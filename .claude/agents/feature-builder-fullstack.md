@@ -1,7 +1,7 @@
 ---
 name: feature-builder-fullstack
 description: "Implementuje feature dotykający równolegle UI i warstwy danych (formularze z auth, full-page features z fetchem, CRUD flow end-to-end). Wywoływany przez dev-docs-execute gdy Implementation Unit jest cross-layer i nie da się go rozsądnie podzielić na osobne UI + data IU."
-skills: [tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration]
+skills: [tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration, figma:figma-use, figma:figma-implement-design]
 model: inherit
 ---
 
@@ -26,6 +26,15 @@ Przeczytaj cały blok Implementation Unit. Wydobądź pola standardowe (Cel, Pli
 - **UI:** komponent React, formularz, integracja z hookiem danych, accessibility
 
 Zapisz dekompozycję w pamięci roboczej — będziesz się do niej odwoływać w `Decyzje implementacyjne`.
+
+### 1.5. Wczytaj designerski kontekst (jeśli dostarczony — dotyczy warstwy UI)
+Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj wszystkie wymienione pliki przed implementacją podwarstwy UI:
+
+1. **SPEC.md (per-feature)** — pomiary 1:1 z Figmy. Najwyższy priorytet dla wartości UI (paddingi, kolory hex, fonty).
+2. **DESIGN.md (projekt-wide)** — tokeny systemu designu.
+3. **PNG screeny referencyjne** — Read jako image dla weryfikacji proporcji i wariantów.
+
+**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu — NIE zgaduj. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` z nagłówka SPEC.md i dopytaj Figmę. Warstwa danych (Data) nie konsumuje SPEC.md — pomiń kontekst designerski przy implementacji schema/RLS/query.
 
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob:
@@ -104,3 +113,5 @@ Zwróć dokładnie ten format:
 5. **Testy obu warstw** — data i UI mają swoje testy. Brak unit testów po jednej stronie = `Status: partial`.
 6. **Atak na niewiadome** — jeśli IU jest niejasne którą warstwę naprawdę dotyka, zwróć `Status: blocked` z pytaniem.
 7. **Brak refaktoryzacji** — zgłoś w `Następne kroki dla orkiestratora`.
+8. **Source of truth designu (warstwa UI)** — SPEC.md > DESIGN.md > ux-ui-guidelines. Rozjazdy raportuj w `Decyzje implementacyjne` (dekompozycja Data/UI).
+9. **Brakujący pomiar → dopytaj Figmę** — wywołaj `mcp__plugin_figma_figma__get_design_context` zamiast halucynować. Halucynacja = `Status: partial`.

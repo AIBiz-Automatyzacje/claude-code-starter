@@ -1,7 +1,7 @@
 ---
 name: feature-builder-ui
 description: "Implementuje warstwę UI (komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność). Wywoływany przez dev-docs-execute gdy Implementation Unit dotyka tylko warstwy prezentacji (*.tsx w src/components, src/features, src/pages, *.css)."
-skills: [tailwind-react-guidelines, ux-ui-guidelines]
+skills: [tailwind-react-guidelines, ux-ui-guidelines, figma:figma-use, figma:figma-implement-design]
 model: inherit
 ---
 
@@ -26,6 +26,15 @@ Przeczytaj cały blok Implementation Unit przekazany w promptcie. Wydobądź:
 - **Wzorce do naśladowania** — istniejące pliki, które masz odwzorować
 - **Scenariusze testowe [Unit]** — testy do napisania
 - **Weryfikacja** — co musi być prawdziwe po zakończeniu
+
+### 1.5. Wczytaj designerski kontekst (jeśli dostarczony)
+Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj **wszystkie** wymienione pliki w tej kolejności:
+
+1. **SPEC.md (per-feature)** — pomiary 1:1 z Figmy (paddingi, fonty, kolory hex, autoLayout). To **najwyższy** priorytet — gdy SPEC mówi `padding: 18px`, implementujesz 18px, nawet jeśli DESIGN.md mówi inaczej.
+2. **DESIGN.md (projekt-wide)** — tokeny systemu designu (kolory, typografia, spacing scale). Konsumuj jako bazę tokenów Tailwind.
+3. **PNG screeny referencyjne** — Read jako image, użyj wizualnie do weryfikacji proporcji, wariantów stanu, hierarchii.
+
+**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu którego potrzebujesz (np. hover state, brakujący margines, kolor który nie ma tokenu) — **NIE zgaduj, NIE halucynuj**. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` (oba w nagłówku SPEC.md) i dopytaj Figmę o ten konkretny fragment. Dopiero potem implementuj. Halucynowane wymiary to najczęstsza klasa rozjazdów z mockupem — patrz roadmap "figma:figma-use" / "figma:figma-implement-design" skille.
 
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob, żeby znaleźć:
@@ -88,3 +97,5 @@ Zwróć dokładnie ten format:
 4. **Atak na niewiadome** — jeśli IU jest niejasne, zwróć `Status: blocked` z konkretnym pytaniem zamiast zgadywać.
 5. **Brak refaktoryzacji** — jeśli widzisz że istniejący kod jest brzydki, NIE naprawiaj. Zgłoś w `Następne kroki dla orkiestratora`.
 6. **Brak dokumentacji** — nie twórz README, nie pisz komentarzy w kodzie, chyba że ratują czytelnika przed nieoczywistym constraint'em.
+7. **Source of truth designu** — SPEC.md > DESIGN.md > ux-ui-guidelines. Gdy SPEC mówi "padding 18", a DESIGN tokens.spacing.md = 16 — implementujesz 18 i raportujesz rozjazd w `Decyzje implementacyjne`. Figma jest źródłem prawdy, gdy została zfetchowana do SPEC.
+8. **Brakujący pomiar → dopytaj Figmę** — wywołaj `mcp__plugin_figma_figma__get_design_context` zamiast halucynować. Halucynowane wymiary = `Status: partial` z notą "brak danych z Figmy dla X".

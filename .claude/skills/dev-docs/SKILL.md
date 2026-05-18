@@ -30,6 +30,11 @@ Jesteś elitarnym specjalistą ds. planowania strategicznego. Stwórz kompleksow
    - Jeśli requirements doc istnieje → użyj jako kontekst produktowy (cele, wymagania, granice scope'u)
    - Jeśli żaden nie istnieje → kontynuuj standardowo
 
+1b. **Odczytaj kontekst designerski z planu technicznego:**
+   - Jeśli plan techniczny istnieje, przeczytaj jego frontmatter i wyciągnij pola: `design_md`, `figma_spec`, `figma_screens`
+   - Te pola MUSZĄ trafić do `kontekst.md` w sekcji "Designerski kontekst" (patrz Faza 3, struktura plików)
+   - Jeśli plan ma `figma_spec` ≠ null, ale plik nie istnieje fizycznie → STOP, poinformuj usera "Plan deklaruje `figma_spec: <ścieżka>` ale plik nie istnieje. Wróć do `/dev-plan` i zregeneruj kontekst designerski."
+
 2. **Przeanalizuj zapytanie** i określ zakres potrzebnego planowania
 3. **Zbadaj odpowiednie pliki** w bazie kodu, aby zrozumieć obecny stan
 4. **Stwórz uporządkowany plan** zawierający:
@@ -77,6 +82,22 @@ Jesteś elitarnym specjalistą ds. planowania strategicznego. Stwórz kompleksow
    - Requirements doc: [ścieżka do docs/brainstorms/*.md jeśli użyty]
    - Plan techniczny: [ścieżka do docs/plans/*.md jeśli użyty]
    ```
+
+   **W `[nazwa-zadania]-kontekst.md` dodaj sekcję "Designerski kontekst"** (przepisana 1:1 z frontmatera planu technicznego, sekcja 1b Fazy 1):
+
+   ```markdown
+   ## Designerski kontekst
+
+   - **DESIGN.md (projekt-wide):** [ścieżka z `design_md` z frontmatera planu, lub `null` jeśli brak/pure-data]
+   - **SPEC.md (per-feature, pomiary z Figmy):** [ścieżka z `figma_spec`, lub `null`]
+   - **Screeny referencyjne:** [lista ścieżek z `figma_screens`, lub pusta jeśli brak]
+     - `<name-1>`: `<ścieżka PNG>`
+     - `<name-2>`: `<ścieżka PNG>`
+
+   > Te pliki są MANDATORY context dla subagentów buildujących UI. `dev-docs-execute` wstrzykuje je do promptu Agent tool.
+   ```
+
+   Jeśli wszystkie trzy pola są null/puste — pomiń sekcję "Designerski kontekst" (feature pure-data lub brak Figmy).
 
    **`[nazwa-zadania]-zadania.md`** — Format checklisty do śledzenia postępów.
    Dla każdego Unity/fazy checklist powinien zawierać:

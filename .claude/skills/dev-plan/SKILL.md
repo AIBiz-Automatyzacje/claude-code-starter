@@ -217,6 +217,109 @@ Użyj outputu do:
 - Zaostrzenia requirements trace lub strategii weryfikacji
 - Dodania tylko tych szczegółów flow które materialnie poprawiają plan
 
+#### 1.6 Kontekst designerski (warunkowy — UI features)
+
+Cel: zanim ułożysz Implementation Units, ustal **źródło prawdy o designie** dla tego feature'a. Bez tego buildery UI dostaną tylko opis tekstowy i będą halucynować pomiary.
+
+**Krok A — Klasyfikacja feature'a.** Zadaj użytkownikowi pytanie przez `AskUserQuestion`:
+
+> "Czy ten feature dotyka warstwy UI (komponenty, ekrany, layouty)?"
+
+Opcje: `Tak — dotyka UI` / `Nie — pure-data (backend/migracje/Edge Functions)`.
+
+Jeśli **Nie** → pomiń resztę sekcji 1.6, w frontmatter planu (4.2) wstaw `design_md: null`, `figma_spec: null`, `figma_screens: []`.
+
+Jeśli **Tak** → kontynuuj krok B.
+
+**Krok B — Projektowy DESIGN.md.** Sprawdź czy istnieje `docs/DESIGN.md` (Read tool). 
+
+- Jeśli istnieje → zapisz ścieżkę do późniejszego frontmatera planu jako `design_md: ./docs/DESIGN.md` i ogłoś: "Używam `docs/DESIGN.md` jako źródła prawdy o tokenach designu projektu."
+- Jeśli **nie istnieje** → zadaj `AskUserQuestion`:
+
+  > "Brak `docs/DESIGN.md` (projekt-wide design system w formacie Google Labs design.md — YAML tokeny + markdown prose). Co robimy?"
+
+  Opcje:
+  1. `Stwórz teraz — zatrzymaj planowanie` (rekomendowane) — wyjdź z dev-plan, poinstruuj usera żeby stworzył `docs/DESIGN.md` (spec: https://github.com/google-labs-code/design.md). Plan można wznowić później.
+  2. `Pomiń dla tej iteracji` — kontynuuj bez `DESIGN.md`, zapisz `design_md: null` w frontmatter, dodaj do "Otwarte pytania → Odroczone do implementacji" wpis: "Brak `docs/DESIGN.md` — buildery UI bazują tylko na ux-ui-guidelines i SPEC per-feature. Utwórz przed kolejnym UI feature'em."
+
+**Krok C — Mockupy Figmy dla tej iteracji.** Zadaj `AskUserQuestion`:
+
+> "Czy masz w Figmie mockupy ekranów dla tej iteracji?"
+
+Opcje: `Tak — podam linki` / `Nie — projektujemy z głowy w oparciu o DESIGN.md`.
+
+Jeśli **Nie** → wstaw `figma_spec: null`, `figma_screens: []` w frontmatter, kontynuuj do Fazy 2.
+
+Jeśli **Tak** → kontynuuj krok D.
+
+**Krok D — Zbierz linki Figma (jeden per ekran).** Zadaj wolnotekstowo:
+
+> "Podaj URL-e Figma per ekran/komponent (jeden na linię, format `<nazwa>: <url>`). Przykład:
+> ```
+> home-dashboard: https://figma.com/design/abc123/...?node-id=378-43
+> bottom-nav: https://figma.com/design/abc123/...?node-id=27-119
+> ```"
+
+Sparsuj odpowiedź na listę `{name, fileKey, nodeId}` (z URL Figmy: `figma.com/design/<fileKey>/...?node-id=<nodeId>` — zamień `-` na `:` w nodeId).
+
+**Krok E — Fetch i wygeneruj SPEC.md.** Dla każdego ekranu wywołaj **sekwencyjnie** (Figma MCP rate limit):
+
+1. `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` — pobierz pełną hierarchię, pomiary, paddingi, typografię, autoLayout.
+2. `mcp__plugin_figma_figma__get_variable_defs` z `fileKey` + `nodeId` — pobierz tokeny (kolory, spacing, font tokens) używane w tym frame.
+3. `mcp__plugin_figma_figma__get_screenshot` z `fileKey` + `nodeId` — pobierz PNG. Zapisz jako `docs/plans/<feature-slug>-figma/<name>.png`.
+4. Odczytaj `width` i `height` z metadata frame'a (z odpowiedzi `get_design_context`) — to viewport designu dla tego ekranu.
+
+Po zebraniu danych ze wszystkich ekranów stwórz **jeden** plik `docs/plans/<feature-slug>-figma/SPEC.md` z układem:
+
+```markdown
+# <Feature> — Specyfikacja Figma
+
+> Pomiary zfetchowane z Figmy YYYY-MM-DD (`get_design_context` + `get_variable_defs`).
+> Źródło: Figma `<fileKey>`.
+
+## Screeny referencyjne
+
+| Nazwa | Plik | Wymiary | Frame |
+|---|---|---|---|
+| <name> | `./<name>.png` | <W>×<H>px | `<nodeId>` |
+| ... | ... | ... | ... |
+
+## Tokeny (Figma variables → mapowanie na `docs/DESIGN.md` lub `global.css @theme {}`)
+
+[Z `get_variable_defs` — tabela `figma_variable | hex | token w projekcie`. Sprawdź czy istnieje w `docs/DESIGN.md`; oznacz brakujące jako "do dodania w DESIGN.md".]
+
+## <NAZWA EKRANU 1> (`<nodeId>`) — pełny ekran
+
+[Z `get_design_context` — sekcja per komponent z paddingami, fontami, kolorami, autoLayoutem. Lustruj strukturę frame'a 1:1.]
+
+## <NAZWA EKRANU 2> (`<nodeId>`) — ...
+
+[...]
+
+## Rozjazdy vs DESIGN.md — Figma jest źródłem prawdy
+
+[Tabela: element | DESIGN.md mówi | Figma mówi | decyzja. Jeśli brak rozjazdów — zostaw sekcję pustą z komentarzem "Brak rozjazdów na moment fetchu".]
+```
+
+Po zapisie plików wpisz do frontmatter planu (4.2):
+
+```yaml
+figma_spec: ./docs/plans/<feature-slug>-figma/SPEC.md
+figma_screens:
+  <name-1>: ./docs/plans/<feature-slug>-figma/<name-1>.png
+  <name-2>: ./docs/plans/<feature-slug>-figma/<name-2>.png
+```
+
+**Krok F — Idempotentność.** Jeśli `docs/plans/<feature-slug>-figma/SPEC.md` **już istnieje** (rerun dev-plan na tym samym slug), zadaj `AskUserQuestion`:
+
+> "SPEC.md już istnieje. Co robimy?"
+
+Opcje:
+1. `Re-fetch i nadpisz` — pociągnij świeże dane z Figmy, nadpisz SPEC i PNG.
+2. `Użyj istniejący` (rekomendowane jeśli nic nie zmieniło się w Figmie) — pomiń kroki E, użyj ścieżek z istniejącego folderu.
+
+NIGDY nie nadpisuj bez explicit zgody usera (memory: confirm-before-delete).
+
 ### Faza 2: Rozwiąż pytania planistyczne
 
 Zbuduj listę pytań planistycznych z:
@@ -296,11 +399,13 @@ Każdy Implementation Unit MUSI mieć zadeklarowany `Delegate to:` — nazwa sub
 
 | Ścieżki w `Pliki:` | Subagent | Skille (mirror dla `Skills in play:`) |
 |---|---|---|
-| Tylko `*.tsx` w `src/components/`, `src/features/<x>/components/`, `src/pages/`, lub `*.css` | `feature-builder-ui` | tailwind-react-guidelines, ux-ui-guidelines |
+| Tylko `*.tsx` w `src/components/`, `src/features/<x>/components/`, `src/pages/`, lub `*.css` | `feature-builder-ui` | tailwind-react-guidelines, ux-ui-guidelines, figma:figma-use, figma:figma-implement-design |
 | Tylko `*.ts` w `src/lib/`, `src/hooks/use<X>Data.ts`, `supabase/migrations/`, `supabase/functions/` | `feature-builder-data` | supabase-dev-guidelines, security, sentry-integration |
-| Mix UI i danych w jednym atomowym IU | `feature-builder-fullstack` | tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration |
+| Mix UI i danych w jednym atomowym IU | `feature-builder-fullstack` | tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration, figma:figma-use, figma:figma-implement-design |
 
 **Reguła praktyczna:** jeśli da się rozsądnie podzielić na dwa osobne IU (jeden UI, drugi data) — podziel. `feature-builder-fullstack` używaj **tylko** gdy podział byłby sztuczny (np. formularz logowania, gdzie UI bez auth call lub auth call bez formularza są bezużyteczne).
+
+**Figma w mirrorze:** `feature-builder-ui` i `feature-builder-fullstack` zawsze mają figma skille w `Skills in play:` (mirror frontmatera tych agentów). Te skille są aktywne tylko gdy plan ma niepuste `figma_spec`/`figma_screens` w frontmaterze — wtedy `dev-docs-execute` wstrzykuje subagentowi "Mandatory designerski kontekst". Bez tej sekcji w prompcie buildery ignorują skille figma. `feature-builder-data` nie ma figma skilli — warstwa danych nie dotyka designu.
 
 Pole `Skills in play:` jest dokumentacyjnym mirror frontmatter `skills:` wybranego subagenta — pozwala czytelnikowi planu zrozumieć kontekst implementacji bez wchodzenia do pliku subagenta.
 
@@ -361,6 +466,11 @@ type: [feat|fix|refactor]
 status: active
 date: YYYY-MM-DD
 origin: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # dołącz gdy planujesz z requirements doc
+design_md: ./docs/DESIGN.md          # null jeśli pure-data feature lub brak DESIGN.md (patrz 1.6)
+figma_spec: ./docs/plans/<feature-slug>-figma/SPEC.md   # null jeśli brak mockupów Figmy
+figma_screens:                       # {} jeśli brak mockupów; mapa name → ścieżka PNG
+  home: ./docs/plans/<feature-slug>-figma/home.png
+  settings: ./docs/plans/<feature-slug>-figma/settings.png
 ---
 
 # [Tytuł planu]
@@ -532,6 +642,9 @@ Przed finalizacją sprawdź:
 - Każdy implementation unit jest konkretny, uporządkowany według zależności i gotowy do implementacji
 - Każdy implementation unit ma wypełnione `Delegate to:` zgodnie z regułą decyzyjną z sekcji 3.5
 - Pole `Skills in play:` w każdym IU jest spójne z frontmatter `skills:` wybranego subagenta
+- Frontmatter planu ma wypełnione pola `design_md`, `figma_spec`, `figma_screens` (zgodnie z 1.6) — jako konkretne ścieżki LUB explicite `null`/`{}`. Nigdy nie pomijaj tych pól.
+- Jeśli `figma_spec` ≠ null — plik istnieje na dysku (`Read` go zwraca treść), a każdy ekran z `figma_screens` ma fizycznie zapisany PNG
+- Każdy IU delegowany do `feature-builder-ui` lub `feature-builder-fullstack` ma w `Skills in play:` figma skille (mirror per sekcja 3.5), niezależnie od tego czy ten konkretny IU korzysta z mockupu — bo skille są w frontmaterze agenta
 - Jeśli postawa test-first lub characterization-first była explicite lub silnie implikowana, relevantne unity niosą ją dalej z lekką `Notatką wykonawczą`
 - Scenariusze testowe są konkretne bez stawania się kodem testowym
 - Każdy checkbox `Weryfikacja:` jest automatyzowalny (CLI lub E2E przez agent-browser). Kroki wymagające człowieka są w `Operator checklist` lub jako `[Manual]` w `Scenariusze testowe` — nigdy w `Weryfikacja:`

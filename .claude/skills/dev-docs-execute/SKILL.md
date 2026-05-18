@@ -45,7 +45,25 @@ KAŻDY Implementation Unit z fazy MUSI być wykonany przez subagenta zadeklarowa
 
 **Krok 3 — Dla każdego IU wywołaj Agent tool:**
 - `subagent_type` = wartość pola `Delegate to:` z IU (`feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`)
-- `prompt` = cały blok IU dosłownie (Cel, Wymagania, Pliki, Podejście, Wzorce, Scenariusze testowe, Weryfikacja) + ścieżka do dokumentacji zadania (`$1`) + numer IU
+- `prompt` = cały blok IU dosłownie (Cel, Wymagania, Pliki, Podejście, Wzorce, Scenariusze testowe, Weryfikacja) + ścieżka do dokumentacji zadania (`$1`) + numer IU + **mandatory designerski kontekst** (patrz krok 3a).
+
+**Krok 3a — Mandatory designerski kontekst (gdy subagent to `feature-builder-ui` lub `feature-builder-fullstack`):**
+
+Odczytaj `$1/[nazwa-zadania]-kontekst.md` i wyciągnij sekcję "Designerski kontekst". Jeśli sekcja istnieje i zawiera niepuste ścieżki, **DOKLEJ** do promptu Agent tool blok:
+
+```
+## Mandatory designerski kontekst (przeczytaj PRZED implementacją)
+
+- DESIGN.md (projekt-wide tokeny): <ścieżka z design_md, lub "brak — bazuj na ux-ui-guidelines">
+- SPEC.md (per-feature pomiary z Figmy): <ścieżka z figma_spec, lub "brak — projektujesz w oparciu o DESIGN.md">
+- Screeny referencyjne (PNG):
+  - <name-1>: <ścieżka>
+  - <name-2>: <ścieżka>
+
+Te pliki są źródłem prawdy o designie. SPEC.md > DESIGN.md > ux-ui-guidelines (od najbardziej konkretnego do najbardziej ogólnego). Jeśli SPEC.md nie pokrywa pomiaru — dopytaj Figmę przez `mcp__plugin_figma_figma__get_design_context` (fileKey/nodeId z nagłówka SPEC.md). Nigdy nie zgaduj wymiarów.
+```
+
+Jeśli sekcja "Designerski kontekst" nie istnieje LUB wszystkie pola są null/puste → pomiń krok 3a (feature pure-data lub świadoma decyzja "bez Figmy"). Dla subagenta `feature-builder-data` zawsze pomijaj krok 3a (warstwa danych nie konsumuje designu).
 
 **Krok 4 — Po otrzymaniu raportu od subagenta zweryfikuj `Status:`**
 
