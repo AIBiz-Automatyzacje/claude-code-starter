@@ -37,12 +37,14 @@ Audyt sklada sie z 4 niezaleznych przebiegow. Kazdy ma inny fokus i moze byc uru
 6. **Circular dependencies** -- import graph, wzajemne zaleznosci miedzy modulami
 7. **Layer boundaries** -- Czy warstwy sa prawidlowo oddzielone? Czy nie ma przeskakiwania warstw?
 8. **API contracts** -- Czy interfejsy miedzy modulami sa stabilne i dobrze zdefiniowane?
+9. **Deep vs shallow modules** -- czy moduł ma dużą dźwignię za małym interfejsem (deep), czy interfejs jest niemal tak złożony jak implementacja (shallow / pass-through)?
 
 **Jak przeprowadzic:**
 - Zbuduj mape zaleznosci (grep importow, przeanalizuj kto importuje kogo)
 - Dla kazdego modulu odpowiedz: "jaki jest jeden powod do zmiany tego modulu?"
 - Sprawdz czy sa cykliczne zaleznosci (A importuje B, B importuje A)
 - Zweryfikuj ze warstwy nie sa naruszane (UI nie importuje data access, serwis nie zalezy od UI)
+- **Deletion test** dla modułów podejrzanych o płytkość: wyobraź sobie usunięcie modułu. Jeśli złożoność znika — był pass-through (kandydat do konsolidacji). Jeśli złożoność pojawia się rozproszona u N callerów — zarabiał na siebie (zostaw)
 
 **Szczegolowa dokumentacja:** [resources/architecture-analysis.md](resources/architecture-analysis.md)
 
@@ -75,7 +77,7 @@ Audyt sklada sie z 4 niezaleznych przebiegow. Kazdy ma inny fokus i moze byc uru
 
 **Co analizowac:**
 1. **YAGNI** -- Czy kazdy element kodu jest explicite wymagany TERAZ?
-2. **Abstraction challenge** -- Czy kazda abstrakcja ma uzasadnienie (2+ uzycia)?
+2. **Abstraction challenge** -- Czy kazda abstrakcja ma uzasadnienie (2+ uzycia)? Reguła szwu: **jeden adapter = szew hipotetyczny (przedwczesna abstrakcja), dwa adaptery = szew realny**. Pojedynczy adapter za interfejsem to sygnał przedwczesnej abstrakcji
 3. **Redundancy** -- Zduplikowana logika, powtorzony error handling, dead code
 4. **Complexity** -- Deep nesting, dlugie funkcje, dlugie pliki
 5. **LOC metrics** -- Ile linii logiki mozna usunac bez utraty funkcjonalnosci?
@@ -177,7 +179,8 @@ Uzyj tego samego systemu co code-review, aby raporty byly spojne:
 - Low (< 10 issues) / Medium (10-25 issues) / High (> 25 issues)
 
 ### Top 5 priorytetow do naprawy
-1. [najwazniejszy problem + uzasadnienie]
+Przy każdym priorytecie dodaj **badge siły rekomendacji** (ortogonalny do severity — mówi o pewności, nie o wadze): `Strong` / `Worth exploring` / `Speculative`.
+1. [najwazniejszy problem + uzasadnienie] — `Strong`
 2. ...
 
 ### Co zrobiono dobrze

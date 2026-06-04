@@ -33,7 +33,7 @@ Jeśli istnieje plan w `docs/plans/`:
 - Sprawdź czy IU miało wypełnione `Delegate to:`. Brak pola w IU sprzed reformy delegacji = ⚪ [info] (legacy plan, nie blokuje review). Niezgodność `Delegate to:` z faktyczną kategorią plików (np. UI files w IU oznaczonym `feature-builder-data`) = 🟡 [P3-nit] z notatką dla planisty
 - Dodaj do raportu sekcję "Odchylenia od planu" jeśli implementacja różni się od planu
 
-Uruchom 5 agentów (Task) równolegle, każdy z inną perspektywą:
+Uruchom 6 agentów (Task) równolegle, każdy z inną perspektywą:
 
 **Agent 1: Security Review**
 ```
@@ -84,15 +84,28 @@ Zwróć USTRUKTURYZOWANY wynik per scenariusz w formacie:
 Klasyfikuj findingi: ✅ passed, 🟠 [P2-important] failed, ⚪ skipped (np. brak dev servera).
 ```
 
+**Agent 6: Spec Compliance**
+```
+Jesteś recenzentem zgodności ze spec. To OSOBNA oś review — sprawdzasz, czy diff faktycznie realizuje to, o co prosił spec, a nie czy kod jest dobrej jakości (tym zajmują się Agenci 1-5).
+Wejście: requirements doc (`docs/dev-brainstorms/*-requirements.md`) i/lub Implementation Unit z planu (`docs/plans/`) odpowiadający fazie $2, oraz zmiany z fazy $2 w folderze $1.
+Zgłoś trzy rzeczy, każdą z CYTATEM linii spec / IU (np. ID wymagania R3 lub nazwa IU):
+(a) wymagania ze spec/IU BRAKUJĄCE lub częściowo zaimplementowane,
+(b) zachowanie w diffie, o które NIKT nie prosił (scope creep),
+(c) wymagania pozornie zaimplementowane, ale BŁĘDNIE.
+Jeśli nie ma spec ani planu — pomiń i zwróć "brak spec do weryfikacji".
+Klasyfikuj: 🔴 [P1-blocking], 🟠 [P2-important], 🟡 [P3-nit].
+```
+
 Po zakończeniu wszystkich agentów — **skonsoliduj wyniki:**
-- Zbierz findings ze wszystkich 5 agentów
+- Zbierz findings z Agentów 1-5 (oś Standards: bezpieczeństwo, performance, architektura, scenariusze, E2E)
 - Usuń duplikaty (różne agenty mogą znaleźć ten sam problem)
 - Posortuj po severity: P1 → P2 → P3
+- **Wyniki Agenta 6 (oś Spec) trzymaj OSOBNO** — NIE scalaj ich z findings Standards i nie dedupuj między osiami. Rozdzielenie jest celowe: zmiana może przejść jedną oś i oblać drugą (kod zgodny z konwencjami, ale realizujący złą rzecz — i odwrotnie), a scalanie maskuje jedną przez drugą
 
 ### 4. Zapisz wyniki review
 Po zakończeniu review przez subagenta:
 
-**Utwórz plik `$1/review-faza-$2.md`** z pełnym raportem.
+**Utwórz plik `$1/review-faza-$2.md`** z pełnym raportem. Umieść w nim **osobną sekcję `## Zgodność ze spec`** z wynikami Agenta 6 — NIE scalaj jej z findings osi Standards (osie pozostają rozdzielone, by jedna nie maskowała drugiej).
 
 **Zaktualizuj `$1/[zadanie]-zadania.md`:**
 - Dodaj sekcję "## Do poprawy po review fazy $2"
@@ -175,6 +188,7 @@ Jeśli Agent 5 wykonał weryfikacje:
    - 🔵 [suggestion]: X
    - 🌐 [E2E]: X passed / Y failed
    - ☑️ Weryfikacja: X auto / Y E2E / Z manual / W niejasne / V failed
+   - 📋 Zgodność ze spec: X braków / Y scope creep / Z błędnie zaimplementowane
 
 📄 Raport zapisany: $1/review-faza-$2.md
 

@@ -45,7 +45,7 @@ PRZED napisaniem kodu uruchom Grep/Glob, żeby znaleźć:
 NIE wymyślaj wzorca. Naśladuj istniejący.
 
 ### 3. Implementuj
-Napisz kod zgodnie z `Pliki:` i `Podejście`. **Razem z kodem napisz testy** — nie odkładaj na koniec.
+Napisz kod zgodnie z `Pliki:` i `Podejście`. **Razem z kodem napisz testy** — nie odkładaj na koniec. Pracuj wertykalnie: jeden test → jego implementacja → następny, nie hurtem wszystkie testy naraz (horizontal slicing).
 
 Obowiązkowe pryncypia (z załadowanych skilli):
 - React 19: bez forwardRef, useActionState dla formularzy gdzie sensowne, brak zbędnych useMemo/useCallback (Compiler)

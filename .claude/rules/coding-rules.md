@@ -23,6 +23,8 @@
 - Nie ładuj pełnych datasetów w unit testach — używaj fixtures w `tests/fixtures/`
 - Pattern: Arrange-Act-Assert wewnątrz describe/it bloków
 - Testuj ZACHOWANIE (behavior), nie implementację (internal state)
+- Pisz testy WERTYKALNIE (tracer bullets): jeden test → jego implementacja → następny. NIGDY nie pisz wszystkich testów naraz, a potem całej implementacji (horizontal slicing) — to produkuje testy „kształtu" (struktur i sygnatur), nie zachowania; przechodzą, gdy zachowanie się psuje
+- Nigdy nie refaktoruj, gdy test jest RED — najpierw doprowadź do GREEN
 ---
 
 ## 3. Organizacja kodu
