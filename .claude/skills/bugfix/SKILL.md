@@ -71,7 +71,9 @@ Skill do naprawy bugow wykrytych w dzialajcej aplikacji — Sentry alerty, E2E f
    - Maly (1-2 pliki, oczywista zmiana) — naprawiaj na biezacym branchu
    - Duzy (3+ pliki, zmiana logiki) — stworz branch `fix/opis-bugu`
 
-6. **OUTPUT:** Zapisz jednozdaniowe podsumowanie: "Root cause to X, bo Y"
+6. **Assumption audit (przed postawieniem hipotezy):** wypisz wszystko, co „musi być prawdą", żeby Twoja hipoteza root cause się trzymała. Przy każdym założeniu oznacz: **ZWERYFIKOWANE** (sprawdziłem w kodzie / danych / logach) czy **ZAŁOŻONE** (zgaduję). Każde ZAŁOŻONE, na którym wisi hipoteza, zweryfikuj zanim ruszysz dalej — niezweryfikowane założenie to najczęstsza przyczyna naprawiania złego miejsca.
+
+7. **OUTPUT:** Zapisz jednozdaniowe podsumowanie: "Root cause to X, bo Y"
 
 ### Faza 2: Failing test
 
@@ -87,11 +89,13 @@ Skill do naprawy bugow wykrytych w dzialajcej aplikacji — Sentry alerty, E2E f
    - NIE dodawaj "ulepszen" przy okazji
    - NIE oslabiaj asercji zeby test przeszedl
 
-2. **Uruchom test z Fazy 2** — MUSI przejsc
+2. **Predykcja przed testem (gate przyczynowy):** dla każdego niepewnego ogniwa łańcucha przyczynowego zapisz, co DOKŁADNIE powinno się zmienić, jeśli Twój model przyczyny jest poprawny. Po uruchomieniu testu porównaj wynik z predykcją — jeśli fix działa, ale predykcja była błędna, prawdopodobnie naprawiłeś symptom, nie przyczynę; wróć do Fazy 1.
 
-3. **Uruchom pelny suite** — zero regresji
+3. **Uruchom test z Fazy 2** — MUSI przejsc
 
-4. **Jesli fix nie dziala:**
+4. **Uruchom pelny suite** — zero regresji
+
+5. **Jesli fix nie dziala:**
    - < 3 proby: wroc do Fazy 1, przeanalizuj z nowa wiedza
    - >= 3 proby: **STOP.** Zakwestionuj architekture:
      - Czy kazdy fix ujawnia nowy problem w innym miejscu?
@@ -99,7 +103,16 @@ Skill do naprawy bugow wykrytych w dzialajcej aplikacji — Sentry alerty, E2E f
      - Czy trzymamy sie wzorca z bezwladnosci?
      - Omow z userem zanim podejmiesz kolejna probe
 
-5. **Opcjonalnie — defense-in-depth:**
+   **Smart escalation — dopasuj typ problemu do wzorca dowodów:**
+
+   | Wzorzec, który widzisz | Co to prawdopodobnie znaczy | Ruch |
+   |---|---|---|
+   | Każdy fix psuje coś w innym module | Problem architektoniczny, nie lokalny bug | Cofnij się o poziom; omów granice z userem |
+   | Dowody sobie przeczą | Twój model myślowy jest zły | Odrzuć hipotezę, wróć do assumption audit (Faza 1) |
+   | Działa lokalnie, pada w CI / produkcji | Problem środowiska, nie kodu | Porównaj env, wersje, dane, kolejność — nie zmieniaj logiki |
+   | Bug znika i wraca losowo | Race condition lub stan współdzielony | Szukaj async / timing / closure, nie pojedynczej linii |
+
+6. **Opcjonalnie — defense-in-depth:**
    Po udanym fixie dodaj walidacje na wielu warstwach, zeby bug byl strukturalnie niemozliwy.
    Szczegoly: przeczytaj `techniki/defense-in-depth.md`
 
@@ -157,7 +170,7 @@ Jesli cokolwiek failuje — wroc do Fazy 3. NIE racjonalizuj ("to pre-existing",
 - "Dodajmy kilka zmian naraz" → Faza 3, punkt 1
 - "Pominmy test, sprawdze recznie" → Faza 2
 - "Pewnie to X, naprawmy to" → Faza 1
-- "Jeszcze jedna proba" (po 2+ nieudanych) → Faza 3, punkt 4
+- "Jeszcze jedna proba" (po 2+ nieudanych) → Faza 3, punkt 5
 - "Gotowe!" (bez uruchomienia komend) → Faza 4
 
 ## Techniki wspierajace

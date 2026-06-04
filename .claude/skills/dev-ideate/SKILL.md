@@ -44,6 +44,7 @@ Jesli nie podano argumentu, przeprowadz ideacje calego projektu autonomicznie.
 5. **Roznorodnosc agentow ulepsza pule kandydatow** — rownolegle sub-agenty sa mechanizmem wspierajacym bogatsze generowanie i krytyczne, nie zastepuja glownego workflow.
 6. **Zachowaj artefakt wczesnie** — zapisz dokument ideacji przed prezentacja wynikow, zeby praca przetrwala przerwania.
 7. **Kieruj akcje do brainstormingu** — ideacja identyfikuje obiecujace kierunki; `/dev-brainstorm` definiuje wybrany kierunek wystarczajaco precyzyjnie do planowania.
+8. **Każdy pomysł niesie podstawę (basis) i przechodzi meeting-test** — wymuś przy każdym pomyśle jawną podstawę (`direct` / `external` / `reasoned`), żeby odsiać puste podpowiedzi „dla zapełnienia". Próg odsiewu: czy ten pomysł zasługuje na osobną dyskusję w zespole? Jeśli nie — nie jest ocalałym.
 
 ## Przebieg
 
@@ -142,7 +143,7 @@ Postepuj dokladnie wedlug tego mechanizmu:
    - instrukcje generowania surowych kandydatow, nie krytyki
 8. Przypisz kazdemu sub-agentowi inny frame ideacji jako **bias startowy, nie ograniczenie**. Instruuj kazdego agenta, zeby zaczynal ze swojej perspektywy ale podazal za kazdym obiecujacym watek gdziekolwiek prowadzi — pomysly cross-cutting obejmujace wiele frame'ow sa cenne, nie poza scope'm.
 
-   **4 frame'y ideacji (dostosowane do stacku React/TypeScript/Supabase/Tailwind/Vite):**
+   **6 frame'ów ideacji** — 4 techniczne dostosowane do stacku React/TypeScript/Supabase/Tailwind/Vite + 2 kreatywne. Frame to bias startowy, nie ograniczenie; przy domyślnych 4 agentach rozdziel frame'y tak, by oba kreatywne (5-6) były reprezentowane jako biasy obok technicznych:
 
    1. **Tech Debt Scout** — szuka:
       - typy `any` w TypeScript
@@ -177,11 +178,22 @@ Postepuj dokladnie wedlug tego mechanizmu:
       - mozliwosci automatyzacji (cron joby, triggery Supabase)
       - brak internacjonalizacji (i18n)
 
+   5. **Cross-Domain Analyst** — przenosi wzorce z niepowiązanych dziedzin:
+      - jak inne branże lub systemy rozwiązują analogiczny problem (gry, finanse, logistyka, biologia, infrastruktura)
+      - notuj analogię tylko gdy podobieństwo strukturalne się trzyma (te same ograniczenia, te same tryby awarii), nie gdy zgadza się samo słownictwo
+      - pytanie wiodące: „kto na świecie rozwiązał to lepiej i co z tego da się przenieść?"
+
+   6. **Constraint Flipper** — kwestionuje przyjęte ograniczenia:
+      - co gdyby odwrócić założenie uznawane za stałe (koszt, kolejność kroków, kto coś robi, czy w ogóle to robić)
+      - usuń ograniczenie i sprawdź, jaki lepszy projekt staje się możliwy
+      - pytanie wiodące: „które »tak musi być« jest naprawdę wyborem, nie prawem?"
+
 9. Popros kazdego sub-agenta o zwrocenie ustandaryzowanej struktury dla kazdego pomyslu:
    - title
    - summary
    - why_it_matters
    - evidence (dowody / punkty uziemienia)
+   - basis (podstawa pomysłu: `direct` — wprost z kodu/skanu repo | `external` — z wzorca zewnętrznego lub innej domeny | `reasoned` — z rozumowania bez twardego dowodu)
    - boldness (odwaga: low / medium / high)
    - focus_fit (dopasowanie do fokusa: jesli podano)
 10. Scal i zdeduplikuj outputy sub-agentow w jedna glowna liste kandydatow.
@@ -228,6 +240,8 @@ Kryteria odrzucania:
 - zbyt kosztowny wzgledem prawdopodobnej wartosci
 - juz pokryty przez istniejace workflow lub dokumentacje
 - ciekawy ale lepiej obsluzony jako wariant brainstormu, nie ulepszenie produktu
+- **nie przechodzi meeting-testu** — nie zasługuje na osobną dyskusję w zespole
+- **słaba podstawa (basis)** — oznaczony `reasoned` bez wiarygodnego rozumowania, albo `direct`/`external` bez realnego pokrycia w dowodach
 
 Spojna rubryka ocalatych wazaca:
 - uziemienie w aktualnym repo
@@ -237,6 +251,7 @@ Spojna rubryka ocalatych wazaca:
 - dzwignia na przyszla prace
 - obciazenie implementacyjne
 - pokrywanie sie z silniejszymi pomyslami
+- siła i typ podstawy (basis): przy równej reszcie `direct` > `external` > `reasoned`
 
 Docelowy output:
 - zachowaj 5-7 ocalatych domyslnie
