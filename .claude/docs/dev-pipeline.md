@@ -10,12 +10,37 @@ Data utworzenia: 2026-03-24
 ```
 /dev-ideate → /dev-brainstorm → /dev-plan → /dev-docs → /dev-docs-execute ↔ /dev-docs-review → /dev-docs-complete → /dev-compound
                                                                                                                         ↓
-                                                       /dev-autopilot (orkiestruje execute↔review→complete→compound)
+                                                       dev-autopilot-wf (orkiestruje execute↔review→complete→compound)
                                                                                                           /dev-compound-refresh
 ```
 
 Skille dev-* mogą być wywoływane programowo przez inne skille i agenty (bez `disable-model-invocation`).
 Każdy skill działa BEZ argumentów (wyciąga kontekst z sesji). Argumenty są opcjonalne.
+
+### Pipeline jako Dynamic Workflows
+
+W tym szablonie część fazy implementacji jest zaimplementowana jako **Dynamic Workflows** —
+deterministyczne orkiestratory w JavaScript w `.claude/workflows/*.js` (suffix `-wf`, żeby uniknąć
+kolizji nazw ze skillami). Orkiestrator trzyma plan i sterowanie w kodzie, a buildery i reviewerzy
+to **leaf-agenci** wołani przez `agentType`. Pliki workflowów:
+
+| Workflow | Plik | Co robi |
+|----------|------|---------|
+| `dev-autopilot-wf` | `.claude/workflows/dev-autopilot-wf.js` | Autonomiczny pipeline: bootstrap → per faza (execute → review → adversarial verify → fix) → complete → compound. Trzyma `PlanState` w kodzie, resume z `.autopilot-state.json`. |
+| `dev-docs-execute-wf` | `.claude/workflows/dev-docs-execute-wf.js` | Wykonanie JEDNEJ fazy: planner czyta Implementation Units z `docs/plans/`, buildery `feature-builder-*` implementują je przez `agentType`, potem walidacja + commit + aktualizacja dokumentacji. |
+| `dev-docs-review-wf` | `.claude/workflows/dev-docs-review-wf.js` | Code review jednej fazy: context-packager → 7 reviewerów równolegle (+ E2E) → dedup → adversarial verify każdego P1/P2 → scribe zapisuje raport + bookkeeping checkboxów `Weryfikacja:` → severity gate. |
+| `dev-docs-complete-wf` | `.claude/workflows/dev-docs-complete-wf.js` | Archiwizacja ukończonego zadania: `docs/active/<zadanie>` → `docs/completed/`, podsumowanie, aktualizacja dokumentacji projektu. |
+| `dev-compound-wf` | `.claude/workflows/dev-compound-wf.js` | Dokumentuje rozwiązane problemy z sesji do `docs/solutions/` (tryb compact) i ocenia rule-worthy do `.claude/rules/learned-patterns.md`. |
+
+Workflowy `*-wf` odpalasz toolem **`Workflow`** (`Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js"}, args)`),
+standalone (z argumentami, np. `{sciezka, faza}`) albo orkiestrowane przez `dev-autopilot-wf`.
+**Git walidujesz w sesji PRZED odpaleniem autopilota** — workflow nie pyta o branch switch.
+RESUME po przerwanym runie: `Workflow({scriptPath, resumeFromRunId})` + ZAWSZE przekaż `args` ponownie
+(stan wznowienia czyta z `.autopilot-state.json`, checkboxy md to tylko widok dla człowieka).
+
+Skille fazy discovery/planowania (`/dev-ideate`, `/dev-brainstorm`, `/dev-plan`, `/dev-docs`,
+`/dev-docs-update`, `/dev-compound-refresh`) pozostają zwykłymi skillami — nie mają wariantu `-wf`.
+Skill `/dev-autopilot` (ręczna orkiestracja) zostaje jako legacy/fallback — domyślną ścieżką jest `dev-autopilot-wf`.
 
 ---
 
@@ -51,29 +76,30 @@ Każdy skill działa BEZ argumentów (wyciąga kontekst z sesji). Argumenty są 
 **Kiedy:** Masz plan (z dev-plan lub z rozmowy w plan mode). Chcesz zacząć implementację.
 **Jak działa:** Szuka plan/requirements docs, tworzy branch git, generuje 3 pliki w `docs/active/[nazwa]/`.
 **Output:** `docs/active/[nazwa]/` z: plan.md, kontekst.md, zadania.md + branch `feature/[nazwa]`
-**Następny krok:** `/dev-docs-execute docs/active/[nazwa]`
+**Następny krok:** `dev-autopilot-wf docs/active/[nazwa]` (cały pipeline) lub `/dev-docs-execute docs/active/[nazwa]` (faza po fazie)
 
 ### Faza implementacji
 
-#### `/dev-autopilot docs/active/[nazwa]`
+#### `dev-autopilot-wf docs/active/[nazwa]` (workflow)
 **Cel:** Automatyczne wykonanie WSZYSTKICH faz implementacji z review i naprawami.
 **Kiedy:** Masz gotową dokumentację w docs/active/ i chcesz uruchomić cały pipeline bez ręcznej interwencji.
-**Jak działa:** Czyta plan, buduje kolejkę faz. Per faza: spawnuje Agent → execute, Agent → review, Agent → fix (jeśli P1/P2, max 2 cykle). Po wszystkich fazach: complete + compound.
+**Jak działa:** Dynamic Workflow (`.claude/workflows/dev-autopilot-wf.js`). Czyta plan, buduje `PlanState` i kolejkę faz. Per faza woła pod-workflowy: `dev-docs-execute-wf` → `dev-docs-review-wf` → (przy P1/P2) cykl fix. Po wszystkich fazach: `dev-docs-complete-wf` + `dev-compound-wf`.
 **Output:** Zaimplementowany kod + archiwum w docs/completed/ + wpis w docs/solutions/
-**Resumability:** Ponowne wywołanie czyta stan z checkboxów i kontynuuje od ostatniej niekompletnej fazy.
-**Stop conditions:** P1 po 2 cyklach fix, błąd buildu/testów, git conflict.
+**Resumability:** `Workflow({scriptPath, resumeFromRunId})` + te same args — stan z `.autopilot-state.json` (źródło prawdy), kontynuuje od ostatniej niekompletnej fazy.
+**Stop conditions:** P1 po cyklu fix (limit cykli fix = 1 — drugi cykl naprawiał 0 findingów, a kosztował pełny re-review), błąd buildu/testów, git conflict. Walidację brancha robisz w sesji PRZED odpaleniem.
 
-#### `/dev-docs-execute docs/active/[nazwa]`
+#### `/dev-docs-execute docs/active/[nazwa]` (workflow: `dev-docs-execute-wf`)
 **Cel:** Wykonanie jednej fazy implementacji.
 **Kiedy:** Masz gotową dokumentację w docs/active/. Chcesz zaimplementować kolejną fazę.
-**Jak działa:** Czyta plan, znajduje następną fazę, wykonuje ją. Wybiera strategię: inline (1-2 taski) lub sub-agenty (3+ tasków). Sprawdza scope boundaries. Po zakończeniu: System-Wide Test Check (5 pytań), aktualizacja checkboxów w planie, incremental commits.
+**Jak działa:** Planner czyta Implementation Units z planu, znajduje następną fazę. Każdy IU jest delegowany do buildera przez `agentType` (`feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`) — wartość z pola `Delegate to:` w IU. Strategia: serial (zależne) lub parallel (niezależne). Dla IU dotykających UI/fullstack doklejany jest mandatory kontekst designerski. Po zakończeniu: System-Wide Test Check, aktualizacja checkboxów, incremental commits.
 **Output:** Zaimplementowany kod + zaktualizowana dokumentacja + commit(y)
 **Następny krok:** `/dev-docs-review docs/active/[nazwa] [numer-fazy]` lub kolejny `/dev-docs-execute`
 
-#### `/dev-docs-review docs/active/[nazwa] [numer-fazy]`
+#### `/dev-docs-review docs/active/[nazwa] [numer-fazy]` (workflow: `dev-docs-review-wf`)
 **Cel:** Code review wykonanej fazy.
 **Kiedy:** Po `/dev-docs-execute` — chcesz sprawdzić jakość kodu przed kontynuacją.
-**Jak działa:** 4 agenty review równolegle (Security, Performance, Architecture, Scenario Exploration). Konsolidacja wyników. Severity gate: P1 (blokuje) / P2 (zastrzeżenia) / P3 (OK).
+**Jak działa:** context-packager (mapa zmian raz) → 7 reviewerów równolegle (Security, Performance, Architecture, TypeScript, Spec-compliance, Test-coverage) + osobny agent E2E. Następnie dedup → adversarial verify każdego P1/P2 (sceptycy próbują obalić finding; P1=3 sceptyków, P2=1) → scribe zapisuje raport i robi bookkeeping checkboxów `Weryfikacja:` → severity gate: P1 (blokuje) / P2 (zastrzeżenia) / P3 (OK).
+**Weryfikacja E2E:** Agent `feature-tester-e2e` (skill `agent-browser`) — testuje w przeglądarce na dev serverze Vite (localhost:5173), NIE headless symulację. Sprawdza checkboxy `Weryfikacja:` 🌐 z checklisty: interakcje, nawigację klawiaturą, responsywność, visual regression. Jeśli zadanie ma `figma_screens` — robi side-by-side visual comparison z mockupami. Najpierw preflight: czy dev server żyje (`curl localhost:5173`).
 **Output:** `docs/active/[nazwa]/review-faza-X.md` + checkboxy do poprawy w zadaniach
 **Następny krok:** `/dev-docs-execute` (poprawki) lub kolejna faza
 
@@ -119,19 +145,22 @@ Każdy skill działa BEZ argumentów (wyciąga kontekst z sesji). Argumenty są 
 | `best-practices-researcher` | Szuka best practices online (Context7, WebSearch) |
 | `framework-docs-researcher` | Szuka dokumentacji framework'ów/bibliotek |
 
-### Review (używane przez `/dev-docs-review`)
+### Review (używane przez `/dev-docs-review` / `dev-docs-review-wf` — 7 reviewerów równolegle + E2E)
 | Agent | Rola |
 |-------|------|
 | `security-sentinel` | Auth, RLS, XSS, Zod validation, API key exposure |
 | `performance-oracle` | N+1, bundle size, lazy loading, memoizacja, useEffect cleanup |
 | `kieran-typescript-reviewer` | Type safety, brak `any`, modern patterns, naming |
 | `architecture-strategist` | SOLID, component boundaries, coupling, circular deps |
-| `code-simplicity-reviewer` | YAGNI, redundancja, uproszczenia |
+| `spec-flow-analyzer` | Zgodność ze spec/planem IU: under-implementation, scope creep, błędna implementacja |
+| (default agent) | Test-coverage: happy path, invalid inputs, boundary, brakujące testy |
+| `feature-tester-e2e` | E2E w przeglądarce (agent-browser) — checkboxy `Weryfikacja:` 🌐 |
 
 ### Workflow (używane przez `/dev-plan`)
 | Agent | Rola |
 |-------|------|
 | `spec-flow-analyzer` | User flow analysis, missing paths, edge cases |
+| `code-simplicity-reviewer` | YAGNI, redundancja, uproszczenia (manualny `/dev-docs-review`) |
 
 ---
 
@@ -208,9 +237,13 @@ docs/
 /dev-brainstorm lazy loading         ← doprecyzuj pomysł
 /dev-plan                            ← plan techniczny
 /dev-docs                            ← struktura zadań
-/dev-autopilot docs/active/lazy-loading   ← WSZYSTKO automatycznie:
+dev-autopilot-wf docs/active/lazy-loading  ← WSZYSTKO automatycznie (tool Workflow):
                                           execute fazy 1..N
-                                          review każdej fazy
-                                          fix jeśli P1/P2
+                                          review każdej fazy + adversarial verify
+                                          fix jeśli P1/P2 (1 cykl, bez re-review)
                                           complete + compound
 ```
+
+> Uwaga: środowisko E2E (agent-browser na dedykowanej bazie Supabase e2e) jest opcjonalne i opt-in —
+> patrz `.claude/templates/e2e-env/README.md`. Bez `.env.e2e` weryfikacje E2E lądują jako OPERATOR.
+> Po każdej zmianie `.claude/workflows/*-wf.js` odpal smoke-test: `.claude/templates/smoke-autopilot/`.

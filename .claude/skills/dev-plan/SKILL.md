@@ -393,6 +393,16 @@ Używaj `Notatka wykonawcza` oszczędnie. Dobre użycia:
 
 Nie rozwijaj unitów w literalne substepy `RED/GREEN/REFACTOR`.
 
+#### 3.4b Zarządzany harness E2E — seedy i baza testowa
+
+Autonomiczne E2E (autopilot) działa na **dedykowanym projekcie testowym** opisanym w `.env.e2e` (NIGDY dev/prod). Środowisko stawia i sprząta sam autopilot (dev server Vite z `--mode e2e` na bazie `.env.e2e`, `supabase db push` migracji + seedy, konto `E2E_TEST_EMAIL`); tester `feature-tester-e2e` (agent-browser) **tylko odpala** scenariusz w przeglądarce — **nie pisze flow**. Planując scenariusze `[E2E]`, przestrzegaj:
+
+- **W webie sam flow opisuje checkbox `[E2E]`/`Weryfikacja:`** (URL, kroki: otwórz, kliknij, sprawdź, screenshot) — agent-browser wykonuje go z opisu, NIE ma osobnego pliku flow. Jedynym deliverable BUILDERA jest **seed `e2e/seeds/<flow>-seed.sql`** (gdy scenariusz potrzebuje danych). Wpisz go do `**Pliki:**` danego IU jako `Stwórz:` i przypisz IU do buildera (`feature-builder-*`). Autorstwo seeda NIGDY nie może wisieć pod checkboxem testera ani w bloku testera, bo wtedy nikt go nie napisze i E2E cicho spadnie do Operatora.
+- **Seed musi być idempotentny** (DELETE/upsert, bezpieczny do re-runu) i referować konto testowe przez `(select id from auth.users where email='<E2E_TEST_EMAIL>')` — **nigdy przez stałe ID**. Wzór: istniejący seed w `e2e/seeds/`. Flow loguje się kontem `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` (email+hasło, NIE OAuth — popup providera jest niedostępny headless).
+- **E2E celuje w projekt z `.env.e2e`** — nigdy nie wstrzykuj danych testowych do dev/prod ani przez Supabase MCP. Smoke RLS (np. odmowa nie-uczestnikowi) wykonuj SQL-em na bazie e2e (`psql "$SUPABASE_E2E_DB_URL"`).
+- **Realtime / multi-client realistycznie:** single-client (render, wysłanie, optimistic+echo dedup) jest autonomicznie testowalny i należy do `[E2E]`. Prawdziwy two-client „na żywo" (równoczesne karty/urządzenia) → `Operator checklist` `[Manual]`, bo harness single-client tego nie dowiedzie.
+- **Projekt bez `.env.e2e`** (brak opt-in do E2E): scenariusz `[E2E]` przenieś do `Operator checklist` jako `[Manual]` — seed nie jest wtedy wymagany. Setup harnessu: `.claude/templates/e2e-env/README.md`.
+
 #### 3.5 Wybór subagenta dla IU
 
 Każdy Implementation Unit MUSI mieć zadeklarowany `Delegate to:` — nazwa subagenta z `.claude/agents/`, który go wykona. Reguła decyzyjna oparta na ścieżkach z pola `Pliki:`:
