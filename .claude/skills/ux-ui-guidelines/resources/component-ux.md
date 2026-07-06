@@ -502,10 +502,13 @@ const alertIcons = {
 
 export function Alert({ variant, children }: AlertProps) {
     const Icon = alertIcons[variant];
-    
+    // role="alert" tylko dla pilnych komunikatów (błąd/ostrzeżenie);
+    // sukces/info używają role="status" (grzeczne, nieprzerywające).
+    const isUrgent = variant === 'error' || variant === 'warning';
+
     return (
         <div
-            role="alert"
+            role={isUrgent ? 'alert' : 'status'}
             className={cn(
                 'p-4 rounded-lg border flex items-start gap-3',
                 alertStyles[variant]
@@ -658,24 +661,28 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 ## Optimistic Updates (React 19)
 
 ### useOptimistic Hook
+
+> **Uwaga:** setter z `useOptimistic` MUSI być wywołany wewnątrz akcji lub `startTransition`.
+> Wywołanie go z `onMutate` React Query (poza transition) jest anty-patternem — React zgłosi
+> ostrzeżenie, a stan optymistyczny nie zostanie poprawnie powiązany z trwającą akcją.
+> Owiń zarówno `setOptimistic*`, jak i `mutateAsync` w jedną `startTransition`.
+
 ```typescript
-import { useOptimistic } from 'react';
+import { useOptimistic, useTransition } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 function FavoriteButton({ templateId, isFavorite }: Props) {
     const queryClient = useQueryClient();
-    
-    // Optimistic state
+    const [isPending, startTransition] = useTransition();
+
+    // Optimistic state — aktualizowany wyłącznie wewnątrz transition/akcji
     const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
-    
+
     const mutation = useMutation({
         mutationFn: () => api.toggleFavorite(templateId),
-        onMutate: () => {
-            // Instant UI update
-            setOptimisticFavorite(!optimisticFavorite);
-        },
         onError: () => {
-            // useOptimistic auto-rollbacks, ale toast jest pomocny
+            // Gdy akcja się kończy, useOptimistic wraca do bazowego `isFavorite`;
+            // toast informuje użytkownika o niepowodzeniu.
             toast.error('Nie udało się zapisać');
         },
         onSettled: () => {
@@ -683,12 +690,20 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
         },
     });
 
+    const handleToggle = () => {
+        // setter useOptimistic + mutacja w jednej transition
+        startTransition(async () => {
+            setOptimisticFavorite(!optimisticFavorite);
+            await mutation.mutateAsync();
+        });
+    };
+
     return (
         <Button
             variant="ghost"
             size="icon"
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
+            onClick={handleToggle}
+            disabled={isPending}
             aria-label={optimisticFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
         >
             <Heart
@@ -708,21 +723,21 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
 ```typescript
 function TodoList() {
     const { data: todos } = useTodos();
+    const [isPending, startTransition] = useTransition();
     const [optimisticTodos, addOptimisticTodo] = useOptimistic(
         todos ?? [],
         (state, newTodo: Todo) => [...state, newTodo]
     );
 
-    const mutation = useMutation({
-        mutationFn: api.createTodo,
-        onMutate: (newTodo) => {
-            // Dodaj natychmiast z tymczasowym ID
-            addOptimisticTodo({
-                ...newTodo,
-                id: `temp-${Date.now()}`,
-            });
-        },
-    });
+    const mutation = useMutation({ mutationFn: api.createTodo });
+
+    const handleCreate = (newTodo: NewTodo) => {
+        // setter useOptimistic + mutacja w jednej transition (nie w onMutate)
+        startTransition(async () => {
+            addOptimisticTodo({ ...newTodo, id: `temp-${Date.now()}` });
+            await mutation.mutateAsync(newTodo);
+        });
+    };
 
     return (
         <ul>

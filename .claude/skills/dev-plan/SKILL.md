@@ -26,6 +26,8 @@ Zadawaj jedno pytanie na raz. Preferuj zwięzły single-select gdy istnieją nat
 
 Nie kontynuuj dopóki nie masz jasnego inputu do planowania.
 
+**Słownik domenowy:** jeśli istnieje `docs/CONCEPTS.md`, przeczytaj go najpierw — to glosariusz pojęć o projektowo-specyficznym znaczeniu. Używaj tej terminologii w planie i NIE planuj zmian sprzecznych z definicjami (np. „naprawy" statusu, który celowo działa nietypowo).
+
 ## Główne zasady
 
 1. **Używaj wymagań jako źródła prawdy** — jeśli `/dev-brainstorm` wyprodukował requirements doc, planowanie powinno na nim bazować zamiast wymyślać zachowania od nowa.

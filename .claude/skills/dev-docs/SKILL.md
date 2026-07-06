@@ -35,6 +35,7 @@ Jesteś elitarnym specjalistą ds. planowania strategicznego. Stwórz kompleksow
    - Te pola MUSZĄ trafić do `kontekst.md` w sekcji "Designerski kontekst" (patrz Faza 3, struktura plików)
    - Jeśli plan ma `figma_spec` ≠ null, ale plik nie istnieje fizycznie → STOP, poinformuj usera "Plan deklaruje `figma_spec: <ścieżka>` ale plik nie istnieje. Wróć do `/dev-plan` i zregeneruj kontekst designerski."
 
+1c. **Wczytaj słownik domenowy:** jeśli istnieje `docs/CONCEPTS.md`, przeczytaj go — glosariusz pojęć o projektowo-specyficznym znaczeniu. Używaj tej terminologii w zadaniach i nie planuj zmian sprzecznych z definicjami.
 2. **Przeanalizuj zapytanie** i określ zakres potrzebnego planowania
 3. **Zbadaj odpowiednie pliki** w bazie kodu, aby zrozumieć obecny stan
 4. **Stwórz uporządkowany plan** zawierający:

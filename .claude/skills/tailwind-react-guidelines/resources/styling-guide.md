@@ -237,6 +237,73 @@ export const Button = ({ className, variant, size, ...props }: ButtonProps) => (
 
 ---
 
+## shadcn/ui + Tailwind v4 Setup
+
+W Tailwind v4 nie ma `tailwind.config.js` ani `darkMode: 'class'` - konfiguracja i wariant dark idą przez CSS. shadcn/ui integruje się przez `components.json` + tokeny CSS.
+
+### Vite plugin
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+    plugins: [react(), tailwindcss()], // Brak postcss.config - plugin ogarnia Tailwind v4
+});
+```
+
+### components.json
+```json
+{
+    "$schema": "https://ui.shadcn.com/schema.json",
+    "style": "new-york",
+    "tailwind": {
+        "config": "",
+        "css": "src/index.css",
+        "baseColor": "neutral",
+        "cssVariables": true
+    },
+    "aliases": { "components": "@/components", "utils": "@/lib/utils", "ui": "@/components/ui" }
+}
+```
+
+### Tokeny CSS + dark variant
+```css
+/* src/index.css */
+@import "tailwindcss";
+
+/* Dark mode przez klasę .dark (v4 nie ma darkMode w configu) */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0.039 264);
+    --primary: oklch(0.45 0.26 264);
+    --primary-foreground: oklch(1 0 0);
+    --border: oklch(0.922 0.012 264);
+}
+
+.dark {
+    --background: oklch(0.145 0.039 264);
+    --foreground: oklch(0.98 0.005 264);
+    --border: oklch(0.3 0.02 264);
+}
+
+/* Mapowanie tokenów na utility Tailwind (bg-background, text-foreground, ...) */
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-border: var(--border);
+}
+```
+
+**Dlaczego `@theme inline`:** tokeny trzymamy w `:root`/`.dark` (żeby dark mode je nadpisywał), a `@theme inline` tylko generuje z nich utility - `var()` rozwiązuje się w miejscu użycia, więc `dark:` działa poprawnie.
+
+---
+
 ## Responsywność
 
 ### Viewport Breakpoints (Mobile-First)
@@ -402,9 +469,10 @@ Rozwiązuje problemy z `100vh` na mobile (Safari toolbar):
 <div className="hover:scale-105 transition-transform duration-300">
 ```
 
-### Framer Motion (złożone animacje)
+### Motion (złożone animacje)
 ```typescript
-import { motion, AnimatePresence } from 'framer-motion';
+// Pakiet `motion` (dawniej framer-motion) - import z 'motion/react'
+import { motion, AnimatePresence } from 'motion/react';
 
 <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -504,10 +572,11 @@ dialog[open] {
 </button>
 ```
 
-### Font Feature Settings (v4.2+)
+### Tabular Numbers (font-variant-numeric)
 ```typescript
-<span className="font-feature-settings-tnum">1234567890</span>  // Tabular numbers
-<span className="font-variant-numeric-tabular-nums">$1,234.56</span>
+// Utility `tabular-nums` = font-variant-numeric: tabular-nums (równa szerokość cyfr)
+<span className="tabular-nums">1234567890</span>
+<span className="tabular-nums">$1,234.56</span>
 ```
 
 ---

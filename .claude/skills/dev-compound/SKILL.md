@@ -145,6 +145,33 @@ Dodatkowe informacje o okolicznościach, środowisku, wersji.
 
 Dostosuj sekcje `stack` i `tags` do faktycznego stosu technologicznego problemu. Nie wstawiaj pełnego stacka jeśli problem dotyczy tylko jednej technologii.
 
+### Krok 4.5: Zaktualizuj słownik domenowy (docs/CONCEPTS.md)
+
+Sprawdź, czy w tej sesji pojawił się lub uściślił **termin domenowy o znaczeniu specyficznym dla projektu** (encja, nazwany proces, status/enum o niestandardowym sensie). Jeśli tak — dodaj/zaktualizuj jedno hasło w `docs/CONCEPTS.md`.
+
+**Zasady słownika (trzymaj się ściśle):**
+- **Cienki indeks**: hasło = 1-2 zdania definicji + opcjonalny link do szczegółów (`→ [nazwa](../CLAUDE.md#kotwica)`). Nie kopiuj wiedzy z CLAUDE.md — linkuj.
+- **Tylko domenowe**: pojęcia biznesowe/projektowe, zwłaszcza **kontrintuicyjne** (np. status „refund" liczony jako aktywny). NIE dodawaj pojęć technicznych/generycznych — te idą do `docs/solutions/` lub `learned-patterns`.
+- **Alfabetycznie**, jeden `## Termin` na hasło, dedup przed dodaniem.
+- **Glosariusz, nie spec** — jeśli hasło wymaga akapitów, to nie jest hasło słownika.
+
+**Bootstrap (pierwsze uruchomienie w projekcie):** jeśli `docs/CONCEPTS.md` nie istnieje, a projekt ma bogatą domenę (statusy/enumy o niestandardowym znaczeniu, nazwane procesy), wygeneruj startowy słownik: przeczytaj `CLAUDE.md` + schemat bazy/migracje + definicje enumów/statusów w kodzie, wyciągnij 5-15 najważniejszych pojęć projektowo-specyficznych i zapisz plik wg formatu poniżej. Zgłoś użytkownikowi, że utworzono seed do przeglądu.
+
+Format pliku:
+
+```markdown
+# Concepts — słownik domenowy <projekt>
+
+Glosariusz pojęć o znaczeniu specyficznym dla tego projektu (encje, nazwane procesy, statusy).
+Jedno hasło = zwięzła definicja + opcjonalny link do CLAUDE.md/docs. Tylko słownik, nie spec.
+Narasta przez /dev-compound, porządkowany przez /dev-compound-refresh.
+
+## <Termin>
+<1-2 zdania — co znaczy w TYM projekcie, zwłaszcza gdy kontrintuicyjne>. → [szczegóły](../CLAUDE.md#...)
+```
+
+Jeśli nie pojawił się żaden termin domenowy — pomiń ten krok (to normalne dla większości sesji).
+
 ### Krok 5: Podsumowanie
 
 Wyświetl podsumowanie:
@@ -309,6 +336,10 @@ Odświeżenie **nie** ma sensu gdy:
 3. Pokrywanie się jest powierzchowne
 
 Jeśli widzisz oczywistego kandydata do odświeżenia, wspomnij o tym w podsumowaniu i zasugeruj uruchomienie `/dev-compound-refresh` z wąskim scope.
+
+### Po zapisie: aktualizacja słownika domenowego
+
+Zastosuj **Krok 4.5** także w trybie full — jeśli w sesji pojawił się termin domenowy o projektowo-specyficznym znaczeniu, dodaj/zaktualizuj hasło w `docs/CONCEPTS.md` (cienki indeks + link; utwórz plik z nagłówkiem jeśli nie istnieje).
 
 ### Po zapisie: ocena i dodanie reguły do learned-patterns
 

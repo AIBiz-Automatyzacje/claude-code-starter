@@ -245,24 +245,28 @@ queryClient.setQueryData(templateOptions(id).queryKey, newData);
 
 Natychmiastowa reakcja UI przed odpowiedzią serwera:
 ```typescript
-import { useOptimistic } from 'react';
+import { useOptimistic, useTransition } from 'react';
 
 function FavoriteButton({ templateId, isFavorite }: Props) {
+    const [isPending, startTransition] = useTransition();
     const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
 
-    const handleToggle = async () => {
-        setOptimisticFavorite(!optimisticFavorite); // Natychmiast
-        
-        try {
-            await toggleFavorite(templateId); // API call
-        } catch (error) {
-            // useOptimistic automatycznie przywraca przy błędzie
-            toast.error('Nie udało się zaktualizować');
-        }
+    // useOptimistic MUSI być wołane wewnątrz transition/action - inaczej React rzuci błąd
+    const handleToggle = () => {
+        startTransition(async () => {
+            setOptimisticFavorite(!optimisticFavorite); // Natychmiast
+
+            try {
+                await toggleFavorite(templateId); // API call
+            } catch {
+                // useOptimistic automatycznie przywraca przy błędzie
+                toast.error('Nie udało się zaktualizować');
+            }
+        });
     };
 
     return (
-        <Button variant="ghost" size="icon" onClick={handleToggle}>
+        <Button variant="ghost" size="icon" onClick={handleToggle} disabled={isPending}>
             <Heart className={cn(
                 "h-5 w-5 transition-colors",
                 optimisticFavorite 

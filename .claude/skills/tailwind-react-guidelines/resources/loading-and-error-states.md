@@ -131,35 +131,42 @@ function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
 
 ### useOptimistic - natywny hook
 ```typescript
-import { useOptimistic } from 'react';
+import { useOptimistic, useTransition } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 function FavoriteButton({ templateId, isFavorite }: Props) {
     const queryClient = useQueryClient();
-    
+    const [isPending, startTransition] = useTransition();
+
     // Optimistic state
     const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
-    
+
     const mutation = useMutation({
         mutationFn: () => api.toggleFavorite(templateId),
-        onMutate: () => {
-            // Instant UI update
-            setOptimisticFavorite(!optimisticFavorite);
-        },
-        onError: () => {
-            // Auto-rollback przez React - optimisticFavorite wraca do isFavorite
-            toast.error('Nie udało się zapisać');
-        },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['templates'] });
         },
     });
 
+    // useOptimistic MUSI być wołane wewnątrz transition/action, nie w onMutate.
+    // Await mutateAsync utrzymuje optimistic value do czasu odświeżenia cache.
+    const handleToggle = () => {
+        startTransition(async () => {
+            setOptimisticFavorite(!optimisticFavorite); // Instant UI update
+            try {
+                await mutation.mutateAsync();
+            } catch {
+                // Auto-rollback przez React - optimisticFavorite wraca do isFavorite
+                toast.error('Nie udało się zapisać');
+            }
+        });
+    };
+
     return (
         <Button
             variant="ghost"
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
+            onClick={handleToggle}
+            disabled={isPending}
         >
             <Heart 
                 className={cn(

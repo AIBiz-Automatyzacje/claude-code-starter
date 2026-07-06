@@ -42,6 +42,8 @@ Traktuj wszystkie jako kandydatów. Nie faworyzuj wniosków bugowych nad pozosta
 
 Katalog `docs/solutions/` zawiera udokumentowane wnioski z frontmatterem YAML. Gdy plików mogą być setki, używaj tej wydajnej strategii minimalizującej wywołania narzędzi.
 
+Dodatkowo, jeśli istnieje `docs/CONCEPTS.md` (słownik domenowy), przeczytaj go na wstępie — daje kontekst terminologii projektowej (encje, statusy, nazwane procesy) i pomaga trafnie interpretować `<work-context>`. To nie baza rozwiązań, lecz glosariusz; traktuj jako uzupełnienie, nie zastępstwo dla `docs/solutions/`.
+
 ### Krok 1: Wyłuskaj słowa kluczowe z kontekstu pracy
 
 Wywołujący może przekazać ustrukturyzowany blok `<work-context>` opisujący, co robi:

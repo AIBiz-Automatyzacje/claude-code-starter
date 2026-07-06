@@ -338,10 +338,10 @@ import { z } from 'zod';
 
 // Schema
 const ItemSchema = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     name: z.string().min(1),
     category: z.enum(['marketing', 'sprzedaz', 'hr']),
-    created_at: z.string().datetime(),
+    created_at: z.iso.datetime(),
 });
 
 // Typ ze schema

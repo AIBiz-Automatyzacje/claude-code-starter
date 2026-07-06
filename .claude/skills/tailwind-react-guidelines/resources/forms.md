@@ -61,7 +61,7 @@ import { Label } from '@/components/ui/label';
 // 1. SCHEMA
 const contactSchema = z.object({
     name: z.string().min(2, 'Minimum 2 znaki'),
-    email: z.string().email('Nieprawidłowy adres email'),
+    email: z.email('Nieprawidłowy adres email'),
     message: z.string().min(10, 'Minimum 10 znaków').max(500, 'Maximum 500 znaków'),
 });
 
@@ -156,8 +156,8 @@ import { z } from 'zod';
 
 // Stringi
 z.string().min(1, 'Wymagane')
-z.string().email('Nieprawidłowy email')
-z.string().url('Nieprawidłowy URL')
+z.email('Nieprawidłowy email')
+z.url('Nieprawidłowy URL')
 z.string().regex(/^\d{9}$/, 'Nieprawidłowy numer telefonu')
 
 // Liczby
@@ -166,7 +166,7 @@ z.coerce.number() // Konwertuje string z inputa na number
 
 // Boolean
 z.boolean()
-z.literal(true, { errorMap: () => ({ message: 'Musisz zaakceptować regulamin' }) })
+z.literal(true, { error: 'Musisz zaakceptować regulamin' })
 
 // Enum
 z.enum(['draft', 'published', 'archived'])
@@ -503,7 +503,7 @@ import { z } from 'zod';
 // Schema dla każdego kroku
 const step1Schema = z.object({
     name: z.string().min(1, 'Wymagane'),
-    email: z.string().email('Nieprawidłowy email'),
+    email: z.email('Nieprawidłowy email'),
 });
 
 const step2Schema = z.object({
@@ -513,11 +513,11 @@ const step2Schema = z.object({
 
 const step3Schema = z.object({
     plan: z.enum(['free', 'pro', 'enterprise']),
-    terms: z.literal(true, { errorMap: () => ({ message: 'Musisz zaakceptować regulamin' }) }),
+    terms: z.literal(true, { error: 'Musisz zaakceptować regulamin' }),
 });
 
-// Pełna schema
-const fullSchema = step1Schema.merge(step2Schema).merge(step3Schema);
+// Pełna schema (Zod v4: .extend(shape) zamiast .merge(schema))
+const fullSchema = step1Schema.extend(step2Schema.shape).extend(step3Schema.shape);
 type WizardForm = z.infer<typeof fullSchema>;
 
 // Schema dla każdego kroku (do walidacji częściowej)

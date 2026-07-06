@@ -36,6 +36,9 @@ Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj **wsz
 
 **Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu którego potrzebujesz (np. hover state, brakujący margines, kolor który nie ma tokenu) — **NIE zgaduj, NIE halucynuj**. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` (oba w nagłówku SPEC.md) i dopytaj Figmę o ten konkretny fragment. Dopiero potem implementuj. Halucynowane wymiary to najczęstsza klasa rozjazdów z mockupem — patrz roadmap "figma:figma-use" / "figma:figma-implement-design" skille.
 
+### 1.6. Słownik domenowy (jeśli istnieje)
+Jeśli w repo jest `docs/CONCEPTS.md`, przeczytaj go — glosariusz pojęć o projektowo-specyficznym znaczeniu (statusy, encje, nazwane procesy). Używaj tej terminologii i NIE zmieniaj zachowania wbrew definicjom (np. nie „naprawiaj" statusu, który celowo działa nietypowo).
+
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob, żeby znaleźć:
 - Komponenty wzorcowe wymienione w `Wzorce do naśladowania`

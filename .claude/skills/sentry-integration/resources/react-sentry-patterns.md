@@ -15,6 +15,7 @@ Szczegółowe wzorce integracji Sentry z React 19 + Vite + TypeScript.
 
 - [Instalacja](#instalacja)
 - [Konfiguracja Sentry](#konfiguracja-sentry)
+- [Source Maps (Vite)](#source-maps-vite)
 - [Error Boundary](#error-boundary)
 - [Logger Integration](#logger-integration)
 - [User Context](#user-context)
@@ -51,6 +52,19 @@ export function initSentry() {
       dsn: import.meta.env.VITE_SENTRY_DSN,
       environment: import.meta.env.MODE,
 
+      // Release tracking — spina zdarzenia z wersją i source mapami (patrz sekcja Source Maps).
+      // Musi zgadzać się z `release` w @sentry/vite-plugin.
+      release: import.meta.env.VITE_APP_VERSION,
+
+      // Distributed tracing — dołączaj nagłówki trace do własnego API i Supabase.
+      tracePropagationTargets: [
+        'localhost',
+        /^https:\/\/[a-z0-9-]+\.supabase\.co/,
+      ],
+
+      // Obejście ad-blockerów — tuneluj zdarzenia przez własny endpoint (np. proxy /monitoring).
+      tunnel: '/monitoring',
+
       // Performance monitoring - 10% transakcji
       tracesSampleRate: 0.1,
 
@@ -61,8 +75,9 @@ export function initSentry() {
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration({
-          maskAllText: false,
-          blockAllMedia: false,
+          // GDPR: domyślnie maskuj tekst i blokuj media w nagraniach sesji
+          maskAllText: true,
+          blockAllMedia: true,
         }),
       ],
 
@@ -170,6 +185,63 @@ export function captureError(
   }
 }
 ```
+
+---
+
+## Source Maps (Vite)
+
+Bez uploadu source map produkcyjny stack trace jest zminifikowany (`a.b is not a function`).
+`@sentry/vite-plugin` generuje release, uploaduje source mapy do Sentry i sprząta je z bundla.
+
+**Instalacja:**
+
+```bash
+npm install --save-dev @sentry/vite-plugin
+```
+
+**Plik: `vite.config.ts`**
+
+```typescript
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  build: {
+    sourcemap: 'hidden', // WYMAGANE: generuj mapy, ale nie linkuj ich w bundlu
+  },
+  plugins: [
+    react(),
+    // Plugin Sentry MUSI być po pozostałych pluginach
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+
+      // Token TYLKO z env — NIGDY nie commituj do repo
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+
+      // Musi zgadzać się z `release` w Sentry.init()
+      release: { name: process.env.VITE_APP_VERSION },
+
+      sourcemaps: {
+        // Usuń mapy po uploadzie, żeby nie trafiły na produkcję
+        filesToDeleteAfterUpload: ['./dist/**/*.map'],
+      },
+    }),
+  ],
+});
+```
+
+**Zmienne (CI/build, NIE w kliencie):**
+
+```env
+SENTRY_ORG=twoja-organizacja
+SENTRY_PROJECT=twoj-projekt
+SENTRY_AUTH_TOKEN=sntrys_xxx   # sekret CI, nie VITE_*
+```
+
+> **Uwaga:** `SENTRY_AUTH_TOKEN` to sekret build-time. Nie używaj prefiksu `VITE_`, bo
+> zmienne `VITE_*` są wstrzykiwane do bundla klienta i token by wyciekł.
 
 ---
 
@@ -416,26 +488,17 @@ Sentry.replayIntegration({
 
 ## Ignorowane Błędy
 
-Błędy, które NIE powinny trafiać do Sentry:
+Pełna, kanoniczna lista `ignoreErrors` jest częścią `Sentry.init()` w sekcji
+[Konfiguracja Sentry](#konfiguracja-sentry) — nie duplikuj jej, edytuj w jednym miejscu.
 
-```typescript
-ignoreErrors: [
-  // Browser quirks
-  'ResizeObserver loop',
-  'Non-Error exception captured',
+Kategorie błędów, które NIE powinny trafiać do Sentry (i dlaczego):
 
-  // Network issues (user side)
-  'Network request failed',
-  'Failed to fetch',
-  'AbortError',
-
-  // Chunk loading (refresh rozwiązuje)
-  /^Loading chunk \d+ failed/,
-
-  // User cancellation
-  'AbortError: The user aborted a request',
-]
-```
+| Kategoria | Przykłady | Dlaczego ignorować |
+|-----------|-----------|--------------------|
+| Browser quirks | `ResizeObserver loop`, `Non-Error exception captured` | Szum przeglądarki, nie błąd aplikacji |
+| Network (user side) | `Failed to fetch`, `Network request failed`, `NetworkError` | Problem łącza użytkownika, nie kodu |
+| Chunk loading | `/^Loading chunk \d+ failed/` | Rozwiązuje odświeżenie po deployu |
+| User cancellation | `AbortError` | Świadome anulowanie żądania przez usera |
 
 ---
 

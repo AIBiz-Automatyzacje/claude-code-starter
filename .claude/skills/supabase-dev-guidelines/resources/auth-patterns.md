@@ -8,7 +8,7 @@ Wzorce autentykacji Supabase dla Vite SPA - OAuth, email/hasło, zarządzanie se
 
 ### PKCE (Proof Key for Code Exchange)
 
-Supabase JS v2 używa PKCE jako domyślnego flow OAuth. Po redirect z providera, URL zawiera parametr `code` ważny **5 minut** (jednorazowy). W callback musisz jawnie wywołać `exchangeCodeForSession(code)` — zobacz sekcję "Callback OAuth".
+Supabase JS v2 używa PKCE jako domyślnego flow OAuth. Po redirect z providera, URL zawiera parametr `code` ważny **5 minut** (jednorazowy). Klient przeglądarkowy z `createClient` ma domyślnie `detectSessionInUrl: true` i **sam** wymienia ten `code` na sesję — **nie wołaj `exchangeCodeForSession(code)` ręcznie w przeglądarce**. Kod jest jednorazowy, więc podwójna wymiana (auto-detekcja + ręczna) tworzy race i kończy się błędem „code already used". Jeśli świadomie robisz ręczny exchange, ustaw `detectSessionInUrl: false` przy tworzeniu klienta. Zobacz sekcję "Callback OAuth".
 
 PKCE obsługiwane dla: `signInWithOAuth`, `signInWithOtp`, `signUp`, `resetPasswordForEmail`.
 
@@ -245,35 +245,29 @@ export function AuthCallback() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const handleCallback = async () => {
-            try {
-                // PKCE: Wymień code z URL na sesję
-                const code = new URL(window.location.href).searchParams.get('code');
+        // OAuth provider może zwrócić błąd w parametrach URL
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('error')) {
+            logger.error('OAuth callback error', params.get('error_description'));
+            navigate('/?error=auth');
+            return;
+        }
 
-                if (code) {
-                    const { error } = await supabase.auth.exchangeCodeForSession(code);
-                    if (error) {
-                        logger.error('OAuth callback error', error);
-                        navigate('/?error=auth');
-                        return;
-                    }
-                }
-
-                // Sprawdź czy sesja istnieje (obsługuje też hash-based flow)
-                const { data: { session } } = await supabase.auth.getSession();
-
-                if (session?.user) {
+        // Klient przeglądarkowy (detectSessionInUrl: true — domyślnie) SAM
+        // wymienia parametr `code` z URL na sesję (PKCE). NIE wołamy
+        // exchangeCodeForSession ręcznie — kod jest jednorazowy, a podwójna
+        // wymiana kończy się błędem "code already used". Czekamy tylko na
+        // ustanowienie sesji przez onAuthStateChange.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
                     await ensureUserProfile();
+                    navigate('/');
                 }
-
-                navigate('/');
-            } catch (error) {
-                logger.error('Callback processing error', error);
-                navigate('/?error=auth');
             }
-        };
+        );
 
-        handleCallback();
+        return () => subscription.unsubscribe();
     }, [navigate]);
 
     return <LoadingOverlay />;
@@ -297,7 +291,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation (patrz security.md)
 AS $$
 BEGIN
     INSERT INTO public.profiles (id, email, full_name, avatar_url, created_at, updated_at)
@@ -333,7 +327,7 @@ CREATE OR REPLACE FUNCTION public.ensure_user_profile()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation (patrz security.md)
 AS $$
 DECLARE
     current_user_id UUID;
@@ -621,7 +615,7 @@ function ProfileSettings() {
 - [ ] OAuth users nie zmieniają hasła/emaila
 - [ ] `getUser()` przed krytycznymi operacjami
 
-**PKCE:** Wymaga jawnego `exchangeCodeForSession(code)` w callback — zobacz [Callback OAuth](#callback-oauth).
+**PKCE:** Klient przeglądarkowy wymienia `code` automatycznie (`detectSessionInUrl: true`) — callback czeka tylko na sesję przez `onAuthStateChange`, bez ręcznego `exchangeCodeForSession`. Zobacz [Callback OAuth](#callback-oauth).
 
 **Uwaga:** Pakiety `@supabase/auth-helpers-*` (nextjs, react, sveltekit, remix) są **deprecated**. Jedynym wspieranym rozwiązaniem SSR jest `@supabase/ssr`. Ten skill dotyczy Vite SPA (client-side), gdzie używamy bezpośrednio `@supabase/supabase-js`.
 

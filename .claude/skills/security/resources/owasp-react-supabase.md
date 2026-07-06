@@ -1,51 +1,42 @@
-# OWASP Top 10 (2021) -- Mapowanie na React + Supabase + Edge Functions
+# OWASP Top 10 (2025) — Mapowanie na React + Supabase + Edge Functions
 
-Przewodnik mapujacy kazda kategorie OWASP Top 10 na konkretne scenariusze, checklisty i wzorce kodu dla stacku React 19 + Supabase + Edge Functions.
+Przewodnik mapujący każdą kategorię **OWASP Top 10:2025** (finalna wersja: styczeń 2026) na konkretne scenariusze, checklisty i wzorce kodu dla stacku React 19 + Supabase + Edge Functions.
+
+**Co zmieniło się względem 2021 (istotne dla nas):**
+- **SSRF** nie jest już osobną kategorią — wchłonięty do **A01 Broken Access Control**.
+- **Security Misconfiguration** awansuje z #5 na **A02**.
+- **A03 Software Supply Chain Failures** — NOWA, szersza kategoria (zastępuje „Vulnerable and Outdated Components").
+- **A10 Mishandling of Exceptional Conditions** — NOWA (błędna obsługa błędów, fail-open, wyciek stack trace).
+- Injection spada z #3 na **A05**, Insecure Design na **A06**.
 
 ---
 
-## A01: Broken Access Control
+## A01:2025 — Broken Access Control
 
-Najczestszy problem bezpieczenstwa. W naszym stacku manifestuje sie przez bledna lub brakujaca konfiguracje RLS.
+Najczęstszy problem bezpieczeństwa (#1 od lat). W naszym stacku manifestuje się głównie przez błędną/brakującą konfigurację RLS, autoryzację na danych edytowalnych przez usera oraz — od 2025 — **SSRF** (traktowany jako obejście kontroli dostępu do zasobów wewnętrznych).
 
 **Scenariusze w naszym stacku:**
-- RLS wylaczone na tabeli -- kazdy z anon key ma pelny dostep
-- Brak policy na operacje DELETE -- uzytkownik moze usuwac cudze dane
-- `service_role` key w zmiennych `VITE_*` -- przegladarka omija RLS
-- Edge Function bez weryfikacji JWT -- anonimowy dostep do chronionych operacji
-- Policy oparta na `auth.email()` zamiast `auth.uid()` -- email jest mutowalny
+- RLS wyłączone na tabeli — każdy z anon key ma pełny dostęp
+- Brak policy na operację DELETE — użytkownik może usuwać cudze dane
+- `service_role` key w zmiennych `VITE_*` — przeglądarka omija RLS
+- Edge Function bez weryfikacji JWT — anonimowy dostęp do chronionych operacji
+- Policy oparta na `auth.email()` lub `user_metadata` zamiast `auth.uid()` / `app_metadata`
+- **SECURITY DEFINER function z mutowalnym `search_path`** — privilege escalation przez podstawienie schematu
+- **SSRF**: Edge Function fetchująca URL od użytkownika → dostęp do metadata endpoint / usług wewnętrznych
 
 **Checklist:**
-- [ ] Kazda tabela ma `ENABLE ROW LEVEL SECURITY`
-- [ ] Policies pokrywaja SELECT, INSERT, UPDATE, DELETE
-- [ ] Policies uzywaja `(SELECT auth.uid()) = user_id`
+- [ ] Każda tabela ma `ENABLE ROW LEVEL SECURITY`
+- [ ] Policies pokrywają SELECT, INSERT, UPDATE, DELETE
+- [ ] Policies używają `(SELECT auth.uid()) = user_id`
+- [ ] Autoryzacja NIGDY na `user_metadata` (edytowalne przez usera) — używaj `app_metadata` lub tabeli ról (patrz `auth-security-patterns.md`)
 - [ ] `service_role` key NIE jest w zmiennych `VITE_*`
-- [ ] Edge Functions weryfikuja JWT przez `supabase.auth.getUser()`
-- [ ] Brak hardcoded user ID / email w logice autoryzacji
-- [ ] Macierz dostepu (kto moze co) jest udokumentowana i zweryfikowana
+- [ ] Edge Functions weryfikują JWT przez `supabase.auth.getUser()` / `getClaims()`
+- [ ] Każda funkcja SECURITY DEFINER ma `SET search_path = ''` i nazwy schematyczne (`public.tabela`)
+- [ ] SSRF: walidacja URL + blokada redirectów + blokada adresów wewnętrznych (patrz niżej)
+- [ ] Macierz dostępu (kto może co) jest udokumentowana i zweryfikowana
 
-**Zly wzorzec:**
+**Dobry wzorzec — RLS własności danych:**
 ```sql
--- Tabela bez RLS -- pelny dostep dla kazdego z anon key
-CREATE TABLE user_documents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id),
-    content TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
--- Brak ALTER TABLE ... ENABLE ROW LEVEL SECURITY
--- Brak policies
-```
-
-**Dobry wzorzec:**
-```sql
-CREATE TABLE user_documents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) NOT NULL,
-    content TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 ALTER TABLE user_documents ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "users_read_own_documents"
@@ -64,230 +55,95 @@ TO authenticated
 USING ((SELECT auth.uid()) = user_id);
 ```
 
----
-
-## A02: Cryptographic Failures
-
-Wycieki danych wrazliwych przez brak lub bledne szyfrowanie / zarzadzanie secretami.
-
-**Scenariusze w naszym stacku:**
-- Secrets (API keys, service_role) commitowane do repozytorium
-- PII (email, imie) w logach `console.error` lub w payloadach Sentry
-- Brak HTTPS (Supabase wymusza domyslnie, ale custom domeny moga nie miec)
-- Tokeny w URL query params (widoczne w logach serwera, referer headers)
-
-**Checklist:**
-- [ ] `.env` i `.env.local` sa w `.gitignore`
-- [ ] `.env.example` zawiera TYLKO klucze bez wartosci
-- [ ] Brak secretow w kodzie zrodlowym (szukaj: `sk_`, `secret`, `password`, `token`)
-- [ ] `console.error` / `console.log` nie loguja obiektow user/session
-- [ ] Sentry `beforeSend` filtruje PII
-- [ ] Custom domeny maja wazny certyfikat SSL
-- [ ] Tokeny nie sa przekazywane w URL query params
-
-**Zly wzorzec:**
-```typescript
-// Hardcoded secret w kodzie
-const STRIPE_KEY = 'sk_live_abc123def456';
-
-// PII w logach
-console.error('User error:', { email: user.email, session });
-
-// Secret w VITE_ (dostepny w przegladarce)
-const supabase = createClient(url, import.meta.env.VITE_SERVICE_ROLE_KEY);
-```
-
-**Dobry wzorzec:**
-```typescript
-// Secret w zmiennej srodowiskowej (Edge Function)
-const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-
-// Logowanie bez PII
-logger.error('Blad aktualizacji profilu', { userId: user.id, errorCode: error.code });
-
-// Anon key na froncie, service_role tylko server-side
-const supabase = createClient(url, import.meta.env.VITE_SUPABASE_ANON_KEY);
-```
-
----
-
-## A03: Injection
-
-SQL injection i XSS -- dwa glowne wektory ataku przez wstrzykiwanie kodu.
-
-**Scenariusze w naszym stacku:**
-- Raw SQL w funkcjach `.rpc()` -- konkatenacja stringow w PostgreSQL
-- Niebezpieczne renderowanie raw HTML z user content -- XSS
-- User-generated URLs w `href` -- `javascript:` protocol injection
-- Template literals w zapytaniach SQL wewnatrz SECURITY DEFINER functions
-
-**Checklist:**
-- [ ] Brak konkatenacji stringow w funkcjach PostgreSQL (uzyj `$1`, `$2` parametrow)
-- [ ] Brak niebezpiecznego renderowania raw HTML z niezaufanymi danymi
-- [ ] Walidacja protokolu dla user-provided URLs (whitelist: `https:`, `http:`)
-- [ ] Brak `EXECUTE format(...)` z user input bez `%L` (literal quoting)
-- [ ] Content Security Policy blokuje inline scripts
-
-**Zly wzorzec -- SQL Injection:**
+**SECURITY DEFINER — pinuj `search_path` (privilege escalation):**
 ```sql
--- Konkatenacja w funkcji PostgreSQL
-CREATE FUNCTION search_posts(search_term TEXT)
-RETURNS SETOF posts
-LANGUAGE plpgsql AS $$
-BEGIN
-    -- NIEBEZPIECZNE: SQL injection
-    RETURN QUERY EXECUTE 'SELECT * FROM posts WHERE title LIKE ''%' || search_term || '%''';
-END;
-$$;
+-- ŹLE: mutowalny search_path -> atakujący podstawia własny schemat z funkcją "spoofującą"
+CREATE FUNCTION public.get_secret() RETURNS text
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN RETURN (SELECT secret FROM vault); END; $$;
+
+-- DOBRZE: pusty search_path + nazwy w pełni kwalifikowane
+CREATE FUNCTION public.get_secret() RETURNS text
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = ''            -- kluczowe
+AS $$
+BEGIN RETURN (SELECT secret FROM public.vault); END; $$;
 ```
 
-**Dobry wzorzec -- SQL Injection:**
-```sql
-CREATE FUNCTION search_posts(search_term TEXT)
-RETURNS SETOF posts
-LANGUAGE plpgsql AS $$
-BEGIN
-    -- BEZPIECZNE: parametryzowane zapytanie
-    RETURN QUERY SELECT * FROM posts WHERE title ILIKE '%' || search_term || '%';
-    -- Lub z EXECUTE i %L:
-    -- RETURN QUERY EXECUTE format('SELECT * FROM posts WHERE title ILIKE %L', '%' || search_term || '%');
-END;
-$$;
-```
-
-**Zly wzorzec -- XSS:**
+**SSRF — hardened (2025: część A01):**
 ```typescript
-// User-provided URL bez walidacji
-function UserLink({ url }: { url: string }) {
-    return <a href={url}>Link</a>; // javascript:alert('xss') zadziala
+// Blokuj: metadata endpoint, localhost, sieci prywatne, kodowania IP obchodzące filtr
+const ALLOWED_HOSTS = new Set(['api.example.com', 'cdn.example.com']);
+
+function isBlockedHost(host: string): boolean {
+    const h = host.toLowerCase();
+    if (['localhost', '0.0.0.0', '::1', '[::1]'].includes(h)) return true;
+    if (h === '169.254.169.254') return true;                       // cloud metadata
+    if (/^(10\.|127\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(h)) return true; // prywatne
+    if (/^(0x|0b|\d{8,})/.test(h)) return true;                     // hex/decimal IP encoding
+    if (h.startsWith('[::ffff:') || h.startsWith('[fc') || h.startsWith('[fd')) return true; // IPv6
+    return false;
 }
 
-// Wstawianie niezaufanego HTML do DOM -- podatne na XSS
-// Np. przypisanie user content do elementu DOM przez raw HTML API
-// lub uzycie React API do renderowania nieczyszczonego HTML
-```
+Deno.serve(async (req) => {
+    const { url } = await req.json();
+    let parsed: URL;
+    try { parsed = new URL(url); } catch { return new Response('Bad URL', { status: 400 }); }
 
-**Dobry wzorzec -- XSS:**
-```typescript
-// Uzyj biblioteki do sanityzacji (DOMPurify) jesli musisz renderowac HTML
-import DOMPurify from 'dompurify';
+    if (parsed.protocol !== 'https:') return new Response('Forbidden', { status: 403 });
+    if (!ALLOWED_HOSTS.has(parsed.hostname)) return new Response('Forbidden', { status: 403 });
+    if (isBlockedHost(parsed.hostname)) return new Response('Forbidden', { status: 403 });
 
-function Comment({ content }: { content: string }) {
-    const sanitized = DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
-        ALLOWED_ATTR: ['href', 'target', 'rel'],
+    const res = await fetch(parsed, {
+        redirect: 'manual',                         // 302 -> 169.254.169.254 nie przejdzie
+        signal: AbortSignal.timeout(5000),
+        // NIE przekazuj nagłówka Authorization do zewnętrznego hosta
     });
-    return <div>{sanitized}</div>;
-}
-
-// Walidacja protokolu URL
-function UserLink({ url }: { url: string }) {
-    const isSafeUrl = /^https?:\/\//i.test(url);
-    if (!isSafeUrl) return null;
-    return <a href={url} rel="noopener noreferrer">Link</a>;
-}
+    if (res.status >= 300 && res.status < 400) return new Response('Redirect blocked', { status: 403 });
+    return new Response(res.body);
+});
 ```
+> Uwaga: filtr po hostname nie chroni w 100% przed **DNS rebinding** (host rozwiązuje się do IP prywatnego po walidacji). Przy wysokim ryzyku — rozwiąż DNS, zwaliduj IP i pinuj je do połączenia.
 
 ---
 
-## A04: Insecure Design
+## A02:2025 — Security Misconfiguration
 
-Brak mechanizmow bezpieczenstwa na poziomie architektury.
-
-**Scenariusze w naszym stacku:**
-- Brak rate limiting na Edge Functions (brute force, DDoS)
-- Brak CSRF protection na mutujacych endpointach
-- Brak limitu prob logowania
-- Brak mechanizmu lockout po nieudanych probach
-
-**Checklist:**
-- [ ] Rate limiting na publicznych Edge Functions
-- [ ] Limit prob logowania (Supabase ma wbudowany, zweryfikuj konfiguracje)
-- [ ] CORS restrykcyjny (nie `*`) na Edge Functions
-- [ ] Timeout na operacjach (AbortController, statement_timeout w PostgreSQL)
-- [ ] Limity rozmiaru plikow przy uploadzie
-- [ ] Limity dlugosci inputow (Zod `.max()`)
-
-**Zly wzorzec:**
-```typescript
-// Edge Function bez rate limiting i z otwartym CORS
-Deno.serve(async (req) => {
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*', // Kazda domena
-        'Access-Control-Allow-Methods': 'POST',
-    };
-    // Brak limitu wywolan
-    const { email } = await req.json();
-    await sendPasswordReset(email); // Brute force enumeration
-    return new Response('OK', { headers: corsHeaders });
-});
-```
-
-**Dobry wzorzec:**
-```typescript
-import { corsHeaders } from '../_shared/cors.ts';
-
-// CORS z konkretna domena
-const allowedOrigins = [Deno.env.get('ALLOWED_ORIGIN')!];
-
-Deno.serve(async (req) => {
-    const origin = req.headers.get('Origin') ?? '';
-    if (!allowedOrigins.includes(origin)) {
-        return new Response('Forbidden', { status: 403 });
-    }
-
-    // Walidacja inputu z limitem
-    const body = await req.json();
-    const parsed = z.object({
-        email: z.string().email().max(255),
-    }).safeParse(body);
-
-    if (!parsed.success) {
-        return new Response('Bad Request', { status: 400 });
-    }
-
-    return new Response('OK', { headers: corsHeaders });
-});
-```
-
----
-
-## A05: Security Misconfiguration
-
-Domyslne lub bledne ustawienia otwierajace luki.
+Awans z #5 (2021). Domyślne lub błędne ustawienia otwierające luki — w naszym stacku najczęściej CORS, brak nagłówków bezpieczeństwa i konfiguracja Supabase Dashboard.
 
 **Scenariusze w naszym stacku:**
-- Domyslne ustawienia Supabase bez dodatkowego hardeningu
 - CORS `Access-Control-Allow-Origin: *` na Edge Functions
-- Zmienne srodowiskowe niedopasowane miedzy srodowiskami (dev/staging/prod)
-- Brak Content Security Policy headers
-- Debug mode wlaczony na produkcji
+- Brak Content Security Policy / nagłówków bezpieczeństwa (Vite SPA)
+- Redirect URLs / OAuth w Supabase Dashboard nieograniczone do znanych domen
+- Debug mode / źródła map / verbose błędy na produkcji
+- Zmienne środowiskowe niedopasowane między dev/staging/prod
 
 **Checklist:**
 - [ ] CORS ograniczony do konkretnych domen (nie `*`)
-- [ ] CSP header skonfigurowany (przynajmniej `default-src 'self'`)
-- [ ] `X-Content-Type-Options: nosniff` ustawiony
-- [ ] `X-Frame-Options: DENY` (lub CSP `frame-ancestors 'none'`)
-- [ ] Supabase Dashboard: Email enumeration protection wlaczone
+- [ ] **CSP dla Vite SPA** z `connect-src` obejmującym domenę Supabase (inaczej klient się nie połączy)
+- [ ] `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` (lub CSP `frame-ancestors 'none'`)
+- [ ] `Strict-Transport-Security` na custom domenie
+- [ ] Supabase Dashboard: email enumeration protection + leaked-password protection włączone
 - [ ] Supabase Dashboard: Redirect URLs ograniczone do znanych domen
-- [ ] Zmienne srodowiskowe rozne miedzy dev/staging/prod
 - [ ] Brak `console.log` / debug output na produkcji
 
-**Zly wzorzec:**
-```typescript
-// _shared/cors.ts -- zbyt otwarty
-export const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Methods': '*',
-};
+**CSP dla Vite SPA (ustawiane w nagłówkach hostingu, nie w `<meta>` dla dyrektyw wymagających nagłówka):**
 ```
+Content-Security-Policy:
+  default-src 'self';
+  connect-src 'self' https://<PROJECT>.supabase.co wss://<PROJECT>.supabase.co https://*.sentry.io;
+  img-src 'self' data: https:;
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  frame-ancestors 'none';
+  base-uri 'self'
+```
+> Vite buduje statyczne assety z hashowanymi nazwami — unikaj `'unsafe-inline'` dla `script-src`. `connect-src` MUSI zawierać REST (`https://…supabase.co`) i Realtime (`wss://…`), inaczej aplikacja nie działa.
 
-**Dobry wzorzec:**
+**CORS — restrykcyjny:**
 ```typescript
-// _shared/cors.ts -- restrykcyjny
+// _shared/cors.ts
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://myapp.com';
-
 export const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -297,241 +153,260 @@ export const corsHeaders = {
 
 ---
 
-## A06: Vulnerable and Outdated Components
+## A03:2025 — Software Supply Chain Failures (NOWA)
 
-Zaleznosci z znanymi lukami bezpieczenstwa.
+Rozszerzenie dawnego „Vulnerable and Outdated Components" o **cały łańcuch dostaw**: zależności, lockfile, rejestry, narzędzia buildu, a dla nas — także **dostęp AI/MCP z kluczem `service_role`**.
 
 **Scenariusze w naszym stacku:**
-- Outdated `@supabase/supabase-js` z znanymi CVE
-- Stare wersje React z lukami bezpieczenstwa
-- Zaleznosci dev ktore wyciekaja do produkcji
-- Brak regularnego audytu zaleznosci
+- Outdated `@supabase/supabase-js` / React z znanymi CVE
+- Brak commitowanego lockfile → niereprodukowalny build, ryzyko podmiany wersji
+- Niepinowane importy Deno w Edge Functions (`npm:pkg` bez wersji, `https://` bez integrity)
+- Typosquatting / złośliwe paczki w `dependencies`
+- **Prompt injection przez dane w bazie** przy agentach AI z MCP na `service_role` (udokumentowane 2025) — złośliwy wiersz instruuje agenta do wykonania SQL
 
 **Checklist:**
-- [ ] `npm audit` / `bun audit` nie zwraca krytycznych luk
-- [ ] Zaleznosci aktualizowane przynajmniej kwartalnie
-- [ ] `package-lock.json` / `bun.lockb` commitowany (reproducible builds)
-- [ ] Brak `dependencies` ktore powinny byc w `devDependencies`
-- [ ] Dependabot / Renovate skonfigurowany do automatycznych PR
+- [ ] `npm audit` / `bun audit` bez krytycznych luk (w CI)
+- [ ] Lockfile (`bun.lockb` / `package-lock.json`) commitowany
+- [ ] Importy Deno w Edge Functions **pinowane do wersji** (`npm:stripe@18.x`, nie `npm:stripe`)
+- [ ] Dependabot / Renovate skonfigurowany
+- [ ] Brak `dependencies`, które powinny być `devDependencies`
+- [ ] **Agent AI / MCP NIE dostaje klucza `service_role`** — tylko anon/ograniczony zakres, tryb read-only gdzie się da
+- [ ] Weryfikacja źródła paczek przed dodaniem (pobrania, maintainer, data ostatniej publikacji)
 
-**Komendy do sprawdzenia:**
 ```bash
-# Audit zaleznosci
-npm audit
-# lub
-bun audit
-
-# Sprawdz outdated
-npm outdated
+bun audit          # lub: npm audit
+bun outdated       # przegląd przestarzałych
 ```
 
 ---
 
-## A07: Identification and Authentication Failures
+## A04:2025 — Cryptographic Failures
 
-Slabe mechanizmy autentykacji i zarzadzania sesjami.
+Wycieki danych wrażliwych przez brak/błędne szyfrowanie lub zarządzanie secretami.
 
 **Scenariusze w naszym stacku:**
-- Brak wymuszenia minimalnej dlugosci hasla
-- Brak MFA (Multi-Factor Authentication)
-- `getSession()` uzywane do autoryzacji server-side (token nie jest weryfikowany)
-- Session fixation po zmianie uprawnien
-- Brak re-autentykacji przed krytycznymi operacjami
+- Secrets (API keys, `service_role`) commitowane do repozytorium
+- PII (email, imię) w logach `console.error` lub payloadach Sentry
+- Tokeny w URL query params (widoczne w logach serwera, referer)
+- Custom domena bez ważnego SSL
 
 **Checklist:**
-- [ ] Minimalna dlugosc hasla >= 8 znakow (Supabase Dashboard)
-- [ ] `getUser()` lub `getClaims()` do autoryzacji server-side (nie `getSession()`)
-- [ ] Re-autentykacja przed: zmiana hasla, zmiana email, usuniecie konta
-- [ ] Generyczne komunikaty bledow logowania (nie ujawniaj czy email istnieje)
-- [ ] OAuth redirect URLs ograniczone do znanych domen
-- [ ] Token refresh dziala poprawnie (Supabase JS automatycznie)
+- [ ] `.env` / `.env.local` w `.gitignore`; `.env.example` bez wartości
+- [ ] Brak secretów w kodzie (szukaj: `sk_`, `secret`, `password`, `token`)
+- [ ] `console.*` nie loguje obiektów user/session
+- [ ] Sentry `beforeSend` filtruje PII; `sendDefaultPii: false`
+- [ ] Tokeny nie w URL query params
 
-**Zly wzorzec:**
 ```typescript
-// getSession() do autoryzacji -- token nie jest weryfikowany
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-    // Zaufanie nieveryfikowanemu tokenowi
-    await performCriticalAction(session.user.id);
-}
-```
-
-**Dobry wzorzec:**
-```typescript
-// getUser() weryfikuje token z serwerem
-const { data: { user }, error } = await supabase.auth.getUser();
-if (error || !user) {
-    return new Response('Unauthorized', { status: 401 });
-}
-await performCriticalAction(user.id);
+// DOBRZE: secret server-side, anon key na froncie, log bez PII
+const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+const supabase = createClient(url, import.meta.env.VITE_SUPABASE_ANON_KEY);
+logger.error('Błąd aktualizacji profilu', { userId: user.id, errorCode: error.code });
 ```
 
 ---
 
-## A08: Software and Data Integrity Failures
+## A05:2025 — Injection
 
-Brak weryfikacji integralnosci danych z zewnetrznych zrodel.
+SQL injection i XSS — dwa główne wektory. Spadek z #3, ale wciąż krytyczny dla `.rpc()` i renderowania user content.
 
 **Scenariusze w naszym stacku:**
-- Stripe webhook bez weryfikacji sygnatury -- falszywe eventy
-- Dane z zewnetrznych API uzywane bez walidacji Zod
-- Brak SRI (Subresource Integrity) dla CDN scripts
-- CI/CD pipeline bez weryfikacji artefaktow
+- Konkatenacja stringów w funkcjach PostgreSQL / `EXECUTE format()` bez `%L`
+- Niebezpieczne renderowanie raw HTML z user content (XSS)
+- User-generated URLs w `href` — `javascript:` protocol injection
 
 **Checklist:**
-- [ ] Stripe webhooks weryfikowane przez `constructEventAsync` z webhook secret
-- [ ] Dane z zewnetrznych API walidowane Zod przed uzyciem
-- [ ] CDN scripts maja atrybut `integrity` (SRI)
-- [ ] Brak dynamicznego wykonywania kodu z user input (brak niebezpiecznych funkcji ewaluujacych)
+- [ ] Brak konkatenacji stringów w funkcjach PostgreSQL (parametry `$1`, `$2`)
+- [ ] `EXECUTE format(...)` używa `%L` (literal) / `%I` (identifier) dla user input
+- [ ] Brak renderowania niesanityzowanego HTML (DOMPurify, gdy konieczne)
+- [ ] Walidacja protokołu URL (whitelist `https:`/`http:`)
+- [ ] CSP blokuje inline scripts
 
-**Zly wzorzec:**
+```sql
+-- BEZPIECZNE: parametryzacja / format z %L
+RETURN QUERY SELECT * FROM posts WHERE title ILIKE '%' || search_term || '%';
+-- lub: EXECUTE format('SELECT * FROM posts WHERE title ILIKE %L', '%' || search_term || '%');
+```
 ```typescript
-// Stripe webhook bez weryfikacji sygnatury
+import DOMPurify from 'dompurify';
+function Comment({ content }: { content: string }) {
+    const sanitized = DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
+        ALLOWED_ATTR: ['href', 'target', 'rel'],
+    });
+    return <div>{sanitized}</div>;
+}
+function UserLink({ url }: { url: string }) {
+    if (!/^https?:\/\//i.test(url)) return null;          // blokuj javascript:
+    return <a href={url} rel="noopener noreferrer">Link</a>;
+}
+```
+
+---
+
+## A06:2025 — Insecure Design
+
+Brak mechanizmów bezpieczeństwa na poziomie architektury (rate limiting, throttling, limity).
+
+**Scenariusze w naszym stacku:**
+- Brak rate limiting na publicznych Edge Functions (brute force, enumeration, DDoS)
+- Brak limitu prób logowania / lockout
+- Brak limitów rozmiaru inputów / plików
+
+**Checklist:**
+- [ ] Rate limiting na publicznych Edge Functions
+- [ ] Limit prób logowania (Supabase wbudowany — zweryfikuj konfigurację)
+- [ ] Timeout na operacjach (`AbortController`, `statement_timeout`)
+- [ ] Limity długości inputów (Zod `.max()`), limity rozmiaru uploadu
+
+```typescript
 Deno.serve(async (req) => {
-    const event = await req.json(); // Kazdy moze wyslac falszywy event
-    if (event.type === 'checkout.session.completed') {
-        await activateSubscription(event.data.object.customer);
-    }
+    const origin = req.headers.get('Origin') ?? '';
+    if (!allowedOrigins.includes(origin)) return new Response('Forbidden', { status: 403 });
+
+    const parsed = z.object({ email: z.email().max(255) }).safeParse(await req.json());
+    if (!parsed.success) return new Response('Bad Request', { status: 400 });
+    // + rate limiting przed operacją wrażliwą (np. reset hasła)
+    return new Response('OK', { headers: corsHeaders });
 });
 ```
 
-**Dobry wzorzec:**
-```typescript
-import Stripe from 'npm:stripe@17';
+---
 
+## A07:2025 — Authentication Failures
+
+(Przemianowane z „Identification and Authentication Failures".) Słabe mechanizmy autentykacji i zarządzania sesjami.
+
+**Scenariusze w naszym stacku:**
+- `getSession()` używane do autoryzacji server-side (token nieweryfikowany)
+- Brak MFA / brak weryfikacji AAL w policy dla operacji wrażliwych
+- Brak re-autentykacji przed krytycznymi operacjami
+- Komunikaty ujawniające istnienie konta
+
+**Checklist:**
+- [ ] `getUser()` lub `getClaims()` do autoryzacji server-side (NIE `getSession()`)
+- [ ] Minimalna długość hasła ≥ 8 + leaked-password protection (Dashboard)
+- [ ] Re-autentykacja przed: zmianą hasła/email, usunięciem konta
+- [ ] Generyczne komunikaty błędów logowania
+- [ ] OAuth redirect URLs ograniczone do znanych domen
+
+```typescript
+// getUser() weryfikuje token z serwerem (getSession() tylko czyta lokalny stan)
+const { data: { user }, error } = await supabase.auth.getUser();
+if (error || !user) return new Response('Unauthorized', { status: 401 });
+await performCriticalAction(user.id);
+```
+> **`getClaims()` + asymetryczne JWT signing keys** (ECC/P-256, GA 2025): przy asymetrycznym podpisie `getClaims()` weryfikuje token **lokalnie** (bez round-tripu do Auth), co jest dziś rekomendowanym, szybkim wzorcem w Edge Functions. Przy secrecie symetrycznym `getClaims()` i tak wykona weryfikację zdalną.
+
+---
+
+## A08:2025 — Software or Data Integrity Failures
+
+Brak weryfikacji integralności danych z zewnętrznych źródeł.
+
+**Scenariusze w naszym stacku:**
+- Stripe webhook bez weryfikacji sygnatury — fałszywe eventy
+- Dopasowanie usera po `email` (mutowalny) zamiast `metadata.user_id`
+- Dane z zewnętrznych API użyte bez walidacji Zod
+
+**Checklist:**
+- [ ] Stripe webhooks weryfikowane przez `constructEventAsync` z webhook secret
+- [ ] Powiązanie usera po **`metadata.user_id`** (UUID), nigdy po email
+- [ ] Dane z zewnętrznych API walidowane Zod przed użyciem
+- [ ] Brak dynamicznego wykonywania kodu z user input
+
+```typescript
+import Stripe from 'npm:stripe@18';                        // pinowana wersja
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 
 Deno.serve(async (req) => {
     const body = await req.text();
     const signature = req.headers.get('stripe-signature')!;
-
-    const event = await stripe.webhooks.constructEventAsync(
-        body, signature, webhookSecret
-    );
-
+    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     if (event.type === 'checkout.session.completed') {
-        await activateSubscription(event.data.object.customer);
+        const userId = event.data.object.metadata?.user_id;  // NIE email
+        if (userId) await activateSubscription(userId);
     }
+    return new Response('OK');
 });
 ```
 
 ---
 
-## A09: Security Logging and Monitoring Failures
+## A09:2025 — Security Logging and Alerting Failures
 
-Brak lub niewystarczajace logowanie zdarzen bezpieczenstwa.
+(Rozszerzone o **alerting**.) Brak logowania zdarzeń bezpieczeństwa i brak alertów na incydenty.
 
 **Scenariusze w naszym stacku:**
-- Brak audit logu dla krytycznych operacji (usuniecie konta, zmiana uprawnien)
+- Brak audit logu dla krytycznych operacji (usunięcie konta, zmiana uprawnień)
 - PII w logach (email, IP, session tokens)
 - `console.log` zamiast structured logging
-- Brak alertow na podejrzane aktywnosci
+- Brak alertów Sentry na skoki błędów / podejrzaną aktywność
 
 **Checklist:**
-- [ ] Audit log dla krytycznych operacji (lista w supabase-dev-guidelines)
+- [ ] Audit log dla krytycznych operacji (lista w `supabase-dev-guidelines`)
 - [ ] `logger.error()` zamiast `console.error()` na produkcji
-- [ ] Logi NIE zawieraja: hasel, tokenow, pelnych obiektow sesji, PII
-- [ ] Sentry skonfigurowany z `beforeSend` filtrujacym wrazliwe dane
-- [ ] Failed login attempts logowane (Supabase robi to domyslnie)
-- [ ] Edge Functions loguja bledy do Sentry (nie do console)
+- [ ] Logi bez: haseł, tokenów, pełnych obiektów sesji, PII
+- [ ] Sentry `beforeSend` filtruje wrażliwe dane
+- [ ] **Alerty Sentry** skonfigurowane (spike błędów, nowy typ błędu w auth/płatnościach)
 
-**Zly wzorzec:**
 ```typescript
-// PII w logach
-console.error('Login failed:', { email, password, ip: req.headers.get('x-forwarded-for') });
-
-// Brak logowania krytycznej operacji
-async function deleteUserAccount(userId: string) {
-    await supabase.from('profiles').delete().eq('id', userId);
-    // Brak wpisu w audit_log
-}
-```
-
-**Dobry wzorzec:**
-```typescript
-// Bezpieczne logowanie
-logger.error('Login failed', { userId: user?.id, errorCode: error.code });
-
-// Krytyczna operacja z audit logiem
-async function deleteUserAccount(userId: string) {
-    // Audit log PRZED usunieciem (SECURITY DEFINER function)
-    await supabase.rpc('delete_user_account');
-    // Funkcja PostgreSQL loguje do audit_log i usuwa dane
-}
+logger.error('Login failed', { userId: user?.id, errorCode: error.code });   // bez PII
+await supabase.rpc('delete_user_account');   // SECURITY DEFINER loguje do audit_log PRZED usunięciem
 ```
 
 ---
 
-## A10: Server-Side Request Forgery (SSRF)
+## A10:2025 — Mishandling of Exceptional Conditions (NOWA)
 
-Edge Functions fetchujace zasoby na podstawie URL od uzytkownika.
+Nowa kategoria: błędna obsługa błędów prowadząca do luk — **fail-open** (błąd = dostęp przyznany), wyciek szczegółów błędu do klienta, ciche połknięcie wyjątków, złe kody statusu.
 
 **Scenariusze w naszym stacku:**
-- Edge Function pobierajaca dane z URL podanego przez uzytkownika
-- Proxy endpoint bez walidacji docelowego adresu
-- Fetch do wewnetrznych serwisow (metadata endpoint, localhost)
+- **Fail-open w autoryzacji**: `try { await checkAccess() } catch { /* przepuszcza */ }`
+- Pusty `catch {}` — błąd RLS/auth zignorowany, flow leci dalej
+- Wyciek stack trace / błędu Postgres do klienta (ujawnia schemat, nazwy tabel)
+- Edge Function zwraca `200` mimo błędu → klient myśli, że operacja się udała
+- Nieobsłużone rejection w Promise → isolate pada, stan niespójny
 
 **Checklist:**
-- [ ] Walidacja URL przed `fetch()` w Edge Functions
-- [ ] Whitelist dozwolonych domen (jesli to mozliwe)
-- [ ] Blokada adresow wewnetrznych: `localhost`, `127.0.0.1`, `169.254.169.254`, `10.*`, `172.16-31.*`, `192.168.*`
-- [ ] Timeout na fetch requests
-- [ ] Brak przekazywania wewnetrznych headerow (Authorization) do zewnetrznych URL
+- [ ] Autoryzacja **fail-closed** — błąd sprawdzenia = odmowa dostępu, nigdy przyznanie
+- [ ] Zero pustych `catch {}` — loguj albo re-throw (patrz `coding-rules` §4)
+- [ ] Klient dostaje generyczny komunikat + kod; szczegóły błędu tylko do logu/Sentry
+- [ ] Edge Function zwraca poprawny status (4xx/5xx) przy błędzie, nie `200`
+- [ ] `Promise.allSettled` dla operacji, które mogą niezależnie failować
 
-**Zly wzorzec:**
 ```typescript
-// Fetch na URL od uzytkownika bez walidacji
-Deno.serve(async (req) => {
-    const { url } = await req.json();
-    // Atakujacy moze podac: http://169.254.169.254/latest/meta-data/
-    const response = await fetch(url);
-    const data = await response.text();
-    return new Response(data);
-});
-```
+// ŹLE: fail-open — błąd sprawdzenia przepuszcza użytkownika
+try {
+    const allowed = await checkAccess(userId, resourceId);
+    if (allowed) return resource;
+} catch { return resource; }                 // KATASTROFA: błąd = dostęp
 
-**Dobry wzorzec:**
-```typescript
-const ALLOWED_DOMAINS = ['api.example.com', 'cdn.example.com'];
-
-function isUrlAllowed(urlString: string): boolean {
-    try {
-        const url = new URL(urlString);
-        if (url.protocol !== 'https:') return false;
-        if (!ALLOWED_DOMAINS.includes(url.hostname)) return false;
-        // Blokuj wewnetrzne adresy
-        if (['localhost', '127.0.0.1'].includes(url.hostname)) return false;
-        if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(url.hostname)) return false;
-        return true;
-    } catch {
-        return false;
+// DOBRZE: fail-closed + generyczny błąd dla klienta, szczegóły do logu
+try {
+    if (!(await checkAccess(userId, resourceId))) {
+        return new Response('Forbidden', { status: 403 });
     }
+    return new Response(JSON.stringify(resource), { status: 200 });
+} catch (err) {
+    logger.error('Access check failed', { userId, errorCode: (err as Error).name });
+    return new Response('Internal Error', { status: 500 });   // brak stack trace dla klienta
 }
-
-Deno.serve(async (req) => {
-    const { url } = await req.json();
-    if (!isUrlAllowed(url)) {
-        return new Response('Forbidden URL', { status: 403 });
-    }
-    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    return new Response(response.body);
-});
 ```
 
 ---
 
-## Podsumowanie
+## Podsumowanie — najwyższe ryzyko w stacku React + Supabase + Edge Functions
 
-**Najwyzsze ryzyko w stacku React + Supabase + Edge Functions:**
+| Priorytet | Kategoria 2025 | Główne ryzyko w naszym stacku |
+|-----------|----------------|-------------------------------|
+| 1 | A01 Broken Access Control | RLS wyłączone/błędne, authz na `user_metadata`, SECURITY DEFINER bez `search_path`, SSRF |
+| 2 | A07 Authentication Failures | `getSession()` zamiast `getUser()`/`getClaims()` server-side |
+| 3 | A02 Security Misconfiguration | CORS `*`, brak CSP z `connect-src` Supabase |
+| 4 | A05 Injection | Raw SQL w `.rpc()`, XSS przez user content |
+| 5 | A08 Data Integrity | Stripe webhook bez sygnatury / dopasowanie po email |
+| 6 | A10 Mishandling of Exceptional Conditions | Fail-open w autoryzacji, wyciek błędów do klienta |
 
-| Priorytet | Kategoria | Glowne ryzyko |
-|-----------|-----------|----------------|
-| 1 | A01 Broken Access Control | RLS wylaczone lub bledne policies |
-| 2 | A07 Auth Failures | `getSession()` zamiast `getUser()` server-side |
-| 3 | A03 Injection | Raw SQL w `.rpc()`, XSS przez user content |
-| 4 | A02 Cryptographic Failures | Service role key na froncie, secrets w kodzie |
-| 5 | A08 Data Integrity | Stripe webhook bez weryfikacji sygnatury |
-
-**Zobacz takze:**
-- [auth-security-patterns.md](auth-security-patterns.md) -- Wzorce auth i bezpieczenstwa
+**Zobacz także:**
+- [auth-security-patterns.md](auth-security-patterns.md) — wzorce auth, RLS, `app_metadata` vs `user_metadata`

@@ -15,6 +15,8 @@ ALTER TABLE my_table ENABLE ROW LEVEL SECURITY;
 -- Tylko service_role ma pełny dostęp
 ```
 
+> ⚠️ **Autoryzacja NIGDY na `user_metadata`.** `user_metadata` (`raw_user_meta_data`) jest edytowalne przez klienta (`supabase.auth.updateUser({ data: {...} })`) — użycie go w policy = privilege escalation (user podnosi sobie rolę z DevTools). Do ról używaj `app_metadata` (server-side, przez Admin API) lub tabeli ról. Nie używaj też top-level claimu `role` (to zarezerwowana rola Postgres). Pełny wzorzec: skill `security` → `auth-security-patterns.md`.
+
 ### Wzorce Policies
 
 #### Publiczny Odczyt
@@ -87,13 +89,15 @@ SECURITY DEFINER pozwala funkcji działać z uprawnieniami właściciela (zazwyc
 - Funkcji wywoływanych przez trigger
 - Wpisów do audit_log
 
+> ⚠️ **`SET search_path = ''` (pusty), nie `= public`.** Funkcja SECURITY DEFINER działa z uprawnieniami właściciela. Jeśli `search_path` zawiera schemat zapisywalny przez atakującego (albo poleganie na domyślnym `public`), może on podstawić własną tabelę/funkcję i przechwycić wykonanie z podniesionymi uprawnieniami (privilege escalation). Pusty `search_path` wymusza rozwiązywanie nazw jednoznacznie — dlatego **wszystkie** obiekty muszą być w pełni kwalifikowane (`public.tabela`, `auth.uid()`).
+
 **Wzorzec:**
 ```sql
 CREATE OR REPLACE FUNCTION public.my_secure_function()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public  -- Bezpieczeństwo - zawsze ustaw!
+SET search_path = ''  -- Pusty search_path + w pełni kwalifikowane nazwy
 AS $$
 BEGIN
     -- Sprawdź autentykację
@@ -102,7 +106,7 @@ BEGIN
     END IF;
 
     -- Logika z pełnymi uprawnieniami
-    INSERT INTO protected_table ...;
+    INSERT INTO public.protected_table ...;
 END;
 $$;
 ```
@@ -124,7 +128,7 @@ CREATE OR REPLACE FUNCTION public.delete_user_account()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation
 AS $$
 DECLARE
     current_user_id UUID;
@@ -138,7 +142,7 @@ BEGIN
     END IF;
 
     -- Loguj PRZED usunięciem (GDPR compliance)
-    INSERT INTO audit_log (user_id, user_email, action, metadata)
+    INSERT INTO public.audit_log (user_id, user_email, action, metadata)
     VALUES (
         current_user_id,
         current_user_email,
@@ -150,7 +154,7 @@ BEGIN
     );
 
     -- Usuń z profiles (CASCADE usunie powiązane dane)
-    DELETE FROM profiles WHERE id = current_user_id;
+    DELETE FROM public.profiles WHERE id = current_user_id;
 
     -- Usuń z auth.users
     DELETE FROM auth.users WHERE id = current_user_id;
@@ -211,10 +215,10 @@ CREATE OR REPLACE FUNCTION public.log_audit_event(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation
 AS $$
 BEGIN
-    INSERT INTO audit_log (user_id, user_email, action, table_name, record_id, metadata)
+    INSERT INTO public.audit_log (user_id, user_email, action, table_name, record_id, metadata)
     VALUES (
         auth.uid(),
         auth.email(),
@@ -242,11 +246,11 @@ CREATE OR REPLACE FUNCTION log_profile_changes()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation
 AS $$
 BEGIN
     IF TG_OP = 'UPDATE' THEN
-        INSERT INTO audit_log (user_id, action, table_name, record_id, metadata)
+        INSERT INTO public.audit_log (user_id, action, table_name, record_id, metadata)
         VALUES (
             NEW.id,
             'PROFILE_UPDATED',
@@ -410,7 +414,7 @@ if (error) {
 ### Nowa Funkcja RPC
 
 - [ ] Użyj `SECURITY DEFINER` jeśli wymaga elevated access
-- [ ] Ustaw `SET search_path = public`
+- [ ] Ustaw `SET search_path = ''` (pusty) + w pełni kwalifikowane nazwy (`public.tabela`)
 - [ ] Sprawdź `auth.uid() IS NOT NULL`
 - [ ] Loguj krytyczne operacje do audit_log (przez funkcję, nie bezpośrednio)
 
@@ -441,7 +445,7 @@ if (error) {
 **Główne Zasady:**
 1. **RLS zawsze włączony** - każda tabela
 2. **UUID do relacji** - nigdy email (email jest mutowalny)
-3. **SECURITY DEFINER z search_path** - dla funkcji omijających RLS
+3. **SECURITY DEFINER z pustym search_path** - `SET search_path = ''` + w pełni kwalifikowane nazwy (privilege escalation)
 4. **Audit log izolowany** - wpisy tylko przez triggery/funkcje, nie z klienta
 5. **Service role tylko server-side** - Edge Functions, backend
 6. **Production-safe logging** - nie wyciekaj struktury DB

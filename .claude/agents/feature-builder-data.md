@@ -27,6 +27,9 @@ Przeczytaj cały blok Implementation Unit. Wydobądź:
 - **Scenariusze testowe** — happy path, error cases, edge cases
 - **Weryfikacja** — co musi być prawdziwe (np. RLS odrzuca anon, JWT walidowany)
 
+### 1.6. Słownik domenowy (jeśli istnieje)
+Jeśli w repo jest `docs/CONCEPTS.md`, przeczytaj go — glosariusz pojęć o projektowo-specyficznym znaczeniu (statusy, encje, nazwane procesy). Używaj tej terminologii w schematach/RLS/logice i NIE zmieniaj zachowania wbrew definicjom (np. nie „naprawiaj" statusu, który celowo działa nietypowo).
+
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob, żeby znaleźć:
 - Istniejące migracje w `supabase/migrations/` — naśladuj nazewnictwo (timestamp, opis)

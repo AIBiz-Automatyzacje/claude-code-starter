@@ -36,6 +36,9 @@ Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj wszys
 
 **Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu — NIE zgaduj. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` z nagłówka SPEC.md i dopytaj Figmę. Warstwa danych (Data) nie konsumuje SPEC.md — pomiń kontekst designerski przy implementacji schema/RLS/query.
 
+### 1.6. Słownik domenowy (jeśli istnieje)
+Jeśli w repo jest `docs/CONCEPTS.md`, przeczytaj go — glosariusz pojęć o projektowo-specyficznym znaczeniu (statusy, encje, nazwane procesy). Używaj tej terminologii w obu podwarstwach i NIE zmieniaj zachowania wbrew definicjom (np. nie „naprawiaj" statusu, który celowo działa nietypowo).
+
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob:
 - Istniejące podobne fullstack flow (np. inne formularze z Supabase Auth, inne CRUD)

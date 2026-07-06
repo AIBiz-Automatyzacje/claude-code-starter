@@ -145,6 +145,7 @@
 - NIGDY nie konkatenuj user input do SQL queries — używaj parametrized queries
 - NIGDY nie używaj dynamicznego wykonywania kodu z user input
 - NIGDY nie deserializuj niezaufanych danych z zewnętrznych źródeł
+- NIGDY nie autoryzuj po `user_metadata` (Supabase) — jest edytowalne przez usera (`supabase.auth.updateUser`), więc RLS na tym polu = privilege escalation. Rolę trzymaj w `app_metadata` (server-side) lub dedykowanej tabeli ról; nie używaj też top-level claimu `role`
 - Waliduj KAŻDY input na granicy API (Zod, Pydantic, etc.)
 - Minimum privileges — nie dawaj więcej uprawnień niż potrzeba
 - Nie uruchamiaj `rm -rf` bez explicit user confirmation

@@ -124,7 +124,7 @@ Realtime respektuje RLS policies:
 CREATE POLICY "favorites_select_own"
 ON favorites FOR SELECT
 TO authenticated
-USING (auth.uid() = user_id);
+USING ((SELECT auth.uid()) = user_id);
 
 -- Uzytkownik otrzyma tylko zmiany SWOICH ulubionych
 ```

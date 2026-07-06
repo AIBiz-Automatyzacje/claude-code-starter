@@ -74,9 +74,10 @@ Zmapuj endpointy vs wymagania autoryzacji.
 | DELETE /posts/:id | nie  | nie           | tak   | tak   |
 
 2. **Zweryfikuj RLS policies** -- czy odzwierciedlaja macierz dostepu
-3. **Edge Functions JWT** -- czy kazda chroniona funkcja wywoluje `supabase.auth.getUser()`?
+3. **Edge Functions JWT** -- czy kazda chroniona funkcja wywoluje `supabase.auth.getUser()` / `getClaims()`?
 4. **Sprawdz `getSession()` vs `getUser()`** -- `getSession()` nie weryfikuje tokena server-side
-5. **Sprawdz role-based access** -- czy nie ma hardcoded email/ID w logice autoryzacji
+5. **Sprawdz role-based access** -- rola z `app_metadata` lub tabeli rol, NIGDY z `user_metadata` (edytowalne przez usera); brak hardcoded email/ID
+6. **Fail-closed** -- blad sprawdzenia dostepu = odmowa, nigdy przyznanie (A10:2025)
 
 ### Krok 5: Sensitive Data Exposure
 
@@ -100,7 +101,7 @@ Szukaj wyciekow danych wrazliwych.
 
 ### Krok 6: OWASP Top 10 Compliance
 
-Przejdz kazda kategorie OWASP Top 10 (2021) pod katem naszego stacku.
+Przejdz kazda kategorie **OWASP Top 10:2025** pod katem naszego stacku. Zwroc uwage na zmiany 2025: SSRF wchloniety do A01, nowe A03 (Software Supply Chain -- m.in. klucz `service_role` dla agentow AI/MCP) i A10 (Mishandling of Exceptional Conditions -- fail-open, wyciek bledow).
 
 Pelne mapowanie kategorii na stack React + Supabase + Edge Functions:
 **[Przewodnik: resources/owasp-react-supabase.md](resources/owasp-react-supabase.md)**

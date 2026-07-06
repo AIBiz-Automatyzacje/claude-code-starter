@@ -1,10 +1,10 @@
 export const meta = {
   name: 'dev-autopilot-wf',
-  description: 'Autonomiczny pipeline: bootstrap (stan z .autopilot-state.json) -> per faza (execute -> review+verify -> fix, bez re-review) -> compound -> complete. Orkiestrator trzyma stan w JSON i liczy gate\'y w JS; buildery i reviewerzy to leaf-agenci.',
+  description: 'Autonomiczny pipeline: bootstrap (stan z .autopilot-state.json) -> per faza (execute -> review+verify -> fix, bez re-review) -> compound -> compound-refresh (scoped) -> complete. Orkiestrator trzyma stan w JSON i liczy gate\'y w JS; buildery i reviewerzy to leaf-agenci.',
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). RESUME po przerwanym runie: uzyj Workflow({scriptPath, resumeFromRunId}) i ZAWSZE przekaz args ponownie (te sama sciezke zadania) — args NIE przezywa miedzy wywolaniami. Stan wznowienia czyta z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy), checkboxy md sa tylko widokiem dla czlowieka.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + rozgrzewka cache testow + srodowisko E2E (gdy .env.e2e istnieje: TWARDY STOP runu dopoki E2E nie gotowe — np. dev server Vite na dedykowanej bazie e2e)' },
-    { title: 'Zakonczenie', detail: 'walidacja koncowa -> compound -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
+    { title: 'Zakonczenie', detail: 'walidacja koncowa -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
   ],
 }
 
@@ -633,9 +633,36 @@ if (e2eAktywne) {
 // Complete (archiwizacja, przenosi folder) jest OSTATNI — po nim juz NIE zapisujemy stanu
 // (plik wedruje do archiwum razem z folderem; zapis wskrzesilby pusty katalog w active/).
 // Stempel complete:"done" w zarchiwizowanym pliku stawia sam complete-wf (krok 5 jego prompta).
+const REFRESH_RESULT = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    przejrzano: { type: 'number', description: 'liczba dokumentow w waskim scope' },
+    akcje: { type: 'array', items: { type: 'string' }, description: 'wykonane akcje (Keep/Update/Replace/Archive/dedup CONCEPTS)' },
+    slownik: { type: 'string', enum: ['posprzatany', 'bez zmian', 'brak pliku'] },
+  },
+  required: ['przejrzano', 'slownik'],
+}
+
+const refreshPrompt = (plik, kategoria) =>
+  `Jestes czescia pipeline'u dev-autopilot. Utrzymujesz baze wiedzy PO zapisie nowego solution.
+Wykonaj skill .claude/skills/dev-compound-refresh/SKILL.md w TRYBIE AUTONOMICZNYM (bez pytan), ale SCOPED — WASKO:
+- Zakres = kategoria dotknieta tym runem${kategoria ? `: "${kategoria}"` : ` (wywnioskuj z ${plik})`} + plik docs/CONCEPTS.md.
+- NIE przegladaj calej bazy docs/solutions/ — tylko ten waski scope (routing "Skupiony", 1-2 dokumenty).
+- Cel: czy nowy solution (${plik}) podwaza/zastepuje siostrzany dokument w tej kategorii; dedup i weryfikacja hasel w docs/CONCEPTS.md; napraw nieaktualne referencje.
+- Wykonuj bezpieczne akcje (Keep/Update/Archive/Replace gdy dowody wystarczajace); niejednoznaczne oznacz stale. Best-effort — nie blokuj.
+Zwroc obiekt zgodny ze schematem RefreshResult.`
+
 let compound = null
+let refresh = null
 if (stan.zakonczenie.compound === 'pending') {
   compound = await workflow('dev-compound-wf', { sciezka })
+  // Scoped refresh ZARAZ po compound — dedup/prune bazy dla dotknietej kategorii + CONCEPTS.md.
+  // Odpala sie tylko gdy compound cos zapisal (compound.plik != null). Best-effort: nie blokuje complete.
+  if (compound && compound.plik) {
+    refresh = await agent(refreshPrompt(compound.plik, compound.kategoria), { schema: REFRESH_RESULT, label: 'compound-refresh' })
+    log(`Compound-refresh (scoped): ${refresh ? `${refresh.przejrzano} dok., slownik=${refresh.slownik}` : 'agent zwrocil null'}`)
+  }
   stan.zakonczenie.compound = 'done'
   await zapiszStan()
 }
@@ -661,4 +688,5 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   solution: compound && compound.plik,
   regula: compound && compound.regula,
+  refresh: refresh ? refresh.slownik : 'pominieto',
 }

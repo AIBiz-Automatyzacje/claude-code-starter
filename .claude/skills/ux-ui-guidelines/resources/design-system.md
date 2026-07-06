@@ -18,6 +18,9 @@ Paleta kolorów (OKLCH), typografia, spacing i design tokens - Tailwind v4.
     --color-primary-foreground: oklch(1 0 0);
     
     /* Accent - Zielony */
+    /* ⚠️ KONTRAST: accent (L≈0.65) + biały foreground (oklch(1 0 0)) daje ~2.5-3:1,
+       poniżej WCAG AA 4.5:1 dla tekstu. Dla tekstu użyj ciemnego foreground
+       (np. oklch(0.2 0.02 260)) LUB zejdź z tłem do ~L 0.45-0.5. */
     --color-accent: oklch(0.65 0.2 160);
     --color-accent-foreground: oklch(1 0 0);
     
@@ -26,6 +29,10 @@ Paleta kolorów (OKLCH), typografia, spacing i design tokens - Tailwind v4.
     --color-destructive-foreground: oklch(1 0 0);
     
     /* Success */
+    /* ⚠️ KONTRAST: success (L≈0.65) + biały foreground (oklch(1 0 0)) daje ~2.5-3:1,
+       poniżej WCAG AA 4.5:1 dla tekstu. Dla tekstu użyj ciemnego foreground
+       (np. oklch(0.2 0.02 260)) LUB zejdź z tłem do ~L 0.45-0.5.
+       Jasny odcień jest OK jako wypełnienie/UI (próg 3:1), ale nie dla tekstu. */
     --color-success: oklch(0.65 0.2 145);
     --color-success-foreground: oklch(1 0 0);
     

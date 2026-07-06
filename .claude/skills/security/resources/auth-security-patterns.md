@@ -55,20 +55,26 @@ USING ((SELECT auth.uid()) = user_id)
 WITH CHECK ((SELECT auth.uid()) = user_id);
 ```
 
-### Admin Access
+### Dostęp administracyjny (role)
 
-Dostep administracyjny -- przez role w JWT claims lub oddzielna tabele.
+> ⚠️ **KRYTYCZNE — najczęstszy błąd autoryzacji w Supabase, notorycznie popełniany przez agentów AI.**
+> NIGDY nie trzymaj roli w `user_metadata`. Pole `raw_user_meta_data` (czyli claim `user_metadata` w JWT) jest **edytowalne przez samego użytkownika** — wystarczy `supabase.auth.updateUser({ data: { role: 'admin' } })` z konsoli/DevTools i atakujący podnosi sobie rolę, po czym RLS przepuszcza go do cudzych danych (privilege escalation).
+> Do autoryzacji używaj **`app_metadata`** (ustawiane wyłącznie server-side, użytkownik go nie zmieni) albo **dedykowanej tabeli ról**.
+> Nie używaj też top-levelowego claimu `role` w policy — to zarezerwowany claim Postgres/PostgREST (`authenticated` / `anon` / `service_role`), nie rola aplikacyjna.
 
 ```sql
--- Opcja 1: Przez custom claims w JWT (wymaga konfiguracji w Supabase Dashboard)
+-- ŹLE: user_metadata jest edytowalne przez klienta -> privilege escalation
+-- USING ((SELECT auth.jwt() -> 'user_metadata' ->> 'role') = 'admin')   -- NIGDY
+
+-- Opcja 1: app_metadata (ustawiane server-side, immutable dla usera)
 CREATE POLICY "admins_full_access"
 ON posts FOR ALL
 TO authenticated
 USING (
-    (SELECT auth.jwt() ->> 'role') = 'admin'
+    (SELECT auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
 );
 
--- Opcja 2: Przez tabele admin_users
+-- Opcja 2: dedykowana tabela rol (preferowane przy RBAC / wielu rolach)
 CREATE POLICY "admins_manage_posts"
 ON posts FOR ALL
 TO authenticated
@@ -80,6 +86,15 @@ USING (
 );
 ```
 
+Rolę w `app_metadata` ustawiasz **tylko z backendu** przez Admin API (klucz `service_role`) — nigdy z klienta:
+
+```ts
+// Server-side only (service_role) -- np. Edge Function, nigdy w przegladarce
+await supabaseAdmin.auth.admin.updateUserById(userId, {
+    app_metadata: { role: 'admin' },
+});
+```
+
 ### Typowe Bledy RLS
 
 | Blad | Konsekwencja | Poprawka |
@@ -87,6 +102,7 @@ USING (
 | Brak `ENABLE ROW LEVEL SECURITY` | Pelny dostep dla kazdego | Zawsze wlaczaj RLS |
 | Brak policy na DELETE | Nikt nie moze usuwac (lub kazdy, jesli RLS wylaczony) | Dodaj explicit DELETE policy |
 | `auth.email()` w policy | Email jest mutowalny -- uzytkownik moze zmienic | Uzywaj `auth.uid()` (UUID immutable) |
+| Rola z `user_metadata` w policy | User edytuje `user_metadata` z DevTools i podnosi sobie rolę (privilege escalation) | Używaj `app_metadata` (server-side) lub tabeli ról; nie top-level `role` |
 | `auth.uid()` bez subquery | Wolniejsze -- ewaluowane per row | Uzywaj `(SELECT auth.uid())` -- ewaluowane raz |
 | Brak policy = brak dostepu | Tabela jest niedostepna dla klientow | Zamierzone dla service-only tabel, blad dla reszty |
 | Policy na SELECT ale nie na INSERT | Uzytkownik widzi dane ale nie moze tworzyc | Sprawdz kazda operacje osobno |

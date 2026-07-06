@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 // Stripe - użyj npm:
-import Stripe from 'npm:stripe@17';
+import Stripe from 'npm:stripe@18';
 
 // Inne pakiety npm
 import { z } from 'npm:zod@3';
@@ -102,7 +102,7 @@ Od Deno 2.x, `deno.json` jest preferowany nad import maps. Jeśli oba istnieją,
 {
   "imports": {
     "@supabase/supabase-js": "jsr:@supabase/supabase-js@2",
-    "stripe": "npm:stripe@17"
+    "stripe": "npm:stripe@18"
   }
 }
 ```
@@ -182,11 +182,11 @@ Deno.serve(async (req) => {
 ```typescript
 // supabase/functions/create-checkout-session/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import Stripe from 'npm:stripe@17';
+import Stripe from 'npm:stripe@18';
 import { corsHeaders } from '../_shared/cors.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-    apiVersion: '2024-12-18.acacia',
+    apiVersion: '2026-06-24.dahlia',
 });
 
 Deno.serve(async (req) => {
@@ -263,10 +263,10 @@ Deno.serve(async (req) => {
 ```typescript
 // supabase/functions/stripe-webhook/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import Stripe from 'npm:stripe@17';
+import Stripe from 'npm:stripe@18';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-    apiVersion: '2024-12-18.acacia',
+    apiVersion: '2026-06-24.dahlia',
 });
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
 
@@ -296,8 +296,14 @@ Deno.serve(async (req) => {
         switch (event.type) {
             case 'checkout.session.completed': {
                 const session = event.data.object as Stripe.Checkout.Session;
-                const email = session.customer_email;
+                // Dopasowanie po UUID z metadata (ustawionym przy tworzeniu
+                // sesji), NIGDY po email — email jest mutowalny.
+                const userId = session.metadata?.user_id;
                 const customerId = session.customer as string;
+
+                if (!userId) {
+                    throw new Error('Missing user_id in session metadata');
+                }
 
                 // Aktywuj dostęp
                 await supabase
@@ -307,13 +313,13 @@ Deno.serve(async (req) => {
                         stripe_customer_id: customerId,
                         updated_at: new Date().toISOString(),
                     })
-                    .eq('email', email);
+                    .eq('id', userId);
 
                 // Zapisz płatność
                 await supabase
                     .from('payments')
                     .insert({
-                        user_email: email,
+                        user_id: userId,
                         stripe_payment_intent_id: session.payment_intent as string,
                         stripe_customer_id: customerId,
                         amount: session.amount_total ?? 0,

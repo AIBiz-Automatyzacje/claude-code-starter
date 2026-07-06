@@ -1,6 +1,6 @@
 # Dostępność (Accessibility)
 
-WCAG 2.2 AA (ISO/IEC 40500:2025), ARIA, nawigacja klawiaturą - standardy 2026.
+WCAG 2.2 AA, ARIA, nawigacja klawiaturą - standardy 2026.
 
 ---
 
@@ -19,7 +19,7 @@ WCAG 2.2 AA (ISO/IEC 40500:2025), ARIA, nawigacja klawiaturą - standardy 2026.
 
 ### Status Regulacyjny (2026)
 
-- **ISO/IEC 40500:2025** — WCAG 2.2 zatwierdzony jako standard międzynarodowy (Paź 2025)
+- **WCAG 2.2** (W3C Recommendation, Paź 2023) — obowiązująca wersja rekomendacji do wdrożeń
 - **EU EAA** (European Accessibility Act) — obowiązuje od 28 czerwca 2025, wymaga WCAG 2.2
 - **WCAG 3.0** — Working Draft (marzec 2026), NIE gotowy do implementacji (~2028)
 
@@ -505,7 +505,7 @@ function SortableList({ items, onReorder }: Props) {
 
 ## Inert Attribute
 
-`inert` wyłącza interakcję i dostępność dla elementu i jego dzieci. **Baseline** od IV.2023 (~94%+ globalnie) — bezpieczny w produkcji bez polyfilli.
+`inert` wyłącza interakcję i dostępność dla elementu i jego dzieci. **Baseline** od IV.2023 (~94%+ globalnie) — bezpieczny w produkcji bez polyfilli. W React 19 `inert` to natywny boolean — przekazuj `inert={warunek}`, bez hacku `inert={x ? '' : undefined}`.
 
 ### Modal z inert
 ```typescript
@@ -515,7 +515,7 @@ function App() {
     return (
         <>
             {/* Main content - inert gdy modal otwarty */}
-            <div inert={modalOpen ? '' : undefined}>
+            <div inert={modalOpen}>
                 <Header />
                 <main>{/* Content */}</main>
                 <Footer />
@@ -545,14 +545,14 @@ function Layout({ children }: Props) {
                     "fixed inset-y-0 left-0 w-64 transform transition-transform",
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
-                inert={!sidebarOpen ? '' : undefined}
+                inert={!sidebarOpen}
             >
                 <nav>{/* Navigation */}</nav>
             </aside>
 
             {/* Main - inert gdy sidebar otwarty na mobile */}
             <main
-                inert={sidebarOpen ? '' : undefined}
+                inert={sidebarOpen}
                 className="md:ml-64"
             >
                 {children}

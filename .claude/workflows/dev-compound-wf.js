@@ -16,6 +16,11 @@ const COMPOUND_RESULT = {
       description: 'status learned-patterns',
       enum: ['dodana', 'pominieta: nie rule-worthy', 'pominieta: duplikat', 'pominieta: limit 50', 'brak'],
     },
+    slownik: {
+      type: 'string',
+      description: 'status docs/CONCEPTS.md',
+      enum: ['zaktualizowany', 'utworzony', 'brak'],
+    },
   },
   required: ['plik', 'regula'],
 }
@@ -38,6 +43,10 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
    Jesli nie bylo nietrywialnego problemu wartego dokumentacji — ustaw plik=null.
 5. Ocen rule-worthy (min 2 z 5 kryteriow), sprawdz duplikaty i limit 50, ewentualnie dodaj regule
    do .claude/rules/learned-patterns.md i zaktualizuj rule-count.
+6. Slownik domenowy (Krok 4.5 skilla): jesli w sesji pojawil sie/uscisnil termin domenowy o znaczeniu
+   PROJEKTOWO-SPECYFICZNYM (encja, nazwany proces, status/enum o niestandardowym sensie) — dodaj/zaktualizuj
+   JEDNO haslo w docs/CONCEPTS.md (cienki indeks: 1-2 zdania + link do CLAUDE.md; tylko domenowe, nie techniczne;
+   alfabetycznie, dedup). Jesli plik nie istnieje a domena jest bogata — utworz go z naglowkiem. Inaczej slownik=brak.
 
 NIE tworz plikow tymczasowych — tylko finalny plik. Zwroc obiekt zgodny ze schematem CompoundResult.`,
   { schema: COMPOUND_RESULT, label: 'compound' }

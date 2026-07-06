@@ -628,6 +628,34 @@ export function Collapsible({ isOpen, children }: CollapsibleProps) {
 }
 ```
 
+### Natywna alternatywa: `interpolate-size` (Chrome 129+)
+
+Od Chrome 129+ animacja `height: auto` jest możliwa czystym CSS, bez mierzenia wysokości
+w JS/Motion — wystarczy włączyć `interpolate-size: allow-keywords` na `:root` (lub przez
+`calc-size()`). Traktuj jako progressive enhancement (przeglądarki bez wsparcia po prostu
+skoczą do końcowej wysokości) i zawsze respektuj `prefers-reduced-motion`.
+
+```css
+:root {
+    interpolate-size: allow-keywords;
+}
+
+.collapsible {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease;
+}
+.collapsible[data-open='true'] {
+    height: auto; /* interpolowane dzięki interpolate-size */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .collapsible {
+        transition: none;
+    }
+}
+```
+
 ---
 
 ## Unikaj

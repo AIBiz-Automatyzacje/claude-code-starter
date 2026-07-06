@@ -36,7 +36,7 @@ Kompleksowy przewodnik dla pracy z Supabase w aplikacjach Vite SPA - autentykacj
 
 - [ ] Utwórz katalog `supabase/functions/function-name/`
 - [ ] Użyj `Deno.serve()` (nie importuj serve)
-- [ ] Importy: `jsr:@supabase/supabase-js@2`, `npm:stripe@17`
+- [ ] Importy: `jsr:@supabase/supabase-js@2`, `npm:stripe@18`
 - [ ] CORS headers w `_shared/cors.ts`
 - [ ] Zweryfikuj JWT jeśli wymagana autentykacja
 - [ ] Loguj błędy (bez wrażliwych danych)
@@ -48,7 +48,7 @@ Kompleksowy przewodnik dla pracy z Supabase w aplikacjach Vite SPA - autentykacj
 - [ ] RLS włączony na każdej tabeli
 - [ ] UUID (`auth.uid()`) w policies, nie email
 - [ ] Audit log bez INSERT policy dla authenticated (tylko triggers/SECURITY DEFINER)
-- [ ] `SET search_path = public` w każdej funkcji SECURITY DEFINER
+- [ ] `SET search_path = ''` (pusty) + w pełni kwalifikowane nazwy (`public.tabela`) w każdej funkcji SECURITY DEFINER
 - [ ] Email enumeration protection włączone w Dashboard
 
 ---
@@ -67,11 +67,11 @@ export const supabase = createClient(
 );
 
 // Helper types
-export type Tables =
+export type Tables<T extends keyof Database['public']['Tables']> =
     Database['public']['Tables'][T]['Row'];
-export type InsertTables =
+export type InsertTables<T extends keyof Database['public']['Tables']> =
     Database['public']['Tables'][T]['Insert'];
-export type UpdateTables =
+export type UpdateTables<T extends keyof Database['public']['Tables']> =
     Database['public']['Tables'][T]['Update'];
 ```
 
@@ -126,7 +126,7 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 - Email/hasło
 
 **Kluczowe Koncepcje:**
-- PKCE z jawnym `exchangeCodeForSession(code)` w callback
+- PKCE z auto-detekcją (`detectSessionInUrl: true` — domyślnie); nie wymieniaj `code` ręcznie w przeglądarce
 - Hook `useAuth()` zarządza sesją
 - Trigger `handle_new_user()` tworzy rekord w `public.profiles`
 - Funkcja `ensure_user_profile()` jako fallback
@@ -165,7 +165,7 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 **Wzorce 2026:**
 - `Deno.serve()` (wbudowane, bez importu)
 - `jsr:@supabase/supabase-js@2` (nie esm.sh)
-- `npm:stripe@17` (nie esm.sh)
+- `npm:stripe@18` (nie esm.sh)
 - `constructEventAsync` dla Stripe webhooks
 - Runtime: **Deno 2.x** (upgrade z 1.45.2)
 - `deno.json` preferowany nad import maps
@@ -216,7 +216,7 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 1. **RLS Zawsze Włączony**: Każda tabela musi mieć RLS
 2. **UUID w Policies**: `auth.uid() = user_id`, nigdy email
 3. **Generated Types**: `supabase gen types` po każdej migracji
-4. **SECURITY DEFINER Ostrożnie**: Zawsze `SET search_path = public`
+4. **SECURITY DEFINER Ostrożnie**: Zawsze `SET search_path = ''` (pusty) + w pełni kwalifikowane nazwy (`public.tabela`)
 5. **Service Role Tylko w Edge Functions**: Nigdy nie eksponuj na froncie
 6. **Audit Log Izolowany**: Wpisy tylko przez triggers/SECURITY DEFINER
 7. **Logger dla Błędów**: `logger.error()` zamiast `console.error()`

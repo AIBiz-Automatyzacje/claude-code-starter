@@ -495,7 +495,7 @@ CREATE OR REPLACE FUNCTION public.delete_user_account()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation (patrz security.md)
 AS $$
 DECLARE
     current_user_id UUID;
@@ -509,7 +509,7 @@ BEGIN
     END IF;
 
     -- Loguj do audit PRZED usunięciem
-    INSERT INTO audit_log (user_id, user_email, action, metadata)
+    INSERT INTO public.audit_log (user_id, user_email, action, metadata)
     VALUES (
         current_user_id,
         current_user_email,
@@ -518,7 +518,7 @@ BEGIN
     );
 
     -- Usuń z public (CASCADE usunie powiązane dane)
-    DELETE FROM profiles WHERE id = current_user_id;
+    DELETE FROM public.profiles WHERE id = current_user_id;
 
     -- Usuń z auth.users
     DELETE FROM auth.users WHERE id = current_user_id;
@@ -552,20 +552,20 @@ CREATE OR REPLACE FUNCTION public.activate_subscription(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation (patrz security.md)
 AS $$
 BEGIN
     -- Ta funkcja jest wywoływana przez Edge Function (service_role)
     -- NIE przez frontend
     
-    UPDATE profiles
+    UPDATE public.profiles
     SET
         is_premium = true,
         stripe_customer_id = p_stripe_customer_id,
         updated_at = NOW()
     WHERE id = p_user_id;
 
-    INSERT INTO audit_log (user_id, action, metadata)
+    INSERT INTO public.audit_log (user_id, action, metadata)
     VALUES (
         p_user_id,
         'SUBSCRIPTION_ACTIVATED',
@@ -719,7 +719,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''  -- pusty: chroni przed privilege escalation (patrz security.md)
 AS $$
 BEGIN
     INSERT INTO public.profiles (id, email, full_name, avatar_url, created_at, updated_at)
@@ -745,6 +745,19 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 ```
+
+---
+
+## Connection Pooling (Supavisor)
+
+Supabase udostępnia Postgres przez pooler **Supavisor**. Wybór portu zależy od tego, czy połączenia są liczne i krótkotrwałe (serverless), czy trwałe:
+
+| Tryb | Port | Kiedy używać |
+|------|------|--------------|
+| **Transaction** | `6543` | Serverless / Edge Functions / Lambda — wiele krótkich połączeń. Połączenie z puli jest przydzielane na czas pojedynczej transakcji. **Nie wspiera** prepared statements ani stanu sesyjnego (`SET`, `LISTEN/NOTIFY`). |
+| **Session** | `5432` | Długo żyjące backendy, migracje, `psql`, narzędzia wymagające pełnej sesji (prepared statements, `SET`, advisory locks). |
+
+Zasada: **serverless → 6543 (transaction)**, **stały serwer / migracje → 5432 (session)**. Bezpośrednie połączenie do bazy (direct connection, z pominięciem poolera) rezerwuj dla operacji administracyjnych. W trybie transaction wyłącz prepared statements po stronie klienta (np. `prepare: false` w postgres.js, `?pgbouncer=true` w Prisma).
 
 ---
 

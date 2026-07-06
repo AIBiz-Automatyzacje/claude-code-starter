@@ -29,7 +29,7 @@ Przewodnik dla projektowania interfejsu użytkownika - design system, dostępno�
 - [ ] Container queries dla komponentów (`@container`)
 - [ ] Focus visible dla nawigacji klawiaturą
 - [ ] ARIA labels dla elementów interaktywnych
-- [ ] Touch targets min 24x24px (WCAG 2.2 AA), rekomendowane 44x44px (AAA)
+- [ ] Touch targets min 24x24px (WCAG 2.2 AA, 2.5.8), rekomendowane 44x44px (Apple HIG / cel AAA, 2.5.5)
 - [ ] `prefers-reduced-motion` dla animacji
 - [ ] Contrast ratio min 4.5:1 (WCAG AA)
 - [ ] Dynamic viewport units (`min-h-dvh`)
@@ -106,7 +106,7 @@ OKLCH zapewnia lepszą percepcję jasności niż HSL:
 **Wymagania:**
 - Contrast ratio min 4.5:1 dla tekstu
 - Focus visible i nie zasłonięty (2.4.11 Focus Not Obscured)
-- Touch targets min 44x44px (2.5.8 Target Size)
+- Touch targets min 24x24px (2.5.8 Target Size Minimum, AA); 44x44px to Apple HIG / cel AAA (2.5.5)
 - ARIA labels dla ikon/przycisków
 - Nagłówki w poprawnej hierarchii
 
@@ -311,7 +311,7 @@ export function ActionButton({ onClick, children, disabled }: ActionButtonProps)
 3. **OKLCH colors** zamiast HSL
 4. **Dynamic viewport** (`dvh`) zamiast `vh`
 5. **Focus States** widoczne i nie zasłonięte
-6. **Touch Targets** min 44x44px
+6. **Touch Targets** min 24x24px (WCAG 2.2 AA, 2.5.8); 44x44px to Apple HIG / cel AAA
 7. **prefers-reduced-motion** obowiązkowo
 8. **useTransition** dla loading states (nie useState)
 9. **View Transitions** dla nawigacji (z fallbackiem)

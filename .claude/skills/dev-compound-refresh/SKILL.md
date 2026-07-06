@@ -39,7 +39,8 @@ Odświeżaj w tej kolejności:
 1. Najpierw przejrzyj poszczególne dokumenty rozwiązań (learnings)
 2. Zanotuj które rozwiązania pozostały aktualne, zostały zaktualizowane, zastąpione lub zarchiwizowane
 3. Następnie przejrzyj dokumenty wzorcowe (pattern docs) zależne od tych rozwiązań
-4. Na końcu przejrzyj `.claude/rules/learned-patterns.md` — usuń reguły bez aktualnego źródła, zaktualizuj po Replace, zdeduplikuj, wyegzekwuj limit ~50
+4. Przejrzyj `.claude/rules/learned-patterns.md` — usuń reguły bez aktualnego źródła, zaktualizuj po Replace, zdeduplikuj, wyegzekwuj limit ~50
+5. Na końcu przejrzyj `docs/CONCEPTS.md` (jeśli istnieje) — słownik domenowy. Usuń hasła, których kod/feature już nie istnieje; scal duplikaty; zweryfikuj, że definicje pasują do aktualnego zachowania; zamień treść skopiowaną z CLAUDE.md na link. Trzymaj formę cienkiego indeksu (1-2 zdania na hasło, alfabetycznie). Nie dubluj tu wiedzy z `docs/solutions/` — to glosariusz pojęć, nie baza rozwiązań.
 
 Dlaczego ta kolejność:
 

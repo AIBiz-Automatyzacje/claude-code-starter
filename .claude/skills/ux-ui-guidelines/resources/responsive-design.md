@@ -695,7 +695,7 @@ function PullToRefresh({
 
 ### Swipe Actions
 ```typescript
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'motion/react';
 import { Trash2, Archive } from 'lucide-react';
 
 function SwipeableItem({ 

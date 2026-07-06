@@ -263,7 +263,7 @@ test('ładuje i wyświetla dane', async () => {
 ```typescript
 import { render, type RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { Toaster } from 'sonner';
 import { type ReactElement, type ReactNode } from 'react';
 
@@ -607,7 +607,7 @@ test('zaznacza checkbox', async () => {
 ```typescript
 // pages/ItemPage.test.tsx
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ItemPage } from './ItemPage';
 

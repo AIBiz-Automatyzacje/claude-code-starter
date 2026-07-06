@@ -35,7 +35,7 @@ Jeśli plan użytkownika kłóci się z czymś znalezionym w `docs/`, **zatrzyma
 
 Gdy user używa rozmytego lub przeciążonego terminu ("kurs" vs "lekcja", "user" vs "klient", "moduł" vs "feature"), zapytaj o kanoniczne znaczenie. Jeśli termin jest już używany w `docs/` lub w kodzie z konkretnym znaczeniem, **odeślij do tego źródła** zamiast tworzyć nową definicję.
 
-**Nie twórz** plików słownikowych ani CONTEXT.md — to nie jest rola tego skilla. Hierarchia plików w `docs/` jest stabilna i nie psujemy jej.
+**Nie twórz** samodzielnie plików słownikowych w trakcie roastu — to nie jest rola tego skilla (utrwalanie jest sugerowane na końcu sesji, patrz niżej). Ale gdy roast ustali **kanoniczne znaczenie terminu domenowego** (encja, status, nazwany proces), zanotuj je — to kandydat do `docs/CONCEPTS.md`. Hierarchia plików w `docs/` jest stabilna i nie psujemy jej.
 
 ### Stress-testuj konkretnymi scenariuszami
 
@@ -54,6 +54,7 @@ Mapowanie:
 - **Rozwiązanie konkretnego problemu technicznego** (root cause + fix) → `/dev-compound`
 - **Rozstrzygnięcie scope'u / kryteriów sukcesu / zachowań produktu** → `/dev-brainstorm`
 - **Plan techniczny implementacji większej zmiany** → `/dev-docs` lub `/dev-plan`
+- **Kanoniczne znaczenie terminu domenowego** (encja, status, nazwany proces o niestandardowym sensie) → `docs/CONCEPTS.md` — jedno hasło jako cienki indeks; utrwal przez `/dev-compound` (ma krok słownika) albo bezpośrednim dopiskiem
 
 Format sugestii: jedna linia na końcu odpowiedzi, np. _"Decyzja o granicy kontekstu Customer/User warta utrwalenia — rozważ `/dev-brainstorm` żeby zapisać to do requirements doc."_
 

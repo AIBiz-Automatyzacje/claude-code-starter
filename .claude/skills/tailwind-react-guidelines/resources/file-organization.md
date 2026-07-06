@@ -120,7 +120,7 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 ```typescript
 // App.tsx
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 
@@ -188,7 +188,7 @@ export function App() {
 ### Protected Route
 ```typescript
 // components/ProtectedRoute.tsx
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
 
@@ -221,7 +221,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 ### Layout z Outlet
 ```typescript
 // components/Layout.tsx
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 
@@ -264,15 +264,18 @@ navigate(ROUTES.SETTINGS);
 ### useParams - Parametry URL
 ```typescript
 // pages/ItemPage.tsx
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 export function ItemPage() {
     const { id } = useParams<{ id: string }>();
 
-    const { data: template, isLoading } = useQuery({
-        queryKey: ['template', id],
-        queryFn: () => api.getItem(id!),
-        enabled: !!id,
+    const { data: item, isLoading } = useQuery({
+        queryKey: ['item', id],
+        queryFn: () => {
+            if (!id) throw new Error('Brak parametru id');
+            return api.getItem(id); // id zawężone do string, bez non-null assertion
+        },
+        enabled: Boolean(id),
     });
 
     if (isLoading) return <Skeleton />;
@@ -287,7 +290,7 @@ export default ItemPage;
 ### useSearchParams - Query String
 ```typescript
 // pages/ItemsPage.tsx
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 export function ItemsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -335,7 +338,7 @@ export function ItemsPage() {
 
 ### useNavigate - Programowa Nawigacja
 ```typescript
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 function LoginForm() {
     const navigate = useNavigate();
@@ -372,7 +375,7 @@ navigate('/dashboard', { replace: true });
 </Route>
 
 // pages/SettingsLayout.tsx
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router';
 import { cn } from '@/lib/utils';
 
 export function SettingsLayout() {
@@ -432,7 +435,7 @@ const deleteMutation = useMutation({
 ```typescript
 // App.tsx lub Layout.tsx
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -454,7 +457,7 @@ function ScrollToTop() {
 ### View Transitions (opcjonalne)
 ```typescript
 // hooks/useViewTransitionNavigate.ts
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useCallback } from 'react';
 
 export function useViewTransitionNavigate() {
