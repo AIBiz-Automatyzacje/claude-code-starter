@@ -3,7 +3,7 @@
 > Opiniowany starter Claude Code dla product engineering na stacku **React 19 + TypeScript + Supabase + Vite + Tailwind v4**.
 > Kompletny katalog `.claude/` (skille, agenci, workflowy, reguły, hooki) + pipeline `dev-*` od pomysłu do wdrożenia — z autonomicznym autopilotem, code review multi-agent i kumulowaniem wiedzy.
 
-**Ostatnia aktualizacja:** 2026-07-06 · **Repo:** `AIBiz-Automatyzacje/claude-code-starter`
+**Ostatnia aktualizacja:** 2026-07-12 · **Repo:** `AIBiz-Automatyzacje/claude-code-starter`
 
 ---
 
