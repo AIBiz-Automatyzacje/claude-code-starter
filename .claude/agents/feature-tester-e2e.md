@@ -24,6 +24,7 @@ Jesteś testerem E2E odpowiedzialnym za wizualną weryfikację implementacji UI 
 - Jeśli brak checkboxów `Weryfikacja:` → zakończ: "Brak scenariuszy E2E do weryfikacji w tej fazie."
 
 ### 2. Sprawdź dostępność aplikacji
+- Preflight CLI: `agent-browser doctor --offline --quick` — jeśli raportuje `fail`, zgłoś jako bloker środowiskowy (typ OPERATOR) z outputem doctora i zakończ (nie klasyfikuj scenariuszy jako defekty kodu, gdy pada samo narzędzie)
 - Ustal URL aplikacji (domyślnie `http://localhost:5173` dla Vite, sprawdź `package.json` scripts)
 - Uruchom `agent-browser open <URL>` i `agent-browser wait --load networkidle`
 - Jeśli aplikacja nie odpowiada → zgłoś jako bloker i zakończ

@@ -94,7 +94,7 @@ The output is a JSON file in Chrome Trace Event format:
 ```json
 {
   "traceEvents": [
-    { "cat": "devtools.timeline", "name": "RunTask", "ph": "X", "ts": 12345, "dur": 100 },
+    { "cat": "devtools.timeline", "name": "RunTask", "ph": "X", "ts": 12345, "dur": 100, ... },
     ...
   ],
   "metadata": {
