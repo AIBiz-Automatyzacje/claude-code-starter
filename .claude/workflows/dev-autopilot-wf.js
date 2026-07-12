@@ -4,7 +4,7 @@ export const meta = {
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + rozgrzewka cache testow + srodowisko E2E (gdy .env.e2e istnieje: TWARDY STOP runu dopoki E2E nie gotowe — np. dev server Vite na dedykowanej bazie e2e)' },
-    { title: 'Zakonczenie', detail: 'walidacja koncowa -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
+    { title: 'Zakonczenie', detail: 'walidacja koncowa -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja) -> telemetria (1 linia JSONL do ~/.claude/telemetry/autopilot-runs.jsonl, best-effort)' },
   ],
 }
 
@@ -553,6 +553,8 @@ for (const numerFazy of kolejka) {
   let gateFazy = 'CZYSTE'
   let cykle = 0
   let e2eSync = null
+  let licznikiFazy = null
+  let fixInfo = null
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
   if (faza.execute === 'pending') {
@@ -600,6 +602,7 @@ for (const numerFazy of kolejka) {
       log(`Faza ${numerFazy}: NIESPOJNOSC licznikow scribe (p1=${scribeL.p1},p2=${scribeL.p2}) vs JS (p1=${liczniki.p1},p2=${liczniki.p2}) — uzywam JS`)
     }
     log(`Review fazy ${numerFazy}: P1=${liczniki.p1} P2=${liczniki.p2} P3=${liczniki.p3} OPERATOR=${liczniki.operator}`)
+    licznikiFazy = liczniki
     faza.review = 'done'
     faza.otwarteFindingi = otwartePoReview(review.findings)
     faza.fix = faza.otwarteFindingi.length ? 'pending' : 'none'
@@ -613,6 +616,7 @@ for (const numerFazy of kolejka) {
       return { status: 'STOP', powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty }
     }
     cykle = 1
+    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2 }
     log(`Fix fazy ${numerFazy}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
 
     if (fix.walidacja === 'FAIL' || fix.nierozwiazaneP1 > 0) {
@@ -672,7 +676,7 @@ for (const numerFazy of kolejka) {
   // Delta 0 po resume = agenci fazy wrocili z journala (cache), nie "darmowa faza" — oznacz w raporcie.
   const tokFazyOpis = tokFazy === 0 ? '0k (z cache — resume)' : `${tokFazy}k`
   log(`Faza ${numerFazy}: koniec — gate ${gateFazy}, cykle ${cykle}, ~${tokFazyOpis} tokenow`)
-  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a' })
+  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, liczniki: licznikiFazy, fix: fixInfo, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a' })
 }
 
 // ── Zakonczenie ──────────────────────────────────────────────────────────
@@ -747,6 +751,31 @@ if (stan.zakonczenie.complete === 'pending') {
 
 const tokRazem = Math.round((tokSpent() - tokRunStart) / 1000)
 log(`Autopilot koniec: ${kolejka.length} faz, ~${tokRazem}k tokenow lacznie`)
+
+// TELEMETRIA (best-effort, tylko sciezka sukcesu): jedna linia JSONL do GLOBALNEGO pliku
+// ~/.claude/telemetry/autopilot-runs.jsonl — wspolnego dla wszystkich projektow na maszynie
+// (dane do strojenia progow pipeline'u: limit fix, sceptycy, routing; per projekt bylyby rozproszone).
+// Timestamp i nazwe projektu ustala leaf-agent (workflow nie moze uzyc Date.now). Pad = tylko log.
+const wpisTelemetrii = {
+  zadanie: stan.nazwaZadania,
+  fazyUkonczone: kolejka.length,
+  raporty,
+  walidacja: 'PASS',
+  e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
+  solution: !!(compound && compound.plik),
+  tokenyRazemK: tokRazem,
+}
+const tele = await agent(
+  `Dopisz JEDNA linie telemetrii pipeline'u dev-autopilot do globalnego pliku ~/.claude/telemetry/autopilot-runs.jsonl.
+1. Bash: mkdir -p ~/.claude/telemetry
+2. Ustal: ts = \`date -Iseconds\`, projekt = \`basename "$(git rev-parse --show-toplevel)"\`.
+3. Wez ponizszy obiekt, dodaj do niego pola "ts" i "projekt", zserializuj do JEDNEJ linii JSON (bez pretty-print):
+${JSON.stringify(wpisTelemetrii)}
+4. Dopisz te linie na koncu pliku (append, >>). NIE nadpisuj istniejacej zawartosci.
+Nie modyfikuj zadnych innych plikow. Zwroc {zapisano:true} (lub false gdy sie nie udalo).`,
+  { schema: ZAPIS_STANU, label: 'telemetria', model: 'haiku' }
+)
+if (!tele || !tele.zapisano) log('Telemetria: zapis nie powiodl sie (best-effort, run niezagrozony)')
 
 return {
   status: 'OK',

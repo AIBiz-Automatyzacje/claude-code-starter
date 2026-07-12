@@ -1,6 +1,6 @@
 export const meta = {
   name: 'dev-docs-review-wf',
-  description: 'Code review fazy: context-packager (mapa zmian raz) -> 8 reviewerow rownolegle (security/perf/architektura/typescript/spec-compliance/simplicity/test/E2E) -> dedup -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + bookkeeping checkboxow Weryfikacja: -> severity gate.',
+  description: 'Code review fazy: context-packager (mapa zmian raz) -> routing reviewerow wg mapy (rdzen zawsze; perf/architektura warunkowo na malych fazach) -> do 8 reviewerow rownolegle (security/perf/architektura/typescript/spec-compliance/simplicity/test/E2E) -> dedup 2-przebiegowy (JS + semantyczny haiku) -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + bookkeeping checkboxow Weryfikacja: -> severity gate.',
   whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
   phases: [
     { title: 'Review', detail: 'context-packager + 8 reviewerow rownolegle (w tym spec-compliance i simplicity/YAGNI)' },
@@ -274,7 +274,27 @@ phase('Review')
 // Poprawka 9: zbuduj diff/mape raz; reviewerzy dostaja ja inline zamiast kazdy odkrywac zmiany od zera.
 // Null (agent skipniety/blad) -> reviewerzy robia wlasna dyskryminacje jak dotad (fallback w mapaBlok).
 const kontekst = await agent(kontekstPrompt(sciezka, faza), { schema: KONTEKST, label: 'kontekst:diff', phase: 'Review' })
-const thunki = REVIEWERZY.map((r) => () =>
+
+// Routing reviewerow wg mapy zmian (bezpieczna wersja): rdzen — security, typescript,
+// spec-compliance, simplicity (+ test-coverage, e2e) — odpala sie ZAWSZE (XSS potrafi siedziec
+// w pliku "czysto UI-owym", spec/testy dotycza kazdej fazy). Warunkowo tylko performance
+// i architecture na MALYCH fazach (<=2 pliki), gdzie zwykle nie maja czego ocenic.
+// Brak kontekstu (packager padl/null) => pelny sklad — bez mapy nie wiemy nic o fazie.
+const plikiFazy = (kontekst && kontekst.pliki) || []
+const malaFaza = plikiFazy.length > 0 && plikiFazy.length <= 2
+const WZORZEC_PERF = /src\/(hooks|lib)\/|quer|fetch|realtime|\.sql$/i
+const perfIstotny = !malaFaza || plikiFazy.some((p) => WZORZEC_PERF.test(p.plik))
+const nowyModul = plikiFazy.some((p) => /\bnow(y|a|e)\b/i.test(p.czegoDotyczy || ''))
+const archIstotny = !malaFaza || nowyModul
+const aktywni = REVIEWERZY.filter((r) => {
+  if (r.key === 'performance') return perfIstotny
+  if (r.key === 'architecture') return archIstotny
+  return true
+})
+const pominieci = REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => r.key)
+if (pominieci.length) log(`Routing: mala faza (${plikiFazy.length} pliki) — pomijam reviewerow: ${pominieci.join(', ')}`)
+
+const thunki = aktywni.map((r) => () =>
   agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), { schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' })
 )
 thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, label: 'review:test-coverage', phase: 'Review' }))
@@ -282,7 +302,7 @@ thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e), { schema: FINDINGS, 
 
 const wyniki = await parallel(thunki)
 
-// Dedup w JS (po pliku + poczatku opisu) — bariera byla potrzebna wlasnie tu.
+// Dedup przebieg 1 — JS (po pliku + poczatku opisu): lapie identyczne sformulowania za darmo.
 // Przy kolizji klucza wygrywa WYZSZE severity (P1<P2<P3), nie kolejnosc reviewerow.
 const wszystkie = wyniki.filter(Boolean).flatMap((w) => w.findings)
 const RANGA = { P1: 0, P2: 1, P3: 2 }
@@ -292,7 +312,52 @@ for (const f of wszystkie) {
   const obecny = poKluczu.get(klucz)
   if (!obecny || RANGA[f.severity] < RANGA[obecny.severity]) poKluczu.set(klucz, f)
 }
-const dedup = [...poKluczu.values()]
+let dedup = [...poKluczu.values()]
+
+// Dedup przebieg 2 — semantyczny (haiku): 8 reviewerow czesto opisuje TEN SAM problem roznymi
+// slowami; klucz tekstowy tego nie sklei, a kazdy duplikat P1/P2 kosztuje potem 1-3 sceptykow
+// w verify. Agent zwraca TYLKO grupy indeksow-duplikatow; scalanie liczy JS (wygrywa wyzsze
+// severity). Agent null / niepoprawne indeksy => zostaje wynik przebiegu 1 (best-effort).
+if (dedup.length > 1) {
+  const DEDUP_GRUPY = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      duplikaty: {
+        type: 'array',
+        items: { type: 'array', items: { type: 'integer' } },
+        description: 'grupy indeksow (min 2 na grupe) opisujacych TEN SAM problem; findingi bez duplikatu POMIN',
+      },
+    },
+    required: ['duplikaty'],
+  }
+  const lista = dedup.map((f, i) => `${i}. [${f.severity}/${f.typ}] ${f.plik} — ${f.opis}`).join('\n')
+  const grupy = await agent(
+    `Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH reviewerow (faza ${faza}, ${sciezka}).
+Znajdz grupy wpisow opisujacych TEN SAM problem inna parafraza (ten sam plik/mechanizm i ta sama przyczyna).
+NIE lacz roznych problemow w tym samym pliku ani problemow o wspolnym objawie, ale innej przyczynie.
+W razie watpliwosci NIE laczyc. Zwroc wylacznie grupy 2+ indeksow; brak duplikatow => {duplikaty: []}.
+
+${lista}`,
+    { schema: DEDUP_GRUPY, label: 'dedup:semantyczny', model: 'haiku', phase: 'Review' }
+  )
+  if (grupy && Array.isArray(grupy.duplikaty)) {
+    const doUsuniecia = new Set()
+    for (const grupa of grupy.duplikaty) {
+      const poprawne = [...new Set(grupa)].filter((i) => Number.isInteger(i) && i >= 0 && i < dedup.length)
+      if (poprawne.length < 2) continue
+      // Reprezentant grupy = najwyzsze severity (najnizsza RANGA); reszta odpada.
+      const reprezentant = poprawne.reduce((a, b) => (RANGA[dedup[a].severity] <= RANGA[dedup[b].severity] ? a : b))
+      for (const i of poprawne) if (i !== reprezentant) doUsuniecia.add(i)
+    }
+    if (doUsuniecia.size) {
+      log(`Dedup semantyczny: scalono ${doUsuniecia.size} duplikatow (z ${dedup.length} findingow)`)
+      dedup = dedup.filter((_, i) => !doUsuniecia.has(i))
+    }
+  } else if (!grupy) {
+    log('Dedup semantyczny: agent zwrocil null — zostaje dedup JS')
+  }
+}
 
 // Faza 2: adversarial verify — tylko P1/P2 (P3/nity przechodza bez weryfikacji)
 phase('Verify')

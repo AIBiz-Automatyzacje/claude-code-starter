@@ -80,6 +80,14 @@ Audyt wykazał: skill był na poziomie ~0.26, upstream 0.31.1 (werdykt: ISTOTNIE
 - `feature-tester-e2e.md` — preflight `agent-browser doctor --offline --quick` (fail = bloker OPERATOR, nie defekt kodu).
 - `ZRODLA-SZABLONU.md` — dodane upstream repo vercel-labs/agent-browser + procedura aktualizacji Z BINARKI (nie przez klonowanie; upstream wersjonuje skill razem z CLI).
 
+## D. [WYKONANE] Follow-up 2: mechanizmy z warstwy 3 review (2026-07-12)
+
+- **Routing reviewerów** (`dev-docs-review-wf.js`): rdzeń (security/typescript/spec/simplicity/test/E2E) zawsze; `performance-oracle` i `architecture-strategist` warunkowo na małych fazach (≤2 pliki; perf gdy diff dotyka hooks/lib/query/SQL, arch gdy nowy moduł). Brak mapy zmian = pełny skład.
+- **Dedup 2-przebiegowy** (`dev-docs-review-wf.js`): JS (klucz tekstowy) + agent semantyczny na Haiku (grupuje parafrazy tego samego problemu; konserwatywny — "w razie wątpliwości NIE łączyć"; pad agenta = zostaje wynik JS).
+- **`/freshness-audit`** (nowy skill + `freshness-audit-wf.js`, zbudowany przez agenta na Opusie): cykliczny audyt skilli technicznych w ŻYWYCH źródłach (zakaz pamięci modelu, każde ustalenie z URL) → adversarial verify → raport `docs/reviews/freshness-<data>.md`. Nic nie zmienia sam.
+- **Telemetria** (`dev-autopilot-wf.js`): na końcu udanego runu leaf-agent (Haiku) dopisuje 1 linię JSONL do GLOBALNEGO `~/.claude/telemetry/autopilot-runs.jsonl` (pola: ts, projekt, zadanie, fazy, per-faza liczniki P1/P2/P3 + wynik fix + gate + tokeny). Wariant globalny wybrany świadomie: dane do strojenia progów szablonu muszą być w jednym miejscu między projektami. Best-effort — pad zapisu nie zagraża runowi.
+- Pozostałe drobne: zdanie o legacy `dev-autopilot` w README, pola `paths` w 3 skillach guideline (tailwind/ux-ui/supabase; celowo NIE w security/sentry — to skille intencyjne), korekta opisu `useOptimistic` (warning + revert, nie błąd).
+
 ## Zasady wykonania
 - Zmiany w `.claude/workflows/*-wf.js` (A4, B5, ew. B1/B7/B8) → po każdej smoke-test z `.claude/templates/smoke-autopilot/`.
 - Bez commitów, dopóki user nie poprosi.
