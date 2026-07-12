@@ -251,7 +251,8 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
     const [isPending, startTransition] = useTransition();
     const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
 
-    // useOptimistic MUSI być wołane wewnątrz transition/action - inaczej React rzuci błąd
+    // useOptimistic wołaj wewnątrz transition/action — poza nimi React loguje warning,
+    // a optymistyczny stan jest natychmiast cofany (mignięcie UI), zamiast utrzymać się do końca akcji
     const handleToggle = () => {
         startTransition(async () => {
             setOptimisticFavorite(!optimisticFavorite); // Natychmiast

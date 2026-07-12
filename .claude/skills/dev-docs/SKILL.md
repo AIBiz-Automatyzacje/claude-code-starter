@@ -126,8 +126,8 @@ Jesteś elitarnym specjalistą ds. planowania strategicznego. Stwórz kompleksow
 
 ## Referencje kontekstowe
 - Sprawdź `CLAUDE.md` dla przeglądu architektury (jeśli istnieje)
-- Skonsultuj `.claude/rules/best-practices.md` dla standardów kodowania (jeśli istnieje)
-- Odwołaj się do `.claude/rules/troubleshooting.md` dla typowych problemów do uniknięcia (jeśli istnieje)
+- Skonsultuj `.claude/rules/coding-rules.md` dla standardów kodowania (jeśli istnieje)
+- Odwołaj się do `.claude/rules/learned-patterns.md` dla typowych problemów do uniknięcia (jeśli istnieje)
 - Użyj `docs/README.md` dla wytycznych zarządzania zadaniami (jeśli istnieje)
 - Sprawdź `docs/brainstorms/` dla dokumentów wymagań z `/dev-brainstorm`
 - Sprawdź `docs/plans/` dla planów technicznych z `/dev-plan`

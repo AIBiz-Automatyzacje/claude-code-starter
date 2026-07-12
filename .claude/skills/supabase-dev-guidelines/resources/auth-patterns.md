@@ -224,7 +224,7 @@ function MyComponent() {
 
 **Ważne:**
 - `getSession()` czyta token z localStorage — nie weryfikuje go. Nigdy nie używaj do autoryzacji server-side.
-- `getClaims()` dostępne dla projektów z asymetrycznymi kluczami JWT (domyślne od maja 2025). Weryfikuje JWT lokalnie przez WebCrypto API.
+- `getClaims()` dostępne dla projektów z asymetrycznymi kluczami JWT (domyślne od 1 października 2025). Weryfikuje JWT lokalnie przez WebCrypto API.
 
 Hook `useAuth` używa `getSession()` dla szybkiego UI. Krytyczne operacje powinny używać `getUser()` lub `getClaims()`.
 
@@ -236,7 +236,7 @@ Hook `useAuth` używa `getSession()` dla szybkiego UI. Krytyczne operacje powinn
 ```typescript
 // components/AuthCallback.tsx
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { ensureUserProfile } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
@@ -401,7 +401,7 @@ const handleForgotPassword = async (email: string) => {
 ```typescript
 // pages/ResetPasswordPage.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';

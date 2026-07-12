@@ -5,8 +5,11 @@ Szczegółowe wzorce integracji Sentry z Supabase Edge Functions (Deno runtime).
 > **ℹ️ STAN RUNTIME'U**
 >
 > Supabase Edge Runtime działa dziś na Deno 2.x, a `@sentry/deno` ma instrumentację
-> requestów (`Deno.serve`) oraz pełne wsparcie `beforeSend`. Wcześniejsze ograniczenia
-> (Deno 1.45.2, brak instrumentacji, brak `beforeSend`) są nieaktualne.
+> requestów (`Deno.serve`) oraz wsparcie `beforeSend`. Wsparcie instrumentacji `Deno.serve`
+> jest jednak świeże/eksperymentalne — oficjalna dokumentacja Supabase nadal zaleca
+> `defaultIntegrations: false` na Edge Runtime, bo bez tego nie ma gwarancji scope
+> separation między requestami w tym samym isolate. Traktuj automatyczną instrumentację
+> jako bonus, nie jako zamiennik izolacji przez `withScope()`.
 >
 > Dobre praktyki, które nadal warto stosować:
 > 1. **Używaj `Sentry.withScope()`** dla izolacji kontekstu per operacja/branch — czytelniejsze
@@ -38,7 +41,8 @@ import * as Sentry from 'npm:@sentry/deno';
 
 **Uwagi:**
 - `npm:@sentry/deno` to aktualny zalecany import (stary `deno.land/x/sentry` jest deprecated)
-- Wymaga Deno 2.x — Supabase Edge Runtime spełnia ten wymóg, więc domyślne integracje (w tym tracing) działają out-of-the-box
+- Wymaga Deno 2.x — Supabase Edge Runtime spełnia ten wymóg. Domyślne integracje (w tym tracing)
+  działają, ale instrumentacja `Deno.serve` jest świeża/eksperymentalna — patrz `defaultIntegrations: false` niżej
 
 ---
 
@@ -55,8 +59,9 @@ let initialized = false;
  * Inicjalizuje Sentry dla Edge Function
  * @param functionName - Nazwa funkcji (np. 'stripe-webhook')
  *
- * Domyślne integracje (w tym tracing) działają na Deno 2.x.
- * Kontekst per operacja izolujemy dalej przez Sentry.withScope().
+ * Domyślne integracje (w tym tracing) działają na Deno 2.x, ale instrumentacja
+ * Deno.serve jest świeża/eksperymentalna. Kontekst per operacja izolujemy
+ * jawnie przez Sentry.withScope() — nie polegamy tylko na auto-instrumentacji.
  */
 export function initSentry(functionName: string): typeof Sentry {
   if (!initialized) {
@@ -69,6 +74,11 @@ export function initSentry(functionName: string): typeof Sentry {
         environment,
         release: Deno.env.get('SENTRY_RELEASE'), // np. 'stripe-webhook@1.4.0'
         tracesSampleRate: 0.1, // 10% transakcji
+
+        // Bezpieczny default na Edge Runtime: bez gwarancji scope separation
+        // między requestami w tym samym isolate przy auto-instrumentacji
+        // Deno.serve. Usuń dopiero gdy zweryfikujesz separation na swoim runtime.
+        defaultIntegrations: false,
 
         // Centralne maskowanie PII — jeden punkt dla wszystkich zdarzeń
         beforeSend(event) {
@@ -170,15 +180,15 @@ export function captureMessage(
 
 ```typescript
 // UWAGA: Używamy Deno.serve (natywne API) zamiast serve z deno.land/std
-import Stripe from 'https://esm.sh/stripe@17?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import Stripe from 'npm:stripe@22';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { initSentry, captureError } from '../_shared/sentry.ts';
 
 // Inicjalizacja Sentry (raz przy cold start)
 const Sentry = initSentry('stripe-webhook');
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2024-12-18.acacia', // Aktualna wersja API Stripe (grudzień 2024)
+  apiVersion: '2026-06-24.dahlia', // Wersja API pinowana przez stripe-node v22.3.x
   httpClient: Stripe.createFetchHttpClient(),
 });
 
@@ -241,7 +251,7 @@ Deno.serve(async (req) => {
 
 **Kluczowe zmiany vs stary pattern:**
 - `Deno.serve()` zamiast `serve()` z `deno.land/std`
-- Wersje bibliotek bez pinowania (np. `stripe@17` zamiast `stripe@14.5.0`)
+- Wersje bibliotek bez pinowania (np. `stripe@22` zamiast `stripe@22.3.0`)
 - `Sentry.withScope()` dla izolacji kontekstu między requestami
 
 ---
@@ -448,8 +458,8 @@ const url = `https://${host}/api/${projectId}/envelope/?sentry_key=${publicKey}&
 ### Wersje bibliotek (Best Practices)
 
 **Stripe:**
-- Używaj major version bez patch: `stripe@17` zamiast `stripe@14.5.0`
-- Sprawdź `apiVersion` - aktualna: `2024-12-18.acacia`
+- Używaj major version bez patch: `stripe@22` zamiast `stripe@22.3.0`
+- Sprawdź `apiVersion` - aktualna: `2026-06-24.dahlia` (pinowana przez stripe-node v22.3.x)
 
 **Supabase JS:**
 - Używaj: `@supabase/supabase-js@2` (automatycznie najnowsza z major 2)

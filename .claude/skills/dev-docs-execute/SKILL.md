@@ -6,30 +6,19 @@ argument-hint: "[ścieżka-do-folderu np. 'docs/active/auth-refaktor']"
 
 # Wykonanie kolejnej fazy zadania
 
-## Zmienne
-- ŚCIEŻKA_ZADANIA: $1
+## Wykonanie
 
-## Instrukcje
+Ustal `sciezka` (folder zadania w `docs/active/`, np. z argumentu `$1`) i `faza` (numer fazy). Jeśli `faza` nie została podana jawnie, wylicz ją jako **pierwszą nieukończoną fazę** na podstawie checkboxów w `$sciezka/*-zadania.md`.
 
-### 0. Walidacja git
-1. **Sprawdź aktualny branch:** `git branch --show-current`
-2. **Przeczytaj wymagany branch** z dokumentacji w `$1/` (szukaj "Branch:" w plikach)
-3. **Porównaj:**
-   - Jeśli branch się zgadza → kontynuuj
-   - Jeśli branch się nie zgadza → poinformuj użytkownika i zapytaj czy przełączyć
-4. **Sprawdź czy nie ma niezacommitowanych zmian** z poprzednich sesji
+URUCHOM workflow toolem Workflow:
 
-### 1. Zapoznaj się z dokumentacją zadania
-Przeczytaj wszystkie pliki `.md` w `$1/`:
-- Plik z planem (zawiera fazy, cele, kryteria)
-- Plik z kontekstem (decyzje, stan, notatki)
-- Plik z zadaniami (lista ze statusami ✅/⬜)
+```
+Workflow({scriptPath: ".claude/workflows/dev-docs-execute-wf.js", args: {sciezka, faza}})
+```
 
-### 2. Określ aktualny stan
-Na podstawie pliku z zadaniami:
-- Znajdź ostatnią ukończoną fazę/etap (oznaczoną ✅)
-- Zidentyfikuj NASTĘPNĄ fazę/etap do wykonania
-- Jeśli wszystko ukończone → poinformuj użytkownika i zakończ
+Po zakończeniu workflow streść użytkownikowi wynik: numer fazy, `status` (completed/partial/blocked), status poszczególnych Implementation Units, commity, wynik testów, odchylenia od planu.
+
+**NIE wykonuj procedury ręcznie** — mechanika (planner buduje listę Implementation Units z planu technicznego, buildery `feature-builder-*` implementują je delegacją przez `agentType`, krok domknięcia waliduje/commituje/aktualizuje dokumentację) żyje w workflow. Sekcje referencyjne poniżej są używane PRZEZ workflow — jego sub-agenty czytają je bezpośrednio z tego pliku — nie przez Ciebie.
 
 ### 2.5 Strategia delegacji do subagentów
 
@@ -82,12 +71,6 @@ Jeśli sekcja "Designerski kontekst" nie istnieje LUB wszystkie pola są null/pu
 - NIE przechodź do następnych faz
 - Zatrzymaj się po ukończeniu tej jednej fazy
 
-### 4. Walidacja i testy
-Po zakończeniu fazy:
-- Sprawdź czy w planie są zdefiniowane testy akceptacyjne dla tej fazy
-- Jeśli tak → wykonaj je
-- Zapisz wyniki testów i zrzuty ekranu w `$1/`
-
 ### 4.5 System-Wide Test Check
 Przed zamknięciem fazy odpowiedz na 5 pytań:
 1. Czy typecheck przechodzi bez nowych błędów?
@@ -98,83 +81,3 @@ Przed zamknięciem fazy odpowiedz na 5 pytań:
 5. Czy build przechodzi?
 
 Jeśli odpowiedź na którekolwiek pytanie to NIE — napraw przed kontynuacją.
-
-### 5. Aktualizuj dokumentację
-**W pliku z zadaniami:**
-- Oznacz ukończone zadania jako ✅
-- Dodaj nowo odkryte zadania (jeśli są)
-
-**W pliku z kontekstem:**
-- Dodaj zmiany wprowadzone w tej fazie
-- Zapisz podjęte decyzje
-- Zaktualizuj "Ostatnia aktualizacja: RRRR-MM-DD"
-
-### 5.5 Aktualizacja planu technicznego
-Jeśli istnieje plan techniczny w `docs/plans/`:
-- Znajdź Implementation Unit odpowiadający ukończonej fazie
-- Zaktualizuj checkboxy test scenarios (odznacz spełnione)
-- Zaktualizuj checkboxy verification (odznacz spełnione)
-- Plan staje się żywym dokumentem śledzenia postępu
-
-### 6. Commit zmian (inkrementalny)
-Heurystyka: commituj gdy możesz napisać sensowny commit message opisujący kompletną zmianę.
-- Nie czekaj do końca fazy — commituj logiczne jednostki pracy
-- Jeśli commit message brzmiałby "WIP" lub "partial" — nie commituj jeszcze
-- Pattern: `feat/fix/refactor([nazwa-zadania]): [co i dlaczego]`
-- Jedna faza może mieć wiele commitów lub jeden — zależy od złożoności
-- Staguj tylko pliki związane z daną jednostką pracy (nie `git add .`)
-
-### 7. Przygotuj podsumowanie
-Napisz podsumowanie w **prostym języku** zrozumiałym dla osoby nietechnicznej:
-```
-## Podsumowanie fazy [numer/nazwa]
-
-### Co zostało zrobione
-[Opis w prostych słowach, bez żargonu technicznego]
-
-### Co widać w aplikacji
-**Desktop:**
-- [Widoczne zmiany dla użytkownika]
-
-**Mobile:**
-- [Widoczne zmiany dla użytkownika]
-
-### Zmiany "pod maską" (backend/kod)
-[Wyjaśnij DLACZEGO te zmiany były ważne, nawet jeśli niewidoczne]
-
-### Następny krok
-[Jaka faza/etap jest następny]
-
-```
-
-## Format wyjściowy
-```
-✅ Ukończono fazę [numer/nazwa] w $1
-
-🔀 Branch: [nazwa-brancha]
-
-📋 Wykonane Implementation Units:
-   - IU-{N}: {nazwa} → {subagent} → {status}
-   - IU-{N+1}: {nazwa} → {subagent} → {status}
-
-🧪 Testy akceptacyjne: [PASS/FAIL/brak testów]
-
-📁 Zapisane pliki:
-   - [zrzuty ekranu, logi, inne]
-
-📝 Zaktualizowana dokumentacja w $1/
-
-⚠️ Odchylenia od planu (zgłoszone przez subagentów):
-   - [lub "Brak"]
-
-💾 Commit: feat([nazwa-zadania]): [opis]
-
----
-
-[PODSUMOWANIE W PROSTYM JĘZYKU]
-
----
-
-➡️ Review ukończonej fazy:
-   Uruchom: /dev-docs-review $1 Faza [numer]
-```

@@ -1,9 +1,9 @@
 export const meta = {
   name: 'dev-docs-review-wf',
-  description: 'Code review fazy: context-packager (mapa zmian raz) -> 7 reviewerow rownolegle (security/perf/architektura/typescript/spec-compliance/test/E2E) -> dedup -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + bookkeeping checkboxow Weryfikacja: -> severity gate.',
+  description: 'Code review fazy: context-packager (mapa zmian raz) -> 8 reviewerow rownolegle (security/perf/architektura/typescript/spec-compliance/simplicity/test/E2E) -> dedup -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + bookkeeping checkboxow Weryfikacja: -> severity gate.',
   whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
   phases: [
-    { title: 'Review', detail: 'context-packager + 7 reviewerow rownolegle (w tym spec-compliance: zgodnosc ze spec/planem)' },
+    { title: 'Review', detail: 'context-packager + 8 reviewerow rownolegle (w tym spec-compliance i simplicity/YAGNI)' },
     { title: 'Verify', detail: 'adversarial verify per finding (P1=3 sceptykow, P2=1)' },
     { title: 'Zapis', detail: 'raport + bookkeeping + severity gate' },
   ],
@@ -136,6 +136,7 @@ const REVIEWERZY = [
   { key: 'architecture', agentType: 'architecture-strategist', fokus: 'SOLID, wzorce, nazewnictwo, import organization, granice warstw' },
   { key: 'typescript', agentType: 'kieran-typescript-reviewer', fokus: 'type safety, brak any/as/!, discriminated unions, explicit return types' },
   { key: 'spec-compliance', agentType: 'spec-flow-analyzer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
+  { key: 'simplicity', agentType: 'code-simplicity-reviewer', fokus: 'YAGNI i minimalizm: zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na niemozliwe scenariusze, martwy kod, redundancja, uproszczenia bez utraty funkcji. Duplication > Complexity — prosta duplikacja jest OK, zlozona abstrakcja DRY nie' },
 ]
 
 // Blok doklejany w trybie re-review (po cyklu fix) — targetowana weryfikacja zamiast pelnego re-skanu.
@@ -177,7 +178,8 @@ Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[]}.`
 
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst) {
   return `Jestes reviewerem fazy ${faza} w folderze ${sciezka}.
-Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/dev-brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Files:, Test scenarios:, Patterns to follow:).
+Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Files:, Test scenarios:, Patterns to follow:).
+Przeczytaj tez .claude/rules/learned-patterns.md (jesli istnieje) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.
 Skup sie na: ${fokus}.
 Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
 Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
@@ -339,9 +341,19 @@ log(`Verify: z ${doWeryfikacji.length} findingow P1/P2 potwierdzono ${potwierdzo
 
 // Faza 3: scribe zapisuje raport + bookkeeping + liczy severity gate
 phase('Zapis')
-const wynik = await agent(scribePrompt(sciezka, faza, potwierdzone), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
+let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
 if (!wynik) {
-  // Scribe padl — zwroc zweryfikowane findingi zamiast null (orkiestrator i tak liczy gate w JS z findings[]).
+  // Scribe padl — jedna ponowna proba (to JEDYNY agent zapisujacy review-faza-N.md i sekcje
+  // "Do poprawy"; bez tych artefaktow fix dziala bez kontekstu, a czlowiek bez widoku).
+  log(`Scribe fazy ${faza} padl — ponawiam raz`)
+  wynik = await agent(
+    `${scribePrompt(sciezka, faza, potwierdzone)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
+    { schema: REVIEW_RESULT, label: `scribe:faza-${faza}:retry` }
+  )
+}
+if (!wynik) {
+  // Scribe padl 2x — zwroc zweryfikowane findingi + flage scribeFail (orkiestrator liczy gate w JS
+  // z findings[], ale NIE moze oznaczyc review jako done: raport i checkboxy nie powstaly).
   return {
     fazaNumer: faza,
     findings: potwierdzone,
@@ -349,6 +361,7 @@ if (!wynik) {
     severityGate: 'BLOKUJE',
     raportSciezka: '',
     e2e: { passed: 0, failed: 0, skipped: 0 },
+    scribeFail: true,
   }
 }
 return wynik

@@ -13,7 +13,7 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 
 - **Pipeline `dev-*`** — od ideacji, przez plan, po autonomiczną implementację z review i naprawami (`dev-autopilot-wf`).
 - **Skille techniczne** pod stack — React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry — z aktualnymi wzorcami (React 19, Tailwind v4, Zod v4, OWASP 2025).
-- **16 wyspecjalizowanych agentów** — buildery warstw, reviewerzy, research.
+- **15 wyspecjalizowanych agentów** — buildery warstw, reviewerzy, research.
 - **Knowledge compounding** — rozwiązane problemy (`docs/solutions/`), reguły (`learned-patterns.md`) i żywy słownik domenowy (`docs/CONCEPTS.md`).
 - **Reguły kodowania** i katalog anty-patternów AI (`.claude/rules/coding-rules.md`).
 
@@ -23,6 +23,7 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 
 | Data | Zmiana |
 |------|--------|
+| **2026-07-12** | **Poprawki po multi-agent review (46 findingów, 0 obalonych):** naprawa nazwy skilla Figma (`figma-design-to-code` — zaimportowany lokalnie z pluginu; poprzednia nazwa nie istniała), ujednolicenie ścieżki `docs/brainstorms/` (handoff brainstorm→plan był cicho zerwany), usunięcie skażonego `auto-error-resolver`, **8. reviewer** (`code-simplicity-reviewer`) w review-wf, **targeted verify P1/KOD po fixie** (niezależny weryfikator zamiast czystego self-reportu), warmup degraduje zamiast STOP, retry scribe'a, readerzy `learned-patterns.md` (planner/reviewerzy/buildery), audyt console.log/Sentry w domknięciu fazy, skille `/dev-docs-execute`+`/dev-docs-review` = cienkie wrappery na workflowy, `web-research-specialist` podłączony do brainstorm/ideate. Freshness: **Stripe v22** (wpis 2026-07-06 błędnie utrzymywał v18), Zod v4 w Edge Functions, `getClaims()` preferowane, React Router v8 (`react-router`, bez `-dom`), TS 6.0/7.0, Sentry `defaultIntegrations: false`. Skorygowana semantyka RESUME (świeży run po STOP bramki vs resume po awarii). |
 | **2026-07-06** | **Słownik domenowy `docs/CONCEPTS.md`** (writer w `dev-compound`, readerzy w `dev-plan`/`dev-docs`/builderach, utrzymanie w `dev-compound-refresh`). Autopilot woła teraz **scoped `dev-compound-refresh`** po compound. **Audyt skilli technicznych:** `security` → OWASP Top 10:2025 + błąd `user_metadata` (reguła w `coding-rules §9`); `tailwind` → Zod v4 + `useOptimistic` w transition; `supabase` → PKCE `onAuthStateChange` + Stripe v18 + `search_path=''`; `ux-ui` → kontrast/`inert`/`interpolate-size`; `sentry` → source maps + Deno 2.x. |
 | 2026-06-21 | Dev Autopilot przeniesiony na **Dynamic Workflow** (`.claude/workflows/*-wf.js`); orkiestrator w JS, buildery/reviewerzy jako leaf-agenci. |
 | 2026-06-04 | Wchłonięte koncepty inżynierskie z mattpocock/skills (Tier 2); agenty/skille podciągnięte z compound-engineering. |
@@ -57,7 +58,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 |----------|---------|
 | `dev-autopilot-wf` | Autonomiczny pipeline: bootstrap (stan z `.autopilot-state.json`) → per faza (execute → review + adversarial verify → fix) → compound → **compound-refresh (scoped)** → complete. |
 | `dev-docs-execute-wf` | Wykonanie JEDNEJ fazy: planner czyta Implementation Units z `docs/plans/`, buildery `feature-builder-*` implementują je przez `agentType`, potem walidacja + commit + aktualizacja docs. |
-| `dev-docs-review-wf` | Review jednej fazy: context-packager → 7 reviewerów równolegle → dedup → adversarial verify P1/P2 → scribe zapisuje raport + bookkeeping checkboxów `Weryfikacja:` → severity gate. |
+| `dev-docs-review-wf` | Review jednej fazy: context-packager → 8 reviewerów równolegle → dedup → adversarial verify P1/P2 → scribe zapisuje raport + bookkeeping checkboxów `Weryfikacja:` → severity gate. |
 | `dev-docs-complete-wf` | Archiwizacja: `docs/active/<zadanie>` → `docs/completed/`, podsumowanie, aktualizacja docs projektu, commit. |
 | `dev-compound-wf` | Dokumentuje rozwiązane problemy do `docs/solutions/`, ocenia rule-worthy do `learned-patterns.md`, aktualizuje `docs/CONCEPTS.md`. |
 
@@ -85,13 +86,13 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 #### Implementacja
 
 **`dev-autopilot-wf docs/active/[nazwa]`** *(workflow, domyślna ścieżka)* — automatyczne wykonanie WSZYSTKICH faz z review i naprawami. Buduje `PlanState` + kolejkę faz, per faza woła `dev-docs-execute-wf` → `dev-docs-review-wf` → (przy P1/P2) cykl fix. Po fazach: compound → scoped refresh → complete.
-- **Resumability:** `Workflow({scriptPath, resumeFromRunId})` + te same args.
-- **Stop conditions:** P1 po cyklu fix (limit fix = 1 — drugi cykl naprawiał 0 findingów przy koszcie pełnego re-review), błąd buildu/testów, git conflict.
+- **Resumability:** po **awarii runu** (crash/kill) — `Workflow({scriptPath, resumeFromRunId})` + te same args (cache odtwarza ukończone kroki). Po **STOP bramki** (środowisko E2E, fix FAIL, nierozwiązane P1), gdy coś naprawiłeś — **świeży run bez resume** (stan faz i tak wznowi się z `.autopilot-state.json`; resume zwróciłby porażkę bramki z cache).
+- **Stop conditions:** P1 po cyklu fix (limit fix = 1 — drugi cykl naprawiał 0 findingów przy koszcie pełnego re-review; każdy P1/KOD po fixie przechodzi dodatkowo **niezależny targeted verify**), błąd buildu/testów, git conflict.
 - **Myk:** walidację brancha robisz **w sesji PRZED** odpaleniem — workflow nie pyta o branch switch.
 
 **`/dev-docs-execute docs/active/[nazwa]`** *(workflow: `dev-docs-execute-wf`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Dla IU dotykających UI doklejany mandatory kontekst designerski. Na końcu: System-Wide Test Check, checkboxy, incremental commits.
 
-**`/dev-docs-review docs/active/[nazwa] [faza]`** *(workflow: `dev-docs-review-wf`)* — code review fazy. context-packager (mapa zmian raz) → **7 reviewerów równolegle** (Security, Performance, Architecture, TypeScript, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 sceptyków, P2 = 1**) → scribe zapisuje raport + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
+**`/dev-docs-review docs/active/[nazwa] [faza]`** *(workflow: `dev-docs-review-wf` — skill jest cienkim wrapperem wołającym workflow)* — code review fazy. context-packager (mapa zmian raz) → **8 reviewerów równolegle** (Security, Performance, Architecture, TypeScript, Spec-compliance, Simplicity/YAGNI, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 sceptyków, P2 = 1**) → scribe zapisuje raport + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
 - **Myk E2E:** `feature-tester-e2e` testuje w **prawdziwej przeglądarce** (agent-browser) na dev serverze Vite (`localhost:5173`), nie w headless symulacji. Preflight: `curl localhost:5173`. Przy `figma_screens` robi side-by-side visual diff z mockupami. Bez `.env.e2e` weryfikacje E2E lądują jako OPERATOR (do ręcznego sprawdzenia).
 
 **`/dev-docs-update docs/active/[nazwa]`** — zapis stanu przed kompaktowaniem kontekstu. Commituje WIP, aktualizuje 3 pliki zadania, dokumentuje niedokończoną pracę.
@@ -115,7 +116,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | Skill | Zakres |
 |-------|--------|
 | **`tailwind-react-guidelines`** | React 19 (`use`, Actions, `useActionState`, `useOptimistic`, ref jako prop), TypeScript 5.7+, Tailwind v4 (CSS-first `@theme`), shadcn/ui, React Query, RHF + **Zod v4**, testy (Vitest + RTL + MSW), lazy/Suspense, Sonner. |
-| **`supabase-dev-guidelines`** | Auth (OAuth + email, PKCE przez `onAuthStateChange`), PostgreSQL, RLS (`(SELECT auth.uid())`), SECURITY DEFINER (`search_path=''`), Edge Functions (Deno, Stripe v18), Realtime, Supavisor pooling. |
+| **`supabase-dev-guidelines`** | Auth (OAuth + email, PKCE przez `onAuthStateChange`), PostgreSQL, RLS (`(SELECT auth.uid())`), SECURITY DEFINER (`search_path=''`), Edge Functions (Deno, Stripe v22), Realtime, Supavisor pooling. |
 | **`ux-ui-guidelines`** | Design system (OKLCH), dostępność (WCAG 2.2, ARIA, natywny `inert`), responsive (container queries), animacje (Motion, View Transitions, `interpolate-size`), interface polish. |
 | **`security`** | Audyt bezpieczeństwa: **OWASP Top 10:2025**, RLS, `app_metadata` vs `user_metadata`, SSRF, CSP dla Vite, `getClaims` + asymetryczne JWT. |
 | **`sentry-integration`** | Error tracking + performance dla React + Edge Functions (Deno 2.x): `beforeSend`, source maps (`@sentry/vite-plugin`), release tracking, `await captureError`. |
@@ -128,14 +129,15 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | Skill | Do czego |
 |-------|----------|
 | **`agent-browser`** | Automatyzacja przeglądarki przez CLI (nawigacja, formularze, screenshoty, scraping, testowanie UI) z ref-based selection (`@e1`, `@e2`). Silnik E2E dla `feature-tester-e2e`. |
+| **`figma-design-to-code`** | Implementacja designu Figma jako kod (kierunek design→code). Zaimportowany lokalnie z oficjalnego pluginu Figma (v2.2.78) — działa też bez zainstalowanego pluginu. Preładowany do builderów UI/fullstack. |
 | **`zroastuj-mnie`** | Bezlitosny wywiad stress-testujący plan/projekt. Research docs przed sesją, wykrywanie sprzeczności, scenariusze. Na końcu sugeruje utrwalenie (m.in. terminu do `docs/CONCEPTS.md`). |
 | **`gemini`** | Uruchamia Gemini CLI jako subagenta (analiza kodu, audyt UX/security). Zapisuje feedback do `Zasoby/gemini/`. |
 | **`coolify-manager`** | Zarządzanie i troubleshooting deploymentów Coolify (CLI + API): serwery, WordPress, kontenery, SSL, bazy, env, backupy. |
-| **`dev-autopilot`** *(legacy)* | Ręczna orkiestracja pipeline'u. **Domyślną ścieżką jest `dev-autopilot-wf`** — ten skill zostaje jako fallback. |
+| **`dev-autopilot`** *(legacy)* | Ręczna orkiestracja pipeline'u. **Domyślną ścieżką jest `dev-autopilot-wf`** — ten skill zostaje jako fallback. Uwaga: celowo używa starszego modelu pętli naprawczej (fix → pełny re-review, do `MAX_FIX_CYKLI: 2`), więc jest droższy i zachowuje się inaczej niż workflow (fix ×1 + targeted verify). |
 
 ---
 
-## Agenci — pełna lista (16)
+## Agenci — pełna lista (15)
 
 ### Buildery warstw (wołane przez `dev-docs-execute-wf`)
 
@@ -145,7 +147,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `feature-builder-data` | Warstwa danych: zapytania Supabase, RLS, migracje SQL, walidacja Zod, Edge Functions, autoryzacja. |
 | `feature-builder-fullstack` | Cross-layer (UI + dane naraz): formularze z auth, full-page z fetchem, CRUD end-to-end. |
 
-### Reviewerzy (wołani przez `dev-docs-review-wf` — 7 równolegle)
+### Reviewerzy (wołani przez `dev-docs-review-wf` — 8 równolegle)
 
 | Agent | Rola |
 |-------|------|
@@ -154,21 +156,20 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `kieran-typescript-reviewer` | Type safety, brak `any`, modern patterns, nazewnictwo. |
 | `architecture-strategist` | SOLID, granice komponentów, coupling, circular deps. |
 | `spec-flow-analyzer` | Zgodność ze spec/planem IU: under-implementation, scope creep, błędna implementacja, edge case'y. |
-| `code-simplicity-reviewer` | YAGNI, redundancja, uproszczenia (manualny review pass). |
+| `code-simplicity-reviewer` | YAGNI, zbędna złożoność, martwy kod, uproszczenia bez utraty funkcji. |
 | `feature-tester-e2e` | E2E w przeglądarce (agent-browser) — checkboxy `Weryfikacja:` 🌐, visual diff z Figmą. |
-| `auto-error-resolver` | Automatyczna naprawa błędów kompilacji TypeScript. |
 
 > Test-coverage w review-wf pokrywa domyślny agent (happy path, invalid inputs, boundary, brakujące testy).
 
-### Research (wołani przez `dev-plan`)
+### Research (wołani przez `dev-plan`, `dev-brainstorm`, `dev-ideate`)
 
 | Agent | Rola |
 |-------|------|
-| `repo-research-analyst` | Struktura repo, konwencje, wzorce implementacyjne. |
-| `learnings-researcher` | Szuka w `docs/solutions/` + `docs/CONCEPTS.md` powiązanych wniosków. |
-| `best-practices-researcher` | Best practices online (Context7, WebSearch). |
-| `framework-docs-researcher` | Dokumentacja frameworków/bibliotek, wersje, ograniczenia. |
-| `web-research-specialist` | Iteracyjny research w sieci — grounding zewnętrzny, prior art, wzorce konkurencji. |
+| `repo-research-analyst` | Struktura repo, konwencje, wzorce implementacyjne (dev-plan). |
+| `learnings-researcher` | Szuka w `docs/solutions/` + `docs/CONCEPTS.md` powiązanych wniosków (dev-plan). |
+| `best-practices-researcher` | Best practices online (Context7, WebSearch) (dev-plan). |
+| `framework-docs-researcher` | Dokumentacja frameworków/bibliotek, wersje, ograniczenia (dev-plan). |
+| `web-research-specialist` | Iteracyjny research w sieci — prior art, wzorce konkurencji (dev-brainstorm, dev-ideate). |
 
 ---
 
@@ -256,9 +257,9 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 ## Myki i pułapki (najważniejsze)
 
 - **Autopilot: waliduj branch PRZED odpaleniem** — workflow nie pyta o branch switch.
-- **RESUME zawsze z tymi samymi `args`** — `args` nie przeżywa między wywołaniami; stan czyta z `.autopilot-state.json` (źródło prawdy), checkboxy `.md` to tylko widok.
+- **RESUME tylko po awarii runu** (zawsze z tymi samymi `args` — nie przeżywają między wywołaniami). Po **STOP bramki** (środowisko E2E, fix FAIL), gdy coś naprawiłeś — **świeży run bez `resumeFromRunId`**: resume zwróciłby porażkę bramki z cache; stan faz i tak wznowi się z `.autopilot-state.json` (źródło prawdy), checkboxy `.md` to tylko widok. Ręczne edycje `.autopilot-state.json` też wymagają świeżego runu.
 - **E2E to prawdziwa przeglądarka**, nie symulacja — wymaga żywego dev servera (`localhost:5173`). Bez `.env.e2e` weryfikacje E2E → OPERATOR.
-- **Limit cyklu fix = 1** — drugi cykl historycznie naprawiał 0 findingów przy koszcie pełnego re-review.
+- **Limit cyklu fix = 1** — drugi cykl historycznie naprawiał 0 findingów przy koszcie pełnego re-review. Po fixie każdy P1/KOD przechodzi **niezależny targeted verify** (weryfikator sprawdza kod, nie self-report fixa).
 - **`compound-refresh` w autopilocie jest scoped** (tylko dotknięta kategoria + CONCEPTS.md) — pełny refresh całej bazy odpalaj osobno, okresowo.
 - **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; używaj `app_metadata` lub tabeli ról (reguła w `coding-rules §9`).
 - **Po każdej zmianie `.claude/workflows/*-wf.js`** odpal smoke-test z `.claude/templates/smoke-autopilot/`.

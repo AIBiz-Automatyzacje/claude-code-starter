@@ -1,7 +1,7 @@
 ---
 name: feature-builder-ui
 description: "Implementuje warstwę UI (komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność). Wywoływany przez dev-docs-execute gdy Implementation Unit dotyka tylko warstwy prezentacji (*.tsx w src/components, src/features, src/pages, *.css)."
-skills: [tailwind-react-guidelines, ux-ui-guidelines, figma:figma-use, figma:figma-implement-design]
+skills: [tailwind-react-guidelines, ux-ui-guidelines, figma:figma-use, figma-design-to-code]
 model: inherit
 ---
 
@@ -34,10 +34,13 @@ Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj **wsz
 2. **DESIGN.md (projekt-wide)** — tokeny systemu designu (kolory, typografia, spacing scale). Konsumuj jako bazę tokenów Tailwind.
 3. **PNG screeny referencyjne** — Read jako image, użyj wizualnie do weryfikacji proporcji, wariantów stanu, hierarchii.
 
-**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu którego potrzebujesz (np. hover state, brakujący margines, kolor który nie ma tokenu) — **NIE zgaduj, NIE halucynuj**. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` (oba w nagłówku SPEC.md) i dopytaj Figmę o ten konkretny fragment. Dopiero potem implementuj. Halucynowane wymiary to najczęstsza klasa rozjazdów z mockupem — patrz roadmap "figma:figma-use" / "figma:figma-implement-design" skille.
+**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu którego potrzebujesz (np. hover state, brakujący margines, kolor który nie ma tokenu) — **NIE zgaduj, NIE halucynuj**. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` (oba w nagłówku SPEC.md) i dopytaj Figmę o ten konkretny fragment. Dopiero potem implementuj. Halucynowane wymiary to najczęstsza klasa rozjazdów z mockupem — patrz roadmap "figma:figma-use" / "figma-design-to-code" skille.
 
 ### 1.6. Słownik domenowy (jeśli istnieje)
 Jeśli w repo jest `docs/CONCEPTS.md`, przeczytaj go — glosariusz pojęć o projektowo-specyficznym znaczeniu (statusy, encje, nazwane procesy). Używaj tej terminologii i NIE zmieniaj zachowania wbrew definicjom (np. nie „naprawiaj" statusu, który celowo działa nietypowo).
+
+### 1.7. Wyuczone reguły
+Przeczytaj `.claude/rules/learned-patterns.md` (jeśli istnieje) — reguły wyprodukowane z problemów rozwiązanych w poprzednich zadaniach tego projektu. Stosuj je przy implementacji; mają pierwszeństwo przed ogólnymi wzorcami, bo kodują pułapki specyficzne dla tego repo.
 
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob, żeby znaleźć:

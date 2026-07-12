@@ -1,6 +1,12 @@
 # Standardy TypeScript
 
-Wytyczne TypeScript 5.7+ (aktualna: 5.9) i React 19 - konfiguracja, typy, nowoczesne wzorce.
+Wytyczne TypeScript 5.7+ i React 19 - konfiguracja, typy, nowoczesne wzorce.
+
+**Stan wersji:** TS 6.0 to aktualne GA oparte jeszcze na JS-owym kompilatorze (zmiany domyślnych:
+`strict: true` domyślnie, target ES5 usunięty — domyślny target przesunięty na nowoczesny ES).
+TS 7.0 to natywny kompilator (GA 2026-07-08, 8-12x szybszy), ale ekosystem (Vue/Svelte/Astro)
+czeka na 7.1 dla pełnego wsparcia edytorów. Dla tego stacku (Vite SPA + React) bezpieczny wybór
+to 6.x — 7.0 opcjonalnie, gdy toolchain będzie gotowy.
 
 ---
 

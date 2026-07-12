@@ -10,7 +10,7 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 > **Stan SDK**
 >
 > - **React SDK:** v10+ (funkcyjne integracje, React 19 error hooks) ✅
-> - **Edge Functions:** `@sentry/deno` na Deno 2.x (instrumentacja + `beforeSend`) ✅ — używaj `withScope` dla izolacji i `await flush()` przed `Response`
+> - **Edge Functions:** `@sentry/deno` na Deno 2.x (instrumentacja `Deno.serve` świeża/eksperymentalna + `beforeSend`) ⚠️ — ustaw `defaultIntegrations: false` (dokumentacja Supabase nadal to zaleca na Edge Runtime), używaj `withScope` dla izolacji i `await flush()` przed `Response`
 
 ## Table of Contents
 
@@ -41,11 +41,13 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 ## Dobre praktyki (Edge Functions / Supabase)
 
 `@sentry/deno` działa na Supabase Edge Runtime (Deno 2.x) z instrumentacją requestów
-i wsparciem `beforeSend`. Wcześniejsze ograniczenia (Deno 1.45.2, brak instrumentacji,
-brak `beforeSend`) są nieaktualne. Nadal stosuj:
+i wsparciem `beforeSend`. Wsparcie instrumentacji `Deno.serve` jest jednak świeże/eksperymentalne —
+oficjalna dokumentacja Supabase nadal zaleca `defaultIntegrations: false` na Edge Runtime, bo bez
+tego nie ma gwarancji scope separation między requestami w tym samym isolate. Nadal stosuj:
 
 | Zasada | Dlaczego |
 |--------|----------|
+| `defaultIntegrations: false` w `Sentry.init()` | Bezpieczny default dopóki nie zweryfikujesz scope separation na swoim runtime |
 | Ustawiaj kontekst przez `Sentry.withScope()` | Izolacja per operacja; unikasz wycieku tagów między requestami |
 | Nie ustawiaj globalnych tagów per-request | Globalny scope jest współdzielony w obrębie isolate'u |
 | `await Sentry.flush()` przed `Response` | Isolate może zostać zamrożony zaraz po odpowiedzi |

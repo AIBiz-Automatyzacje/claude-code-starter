@@ -551,7 +551,7 @@ Użyj DevTools do resize'owania parent elementu, nie całego viewport.
 ### Bottom Navigation
 ```typescript
 import { Home, Search, PlusCircle, Heart, User } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 
 function BottomNav() {
     return (

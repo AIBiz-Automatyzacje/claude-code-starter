@@ -167,7 +167,7 @@ Rozszerzenie dawnego „Vulnerable and Outdated Components" o **cały łańcuch 
 **Checklist:**
 - [ ] `npm audit` / `bun audit` bez krytycznych luk (w CI)
 - [ ] Lockfile (`bun.lockb` / `package-lock.json`) commitowany
-- [ ] Importy Deno w Edge Functions **pinowane do wersji** (`npm:stripe@18.x`, nie `npm:stripe`)
+- [ ] Importy Deno w Edge Functions **pinowane do wersji** (`npm:stripe@22.x`, nie `npm:stripe`)
 - [ ] Dependabot / Renovate skonfigurowany
 - [ ] Brak `dependencies`, które powinny być `devDependencies`
 - [ ] **Agent AI / MCP NIE dostaje klucza `service_role`** — tylko anon/ograniczony zakres, tryb read-only gdzie się da
@@ -316,7 +316,7 @@ Brak weryfikacji integralności danych z zewnętrznych źródeł.
 - [ ] Brak dynamicznego wykonywania kodu z user input
 
 ```typescript
-import Stripe from 'npm:stripe@18';                        // pinowana wersja
+import Stripe from 'npm:stripe@22';                        // pinowana wersja
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 

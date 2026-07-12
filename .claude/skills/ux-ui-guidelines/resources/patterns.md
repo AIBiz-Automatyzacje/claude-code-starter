@@ -35,7 +35,7 @@ function TemplateTabs() {
 
 **URL-Synced Tabs:**
 ```typescript
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 function UrlTabs() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -55,7 +55,7 @@ function UrlTabs() {
 ### Breadcrumbs
 ```typescript
 import { ChevronRight, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 interface BreadcrumbItem {
     label: string;
@@ -509,7 +509,7 @@ function FilterPanel({ children, activeCount }: { children: React.ReactNode; act
 
 ### URL State Sync
 ```typescript
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 interface Filters {
     search: string;

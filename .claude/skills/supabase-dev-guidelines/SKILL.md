@@ -1,6 +1,11 @@
 ---
 name: supabase-dev-guidelines
 description: Auth (Google/Facebook OAuth, email), Database (PostgreSQL, RLS policies, SECURITY DEFINER), Edge Functions, Realtime subscriptions. Uzywaj przy pracy z autentykacja, baza danych, migracjami, bezpieczenstwem.
+paths:
+  - "supabase/**"
+  - "**/*.sql"
+  - "src/lib/**"
+  - "src/hooks/**"
 ---
 
 # Supabase Development Guidelines
@@ -36,7 +41,7 @@ Kompleksowy przewodnik dla pracy z Supabase w aplikacjach Vite SPA - autentykacj
 
 - [ ] Utwórz katalog `supabase/functions/function-name/`
 - [ ] Użyj `Deno.serve()` (nie importuj serve)
-- [ ] Importy: `jsr:@supabase/supabase-js@2`, `npm:stripe@18`
+- [ ] Importy: `jsr:@supabase/supabase-js@2`, `npm:stripe@22`
 - [ ] CORS headers w `_shared/cors.ts`
 - [ ] Zweryfikuj JWT jeśli wymagana autentykacja
 - [ ] Loguj błędy (bez wrażliwych danych)
@@ -165,7 +170,7 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 **Wzorce 2026:**
 - `Deno.serve()` (wbudowane, bez importu)
 - `jsr:@supabase/supabase-js@2` (nie esm.sh)
-- `npm:stripe@18` (nie esm.sh)
+- `npm:stripe@22` (nie esm.sh)
 - `constructEventAsync` dla Stripe webhooks
 - Runtime: **Deno 2.x** (upgrade z 1.45.2)
 - `deno.json` preferowany nad import maps

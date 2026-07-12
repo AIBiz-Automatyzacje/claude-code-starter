@@ -1,6 +1,12 @@
 ---
 name: tailwind-react-guidelines
 description: Frontend React 19 + TypeScript 5.7+ + TailwindCSS v4 + shadcn/ui dla Vite SPA. Komponenty, React Query, formularze (RHF + Zod), testowanie (Vitest + RTL + MSW), lazy loading, Suspense, Sonner. Używaj przy tworzeniu komponentów, stron, stylowaniu, data fetchingu, formularzach, testach, optymalizacji.
+paths:
+  - "**/*.tsx"
+  - "**/*.css"
+  - "src/**/*.ts"
+  - "vite.config.*"
+  - "vitest.config.*"
 ---
 
 # Tailwind React Guidelines

@@ -115,6 +115,65 @@ await supabaseAdmin.auth.admin.updateUserById(userId, {
 
 Kazda chroniona Edge Function musi weryfikowac JWT.
 
+**getClaims() -- PREFEROWANE server-side.** Od 1 pazdziernika 2025 nowe projekty Supabase
+domyslnie uzywaja asymetrycznych kluczy JWT -- `getClaims()` weryfikuje token lokalnie przez
+JWKS (bez round-tripu do serwera Auth), wiec jest szybsze niz `getUser()`.
+
+```typescript
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+
+Deno.serve(async (req) => {
+    // CORS preflight
+    if (req.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders });
+    }
+
+    try {
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader) {
+            return new Response(
+                JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Brak tokena' } }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        const token = authHeader.replace('Bearer ', '');
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_ANON_KEY')!
+        );
+
+        // Weryfikacja lokalna przez JWKS -- bez sieciowego zapytania do Auth
+        const { data, error: claimsError } = await supabase.auth.getClaims(token);
+        if (claimsError || !data) {
+            return new Response(
+                JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Nieprawidlowy token' } }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        // Logika biznesowa z zweryfikowanym data.claims.sub (user_id)
+        // ...
+
+        return new Response(
+            JSON.stringify({ data: { success: true } }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+    } catch (error) {
+        // Loguj bez wrazliwych danych
+        console.error('Edge Function error:', error instanceof Error ? error.message : 'Unknown');
+        return new Response(
+            JSON.stringify({ error: { code: 'INTERNAL', message: 'Blad serwera' } }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+    }
+});
+```
+
+**getUser() -- fallback dla starszych projektow.** Projekty na starszych symetrycznych kluczach
+JWT nie maja jeszcze JWKS do lokalnej weryfikacji -- `getUser()` kontaktuje sie z serwerem Auth
+przy kazdym wywolaniu i pozostaje jedyna opcja.
+
 ```typescript
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -140,7 +199,7 @@ Deno.serve(async (req) => {
             { global: { headers: { Authorization: authHeader } } }
         );
 
-        // Weryfikacja -- getUser() kontaktuje sie z serwerem Auth
+        // Weryfikacja -- getUser() kontaktuje sie z serwerem Auth (fallback, patrz getClaims() wyzej)
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
             return new Response(
@@ -210,7 +269,7 @@ export const corsHeaders: Record<string, string> = {
 Kazdy input do Edge Function musi byc walidowany.
 
 ```typescript
-import { z } from 'npm:zod@3';
+import { z } from 'npm:zod@4';
 
 const CreatePostSchema = z.object({
     title: z.string().min(1).max(200),

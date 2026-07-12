@@ -114,7 +114,10 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 ---
 ---
 
-## Routing (React Router v7)
+## Routing (React Router v8)
+
+v8 (2026-06) nie zmienia API z v7, ale podnosi minima do Node 22.22+, React 19.2.7+ i Vite 7+;
+pakiet `react-router-dom` został w v8 całkowicie usunięty — importuj z `react-router`.
 
 ### Konfiguracja w App.tsx
 ```typescript

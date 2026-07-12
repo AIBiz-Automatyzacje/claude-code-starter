@@ -61,7 +61,7 @@ elif [ "$ERROR_COUNT" -le "$ERROR_THRESHOLD" ]; then
         echo ""
         echo "$TSC_OUTPUT" | grep "error TS" | head -10
         echo ""
-        echo "Użyj agenta auto-error-resolver do automatycznego naprawienia błędów."
+        echo "Napraw błędy TypeScript przed zakończeniem (typuj poprawnie, nie używaj any/as)."
         echo ""
     } >&2
     exit 2
@@ -75,7 +75,7 @@ else
         echo "Pierwsze 15 błędów:"
         echo "$TSC_OUTPUT" | grep "error TS" | head -15
         echo ""
-        echo "INSTRUKCJA: Uruchom agenta auto-error-resolver aby automatycznie naprawić błędy TypeScript."
+        echo "INSTRUKCJA: Napraw błędy TypeScript zanim zakończysz (zacznij od pierwszych — kolejne często są kaskadą)."
         echo "Cache błędów: $CACHE_DIR/last-errors.txt"
         echo ""
     } >&2

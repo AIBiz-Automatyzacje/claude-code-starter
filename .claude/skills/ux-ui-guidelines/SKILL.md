@@ -1,6 +1,9 @@
 ---
 name: ux-ui-guidelines
 description: Wytyczne UX/UI dla React 19 + Tailwind v4. Design system (OKLCH colors), dostępność (WCAG 2.2, ARIA), responsive design (mobile-first, container queries), animacje (Motion, View Transitions, prefers-reduced-motion), UI patterns (navigation, tables, search, onboarding), interface polish (concentric radius, optical alignment, tabular numbers, scale 0.96 on press, font smoothing, image outlines, interruptible animations, shadow-as-border). Używaj przy projektowaniu UI, dostępności, animacjach, mobile UX oraz micro-detalach polish — "feels off", "interface polish", "border radius polish", "stagger animations", "tabular numbers", "scale on press".
+paths:
+  - "**/*.tsx"
+  - "**/*.css"
 ---
 
 # UX/UI Guidelines

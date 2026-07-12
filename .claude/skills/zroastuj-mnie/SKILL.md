@@ -18,7 +18,7 @@ Zanim zaczniesz roast, **przeskanuj istniejące źródła decyzji** w repo. Nie 
 Kolejność i cel:
 
 1. **`docs/active/`** — aktywne projekty z `/dev-docs`. Plany, status, learnings z trwających prac. Sprawdź czy roastowany temat nie jest częścią aktywnego zadania.
-2. **`docs/archive/`** — ukończone projekty wdrożeniowe. Decyzje historyczne i ich uzasadnienia. Cennie dla "dlaczego zrobiliśmy to tak".
+2. **`docs/completed/`** — ukończone projekty wdrożeniowe. Decyzje historyczne i ich uzasadnienia. Cennie dla "dlaczego zrobiliśmy to tak".
 3. **`docs/solutions/`** — baza rozwiązanych problemów z `/dev-compound`. Filtruj po YAML frontmatter i nagłówkach. Cenne przy decyzjach technicznych powtarzających się wzorce.
 4. **`docs/brainstorms/*-requirements.md`** — requirements docs z `/dev-brainstorm`. Granice scope'u i kryteria sukcesu, które już zostały rozstrzygnięte.
 5. **Codebase** — gdy roast dotyczy zachowania istniejącego kodu, zweryfikuj o czym mówisz, zanim zapytasz.

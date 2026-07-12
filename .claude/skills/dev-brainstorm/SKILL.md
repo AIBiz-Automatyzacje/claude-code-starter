@@ -49,7 +49,7 @@ Nie kontynuuj dopóki nie masz opisu od użytkownika.
 
 #### 0.1 Wznów istniejącą pracę gdy to sensowne
 
-Jeśli użytkownik odnosi się do istniejącego tematu brainstormu lub dokumentu, lub istnieje niedawny plik `*-requirements.md` w `docs/dev-brainstorms/`:
+Jeśli użytkownik odnosi się do istniejącego tematu brainstormu lub dokumentu, lub istnieje niedawny plik `*-requirements.md` w `docs/brainstorms/`:
 - Przeczytaj dokument
 - Potwierdź z użytkownikiem: "Znalazłem istniejący requirements doc dla [temat]. Kontynuuję od tego, czy zaczynamy od nowa?"
 - Przy wznawianiu: streść aktualny stan, kontynuuj od istniejących decyzji i otwartych pytań, aktualizuj istniejący dokument zamiast tworzyć duplikat
@@ -82,11 +82,13 @@ Przeskanuj repo przed merytorycznym brainstormingiem. Dopasuj głębokość do s
 
 **Lekka** — wyszukaj temat, sprawdź czy coś podobnego już istnieje, idź dalej.
 
-**Standardowa i Głęboka** — dwa przejścia:
+**Standardowa i Głęboka** — trzy przejścia:
 
 *Sprawdzenie ograniczeń* — sprawdź pliki instrukcji projektu (`CLAUDE.md`, coding rules) pod kątem ograniczeń workflow, produktu lub scope'u wpływających na brainstorm. Jeśli nic nie wnoszą, idź dalej.
 
 *Skan tematu* — wyszukaj powiązane terminy. Przeczytaj najbardziej relevantny istniejący artefakt (brainstorm, plan, spec, skill, feature doc). Przejrzyj pobliskie przykłady pokrywające podobne zachowanie.
+
+*Zewnętrzny research (prior art)* — gdy pomysł dotyka obszaru, gdzie istnieje prior art, konkurencja lub zewnętrzne wzorce rozwiązań, URUCHOM agenta `web-research-specialist` (Agent tool, subagent_type: "web-research-specialist") z pytaniem o prior art i wzorce rozwiązań dla tego obszaru. Wpleć wyniki w Product Pressure Test (1.2) i, jeśli materialnie istotne, w dokument wymagań (Faza 3).
 
 Jeśli nic oczywistego nie pojawi się po krótkim skanie, powiedz o tym i kontynuuj. Nie dryfuj w planowanie techniczne — unikaj inspekcji testów, migracji, deploymentu czy niskopoziomowej architektury, chyba że brainstorm dotyczy decyzji technicznej.
 
@@ -245,7 +247,7 @@ Przed finalizacją sprawdź:
 
 Jeśli planowanie musiałoby wymyślić zachowania produktu, granice scope'u lub kryteria sukcesu — brainstorm nie jest jeszcze ukończony.
 
-Upewnij się że katalog `docs/dev-brainstorms/` istnieje przed zapisem.
+Upewnij się że katalog `docs/brainstorms/` istnieje przed zapisem.
 
 Jeśli dokument zawiera otwarte pytania:
 - Używaj `Do rozwiązania przed planowaniem` tylko dla pytań które naprawdę blokują planowanie
@@ -306,7 +308,7 @@ Gdy ukończony i gotowy do planowania:
 ```text
 Brainstorm ukończony!
 
-Requirements doc: docs/dev-brainstorms/YYYY-MM-DD-<topic>-requirements.md  # jeśli został stworzony
+Requirements doc: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # jeśli został stworzony
 
 Kluczowe decyzje:
 - [Decyzja 1]
@@ -320,7 +322,7 @@ Jeśli użytkownik pauzuje z niepustym `Do rozwiązania przed planowaniem`:
 ```text
 Brainstorm wstrzymany.
 
-Requirements doc: docs/dev-brainstorms/YYYY-MM-DD-<topic>-requirements.md  # jeśli został stworzony
+Requirements doc: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # jeśli został stworzony
 
 Planowanie jest zablokowane przez:
 - [Blokujące pytanie 1]

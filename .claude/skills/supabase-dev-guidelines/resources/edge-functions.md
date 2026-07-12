@@ -75,10 +75,10 @@ Deno.serve(async (req) => {
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 // Stripe - użyj npm:
-import Stripe from 'npm:stripe@18';
+import Stripe from 'npm:stripe@22';
 
 // Inne pakiety npm
-import { z } from 'npm:zod@3';
+import { z } from 'npm:zod@4';
 
 // Deno std (jeśli potrzebne)
 import { encodeBase64 } from 'jsr:@std/encoding@1/base64';
@@ -102,7 +102,7 @@ Od Deno 2.x, `deno.json` jest preferowany nad import maps. Jeśli oba istnieją,
 {
   "imports": {
     "@supabase/supabase-js": "jsr:@supabase/supabase-js@2",
-    "stripe": "npm:stripe@18"
+    "stripe": "npm:stripe@22"
   }
 }
 ```
@@ -117,7 +117,70 @@ import Stripe from 'stripe';
 
 ## Weryfikacja JWT
 
-### Pobieranie Użytkownika z Token
+### getClaims() — PREFEROWANE server-side
+
+Od 1 października 2025 nowe projekty Supabase domyślnie używają asymetrycznych kluczy JWT.
+`getClaims()` weryfikuje token lokalnie przez JWKS (bez round-tripu do serwera Auth) i jest
+szybsze niż `getUser()`. To preferowany wzorzec w Edge Functions.
+
+```typescript
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
+
+Deno.serve(async (req) => {
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders });
+    }
+
+    try {
+        const authHeader = req.headers.get('Authorization');
+
+        if (!authHeader) {
+            throw new Error('Missing authorization header');
+        }
+
+        const token = authHeader.replace('Bearer ', '');
+
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        );
+
+        // Weryfikacja lokalna przez JWKS - bez sieciowego zapytania do Auth
+        const { data, error: claimsError } = await supabase.auth.getClaims(token);
+
+        if (claimsError || !data) {
+            throw new Error('Invalid token');
+        }
+
+        const userId = data.claims.sub;
+
+        // Token zweryfikowany - kontynuuj
+        const result = await processForUser(userId);
+
+        return new Response(
+            JSON.stringify(result),
+            {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+        );
+    } catch (error) {
+        return new Response(
+            JSON.stringify({ error: error.message }),
+            {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 401,
+            }
+        );
+    }
+});
+```
+
+### getUser() — fallback dla starszych projektów
+
+Projekty na starszych symetrycznych kluczach JWT nie mają jeszcze JWKS do lokalnej weryfikacji —
+`getUser()` kontaktuje się z serwerem Auth przy każdym wywołaniu i pozostaje jedyną opcją.
+
 ```typescript
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
@@ -182,7 +245,7 @@ Deno.serve(async (req) => {
 ```typescript
 // supabase/functions/create-checkout-session/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import Stripe from 'npm:stripe@18';
+import Stripe from 'npm:stripe@22';
 import { corsHeaders } from '../_shared/cors.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
@@ -263,7 +326,7 @@ Deno.serve(async (req) => {
 ```typescript
 // supabase/functions/stripe-webhook/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import Stripe from 'npm:stripe@18';
+import Stripe from 'npm:stripe@22';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
     apiVersion: '2026-06-24.dahlia',

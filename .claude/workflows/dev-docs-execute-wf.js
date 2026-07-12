@@ -119,6 +119,9 @@ Referencja metodologii: przeczytaj .claude/skills/dev-docs-execute/SKILL.md sekc
 (strategia delegacji, granice scope'u, mandatory designerski kontekst).
 
 1. Przeczytaj ${sciezka}/*-plan.md, ${sciezka}/*-zadania.md, ${sciezka}/*-kontekst.md.
+1b. Przeczytaj .claude/rules/learned-patterns.md (jesli istnieje) — reguly wyprodukowane z problemow
+   rozwiazanych w poprzednich zadaniach tego projektu. Reguly istotne dla danego IU DOPISZ do jego
+   promptu (sekcja "Wyuczone reguly projektu:") — buildery nie maja gwarancji dostepu do project rules.
 2. Otworz plan techniczny w docs/plans/ (referencja "Plan techniczny:"/"origin:" w pliku planu zadania).
    Zlokalizuj Implementation Units odpowiadajace fazie ${faza}.
 3. Jesli faza ${faza} jest juz ukonczona albo nie ma niezaznaczonych checkboxow IMPLEMENTACYJNYCH -> ustaw poza=true, iu=[].
@@ -160,6 +163,11 @@ ${podsumowanieIU}
    istniejace testy przechodza, nowe testy pokrywaja happy path + error case, checkboxy "Test:" napisane i przechodza,
    importy nie lamia modulow, build (vite build) przechodzi. Komendy z package.json.
    UWAGA: jesli ktorykolwiek builder raportowal dodanie zaleznosci — pierwszy vitest jest ZIMNY (procedura tla z bloku).
+1b. AUDYT ERROR-HANDLINGU (przed commitem — hooki sesyjne nie widza zmian commitowanych przez workflow):
+   przejrzyj git diff tej fazy pod katem: (a) console.log/console.error w kodzie PRODUKCYJNYM
+   (testy i skrypty narzedziowe sa OK) — zamien na structured logging lub Sentry; (b) bloki catch
+   bez raportowania — dodaj Sentry captureError/captureException lub re-throw (zakaz pustych catch).
+   Znaleziska NAPRAW przed commitem, nie odnotowuj "do zrobienia".
 ${BLOK_DLUGIE_KOMENDY}
 2. Aktualizuj ${sciezka}/*-zadania.md: oznacz ukonczone checkboxy [x] (NIE ruszaj "Weryfikacja:" — to dla review).
 3. Aktualizuj ${sciezka}/*-kontekst.md: zmiany, decyzje, "Ostatnia aktualizacja".
@@ -180,6 +188,11 @@ if (!sciezka || faza === undefined) {
 
 phase('Plan IU')
 const plan = await agent(plannerPrompt(sciezka, faza), { schema: IU_PLAN, label: `planner:faza-${faza}` })
+
+// Null-guard: planner zabity/blad -> kontrolowany blocked zamiast TypeError (ktory wykoleilby caly autopilot).
+if (!plan) {
+  return { fazaNumer: faza, status: 'blocked', iu: [], commity: [], testy: 'n/a', odchylenia: [], problem: 'planner zwrocil null (agent padl lub zostal pominiety)' }
+}
 
 if (plan.poza || plan.iu.length === 0) {
   return { fazaNumer: faza, status: 'completed', iu: [], commity: [], testy: 'brak', odchylenia: [], problem: null }

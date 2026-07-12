@@ -32,8 +32,7 @@ Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone 
 
 5. **Zaktualizuj dokumentację projektu** (jeśli istotne):
    - Dopisz decyzje architektoniczne do `CLAUDE.md`
-   - Dodaj nowe wzorce do `.claude/rules/best-practices.md`
-   - Zaktualizuj `.claude/rules/troubleshooting.md` jeśli odkryto nowe pułapki
+   - Jeśli odkryto wzorce warte utrwalenia — dodaj regułę do `.claude/rules/learned-patterns.md` (utwórz plik, jeśli nie istnieje) lub zaktualizuj `CLAUDE.md`.
 
 5.5 **Sugestia dokumentowania problemów:**
    - Jeśli podczas pracy napotkano nietrywialne problemy warte udokumentowania:

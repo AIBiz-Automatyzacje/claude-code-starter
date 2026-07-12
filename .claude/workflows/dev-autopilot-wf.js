@@ -1,7 +1,7 @@
 export const meta = {
   name: 'dev-autopilot-wf',
   description: 'Autonomiczny pipeline: bootstrap (stan z .autopilot-state.json) -> per faza (execute -> review+verify -> fix, bez re-review) -> compound -> compound-refresh (scoped) -> complete. Orkiestrator trzyma stan w JSON i liczy gate\'y w JS; buildery i reviewerzy to leaf-agenci.',
-  whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). RESUME po przerwanym runie: uzyj Workflow({scriptPath, resumeFromRunId}) i ZAWSZE przekaz args ponownie (te sama sciezke zadania) — args NIE przezywa miedzy wywolaniami. Stan wznowienia czyta z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy), checkboxy md sa tylko widokiem dla czlowieka.',
+  whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + rozgrzewka cache testow + srodowisko E2E (gdy .env.e2e istnieje: TWARDY STOP runu dopoki E2E nie gotowe — np. dev server Vite na dedykowanej bazie e2e)' },
     { title: 'Zakonczenie', detail: 'walidacja koncowa -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
@@ -16,8 +16,13 @@ export const meta = {
 //          nie liczy checkboxow. Orkiestrator liczy kolejke i przejscia w JS.
 // Filar 3: trust-but-verify — gate'y liczone w JS z review.findings[], null-guardy po kazdym
 //          await, warmup wymaga dowodu (kontrolny warm-run w sekundach).
-// Re-review po fixie USUNIETY (decyzja usera, dane wf_3c9d3864): gate z self-reportu fixa.
+// Re-review po fixie USUNIETY (decyzja usera, dane wf_3c9d3864); od 2026-07-12 gate P1 wzmocniony
+// TARGETED VERIFY: kazdy P1/KOD z listy fixa dostaje 1 niezaleznego weryfikatora (tanszy substytut re-review).
 // Mitygacja test-weakeningu: zakaz modyfikacji asercji w fixPrompt + git diff testow w walidacji.
+// RESUME vs CACHE: resumeFromRunId odtwarza wyniki agentow z journala po prefiksie wywolan — sluzy
+// TYLKO do wznowienia po awarii runu. Po STOP bramki srodowiskowej operator naprawia i odpala
+// SWIEZY run (bez resume): prompty agentow bramkowych sa statyczne, wiec resume zwrociloby ich
+// zcache'owana porazke. Poprawnosc wznowienia gwarantuje .autopilot-state.json, nie cache.
 
 const BLOK_DLUGIE_KOMENDY = `
 === DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
@@ -174,6 +179,16 @@ const FIX_RESULT = {
     nierozwiazaneP2: { type: 'integer', description: 'P2 przeniesione do known-issues (graceful)' },
   },
   required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2'],
+}
+
+const POSTFIX_VERDICT = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    nadalOtwarty: { type: 'boolean', description: 'true = problem wciaz istnieje w kodzie lub naprawa jest pozorna' },
+    uzasadnienie: { type: 'string' },
+  },
+  required: ['nadalOtwarty', 'uzasadnienie'],
 }
 
 const VALIDATION_RESULT = {
@@ -382,6 +397,23 @@ z nich, bez re-review): nierozwiazaneP1 (P1 ktorych NIE zamknales -> orkiestrato
 nierozwiazaneP2 (P2 przeniesione do known-issues), walidacja (PASS/FAIL pelnej walidacji).`
 }
 
+function postFixVerifyPrompt(sciezka, numerFazy, finding) {
+  return `Jestes NIEZALEZNYM weryfikatorem naprawy po cyklu fix fazy ${numerFazy} (zadanie: ${sciezka}).
+Agent fix zadeklarowal, ze ponizszy finding P1 zostal naprawiony. NIE ufaj deklaracji — sprawdz KOD.
+
+FINDING [${finding.severity}/${finding.typ}] ${finding.plik}:
+${finding.opis}
+
+1. Przeczytaj aktualny stan pliku ${finding.plik} (i powiazanych) oraz commit(y) fix tej fazy
+   (git log --oneline --grep="^fix(" + git show odpowiedniego commita).
+2. Ocen MERYTORYCZNIE: czy naprawa adresuje PRZYCZYNE findingu, czy tylko objaw / czy jest pozorna
+   (np. wyciszenie, obejscie, zmiana nieistotnego fragmentu).
+3. Kontekst findingu: ${sciezka}/review-faza-${numerFazy}.md (jesli istnieje).
+
+Zwroc {nadalOtwarty, uzasadnienie}. nadalOtwarty=true gdy problem wciaz istnieje lub naprawa jest pozorna.
+Read-only — nie modyfikuj plikow.`
+}
+
 function finalValidationPrompt(sciezka) {
   return `Wykonaj pelna walidacje calego projektu po autopilocie (folder zadania: ${sciezka}).
 ${BLOK_DLUGIE_KOMENDY}
@@ -479,8 +511,11 @@ if (!warmup) {
   return { status: 'STOP', powod: 'rozgrzewka nie zwrocila wyniku (agent null)', stan }
 }
 log(`Rozgrzewka: ${warmup.status} — ${warmup.detal} (zimny: ${warmup.czasZimnySek ?? 'n/a'}s, kontrolny: ${warmup.czasKontrolnySek ?? 'n/a'}s)`)
+// Warmup to OPTYMALIZACJA, nie warunek poprawnosci — 'niepowodzenie' degraduje z ostrzezeniem,
+// nie zatrzymuje runu (prog <60s kontrolnego biegu jest maszyno-zalezny; na wolnym sprzecie
+// poprawny cache potrafi go przekroczyc). Agenci faz i tak maja BLOK_DLUGIE_KOMENDY (tlo+polling).
 if (warmup.status === 'niepowodzenie') {
-  return { status: 'STOP', powod: `rozgrzewka cache nie powiodla sie: ${warmup.detal} — fazy UI zginelyby na watchdogu, taniej zatrzymac tu`, stan }
+  log(`OSTRZEZENIE: rozgrzewka cache niepotwierdzona (${warmup.detal}) — kontynuuje; agenci faz musza scisle stosowac procedure tla dla zimnych biegow`)
 }
 
 // Srodowisko E2E: raz per run (dev server Vite hot-reloaduje working tree przez HMR, restart per faza zbedny).
@@ -497,7 +532,7 @@ if (e2eEnv && e2eEnv.status === 'niepowodzenie') {
   return {
     status: 'STOP',
     powod: `Srodowisko E2E nie gotowe, a .env.e2e istnieje (projekt wymaga E2E): ${e2eEnv.detal}`,
-    naprawa: 'Setup: .claude/templates/e2e-env/README.md. Najczestsze braki = niepoprawne klucze VITE_*/SUPABASE_E2E_* w .env.e2e, brak dedykowanego projektu Supabase e2e (guard tozsamosci: VITE_SUPABASE_URL musi sie ROZNIC od .env), albo zajety port 5173. Opt-out swiadomego runu headless: usun/zmien nazwe .env.e2e. Po setupie wznow: Workflow({scriptPath, resumeFromRunId}) + TE SAME args.',
+    naprawa: 'Setup: .claude/templates/e2e-env/README.md. Najczestsze braki = niepoprawne klucze VITE_*/SUPABASE_E2E_* w .env.e2e, brak dedykowanego projektu Supabase e2e (guard tozsamosci: VITE_SUPABASE_URL musi sie ROZNIC od .env), albo zajety port 5173. Opt-out swiadomego runu headless: usun/zmien nazwe .env.e2e. Po setupie odpal SWIEZY run (te same args, BEZ resumeFromRunId — resume zwrociloby zcache\'owana porazke env-up; stan faz wznowi sie z .autopilot-state.json).',
     e2eEnv,
     stan,
   }
@@ -548,6 +583,16 @@ for (const numerFazy of kolejka) {
     if (!review) {
       return { status: 'STOP', powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty }
     }
+    // Scribe padl 2x: raport review-faza-N.md i sekcja "Do poprawy" NIE powstaly. Nie oznaczamy
+    // review=done (utrwalone done nigdy juz nie odtworzy raportu) — STOP; kolejny run powtorzy review.
+    if (review.scribeFail) {
+      await zapiszStan()
+      return {
+        status: 'STOP',
+        powod: `Faza ${numerFazy}: scribe padl 2x — findingi zweryfikowane (P1/P2 w wyniku), ale raport review-faza-${numerFazy}.md nie zostal zapisany. Review pozostaje pending; odpal SWIEZY run (reviewerzy odpala sie ponownie).`,
+        faza: numerFazy, findings: review.findings, raporty,
+      }
+    }
     // Filar 3: liczniki/gate w JS z findings[]; liczniki scribe'a tylko do porownania w logu.
     const liczniki = policzFindingi(review.findings)
     const scribeL = review.liczniki || {}
@@ -576,10 +621,38 @@ for (const numerFazy of kolejka) {
       return {
         status: 'STOP',
         powod: fix.nierozwiazaneP1 > 0
-          ? `Faza ${numerFazy}: ${fix.nierozwiazaneP1}x P1 nierozwiazane po fixie (brak re-review) — wymagana reczna interwencja`
+          ? `Faza ${numerFazy}: ${fix.nierozwiazaneP1}x P1 nierozwiazane po fixie — wymagana reczna interwencja`
           : `Faza ${numerFazy}: walidacja fixa FAIL — wymagana reczna interwencja`,
+        naprawa: 'Po recznej naprawie odpal SWIEZY run (te same args, BEZ resumeFromRunId) — stan wroci wprost do tej fazy z .autopilot-state.json; resume odtworzyloby zcache\'owany FAIL fixa.',
         faza: numerFazy, fix, raporty,
       }
+    }
+
+    // TARGETED VERIFY po fixie (tanszy substytut usunietego re-review): kazdy P1 typu KOD
+    // z listy przekazanej fixowi dostaje 1 niezaleznego weryfikatora. Gate P1 wraca do werdyktu
+    // obiektywnego zamiast wylacznie self-reportu fixa (anty-patterny #2/#7: pozorna naprawa).
+    // P1 typu TEST/E2E pomijamy: TEST lapie walidacja (testy musza przejsc), E2E zweryfikowal fix w przegladarce.
+    const p1Kod = faza.otwarteFindingi.filter((f) => f.severity === 'P1' && f.typ === 'KOD')
+    if (p1Kod.length) {
+      const werdykty = await parallel(
+        p1Kod.map((f) => () =>
+          agent(postFixVerifyPrompt(sciezka, numerFazy, f), { schema: POSTFIX_VERDICT, label: `verify-fix:${f.plik}` })
+        )
+      )
+      // null (weryfikator padl) nie blokuje — infra hiccup to nie dowod zlej naprawy; logujemy.
+      const nadalOtwarte = p1Kod.filter((f, i) => werdykty[i] && werdykty[i].nadalOtwarty)
+      werdykty.forEach((w, i) => { if (!w) log(`verify-fix: brak werdyktu dla P1 ${p1Kod[i].plik} (agent null) — przepuszczam z ostrzezeniem`) })
+      if (nadalOtwarte.length) {
+        // Zawez liste do realnie otwartych — kolejny run wraca wprost do fixa z ta zawezona lista.
+        faza.otwarteFindingi = nadalOtwarte.map((f, i) => ({ ...f, opis: `[NIEZAMKNIETY po fixie] ${f.opis}` }))
+        await zapiszStan()
+        return {
+          status: 'STOP',
+          powod: `Faza ${numerFazy}: niezalezna weryfikacja wykryla ${nadalOtwarte.length}x P1 NADAL otwarte po fixie (self-report fixa mowil "naprawione") — wymagana reczna interwencja. Po naprawie odpal SWIEZY run.`,
+          faza: numerFazy, fix, nadalOtwarte, raporty,
+        }
+      }
+      log(`Faza ${numerFazy}: targeted verify — wszystkie ${p1Kod.length}x P1/KOD potwierdzone jako zamkniete`)
     }
 
     gateFazy = fix.nierozwiazaneP2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'

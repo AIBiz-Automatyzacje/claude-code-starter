@@ -116,12 +116,15 @@ Uruchom agenty rownolegle na **pierwszym planie** (nie uzywaj dispatchowania w t
    >
    > Wskazowka fokusowa: {focus_hint}
 
+3. **Zewnetrzny grounding (opcjonalnie)** — gdy fokus lub kontekst codebase wskazuje na obszar z istotnym prior art, konkurencyjnymi wzorcami lub zewnetrznymi rozwiazaniami, uruchom agenta `web-research-specialist` (Agent tool, subagent_type: "web-research-specialist") z pytaniem o trendy i wzorce rozwiazan konkurencji dla tego obszaru. Pomin ten agent, gdy fokus jest czysto wewnetrzny (np. tech debt, refaktoryzacja) bez zewnetrznego punktu odniesienia.
+
 Skonsoliduj wyniki w krotkie podsumowanie rozpoznania:
 
 - **Kontekst codebase** — ksztalt projektu, widoczne wzorce, oczywiste bolaczki, punkty dzwigni
 - **Sygnaly jakosci** — TODO/FIXME, aktywne obszary, niedawne trendy zmian
+- **Zewnetrzny grounding** — trendy/wzorce konkurencji, jesli agent 3 zostal uruchomiony
 
-**Nie** rob zewnetrznego researchu.
+Domyslnie **nie** rob dodatkowego zewnetrznego researchu poza agentem 3 — jesli fokus nie dotyka obszaru z prior art, pomin agenta 3 i ten punkt podsumowania.
 
 ### Faza 2: Dywergentna ideacja
 
