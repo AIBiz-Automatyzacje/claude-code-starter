@@ -3,13 +3,13 @@
 > Opiniowany starter Claude Code dla product engineering na stacku **React 19 + TypeScript + Supabase + Vite + Tailwind v4**.
 > Kompletny katalog `.claude/` (skille, agenci, workflowy, reguły, hooki) + pipeline `dev-*` od pomysłu do wdrożenia — z autonomicznym autopilotem, code review multi-agent i kumulowaniem wiedzy.
 
-**Ostatnia aktualizacja:** 2026-07-12 · **Repo:** `AIBiz-Automatyzacje/claude-code-starter`
+**Ostatnia aktualizacja:** 2026-07-14 · **Repo:** [`AIBiz-Automatyzacje/claude-code-starter`](https://github.com/AIBiz-Automatyzacje/claude-code-starter)
 
 ---
 
 ## Co dostajesz
 
-Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spójny system pracy z Claude Code:
+Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spójny system pracy z Claude Code. A gdy szablon się rozwinie — jedno `/sync-template` zaciąga zmiany z tego repo do projektu (bez ręcznego dyktowania linku):
 
 - **Pipeline `dev-*`** — od ideacji, przez plan, po autonomiczną implementację z review i naprawami (`dev-autopilot-wf`).
 - **Skille techniczne** pod stack — React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry — z aktualnymi wzorcami (React 19, Tailwind v4, Zod v4, OWASP 2025).
@@ -23,6 +23,7 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 
 | Data | Zmiana |
 |------|--------|
+| **2026-07-14** | **Nowy skill `/sync-template`** — aktualizacja maszynerii `.claude/` w projekcie docelowym prosto z tego repo (`claude-code-starter`). Sprawdza po SHA commita, czy szablon się zmienił, i automatycznie aplikuje (szablon wygrywa; backup nadpisywanych/usuwanych plików do `.claude/.backups/`; `settings.local.json` i własne skille projektu nietknięte; usuwanie wycofanych plików sterowane manifestem `.claude/.template-manifest`). Bundlowany skrypt bash zgodny z bash 3.2 (macOS), tryby `--dry-run`/`--force`. Rozwiązuje potrzebę ręcznego dyktowania linku i proszenia o aktualizację po wrzuceniu szablonu do nowego projektu. |
 | **2026-07-12** | **Poprawki po multi-agent review (46 findingów, 0 obalonych):** naprawa nazwy skilla Figma (`figma-design-to-code` — zaimportowany lokalnie z pluginu; poprzednia nazwa nie istniała), ujednolicenie ścieżki `docs/brainstorms/` (handoff brainstorm→plan był cicho zerwany), usunięcie skażonego `auto-error-resolver`, **8. reviewer** (`code-simplicity-reviewer`) w review-wf, **targeted verify P1/KOD po fixie** (niezależny weryfikator zamiast czystego self-reportu), warmup degraduje zamiast STOP, retry scribe'a, readerzy `learned-patterns.md` (planner/reviewerzy/buildery), audyt console.log/Sentry w domknięciu fazy, skille `/dev-docs-execute`+`/dev-docs-review` = cienkie wrappery na workflowy, `web-research-specialist` podłączony do brainstorm/ideate. Freshness: **Stripe v22** (wpis 2026-07-06 błędnie utrzymywał v18), Zod v4 w Edge Functions, `getClaims()` preferowane, React Router v8 (`react-router`, bez `-dom`), TS 6.0/7.0, Sentry `defaultIntegrations: false`. Skorygowana semantyka RESUME (świeży run po STOP bramki vs resume po awarii). **Nowe mechanizmy:** routing reviewerów wg mapy zmian + dedup semantyczny (Haiku) w review-wf, `/freshness-audit` (cykliczny audyt skilli w żywych źródłach), telemetria runów autopilota (`~/.claude/telemetry/autopilot-runs.jsonl`), pola `paths` w skillach guideline, sync `agent-browser` z upstream 0.31.1. |
 | **2026-07-06** | **Słownik domenowy `docs/CONCEPTS.md`** (writer w `dev-compound`, readerzy w `dev-plan`/`dev-docs`/builderach, utrzymanie w `dev-compound-refresh`). Autopilot woła teraz **scoped `dev-compound-refresh`** po compound. **Audyt skilli technicznych:** `security` → OWASP Top 10:2025 + błąd `user_metadata` (reguła w `coding-rules §9`); `tailwind` → Zod v4 + `useOptimistic` w transition; `supabase` → PKCE `onAuthStateChange` + Stripe v18 + `search_path=''`; `ux-ui` → kontrast/`inert`/`interpolate-size`; `sentry` → source maps + Deno 2.x. |
 | 2026-06-21 | Dev Autopilot przeniesiony na **Dynamic Workflow** (`.claude/workflows/*-wf.js`); orkiestrator w JS, buildery/reviewerzy jako leaf-agenci. |
@@ -135,6 +136,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | **`gemini`** | Uruchamia Gemini CLI jako subagenta (analiza kodu, audyt UX/security). Zapisuje feedback do `Zasoby/gemini/`. |
 | **`coolify-manager`** | Zarządzanie i troubleshooting deploymentów Coolify (CLI + API): serwery, WordPress, kontenery, SSL, bazy, env, backupy. |
 | **`freshness-audit`** *(workflow: `freshness-audit-wf`)* | Cykliczny audyt aktualności skilli technicznych względem **żywej** dokumentacji (oficjalne docs, changelogi GitHub, npm). Weryfikuje wersje/piny/wzorce API z URL-i, nie z pamięci modelu; adversarial verify P1/P2; raport do `docs/reviews/freshness-<data>.md`. Odpalaj okresowo (np. raz w miesiącu). Nic nie zmienia w skillach — tylko raportuje. |
+| **`sync-template`** | Aktualizuje maszynerię `.claude/` (skille, agenci, reguły, hooki, workflows, templates + `settings.json`) w projekcie docelowym, zaciągając najnowszą wersję z tego repo (`claude-code-starter`, branch `main`). Jedno uruchomienie sprawdza po SHA commita, czy coś się zmieniło, i **automatycznie aplikuje** — szablon zawsze wygrywa, ale nadpisywane/usuwane pliki najpierw trafiają do backupu (`.claude/.backups/`). Pliki lokalne projektu (`settings.local.json`, własne skille) pozostają nietknięte. Argumenty: `--dry-run` (podgląd), `--force` (twardy reset do wersji z szablonu). |
 | **`dev-autopilot`** *(legacy)* | Ręczna orkiestracja pipeline'u. **Domyślną ścieżką jest `dev-autopilot-wf`** — ten skill zostaje jako fallback. Uwaga: celowo używa starszego modelu pętli naprawczej (fix → pełny re-review, do `MAX_FIX_CYKLI: 2`), więc jest droższy i zachowuje się inaczej niż workflow (fix ×1 + targeted verify). |
 
 ---
