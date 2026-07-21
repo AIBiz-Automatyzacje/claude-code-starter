@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Konfiguracja CodeRabbit AI code review
+# Dokumentacja: https://docs.coderabbit.ai/reference/configuration
+
+language: pl-PL
+
+tone_instructions: "Pisz po polsku, konkretnie, bez wierszyków. Łap realne bugi, problemy z type safety i bezpieczeństwem. Nie nitpickuj nazewnictwa. Komentarze 1-3 zdania. Cytuj reguły z coding-rules.md gdy kod je łamie."
+
+early_access: false
+
+reviews:
+  profile: assertive            # bardziej dociekliwy review (drugi tryb to 'chill')
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  changed_files_summary: true
+  sequence_diagrams: false
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: true
+  suggested_reviewers: false
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    base_branches:
+      - main
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+
+  # Filtry wspólne. STACK: dołącz dodatkowe wykluczenia z reference/stack-blocks.md.
+  path_filters:
+    - "!node_modules/**"
+    - "!docs/**"
+    - "!.claude/**"
+    - "!package-lock.json"
+    - "!*.lock"
+
+  # Instrukcje uniwersalne. STACK: dołącz bloki per-katalog z reference/stack-blocks.md.
+  path_instructions:
+    - path: "**/*.{ts,tsx}"
+      instructions: |
+        Trzymaj się reguł z .claude/rules/coding-rules.md i CLAUDE.md.
+        Krytyczne:
+        - Zero `any` — używaj `unknown` + type guards
+        - Zero `!` (non-null assertion) — obsłuż null/undefined jawnie
+        - Zero `as` type assertions poza DOM narrowing
+        - Pliki > 300 linii = sygnalizuj refaktor
+        - Funkcje > 50 linii = sygnalizuj podział
+        - Boolean: prefix `is`/`has`/`should`/`can`
+        - Event handlers: prefix `handle`
+        - useEffect z async = AbortController w cleanup
+        - setTimeout/setInterval = clearTimeout/clearInterval w cleanup
+    - path: "**/*.test.{ts,tsx}"
+      instructions: |
+        Testy: Arrange-Act-Assert. Min 1 asercja per test. NIE mockuj
+        testowanego kodu — mockuj tylko zewnętrzne serwisy. NIE osłabiaj
+        asercji żeby test przeszedł.
+    - path: ".github/workflows/**/*.yml"
+      instructions: |
+        GitHub Actions: nigdy nie wstawiaj `${{ github.event.* }}`
+        bezpośrednio do `run:` — przekaż przez env z cudzysłowem. Pinuj
+        wersje akcji do major (np. @v4) lub SHA.
+
+  tools:
+    # JavaScript/TypeScript
+    eslint:
+      enabled: true
+    biome:
+      enabled: false  # nie używamy biome — eslint wystarczy
+    oxc:
+      enabled: false  # nie używamy oxlint — eslint wystarczy
+    # GitHub Actions + YAML
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    # Security
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    semgrep:
+      enabled: true
+    osvScanner:
+      enabled: true
+    # Disabled — szum dla nas
+    markdownlint:
+      enabled: false
+    languagetool:
+      enabled: false
+
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+    # UZUPEŁNIJ: wpisz TYLKO pliki, które istnieją w projekcie docelowym.
+    filePatterns:
+      - ".claude/rules/coding-rules.md"
+      - "CLAUDE.md"
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  pull_requests:
+    scope: auto
+
+code_generation:
+  docstrings:
+    language: pl-PL
