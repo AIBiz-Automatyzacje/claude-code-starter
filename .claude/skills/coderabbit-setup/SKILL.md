@@ -51,14 +51,33 @@ projektów (język polski, profil assertive, te same tools i reguły z
    (systemowy ruby jest na macOS; gdyby go nie było — zwaliduj innym dostępnym
    parserem YAML). Błąd parsowania = napraw plik, nie pomijaj walidacji.
 
-6. **Raport dla usera.** Podsumuj: wykryty stack, które bloki weszły do configu,
-   jakie pliki trafiły do `code_guidelines.filePatterns`. Przypomnij o kroku
-   ręcznym, bez którego config nie działa:
-   - aplikacja GitHub **CodeRabbit** musi być zainstalowana na repo (jednorazowo:
-     https://github.com/apps/coderabbitai → Configure → zaznacz repo),
-   - config zadziała od pierwszego PR-a po jego zamergowaniu do brancha bazowego
-     (CodeRabbit czyta `.coderabbit.yaml` z brancha PR-a, więc pierwszy PR
-     z samym configiem też już jest reviewowany wg niego).
+6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit — KROK OBOWIĄZKOWY,
+   nie pomijaj go nigdy.** Bez zainstalowanej aplikacji config jest martwym
+   plikiem. Instalacji nie da się wykonać z CLI, ale da się ją WYKRYĆ:
+   ```bash
+   gh api user/installations --jq '.installations[] | select(.app_slug == "coderabbitai") | .account.login'
+   ```
+   - Wynik zawiera ownera repo (porównaj z `gh repo view --json owner -q .owner.login`)
+     → instalacja jest, odnotuj ✅.
+   - Wynik pusty, brak ownera albo błąd → uznaj instalację za BRAKUJĄCĄ (❌).
+     Sygnał potwierdzający: sprawdź, czy bot komentował ostatnie PR-y —
+     ```bash
+     gh pr list --state merged --limit 3 --json number -q '.[].number'
+     gh api "repos/{owner}/{repo}/issues/<nr>/comments" --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length'
+     ```
+     Zero komentarzy bota na istniejących PR-ach = na pewno brak instalacji.
+
+7. **Raport dla usera — ZAWSZE wypisz wszystkie 4 punkty poniżej.** Nie skracaj
+   i nie pomijaj żadnego, nawet gdy wszystko jest OK:
+   1. Wykryty stack + które bloki weszły do configu.
+   2. Pliki wpisane do `code_guidelines.filePatterns`.
+   3. **Instalacja aplikacji GitHub CodeRabbit: ✅ albo ❌** (wynik kroku 6).
+      Przy ❌ powiedz wprost: „**Bez tego config NIE DZIAŁA.** Jednorazowy krok
+      ręczny w przeglądarce (nie da się z CLI):
+      https://github.com/apps/coderabbitai → Configure → zaznacz to repo."
+   4. Przypomnienie: `.coderabbit.yaml` trzeba **zacommitować i wypchnąć** —
+      CodeRabbit czyta config z brancha PR-a, więc już pierwszy PR zawierający
+      ten plik jest reviewowany według niego.
 
 ## Czego NIE robić
 
