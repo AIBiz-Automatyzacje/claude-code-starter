@@ -1,6 +1,6 @@
 [![Akademia Automatyzacji](assets/baner-akademia-automatyzacji.png)](https://akademiaautomatyzacji.com)
 
-> **[Dołącz do Akademii Automatyzacji →](https://akademiaautomatyzacji.com)** - ponad 1100 osób
+> **[Dołącz do Akademii Automatyzacji →](https://akademiaautomatyzacji.com)** - 1200 osób
 > uczy się u nas automatyzacji i AI na prawdziwych wdrożeniach, nie na teorii.
 
 # Claude Code Starter
@@ -39,6 +39,11 @@ Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po dro
 
 ### Klucze do tego rozwiązania
 
+- **Spec-Driven + Test-Driven Development** - najpierw powstaje specyfikacja i plan, dopiero
+  potem kod. Każda faza kończy się testami i pełnym pokryciem testowym.
+- **Pełna dokumentacja techniczna w dwóch dokumentach** - Dev Plan (plan techniczny
+  z `/dev-plan`) i DevDocs (dokumentacja wykonawcza z `/dev-docs`: plan, kontekst, lista
+  zadań), aktualizowane na bieżąco w trakcie implementacji.
 - **Review robi 8 niezależnych agentów naraz** (bezpieczeństwo, wydajność, architektura,
   zgodność ze specyfikacją, prostota, testy) - a każde poważne znalezisko przechodzi jeszcze
   przez agenta-sceptyka, który próbuje je obalić. Zostają tylko prawdziwe błędy.
