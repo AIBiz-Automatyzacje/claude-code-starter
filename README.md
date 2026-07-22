@@ -1,9 +1,37 @@
+[![Akademia Automatyzacji](assets/baner-akademia-automatyzacji.png)](https://akademiaautomatyzacji.com)
+
+> **[Dołącz do Akademii Automatyzacji →](https://akademiaautomatyzacji.com)** - ponad 1100 osób
+> uczy się u nas automatyzacji i AI na prawdziwych wdrożeniach, nie na teorii.
+
 # Claude Code Starter
 
-> Opiniowany starter Claude Code dla product engineering na stacku **React 19 + TypeScript + Supabase + Vite + Tailwind v4**.
-> Kompletny katalog `.claude/` (skille, agenci, workflowy, reguły, hooki) + pipeline `dev-*` od pomysłu do wdrożenia — z autonomicznym autopilotem, code review multi-agent i kumulowaniem wiedzy.
+Gotowy system pracy z Claude Code. Kopiujesz jeden folder do swojego projektu i Claude
+przestaje pisać kod na ślepo - dostaje skille, agentów i reguły, dzięki którym prowadzi
+projekt od pomysłu do działającej aplikacji.
 
-**Ostatnia aktualizacja:** 2026-07-21 · **Repo:** [`AIBiz-Automatyzacje/claude-code-starter`](https://github.com/AIBiz-Automatyzacje/claude-code-starter)
+## Do czego to służy
+
+Sami na tym budujemy własne aplikacje w AIBIZ. Po skopiowaniu folderu `.claude/` Twój Claude:
+
+- **Pomaga doprecyzować, CO budujesz** - zanim powstanie linijka kodu, przepyta Cię
+  o wymagania i rozpisze plan techniczny.
+- **Implementuje fazami i sam sprawdza swoją robotę** - każdą fazę przegląda 8 niezależnych
+  agentów-reviewerów (bezpieczeństwo, wydajność, architektura, testy), a błędy naprawia.
+- **Zapamiętuje wnioski** - rozwiązane problemy trafiają do `docs/solutions/`, więc
+  w kolejnych zadaniach nie wpada na te same miny.
+
+Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + Tailwind v4**.
+Budujesz na czymś innym? Rdzeń systemu (pipeline, review, baza wiedzy) zadziała, tylko
+skille techniczne będą do podmiany.
+
+## Jak zacząć - 3 kroki
+
+1. Sklonuj repo: `git clone https://github.com/AIBiz-Automatyzacje/claude-code-starter.git`
+2. Skopiuj folder `.claude/` do swojego projektu.
+3. Odpal Claude Code i wpisz `/dev-brainstorm` - opisz, co chcesz zbudować. Resztą pokieruje pipeline.
+
+Chcesz zrozumieć, jak to działa pod maską? Niżej masz pełną dokumentację: pipeline `dev-*`,
+workflowy, wszystkich 15 agentów i pułapki, na które sami wpadliśmy.
 
 ---
 
@@ -16,24 +44,6 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 - **15 wyspecjalizowanych agentów** — buildery warstw, reviewerzy, research.
 - **Knowledge compounding** — rozwiązane problemy (`docs/solutions/`), reguły (`learned-patterns.md`) i żywy słownik domenowy (`docs/CONCEPTS.md`).
 - **Reguły kodowania** i katalog anty-patternów AI (`.claude/rules/coding-rules.md`).
-
----
-
-## Changelog
-
-| Data | Zmiana |
-|------|--------|
-| **2026-07-21** | **Nowy skill `/coderabbit-setup`** — generuje `.coderabbit.yaml` dopasowany do stacku projektu (Expo/RN, Next.js, React+Vite, Node, Supabase), żeby CodeRabbit robił automatyczny AI code review każdego PR-a przed merge. Część wspólna (język polski, profil assertive, tools, knowledge_base z `coding-rules.md`) w `templates/coderabbit-base.yaml`, bloki per stack w `reference/stack-blocks.md`; skill wykrywa stack z `package.json`/struktury katalogów, wpisuje do `code_guidelines.filePatterns` tylko istniejące pliki i waliduje YAML przed zapisem. |
-| **2026-07-14** | **Nowy skill `/sync-template`** — aktualizacja maszynerii `.claude/` w projekcie docelowym prosto z tego repo (`claude-code-starter`). Sprawdza po SHA commita, czy szablon się zmienił, i automatycznie aplikuje (szablon wygrywa; backup nadpisywanych/usuwanych plików do `.claude/.backups/`; `settings.local.json` i własne skille projektu nietknięte; usuwanie wycofanych plików sterowane manifestem `.claude/.template-manifest`). Bundlowany skrypt bash zgodny z bash 3.2 (macOS), tryby `--dry-run`/`--force`. Rozwiązuje potrzebę ręcznego dyktowania linku i proszenia o aktualizację po wrzuceniu szablonu do nowego projektu. |
-| **2026-07-12** | **Poprawki po multi-agent review (46 findingów, 0 obalonych):** naprawa nazwy skilla Figma (`figma-design-to-code` — zaimportowany lokalnie z pluginu; poprzednia nazwa nie istniała), ujednolicenie ścieżki `docs/brainstorms/` (handoff brainstorm→plan był cicho zerwany), usunięcie skażonego `auto-error-resolver`, **8. reviewer** (`code-simplicity-reviewer`) w review-wf, **targeted verify P1/KOD po fixie** (niezależny weryfikator zamiast czystego self-reportu), warmup degraduje zamiast STOP, retry scribe'a, readerzy `learned-patterns.md` (planner/reviewerzy/buildery), audyt console.log/Sentry w domknięciu fazy, skille `/dev-docs-execute`+`/dev-docs-review` = cienkie wrappery na workflowy, `web-research-specialist` podłączony do brainstorm/ideate. Freshness: **Stripe v22** (wpis 2026-07-06 błędnie utrzymywał v18), Zod v4 w Edge Functions, `getClaims()` preferowane, React Router v8 (`react-router`, bez `-dom`), TS 6.0/7.0, Sentry `defaultIntegrations: false`. Skorygowana semantyka RESUME (świeży run po STOP bramki vs resume po awarii). **Nowe mechanizmy:** routing reviewerów wg mapy zmian + dedup semantyczny (Haiku) w review-wf, `/freshness-audit` (cykliczny audyt skilli w żywych źródłach), telemetria runów autopilota (`~/.claude/telemetry/autopilot-runs.jsonl`), pola `paths` w skillach guideline, sync `agent-browser` z upstream 0.31.1. |
-| **2026-07-06** | **Słownik domenowy `docs/CONCEPTS.md`** (writer w `dev-compound`, readerzy w `dev-plan`/`dev-docs`/builderach, utrzymanie w `dev-compound-refresh`). Autopilot woła teraz **scoped `dev-compound-refresh`** po compound. **Audyt skilli technicznych:** `security` → OWASP Top 10:2025 + błąd `user_metadata` (reguła w `coding-rules §9`); `tailwind` → Zod v4 + `useOptimistic` w transition; `supabase` → PKCE `onAuthStateChange` + Stripe v18 + `search_path=''`; `ux-ui` → kontrast/`inert`/`interpolate-size`; `sentry` → source maps + Deno 2.x. |
-| 2026-06-21 | Dev Autopilot przeniesiony na **Dynamic Workflow** (`.claude/workflows/*-wf.js`); orkiestrator w JS, buildery/reviewerzy jako leaf-agenci. |
-| 2026-06-04 | Wchłonięte koncepty inżynierskie z mattpocock/skills (Tier 2); agenty/skille podciągnięte z compound-engineering. |
-| 2026-05-18 | Świadomość Figma/DESIGN.md w pipeline `dev-*` + visual diff w testerze E2E. |
-| 2026-05-11 | `sentry-integration` podłączony do builderów data + fullstack. |
-| 2026-05-05 | Polish wcielony w `ux-ui-guidelines`; sprzątanie skilli legacy. |
-
-> Źródła inspiracji: `compound-engineering-plugin` (EveryInc) + `mattpocock/skills`, zaadaptowane i spolszczone pod nasz stack. Szczegóły adaptacji: lokalna notatka `ZRODLA-SZABLONU.md` (gitignored).
 
 ---
 
@@ -270,3 +280,23 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 - **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; używaj `app_metadata` lub tabeli ról (reguła w `coding-rules §9`).
 - **Po każdej zmianie `.claude/workflows/*-wf.js`** odpal smoke-test z `.claude/templates/smoke-autopilot/`.
 - **Skille `dev-*` działają bez argumentów** — argument jest opcjonalnym doprecyzowaniem, nie wymogiem.
+
+---
+
+## Changelog
+
+**Ostatnia aktualizacja:** 2026-07-21
+
+| Data | Zmiana |
+|------|--------|
+| **2026-07-21** | **Nowy skill `/coderabbit-setup`** — generuje `.coderabbit.yaml` dopasowany do stacku projektu (Expo/RN, Next.js, React+Vite, Node, Supabase), żeby CodeRabbit robił automatyczny AI code review każdego PR-a przed merge. Część wspólna (język polski, profil assertive, tools, knowledge_base z `coding-rules.md`) w `templates/coderabbit-base.yaml`, bloki per stack w `reference/stack-blocks.md`; skill wykrywa stack z `package.json`/struktury katalogów, wpisuje do `code_guidelines.filePatterns` tylko istniejące pliki i waliduje YAML przed zapisem. |
+| **2026-07-14** | **Nowy skill `/sync-template`** — aktualizacja maszynerii `.claude/` w projekcie docelowym prosto z tego repo (`claude-code-starter`). Sprawdza po SHA commita, czy szablon się zmienił, i automatycznie aplikuje (szablon wygrywa; backup nadpisywanych/usuwanych plików do `.claude/.backups/`; `settings.local.json` i własne skille projektu nietknięte; usuwanie wycofanych plików sterowane manifestem `.claude/.template-manifest`). Bundlowany skrypt bash zgodny z bash 3.2 (macOS), tryby `--dry-run`/`--force`. Rozwiązuje potrzebę ręcznego dyktowania linku i proszenia o aktualizację po wrzuceniu szablonu do nowego projektu. |
+| **2026-07-12** | **Poprawki po multi-agent review (46 findingów, 0 obalonych):** naprawa nazwy skilla Figma (`figma-design-to-code` — zaimportowany lokalnie z pluginu; poprzednia nazwa nie istniała), ujednolicenie ścieżki `docs/brainstorms/` (handoff brainstorm→plan był cicho zerwany), usunięcie skażonego `auto-error-resolver`, **8. reviewer** (`code-simplicity-reviewer`) w review-wf, **targeted verify P1/KOD po fixie** (niezależny weryfikator zamiast czystego self-reportu), warmup degraduje zamiast STOP, retry scribe'a, readerzy `learned-patterns.md` (planner/reviewerzy/buildery), audyt console.log/Sentry w domknięciu fazy, skille `/dev-docs-execute`+`/dev-docs-review` = cienkie wrappery na workflowy, `web-research-specialist` podłączony do brainstorm/ideate. Freshness: **Stripe v22** (wpis 2026-07-06 błędnie utrzymywał v18), Zod v4 w Edge Functions, `getClaims()` preferowane, React Router v8 (`react-router`, bez `-dom`), TS 6.0/7.0, Sentry `defaultIntegrations: false`. Skorygowana semantyka RESUME (świeży run po STOP bramki vs resume po awarii). **Nowe mechanizmy:** routing reviewerów wg mapy zmian + dedup semantyczny (Haiku) w review-wf, `/freshness-audit` (cykliczny audyt skilli w żywych źródłach), telemetria runów autopilota (`~/.claude/telemetry/autopilot-runs.jsonl`), pola `paths` w skillach guideline, sync `agent-browser` z upstream 0.31.1. |
+| **2026-07-06** | **Słownik domenowy `docs/CONCEPTS.md`** (writer w `dev-compound`, readerzy w `dev-plan`/`dev-docs`/builderach, utrzymanie w `dev-compound-refresh`). Autopilot woła teraz **scoped `dev-compound-refresh`** po compound. **Audyt skilli technicznych:** `security` → OWASP Top 10:2025 + błąd `user_metadata` (reguła w `coding-rules §9`); `tailwind` → Zod v4 + `useOptimistic` w transition; `supabase` → PKCE `onAuthStateChange` + Stripe v18 + `search_path=''`; `ux-ui` → kontrast/`inert`/`interpolate-size`; `sentry` → source maps + Deno 2.x. |
+| 2026-06-21 | Dev Autopilot przeniesiony na **Dynamic Workflow** (`.claude/workflows/*-wf.js`); orkiestrator w JS, buildery/reviewerzy jako leaf-agenci. |
+| 2026-06-04 | Wchłonięte koncepty inżynierskie z mattpocock/skills (Tier 2); agenty/skille podciągnięte z compound-engineering. |
+| 2026-05-18 | Świadomość Figma/DESIGN.md w pipeline `dev-*` + visual diff w testerze E2E. |
+| 2026-05-11 | `sentry-integration` podłączony do builderów data + fullstack. |
+| 2026-05-05 | Polish wcielony w `ux-ui-guidelines`; sprzątanie skilli legacy. |
+
+> Źródła inspiracji: `compound-engineering-plugin` (EveryInc) + `mattpocock/skills`, zaadaptowane i spolszczone pod nasz stack. Szczegóły adaptacji: lokalna notatka `ZRODLA-SZABLONU.md` (gitignored).
