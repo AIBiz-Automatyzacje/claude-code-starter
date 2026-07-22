@@ -11,7 +11,7 @@ projekt od pomysłu do działającej aplikacji.
 
 ## Do czego to służy
 
-Sami na tym budujemy własne aplikacje w AIBIZ. Po skopiowaniu folderu `.claude/` Twój Claude:
+Sami na tym budujemy własne aplikacje w Akademii Automatyzacji. Po skopiowaniu folderu `.claude/` Twój Claude:
 
 - **Pomaga doprecyzować, CO budujesz** - zanim powstanie linijka kodu, przepyta Cię
   o wymagania i rozpisze plan techniczny.
@@ -23,6 +23,39 @@ Sami na tym budujemy własne aplikacje w AIBIZ. Po skopiowaniu folderu `.claude/
 Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + Tailwind v4**.
 Budujesz na czymś innym? Rdzeń systemu (pipeline, review, baza wiedzy) zadziała, tylko
 skille techniczne będą do podmiany.
+
+## Jak to działa
+
+Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po drodze wygląda to tak:
+
+1. **Opisujesz pomysł** - `/dev-brainstorm` przepytuje Cię pytanie po pytaniu, aż będzie jasne,
+   co dokładnie ma powstać. Efekt: dokument wymagań.
+2. **Claude rozpisuje plan** - `/dev-plan` skanuje repo i dzieli robotę na fazy z konkretnymi
+   krokami. Ty tylko zatwierdzasz.
+3. **Odpalasz autopilot** - `dev-autopilot-wf` wykonuje fazy jedna po drugiej: implementacja,
+   review, naprawa błędów. Wracasz do gotowej zmiany z raportem, co i dlaczego zostało zrobione.
+
+### Klucze do tego rozwiązania
+
+- **Review robi 8 niezależnych agentów naraz** (bezpieczeństwo, wydajność, architektura,
+  zgodność ze specyfikacją, prostota, testy) - a każde poważne znalezisko przechodzi jeszcze
+  przez agenta-sceptyka, który próbuje je obalić. Zostają tylko prawdziwe błędy.
+- **Sterowanie trzyma kod, nie model** - kolejność faz, bramki jakości i limity napraw są
+  zapisane w deterministycznych workflowach JS. Claude wykonuje zadania, ale nie decyduje,
+  czy może pominąć review.
+- **Reguły kodowania i katalog anty-patternów AI** (`.claude/rules/`) pilnują jakości
+  od pierwszej linijki - m.in. zakaz osłabiania testów i obniżania progów, żeby "przeszło".
+
+### Czego system uczy się w trakcie projektu
+
+- Każdy rozwiązany problem ląduje w `docs/solutions/` - następnym razem Claude sięga
+  po gotowe rozwiązanie zamiast kombinować od zera.
+- Powtarzalne wnioski zamieniają się w reguły (`learned-patterns.md`), które czytają
+  wszyscy agenci w kolejnych zadaniach.
+- Pojęcia z Twojej domeny trafiają do słownika `docs/CONCEPTS.md` - dzięki temu Claude
+  nie "naprawia" rzeczy, które celowo działają nietypowo.
+
+Im dłużej pracujesz w projekcie, tym mniej błędów Claude powtarza.
 
 ## Jak zacząć - 3 kroki
 
