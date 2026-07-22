@@ -32,7 +32,9 @@ Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po dro
    co dokładnie ma powstać. Efekt: dokument wymagań.
 2. **Claude rozpisuje plan** - `/dev-plan` skanuje repo i dzieli robotę na fazy z konkretnymi
    krokami. Ty tylko zatwierdzasz.
-3. **Odpalasz autopilot** - `dev-autopilot-wf` wykonuje fazy jedna po drugiej: implementacja,
+3. **`/dev-docs` przygotowuje zadanie** - tworzy branch `feature/[nazwa]` i 3 pliki robocze
+   (plan, kontekst, lista zadań), z których pipeline będzie korzystał przez całą implementację.
+4. **Odpalasz autopilot** - `dev-autopilot-wf` wykonuje fazy jedna po drugiej: implementacja,
    review, naprawa błędów. Wracasz do gotowej zmiany z raportem, co i dlaczego zostało zrobione.
 
 ### Klucze do tego rozwiązania
