@@ -61,6 +61,38 @@ const FINDING_OTWARTY = {
   required: ['severity', 'typ', 'plik', 'opis'],
 }
 
+// Metryki fazy utrwalane w .autopilot-state.json (2026-07-26). Powod: telemetria ma dawac dane do
+// strojenia progow (routing, dedup, sceptycy), a przy resume review sie NIE powtarza — bez utrwalenia
+// wpis telemetrii mial null. Schemat MUSI istniec tu, bo stan przechodzi przez bootstrap-agenta
+// (additionalProperties: false wymazalby nieznane pole przy pierwszym zapiszStan).
+// Do stanu idzie SKROT (liczby do strojenia); pelny przebieg z flagami warstw zyje w raporcie review-faza-N.md.
+const METRYKI_FAZY = {
+  type: ['object', 'null'],
+  additionalProperties: false,
+  properties: {
+    liczniki: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { p1: { type: 'integer' }, p2: { type: 'integer' }, p3: { type: 'integer' }, operator: { type: 'integer' } },
+      required: ['p1', 'p2', 'p3'],
+    },
+    przebieg: {
+      type: ['object', 'null'],
+      additionalProperties: false,
+      properties: {
+        pominieci: { type: 'array', items: { type: 'string' }, description: 'keys reviewerow pominietych przez routing' },
+        znalezione: { type: 'integer' },
+        poDedupJs: { type: 'integer' },
+        poDedupSem: { type: 'integer' },
+        weryfikowane: { type: 'integer' },
+        obalone: { type: 'integer' },
+      },
+      required: ['pominieci', 'znalezione', 'poDedupJs', 'poDedupSem', 'weryfikowane', 'obalone'],
+    },
+  },
+  required: ['liczniki', 'przebieg'],
+}
+
 const PLAN_STATE = {
   type: 'object',
   additionalProperties: false,
@@ -90,6 +122,7 @@ const PLAN_STATE = {
           review: { type: 'string', enum: ['done', 'pending'] },
           fix: { type: 'string', enum: ['done', 'pending', 'none'], description: 'none = review nie zostawil otwartych P1/P2' },
           otwarteFindingi: { type: 'array', items: FINDING_OTWARTY },
+          metryki: METRYKI_FAZY,
         },
         required: ['numer', 'nazwa', 'execute', 'review', 'fix', 'otwarteFindingi'],
       },
@@ -222,6 +255,8 @@ Folder zadania: ${sciezka}
 
    A) PLIK ISTNIEJE (resume): przeczytaj go i zwroc jego fazy/zakonczenie BEZ reinterpretacji
       checkboxow md — plik stanu jest ZRODLEM PRAWDY, checkboxy to tylko widok dla czlowieka.
+      Pole "metryki" fazy (jesli obecne) PRZEPISZ 1:1 — nie licz go sam, nie uzupelniaj, nie zeruj;
+      to zapis telemetrii z runu, w ktorym review sie odbylo. Gdy pola nie ma, pomin je (null).
       zrodloStanu = "state-json". Dodatkowo porownaj informacyjnie z plikami (np. istnieje
       ${sciezka}/review-faza-N.md a stan mowi review=pending) i wpisz różnice do rozbieznosci[]
       (NIE koryguj stanu samodzielnie).
@@ -543,6 +578,21 @@ const historia = {}
 const raporty = []
 const tokRunStart = tokSpent()
 
+// Normalizacja metryk przebiegu do SKROTU (schemat METRYKI_FAZY + telemetria): review-wf zwraca
+// pelny obiekt (pominieci = [{key,powod}]), a stan po resume trzyma juz skrot (pominieci = ['key']).
+// Jedna funkcja, zeby stan i telemetria mialy IDENTYCZNY kształt niezaleznie od zrodla.
+function skrotPrzebiegu(p) {
+  if (!p) return null
+  return {
+    pominieci: (p.pominieci || []).map((x) => (typeof x === 'string' ? x : x.key)),
+    znalezione: p.znalezione,
+    poDedupJs: p.poDedupJs,
+    poDedupSem: p.poDedupSem,
+    weryfikowane: p.weryfikowane,
+    obalone: p.obalone,
+  }
+}
+
 for (const numerFazy of kolejka) {
   const faza = stan.fazy.find((f) => f.numer === numerFazy)
   if (!faza) {
@@ -553,7 +603,11 @@ for (const numerFazy of kolejka) {
   let gateFazy = 'CZYSTE'
   let cykle = 0
   let e2eSync = null
-  let licznikiFazy = null
+  // Metryki fazy: przy resume review moze byc juz 'done' i review-wf sie NIE odpali — wtedy liczniki
+  // i przebieg czytamy z faza.metryki utrwalonych w stanie (bez tego telemetria dostawala null).
+  const metrykiZeStanu = faza.metryki || {}
+  let licznikiFazy = metrykiZeStanu.liczniki || null
+  let przebiegFazy = metrykiZeStanu.przebieg || null
   let fixInfo = null
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
@@ -603,7 +657,17 @@ for (const numerFazy of kolejka) {
     }
     log(`Review fazy ${numerFazy}: P1=${liczniki.p1} P2=${liczniki.p2} P3=${liczniki.p3} OPERATOR=${liczniki.operator}`)
     licznikiFazy = liczniki
+    przebiegFazy = review.przebieg || null
+    if (przebiegFazy) {
+      const skrot = skrotPrzebiegu(przebiegFazy)
+      const pom = skrot.pominieci.length ? skrot.pominieci.join(',') : 'brak'
+      log(`Routing fazy ${numerFazy}: pominieci=${pom}; findingi ${przebiegFazy.znalezione}->${przebiegFazy.poDedupSem} po dedupie, obalone ${przebiegFazy.obalone}/${przebiegFazy.weryfikowane}`)
+    }
     faza.review = 'done'
+    // Metryki utrwalone w stanie — zrodlo dla telemetrii po resume (review sie wtedy nie powtarza).
+    // Skrot zgodny z METRYKI_FAZY: same liczby do strojenia progow. Pelny przebieg (flagi warstw,
+    // lista aktywnych) zostaje w raporcie review-faza-N.md, zeby nie puchl plik stanu.
+    faza.metryki = { liczniki, przebieg: skrotPrzebiegu(przebiegFazy) }
     faza.otwarteFindingi = otwartePoReview(review.findings)
     faza.fix = faza.otwarteFindingi.length ? 'pending' : 'none'
     await zapiszStan()
@@ -676,7 +740,9 @@ for (const numerFazy of kolejka) {
   // Delta 0 po resume = agenci fazy wrocili z journala (cache), nie "darmowa faza" — oznacz w raporcie.
   const tokFazyOpis = tokFazy === 0 ? '0k (z cache — resume)' : `${tokFazy}k`
   log(`Faza ${numerFazy}: koniec — gate ${gateFazy}, cykle ${cykle}, ~${tokFazyOpis} tokenow`)
-  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, liczniki: licznikiFazy, fix: fixInfo, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a' })
+  // przebieg = metryki routingu/dedupu/verify (z review-wf albo ze stanu po resume) — dane do
+  // strojenia progow: kogo routing pomija, ile dedup sklei, ile verify obala.
+  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, liczniki: licznikiFazy, fix: fixInfo, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy) })
 }
 
 // ── Zakonczenie ──────────────────────────────────────────────────────────
@@ -755,6 +821,10 @@ log(`Autopilot koniec: ${kolejka.length} faz, ~${tokRazem}k tokenow lacznie`)
 // TELEMETRIA (best-effort, tylko sciezka sukcesu): jedna linia JSONL do GLOBALNEGO pliku
 // ~/.claude/telemetry/autopilot-runs.jsonl — wspolnego dla wszystkich projektow na maszynie
 // (dane do strojenia progow pipeline'u: limit fix, sceptycy, routing; per projekt bylyby rozproszone).
+// raporty[].przebieg (od 2026-07-26) niesie liczby routingu/dedupu/verify — bez nich wpis mowil
+// tylko ILE findingow bylo, nie CZY routing kogos pomija i czy dedup semantyczny zarabia na siebie.
+// Ograniczenie swiadome: wpis powstaje TYLKO gdy caly run dojdzie do konca — run zatrzymany na
+// bramce (STOP) nie zostawia telemetrii, mimo ze fazy przed bramka maja policzone metryki w stanie.
 // Timestamp i nazwe projektu ustala leaf-agent (workflow nie moze uzyc Date.now). Pad = tylko log.
 const wpisTelemetrii = {
   zadanie: stan.nazwaZadania,

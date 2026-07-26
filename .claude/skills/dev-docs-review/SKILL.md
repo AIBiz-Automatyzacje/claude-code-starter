@@ -18,7 +18,9 @@ Workflow({scriptPath: ".claude/workflows/dev-docs-review-wf.js", args: {sciezka,
 
 Po zakończeniu workflow streść użytkownikowi wynik: severity gate (BLOKUJE / ZASTRZEŻENIA / CZYSTE), liczniki findingów (P1/P2/P3, w tym OPERATOR), wynik E2E (passed/failed/skipped), ścieżkę zapisanego raportu.
 
-**NIE wykonuj procedury ręcznie** — mechanika (7 reviewerów + adversarial verify / delegacja IU do builderów) żyje w workflow; sekcje referencyjne poniżej są używane PRZEZ workflow, nie przez Ciebie.
+**NIE wykonuj procedury ręcznie** — mechanika (routing reviewerów + adversarial verify / delegacja IU do builderów) żyje w workflow; sekcje referencyjne poniżej są używane PRZEZ workflow, nie przez Ciebie.
+
+Skład reviewerów ustala **routing domenowy** (workflow, nie Ty): rdzeń — `security`, `spec-compliance`, `simplicity`, `test-coverage` — odpala się zawsze; `performance`, `architecture`, `typescript` i `e2e` tylko gdy ich domena jest w fazie obecna (flagi warstw od context-packagera). Brak flag = pełny skład (fail-open). Kogo pominięto, widać w sekcji `## Przebieg review` raportu.
 
 ### 1. Walidacja
 - Sprawdź czy folder `$1/` istnieje
@@ -78,7 +80,7 @@ Na podstawie skonsolidowanego raportu:
 |---|---|---|
 | **CLI** | `bun run`, `npm run`, `pnpm`, `yarn`, `make`, `tsc`, `vitest`, `bun test`, `cargo`, `pytest`, `ruff`, `eslint` | Uruchom komendę przez Bash. Jeśli exit 0 → odznacz `[x]`. Jeśli != 0 → zostaw `[ ]`, dopisz suffix ` (FAIL: <skrót błędu>)` i dodaj wpis do raportu jako 🟠 [P2-important]. |
 | **Grep / istnienie pliku** | `grep`, `rg`, `test -f`, `ls`, "brak referencji do", "plik istnieje", "import nie istnieje" | Uruchom przez Bash. PASS → `[x]`. FAIL → `[ ]` z suffixem ` (FAIL)` i wpis P2. |
-| **E2E browser** | URL, `agent-browser`, "viewport", "kliknij", "screenshot", oznaczenie 🌐 | Sprawdź wynik Agent 5 z findings typu E2E/OPERATOR zwróconych przez workflow. PASS → `[x]`. FAIL → `[ ]` (P2 już zarejestrowany jako finding). SKIP / niewykonalny headless → `[ ]` z suffixem ` (SKIP — <powód>)` i wpis do Operator checklist zamiast P2. |
+| **E2E browser** | URL, `agent-browser`, "viewport", "kliknij", "screenshot", oznaczenie 🌐 | Sprawdź wynik Agent 5 z findings typu E2E/OPERATOR zwróconych przez workflow. PASS → `[x]`. FAIL → `[ ]` (P2 już zarejestrowany jako finding). SKIP / niewykonalny headless → `[ ]` z suffixem ` (SKIP — <powód>)` i wpis do Operator checklist zamiast P2. **Gdy routing pominął testera E2E** (widać w `## Przebieg review`) → NIE odznaczaj żadnego takiego checkboxa: nie ma przebiegu, który by to potwierdził. Zostaw `[ ]` i przenieś do Operator checklist. |
 | **Manual** | "ręcznie", "operator", "symulator", "device", "emulator", "QA", "tester człowiek" | Zostaw `[ ]`. Dopisz suffix ` — wymaga operatora (checklist)`. NIE dodawaj do P2 — to oczekiwana ręczna weryfikacja. |
 | **Niejasne** | nic z powyższych nie pasuje | Zostaw `[ ]`. Dopisz suffix ` — klasyfikacja niejasna, wymaga ręcznej decyzji`. Dodaj do raportu jako 🟡 [P3-nit] z notatką dla planisty: "checkbox nieautomatyzowalny — rozważ przeniesienie do Operator checklist (dev-plan §3.4) lub przeformułowanie na CLI/E2E". |
 
@@ -103,3 +105,9 @@ Na podstawie skonsolidowanego raportu:
 ```
 
 **Krok 5: Re-aktualizuj severity gate.** Jeśli krok 2 dodał nowe P2 (CLI FAIL, E2E SKIP, Grep FAIL) lub P3 (niejasne) — zaktualizuj liczniki w raporcie i ponownie zastosuj decyzję severity gate z sekcji 4.5.
+
+### 4.8 Sekcja `## Przebieg review` (obowiązkowa)
+
+Raport kończy się blokiem `## Przebieg review` — orkiestrator podaje go scribe'owi **gotowego, z policzonymi liczbami**; wklej go 1:1 i **nie przeliczaj**. Zawiera: liczbę plików fazy, flagi warstw, liczbę browserowych checkboxów, listę reviewerów aktywnych i pominiętych (z powodem) oraz ścieżkę findingów `znalezione → dedup JS → dedup semantyczny` i `verify: weryfikowane / obalone / bez głosów`.
+
+**Po co:** bez tego bloku nie da się później odpowiedzieć, czy routing kogoś pominął, czy dedup semantyczny cokolwiek scalił i ile findingów obalili sceptycy — logi runu workflow nie przeżywają długo, a raport jest w repo. Te same liczby (w skrócie) trafiają do `.autopilot-state.json` i telemetrii runu.

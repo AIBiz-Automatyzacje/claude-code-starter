@@ -77,6 +77,23 @@ You will systematically execute these security scans:
    - Document compliance status for each category
    - Provide specific remediation steps for any gaps
 
+7. **Granice zaufania POZA warstwą API** (zapisy omijające walidację)
+   - Znajdź każdy zapis do bazy/storage, który NIE przechodzi przez warstwę API/serwisu: skrypty
+     migracyjne, ETL, importy CSV/JSON, seedy, joby wsadowe, webhooki, konsumenci kolejek, `INSERT`
+     z surowego SQL-a w skrypcie
+   - Dla każdego zapytaj: **czy źródło danych mogło być zapisywalne przez kogoś z zewnątrz?**
+     (publiczna baza, wyciekłe hasło, współdzielony bucket, endpoint bez auth, cudzy webhook)
+   - Sprawdź, które gwarancje warstwy API zostały OMINIĘTE: tożsamość wymuszona z tokenu
+     (`from_user`/`owner_id` przepisane z danych źródłowych = spoofing), limity długości/rozmiaru,
+     kształt payloadu, whitelisty `CHECK`/enum, przynależność do zasobu (obce `thread_id`/`parent_id`
+     = wstrzyknięcie treści do cudzego wątku), pola techniczne sterujące logiką (flagi typu
+     `*_attempted`, `processed_at` — preseed potrafi trwale wyłączyć mechanizm)
+   - Cichy `INSERT OR IGNORE` / `ON CONFLICT DO NOTHING` w narzędziu migracyjnym: sprawdź, czy nie
+     raportuje odrzuconych wierszy jako „już istniejące" (utrata danych zgłoszona jako sukces)
+   - **„Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE obniża severity.**
+     Oceniaj wpływ w momencie, w którym skrypt zostanie uruchomiony na realnych danych. Skrypt, który
+     przenosi niezaufane dane do zaufanego magazynu, jest granicą bezpieczeństwa — nie narzędziem pomocniczym
+
 ## React & Supabase Specific Checks
 
 - [ ] No `service_role` key in frontend code
@@ -104,6 +121,7 @@ For every review, you will verify:
 - [ ] Security headers properly configured
 - [ ] Error messages don't leak sensitive information
 - [ ] Dependencies are up-to-date and vulnerability-free
+- [ ] Skrypty migracyjne / ETL / seedy walidują dane źródłowe jak input z granicy API (tożsamość, limity, kształt)
 
 ## Reporting Protocol
 

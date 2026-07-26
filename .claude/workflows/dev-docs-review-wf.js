@@ -1,9 +1,9 @@
 export const meta = {
   name: 'dev-docs-review-wf',
-  description: 'Code review fazy: context-packager (mapa zmian raz) -> routing reviewerow wg mapy (rdzen zawsze; perf/architektura warunkowo na malych fazach) -> do 8 reviewerow rownolegle (security/perf/architektura/typescript/spec-compliance/simplicity/test/E2E) -> dedup 2-przebiegowy (JS + semantyczny haiku) -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + bookkeeping checkboxow Weryfikacja: -> severity gate.',
+  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/simplicity/test zawsze; perf/architektura/typescript/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 8 reviewerow rownolegle -> dedup 2-przebiegowy (JS + semantyczny haiku) -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + sekcje "Przebieg review" + bookkeeping checkboxow Weryfikacja: -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii.',
   whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
   phases: [
-    { title: 'Review', detail: 'context-packager + 8 reviewerow rownolegle (w tym spec-compliance i simplicity/YAGNI)' },
+    { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 8, w tym spec-compliance i simplicity/YAGNI)' },
     { title: 'Verify', detail: 'adversarial verify per finding (P1=3 sceptykow, P2=1)' },
     { title: 'Zapis', detail: 'raport + bookkeeping + severity gate' },
   ],
@@ -33,6 +33,20 @@ REGULY:
   odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
   Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
 === KONIEC BLOKU DLUGICH KOMEND ===`
+
+// Doklejany do reviewerow i do sceptykow w Verify. Powod (run team-os-hub-api, 2026-07-24):
+// skrypt migracji wstawial surowym INSERT-em dane z PUBLICZNIE eksponowanego Postgresa, omijajac
+// walidacje tozsamosci/limitow z warstwy API. Cala klasa (spoofing from_user, splice do cudzego
+// watku, obejscie MAX_*_LEN) zostala zredukowana do dwoch P3 z uzasadnieniem "skrypt jednorazowy,
+// usuwany w kolejnym IU". Zewnetrzny commit-reviewer nazwal to authentication-bypass/high.
+const BLOK_ZAUFANIE = `
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===`
 
 // ── Schematy ──────────────────────────────────────────────────────────────
 
@@ -107,6 +121,9 @@ const REVIEW_RESULT = {
 }
 
 // Poprawka 9: wspolna mapa zmian zbudowana RAZ zamiast 7x niezaleznie przez kazdego reviewera.
+// Routing v2 (2026-07-26): packager zwraca tez FLAGI WARSTW i liczbe browserowych checkboxow.
+// Wczesniej routing zgadywal warstwe regexami po sciezce (src/hooks|lib, .sql) — nie trafial
+// w projekty bez src/ (Node/CLI), wiec warunek nigdy nie odpalal. Packager i tak czyta caly diff.
 const KONTEKST = {
   type: 'object',
   additionalProperties: false,
@@ -124,8 +141,20 @@ const KONTEKST = {
         required: ['plik', 'czegoDotyczy'],
       },
     },
+    warstwy: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        ui: { type: 'boolean', description: 'faza tyka warstwy prezentacji: komponenty, style, HTML, szablony, public/' },
+        dane: { type: 'boolean', description: 'faza tyka danych/IO: SQL, migracje, zapytania, fetch/HTTP, cache, petle po rekordach, praca na plikach' },
+        typowanie: { type: 'boolean', description: 'w diffie sa pliki .ts/.tsx ALBO projekt ma tsconfig.json (statyczne typowanie w gre)' },
+        nowyModul: { type: 'boolean', description: 'faza dodaje nowy modul/plik zrodlowy albo przesuwa granice warstw (nie: edycja istniejacego pliku)' },
+      },
+      required: ['ui', 'dane', 'typowanie', 'nowyModul'],
+    },
+    e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow "Weryfikacja:" tej fazy wymagajacych przegladarki (0 gdy brak)' },
   },
-  required: ['pliki'],
+  required: ['pliki', 'warstwy', 'e2eCheckboxy'],
 }
 
 // ── Reviewerzy (leaf-agenci przez agentType) ───────────────────────────────
@@ -173,7 +202,13 @@ zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam g
 1. Ustal zakres zmian fazy ${faza}: \`git diff --stat\` zmian tej fazy. Jesli faza ma osobne commity — diff od bazy fazy;
    jak nie da sie wyodrebnic — uzyj diff vs main/origin/main.
 2. Dla kazdego zmienionego pliku podaj jednolinijkowe "czego dotyczy" (np. "nowy hook useLobbyData — fetch + realtime").
-Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[]}.`
+3. Ustal 4 FLAGI WARSTW (ui / dane / typowanie / nowyModul — opisy w schemacie). Oceniaj po TRESCI zmian,
+   nie po nazwie katalogu: projekt bez src/ tez ma warstwe danych, a plik .mjs z petla INSERT to "dane".
+   \`typowanie\` = sa pliki .ts/.tsx w diffie ALBO w korzeniu repo istnieje tsconfig.json (sprawdz).
+   Flagi decyduja, ktorzy reviewerzy sie odpala — pomylka w gore (true) jest tania, w dol (false) gubi reviewera.
+4. Policz \`e2eCheckboxy\`: niezaznaczone checkboxy "Weryfikacja:" fazy ${faza} w ${sciezka}/*-zadania.md wymagajace
+   PRZEGLADARKI (open/navigate URL, click, type/fill, assert visible, screenshot, responsywnosc, 🌐). CLI/Manual nie licz.
+Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy}.`
 }
 
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst) {
@@ -182,7 +217,8 @@ Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-req
 Przeczytaj tez .claude/rules/learned-patterns.md (jesli istnieje) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.
 Skup sie na: ${fokus}.
 Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
-Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+${BLOK_ZAUFANIE}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 function testCoveragePrompt(sciezka, faza, poprzednie, kontekst) {
@@ -228,7 +264,26 @@ Zwroc {findings:[...]}. Nie zapisuj plikow (scribe zrobi bookkeeping).
 ${BLOK_DLUGIE_KOMENDY}${rereviewBlok(poprzednie)}`
 }
 
-function scribePrompt(sciezka, faza, potwierdzone) {
+// Gotowy blok markdown dla raportu — liczby policzone w JS, scribe wkleja 1:1 (nie przelicza).
+function przebiegBlok(p) {
+  const pom = p.pominieci.length ? p.pominieci.map((x) => `${x.key} (${x.powod})`).join('; ') : 'brak — pelny sklad'
+  const w = p.warstwy
+    ? `ui=${p.warstwy.ui} dane=${p.warstwy.dane} typowanie=${p.warstwy.typowanie} nowyModul=${p.warstwy.nowyModul}`
+    : 'brak flag (packager padl) — fail-open, pelny sklad'
+  return `## Przebieg review
+
+| Etap | Wartosc |
+|---|---|
+| Pliki w fazie (z tego kodu) | ${p.pliki} (${p.plikiKodu}) |
+| Flagi warstw | ${w} |
+| Browserowe checkboxy \`Weryfikacja:\` | ${p.e2eCheckboxy} |
+| Reviewerzy aktywni | ${p.aktywni.join(', ')} |
+| Reviewerzy pominieci | ${pom} |
+| Findingi: znalezione -> dedup JS -> dedup semantyczny | ${p.znalezione} -> ${p.poDedupJs} -> ${p.poDedupSem} |
+| Adversarial verify: weryfikowane / obalone / bez glosow | ${p.weryfikowane} / ${p.obalone} / ${p.niezweryfikowane} |`
+}
+
+function scribePrompt(sciezka, faza, potwierdzone, przebieg) {
   return `Jestes scribe review fazy ${faza} w ${sciezka}. Otrzymujesz ZWERYFIKOWANE findings (po adversarial verify).
 
 Findings (JSON):
@@ -246,10 +301,17 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
 3. Bookkeeping checkboxow "Weryfikacja:" (sekcja 4.7): re-parsuj niezaznaczone "Weryfikacja:" fazy ${faza},
    sklasyfikuj (CLI->uruchom przez Bash, exit0->[x]; Grep->uruchom; E2E browser (agent-browser) wykonany->wg findings E2E;
    E2E niewykonalny headless->Operator checklist (typ OPERATOR, nie P2); Manual->zostaw z adnotacja; Niejasne->P3).
-   Odznacz/anotuj w pliku zadan. Dopisz sekcje "Bookkeeping checkboxow Weryfikacja:" do raportu.
+   Odznacz/anotuj w pliku zadan. Dopisz sekcje "Bookkeeping checkboxow Weryfikacja:" do raportu.${przebieg.aktywni.includes('e2e') ? '' : `
+   UWAGA — TESTER E2E NIE ODPALIL W TEJ FAZIE (routing pominal: ${(przebieg.pominieci.find((x) => x.key === 'e2e') || {}).powod || 'brak warstwy UI'}).
+   Zadnego checkboxa wymagajacego PRZEGLADARKI NIE odznaczaj — nie ma przebiegu, ktory by to potwierdzil.
+   Jesli mimo to znajdziesz taki checkbox, zostaw \`- [ ]\` i przenies go do "## Operator checklist faza ${faza}"
+   (format "- [ ] Operator: ..."), bo weryfikacja nie zostala wykonana.`}
 4. Policz liczniki: p1/p2/p3 (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL.
 5. Ustaw severityGate: BLOKUJE (sa P1) / ZASTRZEZENIA (tylko P2) / CZYSTE (zero P1/P2 — sam P3/OPERATOR nie blokuje gate'u).
 6. Policz e2e {passed, failed, skipped}.
+7. Na koniec raportu wklej DOKLADNIE ten blok (1:1, NIE przeliczaj liczb — sa policzone przez orkiestratora):
+
+${przebiegBlok(przebieg)}
 
 Zwroc obiekt zgodny ze schematem ReviewResult (findings = finalna lista po bookkeepingu, z findingami OPERATOR wlacznie).`
 }
@@ -275,30 +337,41 @@ phase('Review')
 // Null (agent skipniety/blad) -> reviewerzy robia wlasna dyskryminacje jak dotad (fallback w mapaBlok).
 const kontekst = await agent(kontekstPrompt(sciezka, faza), { schema: KONTEKST, label: 'kontekst:diff', phase: 'Review' })
 
-// Routing reviewerow wg mapy zmian (bezpieczna wersja): rdzen — security, typescript,
-// spec-compliance, simplicity (+ test-coverage, e2e) — odpala sie ZAWSZE (XSS potrafi siedziec
-// w pliku "czysto UI-owym", spec/testy dotycza kazdej fazy). Warunkowo tylko performance
-// i architecture na MALYCH fazach (<=2 pliki), gdzie zwykle nie maja czego ocenic.
-// Brak kontekstu (packager padl/null) => pelny sklad — bez mapy nie wiemy nic o fazie.
+// Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy. Poprzedni prog "<=2 pliki" nie odpalil ani raz
+// (realne fazy: 6-15 plikow), a regexy po sciezce nie trafialy w projekty bez src/. Teraz decyduja
+// FLAGI WARSTW od packagera: reviewer odpala sie, gdy jego domena jest w fazie OBECNA.
+// Rdzen nietykalny: security (XSS/wyciek siedzi tez w "czysto UI" pliku), spec-compliance, simplicity,
+// test-coverage. Warunkowi: performance, architecture, typescript, e2e.
+// FAIL-OPEN: brak mapy albo brak flag (packager padl) => PELNY sklad — bez faktow nie pomijamy nikogo.
 const plikiFazy = (kontekst && kontekst.pliki) || []
-const malaFaza = plikiFazy.length > 0 && plikiFazy.length <= 2
-const WZORZEC_PERF = /src\/(hooks|lib)\/|quer|fetch|realtime|\.sql$/i
-const perfIstotny = !malaFaza || plikiFazy.some((p) => WZORZEC_PERF.test(p.plik))
-const nowyModul = plikiFazy.some((p) => /\bnow(y|a|e)\b/i.test(p.czegoDotyczy || ''))
-const archIstotny = !malaFaza || nowyModul
-const aktywni = REVIEWERZY.filter((r) => {
-  if (r.key === 'performance') return perfIstotny
-  if (r.key === 'architecture') return archIstotny
-  return true
-})
-const pominieci = REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => r.key)
-if (pominieci.length) log(`Routing: mala faza (${plikiFazy.length} pliki) — pomijam reviewerow: ${pominieci.join(', ')}`)
+const warstwy = (kontekst && kontekst.warstwy) || null
+const e2eCheckboxy = (kontekst && Number.isInteger(kontekst.e2eCheckboxy)) ? kontekst.e2eCheckboxy : 0
+const plikiKodu = plikiFazy.filter((p) => /\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte|py|go|rs|sh|sql)$/i.test(p.plik)).length
+
+// Warunek per reviewer: brak wpisu = rdzen (zawsze aktywny).
+const WARUNKI = {
+  performance: (w) => w.dane || plikiKodu >= 5,
+  architecture: (w) => w.nowyModul || plikiKodu >= 3,
+  typescript: (w) => w.typowanie,
+}
+const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy))
+// E2E ma druga, niezalezna furtke: nawet gdy packager pomyli sie na `ui`, faza z browserowym
+// checkboxem "Weryfikacja:" zawsze dostaje testera (inaczej scribe odznaczylby go bez przebiegu).
+const e2eAktywny = !warstwy || warstwy.ui || e2eCheckboxy > 0
+const pominieci = [
+  ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: 'domena nieobecna w mapie zmian fazy' })),
+  ...(e2eAktywny ? [] : [{ key: 'e2e', powod: `brak warstwy UI i zero browserowych checkboxow Weryfikacja: (${e2eCheckboxy})` }]),
+]
+if (pominieci.length) log(`Routing v2: pomijam ${pominieci.map((p) => p.key).join(', ')} (${plikiFazy.length} plikow, ${plikiKodu} kodu)`)
+else log(`Routing v2: pelny sklad (${plikiFazy.length} plikow${warstwy ? '' : ', brak flag warstw — fail-open'})`)
 
 const thunki = aktywni.map((r) => () =>
   agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), { schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' })
 )
 thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, label: 'review:test-coverage', phase: 'Review' }))
-thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e), { schema: FINDINGS, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }))
+if (e2eAktywny) {
+  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e), { schema: FINDINGS, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }))
+}
 
 const wyniki = await parallel(thunki)
 
@@ -313,6 +386,8 @@ for (const f of wszystkie) {
   if (!obecny || RANGA[f.severity] < RANGA[obecny.severity]) poKluczu.set(klucz, f)
 }
 let dedup = [...poKluczu.values()]
+// Zapisz stan PRZED dedupem semantycznym — `dedup` jest nadpisywane, a metryka idzie do raportu.
+const poDedupJs = dedup.length
 
 // Dedup przebieg 2 — semantyczny (haiku): 8 reviewerow czesto opisuje TEN SAM problem roznymi
 // slowami; klucz tekstowy tego nie sklei, a kazdy duplikat P1/P2 kosztuje potem 1-3 sceptykow
@@ -373,7 +448,7 @@ const zweryfikowane = await parallel(
     parallel(
       Array.from({ length: liczbaSceptykow(f) }, (_, i) => () =>
         agent(
-          `Adwersaryjnie OBAL ten finding z review fazy ${faza} (${sciezka}). Domyslnie zakladaj ze finding jest NIEREALNY, chyba ze masz twardy dowod z kodu.\nFinding [${f.severity}/${f.typ}] ${f.plik}: ${f.opis}\nSprawdz kod. Czy to prawdziwy problem czy false positive? Zwroc werdykt.`,
+          `Adwersaryjnie OBAL ten finding z review fazy ${faza} (${sciezka}). Domyslnie zakladaj ze finding jest NIEREALNY, chyba ze masz twardy dowod z kodu.\nFinding [${f.severity}/${f.typ}] ${f.plik}: ${f.opis}\nSprawdz kod. Czy to prawdziwy problem czy false positive? Zwroc werdykt.\n\nWYJATEK od domyslnej skepsy: argument "to kod jednorazowy / throwaway / skrypt migracyjny / usuwany pozniej" NIE obala findingu i NIE uzasadnia severityKorekta w dol. Obalasz WYLACZNIE dowodem z kodu, ze wplyw nie zachodzi.${BLOK_ZAUFANIE}`,
           { schema: VERDICT, label: `verify:${f.plik}:${i}`, phase: 'Verify' }
         )
       )
@@ -404,15 +479,32 @@ const potwierdzone = [
 ]
 log(`Verify: z ${doWeryfikacji.length} findingow P1/P2 potwierdzono ${potwierdzone.length - nity.length} (+ ${nity.length} nitow)`)
 
+// Metryki przebiegu liczone w JS (Filar 3: agent nigdy nie liczy tego, co JS wie na pewno).
+// Ida do raportu review (widok dla czlowieka) I do orkiestratora -> stan -> telemetria (strojenie progow).
+const przebieg = {
+  pliki: plikiFazy.length,
+  plikiKodu,
+  warstwy,
+  e2eCheckboxy,
+  aktywni: [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eAktywny ? ['e2e'] : [])],
+  pominieci,
+  znalezione: wszystkie.length,
+  poDedupJs,
+  poDedupSem: dedup.length,
+  weryfikowane: doWeryfikacji.length,
+  obalone: doWeryfikacji.length - (potwierdzone.length - nity.length),
+  niezweryfikowane: potwierdzone.filter((f) => f.opis.startsWith('[NIEZWERYFIKOWANY')).length,
+}
+
 // Faza 3: scribe zapisuje raport + bookkeeping + liczy severity gate
 phase('Zapis')
-let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
+let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
 if (!wynik) {
   // Scribe padl — jedna ponowna proba (to JEDYNY agent zapisujacy review-faza-N.md i sekcje
   // "Do poprawy"; bez tych artefaktow fix dziala bez kontekstu, a czlowiek bez widoku).
   log(`Scribe fazy ${faza} padl — ponawiam raz`)
   wynik = await agent(
-    `${scribePrompt(sciezka, faza, potwierdzone)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
+    `${scribePrompt(sciezka, faza, potwierdzone, przebieg)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
     { schema: REVIEW_RESULT, label: `scribe:faza-${faza}:retry` }
   )
 }
@@ -426,7 +518,9 @@ if (!wynik) {
     severityGate: 'BLOKUJE',
     raportSciezka: '',
     e2e: { passed: 0, failed: 0, skipped: 0 },
+    przebieg,
     scribeFail: true,
   }
 }
-return wynik
+// przebieg dokladany w JS (nie przez schemat agenta) — orkiestrator zapisuje go w stanie i telemetrii.
+return { ...wynik, przebieg }
