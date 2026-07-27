@@ -48,6 +48,24 @@ danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisyw
 oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
 === KONIEC BLOKU GRANIC ZAUFANIA ===`
 
+// Doklejany do KAZDEGO agenta zglaszajacego findingi (reviewerzy, test-coverage, e2e).
+// Powod (telemetria 5 zadan / 16 faz): P1=2, P2=29, P3=179 — P3 to 85% calego outputu review,
+// a NIE trafia do petli naprawczej: otwartePoReview w dev-autopilot-wf.js filtruje wylacznie
+// severity P1|P2. Za kazdy P3 placimy trzy razy (generacja u 6-8 reviewerow rownolegle, wejscie
+// dedupu semantycznego, prompt scribe'a) i raz czytaniem 17-25 KB raportu. W jednym zadaniu bylo
+// 60 P3 przy 10 realnie naprawionych P1/P2. Limit jest TWARDY i dotyczy WYLACZNIE P3 — przemilczany
+// P1 to katastrofa, przemilczany P3 to oszczednosc.
+const BLOK_LIMIT_P3 = `
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC: P3 zglaszasz tylko wtedy, gdy potrafisz wskazac KONKRETNA akcje naprawcza w TEJ fazie
+(co, w ktorym pliku, na co zmienic). "Warto by kiedys rozwazyc", "mozna by dodac wiecej testow",
+"nazwa moglaby byc lepsza", "rozwazyc refaktor" — bez konkretu NIE zglaszasz. Nit bez akcji to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku.
+=== KONIEC BLOKU LIMITU P3 ===`
+
 // ── Schematy ──────────────────────────────────────────────────────────────
 
 const FINDINGS = {
@@ -120,6 +138,39 @@ const REVIEW_RESULT = {
   required: ['fazaNumer', 'findings', 'liczniki', 'severityGate', 'raportSciezka'],
 }
 
+// Sentinel kompletnosci zapisu scribe'a: prompt scribe'a (krok 7) kaze wkleic ten blok DOKLADNIE
+// na koncu raportu, wiec jego obecnosc w pliku = zapis sie domknal.
+const SENTINEL_RAPORTU = '## Przebieg review'
+
+// Schemat inspektora dysku po padzie scribe'a — maly, bo inspektor tylko patrzy, nie zapisuje.
+const INSPEKCJA_RAPORTU = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    kompletny: { type: 'boolean', description: `raport istnieje i zawiera naglowek "${SENTINEL_RAPORTU}"` },
+    raportSciezka: { type: 'string', description: 'sciezka raportu gdy istnieje, pusty string gdy brak pliku' },
+    e2e: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { passed: { type: 'integer' }, failed: { type: 'integer' }, skipped: { type: 'integer' } },
+      required: ['passed', 'failed', 'skipped'],
+    },
+  },
+  required: ['kompletny', 'raportSciezka', 'e2e'],
+}
+
+// Zrzut diffu fazy (2026-07-27): packager przekierowaniem powloki (`git diff ... > plik`) sklada
+// artefakt, ktory reviewerzy czytaja JEDNYM Read zamiast kazdy odpalac wlasny `git diff` i samodzielnie
+// ustalac zakres. Diff NIE przechodzi przez output packagera — wynik strukturalny agenta to jego tokeny
+// WYJSCIOWE, wiec zwracanie tresci diffu w schemacie kosztowaloby dokladnie tyle, ile chcemy zaoszczedzic
+// (plus ryzyko uciecia i przeklamania). W schemacie leca WYLACZNIE metadane artefaktu.
+// HIPOTEZA: to ma obnizyc koszt fazy review (realne fazy: 224-298k tokenow). Weryfikacja przez telemetrie —
+// rozbicie tokenow per etap zbiera dev-autopilot-wf.js; nastepny run pokaze, czy review faktycznie tanieje.
+// Limit 300 KB: przy ~4 znakach na token to ~75k tokenow, czyli gorna granica, przy ktorej reviewer ma
+// jeszcze miejsce na plan/spec/learned-patterns i wlasne Read. Powyzej i tak nikt tego nie czyta w calosci.
+const LIMIT_DIFFU_B = 300 * 1024
+const ZNACZNIK_UCIECIA = '=== DIFF PRZYCIETY (limit 300 KB) — dalsza czesc zmian fazy NIE jest w tym pliku ==='
+
 // Poprawka 9: wspolna mapa zmian zbudowana RAZ zamiast 7x niezaleznie przez kazdego reviewera.
 // Routing v2 (2026-07-26): packager zwraca tez FLAGI WARSTW i liczbe browserowych checkboxow.
 // Wczesniej routing zgadywal warstwe regexami po sciezce (src/hooks|lib, .sql) — nie trafial
@@ -153,6 +204,12 @@ const KONTEKST = {
       required: ['ui', 'dane', 'typowanie', 'nowyModul'],
     },
     e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow "Weryfikacja:" tej fazy wymagajacych przegladarki (0 gdy brak)' },
+    // Metadane artefaktu z diffem — NIGDY tresc diffu (patrz komentarz przy LIMIT_DIFFU_B).
+    // Poza `required`: gdy packager ich nie zwroci, mapa dziala jak dotad (fail-open), zamiast
+    // wywalic caly obiekt kontekstu na walidacji schematu i stracic rowniez flagi routingu.
+    diffPlik: { type: 'string', description: 'sciezka zrzutu diffu fazy (pusty string gdy zrzut sie nie udal)' },
+    diffZapisany: { type: 'boolean', description: 'true tylko gdy plik zrzutu realnie powstal i jest niepusty' },
+    diffUciety: { type: 'boolean', description: 'true gdy zrzut przekroczyl limit i zostal przyciety ze znacznikiem' },
   },
   required: ['pliki', 'warstwy', 'e2eCheckboxy'],
 }
@@ -184,31 +241,51 @@ Cel: zweryfikowac skutecznosc napraw, nie wygenerowac nowa liste.`
 }
 
 // Wspolna mapa zmian doklejana do promptu reviewera — punkt startu zamiast wlasnego "co sie zmienilo".
+// FAIL-OPEN dwuwarstwowy: (a) brak zrzutu (packager padl / zrzut sie nie udal) => blok o pliku znika;
+// (b) `diffZapisany` to DEKLARACJA agenta o wlasnej pracy, nie fakt sprawdzony przez workflow, a /tmp bywa
+// czyszczone — wiec sam blok niesie tez instrukcje na nieudany Read. Reviewer nigdy nie zostaje bez diffu.
 function mapaBlok(kontekst) {
   if (!kontekst || !kontekst.pliki || !kontekst.pliki.length) return ''
   const lista = kontekst.pliki.map((p) => `- ${p.plik} — ${p.czegoDotyczy}`).join('\n')
+  const diffBlok = kontekst.diffZapisany && kontekst.diffPlik
+    ? `
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: ${kontekst.diffPlik}
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego \`git diff\` calej fazy.${kontekst.diffUciety ? `
+UWAGA: ten zrzut jest PRZYCIETY (limit ${Math.round(LIMIT_DIFFU_B / 1024)} KB, znacznik uciecia na koncu pliku) — NIE jest pelnym obrazem zmian.
+Pliki z listy powyzej, ktorych w zrzucie nie ma, dobierz osobno (Read pliku albo \`git diff -- <plik>\`).` : ''}
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.`
+    : ''
   return `
 
 === MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
 ${kontekst.diffStat || ''}
 ${lista}
+${diffBlok}
 Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.`
 }
 
-function kontekstPrompt(sciezka, faza) {
+function kontekstPrompt(sciezka, faza, diffPlik) {
   return `Jestes context-packagerem review fazy ${faza} (${sciezka}). Zbuduj WSPOLNA mape zmian dla reviewerow,
 zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam git diff).
 
 1. Ustal zakres zmian fazy ${faza}: \`git diff --stat\` zmian tej fazy. Jesli faza ma osobne commity — diff od bazy fazy;
    jak nie da sie wyodrebnic — uzyj diff vs main/origin/main.
-2. Dla kazdego zmienionego pliku podaj jednolinijkowe "czego dotyczy" (np. "nowy hook useLobbyData — fetch + realtime").
-3. Ustal 4 FLAGI WARSTW (ui / dane / typowanie / nowyModul — opisy w schemacie). Oceniaj po TRESCI zmian,
+2. Zrzuc PELNY diff DOKLADNIE tego samego zakresu do pliku ${diffPlik} — Bash, przekierowaniem powloki:
+   \`git diff <ten sam zakres co w kroku 1> > ${diffPlik}\`
+   Tresc diffu ma NIGDY nie przejsc przez Twoja odpowiedz (to Twoje tokeny wyjsciowe) — tylko przekierowanie.
+   Potem \`wc -c < ${diffPlik}\`. Gdy rozmiar > ${LIMIT_DIFFU_B} B, przytnij i oznacz uciecie:
+   \`head -c ${LIMIT_DIFFU_B} ${diffPlik} > ${diffPlik}.tmp && mv ${diffPlik}.tmp ${diffPlik} && printf '\\n%s\\n' '${ZNACZNIK_UCIECIA}' >> ${diffPlik}\`
+   Zwroc METADANE: diffPlik (sciezka albo "" gdy zrzut sie nie udal), diffZapisany (plik powstal i jest niepusty),
+   diffUciety (czy przycinales). Nieudany zrzut NIE jest bledem krytycznym — ustaw diffZapisany=false i lec dalej.
+3. Dla kazdego zmienionego pliku podaj jednolinijkowe "czego dotyczy" (np. "nowy hook useLobbyData — fetch + realtime").
+4. Ustal 4 FLAGI WARSTW (ui / dane / typowanie / nowyModul — opisy w schemacie). Oceniaj po TRESCI zmian,
    nie po nazwie katalogu: projekt bez src/ tez ma warstwe danych, a plik .mjs z petla INSERT to "dane".
    \`typowanie\` = sa pliki .ts/.tsx w diffie ALBO w korzeniu repo istnieje tsconfig.json (sprawdz).
    Flagi decyduja, ktorzy reviewerzy sie odpala — pomylka w gore (true) jest tania, w dol (false) gubi reviewera.
-4. Policz \`e2eCheckboxy\`: niezaznaczone checkboxy "Weryfikacja:" fazy ${faza} w ${sciezka}/*-zadania.md wymagajace
+5. Policz \`e2eCheckboxy\`: niezaznaczone checkboxy "Weryfikacja:" fazy ${faza} w ${sciezka}/*-zadania.md wymagajace
    PRZEGLADARKI (open/navigate URL, click, type/fill, assert visible, screenshot, responsywnosc, 🌐). CLI/Manual nie licz.
-Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy}.`
+Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, diffPlik, diffZapisany, diffUciety}.`
 }
 
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst) {
@@ -218,7 +295,7 @@ Przeczytaj tez .claude/rules/learned-patterns.md (jesli istnieje) — reguly z p
 Skup sie na: ${fokus}.
 Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
 Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
-${BLOK_ZAUFANIE}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 function testCoveragePrompt(sciezka, faza, poprzednie, kontekst) {
@@ -227,7 +304,7 @@ Sprawdz: happy path, invalid inputs, boundary conditions, concurrent operations,
 Test coverage: czy plan techniczny (docs/plans/) definiowal scenariusze testowe dla tej fazy i czy pliki testowe
 istnieja oraz maja asercje? Brakujace testy = P2 (typ TEST).
 Zwroc {findings:[...]} (severity P1/P2/P3, typ KOD/TEST/E2E/OPERATOR). Nie zapisuj plikow.
-${BLOK_DLUGIE_KOMENDY}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 function e2ePrompt(sciezka, faza, poprzednie) {
@@ -261,7 +338,7 @@ Jesli zadanie ma figma_screens / mockupy w sekcji designerskiej — zrob side-by
 comparison screenshotu z mockupem (rozbieznosci wizualne = P2 typ E2E).
 
 Zwroc {findings:[...]}. Nie zapisuj plikow (scribe zrobi bookkeeping).
-${BLOK_DLUGIE_KOMENDY}${rereviewBlok(poprzednie)}`
+${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${rereviewBlok(poprzednie)}`
 }
 
 // Gotowy blok markdown dla raportu — liczby policzone w JS, scribe wkleja 1:1 (nie przelicza).
@@ -316,6 +393,31 @@ ${przebiegBlok(przebieg)}
 Zwroc obiekt zgodny ze schematem ReviewResult (findings = finalna lista po bookkeepingu, z findingami OPERATOR wlacznie).`
 }
 
+function inspekcjaPrompt(sciezka, faza) {
+  return `Jestes inspektorem dysku po padzie scribe'a review fazy ${faza} (${sciezka}). Jestes READ-ONLY:
+NIE zapisuj, NIE nadpisuj i NIE modyfikuj zadnego pliku — masz wylacznie sprawdzic, co juz na dysku LEZY.
+
+1. Sprawdz, czy istnieje plik ${sciezka}/review-faza-${faza}.md. Brak pliku => kompletny=false, raportSciezka="".
+2. Sprawdz, czy raport zawiera naglowek "${SENTINEL_RAPORTU}". Scribe wkleja ten blok DOKLADNIE NA KONCU
+   raportu, wiec jego obecnosc oznacza, ze zapis sie domknal. Jest => kompletny=true, nie ma => kompletny=false.
+3. Odczytaj z raportu statystyki E2E {passed, failed, skipped}. Gdy raport ich nie podaje — zwroc zera. Nie zgaduj.
+Zwroc {kompletny, raportSciezka, e2e}.`
+}
+
+// Liczniki i gate licza sie w JS z findings[] — tak samo jak robi to orkiestrator (policzFindingi
+// w dev-autopilot-wf.js). Findingi OPERATOR sa poza gate'em: to warunki srodowiskowe, nie defekty.
+function podsumujFindingi(findings) {
+  const istotne = findings.filter((f) => f.typ !== 'OPERATOR')
+  const liczniki = {
+    p1: istotne.filter((f) => f.severity === 'P1').length,
+    p2: istotne.filter((f) => f.severity === 'P2').length,
+    p3: istotne.filter((f) => f.severity === 'P3').length,
+    operator: findings.length - istotne.length,
+  }
+  const severityGate = liczniki.p1 > 0 ? 'BLOKUJE' : liczniki.p2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
+  return { liczniki, severityGate }
+}
+
 // ── Orkiestracja ──────────────────────────────────────────────────────────
 
 const sciezka = args && args.sciezka
@@ -335,7 +437,10 @@ const poprzE2e = poprzednie.filter((f) => f.typ === 'E2E' || f.typ === 'OPERATOR
 phase('Review')
 // Poprawka 9: zbuduj diff/mape raz; reviewerzy dostaja ja inline zamiast kazdy odkrywac zmiany od zera.
 // Null (agent skipniety/blad) -> reviewerzy robia wlasna dyskryminacje jak dotad (fallback w mapaBlok).
-const kontekst = await agent(kontekstPrompt(sciezka, faza), { schema: KONTEKST, label: 'kontekst:diff', phase: 'Review' })
+// Sciezka zrzutu diffu: POZA repo (drzewo robocze usera zostaje czyste, artefakt nie wpadnie do commita),
+// deterministyczna z (sciezka, faza) — retry packagera nadpisuje ten sam plik zamiast mnozyc smieci.
+const diffPlik = `/tmp/review-diff-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.diff`
+const kontekst = await agent(kontekstPrompt(sciezka, faza, diffPlik), { schema: KONTEKST, label: 'kontekst:diff', phase: 'Review' })
 
 // Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy. Poprzedni prog "<=2 pliki" nie odpalil ani raz
 // (realne fazy: 6-15 plikow), a regexy po sciezce nie trafialy w projekty bez src/. Teraz decyduja
@@ -349,8 +454,12 @@ const e2eCheckboxy = (kontekst && Number.isInteger(kontekst.e2eCheckboxy)) ? kon
 const plikiKodu = plikiFazy.filter((p) => /\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte|py|go|rs|sh|sql)$/i.test(p.plik)).length
 
 // Warunek per reviewer: brak wpisu = rdzen (zawsze aktywny).
+// `plikiKodu > 0` przy `dane` (2026-07-27): faza czysto dokumentacyjna (run team-os-onboarding-instalatory,
+// faza 3 — 5 plikow md, 0 kodu) dostawala flage dane=true od packagera i budzila performance-oracle
+// nad markdownem. Perf nie ma czego mierzyc bez ani jednego pliku kodu — a >=5 plikow kodu i tak lapie
+// duze fazy niezaleznie od flagi.
 const WARUNKI = {
-  performance: (w) => w.dane || plikiKodu >= 5,
+  performance: (w) => (w.dane && plikiKodu > 0) || plikiKodu >= 5,
   architecture: (w) => w.nowyModul || plikiKodu >= 3,
   typescript: (w) => w.typowanie,
 }
@@ -377,6 +486,24 @@ const wyniki = await parallel(thunki)
 
 // Dedup przebieg 1 — JS (po pliku + poczatku opisu): lapie identyczne sformulowania za darmo.
 // Przy kolizji klucza wygrywa WYZSZE severity (P1<P2<P3), nie kolejnosc reviewerow.
+//
+// UWAGA — ten przebieg praktycznie NIC nie skleja i tak ma zostac. Zmierzone na trzech kolejnych
+// fazach realnego runu: 49->49, 44->44, 24->24 (zero sklejen). Kilkoro reviewerow opisuje ten sam
+// problem wlasnymi slowami, wiec pierwsze 60 znakow opisu nigdy sie nie pokrywa. Cala prace robi
+// przebieg semantyczny nizej (117->80, -32%). Klucz zostaje jako tani filtr dokladnych powtorzen.
+//
+// Wzmocnienie klucza po LOKALIZACJI (plik + linia w oknie tolerancji) bylo rozwazone, zmierzone
+// i ODRZUCONE — nie probuj tego ponownie bez nowych danych:
+//   - sam klucz `plik:linia` (+typ) na 75 realnych findingach z raportow produkcyjnych dal
+//     5 sklejen i KAZDE bylo bledne: pod jednym `plik:linia` potrafia siedziec dwa rozne defekty
+//     (uprawnienia 0644 obok nieatomowego zapisu; brak try/catch obok braku walidacji roli).
+//     Falszywe sklejenie TRWALE gubi finding i nikt tego nie zauwazy — ten przebieg nie ma nad
+//     soba ani modelu, ani czlowieka.
+//   - wariant z bramka podobienstwa opisow (Jaccard + okno linii) faktycznie dzialal: zero bledow
+//     i jedno poprawne sklejenie duplikatu, ktory przepuscil nawet przebieg semantyczny. Ale trzy
+//     progi kalibrowane na JEDNYM polskojezycznym korpusie (opisy findingow nie zawsze beda po
+//     polsku) przy zysku rzedu jednej pary na 75 findingow to zla wymiana wobec ryzyka cichej
+//     utraty findingu — regula §11 "Duplication > Complexity".
 const wszystkie = wyniki.filter(Boolean).flatMap((w) => w.findings)
 const RANGA = { P1: 0, P2: 1, P3: 2 }
 const poKluczu = new Map()
@@ -509,6 +636,28 @@ if (!wynik) {
   )
 }
 if (!wynik) {
+  // Scribe potrafi padnac PO udanym zapisie — przy zwracaniu wyniku do orkiestratora (run
+  // team-os-onboarding-instalatory, faza 2, 2026-07-26: raport 363 linie + komplet sekcji i
+  // bookkeeping juz na dysku, APIError dopiero na returnie). Bez tej inspekcji leci scribeFail
+  // i autopilot kaze powtorzyc cale review — 150-250k tokenow za prace, ktora juz jest zrobiona.
+  const inspekcja = await agent(inspekcjaPrompt(sciezka, faza), { schema: INSPEKCJA_RAPORTU, model: 'haiku', label: `scribe:faza-${faza}:inspekcja` })
+  if (inspekcja && inspekcja.kompletny) {
+    // Liczniki i gate z JS, nie z galezi scribeFail: tam 'BLOKUJE' bylo bezpiecznikiem dla braku
+    // raportu, tutaj raport jest — gate ma odpowiadac realnym findingom.
+    const { liczniki, severityGate } = podsumujFindingi(potwierdzone)
+    log(`Scribe fazy ${faza} padl przy zwracaniu wyniku, ale raport jest kompletny (jest "${SENTINEL_RAPORTU}") — odzyskuje wynik z dysku zamiast powtarzac review`)
+    return {
+      fazaNumer: faza,
+      findings: potwierdzone,
+      liczniki,
+      severityGate,
+      raportSciezka: inspekcja.raportSciezka || `${sciezka}/review-faza-${faza}.md`,
+      e2e: inspekcja.e2e || { passed: 0, failed: 0, skipped: 0 },
+      przebieg,
+      scribeOdzyskany: true,
+    }
+  }
+  log(`Scribe fazy ${faza} padl 2x, a raportu nie da sie odzyskac (${inspekcja ? 'raport niekompletny lub go nie ma' : 'inspektor zwrocil null'})`)
   // Scribe padl 2x — zwroc zweryfikowane findingi + flage scribeFail (orkiestrator liczy gate w JS
   // z findings[], ale NIE moze oznaczyc review jako done: raport i checkboxy nie powstaly).
   return {
