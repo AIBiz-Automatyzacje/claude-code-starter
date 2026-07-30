@@ -73,6 +73,19 @@ Im dłużej pracujesz w projekcie, tym mniej błędów Claude powtarza.
 Chcesz zrozumieć, jak to działa pod maską? Niżej masz pełną dokumentację: pipeline `dev-*`,
 workflowy, wszystkich 15 agentów i pułapki, na które sami wpadliśmy.
 
+## Bonus: Output Style „adhd"
+
+Masz dość gadatliwych odpowiedzi? W [`output-styles/adhd.md`](output-styles/adhd.md) znajdziesz
+gotowy Output Style, który sprawia, że Claude zaczyna od konkretu zamiast ściany tekstu.
+Napisany według wytycznych Anthropic dla modeli z serii 5 (zero zakazów — opisany cel,
+resztę model wyprowadza sam). Inspiracja: skill [i-have-adhd](https://github.com/ayghri/i-have-adhd)
+z wiralowego wątku na r/ClaudeAI.
+
+1. Skopiuj `output-styles/adhd.md` do folderu `.claude/output-styles/` w swoim projekcie
+   (albo do `~/.claude/output-styles/` globalnie).
+2. Zrestartuj sesję Claude Code.
+3. Wpisz `/config`, wybierz **Output style → adhd** i zatwierdź enterem.
+
 ---
 
 ## Co dostajesz
