@@ -42,6 +42,11 @@ Kroki (zgodnie ze skillem):
 8. Zacommituj archiwizacje: git add TYLKO plikow ktore zmieniles w krokach 4-7
    (docs/active/, docs/completed/, ew. CLAUDE.md / .claude/rules/) i commit z message
    "docs(${nazwaZadania}): archiwizacja zadania — completed + podsumowanie".
+   SIATKA BEZPIECZENSTWA: sprawdz \`git status --porcelain\` i jesli wisza niezacommitowane
+   artefakty bazy wiedzy — docs/solutions/, docs/CONCEPTS.md, .claude/rules/learned-patterns.md
+   — dolacz je do TEGO commita (compound albo compound-refresh nie domknal swojego commita).
+   Powod: dwa runy z rzedu zostawily te pliki w drzewie, a brudne drzewo blokuje bramke bootstrapu
+   nastepnego runu autopilota (STOP "niezacommitowane zmiany").
    NIE dodawaj plikow spoza tej listy (zadnego git add -A). Jesli git commit nie powiedzie sie
    lub nie ma zmian — zwroc commit: "" i opisz powod w rezultaty (nie przerywaj archiwizacji).
 

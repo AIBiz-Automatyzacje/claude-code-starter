@@ -81,6 +81,10 @@ const METRYKI_FAZY = {
       additionalProperties: false,
       properties: {
         pominieci: { type: 'array', items: { type: 'string' }, description: 'keys reviewerow pominietych przez routing' },
+        // Poza `required` SWIADOMIE (2026-07-30): stany zapisane przed ta zmiana maja `przebieg` BEZ tego
+        // pola, a bootstrap-agent przepisuje `metryki` 1:1 przez ten schemat. W `required` wywalilby
+        // wznowienie starego zadania na walidacji. null = przebieg ze starszego runu.
+        e2eTryb: { type: ['string', 'null'], description: 'tryb testera E2E: przegladarka | bez-przegladarki | pominiety' },
         znalezione: { type: 'integer' },
         poDedupJs: { type: 'integer' },
         poDedupSem: { type: 'integer' },
@@ -612,6 +616,9 @@ function skrotPrzebiegu(p) {
   if (!p) return null
   return {
     pominieci: (p.pominieci || []).map((x) => (typeof x === 'string' ? x : x.key)),
+    // null = przebieg ze STARSZEGO stanu, ktory tego pola nie zna (patrz METRYKI_FAZY) — konsument
+    // telemetrii ma widziec brak danych, nie zgadywany tryb.
+    e2eTryb: p.e2eTryb || null,
     znalezione: p.znalezione,
     poDedupJs: p.poDedupJs,
     poDedupSem: p.poDedupSem,
@@ -674,6 +681,10 @@ for (const numerFazy of kolejka) {
       sciezka,
       faza: numerFazy,
       poprzednieFindingi: faza.otwarteFindingi.length ? faza.otwarteFindingi : null,
+      // Status srodowiska przegladarkowego (2026-07-30): routing v2 sam z diffu NIE wie, czy przegladarka
+      // stoi, wiec w runie rownolegle-joby (faza 1) przywolal testera przy e2eSrodowisko: "pominieto"
+      // — wynik 1 passed / 1 failed / 3 skipped. Z tym sygnalem review-wf da mu tryb bez przegladarki.
+      srodowiskoE2E: e2eAktywne ? 'gotowe' : (e2eEnv ? e2eEnv.status : 'brak'),
     })
     if (!review) {
       return { status: 'STOP', powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty }
@@ -700,7 +711,7 @@ for (const numerFazy of kolejka) {
     if (przebiegFazy) {
       const skrot = skrotPrzebiegu(przebiegFazy)
       const pom = skrot.pominieci.length ? skrot.pominieci.join(',') : 'brak'
-      log(`Routing fazy ${numerFazy}: pominieci=${pom}; findingi ${przebiegFazy.znalezione}->${przebiegFazy.poDedupSem} po dedupie, obalone ${przebiegFazy.obalone}/${przebiegFazy.weryfikowane}`)
+      log(`Routing fazy ${numerFazy}: pominieci=${pom}; tester E2E=${skrot.e2eTryb || 'n/a'}; findingi ${przebiegFazy.znalezione}->${przebiegFazy.poDedupSem} po dedupie, obalone ${przebiegFazy.obalone}/${przebiegFazy.weryfikowane}`)
     }
     faza.review = 'done'
     // Metryki utrwalone w stanie — zrodlo dla telemetrii po resume (review sie wtedy nie powtarza).
@@ -848,8 +859,13 @@ const REFRESH_RESULT = {
     przejrzano: { type: 'number', description: 'liczba dokumentow w waskim scope' },
     akcje: { type: 'array', items: { type: 'string' }, description: 'wykonane akcje (Keep/Update/Replace/Archive/dedup CONCEPTS)' },
     slownik: { type: 'string', enum: ['posprzatany', 'bez zmian', 'brak pliku'] },
+    // Refresh EDYTUJE istniejace dokumenty bazy wiedzy (w audytowanym runie zmodyfikowal siostrzany
+    // solution), a nikt tych zmian nie commitowal — razem z artefaktami compound zostawaly w drzewie
+    // i blokowaly bramke bootstrapu nastepnego runu. W required z tego samego powodu co plikiBinarne:
+    // brak commita musi byc jawny, pole opcjonalne = agent cicho pomija commit.
+    commit: { type: 'string', description: 'hash commita zmian bazy wiedzy ("" gdy nic nie zmieniono albo commit sie nie udal)' },
   },
-  required: ['przejrzano', 'slownik'],
+  required: ['przejrzano', 'slownik', 'commit'],
 }
 
 const refreshPrompt = (plik, kategoria) =>
@@ -859,7 +875,14 @@ Wykonaj skill .claude/skills/dev-compound-refresh/SKILL.md w TRYBIE AUTONOMICZNY
 - NIE przegladaj calej bazy docs/solutions/ — tylko ten waski scope (routing "Skupiony", 1-2 dokumenty).
 - Cel: czy nowy solution (${plik}) podwaza/zastepuje siostrzany dokument w tej kategorii; dedup i weryfikacja hasel w docs/CONCEPTS.md; napraw nieaktualne referencje.
 - Wykonuj bezpieczne akcje (Keep/Update/Archive/Replace gdy dowody wystarczajace); niejednoznaczne oznacz stale. Best-effort — nie blokuj.
-Zwroc obiekt zgodny ze schematem RefreshResult.`
+- PO wykonaniu akcji ZACOMMITUJ zmienione dokumenty bazy wiedzy. Kto zapisuje, ten commituje: dwa runy
+  z rzedu zostawily artefakty bazy wiedzy niezacommitowane, a brudne drzewo blokuje bramke bootstrapu
+  nastepnego runu autopilota (STOP "niezacommitowane zmiany").
+  Staguj WYLACZNIE po whiteliscie: \`git add docs/solutions/ docs/CONCEPTS.md .claude/rules/learned-patterns.md\`
+  (pomin sciezki, ktorych nie ma na dysku). ZAKAZ \`git add -A\` i \`git add .\`.
+  Message: \`docs(solutions): odswiezenie bazy wiedzy — <co zmieniono>\`.
+  Gdy nie zmieniles zadnego pliku albo commit sie nie udal — zwroc commit: "" i nie przerywaj.
+Zwroc obiekt zgodny ze schematem RefreshResult (commit = hash commita lub "").`
 
 let compound = null
 let refresh = null
@@ -869,7 +892,7 @@ if (stan.zakonczenie.compound === 'pending') {
   // Odpala sie tylko gdy compound cos zapisal (compound.plik != null). Best-effort: nie blokuje complete.
   if (compound && compound.plik) {
     refresh = await agent(refreshPrompt(compound.plik, compound.kategoria), { schema: REFRESH_RESULT, label: 'compound-refresh' })
-    log(`Compound-refresh (scoped): ${refresh ? `${refresh.przejrzano} dok., slownik=${refresh.slownik}` : 'agent zwrocil null'}`)
+    log(`Compound-refresh (scoped): ${refresh ? `${refresh.przejrzano} dok., slownik=${refresh.slownik}, commit=${refresh.commit || 'brak'}` : 'agent zwrocil null'}`)
   }
   stan.zakonczenie.compound = 'done'
   await zapiszStan()

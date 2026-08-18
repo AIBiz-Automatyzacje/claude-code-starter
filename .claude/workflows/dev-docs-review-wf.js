@@ -307,7 +307,24 @@ Zwroc {findings:[...]} (severity P1/P2/P3, typ KOD/TEST/E2E/OPERATOR). Nie zapis
 ${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
-function e2ePrompt(sciezka, faza, poprzednie) {
+// Blok trybu `bez-przegladarki` — doklejany, gdy orkiestrator zglosil, ze srodowiska E2E NIE MA.
+// Obserwacja (run rownolegle-joby, faza 1, 2026-07-30): routing przywolal testera (ui=true + 1 browserowy
+// checkbox), ale srodowiska nie bylo (e2eSrodowisko: "pominieto", brak .env.e2e) — tester i tak poszedl
+// w przegladarke i skonczylo sie na 1 passed / 1 failed / 3 skipped. Nie wycinamy go, bo ten JEDEN fail
+// byl realny i wykryty na poziomie HTTP; odbieramy mu tylko przegladarke, ktorej nie ma.
+const BLOK_BEZ_PRZEGLADARKI = `
+TRYB BEZ PRZEGLADARKI — orkiestrator zglosil, ze srodowisko E2E jest NIEDOSTEPNE. To zakaz, nie sugestia:
+- NIE uruchamiaj skilla agent-browser, NIE nawiguj po URL-ach, NIE rob screenshotow ani snapshotow.
+- Kazdy scenariusz wymagajacy PRZEGLADARKI = SKIP z powodem "brak srodowiska E2E" -> zglos jako finding
+  typ OPERATOR (severity P3) z Operator action, zeby trafil do Operator checklist. NIE zglaszaj go jako P2
+  (to nie defekt kodu) i pod zadnym pozorem NIE opisuj go tak, jakby zostal odegrany.
+- Wykonaj TYLKO weryfikacje NIEBROWSEROWE dajace rownowazny dowod: HTTP (curl na route/endpoint + sprawdzenie
+  statusu i tresci odpowiedzi), CLI (skrypty, testy, inspekcja artefaktow builda). Porazka wykryta tak samo
+  jest defektem -> finding P2 typ E2E.
+- Preflight (curl) nadal wykonaj — bez niego nie wiesz, co da sie sprawdzic po HTTP.
+`
+
+function e2ePrompt(sciezka, faza, poprzednie, tryb) {
   return `Jestes testerem E2E w przegladarce (agent-browser) dla fazy ${faza} w ${sciezka}.
 Zbierz niezaznaczone checkboxy "Weryfikacja:" tej fazy dotyczace scenariuszy w przegladarce
 (open/navigate URL, click, type/fill, expect/assert visible, screenshot, nawigacja klawiatura,
@@ -325,7 +342,7 @@ na dedykowanej bazie e2e i zsynchronizowal migracje+seedy PRZED Twoim startem. W
 - "migracja/RPC niewdrozona na remote" i "brak seeded sesji" NIE sa automatycznym powodem
   OPERATOR — najpierw SPRAWDZ realnie (uruchom flow); klasyfikuj OPERATOR dopiero po twardym
   dowodzie blokera srodowiskowego (np. blad poza kontrola: dev server down, popup OAuth zewnetrznego providera).
-
+${tryb === 'bez-przegladarki' ? BLOK_BEZ_PRZEGLADARKI : ''}
 KLASYFIKACJA per scenariusz (to jest krytyczne — nie wszystko jest P2):
 - Scenariusz WYKONANY i FAILED z powodu defektu w kodzie/UI/stylu -> finding P2 typ E2E.
 - Scenariusz NIEWYKONALNY headless (dev server down, popup OAuth zewnetrznego providera,
@@ -354,12 +371,17 @@ function przebiegBlok(p) {
 | Pliki w fazie (z tego kodu) | ${p.pliki} (${p.plikiKodu}) |
 | Flagi warstw | ${w} |
 | Browserowe checkboxy \`Weryfikacja:\` | ${p.e2eCheckboxy} |
+| Tryb testera E2E | ${p.e2eTryb} |
 | Reviewerzy aktywni | ${p.aktywni.join(', ')} |
 | Reviewerzy pominieci | ${pom} |
 | Findingi: znalezione -> dedup JS -> dedup semantyczny | ${p.znalezione} -> ${p.poDedupJs} -> ${p.poDedupSem} |
 | Adversarial verify: weryfikowane / obalone / bez glosow | ${p.weryfikowane} / ${p.obalone} / ${p.niezweryfikowane} |`
 }
 
+// Ostrzezenie o niepotwierdzonych checkboxach wisi na `e2eTryb`, a NIE na `aktywni.includes('e2e')`
+// (2026-07-30). W trybie `bez-przegladarki` tester JEST w `aktywni`, ale przegladarki nie tknal — warunek
+// "tester nie odpalil" przepuscilby wtedy scribe'a do odznaczania browserowych checkboxow bez zadnego
+// przebiegu, cicho kasujac gwarancje z poprzedniego audytu. Pytanie jest wiec "czy tester MIAL PRZEGLADARKE".
 function scribePrompt(sciezka, faza, potwierdzone, przebieg) {
   return `Jestes scribe review fazy ${faza} w ${sciezka}. Otrzymujesz ZWERYFIKOWANE findings (po adversarial verify).
 
@@ -378,8 +400,10 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
 3. Bookkeeping checkboxow "Weryfikacja:" (sekcja 4.7): re-parsuj niezaznaczone "Weryfikacja:" fazy ${faza},
    sklasyfikuj (CLI->uruchom przez Bash, exit0->[x]; Grep->uruchom; E2E browser (agent-browser) wykonany->wg findings E2E;
    E2E niewykonalny headless->Operator checklist (typ OPERATOR, nie P2); Manual->zostaw z adnotacja; Niejasne->P3).
-   Odznacz/anotuj w pliku zadan. Dopisz sekcje "Bookkeeping checkboxow Weryfikacja:" do raportu.${przebieg.aktywni.includes('e2e') ? '' : `
-   UWAGA — TESTER E2E NIE ODPALIL W TEJ FAZIE (routing pominal: ${(przebieg.pominieci.find((x) => x.key === 'e2e') || {}).powod || 'brak warstwy UI'}).
+   Odznacz/anotuj w pliku zadan. Dopisz sekcje "Bookkeeping checkboxow Weryfikacja:" do raportu.${przebieg.e2eTryb === 'przegladarka' ? '' : `
+   UWAGA — TESTER E2E NIE MIAL PRZEGLADARKI W TEJ FAZIE (${przebieg.e2eTryb === 'bez-przegladarki'
+     ? 'tester odpalil w trybie BEZ PRZEGLADARKI — srodowisko E2E niedostepne, wiec zadnego scenariusza browserowego nie odegral (tylko weryfikacje HTTP/CLI)'
+     : `routing pominal testera: ${(przebieg.pominieci.find((x) => x.key === 'e2e') || {}).powod || 'brak warstwy UI'}`}).
    Zadnego checkboxa wymagajacego PRZEGLADARKI NIE odznaczaj — nie ma przebiegu, ktory by to potwierdzil.
    Jesli mimo to znajdziesz taki checkbox, zostaw \`- [ ]\` i przenies go do "## Operator checklist faza ${faza}"
    (format "- [ ] Operator: ..."), bo weryfikacja nie zostala wykonana.`}
@@ -424,6 +448,10 @@ const sciezka = args && args.sciezka
 const faza = args && args.faza
 // Poprawka 1: w re-review orkiestrator przekazuje findingi z poprzedniego cyklu -> targetowana weryfikacja.
 const poprzednie = (args && args.poprzednieFindingi) || []
+// Status srodowiska przegladarkowego E2E od orkiestratora ('gotowe' | 'pominieto' | 'niepowodzenie' | 'brak').
+// undefined = run standalone (reczne /dev-docs-review) — wtedy NIE wiemy nic o srodowisku i nie wolno nam
+// niczego ograniczac: FAIL-OPEN, zachowanie dokladnie jak przed ta zmiana.
+const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 if (!sciezka || faza === undefined) {
   return { fazaNumer: -1, findings: [], liczniki: { p1: 0, p2: 0, p3: 0, operator: 0 }, severityGate: 'BLOKUJE', raportSciezka: '', e2e: { passed: 0, failed: 0, skipped: 0 } }
 }
@@ -466,10 +494,20 @@ const WARUNKI = {
 const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy))
 // E2E ma druga, niezalezna furtke: nawet gdy packager pomyli sie na `ui`, faza z browserowym
 // checkboxem "Weryfikacja:" zawsze dostaje testera (inaczej scribe odznaczylby go bez przebiegu).
-const e2eAktywny = !warstwy || warstwy.ui || e2eCheckboxy > 0
+const domenaE2E = !warstwy || warstwy.ui || e2eCheckboxy > 0
+// Tryb testera E2E (2026-07-30) — trzy stany zamiast wlacz/wylacz. Domena decyduje, CZY tester ma co robic;
+// status srodowiska decyduje, CZYM moze to robic. Obserwacja z runu rownolegle-joby (faza 1): tester
+// przywolany bez srodowiska (e2eSrodowisko: "pominieto") dal 1 passed / 1 failed / 3 skipped — czesc tej
+// pracy zrobilby scribe za darmo, ale ten jeden fail byl realny. Wiec: ograniczamy zakres i MIERZYMY.
+//   'przegladarka'     = domena obecna + srodowisko gotowe ALBO nieznane (standalone) -> jak dotad,
+//   'bez-przegladarki' = domena obecna, ale srodowisko ZNANE i != 'gotowe' -> tylko HTTP/CLI,
+//   'pominiety'        = brak warstwy UI i zero browserowych checkboxow -> tester nie startuje.
+const e2eTryb = !domenaE2E
+  ? 'pominiety'
+  : (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-przegladarki' : 'przegladarka'
 const pominieci = [
   ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: 'domena nieobecna w mapie zmian fazy' })),
-  ...(e2eAktywny ? [] : [{ key: 'e2e', powod: `brak warstwy UI i zero browserowych checkboxow Weryfikacja: (${e2eCheckboxy})` }]),
+  ...(e2eTryb === 'pominiety' ? [{ key: 'e2e', powod: `brak warstwy UI i zero browserowych checkboxow Weryfikacja: (${e2eCheckboxy})` }] : []),
 ]
 if (pominieci.length) log(`Routing v2: pomijam ${pominieci.map((p) => p.key).join(', ')} (${plikiFazy.length} plikow, ${plikiKodu} kodu)`)
 else log(`Routing v2: pelny sklad (${plikiFazy.length} plikow${warstwy ? '' : ', brak flag warstw — fail-open'})`)
@@ -478,8 +516,9 @@ const thunki = aktywni.map((r) => () =>
   agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), { schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' })
 )
 thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, label: 'review:test-coverage', phase: 'Review' }))
-if (e2eAktywny) {
-  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e), { schema: FINDINGS, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }))
+if (e2eTryb !== 'pominiety') {
+  log(`Tester E2E: tryb ${e2eTryb} (srodowisko: ${srodowiskoE2E === undefined ? 'nieznane — run standalone' : srodowiskoE2E})`)
+  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb), { schema: FINDINGS, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }))
 }
 
 const wyniki = await parallel(thunki)
@@ -613,7 +652,8 @@ const przebieg = {
   plikiKodu,
   warstwy,
   e2eCheckboxy,
-  aktywni: [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eAktywny ? ['e2e'] : [])],
+  e2eTryb,
+  aktywni: [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])],
   pominieci,
   znalezione: wszystkie.length,
   poDedupJs,
