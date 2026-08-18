@@ -1,6 +1,6 @@
 export const meta = {
   name: 'dev-docs-review-wf',
-  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/simplicity/test zawsze; perf/architektura/typescript/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 8 reviewerow rownolegle -> dedup 2-przebiegowy (JS + semantyczny haiku) -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + sekcje "Przebieg review" + bookkeeping checkboxow Weryfikacja: -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii.',
+  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/simplicity/test zawsze; perf/architektura/typescript/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 8 reviewerow rownolegle -> dedup 2-przebiegowy (JS + semantyczny haiku) -> detekcja blokera srodowiska po sygnaturze (JS) + globalny limit P3 po dedupie (round-robin po zrodle) -> adversarial verify P1/P2 (P1=3 sceptykow, P2=1) -> scribe zapisuje raport + sekcje "Przebieg review" + bookkeeping checkboxow Weryfikacja: -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii i blokerSrodowiska dla orkiestratora.',
   whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
   phases: [
     { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 8, w tym spec-compliance i simplicity/YAGNI)' },
@@ -65,6 +65,51 @@ AKCYJNOSC: P3 zglaszasz tylko wtedy, gdy potrafisz wskazac KONKRETNA akcje napra
 "nazwa moglaby byc lepsza", "rozwazyc refaktor" — bez konkretu NIE zglaszasz. Nit bez akcji to szum.
 Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku.
 === KONIEC BLOKU LIMITU P3 ===`
+
+// Doklejany do spec-compliance i test-coverage. Powod (run feedback-marcin-poprawki, 2026-08-06,
+// repo mobile — klasa bledu w pelni przenosna): `price_pln` to koszt CALEGO turnieju, ale trzy miejsca
+// w kodzie czytaly go jako kwote OD GRACZA — rejestr wplat pokazywal "zebrano 640 zl z 1280 zl"
+// zamiast 80 z 160 (8x zawyzenie), a jeden ekran jednoczesnie "5,00 zl za osobe" i "40 zl od gracza".
+// Unit testy byly ZIELONE, bo fixture'y powielaly to samo bledne zalozenie; zaden z 8 reviewerow tego
+// nie zglosil, bo kod jest wewnetrznie spojny. Wylapal to dopiero E2E na realnych danych — najdrozsza
+// mozliwa sciezka.
+const BLOK_SEMANTYKA = `
+=== SEMANTYKA I JEDNOSTKI POL (obowiazkowe, gdy faza tyka danych liczbowych/czasowych) ===
+Kod wewnetrznie spojny moze byc jednolicie BLEDNY: jesli fixture i implementacja przyjmuja to samo zle
+zalozenie o znaczeniu pola, testy przechodza, a produkt liczy zle.
+
+PROCEDURA (wykonaj ja, nie streszczaj):
+1. Wypisz pola liczbowe/czasowe dotkniete faza i dla KAZDEGO uruchom
+   \`grep -rn "<nazwa_pola>" --include=*.ts --include=*.tsx --include=*.sql .\` — masz zobaczyc WSZYSTKIE
+   uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
+2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
+   -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly \`numeric\` bez komentarza), NIE zgaduj
+   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
+   "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
+3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
+   RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
+   przeglad kodu nie daje takiej pewnosci jak realna liczba.
+
+Co sprawdzasz w kazdym uzyciu:
+- kwoty: calosc vs per-osoba vs per-jednostke; grosze vs zlote; brutto vs netto,
+- czas: sekundy vs milisekundy; UTC vs lokalny; timestamp vs data,
+- indeksy i skale: miesiac 0- vs 1-based; procenty jako 0..1 vs 0..100; licznik vs suma,
+- liczebnosci: liczba graczy vs liczba druzyn vs liczba miejsc.
+Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
+testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
+Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
+UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
+uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
+wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
+=== KONIEC BLOKU SEMANTYKI ===`
+
+// Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec przy
+// 8 reviewerach agregat i tak dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz
+// przy 1 P1 i 17 P2 realnie naprawionych). P3 nie wchodza do petli naprawczej (otwartePoReview filtruje
+// P1|P2), wiec ponad limit placimy juz tylko za prompt scribe'a i objetosc raportu.
+// Prog 8 jest WSTEPNY — dobrany tak, by miescil obserwowana mediane po dedupie i przycinal ogon.
+// Do strojenia po zebraniu telemetrii z kilku runow (pole przebieg.p3Odrzucone mowi, ile ucielismy).
+const LIMIT_P3_GLOBALNY = 8
 
 // ── Schematy ──────────────────────────────────────────────────────────────
 
@@ -221,7 +266,9 @@ const REVIEWERZY = [
   { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, memoization, useEffect cleanup' },
   { key: 'architecture', agentType: 'architecture-strategist', fokus: 'SOLID, wzorce, nazewnictwo, import organization, granice warstw' },
   { key: 'typescript', agentType: 'kieran-typescript-reviewer', fokus: 'type safety, brak any/as/!, discriminated unions, explicit return types' },
-  { key: 'spec-compliance', agentType: 'spec-flow-analyzer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
+  // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY
+  // (spec/IU) jako punkt odniesienia; pozostali dostaja procedure posrednio przez test-coverage.
+  { key: 'spec-compliance', semantyka: true, agentType: 'spec-flow-analyzer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
   { key: 'simplicity', agentType: 'code-simplicity-reviewer', fokus: 'YAGNI i minimalizm: zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na niemozliwe scenariusze, martwy kod, redundancja, uproszczenia bez utraty funkcji. Duplication > Complexity — prosta duplikacja jest OK, zlozona abstrakcja DRY nie' },
 ]
 
@@ -288,14 +335,14 @@ zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam g
 Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, diffPlik, diffZapisany, diffUciety}.`
 }
 
-function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst) {
+function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, semantyka) {
   return `Jestes reviewerem fazy ${faza} w folderze ${sciezka}.
 Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Files:, Test scenarios:, Patterns to follow:).
 Przeczytaj tez .claude/rules/learned-patterns.md (jesli istnieje) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.
 Skup sie na: ${fokus}.
 Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
 Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
-${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+${BLOK_ZAUFANIE}${semantyka ? BLOK_SEMANTYKA : ''}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 function testCoveragePrompt(sciezka, faza, poprzednie, kontekst) {
@@ -304,7 +351,7 @@ Sprawdz: happy path, invalid inputs, boundary conditions, concurrent operations,
 Test coverage: czy plan techniczny (docs/plans/) definiowal scenariusze testowe dla tej fazy i czy pliki testowe
 istnieja oraz maja asercje? Brakujace testy = P2 (typ TEST).
 Zwroc {findings:[...]} (severity P1/P2/P3, typ KOD/TEST/E2E/OPERATOR). Nie zapisuj plikow.
-${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+${BLOK_DLUGIE_KOMENDY}${BLOK_SEMANTYKA}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 // Blok trybu `bez-przegladarki` — doklejany, gdy orkiestrator zglosil, ze srodowiska E2E NIE MA.
@@ -351,6 +398,12 @@ KLASYFIKACJA per scenariusz (to jest krytyczne — nie wszystko jest P2):
   W opisie podaj: tresc checkboxa + dokladny blocker + Operator action (kroki do odblokowania).
 - Scenariusz WYKONANY i PASSED -> nie zglaszaj (scribe odznaczy w bookkeepingu).
 
+CYTUJ DOSLOWNE KOMUNIKATY BLEDOW: gdy scenariusz pada na bledzie srodowiska/sieci (connection refused,
+ERR_*, ECONNREFUSED, timeout, DNS), wklej do opisu findingu DOSLOWNY komunikat z konsoli/outputu
+(skopiowany 1:1), nie parafraze. Orkiestrator rozpoznaje klasy blokera srodowiska po SYGNATURZE
+tekstowej w opisach findingow — parafraza ("serwer nie odpowiadal") tej detekcji NIE uruchomi
+i run pojedzie dalej na zepsutym srodowisku.
+
 Jesli zadanie ma figma_screens / mockupy w sekcji designerskiej — zrob side-by-side visual
 comparison screenshotu z mockupem (rozbieznosci wizualne = P2 typ E2E).
 
@@ -375,6 +428,7 @@ function przebiegBlok(p) {
 | Reviewerzy aktywni | ${p.aktywni.join(', ')} |
 | Reviewerzy pominieci | ${pom} |
 | Findingi: znalezione -> dedup JS -> dedup semantyczny | ${p.znalezione} -> ${p.poDedupJs} -> ${p.poDedupSem} |
+| P3 odrzucone limitem globalnym | ${p.p3Odrzucone || 0} |
 | Adversarial verify: weryfikowane / obalone / bez glosow | ${p.weryfikowane} / ${p.obalone} / ${p.niezweryfikowane} |`
 }
 
@@ -513,7 +567,7 @@ if (pominieci.length) log(`Routing v2: pomijam ${pominieci.map((p) => p.key).joi
 else log(`Routing v2: pelny sklad (${plikiFazy.length} plikow${warstwy ? '' : ', brak flag warstw — fail-open'})`)
 
 const thunki = aktywni.map((r) => () =>
-  agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), { schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' })
+  agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), { schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' })
 )
 thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, label: 'review:test-coverage', phase: 'Review' }))
 if (e2eTryb !== 'pominiety') {
@@ -543,7 +597,40 @@ const wyniki = await parallel(thunki)
 //     progi kalibrowane na JEDNYM polskojezycznym korpusie (opisy findingow nie zawsze beda po
 //     polsku) przy zysku rzedu jednej pary na 75 findingow to zla wymiana wobec ryzyka cichej
 //     utraty findingu — regula §11 "Duplication > Complexity".
-const wszystkie = wyniki.filter(Boolean).flatMap((w) => w.findings)
+// ── Detekcja blokera srodowiskowego po SYGNATURZE (port z mobile, 2026-08-08) ──
+// Powod (run feedback-marcin-poprawki, mobile): awarie SRODOWISKA objawialy sie dopiero w scenariuszach
+// E2E, tester klasyfikowal je jako P2/OPERATOR i RUN LECIAL DALEJ przez kolejne fazy — kazdy nastepny
+// scenariusz padal z tego samego powodu, a operator dowiadywal sie po godzinach. Klasy z jednoznaczna
+// sygnatura w outputach rozpoznajemy w JS (bez LLM) i pozwalamy orkiestratorowi zatrzymac run od razu.
+// Web-owe klasy: (a) dev server nieosiagalny (padl w trakcie runu / zly port) — kazdy kolejny scenariusz
+// przegladarkowy padnie tak samo; (b) host nierozwiazywalny (zly URL w .env.e2e / projekt Supabase
+// spauzowany) — to samo. SWIADOME OGRANICZENIE: gdy przegladarka/curl zmieni brzmienie komunikatu,
+// detekcja przestanie dzialac po cichu — dlatego to UZUPELNIENIE normalnej klasyfikacji, nie jej
+// zamiennik. Finding nierozpoznany dalej idzie zwykla sciezka P2/OPERATOR (stan sprzed tej zmiany).
+// Tester E2E ma nakaz cytowania DOSLOWNYCH komunikatow (patrz e2ePrompt) — parafraza nie uruchomi detekcji.
+const SYGNATURY_BLOKERA = [
+  { re: /err_connection_refused|econnrefused|net::err_connection|connection refused|(localhost|127\.0\.0\.1):\d+[^\n]{0,60}\b(refused|unreachable|timed out|nie odpowiada)/i, klasa: 'dev-server-nieosiagalny' },
+  { re: /err_name_not_resolved|enotfound|getaddrinfo|could not resolve host/i, klasa: 'host-nierozwiazywalny' },
+]
+function wykryjBlokerSrodowiska(findingi) {
+  for (const f of findingi) {
+    const tekst = `${f.opis || ''} ${f.plik || ''}`
+    for (const s of SYGNATURY_BLOKERA) {
+      if (s.re.test(tekst)) return { wykryty: true, klasa: s.klasa, dowod: (f.opis || '').slice(0, 500) }
+    }
+  }
+  return null
+}
+
+// Etykieta zrodla per finding — kolejnosc `wyniki` odpowiada kolejnosci `thunki` (aktywni, potem
+// test-coverage, potem opcjonalnie e2e). Potrzebna do sprawiedliwego przyciecia P3 (patrz wybierzNity):
+// bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
+const etykietyZrodel = [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
+const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
+const blokerSrodowiska = wykryjBlokerSrodowiska(wszystkie)
+if (blokerSrodowiska) {
+  log(`BLOKER SRODOWISKA wykryty po sygnaturze (${blokerSrodowiska.klasa}) — orkiestrator zatrzyma run zamiast ciagnac kolejne fazy na zepsutym srodowisku`)
+}
 const RANGA = { P1: 0, P2: 1, P3: 2 }
 const poKluczu = new Map()
 for (const f of wszystkie) {
@@ -603,7 +690,45 @@ ${lista}`,
 // Faza 2: adversarial verify — tylko P1/P2 (P3/nity przechodza bez weryfikacji)
 phase('Verify')
 const doWeryfikacji = dedup.filter((f) => f.severity === 'P1' || f.severity === 'P2')
-const nity = dedup.filter((f) => f.severity === 'P3')
+// Globalny limit P3 PO dedupie — per-reviewerowy BLOK_LIMIT_P3 nie ogranicza AGREGATU (8 reviewerow x 5).
+// Przycinamy JAWNIE (log + metryka p3Odrzucone), nigdy po cichu: milczace uciecie czytaloby sie jak
+// "tyle bylo", a to falszywy obraz jakosci fazy. P1/P2 NIE sa tu dotykane pod zadnym warunkiem.
+const wszystkieNity = dedup.filter((f) => f.severity === 'P3')
+// Wybor round-robin po ZRODLE, nie `slice` po kolejnosci wstawiania. Powod (review adwersaryjny 2026-08-08,
+// mobile): findingi wchodza do Mapy w kolejnosci reviewerow (security, performance, architecture,
+// typescript, spec-compliance, simplicity, test-coverage, e2e), wiec proste `slice(0,8)` przy 20+ nitach
+// przepuszczalo wylacznie P3 dwoch pierwszych reviewerow i SYSTEMATYCZNIE, w kazdej fazie, wycinalo cale
+// wyjscie simplicity, test-coverage i e2e. To nie jest uciecie ogona, tylko wyciszenie trzech reviewerow.
+// W obrebie zrodla KOD/TEST ida przed OPERATOR (nit o defekcie jest wart wiecej niz nota srodowiskowa).
+function wybierzNity(nityLista, limit) {
+  if (nityLista.length <= limit) return nityLista
+  const PRIORYTET = { KOD: 0, TEST: 1, E2E: 2, OPERATOR: 3 }
+  const kolejki = new Map()
+  for (const f of nityLista) {
+    const k = f._zrodlo || '?'
+    if (!kolejki.has(k)) kolejki.set(k, [])
+    kolejki.get(k).push(f)
+  }
+  for (const q of kolejki.values()) q.sort((a, b) => (PRIORYTET[a.typ] ?? 9) - (PRIORYTET[b.typ] ?? 9))
+  const wybrane = []
+  for (let runda = 0; wybrane.length < limit; runda++) {
+    let dodano = false
+    for (const q of kolejki.values()) {
+      if (q.length > runda) {
+        wybrane.push(q[runda])
+        dodano = true
+        if (wybrane.length === limit) break
+      }
+    }
+    if (!dodano) break // wyczerpalismy wszystkie kolejki przed osiagnieciem limitu
+  }
+  return wybrane
+}
+const nity = wybierzNity(wszystkieNity, LIMIT_P3_GLOBALNY)
+const p3Odrzucone = wszystkieNity.length - nity.length
+if (p3Odrzucone) {
+  log(`Limit P3: z ${wszystkieNity.length} nitow po dedupie zostawiam ${nity.length} (odrzucone: ${p3Odrzucone}) — prog LIMIT_P3_GLOBALNY=${LIMIT_P3_GLOBALNY}`)
+}
 
 // Poprawka 8: P1 (blocking) -> 3 sceptykow (konsensus 2/3). P2 (important) -> 1 sceptyk.
 // Verify bylo 55% calego runu (dane wf_ed163076: 114/208 agentow). 3x na kazdy P2 to nadmiar —
@@ -658,6 +783,7 @@ const przebieg = {
   znalezione: wszystkie.length,
   poDedupJs,
   poDedupSem: dedup.length,
+  p3Odrzucone,
   weryfikowane: doWeryfikacji.length,
   obalone: doWeryfikacji.length - (potwierdzone.length - nity.length),
   niezweryfikowane: potwierdzone.filter((f) => f.opis.startsWith('[NIEZWERYFIKOWANY')).length,
@@ -694,6 +820,7 @@ if (!wynik) {
       raportSciezka: inspekcja.raportSciezka || `${sciezka}/review-faza-${faza}.md`,
       e2e: inspekcja.e2e || { passed: 0, failed: 0, skipped: 0 },
       przebieg,
+      blokerSrodowiska,
       scribeOdzyskany: true,
     }
   }
@@ -708,8 +835,10 @@ if (!wynik) {
     raportSciezka: '',
     e2e: { passed: 0, failed: 0, skipped: 0 },
     przebieg,
+    blokerSrodowiska,
     scribeFail: true,
   }
 }
-// przebieg dokladany w JS (nie przez schemat agenta) — orkiestrator zapisuje go w stanie i telemetrii.
-return { ...wynik, przebieg }
+// przebieg i blokerSrodowiska dokladane w JS (nie przez schemat agenta) — orkiestrator zapisuje przebieg
+// w stanie i telemetrii, a po blokerze zatrzymuje run.
+return { ...wynik, przebieg, blokerSrodowiska }

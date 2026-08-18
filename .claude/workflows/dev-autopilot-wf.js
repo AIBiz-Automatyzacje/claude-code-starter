@@ -3,8 +3,8 @@ export const meta = {
   description: 'Autonomiczny pipeline: bootstrap (stan z .autopilot-state.json) -> per faza (execute -> review+verify -> fix, bez re-review) -> compound -> compound-refresh (scoped) -> complete. Orkiestrator trzyma stan w JSON i liczy gate\'y w JS; buildery i reviewerzy to leaf-agenci.',
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu.',
   phases: [
-    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + rozgrzewka cache testow + srodowisko E2E (gdy .env.e2e istnieje: TWARDY STOP runu dopoki E2E nie gotowe — np. dev server Vite na dedykowanej bazie e2e)' },
-    { title: 'Zakonczenie', detail: 'walidacja koncowa -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja) -> telemetria (1 linia JSONL do ~/.claude/telemetry/autopilot-runs.jsonl, best-effort)' },
+    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
+    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja) -> telemetria (1 linia JSONL do ~/.claude/telemetry/autopilot-runs.jsonl; takze na sciezkach STOP)' },
   ],
 }
 
@@ -90,6 +90,9 @@ const METRYKI_FAZY = {
         poDedupSem: { type: 'integer' },
         weryfikowane: { type: 'integer' },
         obalone: { type: 'integer' },
+        // Poza required: stany zapisane przed portem globalnego limitu P3 tego pola nie maja, a bootstrap
+        // przepisuje stan 1:1 przez ten schemat — wymog wywracalby resume starszych zadan.
+        p3Odrzucone: { type: ['integer', 'null'], description: 'P3 uciete globalnym limitem po dedupie (strojenie progu)' },
       },
       required: ['pominieci', 'znalezione', 'poDedupJs', 'poDedupSem', 'weryfikowane', 'obalone'],
     },
@@ -149,7 +152,13 @@ const PLAN_STATE = {
 const ZAPIS_STANU = {
   type: 'object',
   additionalProperties: false,
-  properties: { zapisano: { type: 'boolean' } },
+  properties: {
+    zapisano: { type: 'boolean' },
+    // Pole opcjonalne, bo tego samego schematu uzywa telemetria (dopisuje linie JSONL, nie stan).
+    // Dla .autopilot-state.json jest OBOWIAZKOWE — patrz zapiszStanPrompt: agent ma je ustawic
+    // po REALNYM sparsowaniu pliku z dysku, nie po samym wywolaniu Write.
+    poprawnyJson: { type: ['boolean', 'null'], description: 'plik odczytany z dysku po zapisie sparsowal sie jako JSON' },
+  },
   required: ['zapisano'],
 }
 
@@ -163,6 +172,23 @@ const WARMUP_RESULT = {
     czasKontrolnySek: { type: ['integer', 'null'], description: 'czas kontrolnego warm-runu w sekundach — DOWOD zbudowania cache' },
   },
   required: ['status', 'detal'],
+}
+
+// Precheck: TANI, deterministyczny sygnal opt-in — oddzielony od ciezkiego env-up, zeby flake ciezkiego
+// agenta na projekcie opt-in NIE degradowal cicho E2E (patrz orkiestracja).
+// Precheck czyta DWA niezalezne sygnaly: czy repo MA srodowisko (.env.e2e) i czy zadanie go WYMAGA
+// (checkboxy [E2E] w planie). Sam plik to za malo — brak setupu bylby nieodrozanialny od swiadomej
+// rezygnacji (regresja e3-core-loop, mobile: run przejechal 3 fazy i ~20h zanim ktokolwiek zauwazyl,
+// ze scenariusze [E2E] nie maja gdzie sie wykonac).
+const E2E_PRECHECK = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    istnieje: { type: 'boolean', description: 'true = plik .env.e2e istnieje w korzeniu repo (srodowisko E2E skonfigurowane)' },
+    zadanieWymagaE2E: { type: 'boolean', description: 'true = plan zadania ma co najmniej jeden NIEZAZNACZONY checkbox z markerem [E2E] (zadanie deklaruje E2E jako deliverable)' },
+    liczbaScenariuszy: { type: 'integer', description: 'ile niezaznaczonych checkboxow [E2E] znaleziono w planie zadania (0 gdy zadnego)' },
+  },
+  required: ['istnieje', 'zadanieWymagaE2E', 'liczbaScenariuszy'],
 }
 
 const E2E_ENV_RESULT = {
@@ -248,6 +274,8 @@ const VALIDATION_RESULT = {
     testy: { type: 'string', description: 'PASS/FAIL z liczbami X/Y (+ adnotacje flake-infra)' },
     build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'vite build (lub build z package.json)' },
     testyZmodyfikowane: { type: 'array', items: { type: 'string' }, description: 'pliki *.test.* ze ZMIENIONYMI istniejacymi asercjami w commitach fix(...) — sygnal test-weakeningu' },
+    e2eNieuruchomione: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] wciaz NIEZAZNACZONYCH w planie zadania — wymusza wynik=FAIL (completion-gate). Nie zalezy od istnienia .env.e2e: zrodlem prawdy o wymaganiu E2E jest plan, nie repo' },
+    knownIssuesZamkniete: { type: ['integer', 'null'], description: 'ile wpisow known-issues.md przeniesiono do sekcji "Zamkniete" (higiena, NIE wplywa na wynik)' },
     wynik: { type: 'string', enum: ['PASS', 'FAIL'] },
     bledy: { type: 'array', items: { type: 'string' } },
   },
@@ -267,7 +295,15 @@ Folder zadania: ${sciezka}
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
 
-   A) PLIK ISTNIEJE (resume): przeczytaj go i zwroc jego fazy/zakonczenie BEZ reinterpretacji
+   A) PLIK ISTNIEJE (resume): NAJPIERW zwaliduj, ze to poprawny JSON:
+      \`node -e "JSON.parse(require('fs').readFileSync('${sciezka}/.autopilot-state.json','utf8'));console.log('JSON-OK')"\`
+      Blad parsowania -> NIE PROBUJ go odczytac ani zrekonstruowac. Model potrafi "odczytac" uszkodzony JSON
+      i zmyslic stan faz, a to znaczy albo powtorzenie kilku godzin pracy, albo pominiecie fazy, ktorej nikt
+      nie wykonal. Zamiast tego zbuduj stan z plikow md jak w wariancie B, ustaw
+      zrodloStanu:"pierwszy-parse-md" i dopisz do rozbieznosci[] wpis:
+      "USZKODZONY .autopilot-state.json (nie parsuje sie) — stan odtworzony z md; operator powinien go
+      sprawdzic lub usunac przed kolejnym runem". Nie modyfikuj tego pliku.
+      JSON-OK -> przeczytaj go i zwroc jego fazy/zakonczenie BEZ reinterpretacji
       checkboxow md — plik stanu jest ZRODLEM PRAWDY, checkboxy to tylko widok dla czlowieka.
       Pole "metryki" fazy (jesli obecne) PRZEPISZ 1:1 — nie licz go sam, nie uzupelniaj, nie zeruj;
       to zapis telemetrii z runu, w ktorym review sie odbylo. Gdy pola nie ma, pomin je (null).
@@ -301,14 +337,27 @@ Zwroc obiekt zgodny ze schematem. Nie modyfikuj zadnych plikow — to read-only 
 }
 
 function zapiszStanPrompt(sciezka, trescJson) {
-  return `Zapisz plik stanu pipeline'u dev-autopilot. Uzyj narzedzia Write (pelne nadpisanie pliku).
+  return `Zapisz plik stanu pipeline'u dev-autopilot: ${sciezka}/.autopilot-state.json (pelne nadpisanie).
 
-Sciezka: ${sciezka}/.autopilot-state.json
-Tresc — zapisz DOKLADNIE ponizszy JSON, bez zadnych zmian, dopiskow ani komentarzy:
+Tresc ponizej jest juz POPRAWNYM JSON-em wygenerowanym maszynowo. Twoje jedyne zadanie to przeniesc ja
+na dysk BAJT W BAJT. Nie formatuj, nie poprawiaj, nie skracaj, nie dodawaj komentarzy ani pol.
 
+--- POCZATEK TRESCI ---
 ${trescJson}
+--- KONIEC TRESCI ---
 
-Nie modyfikuj ZADNYCH innych plikow. Zwroc {zapisano:true}.`
+1. ZAPIS: uzyj narzedzia Write z dokladnie ta trescia (bez linii "--- POCZATEK/KONIEC TRESCI ---").
+2. WALIDACJA (obowiazkowa, nie pomijaj): odczytaj plik Z DYSKU i sprawdz, ze parsuje sie jako JSON:
+   \`node -e "JSON.parse(require('fs').readFileSync('${sciezka}/.autopilot-state.json','utf8'));console.log('JSON-OK')"\`
+   (brak node -> \`python3 -c "import json;json.load(open('${sciezka}/.autopilot-state.json'));print('JSON-OK')"\`).
+   Wynik "JSON-OK" -> zwroc {zapisano:true, poprawnyJson:true}.
+   Blad parsowania -> ZAPISZ PONOWNIE (raz) i zwaliduj jeszcze raz. Nadal blad -> {zapisano:false, poprawnyJson:false}.
+3. POWOD tej walidacji (run feedback-marcin-poprawki, mobile, 2026-08-06): przy przepisywaniu tresci przez
+   agenta w opisie findingu wszedl NIEZAESCAPOWANY cudzyslow — plik przestal byc JSON-em. To jest plik,
+   z ktorego pipeline odtwarza stan po awarii: uszkodzony albo wywroci nastepny bootstrap, albo cicho skasuje
+   dowod, ze cala faza zostala wykonana, i pipeline powtorzy kilka godzin pracy. Zapis bez odczytu = brak dowodu.
+
+Nie modyfikuj ZADNYCH innych plikow.`
 }
 
 function warmupPrompt(sciezka) {
@@ -338,6 +387,23 @@ ${BLOK_DLUGIE_KOMENDY}
 5. Sprzatanie: usun /tmp/autopilot-warmup.log i ewentualny tymczasowy test z kroku 2.
 
 Poza wyjatkiem z kroku 2 NIE modyfikuj zadnych plikow. Zwroc {status, detal, czasZimnySek, czasKontrolnySek}.`
+}
+
+function e2ePrecheckPrompt(sciezka) {
+  return `Jestes precheck-agentem E2E pipeline'u dev-autopilot. Zadanie: zebrac DWA niezalezne sygnaly.
+NIE interpretuj ich i NIE wyciagaj wnioskow — decyzje podejmuje orkiestrator.
+
+1. CZY SRODOWISKO ISTNIEJE: \`test -f "$(git rev-parse --show-toplevel)/.env.e2e" && echo TAK || echo NIE\`.
+   TAK -> istnieje:true, NIE -> istnieje:false. NIE czytaj zawartosci pliku (sekrety).
+
+2. CZY ZADANIE WYMAGA E2E: \`grep -cE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md\` (sumuj po plikach,
+   brak trafien = 0 — grep konczy sie wtedy kodem 1, to NIE jest blad). Marker [E2E] oznacza scenariusz,
+   ktory ma byc wykonany w przegladarce (agent-browser) na zarzadzanym srodowisku. Liczysz WYLACZNIE
+   niezaznaczone \`- [ ]\`; pozycje juz odhaczone i pozycje z markerem [Manual] (swiadomie recznie przez
+   operatora) sie NIE licza.
+   Wynik -> liczbaScenariuszy; zadanieWymagaE2E = (liczbaScenariuszy > 0).
+
+Zwroc {istnieje, zadanieWymagaE2E, liczbaScenariuszy}. Nic wiecej nie rob.`
 }
 
 function e2eEnvUpPrompt() {
@@ -384,9 +450,13 @@ ${BLOK_DLUGIE_KOMENDY}
    weryfikacja SQL migracji w pipeline (testy migracji w repo to regex na pliku). Blad SQL ->
    status "niepowodzenie" z pelna trescia bledu w detal — to moze byc DEFEKT KODU migracji, nie infra.
 3. SEED: znajdz seedy powiazane z flow tej fazy — pliki *-seed.sql w e2e/seeds/ (powiazanie po nazwie
-   flow z checkboxow "Weryfikacja:" fazy ${numerFazy} w ${sciezka}/*-zadania.md). Aplikuj kazdy:
-   \`psql "$SUPABASE_E2E_DB_URL" -f <plik>\` (brak psql -> sprobuj \`supabase db query\` lub odnotuj
-   w detal). Bledy duplikatow przy nieidempotentnym seedzie odnotuj, nie failuj.
+   flow z checkboxow "Weryfikacja:" fazy ${numerFazy} w ${sciezka}/*-zadania.md). Aplikuj kazdy
+   WYLACZNIE przez \`psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <plik>\`.
+   ZAKAZ \`supabase db query -f\` jako fallbacku: CLI wysyla plik jako JEDNO prepared statement, wiec
+   seed z \`begin; do $$ ... $$; commit;\` pada na "cannot insert multiple commands into a prepared
+   statement" (42601) — to narzedzie do jednozdaniowych sprawdzen, nie do seedow. Brak psql ->
+   status "niepowodzenie" z instrukcja instalacji w detal (brew install libpq / apt install postgresql-client).
+   Bledy duplikatow przy nieidempotentnym seedzie odnotuj, nie failuj.
 4. KONTO TESTOWE: sprawdz czy user E2E_TEST_EMAIL istnieje (GET /auth/v1/admin/users przez
    service_role). Brak -> utworz (POST /auth/v1/admin/users, email_confirm:true, haslo E2E_TEST_PASSWORD).
 
@@ -499,7 +569,39 @@ potem \`git diff <zakres>\` zawezony do plikow *.test.* — szukaj ZMIAN W ISTNI
 istniejacego testu wpisz do testyZmodyfikowane[] (to sygnal test-weakeningu do raportu, nie auto-FAIL).
 
 KROK 4 — jesli REALNY FAIL i potrafisz naprawic prosty problem (import, typ) — napraw, commituj,
-uruchom ponownie. Jak nie potrafisz — zwroc liste bledow z lokalizacjami i wynik=FAIL.
+uruchom ponownie. Jak nie potrafisz — zapisz liste bledow z lokalizacjami i ustaw wynik=FAIL,
+ale NIE KONCZ pracy: kroki 5 i 6 wykonaj ZAWSZE, takze na sciezce FAIL. Krok 5 tylko raportuje,
+a krok 6 jest higiena, ktorej pominiecie zostawia operatorowi nieaktualny obraz stanu projektu
+dokladnie wtedy, gdy najbardziej go potrzebuje (przy zatrzymanym runie).
+
+KROK 5 — COMPLETION-GATE E2E (krytyczny — chroni przed cichym zamknieciem sprintu z pominietym E2E):
+Grepnij zadanie: \`grep -nE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md\` (brak trafien = exit 1, to NIE blad).
+Jesli zostaly NIEZAZNACZONE checkboxy [E2E] -> wpisz ich tresci do e2eNieuruchomione[] i ustaw wynik=FAIL,
+bledy[] += "N scenariuszy [E2E] nieuruchomionych — sprint NIE moze sie zamknac z cicho pominietym E2E.
+Operator musi je odpalic LUB przeniesc do Operator checklist ze zmiana markera [E2E] -> [Manual],
+jesli scenariusz ma byc swiadomie wykonany recznie."
+UWAGA: ten gate NIE zalezy od istnienia \`.env.e2e\`. Gdyby brak pliku wylaczal bramke, zadanie pelne
+scenariuszy [E2E] mogloby zamknac sie cicho jako "OPERATOR" — dokladnie ten scenariusz, przed ktorym
+gate ma chronic (regresja e3-core-loop, mobile). Zrodlem prawdy o tym, czy E2E jest wymagane,
+jest PLAN ZADANIA, a nie zawartosc repo.
+NIE probuj sam odpalac scenariuszy w przegladarce — to gate raportujacy, blokuje archiwizacje.
+
+KROK 6 — PRZEGLAD known-issues.md (higiena, nie bramka — nie zmienia wyniku PASS/FAIL):
+Jesli ${sciezka}/known-issues.md istnieje, zweryfikuj KAZDY wpis wzgledem AKTUALNEGO kodu (nie wzgledem tego,
+co pisal fix w swojej fazie): przeczytaj wskazany plik/flow i rozstrzygnij, czy problem nadal zachodzi.
+- Nadal otwarty -> zostaw w swojej sekcji bez zmian.
+- Zamkniety (naprawiony pozniejsza faza, fixem innego findingu albo recznie przez operatora) -> PRZENIES go
+  na koniec pliku, do sekcji "## Zamkniete", z jednolinijkowa adnotacja CZYM zostal zamkniety
+  (commit / faza / "operator recznie"). NIE kasuj wpisow — historia problemu bywa cenniejsza niz sam wpis.
+Liczbe przeniesionych wpisow zwroc w polu knownIssuesZamkniete (NIE w bledy[] — to pole jest dla realnych
+FAIL-i z krokow 4/5 i mieszanie tam informacji higienicznej grozi tym, ze ustawisz wynik=FAIL bez powodu).
+COMMIT (obowiazkowy, gdy cokolwiek zmieniles w known-issues.md): \`git add <sciezka known-issues.md> &&
+git commit -m "docs(known-issues): przenies zamkniete wpisy"\`. Bez commita zostawiasz BRUDNE DRZEWO,
+a kolejny run autopilota zatrzyma sie w bootstrapie na bramce czystosci brancha ("niezacommitowane zmiany") —
+poprawka higieniczna zablokowalaby wznowienie. Na sciezce FAIL jest to szczegolnie istotne, bo archiwizacja
+(dev-docs-complete-wf), ktora normalnie commituje docs/, w ogole sie nie wykona.
+POWOD (run feedback-marcin-poprawki, mobile): wpisy z faz 2 i 3 byly domkniete w pozniejszych fazach, ale plik
+dalej prezentowal je jako otwarte problemy — operator czytal miedzy runami nieprawdziwy obraz stanu projektu.
 
 Zwroc obiekt zgodny ze schematem ValidationResult.`
 }
@@ -537,77 +639,19 @@ if (!sciezka) {
 
 const tokSpent = () => (typeof budget !== 'undefined' && budget && budget.spent ? budget.spent() : 0)
 
-phase('Bootstrap')
-const stan = await agent(bootstrapPrompt(sciezka), { schema: PLAN_STATE, label: 'bootstrap' })
-if (!stan) {
-  return { status: 'STOP', powod: 'bootstrap nie zwrocil stanu (agent null)' }
-}
-
-// Decyzja A: git zwalidowany w sesji przed odpaleniem; tu tylko bezpiecznik.
-if (!stan.branch.zgodny) {
-  return { status: 'STOP', powod: `branch mismatch: jestes na "${stan.branch.aktualny}", wymagany "${stan.branch.wymagany}"`, stan }
-}
-if (!stan.branch.czysty) {
-  return { status: 'STOP', powod: 'niezacommitowane zmiany — zacommituj/stash przed autopilotem (po awarii runu: NAJPIERW git status, kod faz zwykle JEST na dysku)', stan }
-}
-for (const r of stan.rozbieznosci || []) log(`Bootstrap rozbieznosc (informacyjna): ${r}`)
-
-// Filar 2: kolejka liczona w JS ze stanu — zero interpretacji LLM.
-const kolejka = stan.fazy
-  .filter((f) => f.execute === 'pending' || f.review === 'pending' || f.fix === 'pending')
-  .map((f) => f.numer)
-
-log(`Autopilot: ${stan.nazwaZadania} (stan: ${stan.zrodloStanu}) — fazy do wykonania: ${kolejka.join(', ') || 'brak'}`)
-
-// Utrwalanie stanu: tresc liczona w JS, zapis przez tani leaf-agent (haiku). Best-effort z ostrzezeniem.
-async function zapiszStan() {
-  const tresc = JSON.stringify(
-    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie },
-    null,
-    2
-  )
-  const w = await agent(zapiszStanPrompt(sciezka, tresc), { schema: ZAPIS_STANU, label: 'stan:zapis', model: 'haiku' })
-  if (!w || !w.zapisano) log('OSTRZEZENIE: zapis .autopilot-state.json nie powiodl sie — resume bedzie polegac na parse md')
-}
-
-// Filar 1: rozgrzewka cache vitest — zawsze (self-skip gdy brak vitest; warm = sekundy).
-// Chroni tez walidacje koncowa przy pustej kolejce (np. resume po ukonczonych fazach na zimnej maszynie).
-const warmup = await agent(warmupPrompt(sciezka), { schema: WARMUP_RESULT, label: 'warmup:vitest', phase: 'Bootstrap' })
-if (!warmup) {
-  return { status: 'STOP', powod: 'rozgrzewka nie zwrocila wyniku (agent null)', stan }
-}
-log(`Rozgrzewka: ${warmup.status} — ${warmup.detal} (zimny: ${warmup.czasZimnySek ?? 'n/a'}s, kontrolny: ${warmup.czasKontrolnySek ?? 'n/a'}s)`)
-// Warmup to OPTYMALIZACJA, nie warunek poprawnosci — 'niepowodzenie' degraduje z ostrzezeniem,
-// nie zatrzymuje runu (prog <60s kontrolnego biegu jest maszyno-zalezny; na wolnym sprzecie
-// poprawny cache potrafi go przekroczyc). Agenci faz i tak maja BLOK_DLUGIE_KOMENDY (tlo+polling).
-if (warmup.status === 'niepowodzenie') {
-  log(`OSTRZEZENIE: rozgrzewka cache niepotwierdzona (${warmup.detal}) — kontynuuje; agenci faz musza scisle stosowac procedure tla dla zimnych biegow`)
-}
-
-// Srodowisko E2E: raz per run (dev server Vite hot-reloaduje working tree przez HMR, restart per faza zbedny).
-// BRAMKA OPT-IN (2026-06-16, regresja etap-11): status decyduje czy run leci dalej.
-//   'pominieto'     = brak .env.e2e -> projekt nie chce E2E -> cicha degradacja do OPERATOR (status quo).
-//   'niepowodzenie' = .env.e2e ISTNIEJE (projekt opt-in'owal sie w E2E), ale srodowisko nie gotowe
-//                     -> HARD STOP w bootstrapie, PRZED jakakolwiek faza. Bez tego E2E znika z runu
-//                     bez sladu (cicho do OPERATOR) — operator dowiaduje sie z checkboxow po fakcie.
-//   'gotowe'        = dev server Vite na dedykowanej bazie e2e -> E2E aktywne.
-// null (agent padl) = infra hiccup, nie brak setupu -> nie blokuj (degraduj z ostrzezeniem w logu).
-const e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, label: 'e2e:env-up', phase: 'Bootstrap' })
-log(`E2E env: ${e2eEnv ? `${e2eEnv.status} (devServer: ${e2eEnv.devServer}) — ${e2eEnv.detal}` : 'agent zwrocil null — pomijam E2E (infra, nie brak setupu)'}`)
-if (e2eEnv && e2eEnv.status === 'niepowodzenie') {
-  return {
-    status: 'STOP',
-    powod: `Srodowisko E2E nie gotowe, a .env.e2e istnieje (projekt wymaga E2E): ${e2eEnv.detal}`,
-    naprawa: 'Setup: .claude/templates/e2e-env/README.md. Najczestsze braki = niepoprawne klucze VITE_*/SUPABASE_E2E_* w .env.e2e, brak dedykowanego projektu Supabase e2e (guard tozsamosci: VITE_SUPABASE_URL musi sie ROZNIC od .env), albo zajety port 5173. Opt-out swiadomego runu headless: usun/zmien nazwe .env.e2e. Po setupie odpal SWIEZY run (te same args, BEZ resumeFromRunId — resume zwrociloby zcache\'owana porazke env-up; stan faz wznowi sie z .autopilot-state.json).',
-    e2eEnv,
-    stan,
-  }
-}
-const e2eAktywne = !!e2eEnv && e2eEnv.status === 'gotowe'
-
+// Stan runu zadeklarowany PRZED pierwsza bramka (port z mobile, 2026-08-08). Powod: telemetria zapisuje
+// sie teraz takze na sciezkach STOP, a helper telemetrii nie moze siegac do bindingow w martwej strefie —
+// kazda zmienna, ktora czyta, musi istniec, zanim jakikolwiek STOP bedzie mogl zapasc.
+// UWAGA dla strojenia progow: tokRunStart mierzy odtad od POCZATKU runu (z bootstrapem, env-up i warmupem),
+// wczesniej liczyl dopiero od pierwszej fazy — wpisy sprzed tej zmiany maja nizsze tokenyRazemK przy tej
+// samej pracy. Bootstrap to realny koszt runu, wiec liczymy go, ale porownania miedzy epokami wymagaja uwagi.
+const tokRunStart = tokSpent()
 const historia = {}
 const raporty = []
-const tokRunStart = tokSpent()
+let kolejka = []
+let e2eEnv = null
+let stan = null
+let compound = null
 
 // Normalizacja metryk przebiegu do SKROTU (schemat METRYKI_FAZY + telemetria): review-wf zwraca
 // pelny obiekt (pominieci = [{key,powod}]), a stan po resume trzyma juz skrot (pominieci = ['key']).
@@ -624,13 +668,209 @@ function skrotPrzebiegu(p) {
     poDedupSem: p.poDedupSem,
     weryfikowane: p.weryfikowane,
     obalone: p.obalone,
+    p3Odrzucone: p.p3Odrzucone ?? null,
   }
+}
+
+// Telemetria (best-effort): JEDNA linia JSONL do globalnego ~/.claude/telemetry/autopilot-runs.jsonl,
+// wspolnego dla wszystkich projektow na maszynie. Wpis powstaje TAKZE przy STOP (port z mobile).
+// Powod (run feedback-marcin-poprawki, mobile): run trwal ~10h, spalil 136 agentow i zatrzymal sie 5x na
+// bramkach, a poniewaz nigdy nie doszedl do konca, nie zostawil ANI JEDNEJ linii telemetrii. Dane o tym,
+// ile kosztuja awarie srodowiskowe — czyli dokladnie to, czego potrzeba do strojenia bramek — przepadly
+// w calosci. Wpis STOP niesie status i powod, wiec analiza rozroznia "run sie udal" od "run padl na bramce X".
+// Telemetria opisuje CALE zadanie, nie tylko ten run (2026-07-27): `kolejka` filtruje po pending, wiec
+// faza domknieta we WCZESNIEJSZYM runie nie wchodzi do petli — jej wiersz odtwarzamy ze stanu
+// (zrodlo:'stan', null tam, gdzie stan nie zna wartosci; gate/cykle/tokeny sa liczone w petli runu).
+async function zapiszTelemetrie(status, powod) {
+  const raportyTelemetrii = ((stan && stan.fazy) || [])
+    .map((f) => {
+      const zRunu = raporty.find((r) => r.faza === f.numer)
+      if (zRunu) return { ...zRunu, zrodlo: 'run' }
+      if (!f.metryki) return null
+      return {
+        faza: f.numer,
+        gate: null,
+        cykle: null,
+        tokeny: null,
+        // Swiadomie NIE utrwalamy tokenyEtapy w stanie: tokeny opisuja RUN, nie faze. Liczby z runu, ktory
+        // te faze zrobil, doklejone do wpisu innego runu podpieralyby jego koszt cudzymi danymi.
+        tokenyEtapy: null,
+        liczniki: f.metryki.liczniki || null,
+        fix: null,
+        e2eSync: 'n/a',
+        przebieg: skrotPrzebiegu(f.metryki.przebieg),
+        zrodlo: 'stan',
+      }
+    })
+    .filter(Boolean)
+  const zeStanu = raportyTelemetrii.filter((r) => r.zrodlo === 'stan').map((r) => r.faza)
+  if (zeStanu.length) log(`Telemetria: dokladam metryki faz z wczesniejszych runow: ${zeStanu.join(', ')}`)
+
+  const wpis = {
+    zadanie: (stan && stan.nazwaZadania) || 'nieznane',
+    status,
+    powod: powod || null,
+    fazyUkonczone: raporty.length,
+    // Ile faz ma ZADANIE (ze stanu), nie ile z nich zdazylo dac metryki — inaczej wczesny STOP raportowal
+    // "zadanie 1-fazowe" dla zadania o pieciu fazach i analiza pokrycia byla systematycznie zanizona.
+    fazyZadania: (stan && stan.fazy && stan.fazy.length) || raportyTelemetrii.length,
+    fazyZMetrykami: raportyTelemetrii.length,
+    raporty: raportyTelemetrii,
+    walidacja: status === 'OK' ? 'PASS' : null,
+    e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
+    solution: !!(compound && compound.plik),
+    tokenyRazemK: Math.round((tokSpent() - tokRunStart) / 1000),
+  }
+  const tele = await agent(
+    `Dopisz JEDNA linie telemetrii pipeline'u dev-autopilot do globalnego pliku ~/.claude/telemetry/autopilot-runs.jsonl.
+1. Bash: mkdir -p ~/.claude/telemetry
+2. Ustal: ts = \`date -Iseconds\`, projekt = \`basename "$(git rev-parse --show-toplevel)"\`.
+3. Wez ponizszy obiekt, dodaj do niego pola "ts" i "projekt", zserializuj do JEDNEJ linii JSON (bez pretty-print):
+${JSON.stringify(wpis)}
+4. Dopisz te linie na koncu pliku (append, >>). NIE nadpisuj istniejacej zawartosci.
+   Pola tekstowe (zwlaszcza "powod") zawieraja cudzyslowy i backticki — zapisuj przez heredoc z CYTOWANYM
+   delimiterem (\`cat >> plik <<'EOF'\`), nigdy przez \`echo "..."\` z interpolacja powloki.
+5. WALIDACJA (obowiazkowa): sprawdz, ze OSTATNIA linia pliku parsuje sie jako JSON:
+   \`tail -1 ~/.claude/telemetry/autopilot-runs.jsonl | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{JSON.parse(d);console.log('JSONL-OK')})"\`
+   "JSONL-OK" -> {zapisano:true, poprawnyJson:true}. Blad -> usun te wadliwa ostatnia linie
+   (\`sed -i '' -e '$d' <plik>\` na macOS) i zwroc {zapisano:false, poprawnyJson:false} — lepiej BRAK wpisu
+   niz linia, ktora psuje parsowanie calego pliku analitykom. To ta sama klasa bledu, ktora uszkodzila
+   .autopilot-state.json: model przepisujacy tekst z cudzyslowami bez sprawdzenia wyniku.
+Nie modyfikuj zadnych innych plikow.`,
+    { schema: ZAPIS_STANU, label: `telemetria:${status}`, model: 'haiku' }
+  )
+  if (!tele || !tele.zapisano) log('Telemetria: zapis nie powiodl sie (best-effort, run niezagrozony)')
+}
+
+// Kazde zatrzymanie runu przechodzi TEDY — inaczej bramka, ktora zadziala, nie zostawia po sobie danych.
+async function stopRun(obj) {
+  // try/catch jest KRYTYCZNY, nie ozdobny: telemetria wola agenta, a najczestsza przyczyna STOP-u bywa
+  // przeciazenie API (529). Gdyby to wywolanie RZUCILO, wyjatek poszedlby w gore i run zginalby BEZ
+  // zwrocenia obiektu STOP — operator stracilby `powod` i `naprawa`, czyli cala wartosc bramki.
+  try {
+    await zapiszTelemetrie('STOP', obj.powod)
+  } catch (e) {
+    log(`Telemetria STOP nie zapisala sie (${e && e.message ? e.message : e}) — best-effort, komunikat STOP wraca normalnie`)
+  }
+  return { status: 'STOP', ...obj }
+}
+
+phase('Bootstrap')
+stan = await agent(bootstrapPrompt(sciezka), { schema: PLAN_STATE, label: 'bootstrap' })
+if (!stan) {
+  return await stopRun({ powod: 'bootstrap nie zwrocil stanu (agent null)' })
+}
+
+// Decyzja A: git zwalidowany w sesji przed odpaleniem; tu tylko bezpiecznik.
+if (!stan.branch.zgodny) {
+  return await stopRun({ powod: `branch mismatch: jestes na "${stan.branch.aktualny}", wymagany "${stan.branch.wymagany}"`, stan })
+}
+if (!stan.branch.czysty) {
+  return await stopRun({ powod: 'niezacommitowane zmiany — zacommituj/stash przed autopilotem (po awarii runu: NAJPIERW git status, kod faz zwykle JEST na dysku)', stan })
+}
+for (const r of stan.rozbieznosci || []) log(`Bootstrap rozbieznosc (informacyjna): ${r}`)
+
+// Filar 2: kolejka liczona w JS ze stanu — zero interpretacji LLM.
+kolejka = stan.fazy
+  .filter((f) => f.execute === 'pending' || f.review === 'pending' || f.fix === 'pending')
+  .map((f) => f.numer)
+
+log(`Autopilot: ${stan.nazwaZadania} (stan: ${stan.zrodloStanu}) — fazy do wykonania: ${kolejka.join(', ') || 'brak'}`)
+
+// Utrwalanie stanu: tresc liczona w JS, zapis przez tani leaf-agent (haiku). Best-effort z ostrzezeniem.
+async function zapiszStan() {
+  const tresc = JSON.stringify(
+    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie },
+    null,
+    2
+  )
+  let w = await agent(zapiszStanPrompt(sciezka, tresc), { schema: ZAPIS_STANU, label: 'stan:zapis', model: 'haiku' })
+  // Nieudany zapis LUB plik, ktory nie sparsowal sie z dysku, to ten sam problem: stanu na dysku NIE MA.
+  // Jedna ponowna proba (na modelu glownym — haiku wlasnie pokazal, ze nie uniosl przepisania tresci).
+  if (!w || !w.zapisano || w.poprawnyJson === false) {
+    log(`Zapis .autopilot-state.json nieudany (${!w ? 'agent null' : w.poprawnyJson === false ? 'plik nie parsuje sie jako JSON' : 'zapisano=false'}) — ponawiam raz`)
+    w = await agent(zapiszStanPrompt(sciezka, tresc), { schema: ZAPIS_STANU, label: 'stan:zapis:retry' })
+  }
+  if (!w || !w.zapisano || w.poprawnyJson === false) {
+    log('OSTRZEZENIE: .autopilot-state.json NIE zostal poprawnie zapisany po 2 probach — resume bedzie polegac na parse md, a uszkodzony plik moze wywrocic nastepny bootstrap. Sprawdz go recznie przed kolejnym runem.')
+  }
+}
+
+// Srodowisko E2E PRZED warmupem: tani gate (precheck + wczesne checki env-up) zatrzymuje run
+// zanim zaplacimy za rozgrzewke cache. Dev server Vite hot-reloaduje working tree, wiec stawiamy raz per run.
+//
+// BRAMKA OPT-IN (2026-06-16, regresja etap-11): status decyduje czy run leci dalej.
+//   'pominieto'     = brak .env.e2e I zadanie nie ma zadnego [E2E] -> projekt faktycznie nie chce E2E ->
+//                     degradacja do OPERATOR. Gdy zadanie MA [E2E], run nie dochodzi tutaj — zatrzymuje
+//                     go bramka setupu wyzej (brak srodowiska != swiadoma rezygnacja).
+//   'niepowodzenie' = .env.e2e ISTNIEJE, ale srodowisko nie gotowe
+//                     -> HARD STOP w bootstrapie, PRZED jakakolwiek faza (E2E nie znika cicho do OPERATOR).
+//   'gotowe'        = dev server Vite na dedykowanej bazie e2e -> E2E aktywne.
+//
+// PRECHECK: tani, deterministyczny sygnal opt-in ODDZIELONY od ciezkiego env-up. Bez niego flake env-up
+// (null) na projekcie opt-in degradowalby cicho E2E — a completion-gate wylapalby to dopiero na KONCU runu
+// (najdrozszy moment). Z precheckiem: opt-in potwierdzony -> null env-up = STOP, nie degradacja.
+const precheck = await agent(e2ePrecheckPrompt(sciezka), { schema: E2E_PRECHECK, label: 'e2e:precheck', model: 'haiku', phase: 'Bootstrap' })
+const optIn = precheck ? precheck.istnieje : null // null = precheck padl (nie wiemy — env-up ma self-skip)
+
+// BRAMKA SETUPU (port z mobile, regresja e3-core-loop): zadanie DEKLARUJE scenariusze [E2E], a repo nie ma
+// srodowiska. Wczesniej ta kombinacja byla nieodrozanialna od "projekt nie chce E2E" i degradowala sie
+// cicho do OPERATOR — run jechal przez wszystkie fazy, a brak srodowiska wychodzil dopiero na
+// completion-gate, czyli po zaplaceniu za CALA prace. Teraz STOP przed faza 1, gdy jest najtaniej.
+if (optIn === false && precheck.zadanieWymagaE2E) {
+  return await stopRun({
+    powod: `zadanie deklaruje ${precheck.liczbaScenariuszy} scenariuszy [E2E], a repo nie ma .env.e2e — srodowisko E2E nie jest skonfigurowane. Run zatrzymany PRZED faza 1: bez srodowiska te scenariusze i tak nie zostana wykonane, a etap nie domknie sie na completion-gate.`,
+    naprawa: 'One-time setup wg .claude/templates/e2e-env/README.md (dedykowany projekt Supabase e2e, .env.e2e, gitignore, tryb --mode e2e w Vite, konto testowe). Swiadomy opt-out (scenariusz wykonasz recznie): przenies te pozycje do "Operator checklist" i zmien marker [E2E] na [Manual] w pliku zadania. Po setupie odpal SWIEZY run (te same args, BEZ resumeFromRunId).',
+    stan,
+  })
+}
+
+if (optIn !== false) {
+  // Opt-in TAK lub nieznany -> odpal env-up (ma wlasny self-skip gdy .env.e2e faktycznie nie ma).
+  e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, label: 'e2e:env-up', phase: 'Bootstrap' })
+  if (!e2eEnv && optIn === true) {
+    // Opt-in POTWIERDZONY przez precheck, a ciezki env-up padl -> jeden retry (infra hiccup bywa przejsciowy).
+    log('E2E env-up: agent zwrocil null przy potwierdzonym .env.e2e — retry raz')
+    e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, label: 'e2e:env-up:retry', phase: 'Bootstrap' })
+    if (!e2eEnv) {
+      // Drugi null przy potwierdzonym opt-in -> STOP (nie degraduj cicho, jak przy 'niepowodzenie').
+      return await stopRun({
+        powod: 'E2E env-up zwrocil null 2x przy istniejacym .env.e2e (projekt opt-in E2E) — nie degraduje cicho do OPERATOR. To infra/agent hiccup, nie brak setupu.',
+        naprawa: 'Sprawdz srodowisko (dev server Vite / port 5173 / baza e2e) i odpal SWIEZY run (te same args, BEZ resumeFromRunId). UWAGA: dwa nulle POD RZAD bez zuzytych tokenow i bez wywolan narzedzi to zwykle przeciazenie API (529 Overloaded), a nie problem srodowiska — wtedy natychmiastowe ponawianie tylko doklada ruchu. Odczekaj kilkanascie minut albo odpal run przez `/loop <interwal> /dev-autopilot-wf <sciezka>`.',
+        stan,
+      })
+    }
+  }
+}
+log(`E2E env: ${e2eEnv ? `${e2eEnv.status} (devServer: ${e2eEnv.devServer}) — ${e2eEnv.detal}` : `pomijam E2E (${optIn === false ? 'brak .env.e2e, a zadanie nie deklaruje zadnego scenariusza [E2E] — projekt nie opt-in' : 'precheck padl i env-up null — infra'})`}`)
+if (e2eEnv && e2eEnv.status === 'niepowodzenie') {
+  return await stopRun({
+    powod: `Srodowisko E2E nie gotowe, a .env.e2e istnieje (projekt wymaga E2E): ${e2eEnv.detal}`,
+    naprawa: 'Setup: .claude/templates/e2e-env/README.md. Najczestsze braki = niepoprawne klucze VITE_*/SUPABASE_E2E_* w .env.e2e, brak dedykowanego projektu Supabase e2e (guard tozsamosci: VITE_SUPABASE_URL musi sie ROZNIC od .env), albo zajety port 5173. Opt-out swiadomego runu headless: usun/zmien nazwe .env.e2e I zdejmij markery [E2E] z planu zadania (bramka setupu czyta plan). Po setupie odpal SWIEZY run (te same args, BEZ resumeFromRunId — resume zwrociloby zcache\'owana porazke env-up; stan faz wznowi sie z .autopilot-state.json).',
+    e2eEnv,
+    stan,
+  })
+}
+const e2eAktywne = !!e2eEnv && e2eEnv.status === 'gotowe'
+
+// Filar 1: rozgrzewka cache vitest — PO bramce E2E (tani gate first). Self-skip gdy brak vitest; warm = sekundy.
+// Chroni tez walidacje koncowa przy pustej kolejce (np. resume po ukonczonych fazach na zimnej maszynie).
+const warmup = await agent(warmupPrompt(sciezka), { schema: WARMUP_RESULT, label: 'warmup:vitest', phase: 'Bootstrap' })
+if (!warmup) {
+  return await stopRun({ powod: 'rozgrzewka nie zwrocila wyniku (agent null)', stan })
+}
+log(`Rozgrzewka: ${warmup.status} — ${warmup.detal} (zimny: ${warmup.czasZimnySek ?? 'n/a'}s, kontrolny: ${warmup.czasKontrolnySek ?? 'n/a'}s)`)
+// Warmup to OPTYMALIZACJA, nie warunek poprawnosci — 'niepowodzenie' degraduje z ostrzezeniem,
+// nie zatrzymuje runu (prog <60s kontrolnego biegu jest maszyno-zalezny; na wolnym sprzecie
+// poprawny cache potrafi go przekroczyc). Agenci faz i tak maja BLOK_DLUGIE_KOMENDY (tlo+polling).
+if (warmup.status === 'niepowodzenie') {
+  log(`OSTRZEZENIE: rozgrzewka cache niepotwierdzona (${warmup.detal}) — kontynuuje; agenci faz musza scisle stosowac procedure tla dla zimnych biegow`)
 }
 
 for (const numerFazy of kolejka) {
   const faza = stan.fazy.find((f) => f.numer === numerFazy)
   if (!faza) {
-    return { status: 'STOP', powod: `kolejka zawiera faze ${numerFazy} nieobecna w fazy[] — niespojny stan bootstrapu`, raporty }
+    return await stopRun({ powod: `kolejka zawiera faze ${numerFazy} nieobecna w fazy[] — niespojny stan bootstrapu`, raporty })
   }
   phase(`Faza ${numerFazy}`)
   const tokFazaStart = tokSpent()
@@ -656,7 +896,7 @@ for (const numerFazy of kolejka) {
     const tokEtapStart = tokSpent()
     const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy })
     if (!exec || exec.status !== 'completed') {
-      return { status: 'STOP', powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty }
+      return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty })
     }
     faza.execute = 'done'
     await zapiszStan()
@@ -687,17 +927,32 @@ for (const numerFazy of kolejka) {
       srodowiskoE2E: e2eAktywne ? 'gotowe' : (e2eEnv ? e2eEnv.status : 'brak'),
     })
     if (!review) {
-      return { status: 'STOP', powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty }
+      return await stopRun({ powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
     // Scribe padl 2x: raport review-faza-N.md i sekcja "Do poprawy" NIE powstaly. Nie oznaczamy
     // review=done (utrwalone done nigdy juz nie odtworzy raportu) — STOP; kolejny run powtorzy review.
     if (review.scribeFail) {
       await zapiszStan()
-      return {
-        status: 'STOP',
+      return await stopRun({
         powod: `Faza ${numerFazy}: scribe padl 2x — findingi zweryfikowane (P1/P2 w wyniku), ale raport review-faza-${numerFazy}.md nie zostal zapisany. Review pozostaje pending; odpal SWIEZY run (reviewerzy odpala sie ponownie).`,
         faza: numerFazy, findings: review.findings, raporty,
-      }
+      })
+    }
+    // BLOKER SRODOWISKA wykryty po SYGNATURZE w opisach findingow (review-wf liczy to w JS, bez LLM).
+    // Bez tego run ciagnal kolejne fazy na trwale zepsutym srodowisku, a kazdy nastepny scenariusz padal
+    // z tego samego powodu — operator dowiadywal sie dopiero na completion-gate, po godzinach pracy
+    // (run feedback-marcin-poprawki, mobile: 5 faz na zepsutej binarce). Review ZOSTAJE zapisane (raport
+    // i sekcja "Do poprawy" sa juz na dysku), ale nie oznaczamy go jako done: findingi E2E powstaly na
+    // zepsutym srodowisku, wiec po naprawie faza wymaga powtorki.
+    if (review.blokerSrodowiska && review.blokerSrodowiska.wykryty) {
+      const b = review.blokerSrodowiska
+      return await stopRun({
+        powod: `Faza ${numerFazy}: scenariusz E2E padl na BLOKERZE SRODOWISKA (${b.klasa}), nie na defekcie kodu. Dowod z outputu: "${b.dowod}". Kazdy kolejny scenariusz padlby tak samo, wiec zatrzymuje run zamiast ciagnac go na zepsutym srodowisku.`,
+        naprawa: b.klasa === 'dev-server-nieosiagalny'
+          ? 'Dev server Vite jest nieosiagalny — padl w trakcie runu albo port sie nie zgadza. Sprawdz /tmp/autopilot-vite.log (tail -30) i czy port 5173 jest wolny (`lsof -ti:5173`). Potem SWIEZY run (te same args, BEZ resumeFromRunId) — env-up postawi dev server od nowa, a review tej fazy powtorzy sie na sprawnym srodowisku.'
+          : 'Host z .env.e2e nie rozwiazuje sie w DNS — najczesciej projekt Supabase e2e jest SPAUZOWANY (free tier usypia po tygodniu) albo URL w .env.e2e jest bledny. Odpauzuj/zweryfikuj projekt w dashboardzie Supabase, sprawdz VITE_SUPABASE_URL i SUPABASE_E2E_DB_URL, potem SWIEZY run (te same args, BEZ resumeFromRunId).',
+        faza: numerFazy, blokerSrodowiska: b, raporty,
+      })
     }
     // Filar 3: liczniki/gate w JS z findings[]; liczniki scribe'a tylko do porownania w logu.
     const liczniki = policzFindingi(review.findings)
@@ -731,7 +986,7 @@ for (const numerFazy of kolejka) {
     const tokEtapStart = tokSpent()
     const fix = await agent(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi), { schema: FIX_RESULT, label: `fix:faza-${numerFazy}` })
     if (!fix) {
-      return { status: 'STOP', powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty }
+      return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
     cykle = 1
     fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2 }
@@ -745,25 +1000,23 @@ for (const numerFazy of kolejka) {
     const plikiBinarne = fix.plikiBinarne || []
     if (plikiBinarne.length) {
       await zapiszStan()
-      return {
-        status: 'STOP',
+      return await stopRun({
         powod: `Faza ${numerFazy}: po fixie git widzi jako BINARNE pliki, ktore powinny byc tekstem: ${plikiBinarne.join(', ')}. Najprawdopodobniej wpisano do nich SUROWE bajty sterujace zamiast sekwencji ucieczki (np. literalny U+001F zamiast \\x1f w regexie). Kazdy kolejny agent, ktory zrobi Read takiego pliku, rozlaczy sie na APIError — pipeline bedzie umieral w kolko, dopoki plik nie zostanie naprawiony.`,
         naprawa: `Napraw ${plikiBinarne.join(', ')} POZA pipelinem i NIE otwieraj ich Readem (to samo rozlaczenie dotyczy kazdej sesji): albo cofnij zmiane (\`git checkout <commit-sprzed-fixa> -- <plik>\`), albo przepisz plik od nowa z sekwencjami ucieczki (\\x00-\\x1f\\x7f-\\x9f zamiast literalnych bajtow). Potwierdz \`file <plik>\` = "... text" i \`git diff --numstat\` = liczby zamiast "-", zacommituj, potem odpal SWIEZY run (te same args, BEZ resumeFromRunId).`,
         faza: numerFazy, fix, plikiBinarne, raporty,
-      }
+      })
     }
 
     if (fix.walidacja === 'FAIL' || fix.nierozwiazaneP1 > 0) {
       // Stan NIE oznacza fix=done — resume wroci wprost do fixa z ta sama lista.
       await zapiszStan()
-      return {
-        status: 'STOP',
+      return await stopRun({
         powod: fix.nierozwiazaneP1 > 0
           ? `Faza ${numerFazy}: ${fix.nierozwiazaneP1}x P1 nierozwiazane po fixie — wymagana reczna interwencja`
           : `Faza ${numerFazy}: walidacja fixa FAIL — wymagana reczna interwencja`,
         naprawa: 'Po recznej naprawie odpal SWIEZY run (te same args, BEZ resumeFromRunId) — stan wroci wprost do tej fazy z .autopilot-state.json; resume odtworzyloby zcache\'owany FAIL fixa.',
         faza: numerFazy, fix, raporty,
-      }
+      })
     }
 
     // TARGETED VERIFY po fixie (tanszy substytut usunietego re-review): kazdy P1 typu KOD
@@ -784,11 +1037,10 @@ for (const numerFazy of kolejka) {
         // Zawez liste do realnie otwartych — kolejny run wraca wprost do fixa z ta zawezona lista.
         faza.otwarteFindingi = nadalOtwarte.map((f, i) => ({ ...f, opis: `[NIEZAMKNIETY po fixie] ${f.opis}` }))
         await zapiszStan()
-        return {
-          status: 'STOP',
+        return await stopRun({
           powod: `Faza ${numerFazy}: niezalezna weryfikacja wykryla ${nadalOtwarte.length}x P1 NADAL otwarte po fixie (self-report fixa mowil "naprawione") — wymagana reczna interwencja. Po naprawie odpal SWIEZY run.`,
           faza: numerFazy, fix, nadalOtwarte, raporty,
-        }
+        })
       }
       log(`Faza ${numerFazy}: targeted verify — wszystkie ${p1Kod.length}x P1/KOD potwierdzone jako zamkniete`)
     }
@@ -827,13 +1079,16 @@ phase('Zakonczenie')
 if (stan.zakonczenie.walidacja === 'pending') {
   const walidacja = await agent(finalValidationPrompt(sciezka), { schema: VALIDATION_RESULT, label: 'walidacja-koncowa' })
   if (!walidacja) {
-    return { status: 'STOP', powod: 'walidacja koncowa zwrocila null', historia, raporty }
+    return await stopRun({ powod: 'walidacja koncowa zwrocila null', historia, raporty })
   }
   if (walidacja.testyZmodyfikowane && walidacja.testyZmodyfikowane.length) {
     log(`UWAGA test-weakening: fix zmodyfikowal istniejace testy: ${walidacja.testyZmodyfikowane.join(', ')}`)
   }
+  if (walidacja.knownIssuesZamkniete) {
+    log(`known-issues: przeniesiono ${walidacja.knownIssuesZamkniete} zamknietych wpisow do sekcji "Zamkniete"`)
+  }
   if (walidacja.wynik === 'FAIL') {
-    return { status: 'STOP', powod: 'walidacja koncowa FAIL', walidacja, historia, raporty }
+    return await stopRun({ powod: 'walidacja koncowa FAIL', walidacja, historia, raporty })
   }
   stan.zakonczenie.walidacja = 'done'
   stan.walidacjaWynik = walidacja
@@ -884,7 +1139,7 @@ Wykonaj skill .claude/skills/dev-compound-refresh/SKILL.md w TRYBIE AUTONOMICZNY
   Gdy nie zmieniles zadnego pliku albo commit sie nie udal — zwroc commit: "" i nie przerywaj.
 Zwroc obiekt zgodny ze schematem RefreshResult (commit = hash commita lub "").`
 
-let compound = null
+// `compound` jest zadeklarowany na gorze pliku (czyta go telemetria, takze na sciezkach STOP).
 let refresh = null
 if (stan.zakonczenie.compound === 'pending') {
   compound = await workflow('dev-compound-wf', { sciezka })
@@ -906,67 +1161,9 @@ if (stan.zakonczenie.complete === 'pending') {
 const tokRazem = Math.round((tokSpent() - tokRunStart) / 1000)
 log(`Autopilot koniec: ${kolejka.length} faz, ~${tokRazem}k tokenow lacznie`)
 
-// TELEMETRIA (best-effort, tylko sciezka sukcesu): jedna linia JSONL do GLOBALNEGO pliku
-// ~/.claude/telemetry/autopilot-runs.jsonl — wspolnego dla wszystkich projektow na maszynie
-// (dane do strojenia progow pipeline'u: limit fix, sceptycy, routing; per projekt bylyby rozproszone).
-// raporty[].przebieg (od 2026-07-26) niesie liczby routingu/dedupu/verify — bez nich wpis mowil
-// tylko ILE findingow bylo, nie CZY routing kogos pomija i czy dedup semantyczny zarabia na siebie.
-// Ograniczenie swiadome: wpis powstaje TYLKO gdy caly run dojdzie do konca — run zatrzymany na
-// bramce (STOP) nie zostawia telemetrii, mimo ze fazy przed bramka maja policzone metryki w stanie.
-// Timestamp i nazwe projektu ustala leaf-agent (workflow nie moze uzyc Date.now). Pad = tylko log.
-
-// Telemetria opisuje CALE zadanie, nie tylko ten run (2026-07-27). `kolejka` filtruje po pending, wiec
-// faza domknieta we WCZESNIEJSZYM runie nie wchodzi do petli i nigdy nie dostawala wiersza — przy zadaniu
-// robionym w kilku runach gubilismy metryki dokladnie tych faz, ktore przeszly bez awarii (run
-// team-os-onboarding-instalatory: faza 1 zniknela z telemetrii, choc jej metryki leza w stanie).
-// Wiersz odtworzony ze stanu ma zrodlo:'stan' i null tam, gdzie stan nie zna wartosci (gate/cykle/tokeny
-// sa liczone w petli runu) — konsument telemetrii ma widziec brak danych, nie zgadywana wartosc.
-const raportyTelemetrii = stan.fazy
-  .map((f) => {
-    const zRunu = raporty.find((r) => r.faza === f.numer)
-    if (zRunu) return { ...zRunu, zrodlo: 'run' }
-    if (!f.metryki) return null
-    return {
-      faza: f.numer,
-      gate: null,
-      cykle: null,
-      tokeny: null,
-      // Swiadomie NIE utrwalamy tokenyEtapy w stanie: tokeny opisuja RUN, nie faze. Liczby z runu, ktory
-      // te faze zrobil, doklejone do wpisu innego runu podpieralyby jego koszt cudzymi danymi — a i tak
-      // nie mowilyby, ile kosztowalo wznowienie. Brak danych ma byc widoczny jako null, jak przy `tokeny`.
-      tokenyEtapy: null,
-      liczniki: f.metryki.liczniki || null,
-      fix: null,
-      e2eSync: 'n/a',
-      przebieg: skrotPrzebiegu(f.metryki.przebieg),
-      zrodlo: 'stan',
-    }
-  })
-  .filter(Boolean)
-const zeStanu = raportyTelemetrii.filter((r) => r.zrodlo === 'stan').map((r) => r.faza)
-if (zeStanu.length) log(`Telemetria: dokladam metryki faz z wczesniejszych runow: ${zeStanu.join(', ')}`)
-
-const wpisTelemetrii = {
-  zadanie: stan.nazwaZadania,
-  fazyUkonczone: kolejka.length,
-  fazyZadania: raportyTelemetrii.length,
-  raporty: raportyTelemetrii,
-  walidacja: 'PASS',
-  e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
-  solution: !!(compound && compound.plik),
-  tokenyRazemK: tokRazem,
-}
-const tele = await agent(
-  `Dopisz JEDNA linie telemetrii pipeline'u dev-autopilot do globalnego pliku ~/.claude/telemetry/autopilot-runs.jsonl.
-1. Bash: mkdir -p ~/.claude/telemetry
-2. Ustal: ts = \`date -Iseconds\`, projekt = \`basename "$(git rev-parse --show-toplevel)"\`.
-3. Wez ponizszy obiekt, dodaj do niego pola "ts" i "projekt", zserializuj do JEDNEJ linii JSON (bez pretty-print):
-${JSON.stringify(wpisTelemetrii)}
-4. Dopisz te linie na koncu pliku (append, >>). NIE nadpisuj istniejacej zawartosci.
-Nie modyfikuj zadnych innych plikow. Zwroc {zapisano:true} (lub false gdy sie nie udalo).`,
-  { schema: ZAPIS_STANU, label: 'telemetria', model: 'haiku' }
-)
-if (!tele || !tele.zapisano) log('Telemetria: zapis nie powiodl sie (best-effort, run niezagrozony)')
+// TELEMETRIA sciezki sukcesu — sama funkcja (z komentarzem o zakresie danych) siedzi na gorze pliku,
+// bo wolaja ja takze wszystkie sciezki STOP przez stopRun().
+await zapiszTelemetrie('OK', null)
 
 return {
   status: 'OK',

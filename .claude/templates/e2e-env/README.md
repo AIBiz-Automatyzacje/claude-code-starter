@@ -5,17 +5,32 @@ stawia dev server Vite na dedykowanej bazie e2e, synchronizuje migracje+seedy pe
 scenariusza wchodzi w pętlę fix jako finding P2 typ E2E.
 
 **Bramka opt-in:**
-- **Brak `.env.e2e`** → projekt nie chce E2E → flow klasyfikowane jako OPERATOR, run leci dalej (status quo).
+- **Brak `.env.e2e`, a plan zadania NIE ma żadnego `[E2E]`** → projekt faktycznie nie chce E2E →
+  flow klasyfikowane jako OPERATOR, run leci dalej (status quo).
+- **Brak `.env.e2e`, ale plan zadania MA niezaznaczone `[E2E]`** → **TWARDY STOP w bootstrapie**,
+  przed fazą 1, z odesłaniem do tego README. Bez tej bramki kombinacja była nieodróżnialna od
+  świadomej rezygnacji i degradowała się cicho — run przejeżdżał cały plan, a brak środowiska
+  wychodził dopiero na completion-gate, czyli po zapłaceniu za całą pracę (regresja e3-core-loop
+  w szablonie mobile: 3 fazy, ~20 h, zanim ktokolwiek zauważył). Świadomy opt-out: przenieś pozycję
+  do `Operator checklist` i zmień marker `[E2E]` → `[Manual]`.
+  Oba sygnały czyta osobny, tani **precheck** (`test -f .env.e2e` + `grep '[E2E]'` w planie zadania),
+  oddzielony od ciężkiego env-up.
 - **`.env.e2e` istnieje, ale środowisko niegotowe** (np. złe klucze, zajęty port 5173) → autopilot
   **TWARDO zatrzymuje run w bootstrapie** z gotową komendą naprawczą. Powód: gdy projekt opt-in'ował
-  się w E2E, ciche pominięcie = E2E znika z runu bez śladu. Świadomy run headless: usuń/zmień nazwę `.env.e2e`.
+  się w E2E, ciche pominięcie = E2E znika z runu bez śladu. Świadomy run headless: usuń/zmień nazwę
+  `.env.e2e` **i** zdejmij markery `[E2E]` z planu — samo usunięcie pliku już nie wystarczy,
+  bo bramka setupu czyta plan zadania.
+- **env-up padł (null) przy potwierdzonym opt-in** → retry raz, drugi null = **STOP** (nie cicha degradacja
+  do OPERATOR — to infra hiccup, nie brak setupu).
 
 ## Architektura
 
 ```
-Bootstrap:    env-up    — .env.e2e? gitignore? dev server Vite (detached, --mode e2e ładuje .env.e2e).
+Bootstrap:    precheck  — test -f .env.e2e? + grep '[E2E]' w planie zadania (tani sygnał opt-in,
+                          oddzielony od env-up). Plan wymaga E2E a pliku brak = STOP przed fazą 1.
+              env-up    — .env.e2e? gitignore? dev server Vite (detached, --mode e2e ładuje .env.e2e).
                           .env.e2e jest, a env niegotowe = HARD STOP (gate opt-in);
-                          brak .env.e2e = pominieto, run leci dalej.
+                          brak .env.e2e i zero [E2E] w planie = pominieto, run leci dalej.
 Per faza:     db-sync   — supabase db push na bazę e2e (PIERWSZY realny apply SQL migracji
                           w pipeline!) + seedy e2e/seeds/*-seed.sql + konto testowe.
 Review/fix:   tester E2E i fix odpalają agent-browser na localhost:5173 (gotowe środowisko).
@@ -71,6 +86,23 @@ bojowy tej fazy.
 - Seedy: `e2e/seeds/<nazwa-flow>-seed.sql` — db-sync wiąże seed z flow po nazwie. Pisz seedy **idempotentnie**.
 - Logowanie w flow wyłącznie kontem `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` (OAuth providera
   jest nietestowalny headless — popup poza kontrolą przeglądarki automatycznej).
+- **Re-seed per flow** (izolacja stanu): każdy scenariusz zaczyna od czystego, znanego stanu —
+  seed idempotentny aplikuj przed KAŻDYM scenariuszem, nie raz na całą fazę.
+- **Wyegzekwuj re-seed skryptem, nie zdaniem w dokumencie**: jeśli seedy etapu resetują ten sam
+  rekord/konto (typowo: `delete from … where user_id = <konto e2e>`), to są **wzajemnie
+  destrukcyjne** — po zbiorczym db-sync stan spełnia warunek wstępny najwyżej JEDNEGO scenariusza
+  i „N/N PASS" jest nieosiągalne, choć każdy scenariusz osobno przechodzi. Dołóż do etapu runner
+  `e2e/<etap>-run-all.sh` przeplatający `psql -v ON_ERROR_STOP=1 -f <seed>` ze scenariuszami para
+  po parze i wskaż go w checkboxach `Weryfikacja: [E2E]` — tester E2E ma wtedy re-seedować
+  przed każdym scenariuszem zamiast polegać na zbiorczym syncu.
+- **Seedy aplikuj `psql`, nie `supabase db query -f`**: `db query` wysyła plik jako JEDNO prepared
+  statement, więc seed z `begin; do $$ … $$; commit;` pada na `cannot insert multiple commands into
+  a prepared statement (42601)`. CLI nadaje się do jednozdaniowych sprawdzeń, nie do seedów.
+- **Pozytywna identyfikacja bazy w każdym destrukcyjnym seedzie**: guard „konto testowe istnieje"
+  NIE chroni — zawodzi dokładnie wtedy, gdy konto o tym mailu istnieje na dev/prod. Wymagaj tabeli
+  markera zakładanej ręcznie WYŁĄCZNIE na bazie e2e (poza migracjami, żeby `db push` nie mógł jej
+  przynieść na dev/prod) i zaczynaj seed od:
+  `if to_regclass('public.e2e_env_marker') is null then raise exception '…' end if;`
 
 ## Pułapki
 
