@@ -80,6 +80,15 @@ Przed zadawaniem pytań planistycznych przeszukaj `docs/brainstorms/` w poszukiw
 
 Jeśli wiele dokumentów źródłowych pasuje, zapytaj którego użyć używając narzędzia pytań platformy gdy dostępne. W przeciwnym razie prezentuj numerowane opcje w chacie i czekaj na odpowiedź.
 
+**Dokument przygotowania przed planowaniem (`/dev-prep`).** Po ustaleniu dokumentu źródłowego zrób glob `docs/operator/*-przed-planem.md` i sprawdź, czy któryś ma w frontmaterze `origin:` wskazujący ten sam etap/dokument. Jeśli tak:
+
+- Przeczytaj go w całości i przyjmij jego `feature_slug:` jako `<feature-slug>` na cały przebieg (1.6, 3.1, 5.2b) — **nie wymyślaj własnego slugu**.
+- Sekcja 1 (makiety, wraz z wklejonymi URL-ami Figmy) jest inputem dla 1.6 kroku C; sekcje 2–3 (konta, klucze, assety) dla 3.7; sekcja 4 (decyzje) dla 0.5.
+- Ogłoś jednym zdaniem: „Znalazłem przygotowanie przed planowaniem: `<ścieżka>` (N pozycji, M nieodhaczonych) — używam go jako źródła kontekstu designerskiego i wymagań operatora."
+- **Nieodhaczone pozycje `[blokuje planowanie]`** wymień i zapytaj przez `AskUserQuestion`, czy planować mimo to (wybór świadomy — plan powstanie z lukami), czy przerwać do czasu ich domknięcia.
+
+Brak takiego dokumentu jest w pełni poprawny — kontynuuj standardowym przebiegiem (1.6 zapyta o Figmę interaktywnie). Nie wymagaj `/dev-prep` i nie przerywaj planowania z powodu jego braku.
+
 #### 0.3 Użyj dokumentu źródłowego jako głównego inputu
 
 Jeśli relevantny requirements doc istnieje:
@@ -229,7 +238,7 @@ Użyj outputu do:
 
 Cel: zanim ułożysz Implementation Units, ustal **źródło prawdy o designie** dla tego feature'a. Bez tego buildery UI dostaną tylko opis tekstowy i będą halucynować pomiary.
 
-Ustal już teraz roboczo `<feature-slug>` = `<descriptive-name>` (kebab-case, 3-5 słów), którego użyjesz **bez zmian** w 3.1 (nazwa pliku planu), w `docs/plans/<feature-slug>-figma/` i w 5.2b (`docs/operator/<feature-slug>-przygotowanie.md`).
+Ustal już teraz roboczo `<feature-slug>` = `<descriptive-name>` (kebab-case, 3-5 słów), którego użyjesz **bez zmian** w 3.1 (nazwa pliku planu), w `docs/plans/<feature-slug>-figma/` i w 5.2b (`docs/operator/<feature-slug>-przygotowanie.md`). Jeśli 0.2 znalazło dokument `/dev-prep`, slug jest już ustalony — weź `feature_slug:` z jego frontmattera i nie twórz nowego.
 
 **Krok A — Klasyfikacja feature'a (bez pytania użytkownika).** Ustal sam, czy feature dotyka warstwy UI, na podstawie dokumentu źródłowego i researchu z 1.1 — tą samą regułą ścieżek co tabela w 3.5:
 
@@ -255,8 +264,13 @@ Jeśli **dotyka UI** → kontynuuj krok B.
 
 **Krok C — Mockupy Figmy dla tej iteracji.** Kolejność sprawdzeń (pierwsze trafienie wygrywa):
 1. **Istniejący SPEC** — zrób glob `docs/plans/*-figma/SPEC.md`; jeśli którykolwiek folder odpowiada temu feature'owi (ten sam `fileKey` Figmy w nagłówku SPEC, pokrywająca się nazwa lub ten sam dokument źródłowy) → przyjmij jego slug jako `<feature-slug>` i przejdź do **kroku F** — niezależnie od tego, czy linki są w źródle (rerun nie może nadpisać SPEC bez zgody).
-2. **Linki w źródle** — użytkownik podał URL-e `figma.com/design/...` w requeście lub dokumencie źródłowym → przejdź wprost do kroku D bez pytania.
-3. W pozostałych przypadkach zadaj `AskUserQuestion` (to jedyne pytanie designerskie, które skill zadaje w standardowym przebiegu):
+2. **Dokument `/dev-prep`** — jeśli 0.2 znalazło `docs/operator/<feature-slug>-przed-planem.md`, jego sekcja 1 jest listą ekranów tej iteracji. Rozstrzygnij po wypełnieniu pól `URL Figma:`:
+   - **Wszystkie ekrany mają URL** → przejdź wprost do kroku D **bez pytania**; listę `{name, url}` bierzesz z dokumentu, nie od użytkownika (`name` = nazwa ekranu z sekcji 1, bez zmian — to ona wiąże makietę z zamówieniem).
+   - **Część ekranów ma URL** → wymień nazwy ekranów bez URL-a i zapytaj przez `AskUserQuestion`: `Fetchuj gotowe, resztę zaprojektujemy z głowy` / `Podam brakujące URL-e teraz` / `Przerywam — dokończę makiety`. Przy pierwszej opcji zapisz brakujące ekrany do „Otwarte pytania → Odroczone do implementacji".
+   - **Żaden ekran nie ma URL-a, a sekcja 1 jest niepusta** → makiety zamówione, ale niegotowe. Zapytaj: `Projektujemy z głowy w oparciu o DESIGN.md` / `Przerywam planowanie do czasu makiet` (rekomendowane, gdy pozycje mają **[blokuje planowanie]**).
+   - **Sekcja 1 pusta lub `dotyka_ui: false`** → `figma_spec: null`, `figma_screens: {}`, kontynuuj do Fazy 2.
+3. **Linki w źródle** — użytkownik podał URL-e `figma.com/design/...` w requeście lub dokumencie źródłowym → przejdź wprost do kroku D bez pytania.
+4. W pozostałych przypadkach zadaj `AskUserQuestion` (to jedyne pytanie designerskie, które skill zadaje w standardowym przebiegu):
 
 > "Czy masz w Figmie mockupy ekranów dla tej iteracji?"
 
@@ -466,7 +480,11 @@ Przejdź po wszystkich IU i wypisz **wyłącznie** rzeczy, których Claude/autop
 | Środowisko E2E | plan ma ≥1 `[E2E]` → musi istnieć `.env.e2e` (sprawdź `ls .env.e2e`); brak = pozycja „setup wg `.claude/templates/e2e-env/README.md` (~30 min)" **albo** świadomy opt-out (scenariusze `[E2E]` → `[Manual]`). Gdy `.env.e2e` istnieje — NIE wpisuj nic: dev server Vite, migracje i seedy na projekt e2e robi sam autopilot (env-up, db-sync) | 3.4b; stan repo |
 | Assety graficzne / treści | favicon, ikony, ilustracje empty state, wideo, teksty prawne, tłumaczenia od klienta | IU w `public/`, `src/assets/`, legal |
 | Dane na projekcie głównym | dane wejściowe/backfill, których builder potrzebuje **do implementacji** (np. istniejące rekordy do migracji danych) — nie do rolloutu ani do testów ręcznych | IU z migracjami / czytające istniejące dane |
-| Dostępy potrzebne do implementacji | dostęp do Figmy z mockupami, dashboard Supabase/Sentry, konto w zewnętrznym API | 1.6; IU integracyjne |
+| Dostępy potrzebne do implementacji | dashboard Supabase/Sentry, konto w zewnętrznym API | IU integracyjne |
+
+**Gdy istnieje dokument `/dev-prep`** (`docs/operator/<feature-slug>-przed-planem.md` znaleziony w 0.2): przejdź po jego sekcjach 2–3 i **nie powtarzaj pozycji odhaczonych `[x]`** — są zrobione, ich powtórzenie każe operatorowi robić to samo dwa razy. Pozycje **nieodhaczone** przepisz tutaj, uzupełniając o to, czego `/dev-prep` nie mógł wiedzieć: numer blokowanego IU/fazy. Pozycje, których w tamtym dokumencie nie ma, a wynikają z IU — dopisz normalnie.
+
+Dostępu do Figmy **nie wpisuj** — rozstrzyga się w 1.6 (fetch się udał albo zapadła decyzja „projektujemy z głowy"); pozycja dopisana po fakcie niczego już nie odblokuje.
 
 Fizyczne urządzenie do scenariuszy `[Manual]` (responsywność na realnym urządzeniu, push, dotyk) → `Operator checklist` / smoke po implementacji, **nie tutaj** — brak urządzenia niczego nie blokuje przed startem.
 
@@ -714,7 +732,7 @@ Przed finalizacją sprawdź:
 - Frontmatter planu ma wypełnione pola `design_md`, `figma_spec`, `figma_screens` (zgodnie z 1.6) — jako konkretne ścieżki LUB explicite `null`/`{}`. Nigdy nie pomijaj tych pól.
 - Jeśli `figma_spec` ≠ null — plik istnieje na dysku (`Read` go zwraca treść), a każdy ekran z `figma_screens` ma fizycznie zapisany PNG
 - Każdy IU delegowany do `feature-builder-ui` lub `feature-builder-fullstack` ma w `Skills in play:` figma skille (mirror per sekcja 3.5), niezależnie od tego czy ten konkretny IU korzysta z mockupu — bo skille są w frontmaterze agenta
-- Jeśli plan ma ≥1 IU z `Delegate to:` ui|fullstack, kroki B–C z 1.6 zostały wykonane (użytkownik był zapytany o Figmę albo linki były w źródle) — `figma_spec: null` dopuszczalne tylko jako świadoma odpowiedź „Nie — projektujemy z głowy", nigdy jako skutek pominięcia 1.6 przy klasyfikacji pure-data
+- Jeśli plan ma ≥1 IU z `Delegate to:` ui|fullstack, kroki B–C z 1.6 zostały wykonane (użytkownik był zapytany o Figmę, linki były w źródle albo przyszły z dokumentu `/dev-prep`) — `figma_spec: null` dopuszczalne tylko jako świadoma odpowiedź „Nie — projektujemy z głowy", nigdy jako skutek pominięcia 1.6 przy klasyfikacji pure-data
 - Jeśli postawa test-first lub characterization-first była explicite lub silnie implikowana, relevantne unity niosą ją dalej z lekką `Notatką wykonawczą`
 - Scenariusze testowe są konkretne bez stawania się kodem testowym
 - Każdy checkbox `Weryfikacja:` jest automatyzowalny (CLI lub runner E2E). Kroki wymagające człowieka są w `Operator checklist` lub jako `[Manual]` w `Scenariusze testowe` — nigdy w `Weryfikacja:`
