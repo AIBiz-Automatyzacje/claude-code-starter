@@ -8,7 +8,7 @@ argument-hint: "[etap zbiorczego dokumentu wymagań, np. docs/brainstorms/mvp-re
 
 **Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
 
-`/dev-prep` odpowiada na jedno pytanie: **co człowiek musi dostarczyć poza kodem, zanim ruszy etap**. Produkuje jeden dokument — `docs/operator/<feature-slug>-przygotowanie.md` — i nic więcej.
+`/dev-prep` odpowiada na jedno pytanie: **co człowiek musi dostarczyć poza kodem, zanim ruszy etap**. Produkuje jeden dokument w `docs/operator/` — i nic więcej. Nazwa domyślna to `<feature-slug>-przygotowanie.md`, ale gdy w katalogu jest już seria checklist, skill dziedziczy jej konwencję (0.3).
 
 To **jedyny** dokument przygotowawczy w pipeline. `/dev-plan` go **czyta i uzupełnia** o to, co wyjdzie dopiero z Implementation Units (numery blokowanych faz, klucze wynikłe z konkretnych plików, środowisko E2E) — nie tworzy drugiej listy. `/dev-docs` sprawdza go w bramce gotowości przed autopilotem.
 
@@ -68,9 +68,26 @@ Jeśli dokument źródłowy ma etapy zależne (`Zależy od: E1`), sprawdź stan 
 
 **Ten sam slug** trafi później do `docs/plans/<feature-slug>-figma/` i nazwy pliku planu — `/dev-plan` przyjmuje go z frontmattera tego dokumentu zamiast wymyślać własny.
 
-#### 0.3 Idempotentność
+#### 0.3 Nazwa pliku — dziedzicz z istniejącej serii
 
-Jeśli `docs/operator/<feature-slug>-przygotowanie.md` już istnieje, przeczytaj go i zadaj `AskUserQuestion`:
+Domyślna nazwa to `docs/operator/<feature-slug>-przygotowanie.md`, ale **projekt z zastaną serią checklist wygrywa z tą domyślną**. Operator rozpoznaje swoje dokumenty po nazwie; wstawienie w środek serii pliku nazwanego inaczej łamie porządek katalogu.
+
+Ustal nazwę tak:
+
+1. Zrób `ls docs/operator/*.md`. Odrzuć `*-smoke.md` (generuje je `dev-docs-complete`) i pliki bez frontmattera/nagłówka checklisty (poradniki, notatki).
+2. Jeśli zostały **≥2 pliki dzielące wspólny sufiks** po identyfikatorze etapu — masz serię. Przykłady: `e1-operator-checklist.md` + `e2-operator-checklist.md` → sufiks `-operator-checklist`; `etap-3-przygotowanie.md` + `etap-4-przygotowanie.md` → sufiks `-przygotowanie`.
+3. Odtwórz **prefiks** z konwencji serii, nie ze swojego slugu: gdy seria używa identyfikatorów etapu (`e1`, `e2`, `etap-3`), użyj identyfikatora **tego** etapu z dokumentu źródłowego w tym samym formacie. Gdy seria używa pełnych slugów — użyj `<feature-slug>`.
+4. **Jeden plik w katalogu** = za mało na serię, ale za dużo na ignorowanie: przyjmij jego sufiks, jeśli jest jednoznaczny.
+5. **Dwa konkurencyjne wzorce** (np. `e1-external-setup-checklist.md` obok `e2-operator-checklist.md`) → zapytaj przez `AskUserQuestion`, którą konwencję kontynuować, pokazując obie jako pełne nazwy pliku, który zaraz utworzysz.
+6. **Pusty katalog** → nazwa domyślna.
+
+Wybraną nazwę ogłoś jednym zdaniem przed zapisem: „Kontynuuję konwencję serii: `docs/operator/e3-operator-checklist.md`."
+
+Do frontmattera dokumentu **zawsze** wpisz `feature_slug:` i `origin:` — `/dev-plan` odnajduje checklistę po nich, nie po nazwie pliku, więc dowolna konwencja nazewnicza działa w pipeline bez zmian.
+
+#### 0.4 Idempotentność
+
+Jeśli plik o ustalonej w 0.3 nazwie już istnieje, przeczytaj go i zadaj `AskUserQuestion`:
 
 > „Przygotowanie dla `<feature-slug>` już istnieje (N pozycji, M odhaczonych). Co robimy?"
 
@@ -99,7 +116,7 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 | `docs/DESIGN.md` | brak = pozycja w sekcji „Decyzje": design system nie istnieje, projektant nie ma tokenów |
 | `docs/plans/*-figma/SPEC.md` | pokrywający się feature = część makiet już sfetchowana; nie zamawiaj ich ponownie |
 | `.env.example`, `.env.local` (tylko **nazwy** zmiennych — `grep -o '^[A-Z_]*='`) | które klucze już są ustawione, a które trzeba zdobyć |
-| Wcześniejsze `docs/operator/*-przygotowanie.md` | co dostarczono w poprzednich etapach — nie powtarzaj; trzymaj się układu sekcji tamtych plików |
+| Checklisty wcześniejszych etapów w `docs/operator/` (nazwy wg 0.3) | co dostarczono wcześniej — nie powtarzaj; trzymaj się układu sekcji tamtych plików |
 | `docs/solutions/` | wcześniejsze wnioski o tej domenie |
 | `public/`, `src/assets/` | jakie assety już są |
 
@@ -155,7 +172,7 @@ Nie projektuj. Nie opisuj układu, kolorów ani komponentów — zamawiasz makie
 
 ### Faza 3: Zapisz dokument
 
-`mkdir -p docs/operator/` i zapisz `docs/operator/<feature-slug>-przygotowanie.md`:
+`mkdir -p docs/operator/` i zapisz plik pod nazwą ustaloną w 0.3 (domyślnie `docs/operator/<feature-slug>-przygotowanie.md`):
 
 ```markdown
 ---
@@ -225,7 +242,7 @@ Gdy w `docs/operator/` istnieją dokumenty z wcześniejszych etapów — **trzym
 Ogłoś:
 
 ```text
-Operator checklist: docs/operator/<feature-slug>-przygotowanie.md
+Operator checklist: docs/operator/<nazwa ustalona w 0.3>
 Decyzje: N (M blokuje planowanie) · Konta/sekrety: N · Assety: N · Makiety: N ekranów
 ```
 

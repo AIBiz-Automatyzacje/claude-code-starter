@@ -129,7 +129,7 @@ Ostatnia aktualizacja: RRRR-MM-DD
 
 ### Faza 4: Commit inicjalny
 
-- `git add docs/active/<nazwa>/` **+ dokładnie ścieżki klasy (a) zapamiętane w Fazie 0** (plan `docs/plans/<plik>-plan.md`, `docs/plans/<slug>-figma/`, `docs/operator/<slug>-przygotowanie.md` (utworzony przez `/dev-prep` lub `/dev-plan`), ew. zmieniony requirements doc z `origin:`) + plan techniczny, jeśli dopisałeś do niego fazy / poprawki E2E w Fazie 1–2. Dodawaj wyłącznie wylistowane ścieżki — bez blanket `git add docs/plans/` i bez `git add -A`.
+- `git add docs/active/<nazwa>/` **+ dokładnie ścieżki klasy (a) zapamiętane w Fazie 0** (plan `docs/plans/<plik>-plan.md`, `docs/plans/<slug>-figma/`, operator checklist — **dokładna ścieżka z `operator_prep:`**, nie zgadywana nazwa: `/dev-prep` dziedziczy konwencję nazewniczą serii checklist projektu, więc plik bywa nazwany np. `docs/operator/e3-operator-checklist.md`, ew. zmieniony requirements doc z `origin:`) + plan techniczny, jeśli dopisałeś do niego fazy / poprawki E2E w Fazie 1–2. Dodawaj wyłącznie wylistowane ścieżki — bez blanket `git add docs/plans/` i bez `git add -A`.
 - Commit: `docs: inicjalizacja planu dla <nazwa>` (plan + figma + przygotowanie operatora w tym samym commicie).
 
 ### Faza 5: Bramka gotowości i handoff na autopilot
@@ -155,7 +155,7 @@ Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej*
 
 🚦 Bramka gotowości:
    - E2E: <E scenariuszy; .env.e2e OK / BRAK → setup wg .claude/templates/e2e-env/README.md lub opt-out>
-   - Przygotowanie dla operatora: <brak / docs/operator/<slug>-przygotowanie.md: P pozycji, B blokuje start, niezaznaczone: …>
+   - Przygotowanie dla operatora: <brak / ścieżka z `operator_prep`: P pozycji, B blokuje start, niezaznaczone: …>
    - Git: OK
 
 ➡️ Następny krok (domyślny): uruchom autopilot w tej sesji:
@@ -166,7 +166,7 @@ Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej*
    Ręczna kontrola faza po fazie (zamiast autopilota): /dev-docs-execute docs/active/<nazwa> → /dev-docs-review docs/active/<nazwa> 1 → … → /dev-docs-complete <nazwa>
 ```
 
-Jeśli bramka ma czerwone pozycje — `➡️ Następny krok` wskazuje najpierw ich usunięcie (setup środowiska E2E, odhaczenie przygotowania, opt-out `[E2E]` → `[Manual]`), potem **obowiązkowy commit tych zmian** (każda z tych dróg modyfikuje śledzone pliki: `docs/operator/<slug>-przygotowanie.md`, `docs/active/<nazwa>/`, plan techniczny, `.gitignore` po setupie e2e), np. `git add <dokładne ścieżki> && git commit -m "docs(<nazwa>): przygotowanie operatora"` i `git status --short` puste — bootstrap autopilota zatrzyma run na brudnym drzewie. Dopiero potem autopilot. Gdy użytkownik usuwa czerwone pozycje w tej samej sesji, zrób ten commit sam przed wywołaniem `Workflow`. Gdy użytkownik wybierze uruchomienie autopilota, **uruchom go toolem `Workflow`** w bieżącej sesji — nie opisuj tylko komendy.
+Jeśli bramka ma czerwone pozycje — `➡️ Następny krok` wskazuje najpierw ich usunięcie (setup środowiska E2E, odhaczenie przygotowania, opt-out `[E2E]` → `[Manual]`), potem **obowiązkowy commit tych zmian** (każda z tych dróg modyfikuje śledzone pliki: operator checklist ze ścieżki `operator_prep`, `docs/active/<nazwa>/`, plan techniczny, `.gitignore` po setupie e2e), np. `git add <dokładne ścieżki> && git commit -m "docs(<nazwa>): przygotowanie operatora"` i `git status --short` puste — bootstrap autopilota zatrzyma run na brudnym drzewie. Dopiero potem autopilot. Gdy użytkownik usuwa czerwone pozycje w tej samej sesji, zrób ten commit sam przed wywołaniem `Workflow`. Gdy użytkownik wybierze uruchomienie autopilota, **uruchom go toolem `Workflow`** w bieżącej sesji — nie opisuj tylko komendy.
 
 ## Referencje kontekstowe
 - `.claude/rules/coding-rules.md` i `.claude/rules/learned-patterns.md` — tylko do bramki E2E (Faza 2 pkt 4); nie dopisuj z nich zadań

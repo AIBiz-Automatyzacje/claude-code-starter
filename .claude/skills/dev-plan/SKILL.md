@@ -80,7 +80,7 @@ Przed zadawaniem pytań planistycznych przeszukaj `docs/brainstorms/` w poszukiw
 
 Jeśli wiele dokumentów źródłowych pasuje, zapytaj którego użyć używając narzędzia pytań platformy gdy dostępne. W przeciwnym razie prezentuj numerowane opcje w chacie i czekaj na odpowiedź.
 
-**Operator checklist etapu (`/dev-prep`).** Po ustaleniu dokumentu źródłowego zrób glob `docs/operator/*-przygotowanie.md` i sprawdź, czy któryś ma w frontmaterze `origin:` wskazujący ten sam etap/dokument. Jeśli tak:
+**Operator checklist etapu (`/dev-prep`).** Po ustaleniu dokumentu źródłowego zrób glob `docs/operator/*.md` (z pominięciem `*-smoke.md`) i sprawdź **frontmattery**, czy któryś ma `origin:` wskazujący ten sam etap/dokument. **Szukaj po frontmatterze, nie po nazwie pliku** — `/dev-prep` dziedziczy konwencję nazewniczą zastanej serii checklist, więc plik może się nazywać `e3-operator-checklist.md` równie dobrze jak `<slug>-przygotowanie.md`. Jeśli znajdziesz:
 
 - Przeczytaj go w całości i przyjmij jego `feature_slug:` jako `<feature-slug>` na cały przebieg (1.6, 3.1, 5.2b) — **nie wymyślaj własnego slugu**.
 - To jest **ten sam plik**, który uzupełnisz w 5.2b. Nie twórz drugiego dokumentu przygotowawczego — sekcja 3.7 dopisuje do tego.
@@ -239,7 +239,7 @@ Użyj outputu do:
 
 Cel: zanim ułożysz Implementation Units, ustal **źródło prawdy o designie** dla tego feature'a. Bez tego buildery UI dostaną tylko opis tekstowy i będą halucynować pomiary.
 
-Ustal już teraz roboczo `<feature-slug>` = `<descriptive-name>` (kebab-case, 3-5 słów), którego użyjesz **bez zmian** w 3.1 (nazwa pliku planu), w `docs/plans/<feature-slug>-figma/` i w 5.2b (`docs/operator/<feature-slug>-przygotowanie.md`). Jeśli 0.2 znalazło dokument `/dev-prep`, slug jest już ustalony — weź `feature_slug:` z jego frontmattera i nie twórz nowego.
+Ustal już teraz roboczo `<feature-slug>` = `<descriptive-name>` (kebab-case, 3-5 słów), którego użyjesz **bez zmian** w 3.1 (nazwa pliku planu), w `docs/plans/<feature-slug>-figma/` i w 5.2b (nazwa pliku checklisty, o ile nie dziedziczy konwencji serii). Jeśli 0.2 znalazło dokument `/dev-prep`, slug jest już ustalony — weź `feature_slug:` z jego frontmattera i nie twórz nowego.
 
 **Krok A — Klasyfikacja feature'a (bez pytania użytkownika).** Ustal sam, czy feature dotyka warstwy UI, na podstawie dokumentu źródłowego i researchu z 1.1 — tą samą regułą ścieżek co tabela w 3.5:
 
@@ -265,7 +265,7 @@ Jeśli **dotyka UI** → kontynuuj krok B.
 
 **Krok C — Mockupy Figmy dla tej iteracji.** Kolejność sprawdzeń (pierwsze trafienie wygrywa):
 1. **Istniejący SPEC** — zrób glob `docs/plans/*-figma/SPEC.md`; jeśli którykolwiek folder odpowiada temu feature'owi (ten sam `fileKey` Figmy w nagłówku SPEC, pokrywająca się nazwa lub ten sam dokument źródłowy) → przyjmij jego slug jako `<feature-slug>` i przejdź do **kroku F** — niezależnie od tego, czy linki są w źródle (rerun nie może nadpisać SPEC bez zgody).
-2. **Operator checklist z `/dev-prep`** — jeśli 0.2 znalazło `docs/operator/<feature-slug>-przygotowanie.md`, jego sekcja „Makiety" jest listą ekranów tej iteracji. Rozstrzygnij po wypełnieniu pól `URL Figma:`:
+2. **Operator checklist z `/dev-prep`** — jeśli 0.2 znalazło checklistę tego etapu, jej sekcja „Makiety" jest listą ekranów tej iteracji. Rozstrzygnij po wypełnieniu pól `URL Figma:`:
    - **Wszystkie ekrany mają URL** → przejdź wprost do kroku D **bez pytania**; listę `{name, url}` bierzesz z dokumentu, nie od użytkownika (`name` = nazwa ekranu z sekcji, bez zmian — to ona wiąże makietę z pozycją checklisty).
    - **Część ekranów ma URL** → wymień nazwy ekranów bez URL-a i zapytaj przez `AskUserQuestion`: `Fetchuj gotowe, resztę zaprojektujemy z głowy` / `Podam brakujące URL-e teraz` / `Przerywam — dokończę makiety`. Przy pierwszej opcji zapisz brakujące ekrany do „Otwarte pytania → Odroczone do implementacji".
    - **Żaden ekran nie ma URL-a, a sekcja jest niepusta** → makiety zamówione, ale niegotowe. Zapytaj: `Projektujemy z głowy w oparciu o DESIGN.md` / `Przerywam planowanie do czasu makiet` (rekomendowane, gdy pozycje mają **[blokuje planowanie]**).
@@ -483,7 +483,7 @@ Przejdź po wszystkich IU i wypisz **wyłącznie** rzeczy, których Claude/autop
 | Dane na projekcie głównym | dane wejściowe/backfill, których builder potrzebuje **do implementacji** (np. istniejące rekordy do migracji danych) — nie do rolloutu ani do testów ręcznych | IU z migracjami / czytające istniejące dane |
 | Dostępy potrzebne do implementacji | dashboard Supabase/Sentry, konto w zewnętrznym API | IU integracyjne |
 
-**Gdy operator checklist już istnieje** (`docs/operator/<feature-slug>-przygotowanie.md` znaleziony w 0.2 — typowo z `/dev-prep`), Twoim zadaniem jest go **uzupełnić, nie odtworzyć**. Przejdź po nim i przygotuj wyłącznie **deltę**:
+**Gdy operator checklist już istnieje** (plik znaleziony w 0.2 po frontmatterze — typowo z `/dev-prep`), Twoim zadaniem jest go **uzupełnić, nie odtworzyć**. Przejdź po nim i przygotuj wyłącznie **deltę**:
 
 - **Pozycje odhaczone `[x]`** — nie ruszasz. Są zrobione; powtórzenie każe operatorowi robić to samo dwa razy.
 - **Pozycje nieodhaczone, które już tam są** — dopisujesz do nich to, czego `/dev-prep` nie mógł wiedzieć: **numer blokowanego IU/fazy** (`— blokuje Fazę 2 (IU-3)`). Treści nie przepisujesz.
@@ -553,7 +553,7 @@ figma_spec: ./docs/plans/<feature-slug>-figma/SPEC.md   # null jeśli brak mocku
 figma_screens:                       # {} jeśli brak mockupów; mapa name → ścieżka PNG
   home: ./docs/plans/<feature-slug>-figma/home.png
   settings: ./docs/plans/<feature-slug>-figma/settings.png
-operator_prep: ./docs/operator/<feature-slug>-przygotowanie.md   # null gdy lista z 3.7 jest pusta
+operator_prep: ./docs/operator/<nazwa checklisty>.md   # faktyczna ścieżka z 5.2b; null gdy lista z 3.7 jest pusta
 ---
 
 # [Tytuł planu]
@@ -605,7 +605,7 @@ operator_prep: ./docs/operator/<feature-slug>-przygotowanie.md   # null gdy list
 
 ## Wymagania wstępne operatora
 
-[Z 3.7. Jeśli lista pusta: „Brak — autopilot może startować od razu." Jeśli niepusta: jedno zdanie + link do pliku `docs/operator/<feature-slug>-przygotowanie.md` (powstaje w 5.2b) i skrót pozycji jako lista `- [ ]` z numerem blokowanej fazy/IU, np. „- [ ] Google OAuth client ID w `.env.local` — blokuje Fazę 2 (IU-3)".]
+[Z 3.7. Jeśli lista pusta: „Brak — autopilot może startować od razu." Jeśli niepusta: jedno zdanie + link do checklisty (ścieżka z `operator_prep`, ustalona w 5.2b) i skrót pozycji jako lista `- [ ]` z numerem blokowanej fazy/IU, np. „- [ ] Google OAuth client ID w `.env.local` — blokuje Fazę 2 (IU-3)".]
 
 ## Implementation Units
 
@@ -772,7 +772,7 @@ Plan zapisany do docs/plans/[nazwa-pliku]
 
 #### 5.2b Operator checklist — uzupełnij albo utwórz (gdy delta z 3.7 jest niepusta)
 
-Plik jest zawsze jeden: `docs/operator/<feature-slug>-przygotowanie.md` (`<feature-slug>` z 1.6 — ten sam co w `docs/plans/<feature-slug>-figma/`). Ścieżkę wpisz do frontmattera planu jako `operator_prep:`.
+Plik jest zawsze jeden. Gdy 0.2 go znalazło — używasz **jego ścieżki, jaka jest**, bez zmiany nazwy (`/dev-prep` mógł zdziedziczyć konwencję serii, np. `docs/operator/e3-operator-checklist.md`). Gdy go nie ma — tworzysz `docs/operator/<feature-slug>-przygotowanie.md` (`<feature-slug>` z 1.6, ten sam co w `docs/plans/<feature-slug>-figma/`); jeśli w `docs/operator/` widać serię checklist o innej konwencji nazw, dopasuj się do niej tak samo jak `/dev-prep` (jego krok 0.3). Faktyczną ścieżkę wpisz do frontmattera planu jako `operator_prep:` — to ona jest referencją dla `/dev-docs`, nie żaden wzorzec nazwy.
 
 **Gdy plik istnieje** (utworzony przez `/dev-prep`, znaleziony w 0.2) — **edytuj go w miejscu narzędziem `Edit`, nigdy `Write`**:
 
@@ -782,7 +782,7 @@ Plik jest zawsze jeden: `docs/operator/<feature-slug>-przygotowanie.md` (`<featu
 - **Nie duplikuj sekcji** ani nagłówka. Nie zmieniaj układu sekcji zastanego w pliku.
 - Dopisz jedną linię pod nagłówkiem: `Uzupełnione przez /dev-plan YYYY-MM-DD — pozycje z Implementation Units oznaczone numerem blokowanej fazy.`
 
-Potwierdź: `Operator checklist uzupełniony: docs/operator/<feature-slug>-przygotowanie.md (+N pozycji z IU, M blokuje start)`
+Potwierdź: `Operator checklist uzupełniony: <ścieżka pliku> (+N pozycji z IU, M blokuje start)`
 
 **Gdy pliku nie ma** (wejście wprost do `/dev-plan`) — `mkdir -p docs/operator/` i zapisz nowy wg układu poniżej:
 
@@ -819,7 +819,7 @@ Reguły treści: każdy punkt ma wszystkie trzy pola (Po co / Jak / Dowód); sek
 Potwierdź:
 
 ```text
-Przygotowanie dla operatora zapisane do docs/operator/<feature-slug>-przygotowanie.md (N pozycji, M blokuje start)
+Przygotowanie dla operatora zapisane do <ścieżka checklisty> (N pozycji, M blokuje start)
 ```
 
 **Tryb pipeline:** Jeśli wywołany z automatycznego workflow lub kontekstu `disable-model-invocation`, pomiń interaktywne pytania. Podejmij potrzebne wybory automatycznie i kontynuuj do zapisu planu.
@@ -828,7 +828,7 @@ Przygotowanie dla operatora zapisane do docs/operator/<feature-slug>-przygotowan
 
 Po zapisie plików prezentuj opcje używając narzędzia pytań platformy gdy dostępne. W przeciwnym razie prezentuj numerowane opcje w chacie i czekaj na odpowiedź.
 
-**Pytanie:** "Plan gotowy w `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`[ + przygotowanie dla operatora w `docs/operator/<feature-slug>-przygotowanie.md` (N pozycji, M blokuje start)]. Co chciałbyś zrobić dalej?"
+**Pytanie:** "Plan gotowy w `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`[ + przygotowanie dla operatora w `<ścieżka checklisty>` (N pozycji, M blokuje start)]. Co chciałbyś zrobić dalej?"
 
 **Opcje:**
 1. **Uruchom `/dev-docs`** (Rekomendowane) — potnij plan na zadania dla autopilota (`docs/active/`) i utwórz branch
