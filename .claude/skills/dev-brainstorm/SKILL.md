@@ -14,6 +14,23 @@ Trwałym wynikiem tego workflow jest **dokument wymagań** (requirements doc). D
 
 Ten skill nie implementuje kodu. Eksploruje, doprecyzowuje i dokumentuje decyzje do późniejszego planowania lub wykonania.
 
+## Kiedy używać (a kiedy od razu `/dev-plan`)
+
+Brainstorm jest krokiem **opcjonalnym** pipeline'u — dla „pustej kartki", nie dla każdego zadania.
+
+**Użyj `/dev-brainstorm`, gdy:**
+- feature jest nowy i nie ma jeszcze wymagań (nikt nie wie, jak ma się zachowywać),
+- istnieje kilka konkurencyjnych kierunków produktowych i trzeba wybrać,
+- problem jest niejasno ujęty („użytkownicy się gubią", „coś z onboardingiem").
+
+**Pomiń i idź od razu do `/dev-plan`, gdy wymagania już istnieją** w jednej z form:
+- etap/sekcja w zbiorczym dokumencie wymagań projektu (np. `docs/brainstorms/mvp-requirements.md`, roadmapa etapów),
+- lista konkretnych poprawek z feedbacku (R1…Rn) lub odpowiedzi interesariusza na pytania,
+- bug / tech-debt / audyt z jasnym zakresem,
+- zadanie typu „zrób X jak w Y" odwołujące się do istniejącego wzorca.
+
+`/dev-plan` umie czytać takie źródła bezpośrednio (sekcja 0.2 tego skilla) — wymuszanie brainstormu na gotowych wymaganiach to ceremonia, która niczego nie dodaje. W razie wątpliwości: jeśli planner nie musiałby *wymyślać* zachowań produktu, brainstorm nie jest potrzebny.
+
 ## Główne zasady
 
 1. **Najpierw oceń scope** — dopasuj poziom formalności do rozmiaru i niejednoznaczności pracy.
@@ -268,7 +285,7 @@ Jeśli `Do rozwiązania przed planowaniem` zawiera elementy:
 - Zadaj blokujące pytania teraz, jedno na raz, domyślnie
 - Jeśli użytkownik explicite chce przejść dalej, najpierw przekonwertuj każdy pozostały element w explicite decyzję, założenie lub pytanie `Odroczone do planowania`
 - Jeśli użytkownik chce się zatrzymać, przedstaw handoff jako wstrzymany lub zablokowany
-- Nie oferuj `Przejdź do planowania` ani `Przejdź do pracy` gdy `Do rozwiązania przed planowaniem` jest niepusty
+- Nie oferuj `Przejdź do planowania` gdy `Do rozwiązania przed planowaniem` jest niepusty
 
 **Pytanie gdy nie ma blokujących pytań:** "Brainstorm ukończony. Co chciałbyś zrobić dalej?"
 
@@ -276,22 +293,17 @@ Jeśli `Do rozwiązania przed planowaniem` zawiera elementy:
 
 Przedstaw tylko pasujące opcje:
 - **Przejdź do planowania (Rekomendowane)** — uruchom `/dev-plan` do planowania technicznego implementacji
-- **Przejdź bezpośrednio do pracy** — oferuj tylko gdy scope jest lekki, kryteria sukcesu jasne, granice scope'u jasne i nie pozostają istotne pytania techniczne
 - **Przejrzyj i dopracuj** — oferuj tylko gdy istnieje dokument wymagań do poprawy
 - **Zadaj więcej pytań** — kontynuuj doprecyzowywanie scope'u, preferencji lub edge cases
 - **Gotowe na teraz** — wróć później
 
-Jeśli gate do bezpośredniej pracy nie jest spełniony, pomiń tę opcję.
+**Nie oferuj przejścia bezpośrednio do implementacji** (`/dev-docs-execute`, buildery, autopilot) z pominięciem `/dev-plan` i `/dev-docs`. Kod powstaje wyłącznie z Implementation Units planu technicznego — bez planu nie ma `Delegate to:`, scenariuszy `[E2E]`, seedów ani stanu zadania, więc cały harness (review, bramki E2E, resume) nie ma na czym pracować. Nawet dla lekkiego scope'u właściwa ścieżka to krótki plan (`/dev-plan` w głębokości Lekkiej).
 
 #### 4.2 Obsłuż wybraną opcję
 
 **Jeśli użytkownik wybiera "Przejdź do planowania (Rekomendowane)":**
 
 Natychmiast uruchom `/dev-plan` w bieżącej sesji. Przekaż ścieżkę do requirements doc gdy istnieje; w przeciwnym razie przekaż zwięzłe podsumowanie sfinalizowanych decyzji brainstormu. Nie drukuj podsumowania końcowego.
-
-**Jeśli użytkownik wybiera "Przejdź bezpośrednio do pracy":**
-
-Natychmiast uruchom `/dev-docs-execute` w bieżącej sesji używając sfinalizowanego outputu brainstormu jako kontekst. Nie drukuj podsumowania końcowego.
 
 **Jeśli użytkownik wybiera "Zadaj więcej pytań":** Wróć do fazy 1.3 (Dialog) i kontynuuj zadawanie pytań jedno na raz. Sonduj głębiej edge cases, ograniczenia, preferencje lub niezbadane obszary. Kontynuuj aż użytkownik jest zadowolony, potem wróć do fazy 4.
 

@@ -68,19 +68,19 @@ Na podstawie skonsolidowanego raportu:
 - **Jeśli tylko P2 (important):** "⚠️ KONTYNUUJ Z ZASTRZEŻENIAMI — X problemów P2 do naprawy"
 - **Jeśli tylko P3 (nit):** "✅ GOTOWE DO KONTYNUACJI — X sugestii do rozważenia"
 
-### 4.7 Bookkeeping checkboxów `Weryfikacja:`
+### 4.7 Bookkeeping checkboxów `Weryfikacja:` i `Test: [E2E]`
 
-**Cel kroku:** każdy `- [ ] Weryfikacja:` w fazie $2 musi mieć rozstrzygnięcie po review — albo `[x]` (przeszedł), albo `[ ]` z adnotacją kto ma to zrobić. Bez tego kroku trywialne `Weryfikacja: bun run typecheck` zostają wiecznie niezaznaczone mimo że quality gate je potwierdził.
+**Cel kroku:** każdy `- [ ] Weryfikacja:` oraz każdy `- [ ] Test: [E2E]` w fazie $2 musi mieć rozstrzygnięcie po review — albo `[x]` (przeszedł), albo `[ ]` z adnotacją kto ma to zrobić. Bez tego kroku trywialne `Weryfikacja: bun run typecheck` zostają wiecznie niezaznaczone mimo że quality gate je potwierdził.
 
-**Krok 1: Re-parsuj plik zadań.** Otwórz `$1/*-zadania.md`, znajdź sekcję fazy $2, wyciągnij wszystkie wciąż niezaznaczone wiersze pasujące do regex `^\s*-\s*\[\s*\]\s*Weryfikacja:`.
+**Krok 1: Re-parsuj plik zadań.** Otwórz `$1/*-zadania.md`, znajdź sekcję fazy $2, wyciągnij wszystkie wciąż niezaznaczone wiersze pasujące do regex `^\s*-\s*\[\s*\]\s*(Weryfikacja:|Test:\s*\[E2E\])`. Oba prefiksy: scenariusz `[E2E]` z planu ląduje w zadaniach pod `Test:`, a jedynym właścicielem jego odznaczenia jest ten bookkeeping (execute go nie rusza; PASS testera → `[x]`, FAIL → `[ ]` z P2, tester pominięty → `[ ]` + Operator checklist).
 
-**Krok 2: Sklasyfikuj każdy checkbox** — dopasuj treść do jednej z kategorii (kolejność dopasowania od góry, zatrzymaj się na pierwszej pasującej):
+**Krok 2: Sklasyfikuj każdy checkbox** — **reguła zero:** linia z markerem `[E2E]` (dowolny prefiks) = ZAWSZE kategoria E2E, niezależnie od pozostałych sygnałów (nawet jeśli treść zawiera komendę CLI w opisie flow). Dla pozostałych dopasuj treść do jednej z kategorii (kolejność dopasowania od góry, zatrzymaj się na pierwszej pasującej):
 
 | Kategoria | Sygnały w treści checkboxa | Akcja |
 |---|---|---|
 | **CLI** | `bun run`, `npm run`, `pnpm`, `yarn`, `make`, `tsc`, `vitest`, `bun test`, `cargo`, `pytest`, `ruff`, `eslint` | Uruchom komendę przez Bash. Jeśli exit 0 → odznacz `[x]`. Jeśli != 0 → zostaw `[ ]`, dopisz suffix ` (FAIL: <skrót błędu>)` i dodaj wpis do raportu jako 🟠 [P2-important]. |
 | **Grep / istnienie pliku** | `grep`, `rg`, `test -f`, `ls`, "brak referencji do", "plik istnieje", "import nie istnieje" | Uruchom przez Bash. PASS → `[x]`. FAIL → `[ ]` z suffixem ` (FAIL)` i wpis P2. |
-| **E2E browser** | URL, `agent-browser`, "viewport", "kliknij", "screenshot", oznaczenie 🌐 | Sprawdź wynik Agent 5 z findings typu E2E/OPERATOR zwróconych przez workflow. PASS → `[x]`. FAIL → `[ ]` (P2 już zarejestrowany jako finding). SKIP / niewykonalny headless → `[ ]` z suffixem ` (SKIP — <powód>)` i wpis do Operator checklist zamiast P2. **Gdy routing pominął testera E2E** (widać w `## Przebieg review`) → NIE odznaczaj żadnego takiego checkboxa: nie ma przebiegu, który by to potwierdził. Zostaw `[ ]` i przenieś do Operator checklist. |
+| **E2E browser** | marker `[E2E]` (reguła zero), URL, `agent-browser`, "viewport", "kliknij", "screenshot", oznaczenie 🌐 | **PASS wyłącznie z listy „Przebiegi E2E" testera** (workflow przekazuje ją obok findingów; pole `przebiegi[]` z `flow`, `wynik: PASS/FAIL/SKIP` + dowód). **Dopasowanie tolerancyjne:** po identyfikatorze flow zawartym w linii (= pole `flow` wpisu) LUB po treści po normalizacji (bez `- [ ] `, bez suffixów `(SKIP — …)`/`(FAIL: …)`, bez białych znaków). Dla każdego flow weź **zbiór** wpisów o tym `flow`: jeśli którykolwiek jest FAIL lub SKIP → cały flow = FAIL/SKIP (FAIL przed SKIP, oba przed PASS) i nie odznaczaj żadnej jego linii; `[x]` dla **każdej** niezaznaczonej linii `[E2E]` fazy wskazującej ten flow **wyłącznie** gdy wszystkie wpisy tego flow są PASS; przy odznaczaniu usuń stary suffix SKIP/FAIL i odhacz/usuń odpowiadającą kopię `Operator: …` w Operator checklist. FAIL → `[ ]`; usuń nieaktualny suffix `(SKIP — …)` (flow przebiegł), istniejący `(FAIL: …)` zostaw — fix zastąpi go po re-runie (P2 już zarejestrowany jako finding). SKIP **lub brak wpisu** → `[ ]` z suffixem ` (SKIP — <powód>)` (zastąp istniejący suffix, nie dopisuj drugiego) i kopia do Operator checklist (w kopii `[E2E]` → `[Manual]`; bez duplikatu, gdy kopia tego flow już tam jest). **Brak findingu NIE jest dowodem PASS.** Gdy tester **padł** (wiersz „Tester E2E" w `## Przebieg review`: „padł") → NIE odznaczaj, NIE dopisuj suffixów ani kopii — orkiestrator zatrzyma run i review powtórzy się z testerem. Gdy routing go pominął → NIE odznaczaj; zostaw `[ ]` i przenieś kopię do Operator checklist. |
 | **Manual** | "ręcznie", "operator", "symulator", "device", "emulator", "QA", "tester człowiek" | Zostaw `[ ]`. Dopisz suffix ` — wymaga operatora (checklist)`. NIE dodawaj do P2 — to oczekiwana ręczna weryfikacja. |
 | **Niejasne** | nic z powyższych nie pasuje | Zostaw `[ ]`. Dopisz suffix ` — klasyfikacja niejasna, wymaga ręcznej decyzji`. Dodaj do raportu jako 🟡 [P3-nit] z notatką dla planisty: "checkbox nieautomatyzowalny — rozważ przeniesienie do Operator checklist (dev-plan §3.4) lub przeformułowanie na CLI/E2E". |
 
@@ -89,7 +89,7 @@ Na podstawie skonsolidowanego raportu:
 **Krok 4: Zaktualizuj raport review.** W `$1/review-faza-$2.md` dopisz sekcję na końcu raportu:
 
 ```markdown
-## Bookkeeping checkboxów Weryfikacja:
+## Bookkeeping checkboxów Weryfikacja: / Test: [E2E]
 
 - Odznaczone automatycznie (CLI/grep): X
 - Odznaczone na podstawie Agent 5 E2E: Y

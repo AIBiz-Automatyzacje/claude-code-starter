@@ -169,7 +169,10 @@ ${podsumowanieIU}
    bez raportowania — dodaj Sentry captureError/captureException lub re-throw (zakaz pustych catch).
    Znaleziska NAPRAW przed commitem, nie odnotowuj "do zrobienia".
 ${BLOK_DLUGIE_KOMENDY}
-2. Aktualizuj ${sciezka}/*-zadania.md: oznacz ukonczone checkboxy [x] (NIE ruszaj "Weryfikacja:" — to dla review).
+2. Aktualizuj ${sciezka}/*-zadania.md: oznacz ukonczone checkboxy [x] (NIE ruszaj "Weryfikacja:" ANI zadnego
+   checkboxa z markerem [E2E]/[Manual] — "Test: [E2E]" to URUCHOMIENIE flow przez testera review, nie jego
+   napisanie; odznacza go scribe review po PASS w przegladarce. Napisany seed e2e/seeds/*.sql odhaczasz WYLACZNIE
+   w checkboxie implementacyjnym "Stwórz (e2e seed):").
 3. Aktualizuj ${sciezka}/*-kontekst.md: zmiany, decyzje, "Ostatnia aktualizacja".
 4. Aktualizuj plan techniczny w docs/plans/ (odznacz test scenarios / verification dla tej fazy).
 5. Commit inkrementalny: feat/fix/refactor([nazwa]): [co i dlaczego]. Staguj tylko zmienione pliki (nie git add .).

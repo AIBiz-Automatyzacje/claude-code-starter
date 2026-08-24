@@ -76,7 +76,7 @@ Przed zamknięciem fazy odpowiedz na 5 pytań:
 1. Czy typecheck przechodzi bez nowych błędów?
 2. Czy istniejące testy nadal przechodzą?
 3. Czy nowe testy pokrywają happy path i przynajmniej jeden error case?
-3b. Czy checklist fazy zawierał checkboxy testowe (`Test:`)? Jeśli tak — czy odpowiadające testy zostały napisane i przechodzą? Jeśli nie zostały napisane — napisz je TERAZ przed zamknięciem fazy.
+3b. Czy checklist fazy zawierał checkboxy testowe (`Test: [Unit]`)? Jeśli tak — czy odpowiadające testy zostały napisane i przechodzą? Jeśli nie zostały napisane — napisz je TERAZ przed zamknięciem fazy. Checkboxy `Test: [E2E]` pomiń — odznacza je review po realnym przebiegu w przeglądarce (agent-browser); seed scenariusza odhaczasz tylko w checkboxie implementacyjnym `Stwórz (e2e seed):`.
 4. Czy nowe importy nie łamią istniejących modułów?
 5. Czy build przechodzi?
 

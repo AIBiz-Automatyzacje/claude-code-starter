@@ -4,7 +4,7 @@ export const meta = {
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
-    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (compound pierwszy: sciezki w docs/active/ jeszcze zyja) -> telemetria (1 linia JSONL do ~/.claude/telemetry/autopilot-runs.jsonl; takze na sciezkach STOP)' },
+    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja) -> telemetria (1 linia JSONL do ~/.claude/telemetry/autopilot-runs.jsonl; takze na sciezkach STOP)' },
   ],
 }
 
@@ -93,6 +93,12 @@ const METRYKI_FAZY = {
         // Poza required: stany zapisane przed portem globalnego limitu P3 tego pola nie maja, a bootstrap
         // przepisuje stan 1:1 przez ten schemat — wymog wywracalby resume starszych zadan.
         p3Odrzucone: { type: ['integer', 'null'], description: 'P3 uciete globalnym limitem po dedupie (strojenie progu)' },
+        // Pola E2E (port z mobile, 2026-08-23) tez poza required — stany sprzed tej daty ich nie maja.
+        e2eCheckboxy: { type: ['integer', 'null'] },
+        e2eStatus: { type: ['string', 'null'], description: 'status testera E2E z review-wf (wykonany / padl / pominiety przez routing)' },
+        e2ePass: { type: ['integer', 'null'] },
+        e2eFail: { type: ['integer', 'null'] },
+        e2eSkip: { type: ['integer', 'null'] },
       },
       required: ['pominieci', 'znalezione', 'poDedupJs', 'poDedupSem', 'weryfikowane', 'obalone'],
     },
@@ -274,7 +280,9 @@ const VALIDATION_RESULT = {
     testy: { type: 'string', description: 'PASS/FAIL z liczbami X/Y (+ adnotacje flake-infra)' },
     build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'vite build (lub build z package.json)' },
     testyZmodyfikowane: { type: 'array', items: { type: 'string' }, description: 'pliki *.test.* ze ZMIENIONYMI istniejacymi asercjami w commitach fix(...) — sygnal test-weakeningu' },
-    e2eNieuruchomione: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] wciaz NIEZAZNACZONYCH w planie zadania — wymusza wynik=FAIL (completion-gate). Nie zalezy od istnienia .env.e2e: zrodlem prawdy o wymaganiu E2E jest plan, nie repo' },
+    e2eNieuruchomione: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] wciaz NIEZAZNACZONYCH w planie zadania, ktore NIGDY nie przebiegly (bez suffixu "(FAIL:") — wymusza wynik=FAIL (completion-gate). Nie zalezy od istnienia .env.e2e: zrodlem prawdy o wymaganiu E2E jest plan, nie repo' },
+    e2eFail: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] z suffixem "(FAIL:" — flow przebiegl i padl na znanym defekcie (known-issues); wymusza wynik=FAIL, ale z inna instrukcja dla operatora (napraw kod, NIE zmieniaj na [Manual])' },
+    e2eFazy: { type: 'array', items: { type: 'integer' }, description: 'numery faz (z naglowka "## Faza N"), w ktorych lezy co najmniej jeden niezaznaczony [E2E] z e2eNieuruchomione/e2eFail — orkiestrator cofa im review do pending' },
     knownIssuesZamkniete: { type: ['integer', 'null'], description: 'ile wpisow known-issues.md przeniesiono do sekcji "Zamkniete" (higiena, NIE wplywa na wynik)' },
     wynik: { type: 'string', enum: ['PASS', 'FAIL'] },
     bledy: { type: 'array', items: { type: 'string' } },
@@ -396,11 +404,13 @@ NIE interpretuj ich i NIE wyciagaj wnioskow — decyzje podejmuje orkiestrator.
 1. CZY SRODOWISKO ISTNIEJE: \`test -f "$(git rev-parse --show-toplevel)/.env.e2e" && echo TAK || echo NIE\`.
    TAK -> istnieje:true, NIE -> istnieje:false. NIE czytaj zawartosci pliku (sekrety).
 
-2. CZY ZADANIE WYMAGA E2E: \`grep -cE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md\` (sumuj po plikach,
-   brak trafien = 0 — grep konczy sie wtedy kodem 1, to NIE jest blad). Marker [E2E] oznacza scenariusz,
+2. CZY ZADANIE WYMAGA E2E: \`grep -hE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md | grep -vcE 'Operator:|\\[P[123]\\]'\`
+   (brak trafien = 0 — grep konczy sie wtedy kodem 1, to NIE jest blad). Marker [E2E] oznacza scenariusz,
    ktory ma byc wykonany w przegladarce (agent-browser) na zarzadzanym srodowisku. Liczysz WYLACZNIE
-   niezaznaczone \`- [ ]\`; pozycje juz odhaczone i pozycje z markerem [Manual] (swiadomie recznie przez
-   operatora) sie NIE licza.
+   niezaznaczone \`- [ ]\`; pozycje juz odhaczone, pozycje z markerem [Manual] (swiadomie recznie przez
+   operatora), kopie z prefiksem "Operator:" w sekcjach "## Operator checklist faza N" oraz pozycje findingow
+   z tokenem [P1]/[P2]/[P3] w sekcjach "## Do poprawy po review fazy N" (linie zrodlowe z planu nigdy go
+   nie maja) sie NIE licza.
    Wynik -> liczbaScenariuszy; zadanieWymagaE2E = (liczbaScenariuszy > 0).
 
 Zwroc {istnieje, zadanieWymagaE2E, liczbaScenariuszy}. Nic wiecej nie rob.`
@@ -449,8 +459,13 @@ ${BLOK_DLUGIE_KOMENDY}
    (non-interactive: dodaj --yes jesli CLI wspiera, inaczej \`echo Y |\`). To pierwsza PRAWDZIWA
    weryfikacja SQL migracji w pipeline (testy migracji w repo to regex na pliku). Blad SQL ->
    status "niepowodzenie" z pelna trescia bledu w detal — to moze byc DEFEKT KODU migracji, nie infra.
-3. SEED: znajdz seedy powiazane z flow tej fazy — pliki *-seed.sql w e2e/seeds/ (powiazanie po nazwie
-   flow z checkboxow "Weryfikacja:" fazy ${numerFazy} w ${sciezka}/*-zadania.md). Aplikuj kazdy
+3. SEED: znajdz seedy powiazane z flow tej fazy — pliki *-seed.sql w e2e/seeds/. Zrodla nazw flow/seedow
+   fazy ${numerFazy} w ${sciezka}/*-zadania.md (WSZYSTKIE, nie tylko "Weryfikacja:"): (a) kazda linia z markerem
+   [E2E] (prefiks Test: i Weryfikacja:) — identyfikator flow (pierwszy backtick w linii) i ewentualne jawne
+   "(seed: e2e/seeds/<x>-seed.sql)"; (b) checkboxy implementacyjne "Stwórz (e2e seed):" tej fazy (niosa dokladne
+   sciezki); (c) fallback: kazdy e2e/seeds/*-seed.sql dodany lub zmieniony w commitach tej fazy.
+   Jawny "(seed: …)" WYGRYWA (scenariusz moze uzywac cudzego seeda); konwencje <flow>-seed.sql dobieraj
+   po identyfikatorze flow tylko gdy linia nie wskazuje seeda jawnie. Aplikuj kazdy
    WYLACZNIE przez \`psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <plik>\`.
    ZAKAZ \`supabase db query -f\` jako fallbacku: CLI wysyla plik jako JEDNO prepared statement, wiec
    seed z \`begin; do $$ ... $$; commit;\` pada na "cannot insert multiple commands into a prepared
@@ -493,8 +508,19 @@ KLASYFIKUJ kazdy finding przed naprawa:
 - Typ KOD (blad implementacji/security/perf/architektury): napraw kod -> uruchom unit testy -> odznacz checkbox.
 - Typ TEST (brakujacy test): NIE ruszaj kodu produkcyjnego, napisz test (min 1 asercja, nie assertion-free)
   zgodnie z planem w docs/plans/ -> uruchom -> odznacz.
-- Typ E2E (weryfikacja E2E): napraw przyczyne -> re-uruchom scenariusz w przegladarce (agent-browser:
-  open URL, snapshot, click, screenshot) -> odznacz DOPIERO po PASS (nie na "naprawilem kod").
+- Typ E2E (weryfikacja E2E): napraw przyczyne (takze: NAPISZ brakujacy seed e2e/seeds/<flow>-seed.sql wg IU,
+  gdy finding mowi "brak seeda") -> re-uruchom scenariusz w przegladarce (agent-browser: open URL, snapshot,
+  click, screenshot; przed odegraniem zaaplikuj seed flow przez psql na "$SUPABASE_E2E_DB_URL") -> odznacz
+  DOPIERO po PASS (nie na "naprawilem kod"). Zrodlowy checkbox identyfikuj TOLERANCYJNIE: NAJPIERW po
+  identyfikatorze flow (pierwszy backtick w linii = ten z linii "checkbox:" opisu findingu), FALLBACK po tresci
+  po normalizacji (bez markera, bez suffixow) dla linii bez identyfikatora — nie po literalnym "[E2E]".
+  JEDEN FLOW = WIELE LINII: po PASS odznacz KAZDA
+  niezaznaczona linie "Test:/Weryfikacja: … [E2E]" tej fazy wskazujaca ten sam flow (nie tylko te z "checkbox:"),
+  usun z nich suffix "(SKIP — …)"/"(FAIL: …)" i odhacz/usun odpowiadajace kopie "Operator: …"
+  w "## Operator checklist faza ${numerFazy}". Po PASS odznacz TAKZE zrodlowy checkbox tej fazy
+  w ${sciezka}/*-zadania.md — "- [ ] Test: [E2E] ..." lub "- [ ] Weryfikacja: [E2E] ..." — nie tylko pozycje
+  w "Do poprawy". Po fix NIE ma re-review, wiec nikt inny go nie odznaczy, a completion-gate
+  (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.
 
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
@@ -526,6 +552,11 @@ KNOWN-ISSUES (graceful — bez osobnego agenta): jesli ZOSTAJA P2 ktorych NIE ud
 "## Faza ${numerFazy}" juz istnieje — ZASTAP jej cala tresc (od naglowka do nastepnego "## " lub konca pliku),
 NIE dopisuj duplikatu. Format: "## Faza ${numerFazy}\\nPozostaje N problemow P2 po fixie. Review: review-faza-${numerFazy}.md\\n- 🟠 [P2] plik — opis".
 Po zapisie upewnij sie ze jest DOKLADNIE jeden naglowek "## Faza ${numerFazy}".
+Jesli nierozwiazany P2 jest typu E2E: w KAZDEJ zrodlowej linii "- [ ] Test: [E2E] ..." / "- [ ] Weryfikacja: [E2E] ..."
+tej fazy wskazujacej ten flow ZASTAP istniejacy suffix "(SKIP — …)"/"(FAIL: …)" (jesli jest) JEDNYM nowym
+" (FAIL: <skrot bledu z przebiegu> — known-issues faza ${numerFazy})" — na linii ma byc dokladnie jeden suffix; NIE odznaczaj jej.
+Completion-gate rozroznia po tym suffixie "przebiegl i padl na defekcie" od "nigdy nie uruchomiony"; bez
+niego operator dostalby falszywa instrukcje "odpal lub zmien na [Manual]" dla znanego defektu.
 
 Dzialaj autonomicznie, nie pytaj usera. Zwroc obiekt FixResult — KRYTYCZNE pola (orkiestrator gate'uje
 z nich, bez re-review): nierozwiazaneP1 (P1 ktorych NIE zamknales -> orkiestrator zrobi STOP),
@@ -575,11 +606,19 @@ a krok 6 jest higiena, ktorej pominiecie zostawia operatorowi nieaktualny obraz 
 dokladnie wtedy, gdy najbardziej go potrzebuje (przy zatrzymanym runie).
 
 KROK 5 — COMPLETION-GATE E2E (krytyczny — chroni przed cichym zamknieciem sprintu z pominietym E2E):
-Grepnij zadanie: \`grep -nE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md\` (brak trafien = exit 1, to NIE blad).
-Jesli zostaly NIEZAZNACZONE checkboxy [E2E] -> wpisz ich tresci do e2eNieuruchomione[] i ustaw wynik=FAIL,
-bledy[] += "N scenariuszy [E2E] nieuruchomionych — sprint NIE moze sie zamknac z cicho pominietym E2E.
-Operator musi je odpalic LUB przeniesc do Operator checklist ze zmiana markera [E2E] -> [Manual],
-jesli scenariusz ma byc swiadomie wykonany recznie."
+Grepnij zadanie: \`grep -nE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md | grep -vE 'Operator:|\\[P[123]\\]'\` (brak trafien
+= exit 1, to NIE blad; kopie "Operator:" w Operator checklist i pozycje findingow [P1]/[P2]/[P3] w "Do poprawy" nie sa
+scenariuszami — liczy sie wylacznie linia zrodlowa Test:/Weryfikacja: w sekcji fazy). Dla kazdego trafienia ustal numer fazy
+z najblizszego naglowka "## Faza N" powyzej i wpisz go do e2eFazy[] (unikalne numery) — orkiestrator cofnie
+review tych faz do "pending", zeby swiezy run powtorzyl tester zamiast zatrzymywac sie w petli na tym samym gate.
+Rozdziel trafienia na DWIE listy:
+- linie z suffixem "(FAIL:" -> e2eFail[] — flow PRZEBIEGL i padl na znanym defekcie (fix nie domknal P2, wpis jest
+  w known-issues.md). wynik=FAIL, bledy[] += "N scenariuszy [E2E] przebieglo i padlo na defekcie — patrz
+  known-issues.md (faza N). NIE zmieniaj ich na [Manual]: to ukryloby znany defekt; napraw kod i odpal flow ponownie."
+- pozostale -> e2eNieuruchomione[] — scenariusz NIGDY nie przebiegl. wynik=FAIL, bledy[] += "N scenariuszy [E2E]
+  nieuruchomionych — sprint NIE moze sie zamknac z cicho pominietym E2E. Operator musi je
+  odpalic LUB przeniesc do Operator checklist ze zmiana markera [E2E] -> [Manual], jesli scenariusz ma byc
+  swiadomie wykonany recznie."
 UWAGA: ten gate NIE zalezy od istnienia \`.env.e2e\`. Gdyby brak pliku wylaczal bramke, zadanie pelne
 scenariuszy [E2E] mogloby zamknac sie cicho jako "OPERATOR" — dokladnie ten scenariusz, przed ktorym
 gate ma chronic (regresja e3-core-loop, mobile). Zrodlem prawdy o tym, czy E2E jest wymagane,
@@ -599,7 +638,8 @@ COMMIT (obowiazkowy, gdy cokolwiek zmieniles w known-issues.md): \`git add <scie
 git commit -m "docs(known-issues): przenies zamkniete wpisy"\`. Bez commita zostawiasz BRUDNE DRZEWO,
 a kolejny run autopilota zatrzyma sie w bootstrapie na bramce czystosci brancha ("niezacommitowane zmiany") —
 poprawka higieniczna zablokowalaby wznowienie. Na sciezce FAIL jest to szczegolnie istotne, bo archiwizacja
-(dev-docs-complete-wf), ktora normalnie commituje docs/, w ogole sie nie wykona.
+(dev-docs-complete-wf), ktora normalnie commituje docs/active + docs/completed + smoke operatora + wyjscia compound
+(pathspec jawny, nie blanket docs/), w ogole sie nie wykona.
 POWOD (run feedback-marcin-poprawki, mobile): wpisy z faz 2 i 3 byly domkniete w pozniejszych fazach, ale plik
 dalej prezentowal je jako otwarte problemy — operator czytal miedzy runami nieprawdziwy obraz stanu projektu.
 
@@ -669,6 +709,12 @@ function skrotPrzebiegu(p) {
     weryfikowane: p.weryfikowane,
     obalone: p.obalone,
     p3Odrzucone: p.p3Odrzucone ?? null,
+    // E2E: faza, w ktorej wszystkie [E2E] spadly do SKIP, musi byc odroznialna w stanie i telemetrii od fazy 100% PASS.
+    e2eCheckboxy: p.e2eCheckboxy ?? null,
+    e2eStatus: p.e2eStatus ?? null,
+    e2ePass: p.e2ePass ?? null,
+    e2eFail: p.e2eFail ?? null,
+    e2eSkip: p.e2eSkip ?? null,
   }
 }
 
@@ -954,6 +1000,18 @@ for (const numerFazy of kolejka) {
         faza: numerFazy, blokerSrodowiska: b, raporty,
       })
     }
+    // TESTER E2E PADL 2x przy checkboxach [E2E] (review-wf zwraca e2eTesterFail). Raport i sekcje sa na dysku
+    // (checkboxy [E2E] zostaly [ ] + kopie w Operator checklist), ale review NIE jest done: bez przebiegu
+    // w przegladarce faza z E2E nie ma dowodu, a cicha degradacja do OPERATOR to dokladnie regresja etap-11/12b.
+    // (po blokerze srodowiska: bloker to konkretniejsza diagnoza z instrukcja naprawy; oba zostawiaja review pending)
+    if (review.e2eTesterFail) {
+      await zapiszStan()
+      return await stopRun({
+        powod: `Faza ${numerFazy}: tester E2E (agent-browser) ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} przy ${review.przebieg && review.przebieg.e2eLiczbaZnana ? `${review.przebieg.e2eCheckboxy} checkboxach [E2E]` : 'nieznanej liczbie checkboxow [E2E] (packager kontekst:diff tez padl — szukaj 529/watchdoga, nie przegladarki)'}. Nie degraduje cicho do OPERATOR: review pozostaje pending.`,
+        naprawa: 'Sprawdz dev server Vite (port 5173, /tmp/autopilot-vite.log), agent-browser (`agent-browser doctor`) albo 529 Overloaded i odpal SWIEZY run (te same args, BEZ resumeFromRunId) — review tej fazy powtorzy sie z testerem. Jesli srodowisko stoi, a tester pada 2x na tym samym flow — flow prawdopodobnie wisi na powierzchni poza kontrola headless (popup OAuth, natywny dialog przegladarki): odegraj scenariusz recznie, zeby zobaczyc gdzie, i rozwaz [E2E] -> [Manual].',
+        faza: numerFazy, findings: review.findings, raporty,
+      })
+    }
     // Filar 3: liczniki/gate w JS z findings[]; liczniki scribe'a tylko do porownania w logu.
     const liczniki = policzFindingi(review.findings)
     const scribeL = review.liczniki || {}
@@ -966,7 +1024,7 @@ for (const numerFazy of kolejka) {
     if (przebiegFazy) {
       const skrot = skrotPrzebiegu(przebiegFazy)
       const pom = skrot.pominieci.length ? skrot.pominieci.join(',') : 'brak'
-      log(`Routing fazy ${numerFazy}: pominieci=${pom}; tester E2E=${skrot.e2eTryb || 'n/a'}; findingi ${przebiegFazy.znalezione}->${przebiegFazy.poDedupSem} po dedupie, obalone ${przebiegFazy.obalone}/${przebiegFazy.weryfikowane}`)
+      log(`Routing fazy ${numerFazy}: pominieci=${pom}; tester E2E=${skrot.e2eTryb || 'n/a'}; findingi ${przebiegFazy.znalezione}->${przebiegFazy.poDedupSem} po dedupie, obalone ${przebiegFazy.obalone}/${przebiegFazy.weryfikowane}; E2E: ${przebiegFazy.e2eStatus || 'n/a'} (${przebiegFazy.e2eCheckboxy ?? '?'} checkboxow, PASS/FAIL/SKIP ${przebiegFazy.e2ePass ?? 0}/${przebiegFazy.e2eFail ?? 0}/${przebiegFazy.e2eSkip ?? 0})`)
     }
     faza.review = 'done'
     // Metryki utrwalone w stanie — zrodlo dla telemetrii po resume (review sie wtedy nie powtarza).
@@ -1087,8 +1145,35 @@ if (stan.zakonczenie.walidacja === 'pending') {
   if (walidacja.knownIssuesZamkniete) {
     log(`known-issues: przeniesiono ${walidacja.knownIssuesZamkniete} zamknietych wpisow do sekcji "Zamkniete"`)
   }
+  // Filar 3: gate w JS. Agent MA ustawic FAIL przy otwartych [E2E], ale nic poza JS tego nie egzekwuje —
+  // wynik=PASS z niepusta lista [E2E] archiwizowalby zadanie z nieuruchomionym E2E (cicha zielen).
+  const e2eOtwarte = [...(walidacja.e2eNieuruchomione || []), ...(walidacja.e2eFail || [])]
+  if (e2eOtwarte.length && walidacja.wynik !== 'FAIL') {
+    log(`NIESPOJNOSC walidacji: ${e2eOtwarte.length} otwartych [E2E] przy wynik=${walidacja.wynik} — wymuszam FAIL`)
+    walidacja.wynik = 'FAIL'
+  }
   if (walidacja.wynik === 'FAIL') {
-    return await stopRun({ powod: 'walidacja koncowa FAIL', walidacja, historia, raporty })
+    // Completion-gate E2E bez automatycznej drogi powrotu = petla identycznych STOP-ow: po naprawie srodowiska/kodu
+    // swiezy run mial wszystkie fazy done, szedl prosto do walidacji i padal na tym samym grepie. Dlatego fazy
+    // z niezaznaczonymi [E2E] cofamy do review=pending — swiezy run wraca do review z testerem, ktory ponawia flow.
+    const fazyDoPowtorki = (walidacja.e2eFazy || []).filter((n) => stan.fazy.some((f) => f.numer === n))
+    if (e2eOtwarte.length && fazyDoPowtorki.length) {
+      for (const n of fazyDoPowtorki) {
+        const f = stan.fazy.find((x) => x.numer === n)
+        f.review = 'pending'
+        f.fix = 'none'
+        f.otwarteFindingi = []
+      }
+      await zapiszStan()
+    }
+    const naprawaE2e = e2eOtwarte.length
+      ? ` E2E: ${fazyDoPowtorki.length ? `fazy ${fazyDoPowtorki.join(', ')} cofniete do review=pending — po naprawie (srodowisko/kod) odpal SWIEZY run (te same args, BEZ resumeFromRunId): review tych faz powtorzy sie z testerem, ktory ponowi flow i odznaczy zrodlowe checkboxy po PASS.` : 'nie udalo sie ustalic faz z niezaznaczonymi [E2E] — recznie ustaw im review:"pending" w .autopilot-state.json i odpal swiezy run.'} Alternatywy: (b) recznie odegraj scenariusz w przegladarce na srodowisku z .env.e2e (dev server \`--mode e2e\` + seed flow przez psql), przy PASS zaznacz [x] i usun suffix (SKIP/FAIL) w zadaniach + commit; (c) swiadomy opt-out: [E2E] -> [Manual] w zadaniach i planie (NIE dla linii z "(FAIL:" — to ukryloby znany defekt). Jesli srodowisko stoi, a ten sam flow pada/wisi przy kazdym runie — flow prawdopodobnie dotyka powierzchni poza kontrola headless (popup OAuth, natywny dialog przegladarki): odegraj go recznie, zeby zobaczyc gdzie, i rozwaz opt-out.`
+      : ''
+    return await stopRun({
+      powod: 'walidacja koncowa FAIL',
+      naprawa: `Bledy: ${(walidacja.bledy || []).join(' | ') || 'brak szczegolow'}.${naprawaE2e}`,
+      walidacja, historia, raporty,
+    })
   }
   stan.zakonczenie.walidacja = 'done'
   stan.walidacjaWynik = walidacja
@@ -1155,7 +1240,35 @@ if (stan.zakonczenie.compound === 'pending') {
 
 let complete = null
 if (stan.zakonczenie.complete === 'pending') {
-  complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania })
+  // Wyjscia compound/refresh (solution, regula, slownik) — complete-wf dostaje je jako dodatkowy pathspec.
+  // Refresh sam commituje po whiteliscie (patrz refreshPrompt), ale to best-effort: gdy jego commit sie nie
+  // uda (albo compound nie domknie swojego), run konczylby sie OK z brudnym drzewem i nastepny bootstrap
+  // STOP-owalby. Katalogowo, nie punktowo: refresh edytuje TAKZE siostrzane solutions (Update/Replace/Archive ->
+  // docs/solutions/_archived/), CONCEPTS.md i learned-patterns.md niezaleznie od pol CompoundResult, a nie
+  // raportuje sciezek. Bootstrap gwarantuje czyste drzewo na starcie, wiec wszystko brudne pod tymi sciezkami
+  // pochodzi z tego runu. complete-wf pomija sciezki nieistniejace (krok 8), wiec brak katalogu nie szkodzi.
+  const dodatkowePathspec = compound
+    ? ['docs/solutions', 'docs/CONCEPTS.md', '.claude/rules/learned-patterns.md']
+    : []
+  complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec })
+  if (complete && (!complete.archiwum || !complete.commit)) {
+    log(`UWAGA: archiwizacja NIE domknieta (archiwum=${complete.archiwum || 'brak'}, commit=${complete.commit || 'brak'}): ${[...(complete.aktualizacje || []), ...(complete.rezultaty || [])].join('; ') || 'bez szczegolow'} — zadanie moglo zostac w docs/active/, sprawdz git status`)
+  }
+  // Smoke operatora (dokument #2 dla czlowieka) powstaje w complete-wf z sekcji "Operator checklist faza N",
+  // [Manual] i findingow OPERATOR — to jest lista "co sprawdzic recznie po zielonym automacie".
+  // Logujemy sciezke wprost, bo to pierwsza rzecz, ktorej operator szuka po runie.
+  // Cztery stany, nie dwa: `complete === null` (caly complete-wf padl) i `smokeStatus === 'agent-null'`
+  // (agent smoke'u padl 2x) to AWARIE — nie wolno ich logowac jako "brak pozycji", bo operator uznalby,
+  // ze nie ma nic do sprawdzenia, a Operator checklist/[Manual] nigdy nie trafily do docs/operator/.
+  if (!complete) {
+    log('UWAGA: complete-wf zwrocil null — smoke operatora i archiwizacja w stanie NIEZNANYM; sprawdz docs/active/ i docs/operator/ recznie')
+  } else if (complete.smokeStatus === 'agent-null') {
+    log(`UWAGA: smoke operatora NIE powstal (agent padl 2x) — pozycje Operator checklist/[Manual] nie zostaly przeniesione; wygeneruj recznie: /dev-docs-complete ${stan.nazwaZadania}`)
+  } else if (complete.smokeOperatora) {
+    log(`Smoke operatora do przejscia recznie: ${complete.smokeOperatora}`)
+  } else {
+    log('Smoke operatora: brak pozycji do recznego sprawdzenia (plik nie powstal)')
+  }
 }
 
 const tokRazem = Math.round((tokSpent() - tokRunStart) / 1000)
@@ -1176,6 +1289,9 @@ return {
   e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
   archiwum: complete && complete.archiwum,
   archiwumCommit: (complete && complete.commit) || '',
+  smokeOperatora: (complete && complete.smokeOperatora) || '',
+  smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
+  archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   solution: compound && compound.plik,
   regula: compound && compound.regula,
   refresh: refresh ? refresh.slownik : 'pominieto',

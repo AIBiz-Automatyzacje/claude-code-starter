@@ -18,6 +18,17 @@ Cel: wykrywac bugi WORKFLOW za grosze, zamiast odkrywac je po 3h realnego runu.
 2. Upewnij sie ze git jest czysty i jestes na branchu roboczym (np. `test/smoke-autopilot`).
 3. Odpal: `/dev-autopilot-wf docs/active/smoke-autopilot`
 4. Oczekiwany wynik: status OK, 1 faza, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane.
+5. Asercje fazy "Smoke operatora" (complete-wf) — fixture ma celowo 1 pozycje `[Manual]` w `## Operator checklist faza 1`,
+   zeby przepuscic DODATNIA galaz (bez niej faza zawsze konczy sie "brak pozycji" i regresja smoke'u jest niewidoczna):
+   - log complete-wf: `Smoke operatora: docs/operator/<data>-smoke-autopilot-smoke.md (N pozycji)` BEZ fragmentu
+     `UWAGA: ... [E2E] nieuruchomionych` (e2eNieuruchomione musi byc 0; fixture celowo nie ma `[E2E]`, bo bramka setupu
+     zatrzymalaby run bez `.env.e2e`);
+   - log autopilota: `Smoke operatora do przejscia recznie: docs/operator/<data>-smoke-autopilot-smoke.md`; pole
+     `smokeOperatora` w wyniku niepuste, `smokeStatus: "plik"`;
+   - plik istnieje i `grep -c '^- \[ \]' docs/operator/<data>-smoke-autopilot-smoke.md` >= 1, zero wartosci sekretow w pliku;
+   - `git show --stat HEAD` commita archiwizacji zawiera `docs/operator/...-smoke.md` (krok 8 `git add`).
+   Wariant negatywny (drugi run): usun sekcje `## Operator checklist faza 1` z fixture → oczekiwane
+   `Smoke operatora: brak pozycji do recznego sprawdzenia — plik nie powstal`, `smokeStatus: "brak-pozycji"`, brak pliku w `docs/operator/`.
 
 ## Test resume (Bug 1 — scenariusz celowy)
 
@@ -34,3 +45,4 @@ Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 - `git log --oneline` → revert/usun commity smoke (feat/fix/docs ze "smoke-autopilot").
 - Usun `src/lib/smoke-autopilot.ts` + test (jesli revert ich nie zdjal).
 - Usun `docs/completed/smoke-autopilot/` i wpisy w dokumentacji projektu, jesli complete cos dopisal.
+- Usun `docs/operator/<data>-smoke-autopilot-smoke.md` (jesli revert commita archiwizacji go nie zdjal).

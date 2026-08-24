@@ -10,7 +10,7 @@ funkcje pomocnicza z testami. Wartosc biznesowa: zerowa. Wartosc diagnostyczna: 
 
 ## Fazy
 
-### Faza 1: Funkcja pomocnicza
+### Faza 1 — Funkcja pomocnicza
 
 Jedna funkcja `dodajBezpiecznie` w `src/lib/smoke-autopilot.ts` (walidacja wejscia + suma) wraz z testami
 (happy path + error case). Brak UI, brak bazy, brak zaleznosci zewnetrznych.

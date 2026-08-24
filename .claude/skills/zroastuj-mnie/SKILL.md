@@ -53,7 +53,7 @@ Mapowanie:
 
 - **Rozwiązanie konkretnego problemu technicznego** (root cause + fix) → `/dev-compound`
 - **Rozstrzygnięcie scope'u / kryteriów sukcesu / zachowań produktu** → `/dev-brainstorm`
-- **Plan techniczny implementacji większej zmiany** → `/dev-docs` lub `/dev-plan`
+- **Plan techniczny implementacji większej zmiany** → `/dev-plan` (potem `/dev-docs` tnie plan na zadania dla autopilota)
 - **Kanoniczne znaczenie terminu domenowego** (encja, status, nazwany proces o niestandardowym sensie) → `docs/CONCEPTS.md` — jedno hasło jako cienki indeks; utrwal przez `/dev-compound` (ma krok słownika) albo bezpośrednim dopiskiem
 
 Format sugestii: jedna linia na końcu odpowiedzi, np. _"Decyzja o granicy kontekstu Customer/User warta utrwalenia — rozważ `/dev-brainstorm` żeby zapisać to do requirements doc."_

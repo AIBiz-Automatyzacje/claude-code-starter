@@ -93,8 +93,10 @@ bojowy tej fazy.
   destrukcyjne** — po zbiorczym db-sync stan spełnia warunek wstępny najwyżej JEDNEGO scenariusza
   i „N/N PASS" jest nieosiągalne, choć każdy scenariusz osobno przechodzi. Dołóż do etapu runner
   `e2e/<etap>-run-all.sh` przeplatający `psql -v ON_ERROR_STOP=1 -f <seed>` ze scenariuszami para
-  po parze i wskaż go w checkboxach `Weryfikacja: [E2E]` — tester E2E ma wtedy re-seedować
-  przed każdym scenariuszem zamiast polegać na zbiorczym syncu.
+  po parze i wskaż go JEDNĄ linią `Weryfikacja: [E2E] \`e2e/<etap>-run-all.sh\` — <stan>`
+  (scenariusze zostają w swoich liniach `Test: [E2E]`; tester uruchamia runner RAZ i wyprowadza
+  z jego outputu wynik per scenariusz — nie odgrywa scenariuszy objętych runnerem standalone).
+  Wzór: runner etapu obok seedów, np. `e2e/e3-run-all.sh`.
 - **Seedy aplikuj `psql`, nie `supabase db query -f`**: `db query` wysyła plik jako JEDNO prepared
   statement, więc seed z `begin; do $$ … $$; commit;` pada na `cannot insert multiple commands into
   a prepared statement (42601)`. CLI nadaje się do jednozdaniowych sprawdzeń, nie do seedów.
