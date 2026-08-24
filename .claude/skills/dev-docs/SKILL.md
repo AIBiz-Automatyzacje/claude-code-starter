@@ -129,7 +129,7 @@ Ostatnia aktualizacja: RRRR-MM-DD
 
 ### Faza 4: Commit inicjalny
 
-- `git add docs/active/<nazwa>/` **+ dokładnie ścieżki klasy (a) zapamiętane w Fazie 0** (plan `docs/plans/<plik>-plan.md`, `docs/plans/<slug>-figma/`, `docs/operator/<slug>-przygotowanie.md`, `docs/operator/<slug>-przed-planem.md` z `/dev-prep`, ew. zmieniony requirements doc z `origin:`) + plan techniczny, jeśli dopisałeś do niego fazy / poprawki E2E w Fazie 1–2. Dodawaj wyłącznie wylistowane ścieżki — bez blanket `git add docs/plans/` i bez `git add -A`.
+- `git add docs/active/<nazwa>/` **+ dokładnie ścieżki klasy (a) zapamiętane w Fazie 0** (plan `docs/plans/<plik>-plan.md`, `docs/plans/<slug>-figma/`, `docs/operator/<slug>-przygotowanie.md` (utworzony przez `/dev-prep` lub `/dev-plan`), ew. zmieniony requirements doc z `origin:`) + plan techniczny, jeśli dopisałeś do niego fazy / poprawki E2E w Fazie 1–2. Dodawaj wyłącznie wylistowane ścieżki — bez blanket `git add docs/plans/` i bez `git add -A`.
 - Commit: `docs: inicjalizacja planu dla <nazwa>` (plan + figma + przygotowanie operatora w tym samym commicie).
 
 ### Faza 5: Bramka gotowości i handoff na autopilot

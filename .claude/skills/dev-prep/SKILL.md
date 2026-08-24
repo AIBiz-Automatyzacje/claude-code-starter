@@ -1,14 +1,16 @@
 ---
 name: dev-prep
-description: "Zamówienie na materiały wejściowe przed planowaniem: makiety, konta, assety, decyzje."
+description: "Operator checklist etapu przed planowaniem: decyzje, konta, assety, makiety."
 argument-hint: "[etap zbiorczego dokumentu wymagań, np. docs/brainstorms/mvp-requirements.md#etap-17]"
 ---
 
-# Przygotuj materiały wejściowe przed `/dev-plan`
+# Operator checklist etapu — przygotowanie przed `/dev-plan`
 
 **Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
 
-`/dev-prep` odpowiada na jedno pytanie: **co człowiek musi mieć gotowe, zanim ma sens odpalenie `/dev-plan`**. Produkuje jeden dokument — zamówienie na materiały wejściowe — i nic więcej.
+`/dev-prep` odpowiada na jedno pytanie: **co człowiek musi dostarczyć poza kodem, zanim ruszy etap**. Produkuje jeden dokument — `docs/operator/<feature-slug>-przygotowanie.md` — i nic więcej.
+
+To **jedyny** dokument przygotowawczy w pipeline. `/dev-plan` go **czyta i uzupełnia** o to, co wyjdzie dopiero z Implementation Units (numery blokowanych faz, klucze wynikłe z konkretnych plików, środowisko E2E) — nie tworzy drugiej listy. `/dev-docs` sprawdza go w bramce gotowości przed autopilotem.
 
 Ten skill **nie planuje**. Nie tworzy Implementation Units, nie dobiera bibliotek, nie proponuje architektury, nie szacuje. Jeśli zaczynasz pisać „jak to zbudować" — jesteś w złym skillu, to należy do `/dev-plan`.
 
@@ -16,29 +18,25 @@ Ten skill **nie planuje**. Nie tworzy Implementation Units, nie dobiera bibliote
 
 ```
 /dev-brainstorm → CO budować (opcjonalny)
-/dev-prep       → CZEGO POTRZEBA, ŻEBY ZAPLANOWAĆ   ← ten skill
-/dev-plan       → JAK budować (czyta wynik /dev-prep w 1.6 i 3.7)
-/dev-docs       → cięcie planu na fazy i zadania
+/dev-prep       → CO CZŁOWIEK MUSI DOSTARCZYĆ   ← ten skill, tworzy <slug>-przygotowanie.md
+/dev-plan       → JAK budować; czyta ten dokument (0.2, 1.6) i UZUPEŁNIA go (3.7/5.2b)
+/dev-docs       → cięcie planu na fazy; sprawdza dokument w bramce gotowości
 dev-autopilot-wf → wykonanie
 ```
 
-**Trzy dokumenty operatora — nie myl ich:**
+**Dwa dokumenty operatora w całym cyklu — nie myl ich:**
 
-| Dokument | Kto generuje | Kiedy wykonywany | Treść |
+| Dokument | Kto tworzy | Kiedy wykonywany | Treść |
 |---|---|---|---|
-| `docs/operator/<slug>-przed-planem.md` | `/dev-prep` | **przed planowaniem** | makiety do zaprojektowania, konta do założenia, assety do dostarczenia, decyzje do domknięcia |
-| `docs/operator/<slug>-przygotowanie.md` | `/dev-plan` (3.7 / 5.2b) | **przed autopilotem** | klucze i środowisko wyprowadzone precyzyjnie z IU, z numerem blokowanej fazy |
+| `docs/operator/<slug>-przygotowanie.md` | **`/dev-prep`** (uzupełnia `/dev-plan`) | **przed implementacją** | decyzje, konta i konsole, sekrety, assety, makiety |
 | `docs/operator/<data>-<zadanie>-smoke.md` | `dev-docs-complete` | **po autopilocie** | czego automat nie sprawdził |
-
-Granica `/dev-prep` vs 3.7 `/dev-plan`: `/dev-prep` wypisuje pozycje **o długim czasie realizacji po stronie człowieka**, które da się przewidzieć z opisu etapu (makiety, założenie konta w zewnętrznym serwisie, teksty prawne od klienta). 3.7 wypisuje pozycje **wyprowadzone z konkretnych IU** i przypisuje im numer blokowanej fazy. Pokrywanie się jest oczekiwane i nieszkodliwe — 3.7 czyta dokument z `/dev-prep` i nie duplikuje pozycji już odhaczonych.
 
 ## Kiedy używać
 
-- Startujesz nowy etap ze zbiorczego dokumentu wymagań (`mvp-requirements.md`) i etap dotyka UI.
-- Chcesz zamówić makiety u projektanta, zanim usiądziesz do planowania.
-- Etap wymaga kont/kluczy zewnętrznych, których zdobycie zajmie dni, nie minuty.
+- Startujesz etap zbiorczego dokumentu wymagań (`mvp-requirements.md`, roadmapa etapów) — zwłaszcza gdy wymaga kont zewnętrznych, assetów albo makiet.
+- Chcesz zamówić makiety u projektanta albo założyć konta, zanim usiądziesz do planowania.
 
-**Kiedy NIE używać:** bugfix, tech-debt, zmiana czysto backendowa bez nowych integracji, poprawka w istniejącym ekranie bez nowego designu. Wtedy idź wprost do `/dev-plan` — on i tak zapyta o Figmę w 1.6, a `/dev-prep` doda tylko pusty dokument.
+**Kiedy NIE używać:** bugfix, tech-debt, zmiana czysto backendowa bez nowych integracji i assetów. Wtedy wprost `/dev-plan` — on utworzy krótką listę sam (5.2b), jeśli w ogóle będzie co wpisać.
 
 ## Metoda interakcji
 
@@ -58,23 +56,27 @@ Kolejność (pierwsze trafienie wygrywa):
 2. **Argument wskazuje plik bez kotwicy** — przeczytaj, wypisz etapy/sekcje i zapytaj przez `AskUserQuestion`, którego etapu dotyczy przygotowanie. Nie przetwarzaj całego dokumentu naraz.
 3. **Argument pusty** — zrób glob `docs/brainstorms/*.md`. Jeden trafny dokument → wypisz jego etapy i zapytaj o etap. Wiele → zapytaj najpierw o dokument. Zero → zapytaj: „Nie znalazłem dokumentu wymagań w `docs/brainstorms/`. Podaj ścieżkę do etapu albo opisz zakres iteracji."
 
-Nie kontynuuj bez jednoznacznego zakresu jednej iteracji. „Cały MVP" nie jest zakresem — zamówienie na makiety do dwudziestu ekranów naraz jest nie do wykonania i dezaktualizuje się szybciej, niż powstaje.
+Nie kontynuuj bez jednoznacznego zakresu **jednego etapu**. „Cały MVP" nie jest zakresem — checklista do dwudziestu ekranów naraz jest nie do wykonania i dezaktualizuje się szybciej, niż powstaje.
 
-**Słownik domenowy:** jeśli istnieje `docs/CONCEPTS.md`, przeczytaj go i używaj jego terminologii w nazwach ekranów. Nazwa ekranu w zamówieniu jest później kluczem dopasowania do URL-a Figmy w `/dev-plan` — rozjazd nazewnictwa kosztuje ręczne mapowanie.
+Jeśli dokument źródłowy ma etapy zależne (`Zależy od: E1`), sprawdź stan poprzedniego etapu i zanotuj go w nagłówku — pozycje już dostarczone w poprzednim etapie **nie wracają** na listę.
+
+**Słownik domenowy:** jeśli istnieje `docs/CONCEPTS.md`, przeczytaj go i używaj jego terminologii w nazwach ekranów. Nazwa ekranu w sekcji makiet jest kluczem dopasowania do URL-a Figmy w `/dev-plan` 1.6 — rozjazd nazewnictwa kosztuje ręczne mapowanie.
 
 #### 0.2 Ustal `<feature-slug>`
 
-`<feature-slug>` = kebab-case, 3–5 słów, opisujący etap (np. `onboarding-uzytkownika`, `panel-rozliczen`). **Ten sam slug** trafi później do `docs/plans/<feature-slug>-figma/` i `docs/operator/<feature-slug>-przygotowanie.md` — `/dev-plan` przyjmuje go z tego dokumentu zamiast wymyślać własny. Wpisz go do frontmattera (Faza 3) jako `feature_slug:`.
+`<feature-slug>` = kebab-case, 3–5 słów, opisujący etap (np. `e2-auth-onboarding`, `panel-rozliczen`). Przy dokumencie etapowym użyj identyfikatora etapu jako prefiksu — porządkuje `docs/operator/` chronologicznie.
+
+**Ten sam slug** trafi później do `docs/plans/<feature-slug>-figma/` i nazwy pliku planu — `/dev-plan` przyjmuje go z frontmattera tego dokumentu zamiast wymyślać własny.
 
 #### 0.3 Idempotentność
 
-Jeśli `docs/operator/<feature-slug>-przed-planem.md` już istnieje, przeczytaj go i zadaj `AskUserQuestion`:
+Jeśli `docs/operator/<feature-slug>-przygotowanie.md` już istnieje, przeczytaj go i zadaj `AskUserQuestion`:
 
-> „Dokument przygotowania dla `<feature-slug>` już istnieje (N pozycji, M odhaczonych). Co robimy?"
+> „Przygotowanie dla `<feature-slug>` już istnieje (N pozycji, M odhaczonych). Co robimy?"
 
-Opcje: `Zaktualizuj w miejscu` (rekomendowane — **zachowaj zaznaczone `[x]`**, dopisz nowe pozycje, oznacz nieaktualne jako `~~przekreślone~~` z jednozdaniowym powodem) / `Pokaż stan i wyjdź` / `Nadpisz od zera`.
+Opcje: `Zaktualizuj w miejscu` (rekomendowane — **zachowaj zaznaczone `[x]` wraz z wpisanymi wartościami i datami**, dopisz nowe pozycje, oznacz nieaktualne jako `~~przekreślone~~` z jednozdaniowym powodem) / `Pokaż stan i wyjdź` / `Nadpisz od zera`.
 
-Nigdy nie odznaczaj `[x]` postawionego przez człowieka — to jego oświadczenie, że materiał jest gotowy.
+Nigdy nie odznaczaj `[x]` postawionego przez człowieka — to jego oświadczenie, że materiał jest gotowy. Nie kasuj też dopisanych przy pozycjach wartości („Team ID = `GFFF7Z9PK9`, sprawdzone 2026-06-16") — dokument jest dziennikiem ustaleń, nie tylko listą.
 
 ### Faza 1: Rozpoznanie
 
@@ -87,7 +89,7 @@ Tą samą regułą ścieżek co `/dev-plan` 1.6 krok A:
 - **Dotyka UI** — etap opisuje ekrany, komponenty, layouty, nawigację, stany widoczne dla użytkownika.
 - **Pure-data** — praca zamyka się w `src/lib/`, `src/hooks/`, `supabase/migrations/`, `supabase/functions/`, konfiguracji.
 
-Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje (wpisz w niej jedno zdanie „Etap nie dotyka UI — brak zamówienia na makiety."), a pozostałe trzy sekcje wypełniasz normalnie.
+Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje (wpisz w niej „Etap nie dotyka UI — brak makiet do przygotowania."), pozostałe wypełniasz normalnie.
 
 #### 1.2 Skan repo (równolegle, read-only)
 
@@ -97,55 +99,63 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 | `docs/DESIGN.md` | brak = pozycja w sekcji „Decyzje": design system nie istnieje, projektant nie ma tokenów |
 | `docs/plans/*-figma/SPEC.md` | pokrywający się feature = część makiet już sfetchowana; nie zamawiaj ich ponownie |
 | `.env.example`, `.env.local` (tylko **nazwy** zmiennych — `grep -o '^[A-Z_]*='`) | które klucze już są ustawione, a które trzeba zdobyć |
+| Wcześniejsze `docs/operator/*-przygotowanie.md` | co dostarczono w poprzednich etapach — nie powtarzaj; trzymaj się układu sekcji tamtych plików |
 | `docs/solutions/` | wcześniejsze wnioski o tej domenie |
 | `public/`, `src/assets/` | jakie assety już są |
 
 **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
 
-Gdy skan repo wymaga przeszukania wielu lokalizacji, deleguj do agenta `Explore` albo `repo-research-analyst` zamiast czytać plik po pliku.
+Gdy skan wymaga przeszukania wielu lokalizacji, deleguj do agenta `Explore` albo `repo-research-analyst` zamiast czytać plik po pliku.
 
-### Faza 2: Wyprowadź cztery listy
+### Faza 2: Wyprowadź listy
 
-Wyprowadzaj **wyłącznie** z dokumentu źródłowego i skanu repo. Czego nie ma w etapie, nie wymyślaj — to ta sama zasada, która obowiązuje `/dev-docs` wobec planu. Gdy czegoś nie wiesz, wpisz to do sekcji „Decyzje do domknięcia" zamiast zgadywać.
+Wyprowadzaj **wyłącznie** z dokumentu źródłowego i skanu repo. Czego nie ma w etapie, nie wymyślaj. Gdy czegoś nie wiesz, wpisz to do sekcji „Decyzje" zamiast zgadywać.
 
-#### 2.1 Makiety (tylko gdy etap dotyka UI)
+Obowiązuje jedna granica: **tu trafia wyłącznie to, co robi człowiek poza kodem**. Migracje, komponenty, testy, dev server, `git` — to implementacja. Gdy pozycja jest blisko granicy, dopisz przy niej `*(kod — robi autopilot)*` zamiast kasować; operator przy nagraniu/przeglądzie wie wtedy, że to nie jego krok.
 
-Dla każdego ekranu/komponentu z etapu zapisz:
+#### 2.1 Decyzje
 
-- **Nazwa** w kebab-case (`panel-rozliczen`, `modal-potwierdzenia`) — będzie kluczem przy podawaniu URL-a Figmy w `/dev-plan` 1.6 krok D.
-- **Status**: `nowy` / `modyfikacja <ścieżka istniejącego pliku>` / `już zaprojektowany (SPEC: <ścieżka>)`.
-- **Co pokazuje** — jedno–dwa zdania z wymagań etapu, nie z wyobraźni.
-- **Stany do zaprojektowania** — wypisz te, które etap implikuje: pusty, ładowanie, błąd, brak uprawnień, stan po sukcesie, walidacja formularza. Brakujący stan pustej listy to najczęstsza dziura, która wychodzi dopiero u buildera.
-- **Breakpointy** — mobile / desktop / oba, zgodnie z tym, co mówi etap. Gdy etap milczy: wpisz „do potwierdzenia" i dodaj pozycję do „Decyzji".
-- **Wymagania z etapu**, które ekran realizuje (identyfikatory `R1`, `#etap-17` itp.) — to jest traceability, którą `/dev-plan` przenosi dalej.
+Na górze dokumentu, bo zwykle blokują resztę: nieodwracalne wybory (bundle identifier, region danych, dostawca płatności), rozstrzygnięcia produktowe zostawione otwarte przez etap, wybór między wariantami implementacji, który zmienia zakres.
 
-Nie projektuj. Nie opisuj układu, kolorów ani komponentów shadcn/ui — zamawiasz makietę, a nie zastępujesz projektanta.
+Każdą zapisz jako **pytanie zamknięte z wypisanymi opcjami**, nie jako temat do przemyślenia. Pytanie bez opcji wraca do Ciebie po tygodniu w tej samej postaci. Oznacz **[blokuje planowanie]** te, bez których `/dev-plan` nie napisze IU (zasada 0.5 `dev-plan`: nierozwiązany bloker planowania).
 
-#### 2.2 Konta, klucze, dostępy
+#### 2.2 Konta, konsole, sekrety
 
-Wyłącznie te, które wynikają z opisu etapu (integracja z zewnętrznym serwisem, płatności, mapy, auth przez dostawcę, monitoring) **i** których nie widać w `.env.example` / `.env.local` jako już ustawionych. Dla każdej pozycji: **co**, **po co**, **jak zdobyć** (gdzie wejść, co kliknąć, do jakiej zmiennej wpisać), **dowód** (komenda lub obserwacja).
+Konta i konsole zewnętrzne (dostawca auth, płatności, monitoring, mapy, store'y), tokeny, klucze, zmienne środowiskowe — te, które wynikają z opisu etapu i których nie widać jako już ustawionych.
 
-Sekrety opisuj **nazwą zmiennej**, nigdy wartością.
+Dla każdej pozycji: **co**, **po co / co blokuje**, **jak** (gdzie wejść, co kliknąć, do jakiej zmiennej wpisać), **dowód wykonania** (komenda lub obserwacja).
 
-Nie wpisuj tu rzeczy, które autopilot robi sam (typecheck, testy, dev server, migracje i seedy na projekt e2e, `git`) ani środowiska E2E — to domena 3.7 `/dev-plan`, które policzy scenariusze `[E2E]` z gotowych IU.
+Oznacz każdą wartość jako 🔓 publiczną (może iść do repo) albo 🔒 sekret (nigdy do gita) i zamknij dokument sekcją **„Gdzie to ląduje"** — która wartość idzie do `.env`, która do sekretów builda, która do konfiguracji. Sekrety opisuj **nazwą zmiennej**, nigdy wartością.
+
+**Kolejność ma znaczenie.** Gdy jedna pozycja zależy od innej (klucz wymaga fingerprintu, który powstaje dopiero z builda; DSN wymaga org założonej w wybranym regionie), zapisz to wprost jako notatkę o kolejności — inaczej operator utknie w połowie i wróci z pytaniem.
 
 #### 2.3 Assety i treści
 
-Favicon, ikony, ilustracje empty state, wideo, zdjęcia, teksty prawne (regulamin, polityka prywatności), tłumaczenia, treści od klienta. Kryterium jest jedno: **czas realizacji po stronie człowieka**. Rzeczy, które da się wygenerować w minutę podczas implementacji, tu nie należą.
+Ikony, favicon, splash, ilustracje empty state, wideo, dźwięki, fonty (wraz z licencją), teksty prawne, tłumaczenia, treści od klienta. Kryterium: **czas realizacji po stronie człowieka**. Rzeczy do wygenerowania w minutę podczas implementacji tu nie należą.
 
-Dla każdej pozycji: co, w jakim formacie/rozmiarze (gdy etap to określa), kto dostarcza.
+Dla każdej: co, format/wymiary (gdy etap je określa), kto dostarcza, gdzie w repo ma wylądować.
 
-#### 2.4 Decyzje produktowe do domknięcia
+Świadomie odpuszczony asset oznacz `[~]` z powodem i tym, co go zastępuje — to dług, nie brak.
 
-Pytania, które etap zostawia otwarte, a bez których `/dev-plan` się zatrzyma (zasada 0.5 `dev-plan`: nierozwiązany bloker planowania). Typowo: który dostawca płatności, czy wymagamy weryfikacji e-mail, co się dzieje przy przekroczeniu limitu, jaki jest zakres uprawnień roli.
+#### 2.4 Makiety (tylko gdy etap dotyka UI)
 
-Każdą pozycję zapisz jako pytanie zamknięte z wypisanymi opcjami, nie jako temat do przemyślenia. Pytanie bez opcji wraca do Ciebie po tygodniu w tej samej postaci.
+Ta sekcja musi być gotowa **przed** `/dev-plan` — makiety są referencją dla implementacji, a ich zawartość determinuje format assetów z 2.3.
 
-Oznacz **[blokuje planowanie]** te, bez których nie da się napisać IU. Pozostałe zostaw jako „warto ustalić".
+Dla każdego ekranu/komponentu z etapu:
+
+- **Nazwa** w kebab-case (`panel-rozliczen`, `modal-potwierdzenia`) — klucz dopasowania do URL-a Figmy w `/dev-plan` 1.6 krok D.
+- **Status**: `nowy` / `modyfikacja <ścieżka istniejącego pliku>` / `już zaprojektowany (SPEC: <ścieżka>)`.
+- **Co pokazuje** — jedno–dwa zdania z wymagań etapu, nie z wyobraźni.
+- **Stany do zaprojektowania** — te, które etap implikuje: pusty, ładowanie, błąd, brak uprawnień, po sukcesie, walidacja formularza. Brakujący stan pustej listy to najczęstsza dziura, która wychodzi dopiero u buildera.
+- **Breakpointy** — zgodnie z etapem; gdy etap milczy, wpisz „do potwierdzenia" i dodaj pozycję do 2.1.
+- **Wymagania z etapu**, które ekran realizuje (`R1`, `#etap-17`) — traceability, którą `/dev-plan` przenosi dalej.
+- **`URL Figma:`** — puste pole do wklejenia po zaprojektowaniu.
+
+Nie projektuj. Nie opisuj układu, kolorów ani komponentów — zamawiasz makietę, nie zastępujesz projektanta.
 
 ### Faza 3: Zapisz dokument
 
-`mkdir -p docs/operator/` i zapisz `docs/operator/<feature-slug>-przed-planem.md`:
+`mkdir -p docs/operator/` i zapisz `docs/operator/<feature-slug>-przygotowanie.md`:
 
 ```markdown
 ---
@@ -156,62 +166,73 @@ dotyka_ui: true | false
 status: do-zrobienia | gotowe
 ---
 
-# Przygotowanie przed planowaniem — <Tytuł etapu>
+# <Etap> — Operator checklist (przygotowanie przed implementacją)
 
-Źródło: `docs/brainstorms/mvp-requirements.md#etap-17` · Utworzono: YYYY-MM-DD
-Status: **do zrobienia przed `/dev-plan`** — odhaczaj `[ ]` → `[x]`.
+**Etap:** <nazwa etapu ze źródła> · **Utworzono:** YYYY-MM-DD · **Zależy od:** <poprzedni etap / —>
+Źródło: `docs/brainstorms/mvp-requirements.md#etap-17`
 
-To lista materiałów wejściowych, bez których planowanie będzie zgadywaniem.
-Pozycje **[blokuje planowanie]** muszą być gotowe przed `/dev-plan`; pozostałe mogą dojść w trakcie.
+> Lista kroków, które robi **człowiek poza kodem**: decyzje, konta zewnętrzne, sekrety, assety, makiety.
+> Kod (migracje, komponenty, testy) powstaje w implementacji — nie jest tutaj.
+> Legenda: 🔓 publiczne (może iść do repo) · 🔒 sekret (nigdy do gita) · `[~]` świadomy dług · *(kod)* nie Twój krok.
+> `/dev-plan` dopisze do tej listy numery blokowanych faz i pozycje wynikłe z Implementation Units.
 
-## 1. Makiety do zaprojektowania
+## 1. Decyzje (zero plików, ale blokują resztę)
 
-Po zaprojektowaniu wklej URL-e Figmy przy ekranach — `/dev-plan` weźmie je stąd zamiast pytać.
+- [ ] **<Pytanie zamknięte?>** — **[blokuje planowanie]**
+  - Opcje: A) <…> B) <…>
+  - Dlaczego blokuje: <który obszar etapu zależy od odpowiedzi>
+  - Ustalono: _(wpisz wybór i datę)_
 
-- [ ] **`<nazwa-ekranu>`** — nowy / modyfikacja `src/pages/<x>.tsx` — **[blokuje planowanie]**
-  - Co pokazuje: <1–2 zdania z etapu>
-  - Stany: pusty · ładowanie · błąd · <inne z etapu>
-  - Breakpointy: mobile + desktop
-  - Wymagania: R3, R7
-  - URL Figma: _(wklej po zaprojektowaniu)_
+## 2. Konta, konsole, sekrety
 
-## 2. Konta, klucze, dostępy
+Kolejność: <notatka, gdy pozycje zależą od siebie>
 
-- [ ] **<Co zrobić>**
+- [ ] 🔒 **<Co zrobić>**
   - Po co: <co się stanie bez tego>
   - Jak: <gdzie wejść, co skopiować, do jakiej zmiennej>
   - Dowód: `grep <NAZWA_ZMIENNEJ> .env.local` zwraca wartość
 
 ## 3. Assety i treści
 
-- [ ] **<Co>** — format/rozmiar: <…> — dostarcza: <kto>
+- [ ] 🔓 **<Co>** — format/wymiary: <…> — dostarcza: <kto> — ląduje w: `<ścieżka>`
 
-## 4. Decyzje do domknięcia
+## 4. Makiety
 
-- [ ] **<Pytanie zamknięte?>** — **[blokuje planowanie]**
-  - Opcje: A) <…> B) <…>
-  - Dlaczego blokuje: <który obszar etapu zależy od odpowiedzi>
-  - Ustalono: _(wpisz wybór)_
+Po zaprojektowaniu wklej URL-e — `/dev-plan` weźmie je stąd zamiast pytać.
+
+- [ ] **`<nazwa-ekranu>`** — nowy / modyfikacja `src/pages/<x>.tsx`
+  - Co pokazuje: <1–2 zdania z etapu>
+  - Stany: pusty · ładowanie · błąd · <inne z etapu>
+  - Breakpointy: mobile + desktop
+  - Wymagania: R3, R7
+  - URL Figma: _(wklej po zaprojektowaniu)_
+
+## Gdzie to ląduje
+
+- 🔓 → `.env` / konfiguracja klienta
+- 🔒 → sekrety builda + lokalny `.env` poza gitem
 
 ---
-Gdy wszystkie **[blokuje planowanie]** są odhaczone: `/dev-plan docs/brainstorms/mvp-requirements.md#etap-17`
+Gdy **[blokuje planowanie]** są odhaczone: `/dev-plan docs/brainstorms/mvp-requirements.md#etap-17`
 ```
 
-Sekcję bez pozycji zostaw z jedną linią „Brak — nic do przygotowania w tej kategorii." Nie usuwaj nagłówka: `/dev-plan` szuka sekcji po numerze i tytule.
+Sekcję bez pozycji zostaw z jedną linią „Brak — nic do przygotowania w tej kategorii." Nie usuwaj nagłówka: `/dev-plan` i `/dev-docs` szukają sekcji po numerze i tytule.
+
+Gdy w `docs/operator/` istnieją dokumenty z wcześniejszych etapów — **trzymaj się ich układu sekcji i nazewnictwa**, nawet jeśli różni się od szablonu powyżej. Spójność serii jest ważniejsza niż zgodność z tym skillem.
 
 ### Faza 4: Podsumowanie i handoff
 
 Ogłoś:
 
 ```text
-Przygotowanie przed planowaniem: docs/operator/<feature-slug>-przed-planem.md
-Makiety: N ekranów (M blokuje planowanie) · Konta/klucze: N · Assety: N · Decyzje: N (M blokuje)
+Operator checklist: docs/operator/<feature-slug>-przygotowanie.md
+Decyzje: N (M blokuje planowanie) · Konta/sekrety: N · Assety: N · Makiety: N ekranów
 ```
 
 Następnie zadaj `AskUserQuestion`: „Co dalej?"
 
-- `Zamawiam makiety i wracam później` — zakończ. Przypomnij jedną linią: po zaprojektowaniu wklej URL-e Figmy do sekcji 1, wtedy `/dev-plan` nie zapyta o nie ponownie.
-- `Wszystko już mam — planujmy` — **uruchom `/dev-plan <origin>` w tej sesji** (nie opisuj tylko komendy). Przed uruchomieniem sprawdź, czy któraś pozycja **[blokuje planowanie]** została nieodhaczona; jeśli tak, wymień je i potwierdź, że użytkownik świadomie idzie dalej.
+- `Idę dostarczyć pozycje i wracam` — zakończ. Przypomnij jedną linią: po zaprojektowaniu makiet wklej URL-e do sekcji 4, wtedy `/dev-plan` nie zapyta o Figmę.
+- `Wszystko już mam — planujmy` — **uruchom `/dev-plan <origin>` w tej sesji** (nie opisuj tylko komendy). Wcześniej sprawdź nieodhaczone pozycje **[blokuje planowanie]**; jeśli są, wymień je i potwierdź, że użytkownik świadomie idzie dalej.
 - `Popraw dokument` — wróć do Fazy 2 z jego uwagami.
 
 **Commit:** dokument jest artefaktem planowania — `/dev-docs` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego Fazie 0). Nie commituj go sam, chyba że użytkownik poprosi.

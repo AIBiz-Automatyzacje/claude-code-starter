@@ -80,14 +80,15 @@ Przed zadawaniem pytań planistycznych przeszukaj `docs/brainstorms/` w poszukiw
 
 Jeśli wiele dokumentów źródłowych pasuje, zapytaj którego użyć używając narzędzia pytań platformy gdy dostępne. W przeciwnym razie prezentuj numerowane opcje w chacie i czekaj na odpowiedź.
 
-**Dokument przygotowania przed planowaniem (`/dev-prep`).** Po ustaleniu dokumentu źródłowego zrób glob `docs/operator/*-przed-planem.md` i sprawdź, czy któryś ma w frontmaterze `origin:` wskazujący ten sam etap/dokument. Jeśli tak:
+**Operator checklist etapu (`/dev-prep`).** Po ustaleniu dokumentu źródłowego zrób glob `docs/operator/*-przygotowanie.md` i sprawdź, czy któryś ma w frontmaterze `origin:` wskazujący ten sam etap/dokument. Jeśli tak:
 
 - Przeczytaj go w całości i przyjmij jego `feature_slug:` jako `<feature-slug>` na cały przebieg (1.6, 3.1, 5.2b) — **nie wymyślaj własnego slugu**.
-- Sekcja 1 (makiety, wraz z wklejonymi URL-ami Figmy) jest inputem dla 1.6 kroku C; sekcje 2–3 (konta, klucze, assety) dla 3.7; sekcja 4 (decyzje) dla 0.5.
-- Ogłoś jednym zdaniem: „Znalazłem przygotowanie przed planowaniem: `<ścieżka>` (N pozycji, M nieodhaczonych) — używam go jako źródła kontekstu designerskiego i wymagań operatora."
+- To jest **ten sam plik**, który uzupełnisz w 5.2b. Nie twórz drugiego dokumentu przygotowawczego — sekcja 3.7 dopisuje do tego.
+- Sekcja „Makiety" (z wklejonymi URL-ami Figmy) jest inputem dla 1.6 kroku C; „Decyzje" dla 0.5; „Konta, konsole, sekrety" i „Assety" dla 3.7.
+- Ogłoś jednym zdaniem: „Znalazłem operator checklist etapu: `<ścieżka>` (N pozycji, M nieodhaczonych) — używam go jako źródła kontekstu designerskiego i wymagań operatora; uzupełnię go po zbudowaniu IU."
 - **Nieodhaczone pozycje `[blokuje planowanie]`** wymień i zapytaj przez `AskUserQuestion`, czy planować mimo to (wybór świadomy — plan powstanie z lukami), czy przerwać do czasu ich domknięcia.
 
-Brak takiego dokumentu jest w pełni poprawny — kontynuuj standardowym przebiegiem (1.6 zapyta o Figmę interaktywnie). Nie wymagaj `/dev-prep` i nie przerywaj planowania z powodu jego braku.
+Brak takiego dokumentu jest w pełni poprawny — kontynuuj standardowym przebiegiem (1.6 zapyta o Figmę interaktywnie, 5.2b utworzy krótką listę od zera). Nie wymagaj `/dev-prep` i nie przerywaj planowania z powodu jego braku.
 
 #### 0.3 Użyj dokumentu źródłowego jako głównego inputu
 
@@ -264,11 +265,11 @@ Jeśli **dotyka UI** → kontynuuj krok B.
 
 **Krok C — Mockupy Figmy dla tej iteracji.** Kolejność sprawdzeń (pierwsze trafienie wygrywa):
 1. **Istniejący SPEC** — zrób glob `docs/plans/*-figma/SPEC.md`; jeśli którykolwiek folder odpowiada temu feature'owi (ten sam `fileKey` Figmy w nagłówku SPEC, pokrywająca się nazwa lub ten sam dokument źródłowy) → przyjmij jego slug jako `<feature-slug>` i przejdź do **kroku F** — niezależnie od tego, czy linki są w źródle (rerun nie może nadpisać SPEC bez zgody).
-2. **Dokument `/dev-prep`** — jeśli 0.2 znalazło `docs/operator/<feature-slug>-przed-planem.md`, jego sekcja 1 jest listą ekranów tej iteracji. Rozstrzygnij po wypełnieniu pól `URL Figma:`:
-   - **Wszystkie ekrany mają URL** → przejdź wprost do kroku D **bez pytania**; listę `{name, url}` bierzesz z dokumentu, nie od użytkownika (`name` = nazwa ekranu z sekcji 1, bez zmian — to ona wiąże makietę z zamówieniem).
+2. **Operator checklist z `/dev-prep`** — jeśli 0.2 znalazło `docs/operator/<feature-slug>-przygotowanie.md`, jego sekcja „Makiety" jest listą ekranów tej iteracji. Rozstrzygnij po wypełnieniu pól `URL Figma:`:
+   - **Wszystkie ekrany mają URL** → przejdź wprost do kroku D **bez pytania**; listę `{name, url}` bierzesz z dokumentu, nie od użytkownika (`name` = nazwa ekranu z sekcji, bez zmian — to ona wiąże makietę z pozycją checklisty).
    - **Część ekranów ma URL** → wymień nazwy ekranów bez URL-a i zapytaj przez `AskUserQuestion`: `Fetchuj gotowe, resztę zaprojektujemy z głowy` / `Podam brakujące URL-e teraz` / `Przerywam — dokończę makiety`. Przy pierwszej opcji zapisz brakujące ekrany do „Otwarte pytania → Odroczone do implementacji".
-   - **Żaden ekran nie ma URL-a, a sekcja 1 jest niepusta** → makiety zamówione, ale niegotowe. Zapytaj: `Projektujemy z głowy w oparciu o DESIGN.md` / `Przerywam planowanie do czasu makiet` (rekomendowane, gdy pozycje mają **[blokuje planowanie]**).
-   - **Sekcja 1 pusta lub `dotyka_ui: false`** → `figma_spec: null`, `figma_screens: {}`, kontynuuj do Fazy 2.
+   - **Żaden ekran nie ma URL-a, a sekcja jest niepusta** → makiety zamówione, ale niegotowe. Zapytaj: `Projektujemy z głowy w oparciu o DESIGN.md` / `Przerywam planowanie do czasu makiet` (rekomendowane, gdy pozycje mają **[blokuje planowanie]**).
+   - **Sekcja pusta lub `dotyka_ui: false`** → `figma_spec: null`, `figma_screens: {}`, kontynuuj do Fazy 2.
 3. **Linki w źródle** — użytkownik podał URL-e `figma.com/design/...` w requeście lub dokumencie źródłowym → przejdź wprost do kroku D bez pytania.
 4. W pozostałych przypadkach zadaj `AskUserQuestion` (to jedyne pytanie designerskie, które skill zadaje w standardowym przebiegu):
 
@@ -482,9 +483,15 @@ Przejdź po wszystkich IU i wypisz **wyłącznie** rzeczy, których Claude/autop
 | Dane na projekcie głównym | dane wejściowe/backfill, których builder potrzebuje **do implementacji** (np. istniejące rekordy do migracji danych) — nie do rolloutu ani do testów ręcznych | IU z migracjami / czytające istniejące dane |
 | Dostępy potrzebne do implementacji | dashboard Supabase/Sentry, konto w zewnętrznym API | IU integracyjne |
 
-**Gdy istnieje dokument `/dev-prep`** (`docs/operator/<feature-slug>-przed-planem.md` znaleziony w 0.2): przejdź po jego sekcjach 2–3 i **nie powtarzaj pozycji odhaczonych `[x]`** — są zrobione, ich powtórzenie każe operatorowi robić to samo dwa razy. Pozycje **nieodhaczone** przepisz tutaj, uzupełniając o to, czego `/dev-prep` nie mógł wiedzieć: numer blokowanego IU/fazy. Pozycje, których w tamtym dokumencie nie ma, a wynikają z IU — dopisz normalnie.
+**Gdy operator checklist już istnieje** (`docs/operator/<feature-slug>-przygotowanie.md` znaleziony w 0.2 — typowo z `/dev-prep`), Twoim zadaniem jest go **uzupełnić, nie odtworzyć**. Przejdź po nim i przygotuj wyłącznie **deltę**:
+
+- **Pozycje odhaczone `[x]`** — nie ruszasz. Są zrobione; powtórzenie każe operatorowi robić to samo dwa razy.
+- **Pozycje nieodhaczone, które już tam są** — dopisujesz do nich to, czego `/dev-prep` nie mógł wiedzieć: **numer blokowanego IU/fazy** (`— blokuje Fazę 2 (IU-3)`). Treści nie przepisujesz.
+- **Pozycje, których tam nie ma**, a wynikają z konkretnych IU (nowy klucz w `.env.example` tykanym przez IU, sekret Edge Function, środowisko E2E) — dopisujesz jako nowe.
 
 Dostępu do Figmy **nie wpisuj** — rozstrzyga się w 1.6 (fetch się udał albo zapadła decyzja „projektujemy z głowy"); pozycja dopisana po fakcie niczego już nie odblokuje.
+
+Gdy dokumentu nie ma (wejście wprost do `/dev-plan`, np. bugfix), zbuduj listę od zera wg tabeli powyżej — 5.2b utworzy plik.
 
 Fizyczne urządzenie do scenariuszy `[Manual]` (responsywność na realnym urządzeniu, push, dotyk) → `Operator checklist` / smoke po implementacji, **nie tutaj** — brak urządzenia niczego nie blokuje przed startem.
 
@@ -763,9 +770,21 @@ Potwierdź:
 Plan zapisany do docs/plans/[nazwa-pliku]
 ```
 
-#### 5.2b Zapisz dokument „Przygotowanie dla operatora" (gdy lista z 3.7 jest niepusta)
+#### 5.2b Operator checklist — uzupełnij albo utwórz (gdy delta z 3.7 jest niepusta)
 
-Użyj `mkdir -p docs/operator/` i zapisz `docs/operator/<feature-slug>-przygotowanie.md` (`<feature-slug>` = `<descriptive-name>` z nazwy pliku planu, ten sam co w `docs/plans/<feature-slug>-figma/`). Ścieżkę wpisz do frontmattera planu jako `operator_prep:`. Układ pliku:
+Plik jest zawsze jeden: `docs/operator/<feature-slug>-przygotowanie.md` (`<feature-slug>` z 1.6 — ten sam co w `docs/plans/<feature-slug>-figma/`). Ścieżkę wpisz do frontmattera planu jako `operator_prep:`.
+
+**Gdy plik istnieje** (utworzony przez `/dev-prep`, znaleziony w 0.2) — **edytuj go w miejscu narzędziem `Edit`, nigdy `Write`**:
+
+- Dopisz numery blokowanych faz przy pozycjach, które już tam są.
+- Dodaj nowe pozycje z delty 3.7 do właściwych sekcji („Konta, konsole, sekrety" / „Assety i treści" / nowa sekcja „Środowisko E2E", gdy dotyczy).
+- **Nie kasuj i nie przepisuj `[x]`** ani wpisanych przy nich wartości i dat — to dziennik ustaleń operatora.
+- **Nie duplikuj sekcji** ani nagłówka. Nie zmieniaj układu sekcji zastanego w pliku.
+- Dopisz jedną linię pod nagłówkiem: `Uzupełnione przez /dev-plan YYYY-MM-DD — pozycje z Implementation Units oznaczone numerem blokowanej fazy.`
+
+Potwierdź: `Operator checklist uzupełniony: docs/operator/<feature-slug>-przygotowanie.md (+N pozycji z IU, M blokuje start)`
+
+**Gdy pliku nie ma** (wejście wprost do `/dev-plan`) — `mkdir -p docs/operator/` i zapisz nowy wg układu poniżej:
 
 ```markdown
 # Przygotowanie dla operatora — <Tytuł planu>
