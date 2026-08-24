@@ -15,13 +15,14 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 // import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 ```
 
-**Migracja:** Pakiet `framer-motion` został przemianowany na `motion` (v12.x). Import zmieniony z `framer-motion` na `motion/react`. Stary pakiet nadal działa bez zmian.
+**Migracja:** Pakiet `framer-motion` został przemianowany na `motion` (aktualnie v13.x — motion@13.1.1 i framer-motion@13.1.1 wg npm, 2026-08; sprawdź upgrade guide motion.dev przy podbiciu majora). Import zmieniony z `framer-motion` na `motion/react`. Stary pakiet nadal działa bez zmian.
+v13 usunęło automatyczne użycie `@emotion/is-prop-valid` — przy styled-components/Emotion trzeba je jawnie wstrzyknąć przez `MotionConfig` (zob. upgrade guide).
 ```bash
 # Nowe projekty
 npm install motion
 
 # Istniejące projekty — brak zmian wymaganych
-# framer-motion jest re-eksportem z motion
+# motion/react jest re-eksportem framer-motion (motion zależy od framer-motion) — oba pakiety mają tę samą wersję
 ```
 
 ### Podstawowe Animacje
@@ -321,8 +322,10 @@ function useSupportsViewTransitions() {
 |-------------|--------------|----------------|
 | Chrome | 111+ | 126+ |
 | Safari | 18+ | 18.2+ |
-| Firefox | 133+ | Brak |
+| Firefox | 144+ | Brak |
 | Edge | 111+ | 126+ |
+
+Same-document: Baseline Newly Available od X.2025 (~90% pokrycia wg caniuse, 2026-08); cross-document nadal poza Baseline (brak Firefox).
 
 ---
 
@@ -463,7 +466,7 @@ function Card({ children }: Props) {
 const supportsScrollTimeline = CSS.supports('animation-timeline', 'view()');
 ```
 
-**Wsparcie (2026):** Chrome 115+, Edge 115+, Safari 26+ (nowe!), Firefox za flagą. Globalne pokrycie ~83-85%. Stosuj jako progressive enhancement.
+**Wsparcie (2026-08, caniuse):** Chrome 115+, Edge 115+, Safari 26+, Firefox 157+. Globalne pokrycie ~85%. Nadal poza Baseline — stosuj jako progressive enhancement z `@supports (animation-timeline: scroll())`.
 
 ### Fallback z Intersection Observer
 ```typescript
@@ -527,7 +530,7 @@ dialog[open] {
 }
 ```
 
-### Tailwind v4.1+ (starting variant)
+### Tailwind v4.0+ (starting variant)
 ```typescript
 <div className="starting:opacity-0 starting:scale-95 transition-all duration-300">
     Content with entry animation
@@ -632,7 +635,9 @@ export function Collapsible({ isOpen, children }: CollapsibleProps) {
 
 Od Chrome 129+ animacja `height: auto` jest możliwa czystym CSS, bez mierzenia wysokości
 w JS/Motion — wystarczy włączyć `interpolate-size: allow-keywords` na `:root` (lub przez
-`calc-size()`). Traktuj jako progressive enhancement (przeglądarki bez wsparcia po prostu
+`calc-size()`). Tylko Chromium (Chrome/Edge 129+); brak w Safari i Firefox (caniuse, 2026-08), ~70% pokrycia —
+wymaga fallbacku (np. `grid-template-rows` 0fr→1fr) lub `@supports (interpolate-size: allow-keywords)`.
+Traktuj jako progressive enhancement (przeglądarki bez wsparcia po prostu
 skoczą do końcowej wysokości) i zawsze respektuj `prefers-reduced-motion`.
 
 ```css

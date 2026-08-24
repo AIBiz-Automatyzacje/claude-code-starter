@@ -1,6 +1,7 @@
 # Standardy TypeScript
 
-Wytyczne TypeScript 5.7+ i React 19 - konfiguracja, typy, nowoczesne wzorce.
+Wytyczne TypeScript 6.x/7.x i React 19 - konfiguracja, typy, nowoczesne wzorce.
+(TS 7.0 GA 2026-07-08 — natywny kompilator; od 6.0 `strict`, `noUncheckedSideEffectImports` i nowoczesny `target` są domyślne. Wersje wg devblogs.microsoft.com/typescript — sprawdź przy podbiciu.)
 
 **Stan wersji:** TS 6.0 to aktualne GA oparte jeszcze na JS-owym kompilatorze (zmiany domyślnych:
 `strict: true` domyślnie, target ES5 usunięty — domyślny target przesunięty na nowoczesny ES).
@@ -103,7 +104,7 @@ export const MyComponent = ({
 
 ## React 19: Ref jako Prop
 
-W React 19 `forwardRef` jest **deprecated**. Ref to zwykły prop:
+W React 19 `forwardRef` **nie jest już potrzebny** (zostanie oznaczony jako deprecated w przyszłym wydaniu; w 19.2 brak warningu). Ref to zwykły prop:
 ```typescript
 // React 19 - ref jako prop
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {

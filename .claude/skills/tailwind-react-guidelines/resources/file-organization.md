@@ -116,8 +116,11 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 
 ## Routing (React Router v8)
 
-v8 (2026-06) nie zmienia API z v7, ale podnosi minima do Node 22.22+, React 19.2.7+ i Vite 7+;
-pakiet `react-router-dom` został w v8 całkowicie usunięty — importuj z `react-router`.
+v8 (2026-06; aktualnie 8.3.0) podnosi minima do Node 22.22+ i React 19.2.7+ oraz wprowadza breaking changes:
+pakiet `react-router-dom` został całkowicie usunięty — importuj z `react-router`, a komponenty DOM
+(`RouterProvider`, `HydratedRouter`) z `react-router/dom`; middleware zawsze włączone (`context` w loader/action
+= `RouterContextProvider`); pakiet ESM-only; usunięte `hasErrorBoundary`; flagi `future.v8_*` stały się domyślne.
+(Źródło: CHANGELOG `packages/react-router` w repo remix-run/react-router, sekcja 8.0.0 — sprawdź przy podbiciu majora.)
 
 ### Konfiguracja w App.tsx
 ```typescript

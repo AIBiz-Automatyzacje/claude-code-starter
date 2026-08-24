@@ -115,115 +115,80 @@ await supabaseAdmin.auth.admin.updateUserById(userId, {
 
 Kazda chroniona Edge Function musi weryfikowac JWT.
 
-**getClaims() -- PREFEROWANE server-side.** Od 1 pazdziernika 2025 nowe projekty Supabase
-domyslnie uzywaja asymetrycznych kluczy JWT -- `getClaims()` weryfikuje token lokalnie przez
-JWKS (bez round-tripu do serwera Auth), wiec jest szybsze niz `getUser()`.
+**withSupabase({ auth: 'user' }) -- AKTUALNY WZORZEC (2026).** Oficjalne wytyczne Supabase
+(AI-prompt `edge-functions.md`, pkt 7-8): nie uzywaj `Deno.serve` -- eksportuj domyslny obiekt
+z handlerem `fetch` i ZAWSZE owijaj go w `withSupabase` z `npm:@supabase/server@^1`. Wrapper
+sam robi to, co wczesniej pisalismy recznie: odrzuca request bez waznego JWT **przed** wejsciem
+do handlera, buduje klienta `ctx.supabase` (RLS w kontekscie usera) i `ctx.supabaseAdmin`
+(secret key, omija RLS) oraz dodaje naglowki CORS (`cors: 'default'`). Zweryfikowana
+tozsamosc masz w `ctx.userClaims` (`sub` = user_id). `Deno.serve` nadal dziala (legacy), ale
+przestal byc dokumentowanym wzorcem.
 
 ```typescript
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { withSupabase } from 'npm:@supabase/server@^1';
 
-Deno.serve(async (req) => {
-    // CORS preflight
-    if (req.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders });
-    }
+export default {
+    // auth: 'user' -- request bez waznego JWT dostaje 401 zanim handler ruszy.
+    // Tryby: 'user' | 'publishable' | 'secret' | 'none' (lub tablica, np. ['user', 'secret']).
+    // Dla trybu innego niz 'user' ustaw verify_jwt = false w supabase/config.toml.
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        try {
+            // ctx.userClaims.sub to zweryfikowany user_id -- NIE czytaj go z body/naglowkow
+            const userId = ctx.userClaims?.sub;
 
-    try {
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader) {
-            return new Response(
-                JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Brak tokena' } }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            // Wrapper NIE robi za Ciebie: walidacji Zod, autoryzacji zasobu, rate limitu.
+            // ctx.supabase respektuje RLS -- to pierwsza linia autoryzacji zasobu.
+            const { data, error } = await ctx.supabase
+                .from('posts')
+                .select('id, title')
+                .eq('user_id', userId);
+            if (error) throw error;
+
+            return Response.json({ data });
+        } catch (error) {
+            // Loguj bez wrazliwych danych
+            console.error('Edge Function error:', error instanceof Error ? error.message : 'Unknown');
+            return Response.json(
+                { error: { code: 'INTERNAL', message: 'Blad serwera' } },
+                { status: 500 }
             );
         }
-
-        const token = authHeader.replace('Bearer ', '');
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_ANON_KEY')!
-        );
-
-        // Weryfikacja lokalna przez JWKS -- bez sieciowego zapytania do Auth
-        const { data, error: claimsError } = await supabase.auth.getClaims(token);
-        if (claimsError || !data) {
-            return new Response(
-                JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Nieprawidlowy token' } }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
-
-        // Logika biznesowa z zweryfikowanym data.claims.sub (user_id)
-        // ...
-
-        return new Response(
-            JSON.stringify({ data: { success: true } }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-    } catch (error) {
-        // Loguj bez wrazliwych danych
-        console.error('Edge Function error:', error instanceof Error ? error.message : 'Unknown');
-        return new Response(
-            JSON.stringify({ error: { code: 'INTERNAL', message: 'Blad serwera' } }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-    }
-});
+    }),
+};
 ```
 
-**getUser() -- fallback dla starszych projektow.** Projekty na starszych symetrycznych kluczach
-JWT nie maja jeszcze JWKS do lokalnej weryfikacji -- `getUser()` kontaktuje sie z serwerem Auth
-przy kazdym wywolaniu i pozostaje jedyna opcja.
+> Pin `npm:@supabase/server@^1` -- aktualna 1.4.1 (npm, 2026-08). Przy podbiciu majora sprawdz
+> w README (github.com/supabase/server) sygnature `withSupabase`, pola `SupabaseContext`
+> i kształt opcji `cors` (`'default' | 'disabled' | { headers }`; formy `true`/`false` sa deprecated).
+
+**getClaims() / getUser() -- gdy weryfikujesz token recznie.** Potrzebne tylko poza wrapperem
+(np. `auth: 'none'` z wlasna logika auth albo token z innego zrodla niz naglowek). Od
+1 pazdziernika 2025 nowe projekty Supabase domyslnie uzywaja asymetrycznych kluczy JWT --
+`getClaims()` weryfikuje token lokalnie przez JWKS (bez round-tripu do serwera Auth), wiec jest
+szybsze niz `getUser()`. Na projektach z symetrycznym secretem JWT `getClaims()` wykonuje
+fallback do weryfikacji zdalnej (jak `getUser()`) -- dziala, ale bez zysku wydajnosci;
+`getUser()` pozostaje rownowazna alternatywa.
 
 ```typescript
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
-Deno.serve(async (req) => {
-    // CORS preflight
-    if (req.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders });
-    }
+// Wewnatrz handlera withSupabase({ auth: 'none' }, ...) -- recznie weryfikujesz token
+const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+if (!token) {
+    return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Brak tokena' } }, { status: 401 });
+}
 
-    try {
-        // Utworz klienta z tokenem uzytkownika
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader) {
-            return new Response(
-                JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Brak tokena' } }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
+const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}').default // legacy: SUPABASE_ANON_KEY
+);
 
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_ANON_KEY')!,
-            { global: { headers: { Authorization: authHeader } } }
-        );
-
-        // Weryfikacja -- getUser() kontaktuje sie z serwerem Auth (fallback, patrz getClaims() wyzej)
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
-            return new Response(
-                JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Nieprawidlowy token' } }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
-
-        // Logika biznesowa z zweryfikowanym user.id
-        // ...
-
-        return new Response(
-            JSON.stringify({ data: { success: true } }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-    } catch (error) {
-        // Loguj bez wrazliwych danych
-        console.error('Edge Function error:', error instanceof Error ? error.message : 'Unknown');
-        return new Response(
-            JSON.stringify({ error: { code: 'INTERNAL', message: 'Blad serwera' } }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-    }
-});
+// Weryfikacja lokalna przez JWKS (asymetryczne klucze) lub zdalna (symetryczne)
+const { data, error: claimsError } = await supabase.auth.getClaims(token);
+if (claimsError || !data) {
+    return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Nieprawidlowy token' } }, { status: 401 });
+}
+// data.claims.sub = zweryfikowany user_id
 ```
 
 ### Service Role -- Kiedy i Jak
@@ -231,14 +196,12 @@ Deno.serve(async (req) => {
 Service role omija RLS. Uzywaj TYLKO gdy operacja wymaga dostepu do danych innych uzytkownikow lub tabel bez policies.
 
 ```typescript
-// Service role client -- TYLKO w Edge Functions, NIGDY na froncie
-const supabaseAdmin = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-);
+// Klient admin jest gotowy na ctx.supabaseAdmin (withSupabase) -- TYLKO w Edge Functions, NIGDY na froncie.
+// Bez wrappera: createClient(SUPABASE_URL, JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!).default)
+// (legacy: SUPABASE_SERVICE_ROLE_KEY).
 
-// Przyklad: webhook Stripe musi zaktualizowac subskrypcje dowolnego uzytkownika
-const { error } = await supabaseAdmin
+// Przyklad: webhook Stripe (auth: 'none') musi zaktualizowac subskrypcje dowolnego uzytkownika
+const { error } = await ctx.supabaseAdmin
     .from('subscriptions')
     .update({ status: 'active' })
     .eq('stripe_customer_id', customerId);
@@ -252,6 +215,10 @@ const { error } = await supabaseAdmin
 
 ### CORS Handling
 
+`withSupabase` domyslnie (`cors: 'default'`) dodaje standardowe naglowki CORS supabase-js.
+Do produkcji ogranicz origin przez `cors: { headers: {...} }`; dla webhookow serwer-serwer
+wylacz CORS (`cors: 'disabled'`).
+
 ```typescript
 // supabase/functions/_shared/cors.ts
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://myapp.com';
@@ -261,6 +228,13 @@ export const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Max-Age': '86400',
+};
+
+// index.ts -- przekaz naglowki do wrappera zamiast obslugiwac OPTIONS recznie
+export default {
+    fetch: withSupabase({ auth: 'user', cors: { headers: corsHeaders } }, async (req, ctx) => {
+        // ...
+    }),
 };
 ```
 
@@ -277,29 +251,30 @@ const CreatePostSchema = z.object({
     published: z.boolean().default(false),
 });
 
-Deno.serve(async (req) => {
-    // ... auth verification ...
+export default {
+    // withSupabase weryfikuje JWT, ale NIE waliduje body -- Zod jest nadal obowiazkowy
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        const body = await req.json();
+        const parsed = CreatePostSchema.safeParse(body);
 
-    const body = await req.json();
-    const parsed = CreatePostSchema.safeParse(body);
-
-    if (!parsed.success) {
-        return new Response(
-            JSON.stringify({
-                error: {
-                    code: 'VALIDATION_ERROR',
-                    message: 'Nieprawidlowe dane',
-                    details: parsed.error.flatten().fieldErrors,
+        if (!parsed.success) {
+            return Response.json(
+                {
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Nieprawidlowe dane',
+                        details: parsed.error.flatten().fieldErrors,
+                    },
                 },
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-    }
+                { status: 400 }
+            );
+        }
 
-    // Uzyj parsed.data -- typowany i zwalidowany
-    const { title, content, published } = parsed.data;
-    // ...
-});
+        // Uzyj parsed.data -- typowany i zwalidowany
+        const { title, content, published } = parsed.data;
+        // ...
+    }),
+};
 ```
 
 ---
@@ -449,26 +424,29 @@ const QueryItemsSchema = z.object({
 
 ```typescript
 // Edge Function
-Deno.serve(async (req) => {
-    const body = await req.json();
-    const result = CreateItemSchema.safeParse(body);
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        const body = await req.json();
+        const result = CreateItemSchema.safeParse(body);
 
-    if (!result.success) {
-        return new Response(
-            JSON.stringify({
-                error: {
-                    code: 'VALIDATION_ERROR',
-                    message: 'Nieprawidlowe dane wejsciowe',
-                    details: result.error.flatten().fieldErrors,
+        if (!result.success) {
+            return Response.json(
+                {
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Nieprawidlowe dane wejsciowe',
+                        details: result.error.flatten().fieldErrors,
+                    },
                 },
-            }),
-            { status: 400 }
-        );
-    }
+                { status: 400 }
+            );
+        }
 
-    // Od tego momentu result.data jest typowane i bezpieczne
-    const item = result.data;
-});
+        // Od tego momentu result.data jest typowane i bezpieczne
+        const item = result.data;
+        // ...
+    }),
+};
 
 // React Hook Form + Zod (frontend)
 import { useForm } from 'react-hook-form';
@@ -557,7 +535,9 @@ const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
 
 // Zmienne Supabase dostepne automatycznie:
-// SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+// SUPABASE_URL, SUPABASE_PUBLISHABLE_KEYS, SUPABASE_SECRET_KEYS (JSON-mapy, klucz 'default');
+// legacy: SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY. Z withSupabase nie czytasz ich
+// recznie -- klienci sa gotowi na ctx.supabase / ctx.supabaseAdmin.
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 ```
 
@@ -573,7 +553,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL');
 
 **Najwazniejsze zasady:**
 1. RLS zawsze wlaczony, policies na kazdej operacji, `(SELECT auth.uid())` zamiast `auth.email()`
-2. Edge Functions -- `getUser()` do weryfikacji JWT, service_role tylko gdy konieczne
+2. Edge Functions -- `export default { fetch: withSupabase({ auth: 'user' }, ...) }` weryfikuje JWT za Ciebie; recznie `getClaims()` (`getUser()` tylko jako rownowazny fallback), `ctx.supabaseAdmin` / secret key tylko gdy konieczne
 3. React -- uwazaj na niebezpieczne renderowanie raw HTML, user URLs, dynamiczne `src`/`href`
 4. Zod na kazdej granicy systemu (Edge Functions, formularze, query params)
 5. Secrets -- VITE_* tylko dla publicznych kluczy, reszta w Edge Functions env vars

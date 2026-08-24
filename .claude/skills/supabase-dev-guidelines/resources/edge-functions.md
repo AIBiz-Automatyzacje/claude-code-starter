@@ -9,9 +9,8 @@ Wzorce dla Supabase Edge Functions - Deno runtime, autentykacja, CORS, Stripe.
 ### Katalog i Plik
 ```
 supabase/functions/
-├── _shared/
-│   └── cors.ts              # Współdzielone CORS headers
 ├── create-checkout-session/
+│   ├── deno.json
 │   └── index.ts
 ├── create-billing-portal-session/
 │   └── index.ts
@@ -19,50 +18,84 @@ supabase/functions/
     └── index.ts
 ```
 
-### Współdzielone CORS Headers
+### CORS — załatwia wrapper `withSupabase`
+
+`withSupabase` z `npm:@supabase/server@^1` sam obsługuje preflight (OPTIONS) i dokleja
+standardowe nagłówki CORS supabase-js (opcja `cors: 'default'`, domyślna). Nie twórz
+`_shared/cors.ts` ani ręcznej gałęzi `if (req.method === 'OPTIONS')`. Warianty:
+`cors: 'disabled'` (webhooki server-to-server) lub `cors: { headers: {...} }` (własne
+nagłówki, np. konkretne `Access-Control-Allow-Origin`).
+
+### Podstawowy Szablon (2026) — `withSupabase`
+
+Wzorzec oficjalny Supabase: eksport domyślny obiektu z handlerem `fetch`, owinięty
+`withSupabase`. Wrapper weryfikuje auth PRZED wejściem do handlera, tworzy klientów
+(`ctx.supabase` — w roli usera, podlega RLS; `ctx.supabaseAdmin` — secret key, omija RLS)
+i obsługuje CORS. Ten sam handler działa bez zmian na Cloudflare Workers i Bun.
+
 ```typescript
-// supabase/functions/_shared/cors.ts
-export const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// supabase/functions/my-function/index.ts
+import { withSupabase } from 'npm:@supabase/server@^1';
+
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        try {
+            // ctx.userClaims: { id, email, role } z JWT (null przy auth innym niż 'user')
+            const result = await processRequest(req, ctx.supabase, ctx.userClaims);
+
+            return Response.json(result);
+        } catch (error) {
+            console.error('Function error:', error);
+
+            const message = error instanceof Error ? error.message : 'Internal error';
+            return Response.json({ error: message }, { status: 400 });
+        }
+    }),
 };
 ```
 
-### Podstawowy Szablon (2026)
+**Sygnatura (README `supabase/server`, v1.4.1):**
 ```typescript
-// supabase/functions/my-function/index.ts
-import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+withSupabase(
+    {
+        auth: 'user' | 'publishable' | 'secret' | 'none' | AuthMode[],   // tablica = dowolny z trybów
+        cors?: 'default' | 'disabled' | { headers: Record<string, string> },
+    },
+    handler: (req: Request, ctx: SupabaseContext) => Promise<Response>,
+);
 
-Deno.serve(async (req) => {
-    // Obsługa CORS preflight
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
-    }
+interface SupabaseContext {
+    supabase: SupabaseClient;        // RLS (rola usera / anon)
+    supabaseAdmin: SupabaseClient;   // secret key, omija RLS
+    userClaims: UserClaims | null;   // id, email, role — tylko auth 'user'
+    jwtClaims: JWTClaims | null;     // pełne claims JWT
+    authMode: AuthMode;              // który tryb dopasowano
+    authKeyName?: string;            // nazwa klucza API ('secret'/'publishable')
+}
+```
 
-    try {
-        // Logika funkcji
-        const result = await processRequest(req);
+Wrapper czyta `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_SECRET_KEYS` i
+`SUPABASE_JWKS` — wszystkie wstrzykiwane automatycznie w Edge Functions.
 
-        return new Response(
-            JSON.stringify(result),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 200,
-            }
-        );
-    } catch (error) {
-        console.error('Function error:', error);
+### Tryb `auth` — dobierz per funkcja
 
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 400,
-            }
-        );
-    }
-});
+| Tryb | Kto woła | Klient w ctx | `verify_jwt` w `config.toml` |
+|------|----------|--------------|------------------------------|
+| `'user'` | zalogowany user (JWT w `Authorization`) | `ctx.supabase` (RLS) | domyślne (`true`) |
+| `'secret'` | cron, worker, `pg_net`, inna funkcja (secret key) | `ctx.supabaseAdmin` | `false` |
+| `'publishable'` | klient publiczny przed logowaniem | `ctx.supabase` (anon) | `false` |
+| `'none'` | endpoint publiczny / webhook zewnętrzny (weryfikacja w kodzie) | `ctx.supabase` jako anon | `false` |
+
+Dla KAŻDEGO trybu innego niż `'user'` wyłącz weryfikację JWT na bramce, inaczej gateway
+odrzuci request zanim dojdzie do wrappera:
+
+```toml
+# supabase/config.toml
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.nightly-cleanup]
+verify_jwt = false
 ```
 
 ---
@@ -71,8 +104,11 @@ Deno.serve(async (req) => {
 
 ### Preferowane Źródła
 ```typescript
-// Supabase - użyj JSR
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+// Wrapper handlera (auth, klienci, CORS)
+import { withSupabase } from 'npm:@supabase/server@^1';
+
+// Supabase JS — tylko gdy potrzebujesz klienta poza ctx (docs Supabase używają npm:, nie jsr:)
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Stripe - użyj npm:
 import Stripe from 'npm:stripe@22';
@@ -88,10 +124,12 @@ import { encodeBase64 } from 'jsr:@std/encoding@1/base64';
 
 | Źródło | Status 2026 | Użycie |
 |--------|-------------|--------|
-| `jsr:` | ✅ Preferowane | Pakiety Deno-native |
-| `npm:` | ✅ Preferowane | Pakiety npm |
-| `esm.sh` | ⚠️ Legacy | Tylko gdy jsr/npm nie działa |
-| `deno.land/x` | ❌ Deprecated | Migruj do jsr: |
+| `npm:` | ✅ Preferowane | Pakiety npm (w tym `@supabase/server`, `@supabase/supabase-js`) |
+| `jsr:` | ✅ Preferowane | Pakiety Deno-native (`@std/*`) |
+| `deno.land/x` | ⚠️ Minimalizuj | Wspierane, niepreferowane — docs: „minimize the use" |
+| `esm.sh`, `unpkg.com` | ⚠️ Minimalizuj | Tylko gdy jsr/npm nie działa |
+
+Zawsze pinuj wersję (`@2`, `@^1`, `@22`).
 
 ### Konfiguracja `deno.json` (Preferowane)
 
@@ -101,7 +139,8 @@ Od Deno 2.x, `deno.json` jest preferowany nad import maps. Jeśli oba istnieją,
 // supabase/functions/deno.json
 {
   "imports": {
-    "@supabase/supabase-js": "jsr:@supabase/supabase-js@2",
+    "@supabase/server": "npm:@supabase/server@^1",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
     "stripe": "npm:stripe@22"
   }
 }
@@ -109,7 +148,7 @@ Od Deno 2.x, `deno.json` jest preferowany nad import maps. Jeśli oba istnieją,
 
 Z `deno.json` importy w kodzie są czystsze:
 ```typescript
-import { createClient } from '@supabase/supabase-js';
+import { withSupabase } from '@supabase/server';
 import Stripe from 'stripe';
 ```
 
@@ -117,124 +156,50 @@ import Stripe from 'stripe';
 
 ## Weryfikacja JWT
 
-### getClaims() — PREFEROWANE server-side
+### `auth: 'user'` — wrapper weryfikuje za Ciebie (PREFEROWANE)
 
-Od 1 października 2025 nowe projekty Supabase domyślnie używają asymetrycznych kluczy JWT.
-`getClaims()` weryfikuje token lokalnie przez JWKS (bez round-tripu do serwera Auth) i jest
-szybsze niż `getUser()`. To preferowany wzorzec w Edge Functions.
+Z `withSupabase({ auth: 'user' })` nie parsujesz nagłówka `Authorization` ani nie wołasz
+`getClaims()`/`getUser()` ręcznie: request bez ważnego JWT jest odrzucany ZANIM handler
+się wykona. Tożsamość masz w `ctx.userClaims` (`id`, `email`, `role`), pełne claims
+w `ctx.jwtClaims`, a `ctx.supabase` działa już w roli tego usera (RLS).
 
 ```typescript
-import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+import { withSupabase } from 'npm:@supabase/server@^1';
 
-Deno.serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
-    }
-
-    try {
-        const authHeader = req.headers.get('Authorization');
-
-        if (!authHeader) {
-            throw new Error('Missing authorization header');
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        // ctx.userClaims nie jest null — wrapper odrzucił request bez JWT
+        const userId = ctx.userClaims?.id;
+        if (!userId) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const token = authHeader.replace('Bearer ', '');
-
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-        );
-
-        // Weryfikacja lokalna przez JWKS - bez sieciowego zapytania do Auth
-        const { data, error: claimsError } = await supabase.auth.getClaims(token);
-
-        if (claimsError || !data) {
-            throw new Error('Invalid token');
-        }
-
-        const userId = data.claims.sub;
-
-        // Token zweryfikowany - kontynuuj
-        const result = await processForUser(userId);
-
-        return new Response(
-            JSON.stringify(result),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            }
-        );
-    } catch (error) {
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 401,
-            }
-        );
-    }
-});
+        const result = await processForUser(userId, ctx.supabase);
+        return Response.json(result);
+    }),
+};
 ```
 
-### getUser() — fallback dla starszych projektów
+Pełny obiekt `User` (metadata, identities) — dopiero gdy naprawdę go potrzebujesz:
+`const { data: { user } } = await ctx.supabase.auth.getUser();` (round-trip do Auth).
 
-Projekty na starszych symetrycznych kluczach JWT nie mają jeszcze JWKS do lokalnej weryfikacji —
-`getUser()` kontaktuje się z serwerem Auth przy każdym wywołaniu i pozostaje jedyną opcją.
+### getClaims() vs getUser() — gdy weryfikujesz ręcznie
+
+Potrzebne tylko przy `auth: 'none'` z własną logiką (np. token w body) lub poza wrapperem.
+
+- `getClaims()` — preferowane. Od 1 października 2025 nowe projekty mają asymetryczne
+  klucze JWT: weryfikacja lokalna przez JWKS (`SUPABASE_JWKS`), bez round-tripu do Auth.
+- Na projektach z symetrycznym secretem JWT `getClaims()` sam robi fallback do weryfikacji
+  zdalnej (jak `getUser()`) — działa, tylko bez zysku wydajności; `getUser()` pozostaje
+  równoważną alternatywą.
 
 ```typescript
-import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
-
-Deno.serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
-    }
-
-    try {
-        // Pobierz Authorization header
-        const authHeader = req.headers.get('Authorization');
-
-        if (!authHeader) {
-            throw new Error('Missing authorization header');
-        }
-
-        // Utwórz klienta Supabase z tokenem użytkownika
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            {
-                global: {
-                    headers: { Authorization: authHeader },
-                },
-            }
-        );
-
-        // Pobierz użytkownika (weryfikuje token z serwerem)
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-            throw new Error('Invalid token');
-        }
-
-        // Użytkownik zweryfikowany - kontynuuj
-        const result = await processForUser(user);
-
-        return new Response(
-            JSON.stringify(result),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            }
-        );
-    } catch (error) {
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 401,
-            }
-        );
-    }
-});
+const token = req.headers.get('Authorization')?.replace('Bearer ', '') ?? '';
+const { data, error } = await ctx.supabase.auth.getClaims(token);
+if (error || !data) {
+    return Response.json({ error: 'Invalid token' }, { status: 401 });
+}
+const userId = data.claims.sub;
 ```
 
 ---
@@ -244,78 +209,56 @@ Deno.serve(async (req) => {
 ### create-checkout-session
 ```typescript
 // supabase/functions/create-checkout-session/index.ts
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { withSupabase } from 'npm:@supabase/server@^1';
 import Stripe from 'npm:stripe@22';
-import { corsHeaders } from '../_shared/cors.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-    apiVersion: '2026-06-24.dahlia',
+    // MUSI rownac sie pinowi zainstalowanego majora (Stripe.LatestApiVersion).
+    // Typ apiVersion to literal JEDNEJ wersji — rozjazd = blad typow w deno check,
+    // nie ostrzezenie. Po kazdym podbiciu stripe-node sprawdz src/apiVersion.ts.
+    apiVersion: '2026-07-29.dahlia', // stripe-node 22.5.0 (pin wszedl w 22.4.0)
 });
 
-Deno.serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
-    }
+// auth: 'user' — wrapper odrzuca request bez ważnego JWT i obsługuje CORS/preflight
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        try {
+            const user = ctx.userClaims;
+            if (!user) {
+                return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            }
 
-    try {
-        // Weryfikuj użytkownika
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader) {
-            throw new Error('Missing authorization');
-        }
+            // Pobierz dane z body
+            const { priceId, successUrl, cancelUrl } = await req.json();
 
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: authHeader } } }
-        );
-
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-            throw new Error('Unauthorized');
-        }
-
-        // Pobierz dane z body
-        const { priceId, successUrl, cancelUrl } = await req.json();
-
-        // Utwórz sesję Stripe Checkout
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', 'blik', 'p24'],
-            line_items: [
-                {
-                    price: priceId,
-                    quantity: 1,
+            // Utwórz sesję Stripe Checkout
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card', 'blik', 'p24'],
+                line_items: [
+                    {
+                        price: priceId,
+                        quantity: 1,
+                    },
+                ],
+                mode: 'payment',
+                success_url: successUrl,
+                cancel_url: cancelUrl,
+                customer_email: user.email,
+                metadata: {
+                    user_id: user.id,
+                    user_email: user.email,
                 },
-            ],
-            mode: 'payment',
-            success_url: successUrl,
-            cancel_url: cancelUrl,
-            customer_email: user.email,
-            metadata: {
-                user_id: user.id,
-                user_email: user.email,
-            },
-        });
+            });
 
-        return new Response(
-            JSON.stringify({ sessionId: session.id, url: session.url }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            }
-        );
-    } catch (error) {
-        console.error('Checkout error:', error);
+            return Response.json({ sessionId: session.id, url: session.url });
+        } catch (error) {
+            console.error('Checkout error:', error);
 
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 400,
-            }
-        );
-    }
-});
+            const message = error instanceof Error ? error.message : 'Internal error';
+            return Response.json({ error: message }, { status: 400 });
+        }
+    }),
+};
 ```
 
 ---
@@ -325,15 +268,22 @@ Deno.serve(async (req) => {
 ### stripe-webhook
 ```typescript
 // supabase/functions/stripe-webhook/index.ts
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { withSupabase } from 'npm:@supabase/server@^1';
 import Stripe from 'npm:stripe@22';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-    apiVersion: '2026-06-24.dahlia',
+    // MUSI rownac sie pinowi zainstalowanego majora (Stripe.LatestApiVersion).
+    // Typ apiVersion to literal JEDNEJ wersji — rozjazd = blad typow w deno check,
+    // nie ostrzezenie. Po kazdym podbiciu stripe-node sprawdz src/apiVersion.ts.
+    apiVersion: '2026-07-29.dahlia', // stripe-node 22.5.0 (pin wszedl w 22.4.0)
 });
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
 
-Deno.serve(async (req) => {
+// Webhook zewnętrzny: auth 'none' (Stripe nie ma JWT Supabase), CORS wyłączony
+// (server-to-server). Zaufanie opiera się WYŁĄCZNIE na podpisie stripe-signature.
+// Wymaga `verify_jwt = false` dla tej funkcji w supabase/config.toml.
+export default {
+    fetch: withSupabase({ auth: 'none', cors: 'disabled' }, async (req, ctx) => {
     try {
         const body = await req.text();
         const signature = req.headers.get('stripe-signature');
@@ -342,18 +292,15 @@ Deno.serve(async (req) => {
             throw new Error('Missing signature');
         }
 
-        // Weryfikuj sygnaturę webhook
+        // Weryfikuj sygnaturę webhook — jedyna bramka auth tej funkcji
         const event = await stripe.webhooks.constructEventAsync(
             body,
             signature,
             webhookSecret
         );
 
-        // Service role client dla pełnego dostępu
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
+        // Klient admin (secret key, omija RLS) — dopiero PO weryfikacji podpisu
+        const supabase = ctx.supabaseAdmin;
 
         // Obsłuż event
         switch (event.type) {
@@ -411,24 +358,25 @@ Deno.serve(async (req) => {
             }
         }
 
-        return new Response(JSON.stringify({ received: true }), {
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return Response.json({ received: true });
     } catch (error) {
         console.error('Webhook error:', error);
 
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            {
-                headers: { 'Content-Type': 'application/json' },
-                status: 400,
-            }
-        );
+        const message = error instanceof Error ? error.message : 'Internal error';
+        return Response.json({ error: message }, { status: 400 });
     }
-});
+    }),
+};
 ```
 
-**Uwaga:** Webhook nie używa CORS headers - jest wywoływany przez Stripe server-to-server.
+```toml
+# supabase/config.toml
+[functions.stripe-webhook]
+verify_jwt = false
+```
+
+**Uwaga:** Webhook ma `cors: 'disabled'` — jest wywoływany przez Stripe server-to-server.
+NIE przepisuj go na `auth: 'user'`/`'secret'`: Stripe nie wyśle ani JWT, ani secret key.
 
 ---
 
@@ -491,10 +439,16 @@ supabase secrets list
 
 ### Dostęp w Funkcji
 ```typescript
-// Automatycznie dostępne
+// Automatycznie dostępne (docs: functions/secrets). Z withSupabase nie czytasz ich
+// ręcznie — klienci są gotowi w ctx.supabase / ctx.supabaseAdmin.
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
-const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+// Klucze API to JSON-mapy nazwanych kluczy; główny klucz pod 'default'
+const publishableKey = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}').default; // sb_publishable_...
+const secretKey = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}').default;           // sb_secret_...
+
+// LEGACY (anon/service_role JWT, wycofywane do końca 2026): SUPABASE_ANON_KEY,
+// SUPABASE_SERVICE_ROLE_KEY — nie używaj w nowym kodzie.
 
 // Custom secrets
 const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -571,53 +525,32 @@ supabase functions list
 
 ### Standardowy Pattern
 ```typescript
-Deno.serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
-    }
+import { withSupabase } from 'npm:@supabase/server@^1';
 
-    try {
-        // Walidacja input
-        const body = await req.json();
-        
-        if (!body.priceId) {
-            return new Response(
-                JSON.stringify({ error: 'Missing priceId' }),
-                { 
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                    status: 400 
-                }
-            );
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        try {
+            // Walidacja input
+            const body = await req.json();
+
+            if (!body.priceId) {
+                return Response.json({ error: 'Missing priceId' }, { status: 400 });
+            }
+
+            // Logika...
+            const result = await process(body, ctx.supabase);
+
+            return Response.json(result);
+        } catch (error) {
+            // Loguj pełny błąd (widoczny w Supabase Dashboard > Logs)
+            console.error('Function error:', error);
+
+            // Zwróć bezpieczną wiadomość (401 dla braku JWT zwraca sam wrapper)
+            const message = error instanceof Error ? error.message : 'Internal error';
+            return Response.json({ error: message }, { status: 500 });
         }
-
-        // Logika...
-        const result = await process(body);
-
-        return new Response(
-            JSON.stringify(result),
-            { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 200 
-            }
-        );
-
-    } catch (error) {
-        // Loguj pełny błąd (widoczny w Supabase Dashboard > Logs)
-        console.error('Function error:', error);
-
-        // Zwróć bezpieczną wiadomość
-        const message = error instanceof Error ? error.message : 'Internal error';
-        const status = error instanceof AuthError ? 401 : 500;
-
-        return new Response(
-            JSON.stringify({ error: message }),
-            { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status 
-            }
-        );
-    }
-});
+    }),
+};
 ```
 
 ---
@@ -625,11 +558,12 @@ Deno.serve(async (req) => {
 ## Podsumowanie
 
 **Checklist Edge Function (2026):**
-- [ ] Użyj `Deno.serve()` (nie importuj serve)
-- [ ] Importy: `jsr:` dla Supabase, `npm:` dla Stripe
-- [ ] Obsłuż CORS preflight (OPTIONS)
-- [ ] Weryfikuj JWT dla autentykowanych endpointów
-- [ ] Użyj service_role tylko dla webhooków
+- [ ] `export default { fetch: withSupabase({ auth }, handler) }` — nie `Deno.serve()`
+- [ ] Importy: `npm:@supabase/server@^1`, `npm:@supabase/supabase-js@2`, `npm:stripe@22` (zawsze z wersją)
+- [ ] Tryb `auth` dobrany per funkcja (`'user'` / `'secret'` / `'publishable'` / `'none'`)
+- [ ] `verify_jwt = false` w `config.toml` dla każdej funkcji z `auth` innym niż `'user'`
+- [ ] CORS przez wrapper (`'default'` / `'disabled'` dla webhooków) — bez `_shared/cors.ts`
+- [ ] `ctx.supabaseAdmin` tylko w webhookach/cronie, po weryfikacji podpisu
 - [ ] Loguj błędy (widoczne w Dashboard > Logs)
 - [ ] Zwracaj odpowiednie kody statusu
 - [ ] Ustaw secrets przez CLI lub Dashboard
@@ -642,9 +576,15 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 serve(async (req) => { ... });
 
-// ✅ NOWY (Deno 2.x — obecny runtime)
+// ⚠️ STARSZY (nadal działa, niezalecany przez Supabase — AI-prompt: „do NOT use Deno.serve")
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 Deno.serve(async (req) => { ... });
+
+// ✅ NOWY (Deno 2.x — oficjalny wzorzec 2026)
+import { withSupabase } from 'npm:@supabase/server@^1';
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => { ... }),
+};
 ```
 
 **Zobacz Także:**

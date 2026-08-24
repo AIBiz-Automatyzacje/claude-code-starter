@@ -11,10 +11,10 @@ Wzorce PostgreSQL, RLS policies, generowane typy i operacje CRUD dla Supabase.
 Nie pisz typów tabel ręcznie. Używaj Supabase CLI:
 ```bash
 # Generuj typy z bazy danych
-supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
+supabase gen types --lang typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
 
-# Lub z lokalnej bazy
-supabase gen types typescript --local > src/types/database.ts
+# Lub z lokalnej bazy (pozycyjne `typescript` to stara, nieudokumentowana forma)
+supabase gen types --lang typescript --local > src/types/database.ts
 ```
 
 ### Konfiguracja Klienta
@@ -25,7 +25,7 @@ import type { Database } from '@/types/database';
 
 export const supabase = createClient<Database>(
     import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY // sb_publishable_...; legacy: VITE_SUPABASE_ANON_KEY
 );
 
 // Typy pomocnicze

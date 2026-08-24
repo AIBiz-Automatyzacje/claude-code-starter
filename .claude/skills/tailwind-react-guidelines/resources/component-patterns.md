@@ -121,7 +121,7 @@ export default MyComponent;
 
 ## React 19: Ref jako Prop
 
-W React 19 `forwardRef` jest **deprecated**. Ref to zwykły prop:
+W React 19 `forwardRef` **nie jest już potrzebny** (zostanie oznaczony jako deprecated w przyszłym wydaniu; w 19.2 brak warningu). Ref to zwykły prop:
 ```typescript
 // React 19 - ref w interfejsie props
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {

@@ -34,16 +34,17 @@ Kompleksowy przewodnik dla pracy z Supabase w aplikacjach Vite SPA - autentykacj
 - [ ] Zdefiniuj RLS policies dla SELECT, INSERT, UPDATE, DELETE
 - [ ] Używaj `(SELECT auth.uid())` w policies (nie email) — subquery dla wydajności
 - [ ] Dodaj indeksy dla często używanych kolumn
-- [ ] Wygeneruj typy: `supabase gen types typescript --local > src/types/database.ts`
+- [ ] Wygeneruj typy: `supabase gen types --lang typescript --local > src/types/database.ts`
 - [ ] Utwórz funkcje API w `lib/supabase.ts`
 
 ### Checklist Edge Function
 
 - [ ] Utwórz katalog `supabase/functions/function-name/`
-- [ ] Użyj `Deno.serve()` (nie importuj serve)
-- [ ] Importy: `jsr:@supabase/supabase-js@2`, `npm:stripe@22`
-- [ ] CORS headers w `_shared/cors.ts`
-- [ ] Zweryfikuj JWT jeśli wymagana autentykacja
+- [ ] `export default { fetch: withSupabase({ auth }, handler) }` z `npm:@supabase/server@^1` (nie `Deno.serve()`)
+- [ ] Importy: `npm:@supabase/supabase-js@2`, `npm:stripe@22`
+- [ ] Tryb `auth` per funkcja: `'user'` (JWT), `'secret'` (cron/pg_net), `'publishable'` (przed logowaniem), `'none'` (webhook zewnętrzny)
+- [ ] `verify_jwt = false` w `supabase/config.toml` dla trybów innych niż `'user'`
+- [ ] CORS załatwia wrapper (`cors: 'disabled'` dla webhooków) — bez `_shared/cors.ts`
 - [ ] Loguj błędy (bez wrażliwych danych)
 - [ ] Przetestuj lokalnie: `supabase functions serve`
 - [ ] Deploy: `supabase functions deploy function-name`
@@ -66,9 +67,14 @@ Kompleksowy przewodnik dla pracy z Supabase w aplikacjach Vite SPA - autentykacj
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
+// Publishable key (sb_publishable_...) — bezpieczny do ujawnienia, podlega RLS.
+// Legacy anon/service_role (JWT) będą wycofane do końca 2026 — nowe projekty
+// używają publishable/secret keys (docs: guides/api/api-keys).
 export const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    // Domyślny flowType to 'implicit' — dla OAuth/magic link ustaw PKCE jawnie
+    { auth: { flowType: 'pkce' } }
 );
 
 // Helper types
@@ -83,10 +89,10 @@ export type UpdateTables<T extends keyof Database['public']['Tables']> =
 ### Generowanie Typów
 ```bash
 # Z lokalnej bazy
-supabase gen types typescript --local > src/types/database.ts
+supabase gen types --lang typescript --local > src/types/database.ts
 
-# Z produkcji
-supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
+# Z produkcji (pozycyjne `typescript` to stara forma — używaj --lang)
+supabase gen types --lang typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
 ```
 
 ### Podstawowe Operacje
@@ -131,7 +137,7 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 - Email/hasło
 
 **Kluczowe Koncepcje:**
-- PKCE z auto-detekcją (`detectSessionInUrl: true` — domyślnie); nie wymieniaj `code` ręcznie w przeglądarce
+- Domyślny `flowType` w `createClient` to `implicit` — PKCE włącz jawnie: `{ auth: { flowType: 'pkce' } }` (`@supabase/ssr` ma PKCE skonfigurowane); `detectSessionInUrl: true` domyślnie — nie wymieniaj `code` ręcznie w przeglądarce
 - Hook `useAuth()` zarządza sesją
 - Trigger `handle_new_user()` tworzy rekord w `public.profiles`
 - Funkcja `ensure_user_profile()` jako fallback
@@ -168,8 +174,8 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 - Operacje wymagające service_role
 
 **Wzorce 2026:**
-- `Deno.serve()` (wbudowane, bez importu)
-- `jsr:@supabase/supabase-js@2` (nie esm.sh)
+- `export default { fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {...}) }` z `npm:@supabase/server@^1` — `ctx.supabase` (RLS) / `ctx.supabaseAdmin`; `Deno.serve()` to legacy, które nadal działa, ale Supabase go już nie zaleca
+- `npm:@supabase/supabase-js@2` (nie jsr:/esm.sh) — tylko gdy potrzebny klient poza `ctx`
 - `npm:stripe@22` (nie esm.sh)
 - `constructEventAsync` dla Stripe webhooks
 - Runtime: **Deno 2.x** (upgrade z 1.45.2)
@@ -198,6 +204,10 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 - Subscriptions dla zmian w tabelach
 - Presence dla statusu użytkowników
 - Broadcast dla custom events
+
+**Bezpieczeństwo:** kanały prywatne (`config: { private: true }`) działają dopiero po wyłączeniu
+„Allow public access" w **Realtime Settings** (`/dashboard/project/_/realtime/settings`).
+Dopóki jest włączone, RLS na `realtime.messages` nie jest wymuszane przy joinie.
 
 **[Pełny Przewodnik: resources/realtime.md](resources/realtime.md)**
 
@@ -233,13 +243,16 @@ const { data, error } = await supabase.rpc('ensure_user_profile');
 ### Frontend (.env.local)
 ```env
 VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...   # legacy: VITE_SUPABASE_ANON_KEY (wycofywany do końca 2026)
 ```
 
 ### Edge Functions
 ```env
+# Wstrzykiwane automatycznie (withSupabase czyta je sam):
 SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...  # NIGDY nie commituj!
+SUPABASE_PUBLISHABLE_KEYS={"default":"sb_publishable_..."}
+SUPABASE_SECRET_KEYS={"default":"sb_secret_..."}   # legacy: SUPABASE_SERVICE_ROLE_KEY; NIGDY nie commituj!
+# Własne secrets (supabase secrets set):
 STRIPE_SECRET_KEY=...          # NIGDY nie commituj!
 STRIPE_WEBHOOK_SECRET=...      # NIGDY nie commituj!
 ```
@@ -272,8 +285,8 @@ if (session) { /* autoryzacja */ }  // Token nie jest zweryfikowany!
 
 ### Preferuj
 ```typescript
-// ✅ Anon key na froncie
-const supabase = createClient(url, ANON_KEY);
+// ✅ Publishable key na froncie (sb_publishable_...; legacy anon key działa do końca 2026)
+const supabase = createClient(url, PUBLISHABLE_KEY);
 
 // ✅ UUID w RLS policy
 USING (auth.uid() = user_id)  // UUID jest immutable
@@ -284,8 +297,10 @@ const { data } = await supabase.from('posts').select('*');  // data: Tables[]
 // ✅ Production-safe logger
 logger.error('Błąd operacji', error);
 
-// ✅ Nowy standard Edge Functions
-Deno.serve(async (req) => { ... });
+// ✅ Nowy standard Edge Functions (Deno.serve = legacy, nadal działa)
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => { ... }),
+};
 
 // ✅ getUser() lub getClaims() do autoryzacji
 const { data: { user } } = await supabase.auth.getUser();
@@ -294,4 +309,4 @@ if (user) { /* autoryzacja */ }
 
 ---
 
-**Status Skilla**: Modułowa struktura z progressive loading dla optymalnego zarządzania kontekstem. Zaktualizowany do standardów Marzec 2026.
+**Status Skilla**: Modułowa struktura z progressive loading dla optymalnego zarządzania kontekstem. Zaktualizowany do standardów Sierpień 2026 (withSupabase, publishable/secret keys).

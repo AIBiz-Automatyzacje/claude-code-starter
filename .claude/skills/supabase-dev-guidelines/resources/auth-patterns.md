@@ -8,7 +8,7 @@ Wzorce autentykacji Supabase dla Vite SPA - OAuth, email/hasło, zarządzanie se
 
 ### PKCE (Proof Key for Code Exchange)
 
-Supabase JS v2 używa PKCE jako domyślnego flow OAuth. Po redirect z providera, URL zawiera parametr `code` ważny **5 minut** (jednorazowy). Klient przeglądarkowy z `createClient` ma domyślnie `detectSessionInUrl: true` i **sam** wymienia ten `code` na sesję — **nie wołaj `exchangeCodeForSession(code)` ręcznie w przeglądarce**. Kod jest jednorazowy, więc podwójna wymiana (auto-detekcja + ręczna) tworzy race i kończy się błędem „code already used". Jeśli świadomie robisz ręczny exchange, ustaw `detectSessionInUrl: false` przy tworzeniu klienta. Zobacz sekcję "Callback OAuth".
+Domyślny `flowType` w `createClient` to **`implicit`** (supabase-js 2.112.x, `DEFAULT_AUTH_OPTIONS` w auth-js). Dla PKCE ustaw jawnie `createClient(url, key, { auth: { flowType: 'pkce' } })` — wyjątkiem jest klient z `@supabase/ssr`, który ma PKCE skonfigurowane. Po redirect z providera, URL zawiera parametr `code` ważny **5 minut** (jednorazowy). Klient przeglądarkowy z `createClient` ma domyślnie `detectSessionInUrl: true` i **sam** wymienia ten `code` na sesję — **nie wołaj `exchangeCodeForSession(code)` ręcznie w przeglądarce**. Kod jest jednorazowy, więc podwójna wymiana (auto-detekcja + ręczna) tworzy race i kończy się błędem „code already used". Jeśli świadomie robisz ręczny exchange, ustaw `detectSessionInUrl: false` przy tworzeniu klienta. Zobacz sekcję "Callback OAuth".
 
 PKCE obsługiwane dla: `signInWithOAuth`, `signInWithOtp`, `signUp`, `resetPasswordForEmail`.
 

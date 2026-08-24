@@ -25,23 +25,30 @@ const value = useMemo(() => a + b, [a, b]);
 
 React Compiler 1.0 (stabilny od Paź 2025) automatycznie memoizuje komponenty i wartości. W Vite wymaga setup:
 ```bash
-npm install -D babel-plugin-react-compiler
+npm install -D babel-plugin-react-compiler @rolldown/plugin-babel
 ```
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 
 export default defineConfig({
     plugins: [
-        react({
-            babel: {
-                plugins: ['babel-plugin-react-compiler'],
-            },
-        }),
+        react(),
+        babel({ presets: [reactCompilerPreset()] }),
     ],
 });
 ```
+
+**Wymagania:** Vite >= 6 (aktualnie 8.x), `@vitejs/plugin-react` >= 6.0.0 (aktualnie 6.1.0; peer `vite ^8`),
+`babel-plugin-react-compiler` ^1.0.0 (opcjonalny peer plugin-react).
+Opcja `react({ babel: { plugins: [...] } })` istnieje **tylko** w `@vitejs/plugin-react` < 6 — od 6.0.0
+(Vite 8 + Oxc) plugin nie używa Babela i opcja `babel` została usunięta; Compiler włącza się wyłącznie przez
+`@rolldown/plugin-babel` + `reactCompilerPreset`.
+Źródło wersji: CHANGELOG `@vitejs/plugin-react` (6.1.0, 2026-08-19) i https://react.dev/learn/react-compiler/installation
+(stan 2026-08-23). Przy podbiciu sprawdź, czy `reactCompilerPreset` jest nadal eksportowany z `@vitejs/plugin-react`
+i czy `@rolldown/plugin-babel` nie został wchłonięty do core Vite.
 
 **Z Compiler 1.0 (rekomendowany setup):**
 - `useMemo` / `useCallback` zbędne — Compiler memoizuje automatycznie

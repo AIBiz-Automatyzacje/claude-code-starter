@@ -12,15 +12,20 @@ WCAG 2.2 AA, ARIA, nawigacja klawiaturą - standardy 2026.
 |-----------|--------|------|
 | 2.4.11 Focus Not Obscured | AA | Focus nie może być całkowicie zasłonięty |
 | 2.4.12 Focus Not Obscured (Enhanced) | AAA | Focus nie może być częściowo zasłonięty |
+| 2.4.13 Focus Appearance | AAA | Widoczny wskaźnik focusu o min. rozmiarze/kontraście |
 | 2.5.7 Dragging Movements | AA | Alternatywa dla drag-and-drop |
 | 2.5.8 Target Size (Minimum) | AA | Min 24x24px dla touch targets |
 | 3.2.6 Consistent Help | A | Pomoc w spójnym miejscu |
 | 3.3.7 Redundant Entry | A | Nie wymagaj ponownego wpisywania |
+| 3.3.8 Accessible Authentication (Minimum) | AA | Brak testów poznawczych w logowaniu (pozwól na wklejanie / menedżer haseł) |
+| 3.3.9 Accessible Authentication (Enhanced) | AAA | Bez testów poznawczych nawet z alternatywą |
+
+Razem 9 nowych kryteriów; 4.1.1 Parsing zostało usunięte w 2.2.
 
 ### Status Regulacyjny (2026)
 
-- **WCAG 2.2** (W3C Recommendation, Paź 2023) — obowiązująca wersja rekomendacji do wdrożeń
-- **EU EAA** (European Accessibility Act) — obowiązuje od 28 czerwca 2025, wymaga WCAG 2.2
+- **WCAG 2.2** (W3C Recommendation, 5 paź 2023, zaktualizowana 12 gru 2024) — obowiązująca wersja rekomendacji do wdrożeń
+- **EU EAA** (European Accessibility Act, dyr. 2019/882) — stosowana od 28 czerwca 2025; prawnym punktem odniesienia jest norma zharmonizowana EN 301 549 (V3.2.1 = WCAG 2.1 AA). Rewizja EN 301 549 V4.1.1 z WCAG 2.2 AA jest w trakcie harmonizacji (planowana publikacja VIII.2026, cytowanie w Dz.U. UE planowane XI.2026 — termin może się przesunąć). Wdrażaj WCAG 2.2 AA jako cel (zawiera 2.1), ale formalny wymóg to 2.1 AA
 - **WCAG 3.0** — Working Draft (marzec 2026), NIE gotowy do implementacji (~2028)
 
 ---
@@ -566,7 +571,7 @@ function Layout({ children }: Props) {
 
 ## Popover API (Natywne Popovers)
 
-Popover API (Baseline Widely Available od IV.2025) oferuje wbudowaną dostępność:
+Popover API (Baseline Newly Available od IV.2024 dla atrybutu `popover`; Widely Available wymaga 30 miesięcy, więc spodziewane ok. X.2026; ~91% pokrycia wg MDN, 2026-08) oferuje wbudowaną dostępność:
 
 ### Co przeglądarka robi automatycznie
 - `aria-expanded` na trigger button
@@ -586,6 +591,9 @@ Popover API (Baseline Widely Available od IV.2025) oferuje wbudowaną dostępno�
 </div>
 
 // Tooltip pattern
+// popover="hint" — brak w Safari (2026-08; Chrome/Edge 151+, Firefox 153+); wg spec HTML nieznana
+// wartość degraduje do `manual` (bez light-dismiss/Esc). Zawsze dodaj własne zamykanie na
+// mouseout/blur/Escape, albo feature-detect (ustaw el.popover='hint' i odczytaj) z fallbackiem na `auto`.
 <button popovertarget="tooltip-1" popovertargetaction="toggle">
     <Info className="h-4 w-4" />
 </button>

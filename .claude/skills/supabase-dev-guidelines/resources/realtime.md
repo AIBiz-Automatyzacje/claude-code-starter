@@ -164,6 +164,14 @@ const channel = supabase.channel('room:' + userId, {
 });
 ```
 
+> **KRYTYCZNE — wyłącz „Allow public access":** dopóki to ustawienie jest włączone,
+> kanały prywatne NIE są egzekwowane — RLS na `realtime.messages` nie blokuje joinu,
+> więc każdy z anon key subskrybuje i nadaje na dowolnym kanale mimo poprawnych policy.
+> Ustawienie leży na ekranie **Realtime Settings**
+> (`/dashboard/project/_/realtime/settings`) — to NIE jest `Database → Replication`
+> (tam włącza się tylko publikację tabel, patrz sekcja „Konfiguracja Publikacji").
+> Źródło: https://supabase.com/docs/guides/realtime/authorization
+
 > **Uwaga:** Realtime Authorization jest w Public Beta — API może się zmienić.
 
 ---

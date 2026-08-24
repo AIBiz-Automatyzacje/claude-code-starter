@@ -340,7 +340,7 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 }
 ```
 
-**Wsparcie:** Chrome 127+, Edge 126+, Firefox 149+, Safari 26.1+.
+**Wsparcie:** Chrome 125+, Edge 125+, Firefox 147+, Safari 26+. Baseline Newly Available od I.2026 (~84% pokrycia wg caniuse, 2026-08) — nadal fallback dla starszych Safari/Firefox.
 
 **Rekomendacja:** Stosuj jako progressive enhancement. Dla pełnego wsparcia przeglądarek nadal używaj Radix UI positioning lub floating-ui.
 

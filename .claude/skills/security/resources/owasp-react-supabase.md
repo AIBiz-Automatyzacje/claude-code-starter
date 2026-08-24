@@ -30,7 +30,8 @@ Najczęstszy problem bezpieczeństwa (#1 od lat). W naszym stacku manifestuje si
 - [ ] Policies używają `(SELECT auth.uid()) = user_id`
 - [ ] Autoryzacja NIGDY na `user_metadata` (edytowalne przez usera) — używaj `app_metadata` lub tabeli ról (patrz `auth-security-patterns.md`)
 - [ ] `service_role` key NIE jest w zmiennych `VITE_*`
-- [ ] Edge Functions weryfikują JWT przez `supabase.auth.getUser()` / `getClaims()`
+- [ ] Edge Functions owinięte w `withSupabase({ auth: 'user' })` (`npm:@supabase/server@^1`) — JWT weryfikowany przed handlerem; ręcznie tylko `getClaims()` / `getUser()` w trybie `auth: 'none'`
+- [ ] Funkcje z `auth` innym niż `'user'` mają `verify_jwt = false` w `supabase/config.toml` — i świadomie (webhook z weryfikacją sygnatury, cron z secret key), nie „bo nie działało"
 - [ ] Każda funkcja SECURITY DEFINER ma `SET search_path = ''` i nazwy schematyczne (`public.tabela`)
 - [ ] SSRF: walidacja URL + blokada redirectów + blokada adresów wewnętrznych (patrz niżej)
 - [ ] Macierz dostępu (kto może co) jest udokumentowana i zweryfikowana
@@ -85,23 +86,26 @@ function isBlockedHost(host: string): boolean {
     return false;
 }
 
-Deno.serve(async (req) => {
-    const { url } = await req.json();
-    let parsed: URL;
-    try { parsed = new URL(url); } catch { return new Response('Bad URL', { status: 400 }); }
+export default {
+    // auth: 'user' — wrapper odrzuca anonimowe wywołania; walidacja URL to nadal Twoja robota
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        const { url } = await req.json();
+        let parsed: URL;
+        try { parsed = new URL(url); } catch { return new Response('Bad URL', { status: 400 }); }
 
-    if (parsed.protocol !== 'https:') return new Response('Forbidden', { status: 403 });
-    if (!ALLOWED_HOSTS.has(parsed.hostname)) return new Response('Forbidden', { status: 403 });
-    if (isBlockedHost(parsed.hostname)) return new Response('Forbidden', { status: 403 });
+        if (parsed.protocol !== 'https:') return new Response('Forbidden', { status: 403 });
+        if (!ALLOWED_HOSTS.has(parsed.hostname)) return new Response('Forbidden', { status: 403 });
+        if (isBlockedHost(parsed.hostname)) return new Response('Forbidden', { status: 403 });
 
-    const res = await fetch(parsed, {
-        redirect: 'manual',                         // 302 -> 169.254.169.254 nie przejdzie
-        signal: AbortSignal.timeout(5000),
-        // NIE przekazuj nagłówka Authorization do zewnętrznego hosta
-    });
-    if (res.status >= 300 && res.status < 400) return new Response('Redirect blocked', { status: 403 });
-    return new Response(res.body);
-});
+        const res = await fetch(parsed, {
+            redirect: 'manual',                         // 302 -> 169.254.169.254 nie przejdzie
+            signal: AbortSignal.timeout(5000),
+            // NIE przekazuj nagłówka Authorization do zewnętrznego hosta
+        });
+        if (res.status >= 300 && res.status < 400) return new Response('Redirect blocked', { status: 403 });
+        return new Response(res.body);
+    }),
+};
 ```
 > Uwaga: filtr po hostname nie chroni w 100% przed **DNS rebinding** (host rozwiązuje się do IP prywatnego po walidacji). Przy wysokim ryzyku — rozwiąż DNS, zwaliduj IP i pinuj je do połączenia.
 
@@ -149,6 +153,12 @@ export const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
+
+// index.ts — withSupabase ma cors: 'default' (standardowe nagłówki supabase-js);
+// na produkcji podaj własne, a dla webhooków serwer-serwer użyj cors: 'disabled'
+export default {
+    fetch: withSupabase({ auth: 'user', cors: { headers: corsHeaders } }, async (req, ctx) => { /* ... */ }),
+};
 ```
 
 ---
@@ -194,7 +204,7 @@ Wycieki danych wrażliwych przez brak/błędne szyfrowanie lub zarządzanie secr
 - [ ] `.env` / `.env.local` w `.gitignore`; `.env.example` bez wartości
 - [ ] Brak secretów w kodzie (szukaj: `sk_`, `secret`, `password`, `token`)
 - [ ] `console.*` nie loguje obiektów user/session
-- [ ] Sentry `beforeSend` filtruje PII; `sendDefaultPii: false`
+- [ ] Sentry `beforeSend` filtruje PII; `dataCollection: { userInfo: false }` (SDK >= 10.57; `sendDefaultPii` jest deprecated i zniknie w v11 — gdy ustawione oba, wygrywa `dataCollection`)
 - [ ] Tokeny nie w URL query params
 
 ```typescript
@@ -260,15 +270,19 @@ Brak mechanizmów bezpieczeństwa na poziomie architektury (rate limiting, throt
 - [ ] Limity długości inputów (Zod `.max()`), limity rozmiaru uploadu
 
 ```typescript
-Deno.serve(async (req) => {
-    const origin = req.headers.get('Origin') ?? '';
-    if (!allowedOrigins.includes(origin)) return new Response('Forbidden', { status: 403 });
+export default {
+    // Endpoint publiczny (np. reset hasła): auth: 'publishable' + verify_jwt = false w config.toml.
+    // Wrapper NIE daje rate limitu ani walidacji — to Twoja odpowiedzialność.
+    fetch: withSupabase({ auth: 'publishable', cors: { headers: corsHeaders } }, async (req, ctx) => {
+        const origin = req.headers.get('Origin') ?? '';
+        if (!allowedOrigins.includes(origin)) return new Response('Forbidden', { status: 403 });
 
-    const parsed = z.object({ email: z.email().max(255) }).safeParse(await req.json());
-    if (!parsed.success) return new Response('Bad Request', { status: 400 });
-    // + rate limiting przed operacją wrażliwą (np. reset hasła)
-    return new Response('OK', { headers: corsHeaders });
-});
+        const parsed = z.object({ email: z.email().max(255) }).safeParse(await req.json());
+        if (!parsed.success) return new Response('Bad Request', { status: 400 });
+        // + rate limiting przed operacją wrażliwą (np. reset hasła)
+        return new Response('OK');
+    }),
+};
 ```
 
 ---
@@ -317,19 +331,24 @@ Brak weryfikacji integralności danych z zewnętrznych źródeł.
 
 ```typescript
 import Stripe from 'npm:stripe@22';                        // pinowana wersja
+import { withSupabase } from 'npm:@supabase/server@^1';
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 
-Deno.serve(async (req) => {
-    const body = await req.text();
-    const signature = req.headers.get('stripe-signature')!;
-    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-    if (event.type === 'checkout.session.completed') {
-        const userId = event.data.object.metadata?.user_id;  // NIE email
-        if (userId) await activateSubscription(userId);
-    }
-    return new Response('OK');
-});
+export default {
+    // Webhook: auth: 'none' (Stripe nie ma JWT) + verify_jwt = false w config.toml;
+    // cors: 'disabled' (serwer-serwer). Tożsamość zapewnia WYŁĄCZNIE sygnatura Stripe.
+    fetch: withSupabase({ auth: 'none', cors: 'disabled' }, async (req, ctx) => {
+        const body = await req.text();
+        const signature = req.headers.get('stripe-signature')!;
+        const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+        if (event.type === 'checkout.session.completed') {
+            const userId = event.data.object.metadata?.user_id;  // NIE email
+            if (userId) await activateSubscription(ctx.supabaseAdmin, userId);
+        }
+        return new Response('OK');
+    }),
+};
 ```
 
 ---

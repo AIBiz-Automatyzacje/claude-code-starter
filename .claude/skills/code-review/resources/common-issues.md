@@ -253,12 +253,12 @@ const supabase = createClient(
 );
 ```
 ```typescript
-// ✅ Dobrze — anon key w kliencie (podlega RLS)
+// ✅ Dobrze — publishable key w kliencie (podlega RLS; legacy anon key wycofywany do końca 2026)
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY // sb_publishable_...
 );
 ```
 

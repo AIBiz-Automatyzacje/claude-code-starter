@@ -19,8 +19,9 @@ Vitest + React Testing Library + MSW - unit testy, integracyjne, mockowanie API.
 
 ### Instalacja
 ```bash
-npm install -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom msw
+npm install -D vitest @testing-library/react @testing-library/dom @testing-library/jest-dom @testing-library/user-event jsdom msw
 ```
+> `@testing-library/dom` to obowiązkowy peer `@testing-library/react` (16.3.2 wymaga `^10.0.0`); npm 7+ doinstaluje go sam, ale pnpm/yarn strict wymagają jawnego wpisu.
 
 ### vitest.config.ts
 ```typescript

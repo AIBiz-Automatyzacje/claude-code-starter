@@ -352,25 +352,32 @@ try {
 
 ### Bezpieczeństwo
 ```typescript
-// ❌ NIGDY na froncie
-const supabase = createClient(url, SERVICE_ROLE_KEY);
+// ❌ NIGDY na froncie (secret key w przeglądarce i tak dostaje HTTP 401 — Supabase
+//    blokuje po User-Agent, ale klucz wycieka do bundle'a)
+const supabase = createClient(url, SECRET_KEY);
 
-// ✅ TYLKO w Edge Functions
-const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-);
+// ✅ TYLKO w Edge Functions — przez withSupabase, bez ręcznego createClient
+export default {
+    fetch: withSupabase({ auth: 'none', cors: 'disabled' }, async (req, ctx) => {
+        // ...weryfikacja podpisu webhooka...
+        const supabase = ctx.supabaseAdmin; // secret key, omija RLS
+    }),
+};
 ```
 
 ### Kiedy Używać
 
 | Kontekst | Klucz |
 |----------|-------|
-| Frontend (przeglądarka) | `ANON_KEY` |
-| Mobile app | `ANON_KEY` |
-| Edge Functions (webhook) | `SERVICE_ROLE_KEY` |
-| Backend server | `SERVICE_ROLE_KEY` |
-| Migracje, seedy | `SERVICE_ROLE_KEY` |
+| Frontend (przeglądarka) | `PUBLISHABLE_KEY` (`sb_publishable_...`; legacy: `ANON_KEY`) |
+| Mobile app | `PUBLISHABLE_KEY` (legacy: `ANON_KEY`) |
+| Edge Functions (webhook) | `SECRET_KEY` (`sb_secret_...`; legacy: `SERVICE_ROLE_KEY`) — `ctx.supabaseAdmin` |
+| Backend server | `SECRET_KEY` (legacy: `SERVICE_ROLE_KEY`) |
+| Migracje, seedy | `SECRET_KEY` (legacy: `SERVICE_ROLE_KEY`) |
+
+Legacy klucze `anon`/`service_role` (JWT) zostaną wycofane do końca 2026 — działają
+równolegle z nowymi, ale nowe projekty używają publishable/secret keys
+(docs: guides/api/api-keys).
 
 ---
 

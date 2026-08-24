@@ -10,7 +10,7 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 > **Stan SDK**
 >
 > - **React SDK:** v10+ (funkcyjne integracje, React 19 error hooks) ✅
-> - **Edge Functions:** `@sentry/deno` na Deno 2.x (instrumentacja `Deno.serve` świeża/eksperymentalna + `beforeSend`) ⚠️ — ustaw `defaultIntegrations: false` (dokumentacja Supabase nadal to zaleca na Edge Runtime), używaj `withScope` dla izolacji i `await flush()` przed `Response`
+> - **Edge Functions:** `npm:@sentry/deno@^10` na Deno 2.x, handler `export default { fetch: withSupabase(...) }` ⚠️ — `@sentry/deno` nie ma integracji dla fetch-handlera, więc błędy łapiesz ręcznie (`try/catch` → `captureError`); ustaw `defaultIntegrations: false` (tak robi oficjalny przykład Supabase), używaj `withScope` dla izolacji i `await flush()` przed `Response`
 
 ## Table of Contents
 
@@ -40,10 +40,11 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 
 ## Dobre praktyki (Edge Functions / Supabase)
 
-`@sentry/deno` działa na Supabase Edge Runtime (Deno 2.x) z instrumentacją requestów
-i wsparciem `beforeSend`. Wsparcie instrumentacji `Deno.serve` jest jednak świeże/eksperymentalne —
-oficjalna dokumentacja Supabase nadal zaleca `defaultIntegrations: false` na Edge Runtime, bo bez
-tego nie ma gwarancji scope separation między requestami w tym samym isolate. Nadal stosuj:
+`@sentry/deno` (v10) działa na Supabase Edge Runtime (Deno 2.x) ze wsparciem `beforeSend`.
+Handler piszemy jako `export default { fetch: withSupabase(...) }` (`Deno.serve` to legacy), a
+`@sentry/deno` nie ma integracji dla fetch-handlera — instrumentacja jest ręczna (`try/catch`).
+Oficjalny przykład Supabase ustawia `defaultIntegrations: false` na Edge Runtime, bo bez tego nie
+ma gwarancji scope separation między requestami w tym samym isolate. Nadal stosuj:
 
 | Zasada | Dlaczego |
 |--------|----------|
@@ -126,23 +127,28 @@ Sentry.withScope((scope) => {
 
 **Każda funkcja MUSI mieć Sentry z `withScope`:**
 ```typescript
+import { withSupabase } from 'npm:@supabase/server@^1';
 import { initSentry, captureError } from '../_shared/sentry.ts';
 
 const Sentry = initSentry('function-name');
 
-// WAŻNE: Deno.serve zamiast serve z deno.land/std
-Deno.serve(async (req) => {
-  try {
-    // logika
-  } catch (error) {
-    // ZAWSZE używaj captureError (używa withScope wewnętrznie)
-    captureError(error, {
-      operation: 'checkout',
-      user_id: userId  // NIE user_email (GDPR)
-    });
-    return new Response(JSON.stringify({ error: 'Error' }), { status: 500 });
-  }
-});
+// WAŻNE: export default { fetch } + withSupabase zamiast Deno.serve.
+// Tryb auth per funkcja ('user' | 'publishable' | 'secret' | 'none');
+// dla trybu innego niż 'user' -> verify_jwt = false w supabase/config.toml.
+export default {
+  fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+    try {
+      // logika — ctx.supabase (RLS), ctx.userClaims?.sub = user_id
+    } catch (error) {
+      // ZAWSZE await captureError (używa withScope + flush wewnętrznie)
+      await captureError(error, {
+        operation: 'checkout',
+        user_id: ctx.userClaims?.sub  // NIE user_email (GDPR)
+      });
+      return new Response(JSON.stringify({ error: 'Error' }), { status: 500 });
+    }
+  }),
+};
 ```
 
 ---

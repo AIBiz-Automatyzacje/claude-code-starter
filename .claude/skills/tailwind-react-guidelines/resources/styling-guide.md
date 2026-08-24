@@ -257,24 +257,34 @@ export default defineConfig({
 ```json
 {
     "$schema": "https://ui.shadcn.com/schema.json",
-    "style": "new-york",
+    "style": "base-nova",
+    "rsc": false,
+    "tsx": true,
     "tailwind": {
         "config": "",
         "css": "src/index.css",
         "baseColor": "neutral",
         "cssVariables": true
     },
-    "aliases": { "components": "@/components", "utils": "@/lib/utils", "ui": "@/components/ui" }
+    "aliases": { "components": "@/components", "utils": "@/lib/utils", "ui": "@/components/ui", "lib": "@/lib", "hooks": "@/hooks" },
+    "iconLibrary": "lucide"
 }
 ```
+
+> `new-york` to styl legacy (działa, mapuje na `new-york-v4`; `default` jest zdeprecjonowany). Nowe projekty
+> używają stylów `base-*` (Base UI) lub `radix-*` (Radix): Vega, Nova, Maia, Lyra, Mira, Luma, Rhea, Sera.
+> Stylu i `baseColor` nie da się zmienić po inicjalizacji. Wartość `base-nova` pochodzi z
+> https://ui.shadcn.com/docs/installation/manual (stan 2026-08-23) — przy podbiciu shadcn porównaj z tamtejszym `components.json`.
 
 ### Tokeny CSS + dark variant
 ```css
 /* src/index.css */
 @import "tailwindcss";
 
-/* Dark mode przez klasę .dark (v4 nie ma darkMode w configu) */
-@custom-variant dark (&:is(.dark *));
+/* Dark mode przez klasę .dark (v4 nie ma darkMode w configu).
+   Oficjalny wzorzec z docs Tailwind (zerowa specyficzność, obejmuje też sam element .dark);
+   shadcn generuje `&:is(.dark *)` — działa, ale nie pokrywa elementu .dark. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
     --background: oklch(1 0 0);
@@ -520,7 +530,29 @@ const toggleTheme = () => {
 }
 ```
 
-**Uwaga:** View Transitions API (same-document) jest wspierane w Chrome 111+, Firefox 133+ i Safari 18+. Cross-document transitions mają ograniczone wsparcie — używaj z feature detection.
+**Uwaga:** View Transitions API (same-document) jest wspierane w Chrome 111+, Firefox 144+ i Safari 18+ (caniuse, 2026-08). Cross-document transitions mają ograniczone wsparcie — używaj z feature detection.
+
+---
+
+## @starting-style (Entry Animations, Tailwind v4.0+)
+```css
+/* W globals.css - animacja przy pojawieniu się elementu */
+dialog[open] {
+    opacity: 1;
+    transform: scale(1);
+
+    @starting-style {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+```
+```typescript
+// Tailwind v4.0+: starting variant (wprowadzony w v4.0, nie w v4.1)
+<div className="starting:opacity-0 starting:scale-95 transition-all duration-300">
+    Content with entry animation
+</div>
+```
 
 ---
 
@@ -537,26 +569,6 @@ const toggleTheme = () => {
 // Gradient mask (fade out)
 <div className="mask-linear-gradient mask-b-from-50%">
     <img src="hero.jpg" />
-</div>
-```
-
-### @starting-style (Entry Animations)
-```css
-/* W globals.css - animacja przy pojawieniu się elementu */
-dialog[open] {
-    opacity: 1;
-    transform: scale(1);
-
-    @starting-style {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-}
-```
-```typescript
-// Tailwind v4.1+: starting variant
-<div className="starting:opacity-0 starting:scale-95 transition-all duration-300">
-    Content with entry animation
 </div>
 ```
 
@@ -627,7 +639,9 @@ const usePrefersReducedMotion = () => {
 
 ### tailwind.config.js (w v4)
 ```javascript
-// NIE - przestarzałe w v4
+// NIE - w v4 konfiguracja idzie przez CSS (@theme); tailwind.config.js działa tylko legacy
+// po jawnym `@config "./tailwind.config.js";` w CSS (nie jest wykrywany automatycznie,
+// bez corePlugins/safelist/separator) — nie używaj w nowych projektach
 module.exports = {
     theme: { extend: { colors: { ... } } }
 }
