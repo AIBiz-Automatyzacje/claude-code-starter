@@ -54,7 +54,7 @@ Kolejność (pierwsze trafienie wygrywa):
 
 1. **Argument wskazuje etap** — ścieżka z kotwicą sekcji (`docs/brainstorms/mvp-requirements.md#etap-17`). Przeczytaj **wyłącznie tę sekcję** plus sekcje przekrojowe dokumentu („decyzje obowiązujące", „ustalenia", „konwencje"), jeśli istnieją.
 2. **Argument wskazuje plik bez kotwicy** — przeczytaj, wypisz etapy/sekcje i zapytaj przez `AskUserQuestion`, którego etapu dotyczy przygotowanie. Nie przetwarzaj całego dokumentu naraz.
-3. **Argument pusty** — zrób glob `docs/brainstorms/*.md`. Jeden trafny dokument → wypisz jego etapy i zapytaj o etap. Wiele → zapytaj najpierw o dokument. Zero → zapytaj: „Nie znalazłem dokumentu wymagań w `docs/brainstorms/`. Podaj ścieżkę do etapu albo opisz zakres iteracji."
+3. **Argument pusty** — zrób glob `docs/brainstorms/*.md`. Zero trafień → **fallback** (katalog to konwencja, nie kontrakt — projekt mógł zapisać brainstorm gdzie indziej, np. `docs/dev-brainstorms/`): glob `docs/**/*-requirements.md` + katalogi w `docs/` o nazwie zawierającej `brainstorm` (z pominięciem `docs/plans/`, `docs/active/`, `docs/completed/`, `docs/solutions/`, `docs/operator/`); trafienie ogłoś jednym zdaniem jako nietypową lokalizację. Jeden trafny dokument → wypisz jego etapy i zapytaj o etap. Wiele → zapytaj najpierw o dokument. Zero także po fallbacku → zapytaj: „Nie znalazłem dokumentu wymagań w `docs/`. Podaj ścieżkę do etapu albo opisz zakres iteracji."
 
 Nie kontynuuj bez jednoznacznego zakresu **jednego etapu**. „Cały MVP" nie jest zakresem — checklista do dwudziestu ekranów naraz jest nie do wykonania i dezaktualizuje się szybciej, niż powstaje.
 
