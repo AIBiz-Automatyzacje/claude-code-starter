@@ -826,17 +826,91 @@ Nie modyfikuj zadnych innych plikow.`,
   if (!tele || !tele.zapisano) log('Telemetria: zapis nie powiodl sie (best-effort, run niezagrozony)')
 }
 
+// Wynik sprzatania artefaktow przy STOP-ie (plan B2).
+const COMMIT_ARTEFAKTOW = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    zacommitowano: { type: 'boolean', description: 'true tylko gdy powstal NOWY commit; false takze wtedy, gdy nie bylo czego commitowac' },
+    commit: { type: ['string', 'null'], description: 'krotki hash nowego commita albo null' },
+    brudnePozaZadaniem: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'sciezki z `git status --short` SPOZA katalogu zadania — nietkniete, ida do komunikatu STOP',
+    },
+  },
+  required: ['zacommitowano', 'brudnePozaZadaniem'],
+}
+
+// Najczestszy STOP w telemetrii (6 na 39 runow) to "niezacommitowane zmiany" — i ZAWSZE bezposrednio
+// po innym zatrzymaniu. Mechanizm: `zapiszStan()` zapisuje .autopilot-state.json, scribe zapisuje
+// review-faza-N.md, po czym run staje na bramce i NIKT tego nie commituje. Bootstrap nastepnego runu
+// widzi brudne drzewo i zatrzymuje sie na bramce czystosci — operator dostaje falszywy STOP o cudzych
+// zmianach, ktorych nie ma, i musi recznie zacommitowac artefakty pipeline'u.
+//
+// Sprzatamy WYLACZNIE `docs/active/<zadanie>/` (plan B2, wariant rekomendowany). Kod fazy zostaje
+// nietkniety, a semantyka bramki czystosci sie nie zmienia: ona dalej chroni przed uruchomieniem
+// autopilota na cudzych zmianach — tyle ze te zmiany to juz NIE sa nasze wlasne artefakty.
+async function zacommitujArtefaktyStop(faza) {
+  // Przed bootstrapem nie znamy ani zadania, ani sciezki — nie ma czego i gdzie commitowac.
+  if (!sciezka || !stan || !stan.nazwaZadania) return null
+  // Bramka brancha jest WCZESNIEJ niz ten commit i nie wolno jej ominac: przy STOP-ie "branch mismatch"
+  // siedzimy na cudzej galezi (typowo main), a artefakty zadania naleza do feature/<zadanie>. Commit
+  // tutaj wsadzilby dokumentacje zadania do niewlasciwej historii — gorzej niz brudne drzewo.
+  if (stan.branch && stan.branch.zgodny === false) {
+    log('Commit artefaktow przy STOP pominiety — jestesmy na niewlasciwym branchu, artefakty zostaja w drzewie')
+    return null
+  }
+  const opisFazy = Number.isInteger(faza) ? ` (faza ${faza})` : ''
+  return await agent(
+    `Pipeline dev-autopilot zatrzymuje sie na bramce. Zacommituj WYLACZNIE wlasne artefakty pipeline'u,
+zeby bootstrap nastepnego runu nie stanal na bramce czystosci z powodu plikow, ktore sam wygenerowal.
+
+1. \`git status --short\` — zapamietaj pelna liste.
+2. Z tej listy wyodrebnij sciezki SPOZA \`${sciezka}/\`. NIE dotykaj ich w zaden sposob: nie dodawaj,
+   nie stashuj, nie cofaj. Zwroc je w brudnePozaZadaniem[] — ida do komunikatu STOP dla operatora.
+3. Jesli w \`${sciezka}/\` sa jakiekolwiek zmiany (zmodyfikowane, nowe lub usuniete):
+   \`git add ${sciezka}/\` — DOKLADNIE ten pathspec, ZAKAZ \`git add -A\` i \`git add .\` —
+   a potem \`git commit -m "docs(${stan.nazwaZadania}): stan pipeline'u po STOP${opisFazy}"\`.
+   Zwroc zacommitowano=true i krotki hash z \`git rev-parse --short HEAD\`.
+4. Jesli w \`${sciezka}/\` nie ma zmian — nic nie commituj, zwroc zacommitowano=false i commit=null.
+5. Gdy \`git commit\` zwroci blad (np. hook odrzucil), NIE probuj obchodzic go flagami (\`--no-verify\`,
+   \`-f\`): zwroc zacommitowano=false i commit=null. Falszywy commit jest gorszy niz brudne drzewo.
+
+Nie modyfikuj plikow, nie uruchamiaj testow, nie przelaczaj brancha.`,
+    { schema: COMMIT_ARTEFAKTOW, model: 'haiku', label: 'stop:commit-artefaktow' }
+  )
+}
+
 // Kazde zatrzymanie runu przechodzi TEDY — inaczej bramka, ktora zadziala, nie zostawia po sobie danych.
 async function stopRun(obj) {
+  // Ten sam try/catch co przy telemetrii i z tego samego powodu: to wywolanie wola agenta, a najczestsza
+  // przyczyna STOP-u bywa przeciazenie API. Rzucony wyjatek zabralby operatorowi komunikat bramki.
+  let artefakty = null
+  try {
+    artefakty = await zacommitujArtefaktyStop(obj.faza)
+  } catch (e) {
+    log(`Commit artefaktow przy STOP nie powiodl sie (${e && e.message ? e.message : e}) — best-effort, komunikat STOP wraca normalnie`)
+  }
+  let powod = obj.powod
+  if (artefakty) {
+    if (artefakty.zacommitowano) {
+      log(`Artefakty pipeline'u zacommitowane przed STOP-em: ${artefakty.commit || '(brak hasha)'} — bootstrap nastepnego runu nie stanie na bramce czystosci`)
+    }
+    const brudne = artefakty.brudnePozaZadaniem || []
+    if (brudne.length) {
+      powod = `${powod} UWAGA: poza katalogiem zadania zostaly niezacommitowane zmiany (${brudne.join(', ')}) — NIE tknelismy ich, ale bramka czystosci nastepnego runu na nich stanie.`
+    }
+  }
   // try/catch jest KRYTYCZNY, nie ozdobny: telemetria wola agenta, a najczestsza przyczyna STOP-u bywa
   // przeciazenie API (529). Gdyby to wywolanie RZUCILO, wyjatek poszedlby w gore i run zginalby BEZ
   // zwrocenia obiektu STOP — operator stracilby `powod` i `naprawa`, czyli cala wartosc bramki.
   try {
-    await zapiszTelemetrie('STOP', obj.powod)
+    await zapiszTelemetrie('STOP', powod)
   } catch (e) {
     log(`Telemetria STOP nie zapisala sie (${e && e.message ? e.message : e}) — best-effort, komunikat STOP wraca normalnie`)
   }
-  return { status: 'STOP', ...obj }
+  return { status: 'STOP', ...obj, powod, artefaktyStop: artefakty }
 }
 
 phase('Bootstrap')
