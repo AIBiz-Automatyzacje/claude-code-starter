@@ -109,10 +109,10 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 ## Pipeline `dev-*` — przegląd
 
 ```
-/dev-ideate → /dev-brainstorm → /dev-prep → /dev-plan → /dev-docs → [ dev-autopilot-wf ] → gotowe
-  (pomysły)     (CO budować)   (CO ma       (JAK)      (struktura)   (cały pipeline auto)
-                                dostarczyć
-                                człowiek)
+/dev-ideate → /dev-brainstorm → /dev-prep → /dev-plan → /dev-docs → [ dev-autopilot-wf ] → /dev-pr → merge
+  (pomysły)     (CO budować)   (CO ma       (JAK)      (struktura)   (cały pipeline auto)   (review bota,
+                                dostarczyć                                                   tury poprawek,
+                                człowiek)                                                    compound)
 
 dev-autopilot-wf orkiestruje:
   bootstrap → per faza( execute-wf → review-wf + adversarial verify → fix ) → compound-wf → compound-refresh(scoped) → complete-wf
@@ -141,6 +141,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `dev-docs-execute-wf` | Wykonanie JEDNEJ fazy: planner czyta Implementation Units z `docs/plans/`, buildery `feature-builder-*` implementują je przez `agentType`, potem walidacja + commit + aktualizacja docs. |
 | `dev-docs-review-wf` | Review jednej fazy: context-packager (mapa zmian + **flagi warstw** + **zrzut diffu fazy do pliku**, który reviewerzy czytają jednym `Read` zamiast każdy własnym `git diff`) → **routing domenowy** (rdzeń `security`/`spec-compliance`/`test-coverage` zawsze; `performance`/`code-quality`/`correctness`/`e2e` tylko gdy ich domena jest w fazie obecna; brak flag = pełny skład) → do 7 reviewerów równolegle (**limit 5 P3 na reviewera** + **globalny limit 8 P3 po dedupie z wyborem round-robin po źródle** — żeby ucinanie nie wyciszało systematycznie tych samych reviewerów; P1/P2 bez limitu; tester E2E w trybie `przegladarka` / `bez-przegladarki` / `pominiety` — zależnie od domeny fazy i tego, czy środowisko przeglądarkowe stoi; spec-compliance i test-coverage dostają **blok semantyki jednostek pól** — wykonywalna procedura grep wszystkich użyć + kolejność źródeł prawdy + odczyt realnego wiersza z bazy e2e) → dedup 2-przebiegowy (JS + semantyczny Haiku) → **detekcja blokera środowiska po sygnaturze** (JS, bez LLM — connection refused / DNS, ale **tylko** w findingach testera E2E, **tylko** w trybie `przegladarka` i **tylko** gdy tester ma wpis FAIL albo SKIP w `przebiegi[]`; sama nazwa `getaddrinfo` w opisie defektu kodu blokerem nie jest — regexy pod testem `__tests__/bloker-srodowiska.test.mjs`; orkiestrator robi STOP zamiast ciągnąć fazy na zepsutym środowisku) → adversarial verify P1/P2 (findingi E2E/OPERATOR testera poza verify — dowodem jest przebieg, nie kod) → scribe zapisuje raport + sekcję **`## Przebieg review`** + bookkeeping checkboxów (`[E2E]` odznacza **wyłącznie** z wpisów PASS w `przebiegi[]` testera — brak findingu ≠ PASS) → severity gate. Gdy scribe padnie po udanym zapisie, **wynik jest odzyskiwany z dysku** po sentinelu `## Przebieg review` zamiast powtarzać całe review. |
 | `dev-docs-complete-wf` | Dwie fazy: **smoke operatora** (`docs/operator/<data>-<zadanie>-smoke.md` — co sprawdzić ręcznie po zielonym automacie; `[E2E]` nieuruchomione jako czerwona flaga) → archiwizacja: `docs/active/<zadanie>` → `docs/completed/`, podsumowanie, aktualizacja docs projektu, commit (jawnym pathspecem, także wyjścia compound). |
+| `dev-pr-wf` | Mechanika obsługi pull requesta, wołana etapami przez skill `/dev-pr`: **bramka wejścia** (gałąź inna niż główna, czyste drzewo, zadanie istnieje) i utworzenie PR przez `gh pr create --body-file` (nigdy stdin — przy pustym stdin `gh` kończy się kodem 0 i tworzy PR z pustym opisem) → **zebranie i klasyfikacja** nierozwiązanych wątków przez GraphQL (`napraw` / `napraw-szerzej` / `odrzuć` / `do-operatora`, każdy z polem `wplywNaProjekt` i klastrem wspólnej przyczyny; `odrzuć` bez cytatu ze źródła decyzji JS przeklasyfikowuje na `do-operatora`) → **naprawa** wybranych wątków + odpowiedzi w wątkach + commit jawnym pathspecem i push → **bramka merge'a** (pięć warunków liczonych w JS) → **compound** z pętlą zwrotną do reviewerów. |
 | `dev-compound-wf` | Dokumentuje rozwiązane problemy do `docs/solutions/`, ocenia rule-worthy do `learned-patterns.md`, aktualizuje `docs/CONCEPTS.md` — i **commituje te artefakty** (whitelist ścieżek, bez `git add -A`), żeby nie zostawiać brudnego drzewa blokującego następny run. |
 | `freshness-audit-wf` | Cykliczny audyt aktualności skilli technicznych: inwentaryzacja twierdzeń o świecie (wersje, piny, wzorce API) → weryfikacja w **żywych** źródłach (oficjalne docs, changelogi GitHub, npm — przez WebFetch/WebSearch/context7, zakaz pamięci modelu) → adversarial verify P1/P2 → raport do `docs/reviews/freshness-<data>.md`. Niczego nie zmienia w skillach — tylko raportuje. |
 
@@ -193,6 +194,11 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 **`/dev-docs-complete [nazwa]`** — archiwizacja ukończonego zadania. Weryfikuje ukończenie, wyciąga wnioski, przenosi `docs/active/` → `docs/completed/`, aktualizuje docs projektu. W trybie ręcznym skill wykonuje procedurę inline w sesji (smoke → archiwizacja); `dev-docs-complete-wf` jest wołany przez autopilot i czyta ten skill jako referencję procedury. → sugeruje `/dev-compound`.
 - **Smoke operatora (dokument #2):** przed archiwizacją generuje `docs/operator/<data>-<nazwa>-smoke.md` — listę **wyłącznie tego, czego automat nie sprawdził** (niezaznaczone `## Operator checklist faza N`, scenariusze `[Manual]`, findingi OPERATOR z raportów review, known-issues, P3 widoczne dla użytkownika), z sekcją „0. Przygotowanie" (właściwy projekt Supabase — nie e2e, konto testowe nazwą zmiennej, dev server) i ramką „Jak kontynuować w nowej sesji". Niezaznaczone `[E2E]` trafiają na górę jako `⚠️ E2E nieuruchomione` — nigdy nie są cicho odhaczane. Autopilot loguje ścieżkę i zwraca ją w `smokeOperatora`.
+
+**`/dev-pr [tury] [--bez-merge]`** *(workflow: `dev-pr-wf` — skill prowadzi rozmowę, workflow wykonuje etapy)* — **obsługa pull requesta od wysłania do merge'a**. Domyka odcinek, który do tej pory był poza szablonem: w projekcie źródłowym to 127 komentarzy bota w 6 pull requestach i 14 commitów ręcznych tur przy **zerze** wpisów w bazie wiedzy. Tworzy PR (opis z `<zadanie>-podsumowanie.md` + sekcja „Świadomie nienaprawione" z otwartych P3 i `known-issues.md`), czeka na recenzję bota (`Monitor`, limit 20 min), klasyfikuje **każdy wątek** wg wpływu **na teraz i na dalszy ciąg projektu**, prowadzi tury poprawek z odpowiedziami w wątkach, a na końcu uruchamia compound — zapisuje do `docs/solutions/` **klasy błędów, które bot znalazł po naszym własnym review**, i proponuje reguły do konkretnych agentów-reviewerów (wdrożenie zostaje decyzją operatora).
+- **Tryby:** `/dev-pr` interaktywny (operator wybiera przez `AskUserQuestion`, co naprawiamy; merge zawsze jego decyzją) · `/dev-pr 3` autonomiczny do 3 tur · `/dev-pr 3 --bez-merge` kończy raportem. **Liczba tur jest twardym limitem.**
+- **Ograniczenie:** bot odpowiada nieprzewidywalnie (w danych: PR otwarty 22:13, tury następnego dnia 08:58), a `Monitor` jest związany z sesją — **tryb autonomiczny ma sens tylko w sesji zostawionej otwartej**.
+- **Bramka merge'a** (tylko autonomicznie): `mergeable = MERGEABLE` **i** `mergeStateStatus = CLEAN` **i** zero wątków klasy `napraw` **i** zero `do-operatora` **i** CI zielone. Którykolwiek warunek niespełniony → raport „gotowy do Twojej decyzji" z listą tego, co zostało.
 
 #### Knowledge capture
 
@@ -324,7 +330,8 @@ docs/
 # odhacz przygotowanie dla operatora (konsole, sekrety, .env.e2e wg templates/e2e-env gdy plan ma [E2E])
 /dev-docs                               ← zadania z planu + branch + bramka gotowości → gotowe wywołanie autopilota
 dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compound→refresh→complete
-# po runie: docs/operator/<data>-lazy-loading-smoke.md → przejdź ręcznie w przeglądarce → PR
+# po runie: docs/operator/<data>-lazy-loading-smoke.md → przejdź ręcznie w przeglądarce
+/dev-pr 3                               ← PR, recenzja bota, do 3 tur poprawek, bramka merge'a, compound
 ```
 
 **2. Nowy feature krok po kroku (ręczna kontrola)**
@@ -334,6 +341,7 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 /dev-docs-review  docs/active/nazwa 1
 /dev-docs-execute docs/active/nazwa          ← faza 2 …
 /dev-docs-complete nazwa                     ← też generuje smoke operatora
+/dev-pr                                      ← PR, review bota, tury poprawek, compound
 ```
 
 **3. Szybki feature (bez pełnego pipeline'u)**
