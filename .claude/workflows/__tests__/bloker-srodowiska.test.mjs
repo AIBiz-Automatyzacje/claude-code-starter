@@ -1,6 +1,10 @@
 // Test detekcji blokera srodowiska z dev-docs-review-wf.js.
 //
 // Uruchomienie:  node --test .claude/workflows/__tests__/bloker-srodowiska.test.mjs
+//   albo caly katalog:  node --test '.claude/workflows/__tests__/*.test.mjs'   (glob w apostrofach)
+// UWAGA: `node --test .claude/workflows/__tests__/` (sama sciezka katalogu) NIE dziala — automatyczne
+// wyszukiwanie testow pomija katalogi ukryte, a caly `.claude` jest ukryty. Node probuje wtedy zaladowac
+// katalog jako modul i wywala MODULE_NOT_FOUND. Uzywaj jednej z dwoch form powyzej.
 //
 // DLACZEGO EKSTRAKCJA ZE ZRODLA, A NIE IMPORT: workflowy sa self-contained skryptami runtime'u Workflow —
 // maja top-level `await agent(...)`, `phase()`, `log()`, ktorych w Node nie ma, wiec `import()` tego pliku
