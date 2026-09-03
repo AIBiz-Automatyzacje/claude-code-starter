@@ -1,6 +1,6 @@
 export const meta = {
   name: 'dev-autopilot-wf',
-  description: 'Autonomiczny pipeline: bootstrap (stan z .autopilot-state.json) -> per faza (execute -> review+verify -> fix, bez re-review) -> compound -> compound-refresh (scoped) -> complete. Orkiestrator trzyma stan w JSON i liczy gate\'y w JS; buildery i reviewerzy to leaf-agenci.',
+  description: 'Autonomiczny pipeline: bootstrap (stan z .autopilot-state.json) -> per faza (execute -> review+verify -> fix -> kontrola diffu naprawczego, bez re-review) -> compound -> compound-refresh (scoped) -> complete. Orkiestrator trzyma stan w JSON i liczy gate\'y w JS; buildery i reviewerzy to leaf-agenci.',
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
@@ -591,6 +591,140 @@ nierozwiazaneP2 (P2 przeniesione do known-issues), walidacja (PASS/FAIL pelnej w
 plikiBinarne (pliki zrodlowe, ktore przestaly byc tekstem -> orkiestrator zrobi STOP).`
 }
 
+// ── Kontrola diffu naprawczego (plan B5) ──────────────────────────────────
+// Powod z dowodu: fix fazy 5 w oferty-online dodal `loading="lazy"` do ramki i PUSTY `catch`;
+// jedno i drugie CodeRabbit usunal dzien pozniej (44a938e). Petla naprawcza nie ma nad soba
+// re-review, wiec commit fixa byl dotad jedynym kodem w pipelinie, ktorego nikt nie ogladal.
+// Dwa stopnie, od najtanszego: mechaniczny grep po DODANYCH liniach, potem jeden tani agent.
+
+const PRE_SKAN_FIXA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    trafienia: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          wzorzec: { type: 'string', enum: ['pusty-catch', 'type-assertion', 'any', 'console-log', 'non-null'] },
+          plik: { type: 'string' },
+          linia: { type: 'string', description: 'DODANA linia diffu 1:1, bez wiodacego "+"' },
+        },
+        required: ['wzorzec', 'plik', 'linia'],
+      },
+    },
+  },
+  required: ['trafienia'],
+}
+
+const REGRESJA_FIXA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    regresje: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          plik: { type: 'string', description: 'plik:linia' },
+          opis: { type: 'string', description: 'co commit fixa zepsul — nie co bylo zepsute wczesniej' },
+        },
+        required: ['plik', 'opis'],
+      },
+    },
+    bramki: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          plik: { type: 'string', description: 'plik:linia nowej bramki walidacyjnej' },
+          opis: { type: 'string', description: 'co bramka ma przepuszczac, a czego nie' },
+          wektory: { type: 'array', items: { type: 'string' }, description: 'co najmniej 3 konkretne proby obejscia' },
+          testOdmowy: { type: 'boolean', description: 'czy istnieje test, ktory sprawdza ODRZUCENIE zlego wejscia (nie tylko przyjecie dobrego)' },
+        },
+        required: ['plik', 'opis', 'wektory', 'testOdmowy'],
+      },
+    },
+  },
+  required: ['regresje', 'bramki'],
+}
+
+function preSkanFixaPrompt(numerFazy) {
+  return `Mechaniczny skan commitow fix fazy ${numerFazy}. NIE oceniaj kodu, NIE interpretuj — tylko grep.
+
+1. Ustal zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa tej fazy.
+   Diff: \`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.
+2. Patrz WYLACZNIE na linie DODANE (zaczynajace sie od "+", bez naglowkow "+++"). Linie kontekstu
+   i usuniete pomijasz — szukamy tego, co fix WPROWADZIL, nie tego, co juz bylo.
+3. Zglos kazde trafienie ponizszych wzorcow (z pliku i trescia linii 1:1, bez wiodacego "+"):
+   - pusty-catch:    \`catch {}\` albo \`catch (e) {}\` — takze z bialymi znakami i nowa linia miedzy klamrami
+   - type-assertion: \` as \` w TypeScript, Z WYJATKIEM \`as const\`
+   - any:            \`: any\` (adnotacja typu)
+   - console-log:    \`console.log\`
+   - non-null:       operator \`!\` po wyrazeniu (\`foo!.bar\`, \`foo!)\`, \`foo!;\`, \`foo!,\`) — NIE mylic
+                     z negacja \`!foo\` ani z \`!==\`
+4. Zero trafien to poprawny i czesty wynik — zwroc {trafienia: []}. Nie dobieraj nic "na wszelki wypadek",
+   nie zglaszaj linii spoza diffu i nie zglaszaj plikow, ktorych fix nie tknal.
+
+Read-only: nie modyfikuj plikow, nie commituj, nie uruchamiaj testow.`
+}
+
+function regresjaFixaPrompt(sciezka, numerFazy) {
+  return `Jestes NIEZALEZNYM kontrolerem commitow fix fazy ${numerFazy} (zadanie: ${sciezka}).
+Petla naprawcza nie ma nad soba re-review — jestes jedynym, kto oglada ten kod.
+
+Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa tej fazy, potem
+\`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.
+
+ZADANIE 1 — REGRESJE. Zglaszaj WYLACZNIE to, co zepsul TEN commit: kod dzialajacy przed fixem,
+ktory po nim nie dziala, oraz zmiany zachowania, o ktore nikt nie prosil (fix fazy 5 w projekcie
+zrodlowym dolozyl \`loading="lazy"\` do ramki, ktorej finding nie dotyczyl). NIE rob pelnego re-skanu
+fazy i NIE zglaszaj problemow, ktorych review nie wykrylo — na to jest review, nie Ty.
+
+ZADANIE 2 — NOWE BRAMKI WALIDACYJNE (obowiazkowe, nie pomijaj). Dla KAZDEJ nowej albo zmienionej
+bramki w diffie (wyrazenie regularne, allowlista, limit rozmiaru/dlugosci, porownanie originu,
+sprawdzenie roli, parsowanie wejscia) wypisz CO NAJMNIEJ 3 konkretne wektory obejscia — nie kategorie,
+tylko wejscia, ktore sprobujesz przepchnac (np. "//evil.com jako adres protokolowo-wzgledny",
+"JAVASCRIPT:alert(1) wielkimi literami", "wartosc druga na liscie srcset po przecinku").
+Potem sprawdz w testach, czy istnieje test ODMOWY — sprawdzajacy, ze zle wejscie zostaje ODRZUCONE,
+a nie tylko ze dobre przechodzi. Ustaw testOdmowy=false, gdy takiego testu nie ma.
+Bramka bez testu odmowy to bramka, ktorej nikt nie sprawdzil — nastepna zmiana rozszczelni ja po cichu.
+
+Zero regresji i zero nowych bramek to poprawny wynik: {regresje: [], bramki: []}.
+Read-only: nie modyfikuj plikow, nie commituj.`
+}
+
+function fixPoprawkaPrompt(sciezka, numerFazy, pozycje) {
+  return `Jestes czescia pipeline'u dev-autopilot. To JEDYNA tura poprawek po kontroli commita fix fazy ${numerFazy}.
+Kontrola diffu naprawczego znalazla ponizsze pozycje — to rzeczy, ktore wprowadzil albo pominal
+sam fix, nie nowe findingi z review.
+
+Folder zadania: ${sciezka}
+
+DO POPRAWY (lista autorytatywna):
+${JSON.stringify(pozycje, null, 2)}
+
+Zasady:
+- Pusty \`catch\`: zaloguj albo re-throw. Nigdy nie zostawiaj pustego bloku (coding-rules §4).
+- \`as\` / \`: any\` / non-null \`!\`: zastap type guardem, \`unknown\` z zawezeniem albo jawna obsluga
+  nullowalnosci (coding-rules §10). \`as const\` jest dozwolone i nie jest tu zglaszane.
+- \`console.log\` w kodzie produkcyjnym: usun albo zamien na logger projektu.
+- Regresja: cofnij zmiane, o ktora nikt nie prosil, albo napraw to, co przestalo dzialac.
+- Brakujacy test odmowy: DOPISZ test sprawdzajacy, ze bramka ODRZUCA zle wejscie — po jednym na wektor
+  z listy. NIE oslabiaj i NIE modyfikuj istniejacych testow, zeby przeszly (zakaz twardy: coding-rules §2).
+
+Po poprawkach: pelna walidacja (typecheck, test, build — komendy z package.json), commit
+\`fix([nazwa]): kontrola diffu naprawczego fazy ${numerFazy}\` z jawnym pathspec zmienionych plikow
+(ZAKAZ \`git add -A\` i \`git add .\`). Gdy ktorejs pozycji NIE da sie zamknac bez ruszania kodu spoza tej
+fazy — zostaw ja i opisz w nienaprawione[]; to nie jest bramka blokujaca faze.
+${BLOK_DLUGIE_KOMENDY}
+
+Zwroc {naprawione, pozostaje, walidacja, nierozwiazaneP1: 0, nierozwiazaneP2: 0, plikiBinarne, p3Pominiete: [], nienaprawione}.`
+}
+
 function postFixVerifyPrompt(sciezka, numerFazy, finding) {
   return `Jestes NIEZALEZNYM weryfikatorem naprawy po cyklu fix fazy ${numerFazy} (zadanie: ${sciezka}).
 Agent fix zadeklarowal, ze ponizszy finding P1 zostal naprawiony. NIE ufaj deklaracji — sprawdz KOD.
@@ -676,6 +810,11 @@ Zwroc obiekt zgodny ze schematem ValidationResult.`
 // ── Helpery orkiestratora (deterministycznie, w JS) ───────────────────────
 
 // Filar 3: liczniki i gate liczone z findings[], nie z self-reportu scribe'a.
+// Ten sam wzorzec co w dev-docs-review-wf.js: `effort: undefined` bywa traktowane inaczej niz brak pola,
+// wiec klucz dokladamy tylko dla ustawionego tieru. Kontrola diffu naprawczego to praca mechaniczna
+// (grep po dodanych liniach, przeglad jednego commita) — nie kupujemy tam tieru sesji.
+const zEffortemAP = (opts, effort) => (effort ? { ...opts, effort } : opts)
+
 function policzFindingi(findings) {
   const istotne = (findings || []).filter((f) => f.typ !== 'OPERATOR')
   return {
@@ -1041,6 +1180,8 @@ for (const numerFazy of kolejka) {
   let licznikiFazy = metrykiZeStanu.liczniki || null
   let przebiegFazy = metrykiZeStanu.przebieg || null
   let fixInfo = null
+  // Wynik kontroli diffu naprawczego (plan B5) — do raportu fazy i telemetrii.
+  let kontrolaFixa = null
   // Atrybucja tokenow per etap: "faza = 298k" nie mowi, czy placimy za buildery, czy za reviewerow,
   // wiec kazdy etap ma wlasny akumulator. null (a NIE 0) = etapu w tym runie nie bylo (przy resume byl
   // juz 'done'); 0 = wykonal sie i nic nie kosztowal. Dopisujemy delte na KONCU bloku etapu — sciezki
@@ -1228,6 +1369,62 @@ for (const numerFazy of kolejka) {
       log(`Faza ${numerFazy}: targeted verify — wszystkie ${p1Kod.length}x P1/KOD potwierdzone jako zamkniete`)
     }
 
+    // KONTROLA DIFFU NAPRAWCZEGO (plan B5). Commit fixa byl dotad jedynym kodem w pipelinie, ktorego
+    // nikt nie ogladal: po fixie NIE ma re-review, a targeted verify sprawdza tylko, czy P1 zostal
+    // zamkniety — nie to, co fix przy okazji wprowadzil. Dwa stopnie, od najtanszego.
+    const doPoprawki = []
+    // Stopien 1: mechaniczny grep po DODANYCH liniach. Agent tylko greppuje, decyzje podejmuje JS.
+    const preSkan = await agent(preSkanFixaPrompt(numerFazy), zEffortemAP({ schema: PRE_SKAN_FIXA, model: 'haiku', label: `fix:pre-skan:faza-${numerFazy}` }, 'low'))
+    if (preSkan && Array.isArray(preSkan.trafienia)) {
+      // console.log w plikach testowych nie jest naruszeniem "brak console.log w kodzie produkcyjnym" —
+      // filtr trzymamy w JS, zeby agent nie musial rozstrzygac wyjatkow (i nie mogl ich sobie rozszerzyc).
+      const istotne = preSkan.trafienia.filter((t) => !(t.wzorzec === 'console-log' && /\.(test|spec)\./i.test(t.plik || '')))
+      for (const t of istotne) doPoprawki.push({ zrodlo: 'pre-skan', wzorzec: t.wzorzec, plik: t.plik, opis: `commit fix wprowadzil: ${t.linia}` })
+      if (istotne.length) log(`Faza ${numerFazy}: pre-skan diffu fixa — ${istotne.length}x naruszenie coding-rules w dodanych liniach (${[...new Set(istotne.map((t) => t.wzorzec))].join(', ')})`)
+    } else if (!preSkan) {
+      log(`Faza ${numerFazy}: pre-skan diffu fixa zwrocil null — pomijam stopien 1 (best-effort, faza niezagrozona)`)
+    }
+    // Stopien 2: jeden tani agent — regresje wprowadzone przez fix + nowe bramki walidacyjne bez testu odmowy.
+    const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy), zEffortemAP({ schema: REGRESJA_FIXA, label: `fix:kontrola:faza-${numerFazy}` }, 'low'))
+    if (regresja) {
+      for (const r of regresja.regresje || []) doPoprawki.push({ zrodlo: 'regresja', plik: r.plik, opis: r.opis })
+      const bezTestu = (regresja.bramki || []).filter((b) => !b.testOdmowy)
+      for (const b of bezTestu) {
+        doPoprawki.push({
+          zrodlo: 'bramka-bez-testu-odmowy',
+          plik: b.plik,
+          opis: `nowa bramka walidacyjna (${b.opis}) nie ma testu ODMOWY. Wektory do pokrycia: ${(b.wektory || []).join(' | ')}`,
+        })
+      }
+      if ((regresja.bramki || []).length) log(`Faza ${numerFazy}: kontrola diffu fixa — ${regresja.bramki.length} nowych bramek walidacyjnych, bez testu odmowy: ${bezTestu.length}`)
+    } else {
+      log(`Faza ${numerFazy}: kontrola diffu fixa zwrocila null — pomijam stopien 2 (best-effort, faza niezagrozona)`)
+    }
+    // JEDEN cykl poprawkowy, twardo. To kontrola wlasnej roboty pipeline'u, nie kolejna runda review —
+    // druga tura zaczelaby scigac wlasny ogon i nie da sie jej ograniczyc niczym poza licznikiem.
+    if (doPoprawki.length) {
+      log(`Faza ${numerFazy}: kontrola diffu naprawczego zwraca ${doPoprawki.length} pozycji do fixa (jeden cykl):\n  ${doPoprawki.map((p) => `[${p.zrodlo}] ${p.plik} — ${p.opis}`).join('\n  ')}`)
+      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki), { schema: FIX_RESULT, label: `fix:poprawka:faza-${numerFazy}` })
+      if (!poprawka) {
+        log(`Faza ${numerFazy}: tura poprawkowa zwrocila null — pozycje zostaja otwarte, faza idzie dalej (P3-klasa, nie bramka)`)
+      } else {
+        kontrolaFixa = { pozycje: doPoprawki.length, naprawione: poprawka.naprawione, walidacja: poprawka.walidacja }
+        log(`Faza ${numerFazy}: tura poprawkowa — naprawiono ${poprawka.naprawione}/${doPoprawki.length}, walidacja ${poprawka.walidacja}`)
+        // Walidacja FAIL po turze poprawkowej JEST bramka: zostawilibysmy faze z niedzialajacym typecheckiem
+        // albo czerwonymi testami, a nastepna faza budowalaby na tym.
+        if (poprawka.walidacja === 'FAIL') {
+          await zapiszStan()
+          return await stopRun({
+            powod: `Faza ${numerFazy}: tura poprawkowa po kontroli diffu naprawczego zakonczyla sie walidacja FAIL — kod fazy zostal w stanie, w ktorym typecheck/testy/build nie przechodza.`,
+            naprawa: 'Sprawdz ostatni commit `fix(...): kontrola diffu naprawczego` i doprowadz walidacje do zieleni recznie, potem odpal SWIEZY run (te same args, BEZ resumeFromRunId).',
+            faza: numerFazy, fix, poprawka, raporty,
+          })
+        }
+      }
+    } else {
+      log(`Faza ${numerFazy}: kontrola diffu naprawczego czysta — zero naruszen coding-rules, zero regresji, kazda nowa bramka ma test odmowy`)
+    }
+
     gateFazy = fix.nierozwiazaneP2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
     if (fix.nierozwiazaneP2 > 0) {
       cykle = '1 (graceful P2)'
@@ -1253,7 +1450,7 @@ for (const numerFazy of kolejka) {
   log(`Faza ${numerFazy}: koniec — gate ${gateFazy}, cykle ${cykle}, ~${tokFazyOpis} tokenow (${opisEtapow})`)
   // przebieg = metryki routingu/dedupu/verify (z review-wf albo ze stanu po resume) — dane do
   // strojenia progow: kogo routing pomija, ile dedup sklei, ile verify obala.
-  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, tokenyEtapy, liczniki: licznikiFazy, fix: fixInfo, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy) })
+  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, tokenyEtapy, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy) })
 }
 
 // ── Zakonczenie ──────────────────────────────────────────────────────────
