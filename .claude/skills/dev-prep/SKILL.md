@@ -122,7 +122,7 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 
 **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
 
-Gdy skan wymaga przeszukania wielu lokalizacji, deleguj do agenta `Explore` albo `repo-research-analyst` zamiast czytać plik po pliku.
+Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, zamiast czytać plik po pliku.
 
 ### Faza 2: Wyprowadź listy
 

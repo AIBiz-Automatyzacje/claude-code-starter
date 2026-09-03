@@ -162,10 +162,14 @@ Przygotuj zwięzłe podsumowanie kontekstu planowania (akapit lub dwa) jako inpu
 - Jeśli dokument źródłowy istnieje, podsumuj ujęcie problemu, wymagania i kluczowe decyzje z tego dokumentu
 - W przeciwnym razie użyj bezpośrednio opisu feature'a
 
-Uruchom tych agentów równolegle:
+Uruchom tych agentów równolegle. **Zawsze przez `subagent_type` z nazwą agenta — nigdy jako `Explore`
+z doklejonym plikiem `.claude/agents/<nazwa>.md` do promptu.** `Explore` jest read-only i nie ma
+narzędzi sieciowych, więc research zewnętrzny (Context7, WebFetch) po cichu nie działa, a definicja agenta
+wklejona w prompt to instrukcja dla modelu, nie system prompt subagenta — traci `model:` i `tools:`
+z frontmattera. Wzorzec poprawny: `dev-brainstorm/SKILL.md` (1.1, `web-research-specialist`).
 
-- Agent tool (type: Explore) z promptem z `.claude/agents/repo-research-analyst.md` — przekaż podsumowanie kontekstu planowania
-- Agent tool (type: Explore) z promptem z `.claude/agents/learnings-researcher.md` — przekaż podsumowanie kontekstu planowania
+- Agent tool, `subagent_type: "repo-research-analyst"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania**
+- Agent tool, `subagent_type: "learnings-researcher"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania**
 
 Zbierz:
 - Istniejące wzorce i konwencje do naśladowania
@@ -214,8 +218,8 @@ Ogłoś decyzję krótko przed kontynuacją. Przykłady:
 
 Jeśli krok 1.2 wskazuje że research zewnętrzny jest przydatny, uruchom tych agentów równolegle:
 
-- Agent tool (type: Explore) z promptem z `.claude/agents/best-practices-researcher.md` — przekaż podsumowanie kontekstu planowania
-- Agent tool (type: Explore) z promptem z `.claude/agents/framework-docs-researcher.md` — przekaż podsumowanie kontekstu planowania
+- Agent tool, `subagent_type: "best-practices-researcher"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania**
+- Agent tool, `subagent_type: "framework-docs-researcher"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania**
 
 #### 1.4 Konsoliduj research
 
@@ -230,7 +234,7 @@ Podsumuj:
 
 Dla planów **Standardowych** lub **Głębokich**, lub gdy kompletność user flow jest wciąż niejasna, uruchom:
 
-- Agent tool (type: Explore) z promptem z `.claude/agents/spec-flow-analyzer.md` — przekaż podsumowanie kontekstu planowania i wyniki researchu
+- Agent tool, `subagent_type: "spec-flow-analyzer"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania i wyniki researchu**
 
 Użyj outputu do:
 - Identyfikacji brakujących edge cases, przejść stanów lub luk w handoff'ach
