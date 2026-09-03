@@ -232,7 +232,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 ---
 
-## Agenci — pełna lista (15)
+## Agenci — pełna lista (16)
 
 ### Buildery warstw (wołane przez `dev-docs-execute-wf`)
 
@@ -250,7 +250,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `performance-oracle` | N+1, bundle size, lazy loading, memoizacja, cleanup `useEffect`. |
 | `kieran-typescript-reviewer` | Type safety, brak `any`, modern patterns, nazewnictwo. |
 | `architecture-strategist` | SOLID, granice komponentów, coupling, circular deps. |
-| `spec-flow-analyzer` | Zgodność ze spec/planem IU: under-implementation, scope creep, błędna implementacja, edge case'y. |
+| `spec-compliance-reviewer` | Zgodność implementacji z zamówieniem — wymagania brakujące, częściowe, błędnie zaimplementowane, scope creep, teksty niezgodne z verbatim. Każdy finding cytuje ID wymagania lub nazwę IU. |
 | `code-simplicity-reviewer` | YAGNI, zbędna złożoność, martwy kod, uproszczenia bez utraty funkcji. |
 | `feature-tester-e2e` | E2E w przeglądarce (agent-browser) — uruchamia scenariusze checkboxów `[E2E]` (oba prefiksy `Test:`/`Weryfikacja:`), zwraca przebieg PASS/FAIL/SKIP per checkbox z dowodem, visual diff z Figmą. Nie pisze do pliku zadań. |
 
@@ -265,6 +265,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `best-practices-researcher` | Best practices online (Context7, WebSearch) (dev-plan). |
 | `framework-docs-researcher` | Dokumentacja frameworków/bibliotek, wersje, ograniczenia (dev-plan). |
 | `web-research-specialist` | Iteracyjny research w sieci — prior art, wzorce konkurencji (dev-brainstorm, dev-ideate). |
+| `spec-flow-analyzer` | Analiza specyfikacji **przed** implementacją: kompletność user flow, edge case'y, luki w handoffach (`dev-plan` 1.5). W review fazy już nie występuje — tam pracuje `spec-compliance-reviewer`. |
 
 ---
 

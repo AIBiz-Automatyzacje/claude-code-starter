@@ -354,7 +354,7 @@ const REVIEWERZY = [
   { key: 'typescript', agentType: 'kieran-typescript-reviewer', fokus: 'type safety, brak any/as/!, discriminated unions, explicit return types' },
   // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY
   // (spec/IU) jako punkt odniesienia; pozostali dostaja procedure posrednio przez test-coverage.
-  { key: 'spec-compliance', semantyka: true, agentType: 'spec-flow-analyzer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
+  { key: 'spec-compliance', semantyka: true, agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
   { key: 'simplicity', agentType: 'code-simplicity-reviewer', fokus: 'YAGNI i minimalizm: zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na niemozliwe scenariusze, martwy kod, redundancja, uproszczenia bez utraty funkcji. Duplication > Complexity — prosta duplikacja jest OK, zlozona abstrakcja DRY nie' },
 ]
 
