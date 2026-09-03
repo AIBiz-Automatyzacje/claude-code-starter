@@ -40,8 +40,9 @@ Dla każdego zadania w `docs/active/[nazwa-zadania]/`:
 - Znacznik "Ostatnia aktualizacja: RRRR-MM-DD"
 
 **Zaktualizuj `[nazwa-zadania]-kontekst.md`** (to jedyny plik, który `dev-docs-complete` czyta przy wyciąganiu wniosków):
-- Kluczowe decyzje podjęte w tej sesji → sekcja `## Decyzje techniczne`
-- Zmodyfikowane pliki i powód zmian, odkryte blokery, obecny stan implementacji → sekcja `## Dziennik`
+- **Wszystko, co ustaliła ta sesja, idzie do `## Dziennik`** — decyzje, zmodyfikowane pliki i powód zmian, odkryte blokery, obecny stan implementacji. Jedna sekcja, chronologicznie
+- **Nie twórz** w tym pliku sekcji `## Decyzje techniczne`, `## Kluczowe pliki`, `## Odroczone do implementacji` ani `## Wzorce do naśladowania`. Od 2026-09-03 plik kontekstu ich nie ma i nie ma ich odtwarzać: były ręcznie utrzymywaną kopią planu, która po dwóch fazach się rozjeżdżała (w zbadanym zadaniu „Decyzje techniczne" miały 1 linię wspólną z planem na 23). Dwa źródła prawdy o decyzjach są gorsze niż jedno
+- **Korekta decyzji technicznej idzie do planu technicznego** w `docs/plans/` — tam, gdzie czyta ją planner i reviewerzy. W Dzienniku zostaw jedno zdanie, że decyzja się zmieniła, i wskaźnik do planu
 - Następne bezpośrednie kroki → sekcja „Przekazanie" (pkt 4)
 - Znacznik "Ostatnia aktualizacja: RRRR-MM-DD"
 
@@ -55,7 +56,7 @@ Dla każdego zadania w `docs/active/[nazwa-zadania]/`:
 ### 2. Utrwalenie kontekstu sesji
 W odpowiednich plikach zadania uwzględnij:
 - Rozwiązane złożone problemy → `[nazwa-zadania]-kontekst.md` (`## Dziennik`)
-- Podjęte decyzje architektoniczne → `[nazwa-zadania]-kontekst.md` (`## Decyzje techniczne`)
+- Podjęte decyzje architektoniczne → `[nazwa-zadania]-kontekst.md` (`## Dziennik`) + korekta „Kluczowych decyzji technicznych" w planie technicznym, jeśli decyzja zmienia to, co plan już zapisał
 - Znalezione i naprawione błędy → `[nazwa-zadania]-kontekst.md` (`## Dziennik`)
 - Nowe zadania do wykonania → `[nazwa-zadania]-zadania.md` (wg kontraktu formatu wyżej)
 - Zmiany w podejściu lub strategii → `[nazwa-zadania]-kontekst.md` (`## Dziennik`) + korekta planu technicznego w `docs/plans/`, jeśli zmienia IU/fazy

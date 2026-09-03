@@ -106,10 +106,14 @@ Ostatnia aktualizacja: RRRR-MM-DD
 
 **`<nazwa>-kontekst.md`** — to, co buildery i reviewerzy dostają jako kontekst:
 - `## Źródła` — jak wyżej.
-- `## Kluczowe pliki` — suma `Pliki:` ze wszystkich IU, pogrupowana `Stwórz` / `Modyfikuj` / `Testy` / `E2E (e2e/seeds/)`.
-- `## Decyzje techniczne` — przepisane z „Kluczowe decyzje techniczne" planu (bez parafrazy).
-- `## Odroczone do implementacji` — z „Otwarte pytania" planu.
-- `## Wzorce do naśladowania` — suma `Wzorce do naśladowania:` z IU (deduplikowana).
+- `## Plan techniczny` — **jedna linia** ze wskaźnikiem: `Kluczowe pliki, decyzje techniczne, odroczone
+  pytania i wzorce do naśladowania: <ścieżka planu technicznego> (sekcje „Kluczowe decyzje techniczne",
+  „Otwarte pytania", `Pliki:` i `Wzorce do naśladowania:` w blokach IU).`
+  **Nie przepisuj tych sekcji.** Do 2026-09-03 plik kontekstu je kopiował i była to kopia utrzymywana
+  ręcznie: w zbadanym zadaniu „Decyzje techniczne" miały 1 linię wspólną z planem na 23, a „Odroczone"
+  0 na 10 — czyli przepisanie, nie kopia, i drugie źródło prawdy, które po dwóch fazach kłamało.
+  Żaden workflow tych sekcji nie czytał; execute-wf bierze z tego pliku wyłącznie „Designerski kontekst"
+  i „Dziennik", a planner sięga po decyzje wprost do planu technicznego.
 - `## Designerski kontekst` — **dokładnie** ten blok (execute-wf kopiuje go do promptów builderów UI/fullstack):
 
   ```markdown
@@ -123,7 +127,9 @@ Ostatnia aktualizacja: RRRR-MM-DD
   > Te pliki są MANDATORY context dla subagentów buildujących UI. `dev-docs-execute` wstrzykuje je do promptu Agent tool. Tester `feature-tester-e2e` używa `figma_screens` do visual diff w przeglądarce.
   ```
   Jeśli wszystkie trzy pola są null/puste — pomiń sekcję.
-- `## Wymagania wstępne operatora` — link do `operator_prep` + skrót pozycji z planu (sekcja „Wymagania wstępne operatora"), albo „Brak".
+- `## Wymagania wstępne operatora` — link do `operator_prep` + lista **nieodhaczonych** pozycji z markerem
+  `[blokuje: …]` wraz z numerem blokowanej fazy, albo „Brak". To jedyne miejsce w `docs/active/`, gdzie
+  operator widzi, co jeszcze wisi na nim w trakcie runu.
 - `## Dziennik` — pusta lista; execute-wf dopisuje tu zmiany i decyzje per faza.
 
 **`<nazwa>-zadania.md`** — wynik Fazy 2, poprzedzony nagłówkiem i linią `Źródła: plan techniczny <ścieżka>`.
