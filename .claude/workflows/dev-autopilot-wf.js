@@ -246,6 +246,22 @@ const FIX_RESULT = {
     nienaprawione: { type: 'array', items: { type: 'string' } },
     nierozwiazaneP1: { type: 'integer', description: 'P1 ktorych fix NIE zamknal (krytyczne -> STOP)' },
     nierozwiazaneP2: { type: 'integer', description: 'P2 przeniesione do known-issues (graceful)' },
+    // P3 weszly do fixa w 2026-09-03 (plan B1). Zasada "napraw albo uzasadnij": pominiecie musi byc
+    // NAZWANE, inaczej wracamy do stanu sprzed zmiany, tylko drozej — agent cicho przepuszczalby nity
+    // i raportowal komplet. To pole NIE karmi zadnej bramki: P3 nie blokuje przejscia do nastepnej fazy.
+    p3Pominiete: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          plik: { type: 'string', description: 'plik:linia z findingu' },
+          powod: { type: 'string', description: 'JEDNO zdanie, co konkretnie stoi na przeszkodzie — nie "to nit" ani "niski priorytet"' },
+        },
+        required: ['plik', 'powod'],
+      },
+      description: 'P3 z listy, ktorych NIE naprawiles, kazdy z jednozdaniowym uzasadnieniem (pusta lista = naprawiles wszystkie)',
+    },
     // Guard plikow binarnych (run team-os-onboarding-instalatory, 2026-07-26): fix wpisal do
     // scripts/inbox/invite.mjs regex z SUROWYMI bajtami sterujacymi zamiast sekwencji \x.. — plik
     // przestal byc tekstem (git: "Bin 9804 -> 15506 bytes") i KAZDY kolejny agent padal na jego Read
@@ -257,7 +273,9 @@ const FIX_RESULT = {
       description: 'pliki zmienione w tej fazie, ktore git widzi jako binarne (numstat "-"), a NIE sa legalnymi binariami — typowa przyczyna: surowe bajty sterujace w pliku zrodlowym',
     },
   },
-  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne'],
+  // p3Pominiete w required z tego samego powodu co plikiBinarne: pusta lista MUSI znaczyc "przeszedlem
+  // po wszystkich P3", a pole opcjonalne pozwoliloby agentowi cicho pominac cala trzecia grupe.
+  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne', 'p3Pominiete'],
 }
 
 const POSTFIX_VERDICT = {
@@ -502,7 +520,16 @@ Pelny kontekst kazdego findingu: ${sciezka}/review-faza-${numerFazy}.md.
 Checkboxy w sekcji "Do poprawy po review fazy ${numerFazy}" w ${sciezka}/*-zadania.md odznaczaj
 w miare napraw (to widok dla czlowieka).
 
-Napraw WSZYSTKIE z listy (sa to P1 blocking i P2 important; P3 nie ma na liscie).
+KOLEJNOSC PRACY (lista zawiera P1, P2 ORAZ P3 typu KOD/TEST — P3 nie sa juz odcinane):
+1. NAJPIERW wszystkie P1 (blocking). Kazdy musi zostac zamkniety albo policzony w nierozwiazaneP1.
+2. POTEM wszystkie P2 (important).
+3. NA KONIEC P3 (nity). Przy kazdym P3 obowiazuje zasada "napraw albo uzasadnij": naprawiasz go tak
+   samo jak P2, ALBO wpisujesz go do p3Pominiete[] z JEDNYM zdaniem, dlaczego nie. Zdania w rodzaju
+   "to nit", "niski priorytet", "pre-existing" NIE sa uzasadnieniem — powiedz, co konkretnie stoi na
+   przeszkodzie (np. "zmiana wymaga refaktoru modulu X spoza zakresu tej fazy", "sugestia jest sprzeczna
+   z decyzja D4 z planu"). Uzasadnienie wraca do orkiestratora i trafia do raportu — nie znika po cichu.
+P3 NIE blokuje przejscia do nastepnej fazy. Nie zatrzymuj sie na nim i nie ryzykuj dla niego regresji:
+gdy naprawa P3 wymagalaby ruszenia kodu spoza tej fazy, to jest wlasnie przypadek na p3Pominiete[].
 
 KLASYFIKUJ kazdy finding przed naprawa:
 - Typ KOD (blad implementacji/security/perf/architektury): napraw kod -> uruchom unit testy -> odznacz checkbox.
@@ -659,9 +686,20 @@ function policzFindingi(findings) {
   }
 }
 
+// P3 wchodza do petli naprawczej od 2026-09-03 (decyzja operatora po audycie 2026-09-02, pozycja B1).
+// Dowod: 741 wygenerowanych P3 przy ZERZE naprawionych przez autopilota — a CodeRabbit naprawial czesc
+// z nich dzien pozniej jako realne bledy (udokumentowane pary commitow). Placilismy trzy razy za ich
+// wygenerowanie i ani razu za skorzystanie z nich.
+// P3 typu OPERATOR zostaja POZA fixem — to warunki srodowiskowe (odpal cos recznie, sprawdz w konsoli),
+// nie defekt kodu; ida do "## Operator checklist faza N" i do smoke'u operatora.
+// Severity gate sie NIE zmienia: P3 nadal nie blokuje przejscia do nastepnej fazy (patrz gateFazy nizej) —
+// gdyby blokowal, jeden nit zatrzymywalby caly run.
 function otwartePoReview(findings) {
   return (findings || [])
-    .filter((f) => f.typ !== 'OPERATOR' && (f.severity === 'P1' || f.severity === 'P2'))
+    .filter((f) => f.typ !== 'OPERATOR' && (
+      f.severity === 'P1' || f.severity === 'P2' ||
+      (f.severity === 'P3' && (f.typ === 'KOD' || f.typ === 'TEST'))
+    ))
     .map((f) => ({ severity: f.severity, typ: f.typ, plik: f.plik, opis: f.opis }))
 }
 
@@ -1054,8 +1092,14 @@ for (const numerFazy of kolejka) {
       return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
     cykle = 1
-    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2 }
+    // p3Pominiete idzie do raportu i telemetrii, ale NIE do zadnej bramki (plan B1: severity gate bez zmian).
+    // Bez tego kanalu "napraw albo uzasadnij" bylo deklaracja — uzasadnienia gineleby w kontekscie agenta.
+    const p3Pominiete = fix.p3Pominiete || []
+    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2, p3Pominiete: p3Pominiete.length }
     log(`Fix fazy ${numerFazy}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
+    if (p3Pominiete.length) {
+      log(`Faza ${numerFazy}: ${p3Pominiete.length}x P3 swiadomie pominiete (nie blokuja gate'u):\n  ${p3Pominiete.map((p) => `${p.plik} — ${p.powod}`).join('\n  ')}`)
+    }
 
     // Guard plikow binarnych PRZED gate'em walidacji: uszkodzony plik zrodlowy jest PRZYCZYNA,
     // a typecheck/testy failuja wtornie — na "walidacja FAIL" operator szuka defektu logiki zamiast

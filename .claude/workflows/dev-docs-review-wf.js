@@ -60,10 +60,17 @@ const BLOK_LIMIT_P3 = `
 LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
 Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
 Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
-AKCYJNOSC: P3 zglaszasz tylko wtedy, gdy potrafisz wskazac KONKRETNA akcje naprawcza w TEJ fazie
-(co, w ktorym pliku, na co zmienic). "Warto by kiedys rozwazyc", "mozna by dodac wiecej testow",
-"nazwa moglaby byc lepsza", "rozwazyc refaktor" — bez konkretu NIE zglaszasz. Nit bez akcji to szum.
-Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu \`plik\` (format \`sciezka/plik.ts:123\`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien \`as SessionRow\` na guard \`isSessionRow()\` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
 === KONIEC BLOKU LIMITU P3 ===`
 
 // Doklejany do spec-compliance i test-coverage. Powod (run feedback-marcin-poprawki, 2026-08-06,
@@ -107,9 +114,12 @@ wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem 
 // 8 reviewerach agregat i tak dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz
 // przy 1 P1 i 17 P2 realnie naprawionych). P3 nie wchodza do petli naprawczej (otwartePoReview filtruje
 // P1|P2), wiec ponad limit placimy juz tylko za prompt scribe'a i objetosc raportu.
-// Prog 8 jest WSTEPNY — dobrany tak, by miescil obserwowana mediane po dedupie i przycinal ogon.
-// Do strojenia po zebraniu telemetrii z kilku runow (pole przebieg.p3Odrzucone mowi, ile ucielismy).
-const LIMIT_P3_GLOBALNY = 8
+// Prog PODNIESIONY 8 -> 15 (2026-09-03, plan B1). Osiem bylo progiem dla nitow, ktorych NIKT nie
+// naprawial — otwartePoReview odcinalo P3 przed fixem, wiec ciecie kosztowalo tylko objetosc raportu.
+// Od decyzji operatora P3 typu KOD/TEST wchodza do petli naprawczej, wiec ten sam limit zaczal
+// wyrzucac PRACE DO ZROBIENIA, nie szum. 15 to prog wstepny; strojenie po telemetrii z kilku runow
+// (przebieg.p3Odrzucone mowi, ile ucielismy, a fix.p3Pominiete — ile z przepuszczonych bylo realnych).
+const LIMIT_P3_GLOBALNY = 15
 
 // ── Schematy ──────────────────────────────────────────────────────────────
 
@@ -520,7 +530,14 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
 
 1. Zapisz ${sciezka}/review-faza-${faza}.md — pelny raport (findings posortowane P1->P2->P3, statystyki).
 2. Zaktualizuj ${sciezka}/*-zadania.md: dodaj/uzupelnij sekcje "## Do poprawy po review fazy ${faza}"
-   — wylistuj TYLKO findingi typu KOD/TEST/E2E o severity P1 i P2 jako checkbox: "- [ ] 🔴/🟠 [severity] **plik:linia** — opis". P3 opcjonalnie.
+   — wylistuj findingi typu KOD/TEST/E2E o severity P1 i P2 ORAZ findingi P3 typu KOD/TEST,
+   jako checkbox: "- [ ] 🔴/🟠/🟡 [severity] **plik:linia** — opis".
+   P3 sa tu od 2026-09-03: orkiestrator przekazuje je agentowi fixa razem z P1/P2 (P3 typu E2E i OPERATOR
+   NIE — te ida odpowiednio do bookkeepingu i do Operator checklist). Kazda pozycja P3 MUSI byc wykonalna
+   bez dopytywania: jeden plik z numerem linii + zdanie akcji (co zmienic i na co). Gdy finding P3 tego nie
+   ma, NIE przepisuj go w tej postaci — zapisz go w raporcie review-faza-${faza}.md, a do tej sekcji wstaw
+   tylko wtedy, gdy potrafisz go dociagnac do wykonalnej postaci z tresci findingu. Lista zyczen w tej sekcji
+   kosztuje ture agenta fixa.
    W tresci tych pozycji NIE przepisuj markera [E2E] z opisu findingu (linia "checkbox:" findingu E2E) — zamien go na
    [e2e→fix]; jedyna nosna linia [E2E] jest zrodlowa (Test:/Weryfikacja:), a grepy precheck/tester/completion-gate/smoke
    liczylyby kopie jako osobne, nieuruchomione scenariusze.
@@ -871,31 +888,55 @@ const operatorowe = dedup.filter((f) => f.typ === 'OPERATOR')
 // przepuszczalo wylacznie P3 dwoch pierwszych reviewerow i SYSTEMATYCZNIE, w kazdej fazie, wycinalo cale
 // wyjscie simplicity, test-coverage i e2e. To nie jest uciecie ogona, tylko wyciszenie trzech reviewerow.
 // W obrebie zrodla KOD/TEST ida przed OPERATOR (nit o defekcie jest wart wiecej niz nota srodowiskowa).
-function wybierzNity(nityLista, limit) {
+// Od 2026-09-03 (plan B1) wybor jest DWUSTOPNIOWY. Skoro P3 ida do fixa, najtanszy nit to ten, ktorego
+// plik agent fixa i tak otworzy przy P1/P2 tej samej fazy — naprawa kosztuje wtedy jedno spojrzenie
+// wiecej, a nie osobne wejscie w plik. Dopiero reszte tniemy round-robinem po zrodle jak dotad.
+// `plikiWaznych` liczymy PRZED verify, wiec moze zawierac plik findingu, ktory sceptycy zaraz obala —
+// to swiadomy kompromis: to jest tie-breaker kolejnosci nitow, nie decyzja o ich losie.
+function kluczPliku(plik) {
+  // "src/a.ts:214" i "src/a.ts:31" to ten sam plik — numer linii tu przeszkadza.
+  return String(plik || '').split(':')[0].trim().toLowerCase()
+}
+function wybierzNity(nityLista, limit, plikiWaznych) {
   if (nityLista.length <= limit) return nityLista
   const PRIORYTET = { KOD: 0, TEST: 1, E2E: 2, OPERATOR: 3 }
-  const kolejki = new Map()
-  for (const f of nityLista) {
-    const k = f._zrodlo || '?'
-    if (!kolejki.has(k)) kolejki.set(k, [])
-    kolejki.get(k).push(f)
-  }
-  for (const q of kolejki.values()) q.sort((a, b) => (PRIORYTET[a.typ] ?? 9) - (PRIORYTET[b.typ] ?? 9))
+  const wTymSamymPliku = nityLista.filter((f) => plikiWaznych.has(kluczPliku(f.plik)))
+  const pozostale = nityLista.filter((f) => !plikiWaznych.has(kluczPliku(f.plik)))
+  // Stopien 1: nity w plikach juz otwieranych przez fix. Gdyby samych takich bylo ponad limit,
+  // tez ida round-robinem — inaczej jeden gadatliwy reviewer zjadlby caly budzet.
   const wybrane = []
-  for (let runda = 0; wybrane.length < limit; runda++) {
-    let dodano = false
-    for (const q of kolejki.values()) {
-      if (q.length > runda) {
-        wybrane.push(q[runda])
-        dodano = true
-        if (wybrane.length === limit) break
-      }
+  const dobierz = (lista) => {
+    if (wybrane.length >= limit || !lista.length) return
+    const kolejki = new Map()
+    for (const f of lista) {
+      const k = f._zrodlo || '?'
+      if (!kolejki.has(k)) kolejki.set(k, [])
+      kolejki.get(k).push(f)
     }
-    if (!dodano) break // wyczerpalismy wszystkie kolejki przed osiagnieciem limitu
+    for (const q of kolejki.values()) q.sort((a, b) => (PRIORYTET[a.typ] ?? 9) - (PRIORYTET[b.typ] ?? 9))
+    for (let runda = 0; wybrane.length < limit; runda++) {
+      let dodano = false
+      for (const q of kolejki.values()) {
+        if (q.length > runda) {
+          wybrane.push(q[runda])
+          dodano = true
+          if (wybrane.length === limit) break
+        }
+      }
+      if (!dodano) break // wyczerpalismy wszystkie kolejki tego stopnia
+    }
   }
+  dobierz(wTymSamymPliku)
+  dobierz(pozostale)
   return wybrane
 }
-const nity = wybierzNity(wszystkieNity, LIMIT_P3_GLOBALNY)
+// Pliki findingow waznych tej fazy — bez OPERATOR (nie sa defektem kodu, fix ich nie otwiera).
+const plikiWaznych = new Set(
+  dedup.filter((f) => (f.severity === 'P1' || f.severity === 'P2') && f.typ !== 'OPERATOR').map((f) => kluczPliku(f.plik))
+)
+plikiWaznych.delete('?')
+plikiWaznych.delete('')
+const nity = wybierzNity(wszystkieNity, LIMIT_P3_GLOBALNY, plikiWaznych)
 const p3Odrzucone = wszystkieNity.length - nity.length
 if (p3Odrzucone) {
   const odrzucone = wszystkieNity.filter((f) => !nity.includes(f)).map((f) => `${f._zrodlo}: ${f.plik} — ${(f.opis || '').slice(0, 60)}`)
