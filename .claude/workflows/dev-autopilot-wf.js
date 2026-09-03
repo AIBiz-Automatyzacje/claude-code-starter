@@ -1433,6 +1433,32 @@ for (const numerFazy of kolejka) {
     faza.fix = 'done'
     faza.otwarteFindingi = []
     await zapiszStan()
+    // ZWIN SEKCJE "Do poprawy" ZAMKNIETEJ FAZY (plan B8). Plik zadan jest czytany przy KAZDEJ nastepnej
+    // fazie — przez plannera, testera E2E i scribe'a — a w trakcie jednego zadania puchnie z 23 KB do 59 KB
+    // wlasnie tymi sekcjami. Pelna tresc findingow i tak zostaje w review-faza-K.md; w pliku zadan
+    // potrzebny jest tylko slad, ze faza przeszla przez fix.
+    // Best-effort: to porzadki, nie bramka — null nie moze zatrzymac fazy, ktora wlasnie sie domknela.
+    const zwijanie = await agent(
+      `Zwin ZAMKNIETE pozycje sekcji "## Do poprawy po review fazy ${numerFazy}" w ${sciezka}/*-zadania.md.
+
+1. Znajdz te sekcje (\`grep -n "## Do poprawy po review fazy ${numerFazy}"\`). Gdy jej nie ma — nic nie rob,
+   zwroc zapisano=false. To poprawny wynik: faza mogla nie miec findingow.
+2. Policz w niej wiersze ZAZNACZONE (\`- [x]\`) i NIEZAZNACZONE (\`- [ ]\`).
+3. USUN wszystkie wiersze \`- [x]\` z tej sekcji i wstaw w ich miejsce JEDNA linie:
+   \`Zamkniete cyklem fix: <N> pozycji — pelna tresc findingow i uzasadnienia w \\\`review-faza-${numerFazy}.md\\\`.\`
+4. KAZDY wiersz \`- [ ]\` ZOSTAW DOSLOWNIE, razem z adnotacjami (np. "przeniesione do known-issues").
+   To NIE jest kosmetyka: \`dev-docs-complete\` grepuje wlasnie te niezaznaczone wiersze — [P1]/[P2] ida
+   do puli domkniecia zadania, a otwarte P3 do smoke'u operatora. Usuniecie ich skasowaloby te wejscia
+   po cichu i zadanie domknieto by jako czyste.
+5. NIE ruszaj: zadnej innej sekcji, checkboxow implementacyjnych, \`Test:\`, \`Weryfikacja:\`, \`[E2E]\`,
+   \`[Manual]\` ani sekcji "## Operator checklist faza ${numerFazy}" — ta zostaje w calosci, bo jej pozycje
+   sa dla czlowieka i trafiaja pozniej do smoke'u operatora. Sekcje innych faz zostaw nietkniete.
+
+Nie commituj — orkiestrator zrobi to sam. Zwroc {zapisano: true} po realnym zapisie pliku
+(zapisano=false takze wtedy, gdy nie bylo ani jednego wiersza \`- [x]\` do zwiniecia).`,
+      { schema: ZAPIS_STANU, model: 'haiku', label: `zwin-do-poprawy:faza-${numerFazy}` }
+    )
+    if (zwijanie && zwijanie.zapisano) log(`Faza ${numerFazy}: zamkniete pozycje sekcji "Do poprawy" zwiniete do wskaznika na review-faza-${numerFazy}.md (niezaznaczone zostaly — czyta je dev-docs-complete)`)
     dopiszEtap('fix', tokEtapStart)
   } else if (faza.fix === 'none') {
     gateFazy = 'CZYSTE'

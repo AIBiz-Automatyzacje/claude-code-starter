@@ -118,12 +118,21 @@ Faza do wykonania: ${faza}
 Referencja metodologii: przeczytaj .claude/skills/dev-docs-execute/SKILL.md sekcje 2.5, 3, 3a
 (strategia delegacji, granice scope'u, mandatory designerski kontekst).
 
-1. Przeczytaj ${sciezka}/*-plan.md, ${sciezka}/*-zadania.md, ${sciezka}/*-kontekst.md.
+1. CZYTAJ WYCINKAMI, NIE CALYMI PLIKAMI. Cztery dokumenty tego zadania to lacznie 120-175 KB, a plik
+   zadan rosnie w trakcie jednego zadania z 23 KB do 59 KB (sekcje "Do poprawy po review") i jest czytany
+   przy KAZDEJ fazie. Do zbudowania jednostek fazy ${faza} potrzebujesz czterech wycinkow. Kazdy bierz
+   przez \`grep -n\` naglowka, a potem \`Read\` z \`offset\` i \`limit\` — nigdy nie ladujesz calego pliku:
+   - z \`${sciezka}/*-plan.md\`: tabela \`## Fazy\` i sekcja \`## Zrodla\` (stamtad masz sciezke planu technicznego),
+   - z \`${sciezka}/*-zadania.md\`: blok od \`## Faza ${faza}\` do NASTEPNEGO naglowka tego samego poziomu,
+   - z \`${sciezka}/*-kontekst.md\`: sekcja \`## Designerski kontekst\`,
+   - z planu technicznego w \`docs/plans/\`: sekcja \`### Faza ${faza}\` (tam sa Implementation Units tej fazy).
+   Po wiecej siegaj TYLKO wtedy, gdy jednostka odsyla do czegos, czego w tych wycinkach nie ma
+   (np. decyzja opisana przy innej fazie). Nie czytaj dokumentow "dla kontekstu".
 1b. Przeczytaj .claude/rules/learned-patterns.md (jesli istnieje) — reguly wyprodukowane z problemow
-   rozwiazanych w poprzednich zadaniach tego projektu. Reguly istotne dla danego IU DOPISZ do jego
-   promptu (sekcja "Wyuczone reguly projektu:") — buildery nie maja gwarancji dostepu do project rules.
-2. Otworz plan techniczny w docs/plans/ (referencja "Plan techniczny:"/"origin:" w pliku planu zadania).
-   Zlokalizuj Implementation Units odpowiadajace fazie ${faza}.
+   rozwiazanych w poprzednich zadaniach tego projektu. Ten plik czytasz w CALOSCI (ok. 11 KB): reguly
+   istotne dla danego IU DOPISZ do jego promptu (sekcja "Wyuczone reguly projektu:") — buildery nie maja
+   gwarancji dostepu do project rules.
+2. W sekcji \`### Faza ${faza}\` planu technicznego zlokalizuj Implementation Units tej fazy.
 3. Jesli faza ${faza} jest juz ukonczona albo nie ma niezaznaczonych checkboxow IMPLEMENTACYJNYCH -> ustaw poza=true, iu=[].
    Do ukonczenia NIE licza sie (pomijaj calkowicie): checkboxy z prefiksem "Weryfikacja:", "Operator:",
    oznaczone "[E2E]"/"[Manual]", oraz wszystkie checkboxy w sekcjach "## Do poprawy po review fazy N"
