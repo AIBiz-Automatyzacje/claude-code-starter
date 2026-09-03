@@ -324,6 +324,21 @@ const KONTEKST = {
     // dokumenty sam), a nie wywalac calego obiektu kontekstu na walidacji schematu i gubic flagi routingu.
     ctxPlik: { type: 'string', description: 'sciezka dossier fazy (pusty string gdy zapis sie nie udal)' },
     ctxZapisany: { type: 'boolean', description: 'true tylko gdy dossier realnie powstalo i jest niepuste' },
+    // Wsparcie deterministyczne dla reviewerow (plan B6): dwa wzorce, ktore packager i tak widzi w diffie,
+    // a ktore reviewer potrafi przeoczyc, bo kod wyglada poprawnie. Poza `required` — brak pola = brak bloku.
+    preSkan: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          wzorzec: { type: 'string', enum: ['pusty-catch', 'then-bez-catch'] },
+          plik: { type: 'string', description: 'plik:linia' },
+        },
+        required: ['wzorzec', 'plik'],
+      },
+      description: 'mechaniczne trafienia w DODANYCH liniach diffu fazy (pusty catch, .then bez .catch w tym samym pliku)',
+    },
     diffZapisany: { type: 'boolean', description: 'true tylko gdy plik zrzutu realnie powstal i jest niepusty' },
     diffUciety: { type: 'boolean', description: 'true gdy zrzut przekroczyl limit i zostal przyciety ze znacznikiem' },
   },
@@ -390,12 +405,23 @@ wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem 
 Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
 dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
     : ''
+  // Pre-skan (plan B6): dwa wzorce, ktore JS widzi na pewno, podane reviewerom jako WSKAZOWKA, nie werdykt.
+  // Klasyfikacja zostaje przy reviewerze — pusty catch w bloku, ktory za chwile i tak rzuca, bywa poprawny.
+  const preSkan = Array.isArray(kontekst.preSkan) ? kontekst.preSkan : []
+  const preSkanBlok = preSkan.length
+    ? `
+=== PRE-SKAN MECHANICZNY (grep po dodanych liniach, bez oceny) ===
+${preSkan.map((t) => `- ${t.wzorzec}: ${t.plik}`).join('\n')}
+To sa MIEJSCA, nie findingi. Obejrzyj kazde i sam zdecyduj, czy to defekt — pusty catch bywa swiadomy,
+a \`.then\` bez \`.catch\` moze miec obsluge pietro wyzej. Brak wpisu na tej liscie NIE znaczy, ze pliku
+nie trzeba sprawdzic: to uzupelnienie Twojego przegladu, nie jego zamiennik.`
+    : ''
   return `
 
 === MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
 ${kontekst.diffStat || ''}
 ${lista}
-${diffBlok}${ctxBlok}
+${diffBlok}${ctxBlok}${preSkanBlok}
 Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.`
 }
 
@@ -453,7 +479,12 @@ zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam g
    reviewerom fakty. Zwroc ctxPlik (sciezka albo "" gdy zapis sie nie udal) i ctxZapisany (plik powstal
    i jest niepusty). Nieudany zapis NIE jest bledem krytycznym: ustaw ctxZapisany=false i lec dalej —
    reviewerzy wroca wtedy do czytania pelnych dokumentow.
-Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, figmaScreens, diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany}.`
+8. PRE-SKAN MECHANICZNY (grep, nie ocena). W liniach DODANYCH przez diff tej fazy znajdz dwa wzorce:
+   - \`pusty-catch\`: \`catch {}\` albo \`catch (e) {}\` — takze z bialymi znakami i nowa linia miedzy klamrami,
+   - \`then-bez-catch\`: plik, w ktorym pojawilo sie \`.then(\`, a w CALYM tym pliku nie ma ani jednego \`.catch(\`.
+   Zwroc liste {wzorzec, plik} z numerem linii w polu plik. Zero trafien to poprawny wynik ([]).
+   NIE oceniaj, czy to defekt — od tego sa reviewerzy; Ty tylko wskazujesz miejsca.
+Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, figmaScreens, diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, preSkan}.`
 }
 
 // Zrodla wymagan podawane reviewerowi. Gdy packager zbudowal dossier (plan B3), lektura zaczyna sie

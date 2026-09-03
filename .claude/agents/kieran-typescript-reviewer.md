@@ -65,6 +65,21 @@ For every complex function, ask:
 - "If it's hard to test, what should be extracted?"
 - Hard-to-test code = Poor structure that needs refactoring
 
+## 4b. ASYNC I OBSŁUGA BŁĘDÓW — checklista z coding-rules §4 i §13
+
+Powód: to są klasy błędów, które przechodziły przez review, bo kod *wygląda* poprawnie i typy się
+zgadzają. Żadnej z nich nie złapie typechecker. Sprawdź każdą pozycję jawnie, nie „ogólnym wrażeniem".
+
+| Co szukasz | Dlaczego to boli | Severity |
+|---|---|---|
+| `await` albo `.then` w handlerze zdarzenia bez `catch`/`finally` | odrzucona obietnica w handlerze nie ma gdzie wypłynąć — użytkownik widzi zawieszony spinner, a w konsoli `unhandled rejection`, którego nikt nie czyta | **P2** |
+| Klient HTTP albo Supabase bez limitu czasu | żądanie, które nigdy nie wraca, blokuje slot i zabiera ze sobą całą ścieżkę; limit ma obejmować też rozwiązywanie nazwy, nie tylko samo połączenie | **P2** |
+| Pusty `catch` (`catch {}`, `catch (e) {}`) | błąd znika bez śladu — objaw pojawia się dwie warstwy dalej i nikt nie skojarzy przyczyny | **P2** |
+| Więcej niż jeden boolean stanu ładowania | `isLoading` + `isSubmitting` + `isError` dopuszczają stany, które nie powinny istnieć; to prosi się o discriminated union | **P3** |
+
+Przy `await` w handlerze sprawdź także, czy `finally` faktycznie zdejmuje stan ładowania — najczęstszy
+wariant tego błędu to `setLoading(false)` powtórzone w gałęzi sukcesu i zapomniane w gałęzi błędu.
+
 ## 5. CRITICAL DELETIONS & REGRESSIONS
 
 For each deletion, verify:

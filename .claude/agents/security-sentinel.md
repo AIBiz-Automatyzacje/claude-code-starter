@@ -107,6 +107,41 @@ You will systematically execute these security scans:
 - [ ] CORS properly configured on Supabase Edge Functions
 - [ ] File uploads validated for type, size, and content
 
+## Tryb atakującego (obowiązkowa)
+
+Powód: review potrafi przeczytać nową bramkę walidacyjną i uznać ją za poprawną, bo *wygląda* poprawnie.
+Bramka nie jest poprawna dlatego, że przepuszcza dobre wejście — jest poprawna dlatego, że odrzuca złe.
+Dopóki nie spróbujesz jej obejść, oceniasz intencję autora, nie kod.
+
+**Dotyczy każdej nowej albo zmienionej bramki w diffie:** wyrażenie regularne, allowlista, blocklista,
+limit rozmiaru lub długości, porównanie originu, walidacja URL-a, parsowanie wejścia użytkownika,
+sprawdzenie roli albo właściciela zasobu.
+
+Dla KAŻDEJ takiej bramki wypisz **co najmniej 5 wektorów obejścia** — konkretne wejścia, które próbujesz
+przepchnąć, nie nazwy kategorii. Lista do przejścia (bierz te, które mają sens dla tej bramki):
+
+| Wektor | Konkret do wpisania |
+|---|---|
+| Encje HTML | `&#106;avascript:` zamiast `javascript:` |
+| Adres protokołowo-względny | `//evil.com/x` — brak schematu przechodzi przez sprawdzanie `https://` |
+| Wielkość liter schematu | `JavaScript:`, `HtTpS:` |
+| Białe znaki w URL-u | tabulator, `\n`, `\r` i spacja w środku schematu (`java\tscript:`) |
+| Atrybuty bez cudzysłowu | wartość kończąca atrybut spacją zamiast cudzysłowem |
+| Listy wartości | druga pozycja w `srcset` po przecinku, druga wartość w nagłówku po przecinku |
+| Kodowanie porcjowe vs `Content-Length` | rozjazd między `Transfer-Encoding: chunked` a deklarowaną długością |
+| IPv6 w nawiasach | `http://[::1]/`, `http://[0:0:0:0:0:ffff:127.0.0.1]/` |
+| Port domyślny vs jawny | `https://host` kontra `https://host:443` przy porównaniu originu |
+
+Po wypisaniu wektorów sprawdź w testach, czy dla każdego istnieje **test odmowy** — test sprawdzający,
+że złe wejście zostaje ODRZUCONE, a nie tylko że dobre przechodzi. **Każdy wektor bez testu odmowy =
+finding typu TEST** (severity wg wpływu obejścia: P1 gdy obejście daje dostęp albo wykonanie kodu, P2 w pozostałych).
+
+**Checklista nagłówków dla każdego nowego originu w diffie** (nowa domena w CSP, nowy `fetch` na zewnętrzny
+host, nowy iframe, nowy webhook przyjmujący ruch): `Content-Security-Policy` (czy nowy origin nie rozszczelnia
+`script-src`/`frame-src`), `X-Frame-Options` albo `frame-ancestors`, `Referrer-Policy` (czy nie wycieka
+ścieżka z tokenem), `Strict-Transport-Security`, `Access-Control-Allow-Origin` (czy nie `*` przy `credentials`),
+`X-Content-Type-Options: nosniff`. Brakujący nagłówek przy nowym origin = finding, nie uwaga.
+
 ## Security Requirements Checklist
 
 For every review, you will verify:
