@@ -992,6 +992,13 @@ for (const numerFazy of kolejka) {
     // zepsutym srodowisku, wiec po naprawie faza wymaga powtorki.
     if (review.blokerSrodowiska && review.blokerSrodowiska.wykryty) {
       const b = review.blokerSrodowiska
+      // Utrwal to, co review JUZ ustalilo o kodzie (audyt 2026-09-02, pozycja A2). Dotad ta galaz
+      // wychodzila przed zapisem metryk, wiec STOP na blokerze zostawial w stanie i telemetrii `null`
+      // zamiast licznikow — praca 8 reviewerow znikala. `faza.review` CELOWO zostaje `pending`:
+      // findingi E2E powstaly na zepsutym srodowisku i po naprawie wymagaja powtorki.
+      faza.otwarteFindingi = otwartePoReview(review.findings)
+      faza.metryki = { liczniki: policzFindingi(review.findings), przebieg: skrotPrzebiegu(review.przebieg) }
+      await zapiszStan()
       return await stopRun({
         powod: `Faza ${numerFazy}: scenariusz E2E padl na BLOKERZE SRODOWISKA (${b.klasa}), nie na defekcie kodu. Dowod z outputu: "${b.dowod}". Kazdy kolejny scenariusz padlby tak samo, wiec zatrzymuje run zamiast ciagnac go na zepsutym srodowisku.`,
         naprawa: b.klasa === 'dev-server-nieosiagalny'
