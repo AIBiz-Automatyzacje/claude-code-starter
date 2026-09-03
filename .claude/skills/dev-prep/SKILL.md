@@ -134,7 +134,7 @@ Obowiązuje jedna granica: **tu trafia wyłącznie to, co robi człowiek poza ko
 
 Na górze dokumentu, bo zwykle blokują resztę: nieodwracalne wybory (bundle identifier, region danych, dostawca płatności), rozstrzygnięcia produktowe zostawione otwarte przez etap, wybór między wariantami implementacji, który zmienia zakres.
 
-Każdą zapisz jako **pytanie zamknięte z wypisanymi opcjami**, nie jako temat do przemyślenia. Pytanie bez opcji wraca do Ciebie po tygodniu w tej samej postaci. Oznacz **[blokuje planowanie]** te, bez których `/dev-plan` nie napisze IU (zasada 0.5 `dev-plan`: nierozwiązany bloker planowania).
+Każdą zapisz jako **pytanie zamknięte z wypisanymi opcjami**, nie jako temat do przemyślenia. Pytanie bez opcji wraca do Ciebie po tygodniu w tej samej postaci. Oznacz **[blokuje: planowanie]** te, bez których `/dev-plan` nie napisze IU (zasada 0.5 `dev-plan`: nierozwiązany bloker planowania).
 
 #### 2.2 Konta, konsole, sekrety
 
@@ -191,11 +191,12 @@ status: do-zrobienia | gotowe
 > Lista kroków, które robi **człowiek poza kodem**: decyzje, konta zewnętrzne, sekrety, assety, makiety.
 > Kod (migracje, komponenty, testy) powstaje w implementacji — nie jest tutaj.
 > Legenda: 🔓 publiczne (może iść do repo) · 🔒 sekret (nigdy do gita) · `[~]` świadomy dług · *(kod)* nie Twój krok.
-> `/dev-plan` dopisze do tej listy numery blokowanych faz i pozycje wynikłe z Implementation Units.
+> `/dev-plan` dopisze do tej listy pozycje wynikłe z Implementation Units i **zamieni** marker
+> `[blokuje: planowanie]` na `[blokuje: faza N]` tam, gdzie zna numer blokowanej fazy.
 
 ## 1. Decyzje (zero plików, ale blokują resztę)
 
-- [ ] **<Pytanie zamknięte?>** — **[blokuje planowanie]**
+- [ ] **<Pytanie zamknięte?>** — **[blokuje: planowanie]**
   - Opcje: A) <…> B) <…>
   - Dlaczego blokuje: <który obszar etapu zależy od odpowiedzi>
   - Ustalono: _(wpisz wybór i datę)_
@@ -230,7 +231,7 @@ Po zaprojektowaniu wklej URL-e — `/dev-plan` weźmie je stąd zamiast pytać.
 - 🔒 → sekrety builda + lokalny `.env` poza gitem
 
 ---
-Gdy **[blokuje planowanie]** są odhaczone: `/dev-plan docs/brainstorms/mvp-requirements.md#etap-17`
+Gdy **[blokuje: planowanie]** są odhaczone: `/dev-plan docs/brainstorms/mvp-requirements.md#etap-17`
 ```
 
 Sekcję bez pozycji zostaw z jedną linią „Brak — nic do przygotowania w tej kategorii." Nie usuwaj nagłówka: `/dev-plan` i `/dev-docs` szukają sekcji po numerze i tytule.
@@ -243,13 +244,13 @@ Ogłoś:
 
 ```text
 Operator checklist: docs/operator/<nazwa ustalona w 0.3>
-Decyzje: N (M blokuje planowanie) · Konta/sekrety: N · Assety: N · Makiety: N ekranów
+Decyzje: N (M z markerem `[blokuje: planowanie]`) · Konta/sekrety: N · Assety: N · Makiety: N ekranów
 ```
 
 Następnie zadaj `AskUserQuestion`: „Co dalej?"
 
 - `Idę dostarczyć pozycje i wracam` — zakończ. Przypomnij jedną linią: po zaprojektowaniu makiet wklej URL-e do sekcji 4, wtedy `/dev-plan` nie zapyta o Figmę.
-- `Wszystko już mam — planujmy` — **uruchom `/dev-plan <origin>` w tej sesji** (nie opisuj tylko komendy). Wcześniej sprawdź nieodhaczone pozycje **[blokuje planowanie]**; jeśli są, wymień je i potwierdź, że użytkownik świadomie idzie dalej.
+- `Wszystko już mam — planujmy` — **uruchom `/dev-plan <origin>` w tej sesji** (nie opisuj tylko komendy). Wcześniej sprawdź nieodhaczone pozycje **[blokuje: planowanie]**; jeśli są, wymień je i potwierdź, że użytkownik świadomie idzie dalej.
 - `Popraw dokument` — wróć do Fazy 2 z jego uwagami.
 
 **Commit:** dokument jest artefaktem planowania — `/dev-docs` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego Fazie 0). Nie commituj go sam, chyba że użytkownik poprosi.

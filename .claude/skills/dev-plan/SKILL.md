@@ -88,7 +88,7 @@ Jeśli wiele dokumentów źródłowych pasuje, zapytaj którego użyć używają
 - To jest **ten sam plik**, który uzupełnisz w 5.2b. Nie twórz drugiego dokumentu przygotowawczego — sekcja 3.7 dopisuje do tego.
 - Sekcja „Makiety" (z wklejonymi URL-ami Figmy) jest inputem dla 1.6 kroku C; „Decyzje" dla 0.5; „Konta, konsole, sekrety" i „Assety" dla 3.7.
 - Ogłoś jednym zdaniem: „Znalazłem operator checklist etapu: `<ścieżka>` (N pozycji, M nieodhaczonych) — używam go jako źródła kontekstu designerskiego i wymagań operatora; uzupełnię go po zbudowaniu IU."
-- **Nieodhaczone pozycje `[blokuje planowanie]`** wymień i zapytaj przez `AskUserQuestion`, czy planować mimo to (wybór świadomy — plan powstanie z lukami), czy przerwać do czasu ich domknięcia.
+- **Nieodhaczone pozycje `[blokuje: planowanie]`** wymień i zapytaj przez `AskUserQuestion`, czy planować mimo to (wybór świadomy — plan powstanie z lukami), czy przerwać do czasu ich domknięcia.
 
 Brak takiego dokumentu jest w pełni poprawny — kontynuuj standardowym przebiegiem (1.6 zapyta o Figmę interaktywnie, 5.2b utworzy krótką listę od zera). Nie wymagaj `/dev-prep` i nie przerywaj planowania z powodu jego braku.
 
@@ -274,7 +274,7 @@ Jeśli **dotyka UI** → kontynuuj krok B.
 2. **Operator checklist z `/dev-prep`** — jeśli 0.2 znalazło checklistę tego etapu, jej sekcja „Makiety" jest listą ekranów tej iteracji. Rozstrzygnij po wypełnieniu pól `URL Figma:`:
    - **Wszystkie ekrany mają URL** → przejdź wprost do kroku D **bez pytania**; listę `{name, url}` bierzesz z dokumentu, nie od użytkownika (`name` = nazwa ekranu z sekcji, bez zmian — to ona wiąże makietę z pozycją checklisty).
    - **Część ekranów ma URL** → wymień nazwy ekranów bez URL-a i zapytaj przez `AskUserQuestion`: `Fetchuj gotowe, resztę zaprojektujemy z głowy` / `Podam brakujące URL-e teraz` / `Przerywam — dokończę makiety`. Przy pierwszej opcji zapisz brakujące ekrany do „Otwarte pytania → Odroczone do implementacji".
-   - **Żaden ekran nie ma URL-a, a sekcja jest niepusta** → makiety zamówione, ale niegotowe. Zapytaj: `Projektujemy z głowy w oparciu o DESIGN.md` / `Przerywam planowanie do czasu makiet` (rekomendowane, gdy pozycje mają **[blokuje planowanie]**).
+   - **Żaden ekran nie ma URL-a, a sekcja jest niepusta** → makiety zamówione, ale niegotowe. Zapytaj: `Projektujemy z głowy w oparciu o DESIGN.md` / `Przerywam planowanie do czasu makiet` (rekomendowane, gdy pozycje mają **[blokuje: planowanie]**).
    - **Sekcja pusta lub `dotyka_ui: false`** → `figma_spec: null`, `figma_screens: {}`, kontynuuj do Fazy 2.
 3. **Linki w źródle** — użytkownik podał URL-e `figma.com/design/...` w requeście lub dokumencie źródłowym → przejdź wprost do kroku D bez pytania.
 4. W pozostałych przypadkach zadaj `AskUserQuestion` (to jedyne pytanie designerskie, które skill zadaje w standardowym przebiegu):
@@ -492,7 +492,8 @@ Przejdź po wszystkich IU i wypisz **wyłącznie** rzeczy, których Claude/autop
 **Gdy operator checklist już istnieje** (plik znaleziony w 0.2 po frontmatterze — typowo z `/dev-prep`), Twoim zadaniem jest go **uzupełnić, nie odtworzyć**. Przejdź po nim i przygotuj wyłącznie **deltę**:
 
 - **Pozycje odhaczone `[x]`** — nie ruszasz. Są zrobione; powtórzenie każe operatorowi robić to samo dwa razy.
-- **Pozycje nieodhaczone, które już tam są** — dopisujesz do nich to, czego `/dev-prep` nie mógł wiedzieć: **numer blokowanego IU/fazy** (`— blokuje Fazę 2 (IU-3)`). Treści nie przepisujesz.
+- **Pozycje nieodhaczone, które już tam są** — dopisujesz do nich to, czego `/dev-prep` nie mógł wiedzieć: **numer blokowanej fazy**. Robisz to przez **podmianę markera**, nie przez dopisanie nawiasu obok starego: `**[blokuje: planowanie]**` → `**[blokuje: faza 2]** (IU-3)`. Pozycja bez markera dostaje `**[blokuje: faza N]**`. Treści nie przepisujesz.
+- **Jedna rodzina markerów w całym pipeline:** `[blokuje: planowanie]` (bez tego `/dev-plan` nie napisze IU) i `[blokuje: faza N]` (bez tego nie ruszy faza N). Nic poza tymi dwoma — `/dev-docs` grepuje `^- \[ \].*\[blokuje:` i pozycja zapisana inaczej jest dla bramki gotowości niewidzialna.
 - **Pozycje, których tam nie ma**, a wynikają z konkretnych IU (nowy klucz w `.env.example` tykanym przez IU, sekret Edge Function, środowisko E2E) — dopisujesz jako nowe.
 
 Dostępu do Figmy **nie wpisuj** — rozstrzyga się w 1.6 (fetch się udał albo zapadła decyzja „projektujemy z głowy"); pozycja dopisana po fakcie niczego już nie odblokuje.
@@ -611,7 +612,7 @@ operator_prep: ./docs/operator/<nazwa checklisty>.md   # faktyczna ścieżka z 5
 
 ## Wymagania wstępne operatora
 
-[Z 3.7. Jeśli lista pusta: „Brak — autopilot może startować od razu." Jeśli niepusta: jedno zdanie + link do checklisty (ścieżka z `operator_prep`, ustalona w 5.2b) i skrót pozycji jako lista `- [ ]` z numerem blokowanej fazy/IU, np. „- [ ] Google OAuth client ID w `.env.local` — blokuje Fazę 2 (IU-3)".]
+[Z 3.7. Jeśli lista pusta: „Brak — autopilot może startować od razu." Jeśli niepusta: jedno zdanie + link do checklisty (ścieżka z `operator_prep`, ustalona w 5.2b) i skrót pozycji jako lista `- [ ]` z numerem blokowanej fazy/IU, np. „- [ ] Google OAuth client ID w `.env.local` — **[blokuje: faza 2]** (IU-3)".]
 
 ## Implementation Units
 
@@ -788,7 +789,7 @@ Plik jest zawsze jeden. Gdy 0.2 go znalazło — używasz **jego ścieżki, jaka
 - **Nie duplikuj sekcji** ani nagłówka. Nie zmieniaj układu sekcji zastanego w pliku.
 - Dopisz jedną linię pod nagłówkiem: `Uzupełnione przez /dev-plan YYYY-MM-DD — pozycje z Implementation Units oznaczone numerem blokowanej fazy.`
 
-Potwierdź: `Operator checklist uzupełniony: <ścieżka pliku> (+N pozycji z IU, M blokuje start)`
+Potwierdź: `Operator checklist uzupełniony: <ścieżka pliku> (+N pozycji z IU, M z markerem [blokuje: faza 1])`
 
 **Gdy pliku nie ma** (wejście wprost do `/dev-plan`) — `mkdir -p docs/operator/` i zapisz nowy wg układu poniżej:
 
@@ -800,18 +801,18 @@ Status: **do zrobienia przed autopilotem** — odhaczaj `[ ]` → `[x]`. `/dev-d
 
 To lista rzeczy, których autopilot nie zrobi sam. Bez nich run zatrzyma się na bramce
 (środowisko E2E) albo builder zaimplementuje funkcję bez realnych danych/kluczy.
-Pozycje oznaczone **[blokuje start]** muszą być gotowe przed pierwszą fazą; pozostałe — przed fazą podaną w nawiasie.
+Każda pozycja ma marker **[blokuje: faza N]** z numerem pierwszej fazy, która bez niej nie ruszy. `[blokuje: faza 1]` = musi być gotowe przed startem autopilota.
 
 ## 1. <Kategoria z tabeli 3.7, np. Konta i konsole zewnętrzne>
 
-- [ ] **<Co zrobić>** — **[blokuje start]** / (przed Fazą N, IU-K)
+- [ ] **<Co zrobić>** — **[blokuje: faza N]** (IU-K)
   - Po co: <jedno zdanie — co się stanie bez tego>
   - Jak: <kroki: gdzie wejść, co kliknąć, jaką wartość skopiować, do jakiej zmiennej>
   - Dowód: <komenda lub obserwacja, np. `grep GOOGLE_CLIENT_ID .env.local` zwraca wartość>
 
 ## 2. Środowisko E2E   ← sekcja obowiązkowa TYLKO gdy plan ma ≥1 `[E2E]` a `ls .env.e2e` zwraca brak (spójnie z 3.7/5.1); gdy `.env.e2e` istnieje — pomiń całą sekcję (dev server Vite, migracje i seedy weryfikuje/robi sam autopilot w env-up i db-sync)
 
-- [ ] **Postaw środowisko E2E wg `.claude/templates/e2e-env/README.md` (~30 min, one-time)** — **[blokuje start]** (bramka setupu autopilota)
+- [ ] **Postaw środowisko E2E wg `.claude/templates/e2e-env/README.md` (~30 min, one-time)** — **[blokuje: faza 1]** (bramka setupu autopilota)
   - Po co: plan ma N scenariuszy `[E2E]`; bez `.env.e2e` autopilot zatrzyma run przed fazą 1.
   - Jak: README prowadzi krok po kroku (dedykowany projekt Supabase e2e — NIGDY ref dev/prod, `.env.e2e` z `.env.e2e.example`, wpis do `.gitignore`, konto testowe, tryb `--mode e2e` Vite). Świadomy opt-out: zamień `[E2E]` → `[Manual]` w planie i przenieś do Operator checklist.
   - Dowód: `test -f .env.e2e && git check-ignore -q .env.e2e && echo OK` → OK; `<pm> run dev -- --mode e2e --port 5173` startuje, a localhost:5173 loguje się kontem `E2E_TEST_EMAIL`
@@ -825,7 +826,7 @@ Reguły treści: każdy punkt ma wszystkie trzy pola (Po co / Jak / Dowód); sek
 Potwierdź:
 
 ```text
-Przygotowanie dla operatora zapisane do <ścieżka checklisty> (N pozycji, M blokuje start)
+Przygotowanie dla operatora zapisane do <ścieżka checklisty> (N pozycji, M z markerem [blokuje: faza 1])
 ```
 
 **Tryb pipeline:** Jeśli wywołany z automatycznego workflow lub kontekstu `disable-model-invocation`, pomiń interaktywne pytania. Podejmij potrzebne wybory automatycznie i kontynuuj do zapisu planu.
@@ -834,7 +835,7 @@ Przygotowanie dla operatora zapisane do <ścieżka checklisty> (N pozycji, M blo
 
 Po zapisie plików prezentuj opcje używając narzędzia pytań platformy gdy dostępne. W przeciwnym razie prezentuj numerowane opcje w chacie i czekaj na odpowiedź.
 
-**Pytanie:** "Plan gotowy w `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`[ + przygotowanie dla operatora w `<ścieżka checklisty>` (N pozycji, M blokuje start)]. Co chciałbyś zrobić dalej?"
+**Pytanie:** "Plan gotowy w `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`[ + przygotowanie dla operatora w `<ścieżka checklisty>` (N pozycji, M z markerem [blokuje: faza 1])]. Co chciałbyś zrobić dalej?"
 
 **Opcje:**
 1. **Uruchom `/dev-docs`** (Rekomendowane) — potnij plan na zadania dla autopilota (`docs/active/`) i utwórz branch

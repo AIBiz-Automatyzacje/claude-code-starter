@@ -101,6 +101,7 @@ Ostatnia aktualizacja: RRRR-MM-DD
 - `## Zakres` — lista wymagań z „Śledzenie wymagań" (ID + jedno zdanie) i „Granice scope'u" przepisane.
 - `## Fazy` — tabela `| Faza | Nazwa | IU | Zależy od | Delegaci |` — 1:1 z planem. To źródło listy faz dla autopilota.
 - `## Kryteria akceptacji całości` — przepisane z „Metryki sukcesu"/„Śledzenie wymagań" planu + zdanie: „Każda faza: typecheck 0 błędów, testy PASS, review bez otwartych P1; każdy `[E2E]` uruchomiony (nie odhaczony ręcznie)".
+- `## Blokery operatora per faza` — **tylko jeśli** bramka gotowości (Faza 5 pkt 2) znajdzie nieodhaczone pozycje `[blokuje: faza N]` dla N ≥ 2. Jedna linia na pozycję, z numerem fazy i wskaźnikiem do checklisty. Pozycje blokujące planowanie albo fazę 1 tutaj nie trafiają — one zatrzymują handoff.
 - **Bez** własnych sekcji „Ryzyka", „Szacunek", „Analiza obecnego stanu" — jeśli plan ma „Ryzyka i zależności", wstaw jedno zdanie z linkiem do tej sekcji planu.
 
 **`<nazwa>-kontekst.md`** — to, co buildery i reviewerzy dostają jako kontekst:
@@ -137,7 +138,9 @@ Ostatnia aktualizacja: RRRR-MM-DD
 Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej**:
 
 1. **E2E:** `grep -hE '^- \[ \].*\[E2E\]' docs/active/<nazwa>/*-zadania.md | grep -vcE 'Operator:|\[P[123]\]'` (brak trafień = 0, grep kończy się kodem 1 — to nie błąd). Jeśli > 0, a `.env.e2e` nie istnieje → autopilot zatrzyma się na bramce setupu przed fazą 1. Napisz to wprost i podaj dwie drogi: setup wg `.claude/templates/e2e-env/README.md` (one-time, ~30 min) albo świadomy opt-out (`[E2E]` → `[Manual]` w zadaniach i w planie). Nie uruchamiaj autopilota „żeby zobaczyć".
-2. **Przygotowanie dla operatora:** jeśli `operator_prep` ≠ null — policz niezaznaczone `- [ ]` w tym pliku i wypisz te oznaczone **[blokuje start]**. Niezaznaczone blokery = autopilot formalnie ruszy, ale buildery będą implementować bez kluczy/danych — zarekomenduj odhaczenie najpierw.
+2. **Przygotowanie dla operatora:** jeśli `operator_prep` ≠ null — `grep -nE '^- \[ \].*\[blokuje:' <dokładna ścieżka z `operator_prep`>` (brak trafień = 0, grep kończy się kodem 1 — to nie błąd). To **jedyna** rodzina markerów w pipeline: `[blokuje: planowanie]` i `[blokuje: faza N]`, obie pisane przez `/dev-prep` i `/dev-plan`. Rozdziel trafienia:
+   - **`[blokuje: planowanie]`, `[blokuje: faza 1]` albo `[blokuje:` bez czytelnego numeru fazy → STOP.** Nie uruchamiaj `Workflow` — dokładnie tak samo jak przy brudnym drzewie. Wypisz te pozycje z numerami linii i podaj dwie drogi: odhaczyć je (`[ ]` → `[x]`) albo świadomie usunąć marker, jeśli pozycja przestała blokować. Autopilot ruszony mimo tego zaimplementuje fazę 1 bez kluczy/danych i dowiesz się o tym dopiero z review.
+   - **`[blokuje: faza N]` dla N ≥ 2 → nie blokują startu**, ale muszą być widoczne dla operatora w trakcie runu. Wpisz je do `docs/active/<nazwa>/<nazwa>-plan.md` pod nagłówkiem `## Blokery operatora per faza` (utwórz sekcję, jeśli jej nie ma), po jednej linii: `- [ ] faza N — <treść pozycji 1:1> · <ścieżka checklisty>:<linia>`. Po dopisaniu **zacommituj jawnym pathspecem** (`git add docs/active/<nazwa>/<nazwa>-plan.md && git commit -m "docs(<nazwa>): blokery operatora per faza"`) — inaczej punkt 3 zobaczy brudne drzewo.
 3. **Git:** aktualny branch = `feature/<nazwa>`, drzewo czyste po commicie (`git status --short` puste). Jeśli coś nadal jest brudne — wypisz co i nie kieruj do autopilota (jego bootstrap zatrzyma run na niezacommitowanych zmianach). Autopilot **nie** przełącza brancha sam.
 
 ## Format wyjściowy
@@ -155,7 +158,7 @@ Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej*
 
 🚦 Bramka gotowości:
    - E2E: <E scenariuszy; .env.e2e OK / BRAK → setup wg .claude/templates/e2e-env/README.md lub opt-out>
-   - Przygotowanie dla operatora: <brak / ścieżka z `operator_prep`: P pozycji, B blokuje start, niezaznaczone: …>
+   - Przygotowanie dla operatora: <brak / ścieżka z `operator_prep`: P pozycji; blokujące start (`[blokuje: planowanie]` / `[blokuje: faza 1]`): B → STOP albo OK; odroczone do faz ≥2: K, wpisane do plan.md>
    - Git: OK
 
 ➡️ Następny krok (domyślny): uruchom autopilot w tej sesji:
