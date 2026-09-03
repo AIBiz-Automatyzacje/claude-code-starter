@@ -277,6 +277,9 @@ const KONTEKST = {
       required: ['ui', 'dane', 'typowanie', 'nowyModul'],
     },
     e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych przegladarki/agent-browser (0 gdy brak)' },
+    // Druga, niezalezna od checkboxow praca testera: visual diff z makietami (feature-tester-e2e §3.5).
+    // Poza `required` — starszy packager jej nie zwroci i routing wraca wtedy do fail-open po `warstwy.ui`.
+    figmaScreens: { type: 'boolean', description: 'czy plik kontekstu zadania ma niepuste pole figma_screens (mapa ekran -> mockup) — tester robi wtedy visual diff nawet bez checkboxow [E2E]' },
     // Metadane artefaktu z diffem — NIGDY tresc diffu (patrz komentarz przy LIMIT_DIFFU_B).
     // Poza `required`: gdy packager ich nie zwroci, mapa dziala jak dotad (fail-open), zamiast
     // wywalic caly obiekt kontekstu na walidacji schematu i stracic rowniez flagi routingu.
@@ -361,7 +364,11 @@ zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam g
 5. Policz \`e2eCheckboxy\`: niezaznaczone checkboxy \`[E2E]\` fazy ${faza} w ${sciezka}/*-zadania.md — z OBU prefiksow
    (\`Test: [E2E] ...\` ORAZ \`Weryfikacja: [E2E] ...\`; grep \`^- \\[ \\].*\\[E2E\\]\` z wykluczeniem kopii \`Operator:\` i pozycji findingow \`[P1]/[P2]/[P3]\` z "Do poprawy"). To scenariusze wymagajace
    przegladarki (agent-browser). CLI (\`test\`/\`typecheck\`/\`grep\`) i \`[Manual]\` nie licz.
-Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, diffPlik, diffZapisany, diffUciety}.`
+6. Ustal \`figmaScreens\`: w ${sciezka}/*-kontekst.md, sekcja "Designerski kontekst", pole \`figma_screens\`.
+   true tylko wtedy, gdy pole istnieje i ma co najmniej jeden wpis ekran -> sciezka mockupu; puste/null/brak = false.
+   To DRUGA praca testera obok checkboxow: visual diff z makietami odpala sie z tego pola, nie z checkboxa,
+   wiec bez tej flagi faza z makietami a bez \`[E2E]\` stracilaby porownanie z mockupem.
+Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, figmaScreens, diffPlik, diffZapisany, diffUciety}.`
 }
 
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, semantyka) {
@@ -635,9 +642,18 @@ const WARUNKI = {
   typescript: (w) => w.typowanie,
 }
 const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy))
-// E2E ma druga, niezalezna furtke: nawet gdy packager pomyli sie na `ui`, faza z checkboxem [E2E]
-// (Test: lub Weryfikacja:) zawsze dostaje testera (inaczej scribe odznaczylby go bez przebiegu).
-const domenaE2E = !warstwy || warstwy.ui || e2eCheckboxy > 0
+// Liczba checkboxow [E2E] pochodzi z packagera; gdy packager padl (null) liczba jest NIEZNANA, nie zero —
+// bramkowanie retry/STOP licznikiem zamienialoby awarie dwoch agentow (529/watchdog) w cicha degradacje.
+const e2eLiczbaZnana = !!(kontekst && Number.isInteger(kontekst.e2eCheckboxy))
+// Flaga `figmaScreens` jest poza `required` schematu — starszy/padniety packager jej nie zwroci i wtedy
+// dzialamy jak dotad (fail-open ponizej po `warstwy.ui`).
+const figmaScreens = !!(kontekst && kontekst.figmaScreens)
+// Do 2026-09-02 warunkiem bylo `warstwy.ui`, czyli KAZDA faza dotykajaca prezentacji budzila testera —
+// takze taka, ktora nie ma ani jednego scenariusza do odegrania. W telemetrii: 10 z 18 uruchomien testera
+// szlo w tryb `przegladarka` przy `e2eCheckboxy: 0`. Teraz decyduje POLICZONA praca: checkboxy [E2E] albo
+// makiety Figmy do visual diffu (feature-tester-e2e §3.5 wisi na `figma_screens`, nie na checkboxie).
+// Gdy packager padl i liczba jest NIEZNANA, wracamy do `warstwy.ui` — bez faktow nie wycinamy testera.
+const domenaE2E = !warstwy || (e2eLiczbaZnana ? (e2eCheckboxy > 0 || figmaScreens) : warstwy.ui)
 // Tryb testera E2E (2026-07-30) — trzy stany zamiast wlacz/wylacz. Domena decyduje, CZY tester ma co robic;
 // status srodowiska decyduje, CZYM moze to robic. Obserwacja z runu rownolegle-joby (faza 1): tester
 // przywolany bez srodowiska (e2eSrodowisko: "pominieto") dal 1 passed / 1 failed / 3 skipped — czesc tej
@@ -650,7 +666,7 @@ const e2eTryb = !domenaE2E
   : (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-przegladarki' : 'przegladarka'
 const pominieci = [
   ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: 'domena nieobecna w mapie zmian fazy' })),
-  ...(e2eTryb === 'pominiety' ? [{ key: 'e2e', powod: `brak warstwy UI i zero checkboxow [E2E] (${e2eCheckboxy})` }] : []),
+  ...(e2eTryb === 'pominiety' ? [{ key: 'e2e', powod: `zero checkboxow [E2E] (${e2eCheckboxy}) i brak makiet figma_screens${e2eLiczbaZnana ? '' : ' — liczba nieznana, decydowal brak warstwy UI'}` }] : []),
 ]
 if (pominieci.length) log(`Routing v2: pomijam ${pominieci.map((p) => p.key).join(', ')} (${plikiFazy.length} plikow, ${plikiKodu} kodu)`)
 else log(`Routing v2: pelny sklad (${plikiFazy.length} plikow${warstwy ? '' : ', brak flag warstw — fail-open'})`)
@@ -671,9 +687,7 @@ const wyniki = await parallel(thunki)
 // jeden retry (jak env-up w autopilocie), a po drugim nullu twarda flaga e2eTesterFail dla orkiestratora.
 const e2eAktywny = e2eTryb !== 'pominiety'
 const indeksE2e = e2eAktywny ? thunki.length - 1 : -1
-// Liczba checkboxow [E2E] pochodzi z packagera; gdy packager padl (null) liczba jest NIEZNANA, nie zero —
-// bramkowanie retry/STOP licznikiem zamienialoby awarie dwoch agentow (529/watchdog) w cicha degradacje.
-const e2eLiczbaZnana = !!(kontekst && Number.isInteger(kontekst.e2eCheckboxy))
+// `e2eLiczbaZnana` policzone wyzej przy routingu (ten sam fakt: czy packager podal liczbe checkboxow).
 const e2eMozeMiecCheckboxy = e2eCheckboxy > 0 || !e2eLiczbaZnana
 // Wynik "wykonany, ale bez ani jednego przebiegu" przy checkboxach [E2E] jest rownowazny nullowi: tester nie
 // dowiodl niczego (przerwany po preflighcie, zapomnial raportowac) — bez retry cala faza spadlaby do OPERATOR.
@@ -938,6 +952,7 @@ const przebieg = {
   plikiKodu,
   warstwy,
   e2eCheckboxy,
+  figmaScreens,
   e2eTryb,
   aktywni: [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])],
   pominieci,
