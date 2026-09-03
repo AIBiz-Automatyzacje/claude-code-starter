@@ -422,12 +422,27 @@ Dla każdego unitu dołącz:
 - **Pliki** — dokładne ścieżki plików do stworzenia, modyfikacji lub testowania
 - **Delegate to** — subagent wykonujący ten unit (`feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`). Reguła decyzyjna w sekcji 3.5.
 - **Skills in play** — lista skilli aktywnych podczas implementacji (mirror frontmatter `skills:` wybranego subagenta). Dokumentacyjne, dla czytelności planu.
-- **Podejście** — kluczowe decyzje, przepływ danych, granice komponentów lub notatki integracyjne
+- **Podejście** — kluczowe decyzje, przepływ danych, granice komponentów lub notatki integracyjne. Odwołania do decyzji z planu zapisuj razem z ich treścią (patrz blok pod listą)
 - **Notatka wykonawcza** — opcjonalna, tylko gdy unit korzysta z niestandardowej postawy wykonawczej jak test-first lub characterization-first
+- **Teksty (verbatim)** *(opcjonalne — obowiązkowe, gdy unit renderuje zatwierdzone treści)* — etykiety, nagłówki i komunikaty przepisane **dosłownie**, nie przez odwołanie do punktu checklisty
 - **Wzorce do naśladowania** — istniejący kod lub konwencje do odwzorowania
 - **Scenariusze testowe** — konkretne zachowania, edge cases i ścieżki awarii do pokrycia. Rozróżniaj typy: `[Unit]` dla testów kodu, `[E2E]` dla scenariuszy do weryfikacji w przeglądarce przez `/agent-browser`, `[Manual]` dla pojedynczych testów wymagających człowieka (np. weryfikacja na fizycznym urządzeniu)
 - **Weryfikacja** — wyłącznie **automatyzowalne** kryteria PASS/FAIL: komenda CLI (typecheck/test/lint/grep) **lub** runner E2E niebędący scenariuszem (np. skrypt `e2e/<etap>-run-all.sh`); scenariusze E2E idą do „Scenariusze testowe" jako `[E2E]`, nie tutaj. Każdy checkbox `Weryfikacja:` musi być możliwy do domknięcia bez udziału człowieka, wyrażony jako oczekiwany wynik a nie literalny skrypt komend shellowych. Powód: `/dev-docs-review` automatycznie odznacza `Weryfikacja:` po PASS — checkbox nieautomatyzowalny pozostanie wiecznie `[ ]` i zafałszuje raport postępu. Jeśli kryterium wymaga człowieka — przenieś do `Operator checklist` lub do `Scenariusze testowe` jako `[Manual]`. Scenariusze E2E żyją w „Scenariusze testowe" jako `[E2E] \`<flow>\` — …` (jedna linia per scenariusz — patrz 3.4b); w `Weryfikacja:` marker `[E2E]` tylko dla runnera niebędącego scenariuszem — nigdy druga linia dla tego samego flow (parsery autopilota liczą linie `[E2E]` jako osobne przebiegi i dopasowują po nazwie flow)
 - **Operator checklist** *(opcjonalne)* — kroki wymagające człowieka (manual test na urządzeniu, weryfikacja przez QA, akceptacja designera). Są celowo poza automatyzacją autopilota — operator zaznacza je ręcznie po wykonaniu. Pomiń sekcję jeśli IU nie ma takich kroków
+
+**Odwołanie do decyzji zawsze niesie jej treść.** Jednostka implementacyjna trafia do buildera jako
+osobny prompt, w osobnym kontekście — builder nie ma przed sobą planu i nie może „zajrzeć wyżej".
+Odwołanie w postaci samego identyfikatora („strażnik regresji D2", „zgodnie z decyzją D7") jest dla niego
+pustym stringiem. Udokumentowany skutek: builder fazy 6 sam wyszukał plik checklisty i zostawił o tym
+komentarz w kodzie (`cta-section.ts:26`) — czyli zrobił robotę plannera, w połowie ślepo.
+
+- Przy **każdym** odwołaniu do decyzji dopisz **jedno zdanie jej treści** w nawiasie:
+  `strażnik regresji D2 (przy zmianie CTA nie ruszamy istniejącego trackingu — nowy event, nie modyfikacja)`.
+  Identyfikator zostaje — jest kotwicą do planu; zdanie sprawia, że jednostka jest samowystarczalna.
+- Zatwierdzone **teksty widoczne dla użytkownika** (etykiety przycisków, nagłówki, komunikaty błędów)
+  wklejaj do jednostki **dosłownie**, w bloku `**Teksty (verbatim):**`. Nigdy przez odwołanie do numeru
+  punktu checklisty („teksty verbatim z sekcji 3.1") — builder wpisze wtedy własną wersję albo pójdzie
+  szukać pliku, a `spec-compliance-reviewer` zgłosi rozjazd z zamówieniem jako P2.
 
 Każdy feature-bearing unit powinien zawierać ścieżkę pliku testowego w `**Pliki:**`. Dla unitów modyfikujących komponenty UI lub ścieżki użytkownika — dołącz scenariusze `[E2E]` opisujące flow do przetestowania przez `/agent-browser` (otwórz URL, zrób snapshot, kliknij X, sprawdź Y, zrób screenshot).
 

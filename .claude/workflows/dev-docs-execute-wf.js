@@ -141,7 +141,15 @@ Referencja metodologii: przeczytaj .claude/skills/dev-docs-execute/SKILL.md sekc
    Jesli ktorykolwiek IU dodaje nowa zaleznosc (biblioteka, config vite/vitest) — preferuj serial:
    rownolegle zimne vitesty po inwalidacji cache duplikuja ~16-min prace i ryzykuja watchdog-kill.
 5. Dla kazdego IU zbuduj KOMPLETNY prompt builderowi:
-   - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Wzorce, Scenariusze testowe, Weryfikacja)
+   - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Teksty (verbatim), Wzorce, Scenariusze testowe, Weryfikacja)
+   - DOMKNIJ ODWOLANIA DO DECYZJI. Builder pracuje w OSOBNYM kontekscie i nie widzi planu: odwolanie
+     w rodzaju "straznik regresji D2" albo "zgodnie z decyzja D7" jest dla niego pustym stringiem.
+     Dla KAZDEGO takiego odwolania w jednostce znajdz jego definicje w sekcji kluczowych decyzji planu
+     technicznego i SKOPIUJ ja do promptu jako blok "Decyzje przywolane przez to IU:" (identyfikator + tresc).
+     Udokumentowany skutek pominiecia: builder fazy 6 sam wyszukiwal plik checklisty i zostawil o tym
+     komentarz w kodzie (cta-section.ts:26) — robil prace plannera, w polowie slepo.
+     Podobnie z tekstami: gdy jednostka odsyla do "tekstow verbatim z sekcji X", wklej te teksty DOSLOWNIE.
+     Nie streszczaj i nie parafrazuj — tekst widoczny dla uzytkownika inny niz zatwierdzony to finding P2.
    - sciezka zadania ${sciezka} + numer IU
    - dla feature-builder-ui|fullstack: doklej "Mandatory designerski kontekst" z sekcji "Designerski kontekst"
      w ${sciezka}/*-kontekst.md (DESIGN.md, SPEC.md, screeny). Dla -data pomijaj.
