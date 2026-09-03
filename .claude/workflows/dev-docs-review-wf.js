@@ -634,7 +634,7 @@ function przebiegBlok(p) {
 // (2026-07-30). W trybie `bez-przegladarki` tester JEST w `aktywni`, ale przegladarki nie tknal — warunek
 // "tester nie odpalil" przepuscilby wtedy scribe'a do odznaczania browserowych checkboxow bez zadnego
 // przebiegu, cicho kasujac gwarancje z poprzedniego audytu. Pytanie jest wiec "czy tester MIAL PRZEGLADARKE".
-function scribePrompt(sciezka, faza, potwierdzone, przebieg) {
+function scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone) {
   return `Jestes scribe review fazy ${faza} w ${sciezka}. Otrzymujesz ZWERYFIKOWANE findings (po adversarial verify).
 
 Findings (JSON):
@@ -643,9 +643,20 @@ ${JSON.stringify(potwierdzone, null, 2)}
 Przebiegi E2E testera (JSON; JEDYNY dowod PASS — tester: ${przebieg.e2eStatus}):
 ${JSON.stringify(przebieg.e2ePrzebiegi || [], null, 2)}
 
+Findingi OBALONE przez adversarial verify (JSON; NIE sa do naprawy — same do raportu):
+${JSON.stringify(obalone || [], null, 2)}
+
 Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7.
 
 1. Zapisz ${sciezka}/review-faza-${faza}.md — pelny raport (findings posortowane P1->P2->P3, statystyki).
+1b. W tym samym raporcie, PO liscie findingow a PRZED blokiem "## Przebieg review" z punktu 7
+   (ten blok musi zostac OSTATNI — po nim orkiestrator poznaje, ze zapis sie domknal),
+   dopisz sekcje "## Obalone przez verify (nie do naprawy)"
+   z listy obalonych powyzej — JEDNA linia na finding: \`- [severity/typ] plik — opis · obalone: powodObalenia (zrodlo: X)\`.
+   Pusta lista => sekcja z jedna linia "Brak — kazdy weryfikowany finding przetrwal probe obalenia."
+   Te pozycje NIE ida do ${sciezka}/*-zadania.md ani do zadnej sekcji z checkboxami: to nie sa zadania,
+   tylko slad po pracy sceptykow. Po kilku zadaniach da sie porownac te liste z uwagami zewnetrznego
+   reviewera i dopiero wtedy ocenic, czy trzej sceptycy dla P1 sa warci swojej ceny.
 2. Zaktualizuj ${sciezka}/*-zadania.md: dodaj/uzupelnij sekcje "## Do poprawy po review fazy ${faza}"
    — wylistuj findingi typu KOD/TEST/E2E o severity P1 i P2 ORAZ findingi P3 typu KOD/TEST,
    jako checkbox: "- [ ] 🔴/🟠/🟡 [severity] **plik:linia** — opis".
@@ -1096,6 +1107,9 @@ function domknijWerdykty(f, glosy) {
   if (glosy.length === 0) {
     return { ...f, potwierdzony: true, opis: `[NIEZWERYFIKOWANY — 0 glosow sceptykow] ${f.opis}` }
   }
+  // Uzasadnienia sceptykow zostaja przy findingu (pole wewnetrzne, jak _zrodlo) — potrzebne do sekcji
+  // "Obalone przez verify" w raporcie (plan B11). Dane sa juz w pamieci procesu, koszt zerowy.
+  const _uzasadnienie = glosy.map((v) => v.uzasadnienie).filter(Boolean).join(' | ')
   const realne = glosy.filter((v) => v.realny).length
   // potwierdzony gdy wiekszosc sceptykow NIE zdolala obalic
   const potwierdzony = realne >= Math.ceil(glosy.length / 2)
@@ -1113,11 +1127,11 @@ function domknijWerdykty(f, glosy) {
   if (glosy.length === 1) {
     const sugestia = najczestsza && najczestsza !== f.severity
     if (sugestia) severityKorektyOdrzucone++
-    return { ...f, potwierdzony, opis: sugestia ? `${f.opis} [sceptyk sugeruje ${najczestsza}]` : f.opis }
+    return { ...f, potwierdzony, _uzasadnienie, opis: sugestia ? `${f.opis} [sceptyk sugeruje ${najczestsza}]` : f.opis }
   }
   const severity = ileGlosow > glosy.length / 2 ? najczestsza : f.severity
   if (severity !== f.severity) severityKorektyPrzyjete++
-  return { ...f, potwierdzony, severity }
+  return { ...f, potwierdzony, severity, _uzasadnienie }
 }
 
 // Grupowanie P2 po SCIEZCE pliku (bez numeru linii) w porcje po maks `maks`. Dwa findingi w tym samym
@@ -1196,7 +1210,18 @@ if (grupyP2.length) {
 }
 const zweryfikowane = [...p1Zweryfikowane, ...p2Zweryfikowane]
 
-const potwierdzoneKod = zweryfikowane.filter(Boolean).filter((f) => f.potwierdzony).map(({ potwierdzony, ...f }) => f)
+const potwierdzoneKod = zweryfikowane.filter(Boolean).filter((f) => f.potwierdzony).map(({ potwierdzony, _uzasadnienie, ...f }) => f)
+// OBALONE (plan B11). Dotad znikaly bez sladu: sceptyk je zabijal, a w raporcie nie zostawalo nic —
+// nie dalo sie ocenic, czy verify obala szum, czy realne findingi. Ida WYLACZNIE do raportu review,
+// nigdy do pliku zadan (to nie sa zadania). Koszt zerowy: dane sa juz w pamieci procesu.
+const obalone = zweryfikowane.filter(Boolean).filter((f) => !f.potwierdzony).map((f) => ({
+  severity: f.severity,
+  typ: f.typ,
+  plik: f.plik,
+  opis: f.opis,
+  zrodlo: f._zrodlo,
+  powodObalenia: f._uzasadnienie || '(sceptyk nie podal uzasadnienia)',
+}))
 const potwierdzone = [
   ...potwierdzoneKod,
   ...e2eBezVerify,
@@ -1243,13 +1268,13 @@ const przebieg = {
 
 // Faza 3: scribe zapisuje raport + bookkeeping + liczy severity gate
 phase('Zapis')
-let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
+let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
 if (!wynik) {
   // Scribe padl — jedna ponowna proba (to JEDYNY agent zapisujacy review-faza-N.md i sekcje
   // "Do poprawy"; bez tych artefaktow fix dziala bez kontekstu, a czlowiek bez widoku).
   log(`Scribe fazy ${faza} padl — ponawiam raz`)
   wynik = await agent(
-    `${scribePrompt(sciezka, faza, potwierdzone, przebieg)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
+    `${scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
     { schema: REVIEW_RESULT, label: `scribe:faza-${faza}:retry` }
   )
 }
