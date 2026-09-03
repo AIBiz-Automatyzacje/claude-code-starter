@@ -736,11 +736,22 @@ if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZna
 // detekcja przestanie dzialac po cichu — dlatego to UZUPELNIENIE normalnej klasyfikacji, nie jej
 // zamiennik. Finding nierozpoznany dalej idzie zwykla sciezka P2/OPERATOR (stan sprzed tej zmiany).
 // Tester E2E ma nakaz cytowania DOSLOWNYCH komunikatow (patrz e2ePrompt) — parafraza nie uruchomi detekcji.
+// Gole `getaddrinfo` USUNIETE z drugiego wzorca (audyt 2026-09-02, finding A1). Nazwa wywolania systemowego
+// wystepuje w NORMALNYM opisie defektu kodu — realny P2 z oferty-online brzmial "`resolveWebhookTarget`
+// (a w nim `dns.lookup`) jest awaitowane PRZED utworzeniem AbortSignal.timeout, a `dns.lookup`/`getaddrinfo`
+// nie ma wlasnego limitu" i zatrzymywal run jako "bloker srodowiska", choc opisywal brak timeoutu w kodzie.
+// Zostaje wylacznie `getaddrinfo` ZLACZONE z kodem bledu (tak brzmi realny komunikat runtime).
 const SYGNATURY_BLOKERA = [
   { re: /err_connection_refused|econnrefused|net::err_connection|connection refused|(localhost|127\.0\.0\.1):\d+[^\n]{0,60}\b(refused|unreachable|timed out|nie odpowiada)/i, klasa: 'dev-server-nieosiagalny' },
-  { re: /err_name_not_resolved|enotfound|getaddrinfo|could not resolve host/i, klasa: 'host-nierozwiazywalny' },
+  { re: /err_name_not_resolved|\benotfound\b|\beai_again\b|getaddrinfo\s+(enotfound|eai_again|eai_fail)|could not resolve host/i, klasa: 'host-nierozwiazywalny' },
 ]
-function wykryjBlokerSrodowiska(findingi) {
+// `przebiegiTestera` to trzeci filtr obok sygnatury i zrodla (audyt 2026-09-02, finding A1): bloker
+// srodowiska objawia sie PADNIETYM scenariuszem. Gdy tester nie ma ani jednego wpisu FAIL/SKIP, sygnatura
+// w opisie jest cytatem z kodu albo dywagacja, nie awaria — i nie ma powodu zatrzymywac calego runu.
+function wykryjBlokerSrodowiska(findingi, przebiegiTestera) {
+  const maNieudanyPrzebieg = Array.isArray(przebiegiTestera)
+    && przebiegiTestera.some((p) => p && (p.wynik === 'FAIL' || p.wynik === 'SKIP'))
+  if (!maNieudanyPrzebieg) return null
   for (const f of findingi) {
     const tekst = `${f.opis || ''} ${f.plik || ''}`
     for (const s of SYGNATURY_BLOKERA) {
@@ -755,7 +766,12 @@ function wykryjBlokerSrodowiska(findingi) {
 // bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
 const etykietyZrodel = [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
 const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
-const blokerSrodowiska = wykryjBlokerSrodowiska(wszystkie)
+// Wejscie zawezone do findingow TESTERA (audyt 2026-09-02, finding A1): sygnatura w opisie reviewera kodu
+// mowi o kodzie, nie o srodowisku. I tylko w trybie `przegladarka` — w `bez-przegladarki` odmowa polaczenia
+// z curla jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria uzasadniajaca STOP runu.
+const blokerSrodowiska = e2eTryb === 'przegladarka'
+  ? wykryjBlokerSrodowiska(wszystkie.filter((f) => f._zrodlo === 'e2e'), e2ePrzebiegi)
+  : null
 if (blokerSrodowiska) {
   log(`BLOKER SRODOWISKA wykryty po sygnaturze (${blokerSrodowiska.klasa}) — orkiestrator zatrzyma run zamiast ciagnac kolejne fazy na zepsutym srodowisku`)
 }
