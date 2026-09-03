@@ -906,6 +906,11 @@ if (p3Odrzucone) {
 // Verify bylo 55% calego runu (dane wf_ed163076: 114/208 agentow). 3x na kazdy P2 to nadmiar —
 // P2 nie blokuje merge'a, wystarczy jeden glos czy realny.
 const liczbaSceptykow = (f) => (f.severity === 'P1' ? 3 : 1)
+// Ile razy sceptycy w ogole ruszaja severity: `przyjete` = korekta zgodnej wiekszosci (>=2 glosy),
+// `odrzucone` = sugestia pojedynczego glosu, ktora poszla do opisu zamiast do severity. Drugi licznik
+// mowi, ile P2 bylo o krok od przeklasyfikowania przez jeden glos — bez niego zmiana z A7 jest niewidoczna.
+let severityKorektyPrzyjete = 0
+let severityKorektyOdrzucone = 0
 const zweryfikowane = await parallel(
   doWeryfikacji.map((f) => () =>
     parallel(
@@ -926,11 +931,22 @@ const zweryfikowane = await parallel(
       const potwierdzony = realne >= Math.ceil(glosy.length / 2)
       // Korekta severity tylko gdy zgodna WIEKSZOSC glosujacych ja proponuje — pojedynczy glos
       // nie moze zdegradowac P1 (ominalby twardy STOP) ani awansowac P2.
+      //
+      // Przy JEDNYM glosie "wiekszosc" jest pojeciem pustym: `1 > 0.5` przepuszczalo korekte kazdego
+      // pojedynczego sceptyka, a P2 ma z definicji dokladnie jednego (liczbaSceptykow wyzej) — wiec
+      // regula z komentarza nie obowiazywala dla ZADNEGO findingu waznego (audyt 2026-09-02, A7).
+      // Teraz sugestia jednego glosu idzie do OPISU, gdzie widzi ja fix i czlowiek, a severity zostaje.
       const korekty = glosy.map((v) => v.severityKorekta).filter(Boolean)
       const zliczone = {}
       for (const k of korekty) zliczone[k] = (zliczone[k] || 0) + 1
       const [najczestsza, ileGlosow] = Object.entries(zliczone).sort((a, b) => b[1] - a[1])[0] || [null, 0]
+      if (glosy.length === 1) {
+        const sugestia = najczestsza && najczestsza !== f.severity
+        if (sugestia) severityKorektyOdrzucone++
+        return { ...f, potwierdzony, opis: sugestia ? `${f.opis} [sceptyk sugeruje ${najczestsza}]` : f.opis }
+      }
       const severity = ileGlosow > glosy.length / 2 ? najczestsza : f.severity
+      if (severity !== f.severity) severityKorektyPrzyjete++
       return { ...f, potwierdzony, severity }
     })
   )
@@ -962,6 +978,7 @@ const przebieg = {
   p3Odrzucone,
   weryfikowane: doWeryfikacji.length,
   obalone: doWeryfikacji.length - potwierdzoneKod.length,
+  severityKorekty: { przyjete: severityKorektyPrzyjete, odrzucone: severityKorektyOdrzucone },
   e2eWykonany,
   e2eTesterFail,
   e2eRetry,
