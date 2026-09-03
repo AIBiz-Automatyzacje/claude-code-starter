@@ -13,9 +13,18 @@ Przed aktualizacją dokumentacji:
 
 1. **Zapisz aktualny branch:** `git branch --show-current`
 2. **Sprawdź niezacommitowane zmiany:** `git status --short`
-3. **Jeśli są zmiany — wykonaj commit WIP:**
+3. **Jeśli są zmiany — wykonaj commit WIP.** Nigdy `git add .` ani `git add -A`: commit WIP powstaje
+   w środku pracy, więc w drzewie leżą wtedy artefakty runów, logi, `.env` i pliki cudzych zadań.
+   Dwa kroki, oba jawne:
 ```bash
-   git add .
+   git add -u                        # tylko pliki JUŻ śledzone — nic nowego nie wchodzi po cichu
+   git status --short                # pozostaną wiersze `??` = pliki nieśledzone
+```
+   Każdy plik `??` rozpatrz **osobno** i dodaj jawną ścieżką (`git add <ścieżka>`) tylko wtedy, gdy
+   należy do tego zadania i ma być w repo. Nie dodawaj: `.env*`, plików z `/tmp`, logów, zrzutów diffu,
+   artefaktów narzędzi, plików innego zadania. Czego nie dodajesz — wypisz w podsumowaniu, żeby operator
+   wiedział, że zostały poza commitem.
+```bash
    git commit -m "wip([nazwa-zadania]): stan przed resetem kontekstu"
 ```
 4. **Zapisz hash ostatniego commita:** `git rev-parse --short HEAD`
