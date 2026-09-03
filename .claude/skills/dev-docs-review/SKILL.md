@@ -20,7 +20,7 @@ Po zakończeniu workflow streść użytkownikowi wynik: severity gate (BLOKUJE /
 
 **NIE wykonuj procedury ręcznie** — mechanika (routing reviewerów + adversarial verify / delegacja IU do builderów) żyje w workflow; sekcje referencyjne poniżej są używane PRZEZ workflow, nie przez Ciebie.
 
-Skład reviewerów ustala **routing domenowy** (workflow, nie Ty): rdzeń — `security`, `spec-compliance`, `simplicity`, `test-coverage` — odpala się zawsze; `performance`, `architecture`, `typescript` i `e2e` tylko gdy ich domena jest w fazie obecna (flagi warstw od context-packagera). Brak flag = pełny skład (fail-open). Kogo pominięto, widać w sekcji `## Przebieg review` raportu.
+Skład reviewerów ustala **routing domenowy** (workflow, nie Ty): rdzeń — `security`, `spec-compliance`, `test-coverage` — odpala się zawsze; `performance`, `code-quality`, `correctness` i `e2e` tylko gdy ich domena jest w fazie obecna (flagi warstw od context-packagera). Brak flag = pełny skład (fail-open). Kogo pominięto, widać w sekcji `## Przebieg review` raportu.
 
 ### 1. Walidacja
 - Sprawdź czy folder `$1/` istnieje
