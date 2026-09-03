@@ -1,9 +1,9 @@
 export const meta = {
   name: 'dev-docs-review-wf',
-  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/simplicity/test zawsze; perf/architektura/typescript/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 8 reviewerow rownolegle (tester E2E zwraca przebiegi[] per checkbox [E2E]) -> dedup 2-przebiegowy (JS + semantyczny haiku) -> detekcja blokera srodowiska po sygnaturze (JS) + globalny limit P3 po dedupie (round-robin po zrodle) -> adversarial verify P1/P2 (P1=3 niezaleznych sceptykow z konsensusem 2/3; P2 batchowane po pliku, jeden sceptyk na grupe do 4 findingow; findingi E2E testera i OPERATOR poza verify) -> scribe zapisuje raport + sekcje "Przebieg review" + bookkeeping checkboxow Weryfikacja:/Test: [E2E] (odznaczanie WYLACZNIE z wpisu PASS) -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii oraz blokerSrodowiska i e2eTesterFail dla orkiestratora.',
+  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/test zawsze; perf/code-quality/correctness/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 7 reviewerow rownolegle (tester E2E zwraca przebiegi[] per checkbox [E2E]) -> dedup 2-przebiegowy (JS + semantyczny haiku) -> detekcja blokera srodowiska po sygnaturze (JS) + globalny limit P3 po dedupie (round-robin po zrodle) -> adversarial verify P1/P2 (P1=3 niezaleznych sceptykow z konsensusem 2/3; P2 batchowane po pliku, jeden sceptyk na grupe do 4 findingow; findingi E2E testera i OPERATOR poza verify) -> scribe zapisuje raport + sekcje "Przebieg review" + bookkeeping checkboxow Weryfikacja:/Test: [E2E] (odznaczanie WYLACZNIE z wpisu PASS) -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii oraz blokerSrodowiska i e2eTesterFail dla orkiestratora.',
   whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
   phases: [
-    { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 8, w tym spec-compliance i simplicity/YAGNI)' },
+    { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 7: security, performance, code-quality, correctness, spec-compliance, test-coverage, e2e)' },
     { title: 'Verify', detail: 'adversarial verify: P1 = 3 sceptykow (2/3), P2 = jeden sceptyk na grupe findingow z tego samego pliku' },
     { title: 'Zapis', detail: 'raport + bookkeeping + severity gate' },
   ],
@@ -111,7 +111,7 @@ wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem 
 === KONIEC BLOKU SEMANTYKI ===`
 
 // Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec przy
-// 8 reviewerach agregat i tak dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz
+// 8 reviewerach (dzis 7 — patrz konsolidacja B12) agregat i tak dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz
 // przy 1 P1 i 17 P2 realnie naprawionych). P3 nie wchodza do petli naprawczej (otwartePoReview filtruje
 // P1|P2), wiec ponad limit placimy juz tylko za prompt scribe'a i objetosc raportu.
 // Prog PODNIESIONY 8 -> 15 (2026-09-03, plan B1). Osiem bylo progiem dla nitow, ktorych NIKT nie
@@ -347,15 +347,25 @@ const KONTEKST = {
 
 // ── Reviewerzy (leaf-agenci przez agentType) ───────────────────────────────
 
+// KONSOLIDACJA 2026-09-03 (plan B12) — najbardziej ryzykowna zmiana z calej rundy.
+// `architecture`, `simplicity` i `typescript` byly trzema osobnymi wejsciami w te sama warstwe: jakosc
+// wewnetrzna kodu. Kazdy z nich czytal ten sam diff i kazdy placil za wlasne wejscie w te same pliki,
+// a ich findingi regularnie laczyl dopiero dedup semantyczny. Zwolnione miejsce oddajemy osi, ktorej
+// w zestawie NIE BYLO: POPRAWNOSCI. Osiem par oczu ogladalo strukture, typy, spec i bezpieczenstwo,
+// ale nikt nie mial wprost zadania "przesledz wykonanie zmienionych sciezek i znajdz defekt, ktory tam jest".
+//
+// WARUNEK ODWROTU (mierz przez 5 faz, zanim uznasz zmiane za dobra): `przebieg.poDedupSem` oraz liczba
+// POTWIERDZONYCH P1/P2 typu KOD. Jesli liczba potwierdzonych spadnie — rozdziel z powrotem na trzech
+// reviewerow (przywroc wpisy `architecture`/`simplicity`/`typescript` i ich warunki routingu z WARUNKI).
+// Spadek samego `poDedupSem` bez spadku potwierdzonych to sukces, nie regresja: mniej duplikatow.
 const REVIEWERZY = [
   { key: 'security', agentType: 'security-sentinel', fokus: 'auth, RLS policies, XSS, data exposure, Zod validation, API key exposure' },
   { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, memoization, useEffect cleanup' },
-  { key: 'architecture', agentType: 'architecture-strategist', fokus: 'SOLID, wzorce, nazewnictwo, import organization, granice warstw' },
-  { key: 'typescript', agentType: 'kieran-typescript-reviewer', fokus: 'type safety, brak any/as/!, discriminated unions, explicit return types' },
+  { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych' },
+  { key: 'correctness', agentType: 'general-purpose', fokus: 'POPRAWNOSC WYKONANIA — jedyna os, ktorej nikt inny nie ma. Nie oceniasz stylu, struktury ani typow: masz ZNALEZC DEFEKT, ktory w tym kodzie JEST. Procedura: wypisz sciezki wykonania zmienione w tej fazie (kazda galaz warunku, kazda petla, kazda sciezka bledu), potem przejdz KAZDA z nich krok po kroku na konkretnych danych wejsciowych — wartosc graniczna, pusta kolekcja, null, wartosc spoza zakresu, dwa rownolegle wywolania, przerwanie w polowie. Szukaj: off-by-one, odwrocony warunek, brakujaca galaz else, stan czytany przed zapisem, wyscig miedzy async operacjami, cleanup ktory nie odpala, wartosc uzyta po zmianie znaczenia. Kazdy finding MUSI miec scenariusz awarii: konkretne wejscie -> co sie stanie -> dlaczego to zle. Bez takiego scenariusza to nie jest finding poprawnosci' },
   // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY
   // (spec/IU) jako punkt odniesienia; pozostali dostaja procedure posrednio przez test-coverage.
   { key: 'spec-compliance', semantyka: true, agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
-  { key: 'simplicity', agentType: 'code-simplicity-reviewer', fokus: 'YAGNI i minimalizm: zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na niemozliwe scenariusze, martwy kod, redundancja, uproszczenia bez utraty funkcji. Duplication > Complexity — prosta duplikacja jest OK, zlozona abstrakcja DRY nie' },
 ]
 
 // Blok doklejany w trybie re-review (po cyklu fix) — targetowana weryfikacja zamiast pelnego re-skanu.
@@ -778,8 +788,8 @@ const kontekst = await agent(kontekstPrompt(sciezka, faza, diffPlik, ctxPlik), z
 // Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy. Poprzedni prog "<=2 pliki" nie odpalil ani raz
 // (realne fazy: 6-15 plikow), a regexy po sciezce nie trafialy w projekty bez src/. Teraz decyduja
 // FLAGI WARSTW od packagera: reviewer odpala sie, gdy jego domena jest w fazie OBECNA.
-// Rdzen nietykalny: security (XSS/wyciek siedzi tez w "czysto UI" pliku), spec-compliance, simplicity,
-// test-coverage. Warunkowi: performance, architecture, typescript, e2e.
+// Rdzen nietykalny: security (XSS/wyciek siedzi tez w "czysto UI" pliku), spec-compliance, test-coverage.
+// Warunkowi: performance, code-quality, correctness, e2e.
 // FAIL-OPEN: brak mapy albo brak flag (packager padl) => PELNY sklad — bez faktow nie pomijamy nikogo.
 const plikiFazy = (kontekst && kontekst.pliki) || []
 const warstwy = (kontekst && kontekst.warstwy) || null
@@ -793,8 +803,13 @@ const plikiKodu = plikiFazy.filter((p) => /\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte|p
 // duze fazy niezaleznie od flagi.
 const WARUNKI = {
   performance: (w) => (w.dane && plikiKodu > 0) || plikiKodu >= 5,
-  architecture: (w) => w.nowyModul || plikiKodu >= 3,
-  typescript: (w) => w.typowanie,
+  // Warunek `code-quality` to ALTERNATYWA trzech dotychczasowych warunkow (architecture OR typescript
+  // OR simplicity). Simplicity byl w rdzeniu (zawsze aktywny), wiec formalnie ta alternatywa jest zawsze
+  // prawdziwa dla fazy z kodem — zapis zostaje jawny, zeby przy warunku odwrotu bylo widac, z czego
+  // powstal, i zeby rozdzielenie z powrotem bylo mechaniczne.
+  'code-quality': (w) => w.nowyModul || plikiKodu >= 3 || w.typowanie || plikiKodu > 0,
+  // Poprawnosc wymaga kodu do przesledzenia. Faza czysto dokumentacyjna nie ma sciezek wykonania.
+  correctness: () => plikiKodu > 0,
 }
 const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy))
 // Liczba checkboxow [E2E] pochodzi z packagera; gdy packager padl (null) liczba jest NIEZNANA, nie zero —
