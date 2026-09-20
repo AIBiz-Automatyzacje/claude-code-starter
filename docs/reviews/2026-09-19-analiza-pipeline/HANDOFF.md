@@ -219,6 +219,11 @@ Kolejność wg spodziewanego efektu. Każda ma być w raporcie z liczbą „prze
       koszyk „zawsze" z twardym limitem, walidacja frontmatteru w JS, ten sam wycinek dla reviewerów, data + źródło + licznik ucieczek per wpis,
       jednorazowa konwersja obecnych 49k zn skryptem).
     - **Higiena konta (MCP/pluginy per projekt, audyt pluginów): osobny etap po raportach**, przeprowadzony na tym projekcie, z wnioskami do szablonu.
+    - **8 zabezpieczeń learned-patterns PRZYJĘTE przez operatora** (wejście do panelu): walidacja globów przy generowaniu indeksu; zamknięty słownik
+      klas w szablonie; koszyk „zawsze" z twardym limitem w JS; walidacja frontmatteru solutions w JS (compound odmawia zapisu bez pól); ten sam wycinek
+      do reviewerów przez dossier; data + źródło + licznik ucieczek per wpis (zasila dev-pr); jednorazowa konwersja 49k zn skryptem z listą odrzutów
+      dla operatora; dopasowanie po katalogach IU, nie po nazwach plików. Plus bramka „zielony main" w bootstrapie autopilota.
+    - **ETAP 3 STARTUJE W NOWEJ SESJI** — wszystkie decyzje do etapów 3–5 są w tym pliku (6a pkt 1–17), ETAP1/1B/2 i POMIARY. Nie pytać o nie ponownie.
     - Docker i czerwone testy oferty-online: **nie są blokerem niczego teraz** — advisors zmierzymy przy wdrożeniu bramki; czerwony main to finding
       dla szablonu (bramka „zielony main" w bootstrapie autopilota), nie zadanie dla operatora w tej analizie.
 16. **Mini-run w etapie 4 (przed panelem, ~1 h, metoda markerów z pomiaru 1):** trzy pytania na jednym małym zadaniu buildera: (a) czy reguła-marker
