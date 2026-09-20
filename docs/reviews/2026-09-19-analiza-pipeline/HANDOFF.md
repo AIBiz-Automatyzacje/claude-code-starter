@@ -207,6 +207,20 @@ Kolejność wg spodziewanego efektu. Każda ma być w raporcie z liczbą „prze
       Zamiast tego: (1) `fix:kontrola` dostaje polecenia-listy correctness zawężone do diffu fixa (ten sam 1 agent, ten sam cykl); (2) builder fixa
       naprawia tylko P1/P2, P3 → known-issues/bot, zakaz zmian poza zgłoszonym miejscem (mniejszy diff = mniej nowych odkryć); (3) reszta → CodeRabbit
       w dev-pr. Miara: P1/P2 od bota w plikach dotkniętych fixami po 5 zadaniach.
+17. **Decyzje operatora 2026-09-20 (druga rozmowa po pomiarach):**
+    - **Sceptyk asymetryczny: TAK** — prompt verify: sceptyk dostaje sam zarzut (plik:linia + teza) bez uzasadnienia autora; odpowiada etykietą
+      AGREE / DISAGREE_EVIDENCE (musi wskazać linię kodu lub test) / DISAGREE_CONCERN (nie kasuje findingu, obniża wagę); dla P1 naprawa zawiera test
+      padający przed poprawką.
+    - **Struktura learned-patterns: PRZYJĘTA.** Trzy poziomy: (0) CLAUDE.md — jedna linia wskazująca indeks; (1) `docs/learned-patterns.md` — indeks
+      GENEROWANY przez dev-compound-refresh z nagłówków solutions (klasa | reguła 2 zdania | wzorce plików | waga | link), bramka rozmiaru i dedup w JS
+      przy generowaniu, nikt nie edytuje ręcznie; (2) `docs/solutions/*.md` — szczegóły, bez limitu, frontmatter z polami klasa/reguła/paths/waga
+      (jedyne źródło prawdy). Plik wychodzi z `.claude/rules/` (nie jest już ładowany eager). Orkiestrator wkleja builderowi/reviewerowi tylko wpisy
+      pasujące do plików IU; dev-plan czyta indeks w całości. Luki i zabezpieczenia: patrz odpowiedź w sesji 2026-09-20 (słownik klas, walidacja globów,
+      koszyk „zawsze" z twardym limitem, walidacja frontmatteru w JS, ten sam wycinek dla reviewerów, data + źródło + licznik ucieczek per wpis,
+      jednorazowa konwersja obecnych 49k zn skryptem).
+    - **Higiena konta (MCP/pluginy per projekt, audyt pluginów): osobny etap po raportach**, przeprowadzony na tym projekcie, z wnioskami do szablonu.
+    - Docker i czerwone testy oferty-online: **nie są blokerem niczego teraz** — advisors zmierzymy przy wdrożeniu bramki; czerwony main to finding
+      dla szablonu (bramka „zielony main" w bootstrapie autopilota), nie zadanie dla operatora w tej analizie.
 16. **Mini-run w etapie 4 (przed panelem, ~1 h, metoda markerów z pomiaru 1):** trzy pytania na jednym małym zadaniu buildera: (a) czy reguła-marker
     wklejona przez orkiestrator do promptu delegacji („każdy nowy plik zaczyna się komentarzem X") jest STOSOWANA w kodzie; (b) to samo dla reguły
     dostarczonej przez `paths:` (kontrola); (c) czy treść skilla wstrzykniętego przez `skills:` jest stosowana (marker w SKILL.md testowym), czy tylko
