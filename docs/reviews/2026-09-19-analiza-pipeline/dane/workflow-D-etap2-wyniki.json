@@ -1,0 +1,927 @@
+{
+ "research:natywne-b": {
+  "odpowiedzi": [
+   {
+    "pytanie": "Format suite: jak wygląda zestaw przypadków eval (JSON/YAML/MD)?",
+    "odpowiedz": "Suita NIE jest jednym plikiem JSON. To katalogi: <plugin>/evals/<case>/prompt.md (frontmatter: name, tags, plugins, runs, max_turns, timeout_seconds, allowed_tools, model, append_system_prompt, env; body = prompt) + <case>/graders/<nazwa>.md (frontmatter type:, body = wzorzec/rubryka). Opcjonalny case.yaml (wymaga schema_version: \"1.1\" i name) dodaje context.scaffold_script, context.history_file (odtworzenie transkryptu i ocena KOLEJNEJ tury — ważne dla reviewera), context.add_dirs. Domyślnie runs: 3, max_turns: 10, timeout_seconds: 300. Katalog evals/ zmienia --eval-dir lub \"experimental\": {\"evals\": \"...\"} w plugin.json. JSON jest po stronie WYNIKU: evals/results/<ts>/aggregate-result.json (schemaVersion, suite, cases[].arms.{with,without}[].graders[], aggregates; camelCase, additive-only) — to samo drukuje --json. Scaffold suity: claude plugin eval init (wywiad) lub init --bare <nazwa>; sam format katalogów jest ścieżką nieinteraktywną, więc agent/skrypt może pisać prompt.md + graders/*.md wprost.",
+    "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help` oraz self-test w pustym katalogu, Claude Code 2.1.278",
+    "data": "2026-09-20",
+    "status": "potwierdzone-w-docs"
+   },
+   {
+    "pytanie": "Co dokładnie jest mierzone: trafienie triggera, jakość wyjścia, tokeny?",
+    "odpowiedz": "Mierzone są wyłącznie wyniki graderów, per run, uśredniane po runs (domyślnie 3). Typy graderów: regex (pattern, flags, match: contains|not_contains|count:N, target), tool_used (tool, input_match, min/max — \"nie wolno wywołać\" = min:0,max:0), tool_order (before/after), file_exists (glob po plikach UTWORZONYCH przez agenta), llm (criteria, focus — sędzia głosuje 2 z 3, domyślnie haiku, zmiana przez --judge-model), baseline (baseline_file, criteria). (1) TRAFIENIE TRIGGERA: tak, to idiom tool_used z tool: Skill i input_match '\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?<skill>\"'. (2) JAKOŚĆ WYJŚCIA: tak — źródła danych dla gradera to last_message (domyślnie), trace (JSON per linia), files (ścieżki utworzone, nie treść), {source: file, path} (TREŚĆ pliku; obraz PNG/JPEG/GIF/WebP trafia do sędziego LLM jako obraz), mock_calls (wywołania mockowanych narzędzi MCP z inputem i odpowiedzią). Dla długich artefaktów rekomendowane są gradery deterministyczne — sędzia LLM szumi na długich wejściach. (3) TOKENY: NIE ma gradera ani pola na tokeny/koszt kontekstu. Jest tylko budżet wykonania --max-cost-usd (twardy sufit, sprawdzany przed startem każdego runu, przekroczenie = exit 2, partialReason: cost_ceiling) — czyli koszt jest limitowany, nie raportowany jako metryka. Do kosztu kontekstu skilli służy osobne /skill-doctor: raport użycia i kosztu kontekstu per skill (koszt listingu, tokeny/użycia z 7 dni, ostrzeżenia o nigdy niewywołanych skillach, nieużywane pluginy); interaktywnie otwiera zakładkę Stats managera pluginów (to samo co /plugin stats), a w -p / Remote Control / sesjach w tle drukuje raport tekstem. Bez argumentów, to NIE jest linter (strukturę sprawdza claude plugin validate <path>).",
+    "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help`, Claude Code 2.1.278",
+    "data": "2026-09-20",
+    "status": "potwierdzone-w-docs"
+   },
+   {
+    "pytanie": "Czy da się uruchomić w CI?",
+    "odpowiedz": "Tak, jest to wprost przewidziany scenariusz. Klucze: --trust-plugin (pierwszy run w niezaufanym katalogu pluginu normalnie pyta \"Trust this plugin directory? [y/N]\" i BEZ terminala, pod --json i w CI jest odrzucany — ten flag odpowiada za operatora, opis w --help: \"--trust-plugin answers for CI\"), --json [plik] (pełny wynik na stdout lub do pliku; runy z --json są ciche — stderr zostawia tylko błędy ładowania i notki), --threshold 0..1 (domyślnie 1.0). Kody wyjścia: 0 = wszystkie case'y >= progu; 1 = poniżej progu / błąd ładowania / brak case'ów / zły argument / run, którego nie dało się wystartować; 2 = częściowy (sufit kosztu albo odrzucone poświadczenie, partialReason cost_ceiling/auth_failed); 130 przerwane; 143 zabite. Dostępność: GA, bez flagi włączającej, na każdym dostawcy (first-party, Bedrock/Vertex/Foundry, gateway, telemetria wyłączona, runnery CI). Bramki do pamiętania: Bash/Write/Edit/WebFetch/WebSearch/mcp__* wymagają --allow-tools, scaffold_script wymaga --scaffold, -j/--concurrency 1-8 (domyślnie 1, runy dzielą jeden rate limit), --report <path> zapisuje HTML, --no-publish blokuje automatyczną publikację raportu na claude.ai (publikacja i tak niedostępna na Bedrock/Vertex/Foundry i przy auth kluczem API).",
+    "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help`, Claude Code 2.1.278",
+    "data": "2026-09-20",
+    "status": "potwierdzone-w-docs"
+   },
+   {
+    "pytanie": "Czy nadaje się do A/B dwóch wersji promptu reviewera na tych samych przypadkach?",
+    "odpowiedz": "Tak, ale nie ma natywnego trybu \"wersja A vs wersja B\". Natywna jest tylko ablacja --ablation with-without: ramię z pluginem vs ramię BEZ pluginu, z deltą w aggregate-result.json (cases[].arms.{with,without}) — to odpowiada na pytanie \"czy skill/agent w ogóle coś daje\", nie \"czy prompt v2 jest lepszy od v1\". A/B dwóch promptów robi się operacyjnie: ta sama suita evals/ (te same prompt.md + graders/*.md), dwie kopie pluginu (dwa checkouty/worktree z inną wersją promptu reviewera), dwa uruchomienia z tym samym --model, --judge-model i --runs, potem porównanie pól aggregates / cases[].graders[] z obu aggregate-result.json (schemaVersion, camelCase, additive-only — stabilne do parsowania skryptem). Warunki wiarygodności takiego A/B: podnieś --runs (domyślne 3 to mało na różnicę kilku punktów), przypnij --model (ANTHROPIC_MODEL NIE jest dziedziczone przez dziecko) i --judge-model, preferuj gradery deterministyczne zamiast llm tam, gdzie oceniasz długie raporty review, a do oceny \"kolejnej tury\" reviewera użyj case.yaml context.history_file. Czego docs/--help NIE mówią i trzeba zmierzyć u nas: wariancja score między powtórzeniami tej samej wersji (ile runs potrzeba, by delta A-B była poza szumem) oraz czy sędzia LLM jest stabilny na naszych długich raportach review.",
+    "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help` (--ablation, --runs, --model, --judge-model, --json), Claude Code 2.1.278",
+    "data": "2026-09-20",
+    "status": "docs-milcza-do-pomiaru"
+   }
+  ]
+ },
+ "research:natywne-a": {
+  "odpowiedzi": [
+   {
+    "pytanie": "Czy reguly .claude/rules/*.md BEZ frontmatter paths: laduja sie w subagentach?",
+    "odpowiedz": "Tak. Docs (sub-agents.md, sekcja 'What loads at startup') wymieniaja w kontekscie startowym non-fork subagenta 'every level of the CLAUDE.md hierarchy the main conversation loads, including ~/.claude/CLAUDE.md, project rules, CLAUDE.local.md, managed policy files'. Reguly bez pola paths sa wg memory.md ladowane bezwarunkowo z tym samym priorytetem co .claude/CLAUDE.md, wiec wchodza do subagenta. Wyjatki: wbudowane agenty Explore i Plan pomijaja to w calosci; subagent z omitClaudeMd tez.",
+    "url": "https://code.claude.com/docs/en/sub-agents.md",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "potwierdzone-w-docs"
+   },
+   {
+    "pytanie": "Czy reguly .claude/rules/*.md Z frontmatter paths: (globy) laduja sie w SUBAGENTACH (Agent tool, agent() w Workflow), gdy subagent czyta plik pasujacy do globu?",
+    "odpowiedz": "docs milcza — do pomiaru. memory.md mowi tylko: 'Path-scoped rules trigger when Claude reads files matching the pattern, not on every tool use' — bez wskazania, czy dotyczy to rowniez sesji subagenta. Sekcja 'What loads at startup' w sub-agents.md wymienia 'project rules' w kontekscie startowym, ale nie rozstrzyga regul warunkowych ladowanych on-demand w trakcie pracy subagenta. Zadna strona nie laczy paths: z Agent tool ani z agent() w Workflow. Niuans do uwzglednienia w pomiarze: reguly projektowe sa pomijane, gdy wykluczysz 'project' z --setting-sources (przed v2.1.211 path-scoped ladowaly sie mimo wykluczenia), a symlinkowane reguly spoza working directory ladują sie wylacznie wtedy, gdy NIE maja pola paths.",
+    "url": "https://code.claude.com/docs/en/memory.md#path-specific-rules",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "docs-milcza-do-pomiaru"
+   },
+   {
+    "pytanie": "Co dokladnie robi omitClaudeMd: true w definicji subagenta?",
+    "odpowiedz": "Pole frontmatter subagenta (opcjonalne). Cytat z tabeli 'Supported frontmatter fields': 'Set to true to launch this subagent without the user, project, and local CLAUDE.md files; managed policy files still load, except for managed subagents. Use it for subagents that take everything they need from the delegation prompt. Ignored when the agent runs as the main session agent via --agent or the agent setting.' Sekcja 'What loads at startup' potwierdza: 'A subagent whose definition sets omitClaudeMd loads only the managed policy files, or none at all when the definition comes from managed settings.'",
+    "url": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "potwierdzone-w-docs"
+   },
+   {
+    "pytanie": "Od jakiej wersji dziala omitClaudeMd?",
+    "odpowiedz": "Requires Claude Code v2.1.271 or later (zapis wprost w tabeli pol frontmatter subagenta).",
+    "url": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "potwierdzone-w-docs"
+   },
+   {
+    "pytanie": "Czy omitClaudeMd wylacza takze .claude/rules/*.md oraz @import?",
+    "odpowiedz": "docs milcza — do pomiaru. Opis pola wymienia wylacznie 'user, project, and local CLAUDE.md files' i nie nazywa ani .claude/rules/*.md, ani rozwijania @import. Poszlaka za tym, ze reguly tez odpadaja: sekcja 'What loads at startup' traktuje 'project rules' jako czesc tej samej hierarchii CLAUDE.md, ktora omitClaudeMd redukuje do managed policy files; dodatkowo memory.md przy AGENTS.md pisze, ze 'subagents that skip project instructions skip these files too' wraz z rozwinietymi @path importami. To jednak wniosek z konstrukcji zdan, nie zapis wprost — zweryfikuj pomiarem.",
+    "url": "https://code.claude.com/docs/en/memory.md#agents-md",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "docs-milcza-do-pomiaru"
+   },
+   {
+    "pytanie": "Czy omitClaudeMd dziala dla agentow uruchamianych z Workflow tool / agent()?",
+    "odpowiedz": "docs milcza — do pomiaru. Docs podaja tylko jeden przypadek ignorowania pola: 'Ignored when the agent runs as the main session agent via --agent or the agent setting.' Workflow tool ani agent() nie sa w tym kontekscie wymienione. Skoro agent() spawnuje zwykly subagent (a nie glowny agent sesji), pole powinno dzialac, ale docs tego nie potwierdzaja.",
+    "url": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "docs-milcza-do-pomiaru"
+   },
+   {
+    "pytanie": "Czego subagent NIE dziedziczy z sesji glownej (kontekst dla pomiaru regul)?",
+    "odpowiedz": "Wg sub-agents.md non-fork subagent nie dziedziczy: historii rozmowy, wczesniej wywolanych skilli, ustawien output style, auto memory (moze miec wlasna przez pole memory) ani rozmiaru okna kontekstu (zalezy od jego modelu). Dziedziczy: wlasny system prompt + environment details, delegation prompt, hierarchie CLAUDE.md (w tym project rules), snapshot git status, pelna tresc skilli z pola skills, sibling roster (v2.1.206+). Fork dziedziczy pelny kontekst rodzica zamiast startowac od zera.",
+    "url": "https://code.claude.com/docs/en/sub-agents.md",
+    "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+    "status": "potwierdzone-w-docs"
+   }
+  ]
+ },
+ "research:bramki-mechaniczne": {
+  "kierunek": "Kierunek 3 — bramki mechaniczne w domknięciu fazy: co jest standardem 2026 (ESLint flat config, knip, size-limit, bramka niezmienności migracji, alternatywy Biome/oxlint)",
+  "ustalenia": [
+   {
+    "teza": "ESLint v10.0.0 (6 lutego 2026) całkowicie usuwa system eslintrc: pliki .eslintrc.*/.eslintignore, flagi --no-eslintrc/--env/--rulesdir i komentarze /* eslint-env */ są martwe, a jedyną formą konfiguracji jest flat config (eslint.config.*). Zmienił się też algorytm szukania configu — startuje od katalogu linkowanego pliku, nie od cwd (wsparcie dla monorepo). Wymaga Node >= 20.19.",
+    "url": "https://eslint.org/blog/2026/02/eslint-v10.0.0-released/",
+    "data": "2026-02-06",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Bramka lintera w domknięciu fazy musi być pisana od razu jako eslint.config.ts/mjs na ESLint 10 — każdy przykład .eslintrc w promptach czy skillach jest dziś błędem, nie stylem."
+   },
+   {
+    "teza": "typescript-eslint udostępnia presety warstwowo: recommended / strict / stylistic, każdy z wariantem *-type-checked wymagającym informacji o typach; w flat configu używa się tseslint.configs.strictTypeChecked. Dokumentacja jawnie ostrzega, że strict i strict-type-checked NIE są stabilne wg semver — zestaw reguł może się zmienić poza majorem.",
+    "url": "https://typescript-eslint.io/users/configs/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Bierzemy recommendedTypeChecked jako bramkę twardą (stabilna), a strictTypeChecked tylko jako warstwę ostrzeżeń — inaczej minor typescript-eslint potrafi zatrzymać domknięcie fazy bez naszej zmiany kodu."
+   },
+   {
+    "teza": "Reguła max-lines jest żywa (od ESLint 2.12), przyjmuje opcje { max, skipBlankLines, skipComments } z domyślnym max = 300 i nie liczy końcowego pustego wiersza. Analogicznie działa max-lines-per-function.",
+    "url": "https://eslint.org/docs/latest/rules/max-lines",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Progi 300/50 z naszych coding-rules dają się wyrazić maszynowo jako max-lines {max:360, skipBlankLines:true, skipComments:true} i max-lines-per-function {max:60,...} — to zdejmuje z reviewera-agenta i z bota PR ok. 80 uwag szumu konfiguracyjnego."
+   },
+   {
+    "teza": "Reguła no-empty jest w konfiguracji recommended @eslint/js i ma opcję allowEmptyCatch (domyślnie wyłączoną), czyli pusty catch bez komentarza jest błędem z pudełka.",
+    "url": "https://eslint.org/docs/latest/rules/no-empty",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Klasa defektów 'pusty catch / połknięty błąd', która dziś przechodzi przez agenta code-quality, jest łapana przez js.configs.recommended bez jednej linijki promptu — wystarczy nie wyłączać allowEmptyCatch."
+   },
+   {
+    "teza": "eslint-plugin-react-hooks v6 (wydany wraz z React Compiler 1.0, jesień 2025) domyślnie używa flat configu i dokłada do exhaustive-deps oraz rules-of-hooks kilkanaście reguł napędzanych kompilatorem: set-state-in-effect, set-state-in-render, purity, immutability, refs, error-boundaries, static-components, preserve-manual-memoization i inne. Reguły działają statycznie i nie wymagają włączenia React Compilera w aplikacji.",
+    "url": "https://react.dev/reference/eslint-plugin-react-hooks",
+    "data": "brak daty (strona wersji rc; v6 ogłoszone X 2025)",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Druga co do wielkości klasa ucieczek do bota — cykl życia React i wyścigi — ma dziś gotowy mechaniczny wykrywacz; set-state-in-effect i refs to dokładnie te wzorce, które łapał CodeRabbit, a nie nasz reviewer."
+   },
+   {
+    "teza": "eslint-plugin-import-x to utrzymywany fork eslint-plugin-import: zawiera regułę order, wspiera flat config, obcina zależności ze 117 do 16 i używa rustowego resolvera unrs-resolver zamiast resolve; powstał, bo upstream nie przyjmował zmian łamiących (m.in. wsparcia dla pola exports).",
+    "url": "https://github.com/un-ts/eslint-plugin-import-x",
+    "data": "brak daty",
+    "typZrodla": "repo",
+    "pewnosc": "srednia",
+    "dlaNas": "Jeśli chcemy grupowania importów (stdlib/third-party/local) jako bramki, import-x/order jest tańszy niż stary eslint-plugin-import; alternatywa czysto sortująca to simple-import-sort (v14, publikacja ~2 mies. temu) lub perfectionist — oba żywe."
+   },
+   {
+    "teza": "typescript-eslint podaje, że przy typed lintingu czas lintowania jest z grubsza równy czasowi builda projektu; pierwsza reguła typowana zawsze wygląda najdroższa (rozgrzewanie cache TS), a największe spowolnienia dają szerokie include w tsconfig oraz wtyczki typu eslint-plugin-prettier i część reguł eslint-plugin-import. Zalecany jest parserOptions.projectService z v8 i profilowanie przez TIMING=1. Konkretnych liczb dokumentacja nie podaje.",
+    "url": "https://typescript-eslint.io/troubleshooting/typed-linting/performance/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Koszt bramki lintera w domknięciu fazy planujemy jako ~jeden dodatkowy tsc; 'lint tylko na diffie fazy' nie zmniejsza go istotnie przy regułach typowanych, bo i tak trzeba zbudować program TS."
+   },
+   {
+    "teza": "knip wykrywa nieużywane pliki, eksporty i zależności z package.json — czego no-unused-vars z ESLinta nie umie, bo widzi tylko jeden plik. Ma 150+ pluginów (m.in. Vite i Vitest), raportery json/markdown/github-actions/sarif, tryb --production (pomija testy i devDependencies) oraz --cache dający 10–40% szybsze kolejne uruchomienia; postęp sam wyłącza się w CI.",
+    "url": "https://knip.dev/reference/cli",
+    "data": "brak daty (strona aktualizowana 2026)",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Dead code i sieroce pliki, które dziś tropi agent Opus, domyka jedno polecenie z raporterem json — nadaje się na twardą bramkę fazy z --cache, a wynik da się wprost wkleić do stanu orkiestracji."
+   },
+   {
+    "teza": "size-limit liczy realny koszt paczki (gzip/brotli, tree-shaking przez import), a także czas ładowania i wykonania w headless Chrome; konfiguruje się przez .size-limit.json lub sekcję w package.json, ma plugin @size-limit/esbuild i gotową GitHub Action komentującą PR-y oraz odrzucającą je po przekroczeniu limitu.",
+    "url": "https://github.com/ai/size-limit",
+    "data": "brak daty (repo aktywne)",
+    "typZrodla": "repo",
+    "pewnosc": "wysoka",
+    "dlaNas": "To jest ten mechaniczny zamiennik osi performance z decyzji etapu 1b — budżet bundla jako plik w repo zamiast agenta zgadującego, co jest 'za ciężkie'."
+   },
+   {
+    "teza": "Atlas utrzymuje plik integralności atlas.sum (odwrócone drzewo merkle z sumą katalogu i sumą każdej migracji). Modyfikacja istniejącego pliku migracji zmienia jego sumę i Atlas raportuje niezgodność przy następnej komendzie — lokalnie i w CI — więc zmiana nie dociera niezauważona na produkcję; sumę przelicza świadomie atlas migrate hash, a atlas migrate lint łapie konflikty semantyczne.",
+    "url": "https://atlasgo.io/concepts/migration-directory-integrity",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Wzorzec do skopiowania jeden do jednego: plik sum katalogu migracji + porównanie w bramce fazy zamienia nasze P1 'poprawka w już wypchniętej migracji' w błąd narzędzia, nie w znalezisko reviewera."
+   },
+   {
+    "teza": "Prisma Migrate przelicza hash każdej migracji z jej plików i porównuje ze stored hash; ręczna edycja już zastosowanej migracji kończy się błędem MIGRATION.CHECK_HASH_MISMATCH. Dokumentacja odnotowuje lukę: hash liczony jest z artefaktów skompilowanych, więc edycja źródła bez rekompilacji nie zostanie wykryta.",
+    "url": "https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "srednia",
+    "dlaNas": "Potwierdza, że checksum zastosowanych migracji to standard branżowy, a nie nasz wymysł — i przypomina, że bramka musi liczyć hash z tego pliku, który realnie jedzie na bazę."
+   },
+   {
+    "teza": "Supabase CLI śledzi w supabase_migrations.schema_migrations wyłącznie to, które migracje zostały zastosowane; dokumentacja nie wspomina o przechowywaniu checksumy ani o wykrywaniu edycji już zastosowanego pliku. supabase migration list pokazuje rozjazd lokalne/zdalne, a supabase migration repair tylko zmienia wpisy w tabeli historii, nie uruchamiając ani nie cofając SQL. Zalecana ochrona to dyscyplina: nigdy nie zmieniaj zdalnej bazy ręcznie.",
+    "url": "https://supabase.com/docs/guides/deployment/database-migrations",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasz stack nie dostanie tej bramki za darmo — musimy dołożyć własny check (hash plików migracji trzymany w repo albo git diff wobec merge-base na supabase/migrations), bo CLI edycji wypchniętej migracji nie zauważy."
+   },
+   {
+    "teza": "Biome v2 (17 czerwca 2025) jako pierwszy linter JS/TS robi reguły typoświadome bez kompilatora TypeScript, na własnym syntezatorze typów (pierwsza reguła: noFloatingPromises, pokrycie ~75–85% reguł typowanych typescript-eslint), dokłada skanowanie wielu plików, konfigurację zagnieżdżoną dla monorepo, pluginy lintera i asysty sortujące importy. Wpis nie wymienia żadnej reguły limitu długości pliku/funkcji.",
+    "url": "https://biomejs.dev/blog/biome-v2/",
+    "data": "2025-06-17",
+    "typZrodla": "blog",
+    "pewnosc": "srednia",
+    "dlaNas": "Biome nie zastąpi u nas ESLinta w domknięciu fazy: brakuje odpowiednika max-lines i reguł react-hooks v6, a pokrycie reguł typowanych jest częściowe — sensownie wchodzi najwyżej jako formatter."
+   },
+   {
+    "teza": "Oxlint ma od 22 lipca 2026 stabilny type-aware linting (silnik tsgolint v7 na typescript-go, 59 z 61 reguł typowanych typescript-eslint, śledzi TS 7.0.2), włączany przez typeAware/typeCheck lub --type-aware; raportowane przyspieszenia wobec typescript-eslint: VS Code 12x, repo TypeScript 14x, TypeORM 18x, Vue core 13x. Linting i type-check dzielą jeden program TS.",
+    "url": "https://oxc.rs/blog/2026-07-22-type-aware-linting-stable",
+    "data": "2026-07-22",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Jeśli czas bramki w domknięciu fazy okaże się bolesny, oxlint --type-aware jest realną, już stabilną drogą ucieczki — ale nie ma reguł react-compiler, więc byłby dodatkiem do ESLinta, nie zamianą."
+   }
+  ],
+  "luki": [
+   "Czas wykonania każdej bramki (ESLint typed, knip, size-limit, check migracji) na projekcie 50–200 plików — do pomiaru; żadne oficjalne źródło nie podaje liczb dla tej skali, typescript-eslint mówi tylko 'mniej więcej tyle co build'.",
+   "Czy w naszych repo realnie opłaca się uruchamiać ESLint tylko na plikach z diffu fazy — do pomiaru; przy regułach typowanych program TS i tak powstaje dla całego projektu, więc oszczędność jest nieznana.",
+   "Dokładna data i numer wersji wydania eslint-plugin-react-hooks v6 — brak potwierdzenia z oficjalnego changeloga (strona react.dev jest oznaczona jako 'rc', data z wyniku wyszukiwania, nie z fetchowanego źródła).",
+   "Aktualna wersja i data ostatniego wydania size-limit oraz eslint-plugin-import-x — brak źródła (npm zwrócił 403, repo nie pokazuje numeru wydania w treści).",
+   "Czy istnieje gotowy pakiet 'quality gate' łączący lint+knip+size-limit w jedno polecenie — brak źródła; znalezione są tylko pojedyncze narzędzia, scalanie wychodzi na skrypt w package.json.",
+   "Czy Supabase CLI w wersji 2026 dokłada gdziekolwiek checksumę migracji poza dokumentacją deployment/database-migrations — do pomiaru na realnym projekcie (sprawdzić kolumny tabeli supabase_migrations.schema_migrations).",
+   "Koszt fałszywych alarmów knipa na naszych projektach (eksporty publiczne, fixture'y, pliki generowane) — do pomiaru; docs mówią tylko, że wymaga konfiguracji entry pointów."
+  ],
+  "rekomendacje": [
+   "Napisać jeden eslint.config.ts na ESLint 10 (ustalenie 1) z warstwami: js.configs.recommended (daje no-empty i no-unreachable za darmo — ustalenie 4), tseslint recommendedTypeChecked jako error i strictTypeChecked jako warn (ustalenie 2), plus max-lines {max:360, skipBlankLines:true, skipComments:true} i max-lines-per-function {max:60} (ustalenie 3) — to jest mechaniczne wejście dla progów 300/50, które dziś generują 80 uwag szumu od bota.",
+   "Włączyć eslint-plugin-react-hooks v6 z regułami kompilatora (ustalenie 5), w pierwszym kroku jako error dla set-state-in-effect, set-state-in-render, refs, purity i immutability — to jest najtańszy zamiennik dla klasy 'cykl życia React / wyścigi' z inwentarza ucieczek do bota.",
+   "Dodać knip jako twardą bramkę domknięcia fazy: knip --production --cache --reporter json (ustalenie 8), z knip.json deklarującym entry pointy i ignorowaniem fixture'ów; wynik json wkleić do stanu orkiestracji zamiast opisywać go agentem.",
+   "Zastąpić oś performance plikiem .size-limit.json z budżetem gzip na główne wejścia (ustalenie 9) uruchamianym w domknięciu fazy — zgodnie z decyzją z etapu 1b, bez agenta i bez GitHub Action na tym etapie.",
+   "Zbudować własną bramkę niezmienności migracji na wzór atlas.sum (ustalenie 10) i checksumy Prismy (ustalenie 11), bo Supabase CLI tego nie daje (ustalenie 12): plik migrations.sum w repo z hashem każdego pliku supabase/migrations + krok fazy porównujący hashe i wywalający się przy zmianie pliku, który ma już wpis w historii. To zamienia nasze P1 w błąd narzędzia.",
+   "Nie przepisywać stacku na Biome (ustalenie 13) — brak odpowiednika max-lines i reguł react-hooks; oxlint --type-aware (ustalenie 14) trzymać jako plan B na wypadek, gdyby zmierzony czas bramki typowanej przekroczył budżet fazy, i najpierw ten czas zmierzyć (pozycja 1 i 2 z luk)."
+  ],
+  "kosztWdrozenia": "Konfiguracja: jeden eslint.config.ts (kilka godzin pracy plus tura wyciszania zastanych naruszeń w istniejących repo), knip.json z entry pointami i ignorami (0,5 dnia na projekt, głównie na fałszywe alarmy), .size-limit.json (godzina), skrypt migrations.sum plus krok w domknięciu fazy (pół dnia, ok. 80 linii Node). Runtime CI: lint typowany kosztuje mniej więcej tyle co jeden tsc projektu, knip z --cache to sekundy przy kolejnych uruchomieniach, size-limit wymaga builda — realnie do zmierzenia na naszych 50–200 plikach, dziś nie mamy tych liczb. Tokeny: to jest ruch odwrotny do kosztu — bramki działają poza modelem, więc zdejmują z fazy większość pracy agenta code-quality (Opus, ~400–900k tokenów na agenta) i zamieniają ją na kilkadziesiąt sekund CPU plus krótki raport json doklejany do promptu."
+ },
+ "research:mutation-testing": {
+  "kierunek": "Testy niefalsyfikowalne — mutation testing (StrykerJS) jako mechaniczny zamiennik promptu reviewera test-coverage",
+  "ustalenia": [
+   {
+    "teza": "StrykerJS ma tryb --incremental: zapisuje reports/stryker-incremental.json, robi git-podobny diff kodu i testów wobec poprzedniego raportu i uruchamia mutanty tylko dla zmienionego kodu; nie wykrywa zmian w plikach niemutowanych, zależnościach ani zmiennych środowiskowych, a śledzenie zmian testów zależy od runnera.",
+    "url": "https://stryker-mutator.io/docs/stryker-js/incremental/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Da się uruchamiać Strykera po każdej fazie autopilota bez pełnego przebiegu, o ile artefakt incremental jest cache'owany między fazami/runami."
+   },
+   {
+    "teza": "Runner @stryker-mutator/vitest-runner wymusza coverageAnalysis: \"perTest\" niezależnie od configu (dla każdego mutanta odpala tylko testy dotykające zmutowanej linii); nie wspiera Browser Mode ani threads: false.",
+    "url": "https://stryker-mutator.io/docs/stryker-js/vitest-runner/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasz stack (vitest) dostaje najtańszy wariant mutacji z pudełka, ale E2E Playwright/agent-browser pozostaje poza zasięgiem — mutacja obejmie tylko warstwę unit/integration."
+   },
+   {
+    "teza": "Oficjalny schemat opcji StrykerJS (packages/api/schema/stryker-core.json na master) NIE zawiera opcji \"since\" — sprawdzone grepem, 0 trafień przy obecnych \"incremental\", \"mutate\", \"thresholds\". Opcję since (since.target, since.ignore-changes-in: \"test only code changes since the given target\") ma Stryker.NET, nie wersja JS.",
+    "url": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json",
+    "data": "2026-09-20 (stan master w dniu sprawdzenia)",
+    "typZrodla": "repo",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nie możemy liczyć na gotowe --since w JS — scoping na diff fazy musimy policzyć sami z git diff i podać przez --mutate; blogi obiecujące \"stryker run --since main\" dla JS są błędne."
+   },
+   {
+    "teza": "Oficjalna konfiguracja StrykerJS pozwala zawęzić mutacje do konkretnych zakresów linii: \"It is possible to specify exactly which code blocks to mutate by means of a mutation range\" — np. \"src/app.js:1-11\" lub \"src/app.js:5:4-6:4\". Domyślne progi to { high: 80, low: 60, break: null }, concurrency domyślnie n-1 rdzeni.",
+    "url": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/docs/configuration.md",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Bramka fazy może mutować dokładnie hunki z git diff fazy (plik:od-do), więc koszt jest proporcjonalny do rozmiaru fazy, nie repozytorium."
+   },
+   {
+    "teza": "Zestaw mutatorów JS/TS obejmuje m.in. String Literal (\"foo\" -> \"\"), Object Literal (usunięcie właściwości: { foo: 'bar' } -> { }), Conditional Expression (warunek na true/false), Optional Chaining (foo?.bar -> foo.bar) oraz Method Expression (min() <-> max(), sort/filter/slice/reverse).",
+    "url": "https://stryker-mutator.io/docs/mutation-testing-elements/supported-mutators/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Mutatory trafiają wprost w dwie z naszych klas B: łańcuch walidacji (min/max, usunięta właściwość obiektu konfiguracyjnego/schematu) i gałąź warunkowa bez asercji — czyli część \"schematu luźniejszego od kontraktu\" jest wykrywalna mechanicznie."
+   },
+   {
+    "teza": "StrykerJS jest aktywnie rozwijany: v10.0.0 wydane 2026-08-14 (Babel 8, minimum Node 22+, wsparcie TypeScript 7, filtrowanie mutantów), poprzednio v9.6.1 z 2026-04-10.",
+    "url": "https://github.com/stryker-mutator/stryker-js/releases",
+    "data": "2026-08-14",
+    "typZrodla": "repo",
+    "pewnosc": "wysoka",
+    "dlaNas": "Narzędzie nie jest porzucone i nadąża za naszym stackiem — wdrożenie nie kupuje długu technologicznego."
+   },
+   {
+    "teza": "Google wdrożył mutation testing produkcyjnie w code review, mutując wyłącznie zmieniony kod zamiast całej bazy (2 mld linii), z filtrowaniem kontekstowym, limitem mutantów na linię i wyborem operatorów wg historii; objęło ponad 24 000 deweloperów i ponad 1000 projektów, generując o rzędy wielkości mniej mutantów.",
+    "url": "https://arxiv.org/abs/2102.11378",
+    "data": "2021-02-23",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasz zamysł (mutacja tylko na diffie fazy + limit mutantów) to dokładnie wzorzec przemysłowy, a nie eksperyment; sensowne jest też filtrowanie mutantów, nie tylko zakresu plików."
+   },
+   {
+    "teza": "MutGen (IEEE TSE, submisja 2025-06-03, v8 2026-04-15) pokazuje, że pokrycie jest słabym wskaźnikiem wykrywania błędów: część zestawów testów osiąga 100% coverage przy 4% mutation score; sterowanie promptu feedbackiem mutacyjnym podnosi wynik z 53% (vanilla LLM) do 89,5% na HumanEval-Java.",
+    "url": "https://arxiv.org/abs/2506.02954",
+    "data": "2026-04-15 (v8; pierwsza wersja 2025-06-03)",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "To ilościowe potwierdzenie naszej klasy B \"test niefalsyfikowalny\" i dowód, że sprzężenie zwrotne z mutacji (a nie sam prompt) podnosi jakość testów pisanych przez model — czyli warto oddać wynik Strykera builderowi w pętli fix."
+   },
+   {
+    "teza": "Badanie ewolucji kodu pokazuje \"residual alignment\": ponad 99% testów LLM, które padają na zmienionym kodzie, przechodzi na kodzie oryginalnym; przy zmianach semantycznych pass rate spada ze 100% do 66,5%, a modele asertują zapamiętaną specyfikację zamiast rzeczywistej logiki.",
+    "url": "https://arxiv.org/html/2603.23443v1",
+    "data": "2026-03 (arXiv 2603.23443v1)",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Wyjaśnia, dlaczego nasze testy z autopilota bywają \"kształtu\" — model dopisuje asercje do tego, co pamięta o zadaniu, a nie do kodu fazy; mutant to jedyny tani sposób, by to wykryć."
+   },
+   {
+    "teza": "Replikacyjne badanie (ISSTA 2026, submisja 2026-07-24) stwierdza, że przydatność coverage i mutation score jest silnie zależna od kontekstu: w scenariuszu regresyjnym metryki pomagają porównywać zestawy, ale gdy kod może już zawierać defekt, nie są wiarygodnym wskaźnikiem realnej wykrywalności błędów; rozmiar zestawu nie jest tu dominującym czynnikiem.",
+    "url": "https://arxiv.org/abs/2607.22880",
+    "data": "2026-07-24",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "Mutation score traktujemy jako detektor testów niefalsyfikowalnych (regresja), a nie jako cel liczbowy do maksymalizacji — inaczej agent zacznie dopisywać testy pod metrykę."
+   },
+   {
+    "teza": "@vitest/eslint-plugin (ESLint 9+, flat config) ma reguły łapiące dokładnie patologie asercji: expect-expect (test bez asercji), valid-expect, no-conditional-expect, no-standalone-expect w konfiguracji recommended oraz prefer-called-with (wymusza toHaveBeenCalledWith zamiast samego toHaveBeenCalled) w konfiguracji all.",
+    "url": "https://github.com/vitest-dev/eslint-plugin-vitest",
+    "data": "brak daty",
+    "typZrodla": "repo",
+    "pewnosc": "wysoka",
+    "dlaNas": "Dwie z trzech naszych podklas (asercja pusta, atrapa sprawdzana bez argumentów) są łapane lintem w milisekundy — to tańsza pierwsza warstwa niż Stryker i niż agent LLM."
+   },
+   {
+    "teza": "Vitest ma wbudowane testowanie typów: pliki *.test-d.ts nie są uruchamiane, tylko statycznie analizowane przez tsc po włączeniu flagi --typecheck (od 2.1 testy typów i runtime raportowane są jako osobne wpisy); expectTypeOf/toEqualTypeOf sprawdza dokładną równość typów.",
+    "url": "https://vitest.dev/guide/testing-types",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Klasę \"schemat luźniejszy od kontraktu\" można zamknąć mechanicznie: z.infer ze schematu porównane expectTypeOf z typem kontraktu w teście typów, uruchamiane w bramce fazy razem z typecheckiem."
+   },
+   {
+    "teza": "Praktyczny przewodnik (2026-06-30, akt. 2026-09-16) raportuje, że tryb --incremental Strykera ponownie użył 3 731 z 3 965 wyników mutantów w jednym przebiegu, rekomenduje uruchamianie mutacji diff-scoped na PR i pełnej analizy w harmonogramie, oraz progi zależne od krytyczności ścieżki (wyższe dla płatności/bezpieczeństwa) zamiast jednej liczby dla repo.",
+    "url": "https://www.augmentcode.com/guides/mutation-testing-ai-generated-code",
+    "data": "2026-09-16",
+    "typZrodla": "blog",
+    "pewnosc": "srednia",
+    "dlaNas": "Potwierdza układ dwuwarstwowy: tania mutacja na diffie fazy + pełny przebieg rzadziej, z progiem podniesionym tylko dla modułów krytycznych (RLS, płatności, Edge Functions)."
+   },
+   {
+    "teza": "Przewodnik z 2026-06-25 podaje skalę interpretacji mutation score (90-100% doskonale, 75-89% dobrze, 60-74% słabe asercje, <60% pokrycie kosmetyczne; dla większości kodu 75-85%) i układ CI: mutacja na PR przy zmianach w src/** plus pełny przebieg tygodniowo; wskazuje coverageAnalysis: perTest jako największą optymalizację. UWAGA: ten sam tekst sugeruje flagę --since dla StrykerJS, której w schemacie opcji JS nie ma.",
+    "url": "https://qaskills.sh/blog/mutation-testing-stryker-guide-2026",
+    "data": "2026-06-25",
+    "typZrodla": "blog",
+    "pewnosc": "niska",
+    "dlaNas": "Progi 75-85% możemy przyjąć jako punkt startowy dla modułów objętych fazą, ale konfigurację diffu bierzemy z oficjalnego --mutate, nie z tego bloga."
+   }
+  ],
+  "luki": [
+   "Ile realnie trwa mutacja diff-scoped na naszym projekcie (50-200 plików TS/TSX, vitest, faza o ~10-30 zmienionych plikach) — żadne znalezione źródło nie podaje twardego czasu dla takiej skali; do pomiaru na jednej fazie realnego zadania.",
+   "Czy Stryker wykrywa klasę \"atrapa nie sprawdza argumentów\" (vi.fn() z toHaveBeenCalled zamiast toHaveBeenCalledWith) — brak źródła mówiącego o tym wprost; hipoteza jest taka, że mutacja argumentu w kodzie produkcyjnym nie zabije takiego testu, więc łapie to lint prefer-called-with, nie mutacja; do pomiaru eksperymentem na jednym pliku.",
+   "Skuteczność mutacji na schematach Zod (czy mutatory Object Literal/Method Expression realnie generują sensowne mutanty w łańcuchach z.object(...).min()) — brak źródła; do pomiaru.",
+   "Czy cache incremental (stryker-incremental.json) przetrwa między fazami autopilota w naszym układzie katalogów i czy nie trafia niechcący do gita — brak źródła, decyzja projektowa do rozstrzygnięcia.",
+   "Znany błąd: vitest-runner w trybie incremental generuje ~15k linii diffu w baseline przy braku zmian (issue #6004 stryker-js) — nie zweryfikowałem statusu ani wersji, w której naprawiono; brak źródła potwierdzonego fetchem.",
+   "Brak danych o mutacji dla Supabase Edge Functions (Deno) i dla kodu Hono uruchamianego poza vitest — brak źródła."
+  ],
+  "rekomendacje": [
+   "Wprowadzić Strykera jako bramkę mechaniczną domknięcia fazy zamiast osi test-coverage w agencie LLM, scoped na diff fazy: policzyć git diff --unified=0 wobec commitu startowego fazy i podać zakresy jako --mutate \"plik:od-do,...\" (ustalenia 4 i 3 — StrykerJS nie ma --since, zakresy linii są udokumentowane).",
+   "Przed Strykerem postawić darmową warstwę lintu: @vitest/eslint-plugin w flat configu z recommended (expect-expect, valid-expect, no-conditional-expect, no-standalone-expect) plus punktowo prefer-called-with — to zamyka asercje puste i atrapy bez argumentów w milisekundach (ustalenie 11), spójnie z już podjętą decyzją o ESLint flat config w domknięciu fazy.",
+   "Klasę \"schemat luźniejszy od kontraktu\" zamknąć testem typów: plik *.test-d.ts z expectTypeOf<z.infer<typeof Schema>>().toEqualTypeOf<Kontrakt>() uruchamiany przez vitest --typecheck w tej samej bramce co tsc (ustalenie 12) — to jedyny znaleziony mechanizm trafiający w tę klasę wprost.",
+   "Wynik mutacji traktować jako wejście do pętli fix, a nie jako raport: przeżyte mutanty (plik, linia, operator) doklejać do promptu buildera jako listę do zabicia — MutGen pokazuje skok 53% -> 89,5% właśnie przy sprzężeniu zwrotnym z mutacji (ustalenie 8).",
+   "Nie ustawiać mutation score jako globalnego celu liczbowego; próg break włączyć wyłącznie dla ścieżek krytycznych (RLS/Supabase, płatności, autoryzacja), resztę raportować bez łamania builda — badanie ISSTA 2026 pokazuje, że poza scenariuszem regresyjnym metryka nie mierzy realnej wykrywalności defektów (ustalenia 10 i 13).",
+   "Ułożyć dwa biegi: mutacja diff-scoped w domknięciu każdej fazy (z --incremental i cache stryker-incremental.json trzymanym poza repo) oraz pełny przebieg rzadziej, np. przy dev-pr lub raz w tygodniu — to wzorzec z Google i z przewodników 2026 (ustalenia 7, 13, 1)."
+  ],
+  "kosztWdrozenia": "Konfiguracja jest niewielka: dodanie @stryker-mutator/core + vitest-runner, stryker.config.json z perTest (wymuszony przez runner) i progami bez break, plus krótki skrypt liczący zakresy --mutate z git diff fazy; warstwa lintu (@vitest/eslint-plugin) i test typów (vitest --typecheck) to dosłownie kilka linii w istniejących configach. Koszt runtime to wyłącznie czas CI/lokalnego CPU — zero tokenów, bo cała bramka jest mechaniczna; przy diffie fazy rzędu kilkunastu plików i coverageAnalysis perTest realne są minuty, ale twardy pomiar na naszym repo trzeba dopiero zrobić (patrz luki). Po stronie oszczędności: wypada oś test-coverage z review wieloagentowego, czyli jeden agent mniej na fazę przy ~107k tokenów samego rozruchu każdego agenta."
+ },
+ "research:coding-rules-2026": {
+  "kierunek": "Kierunek 4: coding-rules od zera — konfrontacja /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md (14 sekcji) z oficjalnymi praktykami 2026 (TypeScript, React 19 + React Compiler, Supabase, Hono, Node, vitest/testing-library, ESLint/typescript-eslint, OWASP).",
+  "ustalenia": [
+   {
+    "teza": "ESLint ma wbudowaną regułę max-lines z opcjami max (domyślnie 300), skipBlankLines i skipComments oraz siostrzaną max-lines-per-function. Nasza sekcja 1 („plik > 300 linii\", „funkcja > 50 linii\") to dokładnie ta reguła zapisana prozą, którą model może zignorować, a linter nie.",
+    "url": "https://eslint.org/docs/latest/rules/max-lines",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Sekcja 1 idzie do ESLint flat config (max-lines z skipBlankLines/skipComments i tolerancją, max-lines-per-function) i znika z promptu reviewera — to gasi część z 157 uwag „szumu konfiguracyjnego\" bota, bo próg staje się jedną liczbą w configu, a nie sporem."
+   },
+   {
+    "teza": "typescript-eslint @typescript-eslint/no-explicit-any jest w presecie recommended i ma opcję fixToUnknown, która automatycznie zamienia `any` na `unknown` — czyli dokładnie to, co nakazuje nasza reguła 10 zdaniem „NIGDY nie używaj any — użyj unknown\".",
+    "url": "https://typescript-eslint.io/rules/no-explicit-any/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Punkt 4 naszego quality gate („brak nowych any\") przestaje być pytaniem do reviewera i staje się błędem lintera z autofixem — zero tur agenta na tę klasę."
+   },
+   {
+    "teza": "@typescript-eslint/no-floating-promises jest w presecie recommended-type-checked i wykrywa promise'y bez await/return/catch/void oraz tablice promise'ów nieobsłużone przez Promise.all/allSettled/any/race — „improperly sequenced operations, ignored Promise rejections\".",
+    "url": "https://typescript-eslint.io/rules/no-floating-promises/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "To jest mechaniczne wejście dla naszej klasy defektów B „ścieżka błędu bez obsługi\" i dla sekcji 13, której dziś pilnuje tylko prompt — włączamy recommended-type-checked zamiast dopisywać zdania do CLAUDE.md."
+   },
+   {
+    "teza": "React 19 wprowadza Actions, useActionState (zwraca [error, submitAction, isPending]), useFormStatus, useOptimistic, use() (można wołać warunkowo), ref jako zwykły prop (koniec forwardRef), <Context> jako provider i funkcje sprzątające zwracane z ref callbacków.",
+    "url": "https://react.dev/blog/2024/12/05/react-19",
+    "data": "2024-12-05",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasza sekcja 13 nie zna tych API — reguła „więcej niż 1 boolean do stanu ładowania = state machine\" powinna wprost wskazywać useActionState/useOptimistic jako natywne rozwiązanie zamiast ręcznego dyskryminowanego uniona."
+   },
+   {
+    "teza": "React Compiler 1.0 jest stabilny od 7.10.2025, kompatybilny z Reactem 17+, a jego reguły lintowe („compiler-powered lint rules\") są w presetach recommended i recommended-latest pakietu eslint-plugin-react-hooks — nie trzeba osobnej wtyczki.",
+    "url": "https://react.dev/blog/2025/10/07/react-compiler-1",
+    "data": "2025-10-07",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Cała klasa defektów B „cykl życia React / wyścigi\" dostaje mechaniczne wejście: eslint-plugin-react-hooks w presecie recommended-latest w domknięciu fazy, zamiast reviewera czytającego komponenty oczami."
+   },
+   {
+    "teza": "Przy włączonym React Compilerze memoizacja jest automatyczna: „By default, React Compiler will memoize your code based on its analysis and heuristics. In most cases, this memoization will be as precise, or moreso, than what you may have written\", a useMemo/useCallback zostają tylko jako escape hatch.",
+    "url": "https://react.dev/learn/react-compiler/introduction",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Jeśli włączamy kompilator, reviewer performance nie ma prawa zgłaszać „brak useMemo/useCallback\" — to trzeba zapisać wprost, inaczej wraca jako szum w kolejnych przejściach review."
+   },
+   {
+    "teza": "Dokumentacja useEffect odradza ręczny fetch w efektach (brak SSR, kaskady sieciowe, brak cache, boilerplate) i rekomenduje mechanizm frameworka albo cache po stronie klienta (TanStack Query, SWR, React Router 6.4+); wyścigi gasi flagą `ignore` w cleanupie, nie AbortControllerem.",
+    "url": "https://react.dev/reference/react/useEffect",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasza reguła 13 „useEffect z async = ZAWSZE AbortController\" jest węższa niż zalecenie oficjalne i wymusza wzorzec, którego React nie rekomenduje — trzeba ją przeformułować na „efekt z async = cleanup, który unieważnia wynik; a lepiej nie fetchuj w efekcie\"."
+   },
+   {
+    "teza": "TypeScript 5.8 dodał --erasableSyntaxOnly, który „will error on most TypeScript-specific constructs that have runtime behavior\" (enum, namespace/module z kodem, parameter properties, import =), po to, by pliki dały się uruchomić trybem type-stripping Node'a; zalecane razem z --verbatimModuleSyntax.",
+    "url": "https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/",
+    "data": "2025-02-28",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Sekcja 10 zna tylko strict:true — brakuje jej flag, które w 2026 definiują „zdrowy\" tsconfig; to dopisujemy do reguł jako konfigurację, nie jako zdanie do przeczytania przez agenta."
+   },
+   {
+    "teza": "verbatimModuleSyntax: „Anything that uses the `type` modifier is dropped entirely\", a „any imports or exports without a `type` modifier are left around\" — decyzja o elizji importu zależy wyłącznie od modyfikatora `type`, nie od analizy użycia.",
+    "url": "https://www.typescriptlang.org/tsconfig/verbatimModuleSyntax.html",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Sekcja 8 mówi o grupowaniu importów, ale nie o `import type` — przy tej fladze brak modyfikatora to realny side-effect w bundlu, więc to reguła kodu, a nie kosmetyka (egzekwowalna przez @typescript-eslint/consistent-type-imports)."
+   },
+   {
+    "teza": "Operator `satisfies` (TS 4.9) rozwiązuje dylemat „chcemy sprawdzić zgodność z typem, ale zachować najbardziej szczegółowy typ dla inferencji\"; w przeciwieństwie do `as`, który omija sprawdzanie typów, `satisfies` łapie literówkę w kluczu i nie zmienia typu wyniku.",
+    "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasza reguła 10 „NIGDY nie używaj `as`\" nie podaje zamiennika — powinna brzmieć „zamiast `as` użyj `satisfies` albo type guarda\", bo inaczej agent albo łamie regułę, albo pisze gorszy kod."
+   },
+   {
+    "teza": "TypeScript 5.2 wprowadził `using` / `await using` (Symbol.dispose, Symbol.asyncDispose) jako pierwszoklasowe sprzątanie zasobów; dokumentacja wprost wskazuje, że ręczne try/finally jest podatne na zapomniany lub zduplikowany cleanup przy wielu wyjściach z funkcji. Zasoby są zwalniane LIFO, a kolizja błędów daje SuppressedError.",
+    "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "srednia",
+    "dlaNas": "Sekcja 4 i 13 mówią o cleanupie tylko w kontekście Reacta; dla kodu Node/Hono (pliki, połączenia, timery) `using` jest dziś standardowym zamiennikiem try/finally i brakuje go w regułach."
+   },
+   {
+    "teza": "Supabase: owijanie auth.uid() w (select ...) „causes an initPlan to be run by the Postgres optimizer, which allows it to 'cache' the results per-statement, rather than calling the function on each row\"; polityki trzeba indeksować (kolumna filtra jako wiodąca w indeksie btree) i zawsze podawać rolę przez TO, bo wtedy wykonanie zatrzymuje się na `to authenticated`.",
+    "url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Sekcja 9 ma tylko zakaz autoryzacji po user_metadata — brakuje trzech konkretnych, sprawdzalnych reguł RLS, które u nas realnie decydują o poprawności i wydajności zapytań."
+   },
+   {
+    "teza": "Supabase ostrzega, że funkcja `security definer` „will run as the creator\" i „A security definer function in an exposed schema is callable over the Data API with the creator's privileges. Never create one in a schema listed under 'Exposed schemas.'\"",
+    "url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "To jest reguła klasy „privilege escalation\" tej samej wagi co nasz zakaz user_metadata i powinna stać obok niego w sekcji 9."
+   },
+   {
+    "teza": "Supabase Database Advisors to deterministyczne checki na żywym schemacie: bezpieczeństwo (0013_rls_disabled_in_public, 0007_policy_exists_rls_disabled, 0002_auth_users_exposed, 0023_sensitive_columns_exposed) i wydajność (0001_unindexed_foreign_keys, 0003_auth_rls_initplan, 0005_unused_index, 0020_table_bloat); dostępne w Studio, przez CLI `supabase db advisors`, Management API i MCP get_advisors.",
+    "url": "https://supabase.com/docs/guides/database/database-advisors",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Advisors pokrywają mechanicznie dokładnie te reguły RLS, których dziś pilnuje prompt reviewera — to gotowa bramka w domknięciu fazy, zgodna z już podjętą decyzją o zastąpieniu reviewera performance."
+   },
+   {
+    "teza": "Supabase dla RBAC rekomenduje tabelę ról w bazie plus Custom Access Token Auth Hook wstrzykujący rolę do JWT jako custom claim — przewodnik nie wspomina ani o app_metadata, ani o user_metadata jako miejscu na rolę.",
+    "url": "https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "srednia",
+    "dlaNas": "Nasza reguła 9 dopuszcza app_metadata jako miejsce na rolę; oficjalny przewodnik prowadzi gdzie indziej (tabela ról + auth hook), więc regułę trzeba przeformułować: „zakaz user_metadata\" zostaje, „app_metadata\" schodzi z pozycji zalecenia do tolerowanego wyjątku."
+   },
+   {
+    "teza": "Hono waliduje przez middleware (targety: json, query, header, param, cookie, form), a @hono/zod-validator pozwala napisać zValidator('form', schema) zamiast ręcznego safeParse; dokumentacja ostrzega, że bez pasującego nagłówka content-type „the request body will not be parsed and you will receive an empty object ({})\".",
+    "url": "https://hono.dev/docs/guides/validation",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasza reguła 9 „waliduj KAŻDY input na granicy API (Zod)\" nie mówi JAK — w Hono poprawną formą jest zValidator jako middleware; pułapka pustego {} przy złym content-type to realny, falsyfikowalny test, którego nasze reguły nie wymuszają."
+   },
+   {
+    "teza": "Hono ma HTTPException: „This is a custom Hono Error that simplifies returning error responses\" — rzucasz `throw new HTTPException(401, { message: 'Unauthorized' })`, a w app.onError sprawdzasz `err instanceof HTTPException` i zwracasz `err.getResponse()`; dostępna jest też opcja `cause`.",
+    "url": "https://hono.dev/docs/api/exception",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasza reguła 4 „rzucaj typed errors, nie string messages\" i „ustandaryzowany format { data, error }\" mają w Hono konkretną realizację (HTTPException + app.onError) — bez jej wskazania agent wymyśla własny AppError za każdym razem."
+   },
+   {
+    "teza": "W Node fetch jest globalny i od v21.0.0 „No longer experimental\" (dodany w v17.5.0/v16.15.0, od v18 bez flagi), a AbortSignal.timeout(delay) jest statyczną metodą zwracającą sygnał przerywany po zadanym czasie.",
+    "url": "https://nodejs.org/api/globals.html",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Klasa defektów B „brak timeoutu\" ma jednolinijkowy natywny zamiennik (AbortSignal.timeout) — to powinna być reguła z przykładem, nie ogólnik; i nie ma powodu dodawać axiosa/node-fetch jako zależności."
+   },
+   {
+    "teza": "OWASP API4:2023 Unrestricted Resource Consumption wymienia jako prewencję nie tylko rate limiting („a limit on how often a client can interact with the API within a defined timeframe\"), ale też limity rozmiaru danych na wszystkich parametrach i payloadach, throttling pojedynczych operacji (np. weryfikacja OTP), walidację serwerową parametru sterującego liczbą zwracanych rekordów oraz limity wydatków u dostawców.",
+    "url": "https://api-security.owasp.org/editions/2023/en/0xa4-unrestricted-resource-consumption/",
+    "data": "2023",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasza sekcja 9 ma z tego tylko „rate limiting na KAŻDYM public endpoint\" — brakuje maksymalnego rozmiaru payloadu, limitu page size i throttlingu operacji wrażliwych, czyli rzeczy, które da się sprawdzić w schemacie Zod i w teście."
+   },
+   {
+    "teza": "Testing Library: „The more your tests resemble the way your software is used, the more confidence they can give you\" — testy mają operować na węzłach DOM, nie na instancjach komponentów, co zniechęca do polegania na szczegółach implementacji.",
+    "url": "https://testing-library.com/docs/guiding-principles/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "To jest źródłowe uzasadnienie naszej reguły 2 „testuj ZACHOWANIE, nie implementację\" — regułę zostawiamy, ale trzeba ją dowiązać do kryterium falsyfikowalności, bo sama w sobie nie wyklucza asercji luźniejszej od kontraktu."
+   },
+   {
+    "teza": "Vitest Browser Mode uruchamia testy w prawdziwej przeglądarce (Playwright/WebdriverIO/preview) z dostępem do window i document; dokumentacja odradza symulowanie zdarzeń i każe używać userEvent z vitest/browser, który działa przez Chrome DevTools Protocol lub WebDriver — „it simulates events instead of actually triggering them\".",
+    "url": "https://vitest.dev/guide/browser/",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "srednia",
+    "dlaNas": "Nasza sekcja 2 nie rozróżnia unitów w jsdom od testów komponentów w przeglądarce; jeśli mamy gasić klasę „test niefalsyfikowalny\" dla UI, browser mode + userEvent jest dziś ścieżką oficjalną, a jsdom + fireEvent generuje testy kształtu."
+   }
+  ],
+  "luki": [
+   "Czy eslint-plugin-import (reguła import/order) jest w 2026 nadal zalecanym sposobem egzekwowania naszej reguły „importy grouped: stdlib, third-party, local, sorted alphabetically\", czy wyparł go eslint-plugin-perfectionist — nie zweryfikowałem żadnym źródłem. Brak źródła.",
+   "Brak źródła dla reguły 3 „jeden eksport per plik dla głównych modułów\" — nie znalazłem oficjalnego zalecenia TypeScript/ESLint, które by ją popierało lub obalało. Brak źródła.",
+   "Brak źródła dla reguły 4 „używaj structured logging (pino), nie console.log\" w kontekście Node 22/24 — nie sprawdziłem, czy node:util / natywny logger albo OpenTelemetry nie są dziś domyślną rekomendacją. Brak źródła.",
+   "Nie zmierzyłem, ile z naszych 157 uwag „szumu konfiguracyjnego\" CodeRabbita pochodzi konkretnie z progów 300/50 linii — bez tego nie wiadomo, jaką tolerancję ustawić w max-lines. Do pomiaru.",
+   "Nie mam oficjalnego zdania Supabase wprost porównującego app_metadata z user_metadata jako miejsce na rolę (strona RBAC milczy) — nasza reguła 9 opiera się na rozumowaniu, nie na cytacie. Do pomiaru (sprawdzić docs auth/managing-user-data).",
+   "Nie zweryfikowałem, czy eslint-plugin-react-hooks w wersji z regułami kompilatora działa bez włączonego React Compilera w buildzie (czy lint jest niezależny od kompilacji). Do pomiaru.",
+   "Nie sprawdziłem, czy Vitest Browser Mode jest formalnie oznaczony jako stabilny czy eksperymentalny — strona przewodnika nie zawiera takiej etykiety. Do pomiaru (changelog Vitest 4/5).",
+   "Brak źródła na to, że katalog „10 anty-patternów AI\" z sekcji 5 (z procentami 80-90%) pochodzi z jakiejkolwiek publikacji — liczby wyglądają na nasze, nieudokumentowane. Do pomiaru."
+  ],
+  "rekomendacje": [
+   "PRZENIES-DO-LINTERA sekcje 1, 5 (część), 6 i 10: max-lines + max-lines-per-function z skipBlankLines/skipComments (ust. 1), no-explicit-any z fixToUnknown (ust. 2), no-floating-promises z recommended-type-checked (ust. 3), no-unused-vars/no-empty/no-unreachable; z promptów reviewera te zdania USUN. Uzasadnienie: reguła bez mechanicznego wejścia nie działa — 45 z 68 defektów miało regułę w prompcie i przeszło.",
+   "ZMIEN sekcję 13 (async/React) w całości: reguła „useEffect z async = ZAWSZE AbortController\" jest sprzeczna z oficjalnym zaleceniem Reacta (ust. 7) — zastąp ją „efekt z async unieważnia wynik w cleanupie; fetch na mount przez TanStack Query / mechanizm frameworka, nie ręcznie\". DODAJ useActionState/useOptimistic jako natywny zamiennik ręcznych state machine (ust. 4). DODAJ eslint-plugin-react-hooks w presecie recommended-latest jako mechaniczne wejście dla całej sekcji (ust. 5) i zapisz wprost, że przy włączonym React Compilerze finding „brak useMemo/useCallback\" jest nieważny (ust. 6).",
+   "ZMIEN sekcję 10 (type safety): „NIGDY nie używaj `as`\" → „zamiast `as` użyj `satisfies` albo type guarda\" (ust. 10). DODAJ do definicji „strict tsconfig\" flagi verbatimModuleSyntax i erasableSyntaxOnly wraz z konsekwencją: bez enumów, namespace'ów i parameter properties (ust. 8, 9). DODAJ `using` / `await using` jako domyślną formę sprzątania zasobów w kodzie Node/Hono zamiast try/finally (ust. 11) — PRZENIES-DO-LINTERA sam zapis importów typów przez consistent-type-imports.",
+   "DODAJ do sekcji 9 (bezpieczeństwo) cztery reguły RLS z dowodem: auth.uid() zawsze owinięte w (select ...), indeks na kolumnie filtra polityki jako wiodący, każda polityka z klauzulą TO <rola>, zakaz security definer w wystawionym schemacie (ust. 12, 13). ZMIEN regułę o rolach: app_metadata schodzi z pozycji zalecenia, zalecana jest tabela ról + Custom Access Token Auth Hook, zakaz user_metadata zostaje (ust. 15). PRZENIES-DO-LINTERA/BRAMKI: `supabase db advisors` w domknięciu fazy pokrywa 0013, 0007, 0003, 0001 mechanicznie (ust. 14).",
+   "DODAJ sekcję „granica API w Hono/Node\": walidacja przez zValidator jako middleware z jawnym testem na brakujący content-type (pusty {} zamiast danych — ust. 16), błędy przez HTTPException + app.onError zamiast własnego AppError w każdym projekcie (ust. 17), każde wyjście sieciowe z AbortSignal.timeout — to zamyka klasę B „brak timeoutu\" jedną linijką bez nowej zależności (ust. 18). ROZSZERZ regułę „rate limiting na KAŻDYM public endpoint\" o limit rozmiaru payloadu, limit page size i throttling operacji wrażliwych wg OWASP API4:2023 (ust. 19).",
+   "ROZSTRZYGNIJ wewnętrzne sprzeczności dokumentu, bo to one produkują spory reviewerów: sekcja 3 „wyciągaj shared logic do dedykowanego modułu\" kontra sekcja 11 „Duplication > Complexity\" — ustal jeden próg (np. ekstrakcja dopiero przy 3. użyciu, wcześniej duplikacja jest OK) i USUN słabszy zapis. Zmiękcz absolutne NIGDY/ZAWSZE tam, gdzie oficjalne docs dopuszczają wyjątek (ust. 7, 10). W sekcji 2 DODAJ kryterium falsyfikowalności wprost dowiązane do zasady Testing Library (ust. 20) i rozróżnij unit w jsdom od testu komponentu w browser mode z userEvent (ust. 21). W sekcji 5 oznacz katalog 10 anty-patternów jako nasze obserwacje bez źródła albo USUN procenty."
+  ],
+  "kosztWdrozenia": "Konfiguracja: jednorazowo 1–2 dni na eslint.config.js (flat config z recommended-type-checked + eslint-plugin-react-hooks recommended-latest + max-lines z tolerancją) plus tsconfig (verbatimModuleSyntax, erasableSyntaxOnly) — erasableSyntaxOnly może wymusić usunięcie istniejących enumów, więc w starszych projektach to osobna migracja. Przepisanie samego coding-rules.md to jedna sesja: dokument skurczy się o sekcje 1, 6 (quality gate) i część 5, a urośnie o Supabase/Hono/Node, więc netto zostanie mniej więcej tej samej długości (~11k znaków = ~3k tokenów doklejane do każdego z 35 agentów fazy, czyli ~105k tokenów na fazę tylko za reguły). Runtime: reguły type-checked w ESLint wydłużają lint o kilkadziesiąt sekund na projekt (potrzebny program TS), `supabase db advisors` to sekundy i zero tokenów — w zamian znikają tury agentów na klasy, które linter łapie deterministycznie."
+ },
+ "research:ekonomia-review": {
+  "kierunek": "Ekonomia review wieloagentowego LLM: czy niezbieganie findingow jest znana wlasnoscia, ile reviewerow i przejsc ma sens, czy adwersarialna weryfikacja sie oplaca, jak kontekst i reguly wplywaja na wykrywalnosc, jak inni tna koszt review.",
+  "ustalenia": [
+   {
+    "teza": "Niestabilnosc ocen LLM miedzy przebiegami jest udokumentowana i zmierzona: przy identycznym promptcie i ustawieniach intra-rater reliability (Krippendorff's Alpha) wynosi 0,33 (Llama-3.1-70B), 0,63 (DeepSeek-R1-Distill) i 0,79 (Qwen3-32B) przy progu akceptowalnosci 0,8; na MT-Bench Qwen-3 spada do 0,56. Autorzy rekomenduja glos wiekszosciowy z 3 przebiegow i ostrzegaja, ze temperatura 0 tnie wariancje kosztem jakosci.",
+    "url": "https://arxiv.org/html/2510.27106v1",
+    "data": "2025-10-31",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasze niezbieganie review to wlasnosc LLM-jako-sedziego, wiec leczy sie je probkowaniem i agregacja, a nie kolejna regula w promptcie."
+   },
+   {
+    "teza": "Dokladanie kolejnych rund review pogarsza wynik: pojedyncza runda F1 0,376 (precyzja 0,297 / recall 0,529), pelny multi-turn F1 0,303 (precyzja 0,204 / recall 0,607), wariant najbardziej rozgadany F1 0,263 przy precyzji 0,168. Falszywe pozytywy rosna z 5,23 do 8,47 na artefakt (+62%), a na kazdy nowy prawdziwy blad z rundy 2 przypada ok. 4-5 falszywych.",
+    "url": "https://arxiv.org/pdf/2603.16244",
+    "data": "2026-03-17",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "Nasze 12-18 nowych findingow w powtorce fazy to w wiekszosci szum, wiec powtarzanie review w petli jest najgorszym sposobem podnoszenia recall."
+   },
+   {
+    "teza": "Na SWR-Bench (1000 recznie zweryfikowanych PR-ow z pelnym kontekstem repo) pojedyncze przejscie najlepszego pipeline'u z Gemini-2.5-Pro daje precyzje 16,65%, recall 23,18%, F1 19,38%. Multi-Review (n niezaleznych przebiegow tego samego review zagregowanych osobnym wywolaniem LLM) przy n=10 podnosi recall do 30,44% (+118,8%) i F1 do 21,91% (+43,7%), z plateau w okolicy n=10; agregacja ma jednoczesnie podnosic recall i odsiewac findingi zglaszane sporadycznie.",
+    "url": "https://arxiv.org/html/2509.01494v1",
+    "data": "2025-09-01",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "Jesli chcemy wiecej recall, oplaca sie n rownoleglych przebiegow TEJ SAMEJ osi plus agregator, a nie kolejna runda sekwencyjna ani kolejna specjalizowana os."
+   },
+   {
+    "teza": "Adwersarialna weryfikacja findingow dziala jako filtr precyzji: w metodzie Refute-or-Promote recenzenci-obalacze dostaja sam claim bez uzasadnienia (kontekst asymetryczny) i zabijaja ok. 63% kandydatow w etapie A i 42% pozostalych w etapie B, lacznie 79% retrospektywnie i 83% prospektywnie (n=30). Autorzy podkreslaja, ze przelomem jest walidacja empiryczna (test/PoC), nie konsensus modeli: weryfikator jest konieczny, ale niewystarczajacy.",
+    "url": "https://arxiv.org/html/2604.19049v1",
+    "data": "2026-04",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Nasi sceptycy obalajacy 12-19% dzialaja duzo slabiej niz mozliwe 60-80%, bo dostaja pelne uzasadnienie findingu i nie musza go obalic testem."
+   },
+   {
+    "teza": "Adversarial Review (agent glowny + recenzent + krytyk, 3 agenty zamiast 5 w MARS) wymusza jawne kategorie sporu AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN, zeby zablokowac falszywy konsensus; daje 87% pass-rate na trudnych zadaniach LiveCodeBench (vs 82% MARS), F1 0,533 vs 0,457 dla wariantu bez wymuszonej struktury i 75,2% na SWE-bench Verified vs 71,6% zero-shot, kosztem ok. 4,5x wiecej tokenow, pozostajac na granicy Pareto koszt-jakosc.",
+    "url": "https://arxiv.org/html/2608.18167",
+    "data": "2026-08-16",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Nasz verify warto przepisac na wymuszony format sporu z etykietami zamiast swobodnej narracji sceptyka, bo to wlasnie struktura, nie liczba agentow, daje zysk."
+   },
+   {
+    "teza": "Cursor opisuje wlasny Bugbot: pierwotnie osiem rownoleglych przejsc po diffie z losowana kolejnoscia linii (rozna kolejnosc wymusza inne sciezki rozumowania), majority voting odsiewajacy findingi z pojedynczego przejscia i osobny model-walidator do lapania falszywych alarmow. Resolution rate (odsetek uwag naprawionych przed mergem) wzrosl z 52% do ponad 70%, srednia liczba flagowanych bledow na przebieg z 0,4 do 0,7; jesienia 2025 przeszli z pipeline'u na architekture agentowa.",
+    "url": "https://cursor.com/blog/building-bugbot",
+    "data": "2026-01-15",
+    "typZrodla": "blog",
+    "pewnosc": "wysoka",
+    "dlaNas": "Przemysl gasi niezbieganie dokladnie odwrotnie niz my: wiele rownoleglych probek jednego reviewera + glosowanie + walidator, zamiast wielu roznych rol i kolejnych rund."
+   },
+   {
+    "teza": "OpenCodeReview stawia teze deterministic engineering for uncertain agents: ograniczenie swobody agenta (regulowy dispatch plikow, ograniczony zestaw narzedzi z bounded outputem, niezalezna refleksja filtrujaca) daje SEM-F1 17,9-25,1% wobec 10,9-14,1% dla Claude Code przy tym samym modelu (2,17x lepiej) i zuzywa 385-743k tokenow na PR wobec 2 062-5 664k (5-15x mniej), przy czasie 1m06s-6m28s vs 5m38s-14m24s.",
+    "url": "https://arxiv.org/html/2608.09290v1",
+    "data": "2026-08-10",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Potwierdza nasza decyzje o bramkach mechanicznych: deterministyczny dobor plikow i ograniczone narzedzia bija swobodnego agenta czytajacego repo i przy okazji tna koszt rzedu wielkosci."
+   },
+   {
+    "teza": "Benchmark IFScale (20 modeli, 7 dostawcow, do 500 instrukcji w jednym promptcie) pokazuje degradacje przestrzegania regul z ich liczba: przy 10 instrukcjach 98-100%, przy 150 czolowe modele 84-99%, przy 500 nawet najlepsze tylko ok. 68% (gemini-2.5-pro 68,9%, o3 62,8%). Najsilniejszy bias pozycyjny (przewaga instrukcji wczesniejszych) wystepuje przy 150-200 instrukcjach, a dominujacym bledem jest pominiecie calej instrukcji, nie jej znieksztalcenie.",
+    "url": "https://arxiv.org/html/2507.11538v1",
+    "data": "2025-07",
+    "typZrodla": "paper",
+    "pewnosc": "wysoka",
+    "dlaNas": "To jest liczbowe wyjasnienie, dlaczego 45 z 68 ucieczek mialo regule w promptcie i mimo to przeszlo: przy kilkuset regulach w CLAUDE.md model po prostu ciche je pomija."
+   },
+   {
+    "teza": "Przy zrownanym budzecie tokenow myslenia pojedynczy agent dorownuje lub bije systemy wieloagentowe na zadaniach wieloetapowych (FRAMES, MuSiQue 4-hop; Qwen3-30B, DeepSeek-R1-70B, Gemini 2.5 Flash/Pro; budzety 100-10k tokenow). Przyklad: FRAMES / Gemini 2.5-Pro przy 5000 tokenow: pojedynczy agent 0,700, sekwencyjny MAS 0,680, debata 0,700. Wniosek autorow: raportowane zyski MAS tlumaczy raczej wiecej compute i kontekstu niz sama architektura; MAS wygrywa dopiero gdy kontekst mocno degraduje.",
+    "url": "https://arxiv.org/html/2604.02460v1",
+    "data": "2026-04-02",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Nasze 6 osi review moze dawac zysk glownie przez 6x wiecej tokenow, a nie przez specjalizacje, wiec podzial na role trzeba porownac z jednym reviewerem o tym samym budzecie."
+   },
+   {
+    "teza": "W kontrolowanym porownaniu specjalistow z generalista (ocena esejow, 3 agenci specjalisci + koordynator vs jeden agent) multi-agent daje QWK 0,7453 vs 0,7165, czyli 2,9 pkt proc. (ok. 4% wzglednie), kosztem 4x wiecej wywolan API. Przewaga koncentruje sie na przypadkach skrajnych (dla najslabszych prac +26,6 i +10,8 pkt proc.), a w srodku skali pojedynczy agent bywa lepszy (61,2% vs 57,3%).",
+    "url": "https://arxiv.org/html/2601.22386v1",
+    "data": "2026-01",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Specjalizacja rol oplaca sie tam, gdzie przypadek jest skrajny (security, migracje), a nie jako rownomierny podzial na szesc osi po tym samym diffie."
+   },
+   {
+    "teza": "Klasyczna praca o skalowaniu przez sampling-and-voting (Agent Forest) pokazuje, ze wydajnosc rosnie z liczba instancji agenta, ale stopien poprawy jest skorelowany z trudnoscia zadania, a metoda jest ortogonalna wobec innych technik. Nowsze analizy dokladaja warunek: zysk saturuje sie, gdy dodatkowi agenci sa klonami o tej samej slepej plamce, a glosowanie nie naprawia bledow systematycznych i skorelowanych.",
+    "url": "https://arxiv.org/abs/2402.05120",
+    "data": "2024-10-11",
+    "typZrodla": "paper",
+    "pewnosc": "srednia",
+    "dlaNas": "Zwielokrotnianie przebiegow pomoze nam tylko przy naprawde trudnych fazach i tylko jesli probki sa rozne (inna kolejnosc diffu, inny model), inaczej kupujemy ten sam blad n razy."
+   },
+   {
+    "teza": "Kontekst podawany recenzentowi istotnie zmienia wykrywalnosc podatnosci: sam diff wypada najslabiej, diff z otoczeniem posrednio, a pelne pliki z metadanymi PR najlepiej; jednoczesnie framing zadania (komentarze i opis PR sugerujace, ze kod jest w porzadku) potrafi obnizyc detection rate, czyli istnieje mierzalny bias kontekstowy dzialajacy w obie strony.",
+    "url": "https://arxiv.org/pdf/2603.18740",
+    "data": "2026-09-15",
+    "typZrodla": "paper",
+    "pewnosc": "niska",
+    "dlaNas": "Dossier dla reviewera musi zawierac kod i fakty, a nie nasze wlasne zapewnienia z planu fazy, bo pozytywny opis obniza czujnosc reviewera."
+   },
+   {
+    "teza": "CodeRabbit, bot ktory lapie nasze ucieczki, nie jest czystym LLM-em: integruje ponad 50 deterministycznych linterow i analizatorow bezpieczenstwa (m.in. ESLint dla TS/JS, Ruff, skanery sekretow) uruchamianych automatycznie w sandboksie, a ich wyniki wklada do review razem z jednoklikowymi poprawkami.",
+    "url": "https://docs.coderabbit.ai/tools",
+    "data": "brak daty",
+    "typZrodla": "docs",
+    "pewnosc": "wysoka",
+    "dlaNas": "Czesc naszych 195 realnych defektow z uwag bota to rzeczy, ktore u niego znajduje linter, a u nas ma znalezc agent: to dokladnie argument za ESLint flat config i knip w domknieciu fazy."
+   },
+   {
+    "teza": "Praktyczny konsensus rynkowy 2026: zaufanie do AI-reviewera buduje sie strojeniem na niska liczbe falszywych pozytywow, a nie na wysoki recall, bo koszt jednego FP to sekundy uwagi programisty, a koszt tysiaca to nauczenie zespolu przewijania kazdego komentarza; narzedzia zaleca sie wdrazac najpierw na waskich, niskoryzykownych kategoriach i dopiero potem rozszerzac.",
+    "url": "https://sourcegraph.com/blog/ai-code-review",
+    "data": "2026-05-21",
+    "typZrodla": "blog",
+    "pewnosc": "srednia",
+    "dlaNas": "Uzasadnia rezygnacje z osi, ktore produkuja glownie szum (performance, code-quality), i przesuniecie budzetu na waskie, sprawdzalne klasy defektow."
+   }
+  ],
+  "luki": [
+   "Brak zrodla: nie znalazlem zadnej publicznej dokumentacji Anthropic opisujacej wewnetrzna mechanike /code-review ani tzw. ultrareview (ile przejsc, czy jest drugi agent weryfikujacy, jak deduplikuja findingi) - nie ma czego cytowac.",
+   "Brak zrodla: nie znalazlem oficjalnej dokumentacji GitHub Copilot code review ani Greptile opisujacej liczbe przejsc i mechanizm weryfikacji; dostepne sa tylko porownania blogowe bez metodologii, wiec nie wlaczylem ich jako ustalen.",
+   "Brak zrodla: nie potwierdzilem pierwotnym zrodlem liczb o routingu po ryzyku PR (tiery low/medium/high) ani danych Cloudflare o 131 246 runach i medianie 0,98 USD za review - pojawiaja sie w wynikach wyszukiwania, ale nie udalo sie ich otworzyc u zrodla.",
+   "Do pomiaru: nasz wlasny inter-run agreement - ile z 12-18 findingow powtorki to te same findingi co za pierwszym razem, a ile faktycznie nowych prawdziwych defektow (bez tego nie wiemy, czy jestesmy blizej CCR-1 czy D-CCR-2b).",
+   "Do pomiaru: skutecznosc naszych sceptykow po zmianie na kontekst asymetryczny (sam claim bez uzasadnienia) - czy kill rate ruszy z 12-19% w strone 40-60%.",
+   "Do pomiaru: jaka czesc naszych 195 realnych defektow z uwag CodeRabbita zlapalby u nas sam ESLint flat config + knip + tsc, bez zadnego agenta.",
+   "Brak zrodla: nie ma badania mierzacego zysk z podzialu review na dokladnie nasze 6 osi (security/correctness/spec/perf/testy/jakosc) wobec jednego reviewera o tym samym budzecie tokenow - najblizsze dane sa z innych domen."
+  ],
+  "rekomendacje": [
+   "Wywalic powtarzanie review sekwencyjnie i nigdy nie robic drugiej rundy tej samej fazy w petli - ustalenie 2 pokazuje, ze druga runda kupuje 1 prawdziwy defekt za 4-5 falszywych i obniza F1 z 0,376 do 0,303; zamiast tego ustalenie 3 i 6: jesli chcemy wiecej recall, robimy n rownoleglych probek jednego reviewera (rozna kolejnosc diffu) i agregator, z plateau okolo n=10 - u nas realnie n=3.",
+   "Przepisac sceptyka verify na kontekst asymetryczny i wymuszony format sporu: sceptyk dostaje sam claim bez uzasadnienia autora (ustalenie 4) i odpowiada w jednej z etykiet AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN (ustalenie 5), a DISAGREE_EVIDENCE wymaga przywolania linii kodu albo testu - to powinno ruszyc kill rate z naszych 12-19% w strone 40-80%.",
+   "Zamknac finding empirycznie, nie konsensusem: ustalenie 4 mowi wprost, ze o zaufaniu decyduje test/PoC, a nie zgoda modeli - dla klas P1 (migracje, sciezka bledu, wyscigi React) wymagac od fixa testu regresyjnego, ktory failuje przed poprawka, zamiast kolejnej rundy opinii.",
+   "Przesunac budzet z osi produkujacych szum do bramek deterministycznych: ustalenia 7 i 13 (OpenCodeReview 2,17x lepszy SEM-F1 przy 5-15x mniejszym zuzyciu tokenow; CodeRabbit odpala 50+ linterow) potwierdzaja juz podjeta decyzje o ESLint flat config + knip + size-limit w domknieciu fazy i o redukcji agentow do klas zachowaniowych; ustalenie 14 dodaje argument, ze niski FP jest wazniejszy od recall.",
+   "Zmierzyc, czy 6 osi to specjalizacja czy tylko 6x wiecej tokenow: ustalenia 9 i 10 pokazuja, ze przy zrownanym budzecie pojedynczy agent dorownuje MAS, a specjalizacja placi glownie na przypadkach skrajnych - zrobic jeden run kontrolny, gdzie jeden reviewer dostaje budzet rowny sumie osi, i porownac liste findingow; jesli remis, zostawic 2-3 osie skrajne (security, correctness/migracje) plus bramki mechaniczne.",
+   "Przerobic reguly w promptach na krotkie polecenia-listy i ograniczyc ich liczbe: ustalenie 8 (IFScale) pokazuje spadek przestrzegania do ok. 68% przy 500 instrukcjach, bias na instrukcje wczesniejsze przy 150-200 i dominujacy blad typu ciche pominiecie - kazda os review ma dostac maks. kilkanascie polecen produkujacych liste, ustawionych na poczatku promptu, a reszta coding-rules ma zejsc do lintera.",
+   "Dossier dla reviewera budowac z kodu i faktow, nie z naszych zapewnien: ustalenie 12 wskazuje, ze pozytywny framing w opisie zmiany obniza wykrywalnosc, a pelne pliki biją sam diff - do reviewera idzie diff plus pelne tresci dotknietych plikow i kontrakty, bez fragmentow planu mowiacych, ze cos jest juz sprawdzone."
+  ],
+  "kosztWdrozenia": "Zmiany sa glownie promptowe i konfiguracyjne, nie architektoniczne: przepisanie sceptyka na kontekst asymetryczny z etykietami sporu oraz skrocenie regul do polecen-list to po kilka godzin edycji szablonow agentow, a ESLint flat config + knip + size-limit w domknieciu fazy to jednorazowo 1-2 dni z dostrajaniem progow pod nasze projekty. Runtime: bramki mechaniczne dodaja kilkadziesiat sekund do minuty CI na faze i zero tokenow, a rezygnacja z drugiej rundy review i z osi szumowych powinna zdjac wiekszosc z 66% tokenow fazy idacych dzis w review; ewentualne n=3 rownolegle probki jednej osi kosztuja mniej niz obecne 6 osi plus sceptycy plus powtorki. Jedyny realny koszt jednorazowy to run kontrolny porownujacy 6 osi z jednym reviewerem o rownym budzecie - jedna faza przerobiona dwoma sciezkami, czyli koszt mniej wiecej jednej dodatkowej fazy autopilota."
+ },
+ "mapowanie-na-pipeline": {
+  "elementy": [
+   {
+    "element": "Review: oś security",
+    "dzisiaj": "Agent Opus czyta diff fazy i szuka bramek, PII w logach, walidacji koperty; 38 uwag B bota przeszło mimo właściciela i reguły.",
+    "zamiennik": "czesciowy",
+    "czym": "Supabase Database Advisors (0013_rls_disabled_in_public, 0007_policy_exists_rls_disabled, 0002_auth_users_exposed, 0023_sensitive_columns_exposed) w domknięciu fazy + ESLint no-empty/recommended na ścieżkę błędu; reszta (bramka czarną listą, PII w message do Sentry, dokument sterujący) bez mechanicznego zamiennika.",
+    "dowod": "https://supabase.com/docs/guides/database/database-advisors (dostęp 2026-09-20); https://supabase.com/docs/guides/database/postgres/row-level-security (dostęp 2026-09-20, security definer w wystawionym schemacie); https://eslint.org/docs/latest/rules/no-empty (dostęp 2026-09-20)",
+    "coZostajeAgentowi": "Tryb atakującego na bramkach w kodzie aplikacji: dla każdej bramki wypisz gałąź domyślną i 3 ładunki, które przepuszcza; ładunek wyjątku (co ląduje w Sentry); diff w CLAUDE.md/.claude. Advisors widzą schemat bazy, nie kod TS.",
+    "ryzyko": "Advisors działają na żywej bazie (wymagają migracji już zastosowanych lokalnie) — w domknięciu fazy trzeba mieć `supabase db reset`; fałszywe poczucie pokrycia: advisors nie widzą Edge Functions ani Hono."
+   },
+   {
+    "element": "Review: oś correctness",
+    "dzisiaj": "Agent Opus, największa klasa ucieczek (77 uwag B: ścieżka błędu bez obsługi 12, cykl życia React 11, wyścigi 6, granice wartości w migracji).",
+    "zamiennik": "czesciowy",
+    "czym": "@typescript-eslint/no-floating-promises (recommended-type-checked) na ścieżkę błędu bez obsługi; eslint-plugin-react-hooks v6 z regułami kompilatora (set-state-in-effect, set-state-in-render, purity, immutability, refs) na cykl życia React i wyścigi; AbortSignal.timeout jako reguła kodu na brak timeoutu.",
+    "dowod": "https://typescript-eslint.io/rules/no-floating-promises/ (dostęp 2026-09-20); https://react.dev/reference/eslint-plugin-react-hooks (dostęp 2026-09-20); https://react.dev/blog/2025/10/07/react-compiler-1 (2025-10-07); https://nodejs.org/api/globals.html (AbortSignal.timeout, dostęp 2026-09-20)",
+    "coZostajeAgentowi": "To, czego linter nie widzi: „wszystkie drogi do operacji i bramka na każdej\", wartość czytana przed await i użyta po nim (numer generacji zamiast flagi), długość generowanego literału vs constraint w migracji, spójność dwóch systemów.",
+    "ryzyko": "Reguły kompilatora React mogą sypać szumem w istniejącym kodzie (tura wyciszania); reguły typowane kosztują ~jeden tsc na fazę — czasu nie mamy zmierzonego."
+   },
+   {
+    "element": "Review: oś spec-compliance",
+    "dzisiaj": "Agent Opus sprawdza zgodność z planem/IU i tekstami UI; 15 uwag B, w tym 12 „tekst obiecuje czynność, której kod nie robi\".",
+    "zamiennik": "brak",
+    "czym": "-",
+    "dowod": "brak dowodu w wynikach researchu — żaden z pięciu kierunków nie wskazał narzędzia porównującego intencję dokumentu z kodem",
+    "coZostajeAgentowi": "Całość: literał tekstowy → linia kodu, która go realizuje; dokument prawny vs kolumny migracji; grep literałów z „Ty\" vs docs/design.md.",
+    "ryzyko": "Brak mechanicznego wejścia oznacza, że oś zostaje zależna od promptu — a IFScale pokazuje ciche pomijanie instrukcji, więc polecenia-listy muszą być krótkie i na początku promptu (https://arxiv.org/html/2507.11538v1, 2025-07)."
+   },
+   {
+    "element": "Review: oś performance",
+    "dzisiaj": "Decyzja z etapu 1: ZASTAP. Oś 1,5–2,2% fazy, 57% wyjścia to P3, 8 uwag B (w tym 4 „brak timeoutu\").",
+    "zamiennik": "standardowe-narzedzie",
+    "czym": "size-limit (budżet gzip/brotli w .size-limit.json, plugin esbuild, bramka w CI) + Supabase advisors performance (0001_unindexed_foreign_keys, 0003_auth_rls_initplan, 0005_unused_index) + AbortSignal.timeout na każde wyjście sieciowe.",
+    "dowod": "https://github.com/ai/size-limit (dostęp 2026-09-20); https://supabase.com/docs/guides/database/database-advisors (dostęp 2026-09-20); https://supabase.com/docs/guides/database/postgres/row-level-security (initPlan przy (select auth.uid()), dostęp 2026-09-20); https://nodejs.org/api/globals.html (dostęp 2026-09-20)",
+    "coZostajeAgentowi": "5 linii w fokusie correctness (N+1, pętla z fetchem, Promise.all po kolekcji, .limit() bez count) — zero osobnego agenta.",
+    "ryzyko": "Przy włączonym React Compilerze finding „brak useMemo/useCallback\" staje się nieważny i trzeba to zapisać wprost, inaczej wróci jako szum (https://react.dev/learn/react-compiler/introduction, dostęp 2026-09-20); size-limit wymaga builda, czas niezmierzony."
+   },
+   {
+    "element": "Review: oś test-coverage",
+    "dzisiaj": "Agent Opus z kryterium „test istnieje + ma asercję\"; największa przeoczona klasa B to test niefalsyfikowalny (31 uwag: asercja/atrapa/schemat luźniejszy od kontraktu).",
+    "zamiennik": "standardowe-narzedzie",
+    "czym": "Trzy warstwy: (1) @vitest/eslint-plugin — expect-expect, valid-expect, no-conditional-expect, no-standalone-expect, prefer-called-with; (2) vitest --typecheck + expectTypeOf<z.infer<typeof Schema>>().toEqualTypeOf<Kontrakt>() na schemat luźniejszy od kontraktu; (3) StrykerJS z vitest-runnerem, mutacje zawężone do hunków diffu fazy przez --mutate \"plik:od-do\".",
+    "dowod": "https://github.com/vitest-dev/eslint-plugin-vitest (dostęp 2026-09-20); https://vitest.dev/guide/testing-types (dostęp 2026-09-20); https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/docs/configuration.md (mutation range, dostęp 2026-09-20); https://stryker-mutator.io/docs/stryker-js/vitest-runner/ (wymuszony coverageAnalysis perTest, dostęp 2026-09-20); https://arxiv.org/abs/2102.11378 (Google: mutacja tylko na zmienionym kodzie, 2021-02-23); https://arxiv.org/abs/2506.02954 (100% coverage przy 4% mutation score; feedback mutacyjny 53%→89,5%, 2026-04-15)",
+    "coZostajeAgentowi": "Luka pokrycia (czego testu nie ma w ogóle) i strażnik negatywny — mutacja nie wykryje brakującego scenariusza, tylko martwą asercję. Przeżyte mutanty doklejać do promptu buildera jako listę do zabicia, nie do reviewera.",
+    "ryzyko": "StrykerJS NIE ma opcji --since (jest tylko w Stryker.NET) — scoping trzeba policzyć z git diff samemu, blogi obiecujące `stryker run --since main` są błędne (https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json, master 2026-09-20). Mutation score jako cel liczbowy zachęci agenta do pisania testów pod metrykę (https://arxiv.org/abs/2607.22880, 2026-07-24). E2E (Playwright/agent-browser) i Deno Edge Functions poza zasięgiem."
+   },
+   {
+    "element": "Review: oś code-quality",
+    "dzisiaj": "Agent Opus; 73% wyjścia to P3 stylu, 12 uwag B (pusty catch 2, martwa gałąź 1, duplikacja 3, kontrakt shared 3).",
+    "zamiennik": "standardowe-narzedzie",
+    "czym": "ESLint 10 flat config: js.configs.recommended (no-empty z allowEmptyCatch domyślnie off, no-unreachable, no-unused-vars), tseslint recommendedTypeChecked jako error, no-explicit-any z fixToUnknown, max-lines {max:360, skipBlankLines, skipComments} i max-lines-per-function {max:60}, import-x/order; knip --production --cache --reporter json na martwe pliki/eksporty/zależności.",
+    "dowod": "https://eslint.org/blog/2026/02/eslint-v10.0.0-released/ (2026-02-06, koniec eslintrc); https://eslint.org/docs/latest/rules/max-lines (dostęp 2026-09-20); https://eslint.org/docs/latest/rules/no-empty (dostęp 2026-09-20); https://typescript-eslint.io/rules/no-explicit-any/ (dostęp 2026-09-20); https://typescript-eslint.io/users/configs/ (dostęp 2026-09-20); https://knip.dev/reference/cli (dostęp 2026-09-20); https://github.com/un-ts/eslint-plugin-import-x (dostęp 2026-09-20); https://docs.coderabbit.ai/tools (CodeRabbit odpala 50+ linterów, dostęp 2026-09-20)",
+    "coZostajeAgentowi": "Wyłącznie klasy zachowaniowe: rozjechany kontrakt shared między modułami, błędy serwera mapowane na 400, nieidempotentny SQL, lustrzana duplikacja w testach. Wynik lintera jako WEJŚCIE do promptu („przy każdym trafieniu: defekt czy świadoma decyzja\").",
+    "ryzyko": "strictTypeChecked nie jest stabilny wg semver — minor typescript-eslint może zatrzymać domknięcie fazy bez naszej zmiany kodu, więc tylko jako warn (https://typescript-eslint.io/users/configs/). Knip sypie fałszywymi alarmami na eksportach publicznych i fixture'ach — wymaga knip.json z entry pointami."
+   },
+   {
+    "element": "Review: oś e2e (tester)",
+    "dzisiaj": "Agent uruchamia scenariusze E2E; 4 uwagi B (seed niezgodny z kontraktem 3); STOP-y runów prawie wyłącznie z tej osi.",
+    "zamiennik": "brak",
+    "czym": "-",
+    "dowod": "brak dowodu w wynikach researchu — mutacja nie obejmuje E2E (https://stryker-mutator.io/docs/stryker-js/vitest-runner/ — brak Browser Mode), a żaden kierunek nie wskazał narzędzia walidującego seed vs migracja",
+    "coZostajeAgentowi": "Całość uruchomienia plus polecenie-lista: każdy seed w diffie — kolumny wstawiane vs wymagane przez migrację, wartości nieosiągalne w produkcji = finding.",
+    "ryzyko": "Jedyny element, którego nie da się odchudzić bramką; STOP-y zewnętrzne (limit mailera) zostają."
+   },
+   {
+    "element": "Verify — sceptycy",
+    "dzisiaj": "Sceptyk dostaje finding z pełnym uzasadnieniem autora i obala 12–19%; 105 agentów na 23 fazy, 80% grup jednoelementowych.",
+    "zamiennik": "czesciowy",
+    "czym": "Zmiana mechaniki, nie zamiennik narzędziowy: kontekst asymetryczny (sceptyk dostaje sam claim bez uzasadnienia — Refute-or-Promote zabija 63% w etapie A i 79–83% łącznie) + wymuszone etykiety sporu AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN (Adversarial Review: F1 0,533 vs 0,457 dla wariantu bez struktury) + domykanie findingu testem/PoC zamiast konsensusem.",
+    "dowod": "https://arxiv.org/html/2604.19049v1 (2026-04, kill rate 63%/42%, „weryfikator konieczny, ale niewystarczający — decyduje walidacja empiryczna\"); https://arxiv.org/html/2608.18167 (2026-08-16, wymuszone kategorie sporu, koszt ~4,5× tokenów, granica Pareto)",
+    "coZostajeAgentowi": "Sam akt obalania — to nadal agent LLM, tylko z innym wejściem i sztywnym formatem wyjścia.",
+    "ryzyko": "Adversarial Review kosztuje ~4,5× więcej tokenów w cytowanym układzie — u nas sceptycy to 6% fazy, więc wzrost jest do przyjęcia tylko przy batchowaniu; kontekst asymetryczny może podnieść odsetek błędnych obaleń P1 (u nas nie mierzony)."
+   },
+   {
+    "element": "Dedup semantyczny findingów",
+    "dzisiaj": "Agent scala duplikaty między osiami przed fixem.",
+    "zamiennik": "czesciowy",
+    "czym": "Agregator z Multi-Review: n niezależnych przebiegów zbieranych osobnym wywołaniem LLM, który jednocześnie podnosi recall i odsiewa findingi zgłaszane sporadycznie; Cursor Bugbot robi to jako majority voting po 8 równoległych przejściach z losowaną kolejnością linii.",
+    "dowod": "https://arxiv.org/html/2509.01494v1 (2025-09-01, Multi-Review n=10: recall +118,8%, F1 +43,7%, plateau ~n=10); https://cursor.com/blog/building-bugbot (2026-01-15, majority voting + model-walidator, resolution rate 52%→70%)",
+    "coZostajeAgentowi": "Sama agregacja pozostaje wywołaniem LLM — research nie daje mechanicznego dedupu semantycznego. Zmienia się rola: z „scal duplikaty\" na „zagreguj i odsiej sporadyczne\".",
+    "ryzyko": "Głosowanie nie naprawia błędów systematycznych i skorelowanych — klony agenta z tą samą ślepą plamką kupują ten sam błąd n razy (https://arxiv.org/abs/2402.05120, 2024-10-11)."
+   },
+   {
+    "element": "Packager / dossier",
+    "dzisiaj": "Agent buduje dossier fazy i routuje reviewerów; bilans ujemny (18,7 M kosztu vs 9,5 M zysku), a po dossier reviewerzy czytają 2× więcej Bashem.",
+    "zamiennik": "czesciowy",
+    "czym": "Deterministyczny dispatch plików zamiast agenta: OpenCodeReview (regułowy dobór plików + ograniczony zestaw narzędzi z bounded outputem) daje SEM-F1 17,9–25,1% wobec 10,9–14,1% dla Claude Code przy 5–15× mniejszym zużyciu tokenów. Routing E2E da się policzyć w JS z grepa checkboxów.",
+    "dowod": "https://arxiv.org/html/2608.09290v1 (2026-08-10, 385–743k tokenów/PR vs 2 062–5 664k); https://arxiv.org/pdf/2603.18740 (2026-09-15, pełne pliki biją sam diff, pozytywny framing obniża wykrywalność)",
+    "coZostajeAgentowi": "Nic — dobór plików i routing to praca JS. Agent znika, jeśli dossier dostanie mandat i będzie generowany deterministycznie.",
+    "ryzyko": "Dwa źródła mówią przeciwnie o objętości: pełne pliki podnoszą wykrywalność (2603.18740), a ograniczony, deterministyczny wybór bije swobodne czytanie (2608.09290) — do rozstrzygnięcia pomiarem. Dossier NIE może zawierać naszych zapewnień z planu fazy (obniżają czujność reviewera)."
+   },
+   {
+    "element": "Scribe telemetrii",
+    "dzisiaj": "Agent haiku dopisuje wpis do globalnego JSONL; skasował plik 2×.",
+    "zamiennik": "brak",
+    "czym": "-",
+    "dowod": "brak dowodu w wynikach researchu — żaden kierunek nie dotyczy zapisu telemetrii; decyzja własna z etapu 1 (niższy tier + krótszy prompt, nie dzielić)",
+    "coZostajeAgentowi": "Zapis jednego wiersza — praca, której nie powinien robić agent, ale research nie dostarcza argumentu, tylko zdrowy rozsądek: to jest append w JS, nie zadanie modelu.",
+    "ryzyko": "Kasowanie globalnego pliku przez agenta jest udokumentowane (2 razy); przeniesienie do JS to zmiana we własnym skrypcie, bez zewnętrznego wzorca."
+   },
+   {
+    "element": "stan:zapis (agent haiku)",
+    "dzisiaj": "80 powołań agenta haiku na 23 fazy tylko po to, by zapisać stan policzony wcześniej w JS (dev-autopilot-wf.js:1199-1205).",
+    "zamiennik": "nie-dotyczy",
+    "czym": "Decyzja z etapu 1 już podjęta (stan doklejany do promptu następcy); research jej nie dotyczy, ale ją wspiera: opłata za powołanie agenta to ~107k tokenów pierwszej tury, a subagent nie dziedziczy historii rozmowy, więc stan i tak musi być w prompcie delegacji.",
+    "dowod": "https://code.claude.com/docs/en/sub-agents.md (dostęp 2026-09-20; non-fork subagent nie dziedziczy historii rozmowy, dostaje delegation prompt)",
+    "coZostajeAgentowi": "Nic — 0 agentów.",
+    "ryzyko": "Trzeba zachować wszystkie 3 punkty zapisu w fazie; przy STOP-ie następcy nie ma, więc gałąź STOP musi pisać stan z JS."
+   },
+   {
+    "element": "Precheck",
+    "dzisiaj": "7 wywołań = 0,93 M jednostek, jeden odsiew oszczędził 254k — bilans ujemny.",
+    "zamiennik": "czesciowy",
+    "czym": "Mechaniczny skrypt doctor (bash, zero agentów) z listą narzędzi wyliczaną z projektu + scalenie z env-up; plus `claude plugin validate` / `claude plugin eval` jako bramka CI dla maszynerii.",
+    "dowod": "`claude plugin eval --help` zweryfikowane lokalnie, Claude Code 2.1.278, 2026-09-20 (--trust-plugin „answers for CI\", --json, --threshold, kody wyjścia 0/1/2)",
+    "coZostajeAgentowi": "Nic, jeśli precheck zejdzie do skryptu; agent zostaje tylko jako gałąź STOP z komunikatem dla operatora.",
+    "ryzyko": "plugin eval ma bramki: Bash/Write/Edit/WebFetch/mcp__* wymagają --allow-tools, scaffold_script wymaga --scaffold; runy dzielą jeden rate limit (-j 1–8)."
+   },
+   {
+    "element": "env-up E2E",
+    "dzisiaj": "Agent stawia środowisko E2E (supabase db push, parametry z .env.e2e); najczęstsze źródło STOP-ów.",
+    "zamiennik": "czesciowy",
+    "czym": "Skrypt doctor + bramka niezmienności migracji przed postawieniem środowiska; sam start środowiska pozostaje poleceniami CLI w JS.",
+    "dowod": "https://supabase.com/docs/guides/deployment/database-migrations (dostęp 2026-09-20; CLI śledzi tylko co zastosowano, `migration repair` zmienia wpisy historii bez uruchamiania SQL)",
+    "coZostajeAgentowi": "Diagnoza nietypowej awarii środowiska; rutynowy start to skrypt.",
+    "ryzyko": "Supabase CLI nie daje nam checksumy migracji — ochronę trzeba dołożyć samemu, inaczej środowisko wstaje na zmodyfikowanym pliku bez ostrzeżenia."
+   },
+   {
+    "element": "Pre-skan fixa (haiku, grep)",
+    "dzisiaj": "2 produkcyjne trafienia w 15 fazach; kosztuje powołanie agenta w każdej fazie.",
+    "zamiennik": "standardowe-narzedzie",
+    "czym": "ESLint flat config (no-empty, no-unreachable, no-unused-vars) uruchamiany w domknięciu — to dokładnie ta praca; knip na martwe wpisy.",
+    "dowod": "https://eslint.org/docs/latest/rules/no-empty (dostęp 2026-09-20); https://knip.dev/reference/cli (dostęp 2026-09-20, wykrywa nieużywane pliki/eksporty/zależności — czego no-unused-vars nie umie)",
+    "coZostajeAgentowi": "Nic — element do skasowania.",
+    "ryzyko": "Żadne, pod warunkiem że lint faktycznie stoi w bramce fazy, a nie tylko w CI po merge'u."
+   },
+   {
+    "element": "Kontrola diffu naprawczego",
+    "dzisiaj": "Niezależny agent ogląda commit fixa; 3 realne regresje na 12 wpisów (25%) — zmiany kontraktu niewidoczne dla typechecku i testów.",
+    "zamiennik": "czesciowy",
+    "czym": "Bramka niezmienności migracji (plik sum na wzór atlas.sum / checksumy Prismy) + vitest --typecheck na kontrakty (expectTypeOf) łapią część klasy „zmiana kontraktu\"; reszta (dołożony AbortSignal.any, nowe pole w odpowiedzi API) zostaje agentowi.",
+    "dowod": "https://atlasgo.io/concepts/migration-directory-integrity (dostęp 2026-09-20, odwrócone drzewo merkle, niezgodność raportowana lokalnie i w CI); https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production (MIGRATION.CHECK_HASH_MISMATCH, dostęp 2026-09-20); https://vitest.dev/guide/testing-types (dostęp 2026-09-20)",
+    "coZostajeAgentowi": "Wykrywanie zmian zachowania w commicie fixa — niezależność wykrywacza od naprawiacza jest jedynym zabezpieczeniem, a research potwierdza, że weryfikator konieczny (2604.19049).",
+    "ryzyko": "Nie scalać z poprawką; Prisma odnotowuje lukę — hash liczony z artefaktu, nie źródła, więc nasza bramka musi liczyć hash tego pliku, który jedzie na bazę."
+   },
+   {
+    "element": "Domknięcie fazy (typecheck / test / lint / commit)",
+    "dzisiaj": "typecheck + testy + commit; lintera de facto gra agent code-quality, brak knip, brak size-limit, brak bramki migracji.",
+    "zamiennik": "standardowe-narzedzie",
+    "czym": "Jeden eslint.config.ts na ESLint 10 (js recommended + tseslint recommendedTypeChecked + react-hooks v6 + max-lines/max-lines-per-function + @vitest/eslint-plugin), knip --production --cache --reporter json, size-limit z .size-limit.json, vitest --typecheck, Stryker diff-scoped, migrations.sum, supabase db advisors.",
+    "dowod": "https://eslint.org/blog/2026/02/eslint-v10.0.0-released/ (2026-02-06); https://knip.dev/reference/cli (dostęp 2026-09-20); https://github.com/ai/size-limit (dostęp 2026-09-20); https://atlasgo.io/concepts/migration-directory-integrity (dostęp 2026-09-20); https://supabase.com/docs/guides/database/database-advisors (dostęp 2026-09-20); https://arxiv.org/html/2608.09290v1 (2026-08-10, deterministyczne bramki biją swobodnego agenta 2,17× przy 5–15× mniejszym koszcie)",
+    "coZostajeAgentowi": "Interpretacja wyników: przy każdym trafieniu lintera/knipa decyzja „defekt czy świadoma decyzja\"; przeżyte mutanty jako lista do zabicia dla buildera.",
+    "ryzyko": "Nie ma gotowego pakietu scalającego lint+knip+size-limit — to skrypt w package.json. Czas bramki na 50–200 plikach niezmierzony; przy regułach typowanych lint ≈ jeden build TS (https://typescript-eslint.io/troubleshooting/typed-linting/performance/). Plan B na czas: oxlint --type-aware (https://oxc.rs/blog/2026-07-22-type-aware-linting-stable, 2026-07-22), ale bez reguł react-compiler i max-lines, więc jako dodatek, nie zamiana; Biome v2 odpada z tego samego powodu (https://biomejs.dev/blog/biome-v2/, 2025-06-17)."
+   },
+   {
+    "element": "Planner + dev-docs (scalony skill)",
+    "dzisiaj": "Dwa skille pod rząd, 22–46% treści dev-docs to niemal dosłowna kopia planu; 0 uwag B przypisanych, ale źródło 80 uwag A (progi rozmiaru) i 5 B (ta sama stała w wielu miejscach).",
+    "zamiennik": "czesciowy",
+    "czym": "Budżet pliku w IU jako liczba z max-lines (jedna liczba w configu zamiast sporu) + knip jako wykrywacz rejestru stałych/martwych eksportów; samo planowanie bez zamiennika.",
+    "dowod": "https://eslint.org/docs/latest/rules/max-lines (dostęp 2026-09-20, max/skipBlankLines/skipComments); https://knip.dev/reference/cli (dostęp 2026-09-20)",
+    "coZostajeAgentowi": "Całe planowanie i decyzja „zostaje / dzieli się\" wg liczby powodów do zmiany — linie są tylko wyzwalaczem pytania.",
+    "ryzyko": "Próg 300/50 przeniesiony do configu bez tolerancji wróci jako ten sam szum; ustalenie 1b: 360/60 (tolerancja 20%)."
+   },
+   {
+    "element": "Builder — kontekst startowy (CLAUDE.md, rules, MCP, skille)",
+    "dzisiaj": "~107k tokenów w pierwszej turze każdego z 35 agentów fazy: system prompt 44k, CLAUDE.md+rules 33k, nazwy MCP 27k, opisy skilli 10k.",
+    "zamiennik": "natywny-claude-code",
+    "czym": "omitClaudeMd: true w definicji subagenta (v2.1.271+) — „launch this subagent without the user, project, and local CLAUDE.md files\"; tools: jako allowlista i disallowedTools: mcp__* na 27k narzędzi; pole skills: wstrzykujące tylko potrzebne skille; wszystko, co reguła musi przekazać, idzie do promptu delegacji.",
+    "dowod": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields (dostęp 2026-09-20; omitClaudeMd wymaga v2.1.271+, ignorowane tylko dla agenta głównego via --agent); https://code.claude.com/docs/en/sub-agents.md (dostęp 2026-09-20, „What loads at startup\": subagent dostaje całą hierarchię CLAUDE.md wraz z project rules)",
+    "coZostajeAgentowi": "Cała praca merytoryczna — zmienia się wyłącznie objętość kontekstu startowego. Reguły potrzebne agentowi wracają jako krótkie polecenia-listy w prompcie.",
+    "ryzyko": "Dwie niewiadome: docs NIE mówią, czy omitClaudeMd wyłącza też .claude/rules/*.md i rozwijanie @import (a to właśnie tam siedzi 33k), ani czy pole działa dla agentów z Workflow tool / agent(). Do zmierzenia runem przed wdrożeniem. Dodatkowo: przy kilkuset instrukcjach model i tak cicho pomija część reguł (https://arxiv.org/html/2507.11538v1, 2025-07: ~68% przestrzegania przy 500 instrukcjach)."
+   },
+   {
+    "element": "dev-pr (tury z botem)",
+    "dzisiaj": "0,74% kosztu pipeline'u; tury 2–3 omijają etap klasyfikacji, guard uznaje dowolny backtick za cytat ze źródła decyzji, brak rekomendacji merguj/nie merguj.",
+    "zamiennik": "czesciowy",
+    "czym": "Konfiguracja CodeRabbita (.coderabbit.yaml) zamiast tur negocjacji: bot odpala 50+ deterministycznych linterów w sandboksie, więc szum A jest wyłączalny konfiguracją, a nie odpowiedzią agenta; sufit tur uzasadniony rozkładem uwag.",
+    "dowod": "https://docs.coderabbit.ai/tools (dostęp 2026-09-20, ponad 50 linterów i skanerów uruchamianych automatycznie); https://sourcegraph.com/blog/ai-code-review (2026-05-21, stroić na niski FP, nie na wysoki recall)",
+    "coZostajeAgentowi": "Klasyfikacja wątków i decyzja „naprawiam / odrzucam z uzasadnieniem\" — zostaje, ale obowiązkowo w każdej turze.",
+    "ryzyko": "Zmiany w .coderabbit.yaml trzeba wdrożyć PRZED pomiarem dev-pr, inaczej liczba tur nie będzie porównywalna."
+   },
+   {
+    "element": "dev-compound (dopisywanie do CLAUDE.md / learned-patterns)",
+    "dzisiaj": "Dopisuje do CLAUDE.md i learned-patterns; CLAUDE.md urósł 3,4k → 89,7k znaków w 4 tygodnie, learned-patterns 0 → 47k — i każdy agent niesie to w każdej turze.",
+    "zamiennik": "natywny-claude-code",
+    "czym": "Warstwowanie kontekstu zamiast dopisywania do zawsze ładowanej warstwy: reguły z frontmatter paths: ładują się dopiero przy czytaniu pasującego pliku, a @import w CLAUDE.md jest zawsze eager; subagenty odchudza omitClaudeMd.",
+    "dowod": "https://code.claude.com/docs/en/memory.md#path-specific-rules (dostęp 2026-09-20: „Path-scoped rules trigger when Claude reads files matching the pattern, not on every tool use\"); https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields (dostęp 2026-09-20)",
+    "coZostajeAgentowi": "Pisanie samej wiedzy (klasa → reguła → source) — to zostaje, zmienia się tylko warstwa docelowa.",
+    "ryzyko": "Największa niewiadoma całego etapu: docs NIE rozstrzygają, czy reguły z paths: w ogóle działają w subagentach (Agent tool / agent() w Workflow) — jeśli nie działają, cała warstwowość nie odchudza agentów pipeline'u, tylko sesję główną. Niuans: przed v2.1.211 path-scoped ładowały się mimo wykluczenia 'project' z --setting-sources; symlinkowane reguły spoza working directory ładują się tylko BEZ pola paths."
+   },
+   {
+    "element": "sync-template (dystrybucja szablonu)",
+    "dzisiaj": "Kopiowany katalog .claude/ z synchronizacją skryptem; lokalny patch E2E w oferty-online zablokował sync, przez co projekt nie dostał napraw N1–N9.",
+    "zamiennik": "czesciowy",
+    "czym": "Plugin Claude Code (skills/, agents/, commands/, hooks/, workflows/, templates jako assety) + `claude plugin validate --strict` i `claude plugin eval` jako bramka CI zmian w maszynerii; ablacja --ablation with-without odpowiada na „czy ten skill/agent w ogóle coś daje\".",
+    "dowod": "`claude plugin eval --help` zweryfikowane lokalnie, Claude Code 2.1.278, 2026-09-20 (format katalogów evals/<case>/prompt.md + graders/*.md, --ablation with-without, --json, --threshold, kody wyjścia); HANDOFF 6a pkt 13 (ustalenia z docs plugins-reference/workflows)",
+    "coZostajeAgentowi": "Nic — dystrybucja i walidacja są mechaniczne.",
+    "ryzyko": "Operator zdecydował 2026-09-20: pluginu NIE wdrażać teraz. Plugin nie może nieść CLAUDE.md ani rules/*.md jako auto-ładowanego kontekstu, a namespace /nazwa-pluginu:skill wymusza przepisanie wszystkich odwołań między skillami. plugin eval nie mierzy tokenów ani kosztu kontekstu (do tego jest /skill-doctor)."
+   },
+   {
+    "element": "coding-rules.md jako dokument",
+    "dzisiaj": "14 sekcji, ~11k znaków doklejane do każdego z 35 agentów fazy (~3k tokenów × 35 ≈ 105k na fazę tylko za reguły); 45 z 68 defektów miało regułę w prompcie i mimo to przeszło.",
+    "zamiennik": "czesciowy",
+    "czym": "Przeniesienie sekcji 1, 6 i części 5/10 do lintera (max-lines, no-explicit-any z fixToUnknown, no-floating-promises, no-empty, consistent-type-imports); dopisanie tego, czego dokument nie ma: flagi tsconfig verbatimModuleSyntax i erasableSyntaxOnly, satisfies zamiast zakazu `as`, `using`/`await using` zamiast try/finally, cztery reguły RLS, zValidator + HTTPException w Hono, AbortSignal.timeout, OWASP API4:2023 (limit payloadu, page size, throttling), useActionState/useOptimistic.",
+    "dowod": "https://eslint.org/docs/latest/rules/max-lines; https://typescript-eslint.io/rules/no-explicit-any/; https://typescript-eslint.io/rules/no-floating-promises/; https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/ (2025-02-28, erasableSyntaxOnly); https://www.typescriptlang.org/tsconfig/verbatimModuleSyntax.html; https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html (satisfies); https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html (using/await using); https://supabase.com/docs/guides/database/postgres/row-level-security; https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac; https://hono.dev/docs/guides/validation; https://hono.dev/docs/api/exception; https://api-security.owasp.org/editions/2023/en/0xa4-unrestricted-resource-consumption/ (2023); https://react.dev/blog/2024/12/05/react-19 (2024-12-05); https://react.dev/reference/react/useEffect; https://testing-library.com/docs/guiding-principles/ (wszystkie bez daty publikacji — dostęp 2026-09-20)",
+    "coZostajeAgentowi": "To, co zostaje w dokumencie, ma być krótkimi poleceniami produkującymi listę, na początku promptu — nie prozą.",
+    "ryzyko": "Dwie reguły są dziś SPRZECZNE z oficjalnymi docs: §13 „useEffect z async = ZAWSZE AbortController\" (React odradza fetch w efekcie i gasi wyścig flagą ignore) i §9 dopuszczenie app_metadata na rolę (Supabase prowadzi do tabeli ról + Custom Access Token Auth Hook). §3 „wyciągaj shared logic\" kontra §11 „Duplication > Complexity\" produkuje spory reviewerów. Katalog „10 anty-patternów AI\" z procentami 80–90% nie ma żadnego źródła. erasableSyntaxOnly może wymusić usunięcie enumów w starszych projektach — osobna migracja."
+   }
+  ],
+  "sprzecznosciMiedzyKierunkami": [
+   "Kierunek 5 sam sobie przeczy w sprawie liczby przebiegów: badanie wieloturowe mówi, że druga runda review obniża F1 z 0,376 do 0,303 i kupuje 1 prawdziwy defekt za 4–5 fałszywych (https://arxiv.org/pdf/2603.16244, 2026-03-17), a Multi-Review i Bugbot mówią, że n RÓWNOLEGŁYCH przebiegów podnosi recall o 118% (https://arxiv.org/html/2509.01494v1, 2025-09-01; https://cursor.com/blog/building-bugbot, 2026-01-15). Rozstrzygnięcie: to nie jest sprzeczność, tylko rozróżnienie sekwencyjne vs równoległe — ale jeśli je pomylimy, wdrożymy dokładnie to, co szkodzi. Nasze „review nie zbiega\" (12–18 nowych findingów w powtórce) to przypadek sekwencyjny.",
+   "Kierunek 5 przeciw kierunkowi 5: przy zrównanym budżecie tokenów pojedynczy agent dorównuje systemom wieloagentowym (https://arxiv.org/html/2604.02460v1, 2026-04-02), co podważa sens 6 osi — ale jednocześnie zaleca n=3 równoległe próbki i adwersarialny verify kosztujący ~4,5× tokenów (https://arxiv.org/html/2608.18167, 2026-08-16). Jedno mówi „tnij compute\", drugie „dołóż compute w innym miejscu\". Bez runu kontrolnego nie wiemy, które dotyczy nas.",
+   "Kierunek 5 o kontekście reviewera: pełne pliki z metadanymi PR biją sam diff (https://arxiv.org/pdf/2603.18740, 2026-09-15), a OpenCodeReview pokazuje, że regułowy, ograniczony dobór plików z bounded outputem bije swobodnego agenta czytającego repo 2,17× przy 5–15× mniejszym koszcie (https://arxiv.org/html/2608.09290v1, 2026-08-10). To wprost sprzeczne wskazówki dla dossier: karmić szeroko czy wąsko.",
+   "Kierunek 4 przeciw naszemu coding-rules §13: React odradza ręczny fetch w useEffect i każe gasić wyścig flagą ignore w cleanupie (https://react.dev/reference/react/useEffect), a nasza reguła mówi „ZAWSZE AbortController\" — i to właśnie dołożony AbortSignal.any był jedną z trzech regresji złapanych przez kontrolę diffu fixa. Reguła generuje defekty, które potem łapiemy agentem.",
+   "Kierunek 4 przeciw naszemu coding-rules §9: przewodnik RBAC Supabase prowadzi do tabeli ról + Custom Access Token Auth Hook i nie wspomina o app_metadata (https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac), a nasza reguła zaleca app_metadata. Zakaz user_metadata się broni, zalecenie — nie.",
+   "Kierunek 2: oficjalny schemat opcji StrykerJS nie zawiera `since` (https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json, master 2026-09-20), a przewodnik z 2026-06-25 instruuje `stryker run --since main` (https://qaskills.sh/blog/mutation-testing-stryker-guide-2026). Blog jest błędny — scoping liczymy sami z git diff i --mutate.",
+   "Kierunek 2 przeciw kierunkowi 5 w sprawie budżetu: mutacja ze sprzężeniem zwrotnym do buildera podnosi jakość testów z 53% do 89,5% (https://arxiv.org/abs/2506.02954), ale to kolejne tury naprawiania w fazie — a kierunek 5 każe tury ciąć. Mutacja jest tania w tokenach (CPU, nie model), ale jej WYNIK generuje pracę agenta.",
+   "Kierunek 3 przeciw kierunkowi 4 w sprawie presetu: kierunek 3 ostrzega, że strict/strictTypeChecked nie są stabilne wg semver i mogą zatrzymać domknięcie fazy poza majorem (https://typescript-eslint.io/users/configs/), kierunek 4 rekomenduje typed linting bez tego zastrzeżenia. Bezpiecznie: recommendedTypeChecked jako error, strictTypeChecked jako warn.",
+   "Kierunek 1 przeciw naszej tezie kosztowej: omitClaudeMd jest udokumentowane wyłącznie dla „user, project, and local CLAUDE.md files\" i docs MILCZĄ o .claude/rules/*.md oraz @import (https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields). Nasze 33k tokenów to CLAUDE.md PLUS rules — jeśli reguły nie odpadają, dźwignia jest o połowę mniejsza niż zakładamy.",
+   "Kierunek 1 przeciw oczekiwaniu, że plugin eval zmierzy nam koszt: eval nie ma gradera ani pola na tokeny (jest tylko sufit --max-cost-usd), a koszt kontekstu skilli raportuje osobne /skill-doctor (`claude plugin eval --help`, Claude Code 2.1.278, 2026-09-20). Do mierzenia odchudzania kontekstu eval się nie nadaje — nadaje się do mierzenia jakości promptu."
+  ],
+  "doPomiaru": [
+   "Czy reguły .claude/rules/*.md z frontmatter paths: w ogóle docierają do subagenta uruchomionego przez Agent tool i przez agent() w Workflow — docs milczą (https://code.claude.com/docs/en/memory.md#path-specific-rules). To warunek konieczny całej warstwowości kontekstu; mini-run z regułami-markerami wg HANDOFF 6a pkt 9.",
+   "Czy omitClaudeMd: true wyłącza także .claude/rules/*.md i rozwinięte @import, czy tylko trzy pliki CLAUDE.md — docs nie nazywają reguł. Pomiar: kontekst startowy z pola usage w transkrypcie agenta z flagą i bez.",
+   "Czy omitClaudeMd działa dla agentów z Workflow tool / agent() — docs wymieniają tylko jeden przypadek ignorowania pola (agent główny via --agent).",
+   "Ile realnie trwa bramka mechaniczna na naszym repo (50–200 plików TS/TSX): ESLint typed, knip --cache, size-limit, Stryker diff-scoped na fazie o 10–30 plikach, supabase db advisors — żadne źródło nie podaje liczb dla tej skali. Bez tego nie wiemy, czy bramka mieści się w fazie i czy potrzebny jest plan B (oxlint --type-aware).",
+   "Jaka część naszych 195 realnych uwag B CodeRabbita zostałaby złapana przez sam ESLint flat config + knip + tsc, bez żadnego agenta — to jest liczba, która rozstrzyga, ile osi review można skasować.",
+   "Nasz inter-run agreement: ile z 12–18 findingów powtórki fazy to te same findingi, a ile naprawdę nowych prawdziwych defektów. Bez tego nie wiemy, czy jesteśmy w reżimie „powtórka szkodzi\" (2603.16244), czy „potrzeba więcej próbek\" (2509.01494).",
+   "Czy sceptyk z kontekstem asymetrycznym (sam claim, bez uzasadnienia autora) i etykietami AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN ruszy kill rate z naszych 12–19% w stronę 40–80% — i czy nie zacznie obalać prawdziwych P1.",
+   "Run kontrolny: jeden reviewer z budżetem tokenów równym sumie 6 osi kontra dzisiejsze 6 osi na tej samej fazie — czy specjalizacja daje cokolwiek poza 6× większym compute (https://arxiv.org/html/2604.02460v1).",
+   "Czy Stryker wykrywa klasę „atrapa nie sprawdza argumentów\" (vi.fn() + toHaveBeenCalled zamiast toHaveBeenCalledWith) — hipoteza: nie, łapie to lint prefer-called-with. Eksperyment na jednym pliku.",
+   "Skuteczność mutatorów na schematach Zod (czy Object Literal / Method Expression generują sensowne mutanty w łańcuchach z.object(...).min()) — od tego zależy, czy „schemat luźniejszy od kontraktu\" domyka mutacja, czy tylko test typów.",
+   "Czy cache Strykera (stryker-incremental.json) przeżywa między fazami autopilota w naszym układzie katalogów i czy nie wpada do gita; plus status znanego błędu vitest-runnera generującego ~15k linii diffu w baseline (issue #6004).",
+   "Czy tabela supabase_migrations.schema_migrations trzyma gdziekolwiek checksumę w CLI z 2026 — jeśli nie, bramka migrations.sum jest u nas konieczna, nie opcjonalna.",
+   "Wariancja score plugin eval między powtórzeniami tej samej wersji promptu (ile --runs trzeba, by delta A–B wyszła poza szum) i stabilność sędziego LLM na naszych długich raportach review — bez tego A/B promptów reviewera nic nie dowodzi.",
+   "Koszt fałszywych alarmów knipa na naszych projektach (eksporty publiczne, fixture'y, pliki generowane) — ile tur wyciszania przed pierwszym zielonym domknięciem.",
+   "Ile z naszych 157 uwag szumu konfiguracyjnego pochodzi konkretnie z progów 300/50 — od tego zależy, jaką tolerancję ustawić w max-lines (propozycja 1b: 360/60).",
+   "Czy reguły eslint-plugin-react-hooks v6 napędzane kompilatorem działają bez włączonego React Compilera w buildzie i ile szumu sypią na istniejącym kodzie oferty-online.",
+   "Efekt mandatu dossier: tury Bash reviewerów przed i po zapisaniu „reviewer zaczyna od dossier, nie robi git diff\" — dziś jedyny pomiar (Bash p50 10,5 → 23) idzie w złą stronę i jest zmieszany z rozrostem CLAUDE.md.",
+   "Kontekst startowy agenta przed i po: tools: allowlista bez MCP, pole skills: zamiast 300 opisów, omitClaudeMd — trzy warianty, zmierzone z usage w transkrypcie, na tej samej fazie."
+  ]
+ }
+}

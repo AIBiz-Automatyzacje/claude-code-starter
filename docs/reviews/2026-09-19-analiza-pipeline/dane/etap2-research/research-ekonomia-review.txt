@@ -1,0 +1,136 @@
+{
+ "kierunek": "Ekonomia review wieloagentowego LLM: czy niezbieganie findingow jest znana wlasnoscia, ile reviewerow i przejsc ma sens, czy adwersarialna weryfikacja sie oplaca, jak kontekst i reguly wplywaja na wykrywalnosc, jak inni tna koszt review.",
+ "ustalenia": [
+  {
+   "teza": "Niestabilnosc ocen LLM miedzy przebiegami jest udokumentowana i zmierzona: przy identycznym promptcie i ustawieniach intra-rater reliability (Krippendorff's Alpha) wynosi 0,33 (Llama-3.1-70B), 0,63 (DeepSeek-R1-Distill) i 0,79 (Qwen3-32B) przy progu akceptowalnosci 0,8; na MT-Bench Qwen-3 spada do 0,56. Autorzy rekomenduja glos wiekszosciowy z 3 przebiegow i ostrzegaja, ze temperatura 0 tnie wariancje kosztem jakosci.",
+   "url": "https://arxiv.org/html/2510.27106v1",
+   "data": "2025-10-31",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasze niezbieganie review to wlasnosc LLM-jako-sedziego, wiec leczy sie je probkowaniem i agregacja, a nie kolejna regula w promptcie."
+  },
+  {
+   "teza": "Dokladanie kolejnych rund review pogarsza wynik: pojedyncza runda F1 0,376 (precyzja 0,297 / recall 0,529), pelny multi-turn F1 0,303 (precyzja 0,204 / recall 0,607), wariant najbardziej rozgadany F1 0,263 przy precyzji 0,168. Falszywe pozytywy rosna z 5,23 do 8,47 na artefakt (+62%), a na kazdy nowy prawdziwy blad z rundy 2 przypada ok. 4-5 falszywych.",
+   "url": "https://arxiv.org/pdf/2603.16244",
+   "data": "2026-03-17",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasze 12-18 nowych findingow w powtorce fazy to w wiekszosci szum, wiec powtarzanie review w petli jest najgorszym sposobem podnoszenia recall."
+  },
+  {
+   "teza": "Na SWR-Bench (1000 recznie zweryfikowanych PR-ow z pelnym kontekstem repo) pojedyncze przejscie najlepszego pipeline'u z Gemini-2.5-Pro daje precyzje 16,65%, recall 23,18%, F1 19,38%. Multi-Review (n niezaleznych przebiegow tego samego review zagregowanych osobnym wywolaniem LLM) przy n=10 podnosi recall do 30,44% (+118,8%) i F1 do 21,91% (+43,7%), z plateau w okolicy n=10; agregacja ma jednoczesnie podnosic recall i odsiewac findingi zglaszane sporadycznie.",
+   "url": "https://arxiv.org/html/2509.01494v1",
+   "data": "2025-09-01",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "Jesli chcemy wiecej recall, oplaca sie n rownoleglych przebiegow TEJ SAMEJ osi plus agregator, a nie kolejna runda sekwencyjna ani kolejna specjalizowana os."
+  },
+  {
+   "teza": "Adwersarialna weryfikacja findingow dziala jako filtr precyzji: w metodzie Refute-or-Promote recenzenci-obalacze dostaja sam claim bez uzasadnienia (kontekst asymetryczny) i zabijaja ok. 63% kandydatow w etapie A i 42% pozostalych w etapie B, lacznie 79% retrospektywnie i 83% prospektywnie (n=30). Autorzy podkreslaja, ze przelomem jest walidacja empiryczna (test/PoC), nie konsensus modeli: weryfikator jest konieczny, ale niewystarczajacy.",
+   "url": "https://arxiv.org/html/2604.19049v1",
+   "data": "2026-04",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Nasi sceptycy obalajacy 12-19% dzialaja duzo slabiej niz mozliwe 60-80%, bo dostaja pelne uzasadnienie findingu i nie musza go obalic testem."
+  },
+  {
+   "teza": "Adversarial Review (agent glowny + recenzent + krytyk, 3 agenty zamiast 5 w MARS) wymusza jawne kategorie sporu AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN, zeby zablokowac falszywy konsensus; daje 87% pass-rate na trudnych zadaniach LiveCodeBench (vs 82% MARS), F1 0,533 vs 0,457 dla wariantu bez wymuszonej struktury i 75,2% na SWE-bench Verified vs 71,6% zero-shot, kosztem ok. 4,5x wiecej tokenow, pozostajac na granicy Pareto koszt-jakosc.",
+   "url": "https://arxiv.org/html/2608.18167",
+   "data": "2026-08-16",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Nasz verify warto przepisac na wymuszony format sporu z etykietami zamiast swobodnej narracji sceptyka, bo to wlasnie struktura, nie liczba agentow, daje zysk."
+  },
+  {
+   "teza": "Cursor opisuje wlasny Bugbot: pierwotnie osiem rownoleglych przejsc po diffie z losowana kolejnoscia linii (rozna kolejnosc wymusza inne sciezki rozumowania), majority voting odsiewajacy findingi z pojedynczego przejscia i osobny model-walidator do lapania falszywych alarmow. Resolution rate (odsetek uwag naprawionych przed mergem) wzrosl z 52% do ponad 70%, srednia liczba flagowanych bledow na przebieg z 0,4 do 0,7; jesienia 2025 przeszli z pipeline'u na architekture agentowa.",
+   "url": "https://cursor.com/blog/building-bugbot",
+   "data": "2026-01-15",
+   "typZrodla": "blog",
+   "pewnosc": "wysoka",
+   "dlaNas": "Przemysl gasi niezbieganie dokladnie odwrotnie niz my: wiele rownoleglych probek jednego reviewera + glosowanie + walidator, zamiast wielu roznych rol i kolejnych rund."
+  },
+  {
+   "teza": "OpenCodeReview stawia teze deterministic engineering for uncertain agents: ograniczenie swobody agenta (regulowy dispatch plikow, ograniczony zestaw narzedzi z bounded outputem, niezalezna refleksja filtrujaca) daje SEM-F1 17,9-25,1% wobec 10,9-14,1% dla Claude Code przy tym samym modelu (2,17x lepiej) i zuzywa 385-743k tokenow na PR wobec 2 062-5 664k (5-15x mniej), przy czasie 1m06s-6m28s vs 5m38s-14m24s.",
+   "url": "https://arxiv.org/html/2608.09290v1",
+   "data": "2026-08-10",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Potwierdza nasza decyzje o bramkach mechanicznych: deterministyczny dobor plikow i ograniczone narzedzia bija swobodnego agenta czytajacego repo i przy okazji tna koszt rzedu wielkosci."
+  },
+  {
+   "teza": "Benchmark IFScale (20 modeli, 7 dostawcow, do 500 instrukcji w jednym promptcie) pokazuje degradacje przestrzegania regul z ich liczba: przy 10 instrukcjach 98-100%, przy 150 czolowe modele 84-99%, przy 500 nawet najlepsze tylko ok. 68% (gemini-2.5-pro 68,9%, o3 62,8%). Najsilniejszy bias pozycyjny (przewaga instrukcji wczesniejszych) wystepuje przy 150-200 instrukcjach, a dominujacym bledem jest pominiecie calej instrukcji, nie jej znieksztalcenie.",
+   "url": "https://arxiv.org/html/2507.11538v1",
+   "data": "2025-07",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "To jest liczbowe wyjasnienie, dlaczego 45 z 68 ucieczek mialo regule w promptcie i mimo to przeszlo: przy kilkuset regulach w CLAUDE.md model po prostu ciche je pomija."
+  },
+  {
+   "teza": "Przy zrownanym budzecie tokenow myslenia pojedynczy agent dorownuje lub bije systemy wieloagentowe na zadaniach wieloetapowych (FRAMES, MuSiQue 4-hop; Qwen3-30B, DeepSeek-R1-70B, Gemini 2.5 Flash/Pro; budzety 100-10k tokenow). Przyklad: FRAMES / Gemini 2.5-Pro przy 5000 tokenow: pojedynczy agent 0,700, sekwencyjny MAS 0,680, debata 0,700. Wniosek autorow: raportowane zyski MAS tlumaczy raczej wiecej compute i kontekstu niz sama architektura; MAS wygrywa dopiero gdy kontekst mocno degraduje.",
+   "url": "https://arxiv.org/html/2604.02460v1",
+   "data": "2026-04-02",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Nasze 6 osi review moze dawac zysk glownie przez 6x wiecej tokenow, a nie przez specjalizacje, wiec podzial na role trzeba porownac z jednym reviewerem o tym samym budzecie."
+  },
+  {
+   "teza": "W kontrolowanym porownaniu specjalistow z generalista (ocena esejow, 3 agenci specjalisci + koordynator vs jeden agent) multi-agent daje QWK 0,7453 vs 0,7165, czyli 2,9 pkt proc. (ok. 4% wzglednie), kosztem 4x wiecej wywolan API. Przewaga koncentruje sie na przypadkach skrajnych (dla najslabszych prac +26,6 i +10,8 pkt proc.), a w srodku skali pojedynczy agent bywa lepszy (61,2% vs 57,3%).",
+   "url": "https://arxiv.org/html/2601.22386v1",
+   "data": "2026-01",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Specjalizacja rol oplaca sie tam, gdzie przypadek jest skrajny (security, migracje), a nie jako rownomierny podzial na szesc osi po tym samym diffie."
+  },
+  {
+   "teza": "Klasyczna praca o skalowaniu przez sampling-and-voting (Agent Forest) pokazuje, ze wydajnosc rosnie z liczba instancji agenta, ale stopien poprawy jest skorelowany z trudnoscia zadania, a metoda jest ortogonalna wobec innych technik. Nowsze analizy dokladaja warunek: zysk saturuje sie, gdy dodatkowi agenci sa klonami o tej samej slepej plamce, a glosowanie nie naprawia bledow systematycznych i skorelowanych.",
+   "url": "https://arxiv.org/abs/2402.05120",
+   "data": "2024-10-11",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Zwielokrotnianie przebiegow pomoze nam tylko przy naprawde trudnych fazach i tylko jesli probki sa rozne (inna kolejnosc diffu, inny model), inaczej kupujemy ten sam blad n razy."
+  },
+  {
+   "teza": "Kontekst podawany recenzentowi istotnie zmienia wykrywalnosc podatnosci: sam diff wypada najslabiej, diff z otoczeniem posrednio, a pelne pliki z metadanymi PR najlepiej; jednoczesnie framing zadania (komentarze i opis PR sugerujace, ze kod jest w porzadku) potrafi obnizyc detection rate, czyli istnieje mierzalny bias kontekstowy dzialajacy w obie strony.",
+   "url": "https://arxiv.org/pdf/2603.18740",
+   "data": "2026-09-15",
+   "typZrodla": "paper",
+   "pewnosc": "niska",
+   "dlaNas": "Dossier dla reviewera musi zawierac kod i fakty, a nie nasze wlasne zapewnienia z planu fazy, bo pozytywny opis obniza czujnosc reviewera."
+  },
+  {
+   "teza": "CodeRabbit, bot ktory lapie nasze ucieczki, nie jest czystym LLM-em: integruje ponad 50 deterministycznych linterow i analizatorow bezpieczenstwa (m.in. ESLint dla TS/JS, Ruff, skanery sekretow) uruchamianych automatycznie w sandboksie, a ich wyniki wklada do review razem z jednoklikowymi poprawkami.",
+   "url": "https://docs.coderabbit.ai/tools",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Czesc naszych 195 realnych defektow z uwag bota to rzeczy, ktore u niego znajduje linter, a u nas ma znalezc agent: to dokladnie argument za ESLint flat config i knip w domknieciu fazy."
+  },
+  {
+   "teza": "Praktyczny konsensus rynkowy 2026: zaufanie do AI-reviewera buduje sie strojeniem na niska liczbe falszywych pozytywow, a nie na wysoki recall, bo koszt jednego FP to sekundy uwagi programisty, a koszt tysiaca to nauczenie zespolu przewijania kazdego komentarza; narzedzia zaleca sie wdrazac najpierw na waskich, niskoryzykownych kategoriach i dopiero potem rozszerzac.",
+   "url": "https://sourcegraph.com/blog/ai-code-review",
+   "data": "2026-05-21",
+   "typZrodla": "blog",
+   "pewnosc": "srednia",
+   "dlaNas": "Uzasadnia rezygnacje z osi, ktore produkuja glownie szum (performance, code-quality), i przesuniecie budzetu na waskie, sprawdzalne klasy defektow."
+  }
+ ],
+ "luki": [
+  "Brak zrodla: nie znalazlem zadnej publicznej dokumentacji Anthropic opisujacej wewnetrzna mechanike /code-review ani tzw. ultrareview (ile przejsc, czy jest drugi agent weryfikujacy, jak deduplikuja findingi) - nie ma czego cytowac.",
+  "Brak zrodla: nie znalazlem oficjalnej dokumentacji GitHub Copilot code review ani Greptile opisujacej liczbe przejsc i mechanizm weryfikacji; dostepne sa tylko porownania blogowe bez metodologii, wiec nie wlaczylem ich jako ustalen.",
+  "Brak zrodla: nie potwierdzilem pierwotnym zrodlem liczb o routingu po ryzyku PR (tiery low/medium/high) ani danych Cloudflare o 131 246 runach i medianie 0,98 USD za review - pojawiaja sie w wynikach wyszukiwania, ale nie udalo sie ich otworzyc u zrodla.",
+  "Do pomiaru: nasz wlasny inter-run agreement - ile z 12-18 findingow powtorki to te same findingi co za pierwszym razem, a ile faktycznie nowych prawdziwych defektow (bez tego nie wiemy, czy jestesmy blizej CCR-1 czy D-CCR-2b).",
+  "Do pomiaru: skutecznosc naszych sceptykow po zmianie na kontekst asymetryczny (sam claim bez uzasadnienia) - czy kill rate ruszy z 12-19% w strone 40-60%.",
+  "Do pomiaru: jaka czesc naszych 195 realnych defektow z uwag CodeRabbita zlapalby u nas sam ESLint flat config + knip + tsc, bez zadnego agenta.",
+  "Brak zrodla: nie ma badania mierzacego zysk z podzialu review na dokladnie nasze 6 osi (security/correctness/spec/perf/testy/jakosc) wobec jednego reviewera o tym samym budzecie tokenow - najblizsze dane sa z innych domen."
+ ],
+ "rekomendacje": [
+  "Wywalic powtarzanie review sekwencyjnie i nigdy nie robic drugiej rundy tej samej fazy w petli - ustalenie 2 pokazuje, ze druga runda kupuje 1 prawdziwy defekt za 4-5 falszywych i obniza F1 z 0,376 do 0,303; zamiast tego ustalenie 3 i 6: jesli chcemy wiecej recall, robimy n rownoleglych probek jednego reviewera (rozna kolejnosc diffu) i agregator, z plateau okolo n=10 - u nas realnie n=3.",
+  "Przepisac sceptyka verify na kontekst asymetryczny i wymuszony format sporu: sceptyk dostaje sam claim bez uzasadnienia autora (ustalenie 4) i odpowiada w jednej z etykiet AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN (ustalenie 5), a DISAGREE_EVIDENCE wymaga przywolania linii kodu albo testu - to powinno ruszyc kill rate z naszych 12-19% w strone 40-80%.",
+  "Zamknac finding empirycznie, nie konsensusem: ustalenie 4 mowi wprost, ze o zaufaniu decyduje test/PoC, a nie zgoda modeli - dla klas P1 (migracje, sciezka bledu, wyscigi React) wymagac od fixa testu regresyjnego, ktory failuje przed poprawka, zamiast kolejnej rundy opinii.",
+  "Przesunac budzet z osi produkujacych szum do bramek deterministycznych: ustalenia 7 i 13 (OpenCodeReview 2,17x lepszy SEM-F1 przy 5-15x mniejszym zuzyciu tokenow; CodeRabbit odpala 50+ linterow) potwierdzaja juz podjeta decyzje o ESLint flat config + knip + size-limit w domknieciu fazy i o redukcji agentow do klas zachowaniowych; ustalenie 14 dodaje argument, ze niski FP jest wazniejszy od recall.",
+  "Zmierzyc, czy 6 osi to specjalizacja czy tylko 6x wiecej tokenow: ustalenia 9 i 10 pokazuja, ze przy zrownanym budzecie pojedynczy agent dorownuje MAS, a specjalizacja placi glownie na przypadkach skrajnych - zrobic jeden run kontrolny, gdzie jeden reviewer dostaje budzet rowny sumie osi, i porownac liste findingow; jesli remis, zostawic 2-3 osie skrajne (security, correctness/migracje) plus bramki mechaniczne.",
+  "Przerobic reguly w promptach na krotkie polecenia-listy i ograniczyc ich liczbe: ustalenie 8 (IFScale) pokazuje spadek przestrzegania do ok. 68% przy 500 instrukcjach, bias na instrukcje wczesniejsze przy 150-200 i dominujacy blad typu ciche pominiecie - kazda os review ma dostac maks. kilkanascie polecen produkujacych liste, ustawionych na poczatku promptu, a reszta coding-rules ma zejsc do lintera.",
+  "Dossier dla reviewera budowac z kodu i faktow, nie z naszych zapewnien: ustalenie 12 wskazuje, ze pozytywny framing w opisie zmiany obniza wykrywalnosc, a pelne pliki biją sam diff - do reviewera idzie diff plus pelne tresci dotknietych plikow i kontrakty, bez fragmentow planu mowiacych, ze cos jest juz sprawdzone."
+ ],
+ "kosztWdrozenia": "Zmiany sa glownie promptowe i konfiguracyjne, nie architektoniczne: przepisanie sceptyka na kontekst asymetryczny z etykietami sporu oraz skrocenie regul do polecen-list to po kilka godzin edycji szablonow agentow, a ESLint flat config + knip + size-limit w domknieciu fazy to jednorazowo 1-2 dni z dostrajaniem progow pod nasze projekty. Runtime: bramki mechaniczne dodaja kilkadziesiat sekund do minuty CI na faze i zero tokenow, a rezygnacja z drugiej rundy review i z osi szumowych powinna zdjac wiekszosc z 66% tokenow fazy idacych dzis w review; ewentualne n=3 rownolegle probki jednej osi kosztuja mniej niz obecne 6 osi plus sceptycy plus powtorki. Jedyny realny koszt jednorazowy to run kontrolny porownujacy 6 osi z jednym reviewerem o rownym budzecie - jedna faza przerobiona dwoma sciezkami, czyli koszt mniej wiecej jednej dodatkowej fazy autopilota."
+}

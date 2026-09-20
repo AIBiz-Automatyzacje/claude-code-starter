@@ -1,0 +1,53 @@
+{
+ "odpowiedzi": [
+  {
+   "pytanie": "Czy reguly .claude/rules/*.md BEZ frontmatter paths: laduja sie w subagentach?",
+   "odpowiedz": "Tak. Docs (sub-agents.md, sekcja 'What loads at startup') wymieniaja w kontekscie startowym non-fork subagenta 'every level of the CLAUDE.md hierarchy the main conversation loads, including ~/.claude/CLAUDE.md, project rules, CLAUDE.local.md, managed policy files'. Reguly bez pola paths sa wg memory.md ladowane bezwarunkowo z tym samym priorytetem co .claude/CLAUDE.md, wiec wchodza do subagenta. Wyjatki: wbudowane agenty Explore i Plan pomijaja to w calosci; subagent z omitClaudeMd tez.",
+   "url": "https://code.claude.com/docs/en/sub-agents.md",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "potwierdzone-w-docs"
+  },
+  {
+   "pytanie": "Czy reguly .claude/rules/*.md Z frontmatter paths: (globy) laduja sie w SUBAGENTACH (Agent tool, agent() w Workflow), gdy subagent czyta plik pasujacy do globu?",
+   "odpowiedz": "docs milcza — do pomiaru. memory.md mowi tylko: 'Path-scoped rules trigger when Claude reads files matching the pattern, not on every tool use' — bez wskazania, czy dotyczy to rowniez sesji subagenta. Sekcja 'What loads at startup' w sub-agents.md wymienia 'project rules' w kontekscie startowym, ale nie rozstrzyga regul warunkowych ladowanych on-demand w trakcie pracy subagenta. Zadna strona nie laczy paths: z Agent tool ani z agent() w Workflow. Niuans do uwzglednienia w pomiarze: reguly projektowe sa pomijane, gdy wykluczysz 'project' z --setting-sources (przed v2.1.211 path-scoped ladowaly sie mimo wykluczenia), a symlinkowane reguly spoza working directory ladują sie wylacznie wtedy, gdy NIE maja pola paths.",
+   "url": "https://code.claude.com/docs/en/memory.md#path-specific-rules",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "docs-milcza-do-pomiaru"
+  },
+  {
+   "pytanie": "Co dokladnie robi omitClaudeMd: true w definicji subagenta?",
+   "odpowiedz": "Pole frontmatter subagenta (opcjonalne). Cytat z tabeli 'Supported frontmatter fields': 'Set to true to launch this subagent without the user, project, and local CLAUDE.md files; managed policy files still load, except for managed subagents. Use it for subagents that take everything they need from the delegation prompt. Ignored when the agent runs as the main session agent via --agent or the agent setting.' Sekcja 'What loads at startup' potwierdza: 'A subagent whose definition sets omitClaudeMd loads only the managed policy files, or none at all when the definition comes from managed settings.'",
+   "url": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "potwierdzone-w-docs"
+  },
+  {
+   "pytanie": "Od jakiej wersji dziala omitClaudeMd?",
+   "odpowiedz": "Requires Claude Code v2.1.271 or later (zapis wprost w tabeli pol frontmatter subagenta).",
+   "url": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "potwierdzone-w-docs"
+  },
+  {
+   "pytanie": "Czy omitClaudeMd wylacza takze .claude/rules/*.md oraz @import?",
+   "odpowiedz": "docs milcza — do pomiaru. Opis pola wymienia wylacznie 'user, project, and local CLAUDE.md files' i nie nazywa ani .claude/rules/*.md, ani rozwijania @import. Poszlaka za tym, ze reguly tez odpadaja: sekcja 'What loads at startup' traktuje 'project rules' jako czesc tej samej hierarchii CLAUDE.md, ktora omitClaudeMd redukuje do managed policy files; dodatkowo memory.md przy AGENTS.md pisze, ze 'subagents that skip project instructions skip these files too' wraz z rozwinietymi @path importami. To jednak wniosek z konstrukcji zdan, nie zapis wprost — zweryfikuj pomiarem.",
+   "url": "https://code.claude.com/docs/en/memory.md#agents-md",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "docs-milcza-do-pomiaru"
+  },
+  {
+   "pytanie": "Czy omitClaudeMd dziala dla agentow uruchamianych z Workflow tool / agent()?",
+   "odpowiedz": "docs milcza — do pomiaru. Docs podaja tylko jeden przypadek ignorowania pola: 'Ignored when the agent runs as the main session agent via --agent or the agent setting.' Workflow tool ani agent() nie sa w tym kontekscie wymienione. Skoro agent() spawnuje zwykly subagent (a nie glowny agent sesji), pole powinno dzialac, ale docs tego nie potwierdzaja.",
+   "url": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "docs-milcza-do-pomiaru"
+  },
+  {
+   "pytanie": "Czego subagent NIE dziedziczy z sesji glownej (kontekst dla pomiaru regul)?",
+   "odpowiedz": "Wg sub-agents.md non-fork subagent nie dziedziczy: historii rozmowy, wczesniej wywolanych skilli, ustawien output style, auto memory (moze miec wlasna przez pole memory) ani rozmiaru okna kontekstu (zalezy od jego modelu). Dziedziczy: wlasny system prompt + environment details, delegation prompt, hierarchie CLAUDE.md (w tym project rules), snapshot git status, pelna tresc skilli z pola skills, sibling roster (v2.1.206+). Fork dziedziczy pelny kontekst rodzica zamiast startowac od zera.",
+   "url": "https://code.claude.com/docs/en/sub-agents.md",
+   "data": "2026-09-20 (data dostepu; strona nie podaje daty publikacji)",
+   "status": "potwierdzone-w-docs"
+  }
+ ]
+}

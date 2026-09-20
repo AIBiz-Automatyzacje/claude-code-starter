@@ -1,0 +1,135 @@
+{
+ "kierunek": "Kierunek 3 — bramki mechaniczne w domknięciu fazy: co jest standardem 2026 (ESLint flat config, knip, size-limit, bramka niezmienności migracji, alternatywy Biome/oxlint)",
+ "ustalenia": [
+  {
+   "teza": "ESLint v10.0.0 (6 lutego 2026) całkowicie usuwa system eslintrc: pliki .eslintrc.*/.eslintignore, flagi --no-eslintrc/--env/--rulesdir i komentarze /* eslint-env */ są martwe, a jedyną formą konfiguracji jest flat config (eslint.config.*). Zmienił się też algorytm szukania configu — startuje od katalogu linkowanego pliku, nie od cwd (wsparcie dla monorepo). Wymaga Node >= 20.19.",
+   "url": "https://eslint.org/blog/2026/02/eslint-v10.0.0-released/",
+   "data": "2026-02-06",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Bramka lintera w domknięciu fazy musi być pisana od razu jako eslint.config.ts/mjs na ESLint 10 — każdy przykład .eslintrc w promptach czy skillach jest dziś błędem, nie stylem."
+  },
+  {
+   "teza": "typescript-eslint udostępnia presety warstwowo: recommended / strict / stylistic, każdy z wariantem *-type-checked wymagającym informacji o typach; w flat configu używa się tseslint.configs.strictTypeChecked. Dokumentacja jawnie ostrzega, że strict i strict-type-checked NIE są stabilne wg semver — zestaw reguł może się zmienić poza majorem.",
+   "url": "https://typescript-eslint.io/users/configs/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Bierzemy recommendedTypeChecked jako bramkę twardą (stabilna), a strictTypeChecked tylko jako warstwę ostrzeżeń — inaczej minor typescript-eslint potrafi zatrzymać domknięcie fazy bez naszej zmiany kodu."
+  },
+  {
+   "teza": "Reguła max-lines jest żywa (od ESLint 2.12), przyjmuje opcje { max, skipBlankLines, skipComments } z domyślnym max = 300 i nie liczy końcowego pustego wiersza. Analogicznie działa max-lines-per-function.",
+   "url": "https://eslint.org/docs/latest/rules/max-lines",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Progi 300/50 z naszych coding-rules dają się wyrazić maszynowo jako max-lines {max:360, skipBlankLines:true, skipComments:true} i max-lines-per-function {max:60,...} — to zdejmuje z reviewera-agenta i z bota PR ok. 80 uwag szumu konfiguracyjnego."
+  },
+  {
+   "teza": "Reguła no-empty jest w konfiguracji recommended @eslint/js i ma opcję allowEmptyCatch (domyślnie wyłączoną), czyli pusty catch bez komentarza jest błędem z pudełka.",
+   "url": "https://eslint.org/docs/latest/rules/no-empty",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Klasa defektów 'pusty catch / połknięty błąd', która dziś przechodzi przez agenta code-quality, jest łapana przez js.configs.recommended bez jednej linijki promptu — wystarczy nie wyłączać allowEmptyCatch."
+  },
+  {
+   "teza": "eslint-plugin-react-hooks v6 (wydany wraz z React Compiler 1.0, jesień 2025) domyślnie używa flat configu i dokłada do exhaustive-deps oraz rules-of-hooks kilkanaście reguł napędzanych kompilatorem: set-state-in-effect, set-state-in-render, purity, immutability, refs, error-boundaries, static-components, preserve-manual-memoization i inne. Reguły działają statycznie i nie wymagają włączenia React Compilera w aplikacji.",
+   "url": "https://react.dev/reference/eslint-plugin-react-hooks",
+   "data": "brak daty (strona wersji rc; v6 ogłoszone X 2025)",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Druga co do wielkości klasa ucieczek do bota — cykl życia React i wyścigi — ma dziś gotowy mechaniczny wykrywacz; set-state-in-effect i refs to dokładnie te wzorce, które łapał CodeRabbit, a nie nasz reviewer."
+  },
+  {
+   "teza": "eslint-plugin-import-x to utrzymywany fork eslint-plugin-import: zawiera regułę order, wspiera flat config, obcina zależności ze 117 do 16 i używa rustowego resolvera unrs-resolver zamiast resolve; powstał, bo upstream nie przyjmował zmian łamiących (m.in. wsparcia dla pola exports).",
+   "url": "https://github.com/un-ts/eslint-plugin-import-x",
+   "data": "brak daty",
+   "typZrodla": "repo",
+   "pewnosc": "srednia",
+   "dlaNas": "Jeśli chcemy grupowania importów (stdlib/third-party/local) jako bramki, import-x/order jest tańszy niż stary eslint-plugin-import; alternatywa czysto sortująca to simple-import-sort (v14, publikacja ~2 mies. temu) lub perfectionist — oba żywe."
+  },
+  {
+   "teza": "typescript-eslint podaje, że przy typed lintingu czas lintowania jest z grubsza równy czasowi builda projektu; pierwsza reguła typowana zawsze wygląda najdroższa (rozgrzewanie cache TS), a największe spowolnienia dają szerokie include w tsconfig oraz wtyczki typu eslint-plugin-prettier i część reguł eslint-plugin-import. Zalecany jest parserOptions.projectService z v8 i profilowanie przez TIMING=1. Konkretnych liczb dokumentacja nie podaje.",
+   "url": "https://typescript-eslint.io/troubleshooting/typed-linting/performance/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Koszt bramki lintera w domknięciu fazy planujemy jako ~jeden dodatkowy tsc; 'lint tylko na diffie fazy' nie zmniejsza go istotnie przy regułach typowanych, bo i tak trzeba zbudować program TS."
+  },
+  {
+   "teza": "knip wykrywa nieużywane pliki, eksporty i zależności z package.json — czego no-unused-vars z ESLinta nie umie, bo widzi tylko jeden plik. Ma 150+ pluginów (m.in. Vite i Vitest), raportery json/markdown/github-actions/sarif, tryb --production (pomija testy i devDependencies) oraz --cache dający 10–40% szybsze kolejne uruchomienia; postęp sam wyłącza się w CI.",
+   "url": "https://knip.dev/reference/cli",
+   "data": "brak daty (strona aktualizowana 2026)",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Dead code i sieroce pliki, które dziś tropi agent Opus, domyka jedno polecenie z raporterem json — nadaje się na twardą bramkę fazy z --cache, a wynik da się wprost wkleić do stanu orkiestracji."
+  },
+  {
+   "teza": "size-limit liczy realny koszt paczki (gzip/brotli, tree-shaking przez import), a także czas ładowania i wykonania w headless Chrome; konfiguruje się przez .size-limit.json lub sekcję w package.json, ma plugin @size-limit/esbuild i gotową GitHub Action komentującą PR-y oraz odrzucającą je po przekroczeniu limitu.",
+   "url": "https://github.com/ai/size-limit",
+   "data": "brak daty (repo aktywne)",
+   "typZrodla": "repo",
+   "pewnosc": "wysoka",
+   "dlaNas": "To jest ten mechaniczny zamiennik osi performance z decyzji etapu 1b — budżet bundla jako plik w repo zamiast agenta zgadującego, co jest 'za ciężkie'."
+  },
+  {
+   "teza": "Atlas utrzymuje plik integralności atlas.sum (odwrócone drzewo merkle z sumą katalogu i sumą każdej migracji). Modyfikacja istniejącego pliku migracji zmienia jego sumę i Atlas raportuje niezgodność przy następnej komendzie — lokalnie i w CI — więc zmiana nie dociera niezauważona na produkcję; sumę przelicza świadomie atlas migrate hash, a atlas migrate lint łapie konflikty semantyczne.",
+   "url": "https://atlasgo.io/concepts/migration-directory-integrity",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Wzorzec do skopiowania jeden do jednego: plik sum katalogu migracji + porównanie w bramce fazy zamienia nasze P1 'poprawka w już wypchniętej migracji' w błąd narzędzia, nie w znalezisko reviewera."
+  },
+  {
+   "teza": "Prisma Migrate przelicza hash każdej migracji z jej plików i porównuje ze stored hash; ręczna edycja już zastosowanej migracji kończy się błędem MIGRATION.CHECK_HASH_MISMATCH. Dokumentacja odnotowuje lukę: hash liczony jest z artefaktów skompilowanych, więc edycja źródła bez rekompilacji nie zostanie wykryta.",
+   "url": "https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "srednia",
+   "dlaNas": "Potwierdza, że checksum zastosowanych migracji to standard branżowy, a nie nasz wymysł — i przypomina, że bramka musi liczyć hash z tego pliku, który realnie jedzie na bazę."
+  },
+  {
+   "teza": "Supabase CLI śledzi w supabase_migrations.schema_migrations wyłącznie to, które migracje zostały zastosowane; dokumentacja nie wspomina o przechowywaniu checksumy ani o wykrywaniu edycji już zastosowanego pliku. supabase migration list pokazuje rozjazd lokalne/zdalne, a supabase migration repair tylko zmienia wpisy w tabeli historii, nie uruchamiając ani nie cofając SQL. Zalecana ochrona to dyscyplina: nigdy nie zmieniaj zdalnej bazy ręcznie.",
+   "url": "https://supabase.com/docs/guides/deployment/database-migrations",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasz stack nie dostanie tej bramki za darmo — musimy dołożyć własny check (hash plików migracji trzymany w repo albo git diff wobec merge-base na supabase/migrations), bo CLI edycji wypchniętej migracji nie zauważy."
+  },
+  {
+   "teza": "Biome v2 (17 czerwca 2025) jako pierwszy linter JS/TS robi reguły typoświadome bez kompilatora TypeScript, na własnym syntezatorze typów (pierwsza reguła: noFloatingPromises, pokrycie ~75–85% reguł typowanych typescript-eslint), dokłada skanowanie wielu plików, konfigurację zagnieżdżoną dla monorepo, pluginy lintera i asysty sortujące importy. Wpis nie wymienia żadnej reguły limitu długości pliku/funkcji.",
+   "url": "https://biomejs.dev/blog/biome-v2/",
+   "data": "2025-06-17",
+   "typZrodla": "blog",
+   "pewnosc": "srednia",
+   "dlaNas": "Biome nie zastąpi u nas ESLinta w domknięciu fazy: brakuje odpowiednika max-lines i reguł react-hooks v6, a pokrycie reguł typowanych jest częściowe — sensownie wchodzi najwyżej jako formatter."
+  },
+  {
+   "teza": "Oxlint ma od 22 lipca 2026 stabilny type-aware linting (silnik tsgolint v7 na typescript-go, 59 z 61 reguł typowanych typescript-eslint, śledzi TS 7.0.2), włączany przez typeAware/typeCheck lub --type-aware; raportowane przyspieszenia wobec typescript-eslint: VS Code 12x, repo TypeScript 14x, TypeORM 18x, Vue core 13x. Linting i type-check dzielą jeden program TS.",
+   "url": "https://oxc.rs/blog/2026-07-22-type-aware-linting-stable",
+   "data": "2026-07-22",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Jeśli czas bramki w domknięciu fazy okaże się bolesny, oxlint --type-aware jest realną, już stabilną drogą ucieczki — ale nie ma reguł react-compiler, więc byłby dodatkiem do ESLinta, nie zamianą."
+  }
+ ],
+ "luki": [
+  "Czas wykonania każdej bramki (ESLint typed, knip, size-limit, check migracji) na projekcie 50–200 plików — do pomiaru; żadne oficjalne źródło nie podaje liczb dla tej skali, typescript-eslint mówi tylko 'mniej więcej tyle co build'.",
+  "Czy w naszych repo realnie opłaca się uruchamiać ESLint tylko na plikach z diffu fazy — do pomiaru; przy regułach typowanych program TS i tak powstaje dla całego projektu, więc oszczędność jest nieznana.",
+  "Dokładna data i numer wersji wydania eslint-plugin-react-hooks v6 — brak potwierdzenia z oficjalnego changeloga (strona react.dev jest oznaczona jako 'rc', data z wyniku wyszukiwania, nie z fetchowanego źródła).",
+  "Aktualna wersja i data ostatniego wydania size-limit oraz eslint-plugin-import-x — brak źródła (npm zwrócił 403, repo nie pokazuje numeru wydania w treści).",
+  "Czy istnieje gotowy pakiet 'quality gate' łączący lint+knip+size-limit w jedno polecenie — brak źródła; znalezione są tylko pojedyncze narzędzia, scalanie wychodzi na skrypt w package.json.",
+  "Czy Supabase CLI w wersji 2026 dokłada gdziekolwiek checksumę migracji poza dokumentacją deployment/database-migrations — do pomiaru na realnym projekcie (sprawdzić kolumny tabeli supabase_migrations.schema_migrations).",
+  "Koszt fałszywych alarmów knipa na naszych projektach (eksporty publiczne, fixture'y, pliki generowane) — do pomiaru; docs mówią tylko, że wymaga konfiguracji entry pointów."
+ ],
+ "rekomendacje": [
+  "Napisać jeden eslint.config.ts na ESLint 10 (ustalenie 1) z warstwami: js.configs.recommended (daje no-empty i no-unreachable za darmo — ustalenie 4), tseslint recommendedTypeChecked jako error i strictTypeChecked jako warn (ustalenie 2), plus max-lines {max:360, skipBlankLines:true, skipComments:true} i max-lines-per-function {max:60} (ustalenie 3) — to jest mechaniczne wejście dla progów 300/50, które dziś generują 80 uwag szumu od bota.",
+  "Włączyć eslint-plugin-react-hooks v6 z regułami kompilatora (ustalenie 5), w pierwszym kroku jako error dla set-state-in-effect, set-state-in-render, refs, purity i immutability — to jest najtańszy zamiennik dla klasy 'cykl życia React / wyścigi' z inwentarza ucieczek do bota.",
+  "Dodać knip jako twardą bramkę domknięcia fazy: knip --production --cache --reporter json (ustalenie 8), z knip.json deklarującym entry pointy i ignorowaniem fixture'ów; wynik json wkleić do stanu orkiestracji zamiast opisywać go agentem.",
+  "Zastąpić oś performance plikiem .size-limit.json z budżetem gzip na główne wejścia (ustalenie 9) uruchamianym w domknięciu fazy — zgodnie z decyzją z etapu 1b, bez agenta i bez GitHub Action na tym etapie.",
+  "Zbudować własną bramkę niezmienności migracji na wzór atlas.sum (ustalenie 10) i checksumy Prismy (ustalenie 11), bo Supabase CLI tego nie daje (ustalenie 12): plik migrations.sum w repo z hashem każdego pliku supabase/migrations + krok fazy porównujący hashe i wywalający się przy zmianie pliku, który ma już wpis w historii. To zamienia nasze P1 w błąd narzędzia.",
+  "Nie przepisywać stacku na Biome (ustalenie 13) — brak odpowiednika max-lines i reguł react-hooks; oxlint --type-aware (ustalenie 14) trzymać jako plan B na wypadek, gdyby zmierzony czas bramki typowanej przekroczył budżet fazy, i najpierw ten czas zmierzyć (pozycja 1 i 2 z luk)."
+ ],
+ "kosztWdrozenia": "Konfiguracja: jeden eslint.config.ts (kilka godzin pracy plus tura wyciszania zastanych naruszeń w istniejących repo), knip.json z entry pointami i ignorami (0,5 dnia na projekt, głównie na fałszywe alarmy), .size-limit.json (godzina), skrypt migrations.sum plus krok w domknięciu fazy (pół dnia, ok. 80 linii Node). Runtime CI: lint typowany kosztuje mniej więcej tyle co jeden tsc projektu, knip z --cache to sekundy przy kolejnych uruchomieniach, size-limit wymaga builda — realnie do zmierzenia na naszych 50–200 plikach, dziś nie mamy tych liczb. Tokeny: to jest ruch odwrotny do kosztu — bramki działają poza modelem, więc zdejmują z fazy większość pracy agenta code-quality (Opus, ~400–900k tokenów na agenta) i zamieniają ją na kilkadziesiąt sekund CPU plus krótki raport json doklejany do promptu."
+}

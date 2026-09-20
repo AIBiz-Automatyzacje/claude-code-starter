@@ -1,0 +1,32 @@
+{
+ "odpowiedzi": [
+  {
+   "pytanie": "Format suite: jak wygląda zestaw przypadków eval (JSON/YAML/MD)?",
+   "odpowiedz": "Suita NIE jest jednym plikiem JSON. To katalogi: <plugin>/evals/<case>/prompt.md (frontmatter: name, tags, plugins, runs, max_turns, timeout_seconds, allowed_tools, model, append_system_prompt, env; body = prompt) + <case>/graders/<nazwa>.md (frontmatter type:, body = wzorzec/rubryka). Opcjonalny case.yaml (wymaga schema_version: \"1.1\" i name) dodaje context.scaffold_script, context.history_file (odtworzenie transkryptu i ocena KOLEJNEJ tury — ważne dla reviewera), context.add_dirs. Domyślnie runs: 3, max_turns: 10, timeout_seconds: 300. Katalog evals/ zmienia --eval-dir lub \"experimental\": {\"evals\": \"...\"} w plugin.json. JSON jest po stronie WYNIKU: evals/results/<ts>/aggregate-result.json (schemaVersion, suite, cases[].arms.{with,without}[].graders[], aggregates; camelCase, additive-only) — to samo drukuje --json. Scaffold suity: claude plugin eval init (wywiad) lub init --bare <nazwa>; sam format katalogów jest ścieżką nieinteraktywną, więc agent/skrypt może pisać prompt.md + graders/*.md wprost.",
+   "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help` oraz self-test w pustym katalogu, Claude Code 2.1.278",
+   "data": "2026-09-20",
+   "status": "potwierdzone-w-docs"
+  },
+  {
+   "pytanie": "Co dokładnie jest mierzone: trafienie triggera, jakość wyjścia, tokeny?",
+   "odpowiedz": "Mierzone są wyłącznie wyniki graderów, per run, uśredniane po runs (domyślnie 3). Typy graderów: regex (pattern, flags, match: contains|not_contains|count:N, target), tool_used (tool, input_match, min/max — \"nie wolno wywołać\" = min:0,max:0), tool_order (before/after), file_exists (glob po plikach UTWORZONYCH przez agenta), llm (criteria, focus — sędzia głosuje 2 z 3, domyślnie haiku, zmiana przez --judge-model), baseline (baseline_file, criteria). (1) TRAFIENIE TRIGGERA: tak, to idiom tool_used z tool: Skill i input_match '\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?<skill>\"'. (2) JAKOŚĆ WYJŚCIA: tak — źródła danych dla gradera to last_message (domyślnie), trace (JSON per linia), files (ścieżki utworzone, nie treść), {source: file, path} (TREŚĆ pliku; obraz PNG/JPEG/GIF/WebP trafia do sędziego LLM jako obraz), mock_calls (wywołania mockowanych narzędzi MCP z inputem i odpowiedzią). Dla długich artefaktów rekomendowane są gradery deterministyczne — sędzia LLM szumi na długich wejściach. (3) TOKENY: NIE ma gradera ani pola na tokeny/koszt kontekstu. Jest tylko budżet wykonania --max-cost-usd (twardy sufit, sprawdzany przed startem każdego runu, przekroczenie = exit 2, partialReason: cost_ceiling) — czyli koszt jest limitowany, nie raportowany jako metryka. Do kosztu kontekstu skilli służy osobne /skill-doctor: raport użycia i kosztu kontekstu per skill (koszt listingu, tokeny/użycia z 7 dni, ostrzeżenia o nigdy niewywołanych skillach, nieużywane pluginy); interaktywnie otwiera zakładkę Stats managera pluginów (to samo co /plugin stats), a w -p / Remote Control / sesjach w tle drukuje raport tekstem. Bez argumentów, to NIE jest linter (strukturę sprawdza claude plugin validate <path>).",
+   "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help`, Claude Code 2.1.278",
+   "data": "2026-09-20",
+   "status": "potwierdzone-w-docs"
+  },
+  {
+   "pytanie": "Czy da się uruchomić w CI?",
+   "odpowiedz": "Tak, jest to wprost przewidziany scenariusz. Klucze: --trust-plugin (pierwszy run w niezaufanym katalogu pluginu normalnie pyta \"Trust this plugin directory? [y/N]\" i BEZ terminala, pod --json i w CI jest odrzucany — ten flag odpowiada za operatora, opis w --help: \"--trust-plugin answers for CI\"), --json [plik] (pełny wynik na stdout lub do pliku; runy z --json są ciche — stderr zostawia tylko błędy ładowania i notki), --threshold 0..1 (domyślnie 1.0). Kody wyjścia: 0 = wszystkie case'y >= progu; 1 = poniżej progu / błąd ładowania / brak case'ów / zły argument / run, którego nie dało się wystartować; 2 = częściowy (sufit kosztu albo odrzucone poświadczenie, partialReason cost_ceiling/auth_failed); 130 przerwane; 143 zabite. Dostępność: GA, bez flagi włączającej, na każdym dostawcy (first-party, Bedrock/Vertex/Foundry, gateway, telemetria wyłączona, runnery CI). Bramki do pamiętania: Bash/Write/Edit/WebFetch/WebSearch/mcp__* wymagają --allow-tools, scaffold_script wymaga --scaffold, -j/--concurrency 1-8 (domyślnie 1, runy dzielą jeden rate limit), --report <path> zapisuje HTML, --no-publish blokuje automatyczną publikację raportu na claude.ai (publikacja i tak niedostępna na Bedrock/Vertex/Foundry i przy auth kluczem API).",
+   "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help`, Claude Code 2.1.278",
+   "data": "2026-09-20",
+   "status": "potwierdzone-w-docs"
+  },
+  {
+   "pytanie": "Czy nadaje się do A/B dwóch wersji promptu reviewera na tych samych przypadkach?",
+   "odpowiedz": "Tak, ale nie ma natywnego trybu \"wersja A vs wersja B\". Natywna jest tylko ablacja --ablation with-without: ramię z pluginem vs ramię BEZ pluginu, z deltą w aggregate-result.json (cases[].arms.{with,without}) — to odpowiada na pytanie \"czy skill/agent w ogóle coś daje\", nie \"czy prompt v2 jest lepszy od v1\". A/B dwóch promptów robi się operacyjnie: ta sama suita evals/ (te same prompt.md + graders/*.md), dwie kopie pluginu (dwa checkouty/worktree z inną wersją promptu reviewera), dwa uruchomienia z tym samym --model, --judge-model i --runs, potem porównanie pól aggregates / cases[].graders[] z obu aggregate-result.json (schemaVersion, camelCase, additive-only — stabilne do parsowania skryptem). Warunki wiarygodności takiego A/B: podnieś --runs (domyślne 3 to mało na różnicę kilku punktów), przypnij --model (ANTHROPIC_MODEL NIE jest dziedziczone przez dziecko) i --judge-model, preferuj gradery deterministyczne zamiast llm tam, gdzie oceniasz długie raporty review, a do oceny \"kolejnej tury\" reviewera użyj case.yaml context.history_file. Czego docs/--help NIE mówią i trzeba zmierzyć u nas: wariancja score między powtórzeniami tej samej wersji (ile runs potrzeba, by delta A-B była poza szumem) oraz czy sędzia LLM jest stabilny na naszych długich raportach review.",
+   "url": "brak publicznej strony docs; zweryfikowane lokalnie: `claude plugin eval --help` (--ablation, --runs, --model, --judge-model, --json), Claude Code 2.1.278",
+   "data": "2026-09-20",
+   "status": "docs-milcza-do-pomiaru"
+  }
+ ]
+}

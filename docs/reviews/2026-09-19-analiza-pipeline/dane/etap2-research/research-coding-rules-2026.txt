@@ -1,0 +1,192 @@
+{
+ "kierunek": "Kierunek 4: coding-rules od zera — konfrontacja /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md (14 sekcji) z oficjalnymi praktykami 2026 (TypeScript, React 19 + React Compiler, Supabase, Hono, Node, vitest/testing-library, ESLint/typescript-eslint, OWASP).",
+ "ustalenia": [
+  {
+   "teza": "ESLint ma wbudowaną regułę max-lines z opcjami max (domyślnie 300), skipBlankLines i skipComments oraz siostrzaną max-lines-per-function. Nasza sekcja 1 („plik > 300 linii\", „funkcja > 50 linii\") to dokładnie ta reguła zapisana prozą, którą model może zignorować, a linter nie.",
+   "url": "https://eslint.org/docs/latest/rules/max-lines",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Sekcja 1 idzie do ESLint flat config (max-lines z skipBlankLines/skipComments i tolerancją, max-lines-per-function) i znika z promptu reviewera — to gasi część z 157 uwag „szumu konfiguracyjnego\" bota, bo próg staje się jedną liczbą w configu, a nie sporem."
+  },
+  {
+   "teza": "typescript-eslint @typescript-eslint/no-explicit-any jest w presecie recommended i ma opcję fixToUnknown, która automatycznie zamienia `any` na `unknown` — czyli dokładnie to, co nakazuje nasza reguła 10 zdaniem „NIGDY nie używaj any — użyj unknown\".",
+   "url": "https://typescript-eslint.io/rules/no-explicit-any/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Punkt 4 naszego quality gate („brak nowych any\") przestaje być pytaniem do reviewera i staje się błędem lintera z autofixem — zero tur agenta na tę klasę."
+  },
+  {
+   "teza": "@typescript-eslint/no-floating-promises jest w presecie recommended-type-checked i wykrywa promise'y bez await/return/catch/void oraz tablice promise'ów nieobsłużone przez Promise.all/allSettled/any/race — „improperly sequenced operations, ignored Promise rejections\".",
+   "url": "https://typescript-eslint.io/rules/no-floating-promises/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "To jest mechaniczne wejście dla naszej klasy defektów B „ścieżka błędu bez obsługi\" i dla sekcji 13, której dziś pilnuje tylko prompt — włączamy recommended-type-checked zamiast dopisywać zdania do CLAUDE.md."
+  },
+  {
+   "teza": "React 19 wprowadza Actions, useActionState (zwraca [error, submitAction, isPending]), useFormStatus, useOptimistic, use() (można wołać warunkowo), ref jako zwykły prop (koniec forwardRef), <Context> jako provider i funkcje sprzątające zwracane z ref callbacków.",
+   "url": "https://react.dev/blog/2024/12/05/react-19",
+   "data": "2024-12-05",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasza sekcja 13 nie zna tych API — reguła „więcej niż 1 boolean do stanu ładowania = state machine\" powinna wprost wskazywać useActionState/useOptimistic jako natywne rozwiązanie zamiast ręcznego dyskryminowanego uniona."
+  },
+  {
+   "teza": "React Compiler 1.0 jest stabilny od 7.10.2025, kompatybilny z Reactem 17+, a jego reguły lintowe („compiler-powered lint rules\") są w presetach recommended i recommended-latest pakietu eslint-plugin-react-hooks — nie trzeba osobnej wtyczki.",
+   "url": "https://react.dev/blog/2025/10/07/react-compiler-1",
+   "data": "2025-10-07",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Cała klasa defektów B „cykl życia React / wyścigi\" dostaje mechaniczne wejście: eslint-plugin-react-hooks w presecie recommended-latest w domknięciu fazy, zamiast reviewera czytającego komponenty oczami."
+  },
+  {
+   "teza": "Przy włączonym React Compilerze memoizacja jest automatyczna: „By default, React Compiler will memoize your code based on its analysis and heuristics. In most cases, this memoization will be as precise, or moreso, than what you may have written\", a useMemo/useCallback zostają tylko jako escape hatch.",
+   "url": "https://react.dev/learn/react-compiler/introduction",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Jeśli włączamy kompilator, reviewer performance nie ma prawa zgłaszać „brak useMemo/useCallback\" — to trzeba zapisać wprost, inaczej wraca jako szum w kolejnych przejściach review."
+  },
+  {
+   "teza": "Dokumentacja useEffect odradza ręczny fetch w efektach (brak SSR, kaskady sieciowe, brak cache, boilerplate) i rekomenduje mechanizm frameworka albo cache po stronie klienta (TanStack Query, SWR, React Router 6.4+); wyścigi gasi flagą `ignore` w cleanupie, nie AbortControllerem.",
+   "url": "https://react.dev/reference/react/useEffect",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasza reguła 13 „useEffect z async = ZAWSZE AbortController\" jest węższa niż zalecenie oficjalne i wymusza wzorzec, którego React nie rekomenduje — trzeba ją przeformułować na „efekt z async = cleanup, który unieważnia wynik; a lepiej nie fetchuj w efekcie\"."
+  },
+  {
+   "teza": "TypeScript 5.8 dodał --erasableSyntaxOnly, który „will error on most TypeScript-specific constructs that have runtime behavior\" (enum, namespace/module z kodem, parameter properties, import =), po to, by pliki dały się uruchomić trybem type-stripping Node'a; zalecane razem z --verbatimModuleSyntax.",
+   "url": "https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/",
+   "data": "2025-02-28",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Sekcja 10 zna tylko strict:true — brakuje jej flag, które w 2026 definiują „zdrowy\" tsconfig; to dopisujemy do reguł jako konfigurację, nie jako zdanie do przeczytania przez agenta."
+  },
+  {
+   "teza": "verbatimModuleSyntax: „Anything that uses the `type` modifier is dropped entirely\", a „any imports or exports without a `type` modifier are left around\" — decyzja o elizji importu zależy wyłącznie od modyfikatora `type`, nie od analizy użycia.",
+   "url": "https://www.typescriptlang.org/tsconfig/verbatimModuleSyntax.html",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Sekcja 8 mówi o grupowaniu importów, ale nie o `import type` — przy tej fladze brak modyfikatora to realny side-effect w bundlu, więc to reguła kodu, a nie kosmetyka (egzekwowalna przez @typescript-eslint/consistent-type-imports)."
+  },
+  {
+   "teza": "Operator `satisfies` (TS 4.9) rozwiązuje dylemat „chcemy sprawdzić zgodność z typem, ale zachować najbardziej szczegółowy typ dla inferencji\"; w przeciwieństwie do `as`, który omija sprawdzanie typów, `satisfies` łapie literówkę w kluczu i nie zmienia typu wyniku.",
+   "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasza reguła 10 „NIGDY nie używaj `as`\" nie podaje zamiennika — powinna brzmieć „zamiast `as` użyj `satisfies` albo type guarda\", bo inaczej agent albo łamie regułę, albo pisze gorszy kod."
+  },
+  {
+   "teza": "TypeScript 5.2 wprowadził `using` / `await using` (Symbol.dispose, Symbol.asyncDispose) jako pierwszoklasowe sprzątanie zasobów; dokumentacja wprost wskazuje, że ręczne try/finally jest podatne na zapomniany lub zduplikowany cleanup przy wielu wyjściach z funkcji. Zasoby są zwalniane LIFO, a kolizja błędów daje SuppressedError.",
+   "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "srednia",
+   "dlaNas": "Sekcja 4 i 13 mówią o cleanupie tylko w kontekście Reacta; dla kodu Node/Hono (pliki, połączenia, timery) `using` jest dziś standardowym zamiennikiem try/finally i brakuje go w regułach."
+  },
+  {
+   "teza": "Supabase: owijanie auth.uid() w (select ...) „causes an initPlan to be run by the Postgres optimizer, which allows it to 'cache' the results per-statement, rather than calling the function on each row\"; polityki trzeba indeksować (kolumna filtra jako wiodąca w indeksie btree) i zawsze podawać rolę przez TO, bo wtedy wykonanie zatrzymuje się na `to authenticated`.",
+   "url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Sekcja 9 ma tylko zakaz autoryzacji po user_metadata — brakuje trzech konkretnych, sprawdzalnych reguł RLS, które u nas realnie decydują o poprawności i wydajności zapytań."
+  },
+  {
+   "teza": "Supabase ostrzega, że funkcja `security definer` „will run as the creator\" i „A security definer function in an exposed schema is callable over the Data API with the creator's privileges. Never create one in a schema listed under 'Exposed schemas.'\"",
+   "url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "To jest reguła klasy „privilege escalation\" tej samej wagi co nasz zakaz user_metadata i powinna stać obok niego w sekcji 9."
+  },
+  {
+   "teza": "Supabase Database Advisors to deterministyczne checki na żywym schemacie: bezpieczeństwo (0013_rls_disabled_in_public, 0007_policy_exists_rls_disabled, 0002_auth_users_exposed, 0023_sensitive_columns_exposed) i wydajność (0001_unindexed_foreign_keys, 0003_auth_rls_initplan, 0005_unused_index, 0020_table_bloat); dostępne w Studio, przez CLI `supabase db advisors`, Management API i MCP get_advisors.",
+   "url": "https://supabase.com/docs/guides/database/database-advisors",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Advisors pokrywają mechanicznie dokładnie te reguły RLS, których dziś pilnuje prompt reviewera — to gotowa bramka w domknięciu fazy, zgodna z już podjętą decyzją o zastąpieniu reviewera performance."
+  },
+  {
+   "teza": "Supabase dla RBAC rekomenduje tabelę ról w bazie plus Custom Access Token Auth Hook wstrzykujący rolę do JWT jako custom claim — przewodnik nie wspomina ani o app_metadata, ani o user_metadata jako miejscu na rolę.",
+   "url": "https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "srednia",
+   "dlaNas": "Nasza reguła 9 dopuszcza app_metadata jako miejsce na rolę; oficjalny przewodnik prowadzi gdzie indziej (tabela ról + auth hook), więc regułę trzeba przeformułować: „zakaz user_metadata\" zostaje, „app_metadata\" schodzi z pozycji zalecenia do tolerowanego wyjątku."
+  },
+  {
+   "teza": "Hono waliduje przez middleware (targety: json, query, header, param, cookie, form), a @hono/zod-validator pozwala napisać zValidator('form', schema) zamiast ręcznego safeParse; dokumentacja ostrzega, że bez pasującego nagłówka content-type „the request body will not be parsed and you will receive an empty object ({})\".",
+   "url": "https://hono.dev/docs/guides/validation",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasza reguła 9 „waliduj KAŻDY input na granicy API (Zod)\" nie mówi JAK — w Hono poprawną formą jest zValidator jako middleware; pułapka pustego {} przy złym content-type to realny, falsyfikowalny test, którego nasze reguły nie wymuszają."
+  },
+  {
+   "teza": "Hono ma HTTPException: „This is a custom Hono Error that simplifies returning error responses\" — rzucasz `throw new HTTPException(401, { message: 'Unauthorized' })`, a w app.onError sprawdzasz `err instanceof HTTPException` i zwracasz `err.getResponse()`; dostępna jest też opcja `cause`.",
+   "url": "https://hono.dev/docs/api/exception",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasza reguła 4 „rzucaj typed errors, nie string messages\" i „ustandaryzowany format { data, error }\" mają w Hono konkretną realizację (HTTPException + app.onError) — bez jej wskazania agent wymyśla własny AppError za każdym razem."
+  },
+  {
+   "teza": "W Node fetch jest globalny i od v21.0.0 „No longer experimental\" (dodany w v17.5.0/v16.15.0, od v18 bez flagi), a AbortSignal.timeout(delay) jest statyczną metodą zwracającą sygnał przerywany po zadanym czasie.",
+   "url": "https://nodejs.org/api/globals.html",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Klasa defektów B „brak timeoutu\" ma jednolinijkowy natywny zamiennik (AbortSignal.timeout) — to powinna być reguła z przykładem, nie ogólnik; i nie ma powodu dodawać axiosa/node-fetch jako zależności."
+  },
+  {
+   "teza": "OWASP API4:2023 Unrestricted Resource Consumption wymienia jako prewencję nie tylko rate limiting („a limit on how often a client can interact with the API within a defined timeframe\"), ale też limity rozmiaru danych na wszystkich parametrach i payloadach, throttling pojedynczych operacji (np. weryfikacja OTP), walidację serwerową parametru sterującego liczbą zwracanych rekordów oraz limity wydatków u dostawców.",
+   "url": "https://api-security.owasp.org/editions/2023/en/0xa4-unrestricted-resource-consumption/",
+   "data": "2023",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasza sekcja 9 ma z tego tylko „rate limiting na KAŻDYM public endpoint\" — brakuje maksymalnego rozmiaru payloadu, limitu page size i throttlingu operacji wrażliwych, czyli rzeczy, które da się sprawdzić w schemacie Zod i w teście."
+  },
+  {
+   "teza": "Testing Library: „The more your tests resemble the way your software is used, the more confidence they can give you\" — testy mają operować na węzłach DOM, nie na instancjach komponentów, co zniechęca do polegania na szczegółach implementacji.",
+   "url": "https://testing-library.com/docs/guiding-principles/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "To jest źródłowe uzasadnienie naszej reguły 2 „testuj ZACHOWANIE, nie implementację\" — regułę zostawiamy, ale trzeba ją dowiązać do kryterium falsyfikowalności, bo sama w sobie nie wyklucza asercji luźniejszej od kontraktu."
+  },
+  {
+   "teza": "Vitest Browser Mode uruchamia testy w prawdziwej przeglądarce (Playwright/WebdriverIO/preview) z dostępem do window i document; dokumentacja odradza symulowanie zdarzeń i każe używać userEvent z vitest/browser, który działa przez Chrome DevTools Protocol lub WebDriver — „it simulates events instead of actually triggering them\".",
+   "url": "https://vitest.dev/guide/browser/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "srednia",
+   "dlaNas": "Nasza sekcja 2 nie rozróżnia unitów w jsdom od testów komponentów w przeglądarce; jeśli mamy gasić klasę „test niefalsyfikowalny\" dla UI, browser mode + userEvent jest dziś ścieżką oficjalną, a jsdom + fireEvent generuje testy kształtu."
+  }
+ ],
+ "luki": [
+  "Czy eslint-plugin-import (reguła import/order) jest w 2026 nadal zalecanym sposobem egzekwowania naszej reguły „importy grouped: stdlib, third-party, local, sorted alphabetically\", czy wyparł go eslint-plugin-perfectionist — nie zweryfikowałem żadnym źródłem. Brak źródła.",
+  "Brak źródła dla reguły 3 „jeden eksport per plik dla głównych modułów\" — nie znalazłem oficjalnego zalecenia TypeScript/ESLint, które by ją popierało lub obalało. Brak źródła.",
+  "Brak źródła dla reguły 4 „używaj structured logging (pino), nie console.log\" w kontekście Node 22/24 — nie sprawdziłem, czy node:util / natywny logger albo OpenTelemetry nie są dziś domyślną rekomendacją. Brak źródła.",
+  "Nie zmierzyłem, ile z naszych 157 uwag „szumu konfiguracyjnego\" CodeRabbita pochodzi konkretnie z progów 300/50 linii — bez tego nie wiadomo, jaką tolerancję ustawić w max-lines. Do pomiaru.",
+  "Nie mam oficjalnego zdania Supabase wprost porównującego app_metadata z user_metadata jako miejsce na rolę (strona RBAC milczy) — nasza reguła 9 opiera się na rozumowaniu, nie na cytacie. Do pomiaru (sprawdzić docs auth/managing-user-data).",
+  "Nie zweryfikowałem, czy eslint-plugin-react-hooks w wersji z regułami kompilatora działa bez włączonego React Compilera w buildzie (czy lint jest niezależny od kompilacji). Do pomiaru.",
+  "Nie sprawdziłem, czy Vitest Browser Mode jest formalnie oznaczony jako stabilny czy eksperymentalny — strona przewodnika nie zawiera takiej etykiety. Do pomiaru (changelog Vitest 4/5).",
+  "Brak źródła na to, że katalog „10 anty-patternów AI\" z sekcji 5 (z procentami 80-90%) pochodzi z jakiejkolwiek publikacji — liczby wyglądają na nasze, nieudokumentowane. Do pomiaru."
+ ],
+ "rekomendacje": [
+  "PRZENIES-DO-LINTERA sekcje 1, 5 (część), 6 i 10: max-lines + max-lines-per-function z skipBlankLines/skipComments (ust. 1), no-explicit-any z fixToUnknown (ust. 2), no-floating-promises z recommended-type-checked (ust. 3), no-unused-vars/no-empty/no-unreachable; z promptów reviewera te zdania USUN. Uzasadnienie: reguła bez mechanicznego wejścia nie działa — 45 z 68 defektów miało regułę w prompcie i przeszło.",
+  "ZMIEN sekcję 13 (async/React) w całości: reguła „useEffect z async = ZAWSZE AbortController\" jest sprzeczna z oficjalnym zaleceniem Reacta (ust. 7) — zastąp ją „efekt z async unieważnia wynik w cleanupie; fetch na mount przez TanStack Query / mechanizm frameworka, nie ręcznie\". DODAJ useActionState/useOptimistic jako natywny zamiennik ręcznych state machine (ust. 4). DODAJ eslint-plugin-react-hooks w presecie recommended-latest jako mechaniczne wejście dla całej sekcji (ust. 5) i zapisz wprost, że przy włączonym React Compilerze finding „brak useMemo/useCallback\" jest nieważny (ust. 6).",
+  "ZMIEN sekcję 10 (type safety): „NIGDY nie używaj `as`\" → „zamiast `as` użyj `satisfies` albo type guarda\" (ust. 10). DODAJ do definicji „strict tsconfig\" flagi verbatimModuleSyntax i erasableSyntaxOnly wraz z konsekwencją: bez enumów, namespace'ów i parameter properties (ust. 8, 9). DODAJ `using` / `await using` jako domyślną formę sprzątania zasobów w kodzie Node/Hono zamiast try/finally (ust. 11) — PRZENIES-DO-LINTERA sam zapis importów typów przez consistent-type-imports.",
+  "DODAJ do sekcji 9 (bezpieczeństwo) cztery reguły RLS z dowodem: auth.uid() zawsze owinięte w (select ...), indeks na kolumnie filtra polityki jako wiodący, każda polityka z klauzulą TO <rola>, zakaz security definer w wystawionym schemacie (ust. 12, 13). ZMIEN regułę o rolach: app_metadata schodzi z pozycji zalecenia, zalecana jest tabela ról + Custom Access Token Auth Hook, zakaz user_metadata zostaje (ust. 15). PRZENIES-DO-LINTERA/BRAMKI: `supabase db advisors` w domknięciu fazy pokrywa 0013, 0007, 0003, 0001 mechanicznie (ust. 14).",
+  "DODAJ sekcję „granica API w Hono/Node\": walidacja przez zValidator jako middleware z jawnym testem na brakujący content-type (pusty {} zamiast danych — ust. 16), błędy przez HTTPException + app.onError zamiast własnego AppError w każdym projekcie (ust. 17), każde wyjście sieciowe z AbortSignal.timeout — to zamyka klasę B „brak timeoutu\" jedną linijką bez nowej zależności (ust. 18). ROZSZERZ regułę „rate limiting na KAŻDYM public endpoint\" o limit rozmiaru payloadu, limit page size i throttling operacji wrażliwych wg OWASP API4:2023 (ust. 19).",
+  "ROZSTRZYGNIJ wewnętrzne sprzeczności dokumentu, bo to one produkują spory reviewerów: sekcja 3 „wyciągaj shared logic do dedykowanego modułu\" kontra sekcja 11 „Duplication > Complexity\" — ustal jeden próg (np. ekstrakcja dopiero przy 3. użyciu, wcześniej duplikacja jest OK) i USUN słabszy zapis. Zmiękcz absolutne NIGDY/ZAWSZE tam, gdzie oficjalne docs dopuszczają wyjątek (ust. 7, 10). W sekcji 2 DODAJ kryterium falsyfikowalności wprost dowiązane do zasady Testing Library (ust. 20) i rozróżnij unit w jsdom od testu komponentu w browser mode z userEvent (ust. 21). W sekcji 5 oznacz katalog 10 anty-patternów jako nasze obserwacje bez źródła albo USUN procenty."
+ ],
+ "kosztWdrozenia": "Konfiguracja: jednorazowo 1–2 dni na eslint.config.js (flat config z recommended-type-checked + eslint-plugin-react-hooks recommended-latest + max-lines z tolerancją) plus tsconfig (verbatimModuleSyntax, erasableSyntaxOnly) — erasableSyntaxOnly może wymusić usunięcie istniejących enumów, więc w starszych projektach to osobna migracja. Przepisanie samego coding-rules.md to jedna sesja: dokument skurczy się o sekcje 1, 6 (quality gate) i część 5, a urośnie o Supabase/Hono/Node, więc netto zostanie mniej więcej tej samej długości (~11k znaków = ~3k tokenów doklejane do każdego z 35 agentów fazy, czyli ~105k tokenów na fazę tylko za reguły). Runtime: reguły type-checked w ESLint wydłużają lint o kilkadziesiąt sekund na projekt (potrzebny program TS), `supabase db advisors` to sekundy i zero tokenów — w zamian znikają tury agentów na klasy, które linter łapie deterministycznie."
+}

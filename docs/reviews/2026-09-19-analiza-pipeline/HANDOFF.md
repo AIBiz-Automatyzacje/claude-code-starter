@@ -29,8 +29,8 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 0 | Model kosztu — deterministycznie, skryptami, bez agentów | **GOTOWE** (`dane/`, sekcja 3 niżej) |
 | 1 | Wartość każdego reviewera i mechaniki review (analityk + sceptyk per element) | **GOTOWE 2026-09-20** (run `wf_7181673d-ef5`, 18 agentów Opus, skrypt `skrypty/workflow-B-etap1.js`). Wyniki: `dane/workflow-B-etap1-wyniki.json`, czytelnie `dane/etap1-spory/*.txt`. **Rozstrzygnięcie na Fable: `ETAP1-ROZSTRZYGNIECIE.md` — to jest wejście do etapów 2–4, a NIE werdykty z workflow-A (liczone na danych v1, zawyżone ~2×).** |
 | 1b | dev-pr (analityk + sceptyk) + klasyfikacja 574 uwag CodeRabbita z GitHuba | **GOTOWE 2026-09-20** (run `wf_daf2b119-3c4`, 6 agentów Opus, skrypt `skrypty/workflow-C-etap1b.js`). Dane: `dane/coderabbit/` (bot-comments.jsonl, klasyfikacja-574.csv). **Rozstrzygnięcie: `ETAP1B-ROZSTRZYGNIECIE.md`** — 8 zmian w .coderabbit.yaml (−85% szumu), mapa luk per oś z poleceniami-listami (~60–70% uwag B), dev-pr PRZEBUDUJ wąsko (4 zmiany). |
-| 2 | Research zewnętrzny (4 kierunki) + mapowanie na nasz pipeline | **NIE ZROBIONE** (limit modelu; `research:claude-code-natywne` padł też na „Prompt is too long" — skróć prompt) |
-| 3 | Krytyk kompletności | NIE ZROBIONE |
+| 2 | Research zewnętrzny (5 kierunków) + mapowanie na nasz pipeline | **GOTOWE 2026-09-20** (run `wf_f3c27f89-972`, 7 agentów Opus, skrypt `skrypty/workflow-D-etap2-research.js`, odtworzenie `skrypty/journal_do_json.py`). Dane: `dane/workflow-D-etap2-wyniki.json`, czytelnie `dane/etap2-research/*.txt`. **Rozstrzygnięcie: `ETAP2-ROZSTRZYGNIECIE.md`** — 6 ustaleń przekrojowych (IFScale: reguły cicho pomijane; powtórka sekwencyjna szkodzi, równoległa pomaga; sceptyk asymetryczny 4× skuteczniejszy; `omitClaudeMd` potwierdzone, `paths:`/rules w subagentach — docs milczą; 3 warstwy testów niefalsyfikowalnych, StrykerJS bez `--since`; 2 reguły coding-rules sprzeczne z docs), mapa 22 elementów, **4 pomiary jako warunek wejścia do etapu 4** (§3). |
+| 3 | Krytyk kompletności | NIE ZROBIONE (wejście: ETAP2 §6) |
 | 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE |
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` + publikacja jako artefakt (opcjonalnie) | NIE ZROBIONE |
 
@@ -110,8 +110,8 @@ Kolejność wg spodziewanego efektu. Każda ma być w raporcie z liczbą „prze
 2. Dokończyć etap 1: uruchomić workflow (na bazie `skrypty/workflow-A-pipeline-analiza-a.js`) TYLKO dla brakujących elementów:
    analityk test-coverage + 4 mechaniki, sceptycy dla wszystkich 11 werdyktów (6 gotowych werdyktów wkleić do promptów sceptyków
    z `dane/workflow-A-wyniki-czesciowe.json`), „ucieczki do bota". Modele: opus (nie fable). ~20 agentów.
-3. Etap 2: research 4 kierunków (prompt `claude-code-natywne` skrócić/podzielić) + mapowanie. ~6 agentów, sonnet/opus.
-4. Etap 3: krytyk. 1 agent.
+3. Etap 2: ZROBIONE (`ETAP2-ROZSTRZYGNIECIE.md`). Przed etapem 4 wykonać 4 pomiary z ETAP2 §3 (reguły `paths:`/`omitClaudeMd` w subagentach; ile z 195 uwag B łapie lint; czas bramek; inter-run agreement) — skrypty i mini-run, nie agenci.
+4. Etap 3: krytyk. 1 agent (opus). Wejście: ETAP2 §6.
 5. Etap 4: panel projektowy — 3 projektanci (każdy dostaje digest + werdykty po kontrach + mapę researchu + hipotezy z sekcji 5,
    ale z innym priorytetem: minimalny koszt / maksymalna jakość / hybryda), 3 sędziów, sceptyk na zwycięzcę, synteza. ~8 agentów.
 6. Etap 5: napisać dwa raporty do `docs/reviews/2026-09-19-analiza-pipeline/`:

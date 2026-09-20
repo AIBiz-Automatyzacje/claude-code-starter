@@ -1,0 +1,134 @@
+{
+ "kierunek": "Testy niefalsyfikowalne — mutation testing (StrykerJS) jako mechaniczny zamiennik promptu reviewera test-coverage",
+ "ustalenia": [
+  {
+   "teza": "StrykerJS ma tryb --incremental: zapisuje reports/stryker-incremental.json, robi git-podobny diff kodu i testów wobec poprzedniego raportu i uruchamia mutanty tylko dla zmienionego kodu; nie wykrywa zmian w plikach niemutowanych, zależnościach ani zmiennych środowiskowych, a śledzenie zmian testów zależy od runnera.",
+   "url": "https://stryker-mutator.io/docs/stryker-js/incremental/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Da się uruchamiać Strykera po każdej fazie autopilota bez pełnego przebiegu, o ile artefakt incremental jest cache'owany między fazami/runami."
+  },
+  {
+   "teza": "Runner @stryker-mutator/vitest-runner wymusza coverageAnalysis: \"perTest\" niezależnie od configu (dla każdego mutanta odpala tylko testy dotykające zmutowanej linii); nie wspiera Browser Mode ani threads: false.",
+   "url": "https://stryker-mutator.io/docs/stryker-js/vitest-runner/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasz stack (vitest) dostaje najtańszy wariant mutacji z pudełka, ale E2E Playwright/agent-browser pozostaje poza zasięgiem — mutacja obejmie tylko warstwę unit/integration."
+  },
+  {
+   "teza": "Oficjalny schemat opcji StrykerJS (packages/api/schema/stryker-core.json na master) NIE zawiera opcji \"since\" — sprawdzone grepem, 0 trafień przy obecnych \"incremental\", \"mutate\", \"thresholds\". Opcję since (since.target, since.ignore-changes-in: \"test only code changes since the given target\") ma Stryker.NET, nie wersja JS.",
+   "url": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json",
+   "data": "2026-09-20 (stan master w dniu sprawdzenia)",
+   "typZrodla": "repo",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nie możemy liczyć na gotowe --since w JS — scoping na diff fazy musimy policzyć sami z git diff i podać przez --mutate; blogi obiecujące \"stryker run --since main\" dla JS są błędne."
+  },
+  {
+   "teza": "Oficjalna konfiguracja StrykerJS pozwala zawęzić mutacje do konkretnych zakresów linii: \"It is possible to specify exactly which code blocks to mutate by means of a mutation range\" — np. \"src/app.js:1-11\" lub \"src/app.js:5:4-6:4\". Domyślne progi to { high: 80, low: 60, break: null }, concurrency domyślnie n-1 rdzeni.",
+   "url": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/docs/configuration.md",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Bramka fazy może mutować dokładnie hunki z git diff fazy (plik:od-do), więc koszt jest proporcjonalny do rozmiaru fazy, nie repozytorium."
+  },
+  {
+   "teza": "Zestaw mutatorów JS/TS obejmuje m.in. String Literal (\"foo\" -> \"\"), Object Literal (usunięcie właściwości: { foo: 'bar' } -> { }), Conditional Expression (warunek na true/false), Optional Chaining (foo?.bar -> foo.bar) oraz Method Expression (min() <-> max(), sort/filter/slice/reverse).",
+   "url": "https://stryker-mutator.io/docs/mutation-testing-elements/supported-mutators/",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Mutatory trafiają wprost w dwie z naszych klas B: łańcuch walidacji (min/max, usunięta właściwość obiektu konfiguracyjnego/schematu) i gałąź warunkowa bez asercji — czyli część \"schematu luźniejszego od kontraktu\" jest wykrywalna mechanicznie."
+  },
+  {
+   "teza": "StrykerJS jest aktywnie rozwijany: v10.0.0 wydane 2026-08-14 (Babel 8, minimum Node 22+, wsparcie TypeScript 7, filtrowanie mutantów), poprzednio v9.6.1 z 2026-04-10.",
+   "url": "https://github.com/stryker-mutator/stryker-js/releases",
+   "data": "2026-08-14",
+   "typZrodla": "repo",
+   "pewnosc": "wysoka",
+   "dlaNas": "Narzędzie nie jest porzucone i nadąża za naszym stackiem — wdrożenie nie kupuje długu technologicznego."
+  },
+  {
+   "teza": "Google wdrożył mutation testing produkcyjnie w code review, mutując wyłącznie zmieniony kod zamiast całej bazy (2 mld linii), z filtrowaniem kontekstowym, limitem mutantów na linię i wyborem operatorów wg historii; objęło ponad 24 000 deweloperów i ponad 1000 projektów, generując o rzędy wielkości mniej mutantów.",
+   "url": "https://arxiv.org/abs/2102.11378",
+   "data": "2021-02-23",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "Nasz zamysł (mutacja tylko na diffie fazy + limit mutantów) to dokładnie wzorzec przemysłowy, a nie eksperyment; sensowne jest też filtrowanie mutantów, nie tylko zakresu plików."
+  },
+  {
+   "teza": "MutGen (IEEE TSE, submisja 2025-06-03, v8 2026-04-15) pokazuje, że pokrycie jest słabym wskaźnikiem wykrywania błędów: część zestawów testów osiąga 100% coverage przy 4% mutation score; sterowanie promptu feedbackiem mutacyjnym podnosi wynik z 53% (vanilla LLM) do 89,5% na HumanEval-Java.",
+   "url": "https://arxiv.org/abs/2506.02954",
+   "data": "2026-04-15 (v8; pierwsza wersja 2025-06-03)",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "To ilościowe potwierdzenie naszej klasy B \"test niefalsyfikowalny\" i dowód, że sprzężenie zwrotne z mutacji (a nie sam prompt) podnosi jakość testów pisanych przez model — czyli warto oddać wynik Strykera builderowi w pętli fix."
+  },
+  {
+   "teza": "Badanie ewolucji kodu pokazuje \"residual alignment\": ponad 99% testów LLM, które padają na zmienionym kodzie, przechodzi na kodzie oryginalnym; przy zmianach semantycznych pass rate spada ze 100% do 66,5%, a modele asertują zapamiętaną specyfikację zamiast rzeczywistej logiki.",
+   "url": "https://arxiv.org/html/2603.23443v1",
+   "data": "2026-03 (arXiv 2603.23443v1)",
+   "typZrodla": "paper",
+   "pewnosc": "srednia",
+   "dlaNas": "Wyjaśnia, dlaczego nasze testy z autopilota bywają \"kształtu\" — model dopisuje asercje do tego, co pamięta o zadaniu, a nie do kodu fazy; mutant to jedyny tani sposób, by to wykryć."
+  },
+  {
+   "teza": "Replikacyjne badanie (ISSTA 2026, submisja 2026-07-24) stwierdza, że przydatność coverage i mutation score jest silnie zależna od kontekstu: w scenariuszu regresyjnym metryki pomagają porównywać zestawy, ale gdy kod może już zawierać defekt, nie są wiarygodnym wskaźnikiem realnej wykrywalności błędów; rozmiar zestawu nie jest tu dominującym czynnikiem.",
+   "url": "https://arxiv.org/abs/2607.22880",
+   "data": "2026-07-24",
+   "typZrodla": "paper",
+   "pewnosc": "wysoka",
+   "dlaNas": "Mutation score traktujemy jako detektor testów niefalsyfikowalnych (regresja), a nie jako cel liczbowy do maksymalizacji — inaczej agent zacznie dopisywać testy pod metrykę."
+  },
+  {
+   "teza": "@vitest/eslint-plugin (ESLint 9+, flat config) ma reguły łapiące dokładnie patologie asercji: expect-expect (test bez asercji), valid-expect, no-conditional-expect, no-standalone-expect w konfiguracji recommended oraz prefer-called-with (wymusza toHaveBeenCalledWith zamiast samego toHaveBeenCalled) w konfiguracji all.",
+   "url": "https://github.com/vitest-dev/eslint-plugin-vitest",
+   "data": "brak daty",
+   "typZrodla": "repo",
+   "pewnosc": "wysoka",
+   "dlaNas": "Dwie z trzech naszych podklas (asercja pusta, atrapa sprawdzana bez argumentów) są łapane lintem w milisekundy — to tańsza pierwsza warstwa niż Stryker i niż agent LLM."
+  },
+  {
+   "teza": "Vitest ma wbudowane testowanie typów: pliki *.test-d.ts nie są uruchamiane, tylko statycznie analizowane przez tsc po włączeniu flagi --typecheck (od 2.1 testy typów i runtime raportowane są jako osobne wpisy); expectTypeOf/toEqualTypeOf sprawdza dokładną równość typów.",
+   "url": "https://vitest.dev/guide/testing-types",
+   "data": "brak daty",
+   "typZrodla": "docs",
+   "pewnosc": "wysoka",
+   "dlaNas": "Klasę \"schemat luźniejszy od kontraktu\" można zamknąć mechanicznie: z.infer ze schematu porównane expectTypeOf z typem kontraktu w teście typów, uruchamiane w bramce fazy razem z typecheckiem."
+  },
+  {
+   "teza": "Praktyczny przewodnik (2026-06-30, akt. 2026-09-16) raportuje, że tryb --incremental Strykera ponownie użył 3 731 z 3 965 wyników mutantów w jednym przebiegu, rekomenduje uruchamianie mutacji diff-scoped na PR i pełnej analizy w harmonogramie, oraz progi zależne od krytyczności ścieżki (wyższe dla płatności/bezpieczeństwa) zamiast jednej liczby dla repo.",
+   "url": "https://www.augmentcode.com/guides/mutation-testing-ai-generated-code",
+   "data": "2026-09-16",
+   "typZrodla": "blog",
+   "pewnosc": "srednia",
+   "dlaNas": "Potwierdza układ dwuwarstwowy: tania mutacja na diffie fazy + pełny przebieg rzadziej, z progiem podniesionym tylko dla modułów krytycznych (RLS, płatności, Edge Functions)."
+  },
+  {
+   "teza": "Przewodnik z 2026-06-25 podaje skalę interpretacji mutation score (90-100% doskonale, 75-89% dobrze, 60-74% słabe asercje, <60% pokrycie kosmetyczne; dla większości kodu 75-85%) i układ CI: mutacja na PR przy zmianach w src/** plus pełny przebieg tygodniowo; wskazuje coverageAnalysis: perTest jako największą optymalizację. UWAGA: ten sam tekst sugeruje flagę --since dla StrykerJS, której w schemacie opcji JS nie ma.",
+   "url": "https://qaskills.sh/blog/mutation-testing-stryker-guide-2026",
+   "data": "2026-06-25",
+   "typZrodla": "blog",
+   "pewnosc": "niska",
+   "dlaNas": "Progi 75-85% możemy przyjąć jako punkt startowy dla modułów objętych fazą, ale konfigurację diffu bierzemy z oficjalnego --mutate, nie z tego bloga."
+  }
+ ],
+ "luki": [
+  "Ile realnie trwa mutacja diff-scoped na naszym projekcie (50-200 plików TS/TSX, vitest, faza o ~10-30 zmienionych plikach) — żadne znalezione źródło nie podaje twardego czasu dla takiej skali; do pomiaru na jednej fazie realnego zadania.",
+  "Czy Stryker wykrywa klasę \"atrapa nie sprawdza argumentów\" (vi.fn() z toHaveBeenCalled zamiast toHaveBeenCalledWith) — brak źródła mówiącego o tym wprost; hipoteza jest taka, że mutacja argumentu w kodzie produkcyjnym nie zabije takiego testu, więc łapie to lint prefer-called-with, nie mutacja; do pomiaru eksperymentem na jednym pliku.",
+  "Skuteczność mutacji na schematach Zod (czy mutatory Object Literal/Method Expression realnie generują sensowne mutanty w łańcuchach z.object(...).min()) — brak źródła; do pomiaru.",
+  "Czy cache incremental (stryker-incremental.json) przetrwa między fazami autopilota w naszym układzie katalogów i czy nie trafia niechcący do gita — brak źródła, decyzja projektowa do rozstrzygnięcia.",
+  "Znany błąd: vitest-runner w trybie incremental generuje ~15k linii diffu w baseline przy braku zmian (issue #6004 stryker-js) — nie zweryfikowałem statusu ani wersji, w której naprawiono; brak źródła potwierdzonego fetchem.",
+  "Brak danych o mutacji dla Supabase Edge Functions (Deno) i dla kodu Hono uruchamianego poza vitest — brak źródła."
+ ],
+ "rekomendacje": [
+  "Wprowadzić Strykera jako bramkę mechaniczną domknięcia fazy zamiast osi test-coverage w agencie LLM, scoped na diff fazy: policzyć git diff --unified=0 wobec commitu startowego fazy i podać zakresy jako --mutate \"plik:od-do,...\" (ustalenia 4 i 3 — StrykerJS nie ma --since, zakresy linii są udokumentowane).",
+  "Przed Strykerem postawić darmową warstwę lintu: @vitest/eslint-plugin w flat configu z recommended (expect-expect, valid-expect, no-conditional-expect, no-standalone-expect) plus punktowo prefer-called-with — to zamyka asercje puste i atrapy bez argumentów w milisekundach (ustalenie 11), spójnie z już podjętą decyzją o ESLint flat config w domknięciu fazy.",
+  "Klasę \"schemat luźniejszy od kontraktu\" zamknąć testem typów: plik *.test-d.ts z expectTypeOf<z.infer<typeof Schema>>().toEqualTypeOf<Kontrakt>() uruchamiany przez vitest --typecheck w tej samej bramce co tsc (ustalenie 12) — to jedyny znaleziony mechanizm trafiający w tę klasę wprost.",
+  "Wynik mutacji traktować jako wejście do pętli fix, a nie jako raport: przeżyte mutanty (plik, linia, operator) doklejać do promptu buildera jako listę do zabicia — MutGen pokazuje skok 53% -> 89,5% właśnie przy sprzężeniu zwrotnym z mutacji (ustalenie 8).",
+  "Nie ustawiać mutation score jako globalnego celu liczbowego; próg break włączyć wyłącznie dla ścieżek krytycznych (RLS/Supabase, płatności, autoryzacja), resztę raportować bez łamania builda — badanie ISSTA 2026 pokazuje, że poza scenariuszem regresyjnym metryka nie mierzy realnej wykrywalności defektów (ustalenia 10 i 13).",
+  "Ułożyć dwa biegi: mutacja diff-scoped w domknięciu każdej fazy (z --incremental i cache stryker-incremental.json trzymanym poza repo) oraz pełny przebieg rzadziej, np. przy dev-pr lub raz w tygodniu — to wzorzec z Google i z przewodników 2026 (ustalenia 7, 13, 1)."
+ ],
+ "kosztWdrozenia": "Konfiguracja jest niewielka: dodanie @stryker-mutator/core + vitest-runner, stryker.config.json z perTest (wymuszony przez runner) i progami bez break, plus krótki skrypt liczący zakresy --mutate z git diff fazy; warstwa lintu (@vitest/eslint-plugin) i test typów (vitest --typecheck) to dosłownie kilka linii w istniejących configach. Koszt runtime to wyłącznie czas CI/lokalnego CPU — zero tokenów, bo cała bramka jest mechaniczna; przy diffie fazy rzędu kilkunastu plików i coverageAnalysis perTest realne są minuty, ale twardy pomiar na naszym repo trzeba dopiero zrobić (patrz luki). Po stronie oszczędności: wypada oś test-coverage z review wieloagentowego, czyli jeden agent mniej na fazę przy ~107k tokenów samego rozruchu każdego agenta."
+}
