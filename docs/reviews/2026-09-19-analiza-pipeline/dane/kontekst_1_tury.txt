@@ -1,0 +1,41 @@
+=== KONTEKST 1. TURY (k tokenow) per rola: p10 / p50 / p90 | dlugosc promptu zadania (znaki, p50) ===
+verify                   n= 575    58k /   76k /  113k | prompt   2080 zn
+stan:zapis               n= 269    47k /   67k /   94k | prompt   4035 zn
+build                    n= 177    85k /  118k /  159k | prompt   9687 zn
+verify-batch             n= 163    93k /  110k /  144k | prompt  11067 zn
+?                        n= 126    58k /   95k /  113k | prompt   2383 zn
+fix                      n= 116    72k /  108k /  139k | prompt  10725 zn
+scribe                   n=  84    71k /   99k /  137k | prompt  24517 zn
+review:test-coverage     n=  81    70k /   95k /  130k | prompt  11217 zn
+review:spec-compliance   n=  81    72k /   96k /  132k | prompt  10341 zn
+kontekst:diff            n=  81    68k /   92k /  127k | prompt   2769 zn
+review:security          n=  81    71k /   97k /  134k | prompt   7971 zn
+dedup:semantyczny        n=  80    60k /   79k /   99k | prompt  32312 zn
+planner                  n=  79    62k /   89k /  125k | prompt   2799 zn
+review:performance       n=  78    71k /   96k /  132k | prompt   8030 zn
+domkniecie               n=  74    67k /   91k /  126k | prompt   6662 zn
+review:simplicity        n=  66    68k /   92k /  117k | prompt   7809 zn
+review:e2e               n=  58    84k /  110k /  147k | prompt   9428 zn
+e2e:db-sync              n=  55    70k /   91k /  126k | prompt   5086 zn
+bootstrap                n=  54    69k /   91k /  127k | prompt   3669 zn
+telemetria               n=  44    46k /   65k /   94k | prompt   4430 zn
+review:architecture      n=  43    65k /   81k /  118k | prompt   7117 zn
+review:typescript        n=  40    65k /   76k /  118k | prompt   7265 zn
+warmup:vitest            n=  38    68k /  101k /  126k | prompt   3980 zn
+e2e:precheck             n=  37    45k /   66k /   92k | prompt   1214 zn
+review:correctness       n=  36    94k /  112k /  144k | prompt  10230 zn
+e2e:env-up               n=  34    70k /   91k /  127k | prompt   5596 zn
+
+=== per projekt (1. tura) ===
+oferty-online                      n=1959 p10=67k p50=89k
+claude-cron                        n= 385 p10=78k p50=93k
+Nawykometr                         n= 231 p10=43k p50=59k
+akademia-automatyzacji-dashboard   n= 244 p10=83k p50=114k
+symulator-poczekalni               n= 122 p10=48k p50=62k
+
+=== per miesiac startu (1. tura) ===
+2026-08 n=1231 p10=61k p50=77k
+2026-09 n=1710 p10=63k p50=101k
+
+Koszt 'kontekstu startowego x tury' (cache read 0.1): 470M z 1179M jedn. = 40% calosci
+W tym czysty staly narzut (p10 projektu, czyli bez promptu zadania): 301M = 26% calosci

@@ -1,0 +1,624 @@
+{
+ "os": "correctness",
+ "zgloszone_n": 64,
+ "potwierdzone_n": 81,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:97",
+   "opis": "Po zakończeniu przewodnika `markTourSeen` zapisuje kolumnę w bazie, ale profil, z którego hook czyta `tourSeen`, jest wczytywany RAZ w `AccessGate` nad `Outlet`-em i nikt go po tym zapisie nie przeładowuje (`useAccountAccessReload` woła wyłącznie `help-page.tsx`). SCENARIUSZ: konto z `tour_seen_offers = false` wchodzi na `/oferty`, przechodzi przewodnik do „Koniec\" (PATCH przechodzi), klika ofertę, wraca strzałką „Wstecz\" na `/oferty`. `OffersPage` montuje się od nowa, `profile.tourSeen.oferty` w kontekście nadal `false`, `isEligible` znów `true` → przewodnik startuje PONOWNIE i zapisuje kolumnę drugi raz, a `track('przewodnik_zakonczony_oferty')` leci kolejny raz. To samo dzieje się przy ka"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:168",
+   "opis": "Droga członka z karty logowania gubi `redirectPath`. `LoginForm` przyjmuje `redirectPath` i podaje go do `signInWithOtp` jako `emailRedirectTo` (strona zgody OAuth przekazuje tam ścieżkę z `authorization_id`, `consent-cards.tsx:89`). Przy `otp_disabled` karta woła `submitRegistration({ email })` BEZ tej ścieżki, a serwer (`apps/server/src/access/registration-service.ts:217`) wysyła link z zaszytym `<APP_ORIGIN>/auth/callback`. Scenariusz: członek AA bez konta podłącza connector Claude -> `/oauth/consent?authorization_id=…` -> wpisuje adres -> „Sprawdź skrzynkę” -> klika w mail -> ląduje na `/auth/callback` -> `/zaproszenie` -> `/oferty`; prośba o dostęp connectora nigdy nie wraca na ekran zg"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "scripts/dockerfile-invariants.test.ts:178",
+   "opis": "Inwariant sprawdza tylko, że każdy `src/offer/*.css` jest ŹRÓDŁEM jakiegoś `cp` w skrypcie `build` — cel kopiowania jest ignorowany (`filesCopiedByBuildScript` odrzuca ostatni argument), więc `cp src/offer/*.css /tmp/` przeszłoby test, a proces w kontenerze i tak wywaliłby się na `readFileSync` w `dist/offer/`. Akcja: w `filesCopiedByBuildScript` zwracać także cel dopasowania i w tym `it` dopisać asercję, że cel każdego kroku `cp` obejmującego arkusze to `dist/offer/` (np. `expect(destinations).toContain('dist/offer/')`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/template-preview-card.tsx:72",
+   "opis": "`withOfferOriginBase` przy braku dosłownego `<head>` w dokumencie wykonuje `return `${baseTag}${html}``, czyli wstawia `<base href=…>` PRZED `<!doctype html>`. Dokument szablonu jest HTML-em od modelu (`zapisz_szablon`), a `validateTemplateDocument` nie wymaga ani `<head>`, ani `<!doctype>` — wystarczy szablon z `<head lang=\"pl\">`, `<head >` albo bez sekcji head. Scenariusz: szablon zapisany rozmową bez literału `<head>` → `srcDoc` zaczyna się od `<base …><!doctype html>` → przeglądarka wchodzi w QUIRKS MODE (doctype nie jest już pierwszy), więc podgląd renderuje się z innym modelem pudełkowym i innymi metrykami niż realna oferta, bez jednego błędu w konsoli — czyli karta „PODGLĄD DOKUMENTU”"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89",
+   "opis": "Ścieżka powrotu `/oauth/consent?authorization_id=…` (wprowadzona w fixie po review fazy 3) odsyła NOWO ZAŁOŻONEGO członka AA z maila z powrotem na stronę zgody, która stoi POZA `RequireSession`/`AccessGate` i nie czyta profilu (`use-consent.ts:248` woła `approveAuthorization` bez sprawdzenia `access_state`/`terms_accepted_at`). Scenariusz: członek bez konta wchodzi z Claude na `/oauth/consent?authorization_id=X`, wpisuje adres -> `otp_disabled` -> `POST /api/dostep/rejestracja` z `redirectPath` -> serwer wysyła link z `emailRedirectTo=<APP_ORIGIN>/oauth/consent?authorization_id=X` -> `handle_new_user()` daje `akademia`/`oczekujace`, `terms_accepted_at = null` -> klik w link wraca na ekran zg"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "server.js:912",
+   "opis": "streamFileToResponse otwiera strumień pliku PRZED statSync i writeHead, a między tymi krokami nie ma żadnego sprzątania: jeśli którakolwiek z linii 912–915 rzuci, `stream` zostaje żywy i nikt go nie niszczy (listenery 'error'/'close' są dopinane dopiero po writeHead). Scenariusz awarii (potwierdzony empirycznie): załącznik z mime zawierającym CR/LF -> res.writeHead rzuca TypeError ERR_INVALID_CHAR (stack: server.js:913) -> wyjątek leci do globalnego catch w createServer (500), a createReadStream już otworzył deskryptor, który nigdy nie zostanie zamknięty. Uprawniony członek może powtarzać ten GET 30x/min (limit kubła binarnego) i wyczerpać deskryptory procesu huba (EMFILE) — daemon przestaje"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/inbox-api.js:88",
+   "opis": "Nowy INBOX_URL_PATTERN dopuszcza opcjonalny trzeci segment dla KAŻDEJ akcji, nie tylko binarnej, więc nadmiarowy segment przechodzi tam, gdzie wcześniej dawał null — a checkbox IU-3 i komentarz nad regexem twierdzą coś przeciwnego („nadmiarowe segmenty nie przechodzą\", regex jest granicą bezpieczeństwa). Scenariusz awarii (potwierdzony na żywym serwerze): GET /inbox/v1/<token>/ping/dowolny-smiec zwraca 200 {\"v\":1,\"user\":...} zamiast 404; POST /inbox/v1/<token>/pull/x wykonuje pełny pull. Skutek: błąd konstrukcji URL po stronie klienta (inbox-client.mjs, faza 2/3) nigdy się nie ujawni, a hub odpowiada tą samą operacją pod nieskończenie wieloma URL-ami (rozjazd z deklarowanym kontraktem wersjo"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "lib/inbox-db.js:849",
+   "opis": "Rewokacja zostawia TRWALE nieusuwalne osierocone bajty — dokładnie to, czego zakazuje R13 („bez osieroconych bajtów\"). `revokeMember` zbiera kandydatów do skasowania (`shas`, linia 826) WYŁĄCZNIE z `inbox_attachments` członka, a w transakcji kasuje `DELETE FROM inbox_blob_uploads WHERE uploaded_by = ?` (838). Bajty wgrane przez członka, do których nigdy nie powstał wiersz załącznika (PUT wykonany, `send` nie — normalna sytuacja: człowiek przerwał, klient padł, wysyłka odrzucona przez walidację), nie są w `shas`, więc plik zostaje na dysku, a jednocześnie znika jedyny ślad, po którym mogłoby go znaleźć przemiatanie sierot (`computeOrphanedBlobs` czyta wyłącznie `listBlobUploads`). Scenariusz "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/upload-queue-list.tsx:70",
+   "opis": "Cała lista kolejki stoi w jednym `role=\"status\" aria-live=\"polite\"`, a wewnątrz niej tekst stanu pliku w trakcie wysyłki to `queueUploadingText(item.progress)` = „Wgrywamy… {n} %”, przeliczane na każde zdarzenie `progress` XHR-a (co ~50 ms). Scenariusz: czytnik ekranu przy wgrywaniu 12 grafik dostaje kilkaset ogłoszeń całej listy pod rząd i nie da się przeczytać ani jednego wiersza ani niczego innego na ekranie — komentarz „i tak zmienia się zawsze jeden wiersz naraz” pomija to, że ten jeden wiersz zmienia się kilkanaście razy na sekundę. Wartość postępu i tak niesie natywny `<progress>` (linia 86). Dodać `aria-live=\"off\"` na `<span>` ze statusem (linia 76) dla wariantu `item.stan === 'wgryw"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/src/env.ts:265",
+   "opis": "`AA_MEMBERSHIP_SECRET: z.string().min(32)` nie przycina białych znaków, więc wartość złożona z 32 spacji (łatwa do wprowadzenia przez kopiowanie w panelu Coolify) przechodzi walidację i staje się „sekretem\" jedynej bramki `POST /api/czlonkostwo`. Test „traktuje pusty AA_MEMBERSHIP_SECRET jak brak wartości\" (`packages/shared/src/env.test.ts:88`) przechodzi wyłącznie dlatego, że podaje 3 spacje (za krótkie), a nie dlatego, że schemat odrzuca pustkę. Zmień linię 266 z `.string()` na `.string().trim()`, żeby minimalna długość mierzyła znaki realne."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "CLAUDE.md:73",
+   "opis": "Akapit „samodzielna rejestracja\" (IU-9) twierdzi: „odrzut TLD `.test` na `create_user: true` (`400 email_address_invalid` wyłącznie dla `.test`, `.invalid` przechodzi), więc adres seeda to `czlonek-e2e@oferty-online.invalid`\". To zdanie jest sprzeczne z pomiarem operatora 16.09 23:02 zapisanym w tej samej fazie w `e2e/seeds/rejestracja-czlonek-seed.sql` (komentarz: GoTrue odrzuca ZARÓWNO `.test`, jak i `.invalid`; adres w seedzie jest PLACEHOLDEREM do podmiany na domenę z MX) i w zadaniach (`samodzielna-rejestracja-czlonkow-aa-zadania.md:145` i `:201`). Scenariusz awarii: kolejna sesja wykona CLAUDE.md dosłownie, uzna `.invalid` za działający adres E2E, odegra smoke i dostanie `email_address"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/mcp/oauth-token-verifier.ts:137",
+   "opis": "Trzeci tor stoi na dwóch założeniach o KONKRETNYM projekcie Supabase, których nie da się sprawdzić headless, a których niespełnienie daje dokładnie ten sam objaw co zły token: 401 z identycznym ciałem, zero śladu w logu i w Sentry. (1) `header.alg.startsWith('HS')` → `null`: jeśli projekt nadal podpisuje JWT legacy sekretem symetrycznym (HS256, czyli stan sprzed migracji na „JWT Signing Keys”), KAŻDY token connectora dostanie 401 — dodatkowo `getClaims` w auth-js robi wtedy przy każdym żądaniu zbędny fallback na `/auth/v1/user`. (2) `claims.client_id` musi być obecny i niepusty w access tokenie wydanym przez OAuth Server Supabase; jeśli projekt go nie wpisuje, weryfikator uzna token connecto"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-connected-apps.ts:150",
+   "opis": "Flaga `isRevokeFailed` żyje w kontrolerze i jest zerowana WYŁĄCZNIE na starcie `revoke` (linia 232), a `connected-apps-card.tsx` przekazuje ją do KAŻDEGO otwieranego okna potwierdzenia (`isFailed={controller.isRevokeFailed}`, linia 325). Zamknięcie okna (`onCancel` → `setPendingClientId(null)`, linia 329) niczego nie resetuje. Scenariusz awarii: lista z trzema wpisami; klikam „Odłącz\" przy `Claude`, potwierdzam, `revokeGrant` oddaje błąd 500 → okno zostaje otwarte z komunikatem „Nie udało się odłączyć aplikacji. Spróbuj jeszcze raz.\"; klikam „Zostaw\" (okno znika, nic nie zostało odłączone); klikam „Odłącz\" przy `Claude Code` → nowe okno potwierdzenia otwiera się OD RAZU z czerwonym `role=\"al"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/upload-queue-refusals.ts:73",
+   "opis": "`classifyUploadFailure` uznaje odmowę za „przerwę” WYŁĄCZNIE po kodzie z koperty (`cause.code === UPLOAD_RATE_LIMITED_CODE`), choć `templates-api.ts:430` dokleja `retryAfterSeconds` także wtedy, gdy ciało 429 nie jest kopertą (`TemplatesApiError(UNKNOWN_SHAPE_MESSAGE)` z `code === undefined`). Scenariusz: reverse proxy Coolify/Traefik oddaje własne 429 z ciałem HTML i nagłówkiem `Retry-After: 20` → `unwrapEnvelope` rzuca „nieznany kształt”, kod jest `undefined`, więc plik dostaje `refuseAssetUpload(undefined, …)` = trwały `blad_wgrywania` („Nie udało się wgrać…”) zamiast odliczania i ponowienia — mimo że sekundy oczekiwania już są w wyjątku i zostają wyrzucone. Zmienić warunek w linii 73 na "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/assets/limits.ts:84",
+   "opis": "`formatBytesForHuman` zaokrągla `toFixed(1)` do najbliższej wartości, więc dla pliku 10 485 761 B (tuż ponad limit) komunikat brzmi „Ten plik ma 10,0 MB. Maksymalny rozmiar grafiki to 10 MB — zmniejsz zdjęcie przed wgraniem.\" — zdanie samo sobie przeczy i użytkownik nie wie, o ile ma zmniejszyć plik (utrwala to asercja w `image-pipeline.test.ts`). Akcja: w linii 84 zamień `(bytes / BYTES_IN_MIB).toFixed(1)` na zaokrąglenie W GÓRĘ, np. `(Math.ceil((bytes / BYTES_IN_MIB) * 10) / 10).toFixed(1)`, i popraw oczekiwaną wartość w teście `image-pipeline.test.ts` na „10,1 MB\"."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/account-deletion-service.ts:227",
+   "opis": "Krok 4 maszyny D12 NIE jest idempotentny, wbrew obietnicy z nagłówka pliku („Każdy krok jest idempotentny\"), a między krokiem 1 a 4 nie ma żadnej bramki „usuwanie już trwa\". Scenariusz awarii: właściciel klika „Usuń konto\" dwa razy pod rząd (albo panel wysyła żądanie dwa razy — wiadro dopuszcza 3/min per `owner_id`, a `routes/account.ts` nie serializuje żądań). Dwa żądania przechodzą `begin_account_deletion` (`for update` tylko serializuje, nie odrzuca drugiego wywołania: `deletion_requested_at = coalesce(old, now())` i pełny plan wraca ZA KAŻDYM RAZEM), oba wołają `removeMany` (idempotentne), oba wołają `reportAdminEvent('konto_usuniete')` — w dzienniku administratora powstają DWA wiersze o"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:268",
+   "opis": "„Zamknij checklistę\" chowa kartę wyłącznie stanem LOKALNYM hooka (`useState(profile?.isFirstStepsDismissed === true)`), a wartość początkowa bierze się ze STAŁEGO profilu bramki, którego `dismissFirstSteps` nie przeładowuje. SCENARIUSZ: konto z `first_steps_dismissed_at = null` wchodzi na `/oferty`, klika „Zamknij checklistę\" (karta znika, PATCH 204), przechodzi na `/szablony` i wraca na `/oferty`. `OffersPage` montuje się od nowa, `profile.isFirstStepsDismissed` w kontekście wciąż `false` → `isDismissed` startuje `false` → sondy lecą jeszcze raz i karta WRACA; kolejne kliknięcie „Zamknij\" wysyła kolejny `UPDATE` i kolejne zdarzenie `checklista_zamknieta`. DLACZEGO TO ŹLE: ręczne zamknięcie "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-map-card.tsx:71",
+   "opis": "Czas na pasku „przewinięta\" jest stałą, nie pomiarem — sprzeczność progu 3 s z podłogą formatowania 5 s. `formatDuration` (analytics.ts:69) zwraca „< 5 s\" dla każdej wartości poniżej 5 s, a stan `scrolled` z definicji oznacza `seconds < SCROLLED_SECTION_MAX_SECONDS` = 3 s. Zatem KAŻDY pasek przewinięty renderuje się jako „< 5 s · przewinięta\", a kafel NIE CZYTAŁ i pas K2 zawsze jako „{sekcja} przewinął w < 5 s\" (offer-map-card.tsx:222, visit-path-card.tsx:95).\n\nSCENARIUSZ: wizyta z seeda (`warianty: 1`) → makieta/plan wymagają `Warianty 1 s · przewinięta` ([Unit] IU-14, tabela „Teksty\": pasek przewinięta `{czas} · przewinięta`), a widok pokazuje `Warianty < 5 s · przewinięta`. Sekcja przewin"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts:93",
+   "opis": "Odczyt profilu w Ustawieniach jest BEZ filtra po właścicielu i kończy się `.maybeSingle<ProfileRow>()` — komentarz mówi wprost, że jednowierszowość zapewnia RLS. Migracja `20260914100000` dokłada drugą politykę permissive `profiles_select_admin` (`using (select public.is_admin())`), więc dla sesji z `profiles.role = 'admin'` to zapytanie zwraca WSZYSTKIE wiersze `profiles`, nie jeden. Scenariusz: konto admina (na E2E robi je `e2e/seeds/faza-9b-admin-seed.sql`, który przy okazji zakłada drugi profil `e2e-b@oferty-online.test`) wchodzi w /ustawienia → GET /rest/v1/profiles?select=… z `Accept: application/vnd.pgrst.object+json` trafia na 2+ wiersze → PostgREST oddaje 406/PGRST116 („multiple row"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/offer-favicon.ts:61",
+   "opis": "Fallback „bez `</head>` i bez `<body` — na początku dokumentu\" wstawia `<link>` PRZED `<!doctype html>`. Scenariusz: HTML `<!doctype html><html lang=\"pl\"><div class=\"doc\">…</div></html>` (bez `</head>` i `<body`, `REQUIRED_MARKERS` tego nie wymagają) → wynik zaczyna się od `<link rel=\"icon\"…><!doctype html>` → parser HTML w trybie „initial\" widzi start tag przed DOCTYPE, przełącza dokument w QUIRKS MODE, a doctype ignoruje (zmierzone jsdom: `compatMode === 'BackCompat'` vs `CSS1Compat` bez wstawki). Oferta jest niemutowalna, więc zmiana trybu renderowania (inne `height:100%`, box model tabel, line-height obrazów) zostaje na zawsze; komentarz w linii 57 („parser HTML i tak wkłada `<link>` do "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260907120000_visits_section_path.sql:129",
+   "opis": "Stan `[]` (\"pomiar był, żadnej sekcji nie odwiedzono\") jest NIEOSIĄGALNY przez jedyną ścieżkę zapisu, a trzy dokumenty tej samej fazy opisują go sprzecznie. Warunek scalania to `jsonb_array_length(p_section_path) > coalesce(jsonb_array_length(visits.section_path), 0)`. Scenariusz: wizyta wstawiona przy `open` ma `section_path = NULL`; beacon niesie `p_section_path = '[]'` (karta otwarta i zamknięta bez wejścia w sekcję) → `0 > coalesce(NULL,0) = 0` jest FAŁSZEM → kolumna zostaje `NULL`, `POST /e` oddaje 204, zero błędów. Panel fazy 3 pokaże tej wizycie dopisek „brak zapisu ścieżki\" — czyli tę samą etykietę co wizycie sprzed migracji, mimo że pomiar był. Sprzeczność w dokumentach: `comment on"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/access/invitation-service.ts:111",
+   "opis": "Gałąź 429 `limit_maili` stoi na JEDNYM literale kodu błędu GoTrue (`EMAIL_RATE_LIMIT_CODE = 'over_email_send_rate_limit'`) wziętym z dokumentacji, nie z pomiaru na żywej instancji — a learned-pattern („zachowanie cudzej usługi bierz z uruchomienia\") mówi, że to jest dokładnie ten rodzaj założenia, który przechodzi typecheck i testy z atrapą, a pada na produkcji. Jeśli realny GoTrue na wdrożonym refie oddaje przy wyczerpanej puli (Resend Free, `rate_limit_email_sent = 60/h na cały produkt`) inny `code` albo sam status 429 bez `code`, `invite()` rzuci `InvitationServiceError`, trasa odda 503 „Nie udało się wysłać zaproszenia. Spróbuj za chwilę.\" i administrator nie dowie się, że wiersz zaprosz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/tracking/visit-service.test.ts:966",
+   "opis": "Trzeci szczebel drabinki (`withoutBoth !== null` — `visit-service.ts:394-395`) nie ma ani jednego testu: żaden przypadek nie doprowadza do trzech wywołań RPC, z których pada także ostatnie. Regresja, którą to przepuści: zamiana `throw driftError(withoutBoth, firstError)` na `return { sectionPath: firstError, readingTime: withoutSectionPath }` zamknęłaby oba zatrzaski mimo NIEUDANEGO scalenia — czyli awaria bazy wygaszałaby oba pomiary na stałe, a testy dalej byłyby zielone. Akcja: dopisz na końcu bloku `describe('scalanie z kolejnością czytania (faza 8, R10)')` test z `createFakeClient(undefined, [{code:'PGRST202',...},{code:'PGRST202',...},{code:'08006',message:'polaczenie zerwane'}])`, ład"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/reading-path.ts:318",
+   "opis": "describePath: człon końcowy („dalej …\") powtarza cel powrotu, gdy OSTATNI przebieg ma jeden krok. `parts.push(dalej ${tailOf(lastStep)})` bierze ostatni krok, którym w tym układzie jest dokładnie ta sama sekcja, która przed chwilą została wymieniona jako cel powrotu.\n\nSCENARIUSZ (zweryfikowany uruchomieniem modułu na fiksturze `v1` z offer-details-page.test.tsx): section_ids = ['wstep','zakres','cena','harmonogram','referencje','cta'], wizyta sections={wstep:100, cena:145}, section_path=['wstep','cena','wstep']. Kroki: wstep(order 0), cena(2), wstep(0) → runs = [[wstep,cena],[wstep]]. Kafel ŚCIEŻKA renderuje: „Od góry do sekcji Cena, potem powrót do sekcji Wstęp, dalej do sekcji Wstęp. Dwa w"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:24",
+   "opis": "Weryfikacja niewykonalna headless — wymaga żywego środowiska. (1) Cztery scenariusze E2E fazy (`oferty-filtr-i-sortowanie`, `mapa-oferty-sciezka`, `sciezka-czytania-tracker`, `oferta-bez-wizyt`) są w zadaniach nieodhaczone: potrzebują zalogowanego konta `E2E_TEST_EMAIL`, obu nowych seedów na bazie E2E i markera `public.e2e_env_marker`. (2) `OFFER_DETAILS_COLUMNS` ciągnie teraz `visits(id, …, section_path)`. Bez migracji `20260907120000_visits_section_path.sql` ORAZ jej KOLUMNOWEGO grantu SELECT na projekcie DOCELOWYM (`uznjvfdqrisbzbcwemjn`, nie lokalnie zalinkowany staging) pada CAŁY widok oferty — hook oddaje stan `error`, a nie brak ścieżki; dashboard nie ma tu fallbacku. Kolejność rollou"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/visit-path-card.tsx:56",
+   "opis": "K2 otwiera się PUSTE, gdy wizyta ma `section_path` niebędące `null`, ale wszystkie wpisy wypadają na progu 3 s. Scenariusz: sections={wstep:2, cena:1}, section_path=['wstep','cena'] → wiersz listy mówi „0 kroków ścieżki\", ma `aria-expanded`, klik otwiera kartę, a `VisitPathSteps` renderuje `<ol>` bez ani jednego elementu (K3 w tym samym stanie mówi wprost „Żadna sekcja nie zatrzymała klienta na dłużej niż chwilę.\"). AKCJA: w `VisitPathSteps` zwróć przy `steps.length === 0` to samo zdanie co `describePath` dla pustej ścieżki (wystaw je z `reading-path.ts` jako nazwaną stałą i użyj w obu miejscach)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:32",
+   "opis": "Plan IU-5 uzasadnia obecność linków na `/oauth/consent` tym, że „użytkownik zgadza się na dostęp aplikacji, dokumenty są na miejscu” — ale linki jadą wyłącznie przez `AuthCard`, którego na `/oauth/consent` używa tylko `ConsentLogin` (wariant BEZ sesji). Ekran właściwej decyzji (`ConsentShell`, użytkownik zalogowany, przyciski „Zezwól/Odmów”) ma własny `<main>` bez `LegalLinks`, więc osoba faktycznie udzielająca zgody nie widzi „Regulamin · Prywatność”. Scenariusz: zalogowany handlowiec otwiera `/oauth/consent?authorization_id=…` → `ConsentShell` → zero linków do dokumentów; te same linki są widoczne tylko, gdy wcześniej trzeba się zalogować. Akcja: w `ConsentShell` po zamykającym `</div>` ka"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:18",
+   "opis": "Dwie liczby w tej fazie zakładają `max_rows = 1000` PostgREST-a na REFIE WDROŻONYM (`uznjvfdqrisbzbcwemjn`): `EMBEDDED_VISITS_MAX_ROWS = 1000` (dopisek o sufitowaniu tabeli pokazuje się WYŁĄCZNIE przy `visits.length === 1000`) i sufit `cardinality(p_offer_ids) > 1000` w `offers_visit_summary` (lista ofert ma nie przekroczyć `max_rows`, więc RPC nigdy nie dostanie > 1000 id). Wartość nie występuje w repo, `compare:schemas` jej nie widzi, a jej zmiana w Dashboardzie Supabase (Settings → API → Max rows) rozjeżdża się bez błędu: przy `max_rows` > 1000 dopisek nigdy się nie pokaże, a konto z > 1000 ofert dostałoby 22023 → wszystkie liczniki `—`. Weryfikacja niewykonalna headless: odczytać ustawie"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "scripts/inbox/reply.test.mjs:82",
+   "opis": "Nowa ścieżka `--attach` w `reply.mjs` (import `prepareAttachments`, wywołanie po ustaleniu adresata, warunkowe `body.attachments`) nie ma ANI JEDNEGO testu — `reply.test.mjs` nie zawiera słowa `attach`, choć checkbox „Modyfikuj reply.mjs — ta sama ścieżka załączników co w send.mjs\" jest odhaczony. Testy fazy pokrywają wyłącznie `send.mjs`, więc rozjazd obu ścieżek jest niewykrywalny. Scenariusz awarii: ktoś przestawia w `reply.mjs` `prepareAttachments` PO `client.send` albo robi literówkę w kluczu (`args.attachments` zamiast `args.attach`) — cała suita jest zielona, a odpowiedź dociera bez plików (R1/R2 złamane cicho, dokładnie ta klasa cichej utraty danych, przed którą ostrzega nagłówek `ar"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-page.tsx:43",
+   "opis": "`track(ANALYTICS_EVENTS.tourRestarted)` („przewodnik_wlaczony_ponownie\") leci PRZED zapisem i niezależnie od jego wyniku: przy `userId === null` oraz przy nieudanym `resetTours` ekran pokazuje `tourRestartFailed`, a do PostHoga i tak idzie zdarzenie mówiące, że przewodnik został włączony ponownie. Przenieś wywołanie `track` do gałęzi sukcesu w `.then` (obok `reloadProfile()`), żeby zdarzenie opisywało stan, który faktycznie zaszedł."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/admin-accounts.ts:37",
+   "opis": "`export const ADMIN_API_PREFIX = '/api/admin'` nie ma ani jednego konsumenta (grep po `apps/server/src` i `apps/dashboard/src`: zero użyć poza definicją; guard originu dla tej powierzchni siedzi w handlerach przez `appOriginOnly`, nie w `app.ts`). Komentarz obok zapowiada „do guarda originu w `app.ts`\", którego ta faza świadomie nie dodała, więc stała jest martwym kodem sugerującym nieistniejącą bramkę. Akcja: usunąć linię 37 razem z jej komentarzem."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/template-asset-path.tsx:56",
+   "opis": "`hasCopyFailed` jest ustawiane na `true` w `onError` (linia 79-81) i NIGDY nie wraca do `false` — `CopyButton` nie ma kanału sukcesu, a komponent nie kasuje stanu przy kolejnym kliknięciu. Scenariusz: handlowiec klika „Kopiuj ścieżkę”, gdy okno panelu nie ma fokusu (Chrome rzuca wtedy `NotAllowedError: Document is not focused` z `navigator.clipboard.writeText`) → pokazuje się `role=\"alert\"` „Nie udało się skopiować…” i pole awaryjne; klika ponownie z fokusem → `writeText` przechodzi, `copyCount` rośnie, etykieta przycisku zmienia się na „Skopiowano”, ale czerwony komunikat o niepowodzeniu i pole awaryjne ZOSTAJĄ na ekranie obok potwierdzenia. Ekran twierdzi jednocześnie, że skopiowało się i "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:51",
+   "opis": "Okno rolloutu „migracja PRZED obrazem” nie jest bezpieczne wobec pushu z AA: obraz sprzed fazy 2 (`apps/server/src/access/membership-service.ts:91`, `EVENT_BY_NEW_STATE.get(row.new_state)`) ignoruje `old_source`/`new_source` i klasyfikuje wiersz krok-3 (przepięcie `zewnetrzne`→`akademia`, `old_state = new_state`) po samym `new_state`: konto `zewnetrzne`/`aktywne` z hashem na liście → zdarzenie `konto_przywrocone` + webhook administratora, konto `zewnetrzne`/`ograniczone` → `konto_ograniczone`, mimo że stan nie drgnął. Push AA jest automatem zewnętrznym i może trafić w okno między `supabase db push --project-ref uznjvfdqrisbzbcwemjn` a deployem obrazu z IU-5. Do checklisty operatora IU-1: wst"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-db.js:464",
+   "opis": "Guard nazwy pliku odrzuca separator i NUL, ale przepuszcza nazwy będące segmentami specjalnymi: filename \".\" i \"..\" przechodzą walidację i trafią do path.join w zapisie do vaulta (faza 3), gdzie wskażą katalog zamiast pliku (zapis padnie EISDIR/EPERM przy odbiorze wiadomości). Akcja: w tym samym `if` dorzuć warunek odrzucający `filename === '.' || filename === '..'` z tym samym błędem invalid_attachment."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-refusals.ts:41",
+   "opis": "`const byCode = outcome.code === null ? undefined : known[outcome.code]` indeksuje obiekt literalny kluczem pochodzącym z ciała odpowiedzi serwera, więc kod odmowy o nazwie z prototypu (`toString`, `constructor`, `valueOf`) oddaje funkcję zamiast `undefined`; `byCode ?? outcome.message` jej nie odrzuci i funkcja trafia jako `message` do `showToast`, a stamtąd jako dziecko Reacta do `Toast` — toast wywala render ekranu „Użytkownicy\" zamiast pokazać zdanie odmowy. Akcja: w l. 41 zamień na `outcome.code !== null && Object.hasOwn(known, outcome.code) ? known[outcome.code] : undefined` (ten sam wzorzec zastosuj w bliźniaczym `DELETION_REFUSALS[outcome.code]` w `features/settings/use-account-delet"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:802",
+   "opis": "Pętla sprawdza treść `qual`/`with_check`, ale nie sprawdza, JAKIEJ operacji dotyczy polityka — `polityki.get('mcp_tokens_select_own')` przeszedłby również wtedy, gdyby ta polityka została przepisana na `for all` (wtedy `qual` i `with_check` dalej zawierają `client_id` i `owner_id`, a `toHaveLength(4)` nadal się zgadza), czyli zakres uprawnień mógłby się po cichu rozszerzyć. Akcja: w pętli z linii 802 dodaj `expect(polityka?.cmd).toBe(nazwa === 'mcp_tokens_select_own' ? 'SELECT' : nazwa === 'mcp_tokens_delete_own' ? 'DELETE' : 'UPDATE')`, a w pętli z linii 810 `expect(polityka?.cmd).toBe(nazwa === 'mcp_tokens_insert_own' ? 'INSERT' : 'UPDATE')`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:4404",
+   "opis": "Komentarz migracji (linia 273) twierdzi, że trigger wierszowy widzi wiersze wstawione WCZEŚNIEJ tym samym poleceniem, więc jedno żądanie PostgREST z tablicą nie przeskoczy sufitu — ale żaden test RLS tego nie sprawdza (stary trigger z `20260903120000` był statement-level DOKŁADNIE z obawy o ten przypadek; `insertOffersAsAdmin` wstawia tablicę wyłącznie PONIŻEJ limitu). Gdyby snapshot wewnętrznego SELECT-u nie obejmował wierszy bieżącego polecenia, `insert([26 wierszy])` tokenem handlowca przeszedłby w całości przy 0/25, a test-first z fazy nic by nie zapalił. Akcja: obok testu 25./26. publikacji dodać `it` wstawiające JEDNYM `tenantB.client.from('offers').insert([...])` `limit - used + 1` wi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:307",
+   "opis": "Wynik `rejestracja_otwarta` z `submitAccessRequest` dostaje zdanie `ACCESS_TEXTS.requestFailed` („Nie udało się wysłać. Spróbuj ponownie.”), choć w `access/texts.ts:56` istnieje dokładnie dla tego przypadku `requestRegistrationOpen` („Rejestracja jest otwarta — załóż konto linkiem logowania.”), którego używa `/chce-dostep`. Scenariusz: obcy dochodzi do kroku „Lista oczekujących”, w międzyczasie administrator przełącza tryb na `otwarta`, klik „Zapisz na listę oczekujących” -> 409 -> karta wraca do pola z komunikatem „nie udało się wysłać”; człowiek nie wie, że zapis na listę jest już niemożliwy i że ma po prostu wysłać link ponownie — komunikat opisuje awarię, której nie było. Zamień w gałęzi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/src/webhook-contract.ts:445",
+   "opis": "Komentarz deklaruje, że `webhookPayloadSchema` jest LUSTREM `apps/server/src/webhooks/payload.ts`, ale ten plik emituje jeszcze jeden kształt — `buildWebhookTestPayload` z `typ: 'test_polaczenia'`, `oferta: null`, `pytanie: null` — którego unia rozłączna nie zna (nie ma go ani w `WEBHOOK_MESSAGE_TYPES`, ani jako wariantu). Przy przejściu `payload.ts` na ten schemat w IU-8 fazy 2 strzał testowy z Ustawień przestanie się walidować. Zmień zdanie w tym komentarzu na jawne wyliczenie: schemat pokrywa wyłącznie ładunki KOLEJKI, a `buildWebhookTestPayload` jest poza nim z rozmysłu (test nie jest wiadomością kolejki i nie ma `zdarzenie_id`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "packages/shared/src/database.types.test.ts:263",
+   "opis": "Test „dopuszcza NULL w visits.section_path\" jest NIEFALSYFIKOWALNY: `Json` (database.types.ts:1-7) zawiera już `null`, więc `Json | null` normalizuje się do `Json` i `Equals<VisitsRow['section_path'], Json | null>` jest prawdą także wtedy, gdy kolumna przestanie być nullowalna. Zweryfikowane mutacją: zmiana `section_path: Json | null` na `section_path: Json` w Row (database.types.ts:282) zostawia `pnpm vitest run src/database.types.test.ts` ZIELONY (12/12) i `tsc --noEmit` bez błędu; `ColumnPresence` też tego nie łapie, bo działa na `keyof`. Skutek: jedyny zadeklarowany strażnik decyzji 8 na poziomie typów nie strzeże niczego — po regeneracji typów (np. gdyby ktoś dołożył `default '[]' not n"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/pages/terms-page.ts:76",
+   "opis": "Punkt 4 regulaminu (\"Oferty\") niesie zdanie z odwróconym podmiotem: \"Zmiana treści to nowa oferta pod nowym adresem; stara zostaje taka, jaką wysłał ją odbiorca.\" — ofertę wysyła UŻYTKOWNIK, odbiorca ją otrzymuje. Scenariusz: użytkownik (albo prawnik przy weryfikacji R9) czyta /regulamin na APP_ORIGIN → dokument prawny stwierdza fakt sprzeczny z działaniem usługi (odbiorca nie wysyła oferty, tylko ją dostaje) → zdanie, które ma uzasadniać niemutowalność (zasada nr 2), traci sens i podważa wiarygodność całego punktu. Żaden test tego nie łapie, bo asercje sprawdzają nagłówki i frazy z decyzji, nie to zdanie. Akcja: zamień 'jaką wysłał ją odbiorca' na 'jaką otrzymał odbiorca' (albo 'jaką wysłał"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/static/c.js:151",
+   "opis": "Gałąź `oferta_wygasla` zakłada, że węzeł `data-cta=\"msg-wygasla\"` istnieje w dokumencie, ale dokument oferty jest NIEMUTOWALNY — węzeł dokłada dopiero `cta-section.ts` z tej fazy, więc każda oferta opublikowana PRZED tym deployem go nie ma. `node('msg-wygasla')` zwraca wtedy `null`, `show()` na `null` jest cichym no-opem, a linia `show(acceptError, !gone)` przy `gone === true` DODATKOWO gasi komunikat ogólny. Scenariusz: oferta opublikowana w fazie 6, klient ma stronę otwartą, oferta wygasa, klient klika „Akceptuję” → serwer oddaje 409 `oferta_wygasla` → na ekranie NIE pojawia się ani nowy tekst o wygaśnięciu, ani dotychczasowe „Nie udało się zapisać akceptacji…”; przycisk wraca do stanu akt"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9a-limity-seed.sql:29",
+   "opis": "Seed zostawia konto E2E z `limit_offers_per_month = 5` i `limit_templates = 2` (nagłówek to przyznaje i odsyła do RĘCZNEGO SQL), a ŻADEN inny seed nie przywraca defaultów — od tej migracji triggery odmawiają także wstawieniom przez `postgres`/psql. Scenariusz deterministyczny: po przebiegu `baner-limitu-ofert` uruchomienie `faza-8-szablony-osiem-seed.sql` pada na 3. szablonie z `54000 limit_szablonow` (limit 2), a `faza-8-oferty-statusy-seed.sql` pada na 6. wierszu (`now() - 40 days`): pięć poprzednich ofert jest w bieżącym miesiącu, `used = 5 >= limit 5`, trigger odmawia NIEZALEŻNIE od `created_at` nowego wiersza — każdy późniejszy scenariusz E2E ofert/szablonów jest czerwony bez związku z "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts:222",
+   "opis": "Asercja `expect(HEAT_VISIT_LIMIT).toBe(Math.floor(HEAT_BYTE_BUDGET / MAX_HEAT_ROW_BYTES))` powtarza dosłownie wzór implementacji, a pozostałe asercje tego bloku liczą bajty przez `estimateHeatBytes`, czyli przez TE SAME stałe (`BYTES_PER_HEAT_CELL`, `HEAT_ROW_OVERHEAD_BYTES`), z których wyprowadzony jest limit — test jest tautologiczny i przejdzie na zielono po dowolnej cichej zmianie budżetu (np. `HEAT_BYTE_BUDGET` na 20 mln, limit skacze na 967 wierszy ≈ 20 MB transferu, test dalej PASS). To wprost przypadek z `.claude/rules/learned-patterns.md` („fikstura nie może wyprowadzać oczekiwanej wartości tym samym wzorem, co implementacja”). Akcja: zamień linię 222 na `expect(HEAT_VISIT_LIMIT).to"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-events.ts:170",
+   "opis": "`summary.pominieto` jest dokumentowane jako liczba WIERSZY bez zdarzenia, ale przy wierszu ze zmianą stanu I źródła naraz, gdzie oba kierunki są spoza białych list (np. `{oldState:'aktywne', newState:'oczekujace', oldSource:'akademia', newSource:'zewnetrzne'}`), `sourceChangeWrite` (linia 131) i `stateChangeWrite` (linia 102) inkrementują `tally.pominieto` niezależnie — jeden wiersz liczy się jako 2, a odpowiedź `POST /api/czlonkostwo` raportuje `pominieto: 2` przy jednym wierszu zwrotu. Przenieś inkrementację `pominieto` z obu funkcji pomocniczych do pętli w `collectMembershipEvents`: policz wiersz jako pominięty raz, gdy po obu gałęziach nie powstał ani jeden `write` dla tego wiersza (np. "
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:307",
+   "opis": "Wynik `rejestracja_otwarta` z `submitAccessRequest` dostaje zdanie `ACCESS_TEXTS.requestFailed` („Nie udało się wysłać. Spróbuj ponownie.”), choć w `access/texts.ts:56` istnieje dokładnie dla tego przypadku `requestRegistrationOpen` („Rejestracja jest otwarta — załóż konto linkiem logowania.”), którego używa `/chce-dostep`. Scenariusz: obcy dochodzi do kroku „Lista oczekujących”, w międzyczasie administrator przełącza tryb na `otwarta`, klik „Zapisz na listę oczekujących” -> 409 -> karta wraca do pola z komunikatem „nie udało się wysłać”; człowiek nie wie, że zapis na listę jest już niemożliwy i że ma po prostu wysłać link ponownie — komunikat opisuje awarię, której nie było. Zamień w gałęzi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:4404",
+   "opis": "Komentarz migracji (linia 273) twierdzi, że trigger wierszowy widzi wiersze wstawione WCZEŚNIEJ tym samym poleceniem, więc jedno żądanie PostgREST z tablicą nie przeskoczy sufitu — ale żaden test RLS tego nie sprawdza (stary trigger z `20260903120000` był statement-level DOKŁADNIE z obawy o ten przypadek; `insertOffersAsAdmin` wstawia tablicę wyłącznie PONIŻEJ limitu). Gdyby snapshot wewnętrznego SELECT-u nie obejmował wierszy bieżącego polecenia, `insert([26 wierszy])` tokenem handlowca przeszedłby w całości przy 0/25, a test-first z fazy nic by nie zapalił. Akcja: obok testu 25./26. publikacji dodać `it` wstawiające JEDNYM `tenantB.client.from('offers').insert([...])` `limit - used + 1` wi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:268",
+   "opis": "„Zamknij checklistę\" chowa kartę wyłącznie stanem LOKALNYM hooka (`useState(profile?.isFirstStepsDismissed === true)`), a wartość początkowa bierze się ze STAŁEGO profilu bramki, którego `dismissFirstSteps` nie przeładowuje. SCENARIUSZ: konto z `first_steps_dismissed_at = null` wchodzi na `/oferty`, klika „Zamknij checklistę\" (karta znika, PATCH 204), przechodzi na `/szablony` i wraca na `/oferty`. `OffersPage` montuje się od nowa, `profile.isFirstStepsDismissed` w kontekście wciąż `false` → `isDismissed` startuje `false` → sondy lecą jeszcze raz i karta WRACA; kolejne kliknięcie „Zamknij\" wysyła kolejny `UPDATE` i kolejne zdarzenie `checklista_zamknieta`. DLACZEGO TO ŹLE: ręczne zamknięcie "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "e2e/seeds/faza-9b-zaproszenie-seed.sql:6",
+   "opis": "Komentarz nagłówkowy seeda (l. 6, 10, 20) opisuje, że ekran `/zaproszenie` rozstrzyga przez `accept_invitation()` i że to ona „świadomie nie dopasowuje zaproszeń wygasłych\" — od IU-7 panel woła WYŁĄCZNIE `accept_terms()`, a `accept_invitation()` jest aliasem do skasowania osobną migracją po smoke'u. Scenariusz: po migracji kasującej alias ktoś czyta ten seed, szuka `accept_invitation` w schemacie, nie znajduje i uznaje scenariusz E2E zaproszenia za osierocony (albo odwrotnie — odkłada kasowanie aliasu, bo „seed E2E go używa\"), choć seed nie woła żadnej funkcji, a scenariusz biegnie przez `accept_terms` drogą 1. Akcja: w liniach 6, 10 i 20 zamień `accept_invitation()` na `accept_terms()` (dro"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:301",
+   "opis": "Wyścig między dynamicznym importem SDK a `identifyUser`/`track`: `client` jest ustawiany dopiero po `await import('posthog-js/dist/module.no-external')` (linia 252), a każde wywołanie sprzed tej chwili jest cicho gubione (`if (client === null) return`). SCENARIUSZ: handlowiec z żywą sesją otwiera `app.traferto.pl/oferty`. `main.tsx` woła `void initAnalytics()` (start pobierania chunku ~326 KB), a kilka ms później efekt `SessionProvider` dostaje wynik `supabase.auth.getSession()` z localStorage i woła `identifyUser(owner_id)` oraz `track('logowanie')` — oba trafiają w `client === null` i przepadają bez śladu. Nic ich nie odtwarza: `identify` leci wyłącznie z `apply()` w `session-context`, a k"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "traferto-membership-emission",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "tests/test_import_skool_members.py:150",
+   "opis": "Autouse fixture `_traferto_unconfigured` (zerująca `traferto_membership_url`/`_secret`) żyje tylko w tym jednym pliku, a chroni przed skutkiem globalnym: każdy przyszły test, który wywoła `import_skool_members` lub `POST /api/import/skool-members` poza tym modułem, przy lokalnym `.env` z uzupełnioną konfiguracją Traferto wyśle realny POST z listą hashy na produkcyjny endpoint (`push_membership_to_traferto` odpala się bezwarunkowo po `completed`). To ten sam problem zasięgu `conftest.py`, co w learned-patterns 2026-05-30 (`testpaths` obejmuje dwa drzewa: `tests/` i `backend/tests/`). Przenieś tę fixture do `tests/conftest.py` (albo repo-root `conftest.py`, żeby pokrywała także `backend/tests/"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9b-onboarding-seed.sql:77",
+   "opis": "Seed zeruje `webhook_url` i `webhook_host`, ale NIE `webhook_set_at`. Na `profiles` stoi `profiles_webhook_set_at_pair_check check ((webhook_url is null) = (webhook_set_at is null))` (migracja `20260902190000`) obok `profiles_webhook_pair_check`. Scenariusz awarii: konto E2E `e2e@oferty-online.test` ma po scenariuszach webhooka z fazy 6 ustawiony adres (`webhook_url`, `webhook_host`, `webhook_set_at` niepuste) → `psql -v ON_ERROR_STOP=1 -f e2e/seeds/faza-9b-onboarding-seed.sql` pada na `ERROR: new row for relation \"profiles\" violates check constraint \"profiles_webhook_set_at_pair_check\"` i CAŁY seed (łącznie ze stanem `tour_seen_*`/`first_steps_dismissed_at`) nie wchodzi, więc oba scenariusz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "CLAUDE.md:73",
+   "opis": "Akapit „samodzielna rejestracja\" (IU-9) twierdzi: „odrzut TLD `.test` na `create_user: true` (`400 email_address_invalid` wyłącznie dla `.test`, `.invalid` przechodzi), więc adres seeda to `czlonek-e2e@oferty-online.invalid`\". To zdanie jest sprzeczne z pomiarem operatora 16.09 23:02 zapisanym w tej samej fazie w `e2e/seeds/rejestracja-czlonek-seed.sql` (komentarz: GoTrue odrzuca ZARÓWNO `.test`, jak i `.invalid`; adres w seedzie jest PLACEHOLDEREM do podmiany na domenę z MX) i w zadaniach (`samodzielna-rejestracja-czlonkow-aa-zadania.md:145` i `:201`). Scenariusz awarii: kolejna sesja wykona CLAUDE.md dosłownie, uzna `.invalid` za działający adres E2E, odegra smoke i dostanie `email_address"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/admin-accounts-service.ts:174",
+   "opis": "Odczyt `profiles` w `list()` nie ma jawnego sufitu ani sygnału obcięcia, a PostgREST tnie odpowiedź na `max_rows = 1000` BEZ błędu (ta sama pułapka co `EMBEDDED_VISITS_MAX_ROWS` w panelu): przy 1001 kontach widok „Użytkownicy\" po cichu pokaże 1000, mimo że `readEmails()` stronicuje aż do 5000 — czyli dwa źródła tej samej listy mają dwa różne sufity, a komentarz przy `USERS_MAX_PAGES` mówi o długu tylko po stronie e-maili. Akcja: w zapytaniu z linii 174 dodać jawne `.limit(ADMIN_ACCOUNTS_MAX_ROWS)` (nowa stała = 1000, z komentarzem, że liczba zakłada `max_rows` z Dashboardu Supabase) i dopisać do `AdminAccountsSnapshot` pole sygnalizujące sufit przy `profileRows.length === ADMIN_ACCOUNTS_MAX_"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-events.ts:170",
+   "opis": "`summary.pominieto` jest dokumentowane jako liczba WIERSZY bez zdarzenia, ale przy wierszu ze zmianą stanu I źródła naraz, gdzie oba kierunki są spoza białych list (np. `{oldState:'aktywne', newState:'oczekujace', oldSource:'akademia', newSource:'zewnetrzne'}`), `sourceChangeWrite` (linia 131) i `stateChangeWrite` (linia 102) inkrementują `tally.pominieto` niezależnie — jeden wiersz liczy się jako 2, a odpowiedź `POST /api/czlonkostwo` raportuje `pominieto: 2` przy jednym wierszu zwrotu. Przenieś inkrementację `pominieto` z obu funkcji pomocniczych do pętli w `collectMembershipEvents`: policz wiersz jako pominięty raz, gdy po obu gałęziach nie powstał ani jeden `write` dla tego wiersza (np. "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:285",
+   "opis": "Martwa linia: `controllerRef.current?.abort()` tuż po `nextGeneration()` (l. 284), które samo abortuje i zeruje `controllerRef.current` (l. 162–163) — w tym miejscu `controllerRef.current` jest zawsze `null`, więc wywołanie nigdy nic nie robi, a czytelnikowi sugeruje, że `nextGeneration()` NIE abortuje (co jest nieprawdą i sprzeczne z komentarzem funkcji l. 153–159). Ta sama nadmiarowa linia siedzi w `resolveRegistration` (l. 177), wołanym wyłącznie z `handleSubmit` po `nextGeneration()` (l. 225). Akcja: usuń l. 285 (i lustrzaną l. 177), zostawiając w obu miejscach samo `const controller = new AbortController(); controllerRef.current = controller;`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts:93",
+   "opis": "Odczyt profilu w Ustawieniach jest BEZ filtra po właścicielu i kończy się `.maybeSingle<ProfileRow>()` — komentarz mówi wprost, że jednowierszowość zapewnia RLS. Migracja `20260914100000` dokłada drugą politykę permissive `profiles_select_admin` (`using (select public.is_admin())`), więc dla sesji z `profiles.role = 'admin'` to zapytanie zwraca WSZYSTKIE wiersze `profiles`, nie jeden. Scenariusz: konto admina (na E2E robi je `e2e/seeds/faza-9b-admin-seed.sql`, który przy okazji zakłada drugi profil `e2e-b@oferty-online.test`) wchodzi w /ustawienia → GET /rest/v1/profiles?select=… z `Accept: application/vnd.pgrst.object+json` trafia na 2+ wiersze → PostgREST oddaje 406/PGRST116 („multiple row"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9a-limity-seed.sql:29",
+   "opis": "Seed zostawia konto E2E z `limit_offers_per_month = 5` i `limit_templates = 2` (nagłówek to przyznaje i odsyła do RĘCZNEGO SQL), a ŻADEN inny seed nie przywraca defaultów — od tej migracji triggery odmawiają także wstawieniom przez `postgres`/psql. Scenariusz deterministyczny: po przebiegu `baner-limitu-ofert` uruchomienie `faza-8-szablony-osiem-seed.sql` pada na 3. szablonie z `54000 limit_szablonow` (limit 2), a `faza-8-oferty-statusy-seed.sql` pada na 6. wierszu (`now() - 40 days`): pięć poprzednich ofert jest w bieżącym miesiącu, `used = 5 >= limit 5`, trigger odmawia NIEZALEŻNIE od `created_at` nowego wiersza — każdy późniejszy scenariusz E2E ofert/szablonów jest czerwony bez związku z "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:275",
+   "opis": "Weryfikacja niewykonalna headless: kolejność rolloutu jest wiążąca i nic jej nie egzekwuje — migracja na ref WDROŻONY (`supabase db push --project-ref uznjvfdqrisbzbcwemjn`, lokalne CLI celuje w staging) MUSI pójść PRZED publikacją obrazu, bo nowy obraz czyta `profiles.limit_templates` przy KAŻDYM listowaniu szablonów (`GET /api/szablony`, `lista_szablonow` → 42703 → 503/„awaria”), a `readAccountUsage` przy każdym wgraniu i usunięciu grafiki (`profiles.limit_storage_bytes` → 503). Odwrotna kolejność (obraz przed migracją) nie jest cicha jak w fazie 5b, tylko kładzie cały ekran `/szablony` i wgrywanie do czasu pushu. Do smoke'u: `pnpm test:rls` zielony na stagingu + `pnpm compare:schemas` zgo"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:144",
+   "opis": "Sprzątanie po odmontowaniu przerywa wyłącznie kontroler istniejący W CHWILI odmontowania, ale nie podbija generacji. `signInWithOtp` nie ma sygnału przerwania, więc gdy karta odmontuje się w trakcie `sending` (np. klik w link „Chcę dostęp”/„Regulamin” podczas wysyłki, przejście z `/oauth/consent`), po odmowie `otp_disabled` `isStale(generation)` w linii 214 oddaje `false`, `resolveRegistration` tworzy NOWY kontroler i wysyła `POST /api/dostep/rejestracja` z komponentu, którego już nie ma — dla członka serwer wyśle link zakładający konto, a człowiek nie zobaczy żadnego potwierdzenia (dla obcego to niewidoczna, nielimitowana przez UI runda na wyrocznię członkostwa). Dopisz w tym samym cleanupi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/registration-service.ts:115",
+   "opis": "`precheckRowSchema` to `z.strictObject`, więc każda przyszła migracja rozszerzająca `returns table` funkcji `registration_precheck` o kolejną kolumnę zamienia CAŁĄ rejestrację w 503 `sprawdzenie_nieudane` w oknie „migracja PRZED obrazem\" (wiążąca kolejność rolloutu projektu). Scenariusz: `db push` z dodaną kolumną `foo` → PostgREST oddaje wiersz `{account_state, is_member, registration_mode, foo}` → `safeParse` pada na `unrecognized_keys` → wyjątek stage `rpc` → 503 dla każdego członka do czasu deployu obrazu, bez żadnej wady danych. Zamień `z.strictObject` na `z.object` (nieznane klucze są tu nieszkodliwe — serwis czyta trzy pola), a kształt tych trzech pól nadal egzekwują enumy i `.nullabl"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:18",
+   "opis": "Dwie liczby w tej fazie zakładają `max_rows = 1000` PostgREST-a na REFIE WDROŻONYM (`uznjvfdqrisbzbcwemjn`): `EMBEDDED_VISITS_MAX_ROWS = 1000` (dopisek o sufitowaniu tabeli pokazuje się WYŁĄCZNIE przy `visits.length === 1000`) i sufit `cardinality(p_offer_ids) > 1000` w `offers_visit_summary` (lista ofert ma nie przekroczyć `max_rows`, więc RPC nigdy nie dostanie > 1000 id). Wartość nie występuje w repo, `compare:schemas` jej nie widzi, a jej zmiana w Dashboardzie Supabase (Settings → API → Max rows) rozjeżdża się bez błędu: przy `max_rows` > 1000 dopisek nigdy się nie pokaże, a konto z > 1000 ofert dostałoby 22023 → wszystkie liczniki `—`. Weryfikacja niewykonalna headless: odczytać ustawie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:55",
+   "opis": "`startedRef` jest FLAGĄ, która nigdy nie wraca do `false`, a sprzątanie efektu bezwarunkowo woła `instance.destroy()`. Pod `<StrictMode>` (a tak montuje `main.tsx` w dev) React 19 wykonuje: efekt → cleanup → efekt. Przebieg: (1) `startedRef=false` → `driver()` + `drive()`; (2) cleanup → `isUnmountingRef=true`, `instance.destroy()` — nakładka znika; (3) drugi przebieg efektu zeruje `isUnmountingRef`, ale zastaje `startedRef === true` i wychodzi przed `driver()`. Efekt: w developmencie przewodnik nie pokazuje się ANI RAZU na żadnym z trzech ekranów, mimo że `tour_seen_* = false`, a test `„driver() DOKŁADNIE raz mimo podwójnego montażu StrictMode\"` (use-screen-tour.test.tsx) przechodzi, bo licz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/offers/visit-summary.test.ts:188",
+   "opis": "Atrapa w teście „przerwanie własnym sygnałem nie jest awarią” RZUCA `DOMException('AbortError')`, a produkcyjny postgrest-js po abort() nie rzuca, tylko rozwiązuje `{ data: null, error: { code: '', message: 'AbortError: …', hint: 'Request was aborted (timeout or manual cancellation)' } }` — atrapa odwzorowuje gałąź, której oryginał nie ma, i omija tę, którą ma (learned-patterns: „atrapa MUSI odwzorować gałęzie oryginału o koszcie zewnętrznym”). Test jest zielony, gdy implementacja raportuje abort do Sentry (finding P2). Zmień `abortSignal.mockImplementation` z `throw new DOMException(...)` na `controller.abort(); return { data: null, error: { code: '', message: 'AbortError: signal is aborted"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/account/use-profile.ts:280",
+   "opis": "`updateOwnProfile` raportuje awarie ZAPISU przez ten sam modułowy zatrzask `reportFailureOnce`, którego używa odczyt profilu. Scenariusz: obraz wdrożony bez grantu UPDATE → pierwsze kliknięcie „Zamknij checklistę” konsumuje zatrzask; późniejsza REALNA awaria odczytu `profiles` (ta, która stawia bramkę dostępu w stanie `awaria` i blokuje wejście do panelu) nie trafia już do Sentry w tej sesji. Akcja: dodać osobny zatrzask modułowy dla zapisów (np. `let isWriteFailureReported = false;` + `reportWriteFailureOnce`) i wołać go w obu gałęziach `updateOwnProfile` zamiast `reportFailureOnce`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/access/invitation-service.ts:111",
+   "opis": "Gałąź 429 `limit_maili` stoi na JEDNYM literale kodu błędu GoTrue (`EMAIL_RATE_LIMIT_CODE = 'over_email_send_rate_limit'`) wziętym z dokumentacji, nie z pomiaru na żywej instancji — a learned-pattern („zachowanie cudzej usługi bierz z uruchomienia\") mówi, że to jest dokładnie ten rodzaj założenia, który przechodzi typecheck i testy z atrapą, a pada na produkcji. Jeśli realny GoTrue na wdrożonym refie oddaje przy wyczerpanej puli (Resend Free, `rate_limit_email_sent = 60/h na cały produkt`) inny `code` albo sam status 429 bez `code`, `invite()` rzuci `InvitationServiceError`, trasa odda 503 „Nie udało się wysłać zaproszenia. Spróbuj za chwilę.\" i administrator nie dowie się, że wiersz zaprosz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184",
+   "opis": "Oba liczniki ofert (miesiąc i godzina) liczą po `offers.created_at`, a tę kolumnę wstawiający klient KONTROLUJE: grant INSERT na `offers` dla `authenticated` jest TABELOWY (migracja `20260824171406`: `grant select, insert, delete on table public.offers`, potwierdzone komentarzem w `20260825171812`), kolumna ma tylko `default now()` i żaden trigger jej nie stempluje (seed 9a sam wstawia jawne `created_at`, więc stempla na pewno nie ma). Scenariusz: handlowiec z sesją panelu albo tokenem MCP (mintowana sesja / JWT OAuth) wysyła `POST /rest/v1/offers` z pełnym wierszem oferty i `\"created_at\":\"2020-01-01T00:00:00Z\"` — `offers_insert_own` przepuszcza (owner_id = auth.uid()), trigger `offers_enfor"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/format.ts:239",
+   "opis": "Odczyt etykiety po kluczu z `jsonb` idzie przez indeksowanie obiektu literalnego, więc trafia w prototyp: dla `details.kind === 'toString'` wyrażenie `LIMIT_KIND_LABELS[limitKind] ?? limitKind` oddaje FUNKCJĘ (nie `undefined`, więc `??` nie zadziała), która ląduje w `AdminEventDetail.value` i w `<dd>{detail.value}</dd>` (event-row.tsx) wywraca render całej listy zdarzeń zamiast pokazać jeden wiersz. Ten sam plik robi to poprawnie w `readString`/`readNumber` przez `Object.hasOwn` (learned-patterns, 2026-08-28). Akcja: w l. 239 zamień `LIMIT_KIND_LABELS[limitKind] ?? limitKind` na `(Object.hasOwn(LIMIT_KIND_LABELS, limitKind) ? LIMIT_KIND_LABELS[limitKind] : undefined) ?? limitKind` (albo zami"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:97",
+   "opis": "Po zakończeniu przewodnika `markTourSeen` zapisuje kolumnę w bazie, ale profil, z którego hook czyta `tourSeen`, jest wczytywany RAZ w `AccessGate` nad `Outlet`-em i nikt go po tym zapisie nie przeładowuje (`useAccountAccessReload` woła wyłącznie `help-page.tsx`). SCENARIUSZ: konto z `tour_seen_offers = false` wchodzi na `/oferty`, przechodzi przewodnik do „Koniec\" (PATCH przechodzi), klika ofertę, wraca strzałką „Wstecz\" na `/oferty`. `OffersPage` montuje się od nowa, `profile.tourSeen.oferty` w kontekście nadal `false`, `isEligible` znów `true` → przewodnik startuje PONOWNIE i zapisuje kolumnę drugi raz, a `track('przewodnik_zakonczony_oferty')` leci kolejny raz. To samo dzieje się przy ka"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "traferto-membership-emission",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "backend/services/traferto_membership.py:179",
+   "opis": "Retry emisji (`await asyncio.sleep(60)` + druga próba z timeoutem 10 s) wykonuje się wewnątrz łańcucha wywołań requestu HTTP: `POST /api/import/skool-members` → `_run_skool_import` (`backend/routers/import_ops.py:87`) → `import_skool_members` → `push_membership_to_traferto` (`backend/services/import_skool_members.py:343`). Scenariusz awarii: Traferto jest niedostępne (5xx/timeout) w momencie, gdy operator klika „Odśwież status Skool\" w `/clients/do-usuniecia-skool`; import kończy się `completed`, a odpowiedź HTTP jest wstrzymana dodatkowe ~80 s (10 s pierwsza próba + 60 s sleep + 10 s retry) już PO zamknięciu `sync_log`. Sam import członków trwa realnie kilkadziesiąt sekund (4 taby + `INTER_"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 81
+ },
+ "potwierdzone_per_severity": {
+  "P3": 38,
+  "P2": 39,
+  "P1": 4
+ }
+}

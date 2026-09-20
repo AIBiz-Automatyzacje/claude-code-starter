@@ -1,0 +1,433 @@
+{
+ "os": "brak",
+ "zgloszone_n": 0,
+ "potwierdzone_n": 323,
+ "obalone_n": 1,
+ "potwierdzone_probka": [
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "backend/tests/test_payment_reminders_pure.py:36",
+   "opis": "`test_sequence_constants` asertuje wyłącznie, że stałe równają się swoim literałom (`MAX_STEPS == 3`, `STEP_GAP_BUSINESS_DAYS == 2`, `MAX_ATTEMPTS == 3`) — testuje implementację, nie zachowanie (change-detector test: zmiana biznesowa wymusi zmianę testu bez wykrycia żadnego bugu). Analogicznie `test_payload_contains_all_r11_keys` linia 217 (`set(ReminderPayload.__annotations__) == _R11_KEYS`) testuje deklarację typu, którą i tak weryfikuje mypy, i powiela listę 13 pól. Zachowanie stałych jest już pokryte pośrednio przez `test_next_step_due_at_uses_business_day_gap` i testy zakresu `step`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-08-17-001-feat-automatyczne-przypomnienia-platnosci-plan.md:?",
+   "opis": "Trzy pytania z sekcji „Odroczone do implementacji\" pozostają nierozstrzygnięte i są weryfikowalne wyłącznie na realnym koncie Stripe + instancji n8n (niewykonalne headless): (1) czy `latest_invoice.hosted_invoice_url` bywa `null` dla części subskrypcji, (2) czy pojedyncze `_stripe_get(invoices/{id})` per domykaną sekwencję nie uderza w rate limit przy większej liczbie domknięć w jednym przebiegu, (3) czy `subscription_kind` w cache pokrywa realne past_due (inaczej `pick_template_key` leci na default `aa_installments`). Do sprawdzenia w pierwszym przebiegu `dry_run` po Unicie 4."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "frontend/src/components/clients/reminder-history.tsx:80",
+   "opis": "`Math.min(reminder.current_step, MAX_REMINDER_STEPS)` powtarza clamp, który `describeReminder` już policzył linijkę wyżej (`view.filledDots`, wewnętrzny `clampDots`). Użyj `view.filledDots` zamiast drugiej implementacji tej samej reguły."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/updater.js:67",
+   "opis": "buildUpdateStatus przyjmuje wstrzykiwany `now = new Date()` wyłącznie po to, żeby wypełnić pole `checked_at` w odpowiedzi. Żaden test nie podaje `now` (lib/updater.test.js nie przekazuje go w ani jednym z siedmiu wywołań), a żaden konsument nie czyta `checked_at` — updateBarView (public/render-helpers.js:333) używa tylko status, can_update, local_revision i message. To wstrzykiwanie zależności bez drugiego użycia, czyli abstrakcja na zapas przy jednorazowym polu. Akcja: usunąć parametr `now` z sygnatury i liczyć `checked_at: new Date().toISOString()` wprost (albo, jeśli pole nie jest potrzebne w kontrakcie API, usunąć oba)."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "frontend/src/test/mocks/handlers.ts:414",
+   "opis": "Mock kroku używa `error: \"webhook 500\"`, podczas gdy produkcja zapisuje wyłącznie skrócone kody z `NotificationResult.error`: `timeout` / `network_error` / `http_500` (backend/services/notifications.py:122-143 — świadomy kontrakt sanitizacji, żeby URL webhooka nie wyciekł do DB/UI). Reguła projektu: mock handlers muszą używać tych samych wartości co prawdziwe API, inaczej testy są fałszywie zielone (learned 2026-04-04). Tu ryzyko jest niskie (wartość tylko renderowana), ale fixture utrwala nieistniejący format i osłabia przyszłe testy formaterów błędów."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "server.runs.test.js:90",
+   "opis": "Scenariusz testowy z planu U1 („plik wersji istnieje i poprawny → `/api/status` zwraca rewizję i datę\") jest odhaczony, ale pokryty wyłącznie unit-testami `lib/version.test.js` — nikt nie asertuje, że pole `version` faktycznie jest w odpowiedzi `/api/status`. Szew server.js↔lib/version jest nieprzetestowany: usunięcie/przemianowanie pola (albo przyszła memoizacja z punktu wyżej) przechodzi cały `npm test` na zielono, a kontrakt publicznego endpointu jest złamany. To dokładnie wzorzec „testy czystych funkcji obu stron przechodzą przy złamanym zachowaniu systemowym\" z learned-patterns. Akcja: w `server.runs.test.js` (jest tam już żywy proces serwera i helper `getStatus()`) dołożyć asercję kszt"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": ".github/workflows/ci.yml:113",
+   "opis": "Bramka typów w CI jest no-opem — `npx tsc --noEmit` przy `frontend/tsconfig.json` z `\"files\": []` + `references` nie sprawdza ANI JEDNEGO pliku (projekt solution; bez `-b` referencje są ignorowane). Ujawniło się dokładnie w tej fazie: commit be1831e opisuje trzy błędy typów (brak `payment_reminders: null` w fixture'ach `SyncStatusResponse`, `postJson` bez wymaganego `body`, deferred zawężony do `never`), których „typecheck\" nie złapał — złapał je dopiero `npm run build` (`tsc -b`). Weryfikacja Unit 6 („`npx tsc --noEmit` … zielone\") jest więc fałszywie zielona dla każdej przyszłej fazy frontendowej. Fix: `npx tsc -b --noEmit` (albo `tsc -p tsconfig.app.json --noEmit`) w kroku typecheck + kor"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/persisted-env.js:245",
+   "opis": "Spawn binarki `powershell` po gołej nazwie, rozstrzyganej przez PATH procesu daemona — na Windowsie każdy zapisywalny katalog wcześniej w PATH pozwala podstawić własny `powershell.exe`, który zostanie uruchomiony przy każdym `/api/status`. Reszta repo (`lib/claude-spawn.js`) świadomie unika fallbacków rozstrzyganych przez shell z tego samego powodu. Akcja: użyj pełnej ścieżki `path.join(process.env.SystemRoot || 'C:\\\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')` z fallbackiem na `null` gdy plik nie istnieje."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "backend/routers/payment_reminders.py:208",
+   "opis": "[NIEZWERYFIKOWANY — 0 glosow sceptykow] Retry kroku wykonuje blokujace wywolanie sieciowe WEWNATRZ write-locka: _begin_immediate(conn) (linia 208) -> engine.send_step(...) (linia 213), a send_step w trybie live wola send_webhook_json -> httpx.post z _WEBHOOK_TIMEOUT_SECONDS = 10.0. Przez caly czas RTT/timeoutu n8n (do 10 s) polaczenie trzyma ekskluzywny write-lock SQLite. Skutki: (a) godzinowy run_payment_reminders_job oraz POST /api/sync/payment-reminders dostaja sqlite3.OperationalError na wlasnym BEGIN IMMEDIATE (get_db ma tylko timeout=10) -> 409 database_busy / skip cyklu, (b) inne importery (EasyCart 1h, Stripe installments, sheets sync) blokuja sie na zapisach w tym oknie. Wzorzec z _"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "server.js:335",
+   "opis": "`GET /api/update` nie ma ani cache'u, ani rate limitu, ani guardu cross-origin — a `Access-Control-Allow-Origin: *` jest ustawiane globalnie (server.js:784), zaś guard CSRF `isCrossOriginRequest` obejmuje wyłącznie metody != GET/HEAD (server.js:234). Dowolna strona, którą user odwiedzi, robi `fetch('http://localhost:7777/api/update')`, ODCZYTUJE odpowiedź (rewizja + `installed_at` + `source` = fingerprint maszyny i wersji) i przy każdym żądaniu wymusza po stronie serwera wyjście do `api.github.com`. Pętla w JS na obcej stronie: (a) wyczerpuje limit 60 żądań/h publicznego API GitHuba dla IP usera → feature na godzinę wpada w `check_failed` i przestaje działać, (b) generuje nieograniczoną licz"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/naprawy-team-os/naprawy-team-os-zadania.md:153",
+   "opis": "Weryfikacja niewykonalna w tym repozytorium: cały U12 (`skills/onboard/SKILL.md`, `skills/onboard/templates/skrzynka.css`) leży NIEZACOMMITOWANY w osobnym repo `aibiz-plugin`, więc diff Fazy 5 nie zawiera ani jednej linii tych zmian — nie da się ich zrecenzować ani potwierdzić, że są tym, co opisuje dokumentacja. Dodatkowo push jest zablokowany cudzymi niezacommitowanymi zmianami w `hooks/` (`D hooks/frontmatter-validate.sh`, `M hooks/hooks.json`) — usunięty hook walidacji frontmattera to zmiana o charakterze bezpieczeństwa/jakości w cudzym repo i musi zostać wyjaśniona z autorem PRZED pushem, a nie przy okazji."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "scripts/inbox/inbox-pull.test.mjs:130",
+   "opis": "mergeFrontmatter ma 5 testow wymaganych planem, ale DWIE wlasne galezie obronne fazy sa bez pokrycia, mimo ze nota fazy deklaruje je jako przetestowane (\"niedomkniete ---\", \"wartosci wielolinijkowe\"): (1) guard niedomknietego frontmattera `if (/^---\\r?\\n/.test(raw)) return raw` (inbox-pull.mjs:254) — regresja tu nadpisalaby plik, ktorego struktury kod nie rozumie; (2) splitTopLevelEntries (inbox-pull.mjs:236) i jego galaz kontynuacji dla wartosci blokowych — jedyne testy uzywaja wartosci inline (`tags: [skrzynka]`), wiec doklejanie linii `  - x` do ostatniego klucza nie jest asertowane po zadnej stronie (ani w pliku usera, ani w szablonie). Zweryfikowalem recznie, ze zachowanie jest dzis pop"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "backend/services/payment_reminders.py:356",
+   "opis": "Brak guardu na pustą/niedostępną listę Stripe przed reconcile — masowe, nieodwracalne `resolved_lost`. `collect_pairs` woła `_stripe_list_subscriptions` → `_stripe_get`, które przy braku `settings.stripe_api_key` (pusty env, rotacja klucza, literówka) zwraca `None` bez wyjątku → lista `[]` → `pairs = {}`. `_reconcile` interpretuje to jako „żadna para nie jest już past_due\" i domyka WSZYSTKIE otwarte sekwencje: `invoice_is_paid` też dostaje `None` (brak klucza) i zwraca `False`, więc każda sekwencja ląduje w `resolved_lost`. Stan jest nieodtwarzalny, bo `upsert_new_sequences` używa `INSERT OR IGNORE` na `UNIQUE(subscription_id, invoice_id)` — po powrocie klucza para nadal istnieje w tabeli ja"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "scripts/install-vps.sh:1086",
+   "opis": "Oba nowe kontrakty PULS_HOME (`env.PULS_HOME` w settings.json i wskaźnik `~/.claude-cron-home`) pisze WYŁĄCZNIE `setup.mjs`, którego ścieżka VPS nie uruchamia (komentarz w tym samym pliku potwierdza ten sam mechanizm dla `data/version.json`). Na maszynie 24/7 — czyli tej z rolą `agent` — żaden z dwóch wskaźników nie powstaje, więc wywołania `node \"$PULS_HOME/scripts/inbox/close.mjs\"` trafiają w guard „brak PULS_HOME\", a R4 („bez ani jednego ręcznego kroku\") jest spełnione tylko na ścieżce laptopa. Akcja: w finale `install-vps.sh` (obok zapisu `data/inbox.env` i roli, jako user `claude`) zapisać wskaźnik `~/.claude-cron-home` — analogicznie do długu `version.json` zgłoszonego w review Fazy 1."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/naprawy-team-os/naprawy-team-os-zadania.md:87",
+   "opis": "Weryfikacja `curl -s localhost:7777/api/status` zwraca niepuste pole wersji jest niewykonalna w tej sesji: lokalny daemon biegnie ze starym kodem (pole `version` w ogóle nie istnieje w jego odpowiedzi), a restart to decyzja operatora. Dodatkowo na maszynie deweloperskiej `data/version.json` nie istnieje, więc po restarcie pole pokaże `unknown` dopóki nie przejdzie setup.mjs — to poprawne zachowanie, nie defekt."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "scripts/consistency-check.test.mjs:809",
+   "opis": "Brak testu I/O na galaz \"brak pliku Dashboard.md\" (consistency-check.mjs:287, `dashboard === null`), choc nota fazy stawia to jako wymaganie (\"brak sekcji lub brak pliku Dashboardu nie wywala joba\"). Pokryta jest tylko wersja pure (`insertDashboardEntry` bez sekcji) — makeWorkspace ZAWSZE tworzy Dashboard.md. Akcja: dodaj do makeWorkspace opcje `dashboard: null` (pomin zapis) i test: rozjazd + brak Dashboardu -> status `task_created`, plik zadania istnieje, brak wyjatku."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/_payment_reminder_queries.py:224",
+   "opis": "`get_or_create_step` wstawia wiersz-placeholder ze statusem `failed`/`attempts=0` (bo CHECK nie zna `pending`). Semantyka jest przeciążona: jeśli proces padnie między INSERT a `update_step_result` (albo transakcja nie dojdzie do commitu), drawer historii kroków z Unitu 5 (R19) pokaże operatorowi krok „błąd\", który nigdy nie był próbą wysyłki. Czystsze: dołożyć status `pending` do CHECK w migracji albo tworzyć wiersz kroku dopiero po znanym wyniku wysyłki."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/schemas/payment_reminders.py:40",
+   "opis": "`steps: list[ReminderStep] = []` — mutowalny literał jako default. Pydantic v2 kopiuje default, więc to nie jest bug, ale konwencja projektu i czytelność wskazują `Field(default_factory=list)`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/_payment_reminders_locked.py:128",
+   "opis": "`_finish_failed` to druga kopia identycznego helpera z `backend/services/_sync_locked.py` (ta sama sygnatura, to samo ciało, ta sama docstring 'best-effort... nie maskuj oryginalnego wyjątku'); jedyna różnica to dodane `conn.rollback()`. Osobny plik wrappera jest uzasadniony (limit 300 LOC dla `_sync_locked.py`), ale sam helper — nie: naturalne miejsce to `backend/services/_sync_log.py` (48 LOC), obok `start_sync_log`/`finish_sync_log`, z jednym wywołaniem `rollback` sterowanym flagą albo zawsze (rollback bez otwartej transakcji jest no-opem)."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "backend/tests/test_payment_reminders_pure.py:171",
+   "opis": "Dwa `# type: ignore[arg-type]` wyłączają typecheck dokładnie tego kontraktu, który Unit 1 ma ustalić: parametrize dla `pick_template_key` deklaruje `kind: str | None` zamiast `SubscriptionKind | None`, a `_payload(**overrides: object)` + `build_reminder_payload(**kwargs)` gubi weryfikację typów wszystkich 13 pól payloadu (literówka w nazwie klucza albo zły typ `amount` nie zostanie wykryty przez mypy). Fix: parametrize z wartościami typowanymi jako `SubscriptionKind`/`TemplateKey` i `_payload` z jawnymi, typowanymi keyword-only parametrami zamiast `**overrides: object`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/schemas/payment_reminders.py:40",
+   "opis": "`steps: list[ReminderStep] = []` — mutowalny literał jako default. Pydantic v2 kopiuje default, więc to nie jest bug, ale konwencja projektu i czytelność wskazują `Field(default_factory=list)`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "frontend/src/components/clients/reminder-format.ts:33",
+   "opis": "Mapy `STEP_STATUS_LABELS`/`STEP_STATUS_TONES` są typowane `Record<string, …>` zamiast `Record<ReminderStepStatus, …>`, a `describeReminder` (linia ~104) nie ma exhaustive-checku dla `ReminderSequenceState` — nieznany stan wpada do gałęzi domyślnej i renderuje się jako „wysyłanie\" (sugeruje aktywną sekwencję). Dodanie nowego stanu/statusu w backendzie nie wywoła błędu kompilacji. Zalecane: `Record<ReminderStepStatus, …>` + fallback po zawężeniu, oraz `default: return (state satisfies never) as never` (wzorzec z learned-patterns 2026-04-20) z jawną etykietą „nieznany stan\"."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-db.js:111",
+   "opis": "`needsMembersNocaseRebuild` testuje CAŁY DDL tabeli regexem `/COLLATE\\s+NOCASE/i`, a nie kolumnę `name`. Gdy do `members` dojdzie kiedyś inna kolumna z NOCASE (albo tabela zostanie odtworzona ręcznie z NOCASE na `token`), guard zwróci `false` na tabeli, której `name` wciąż jest case-sensitive — migracja cicho się nie wykona i wraca dokładnie ten bug, który ta faza naprawia. Akcja: zawęzić wzorzec do wiersza kolumny, np. `/name\\s+TEXT[^,]*COLLATE\\s+NOCASE/i`, i dołożyć test na DDL z NOCASE wyłącznie przy `token`."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-08-05-001-fix-team-os-naprawy-po-testach-plan.md:710",
+   "opis": "Oba deklarowane scenariusze [Manual] U11 („Windows: aktualizacja przy działającym daemonie → `data\\` i `.node\\` nietknięte, serwer wraca\", „Mac: aktualizacja → proces wraca sam, wersja w panelu nowa\") pozostają nieodhaczone i są NIEWYKONALNE headless: wymagają realnej maszyny Windows (CAVE) oraz Maca z żywym daemonem, bo jedyne pełne sprawdzenie polega na podmianie katalogu instalacji i restarcie procesu. To one — a nie testy jednostkowe — wyłapałyby defekt braku zapisu `version.json` po stronie Maca (P1 powyżej). Do wykonania przez operatora po naprawie P1."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "lib/updater.js:168",
+   "opis": "Ścieżka macOS NIGDY nie aktualizuje `data/version.json`. `buildMacUpdateCommand` to `sleep 1; cd <repo> && git pull --ff-only && kill <pid>` — a jedynymi miejscami piszącymi plik wersji są `setup.mjs`, `install.ps1` (`Invoke-UpdateFinish`) i `install-vps.sh` (grep `writeVersionFile`). Skutki po UDANEJ aktualizacji na Macu: (1) `/api/status` zwraca STARĄ rewizję, więc `pollUpdateProgress` (public/app.js:456) nigdy nie trafi `revisionsMatch(revision, updateWatch.target)` i po 6 min panel mówi „Aktualizacja nie powiodła się — Puls nie wrócił z nową wersją\" mimo sukcesu; (2) `GET /api/update` w kółko raportuje `available`, więc user klika kolejny raz. To dokładnie ta klasa fałszywej diagnostyki,"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/payment_reminders.py:222",
+   "opis": "Webhook przypomnień ma własny, niezależny URL (`payment_reminder_webhook_url`), ale współdzieli token uwierzytelniający z onboardingiem (`settings.n8n_webhook_token` w nagłówku `X-API-Key`). Jeśli oba webhooki kiedykolwiek trafią do różnych instancji/workflowów n8n, token onboardingu wycieka do drugiego odbiorcy. Skoro URL rozdzielono świadomie (R23), warto dodać opcjonalny `PAYMENT_REMINDER_WEBHOOK_TOKEN` z fallbackiem do wspólnego."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/starter-jobs.js:44",
+   "opis": "`loadStarterJobDefs(repoRoot = path.join(__dirname, '..'))` — parametr nie jest przekazywany przez żadnego wywołującego (grep: `seedStarterJobs` i 3 testy wołają bezargumentowo), więc to punkt rozszerzalności bez użycia. Usuń parametr i licz bazę wprost ze stałej modułu (`path.join(__dirname, '..')`), tak jak sąsiedni `TEMPLATES_FILE`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "tests/test_past_due.py:526",
+   "opis": "TestReminderEnrichment weryfikuje poprawnosc pola reminder, ale nie ma regresji na STALA liczbe zapytan przy wielu klientach - analogicznej do istniejacego test_empty_past_due_skips_db_queries (linia 375). Jesli ktos w przyszlosci przeniesie build_reminder_map do petli po clients (albo doda per-klienta lookup kroku), testy nadal beda zielone, a widok dostanie N+1. Rekomendacja: test z 3+ klientami majacymi sekwencje + licznik wywolan conn.execute (spy/patch) z asercja na stala liczbe zapytan niezalezna od liczby wierszy."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "server.js:360",
+   "opis": "Nowe pole `vps_url` (adres Tailscale VPS-a w użyciu ORAZ wartość odczytana z prywatnego `~/.zshrc`/rejestru usera) trafia do odpowiedzi `/api/status`, która jest serwowana z globalnym `Access-Control-Allow-Origin: *` (server.js:760) i nie ma guardu cross-origin dla GET-ów (`isCrossOriginRequest` stosowany tylko przy metodach mutujących, server.js:233/554). Każda strona WWW odwiedzona przez usera może odczytać adres wewnętrznego węzła tailnetu i potwierdzić, że dana maszyna ma skonfigurowany VPS — rozszerzenie wycieku topologii sieci wewnętrznej, dokładnie klasa problemu opisana w learned-pattern o ACAO:* + localhost (docs/solutions/auth-issues/2026-07-24-...). Akcja: w handlerze `/api/status"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "frontend/src/components/clients/reminder-history.tsx:142",
+   "opis": "`ActionError` renderuje `pause.error`/`resume.error`/`retry.error` bezterminowo — TanStack Query czyści `error` dopiero przy kolejnym `mutate` tej samej mutacji. Po nieudanym „Ponów krok 2\" (409) i późniejszym udanym „Wstrzymaj\" komunikat o błędzie retry nadal wisi pod historią, sugerując aktualny problem. Fix: reset przy zmianie danych sekwencji (`useEffect`-free — np. `key` na kontenerze błędu z `reminder.current_step`/`state`) lub `reset()` w `onSuccess` pozostałych mutacji."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/setup/payment-reminders.md:326",
+   "opis": "Runbook §8 (\"Ponów krok\") twierdzi, że retry \"buduje payload ze **świeżej** odpowiedzi Stripe\", a kod idzie przez `stripe_layer.collect_pairs` (backend/routers/payment_reminders.py:187) → `_stripe_list_subscriptions` (backend/services/_stripe_helpers.py), która jest opakowana w `_stripe_cached` z `STRIPE_CACHE_TTL = 300`. Retry operatora może więc pracować na snapshotcie do 5 minut starym: klient, który właśnie zapłacił, nadal wygląda na `past_due` i dostanie kolejną wiadomość, mimo że runbook obiecuje ochronę przez 409 `pair_not_past_due`. §9 wspomina cache tylko w kontekście listy/joba. Sugestia: dopisać w §8 \"z odpowiedzi Stripe (cache ≤5 min — patrz §9)\" albo obejść cache dla ścieżki ret"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "lib/updater.test.js:724",
+   "opis": "Testy maca sprawdzają WYŁĄCZNIE kształt komendy (`git pull --ff-only`, `kill <pid>`, cytowanie katalogu) i nie asertują ani jednego elementu kontraktu, po który cały feature powstał: „po udanej aktualizacji panel wie o nowej wersji\" (zapis `data/version.json`) oraz „serwer wraca\". To jest realizacja learned-patternu 2026-07-03/2026-07-28: testy czystych funkcji obu stron przechodzą przy złamanym zachowaniu systemowym — 21/21 zielonych przy ścieżce maca, która w happy-path zawsze raportuje porażkę (findingi P1 wyżej). Fix: dołóż w lib/updater.test.js asercje na to, że skrypt maca zawiera zapis wersji i wznowienie serwera (po naprawie P1), oraz test szwu `POST /api/update` → `startUpdate` z ws"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "scripts/consistency-check.mjs:314",
+   "opis": "Entry-point guard używa `realpathSync(new URL(import.meta.url).pathname)` zamiast `fileURLToPath(import.meta.url)` — łamie regułę z .claude/rules/learned-patterns.md („realpathSync po OBU stronach\" z `fileURLToPath`) i wzorzec wszystkich pozostałych entry-pointów repo (scripts/inbox/close.mjs:116, scripts/inbox/onboard.mjs:111, scripts/inbox/migrate-pg-to-hub.mjs:174, setup.mjs:1420). `URL.pathname` zwraca ścieżkę PERCENT-ENCODED (katalog instalacji jest wolnym wejściem usera — spacje i diakrytyki są udokumentowanym przypadkiem) oraz `/C:/...` na Windowsie. Skutek: `realpathSync` rzuca, wchodzi fallback na porównanie URL-i, a gdy i ono się rozjedzie, `main()` nie startuje — job kończy się ko"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": ".env.production.example:93",
+   "opis": "Prod startuje z PAYMENT_REMINDERS_MODE=dry_run, ale PAYMENT_REMINDER_WEBHOOK_URL musi zostać dodany w Coolify jako sekret (nie w repo). Dodatkowo _validate_payment_reminders_window jest fail-fast niezależnie od trybu — literówka w PAYMENT_REMINDERS_WINDOW_* zablokuje start całego dashboardu, nie tylko przypomnień. Weryfikacja tylko na realnym środowisku (deploy + /healthz)."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/setup/payment-reminders.md:~66 (§2 tabela env)",
+   "opis": "Pułapka nazewnicza bez ostrzeżenia w runbooku: trzy zmienne mają prefiks liczby mnogiej (`PAYMENT_REMINDERS_MODE`, `PAYMENT_REMINDERS_WINDOW_START_HOUR`, `PAYMENT_REMINDERS_WINDOW_END_HOUR`), a czwarta liczby pojedynczej (`PAYMENT_REMINDER_WEBHOOK_URL`, backend/config.py:160). Literówka `PAYMENT_REMINDERS_WEBHOOK_URL` w Coolify nie wywoła żadnego błędu przy starcie (pola nieznane są ignorowane, walidacja fail-fast dotyczy tylko okna) — objawem będzie cykl kończący się sukcesem, zielony kafel i tylko `logger.error(payment_reminder_webhook_not_configured)` w logach. Warto dopisać jawne ostrzeżenie w §2 albo §10."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "setup.mjs:1104",
+   "opis": "Dwa mechanizmy na jeden cel — `env.PULS_HOME` w `{workspace}/.claude/settings.json` (mergeEnvIntoSettings + registerPulsHomeEnv, ~45 linii + 5 testów) oraz wskaźnik `~/.claude-cron-home`. Kolejność szukania w loaderze vaulta (`INBOX_ENV_FILE` → `$PULS_HOME` → wskaźnik → legacy) sprawia, że wskaźnik jest nadzbiorem: działa dla KAŻDEGO procesu, także w sesjach Claude Code z tego workspace'u, więc ścieżka settings.json nie odblokowuje żadnego przypadku, którego wskaźnik nie pokrywa — dokłada za to fail-fast na cudzym pliku w miejscu, gdzie wcześniej go nie było (przy odmowie autostartu setup teraz przerywa na uszkodzonym settings.json). Uwaga: oba zapisy są jawnie wymagane checklistą U4 w docs/"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/consistency-check.mjs:607",
+   "opis": "Brak szablonu motywu ⇒ early return `no_template` PRZED `detectDrifts`, więc druga kontrola z IU U8 („Jeden job, dwie kontrole — wersja kodu (z U1) i zgodność snippetu CSS\") nigdy nie biegnie na maszynie bez pluginu zespołowego (VPS, świeża instalacja). R13 brzmi „rozjazd wyglądu **i wersji** jest zgłaszany jako zadanie\", a R10 wskazany jest jako konsument wersji — kontrola wersji jest tu martwa. Dwie kontrole są sprzężone bez powodu: `version-unknown` nie zależy od szablonu. Test `scripts/consistency-check.test.mjs:876` utrwala to zachowanie (podaje VERSION_UNKNOWN i asertuje brak zadania), więc regresja jest zabetonowana. Fix: liczyć drift wersji zawsze; brak szablonu ma pomijać wyłącznie "
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/_payment_reminders_locked.py:36",
+   "opis": "`PaymentRemindersSyncError.error_code` ma dokładnie jedną możliwą wartość — `CYCLE_FAILED_ERROR_CODE` (jedyne miejsce rzucania: linia ~118). Pole parametryzuje coś, co nigdy się nie zmienia (abstrakcja bez 2. użycia). Wystarczyłby wyjątek z samym `sync_log_id`, a router mógłby użyć stałej `locked.CYCLE_FAILED_ERROR_CODE` bezpośrednio."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "frontend/src/components/clients/reminder-format.ts:15",
+   "opis": "`MAX_REMINDER_STEPS = 3` jest jawnie oznaczone jako mirror `MAX_STEPS` z `backend/services/_payment_reminders_pure.py`, ale nie ma testu kontraktu chroniącego przed driftem (projekt wymaga go dla mirror-constants — wzorzec `backend/tests/test_easycart_active_statuses_contract.py`). Zmiana `MAX_STEPS` na backendzie cicho rozjedzie etykiety „wyczerpane 3/3\" i liczbę kropek. Fix: test w pytest czytający stałą z pliku TS regexem (albo backendowy endpoint/const eksponowany w API)."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-db.js:202",
+   "opis": "Rozjazd składania wielkości liter: `resolveRecipient` porównuje przez `String(x).toLowerCase()` (fold Unicode), a `COLLATE NOCASE` w SQLite składa WYŁĄCZNIE ASCII A-Z. Zweryfikowane na node:sqlite: przy istniejącym członku „Michał\" wpis „MICHAŁ\" przechodzi przez UNIQUE COLLATE NOCASE bez błędu (Ł/ł nie są składane), więc `addMember` NIE broni przed taką parą — a `resolveRecipient` widzi wtedy dwa trafienia i zwraca `ambiguous_recipient`, czyli obie osoby stają się TRWALE nieosiągalne dla `send` (400 dla każdej wiadomości), mimo że hub uważa schemat za poprawny (`needsMembersNocaseRebuild` = false, rebuild się nie powtórzy). Wariant drugi: baza legacy z parą „Michał\"+\"MICHAŁ\" wywraca `migrate"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "install.ps1.Tests.ps1:1",
+   "opis": "Bliźniacza zmiana na Windows (`Get-RefSha`, `Resolve-ZipSource`, przekazanie `CLAUDE_CRON_INSTALL_REVISION` w `Invoke-Setup`) nie ma żadnego testu Pester, a plan przewidział dla niej wyłącznie weryfikację `[Manual]`, która nie została wykonana. Learned pattern repo mówi wprost, że zielona suita na macOS nie mówi NIC o Windowsie. Failure scenario: `Resolve-ZipSource` ustawia `$ZipTopDir` przez `$script:` — literówka w nazwie zmiennej albo pusty `$sha` daje rozpakowanie do katalogu o innej nazwie i `Expand-RepoFromZip` rzuca „brak setup.mjs\" u KAŻDEGO użytkownika Windows, przy w pełni zielonym `npm test` i install.test.sh. Akcja: dodać do install.ps1.Tests.ps1 testy na `Resolve-ZipSource` z za"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/notifications.py:255",
+   "opis": "`record_notification` zapisuje do `notification_log.response_body` do 2000 znaków surowej odpowiedzi n8n. Payload przypomnień (R11) niesie email, telefon i `hosted_invoice_url` (unguessable link płatniczy = quasi-sekret), a typowy workflow n8n echo'uje wejście w odpowiedzi — czyli PII i link płatniczy mogą wylądować w tabeli audytowej, której to nie dotyczyło przy payloadzie `{email}` z onboardingu. Rozważ obcięcie/whitelistę zapisywanego body dla `action_type='payment_reminder'`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "automatyczne-przypomnienia-platnosci",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Otwarte pytanie z planu do zamknięcia w oknie `dry_run` na produkcji: czy Stripe realnie zwraca `latest_invoice.hosted_invoice_url` dla wszystkich past_due (payload dopuszcza `null`, ale n8n musi obsłużyć brak linku) oraz czy liczba domknięć w jednym przebiegu nie uderza w rate limit Stripe (1 `GET /invoices/{id}` per domykaną sekwencję). Obie rzeczy da się zmierzyć tylko na realnym koncie Stripe."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "install.sh:35",
+   "opis": "Redundantny env-override rewizji w obu instalatorach: `INSTALL_REVISION=\"${CLAUDE_CRON_INSTALL_REVISION:-}\"` (install.sh:35) i `$InstallRevision = if ($env:CLAUDE_CRON_INSTALL_REVISION) …` (install.ps1:34) nie dają nic — setup.mjs czyta `process.env.CLAUDE_CRON_INSTALL_REVISION` bezpośrednio, więc zmienna ustawiona przez wołającego dojdzie do setupu bez pośrednictwa instalatora. Knob „na przyszłość\" bez użycia: zostawić w obu skryptach lokalne `INSTALL_REVISION=\"\"` / `$InstallRevision = \"\"` wypełniane przez resolve_tarball_source / Resolve-ZipSource."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "naprawy-team-os",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "install.sh:318",
+   "opis": "Nowy krok `fetch_ref_sha` (i bliźniaczy `Get-RefSha` w install.ps1:242) dokłada wywołanie sieciowe do api.github.com na krytycznej ścieżce instalacji, a jego jawnie deklarowany kontrakt brzmi „pad = zejście na URL po nazwie gałęzi\". Kontrakt trzyma się tylko dla BŁĘDU, nie dla ZWIESZENIA: `download()` używa `curl -fsSL` bez `--max-time`/`--connect-timeout`, a `Invoke-RestMethod` bez `-TimeoutSec` — przy zdławionym API/blackhole'u sieciowym instalator wisi bez komunikatu, zamiast po kilku sekundach wejść w zaplanowany fallback. Akcja: w `fetch_ref_sha` nie używać ogólnego `download`, tylko własne `curl -fsSL --connect-timeout 5 --max-time 10` (z gałęzią `wget --timeout=10 --tries=1`), a w `Ge"
+  }
+ ],
+ "zgloszone_probka": [],
+ "obalone_wszystkie": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": null,
+   "typ": null,
+   "plik": null,
+   "opis": "",
+   "powod": ""
+  }
+ ],
+ "potwierdzone_per_miesiac": {
+  "2026-08": 323
+ },
+ "potwierdzone_per_severity": {
+  "P3": 247,
+  "P1": 8,
+  "P2": 68
+ }
+}

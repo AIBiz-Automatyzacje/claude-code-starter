@@ -1,0 +1,575 @@
+pr,id,plik,koszyk,klasa,severity,etap,dlaczegoPrzeszlo,streszczenie
+14,1,apps/dashboard/src/components/brand-logo.tsx:21,A,jeden-eksport-per-plik,0,,nie-dotyczy,Typ BrandLogoSize obok komponentu lamie regule 'jeden export per plik' z path_instructions.
+14,2,apps/dashboard/src/components/layout/app-layout.tsx:202,A,prog-rozmiaru,0,,nie-dotyczy,AppLayout 118 linii vs prog 50; bot sam wycofal w #39 jako uwage bez defektu.
+14,3,apps/dashboard/src/features/account/limit-thresholds.test.ts:17,A,zakaz-as,0,,nie-dotyczy,"'as const' w tablicy testowej — czysta reguła stylu, zero wplywu na zachowanie."
+14,4,apps/dashboard/src/features/account/limit-thresholds.test.ts:20,A,preferencje-bota,0,,nie-dotyczy,"Rozdziel Act i Assert — preferencja formatowania testu, nie defekt."
+14,5,apps/dashboard/src/features/account/use-account-limits.ts:120,A,prog-rozmiaru,0,,nie-dotyczy,"53 linie vs prog 50 (+6%, <=20%); bot wycofal w #33."
+14,6,apps/dashboard/src/features/oauth/consent-page.test.tsx:243,A,prog-rozmiaru,0,,nie-dotyczy,365 linii pliku testowego; .coderabbit.yaml juz wylacza progi dla **/*.test.* — bot i tak zglosil.
+14,7,apps/dashboard/src/features/offers/offer-address-row.tsx:18,A,jeden-eksport-per-plik,0,,nie-dotyczy,Trzy eksporty w pliku; reguła stylu z path_instructions dla dashboard/**/*.tsx.
+14,8,apps/dashboard/src/features/offers/onboarding-empty-state.tsx:87,A,prog-rozmiaru,0,,nie-dotyczy,"Komponent >50 linii; bot wycofal w #36 (izolowany, brak potwierdzonego problemu)."
+14,9,apps/dashboard/src/features/offers/texts.ts:108,B,tekst-ui,P3,review:spec-compliance (krok 5 — teksty dla uzytkownika),w-zakresie-ale-przeoczone,"Tekst przypisuje otwarcie automatowi, choc moze to byc czlowiek z geometria < MIN_USABLE_FRAME_PX."
+14,10,apps/dashboard/src/features/offers/texts.ts:496,A,prog-rozmiaru,0,,nie-dotyczy,"texts.ts 515 linii; wyjatek dla **/texts.ts jest w yaml, bot go zignorowal, potem wycofal (#42)."
+14,11,apps/dashboard/src/features/offers/visit-summary.ts:125,B,walidacja-granicy-api,P2,review:security (Zod/walidacja ksztaltu na granicy),w-zakresie-ale-przeoczone,isSummaryRow przyjmuje dowolny string jako last_visit_at; bledny timestamp cicho staje sie null.
+14,12,apps/dashboard/src/features/templates/asset-tiles.tsx:165,B,bramka-na-jednej-z-dwoch-drog,P2,review:correctness,poza-zakresem-promptu,"isDeleteBlocked blokuje wyzwalacz, ale nie juz otwarty alertdialog — usuwanie rownolegle z uploadem."
+14,13,apps/dashboard/src/features/templates/template-assets-card.tsx:151,A,prog-rozmiaru,0,,nie-dotyczy,TemplateAssetsCard >50 linii; bot wycofal w #40.
+14,14,apps/dashboard/src/features/templates/template-texts-format.ts:67,B,wartosc-graniczna,P3,review:correctness (wartosc graniczna gałęzi),w-zakresie-ale-przeoczone,Galaz pustego konta zawsze uzywa formy 'wlasnych' — psuje sie dla limitu 1 i 2-4.
+14,15,apps/dashboard/src/features/templates/template-thumbnail.test.tsx:13,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Atrapa Sentry w tescie modulu, ktory Sentry nie uzywa — asercja captureException zawsze przechodzi."
+14,16,apps/dashboard/src/features/templates/texts.ts:309,A,prog-rozmiaru,0,,nie-dotyczy,"330 linii vs 300 (+10%, <=20%); plik objety wyjatkiem **/texts.ts; bot wycofal (#35)."
+14,17,apps/dashboard/src/features/templates/use-abort-registry.ts:48,B,cykl-zycia-react,P2,review:performance (useEffect cleanup / setTimeout cleanup w fokusie osi),w-zakresie-ale-przeoczone,"Hook tworzy setTimeout, ale sprzata je tylko gdy konsument zawola releaseAll — timer przezywa unmount."
+14,18,apps/dashboard/src/features/templates/use-template-asset-queue.ts:106,A,prog-rozmiaru,0,,nie-dotyczy,"315 linii vs 300 (+5%, <=20%); bot wycofal w #38 (podzial zwiekszalby ryzyko regresji)."
+14,19,apps/dashboard/src/features/templates/use-template-asset-queue.ts:113,B,cykl-zycia-react,P2,review:correctness,poza-zakresem-promptu,"Nowy efekt resetuje isStoppedRef na false, zanim stara petla po zmianie templateId zobaczy stop."
+14,20,apps/dashboard/src/features/templates/use-templates.test.ts:333,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy >300 linii — objety wyjatkiem w yaml; bot wycofal (#41).
+14,21,apps/dashboard/src/features/templates/use-abort-registry.ts:76,A,prog-rozmiaru,0,,nie-dotyczy,useAbortRegistry >50 linii; bot wycofal w #47.
+14,22,apps/dashboard/src/features/templates/use-template-asset-queue.ts:207,A,prog-rozmiaru,0,,nie-dotyczy,processItem 62 linie vs 50 (+24%); bot wycofal w #46.
+14,23,apps/dashboard/src/features/templates/use-template-asset-queue.ts:329,B,petla-ponowien-bez-sufitu,P2,review:correctness,poza-zakresem-promptu,"Staly 429 = nieskonczone ponowienia tego samego pliku, isBusy nigdy nie spada, usuwanie zablokowane."
+14,24,apps/dashboard/src/features/templates/asset-tiles.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+14,25,apps/dashboard/src/features/templates/use-template-asset-queue.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki (licznik generacji).
+14,26,apps/dashboard/src/features/templates/template-texts-format.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki odmiany liczebnika.
+14,27,apps/dashboard/src/components/brand-logo.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki.
+14,28,apps/dashboard/src/features/templates/use-abort-registry.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie cleanupu timerow.
+14,29,apps/dashboard/src/features/account/limit-thresholds.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie rozdzielenia Act/Assert.
+14,30,apps/dashboard/src/features/offers/visit-summary.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie walidacji last_visit_at.
+14,31,apps/dashboard/src/features/account/limit-thresholds.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,"Analysis chain w watku, bez nowej tezy."
+14,32,apps/dashboard/src/features/offers/texts.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki tekstu + learning.
+14,33,apps/dashboard/src/features/account/use-account-limits.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o progu 53 linii.
+14,34,apps/dashboard/src/features/oauth/consent-page.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o rozmiarze pliku testowego.
+14,35,apps/dashboard/src/features/templates/texts.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o rozmiarze texts.ts.
+14,36,apps/dashboard/src/features/offers/onboarding-empty-state.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o dlugosci komponentu.
+14,37,apps/dashboard/src/features/offers/offer-address-row.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku.
+14,38,apps/dashboard/src/features/templates/use-template-asset-queue.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o 315 liniach.
+14,39,apps/dashboard/src/components/layout/app-layout.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o 118 liniach AppLayout.
+14,40,apps/dashboard/src/features/templates/template-assets-card.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o progu dlugosci funkcji.
+14,41,apps/dashboard/src/features/templates/use-templates.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o rozmiarze pliku testowego.
+14,42,apps/dashboard/src/features/offers/texts.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o 515 liniach texts.ts.
+14,43,apps/dashboard/src/features/templates/template-thumbnail.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia atrapy Sentry.
+14,44,apps/dashboard/src/features/templates/use-template-asset-queue.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie limitu prob po 429.
+14,45,apps/dashboard/src/features/offers/offer-address-row.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku.
+14,46,apps/dashboard/src/features/templates/use-template-asset-queue.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o processItem 62 linie.
+14,47,apps/dashboard/src/features/templates/use-abort-registry.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o progu rozmiaru.
+15,48,apps/server/src/offer/markup-hidden.ts:85,B,parser-tokenizer,P2,review:correctness,w-zakresie-ale-przeoczone,rawTextNameAt dopasowuje 'script'/'style' bez sprawdzenia nastepnego znaku — <script-x> maskuje widoczna tresc.
+15,49,supabase/migrations/20260913120000_account_limits_and_admin_events.sql:200,A,teza-falszywa,0,,nie-dotyczy,Indeks zlozony dla limitow; przy 50 ofertach na konto zbedny — bot wycofal w #52.
+15,50,supabase/migrations/20260913160000_offer_templates_heading_texts.sql:60,B,kontrakt-shared,P2,review:spec-compliance (BLOK_SEMANTYKA — jednostka pola),w-zakresie-ale-przeoczone,"char_length(80) w SQL vs z.string().max(80) w UTF-16 — 80 emoji przechodzi w bazie, odpada w Zod."
+15,51,supabase/tests/rls.test.ts:4886,A,zakaz-as,0,,nie-dotyczy,Asercja 'as' w tescie RLS — reguła stylu z path_instructions.
+15,52,supabase/migrations/20260913120000_account_limits_and_admin_events.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o indeksie.
+15,53,supabase/migrations/20260913160000_offer_templates_heading_texts.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku o mierze dlugosci naglowka.
+15,54,supabase/tests/rls.test.ts:130,A,prog-rozmiaru,0,,nie-dotyczy,rls.test.ts >5300 linii; plik testowy objety wyjatkiem; bot wycofal (#58).
+15,55,supabase/tests/rls.test.ts:138,A,teza-falszywa,0,,nie-dotyczy,Teza o sb_secret_ jako Bearer obalona pomiarem na stagingu — bot wycofal (#59).
+15,56,supabase/tests/rls.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia asercji 'as'.
+15,57,apps/server/src/offer/markup-hidden.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku.
+15,58,supabase/tests/rls.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje uwage o rozmiarze rls.test.ts.
+15,59,supabase/tests/rls.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot przyjmuje odrzucenie tezy o Bearer.
+16,60,apps/server/src/access/access-service.ts:83,B,wartosc-graniczna,P3,review:correctness (sciezka bledu),w-zakresie-ale-przeoczone,Odczyt error.code bez guardu — brak pola daje TypeError zamiast AccessServiceError w raporcie.
+16,61,apps/server/src/access/account-deletion-service.ts:318,A,prog-rozmiaru,0,,nie-dotyczy,413 linii vs 300 — uwaga wylacznie z progu.
+16,62,apps/server/src/access/account-deletion-store.test.ts:44,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Atrapa rpc ignoruje nazwe i argumenty — test nie wykryje regresji begin_account_deletion(p_owner_id).
+16,63,apps/server/src/access/invitation-service.ts:165,B,petla-ponowien-bez-sufitu,P2,review:correctness / review:performance,poza-zakresem-promptu,Klient anonymous i klient w revoke bez AbortSignal.timeout — zadanie administratora moze wisiec bez konca.
+16,64,apps/server/src/access/membership-secret.test.ts:40,B,test-niefalsyfikowalny,P3,review:test-coverage,poza-zakresem-promptu,"Mock node:crypto i asercje na wywolaniach implementacji — test sprawdza implementacje, nie zachowanie."
+16,65,apps/server/src/assets/asset-repository.ts:370,A,organizacja-modulu,0,,nie-dotyczy,Nieaktualny docstring kontraktu insertAsset — klasa 'docstring' wprost wskazana jako szum.
+16,66,apps/server/src/assets/detached-assets-sweeper.ts:212,A,prog-rozmiaru,0,,nie-dotyczy,"runTurn 56 linii vs 50 (+12%, <=20%)."
+16,67,apps/server/src/mcp/tools/opublikuj-oferte.ts:247,A,prog-rozmiaru,0,,nie-dotyczy,"registerOpublikujOferte 53 linie vs 50 (+6%, <=20%)."
+16,68,apps/server/src/offer/repository.ts:315,A,prog-rozmiaru,0,,nie-dotyczy,createSupabaseOfferPublisher >50 linii — uwaga z progu.
+16,69,apps/server/src/routes/account.ts:285,A,prog-rozmiaru,0,,nie-dotyczy,Handler DELETE /api/konto 155 linii (131-285) — uwaga z progu.
+16,70,apps/server/src/routes/template-assets.test.ts:284,A,prog-rozmiaru,0,,nie-dotyczy,"Plik testowy 1185 linii — objety wyjatkiem w .coderabbit.yaml, bot i tak zglosil."
+16,71,apps/server/src/tracking/visit-service.ts:420,A,prog-rozmiaru,0,,nie-dotyczy,recordOpen >50 linii — uwaga z progu.
+16,72,apps/server/src/webhooks/payload.ts:3,A,organizacja-modulu,0,,nie-dotyczy,hashEmail importowany z modulu usuwania konta — reguła 'jedna odpowiedzialnosc per modul'.
+16,73,apps/server/src/webhooks/queue-store.test.ts:146,B,test-niefalsyfikowalny,P3,review:test-coverage,w-zakresie-ale-przeoczone,Test isDecisionType sprawdza staly literal 'wygasla' zamiast roznicy WEBHOOK_EVENT_TYPES \ CTA_DECISION_TYPES.
+16,74,apps/server/src/webhooks/queue-store.test.ts:602,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Brak asercji wymuszajacej update na offer_events — pominiecie zapisu przechodzi test.
+16,75,e2e/seeds/faza-9b-admin-seed.sql:78,A,organizacja-modulu,0,,nie-dotyczy,Duplikacja hasla konta e2e-del w dwoch seedach — reguła 'wyciagaj shared logic'.
+16,76,packages/shared/src/access-contract.ts:153,A,zakaz-as,0,,nie-dotyczy,Dwa 'as const' — reguła stylu.
+16,77,packages/shared/src/env.test.ts:100,B,test-niefalsyfikowalny,P3,review:test-coverage,w-zakresie-ale-przeoczone,"32 spacje odrzuca withoutEmptyValues, wiec test nie sprawdza .trim() w schemacie."
+16,78,apps/server/src/webhooks/queue-store.test.ts:601,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 601 linii — objety wyjatkiem w yaml.
+16,79,apps/server/src/webhooks/payload.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wydzielenia email-hash.ts.
+16,80,apps/server/src/webhooks/queue-store.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie dodanej asercji update.
+16,81,apps/server/src/webhooks/queue-store.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie iteracji po roznicy typow zdarzen.
+16,82,apps/server/src/assets/asset-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie aktualizacji kontraktu.
+16,83,packages/shared/src/env.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie falsyfikacji testu .trim().
+16,84,apps/server/src/access/account-deletion-store.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie asercji nazwy RPC.
+16,85,apps/server/src/access/invitation-service.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie timeoutow dla wszystkich klientow.
+17,86,apps/dashboard/src/components/layout/nav-icons.tsx:87,A,jeden-eksport-per-plik,0,,nie-dotyczy,Siedem ikon w jednym pliku — reguła 'jeden export per plik' bez wyjatku dla ikon.
+17,87,apps/dashboard/src/features/access/access-request-form.tsx:64,A,prog-rozmiaru,0,,nie-dotyczy,AccessRequestForm >50 linii — uwaga z progu.
+17,88,apps/dashboard/src/features/access/registration-mode-api.ts:43,A,zakaz-as,0,,nie-dotyczy,(REGISTRATION_MODES as readonly string[]) — reguła stylu.
+17,89,apps/dashboard/src/features/admin/admin-shape.ts:125,A,zakaz-as,0,,nie-dotyczy,"Dwa rzutowania 'as' — reguła stylu, bot sam oznaczyl jako Low value."
+17,90,apps/dashboard/src/features/admin/admin-webhook-card.tsx:188,C,a11y,P3,,poza-zakresem-promptu,"Po otwarciu potwierdzenia wyzwalacz znika, fokus wraca do body — zadna os review nie ma a11y w zakresie."
+17,91,apps/dashboard/src/features/admin/delete-account-dialog.tsx:146,B,bramka-na-jednej-z-dwoch-drog,P2,review:correctness,poza-zakresem-promptu,"'Anuluj' podczas statusu 'usuwanie' zamyka dialog, a operacja usuwania konta trwa dalej bez widoku wyniku."
+17,92,apps/dashboard/src/features/admin/event-row.tsx:32,C,a11y,P3,,poza-zakresem-promptu,"role=""alert"" na <li> nadpisuje listitem — lista traci semantyke dla czytnika ekranu."
+17,93,apps/dashboard/src/features/admin/invite-dialog.tsx:147,B,bramka-na-jednej-z-dwoch-drog,P2,review:correctness,poza-zakresem-promptu,"ESC i tlo blokowane przy isBusy, ale przycisk 'Anuluj' nadal wywoluje onCancel w trakcie mutacji."
+17,94,apps/dashboard/src/features/admin/registration-mode-switch.tsx:53,C,a11y,P3,,poza-zakresem-promptu,Trzy opcje radio w zwyklym <div> bez role=radiogroup i nazwy.
+17,95,apps/dashboard/src/features/admin/use-admin-events.ts:202,B,wartosc-graniczna,P2,review:correctness,w-zakresie-ale-przeoczone,hasMore liczone po odfiltrowanych wierszach — jeden odrzucony wiersz urywa doczytywanie starszych zdarzen.
+17,96,apps/dashboard/src/features/admin/use-admin-webhook.ts:294,A,zakaz-any,0,,nie-dotyczy,"'let envelope;' jako evolving any — reguła typowania, dzis bez skutku."
+17,97,apps/dashboard/src/features/auth/access-gate.test.tsx:42,B,test-niefalsyfikowalny,P3,review:test-coverage,w-zakresie-ale-przeoczone,Atrapy useProfile zwracaja unknown — zaden test nie pilnuje ksztaltu ProfileState.
+17,98,apps/dashboard/src/features/auth/auth-mode-segment.tsx:71,A,styl-inline,0,,nie-dotyczy,Inline style zamiast Tailwind — reguła stylu z path_instructions.
+17,99,apps/dashboard/src/features/auth/auth-mode-segment.tsx:107,C,a11y,P3,,poza-zakresem-promptu,Po strzalce fokus zostaje na zakladce z tabIndex=-1 — wzorzec tablist nie dziala z klawiatury.
+17,100,apps/dashboard/src/features/auth/login-form.tsx:108,A,prog-rozmiaru,0,,nie-dotyczy,Dwie funkcje >50 linii — uwaga z progu.
+17,101,apps/dashboard/src/features/auth/session-context.test.tsx:50,A,zakaz-as,0,,nie-dotyczy,'as unknown as Session' w atrapie testowej — reguła stylu.
+17,102,apps/dashboard/src/features/help/help-page.tsx:87,B,bramka-na-jednej-z-dwoch-drog,P3,review:correctness,poza-zakresem-promptu,Przycisk aktywny w trakcie resetTours — wielokrotne klikniecie mnozy zdarzenia tourRestarted.
+17,103,apps/dashboard/src/features/help/help-page.tsx:103,C,a11y,P3,,poza-zakresem-promptu,Region live montowany razem z trescia — czytnik ekranu moze nie ogłosic komunikatu.
+17,104,apps/dashboard/src/features/offers/offer-details-page.tsx:356,A,prog-rozmiaru,0,,nie-dotyczy,Dwa pliki >300 linii — uwaga z progu.
+17,105,apps/dashboard/src/features/offers/offers-page.test.tsx:67,A,teza-falszywa,0,,nie-dotyczy,Teza o mockowaniu testowanego kodu obalona — bot wycofal finding w #130.
+17,106,apps/dashboard/src/features/onboarding/use-first-steps.ts:33,A,prog-rozmiaru,0,,nie-dotyczy,376 linii vs 300 (+25%) — uwaga z progu.
+17,107,apps/dashboard/src/features/onboarding/use-screen-tour.test.tsx:8,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 425 linii — objety wyjatkiem w .coderabbit.yaml.
+17,108,apps/dashboard/src/features/onboarding/use-screen-tour.ts:50,A,prog-rozmiaru,0,,nie-dotyczy,useScreenTour ~118 linii vs 50 — uwaga z progu.
+17,109,apps/dashboard/src/features/settings/settings-page.test.tsx:173,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Atrapa bez .gt() daje counts:'niedostepne', a test kolejnosci kart i tak przechodzi."
+17,110,apps/dashboard/src/features/settings/use-webhook-settings.ts:131,A,prog-rozmiaru,0,,nie-dotyczy,"350 linii vs 300 (+16,7%, <=20%)."
+17,111,apps/dashboard/src/features/templates/asset-tiles.tsx:255,C,a11y,P3,,poza-zakresem-promptu,blockedReason tylko w title wylaczonej kontrolki — niedostepny z klawiatury i czytnika.
+17,112,apps/dashboard/src/features/templates/template-assets-card.test.tsx:54,B,test-niefalsyfikowalny,P3,review:test-coverage,poza-zakresem-promptu,Mock wewnetrznego useAccountAccess i 'null as unknown' wylaczaja kontrakt AccountAccessContext.
+17,113,apps/dashboard/src/features/templates/template-assets-card.test.tsx:748,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 789 linii — objety wyjatkiem w yaml.
+17,114,apps/dashboard/src/features/templates/templates-page.tsx:137,A,prog-rozmiaru,0,,nie-dotyczy,"318 linii vs 300 (+6%, <=20%)."
+17,115,apps/dashboard/src/lib/analytics.ts:3,A,prog-rozmiaru,0,,nie-dotyczy,506 linii vs 300 — uwaga z progu.
+17,116,apps/dashboard/src/features/access/access-request-form.tsx:128,C,a11y,P3,,poza-zakresem-promptu,aria-invalid=true takze dla limitu i awarii sieci — poprawny adres oznaczony jako nieprawidlowy.
+17,117,apps/dashboard/src/features/access/registration-mode-api.ts:85,B,bramka-czarna-lista,P1,review:security (walidacja koperty API / bramka rejestracji),w-zakresie-ale-przeoczone,Koperta 2xx z niezerowym error przepuszcza tryb — shouldCreateUser moze wyjsc true mimo zamknietej rejestracji.
+17,118,apps/dashboard/src/features/auth/session-context.tsx:59,B,pii-w-message,P2,review:security (data exposure),w-zakresie-ale-przeoczone,Po zewnetrznym wylogowaniu tozsamosc nie jest zerowana — track() nadal wysyla zdarzenia z ID bylego uzytkownika.
+17,119,apps/dashboard/src/features/admin/delete-account-dialog.tsx:26,C,a11y,P3,,poza-zakresem-promptu,Brak focus-visible na przyciskach anulowania w dwoch dialogach.
+17,120,apps/dashboard/src/features/admin/event-row.tsx:32,A,zakaz-as,0,,nie-dotyczy,'as const' przy propie role — reguła stylu.
+17,121,apps/dashboard/src/features/help/help-page.tsx:57,A,prog-rozmiaru,0,,nie-dotyczy,TourRestartCard 86 linii vs 50 — uwaga z progu.
+17,122,apps/dashboard/src/features/settings/delete-account-card.test.tsx:212,B,test-niefalsyfikowalny,P3,review:test-coverage,poza-zakresem-promptu,Mock useAccountDeletion omija kontrakt karty z hookiem — test przejdzie przy uszkodzonej integracji.
+17,123,apps/dashboard/src/features/templates/upload-drop-zone.tsx:115,B,bramka-na-jednej-z-dwoch-drog,P3,review:correctness,poza-zakresem-promptu,"handleDragOver ustawia isOver mimo isBlocked — strefa wyglada aktywnie, a drop odrzuca pliki."
+17,124,apps/dashboard/src/features/settings/settings-page.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie uzupelnienia atrapy i asercji.
+17,125,apps/dashboard/src/features/admin/use-admin-events.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki hasMore/rowCount.
+17,126,apps/dashboard/src/features/admin/invite-dialog.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie blokady 'Anuluj' przy isBusy.
+17,127,apps/dashboard/src/features/admin/delete-account-dialog.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie bramki isBusy na 'Anuluj'.
+17,128,apps/dashboard/src/features/auth/auth-mode-segment.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie przeniesienia fokusu.
+17,129,apps/dashboard/src/features/access/access-request-form.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie osobnego stanu invalid.
+17,130,apps/dashboard/src/features/offers/offers-page.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Bot wycofuje finding o mockach onboardingu.
+17,131,apps/dashboard/src/features/auth/session-context.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie resetUser() po SIGNED_OUT.
+17,132,apps/dashboard/src/features/help/help-page.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie blokady rownoleglych resetTours.
+17,133,apps/dashboard/src/features/access/registration-mode-api.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie fail-closed dla niepustego error.
+17,134,apps/dashboard/src/features/help/help-page.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku.
+17,135,apps/dashboard/src/features/admin/admin-webhook-card.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie przywrocenia fokusu na alertdialog.
+17,136,apps/dashboard/src/features/admin/use-admin-webhook.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie jawnej adnotacji typu.
+17,137,apps/dashboard/src/features/admin/registration-mode-switch.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie roli i nazwy grupy radio.
+17,138,apps/dashboard/src/features/admin/event-row.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie zachowania semantyki listitem.
+17,139,apps/dashboard/src/features/templates/upload-drop-zone.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki isOver przy isBlocked.
+17,140,apps/dashboard/src/features/auth/access-gate.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie typowania atrap useProfile.
+17,141,apps/dashboard/src/features/admin/delete-account-dialog.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie focus-visible.
+17,142,apps/dashboard/src/features/templates/asset-tiles.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie aria-describedby dla blockedReason.
+18,143,apps/server/src/routes/offer-origin-pages.test.ts:113,B,test-niefalsyfikowalny,P3,review:test-coverage,w-zakresie-ale-przeoczone,"Asercje przepuszcza dowolna niepusta tresc bez <form/<html — redirect Hono ma body null, brak expect(body).toBe('')."
+19,144,apps/dashboard/src/features/account/use-profile.ts:250,A,prog-rozmiaru,0,,nie-dotyczy,"381 linii vs 300 (+27%) — uwaga z progu, bot oznaczyl jako nitpick."
+19,145,apps/dashboard/src/features/admin/texts.ts:45,B,tekst-ui,P3,review:spec-compliance (krok 5 — glos produktu),w-zakresie-ale-przeoczone,modeClosedDescription uzywa 'Ty zapraszasz' zamiast glosu pierwszej osoby mnogiej z docs/design.md.
+19,146,apps/dashboard/src/features/auth/use-login-flow.ts:234,A,prog-rozmiaru,0,,nie-dotyczy,"313 linii vs 300 (+4,3%, <=20%) — uwaga wylacznie z progu."
+19,147,apps/server/src/access/registration-service.ts:207,B,pii-w-message,P1,review:security (data exposure),w-zakresie-ale-przeoczone,error.message PostgREST z adresem e-mail idzie do RegistrationServiceError i captureException; scrubEvent nie czysci message ani cause.
+19,148,apps/server/src/routes/access-email-gate.ts:145,B,walidacja-granicy-api,P2,review:security (Zod na granicy API),w-zakresie-ale-przeoczone,"Endpoint waliduje tylko record['email'], reszta ladunku przechodzi jako otwarty rekord bez schematu."
+19,149,apps/server/src/routes/access.ts:295,A,prog-rozmiaru,0,,nie-dotyczy,"createAccessRoutes 164 linie (132-295) — uwaga z progu, bot oznaczyl jako nitpick."
+19,150,e2e/seeds/rejestracja-czlonek-seed.sql:116,B,walidacja-granicy-api,P1,review:security (BLOK GRANIC ZAUFANIA — skrypty/seedy),w-zakresie-ale-przeoczone,Guard seeda nie potwierdza pochodzenia konta — po podmianie v_email 'delete from auth.users' moze usunac cudze konto.
+19,151,packages/shared/src/product-contract.test.ts:201,A,zakaz-as,0,,nie-dotyczy,"'as RegistrationMode' w tescie — reguła stylu, bot oznaczyl jako nitpick."
+19,152,apps/dashboard/src/features/auth/use-login-flow.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku.
+19,153,apps/server/src/routes/access.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wydzielenia handlerow.
+19,154,apps/dashboard/src/features/account/profile-read.ts:146,A,zakaz-as,0,,nie-dotyczy,'values as readonly string[]' — reguła stylu.
+19,155,apps/dashboard/src/features/account/profile-read.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki isOneOf.
+19,156,apps/server/src/routes/access-email-gate.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku.
+19,157,apps/server/src/access/registration-service.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia komunikatu PostgREST z Sentry.
+19,158,apps/dashboard/src/features/admin/texts.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie zmiany modeClosedDescription.
+19,159,apps/dashboard/src/features/account/use-profile.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie podzialu pliku.
+19,160,e2e/seeds/rejestracja-czlonek-seed.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Analysis chain w watku o guardzie seeda.
+1,1,apps/server/src/index.ts,B,zamkniecie-procesu,P2,review:correctness,w-zakresie-ale-przeoczone,Zamkniecie nie oproznia kolejki Sentry i nie ma limitu czasu — SIGKILL na keep-alive
+1,2,apps/server/src/observability/logger.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,JSON.parse zwraca any w tescie — regula 'zero any'
+1,3,apps/server/src/observability/sentry.ts,B,pii-do-sentry,P2,review:security,w-zakresie-ale-przeoczone,"maskEmail przepuszcza krotkie adresy, scrubEvent zostawia query w request.url"
+1,4,apps/server/src/routes/dashboard.ts,B,naglowki-bezpieczenstwa,P2,review:security,w-zakresie-ale-przeoczone,Dokument dashboardu bez X-Frame-Options/frame-ancestors — clickjacking na sesji Supabase
+1,5,apps/server/src/routes/health.test.ts,A,as-const-dozwolony,0,,nie-dotyczy,Usun as const z TEST_BUILD_INFO i REDACTED_PATHS
+1,6,apps/server/src/routes/health.ts,A,rate-limit-z-reguly,P3,,nie-dotyczy,"Publiczny /healthz bez rate limitingu — bot sam pisze, ze odpowiedz jest tania"
+1,7,packages/shared/src/database.types.ts,A,as-const-dozwolony,0,,nie-dotyczy,as const w pliku generowanym przez supabase gen types
+1,8,packages/shared/src/env.ts,A,as-const-dozwolony,0,,nie-dotyczy,"Usun as const z LOG_LEVELS, zastap z.enum"
+1,9,packages/shared/src/env.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,Brak normalizacji originow — host:443 omija granice Z3
+1,10,scripts/seed-test-users.ts,B,pii-w-logu,P3,review:security,w-zakresie-ale-przeoczone,maskEmail przepuszcza pelny adres dla jednoznakowej czesci lokalnej
+1,11,scripts/seed-test-users.ts,A,asercja-typu,P3,,nie-dotyczy,"createAdminClient gubi typ schematu, co wymusza as w tescie"
+1,12,supabase/migrations/20260824171406_init_profiles_offers.sql,C,idempotencja-migracji,P3,,poza-zakresem-promptu,Warunek idempotencji enumow po pg_type.typname bez filtru schematu
+1,13,apps/server/src/app.ts,B,zaufanie-naglowkowi,P2,review:security,w-zakresie-ale-przeoczone,Zwolnienie z rate-limitu oparte na naglowku Host kontrolowanym przez klienta
+1,14,apps/server/src/app.ts,B,kolejnosc-middleware,P3,review:correctness,w-zakresie-ale-przeoczone,Nieznany host dostaje 429 zamiast 404 — limiter przed host-guardem
+1,15,apps/server/src/observability/logger.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,"as Record<string, unknown> w helperach testowych"
+1,16,packages/shared/src/pii.ts,B,pii-do-sentry,P3,review:security,w-zakresie-ale-przeoczone,maskEmail zostawia dwa znaki i pelna domene — nadal identyfikuje uzytkownika
+1,17,apps/server/src/app.ts,B,zaufanie-naglowkowi,P2,review:security,w-zakresie-ale-przeoczone,Niezweryfikowany X-Forwarded-For jako klucz limitera — klient omija limit
+1,18,apps/server/src/app.ts,B,test-niefalsyfikowalny,P3,review:test-coverage,w-zakresie-ale-przeoczone,"Opis testu obiecuje dowod nadpisania naglowka, ktorego test nie daje"
+1,19,apps/server/src/app.ts,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+1,20,apps/server/src/app.ts,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+2,21,.design/Blad404Desktop.dc.html,A,makieta-designu,0,,nie-dotyczy,Brak lang i title w makiecie .design
+2,22,.design/PrywatnoscDesktop.dc.html,C,obowiazek-informacyjny,P2,,poza-zakresem-promptu,"Brak administratora, podstawy prawnej i prawa skargi (art. 13 RODO)"
+2,23,apps/server/src/app.test.ts,A,duplikacja-w-testach,0,,nie-dotyczy,Dwie fabryki testowe maja identyczne ciala
+2,24,apps/server/src/mcp/server.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,"Limit ciala MCP ufa content-length; chunked omija limit, a test dostarcza naglowek"
+2,25,apps/server/src/mcp/tools/pobierz-szablon.ts,B,luka-pokrycia,P3,review:test-coverage,w-zakresie-ale-przeoczone,Brak testu kompletnosci sekcji szkieletu
+2,26,apps/server/src/offer/brand-contract.ts,C,kontrast-a11y,P2,,poza-zakresem-promptu,Prog kontrastu 3:1 daje 2.6:1 dla tekstu pomocniczego z opacity 0.82
+2,27,apps/server/src/offer/cache.ts,B,wartosc-graniczna,P3,review:correctness,w-zakresie-ale-przeoczone,maxEntries: 0 pozwala zapisac wpis ponad limit
+2,28,apps/server/src/offer/mail-draft.ts,B,walidacja-tekstu,P2,review:correctness,w-zakresie-ale-przeoczone,Data i slowo o waznosci sprawdzane osobno — walidacja przepuszcza zly tekst
+2,29,apps/server/src/offer/repository.test.ts,B,luka-pokrycia,P2,review:test-coverage,w-zakresie-ale-przeoczone,Brak testow createSupabaseOfferLoader — sciezki chroniacej ip_salt i owner_id
+2,30,apps/server/src/offer/repository.ts,B,komentarz-rozmija-sie-z-kodem,P3,review:code-quality,w-zakresie-ale-przeoczone,"Komentarz obiecuje walidacje ksztaltu wiersza, kod sprawdza tylko expires_at"
+2,31,apps/server/src/offer/template.test.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 395 linii — prog 300
+2,32,apps/server/src/offer/template.ts,A,prog-rozmiaru,0,,nie-dotyczy,"template.ts 329 linii, renderBlock 68 linii"
+2,33,apps/server/src/offer/validation.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,Walidator nie blokuje //host/path — oferta pobiera zasob z obcego hosta
+2,34,apps/server/src/offer/validation.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,Markery w komentarzu HTML zaliczaja walidacje trackera i stopki
+2,35,apps/server/src/rate-limit.ts,B,wspolne-wiadro-limitu,P2,review:performance,poza-zakresem-promptu,Po zapelnieniu mapy nowi klienci dziela jedno wiadro i dostaja 429 (lamie zasade 7)
+2,36,apps/server/src/routes/debug.ts,B,kontrakt-diagnostyki,P3,review:correctness,w-zakresie-ale-przeoczone,entryCount liczy puste wpisy — diagnostyka rozjezdza sie z produkcja
+2,37,apps/server/src/routes/offer-origin-pages.ts,B,cache-naglowki,P3,review:performance,poza-zakresem-promptu,res.ok pomija 304 — odpowiedz warunkowa traci Cache-Control
+2,38,apps/server/src/routes/offer.ts,A,prog-rozmiaru,0,,nie-dotyczy,createOfferRoutes ponad 50 linii
+2,39,apps/server/src/routes/offer.ts,A,walidacja-zod-z-reguly,0,,nie-dotyczy,"Zada Zod dla sluga, mimo ze SLUG_PATTERN juz go waliduje"
+2,40,apps/server/src/routes/offer.ts,B,wartosc-po-await,P2,review:correctness,w-zakresie-ale-przeoczone,timestamp sprzed await loadOffer — wygasla oferta przechodzi warunek
+2,41,packages/shared/src/env.ts,B,martwa-galaz,P3,review:code-quality,w-zakresie-ale-przeoczone,"Nieosiagalna galaz TRUSTED_PROXY_EMPTY_MESSAGE, test przechodzi z innego powodu"
+2,42,packages/shared/src/pii.ts,B,sekret-do-sentry,P1,review:security,w-zakresie-ale-przeoczone,Redakcja tylko pierwszego poziomu — MCP_BEARER_TOKEN w extra idzie jawnie do Sentry
+2,43,scripts/build-demo-offers-sql.mjs,B,konkatenacja-sql,P2,review:security,w-zakresie-ale-przeoczone,Staly delimiter $seed$ w bloku DO — ownerEmail moze zamknac blok przedwczesnie
+2,44,supabase/migrations/20260825190500_offers_html_size_limit.sql,C,blokada-migracji,P3,,poza-zakresem-promptu,add constraint bez not valid — ACCESS EXCLUSIVE na offers przy migracji
+2,45,supabase/tests/rls.test.ts,B,luka-pokrycia,P2,review:test-coverage,w-zakresie-ale-przeoczone,Brak testu offers_html_size_check — jedynej bariery przed wysadzeniem cache
+2,46,apps/server/src/mcp/server.ts,A,as-const-dozwolony,0,,nie-dotyczy,as const i as RequestInit w MCP serwerze i tescie
+2,47,apps/server/src/offer/validation.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,Niecytowany href=//example.invalid przechodzi walidacje
+2,48,apps/server/src/offer/validation.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,Encje HTML w URL omijaja wzorce — parser zamieni je na adres zewnetrzny
+2,49,apps/server/src/offer/validation.ts,A,prog-rozmiaru,0,,nie-dotyczy,validation.ts i mcp/server.test.ts ponad 300 linii
+2,50,apps/server/src/offer/validation.ts,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,srcset i zakodowane URL omijaja walidacje kontekstow adresowych
+2,51,apps/server/src/offer/validation.test.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 344 linie — przekroczenie progu o 15%
+2,52,apps/server/src/offer/validation.ts,B,falszywy-alarm-walidatora,P2,review:correctness,w-zakresie-ale-przeoczone,srcset z data: base64 zawierajacym // blokuje publikacje poprawnej oferty
+3,53,.design/faza-3-dashboard/ListaOfertMobile.dc.html,A,makieta-designu,0,,nie-dotyczy,Brak lang i title w makietach dashboardu
+3,54,.design/faza-3-dashboard/OnboardingDesktop.dc.html,B,zaszyta-domena,P2,review:spec-compliance,w-zakresie-ale-przeoczone,Zaszyty adres oferty-app-dev w instrukcji MCP dla uzytkownika produkcyjnego (Z4)
+3,55,apps/dashboard/src/components/layout/app-layout.tsx,B,sciezka-bledu-bez-obslugi,P2,review:correctness,w-zakresie-ale-przeoczone,handleLogout ignoruje error i odrzucony promise z signOut
+3,56,apps/dashboard/src/components/layout/nav-icons.tsx,A,jeden-eksport-per-plik,0,,nie-dotyczy,Trzy komponenty ikon w jednym pliku
+3,57,apps/dashboard/src/features/auth/auth-callback-page.test.tsx,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as unknown as Session w fixture testowym
+3,58,apps/dashboard/src/features/auth/login-page.tsx,B,sciezka-bledu-bez-obslugi,P2,review:correctness,w-zakresie-ale-przeoczone,void handleSubmit porzuca odrzucenie — stan sending i trwale wylaczony przycisk
+3,59,apps/dashboard/src/features/auth/require-session.test.tsx,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as unknown as Session i as AuthError w fixture'ach
+3,60,apps/dashboard/src/features/auth/session-context.tsx,B,sciezka-bledu-bez-obslugi,P2,review:correctness,w-zakresie-ale-przeoczone,getSession bez catch — panel utknie na Ladowanie bez ekranu logowania
+3,61,apps/dashboard/src/features/offers/offers-list.test.tsx,A,as-const-dozwolony,0,,nie-dotyczy,"Trzy as const w kodzie produkcyjnym (COLUMNS, teksty)"
+3,62,apps/dashboard/src/features/offers/offers-list.tsx,A,styl-tailwind,0,,nie-dotyczy,Inline style zamiast klas Tailwind dla szerokosci kolumn
+3,63,apps/dashboard/src/features/offers/use-offers.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as [string] przy odczycie mock.calls
+3,64,apps/dashboard/src/features/offers/use-offers.ts,B,kontrakt-shared,P3,review:code-quality,w-zakresie-ale-przeoczone,Reczny OfferRow duplikuje kontrakt tabeli zamiast typu z Database
+3,65,apps/dashboard/src/features/settings/mcp-token.ts,B,kontrakt-shared,P3,review:code-quality,w-zakresie-ale-przeoczone,"Format tokenu MCP zdefiniowany niezaleznie w dashboardzie, serwerze i migracji"
+3,66,apps/dashboard/src/features/settings/settings-page.test.tsx,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as na upsert.mock.calls[0] i placeholder as HTMLElement
+3,67,apps/dashboard/src/features/settings/use-mcp-token.ts,B,sciezka-bledu-bez-obslugi,P2,review:correctness,w-zakresie-ale-przeoczone,"Trzy async IIFE bez catch — przyciski trwale wylaczone, brak zdarzenia w Sentry"
+3,68,apps/dashboard/src/features/settings/use-mcp-token.ts,B,zrodlo-czasu,P3,review:correctness,poza-zakresem-promptu,"createdAt z zegara przegladarki, baza stempluje now() triggerem"
+3,69,apps/server/src/mcp/token-service.ts,A,prog-rozmiaru,0,,nie-dotyczy,createSupabaseMcpTokenResolver ma 154 linie
+3,70,apps/server/src/mcp/token-service.ts,B,brak-timeoutu,P2,review:performance,poza-zakresem-promptu,Cztery wywolania Supabase bez limitu czasu (db.timeout nie obejmuje Auth)
+3,71,apps/server/src/mcp/token-service.ts,B,cykl-zycia-wspolbieznosc,P2,review:correctness,w-zakresie-ale-przeoczone,Rownolegle odswiezenie sesji robi dwa minty — drugi verifyOtp zwraca 500
+3,72,e2e/print-magic-link.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Test nie chroni drugiej bramki — blokady projektu glownego
+3,73,e2e/print-magic-link.ts,A,kolejnosc-importow,0,,nie-dotyczy,Kolejnosc grup importow stdlib/third-party/local
+3,74,e2e/print-magic-link.ts,A,console-log-z-reguly,P3,,nie-dotyczy,console.* w harnessie e2e zamiast structured logging
+3,75,scripts/dockerfile-invariants.test.ts,A,as-const-dozwolony,0,,nie-dotyczy,Zbedne as const na iterowanej tablicy
+3,76,scripts/dockerfile-invariants.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Test skanuje caly Dockerfile — ARG w builderze i ENV w runtime zaliczy sie falszywie
+3,77,supabase/tests/rls.test.ts,B,straznik-negatywny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Trzy testy z asercja negatywna na zbiorze, ktory moze byc pusty"
+3,78,apps/dashboard/src/features/settings/settings-page.test.tsx,A,act-assert,0,,nie-dotyczy,Asercja toBeDefined w fazie Arrange
+4,79,apps/dashboard/src/features/offers/analytics.ts,B,wartosc-graniczna,P3,review:correctness,w-zakresie-ale-przeoczone,Prog porownywany po Math.round — 4.6 s raportowane jako 5 s
+4,80,apps/dashboard/src/features/offers/offer-details-page.test.tsx,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as HTMLElement ukrywa mozliwy null z closest
+4,81,apps/dashboard/src/features/offers/offers-list.tsx,C,a11y-klawiatura,P2,,poza-zakresem-promptu,Klikalny <tr> bez fokusu i obslugi Enter/Spacja
+4,82,apps/dashboard/src/features/offers/offers-page.test.tsx,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Test klika Link, wiec przejdzie po usunieciu onClick wiersza"
+4,83,apps/dashboard/src/features/offers/use-offer-details.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,Zbedne rzutowania as przy mock.calls i getAllBy*
+4,84,apps/server/src/mcp/token-service.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Asercje przejda, gdy implementacja pominie refreshSession i od razu mintuje"
+4,85,apps/server/src/offer/pages/privacy-page.ts,B,tekst-ui,P2,review:spec-compliance,w-zakresie-ale-przeoczone,"Polityka pomija ua_hash, ktory zapisuje migracja visits_tracking"
+4,86,apps/server/src/offer/pages/privacy-page.ts,B,tekst-ui,P2,review:spec-compliance,w-zakresie-ale-przeoczone,Opis retencji i agregatow nie odpowiada migracji — agregaty nie istnieja
+4,87,apps/server/src/offer/validation.ts,B,parser-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,data-section tylko w podwojnych cudzyslowach — niepelna lista sectionIds
+4,88,apps/server/src/routes/events.ts,B,asymetria-bramek,P3,review:correctness,w-zakresie-ale-przeoczone,"Jedna komorka heat spoza siatki uniewaznia caly beacon, sekcje sa odsiewane"
+4,89,apps/server/src/tracker/tracker.test.ts,B,test-kruchy,P3,review:test-coverage,poza-zakresem-promptu,Limit rozmiaru trackera ma 4 bajty zapasu — kazda zmiana wywali test
+4,90,apps/server/src/tracker/tracker.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Atrapy fetch i sendBeacon ignoruja URL — literowka w ENDPOINT przejdzie
+4,91,apps/server/src/tracking/visit-service.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,Piec rzutowan as never w atrapach klienta
+4,92,apps/server/src/tracking/visit-service.test.ts,B,luka-pokrycia,P3,review:test-coverage,w-zakresie-ale-przeoczone,Brak testu bledu RPC w mergeIncrements — sciezka zgloszenia do Sentry
+4,93,apps/server/src/tracking/visit-service.test.ts,A,act-assert,P3,,nie-dotyczy,"Asercja wykonuje sie wewnatrz atrapy, nie w bloku testowym"
+4,94,apps/server/src/tracking/visit-service.ts,A,prog-rozmiaru,0,,nie-dotyczy,visit-service.ts i rls.test.ts ponad 300 linii
+4,95,apps/server/src/tracking/visit-service.ts,B,brak-timeoutu,P2,review:performance,poza-zakresem-promptu,POST /e bez limitu czasu na insert/update/RPC — kumulacja zasobow procesu
+4,96,apps/server/static/t.js,B,utrata-danych-przy-bledzie,P2,review:correctness,w-zakresie-ale-przeoczone,drain() zeruje bufory przed wysylka — nieudany sendBeacon gubi 10 s telemetrii
+4,97,e2e/seeds/faza-4-wizyty-seed.sql,B,seed-niezgodny-z-kontraktem,P3,review:e2e,w-zakresie-ale-przeoczone,Komentarz seeda sprzeczny z kontraktem kafla Ostatnia wizyta z CLAUDE.md
+4,98,packages/shared/src/env.ts,A,rada-operacyjna,0,,nie-dotyczy,Nitpick o rotacji IP_HASH_PEPPER — bot sam potwierdza poprawnosc kodu
+4,99,scripts/compare-schemas.ts,B,blad-polkniety,P3,review:code-quality,w-zakresie-ale-przeoczone,stderr pg_dump ladujе do bufora i ginie — operator widzi tylko Command failed
+4,100,scripts/compare-schemas.ts,B,porownanie-zbiorami,P2,review:correctness,w-zakresie-ale-przeoczone,Porownanie Setami gubi krotnosc linii — rozjazd schematow przejdzie jako zgodny
+4,101,scripts/compare-schemas.ts,C,artefakt-w-repo,P3,,poza-zakresem-promptu,schema-diff.txt zapisywany w repo bez wpisu w .gitignore
+4,102,supabase/migrations/20260828173000_offers_ip_salt_out_of_select_grant.sql,B,grant-niepelny,P2,review:security,brak-mechanicznego-wejscia,Brak section_ids w grancie SELECT — widok szczegolow oferty padnie na uprawnieniach
+4,103,apps/server/src/offer/validation.ts,B,parser-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,Regex skanuje caly dokument — tekst oferty zapisuje sie jako sectionId
+4,104,scripts/compare-schemas.ts,B,sekret-w-argv,P2,review:security,w-zakresie-ale-przeoczone,DATABASE_URL z haslem przekazywany w argv procesu pg_dump
+4,105,scripts/compare-schemas.ts,B,dopasowanie-fragmentu,P3,review:correctness,w-zakresie-ale-przeoczone,includes na markerze usuwa tez e2e_env_marker_backup
+4,106,apps/server/src/offer/validation.ts,B,parser-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,Wzorzec pomija odstepy wokol = i lapie data-section w wartosci innego atrybutu
+4,107,scripts/compare-schemas.ts,B,kodowanie-uri,P3,review:correctness,w-zakresie-ale-przeoczone,Nazwa bazy do .pgpass bez decodeURIComponent — libpq nie znajdzie hasla
+4,108,apps/server/src/offer/validation.ts,B,parser-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,Tresc <script>/<textarea> daje fikcyjne sectionIds
+5,109,apps/dashboard/src/features/offers/heatmap-grid.ts,A,asercja-typu,P3,,nie-dotyczy,Jedyne as w module tlumi kontrole typu przy Object.keys
+5,110,apps/dashboard/src/features/offers/offer-heatmap-card.tsx,A,prog-rozmiaru,0,,nie-dotyczy,"Plik 367 linii, trzy funkcje ponad 50 linii"
+5,111,apps/dashboard/src/features/offers/offer-heatmap-frame.tsx,B,pusty-catch,P3,review:code-quality,w-zakresie-ale-przeoczone,Pusty catch {} przy new URL na VITE_OFFER_ORIGIN — blad konfiguracji bez sygnalu
+5,112,apps/dashboard/src/features/offers/offer-heatmap-frame.tsx,B,cykl-zycia-react,P2,review:correctness,w-zakresie-ale-przeoczone,status nie resetuje sie po zmianie slug — plansza bledu zamiast nowej ramki
+5,113,apps/dashboard/src/features/offers/offer-heatmap-frame.tsx,B,cykl-zycia-react,P2,review:correctness,w-zakresie-ale-przeoczone,Timeout startuje przed ladowaniem lazy iframe — falszywy status error
+5,114,apps/dashboard/src/features/offers/simpleheat.d.ts,A,preferencja-bota,0,,nie-dotyczy,Sugestia dodania @types/simpleheat zamiast lokalnej deklaracji
+5,115,apps/dashboard/src/features/offers/texts.ts,B,tekst-ui,P2,review:spec-compliance,w-zakresie-ale-przeoczone,"Tekst obiecuje czas zatrzymania, a waga mapy liczy zdarzenia aktywnosci"
+5,116,apps/dashboard/src/features/offers/texts.ts,A,as-const-dozwolony,0,,nie-dotyczy,as const przy OFFER_HEATMAP_TEXTS
+5,117,apps/dashboard/src/features/offers/use-offer-heat.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Test przejdzie po usunieciu straznika aborted z hooka
+5,118,apps/server/src/app.ts,A,prog-rozmiaru,0,,nie-dotyczy,"app.ts 535 linii, createApp okolo 250 linii"
+5,119,apps/server/src/routes/offer-origin-pages.test.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 372 linie
+6,120,apps/dashboard/src/features/offers/heatmap-grid.test.ts,B,luka-pokrycia,P3,review:test-coverage,w-zakresie-ale-przeoczone,Brak przypadkow granicznych grid_rows 1 i 64 (pomylka </<= wpada do fallbacku)
+6,121,apps/dashboard/src/features/offers/offer-heatmap-card.tsx,A,prog-rozmiaru,0,,nie-dotyczy,Karta i ramka heatmapy ponad 300 linii
+6,122,apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Asercja wysokosci do MAX_FRAME_HEIGHT przejdzie przy trzykrotnym bledzie geometrii
+6,123,apps/dashboard/src/features/offers/use-offer-heat.ts,C,kolejnosc-rolloutu,P2,,poza-zakresem-promptu,Brak bramki wymuszajacej migracje grid_rows przed publikacja obrazu dashboardu
+6,124,apps/server/static/t.js,B,wartosc-po-await,P2,review:correctness,w-zakresie-ale-przeoczone,docHeight nie zamrozony razem z rows — grid_rows nie opisuje kluczy heat
+6,125,CLAUDE.md,C,wada-dokumentu-sterujacego,P2,,poza-zakresem-promptu,Linia 58 odwraca kontrakt rozmiaru /t.js wzgledem linii 52 — gzip jako twardy limit
+6,126,e2e/seeds/siatka-proporcjonalna-seed.sql,A,prog-rozmiaru,0,,nie-dotyczy,Seed 766 linii przez literal HTML
+6,127,e2e/seeds/siatka-proporcjonalna-seed.sql,B,seed-niezgodny-z-kontraktem,P2,review:e2e,w-zakresie-ale-przeoczone,grid_rows w seedzie lamia kontrakt trackera — E2E testuje stan niemozliwy
+7,128,apps/dashboard/src/features/offers/offer-decisions-card.tsx,A,a11y-drobiazg,P3,,nie-dotyczy,Brak aria-expanded na przycisku rozwiniecia
+7,129,apps/dashboard/src/features/offers/texts.ts,A,kierunek-zaleznosci,P3,,nie-dotyczy,Alias typu brany z modulu hooka zamiast z @oferty/shared
+7,130,apps/dashboard/src/features/settings/accept-message-card.tsx,B,stan-ui-nieczyszczony,P2,review:correctness,w-zakresie-ale-przeoczone,Komunikat zapisano wisi po edycji pola — to samo z isSaveFailed
+7,131,apps/dashboard/src/features/settings/use-webhook-settings.ts,B,stan-ui-nieczyszczony,P2,review:correctness,w-zakresie-ale-przeoczone,Awaria transportu zostawia testState w running do przeladowania widoku
+7,132,apps/dashboard/src/features/settings/use-webhook-settings.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik ma 306 linii — przekroczenie progu o 2%
+7,133,apps/dashboard/src/features/settings/webhook-api.ts,B,brak-timeoutu,P2,review:performance,poza-zakresem-promptu,fetch bez AbortSignal.timeout — przyciski karty zablokowane bez komunikatu
+7,134,apps/dashboard/src/features/settings/webhook-api.ts,B,walidacja-granicy,P2,review:security,w-zakresie-ale-przeoczone,Odpowiedzi webhooka bez schematu Zod — ksztalt wymuszany asercjami as
+7,135,apps/dashboard/src/features/settings/webhook-card.tsx,C,a11y-fokus,P3,,poza-zakresem-promptu,alertdialog nie przejmuje fokusu po odmontowaniu przycisku
+7,136,apps/server/src/app.ts,A,prog-rozmiaru,0,,nie-dotyczy,app.ts ponad 600 linii
+7,137,apps/server/src/cta/cta-script.test.ts,B,test-kruchy,P3,review:test-coverage,poza-zakresem-promptu,settle() liczy mikrozadania — kazdy nowy await w /c.js wywraca testy
+7,138,apps/server/src/cta/cta-script.test.ts,B,test-kruchy,P3,review:test-coverage,poza-zakresem-promptu,formatDate bez timeZone — test zalezy od strefy srodowiska
+7,139,apps/server/src/cta/cta-script.test.ts,B,test-kruchy,P3,review:test-coverage,poza-zakresem-promptu,Sufit przepisany liczba 2000/2001 zamiast QUESTION_MAX_CODE_POINTS
+7,140,apps/server/src/cta/decision-service.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as never gasi kontrole kontraktu DecisionOfferLoader
+7,141,apps/server/src/cta/decision-service.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik ma 313 linii — przekroczenie progu o 4%
+7,142,apps/server/src/cta/decision-service.ts,B,cache-bez-inwalidacji,P3,review:performance,w-zakresie-ale-przeoczone,Wpis cache nie jest usuwany po wykryciu usunietej oferty — podwojny odczyt do konca TTL
+7,143,apps/server/src/index.ts,B,nieobsluzone-odrzucenie,P2,review:correctness,w-zakresie-ale-przeoczone,Lancuch zamkniecia bez .catch — odrzucenie flush konczy proces kodem bledu
+7,144,apps/server/src/mcp/server.ts,A,prog-rozmiaru,0,,nie-dotyczy,"Plik 405 linii, createMcpRoutes okolo 166 linii"
+7,145,apps/server/src/offer/pages/privacy-page.ts,B,tekst-ui,P2,review:spec-compliance,w-zakresie-ale-przeoczone,"Tresc polityki zmieniona, EFFECTIVE_FROM zostalo na starej dacie mimo komentarza"
+7,146,apps/server/src/routes/decisions.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as unknown as Logger ukrywa niekompletna atrape
+7,147,apps/server/src/routes/decisions.ts,A,asercja-typu,P3,,nie-dotyczy,Rzutowanie payload unknown do Record zamiast zawezenia
+7,148,apps/server/src/routes/webhook-settings.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Test obiecuje brak zapytania DNS, a liczy tylko wywolania https.request"
+7,149,apps/server/src/routes/webhook-settings.ts,B,walidacja-granicy,P2,review:security,w-zakresie-ale-przeoczone,Koperta zadania wyluskana przez as; Zod obejmuje tylko sama wartosc adresu
+7,150,apps/server/src/webhooks/schedule.ts,B,spojnosc-dwoch-systemow,P2,review:correctness,wymaga-calego-repo,"vt liczony na jedna wiadomosc, porcja obslugiwana sekwencyjnie — duplikat u odbiorcy"
+7,151,apps/server/src/webhooks/settings-service.test.ts,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Atrapa createClient ignoruje argumenty — podmiana klucza publikowalnego na sekretny przejdzie
+7,152,apps/server/src/webhooks/ssrf-guard.ts,A,asercja-typu,0,,nie-dotyczy,"as przy porownaniu portu — bot sam potwierdza, ze kod dziala poprawnie"
+7,153,apps/server/src/webhooks/ssrf-guard.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik ma 306 linii — przekroczenie progu o 2%
+7,154,packages/shared/src/webhook-contract.ts,A,prog-rozmiaru,0,,nie-dotyczy,Callback superRefine ponad 50 linii
+7,155,packages/shared/src/webhook-contract.ts,A,asercja-typu,P3,,nie-dotyczy,as przy sprawdzaniu parsed.port
+7,156,supabase/tests/rls.test.ts,B,test-kruchy,P3,review:test-coverage,poza-zakresem-promptu,update fixture'u webhooka ignoruje blad — mylaca porazka dalszych testow
+7,157,supabase/tests/rls.test.ts,B,straznik-negatywny,P2,review:test-coverage,w-zakresie-ale-przeoczone,not.toBeNull nie odrozni regresji uprawnien (42501) od regresji walidacji (22023)
+7,158,apps/dashboard/src/features/settings/use-webhook-settings.ts,B,stan-ui-nieczyszczony,P2,review:correctness,w-zakresie-ale-przeoczone,throw cause przy tescie webhooka ustawia isWriteFailed mimo braku zapisu
+7,159,packages/shared/src/webhook-contract.ts,B,walidacja-granicy,P2,review:security,w-zakresie-ale-przeoczone,aktywny_od przyjmuje dowolny tekst — dashboard dostaje Invalid Date
+8,160,apps/dashboard/src/components/copy-button.tsx,B,cykl-zycia-react,P3,review:correctness,w-zakresie-ale-przeoczone,Drugie kopiowanie przed uplywem 2 s nie restartuje timera potwierdzenia
+8,161,apps/dashboard/src/components/error-boundary.tsx,A,as-const-dozwolony,0,,nie-dotyczy,as const przy TEXTS — bot wycofal finding w watku (#194)
+8,162,apps/dashboard/src/components/layout/app-layout.test.tsx,B,test-niefalsyfikowalny,P3,review:test-coverage,w-zakresie-ale-przeoczone,Skan zrodel bez normalizacji wielkosci liter przepusci inny zapis domeny
+8,163,apps/dashboard/src/components/layout/app-layout.tsx,A,jeden-eksport-per-plik,0,,nie-dotyczy,Eksportowany helper uzywany tylko lokalnie
+8,164,apps/dashboard/src/components/layout/app-layout.tsx,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,aaMarketingHref przyjmuje data: i mailto: — logo prowadzi poza kontrakt
+8,165,apps/dashboard/src/features/offers/offer-details-page.tsx,B,cykl-zycia-react,P3,review:correctness,w-zakresie-ale-przeoczone,Sentry.captureException w trakcie renderu — kazdy render ponawia zgloszenie
+8,166,apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx,B,wymaga-przegladarki,P3,review:e2e,wymaga-uruchomienia,jsdom stubuje clientWidth — testy nie wykryja realnego overflow ukladu
+8,167,apps/dashboard/src/features/offers/offer-heatmap-card.tsx,A,prog-rozmiaru,0,,nie-dotyczy,"Karta 381 linii, ramka 358 linii"
+8,168,apps/dashboard/src/features/templates/template-assets-card.tsx,C,a11y-postep,P3,,poza-zakresem-promptu,Pasek postepu z aria-hidden — wartosc nie dociera do technologii asystujacych
+8,169,apps/dashboard/src/features/templates/template-assets-card.tsx,A,prog-rozmiaru,0,,nie-dotyczy,"Plik 468 linii, komponent laczy parsowanie, upload i render"
+8,170,apps/dashboard/src/features/templates/template-assets-card.tsx,B,cykl-zycia-wspolbieznosc,P2,review:correctness,w-zakresie-ale-przeoczone,Rownolegly upload i delete — starsza odpowiedz nadpisuje licznik zajetosci
+8,171,apps/dashboard/src/features/templates/template-delete-action.tsx,A,prog-rozmiaru,0,,nie-dotyczy,DeleteConfirmDialog ma 90 linii
+8,172,apps/dashboard/src/features/templates/template-preview-card.tsx,B,parser-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,Regex gubi apostrofowe src i wstawia <base> do <textarea> — podglad traci zasoby
+8,173,apps/dashboard/src/features/templates/template-rename-form.tsx,A,prog-rozmiaru,0,,nie-dotyczy,TemplateRenameForm ma 76 linii
+8,174,apps/dashboard/src/features/templates/templates-api.ts,B,niespojnosc-transportow,P2,review:correctness,w-zakresie-ale-przeoczone,Nie-JSON-owe cialo rzuca SyntaxError zamiast TemplatesApiError; XHR zachowuje sie odwrotnie
+8,175,apps/dashboard/src/features/templates/templates-page.tsx,A,prog-rozmiaru,0,,nie-dotyczy,TemplatesPage okolo 177 linii
+8,176,apps/dashboard/src/features/templates/templates-page.tsx,B,cykl-zycia-wspolbieznosc,P2,review:correctness,w-zakresie-ale-przeoczone,"Wybor sledzony po nazwie — po rename szczegoly znikaja, stare zakonczenia nadpisuja wybor"
+8,177,apps/dashboard/src/features/templates/use-templates.test.ts,A,prog-rozmiaru,0,,nie-dotyczy,Plik testowy 367 linii
+8,178,apps/dashboard/src/components/layout/app-layout.tsx,B,pusty-catch,P3,review:code-quality,w-zakresie-ale-przeoczone,"Blad parsowania VITE_AA_MARKETING_URL polkniety, brak zgloszenia do Sentry"
+8,179,apps/dashboard/src/features/templates/template-assets-card.tsx,B,cykl-zycia-react,P2,review:correctness,w-zakresie-ale-przeoczone,Mutacja refa w updaterze setOverlay — w StrictMode swieza zajetosc jest pomijana
+8,180,apps/dashboard/src/features/templates/templates-api.test.ts,A,asercja-typu-w-tescie,P3,,nie-dotyczy,as po toBeInstanceOf w trzech plikach testowych
+8,181,apps/dashboard/src/components/copy-button.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,182,apps/dashboard/src/features/templates/template-assets-card.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,183,apps/dashboard/src/features/templates/templates-api.ts,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,184,apps/dashboard/src/components/layout/app-layout.test.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,185,apps/dashboard/src/components/layout/app-layout.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,186,apps/dashboard/src/features/templates/template-preview-card.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,187,apps/dashboard/src/components/layout/app-layout.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,188,apps/dashboard/src/features/templates/template-assets-card.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,189,apps/dashboard/src/features/templates/templates-page.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,190,apps/dashboard/src/features/offers/offer-details-page.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,191,supabase/migrations/20260904160000_offer_templates_unique_name.sql,C,kolizja-nazw-migracji,P3,,poza-zakresem-promptu,Sufiks UUID nie gwarantuje wolnej nazwy — create unique index moze przerwac migracje
+8,192,apps/dashboard/src/lib/build-url.ts,A,teza-obalona,0,,nie-dotyczy,Zarzut PII w Sentry dla publicznych VITE_* — bot wycofal finding (#197)
+8,193,apps/dashboard/src/features/templates/templates-api.test.ts,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,194,apps/dashboard/src/components/error-boundary.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,195,apps/dashboard/src/components/layout/app-layout.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,196,apps/dashboard/src/features/templates/template-assets-card.tsx,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,197,apps/dashboard/src/lib/build-url.ts,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+8,198,supabase/migrations/20260904160000_offer_templates_unique_name.sql,D,odpowiedz-bota,0,,nie-dotyczy,Odpowiedz bota w watku
+9,1,apps/server/src/assets/asset-repository.ts:150,A,preferencje-bota,P3,,nie-dotyczy,"Zbedny naglowek Authorization obok getUser(accessToken) — higiena, bot sam oznaczyl Trivial/Low value."
+9,2,apps/server/src/assets/asset-repository.ts:222,B,kontrakt-vs-implementacja,P2,review:correctness,w-zakresie-ale-przeoczone,"listStoragePaths obiecuje wszystkie sciezki, limit 200 — osierocone obiekty w buckecie po kasowaniu szablonu."
+9,3,apps/server/src/assets/image-pipeline.ts:169,A,prog-rozmiaru,P3,,nie-dotyczy,optimizeImage ~101 linii wobec progu 50 (+102%) — reguła coding-rules §1.
+9,4,apps/server/src/cta/cta-script.test.ts:533,A,teza-obalona,0,,nie-dotyczy,Jedna stala zamiast lustrzanego testu progu — bot wycofal komentarz po kontrze operatora.
+9,5,apps/server/src/index.ts:268,B,duplikacja-logiki,P3,review:code-quality,w-zakresie-ale-przeoczone,Dwa komplety zaleznosci szablonow (dashboard i MCP) — inwariant 'ten sam stan konta' moze cicho peknac.
+9,6,apps/server/src/mcp/server.test.ts:518,A,prog-rozmiaru,P3,,nie-dotyczy,Plik testowy >680 linii wobec progu 300 (+127%).
+9,7,apps/server/src/mcp/tools/template-repository.fake.ts:69,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Atrapa list niesie html, produkcja nie — test nie odbije narzedzia przepisujacego caly wiersz do MCP."
+9,8,apps/server/src/offer/corrective-stylesheet.test.ts:1,A,prog-rozmiaru,P3,,nie-dotyczy,489 linii wobec 300 (+63%) — wydziel model kaskady.
+9,9,apps/server/src/offer/template-repository.test.ts:273,B,test-brak-pokrycia,P3,review:test-coverage,w-zakresie-ale-przeoczone,"Brak testu rename: filtry owner_id/name, null bez wiersza, mapowanie SQLSTATE 23505."
+9,10,apps/server/src/offer/template-repository.ts:1,A,prog-rozmiaru,P3,,nie-dotyczy,"373 linie wobec 300 (+24,3%) — powyzej progu szumu 20%."
+9,11,apps/server/src/offer/template-repository.ts:214,B,round-trip-auth,P3,review:performance,w-zakresie-ale-przeoczone,"ownerIdOf wola auth.getUser w kazdej metodzie — 2 round-tripy zamiast 1, izolacje trzyma RLS."
+9,12,apps/server/src/offer/validation.ts:79,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,"includes('class=""doc') dopasowuje prefiks, nie token — class=""doc-uklad-2"" przechodzi bramke."
+9,13,apps/server/src/offer/validation.ts:609,B,kontrakt-vs-implementacja,P2,review:correctness,w-zakresie-ale-przeoczone,"Bramka szablonu mierzy rozmiar bez arkusza korygujacego — zapisze szablon, ktorym nie da sie opublikowac oferty."
+9,14,apps/server/src/routes/events.test.ts:697,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Brak asercji dlugosci merges — odrzucenie calego beacona przechodzi jako odsiew pola.
+9,15,apps/server/src/routes/events.ts:159,A,prog-rozmiaru,P3,,nie-dotyczy,events.ts 389 linii (+30%) plus dwa seedy SQL — podzial wg reguly 300 linii.
+9,16,apps/server/src/routes/offer-images.ts:260,B,pusty-catch,P3,domkniecie fazy (audyt error-handlingu / lint),brak-mechanicznego-wejscia,Pusty catch {} wbrew coding-rules §4; ESLint no-empty nie jest uruchamiany w domknieciu fazy.
+9,17,apps/server/src/routes/offer-images.ts:264,C,komentarz-nieaktualny,P3,,poza-zakresem-promptu,"Komentarz twierdzi, ze /i/* stoi poza limiterem, a ma juz wlasne wiadro — zadna os nie sprawdza komentarzy."
+9,18,apps/server/src/routes/template-assets.ts:403,B,granica-try-catch,P2,review:correctness,w-zakresie-ale-przeoczone,readAccountUsage w try insertAsset — awaria metryki kasuje obiekt mimo istniejacego wiersza.
+9,19,apps/server/src/routes/template-assets.ts:508,B,granica-try-catch,P2,review:correctness,w-zakresie-ale-przeoczone,Awaria odczytu zajetosci po usunieciu daje 503 usuniecie_nieudane mimo udanego kasowania.
+9,20,apps/server/src/tracker/tracker.test.ts:99,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Schemat testowy z.object luzniejszy od kontraktu — literowka readingMs przechodzi jako brak pola.
+9,21,apps/server/src/tracking/visit-service.ts:281,A,prog-rozmiaru,P3,,nie-dotyczy,visit-service.ts >400 linii wobec 300 (+33%).
+9,22,apps/server/src/tracking/visit-service.ts:367,B,sciezka-bledu,P3,review:code-quality (mapowanie bledow),w-zakresie-ale-przeoczone,Porazka ponowienia gubi kod pierwotnego bledu — Sentry nie pokaze rozjazdu 'kod przed migracja'.
+9,23,apps/server/src/webhooks/settings-service.ts:102,B,pii-w-message,P2,review:security,w-zakresie-ale-przeoczone,ownerId w Error.message trafia do Sentry przez captureException — wprost klasa z ETAP1 §3.
+9,24,apps/server/static/t.js:174,B,sciezka-bledu,P2,review:correctness,w-zakresie-ale-przeoczone,flush() na pagehide wysyla jeden payload — nadmiar readMs ponad MAX_READ_MS ginie przy zamknieciu strony.
+9,25,e2e/seeds/faza-7-czas-czytania-seed.sql:130,B,seed-dane-zrodlowe,P3,review:e2e,brak-mechanicznego-wejscia,Brak grid_rows w insercie — DEFAULT 16 zapisuje bledna gestosc i skaluje heat w dashboardzie.
+9,26,e2e/seeds/faza-7-grafiki-seed.sql:1727,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"replace na literale daty moze cicho nie trafic — seed zielony z bledna data, brak straznika."
+9,27,packages/shared/src/template-asset-contract.test.ts:29,A,teza-obalona,0,,nie-dotyczy,'Usun as const' — bot wycofal: const assertion nie jest niebezpiecznym type assertion.
+9,28,packages/shared/src/template-asset-contract.ts:56,A,teza-obalona,0,,nie-dotyczy,"z.literal na limitach — bot wycofal: limity dostarcza serwer, literal zlamalby kompatybilnosc."
+9,29,supabase/migrations/20260903120000_offer_templates.sql:432,B,minimum-privileges,P2,review:security,w-zakresie-ale-przeoczone,Grant SELECT na storage_path dla authenticated udostepnia klientowi UUID wlasciciela przez PostgREST.
+9,30,supabase/migrations/20260904160000_offer_templates_unique_name.sql:41,B,granica-wartosci-migracja,P1,review:correctness,w-zakresie-ale-przeoczone,"left(name,68)+' (duplikat 19)' = 82 znaki wobec limitu 80 — migracja konczy sie 23514 i blokuje db push."
+9,31,apps/server/src/routes/templates.ts:153,B,wszystkie-drogi-do-operacji,P2,review:correctness,poza-zakresem-promptu,"readTemplateNameQuery deklarowana jako wspolna bramka, uzywa jej tylko PATCH — GET i DELETE maja kopie inline."
+9,32,apps/server/src/assets/asset-repository.ts:243,B,wyscig-rownolegly,P2,review:correctness,w-zakresie-ale-przeoczone,Wstawienie grafiki miedzy listStoragePaths a templates.remove zostawia obiekt w buckecie bez wiersza.
+9,33,apps/server/src/assets/storage-client.ts:79,C,limit-cudzej-uslugi,P2,,poza-zakresem-promptu,Supabase Storage.remove ma sufit 1000 obiektow na zadanie — wiedza o cudzym API poza zasiegiem review diffu.
+9,34,apps/server/src/offer/validation.ts:386,B,parser-html-regexem,P2,review:security,w-zakresie-ale-przeoczone,"hasDocContainer skanuje tez script/style — literal <div class=""doc""> w skrypcie przepuszcza dokument bez .doc."
+9,35,supabase/migrations/20260904160000_offer_templates_unique_name.sql:44,B,granica-wartosci-migracja,P1,review:correctness,w-zakresie-ale-przeoczone,Deduplikacja moze ustawic nazwe na juz istniejaca — CREATE UNIQUE INDEX konczy migracje bledem 23505.
+9,36,apps/server/src/offer/validation.ts:156,B,parser-html-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,Usuwanie sekwencji komentarza wewnatrz wartosci atrybutu zmienia src skryptu — tracker nie dziala mimo zielonej bramki.
+9,37,supabase/migrations/20260904160000_offer_templates_unique_name.sql:55,B,granica-wartosci-migracja,P2,review:correctness,w-zakresie-ale-przeoczone,12-znakowy prefiks UUID nie gwarantuje unikalnosci sufiksu — ponowna kolizja i 23505 przy tworzeniu indeksu.
+9,38,apps/server/src/offer/validation.ts:172,B,parser-html-regexem,P2,review:correctness,w-zakresie-ale-przeoczone,Zla kolejnosc replace: komentarz w kodzie skryptu wycina rzeczywiste markery i odrzuca poprawny dokument.
+9,39,supabase/migrations/20260904160000_offer_templates_unique_name.sql:57,B,kolejnosc-rolloutu,P1,kontrola diffu / domkniecie fazy,brak-mechanicznego-wejscia,"Poprawka w juz wypchnietej migracji nie dotrze do stagingu i produkcji — nikt nie sprawdza mechanicznie, czy diff rusza wydany plik."
+10,40,apps/server/src/assets/detached-assets-sweeper.ts:80,B,sciezka-bledu,P2,review:correctness,w-zakresie-ale-przeoczone,Blad removeMany przerywa sweepBatch — jeden nieusuwalny obiekt blokuje wszystkie pozniejsze wiersze (head-of-line).
+10,41,apps/server/src/mcp/oauth-token-verifier.ts:161,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,"alg:""none"" z niepustym kid przechodzi bramke i wymusza zadania JWKS/getUser — brak allowlisty algorytmow."
+10,42,apps/server/src/mcp/tools/pobierz-szablon.ts:301,A,prog-rozmiaru,P3,,nie-dotyczy,436 linii wobec 300 (+45%).
+10,43,apps/server/src/mcp/tools/usun-szablon.ts:121,B,tekst-ui,P3,review:spec-compliance (krok 5),w-zakresie-ale-przeoczone,"'2 grafiki zostaje' — czasownik nieodmieniony, a test utrwala bledna forme."
+10,44,apps/server/src/routes/dashboard.ts:149,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,Warunek nie obejmuje dokladnej sciezki /api — zwraca index.html 200 zamiast koperty not_found (klasa '/api bez /').
+10,45,apps/server/src/routes/events.test.ts:705,A,prog-rozmiaru,P3,,nie-dotyczy,866 linii wobec 300 (+189%).
+10,46,apps/server/src/routes/events.ts:163,A,prog-rozmiaru,P3,,nie-dotyczy,389 linii wobec 300 (+30%) — powtorka uwagi z PR 9.
+10,47,apps/server/src/routes/template-assets.ts:531,A,prog-rozmiaru,P3,,nie-dotyczy,"Plik 572 linii, callback DELETE >50 linii — dwa progi coding-rules §1."
+10,48,apps/server/src/tracker/tracker.test.ts:622,A,prog-rozmiaru,P3,,nie-dotyczy,977 linii wobec 300 (+226%).
+10,49,apps/server/src/tracking/merge-contract-ladder.ts:111,B,sciezka-bledu,P3,review:code-quality (mapowanie bledow),w-zakresie-ale-przeoczone,"Ta galaz gubi code PostgREST — 08006 i 42501 wygladaja w Sentry identycznie, reszta modulu kod niesie."
+10,50,e2e/print-magic-link.ts:143,B,sciezka-bledu,P3,review:correctness,w-zakresie-ale-przeoczone,--redirect bez '=' cicho wraca do domyslnego /auth/callback — operator dostaje inny cel bez bledu.
+10,51,e2e/print-oauth-consent-url.ts:105,A,preferencje-bota,P3,,nie-dotyczy,"Zod: message -> error (deprecated API) — porzadkowa zgodnosc stylu, bez defektu."
+10,52,packages/shared/src/database.types.test.ts:233,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Asercja runtime na pominietym polu zawsze zwraca undefined — potrzebna asercja ksztaltu typu Args.
+10,53,packages/shared/src/template-asset-contract.ts:107,B,zod-granica,P3,review:security (Zod na granicach),w-zakresie-ale-przeoczone,zachowana_do jako z.string() przepuszcza dowolny tekst na granicy kontraktu; powinno byc ISO datetime.
+10,54,supabase/migrations/20260907120000_visits_section_path.sql:55,C,migracja-blokujaca,P2,,poza-zakresem-promptu,"ADD CHECK bez NOT VALID skanuje visits pod ACCESS EXCLUSIVE; performance-oracle ma bundle/N+1, nie DDL."
+10,55,apps/server/src/routes/template-assets.ts:541,B,sciezka-bledu,P2,review:correctness,w-zakresie-ale-przeoczone,"deleteAsset kasuje wiersz przed storage.remove — po bledzie brak storage_path do ponowienia, obiekt osierocony."
+10,56,apps/server/src/routes/template-assets.ts:535,B,wyscig-rownolegly,P2,review:correctness,w-zakresie-ale-przeoczone,Rownolegla publikacja miedzy detachReferenced a kasowaniem kasuje grafike uzyta w nowej ofercie.
+10,57,apps/server/src/routes/template-assets.ts:530,B,sciezka-bledu,P2,review:correctness,w-zakresie-ale-przeoczone,503 'Sprobuj ponownie' opisuje nieosiagalny scenariusz — ponowienie po odpieciu wiersza daje 404.
+10,58,supabase/migrations/20260908210000_offers_lock_referenced_assets.sql:61,B,wyscig-rownolegly,P2,review:correctness,w-zakresie-ale-przeoczone,select distinct bez order by — dwie publikacje biora for update w odwrotnej kolejnosci i dostaja 40P01.
+10,59,supabase/migrations/20260908210000_offers_lock_referenced_assets.sql:159,B,granica-wartosci-migracja,P1,review:correctness,w-zakresie-ale-przeoczone,"Trigger dopasowuje a-fA-F, strpos tylko male litery — uuid wersalikami kasuje bajty spod niemutowalnej oferty."
+11,60,apps/dashboard/src/features/oauth/consent-cards.tsx:23,A,jeden-eksport-per-plik,0,,nie-dotyczy,'Rozbij plik na moduly z jednym eksportem' — bot wycofal uwage po kontrze operatora.
+11,61,apps/dashboard/src/features/oauth/consent-request.ts:115,B,bramka-czarna-lista,P2,review:security,w-zakresie-ale-przeoczone,trustFor zwraca loopback dla com.example.app://localhost/cb — grant zatwierdzany przed blokada nawigacji.
+11,62,apps/dashboard/src/features/oauth/use-consent.ts:80,A,prog-rozmiaru,P3,,nie-dotyczy,"Kotwica 305 linii wobec 300 (+1,7%, w progu szumu); dwa pliki towarzyszace 602 i 477 linii."
+11,63,apps/dashboard/src/features/offers/analytics.ts:151,A,prog-rozmiaru,P3,,nie-dotyczy,~400 linii wobec 300 (+33%) — wydziel formatowanie.
+11,64,apps/dashboard/src/features/offers/offer-details-page.tsx:122,B,wszystkie-drogi-do-operacji,P3,review:correctness,poza-zakresem-promptu,pathHeadingRef wskazuje wezel hidden md:flex — focus() nic nie robi w ukladzie mobilnym (druga droga).
+11,65,apps/dashboard/src/features/offers/offer-details-page.tsx:237,B,wszystkie-drogi-do-operacji,P2,review:correctness,poza-zakresem-promptu,"onSelectVisit nie rusza openVisitId — karta sciezki opisuje inna wizyte niz mapa, dwa sprzeczne stany."
+11,66,apps/dashboard/src/features/offers/offers-list.tsx:171,A,jeden-eksport-per-plik,P3,,nie-dotyczy,"Dwa eksporty w pliku komponentu — reguła path_instructions 'maly, jeden export per plik'."
+11,67,apps/dashboard/src/features/offers/reading-path.ts:388,A,prog-rozmiaru,P3,,nie-dotyczy,448 linii (+49%) i describePath >50 linii.
+11,68,apps/dashboard/src/features/offers/texts.ts:419,A,prog-rozmiaru,P3,,nie-dotyczy,440+ linii katalogu tekstow wobec 300 (+47%).
+11,69,apps/dashboard/src/features/offers/visit-path-card.tsx:113,B,tekst-ui,P3,review:spec-compliance (krok 5),w-zakresie-ale-przeoczone,Pusty map.skipped daje pas 'Nie czytal: · Warianty...' — separator na poczatku napisu.
+11,70,apps/dashboard/src/features/settings/connected-apps-card.tsx:173,B,cykl-zycia-react,P3,review:correctness,poza-zakresem-promptu,onCancel nie czysci failedClientId — ponowne otwarcie tego samego klienta pokazuje stary revokeError.
+11,71,apps/dashboard/src/features/settings/disconnect-dialog.tsx:45,B,cykl-zycia-react,P3,review:correctness,poza-zakresem-promptu,Usuniecie otwartego <dialog> z DOM bez close() w cleanupie przenosi fokus do body.
+11,72,apps/dashboard/src/features/templates/template-asset-path.tsx:35,C,a11y-fokus,P3,,poza-zakresem-promptu,select() bez focus() — Ctrl+C moze nie skopiowac sciezki; roster nie ma osi dostepnosci.
+11,73,apps/dashboard/src/features/templates/template-assets-card.test.tsx:543,A,preferencje-bota,P3,,nie-dotyczy,Powtorzony obiekt propsow w trzech testach — bot sam oznaczyl Trivial/Low value.
+11,74,apps/dashboard/src/features/templates/template-assets-card.tsx:218,A,prog-rozmiaru,P3,,nie-dotyczy,619 linii wobec 300 (+106%).
+11,75,apps/dashboard/src/features/templates/template-details-page.test.tsx:171,A,prog-rozmiaru,P3,,nie-dotyczy,Podzial testow wg kolokacji i limitow coding-rules §1/§3 — describe 105 linii.
+11,76,apps/dashboard/src/features/templates/template-search.tsx:62,C,a11y-fokus,P3,,poza-zakresem-promptu,outline-none w Tailwind v4 kasuje pierscien fokusu; brak wlasciciela dla dostepnosci klawiaturowej.
+11,77,apps/dashboard/src/features/templates/use-template-details.ts:273,B,cykl-zycia-react,P2,review:correctness,poza-zakresem-promptu,Galaz catch bez ochrony loadedIdRef zrzuca gotowy widok do error — odmontowana karta i przerwany XHR.
+11,78,apps/dashboard/src/features/templates/use-templates.ts:250,A,preferencje-bota,P3,,nie-dotyczy,"Kod 'nie_znaleziono' raz przez stala, raz inline — nitpick DRY oznaczony Trivial/Low value."
+11,79,apps/dashboard/src/main.tsx:50,B,tekst-ui,P3,review:spec-compliance (krok 5),w-zakresie-ale-przeoczone,"Komunikat obiecuje wyslanie zgloszenia, ktorego bez DSN nie ma — klasa 'obietnica czynnosci, ktorej nie ma'."
+11,80,CLAUDE.md:71,B,wada-dokumentu-sterujacego,P1,review:security,poza-zakresem-promptu,Polecenie 'coolify app env list --show-sensitive' w CLAUDE.md wypisuje hasla i tokeny do transkryptu.
+11,81,apps/dashboard/src/features/offers/offer-details-page.test.tsx:638,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"Test nie sprawdza zachowania z wlasnej nazwy — przejdzie tez, gdy implementacja tylko zamknie rozwiniecie."
+11,82,apps/dashboard/src/features/offers/offer-details-page.tsx:218,B,cykl-zycia-react,P3,review:correctness,poza-zakresem-promptu,Efekt zalezny tylko od openVisitId zabiera fokus z <select> przy kazdej zmianie wizyty.
+11,83,apps/dashboard/src/features/offers/visit-path-card.tsx:137,A,jeden-eksport-per-plik,P3,,nie-dotyczy,Dwa glowne komponenty w jednym pliku — reguła path_instructions.
+12,84,apps/dashboard/src/features/templates/asset-tiles.tsx:30,C,a11y-fokus,P3,,poza-zakresem-promptu,Po aktywacji 'Usun grafike' fokus nie przechodzi do alertdialog; brak osi dostepnosci w rosterze.
+12,85,apps/dashboard/src/features/templates/asset-tiles.tsx:46,A,jeden-eksport-per-plik,P3,,nie-dotyczy,Trzy komponenty eksportowane z jednego pliku — reguła coding-rules §3.
+12,86,apps/dashboard/src/features/templates/use-template-asset-mutations.ts:94,B,cykl-zycia-react,P2,review:correctness,w-zakresie-ale-przeoczone,Cleanup z pusta lista zaleznosci nie przerywa zadan po zmianie templateId — grafiki starego szablonu w nakladce nowego.
+12,87,szablony/archiwum/motoryzacja-lakier/narzedzia/placeholder.mjs:5,B,tekst-ui,P3,review:spec-compliance,w-zakresie-ale-przeoczone,"Instrukcja uruchomienia wskazuje sciezke, pod ktora lezy inny generator (Showroom zamiast Lakieru)."
+12,88,szablony/archiwum/motoryzacja-rezerwacja/narzedzia/kontrola.mjs:197,B,sciezka-bledu,P2,review:correctness,w-zakresie-ale-przeoczone,measured.popup bywa null dla dokumentu bez [data-cta=popup] — dostep do pol rzuca TypeError.
+12,89,szablony/meta-ads/README.md:84,B,tekst-ui,P3,review:spec-compliance,w-zakresie-ale-przeoczone,Sprzeczne rozmiary dokumentu (60 488 B vs 60 478 B) — deklaracja zgodnosci bajt w bajt nieweryfikowalna.
+12,90,szablony/motoryzacja/README.md:95,B,pii-w-repo,P2,review:security,w-zakresie-ale-przeoczone,Dane klienta i firmy oraz lokalne sciezki w wersjonowanej dokumentacji szablonu.
+12,91,szablony/nieruchomosci/grafiki/INSTRUKCJA.md:31,B,pii-w-repo,P3,review:security,w-zakresie-ale-przeoczone,Sciezka /Users/kacper_trzepiecinski/... ujawnia nazwe uzytkownika i nie dziala u innych.
+12,92,szablony/nieruchomosci/nieruchomosci.html:362,B,tekst-ui,P3,review:spec-compliance,w-zakresie-ale-przeoczone,"Naglowek obiecuje szesc kadrow, galeria ma piec — rozjazd tresci z deklaracja."
+12,93,apps/dashboard/src/features/templates/asset-tiles.tsx:76,A,prog-rozmiaru,P3,,nie-dotyczy,AssetTile 97 linii wobec progu 50 (+94%).
+13,94,apps/dashboard/src/components/layout/app-layout.tsx:219,A,prog-rozmiaru,P3,,nie-dotyczy,AppLayout 118 linii (163-280) wobec progu 50 (+136%).
+13,95,apps/server/src/app.ts:745,A,prog-rozmiaru,P3,,nie-dotyczy,"app.ts 803 linie, createApp 393 linie, dwa pliki testowe 663 i 438 — wszystkie daleko ponad prog."
+13,96,apps/server/src/offer/pages/app-privacy-page.ts:146,C,zgodnosc-prawna,P2,,poza-zakresem-promptu,Brak podstaw prawnych i praw z art. 13 RODO; zaden reviewer nie ma domeny prawnej (operator odroczyl).
+13,97,apps/server/src/offer/pages/legal-document.ts:121,A,prog-rozmiaru,P3,,nie-dotyczy,renderStylesheet 54 linie wobec progu 50 (+8%) — w progu szumu 20%.
+13,98,apps/server/src/offer/pages/privacy-page.ts:51,A,teza-obalona,0,,nie-dotyczy,'Dodaj Sentry jako odbiorce' — bot wycofal: konfiguracja nie przekazuje danych czytelnika.
+13,99,apps/server/src/offer/pages/terms-attachment.ts:90,C,zgodnosc-prawna,P2,,poza-zakresem-promptu,Brak klauzul z art. 28 ust. 3 lit. f-h RODO w umowie powierzenia — domena prawna bez wlasciciela.
+13,100,apps/server/src/offer/pages/terms-page.test.ts:35,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,Fraza 'natychmiast' pasuje do dowolnego punktu regulaminu — straznik obietnicy nie wykryje jej usuniecia.
+13,101,apps/server/src/offer/pages/terms-page.test.ts:88,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,expect(html).toContain('') jest zawsze prawdziwe — puste pole LEGAL_ENTITY przechodzi petle strazujaca.
+13,102,apps/server/src/offer/pages/terms-page.test.ts:133,B,duplikacja-logiki,P3,review:code-quality,w-zakresie-ale-przeoczone,SAFE_HREF_PATTERN i collectHrefs w dwoch kopiach — korekta w jednym pliku zostawi drugi ze slabsza wersja.
+13,103,apps/server/src/routes/app-origin-pages.test.ts:13,A,prog-rozmiaru,P3,,nie-dotyczy,"413 linii wobec 300 (+37,7%)."
+13,104,apps/server/src/routes/app-origin-pages.test.ts:177,B,test-niefalsyfikowalny,P2,review:test-coverage,w-zakresie-ale-przeoczone,"expect([404,200]).toContain(status) przepuszcza oba wyniki — regresja 404->SPA-200 niewykrywalna."
+13,105,apps/server/src/routes/app-origin-pages.ts:249,A,preferencje-bota,P3,,nie-dotyczy,Fabryka middleware naglowkow statyki — operator odrzucil zgodnie z coding-rules §11 (Duplication > Complexity).
+13,106,packages/shared/src/product-contract.ts:77,A,teza-obalona,0,,nie-dotyczy,'Nie publikuj limitu 10 przed egzekwowaniem' — bot wycofal finding jako swiadome odroczenie do fazy 9a.
+13,107,packages/shared/src/product-contract.ts:78,B,kontrakt-shared,P3,review:code-quality,w-zakresie-ale-przeoczone,Literal 10485760 w constraincie migracji zyje obok ACCOUNT_LIMITS.assetMaxBytes — dwa zrodla tej samej liczby.
+13,108,packages/shared/src/template-asset-contract.ts:40,C,wada-dokumentu-sterujacego,P3,,poza-zakresem-promptu,"coding-rules wskazuje limits.ts jako jedyne zrodlo 10 MB, a wartosc zyje w product-contract.ts — reguła nie jest przedmiotem review."
+13,109,packages/shared/src/template-contract.ts:28,B,kontrakt-shared,P2,review:spec-compliance,w-zakresie-ale-przeoczone,"Kontrakt, MCP, UI i regulamin mowia 10 szablonow, trigger dopuszcza 20 — 11. zapis przejdzie."
+9,110,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku — brak nowej tresci merytorycznej.
+9,111,e2e/seeds/faza-7-czas-czytania-seed.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+9,112,apps/server/src/tracking/visit-service.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+9,113,apps/server/src/assets/asset-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Odpowiedz porzadkujaca watek (wskazanie innego zgloszenia).
+9,114,apps/server/src/mcp/tools/template-repository.fake.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+9,115,apps/server/src/assets/asset-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,"Log weryfikacji skryptem w watku, bez nowej tezy."
+9,116,supabase/migrations/20260904160000_offer_templates_unique_name.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie arytmetyki prefiksu po poprawce.
+9,117,apps/server/static/t.js,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie kompromisu operatora w watku.
+9,118,packages/shared/src/template-asset-contract.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Wycofanie zgloszenia z uwagi #28 w watku.
+9,119,apps/server/src/offer/validation.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Odpowiedz porzadkujaca watek.
+9,120,apps/server/src/offer/validation.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+9,121,apps/server/src/tracker/tracker.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+9,122,apps/server/src/webhooks/settings-service.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia ownerId z komunikatu.
+9,123,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki w watku.
+9,124,apps/server/src/offer/template-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Odpowiedz porzadkujaca watek.
+9,125,supabase/migrations/20260903120000_offer_templates.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji skryptem w watku.
+9,126,apps/server/src/routes/offer-images.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki komentarza.
+9,127,apps/server/src/assets/asset-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia naglowka Authorization.
+9,128,apps/server/src/offer/template-repository.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie dodanych testow rename.
+9,129,apps/server/src/tracking/visit-service.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Odpowiedz porzadkujaca watek.
+9,130,e2e/seeds/faza-7-grafiki-seed.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie straznika replace w seedzie.
+9,131,packages/shared/src/template-asset-contract.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Wycofanie uwagi o as const w watku.
+9,132,apps/server/src/offer/validation.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie hasDocContainer w watku.
+9,133,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Odpowiedz porzadkujaca watek.
+9,134,apps/server/src/offer/template-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji skryptem w watku.
+9,135,apps/server/src/routes/offer-images.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia pustego catch.
+9,136,apps/server/src/index.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wspolnego templateRepository.
+9,137,apps/server/src/cta/cta-script.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Wycofanie komentarza o lustrzanych testach.
+9,138,apps/server/src/routes/events.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wzmocnionej asercji.
+9,139,apps/server/src/assets/storage-client.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie porcjowania Storage.remove.
+9,140,apps/server/src/offer/validation.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie renderedMarkup() w watku.
+9,141,apps/server/src/assets/asset-repository.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie decyzji o swiadomym dlugu (wyscig).
+9,142,apps/server/src/routes/templates.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wspolnej bramki readTemplateNameQuery.
+9,143,supabase/migrations/20260904160000_offer_templates_unique_name.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji migracji skryptem.
+9,144,supabase/migrations/20260904160000_offer_templates_unique_name.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie pelnego UUID w sufiksie.
+9,145,apps/server/src/offer/validation.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji skryptem w watku.
+10,146,apps/server/src/tracking/merge-contract-ladder.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie plainError(failure) w watku.
+10,147,e2e/print-magic-link.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie jawnego odrzucenia --redirect bez '='.
+10,148,apps/server/src/mcp/oauth-token-verifier.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie allowlisty algorytmow.
+10,149,apps/server/src/routes/dashboard.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie API_ROOT_PATH i testu regresji.
+10,150,apps/server/src/mcp/tools/usun-szablon.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie keptVerb(count).
+10,151,apps/server/src/assets/detached-assets-sweeper.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie fallbacku per obiekt.
+10,152,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie ekstrakcji handleDeleteAsset.
+10,153,packages/shared/src/database.types.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie asercji ksztaltu Args.
+10,154,packages/shared/src/template-asset-contract.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie zawezenia zachowana_do do ISO.
+10,155,apps/server/src/routes/events.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wydzielenia event-payload.ts.
+10,156,apps/server/src/mcp/tools/pobierz-szablon.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wydzielenia template-asset-listing.ts.
+10,157,e2e/print-oauth-consent-url.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie zmiany w commicie 333f94f.
+10,158,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie kolejnosci storage.remove przed deleteAsset.
+10,159,supabase/migrations/20260907120000_visits_section_path.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie wyjasnienia o wdrozonej migracji.
+10,160,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie wyjasnienia o triggerze i atomowym RPC.
+10,161,apps/server/src/routes/template-assets.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie obslugi awarii bez zachety do ponowienia.
+10,162,supabase/migrations/20260908210000_offers_lock_referenced_assets.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie order by 1 w nowej migracji.
+10,163,supabase/migrations/20260908210000_offers_lock_referenced_assets.sql,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie normalizacji w detach_referenced.
+10,164,apps/server/src/tracker/tracker.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie findingu o progu 300 linii po decyzji operatora.
+10,165,apps/server/src/routes/events.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie findingu o progu 300 linii po odlozeniu refaktoru.
+11,166,apps/dashboard/src/features/templates/template-search.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie pierscienia focus-visible.
+11,167,apps/dashboard/src/features/templates/template-asset-path.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie focus() przed select().
+11,168,apps/dashboard/src/features/settings/connected-apps-card.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie czyszczenia stanu bledu przy anulowaniu.
+11,169,apps/dashboard/src/features/offers/offer-details-page.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie synchronizacji selectedVisitId i openVisitId.
+11,170,apps/dashboard/src/features/templates/use-template-details.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie zachowania widoku przy blednym przeladowaniu.
+11,171,apps/dashboard/src/features/templates/use-templates.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wspolnej stalej w templates-api.ts.
+11,172,apps/dashboard/src/features/settings/disconnect-dialog.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji skryptem w watku.
+11,173,apps/dashboard/src/main.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia nieprawdziwej obietnicy w komunikacie.
+11,174,apps/dashboard/src/features/offers/offer-details-page.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie osobnego celu fokusu dla akordeonu mobilnego.
+11,175,apps/dashboard/src/features/oauth/consent-request.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie ograniczenia loopback do http/https.
+11,176,apps/dashboard/src/features/offers/visit-path-card.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia separatora na poczatku pasa.
+11,177,apps/dashboard/src/features/templates/template-details-page.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie przeniesienia testow do kolokacji.
+11,178,apps/dashboard/src/features/offers/offers-list.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wydzielenia offerRowMeta.
+11,179,CLAUDE.md,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie filtra wyniku i zakazu zapisu pelnego outputu.
+11,180,apps/dashboard/src/features/offers/offer-details-page.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie asercji na rozwiniecie sciezki v2.
+11,181,apps/dashboard/src/features/offers/offer-details-page.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie pathFocusRequest rozdzielajacego fokus od stanu.
+11,182,apps/dashboard/src/features/oauth/consent-cards.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Wycofanie uwagi o podziale pliku.
+11,183,apps/dashboard/src/features/offers/visit-path-card.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie podzialu pliku.
+11,184,apps/dashboard/src/features/offers/reading-path.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie podzialu poniżej progow 300/50.
+11,185,apps/dashboard/src/features/templates/template-assets-card.test.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie centralizacji propsow w renderCard.
+11,186,apps/dashboard/src/features/oauth/use-consent.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie watku jako dlug techniczny po decyzji operatora.
+11,187,apps/dashboard/src/features/offers/analytics.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie watku jako dlug techniczny.
+11,188,apps/dashboard/src/features/templates/template-assets-card.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie watku jako dlug techniczny.
+11,189,apps/dashboard/src/features/offers/texts.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie watku jako dlug techniczny.
+12,190,szablony/meta-ads/README.md,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie spojnosci liczby bajtow.
+12,191,szablony/archiwum/motoryzacja-lakier/narzedzia/placeholder.mjs,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawionej sciezki generatora.
+12,192,szablony/archiwum/motoryzacja-rezerwacja/narzedzia/kontrola.mjs,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie straznika if (measured.popup).
+12,193,szablony/motoryzacja/README.md,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia danych i sciezek lokalnych.
+12,194,szablony/nieruchomosci/nieruchomosci.html,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji skryptem w watku.
+12,195,apps/dashboard/src/features/templates/asset-tiles.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie uzasadnienia operatora o jednej granicy odpowiedzialnosci.
+12,196,szablony/nieruchomosci/grafiki/INSTRUKCJA.md,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie sciezki wzglednej w instrukcji.
+12,197,apps/dashboard/src/features/templates/use-template-asset-mutations.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie usuniecia przecieku stanu miedzy szablonami.
+12,198,apps/dashboard/src/features/templates/asset-tiles.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie poprawki obslugi fokusu.
+12,199,apps/dashboard/src/features/templates/asset-tiles.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie argumentu z coding-rules §11 o pozostawieniu logiki w AssetTile.
+13,200,apps/server/src/offer/pages/terms-page.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie asercji niepustosci.
+13,201,apps/server/src/routes/app-origin-pages.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie podzialu pliku testowego.
+13,202,packages/shared/src/product-contract.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Zgoda co do zrodla prawdy ACCOUNT_LIMITS.assetMaxBytes.
+13,203,apps/server/src/offer/pages/app-privacy-page.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie luki RODO jako otwartego watku.
+13,204,apps/server/src/routes/app-origin-pages.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie deterministycznego statusu per sciezka.
+13,205,packages/shared/src/template-asset-contract.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie zmiany reguły wskazujacej product-contract.ts.
+13,206,apps/server/src/offer/pages/legal-document.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wydzielenia BASE_RULES.
+13,207,apps/server/src/offer/pages/terms-page.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie wspolnego helpera href.
+13,208,packages/shared/src/product-contract.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Wycofanie findingu o limicie 10 jako swiadomym odroczeniu.
+13,209,packages/shared/src/template-contract.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie odroczenia migracji limitu do fazy 9a.
+13,210,apps/server/src/offer/pages/terms-page.test.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Potwierdzenie zakotwiczenia obietnicy w punkcie 7.
+13,211,apps/server/src/offer/pages/app-privacy-page.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Przyjecie decyzji o prowadzeniu dlugu w known-issues.md.
+13,212,apps/server/src/routes/app-origin-pages.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,"Zgoda z operatorem, ze fabryka dodalaby zlozonosc."
+13,213,apps/server/src/offer/pages/terms-attachment.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Log weryfikacji skryptem w watku.
+13,214,apps/dashboard/src/components/layout/app-layout.tsx,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie watku jako dlug techniczny dla fazy 9b.
+13,215,apps/server/src/app.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Podtrzymanie watku o refaktorze createApp.
+13,216,apps/server/src/offer/pages/privacy-page.ts,D,odpowiedz-bota-w-watku,0,,nie-dotyczy,Wycofanie uwagi o Sentry jako odbiorcy danych.

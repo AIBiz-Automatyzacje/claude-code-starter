@@ -1,0 +1,424 @@
+{
+ "os": "typescript",
+ "zgloszone_n": 0,
+ "zgloszone_probka": [],
+ "potwierdzone_n": 75,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/expired-page.ts:38",
+   "opis": "`const INTER = SELF_HOSTED_FONTS[0]` zaszywa pierwszy krój z listy, a `renderStylesheet` emituje dla niego `@font-face` niezależnie od tego, jaki krój wybrał `safeFontFamily(input.fontFamily)`. Dziś lista ma jeden wpis, ale migracja `20260825171812_offers_brand_and_contact.sql` wprost przewiduje rozszerzanie allowlisty nową migracją — po dołożeniu drugiego kroju plansza wygaśnięcia ustawi `--font: <nowy krój>` bez pasującego `@font-face` i spadnie na `system-ui`. Naprawa: wyznacz wpis przez `SELF_HOSTED_FONTS.find((f) => f.family === font)` (z fallbackiem na `BRAND_DEFAULTS.fontFamily`) i emituj `@font-face` dla znalezionego pliku."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offers.ts:15",
+   "opis": "`interface OfferRow` przepisuje ręcznie kształt wiersza `offers` (`slug`, `offer_title`, `status`, `created_at`, `expires_at`) zamiast wyprowadzić go z wygenerowanych typów bazy, mimo że plik już importuje `Database` (dla `OfferStatus`). Zmiana nazwy lub typu kolumny w migracji przejdzie przez `pnpm typecheck` niezauważona po stronie mapowania, bo `toListItem` będzie zgodne z lokalną deklaracją, a nie ze schematem. Akcja: `type OfferRow = Pick<Database['public']['Tables']['offers']['Row'], 'slug' | 'offer_title' | 'status' | 'created_at' | 'expires_at'>` i usunięcie ręcznego interfejsu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260902140000_webhook_queue.sql:1591",
+   "opis": "`record_offer_acceptance` dla NIEISTNIEJĄCEJ oferty zwraca JEDEN wiersz `accepted_now = false, accepted_at = null, decision_id = null` — kształt nieodróżnialny od „oferta była już zaakceptowana\" inaczej niż po pustym `accepted_at`. Siostrzana `record_offer_question` w tej samej migracji zwraca w tej sytuacji ZERO wierszy (i tak to opisuje komentarz), więc IU-4 dostaje dwa różne kontrakty dla tego samego przypadku brzegowego i przy pierwszym niedopatrzeniu odpowie klientowi „już zaakceptowano\" na ofertę, która nie istnieje. Naprawa: oprzyj końcowy `select` o `locked` (`select … from locked`), żeby brak oferty dawał zero wierszy tak jak w `record_offer_question`, i dopisz w `supabase/tests/rls"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/rate-limit.ts:126",
+   "opis": "resolveClientKey bierze SKRAJNIE LEWY wpis X-Forwarded-For (`const [firstForwarded] = (forwardedFor ?? '').split(',')`), gdy połączenie idzie od zaufanego proxy. Lewy wpis jest wartością, którą ustawia klient — proxy dokłada swój wpis PO prawej. Jeśli proxy (Traefik w Coolify) nagłówek appenduje zamiast nadpisywać, klient wysyłający przy każdym żądaniu inne `X-Forwarded-For: <losowy IP>` dostaje za każdym razem nowe wiadro, czyli limit przestaje obowiązywać — dokładnie ta furtka, którą IU-8 miało zamknąć, tylko przesunięta o jeden krok. Ten sam mechanizm pozwala też celowo wyczerpać wiadro cudzego adresu (podszycie się pod ofiarę = DoS na konkretnego klienta). Poprawność limitu nadal zależy "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/tracking/visit-service.ts:240",
+   "opis": "`recordOpen` traktuje niepowodzenie WTÓRNEGO update'u `offers.status` tak samo jak niepowodzenie insertu wizyty: rzuca `VisitStoreError`, więc `handleOpen` nie zdąży ustawić nagłówka `X-Oo-Visit` (events.ts:786), route łapie wyjątek i oddaje 204 bez tokenu. Scenariusz: wiersz `visits` JEST już zapisany, ale tracker widzi odpowiedź bez nagłówka → `retry()` (t.js:2270) po 30 s wysyła drugi `open` → drugi `visit_key`, drugi wiersz `visits` dla tego samego czytelnika, przy czym pierwszy zostaje na zawsze pusty (żaden beacon nie zna jego klucza, `merge_visit_increments` matchuje po `offer_id + visit_key`). Efekt: zdublowana i częściowo pusta wizyta w danych, które są całym produktem. Naprawa: roz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/routes/debug.ts:1",
+   "opis": "Cel IU-3 — rozstrzygnięcie, czy proxy nadpisuje, czy usuwa `X-Forwarded-For` — jest niewykonalny headless: trasa `/debug/forwarded-for` odczytuje adres z gniazda TCP i ma sens wyłącznie za realnym Traefikiem na wdrożeniu dev (potrzebny deploy + `ENABLE_DEBUG_ROUTES=true` + żądanie przez publiczny FQDN). Dopóki wynik nie jest zapisany, `TRUSTED_PROXY_IPS` i IU-8 pozostają zgadywaniem, a od tej fazy origin ofert jest publiczny z limitem, który — w scenariuszu 2 opisanym w `app.ts` — jest GLOBALNY (jedna pula 120/min na wszystkich odbiorców ofert, przy czym jedno otwarcie oferty to żądanie strony + kroju + trackera). To warunek środowiskowy, nie defekt kodu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/validation.ts:184",
+   "opis": "resolveExpiry używa Date.parse, a komunikat odmowy mówi „nie jest datą w formacie ISO 8601”. Date.parse przyjmuje formaty spoza ISO (np. „Dec 31 2026”, „2026/12/31”) i interpretuje je zależnie od strefy runtime'u, więc termin ważności niemutowalnej oferty może przesunąć się o dobę względem tego, co widzi handlowiec. Naprawa: w offerPublicationSchema zamień `dataWygasniecia: z.string().min(1).optional()` na `z.iso.datetime({ offset: true }).optional()` i zostaw resolveExpiry wyłącznie porównanie z `now`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/mcp/server.ts:139",
+   "opis": "Walidacja Origin w middleware SDK jest wyłączona (createMcpHonoApp dostaje tylko `host`/`allowedHosts`), a jedyną zaporą zostaje statyczny Bearer i host-guard z app.ts. Decyzja jest udokumentowana w kontekście fazy, ale nie ma jej w docs/MVP.md ani w SPIKES.md, gdzie żyje reszta rozstrzygnięć transportu. Naprawa: dopisz jedno zdanie o wyłączonej walidacji Origin (z uzasadnieniem: klienci MCP nie są przeglądarkami) do sekcji o transporcie w docs/MVP.md, żeby faza 6 (OAuth) nie odkrywała tego z kodu."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "Dockerfile:111",
+   "opis": "`CMD [\"sh\", \"-c\", \"node dist-server/db/migrate.js && node dist-server/server/index.js\"]` zostawia `sh` jako PID 1, a busybox ash nie robi `exec` dla ostatniego członu listy `&&` i nie przekazuje sygnałów dziecku. SIGTERM przy każdym redeployu/restarcie w Coolify trafia do `sh`, serwer Hono go nie dostaje i ginie dopiero po SIGKILL (domyślnie 10 s) — w środku obsługiwanych żądań zapisu decyzji lub wiadomości kandydata. Naprawa: `CMD [\"sh\", \"-c\", \"node dist-server/db/migrate.js && exec node dist-server/server/index.js\"]`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/src/trusted-proxy.ts:208",
+   "opis": "parseIpRange przyjmuje CIDR z niezerowymi bitami hosta i po cichu traktuje go jak cały zakres: '192.168.1.5/24' (operator chciał jednego hosta, pomylił maskę) zwraca zakres obejmujący całe 192.168.1.0/24. Moduł deklaruje w nagłówku „parsowanie jest twarde, fail fast\", a tu literówka po cichu ROZSZERZA granicę zaufania. Naprawa: w parseIpRange po policzeniu prefixLengthBits sprawdź, że wszystkie bity poza prefiksem są zerowe (maską bajtową jak w isInRange) i zwróć null, gdy nie są — walidacja ENV zatrzyma wtedy start z komunikatem TRUSTED_PROXY_FORMAT_MESSAGE. Dopisz przypadek do tabeli it.each w trusted-proxy.test.ts."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/brand-contract.ts:155",
+   "opis": "`assertBrandContract` egzekwuje próg kontrastu dla `accentColor` (ACCENT_TEXT_MIN_CONTRAST), ale NIE dla `brandColor`, mimo że `WHITE_TEXT_MIN_CONTRAST` jest zdefiniowany tuż obok (linia 109) i używany wyłącznie w testach. W `template.css` biały tekst stoi na `var(--brand)` w `.hero-wordmark`, `.cta h2`, `.cta-lead` i `.card-brand h3/p`, a `renderOfferTemplate` przyjmuje jasny kolor bez zająknięcia (dowód: test „podmiana --brand nie rusza koloru tekstu głównego\" renderuje `#f0a0a0` i przechodzi). Oferta jest NIEMUTOWALNA, więc nieczytelny hero zostaje u klienta na zawsze; jedyną bramką jest dziś `opublikuj_oferte` z IU-7, który nie istnieje. Naprawa: dołóż w `assertBrandContract` warunek `co"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/mcp/token-service.ts:234",
+   "opis": "`catch` w `sessionFor` usuwa wpis po kluczu, nie po tożsamości obietnicy: przy dwóch równoległych żądaniach tego samego konta z wygasłą sesją oba wchodzą w mint, drugie nadpisuje wpis w mapie, a nieudany mint pierwszego kasuje ZDROWĄ obietnicę drugiego. Skutek: dodatkowy mint i zbędne zużycie puli OTP (tożsamość nigdy nie jest pomylona). Akcja: `if (sessions.get(ownerId) === fresh) { sessions.delete(ownerId); }` w bloku catch."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:115",
+   "opis": "Skala nie ma sufitu: `setScale(available / frame.viewportWidth)`. Dla kubełka `Telefon` (viewport_width 390 — dokładnie taki jest w seedzie E2E tej fazy) przy karcie 904 px daje to skalę 2,32: dokument oferty jest ROZCIĄGANY ponad natywną szerokość (rozmyty tekst, layout mobilny na 904 px) i blok dostaje ok. 12 060 px pionowego scrolla w dashboardzie (5200 × 2,32). Plan (D7/R2) uzasadnia wyłącznie POMNIEJSZANIE (0,32 / 0,70625), a test pokrywa tylko ten kierunek, więc upscale jest niezamierzonym skutkiem ubocznym. Naprawa: `setScale(Math.min(1, available / frame.viewportWidth))` + test [Unit] „dostępna szerokość 904, viewport_width 390 → scale(1), wysokość bloku = doc_height\"."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/sync-cycle.ts:435",
+   "opis": "Bramka zwraca `outcome` ze statusem `completed`, więc `scheduleRetry` (lib/sync.ts:154) NICZEGO nie planuje — cykl nie wróci sam. Gdy okno kończy się COMMITEM, ratuje to `requestSync()` z `createCheckIn`, ale gdy user naciśnie „Cofnij\", nie leci żaden trigger: `undo()` w lib/check-in-pending.ts:224 tylko czyści stan, a `handleUndo` (app/(tabs)/index.tsx:241) woła jedynie `hide()`. Efekt: jeśli tap trafił w trwający cykl foreground, zamknięcie tygodni + ocena Energii (i celebracja „Tydzień zaliczony!\") są pominięte na CAŁĄ sesję apki, aż do kolejnego background→active. Akcja: po udanym `undoPending()` w `app/(tabs)/index.tsx` odpal `requestSync()` (import z `lib/sync` — bez cyklu w grafie mod"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/events.ts:88",
+   "opis": "`sectionsSchema` przyjmuje dowolny klucz pasujący do `[A-Za-z0-9_-]{1,64}`, choć identyfikatory sekcji to zamknięty kontrakt (`LONG_VARIANT_SECTION_IDS` w `apps/server/src/offer/brand-contract.ts`), a `merge_visit_increments` nie waliduje kluczy po stronie bazy (`supabase/migrations/20260828120000_visits_tracking.sql`) — warstwa Node jest tu jedyną bramką. Posiadacz ważnego tokenu wizyty może więc trwale wstrzyknąć do `visits.sections` 64 wymyślone nazwy sekcji, które faza 5 wyrenderuje w dashboardzie. Naprawa: zamień klucz na `z.enum(LONG_VARIANT_SECTION_IDS)` — sufit 64 kluczy staje się wtedy zbędny, bo lista sama go narzuca."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx:100",
+   "opis": "Niesolidny predykat typu: `parts.filter((part): part is string => part !== null)` przepuszcza `undefined` i zawęża je do `string`. `parts` powstaje z `DELIVERY_STATE_TEXTS[decision.deliveryState]` i `DEVICE_LABELS[decision.device]`, czyli z indeksowania mapy wartością spoza granicy zaufania (kolumna bazy, słownik D20 jest jawnie rozwijalny) — szósta wartość enuma da w wierszu tekst „undefined\" bez jednego błędu, dokładnie w klasie opisanej w `learned-patterns.md` („klucz z danych nie jest polem obiektu\"). Naprawa: zmienić predykat na `(part): part is string => typeof part === 'string'` i wpisać `parts` jako `readonly (string | null | undefined)[]`."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "src/features/rozmowy/EkranRozmow.tsx:150",
+   "opis": "Kandydat, który oznaczył choć jednego leada, nie ma jak zakończyć zadania. Prop `przyPrzejsciuDoZakonczenia` jest użyty WYŁĄCZNIE w gałęzi `postyLeadow.length === 0` (komponent `BrakLeadow`, linia 179). Główny render z listą leadów i wątkiem (linie 219-238) nie zawiera żadnej kontrolki przejścia do podsumowania, a `EkranPodsumowania` nie jest osiągalne z żadnego innego miejsca w kodzie. Scenariusz: kandydat oznacza 3 leady, domyka wszystkie 3 rozmowy — i zostaje na ekranie rozmów bez żadnego wyjścia; `POST /api/zakoncz` nigdy nie zostanie wywołane, zadanie nigdy nie przejdzie w fazę `zakonczone`, powiadomienie na Discorda nie poleci (R12, R13). Defekt jest niezależny od braku wiringu App.tsx"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template.ts:1289",
+   "opis": "Cały `template.css` — razem z komentarzami inżynierskimi — wchodzi dosłownie do `<style>` każdej opublikowanej, niemutowalnej oferty. Odbiorca oferty w „pokaż źródło\" widzi m.in. „Handlowiec steruje TRZEMA zmiennymi (--brand, --accent, --font)\", „Wszystko poniżej jest zamrożone\", „decyzja 1.9: przy jasnym brandzie oferta byłaby nie do przeczytania, a opublikowanej oferty nie wolno poprawić\", „Zero absolutnych URL-i (Z4)\", ścieżki `.design/Main.dc.html`, `.design/OfertaMobile.dc.html`. To wprost zasada naczelna nr 1 („Klient nie widzi AI ani narzędzia… ma widzieć lepiej przygotowanego handlowca\") — komentarze zdradzają, że stronę wygenerowało narzędzie i jak jest ograniczone. Do tego to ~2 KB"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/index.ts:36",
+   "opis": "Kolejność rolloutu staje się twardsza niż w fazie 2 i nadal nic jej nie egzekwuje: `webhookWorker.start()` biegnie bezwarunkowo przy starcie procesu i od razu woła `webhook_queue_read` — funkcję z migracji `20260902140000`, która wg checklisty operatora tej fazy jest WYŁĄCZNIE na projekcie stagingowym `nxiqssmkteemyhzjkrob`, podczas gdy wdrożenie na Coolify stoi na `uznjvfdqrisbzbcwemjn`. Obraz opublikowany przed `supabase db push --project-ref <ref docelowy>` daje błąd braku funkcji przy KAŻDEJ turze, `report(...)` wysyła wyjątek do Sentry nawet co 5 s (sufit backoffu pustej tury), a strony ofert i endpointy CTA odpowiadają normalnie — ten sam cichy rozjazd co 2026-09-01 przy `grid_rows`, t"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/analytics.ts:206",
+   "opis": "Kafel „Ostatnia wizyta” bierze `max(lastSeenAt)`, a pierwszy wiersz karty „Wizyty” pokazuje `startedAt` tej samej wizyty (`offer-visits-list.tsx:50`) — dla seeda E2E (`e2e/seeds/faza-4-wizyty-seed.sql`, wizyta 3: `last_seen_at = started_at + 43 s`) ten sam ekran poda dwie różne godziny tej samej, najnowszej wizyty. Handlowiec czyta to jako błąd danych, a przebieg [E2E] `widok-oferty-dane` asertuje „datę ostatniej wizyty” tekstem, więc rozjazd godzin trzeba i tak rozstrzygnąć. Akcja: wyprowadzić `lastVisitAt` z `max(startedAt)` (kafel i pierwszy wiersz listy mówią wtedy to samo) albo pokazywać w wierszu `lastSeenAt`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:127",
+   "opis": "`.maybeSingle<OfferDetailsRow>()` podstawia ręcznie napisany interfejs w miejsce typu wywnioskowanego przez supabase-js z `Database` i z łańcucha `OFFER_DETAILS_COLUMNS` — to `as` w przebraniu na granicy systemu. Efekt: typecheck przestaje pilnować, czy kolumny wypisane w stringu istnieją i mają ten kształt. Scenariusz awarii: migracja zmienia `offers.offer_title` na `title` albo `visits.scroll_depth_pct` na `read_pct` — `pnpm typecheck` i cały zestaw testów (mock supabase zwraca fikstury w starym kształcie) są zielone, a widok w produkcji renderuje `undefined` w nagłówku i `przeczytane undefined%`. Dla porównania `use-offers.ts:18` nie używa generyka i tam inferencja realnie chroni zapytani"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/tsconfig.json:1",
+   "opis": "Serwis z IU-4 nie da się uruchomić — celem IU było „Proces nasłuchujący\", a proces nie startuje. Zweryfikowane: `node --experimental-strip-types apps/server/src/index.ts` kończy się `Error [ERR_MODULE_NOT_FOUND]: Cannot find module '.../apps/server/src/app.js'`. Przyczyna: `tsconfig.base.json` narzuca `module: \"ESNext\"` + `moduleResolution: \"bundler\"` + `noEmit: true`, `apps/server/package.json` nie ma skryptu `build` ani `start`, a `@oferty/shared` eksportuje surowe `.ts` (`exports: {\".\": \"./src/index.ts\"}`) — nic nie produkuje `.js`, do których importy w `index.ts`/`app.ts` się odwołują. Typecheck i testy są zielone, bo obie bramki omijają runtime (vitest ma własny resolver). Ten sam ryzyk"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/observability/sentry.ts:62",
+   "opis": "Weryfikacja end-to-end monitoringu jest niewykonalna headless: brak DSN i brak dostępu do projektu Sentry. Testy pokrywają wyłącznie atrapę SDK (`vi.mock('@sentry/node')`) i `scrubEvent` wywoływane bezpośrednio — nie ma dowodu, że `beforeSend` faktycznie wpina się w pipeline i że zdarzenie docierające do Sentry nie niesie IP, nagłówków ani pełnego e-maila. Operator action: po deployu ustaw `SENTRY_DSN_SERVER`, wywołaj kontrolowany wyjątek na `APP_ORIGIN` i obejrzyj zdarzenie w Sentry — sprawdź, że `user.ip_address` jest puste, `request.headers`/`cookies` nie ma, a e-mail jest zamaskowany."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": ".maestro/_session-bootstrap.yaml:196",
+   "opis": "Wspólny prolog zaczął wymagać ODSŁONIĘTEGO Home dla KAŻDEGO flow harnessu, zanim flow zdąży obsłużyć własne bramki. Blok zgody czeka na `home-points` (`optional`, 40 s), warunkowo gasi TYLKO `home-preprompt`, po czym BEZWARUNKOWO robi `tapOn: id: \"tab-settings\"` (linia 196). Dwa istniejące stany łamią to założenie: (a) `e4-energia-perfect` seeduje tydzień domknięty na 100%, więc po bramce syncu wchodzi modal `home-week-closing` — a `PixelModal` niesie `accessibilityViewIsModal`, przez co (wg komentarza dodanego w tej samej fazie w `_canary.yaml`) `home-points` i cały tabbar znikają z hierarchii; tap w `tab-settings` pada, prolog przewraca flow, który wcześniej był zielony; (b) ekran-brama `g"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/notifications-preprompt.ts:84",
+   "opis": "`enableFromPreprompt(database)` sprawdza tożsamość bazy RAZ (przy `close()`), a potem leci ciąg awaitów: `markPrepromptShown(database)` → `await requestNotificationPermission()` (natywny dialog + wewnętrzny `replanNotifications`) → `setDailyReminderEnabled(true)`. Ten ostatni setter ignoruje przekazaną `database` i sam woła `getUserDatabase()` (`lib/notifications.ts:255`), więc zapis trafia do bazy AKTUALNEJ w momencie rozstrzygnięcia, nie tej, dla której user odpowiedział. To dokładnie wzorzec z P1 review Fazy 3 („bramka właściciela sprawdzana raz przed pętlą awaitów nie jest bramką\"). Akcja: po `requestNotificationPermission()` dodać `if (getUserDatabase() !== database) return;` przed `set"
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/App.tsx:6",
+   "opis": "`export function App()` — publiczna funkcja bez jawnego typu zwracanego, wbrew regule §10 („wszystkie publiczne funkcje mają explicit return types\"). To jedyne takie miejsce w całej fazie; reszta (server/, db/, scripts/) trzyma regułę. Naprawa: `import type { ReactElement } from 'react';` i `export function App(): ReactElement {`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/offer/template.css",
+   "opis": "Checklista operatora z IU-2 („porównanie side-by-side wyrenderowanego szablonu ze zrzutami `oferta-krotka-*` i `oferta-dluga-*`\") jest nie do wykonania headless — port pomiarów z `.design/*.dc.html` zweryfikowany wyłącznie przez lekturę CSS. Dodatkowo `@font-face` wskazuje `/f/inter-v1.woff2`, a trasa serwująca `/f/` powstaje dopiero w IU-5, więc render przed IU-5 pokaże krój zastępczy (`system-ui`) — to nie defekt, tylko warunek kolejności. Operator: zrób porównanie po IU-5, nie wcześniej."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/decisions.ts:259",
+   "opis": "Jedyne `as` w produkcyjnym kodzie fazy: `(payload as Record<string, unknown>)['tresc']`. Reguła §10 zakazuje asercji typu poza zawężaniem DOM. Zamień na kontrakt Zod na granicy: dodaj w `apps/server/src/cta/decision-payload.ts` `const questionBodySchema = z.object({ tresc: z.unknown() })` i w trasie wywołaj `checkQuestion(questionBodySchema.safeParse(payload).data?.tresc)` — zachowanie identyczne (tablica/`null`/brak pola → `undefined` → `nieprawidlowe_zadanie`), zero asercji."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md:253",
+   "opis": "Dokument zamknięcia fazy (jedyny deliverable tej fazy) opisuje poprawkę, której w kodzie nie ma: „przy braku wartości sekcja nie renderuje się wcale”. W rzeczywistości `offerPreviewUrl` zwraca `null` tylko w `offer-heatmap-frame.tsx:49-67`, a `OfferHeatmapCard` (apps/dashboard/src/features/offers/offer-heatmap-card.tsx:102-125) nigdy nie woła `offerPreviewUrl` ani nie wychodzi wcześniej — przy pustym/błędnym `VITE_OFFER_ORIGIN` handlowiec dalej dostaje PUSTĄ SKORUPĘ bloku (nagłówek, pigułki, przełączniki, podpis) bez mapy. To dokładnie finding P3-3 z review fazy 2, który pozostaje otwarty, a lista długu (linia 271) go nie wymienia — czyli dokument zamyka fazę zapisem, że problem zniknął. Akc"
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-08-29-001-feat-symulator-poczekalni-plan.md:857",
+   "opis": "Weryfikacje i checklisty IU-12 („`docker build .` kończy się powodzeniem\", „[Unit] Obraz buduje się lokalnie i odpowiada na /api/zdrowie\", certyfikat Let's Encrypt, `psql` z zewnątrz ma się nie połączyć, kopia zapasowa w Coolify) oraz [Manual] IU-9 wymagają demona Docker, żywej domeny i panelu Coolify — nie są wykonalne w tej sesji i nie są defektem kodu. Uwaga kolejności: przejście pełnej ścieżki kandydata z listy kontrolnej `docs/operator/wdrozenie.md` jest dziś niewykonalne także na wdrożeniu, bo ekrany fazy 3 nie są zamontowane (findingi P1) — najpierw wiring, potem ta lista."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/brand-contract.ts:75",
+   "opis": "`ALLOWED_FONT_FAMILIES: readonly string[]` rozszerza literał z `SELF_HOSTED_FONTS` z powrotem do `string`, więc kontrakt brandu nie ma zawężenia na poziomie typów — mimo że kontekst fazy deklaruje „zawężenie żyje w brand-contract.ts\". `BrandContract.fontFamily: string` przyjmie 'Comic Sans' bez błędu kompilacji; łapie to dopiero runtime. Naprawa: `export type SelfHostedFontFamily = (typeof SELF_HOSTED_FONTS)[number]['family'];` + `export const ALLOWED_FONT_FAMILIES: readonly SelfHostedFontFamily[] = SELF_HOSTED_FONTS.map((font) => font.family);` i pozostawienie `fontFamily: string` wyłącznie w typie wejściowym walidatora (`assertBrandContract`), żeby po walidacji dalej szła unia."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:332",
+   "opis": "Agregat kubelka miesza gestosci, ale waga komorki to LICZBA PROBEK NA KOMORKE, a komorka wizyty 16-wierszowej pokrywa ~3x wiekszy kawalek dokumentu niz komorka wizyty 51-wierszowej. Po zlozeniu ulamkow do jednej mapy `offer-heatmap-frame.tsx:222` normalizuje gradient przez `maxWeightOf(points)`, wiec skale koloru wyznaczaja stare wizyty (16 wierszy), a nowe gestsze rysuja sie blado przy tym samym zachowaniu czytelnika. Objaw jest cichy: mapa istnieje, punkty leza poprawnie, klamie tylko INTENSYWNOSC, a blok nie ma legendy. Dotyczy kazdej oferty z wizytami sprzed i po migracji 20260831120000, czyli calego okna migracyjnego. Akcja: w `aggregatePoints` sprowadzic wage do gestosci probek na jedn"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/cta/decision-payload.ts:86",
+   "opis": "W dyskryminowanej unii `QuestionCheck` wariant błędu ma `readonly code: string`, więc typ nie chroni przed literówką w kodzie błędu przekazywanym do `jsonError` (`decisions.ts:264`). Zawęź do unii literałów: `readonly code: 'nieprawidlowe_zadanie' | 'pytanie_za_dlugie' | 'pytanie_puste'` — wszystkie trzy wartości powstają w tym samym pliku, więc zawężenie jest darmowe i domyka kontrakt kodów odpowiedzi."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts:78",
+   "opis": "`generate()` i `revoke()` odpalają `void (async () => { … })()` bez żadnego `try/catch/finally`. Obsłużona jest wyłącznie gałąź `{ error }` zwracana przez supabase-js — każdy RZUCONY wyjątek przelatuje jako unhandled rejection, a `setIsBusy(false)` (linie 96 i 115) leży PO awaitach, więc nigdy się nie wykona. Skutek: `isBusy` zostaje `true` na stałe, przyciski „Wygeneruj token” / „Wygeneruj nowy” / „Unieważnij” są trwale `disabled`, `isWriteFailed` zostaje `false`, więc użytkownik nie widzi ani komunikatu błędu, ani możliwości ponowienia — karta tokenu jest martwa do przeładowania strony, a zdarzenie nie trafia do Sentry. Konkretny wyzwalacz: `hashMcpToken` (mcp-token.ts:44) woła `crypto.sub"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "components/check-in-toast.tsx:145",
+   "opis": "`accessibilityLiveRegion=\"polite\"` stoi na KONTENERZE toastu cofnięcia, w którym dziecko z odliczaniem podmienia tekst przez całe okno („Zapisuję za 3 s\" → „2 s\" → „1 s\"). Na Androidzie TalkBack ogłasza cały region przy każdej zmianie treści, więc komunikat „Odhaczone: <cel>\" jest czytany od nowa trzy razy w ciągu 3 s i zagłusza samego siebie tuż przed jedyną akcją okna („Cofnij\"). Akcja: przenieś `accessibilityLiveRegion=\"polite\"` z `View` kontenera na `Text` z tytułem (linia 152) i dodaj `accessibilityElementsHidden`/`importantForAccessibility=\"no\"` na `Text` odliczania."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "Dockerfile:48",
+   "opis": "`ARG VITE_SUPABASE_URL=\"\"` i `ARG VITE_SUPABASE_PUBLISHABLE_KEY=\"\"` mają puste wartości domyślne, a `packages/shared/src/env.ts` nie waliduje żadnej zmiennej `VITE_*` (walidacja dotyczy runtime'u serwera). Nieoznaczenie ich w Coolify jako zmiennych BUILDA da zielony build, zielony start procesu i bundle dashboardu z pustą konfiguracją Supabase — dokładnie klasa cichego dryfu opisana w `.claude/rules/learned-patterns.md`. Test `scripts/dockerfile-invariants.test.ts` pilnuje wyłącznie obecności deklaracji w plikach, nie wartości na wdrożeniu. Weryfikacja możliwa tylko na realnym deployu: operator ma potwierdzić w Coolify, że obie zmienne są typu build, zanim Faza 2 wypuści SPA."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "docs/active/faza-5-heatmapa/faza-5-heatmapa-zadania.md:897",
+   "opis": "W `zadania.md` pozycje „Weryfikacja: `pnpm typecheck`\" i „Weryfikacja: `pnpm test`\" dla IU-1 i IU-2 zostały nieodhaczone, podczas gdy plan (`docs/plans/2026-08-30-001-feat-faza-5-heatmapa-plan.md`) i dziennik kontekstu deklarują je jako wykonane i PASS (potwierdzam pomiarem: typecheck PASS, 375 + 128 testów PASS). Rozjazd między listą zadań a planem myli kolejny przebieg autopilota o realny stan fazy. Akcja: odhacz cztery checkboxy weryfikacji IU-1/IU-2 w `docs/active/faza-5-heatmapa/faza-5-heatmapa-zadania.md` (linie z „Weryfikacja: `pnpm typecheck`\" i „Weryfikacja: `pnpm test`\")."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:40",
+   "opis": "Zmienne modułowe zadeklarowane jako nienullowalne (`let admin: TypedClient; let tenantA: Tenant; let tenantB: Tenant;`), a kod w `afterAll` sam im przeczy: `if (admin === undefined) return;` oraz `tenantA?.offerId`, `tenantB?.client`. Typ kłamie o stanie przed `beforeAll` (i po jego awarii), a optional chaining na typie nienullowalnym maskuje to przed kompilatorem. Akcja: zadeklarować `let admin: TypedClient | undefined;`, `let tenantA: Tenant | undefined;`, `let tenantB: Tenant | undefined;` — wtedy istniejące guardy stają się realnym zawężeniem typu, a dostępy w testach wymuszą jawne rozpakowanie."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template.ts:1134",
+   "opis": "`renderCard(item: { badge?: string; title: string; body: string; onBrand?: boolean })` powiela ręcznie kształt elementu z `OfferBlock` wariantu `'cards'` (linie 1022–1032 diffu) — i to w wersji bez `readonly`. Dwie kopie tego samego kształtu rozjadą się przy pierwszym dołożeniu pola do kart. Naprawa: wyciągnij `type OfferCardItem = Extract<OfferBlock, { kind: 'cards' }>['items'][number];` i użyj go jako typu parametru `renderCard`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "packages/shared/src/env.ts:174",
+   "opis": "TRUSTED_PROXY_IPS jest teraz zmienną WYMAGANĄ i niepustą — brak wartości zatrzymuje start procesu. Na wdrożeniu (Coolify) zmiennej jeszcze nie ma, więc pierwszy deploy tej fazy nie wstanie, a healthcheck kontenera zrolluje wdrożenie bez żadnego błędu aplikacyjnego w logu (dokładnie wzorzec z .claude/rules/learned-patterns.md). Weryfikacja niewykonalna headless: przed deployem trzeba ustawić w Coolify realną wartość (adres/zakres sieci, z której Traefik łączy się z kontenerem — do odczytania z diagnozy adresu połączenia), a po deployu powtórzyć pomiar z fazy 1 (żądania przez publiczny FQDN z różnymi X-Forwarded-For) i potwierdzić, że limit działa per-klient, a nie globalnie. Uwaga: dopóki nie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/tracking/visit-service.test.ts:1",
+   "opis": "`createSupabaseTrackingOfferLoader` i cała ścieżka parsowania odpowiedzi PostgREST (`parseIpSalt`, sprawdzenie długości 32 B, `Date.parse(expires_at)`, mapowanie błędu na `TrackingOfferLookupError`) nie mają ANI JEDNEGO testu — plik testowy pokrywa store, token, hashe, klasyfikację i cache, ale loader pomija. To dokładnie ten kod, który najłatwiej rozjeżdża się z realnym PostgREST (zapis `bytea` jako `\\x…`), a jego cicha awaria kończy się wyjątkiem łapanym przez fail-open Z6, czyli globalnym zanikiem trackingu widocznym wyłącznie w Sentry. Narusza regułę „każda nowa funkcja = min. 1 happy path + 1 error case\". Naprawa: dopisz w `visit-service.test.ts` testy na atrapie klienta: poprawny wiers"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "packages/shared/src/env.ts:127",
+   "opis": "MCP_BEARER_TOKEN jest wymagany bez wartości domyślnej (min. 32 znaki), więc pierwszy deploy po tej fazie ZATRZYMA start procesu, dopóki zmienna nie zostanie dodana w Coolify dla obu originów. Weryfikacja niewykonalna headless: wymaga realnego środowiska wdrożeniowego. Do zrobienia przez operatora przed merge/deployem: wygenerować losowy sekret ≥32 znaki, wpisać go w ENV aplikacji w Coolify, potwierdzić, że healthcheck kontenera wstaje (patrz learned-patterns o rollbacku mimo działającego procesu)."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "server/trasy/stan.ts:78",
+   "opis": "`POST /api/zaczynam` jako jedyna trasa zapisu nie ma bramki fazy (`wymagajFazy`). Kandydat w fazie `zakonczone` wywołuje ją i dostaje 200 plus wykonany UPDATE na wierszu kandydata, podczas gdy R3 i scenariusz testowy planu mówią „po zakończeniu każdy zapis jest odrzucany\". Stan nie zostaje wprawdzie zepsuty (coalesce/case bronią wartości), ale interfejs dostaje potwierdzenie „rozpoczęto\" dla zamkniętego zadania i trasa zapisu jest otwarta po zakończeniu. Naprawa: w server/trasy/stan.ts przed UPDATE odrzucać `kandydat.faza === 'zakonczone'` przez `bladZlejFazy` (nie `wymagajFazy(...,'instrukcja')` — to zabiłoby idempotencję drugiego wywołania w fazie moderacji) oraz dopisać do server/trasy/za"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/sync-cycle.ts:435",
+   "opis": "Nowa bramka `if (hasPendingCheckIn()) return outcome;` wycina CAŁĄ domenę Energii, a więc również daily login bonus (+2), który `runEnergyDomain` przyznaje WYŁĄCZNIE przy `trigger === \"foreground\"` (lib/sync-cycle.ts:330). Jedyny przebieg foreground to `startSync` i przejście `background→active` (lib/sync.ts:306), a jedyny re-trigger po zamknięciu okna to `requestSync()` z `lib/check-ins.ts:195`, czyli trigger `other` — bonusu nie przyzna. Realny scenariusz: user wraca do apki, karty renderują się z lokalnego SQLite natychmiast, tapuje cel zanim pull/flush foregroundowego cyklu wróci z sieci → bramka łapie otwarte okno → +2 i jego toast przepadają do NASTĘPNEGO realnego otwarcia apki. Żaden "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/rate-limit.test.ts:493",
+   "opis": "Brakuje testu na scenariusz ataku, który definiuje sens tej zmiany: żądanie od ZAUFANEGO proxy z podrobionym lewym wpisem. Test „kluczuje po pierwszym wpisie X-Forwarded-For od zaufanego proxy\" (`'198.51.100.9, 10.0.0.7'`) utrwala właśnie zachowanie z findingu P1 zamiast je wykluczać, a test „daje osobne klucze dwóm klientom za tym samym zaufanym proxy\" nie odróżnia dwóch realnych klientów od jednego klienta rotującego zmyśloną wartość. Dodaj test: connectionAddress '10.0.0.7', forwardedFor kolejno 'a.b.c.d, 203.0.113.5' i 'e.f.g.h, 203.0.113.5' (ten sam realny klient dopisany przez proxy po prawej, różny lewy wpis podrobiony przez klienta) => ten sam klucz. Analogiczny test integracyjny w a"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-08": 54,
+  "2026-09": 21
+ },
+ "potwierdzone_per_severity": {
+  "P3": 49,
+  "P2": 25,
+  "P1": 1
+ }
+}

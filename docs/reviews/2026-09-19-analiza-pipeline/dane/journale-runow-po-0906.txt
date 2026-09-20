@@ -1,0 +1,848 @@
+
+########## 2026-09-06 20:20 oferty-online wf_510b6f9f-da8 (70 linii) ##########
+  [?] {"nazwaZadania": "faza-8-connector-oauth-i-dashboard", "branch": {"aktualny": "feature/faza-8-connector-oauth-i-dashboard", "wymagany": "fea
+  [?] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 14}
+  [?] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS) — .env.e2e ma jawna deklaracje odstepstwa operatora (\"CELUJE 
+  [?] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm 10.28.1, monorepo). Wybrany test o najszerszym grafie transformacji: /Users/ka
+  [?] {"fazaNumer": 1, "fazaNazwa": "Fundament danych: ścieżka sekcji w bazie i kontrakty", "strategia": "serial", "poza": false, "iu": [{"id": "I
+  [?] {"id": "IU-1", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/packages/shared/src/section-p
+  [?] {"id": "IU-2", "status": "completed", "pliki": ["supabase/migrations/20260907120000_visits_section_path.sql", "supabase/migrations/202609071
+  [?] {"commity": ["47cc371 feat(faza 8/1): ścieżka czytania sekcji w bazie i kontrakt w packages/shared"], "fazaNumer": 1, "iu": [{"id": "IU-1", 
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "aktualna", "detal": "Baza E2E = WSPÓŁDZIELONY projekt stagingowy (nagłówek .env.e2e deklaruje „CELUJE W PROJEKT STAGINGOWY\"), w
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-8-connector-oauth-i-dashboard-faza-1.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-d
+  [?] {"findings": [], "przebiegi": []}
+  [?] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "supabase/migrations/20260907120000_visits_section_path.sql:1", "opis": "Obie mi
+  [?] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "supabase/migrations/20260907123000_mcp_tokens_reject_oauth_clients.sql:44", "op
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "packages/shared/src/section-path.ts:42", "opis": "Sufit `MAX_SECTION_PATH_LENGTH = 6
+  [?] {"findings": [{"severity": "P2", "typ": "TEST", "plik": "supabase/tests/rls.test.ts:805", "opis": "Test bramki `client_id` w politykach `mcp
+  [?] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "supabase/migrations/20260907120000_visits_section_path.sql:1", "opis": "Obie mi
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260907120000_visits_section_path.sql:129", "opis": "Stan `[]` 
+  [?] {"duplikaty": [[0, 6, 20], [1, 9, 17, 19, 22], [2, 7, 18, 21], [3, 24], [4, 15], [8, 12], [10, 25]]}
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. supabase/tests/rls.test.ts (blo
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dwoma niezależnymi dowodami. (1) Dowód ty
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie, nie obalone. (1) Nieosiągalność
+  [?] {"werdykty": [{"indeks": 0, "realny": false, "uzasadnienie": "Obalony trzema dowodami z kodu.\n\n1) Brak jakiegokolwiek wpływu w kodzie fazy
+  [?] {"fazaNumer": 1, "severityGate": "ZASTRZEZENIA", "raportSciezka": "docs/active/faza-8-connector-oauth-i-dashboard/review-faza-1.md", "liczni
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"commity": ["386e308 fix(faza 8/1): poprawki po review fazy 1"], "e2eReweryfikacja": "n/a", "naprawione": 10, "nienaprawione": [], "nierozw
+  [?] {"trafienia": [{"wzorzec": "type-assertion", "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts", "linia": "    const heat = J
+  [?] {"bramki": [{"plik": "apps/server/src/offer/validation.ts:580", "opis": "TEMPLATE_SECTION_ID_PATTERN (dawniej SECTION_ID_PATTERN) — bramka Z
+  [?] {"commity": ["0d9cb50388262c2dbd399d8400e30972b6ed4008"], "e2eReweryfikacja": "n/a", "naprawione": 1, "nienaprawione": ["WSPÓLNA PRZYCZYNA d
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true}
+  [?] {"fazaNumer": 2, "fazaNazwa": "Tracker i serwer zdarzeń: ścieżka sekcji od przeglądarki do bazy", "strategia": "serial", "poza": false, "iu"
+  [?] {"id": "IU-3", "status": "blocked", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/static/t.js", "/Use
+  [?] {"zacommitowano": true, "commit": "52e0a03", "brudnePozaZadaniem": ["CLAUDE.md", "apps/server/src/cta/cta-script.test.ts", "apps/server/src/
+  [?] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ?
+
+########## 2026-09-07 06:51 oferty-online wf_a9762098-930 (322 linii) ##########
+  [?] {"branch": {"aktualny": "feature/faza-8-connector-oauth-i-dashboard", "wymagany": "feature/faza-8-connector-oauth-i-dashboard", "zgodny": tr
+  [?] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 14}
+  [?] {"status": "gotowe", "devServer": "uruchomione", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS) — guard tozsamosci dal werdykt IDE
+  [?] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (monorepo pnpm, pm=pnpm z pnpm-lock.yaml). Wybrany najciezszy test komponentu: /User
+  [?] {"fazaNumer": 2, "fazaNazwa": "Tracker i serwer zdarzeń: ścieżka sekcji od przeglądarki do bazy", "strategia": "serial", "poza": false, "iu"
+  [?] {"id": "IU-4", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/routes/events
+  [?] {"commity": ["a5833e7 feat(faza 8/2): POST /e przyjmuje kolejność czytania, scalanie z drugim zatrzaskiem"], "fazaNumer": 2, "iu": [{"id": "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "zsynchronizowano", "detal": "Baza WSPÓŁDZIELONA — nagłówek /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/.env.e2
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-8-connector-oauth-i-dashboard-faza-2.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-d
+  [?] {"findings": [], "przebiegi": []}
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/tracking/visit-service.ts:312", "opis": "Wymaganie IU-4 (plan `docs/
+  [?] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "apps/server/src/tracker/tracker.test.ts:80", "opis": "Cała eskalacja budżetu ba
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/events.ts:172", "opis": "NIESYMETRYCZNY, CICHY ODSIEW: `secti
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/events.ts:175", "opis": "`sectionPathSchema` odsiewa CAŁE pol
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/events.ts:172", "opis": "Bramka `section_path` jest ALL-OR-NO
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/static/t.js:182", "opis": "Ścieżka jedzie WYŁĄCZNIE w beaconie, w którym
+  [?] {"duplikaty": [[0, 10, 17, 25], [1, 15, 21], [2, 12], [7, 18, 26], [4, 14], [9, 13, 20, 24, 28]]}
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `apps/server/static/t.js`: `pat
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone kodem, wszystkie trzy ogniwa łańcucha. (1
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Potwierdzone w kodzie: apps/server/src/tracking/visit-
+  [?] {"fazaNumer": 2, "severityGate": "ZASTRZEZENIA", "raportSciezka": "docs/active/faza-8-connector-oauth-i-dashboard/review-faza-2.md", "liczni
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"commity": ["7e437fc"], "e2eReweryfikacja": "n/a", "naprawione": 11, "nienaprawione": [], "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "p3Po
+  [?] {"trafienia": []}
+  [?] {"regresje": [], "bramki": [{"plik": "apps/server/src/routes/events.ts:189 (keepKnownSectionPath, uzyta w sectionPathSchema:210)", "opis": "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true, "poprawnyJson": null}
+  [?] {"fazaNumer": 3, "fazaNazwa": "Serwer OAuth: discovery i trzeci tor klasyfikatora", "strategia": "serial", "poza": false, "iu": [{"id": "IU-
+  [?] {"id": "IU-5", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/mcp/oauth-met
+  [?] {"id": "IU-6", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/http/oauth-to
+  [?] {"commity": ["fa77b30 feat(faza 8/3): discovery OAuth i trzeci tor klasyfikatora MCP"], "fazaNumer": 3, "iu": [{"id": "IU-5", "nazwa": "Meta
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "aktualna", "detal": "Baza E2E = WSPÓŁDZIELONY projekt stagingowy (nagłówek .env.e2e deklaruje wprost: „CELUJE W PROJEKT STAGINGO
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-8-connector-oauth-i-dashboard-faza-3.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-d
+  [?] {"findings": [], "przebiegi": []}
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/well-known.ts:61", "opis": "Dokument RFC 9728 z `resource: <A
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/mcp/oauth-token-verifier.ts:84", "opis": "Kontrakt „co jest tokenem 
+  [?] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/server/src/mcp/oauth-token-verifier.ts:121", "opis": "`client.auth.getClaims(ac
+  [?] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/server/src/mcp/oauth-token-verifier.ts:121", "opis": "Token o kształcie JWT z u
+  [?] {"findings": [{"severity": "P2", "typ": "TEST", "plik": "apps/server/src/mcp/oauth-token-verifier.test.ts:268", "opis": "Asercja `expect(sta
+  [?] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/server/src/mcp/oauth-token-verifier.ts:121", "opis": "`await client.auth.getCla
+  [?] {"duplikaty": [[4, 12, 20], [0, 5, 21], [10, 17], [1, 13], [15, 24]]}
+  [?] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding potwierdzony, próba obalenia nieudana — dowód z kodu i z uruchomienia.\n\
+  [?] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding POTWIERDZONY — próba obalenia nie znalazła ani jednego ogniwa, które by n
+  [?] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Nie udało się obalić — próba obalenia potwierdziła finding w każdym punkcie.\n\n1
+  [?] {"werdykty": [{"indeks": 0, "realny": false, "uzasadnienie": "Fakty kodowe zgadzają się (well-known.ts:50 liczy dokument raz, oauth-metadata
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Fakty z kodu potwierdzone: middleware klasyfikatora w 
+  [?] {"werdykty": [{"indeks": 0, "realny": false, "uzasadnienie": "Fakty pomocnicze się zgadzają (templates.ts woła wstrzykniętego `resolveOwnerI
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dowodem z kodu biblioteki i z implementac
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. W apps/server/src/mcp/server.ts
+  [?] {"fazaNumer": 3, "severityGate": "BLOKUJE", "raportSciezka": "docs/active/faza-8-connector-oauth-i-dashboard/review-faza-3.md", "liczniki": 
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"commity": ["b5295fd fix(faza 8/3): poprawki po review fazy 3"], "e2eReweryfikacja": "n/a", "naprawione": 9, "nienaprawione": [], "nierozwi
+  [?] {"nadalOtwarty": false, "uzasadnienie": "Naprawa (commit b5295fd, „fix(faza 8/3): poprawki po review fazy 3\") adresuje przyczynę, nie objaw
+  [?] {"trafienia": []}
+  [?] {"regresje": [], "bramki": [{"plik": "apps/server/src/mcp/oauth-token-verifier.ts:137 (headerRejectionReason)", "opis": "Bramka zerowa: nagł
+  [?] {"commity": ["8311797 fix(faza 8/3): kontrola diffu naprawczego fazy 3"], "e2eReweryfikacja": "n/a", "naprawione": 2, "nienaprawione": [], "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true, "poprawnyJson": null}
+  [?] {"fazaNumer": 4, "fazaNazwa": "OAuth w dashboardzie: strona zgody, podłączone aplikacje, dokumentacja", "strategia": "serial", "poza": false
+  [?] {"id": "IU-7", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/o
+  [?] {"id": "IU-8", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/s
+  [?] {"id": "IU-9", "status": "completed", "pliki": ["docs/operator/podlaczenie-connectora-claude.md", "docs/MVP.md", "docs/CONCEPTS.md", "CLAUDE
+  [?] {"commity": ["253d6bf feat(faza 8/4): OAuth w dashboardzie — strona zgody, podłączone aplikacje, dokumentacja"], "fazaNumer": 4, "iu": [{"id
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "aktualna", "detal": "Nic nie trzeba było aplikować — baza e2e jest zgodna z fazą 4.\n\n1. Bramka współdzielenia: nagłówek `.env.
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-8-connector-oauth-i-dashboard-faza-4.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-d
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/texts.ts:83", "opis": "`titleFor` wstawia nazwę kl
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "e2e/print-magic-link.ts:139", "opis": "Bramka `parseRedirectPath` ma dziurę dokładni
+  [?] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/browser-navigation.ts:12", "opis": "`navigateTo(url)` woła `w
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/texts.ts:83", "opis": "IU-7 („client.name renderow
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/texts.ts:83", "opis": "`titleFor` podstawia nazwę 
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "e2e/print-magic-link.ts:139", "opis": "Bramka `parseRedirectPath` nie trzyma własneg
+  [?] {"findings": [{"severity": "P1", "typ": "E2E", "plik": "apps/dashboard/src/features/oauth/consent-request.ts:23", "opis": "checkbox: Test: [
+  [?] {"duplikaty": [[1, 10, 14, 21, 29], [3, 8, 17, 26, 31], [5, 11, 19, 37], [12, 15, 25, 34], [13, 28, 39], [20, 33], [22, 32], [27, 38], [41, 
+  [?] {"realny": true, "severityKorekta": "P2", "uzasadnienie": "Próba obalenia nie powiodła się — brak bramki jest faktem z kodu, ale skala „P1 =
+  [?] {"realny": false, "severityKorekta": null, "uzasadnienie": "FALSE POSITIVE w warstwie WPŁYWU (opis mechaniki kodu jest poprawny, ale skutek 
+  [?] {"realny": false, "severityKorekta": null, "uzasadnienie": "FALSE POSITIVE — deklarowany wpływ (XSS na APP_ORIGIN → przejęcie sesji) nie zac
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `use-connected-apps.ts:150` trz
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone przebiegiem na Node 22 w repo. Bramka w `
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `decide()` w apps/dashboard/src
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Fakty z findingu potwierdzone w kodzie i w buildzie. `
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie i w bazie. `texts.ts:34-44` prez
+  [?] {"fazaNumer": 4, "severityGate": "BLOKUJE", "raportSciezka": "docs/active/faza-8-connector-oauth-i-dashboard/review-faza-4.md", "liczniki": 
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"commity": ["b7d0455 fix(faza 8/4): poprawki po review fazy 4"], "e2eReweryfikacja": "5/5 passed", "naprawione": 14, "nienaprawione": [], "
+  [?] {"trafienia": []}
+  [?] {"regresje": [{"plik": "apps/dashboard/src/features/oauth/consent-page.tsx:155", "opis": "Warunek planszy wygasłego linku zmieniono na `isEx
+  [?] {"commity": ["27f5fd9 fix(faza 8/4): kontrola diffu naprawczego fazy 4"], "e2eReweryfikacja": "n/a", "naprawione": 2, "nienaprawione": [], "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true}
+  [?] {"fazaNumer": 5, "fazaNazwa": "Szablony: grafiki w MCP, lista z paginacją, strona szczegółów", "poza": false, "strategia": "serial", "iu": [
+  [?] {"id": "IU-10", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/mcp/tools/po
+  [?] {"id": "IU-11", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/routes.ts
+  [?] {"id": "IU-12", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [?] {"fazaNumer": 5, "status": "completed", "testy": "PASS — pnpm typecheck 0 błędów; pnpm test 1781 testów PASS / 0 FAIL (51 root+e2e, 153 shar
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "zsynchronizowano", "detal": "Baza E2E = PROJEKT STAGINGOWY (nagłówek .env.e2e deklaruje współdzielenie: dane E2E i testów RLS na
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-8-connector-oauth-i-dashboard-faza-5.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-d
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:150", "opis": "Stron
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/assets/asset-repository.ts:213", "opis": "`listAssets` zmieniło porz
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:226", "opis": "Inlin
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:150", "opis": "Stron
+  [?] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/features/templates/texts.ts:487", "opis": "Dwa użycia TEGO SAMEGO
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:150", "opis": "Stron
+  [?] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "docs/active/faza-8-connector-oauth-i-dashboard/faza-8-connector-oauth-i-dashboard-za
+  [?] {"duplikaty": [[0, 17, 22], [1, 8, 28], [4, 18], [3, 16, 26], [7, 15, 25]]}
+  [?] {"realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzony dowodem z kodu, próba obalenia nieudana. (1) texts.ts:478-506 — temp
+  [?] {"realny": true, "severityKorekta": "P2", "uzasadnienie": "Finding potwierdzony dowodem z kodu i danych fazy. (1) `texts.ts:485-501` (`templ
+  [?] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding potwierdzony twardym dowodem z kodu, nie do obalenia. (1) `texts.ts:485-4
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Potwierdzone kodem. W apps/dashboard/src/features/temp
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone z kodu. template-assets-card.tsx:479-482 
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone kodem. `templateMetaText` (apps/dashboard
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. `apps/server/src/assets/asset-r
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie na trzech poziomach. (1) use-tem
+  [?] {"werdykty": [{"indeks": 0, "realny": false, "severityKorekta": null, "uzasadnienie": "Fakt usunięcia paska się potwierdza (git show 27f5fd9
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Fakty z kodu potwierdzone: apps/server/src/routes/temp
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. Serwer w apps/server/src/routes
+  [?] {"fazaNumer": 5, "severityGate": "ZASTRZEZENIA", "raportSciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/docs/active
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"commity": ["587fd3b"], "e2eReweryfikacja": "1/1 passed", "naprawione": 17, "nienaprawione": [], "nierozwiazaneP1": 0, "nierozwiazaneP2": 0
+  [?] {"trafienia": []}
+  [?] {"regresje": [{"plik": "apps/dashboard/src/features/templates/template-details-page.tsx:283", "opis": "Przeniesienie `useTemplateAssets` z `
+  [?] {"commity": ["40c812a fix(faza 8/5): kontrola diffu naprawczego fazy 5"], "e2eReweryfikacja": "n/a", "naprawione": 2, "nienaprawione": [], "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"fazaNumer": 6, "fazaNazwa": "Oferty: kafle, filtr, sortowanie i Mapa oferty", "strategia": "serial", "poza": false, "iu": [{"id": "IU-13",
+  [?] {"id": "IU-13", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [?] {"id": "IU-14", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [?] {"commity": ["e588d0c feat(faza 8/6): oferty — pięć równych kafli, filtr i sortowanie w URL, Mapa oferty"], "fazaNumer": 6, "iu": [{"id": "I
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "niepowodzenie", "detal": "ŚRODOWISKO: nagłówek /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/.env.e2e deklaruje 
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-8-connector-oauth-i-dashboard-faza-6.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-d
+  [?] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx:151", "opis": "`visitSteps(
+  [?] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "e2e/seeds/faza-8-oferty-statusy-seed.sql:10", "opis": "Seed jest opisany jako WYŁĄCZ
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/reading-path.ts:161", "opis": "`longestSections` 
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/reading-path.ts:318", "opis": "describePath: czło
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/reading-path.ts:318", "opis": "IU-14, kafel „ŚCIE
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx:104", "opis": "Wizyta z NIE
+  [?] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "e2e/seeds/faza-8-sciezka-czytania-seed.sql:228", "opis": "checkbox: Test: [E2E] `map
+  [?] {"duplikaty": [[4, 11, 34], [3, 20, 27, 35], [9, 17], [16, 24], [5, 22], [10, 29], [26, 33], [23, 37]]}
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "uzasadnienie": "Potwierdzone kodem. `e2e/seeds/faza-8-oferty-statusy-seed.sql` linie 98–99: `de
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie i dokumentach, proba obalenia ni
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. reading-path.ts:157 `return sec
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dowodem z kodu. (1) HTML seeda (e2e/seeds
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone kodem. `hasHint` (offer-visits-list.tsx:1
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "uzasadnienie": "Potwierdzone w kodzie. `longestSections` (reading-path.ts:161-168) filtruje wył
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Potwierdzone w kodzie. `offersCounterText` (apps/dashb
+  [?] {"fazaNumer": 6, "severityGate": "ZASTRZEZENIA", "raportSciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/docs/active
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"commity": ["bd8da00"], "e2eReweryfikacja": "2/3 passed", "naprawione": 26, "nienaprawione": ["[P2][E2E] docs/active/faza-8-connector-oauth
+  [?] {"trafienia": [{"wzorzec": "type-assertion", "plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx", "linia": "const params = cal
+  [?] {"bramki": [], "regresje": []}
+  [?] {"commity": ["2042238 fix(faza 8/6): kontrola diffu naprawczego fazy 6"], "e2eReweryfikacja": "n/a", "naprawione": 4, "nienaprawione": [], "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"wynik": "FAIL", "build": "PASS", "lint": "SKIPPED", "typecheck": "PASS", "testy": "PASS 1939/1939 (130 plikow: scripts 3/31, e2e 2/51, sha
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zacommitowano": true, "commit": "c32a5ad", "brudnePozaZadaniem": []}
+  [?] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ?
+
+########## 2026-09-07 08:10 oferty-online wf_33ecc7cd-7ed (29 linii) ##########
+  [?] {"branch": {"aktualny": "feature/faza-8-connector-oauth-i-dashboard", "wymagany": "feature/faza-8-connector-oauth-i-dashboard", "zgodny": tr
+  [?] {"istnieje": true, "zadanieWymagaE2E": false, "liczbaScenariuszy": 0}
+  [?] {"detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). Bramki: (1a) .env.e2e jest gitignorowany (git check-ignore exit 0); (1b) komplet 
+  [?] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (monorepo pnpm, lockfile pnpm-lock.yaml). Wybrany test o najciezszym setupie: /Users
+  [?] {"bledy": [], "build": "PASS", "e2eFail": [], "e2eFazy": [], "e2eNieuruchomione": [], "knownIssuesZamkniete": 1, "lint": "SKIPPED", "testy":
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"posprzatano": true, "detal": "Środowisko E2E dev-autopilot jest już czyste. Nie znaleziono /tmp/autopilot-vite.pid ani /tmp/autopilot-vite
+  [?] {"plik": "docs/solutions/auth-issues/2026-09-07-connector-oauth-ksztalt-i-zachowanie-dostawcy-tozsamosci-brane-ze-spec-zamiast-z-pomiaru.md"
+  [?] {"akcje": ["Keep: docs/solutions/auth-issues/2026-09-07-connector-oauth-ksztalt-i-zachowanie-dostawcy-tozsamosci-brane-ze-spec-zamiast-z-pom
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"plik": "docs/operator/2026-09-07-faza-8-connector-oauth-i-dashboard-smoke.md", "pozycje": 35, "e2eNieuruchomione": 0, "zrodla": ["docs/act
+  [?] {"archiwum": "docs/completed/faza-8-connector-oauth-i-dashboard/", "pliki": ["docs/completed/faza-8-connector-oauth-i-dashboard/faza-8-conne
+  <failed> {"type": "failed", "key": "v2:27179ecebd9e275c596c3589e1d8460d1f6e3931aff94028d481e705611dc2aa", "agentId": "a6fc3c7c411d81681"}
+  SEKWENCJA: ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ?
+
+########## 2026-09-11 10:43 oferty-online wf_e0b731cb-bc9 (60 linii) ##########
+  [?] {"nazwaZadania": "faza-9c-dokumenty-prawne", "branch": {"aktualny": "feature/faza-9c-dokumenty-prawne", "wymagany": "feature/faza-9c-dokumen
+  [?] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 2}
+  [?] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). .env.e2e obecny i gitignorowany; komplet kluczy (klucz publik
+  [?] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm). Odpalono najcięższy test komponentu: apps/dashboard/src/features/offers/offe
+  [?] {"fazaNumer": 1, "fazaNazwa": "Fundament: stałe współdzielone i statyka AA na `APP_ORIGIN`", "strategia": "serial", "poza": false, "iu": [{"
+  [?] {"id": "IU-1", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/packages/shared/src/product-c
+  [?] {"id": "IU-2", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/routes/static
+  [?] {"fazaNumer": 1, "status": "completed", "iu": [{"id": "IU-1", "nazwa": "Kontrakt produktu w packages/shared — nazwa, podmiot, ścieżki, limit
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "aktualna", "detal": "Baza WSPÓŁDZIELONA (nagłówek .env.e2e: \"CELUJE W PROJEKT STAGINGOWY\") — zastosowano tryb ostrożny: zero r
+  [?] {"diffStat": "Zakres: git diff 4ec4e5a..HEAD (commit fazy 1: 6bfdb25 „feat(faza-9c): fundament dokumentów prawnych — kontrakt produktu i gru
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:171", "opis": "Nietrafiona ścieżka pod `/
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:1081", "opis": "`/f/*` na APP_ORIGIN nie 
+  [?] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "packages/shared/src/product-contract.ts:76", "opis": "Rozjazd semantyki pola `templa
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:155", "opis": "POTWIERDZONE uruchomieniem
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:171", "opis": "Nietrafiony plik spod `/f/
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:171", "opis": "Nietrafiony plik spod `/f/
+  [?] {"duplikaty": [[0, 5, 8, 11, 13], [6, 9, 10, 14, 15]]}
+  [?] {"realny": true, "severityKorekta": null, "uzasadnienie": "Finding potwierdzony twardym dowodem z kodu, próba obalenia nieudana.\n\nStan fak
+  [?] {"realny": true, "severityKorekta": "P2", "uzasadnienie": "Finding potwierdzony w kodzie, nie da się go obalić. Fakty: (1) `supabase/migrati
+  [?] {"realny": true, "severityKorekta": null, "uzasadnienie": "Próba obalenia nie powiodła się — kod potwierdza każdy punkt findingu.\n\nDowody:
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone grep-em na HEAD: cztery teksty produkcyjn
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Dowód z kodu: packages/shared/src/format-bytes.ts:19-2
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone pomiarem (test-sonda z prawdziwym createD
+  [?] {"fazaNumer": 1, "findings": [{"severity": "P1", "typ": "KOD", "plik": "packages/shared/src/product-contract.ts:76", "opis": "Rozjazd semant
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"naprawione": 10, "pozostaje": 1, "walidacja": "PASS", "nierozwiazaneP1": 1, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zacommitowano": true, "brudnePozaZadaniem": []}
+  [?] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ?
+
+########## 2026-09-11 13:19 oferty-online wf_78323205-648 (114 linii) ##########
+  [?] {"nazwaZadania": "faza-9c-dokumenty-prawne", "branch": {"aktualny": "feature/faza-9c-dokumenty-prawne", "wymagany": "feature/faza-9c-dokumen
+  [?] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 2}
+  [?] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). .env.e2e obecny i gitignorowany; komplet kluczy (klucz publik
+  [?] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm). Odpalono apps/dashboard/src/features/offers/offer-details-page.test.tsx (835
+  [?] {"fazaNumer": 2, "fazaNazwa": "Dokumenty: renderer, regulamin z umową, polityka panelu, rewizja polityki czytelnika", "strategia": "serial",
+  [?] {"id": "IU-3", "status": "completed", "pliki": ["apps/server/src/offer/pages/legal-document.ts", "apps/server/src/offer/pages/legal-document
+  [?] {"id": "IU-4", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/offer/pages/a
+  [?] {"fazaNumer": 2, "status": "completed", "iu": [{"id": "IU-3", "nazwa": "Wspólny renderer dokumentu prawnego + regulamin z załącznikiem — umo
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "aktualna", "detal": "Baza E2E = projekt STAGINGOWY (nagłówek .env.e2e deklaruje współdzielenie z testami RLS) — obowiązywały twa
+  [?] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9c-dokumenty-prawne-faza-2.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-active
+  [?] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:161", "opis": "Dokumenty panelu idą `Cach
+  [?] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/server/src/routes/app-origin-pages.ts:136", "opis": "YAGNI: `LegalDocumentConte
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/terms-page.ts:112", "opis": "Regulamin (pkt 7, linia 112
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/terms-page.ts:76", "opis": "Punkt 4 regulaminu (\"Oferty
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/terms-page.ts:112", "opis": "Regulamin (pkt 7 linia 112 
+  [?] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/terms-page.ts:112", "opis": "Tekst dla użytkownika obiec
+  [?] {"duplikaty": [[0, 10, 15], [7, 13, 17], [8, 11, 20]]}
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie: apps/server/src/routes/offer-or
+  [?] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Fakt z kodu potwierdzony: apps/server/src/offer/pages/
+  [?] {"fazaNumer": 2, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/terms-page.ts:112", "opis": "Regulamin (
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"naprawione": 14, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [?] {"trafienia": []}
+  [?] {"regresje": [], "bramki": [{"plik": "apps/server/src/offer/pages/legal-document.test.ts:36 (lustro: apps/server/src/offer/pages/terms-page.
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true, "poprawnyJson": null}
+  [?] {"fazaNumer": 3, "fazaNazwa": "Linki w panelu i na ekranie logowania", "strategia": "serial", "poza": false, "iu": [{"id": "IU-5", "nazwa": 
+  [?] {"id": "IU-5", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/components
+  [?] {"fazaNumer": 3, "status": "completed", "iu": [{"id": "IU-5", "nazwa": "Linki „Regulamin\" i „Prywatność\" w stopce panelu i pod kartą logow
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"status": "aktualna", "detal": "Baza wspoldzielona ze stagingiem (naglowek .env.e2e: \"CELUJE W PROJEKT STAGINGOWY\") — zadnych operacji de
+  [?] {"diffStat": " .../src/components/layout/app-layout.test.tsx      | 34 ++++++++++++++++++++--\n .../dashboard/src/components/layout/app-layo
+  [?] {"findings": []}
+  [?] {"findings": []}
+  [?] {"findings": [{"severity": "P3", "typ": "TEST", "plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx:144", "opis": "Plan IU-5 i 
+  [?] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:32", "opis": "Plan IU-5 uzasadni
+  [?] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/components/layout/legal-links.tsx:6", "opis": "Komentarz JSDoc op
+  [?] {"findings": [{"severity": "P3", "typ": "E2E", "plik": "apps/dashboard/src/components/layout/app-layout.tsx:213", "opis": "Wiersz stopki sid
+  [?] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/components/layout/app-layout.tsx:213", "opis": "Wiersz wersji w s
+  [?] {"duplikaty": [[0, 7], [6, 8]]}
+  [?] {"fazaNumer": 3, "findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:32", "opis": "Ek
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"naprawione": 7, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "t
+  [?] {"trafienia": []}
+  [?] {"regresje": [], "bramki": []}
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"zapisano": true}
+  [?] {"wynik": "PASS", "wykryteKomendy": ["pnpm typecheck", "pnpm test", "pnpm build", "lint: brak skryptu (bramka jakości repo = typecheck + tes
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"posprzatano": false, "detal": "Plik /tmp/autopilot-vite.pid nie istnieje. Brak procesów do sprzątania — środowisko E2E jest już czyste."}
+  [?] {"plik": "docs/solutions/runtime-errors/2026-09-11-miss-servestatic-spada-w-fallback-spa-ze-stemplem-immutable-i-poza-limiterem.md", "katego
+  [?] {"przejrzano": 6, "slownik": "posprzatany", "commit": "243f62d", "akcje": ["Keep: docs/solutions/runtime-errors/2026-09-11-miss-servestatic-
+  [?] {"zapisano": true, "poprawnyJson": true}
+  [?] {"plik": "docs/operator/2026-09-11-faza-9c-dokumenty-prawne-smoke.md", "pozycje": 8, "e2eNieuruchomione": 0, "zrodla": ["docs/active/faza-9c
+  [?] {"archiwum": "docs/completed/faza-9c-dokumenty-prawne/", "pliki": ["docs/completed/faza-9c-dokumenty-prawne/faza-9c-dokumenty-prawne-podsumo
+  [?] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ? -> ?
+
+########## 2026-09-13 01:24 oferty-online wf_16546a4e-e81 (271 linii) ##########
+  [bootstrap] zadanie=faza-9a-domena-mailer-limity zrodlo=pierwszy-parse-md branch={'aktualny': 'feature/faza-9a-domena-mailer-limity', 'wymagany': 'feature/faza-9a-domena-mailer-limity', 'zgodny': True, 'czysty': True} rozb=[] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'pending', 'pending', 'none', 0), (2, 'pending', 'pending', 'none', 0), (3, 'pending', 'pending', 'none', 0), (4, 'pending', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 6}
+  [e2e:env-up] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). .env.e2e obecny i gitignorowany; komplet wymaganych kluczy (k
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm). Odpalono apps/dashboard/src/features/offers/offer-details-page.test.tsx (835
+  [planner:faza-1] {"fazaNumer": 1, "fazaNazwa": "Tożsamość Traferto: nazwa, dokumenty, ikony, logo", "strategia": "serial", "poza": false, "iu": [{"id": "IU-1
+  [build:IU-1] {"id": "IU-1", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/packages/shared/src/product-c
+  [build:IU-2] {"id": "IU-2", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/offer/offer-f
+  [build:IU-3] {"id": "IU-3", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/index.html", "
+  [build:IU-4] {"id": "IU-4", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/CLAUDE.md", "/Users/kacper_tr
+  [domkniecie:faza-1] {"fazaNumer": 1, "status": "completed", "iu": [{"id": "IU-1", "nazwa": "Nazwa „Traferto\" w kontrakcie, metadanych OAuth i nowej wersji doku
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-1] {"status": "zsynchronizowano", "detal": "Baza E2E = projekt STAGINGOWY wspoldzielony z testami RLS (naglowek .env.e2e) — tryb zakazow zachow
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9a-domena-mailer-limity-faza-1.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-ac
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/offer-favicon.ts:60", "opis": "injectOfferFavicon szuka </head
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "CLAUDE.md:69", "opis": "Akapit „Rozstrzygnięte w fazie 9a\" opisuje kod, którego nie
+  [review:security] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/server/src/offer/offer-favicon.ts:85", "opis": "Bramka `hasOwnFaviconLink` (a p
+  [review:spec-compliance] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "CLAUDE.md:69", "opis": "IU-4 (R15) — akapit „Rozstrzygnięte w fazie 9a\" ma opisywać
+  [review:e2e] {"findings": [{"severity": "P3", "typ": "OPERATOR", "plik": ".claude/launch.json:21", "opis": "Operator: [Manual] Serwis E2E na porcie 3010 
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "CLAUDE.md:69", "opis": "Akapit „Rozstrzygnięte w fazie 9a\" opisuje kontrakt, któreg
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/markup-scan.ts:19", "opis": "Skaner markupu ma zlozonosc KWADR
+  [dedup:semantyczny] {"duplikaty": [[2, 4, 10, 12, 18], [1, 3, 15], [5, 6, 7]]}
+  [verify-batch:claude.md:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. CLAUDE.md:69 mowi, ze renderAaD
+  [verify-batch:apps/server/src/offer/offer-favicon.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone uruchomieniem na apps/server/dist/offer/o
+  [verify-batch:apps/server/src/offer/markup-scan.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone pomiarem na tych samych wzorcach co w app
+  [scribe:faza-1] {"fazaNumer": 1, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/offer-favicon.ts:60", "opis": "injectOfferFavi
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-1] {"naprawione": 11, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [fix:pre-skan:faza-1] {"trafienia": []}
+  [fix:kontrola:faza-1] {"regresje": [], "bramki": [{"plik": "apps/server/src/offer/offer-favicon.ts:65", "opis": "Zamknięta biała lista tokenów `rel` czyniących z 
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-1] {"zapisano": true}
+  [planner:faza-2] {"fazaNumer": 2, "fazaNazwa": "Limity per konto egzekwowane w bazie", "strategia": "serial", "poza": false, "iu": [{"id": "IU-5", "nazwa": "
+  [build:IU-5] {"id": "IU-5", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/migrations/202609131
+  [build:IU-6] {"id": "IU-6", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/limits/limit-
+  [build:IU-7] {"id": "IU-7", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/packages/shared/src/account-l
+  [domkniecie:faza-2] {"fazaNumer": 2, "status": "completed", "iu": [{"id": "IU-5", "nazwa": "Migracja limitów — kolumny profiles, funkcja liczników, trzy trigger
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-2] {"status": "zsynchronizowano", "detal": "Baza E2E = projekt stagingowy nxiqssmkteemyhzjkrob (nagłówek .env.e2e deklaruje współdzielenie) — p
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9a-domena-mailer-limity-faza-2.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-ac
+  [review:performance] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/server/src/offer/template-repository.ts:317", "opis": "`list()` czyta limit sza
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/admin/admin-events.ts:61", "opis": "Klient Supabase kluczem sekretny
+  [review:security] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184", "opis":
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/repository.ts:243", "opis": "R7 („brak funkcji/kolumny w bazie
+  [review:e2e] {"findings": [{"severity": "P3", "typ": "OPERATOR", "plik": ".claude/launch.json", "opis": "Operator: proces serwera E2E (PID 83241, `node -
+  [review:correctness] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184", "opis":
+  [review:test-coverage] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184", "opis":
+  [dedup:semantyczny] {"duplikaty": [[0, 12, 21], [1, 13, 22], [2, 6, 20], [3, 24], [14, 19, 23], [17, 25]]}
+  [verify:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184:0] {"realny": true, "severityKorekta": null, "uzasadnienie": "Finding potwierdzony w kodzie, bez luk w łańcuchu:\n\n1. Okna liczone po `o.creat
+  [verify:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184:2] {"realny": true, "severityKorekta": null, "uzasadnienie": "Finding potwierdzony twardym dowodem z kodu, nie udało się go obalić.\n\n1. Liczn
+  [verify:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184:1] {"realny": true, "severityKorekta": null, "uzasadnienie": "Próba obalenia nie powiodła się — każdy element wektora potwierdza kod:\n\n1. Okn
+  [verify-batch:apps/server/src/admin/admin-events.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Mechanizm potwierdzony w kodzie: `createSupabaseAdminE
+  [verify-batch:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie, obalenie nie udało się. (1) `ac
+  [verify-batch:apps/server/src/limits/limit-error.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Fakty potwierdzone w kodzie: `packages/shared/src/acco
+  [verify-batch:apps/server/src/offer/repository.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone kodem. createSupabaseOfferPublisher (apps
+  [verify-batch:e2e/seeds/faza-9a-limity-seed.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie; stan jest nawet gorszy niz w fi
+  [scribe:faza-2] {"fazaNumer": 2, "findings": [{"severity": "P1", "typ": "KOD", "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.s
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-2] {"naprawione": 15, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "nienaprawione": [], "plikiBinarne": [],
+  [verify-fix:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184] {"nadalOtwarty": false, "uzasadnienie": "Naprawa adresuje przyczynę, nie objaw. W commicie 11b3f4c (sekcja 5b migracji `supabase/migrations/
+  [fix:pre-skan:faza-2] {"trafienia": [{"wzorzec": "type-assertion", "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts", "linia": "const heat = JSON.
+  [fix:kontrola:faza-2] {"regresje": [], "bramki": [{"plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:363", "opis": "Trigger offers_s
+  [fix:poprawka:faza-2] {"naprawione": 1, "pozostaje": 3, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-2] {"zapisano": true}
+  [planner:faza-3] {"fazaNumer": 3, "fazaNazwa": "Agregaty SQL wizyt", "strategia": "serial", "poza": false, "iu": [{"id": "IU-8", "nazwa": "Migracja agregatów
+  [build:IU-8] {"id": "IU-8", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/migrations/202609131
+  [build:IU-9] {"id": "IU-9", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/o
+  [domkniecie:faza-3] {"fazaNumer": 3, "status": "completed", "iu": [{"id": "IU-8", "nazwa": "Migracja agregatów — offers_visit_summary, próg geometrii w packages
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-3] {"status": "niepowodzenie", "detal": "Baza E2E = projekt STAGINGOWY współdzielony (nagłówek .env.e2e) — pracowano wyłącznie na wierszach kon
+  [kontekst:diff] {"diffStat": "39 files changed, 2418 insertions(+), 395 deletions(-) — zakres: git diff b189244..HEAD (jeden commit fazy 3: 219ddaa; baza = 
+  [review:e2e] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "e2e/seeds/faza-9a-agregaty-seed.sql:96", "opis": "checkbox: Test: [E2E] `agregaty-wi
+  [review:spec-compliance] {"findings": []}
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:35", "opis": "Minimalizacja 
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:267", "opis": "Faza dokłada 
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/visit-summary.ts:177", "opis": "Przerwanie własny
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "e2e/seeds/faza-9a-agregaty-seed.sql", "opis": "Scenariusz [E2E] `agregaty-wizyt-odsi
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/visit-summary.ts:177", "opis": "Przerwanie RPC wł
+  [dedup:semantyczny] {"duplikaty": [[0, 8], [4, 9], [6, 12], [7, 13], [11, 17]]}
+  [verify-batch:apps/dashboard/src/features/offers/visit-summary.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie zależności: node_modules/.pnpm/@
+  [verify-batch:e2e/seeds/faza-9a-agregaty-seed.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w repo: checkbox scenariusza [E2E] agrega
+  [verify-batch:apps/dashboard/src/features/offers/visit-summary.test.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone z kodu biblioteki, nie ze spec. Dashboard
+  [verify-batch:apps/dashboard/src/features/offers/use-offer-details.ts:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. `OFFER_DETAILS_COLUMNS` (apps/d
+  [scribe:faza-3] {"fazaNumer": 3, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:35", "opis":
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-3] {"naprawione": 12, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "nienaprawione": [], "p3Pominiete": [], 
+  [fix:pre-skan:faza-3] {"trafienia": []}
+  [fix:kontrola:faza-3] {"regresje": [], "bramki": [{"plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:287", "opis": "isUsableAsFrame deleguje do isUsable
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-3] {"zapisano": true}
+  [planner:faza-4] {"fazaNumer": 4, "fazaNazwa": "Panel: adres oferty, miniatury szablonów, wiele plików", "strategia": "serial", "poza": false, "iu": [{"id": 
+  [build:IU-11] {"id": "IU-11", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/migrations/20260913
+  [build:IU-12] {"id": "IU-12", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [build:IU-13] {"id": "IU-13", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/rate-limit.t
+  [build:IU-10] {"id": "IU-10", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [domkniecie:faza-4] {"fazaNumer": 4, "status": "completed", "testy": "PASS 2675/2675 w 178 plikach (scripts 31, e2e 53, shared 205, server 1435, dashboard 951);
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-4] {"status": "zsynchronizowano", "detal": "Baza WSPÓŁDZIELONA — nagłówek /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/.env.e2
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9a-domena-mailer-limity-faza-4.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-ac
+  [review:performance] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/server/src/offer/template-headings.ts:101", "opis": "`extractHeadingTexts` jest
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118", "opis": "R12 wymaga „fallba
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118", "opis": "Strażnik kliknięci
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118", "opis": "Strażnik kliknięci
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118", "opis": "Strażnik nawigacji
+  [review:correctness] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts:107", "opis": "Zmi
+  [review:e2e] {"findings": [{"severity": "P3", "typ": "OPERATOR", "plik": "?", "opis": "Proces serwisu E2E był STARY względem builda i przez to `/szablony
+  [dedup:semantyczny] {"duplikaty": [[0, 14, 19, 23], [1, 4, 10, 15, 22, 24], [2, 28], [12, 20, 25]]}
+  [verify:apps/dashboard/src/features/templates/use-template-asset-queue.ts:107:0] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Potwierdzony dowodem z kodu i uruchomieniem. (1) `use-abort-registry.ts:40-48` — 
+  [verify:apps/dashboard/src/features/templates/use-template-asset-queue.ts:107:2] {"realny": false, "uzasadnienie": "FALSE POSITIVE — mechanizm opisany poprawnie na poziomie samego hooka, ale w aplikacji nie zachodzi, bo `
+  [verify:apps/dashboard/src/features/templates/use-template-asset-queue.ts:107:1] {"realny": false, "severityKorekta": null, "uzasadnienie": "OBALONY — dowód z kodu: opisany wpływ („plik szablonu B leci pod templateId szab
+  [verify:apps/server/src/offer/template-headings.ts:101:0] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Potwierdzony pomiarem i lekturą kodu, nie da się obalić. Mechanizm: template-head
+  [verify:apps/server/src/offer/template-headings.ts:101:2] {"realny": true, "uzasadnienie": "Próba obalenia nie powiodła się — finding jest POTWIERDZONY pomiarem na zbudowanym kodzie (`apps/server/di
+  [verify:apps/server/src/offer/template-headings.ts:101:1] {"realny": true, "uzasadnienie": "POTWIERDZONY, proba obalenia nieudana na czterech liniach. (1) Mechanizm w kodzie: template-headings.ts:10
+  [verify-batch:apps/server/src/routes/templates.test.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. apps/server/src/routes/template
+  [verify-batch:apps/dashboard/src/features/offers/offers-list.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone kodem. offers-list.tsx:117-123 — handleRo
+  [verify-batch:apps/dashboard/src/features/templates/template-card.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone kodem. Diff (git diff 72c07dc..HEAD -- ap
+  [verify-batch:packages/shared/src/template-contract.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Rozjazd jednostek POTWIERDZONY w kodzie, nie da się go
+  [scribe:faza-4] {"fazaNumer": 4, "findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/server/src/offer/template-headings.ts:101", "opis": "`extractHe
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-4] {"commity": ["9d0f8de"], "e2eReweryfikacja": "n/a", "naprawione": 16, "nienaprawione": ["apps/dashboard/src/features/templates/templates-api
+  [verify-fix:apps/server/src/offer/template-headings.ts:101] {"nadalOtwarty": false, "uzasadnienie": "Naprawa adresuje PRZYCZYNĘ, nie objaw. Kod (apps/server/src/offer/template-headings.ts): dodany lok
+  [fix:pre-skan:faza-4] {"trafienia": [{"plik": "szablony/archiwum/motoryzacja-rezerwacja/narzedzia/kontrola.mjs", "wzorzec": "pusty-catch", "linia": "} catch {}"},
+  [fix:kontrola:faza-4] {"regresje": [], "bramki": [{"plik": "packages/shared/src/template-contract.ts:73", "opis": "Sufit długości pojedynczego nagłówka w schemaci
+  [fix:poprawka:faza-4] {"commity": ["fe4d677"], "e2eReweryfikacja": "n/a", "naprawione": 4, "nienaprawione": [], "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "p3Pom
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-4] {"zapisano": true}
+  [walidacja-koncowa] {"wynik": "PASS", "typecheck": "PASS", "lint": "SKIPPED", "testy": "PASS 2694/2694 w 178 plikach (scripts 31/31, e2e 53/53, @oferty/shared 207/207, @oferty/server 1438/1438, @oferty/dashboard 965/965); zero flake-infra", "build": "PASS", "wykryteKomendy": ["pnpm typecheck", "pnpm test", "pnpm build", "brak skryptu lint w package.json (CLAUDE.md: bramka jakosci to typecheck + test + build)"], "bledy": [], "e2eNieuruchomione": [], "e2eFail": [], "e2eFazy": [], "testyZmodyfikowane": ["apps/server/src/offer/validation.test.ts", "supabase/tests/rls.test.ts", "apps/server/src/limits/limit-error.test.ts", "apps/server/src/mcp/server.test.ts", "apps/server/src/routes/templates.test.ts", "apps/server/src/admin/admin-events.test.ts", "apps/server/src/offer/repository.test.ts", "apps/server/src/offer/template-repository.test.ts", "apps/server/src/offer/template-headings.test.ts", "apps/dashboard/src/features/offers/use-offer-heat.test.ts", "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx", "apps/dashboard/src/features/offers/offer-details-page.test.tsx", "apps/dashboard/src/features/offers/offer-address.test.ts", "apps/dashboard/src/features/offers/heatmap-grid.test.ts", "apps/dashboard/src/features/templates/template-card.test.tsx", "apps/dashboard/src/features/templates/templates-page.test.tsx", "apps/dashboard/src/features/templates/use-template-asset-mutations.test.ts", "packages/shared/src/template-contract.test.ts", "apps/server/src/tracker/tracker.test.ts"], "known
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:env-down] {"posprzatano": true, "detal": "Brak /tmp/autopilot-vite.pid — pipeline nie uruchomił procesu dev-servera, lub został już wcześniej oczyszcz
+  [compound] {"plik": "docs/solutions/supabase-issues/2026-09-13-licznik-limitu-z-wejsciami-klienta-bramka-nominalna-i-dwie-miary-sufitu.md", "kategoria"
+  [compound-refresh] {"przejrzano": 4, "slownik": "posprzatany", "akcje": ["Keep: docs/solutions/supabase-issues/2026-09-13-licznik-limitu-z-wejsciami-klienta-br
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [smoke-operatora:faza-9a-domena-mailer-limity] {"plik": "docs/operator/2026-09-13-faza-9a-domena-mailer-limity-smoke.md", "pozycje": 57, "e2eNieuruchomione": 0, "zrodla": ["docs/active/fa
+  [complete:faza-9a-domena-mailer-limity] {"archiwum": "docs/completed/faza-9a-domena-mailer-limity/", "pliki": ["docs/completed/faza-9a-domena-mailer-limity/faza-9a-domena-mailer-li
+  [telemetria:OK] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> e2e:env-up -> warmup:vitest -> planner:faza-1 -> build:IU-1 -> build:IU-2 -> build:IU-3 -> build:IU-4 -> domkniecie:faza-1 -> stan:zapis -> e2e:db-sync:faza-1 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:apps/server/src/offer/offer-favicon.ts:1 -> verify-batch:claude.md:1 -> verify-batch:apps/server/src/offer/markup-scan.ts:1 -> scribe:faza-1 -> stan:zapis -> fix:faza-1 -> fix:pre-skan:faza-1 -> fix:kontrola:faza-1 -> stan:zapis -> zwin-do-poprawy:faza-1 -> planner:faza-2 -> build:IU-5 -> build:IU-6 -> build:IU-7 -> domkniecie:faza-2 -> stan:zapis -> e2e:db-sync:faza-2 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184:0 -> verify:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184:1 -> verify:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184:2 -> verify-batch:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:1 -> verify-batch:apps/server/src/admin/admin-events.ts:1 -> verify-batch:apps/server/src/limits/limit-error.ts:1 -> verify-batch:e2e/seeds/faza-9a-limity-seed.sql:1 -> verify-batch:apps/server/src/offer/repository.ts:1 -> scribe:faza-2 -> stan:zapis -> fix:faza-2 -> verify-fix:supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184 -> fix:pre-skan:faza-2 -> fix:kontrola:faza-2 -> fix:poprawka:faza-2 -> stan:zapis -> zwin-do-poprawy:faza-2 -> planner:faza-3 -> build:IU-8 -> build:IU-9 -> domkniecie:faza-3 -> stan:zapis -> e2e:db-sync:faza-3 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:apps/dashboard/src/features/offers/use-offer-details.ts:2 -> verify-batch:apps/dashboard/src/features/offers/visit-summary.ts:1 -> verify-batch:apps/dashboard/src/features/offers/visit-summary.test.ts:1 -> verify-batch:e2e/seeds/faza-9a-agregaty-seed.sql:1 -> scribe:faza-3 -> stan:zapis -> fix:faza-3 -> fix:pre-skan:faza-3 -> fix:kontrola:faza-3 -> stan:zapis -> zwin-do-poprawy:faza-3 -> planner:faza-4 -> build:IU-11 -> build:IU-12 -> build:IU-13 -> build:IU-10 -> domkniecie:faza-4 -> stan:zapis -> e2e:db-sync:faza-4 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify:apps/server/src/offer/template-headings.ts:101:0 -> verify:apps/server/src/offer/template-headings.ts:101:1 -> verify:apps/server/src/offer/template-headings.ts:101:2 -> verify:apps/dashboard/src/features/templates/use-template-asset-queue.ts:107:0 -> verify:apps/dashboard/src/features/templates/use-template-asset-queue.ts:107:1 -> verify:apps/dashboard/src/features/templates/use-template-asset-queue.ts:107:2 -> verify-batch:apps/dashboard/src/features/offers/offers-list.tsx:1 -> verify-batch:apps/server/src/routes/templates.test.ts:1 -> verify-batch:apps/dashboard/src/features/templates/template-card.tsx:1 -> verify-batch:packages/shared/src/template-contract.ts:1 -> scribe:faza-4 -> stan:zapis -> fix:faza-4 -> verify-fix:apps/server/src/offer/template-headings.ts:101 -> fix:pre-skan:faza-4 -> fix:kontrola:faza-4 -> fix:poprawka:faza-4 -> stan:zapis -> zwin-do-poprawy:faza-4 -> walidacja-koncowa -> stan:zapis -> e2e:env-down -> compound -> compound-refresh -> stan:zapis -> smoke-operatora:faza-9a-domena-mailer-limity -> complete:faza-9a-domena-mailer-limity -> telemetria:OK
+
+########## 2026-09-14 00:02 akademia-automatyzacji-dashboard wf_f1006761-e7c (73 linii) ##########
+  [bootstrap] zadanie=traferto-membership-emission zrodlo=pierwszy-parse-md branch={'aktualny': 'feature/traferto-membership-emission', 'wymagany': 'feature/traferto-membership-emission', 'zgodny': True, 'czysty': True} rozb=[] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'pending', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": false, "zadanieWymagaE2E": false, "liczbaScenariuszy": 0}
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.2 (frontend/package.json, npm/package-lock.json -> npx). Wybrany najciezszy test kompon
+  [planner:faza-1] {"fazaNumer": 1, "fazaNazwa": "Emisja członków do Traferto (kod + testy + docs)", "strategia": "serial", "poza": false, "iu": [{"id": "IU-1"
+  [build:IU-1] {"id": "unit-1", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/akademia-automatyzacji-dashboard/backend/
+  [build:IU-2] {"id": "Unit 2", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/akademia-automatyzacji-dashboard/backend/
+  [build:IU-3] {"id": "IU-3", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/akademia-automatyzacji-dashboard/backend/se
+  [build:IU-4] {"id": "IU-4", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/akademia-automatyzacji-dashboard/docs/setup
+  [domkniecie:faza-1] {"fazaNumer": 1, "status": "completed", "iu": [{"id": "IU-1", "nazwa": "Wspólna stała dostępu + konfiguracja + auth_header w senderze", "sta
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-traferto-membership-emission-faza-1.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-ac
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "backend/services/traferto_membership.py:179", "opis": "Retry emisji (60 s `asyncio.s
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "backend/services/traferto_membership.py:179", "opis": "Retry emisji (`await asyncio.
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "backend/services/traferto_membership.py:67", "opis": "`_ALIASES_SQL` łączy `customer
+  [review:spec-compliance] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "backend/services/traferto_membership.py:125", "opis": "Rozjazd z Unit 2 (Podejście: 
+  [review:test-coverage] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "backend/services/traferto_membership.py:125", "opis": "`_classify` uznaje za sukces 
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "backend/services/traferto_membership.py:67", "opis": "`_ALIASES_SQL` łączy `customer
+  [dedup:semantyczny] {"duplikaty": [[2, 5, 8, 10, 12, 14], [4, 6, 9], [0, 17], [11, 16], [3, 13, 18]]}
+  [verify-batch:backend/config.py:1] {"werdykty": [{"indeks": 0, "realny": false, "severityKorekta": "P3", "uzasadnienie": "Mechanizm opisany technicznie sie zgadza (backend/con
+  [verify-batch:backend/services/traferto_membership.py:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. `_ALIASES_SQL` (backend/service
+  [scribe:faza-1] {"fazaNumer": 1, "findings": [{"severity": "P2", "typ": "KOD", "plik": "backend/services/traferto_membership.py:67", "opis": "`_ALIASES_SQL`
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-1] {"commity": ["1cd72bb fix(traferto-membership-emission): poprawki po review fazy 1"], "e2eReweryfikacja": "n/a", "naprawione": 6, "nienapraw
+  [fix:pre-skan:faza-1] {"trafienia": [{"wzorzec": "any", "plik": "tests/test_import_skool_members.py", "linia": "seen: list[Any] = []"}, {"wzorzec": "any", "plik":
+  [fix:kontrola:faza-1] {"regresje": [], "bramki": [{"plik": "backend/services/traferto_membership.py:67", "opis": "_ALIASES_SQL — bramka decydująca, czyj primary_e
+  [fix:poprawka:faza-1] {"commity": ["fix(traferto-membership-emission): kontrola diffu naprawczego fazy 1"], "e2eReweryfikacja": "n/a", "naprawione": 3, "nienapraw
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-1] {"zapisano": true, "poprawnyJson": null}
+  [walidacja-koncowa] {"bledy": [], "build": "PASS", "e2eFail": [], "e2eFazy": [], "e2eNieuruchomione": [], "knownIssuesZamkniete": null, "lint": "PASS", "testy": "PASS backend 1724/1725 (1 skipped) + frontend 597/597 (76 plików); zero flake-infra", "testyZmodyfikowane": ["tests/test_import_skool_members.py — usunieta lokalna autouse fixture _traferto_unconfigured (PRZENIESIONA do repo-root conftest.py, zakres ROZSZERZONY na oba drzewa testowe); zero usunietych/oslabionych asercji, reszta diffu to wylacznie nowe testy"], "typecheck": "PASS", "wykryteKomendy": ["npm (package-lock.json) — frontend", "pip/uv .venv — backend", ".venv/bin/python -m mypy backend/", ".venv/bin/python -m ruff check backend/", ".venv/bin/python -m ruff format --check backend/", ".venv/bin/python -m pytest --tb=short -q", "npm run lint (eslint .)", "npm run test (vitest run --reporter=dot)", "npm run build (tsc -b && vite build)"], "wynik": "PASS"}
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [compound] {"plik": "docs/solutions/runtime-errors/2026-09-13-retry-side-effectu-w-serwisie-wolanym-przez-scheduler-i-endpoint.md", "kategoria": "runti
+  [compound-refresh] {"przejrzano": 3, "slownik": "posprzatany", "commit": "e3ef27c", "akcje": ["Keep: docs/solutions/runtime-errors/2026-09-13-retry-side-effect
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [smoke-operatora:traferto-membership-emission] {"plik": "docs/operator/2026-09-13-traferto-membership-emission-smoke.md", "pozycje": 19, "e2eNieuruchomione": 0, "zrodla": ["docs/active/tr
+  [complete:traferto-membership-emission] {"archiwum": "docs/completed/traferto-membership-emission/", "pliki": ["docs/completed/traferto-membership-emission/traferto-membership-emis
+  [telemetria:OK] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> warmup:vitest -> planner:faza-1 -> build:IU-1 -> build:IU-2 -> build:IU-3 -> build:IU-4 -> domkniecie:faza-1 -> stan:zapis -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> dedup:semantyczny -> verify-batch:backend/services/traferto_membership.py:2 -> verify-batch:backend/config.py:1 -> scribe:faza-1 -> stan:zapis -> fix:faza-1 -> fix:pre-skan:faza-1 -> fix:kontrola:faza-1 -> fix:poprawka:faza-1 -> stan:zapis -> zwin-do-poprawy:faza-1 -> walidacja-koncowa -> stan:zapis -> compound -> compound-refresh -> stan:zapis -> smoke-operatora:traferto-membership-emission -> complete:traferto-membership-emission -> telemetria:OK
+
+########## 2026-09-14 20:10 oferty-online wf_cf90b5d6-f83 (296 linii) ##########
+  [bootstrap] zadanie=faza-9b-wielu-uzytkownikow zrodlo=pierwszy-parse-md branch={'aktualny': 'feature/faza-9b-wielu-uzytkownikow', 'wymagany': 'feature/faza-9b-wielu-uzytkownikow', 'zgodny': True, 'czysty': True} rozb=[] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'pending', 'pending', 'none', 0), (2, 'pending', 'pending', 'none', 0), (3, 'pending', 'pending', 'none', 0), (4, 'pending', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 13}
+  [e2e:env-up] {"status": "gotowe", "devServer": "uruchomione", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS) — .env.e2e ma w naglowku jawna dek
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm, monorepo). Wybrany test komponentu z najciezszym setupem: /Users/kacper_trzep
+  [planner:faza-1] {"fazaNumer": 1, "fazaNazwa": "Fundament bazy i kontrakty", "strategia": "serial", "poza": false, "iu": [{"id": "IU-1", "nazwa": "Migracja d
+  [build:IU-1] {"id": "IU-1", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/migrations/202609141
+  [build:IU-2] {"id": "IU-2", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/migrations/202609141
+  [build:IU-3] {"id": "IU-3", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/packages/shared/src/access-co
+  [build:IU-4] {"id": "IU-4", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/scripts/seed-test-users.ts", 
+  [domkniecie:faza-1] {"fazaNumer": 1, "status": "completed", "testy": "PASS — typecheck 0 błędów; pnpm test 2763/2763 (scripts 36, e2e 53, shared 247, server 144
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-1] {"status": "zsynchronizowano", "detal": "Baza E2E = projekt STAGINGOWY (naglowek .env.e2e deklaruje wspoldzielenie) — pracowalem wylacznie n
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9b-wielu-uzytkownikow-faza-1.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-acti
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:1106", "opis": "`app
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:837", "opis": "Asyme
+  [review:correctness] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts:93", "opis": "Odczyt pr
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:837", "opis": "`hand
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:763", "opis": "`acce
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:837", "opis": "Asyme
+  [dedup:semantyczny] {"duplikaty": [[1, 10, 17, 21]]}
+  [verify:apps/dashboard/src/features/settings/use-webhook-settings.ts:93:1] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Próba obalenia nie powiodła się — każde ogniwo łańcucha potwierdzone w kodzie.\n\
+  [verify:apps/dashboard/src/features/settings/use-webhook-settings.ts:93:2] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Potwierdzony dowodami z kodu. (1) use-webhook-settings.ts:92-96 czyta profiles be
+  [verify:apps/dashboard/src/features/settings/use-webhook-settings.ts:93:0] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding potwierdzony dowodem z kodu; próba obalenia nie powiodła się na żadnym z 
+  [verify-batch:supabase/tests/rls.test.ts:1] {"werdykty": [{"indeks": 0, "realny": false, "uzasadnienie": "Główna przesłanka findingu jest fałszywa. Blok „polityki admina i ich granice 
+  [verify-batch:supabase/tests/migration-9b-events.test.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone z kodu, nie z opisu. `instrukcjePolityk` 
+  [verify-batch:supabase/migrations/20260914120000_offer_events_admin_webhook.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. (1) `supabase/migrations/202609
+  [verify-batch:e2e/seeds/faza-9b-admin-seed.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "FAKT POTWIERDZONY: w `e2e/seeds/` jest tylko strona na
+  [verify-batch:supabase/tests/rls.test.ts:4] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. Migracja 20260914100000 (accept
+  [verify-batch:supabase/migrations/20260914100000_access_invitations_admin.sql:4] {"werdykty": [{"indeks": 0, "realny": false, "uzasadnienie": "OBALONY. Po pierwsze, nie ma w kodzie ścieżki dającej sesję na niepotwierdzony
+  [scribe:faza-1] {"fazaNumer": 1, "severityGate": "BLOKUJE", "raportSciezka": "docs/active/faza-9b-wielu-uzytkownikow/review-faza-1.md", "liczniki": {"p1": 1
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-1] {"commity": ["f3d5aca fix(faza-9b): poprawki po review fazy 1"], "e2eReweryfikacja": "n/a", "naprawione": 21, "nienaprawione": [], "nierozwi
+  [verify-fix:apps/dashboard/src/features/settings/use-webhook-settings.ts:93] {"nadalOtwarty": false, "uzasadnienie": "Naprawa jest realna i adresuje przyczynę, nie objaw.\n\nStan kodu (/Users/kacper_trzepiecinski/Docu
+  [fix:pre-skan:faza-1] {"trafienia": []}
+  [fix:kontrola:faza-1] {"regresje": [], "bramki": [{"plik": "packages/shared/src/env.ts:268", "opis": "AA_MEMBERSHIP_SECRET: z.string().trim().min(32) — sekret jed
+  [fix:poprawka:faza-1] {"commity": ["0df8db0 fix(faza-9b): kontrola diffu naprawczego fazy 1"], "e2eReweryfikacja": "n/a", "naprawione": 1, "nienaprawione": ["ROLL
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-1] {"zapisano": true}
+  [planner:faza-2] {"fazaNumer": 2, "fazaNazwa": "Serwer: dostęp, zaproszenia, członkostwo, usunięcie konta, webhooki, polityka", "strategia": "serial", "poza"
+  [build:IU-5] {"id": "IU-5", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/routes/access
+  [build:IU-6] {"id": "IU-6", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/access/member
+  [build:IU-7] {"id": "IU-7", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/offer/cache.t
+  [build:IU-8] {"id": "IU-8", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/webhooks/queu
+  [build:IU-9] {"id": "IU-9", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/limits/limit-
+  [domkniecie:faza-2] {"commity": ["f56cd6a feat(faza-9b): serwer — dostęp, zaproszenia, członkostwo, usunięcie konta, webhooki, polityka"], "fazaNumer": 2, "iu":
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-2] {"status": "aktualna", "detal": "Projekt WSPÓŁDZIELONY — nagłówek /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/.env.e2e dek
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9b-wielu-uzytkownikow-faza-2.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-acti
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql:207", "opis": "`ma
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/account.ts:172", "opis": "Zdanie „Usuwanie zostało przerwane.
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/admin-webhook.ts:90", "opis": "Faza dołożyła PIĘĆ kolejnych k
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/app-privacy-page.ts:108", "opis": "Polityka prywatności 
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/app-privacy-page.ts:108", "opis": "Nowa sekcja 5 polityk
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/offer/pages/app-privacy-page.ts:108", "opis": "Polityka prywatności 
+  [dedup:semantyczny] {"duplikaty": [[0, 17, 26], [4, 32], [9, 19], [11, 30], [12, 31], [14, 33], [20, 24]]}
+  [verify-batch:docs/operator/faza-9b-brief-aa-dashboard-emisja-czlonkow.md:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie i dokumencie. docs/operator/faza
+  [verify-batch:apps/server/src/routes/account.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `deletion_requested_at` stemplu
+  [verify-batch:apps/server/src/access/self-account.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dowodem z kodu. W apps/server/src/access/
+  [verify-batch:apps/server/src/routes/admin-accounts.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Proba obalenia nieudana — dowod z kodu potwierdza find
+  [verify-batch:apps/server/src/offer/pages/app-privacy-page.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dowodem z kodu. (1) `grep -rn \"access_re
+  [verify-batch:supabase/migrations/20260914120000_offer_events_admin_webhook.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. Migracja 20260914120000: CTE `l
+  [verify-batch:apps/server/src/routes/admin-webhook.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Kazde twierdzenie findingu potwierdzone w kodzie, prob
+  [verify-batch:apps/server/src/access/account-deletion-service.ts:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `routes/account.ts` nie seriali
+  [verify-batch:apps/server/src/access/admin-accounts-service.ts:3] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Potwierdzone w kodzie: apps/server/src/access/admin-ac
+  [verify-batch:apps/server/src/access/membership-service.ts:2] {"werdykty": [{"indeks": 0, "realny": true, "uzasadnienie": "Potwierdzone w kodzie: apps/server/src/access/membership-service.ts:162-185 — `
+  [scribe:faza-2] {"fazaNumer": 2, "severityGate": "ZASTRZEZENIA", "raportSciezka": "docs/active/faza-9b-wielu-uzytkownikow/review-faza-2.md", "liczniki": {"p
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-2] {"commity": ["43fb8e7 fix(faza-9b): poprawki po review fazy 2"], "e2eReweryfikacja": "n/a", "naprawione": 24, "nienaprawione": [], "nierozwi
+  [fix:pre-skan:faza-2] {"trafienia": [{"wzorzec": "type-assertion", "plik": "apps/server/src/access/admin-accounts-service.ts", "linia": "  return (ACCOUNT_LIMIT_K
+  [fix:kontrola:faza-2] {"bramki": [{"plik": "apps/server/src/access/admin-accounts-service.ts:369", "opis": "isAccountLimitKind — zamknięta BIAŁA lista ACCOUNT_LIM
+  [fix:poprawka:faza-2] {"naprawione": 5, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-2] {"zapisano": true}
+  [planner:faza-3] {"fazaNumer": 3, "fazaNazwa": "Dashboard: bramka dostępu, zaproszenia, widok „Użytkownicy\", zdarzenia, usunięcie konta", "strategia": "seri
+  [build:IU-10] {"id": "IU-10", "status": "completed", "pliki": ["apps/dashboard/src/features/account/use-profile.ts", "apps/dashboard/src/features/account/
+  [build:IU-11] {"id": "IU-11", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [build:IU-12] {"id": "IU-12", "status": "completed", "pliki": ["apps/dashboard/src/features/admin/events-page.tsx", "apps/dashboard/src/features/admin/eve
+  [build:IU-13] {"id": "IU-13", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/
+  [domkniecie:faza-3] {"commity": ["933a901 feat(faza-9b): dashboard — bramka dostępu, zaproszenia, widok użytkowników, zdarzenia, usunięcie konta"], "fazaNumer":
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-3] {"status": "zsynchronizowano", "detal": "Baza E2E = projekt STAGINGOWY (nagłówek .env.e2e deklaruje współdzielenie z testami RLS) — obowiązy
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9b-wielu-uzytkownikow-faza-3.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-acti
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/admin/use-admin-accounts.ts:222", "opis": "`rpcMutation`
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/auth/login-form.tsx:5", "opis": "Regresja rozmiaru paczk
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/admin/use-admin-accounts.ts:228", "opis": "`rpcMutation`
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/access/invitation-page.tsx:122", "opis": "IU-10 („/zapro
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/access/invitation-page.tsx:122", "opis": "Automatyczne r
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/admin/admin-sections.tsx:147", "opis": "Wymaganie R4 („P
+  [review:e2e] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md:336", "
+  [dedup:semantyczny] {"duplikaty": [[0, 8], [1, 14], [3, 10], [7, 19, 26], [15, 20], [16, 30], [18, 22], [21, 24]]}
+  [verify-batch:apps/dashboard/src/features/access/invitation-page.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `needsProbe` (invitation-page.t
+  [verify-batch:apps/dashboard/src/features/access/access-request-form.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone kodem. `access-request-form.tsx:74-80`: `
+  [verify-batch:apps/dashboard/src/features/admin/use-admin-accounts.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. apps/dashboard/src/features/adm
+  [verify-batch:apps/dashboard/src/features/admin/use-admin-events.ts:1] {"werdykty": [{"indeks": 0, "realny": false, "uzasadnienie": "Sprzężenie istnieje (hasMore i kursor liczone z tablicy PO odsiewie: use-admin
+  [verify-batch:apps/dashboard/src/features/settings/use-account-deletion.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dowodem z kodu i z zależności. (1) `use-a
+  [verify-batch:apps/dashboard/src/features/auth/login-form.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone pomiarem, nie tylko lekturą. Zbudowałem o
+  [verify-batch:apps/dashboard/src/features/admin/admin-sections.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Potwierdzone w kodzie, nie obalone. `admin-sections.ts
+  [verify-batch:apps/dashboard/src/features/admin/format.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Finding potwierdzony dowodem z kodu, nie obalony.\n\n1
+  [scribe:faza-3] {"fazaNumer": 3, "severityGate": "ZASTRZEZENIA", "raportSciezka": "docs/active/faza-9b-wielu-uzytkownikow/review-faza-3.md", "liczniki": {"p
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-3] {"commity": ["f96f1b4"], "e2eReweryfikacja": "1/1 passed", "naprawione": 18, "nienaprawione": [], "nierozwiazaneP1": 0, "nierozwiazaneP2": 0
+  [fix:pre-skan:faza-3] {"trafienia": []}
+  [fix:kontrola:faza-3] {"regresje": [], "bramki": [{"plik": "apps/dashboard/src/features/access/registration-mode-api.ts:67", "opis": "envelopeData — ręczny guard 
+  [fix:poprawka:faza-3] {"commity": ["4ef28cf fix(faza-9b): kontrola diffu naprawczego fazy 3"], "e2eReweryfikacja": "n/a", "naprawione": 4, "nienaprawione": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-3] {"zapisano": true}
+  [planner:faza-4] {"fazaNumer": 4, "fazaNazwa": "Onboarding, PostHog, Pomoc, dokumentacja", "strategia": "serial", "poza": false, "iu": [{"id": "IU-14", "nazw
+  [build:IU-14] {"id": "IU-14", "status": "completed", "pliki": ["apps/dashboard/src/lib/analytics.ts", "apps/dashboard/src/lib/analytics-events.ts", "apps/
+  [build:IU-15] {"id": "IU-15", "status": "completed", "pliki": ["apps/dashboard/package.json", "apps/dashboard/src/features/onboarding/texts.ts", "apps/das
+  [build:IU-16] {"id": "IU-16", "status": "completed", "pliki": ["apps/dashboard/src/features/help/texts.ts", "apps/dashboard/src/features/help/help-section
+  [build:IU-17] {"id": "IU-17", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/CLAUDE.md", "/Users/kacper_t
+  [domkniecie:faza-4] {"commity": ["37e4895 feat(faza-9b): onboarding, PostHog, ekran pomocy i dokumentacja fazy"], "fazaNumer": 4, "iu": [{"id": "IU-14", "nazwa"
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-4] {"status": "zsynchronizowano", "detal": "Baza E2E to WSPÓŁDZIELONY projekt stagingowy (nagłówek .env.e2e: \"CELUJE W PROJEKT STAGINGOWY\") —
+  [kontekst:diff] {"diffStat": "58 files changed, 3524 insertions(+), 250 deletions(-) (zakres: 4ef28cf..37e4895, commit fazy 4 \"feat(faza-9b): onboarding, P
+  [review:performance] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:88", "opis": "`capture_pageview: 'history_change
+  [review:code-quality] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:87", "opis": "`capture_pageview: 'history_change
+  [review:spec-compliance] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:88", "opis": "R11/D15 (IU-14) wymagają, żeby do 
+  [review:test-coverage] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:88", "opis": "`capture_pageview: 'history_change
+  [review:correctness] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:88", "opis": "`capture_pageview: 'history_change
+  [review:security] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:81", "opis": "WYCIEK ADRESÓW OFERT I `authorizat
+  [review:e2e] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "apps/dashboard/src/features/offers/offers-page.tsx:62", "opis": "checkbox: Test: [E2
+  [dedup:semantyczny] {"duplikaty": [[0, 1, 6, 11, 23], [3, 24, 28], [14, 33], [2, 9, 25, 26], [22, 27], [17, 34], [12, 18, 30, 35], [7, 10], [29, 31]]}
+  [verify:apps/dashboard/src/lib/analytics.ts:81:2] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding potwierdzony dowodem z kodu, próba obalenia nieudana.\n\n1. SDK: `node_mo
+  [verify:apps/dashboard/src/lib/analytics.ts:81:1] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding potwierdzony w kodzie — próba obalenia nie powiodła się na żadnym z trzec
+  [verify:apps/dashboard/src/lib/analytics.ts:81:0] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Finding potwierdzony POMIAREM, nie lekturą. Uruchomiłem sondę w vitest+jsdom z do
+  [verify-batch:apps/dashboard/src/lib/analytics.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone kodem i pomiarem na zbudowanym dist. `app
+  [verify-batch:apps/dashboard/src/features/auth/session-context.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone dowodem z kodu. (1) `apps/dashboard/src/l
+  [verify-batch:apps/dashboard/src/features/offers/offers-page.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. offers-page.tsx:62 woła useScre
+  [verify-batch:apps/dashboard/src/features/onboarding/use-first-steps.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie, nie udało się obalić. `offers-p
+  [verify-batch:e2e/seeds/faza-9b-onboarding-seed.sql:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. Migracja 20260902190000 zaklada
+  [verify-batch:apps/dashboard/src/features/help/help-page.tsx:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone z kodu: /pomoc i /oferty są dziećmi jedne
+  [verify-batch:docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie i dokumentach fazy. W `docs/acti
+  [verify-batch:apps/dashboard/src/features/onboarding/use-screen-tour.ts:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Mechanizm potwierdzony w kodzie: main.tsx montuje drze
+  [scribe:faza-4] {"fazaNumer": 4, "severityGate": "BLOKUJE", "raportSciezka": "docs/active/faza-9b-wielu-uzytkownikow/review-faza-4.md", "liczniki": {"p1": 1
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-4] {"commity": ["417a9fd fix(faza-9b): poprawki po review fazy 4"], "e2eReweryfikacja": "3/4 passed (pierwsze-kroki-i-przewodnik: 3 z 4 asercji
+  [verify-fix:apps/dashboard/src/lib/analytics.ts:81] {"nadalOtwarty": false, "uzasadnienie": "Naprawa jest realna i adresuje przyczynę, nie objaw.\n\nStan kodu (`apps/dashboard/src/lib/analytic
+  [fix:pre-skan:faza-4] {"trafienia": [{"wzorzec": "type-assertion", "plik": "apps/dashboard/src/features/onboarding/use-first-steps.test.ts", "linia": "visits: { r
+  [fix:kontrola:faza-4] {"bramki": [{"plik": "apps/dashboard/src/lib/analytics.ts:126", "opis": "routePattern — zamknieta biala lista tras panelu: sciezka z STATIC_
+  [fix:poprawka:faza-4] {"commity": ["9f22103 fix(faza-9b): kontrola diffu naprawczego fazy 4"], "e2eReweryfikacja": "n/a", "naprawione": 2, "nienaprawione": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-4] {"zapisano": true}
+  [walidacja-koncowa] {"wynik": "FAIL", "typecheck": "PASS", "lint": "SKIPPED", "testy": "PASS 3260/3260 (224 pliki: scripts 36/36, e2e 53/53, shared 248/248, server 1703/1703, dashboard 1220/1220; brak flake-infra)", "build": "PASS", "wykryteKomendy": ["pnpm typecheck", "pnpm test --reporter=dot", "pnpm build"], "bledy": ["1 scenariuszy [E2E] przebieglo i padlo na defekcie — patrz known-issues.md (faza 4). NIE zmieniaj ich na [Manual]: to ukryloby znany defekt; napraw kod i odpal flow ponownie."], "e2eFail": ["Test: [E2E] `pierwsze-kroki-i-przewodnik` (seed: e2e/seeds/faza-9b-onboarding-seed.sql) — zaloguj, `/oferty`, sprawdź popover przewodnika, klikaj „Dalej\" do końca, przeładuj i sprawdź brak popovera, sprawdź kartę „Pierwsze kroki\" z „2 z 4 gotowe\", kliknij „Zamknij checklistę\", sprawdź brak karty, screenshot → lista bez karty (FAIL: asercji „przeładuj i sprawdź brak popovera\" NIE DA SIĘ zmierzyć w tym harnessie — requestAnimationFrame nie tyka w headless, driver.js 1.8.0 nie woła onDestroyed, więc tour_seen_offers nie jest zapisywane; pozostałe asercje PASS — known-issues faza 4)"], "e2eNieuruchomione": [], "e2eFazy": [4], "testyZmodyfikowane": ["apps/server/src/routes/account.test.ts", "apps/server/src/access/account-deletion-service.test.ts", "apps/server/src/access/invitation-service.test.ts", "apps/dashboard/src/features/access/access-request-form.test.tsx", "apps/dashboard/src/features/settings/webhook-card.test.tsx", "apps/dashboard/src/features/settings/settings-page.test.tsx", "
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [stop:commit-artefaktow] {"zacommitowano": true, "commit": "825c2aa", "brudnePozaZadaniem": []}
+  [telemetria:STOP] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> e2e:env-up -> warmup:vitest -> planner:faza-1 -> build:IU-1 -> build:IU-2 -> build:IU-3 -> build:IU-4 -> domkniecie:faza-1 -> stan:zapis -> e2e:db-sync:faza-1 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> dedup:semantyczny -> verify:apps/dashboard/src/features/settings/use-webhook-settings.ts:93:0 -> verify:apps/dashboard/src/features/settings/use-webhook-settings.ts:93:1 -> verify:apps/dashboard/src/features/settings/use-webhook-settings.ts:93:2 -> verify-batch:supabase/migrations/20260914100000_access_invitations_admin.sql:4 -> verify-batch:supabase/tests/rls.test.ts:4 -> verify-batch:supabase/tests/rls.test.ts:1 -> verify-batch:supabase/tests/migration-9b-events.test.ts:1 -> verify-batch:supabase/migrations/20260914120000_offer_events_admin_webhook.sql:1 -> verify-batch:e2e/seeds/faza-9b-admin-seed.sql:1 -> scribe:faza-1 -> stan:zapis -> fix:faza-1 -> verify-fix:apps/dashboard/src/features/settings/use-webhook-settings.ts:93 -> fix:pre-skan:faza-1 -> fix:kontrola:faza-1 -> fix:poprawka:faza-1 -> stan:zapis -> zwin-do-poprawy:faza-1 -> planner:faza-2 -> build:IU-5 -> build:IU-6 -> build:IU-7 -> build:IU-8 -> build:IU-9 -> domkniecie:faza-2 -> stan:zapis -> e2e:db-sync:faza-2 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> dedup:semantyczny -> dedup:semantyczny -> verify-batch:apps/server/src/offer/pages/app-privacy-page.ts:1 -> verify-batch:apps/server/src/routes/admin-accounts.ts:1 -> verify-batch:supabase/migrations/20260914120000_offer_events_admin_webhook.sql:1 -> verify-batch:apps/server/src/access/membership-service.ts:2 -> verify-batch:apps/server/src/access/admin-accounts-service.ts:3 -> verify-batch:apps/server/src/routes/admin-webhook.ts:1 -> verify-batch:apps/server/src/access/account-deletion-service.ts:2 -> verify-batch:apps/server/src/routes/account.ts:1 -> verify-batch:docs/operator/faza-9b-brief-aa-dashboard-emisja-czlonkow.md:1 -> verify-batch:apps/server/src/access/self-account.ts:1 -> scribe:faza-2 -> stan:zapis -> fix:faza-2 -> fix:pre-skan:faza-2 -> fix:kontrola:faza-2 -> fix:poprawka:faza-2 -> stan:zapis -> zwin-do-poprawy:faza-2 -> planner:faza-3 -> build:IU-10 -> build:IU-11 -> build:IU-12 -> build:IU-13 -> domkniecie:faza-3 -> stan:zapis -> e2e:db-sync:faza-3 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:apps/dashboard/src/features/admin/use-admin-accounts.ts:1 -> verify-batch:apps/dashboard/src/features/auth/login-form.tsx:1 -> verify-batch:apps/dashboard/src/features/admin/use-admin-events.ts:1 -> verify-batch:apps/dashboard/src/features/access/access-request-form.tsx:1 -> verify-batch:apps/dashboard/src/features/access/invitation-page.tsx:1 -> verify-batch:apps/dashboard/src/features/settings/use-account-deletion.ts:1 -> verify-batch:apps/dashboard/src/features/admin/admin-sections.tsx:1 -> verify-batch:apps/dashboard/src/features/admin/format.ts:1 -> scribe:faza-3 -> stan:zapis -> fix:faza-3 -> fix:pre-skan:faza-3 -> fix:kontrola:faza-3 -> fix:poprawka:faza-3 -> stan:zapis -> zwin-do-poprawy:faza-3 -> planner:faza-4 -> build:IU-14 -> build:IU-15 -> build:IU-16 -> build:IU-17 -> domkniecie:faza-4 -> stan:zapis -> e2e:db-sync:faza-4 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify:apps/dashboard/src/lib/analytics.ts:81:0 -> verify:apps/dashboard/src/lib/analytics.ts:81:1 -> verify:apps/dashboard/src/lib/analytics.ts:81:2 -> verify-batch:apps/dashboard/src/features/help/help-page.tsx:2 -> verify-batch:apps/dashboard/src/features/auth/session-context.tsx:1 -> verify-batch:apps/dashboard/src/lib/analytics.ts:1 -> verify-batch:apps/dashboard/src/features/onboarding/use-first-steps.ts:1 -> verify-batch:apps/dashboard/src/features/offers/offers-page.tsx:1 -> verify-batch:e2e/seeds/faza-9b-onboarding-seed.sql:1 -> verify-batch:apps/dashboard/src/features/onboarding/use-screen-tour.ts:2 -> verify-batch:docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md:1 -> scribe:faza-4 -> stan:zapis -> fix:faza-4 -> verify-fix:apps/dashboard/src/lib/analytics.ts:81 -> fix:pre-skan:faza-4 -> fix:kontrola:faza-4 -> fix:poprawka:faza-4 -> stan:zapis -> zwin-do-poprawy:faza-4 -> walidacja-koncowa -> stan:zapis -> stop:commit-artefaktow -> telemetria:STOP
+
+########## 2026-09-14 22:13 oferty-online wf_4a05c708-56e (7 linii) ##########
+  [bootstrap] zadanie=faza-9b-wielu-uzytkownikow zrodlo=state-json branch={'aktualny': 'feature/faza-9b-wielu-uzytkownikow', 'wymagany': 'feature/faza-9b-wielu-uzytkownikow', 'zgodny': True, 'czysty': False} rozb=['Faza 4: plik docs/active/faza-9b-wielu-uzytkownikow/review-faza-4.md ISTNIEJE (22284 B, 2026-09-14 19:13), a stan mowi review="pending" — stan JSON pozostawiony bez korekty zgodnie z zasada zrodla prawdy.', 'Faza 4: stan mowi fix="none", a sekcja "## Do poprawy po review fazy 4" w zadaniach ISTNIEJE (linia 420) i ma 4 niezaznaczone checkboxy — wszystkie z prefiksem "Operator:" (nie sa findingami P1/P2, wiec nie trafiaja do otwarteFindingi).', 'Working tree NIE jest czysty: zmodyfikowane docs/active/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-zadania.md oraz known-issues.md (branch.czysty = false).'] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'done', 'done', 'done', 0), (2, 'done', 'done', 'done', 0), (3, 'done', 'done', 'done', 0), (4, 'done', 'pending', 'none', 0)]
+  [stop:commit-artefaktow] {"zacommitowano": true, "commit": "cd7a51b", "brudnePozaZadaniem": []}
+  [telemetria:STOP] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> stop:commit-artefaktow -> telemetria:STOP
+
+########## 2026-09-14 23:16 oferty-online wf_29d462f8-85c (83 linii) ##########
+  [bootstrap] zadanie=faza-9b-wielu-uzytkownikow zrodlo=state-json branch={'aktualny': 'feature/faza-9b-wielu-uzytkownikow', 'wymagany': 'feature/faza-9b-wielu-uzytkownikow', 'zgodny': True, 'czysty': True} rozb=['Faza 4: plik docs/active/faza-9b-wielu-uzytkownikow/review-faza-4.md ISTNIEJE (22284 B, 2026-09-14 19:13), a stan mowi review="pending". Stan przepisany 1:1 bez korekty (zgodnie z regula: state-json jest zrodlem prawdy).', 'Faza 4: sekcja "## Do poprawy po review fazy 4" w zadaniach istnieje i jest w calosci zamknieta ("Zamkniete cyklem fix: 17 pozycji", jedyny checkbox [x]), a stan mowi fix="none" (czyli "review nie zostawil otwartych P1/P2"). Stan przepisany 1:1 bez korekty.', 'Faza 4: historia gita niesie commity "fix(faza-9b): poprawki po review fazy 4" (417a9fd) i "fix(faza-9b): kontrola diffu naprawczego fazy 4" (9f22103), co sugeruje, ze cykl review+fix fazy 4 sie odbyl, mimo ze stan mowi review=pending/fix=none. Do rozstrzygniecia przez operatora przed kolejnym runem.', 'Faza 4: sekcja "## Operator checklist faza 4" ma 4 niezaznaczone pozycje [ ] Operator: (przewodnik w przegladarce, VITE_POSTHOG_* w Coolify, weryfikacja repozytorium pluginu, powtorzenie pomiaru posthog-bez-cookie). Zgodnie z regula bootstrapu nie licza sie do execute ani do otwarteFindingi — to smoke operatora.'] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'done', 'done', 'done', 0), (2, 'done', 'done', 'done', 0), (3, 'done', 'done', 'done', 0), (4, 'done', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": true, "zadanieWymagaE2E": false, "liczbaScenariuszy": 0}
+  [e2e:env-up] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS) — .env.e2e jawnie deklaruje \"CELUJE W PROJEKT STAGINGOWY\" i 
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm, monorepo). Wybrany test komponentu z najciezszym setupem: apps/dashboard/src/
+  [e2e:db-sync:faza-4] {"status": "zsynchronizowano", "detal": "Baza E2E = projekt STAGINGOWY dzielony z testami RLS (nagłówek .env.e2e deklaruje współdzielenie), 
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-faza-9b-wielu-uzytkownikow-faza-4.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-docs-acti
+  [review:performance] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:287", "opis": "Dynamiczny import SDK (linia 252)
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/offers/offers-page.tsx:67", "opis": "Przewodnik listy of
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:58", "opis": "R13 („przewo
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:97", "opis": "Przewodnik w
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:287", "opis": "Zdarzenia wysłane ZANIM rozwiąże 
+  [review:correctness] {"findings": [{"severity": "P1", "typ": "KOD", "plik": "apps/dashboard/src/lib/analytics.ts:301", "opis": "Wyścig między dynamicznym importe
+  [dedup:semantyczny] {"duplikaty": [[0, 4, 12], [2, 11], [9, 13], [8, 18], [14, 17, 20]]}
+  [verify:apps/dashboard/src/lib/analytics.ts:287:1] {"realny": true, "severityKorekta": "P1", "uzasadnienie": "Potwierdzone w kodzie, nie udało się obalić.\n\n1. `apps/dashboard/src/lib/analyt
+  [verify:apps/dashboard/src/lib/analytics.ts:287:0] {"realny": true, "severityKorekta": "P2", "uzasadnienie": "Nie udało się obalić — kod potwierdza mechanizm.\n\nDowód z kodu:\n1. `apps/dashb
+  [verify:apps/dashboard/src/lib/analytics.ts:287:2] {"realny": false, "severityKorekta": null, "uzasadnienie": "Finding opisuje mechanizm poprawnie (brak bufora: `track`/`identifyUser` przy `c
+  [verify-batch:apps/dashboard/src/features/help/texts.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. apps/dashboard/src/features/hel
+  [verify-batch:apps/dashboard/src/features/auth/session-context.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `hadSessionRef = useRef(false)`
+  [verify-batch:apps/dashboard/src/features/account/use-profile.test.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `markTourSeen` i `dismissFirstS
+  [verify-batch:apps/dashboard/src/features/offers/offers-page.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. `useOffers` (apps/dashboard/src
+  [verify-batch:apps/dashboard/src/features/onboarding/use-screen-tour.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P2", "uzasadnienie": "Potwierdzone w kodzie. (1) AccessGateForUser (access-g
+  [verify-batch:apps/dashboard/src/features/onboarding/use-first-steps.ts:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Mechanika potwierdzona w kodzie. `isEligible = accessS
+  [verify-batch:apps/dashboard/src/features/auth/access-gate.tsx:1] {"werdykty": [{"indeks": 0, "realny": false, "severityKorekta": null, "uzasadnienie": "Mechanizm opisany w findingu nie zachodzi w używanej wersji SDK. `apps/dashboard/package.json` pinuje `posthog-js` 1.433.0, a w bundlowanym `dist/module.no-external.js` metoda `identify(e,t,i)` NIE odrzuca wywołania dla już zidentyfikowanego użytkownika: jedyne bramki to `_validateIdentifyId` (pusty/sentinelowy/„null”/„distinct_id” id) i `_requirePersonProcessing`, po czym leci bezwarunkowe `e!==s && e!==this.get_property('__alias') && (this.unregister(a), this.register({distinct_id:e}))` — distinct_id JEST przestawiany na nowe konto. Nie ma tam ani `_isIdentified()` → log błędu, ani zachowania starego identyfikatora (ostrzeżenie „existing identity is preserved. Call reset()…” dotyczy WYŁĄCZNIE ścieżki bootstrapu w `init`, nie `identify`). Co więcej, gałąź sklejająca profile (`capture('$identify', {$anon_distinct_id: s})`) odpala się tylko gdy `$user_state === 'anonymous'`, więc nawet merge z poprzednim kontem nie powstaje. Dodatkowo `analytics.ts` ustawia `persistence: 'memory'`, a jedyne wejście do panelu to magic link (`AUTH_CALLBACK_PATH`, pełne przeładowanie dokumentu), więc w praktyce identyfikacja drugiego handlowca i tak startuje w świeżym kontekście bez śladu po poprzednim. Faktem pozostaje tylko to, że `resetUser()` nie stoi przy `signOut` w `access-gate.tsx`, `no-access-page.tsx` i `use-account-deletion.ts` — ale opisany skutek (zdarzenia kolejnego handlowca doklejane do profilu 
+  [scribe:faza-4] {"fazaNumer": 4, "raportSciezka": "docs/active/faza-9b-wielu-uzytkownikow/review-faza-4.md", "severityGate": "BLOKUJE", "liczniki": {"p1": 1
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-4] {"commity": ["47601a1"], "e2eReweryfikacja": "n/a", "naprawione": 18, "nienaprawione": [], "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "p3Po
+  [verify-fix:apps/dashboard/src/lib/analytics.ts:287] {"nadalOtwarty": false, "uzasadnienie": "Naprawa jest realna i adresuje przyczynę, nie objaw. W `apps/dashboard/src/lib/analytics.ts` (commi
+  [fix:pre-skan:faza-4] {"trafienia": []}
+  [fix:kontrola:faza-4] {"bramki": [{"plik": "apps/dashboard/src/lib/analytics.ts:182", "opis": "routePattern — zamknięta biała lista tras statycznych + trzy wzorce
+  [fix:poprawka:faza-4] {"commity": ["67f2268"], "e2eReweryfikacja": "n/a", "naprawione": 2, "nienaprawione": [], "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "p3Pom
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-4] {"zapisano": true}
+  [walidacja-koncowa] {"bledy": [], "build": "PASS", "e2eFail": [], "e2eFazy": [], "e2eNieuruchomione": [], "knownIssuesZamkniete": 0, "lint": "SKIPPED", "testy": "PASS 3278/3278 (224 plikow: scripts 36/36, e2e 53/53, packages/shared 248/248, apps/server 1703/1703, apps/dashboard 1238/1238); zero flake-infra", "testyZmodyfikowane": ["apps/server/src/routes/account.test.ts", "apps/server/src/access/invitation-service.test.ts", "apps/server/src/access/account-deletion-service.test.ts", "apps/dashboard/src/features/access/access-request-form.test.tsx", "apps/dashboard/src/features/auth/login-form.test.tsx", "apps/dashboard/src/features/auth/access-gate.test.tsx", "apps/dashboard/src/features/help/help-page.test.tsx", "apps/dashboard/src/features/offers/offers-page.test.tsx", "apps/dashboard/src/features/onboarding/use-first-steps.test.ts", "apps/dashboard/src/features/onboarding/use-screen-tour.test.tsx", "apps/dashboard/src/features/onboarding/first-steps-card.test.tsx", "apps/dashboard/src/lib/analytics.test.ts", "apps/dashboard/src/features/settings/settings-page.test.tsx", "apps/dashboard/src/features/settings/webhook-card.test.tsx", "supabase/tests/migration-9b-access.test.ts", "supabase/tests/migration-9b-events.test.ts"], "typecheck": "PASS", "wykryteKomendy": ["pnpm typecheck", "pnpm test", "pnpm build"], "wynik": "PASS"}
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:env-down] {"posprzatano": true, "detal": "Plik /tmp/autopilot-vite.pid nie istniał — środowisko E2E dev-autopilot jest już czyste. Weryfikacja potwier
+  [compound] {"commit": "7c541c0d9f4cd2a94aceb083681957e567f1fc32", "kategoria": "ui-bugs", "plik": "docs/solutions/ui-bugs/2026-09-14-przeladowanie-prof
+  [compound-refresh] {"akcje": ["Keep: docs/solutions/ui-bugs/2026-09-14-przeladowanie-profilu-niosacego-autoryzacje-po-zapisie-best-effort-i-wywolania-sprzed-go
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [smoke-operatora:faza-9b-wielu-uzytkownikow] {"plik": "docs/operator/2026-09-14-faza-9b-wielu-uzytkownikow-smoke.md", "pozycje": 33, "e2eNieuruchomione": 0, "zrodla": ["docs/active/faza
+  [complete:faza-9b-wielu-uzytkownikow] {"archiwum": "docs/completed/faza-9b-wielu-uzytkownikow/", "pliki": ["docs/completed/faza-9b-wielu-uzytkownikow/faza-9b-wielu-uzytkownikow-p
+  [telemetria:OK] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> e2e:env-up -> warmup:vitest -> e2e:db-sync:faza-4 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> dedup:semantyczny -> verify:apps/dashboard/src/lib/analytics.ts:287:0 -> verify:apps/dashboard/src/lib/analytics.ts:287:1 -> verify:apps/dashboard/src/lib/analytics.ts:287:2 -> verify-batch:apps/dashboard/src/features/auth/access-gate.tsx:1 -> verify-batch:apps/dashboard/src/features/onboarding/use-first-steps.ts:2 -> verify-batch:apps/dashboard/src/features/offers/offers-page.tsx:1 -> verify-batch:apps/dashboard/src/features/auth/session-context.tsx:1 -> verify-batch:apps/dashboard/src/features/onboarding/use-screen-tour.ts:1 -> verify-batch:apps/dashboard/src/features/help/texts.ts:1 -> verify-batch:apps/dashboard/src/features/account/use-profile.test.ts:1 -> scribe:faza-4 -> stan:zapis -> fix:faza-4 -> verify-fix:apps/dashboard/src/lib/analytics.ts:287 -> fix:pre-skan:faza-4 -> fix:kontrola:faza-4 -> fix:poprawka:faza-4 -> stan:zapis -> zwin-do-poprawy:faza-4 -> walidacja-koncowa -> stan:zapis -> e2e:env-down -> compound -> compound-refresh -> stan:zapis -> smoke-operatora:faza-9b-wielu-uzytkownikow -> complete:faza-9b-wielu-uzytkownikow -> telemetria:OK
+
+########## 2026-09-16 21:01 oferty-online wf_8eefb073-6a9 (177 linii) ##########
+  [bootstrap] zadanie=samodzielna-rejestracja-czlonkow-aa zrodlo=pierwszy-parse-md branch={'aktualny': 'feature/samodzielna-rejestracja-czlonkow-aa', 'wymagany': 'feature/samodzielna-rejestracja-czlonkow-aa', 'zgodny': True, 'czysty': True} rozb=[] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'pending', 'pending', 'none', 0), (2, 'pending', 'pending', 'none', 0), (3, 'pending', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 6}
+  [e2e:env-up] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). .env.e2e gitignorowany, wszystkie wymagane klucze obecne (klu
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm). Rozgrzewka na apps/dashboard/src/features/offers/offer-details-page.test.tsx
+  [planner:faza-1] {"fazaNumer": 1, "fazaNazwa": "Baza i kontrakty", "strategia": "serial", "poza": false, "iu": [{"id": "IU-1", "nazwa": "Migracja membership_
+  [build:IU-1] {"id": "IU-1", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/migrations/202609171
+  [build:IU-2] {"id": "IU-2", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/packages/shared/src/access-co
+  [build:IU-3] {"id": "IU-3", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/supabase/tests/rls.test.ts", 
+  [domkniecie:faza-1] {"fazaNumer": 1, "status": "completed", "iu": [{"id": "IU-1", "nazwa": "Migracja membership_hashes, email_hash, registration_precheck, apply
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-1] {"status": "aktualna", "detal": "Baza .env.e2e = projekt STAGINGOWY (współdzielony z testami RLS) — pracowano bez operacji destrukcyjnych. M
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-samodzielna-rejestracja-czlonkow-aa-faza-1.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-
+  [review:e2e] {"findings": [], "przebiegi": []}
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:413", "op
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/access/membership-service.ts:172", "opis": "Kontrakt zwrotu `apply_m
+  [review:security] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:413", "op
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:413", "op
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:413", "op
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/access/membership-service.ts:91", "opis": "Kontrakt `apply_membershi
+  [dedup:semantyczny] {"duplikaty": [[0, 14, 17, 18], [3, 6, 8], [4, 13], [2, 19], [7, 20], [9, 15]]}
+  [verify-batch:supabase/tests/rls.test.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. Test 'handle_new_user: hash na 
+  [verify-batch:apps/server/src/access/membership-service.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. Migracja `20260917100000` (krok
+  [verify-batch:supabase/migrations/20260917100000_membership_hashes_self_registration.sql:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie migracji. `handle_new_user()` (s
+  [scribe:faza-1] {"fazaNumer": 1, "findings": [{"severity": "P2", "typ": "KOD", "plik": "supabase/migrations/20260917100000_membership_hashes_self_registrati
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-1] {"naprawione": 11, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [fix:pre-skan:faza-1] {"trafienia": []}
+  [fix:kontrola:faza-1] {"regresje": [], "bramki": [{"plik": "apps/server/src/access/membership-service.ts:190", "opis": "Wiersz `apply_membership_list` z `oldState
+  [fix:poprawka:faza-1] {"naprawione": 2, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-1] {"zapisano": true, "poprawnyJson": true}
+  [planner:faza-2] {"fazaNumer": 2, "fazaNazwa": "Serwer: endpoint rejestracji, przepięcie przy pushu, CodeRabbit", "strategia": "parallel", "poza": false, "iu
+  [build:IU-5] {"id": "IU-5", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/access/member
+  [build:IU-4] {"id": "IU-4", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/server/src/access/regist
+  [domkniecie:faza-2] {"fazaNumer": 2, "status": "completed", "iu": [{"id": "IU-4", "nazwa": "POST /api/dostep/rejestracja i registration-service", "status": "com
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-2] {"status": "aktualna", "detal": ".env.e2e deklaruje wspoldzielenie z projektem stagingowym (naglowek: \"CELUJE W PROJEKT STAGINGOWY\") — obo
+  [kontekst:diff] {"diffStat": " .coderabbit.yaml                                   |  16 +-\n apps/server/src/access/membership-events.test.ts   | 107 ++++++
+  [review:e2e] {"findings": [], "przebiegi": []}
+  [review:spec-compliance] {"findings": []}
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/access.ts:179", "opis": "Reguła 1 (`coding-rules.md`): plik u
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/access.ts:179", "opis": "Plik ma po fazie 376 linii (234 prze
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/access/registration-service.ts:217", "opis": "Naruszenie reguły proj
+  [review:correctness] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/server/src/access/registration-service.ts:115", "opis": "`precheckRowSchema` to
+  [review:security] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "apps/server/src/access/registration-service.ts:211", "opis": "signInWithOtp idz
+  [dedup:semantyczny] {"duplikaty": [[3, 6, 16]]}
+  [verify-batch:apps/server/src/routes/access.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Zmierzone na kodzie po fazie (HEAD = ec8a80e): wc -l a
+  [verify-batch:apps/server/src/access/registration-service.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. (1) apps/server/src/access/regi
+  [scribe:faza-2] {"fazaNumer": 2, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/server/src/routes/access.ts:179", "opis": "Reguła 1 (coding-rul
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-2] {"naprawione": 14, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [fix:pre-skan:faza-2] {"trafienia": [{"wzorzec": "pusty-catch", "plik": "apps/server/src/routes/access-email-gate.ts", "linia": "  } catch {"}]}
+  [fix:kontrola:faza-2] {"regresje": [], "bramki": [{"plik": "apps/server/src/routes/access-email-gate.ts:91", "opis": "Nowa bramka Content-Type dla obu POST bez se
+  [fix:poprawka:faza-2] {"naprawione": 1, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-2] {"zapisano": true}
+  [planner:faza-3] {"fazaNazwa": "Dashboard: jedno pole, „Witaj w Traferto”, dwa tryby, dokumentacja", "fazaNumer": 3, "strategia": "serial", "poza": false, "i
+  [build:IU-6] {"id": "IU-6", "status": "completed", "pliki": ["apps/dashboard/src/features/access/registration-api.ts", "apps/dashboard/src/features/acces
+  [build:IU-7] {"id": "IU-7", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/a
+  [build:IU-8] {"id": "IU-8", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/apps/dashboard/src/features/a
+  [build:IU-9] {"id": "IU-9", "status": "completed", "pliki": ["/Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online/CLAUDE.md", "/Users/kacper_tr
+  [domkniecie:faza-3] {"fazaNumer": 3, "status": "completed", "iu": [{"id": "IU-6", "nazwa": "Karta logowania 'Zaloguj sie albo dolacz' - jedno pole, krok 'Lista 
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:db-sync:faza-3] {"status": "zsynchronizowano", "detal": "Baza WSPÓŁDZIELONA (nagłówek .env.e2e: „CELUJE W PROJEKT STAGINGOWY\") — obowiązywały zakazy destru
+  [kontekst:diff] {"ctxPlik": "/tmp/review-ctx-docs-active-samodzielna-rejestracja-czlonkow-aa-faza-3.md", "ctxZapisany": true, "diffPlik": "/tmp/review-diff-
+  [review:security] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/features/auth/login-form.tsx:412", "opis": "Edycja adresu w trakc
+  [review:spec-compliance] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "docs/CONCEPTS.md:158", "opis": "IU-9 (R12: „zdania unieważnione tym zadaniem znikają
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/access/registration-api.ts:112", "opis": "Klient HTTP be
+  [review:performance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/access/registration-api.ts:1", "opis": "D12 (chunk logow
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/auth/login-form.tsx:218", "opis": "Droga członka gubi `r
+  [review:e2e] {"findings": [{"severity": "P2", "typ": "E2E", "plik": "e2e/seeds/rejestracja-czlonek-seed.sql:55", "opis": "checkbox: Test: [E2E] `rejestra
+  [dedup:semantyczny] {"duplikaty": [[4, 11, 15], [5, 16], [9, 13]]}
+  [verify-batch:apps/dashboard/src/features/auth/login-form.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone twardym dowodem z kodu, próba obalenia ni
+  [verify-batch:apps/dashboard/src/features/access/registration-api.ts:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone pomiarem na dist z commitu 56a86b3 (build
+  [verify-batch:docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:2] {"werdykty": [{"indeks": 0, "realny": false, "severityKorekta": null, "uzasadnienie": "Przesłanka findingu („staging oddaje `email_address_n
+  [scribe:faza-3] {"fazaNumer": 3, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/access/registration-api.ts:1", "opis": "
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-3] {"naprawione": 12, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [fix:pre-skan:faza-3] {"trafienia": []}
+  [fix:kontrola:faza-3] {"regresje": [{"plik": "apps/dashboard/src/features/access/registration-api.ts:126", "opis": "Fix dołożył AbortSignal.any([signal, AbortSign
+  [fix:poprawka:faza-3] {"naprawione": 1, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-3] {"zapisano": true}
+  [walidacja-koncowa] {"wynik": "FAIL", "wykryteKomendy": ["pnpm typecheck", "pnpm test", "pnpm build"], "typecheck": "PASS", "lint": "SKIPPED", "testy": "PASS 3500/3500 (scripts 39/39, e2e 53/53, shared 261/261, server 1793/1793, dashboard 1354/1354; bez flake-infra)", "build": "PASS", "bledy": ["1 scenariusz [E2E] nieuruchomiony — sprint NIE moze sie zamknac z cicho pominietym E2E. Operator musi go odpalic LUB przeniesc do Operator checklist ze zmiana markera [E2E] -> [Manual], jesli scenariusz ma byc swiadomie wykonany recznie. Kontekst: `rejestracja-czlonek-link` (faza 3, linia 145 pliku zadan) zostal SKIP-niety przez pule mailera stagingu 2/h (429 `limit_maili`), konto nie powstalo; plan przewiduje SKIP-nie-FAIL, ale checkbox pozostaje niezaznaczony, wiec gate blokuje archiwizacje — ponowny przebieg po odczekaniu godziny."], "testyZmodyfikowane": ["apps/server/src/routes/access.test.ts (fc4029a: przepisany it.each awarii rejestracji — asercje wzmocnione: err_kind, code, level 50; dodany przypadek awaria_nieznana)", "apps/server/src/access/membership-service.test.ts (c468f1a: fikstury rozszerzone o oldSource/newSource — zmiana kontraktu v2 apply_membership_list; fc4029a: zmiana oczekiwanego tekstu logu)", "apps/server/src/routes/membership.test.ts (c468f1a: fikstura rozszerzona o oldSource/newSource)", "apps/server/src/access/email-hash.test.ts (c468f1a: literal NBSP zapisany jako   zamiast surowej spacji — poprawka literalu, nie oslabienie)", "apps/server/src/access/membership-events.test.ts 
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [stop:commit-artefaktow] {"zacommitowano": true, "brudnePozaZadaniem": [], "commit": "7fab9c5"}
+  [telemetria:STOP] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> e2e:env-up -> warmup:vitest -> planner:faza-1 -> build:IU-1 -> build:IU-2 -> build:IU-3 -> domkniecie:faza-1 -> stan:zapis -> e2e:db-sync:faza-1 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:supabase/migrations/20260917100000_membership_hashes_self_registration.sql:2 -> verify-batch:supabase/tests/rls.test.ts:1 -> verify-batch:apps/server/src/access/membership-service.ts:1 -> scribe:faza-1 -> stan:zapis -> fix:faza-1 -> fix:pre-skan:faza-1 -> fix:kontrola:faza-1 -> fix:poprawka:faza-1 -> stan:zapis -> zwin-do-poprawy:faza-1 -> planner:faza-2 -> build:IU-4 -> build:IU-5 -> domkniecie:faza-2 -> stan:zapis -> e2e:db-sync:faza-2 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:apps/server/src/routes/access.ts:1 -> verify-batch:apps/server/src/access/registration-service.ts:1 -> scribe:faza-2 -> stan:zapis -> fix:faza-2 -> fix:pre-skan:faza-2 -> fix:kontrola:faza-2 -> fix:poprawka:faza-2 -> stan:zapis -> zwin-do-poprawy:faza-2 -> planner:faza-3 -> build:IU-6 -> build:IU-7 -> build:IU-8 -> build:IU-9 -> domkniecie:faza-3 -> stan:zapis -> e2e:db-sync:faza-3 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:apps/dashboard/src/features/access/registration-api.ts:2 -> verify-batch:docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:2 -> verify-batch:apps/dashboard/src/features/auth/login-form.tsx:1 -> scribe:faza-3 -> stan:zapis -> fix:faza-3 -> fix:pre-skan:faza-3 -> fix:kontrola:faza-3 -> fix:poprawka:faza-3 -> stan:zapis -> zwin-do-poprawy:faza-3 -> walidacja-koncowa -> stan:zapis -> stop:commit-artefaktow -> telemetria:STOP
+
+########## 2026-09-16 22:42 oferty-online wf_ce87b73b-89f (59 linii) ##########
+  [bootstrap] zadanie=samodzielna-rejestracja-czlonkow-aa zrodlo=state-json branch={'aktualny': 'feature/samodzielna-rejestracja-czlonkow-aa', 'wymagany': 'feature/samodzielna-rejestracja-czlonkow-aa', 'zgodny': True, 'czysty': True} rozb=['Faza 3: stan mowi review=pending, ale istnieje docs/active/samodzielna-rejestracja-czlonkow-aa/review-faza-3.md (werdykt: KONTYNUUJ Z ZASTRZEZENIAMI, 4 P2, 0 P1) — plik stanu mimo to niesie pelne metryki review fazy 3', "Faza 3: stan mowi fix=none, ale sekcja '## Do poprawy po review fazy 3' w zadaniach mowi 'Zamkniete cyklem fix: 13 pozycji', a w historii git sa commity 5c3c7ac 'fix(samodzielna-rejestracja): poprawki po review fazy 3' i 4b4fd64 'kontrola diffu naprawczego fazy 3' — na podstawie md faza 3 wyglada na review=done, fix=done; stanu nie korygowano", 'Faza 3, IU-6: scenariusz [E2E] rejestracja-czlonek-link (zadania.md:145) pozostaje niezaznaczony ze statusem SKIP (pula mailera stagingu 2/h → 429 limit_maili); kopia w Operator checklist faza 3 (zadania.md:202) — nie wplywa na execute (checkbox [E2E] pomijany)', "Faza 1, IU-2: checkbox 'Weryfikacja: pnpm compare:schemas' (zadania.md:45) niezaznaczony — FAIL z rozjazdu staging ↔ ref wdrozony do czasu db push --project-ref uznjvfdqrisbzbcwemjn (pozycja Operator checklist, pomijana przy execute)", 'Otwarte pozycje Operator checklist (pomijane przez execute): faza 1 — 3 (zadania.md:69-71), faza 2 — 2 (zadania.md:116-117), faza 3 — 4 (zadania.md:199-202)'] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'done', 'done', 'done', 0), (2, 'done', 'done', 'done', 0), (3, 'done', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": true, "zadanieWymagaE2E": true, "liczbaScenariuszy": 1}
+  [e2e:env-up] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). .env.e2e istnieje i jest gitignorowany; wszystkie wymagane kl
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm). Test rozgrzewkowy: apps/dashboard/src/features/offers/offer-details-page.tes
+  [e2e:db-sync:faza-3] {"status": "zsynchronizowano", "detal": "Baza WSPÓŁDZIELONA (nagłówek .env.e2e: „CELUJE W PROJEKT STAGINGOWY\") — pracowano wyłącznie na wie
+  [kontekst:diff] {"diffStat": "git diff --stat 20fe017..HEAD (commity fazy 3: 56a86b3 feat, 5c3c7ac fix po review, 4b4fd64 kontrola diffu naprawczego, 7fab9c
+  [review:performance] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/features/auth/login-form.tsx:299", "opis": "Chunk `access-request
+  [review:security] {"findings": [{"severity": "P3", "typ": "TEST", "plik": "apps/server/src/access/redirect-path.test.ts:18", "opis": "Bramka `parseRedirectPat
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "e2e/seeds/rejestracja-czlonek-seed.sql:?", "opis": "Scenariusz E2E [E2E] `rejes
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "CLAUDE.md:73", "opis": "IU-9 (R12) + learned-pattern 2026-09-11: fix P2 nr 1 (D12) p
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/auth/login-form.tsx:115", "opis": "Granice warstw (codin
+  <failed> {"type": "failed", "key": "v2:d5a3db7e72ae53d01412f24df9141818807f055b304078f399ab963eba36304c", "agentId": "a540d44079bb35b1a"}
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "CLAUDE.md:73", "opis": "Dokument sterujący rozjechał się z kodem po commicie naprawc
+  [review:e2e:retry] {"findings": [{"severity": "P3", "typ": "OPERATOR", "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonko
+  [dedup:semantyczny] {"duplikaty": [[2, 10, 16], [9, 12], [15, 17]]}
+  [verify-batch:claude.md:2] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone na kodzie HEAD. (1) `packages/shared/src/
+  [verify-batch:apps/dashboard/src/features/auth/login-form.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": "P3", "uzasadnienie": "Fakty z kodu potwierdzone: `apps/dashboard/src/feature
+  [scribe:faza-3] {"fazaNumer": 3, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/auth/login-form.tsx:115", "opis": "Grani
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-3] {"naprawione": 13, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "nienaprawione": [], "p3Pominiete": [], 
+  [fix:pre-skan:faza-3] {"trafienia": []}
+  [fix:kontrola:faza-3] {"regresje": [{"plik": "apps/server/src/access/redirect-path.ts:53", "opis": "Commit fixa dodał pole `redirectPath` do `POST /api/dostep/rej
+  [fix:poprawka:faza-3] {"naprawione": 1, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-3] {"zapisano": true}
+  [walidacja-koncowa] {"wynik": "FAIL", "wykryteKomendy": ["pnpm typecheck", "pnpm test", "pnpm build", "lint: brak skryptu (bramka jakosci repo = typecheck + test + build)"], "typecheck": "PASS", "lint": "SKIPPED", "testy": "PASS 3517/3517 (scripts 39/39, e2e 53/53, shared 261/261, server 1806/1806, dashboard 1358/1358; flake-infra: apps/server/src/offer/markup-scan.test.ts — test-straznik czasu 292 ms > 200 ms przy rownoleglym biegu server+dashboard w `pnpm -r run test`, PASS w izolacji; dashboard przerwany przez ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL, uruchomiony osobno: PASS)", "build": "PASS", "bledy": ["1 scenariusz [E2E] nieuruchomiony — sprint NIE moze sie zamknac z cicho pominietym E2E. Operator musi go odpalic LUB przeniesc do Operator checklist ze zmiana markera [E2E] -> [Manual], jesli scenariusz ma byc swiadomie wykonany recznie. (faza 3, `rejestracja-czlonek-link`: trzy SKIP-y z rzedu przez pule mailera stagingu 2/h -> 429 `limit_maili`; ponowny przebieg po odczekaniu godziny)"], "e2eNieuruchomione": ["Test: [E2E] `rejestracja-czlonek-link` (seed: e2e/seeds/rejestracja-czlonek-seed.sql) — otwórz `http://app.localhost:3010/logowanie`, wpisz `czlonek-e2e@oferty-online.invalid`, kliknij „Wyślij link”, sprawdź „Sprawdź skrzynkę” z adresem, screenshot → w bazie e2e `auth.users` ma ten adres, `profiles` = `akademia`/`oczekujace` (staging wysyła realny mail wbudowanym mailerem, limit 2/h na projekt — raz na przebieg; przy `limit_maili` SKIP z powodem, nie FAIL) (SKIP — re-review 16.09 22:01: pul
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [stop:commit-artefaktow] {"zacommitowano": true, "commit": "2c97286", "brudnePozaZadaniem": []}
+  [telemetria:STOP] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> e2e:env-up -> warmup:vitest -> e2e:db-sync:faza-3 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> review:e2e:retry -> dedup:semantyczny -> verify-batch:apps/dashboard/src/features/auth/login-form.tsx:1 -> verify-batch:claude.md:2 -> scribe:faza-3 -> stan:zapis -> fix:faza-3 -> fix:pre-skan:faza-3 -> fix:kontrola:faza-3 -> fix:poprawka:faza-3 -> stan:zapis -> zwin-do-poprawy:faza-3 -> walidacja-koncowa -> stan:zapis -> stop:commit-artefaktow -> telemetria:STOP
+
+########## 2026-09-17 00:15 oferty-online wf_feed7bad-902 (69 linii) ##########
+  [bootstrap] zadanie=samodzielna-rejestracja-czlonkow-aa zrodlo=state-json branch={'aktualny': 'feature/samodzielna-rejestracja-czlonkow-aa', 'wymagany': 'feature/samodzielna-rejestracja-czlonkow-aa', 'zgodny': True, 'czysty': True} rozb=["Faza 3: stan mowi review=pending, a istnieje docs/active/samodzielna-rejestracja-czlonkow-aa/review-faza-3.md (runda 2, po fixie 5c3c7ac/4b4fd64, stan pipeline'u 7fab9c5) z werdyktem: 0 P1, 3 P2 KOD (login-form.tsx bez hooka use-login-flow; CLAUDE.md rozjechany z kodem — REGISTRATION_OUTCOMES w product-contract.ts, redirectPath/redirect-path.ts), 10 P3, 1 OPERATOR; stan trzyma metryki tej rundy (p2=3, p3=10), ale review=pending i otwarteFindingi=[] — orkiestrator zdecyduje, czy review fazy 3 ma sie powtorzyc, czy uznac runde 2 z md.", "Faza 3: sekcja '## Do poprawy po review fazy 3' w zadaniach mowi 'Zamkniete cyklem fix: 13 pozycji' (runda 1) i nie ma zadnych niezaznaczonych checkboxow P1/P2, mimo ze review-faza-3.md (runda 2) wymienia 3 otwarte P2 KOD — findingi rundy 2 nie sa odzwierciedlone w zadaniach.", 'Faza 3: jedyny scenariusz E2E `rejestracja-czlonek-link` przeniesiony z [E2E] na [Manual] decyzja operatora 16.09 (commit 7af859e); pozostaje niezaznaczony jako Test: [Manual] w IU-6 i jako pozycja Operator checklist faza 3 — pomijany przez execute zgodnie z regulami.', "Otwarte pozycje operatora (poza execute/fix): faza 1 — 3 (w tym `supabase db push --project-ref uznjvfdqrisbzbcwemjn` PRZED obrazem oraz niezaznaczona 'Weryfikacja: pnpm compare:schemas' w IU-2 zalezna od tego pushu), faza 2 — 2 (rate_limit_otp GoTrue, smoke koncowy na refie wdrozonym), faza 3 — 1 ([Manual] rejestracja-czlonek-link).", 'Plik docs/active/samodzielna-rejestracja-czlonkow-aa/.autopilot-state.json.bak (backup z 22:16) NIE parsuje sie jako JSON (SyntaxError w polu opis findingu) — nie jest zrodlem stanu, wylacznie informacyjnie; aktualny .autopilot-state.json parsuje sie poprawnie.'] zak={'walidacja': 'pending', 'complete': 'pending', 'compound': 'pending'} fazy=[(1, 'done', 'done', 'done', 0), (2, 'done', 'done', 'done', 0), (3, 'done', 'pending', 'none', 0)]
+  [e2e:precheck] {"istnieje": true, "zadanieWymagaE2E": false, "liczbaScenariuszy": 0}
+  [e2e:env-up] {"status": "gotowe", "detal": "BAZA WSPOLDZIELONA (staging = dev + testy RLS). .env.e2e obecny i gitignorowany, wszystkie wymagane klucze ob
+  [warmup:vitest] {"status": "zbudowano", "detal": "Runner: vitest 4.1.11 (pnpm). Odpalono najcięższy test komponentu apps/dashboard/src/features/offers/offer
+  [e2e:db-sync:faza-3] {"status": "zsynchronizowano", "detal": "Baza WSPÓŁDZIELONA ze stagingiem (nagłówek .env.e2e: „CELUJE W PROJEKT STAGINGOWY\") — zero reset/T
+  [kontekst:diff] {"diffStat": "git diff --stat 20fe017..HEAD (faza 3: feat 56a86b3 + fix 5c3c7ac/4b4fd64 + fix 2686e64/8d8400e + docs 7fab9c5/2c97286/7af859e
+  [review:e2e] {"findings": [], "przebiegi": []}
+  [review:performance] {"findings": [{"severity": "P3", "typ": "KOD", "plik": "apps/dashboard/src/features/access/access-request-api.ts:1", "opis": "Klient `submit
+  [review:code-quality] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/access/access-request-api.ts:43", "opis": "`submitAccess
+  [review:spec-compliance] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonko
+  [review:security] {"findings": [{"severity": "P2", "typ": "OPERATOR", "plik": "apps/server/src/access/registration-service.ts:234", "opis": "Od tej fazy magic
+  [review:test-coverage] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89", "opis": "Luka R4 („po klikn
+  [review:correctness] {"findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89", "opis": "Ścieżka powrotu `/
+  [dedup:semantyczny] {"duplikaty": [[8, 12]]}
+  [verify-batch:claude.md:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone z kodu. CLAUDE.md:73 (koncowka akapitu 's
+  [verify-batch:apps/dashboard/src/features/access/access-request-api.ts:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Potwierdzone w kodzie. apps/dashboard/src/features/acc
+  [verify-batch:apps/dashboard/src/features/oauth/consent-cards.tsx:1] {"werdykty": [{"indeks": 0, "realny": true, "severityKorekta": null, "uzasadnienie": "Proba obalenia nie powiodla sie - mechanika scenariusz
+  [scribe:faza-3] {"fazaNumer": 3, "findings": [{"severity": "P2", "typ": "KOD", "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89", "opis": "Śc
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [fix:faza-3] {"naprawione": 12, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "
+  [fix:pre-skan:faza-3] {"trafienia": []}
+  [fix:kontrola:faza-3] {"regresje": [{"plik": "apps/dashboard/src/features/auth/login-form.test.tsx:335", "opis": "Commit fixa dołożył test „wejście w krok »Lista 
+  [fix:poprawka:faza-3] {"naprawione": 1, "pozostaje": 0, "walidacja": "PASS", "nierozwiazaneP1": 0, "nierozwiazaneP2": 0, "plikiBinarne": [], "p3Pominiete": [], "n
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [zwin-do-poprawy:faza-3] {"zapisano": true}
+  [walidacja-koncowa] {"wynik": "PASS", "wykryteKomendy": ["pnpm typecheck", "pnpm test", "pnpm build"], "typecheck": "PASS", "lint": "SKIPPED", "testy": "PASS 3563/3563 (scripts 39/39, e2e 53/53, shared 261/261, server 1809/1809, dashboard 1401/1401); flake-infra: apps/server/src/offer/markup-scan.test.ts (test-strażnik czasu 258 ms > 200 ms przy równoległym pnpm -r serwer+dashboard; PASS w izolacji i w pełnym sekwencyjnym przebiegu serwera)", "build": "PASS", "bledy": [], "testyZmodyfikowane": ["apps/dashboard/src/features/auth/login-form.test.tsx (353effa: asercja fokusu na nagłówku owinięta w waitFor — ta sama wartość oczekiwana)", "apps/dashboard/src/features/auth/access-gate.test.tsx (64942da: vi.mock use-profile z importOriginal — reguła needsTermsScreen zostaje prawdziwa)", "apps/server/src/limits/limit-messages.test.ts (64942da: oczekiwany tekst „przyjmij zaproszenie” → „przyjmij regulamin” razem ze zmianą tekstu w implementacji)", "apps/server/src/mcp/tools/opublikuj-oferte.test.ts (64942da: ta sama zmiana tekstu odmowy konto_oczekujace)", "apps/server/src/access/membership-service.test.ts (fc4029a: toContain('oczekujace') → toContain('\"powod\":\"stan_spoza_pary\"') — asercja doprecyzowana; c468f1a: zdarzenia rozszerzone o oldSource/newSource)", "apps/server/src/access/membership-events.test.ts (fc4029a: usunięte toContain('zewnetrzne') przy przepisaniu testu na nowy kształt zdarzenia)", "apps/server/src/access/registration-service.test.ts (fc4029a: atrapa createClient rozszerzona o fet
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [e2e:env-down] {"posprzatano": false, "detal": "Brak pliku /tmp/autopilot-vite.pid - w środowisku E2E nie ma uruchomionych procesów dev-autopilot do sprząt
+  [compound] {"plik": "docs/solutions/auth-issues/2026-09-17-nowa-sciezka-powrotu-z-maila-omija-bramke-dostepu-strona-zgody-oauth-poza-accessgate.md", "k
+  [compound-refresh] {"przejrzano": 4, "slownik": "bez zmian", "commit": "", "akcje": ["Keep: docs/solutions/auth-issues/2026-09-17-nowa-sciezka-powrotu-z-maila-
+  [stan:zapis] {"zapisano": true, "poprawnyJson": true}
+  [smoke-operatora:samodzielna-rejestracja-czlonkow-aa] {"plik": "docs/operator/2026-09-17-samodzielna-rejestracja-czlonkow-aa-smoke.md", "pozycje": 14, "e2eNieuruchomione": 0, "zrodla": ["docs/ac
+  [complete:samodzielna-rejestracja-czlonkow-aa] {"archiwum": "docs/completed/samodzielna-rejestracja-czlonkow-aa/", "pliki": ["docs/completed/samodzielna-rejestracja-czlonkow-aa/samodzieln
+  [telemetria:OK] {"zapisano": true, "poprawnyJson": true}
+  SEKWENCJA: bootstrap -> e2e:precheck -> e2e:env-up -> warmup:vitest -> e2e:db-sync:faza-3 -> kontekst:diff -> review:test-coverage -> review:security -> review:performance -> review:code-quality -> review:correctness -> review:spec-compliance -> review:e2e -> dedup:semantyczny -> verify-batch:apps/dashboard/src/features/access/access-request-api.ts:1 -> verify-batch:apps/dashboard/src/features/oauth/consent-cards.tsx:1 -> verify-batch:claude.md:1 -> scribe:faza-3 -> stan:zapis -> fix:faza-3 -> fix:pre-skan:faza-3 -> fix:kontrola:faza-3 -> fix:poprawka:faza-3 -> stan:zapis -> zwin-do-poprawy:faza-3 -> walidacja-koncowa -> stan:zapis -> e2e:env-down -> compound -> compound-refresh -> stan:zapis -> smoke-operatora:samodzielna-rejestracja-czlonkow-aa -> complete:samodzielna-rejestracja-czlonkow-aa -> telemetria:OK

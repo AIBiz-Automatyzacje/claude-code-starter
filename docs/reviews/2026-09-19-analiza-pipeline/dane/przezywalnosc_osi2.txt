@@ -1,0 +1,18 @@
+scribe'ow z Findings (JSON): 84, bez: 0 | typy potwierdzonych: {'KOD': 977, 'TEST': 287, 'OPERATOR': 291, 'E2E': 51}
+
+os (zrodlo)            potw. P1 potw. P2 potw. P3 potw. razem  obalone  % obalonych
+brak                          8       68      247         323        1           0%
+security                      9      122      134         265        7           3%
+test-coverage                 7       81      114         202        5           2%
+performance                   7       71      105         183        4           2%
+code-quality                  1       36       99         136        5           4%
+spec-compliance              10       58       64         132        2           1%
+architecture                  3       28       58          89        0           0%
+correctness                   4       39       38          81        4           5%
+typescript                    1       25       49          75        0           0%
+e2e                           1       13       51          65        0           0%
+simplicity                    1        5       49          55        0           0%
+
+per miesiac (potwierdzone per os):
+  2026-08: brak:323, security:91, test-coverage:68, architecture:63, spec-compliance:60, performance:56, typescript:54, simplicity:36, e2e:21
+  2026-09: security:174, code-quality:136, test-coverage:134, performance:127, correctness:81, spec-compliance:72, e2e:44, architecture:26, typescript:21, simplicity:19

@@ -1,0 +1,183 @@
+agentow lacznie: 2941
+
+=== PER PROJEKT === (koszt = jednostki wzgledne; udzial = % sumy)
+klucz                                 n   tury  tools   out k  cacheR M  cacheW k   in k  udzial  koszt/agent min/agent
+oferty-online                      1959  32020  35343    3045    5053.6    252909     85   71.0%         427k      3.4
+Nawykometr                          231   5423   6029     666     843.6     27869     11   10.4%         530k      4.7
+claude-cron                         385   4241   4852     665     518.8     44854     13    9.4%         289k      2.6
+akademia-automatyzacji-dashboard    244   2510   2957     670     345.4     30479    134    6.5%         312k      2.2
+symulator-poczekalni                122   1676   1916     175     176.5     10786      3    2.7%         262k      2.8
+SUMA: agentow=2941 tur=45870 out=5224k cacheR=6937.9M koszt=1178.8M jedn.
+
+=== PER WORKFLOW (workflowPhase) === (koszt = jednostki wzgledne; udzial = % sumy)
+klucz                                 n   tury  tools   out k  cacheR M  cacheW k   in k  udzial  koszt/agent min/agent
+(dev-autopilot main)               2411  34566  39114    3615    4684.5    274618    221   70.4%         344k      3.0
+▸ dev-docs-review-wf                235   4236   4496     465     837.1     43060      8   11.9%         595k      3.6
+▸ dev-docs-execute-wf                67   3329   3566     652     791.9     16889      6    8.8%        1545k     11.3
+Faza 3                               42    943    954     135     169.1      6062      3    2.1%         599k      3.1
+Faza 4                               29    630    707      57     116.5      4450      2    1.5%         603k      4.1
+Faza 1                               35    628    639      76     102.7      4916      2    1.4%         480k      2.9
+Faza 2                               28    566    583      78     102.9      4076      2    1.3%         563k      3.2
+Zakonczenie                          35    332    350      15      39.3      3927      1    0.8%         254k      1.3
+PR                                   17    289    305      70      47.9      2882      0    0.7%         514k      3.8
+Bootstrap                            30    167    169      15      17.8      3791      0    0.6%         219k      0.5
+▸ dev-docs-complete-wf                8    116    134      33      17.5      1477      0    0.3%         470k      3.4
+▸ dev-compound-wf                     4     68     80       7      10.7       747      0    0.2%         511k      3.4
+SUMA: agentow=2941 tur=45870 out=5224k cacheR=6937.9M koszt=1178.8M jedn.
+
+=== PER ROLA — wszystkie runy === (koszt = jednostki wzgledne; udzial = % sumy)
+klucz                                 n   tury  tools   out k  cacheR M  cacheW k   in k  udzial  koszt/agent min/agent
+build                               177   8098   8768    1117    1655.5     35957     25   18.3%        1220k      9.9
+fix                                 116   5711   6169     691    1048.2     24749     16   11.8%        1200k      7.9
+verify                              575   4183   5217     276     352.5     39964     24    7.3%         150k      1.4
+?                                   126   3318   3654     403     564.3     16062     15    6.7%         623k      4.6
+review:test-coverage                 81   2077   2264     170     372.8     16063     12    4.9%         718k      5.5
+review:spec-compliance               81   2064   2184     186     364.5     16642     20    4.9%         718k      5.1
+domkniecie                           74   2324   2879     382     308.6     11441      5    4.0%         636k      4.3
+review:security                      81   1541   1681     148     256.3     15246     15    3.9%         561k      4.7
+review:performance                   78   1206   1365     146     184.6     13901      5    3.1%         468k      3.8
+verify-batch                        163    936   1102      49     108.5     18182      1    2.9%         207k      1.1
+review:correctness                   36   1067   1127      68     222.1      8784      2    2.8%         931k      6.8
+stan:zapis                          269   1348   1348       9      83.9     19645     11    2.8%         122k      1.0
+scribe                               84   1139   1255     501     139.6     11881     18    2.7%         373k      6.4
+review:e2e                           58   1326   1397     104     186.9      7848      2    2.5%         500k      4.6
+review:simplicity                    66    904    978      89     128.7     10921     20    2.3%         408k      3.3
+planner                              79    639    843      65      62.5      9861      1    1.6%         239k      3.2
+kontekst:diff                        81    687    818     111      65.3      9269      1    1.6%         230k      1.5
+review:typescript                    40    703    764      74      93.8      6337     11    1.5%         442k      4.2
+review:architecture                  43    643    719      99      83.5      6824     16    1.5%         404k      4.2
+review:code-quality                  15    381    409      28      83.4      3974      0    1.1%         896k      5.1
+e2e:db-sync                          55    579    683      34      54.4      5988      1    1.1%         238k      1.3
+fix:poprawka                         14    518    579      32      72.0      2064      1    0.8%         710k      5.3
+dedup:semantyczny                    80     88     86      35       0.6      6525      0    0.7%         104k      1.9
+bootstrap                            54    272    283      28      22.3      4749      0    0.7%         153k      0.6
+complete                             19    324    346      70      38.8      2739      0    0.6%         403k      3.1
+walidacja-koncowa                    23    360    425      18      39.6      2861      0    0.6%         331k      1.8
+e2e:env-up                           34    350    359      26      29.8      3486      0    0.6%         219k      1.3
+warmup:vitest                        38    239    255      16      21.0      3766      0    0.6%         181k      0.5
+compound                             19    262    324      21      32.4      2750      0    0.6%         357k      2.8
+zwin-do-poprawy                      33    290    287       0      26.0      2821      2    0.5%         185k      1.7
+fix:kontrola                         18    261    265      21      29.4      2436      0    0.5%         338k      2.5
+telemetria                           44    288    309       1      20.4      3087      2    0.5%         134k      1.9
+inne:custom-wf                       24    202    266      20      23.3      2646      0    0.5%         239k      3.7
+smoke-operatora                      17    191    217      65      21.4      2457      0    0.5%         326k      3.1
+compound-refresh                     19    210    237      16      23.3      2433      0    0.5%         287k      1.7
+fix:pre-skan                         18    394    394       2      32.0      1774      3    0.5%         302k      2.4
+inne:verify                          24    186    248       4      18.2      2563      0    0.4%         210k      2.1
+e2e:precheck                         37    133    138       2       7.0      2470      1    0.3%         102k      0.3
+pr:napraw:tura-1                      3     90     93      19      17.2       607      0    0.2%         858k      5.1
+verify-fix                            5     48     59       2       6.3       777      0    0.1%         322k      1.5
+pr:zbierz:tura-1                      3     57     57      13       8.9       511      0    0.1%         532k      6.8
+stop                                 12     43     43       0       2.6      1012      0    0.1%         127k      0.3
+pr:napraw:tura-2                      2     51     56       7       8.2       323      0    0.1%         631k      4.9
+e2e:env-down                         13     32     32       0       1.2       907      0    0.1%          96k      0.2
+pr:napraw:tura-3                      2     28     31       5       4.4       296      0    0.1%         418k      2.2
+SUMA: agentow=2941 tur=45870 out=5224k cacheR=6937.9M koszt=1178.8M jedn.
+
+=== PER ROLA — tylko oferty-online po 2026-09-06 === (koszt = jednostki wzgledne; udzial = % sumy)
+klucz                                 n   tury  tools   out k  cacheR M  cacheW k   in k  udzial  koszt/agent min/agent
+build                                58   3648   3857     565     912.4     16038      7   22.7%        1967k     14.6
+fix                                  63   2933   3077     363     601.5     12410      7   15.4%        1229k      7.0
+review:test-coverage                 23    878    916      54     194.9      6094      1    5.4%        1190k      7.5
+review:correctness                   23    804    845      56     177.0      6129      1    5.1%        1114k      7.6
+review:spec-compliance               23    711    739      42     160.6      6172      1    4.8%        1043k      5.4
+verify-batch                        105    592    695      39      71.9     12410      1    4.6%         218k      1.0
+review:security                      23    616    658      29     129.9      5728      1    4.0%         882k      5.9
+domkniecie                           20    870   1044     146     145.2      3966      1    4.0%        1010k      5.7
+review:performance                   23    455    515      37      85.3      5141      0    3.0%         658k      4.5
+review:e2e                           18    624    661      70     107.0      3163      1    3.0%         833k      7.6
+stan:zapis                           80    444    444       1      36.0      7704      3    2.6%         165k      1.5
+scribe                               23    427    452     168      66.5      4586      0    2.6%         575k      8.6
+review:code-quality                  14    367    393      28      80.8      3760      0    2.6%         923k      5.3
+?                                    27    533    574      46      76.1      3751      1    2.5%         464k      4.5
+kontekst:diff                        23    247    266      65      29.6      3452      0    1.5%         330k      2.3
+planner                              21    228    273      35      28.6      3533      0    1.5%         354k      5.7
+verify                               30    302    379      14      40.1      2198      0    1.4%         227k      2.0
+e2e:db-sync                          23    229    261      20      26.7      3120      0    1.3%         290k      1.4
+review:simplicity                     9    203    219       7      38.4      2009      0    1.3%         709k      5.4
+zwin-do-poprawy                      22    191    188       0      18.0      2039      1    0.9%         197k      2.0
+walidacja-koncowa                     9    171    190      12      22.5      1383      0    0.8%         449k      2.2
+fix:poprawka                          5    177    200       8      24.2       759      0    0.7%         682k      5.3
+dedup:semantyczny                    23     24     23       0       0.1      2262      0    0.6%         123k      1.5
+fix:kontrola                          8    115    115       7      13.6      1138      0    0.6%         352k      2.1
+e2e:env-up                           11     96     96       9      10.2      1383      0    0.6%         254k      1.0
+compound                              5     97    109       8      14.8       917      0    0.5%         534k      3.7
+warmup:vitest                        11     84     89       6       8.9      1376      0    0.5%         240k      0.7
+bootstrap                            12     62     62       8       6.2      1559      0    0.5%         217k      0.7
+complete                              5     94    109      17      13.9       899      0    0.5%         520k      3.8
+pr:napraw:tura-1                      3     90     93      19      17.2       607      0    0.5%         858k      5.1
+telemetria                           13    107    111       0       9.7      1141      0    0.5%         184k      3.3
+smoke-operatora                       5     71     75      26      10.1       901      0    0.5%         452k      3.8
+fix:pre-skan                          8    131    131       0      11.1       807      1    0.4%         264k      2.6
+compound-refresh                      5     70     84       6       9.9       821      0    0.4%         408k      2.2
+verify-fix                            5     48     59       2       6.3       777      0    0.3%         322k      1.5
+pr:zbierz:tura-1                      3     57     57      13       8.9       511      0    0.3%         532k      6.8
+e2e:precheck                         11     37     37       0       2.3       988      0    0.3%         133k      0.3
+pr:napraw:tura-2                      2     51     56       7       8.2       323      0    0.3%         631k      4.9
+stop                                  7     26     26       0       1.7       645      0    0.2%         139k      0.3
+pr:napraw:tura-3                      2     28     31       5       4.4       296      0    0.2%         418k      2.2
+e2e:env-down                          5     11     11       0       0.5       446      0    0.1%         122k      0.2
+pr:compound:faza-9a-domena-mailer-    1     15     18      13       2.5       195      0    0.1%         560k      6.4
+pr:compound:samodzielna-rejestracj    1     16     16       8       2.7       194      0    0.1%         554k      5.1
+pr:start:faza-9a-domena-mailer-lim    2     14     15       0       1.7       291      0    0.1%         270k      0.6
+review:e2e:retry                      1     16     16       4       2.4       134      0    0.1%         431k      2.2
+SUMA: agentow=817 tur=17028 out=1985k cacheR=3242.7M koszt=502.5M jedn.
+
+=== PER MODEL === (koszt = jednostki wzgledne; udzial = % sumy)
+klucz                                 n   tury  tools   out k  cacheR M  cacheW k   in k  udzial  koszt/agent min/agent
+claude-opus-5                      2265  41173  46083    4998    6503.1    311005    214   90.3%         469k      3.7
+claude-haiku-4-5-20251001           530   2988   3016      56     209.1     40497     24    6.1%         135k      1.2
+claude-fable-5                      107   1437   1667     132     192.9     12968      2    3.1%         338k      3.4
+claude-fable-5-1                     17    250    331      36      32.7      2428      7    0.6%         382k      5.8
+<synthetic>                          22     22      0       0       0.0         0      0    0.0%           0k      3.1
+SUMA: agentow=2941 tur=45870 out=5224k cacheR=6937.9M koszt=1178.8M jedn.
+
+=== PER RUN === (koszt = jednostki wzgledne; udzial = % sumy)
+klucz                                 n   tury  tools   out k  cacheR M  cacheW k   in k  udzial  koszt/agent min/agent
+oferty-online wf_cf90b5d6-f83 2026  147   3749   4038     418     830.4     27926      8   10.2%         816k      5.1
+oferty-online wf_16546a4e-e81 2026  135   3518   3711     527     735.3     24066      8    9.0%         787k      5.5
+Nawykometr wf_2b8059ec-41a 2026-09  143   2859   3264     369     417.0     17090      6    5.5%         453k      4.5
+oferty-online wf_a9762098-930 2026   94   2076   2389      78     372.5     14601      4    4.7%         594k      5.2
+oferty-online wf_8eefb073-6a9 2026   88   1714   1762     334     300.3     15086      4    4.3%         574k      3.7
+oferty-online wf_a9762098-930 2026   67   1763   1912      70     357.5     11011      4    4.2%         744k      5.8
+claude-cron wf_07ba2897-b1d 2026-0  173   1846   2144     451     208.2     18683      7    3.9%         268k      2.4
+claude-cron wf_3a1950f0-fe5 2026-0  124   1608   1765     152     221.5     16859      4    3.7%         354k      2.8
+oferty-online wf_6139a53b-71a 2026  100   1841   2094      67     266.2     13200      4    3.7%         434k      3.6
+oferty-online wf_51a5d098-838 2026  164   2030   2353     210     223.6     14976      4    3.6%         256k      2.6
+oferty-online wf_0f6ce691-b3e 2026   84   1590   1727      49     233.3     11150      3    3.2%         446k      3.4
+Nawykometr wf_51feac8b-a22 2026-09   37   1608   1699     181     291.2      5137      3    3.1%         985k      6.2
+oferty-online wf_04174906-d52 2026   98   1454   1579     157     204.4     11564      3    3.0%         364k      3.1
+oferty-online wf_cfc8a9b8-385 2026  119   1600   1841      38     187.2     12122      3    2.9%         286k      2.7
+symulator-pocz wf_c46168d1-d93 202  122   1676   1916     175     176.5     10786      3    2.7%         262k      2.8
+akademia-autom wf_68c6753f-9e5 202   89   1060   1280     299     144.0     11872     73    2.6%         346k      2.2
+akademia-autom wf_77ce0a61-c78 202   97    888   1079     296     120.0     10743     59    2.3%         278k      2.6
+oferty-online wf_fd824443-91a 2026  101   1227   1372     119     131.5      9083      2    2.1%         248k      2.3
+oferty-online wf_791b7c6e-c22 2026   79   1054   1231      38     123.5      8255      2    1.9%         289k      2.7
+oferty-online wf_68d07920-93d 2026  115   1099   1302     121      94.8      9853      2    1.9%         194k      2.2
+oferty-online wf_437fa27d-fe0 2026   85    960   1079     102      97.3      8216      2    1.7%         241k      2.2
+oferty-online wf_78323205-648 2026   57    675    716     115      90.9      8159      2    1.7%         348k      2.4
+oferty-online wf_45eff655-3b8 2026   54    813    910      53     118.0      6234      1    1.7%         367k      2.8
+oferty-online wf_29d462f8-85c 2026   41    575    641      45     102.4      6431      1    1.6%         451k      2.3
+oferty-online wf_feed7bad-902 2026   34    509    522      79      83.1      5382      1    1.3%         454k      2.5
+oferty-online wf_510b6f9f-da8 2026   35    619    687      23      90.5      4832      1    1.3%         434k      4.0
+oferty-online wf_ce87b73b-89f 2026   29    491    497      76      83.5      4602      1    1.2%         499k      2.9
+akademia-autom wf_f1006761-e7c 202   36    448    495      54      69.5      5540      1    1.2%         393k      2.0
+oferty-online wf_e0b731cb-bc9 2026   30    383    396      95      57.4      4127      1    1.0%         379k      3.3
+oferty-online wf_78546669-f7d 2026   36    362    403       5      36.2      3750      1    0.7%         231k      1.5
+claude-cron wf_9ca1f882-36f 2026-0   29    293    393       8      33.5      3469      0    0.7%         266k      3.4
+Nawykometr wf_cfb3d388-448 2026-08    3    325    325      38      59.1       699      0    0.6%        2325k     20.3
+Nawykometr wf_864f970e-e6b 2026-08    4    287    286      36      47.4       815      0    0.5%        1486k     12.7
+oferty-online wf_675d9ad5-728 2026   32    270    317      28      23.6      2674      0    0.5%         182k      1.7
+claude-cron wf_9ce71a8a-135 2026-0   25    178    196      21      20.9      2578      0    0.5%         216k      2.5
+oferty-online wf_7ef8c2b5-ead 2026   26    210    245       4      19.7      2538      0    0.4%         198k      1.7
+akademia-autom wf_4931f66f-ecb 202   20    107     96      19      11.3      2068      0    0.3%         190k      0.7
+oferty-online wf_33ecc7cd-7ed 2026   14    133    157       1      14.9      1543      0    0.3%         245k      2.7
+Nawykometr wf_eac36ac6-487 2026-08   19     95    121      16       8.0      1740      0    0.3%         160k      2.0
+oferty-online wf_abde085d-1dd 2026    9    123    140      16      12.5       647      0    0.2%         237k      1.8
+SUMA: agentow=2941 tur=45870 out=5224k cacheR=6937.9M koszt=1178.8M jedn.
+
+=== ROZKLADY ===
+build          tury: n=177 p50=39 p90=83 max=136 | ctx_sr(k): n=177 p50=176 p90=261 max=365 | ctx_max(k): n=177 p50=204 p90=341 max=492 | min: n=177 p50=8 p90=19 max=36 | tool_calls: n=177 p50=44 p90=86 max=149
+review:*       tury: n=522 p50=17 p90=39 max=74 | ctx_sr(k): n=522 p50=155 p90=220 max=290 | ctx_max(k): n=522 p50=184 p90=262 max=363 | min: n=522 p50=4 p90=7 max=13 | tool_calls: n=522 p50=19 p90=40 max=82
+fix            tury: n=116 p50=37 p90=109 max=176 | ctx_sr(k): n=116 p50=154 p90=232 max=309 | ctx_max(k): n=116 p50=180 p90=290 max=378 | min: n=116 p50=4 p90=15 max=100 | tool_calls: n=116 p50=41 p90=111 max=197
+verify-batch   tury: n=163 p50=5 p90=9 max=17 | ctx_sr(k): n=163 p50=130 p90=157 max=177 | ctx_max(k): n=163 p50=138 p90=167 max=198 | min: n=163 p50=0 p90=1 max=4 | tool_calls: n=163 p50=6 p90=11 max=18

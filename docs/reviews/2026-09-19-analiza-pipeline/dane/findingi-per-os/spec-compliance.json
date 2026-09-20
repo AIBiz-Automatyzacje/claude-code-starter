@@ -1,0 +1,625 @@
+{
+ "os": "spec-compliance",
+ "zgloszone_n": 35,
+ "potwierdzone_n": 132,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "packages/shared/src/template-contract.ts:73",
+   "opis": "Rozjazd JEDNOSTKI pola `heading_texts` między dwoma bramkami tego samego kontraktu (IU-11: „`check (… ≤ 80 znaków)`\" + „`naglowki: z.array(z.string().max(80))`\"). CHECK bazy liczy `char_length` = PUNKTY KODOWE (migracja 20260913160000:60), a Zod `z.string().max(80)` liczy JEDNOSTKI UTF-16. Dla znaków spoza BMP to dwie różne liczby: nagłówek z 41 emoji ma 41 punktów kodowych (przechodzi CHECK) i 82 jednostki UTF-16 (nie przechodzi `templateSummarySchema`). Komentarz migracji (wiersze 43–46) nazywa Zod „lustrem\" CHECK-a i wywodzi bezpieczeństwo z tego, że repozytorium tnie po grafemach do 80 jednostek UTF-16 — to prawda TYLKO dla zapisu przez serwer, a ta sama migracja uzasadnia istnienie CHEC"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/index.ts:43",
+   "opis": "Scenariusz testowy IU-7 mówi „Brak katalogu z buildem → START kończy się czytelnym błędem konfiguracji\" (plan:504). Testy pokrywają wyłącznie fabrykę (`createDashboardRoutes` rzuca `DashboardBuildMissingError`, dashboard.test.ts:117-141); `loadDashboardRoutes` w index.ts — czyli faktyczne przechwycenie tego wyjątku, wypisanie komunikatu na `stderr` i `process.exit(1)` — nie jest wykonane ani razu w żadnym teście. Regresja typu „ktoś zawęża `catch` albo zapomina `process.exit`\" przechodzi bramkę na zielono, a start kończy się nieobsłużonym wyjątkiem zamiast komunikatu konfiguracyjnego. Naprawa: `apps/server/src/index.test.ts` z `vi.spyOn(process, 'exit')` i `vi.spyOn(process.stderr, 'write')`"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/CONCEPTS.md:158",
+   "opis": "IU-9 (R12: „zdania unieważnione tym zadaniem znikają”) — hasło „tryb rejestracji” w pierwszym zdaniu nadal definiuje `zamknieta` jako „konto powstaje wyłącznie z zaproszenia” i `lista_oczekujacych` jako osobny tryb („każdy zostawia adres w »Chcę dostęp«, dostęp nadaje administrator”), a trzy zdania dalej ten sam akapit mówi, że w `zamknieta` „członek AA zakłada konto sam”, a `lista_oczekujacych` jest wyłącznie aliasem `zamknieta`. Kod (`registration_precheck`, `handle_new_user`, `toPanelRegistrationMode`) realizuje drugą wersję. Akcja: w zdaniu otwierającym zamień nawias przy `zamknieta` na „(konto zakłada sam członek Akademii z hashem w `membership_hashes`; pozostali z zaproszenia — wartość"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "docs/operator/faza-1-fundament-przygotowanie.md:130",
+   "opis": "Faza 4 dodaje NOWĄ WYMAGANĄ zmienną runtime `DASHBOARD_DIST_PATH` (packages/shared/src/env.ts:62, `z.string().min(1)`, bez wartości domyślnej), ale nie aktualizuje pozycji 2.8 checklisty operatora, która jest oznaczona jako WYKONANA („✅ 11 zmiennych\") i zawiera tabelę 11 zmiennych bez tej nowej. IU-8 („Obraz kontenera i pierwszy powtarzalny deploy\", plan:511, zależy od IU-7) zakłada, że komplet zmiennych w Coolify już jest. Skutek w momencie deployu: `parseServerEnv` przerywa start z `EnvValidationError`, kontener nie wstaje, Coolify robi rollback — czyli dokładnie scenariusz, przed którym plan chciał się zabezpieczyć (plan:183 „Bez nich kontener wstanie i padnie na walidacji konfiguracji\")."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "docs/operator/wdrozenie.md:1119",
+   "opis": "Lista kontrolna wdrożenia każe: „Tokeny dla kandydatów wygenerowane: `npm run tokeny:utworz` (przeciwko produkcyjnemu `DATABASE_URL`)\", ale na wdrożeniu nie ma tego jak zrobić. (1) Obraz nie zawiera katalogu `scripts/` — `Dockerfile` kopiuje wyłącznie `dist/`, `dist-server/`, `db/migrations` i `data`. (2) Skrypt uruchamiany jest przez `node --import tsx`, a `tsx` to devDependency, więc warstwa robocza (`npm ci --omit=dev`) go nie ma. (3) Uruchomienie lokalne odpada, bo punkt wyżej w tej samej liście wymaga, żeby baza NIE odpowiadała z internetu. R2 („tokeny zakładasz Ty\") nie ma zatem wykonalnej drogi na produkcji — inaczej niż `scripts/wyniki.sh`, dla którego `docs/operator/jak-czytac-wynik"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:175",
+   "opis": "IU-4 wyrenderowano bez rozstrzygnięcia otwartej rozbieżności z D5, choć review fazy 1 (`docs/active/faza-5-heatmapa/review-faza-1.md`, P3-2) wymagało decyzji PRZED IU-4 i pozycja w `faza-5-heatmapa-zadania.md` („Do poprawy po review fazy 1”) jest nadal nieodhaczona. Plan D5 mówi „jawny limit 200 wizyt NA KUBEŁEK”, a `useOfferHeat` limituje globalnie 200 na ofertę. Skutek w tej fazie: pigułka pokazuje `Komputer (200 wizyt)` i `Telefon` może w ogóle zniknąć (kubełek bez wizyt nie istnieje), a jedyny komunikat R8 `Mapa z ostatnich 200 wizyt z 340.` jest liczony GLOBALNIE i wisi nad mapą JEDNEGO kubełka — użytkownik czyta go jako opis wyświetlanej mapy, choć dotyczy zupełnie innej liczby. Akcja:"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts:90",
+   "opis": "Upsert rotacji tokenu wysyła `created_at: createdAt.toISOString()` z zegara przeglądarki, wprost wbrew kontraktowi domkniętemu w fazie 1. Migracja `supabase/migrations/20260827210000_mcp_tokens_created_at_refresh.sql` (commit a4225e4, poprawka po review fazy 1) rozstrzyga to inaczej i uzasadnia wybór wprost: „Dlaczego trigger, a nie poszerzenie grantu INSERT o created_at: moment wystawienia tokenu to fakt serwerowy. Trigger ustawia go niezależnie od ładunku, więc klient nie może go ani pominąć, ani antydatować, a granty zostają wąskie.” Test RLS fazy 1 (`supabase/tests/rls.test.ts:546`) cementuje ten sam kontrakt: „Ładunek rotacji nie niesie `created_at` (grant INSERT go nie obejmuje), więc "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260828120000_visits_tracking.sql:1",
+   "opis": "Otwarta pozycja operator checklist IU-1: po merge `supabase db push` na projekt główny (produkcyjny) + porównanie schematów staging ↔ produkcja (wniosek 1 fazy 1, komendy bez `--profile`). Migracja jest wypchnięta tylko na staging; bez tego kroku produkcja nie ma tabeli `visits`, funkcji scalającej ani joba `visits_retention_12m`. Wymaga realnego środowiska — poza zasięgiem weryfikacji headless."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md:279",
+   "opis": "Sekcja zamknięcia fazy 5 (IU-6, „Poprawki po review warte odnotowania\" pkt 1) twierdzi, że doszedł „sufit skali (`Math.min(1, …)`), żeby dokument nie był rozciągany ponad natywną szerokość\". W kodzie tego nie ma: `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:163` liczy `setScale(available > 0 ? available / frame.viewportWidth : 0)`, a `grep -rn \"Math.min(1\" apps/dashboard/src/features/offers` nie zwraca nic. To jest dokładnie finding P3-5 review fazy 2 (`review-faza-2.md`, P3 poz. 5), który ten sam dokument o dwa akapity niżej liczy jako OTWARTY („15 z fazy 2\"). Skutek: kanoniczny dokument fazowy ukrywa realny dług (kubełek `Telefon` 390 px w kolumnie 904 px → skala 2,32 i doku"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/components/layout/app-layout.tsx:33",
+   "opis": "IU-14: `aaMarketingLink()` jest wyeksportowana, ale jedynym użyciem jest `AaFooterBrand()` w tym samym pliku (grep po `apps/dashboard/src` daje wyłącznie definicję i to wywołanie) — testy stopki sprawdzają zachowanie przez render, nie przez import funkcji. Akcja: usuń słowo `export` z linii 33 (`function aaMarketingLink(): { readonly href: string; readonly label: string } | null {`), zostawiając ciało i komentarz bez zmian."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "CLAUDE.md:73",
+   "opis": "IU-9 (R12): kontrakt POST /api/dostep/rejestracja w CLAUDE.md jest po turze poprawek nieaktualny. Fix P2 nr 3 z review-faza-3.md (wariant cialo zadania) rozszerzyl kontrakt: cialo przyjmuje opcjonalne redirectPath (nowy apps/server/src/access/redirect-path.ts: sufit 512 znakow, wylacznie sciezka wzgledna od / tego samego originu), nowa odmowa 400 nieprawidlowa_sciezka (apps/server/src/routes/access.ts, blok parseRedirectPath), a emailRedirectTo to <APP_ORIGIN><redirectPath> z domyslnym /auth/callback (registration-service.ts DEFAULT_REGISTRATION_REDIRECT_PATH; panel wysyla pole tylko ze strony zgody OAuth - login-form.tsx resolveRegistration). CLAUDE.md l. 73 nadal mowi: signInWithOtp z emai"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts:80",
+   "opis": "IU-6 wymaga „«Token aktywny od {data}» z `created_at`\", a migracja `20260827210000_mcp_tokens_created_at_refresh.sql` została dołożona po review fazy 1 właśnie po to, żeby moment wystawienia był FAKTEM SERWEROWYM stemplowanym triggerem („Wartość z ładunku klienta jest ignorowana\", komentarz funkcji). Dashboard tego faktu nigdy nie odczytuje: `generate()` ustawia `const createdAt = new Date()` z zegara przeglądarki i po sukcesie upsertu wchodzi w stan `{status:'fresh', createdAt}`, a `hideFreshToken()` przenosi tę samą wartość do stanu `active`, na którym `mcp-token-card.tsx:140` renderuje `activeSinceLabel(...)`. Do końca sesji karta pokazuje więc datę wymyśloną przez klienta, nie tę zapisan"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:1084",
+   "opis": "Scenariusz IU-1 „`merge_visit_increments` z 1024 kluczami `heat` zapisuje komplet\" jest pokryty tylko połowicznie: 1024 klucze wchodzą do wiersza bezpośrednim INSERT-em admina (z pominięciem funkcji), a przez RPC scala się wyłącznie 2 klucze. Druga połowa scenariusza (1025 → obcięcie) jest pokryta. Akcja: dołóż w tym samym describe test wołający `merge_visit_increments` z `p_heat` o 1024 kluczach na wizycie z pustym `heat` i asercją, że po scaleniu obiekt ma 1024 klucze — to jedyna ścieżka, która realnie sprawdza `key_rank <= 1024` w `jsonb_sum_numeric_capped` dla samych NOWYCH kluczy."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260831120000_visits_grid_rows.sql:40",
+   "opis": "Komentarz kolumny `visits.heat` (jedyne źródło prawdy o semantyce klucza wg reguły „znaczenie ustal u źródła: komentarz w migracji\") mówi „klucz = indeks komórki\", a od tej fazy siatka przestaje być symetryczna: klucz to `wiersz:kolumna`, wiersz 0..grid_rows-1 (do 63), kolumna 0..15. Przy nieoznaczonej kolejności osi dekoder z IU-5 może odczytać klucz odwrotnie i mapa przesunie się bez błędu. Akcja: dopisz w tym komentarzu jawny format klucza `wiersz:kolumna` z zakresami obu osi."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "?",
+   "opis": "Weryfikacja semantyki pól wobec żywej bazy była niewykonalna: w repo nie ma `.env.e2e` (są tylko `.env.example` i `.env.local`), więc nie odczytałem realnego wiersza z bazy e2e do porównania rzędu wielkości. Sprawdzenie zrobiłem statycznie i pola są spójne we wszystkich użyciach: `wiadomosci.kolejnosc` = 1 (wiadomość wstępna) / 2 (odpowiedź) tak samo w `server/trasy/rozmowy.ts:9`, w widoku `wyniki_rozmowy` (`wstepna.kolejnosc = 1`, `odpowiedz.kolejnosc = 2`), w `EkranRozmow.tsx:1950` i `EkranPodsumowania.tsx:3148`; `max-age` w sekundach (31536000 = rok, 3600 = godzina); czasy jako ISO UTC, różnice liczone interwałem Postgresa. Brak też `.claude/rules/learned-patterns.md` — weryfikacja wobec "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/webhooks/queue-message.ts:86",
+   "opis": "`isDecisionType` jest CZARNĄ listą (`return typ !== 'otwarta'`), a decyduje o tym, do którego dziennika worker pisze stan doręczenia (`queue-store.ts:263` → `offer_decisions` vs `offer_events`) i którą gałąź kontekstu ładuje `job-loader.ts:302`. Dołożenie czwartego typu do `WEBHOOK_EVENT_TYPES` przepuści go jako „decyzję\" bez błędu typów (predykat `typ is CtaDecisionType` nie jest sprawdzany strukturalnie) i update trafi w niewłaściwą tabelę — klasa z learned-patterns 2026-09-08 („bramka opisana tym, co odrzuca\"). Zamień ciało na zamkniętą białą listę: `return (CTA_DECISION_TYPES as readonly string[]).includes(typ)` z importem `CTA_DECISION_TYPES` z `@oferty/shared` (obok istniejącego import"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-zadania.md:150",
+   "opis": "Pięć scenariuszy [E2E] wymaganych przez IU-4 i IU-5 (`oferta-serwowanie`, `oferta-wygasla`, `slug-nieznany`, `root-originu`, `prywatnosc`) pozostaje niewykonanych i nieodhaczonych, mimo że środowisko jest gotowe: `.env.e2e` istnieje, seed `e2e/seeds/oferta-serwowanie-seed.sql` jest wykonany na stagingu (potwierdziłem odczytem trzech wierszy z REST: `e2eOfertaWazna0000001`, `e2eOfertaWygasla00001`, `e2eOfertaCache0000001`), a proces uruchomiony z `.env.e2e` poprawnie serwuje wszystkie te ścieżki. Brakuje wyłącznie przebiegu przeglądarkowego i screenshotów, czyli jedynej warstwy, która łapie regresje wizualne (te same, które w review fazy 1 wyszły dopiero okiem: znikające linki stopki, fallbac"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": ".claude/workflows/dev-autopilot-wf.js:431",
+   "opis": "Zmiana poza zakresem planu i wprost przeciw regułom projektu: diff fazy modyfikuje maszynerię workflow (53 linie w `dev-autopilot-wf.js`), rozluźniając GUARD TOZSAMOSCI bazy E2E („VITE_SUPABASE_URL z .env.e2e musi byc ROZNY od .env\") tak, by przepuszczał wspólny projekt stagingowy. Żaden IU (IU-1…IU-5) nie wymienia tego pliku w „Pliki:\", a `.claude/rules/coding-rules.md` §5 zabrania wprost: „Nie modyfikuj swoich własnych reguł / review scripts / hooks\" (anty-pattern nr 4 — Governance bypass). Co gorsza, warunkiem wyjątku jest FRAZA w komentarzu `.env.e2e` („CELUJE W PROJEKT STAGINGOWY\" / „SWIADOME odstepstwo\") — plik, który agent może sam zapisać, więc bramka stała się samo-certyfikowalna i "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template-layout-2.css:120",
+   "opis": "IU-6 nakazuje wprost (dossier, sekcja Podejście, oznaczone ⚠️): „Nagłówki idą na `Inter` w cięższej wadze (700/800)”, a rozstrzygnięcie przy implementacji doprecyzowuje: „Waga nagłówków to 700, nie 800”. Arkusz układu 2 ustawia nagłówki sekcji `.doc-uklad-2 .sec h2 { font-weight: 600 }` (linia 120) i `.doc-uklad-2 .cta h2 { font-weight: 600 }` (linia 134), czyli LŻEJ niż układ 1 (`template.css:66` daje `.doc h1,h2,h3 { font-weight: 700 }`) i lżej niż zamówienie. Żadna z notatek „Rozstrzygnięte przy implementacji” nie odnotowuje zejścia do 600 — notatki tłumaczą tylko zmianę ROZMIARU nagłówka sekcji (20 px zamiast 15 px). Ani plan, ani testy układu 2 nie asertują wagi nagłówków, więc rozjazd "
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/active/e6-notyfikacje-dogfooding/e6-notyfikacje-dogfooding-zadania.md:21",
+   "opis": "Rozjazd w dokumentacji zadania: checkbox „Weryfikacja: npm run typecheck / npm test / npm run lint” dla IU-1 pozostaje `[ ]`, podczas gdy kontekst (e6-notyfikacje-dogfooding-kontekst.md, sekcja „Walidacja fazy 1”) raportuje PASS dla wszystkich trzech bramek, a IU-1 jest oznaczone `[x]` i w zadaniach, i w planie (docs/plans/2026-09-01-001-...-plan.md:156). Zweryfikowałem lokalnie: obie dotknięte suity są zielone (25/25 Home, 5/5 splash). Akcja: zaznaczyć ten jeden checkbox na `[x]` w zadania.md:21, żeby stan IU-1 był spójny między planem, zadaniami i dziennikiem (pozycje operatora zostają niezaznaczone — słusznie)."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-08-29-001-feat-symulator-poczekalni-plan.md:874",
+   "opis": "Cała lista `[Manual]` IU-12 (ważny certyfikat Let's Encrypt pod `rekrutacja.akademia.click`, twarde odświeżenie bez 404, potwierdzenie że baza nie odpowiada z internetu, przejście całego zadania od linku do podziękowania, włączenie kopii zapasowych w Coolify, wysyłka linków) jest niewykonalna headless — wymaga realnego wdrożenia, DNS, providera certyfikatu i panelu Coolify. To samo dotyczy niezaznaczonego checkboxa „Obraz buduje się lokalnie i odpowiada na `/api/zdrowie`\" (`docker build .` + uruchomiony kontener). Nie jest to defekt kodu; pozycje muszą trafić do checklisty operatora. Kolejność: dopiero po naprawie findingu P1 z `App.tsx`, bo bez wiringu przejście całego zadania jest niemożli"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/webhooks/worker.ts:2910 (processRow, gałąź webhookUrl === null)",
+   "opis": "D19 wymaga wprost: „**Usunięcie adresu czyści kolejkę** tego użytkownika — inaczej zadania czekałyby na adres, który już nie istnieje, i doleciałyby do przypadkowego następnego\". Implementacja nie czyści kolejki — sprawdza adres dopiero przy doręczaniu. Skutek: handlowiec kasuje adres, po chwili wkleja INNY, a zaległe wiadomości (odroczone nawet o 2 h wg D9) po powrocie do widoczności zobaczą już nowy adres w `profiles.webhook_url` i tam polecą. To jest dosłownie zakazany przez D19 przypadek, a nie ten przetestowany. Test „Usunięcie adresu czyści kolejkę tego właściciela — zaległe zadania nie dolatują do następnego adresu\" jest w `zadania.md` odhaczony [x], choć `worker.test.ts:2510` sprawdz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts:1583",
+   "opis": "Przy odmowie serwera `sendTest` wstawia do etykiety `envelope.error.code`, więc użytkownik widzi wewnętrzny slug w polskim UI: „Test nie dotarł (zbyt_wiele_testow). Sprawdź adres i czy scenariusz jest włączony.\" — komunikat myli przyczynę (limit po naszej stronie, nie odbiorca) i pokazuje identyfikator techniczny. To samo dla `brak_autoryzacji` i `brak_webhooka`. Akcja: dla błędów zwróconych przez NASZ endpoint pokazać `envelope.error.message` (serwer ma gotowe teksty w `TEXTS`), a `webhookTestFailedLabel(status)` zostawić wyłącznie dla wyniku `nieudany` z realnym kodem HTTP odbiorcy."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/active/faza-1-fundament/faza-1-fundament-kontekst.md:158",
+   "opis": "Dokumentacja domknięcia fazy opisuje mechanizm, którego w migracji nie ma. Kontekst (linia 158) i odhaczony checkbox IU-2 w `faza-1-fundament-zadania.md` mówią o „grancie kolumnowym odbierającym UPDATE na `profiles.role` i `profiles.plan_tier`\", a `supabase/migrations/20260824171406_init_profiles_offers.sql:165` nadaje roli `authenticated` WYŁĄCZNIE `grant select on table public.profiles` — żadnego grantu kolumnowego nie ma, bo nie ma w ogóle UPDATE. Efekt jest silniejszy niż spec i jest świadomy (komentarz w migracji to tłumaczy), ale odchylenie NIE zostało zapisane w sekcji „Decyzje i odchylenia z implementacji\", a `profiles_update_own` pozostaje polityką bez odpowiadającego grantu (martwa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx:110",
+   "opis": "Stan „WGRYWANIE\" nie pokazuje wiersza pomocniczego z makiety `176:58` (SPEC, tabela sześciu stanów: `WGRYWANIE` → tekst główny „Wgrywam grafikę…\" + `hero-biuro.jpg · 8,4 MB` + pasek postępu; `GOTOWE` → `hero-biuro.webp · 1600 × 900`). `UploadStatusRow` renderuje sam tekst główny i pasek. Dowodem, że to pominięcie, a nie decyzja, jest martwe pole: `fileName` jest ustawiane w trzech wariantach unii (`asset-upload-state.ts:98,123,134`) i nie jest czytane w żadnym komponencie ani teście. Naprawa: w gałęzi `state.status === 'wgrywanie'` dodać `<p className=\"text-xs text-ink-muted\">{`${state.fileName} · ${formatBytesForHuman(state.bytesBefore)}`}</p>`, a w gałęzi `gotowe` dołożyć `state.fileName` "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:275",
+   "opis": "Parytet powierzchni zrobiony tylko dla `notFound`. Plan (sekcja „Parytet surface API\": „notFound rozgałęzia się po originie — HTML dla ofert, JSON dla aplikacji. **Każda przyszła trasa musi respektować to rozgałęzienie**\" oraz „Propagacja błędów: klient dostaje stronę błędu, nie JSON i nie stack trace\") wymaga tego od całej powierzchni originu ofert, a odpowiedzi 429 (app.ts:273-277) i 500 (`app.onError`, app.ts:367) dalej wychodzą jako `{data:null,error:{code…}}`. Odbiorca oferty zobaczy wtedy surowy JSON narzędzia zamiast strony po polsku (zasada naczelna nr 1). Dodatkowo `c.set('originKind', …)` stoi DOPIERO w linii 280, czyli po bramce limitera — bez przeniesienia tego przypisania powyże"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/corrective-stylesheet.ts:51",
+   "opis": "Arkusz korygujący (IU-7, R7) wymusza `font-size: 17px !important` na `.doc` w regule BEZ media query. `template.css:664-667` deklaruje dla telefonu `@media (max-width: 767px) { .doc { font-size: 16px } }` jako zwykłą deklarację SPOZA warstwy — a `!important` w warstwie bije każdą deklarację zwykłą spoza warstwy (dokładnie ta reguła kaskady, na której stoi moduł). Skutek: po doklejeniu arkusza KAŻDA publikowana oferta (oba układy, także dokument wyrenderowany z wbudowanego szablonu, nie tylko dokument z wrogim CSS-em modelu) traci mobilny rozmiar bazowy 16 px i dostaje 17 px na telefonie — na stałe, bo `offers.html` jest niemutowalny. To rozjazd z zamówieniem: IU-7 mówi „trzy wartości zgadzaj"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9b-admin-seed.sql:189",
+   "opis": "IU-4 („Cel\", dossier: „harness E2E ma seed nadający rolę admina kontu `E2E_TEST_EMAIL` **i cofający ją**\") wymaga pary seedów. W repo jest wyłącznie strona nadająca (`faza-9b-admin-seed.sql`, `set role = 'admin'` w linii 189) — `ls e2e/seeds/` nie zawiera żadnego seeda cofającego rolę, a `grep \"role = 'user'\"` trafia tylko w konta pomocnicze `e2e-b`/`e2e-del`, nigdy w konto `e2e@oferty-online.test`. Konto E2E zostaje adminem na stałe na bazie dzielonej ze stagingiem, więc każdy późniejszy scenariusz „zwykły handlowiec nie widzi /uzytkownicy\", „nawigacja bez pozycji admina\" i „ekran limitów bez przycisków admina\" jest niefalsyfikowalny — badałby konto z rolą `admin`. Brakuje pliku analogiczne"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:293",
+   "opis": "Komentarz przy `catch` opisuje kod, którego już nie ma, i mówi nieprawdę o zachowaniu: twierdzi, że „własnego reportera ma tylko jedna z czterech sond (`visit-summary`)\" i wymienia `probeOfferIds`, podczas gdy w pliku są `probeMcpToken`, `probeOauthGrants`, `probeTemplate`, `probeOffer` i `probeVisit`, żadna nie raportuje samodzielnie (wszystkie oddają `null`), a sondy `visit-summary` ani `probeOfferIds` w ogóle nie istnieją. Akcja: przepisać te dwa zdania na stan faktyczny — „żadna z sond nie raportuje sama, każda oddaje `null`; raport idzie stąd i tylko dla rzutu synchronicznego klienta\" — i usunąć nazwy `visit-summary` oraz `probeOfferIds`."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/notifications.ts:447",
+   "opis": "Strażnik generacji (A.9, precedens P1 z E4 „celebracja konta A u konta B\") jest sprawdzany JEDEN raz — po odczytach, przed fazą zapisu (lib/notifications.ts:447). Faza zapisu to jednak ciąg awaitów: pętla `cancelScheduledNotificationAsync` (452-458) i pętla `schedule` (465-467). `signOut` woła `await commitNow(\"sign-out\")` (lib/auth.ts:324), co przez `onCommitted` odpala `void replanNotifications()` (lib/notifications.ts:731) BEZ awaita, a zaraz potem `await cancelAllNotifications()` — jeśli ten replan zdąży minąć linię 447, jego `schedule` dopisze żądania konta A JUŻ PO `cancelAll`, czyli dokładnie to, przed czym broni komentarz w liniach 298-302. Okno jest wąskie i samoleczące się przy nas"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/validation.ts:574",
+   "opis": "IU-2 — `validateTemplateDocument` mierzy drugi rozmiar na `finalizeOfferDocument(html)` (arkusz korygujący + wstrzyknięta ikona karty), ale etykieta odmowy widoczna dla wołającego brzmi nadal „dokument szablonu po doklejeniu arkusza korygującego (jak przy publikacji)\" — zdanie opisuje niepełną przyczynę: przy szablonie w przedziale (2 MB − arkusz − ikona, 2 MB − arkusz] odmowa wskaże arkusz, choć próg przekracza dopiero wstawka ikony. Zamień literał na `'dokument szablonu po doklejeniu arkusza korygującego i ikony karty (jak przy publikacji)'` — istniejące asercje `toThrow(/arkusza korygującego/)` w validation.test.ts:705 i :715 nadal pasują."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:157",
+   "opis": "R15 planu („klucz limitera z adresu połączenia, X-Forwarded-For czytany wyłącznie od zaufanych proxy — **Termin: przed wystawieniem `/o/<slug>`**\") nie został domknięty, a IU-4/IU-5 wystawiły publicznie cały origin ofert. `readClientKey` dalej bierze klucz z nagłówka `X-Forwarded-For`, a przy jego braku zwraca `SHARED_CLIENT_KEY` (app.ts:157-165) — więc limit 120 żądań/min (app.ts:67) jest albo GLOBALNY dla wszystkich czytelników ofert, albo trywialnie omijalny/zatruwalny podrobionym nagłówkiem. Zweryfikowane na żywym procesie (.env.e2e): jedna odsłona oferty to dokument + `/f/inter-v1.woff2` + `/f/archivo-black-v1.woff2` + `/favicon.svg` + `/favicon.ico` ≈ 5 żądań, czyli ~24 odsłony na minu"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/static/logo-aa.svg:1",
+   "opis": "IU-14 przełączyło `LOGO_PATH` na `/logo-aa-napis.webp` (`apps/server/src/offer/pages/aa-design.ts:56`), a `REQUIRED_ASSETS`/`BRANDING_ASSET_PATHS` czytają tę stałą — stary plik `apps/server/static/logo-aa.svg` nie jest już przez nic referowany (jedyne wystąpienie w kodzie to `LEGACY_LOGO_PATH` w teście negatywnym `aa-design.test.ts:11`) i jedzie w obrazie jako martwy zasób. Plan potwierdza, że dokument oferty logo nie zawiera, więc nic go nie utrwala. Akcja: usuń plik `apps/server/static/logo-aa.svg` (bez zmian w `aa-design.test.ts`, gdzie ścieżka służy jako asercja negatywna)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/reading-path.ts:201",
+   "opis": "IU-14 wymaga odmiany liczebników „przez istniejący wzorzec pluralizacji\", a `repeatClause` wiąże formę rzeczownika z obecnością liczby w `REPEAT_WORDS` (2–4): dla 5+ wejść daje poprawne „5 wejść\", ale dla 22 wejść (ścieżka ma sufit 64 wpisów, więc jest osiągalne) daje „22 wejść\" zamiast „22 wejścia\". Zamień w linii 202 warunek `Object.hasOwn(REPEAT_WORDS, count)` na tę samą regułę liczebnika co `pluralFormFor` w `analytics.ts:92` (końcówka 2–4 z wyjątkiem nastek → „wejścia\", reszta → „wejść\")."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/przygotuj-dane.ts:47",
+   "opis": "R4 wymienia wprost, co pokazuje karta posta: „autora, awatar, treść, grafiki, miniatury wideo z ikoną ▶ (bez odtwarzania), **linki** oraz panel Aktywność w grupie\". `schematPostuZrodlowego` (scripts/przygotuj-dane.ts:47-55) nie zawiera pól `links` ani `videos` z `baza-final.json`, więc oba są bezgłośnie odrzucane — nie ma ich w data/posty-publiczne.json, w tabeli `posty` (db/migrations/001_schemat.sql:40) ani w /api/posty. Realny wpływ jest mały (w źródle `videos` jest puste we wszystkich 42 postach, a jedyny `links` — post 14, http://eWanny.pl/?fbclid=... — powtarza treść widoczną w `body`), ale interfejs fazy 2 nie ma czym zrealizować tego fragmentu R4. Naprawa: albo dodać kolumnę `linki t"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts:64",
+   "opis": "Fail fast na pusty `offerId` to zachowanie spoza planu (IU-2 nie wymienia takiego scenariusza; kontekst fazy sam nazywa je „scenariuszem spoza listy planu”) i chroni przed stanem, który nie może wystąpić — `offerId` przychodzi z `OfferDetails.id`, czyli z kolumny `offers.id` (uuid, NOT NULL). Dodatkowo komentarz uzasadniający jest nietrafny: `eq('offer_id','')` na kolumnie `uuid` zwróci błąd PostgREST, nie „CUDZE wizyty ograniczone już tylko RLS-em” (RLS `visits_select_offer_owner` i tak zawęża do ofert właściciela). To anty-pattern 10 z `.claude/rules/coding-rules.md` (defensive over-engineering) plus fałszywy alarm w Sentry. Akcja: usunąć gałąź `offerId.trim().length === 0` wraz z testem „"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-zadania.md:282",
+   "opis": "Checklist operatora fazy 4 ma tylko dwie pozycje (pomiar po deployu, sprawdzenie pozostalych aplikacji AA) i NIE zawiera pozycji krytycznej dla wdrozenia: wpisania TRUSTED_PROXY_IPS w ENV Coolify PRZED deployem. Zmienna jest od tej fazy wymagana i fail-fast (packages/shared/src/env.ts:189), wiec deploy bez niej konczy sie procesem, ktory nie startuje, a healthcheck cofa deploy — dokladnie scenariusz z .claude/rules/learned-patterns.md. Akcja: dopisac checkbox 'Przed deployem ustaw TRUSTED_PROXY_IPS w Coolify (wartosc z poz. 2.7 checklisty operatora) — bez niej proces nie wystartuje'."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts:14",
+   "opis": "Limit wizyt jest GLOBALNY (200 na całą ofertę), a decyzja D5 planu (`docs/plans/2026-08-30-001-feat-faza-5-heatmapa-plan.md`, „D5 — `heat` idzie osobnym zapytaniem z jawnym limitem 200 wizyt **na kubełek**”; ten sam zapis w `docs/active/faza-5-heatmapa/faza-5-heatmapa-kontekst.md`) mówi o limicie per kubełek. Konsekwencja przy ofercie z >200 wizytami: `order('started_at', desc).limit(200)` może w całości wypełnić się jednym urządzeniem, więc kubełek `Telefon`/`Tablet` znika z wyniku `buildHeatBuckets` (`heatmap-grid.ts:221` — kubełek bez wizyt nie istnieje) albo pokazuje licznik dużo mniejszy niż realny, a komunikat R8 („Mapa z ostatnich N wizyt z M.”) jest liczony globalnie i nie sygnalizuj"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/migration-9b-access.test.ts:185",
+   "opis": "Migracja `…100000` używa literału nowej wartości enuma (`'lista_czlonkow_nie_przyszla'`, linia 1200) w ciele `report_membership_silence()` w tej samej transakcji, w której ten `alter type … add value` stoi (linia 102). Działa to WYŁĄCZNIE dlatego, że funkcja jest `language plpgsql` (ciało parsowane przy pierwszym wywołaniu) — zamiana na `language sql` wywróci migrację kodem 55P04 na świeżej bazie, a `migration-9b-events.test.ts` ma na tę dokładnie klasę strażnik („żadne ciało funkcji nie używa literału nowej wartości enuma\"), którego bliźniaczy plik IU-1 nie ma. Dopisz w `migration-9b-access.test.ts` po zamknięciu pierwszego `describe` (linia 185) test asertujący, że nagłówek `report_members"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/static/c.js:146",
+   "opis": "D22 wymaga wprost: „Klient, który trzymał kartę otwartą od rana, dostaje komunikat o wygaśnięciu zamiast pop-upu\". Serwer stronę serwerową D22 realizuje poprawnie (409 `oferta_wygasla`, DECISION_TEXTS.expired = 'Oferta wygasła'), ale `/c.js` nigdy nie renderuje `error.message`: `call()` (c.js:96-110) zwraca `null` dla KAŻDEJ odpowiedzi bez `data`, więc kliknięcie w „Akceptuję\" na ofercie po terminie pokazuje `msg-akceptacja` = „Nie udało się zapisać akceptacji. Spróbuj ponownie za chwilę.\" — komunikat zapraszający do nieskończonego ponawiania czegoś, co nigdy nie przejdzie. To samo dla pytania (`msg-blad`). Dodatkowo `stan: 'wygasla'` z `GET /d/:slug` jest w c.js:228 całkowicie ignorowany (s"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/App.tsx:24",
+   "opis": "Trasa `/logowanie` nie jest bramkowana w drugą stronę: zalogowany użytkownik, który na nią wejdzie (np. wracając do zakładki albo z zakładki w przeglądarce), dostaje pełny formularz i może wysłać sobie kolejny magic link, zużywając limit wbudowanego mailera (2/h — ostrzeżenie z checklisty operatora 2.1). R2 stawia granice sesji („widoki listy i ustawień wyłącznie za sesją; root przekierowuje\"), ale symetrycznego przekierowania dla trasy publicznej nie ma — `RootRedirect` obsługuje wyłącznie `/`. Akcja: opakować element trasy `LOGIN_PATH` sprawdzeniem `useSessionState()` i przy `status === 'authenticated'` renderować `<Navigate to={OFFERS_PATH} replace />` (ten sam wzorzec, którym `AuthCallba"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/validation.ts:220",
+   "opis": "Z1 („komplet haczykow w szablonie od fazy 2\", requirements linia 67; „Wszystko, co zyje w HTML oferty, podlega niemutowalnosci\", linia 25) nie jest egzekwowane na bramce publikacji. `validateOfferPublication` sprawdza rozmiar, zasoby `data:`, kolory i kroj, ale przyjmuje DOWOLNY dokument — nie weryfikuje obecnosci taga trackera (`RELATIVE_PATHS.tracker` = `/t.js`), stopki „Powered by AA\" (`/aa`), linku „Prywatnosc\" (`/prywatnosc`), przyciskow CTA ani sekcji `data-section`. `pobierz_szablon` wypisuje te zasady wylacznie jako tekst (`pobierz-szablon.ts:RULES`), a HTML sklada Claude — wystarczy, ze pominie tag trackera, i powstaje niemutowalna oferta bez analityki, ktorej regula domenowa zabran"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/plans/faza-2-publikacja-ofert-figma/SPEC.md:50",
+   "opis": "Rozjazd źródła prawdy z kodem po naprawie P2 z review fazy 1: `BRAND_DEFAULTS.accentColor` i default w migracji to dziś `#1f7ba8`, a SPEC.md („Kontrakt zmiennych brandu\") dalej podaje `--accent` = `#2d9cdb` — wartość, która nie przechodzi wprowadzonego progu `ACCENT_TEXT_MIN_CONTRAST = 4.5`. Ten sam stary hex siedzi w fixture testów RLS (`supabase/tests/rls.test.ts:41`), więc kolejny IU (`pobierz_szablon`, IU-6) ma dwa sprzeczne „domyślne\" akcenty do wyboru. Akcja: podnieść wartość w tabeli SPEC.md na `#1f7ba8` z jednozdaniowym uzasadnieniem (próg kontrastu dla tekstu na bieli) i zrównać `BRAND_FIXTURE.accent_color` w rls.test.ts."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:21",
+   "opis": "Nowa migracja fazy 2 (a) rozwiązuje problem JUŻ rozwiązany w fazie 1, (b) robi to metodą tam świadomie odrzuconą, (c) z numerem wersji WCZEŚNIEJSZYM niż migracja leżąca już w repo i na bazie. `20260827210000_mcp_tokens_created_at_refresh.sql` (commit a4225e4) domyka wniosek nr 2 review fazy 1 triggerem `mcp_tokens_set_created_at`; builder fazy 2 pracował na nieaktualnym raporcie (`docs/active/faza-3-konto-i-dashboard/review-faza-1.md`) i dołożył `grant insert (created_at)`, czyli dokładnie wariant odrzucony tam uzasadnieniem „klient nie może go antydatować, a granty zostają wąskie”. Numer 20260827194500 < 20260827210000: `supabase db push` odmawia wstawienia migracji sprzed ostatniej wersji "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "docs/active/siatka-heatmapy-proporcjonalna/siatka-heatmapy-proporcjonalna-zadania.md:370",
+   "opis": "Stan checkboxów rozjeżdża się z kontekstem fazy: kontekst (wpis „Faza 2 — Tracker … completed\") raportuje `pnpm typecheck` / `pnpm test` (654/654) / `pnpm build` jako PASS, a w `zadania.md` pozycje „Weryfikacja\" dla IU-3 (l. 370) i IU-4 (l. 388-389) zostały `[ ]`. Analogicznie w fazie 1 trzy pozycje „Test: [Unit] … CZERWONY do czasu `supabase db push`\" (l. 319-321) są nadal `[ ]`, choć checklist operatora niżej potwierdza `pnpm test:rls` 58/58 PASS z 2026-09-01, a wiersz „Weryfikacja: `pnpm test:rls`\" jest już `[x]`. Akcja: odhaczyć te pięć pozycji (l. 319-321, 370, 388-389), żeby plik dalej czytało się jako stan prawdziwy zadania."
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260913160000_offer_templates_heading_texts.sql:1",
+   "opis": "Kolejność rolloutu tej fazy jest wiążąca, a checklista operatora fazy 4 (dossier, sekcja „Operator checklist faza 4\") jej NIE wymienia — są tam tylko `test:rls`, ponowny zapis szablonów przez MCP i ręczny test 12 plików. Kod fazy zależy od kolumny bezwarunkowo i BEZ fallbacku: `TEMPLATE_SUMMARY_COLUMNS` w `apps/server/src/offer/template-repository.ts:36` selectuje `heading_texts` (bez kolumny PostgREST oddaje 42703 → `raise()` → 500 na `GET /api/szablony` i na `lista_szablonow` MCP), a `save` wysyła `heading_texts` w ładunku insertu i nadpisania (`template-repository.ts:434`) — czyli każde `zapisz_szablon` pada. Nie ma tu zatrzasku w stylu `isReadingTimeUnsupported`/`isSectionPathUnsupported"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-page.tsx:34",
+   "opis": "Tekst `tourRestartDone` („Przewodnik pokaże się przy następnym wejściu na te ekrany.\") obiecuje czynność, której kod W TYM MIEJSCU nie potwierdza — dokładnie klasa z `.claude/rules/learned-patterns.md` (2026-09-09, „komunikat nie obiecuje czynności, której kod nie potwierdza\"). `handleRestart` ustawia `setIsDone(true)` PRZED zapisem, `resetTours` jest best-effort i jego wynik (`Promise<boolean>`) jest odrzucany przez `void`, a przy `userId === null` zapisu nie ma w ogóle — a komunikat i tak się pokazuje (utrwala to test „bez profilu z bramki nie zapisuje niczego, ale gest zostaje policzony\"). Akcja: uzależnić komunikat od wyniku — `void resetTours(userId).then((ok) => { setIsDone(ok); })` pr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9a-limity-seed.sql:137",
+   "opis": "Scenariusz [E2E] `baner-limitu-ofert` z IU-7 asertuje: „po seedzie `dashboard-pusty-seed.sql` żaden baner”. Seed 9a ustawia `profiles.limit_offers_per_month = 5` i `limit_templates = 2` i ZOSTAWIA je po przebiegu (nagłówek seedu, linie 29-35, wprost to przyznaje i odsyła do ręcznego SQL), a `dashboard-pusty-seed.sql` kasuje wyłącznie `offers` (linia 59) i nie dotyka ani `offer_templates`, ani `profiles` — po nim `/szablony` nadal pokazuje baner „limit” (2 z 2), więc asercja planu jest nieosiągalna; sam seed dokumentuje to w liniach 43-44 („/szablony NADAL z banerem”), czyli implementacja jawnie rozjeżdża się ze scenariuszem. Drugi skutek tej samej decyzji: konto E2E jest współdzielone przez "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics-events.ts:26",
+   "opis": "Brak zdarzenia „logowanie\" wymaganego przez R11 („zdarzenia: logowanie, publikacja (z listy), wejście w widok oferty, podłączenie MCP, wgranie grafiki, ekran zgody OAuth, kroki przewodnika i checklisty\") i przez Operator checklist IU-14 („smoke: zdarzenie »logowanie« widoczne w projekcie EU\"). Katalog `ANALYTICS_EVENTS` ma `wylogowanie`, ale nie ma odpowiednika dla wejścia w sesję; `session-context.tsx:47` woła wyłącznie `identifyUser(session.user.id)`, a `identify` nie jest zdarzeniem, więc smoke operatora nie ma czego zobaczyć. Dodatkowo polityka prywatności panelu (`app-privacy-page.ts:79`) deklaruje, że zbieramy „logowanie\". Akcja: dopisać do katalogu `loggedIn: 'logowanie'` i wysłać je "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:88",
+   "opis": "R11/D15 (IU-14) wymagają, żeby do PostHoga nie trafiała ŻADNA treść oferty — dlatego `AnalyticsProperties` dopuszcza wyłącznie liczby, a `offer-details-page.tsx:342` ma komentarz „Zdarzenie NIE niesie sluga ani tytułu: slug jest identyfikatorem oferty konkretnego klienta\". Ta bramka jest obchodzona przez samą konfigurację: `capture_pageview: 'history_change'` każe SDK wysyłać automatyczne `$pageview` z `$current_url`/`$pathname`, a trasy panelu niosą w ścieżce dane wrażliwe — `/oferty/:slug` (routes.ts:10), `/szablony/:id` (routes.ts:43), `/szablony/podglad/:nazwa` (routes.ts:25, NAZWA szablonu handlowca) oraz `/oauth/consent?authorization_id=…` (routes.ts:63). Efekt: slugi ofert klientów i "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/texts.ts:162",
+   "opis": "Opis karty webhooka administratora używa formy męskoosobowej („żebyś nie musiał na nią zaglądać\"), podczas gdy teksty panelu są prowadzone w formie neutralnej — ta sama klasa została świadomie poprawiona w `features/settings/texts.ts` (komentarz przy CONNECTED_APPS_TEXTS: „makieta ma męskoosobowe »którym dałeś«\", w kodzie zostało neutralne „którym masz udzielony dostęp\"). Akcja: zamień człon „żebyś nie musiał na nią zaglądać\" na neutralny, np. „żeby nie trzeba było na nią zaglądać\"."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/invitation-page.tsx:122",
+   "opis": "IU-10 („/zaproszenie\": awaria RPC ma zostawić komunikat, a nie udawać odmowy — patrz test „awaria RPC nie udaje odmowy\" i tekst ACCESS_TEXTS.acceptFailed) jest spełnione TYLKO na ścieżce z checkboxem. W ścieżce automatycznego rozstrzygnięcia (konto `oczekujace` z `terms_accepted_at`, korekta IU-10 z dossier) awaria `accept_invitation()` ustawia `errorMessage`, ale render nigdy do niego nie dochodzi: `needsProbe` (linia 100) pozostaje `true`, bo `useProfile` nie odświeża profilu, więc warunek w linii 122 (`state.status === 'ladowanie' || needsProbe`) zwraca `SessionPending` bezterminowo. Dodatkowo zatrzask `hasProbedRef` blokuje ponowienie. Efekt: zaproszony handlowiec przy mignięciu sieci wi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:254",
+   "opis": "R12 („znika … po ręcznym zamknięciu\") jest spełnione tylko do pierwszej nawigacji: `isDismissed` to stan LOKALNY hooka inicjowany z `profile.isFirstStepsDismissed`, a profil z `AccessGate` po zapisie `dismissFirstSteps` nie jest odświeżany (`use-profile.ts:205` — efekt zależny wyłącznie od `userId`). Po kliknięciu „Zamknij checklistę\" i wyjściu z listy ofert (np. w ofertę i z powrotem) `FirstStepsCard` montuje się na nowo, dostaje stare `isFirstStepsDismissed === false` i karta wraca — mimo poprawnego UPDATE w bazie; znika dopiero po przeładowaniu strony. Akcja: przenieść fakt zamknięcia poza cykl życia komponentu — zatrzask modułowy w `use-first-steps.ts` (np. `let isDismissedInSession = fa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/account.ts:172",
+   "opis": "Zdanie „Usuwanie zostało przerwane. Spróbuj ponownie — konto jest już zablokowane.\" wraca także na ścieżkach, na których usuwanie NIGDY się nie zaczęło: `account.ts:172` (awaria `self.resolveSelf`, czyli weryfikacji tokenu) i `account.ts:270` (awaria `guard.resolveAdminOwnerId`, czyli sprawdzenia roli) — oba PRZED krokiem 1, więc `begin_account_deletion` nie zostało wywołane i `deletion_requested_at` nie jest ustawione. Konto NIE jest zablokowane, a użytkownik dostaje zdanie twierdzące, że jest. IU-7 („Podejście\") wiąże ten tekst wyłącznie z awarią kroku (2) i uzasadnia jego prawdziwość słowami „trigger blokuje od kroku 1\" — poza tym kontekstem jest nieprawdą (learned-patterns 2026-09-09: ko"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-sections.tsx:147",
+   "opis": "Wymaganie R4 („Pole `source` konta (`akademia` / `zewnetrzne`) ustawiane przy zaproszeniu, filtrowalne w widoku »Użytkownicy«\"), przywołane wprost w jednostce IU-11 („Wymagania: R4, R6, R10\"), jest zaimplementowane tylko w połowie: `source` jedzie ze snapshotu i rysuje się jako pigułka na karcie (user-card.tsx), ale sekcja „Konta\" nie ma żadnej kontrolki filtrowania — `snapshot.accounts.map` renderuje całą listę bez stanu filtra, a `grep` po „filtr\" w features/admin/ nie zwraca ani jednego wystąpienia w kodzie produkcyjnym. Przy kilkudziesięciu kontach administrator nie ma jak oddzielić kont z Akademii od zewnętrznych, czyli od podziału, na którym stoi cała logika listy członków (D10)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:293",
+   "opis": "Komentarz przy `catch` opisuje kod, którego już nie ma, i mówi nieprawdę o zachowaniu: twierdzi, że „własnego reportera ma tylko jedna z czterech sond (`visit-summary`)\" i wymienia `probeOfferIds`, podczas gdy w pliku są `probeMcpToken`, `probeOauthGrants`, `probeTemplate`, `probeOffer` i `probeVisit`, żadna nie raportuje samodzielnie (wszystkie oddają `null`), a sondy `visit-summary` ani `probeOfferIds` w ogóle nie istnieją. Akcja: przepisać te dwa zdania na stan faktyczny — „żadna z sond nie raportuje sama, każda oddaje `null`; raport idzie stąd i tylko dla rzutu synchronicznego klienta\" — i usunąć nazwy `visit-summary` oraz `probeOfferIds`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:?",
+   "opis": "IU-6, scenariusz `[E2E] rejestracja-czlonek-link` (plan: seed `e2e/seeds/rejestracja-czlonek-seed.sql`, oczekiwane „Sprawdź skrzynkę” → `auth.users` ma adres, `profiles` = `akademia`/`oczekujace`) został decyzją operatora 16.09 23:05 przepisany na `[Manual]` i pozostaje jedynym niezaznaczonym scenariuszem fazy: droga członka (trafiony hash → `link_wyslany` → konto `akademia`/`oczekujace`) jest potwierdzona wyłącznie unitami na atrapach GoTrue/`fetch`/`registration_precheck` (`login-form.test.tsx:277`, `registration-service.test.ts`). Weryfikacja niewykonalna headless (GoTrue odrzuca `.test`/`.invalid` przy `create_user: true`, pula wbudowanego mailera stagingu 2/h zliczana per żądanie `/otp`"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/webhooks/queue-message.ts:86",
+   "opis": "`isDecisionType` jest CZARNĄ listą (`return typ !== 'otwarta'`), a decyduje o tym, do którego dziennika worker pisze stan doręczenia (`queue-store.ts:263` → `offer_decisions` vs `offer_events`) i którą gałąź kontekstu ładuje `job-loader.ts:302`. Dołożenie czwartego typu do `WEBHOOK_EVENT_TYPES` przepuści go jako „decyzję\" bez błędu typów (predykat `typ is CtaDecisionType` nie jest sprawdzany strukturalnie) i update trafi w niewłaściwą tabelę — klasa z learned-patterns 2026-09-08 („bramka opisana tym, co odrzuca\"). Zamień ciało na zamkniętą białą listę: `return (CTA_DECISION_TYPES as readonly string[]).includes(typ)` z importem `CTA_DECISION_TYPES` z `@oferty/shared` (obok istniejącego import"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/admin-accounts-service.ts:198",
+   "opis": "Cichy sufit metryki: `const withUsage = profileRows.length <= USAGE_PER_ACCOUNT_MAX_ACCOUNTS` (100) sprawia, że przy 101+ kontach KAŻDE konto dostaje `zuzycie: []`, a odpowiedź nie niesie żadnego sygnału, że zużycie nie zostało policzone — panel „Użytkownicy\" (R6: „lista kont … zużycie limitów\") pokaże brak zużycia nieodróżnialny od zużycia zerowego. IU-5 zamawiało w tym miejscu wyłącznie opis progu: „zużycie z `admin_account_limits_usage` per konto (N wywołań — przy ≤ 100 kont akceptowalne; komentarz z progiem)\" — samo wygaszanie danych powyżej progu jest zachowaniem, o które nikt nie prosił, i jest dokładnie tą klasą, przed którą ostrzega learned-pattern o cichym sufitzie `max_rows` (liczn"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-refusals.ts:42",
+   "opis": "`known[outcome.code]` czyta mapę odmów bez `Object.hasOwn`, więc kod odpowiedzi równy nazwie z prototypu (`toString`, `constructor`) oddaje FUNKCJĘ zamiast `undefined` i trafia jako treść toastu — klasa opisana w learned-patterns (2026-08-28), którą ten sam projekt zamyka poprawnie w `features/settings/texts.ts` (`webhookErrorLabel`). Akcja: zamień `const byCode = outcome.code === null ? undefined : known[outcome.code];` na wariant z bramką, np. `const byCode = outcome.code !== null && Object.hasOwn(known, outcome.code) ? known[outcome.code] : undefined;`."
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "traferto-membership-emission",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/traferto_membership.py:125",
+   "opis": "Rozjazd z Unit 2 (Podejście: „klasyfikacja wyniku: `error is None` → parse `data`\"). `_classify` wymaga dodatkowo `result.http_status == 200`, więc odpowiedź 2xx inna niż 200 (np. 202/204 — `send_webhook_json` ustawia `error=None` dla całego `response.is_success`) wpada w gałąź `retryable`: pełna lista hashy leci drugi raz po `retry_delay_seconds`, a przebieg kończy się fałszywym `logger.error(\"traferto_membership_failed\")`. Akcja: zamień warunek w linii 125 na `if result.error is None:` (samo `error is None`, bez porównania `http_status == 200`) — zachowuje `permanent` dla 400/401/413 i `retryable` dla 5xx/timeout, a każdy sukces 2xx klasyfikuje jako `success`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:58",
+   "opis": "R13 („przewodnik przy PIERWSZYM wejściu; stan per ekran w trzech kolumnach `profiles`\") i komentarz samego hooka („JEDEN raz na konto i ekran, nigdy więcej\") są spełnione tylko do pierwszego przeładowania strony. `isEligible` czyta `profile.tourSeen[screen]` z kontekstu `AccessGate`, a ten profil jest odczytywany JEDEN RAZ nad `Outlet`-em (`App.tsx` — grupa tras w `<AccessGate>`), więc po zakończeniu przewodnika `markTourSeen` zapisuje kolumnę w bazie, ale kontekst dalej niesie `false`. `instanceRef` jest lokalny dla montażu, a nawigacja SPA (np. /oferty → /ustawienia → /oferty, albo /szablony → /oferty) odmontowuje ekran, więc przewodnik startuje od nowa przy każdym powrocie na ten sam ekra"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/migration-9b-access.test.ts:185",
+   "opis": "Migracja `…100000` używa literału nowej wartości enuma (`'lista_czlonkow_nie_przyszla'`, linia 1200) w ciele `report_membership_silence()` w tej samej transakcji, w której ten `alter type … add value` stoi (linia 102). Działa to WYŁĄCZNIE dlatego, że funkcja jest `language plpgsql` (ciało parsowane przy pierwszym wywołaniu) — zamiana na `language sql` wywróci migrację kodem 55P04 na świeżej bazie, a `migration-9b-events.test.ts` ma na tę dokładnie klasę strażnik („żadne ciało funkcji nie używa literału nowej wartości enuma\"), którego bliźniaczy plik IU-1 nie ma. Dopisz w `migration-9b-access.test.ts` po zamknięciu pierwszego `describe` (linia 185) test asertujący, że nagłówek `report_members"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/validation.ts:574",
+   "opis": "IU-2 — `validateTemplateDocument` mierzy drugi rozmiar na `finalizeOfferDocument(html)` (arkusz korygujący + wstrzyknięta ikona karty), ale etykieta odmowy widoczna dla wołającego brzmi nadal „dokument szablonu po doklejeniu arkusza korygującego (jak przy publikacji)\" — zdanie opisuje niepełną przyczynę: przy szablonie w przedziale (2 MB − arkusz − ikona, 2 MB − arkusz] odmowa wskaże arkusz, choć próg przekracza dopiero wstawka ikony. Zamień literał na `'dokument szablonu po doklejeniu arkusza korygującego i ikony karty (jak przy publikacji)'` — istniejące asercje `toThrow(/arkusza korygującego/)` w validation.test.ts:705 i :715 nadal pasują."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/template-card.tsx:67",
+   "opis": "Scope creep wobec IU-12. Plan zamawia dokładnie: „`OriginPill` „WBUDOWANY\" znika z listy\" (dossier, IU-12, pole Pliki i Podejście). Diff usuwa z kafla CAŁY `OriginPill`, czyli także pigułkę „WŁASNY\" (`TEMPLATES_TEXTS.pillAuthored`) — zmiana widoczna dla użytkownika na każdym kaflu listy, o którą nikt nie prosił. Builder sam oznaczył ją w korektach fazy jako „DO POTWIERDZENIA PRZEZ OPERATORA w review\" (dossier, wiersz „IU-12, `OriginPill` usunięty z kafla W CAŁOŚCI\"), więc decyzja nie została podjęta — a testy (`template-card.test.tsx:68-69`, `templates-page.test.tsx:504-505`) już ją utrwalają jako kontrakt. Wymaga jawnej decyzji operatora: albo zostawić „WŁASNY\" na kaflach zgodnie z literą I"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-page.tsx:67",
+   "opis": "Przewodnik listy ofert (R13, IU-15: „start po `isLoading === false`\") startuje także na EKRANIE BŁĘDU listy. Strona przekazuje `isPending = state.status === 'loading' || firstSteps.status === 'ladowanie'`, więc dla `state.status === 'error'` (komunikat `OFFERS_TEXTS.loadError`) warunek jest `false` i przewodnik rusza — a że pozycje nawigacji („Ustawienia\", „Pomoc\") są na ekranie, `buildSteps` zwraca kroki z celem i `useScreenTour` odpala `driver()`. Po dojściu do „Koniec\" `onDestroyed` zapisuje `tour_seen_offers = true`, czyli jednorazowy przewodnik spala się na komunikacie o awarii i handlowiec nigdy nie zobaczy kroków „Pierwsze kroki\" i „Adres oferty\". Kontrakt opisuje wprost komentarz sam"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-9b-admin-seed.sql:189",
+   "opis": "IU-4 („Cel\", dossier: „harness E2E ma seed nadający rolę admina kontu `E2E_TEST_EMAIL` **i cofający ją**\") wymaga pary seedów. W repo jest wyłącznie strona nadająca (`faza-9b-admin-seed.sql`, `set role = 'admin'` w linii 189) — `ls e2e/seeds/` nie zawiera żadnego seeda cofającego rolę, a `grep \"role = 'user'\"` trafia tylko w konta pomocnicze `e2e-b`/`e2e-del`, nigdy w konto `e2e@oferty-online.test`. Konto E2E zostaje adminem na stałe na bazie dzielonej ze stagingiem, więc każdy późniejszy scenariusz „zwykły handlowiec nie widzi /uzytkownicy\", „nawigacja bez pozycji admina\" i „ekran limitów bez przycisków admina\" jest niefalsyfikowalny — badałby konto z rolą `admin`. Brakuje pliku analogiczne"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "packages/shared/src/template-contract.ts:73",
+   "opis": "Rozjazd JEDNOSTKI pola `heading_texts` między dwoma bramkami tego samego kontraktu (IU-11: „`check (… ≤ 80 znaków)`\" + „`naglowki: z.array(z.string().max(80))`\"). CHECK bazy liczy `char_length` = PUNKTY KODOWE (migracja 20260913160000:60), a Zod `z.string().max(80)` liczy JEDNOSTKI UTF-16. Dla znaków spoza BMP to dwie różne liczby: nagłówek z 41 emoji ma 41 punktów kodowych (przechodzi CHECK) i 82 jednostki UTF-16 (nie przechodzi `templateSummarySchema`). Komentarz migracji (wiersze 43–46) nazywa Zod „lustrem\" CHECK-a i wywodzi bezpieczeństwo z tego, że repozytorium tnie po grafemach do 80 jednostek UTF-16 — to prawda TYLKO dla zapisu przez serwer, a ta sama migracja uzasadnia istnienie CHEC"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/repository.ts:243",
+   "opis": "R7 („brak funkcji/kolumny w bazie — kod przed migracją — daje JAWNĄ odmowę publikacji z raportem, nie sukces”) i IU-6 Podejście („Kod przed migracją (42703/42883/PGRST202) → awaria z raportem — NIE cichy sukces bez limitu”) są dla ścieżki publikacji spełnione tylko nominalnie. `createSupabaseOfferPublisher` robi wyłącznie `insert` do `offers`, który NIE dotyka `profiles.limit_*` ani `account_limit_counts` — na bazie sprzed migracji `20260913120000` trigger `offers_enforce_account_limits` po prostu nie istnieje, więc baza nie oddaje żadnego 42703/42883, insert przechodzi i `opublikuj_oferte` zwraca sukces bez limitu. Mapowanie 42703 → `OfferPublishError` (repository.ts:257-263) i test „42703 "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/CONCEPTS.md:158",
+   "opis": "IU-9 (R12: „zdania unieważnione tym zadaniem znikają”) — hasło „tryb rejestracji” w pierwszym zdaniu nadal definiuje `zamknieta` jako „konto powstaje wyłącznie z zaproszenia” i `lista_oczekujacych` jako osobny tryb („każdy zostawia adres w »Chcę dostęp«, dostęp nadaje administrator”), a trzy zdania dalej ten sam akapit mówi, że w `zamknieta` „członek AA zakłada konto sam”, a `lista_oczekujacych` jest wyłącznie aliasem `zamknieta`. Kod (`registration_precheck`, `handle_new_user`, `toPanelRegistrationMode`) realizuje drugą wersję. Akcja: w zdaniu otwierającym zamień nawias przy `zamknieta` na „(konto zakłada sam członek Akademii z hashem w `membership_hashes`; pozostali z zaproszenia — wartość"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 72,
+  "2026-08": 60
+ },
+ "potwierdzone_per_severity": {
+  "P2": 58,
+  "P3": 64,
+  "P1": 10
+ }
+}

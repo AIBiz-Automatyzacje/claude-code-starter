@@ -1,0 +1,37 @@
+########## (A) JOURNALE — findingi per os review (runy z etykietami) ##########
+runow z etykietami: 25
+os                 agentow findingi na agenta   P1   P2   P3  OPER/E2E | top pliki
+test-coverage           15       88       5.9    4   43   41         0 | rls.test.ts:6, 20260917100000_membership_hashes_self_registration.sql:4, 20260914100000_access_invitations_admin.sql:4
+code-quality            15       86       5.7    1   26   59         0 | login-form.tsx:4, registration-api.ts:4, limit-error.ts:3
+correctness             15       64       4.3    5   28   31         0 | login-form.tsx:4, CLAUDE.md:3, 20260913120000_account_limits_and_admin_events.sql:3
+security                15       58       3.9    2   27   29         0 | rls.test.ts:6, analytics.ts:4, 20260914100000_access_invitations_admin.sql:3
+performance             15       41       2.7    3   18   20         0 | login-form.tsx:4, analytics.ts:3, 20260914100000_access_invitations_admin.sql:3
+spec-compliance         15       35       2.3    1   23   11         0 | CLAUDE.md:4, use-screen-tour.ts:2, use-first-steps.ts:2
+e2e                     11       19       1.7    0    5   14         0 | ?:6, launch.json:2, samodzielna-rejestracja-czlonkow-aa-zadania.md:2
+dedup: srednio 11.7 findingow w 4.5 grupach duplikatow per faza (n=15)
+verify: {'batch:None': 89}
+fix: {'naprawione': 221, 'nierozwiazaneP2': 1, 'nierozwiazaneP1': 0}
+
+########## (B) RAPORTY review-faza-N — zrodlo per finding ##########
+raportow: 256, findingow rozpoznanych: 220, formaty: {'nowy(zrodlo)': 12, 'inny': 239, 'stary': 5}
+zrodlo (reviewer)                          P1   P2   P3  razem
+brak                                        5   35   65    108
+(bez zrodla — stary format)                 1   29   27     57
+zweryfikowany                               2   18    6     26
+code-quality                                0    6   13     19
+test-coverage                               0    2    7      9
+security                                    1    3    3      7
+correctness                                 0    1    6      7
+performance                                 1    2    4      7
+spec-compliance                             0    3    1      4
+e2e                                         0    1    1      2
+sceptyk sugerowal inna severity (utrzymane): {'P2': 4}
+
+per zadanie (nowy format):
+  faza-1-fundament                     brak:28
+  faza-9b-wielu-uzytkownikow           brak:21
+  siatka-heatmapy-proporcjonalna       brak:8
+  faza-9a-domena-mailer-limity         zweryfikowany:26, code-quality:19, test-coverage:9, security:7, correctness:7, performance:7, spec-compliance:4, e2e:2
+  zalaczniki-w-skrzynce                brak:15
+  e6-notyfikacje-dogfooding            brak:29
+  traferto-membership-emission         brak:7

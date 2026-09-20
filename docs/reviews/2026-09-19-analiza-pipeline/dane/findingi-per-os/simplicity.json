@@ -1,0 +1,424 @@
+{
+ "os": "simplicity",
+ "zgloszone_n": 0,
+ "zgloszone_probka": [],
+ "potwierdzone_n": 55,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/brand-contract.ts:90",
+   "opis": "`FROZEN_TOKENS` (13 wartości: textPrimary, surface, border, radiusy, guttery, ctaMinHeight) nie ma ani jednego konsumenta w `src/` — grep po całym repo (poza `dist/`) daje tylko definicję. To martwy kod, który jest jednocześnie ręcznie zduplikowaną kopią wartości z `template.css`, więc jedyny realny skutek jego istnienia to cichy rozjazd z arkuszem przy pierwszej korekcie stylu. Akcja: usunąć blok `FROZEN_TOKENS` z `brand-contract.ts`; jeśli będzie potrzebny w IU-6/IU-7 (`pobierz_szablon`), dodać go wtedy razem z czytelnikiem."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "app/(tabs)/index.tsx:271",
+   "opis": "Z czterech rzeczy dołożonych do headera realnie działają dwie. `min-w-0` jest no-opem w React Native — Yoga nie ma webowego `min-width: auto` dla elementów flex, domyślne `minWidth` to brak ograniczenia, więc kolumna z `flex-1` (flexBasis 0% + grow 1 + shrink 1) i tak nie rozpycha się treścią. `shrink-0` na prawej grupie też jest no-opem — domyślny `flexShrink` w RN/Yoga to 0 (inaczej niż w webie), a react-native-web wymusza to samo w bazowym stylu View. Zostają dwie klasy-atrapy plus 4-liniowy komentarz, który je tłumaczy, więc czytelnik headera dostaje wyjaśnienie mechanizmu, którego w kodzie nie ma. Akcja: w `app/(tabs)/index.tsx` zostaw `className=\"flex-1 gap-0.5\"` (linia 275) i `classNa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md:272",
+   "opis": "Sekcja „Dług odłożony świadomie” zamykająca fazę 5 mówi „Dwie pozycje należą do operatora” i wymienia wyłącznie ocenę czytelności mapy bez legendy oraz dowód, że sandbox tłumi tracker (checklista fazy 3). Realnie w docs/active/faza-5-heatmapa/faza-5-heatmapa-zadania.md, sekcja „Operator checklist faza 2”, wisi OSIEM nieodhaczonych pozycji operatorskich, w tym takie, bez których funkcja fazy nie działa na produkcji: build-arg VITE_OFFER_ORIGIN w Coolify (bez fail-fast — brak wpisu daje cicho pustą skorupę bloku mapy), zgodność APP_ORIGIN z frame-ancestors, idempotentność seeda E2E wykonanego dotąd raz, cztery pozycje visual review i brakująca para makiety stan-limit-agregatu. Dokument mapy fa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/seed-test-users.ts:130",
+   "opis": "Martwa gałąź warunku: `host.split('.').includes(MAIN_PROJECT_REF) || host === MAIN_PROJECT_REF`. Drugi człon nie może dorzucić trafienia — jeśli `host === MAIN_PROJECT_REF`, to `host.split('.')` zwraca `[MAIN_PROJECT_REF]`, więc pierwszy człon już jest prawdziwy. Akcja: zostaw `if (host.split('.').includes(MAIN_PROJECT_REF)) {`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/brand-contract.ts:52",
+   "opis": "`SELF_HOSTED_FONTS` to jednoelementowa tablica obiektów, której pole `file` ('/f/inter-v1.woff2') nie jest nigdzie czytane — ścieżkę do pliku i tak wpisuje na sztywno `@font-face` w `template.css`. Cała struktura służy wyłącznie do wyliczenia `ALLOWED_FONT_FAMILIES` przez `.map()`. Akcja: zastąp linie 52–58 jednym `export const ALLOWED_FONT_FAMILIES: readonly string[] = ['Inter'];` (komentarz o zamkniętej liście zostaw). Struktura z `file` ma sens dopiero, gdy pojawi się drugi krój ALBO gdy `@font-face` zacznie być generowany z tej listy."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/features/rozmowy/EkranRozmow.tsx:88",
+   "opis": "Martwa gałąź w `cytatPosta()`: `if (skrocony === '') return zdjecia === 0 ? 'Post bez treści' : 'Post ze zdjęciami · N'`. Zestaw postów jest stały i zaseedowany migracją — `data/posty-publiczne.json` ma 42 posty i ZERO z pustą treścią, więc `skrocony` nigdy nie jest pusty. To defensywa na scenariusz, który nie może wystąpić (coding-rules §5). Akcja: usunąć gałąź pustej treści i zostawić `return zdjecia === 0 ? skrocony : skrocony + ' · zdjęć: ' + zdjecia;`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/index.ts:20",
+   "opis": "Funkcja writeLine(stream, message) opakowuje jedno wywołanie stream.write i ma jedno użycie (l.29), a parametr `stream` nigdy nie przyjmuje innej wartości niż process.stderr — parametryzacja bez drugiego wywołania. Akcja: usunąć funkcję writeLine i w loadConfig zapisać wprost `process.stderr.write(`${error.message}\\n`);`, przenosząc istniejący komentarz o braku loggera nad tę linię."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/tracking/visit-service.ts:2074",
+   "opis": "Opcja `cache?: OfferCache<TrackingOffer>` w `CachedTrackingOfferLoaderOptions` ma dokladnie jednego wolajacego, ktory podaje... wartosc identyczna z domyslna (`visit-service.test.ts`: `cache: createOfferCache<TrackingOffer>()`). Zero uzyc odbiegajacych od defaultu = brak uzasadnienia dla parametru. Akcja: usunac `cache` z `CachedTrackingOfferLoaderOptions`, tworzyc cache bezwarunkowo w ciele funkcji, i skasowac argument `cache:` z testu „nie pyta bazy przy kolejnym zdarzeniu tej samej wizyty\" (asercja `load` wolany raz zostaje bez zmian)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260828120000_visits_tracking.sql:430",
+   "opis": "Podwojna obrona przed NULL: merge_visit_increments owija p_sections i p_heat w coalesce(..., '{}'::jsonb), a jsonb_sum_numeric i tak coalesce'uje oba argumenty wewnetrznie (linie z jsonb_each(coalesce(a/b, ...))). Do tego ladunek waliduje Zod w Node, a funkcje wola wylacznie service_role — scenariusz NULL jest praktycznie niemozliwy, a broni sie przed nim w dwoch miejscach naraz. Akcja: usun coalesce wokol p_sections/p_heat w merge_visit_increments (helper juz to robi); coalesce(p_scroll_depth_pct, 0) mozna zostawic, bo greatest z NULL daloby NULL."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "components/goal-card.tsx:131",
+   "opis": "Po tej fazie `onCheckIn` z Home jest SYNCHRONICZNE i nie rzuca (`handleCheckIn` woła tylko `beginPending`), a podwójny tap blokuje już (a) `beginPending` (najwyżej jeden pending) i (b) nowy `isCheckInBlocked`. Cała maszyneria E3 w karcie — `useState(isCheckingIn)`, `async handlePress`, `try/catch` z `captureException`, `finally` — nie ma już czego strzec (stan przełącza się true→false w jednym mikrozadaniu), a `GoalCard` ma tylko jednego konsumenta (`app/(tabs)/index.tsx:472`). Akcja: zawęź prop do `onCheckIn?: () => void`, usuń stan `isCheckingIn` wraz z `handlePress` (`onPress={onCheckIn}`), zostaw `isDisabled = isTargetReached || onCheckIn === undefined || isCheckInBlocked`; test E3 na gu"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/webhooks/schedule.ts:1611-1615",
+   "opis": "Defensywa na scenariusze, które nie mogą wystąpić. `RETRY_DELAYS_SECONDS[readCt - 1] ?? RETRY_DELAYS_SECONDS[RETRY_DELAYS_SECONDS.length - 1] ?? 0` ma dwa nieosiągalne fallbacki: `read_ct` z pgmq startuje od 1, a `worker.ts` zamyka zadanie przez `closeAsFailed`, gdy `readCt >= MAX_DELIVERY_ATTEMPTS` (5), więc do gałęzi ponowienia wchodzi wyłącznie readCt 1-4 → indeks 0-3 zawsze istnieje; drugi `?? 0` na krotce `as const` jest martwy z definicji. Dodatkowo `Math.min(..., MAX_RETRY_DELAY_SECONDS)` i `Math.max(0, ...)` na ścieżce jittera są nieosiągalne (max 7200 × 1,2 = 8640 < 86 400, a `base * (1 + jitter)` nigdy nie jest ujemne) — sens mają tylko na ścieżce `Retry-After`. Akcja: zostawić cla"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/rate-limit.ts:126",
+   "opis": "Martwe gałęzie w resolveClientKey. (1) `String.prototype.split` zawsze zwraca co najmniej jeden element, więc `firstForwarded === undefined` nigdy nie zachodzi — wystarczy `(forwardedFor ?? '').split(',')[0]?.trim()` i sprawdzenie pustego łańcucha. (2) W gałęzi po `isTrustedAddress` adres połączenia z definicji sparsował się poprawnie, więc `connectionKey` nie może tam być `null` — końcowe `?? SHARED_CLIENT_KEY` (linia 132) jest nieosiągalne. Akcja: usunąć oba warunki, zostawić `return forwardedKey ?? connectionKey` z typem zawężonym w gałęzi zaufanej."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/features/rozmowy/WatekRozmowy.tsx:119",
+   "opis": "Odzyskiwanie obiekcji przez powtórny POST to najdroższa złożoność fazy i da się ją usunąć bez utraty funkcji. Ponieważ `GET /api/stan` nie oddaje obiekcji, wznowiona sesja wymusiła: czwarty wariant `WiedzaOObiekcji` ('nieznana'), czwarty status listy 'w-toku' (poza trzema z SPEC/planu, `ListaLeadow.tsx:14`), gałąź w `stanRozmowy()` (`EkranRozmow.tsx`), efekt `odzyskaj()` z własnym AbortController i obsługą błędu (`WatekRozmowy.tsx:126-151`), komunikat „Wczytuję dalszy ciąg rozmowy…\" oraz cichy, niezamierzony przez kandydata POST `/api/leady/:id/wiadomosc` przy każdym otwarciu wcześniej rozpoczętej rozmowy — także rozmowy już domkniętej. Cała ta maszyneria istnieje po to, żeby odczytać jedno "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/mcp/token-service.ts:33",
+   "opis": "Pole `McpTokenIdentity.ownerId` jest zwracane (token-service.ts:249), ale jedyny konsument resolvera — middleware w `apps/server/src/mcp/server.ts:556-560` — czyta wyłącznie `identity.accessToken` i zapisuje do `McpAuthOutcome` tylko jego. `ownerId` żyje dziś wyłącznie w asercjach testów. Akcja: albo zawęź `McpTokenIdentity` do samego `accessToken` (i popraw `expect(identity).toEqual(...)` w token-service.test.ts:162 oraz stub w server.test.ts:60), albo użyj `ownerId` tam, gdzie ma wartość — np. jako pole w `logger` przy awarii/odmowie na ścieżce tokenu z bazy."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": ".dockerignore:11",
+   "opis": "Linia `!.env.example` jest martwa: Dockerfile nie robi `COPY . .` — każdy COPY wymienia konkretne ścieżki i żaden nie dotyczy `.env.example`. Re-include niczego nie wnosi, a komentarz w liniach 7-8 twierdzi nieprawdę („zostaje jako dokumentacja nazw zmiennych\"), bo plik i tak nie trafia do obrazu. Akcja: usuń linię 11 i skróć komentarz do samego stwierdzenia, że sekrety nie wchodzą do kontekstu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "Dockerfile:9",
+   "opis": "`ENV PNPM_HOME=/pnpm` + `ENV PATH=$PNPM_HOME:$PATH` (linie 9-10) to martwa konfiguracja — pnpm trafia do obrazu przez `corepack enable`, które instaluje shimy w `/usr/local/bin` (już w PATH); katalog `/pnpm` nigdy nie powstaje ani nie jest używany (nie ma `pnpm install --global` ani `pnpm setup`). Akcja: usuń obie linie ENV z warstwy `base`."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": ".maestro/_seed-constants.sql:32",
+   "opis": "Nowe sekcje „KONSUMENCI\" w `_seed-constants.sql:32-35` i `_session-bootstrap.yaml:26-31` wyliczają z nazwy wszystkie 15 flow/seedów, a w tym samym akapicie przyznają, że kanoniczną listą jest `FLOWS_ALL` w `run-all.sh` — to trzecia i czwarta ręcznie utrzymywana kopia tej samej listy, aktualizowana przy każdym nowym flow i cicho rozjeżdżająca się (dokładnie ta klasa driftu, która w tej fazie zostawiła osiem nieaktualnych zdań o `applesimutils`). Akcja: zastąpić wyliczenia jednym zdaniem bez nazw — „konsumenci: każdy flow/seed z `FLOWS_ALL` w `.maestro/run-all.sh` (plus `_canary.yaml`, jedyny z `KEEP_SESSION`)\" — zostawiając w obu nagłówkach wyłącznie informację o skutku zmiany („dotyka całego"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/events.ts:138",
+   "opis": "`heatSchema.refine(… <= MAX_HEAT_KEYS)` jest martwy z konstrukcji i sam komentarz to przyznaje („refine nie ma jak odpalić\") — regexp klucza dopuszcza dokładnie 1024 różne klucze, więc warunek nigdy nie może być fałszywy. To defensive code na scenariusz, który nie może wystąpić (anty-pattern #10 z coding-rules). Akcja: usunąć `.refine(...)` i stałą `MAX_HEAT_KEYS` z `events.ts`, zostawiając sufit 1024 wyłącznie tam, gdzie jest żywy — w `merge_visit_increments`; ewentualną zależność opisać jednym zdaniem przy `HEAT_CELL_PATTERN`. (Analogiczny `refine` przy `sectionsSchema` zostaje — tam odsiewanie kluczy sprawia, że warunek jest realny.)"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/notifications.ts:187",
+   "opis": "`DEFAULT_SETTINGS` (187-191) powiela na sztywno defaulty, których jedynym źródłem prawdy ma być `lib/notifications-settings.ts` — a jego docstring mówi wprost „Wszystkie defaulty są w jednym miejscu; drugi punkt wiedzący »brak pory = 20:00« rozjechałby się z pierwszym\". `isGlobalEnabled: true` i `isDailyEnabled: false` to dokładnie wyniki `parseGlobalNotificationsToggle(null)` i `parseDailyNotificationsToggle(null)`, zapisane po raz drugi. Akcja: zbuduj `DEFAULT_SETTINGS` z parserów (`isGlobalEnabled: parseGlobalNotificationsToggle(null)`, `isDailyEnabled: parseDailyNotificationsToggle(null)`, `dailyTime: DEFAULT_DAILY_REMINDER_TIME`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:914",
+   "opis": "Test „B nie odczyta grid_rows wizyty A — nowa kolumna nie rozluźnia izolacji\" sprawdza scenariusz niemożliwy: izolacja `visits` jest wierszowa (polityka po `offers.owner_id`), a dopisanie kolumny do grantu SELECT nie ma jak jej rozluźnić — pokrywa to już „A nie odczyta wizyt oferty B\" (linia ~934) z kontrolną asercją kluczem sekretnym. Akcja: usunąć ten `it`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-kontekst.md:734",
+   "opis": "TRUSTED_PROXY_IPS jest teraz wymagana i niepusta — bez wpisania realnej wartości w Coolify proces NIE WYSTARTUJE po deployu (świadomy fail fast, ale blokuje wdrożenie). Wartości nie da się wyznaczyć headless: wymaga podejrzenia adresu połączenia widzianego przez proces za Traefikiem na żywym wdrożeniu, a następnie powtórzenia pomiaru z fazy 1 (żądania z różnymi X-Forwarded-For przez publiczny FQDN) w celu potwierdzenia, że limit działa per-klient, a nie globalnie. Poza zakresem weryfikacji kodu — pozycja checklisty operatora."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/package.json:8",
+   "opis": "Dwa punkty wejścia do jednego modułu: `exports` deklaruje `\".\" -> ./src/index.ts` (barrel re-eksportujący env) ORAZ `\"./env\" -> ./src/env.ts`. Nie ma jeszcze ani jednego konsumenta, więc od startu istnieją dwie równoważne ścieżki importu tego samego API — to zaproszenie do niespójności w IU-4/IU-6. Akcja: usuń wpis `\"./env\"` z `exports` i zostaw wyłącznie barrel `.` (albo odwrotnie — usuń `index.ts` i wpis `.`), jeden kanoniczny import."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts:32",
+   "opis": "Test „zastępczą gęstością wierszy jest siatka sprzed migracji\" asserta `DEFAULT_GRID_ROWS === 16` — sprawdza literał sam ze sobą, nie zachowanie, i to dla niego rozszerzono eksport modułu. Zachowanie pokrywa już test „brak grid_rows, null i wartość poza zakresem znaczą siatkę 16-wierszową\" (linia 297). Usuń ten `it` i zdejmij `export` z `DEFAULT_GRID_ROWS` w heatmap-grid.ts:24."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/src/pii.ts:20",
+   "opis": "`SECRET_FIELD_NAMES` zawiera `'mcpBearerToken'`, którego w repo nie ma — nie ma takiego pola ani w `ServerConfig` (jest `MCP_BEARER_TOKEN`), ani w `CreateMcpRoutesOptions` (jest `bearerToken`); jedyne wystąpienie to sztuczne pole w `server.test.ts:247`. To wpis „na wszelki wypadek\" (i test napisany pod niego, nie pod realny kształt logu). Akcja: usuń `'mcpBearerToken'` z listy i z asercji testu, zostawiając `MCP_BEARER_TOKEN` i `bearerToken`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:848",
+   "opis": "Test „A odczytuje grid_rows własnej wizyty — kolumna jest w kolumnowym grancie SELECT\" dubluje istniejący test tuż nad nim: `KOLUMNY_WLASCICIELA` dostało `grid_rows` (linia 773), więc brak kolumny w grancie wywala tamten select błędem INSUFFICIENT_PRIVILEGE. Wartość `16` pokrywa z kolei następny test (domyślna wartość kolumny). Nowy przypadek nie może paść samodzielnie. Akcja: usunąć ten `it` — regresja grantu jest już pod asercją przez `KOLUMNY_WLASCICIELA`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/repository.ts:138",
+   "opis": "`PublishedOfferRef` (`slug` + `ownerId`) jest zwracane przez `OfferPublisher`, ale nigdzie nie konsumowane: `publishOfferFromTool` robi `await publishOffer(...)` i wynik odrzuca, budując link z własnego `slug`. Komentarz obiecuje „do logu i do potwierdzenia w odpowiedzi\" — ani jedno, ani drugie nie istnieje. To abstrakcja bez użycia (YAGNI) plus mylący komentarz. Zmień sygnaturę `OfferPublisher` na `Promise<void>` i usuń `PublishedOfferRef` wraz z `return { slug, ownerId }` (fake publisher w teście uprość analogicznie) — albo faktycznie zaloguj `ownerId` po zapisie."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx:13",
+   "opis": "Faza wyciągnęła do packages/shared samą stałą DISPLAY_TIME_ZONE, ale identyczny blok `new Intl.DateTimeFormat('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric', timeZone: DISPLAY_TIME_ZONE })` stoi teraz w czterech miejscach: apps/dashboard/src/features/offers/offers-list.tsx:13, apps/dashboard/src/features/settings/mcp-token-card.tsx:10, apps/server/src/offer/validity-date.ts:10 i apps/server/src/offer/expired-page.ts:35. To nie jest prosta duplikacja dwóch użyć, którą reguła „Duplication > Complexity” dopuszcza — to cztery kopie tej samej decyzji prezentacyjnej, a moduł współdzielony na nią już istnieje. Akcja: dopisz `export function formatDisplayDate(date: Date): string` do packa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/decisions.ts:213",
+   "opis": "Handler `POST /d/:slug/akceptacja` woła `readBody(context)` i WYRZUCA wynik — akceptacja nie ma ładunku, a mimo to trasa buforuje do 16 KB ciała i potrafi odpowiedzieć 413 na żądanie, którego treści nikt nie czyta. Akcja: usuń wywołanie `readBody` (i gałąź `if ('response' in body)`) z handlera akceptacji, zostawiając je wyłącznie w handlerze pytania; test `decisions.test.ts` sprawdzający 413 dotyczy `/pytanie` i pozostaje zielony."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/auth.ts:330",
+   "opis": "`cancelAllNotifications()` wisi wyłącznie na jawnym `signOut()`, a to nie jest jedyne wyjście z sesji: `lib/session.tsx:148` woła `stopSync()` (zamknięcie bazy usera) dla KAŻDEGO przejścia `userId → null`, w tym wygaśnięcia/unieważnienia tokena z `onAuthStateChange`, oraz przy przejściu A→B bez stanu signed-out (cleanup efektu, `lib/session.tsx:192`). W tych ścieżkach żądania zaplanowane dla konta A zostają w systemie — czyli dokładnie stan, przed którym broni A.9 i komentarz przy tym wywołaniu („konto B dostałoby przypomnienia konta A z nazwą jego celu w treści\"). Sprzątanie następuje dopiero przy pierwszym udanym `runReplan` kolejnego usera, a ten wychodzi przedwcześnie przy `permission !="
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "docs/design.md:335",
+   "opis": "Bullet heatmapy w design systemie wciąga do siebie wyjaśnienie mechaniki trackera („waga komórki to licznik próbek ruchu i dotknięć, a nie czas ani jednostka, którą czytelnik zna z góry”), przez co ta sama argumentacja stoi teraz w trzech plikach: docs/design.md, kontekst fazy (akapit „Rozjazd znaczenia wagi komórki”) i sekcja zamknięcia w brainstormie (punkt 5). design.md rozstrzyga wygląd, nie semantykę pomiaru — a przy najbliższej zmianie trackera trzy kopie rozjadą się po cichu. Akcja: skróć bullet do decyzji i wskaźnika, np. „bez legendy — jednozdaniowy podpis w `ink-muted` pod mapą (decyzja 1.5 = A, faza 5; uzasadnienie w sekcji zamknięcia fazy 5)”, zostawiając uzasadnienie w jednym mi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "package.json:15",
+   "opis": "`build:prod` jest funkcjonalnym duplikatem istniejącego skryptu `build` (`pnpm -r --if-present run build`) — pnpm uruchamia skrypty rekurencyjnie w kolejności topologicznej grafu workspace, więc `@oferty/shared` i tak buduje się przed `@oferty/dashboard` i `@oferty/server`. Nowy skrypt nie dodaje żadnego zachowania, a wprowadza ręcznie utrzymywaną listę filtrów, którą trzeba pamiętać zaktualizować przy każdym nowym pakiecie (faza 2 dokłada kolejne). To duplikacja logiki, którą narzędzie robi samo. Akcja: zamień treść `build:prod` na `pnpm -r run build` (bez `--if-present`, żeby brak skryptu build w pakiecie był głośny), albo usuń `build:prod` i w Dockerfile (linia 45) wołaj `pnpm run build`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": ".dockerignore:19",
+   "opis": "Spekulatywne i redundantne wpisy: `build/`, `.venv/`, `__pycache__/`, `coverage/`, `.vite/`, `supabase/.temp/` nie istnieją w repo (repo nie ma Pythona ani kroku coverage), a `node_modules/` (l. 4) i `dist/` (l. 19) są nadmiarowe wobec `**/node_modules/` (l. 5) i `**/dist/` (l. 20), bo wzorzec `**/` obejmuje też katalog główny. Plik ma realnie znaczenie tylko dla rozmiaru kontekstu buildu, bo wszystkie COPY są jawne. Akcja: skasuj linie 4, 19, 21 (`build/`) oraz 27-32 poza tym, co faktycznie istnieje (`.playwright-mcp/`), zostawiając wpisy wymagane przez plan: `**/node_modules/`, `.env`/`.env.*`, `docs/`, `.git/`, `**/dist/`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md:390",
+   "opis": "Zadanie IU-6 brzmiało „oznacz fazę 5 jako zamkniętą wzorcem z faz 1–4”, ale wzorzec zamknięcia obejmuje też koniec dokumentu, a ten został pominięty: linia 392 nadal wymienia tylko fazy 1–4 („Faza 1 zamknięta …, faza 4 zamknięta 2026-08-29”), linia 390 nadal instruuje „Potem /dev-plan dla Fazy 5 — Heatmapa, po rozstrzygnięciu jedynej bramki: kubełkowania agregatu…”, a linia 394 otwiera sekcję „Do wzięcia pod uwagę przy planowaniu fazy 5”. Po commicie bb99e9d ten sam dokument twierdzi jednocześnie, że faza 5 jest ZAMKNIĘTA (linia 230) i że dopiero czeka na zaplanowanie — czytelnik wchodzący od „Następnych kroków” (naturalny punkt wejścia mapy faz) dostaje nieaktualną instrukcję. Kontekst fazy"
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-08-29-001-feat-symulator-poczekalni-plan.md:855",
+   "opis": "Weryfikacje IU-11 i IU-12 są niewykonalne headless w tej sesji i nie są defektem kodu: `docker build .` + odpowiedź obrazu na `/api/zdrowie`, `grep -r \"SESSION_SECRET|DISCORD_WEBHOOK\" dist/`, `npm run db:migrate` na żywej bazie, `bash scripts/wyniki.sh` (wymaga `psql` i bazy z danymi) oraz cała lista kontrolna z `docs/operator/wdrozenie.md` (certyfikat Let's Encrypt, nagłówki Cache-Control w przeglądarce, niedostępność bazy z internetu, kopie zapasowe w Coolify). Wymagają realnego wdrożenia i dostępu do panelu Coolify. Kolejność: najpierw naprawa P1 (wiring `App.tsx`), bo bez niego punkt „pełne przejście zadania: link → instrukcja → moderacja → rozmowy → podziękowanie\" nie ma jak przejść."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:308",
+   "opis": "DEFAULT_OFFER_RATE_LIMIT = 1200/min został dobrany JAKO OBEJŚCIE braku kluczowania per-klient (poprzedni komentarz mówił to wprost: wszystkie żądania bez XFF w jednym wiadrze, więc próg musiał pomieścić cały mailing naraz). IU-8 usuwa tę przyczynę — klucz jest teraz per-klient — ale wartość 1200 została nietknięta, a komentarz przepisano tak, by ją uzasadnić post factum („dwie populacje nie dzielą progu\"). Po zmianie 1200/min dotyczy POJEDYNCZEGO adresu, czyli ~240 odsłon oferty na minutę z jednego IP — to praktycznie brak limitu na publicznym originie ofert. Akcja: przeliczyć próg dla wiadra per-klient (odsłona = ~5 żądań, więc np. 60–120/min na klienta w pełni wystarcza) i zaktualizować ko"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/aa-pages.ts:23",
+   "opis": "Strony systemowe AA (404 „Nie znaleźliśmy tej strony\" i 503 „Chwilowo niedostępne\") budują własną powłokę dokumentu i własny arkusz bazowy, mimo że IU-5 wprowadził dokładnie do tego `renderAaDocument` w `apps/server/src/offer/pages/aa-design.ts` — którego komentarz nagłówkowy wprost wymienia stronę „nie znaleziono\" jako jednego z trzech konsumentów. Efekt: ~40 linii duplikatu (@font-face, tło, kolory, typografia h1/p, stopka) obok drugiego, kanonicznego renderera, a przy okazji rozjazd zachowania — strony z `aa-pages.ts` jako jedyne nie dostają `<link rel=\"icon\">` z `FAVICON_PATHS`. Akcja: przepisać `renderAaPage` na `renderAaDocument({ documentTitle, stylesheet, body })`, zostawiając w `ren"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/brand-contract.ts:90",
+   "opis": "`FROZEN_TOKENS` to martwy eksport: 11 wartości (kolory, promienie, szerokości, gutter) nie ma ANI JEDNEGO użycia w kodzie ani w testach (grep po całym repo — trafienia tylko w definicji i w gitignorowanym `dist/`). Wartości są dosłownym duplikatem tego, co już stoi w `template.css`, a komentarz sam to przyznaje („powielone w template.css\"). Duplikat bez konsumenta nie chroni przed niczym, za to gwarantuje dryf: zmiana w CSS nie ruszy tej mapy i nikt się nie dowie. Akcja: usuń cały blok `FROZEN_TOKENS` (linie 88–104); `template.css` zostaje jedynym miejscem tych wartości. Jeśli w IU-7 pojawi się realny konsument progu/tokenu, wprowadź wtedy pojedynczą stałą, której ktoś faktycznie używa."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "app/(tabs)/settings.test.tsx:248",
+   "opis": "Dwa testy dev-listy w suicie EKRANU powielają 1:1 suitę komponentu `components/dev-notifications-panel.test.tsx`: 248 („renderuje WŁASNY format wpisu — identifier, termin, goalId\") i 275 („pusty plan mówi to wprost\") asertują dokładnie ten sam format wiersza i ten sam `DEV.empty`, które panel testuje u siebie (własne testy formatu weekly/daily/date + `DEV.empty`). Po wyjęciu panelu do osobnego komponentu ekran powinien dowodzić wyłącznie WPIĘCIA. Akcja: usunąć test z linii 275, a test z 248 zredukować do jednej asercji, że panel dostaje wpisy z `listScheduledNotificationsForDev` (obecność `dev-notifications-list` + jednego `dev-notifications-item-<identifier>`); testy z 281 (tap → adapter) i"
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/features/moderacja/PrzyciskiDecyzji.tsx:21",
+   "opis": "DECYZJE jest eksportowane, a używane wyłącznie wewnątrz tego pliku (linia 70) — nawet test go nie importuje. Narusza §3 reguł („jeden eksport per plik dla głównych modułów\"). Akcja: usunąć słowo export z linii 21."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/week.ts:126",
+   "opis": "Docstring `dayOf` deklaruje, że sprząta „trzy kopie `Number(date.slice(8, 10))`\", a dedup objął tylko dwie (`components/goal-history-card.tsx`, `app/goal/[id].tsx`) — trzecia żyje dalej w `components/energy-history-card.tsx:88-91` (`parseDate` z własnym `slice(5,7)`/`slice(8,10)`, bez walidacji formatu, czyli z tym samym ryzykiem „NaN w copy\", którym uzasadniono nowe helpery). Zostaje więc i duplikacja, i nieprawdziwy opis w miejscu, które ma być jednym źródłem kontraktu daty. Akcja (jedna z dwóch, nie obie): albo przepisać `parseDate` w `energy-history-card.tsx` na `{ month: monthIndexOf(date) + 1, day: dayOf(date) }` (call site `MONTHS[from.month - 1]` zostaje bez zmian), albo poprawić doc"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:287",
+   "opis": "Dwa wywołania `Number.isFinite` w `isUsableAsFrame` są martwe: dla `NaN`/`undefined` porównanie `>= MIN_USABLE_FRAME_WIDTH` i tak daje `false`, a `+Infinity` nie wyjdzie z kolumn `integer`/`smallint`, no i tak przycina je sufit w `clampDimension`. Usuń linie 287–288, zostawiając same porównania z progami."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/observability/logger.ts:27",
+   "opis": "Sześć wpisów w REDACTED_PATHS jest w całości pokrytych wcześniejszymi wildcardami (fast-redact traktuje '*' jako dokładnie jeden poziom, a te ścieżki mają dokładnie dwa segmenty): 'headers.authorization' (l.27) pokryte przez '*.authorization', 'headers.cookie' (l.31) przez '*.cookie', 'req.ip' przez '*.ip', 'req.remoteAddress' przez '*.remoteAddress', 'headers[\"x-forwarded-for\"]' przez '*[\"x-forwarded-for\"]' oraz 'headers[\"x-real-ip\"]' przez '*[\"x-real-ip\"]'. Akcja: usunąć te sześć linii z tablicy REDACTED_PATHS — zachowanie i testy redakcji bez zmian, lista krótsza o 15%."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "app/(tabs)/index.tsx:150",
+   "opis": "Dwa źródła prawdy o tym samym oknie cofnięcia: blokada kart czyta moduł (`pending.status === \"pending\"`, :486), a progres optymistyczny toast (`pendingGoalId`, :~338). Moduł wraca do `idle` w `runCommit` PRZED `emitCommitted`, a `handleCommitted` robi jeszcze `await refresh()` — powstaje realna luka, w której (a) toast wciąż pokazuje odliczanie i przycisk „Cofnij\", który jest już martwy (`undo()` zwraca false, bo `pendingWindow === null`), (b) WSZYSTKIE check-buttony są znów aktywne. Tap w tej luce otwiera nowe okno i woła `showPending(...)`, po czym kończące się `handleCommitted` poprzedniego check-inu robi `showSuccess(...)` i KASUJE toast świeżo otwartego okna — user traci jedyną afordanc"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-section-times.tsx:18",
+   "opis": "Martwy guard w `barWidth`: `if (maxSeconds <= 0) return '0%'`. Funkcja jest wołana wyłącznie wewnątrz gałęzi `section.hasTime` (linia 44), a `hasTime === true` oznacza `seconds > 0`, więc `maxSeconds >= seconds > 0` z definicji `maxSectionSeconds` (analytics.ts:467). Akcja: usuń guard i zostaw jedno wyrażenie `${(seconds / maxSeconds) * 100}%`; przy okazji `MIN_BAR_CLASS` (jedno użycie, linia 45) wstaw wprost w className."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-08-29-001-feat-symulator-poczekalni-plan.md:507",
+   "opis": "Weryfikacja niewykonalna headless: (1) cały zestaw testów serwera i migracji wymaga żywego Postgresa z `docker compose up -d db` (server/test/baza.ts:26 i db/migrate.test.ts:17 rzucają bez DATABASE_URL) — bez uruchomionego kontenera nie da się potwierdzić zieleni; (2) checklista operatora IU-5 „potwierdź, że powiadomienie dotarło na Discorda\" wymaga realnego webhooka — testy pokrywają wyłącznie ścieżkę z podstawionym `fetch`. Oba punkty do wykonania przez operatora, nie defekt kodu."
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-08": 36,
+  "2026-09": 19
+ },
+ "potwierdzone_per_severity": {
+  "P3": 49,
+  "P2": 5,
+  "P1": 1
+ }
+}

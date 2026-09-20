@@ -1,0 +1,625 @@
+{
+ "os": "performance",
+ "zgloszone_n": 41,
+ "potwierdzone_n": 183,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer.ts:97",
+   "opis": "Brak cache'owania wyniku negatywnego i wygasłego. `cache.set` świadomie odmawia zapisu oferty po terminie (cache.ts:83), a nieznany slug nie zapisuje niczego — więc KAŻDE wejście na wygasłą ofertę i KAŻDE trafienie w nieistniejący slug o poprawnym formacie generuje osobne zapytanie do Supabase, ciągnące pełną kolumnę `html`, z której ścieżka wygaśnięcia nie korzysta w ogóle (używa 5 małych kolumn). SKUTEK: rozesłany link do oferty, która wygasła, jest klikany dalej przez kolejne dni — każde kliknięcie to pełny odczyt wiersza z ~280 KB `html` tylko po to, by wyrenderować planszę; przy skanerze pukającym w losowe slugi ruch do bazy jest wprost proporcjonalny do ruchu z zewnątrz. Obie sytuacje "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:273",
+   "opis": "Checklista sonduje bazę przy KAŻDYM wejściu na /oferty, także na kontach, które onboarding dawno skończyły. Efekt startuje, gdy `isEligible` (stan `aktywne` i brak ręcznego zamknięcia), a warunek „4/4 → karta ukryta\" liczy się dopiero PO odpowiedziach — świadoma decyzja „karta znika BEZ zapisu do bazy\" oznacza, że nie ma czego zapamiętać. Koszt: pięć równoległych żądań na każde wejście w listę (mcp_tokens, offer_templates, offers, visits + `supabase.auth.oauth.listGrants()` do GoTrue), dożywotnio, na najczęściej odwiedzanym ekranie; `probeOffer` dubluje przy tym pytanie, na które ten sam render odpowiada już przez `useOffers`. Drugi skutek jest widoczny dla użytkownika: `offers-page.tsx` wst"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx:46",
+   "opis": "Klucz listy wizyt to `${index}-${startedAt}` — pozycyjny, wiec React nie zachowa DOM przy zmianie kolejnosci lub dolozeniu wizyty. Stabilny klucz jest dostepny za darmo: kolumna `visits.id` jest objeta grantem SELECT dla `authenticated` (migracja 20260828120000, linia 259). Akcja: dopisac `id` do `OFFER_DETAILS_COLUMNS` w `use-offer-details.ts:17`, przeniesc je do `OfferVisit` i uzyc `key={visit.id}`."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/utworz-tokeny.ts:109",
+   "opis": "`utworzKandydatow()` wykonuje osobny `insert` w pętli `for (const etykieta of etykiety)` — klasyczny N+1 zapis (coding-rules §12) i, co ważniejsze, brak atomowości: przy błędzie na trzeciej etykiecie dwaj pierwsi kandydaci zostają w bazie, a operator dostaje wyjątek i musi zgadywać, kogo już założył (tokenów pierwszej dwójki nie zobaczy, bo `wypiszLinki` woła się dopiero po całej pętli — linki przepadają bezpowrotnie, bo w bazie jest tylko skrót). Akcja: opakować pętlę w `sql.begin(async (tx) => ...)` w `utworzKandydatow`, żeby albo powstali wszyscy, albo nikt."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/rate-limit.ts:116",
+   "opis": "`resolveClientKey` parsuje adres połączenia dwukrotnie przy każdym żądaniu: raz w `toClientKey(connectionAddress)` (linia 116-117), raz wewnątrz `isTrustedAddress(connectionAddress, trustedProxies)` (linia 119) — obie ścieżki wołają `parseIpAddress`, które robi split/regex per grupa. Dodatkowo `connectionKey` liczony jest zachłannie, choć w gałęzi zaufanego proxy zwykle wygrywa `forwardedKey`. Akcja: sparsować adres raz (`const connectionBytes = connectionAddress === undefined ? null : parseIpAddress(connectionAddress)`) i przekazywać bajty do dopasowania zakresów (dodać w `packages/shared/src/trusted-proxy.ts` wariant `isTrustedBytes(bytes, ranges)`, na którym `isTrustedAddress` może się op"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:489",
+   "opis": "`admin_events.owner_id` to klucz obcy `references auth.users (id) on delete set null` bez indeksu — jedyny indeks tabeli to `(created_at desc)`. Każde usunięcie konta w `auth.users` wymusza seq scan `admin_events` (Postgres nie indeksuje FK automatycznie), a widok administratora 9b filtrujący po koncie też pójdzie bez indeksu; w repo każda inna kolumna `owner_id` (`offers`, `offer_templates`, `template_assets`) ma własny indeks. Akcja: pod `admin_events_created_at_idx` dopisz `create index if not exists admin_events_owner_id_idx on public.admin_events (owner_id);` (idempotentne, bezpieczne przy ponownym `db push` na staging; potem `pnpm compare:schemas`)."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/features/moderacja/KartaPosta.tsx:108",
+   "opis": "`mediaPosta(post.obrazy)` buduje nową tablicę obiektów przy każdym renderze karty, więc `GaleriaPosta` nigdy nie może zostać odcięta memoizacją (nawet po naprawie findingu P2 dla samej karty). Akcja: owinąć w `const media = useMemo(() => mediaPosta(post.obrazy), [post.obrazy])` w `KartaPosta` i przekazać `media={media}`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/tracker/tracker.test.ts:939",
+   "opis": "Test-strażnik „próg gzipowy nie może udawać jedynego kontraktu rozmiaru\" porównuje ZMIERZONY rozmiar pliku ze stałą (`statSync(TRACKER_PATH).size > GZIP_SIZE_LIMIT_BYTES`), a niezmienność, którą opisuje jego własny komentarz, zachodzi między dwiema STAŁYMI. Skutek: strażnik przestaje pilnować relacji progów i zaczyna zależeć od bieżącej treści `t.js` — jest zielony także wtedy, gdy ktoś zejdzie ze `SOURCE_SIZE_LIMIT_BYTES` poniżej progu gzipowego, i czerwienieje z powodu, którego nie opisuje (skurczenie pliku). Faza rusza obie stałe naraz, a dokumenty powołują się na ten test jako na sieć bezpieczeństwa, więc warto go domknąć. Akcja: zamień asercję w linii 939 na `expect(SOURCE_SIZE_LIMIT_BY"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/check-in-toast.ts:114",
+   "opis": "Odliczanie (`setInterval` co `UNDO_TICK_MS = 250`) trzyma `remainingMs` w stanie Reacta należącym do HomeScreen (`useCheckInToast` wołane w `app/(tabs)/index.tsx:144`), więc każdy tik re-renderuje CAŁY ekran: hero ze sprite'em, `PointsCounter`, wszystkie `GoalCard` (w repo nie ma ani jednego `React.memo`) — ~12 pełnych renderów drzewa na jeden check-in, a przy wolnym commicie interwał tyka dalej i zwraca za każdym razem NOWY obiekt (`{...current, remainingMs: 0}`), więc re-renderuje nawet gdy wartość się nie zmienia. Akcja: przenieść odliczanie do `CheckInUndoToast` (przekazywać `expiresAt` zamiast `remainingMs` i tykać lokalnie w komponencie toastu) — wtedy tik re-renderuje wyłącznie toast;"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260903120000_offer_templates.sql:432",
+   "opis": "`storage_path` jest w kolumnowym grancie SELECT dla roli `authenticated`, choć komentarz tej samej kolumny (linia 311) deklaruje wprost: „Nie opuszcza serwera: proxy `/i/<id>` czyta ją kluczem sekretnym\". Kod przeczy własnej deklaracji, a granty są tu jedyną linią obrony (zasada naczelna nr 6 i reguła „minimum privileges\"). Precedens fazy 6 jest dokładnie odwrotny i świadomy: `profiles.webhook_host` jest w grancie, a pełny adres NIE, bo ścieżka niesie informację, której klient nie potrzebuje. Dashboard i MCP adresują grafikę przez `id` (`/i/<id>`), więc żaden konsument tej kolumny po stronie `authenticated` nie istnieje — a raz nadany grant zostanie w kolejnych fazach uznany za kontrakt. Akc"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/invitation-page.tsx:139",
+   "opis": "Efekt sondy automatycznej (`useEffect` -> `void runProbe()` -> `supabase.rpc('accept_terms')`) nie ma `AbortController` w sprzątaniu (coding-rules §13: useEffect z async = ZAWSZE AbortController w cleanup). Faza ruszyła nazwę RPC w tej samej funkcji, więc to jej ścieżka: wyjście z `/zaproszenie` w trakcie sondy zostawia żądanie w locie, a jego wynik ustawia `outcome`/`probeStatus` na odmontowanym komponencie i przy awarii sieci po odmontowaniu nadal woła `Sentry.captureException`. Akcja: w efekcie utwórz `const controller = new AbortController()`, przekaż sygnał do `accept(controller.signal)` i wołaj `supabase.rpc('accept_terms').abortSignal(signal)`; w `accept` sprawdź `signal.aborted` PRZE"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:21",
+   "opis": "Rotacja tokenu MCP jest w testach zweryfikowana wyłącznie na atrapie supabase-js (settings-page.test.tsx mockuje `upsert`), więc headless nie da się potwierdzić, czy nowy grant `insert (created_at)` faktycznie odblokowuje UPSERT na własnym wierszu i czy „Token aktywny od {data}\" pokazuje datę AKTUALNEGO tokenu, a nie pierwszego w historii konta. Wymaga żywej bazy: wypchnięcie migracji na staging ORAZ na projekt E2E, a potem ręczny przebieg „Wygeneruj token -> Wygeneruj nowy\" z kontrolą, że nie ma 42501 i że data w karcie się przesunęła. Bez tego faza 3 (E2E) wystartuje na bazie, na której rotacja odmawia zapisu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-page.tsx:51",
+   "opis": "`void resetTours(userId).then((isSaved) => { setRestartState(...); reloadProfile(); })` nie ma strażnika odmontowania — kliknięcie „Pokaż przewodnik ponownie\" i natychmiastowe przejście na inny ekran kończy się `setState` i `reloadProfile()` na zdemontowanym drzewie (bramka dostępu dostaje wtedy prośbę o ponowny odczyt profilu bez konsumenta). Zmień na wzorzec używany w `use-consent.ts`: dodaj `const isMountedRef = useRef(true)` z `useEffect(() => () => { isMountedRef.current = false; }, [])` i w callbacku `.then` wyjdź wcześniej, gdy `!isMountedRef.current`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/plans/2026-09-02-001-feat-faza-6-cta-i-webhooki-plan.md:668",
+   "opis": "Dwa scenariusze E2E fazy (`ustawienia-webhook` z IU-8 i `widok-oferty-decyzje` z IU-9) są niewykonalne headless w tym repo: katalog `e2e/` zawiera wyłącznie seed i skrypt magic linka, nie ma runnera, a scenariusze wymagają żywego projektu Supabase, logowania magic linkiem i screenshotów. Weryfikacja: operator odpala je ręcznie na środowisku po deployu. Seed `e2e/seeds/faza-6-cta-seed.sql` jest przygotowany (akceptacja + dwa pytania na `v_offer_przyjeta`), ale sam się nie uruchamia."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:287",
+   "opis": "Dynamiczny import SDK (linia 252) nie ma BUFORA wywołań sprzed gotowości: `track` i `identifyUser` przy `client === null` po prostu milczą (linie 287, 301), a `client` jest ustawiany dopiero po pobraniu i wykonaniu chunku ~98 KB. Tymczasem `session-context.tsx:63` woła `identifyUser(session.user.id)` i `track(ANALYTICS_EVENTS.loggedIn)` z rozwiązania `supabase.auth.getSession()`, które jest odczytem lokalnego storage'u i rozwiązuje się typowo szybciej niż dociągnięcie chunku PostHoga. Scenariusz porażki: użytkownik wchodzi na /oferty po magic linku, `getSession` rozwiązuje się w ~20 ms, chunk SDK dochodzi po ~200 ms → zdarzenie `logowanie` NIE powstaje, a `identify(owner_id)` przepada; ponie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/dashboard.ts:72",
+   "opis": "Fallback SPA łapie KAŻDĄ ścieżkę GET, także żądania plików z buildu: `routes.get('*', serveStatic({ root, path: INDEX_DOCUMENT }))` wykonuje się zawsze, gdy pierwszy serveStatic nie znalazł pliku. Scenariusz awarii: po redeployu klient z otwartą kartą prosi o stary, hashowany chunk `/assets/index-ABC123.js` — dostaje `index.html` z `Content-Type: text/html` i statusem **200** zamiast 404. Przeglądarka odrzuca moduł („MIME type text/html is not a valid JavaScript MIME type\"), aplikacja się nie podnosi, a ponieważ status to 200, odpowiedź może osiąść w cache pośrednim/SW jako poprawna. To samo dotyczy `/assets/*.css` i map źródeł. Naprawa w tym pliku: fallback tylko dla żądań dokumentu — np. `"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/aa-pages.ts:66",
+   "opis": "`renderNotFoundPage()` i `renderUnavailablePage()`, a także `renderRootPage({ marketingLabel })` i `renderPrivacyPage({ marketingLabel })` (offer-origin-pages.ts:152 i :161) sklejają cały dokument — arkusz, `@font-face`, treść — od nowa przy KAŻDYM żądaniu, choć ich wejścia są stałe w obrębie procesu (`marketingLabel` liczony raz w offer-origin-pages.ts:143). `renderNotFoundPage()` idzie dodatkowo z `app.notFound` (app.ts:388), czyli na każdym 404 originu ofert — ruch botów wymusza pełne złożenie dokumentu za każdym razem dla wyniku identycznego bajt w bajt. NAPRAWA: wystaw gotowe łańcuchy jako stałe modułowe w aa-pages.ts (`NOT_FOUND_PAGE`, `UNAVAILABLE_PAGE`) i policz strony root/prywatnoś"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:319",
+   "opis": "`resolveClientKey` liczy się bezwarunkowo, także dla ścieżek wyłączonych z liczenia (`isCounted === false`, czyli statyka originu ofert — ścieżka o największym wolumenie: kroje, ikony). Klucz jest wtedy wyrzucany. Akcja: przenieść wywołanie `resolveClientKey` do wnętrza gałęzi liczącej, np. `if (isCounted && !requestCounter.isAllowed(resolveClientKey({...}), Date.now()))`, albo poprzedzić je `if (isCounted)`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/mcp/token-service.ts:141",
+   "opis": "Brak jakiegokolwiek limitu czasu na wywołania Supabase w serwisie tokenów (lookupOwnerId, admin.getUserById, admin.generateLink, client.auth.verifyOtp). `fetch` w Node nie ma domyślnego timeoutu, więc zawieszone Admin API zawiesza żądanie MCP bez końca. Skutek jest gorszy niż pojedyncze wolne żądanie: obietnica mintu jest WSPÓŁDZIELONA w `sessions` (Map<ownerId, Promise<CachedSession>>), więc każde kolejne żądanie tego samego handlowca dołącza do tej samej zawieszonej obietnicy (`sessionFor` robi `await pending`), a wpis nigdy nie zostaje posprzątany — konto jest zablokowane do czasu, aż socket sam padnie. Ten sam proces serwuje strony ofert (zasada naczelna nr 7), więc rosnąca liczba wisząc"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-8-connector-oauth-i-dashboard/faza-8-connector-oauth-i-dashboard-zadania.md:284",
+   "opis": "Weryfikacje fazy wymagające żywego środowiska są nieodhaczone i niewykonalne headless: `pnpm test:rls` (linia 284) — faza dopisała do `supabase/tests/rls.test.ts` test przechodzący przez PRODUKCYJNE repozytoria (`pobierz_szablon` tokenem B nie widzi szablonu ani grafik konta A), który potrzebuje żywego stagingu i klucza sekretnego; oraz pięć scenariuszy E2E (linie 308, 309 i 335–337): `szablony-paginacja-i-lupka`, `szablony-brak-wlasnych`, `szczegoly-szablonu-wlasny`, `szczegoly-szablonu-wbudowany`, `szczegoly-szablonu-404`. Pierwszy z nich wymaga wgrania nowego seeda `e2e/seeds/faza-8-szablony-osiem-seed.sql` na bazę E2E (psql, marker `public.e2e_env_marker`) i asertuje `Strona 1 z 2 · 10 s"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "components/goal-card.tsx:249",
+   "opis": "Globalna blokada okna cofnięcia ustawia `disabled` na WEWNĘTRZNYM Pressable check-buttona, a zablokowany Pressable nie przejmuje dotyku — tap spływa do wrappera karty w `app/(tabs)/index.tsx:470` i nawiguje na szczegół celu (to zachowanie jest już udokumentowane w `.maestro/e3-target-cap.yaml`: „zablokowany Pressable nie przejmuje dotyku, więc tap spływa do karty\"). Do E6 dotyczyło to tylko celów z kompletem powtórzeń; teraz przez ~3 s po KAŻDYM tapie wszystkie karty są zablokowane, więc niecierpliwy drugi tap (dokładnie ten, przed którym blokada ma chronić) wyrzuca usera z Home na `/goal/[id]`. Home zostaje zamontowany, więc commit doleci, ale toast z odliczaniem i przycisk „Cofnij\" znikają"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "app/(tabs)/settings.tsx:119",
+   "opis": "`reload()` nie ma tokenu generacji, więc wynik STARSZEGO odczytu kv może nadpisać nowszy. `runMutation` zwalnia `mutationLockRef` PRZED `await reload()` (linie 157-158), więc kolejny tap w toggle w trakcie trwającego reloadu uruchamia drugą mutację; dwa równoległe `readNotificationSettings()` rozstrzygają się w nieokreślonej kolejności i ostatni `setSettings` może wstawić wartość sprzed drugiego zapisu. Efekt: przełącznik pokazuje stan sprzeczny z kv (i z realnym planem powiadomień) aż do kolejnego wejścia na zakładkę. To samo dotyczy zderzenia `useFocusEffect` (linia 138) z reloadem po mutacji. Akcja: dodać `const reloadTokenRef = useRef(0)` — inkrementować na wejściu do `reload`, zapisywać"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/active/zalaczniki-w-skrzynce/zalaczniki-w-skrzynce-zadania.md:332",
+   "opis": "Realny transfer 25 MB przez publiczny Tailscale Funnel z maszyny spoza tailnetu — weryfikacja niewykonalna headless. Harness (`server.inbox.http.test.js`) chodzi po loopbacku, więc nie dowodzi zachowania proxy: buforowania ciała PUT, limitu rozmiaru żądania po stronie Funnela ani timeoutu na kilkunastosekundowym transferze. To jedyna weryfikacja profilu wydajnościowego ścieżki binarnej w realnym środowisku — ryzyko: Funnel ucina ciało albo zamyka połączenie powyżej pewnego progu i każdy większy załącznik kończy się zerwanym transferem, czego loopback nie pokaże. Operator: wyślij 25 MB PUT-em na `/inbox/v1/<token>/blob/<sha256>` przez publiczny URL Funnela, zmierz czas i kod odpowiedzi (oczek"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:1841",
+   "opis": "Jedynym uzasadnieniem CTE `locked ... for update` w `record_offer_acceptance` (zapisanym wprost w kontekscie fazy i w komentarzu migracji) jest wyscig dwoch rownoczesnych klikniec: bez blokady przegrany dostawal `accepted_now = false` z PUSTYM `accepted_at`. Tego scenariusza nie sprawdza zaden test — test idempotencji wola funkcje SEKWENCYJNIE, wiec przeszedlby tak samo po usunieciu `for update`. Skutek: mozna wyciac blokade i caly `pnpm test:rls` zostanie zielony, a klient zobaczy pop-up bez daty akceptacji. Akcja: dopisz w bloku IU-2 test rownolegly wzorowany na istniejacym „dwa rownolegle pokwitowania porazki\": `Promise.all` z dwoma `record_offer_acceptance` na swiezej ofercie → dokladnie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/index.html:11",
+   "opis": "Arkusz Google Fonts jest render-blocking i ściąga cztery wagi Inter (400;500;600;700) plus Archivo Black, podczas gdy `App.tsx` używa realnie dwóch stylów (`font-bold` i zwykłego). To dwa dodatkowe połączenia do obcego originu na krytycznej ścieżce pierwszego renderu i kilka zbędnych plików woff2 na ekran szkieletu. Akcja: zawęź `href` do `family=Archivo+Black&family=Inter:wght@400;700&display=swap` i dokładaj kolejne wagi dopiero razem z widokiem, który ich używa."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:5",
+   "opis": "Regresja rozmiaru paczki wejściowej: zod wszedł na ścieżkę ŁADOWANĄ PRZED PIERWSZYM MALOWANIEM, wbrew uzasadnieniu podziału chunków opisanemu w komentarzu `App.tsx` (publiczna trasa `/oauth/consent` na mobilnej ścieżce podłączania connectora) i §12 reguł. Pomiar (ten sam `npx vite build`, `NODE_ENV=production`, te same `node_modules`): na 828eda9 chunk `App` importował STATYCZNIE tylko `build-url, client-name, jsx-runtime, preload-helper, product-contract, routes, supabase` — `schemas` (zod, 70,97 kB surowo / 18,88 kB gzip) i `json-body` (3,43 kB / 1,60 kB) występowały tam wyłącznie w liście preloadu paczek LAZY (`settings`, `templates`). Na 933a901 `App` importuje statycznie `use-registrati"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/dashboard.ts:71",
+   "opis": "Zasoby dashboardu wychodzą bez `Cache-Control` i bez `ETag`, a `serveStatic` z @hono/node-server 2.1.1 (zweryfikowane w `node_modules/@hono/node-server/dist/serve-static.mjs`) ustawia wyłącznie `Last-Modified` i NIGDY nie obsługuje `If-Modified-Since` — nie ma w nim ścieżki zwracającej 304. Scenariusz: użytkownik dashboardu przy każdym wejściu i każdym odświeżeniu pobiera pełny `index-*.js` (191,5 kB) + `index-*.css` (6,2 kB), mimo że pliki mają w nazwie hash treści i nadają się do cache'owania na rok. Przy dziennej pracy handlowca to setki zbędnych megabajtów i dodatkowe ~200 kB na krytycznej ścieżce każdego wejścia. Naprawa: dla pierwszego serveStatic dodaj `onFound: (path, c) => { c.heade"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:1732",
+   "opis": "Archiwum kolejki (`pgmq.a_webhook_delivery`) nie ma ani retencji, ani sciezki czyszczenia: migracja archiwizuje przy trwalej porazce, a `afterAll` kwituje wylacznie identyfikatory z `enqueuedMsgIds` wynikiem `sukces` — wiadomosci zarchiwizowanej przez test „trwala porazka\" (supabase/tests/rls.test.ts:1984) w tej liscie nie ma i `pgmq.delete` juz jej nie dotknie. Kazdy przebieg `pnpm test:rls` zostawia wiec na stagingu jeden wiersz w archiwum na zawsze, co dodatkowo napedza sufit `max_rows` z findingu o `webhook_queue_peek`. Akcja: dodaj w migracji `webhook_queue_purge_archived(p_msg_id bigint)` (security definer, EXECUTE tylko dla service_role, `delete from pgmq.a_webhook_delivery where msg_"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "app/goal/goal-detail.test.tsx:384",
+   "opis": "Nowy test dowodzi memoizacji tylko dla jednej z trzech składowych `statsKey` (`app/goal/[id].tsx:240`): sprawdza brak odczytu przy nowym obiekcie snapshotu i ponowny odczyt po zmianie `points`. `energy` i `weekStart` nie mają żadnego przypadku, a to one chronią przed najbardziej podstępnym stanem — ekranem szczegółu zamontowanym w tle przez przełom tygodnia (kafel „tygodni\" i historia liczone z `period_closures`), gdzie punkty się nie ruszają. Usunięcie `weekStart` z klucza nie zapali dziś żadnego testu na czerwono. Akcja: w tym samym `describe` dopisać przypadek z `rerender` zmieniającym WYŁĄCZNIE `weekStart` (i drugi — wyłącznie `energy`) w `readyState`, z asercją `expect(mockGetGoalStats)"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/components/copy-button.tsx:194",
+   "opis": "`isCopied` ustawia się na `true` i nigdy nie wraca do `false` — po jednym kliknięciu chip zostaje „Skopiowano” do końca życia komponentu. Użytkownik, który kopiuje komendę MCP, potem świeży token, a potem znów komendę, nie dostaje żadnego potwierdzenia przy drugim i trzecim kopiowaniu — przycisk wygląda tak samo przed i po. Akcja: w `handleCopy` po `setIsCopied(true)` uzbrój `setTimeout(() => setIsCopied(false), 2000)`, trzymając id timera w `useRef` i czyszcząc go w `useEffect(() => () => clearTimeout(ref.current), [])` — bez cleanupu byłoby to naruszenie §13 reguł kodowania („setTimeout = ZAWSZE cleanup”)."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": ".maestro/_session-bootstrap.yaml:32",
+   "opis": "Dokumentacja mechanizmu zgody na powiadomienia jest wewnętrznie sprzeczna i opisuje kod, którego nie ma. `_session-bootstrap.yaml:32` („CZEGO TEN PROLOG NIE ROBI: nie ustawia ZGODY NA POWIADOMIENIA (…) Stan zgody ustawia więc `run-all.sh` per para — YES dla flow asertujących plan, unset dla e6-preprompt\") jest zaprzeczone 120 linii niżej w tym SAMYM pliku (:148 „ZGODA NA POWIADOMIENIA (E6) — NADAWANA TU, TOREM UŻYTKOWNIKA\"). Ten sam nieistniejący mechanizm powtarzają nagłówki czterech flow (e6-toggle-plan.yaml:11, e6-cancel-energia.yaml:12, e6-daily-time.yaml:18, e6-preprompt.yaml:15 — „Kasuje ją wyłącznie applesimutils … robi to run-all.sh TUŻ PRZED tą parą i przywraca YES przed następną\") "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/offer-favicon.ts:60",
+   "opis": "injectOfferFavicon szuka </head> i <body na masce z maskHiddenMarkup, ktora celowo ZACHOWUJE cale znaczniki (grupa 1 HTML_TAG_PATTERN), wiec sekwencja </head> albo <body> zapisana w WARTOSCI ATRYBUTU (np. <meta name=\"x\" content=\"a</head>b\"> lub <div title=\"<body>\">) jest trafiana jako miejsce wstawki. Zweryfikowane na dist: dla '<html><head><meta name=\"x\" content=\"a</head>b\"><title>O</title></head>...' wstawka laduje WEWNATRZ wartosci content — cudzyslowy wstawki rozrywaja znacznik meta (href=\"/brand/...\" staje sie atrybutem meta), drugi <link> staje sie elementem, a fragment 'b\">' wychodzi jako widoczny tekst dokumentu; dokument idzie do offers.html jako niemutowalny (zasada nr 2), wiec zep"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/inbox-retention.js:114",
+   "opis": "Przemiatanie nie ma ŻADNEGO śladu \"te bajty już zwolniłem\", więc praca rośnie bez ograniczeń i powstaje okno kasujące świeże bajty. `listAttachmentsForRetention()` (lib/inbox-db.js:663) zwraca KAŻDY wiersz `inbox_attachments` w historii huba — bez WHERE, bez LIMIT, z dwoma skorelowanymi podzapytaniami na wiersz — a metadane z założenia nie znikają NIGDY (trzeci stan renderu). Skutek 1 (wydajność): wiersz raz uznany za wygasły jest wygasły na zawsze, więc co godzinę, w nieskończoność, `deleteBlobSafely` woła synchroniczny `fs.unlinkSync` dla każdego hasha zwolnionego kiedykolwiek w przeszłości (ENOENT → cicho `false`, więc nawet warn tego nie ujawnia). Po roku pracy huba to pełny skan tabeli "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:1",
+   "opis": "D12 (chunk logowania nie ładuje zoda) jest w tej fazie ZŁAMANE, a raport buildera tego nie widzi, bo mierzył sam chunk `App`, nie jego graf importów. `import { REGISTRATION_OUTCOMES } from '@oferty/shared'` ściąga moduł `packages/shared/src/access-contract.ts`, który na poziomie modułu woła zod (`emailSchema`, `membershipListSchema`, trzy `z.enum`) — Rollup nie tree-shake'uje tych wywołań (nie są oznaczone jako czyste), więc cały moduł ląduje w chunku współdzielonym z `json-body`, a ten importuje `schemas-*.js` (zod, 70,97 kB raw / 18,8 kB gzip). Pomiar na `pnpm build` (dist z 16.09 19:54): `App-aGRoP5zl.js` importuje statycznie `./json-body-CFiMuTjS.js`, a ten `./schemas-za4UJh5G.js` — łado"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:154",
+   "opis": "Efekt rysujący ma deps `[points, frame.viewportWidth]` — bez `frame.docHeight`. Dziś ratuje to brak memoizacji (`points` jest nową tablicą przy każdym renderze), ale po naprawie memoizacji z findingu P2 zmiana wysokości ramki przy tej samej szerokości przestanie być zauważona: React ustawia nowy atrybut `height` na canvasie, co CZYŚCI jego zawartość, a efekt się nie uruchomi i handlowiec zobaczy pusty canvas nad ofertą. Akcja: dopisać `frame.docHeight` do tablicy zależności na linii 154."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": ".maestro/e6-toggle-plan.yaml:120",
+   "opis": "Bloki `repeat: times: 4` z `runFlow: when:` odświeżające dev-listę płacą pełny koszt pollingu również na ścieżce szczęśliwej. Repo ma to zmierzone i udokumentowane: `.maestro/e4-daily-login.yaml:39` — „runFlow: when: visible: na NIEOBECNYM elemencie kosztuje w Maestro ~5 s pollingu (zmierzone: dur=5015)\". W nowych flow warunek jest tak dobrany, że przy stanie JUŻ docelowym Maestro musi wyczerpać polling, żeby ocenić go na false: `e6-toggle-plan.yaml:120` i `:199` czekają na `visible:` wpisu, który ma być nieobecny, a `:59`, `e6-cancel-energia.yaml:437`/`:497`, `e6-daily-time.yaml:59`, `e6-preprompt.yaml:130` — na `notVisible:` wpisu, który jest obecny. Dziewięć takich bloków × 4 iteracje × ~"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "lib/notifications.test.ts:283",
+   "opis": "Zero testów na dyscyplinę triggera foregroundu w adapterze — `startNotifications` pojawia się w suite wyłącznie jako rusztowanie dla testów commitu (linie 427 i 459), a `handleAppStateChange` (lib/notifications.ts:695-704) z guardem `wasActive` nie ma ANI JEDNEJ asercji. To jest właśnie ścieżka, którą plan opisuje jako punkt (a) dyscypliny triggera i którą lekcja E5 wskazuje jako źródło „odpalania w każdym cyklu\": iOS generuje `inactive → active` przy Centrum Powiadomień, app switcherze i systemowym dialogu zgody, czyli przy zdarzeniu, które E6 sam wywołuje w `requestNotificationPermission`. Regresja w guardzie (np. usunięcie `wasActive` przy refaktorze) da burzę replanów — N natywnych `sche"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx:151",
+   "opis": "`visitSteps(visit, sectionIds)` jest liczone w renderze dla KAŻDEGO wiersza wizyty i przeliczane od zera przy każdym renderze `OfferAnalytics` (klik wiersza ustawia dwa stany, dochodzą przejścia stanu `useOfferHeat` i `useOfferDecisions`). Każde wywołanie alokuje dwa `Set` (`sortedSectionIds`), `Map` pozycji sekcji i całą tablicę kroków tylko po to, żeby wziąć z niej `.length`. Lista wizyt nie ma paginacji i sięga udokumentowanego w `use-offer-details.ts` sufitu 1000 wizyt na ofertę, a w tym samym feature `use-heatmap-view.ts` ma wprost zapisane, że memoizacja takiego rachunku nie jest optymalizacją na zapas. Akcja: w `OfferVisitsList` policz mapę raz — `const stepCounts = useMemo(() => new "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:214",
+   "opis": "Ramka i canvas dostają `frame.docHeight`/`frame.viewportWidth` wprost z wiersza `visits`, bez żadnego ograniczenia górnego. Te kolumny pochodzą zza granicy zaufania: `POST /e` przyjmuje `doc_height` do 10 000 000 i `viewport_width` do 32 767 (apps/server/src/routes/events.ts:91-92), a zdarzenie może wysłać każdy odbiorca oferty (ma `X-Oo-Visit` po zwykłym otwarciu). Scenariusz: odbiorca (albo egzotyczna przeglądarka) zapisuje wizytę z `doc_height` = 200 000; handlowiec wchodzi w widok oferty, `OfferHeatmapFrame` tworzy `<canvas width=1280 height=200000>` (256 mln pikseli), a `simpleheat.draw()` woła `getImageData` na całej powierzchni — ~1 GB ImageData: zakładka zawiesza się albo `getImageDa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/visit-path-card.tsx:113",
+   "opis": "`buildOfferMap(visit, sectionIds)` jest liczone DWA RAZY dla tej samej otwartej wizyty w tym pliku: w `VisitPathAccordion` (linia 113) i w `VisitPathCard` (linia 142). Oba komponenty są zamontowane jednocześnie — karta dostaje `className=\"hidden md:flex\"` z `offer-details-page.tsx`, a akordeon siedzi w `md:hidden` w wierszu listy, więc breakpoint przełącza CSS, a nie montowanie. Trzeci przebieg tego samego rachunku robi `OfferMapCard` (`offer-map-card.tsx:158`), bo `handleToggleVisit` ustawia tę samą wizytę również jako wybraną. Żadne z wywołań nie jest memoizowane, więc powtarzają się przy każdym renderze rodzica. Akcja: w tym pliku owiń oba wywołania w `useMemo(() => buildOfferMap(visit, s"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "OPERATOR",
+   "plik": ".maestro/run-all.sh:57",
+   "opis": "Główny deliverable fazy — 5 nowych par flow+seed (e6-toggle-plan, e6-cancel-energia, e6-deep-link, e6-daily-time, e6-preprompt) — NIE ZOSTAŁ ANI RAZU URUCHOMIONY. Kontekst zadania deklaruje to wprost: „[E2E] NIE uruchamiane w tej fazie — 5 flow e6-* jest NAPISANYCH, ale nieuruchomionych\". To dokładnie stan zakazany przez .claude/rules/learned-patterns.md („deliverable E2E napisany, lecz nieuruchomiony = bug ukryty do pierwszego realnego przebiegu; »green« bez wykonania jest fałszywy\") — w etapie 12b jeden szczegół (body uploadu) zablokował wtedy WSZYSTKIE 4 flow. Ryzyko jest tu wyższe niż zwykle, bo faza wprowadza pierwsze w repo użycia: `assertTrue` z polem `label` (e6-cancel-energia.yaml:4"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/tracking/visit-service.ts:339",
+   "opis": "Warunek środowiskowy, nie defekt tej fazy: jeśli obraz wyjdzie na środowisko PRZED `supabase db push` migracji `20260903140000`, `mergeIncrements` łapie brak szóstego parametru i zatrzaskuje procesowy latch `isReadingTimeUnsupported`, który NIE jest nigdzie zerowany. Po późniejszym dociągnięciu migracji ten sam proces do końca życia wysyła wariant bez czasu czytania — wszystkie wizyty mają `reading_ms IS NULL` i dostają dopisek „czas sprzed zmiany pomiaru\", mimo poprawnego trackera i poprawnej bazy, bez błędu w logach (POST /e i tak 204). Operator: potwierdź migrację na ref bazy ŚRODOWISKA DOCELOWEGO (`coolify app env list <uuid> --show-sensitive` → `SUPABASE_URL`, nie lokalne `.env` — lokal"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/seed-test-users.ts:144",
+   "opis": "`findUserByEmail` wykonuje pełny, stronicowany skan `auth.users` (`listUsers`, 200 rekordów na stronę) OSOBNO dla każdego z dwóch kont — klasyczny N+1 po stronie Admin API. `seedTestUsers` woła go dwa razy, a `supabase/tests/rls.test.ts` woła `seedTestUsers` dwukrotnie (beforeAll + test idempotencji), co daje cztery pełne skany tabeli użytkowników na jeden przebieg `pnpm test:rls`. Przy stagingu z kilkoma kontami to sekundy, ale koszt rośnie liniowo z liczbą użytkowników na projekcie i przy kilku tysiącach kont beforeAll zacznie ocierać się o `NETWORK_TIMEOUT_MS = 60_000`. Naprawa: przenieść stronicowanie o poziom wyżej — jedna funkcja `listAllUsers(admin)` wykonująca jeden przebieg i budują"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:2710",
+   "opis": "Test „21. szablon na koncie kończy się odmową z bazy\" dopycha konto B do 20 szablonów i zostawia je do `afterAll`, więc każdy późniejszy test w tym `describe`, który wstawiłby szablon dla tenanta B, padnie na `54000` z powodu stanu poprzedniego testu, a nie badanego zachowania (sprzężenie kolejnością — dziś przypadkiem nikt takiego testu nie ma). Akcja: po `expect(count).toBe(20);` w linii 2710 dopisz sprzątanie fillera w tym samym teście: `const fillerIds = (bulk ?? []).map((row) => row.id); await admin.from('offer_templates').delete().in('id', fillerIds);` oraz usuń te id z `createdTemplateIds` (np. przypisując `createdTemplateIds.splice(createdTemplateIds.length - fillerIds.length, filler"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "lib/notifications.ts:403",
+   "opis": "Faktyczne dostarczenie powiadomień jest nieweryfikowalne headless: `jest-setup.ts` podstawia atrapę `expo-notifications`, więc zielony `npm test` dowodzi wyłącznie KONTRAKTU wywołań (jakie `identifier`/`content`/`trigger` lecą do SDK), a nie tego, że system je dostarczy. Nie da się tu sprawdzić: dostarczenia WEEKLY o niedzielę 18:00 i DAILY o porze z kv na fizycznym iPhonie/Androidzie, zachowania kanału `reminders` (importance HIGH zamrożone po utworzeniu) po reinstalacji, tapu z zimnego startu (czyli realnego wyścigu bramki trasy z `useIsRouteGateResolved`), sufitu 64 żądań iOS przy >59 celach (A.8 — nadmiar odrzucany po cichu, bez błędu do złapania) ani zachowania po reboocie/force-stopie "
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template-repository.ts:317",
+   "opis": "`list()` czyta limit szablonów z `profiles.limit_templates` (per konto, od 9b podnoszalny przez admina), ale nadal obcina listę stałą `TEMPLATE_LIST_LIMIT = 50` i oba konsumenty liczą z długości tablicy (`liczba_szablonow: rows.length` w routes/templates.ts:245, `wolneMiejsca: limit - rows.length` w lista-szablonow.ts:72). Komentarz przy stałej mówi 'przy limicie konta powyżej 50 trzeba ją podnieść razem z nim' — nic tego nie egzekwuje, więc konto z limitem > 50 dostanie cichy sufit metryki (wzorzec learned-patterns 'max_rows obcina kolekcję OSADZONĄ, licz count po stronie bazy'). Akcja bez dodatkowego zapytania: w `list()` zmień `.select(TEMPLATE_SUMMARY_COLUMNS)` na `.select(TEMPLATE_SUMMA"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/admin-accounts-service.ts:200",
+   "opis": "`Promise.all(profileRows.map(...))` odpala do 100 JEDNOCZESNYCH wywołań RPC `admin_account_limits_usage` (każde liczy oferty, publikacje, szablony i zajętość Storage) z procesu obsługującego RÓWNIEŻ `/o/<slug>` i `POST /e`. Komentarz przy `USAGE_PER_ACCOUNT_MAX_ACCOUNTS` uzasadnia LICZBĘ zapytań (i tyle zatwierdzał plan), ale nie ich jednoczesność — 100 równoległych żądań przekracza pulę połączeń PostgREST i kolejkuje za sobą zapytania ścieżki czytelnika. Scenariusz: 90 kont, administrator wchodzi w widok „Użytkownicy” → jedno żądanie panelu zamienia się w 90 równoległych zapytań agregujących; równoległe `/o/<slug>` z pominięciem cache'u i `POST /e` czekają w kolejce. Naprawa: przetwarzaj `p"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-page.tsx:51",
+   "opis": "`void resetTours(userId).then((isSaved) => { setRestartState(...); reloadProfile(); })` nie ma strażnika odmontowania — kliknięcie „Pokaż przewodnik ponownie\" i natychmiastowe przejście na inny ekran kończy się `setState` i `reloadProfile()` na zdemontowanym drzewie (bramka dostępu dostaje wtedy prośbę o ponowny odczyt profilu bez konsumenta). Zmień na wzorzec używany w `use-consent.ts`: dodaj `const isMountedRef = useRef(true)` z `useEffect(() => () => { isMountedRef.current = false; }, [])` i w callbacku `.then` wyjdź wcześniej, gdy `!isMountedRef.current`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/login-form.tsx:285",
+   "opis": "Martwa instrukcja: `controllerRef.current?.abort()` w l. 285 stoi bezpośrednio po `const generation = nextGeneration();` (l. 284), a `nextGeneration` (l. 160–166) już przerwał kontroler i wyzerował `controllerRef.current`, więc optional chaining trafia zawsze w `null`. Ten sam wiersz w `resolveRegistration` (l. 177) jest nieosiągalny z niezerowym kontrolerem, bo funkcja jest wołana wyłącznie po przejściu `isStale` dla generacji, która sama wyzerowała ref. Akcja: usunąć linię 285 (i analogicznie l. 177), zostawiając `const controller = new AbortController(); controllerRef.current = controller;` — testy generacji w `login-form.test.tsx` (edycja adresu w trakcie `sending`, drugie kliknięcie w `"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260913160000_offer_templates_heading_texts.sql:1",
+   "opis": "Brak w „Operator checklist faza 4\" pozycji wymuszającej KOLEJNOŚĆ rolloutu, a ta migracja jest pod tym względem groźniejsza niż faz 5b/6/7 (tryb awarii nie jest cichy — kładzie funkcje). Fazy 2 i 3 dostały taką pozycję (wiersze 159 i 205 pliku zadań), faza 4 nie. Bez `supabase db push --project-ref uznjvfdqrisbzbcwemjn` PRZED publikacją obrazu (lokalne CLI celuje w staging `nxiqssmkteemyhzjkrob`) nowy obraz: (1) czyta `heading_texts` w `TEMPLATE_SUMMARY_COLUMNS` (`apps/server/src/offer/template-repository.ts:31`) przy KAŻDYM listowaniu, więc `GET /api/szablony` i MCP `lista_szablonow` oddają 42703 → cały ekran `/szablony` i lista szablonów w rozmowie są martwe; (2) pisze `heading_texts` w `s"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/assets/detached-assets-sweeper.ts:199",
+   "opis": "Pętla `for (const step of extraSteps)` nie sprawdza flagi `stopping`, choć pętla porcji sprzątania kilka linii wyżej sprawdza ją jawnie („zamykanie procesu przerywa MIĘDZY porcjami”). Krok ciszy listy członków to żądanie HTTP z limitem 5 s, więc zamykanie procesu czeka na nie bez potrzeby — alarm o progu 48 h nic nie traci, gdy tura go pominie. Zmiana: dodaj `if (stopping) break;` jako pierwszą instrukcję ciała tej pętli."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:267",
+   "opis": "Faza dokłada na widoku oferty TRZECI szczebel kaskady żądań: hook czeka na RPC offers_visit_summary (await fetchVisitSummaries po pierwszej odpowiedzi) ZANIM odda ready, a dopiero po ready montuje się OfferAnalytics, w którym startują useOfferHeat (najcięższe żądanie widoku, siatki heat do HEAT_BYTE_BUDGET) i useOfferDecisions. Przed fazą kaskada miała głębokość 2 (oferta -> heat || decyzje), teraz 3 (oferta -> RPC -> heat || decyzje) — każde wejście w ofertę płaci jeden pełny RTT do Supabase (~80-150 ms z PL do regionu UE) opóźnienia startu mapy i karty decyzji, choć RPC nie jest wejściem żadnego z tych dwóch zapytań. Lista ofert robi to poprawnie (ready od razu, liczniki dojeżdżają drugim "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-service.ts:172",
+   "opis": "Kontrakt zwrotu `apply_membership_list` zmienił się w tej fazie (wiersz emitowany także przy zmianie SAMEGO źródła, z `old_state = new_state`), a konsument w Node jest nietknięty: `EVENT_BY_NEW_STATE.get(change.newState)` mapuje wiersz przepięcia `zewnetrzne → akademia` z `old_state = new_state = 'aktywne'` na `konto_przywrocone` (a przy `ograniczone` na `konto_ograniczone`) i zapisuje zdarzenie dziennika + wysyła webhook administratora dla konta, którego stan się NIE zmienił; przy pierwszym pushu po migracji lecą fałszywe zdarzenia dla WSZYSTKICH kont zewnętrznych z listy (porcjami po 8 — także koszt sieciowy proporcjonalny do liczby przepięć). Plan zamyka to w IU-5 (faza 2), ale w stanie H"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:1",
+   "opis": "D12 (chunk logowania nie ładuje zoda) jest w tej fazie ZŁAMANE, a raport buildera tego nie widzi, bo mierzył sam chunk `App`, nie jego graf importów. `import { REGISTRATION_OUTCOMES } from '@oferty/shared'` ściąga moduł `packages/shared/src/access-contract.ts`, który na poziomie modułu woła zod (`emailSchema`, `membershipListSchema`, trzy `z.enum`) — Rollup nie tree-shake'uje tych wywołań (nie są oznaczone jako czyste), więc cały moduł ląduje w chunku współdzielonym z `json-body`, a ten importuje `schemas-*.js` (zod, 70,97 kB raw / 18,8 kB gzip). Pomiar na `pnpm build` (dist z 16.09 19:54): `App-aGRoP5zl.js` importuje statycznie `./json-body-CFiMuTjS.js`, a ten `./schemas-za4UJh5G.js` — łado"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts:170",
+   "opis": "Callback `onProgress` woła `transition(advanceItem(...))` przy KAŻDYM zdarzeniu `progress` XHR-a, mimo że widok pokazuje wartość zaokrągloną do pełnego procenta (`queueUploadingText` w `texts.ts:254` robi `Math.round(progress * 100)`), a `<progress>` i tak ma rozdzielczość piksela. Każde takie `setState` przerysowuje CAŁĄ kartę grafik: `snapshot.assets.map(AssetTile)` (kafle nie są memoizowane, a propsy to strzałki tworzone w renderze) plus wszystkie wiersze `UploadQueueList` — komentarz w `template-assets-card.tsx:92-96` sam nazywa to „kilkadziesiąt razy na sekundę\" i już raz wymusił `useMemo` na skanie dokumentu. AKCJA: w `useTemplateAssetQueue` dołóż przed `transition` w `onProgress` bram"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-sections.tsx:27",
+   "opis": "`useState(false)` daje na desktopie pierwszy paint z sześcioma ZWINIĘTYMI sekcjami, a dopiero efekt po montażu przestawia je na otwarte — czyli jedno wymuszone przeliczenie układu całej strony i widoczne mignięcie przy każdym wejściu na /pomoc. Zamień na leniwy inicjalizator czytający media query synchronicznie: `useState(() => typeof window.matchMedia === 'function' && window.matchMedia(DESKTOP_QUERY).matches)`; efekt z nasłuchem `change` zostaje bez zmian (nadal potrzebny przy zmianie szerokości okna), ale `handleChange()` w jego ciele przestaje być źródłem pierwszego stanu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:160",
+   "opis": "`fetchFirstStepsProgress` duplikuje odczyty, które strona `/oferty` już zrobiła: `probeOfferIds` pobiera do 1000 `offers.id` (a `useOffers` w tym samym renderze pobiera te same wiersze z kolumnami), po czym `fetchVisitSummaries` woła RPC `offers_visit_summary` z tą samą tablicą do 1000 uuid-ów, które `useOffers` woła drugi raz — czyli każde wejście na listę to dwa przebiegi agregatu po WSZYSTKICH wizytach konta plus dwa selecty `offers`, wyłącznie po to, żeby policzyć dwa boole (`hasOffer`, `hasVisit`). Koszt ponosi każde konto aż do 4/4 albo ręcznego zamknięcia checklisty (`isFirstStepsDismissed` to jedyny short-circuit) — również konto, które onboarding dawno skończyło i karty nie widzi. A"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/invitation-page.tsx:139",
+   "opis": "Efekt sondy automatycznej (`useEffect` -> `void runProbe()` -> `supabase.rpc('accept_terms')`) nie ma `AbortController` w sprzątaniu (coding-rules §13: useEffect z async = ZAWSZE AbortController w cleanup). Faza ruszyła nazwę RPC w tej samej funkcji, więc to jej ścieżka: wyjście z `/zaproszenie` w trakcie sondy zostawia żądanie w locie, a jego wynik ustawia `outcome`/`probeStatus` na odmontowanym komponencie i przy awarii sieci po odmontowaniu nadal woła `Sentry.captureException`. Akcja: w efekcie utwórz `const controller = new AbortController()`, przekaż sygnał do `accept(controller.signal)` i wołaj `supabase.rpc('accept_terms').abortSignal(signal)`; w `accept` sprawdź `signal.aborted` PRZE"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-service.ts:162",
+   "opis": "`applyMembershipList` woła `reportAdminEvent` (jedno żądanie RPC `admin_event_record`, limit 5 s) SEKWENCYJNIE w pętli po każdej zmianie stanu — N+1 z `coding-rules` §12, na ścieżce odpowiedzi `POST /api/czlonkostwo`, bez sufitu liczby zmian (lista dopuszcza 4000 hashy, zmian może być tyle, ile kont `akademia`). Scenariusz: lista skrócona o 300 kont → `apply_membership_list` zmienia 300 wierszy w jednej transakcji, po czym Node robi 300 round-tripów po ~150 ms (~45 s odpowiedzi); emiter rozłącza się po swoim timeoucie i ponawia, a druga próba oddaje zero zmian (stan już zastosowany), więc zdarzenia `konto_ograniczone` z niedokończonej pętli nie powstaną NIGDY — dziennik i webhook administrat"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/access.ts:179",
+   "opis": "Reguła 1 (`coding-rules.md`): plik urósł z 234 do 376 linii (> 300), `readCanonicalEmail` ma 71 linii (> 50), a handler `REGISTRATION_PATH` 66 linii (> 50). Faza sama wyniosła `membership-events.ts` z tego powodu, a tu zostawiła trzy naruszenia naraz. Akcja: wynieś wspólną bramkę (limiter → sufit ciała → JSON → `emailSchema`, linie 179–249 razem z `EmailGateResult`, `ACCESS_REQUEST_MAX_BODY_BYTES`, `ACCESS_REQUEST_RATE_LIMIT` i `createRequestCounter`) do nowego `apps/server/src/routes/access-email-gate.ts` jako `createEmailGate({ trustedProxies }) => { readCanonicalEmail(context) }` (jedna instancja licznika = wiadro nadal wspólne dla `prosba` i `rejestracja`); w handlerze rejestracji wyciąg"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:489",
+   "opis": "`admin_events.owner_id` to klucz obcy `references auth.users (id) on delete set null` bez indeksu — jedyny indeks tabeli to `(created_at desc)`. Każde usunięcie konta w `auth.users` wymusza seq scan `admin_events` (Postgres nie indeksuje FK automatycznie), a widok administratora 9b filtrujący po koncie też pójdzie bez indeksu; w repo każda inna kolumna `owner_id` (`offers`, `offer_templates`, `template_assets`) ma własny indeks. Akcja: pod `admin_events_created_at_idx` dopisz `create index if not exists admin_events_owner_id_idx on public.admin_events (owner_id);` (idempotentne, bezpieczne przy ponownym `db push` na staging; potem `pnpm compare:schemas`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260913140000_offers_visit_summary.sql:47",
+   "opis": "Tryb awarii tej fazy jest CICHY z rozmysłu: brak funkcji na refie wdrożonym (PGRST202) daje w panelu pauzę `—` w kolumnach i na kaflach oraz JEDEN raport do Sentry na proces przeglądarki — żadnego błędu w logach serwera, żadnego komunikatu dla użytkownika. `pnpm compare:schemas` oddaje dziś exit 1 (ref wdrożony nie ma jeszcze migracji fazy 2 ani tej funkcji), więc zielony nie jest dostępny jako dowód przed rolloutem. Po `supabase db push --project-ref uznjvfdqrisbzbcwemjn` (OBIE migracje 20260913120000 i 20260913140000, PRZED publikacją obrazu) sprawdź bezpośrednio na refie wdrożonym: (1) `pnpm compare:schemas` -> exit 0; (2) zalogowany w panelu na app.traferto.pl: w DevTools/Network żądanie"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:203",
+   "opis": "Blokada `perform … for update` obejmuje KAŻDE konto `zewnetrzne` (warunek `or p.source = 'zewnetrzne'` bez sprawdzenia hasha), choć krok 3 zmienia wyłącznie te z hashem na liście. W trybie `otwarta` populacja `zewnetrzne` to większość `profiles`, więc na czas pushu (co 48 h lub częściej) blokowane są wiersze, których nic nie zmieni — każde równoległe `accept_terms()` (`for update` na tym samym wierszu) i UPDATE flag onboardingu przez handlowca czeka na koniec transakcji synchronizacji. Akcja: zawęź populację blokady do wierszy faktycznie zmienianych, dodając `join auth.users u on u.id = p.id` do `perform` i zamieniając `or p.source = 'zewnetrzne'` na `or (p.source = 'zewnetrzne' and public.e"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql:207",
+   "opis": "`mark_offer_opened` bierze `select … for update` na wierszu `offers` BEZWARUNKOWO, a faza 2 wpina tę funkcję w hot path `POST /e` (`apps/server/src/tracking/visit-service.ts:391` — wołana po każdym insercie wizyty). Poprzedni `update offers … eq('status','wyslana')` dla oferty już otwartej nie trafiał w żaden wiersz, więc nie zakładał blokady i nie brudził strony. Teraz KAŻDA wizyta (także setna) zakłada wyłączną blokadę wiersza oferty na czas całego CTE (join `profiles` + `webhook_queue_enqueue`), więc równoległe otwarcia tej samej oferty serializują się jedno po drugim, a każdy odczyt generuje zapis xmax na `offers` (WAL, HOT-update, bloat tabeli, która jest jednocześnie źródłem `/o/<slug>"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/access/membership-events.test.ts:105",
+   "opis": "Asercja `expect(text()).toContain('zewnetrzne')` to jedno słowo bez kotwic (learned-patterns 2026-09-11: literał-strażnik ma kotwicę po obu stronach) — przejdzie także wtedy, gdy log zamiast pola `nowe_zrodlo` niesie samo `poprzednie_zrodlo` albo inny wpis, w którym pada to słowo. Akcja: zamień na `expect(text()).toContain('\"nowe_zrodlo\":\"zewnetrzne\"')` i dołóż `expect(text()).toContain('\"poprzednie_zrodlo\":\"akademia\"')`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:1",
+   "opis": "`import posthog from 'posthog-js/dist/module.no-external'` jest STATYCZNY, a `initAnalytics()` woła `main.tsx` w wejściu aplikacji. Pomiar na zbudowanym `apps/dashboard/dist`: chunk `analytics-*.js` ma 326 162 B surowo / 97 820 B po gzipie i jest `modulepreload`owany wprost z `index.html`, czyli pobiera go i parsuje KAŻDE wejście — także anonimowe `/logowanie`, `/chce-dostep` i mobilna ścieżka `/oauth/consent` — oraz każdy build z pustym `VITE_POSTHOG_KEY`, gdzie SDK nigdy nie zostanie użyty (dla porównania: cały `App-*.js` to 50 240 B, `offers-page` 21 928 B). To ta sama klasa, którą komentarz w `App.tsx` już raz naprawił dla ekranu zgody (§12 reguł: dynamic import powyżej 50 KB). Akcja: za"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:280",
+   "opis": "isUsableAsFrame powtarza w całości logikę isUsableVisitGeometry z packages/shared (Number.isFinite na obu osiach + >= MIN_USABLE_FRAME_PX na obu osiach), a helper z shared nie ma poza testami ANI JEDNEGO użycia w dashboardzie — faza wprowadziła jedno źródło liczby, ale zostawiła dwa źródła predykatu, więc zmiana kształtu progu (np. dołożenie sufitu albo drugiego warunku) po stronie shared nie dotknie heatmapy bez błędu (learned-patterns: rozszerzenie kontraktu walidacji po jednej stronie monorepo odsiewa dane cicho). Akcja: dopisz isUsableVisitGeometry do importu z '@oferty/shared' na górze pliku i zamień ciało funkcji na `return isUsableVisitGeometry(visit.viewport_width, visit.doc_height);"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/use-admin-events.ts:211",
+   "opis": "`hasMore` liczone z tablicy PO ODSIEWIE (`entries.length === ADMIN_EVENTS_PAGE_SIZE`, linie 211 i 259), a `entries` powstaje z filtrowania wierszy przez `toAdminEventEntry` (odrzuca wiersz bez `id` i z niesparsowalną datą). Scenariusz porażki: baza oddaje pełną stronę 200 wierszy, z których JEDEN ma uszkodzony `created_at` → `entries.length === 199` → `hasMore: false` → przycisk „Pokaż starsze\" znika i cała starsza część dziennika administratora staje się nieosiągalna, bez jednego błędu w konsoli i bez śladu w Sentry. To dokładnie ta klasa, o której mówi wniosek z 2026-08-28 („licznik liczony jako długość pobranej listy = cichy sufit metryki\"). Poprawka: niech `fetchPage` oddaje parę `{ entr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:273",
+   "opis": "Checklista sonduje bazę przy KAŻDYM wejściu na /oferty, także na kontach, które onboarding dawno skończyły. Efekt startuje, gdy `isEligible` (stan `aktywne` i brak ręcznego zamknięcia), a warunek „4/4 → karta ukryta\" liczy się dopiero PO odpowiedziach — świadoma decyzja „karta znika BEZ zapisu do bazy\" oznacza, że nie ma czego zapamiętać. Koszt: pięć równoległych żądań na każde wejście w listę (mcp_tokens, offer_templates, offers, visits + `supabase.auth.oauth.listGrants()` do GoTrue), dożywotnio, na najczęściej odwiedzanym ekranie; `probeOffer` dubluje przy tym pytanie, na które ten sam render odpowiada już przez `useOffers`. Drugi skutek jest widoczny dla użytkownika: `offers-page.tsx` wst"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:287",
+   "opis": "Dynamiczny import SDK (linia 252) nie ma BUFORA wywołań sprzed gotowości: `track` i `identifyUser` przy `client === null` po prostu milczą (linie 287, 301), a `client` jest ustawiany dopiero po pobraniu i wykonaniu chunku ~98 KB. Tymczasem `session-context.tsx:63` woła `identifyUser(session.user.id)` i `track(ANALYTICS_EVENTS.loggedIn)` z rozwiązania `supabase.auth.getSession()`, które jest odczytem lokalnego storage'u i rozwiązuje się typowo szybciej niż dociągnięcie chunku PostHoga. Scenariusz porażki: użytkownik wchodzi na /oferty po magic linku, `getSession` rozwiązuje się w ~20 ms, chunk SDK dochodzi po ~200 ms → zdarzenie `logowanie` NIE powstaje, a `identify(owner_id)` przepada; ponie"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 127,
+  "2026-08": 56
+ },
+ "potwierdzone_per_severity": {
+  "P1": 7,
+  "P3": 105,
+  "P2": 71
+ }
+}

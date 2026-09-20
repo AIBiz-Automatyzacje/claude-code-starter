@@ -1,0 +1,625 @@
+{
+ "os": "test-coverage",
+ "zgloszone_n": 88,
+ "potwierdzone_n": 202,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:167",
+   "opis": "Wygaśnięcie oferty jest liczone RAZ, przy pobraniu danych (`use-offer-details.ts:129`, `displayStatusFor(row.status, expiresAt, new Date())`), więc karta pozostawiona otwarta przez moment wygaśnięcia dalej pokazuje ramkę — a `/o/<slug>` oddaje wtedy planszę wygaśnięcia (200) o innej wysokości niż `doc_height`, czyli nakładka ląduje w innym układzie współrzędnych. To dokładnie scenariusz, przed którym broni decyzja 3.2 = A. Karta dostaje już `expiresAt`, więc naprawa jest lokalna. Akcja: w warunku wygaśnięcia zamień `status === 'wygasla'` na `status === 'wygasla' || expiresAt.getTime() <= Date.now()` i dopisz test z `expiresAt` w przeszłości przy statusie `otwarta`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/app-origin-pages.test.ts:298",
+   "opis": "Nowy handler `/aa` na APP_ORIGIN nie ma testu dopasowania równością, jaki mają dokumenty (linia 232: `/regulamin/` i `/regulaminx` spadają do SPA). Reguła projektu: każde dopasowanie ścieżki ma trzy testy (pod, równy, wspólny początek). Akcja: w `describe('/aa na APP_ORIGIN')` dodaj `it('dopasowuje ścieżkę równością: /aa/ i /aax spadają do SPA')` — dla obu ścieżek `expect(response.status).toBe(200)` i `expect(await response.text()).toContain(SPA_DOCUMENT)`, bez nagłówka `location`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/auth/login-flow-state.ts:79",
+   "opis": "Nowy moduł czystych przejść (`looksLikeEmail`, `messageForSendError`, `stateAfterWaitlistSave`) nie ma kolokowanego testu (coding-rules §6 „każdy nowy plik ma odpowiadający test”); zachowanie jest dziś dowodzone wyłącznie przez DOM w `login-form.test.tsx`, gdzie gałąź `messageForSendError` po samym `status === 429` (bez `code`) i `looksLikeEmail` na wejściach granicznych (spacja w środku, brak kropki w domenie, dwa `@`) nie mają osobnych asercji. Akcja: stworzyć `apps/dashboard/src/features/auth/login-flow-state.test.ts` z `it.each` dla `stateAfterWaitlistSave` (4 wyniki × oczekiwany `{status, message, isFieldError:false}`), `messageForSendError` (`code = over_email_send_rate_limit` → `rateL"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "components/check-in-toast-slot.test.tsx:43",
+   "opis": "Fixture stanu `pending` podaje `expiresAt: 3000`, czyli wartość o kształcie CZASU TRWANIA, podczas gdy semantyka pola u źródła to bezwzględny znacznik `Date.now()` (`lib/check-in-toast.ts:25` — „`Date.now()` zamknięcia okna\"; `lib/check-in-pending.ts:213` — `Date.now() + UNDO_WINDOW_MS`). Dziś nieszkodliwe (slot przekazuje do toastu tylko `remainingMs`), ale to jedyny fixture tego wariantu w repo i utrwala błędne znaczenie pola — pierwszy odczyt `expiresAt` w slocie da zielony test na złych danych. Akcja: `expiresAt: Date.now() + UNDO_WINDOW_MS` (import z `../lib/check-in-pending`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/offers/use-offers.test.ts:71",
+   "opis": "Porządek listy nie ma asercji: `use-offers.ts:75` woła `.order('created_at', { ascending: false })`, a test rejestruje mock `order` tylko po to, żeby dopiąć łańcuch — nigdzie nie sprawdza jego argumentów. Zmiana na `ascending: true` (najstarsze oferty na górze — dokładnie odwrotnie niż makieta) przejdzie cały zestaw na zielono, bo test „mapuje wiersze\" porównuje kolejność zwróconą przez atrapę, a nie kolejność zamówioną w zapytaniu. Akcja: w teście „pobiera wyłącznie kolumny listy\" dopisać `expect(order).toHaveBeenCalledWith('created_at', { ascending: false })`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/access/registration-service.ts:193",
+   "opis": "Weryfikacja końca-do-końca `POST /api/dostep/rejestracja` (precheck → `signInWithOtp(shouldCreateUser: true)` → `handle_new_user` nadający `akademia`/`oczekujace` z hasha) jest niewykonalna headless i NIE zadziała na stagingu dla dowolnego adresu: staging jedzie wbudowanym mailerem Supabase (2 maile/h na projekt, wysyłka wyłącznie do członków zespołu projektu), więc `signInWithOtp` dla adresu spoza zespołu oddaje `email_address_not_authorized` → serwis rzuca `RegistrationServiceError` → 503 `sprawdzenie_nieudane`, nierozróżnialne od realnej awarii. Smoke operatora musi pójść na refie wdrożonym (Resend, `mail.traferto.pl`) po `db push` migracji `20260917100000` i po pushu listy z AA (do pushu"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts:72",
+   "opis": "Efekt odczytu tokenu ma pusta liste zaleznosci `}, []);`, mimo ze korzysta z `ownerId` (obie mutacje maja poprawnie `[ownerId]`, linie 105 i 124). Dzis nie wybucha tylko dlatego, ze zmiana uzytkownika przechodzi przez `RequireSession` i odmontowuje widok - czyli poprawnosc opiera sie na cudzym komponencie, nie na tym hooku. Naprawa: zmienic `}, []);` w linii 72 na `}, [ownerId]);`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:176",
+   "opis": "Asercja kontrolna oparta o GLOBALNY stan bazy: `expect(leaked?.map((row) => row.id)).toEqual([tenantB.offerId])` zakłada, że B ma dokładnie jedną ofertę w całym projekcie stagingowym. `afterAll` (linia 129 diffu) sprząta fixture'y tylko przy normalnym zakończeniu — po killu/timeoucie runu albo przy dwóch równoległych `pnpm test:rls` (te same konta z ENV) w bazie zostają osierocone wiersze B i test failuje mimo w pełni poprawnego RLS. Test odmowy, który potrafi zaświecić na czerwono bez defektu, degraduje bramkę Z5 do szumu. Naprawa: zapamiętać slug użyty w próbie podszycia w zmiennej i asertować `expect(leaked).toEqual([])` dla zapytania `admin.from('offers').select('id').eq('slug', podszyci"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-5-heatmapa/faza-5-heatmapa-zadania.md:138",
+   "opis": "Zmiana `OFFER_HEATMAP_TEXTS.caption` (fix P2-6 fazy 2) wyszła poza zestaw zaakceptowany przez operatora: decyzja 3.1 została zaakceptowana 2026-08-29 (`docs/operator/faza-5-heatmapa-przygotowanie.md:95`) z poprzednim brzmieniem podpisu, a nowy tekst („Cieplejsze miejsca to te, w których klient najczęściej ruszał kursorem albo dotykał ekranu.\") jest w kodzie i w kontekście fazy opisany jako „wymaga akceptacji operatora\" — ale nie ma go w ŻADNEJ operator checkliście (faza 2 ma 8 pozycji, faza 3 ma 2, żadna nie dotyczy tekstu). Faza 3 to ostatnia okazja, żeby to trafiło do checklisty przed archiwizacją. Akcja: dopisz do „## Operator checklist faza 3\" pozycję „zaakceptuj nowe brzmienie `OFFER_HE"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/webhooks/settings-service.ts:100",
+   "opis": "Nowy moduł 156 linii z realną logiką domenową i ZERO plików testowych (`ls apps/server/src/webhooks` — jedyny moduł bez `.test.ts`). Testy tras używają atrapy `createFakeService` (`webhook-settings.test.ts:40`), która zapamiętuje wyłącznie `url`/`host`/`ownerId` i NIE widzi kształtu patcha, więc nigdzie w repo nie jest asertowane: (a) że zapis nowego adresu zeruje `webhook_disabled_at`, `webhook_failure_streak`, `webhook_last_error_*` (D19 — bez tego nowy adres dziedziczy wyłączenie poprzedniego i nie dostaje ani jednego doręczenia), (b) że „Włącz ponownie\" zeruje licznik porażek (scenariusz planu IU-8 mówi wprost „kliknięcie zeruje licznik i stan\"), (c) że `removeWebhook` czyści `webhook_ur"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/tests/rls.test.ts:6571",
+   "opis": "Znany rozjazd odnotowany w dossier fazy (IU-3): `apps/server/src/webhooks/queue-store.ts` nie przeszedł jeszcze na `WEBHOOK_MESSAGE_TYPES`, więc `parseQueueMessage` oddaje `null` dla wiadomości `otwarta` i `zdarzenie_administratora`, a worker takie zadanie ARCHIWIZUJE. Na stagingu dowolny działający lokalnie proces `server` sprzed tej fazy drenuje WSPÓLNĄ kolejkę i archiwizuje zadania scenariuszy IU-2, co czyni `pnpm test:rls` niestabilnym. Przed uruchomieniem `pnpm test:rls` operator musi ubić lokalny proces serwera (`pkill -x node` na właściwym PID, nie `pkill -f` — wzorzec z learned-patterns) albo uruchomić testy przy zatrzymanym serwisie. Dług zamyka IU-8 fazy 2."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/events.ts:93",
+   "opis": "Sufit liczby kluczy `sections` (`MAX_SECTION_KEYS = 64`, `sectionsSchema.refine`) nie ma testu granicznego, mimo że migracja `supabase/migrations/20260828150000_visits_merge_key_caps.sql` powstała właśnie po to, żeby ten sufit istniał po obu stronach (baza 64/256). Zestaw `it.each` w `events.test.ts` sprawdza komórkę spoza siatki i scroll spoza zakresu, ale nie liczność kluczy. Jest to bramka realnie osiągalna: identyfikatory sekcji przychodzą z `data-section` w HTML oferty, którego walidacja publikacji nie ogranicza do zamkniętej listy, więc odwiedzający z ważnym tokenem może wysłać dowolnie wiele kluczy. Scenariusze: `sections` z 64 kluczami przechodzi i scala się, `sections` z 65 kluczami"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/texts.ts:51",
+   "opis": "`consentLabel: 'Przeczytałem regulamin i politykę prywatności'` to forma męskoosobowa, a projekt ma ustalenie z fazy 8 (plan `2026-09-06-001…`, sekcja „Rozwiązane podczas planowania\"), że formy męskoosobowe w panelu zastępujemy neutralnymi („którym masz udzielony dostęp\", „Link poszedł\") — tu dotyczy to zdania zgody prawnej, czyli najgorszego miejsca na zakładanie płci użytkownika. Verbatim z planu nie zwalnia z self-checku tekstów (learned-patterns 2026-09-13). Akcja: zmień wartość na `'Akceptuję regulamin i politykę prywatności'` i zaktualizuj asercję w `invitation-page.test.tsx`, która szuka tej etykiety."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:282",
+   "opis": "Po wprowadzeniu `MAX_SCALE = 1` kubełek węższy od kolumny (np. „Telefon\" 390 px w kolumnie 904 px — dokładnie scenariusz nowego testu) renderuje się w skali 1 przy `transformOrigin: 'top left'`, więc podgląd przykleja się do lewej krawędzi bloku i zostaje ~510 px pustego tła wewnątrz ramki z obramowaniem. IU-6 zakładało „wygląd bloku bez zmian\", a dla kubełka telefonowego wygląd zmienia się zauważalnie i żaden test tego nie asertuje (sprawdzana jest tylko skala i wysokość). Akcja: wyśrodkuj skalowany kontener w bloku (np. `flex justify-center` na kontenerze zewnętrznym albo `margin-inline: auto` na kontenerze skalowanym o szerokości `frame.viewportWidth * scale`) i dopisz asercję pozycji w o"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx:104",
+   "opis": "Wizyta z NIEPUSTYM `section_path`, której CAŁA ścieżka wypada na odsiewie progu 3 s, obiecuje rozwinięcie, którego nie ma. `hasHint` (offer-visits-list.tsx:104) i `canOpen` (offer-details-page.tsx:160) pytają wyłącznie o `sectionPath !== null`, a nie o `visitSteps(...).length`. Scenariusz jest w pełni osiągalny i wcale nie egzotyczny: czytelnik przewija całą ofertę, każda sekcja poniżej 3 s → `numberedPath` zwraca []. Skutki: (1) wiersz listy pokazuje `0 kroków ścieżki` — dokładnie ten napis, który test `offer-visits-list.test.tsx:206` nazywa kłamstwem i jawnie wyklucza dla wizyty bez ścieżki; (2) nagłówek karty wizyt niesie `kliknij wizytę, żeby zobaczyć jej ścieżkę krok po kroku`, choć kom"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-7-czas-czytania-seed.sql:123",
+   "opis": "Insert wizyt pomija `grid_rows`, więc wszystkie trzy wizyty dostają domyślne 16 wierszy, podczas gdy `doc_height` (5400/7200/6100) w produkcji dałoby 54/64/61 (`t.js:64`) — seed nie odtwarza kształtu produkcyjnego, a mapa uwagi na screenshocie E2E rysuje się z inną gęstością niż jakakolwiek realna wizyta. Akcja: dopisz `grid_rows` do listy kolumn w linii 123 i wartości `54`, `64`, `61` do trzech krotek (klucze `heat` w seedzie mieszczą się w tych zakresach)."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "server.inbox.http.test.js:456",
+   "opis": "Galaz `blob_not_found` w `streamFileToResponse` (server.js:903-907 — metadane w bazie sa, bajtow na dysku nie ma) nie ma zadnego testu, a stanie sie normalnym stanem po fazie 4 (retencja kasuje bloby, wiersze zostaja). Naprawa: dopisac test HTTP — wyslij wiadomosc z zalacznikiem przez `sendWithAttachment` BEZ uprzedniego PUT-a bajtow i asertuj, ze GET blobu przez strone wiadomosci zwraca 404 z pustym cialem (a nie 500)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "e2e/seeds/rejestracja-czlonek-seed.sql:67",
+   "opis": "Jedyna ścieżka E2E dowodząca trafienia hasha → `link_wyslany` → „Sprawdź skrzynkę” → konto `akademia`/`oczekujace` (`rejestracja-czlonek-link`) jest [Manual] decyzją operatora 16.09 (cztery przebiegi bez PASS: TLD `.test`/`.invalid` odrzucane przez GoTrue przy `create_user: true`, pula mailera stagingu 2/h zliczająca ŻĄDANIA). Ścieżka członka pozostaje potwierdzona wyłącznie unitami na atrapach (`stubGoTrue` w `login-form.test.tsx`, atrapa `registration_precheck` w `registration-service.test.ts`) — testy zielone (dashboard 256/256, server access 191/191, shared 261/261 w tym przebiegu), ale nie dowodzą zachowania żywego GoTrue. Nie da się wykonać headless: wymaga adresu na domenie z MX opera"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/routes/events.ts:301",
+   "opis": "Kolejność rolloutu jest teraz twardo wiążąca, a nic jej nie egzekwuje: `handleOpen` wstawia kolumnę `grid_rows` bezwarunkowo, więc deploy serwera PRZED zastosowaniem migracji wywraca KAŻDY insert wizyty na `42703`. Skutek jest cichy dla odbiorcy — `POST /e` i tak zwraca 204, nagłówek `X-Oo-Visit` nie wychodzi, tracker po jednej ponownej próbie milknie, a cała telemetria (nie tylko heatmapa) znika na czas rozjazdu. Plan opisuje właściwą kolejność w sekcji „Rollout\", ale nie ma bramki ani testu, który by ją wymusił — do sprawdzenia ręcznie przy deployu (migracja → dopiero potem obraz aplikacji)."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "components/notifications-preprompt.test.tsx:1",
+   "opis": "Brak testu sprzętowego „Wstecz\" dla pre-promptu, mimo że `components/notifications-preprompt.tsx` przekazuje `onRequestClose={onLater}` z komentarzem, że bez tego flaga kv nie padnie i modal wróci przy kolejnym wejściu na Home. Precedens techniczny istnieje: `components/pixel-modal.test.tsx:68` („Wstecz woła onRequestClose i pochłania zdarzenie\"). Akcja: dopisać test wyzwalający Wstecz na wyrenderowanym pre-prompcie → `onLater` wołane raz, `onEnable` ani razu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-1-fundament/faza-1-fundament-zadania.md:760",
+   "opis": "Dwie pozycje „Weryfikacja\" z IU-6/IU-7 pozostają nieodhaczone i są niewykonalne w tym środowisku bez uruchomionego procesu i zbudowanego artefaktu: (1) lokalne żądanie z hostem aplikacji zwraca dokument dashboardu, a z hostem ofert nie; (2) build dashboardu produkuje dist z index.html i zbundlowanymi zasobami wraz z realnym startem serwisu na tym katalogu. Kontrakt jest w tej chwili pokryty wyłącznie testami przez app.fetch (bez warstwy sieciowej i bez realnego serveStatic z kontenera). To warunek operatorski do domknięcia po kroku builda z IU-8, nie defekt kodu."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "app/(tabs)/settings.tsx:317",
+   "opis": "Weryfikacja niewykonalna headless (wymaga dev-clienta na iOS i Androidzie, `jest` nie wykonuje natywnej serializacji triggerów): po naprawie normalizatora otworzyć Ustawienia w `__DEV__` i porównać dev-listę z realnym planem — wpis `energy-sunday` (trigger DATE, A.7) oraz `dev-test` po tapnięciu „Wyślij testowe za 5 s\" muszą pokazywać czytelny termin, a nie „trigger nieznany\", na OBU platformach. To jedyny przebieg, który potwierdza kształty oddawane przez SDK; przy okazji [Manual] H.3 (`Linking.openSettings()` → powrót gasi hint) i H.8 (banner na froncie)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "e2e/print-oauth-consent-url.ts:251",
+   "opis": "`registrationResponseSchema.safeParse(await response.json())` woła `response.json()` bez bramki formatu ciała: przy odpowiedzi 200 z ciałem niebędącym JSON-em (proxy, strona błędu bramy) leci surowy `SyntaxError` „Unexpected token <…”, czyli komunikat, który operatorowi nie mówi, na którym kroku harness padł — dokładnie wzorzec zapisany w `.claude/rules/learned-patterns.md` („`response.json()` przed walidacją koperty … format ciała ma własną bramkę z błędem domenowym i `cause`”). Akcja: obudź odczyt w `let payload: unknown; try { payload = await response.json(); } catch (cause) { throw new ConsentHarnessError('Odpowiedź rejestracji klienta nie jest JSON-em', { cause }); }` i przekaż `payload"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "OPERATOR",
+   "plik": "/Users/kacper_trzepiecinski/Documents/Kodowanie/Nawykometr/.env.local:1",
+   "opis": "Warunek środowiskowy, nie defekt kodu: w drzewie roboczym został plik `.env.local` (5 linii, mtime 2026-09-06 23:38) z `EXPO_PUBLIC_SUPABASE_URL` IDENTYCZNYM jak w `.env.e2e` i różnym od `.env` (dev) — czyli nieposprzątany swap env po runie harnessu. CLAUDE.md wymaga `rm .env.local` po przebiegu; dopóki plik istnieje, KAŻDY `npx expo start` i `eas build` wchodzi na projekt e2e (Expo inline'uje `EXPO_PUBLIC_*` do bundla), a seedy `.maestro/*-seed.sql` kasują dane tego konta. Operator: `rm /Users/kacper_trzepiecinski/Documents/Kodowanie/Nawykometr/.env.local` przed jakąkolwiek pracą na dev."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/decisions.test.ts:450",
+   "opis": "Nieprzetestowane gałęzie nieprawidłowego wejścia `POST /d/:slug/pytanie`: (1) ciało niebędące poprawnym JSON-em → `JSON.parse` w `routes/decisions.ts:252` rzuca i handler zwraca 400 `nieprawidlowe_zadanie`; (2) `tresc` innego typu niż string albo brak pola → `checkQuestion` zwraca `nieprawidlowe_zadanie` (`cta/decision-payload.ts:96`); (3) puste ciało (`readBody` oddaje `''`). Wszystkie trzy to wejście zza granicy zaufania na publicznym endpoincie zapisu i żadna nie ma testu — testy pokrywają wyłącznie poprawną kopertę z polem `tresc`. Naprawa: trzy przypadki w `describe('pytanie z formularza')` asertujące 400, kod błędu i `store.questions` puste."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "lib/inbox-api.test.js:565",
+   "opis": "Granica `MAX_ATTACHMENTS_PER_MESSAGE` nieprzybita — jedyny przypadek to `MAX + 1` odrzucone, wiec zamiana `>` na `>=` w `lib/inbox-api.js:214` (odrzucenie legalnej wiadomosci z dokladnie 10 plikami) przeszlaby niezauwazona. Akcja: pod linia 565 dopisz asercje, ze lista o dlugosci dokladnie `MAX_ATTACHMENTS_PER_MESSAGE` (te same pola co `tooMany`, `sha256: SHA_A`, `filename: `p${i}.pdf``) daje `status === 200`."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-blobs.js:161",
+   "opis": "`fs.mkdirSync(path.dirname(target))` i `fs.renameSync(tmpFile, target)` leza POZA blokiem try, wiec kazdy blad finalizacji (ENOSPC przy tworzeniu sharda, EACCES, EXDEV, na Windows EPERM przy nadpisaniu otwartego pliku) zostawia plik .part w data/inbox-blobs/tmp na zawsze i wypuszcza nietypowany Error — lamiac niezmiennik deklarowany w komentarzach i testach (plik tymczasowy nie przezywa zadnego przerwania). Naprawa: owinac te dwie linie w `try { ... } catch (err) { removeTemp(tmpFile); throw err; }`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/account-deletion-service.ts:206",
+   "opis": "Krok 3 maszyny D12 (zapis zdarzenia `konto_usuniete`) nie jest idempotentny, mimo że nagłówek modułu i plan (IU-7: „każdy krok idempotentny, więc ponowienie wchodzi od kroku 1\") obiecują, że jest. Scenariusz: `store.deleteUser` pada (linia 227) → 503 „Spróbuj ponownie\" → administrator/właściciel ponawia → `begin_account_deletion` oddaje ten sam plan, `removeMany` na pustej już liście przechodzi, a `reportAdminEvent` zapisuje DRUGIE zdarzenie `konto_usuniete` z nowym `id` i kolejkuje DRUGIE doręczenie webhooka administratora. Odbiorca nie ma czym deduplikować — kontrakt ładunku mówi wprost, że kluczem deduplikacji jest `zdarzenie_id`, a ono jest inne. Żaden test tego nie pokrywa (`account-del"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx:120",
+   "opis": "Ścieżka „Usuń webhook\" nie ma ani jednego testu, choć to jedyna droga wycofania adresu i jedyna akcja z potwierdzeniem w tej karcie (`webhook-card.tsx:110-160`, `use-webhook-settings.ts:remove`). Nietestowane są: otwarcie `role=\"alertdialog\"`, „Anuluj\" (nie może wołać serwera), potwierdzenie → `DELETE /api/ustawienia/webhook` → powrót do stanu `absent` z polem adresu, oraz błąd DELETE. Jedyna dzisiejsza asercja o usuwaniu to `queryByRole('button', {name: remove})).toBeNull()` w stanie bez webhooka. Naprawa: trzy przypadki w describe „Karta webhooka — usunięcie\" (anulowanie: `expect(fetchMock).not.toHaveBeenCalled()`; potwierdzenie: `lastRequest()` = DELETE + pole adresu znów widoczne; błąd: "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:1",
+   "opis": "Weryfikacja niewykonalna headless: migracja jest wypchnięta wyłącznie na staging (`nxiqssmkteemyhzjkrob`), a `pnpm compare:schemas` pokazuje rozjazd z refem wdrożonym (`uznjvfdqrisbzbcwemjn`) — do `supabase db push --project-ref uznjvfdqrisbzbcwemjn` PRZED obrazem (checklist IU-1) każda odpowiedź `accept_terms` z nowego panelu daje `PGRST202`, a `pnpm test:rls` (266/266 wg dziennika) w tej rundzie nie był ponownie uruchamiany — dowód równoważny to para staging-zielony + compare:schemas po pushu na ref wdrożony. Po naprawie findingów P2 wyżej migrację trzeba ponownie wypchnąć na staging i przegonić `pnpm test:rls` (żywy staging), bo testy offline tej fazy (25 + 7 + 37 + 19, wszystkie zielone "
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "src/App.test.tsx:63",
+   "opis": "Brak testów dla dwóch scenariuszy z planu, które żyją wyłącznie w routingu `App.tsx`: IU-10 „[Unit] Wejście w fazie `zakonczone` prowadzi na ekran podziękowania\" oraz przejście do rozmów po zamknięciu moderacji. `App.test.tsx` pokrywa tylko fazy „instrukcja\", „moderacja\" i brak sesji — dlatego regresja z findingu P1 (zaślepka zamiast ekranów) przechodzi przez zielony suite bez jednego czerwonego testu. Naprawa: dopisać w `src/App.test.tsx` dwa testy wzorowane na „faza »moderacja« z serwera montuje poczekalnię z postami\": stan z `faza: 'zakonczone'` ma pokazać ekran podziękowania z banerem, stan z `faza: 'rozmowy'` — listę leadów."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx:96",
+   "opis": "Zero testów obu ścieżek błędu ramki, mimo że plan wymaga ich wprost (IU-3, „Stan błędu ładowania ramki: `onError` + timeout”). Nietestowane są: (a) `onError` → `status='error'` (offer-heatmap-frame.tsx:220), (b) timeout 10 s → `status='error'` (linie 158-166), (c) anulowanie timera po `onLoad`. Ryzyko konkretne: po `FRAME_LOAD_TIMEOUT_MS` komponent podmienia ramkę na komunikat błędu i odmontowuje `iframe`, więc wolne łącze albo duża oferta daje TRWAŁY błąd bez możliwości ponowienia — regresja w tym warunku (np. zmiana zależności efektu) przejdzie na zielono. Akcja: dopisz w `offer-heatmap-frame.test.tsx` przypadki z `vi.useFakeTimers()` (upływ 10 s → `errorHeading`; `fireEvent.load(iframe)` "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "Dockerfile:53",
+   "opis": "Brak jakiegokolwiek automatycznego testu regresyjnego na inwarianty obrazu, mimo ze plan (docs/plans/2026-08-24-001-feat-faza-1-fundament-plan.md, IU-8) nazywa brak `curl` w warstwie runtime \"najdrozsza pulapka tej fazy\", a `kontekst.md` opisuje `ENV PORT=3000` jako defekt zlapany dopiero recznie tuz przed commitem. Faza dodaje 130 linii konfiguracji i ZERO asercji: `pnpm test` (72 testy) nie dotyka Dockerfile ani .dockerignore, a plan zdefiniowal wylacznie scenariusze [Manual], ktore wymagaja demona Dockera (potwierdzone: `docker info` konczy sie bledem). Skutek: dowolna przyszla edycja usuwajaca `apk add --no-cache curl`, `USER node`, `ENV PORT` albo dokladajaca `ENV APP_ORIGIN=` przechodz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/mcp/server.test.ts:89",
+   "opis": "Brak testu rejestracji i wiring-u trzech nowych narzedzi MCP, mimo ze mapa fazy opisuje zmiane w tym pliku jako „testy rejestracji nowych narzedzi\" — dodano wylacznie atrape `templates`. Zaden test w repo nie zawiera lancuchow `zapisz_szablon` / `lista_szablonow` / `usun_szablon`: wszystkie testy wolaja czyste funkcje (`saveTemplateFromTool` itd.) bezposrednio, wiec pominiete `registerUsunSzablon(...)` w `createMcpRoutes`, zla nazwa narzedzia albo blednie odczytany token (`ctx.http?.authInfo?.token` — w `lista-szablonow.ts` callback ma sygnature bez `args`, bo narzedzie nie deklaruje `inputSchema`) przechodza caly suite na zielono. Dopisz do istniejacego bloku `tools/list` (server.test.ts:42"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:1112",
+   "opis": "`apply_membership_list` filtruje `p.terms_accepted_at < now() - interval '7 days'` (linie 1112 i 1135). Dla `terms_accepted_at IS NULL` porównanie daje NULL, więc wiersz jest POMIJANY — czyli NULL działa jak karencja NIESKOŃCZONA, nie jak karencja 7 dni. Ścieżka osiągalna bez żadnej ingerencji w bazę: konto z zaproszeniem `akademia` powstaje przez `handle_new_user` jako `oczekujace` z `terms_accepted_at = NULL` (potwierdza to test „handle_new_user: konto z żywym zaproszeniem…\", rls.test.ts:6398), a admin może je otworzyć przez `admin_set_access(p_state => 'aktywne')` — funkcja NIE ustawia `terms_accepted_at` (linie 552-556). Powstaje konto `aktywne` + `source = 'akademia'` + `access_override"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "packages/shared/src/product-contract.test.ts:51",
+   "opis": "Komentarz „Alias jest ALIASEM także na poziomie typu: kopia `= 10` przeszłaby `toBe`, ale…” obiecuje detekcję, której `Equals<typeof TEMPLATE_LIMIT_PER_ACCOUNT, typeof ACCOUNT_LIMITS.templates>` nie daje — kopia `export const TEMPLATE_LIMIT_PER_ACCOUNT = 10 as const` ma identyczny typ literalny `10`, więc asercja typu i `toBe` są prawdziwe dla aliasu i kopii. Zamień komentarz w liniach 51–52 na uczciwy: „równość typu literalnego sprawdza, że alias nie został rozszerzony do `number`; sam fakt aliasu (nie kopii) pilnuje review, nie test” — albo usuń zdanie o kopii."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/decisions.test.ts:439",
+   "opis": "Brak testu powierzchni metod, mimo że opis zadania wymienia „metody\" jako zakres `decisions.test.ts`. Trasy rejestrują `GET /d/:slug`, `POST /d/:slug/akceptacja`, `POST /d/:slug/pytanie`; nic nie przypina, że `GET /d/:slug/akceptacja` (np. z prefetchu przeglądarki albo skanera) kończy się 404 z `app.notFound` i zerem wywołań `decisionStore`. Naprawa: jeden test w `describe('rozdział originów…')` — `GET` na ścieżkę akceptacji → 404 i `harness.store.acceptances` puste."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "packages/shared/src/env.test.ts",
+   "opis": "Brak testu na jawne wymaganie planu i checkboxa zadania: „schemat serwera **nie** waliduje `VITE_SENTRY_DSN_DASHBOARD`\" oraz na to, że nadmiarowe klucze realnego `process.env` (PATH, HOME, VITE_*) nie wywracają parsowania. Dziś zachowanie zależy od domyślnego stripowania `z.object` — cicha zmiana na `.strict()` przy IU-6 wywróciłaby start serwera, a suite pozostanie zielony. Dodaj test: `parseServerEnv({...validEnv(), VITE_SENTRY_DSN_DASHBOARD:'x', PATH:'/usr/bin'})` przechodzi i nie zwraca tych pól."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "scripts/inbox/attachments.test.mjs:61",
+   "opis": "Granica progu 25 MB nieprzybita — test uzywa `MAX_ATTACHMENT_BYTES + 1024*1024`, wiec zamiana `>` na `>=` w `scripts/inbox/attachments.mjs:81` (odmowa dla pliku o dokladnie 25 MB, ktory hub przyjmuje — `server.js:877` i `lib/inbox-blobs.js:153` tez uzywaja `>`) przeszlaby niezauwazona i rozjechala klienta z hubem. Akcja: dopisz test tworzacy przez `fs.truncateSync` plik o dokladnie `MAX_ATTACHMENT_BYTES` i asertujacy, ze `prepareAttachments([plik], { client })` zwraca jedna pozycje oraz `client.uploads.length === 1`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/static/t.js:48",
+   "opis": "Nowa gałąź produkcyjna `clampCell(v, max)` — `!(v > 0)` zamiast `v < 0`, dodana WŁAŚNIE po to, by łapać NaN z popsutej geometrii (komentarz w kodzie to deklaruje) — nie ma ani jednego testu. Test „przycina komórkę do siatki\" (tracker.test.ts:487) ćwiczy tylko wartości skrajne dodatnie/ujemne, które przechodzą też przez stare `v < 0`, więc powrót do `v < 0` NIE wywali suite'u, a wtedy klucz `heat` staje się `\"NaN:NaN\"` — serwer odsieje go cicho (HEAT_CELL_PATTERN), próbka znika bez śladu. Harness już to umożliwia: `tracker.fireOnWindow('pointerdown')` tworzy zdarzenie bez `clientX`/`clientY` (→ `undefined + 0` = NaN). Akcja: dopisz w apps/server/src/tracker/tracker.test.ts scenariusz z takim "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/components/copy-button.tsx:1",
+   "opis": "Nowy współdzielony komponent (265-linijkowa karta tokenu i onboarding używają go do kopiowania PLAINTEXTU tokenu i komendy `claude mcp add`) nie ma żadnego pliku testowego — brak `copy-button.test.tsx` w repo. Niepokryte: happy path (`navigator.clipboard.writeText` + stan „Skopiowano\"), gałąź `catch` z `Sentry.captureException` oraz — najważniejsze — to, że do Sentry nie trafia kopiowana wartość. Regresja w gałęzi błędu (np. wysłanie kopiowanego tekstu w kontekście zdarzenia) przejdzie cały `pnpm test` na zielono. Akcja: `apps/dashboard/src/components/copy-button.test.tsx` z podmienionym `navigator.clipboard` (resolve + reject) i asercją, że `JSON.stringify(captureException.mock.calls)` nie "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/tests/rls.test.ts:5525",
+   "opis": "Główny ciężar dowodowy tej fazy (bloki `faza 9b — dostęp i admin` oraz `faza 9b — offer_events i webhook admina`, ~1700 linii, ok. 40 scenariuszy) biegnie WYŁĄCZNIE pod `pnpm test:rls` na żywym projekcie stagingowym `nxiqssmkteemyhzjkrob` i jest nieuruchamialny w tym przeglądzie (bramka `assertStagingProject`, konta seeda, wypchnięte migracje). Zweryfikowane headless zostały tylko testy offline: `supabase/tests/migration-9b-access.test.ts`, `migration-9b-events.test.ts`, `scripts/seed-test-users.test.ts`, `scripts/dockerfile-invariants.test.ts` (74 testy) oraz `packages/shared` (247 testów) — wszystkie zielone. Operator musi uruchomić `pnpm seed:test-users` (wymaga `SEED_TEST_USER_C_EMAIL`/`"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/account/use-profile.test.ts:189",
+   "opis": "Dwie z trzech nowych funkcji zapisu profilu nie mają ANI JEDNEGO testu dotykającego ich kodu: `markTourSeen` i `dismissFirstSteps` są w każdym teście konsumenta podmienione atrapą (`use-screen-tour.test.tsx:74`, `use-first-steps.test.ts:79`), a `use-profile.test.ts` testuje wyłącznie odczyt (`useProfile`). W efekcie nic nie sprawdza tabeli `TOUR_PATCHES` (use-profile.ts:107-111): zamiana wartości `oferty`↔`szablony` albo literówka w kolumnie przeszłaby zielono przez CAŁY suite, a objawem produkcyjnym byłby przewodnik, który nigdy się nie odhacza na jednym ekranie i nigdy nie wraca na innym. Tak samo nietestowany jest filtr `.eq('id', userId)` i stempel czasu w `dismissFirstSteps` (tylko `res"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:6340",
+   "opis": "`silenceEvents()` liczy WSZYSTKIE wiersze `admin_events` z `created_at >= blockStartedAt`, bez filtru po `kind`, a asercje w teście są dokładne (`toBe(0)`, `toBe(1)`). Na współdzielonym stagingu każde inne zdarzenie zapisane w tym oknie (np. `limit_przekroczony` z bloku 9a albo z równoległej sesji) przewraca test, a jednocześnie test przepuściłby zapis zdarzenia o BŁĘDNYM rodzaju. Zmień zapytanie w `silenceEvents()` na `admin.from('admin_events').select('id').eq('kind', 'lista_czlonkow_nie_przyszla').gte('created_at', blockStartedAt)`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:138",
+   "opis": "Brak happy-path właściciela: żaden test nie dowodzi, że A MOŻE wstawić, zmodyfikować ani usunąć WŁASNĄ ofertę, ani odczytać własny profil. Wszystkie fixture'y (`insertOfferAsAdmin`, linia 75) wstawia klient na kluczu sekretnym, który omija RLS. Skutek: usunięcie polityki `offers_insert_own`/`offers_update_own`/`offers_delete_own` albo grantu `insert, update, delete on public.offers to authenticated` (migracja, linie 141-143 diffu) zostawia `pnpm test:rls` w całości zielony (10/10), a aplikacja przestaje działać — bramka Z5 przepuści migrację, która blokuje własnego właściciela. Naprawa: dodać trzy testy na kliencie `tenantA.client` — insert oferty z `owner_id: tenantA.id` → sukces i zwrócony"
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:97",
+   "opis": "Przewodnik wraca przy KAŻDYM ponownym wejściu na ekran w tej samej sesji, mimo że hook obiecuje „JEDEN raz na konto i ekran, nigdy więcej\" (R13: „przy pierwszym wejściu\"). Po zamknięciu przewodnika `onDestroyed` woła `markTourSeen(userId, screen)`, który zapisuje kolumnę w bazie, ale NIE aktualizuje profilu w pamięci: `AccessGate` jest trasą-layoutem (App.tsx:201) i czyta `profiles` raz, a `useProfile` ponawia odczyt wyłącznie po zmianie `reloadToken`. Strony (`OffersPage`, `OfferDetailsPage`, `TemplatesPage`) są trasami-dziećmi i odmontowują się przy każdej nawigacji SPA, więc `instanceRef` (per instancja komponentu) niczego nie pamięta, a `isEligible` dalej widzi `profile.tourSeen[screen] "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics-events.ts:14",
+   "opis": "Brak zdarzenia „logowanie”, mimo że wymaga go R11 („zdarzenia: logowanie, …”), operator checklist fazy 4 („smoke: zdarzenie »logowanie« widoczne w projekcie EU”) i polityka prywatności panelu (`app-privacy-page.ts:78` — „Zbieramy zdarzenia …: logowanie, …”). W katalogu jest wyłącznie `loggedOut: 'wylogowanie'`; `grep` po `track(` w całym dashboardzie nie pokazuje ani jednego wywołania przy uwierzytelnieniu — `session-context.tsx:47` woła tylko `identifyUser`. Smoke operatora nie ma jak przejść, a dokument prawny obiecuje zbieranie, którego nie ma. Akcja: dodać `loggedIn: 'logowanie'` do `ANALYTICS_EVENTS` i wysłać je w `session-context.tsx` przy PRZEJŚCIU z `anonymous`/braku sesji na `authen"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260913120000_account_limits_and_admin_events.sql:184",
+   "opis": "Limit miesięczny i godzinowy da się obejść jednym dodatkowym polem w ładunku: `account_limit_counts` liczy oferty po `offers.created_at` (linie 184 i 191), a `authenticated` ma z migracji inicjalnej TABELOWY grant INSERT na `offers` (`20260824171406_init_profiles_offers.sql:194` — potwierdzone na stagingu: 18 kolumn INSERT, w tym `created_at`) i żaden trigger nie stempluje `created_at` (inaczej niż `mcp_tokens`, `offer_templates`, `template_assets`, gdzie stempluje trigger, nie ładunek klienta). Token handlowca (sesja panelu, `oo_…`, JWT connectora) idzie prosto do PostgREST — dokładnie ten model zagrożenia, którym migracja uzasadnia egzekwowanie w bazie. DOWÓD (staging, transakcja z `set lo"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/unavailable-counter.tsx:21",
+   "opis": "`aria-label` na `<span>` bez roli (rola `generic`) jest w WAI-ARIA 1.2 zabronione i pomijane przez czytniki ekranu (Firefox/NVDA nie wystawiają nazwy dla `generic`), więc obiecana w planie nazwa dostępna „liczba niedostępna” nie dociera do użytkownika — `getByLabelText` w testach przechodzi, bo testing-library czyta atrybut, nie drzewo dostępności. Dodaj `role=\"img\"` do tego `<span>` (na `img` `aria-label` jest dozwolone, a wszystkie istniejące asercje `getByLabelText`/`getAllByLabelText` pozostają zielone bez zmian)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/markup-scan.ts:19",
+   "opis": "Skaner markupu ma zlozonosc KWADRATOWA na wejsciu z niedomknietym cudzyslowem w znaczniku, a ta faza zrobila z niego wspolny modul i dolozyla drugi pelny przebieg (maskHiddenMarkup) na sciezce publikacji. Pomiar na dist: dokument '<a \"' powtorzony 20k/40k/80k razy (80/160/320 KB) -> renderedMarkup 2.0 s / 8.0 s / 31.9 s, maskHiddenMarkup identycznie (4x czasu na 2x rozmiaru). MCP przyjmuje cialo do HTML_MAX_BYTES + zapas (~2 MB), a validateOfferPublication wola assertNoOwnFavicon (renderedMarkup + matchAll) i injectOfferFavicon (mask) PRZED assertHtmlSize, wiec jedno uwierzytelnione wywolanie opublikuj_oferte/zapisz_szablon z ~2 MB takiego HTML blokuje petle zdarzen jedynego procesu Node na "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/limits-dialog.tsx:84",
+   "opis": "Pole Storage wczytuje limit jako `Math.round(storageBytes / BYTES_IN_MIB)` i przy zapisie mnoży z powrotem, więc limit niebędący pełną wielokrotnością MiB (ustawiony wcześniej RPC albo SQL-em) jest cicho zaokrąglany także wtedy, gdy administrator zmienia wyłącznie limit ofert — jedna liczba konta zmienia się bez świadomej decyzji. Akcja: zapamiętać `account.limits.storageBytes` w stałej przy montowaniu okna i w `handleSubmit` wysyłać tę wartość zamiast `storage * BYTES_IN_MIB`, gdy tekst pola nie różni się od wartości początkowej."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts:218",
+   "opis": "Pomiar odłożony w planie IU-13 („czy przeglądarka dosyła całe ciało XHR po wczesnym 429”) nie został wykonany — wymaga żywego środowiska z sesją handlowca i realnego odbicia limitera, więc jest niewykonalny headless. Zaimplementowany wariant jest bezpieczny niezależnie od wyniku (klient ZAWSZE odczekuje pełne `Retry-After`, uzasadnienie w komentarzu przy `waitForLimit`), więc nie ma tu defektu do naprawy — jest otwarta pozycja smoke'u. AKCJA operatora: przy ręcznym wgraniu 12 plików na koncie wdrożonym (pozycja już w checkliście) zanotować, czy przy 429 dla pliku > 2 MB przeglądarka wysłała całe ciało (karta Sieć: rozmiar żądania vs rozmiar pliku); wynik rozstrzyga, czy dla dużych plików wol"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql:1",
+   "opis": "Weryfikacja niewykonalna headless: obie migracje fazy 9b (`20260914100000`, `20260914120000`) muszą trafić na ref bazy używany przez wdrożone środowisko PRZED publikacją obrazu, a lokalne CLI jest zalinkowane do stagingu (`nxiqssmkteemyhzjkrob`), nie do refu wdrożonego. Bez nich: `admin_event_record` → każde zdarzenie administratora ginie z samym `warn`; `begin_account_deletion` → `DELETE /api/konto` oddaje 503 (to akurat zachowanie zamierzone); `mark_offer_opened` → zatrzask degraduje do `update` i webhook „otwarta\" NIE powstaje aż do restartu procesu PO migracji; `apply_membership_list`/`report_membership_silence` → 503 i cisza w alarmie. Do tego `AA_MEMBERSHIP_SECRET` musi być w Coolify p"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "e2e/seeds/faza-9a-agregaty-seed.sql:22",
+   "opis": "Komentarz-spec scenariusza podaje kolejność wierszy tabeli „od najnowszej” jako Komputer → Tablet → Telefon, a z wartości `started_at` w seedzie najnowsza jest wizyta tabletu (`now() - 1 day`), potem komputer (`now() - 2 days`), potem telefon (`now() - 3 days`). Tester E2E asertujący dosłownie z tego komentarza dostanie fałszywy FAIL (albo „naprawi” seed). Zmień linie 22–25 na: `Tablet · czytanie 43 s · przeczytane 30% · 2 kroki ścieżki`, `Komputer · czytanie 1 min 50 s · przeczytane 60% · 3 kroki ścieżki`, `Telefon · czytanie 2 min 37 s · przeczytane 85% · 3 kroki ścieżki`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.test.ts:256",
+   "opis": "Nie ma testu na jedyny nietrywialny wariant `anyOf` (use-first-steps.ts:213), czyli na to, co się dzieje, gdy konto NIE ma wiersza `mcp_tokens`, a `listGrants()` nie rozstrzyga — a autor sam pisze w komentarzu przy `probeOauthGrants`, że to stan spodziewany (wyłączony serwer OAuth na projekcie). Wtedy `hasMcp === null` gasi CAŁĄ kartę dokładnie na świeżym koncie, dla którego checklista istnieje; dziś żaden test tego nie utrwala ani nie kwestionuje. Akcja: dopisz przypadek w bloku „kiedy karty NIE MA\": `tables.mcp_tokens = { rows: [], error: null }` + `listGrants.mockResolvedValue({ data: null, error: { message: 'oauth disabled' } })` → `await waitFor(() => expect(current().status).toBe('ukry"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/mcp/server.ts:28",
+   "opis": "MCP_SERVER_NAME = 'oferty-online' idzie w serverInfo odpowiedzi initialize — to jedyny identyfikator serwera, ktory klient MCP (claude.ai, Claude Code) moze pokazac uzytkownikowi, a nie ma go na liscie identyfikatorow technicznych, ktore faza 9a swiadomie zostawia (CLAUDE.md akapit 9a: scope @oferty/*, name package.json, e-mail E2E, alias 'oferty' po stronie klienta). R1 wymaga nazwy Traferto we wszystkich miejscach widocznych dla uzytkownika. Akcja: w new McpServer({ name: MCP_SERVER_NAME, version: MCP_SERVER_VERSION }) dodac 'title: PRODUCT_NAME' (BaseMetadataSchema w @modelcontextprotocol/core 2.0.0 ma pole title 'Intended for UI') — name zostaje identyfikatorem programistycznym; dopisac "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/template-repository.ts:317",
+   "opis": "`list` pobiera listę pod stałym sufitem `.limit(TEMPLATE_LIST_LIMIT)` (50) i RÓWNOLEGLE czyta `profiles.limit_templates`; dla konta z limitem podniesionym przez admina (9b) powyżej 50 `liczba_szablonow`, `wolneMiejsca` (`Math.max(0, limit - rows.length)`) i lista będą cicho ucięte — komentarz w linii 47 mówi „trzeba ją podnieść razem z nim”, ale nic tego nie egzekwuje. Zamień równoległe `Promise.all` na sekwencję: najpierw `profileResult` (limit konta), potem lista z `.limit(Math.max(TEMPLATE_LIST_LIMIT, profileResult.data.limit_templates))` — jedno dodatkowe round-trip tylko na torze listy, a sufit rośnie razem z limitem konta; w `template-repository.test.ts` dopisać przypadek `limit_templa"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89",
+   "opis": "Luka R4 („po kliknięciu w link członek przechodzi ekran regulaminu”) na ścieżce, którą fix po review fazy 3 celowo otworzył: `ConsentLogin` przekazuje `redirectPath = /oauth/consent?authorization_id=…`, `use-login-flow.ts:161` wysyła je w ciele `POST /api/dostep/rejestracja`, a serwer (`registration-service.ts:234`) składa `emailRedirectTo = <APP_ORIGIN>/oauth/consent?…`. Członek AA BEZ konta, który zaczął od strony zgody Claude, po kliknięciu w mail dostaje sesję na koncie świeżo utworzonym przez `handle_new_user` (`access_state = oczekujace`, `terms_accepted_at = null`) i ląduje od razu na ekranie zgody OAuth — trasa `/oauth/consent` jest z rozmysłu POZA `RequireSession` i POZA `AccessGate"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:335",
+   "opis": "Po ukończeniu onboardingu (4/4) karta znika BEZ zapisu, więc `isEligible` zostaje `true` na zawsze i każde wejście na `/oferty` wykonuje komplet pięciu zapytań (`mcp_tokens`, `offer_templates`, `offers`, `visits` + `auth.oauth.listGrants()`) tylko po to, żeby niczego nie wyrenderować — dla każdego aktywnego konta, do końca życia konta. Komentarz uzasadnia brak zapisu poprawnością („stan liczy się z danych\"), ale nie adresuje kosztu; `listGrants` idzie dodatkowo do GoTrue, a nie do PostgREST-a. Akcja: w gałęzi `if (doneCount === required.length)` zapisz ukończenie w module-level `Set<string>` kluczowanym `profile.id` (np. `completedOwners.add(profile.id)`) i dołóż `!completedOwners.has(userId"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/lib/analytics.ts:114",
+   "opis": "`export function track(event: string, …)` przyjmuje dowolny łańcuch, więc literówka w nazwie zdarzenia nie jest błędem typu — a komentarz katalogu (`analytics-events.ts:3`) uzasadnia istnienie `ANALYTICS_EVENTS` właśnie tym, że „literówka w wywołaniu nie jest błędem typu, tylko nowym, pustym zdarzeniem w PostHogu”. Akcja: dodać w `analytics-events.ts` typ `export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];` i zmienić sygnaturę na `track(event: AnalyticsEventName, properties?: AnalyticsProperties)` (istniejące wywołania z literałami w testach pozostają poprawne)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:203",
+   "opis": "Wspólna blokada `perform … for update` bierze wiersze WSZYSTKICH kont `zewnetrzne` (`or p.source = 'zewnetrzne'` bez warunku na hash), choć krok 3 aktualizuje wyłącznie te z hashem na liście. W trybie `otwarta` każdy push blokuje na czas transakcji każde konto zewnętrzne, a `accept_terms` (własne `for update` na wierszu `profiles`) i `admin_set_access` czekają na nim bez potrzeby. Zawęzić gałąź: `or (p.source = 'zewnetrzne' and public.email_hash(u.email) in (select m.hash from public.membership_hashes m))` z dołożonym `join auth.users u on u.id = p.id` w tym `perform` (zbiór blokowany = zbiór aktualizowany, tak jak dla gałęzi `akademia`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/texts.ts:95",
+   "opis": "Zdanie `limitsDefaultNote` („Powyżej to wartości domyślne — swoje limity zobaczysz w Ustawieniach.\") kieruje użytkownika w miejsce, w którym tych liczb NIE MA. `useAccountLimits` jest importowany wyłącznie w `features/offers/offers-page.tsx:5` i `features/templates/templates-page.tsx:6`, a `features/settings/settings-page.tsx` i `features/settings/texts.ts` nie zawierają ani jednego wystąpienia słowa „limit\" (sprawdzone gripem). Dodatkowo jedyny konsument tych danych, `LimitBanner`, renderuje się WYŁĄCZNIE od progu (`limit-banner.tsx:14-16` — poniżej progu oddaje `null`), więc konto poniżej progu nie zobaczy swoich limitów nigdzie w panelu. To ta sama klasa, co wpis w learned-patterns z 2026"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-page.tsx:62",
+   "opis": "Pierwszy krok przewodnika listy ofert („Pierwsze kroki”, `tours.ts` → `tourId: 'checklista'`) jest w praktyce ZAWSZE pomijany. `buildSteps` robi zdjęcie DOM-u w chwili, gdy `useOffers` przestaje ładować, a `FirstStepsCard` renderuje `null` do czasu rozwiązania własnych sond (`use-first-steps.ts`: `mcp_tokens` + `listGrants` + `offer_templates` + `offers`, a potem SZEREGOWO `offers_visit_summary`) — czyli z definicji później niż odpowiedź na listę ofert. Nowe konto (jedyny odbiorca przewodnika) nigdy nie zobaczy kroku o checkliście, a `use-screen-tour.test.tsx` utrwala to jako normę (`expect(config.steps).toHaveLength(2)`). Akcja: opóźnić start przewodnika listy ofert do chwili, gdy znany jes"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/pages/app-privacy-page.ts:108",
+   "opis": "Polityka prywatności obiecuje czynność, której żaden kod nie wykonuje: „Adres usuwamy po wysłaniu zaproszenia albo po 12 miesiącach od zapisu\". Nic w produkcie nie kasuje wierszy `access_requests` — migracja 20260914100000 nie ma ani triggera, ani RPC kasującego, polityki dają rolom klienckim wyłącznie SELECT, `invitation-service.invite()` po udanej wysyłce zaproszenia nie dotyka tabeli, a sweeper (`assets/detached-assets-sweeper.ts`) ma tylko krok ciszy członkostwa. Ten sam adres zostaje dodatkowo na zawsze w `admin_events.details.email` zdarzenia `zapis_chce_dostep`. Scenariusz: ktoś zostawia adres w formularzu, admin wysyła zaproszenie — adres zostaje w `access_requests` i w dzienniku bez"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260913140000_offers_visit_summary.sql",
+   "opis": "Weryfikacja niewykonalna headless — pozycje rolloutu na ref wdrożony `uznjvfdqrisbzbcwemjn`: (1) `supabase db push --project-ref uznjvfdqrisbzbcwemjn` z migracją `20260913140000` ORAZ migracją fazy 2 `20260913120000` PRZED publikacją obrazu — bez funkcji panel pokazuje `—` w kolumnach i na trzech kaflach (Sentry raz per proces z `PGRST202`), bez śladu w logach serwera; (2) `pnpm compare:schemas` ma wyjść na exit 0 dopiero po tym pushu (dziś rozjazd 320+10 linii jest wyjaśniony, ale niezamknięty); (3) potwierdzić w Supabase Dashboard refu wdrożonego, że `max_rows` PostgREST = 1000 — `EMBEDDED_VISITS_MAX_ROWS` w `use-offer-details.ts` jest kopią tej konfiguracji poza repo, a przy innej wartośc"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "CLAUDE.md:55",
+   "opis": "Po tym diffie dokument jest sprzeczny sam ze sobą (learned pattern 2026-09-11 o starej lokalizacji po przeniesieniu): akapit smoke fazy 4 kończy się zdaniem „Liczniki listy i kafli są wiarygodne do 1000 wizyt na ofertę (…) — świadomy dług, naprawa razem z agregatami w fazie 9”, a akapit 9a (linia 69) mówi, że lista przestała osadzać `visits` i sufit z kafli zdjęto. Zamień końcówkę zdania w linii 55 na: „— dług domknięty w fazie 9a (RPC `offers_visit_summary` liczy po stronie bazy); sufit `max_rows` zostaje WYŁĄCZNIE na tabeli wizyt w widoku oferty i jest sygnalizowany dopiskiem `offerVisitsCapNote` przy `visits.length === EMBEDDED_VISITS_MAX_ROWS`.”"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "docs/operator/faza-9b-brief-aa-dashboard-emisja-czlonkow.md:32",
+   "opis": "Kontrakt wydany zewnętrznemu emiterowi rozjechał się z kodem po podniesieniu sufitu ciała. Brief deklaruje „sufit ciała 256 KB\" (wiersz 20) i „`413` — ciało > 256 KB — nie powinno wystąpić przy ≤ 4000 hashy\" (wiersz 32), a `routes/membership.ts:55` egzekwuje 512 KB WŁAŚNIE dlatego, że pełna dozwolona lista (4000 × `MEMBERSHIP_HASH_JSON_BYTES` = 67 B ≈ 268 000 B) przekracza 256 KB — zdanie z wiersza 32 jest więc wewnętrznie fałszywe. Scenariusz: programista AA Dashboardu implementuje wg briefu, tnie listę do 256 KB (~3900 hashy) albo odrzuca własny ładunek przed wysyłką; ucięta lista znaczy dla Traferto „ci członkowie nie są aktywni\", więc konta poza uciętym fragmentem lecą w tryb `ograniczon"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/tests/rls.test.ts:6571",
+   "opis": "Znany rozjazd odnotowany w dossier fazy (IU-3): `apps/server/src/webhooks/queue-store.ts` nie przeszedł jeszcze na `WEBHOOK_MESSAGE_TYPES`, więc `parseQueueMessage` oddaje `null` dla wiadomości `otwarta` i `zdarzenie_administratora`, a worker takie zadanie ARCHIWIZUJE. Na stagingu dowolny działający lokalnie proces `server` sprzed tej fazy drenuje WSPÓLNĄ kolejkę i archiwizuje zadania scenariuszy IU-2, co czyni `pnpm test:rls` niestabilnym. Przed uruchomieniem `pnpm test:rls` operator musi ubić lokalny proces serwera (`pkill -x node` na właściwym PID, nie `pkill -f` — wzorzec z learned-patterns) albo uruchomić testy przy zatrzymanym serwisie. Dług zamyka IU-8 fazy 2."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-service.ts:110",
+   "opis": "Pole `pominieto` w odpowiedzi `POST /api/czlonkostwo` nie ma zdefiniowanej semantyki w ŻADNYM źródle prawdy: plan (`docs/plans/2026-09-13-001-…:422`) i zadania wymieniają je bez definicji, migracja `apply_membership_list` nie ma o nim komentarza (zwraca wyłącznie wiersze ZMIENIONE), a brief dla emitera (`docs/operator/faza-9b-brief-aa-dashboard-emisja-czlonkow.md:28`) każe je tylko „zalogować\". Implementacja liczy nim zmiany o kierunku spoza pary `aktywne`/`ograniczone` — czyli w praktyce zawsze 0. Naturalne odczytanie po stronie odbiorcy (i brzmienie R8: „`zewnetrzne` i `admin` pomijane; karencja 7 dni\") to „ile kont pominięto przy synchronizacji\", czego ta liczba NIE mierzy i czego zmierzy"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/access/admin-accounts-service.ts:1",
+   "opis": "Nowy moduł 260 linii z całą logiką widoku „Użytkownicy\" nie ma ANI JEDNEGO testu jednostkowego (odchylenie przyznane w planie: „osobnego testu jednostkowego serwisu nie ma\"), a `routes/admin-accounts.test.ts:476` sprawdza wyłącznie atrapę `AdminAccountsService`, więc realna implementacja ma zerowe pokrycie. Nieprzetestowane zachowania, z których każde psuje widok cicho: (1) pętla stronicowania `auth.admin.listUsers` z sufitem `USERS_MAX_PAGES = 5` — po przekroczeniu konta dostają `email: null` bez żadnego sygnału; (2) próg `USAGE_PER_ACCOUNT_MAX_ACCOUNTS = 100` — przy 101 kontach KAŻDE konto dostaje `zuzycie: []`, nieodróżnialne od „zużycie zerowe\"; (3) rozdział kluczy (sekretny tylko do `au"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 134,
+  "2026-08": 68
+ },
+ "potwierdzone_per_severity": {
+  "P3": 114,
+  "P2": 81,
+  "P1": 7
+ }
+}

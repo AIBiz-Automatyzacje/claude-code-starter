@@ -1,0 +1,66 @@
+epizodow przed filtrem: 202 | z turami: 149
+epizodow: 149
+skill                          n  tury/ep  out k/ep  cacheR M/ep  koszt/ep  min/ep  tools/ep  Agent/ep  Workflow/ep  ctx_max p50
+skill-creator:skill-creator    1       61        99        20.04     2767k      23        60       6.0          0.0         422k
+frontend-design:frontend-des   5       28        56         9.11     1311k      13        47       0.0          0.0         354k
+figma:figma-use               13       26        36         7.12     1023k      21        32       0.1          0.0         338k
+dev-plan                      19       17        36         5.25      930k      47        24       1.7          0.0         323k
+figma:figma-generate-design    3       21        33         5.34      877k       7        39       0.0          0.0         275k
+coderabbit-setup               1       19        17         6.67      783k       6        18       0.0          0.0         361k
+design                         2       18        34         4.92      750k       8        20       0.5          0.0         331k
+dev-docs                      17       13        27         3.86      707k      67        13       0.0          0.0         302k
+dev-prep                      16       16        25         3.04      621k     101        18       0.1          0.0         180k
+figma:figma-create-new-file    1       11        23         4.20      601k       4        18       0.0          0.0         404k
+coolify-manager                8       12         7         4.22      476k       2        13       0.0          0.0         431k
+dev-compound                   6        8        10         3.44      427k       3         7       0.0          0.0         477k
+2fc39ea68228:excalidraw        1        8         5         3.58      403k       2         8       0.0          0.0         452k
+sync-template                  8        5         3         1.44      358k       1         4       0.0          0.0         264k
+dev-brainstorm                 6        7        16         1.27      318k      38         6       0.2          0.0         236k
+artifact-design                3        5        22         1.33      282k       4         4       0.0          0.0         236k
+init                           1        9         8         1.11      276k       2         8       0.0          0.0         142k
+zroastuj-mnie                  7        4         4         1.01      225k       1         4       0.0          0.0         164k
+dev-pr                         8        6         3         0.79      198k       1         5       0.0          0.9         163k
+dev-autopilot-wf              22        3         1         0.30      134k       0         2       0.0          1.0         117k
+dev-ideate                     1        1         0         0.00        0k       0         0       0.0          0.0           0k
+
+=== oferty-online: epizody dev-* chronologicznie (ostatnie 40) ===
+2026-09-01T07:52 dev-docs               tury=  11 out=  17k cacheR=  2.1M koszt=   512k min=  3.3 Agent=0 Workflow=0
+2026-09-01T08:04 dev-autopilot-wf       tury=   3 out=   0k cacheR=  0.2M koszt=   109k min=  0.3 Agent=0 Workflow=1
+2026-09-01T17:24 dev-prep               tury=  17 out=  19k cacheR=  2.3M koszt=   375k min=  5.2 Agent=0 Workflow=0
+2026-09-01T17:24 dev-prep               tury=  17 out=  19k cacheR=  2.3M koszt=   375k min=  5.2 Agent=0 Workflow=0
+2026-09-02T07:21 dev-plan               tury=  35 out= 100k cacheR= 17.5M koszt=  2546k min= 80.0 Agent=5 Workflow=0
+2026-09-02T09:00 dev-docs               tury=  14 out=  29k cacheR=  2.0M koszt=   590k min=  5.9 Agent=0 Workflow=0
+2026-09-02T09:15 dev-autopilot-wf       tury=   4 out=   0k cacheR=  0.4M koszt=   128k min=  0.3 Agent=0 Workflow=1
+2026-09-03T11:25 dev-prep               tury=  19 out=  38k cacheR=  4.5M koszt=   728k min= 17.1 Agent=0 Workflow=0
+2026-09-03T13:15 dev-plan               tury=  24 out=  25k cacheR=  4.9M koszt=   887k min=  6.8 Agent=3 Workflow=0
+2026-09-03T16:14 dev-docs               tury=  15 out=  35k cacheR=  6.4M koszt=   883k min= 10.0 Agent=0 Workflow=0
+2026-09-03T16:27 dev-autopilot-wf       tury=   3 out=   0k cacheR=  0.3M koszt=   118k min=  0.3 Agent=0 Workflow=1
+2026-09-05T17:01 dev-pr                 tury=   2 out=   0k cacheR=  0.2M koszt=   123k min=  0.2 Agent=0 Workflow=1
+2026-09-06T09:22 dev-prep               tury=   6 out=  24k cacheR=  2.4M koszt=   412k min=  6.2 Agent=0 Workflow=0
+2026-09-06T14:32 dev-plan               tury=  18 out=  29k cacheR=  5.1M koszt=  1133k min=  6.6 Agent=5 Workflow=0
+2026-09-06T16:16 dev-docs               tury=  16 out=  48k cacheR=  3.5M koszt=   899k min=  9.0 Agent=0 Workflow=0
+2026-09-06T16:37 dev-autopilot-wf       tury=   3 out=   0k cacheR=  0.3M koszt=   135k min=  0.4 Agent=0 Workflow=1
+2026-09-08T10:22 dev-compound           tury=   7 out=  15k cacheR=  2.4M koszt=   357k min=  3.9 Agent=0 Workflow=0
+2026-09-08T14:57 dev-pr                 tury=  25 out=  14k cacheR=  3.7M koszt=   479k min=  5.5 Agent=0 Workflow=1
+2026-09-08T20:25 dev-compound           tury=   7 out=   9k cacheR=  3.3M koszt=   401k min=  2.6 Agent=0 Workflow=0
+2026-09-08T20:58 dev-pr                 tury=   6 out=   3k cacheR=  1.1M koszt=   148k min=  1.0 Agent=0 Workflow=1
+2026-09-11T06:14 dev-prep               tury=  18 out=  35k cacheR=  4.1M koszt=   677k min= 29.6 Agent=0 Workflow=0
+2026-09-11T06:56 dev-plan               tury=  11 out=  38k cacheR=  3.5M koszt=   670k min= 21.5 Agent=2 Workflow=0
+2026-09-11T07:31 dev-autopilot-wf       tury=   3 out=   1k cacheR=  0.3M koszt=   139k min=  0.4 Agent=0 Workflow=1
+2026-09-11T11:55 dev-pr                 tury=   3 out=   0k cacheR=  0.3M koszt=   202k min=  0.2 Agent=0 Workflow=1
+2026-09-11T14:33 dev-prep               tury=  36 out=  35k cacheR=  7.8M koszt=  1305k min= 47.6 Agent=0 Workflow=0
+2026-09-12T12:47 dev-plan               tury=  20 out=  16k cacheR=  4.4M koszt=   814k min=  4.4 Agent=2 Workflow=0
+2026-09-12T13:43 dev-docs               tury=  10 out=  32k cacheR=  4.3M koszt=   650k min=  5.9 Agent=0 Workflow=0
+2026-09-12T14:09 dev-autopilot-wf       tury=   3 out=   0k cacheR=  0.4M koszt=    47k min=  0.2 Agent=0 Workflow=1
+2026-09-13T09:34 dev-pr                 tury=   1 out=   0k cacheR=  0.1M koszt=   144k min=  0.1 Agent=0 Workflow=0
+2026-09-13T09:34 dev-pr                 tury=   2 out=   0k cacheR=  0.2M koszt=   223k min=  0.3 Agent=0 Workflow=1
+2026-09-13T13:15 dev-prep               tury=  40 out=  45k cacheR=  8.7M koszt=  1351k min= 39.9 Agent=0 Workflow=0
+2026-09-13T14:12 dev-plan               tury=   7 out=   8k cacheR=  1.9M koszt=   573k min=  2.2 Agent=3 Workflow=0
+2026-09-13T15:22 dev-docs               tury=  36 out=  61k cacheR= 16.7M koszt=  3340k min=1025.1 Agent=0 Workflow=0
+2026-09-14T08:29 dev-autopilot-wf       tury=   3 out=   0k cacheR=  0.3M koszt=   239k min=  0.3 Agent=0 Workflow=1
+2026-09-16T10:50 dev-prep               tury=  12 out=  19k cacheR=  1.9M koszt=   497k min= 17.7 Agent=0 Workflow=0
+2026-09-16T14:03 dev-plan               tury=  24 out=  20k cacheR=  5.4M koszt=   947k min=  5.1 Agent=2 Workflow=0
+2026-09-16T14:32 dev-docs               tury=   9 out=  23k cacheR=  3.6M koszt=   528k min=  4.4 Agent=0 Workflow=0
+2026-09-16T14:41 dev-autopilot-wf       tury=   3 out=   0k cacheR=  0.3M koszt=   177k min=  0.3 Agent=0 Workflow=1
+2026-09-17T08:10 dev-pr                 tury=   3 out=   0k cacheR=  0.4M koszt=   200k min=  0.3 Agent=0 Workflow=1
+2026-09-18T14:11 dev-prep               tury=  22 out=  46k cacheR=  6.2M koszt=  1732k min=1204.5 Agent=2 Workflow=0

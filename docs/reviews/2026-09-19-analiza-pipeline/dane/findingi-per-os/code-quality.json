@@ -1,0 +1,624 @@
+{
+ "os": "code-quality",
+ "zgloszone_n": 86,
+ "potwierdzone_n": 136,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-api.js:71",
+   "opis": "Wpis `blob: ['PUT', 'GET']` w `ENDPOINT_METHODS` jest martwy i psuje kształt tabeli: `handleInboxRequest` odrzuca akcje binarne w kroku 0 (`isBinaryAction` → 404), więc do porównania `method !== expectedMethod` (linia 316) nigdy nie dochodzi, a gdyby doszło, porównanie stringa z tablicą zawsze dałoby 405. Dozwolone metody binarne rozstrzyga wyłącznie `authorizeBlobRequest` (linia 261). Akcja: usuń trzy linie wpisu `blob` (razem z komentarzem nad nim) z `ENDPOINT_METHODS`, żeby tabela pozostała jednorodna `akcja → jedna metoda tekstowa`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/mail-draft.ts:61",
+   "opis": "Wpis `{ label: 'Traferto', stem: 'traferto' }` powiela nazwę produktu literałem, choć `PRODUCT_NAME` z `@oferty/shared` jest jedynym źródłem nazwy (IU-1) i serwer już z niego czyta (`app-origin-pages.ts`, `terms-page.ts`). Przy kolejnej zmianie nazwy bramka szkicu maila cicho zostanie przy starej. Dopasowanie jest już bez rozróżniania wielkości liter (`forbiddenPhrasePattern`, flaga `iu`), więc zamień wpis na `{ label: PRODUCT_NAME, stem: PRODUCT_NAME }` z importem `PRODUCT_NAME` z `@oferty/shared`; test `mail-draft.test.ts` asertujący odmowę z „Traferto\" zostaje bez zmian."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/styles/global.css:38",
+   "opis": "Token `--color-surface-sunken: #eceadf` jest martwy: komentarz zapowiada go jako kolor „pasków treści dokumentu na podglądzie”, ale `template-card.tsx` rysuje paski na `bg-ink-faint`/`bg-surface-alt`, a `grep` po `apps/dashboard/src` nie znajduje ani jednego użycia. Usuń deklarację z linii 38 razem z fragmentem komentarza o `surface-sunken` (linie 31–32) albo zastosuj ją w `THUMBNAIL_BAR_WIDTHS`-owych paskach `template-card.tsx` — token bez użycia to trzecia wartość, którą trzeba utrzymywać bez powodu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/template-list-state.ts:80",
+   "opis": "Parametr `pageSize` w `pageCountFor(total, pageSize = TEMPLATES_PER_PAGE)` (linia 80) i w `paginate(items, page, pageSize = TEMPLATES_PER_PAGE)` (linia 111) nie jest podawany przez ŻADNEGO wołającego — ani w `templates-page.tsx`, ani w `template-list-state.test.ts`. To konfiguracja dla wartości, która się nie zmienia (coding-rules §3, §5 pkt 10). Usuń oba parametry i użyj wewnątrz wprost `TEMPLATES_PER_PAGE` (`Math.max(1, Math.ceil(total / TEMPLATES_PER_PAGE))` oraz `const start = (page - 1) * TEMPLATES_PER_PAGE; return items.slice(start, start + TEMPLATES_PER_PAGE);`). Wywołania w kodzie i testach nie wymagają żadnej zmiany."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-api.js:71",
+   "opis": "Wpis `blob: ['PUT', 'GET']` w `ENDPOINT_METHODS` jest martwy i psuje kształt tabeli: `handleInboxRequest` odrzuca akcje binarne w kroku 0 (`isBinaryAction` → 404), więc do porównania `method !== expectedMethod` (linia 316) nigdy nie dochodzi, a gdyby doszło, porównanie stringa z tablicą zawsze dałoby 405. Dozwolone metody binarne rozstrzyga wyłącznie `authorizeBlobRequest` (linia 261). Akcja: usuń trzy linie wpisu `blob` (razem z komentarzem nad nim) z `ENDPOINT_METHODS`, żeby tabela pozostała jednorodna `akcja → jedna metoda tekstowa`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "CLAUDE.md:69",
+   "opis": "Akapit „Rozstrzygnięte w fazie 9a\" opisuje kod, którego nie ma: „`renderAaDocument` dostaje zestaw ikon (…) i logo (`aa` | `traferto`), domyślnie `aa`\" — w kodzie `renderAaDocument({ icons })` NIE ma parametru `logo` (apps/server/src/offer/pages/aa-design.ts:129-139), a parę ikona+znak wybiera `renderLegalDocument({ brand })` z parametrem WYMAGANYM bez domyślnej (legal-document.ts:46-54, 69-71). To samo zdanie mówi, że „dashboard linkuje ikony i logo (…) z jednego komponentu `components/brand-logo.tsx`\", a ikony linkuje `apps/dashboard/index.html`, komponent niesie wyłącznie logo. Plan techniczny dostał korektę („IU-2, `renderAaDocument({ icons })` bez parametru `logo`\"), CLAUDE.md nie — dok"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/limits/limit-error.ts:75",
+   "opis": "`parseResetsAt` oddaje `Date | null | undefined`, gdzie `null` = „brak daty (poprawne)\" a `undefined` = „śmieć (odrzuć)\" — dwie wartości puste o przeciwnym znaczeniu, rozróżnialne tylko przez komentarz i sprawdzenie `=== undefined` w `parseAccountLimitDetail` (linia 96). Akcja: zwracaj unię rozłączną `{ ok: true; resetsAt: Date | null } | { ok: false }` (pusty łańcuch → `{ ok: true, resetsAt: null }`, wzorzec/`NaN` nie pasuje → `{ ok: false }`) i w `parseAccountLimitDetail` rozgałęź po `ok`; testy `it.each` odrzuceń w `limit-error.test.ts` bez zmian."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:143",
+   "opis": "Gałąź `if (newestVisit === undefined)` powtarza w całości blok pustego stanu z linii 130-137, choć oba warunki są tym samym warunkiem: `summary.visitCount` to dosłownie `visits.length` (`analytics.ts:383`), więc przy `visitCount > 0` `offer.visits[0]` nigdy nie jest `undefined`. To defensive code na scenariusz, który nie może wystąpić, plus zdublowany JSX. Zmiana: skasować bramkę `summary.visitCount === 0` (linie 130-137) i zostawić jedną — `const newestVisit = offer.visits[0]; if (newestVisit === undefined) { … }` — która zaspokaja też `noUncheckedIndexedAccess` i daje ten sam wynik dla zera wizyt."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "lib/inbox-blobs.js:140",
+   "opis": "[NIEZWERYFIKOWANY — 0 glosow sceptykow] `writeBlobFromStream` w bloku catch woła `stream.destroy()` na strumieniu, którego NIE jest właścicielem — na ścieżce HTTP to `req`, czyli `IncomingMessage`, a jego `destroy()` niszczy gniazdo. Dzieje się to ZANIM `streamBodyToFile` (server.js:872) zdąży wysłać 413/400, więc klient dostaje ECONNRESET zamiast kodu przyczyny; wzorzec 413 z `/ask` i litera planu wymagają destroy dopiero PO flushu odpowiedzi — i dokładnie tak robi już `rejectBlob` (server.js:855, `res.once('finish', () => req.destroy())`). Dziś testy przechodzą tylko dlatego, że odpowiedź czasem zdąży trafić do bufora gniazda — to wyścig, nie kontrakt. To także złamanie granicy warstw: mag"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "packages/shared/src/template-asset-contract.ts:57",
+   "opis": "Cztery schematy Zod (`templateAssetUploadResponseSchema`, `templateAssetListResponseSchema`, `templateAssetDeleteResponseSchema` oraz pochodne) nie mają ANI JEDNEGO konsumenta ani testu — serwer używa wyłącznie typów i `ACCOUNT_STORAGE_MAX_BYTES`, a `packages/shared` ma test dla `webhook-contract`, `reading-time`, `env`, `pii` i `database.types`, więc brak tu testu jest wyłomem. Bez konsumenta kontrakt nie chroni przed niczym: `toContractAsset`/`toContractUsage` mogą się z nim rozjechać przy zielonym typechecku. Dodaj `packages/shared/src/template-asset-contract.test.ts` z jednym testem per schemat: `expect(templateAssetUploadResponseSchema.parse(fixture)).toEqual(fixture)` na fiksturze o ks"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:341",
+   "opis": "`useEffect(() => { track(ANALYTICS_EVENTS.offerOpened); }, [slug])` odpala się bezwarunkowo przy montażu, także gdy `useOfferDetails` skończy stanem błędu albo „nie ma takiej oferty\" — licznik „wejście w widok oferty\" nabija wtedy wejścia, których nie było (literówka w adresie, oferta cudzego konta). Przenieś zdarzenie za stan danych: warunkuj je na `state.status === 'ready'` i dodaj `state.status` do listy zależności obok `slug` (zatrzask nie jest potrzebny — `slug` zmienia się razem z ofertą, a `ready` per slug występuje raz)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/auth/use-login-flow.ts:169",
+   "opis": "Mapowanie wyniku `submitRegistration` → `LoginFormState` (switch l. 169–184) siedzi w hooku, podczas gdy bliźniacze mapowanie `stateAfterWaitlistSave` żyje w `login-flow-state.ts` jako czyste przejście — dwie funkcje o tej samej roli w dwóch warstwach, a plik hooka ma 327 linii (coding-rules §1: > 300). Akcja: wytnij switch do `login-flow-state.ts` jako `export function stateAfterRegistration(outcome: RegistrationSubmitOutcome, address: string): LoginFormState` (import typu z `../access/registration-api.js`), a w `resolveRegistration` zostaw `return stateAfterRegistration(outcome, address);` po bramce `isStale` — plik hooka schodzi pod 300 linii, a przejścia stanu są w jednym module."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "server.js:914",
+   "opis": "[NIEZWERYFIKOWANY — 0 glosow sceptykow] `streamFileToResponse` wstawia `decision.attachment.mime` (wartość pochodzącą od nadawcy, walidowaną w `normalizeAttachment` WYŁĄCZNIE po długości ≤255 — lib/inbox-db.js:481) wprost do nagłówka `Content-Type`, bez whitelisty i bez `X-Content-Type-Options: nosniff`. Endpoint blob jest publiczny (przed guardem XFF), a token członka siedzi w ŚCIEŻCE URL — więc załącznik z `mime: 'text/html'` otwarty w przeglądarce wykonuje się na origin huba i skrypt czyta `location.pathname`, czyli token ofiary (pełna tożsamość w hubie: pull cudzych wątków, send w jej imieniu). To ta sama klasa co wniosek 'sekret w drzewie czytanym przez agenta'. Dodatkowo mime z CRLF wy"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:10",
+   "opis": "Import spoza grupy lokalnej wstawiony w środek posortowanej grupy `./offer-*` — `import { useScreenTour } from '../onboarding/use-screen-tour.js';` stoi między `./offer-dates.js` a `./offer-decisions-card.js`, łamiąc regułę §3 („Importy: grouped … sorted alphabetically\"), której reszta pliku przestrzega. Przenieś tę linię nad `import { OfferAddressRow } from './offer-address-row.js';` (linia 7), czyli do grupy importów `../`, zaraz po `import { OFFERS_PATH } from '../../routes.js';`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:143",
+   "opis": "Odpowiedź 400 `nieprawidlowy_adres` z własnej bramki serwera (`emailSchema`) jest mapowana na `'blad'`, czyli karta pokazuje `AUTH_TEXTS.checkFailed` „Nie udało się sprawdzić adresu. Spróbuj ponownie za minutę.” — obietnicę, której ponowienie nigdy nie spełni (learned-patterns 2026-09-09: komunikat nie obiecuje czynności, której kod nie potwierdza). `looksLikeEmail` w karcie jest celowo luźniejsze od `emailSchema` (D12: bez zoda), więc adres ponad 254 znaki albo z podwójną kropką (`jan..k@firma.pl`) przechodzi bramkę lokalną i — jeśli GoTrue odda `otp_disabled` — kończy na 400 serwera (zmierzone: `emailSchema.safeParse` odrzuca oba, regexp karty przepuszcza). Akcja: w `submitRegistration` pr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts:256",
+   "opis": "`const version = versionRef.current ?? optionsRef.current.startMutation();` — gałąź `??` jest martwa: `pump` jest jednobieżny (`isPumpingRef` na wejściu), a jego `finally` zawsze ustawia `versionRef.current = null` (linia 281) i efekt montażu robi to samo (linia 110), więc w chwili odczytu `versionRef.current` jest ZAWSZE `null`. Ref jest przez to tylko do zapisu i ukrywa niezmiennik zamiast go pokazywać. Zamień linie 256–258 na `const version = optionsRef.current.startMutation();`, skasuj `versionRef` razem z jego zapisami w liniach 110, 258 i 281."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:112",
+   "opis": "Klient HTTP bez limitu czasu (checklista §4/§13): fetch(REGISTRATION_PATH, { signal }) dostaje wyłącznie sygnał wołającego, a LoginForm nie zakłada żadnego timeoutu — żądanie, które nigdy nie wraca (proxy trzyma połączenie, serwer wisi na registration_precheck), zostawia kartę w stanie sending z zajętym przyciskiem bez jednego zdania dla użytkownika; jedyną drogą wyjścia jest przypadkowa edycja adresu. Pozostali klienci API panelu (settings/account-api.ts:69, webhook-api.ts, admin/admin-api.ts, templates/templates-api.ts) używają AbortSignal.any([signal, AbortSignal.timeout(…_TIMEOUT_MS)]) — nowy moduł odstaje od wzorca. Akcja: dodać stałą REGISTRATION_TIMEOUT_MS (np. 15 000 — endpoint wysył"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:101",
+   "opis": "YAGNI: `bodyOrNull` woła `readJsonBody(response, (cause) => new Error('POST /api/dostep/rejestracja: odpowiedź nie jest JSON-em', { cause }))` i w tym samym miejscu połyka wynik pustym `catch { return null; }` — obiekt błędu domenowego z `cause` jest budowany wyłącznie po to, żeby go odrzucić; helper `readJsonBody` istnieje dla wołających, którzy błąd PROPAGUJĄ do Sentry, a ten moduł z rozmysłu nie raportuje (komentarz l. 108–110). Akcja: zastąpić ciało `bodyOrNull` przez `try { return await response.json(); } catch { return null; }` z jednym zdaniem komentarza (ciało nie-JSON = nieznany kształt = `blad`, bez raportu) i usunąć import `readJsonBody` z l. 4."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx:57",
+   "opis": "Testy karty grafik sprawdzają wyłącznie render (kafel brakującej grafiki, licznik zajętości, `accept`, stan błędu odczytu) — ani jeden nie uruchamia `handleFile` ani `handleDelete`, czyli całej logiki interakcji tej karty: odsiew pliku przed wysyłką, przejście wgrywanie → optymalizacja → gotowe w komponencie, nakładka `overlay` po sukcesie, potwierdzenie i usunięcie kafla. To ta luka przepuściła defekt z findingu o `handleDelete` (nieudane usunięcie mówi „Nie udało się wgrać grafiki”). Dodaj minimum: (a) wybór pliku przez `fireEvent.change` na `input[type=file]` z atrapą `uploadTemplateAsset` → kafel dochodzi do listy i widać „Gotowe — …”; (b) potwierdzone usunięcie z odrzuconą obietnicą `de"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx:12",
+   "opis": "Linia `export { formatOfferDate } from './offer-dates.js';` to martwy re-export: w produkcji nikt nie importuje `formatOfferDate` z `offers-list.js` (konsumenci biorą go wprost z `offer-dates.js` — `offer-details-page.tsx:6`, `offer-heatmap-card.tsx`), a jedynym importerem jest `offers-list.test.tsx:9`. Komponent listy re-eksportuje przy okazji narzędzie dat, którego sam nie definiuje. Zmiana: usunąć linię 12 z `offers-list.tsx`, a w `offers-list.test.tsx` zaimportować `formatOfferDate` z `./offer-dates.js` (funkcja ma już własne pokrycie w `offer-dates.test.ts:36`, więc blok `describe('formatOfferDate — strefa prezentacji')` w teście listy można przenieść tam albo skasować jako duplikat)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/admin/admin-events.ts:81",
+   "opis": "`AdminEventsWriteError` niesie sam `error.message` bez `code` PostgREST-a, więc wpis `warn` „nie zapisaliśmy zdarzenia administratora\" jest nierozróżnialny między `42P01`/`42501` (migracja nie doszła na ref wdrożony — kolejność rolloutu) a `08006`/timeoutem (usługa leży) — dokładnie klasa z learned-patterns 2026-09-08 („wyjątek niosący sam `message` bez kodu błędu robi z `08006` i `42501` jeden nierozróżnialny wpis\"). Akcja: dodaj do klasy pole `readonly code: string | null` (konstruktor `(message: string, code: string | null = null)`), rzucaj `new AdminEventsWriteError(error.message, error.code ?? null)`, a w `reportLimitExceeded` loguj `{ err: error, kind: refusal.kind, code: error instanc"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:43",
+   "opis": "Asercja typu `(REGISTRATION_OUTCOMES as readonly string[]).includes(value)` narusza coding-rules §10 (zakaz `as` poza DOM narrowing) — skopiowana z registration-mode-api.ts, ale nowy kod nie musi dziedziczyć obejścia. Akcja: zamienić na `REGISTRATION_OUTCOMES.some((outcome) => outcome === value)` — porównanie literału ze stringiem jest legalne bez rzutowania, a guard `value is RegistrationOutcome` zostaje. registration-api.test.ts (koperta z nieznanym wynikiem → 'blad') pokrywa zmianę."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:102",
+   "opis": "Plik ma 363 linie (331 przed fazą — próg 300 z §1 przekroczony i faza dokłada 32 linie), a nowe `countersNoteFor` (l. 102) i `totalVisitsFor` (l. 116) to czyste wyprowadzenia z `OfferDetails` (logika domenowa: kiedy 'otwarta · 0 wizyt' to automat; skąd M w komunikacie limitu mapy) umieszczone w pliku komponentu wbrew §14 ('plik z komponentem nie zawiera logiki biznesowej'). Przenieś obie funkcje jako eksporty do nowego `apps/dashboard/src/features/offers/offer-counters-derived.ts` z testem `offer-counters-derived.test.ts` (przypadki: otwarta+gotowe+0 → tekst; otwarta+niedostepne → null; wyslana+0 → null; totalVisitsFor gotowe → visitCount, niedostepne → visits.length) i zaimportuj je w stron"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "CLAUDE.md:53",
+   "opis": "Źródło prawdy projektu podaje twardy budżet `/t.js` jako **6780 B** (linia 53, powtórzone w linii 59), a repozytorium egzekwuje `SOURCE_SIZE_LIMIT_BYTES = 7680` w `apps/server/src/tracker/tracker.test.ts:55` (plik ma dziś 7674 B, czyli 6 B zapasu — przy progu z CLAUDE.md byłby od dawna przekroczony). Rozjazd zauważa sam kontekst fazy 6 („do rozważenia sprostowanie progu\"), ale zostawia go otwartym: dopóki trwa, każdy kolejny przegląd widzi w CLAUDE.md liczbę, której nikt nie pilnuje, i nie odróżni świadomego podniesienia progu w fazie 5 od cichego rozluźnienia (anty-pattern #3). Akcja: popraw w CLAUDE.md `6780 B` na `7680 B` w liniach 53 i 59 i dopisz przy nowej liczbie „podniesiony z 6144 B"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/access-request-form.tsx:77",
+   "opis": "Lokalna walidacja adresu („to-nie-jest-adres”) pokazuje `ACCESS_TEXTS.requestFailed` = „Nie udało się wysłać. Spróbuj ponownie.”. To zdanie jest nieprawdziwe dwa razy naraz: nic nie zostało wysłane (gałąź kończy się PRZED `fetch`, co potwierdza test `access-request-form.test.tsx:96` asercją `fetchMock).not.toHaveBeenCalled()`), a ponowienie bez poprawienia adresu nigdy się nie uda. Łamie to regułę z learned-patterns 2026-09-09 („komunikat nie obiecuje czynności, której kod nie potwierdza”) oraz DEKLARACJĘ z nagłówka `features/access/texts.ts`, która wprost obiecuje, że żadne zdanie nie mówi „spróbuj ponownie” tam, gdzie ponowienie nie może się udać. Człowiek z literówką w adresie dostaje kom"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/inbox/attachments.mjs:96",
+   "opis": "Domyślna wartość `client = inboxClient` w `prepareAttachments(paths, { client = inboxClient } = {})` nie ma ani jednego użycia: wszystkie cztery wywołania (`send.mjs:46`, `reply.mjs:66`, dwa komplety testów) wstrzykują klienta jawnie. Domyślka utrzymuje przy życiu import z linii 14 i wiąże moduł przygotowania plików z modułem transportu bez powodu. Zamień sygnaturę na `export async function prepareAttachments(paths, { client })` i usuń linię 14 `import * as inboxClient from './inbox-client.mjs';` — żaden istniejący wołający nie wymaga zmiany."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "lib/inbox-retention.js:142",
+   "opis": "Cała pozytywna ścieżka przemiatania jest nietestowalna i nietestowana: `sweepInboxRetention` przyjmuje wstrzykiwane `db`/`blobs`, ale `runSweep` woła ją jako `sweepInboxRetention({ warn })` — bez przekazania zależności — więc każdy test z `isHub: () => true` uderzyłby w prawdziwą `inbox.db` i prawdziwy katalog blobów. W konsekwencji lib/inbox-retention.test.js pokrywa wyłącznie gałąź `isHub() === false` (linia 269 testu) i `TypeError`, a nigdy nie sprawdza, że przy hubie przemiatanie faktycznie biegnie, że log powstaje tylko gdy coś skasowano i że wyjątek z bazy jest łapany w catch z linii 152 (zamiast wywalić timer). To jedyna ścieżka w systemie, która NIEODWRACALNIE kasuje cudze dane, i ni"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/invitation-service.ts:118",
+   "opis": "`const BLOCKING_ACCOUNT_STATES: ReadonlySet<string> = new Set<string>(['aktywne', 'ograniczone'])` jest otypowany zbiorem łańcuchów, więc literówka w którejkolwiek nazwie stanu (`aktywnie`) przejdzie typecheck i cicho przepuści zaproszenie dla konta, które ma już dostęp — a to jest bramka D6 stojąca PRZED `signInWithOtp`. AKCJA: zamień na `const BLOCKING_ACCOUNT_STATES: ReadonlySet<AccessState> = new Set<AccessState>(['aktywne', 'ograniczone'])` (typ `AccessState` jest już importowalny z `@oferty/shared`, używa go `membership-service.ts`) i dopasuj warunek w linii 212 tak, by porównywał wartość zawężoną do `AccessState`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/src/reading-time.ts:50",
+   "opis": "`isReadingMsDelta` wymaga `Number.isInteger`, a wartość spoza kontraktu jest ODSIEWANA po cichu (`events.ts:144`, transform → `undefined`) — nie odrzucana. Producent pomiaru (`t.js`, faza 5) liczy czas widoczności z `performance.now()` / `Date.now()`, więc jeden ułamek milisekundy zamieni CAŁY pomiar wizyty w brak pomiaru, bez błędu i bez śladu w logach — dokładnie klasa cichej awarii z 2026-09-01. Akcja: dopisz w JSDoc nad `isReadingMsDelta` (linia 44–49) jedno zdanie kontraktu dla producenta: „przyrost MUSI być liczbą całkowitą — `t.js` wysyła `Math.round(delta)`; wartość ułamkowa jest odsiewana cicho\", żeby budowniczy fazy 5 miał to w tym samym pliku, z którego bierze sufit."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/access-request-api.ts:26",
+   "opis": "Doc-komentarz pola `email` w `SubmitAccessRequestInput` mówi „Adres w postaci kanonicznej (`emailSchema` z `packages/shared`)\", ale nowy konsument z tej fazy (`saveToWaitlist` w `use-login-flow.ts`) przekazuje `state.email`, czyli adres po samym `trim` bez lowercase i bez `emailSchema` (chunk logowania celowo nie ładuje zoda — D12); kanonizację robi bramka serwera `access-email-gate.ts`. Kontrakt w komentarzu jest fałszywy dla jednego z dwóch wołających. Akcja: zamień komentarz na „Adres po `trim`; kanonizację (lower) i kształt robi bramka serwera (`emailSchema` w `routes/access-email-gate.ts`) — formularz `/chce-dostep` waliduje wcześniej lokalnie, karta logowania nie\" (analogicznie do `Sub"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/app-origin-pages.ts:76",
+   "opis": "`LEGAL_DOCUMENT_NAMES` jest niezależnym `as const` o kluczach `terms`/`privacy`, które muszą pokrywać się z kluczami `LEGAL_PATHS` — dziś pilnuje tego wyłącznie zbieżność nazw, a dopisanie trzeciego dokumentu do `LEGAL_PATHS` w `packages/shared` nie da błędu typów w tej grupie tras (nowa ścieżka nie dostanie ani nazwy, ani handlera). Zmień deklarację na `const LEGAL_DOCUMENT_NAMES = { terms: 'Regulamin', privacy: 'Polityka prywatności' } as const satisfies Record<keyof typeof LEGAL_PATHS, string>;` i wyciągnij `type LegalDocumentKey = keyof typeof LEGAL_PATHS`, używając go w sygnaturach `buildLegalDocumentTitle`, `renderLegalDocumentPlaceholder` i `serveLegalDocument` zamiast trzykrotnego `k"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "scripts/inbox/attachments.mjs:98",
+   "opis": "`const list = Array.isArray(paths) ? paths : [paths];` to defensive code na scenariusz, który nie może wystąpić: jedynym producentem argumentu jest `args.attach` z `scripts/inbox/args.mjs`, gdzie klucz `attach` siedzi w `REPEATABLE_KEYS` i jest ZAWSZE tablicą albo `undefined` (a `undefined` obsługuje wcześniejsze `if (paths == null) return [];`). Gałąź skalarna nie ma testu i tylko rozmywa kontrakt funkcji. Zamień linie 97–99 na `const list = paths ?? [];` (pozostawiając istniejący `if (list.length === 0) return [];`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/limits/limit-error.ts:33",
+   "opis": "Dwa moduły eksportują IDENTYCZNE identyfikatory `ACCOUNT_LIMIT_KINDS` / `AccountLimitKind` z RÓŻNYMI słownikami: `packages/shared/src/account-limits-contract.ts:31` (rodzaje wierszy RPC: `oferty_miesiac`, `publikacje_godzina`, `szablony`, `storage`) i ten plik (`message` triggerów: `limit_ofert_miesiac`, `limit_publikacji_godzina`, `limit_szablonow`, `limit_storage`). Serwer importuje `@oferty/shared`, więc w `apps/server` auto-import i czytelnik widzą pod jedną nazwą dwa niekompatybilne typy (5-sekundowa reguła: `AccountLimitKind` w `admin-events.ts:30` to NIE ten sam typ, co `AccountLimitKind` w hooku dashboardu). Dodatkowo `admin_events.details.kind` (zapis w `admin-events.ts:73`) jest ut"
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-api.js:283",
+   "opis": "`blobErrorStatus` mapuje KAŻDY nieznany kod na 400, więc błędy będące pomyłką serwera — `invalid_sha256` i `invalid_max_bytes` rzucane przez `writeBlobFromStream` (lib/inbox-blobs.js:115, 122) — wracają do klienta jako „twoje żądanie jest złe\" i chowają defekt huba przed diagnozą. Akcja: zamień ciało funkcji na jawną mapę `{ too_large: 413, hash_mismatch: 400, stream_error: 400 }` z domyślną wartością 500 dla kodów spoza mapy."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-events.ts:103",
+   "opis": "Dwa z czterech logger.warn w tym module (linie 103 i 132: stan spoza EVENT_BY_NEW_STATE, kierunek spoza MEMBERSHIP_TARGET_SOURCE) nie niosą pola powod, podczas gdy dwa pozostałe (171: 'brak_zmiany', 180: 'zmiana_podwojna') je mają — w logu o identycznej treści „pomijam zdarzenie” diagnostyka filtruje po powod i nie zobaczy tych dwóch klas. Dodaj powod: 'stan_spoza_pary' do obiektu w linii 104 i powod: 'kierunek_spoza_listy' do obiektu w linii 133 (obok istniejących nowy_stan/nowe_zrodlo), a w membership-events.test.ts w testach „przepięcie w kierunku innym niż akademia” i w membership-service.test.ts „stan spoza znanej pary” zamień asercję toContain('zewnetrzne')/toContain('oczekujace') na t"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260917100000_membership_hashes_self_registration.sql:435",
+   "opis": "Droga 2 `accept_terms` (hash na liście) nie jest idempotentna w polu `access_changed_at`, wbrew komentarzowi nad funkcją (droga 2 ustawia to samo): droga 1 konsumuje zaproszenie, więc drugie wywołanie w nią nie wchodzi, ale droga 2 nie ma nic do skonsumowania — każde kolejne wywołanie przez konto `akademia`/`aktywne` z hashem na liście wykonuje `update ... set access_changed_at = now()` na koncie, któremu nic się nie zmieniło (trasa `/zaproszenie` jest osiągalna wpisem adresu także dla konta aktywnego). Test RLS idempotencji sprawdza tylko `terms_accepted_at`, więc tego nie łapie. Zamień w linii 435 `access_changed_at = now()` na `access_changed_at = case when p.access_state = 'aktywne' and "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-8-connector-oauth-i-dashboard",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/texts.ts:302",
+   "opis": "`texts.ts` urósł w tej fazie ze 184 do 522 linii i przestał być katalogiem tekstów — od linii 302 mieszka w nim druga odpowiedzialność: maszyneria formatowania (`PluralForm`, `pluralFormFor`, `TEMPLATE_FORMS`/`OWN_FORMS`/`BUILT_IN_FORMS`/`SECTION_FORMS`, `templateCount`, `templateCounterText`, `templateMobileCounterText`, `templateSearchCounterText`, `templateNoMatchHeading`, `templatePaginationCaption`, `templatePageIndicator`, `TEMPLATE_DATE_FORMAT`, `formatTemplateDate`, `layoutNumberLabel`, `templateMetaText`, `builtInTemplateInfoText`). To przekracza próg 300 linii i łamie „jedna odpowiedzialność per moduł\" (coding-rules §1, §3). Wytnij wszystko od linii 302 do końca pliku do nowego `ap"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/template-assets.test.ts:190",
+   "opis": "`createFakeLogger` kończy się podwójną asercją `as unknown as Logger`, czyli obejściem typu, a nie konwersją — dokładnie ten wzorzec, który review fazy 1 kazało usunąć z `visit-service.test.ts:251`. `offer-images.test.ts` w tej samej fazie robi to poprawnie: `createLogger({ config: { LOG_LEVEL: 'silent', NODE_ENV: 'test' } })`. Zastąp całą funkcję `createFakeLogger` wywołaniem `createLogger({ config: { LOG_LEVEL: 'silent', NODE_ENV: 'test' } })` (import z `../observability/logger.js`) i usuń podwójne rzutowanie."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/inbox-api.js:71",
+   "opis": "Wpis `blob: ['PUT', 'GET'],` w `ENDPOINT_METHODS` to martwy kod i jedyny element mapy o innym typie niż reszta (string vs tablica). `handleInboxRequest` odrzuca akcje binarne fail-closed w kroku 0 (`if (isBinaryAction(action)) return intruder(404);`), więc do odczytu `ENDPOINT_METHODS['blob']` w linii 314 nigdy nie dochodzi; realną bramkę metody dla blobów trzyma `authorizeBlobRequest` (linia 257). Heterogeniczna wartość dodatkowo psuje niezmiennik porównania `method !== expectedMethod`, gdyby ktoś kiedyś usunął guard z kroku 0. Akcja: usuń wpis `blob: ['PUT', 'GET'],` z `ENDPOINT_METHODS` i zostaw w jego miejsce jednolinijkowy komentarz, że metody akcji binarnych rozstrzyga `authorizeBlobRe"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/access.ts:326",
+   "opis": "Wyjątek spoza RegistrationServiceError (test „wyjątek spoza klasy serwisu też kończy się 503” rzuca TypeError) trafia do logu z powod: 'rpc_nieudane', co jest nieprawdą — zamknięta lista powodów ma kłamać tak samo mało, jak kod odmowy. Dodaj do RegistrationLogReason trzecią wartość awarii 'awaria_nieznana' i licz reason trójstopniowo: !(error instanceof RegistrationServiceError) ? 'awaria_nieznana' : error.stage === 'gotrue' ? 'gotrue_nieudane' : 'rpc_nieudane'. W tym samym catch zamień logger.warn (linia 331) na logger.error — sąsiedni helper report() loguje tę samą klasę zdarzenia (503 z captureException) na poziomie error, a rozjazd poziomów między dwoma endpointami tego samego pliku psuj"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-webhook-card.tsx:26",
+   "opis": "Karta deklaruje własny `const DATE_FORMAT = new Intl.DateTimeFormat('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: DISPLAY_TIME_ZONE })` i opakowanie `formatDate`, choć ten sam feature eksportuje już `formatAdminDate` z `features/admin/format.ts` (a ono woła `formatOfferDate` o IDENTYCZNYCH opcjach). Trzecia kopia tego samego formatera w jednym pakiecie rozjedzie się przy pierwszej zmianie zapisu daty, a komentarz nagłówka usprawiedliwia powtórzenie wyłącznie KLAS CSS, nie formatowania dat. AKCJA: usuń `DATE_FORMAT` (linie 25–31) i funkcję `formatDate` (41–43), zaimportuj `formatAdminDate` z `./format.js` i podmień oba wywołania `formatDate(...)` w `ConfiguredAddress"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/app-origin-pages.ts:136",
+   "opis": "YAGNI: `LegalDocumentContext` to interfejs z jednym polem `marketingLabel: string`, opakowujący pojedynczy łańcuch i przekazywany przez trzy miejsca (`LEGAL_DOCUMENT_RENDERERS`, `serveLegalDocument`, `documentContext` w `createAppOriginPageRoutes`). Abstrakcja bez drugiego pola i bez drugiego konsumenta. Zamień na zwykły parametr: usuń interfejs, w `LEGAL_DOCUMENT_RENDERERS` typ `satisfies Record<LegalDocumentKey, (marketingLabel: string) => string>` z sygnaturami `(marketingLabel) => renderTermsPage({...})`, w `serveLegalDocument(name: LegalDocumentKey, marketingLabel: string)` wołaj `LEGAL_DOCUMENT_RENDERERS[name](marketingLabel)`, a w `createAppOriginPageRoutes` `const marketingLabel = ne"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-sections.tsx:72",
+   "opis": "`useIsDesktop()` jest wołany WEWNĄTRZ `HelpSection`, więc sześć sekcji zakłada sześć niezależnych `matchMedia` z sześcioma listenerami `change` na jeden breakpoint — sześć kopii tego samego stanu. Przenieś `const isDesktop = useIsDesktop()` do `HelpSections` (linia 138) i przekaż wynik w dół nowym propem `readonly isOpen: boolean` do `HelpSection` (`<details open={isOpen}>`); `ConnectSection` weź prop i przekaż dalej."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/email-hash.ts:6",
+   "opis": "Komentarz `hashEmail` wskazuje jako lustro definicję inline `sha256(lower(btrim(email)))` w migracji `20260914100000` — po tej fazie ta kopia w SQL już nie istnieje (test statyczny wręcz asertuje `not.toContain('sha256(')` w `apply_membership_list`), a jedyną definicją po stronie bazy jest `public.email_hash()` z `20260917100000` (D2). Diff przenoszący odpowiedzialność kończy się grepem za starą lokalizacją (learned-patterns 2026-09-11) — zamień w linii 6 odwołanie na: funkcja `public.email_hash()` w migracji `20260917100000`, z testem parytetu w `email-hash.test.ts` (znany rozjazd NBSP)."
+  },
+  {
+   "projekt": "claude-cron",
+   "zadanie": "zalaczniki-w-skrzynce",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "server.js:914",
+   "opis": "[NIEZWERYFIKOWANY — 0 glosow sceptykow] `streamFileToResponse` wstawia `decision.attachment.mime` (wartość pochodzącą od nadawcy, walidowaną w `normalizeAttachment` WYŁĄCZNIE po długości ≤255 — lib/inbox-db.js:481) wprost do nagłówka `Content-Type`, bez whitelisty i bez `X-Content-Type-Options: nosniff`. Endpoint blob jest publiczny (przed guardem XFF), a token członka siedzi w ŚCIEŻCE URL — więc załącznik z `mime: 'text/html'` otwarty w przeglądarce wykonuje się na origin huba i skrypt czyta `location.pathname`, czyli token ofiary (pełna tożsamość w hubie: pull cudzych wątków, send w jej imieniu). To ta sama klasa co wniosek 'sekret w drzewie czytanym przez agenta'. Dodatkowo mime z CRLF wy"
+  }
+ ],
+ "zgloszone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/templates/templates-api.ts:133",
+   "opis": "`export function parseRetryAfterSeconds(...)` jest wyeksportowany, a jedynym wołającym jest ten sam plik (linia 380); żaden inny moduł ani żaden test go nie importuje (`grep -rn parseRetryAfterSeconds apps/dashboard/src` → tylko `templates-api.ts`). Zdejmij słowo `export` z linii 133 — zachowanie pokrywają już trzy testy `uploadTemplateAsset` w `templates-api.test.ts` („429 niesie sekundy”, „429 bez nagłówka czeka MAKSIMUM”, „odmowa spoza limitera bez sekund”)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/visit-summary.ts:177",
+   "opis": "Przerwanie własnym AbortSignal NIE trafia do gałęzi catch, tylko do gałęzi `error !== null`: postgrest-js 2.112.4 (node_modules/.pnpm/@supabase+postgrest-js@2.112.4/.../index.mjs, linie 392-427) przy shouldThrowOnError=false owija AbortError w `res.catch` i ODDAJE `{ data: null, error: { code: '', message: 'AbortError: ...', hint: 'Request was aborted (timeout or manual cancellation)' } }` — nie rzuca. To samo dotyczy `TypeError: Failed to fetch` (też wraca jako error z code ''). Skutek: użytkownik wychodzi z /oferty (albo zmienia slug w widoku oferty) zanim RPC wróci → cleanup efektu robi abort → `reportUnavailableOnce('bez_kodu', error)` wysyła do Sentry zwykły obiekt (\"Object captured as "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-shape.ts:93",
+   "opis": "Parser nazywa się `integer`, ale sprawdza wyłącznie `typeof value === 'number' && Number.isFinite(value)` — przepuszcza `2.5` i `1e21`. Przez niego idą WSZYSTKIE limity i zużycia konta (`limits()`, `usageRow()`), więc rozjazd kontraktu z serwerem („szablony: 2.5”) pokaże się na karcie jako liczba ułamkowa i pojedzie do `LimitsDialog` jako wartość startowa, zamiast zostać odrzucony jak każdy inny nieznany kształt. To też złamanie 5-sekundowej reguły nazewnictwa (§11): nazwa obiecuje kontrolę, której funkcja nie robi. AKCJA: zmień treść na `return typeof value === 'number' && Number.isSafeInteger(value) ? value : null;` (nazwa zostaje adekwatna, a wiersz z ułamkiem odrzuca całą odpowiedź zgodn"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/users-page.tsx:157",
+   "opis": "Funkcja `deleteWarning` trzyma pełne, widoczne dla administratora zdanie („Usunięcie konta ${label} jest natychmiastowe i nieodwracalne. Znikną wszystkie jego oferty, szablony i grafiki, a klienci stracą dostęp do otwartych ofert.”) jako literał W KOMPONENCIE, podczas gdy konwencja projektu (CLAUDE.md, „Każdy feature ma plik texts.ts z tekstami interfejsu”) i cała reszta tego feature'a trzymają teksty w `features/admin/texts.ts` — przez co self-check wzorców pisania i przyszłe poprawki brzmienia omijają ten jeden literał. AKCJA: przenieś go do `features/admin/texts.ts` jako funkcję `deleteAccountWarningFor(label: string): string` (wzorem istniejących `inviteLabel`/`revokeLabel`) i w `users-p"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/help/help-sections.tsx:72",
+   "opis": "`useIsDesktop()` jest wołany WEWNĄTRZ `HelpSection`, więc sześć sekcji zakłada sześć niezależnych `matchMedia` z sześcioma listenerami `change` na jeden breakpoint — sześć kopii tego samego stanu. Przenieś `const isDesktop = useIsDesktop()` do `HelpSections` (linia 138) i przekaż wynik w dół nowym propem `readonly isOpen: boolean` do `HelpSection` (`<details open={isOpen}>`); `ConnectSection` weź prop i przekaż dalej."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260913160000_offer_templates_heading_texts.sql",
+   "opis": "Kolejność rolloutu i dowód schematu — niewykonalne headless. Migracja `20260913160000` (kolumna `heading_texts`, helper `offer_templates_heading_texts_valid`, granty KOLUMNOWE select/insert/update) musi trafić na ref środowiska docelowego PRZED publikacją obrazu: `template-repository.save` pisze `heading_texts` bezwarunkowo, a `TEMPLATE_SUMMARY_COLUMNS` je czyta, więc bez kolumny albo bez grantu KAŻDY zapis szablonu przez MCP i cała lista `/api/szablony` padają na 42501/42703. Ref bierz z `coolify app env list <uuid> --show-sensitive | grep '^SUPABASE_URL='` (nigdy z lokalnego `.env` — lokalne CLI celuje w staging). Otwarte pozycje weryfikacji z listy zadań fazy: `pnpm test:rls` na stagingu "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/registration-api.ts:112",
+   "opis": "Klient HTTP bez limitu czasu (checklista §4/§13): fetch(REGISTRATION_PATH, { signal }) dostaje wyłącznie sygnał wołającego, a LoginForm nie zakłada żadnego timeoutu — żądanie, które nigdy nie wraca (proxy trzyma połączenie, serwer wisi na registration_precheck), zostawia kartę w stanie sending z zajętym przyciskiem bez jednego zdania dla użytkownika; jedyną drogą wyjścia jest przypadkowa edycja adresu. Pozostali klienci API panelu (settings/account-api.ts:69, webhook-api.ts, admin/admin-api.ts, templates/templates-api.ts) używają AbortSignal.any([signal, AbortSignal.timeout(…_TIMEOUT_MS)]) — nowy moduł odstaje od wzorca. Akcja: dodać stałą REGISTRATION_TIMEOUT_MS (np. 15 000 — endpoint wysył"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/limits/limit-error.ts:75",
+   "opis": "`parseResetsAt` oddaje `Date | null | undefined`, gdzie `null` = „brak daty (poprawne)\" a `undefined` = „śmieć (odrzuć)\" — dwie wartości puste o przeciwnym znaczeniu, rozróżnialne tylko przez komentarz i sprawdzenie `=== undefined` w `parseAccountLimitDetail` (linia 96). Akcja: zwracaj unię rozłączną `{ ok: true; resetsAt: Date | null } | { ok: false }` (pusty łańcuch → `{ ok: true, resetsAt: null }`, wzorzec/`NaN` nie pasuje → `{ ok: false }`) i w `parseAccountLimitDetail` rozgałęź po `ok`; testy `it.each` odrzuceń w `limit-error.test.ts` bez zmian."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/access-request-form.tsx:77",
+   "opis": "Lokalna walidacja adresu („to-nie-jest-adres”) pokazuje `ACCESS_TEXTS.requestFailed` = „Nie udało się wysłać. Spróbuj ponownie.”. To zdanie jest nieprawdziwe dwa razy naraz: nic nie zostało wysłane (gałąź kończy się PRZED `fetch`, co potwierdza test `access-request-form.test.tsx:96` asercją `fetchMock).not.toHaveBeenCalled()`), a ponowienie bez poprawienia adresu nigdy się nie uda. Łamie to regułę z learned-patterns 2026-09-09 („komunikat nie obiecuje czynności, której kod nie potwierdza”) oraz DEKLARACJĘ z nagłówka `features/access/texts.ts`, która wprost obiecuje, że żadne zdanie nie mówi „spróbuj ponownie” tam, gdzie ponowienie nie może się udać. Człowiek z literówką w adresie dostaje kom"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/account/use-account-limits.ts:96",
+   "opis": "Warunek `rows.length !== ACCOUNT_LIMIT_KINDS.length` jest kodem obronnym na scenariusz, który nie może zajść: schemat `accountLimitsUsageResponseSchema` (unia rozłączna po `kind`) przepuszcza wyłącznie cztery znane rodzaje, a `findRow` oddaje wiersz tylko przy DOKŁADNIE jednym dopasowaniu — cztery udane `findRow` implikują `rows.length === 4`. Akcja: usuń ten warunek z `if` oraz import `ACCOUNT_LIMIT_KINDS` z `@oferty/shared` (linia 2); test „brakujący wiersz\" i „zdublowany wiersz\" (jeśli go nie ma — dodaj: dwa wiersze `szablony` → `niedostepne`) nadal pokrywają kompletność przez `findRow`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/admin/admin-webhook-card.tsx:26",
+   "opis": "Karta deklaruje własny `const DATE_FORMAT = new Intl.DateTimeFormat('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: DISPLAY_TIME_ZONE })` i opakowanie `formatDate`, choć ten sam feature eksportuje już `formatAdminDate` z `features/admin/format.ts` (a ono woła `formatOfferDate` o IDENTYCZNYCH opcjach). Trzecia kopia tego samego formatera w jednym pakiecie rozjedzie się przy pierwszej zmianie zapisu daty, a komentarz nagłówka usprawiedliwia powtórzenie wyłącznie KLAS CSS, nie formatowania dat. AKCJA: usuń `DATE_FORMAT` (linie 25–31) i funkcję `formatDate` (41–43), zaimportuj `formatAdminDate` z `./format.js` i podmień oba wywołania `formatDate(...)` w `ConfiguredAddress"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/limits/limit-error.ts:33",
+   "opis": "Dwa moduły eksportują IDENTYCZNE identyfikatory `ACCOUNT_LIMIT_KINDS` / `AccountLimitKind` z RÓŻNYMI słownikami: `packages/shared/src/account-limits-contract.ts:31` (rodzaje wierszy RPC: `oferty_miesiac`, `publikacje_godzina`, `szablony`, `storage`) i ten plik (`message` triggerów: `limit_ofert_miesiac`, `limit_publikacji_godzina`, `limit_szablonow`, `limit_storage`). Serwer importuje `@oferty/shared`, więc w `apps/server` auto-import i czytelnik widzą pod jedną nazwą dwa niekompatybilne typy (5-sekundowa reguła: `AccountLimitKind` w `admin-events.ts:30` to NIE ten sam typ, co `AccountLimitKind` w hooku dashboardu). Dodatkowo `admin_events.details.kind` (zapis w `admin-events.ts:73`) jest ut"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "apps/dashboard/src/features/templates/template-card.tsx",
+   "opis": "Dwa odchylenia od literalnego planu czekające na potwierdzenie operatora, zaznaczone przez buildera: (1) z kafla listy zniknął `OriginPill` W CAŁOŚCI, także pigułka „WŁASNY” — plan nazywał wprost tylko zniknięcie „WBUDOWANY”; klucze `pillBuiltIn`/`pillAuthored` zostają w `texts.ts`, bo czyta je `template-details-page.tsx`; (2) desktopowa tabela ofert dostała SIÓDMĄ kolumnę z nagłówkiem `sr-only` „Adres oferty” i przeliczonymi proporcjami pozostałych kolumn (tytuł 33,7 % → 27,7 %, `offers-list.tsx:39-45`). Oba są widoczne dla użytkownika i nie wynikają wprost z zapisu planu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/access/admin-accounts-service.ts:139",
+   "opis": "Nowy moduł (260 linii) nie ma ANI JEDNEGO testu jednostkowego — w teście trasy `routes/admin-accounts.test.ts` podstawiona jest atrapa `AdminAccountsService`, więc żadna z jego decyzji nie jest sprawdzana. Nietestowane zachowania, które mogą się popsuć cicho: pętla stronicowania `readEmails` (warunek wyjścia `data.users.length < USERS_PAGE_SIZE`, sufit `USERS_MAX_PAGES = 5` — po przekroczeniu konta dostają `email: null` zamiast zniknąć), próg `USAGE_PER_ACCOUNT_MAX_ACCOUNTS = 100` wyłączający zużycie limitów (`withUsage`), mapowanie `emails.get(row.id) ?? null` dla konta bez wiersza w `auth.users` oraz rozdział kluczy (sekretny do `listUsers`, token admina do `profiles`/RPC — pomylenie ich d"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/admin-accounts.ts:1",
+   "opis": "Plik ma 431 linii przy progu 300 z `.claude/rules/coding-rules.md` §1 — i to w fazie, która tym samym progiem uzasadniła rozbicie `queue-store.ts` na trzy moduły (`queue-message.ts`, `job-loader.ts`, `queue-store.ts`), więc kryterium jest stosowane niespójnie w obrębie jednego commita. Plik trzyma dwie niezależne powierzchnie: konta (GET listy, DELETE konta) i zaproszenia (POST, DELETE). AKCJA: wydziel `apps/server/src/routes/admin-invitations.ts` z trasami `ADMIN_INVITATIONS_PATH` (linia 214) i `ADMIN_INVITATION_PATH` (linia 310) razem z `inviteRequestSchema`, `invitationIdSchema` i tekstami zaproszeń, wstrzyknij nową grupę w `index.ts`/`app.ts` tym samym wzorcem co `adminWebhookRoutes` (mo"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:10",
+   "opis": "Import spoza grupy lokalnej wstawiony w środek posortowanej grupy `./offer-*` — `import { useScreenTour } from '../onboarding/use-screen-tour.js';` stoi między `./offer-dates.js` a `./offer-decisions-card.js`, łamiąc regułę §3 („Importy: grouped … sorted alphabetically\"), której reszta pliku przestrzega. Przenieś tę linię nad `import { OfferAddressRow } from './offer-address-row.js';` (linia 7), czyli do grupy importów `../`, zaraz po `import { OFFERS_PATH } from '../../routes.js';`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/access/email-hash.test.ts:61",
+   "opis": "Literał `'ala@example.com '` niesie NIEWIDOCZNY znak U+00A0 wpisany wprost w źródło (linie 61, 63, 68) — w edytorze i w diffie wygląda identycznie jak zwykła spacja, więc ktoś naprawiający formatowanie zamieni go na U+0020 i test o rozjeździe NBSP zacznie testować zwykły trim, nadal na zielono. Zapisz znak jawnie jako sekwencję ucieczki: `'ala@example.com '` (i analogicznie w komentarzu w linii 63), tak jak fikstura `İ` ma w nazwie testu podany kod punktu."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:270",
+   "opis": "Komentarz uzasadniający surowy PATCH jest już nieprawdziwy: mówi „Kolumny dostępu (faza 9b) nie są jeszcze w wygenerowanym `Database` (regenerację niesie IU-3)\", a IU-3 tej samej fazy regenerację wykonało — `database.types.ts` ma dziś `access_state`, `source`, `terms_accepted_at` i resztę (linie 341–401). Zamień zdanie w komentarzu `patchProfileAsAdmin` (linie 268–272) na faktyczny powód, który pozostaje ważny: jeden wspólny helper REST zamiast drugiej kopii plumbingu i możliwość wysłania jawnego `null`/kolumn spoza kontraktu typów. To samo zdanie powtórz poprawione w komentarzu przy linii 6653 (blok `faza 9b — offer_events`), który niesie tę samą nieaktualną przesłankę o `mark_offer_opened`"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-9b-wielu-uzytkownikow",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:153",
+   "opis": "Infrastruktura konta C (admin z seeda) nie ma konsumenta poza własnymi testami. `authAsAdmin()` (153) i `adminTenant` (112) są używane WYŁĄCZNIE w bloku `describe('konto administratora z seeda (IU-4 fazy 9b)')` (5462–5524), który sprawdza… że `authAsAdmin()` działa i jedzie sesją, a nie kluczem sekretnym. Wszystkie realne scenariusze polityk admina (5790+: `profiles`, `app_settings`, `invitations`, RPC D4, izolacja R5) używają lokalnego, jednorazowego `adminAccount` zakładanego w `beforeAll` bloku 9b. Koszt tej martwej ścieżki jest realny: para sekretów `SEED_TEST_USER_C_EMAIL/PASSWORD` w `.env.example` i w środowisku operatora oraz `promoteToAdmin()` w `scripts/seed-test-users.ts`, który pr"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/membership-service.ts:143",
+   "opis": "Pętla zapisów destrukturyzuje MembershipEventWrite na { kind, ownerId, details } i składa z tych samych trzech pól nowy obiekt do reportAdminEvent — MembershipEventWrite jest strukturalnie przypisywalny do AdminEvent (kind ⊂ AdminEventKind, ownerId: string ⊂ string | null, te same details). Zamień .map(async ({ kind, ownerId, details }) => { await reportAdminEvent({ adminEvents, logger }, { kind, ownerId, details }); }) na .map(async (write) => { await reportAdminEvent({ adminEvents, logger }, write); })."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "packages/shared/src/product-contract.ts:179",
+   "opis": "Nazwa `assertClosedRegistrationMode` łamie 5-sekundową regułę: prefiks `assert` obiecuje rzut, a funkcja NIGDY nie rzuca — zwraca `'zamknieta'` jako wartość zapasową dla runtime'u, a wyczerpanie unii robi wyłącznie typ `never` argumentu (komentarz sam to mówi). Przemianuj na `closedModeForUnknown(_unknownMode: never): PanelRegistrationMode` (razem z wywołaniem w linii 170) — nazwa ma mówić, co funkcja ODDAJE, nie sugerować bramkę, której nie ma."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/access/invitation-service.ts:265",
+   "opis": "Faza dołożyła drugą kopię ścieżki powrotu magic linku po stronie serwera: `registration-service.ts:91` eksportuje `DEFAULT_REGISTRATION_REDIRECT_PATH = '/auth/callback'`, a `invitation-service.ts:265` nadal niesie ten sam literał w `emailRedirectTo: \\`${appOrigin}/auth/callback\\``; trzecia kopia to `AUTH_CALLBACK_PATH` w `apps/dashboard/src/routes.ts:55` (panel pomija pole `redirectPath`, gdy jest równe tej stałej, i POLEGA na tym, że serwer podstawi tę samą wartość). Zmiana trasy callbacku w jednym miejscu rozjedzie się z pozostałymi bez błędu kompilacji. Akcja (jedna linia w tym pliku): `import { DEFAULT_REGISTRATION_REDIRECT_PATH } from './registration-service.js';` i `emailRedirectTo: \\`"
+  },
+  {
+   "projekt": "akademia-automatyzacji-dashboard",
+   "zadanie": "traferto-membership-emission",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "backend/services/traferto_membership.py:125",
+   "opis": "`_classify` uznaje sukces tylko przy `result.error is None and result.http_status == 200`, ale `send_webhook_json` ustawia `error=None` dokładnie dla każdego 2xx (`response.is_success`, backend/services/notifications.py:135). Odpowiedź `202`/`204` z Traferto zostałaby więc sklasyfikowana jako `retryable`: druga wysyłka pełnej listy plus `logger.error(\"traferto_membership_failed\")` mimo przyjęcia danych. Zmień warunek na `if result.error is None: return \"success\"` (kod odpowiedzi i tak trafia do logu przez `result.http_status`)."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/access.ts:357",
+   "opis": "Literały 'link_wyslany' | 'brak_w_liscie' w RegistrationResult (registration-service.ts) i REGISTRATION_OUTCOMES w packages/shared są dwiema niezależnymi kopiami tego samego kontraktu — zmiana nazwy po jednej stronie przechodzi typecheck i pada dopiero w teście trasy. Zwiąż je typem w miejscu, gdzie wynik wychodzi na zewnątrz: przed jsonData wstaw const wynik: RegistrationOutcome = result.kind; (import type { RegistrationOutcome } from '@oferty/shared') i oddaj jsonData(context, { wynik }) — TS zawęża result.kind w tych dwóch case'ach do pary literałów, więc rozjazd z REGISTRATION_OUTCOMES stanie się błędem kompilacji."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/access/access-request-form.tsx:50",
+   "opis": "YAGNI: mapa HEADINGS ma dwa klucze o IDENTYCZNEJ wartości (ACCESS_TEXTS.waitlistHeading), w tym klucz 'otwarta', który typ propsa AccessRequestMode = Exclude<RegistrationMode, 'otwarta'> wyklucza z definicji — komentarz sam przyznaje, że klucz jest „tylko dla wyczerpania typu”. To abstrakcja bez ani jednego rozgałęzienia: defensive code na scenariusz, którego typ nie dopuszcza. Akcja: usunąć HEADINGS oraz importy toPanelRegistrationMode i PanelRegistrationMode z @oferty/shared, a w l. 131 renderować bezpośrednio {ACCESS_TEXTS.waitlistHeading}; komentarz nad komponentem (l. 22–26) skrócić do zdania „jeden nagłówek dla obu trybów zamkniętych (D9)”. Test access-request-form.test.tsx dla obu try"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-09": 136
+ },
+ "potwierdzone_per_severity": {
+  "P2": 36,
+  "P3": 99,
+  "P1": 1
+ }
+}

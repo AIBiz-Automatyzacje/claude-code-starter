@@ -1,0 +1,424 @@
+{
+ "os": "architecture",
+ "zgloszone_n": 0,
+ "zgloszone_probka": [],
+ "potwierdzone_n": 89,
+ "obalone_n": 0,
+ "potwierdzone_probka": [
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:49",
+   "opis": "Czysty moduł obliczeniowy niesie polską etykietę prezentacyjną: `HeatBucket.label` wypełniane z `DEVICE_LABELS` (linia 235). To jedyny powód, dla którego moduł liczący punkty importuje warstwę etykiet — copy UI przecieka do warstwy danych, a `device` i tak jest w kubełku, więc widok umie sam sięgnąć po etykietę. Akcja: usuń pole `label` z `HeatBucket` (i przypisanie w `buildHeatBuckets`), a w komponencie mapy z IU-3 renderuj `DEVICE_LABELS[bucket.device]`; z `analytics.js` zostaje wtedy import samego typu `VisitDevice`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/webhooks/deliver.ts:214",
+   "opis": "Twardy budzet czasu jednej proby (`WEBHOOK_HTTP_TIMEOUT_MS`, D8) NIE obejmuje rozwiazywania nazwy: `resolveWebhookTarget` (a w nim `dns.lookup`) jest awaitowane PRZED utworzeniem `AbortSignal.timeout(timeoutMs)` (linia 240), a `dns.lookup`/getaddrinfo nie ma wlasnego limitu. Dolozywszy do tego trzy sekwencyjne zapytania `loadJob` po 5 s kazde (queue-store.ts:74), realny czas obslugi JEDNEGO wiersza moze przekroczyc `WEBHOOK_VISIBILITY_TIMEOUT_SECONDS = 30` — czyli zalozenie `vt = timeout x 2 + zapas` przestaje obowiazywac, wiadomosc wraca do widocznosci w trakcie trwajacej proby i odbiorca dostaje duplikat, a `read_ct` rosnie mimo ze proba jeszcze trwa. Akcja: obejmij rozwiazywanie nazwy tym"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx:15",
+   "opis": "Ścieżka endpointu MCP `/mcp` jest zaszyta dwa razy w dwóch różnych feature'ach: `mcpAddCommand()` skleja `${origin}/mcp` w pliku komponentu onboardingu, a `mcpServerAddress()` robi to samo w `features/settings/mcp-token.ts:57`. Dodatkowo logika składania komendy siedzi w pliku komponentu (coding-rules §14: „plik z komponentem nie zawiera logiki biznesowej”). Zmiana ścieżki MCP wymaga trafienia w dwa miejsca w dwóch katalogach. Akcja: przenieść `mcpServerAddress` do `apps/dashboard/src/lib/mcp-address.ts` (obok `supabase.ts`), tam też przenieść `mcpAddCommand`, i zbudować komendę na bazie `mcpServerAddress(origin)` zamiast drugiej interpolacji; oba testy (`mcp-token.test.ts:37`, `offers-page."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/operator/wdrozenie.md:119",
+   "opis": "Instrukcja wdrożenia zawiera sprzeczną procedurę zakładania kandydatów, której nie da się wykonać zgodnie z jej własną listą kontrolną. Punkt „Tokeny dla kandydatów wygenerowane: `npm run tokeny:utworz` (przeciwko produkcyjnemu `DATABASE_URL`)\" wymaga (a) klienta uruchomionego z `tsx` — a `tsx` jest w `devDependencies`, natomiast obraz produkcyjny instaluje zależności przez `npm ci --omit=dev` (`Dockerfile:91`), więc w kontenerze tego polecenia nie ma czym uruchomić; (b) połączenia do bazy spoza sieci wewnętrznej — czego wprost zabrania punkt kontrolny powyżej („Baza nie odpowiada z internetu… Połączenie = baza jest wystawiona, natychmiast to cofnij\"). To samo dotyczy `npm run wyniki:csv` (w"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "E2E",
+   "plik": "e2e/seeds/faza-4-wizyty-seed.sql:128",
+   "opis": "Seed zapisuje `visits.heat` w kształcie NIEZGODNYM z kontraktem systemu, omijając walidację API. Tracker buduje klucze siatki jako `wiersz:kolumna` 0–15 (`apps/server/static/t.js:52`), a bramka `POST /e` egzekwuje to regexem `HEAT_CELL_PATTERN = /^(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])$/` (`apps/server/src/routes/events.ts:74`); potwierdza to dowód E2E fazy 2 (`heat={\"2:1\":1}`). Seed wstawia natomiast klucze płaskie i spoza zakresu: `'{\"18\": 6, \"34\": 3, \"51\": 1}'` (linia 128), `'{\"5\": 4, \"70\": 2}'` (137), `'{\"18\": 2}'` (147). Baza tego nie łapie — migracja `20260828120000_visits_tracking.sql` nie ma CHECK-a na klucze `heat`, więc wiersze wejdą cicho. Zgodnie z regułą granic zaufania seed pisze ja"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:7",
+   "opis": "Hook widoku szczegółów importuje `displayStatusFor` i typ `OfferStatus` z hooka listy (`./use-offers.js`) — zależność hook→hook zamiast wspólnego modułu domenowego, wbrew §3 („wyciągaj shared logic do dedykowanego modułu\") i §14 (kierunek zależności). Dziś `use-offer-details.ts` ciągnie za sobą cały moduł listy razem z `OFFER_COLUMNS` i `useOffers`. Akcja: utwórz `apps/dashboard/src/features/offers/offer-status.ts` z `OfferStatus` i `displayStatusFor` (plus przeniesiony `describe('displayStatusFor')` z `use-offers.test.ts`) i importuj go w obu hookach."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/observability/logger.ts:7",
+   "opis": "Lokalna stała `REDACTION_PLACEHOLDER = '[zredagowane]'` dubluje eksport dodany w tej fazie w `packages/shared/src/pii.ts:2`. Skoro shared już go wystawia (i `index.ts` re-eksportuje), usuń lokalną definicję i importuj z `@oferty/shared` razem z `SECRET_FIELD_NAMES` — inaczej dwie wartości censora rozjadą się przy pierwszej zmianie."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql:41",
+   "opis": "Migracja dodaje `profiles_webhook_set_at_pair_check ((webhook_url is null) = (webhook_set_at is null))` bez backfillu i bez `NOT VALID`, a `ALTER TABLE ... ADD CONSTRAINT` waliduje istniejące wiersze. Każdy profil, który ma dziś `webhook_url` ustawiony ręcznie (smoke fazy 3 na stagingu/dev — worker czyta `profiles.webhook_url`, a przed IU-8 nie było innej drogi niż SQL), ma `webhook_set_at IS NULL` i wywali `supabase db push` na `check constraint ... is violated by some row`. Skutek jest podwójnie kosztowny przy WIĄŻĄCEJ kolejności rolloutu opisanej w nagłówku migracji: push aborcik zostawia kolumnę dodaną, ograniczenie nie, a publikacja obrazu bez migracji kończy się `42703` na każdym zapis"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "e2e/seeds/faza-5-heatmapa-seed.sql:1",
+   "opis": "Seed nie był ani razu wykonany na bazie (autor deklaruje wyłącznie walidację statyczną), a oba scenariusze `[E2E]` IU-4 (`mapa-uwagi-agregat`, `mapa-uwagi-pojedyncza-wizyta`) i checkbox idempotentności IU-5 pozostają nieodhaczone. Weryfikacja jest niewykonalna headless: wymaga żywego stagingu z ręcznie założoną tabelą-markerem `public.e2e_env_marker`, konta `e2e@oferty-online.test` i przeglądarki. Do wykonania przez operatora: `psql -v ON_ERROR_STOP=1 -f e2e/seeds/faza-5-heatmapa-seed.sql` DWUKROTNIE (idempotentność), potem przebieg obu scenariuszy ze screenshotem VIEWPORTU po scrollu (nigdy `fullPage`) — przy okazji sprawdź konsolę ramki pod kątem blokad CSP z findingu o `sandbox` + `'self'"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "app/(tabs)/index.tsx:214",
+   "opis": "Ekran Home urósł do 528 linii (przed fazą 400) i przejął całą orkiestrację dwufazowego check-inu: `handleCheckIn` (214), `handleUndo` (241), `handleCommitted` (255, ~50 linii rozgałęzień capped/error/level-up/success), ref-mostek `commitHandlerRef` + `useEffect` (306–316), cleanupowy `commitNow(\"unmount\")` (320–326) i derywacja `pendingGoalId` (336). Narusza coding-rules §1 (plik > 300 linii = refaktoruj) oraz warstwę „Page = minimum logiki, logika biznesowa w hooku\" — komponent strony trzyma dziś maszynę przejść okno→wynik, precedencję komunikatów i subskrypcję modułu poza Reactem. Reguła §5 zabrania dismissowania jako pre-existing: faza dołożyła +128 linii dokładnie tej odpowiedzialności. "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/analytics.ts:16",
+   "opis": "Kontrakt identyfikatorów sekcji zduplikowany w dashboardzie zamiast wyniesienia do sankcjonowanej warstwy wspólnej — i strażnik rozjazdu jest pozorny. `SECTION_LABELS` powiela listę `LONG_VARIANT_SECTION_IDS` (`apps/server/src/offer/brand-contract.ts:13`), a komentarz w `analytics.test.ts:17` twierdzi, że test „pilnuje rozjazdu\". Nie pilnuje: `TEMPLATE_SECTION_IDS` w teście to RĘCZNA kopia tej samej listy, więc dopisanie sekcji do szablonu serwera nie czerwieni niczego — obie strony trzeba i tak zaktualizować ręcznie, a do tego czasu handlowiec zobaczy surowe `zalaczniki`. Uzasadnienie odchylenia („dashboard nie może importować z apps/server\") jest poprawne co do zakazu (reguła §8), ale pomi"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "supabase/migrations/20260825171812_offers_brand_and_contact.sql:34-40",
+   "opis": "Backfill wpisuje istniejącym wierszom `contact_email = 'brak@example.invalid'` oraz `company_name/offer_title/client_name = 'Wiersz sprzed migracji'`, a grant UPDATE na `offers` jest kolumnowy i obejmuje wyłącznie `status` — właściciel oferty NIE ma jak tych wartości poprawić po fakcie (zasada niemutowalności działa tu przeciw nam). Na stagingu to dane D4, ale ta sama migracja pojedzie na projekt główny. Weryfikacja headless niewykonalna: wymaga wglądu w realną bazę. Do sprawdzenia przez operatora PRZED zastosowaniem na produkcji: czy `public.offers` ma tam jakiekolwiek wiersze; jeśli tak — czy godzimy się, że plansza wygaśnięcia (IU-4) pokaże dla nich placeholderowy kontakt w `mailto:`, czy"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/tests/rls.test.ts:15",
+   "opis": "Naruszenie granicy pakietów: `import type { Database } from '../../packages/shared/src/database.types'` sięga ścieżką względną do wnętrza `src/` innego workspace'u, omijając jego publiczny punkt wejścia — a `packages/shared/src/index.ts` w tej samej fazie został rozszerzony właśnie o reeksport `Database`. Coding-rules §8 („Nie importuj bezpośrednio między packages w monorepo — używaj shared layer\") i §14 (granice warstw). Przyczyną jest brak deklaracji zależności: root `package.json` nie ma `@oferty/shared`, więc import po nazwie pakietu nie zadziała, a deep path utrwala coupling z prywatnym układem plików `packages/shared` — każda zmiana nazwy pliku wygenerowanego przez `supabase gen types`"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/events.ts:64",
+   "opis": "Walidacja identyfikatorów sekcji na granicy API idzie luźnym regexem `SECTION_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/`, mimo że zamknięta lista sekcji ISTNIEJE w repo jako źródło prawdy: `LONG_VARIANT_SECTION_IDS` w apps/server/src/offer/brand-contract.ts (komentarz tam wprost mówi „kontrakt, nie detal (pomiar czasu, faza 4)\"), a szablon `template.ts` emituje `data-section` wyłącznie z tej listy. Komentarz w events.ts sam nazywa to „zamkniętym kontraktem szablonu\" — i mimo to go nie używa. Skutek: dowolny nadawca z ważnym tokenem wizyty wpisuje do `visits.sections` do 64 kluczy wymyślonych przez siebie, a widok oferty fazy 3 renderuje je z „fallbackiem na surowe id\" (plan, IU-5). Naprawa jednol"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:84",
+   "opis": "Karta „Decyzje klienta\" jest renderowana DOPIERO po bramce `if (summary.visitCount === 0) return <OfferEmptyState />;`, więc oferta bez ani jednej wizyty w `visits` nie pokazuje decyzji w ogóle. Zdarzenie CTA jest zapisywane NIEZALEŻNIE od wizyty — `apps/server/src/routes/decisions.ts:96` mówi to wprost („zdarzenie CTA nie jest powiązane z wizytą\"), a urządzenie bierze z nagłówka żądania, nie z `visits`. Scenariusz: czytelnik ma blokadę skryptów/`/t.js` nie wystartował albo `POST /e` cicho padł (zasada naczelna nr 7: zawsze 204, tracker milknie po jednej próbie) → `visits` puste, ale `/c.js` zapisuje akceptację; handlowiec widzi „jeszcze nikt nie otworzył oferty\" i NIE widzi, że klient ofert"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/aa-pages.ts:44",
+   "opis": "Powielona powłoka dokumentu zamiast jedynego źródła. `pages/aa-design.ts` wprowadza `renderAaDocument()` jako wspólny fundament stron AA (język, viewport, dwa `<link rel=icon>`, baza CSS, `@font-face`) i sam deklaruje w komentarzu, że obsługuje „root, «nie znaleziono» i politykę prywatności\". Root i `/prywatnosc` faktycznie z niego korzystają, ale `renderAaPage` w `aa-pages.ts` skleja własny `<!doctype>…<style>` i duplikuje `renderAaFontFaces()`, reguły `body`, `h1`, `p` i focus-ring. Skutki już dziś: strony 404 i „chwilowo niedostępne\" nie mają linków do favicony (root i prywatność mają) i będą się rozjeżdżać przy każdej zmianie tokenów w `aa-design.ts`. Dodatkowo plik leży w `offer/`, choć"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:546",
+   "opis": "Ścieżka zapisu, którą faktycznie wykonuje dashboard, nie jest pokryta testem RLS — testowany jest wariant przeciwny. Test rotacji robi `upsert({ owner_id, token_hash })` i utrwala nieaktualne założenie w komentarzu: „Ładunek rotacji nie niesie created_at (grant INSERT go nie obejmuje)”. Produkcja od tej fazy wysyła ładunek Z `created_at` (apps/dashboard/src/features/settings/use-mcp-token.ts:90), co wymaga świeżego grantu z migracji 20260827194500. Jeśli ta migracja nie wejdzie na bazę (patrz finding o kolejności wersji), rotacja tokenu kończy się 42501 na własnym wierszu, a zielony `pnpm test:rls` tego nie wykryje. Akcja: albo usunąć `created_at` z ładunku (wtedy poprawić komentarz i zostaw"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx:67",
+   "opis": "Klikalność całego wiersza desktopowego opiera się na `position: relative` na `<tr>` (`className=\"relative …\"`, linia 67) plus nakładce `after:absolute after:inset-0` na linku w `<th>` (linia 72). Elementy `table-row` historycznie nie były w WebKit blokiem zawierającym dla potomków `position:absolute` — jeśli przeglądarka to ignoruje, nakładka rozciąga się do najbliższego pozycjonowanego przodka, a tu żaden go nie ma (karta `overflow-hidden rounded-xl` nie jest pozycjonowana), więc każdy wiersz zakłada na CAŁĄ stronę niewidzialny link; ostatni w kolejności przechwytuje wszystkie kliknięcia i lista przestaje działać. Testy jsdom tego nie wychwycą (nie liczą layoutu), a scenariusz `[E2E] lista-"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-1-fundament/faza-1-fundament-zadania.md:761",
+   "opis": "Dwie pozycje `Weryfikacja:` fazy 4 pozostają nieodhaczone i nie da się ich domknąć headless w tym review: (1) IU-7 „lokalnie żądanie z hostem aplikacji zwraca dokument dashboardu, a z hostem ofert nie\" wymaga uruchomionego procesu serwisu ze zbudowanym `DASHBOARD_DIST_PATH`; (2) IU-6/IU-7 „`pnpm typecheck` i `pnpm test` przechodzą\" jest deklarowane w kontekście fazy, ale runtime'owy start procesu nadal zależy od kroku builda z IU-8. Kontrakt jest w tej chwili pokryty wyłącznie testami przez `app.fetch`. Do wykonania przez operatora po IU-8: `pnpm --filter @oferty/dashboard build`, start serwisu z `DASHBOARD_DIST_PATH` wskazującym `apps/dashboard/dist`, a następnie `curl -H \"Host: <APP_ORIGIN"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "app/(tabs)/settings.tsx:164",
+   "opis": "Optymistyczny zapis stanu wyprzedza bramkę współbieżności: `handleGlobalToggle` (164), `handleDailyToggle` (171) i `handleTimeSave` (178) wołają `setSettings(...)` PRZED `runMutation`, a `runMutation` przy zajętym `mutationLockRef` wychodzi cicho (142–163) — bez mutacji i bez `reload`. Drugi tap w trakcie zapisu przestawia więc przełącznik na ekranie, nic nie zapisuje i cofa się dopiero po zakończeniu pierwszej mutacji (`reload` w `finally`). Ekran celu rozwiązał to poprawnie — `handleToggleNotification` sprawdza `notificationLockRef` jako pierwszą instrukcję (`app/goal/[id].tsx:306`). Akcja: przenieść optymistyczny `setSettings` do środka `runMutation` (po przejęciu locka) albo dodać `if (m"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/components/layout/app-layout.tsx:76",
+   "opis": "Prop `children` w `AppLayout` istnieje wyłącznie po to, żeby testy nie musiały budować zagnieżdżonej trasy — komentarz mówi to wprost („używane wyłącznie w testach”). To kształtowanie publicznego API komponentu przez test: produkcja renderuje `<Outlet />` (App.tsx), więc `children ?? <Outlet />` daje dwie ścieżki renderowania, z których jedna nigdy nie działa w aplikacji — a testy layoutu nie sprawdzają tej, która działa. Akcja: usunąć prop i `AppLayoutProps`, a w app-layout.test.tsx renderować layout tak jak router: `<Route element={<AppLayout />}><Route path={OFFERS_PATH} element={<p>lista ofert</p>} /></Route>`."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "components/animated-splash.tsx:7",
+   "opis": "Komentarz-inwariant nad `SPLASH_BG` („Pierwsza klatka splash.mp4 jest pixel-identyczna ze splash-static.png, więc bezszwowy handoff natywny splash -> overlay\") jest po zmianie na `cover` nieaktualny: identyczność treści pierwszej klatki nie oznacza już identycznego renderu, bo overlay skaluje i przycina kadr do pełnego ekranu, a natywny splash zostaje przy `contain`/`imageWidth: 200`. Nowy komentarz przy `contentFit` (`:61–63`) mówi co innego niż ten na górze pliku — dwie sprzeczne notatki w jednym pliku. Akcja: przeredagować komentarz w `components/animated-splash.tsx:7–8` tak, by opisywał faktyczny stan (wspólne tło #FEF7E0 + ta sama grafika, kadr overlaya skalowany `cover`, więc zgodność "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/cta/decision-payload.ts:20",
+   "opis": "`DECISION_TEXTS.emptyQuestion` i `.tooLongQuestion` są znakowo identyczne z `CTA_TEXTS.emptyQuestion`/`.tooLongQuestion` (`offer/cta-section.ts:54,57`), a komentarz nad `DECISION_TEXTS` twierdzi, że „`/c.js` pokazuje je wprost\" — nieprawda: `call()` w `static/c.js:70` zwraca wyłącznie `payload.data`, koperta `error` jest odrzucana, więc komunikaty serwera nigdy nie docierają do klienta. Dwie kopie tekstu widzianego przez odbiorcę, bez testu spójności i z fałszywym uzasadnieniem. Akcja: w `decision-payload.ts` importować te dwa teksty z `offer/cta-section.ts` (albo odwrotnie) i poprawić komentarz na „teksty odpowiedzi API, klient końcowy widzi węzły z dokumentu\"."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "OPERATOR",
+   "plik": "docs/active/faza-1-fundament/faza-1-fundament-kontekst.md:134",
+   "opis": "Warunek środowiskowy, nie defekt kodu: profil CLI Supabase (`~/.supabase/profile`) jest uszkodzony (`failed to read profile: Unsupported Config Type \"\"`), przez co `supabase db push --profile oferty` nie działa i migracja fazy 2 poszła drogą awaryjną przez MCP (`apply_migration`), z ręcznym wyrównaniem timestampu w `supabase_migrations.schema_migrations`. Dopóki operator nie naprawi profilu CLI, każda kolejna migracja wymaga tej samej ręcznej ścieżki, a checkboxy `Weryfikacja:` IU-2/IU-3 odwołujące się do `supabase db push` pozostają niewykonalne w automacie. Weryfikacja `pnpm test:rls` również jest poza zasięgiem headless — wymaga żywego projektu stagingowego i sekretów z `.env`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:4",
+   "opis": "`app.ts` importuje `MCP_PATH` z `./mcp/server.js`, czyli warstwa hosta twardo zależy od modułu, który podnosi serwer MCP: import wciąga `@modelcontextprotocol/server`, `@modelcontextprotocol/hono`, `zod`, repozytorium ofert oraz globalne rozszerzenie `declare module 'hono'`. To wywraca własny wzorzec fazy — MCP jest wstrzykiwane właśnie po to, żeby „warstwa hosta dała się testować bez nich\" (komentarz przy `mcpRoutes`), a `dashboardRoutes`/`offerRoutes` nie ciągną swoich implementacji. Naprawa: wynieść `MCP_PATH` do osobnego modułu stałych (np. `apps/server/src/mcp/path.ts`) albo przekazywać ścieżkę razem z `mcpRoutes` w opcjach."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "db/migrate.ts:42",
+   "opis": "`zapiszLog` jest przepisane 1:1 z `server/log.ts` (ten sam kształt JSON, ten sam wybór strumienia) mimo że `db/migrate.ts` już importuje z warstwy serwera (`import { stworzPolaczenie } from '../server/db.js'` w l. 8). Duplikacja bez powodu łamie §3 („wyciągaj shared logic zamiast duplikować\") i grozi rozjechaniem formatu logów kontenera. Naprawa: usunąć lokalną funkcję i zaimportować `zapiszLog` z `../server/log.js`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "supabase/tests/rls.test.ts:759",
+   "opis": "`randomVisitKey()` reużywa stałej `SLUG_LENGTH` (21) do długości klucza wizyty — semantycznie to dwa różne kontrakty (slug oferty vs `visit_key` z CHECK-iem 8-64 znaki); zmiana długości sluga po cichu zmieniłaby kształt fixture wizyt. Akcja: zadeklarować w bloku `visits` własną stałą, np. `const VISIT_KEY_LENGTH = 21;`, i użyć jej w `randomVisitKey()`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/decisions.ts:47",
+   "opis": "`SLUG_PATTERN = /^[A-Za-z0-9_-]{21}$/` to już trzecia kopia w `apps/server/src` (`routes/events.ts:68`, `routes/offer.ts:26`) plus czwarta w `static/c.js:14`, przy zerze wystąpień w `packages/shared`. Kontrakt formatu slugu (`offers_slug_format_check`) powinien mieć jedno źródło. Akcja: wyeksportować `SLUG_PATTERN` z `packages/shared` (obok `questionSchema`) i zaimportować w `decisions.ts`, `events.ts`, `offer.ts`; kopię w `c.js` zostawić, ale objąć testem-lustrem z findingu wyżej."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260828120000_visits_tracking.sql:209",
+   "opis": "Nazewnictwo: `visits_retention_job()` brzmi jak wykonanie joba, a jest odczytem metadanych z `cron.job` (reguła 5 sekund z coding-rules — nazwa ma mówić CO robi; obok żyje `run_visits_retention()`, co pogłębia mylność pary). Akcja: w tej fazie (migracja świeżo na stagingu, nic jej jeszcze nie woła poza nowym testem) dodać migrację korygującą zmieniającą nazwę na `visits_retention_job_info()` lub `get_visits_retention_job()` i podmienić wywołanie `admin.rpc('visits_retention_job')` w supabase/tests/rls.test.ts oraz wpis w database.types.ts."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "Dockerfile:60",
+   "opis": "Warstwa runtime nie deklaruje `EXPOSE`, choć port jest znany i ustalony (`ENV PORT=3000`, ta sama wartość co domyślna w `packages/shared/src/env.ts` i konfiguracja aplikacji w Coolify). Bez `EXPOSE` metadane obrazu nie niosą informacji o porcie — narzędzia, które go autodetekują (w tym kreatory Coolify i `docker run -P`), nie mają z czego go odczytać, a operator zostaje z ręcznym ustawieniem opisanym w „Operator checklist faza 5\". Naprawa: dopisz `EXPOSE 3000` bezpośrednio pod `ENV PORT=3000`."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/features/rozmowy/EkranRozmow.tsx:98",
+   "opis": "Hook `usePosty()` wraz z typem `StanPostow` jest skopiowany co do znaku z `src/features/moderacja/EkranModeracji.tsx:66` (ta sama treść `useEffect`, ten sam `AbortController`, ta sama obsługa `czyPrzerwano`). To wprost naruszenie reguły §3 („Wyciągaj shared logic do dedykowanego modułu zamiast duplikować\") i §14 — pobieranie danych to warstwa hooka, nie ciało pliku komponentu. Skutek jest realny, nie kosmetyczny: każda przyszła zmiana pobierania postów (np. dopisanie `cache: 'no-store'`, ponowienie po błędzie, `signal` z zewnątrz) musi być wykonana w dwóch miejscach, a rozjazd między nimi da dwa różne zachowania w moderacji i w rozmowach. Kontekst fazy sam wskazuje to jako dług odłożony „poz"
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "lib/notifications.ts:38",
+   "opis": "SRP / rozmiar modułu: `lib/notifications.ts` ma 758 linii i jest NAJWIĘKSZYM plikiem produkcyjnym w repo (dla porównania `sync-transport.ts` 637, `db.ts` 540), przy regule projektu „plik > 300 linii = refaktoruj\" (coding-rules §1) — tej samej, którą IU-4 zastosowano dzieląc plan na `notifications-plan` + `notifications-settings` przy 384 liniach. Moduł skleja pięć odpowiedzialności: (1) store stanu zgody na `useSyncExternalStore`, (2) CRUD ustawień w kv (settery A.3/A.10), (3) diff/replan + single-flight, (4) deep link (walidacja payloadu, intencje, listener), (5) cykl życia (AppState, subskrypcja commitu). Niezmiennik „jedyny importer `expo-notifications`\" nie wymusza jednego pliku — wymusz"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "miesiac": "2026-09",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260902140000_webhook_queue.sql:437",
+   "opis": "`record_webhook_outcome` przyjmuje porazke bez klasy bledu (`p_error_kind` ma default null), wiec zapisuje `webhook_failure_streak > 0` razem z `webhook_last_error_kind = NULL`. Ekran Ustawien renderuje komunikat z klasy bledu — dostanie licznik porazek bez powodu, czyli lustrzane odbicie stanu, ktoremu autor swiadomie zapobiegl w druga strone (sukces czysci znaczniki). Naprawa: przepisac funkcje na `language plpgsql` i podniesc `invalid_parameter_value`, gdy `p_success = false and p_error_kind is null` — dokladnie tym samym stylem walidacji, ktory maja juz webhook_queue_read i webhook_queue_ack."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "supabase/migrations/20260824171406_init_profiles_offers.sql:145",
+   "opis": "Migracja zakłada trigger `on_auth_user_created`, ale nie robi backfillu dla użytkowników istniejących w `auth.users` PRZED jej zastosowaniem. Trigger działa tylko `after insert`, więc każde konto założone wcześniej (na projekcie głównym `uznjvfdqrisbzbcwemjn` migracja poszła na żywą bazę z już istniejącymi kontami operatora) na zawsze zostaje bez wiersza w `public.profiles`. Kod aplikacyjny kolejnych faz zakłada relację 1:1 z `auth.users` (`profiles_select_own` zwróci takiemu użytkownikowi zero wierszy, a `role`/`plan_tier` nie istnieją) — awaria ujawni się dopiero w IU-4/IU-6, poza zasięgiem testów RLS, które operują wyłącznie na kontach świeżo zaseedowanych. Akcja: dopisz w migracji, po ut"
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "tsconfig.server.json:22",
+   "opis": "Żaden projekt TypeScript nie obejmuje testów serwera ani helpera testowego: `tsconfig.server.json` ma `exclude: [\"server/**/*.test.ts\", \"server/test\"]`, `tsconfig.json` obejmuje tylko `src`, a `tsconfig.scripts.json` tylko `scripts` i `db`. W efekcie ~1500 linii w `server/**/*.test.ts` + `server/test/baza.ts` nigdy nie przechodzi przez `tsc` (vitest/esbuild typów nie sprawdza), więc `npm run typecheck` (reguły §6, bramka jakości) daje fałszywe zielone światło — np. błędna sygnatura helpera albo zły kształt asercji przejdzie niezauważony aż do runtime testu. Naprawa: dodać `tsconfig.server-test.json` (rozszerza server, `noEmit: true`, include `server/**/*.test.ts` + `server/test`) i dopiąć go"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "Dockerfile:87",
+   "opis": "Zachowanie sondy `HEALTHCHECK curl -fsS \"http://127.0.0.1:${PORT}/healthz\"` w połączeniu z host-guardem aplikacji jest sprawdzone tylko na poziomie kodu (`apps/server/src/app.ts:56` dopuszcza `127.0.0.1` wyłącznie dla `/healthz`) — bez uruchomionego kontenera nie da się potwierdzić, że Coolify odczytuje status `healthy` i nie robi rollbacku, ani że `PORT` ustawiony po stronie wdrożenia poprawnie przenosi się do sondy. To ta sama klasa awarii, którą opisuje `docs/SPIKES.md:160`. Operator: po deployu potwierdź w Coolify status kontenera `healthy` oraz brak rollbacku (W3)."
+  },
+  {
+   "projekt": "Nawykometr",
+   "zadanie": "e6-notyfikacje-dogfooding",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "app/(tabs)/index.tsx:281",
+   "opis": "Niepełne zastosowanie wzorca `min-w-0 flex-1` w lewej kolumnie headera: greeting dostał `numberOfLines={1}` (`:278`), ale drugi `Text` w tej samej kolumnie — data (`{formatDate(new Date())}`, `:281`) — został bez ograniczenia linii. Przed zmianą kolumna nie miała `flex-1` (w RN `flexShrink` domyślnie 0), więc data nigdy się nie zawijała; po dodaniu `flex-1` kolumna ma teraz skończoną szerokość i długa data pl-PL („Poniedziałek, 27 października\") przy powiększonej czcionce systemowej (`allowFontScaling` domyślnie true) zawinie się do dwóch linii i podniesie wysokość headera — a zarówno IU-1, jak i cytowany SPEC E4 `210:436` stawiają warunek „wysokość headera bez zmian\". Wzorzec w kodzie jest "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-1-fundament",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/tsconfig.json:3",
+   "opis": "`apps/server` dziedziczy z tsconfig.base.json `moduleResolution: \"bundler\"` + `module: \"ESNext\"`, a jednocześnie `@oferty/shared` eksportuje surowe źródła TS (`./src/index.ts`). Dla procesu Node uruchamianego bez bundlera/loadera typecheck przepuści importy bezrozszerzeniowe i import pakietu wskazującego na `.ts`, których Node ESM nie rozwiąże — kod z IU-4 przejdzie bramkę `pnpm typecheck`, a padnie przy starcie. Akcja: w `apps/server/tsconfig.json` nadpisz `\"module\": \"nodenext\"` i `\"moduleResolution\": \"nodenext\"` albo zapisz w kontekście fazy jawną decyzję o bundlowaniu serwera (i wtedy dodaj build `packages/shared` w IU-6), zamiast zostawiać to nierozstrzygnięte."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "src/features/moderacja/EkranModeracji.tsx:155",
+   "opis": "Brak zrzutu oczekujących autozapisów przed nieodwracalnym zamknięciem moderacji. Postęp i odblokowanie bramki liczone są z lokalnej mapy `oceny` (policzOcenione), a faktyczny zapis decyzji leci z opóźnieniem 1000 ms z osobnej kolejki w każdej KartaPosta (useAutozapis). Scenariusz: kandydat dopisuje uzasadnienie do 42. posta, licznik natychmiast pokazuje 42/42, klika „Przejdź do rozmów” i potwierdza; jeśli PUT /api/decyzje/:id dotrze po zmianie fazy, serwer odrzuca go (`where faza = 'moderacja'` w server/trasy/decyzje.ts), a etap jest już zamknięty na stałe — uzasadnienie przepada bezpowrotnie, kandydat dostaje tylko czerwony komunikat w karcie, której nie może już poprawić. Wariant łagodniej"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:317",
+   "opis": "Komentarz przeczy kodowi: „Na `APP_ORIGIN` żądanie idzie dalej (`next`), więc kończy tam, gdzie każdy nieznany zasób dashboardu\", podczas gdy guard wykonuje `return c.notFound()` — nie oddaje żądania dalej, więc `/o/<cokolwiek>` na originie aplikacji kończy JSON-em 404, a nie fallbackiem SPA. Zachowanie jest poprawne, mylący jest opis. Akcja: przepisz komentarz na „na `APP_ORIGIN` guard kończy 404 z `app.notFound` (JSON), bez fallbacku SPA\", tak jak zrobiono przy guardzie dashboardu (linia 346). Scenariusz błędu: kolejna faza dokłada trasę na `/o/*`, sugeruje się komentarzem i szuka nieistniejącego błędu montażu, widząc JSON zamiast `index.html`."
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-5-heatmapa",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:117",
+   "opis": "Brak `VITE_OFFER_ORIGIN` daje PUSTĄ SKORUPĘ bloku, a nie brak bloku — sprzeczność z zapisem w `.env.example`, `Dockerfile` i `vite-env.d.ts` („blok mapy się wtedy nie renderuje\"). `OfferHeatmapFrame` zwraca `null` (offer-heatmap-frame.tsx:180), ale karta renderuje nagłówek „Mapa uwagi\", pigułki trybu, pigułki kubełków, notkę `bucketNote`, ewentualny pasek limitu i podpis `caption` — handlowiec dostaje działające przełączniki nad dziurą i zdanie „Im cieplejszy kolor…\" bez żadnej mapy. `offer-details-page.tsx:97` osadza kartę bezwarunkowo, więc żaden warunek wyżej tego nie łapie. Akcja: w `OfferHeatmapCard` policz `offerPreviewUrl(slug)` (albo przekaż wynik propsem) i przy `null` nie renderuj "
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-2-publikacja-ofert",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/mcp/server.ts:165",
+   "opis": "`readBearerToken(context.req.header('authorization'))` liczone drugi raz w handlerze, po tym jak middleware (linia 142) już je policzyło i zweryfikowało. Zapisz zweryfikowany token w kontekście (`context.set(...)`) i odczytaj go w handlerze — jedno miejsce parsowania nagłówka zamiast dwóch rozjeżdżalnych."
+  },
+  {
+   "projekt": "symulator-poczekalni",
+   "zadanie": "symulator-poczekalni",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "src/features/rozmowy/WatekRozmowy.tsx:6",
+   "opis": "`WatekRozmowy` importuje funkcję `inicjaly` z `./ListaLeadow`, a `EkranRozmow` importuje z plików komponentów typy domenowe (`Lead`, `StatusRozmowy` z `ListaLeadow`, `Rozmowa`, `WpisWatku`, `WiedzaOObiekcji` z `WatekRozmowy`). Komponent zależy od komponentu rodzeństwa wyłącznie po logikę i typy — to ta sama granica warstw, którą review fazy 2 wytknęło dla `Ocena`/`czyOcenaKompletna` w `KartaPosta.tsx` (§14: plik komponentu nie trzyma logiki; §3: jeden eksport na plik). Naprawa: przenieść `inicjaly` oraz typy `Lead`, `StatusRozmowy`, `WpisWatku`, `WiedzaOObiekcji`, `Rozmowa` do `src/features/rozmowy/lead.ts` (+ `lead.test.ts` z przypadkami z `ListaLeadow.test.tsx:44`) i importować je w kompon"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "miesiac": "2026-09",
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:34",
+   "opis": "Kontrakt siatki cieplnej jest RĘCZNIE zduplikowany między warstwami mimo istnienia `packages/shared`: `HEAT_CELL_PATTERN` (identyczny regexp), liczba kolumn 16 oraz progi gęstości 1/64/16 żyją równolegle w `apps/server/src/routes/events.ts` (linie 88, 100–102) i w `apps/dashboard/src/features/offers/heatmap-grid.ts` (linie 16, 34, 30–32). Ta faza właśnie zapłaciła za tę duplikację: plan przewidywał rozszerzenie wzorca na wiersze 0–63 tylko po stronie serwera, a wykonawca musiał sam wykryć, że bez lustrzanej zmiany w dashboardzie mapa nowych, gęstych wizyt byłaby PUSTA — po cichu, bez wyjątku i bez czerwonego testu (żaden test nie porównuje obu stałych). Reguła projektu jest jednoznaczna: sha"
+  },
+  {
+   "projekt": "oferty-online",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "miesiac": "2026-08",
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/mcp/token-service.test.ts:220",
+   "opis": "Mint sesji ma cztery gałęzie błędu (`getUserById` error, konto bez e-maila, `verifyOtp` error, `session === null`) plus `expiryOf` rzucający przy braku terminu ważności — pokryta testem jest dokładnie jedna (`generateLink` error). Atrapa Supabase (`installFakeSupabase`) w ogóle nie umie zwrócić błędu z `verifyOtp` ani sesji `null`, a `getUserById` zawsze oddaje konto z e-mailem. To kod bezpieczeństwa, dla którego IU-3 wymagał testów kontraktu przed implementacją, a reguła §2 wymaga minimum jednego przypadku błędu na funkcję. Akcja: dodać do `FakeState` pola `verifyOtpError`, `mintedSessionNull`, `ownerEmail` (dopuszczające `null`) i po jednym teście na każdą gałąź — z asercją, że wszystkie k"
+  }
+ ],
+ "obalone_wszystkie": [],
+ "potwierdzone_per_miesiac": {
+  "2026-08": 63,
+  "2026-09": 26
+ },
+ "potwierdzone_per_severity": {
+  "P2": 28,
+  "P3": 58,
+  "P1": 3
+ }
+}

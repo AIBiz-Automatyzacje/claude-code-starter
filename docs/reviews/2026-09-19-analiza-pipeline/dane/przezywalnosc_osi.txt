@@ -1,0 +1,13 @@
+faz z review+scribe: 15 | klucze findingow scribe: {'severity': 269, 'typ': 269, 'plik': 269, 'opis': 269}
+zrodla w scribe (top): [('brak', 269)] | findingow z >1 zrodlem: 0
+
+os                zglosil  P1+P2 zgl  przeszlo  P1+P2 przeszlo  przezyw. %  P3 zgl  P3 przeszlo
+test-coverage          88         47         0               0          0%      41            0
+code-quality           86         27         0               0          0%      59            0
+correctness            64         33         0               0          0%      31            0
+security               58         29         0               0          0%      29            0
+performance            41         21         0               0          0%      20            0
+spec-compliance        35         24         0               0          0%      11            0
+e2e                    19          5         0               0          0%      14            0
+
+zrodla w scribe nieznane osiom: {'brak': 269}
