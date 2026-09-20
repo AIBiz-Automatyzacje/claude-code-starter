@@ -1,0 +1,435 @@
+{
+ "luki": [
+  {
+   "id": "L1",
+   "tytul": "Dźwignia kontekstu startowego (30-40%) nie została przeliczona po decyzjach 6a pkt 15 i nie wiadomo, do ilu ról agentów da się ją zastosować.",
+   "typ": "dowod-nie-wspiera-wniosku",
+   "opis": "POMIARY liczą oszczędność jako 35 agentów x ~57k tokenów, a 57k to różnica 62,0k (general-purpose) minus 4,5k (tools: + omitClaudeMd) — czyli wariant, w którym agent nie dostaje ani CLAUDE.md, ani skilli. Decyzja 6a pkt 15 zostawia builderom i reviewerom CLAUDE.md (20,6k zn), skille w polu skills: (7-12k tok/agent) i wycinek learned-patterns, więc dla tych ról zostaje mniej więcej sama allowlista tools: (62,0k -> 11,6k), pomniejszona o to, co decyzje doładowują z powrotem. Nikt tego nie przeliczył. Drugi brak: tools:/omitClaudeMd mierzono przez plik definicji agenta, a w workflowach tylko 6 ról ma agentType; pozostałe ~24 wywołania (planner, domknięcie, bootstrap, stan:zapis, precheck, env-up, warmup, db-sync, fix, verify-fix, pre-skan, kontrola, poprawka, zwijanie, walidacja, env-down, compound-refresh, telemetria, packager, dedup, scribe, sceptycy, correctness, test-coverage) idą jako general-purpose bez pliku, więc nie mają gdzie osadzić allowlisty.",
+   "dowod": "POMIARY-ROZSTRZYGNIECIE.md par.5 pkt 1: „35 agentów x ~57k x 1,25 = ~2,5 M jednostek cache write na fazę z 21,8 M -> ~11% fazy z samego startu (...) to jest te 30-40%”; par.1: „general-purpose 62,0k; tools: [Read, Bash, Write, Edit] 11,6k; to samo + omitClaudeMd 4,5k”. HANDOFF.md par.6a pkt 15: „CLAUDE.md (po odchudzeniu, 20,6k zn) TRAFIA do builderów i reviewerów — nie wyłączać” oraz „Skille bazowe builderów (skills: w frontmatterze, 7-12k tok/agent): działa, zostawić”. Inwentarz: grep agentType w /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/dev-docs-review-wf.js (5 ról) i dev-docs-execute-wf.js (buildery przez iu.agentType); dev-autopilot-wf.js ma 19 wywołań agent() i zero agentType.",
+   "dotyczyElementu": "kontekst startowy agentów pipeline (tools:, omitClaudeMd, skills:) — twarde wejście do panelu",
+   "ocena": "blokuje-panel",
+   "dlaczegoTakaOcena": "Panel ma zaprojektować pipeline pod cel kosztowy; jeśli największa deklarowana dźwignia jest policzona dla konfiguracji odrzuconej decyzją operatora i dla ról, które nie mają plików agentów, wszystkie trzy projekty ustawią priorytety na złej liczbie i porównanie wariantów trzeba będzie powtórzyć.",
+   "coBySieMusialoStac": "Pomiar kontekstu startowego (usage pierwszej tury) dla DOCELOWEJ konfiguracji per rola: builder (tools: + skills: + CLAUDE.md 20,6k + wycinek), reviewer (tools: + CLAUDE.md), agent mechaniczny (tools: + omitClaudeMd) — oraz fakt, czy agent() w Workflow przyjmuje allowlistę/omitClaudeMd bez osobnego pliku definicji agenta."
+  },
+  {
+   "id": "L2",
+   "tytul": "Polecenia-listy to główna dźwignia jakości w całej analizie i nie mają ani jednego pomiaru; budżetu instrukcji na agenta nikt nie policzył mimo progu IFScale.",
+   "typ": "teza-na-jednym-pomiarze-lub-zalozeniu",
+   "opis": "Cała odpowiedź na pytanie „dlaczego bot znajduje po nas 195 realnych defektów” to zamiana reguł na polecenia produkujące listę w promptach właścicieli osi, z szacunkiem domknięcia 60-70% uwag B. Ten szacunek pochodzi z ocen agentów w etapie 1b, nie z żadnego runu. Jednocześnie ETAP2 sam dostarcza mechanizm, przez który to może nie zadziałać: przy 150 instrukcjach przestrzeganie spada do 84-99%, przy 500 do ~68%, a dominujący błąd to ciche pominięcie całej instrukcji — i to jest wyjaśnienie 45 z 68 ucieczek, które miały właściciela i regułę. Nikt nie policzył, ile instrukcji niesie dziś jeden reviewer (prompt osi + bloki wspólne + CLAUDE.md + coding-rules + skille + fokus), więc nie wiadomo, czy dokładane 4-5 poleceń mieści się w reżimie 84-99%, czy w reżimie 68%. Mini-run z 6a pkt 16 testuje pojedynczy marker, czyli sprawdza „czy jedna instrukcja dociera”, a nie „czy trzydziesta jest wykonywana”.",
+   "dowod": "ETAP1B-ROZSTRZYGNIECIE.md par.3: „Razem szacowane domknięcie: ~120-135 z 195 uwag B (60-70%) przy zerze nowych agentów”. ETAP2-ROZSTRZYGNIECIE.md par.0 pkt 1: „przy 150 instrukcjach 84-99%, przy 500 — ok. 68% u najlepszych; dominujący błąd to ciche pominięcie całej instrukcji”. ETAP1-ROZSTRZYGNIECIE.md par.0 pkt 6: „z 68 realnych defektów (...) 45 miało i właściciela, i regułę w prompcie lub learned-patterns — i mimo to przeszły”. HANDOFF.md par.6a pkt 16: mini-run sprawdza „czy reguła-marker wklejona przez orkiestrator do promptu delegacji (...) jest STOSOWANA w kodzie”.",
+   "dotyczyElementu": "polecenia-listy w promptach reviewerów (6 osi x 4-5 poleceń) — twarde wejście z etapów 1 i 1b",
+   "ocena": "blokuje-panel",
+   "dlaczegoTakaOcena": "Wszystkie trzy projekty panelu będą tnąć osie i bramki, opierając jakość na poleceniach-listach; jeśli mechanizm ma skuteczność bliższą zeru niż 60-70%, projekt „po” traci wykrywalność bez zamiennika, a wynik panelu trzeba wyrzucić razem z argumentacją kosztową.",
+   "coBySieMusialoStac": "Liczba instrukcji faktycznie podanych jednemu reviewerowi dziś (zliczona z promptu osi, bloków wspólnych, CLAUDE.md, coding-rules i skilli) oraz wynik jednego runu z poleceniami-listami na PR z warstwy walidacji/migracji, porównany z PR 2, 4, 9 z klasyfikacji 574 — ile uwag danej klasy zniknęło."
+  },
+  {
+   "id": "L3",
+   "tytul": "Pomiar 4 przypisuje nowe findingi po fixie do „review kodu naprawczego” wyłącznie po lokalizacji pliku; alternatywa „review przeoczyło je w rundzie 1” nie została wykluczona.",
+   "typ": "pomiar-zle-zdefiniowany",
+   "opis": "Wniosek brzmi: powtarzalność na kodzie po fixie to ~0, a nowe findingi to review kodu naprawczego, bo 17 z 19 leży w plikach zmienionych fixem. Ale fix w 9b dotknął 23 plików tej samej fazy, więc „w pliku dotkniętym fixem” nie odróżnia defektu wprowadzonego przez fix od defektu, który był tam w rundzie 1 i nie został znaleziony. Przegląd runów prosił dokładnie o to rozróżnienie i ono nie zostało wykonane. Jeśli przewaga leży po stronie „przeoczone”, to recall pojedynczej rundy jest niski, a nie „review ogląda nowy kod” — i wtedy rozstrzygnięcie panelu między jedną rundą z lepszym sceptykiem a n=3 równoległymi próbkami idzie w drugą stronę.",
+   "dowod": "POMIARY-ROZSTRZYGNIECIE.md par.4, wiersz „oferty / 9b f4”: „TAK (23 pliki, fix + kontrola) | 21 -> 19 | powtórzone 0 | nowe 19 (1/8/10) | nowe w plikach zmienionych 17/19”; rozstrzygnięcie: „To NIE jest niezbieganie review — to review kodu naprawczego”; metoda: „Dopasowanie: ten sam plik i (|delta linia| <= 3 lub podobieństwo opisu > 0,3)”. 2026-09-19-przeglad-runow-po-naprawie.md par.7 rek. 6: „zaklasyfikować findingi rundy 2 jako „nowe przez fix” vs „istniały w rundzie 1, nie znalezione””. POMIARY par.5 pkt 3: „składnik „niestabilność” — decyzja panelu między n=3 próbek a jedną rundą z lepszym sceptykiem”.",
+   "dotyczyElementu": "architektura review (liczba rund, n równoległych próbek, kontrola diffu fixa)",
+   "ocena": "blokuje-panel",
+   "dlaczegoTakaOcena": "Panel dostaje wprost do rozstrzygnięcia podział na dwa składniki (niestabilność vs nowy kod), a ten podział jest wyprowadzony z atrybucji po nazwie pliku; jeśli składnik „nowy kod” jest w rzeczywistości „przeoczone w rundzie 1”, panel wybierze architekturę review odwrotnie niż powinien.",
+   "coBySieMusialoStac": "Ręczna klasyfikacja 19 findingów z 9b f4 i 14 z samodzielnej f3 na trzy kategorie: defekt wprowadzony commitem fixa (widoczny w diffie fixa), defekt obecny przed fixem w tym samym pliku, defekt w kodzie nietkniętym — z linią kodu jako dowodem dla każdego."
+  },
+  {
+   "id": "L4",
+   "tytul": "Oś test-coverage (największe źródło findingów) jest w ETAP2 zdegradowana na rzecz trzech warstw mechanicznych, z których jedyna zmierzona daje 0 trafień na jej głównej klasie, a POMIARY mówią „zero dodatkowych osi do skasowania”.",
+   "typ": "sprzecznosc-decyzji",
+   "opis": "ETAP2 ustawia przed agentem trzy warstwy (vitest/eslint-plugin, vitest --typecheck z expectTypeOf, Stryker diff-scoped) i zostawia agentowi tylko „lukę pokrycia i strażnika negatywnego”, z kandydaturą do scalenia z correctness. Pomiar 2 zmierzył warstwę pierwszą dokładnie na tej klasie: test niefalsyfikowalny 0 z 31. Warstwy 2 i 3 nie zostały na tej klasie zmierzone i figurują w POMIARY par.5 pkt 4 jako niezmierzone. Rozstrzygnięcie pomiarów brzmi „nie kasują kolejnych osi” i „zero dodatkowych”, ale nie odnosi się wprost do degradacji z ETAP2, więc panel dostaje dwa różne mandaty dla osi, która dała 202 potwierdzone findingi. Dochodzi wykonalność: Stryker zajął 2 min na 3 plikach i wymaga zielonego zestawu testów, którego main oferty-online nie ma.",
+   "dowod": "ETAP2-ROZSTRZYGNIECIE.md par.2 wiersz test-coverage: „PRZED agentem stoją: @vitest/eslint-plugin -> vitest --typecheck (expectTypeOf) -> Stryker diff-scoped (...) agent tylko na „luka pokrycia / strażnik negatywny” — kandydat do scalenia z correctness w etapie 4”. POMIARY-ROZSTRZYGNIECIE.md par.2: „test-niefalsyfikowalny 0/31” oraz „Liczba „ile osi można skasować” po tym pomiarze: zero dodatkowych”; par.5 pkt 4: „Nie zmierzone (...) Stryker na klasie „atrapa bez argumentów” i na Zod”; par.3: „Warunek twardy: zielony zestaw testów, a main oferty-online go dziś nie ma”. HANDOFF.md par.3 pkt 7: test-coverage 7/81/114 potwierdzonych.",
+   "dotyczyElementu": "oś review test-coverage i trzy warstwy testów niefalsyfikowalnych",
+   "ocena": "blokuje-panel",
+   "dlaczegoTakaOcena": "Panel może zdegradować lub scalić oś odpowiadającą za 202 potwierdzone findingi, opierając się na narzędziach, z których jedyne zmierzone trafiło 0 z 31 na jej głównej klasie; jeśli zamiennik nie działa, projekt „po” traci największe źródło findingów i wynik panelu trzeba odrzucić.",
+   "coBySieMusialoStac": "Wynik puszczenia warstwy 2 (vitest --typecheck z expectTypeOf) i warstwy 3 (Stryker diff-scoped) na plikach testowych z tych 31 uwag klasy „test niefalsyfikowalny”: ile z nich którakolwiek warstwa wskazuje, plus jedno zdanie, który zapis obowiązuje — degradacja z ETAP2 czy „zero dodatkowych osi” z POMIARY."
+  },
+  {
+   "id": "L5",
+   "tytul": "POMIARY par.5 pkt 1 i decyzja operatora 6a pkt 15 nakazują dwie wykluczające się rzeczy w sprawie omitClaudeMd i czytania Read vs Bash, a oba teksty są opisane jako wejście do panelu.",
+   "typ": "sprzecznosc-decyzji",
+   "opis": "POMIARY jako pierwszą pozycję „twarde” wpisują: każdy agent pipeline dostaje tools: oraz omitClaudeMd: true, a buildery i reviewerzy czytają Read, nie cat. Decyzja operatora mówi odwrotnie w obu punktach: CLAUDE.md trafia do builderów i reviewerów i nie wolno go wyłączać, a tryb bypass zostaje, więc czytanie Bashem zostaje i reguły paths: nie są kanałem dostawy wiedzy. Do tego HANDOFF par.5 hipoteza 7 (Read/Edit zamiast Bash, wyłączyć bashFirst strict) jest nadal w zestawie hipotez, który sekcja 6 pkt 5 nakazuje przekazać każdemu z trzech projektantów. Precedens rozstrzyga to na korzyść decyzji operatora, ale nie jest to nigdzie zapisane w samych dokumentach wejściowych.",
+   "dowod": "POMIARY-ROZSTRZYGNIECIE.md par.5 pkt 1: „każdy agent pipeline'u dostaje tools: allowlistę (-50k/agent) + omitClaudeMd: true (...) buildery i reviewerzy czytają Read, nie cat (inaczej paths: martwe)”. HANDOFF.md par.6a pkt 15: „Tryb bypass zostaje dla subagentów, więc czytanie Bashem (cat/sed -n) zostaje” oraz „CLAUDE.md (...) TRAFIA do builderów i reviewerów — nie wyłączać. omitClaudeMd: true tylko dla agentów mechanicznych”. HANDOFF.md par.5 hipoteza 7 i par.6 pkt 5 („każdy dostaje (...) hipotezy z sekcji 5”).",
+   "dotyczyElementu": "przekrojowe: kontekst agentów i tryb czytania plików",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel może iść dalej, bo HANDOFF wprost nadaje decyzjom 6a status obowiązujący, ale trzy niezależne projekty dostają dwa sprzeczne zdania w materiale wejściowym i mogą je rozstrzygnąć różnie, co utrudni porównanie wariantów przez sędziów.",
+   "coBySieMusialoStac": "Ustalenie faktu, który zapis obowiązuje w pakiecie wejściowym panelu (data i precedens decyzji 6a wobec POMIARY par.5 pkt 1 i hipotezy 7), zanim materiał trafi do projektantów."
+  },
+  {
+   "id": "L6",
+   "tytul": "Sceptyk asymetryczny został przyjęty na podstawie dwóch zewnętrznych prac, a nasze własne dane o obaleniach dają trzy różne liczby i nie mają atrybucji per oś.",
+   "typ": "teza-na-jednym-pomiarze-lub-zalozeniu",
+   "opis": "Decyzja „sceptyk asymetryczny: TAK” stoi na literaturze (63% zabitych kandydatów w etapie A, 79-83% łącznie; F1 0,533 wobec 0,457). Nasze liczby o skuteczności dzisiejszych sceptyków są w dokumentach podane trojako: 12% globalnie, 19,2% na 96 fazach z telemetrii i 10,9% w analizie verify — a pole obalone_n w findingi-per-os jest zerowe we wszystkich 10 osiach i uznane za artefakt ekstrakcji. Skutkiem jest brak odpowiedzi, która oś produkuje najwięcej fałszywych findingów, więc nie wiadomo, gdzie mocniejszy sceptyk pomoże, a gdzie zacznie kasować prawdziwe findingi. Kill rate sceptyka asymetrycznego na naszych danych figuruje w POMIARY jako niezmierzony.",
+   "dowod": "ETAP2-ROZSTRZYGNIECIE.md par.0 pkt 3: „Obalają 12-19%. Refute-or-Promote (2026-04): sceptyk z kontekstem asymetrycznym (...) zabija 63% kandydatów w etapie A i 79-83% łącznie”. ETAP1-ROZSTRZYGNIECIE.md par.0 pkt 2: „Pole obalone_n (...) jest zerowe we wszystkich 10 osiach — to artefakt ekstrakcji (...) globalnie 12% obalonych; per oś 0-5% (...) telemetria 19,2% na 96 fazach”; par.2 verify-sceptycy: „(10,9% / 23%)”. HANDOFF.md par.6a pkt 17: „Sceptyk asymetryczny: TAK”. POMIARY par.5 pkt 4: „Nie zmierzone (...) kill rate sceptyka asymetrycznego”.",
+   "dotyczyElementu": "verify-sceptycy (mechanika review)",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Decyzja jest podjęta i panel ma ją przyjąć jako wejście; ryzyko polega na tym, że projektanci oprą na niej redukcję liczby rund review, a przy naszym odsetku obaleń rzędu 10-19% sceptyk o sile 79% może zdejmować prawdziwe findingi — to należy zapisać w raporcie jako niepewność, nie zatrzymywać panelu.",
+   "coBySieMusialoStac": "Jedna spójna liczba obaleń liczona tą samą metodą na tej samej próbie, rozbita per oś, plus kill rate promptu asymetrycznego puszczonego na archiwalnym zestawie findingów o znanych werdyktach: ile P1/P2 uznanych wcześniej za prawdziwe zostałoby obalonych."
+  },
+  {
+   "id": "L7",
+   "tytul": "Model kosztu i rozkład udziałów per etap fazy pochodzi z runów na maszynerii sprzed napraw N1-N9 i z jednego projektu, a wnioski mają dotyczyć szablonu.",
+   "typ": "dowod-nie-wspiera-wniosku",
+   "opis": "Fundament analizy (koszt = tury x kontekst, 35 agentów na fazę, udziały execute 28% / review 25% / fix 17%, mediana fazy) jest policzony głównie na oferty-online, a to repo nie ma napraw N1-N9, bo sync jest zablokowany lokalnym patchem E2E. Z 13 runów po 06.09 tylko jeden (traferto, 1 faza, bez E2E) szedł na wersji odpowiadającej dzisiejszemu szablonowi. Operator postawił warunek wprost: wnioski mają dotyczyć szablonu, nie jednego projektu. Nigdzie nie oszacowano, czy i w którą stronę różnica wersji maszynerii przesuwa udziały, na których panel oprze cięcia.",
+   "dowod": "HANDOFF.md par.3 pkt 4 (udziały per etap fazy: „oferty-online po 06.09”) i pkt 8: „oferty-online NIE ma napraw N1-N9 (sync zablokowany lokalnym patchem E2E)”; par.1: „wnioski mają dotyczyć szablonu (workspace-template), nie jednego projektu”. 2026-09-19-przeglad-runow-po-naprawie.md, wnioski pkt 2: „Cztery zadania oferty-online po 06.09 jechały na STAREJ maszynerii (...) Jedyny run na aktualnej wersji to traferto-membership-emission (1 faza, bez E2E)”.",
+   "dotyczyElementu": "model kosztu z etapu 0 (fundament wszystkich wniosków)",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Naprawy N1-N9 dotyczyły raportowania, stanu i formatów, nie liczby agentów, więc udziały prawdopodobnie się bronią; ale liczby „przed” w raporcie końcowym opisują wersję maszynerii, której w szablonie już nie ma, i to musi być w nim napisane.",
+   "coBySieMusialoStac": "Rozkład kosztu z jednego pełnego runu wielofazowego na aktualnej wersji szablonu (z E2E), zestawiony z udziałami z oferty-online — albo dowód z diffa, że N1-N9 nie zmieniają liczby wywołań agentów na fazę."
+  },
+  {
+   "id": "L8",
+   "tytul": "Pomiar 1b (-50k na allowliście tools:) jest funkcją konta operatora z około 900 narzędziami MCP, a higiena konta została odłożona na osobny etap po raportach.",
+   "typ": "pomiar-zle-zdefiniowany",
+   "opis": "Różnica 62,0k do 11,6k to w dominującej części nazwy narzędzi MCP i opisy skilli tego konkretnego konta (27k plus 10k wg modelu kosztu). Pomiar w czystym repo testowym pokazuje inny rząd: general-purpose 44,3k, agent własny z tools: 4,2-4,7k. Użytkownik szablonu bez tego zestawu MCP i pluginów dostanie mniejszą dźwignię, a wnioski mają być o szablonie. Dodatkowo operator przeniósł audyt MCP i pluginów per projekt na osobny etap po raportach, więc część tej samej oszczędności zostanie skonsumowana inną drogą i może zostać policzona dwa razy.",
+   "dowod": "POMIARY-ROZSTRZYGNIECIE.md par.1: „repo testowe: agent własny z tools: 4,2-4,7k; general-purpose 44,3k (...) workspace-template z pełnym MCP (pomiar 1b): general-purpose 62,0k; tools: 11,6k”. HANDOFF.md par.3 pkt 2: „nazwy ~900 narzędzi MCP 27k, opisy ~300 skilli 10k”; par.6a pkt 17: „Higiena konta (MCP/pluginy per projekt, audyt pluginów): osobny etap po raportach”.",
+   "dotyczyElementu": "pomiar 1 / kontekst startowy, model kosztu szablonu",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Kierunek (allowlista tools: jest największą pojedynczą dźwignią) jest odporny, zmienia się tylko wielkość; panel może projektować, ale raport nie może podawać -50k jako liczby dla szablonu bez zaznaczenia, że to konto z pełnym MCP.",
+   "coBySieMusialoStac": "Kontekst startowy general-purpose zmierzony na koncie z MCP ograniczonym do zestawu, który szablon faktycznie deklaruje (albo bez MCP), obok liczby 62,0k — plus informacja, ile z 37k narzędzi i skilli znika po higienie konta."
+  },
+  {
+   "id": "L9",
+   "tytul": "Pomiar 2 ocenia tylko 97 z 200 uwag B i dopasowuje po linii plus/minus 3, a wniosek „zero dodatkowych osi do skasowania” został wyciągnięty dla całego koszyka.",
+   "typ": "pomiar-zle-zdefiniowany",
+   "opis": "103 uwagi B nie mają numeru linii i zostały uznane za nieporównywalne, więc pomiar obejmuje mniej niż połowę koszyka. Kryterium trafienia to zgodność pliku i linii z tolerancją 3 — reguła lintera zgłaszająca ten sam problem w innym miejscu tej samej funkcji (na przykład max-lines-per-function na nagłówku funkcji wobec uwagi w jej środku) liczy się jako nietrafienie, choć w praktyce zapobiegłaby uwadze. Sam dokument to pokazuje: reguły ERROR odpaliły w plikach z uwagami B 49 razy (max-lines-per-function), 8 (no-unused-vars) i 4 (set-state-in-effect), i nie zostały policzone jako trafienia. Wniosek „zero dodatkowych” jest przez to twierdzeniem o metodzie dopasowania, a nie wyłącznie o zdolności bramek.",
+   "dowod": "POMIARY-ROZSTRZYGNIECIE.md par.2: „uwag B ocenionych 200 (w tym 103 bez numeru linii — komentarze do pliku, nieporównywalne); z numerem linii 97; trafienie ERROR +/-3 linie 1”; tamże: „reguły ERROR odpalone gdziekolwiek w plikach z uwagami B: max-lines-per-function 49, no-unused-vars 8, max-lines 6, set-state-in-effect 4”; rozstrzygnięcie: „Liczba „ile osi można skasować” po tym pomiarze: zero dodatkowych”.",
+   "dotyczyElementu": "pomiar 2 (lint kontra uwagi B) — podstawa decyzji o liczbie osi review",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Wniosek idzie w stronę ostrożną (nie kasować osi), więc panel projektując zachowawczo nie popełni błędu nieodwracalnego; ale liczba 1 na 97 trafi do raportu jako argument i musi być podana razem z metodą i pokryciem próby.",
+   "coBySieMusialoStac": "Ta sama analiza powtórzona z dopasowaniem na poziomie funkcji lub pliku (zamiast linii plus/minus 3) i z jawnym potraktowaniem 103 uwag bez numeru linii — dwie liczby zamiast jednej, żeby wiadomo było, ile z wyniku robi metoda."
+  },
+  {
+   "id": "L10",
+   "tytul": "Zamiennik osi performance i część zamiennika osi security stoją na supabase db advisors, którego nie zmierzono ani razu.",
+   "typ": "teza-na-jednym-pomiarze-lub-zalozeniu",
+   "opis": "Decyzja ZASTĄP dla performance opiera się na trzech elementach: size-limit w domknięciu, advisors performance i pięciu liniach checklisty w correctness. Dla security ETAP2 zdejmuje z promptu reguły RLS, oddając je advisors. Pomiar 3 zamyka temat jednym zdaniem: nie zmierzone, bo Docker był wyłączony, a operator uznał to za nieblokujące i odłożył do wdrożenia bramki. Nie wiadomo ani ile to trwa, ani czy advisors zwraca klasy, które oś performance dziś łapie. Do tego size-limit ma dziś zero trafień w szablonie, więc jego skuteczność też jest wyłącznie oczekiwana.",
+   "dowod": "ETAP1-ROZSTRZYGNIECIE.md par.1 wiersz performance: „ZASTAP (size-limit w CI + Supabase advisors + 5-liniowa checklista perf w correctness)”; par.2: „size-limit jako bramka w domknięciu fazy (dziś 0 trafień w .claude/)”. ETAP2-ROZSTRZYGNIECIE.md par.2 wiersz security: „supabase db advisors (0013, 0007, 0002, 0023) w domknięciu zdejmuje z promptu reguły RLS”. POMIARY par.3: „supabase db advisors — NIE zmierzone — Docker wyłączony”. HANDOFF par.6a pkt 17: „advisors zmierzymy przy wdrożeniu bramki”.",
+   "dotyczyElementu": "oś performance (ZASTĄP) i odchudzenie promptu security",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Etap 1 zapisał warunek odwrotu (więcej niż 1 P1/P2 klasy perf od bota na 5 faz przywraca oś), więc błąd jest odwracalny; panel powinien jednak dostać to jako jawne założenie, a nie jako fakt.",
+   "coBySieMusialoStac": "Jedno uruchomienie supabase db advisors na oferty-online z działającym lokalnym Supabase: lista zwróconych kategorii, czas wykonania i sprawdzenie, czy są wśród nich klasy odpowiadające potwierdzonym findingom osi performance i regułom RLS z promptu security."
+  },
+  {
+   "id": "L11",
+   "tytul": "E2E jest jedynym elementem bez zamiennika i jednocześnie przyczyną prawie wszystkich STOP-ów, a rekomendacje operacyjne z przeglądu runów nie weszły do żadnego rozstrzygnięcia ani decyzji.",
+   "typ": "niezbadane",
+   "opis": "ETAP2 stwierdza, że E2E to jedyny element nieodchudzalny bramką, i zostawia mu polecenie-listę o seedach. Równolegle dane mówią, że STOP-y są niemal wyłącznie E2E, a powtórki wymuszone bramką E2E kosztowały około 1,2 M tokenów w dwóch zadaniach. Przegląd runów wystawił trzy konkretne rekomendacje: parametryzacja E2E w szablonie (bez niej oferty-online nie dostanie żadnej naprawy), traktowanie katalogu zadania jako własnych artefaktów zamiast STOP-u oraz kategoria przyczyny SKIP-u. Żadna nie jest rozstrzygnięta w etapach 1, 1b, 2 ani w decyzjach 6a — parametryzacja figuruje tylko jako hipoteza 9 w sekcji 5 HANDOFF-u.",
+   "dowod": "ETAP2-ROZSTRZYGNIECIE.md par.2 wiersz e2e: „jedyny element nieodchudzalny bramką (mutacja nie obejmuje Browser Mode/E2E; brak narzędzia seed-vs-migracja)”. HANDOFF.md par.3 pkt 8: „STOP-y prawie wyłącznie E2E”; par.5 hipoteza 9: „Parametryzacja E2E w szablonie (...) bez tego oferty-online nie dostanie żadnej naprawy”. 2026-09-19-przeglad-runow-po-naprawie.md par.7 rek. 2, 4, 5 oraz W4: „Bramka nie odróżnia „SKIP przez zewnętrzny limit” od „SKIP przez brak środowiska””.",
+   "dotyczyElementu": "oś e2e, e2e:env-up / env-down, bramka walidacji końcowej",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel może zaprojektować resztę pipeline bez rozstrzygnięcia E2E, ale każdy z trzech projektów odziedziczy klasę przerwań generującą dziś najwięcej powtórek, a porównanie wariantów po koszcie fazy pominie ten składnik.",
+   "coBySieMusialoStac": "Policzony z journali koszt i liczba STOP-ów z przyczyną E2E w podziale na trzy kategorie (limit zewnętrzny, środowisko, ograniczenie harnessu) oraz fakt, czy w szablonie istnieje dziś jakikolwiek punkt konfiguracji startu środowiska poza templates/e2e-env."
+  },
+  {
+   "id": "L12",
+   "tytul": "Słownik klas nie istnieje jako lista, a ETAP1 i ETAP1B nazywają te same klasy inaczej; decyzje 6a mówią o zamkniętym słowniku klas dla learned-patterns, nie dla klas uwag bota.",
+   "typ": "niezbadane",
+   "opis": "ETAP1B sam stwierdza, że trzej klasyfikatorzy użyli trzech nazw na „parser regexem” i dwóch na „ścieżkę błędu”, i że bez słownika następny pomiar będzie nieporównywalny. Równocześnie ETAP1 nazywa tę samą rodzinę „cykl życia i współbieżność UI” (20 pozycji), a ETAP1B rozbija ją na „cykl życia React 11” i „wyścigi 6” — czyli dokumenty wejściowe do panelu już się rozjeżdżają. W decyzjach 6a „zamknięty słownik klas w szablonie” występuje jako jedno z ośmiu zabezpieczeń learned-patterns, więc dotyczy klas wpisów wiedzy, a nie klas uwag bota ani klas ucieczek w dossier buildera. Nigdzie nie ma wyliczonej listy nazw, a trzy mechanizmy mają być po niej kluczowane.",
+   "dowod": "ETAP1B-ROZSTRZYGNIECIE.md par.3: „potrzebny słownik klas (jedna nazwa na klasę), bo trzej klasyfikatorzy użyli 3 nazw na parser regexem, 2 na ścieżkę błędu itd. — bez słownika następny pomiar będzie nieporównywalny”; tabela par.3 („cykl życia React 11”, „wyścigi 6”) wobec ETAP1-ROZSTRZYGNIECIE.md par.3 („cykl życia i współbieżność UI (...) 20”). HANDOFF.md par.6a pkt 17: „zamknięty słownik klas w szablonie” w wyliczeniu ośmiu zabezpieczeń; par.6a pkt 4: „learned-patterns: format klasa -> reguła (2 zdania) -> Source”.",
+   "dotyczyElementu": "przekrojowe: polecenia-listy, indeks learned-patterns, dossier klas ucieczek u buildera",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel może zaprojektować mechanizmy, zostawiając nazwy do implementacji; ale miary skutku wszystkich tych zmian są wyrażone w klasach („liczba P1/P2 klasy X od bota”), więc bez listy nazw wyniku wdrożenia nie da się porównać z dzisiejszym pomiarem.",
+   "coBySieMusialoStac": "Jedna wyliczona lista nazw klas z odwzorowaniem, która nazwa z ETAP1 par.3 odpowiada której z ETAP1B par.3, i stwierdzenie, czy ten sam słownik obsługuje trzy zastosowania (uwagi bota, wpisy learned-patterns, dossier ucieczek), czy potrzebne są trzy rozłączne."
+  },
+  {
+   "id": "L13",
+   "tytul": "/bugfix jest połową zadeklarowanej miary jakości kodu i nie dostarczył ani jednej liczby do analizy.",
+   "typ": "niezbadane",
+   "opis": "Operator zdefiniował miarę jakości jako liczbę P1/P2 znajdowanych przez CodeRabbita oraz /bugfix po naszym review. Etap 1b zmierzył CodeRabbita bardzo dokładnie (574 uwagi, klasyfikacja, trend), natomiast słowo bugfix nie pada w żadnym z czterech rozstrzygnięć — występuje wyłącznie raz, w zdaniu definiującym miarę. Nie wiadomo, ile defektów trafia do /bugfix po wdrożeniu, jakich klas i czy pokrywają się z klasami B bota. Skill bugfix nie został też zinwentaryzowany jako element pipeline, choć jest odrębnym wejściem do naprawiania kodu po merge'u.",
+   "dowod": "HANDOFF.md par.1: „miara jakości kodu = ile P1/P2 znajdują CodeRabbit i /bugfix PO naszym review”. Zliczenie wystąpień słowa „bugfix”: HANDOFF.md 1, ETAP1 0, ETAP1B 0, ETAP2 0, POMIARY 0. Skill istnieje: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/bugfix/SKILL.md.",
+   "dotyczyElementu": "miara jakości pipeline; skill bugfix",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "CodeRabbit sam daje użyteczny baseline, więc panel ma na czym oprzeć kryterium sukcesu; brakuje drugiej połowy miary, czyli defektów wykrytych dopiero w działającej aplikacji — to jest klasa, której żadne review diffu nie łapie, i raport musi to nazwać.",
+   "coBySieMusialoStac": "Liczba i klasy zgłoszeń obsłużonych przez /bugfix w tych samych 5 zadaniach oferty-online (z gita, Sentry albo dokumentów zadań), zestawione z klasami koszyka B — czy to ta sama populacja defektów, czy inna."
+  },
+  {
+   "id": "L14",
+   "tytul": "Osiem plików agentów, trzy skille dev-*, skill code-review, freshness-audit, hooki Stop, templates/ i 74 testy workflowów nie zostały objęte żadnym etapem.",
+   "typ": "element-nietkniety",
+   "opis": "Inwentarz z ETAP1 i mapa 22 elementów z ETAP2 pokrywają rdzeń autopilota i dev-pr, ale poza nimi w .claude/ leży maszyneria, której żaden etap nie dotknął. Osiem plików agentów nie jest wołanych przez workflowy (dwa z nich, kieran-typescript-reviewer.md i code-simplicity-reviewer.md, nie są wołane nigdzie), trzy skille dev-* nie pojawiają się w żadnym rozstrzygnięciu (dev-ideate 403 linie, dev-brainstorm 344, dev-docs-update 107), skill code-review ma własne review poza pipeline, a freshness-audit (skill plus workflow 16 kB) jest gotowym mechanizmem odpowiadającym na pytanie operatora „czy reviewer jest aktualny” i nie został w analizie użyty ani oceniony. Do tego dwa hooki Stop nakładają się zakresem na projektowaną bramkę domknięcia fazy, a 74 testy w .claude/workflows/__tests__ przypinają dzisiejsze zachowanie orkiestratora.",
+   "dowod": "Inwentarz katalogu .claude/agents (16 plików) i grep nazw po .claude/workflows: 0 trafień dla best-practices-researcher, code-simplicity-reviewer, framework-docs-researcher, kieran-typescript-reviewer, learnings-researcher, repo-research-analyst, spec-flow-analyzer, web-research-specialist. Zliczenie wystąpień w pięciu dokumentach: „dev-ideate”, „dev-brainstorm”, „dev-docs-update”, „freshness”, „learnings-researcher”, „architecture-strategist”, „__tests__” — 0; „code-review” — 1 (ETAP2). .claude/settings.json: dwa hooki Stop (stop-build-check-enhanced.sh, error-handling-reminder.sh). .claude/workflows/__tests__: 7 plików testów; 2026-09-19-przeglad-runow-po-naprawie.md par.2: „Test suite szablonu: 74/74 PASS”.",
+   "dotyczyElementu": "inwentarz .claude/ poza rdzeniem autopilota",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Żaden z tych elementów nie wchodzi do kosztu fazy autopilota, więc projekt „po” może powstać bez nich; ale panel projektuje szablon jako całość i bez tej listy trzy projekty pominą maszynerię, która zostanie w repo i rozjedzie się z nowym pipeline'em.",
+   "coBySieMusialoStac": "Uzupełniony inwentarz: dla każdego z tych elementów fakt, czy jest wołany w pipeline (grep po workflowach i skillach), kiedy był ostatnio użyty i czy jego zakres nakłada się na którykolwiek z 22 elementów już rozstrzygniętych."
+  },
+  {
+   "id": "L15",
+   "tytul": "Nigdzie nie zapisano, który plik agenta realizuje którą oś review: oś code-quality to architecture-strategist.md, a correctness i test-coverage nie mają pliku w ogóle.",
+   "typ": "niezbadane",
+   "opis": "Wszystkie rozstrzygnięcia operują nazwami osi (code-quality ZOSTAW-ODCHUDŹ, correctness własny plik agenta, test-coverage kryterium falsyfikowalności), a w kodzie oś code-quality realizuje agent architecture-strategist.md — plik po angielsku, opisany jako architektoniczny, do którego workflow dokleja trzyosiowy fokus. Correctness i test-coverage nie mają agentType, więc startują jako general-purpose z pełnym kontekstem. Bez tej mapy zapis „odchudzić prompt osi o połowę” jest niejednoznaczny: nie wiadomo, czy dotyczy pliku agenta, ciągu fokus w workflowie, czy obu — a właśnie te dwie osie bez pliku są najdroższe startowo.",
+   "dowod": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/dev-docs-review-wf.js:362-368: { key: 'code-quality', agentType: 'architecture-strategist', fokus: ... }, { key: 'correctness', agentType: 'general-purpose', ... }; linia 904: review:test-coverage wywoływane bez agentType. ETAP1-ROZSTRZYGNIECIE.md par.1: „correctness (...) ZOSTAW-ODCHUDZ + własny plik agenta”, a wiersz code-quality nie wskazuje pliku. POMIARY par.1: „general-purpose 62,0k”.",
+   "dotyczyElementu": "roster review: mapowanie oś -> plik agenta -> prompt",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel projektuje roster i cięcia promptów; bez mapy oś-plik projekty będą mówić o bytach, których nie da się jednoznacznie wskazać w repo, a szacunki oszczędności per oś rozjadą się z rzeczywistym kosztem startowym agenta.",
+   "coBySieMusialoStac": "Tabela: oś review, agentType, plik agenta albo jego brak, miejsce życia promptu (plik agenta / ciąg fokus w workflowie / bloki wspólne) i kontekst startowy dziś."
+  },
+  {
+   "id": "L16",
+   "tytul": "Miara sukcesu wszystkich zmian („P1/P2 od bota po 5 zadaniach”) jest zaburzona charakterem kodu i nie ma zdefiniowanego protokołu porównania.",
+   "typ": "pomiar-zle-zdefiniowany",
+   "opis": "Prawie każde rozstrzygnięcie ma kolumnę „miara skutku” wyrażoną jako liczba uwag bota danej klasy po wdrożeniu. Etap 1b pokazał jednak, że ta miara spadła z 12,8 do 5,2 na 100 zmienionych plików bez żadnej zmiany w pipeline, wyłącznie dlatego, że zmienił się charakter pracy. Sam dokument nazywa pomiar rozstrzygający (PR z warstwy walidacji lub migracji porównany z PR 2, 4, 9), ale nie ma go ani w warunkach wejścia do etapu 4, ani w decyzjach. Bez stratyfikacji po typie kodu każda przyszła ocena zmian będzie mogła pokazać dowolny wynik.",
+   "dowod": "ETAP1B-ROZSTRZYGNIECIE.md par.3: „Trend uwag B na 100 zmienionych plików: PR 1-8: 12,8 -> PR 9-13: 11,2 -> PR 14-20: 5,2. Spadek NIE jest dowodem skuteczności napraw pipeline'u (...) Pomiar rozstrzygający: PR z warstwy walidacji/migracji po wdrożeniu poleceń-list, porównany z PR 2, 4, 9”. ETAP1-ROZSTRZYGNIECIE.md par.1, kolumna „miara skutku (do pomiaru po 5 fazach)”.",
+   "dotyczyElementu": "przekrojowe: kryterium sukcesu projektu „po”",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel może zaprojektować pipeline bez tego, ale synteza etapu 4 i raport etapu 5 będą obiecywać efekty mierzone wskaźnikiem, który potrafi spaść o połowę bez żadnej zmiany — to musi być zapisane jako ograniczenie.",
+   "coBySieMusialoStac": "Baseline uwag B na 100 zmienionych plików policzony osobno dla typów kodu (walidacja/migracje, UI/teksty, integracje) na tych 20 PR-ach — żeby przyszłe porejestrowe porównanie miało punkt odniesienia w tej samej warstwie."
+  },
+  {
+   "id": "L17",
+   "tytul": "Koszt i ryzyko wdrożenia nie są wymiarem porównania trzech projektów, choć zmiana dotyka 217 kB kodu workflowów, 74 testów i wymaga nowych plików agentów.",
+   "typ": "niezbadane",
+   "opis": "Panel ma wyprodukować trzy projekty i wybrać przez sędziów, ale żaden etap nie oszacował pracy potrzebnej do wdrożenia którejkolwiek zmiany. Rdzeń to dev-autopilot-wf.js (120 kB) i dev-docs-review-wf.js (97 kB) plus siedem plików testów przypinających dzisiejsze zachowanie; dochodzą pliki agentów, których dziś nie ma dla około 24 ról, przepisanie coding-rules.md, konfiguracja ESLint, knip, size-limit i Strykera oraz tura wyciszania 188 zastanych błędów lintera. Dla operatora pracującego samodzielnie ta wielkość jest realnym kryterium wyboru wariantu, a w materiale wejściowym jej nie ma.",
+   "dowod": "Rozmiary plików: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/dev-autopilot-wf.js 120121 B, dev-docs-review-wf.js 97082 B, katalog __tests__ 7 plików. POMIARY-ROZSTRZYGNIECIE.md par.3: „Pierwsze wdrożenie wymaga tury wyciszania zastanych naruszeń (188 errors, z czego 96 to długość funkcji)”. HANDOFF.md par.2 wiersz etapu 4: trzy projekty, sędziowie, synteza — bez kryterium kosztu wdrożenia.",
+   "dotyczyElementu": "etap 4 — kryteria oceny wariantów",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel wyprodukuje poprawne projekty także bez tego wymiaru, ale sędziowie porównają je tylko po koszcie runu i jakości, więc zwycięzcą może zostać wariant, którego wdrożenie przekracza możliwości jednoosobowego utrzymania.",
+   "coBySieMusialoStac": "Dla każdej zmiany już rozstrzygniętej (roster, bramki, stan w prompcie następcy, allowlisty tools:, learned-patterns) fakt: ile plików i które testy z __tests__ dotyka, oraz czy wymaga nowego pliku agenta."
+  },
+  {
+   "id": "L18",
+   "tytul": "Packager/dossier: etap 1 zostawił bilans otwarty, etap 2 rozstrzygnął „do JS”, a jedyny istniejący pomiar przeczy tezie, na której to stoi, i nie został powtórzony.",
+   "typ": "dowod-nie-wspiera-wniosku",
+   "opis": "Etap 1 zapisał packagera jako element z ujemnym bilansem i jedyny otwarty punkt: 18,7 M kosztu wobec 9,5 M zysku z routingu, a jedyny pomiar przed i po dossier idzie w złą stronę — Bash reviewerów wzrósł z 10,5 do 23 przy niezmienionym Read. Etap 2 rozstrzyga to na „dobór plików i routing deterministycznie w JS, agent packagera znika”, opierając się na zewnętrznej pracy o regułowym doborze plików, i jednocześnie sam odkłada sprzeczność „szeroko vs wąsko” do pomiaru, którego nie ma w liście czterech warunków wejścia. Panel dostaje więc decyzję o skasowaniu agenta opartą na analogii z literatury, nie na naszym pomiarze.",
+   "dowod": "ETAP1-ROZSTRZYGNIECIE.md par.1 wiersz dossier: „packager: OTWARTE — bilans ujemny (18,7 M kosztu vs 9,5 M routingu), a jedyny pomiar pokazuje, że reviewerzy po dossier czytają 2x więcej Bashem”; par.2: „Bash reviewerów p50 10,5 -> 23, Read bez zmian (2) (...) teza „dossier zastępuje czytanie” nie ma żadnego dowodu”. ETAP2-ROZSTRZYGNIECIE.md par.2: „dobór plików i routing deterministycznie w JS (OpenCodeReview) (...) agent packagera znika. Sprzeczność „szeroko vs wąsko” (par.4) do pomiaru”; par.3 — pomiaru mandatu dossier nie ma wśród czterech warunków wejścia.",
+   "dotyczyElementu": "packager / dossier",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Kierunek (routing w JS) jest tani i odwracalny, więc panel może go przyjąć; ale skasowanie agenta packagera zmienia to, co widzą wszyscy reviewerzy, a jedyny nasz pomiar efektu dossier jest przeciwny do zakładanego.",
+   "coBySieMusialoStac": "Liczba tur Bash i Read u reviewerów w fazach z dossier i bez dossier, policzona na runach z tej samej wersji maszynerii (żeby efekt nie był zmieszany z nowym rosterem i rozrostem CLAUDE.md)."
+  },
+  {
+   "id": "L19",
+   "tytul": "Osiem zmian w .coderabbit.yaml zapisano dla projektu oferty-online, a próg 300/50 linii, który wyprodukował 80 uwag szumu, siedzi w szablonie generującym ten plik.",
+   "typ": "element-nietkniety",
+   "opis": "Etap 1b rozstrzyga osiem zmian w .coderabbit.yaml jako pierwszy ruch przed pomiarem dev-pr, opisując je jako zmiany w pliku oferty-online. Tymczasem w nowych projektach plik ten powstaje ze skilla coderabbit-setup, a jego bazowy szablon zawiera dokładnie te dwie instrukcje, które wygenerowały największą klasę szumu. Skill coderabbit-setup nie jest wymieniony w żadnym rozstrzygnięciu ani w mapie 22 elementów, więc każda kolejna instalacja szablonu odtworzy problem, nawet jeśli oferty-online zostanie naprawione. Kłóci się to z warunkiem operatora, że wnioski mają dotyczyć szablonu.",
+   "dowod": "ETAP1B-ROZSTRZYGNIECIE.md par.2: „Konfiguracja bota — 8 zmian w .coderabbit.yaml oferty-online (koszyk A)”, pierwszy wiersz: „usunąć „pliki > 300 / funkcje > 50 linii” z path_instructions (...) 80”. Szablon: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/coderabbit-setup/templates/coderabbit-base.yaml:54-55 — „Pliki > 300 linii = sygnalizuj refaktor”, „Funkcje > 50 linii = sygnalizuj podział”. HANDOFF.md par.1: „wnioski mają dotyczyć szablonu (workspace-template), nie jednego projektu”.",
+   "dotyczyElementu": "skill coderabbit-setup i jego szablon coderabbit-base.yaml",
+   "ocena": "ryzyko-do-raportu",
+   "dlaczegoTakaOcena": "Panel projektuje pipeline, nie konfigurację bota, więc nie zaprojektuje przez to niczego fałszywie; ale największa pojedyncza klasa szumu (80 z 157 uwag A) zostanie odtworzona w każdym nowym projekcie, jeśli ten plik nie trafi na listę zmian szablonu.",
+   "coBySieMusialoStac": "Zestawienie ośmiu zmian z ETAP1B par.2 z zawartością coderabbit-base.yaml w szablonie: które z nich dotyczą linii obecnych w szablonie, a które wyłącznie lokalnej konfiguracji oferty-online."
+  }
+ ],
+ "pytaniaZEtap2": [
+  {
+   "pytanie": "Czy 4 pomiary z ETAP2 par.3 są wystarczające i dobrze zdefiniowane?",
+   "odpowiedz": "Dobrze zdefiniowany jest pomiar 3 (czasy bramek: konkretne komendy, konkretne repo, wyniki 9,9 s / 1,3 s z cache / 1,9 s / 0,8 s) — z dwiema dziurami: advisors nie zmierzono z powodu wyłączonego Dockera, a Stryker (2 min na 3 plikach) jest ekstrapolowany do 5-15 min bez pomiaru. Pomiar 1 jest metodologicznie najmocniejszy (17 rozłącznych scenariuszy z markerami), ale jego kluczowa liczba -50k pochodzi z konta z około 900 narzędziami MCP i została przeniesiona na szablon (L8), a nie obejmuje ról bez pliku agenta (L1). Pomiar 2 ocenia 97 z 200 uwag i używa dopasowania plus/minus 3 linie, więc „1 na 97” mówi o metodzie dopasowania co najmniej tyle, co o zdolności bramek (L9). Pomiar 4 ma próbę 6 par, z czego tylko 3 na zmienionym kodzie, i przypisuje nowe findingi do „kodu naprawczego” po lokalizacji pliku, nie po przyczynie (L3). Brakujące pomiary, które warunkują decyzje już podjęte: skuteczność poleceń-list (L2), kill rate sceptyka asymetrycznego (L6), advisors (L10).",
+   "powiazaneLuki": [
+    "L1",
+    "L2",
+    "L3",
+    "L6",
+    "L8",
+    "L9",
+    "L10"
+   ]
+  },
+  {
+   "pytanie": "Czego research etapu 2 nie objął: E2E, seed vs migracja, spec-compliance — trzy elementy bez zamiennika?",
+   "odpowiedz": "Dla wszystkich trzech research potwierdził brak mechanicznego zamiennika i na tym się zatrzymał — nie zbadał, co je zastępuje po stronie procesu. Dla E2E to najpoważniejsza luka, bo ten element odpowiada za prawie wszystkie STOP-y i około 1,2 M tokenów powtórek, a trzy rekomendacje operacyjne z przeglądu runów (parametryzacja E2E w szablonie, katalog zadania jako własne artefakty, kategoria przyczyny SKIP-u) nie weszły do żadnego rozstrzygnięcia ani do decyzji 6a (L11). Dla pary seed kontra migracja istnieje tylko polecenie-lista u osi e2e i bramka migrations.sum — ta druga pilnuje edycji wypchniętej migracji, a nie zgodności seeda z kontraktem, więc klasa zostaje bez narzędzia i bez pomiaru. Dla spec-compliance research potwierdził ZOSTAW i zalecił krótkie polecenia-listy na początku promptu, co przenosi całą wagę na mechanizm bez pomiaru (L2); nierozstrzygnięte zostało też pytanie z etapu 1, czy oś ma działać tylko na fazach z kodem — 27% jej wyjścia to pliki .md, których bot nie ocenia, więc nie wchodzą do miary jakości.",
+   "powiazaneLuki": [
+    "L2",
+    "L11",
+    "L16"
+   ]
+  },
+  {
+   "pytanie": "Słownik klas z etapu 1b — czy jest domknięty i spójny między 1b, 6a pkt 4 i 6a pkt 17?",
+   "odpowiedz": "Nie jest domknięty i nie jest spójny. Nigdzie nie ma wyliczonej listy nazw klas — jest tylko stwierdzenie z etapu 1b, że słownik jest potrzebny, bo trzej klasyfikatorzy użyli trzech nazw na „parser regexem” i dwóch na „ścieżkę błędu”. Rozjazd widać już między samymi rozstrzygnięciami: ETAP1 par.3 ma jedną klasę „cykl życia i współbieżność UI” (20 pozycji), ETAP1B par.3 rozbija ją na „cykl życia React” (11) i „wyścigi” (6). Dodatkowo mówimy o trzech różnych słownikach, które dokumenty traktują jak jeden: klasy uwag bota (1b), klasy wpisów learned-patterns (6a pkt 4 i pkt 17, gdzie „zamknięty słownik klas w szablonie” jest zabezpieczeniem indeksu wiedzy) oraz 8-10 klas ucieczek w dossier buildera. Konsekwencja praktyczna: miary skutku wyrażone „liczbą P1/P2 klasy X od bota” nie będą porównywalne z dzisiejszym pomiarem.",
+   "powiazaneLuki": [
+    "L12",
+    "L16"
+   ]
+  },
+  {
+   "pytanie": "Brak per-osiowej atrybucji obaleń sceptyków (która oś ma najwięcej fałszywych findingów)?",
+   "odpowiedz": "Potwierdzam brak i pokazuję, że problem jest głębszy niż sama atrybucja. Pole obalone_n w findingi-per-os jest zerowe we wszystkich 10 osiach i uznane za artefakt ekstrakcji, więc naturalnego źródła nie ma. Pozostałe źródła dają trzy różne liczby globalne: 12% (przezywalnosc_osi2), 19,2% na 96 fazach z telemetrii i 10,9% w analizie verify, a jedyna informacja per oś to zakres 0-5%, który nie składa się z żadną z nich. Skutek dla panelu: nie da się wskazać osi produkującej najwięcej fałszywych findingów, więc decyzja o wzmocnieniu sceptyka jest stosowana jednakowo do wszystkich osi, a jej siła szacowana z literatury (63% w etapie A, 79-83% łącznie), nie z naszych danych — przy odsetku obaleń rzędu 10-19% oznacza to nieznane ryzyko kasowania prawdziwych findingów.",
+   "powiazaneLuki": [
+    "L6",
+    "L3"
+   ]
+  },
+  {
+   "pytanie": "Czy polecenia-listy w promptach reviewerów (6 osi x 4-5 poleceń) nie wpadną w ten sam próg IFScale, który uzasadnia ich wprowadzenie?",
+   "odpowiedz": "Nie da się dziś odpowiedzieć, bo nikt nie policzył, ile instrukcji niesie jeden reviewer. Liczenie „4-5 poleceń na oś” jest mylące: pojedynczy agent nie dostaje 4-5 instrukcji, tylko swój prompt osi (security ma 191 linii, w tym około 100 martwych), trzy bloki doklejane do każdego reviewera w workflowie, wielopunktowy ciąg fokus (oś code-quality to trzy osie naraz w jednym stringu), CLAUDE.md, coding-rules z kilkunastoma sekcjami po kilkanaście reguł, a u builderów także treść skilli z pola skills:. To rząd wielkości, w którym IFScale przewiduje ciche pomijanie całych instrukcji — i dokładnie to obserwujemy: 45 z 68 ucieczek miało właściciela i regułę. Etap 2 zauważył ryzyko tylko częściowo, zalecając dla spec-compliance „polecenia-listy krótkie i na początku promptu”, ale bez żadnej liczby. Mini-run z 6a pkt 16 tego nie rozstrzygnie, bo testuje jeden marker, czyli dotarcie pojedynczej instrukcji, a nie zachowanie przy trzydziestej.",
+   "powiazaneLuki": [
+    "L2",
+    "L12",
+    "L15"
+   ]
+  }
+ ],
+ "elementyNietkniete": [
+  {
+   "element": "Agenci nieużywani przez żaden workflow: best-practices-researcher, framework-docs-researcher, learnings-researcher, repo-research-analyst, spec-flow-analyzer, web-research-specialist",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/agents/",
+   "czyWaznyDlaPanelu": "nie-wiem",
+   "dlaczego": "Wołane co najwyżej ze skilli (dev-plan, dev-ideate), nie z pipeline autopilota. Nie wchodzą do kosztu fazy, ale wchodzą do zdania „żaden z 16 agentów szablonu nie ma tools:”, na którym oparto skalę dźwigni."
+  },
+  {
+   "element": "Agenci martwi: kieran-typescript-reviewer.md, code-simplicity-reviewer.md",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/agents/",
+   "czyWaznyDlaPanelu": "nie",
+   "dlaczego": "Zero odwołań w workflowach i skillach; zostały po scaleniu trzech osi (architecture, simplicity, typescript) w code-quality, o czym mówi komentarz w dev-docs-review-wf.js:351-359. Żaden etap ich nie wymienił."
+  },
+  {
+   "element": "Oś code-quality realizowana przez plik architecture-strategist.md",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/dev-docs-review-wf.js:364",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Decyzje etapów 1 i 2 o tej osi mówią o „prompcie osi”, a prompt żyje w dwóch miejscach naraz: w angielskim pliku agenta i w wielozdaniowym ciągu fokus w workflowie. Bez tej mapy cięcia promptów nie są jednoznaczne."
+  },
+  {
+   "element": "Skille dev-ideate (403 linie), dev-brainstorm (344), dev-docs-update (107)",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/",
+   "czyWaznyDlaPanelu": "nie-wiem",
+   "dlaczego": "Zero wystąpień w czterech rozstrzygnięciach. dev-ideate jest wieloagentowy (potencjalny koszt), dev-docs-update nakłada się funkcją z bootstrapem stanu autopilota, który panel będzie przeprojektowywał."
+  },
+  {
+   "element": "Skill code-review",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/code-review/",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Drugie, niezależne wejście do review poza pipeline autopilota; jeśli panel przeprojektuje osie i prompty, ten skill zostanie ze starym rosterem. Wspomniany raz w ETAP2, nigdy nie zinwentaryzowany."
+  },
+  {
+   "element": "Skill bugfix",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/bugfix/",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Połowa zadeklarowanej miary jakości kodu (HANDOFF par.1) i jedyne wejście dla defektów wykrytych po wdrożeniu; zero danych i zero analizy."
+  },
+  {
+   "element": "Skill freshness-audit i workflow freshness-audit-wf.js (16 kB)",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/freshness-audit/, /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/freshness-audit-wf.js",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Operator pytał wprost „czy każdy reviewer jest aktualny” — istniejący mechanizm audytu aktualności nie został w analizie ani użyty, ani oceniony, ani objęty decyzją."
+  },
+  {
+   "element": "Skill coderabbit-setup i jego templates/coderabbit-base.yaml",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/coderabbit-setup/",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Źródło progów 300/50 linii, które wyprodukowały 80 z 157 uwag koszyka A; osiem zmian z etapu 1b opisano dla pliku w oferty-online, nie dla generatora w szablonie."
+  },
+  {
+   "element": "Hooki Stop: stop-build-check-enhanced.sh i error-handling-reminder.sh",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/hooks/ (wpięte w .claude/settings.json)",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Nakładają się zakresem na projektowaną bramkę domknięcia fazy (build check, audyt error-handlingu). ETAP1 wspomina „hook sesyjny, który nie widzi commitów workflow”, ale żaden etap nie ocenił ich wartości ani kosztu."
+  },
+  {
+   "element": "templates/e2e-env i templates/smoke-autopilot",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/templates/",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Parametryzacja E2E (warunek odblokowania synca w oferty-online) dotyczy .env.e2e.example z tego katalogu, a smoke-autopilot to jedyny gotowy scenariusz testowy maszynerii — oba niewymienione w żadnym rozstrzygnięciu."
+  },
+  {
+   "element": "Testy workflowów: 7 plików (m.in. metryki-w-stanie, sceptycy-p2, telemetria-i-kontrola-fixa, skladnia-workflowow)",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/__tests__/",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Przypinają dzisiejsze zachowanie orkiestratora (74 testy wg przeglądu runów); każdy z trzech projektów panelu będzie je łamał, a koszt tej pracy nie jest wymiarem porównania wariantów."
+  },
+  {
+   "element": "Skille wstrzykiwane builderom przez pole skills: supabase-dev-guidelines, tailwind-react-guidelines, ux-ui-guidelines, security, sentry-integration, figma-design-to-code, agent-browser",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/agents/feature-builder-data.md, feature-builder-ui.md, feature-builder-fullstack.md, feature-tester-e2e.md",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "Decyzja 6a pkt 15 zostawia je bez zmian (7-12k tokenów na agenta), ale treści tych skilli nikt nie ocenił ani pod kątem aktualności, ani pod kątem tego, ile z nich agent faktycznie stosuje; mini-run 6a pkt 16 ma to sprawdzić dopiero w etapie 4."
+  },
+  {
+   "element": "settings.json: enabledPlugins dev-browser=true wobec settings.local.json=false; statusLine uruchamiający npx -y @owloops/claude-powerline@latest",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/settings.json i settings.local.json",
+   "czyWaznyDlaPanelu": "nie",
+   "dlaczego": "Sprzeczny stan pluginu w dwóch plikach ustawień szablonu i zewnętrzne pobranie w statusLine; poza kosztem tokenowym pipeline, ale decyzja 6a pkt 7 o pluginach per projekt opiera się właśnie na tym pliku."
+  },
+  {
+   "element": "Role agentów bez pliku definicji (około 24 wywołania: planner, domkniecie, bootstrap, stan:zapis, precheck, env-up, warmup, db-sync, fix, verify-fix, pre-skan, kontrola, poprawka, zwijanie, walidacja-koncowa, env-down, compound-refresh, telemetria, packager, dedup, scribe, sceptycy, correctness, test-coverage)",
+   "sciezka": "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/dev-autopilot-wf.js i dev-docs-review-wf.js",
+   "czyWaznyDlaPanelu": "tak",
+   "dlaczego": "To są role, których dotyczy decyzja „allowlista tools: u wszystkich agentów pipeline”, a dziś startują jako general-purpose bez pliku, więc nie mają nośnika dla allowlisty; inwentarze ETAP1 i ETAP2 opisują je funkcjami, nie plikami."
+  }
+ ],
+ "tezyNaJednymFilarze": [
+  {
+   "teza": "Największa dźwignia kosztowa to kontekst startowy agenta i wynosi 30-40% kosztu fazy.",
+   "filar": "POMIARY-ROZSTRZYGNIECIE.md par.1 (pomiar 1b: 62,0k -> 11,6k -> 4,5k; jedno konto, jedno repo) i par.5 pkt 1 (arytmetyka 35 x 57k); HANDOFF par.3 pkt 2-3.",
+   "coJesliFalszywa": "Sypie się kolejność priorytetów całego projektu „po”: jeśli po decyzjach 6a pkt 15 zostaje kilkanaście procent zamiast 30-40%, cięcia w rosterze i mechanice review (zweryfikowane 8-10%) przestają być drugorzędne, a panel dostaje inne kryterium wyboru wariantu.",
+   "powiazaneLuki": [
+    "L1",
+    "L8"
+   ]
+  },
+  {
+   "teza": "Polecenia-listy w promptach właścicieli osi domkną 60-70% z 195 uwag B bota przy zerze nowych agentów.",
+   "filar": "ETAP1B-ROZSTRZYGNIECIE.md par.3 (szacunek per etap, suma 120-135 z 195) — wyłącznie oceny agentów, bez runu.",
+   "coJesliFalszywa": "Sypie się cała strona jakościowa projektu „po”: cięcia osi (performance, code-quality), degradacja test-coverage i rezygnacja z dodatkowych rund review są uzasadniane tym, że ucieczki zamknie tańszy mechanizm. Bez niego pipeline staje się tańszy i gorszy jednocześnie.",
+   "powiazaneLuki": [
+    "L2",
+    "L12"
+   ]
+  },
+  {
+   "teza": "Nowe findingi w powtórce review po fixie to review kodu naprawczego, a nie niska wykrywalność pierwszej rundy.",
+   "filar": "POMIARY-ROZSTRZYGNIECIE.md par.4 — 3 pary runów na zmienionym kodzie, atrybucja po nazwie pliku (17/19 w plikach dotkniętych fixem).",
+   "coJesliFalszywa": "Sypie się rozstrzygnięcie panelu między jedną rundą z mocniejszym sceptykiem a n=3 równoległymi próbkami oraz decyzja „powtórka po STOP-ie E2E = sam tester” — jeśli pierwsza runda po prostu nie znajduje, ograniczanie liczby rund obniża wykrywalność.",
+   "powiazaneLuki": [
+    "L3",
+    "L6"
+   ]
+  },
+  {
+   "teza": "Bramki mechaniczne nie pozwalają skasować żadnej dodatkowej osi review (1 trafienie na 97 uwag B).",
+   "filar": "POMIARY-ROZSTRZYGNIECIE.md par.2 — jedna konfiguracja ESLint, jedna metoda dopasowania (plik plus linia +/-3), 97 z 200 uwag.",
+   "coJesliFalszywa": "Panel utrzyma osie, które dałoby się zastąpić bramką za kilka sekund CPU, i przyjmie fałszywe ograniczenie oszczędności; w drugą stronę — jeśli liczba jest zaniżona metodą, raport poda operatorowi zły powód, dla którego bot znajduje więcej niż my.",
+   "powiazaneLuki": [
+    "L9",
+    "L4"
+   ]
+  },
+  {
+   "teza": "Oś test-coverage można zdegradować do „luki pokrycia i strażnika negatywnego”, bo trzy warstwy mechaniczne przejmą klasę testów niefalsyfikowalnych.",
+   "filar": "ETAP2-ROZSTRZYGNIECIE.md par.0 pkt 5 i par.2 — research zewnętrzny; jedyny pomiar na tej klasie (POMIARY par.2) daje 0 z 31 dla warstwy pierwszej, warstwy 2 i 3 niezmierzone.",
+   "coJesliFalszywa": "Pipeline traci największe źródło findingów (202 potwierdzone), a klasa „test niefalsyfikowalny” (31 uwag B, druga co do wielkości) zostaje bez właściciela.",
+   "powiazaneLuki": [
+    "L4"
+   ]
+  },
+  {
+   "teza": "Sceptyk asymetryczny z etykietami sporu będzie około 4x skuteczniejszy niż dzisiejszy.",
+   "filar": "ETAP2-ROZSTRZYGNIECIE.md par.0 pkt 3 — dwie prace zewnętrzne (Refute-or-Promote 2026-04, Adversarial Review 2026-08); zero pomiaru na naszych findingach, a nasze liczby obaleń są trzy różne (12%, 19,2%, 10,9%).",
+   "coJesliFalszywa": "Jeśli transfer nie zachodzi, jedna runda review zostaje bez wzmocnienia; jeśli zachodzi za mocno, sceptyk zaczyna kasować prawdziwe P1/P2, a bramki gate przestają oznaczać to co dziś.",
+   "powiazaneLuki": [
+    "L6",
+    "L3"
+   ]
+  },
+  {
+   "teza": "Model kosztu i udziały etapów fazy opisują dzisiejszy szablon.",
+   "filar": "HANDOFF par.3 — dane głównie z oferty-online, repo bez napraw N1-N9; 12 z 13 runów na starej maszynerii, jedyny run na aktualnej wersji to 1 faza bez E2E.",
+   "coJesliFalszywa": "Wszystkie liczby „przed” w raporcie i wszystkie procenty oszczędności odnoszą się do wersji maszynerii, której w szablonie nie ma; porównanie „dziś / po” traci punkt odniesienia.",
+   "powiazaneLuki": [
+    "L7"
+   ]
+  }
+ ],
+ "werdykt": {
+  "czyPanelMozeStartowac": "nie",
+  "uzasadnienie": "Cztery luki uderzają w założenia, na których panel oprze projekty, a nie w szczegóły wykonania. L1: deklarowana dźwignia 30-40% jest policzona dla konfiguracji odrzuconej decyzją 6a pkt 15 (CLAUDE.md i skille zostają u builderów i reviewerów) i dla ról, z których około 24 nie mają pliku agenta, więc nie mają nośnika dla allowlisty tools: — bez przeliczenia trzy projekty ustawią priorytety na złej liczbie. L2: główna dźwignia jakościowa, polecenia-listy z szacunkiem 60-70% domknięcia uwag B, nie ma żadnego pomiaru, a etap 2 sam dostarcza mechanizm (IFScale), przez który może nie zadziałać; nikt nie policzył budżetu instrukcji na agenta. L3: podział „niestabilność kontra review kodu naprawczego”, który POMIARY wprost oddają panelowi do rozstrzygnięcia, jest wyprowadzony z atrybucji po nazwie pliku i nie wyklucza wyjaśnienia „przeoczone w rundzie 1”. L4: oś test-coverage, największe źródło findingów, jest w ETAP2 degradowana na rzecz trzech warstw, z których jedyna zmierzona daje 0 z 31 na jej głównej klasie, a POMIARY mówią „zero dodatkowych osi do skasowania” — panel dostaje dwa sprzeczne mandaty. Pozostałe piętnaście luk (L5-L19) to niepewności, z którymi panel może iść dalej, o ile trafią do raportu końcowego jako jawne ograniczenia — w szczególności sprzeczność POMIARY par.5 z decyzjami 6a (L5), brak atrybucji obaleń per oś (L6), baseline z maszynerii bez N1-N9 (L7) oraz nietknięta warstwa maszynerii poza rdzeniem autopilota (L14, L19).",
+  "lukiBlokujace": [
+   "L1",
+   "L2",
+   "L3",
+   "L4"
+  ]
+ },
+ "coPrzeczytal": [
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/ETAP1-ROZSTRZYGNIECIE.md",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/ETAP1B-ROZSTRZYGNIECIE.md",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/ETAP2-ROZSTRZYGNIECIE.md",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/POMIARY-ROZSTRZYGNIECIE.md",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-przeglad-runow-po-naprawie.md",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/settings.json",
+  "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/settings.local.json",
+  "(fragmenty wg polecenia) frontmattery 16 plikow w /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/agents/",
+  "(fragmenty) frontmattery 12 plikow /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/dev-*/SKILL.md",
+  "(fragmenty przez grep) /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/workflows/dev-docs-review-wf.js, dev-autopilot-wf.js, dev-docs-execute-wf.js",
+  "(fragment) /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/.claude/skills/coderabbit-setup/templates/coderabbit-base.yaml"
+ ]
+}
