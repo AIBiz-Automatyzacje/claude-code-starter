@@ -192,6 +192,25 @@ Kolejność wg spodziewanego efektu. Każda ma być w raporcie z liczbą „prze
     `extraKnownMarketplaces` w `.claude/settings.json` projektu z `ref`/`sha` + `version` w plugin.json. Przed migracją: `claude plugin validate
     --strict` i `claude plugin eval`. W projekcie zostają: settings.json, CLAUDE.md, rules/ (albo rules → skille), docs/, stan autopilota.
 14. **Styl komunikacji z operatorem:** gdzie był problem → co go powodowało → jak działa rozwiązanie → co to daje. Język korzyści, minimum żargonu.
+15. **Decyzje po pomiarach (2026-09-20, po rozmowie o POMIARY-ROZSTRZYGNIECIE):**
+    - **Tryb bypass zostaje** dla subagentów, więc czytanie Bashem (`cat`/`sed -n`) zostaje. Konsekwencja: reguły `paths:` NIE są kanałem dostawy wiedzy
+      do builderów (nigdy się u nich nie załadują) — co najwyżej bonus dla agentów, które użyją Read. Nie budować na nich architektury.
+    - **Allowlista `tools:` u wszystkich agentów pipeline'u** — zaakceptowane (−50k tokenów startu/agent; 498 z 514 agentów nie wołało MCP; tester E2E
+      i buildery UI z Figmą dostają dodatkowo swoje serwery).
+    - **CLAUDE.md (po odchudzeniu, 20,6k zn) TRAFIA do builderów i reviewerów** — nie wyłączać. `omitClaudeMd: true` tylko dla agentów mechanicznych
+      nie patrzących na kod (stan:zapis, telemetria, dedup, precheck, kontekst:diff).
+    - **learned-patterns (49k zn, ładowany bezwarunkowo do 35 agentów):** kierunek = **orkiestrator wkleja wycinek** (JS dobiera z formatu klasa → reguła
+      → źródło tylko klasy pasujące do plików IU i dokleja 1–2k zn do promptu buildera/reviewera; przy planowaniu dev-plan czyta całość). Operator NIE chce
+      czytać learned-patterns sam. Wariant „wiedza poza kontekstem agentów" odrzucony jako domyślny. Do potwierdzenia mini-runem (niżej).
+    - **Skille bazowe builderów (`skills:` w frontmatterze, 7–12k tok/agent):** działa, zostawić; dobór per IU nie jest warty logiki w orkiestratorze.
+    - **Pętla fixów: ŻADNEJ dodatkowej rundy review** (historia „fixa po fixie" = przepalone tokeny; sufit jednego cyklu w `fix:kontrola` zostaje).
+      Zamiast tego: (1) `fix:kontrola` dostaje polecenia-listy correctness zawężone do diffu fixa (ten sam 1 agent, ten sam cykl); (2) builder fixa
+      naprawia tylko P1/P2, P3 → known-issues/bot, zakaz zmian poza zgłoszonym miejscem (mniejszy diff = mniej nowych odkryć); (3) reszta → CodeRabbit
+      w dev-pr. Miara: P1/P2 od bota w plikach dotkniętych fixami po 5 zadaniach.
+16. **Mini-run w etapie 4 (przed panelem, ~1 h, metoda markerów z pomiaru 1):** trzy pytania na jednym małym zadaniu buildera: (a) czy reguła-marker
+    wklejona przez orkiestrator do promptu delegacji („każdy nowy plik zaczyna się komentarzem X") jest STOSOWANA w kodzie; (b) to samo dla reguły
+    dostarczonej przez `paths:` (kontrola); (c) czy treść skilla wstrzykniętego przez `skills:` jest stosowana (marker w SKILL.md testowym), czy tylko
+    zajmuje kontekst. Wynik rozstrzyga wariant learned-patterns i to, czy `skills:` zostaje bez zmian.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
