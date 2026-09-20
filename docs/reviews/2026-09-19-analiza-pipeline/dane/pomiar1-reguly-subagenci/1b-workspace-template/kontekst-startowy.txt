@@ -1,0 +1,10 @@
+Pomiar 1b (2026-09-20): kontekst startowy subagenta (tokeny pierwszej tury) w workspace-template z pelnym zestawem MCP i pluginow uzytkownika.
+Subagenci zdefiniowani inline przez `claude -p --agents`, kazdy czyta README.md przez Read. Model sonnet.
+
+typ subagenta                              | kontekst startowy
+general-purpose (wbudowany)                | 62 009
+tools: [Read, Bash, Write, Edit]           | 11 577
+tools: [...] + omitClaudeMd: true          |  4 467
+disallowedTools: ["mcp__*"] (reszta pelna) | 39 273
+
+Wniosek: sama allowlista tools: zdejmuje ~50k tokenow per agent (MCP + opisy narzedzi wbudowanych); wylaczenie samych MCP ~23k; omitClaudeMd dodatkowo ~7k (CLAUDE.md+rules workspace-template; w oferty-online ta warstwa ma 33k).

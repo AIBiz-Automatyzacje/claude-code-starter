@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "mutate": [
+    "src/features/onboarding/use-first-steps.ts",
+    "src/features/onboarding/use-screen-tour.ts",
+    "src/features/account/use-profile.ts"
+  ],
+  "reporters": [
+    "json",
+    "clear-text"
+  ],
+  "jsonReporter": {
+    "fileName": "reports/mutation.json"
+  },
+  "incremental": false,
+  "tempDirName": ".stryker-tmp",
+  "concurrency": 4,
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": null
+  },
+  "plugins": [
+    "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59bef/scratchpad/oo-wt/node_modules/.pnpm/@stryker-mutator+vitest-runner@10.0.0_@stryker-mutator+core@10.0.0_@types+node@22.19.2__9ac60ad5668f0e406ef386f499b0d147/node_modules/@stryker-mutator/vitest-runner/dist/src/index.js"
+  ],
+  "vitest": {
+    "configFile": "vitest.stryker.config.ts"
+  }
+}

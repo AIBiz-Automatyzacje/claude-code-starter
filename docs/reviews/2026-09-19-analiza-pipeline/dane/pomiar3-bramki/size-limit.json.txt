@@ -1,0 +1,4 @@
+[
+  { "name": "dashboard js (wszystkie chunki)", "path": "apps/dashboard/dist/assets/*.js", "limit": "600 kB", "gzip": true },
+  { "name": "dashboard css", "path": "apps/dashboard/dist/assets/*.css", "limit": "60 kB", "gzip": true }
+]

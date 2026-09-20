@@ -1,0 +1,2503 @@
+[
+ {
+  "pr": 1,
+  "uwag": 10,
+  "plikow": 7,
+  "brak": [],
+  "lint_s": 3.1,
+  "komunikaty": 31,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "1",
+    "plik": "apps/server/src/index.ts",
+    "linia": null,
+    "klasa": "zamkniecie-procesu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Zamkniecie nie oproznia kolejki Sentry i nie ma limitu czasu — SIGKILL na keep-alive",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "3",
+    "plik": "apps/server/src/observability/sentry.ts",
+    "linia": null,
+    "klasa": "pii-do-sentry",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "maskEmail przepuszcza krotkie adresy, scrubEvent zostawia query w request.url",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "4",
+    "plik": "apps/server/src/routes/dashboard.ts",
+    "linia": null,
+    "klasa": "naglowki-bezpieczenstwa",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Dokument dashboardu bez X-Frame-Options/frame-ancestors — clickjacking na sesji Supabase",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "9",
+    "plik": "packages/shared/src/env.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Brak normalizacji originow — host:443 omija granice Z3",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "10",
+    "plik": "scripts/seed-test-users.ts",
+    "linia": null,
+    "klasa": "pii-w-logu",
+    "etap": "review:security",
+    "sev": "P3",
+    "opis": "maskEmail przepuszcza pelny adres dla jednoznakowej czesci lokalnej",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "13",
+    "plik": "apps/server/src/app.ts",
+    "linia": null,
+    "klasa": "zaufanie-naglowkowi",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Zwolnienie z rate-limitu oparte na naglowku Host kontrolowanym przez klienta",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "14",
+    "plik": "apps/server/src/app.ts",
+    "linia": null,
+    "klasa": "kolejnosc-middleware",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Nieznany host dostaje 429 zamiast 404 — limiter przed host-guardem",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "16",
+    "plik": "packages/shared/src/pii.ts",
+    "linia": null,
+    "klasa": "pii-do-sentry",
+    "etap": "review:security",
+    "sev": "P3",
+    "opis": "maskEmail zostawia dwa znaki i pelna domene — nadal identyfikuje uzytkownika",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "17",
+    "plik": "apps/server/src/app.ts",
+    "linia": null,
+    "klasa": "zaufanie-naglowkowi",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Niezweryfikowany X-Forwarded-For jako klucz limitera — klient omija limit",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "18",
+    "plik": "apps/server/src/app.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Opis testu obiecuje dowod nadpisania naglowka, ktorego test nie daje",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 2,
+   "max-lines": 1,
+   "@typescript-eslint/no-unused-vars": 5
+  }
+ },
+ {
+  "pr": 2,
+  "uwag": 20,
+  "plikow": 14,
+  "brak": [],
+  "lint_s": 3.4,
+  "komunikaty": 56,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "24",
+    "plik": "apps/server/src/mcp/server.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Limit ciala MCP ufa content-length; chunked omija limit, a test dostarcza naglowek",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "25",
+    "plik": "apps/server/src/mcp/tools/pobierz-szablon.ts",
+    "linia": null,
+    "klasa": "luka-pokrycia",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Brak testu kompletnosci sekcji szkieletu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "27",
+    "plik": "apps/server/src/offer/cache.ts",
+    "linia": null,
+    "klasa": "wartosc-graniczna",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "maxEntries: 0 pozwala zapisac wpis ponad limit",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "28",
+    "plik": "apps/server/src/offer/mail-draft.ts",
+    "linia": null,
+    "klasa": "walidacja-tekstu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Data i slowo o waznosci sprawdzane osobno — walidacja przepuszcza zly tekst",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "29",
+    "plik": "apps/server/src/offer/repository.test.ts",
+    "linia": null,
+    "klasa": "luka-pokrycia",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Brak testow createSupabaseOfferLoader — sciezki chroniacej ip_salt i owner_id",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "30",
+    "plik": "apps/server/src/offer/repository.ts",
+    "linia": null,
+    "klasa": "komentarz-rozmija-sie-z-kodem",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Komentarz obiecuje walidacje ksztaltu wiersza, kod sprawdza tylko expires_at",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "33",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Walidator nie blokuje //host/path — oferta pobiera zasob z obcego hosta",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "34",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Markery w komentarzu HTML zaliczaja walidacje trackera i stopki",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "35",
+    "plik": "apps/server/src/rate-limit.ts",
+    "linia": null,
+    "klasa": "wspolne-wiadro-limitu",
+    "etap": "review:performance",
+    "sev": "P2",
+    "opis": "Po zapelnieniu mapy nowi klienci dziela jedno wiadro i dostaja 429 (lamie zasade 7)",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "36",
+    "plik": "apps/server/src/routes/debug.ts",
+    "linia": null,
+    "klasa": "kontrakt-diagnostyki",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "entryCount liczy puste wpisy — diagnostyka rozjezdza sie z produkcja",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "37",
+    "plik": "apps/server/src/routes/offer-origin-pages.ts",
+    "linia": null,
+    "klasa": "cache-naglowki",
+    "etap": "review:performance",
+    "sev": "P3",
+    "opis": "res.ok pomija 304 — odpowiedz warunkowa traci Cache-Control",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "40",
+    "plik": "apps/server/src/routes/offer.ts",
+    "linia": null,
+    "klasa": "wartosc-po-await",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "timestamp sprzed await loadOffer — wygasla oferta przechodzi warunek",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "41",
+    "plik": "packages/shared/src/env.ts",
+    "linia": null,
+    "klasa": "martwa-galaz",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Nieosiagalna galaz TRUSTED_PROXY_EMPTY_MESSAGE, test przechodzi z innego powodu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "42",
+    "plik": "packages/shared/src/pii.ts",
+    "linia": null,
+    "klasa": "sekret-do-sentry",
+    "etap": "review:security",
+    "sev": "P1",
+    "opis": "Redakcja tylko pierwszego poziomu — MCP_BEARER_TOKEN w extra idzie jawnie do Sentry",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "43",
+    "plik": "scripts/build-demo-offers-sql.mjs",
+    "linia": null,
+    "klasa": "konkatenacja-sql",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Staly delimiter $seed$ w bloku DO — ownerEmail moze zamknac blok przedwczesnie",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "45",
+    "plik": "supabase/tests/rls.test.ts",
+    "linia": null,
+    "klasa": "luka-pokrycia",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Brak testu offers_html_size_check — jedynej bariery przed wysadzeniem cache",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "47",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Niecytowany href=//example.invalid przechodzi walidacje",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "48",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Encje HTML w URL omijaja wzorce — parser zamieni je na adres zewnetrzny",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "50",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "srcset i zakodowane URL omijaja walidacje kontekstow adresowych",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "52",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "falszywy-alarm-walidatora",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "srcset z data: base64 zawierajacym // blokuje publikacje poprawnej oferty",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 2
+  }
+ },
+ {
+  "pr": 3,
+  "uwag": 13,
+  "plikow": 10,
+  "brak": [],
+  "lint_s": 4.5,
+  "komunikaty": 12,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "54",
+    "plik": ".design/faza-3-dashboard/OnboardingDesktop.dc.html",
+    "linia": null,
+    "klasa": "zaszyta-domena",
+    "etap": "review:spec-compliance",
+    "sev": "P2",
+    "opis": "Zaszyty adres oferty-app-dev w instrukcji MCP dla uzytkownika produkcyjnego (Z4)",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "55",
+    "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+    "linia": null,
+    "klasa": "sciezka-bledu-bez-obslugi",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "handleLogout ignoruje error i odrzucony promise z signOut",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "58",
+    "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+    "linia": null,
+    "klasa": "sciezka-bledu-bez-obslugi",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "void handleSubmit porzuca odrzucenie — stan sending i trwale wylaczony przycisk",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "60",
+    "plik": "apps/dashboard/src/features/auth/session-context.tsx",
+    "linia": null,
+    "klasa": "sciezka-bledu-bez-obslugi",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "getSession bez catch — panel utknie na Ladowanie bez ekranu logowania",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "64",
+    "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+    "linia": null,
+    "klasa": "kontrakt-shared",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Reczny OfferRow duplikuje kontrakt tabeli zamiast typu z Database",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "65",
+    "plik": "apps/dashboard/src/features/settings/mcp-token.ts",
+    "linia": null,
+    "klasa": "kontrakt-shared",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Format tokenu MCP zdefiniowany niezaleznie w dashboardzie, serwerze i migracji",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "67",
+    "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+    "linia": null,
+    "klasa": "sciezka-bledu-bez-obslugi",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Trzy async IIFE bez catch — przyciski trwale wylaczone, brak zdarzenia w Sentry",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "68",
+    "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+    "linia": null,
+    "klasa": "zrodlo-czasu",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "createdAt z zegara przegladarki, baza stempluje now() triggerem",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "70",
+    "plik": "apps/server/src/mcp/token-service.ts",
+    "linia": null,
+    "klasa": "brak-timeoutu",
+    "etap": "review:performance",
+    "sev": "P2",
+    "opis": "Cztery wywolania Supabase bez limitu czasu (db.timeout nie obejmuje Auth)",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "71",
+    "plik": "apps/server/src/mcp/token-service.ts",
+    "linia": null,
+    "klasa": "cykl-zycia-wspolbieznosc",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Rownolegle odswiezenie sesji robi dwa minty — drugi verifyOtp zwraca 500",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "72",
+    "plik": "e2e/print-magic-link.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Test nie chroni drugiej bramki — blokady projektu glownego",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "76",
+    "plik": "scripts/dockerfile-invariants.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Test skanuje caly Dockerfile — ARG w builderze i ENV w runtime zaliczy sie falszywie",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "77",
+    "plik": "supabase/tests/rls.test.ts",
+    "linia": null,
+    "klasa": "straznik-negatywny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Trzy testy z asercja negatywna na zbiorze, ktory moze byc pusty",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 3
+  }
+ },
+ {
+  "pr": 4,
+  "uwag": 22,
+  "plikow": 10,
+  "brak": [],
+  "lint_s": 4.2,
+  "komunikaty": 89,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "79",
+    "plik": "apps/dashboard/src/features/offers/analytics.ts",
+    "linia": null,
+    "klasa": "wartosc-graniczna",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Prog porownywany po Math.round — 4.6 s raportowane jako 5 s",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "82",
+    "plik": "apps/dashboard/src/features/offers/offers-page.test.tsx",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Test klika Link, wiec przejdzie po usunieciu onClick wiersza",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "84",
+    "plik": "apps/server/src/mcp/token-service.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Asercje przejda, gdy implementacja pominie refreshSession i od razu mintuje",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "85",
+    "plik": "apps/server/src/offer/pages/privacy-page.ts",
+    "linia": null,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P2",
+    "opis": "Polityka pomija ua_hash, ktory zapisuje migracja visits_tracking",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "86",
+    "plik": "apps/server/src/offer/pages/privacy-page.ts",
+    "linia": null,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P2",
+    "opis": "Opis retencji i agregatow nie odpowiada migracji — agregaty nie istnieja",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "87",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "parser-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "data-section tylko w podwojnych cudzyslowach — niepelna lista sectionIds",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "88",
+    "plik": "apps/server/src/routes/events.ts",
+    "linia": null,
+    "klasa": "asymetria-bramek",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Jedna komorka heat spoza siatki uniewaznia caly beacon, sekcje sa odsiewane",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "89",
+    "plik": "apps/server/src/tracker/tracker.test.ts",
+    "linia": null,
+    "klasa": "test-kruchy",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Limit rozmiaru trackera ma 4 bajty zapasu — kazda zmiana wywali test",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "90",
+    "plik": "apps/server/src/tracker/tracker.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Atrapy fetch i sendBeacon ignoruja URL — literowka w ENDPOINT przejdzie",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "92",
+    "plik": "apps/server/src/tracking/visit-service.test.ts",
+    "linia": null,
+    "klasa": "luka-pokrycia",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Brak testu bledu RPC w mergeIncrements — sciezka zgloszenia do Sentry",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "95",
+    "plik": "apps/server/src/tracking/visit-service.ts",
+    "linia": null,
+    "klasa": "brak-timeoutu",
+    "etap": "review:performance",
+    "sev": "P2",
+    "opis": "POST /e bez limitu czasu na insert/update/RPC — kumulacja zasobow procesu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "96",
+    "plik": "apps/server/static/t.js",
+    "linia": null,
+    "klasa": "utrata-danych-przy-bledzie",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "drain() zeruje bufory przed wysylka — nieudany sendBeacon gubi 10 s telemetrii",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "97",
+    "plik": "e2e/seeds/faza-4-wizyty-seed.sql",
+    "linia": null,
+    "klasa": "seed-niezgodny-z-kontraktem",
+    "etap": "review:e2e",
+    "sev": "P3",
+    "opis": "Komentarz seeda sprzeczny z kontraktem kafla Ostatnia wizyta z CLAUDE.md",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "99",
+    "plik": "scripts/compare-schemas.ts",
+    "linia": null,
+    "klasa": "blad-polkniety",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "stderr pg_dump ladujе do bufora i ginie — operator widzi tylko Command failed",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "100",
+    "plik": "scripts/compare-schemas.ts",
+    "linia": null,
+    "klasa": "porownanie-zbiorami",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Porownanie Setami gubi krotnosc linii — rozjazd schematow przejdzie jako zgodny",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "102",
+    "plik": "supabase/migrations/20260828173000_offers_ip_salt_out_of_select_grant.sql",
+    "linia": null,
+    "klasa": "grant-niepelny",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Brak section_ids w grancie SELECT — widok szczegolow oferty padnie na uprawnieniach",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "103",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "parser-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Regex skanuje caly dokument — tekst oferty zapisuje sie jako sectionId",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "104",
+    "plik": "scripts/compare-schemas.ts",
+    "linia": null,
+    "klasa": "sekret-w-argv",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "DATABASE_URL z haslem przekazywany w argv procesu pg_dump",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "105",
+    "plik": "scripts/compare-schemas.ts",
+    "linia": null,
+    "klasa": "dopasowanie-fragmentu",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "includes na markerze usuwa tez e2e_env_marker_backup",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "106",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "parser-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Wzorzec pomija odstepy wokol = i lapie data-section w wartosci innego atrybutu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "107",
+    "plik": "scripts/compare-schemas.ts",
+    "linia": null,
+    "klasa": "kodowanie-uri",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Nazwa bazy do .pgpass bez decodeURIComponent — libpq nie znajdzie hasla",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "108",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": null,
+    "klasa": "parser-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Tresc <script>/<textarea> daje fikcyjne sectionIds",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 2
+  }
+ },
+ {
+  "pr": 5,
+  "uwag": 5,
+  "plikow": 3,
+  "brak": [],
+  "lint_s": 2.3,
+  "komunikaty": 5,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "111",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+    "linia": null,
+    "klasa": "pusty-catch",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Pusty catch {} przy new URL na VITE_OFFER_ORIGIN — blad konfiguracji bez sygnalu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "112",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "status nie resetuje sie po zmianie slug — plansza bledu zamiast nowej ramki",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "113",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Timeout startuje przed ladowaniem lazy iframe — falszywy status error",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "115",
+    "plik": "apps/dashboard/src/features/offers/texts.ts",
+    "linia": null,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P2",
+    "opis": "Tekst obiecuje czas zatrzymania, a waga mapy liczy zdarzenia aktywnosci",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "117",
+    "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Test przejdzie po usunieciu straznika aborted z hooka",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 1,
+   "react-hooks/set-state-in-effect": 1
+  }
+ },
+ {
+  "pr": 6,
+  "uwag": 4,
+  "plikow": 2,
+  "brak": [],
+  "lint_s": 2.1,
+  "komunikaty": 1,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "120",
+    "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+    "linia": null,
+    "klasa": "luka-pokrycia",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Brak przypadkow granicznych grid_rows 1 i 64 (pomylka </<= wpada do fallbacku)",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "122",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Asercja wysokosci do MAX_FRAME_HEIGHT przejdzie przy trzykrotnym bledzie geometrii",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "124",
+    "plik": "apps/server/static/t.js",
+    "linia": null,
+    "klasa": "wartosc-po-await",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "docHeight nie zamrozony razem z rows — grid_rows nie opisuje kluczy heat",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "127",
+    "plik": "e2e/seeds/siatka-proporcjonalna-seed.sql",
+    "linia": null,
+    "klasa": "seed-niezgodny-z-kontraktem",
+    "etap": "review:e2e",
+    "sev": "P2",
+    "opis": "grid_rows w seedzie lamia kontrakt trackera — E2E testuje stan niemozliwy",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {}
+ },
+ {
+  "pr": 7,
+  "uwag": 18,
+  "plikow": 13,
+  "brak": [],
+  "lint_s": 4.3,
+  "komunikaty": 64,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "130",
+    "plik": "apps/dashboard/src/features/settings/accept-message-card.tsx",
+    "linia": null,
+    "klasa": "stan-ui-nieczyszczony",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Komunikat zapisano wisi po edycji pola — to samo z isSaveFailed",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "131",
+    "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+    "linia": null,
+    "klasa": "stan-ui-nieczyszczony",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Awaria transportu zostawia testState w running do przeladowania widoku",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "133",
+    "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+    "linia": null,
+    "klasa": "brak-timeoutu",
+    "etap": "review:performance",
+    "sev": "P2",
+    "opis": "fetch bez AbortSignal.timeout — przyciski karty zablokowane bez komunikatu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "134",
+    "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+    "linia": null,
+    "klasa": "walidacja-granicy",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Odpowiedzi webhooka bez schematu Zod — ksztalt wymuszany asercjami as",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "137",
+    "plik": "apps/server/src/cta/cta-script.test.ts",
+    "linia": null,
+    "klasa": "test-kruchy",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "settle() liczy mikrozadania — kazdy nowy await w /c.js wywraca testy",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "138",
+    "plik": "apps/server/src/cta/cta-script.test.ts",
+    "linia": null,
+    "klasa": "test-kruchy",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "formatDate bez timeZone — test zalezy od strefy srodowiska",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "139",
+    "plik": "apps/server/src/cta/cta-script.test.ts",
+    "linia": null,
+    "klasa": "test-kruchy",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Sufit przepisany liczba 2000/2001 zamiast QUESTION_MAX_CODE_POINTS",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "142",
+    "plik": "apps/server/src/cta/decision-service.ts",
+    "linia": null,
+    "klasa": "cache-bez-inwalidacji",
+    "etap": "review:performance",
+    "sev": "P3",
+    "opis": "Wpis cache nie jest usuwany po wykryciu usunietej oferty — podwojny odczyt do konca TTL",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "143",
+    "plik": "apps/server/src/index.ts",
+    "linia": null,
+    "klasa": "nieobsluzone-odrzucenie",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Lancuch zamkniecia bez .catch — odrzucenie flush konczy proces kodem bledu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "145",
+    "plik": "apps/server/src/offer/pages/privacy-page.ts",
+    "linia": null,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P2",
+    "opis": "Tresc polityki zmieniona, EFFECTIVE_FROM zostalo na starej dacie mimo komentarza",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "148",
+    "plik": "apps/server/src/routes/webhook-settings.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Test obiecuje brak zapytania DNS, a liczy tylko wywolania https.request",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "149",
+    "plik": "apps/server/src/routes/webhook-settings.ts",
+    "linia": null,
+    "klasa": "walidacja-granicy",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Koperta zadania wyluskana przez as; Zod obejmuje tylko sama wartosc adresu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "150",
+    "plik": "apps/server/src/webhooks/schedule.ts",
+    "linia": null,
+    "klasa": "spojnosc-dwoch-systemow",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "vt liczony na jedna wiadomosc, porcja obslugiwana sekwencyjnie — duplikat u odbiorcy",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "151",
+    "plik": "apps/server/src/webhooks/settings-service.test.ts",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Atrapa createClient ignoruje argumenty — podmiana klucza publikowalnego na sekretny przejdzie",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "156",
+    "plik": "supabase/tests/rls.test.ts",
+    "linia": null,
+    "klasa": "test-kruchy",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "update fixture'u webhooka ignoruje blad — mylaca porazka dalszych testow",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "157",
+    "plik": "supabase/tests/rls.test.ts",
+    "linia": null,
+    "klasa": "straznik-negatywny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "not.toBeNull nie odrozni regresji uprawnien (42501) od regresji walidacji (22023)",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "158",
+    "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+    "linia": null,
+    "klasa": "stan-ui-nieczyszczony",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "throw cause przy tescie webhooka ustawia isWriteFailed mimo braku zapisu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "159",
+    "plik": "packages/shared/src/webhook-contract.ts",
+    "linia": null,
+    "klasa": "walidacja-granicy",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "aktywny_od przyjmuje dowolny tekst — dashboard dostaje Invalid Date",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 3,
+   "@typescript-eslint/no-unused-vars": 1,
+   "max-lines": 1
+  }
+ },
+ {
+  "pr": 8,
+  "uwag": 11,
+  "plikow": 9,
+  "brak": [],
+  "lint_s": 2.7,
+  "komunikaty": 9,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "160",
+    "plik": "apps/dashboard/src/components/copy-button.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Drugie kopiowanie przed uplywem 2 s nie restartuje timera potwierdzenia",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "162",
+    "plik": "apps/dashboard/src/components/layout/app-layout.test.tsx",
+    "linia": null,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Skan zrodel bez normalizacji wielkosci liter przepusci inny zapis domeny",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "164",
+    "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+    "linia": null,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "aaMarketingHref przyjmuje data: i mailto: — logo prowadzi poza kontrakt",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "165",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Sentry.captureException w trakcie renderu — kazdy render ponawia zgloszenie",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "166",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+    "linia": null,
+    "klasa": "wymaga-przegladarki",
+    "etap": "review:e2e",
+    "sev": "P3",
+    "opis": "jsdom stubuje clientWidth — testy nie wykryja realnego overflow ukladu",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "170",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-wspolbieznosc",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Rownolegly upload i delete — starsza odpowiedz nadpisuje licznik zajetosci",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "172",
+    "plik": "apps/dashboard/src/features/templates/template-preview-card.tsx",
+    "linia": null,
+    "klasa": "parser-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Regex gubi apostrofowe src i wstawia <base> do <textarea> — podglad traci zasoby",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "174",
+    "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+    "linia": null,
+    "klasa": "niespojnosc-transportow",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Nie-JSON-owe cialo rzuca SyntaxError zamiast TemplatesApiError; XHR zachowuje sie odwrotnie",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "176",
+    "plik": "apps/dashboard/src/features/templates/templates-page.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-wspolbieznosc",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Wybor sledzony po nazwie — po rename szczegoly znikaja, stare zakonczenia nadpisuja wybor",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "178",
+    "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+    "linia": null,
+    "klasa": "pusty-catch",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Blad parsowania VITE_AA_MARKETING_URL polkniety, brak zgloszenia do Sentry",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "179",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx",
+    "linia": null,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Mutacja refa w updaterze setOverlay — w StrictMode swieza zajetosc jest pomijana",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 5,
+   "react-hooks/set-state-in-effect": 1
+  }
+ },
+ {
+  "pr": 9,
+  "uwag": 27,
+  "plikow": 13,
+  "brak": [],
+  "lint_s": 2.9,
+  "komunikaty": 185,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "2",
+    "plik": "apps/server/src/assets/asset-repository.ts",
+    "linia": 222,
+    "klasa": "kontrakt-vs-implementacja",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "listStoragePaths obiecuje wszystkie sciezki, limit 200 — osierocone obiekty w buckecie po kasowaniu szablonu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "5",
+    "plik": "apps/server/src/index.ts",
+    "linia": 268,
+    "klasa": "duplikacja-logiki",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Dwa komplety zaleznosci szablonow (dashboard i MCP) — inwariant 'ten sam stan konta' moze cicho peknac.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "7",
+    "plik": "apps/server/src/mcp/tools/template-repository.fake.ts",
+    "linia": 69,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Atrapa list niesie html, produkcja nie — test nie odbije narzedzia przepisujacego caly wiersz do MCP.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "9",
+    "plik": "apps/server/src/offer/template-repository.test.ts",
+    "linia": 273,
+    "klasa": "test-brak-pokrycia",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Brak testu rename: filtry owner_id/name, null bez wiersza, mapowanie SQLSTATE 23505.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "11",
+    "plik": "apps/server/src/offer/template-repository.ts",
+    "linia": 214,
+    "klasa": "round-trip-auth",
+    "etap": "review:performance",
+    "sev": "P3",
+    "opis": "ownerIdOf wola auth.getUser w kazdej metodzie — 2 round-tripy zamiast 1, izolacje trzyma RLS.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "12",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": 79,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "includes('class=\"doc') dopasowuje prefiks, nie token — class=\"doc-uklad-2\" przechodzi bramke.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "13",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": 609,
+    "klasa": "kontrakt-vs-implementacja",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Bramka szablonu mierzy rozmiar bez arkusza korygujacego — zapisze szablon, ktorym nie da sie opublikowac oferty.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "14",
+    "plik": "apps/server/src/routes/events.test.ts",
+    "linia": 697,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Brak asercji dlugosci merges — odrzucenie calego beacona przechodzi jako odsiew pola.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "16",
+    "plik": "apps/server/src/routes/offer-images.ts",
+    "linia": 260,
+    "klasa": "pusty-catch",
+    "etap": "domkniecie fazy (audyt error-handlingu / lint)",
+    "sev": "P3",
+    "opis": "Pusty catch {} wbrew coding-rules §4; ESLint no-empty nie jest uruchamiany w domknieciu fazy.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "18",
+    "plik": "apps/server/src/routes/template-assets.ts",
+    "linia": 403,
+    "klasa": "granica-try-catch",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "readAccountUsage w try insertAsset — awaria metryki kasuje obiekt mimo istniejacego wiersza.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "19",
+    "plik": "apps/server/src/routes/template-assets.ts",
+    "linia": 508,
+    "klasa": "granica-try-catch",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Awaria odczytu zajetosci po usunieciu daje 503 usuniecie_nieudane mimo udanego kasowania.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "20",
+    "plik": "apps/server/src/tracker/tracker.test.ts",
+    "linia": 99,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Schemat testowy z.object luzniejszy od kontraktu — literowka readingMs przechodzi jako brak pola.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "22",
+    "plik": "apps/server/src/tracking/visit-service.ts",
+    "linia": 367,
+    "klasa": "sciezka-bledu",
+    "etap": "review:code-quality (mapowanie bledow)",
+    "sev": "P3",
+    "opis": "Porazka ponowienia gubi kod pierwotnego bledu — Sentry nie pokaze rozjazdu 'kod przed migracja'.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "23",
+    "plik": "apps/server/src/webhooks/settings-service.ts",
+    "linia": 102,
+    "klasa": "pii-w-message",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "ownerId w Error.message trafia do Sentry przez captureException — wprost klasa z ETAP1 §3.",
+    "lint_trafienia": [],
+    "lint_warn": [
+     [
+      "@typescript-eslint/no-unnecessary-condition",
+      102
+     ]
+    ]
+   },
+   {
+    "id": "24",
+    "plik": "apps/server/static/t.js",
+    "linia": 174,
+    "klasa": "sciezka-bledu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "flush() na pagehide wysyla jeden payload — nadmiar readMs ponad MAX_READ_MS ginie przy zamknieciu strony.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "25",
+    "plik": "e2e/seeds/faza-7-czas-czytania-seed.sql",
+    "linia": 130,
+    "klasa": "seed-dane-zrodlowe",
+    "etap": "review:e2e",
+    "sev": "P3",
+    "opis": "Brak grid_rows w insercie — DEFAULT 16 zapisuje bledna gestosc i skaluje heat w dashboardzie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "26",
+    "plik": "e2e/seeds/faza-7-grafiki-seed.sql",
+    "linia": 1727,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "replace na literale daty moze cicho nie trafic — seed zielony z bledna data, brak straznika.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "29",
+    "plik": "supabase/migrations/20260903120000_offer_templates.sql",
+    "linia": 432,
+    "klasa": "minimum-privileges",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Grant SELECT na storage_path dla authenticated udostepnia klientowi UUID wlasciciela przez PostgREST.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "30",
+    "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+    "linia": 41,
+    "klasa": "granica-wartosci-migracja",
+    "etap": "review:correctness",
+    "sev": "P1",
+    "opis": "left(name,68)+' (duplikat 19)' = 82 znaki wobec limitu 80 — migracja konczy sie 23514 i blokuje db push.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "31",
+    "plik": "apps/server/src/routes/templates.ts",
+    "linia": 153,
+    "klasa": "wszystkie-drogi-do-operacji",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "readTemplateNameQuery deklarowana jako wspolna bramka, uzywa jej tylko PATCH — GET i DELETE maja kopie inline.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "32",
+    "plik": "apps/server/src/assets/asset-repository.ts",
+    "linia": 243,
+    "klasa": "wyscig-rownolegly",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Wstawienie grafiki miedzy listStoragePaths a templates.remove zostawia obiekt w buckecie bez wiersza.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "34",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": 386,
+    "klasa": "parser-html-regexem",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "hasDocContainer skanuje tez script/style — literal <div class=\"doc\"> w skrypcie przepuszcza dokument bez .doc.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "35",
+    "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+    "linia": 44,
+    "klasa": "granica-wartosci-migracja",
+    "etap": "review:correctness",
+    "sev": "P1",
+    "opis": "Deduplikacja moze ustawic nazwe na juz istniejaca — CREATE UNIQUE INDEX konczy migracje bledem 23505.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "36",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": 156,
+    "klasa": "parser-html-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Usuwanie sekwencji komentarza wewnatrz wartosci atrybutu zmienia src skryptu — tracker nie dziala mimo zielonej bramki.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "37",
+    "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+    "linia": 55,
+    "klasa": "granica-wartosci-migracja",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "12-znakowy prefiks UUID nie gwarantuje unikalnosci sufiksu — ponowna kolizja i 23505 przy tworzeniu indeksu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "38",
+    "plik": "apps/server/src/offer/validation.ts",
+    "linia": 172,
+    "klasa": "parser-html-regexem",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Zla kolejnosc replace: komentarz w kodzie skryptu wycina rzeczywiste markery i odrzuca poprawny dokument.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "39",
+    "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+    "linia": 57,
+    "klasa": "kolejnosc-rolloutu",
+    "etap": "kontrola diffu / domkniecie fazy",
+    "sev": "P1",
+    "opis": "Poprawka w juz wypchnietej migracji nie dotrze do stagingu i produkcji — nikt nie sprawdza mechanicznie, czy diff rusza wydany plik.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 12,
+   "max-lines": 3
+  }
+ },
+ {
+  "pr": 10,
+  "uwag": 13,
+  "plikow": 9,
+  "brak": [],
+  "lint_s": 2.6,
+  "komunikaty": 25,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "40",
+    "plik": "apps/server/src/assets/detached-assets-sweeper.ts",
+    "linia": 80,
+    "klasa": "sciezka-bledu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Blad removeMany przerywa sweepBatch — jeden nieusuwalny obiekt blokuje wszystkie pozniejsze wiersze (head-of-line).",
+    "lint_trafienia": [],
+    "lint_warn": [
+     [
+      "no-undef",
+      80
+     ]
+    ]
+   },
+   {
+    "id": "41",
+    "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+    "linia": 161,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "alg:\"none\" z niepustym kid przechodzi bramke i wymusza zadania JWKS/getUser — brak allowlisty algorytmow.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "43",
+    "plik": "apps/server/src/mcp/tools/usun-szablon.ts",
+    "linia": 121,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance (krok 5)",
+    "sev": "P3",
+    "opis": "'2 grafiki zostaje' — czasownik nieodmieniony, a test utrwala bledna forme.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "44",
+    "plik": "apps/server/src/routes/dashboard.ts",
+    "linia": 149,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Warunek nie obejmuje dokladnej sciezki /api — zwraca index.html 200 zamiast koperty not_found (klasa '/api bez /').",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "49",
+    "plik": "apps/server/src/tracking/merge-contract-ladder.ts",
+    "linia": 111,
+    "klasa": "sciezka-bledu",
+    "etap": "review:code-quality (mapowanie bledow)",
+    "sev": "P3",
+    "opis": "Ta galaz gubi code PostgREST — 08006 i 42501 wygladaja w Sentry identycznie, reszta modulu kod niesie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "50",
+    "plik": "e2e/print-magic-link.ts",
+    "linia": 143,
+    "klasa": "sciezka-bledu",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "--redirect bez '=' cicho wraca do domyslnego /auth/callback — operator dostaje inny cel bez bledu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "52",
+    "plik": "packages/shared/src/database.types.test.ts",
+    "linia": 233,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Asercja runtime na pominietym polu zawsze zwraca undefined — potrzebna asercja ksztaltu typu Args.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "53",
+    "plik": "packages/shared/src/template-asset-contract.ts",
+    "linia": 107,
+    "klasa": "zod-granica",
+    "etap": "review:security (Zod na granicach)",
+    "sev": "P3",
+    "opis": "zachowana_do jako z.string() przepuszcza dowolny tekst na granicy kontraktu; powinno byc ISO datetime.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "55",
+    "plik": "apps/server/src/routes/template-assets.ts",
+    "linia": 541,
+    "klasa": "sciezka-bledu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "deleteAsset kasuje wiersz przed storage.remove — po bledzie brak storage_path do ponowienia, obiekt osierocony.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "56",
+    "plik": "apps/server/src/routes/template-assets.ts",
+    "linia": 535,
+    "klasa": "wyscig-rownolegly",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Rownolegla publikacja miedzy detachReferenced a kasowaniem kasuje grafike uzyta w nowej ofercie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "57",
+    "plik": "apps/server/src/routes/template-assets.ts",
+    "linia": 530,
+    "klasa": "sciezka-bledu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "503 'Sprobuj ponownie' opisuje nieosiagalny scenariusz — ponowienie po odpieciu wiersza daje 404.",
+    "lint_trafienia": [],
+    "lint_warn": [
+     [
+      "no-return-await",
+      530
+     ]
+    ]
+   },
+   {
+    "id": "58",
+    "plik": "supabase/migrations/20260908210000_offers_lock_referenced_assets.sql",
+    "linia": 61,
+    "klasa": "wyscig-rownolegly",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "select distinct bez order by — dwie publikacje biora for update w odwrotnej kolejnosci i dostaja 40P01.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "59",
+    "plik": "supabase/migrations/20260908210000_offers_lock_referenced_assets.sql",
+    "linia": 159,
+    "klasa": "granica-wartosci-migracja",
+    "etap": "review:correctness",
+    "sev": "P1",
+    "opis": "Trigger dopasowuje a-fA-F, strpos tylko male litery — uuid wersalikami kasuje bajty spod niemutowalnej oferty.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 4,
+   "max-lines": 1
+  }
+ },
+ {
+  "pr": 11,
+  "uwag": 11,
+  "plikow": 8,
+  "brak": [],
+  "lint_s": 2.5,
+  "komunikaty": 16,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "61",
+    "plik": "apps/dashboard/src/features/oauth/consent-request.ts",
+    "linia": 115,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "trustFor zwraca loopback dla com.example.app://localhost/cb — grant zatwierdzany przed blokada nawigacji.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "64",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+    "linia": 122,
+    "klasa": "wszystkie-drogi-do-operacji",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "pathHeadingRef wskazuje wezel hidden md:flex — focus() nic nie robi w ukladzie mobilnym (druga droga).",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "65",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+    "linia": 237,
+    "klasa": "wszystkie-drogi-do-operacji",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "onSelectVisit nie rusza openVisitId — karta sciezki opisuje inna wizyte niz mapa, dwa sprzeczne stany.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "69",
+    "plik": "apps/dashboard/src/features/offers/visit-path-card.tsx",
+    "linia": 113,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance (krok 5)",
+    "sev": "P3",
+    "opis": "Pusty map.skipped daje pas 'Nie czytal: · Warianty...' — separator na poczatku napisu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "70",
+    "plik": "apps/dashboard/src/features/settings/connected-apps-card.tsx",
+    "linia": 173,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "onCancel nie czysci failedClientId — ponowne otwarcie tego samego klienta pokazuje stary revokeError.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "71",
+    "plik": "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+    "linia": 45,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Usuniecie otwartego <dialog> z DOM bez close() w cleanupie przenosi fokus do body.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "77",
+    "plik": "apps/dashboard/src/features/templates/use-template-details.ts",
+    "linia": 273,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Galaz catch bez ochrony loadedIdRef zrzuca gotowy widok do error — odmontowana karta i przerwany XHR.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "79",
+    "plik": "apps/dashboard/src/main.tsx",
+    "linia": 50,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance (krok 5)",
+    "sev": "P3",
+    "opis": "Komunikat obiecuje wyslanie zgloszenia, ktorego bez DSN nie ma — klasa 'obietnica czynnosci, ktorej nie ma'.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "80",
+    "plik": "CLAUDE.md",
+    "linia": 71,
+    "klasa": "wada-dokumentu-sterujacego",
+    "etap": "review:security",
+    "sev": "P1",
+    "opis": "Polecenie 'coolify app env list --show-sensitive' w CLAUDE.md wypisuje hasla i tokeny do transkryptu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "81",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+    "linia": 638,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Test nie sprawdza zachowania z wlasnej nazwy — przejdzie tez, gdy implementacja tylko zamknie rozwiniecie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "82",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+    "linia": 218,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Efekt zalezny tylko od openVisitId zabiera fokus z <select> przy kazdej zmianie wizyty.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 5
+  }
+ },
+ {
+  "pr": 12,
+  "uwag": 7,
+  "plikow": 1,
+  "brak": [],
+  "lint_s": 2.0,
+  "komunikaty": 4,
+  "trafien": 1,
+  "uwagi": [
+   {
+    "id": "86",
+    "plik": "apps/dashboard/src/features/templates/use-template-asset-mutations.ts",
+    "linia": 94,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Cleanup z pusta lista zaleznosci nie przerywa zadan po zmianie templateId — grafiki starego szablonu w nakladce nowego.",
+    "lint_trafienia": [
+     [
+      "react-hooks/set-state-in-effect",
+      91
+     ]
+    ],
+    "lint_warn": []
+   },
+   {
+    "id": "87",
+    "plik": "szablony/archiwum/motoryzacja-lakier/narzedzia/placeholder.mjs",
+    "linia": 5,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P3",
+    "opis": "Instrukcja uruchomienia wskazuje sciezke, pod ktora lezy inny generator (Showroom zamiast Lakieru).",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "88",
+    "plik": "szablony/archiwum/motoryzacja-rezerwacja/narzedzia/kontrola.mjs",
+    "linia": 197,
+    "klasa": "sciezka-bledu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "measured.popup bywa null dla dokumentu bez [data-cta=popup] — dostep do pol rzuca TypeError.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "89",
+    "plik": "szablony/meta-ads/README.md",
+    "linia": 84,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P3",
+    "opis": "Sprzeczne rozmiary dokumentu (60 488 B vs 60 478 B) — deklaracja zgodnosci bajt w bajt nieweryfikowalna.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "90",
+    "plik": "szablony/motoryzacja/README.md",
+    "linia": 95,
+    "klasa": "pii-w-repo",
+    "etap": "review:security",
+    "sev": "P2",
+    "opis": "Dane klienta i firmy oraz lokalne sciezki w wersjonowanej dokumentacji szablonu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "91",
+    "plik": "szablony/nieruchomosci/grafiki/INSTRUKCJA.md",
+    "linia": 31,
+    "klasa": "pii-w-repo",
+    "etap": "review:security",
+    "sev": "P3",
+    "opis": "Sciezka /Users/kacper_trzepiecinski/... ujawnia nazwe uzytkownika i nie dziala u innych.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "92",
+    "plik": "szablony/nieruchomosci/nieruchomosci.html",
+    "linia": 362,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance",
+    "sev": "P3",
+    "opis": "Naglowek obiecuje szesc kadrow, galeria ma piec — rozjazd tresci z deklaracja.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 1,
+   "react-hooks/set-state-in-effect": 1
+  }
+ },
+ {
+  "pr": 13,
+  "uwag": 6,
+  "plikow": 4,
+  "brak": [],
+  "lint_s": 2.1,
+  "komunikaty": 2,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "100",
+    "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+    "linia": 35,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Fraza 'natychmiast' pasuje do dowolnego punktu regulaminu — straznik obietnicy nie wykryje jej usuniecia.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "101",
+    "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+    "linia": 88,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "expect(html).toContain('') jest zawsze prawdziwe — puste pole LEGAL_ENTITY przechodzi petle strazujaca.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "102",
+    "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+    "linia": 133,
+    "klasa": "duplikacja-logiki",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "SAFE_HREF_PATTERN i collectHrefs w dwoch kopiach — korekta w jednym pliku zostawi drugi ze slabsza wersja.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "104",
+    "plik": "apps/server/src/routes/app-origin-pages.test.ts",
+    "linia": 177,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "expect([404,200]).toContain(status) przepuszcza oba wyniki — regresja 404->SPA-200 niewykrywalna.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "107",
+    "plik": "packages/shared/src/product-contract.ts",
+    "linia": 78,
+    "klasa": "kontrakt-shared",
+    "etap": "review:code-quality",
+    "sev": "P3",
+    "opis": "Literal 10485760 w constraincie migracji zyje obok ACCOUNT_LIMITS.assetMaxBytes — dwa zrodla tej samej liczby.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "109",
+    "plik": "packages/shared/src/template-contract.ts",
+    "linia": 28,
+    "klasa": "kontrakt-shared",
+    "etap": "review:spec-compliance",
+    "sev": "P2",
+    "opis": "Kontrakt, MCP, UI i regulamin mowia 10 szablonow, trigger dopuszcza 20 — 11. zapis przejdzie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {}
+ },
+ {
+  "pr": 14,
+  "uwag": 8,
+  "plikow": 7,
+  "brak": [],
+  "lint_s": 2.4,
+  "komunikaty": 15,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "9",
+    "plik": "apps/dashboard/src/features/offers/texts.ts",
+    "linia": 108,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance (krok 5 — teksty dla uzytkownika)",
+    "sev": "P3",
+    "opis": "Tekst przypisuje otwarcie automatowi, choc moze to byc czlowiek z geometria < MIN_USABLE_FRAME_PX.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "11",
+    "plik": "apps/dashboard/src/features/offers/visit-summary.ts",
+    "linia": 125,
+    "klasa": "walidacja-granicy-api",
+    "etap": "review:security (Zod/walidacja ksztaltu na granicy)",
+    "sev": "P2",
+    "opis": "isSummaryRow przyjmuje dowolny string jako last_visit_at; bledny timestamp cicho staje sie null.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "12",
+    "plik": "apps/dashboard/src/features/templates/asset-tiles.tsx",
+    "linia": 165,
+    "klasa": "bramka-na-jednej-z-dwoch-drog",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "isDeleteBlocked blokuje wyzwalacz, ale nie juz otwarty alertdialog — usuwanie rownolegle z uploadem.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "14",
+    "plik": "apps/dashboard/src/features/templates/template-texts-format.ts",
+    "linia": 67,
+    "klasa": "wartosc-graniczna",
+    "etap": "review:correctness (wartosc graniczna gałęzi)",
+    "sev": "P3",
+    "opis": "Galaz pustego konta zawsze uzywa formy 'wlasnych' — psuje sie dla limitu 1 i 2-4.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "15",
+    "plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+    "linia": 13,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Atrapa Sentry w tescie modulu, ktory Sentry nie uzywa — asercja captureException zawsze przechodzi.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "17",
+    "plik": "apps/dashboard/src/features/templates/use-abort-registry.ts",
+    "linia": 48,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:performance (useEffect cleanup / setTimeout cleanup w fokusie osi)",
+    "sev": "P2",
+    "opis": "Hook tworzy setTimeout, ale sprzata je tylko gdy konsument zawola releaseAll — timer przezywa unmount.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "19",
+    "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+    "linia": 113,
+    "klasa": "cykl-zycia-react",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Nowy efekt resetuje isStoppedRef na false, zanim stara petla po zmianie templateId zobaczy stop.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "23",
+    "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+    "linia": 329,
+    "klasa": "petla-ponowien-bez-sufitu",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "Staly 429 = nieskonczone ponowienia tego samego pliku, isBusy nigdy nie spada, usuwanie zablokowane.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 2,
+   "react-hooks/refs": 1,
+   "react-hooks/set-state-in-effect": 1
+  }
+ },
+ {
+  "pr": 15,
+  "uwag": 2,
+  "plikow": 1,
+  "brak": [],
+  "lint_s": 1.7,
+  "komunikaty": 1,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "48",
+    "plik": "apps/server/src/offer/markup-hidden.ts",
+    "linia": 85,
+    "klasa": "parser-tokenizer",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "rawTextNameAt dopasowuje 'script'/'style' bez sprawdzenia nastepnego znaku — <script-x> maskuje widoczna tresc.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "50",
+    "plik": "supabase/migrations/20260913160000_offer_templates_heading_texts.sql",
+    "linia": 60,
+    "klasa": "kontrakt-shared",
+    "etap": "review:spec-compliance (BLOK_SEMANTYKA — jednostka pola)",
+    "sev": "P2",
+    "opis": "char_length(80) w SQL vs z.string().max(80) w UTF-16 — 80 emoji przechodzi w bazie, odpada w Zod.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {}
+ },
+ {
+  "pr": 16,
+  "uwag": 7,
+  "plikow": 6,
+  "brak": [],
+  "lint_s": 2.4,
+  "komunikaty": 32,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "60",
+    "plik": "apps/server/src/access/access-service.ts",
+    "linia": 83,
+    "klasa": "wartosc-graniczna",
+    "etap": "review:correctness (sciezka bledu)",
+    "sev": "P3",
+    "opis": "Odczyt error.code bez guardu — brak pola daje TypeError zamiast AccessServiceError w raporcie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "62",
+    "plik": "apps/server/src/access/account-deletion-store.test.ts",
+    "linia": 44,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Atrapa rpc ignoruje nazwe i argumenty — test nie wykryje regresji begin_account_deletion(p_owner_id).",
+    "lint_trafienia": [],
+    "lint_warn": [
+     [
+      "require-await",
+      45
+     ],
+     [
+      "@typescript-eslint/require-await",
+      45
+     ]
+    ]
+   },
+   {
+    "id": "63",
+    "plik": "apps/server/src/access/invitation-service.ts",
+    "linia": 165,
+    "klasa": "petla-ponowien-bez-sufitu",
+    "etap": "review:correctness / review:performance",
+    "sev": "P2",
+    "opis": "Klient anonymous i klient w revoke bez AbortSignal.timeout — zadanie administratora moze wisiec bez konca.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "64",
+    "plik": "apps/server/src/access/membership-secret.test.ts",
+    "linia": 40,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Mock node:crypto i asercje na wywolaniach implementacji — test sprawdza implementacje, nie zachowanie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "73",
+    "plik": "apps/server/src/webhooks/queue-store.test.ts",
+    "linia": 146,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Test isDecisionType sprawdza staly literal 'wygasla' zamiast roznicy WEBHOOK_EVENT_TYPES \\ CTA_DECISION_TYPES.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "74",
+    "plik": "apps/server/src/webhooks/queue-store.test.ts",
+    "linia": 602,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Brak asercji wymuszajacej update na offer_events — pominiecie zapisu przechodzi test.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "77",
+    "plik": "packages/shared/src/env.test.ts",
+    "linia": 100,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "32 spacje odrzuca withoutEmptyValues, wiec test nie sprawdza .trim() w schemacie.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 1,
+   "@typescript-eslint/consistent-type-imports": 1,
+   "@typescript-eslint/no-unused-vars": 2
+  }
+ },
+ {
+  "pr": 17,
+  "uwag": 11,
+  "plikow": 11,
+  "brak": [],
+  "lint_s": 2.8,
+  "komunikaty": 36,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "91",
+    "plik": "apps/dashboard/src/features/admin/delete-account-dialog.tsx",
+    "linia": 146,
+    "klasa": "bramka-na-jednej-z-dwoch-drog",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "'Anuluj' podczas statusu 'usuwanie' zamyka dialog, a operacja usuwania konta trwa dalej bez widoku wyniku.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "93",
+    "plik": "apps/dashboard/src/features/admin/invite-dialog.tsx",
+    "linia": 147,
+    "klasa": "bramka-na-jednej-z-dwoch-drog",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "ESC i tlo blokowane przy isBusy, ale przycisk 'Anuluj' nadal wywoluje onCancel w trakcie mutacji.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "95",
+    "plik": "apps/dashboard/src/features/admin/use-admin-events.ts",
+    "linia": 202,
+    "klasa": "wartosc-graniczna",
+    "etap": "review:correctness",
+    "sev": "P2",
+    "opis": "hasMore liczone po odfiltrowanych wierszach — jeden odrzucony wiersz urywa doczytywanie starszych zdarzen.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "97",
+    "plik": "apps/dashboard/src/features/auth/access-gate.test.tsx",
+    "linia": 42,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Atrapy useProfile zwracaja unknown — zaden test nie pilnuje ksztaltu ProfileState.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "102",
+    "plik": "apps/dashboard/src/features/help/help-page.tsx",
+    "linia": 87,
+    "klasa": "bramka-na-jednej-z-dwoch-drog",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "Przycisk aktywny w trakcie resetTours — wielokrotne klikniecie mnozy zdarzenia tourRestarted.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "109",
+    "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+    "linia": 173,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P2",
+    "opis": "Atrapa bez .gt() daje counts:'niedostepne', a test kolejnosci kart i tak przechodzi.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "112",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+    "linia": 54,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Mock wewnetrznego useAccountAccess i 'null as unknown' wylaczaja kontrakt AccountAccessContext.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "117",
+    "plik": "apps/dashboard/src/features/access/registration-mode-api.ts",
+    "linia": 85,
+    "klasa": "bramka-czarna-lista",
+    "etap": "review:security (walidacja koperty API / bramka rejestracji)",
+    "sev": "P1",
+    "opis": "Koperta 2xx z niezerowym error przepuszcza tryb — shouldCreateUser moze wyjsc true mimo zamknietej rejestracji.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "118",
+    "plik": "apps/dashboard/src/features/auth/session-context.tsx",
+    "linia": 59,
+    "klasa": "pii-w-message",
+    "etap": "review:security (data exposure)",
+    "sev": "P2",
+    "opis": "Po zewnetrznym wylogowaniu tozsamosc nie jest zerowana — track() nadal wysyla zdarzenia z ID bylego uzytkownika.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "122",
+    "plik": "apps/dashboard/src/features/settings/delete-account-card.test.tsx",
+    "linia": 212,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Mock useAccountDeletion omija kontrakt karty z hookiem — test przejdzie przy uszkodzonej integracji.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "123",
+    "plik": "apps/dashboard/src/features/templates/upload-drop-zone.tsx",
+    "linia": 115,
+    "klasa": "bramka-na-jednej-z-dwoch-drog",
+    "etap": "review:correctness",
+    "sev": "P3",
+    "opis": "handleDragOver ustawia isOver mimo isBlocked — strefa wyglada aktywnie, a drop odrzuca pliki.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 5,
+   "@typescript-eslint/consistent-type-imports": 1
+  }
+ },
+ {
+  "pr": 18,
+  "uwag": 1,
+  "plikow": 1,
+  "brak": [],
+  "lint_s": 1.8,
+  "komunikaty": 5,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "143",
+    "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+    "linia": 113,
+    "klasa": "test-niefalsyfikowalny",
+    "etap": "review:test-coverage",
+    "sev": "P3",
+    "opis": "Asercje przepuszcza dowolna niepusta tresc bez <form/<html — redirect Hono ma body null, brak expect(body).toBe('').",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {}
+ },
+ {
+  "pr": 19,
+  "uwag": 4,
+  "plikow": 3,
+  "brak": [],
+  "lint_s": 3.0,
+  "komunikaty": 9,
+  "trafien": 0,
+  "uwagi": [
+   {
+    "id": "145",
+    "plik": "apps/dashboard/src/features/admin/texts.ts",
+    "linia": 45,
+    "klasa": "tekst-ui",
+    "etap": "review:spec-compliance (krok 5 — glos produktu)",
+    "sev": "P3",
+    "opis": "modeClosedDescription uzywa 'Ty zapraszasz' zamiast glosu pierwszej osoby mnogiej z docs/design.md.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "147",
+    "plik": "apps/server/src/access/registration-service.ts",
+    "linia": 207,
+    "klasa": "pii-w-message",
+    "etap": "review:security (data exposure)",
+    "sev": "P1",
+    "opis": "error.message PostgREST z adresem e-mail idzie do RegistrationServiceError i captureException; scrubEvent nie czysci message ani cause.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "148",
+    "plik": "apps/server/src/routes/access-email-gate.ts",
+    "linia": 145,
+    "klasa": "walidacja-granicy-api",
+    "etap": "review:security (Zod na granicy API)",
+    "sev": "P2",
+    "opis": "Endpoint waliduje tylko record['email'], reszta ladunku przechodzi jako otwarty rekord bez schematu.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   },
+   {
+    "id": "150",
+    "plik": "e2e/seeds/rejestracja-czlonek-seed.sql",
+    "linia": 116,
+    "klasa": "walidacja-granicy-api",
+    "etap": "review:security (BLOK GRANIC ZAUFANIA — skrypty/seedy)",
+    "sev": "P1",
+    "opis": "Guard seeda nie potwierdza pochodzenia konta — po podmianie v_email 'delete from auth.users' moze usunac cudze konto.",
+    "lint_trafienia": [],
+    "lint_warn": []
+   }
+  ],
+  "reguly_w_plikach": {
+   "max-lines-per-function": 1
+  }
+ }
+]

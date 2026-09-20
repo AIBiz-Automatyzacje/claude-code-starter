@@ -1,0 +1,3014 @@
+[
+{
+"plik": ".claude/workflows/__tests__/bloker-srodowiska.test.mjs",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/__tests__/sceptycy-p2.test.mjs",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/__tests__/wybor-nitow.test.mjs",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/dev-autopilot-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/dev-compound-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/dev-docs-complete-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/dev-docs-execute-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/dev-docs-review-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/dev-pr-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": ".claude/workflows/freshness-audit-wf.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/App.test.tsx",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/App.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 114,
+"msg": "Function 'App' has too many lines (130). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/components/copy-button.test.tsx",
+"errors": 1,
+"warnings": 3,
+"bledy": [
+{
+"rule": "vitest/prefer-called-with",
+"line": 96,
+"msg": "Prefer toHaveBeenCalledWith(/* expected args */)"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/components/copy-button.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "vitest/prefer-called-with",
+"line": 58,
+"msg": "Prefer toHaveBeenCalledWith(/* expected args */)"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 219,
+"msg": "Function 'AppLayout' has too many lines (103). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/access/access-request-api.test.ts",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/access-request-form.test.tsx",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 58,
+"msg": "Function 'AccessRequestForm' has too many lines (84). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/access/access-request-page.test.tsx",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/invitation-page.test.tsx",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/invitation-page.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 71,
+"msg": "Function 'InvitationScreen' has too many lines (169). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/access/no-access-page.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/registration-mode-api.test.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/access/use-registration-mode.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/account/profile-read.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/account/use-account-limits.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/account/use-profile.test.ts",
+"errors": 1,
+"warnings": 6,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 206,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/account/use-profile.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/admin/access-toggle.tsx",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 91,
+"msg": "Function 'AdminSections' has too many lines (126). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/admin-shape.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/admin/admin-webhook-card.test.tsx",
+"errors": 1,
+"warnings": 3,
+"bledy": [
+{
+"rule": "vitest/prefer-called-with",
+"line": 75,
+"msg": "Prefer toHaveBeenCalledWith(/* expected args */)"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/admin-webhook-card.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 161,
+"msg": "Function 'ConfiguredActions' has too many lines (72). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/delete-account-dialog.tsx",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 58,
+"msg": "Function 'DeleteAccountDialog' has too many lines (97). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/invite-dialog.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 35,
+"msg": "Function 'InviteDialog' has too many lines (110). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/limits-dialog.tsx",
+"errors": 2,
+"warnings": 3,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 80,
+"msg": "Function 'LimitsDialog' has too many lines (108). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/refs",
+"line": 100,
+"msg": "Error: Cannot access refs during render\n\nReact refs are values that are not needed for rendering. Refs should only be accessed outside of re"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/registration-mode-switch.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/admin/use-admin-accounts.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/admin/use-admin-accounts.ts",
+"errors": 1,
+"warnings": 13,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 127,
+"msg": "Function 'useAdminAccounts' has too many lines (165). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/use-admin-events.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 120,
+"msg": "Function 'useAdminEvents' has too many lines (119). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/use-admin-webhook.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 99,
+"msg": "Function 'useAdminWebhook' has too many lines (173). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/user-card.tsx",
+"errors": 1,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 49,
+"msg": "Function 'UserCard' has too many lines (75). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/admin/users-page.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 38,
+"msg": "Function 'UsersPage' has too many lines (95). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/auth/access-gate.test.tsx",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 42,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/auth/access-gate.tsx",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 95,
+"msg": "Function 'AccessGateForUser' has too many lines (62). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/refs",
+"line": 170,
+"msg": "Error: Cannot access refs during render\n\nReact refs are values that are not needed for rendering. Refs should only be accessed outside of re"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/auth/login-form.test.tsx",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/auth/login-form.tsx",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 32,
+"msg": "Function 'LoginForm' has too many lines (103). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/auth/login-page.test.tsx",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/auth/login-waitlist.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/auth/require-session.test.tsx",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/auth/session-context.test.tsx",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/auth/use-login-flow.ts",
+"errors": 1,
+"warnings": 4,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 70,
+"msg": "Function 'useLoginFlow' has too many lines (107). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/auth/use-request-generation.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/help/help-page.test.tsx",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/help/help-page.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 43,
+"msg": "Function 'TourRestartCard' has too many lines (64). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx",
+"errors": 1,
+"warnings": 6,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 69,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/oauth/consent-page.tsx",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 54,
+"msg": "Function 'ConsentDetails' has too many lines (74). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 145,
+"msg": "Function 'ConsentPage' has too many lines (65). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/oauth/use-consent.test.ts",
+"errors": 1,
+"warnings": 4,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 52,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/oauth/use-consent.ts",
+"errors": 3,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 94,
+"msg": "Function 'useConsent' has too many lines (185). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 115,
+"msg": "Arrow function has too many lines (79). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 121,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/copy-address-button.test.tsx",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-address-row.test.tsx",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 100,
+"msg": "Function 'OfferAnalytics' has too many lines (110). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 106,
+"msg": "Function 'OfferHeatmapCard' has too many lines (230). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 180,
+"msg": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+"errors": 2,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 124,
+"msg": "Function 'OfferHeatmapFrame' has too many lines (125). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 226,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-map-card.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-map-card.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 165,
+"msg": "Function 'OfferMapCard' has too many lines (81). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-visits-list.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 96,
+"msg": "Function 'OfferVisitsList' has too many lines (78). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-controls.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-controls.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 45,
+"msg": "Function 'OffersControls' has too many lines (64). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-filter-state.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 106,
+"msg": "Function 'OffersTable' has too many lines (94). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-page.test.tsx",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 55,
+"msg": "Function 'OffersPage' has too many lines (84). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/path-description.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 98,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/use-offer-details.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 228,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 123,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/offers/use-offers.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/use-offers.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/visit-summary.test.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/offers/visit-summary.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/onboarding/texts.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/onboarding/use-first-steps.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts",
+"errors": 1,
+"warnings": 4,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 268,
+"msg": "Function 'useFirstSteps' has too many lines (66). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/onboarding/use-screen-tour.test.tsx",
+"errors": 2,
+"warnings": 3,
+"bledy": [
+{
+"rule": "vitest/prefer-called-with",
+"line": 187,
+"msg": "Prefer toHaveBeenCalledWith(/* expected args */)"
+},
+{
+"rule": "vitest/prefer-called-with",
+"line": 421,
+"msg": "Prefer toHaveBeenCalledWith(/* expected args */)"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 50,
+"msg": "Function 'useScreenTour' has too many lines (72). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 62,
+"msg": "Arrow function has too many lines (63). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/connected-apps-card.test.tsx",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/connected-apps-card.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 76,
+"msg": "Function 'ConnectedAppsCard' has too many lines (101). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 34,
+"msg": "Function 'DisconnectDialog' has too many lines (69). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 123,
+"msg": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/use-account-deletion.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/use-account-deletion.ts",
+"errors": 1,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 88,
+"msg": "Function 'useAccountDeletion' has too many lines (108). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/use-connected-apps.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/use-connected-apps.ts",
+"errors": 2,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 160,
+"msg": "Function 'useConnectedApps' has too many lines (90). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 232,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 40,
+"msg": "Function 'useMcpToken' has too many lines (94). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 73,
+"msg": "Function 'useWebhookSettings' has too many lines (193). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/settings/webhook-api.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/webhook-card-status.tsx",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+"errors": 0,
+"warnings": 9,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 107,
+"msg": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/asset-tiles.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 52,
+"msg": "Function 'AssetTile' has too many lines (101). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+"errors": 1,
+"warnings": 19,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 32,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-assets-card.tsx",
+"errors": 2,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 60,
+"msg": "Function 'TemplateAssetsCard' has too many lines (136). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 92,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-card.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-delete-action.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-delete-action.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 60,
+"msg": "Function 'DeleteConfirmDialog' has too many lines (74). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-details-page.test.tsx",
+"errors": 0,
+"warnings": 15,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-details-page.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 112,
+"msg": "Function 'TemplateDetails' has too many lines (113). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-pagination.tsx",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 37,
+"msg": "Function 'TemplatePagination' has too many lines (74). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-rename-form.tsx",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 36,
+"msg": "Function 'TemplateRenameForm' has too many lines (72). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-search.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/templates-api.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/templates-api.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 341,
+"msg": "Async function 'uploadTemplateAsset' has too many lines (63). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/templates-page.test.tsx",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/templates-page.tsx",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 129,
+"msg": "Function 'TemplatesPage' has too many lines (125). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/upload-drop-zone.tsx",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 50,
+"msg": "Function 'UploadDropZone' has too many lines (69). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-abort-registry.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "react-hooks/refs",
+"line": 78,
+"msg": "Error: Cannot access refs during render\n\nReact refs are values that are not needed for rendering. Refs should only be accessed outside of re"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-template-asset-mutations.test.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 15,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-template-asset-mutations.ts",
+"errors": 2,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 63,
+"msg": "Function 'useTemplateAssetMutations' has too many lines (128). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 91,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+"errors": 1,
+"warnings": 3,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 16,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+"errors": 2,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 106,
+"msg": "Function 'useTemplateAssetQueue' has too many lines (158). Maximum allowed is 60."
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 161,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-template-details.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-template-details.ts",
+"errors": 2,
+"warnings": 4,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 110,
+"msg": "Function 'useTemplateDetails' has too many lines (113). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 136,
+"msg": "Arrow function has too many lines (91). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-templates.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/features/templates/use-templates.ts",
+"errors": 2,
+"warnings": 3,
+"bledy": [
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 256,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+},
+{
+"rule": "react-hooks/set-state-in-effect",
+"line": 322,
+"msg": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between Reac"
+}
+]
+},
+{
+"plik": "apps/dashboard/src/lib/abort-signal.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/lib/analytics.test.ts",
+"errors": 3,
+"warnings": 2,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 51,
+"msg": "`import()` type annotations are forbidden."
+},
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 61,
+"msg": "`import()` type annotations are forbidden."
+},
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 222,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/lib/analytics.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 125,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/dashboard/src/lib/json-body.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/lib/monitoring.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/test/require-element.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/dashboard/src/test/stub-native-dialog.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/access-service.test.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/access-service.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/account-deletion-service.fake.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/account-deletion-service.test.ts",
+"errors": 0,
+"warnings": 12,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/account-deletion-service.ts",
+"errors": 2,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 154,
+"msg": "Function 'createAccountDeletionService' has too many lines (64). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 315,
+"msg": "Function 'createSupabaseAccountDeletionStore' has too many lines (66). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/access/account-deletion-store.test.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/admin-accounts-service.test.ts",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/admin-accounts-service.ts",
+"errors": 2,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 182,
+"msg": "Function 'createSupabaseAdminAccountsService' has too many lines (104). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 222,
+"msg": "Async method 'list' has too many lines (70). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/access/admin-guard.test.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/admin-guard.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/invitation-service.test.ts",
+"errors": 0,
+"warnings": 10,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/invitation-service.ts",
+"errors": 1,
+"warnings": 8,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 145,
+"msg": "Function 'createSupabaseInvitationService' has too many lines (111). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/access/membership-events.test.ts",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/membership-secret.test.ts",
+"errors": 1,
+"warnings": 3,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 25,
+"msg": "`import()` type annotations are forbidden."
+}
+]
+},
+{
+"plik": "apps/server/src/access/membership-secret.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/membership-service.test.ts",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/membership-service.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/registration-service.fake.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/registration-service.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/registration-service.ts",
+"errors": 1,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 196,
+"msg": "Function 'createSupabaseRegistrationService' has too many lines (80). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/access/self-account.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/access/self-account.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/admin/admin-events.fake.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/admin/admin-events.test.ts",
+"errors": 0,
+"warnings": 9,
+"bledy": []
+},
+{
+"plik": "apps/server/src/admin/admin-events.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/admin/membership-silence-check.test.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/admin/membership-silence-check.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/app.test.ts",
+"errors": 4,
+"warnings": 10,
+"bledy": [
+{
+"rule": "vitest/valid-expect",
+"line": 549,
+"msg": "Expect takes at most 1 argument"
+},
+{
+"rule": "vitest/valid-expect",
+"line": 563,
+"msg": "Expect takes at most 1 argument"
+},
+{
+"rule": "vitest/valid-expect",
+"line": 564,
+"msg": "Expect takes at most 1 argument"
+},
+{
+"rule": "vitest/valid-expect",
+"line": 577,
+"msg": "Expect takes at most 1 argument"
+}
+]
+},
+{
+"plik": "apps/server/src/app.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 445,
+"msg": "Function 'createApp' has too many lines (222). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/assets/asset-repository.test.ts",
+"errors": 0,
+"warnings": 21,
+"bledy": []
+},
+{
+"plik": "apps/server/src/assets/asset-repository.ts",
+"errors": 1,
+"warnings": 23,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 228,
+"msg": "Function 'createSupabaseTemplateAssetRepository' has too many lines (179). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/assets/detached-assets-sweeper.test.ts",
+"errors": 0,
+"warnings": 19,
+"bledy": []
+},
+{
+"plik": "apps/server/src/assets/detached-assets-sweeper.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 71,
+"msg": "Function 'createDetachedAssetsSweeper' has too many lines (143). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/assets/image-pipeline.ts",
+"errors": 2,
+"warnings": 1,
+"bledy": [
+{
+"rule": "no-irregular-whitespace",
+"line": 119,
+"msg": "Irregular whitespace not allowed."
+},
+{
+"rule": "max-lines-per-function",
+"line": 169,
+"msg": "Async function 'optimizeImage' has too many lines (70). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/assets/storage-client.test.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/server/src/assets/storage-client.ts",
+"errors": 0,
+"warnings": 13,
+"bledy": []
+},
+{
+"plik": "apps/server/src/cta/cta-script.test.ts",
+"errors": 0,
+"warnings": 10,
+"bledy": []
+},
+{
+"plik": "apps/server/src/cta/decision-payload.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/cta/decision-service.test.ts",
+"errors": 0,
+"warnings": 14,
+"bledy": []
+},
+{
+"plik": "apps/server/src/cta/decision-service.ts",
+"errors": 1,
+"warnings": 8,
+"bledy": [
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 268,
+"msg": "'acceptedAt' is assigned a value but never used. Allowed unused vars must match /^_/u."
+}
+]
+},
+{
+"plik": "apps/server/src/http/limited-body.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/http/limited-body.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/http/offer-origin.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/server/src/index.ts",
+"errors": 2,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 174,
+"msg": "Async function 'main' has too many lines (334). Maximum allowed is 60."
+},
+{
+"rule": "max-lines",
+"line": 540,
+"msg": "File has too many lines (455). Maximum allowed is 360."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/oauth-token-verifier.test.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 175,
+"msg": "Function 'createSupabaseOAuthTokenVerifier' has too many lines (69). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/server.test.ts",
+"errors": 0,
+"warnings": 62,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/server.ts",
+"errors": 1,
+"warnings": 7,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 270,
+"msg": "Function 'createMcpRoutes' has too many lines (124). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/token-classifier.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 1,
+"msg": "All imports in the declaration are only used as types. Use `import type`."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/token-service.test.ts",
+"errors": 0,
+"warnings": 16,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/token-service.ts",
+"errors": 1,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 116,
+"msg": "Function 'createSupabaseMcpTokenResolver' has too many lines (129). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+"errors": 0,
+"warnings": 39,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+"errors": 1,
+"warnings": 4,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 1,
+"msg": "All imports in the declaration are only used as types. Use `import type`."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/tools/pobierz-szablon.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/template-asset-listing.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/template-repository.fake.ts",
+"errors": 1,
+"warnings": 27,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 99,
+"msg": "Function 'createFakeTemplateRepository' has too many lines (163). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/mcp/tools/template-tool-errors.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+"errors": 0,
+"warnings": 33,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+"errors": 0,
+"warnings": 17,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/usun-szablon.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/zapisz-szablon.test.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/mcp/tools/zapisz-szablon.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/observability/logger.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/observability/sentry.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/observability/sentry.ts",
+"errors": 5,
+"warnings": 10,
+"bledy": [
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 45,
+"msg": "'ip_address' is assigned a value but never used. Allowed unused vars must match /^_/u."
+},
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 56,
+"msg": "'headers' is assigned a value but never used. Allowed unused vars must match /^_/u."
+},
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 56,
+"msg": "'cookies' is assigned a value but never used. Allowed unused vars must match /^_/u."
+},
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 56,
+"msg": "'query_string' is assigned a value but never used. Allowed unused vars must match /^_/u."
+},
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 56,
+"msg": "'data' is assigned a value but never used. Allowed unused vars must match /^_/u."
+}
+]
+},
+{
+"plik": "apps/server/src/offer/brand-contract.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/cache-invalidation.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/cache.ts",
+"errors": 1,
+"warnings": 8,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 81,
+"msg": "Function 'createOfferCache' has too many lines (81). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/offer/cta-section.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/cta-section.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/delete-template.test.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/delete-template.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/mail-draft.test.ts",
+"errors": 0,
+"warnings": 18,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/mail-draft.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/markup-hidden.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/pages/aa-design.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/pages/terms-page.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/repository.test.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/repository.ts",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/template-repository.test.ts",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/server/src/offer/template-repository.ts",
+"errors": 1,
+"warnings": 27,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 334,
+"msg": "Function 'createSupabaseTemplateRepository' has too many lines (140). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/offer/template.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "vitest/no-conditional-expect",
+"line": 439,
+"msg": "Avoid calling `expect` inside conditional statements"
+}
+]
+},
+{
+"plik": "apps/server/src/offer/template.ts",
+"errors": 1,
+"warnings": 2,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 208,
+"msg": "Function 'renderBlock' has too many lines (61). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/offer/validation.ts",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/server/src/rate-limit.test.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/rate-limit.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/access-email-gate.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/access-email-gate.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/access.test.ts",
+"errors": 0,
+"warnings": 21,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/access.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/account.test.ts",
+"errors": 0,
+"warnings": 13,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/account.ts",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 106,
+"msg": "Function 'createAccountRoutes' has too many lines (142). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 131,
+"msg": "Async arrow function has too many lines (121). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/admin-accounts.test.ts",
+"errors": 0,
+"warnings": 24,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/admin-accounts.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 93,
+"msg": "Function 'createAdminAccountsRoutes' has too many lines (96). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/admin-invitations.ts",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 77,
+"msg": "Function 'createAdminInvitationsRoutes' has too many lines (147). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 108,
+"msg": "Async arrow function has too many lines (86). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/admin-webhook.test.ts",
+"errors": 0,
+"warnings": 25,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/admin-webhook.ts",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 85,
+"msg": "Function 'createAdminWebhookRoutes' has too many lines (153). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 116,
+"msg": "Async arrow function has too many lines (61). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/app-origin-pages-static.test.ts",
+"errors": 3,
+"warnings": 1,
+"bledy": [
+{
+"rule": "vitest/no-conditional-expect",
+"line": 106,
+"msg": "Avoid calling `expect` inside conditional statements"
+},
+{
+"rule": "vitest/no-conditional-expect",
+"line": 108,
+"msg": "Avoid calling `expect` inside conditional statements"
+},
+{
+"rule": "vitest/no-conditional-expect",
+"line": 109,
+"msg": "Avoid calling `expect` inside conditional statements"
+}
+]
+},
+{
+"plik": "apps/server/src/routes/app-origin-pages.test-helper.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/app-origin-pages.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/app-origin-pages.ts",
+"errors": 0,
+"warnings": 7,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/dashboard.test.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/dashboard.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/debug.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/debug.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/decisions.test.ts",
+"errors": 1,
+"warnings": 18,
+"bledy": [
+{
+"rule": "vitest/valid-expect",
+"line": 406,
+"msg": "Expect takes at most 1 argument"
+}
+]
+},
+{
+"plik": "apps/server/src/routes/decisions.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 80,
+"msg": "Function 'createDecisionRoutes' has too many lines (145). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/events.test.ts",
+"errors": 0,
+"warnings": 20,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/events.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 73,
+"msg": "Function 'createEventRoutes' has too many lines (84). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/membership.test.ts",
+"errors": 0,
+"warnings": 10,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/membership.ts",
+"errors": 2,
+"warnings": 0,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 88,
+"msg": "Function 'createMembershipRoutes' has too many lines (95). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 111,
+"msg": "Async arrow function has too many lines (73). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/offer-images.test.ts",
+"errors": 0,
+"warnings": 22,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/offer-images.ts",
+"errors": 1,
+"warnings": 7,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 210,
+"msg": "Function 'createOfferImageRoutes' has too many lines (89). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/offer-origin-pages.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/offer.test.ts",
+"errors": 0,
+"warnings": 47,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/static-assets.test.ts",
+"errors": 3,
+"warnings": 8,
+"bledy": [
+{
+"rule": "vitest/valid-expect",
+"line": 44,
+"msg": "Expect takes at most 1 argument"
+},
+{
+"rule": "vitest/valid-expect",
+"line": 78,
+"msg": "Expect takes at most 1 argument"
+},
+{
+"rule": "vitest/valid-expect",
+"line": 79,
+"msg": "Expect takes at most 1 argument"
+}
+]
+},
+{
+"plik": "apps/server/src/routes/template-assets.test.ts",
+"errors": 1,
+"warnings": 40,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 1,
+"msg": "All imports in the declaration are only used as types. Use `import type`."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/template-assets.ts",
+"errors": 3,
+"warnings": 8,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 192,
+"msg": "Function 'createTemplateAssetRoutes' has too many lines (312). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 365,
+"msg": "Async arrow function has too many lines (119). Maximum allowed is 60."
+},
+{
+"rule": "max-lines",
+"line": 580,
+"msg": "File has too many lines (422). Maximum allowed is 360."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/templates.test.ts",
+"errors": 0,
+"warnings": 26,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/templates.ts",
+"errors": 4,
+"warnings": 5,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 211,
+"msg": "Function 'createTemplateRoutes' has too many lines (282). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 271,
+"msg": "Async arrow function has too many lines (64). Maximum allowed is 60."
+},
+{
+"rule": "max-lines-per-function",
+"line": 454,
+"msg": "Async arrow function has too many lines (104). Maximum allowed is 60."
+},
+{
+"rule": "max-lines",
+"line": 560,
+"msg": "File has too many lines (384). Maximum allowed is 360."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/webhook-settings.test.ts",
+"errors": 0,
+"warnings": 24,
+"bledy": []
+},
+{
+"plik": "apps/server/src/routes/webhook-settings.ts",
+"errors": 1,
+"warnings": 1,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 104,
+"msg": "Function 'createWebhookSettingsRoutes' has too many lines (141). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/routes/well-known.test.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/tracker/tracker.test.ts",
+"errors": 0,
+"warnings": 20,
+"bledy": []
+},
+{
+"plik": "apps/server/src/tracking/merge-contract-ladder.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/tracking/visit-service.test.ts",
+"errors": 0,
+"warnings": 32,
+"bledy": []
+},
+{
+"plik": "apps/server/src/tracking/visit-service.ts",
+"errors": 1,
+"warnings": 8,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 303,
+"msg": "Function 'createSupabaseVisitStore' has too many lines (97). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/webhooks/admin-webhook-settings-service.test.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/admin-webhook-settings-service.ts",
+"errors": 1,
+"warnings": 3,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 53,
+"msg": "Function 'createSupabaseAdminWebhookSettingsService' has too many lines (66). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/webhooks/deliver.test.ts",
+"errors": 0,
+"warnings": 8,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/deliver.ts",
+"errors": 0,
+"warnings": 11,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/delivery-result.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/job-loader.ts",
+"errors": 0,
+"warnings": 4,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/queue-store.test.ts",
+"errors": 2,
+"warnings": 11,
+"bledy": [
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 98,
+"msg": "'oferta_id' is assigned a value but never used. Allowed unused vars must match /^_/u."
+},
+{
+"rule": "@typescript-eslint/no-unused-vars",
+"line": 111,
+"msg": "'wlasciciel_id' is assigned a value but never used. Allowed unused vars must match /^_/u."
+}
+]
+},
+{
+"plik": "apps/server/src/webhooks/queue-store.ts",
+"errors": 1,
+"warnings": 14,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 139,
+"msg": "Function 'createSupabaseWebhookQueueStore' has too many lines (115). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/webhooks/settings-service.test.ts",
+"errors": 0,
+"warnings": 6,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/settings-service.ts",
+"errors": 1,
+"warnings": 8,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 60,
+"msg": "Function 'createSupabaseWebhookSettingsService' has too many lines (83). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/src/webhooks/ssrf-guard.test.ts",
+"errors": 1,
+"warnings": 14,
+"bledy": [
+{
+"rule": "@typescript-eslint/consistent-type-imports",
+"line": 5,
+"msg": "Imports \"createPinnedLookup\" are only used as type."
+}
+]
+},
+{
+"plik": "apps/server/src/webhooks/ssrf-guard.ts",
+"errors": 0,
+"warnings": 5,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/worker.test.ts",
+"errors": 0,
+"warnings": 39,
+"bledy": []
+},
+{
+"plik": "apps/server/src/webhooks/worker.ts",
+"errors": 1,
+"warnings": 3,
+"bledy": [
+{
+"rule": "max-lines-per-function",
+"line": 91,
+"msg": "Function 'createWebhookWorker' has too many lines (201). Maximum allowed is 60."
+}
+]
+},
+{
+"plik": "apps/server/static/c.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "apps/server/static/t.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "e2e/print-magic-link.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "e2e/print-magic-link.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "e2e/print-oauth-consent-url.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "e2e/print-oauth-consent-url.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "eslint.config.js",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "packages/shared/src/access-contract.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/access-contract.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/account-limits-contract.test.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/database.types.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/env.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/pii.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/product-contract.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/product-contract.ts",
+"errors": 0,
+"warnings": 1,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/section-path.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/template-contract.test.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/webhook-contract.test.ts",
+"errors": 0,
+"warnings": 2,
+"bledy": []
+},
+{
+"plik": "packages/shared/src/webhook-contract.ts",
+"errors": 0,
+"warnings": 3,
+"bledy": []
+},
+{
+"plik": "scripts/build-demo-offers-sql.mjs",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "scripts/coderabbit-config.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "scripts/compare-schemas.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "scripts/compare-schemas.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "scripts/dockerfile-invariants.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "scripts/seed-test-users.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "scripts/seed-test-users.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/mcp-tokens-policy-gate.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/mcp-tokens-policy-gate.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/migration-9b-access.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/migration-9b-events.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/migration-scan.test-helper.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/migration-self-registration.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/postgrest-snapshot-gate.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/postgrest-snapshot-gate.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+},
+{
+"plik": "supabase/tests/rls.test.ts",
+"errors": 1,
+"warnings": 0,
+"bledy": [
+{
+"rule": null,
+"line": null,
+"msg": "Parsing error: /private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59b"
+}
+]
+}
+]

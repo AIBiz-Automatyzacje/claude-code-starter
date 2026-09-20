@@ -1,0 +1,155 @@
+[
+ {
+  "zadanie": "automatyczne-przypomnienia-platnosci.",
+  "faza": "3",
+  "run1": "wf_77ce0a61-c78",
+  "run2": "wf_68c6753f-9e5",
+  "kod_zmieniony": false,
+  "plikow_kodu_zmienionych": 0,
+  "n1": 29,
+  "n2": 25,
+  "powtorzone": 12,
+  "nowe": 13,
+  "nowe_sev": {
+   "P1": 1,
+   "P2": 1,
+   "P3": 11
+  },
+  "nowe_w_zmienionych": 0,
+  "nowe_p12_kod_niezmienione": []
+ },
+ {
+  "zadanie": "zalaczniki-w-skrzynce.",
+  "faza": "1",
+  "run1": "wf_9ce71a8a-135",
+  "run2": "wf_3a1950f0-fe5",
+  "kod_zmieniony": false,
+  "plikow_kodu_zmienionych": 0,
+  "n1": 5,
+  "n2": 15,
+  "powtorzone": 7,
+  "nowe": 8,
+  "nowe_sev": {
+   "P2": 3,
+   "P3": 5
+  },
+  "nowe_w_zmienionych": 0,
+  "nowe_p12_kod_niezmienione": [
+   {
+    "sev": "P2",
+    "plik": "lib/inbox-db.js:553",
+    "opis": "Model autoryzacji odczytu bajtów (`findAttachmentForUser` + `authorizeBlobRequest` w lib/inbox-api.js:275) brzmi „jesteś stroną JAKIEJKOLWIEK wiadomości wskazującej ten sha256\", a wiadomość może sfabr"
+   },
+   {
+    "sev": "P2",
+    "plik": "lib/inbox-blobs.js:155",
+    "opis": "Dedup (R4) wykrywany jest DOPIERO po przyjęciu i zapisaniu całego pliku: `writeBlobFromStream` bezwarunkowo otwiera fd na tmp (linia 118), przepompowuje cały strumień, liczy hash, a istnienie docelowe"
+   },
+   {
+    "sev": "P2",
+    "plik": "lib/inbox-api.js:88",
+    "opis": "Nowy INBOX_URL_PATTERN dopuszcza opcjonalny trzeci segment dla KAŻDEJ akcji, nie tylko binarnej, więc nadmiarowy segment przechodzi tam, gdzie wcześniej dawał null — a checkbox IU-3 i komentarz nad re"
+   }
+  ]
+ },
+ {
+  "zadanie": "faza-7-szablony-i-grafiki.",
+  "faza": "6",
+  "run1": "wf_0f6ce691-b3e",
+  "run2": "wf_78546669-f7d",
+  "kod_zmieniony": false,
+  "plikow_kodu_zmienionych": 0,
+  "n1": 22,
+  "n2": 5,
+  "powtorzone": 4,
+  "nowe": 1,
+  "nowe_sev": {
+   "P2": 1
+  },
+  "nowe_w_zmienionych": 0,
+  "nowe_p12_kod_niezmienione": [
+   {
+    "sev": "P2",
+    "plik": "apps/server/static/logo-aa-napis.webp",
+    "opis": "NADAL OTWARTE (plik nadal 79 788 B, mtime bez zmian). Znak AA waży 79 788 B przy 720×238 px, a renderuje się jako 22 px (`apps/server/src/offer/pages/root-page.ts:21`) i 20 px (`privacy-page.ts:100`) "
+   }
+  ]
+ },
+ {
+  "zadanie": "faza-9b-wielu-uzytkownikow.",
+  "faza": "4",
+  "run1": "wf_cf90b5d6-f83",
+  "run2": "wf_29d462f8-85c",
+  "kod_zmieniony": true,
+  "plikow_kodu_zmienionych": 23,
+  "n1": 21,
+  "n2": 19,
+  "powtorzone": 0,
+  "nowe": 19,
+  "nowe_sev": {
+   "P1": 1,
+   "P2": 8,
+   "P3": 10
+  },
+  "nowe_w_zmienionych": 17,
+  "nowe_p12_kod_niezmienione": []
+ },
+ {
+  "zadanie": "samodzielna-rejestracja-czlonkow-aa.",
+  "faza": "3",
+  "run1": "wf_8eefb073-6a9",
+  "run2": "wf_ce87b73b-89f",
+  "kod_zmieniony": true,
+  "plikow_kodu_zmienionych": 20,
+  "n1": 17,
+  "n2": 14,
+  "powtorzone": 0,
+  "nowe": 14,
+  "nowe_sev": {
+   "P2": 4,
+   "P3": 10
+  },
+  "nowe_w_zmienionych": 7,
+  "nowe_p12_kod_niezmienione": [
+   {
+    "sev": "P2",
+    "plik": "CLAUDE.md:73",
+    "opis": "Dokument sterujący rozjechał się z kodem po commicie naprawczym 5c3c7ac (learned-patterns 2026-09-11: diff przenoszący stałą między modułami kończy się grep-em CLAUDE.md za starą lokalizacją — tego kr"
+   },
+   {
+    "sev": "P2",
+    "plik": "CLAUDE.md:73",
+    "opis": "IU-9 (R12): kontrakt POST /api/dostep/rejestracja w CLAUDE.md jest po turze poprawek nieaktualny. Fix P2 nr 3 z review-faza-3.md (wariant cialo zadania) rozszerzyl kontrakt: cialo przyjmuje opcjonalne"
+   }
+  ]
+ },
+ {
+  "zadanie": "samodzielna-rejestracja-czlonkow-aa.",
+  "faza": "3",
+  "run1": "wf_ce87b73b-89f",
+  "run2": "wf_feed7bad-902",
+  "kod_zmieniony": true,
+  "plikow_kodu_zmienionych": 15,
+  "n1": 14,
+  "n2": 15,
+  "powtorzone": 1,
+  "nowe": 14,
+  "nowe_sev": {
+   "P2": 5,
+   "P3": 9
+  },
+  "nowe_w_zmienionych": 6,
+  "nowe_p12_kod_niezmienione": [
+   {
+    "sev": "P2",
+    "plik": "apps/dashboard/src/features/access/access-request-api.ts:43",
+    "opis": "`submitAccessRequest` woła `fetch` z gołym `signal` bez sufitu czasu (checklista §4: klient HTTP bez limitu czasu). Do tej fazy jedynym konsumentem był formularz `/chce-dostep`; od IU-6 woła go `saveT"
+   },
+   {
+    "sev": "P2",
+    "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89",
+    "opis": "Ścieżka powrotu `/oauth/consent?authorization_id=…` (wprowadzona w fixie po review fazy 3) odsyła NOWO ZAŁOŻONEGO członka AA z maila z powrotem na stronę zgody, która stoi POZA `RequireSession`/`Acces"
+   }
+  ]
+ }
+]

@@ -1,0 +1,12 @@
+Pomiar 3 — czasy bramek na oferty-online (worktree e8f9b97, 585 plikow TS/TSX, Node 22, pnpm 10, MacBook operatora), 2026-09-20
+
+build-shared: real 1.19
+typecheck: real 9.94
+eslint-full: real 23.59
+eslint-full2: real 23.91
+eslint-full3: real 1.28
+build-dashboard: real 0.53
+knip: real 1.92 / knip --cache: real 0.86
+
+Uwagi: eslint-full = zimny start z regulami typowanymi (recommendedTypeChecked error + strictTypeChecked warn + react-hooks v7 + vitest); eslint-full2 = pierwszy bieg z --cache (buduje cache); eslint-full3 = drugi bieg z --cache. typecheck = skrypt projektu (build shared + tsc x3). Docker wylaczony -> supabase db advisors NIE zmierzone.
+stryker (apps/dashboard, 3 pliki z 417a9fd, 370 mutantow, perTest): real 122.41 s; dry run 184 testow 14 s; killed 299 / survived 61 / no-coverage 10 -> score 80.8%. Wykluczone 4 czerwone testy offer-details-page.test.tsx (czerwone na main bez Strykera).

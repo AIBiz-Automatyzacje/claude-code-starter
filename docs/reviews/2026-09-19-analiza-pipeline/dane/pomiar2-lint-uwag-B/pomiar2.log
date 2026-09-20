@@ -1,0 +1,37 @@
+size-limit 0.8 s [
+  {
+    "name": "dashboard js (wszystkie chunki)",
+    "passed": true,
+    "size": 262749,
+    "sizeLimit": 600000
+  },
+  {
+    "name": "dashboard css",
+    "passed": true,
+    "size": 9444,
+    "sizeLimit": 60000
+  }
+]
+ 
+stryker 2.0 s
+  stryker report brak [Errno 2] No such file or directory: '/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/758e7f89-687e-473b-b371-b49d0eb59bef/scratchpad/oo-wt/apps/dashboard/reports/mutation.json'
+PR 1: uwag B 10, plikow ts 7 (brak 0), lint 3.1s, komunikatow 31, uwag B z trafieniem ERROR ±3 linie: 0
+PR 2: uwag B 20, plikow ts 14 (brak 0), lint 3.4s, komunikatow 56, uwag B z trafieniem ERROR ±3 linie: 0
+PR 3: uwag B 13, plikow ts 10 (brak 0), lint 4.5s, komunikatow 12, uwag B z trafieniem ERROR ±3 linie: 0
+PR 4: uwag B 22, plikow ts 10 (brak 0), lint 4.2s, komunikatow 89, uwag B z trafieniem ERROR ±3 linie: 0
+PR 5: uwag B 5, plikow ts 3 (brak 0), lint 2.3s, komunikatow 5, uwag B z trafieniem ERROR ±3 linie: 0
+PR 6: uwag B 4, plikow ts 2 (brak 0), lint 2.1s, komunikatow 1, uwag B z trafieniem ERROR ±3 linie: 0
+PR 7: uwag B 18, plikow ts 13 (brak 0), lint 4.3s, komunikatow 64, uwag B z trafieniem ERROR ±3 linie: 0
+PR 8: uwag B 11, plikow ts 9 (brak 0), lint 2.7s, komunikatow 9, uwag B z trafieniem ERROR ±3 linie: 0
+PR 9: uwag B 27, plikow ts 13 (brak 0), lint 2.9s, komunikatow 185, uwag B z trafieniem ERROR ±3 linie: 0
+PR 10: uwag B 13, plikow ts 9 (brak 0), lint 2.6s, komunikatow 25, uwag B z trafieniem ERROR ±3 linie: 0
+PR 11: uwag B 11, plikow ts 8 (brak 0), lint 2.5s, komunikatow 16, uwag B z trafieniem ERROR ±3 linie: 0
+PR 12: uwag B 7, plikow ts 1 (brak 0), lint 2.0s, komunikatow 4, uwag B z trafieniem ERROR ±3 linie: 1
+PR 13: uwag B 6, plikow ts 4 (brak 0), lint 2.1s, komunikatow 2, uwag B z trafieniem ERROR ±3 linie: 0
+PR 14: uwag B 8, plikow ts 7 (brak 0), lint 2.4s, komunikatow 15, uwag B z trafieniem ERROR ±3 linie: 0
+PR 15: uwag B 2, plikow ts 1 (brak 0), lint 1.7s, komunikatow 1, uwag B z trafieniem ERROR ±3 linie: 0
+PR 16: uwag B 7, plikow ts 6 (brak 0), lint 2.4s, komunikatow 32, uwag B z trafieniem ERROR ±3 linie: 0
+PR 17: uwag B 11, plikow ts 11 (brak 0), lint 2.8s, komunikatow 36, uwag B z trafieniem ERROR ±3 linie: 0
+PR 18: uwag B 1, plikow ts 1 (brak 0), lint 1.8s, komunikatow 5, uwag B z trafieniem ERROR ±3 linie: 0
+PR 19: uwag B 4, plikow ts 3 (brak 0), lint 3.0s, komunikatow 9, uwag B z trafieniem ERROR ±3 linie: 0
+DONE

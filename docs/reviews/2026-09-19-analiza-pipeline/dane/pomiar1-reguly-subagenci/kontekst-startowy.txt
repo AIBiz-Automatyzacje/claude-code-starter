@@ -1,0 +1,28 @@
+typ | kontekst startowy (tokeny pierwszej tury: cache_write+cache_read+input) | prompt
+MAIN | 62756 | Nie czytaj zadnych plikow i nie uzywaj narzedzi. Na koncu wypisz WYLACZNIE JSON:
+MAIN | 62751 | Przeczytaj narzedziem Read plik src/App.tsx. Na koncu wypisz WYLACZNIE JSON: {"m
+MAIN | 52380 | Uruchom Bash: cat src/App.tsx (nie uzywaj Read). Na koncu wypisz WYLACZNIE JSON:
+MAIN | 52545 | Przeczytaj narzedziem Read plik supabase/migrations/001_init.sql. Na koncu wypis
+MAIN | 52568 | Utworz narzedziem Write nowy plik src/Nowy.tsx z trescia 'export const N = 1'. N
+MAIN | 52558 | Przeczytaj narzedziem Read pliki src/util.test.ts i Dockerfile. Na koncu wypisz 
+MAIN | 61217 | Uruchom Bash: ls -R src supabase (tylko lista plikow, NIE otwieraj zadnego). Na 
+MAIN | 62781 | Narzedziem Edit zamien w src/App.tsx slowo hello na witaj (najpierw Read jesli w
+SUBAGENT-Agent-tool | 4720 | Przeczytaj narzedziem Read plik src/App.tsx i wypisz JSON markerow wg swojej ins
+MAIN | 52331 | Uzyj narzedzia Agent z subagent_type 'pelny' i promptem: 'Przeczytaj narzedziem 
+SUBAGENT-Agent-tool | 4181 | Przeczytaj narzedziem Read plik src/App.tsx i wypisz JSON markerow wg swojej ins
+MAIN | 52495 | Uzyj narzedzia Agent z subagent_type 'goly' i promptem: 'Przeczytaj narzedziem R
+SUBAGENT-Agent-tool | 4710 | Nie czytaj zadnych plikow. Wypisz JSON markerow wg swojej instrukcji.
+MAIN | 61141 | Uzyj narzedzia Agent z subagent_type 'pelny' i promptem: 'Nie czytaj zadnych pli
+SUBAGENT-Agent-tool | 4172 | Nie czytaj zadnych plikow. Wypisz JSON markerow wg swojej instrukcji.
+MAIN | 61142 | Uzyj narzedzia Agent z subagent_type 'goly' i promptem: 'Nie czytaj zadnych plik
+SUBAGENT-Agent-tool | 44278 | Przeczytaj narzedziem Read plik supabase/migrations/001_init.sql. Na koncu wypis
+MAIN | 54985 | Uzyj narzedzia Agent z subagent_type 'general-purpose' i promptem: 'Przeczytaj n
+SUBAGENT-Agent-tool | 4180 | Uruchom Bash: cat supabase/migrations/001_init.sql i wypisz JSON markerow wg swo
+MAIN | 55274 | Uzyj narzedzia Agent z subagent_type 'goly' i promptem: 'Uruchom Bash: cat supab
+MAIN | 52454 | Czy masz dostepne narzedzie o nazwie Workflow? Odpowiedz WYLACZNIE JSON: {"workf
+WORKFLOW-agent() | 53209 | [Workflow harness — computed task] The task text below was computed at runtime b
+MAIN | 66607 | Uzyj narzedzia Workflow ze skryptem (przekaz doslownie): export const meta = { n
+WORKFLOW-agent() | 4383 | [Workflow harness — computed task] The task text below was computed at runtime b
+MAIN | 62762 | Uzyj narzedzia Workflow ze skryptem (przekaz doslownie): export const meta = { n
+WORKFLOW-agent() | 42835 | [Workflow harness — computed task] The task text below was computed at runtime b
+MAIN | 56512 | Uzyj narzedzia Workflow ze skryptem (przekaz doslownie): export const meta = { n

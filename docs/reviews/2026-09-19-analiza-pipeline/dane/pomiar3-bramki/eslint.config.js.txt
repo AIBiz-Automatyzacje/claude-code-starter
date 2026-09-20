@@ -1,0 +1,30 @@
+// Konfiguracja proponowana w ETAP2 (bramka domkniecia fazy). ESLint 10 flat config.
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import reactHooks from 'eslint-plugin-react-hooks'
+import vitest from '@vitest/eslint-plugin'
+import globals from 'globals'
+
+export default tseslint.config(
+  { ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.d.ts', 'output/**', 'szablony/**', '**/database.types.ts', 'coverage/**', 'reports/**', '.stryker-tmp/**'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strictTypeChecked.map((c) => ({ ...c, rules: Object.fromEntries(Object.entries(c.rules ?? {}).map(([k, v]) => [k, Array.isArray(v) ? ['warn', ...v.slice(1)] : 'warn'])) })),
+  {
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname }, globals: { ...globals.node, ...globals.browser } },
+    rules: {
+      'max-lines': ['error', { max: 360, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
+      'no-empty': ['error', { allowEmptyCatch: false }],
+      'no-unreachable': 'error',
+      '@typescript-eslint/no-explicit-any': ['error', { fixToUnknown: true }],
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
+  },
+  { files: ['apps/dashboard/**/*.{ts,tsx}'], plugins: { 'react-hooks': reactHooks }, rules: { ...reactHooks.configs['recommended-latest'].rules } },
+  { files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'e2e/**/*.ts', 'supabase/tests/**/*.ts'], plugins: { vitest }, rules: { ...vitest.configs.recommended.rules, 'vitest/prefer-called-with': 'error', 'vitest/no-conditional-expect': 'error', 'max-lines': 'off', 'max-lines-per-function': 'off', '@typescript-eslint/no-unsafe-assignment': 'off', '@typescript-eslint/no-unsafe-member-access': 'off' } },
+  { files: ['scripts/**/*.ts', 'e2e/**/*.ts'], rules: { 'no-console': 'off' } },
+)
