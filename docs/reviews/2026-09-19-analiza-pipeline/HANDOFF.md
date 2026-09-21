@@ -253,6 +253,10 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
       Wzorzec skillowy (agent sam sięga po referencję) zostaje tylko jako uzupełnienie dla sytuacji nieprzewidzianych przez skrypt. Skille buildera:
       mechanizm `skills:` zostaje (6a pkt 15), treść DZIELONA na warstwę stałą i referencyjne, nie skracana. Odrzucone: czyste wycinanie (traci wiedzę),
       czysty model skillowy (zależy od pamięci modelu). Do mini-runu 6a pkt 16 dołożyć parę: ten sam marker w prompcie ~100 vs ~400 instrukcji.
+    - **Po D3 (operator 2026-09-21: „pasuje") — PLIKI AGENTÓW PER KLASA ROLI jako domyślne, per rola tylko jako wyjątek.** Uzasadnienie: prompty 36 ról
+      bez pliku są dynamiczne (funkcje w JS z argumentami), więc plik niesie WYŁĄCZNIE ustawienia (model, `tools:`, `omitClaudeMd`, `skills:`, krótki mandat);
+      telemetria D3 pokazuje 4–5 zestawów ustawień (mechaniczny-haiku, orkiestracyjny-opus, reviewer, sceptyk, naprawiacz z Edit+skille). Istniejące 8 plików
+      (4 reviewerów, tester E2E, 3 buildery) = wyjątki per rola. Docelowo kilkanaście plików zamiast 40. Wejście do panelu jako preferowany kierunek.
     - **L4 (test-coverage): TAK (operator 2026-09-21)** — oś test-coverage ZOSTAJE; trzy warstwy mechaniczne to dodatki z wynikiem do buildera; scalenie z correctness tylko jako opcja wariantu z warunkiem odwrotu i po pomiarze warstw 2–3. Obowiązuje POMIARY §2 nad ETAP2 §2.
     - **L10 uzupełnienie (operator 2026-09-21): reguły security nie są USUWANE, tylko WARUNKOWE po profilu stacku** (rozszerzenie 6a pkt 6). Projekt z `supabase/` → bramka advisors (chmura) przejmuje RLS/search_path/auth.users, a security dostaje polecenie „nie sprawdzaj tego, robi to advisors". Projekt bez Supabase (np. Postgres na VPS) → security zachowuje polecenia-listy o RLS/politykach, bo nie ma bramki. Profil stacku z package.json + katalogów trafia do promptu każdego reviewera (dossier), nie tylko builderów.
     - **L15: robimy w domknięciach przed panelem** (D3, 20 min) razem z D1 i D2 — na znak operatora.
