@@ -232,6 +232,18 @@ Kolejność wg spodziewanego efektu. Każda ma być w raporcie z liczbą „prze
     dostarczonej przez `paths:` (kontrola); (c) czy treść skilla wstrzykniętego przez `skills:` jest stosowana (marker w SKILL.md testowym), czy tylko
     zajmuje kontekst. Wynik rozstrzyga wariant learned-patterns i to, czy `skills:` zostaje bez zmian.
 
+18. **Decyzje operatora po etapie 3 (2026-09-21, po lekturze ETAP3-DLA-OPERATORA):**
+    - **L7 (model kosztu sprzed N1–N9): niska waga** — realną ocenę zmian da dopiero wdrożenie na prawdziwym projekcie; do raportu jako uwaga, nie jako ryzyko.
+    - **L8 (−50k to konto z pełnym MCP): wiedza do podzielenia się** — raport ma opisać, jak radzić sobie z dużą liczbą MCP/skilli na koncie (allowlista `tools:`), jako wartość sama w sobie.
+    - **L10 (advisors): Supabase WYŁĄCZNIE chmurowe, ZERO Dockera** — advisors mierzyć przez Management API / Supabase MCP (`get_advisors`) na projekcie chmurowym, nie `supabase db advisors` lokalnie. Bramka domknięcia fazy musi działać na chmurze.
+    - **L11 (E2E): mechanizm „test nie może się wykonać → przełącz na manual, nie zatrzymuj autopilota"** — STOP E2E przez środowisko/limit zewnętrzny = checkbox przechodzi na [MANUAL] z powodem, run idzie dalej. Wymóg dla każdego projektu panelu.
+    - **L13 (/bugfix): operator praktycznie nie używa, kandydat do usunięcia z szablonu** — miara jakości = CodeRabbit (+ Sentry po wdrożeniu). Na listę zmian szablonu.
+    - **L17 (koszt wdrożenia): NIE jest kryterium sędziów** — zysk z lepszego workflow przewyższa koszt naprawy; wdrożenie będzie fazowe wg planu z etapu 5. Propozycja czwartego wymiaru WYCOFANA.
+    - **L19: poprawić generator** (`coderabbit-setup/templates/coderabbit-base.yaml`) i opisać w skillu, jak konfigurować bota, żeby nie produkował szumu.
+    - **NOWE — telemetria centralna, mechaniczna, zero tokenów:** operator chce za miesiąc po wdrożeniu usiąść i mieć zebrane dane łatwe do analizy (co działa, co nie). Wymóg: zbieranie NIE może zwiększać kosztu — żadnych agentów (scribe haiku skasował JSONL 2×), tylko skrypt po zakończeniu runu czytający `journal.jsonl` + transkrypty (`usage`) i dopisujący jeden rekord per agent/faza do globalnego JSONL (run, zadanie, faza, rola, model, tury, cache read/write/output, czas, findingi per oś, wynik bramek, przyczyna STOP/MANUAL) + skrypt raportu miesięcznego. To produktyzacja `skrypty/koszt_agentow.py`. **Wejście do panelu: każdy projekt ma wbudowaną telemetrię mechaniczną.**
+    - Potwierdzenia rozumienia (nie decyzje): L1 = tak, dopisać pliki definicji per rola; L2 = tak, listy zamiast długich reguł, skuteczność do weryfikacji po wdrożeniu; L3 = tak, klasyfikacja źródła 33 findingów; L12 = tak, słownik klas do stworzenia; L15 = tak, audyt agentów review; L16 = wartość informacyjna (typ kodu, nie rozmiar).
+    - **L4 (test-coverage): NADAL CZEKA na słowo operatora** po wyjaśnieniu na przykładzie (sesja 2026-09-21).
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
