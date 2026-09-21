@@ -1,0 +1,72 @@
+D2 — budzet instrukcji per rola (oferty-online, /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online)
+Skrypt: skrypty/d2_budzet_instrukcji.py
+
+=== reviewer security ===
+  plik agenta security-sentinel.md                             13129 zn ~  3751 tok | list   91 | zdan nakaz   13 | razem  104
+  fokus osi (workflow)                                            72 zn ~    21 tok | list    0 | zdan nakaz    0 | razem    0
+  reviewerPrompt naglowek + zrodlaBlok                          1095 zn ~   313 tok | list    0 | zdan nakaz    7 | razem    7
+  BLOK_ZAUFANIE                                                  617 zn ~   176 tok | list    0 | zdan nakaz    2 | razem    2
+  BLOK_LIMIT_P3                                                  665 zn ~   190 tok | list    0 | zdan nakaz    3 | razem    3
+  mapaBlok (diff + dossier + pre-skan, tekst staly)             1874 zn ~   535 tok | list    1 | zdan nakaz    9 | razem   10
+  dossier: learned-patterns.md DRUGI RAZ (w calosci)           46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  CLAUDE.md (oferty-online)                                    21008 zn ~  6002 tok | list   36 | zdan nakaz   10 | razem   46
+  rules/coding-rules.md (eager)                                11016 zn ~  3147 tok | list  117 | zdan nakaz    0 | razem  117
+  rules/learned-patterns.md (eager)                            46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  SUMA                                                        143270 zn ~ 40933 tok | list  319 | zdan nakaz   46 | RAZEM  365
+
+=== reviewer code-quality (architecture-strategist, fokus 3 osi) ===
+  plik agenta architecture-strategist.md                        8430 zn ~  2409 tok | list   41 | zdan nakaz    8 | razem   49
+  fokus osi (workflow)                                           718 zn ~   205 tok | list    0 | zdan nakaz    0 | razem    0
+  reviewerPrompt naglowek + zrodlaBlok                          1095 zn ~   313 tok | list    0 | zdan nakaz    7 | razem    7
+  BLOK_ZAUFANIE                                                  617 zn ~   176 tok | list    0 | zdan nakaz    2 | razem    2
+  BLOK_LIMIT_P3                                                  665 zn ~   190 tok | list    0 | zdan nakaz    3 | razem    3
+  mapaBlok (diff + dossier + pre-skan, tekst staly)             1874 zn ~   535 tok | list    1 | zdan nakaz    9 | razem   10
+  dossier: learned-patterns.md DRUGI RAZ (w calosci)           46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  CLAUDE.md (oferty-online)                                    21008 zn ~  6002 tok | list   36 | zdan nakaz   10 | razem   46
+  rules/coding-rules.md (eager)                                11016 zn ~  3147 tok | list  117 | zdan nakaz    0 | razem  117
+  rules/learned-patterns.md (eager)                            46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  SUMA                                                        139217 zn ~ 39775 tok | list  269 | zdan nakaz   41 | RAZEM  310
+
+=== reviewer spec-compliance (+BLOK_SEMANTYKA) ===
+  plik agenta spec-compliance-reviewer.md                       5317 zn ~  1519 tok | list    5 | zdan nakaz   12 | razem   17
+  fokus osi (workflow)                                           374 zn ~   107 tok | list    0 | zdan nakaz    3 | razem    3
+  reviewerPrompt naglowek + zrodlaBlok                          1095 zn ~   313 tok | list    0 | zdan nakaz    7 | razem    7
+  BLOK_ZAUFANIE                                                  617 zn ~   176 tok | list    0 | zdan nakaz    2 | razem    2
+  BLOK_SEMANTYKA                                                 376 zn ~   107 tok | list    1 | zdan nakaz    1 | razem    2
+  BLOK_LIMIT_P3                                                  665 zn ~   190 tok | list    0 | zdan nakaz    3 | razem    3
+  mapaBlok (diff + dossier + pre-skan, tekst staly)             1874 zn ~   535 tok | list    1 | zdan nakaz    9 | razem   10
+  dossier: learned-patterns.md DRUGI RAZ (w calosci)           46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  CLAUDE.md (oferty-online)                                    21008 zn ~  6002 tok | list   36 | zdan nakaz   10 | razem   46
+  rules/coding-rules.md (eager)                                11016 zn ~  3147 tok | list  117 | zdan nakaz    0 | razem  117
+  rules/learned-patterns.md (eager)                            46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  SUMA                                                        136136 zn ~ 38894 tok | list  234 | zdan nakaz   49 | RAZEM  283
+
+=== builder feature-builder-data ===
+  plik agenta feature-builder-data.md                           5600 zn ~  1600 tok | list   41 | zdan nakaz    8 | razem   49
+  iu.prompt od plannera (najdluzszy z 5 ostatnich buildow)     23844 zn ~  6813 tok | list   87 | zdan nakaz   10 | razem   97
+  BLOK_DLUGIE_KOMENDY                                           1875 zn ~   536 tok | list    8 | zdan nakaz    4 | razem   12
+  skills: supabase-dev-guidelines                              10519 zn ~  3005 tok | list   71 | zdan nakaz    5 | razem   76
+  skills: security                                              7555 zn ~  2159 tok | list   70 | zdan nakaz    3 | razem   73
+  skills: sentry-integration                                    8308 zn ~  2374 tok | list   23 | zdan nakaz    6 | razem   29
+  CLAUDE.md (oferty-online)                                    21008 zn ~  6002 tok | list   36 | zdan nakaz   10 | razem   46
+  rules/coding-rules.md (eager)                                11016 zn ~  3147 tok | list  117 | zdan nakaz    0 | razem  117
+  rules/learned-patterns.md (eager)                            46897 zn ~ 13399 tok | list   37 | zdan nakaz    1 | razem   38
+  SUMA                                                        136622 zn ~ 39035 tok | list  490 | zdan nakaz   47 | RAZEM  537
+
+(iu.prompt buildera: 5 probek z 5 ostatnich buildow, mediana 16879 zn, max 23844 zn)
+
+Progi IFScale (ETAP2 §0 pkt 1): 10 instrukcji -> 98-100%; 150 -> 84-99%; 500 -> ~68% (blad = ciche pominiecie).
+
+UZUPELNIENIE (nakazy WEWNATRZ pozycji list — learned-patterns i coding-rules maja reguly wielozdaniowe):
+  learned-patterns.md: 37 pozycji, ale 211 zdan nakazowych w srodku (srednio 5,7 na regule) — kazda kopia
+  coding-rules.md: 110 pozycji, 130 zdan nakazowych
+Skorygowane sumy (gorna granica, z nakazami wewnatrz regul):
+  reviewer security   : 365 - 2*38 + 2*211 = ~711 (learned-patterns x2: eager + dossier)
+  reviewer code-quality: 310 - 76 + 422 = ~656
+  reviewer spec        : 283 - 76 + 422 = ~629
+  builder data         : 537 - 38 + 211 = ~710
+Po decyzjach 6a pkt 15/17 (learned-patterns poza eager i poza dossier, zamiast tego wycinek 1-2k zn = ~3-5 regul = ~20 nakazow):
+  reviewer security   : ~104 (plik agenta) + 22 (bloki workflow) + 46 (CLAUDE.md) + 117-130 (coding-rules) + ~20 (wycinek) = ~310-320
+  builder data        : 49 + 97 (iu.prompt) + 12 + 178 (3 skille) + 46 + 117-130 + ~20 = ~520-530
+Najwieksze pojedyncze bloki po zmianie: coding-rules (117-130), skille buildera (178 lacznie), plik agenta security (104), iu.prompt (97).
+Dolna granica (same pozycje list, bez zdan prozy): reviewer 234-319, builder 490.

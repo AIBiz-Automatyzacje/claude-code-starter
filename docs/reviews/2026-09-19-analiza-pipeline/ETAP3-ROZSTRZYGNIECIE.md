@@ -193,6 +193,21 @@ Zweryfikowane grepem w tej sesji (`.claude/workflows/*.js` bez `__tests__`, `.cl
 - **D3 (zamyka L15 i L1b, ~20 min):** tabela oś → `agentType` → plik agenta lub brak → miejsce promptu → start dziś; lista ~24 ról bez pliku.
 - **D4 (słowo operatora, 0 min):** potwierdzenie precedensów z §6 pkt 1–3, w szczególności test-coverage.
 
+**Wyniki domknięć (2026-09-21):**
+
+- **D1 (L3) GOTOWE** — `dane/pomiar5-atrybucja-po-fixie.{json,txt}`, dopisek w POMIARY §4: 33 findingi = A urodzone w fixie 13 (39%, wszystkie kodowe to skutek
+  naprawy findingu rundy 1, w tym jedyny P1; kontrola diffu nie złapała żadnego) / B przeoczone w rundzie 1 w pliku fixa 14 (42%, 5 P2) / C przeoczone w kodzie
+  nietkniętym 6 (18%). Składnik recall rundy 1 (60%) jest większy niż składnik „nowy kod" (40%).
+- **D2 (L2) GOTOWE** — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`. Jednostka = pozycja listy albo zdanie z markerem nakazu.
+  Dziś (oferty-online): **reviewer security ~365 instrukcji** (dolna granica 319), z tego plik agenta 104, coding-rules 117, CLAUDE.md 46, learned-patterns 38 **×2**
+  (eager z `.claude/rules/` ORAZ w całości w dossier — packager przepisuje go ponownie), bloki workflow 22; **builder danych ~537** (dolna 490): iu.prompt od plannera
+  97 (mediana 16,9k zn), trzy skille `skills:` 178, coding-rules 117, plik agenta 49, CLAUDE.md 46, learned-patterns 38. Reguły learned-patterns są wielozdaniowe
+  (211 nakazów w 37 pozycjach, 5,7 na regułę), więc górna granica to **reviewer ~650–710, builder ~710**. Po 6a pkt 15/17 (learned-patterns → wycinek ~20 nakazów):
+  **reviewer ~310–320, builder ~520–530**. Największe bloki po zmianie: coding-rules 117–130, skille buildera 178, plik agenta security 104, iu.prompt 97.
+  **Wniosek dla panelu:** nawet po decyzjach każdy agent siedzi w paśmie IFScale 150–500 (84–99% → ~68%), a builder przy górnej krawędzi; polecenia-listy
+  (4–5 na oś) są marginalne wobec tła — budżet instrukcji musi być projektowany jako CAŁOŚĆ na rolę (cel: <150), inaczej listy dołożone do 300–500 istniejących
+  nakazów nie mają lepszych szans niż reguły, które zastępują. Dubel learned-patterns w dossier = 13k tokenów × 6 reviewerów na fazę za nic.
+
 **Dodatkowe wejścia do panelu (poza ETAP2 §6 i POMIARY §5):**
 
 - polecenia-listy jako założenie z **warunkiem odwrotu** w każdym projekcie + twardy budżet instrukcji per rola (z D2);

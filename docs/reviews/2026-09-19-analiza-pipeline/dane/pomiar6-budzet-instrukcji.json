@@ -1,0 +1,366 @@
+{
+ "reviewer security": {
+  "skladniki": {
+   "plik agenta security-sentinel.md": {
+    "znaki": 13129,
+    "tokeny_szac": 3751,
+    "linie": 217,
+    "pozycje_list": 91,
+    "zdania_nakazowe": 13,
+    "instrukcje_gorna": 104
+   },
+   "fokus osi (workflow)": {
+    "znaki": 72,
+    "tokeny_szac": 21,
+    "linie": 1,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 0,
+    "instrukcje_gorna": 0
+   },
+   "reviewerPrompt naglowek + zrodlaBlok": {
+    "znaki": 1095,
+    "tokeny_szac": 313,
+    "linie": 10,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 7,
+    "instrukcje_gorna": 7
+   },
+   "BLOK_ZAUFANIE": {
+    "znaki": 617,
+    "tokeny_szac": 176,
+    "linie": 8,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 2,
+    "instrukcje_gorna": 2
+   },
+   "BLOK_LIMIT_P3": {
+    "znaki": 665,
+    "tokeny_szac": 190,
+    "linie": 9,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 3,
+    "instrukcje_gorna": 3
+   },
+   "mapaBlok (diff + dossier + pre-skan, tekst staly)": {
+    "znaki": 1874,
+    "tokeny_szac": 535,
+    "linie": 37,
+    "pozycje_list": 1,
+    "zdania_nakazowe": 9,
+    "instrukcje_gorna": 10
+   },
+   "dossier: learned-patterns.md DRUGI RAZ (w calosci)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   },
+   "CLAUDE.md (oferty-online)": {
+    "znaki": 21008,
+    "tokeny_szac": 6002,
+    "linie": 159,
+    "pozycje_list": 36,
+    "zdania_nakazowe": 10,
+    "instrukcje_gorna": 46
+   },
+   "rules/coding-rules.md (eager)": {
+    "znaki": 11016,
+    "tokeny_szac": 3147,
+    "linie": 217,
+    "pozycje_list": 117,
+    "zdania_nakazowe": 0,
+    "instrukcje_gorna": 117
+   },
+   "rules/learned-patterns.md (eager)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   }
+  },
+  "suma": {
+   "znaki": 143270,
+   "tokeny_szac": 40933,
+   "pozycje_list": 319,
+   "zdania_nakazowe": 46,
+   "instrukcje_gorna": 365
+  }
+ },
+ "reviewer code-quality (architecture-strategist, fokus 3 osi)": {
+  "skladniki": {
+   "plik agenta architecture-strategist.md": {
+    "znaki": 8430,
+    "tokeny_szac": 2409,
+    "linie": 127,
+    "pozycje_list": 41,
+    "zdania_nakazowe": 8,
+    "instrukcje_gorna": 49
+   },
+   "fokus osi (workflow)": {
+    "znaki": 718,
+    "tokeny_szac": 205,
+    "linie": 1,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 0,
+    "instrukcje_gorna": 0
+   },
+   "reviewerPrompt naglowek + zrodlaBlok": {
+    "znaki": 1095,
+    "tokeny_szac": 313,
+    "linie": 10,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 7,
+    "instrukcje_gorna": 7
+   },
+   "BLOK_ZAUFANIE": {
+    "znaki": 617,
+    "tokeny_szac": 176,
+    "linie": 8,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 2,
+    "instrukcje_gorna": 2
+   },
+   "BLOK_LIMIT_P3": {
+    "znaki": 665,
+    "tokeny_szac": 190,
+    "linie": 9,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 3,
+    "instrukcje_gorna": 3
+   },
+   "mapaBlok (diff + dossier + pre-skan, tekst staly)": {
+    "znaki": 1874,
+    "tokeny_szac": 535,
+    "linie": 37,
+    "pozycje_list": 1,
+    "zdania_nakazowe": 9,
+    "instrukcje_gorna": 10
+   },
+   "dossier: learned-patterns.md DRUGI RAZ (w calosci)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   },
+   "CLAUDE.md (oferty-online)": {
+    "znaki": 21008,
+    "tokeny_szac": 6002,
+    "linie": 159,
+    "pozycje_list": 36,
+    "zdania_nakazowe": 10,
+    "instrukcje_gorna": 46
+   },
+   "rules/coding-rules.md (eager)": {
+    "znaki": 11016,
+    "tokeny_szac": 3147,
+    "linie": 217,
+    "pozycje_list": 117,
+    "zdania_nakazowe": 0,
+    "instrukcje_gorna": 117
+   },
+   "rules/learned-patterns.md (eager)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   }
+  },
+  "suma": {
+   "znaki": 139217,
+   "tokeny_szac": 39775,
+   "pozycje_list": 269,
+   "zdania_nakazowe": 41,
+   "instrukcje_gorna": 310
+  }
+ },
+ "reviewer spec-compliance (+BLOK_SEMANTYKA)": {
+  "skladniki": {
+   "plik agenta spec-compliance-reviewer.md": {
+    "znaki": 5317,
+    "tokeny_szac": 1519,
+    "linie": 86,
+    "pozycje_list": 5,
+    "zdania_nakazowe": 12,
+    "instrukcje_gorna": 17
+   },
+   "fokus osi (workflow)": {
+    "znaki": 374,
+    "tokeny_szac": 107,
+    "linie": 1,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 3,
+    "instrukcje_gorna": 3
+   },
+   "reviewerPrompt naglowek + zrodlaBlok": {
+    "znaki": 1095,
+    "tokeny_szac": 313,
+    "linie": 10,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 7,
+    "instrukcje_gorna": 7
+   },
+   "BLOK_ZAUFANIE": {
+    "znaki": 617,
+    "tokeny_szac": 176,
+    "linie": 8,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 2,
+    "instrukcje_gorna": 2
+   },
+   "BLOK_SEMANTYKA": {
+    "znaki": 376,
+    "tokeny_szac": 107,
+    "linie": 8,
+    "pozycje_list": 1,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 2
+   },
+   "BLOK_LIMIT_P3": {
+    "znaki": 665,
+    "tokeny_szac": 190,
+    "linie": 9,
+    "pozycje_list": 0,
+    "zdania_nakazowe": 3,
+    "instrukcje_gorna": 3
+   },
+   "mapaBlok (diff + dossier + pre-skan, tekst staly)": {
+    "znaki": 1874,
+    "tokeny_szac": 535,
+    "linie": 37,
+    "pozycje_list": 1,
+    "zdania_nakazowe": 9,
+    "instrukcje_gorna": 10
+   },
+   "dossier: learned-patterns.md DRUGI RAZ (w calosci)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   },
+   "CLAUDE.md (oferty-online)": {
+    "znaki": 21008,
+    "tokeny_szac": 6002,
+    "linie": 159,
+    "pozycje_list": 36,
+    "zdania_nakazowe": 10,
+    "instrukcje_gorna": 46
+   },
+   "rules/coding-rules.md (eager)": {
+    "znaki": 11016,
+    "tokeny_szac": 3147,
+    "linie": 217,
+    "pozycje_list": 117,
+    "zdania_nakazowe": 0,
+    "instrukcje_gorna": 117
+   },
+   "rules/learned-patterns.md (eager)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   }
+  },
+  "suma": {
+   "znaki": 136136,
+   "tokeny_szac": 38894,
+   "pozycje_list": 234,
+   "zdania_nakazowe": 49,
+   "instrukcje_gorna": 283
+  }
+ },
+ "builder feature-builder-data": {
+  "skladniki": {
+   "plik agenta feature-builder-data.md": {
+    "znaki": 5600,
+    "tokeny_szac": 1600,
+    "linie": 105,
+    "pozycje_list": 41,
+    "zdania_nakazowe": 8,
+    "instrukcje_gorna": 49
+   },
+   "iu.prompt od plannera (najdluzszy z 5 ostatnich buildow)": {
+    "znaki": 23844,
+    "tokeny_szac": 6813,
+    "linie": 139,
+    "pozycje_list": 87,
+    "zdania_nakazowe": 10,
+    "instrukcje_gorna": 97
+   },
+   "BLOK_DLUGIE_KOMENDY": {
+    "znaki": 1875,
+    "tokeny_szac": 536,
+    "linie": 22,
+    "pozycje_list": 8,
+    "zdania_nakazowe": 4,
+    "instrukcje_gorna": 12
+   },
+   "skills: supabase-dev-guidelines": {
+    "znaki": 10519,
+    "tokeny_szac": 3005,
+    "linie": 312,
+    "pozycje_list": 71,
+    "zdania_nakazowe": 5,
+    "instrukcje_gorna": 76
+   },
+   "skills: security": {
+    "znaki": 7555,
+    "tokeny_szac": 2159,
+    "linie": 193,
+    "pozycje_list": 70,
+    "zdania_nakazowe": 3,
+    "instrukcje_gorna": 73
+   },
+   "skills: sentry-integration": {
+    "znaki": 8308,
+    "tokeny_szac": 2374,
+    "linie": 276,
+    "pozycje_list": 23,
+    "zdania_nakazowe": 6,
+    "instrukcje_gorna": 29
+   },
+   "CLAUDE.md (oferty-online)": {
+    "znaki": 21008,
+    "tokeny_szac": 6002,
+    "linie": 159,
+    "pozycje_list": 36,
+    "zdania_nakazowe": 10,
+    "instrukcje_gorna": 46
+   },
+   "rules/coding-rules.md (eager)": {
+    "znaki": 11016,
+    "tokeny_szac": 3147,
+    "linie": 217,
+    "pozycje_list": 117,
+    "zdania_nakazowe": 0,
+    "instrukcje_gorna": 117
+   },
+   "rules/learned-patterns.md (eager)": {
+    "znaki": 46897,
+    "tokeny_szac": 13399,
+    "linie": 83,
+    "pozycje_list": 37,
+    "zdania_nakazowe": 1,
+    "instrukcje_gorna": 38
+   }
+  },
+  "suma": {
+   "znaki": 136622,
+   "tokeny_szac": 39035,
+   "pozycje_list": 490,
+   "zdania_nakazowe": 47,
+   "instrukcje_gorna": 537
+  }
+ }
+}
