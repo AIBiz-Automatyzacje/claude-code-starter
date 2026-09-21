@@ -1,0 +1,44 @@
+D1 — atrybucja 33 nowych findingow powtorki review po fixie (2026-09-21)
+Skrypt: skrypty/d1_atrybucja_po_fixie.py <repo oferty-online>; dane: pomiar5-atrybucja-po-fixie.json
+Metoda: git blame -L linia na HEAD sprzed run2 (commity gałęzi odzyskane z reflogu — po squash-merge #19 nie ma ich w --all).
+  A = linia powstala w commicie fixa (fix wprowadzil kod, ktory review 2 zglosil)
+  B = linia sprzed fixa, plik dotkniety fixem (przeoczone w rundzie 1 w pliku, ktory runda 1 ogladala)
+  C = kod nietkniety fixem (przeoczone w rundzie 1)
+  X = poza kodem (CLAUDE.md) / bez numeru linii
+Weryfikacja reczna klasy A: diffy 417a9fd (analytics.ts 223 linii: import statyczny -> dynamiczny + sanitize_properties;
+  session-context.tsx: dodane zdarzenie loggedIn z hadSessionRef; offers-page.tsx: zmieniony warunek startu przewodnika)
+  i 5c3c7ac (login-form.tsx: dodane controllerRef.current?.abort() x3, w tym jeden no-op; nowy plik redirect-path.test.ts).
+
+PARA 1: faza-9b f4 (fix 417a9fd + kontrola 9f22103; 25 plikow, +776/-219; run1 21 findingow -> run2 19 nowych, 0 powtorzonych)
+  A (7): P1 analytics.ts:287 (dynamiczny import bez bufora — fix ZAMIENIL import statyczny na dynamiczny, bo runda 1 tego zazadala jako P2)
+         P2 analytics.ts:222, P2 offers-page.tsx:67, P2 session-context.tsx:65, P3 analytics.ts:270, P3 help-page.tsx:51, P3 analytics.test.ts:119
+         -> KAZDY z 7 to skutek naprawy findingu z rundy 1 (import, wyciek adresow, zdarzenie logowanie, start przewodnika, reset przewodnika)
+  B (10): P2 use-first-steps.ts:273, P2 use-first-steps.ts:268, P2 use-screen-tour.ts:97, P2 texts.ts:95,
+          P3 help-sections.tsx:27, P3 offer-details-page.tsx:10, P3 help-page.tsx:43, P3 use-first-steps.ts:293, P3 use-first-steps.test.ts:256, P3 use-first-steps.ts:335
+          -> runda 1 OGLADALA te pliki (miala findingi w use-first-steps.ts:160, use-screen-tour.ts:55/63, texts.ts:24, help-sections.tsx:72, offer-details-page.tsx:341) i tych nie znalazla
+  C (2): P2 use-profile.test.ts:189, P3 app-privacy-page.ts:79
+  Korekta do POMIARY §4: "17/19 w plikach zmienionych fixem" to 7 urodzonych w fixie + 10 przeoczonych w rundzie 1.
+
+PARA 2: samodzielna f3 run 2 (fix 5c3c7ac + kontrola 4b4fd64; 20 plikow; run1 17 -> run2 14 nowych, 0 powtorzonych)
+  A (3): P3 redirect-path.test.ts:18 (nowy test z fixa), P3 login-form.tsx:285 x2 (martwy abort dodany fixem — runda 1 zglosila :144/:150 "abort nie przerywa", fix dolozyl abort i jeden jest no-opem)
+  B (4): P2 login-form.tsx:115 (granice warstw; linia z fazy 8), P3 login-form.tsx:299, P3 registration-api.ts:143, P3 registration-api.ts:101
+         -> runda 1 ogladala oba pliki (login-form.tsx:168/412/150/144/443/307, registration-api.ts:1/112/43)
+  C (3): P3 invitation-service.ts:265, P3 access-request-page.tsx:11, P3 faza-9b-zaproszenie-seed.sql:6
+  X (3): P2 CLAUDE.md:73 x2, P3 CLAUDE.md:73 — dokument rozjechal sie z kodem PO fixie (skutek fixa, nie kod)
+  C? (1): P2 e2e/seeds/rejestracja-czlonek-seed.sql (scenariusz E2E nieodegrany — srodowisko, nie kod)
+
+RAZEM 33:
+  A urodzone w fixie: 10 kod (1 P1, 3 P2, 6 P3) + 3 drift CLAUDE.md (2 P2, 1 P3) = 13 (39%)
+  B przeoczone w rundzie 1, plik dotkniety fixem: 14 (5 P2, 9 P3) = 42%
+  C przeoczone w rundzie 1, kod nietkniety: 5 (1 P2, 4 P3) + 1 E2E = 6 (18%)
+  P1/P2 kodowe: A 4 (w tym jedyny P1) | B 5 | C 1
+
+WNIOSKI (fakty, nie decyzje):
+  1. Oba skladniki sa realne i porownywalne: ~40% nowych findingow to skutek fixa, ~60% to niska wykrywalnosc rundy 1 (recall).
+     POMIARY §4 "to NIE jest niezbieganie — to review kodu naprawczego" jest za mocne: w 9b tylko 7 z 17 findingow w plikach fixa urodzil fix.
+  2. Skladnik A to w 10/10 przypadkow kodowych SKUTEK NAPRAWY findingu z rundy 1 (fix duzego zakresu: 223 linie w analytics.ts za jeden P2).
+     Kontrola diffu fixa (9f22103, 4b4fd64) zadnego z nich nie zlapala, w tym P1. Wspiera 6a pkt 15: polecenia-listy correctness w fix:kontrola
+     + builder fixa bez zmian poza zgloszonym miejscem (mniejszy diff fixa = mniej A).
+  3. Skladnik B (14) to pliki, ktore runda 1 czytala i w ktorych miala inne findingi — to jest niestabilnosc/recall z literatury (α 0,33–0,79),
+     nie "nowy kod". 5 P2 w tym koszyku. To jest skladnik, ktory adresuje n rownoleglych probek (ETAP2 §0 pkt 2) albo lepszy sceptyk — decyzja panelu.
+  4. 3 z 33 to rozjazd CLAUDE.md po fixie — argument za 6a pkt 1/11 (uzgodnienie CLAUDE.md po merge'u, nie po fixie).

@@ -129,6 +129,15 @@ próba to 6 par, z czego 3 na tym samym kodzie.
   że kontrola diffu fixa łapie za mało (3 regresje vs 17 findingów pełnego review w tych samych plikach).
 - Dla panelu: „powtórka po STOP-ie E2E = sam tester" stoi, **ale** po fixie z dużym diffem (>15 plików) opłaca się jedna lekka runda (correctness na samym
   diffie fixa), nie pełny skład. Alternatywa z etapu 2 (n=3 równoległe próbki) adresuje tylko składnik „niestabilność", nie składnik „nowy kod".
+  **[WYCOFANE 6a pkt 15: żadnej dodatkowej rundy; zamiast tego polecenia-listy correctness w `fix:kontrola`.]**
+
+**Uzupełnienie D1 (2026-09-21, etap 3 L3) — atrybucja 33 nowych findingów po fixie przez `git blame` na linii (skrypt `skrypty/d1_atrybucja_po_fixie.py`,
+dane `dane/pomiar5-atrybucja-po-fixie.{json,txt}`):** zdanie „to NIE jest niezbieganie — to review kodu naprawczego" jest **za mocne**. Z 17/19 findingów 9b
+„w plikach zmienionych fixem" tylko **7 urodził fix** (wszystkie jako skutek naprawy findingu z rundy 1, w tym jedyny P1: import statyczny → dynamiczny bez bufora),
+a **10 istniało przed fixem** w plikach, które runda 1 czytała i w których miała inne findingi. Łącznie 33: **A urodzone w fixie 13 (39%; 10 kod + 3 drift CLAUDE.md),
+B przeoczone w rundzie 1 w pliku dotkniętym fixem 14 (42%), C przeoczone w kodzie nietkniętym 6 (18%)**. P1/P2 kodowe: A 4 (1 P1), B 5, C 1. Oba składniki są realne:
+składnik A adresuje 6a pkt 15 (polecenia-listy w `fix:kontrola` + mały diff fixa — kontrola diffu nie złapała żadnego z 10 A), składnik B+C (60%, 6 P2) to recall
+rundy 1 — rozstrzygnięcie n=3 próbek vs lepszy sceptyk należy do panelu i dotyczy WIĘKSZEGO składnika.
 
 ## 5. Co zmienia się w wejściach do etapów 3–4 po pomiarach
 
