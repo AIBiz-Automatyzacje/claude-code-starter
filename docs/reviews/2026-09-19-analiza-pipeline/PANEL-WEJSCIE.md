@@ -206,6 +206,32 @@ jest STOSOWANA w kodzie; (b) to samo dla reguły przez `paths:` (kontrola); (c) 
 testowym), czy tylko zajmuje kontekst. Dodatki: (d) ta sama para markerów w prompcie ~100 vs ~400 instrukcji (6a pkt 18 po D2); (e) odczyt `usage` pierwszej
 tury per klasa roli — potwierdzenie dźwigni 25–35% (ETAP3 §1.1). Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
 
-## 12. Telemetria mechaniczna — rekord i miejsce w runie (D5)
+## 12. Telemetria mechaniczna — rekord i miejsce w runie (D5, 2026-09-21; pełny szkic: `dane/d5-telemetria-rekord.txt`)
 
-*(dopisane w domknięciu D5; szkic pól w `dane/d5-telemetria-rekord.txt`)*
+**Dziś:** jeden wpis per run dopisywany przez agenta haiku (`zapiszTelemetrie()`, `dev-autopilot-wf.js:1028-1087`, także w `stopRun()`), który 2× skasował plik;
+`tokenyRazemK` = `budget.spent()` = WYŁĄCZNIE tokeny wyjściowe (2% kosztu); poziom agenta nie istnieje. **Ograniczenie twarde:** skrypt workflowu nie ma dostępu
+do plików ani Node (workflow-authoring), więc orkiestrator nie dopisze rekordu sam; dziennik runu nie zapisuje wyniku końcowego (status/powód zna tylko sesja główna).
+
+**Źródła na dysku (zero tokenów, zweryfikowane na runie z 85 agentami):** `journal.jsonl` (label, phase, result strukturalny każdego agenta — w tym `findings`
+reviewerów), `agent-<id>.jsonl` (usage per odpowiedź API z cache read/write, model, timestampy, tool_use), `agent-<id>.meta.json` (agentType), `.autopilot-state.json`
+(metryki fazy). Etykiety agentów w workflowach-dzieciach nie niosą numeru fazy — do dopisania (`review:security:faza-2`), do tego czasu faza po kolejności grup.
+
+**Rekord (jeden plik `~/.claude/telemetry/pipeline.jsonl`, append-only, klucz idempotencji `run|typ|id`, trzy typy):**
+- `agent` — id, etykieta, faza, rola (jak `rola()` w `koszt_agentow.py`), **klasa_roli** (mechaniczny/orkiestracyjny/reviewer/sceptyk/builder/naprawiacz/tester-e2e),
+  agentType, model, tury, in/cache_w/cache_r/out/thinking, koszt_jedn (pełny cennik), **ctx_start** (kontekst pierwszej tury = miara dźwigni `tools:`), ctx_sr/max,
+  narzędzia, start/koniec/sekundy, wynik (ok/null/brak), findingi p1/p2/p3 (reviewerzy), obalone (sceptycy), instrukcje_stale (z testu budżetu, jeśli jest).
+- `faza` — status, liczniki, przebieg (skrót jak dziś), **findingi_per_os**, e2e {pass, fail, skip, **manual[] z powodem** (L11)}, fix, kontrolaFixa (z `regresje`),
+  **bramki** {typecheck, eslint, knip, sizeLimit, migracje, advisors, stryker: status + sekundy}, koszt per etap, sekundy.
+- `run` — status OK/STOP/NIEZNANY, powód, zrodlo_statusu (sesja/skan), **stop_kategoria** (E2E-środowisko / E2E-asercja / fix-FAIL / P1 / scribe / czystość / inne),
+  manual_razem, fazy, walidacja, e2eSrodowisko, solution, koszt razem, sekundy, szablon (sha).
+
+**Skrypt i miejsce w runie (propozycja, zero agentów w każdym wariancie):** `.claude/scripts/telemetria/zbierz.mjs` (Node, port `koszt_agentow.py`; test na fixture
+w `__tests__`) + `raport.mjs`. **A (główne):** sesja główna po task-notification wywołuje `zbierz.mjs --run <runId> --status <status> --powod <powód>` — krok
+w skillach wszystkich workflowów; z orkiestratora znika agent telemetrii (2 wywołania) i `tokenyRazemK`. **B (siatka, obowiązkowa):** `--skan` w raporcie
+i w doctor dopisuje każdy run bez rekordu (status z ostatniej etykiety w journalu albo NIEZNANY; run w toku pomijany). **C (do sprawdzenia w mini-runie):**
+hook Stop z `--skan --szybko` = pełna automatyzacja bez kroku w skillu.
+
+**Raport miesięczny:** koszt per projekt/zadanie/run i udziały per etap i klasa roli (vs ETAP0 28/25/6/5/17/12%); ctx_start per klasa roli (czy allowlista
+działa: cel ~4,5k / ~15k / ~25k); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria, MANUAL per powód, bramki
+PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord w tym kształcie
+(pola mogą być null, klucze nie mogą zniknąć) i punkt w runie, w którym wywołanie A jest możliwe.
