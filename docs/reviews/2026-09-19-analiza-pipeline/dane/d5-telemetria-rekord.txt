@@ -113,3 +113,10 @@ Wymog wdrozeniowy dla workflowow: etykiety agentow w workflowach-dzieciach niosa
 === 5. CO NIE JEST CZESCIA D5 (do planu etapu 5) ===
 Implementacja skryptow i testu; zmiana etykiet w workflowach; usuniecie agenta telemetria; jednorazowy import 32+ starych wpisow
 autopilot-runs.jsonl (v0) i agents.csv z ETAP0 do nowego pliku (zeby raport miesieczny mial punkt odniesienia "przed").
+
+=== 6. UZUPELNIENIE PO KONTROLI ODWROTNEJ (2026-09-21) ===
+Przeglad runow §7 rek. 1 proponowal plik per run (~/.claude/telemetry/runs/<ts>-<projekt>-<zadanie>.json, Write, zero komend modyfikujacych)
+jako lek na agenta, ktory kasowal wspolny JSONL. Przy skrypcie mechanicznym (nigdy nie otwiera pliku w trybie nadpisania, walidacja JSON
+przed dopiskiem, klucz idempotencji) oba formaty sa bezpieczne; jeden JSONL jest prostszy dla raportu (jeden strumien), plik per run
+jest odporniejszy na rownolegle runy z dwoch sesji (brak wyscigu na append). Decyzja przy wdrozeniu; raport.mjs ma czytac oba (glob + jsonl).
+Otwarta decyzja operatora z przegladu: scalenie autopilot-runs.odzyskane-2026-09-19.jsonl z oryginalem → zalatwia import v0 z §5.

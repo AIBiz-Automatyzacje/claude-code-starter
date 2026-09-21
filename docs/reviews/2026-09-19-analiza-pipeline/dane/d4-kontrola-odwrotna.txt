@@ -1,0 +1,351 @@
+# Kontrola odwrotna D4 — jednostek z markerem: 164; pakiet: 108 jednostek
+# pokrycie = udzial terminow jednostki zrodlowej obecnych w najlepszym oknie pakietu (1-2 jednostki). <0.30 = przejrzec recznie.
+
+## NISKIE (<0.30) — KANDYDACI NA LUKE: 44
+[0.09] ETAP2:112 -> pakiet:1
+    - Większość docs bez daty publikacji (data = dostęp 2026-09-20). Cztery ustalenia niskiej pewności (blog Stryker 2026-06, paper o kontekście 2026-09, przewodnik augmentcode, sourcegraph) użyte tylko jako potwierdzenie, nie jako podstawa decyzji.
+[0.10] HANDOFF §6a decyzje operatora:177 -> pakiet:91
+    13. **Szablon jako plugin — DECYZJA OPERATORA 2026-09-20: NIE WDRAŻAĆ TERAZ.** Zbadane, zapisane niżej jako pomysł na później; w panelu etapu 4 nie jest wariantem, co najwyżej wzmianką „opcja na przyszłość". Pierwotne pytanie: dziś szablon to kopiowany katalog `.claude/` z synchronizacją przez sync-template; lokalny patch w oferty-online zablokował sync (digest §6) — to argument ZA pluginem (maszyneria read-only, akt…
+[0.11] ETAP2:116 -> pakiet:19
+    - Kierunek 1b oparty na `--help` lokalnej wersji 2.1.278 — może się zmienić z wersją.
+[0.14] PRZEGLAD RUNOW decyzje operatora:214 -> pakiet:9
+    - Czy scalić `autopilot-runs.odzyskane-2026-09-19.jsonl` z oryginałem (zastąpienie 6-liniowego pliku 32-liniowym)?
+[0.18] ETAP1B:29 -> pakiet:72
+    | jeśli próg zostaje: 360 / 60 linii (tolerancja 20%) | 14 | przekroczenia o <20%, np. use-consent.ts 305 vs 300; bot sam wycofał większość po kontrze operatora |
+[0.18] ETAP1:76 -> pakiet:74
+    **pętla fix → nie scalać kontroli z poprawką.** Analityk twierdził „14/14 `regresje: []`". Policzone: 3 trafienia na 12 widocznych wpisów (25%), każde to zmiana zachowania wprowadzona przez commit fixa (dołożony `AbortSignal.any`, nowe pole `redirectPath` w odpowiedzi API = zmiana kontraktu), niewidoczna dla typechecku, testów i reviewerów (commit fixa nikt inny nie ogląda). Niezależność wykrywacza od naprawiacza jes…
+[0.18] ETAP2:16 -> pakiet:66
+    2. **„Review nie zbiega" to udokumentowana własność LLM-jako-sędziego, ale lek zależy od kierunku powtarzania.** Intra-rater reliability tego samego modelu na tym samym prompcie: Krippendorff α 0,33–0,79 przy progu 0,8 (2025-10). Powtórka **sekwencyjna** szkodzi: F1 0,376 → 0,303, na 1 nowy prawdziwy defekt 4–5 fałszywych (2026-03). Powtórka **równoległa** (n próbek tej samej osi + agregator) pomaga: recall +119% prz…
+[0.19] ETAP2:64 -> pakiet:58
+    | verify-sceptycy | częściowy (mechanika) | **zmiana wzgl. etapu 1:** ZOSTAW + przepisać na kontekst asymetryczny i etykiety sporu (DISAGREE_EVIDENCE wymaga linii kodu lub testu); dla P1 zamknięcie testem regresyjnym, nie konsensusem; batch 4/sceptyk z etapu 1 nadal hipoteza |
+[0.19] ETAP3:27 -> pakiet:83
+    | L4 test-coverage | blokuje | **precedens do potwierdzenia przez operatora (D4)** | sprzeczność jest realna; rozstrzyga ją kolejność dokumentów i utrata przesłanki, nie nowy pomiar |
+[0.19] ETAP3:6 -> pakiet:21
+    **Wejście krytyka:** HANDOFF.md (całość), ETAP1, ETAP1B, ETAP2, POMIARY (rozstrzygnięcia), `../2026-09-19-przeglad-runow-po-naprawie.md`, inwentarz `.claude/` (frontmattery agentów i skilli dev-*, settings.json, grep po workflowach). Krytyk NIE czytał `dane/`.
+[0.19] ETAP1:69 -> pakiet:74
+    **verify-sceptycy → ZOSTAW (plus hipoteza).** Analityk chciał zastąpić sceptyka P2 furtką w fixie „nie naprawiaj fałszywych". Zmierzona skuteczność takiej furtki: 0,4% (2 na 493 naprawione) wobec 19,2% u sceptyków; odrzucony przez fixa P2 nie znika, tylko ląduje w known-issues i zbija gate na ZASTRZEŻENIA; a coding-rules §4/§5 (anty-pattern „finding dismissal") jedzie w kontekście tego samego agenta. Naprawa na podst…
+[0.21] HANDOFF §6a decyzje operatora:244 -> pakiet:74
+    - Potwierdzenia rozumienia (nie decyzje): L1 = tak, dopisać pliki definicji per rola; L2 = tak, listy zamiast długich reguł, skuteczność do weryfikacji po wdrożeniu; L3 = tak, klasyfikacja źródła 33 findingów; L12 = tak, słownik klas do stworzenia; L15 = tak, audyt agentów review; L16 = wartość informacyjna (typ kodu, nie rozmiar).
+[0.21] ETAP3:16 -> pakiet:28
+    **Krytyk:** panel NIE może startować — 4 luki blokujące (L1 dźwignia kontekstu przeliczona dla odrzuconej konfiguracji, L2 polecenia-listy bez pomiaru, L3 atrybucja nowych findingów po fixie tylko po nazwie pliku, L4 sprzeczne mandaty dla osi test-coverage) + 15 ryzyk do raportu.
+[0.21] ETAP1B:82 -> pakiet:114
+    2. **Dlaczego nie ma raportu per tura?** Workflow jest bezstanowy, licznik tur trzyma rozmowa, schemat naprawy zwraca same ID wątków GraphQL, a szablon raportu (SKILL.md:149) prosi o cztery liczby. Dane do tabeli plik:linia | zarzut | decyzja | uzasadnienie już istnieją w `watki[]` z etapu zbierz — brakuje złączenia po id w szablonie. Nie potrzeba nowego agenta ani pliku na dysku: GitHub jest trwalszym nośnikiem (każ…
+[0.21] ETAP2:3 -> pakiet:38
+    **Data:** 2026-09-20. **Rozstrzyga:** sesja główna (Fable 5.1) na wynikach 7 agentów Opus, run `wf_f3c27f89-972` (10 min, 880k tokenów subagentów, 124 wywołania narzędzi).
+[0.21] ETAP1:3 -> pakiet:50
+    **Data:** 2026-09-20. **Kto rozstrzyga:** sesja główna (Fable 5.1) na podstawie wyników 18 subagentów (Opus) z runu `wf_7181673d-ef5`.
+[0.22] ETAP1B:45 -> pakiet:91
+    | **correctness** | 77 | ścieżka błędu bez obsługi 12, cykl życia React 11, parser regexem 9, bramka na jednej z dwóch dróg 8, wyścigi 6, granica wartości w migracji 4 (3× P1) | (1) każda operacja zmieniająca stan + WSZYSTKIE drogi do niej + bramka na każdej; (2) każdy `await` w ścieżce zapisu: co widzi użytkownik przy odrzuceniu, co zostaje rozjechane; (3) każda wartość czytana przed `await` i użyta po nim; sygnał s…
+[0.22] ETAP3:84 -> pakiet:125
+    **Dlaczego blokuje i jak się zamyka:** fakt jest tani — 33 findingi (19 z 9b f4, 14 z samodzielnej f3 run 2), każdy do przypisania do jednej z trzech klas z linią kodu jako dowodem: (1) wprowadzony commitem fixa (linia jest w diffie fixa), (2) istniał przed fixem w tym samym pliku, (3) kod nietknięty. Dane: `dane/findingi-per-os/`, commity fixów w oferty-online (sha z `dane/pomiar4-powtorki-review.json`). Skrypt + cz…
+[0.22] ETAP3:110 -> pakiet:83
+    Pełne opisy, dowody i „co by musiało się stać" są w `dane/etap3-krytyk/krytyk-kompletnosci.txt`. Tu tylko rozstrzygnięcie i gdzie luka ląduje.
+[0.22] ETAP1:88 -> pakiet:160
+    **dossier → otwarte.** Analityk chciał odchudzać scribe'a, a jedyny element z ujemnym bilansem to packager: 18,7 M kosztu, 9,5 M zysku z routingu (19 pominiętych testerów E2E), a routing poza E2E nie wycina prawie niczego (warunek code-quality tautologiczny). Jedyny pomiar „przed/po dossier" idzie w złą stronę: Bash reviewerów p50 10,5 → 23, Read bez zmian (2). Efekt jest zmieszany z nowym rosterem i rozrostem CLAUDE…
+[0.22] ETAP1B:77 -> pakiet:113
+    1. **Czy naprawia to, co powinien?** W turze 1 tak: pokrycie odpowiedziami na wątki bota skoczyło z 0–11% (PR 1–7, ręcznie) do 100% (PR 10–15, 19). Ale **tury 2 i 3 omijają etap klasyfikacji**: w agents.csv są 3 agenty `zbierz` (wszystkie tura 1) i 7 agentów `napraw` (tury 1–3). Uwagi rundy 2 bota na PR 14 (10:58) dostały odpowiedź z agenta `napraw:tura-3` (11:38) bez rubryki, bez `wpływNaProjekt` i bez jedynego twar…
+[0.23] ETAP2:50 -> pakiet:83
+    | 4. coding-rules 2026 | 21 | patrz §0 pkt 6; do lintera: §1, §6, część §5/§10 (`no-explicit-any` z `fixToUnknown`, `no-floating-promises` = mechaniczne wejście dla „ścieżka błędu bez obsługi", `consistent-type-imports`); brakuje: `verbatimModuleSyntax`, `erasableSyntaxOnly`, `satisfies` zamiast zakazu `as`, `using`/`await using`, 4 reguły RLS (`(select auth.uid())`, indeks na kolumnie polityki, `TO <rola>`, zakaz `s…
+[0.24] ETAP1B:20 -> pakiet:63
+    2. **Pipeline nie ma problemu z naprawianiem, ma problem ze znajdowaniem.** Zero uwag B przypisano do fixa i sceptyków; 98% findingów jest naprawianych. 195 uwag B to defekty, których nasze review nie zgłosiło. Prawie wszystkie mają właściciela i regułę. Lekiem są polecenia-listy w promptach właścicieli (§3), nie nowe reguły ani agenci. Potwierdza to §3 ETAP1-ROZSTRZYGNIECIE na 2,5× większej próbie.
+[0.24] ETAP1B:89 -> pakiet:66
+    4. **Ile tur?** Rozkład uwag per runda bota: 17,1 / 2,1 / 2,3 / 1,5 / 2,0 (325 / 31 / 16 / 9 / 4). Po turze 1 krzywa spada z klifu i stoi płasko na ~2, nie zbiega do zera. ALE rundy 3+ mają 69% uwag Major wobec 40% w rundzie 1 — późne uwagi są rzadsze i cięższe. Dlatego: **sufit 3 tur, domyślnie tryb interaktywny zostaje** (gołe `/dev-pr` = operator wybiera), bez sztywnego „2". Warunek wcześniejszego wyjścia po czyst…
+[0.24] ETAP2:25 -> pakiet:21
+    4. **Dźwignia kontekstu startowego (30–40%) jest potwierdzona w docs tylko w połowie.** `omitClaudeMd: true` (v2.1.271+) wyłącza „user, project, and local CLAUDE.md files" — potwierdzone. Docs **milczą**: (a) czy wyłącza też `.claude/rules/*.md` i rozwinięte `@import` (a tam siedzi połowa z 33k), (b) czy reguły z `paths:` w ogóle ładują się w subagentach z Agent tool / `agent()` w Workflow, (c) czy `omitClaudeMd` dzi…
+[0.24] ETAP3:3 -> pakiet:222
+    **Data:** 2026-09-20. **Rozstrzyga:** sesja główna (Fable 5.1) na wyniku 1 agenta Opus (`effort: high`), run `wf_2ff97321-477` (29 min, 235k tokenów, 21 wywołań narzędzi). Skrypt: `skrypty/workflow-E-etap3-krytyk.js`, odtworzenie z journala: `skrypty/journal_do_json.py`.
+[0.25] ETAP1B:65 -> pakiet:74
+    **Trend uwag B na 100 zmienionych plików:** PR 1–8: 12,8 → PR 9–13: 11,2 → PR 14–20: 5,2. Spadek NIE jest dowodem skuteczności napraw pipeline'u: oferty-online nie ma napraw N1–N9, a dwie najliczniejsze klasy (próg rozmiaru 80, test niefalsyfikowalny 31) są płaskie przez cały okres. Spadek wynika ze zmiany charakteru pracy (panel, teksty zamiast walidacji HTML i migracji). Pomiar rozstrzygający: PR z warstwy walidacj…
+[0.25] POMIARY:96 -> pakiet:83
+    | Stryker, 3 pliki z commitu fixa 417a9fd (use-first-steps, use-screen-tour, use-profile) | **2 min 1 s** (w tym dry run 184 testów 14 s) | 370 mutantów: 299 killed, 61 survived, 10 no-coverage → score 80,8% (83,1% na pokrytych); 4,7 testu na mutanta dzięki `perTest`. Przeżyte: głównie ConditionalExpression/EqualityOperator/BlockStatement w `use-profile.ts:72-94` i `use-first-steps.ts` — dokładnie klasa „gałąź bez as…
+[0.25] POMIARY:79 -> pakiet:74
+    **Rozstrzygnięcie:** teza z etapu 2 „część z 195 B to rzeczy, które u bota znajduje linter" **nie potwierdza się na liniach**: bot **nie** znalazł tych 195 uwag linterami, znalazł je modelem. Bramki mechaniczne mają u nas inną rolę: (a) gaszą koszyk A (progi rozmiaru, styl, 157 uwag) u źródła; (b) **zapobiegają** klasom, które w kodzie oferty-online realnie występują (11 × set-state-in-effect, 3 × refs, 8 × valid-exp…
+[0.25] ETAP3:19 -> pakiet:7
+    **Sesja główna:** panel MOŻE startować po trzech tanich domknięciach (skrypty + czytanie w sesji głównej, zero agentów, łącznie ~2 h) i po jednym słowie operatora w sprawie test-coverage. Uzasadnienie per luka w §1. Skrót:
+[0.27] ETAP3:126 -> pakiet:91
+    | L17 | kryteria panelu | koszt i ryzyko wdrożenia nie są wymiarem sędziów (autopilot-wf 120 kB, review-wf 97 kB, 74 testy, ~24 nowe pliki agentów, 188 zastanych błędów ESLint) | ryzyko | **propozycja dla operatora:** dodać sędziom wymiar „koszt wdrożenia i utrzymania jednoosobowego" (§7) |
+[0.27] HANDOFF §6a decyzje operatora:157 -> pakiet:91
+    9. **Test reguł warunkowych i kontekstu subagentów (przed etapem 4, osobny mini-run na małym repo):** reguły-markery z `paths:` dla 5 wymiarów (`*.tsx`, `supabase/migrations/**`, `*.test.*`, `Dockerfile`+`coolify*`, `.claude/**`), jedna reguła z DWOMA globami, dwie z nakładającymi się globami, jedna bez `paths:` (kontrola), jedna reguła o „momencie procesu" bez ścieżki (ma NIE wejść). Mierzyć: (a) czy marker trafia d…
+[0.27] ETAP1:56 -> pakiet:74
+    **code-quality → ZOSTAW-ODCHUDZ, nie ZASTAP.** Sceptyk otworzył 9 P2 z próbki: 8 to realne defekty zachowania (rozjechany kontrakt `AccountLimitKind` w dwóch modułach, XSS przez Content-Type, fetch bez timeoutu, błędy serwera mapowane na 400, nieidempotentny SQL). Linter/knip złapie 5–8 z 45. Ale 73% wyjścia to P3 stylu, z regeneracją (ten sam martwy wpis 3× w próbce), i każdy P3 kosztuje turę fixa. Decyzja: mechanik…
+[0.27] ETAP3:73 -> pakiet:33
+    **Klasyfikacja:** ryzyko-do-raportu + domknięcie D2 przed panelem + warunek odwrotu jako wymóg dla każdego z trzech projektów.
+[0.27] ETAP3:123 -> pakiet:176
+    | L14 | inwentarz poza rdzeniem | 8 agentów niewołanych z workflowów (2 martwe: kieran-typescript-reviewer, code-simplicity-reviewer — 0 odwołań w skillach i workflowach), dev-ideate/dev-brainstorm/dev-docs-update, skill code-review (drugi roster), freshness-audit (mechanizm „czy reviewer aktualny" — nieużyty), 2 hooki Stop, templates/, 74 testy workflowów | ryzyko | **wejście do panelu:** lista elementów, które proj…
+[0.27] PRZEGLAD RUNOW decyzje operatora:216 -> pakiet:44
+    - `docs/reviews/` w szablonie nadal nieśledzone przez git (pięć plików `??`, w tym ten) — decyzja #3 z planu 03.09 wciąż otwarta.
+[0.27] ETAP3:77 -> pakiet:125
+    **Zarzut (trafny, podtrzymany):** POMIARY §4 klasyfikuje „nowe w plikach zmienionych 17/19" (9b f4) i na tej podstawie rozstrzyga „to NIE jest niezbieganie — to review kodu naprawczego". Ale fix dotknął 23 plików tej samej fazy, więc „w pliku zmienionym fixem" nie odróżnia (a) defektu wprowadzonego przez fix od (b) defektu, który był w rundzie 1 i nie został znaleziony. Przegląd runów (§7 rek. 6) prosił dokładnie o t…
+[0.28] ETAP2:90 -> pakiet:144
+    4. **Inter-run agreement naszego review:** ile z 12–18 findingów powtórki (9b f4 ×2, f3 ×3) to te same findingi, ile nowe prawdziwe — rozstrzyga, czy jesteśmy w reżimie „powtórka szkodzi" czy „za mało próbek". Dane są w `findingi-per-os/`, to skrypt, nie agent.
+[0.28] HANDOFF §6a decyzje operatora:132 -> pakiet:74
+    2. **dev-pr do osobnej analizy** (operator niezadowolony): (a) czy realnie naprawia findingi bota, które powinien; (b) brak raportu końcowego per tura (co było, co naprawiono); (c) brak jasnej rekomendacji merguj / nie merguj / potrzebna kolejna tura; (d) domyślna liczba tur 3–4 do ustalenia; (e) **pomiar uwag CodeRabbita z GitHuba oferty-online**: których dało się uniknąć i dlaczego (progi 300/50 linii przekroczone …
+[0.28] HANDOFF §6a decyzje operatora:170 -> pakiet:119
+    12. **Wymagane narzędzia CLI — dziś brak systemu.** Stan: tylko skill agent-browser ma `command -v`; sync-template sprawdza git; README nie ma sekcji wymagań. Użytkownik szablonu bez Supabase CLI dowie się w ŚRODKU runu autopilota (e2e:env-up `supabase db push`, builder-data `supabase db reset`), bez gh — na starcie dev-pr, bez agent-browser — w testerze E2E. Ruch: mechaniczny skrypt `doctor` (bash, zero agentów), li…
+[0.29] ETAP3:35 -> pakiet:129
+    **Zarzut (trafny w faktach):** POMIARY §5 pkt 1 liczy 35 agentów × ~57k, a 57k = 62,0k (general-purpose) − 4,5k (`tools:` + `omitClaudeMd`) — konfiguracja, której 6a pkt 15 NIE przyjmuje dla builderów i reviewerów (CLAUDE.md 20,6k zn zostaje, `skills:` 7–12k tok zostaje, wycinek learned-patterns dochodzi). Druga część: `tools:`/`omitClaudeMd` żyją w pliku definicji agenta, a w workflowach `agentType` mają tylko: secu…
+[0.29] ETAP3:106 -> pakiet:1
+    **Klasyfikacja:** blokuje-panel → domknięcie D4 (słowo operatora), bez pomiaru.
+[0.29] POMIARY:127 -> pakiet:74
+    - Na kodzie po fixie powtarzalność ~0 i **większość nowych findingów dotyczy plików zmienionych przez fix** (17/19 w 9b). To NIE jest niezbieganie review — to review **kodu naprawczego**, którego dziś nikt poza kontrolą diffu nie ogląda. Potwierdza decyzję z etapu 1 (nie scalać kontroli z poprawką) i pokazuje, że kontrola diffu fixa łapie za mało (3 regresje vs 17 findingów pełnego review w tych samych plikach).
+[0.30] ETAP1B:28 -> pakiet:74
+    | usunąć „pliki > 300 / funkcje > 50 linii" z path_instructions `**/*.{ts,tsx}` (linie 66–67); próg przenieść do ESLint max-lines z tolerancją | 80 | 24 / 22 / 34 uwag w trzech oknach PR — klasa ROŚNIE mimo napraw pipeline'u |
+
+## SREDNIE (0.30-0.49) — sprawdzic wyrywkowo: 65
+[0.30] HANDOFF §6a decyzje operatora:262 -> pakiet:16
+    - **L15: robimy w domknięciach przed panelem** (D3, 20 min) razem z D1 i D2 — na znak operatora.
+[0.30] ETAP2:58 -> pakiet:91
+    | correctness | częściowy | **wzmocnienie:** `no-floating-promises` + `react-hooks` v6 (set-state-in-effect, refs, purity, immutability) jako mechaniczne wejście dla 2 największych klas B (ścieżka błędu 12, cykl życia React 11+6); agentowi zostaje „wszystkie drogi do operacji", wartość przed/po `await`, długość literału vs constraint |
+[0.31] ETAP1:63 -> pakiet:74
+    **spec-compliance → ZOSTAW.** Trzy z pięciu proponowanych cięć kasują realne findingi (filtr TEST w JS wyrzuciłby defekt migracji; „bookkeeping do JS" wyrzuciłby P2 o brakującej zmiennej runtime) lub naruszają udokumentowaną intencję kodu (BLOK_SEMANTYKA). Realna oszczędność całego pakietu: 0,25–0,3 M na fazie 21,8 M = poniżej rozrzutu między runami. Jedyna korekta: martwe odwołania do `architecture`/ `typescript` w …
+[0.31] ETAP2:57 -> pakiet:91
+    | security | częściowy | bez zmian wzgl. etapu 1; `supabase db advisors` (0013, 0007, 0002, 0023) w domknięciu zdejmuje z promptu reguły RLS; agentowi zostaje tryb atakującego na bramkach w kodzie TS + ładunek wyjątku + diff w `.claude/` |
+[0.31] HANDOFF §6a decyzje operatora:263 -> pakiet:240
+    - **Telemetria: „trzeba też to przygotować"** → nowe domknięcie **D5 (~30 min):** szkic rekordu telemetrii (pola) + wskazanie, który skrypt i w którym miejscu runu go dopisuje (produktyzacja `skrypty/koszt_agentow.py`); wejście do panelu jako element obowiązkowy każdego projektu; implementacja w planie etapu 5.
+[0.31] ETAP3:225 -> pakiet:12
+    - **propozycja dla operatora (L17):** sędziowie dostają czwarty wymiar — koszt wdrożenia i utrzymania jednoosobowego (pliki, testy `__tests__`, nowe agenty).
+[0.32] ETAP3:26 -> pakiet:125
+    | L3 atrybucja po fixie | blokuje | **blokuje → domknięcie D1 przed panelem (~1 h)** | jedyna luka, gdzie fakt jest tani, a bez niego panel dostaje pytanie postawione na złym podziale |
+[0.32] HANDOFF §6a decyzje operatora:228 -> pakiet:204
+    - Docker i czerwone testy oferty-online: **nie są blokerem niczego teraz** — advisors zmierzymy przy wdrożeniu bramki; czerwony main to finding dla szablonu (bramka „zielony main" w bootstrapie autopilota), nie zadanie dla operatora w tej analizie.
+[0.33] HANDOFF §6a decyzje operatora:243 -> pakiet:50
+    - **NOWE — telemetria centralna, mechaniczna, zero tokenów:** operator chce za miesiąc po wdrożeniu usiąść i mieć zebrane dane łatwe do analizy (co działa, co nie). Wymóg: zbieranie NIE może zwiększać kosztu — żadnych agentów (scribe haiku skasował JSONL 2×), tylko skrypt po zakończeniu runu czytający `journal.jsonl` + transkrypty (`usage`) i dopisujący jeden rekord per agent/faza do globalnego JSONL (run, zadanie, f…
+[0.33] HANDOFF §6a decyzje operatora:196 -> pakiet:104
+    15. **Decyzje po pomiarach (2026-09-20, po rozmowie o POMIARY-ROZSTRZYGNIECIE):**
+[0.33] ETAP1:16 -> pakiet:74
+    3. **Sceptycy „obalili" 11/11 werdyktów, ale etykieta przetrwała w 9/11.** Obalone były uzasadnienia i arytmetyka, nie kierunek. Zmiany etykiet: performance ZOSTAW-ODCHUDZ → **ZASTAP**; spec-compliance ZOSTAW-ODCHUDZ → **ZOSTAW**; code-quality ZASTAP → **ZOSTAW-ODCHUDZ**.
+[0.33] ETAP1:31 -> pakiet:74
+    | element | analityk | sceptyk | **rozstrzygnięcie** | zweryfikowana oszczędność / faza | miara skutku (do pomiaru po 5 fazach) | |---|---|---|---|---|---|
+[0.33] ETAP1B:3 -> pakiet:7
+    **Data:** 2026-09-20. **Rozstrzyga:** sesja główna (Fable 5.1) na wynikach 6 agentów Opus, run `wf_daf2b119-3c4`.
+[0.33] ETAP2:55 -> pakiet:21
+    | element | zamiennik | rozstrzygnięcie po etapie 2 (nadpisuje etap 1 tylko tam, gdzie zaznaczono) | |---|---|---|
+[0.33] ETAP2:63 -> pakiet:74
+    | e2e | **brak** | jedyny element nieodchudzalny bramką (mutacja nie obejmuje Browser Mode/E2E; brak narzędzia seed-vs-migracja); zostaje polecenie-lista o seedach |
+[0.33] ETAP3:8 -> pakiet:204
+    **Mandat krytyka:** szukać luk, nie proponować rozwiązań, nie podważać decyzji operatora (6a pkt 1–17). Każda luka z oceną blokuje-panel / ryzyko-do-raportu.
+[0.34] ETAP1B:49 -> pakiet:74
+    | **code-quality** | 12 | pusty catch 2, martwa gałąź 1, duplikacja 3, kontrakt shared 3 | ESLint `no-empty`, `no-unreachable`, `no-unused-vars` + knip w domknięciu; wynik lintera jako WEJŚCIE do promptu („przy każdym trafieniu: defekt czy świadoma decyzja"); grep powtórzonych regexów/stałych między plikami fazy | 8 (5 bez agenta) |
+[0.35] ETAP2:48 -> pakiet:83
+    | 2. mutation testing | 13 | Stryker 10.0 (2026-08, Node 22+, TS 7); vitest-runner wymusza `perTest`; **brak `--since` w JS**, są zakresy `plik:od-do`; incremental cache; Google diff-only; MutGen 53→89,5% z feedbackiem; ISSTA 2026: score ≠ wykrywalność; `@vitest/eslint-plugin`; `vitest --typecheck` na schemat vs kontrakt | trzy warstwy w domknięciu fazy (§0 pkt 5); test-coverage zostaje agentem tylko na „luka pokryci…
+[0.35] ETAP2:79 -> pakiet:144
+    | coding-rules.md | częściowy | przepisać wg §0 pkt 6 i kierunku 4; docelowo: to, co zostaje, to polecenia produkujące listę, nie proza; ~3k tokenów × 35 agentów = ~105k na fazę tylko za reguły |
+[0.36] HANDOFF §5 hipotezy:101 -> pakiet:63
+    5. **P3: nie naprawiać automatycznie** — zostawić botowi/operatorowi; pętla fix tylko P1/P2 (do potwierdzenia analizą pętli fix: ile z 138 P3 to realne defekty).
+[0.36] ETAP1:39 -> pakiet:74
+    | test-coverage | ZOSTAW-ODCHUDZ | obalony (zmiana b bez dźwigni) | **ZOSTAW-ODCHUDZ (kryterium falsyfikowalności zamiast „test istnieje + ma asercję")** + naprawić brak `zEffortem`/`agentType` | ~0 tokenów (zmiana jakościowa) | wpisy testing-issues po bocie (dziś 17 z 68 = klasa „test niefalsyfikowalny") |
+[0.36] ETAP2:71 -> pakiet:83
+    | pre-skan fixa | standardowe narzędzie | **skasować** — to praca ESLint (`no-empty`, `no-unreachable`, `no-unused-vars`) i knipa |
+[0.36] ETAP3:132 -> pakiet:196
+    1. **Czy 4 pomiary wystarczają i są dobrze zdefiniowane?** Pomiar 3 (czasy) — tak, z dwiema dziurami (advisors, Stryker ekstrapolowany z 3 plików). Pomiar 1 — metodologicznie najmocniejszy (17 scenariuszy z markerami), ale liczba −50k jest funkcją konta (L8) i nie obejmuje ról bez pliku (L1). Pomiar 2 — 97/200 i ±3 linie: mówi o metodzie tyle co o bramkach (L9). Pomiar 4 — 6 par, 3 na zmienionym kodzie, atrybucja po …
+[0.37] ETAP1B:86 -> pakiet:113
+    3. **Dlaczego nie ma „merguj / nie merguj"?** Bramka zwraca listę faktów („mergeStateStatus = BEHIND"), a JS nie rozróżnia warunku naprawialnego kolejną turą (wątki `napraw` > 0) od wymagającego człowieka (wątki do operatora, CI, konflikt). Żaden epizod nie doszedł do autonomicznego merge'a (0 agentów `pr:merge:`) — każdy kończył się decyzją operatora bez werdyktu.
+[0.37] ETAP2:72 -> pakiet:83
+    | kontrola diffu naprawczego | częściowy | NIE scalać (etap 1 stoi); `migrations.sum` + `vitest --typecheck` łapią część klasy „zmiana kontraktu", reszta zostaje agentowi |
+[0.37] ETAP3:58 -> pakiet:129
+    **Klasyfikacja:** ryzyko-do-raportu (liczba w raporcie: 25–35%, nie 30–40%) + fakt wejściowy do panelu: „allowlista wymaga pliku agenta per rola; dziś 9 ról ma plik, ~24 nie".
+[0.38] HANDOFF §6a decyzje operatora:235 -> pakiet:17
+    18. **Decyzje operatora po etapie 3 (2026-09-21, po lekturze ETAP3-DLA-OPERATORA):**
+[0.38] ETAP2:83 -> pakiet:91
+    1. **Reguły `paths:` i `omitClaudeMd` w subagentach** — mini-run wg HANDOFF 6a pkt 9, rozszerzony o: (a) czy `omitClaudeMd` wyłącza `rules/*.md` i `@import`, (b) czy działa dla `agent()` w Workflow, (c) kontekst startowy z `usage` dla trzech wariantów: `omitClaudeMd`, `tools:` bez MCP, `skills:` zamiast 300 opisów. Bez tego panel nie wie, czy dźwignia to 30–40% czy 15–20%.
+[0.38] ETAP2:86 -> pakiet:83
+    2. **Ile z 195 uwag B łapie sam ESLint flat + knip + tsc + `@vitest/eslint-plugin` + `vitest --typecheck`** — przepuścić dzisiejszy kod oferty-online przez proponowany `eslint.config.ts` i zestawić trafienia z `klasyfikacja-574.csv` po `plik:linia`. To jedna liczba rozstrzygająca, ile osi review można skasować.
+[0.38] ETAP3:122 -> pakiet:196
+    | L13 | /bugfix | połowa zadeklarowanej miary jakości (HANDOFF §1), zero danych, zero wystąpień w rozstrzygnięciach; skill nie zinwentaryzowany | ryzyko | raport: miara jakości = dziś tylko CodeRabbit; /bugfix do zliczenia przy pierwszym pomiarze po wdrożeniu (git/Sentry oferty-online) |
+[0.38] ETAP3:120 -> pakiet:56
+    | L11 | oś e2e, env-up/down | jedyny element bez zamiennika, źródło prawie wszystkich STOP-ów i ~1,2 M tokenów powtórek; 3 rekomendacje z przeglądu runów (parametryzacja E2E, katalog zadania jako własne artefakty, kategoria przyczyny SKIP) nie weszły do żadnej decyzji | ryzyko | **wejście do panelu:** każdy projekt ma pokazać, co robi ze STOP-ami E2E; parametryzacja E2E (HANDOFF §5 hip. 9) na listę zmian szablonu |
+[0.38] HANDOFF §6a decyzje operatora:203 -> pakiet:44
+    - **learned-patterns (49k zn, ładowany bezwarunkowo do 35 agentów):** kierunek = **orkiestrator wkleja wycinek** (JS dobiera z formatu klasa → reguła → źródło tylko klasy pasujące do plików IU i dokleja 1–2k zn do promptu buildera/reviewera; przy planowaniu dev-plan czyta całość). Operator NIE chce czytać learned-patterns sam. Wariant „wiedza poza kontekstem agentów" odrzucony jako domyślny. Do potwierdzenia mini-run…
+[0.39] ETAP1:38 -> pakiet:74
+    | code-quality | ZASTAP | obalony (8/9 P2 realne) | **ZOSTAW-ODCHUDZ + lint mechaniczny** (ESLint flat + knip w domknięciu; styl/progi zakazane w prompcie, fokus na kontrakty/mapowanie błędów/ciche odsiewanie/idempotencję) | −0,3–0,5 M (mniej P3 w fixie; 73% wyjścia to P3) | liczba P3 stylu tej osi → ~0; P2 zachowaniowe bez zmian |
+[0.39] ETAP3:94 -> pakiet:21
+    **Zarzut (trafny):** ETAP2 §2 wiersz test-coverage: „PRZED agentem stoją: @vitest/eslint-plugin → vitest --typecheck (expectTypeOf) → Stryker diff-scoped (…) agent tylko na „luka pokrycia / strażnik negatywny" — kandydat do scalenia z correctness". POMIARY §2: warstwa 1 na klasie test-niefalsyfikowalny **0/31**; §5 pkt 4: Stryker na atrapach i Zod **niezmierzony**; §2: „ile osi można skasować: zero dodatkowych". Oś d…
+[0.39] ETAP1:49 -> pakiet:74
+    **performance → ZASTAP.** Przyjmuję kontrę w całości: w 45 potwierdzonych są 3 P1 i żaden nie jest wydajnościowy (correctness, security, OPERATOR); w domenie zostają 4 P2, z czego 2 to pomiar bundle'a (reguła D12 pękła dwa razy = agent nie zapobiega, tylko raportuje); 57% wyjścia to P3; „useEffect cleanup" jest dublem z correctness; koszt osi 1,5–2,2% fazy plus indukowany. Bot znalazł po nas klasę perf (sufit 200 w ś…
+[0.40] ETAP1:99 -> pakiet:74
+    | progi rozmiaru 300/50 linii | 20 | konwencja | nikt (code-simplicity nie jest już uruchamiany) | właściciel usunięty 03.09 | oddać botowi (`.coderabbit.yaml` path_instructions) — operator odrzucił hurtowo 2× |
+[0.40] ETAP2:59 -> pakiet:74
+    | spec-compliance | **brak** | jedyna oś bez żadnego mechanicznego zamiennika — potwierdza ZOSTAW z etapu 1; polecenia-listy krótkie i na początku promptu (IFScale) |
+[0.40] ETAP3:99 -> pakiet:21
+    **Rozstrzygnięcie precedensem (do potwierdzenia przez operatora — D4):** POMIARY jest późniejsze niż ETAP2 i było pomyślane jako warunek wejścia do etapu 4 (ETAP2 §3). Degradacja z ETAP2 była warunkowa („trzy warstwy przejmą klasę") i straciła przesłankę: jedyna zmierzona warstwa trafia 0/31, dwie pozostałe nie mają pomiaru. Zapis obowiązujący dla panelu: **test-coverage ZOSTAJE jako oś** (z kryterium falsyfikowalnoś…
+[0.41] ETAP2:66 -> pakiet:83
+    | packager/dossier | częściowy → **JS** | **rozstrzygnięcie otwartego pytania z etapu 1:** dobór plików i routing deterministycznie w JS (OpenCodeReview), treść dossier = pełne pliki dotknięte + kontrakty, **bez zapewnień z planu fazy**; agent packagera znika. Sprzeczność „szeroko vs wąsko" (§4) do pomiaru |
+[0.42] ETAP1:101 -> pakiet:74
+    | preferencje bota (Act/Assert, docstring, teza obalona pomiarem) | 11 | nie | nikt i słusznie | — | zostawić botowi |
+[0.42] ETAP3:128 -> pakiet:204
+    | L19 | coderabbit-setup | 8 zmian `.coderabbit.yaml` zapisane dla oferty-online, a progi 300/50 siedzą w `.claude/skills/coderabbit-setup/templates/coderabbit-base.yaml:54-55` (zweryfikowane) | ryzyko | **lista zmian szablonu** (nie panel): przenieść 8 zmian do generatora; 10 min |
+[0.43] HANDOFF §6a decyzje operatora:211 -> pakiet:204
+    17. **Decyzje operatora 2026-09-20 (druga rozmowa po pomiarach):**
+[0.43] ETAP3:224 -> pakiet:173
+    - lista elementów nietkniętych (§5): objąć albo jawnie zostawić;
+[0.43] HANDOFF §5 hipotezy:94 -> pakiet:144
+    2. **Mniej agentów na fazę** (35 → ~15): stan:zapis i telemetria jako jeden plik JSON per run pisany `Write` przez agenta, który i tak istnieje (scribe), zamiast 3 osobnych agentów haiku na fazę; dedup semantyczny do scribe'a; pre-skan + kontrola + poprawka → jedna kontrola; planner + domknięcie → w builderze; verify-batch tylko dla P1/P2 KOD (nie dla P3 i OPERATOR).
+[0.44] ETAP1B:97 -> pakiet:113
+    2. Regex guarda wf:278: usunąć alternatywę z backtickiem, wymagać nazwy dokumentu (CLAUDE.md / docs/plans/ / docs/CONCEPTS.md) + min. 20 znaków uzasadnienia.
+[0.44] ETAP1B:60 -> pakiet:74
+    **Rozstrzygnięcia niespójności klasyfikatorów:** (a) migracje i granice wartości w SQL → zakres correctness (B), stąd polecenie (4); (b) seedy → właściciel e2e dla kontraktu, security dla strażników; (c) pusty catch → domknięcie (lint), nie reviewer; (d) „test kruchy" → A; (e) potrzebny
+[0.44] ETAP1:43 -> pakiet:160
+    | dossier / dedup / scribe | ZOSTAW-ODCHUDZ (tnij scribe'a) | obalony (podział na 2 agentów = koszt ujemny) | **dedup ZOSTAW; scribe: niższy tier + krótszy prompt (nie dzielić); packager: OTWARTE — bilans ujemny (18,7 M kosztu vs 9,5 M routingu), a jedyny pomiar pokazuje, że reviewerzy po dossier czytają 2× więcej Bashem** | scribe −0,1–0,2 M; packager: do decyzji w etapie 4 | tury Bash reviewerów przed/po zmianie ma…
+[0.44] ETAP2:49 -> pakiet:91
+    | 3. bramki mechaniczne | 14 | ESLint 10 (2026-02): eslintrc **martwe**, tylko flat config; `recommendedTypeChecked` error, `strictTypeChecked` **tylko warn** (niestabilny wg semver); `max-lines {360, skipBlankLines, skipComments}`, `max-lines-per-function {60}`; `no-empty` w recommended za darmo; `eslint-plugin-react-hooks` v6 z regułami kompilatora (set-state-in-effect, refs, purity) — działa bez włączonego kompila…
+[0.44] ETAP2:67 -> pakiet:72
+    | scribe telemetrii | brak w researchu | decyzja z etapu 1 (niższy tier, krótszy prompt); własny wniosek: append jednego wiersza to praca JS, nie modelu |
+[0.44] POMIARY:151 -> pakiet:83
+    4. **Nie zmierzone (zostaje):** `supabase db advisors` (Docker), Stryker na klasie „atrapa bez argumentów" i na Zod, kill rate sceptyka asymetrycznego, run kontrolny „1 reviewer vs 6 osi".
+[0.45] ETAP1B:53 -> pakiet:74
+    | **planner (dev-plan/docs)** | 0 przypisanych, ale źródło 80 A + 5 B | próg rozmiaru; ta sama stała w 2–4 miejscach | (1) **budżet pliku w IU**: bieżąca długość + decyzja „zostaje / dzieli się" PRZED pisaniem; kryterium = liczba powodów do zmiany, nie linie (app.ts: konfiguracja + limiter + host-guard + trasy → dzielić; texts.ts 5300 linii jednej odpowiedzialności → nie); (2) **rejestr stałych**: IU wprowadzające li…
+[0.45] ETAP1B:101 -> pakiet:113
+    **Odrzucone:** nowa klasa `bot-podtrzymuje` (dubluje ścieżkę `isResolved:false` → zbierz po naprawie 1), przebudowa schematu na obiekty (złączenie po id wystarczy), etap `raport` z plikiem na dysku (karmi pętlę recenzji, koszt 0,6–0,7 M), domyślne 2 tury (kasuje tryb interaktywny; severity późnych rund temu przeczy), „warunek wcześniejszego wyjścia" (istnieje).
+[0.45] ETAP2:60 -> pakiet:91
+    | performance | standardowe narzędzie | potwierdza ZASTĄP: size-limit + advisors performance (0001, 0003, 0005) + `AbortSignal.timeout` jako reguła kodu; przy React Compilerze zapisać wprost: „brak useMemo/useCallback" nie jest findingiem |
+[0.45] HANDOFF §5 hipotezy:103 -> pakiet:147
+    6. **dev-plan + dev-docs = jeden skill** (jeden artefakt: plan z fazami i checkboxami, bez przepisywania 22–46% treści); dev-prep zostaje osobno (interaktywny, 100 min z człowiekiem). Oszczędność: czas operatora, nie tokeny.
+[0.45] ETAP1:42 -> pakiet:74
+    | orkiestracja / stan / telemetria | ZOSTAW-ODCHUDZ (−2,85 pp) | obalony (scalenie przenosi pracę) | **ZOSTAW-ODCHUDZ: treść stanu (już policzona w JS) doklejana do promptu agenta-następcy zamiast osobnego agenta haiku; precheck → env-up; telemetria zostaje z gałęzią STOP; domknięcie bez zmian (pkt 1b NIE jest duplikatem)** | 80 powołań stan:zapis = 9,6 M/23 fazy ≈ −0,42 M ≈ **−2%**; precheck −0,25 pp; telemetria −0,…
+[0.45] ETAP3:194 -> pakiet:72
+    - **D4 (słowo operatora, 0 min):** potwierdzenie precedensów z §6 pkt 1–3, w szczególności test-coverage.
+[0.46] ETAP3:121 -> pakiet:114
+    | L12 | słownik klas | nie istnieje jako lista; ETAP1 §3 „cykl życia i współbieżność UI" (20) vs ETAP1B §3 „cykl życia React" (11) + „wyścigi" (6); 6a pkt 17 „zamknięty słownik" dotyczy learned-patterns, nie uwag bota ani dossier | ryzyko | raport + wdrożenie: jedna lista nazw z odwzorowaniem ETAP1↔ETAP1B; decyzja, czy jeden słownik obsługuje 3 zastosowania — to jest praca implementacyjna, nie panelowa |
+[0.46] HANDOFF §6a decyzje operatora:195 -> pakiet:120
+    14. **Styl komunikacji z operatorem:** gdzie był problem → co go powodowało → jak działa rozwiązanie → co to daje. Język korzyści, minimum żargonu.
+[0.46] ETAP3:201 -> pakiet:129
+    - **D2 (L2) GOTOWE** — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`. Jednostka = pozycja listy albo zdanie z markerem nakazu. Dziś (oferty-online): **reviewer security ~365 instrukcji** (dolna granica 319), z tego plik agenta 104, coding-rules 117, CLAUDE.md 46, learned-patterns 38 **×2** (eager z `.claude/rules/` ORAZ w całości w dossier — packager przepisuje go ponownie), bloki wor…
+[0.47] HANDOFF §6a decyzje operatora:240 -> pakiet:171
+    - **L13 (/bugfix): operator praktycznie nie używa, kandydat do usunięcia z szablonu** — miara jakości = CodeRabbit (+ Sentry po wdrożeniu). Na listę zmian szablonu.
+[0.48] ETAP3:68 -> pakiet:155
+    **Dlaczego nie blokuje:** skuteczność poleceń-list da się zmierzyć dopiero PO ich wdrożeniu (PR z warstwy walidacji/migracji vs PR 2, 4, 9 — ETAP1B §3), czyli po panelu. Panel nie może czekać na wynik implementacji własnego projektu. Budżet instrukcji natomiast jest do policzenia skryptem przed panelem (D2). Panel dostaje polecenia-listy jako **założenie z warunkiem odwrotu** (wzór: ETAP1 §1 performance — „>1 P1/P2 k…
+[0.48] ETAP2:99 -> pakiet:83
+    - **Sekwencyjnie vs równolegle (kierunek 5).** Nie sprzeczność, lecz rozróżnienie: druga runda po pierwszej szkodzi; n równoległych próbek pomaga. U nas dzisiaj jest wyłącznie wariant szkodliwy. Do panelu: wariant „n=3 próbki correctness z różną kolejnością diffu + agregator" jako alternatywa dla 6 osi.
+[0.48] ETAP1:37 -> pakiet:74
+    | e2e | ZOSTAW-ODCHUDZ | obalony (rek. 1 już wdrożona 02.09) | **ZOSTAW-ODCHUDZ (harness → env-up, jedno źródło promptu, parametry z .env.e2e)** | ~0,3 M bezpośrednio; pośrednio: powtórka po STOP-ie E2E = sam tester (polityka orkiestratora) | liczba STOP-ów E2E z przyczyn zewnętrznych (limit mailera) → 0; koszt powtórek |
+[0.48] HANDOFF §5 hipotezy:97 -> pakiet:74
+    3. **Roster review 6 → 4–5:** code-quality → lint (ESLint/knip) w domknięciu; security/performance/spec/correctness zostają z odchudzonymi promptami (~50% linii) i twardym ogrodzeniem domen; test-coverage — do zbadania (może scalić z correctness jako „poprawność + testy zachowania"); e2e zostaje, ale puste przebiegi to bramka JS.
+[0.49] POMIARY:134 -> pakiet:125
+    **Uzupełnienie D1 (2026-09-21, etap 3 L3) — atrybucja 33 nowych findingów po fixie przez `git blame` na linii (skrypt `skrypty/d1_atrybucja_po_fixie.py`, dane `dane/pomiar5-atrybucja-po-fixie.{json,txt}`):** zdanie „to NIE jest niezbieganie — to review kodu naprawczego" jest **za mocne**. Z 17/19 findingów 9b „w plikach zmienionych fixem" tylko **7 urodził fix** (wszystkie jako skutek naprawy findingu z rundy 1, w ty…
+
+## WYSOKIE (>=0.50): 55
+[0.50] HANDOFF §6a decyzje operatora:136 -> pakiet:119
+    3. **Higiena konta (poza szablonem, sekcja raportu dla operatora):** MCP i pluginy per projekt, nie globalnie; **audyt zainstalowanych pluginów** — usunąć nieużywane.
+[0.50] HANDOFF §6a decyzje operatora:227 -> pakiet:104
+    - **ETAP 3 STARTUJE W NOWEJ SESJI** — wszystkie decyzje do etapów 3–5 są w tym pliku (6a pkt 1–17), ETAP1/1B/2 i POMIARY. Nie pytać o nie ponownie.
+[0.50] ETAP1:33 -> pakiet:74
+    | security | ZOSTAW-ODCHUDZ | obalony (v1, fence) | **ZOSTAW-ODCHUDZ (tylko prompt)** | ~0 tokenów (prompt 191→~90 linii) + warunek `plikiKodu>0` (wycina wywołania w fazach bez kodu) | P1/P2 klasy security od bota po review (dziś 7+6 w dwóch klasach ucieczek) |
+[0.50] ETAP1B:98 -> pakiet:113
+    3. Pole `rekomendacja` liczone w JS po wf:399: MERGUJ / NIE MERGUJ — <warunek> / KOLEJNA TURA / DECYZJA OPERATORA — jako pierwszy wiersz raportu; w prompcie `zbierz` jedno zdanie: „przeczytaj ostatni komentarz bota w wątku; gdy podtrzymuje zarzut, nie klasyfikuj jako `odrzuc`".
+[0.50] ETAP3:119 -> pakiet:158
+    | L10 | performance ZASTĄP, security odchudzone | oba stoją na `supabase db advisors`, niezmierzonym (Docker off, 6a pkt 17: „zmierzymy przy wdrożeniu bramki"); size-limit 0 trafień w szablonie | ryzyko | panel dostaje to jako założenie z warunkiem odwrotu (już zapisany w ETAP1 §1) |
+[0.51] HANDOFF §6a decyzje operatora:267 -> pakiet:170
+    - **L14 — hooki Stop i dwa martwe agenty: POTWIERDZONE przez operatora 2026-09-21 (wszystkie trzy punkty):** (a) `stop-build-check-enhanced.sh` (tsc po każdej odpowiedzi w sesji głównej) ZOSTAJE — działa poza autopilotem, zero tokenów; (b) `error-handling-reminder.sh` (console.log / captureError w edytowanych plikach, exit 2 = dodatkowa tura) → WYCOFAĆ, gdy bramka ESLint (`no-console` + reguła Sentry) wejdzie do domk…
+[0.51] ETAP1:40 -> pakiet:162
+    | verify-sceptycy | ZOSTAW-ODCHUDZ (usuń ścieżkę P2) | obalony (zamiennik 48× słabszy) | **ZOSTAW; hipoteza do pomiaru: batch 4 findingów per sceptyk niezależnie od pliku** | dziś 0; hipoteza: 105→~30 agentów/23 fazy = −0,4 M ≈ −2% (sama opłata za powołanie) | odsetek obalonych i degradacji P2→P3 przy batchowaniu vs dziś (10,9% / 23%) |
+[0.52] HANDOFF §6a decyzje operatora:140 -> pakiet:115
+    5. **coding-rules.md:** poprawki (sprzeczność §3/§11, zbyt absolutne NIGDY/ZAWSZE, część do ESLint) + **research w etapie 2**: czy dokument pisany dziś od zera wyglądałby inaczej (stan praktyk 2026 dla TS/React 19/Supabase/Node); co usunąć, co dodać. Właściciel: szablon, wersjonowany, zmiany tylko z dowodem.
+[0.52] ETAP1:34 -> pakiet:74
+    | correctness | ZOSTAW-ODCHUDZ | obalony (v1, tury zmyślone) | **ZOSTAW-ODCHUDZ + własny plik agenta** | −0,33 M (tury 29,6→~20) ≈ −1,5% | liczba P1/P2 klasy „cykl życia/dwie drogi" od bota (dziś 20 = największa klasa) |
+[0.52] ETAP1:41 -> pakiet:144
+    | pętla fix | ZOSTAW-ODCHUDZ (scal kontrolę+poprawkę) | obalony (3 realne regresje złapane) | **ZOSTAW-ODCHUDZ: NIE scalać kontroli z poprawką; pre-skan → ESLint; zwiń → do stan:zapis** | −0,4 (pre-skan) −0,5 (zwiń) ≈ **−1%** | `regresje[]` z kontroli nadal niepuste w ~25% faz (dziś 3/12) |
+[0.52] HANDOFF §6a decyzje operatora:197 -> pakiet:21
+    - **Tryb bypass zostaje** dla subagentów, więc czytanie Bashem (`cat`/`sed -n`) zostaje. Konsekwencja: reguły `paths:` NIE są kanałem dostawy wiedzy do builderów (nigdy się u nich nie załadują) — co najwyżej bonus dla agentów, które użyją Read. Nie budować na nich architektury.
+[0.52] HANDOFF §6a decyzje operatora:239 -> pakiet:56
+    - **L11 (E2E): mechanizm „test nie może się wykonać → przełącz na manual, nie zatrzymuj autopilota"** — STOP E2E przez środowisko/limit zewnętrzny = checkbox przechodzi na [MANUAL] z powodem, run idzie dalej. Wymóg dla każdego projektu panelu.
+[0.53] PRZEGLAD RUNOW §7 rekomendacje:202 -> pakiet:204
+    4. **Bramka czystości: katalog zadania to własne artefakty.** Brudne wyłącznie `docs/active/<zadanie>/` → commit i kontynuacja, nie STOP. Usuwa klasę „fałszywy STOP po edycji operatora".
+[0.53] ETAP2:61 -> pakiet:83
+    | test-coverage | standardowe narzędzie (3 warstwy) | **zmiana wzgl. etapu 1:** kryterium falsyfikowalności zostaje, ale PRZED agentem stoją: `@vitest/eslint-plugin` → `vitest --typecheck` (expectTypeOf) → Stryker diff-scoped; wynik mutacji → builder (lista mutantów do zabicia); agent tylko na „luka pokrycia / strażnik negatywny" — kandydat do scalenia z correctness w etapie 4 |
+[0.55] HANDOFF §6a decyzje operatora:166 -> pakiet:113
+    11. **Aktualizacja CLAUDE.md dopiero PO merge'u** (nie po ostatniej turze — kolejna tura po commicie może przynieść Major i wymusić ręczną naprawę): krok w dev-pr po potwierdzonym merge'u (auto lub operator potwierdza w skillu) + siatka bezpieczeństwa: bootstrap autopilota na main sprawdza, czy ostatni merge ma wpis w `docs/decisions/`; brak → uzgodnienie CLAUDE.md przed startem runu. Zmiany w `.coderabbit.yaml` (8 z…
+[0.55] HANDOFF §6a decyzje operatora:245 -> pakiet:43
+    - **Po D2 (2026-09-21, operator: „wybierz i doradź") — BUDŻET INSTRUKCJI W TRZECH WARSTWACH, twardy wymóg każdego projektu panelu (jak telemetria):** (1) warstwa STAŁA na rolę (mandat, kilkanaście poleceń-list, format wyniku, bloki workflowu) — **budżet <150 instrukcji**, liczony skryptem tą samą metodą co `skrypty/d2_budzet_instrukcji.py` — **NIE w runie** (operator 2026-09-21: „autopilot ma się nie stopować przez k…
+[0.56] ETAP1B:105 -> pakiet:112
+    **Aktualizacja CLAUDE.md na końcu brancha** (uzupełnienie operatora nr 1): wchodzi do dev-pr dopiero PO tych 4 zmianach, jako krok w etapie compound, z bramką rozmiaru liczoną w JS.
+[0.57] ETAP1B:50 -> pakiet:74
+    | **performance** | 8 | brak timeoutu 4 | do correctness jako 5. polecenie: każde wywołanie sieciowe/klienta bazy + limit czasu; grep `fetch(\|.from(\|.rpc(\|auth.` jako bramka. Potwierdza ZASTĄP z etapu 1 | 5–6 |
+[0.57] HANDOFF §6a decyzje operatora:206 -> pakiet:38
+    - **Skille bazowe builderów (`skills:` w frontmatterze, 7–12k tok/agent):** działa, zostawić; dobór per IU nie jest warty logiki w orkiestratorze.
+[0.57] ETAP3:152 -> pakiet:190
+    | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | panel utrzyma oś zastępowalną bramką albo raport poda zły powód przewagi bota | L9, L4 |
+[0.58] ETAP1:35 -> pakiet:74
+    | spec-compliance | ZOSTAW-ODCHUDZ | obalony (v1, 3 z 5 zmian kasują findingi) | **ZOSTAW** (jedna korekta redakcyjna) | 0 | bez zmian; otwarte pytanie do etapu 4: 27% wyjścia to pliki .md poza miarą jakości (bot ma `!docs/**`) |
+[0.58] ETAP3:114 -> pakiet:21
+    | L5 | kontekst agentów, Read vs Bash | POMIARY §5 pkt 1 („każdy agent `omitClaudeMd`, buildery czytają Read") vs 6a pkt 15 („bypass zostaje, CLAUDE.md trafia do builderów"); HANDOFF §5 hip. 7 (Read zamiast Bash) nadal w pakiecie dla projektantów | ryzyko | **precedens: 6a pkt 15 (późniejsze, „decyzje po pomiarach") nadpisuje POMIARY §5 pkt 1 i hipotezę 7** — zapis w pakiecie wejściowym panelu (D4) |
+[0.59] POMIARY:104 -> pakiet:91
+    **Rozstrzygnięcie:** przy cache ESLint + knip + size-limit to **~4 s na fazę**, typecheck 10 s. Plan B (oxlint) niepotrzebny. Pierwsze wdrożenie wymaga tury wyciszania zastanych naruszeń (188 errors, z czego 96 to długość funkcji). Stryker: **~2 min na 3 pliki** (370 mutantów) — na diffie fazy 10–30 plików to szacunkowo 5–15 min, więc **nie do każdego domknięcia fazy**; kandydat na krok przed dev-pr lub na pliki test…
+[0.60] ETAP1B:72 -> pakiet:113
+    **Werdykt: PRZEBUDUJ, ale wąsko** (analityk: przebuduj 8 zmian; sceptyk: werdykt się broni, lista do połowy). Dev-pr to 0,74% kosztu pipeline'u, 3,5–6 M jednostek na epizod — nie jest celem oszczędności. Cel: jakość decyzji operatora.
+[0.61] POMIARY:149 -> pakiet:123
+    3. **Review (do panelu):** składnik „nowy kod po fixie" wymaga lekkiego review diffu fixa (correctness, sam diff), składnik „niestabilność" — decyzja panelu między n=3 próbek a jedną rundą z lepszym sceptykiem.
+[0.62] HANDOFF §6a decyzje operatora:137 -> pakiet:114
+    4. **learned-patterns:** format klasa → reguła (2 zdania) → Source; dev-compound wstawia do sekcji klasy; refresh deduplikuje per klasa; bramka rozmiaru w JS. **Pytanie otwarte operatora:** projekt rozwijany rok, mikroserwisy — sztywny limit reguł/rozmiaru odrzuca wiedzę. Odpowiedź: limit dotyczy warstwy zawsze ładowanej (indeks), nie wiedzy — wiedza schodzi do warstw ładowanych warunkowo (patrz odpowiedź w sesji 202…
+[0.62] ETAP2:78 -> pakiet:83
+    | sync-template | częściowy | plugin ODŁOŻONY (decyzja operatora); `claude plugin validate --strict` + `eval` jako bramka CI zmian w maszynerii — do wdrożenia niezależnie od pluginu |
+[0.62] ETAP3:218 -> pakiet:83
+    **Dodatkowe wejścia do panelu (poza ETAP2 §6 i POMIARY §5):**
+[0.65] ETAP3:136 -> pakiet:74
+    2. **E2E, seed vs migracja, spec-compliance:** research potwierdził brak zamiennika i się zatrzymał. E2E to najpoważniejsza luka (L11). Seed vs migracja: `migrations.sum` pilnuje edycji wypchniętej migracji, nie zgodności seeda z kontraktem — klasa bez narzędzia i bez pomiaru. Spec-compliance: ZOSTAW, waga na poleceniach-listach (L2); nierozstrzygnięte z etapu 1, czy oś ma działać tylko na fazach z kodem (27% jej wyj…
+[0.66] ETAP3:115 -> pakiet:160
+    | L6 | verify-sceptycy | sceptyk asymetryczny przyjęty z literatury (63–83% kill); nasze obalenia to trzy liczby (12% / 19,2% / 10,9%), `obalone_n` per oś = artefakt; kill rate na naszych findingach niezmierzony | ryzyko | raport (niepewność: sceptyk 79% przy naszych 10–19% może kasować prawdziwe P1/P2) + pomiar po wdrożeniu (archiwalne findingi o znanych werdyktach) |
+[0.67] ETAP3:223 -> pakiet:56
+    - E2E: każdy projekt mówi, co robi ze STOP-ami E2E (3 rekomendacje z przeglądu runów);
+[0.67] HANDOFF §6a decyzje operatora:256 -> pakiet:38
+    - **Po D3 (operator 2026-09-21: „pasuje") — PLIKI AGENTÓW PER KLASA ROLI jako domyślne, per rola tylko jako wyjątek.** Uzasadnienie: prompty 36 ról bez pliku są dynamiczne (funkcje w JS z argumentami), więc plik niesie WYŁĄCZNIE ustawienia (model, `tools:`, `omitClaudeMd`, `skills:`, krótki mandat); telemetria D3 pokazuje 4–5 zestawów ustawień (mechaniczny-haiku, orkiestracyjny-opus, reviewer, sceptyk, naprawiacz z E…
+[0.68] HANDOFF §6a decyzje operatora:261 -> pakiet:61
+    - **L10 uzupełnienie (operator 2026-09-21): reguły security nie są USUWANE, tylko WARUNKOWE po profilu stacku** (rozszerzenie 6a pkt 6). Projekt z `supabase/` → bramka advisors (chmura) przejmuje RLS/search_path/auth.users, a security dostaje polecenie „nie sprawdzaj tego, robi to advisors". Projekt bez Supabase (np. Postgres na VPS) → security zachowuje polecenia-listy o RLS/politykach, bo nie ma bramki. Profil stac…
+[0.69] ETAP1:36 -> pakiet:157
+    | performance | ZOSTAW-ODCHUDZ | obalony → ZASTAP | **ZASTAP** (size-limit w CI + Supabase advisors + 5-liniowa checklista perf w correctness) | −0,47 M (oś 1,5–2,2%) − ~0,5% indukowane (57% P3) ≈ **−2,5%** | P1/P2 klasy perf od bota; jeśli >1 na 5 faz → przywrócić oś warunkowo na tierze low |
+[0.69] ETAP3:182 -> pakiet:21
+    2. **test-coverage (L4):** obowiązuje POMIARY §2 („zero dodatkowych osi") nad ETAP2 §2 (degradacja) — czeka na potwierdzenie operatora (D4).
+[0.71] HANDOFF §6a decyzje operatora:130 -> pakiet:110
+    1. **CLAUDE.md:** żaden skill nie dopisuje do CLAUDE.md (dev-docs-complete:115-116, complete-wf:160 do usunięcia). Aktualizacja = krok „uzgodnij z rzeczywistością" na końcu pracy na branchu (po smoke i po bocie), z bramką rozmiaru liczoną w JS. Decyzje fazowe → `docs/decisions/` + 1 linia indeksu.
+[0.72] HANDOFF §6a decyzje operatora:215 -> pakiet:44
+    - **Struktura learned-patterns: PRZYJĘTA.** Trzy poziomy: (0) CLAUDE.md — jedna linia wskazująca indeks; (1) `docs/learned-patterns.md` — indeks GENEROWANY przez dev-compound-refresh z nagłówków solutions (klasa | reguła 2 zdania | wzorce plików | waga | link), bramka rozmiaru i dedup w JS przy generowaniu, nikt nie edytuje ręcznie; (2) `docs/solutions/*.md` — szczegóły, bez limitu, frontmatter z polami klasa/reguła/…
+[0.72] ETAP1:123 -> pakiet:72
+    - **Do panelu projektowego (etap 4), twarde wejścia:** roster 6 → 5 (performance ZASTAP); code-quality z lintem; stan w prompcie następcy; precheck w env-up; pre-skan → ESLint; zwiń → stan:zapis; nie scalać kontroli z poprawką; powtórka po STOP-ie E2E = sam tester; polecenia-listy zamiast reguł; progi rozmiaru → bot; PR ≤150 plików. Otwarte: packager/dossier, batch sceptyków, ograniczenie spec do faz z kodem.
+[0.73] ETAP2:101 -> pakiet:83
+    - **Tnij compute (1 agent = MAS przy równym budżecie) vs dołóż compute (adversarial ~4,5× tokenów).** Rozstrzygnięcie: compute przesuwa się z osi produkujących szum (performance, code-quality → lint) do weryfikacji (sceptyk asymetryczny). Sceptycy to dziś 6% fazy — nawet 2× więcej to mniej niż jedna oś.
+[0.73] ETAP2:122 -> pakiet:91
+    - **Do panelu (etap 4), twarde wejścia z etapu 2:** zakaz powtórek sekwencyjnych review; sceptyk asymetryczny z etykietami; pełny zestaw bramek domknięcia (§2 „domknięcie fazy"); trzy warstwy testów niefalsyfikowalnych z wynikiem do buildera; packager → JS; pre-skan → skasować; `omitClaudeMd` + `tools:` + `skills:` u agentów pipeline'u (warunkowo na pomiar 1); przepisanie coding-rules.md wg kierunku 4. **Wariant do r…
+[0.75] HANDOFF §6a decyzje operatora:207 -> pakiet:63
+    - **Pętla fixów: ŻADNEJ dodatkowej rundy review** (historia „fixa po fixie" = przepalone tokeny; sufit jednego cyklu w `fix:kontrola` zostaje). Zamiast tego: (1) `fix:kontrola` dostaje polecenia-listy correctness zawężone do diffu fixa (ten sam 1 agent, ten sam cykl); (2) builder fixa naprawia tylko P1/P2, P3 → known-issues/bot, zakaz zmian poza zgłoszonym miejscem (mniejszy diff = mniej nowych odkryć); (3) reszta → …
+[0.75] ETAP3:211 -> pakiet:129
+    - **D3 (L15, L1b) GOTOWE** — `dane/d3-mapa-rol-agentow.txt`: 45 slotów ról w 6 workflowach = **36 bez pliku agenta + 9 z plikiem (8 plików)**; w jednej fazie autopilota ~24 bez pliku (potwierdza L1). `dev-autopilot-wf.js` ma 19 wywołań i zero `agentType`. Prompt osi review żyje w dwóch miejscach dla 4 osi (plik + fokus w workflowie), tylko w workflowie dla correctness i test-coverage, a code-quality = angielski plik …
+[0.76] HANDOFF §6a decyzje operatora:265 -> pakiet:32
+    - **Po D4 (operator 2026-09-21): L11 nadpisuje ETAP1 „powtórka po STOP-ie E2E = sam tester"** — STOP środowiskowy/limitowy → [MANUAL], run idzie dalej; zapis ETAP1 i HANDOFF §5 hipoteza 4 NIEAKTUALNE (nie ma powtórki po STOP-ie, który nie zatrzymuje runu). Wpisane jako precedens 6 w PANEL-WEJSCIE §1.
+[0.80] ETAP3:183 -> pakiet:28
+    3. **lekka runda correctness po fixie:** POMIARY §4 ją proponuje, 6a pkt 15 ją wycofuje na rzecz poleceń-list w `fix:kontrola` — obowiązuje 6a pkt 15.
+[0.81] HANDOFF §6a decyzje operatora:264 -> pakiet:21
+    - **L5: WERSJA B (operator 2026-09-21)** — obowiązuje 6a pkt 15: CLAUDE.md (odchudzony) u builderów i reviewerów, `omitClaudeMd` tylko u agentów mechanicznych, bypass i czytanie Bashem zostają, reguły `paths:` = bonus. POMIARY §5 pkt 1 i HANDOFF §5 hipoteza 7 są NIEAKTUALNE — zapisać w pakiecie wejściowym panelu.
+[0.81] ETAP2:126 -> pakiet:196
+    - **Do raportów (etap 5):** dla operatora — trzy zdania: reguły w tekście są pomijane (68% przy 500), bot łapie nas linterami, a nie mądrością; powtarzanie review kupuje 1 prawdziwy defekt za 4–5 fałszywych; sceptyk działa 4× słabiej niż może, bo dostaje odpowiedź razem z pytaniem.
+[0.83] ETAP1B:14 -> pakiet:74
+    | C — realna luka bez właściciela | 28 | 28 | zostaje botowi |
+[0.83] ETAP1B:94 -> pakiet:113
+    **Zmiany do wdrożenia (4, zero nowych agentów):**
+[0.83] ETAP3:168 -> pakiet:176
+    - **freshness-audit (skill + `freshness-audit-wf.js` 16 kB)** — gotowy mechanizm na pytanie operatora „czy reviewer jest aktualny", nieużyty i nieoceniony.
+[0.84] HANDOFF §6a decyzje operatora:223 -> pakiet:44
+    - **8 zabezpieczeń learned-patterns PRZYJĘTE przez operatora** (wejście do panelu): walidacja globów przy generowaniu indeksu; zamknięty słownik klas w szablonie; koszyk „zawsze" z twardym limitem w JS; walidacja frontmatteru solutions w JS (compound odmawia zapisu bez pól); ten sam wycinek do reviewerów przez dossier; data + źródło + licznik ucieczek per wpis (zasila dev-pr); jednorazowa konwersja 49k zn skryptem z …
+[0.85] ETAP1B:114 -> pakiet:74
+    - **Do panelu (etap 4), twarde wejścia z 1b:** polecenia-listy per oś (§3), budżet pliku i rejestr stałych w plannerze, dossier klas ucieczek u buildera, bramka niezmienności migracji, 8 zmian w `.coderabbit.yaml`, 4 zmiany w dev-pr, seedy z właścicielem.
+[0.87] HANDOFF §6a decyzje operatora:230 -> pakiet:213
+    16. **Mini-run w etapie 4 (przed panelem, ~1 h, metoda markerów z pomiaru 1):** trzy pytania na jednym małym zadaniu buildera: (a) czy reguła-marker wklejona przez orkiestrator do promptu delegacji („każdy nowy plik zaczyna się komentarzem X") jest STOSOWANA w kodzie; (b) to samo dla reguły dostarczonej przez `paths:` (kontrola); (c) czy treść skilla wstrzykniętego przez `skills:` jest stosowana (marker w SKILL.md te…
+[0.92] ETAP3:180 -> pakiet:19
+    1. **omitClaudeMd i Read/Bash (L5):** obowiązuje 6a pkt 15. POMIARY §5 pkt 1 („każdy agent `omitClaudeMd`", „buildery czytają Read") i HANDOFF §5 hipoteza 7 są NIEAKTUALNE dla builderów i reviewerów. Reguły `paths:` = bonus, nie kanał dostawy.
+[0.93] ETAP3:165 -> pakiet:174
+    - **Skille dev-ideate (403 linie), dev-brainstorm (344), dev-docs-update (107)** — 0 wystąpień w rozstrzygnięciach; dev-docs-update nakłada się na bootstrap stanu autopilota.
+[1.00] HANDOFF §6a decyzje operatora:260 -> pakiet:21
+    - **L4 (test-coverage): TAK (operator 2026-09-21)** — oś test-coverage ZOSTAJE; trzy warstwy mechaniczne to dodatki z wynikiem do buildera; scalenie z correctness tylko jako opcja wariantu z warunkiem odwrotu i po pomiarze warstw 2–3. Obowiązuje POMIARY §2 nad ETAP2 §2.
+
+## PRZEGLAD RECZNY pozostalych 44 jednostek <0.30 (po dopisaniu 9 uzupelnien; sesja glowna 2026-09-21)
+Kategorie: U = uzasadnienie/dowod pod decyzja, ktora pakiet ma (pakiet celowo nie powtarza dowodow) | M = metadane dokumentu (data, run, mandat, zrodla)
+| S = pokryte semantycznie innymi slowami (wskazana sekcja pakietu) | N = nieaktualne/rozstrzygniete pozniej | P = poza panelem (etap 5, higiena, ograniczenia researchu)
+ETAP2:112, ETAP2:116 = P (ograniczenia researchu) | HANDOFF 6a:177 plugin = S §0 | PRZEGLAD:214 scalenie JSONL = S §10, §12 | ETAP1B:29 progi 360/60 = S §3 pkt 8
+ETAP1:76 petla fix = U (§2 pkt 9) | ETAP2:16 review nie zbiega = U (§2 pkt 10) | ETAP2:64 verify = S §2 pkt 7 | ETAP3:27 L4 = N (§1 pkt 2) | ETAP3:6 = M
+ETAP1:69 verify = U (§6 batch; furtka w fixie odrzucona = czesc §2 pkt 9 "P3 → known-issues", nie furtka dla P2) | HANDOFF 6a:244 potwierdzenia rozumienia = N
+ETAP3:16 werdykt krytyka = N (§0) | ETAP1B:82 raport per tura = U (§3 pkt 2 zmiana 4) | ETAP2:3, ETAP1:3, ETAP3:3 = M | ETAP1B:45 correctness polecenia = S §2a ETAP1B
+ETAP3:84 D1 metoda = U (§4) | ETAP3:110 = M | ETAP1:88 dossier = U (§6 packager) | ETAP1B:77 czy naprawia = U (§3 pkt 2 zmiana 1) | ETAP2:50 coding-rules 2026 = S §2a ETAP2 (plik z lista)
+ETAP1B:20 problem ze znajdowaniem = U (§2 pkt 11) | ETAP1B:89 ile tur = U (§3 pkt 2 sufit 3) | ETAP2:25 docs milcza = N (POMIARY) | ETAP1B:65 trend = S §9 L16
+POMIARY:96 Stryker = S §2a POMIARY | POMIARY:79 lint 1/97 = S §2a POMIARY | ETAP3:19 = N | ETAP3:126 L17 = N (§0 wycofane) | HANDOFF 6a:157 mini-run regul = N (= pomiar 1)
+ETAP1:56 code-quality = U (§2a ETAP1, §5 hip 3) | ETAP3:73 L2 klasyfikacja = S §6 | ETAP3:123 L14 = S §7 | PRZEGLAD:216 docs/reviews nietrackowane = N (sledzone od 2026-09-20, commity)
+ETAP3:77 L3 zarzut = N (D1) | ETAP2:90 pomiar 4 = N (D1) | HANDOFF 6a:132 dev-pr pytania = S §3 pkt 2 | HANDOFF 6a:170 doctor = S §3 pkt 12 | ETAP3:35 L1 zarzut = U (§1 pkt 4, §2 pkt 1)
+ETAP3:106 = N | POMIARY:127 = N (D1, §8) | ETAP1B:28 progi w path_instructions = S §3 pkt 8 + §10 L19
+WYNIK: 0 jednostek bez odpowiednika po uzupelnieniach. Ograniczenie metody: markery slowne (lista w skrypcie) — zdanie decyzyjne bez zadnego z markerow nie wchodzi do kontroli.
