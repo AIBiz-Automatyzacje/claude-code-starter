@@ -30,6 +30,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 4. **Dźwignia kontekstu startowego = 25–35% kosztu fazy, nie 30–40%** (ETAP3 §1.1, przeliczenie dla konfiguracji z pkt 1; szacunek do potwierdzenia
    odczytem `usage` w mini-runie). Kolejność priorytetów bez zmian: kontekst > roster + mechanika review (8–10%, ETAP1).
 5. **Model kosztu (etap 0) opisuje oferty-online BEZ napraw N1–N9 (L7):** operator — niska waga; do raportu jako uwaga, nie ryzyko. N1–N9 nie zmieniały liczby agentów na fazę.
+6. **STOP E2E ze środowiska / limitu zewnętrznego → [MANUAL], run idzie dalej (operator 2026-09-21, po D4):** obowiązuje 6a pkt 18 L11. **NIEAKTUALNY:** zapis ETAP1
+   „powtórka po STOP-ie E2E = sam tester" (i HANDOFF §5 hipoteza 4) — traci przedmiot, bo taki STOP nie zatrzymuje runu, więc nie ma po nim żadnej powtórki review.
 
 ## 2. Twarde wymogi KAŻDEGO z trzech projektów (6a pkt 15–18; brak któregoś = projekt niekompletny)
 
@@ -55,7 +57,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    jeden rekord per agent/faza do globalnego JSONL + skrypt raportu miesięcznego. Pełny cennik (cache read/write/output), nie sam output. Rekord: §12 (D5).
 6. **E2E → [MANUAL] zamiast STOP (6a pkt 18 L11):** test niewykonalny przez środowisko / limit zewnętrzny = checkbox przechodzi na [MANUAL] z powodem, run idzie dalej.
    Każdy projekt mówi wprost, co robi ze STOP-ami E2E i z 3 rekomendacjami z `../2026-09-19-przeglad-runow-po-naprawie.md` (parametryzacja E2E z `.env.e2e`,
-   katalog zadania jako własne artefakty, kategoria przyczyny SKIP). Relacja do zapisu ETAP1 „powtórka po STOP-ie E2E = sam tester": oba obowiązują, projekt opisuje, kiedy który.
+   katalog zadania jako własne artefakty, kategoria przyczyny SKIP). Zapis ETAP1 „powtórka po STOP-ie E2E = sam tester" NIEAKTUALNY (§1 pkt 6).
 7. **Sceptyk asymetryczny (6a pkt 17):** verify dostaje sam zarzut (plik:linia + teza) BEZ uzasadnienia autora; odpowiada AGREE / DISAGREE_EVIDENCE
    (musi wskazać linię kodu lub test) / DISAGREE_CONCERN (nie kasuje, obniża wagę); dla P1 naprawa zawiera test padający przed poprawką. Stosowany jednakowo do wszystkich osi.
 8. **Security WARUNKOWE po profilu stacku (6a pkt 6, 18):** profil z package.json + katalogów w dossier KAŻDEGO reviewera. Projekt z `supabase/` → bramka advisors
@@ -103,7 +105,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | 1 | odchudzić kontekst startowy agenta | **OBOWIĄZUJE w wersji §1 pkt 1 / §2 pkt 1–4**; dźwignia 25–35%; MCP/skille przez `tools:`; learned-patterns → wycinek od orkiestratora; dev-compound nie pisze do CLAUDE.md | 6a pkt 15, 17; ETAP3 §1.1 |
 | 2 | mniej agentów na fazę (35 → ~15) | **OTWARTA dla panelu** z ustaleniami: stan w prompcie następcy, precheck → env-up, pre-skan → ESLint, zwiń → stan:zapis, NIE scalać kontroli z poprawką (ETAP1); telemetria = skrypt, NIE agent (nadpisuje część hipotezy o scribe); dedup ZOSTAW; packager OTWARTY (§6) | ETAP1 §1, 6a pkt 18 |
 | 3 | roster 6 → 4–5 | **ROZSTRZYGNIĘTE w ETAP1 + L4:** performance ZASTĄP (z warunkiem odwrotu); security ZOSTAW-ODCHUDŹ (prompt 191 → ~90 linii, `plikiKodu>0`, warunkowe po stacku); correctness ZOSTAW-ODCHUDŹ + własny plik; spec-compliance ZOSTAW (otwarte: tylko fazy z kodem); code-quality ZOSTAW-ODCHUDŹ + lint (styl/progi zakazane w prompcie); test-coverage ZOSTAJE (falsyfikowalność); e2e ZOSTAW-ODCHUDŹ (harness → env-up, puste przebiegi = bramka JS). Roster 6 → 5. | ETAP1 §1, §7; 6a pkt 18 |
-| 4 | powtórka po STOP-ie E2E = tylko tester | **ZMODYFIKOWANA przez L11:** STOP środowiskowy/limitowy → [MANUAL], run idzie dalej; projekt opisuje resztę (§2 pkt 6) | 6a pkt 18 |
+| 4 | powtórka po STOP-ie E2E = tylko tester | **NIEAKTUALNA (§1 pkt 6):** STOP środowiskowy/limitowy → [MANUAL], run idzie dalej, powtórka nie istnieje | 6a pkt 18 L11 |
 | 5 | P3 nie naprawiać automatycznie | **PRZYJĘTA:** builder fixa tylko P1/P2, P3 → known-issues/bot | 6a pkt 15 |
 | 6 | dev-plan + dev-docs = jeden skill | **OTWARTA dla panelu**, z uzupełnieniem: budżet pliku i rejestr stałych w plannerze (6a pkt 8, ETAP1B); dev-prep osobno; oszczędność = czas operatora, nie tokeny | HANDOFF §3 pkt 6 |
 | 7 | buildery Read zamiast Bash | **NIEAKTUALNA** (§1 pkt 1) | 6a pkt 15, 18 |
