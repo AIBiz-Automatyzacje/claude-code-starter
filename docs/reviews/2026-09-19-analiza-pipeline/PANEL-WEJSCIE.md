@@ -48,7 +48,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    (nie „agent sam sięgnie" — ETAP1 45/68 ucieczek miało regułę); (3) warstwa MECHANICZNA (ESLint/knip/advisors) znika z tekstu. Skille buildera dzielone
    na stałą/referencyjną, nie skracane. Odrzucone: czyste wycinanie, czysty model skillowy.
 4. **learned-patterns (6a pkt 15, 17):** trzy poziomy — (0) jedna linia w CLAUDE.md, (1) `docs/learned-patterns.md` = indeks GENEROWANY przez dev-compound-refresh
-   z frontmatterów solutions (klasa | reguła 2 zdania | wzorce plików | waga | link), (2) `docs/solutions/*.md` jako jedyne źródło prawdy. Plik wychodzi
+   z nagłówków solutions (klasa | reguła 2 zdania | wzorce plików | waga | link), (2) `docs/solutions/*.md` z frontmatterem klasa/reguła/paths/waga jako jedyne źródło prawdy. Plik wychodzi
    z `.claude/rules/` (koniec ładowania eager). Orkiestrator wkleja builderowi I reviewerowi tylko wpisy pasujące do katalogów IU (1–2k zn); dev-plan czyta indeks.
    8 zabezpieczeń PRZYJĘTYCH: walidacja globów; zamknięty słownik klas w szablonie; koszyk „zawsze" z twardym limitem w JS; walidacja frontmatteru w JS
    (compound odmawia zapisu bez pól); ten sam wycinek do reviewerów przez dossier; data + źródło + licznik ucieczek per wpis; jednorazowa konwersja 49k zn
@@ -69,6 +69,37 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 10. **Zakaz powtórek sekwencyjnych review** (ETAP2 §0: sekwencyjna szkodzi, równoległa pomaga; 1 prawdziwy defekt za 4–5 fałszywych).
 11. **Polecenia-listy zamiast długich reguł** (ETAP1B §3, 6a pkt 18) — jako założenie z **warunkiem odwrotu** w każdym projekcie (§6) i w budżecie z pkt 3.
 
+## 2a. Twarde wejścia z etapów 1, 1b, 2 i pomiarów (rozstrzygnięte przed decyzjami operatora; obowiązują, o ile §1 nie mówi inaczej)
+
+- **ETAP1 §1, §2, §4:** roster 6 → 5 (performance ZASTĄP: size-limit w domknięciu + advisors performance + 5 linii w fokusie correctness: N+1, `for update` na hot path,
+  `Promise.all` po kolekcji, `.limit()` bez `count`, pętla z fetchem); security prompt 191 → ~90 linii + warunek `plikiKodu>0`; correctness własny plik agenta, tury
+  29,6 → ~20; spec-compliance: usunąć martwe odwołania w `spec-compliance-reviewer.md:49` i duplikat fokusu REVIEWERZY:368; code-quality: ESLint flat + knip
+  w domknięciu, prompt z zakazem zgłaszania czegokolwiek, co łapie lint; e2e: harness → env-up, jedno źródło promptu, parametry z `.env.e2e`; stan fazy (policzony
+  w JS) doklejany do promptu agenta-następcy zamiast `stan:zapis` (80 powołań haiku/23 fazy); precheck → env-up; pre-skan → ESLint; zwiń → stan:zapis; NIE scalać
+  `fix:kontrola` z `fix:poprawka`; scribe review: niższy tier + krótszy prompt, nie dzielić; dedup ZOSTAW; domknięcie fazy pkt 1b (audyt error-handlingu) NIE jest
+  duplikatem hooka; progi rozmiaru → bot; **PR ≤ ~150 plików jako bramka w dev-docs-complete** (222 pliki = bot odmówił recenzji). Otwarte po ETAP1: batch sceptyków (§6),
+  spec tylko na fazach z kodem (27% wyjścia to `.md` poza miarą jakości). Zapis „powtórka po STOP-ie E2E = sam tester" — NIEAKTUALNY (§1 pkt 6).
+- **ETAP1B §2, §3, §5:** polecenia-listy per oś — konkretne polecenia w tabeli ETAP1B §3 (correctness 4, test-coverage 3 + kolumna falsyfikowalności, security 4,
+  spec 3, performance → 5. polecenie correctness o limicie czasu, e2e o seedach); **budżet pliku i rejestr stałych w plannerze** (IU wprowadzające stałą istniejącą
+  w repo wskazuje jedno źródło i konsumentów); **dossier klas ucieczek u buildera** (tabela 8–10 klas z jednym zdaniem „co robić zamiast", regenerowana z compoundów);
+  **bramka niezmienności migracji** (`git diff --name-only base..HEAD -- supabase/migrations/` ∩ pliki obecne w base ≠ ∅ → STOP „popraw nową migracją"; ta sama
+  w kontroli diffu naprawczego); 8 zmian `.coderabbit.yaml` (→ generator, §10); 4 zmiany dev-pr (§3 pkt 2); **seedy z właścicielem** (e2e dla kontraktu z migracją,
+  security dla strażników; `e2e/seeds/*.sql` bez path_instructions bota → dopisać jako granicę zaufania); słownik klas (jedna nazwa na klasę) warunkiem porównywalności następnego pomiaru.
+- **ETAP2 §1, §2, §6:** zakaz powtórek sekwencyjnych (§2 pkt 10); sceptyk asymetryczny (§2 pkt 7); **pełny zestaw bramek domknięcia fazy:** `eslint.config.ts`
+  (ESLint 10 flat, `recommendedTypeChecked` error, `strictTypeChecked` warn, `max-lines` 360/60 ze skip*, `import-x/order`, `no-empty`, `no-floating-promises`,
+  `react-hooks` v6+ z regułami kompilatora) + knip + size-limit + `vitest --typecheck` + Stryker diff-scoped + `migrations.sum` (Supabase CLI nie ma checksumy migracji)
+  + advisors (na chmurze, §2 pkt 8); correctness wzmocniony mechanicznie (`no-floating-promises`, `react-hooks` set-state-in-effect/refs/purity) dla 2 największych
+  klas B; przy React Compilerze „brak useMemo/useCallback" NIE jest findingiem; trzy warstwy testów niefalsyfikowalnych jako DODATKI (§1 pkt 2); packager → JS
+  (założenie z warunkiem odwrotu, §6; dossier = pełne pliki dotknięte + kontrakty, BEZ zapewnień z planu fazy); dedup: rola „zagreguj i odsiej sporadyczne" ma sens
+  tylko przy n równoległych próbkach; pre-skan → skasować; `migrations.sum` PRZED env-up; przepisanie coding-rules.md z tabelą USUŃ/ZMIEŃ/DODAJ/PRZENIEŚ-DO-LINTERA
+  (`dane/etap2-research/research-coding-rules-2026.txt`); `claude plugin validate --strict` + `eval` jako bramka CI zmian w maszynerii (niezależnie od pluginu).
+  **Wariant do rozważenia przez panel:** n=3 równoległe próbki 2–3 osi skrajnych (security, correctness+testy) zamiast 6 osi — rozstrzygać z wynikiem D1 (§4).
+- **POMIARY §1–§3 (fakty, które stoją niezależnie od §1 pkt 1):** reguły `paths:` wyzwala tylko Read/Edit (nie `cat`, nie Write nowego pliku, nie `ls`) → reguła
+  o nowej migracji musi być w prompcie delegacji; `omitClaudeMd` działa też dla `agent()` w Workflow; sam `disallowedTools: mcp__*` daje 39,3k (nie 11,6k) — dźwignia
+  jest w `tools:`; bramki z cache ESLint + knip + size-limit ≈ 4 s + typecheck 10 s na 585 plikach; pierwsze wdrożenie ESLint = tura wyciszania 188 zastanych błędów;
+  **Stryker ~2 min na 3 pliki → 5–15 min na fazę, NIE do każdego domknięcia** (kandydat: przed dev-pr lub tylko pliki testowe dotknięte w fazie); Stryker wymaga
+  zielonego zestawu testów (bramka „zielony main", §2 pkt 4); pomiar 2: ESLint trafia 1/97 uwag B po linii → bramki gaszą koszyk A i zapobiegają, nie kasują osi.
+
 ## 3. Pozostałe decyzje operatora 6a pkt 1–14 obowiązujące dla projektów (jedna linia każda)
 
 - pkt 1: aktualizacja CLAUDE.md = krok „uzgodnij z rzeczywistością" na końcu brancha z bramką rozmiaru w JS; decyzje fazowe → `docs/decisions/` + 1 linia indeksu; do usunięcia dopisywanie w dev-docs-complete:115-116 i complete-wf:160.
@@ -85,7 +116,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 ## 4. Wyniki domknięć D1–D3 (2026-09-21)
 
 - **D1 (L3) — `dane/pomiar5-atrybucja-po-fixie.{json,txt}`, dopisek POMIARY §4.** 33 findingi powtórek po fixie = A urodzone w fixie 13 (39%, w tym jedyny P1;
-  wszystkie kodowe to skutek naprawy findingu rundy 1, kontrola diffu nie złapała żadnego) / B przeoczone w rundzie 1 w pliku fixa 14 (42%, 5 P2) / C przeoczone
+  wszystkie 10 kodowych to skutek naprawy findingu rundy 1, kontrola diffu nie złapała żadnego) / B przeoczone w rundzie 1 w pliku fixa 14 (42%, 5 P2) / C przeoczone
   w kodzie nietkniętym 6 (18%). Składnik recall rundy 1 (60%) jest WIĘKSZY niż składnik „nowy kod" (40%) — „review kodu naprawczego" z POMIARY §4 było za mocne.
   **Dla panelu:** wybór „n=3 równoległe próbki 2–3 osi skrajnych vs jedna runda z lepszym sceptykiem" (ETAP2 §6, POMIARY §5 pkt 3) rozstrzygać na tym podziale.
 - **D2 (L2) — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`, ETAP3 §7.** Reviewer security dziś ~365 instrukcji (górna ~650–710:
@@ -103,7 +134,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | # | hipoteza (HANDOFF §5) | stan | źródło |
 |---|---|---|---|
 | 1 | odchudzić kontekst startowy agenta | **OBOWIĄZUJE w wersji §1 pkt 1 / §2 pkt 1–4**; dźwignia 25–35%; MCP/skille przez `tools:`; learned-patterns → wycinek od orkiestratora; dev-compound nie pisze do CLAUDE.md | 6a pkt 15, 17; ETAP3 §1.1 |
-| 2 | mniej agentów na fazę (35 → ~15) | **OTWARTA dla panelu** z ustaleniami: stan w prompcie następcy, precheck → env-up, pre-skan → ESLint, zwiń → stan:zapis, NIE scalać kontroli z poprawką (ETAP1); telemetria = skrypt, NIE agent (nadpisuje część hipotezy o scribe); dedup ZOSTAW; packager OTWARTY (§6) | ETAP1 §1, 6a pkt 18 |
+| 2 | mniej agentów na fazę (35 → ~15) | **OTWARTA dla panelu** z ustaleniami: stan w prompcie następcy, precheck → env-up, pre-skan → ESLint, zwiń → stan:zapis, NIE scalać kontroli z poprawką, scribe review niższy tier (ETAP1); telemetria = skrypt, NIE agent (nadpisuje część hipotezy o scribe); dedup ZOSTAW z rolą zależną od wyboru n próbek (ETAP2); packager → JS jako założenie z warunkiem odwrotu (ETAP2, §6) | ETAP1 §1, ETAP2 §2, 6a pkt 18 |
 | 3 | roster 6 → 4–5 | **ROZSTRZYGNIĘTE w ETAP1 + L4:** performance ZASTĄP (z warunkiem odwrotu); security ZOSTAW-ODCHUDŹ (prompt 191 → ~90 linii, `plikiKodu>0`, warunkowe po stacku); correctness ZOSTAW-ODCHUDŹ + własny plik; spec-compliance ZOSTAW (otwarte: tylko fazy z kodem); code-quality ZOSTAW-ODCHUDŹ + lint (styl/progi zakazane w prompcie); test-coverage ZOSTAJE (falsyfikowalność); e2e ZOSTAW-ODCHUDŹ (harness → env-up, jedno źródło promptu, parametry z `.env.e2e`). Roster 6 → 5. | ETAP1 §1, §7; 6a pkt 18 |
 | 4 | powtórka po STOP-ie E2E = tylko tester | **NIEAKTUALNA (§1 pkt 6):** STOP środowiskowy/limitowy → [MANUAL], run idzie dalej, powtórka nie istnieje | 6a pkt 18 L11 |
 | 5 | P3 nie naprawiać automatycznie | **PRZYJĘTA:** builder fixa tylko P1/P2, P3 → known-issues/bot | 6a pkt 15 |
@@ -117,7 +148,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | założenie | na czym stoi | warunek odwrotu / pomiar | źródło |
 |---|---|---|---|
 | polecenia-listy domkną ~60–70% uwag B | oceny agentów etapu 1b, zero runów; IFScale jednocześnie uzasadnia i grozi | skuteczność mierzalna dopiero PO wdrożeniu (PR z warstwy walidacji/migracji vs PR 2, 4, 9 z 1b); wzór warunku: „>1 P1/P2 klasy X od bota na 5 faz przywraca regułę/oś"; budżet <150 z D2 | ETAP1B §3, ETAP3 §1.2 |
-| performance ZASTĄP (size-limit + advisors + 5-liniowa checklista w correctness) | advisors NIEZMIERZONE (do zmierzenia przy wdrożeniu bramki, na chmurze); size-limit 0 trafień w szablonie | >1 P1/P2 klasy perf od bota na 5 faz → przywrócić oś warunkowo na tierze low | ETAP1 §1, ETAP3 L10 |
+| performance ZASTĄP (size-limit + advisors + 5-liniowa checklista w correctness) | advisors NIEZMIERZONE (do zmierzenia przy wdrożeniu bramki, na chmurze); size-limit dziś w szablonie nieobecny (0 wystąpień w `.claude/`), zmierzony tylko czas (0,8 s) | >1 P1/P2 klasy perf od bota na 5 faz → przywrócić oś warunkowo na tierze low | ETAP1 §1, ETAP3 L10 |
 | security odchudzone + warunkowe po stacku | jw. advisors | P1/P2 klasy security od bota po review (dziś 7+6 w dwóch klasach ucieczek) | ETAP1 §1, 6a pkt 18 |
 | packager → JS (agent znika) | ETAP1: bilans ujemny (18,7 M kosztu vs 9,5 M routingu), jedyny pomiar: reviewerzy po dossier czytają 2× więcej Bashem (10,5 → 23 tur); ETAP2: z literatury | pomiar tur Bash/Read reviewerów z dossier i bez na tej samej maszynerii — po wdrożeniu; kierunek tani i odwracalny | ETAP1 §1, ETAP3 L18 |
 | sceptyk asymetryczny ~4× skuteczniejszy | 2 prace zewnętrzne (63–83% kill); u nas obalenia 12% / 19,2% / 10,9%, `obalone_n` per oś = artefakt | kill rate na archiwalnych findingach o znanych werdyktach — po wdrożeniu; ryzyko: kasowanie prawdziwych P1/P2 | ETAP3 L6 |
@@ -139,7 +170,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | `freshness-audit` (skill + `freshness-audit-wf.js` 16 kB) | gotowy mechanizm na „czy reviewer jest aktualny", nieużyty i nieoceniony | objąć albo zostawić |
 | `templates/e2e-env`, `templates/smoke-autopilot` | źródło parametryzacji E2E (`.env.e2e.example`); smoke-autopilot = jedyny scenariusz testowy maszynerii | objąć przez §2 pkt 6 |
 | `.claude/workflows/__tests__/` (7 plików, 74 testy) | przypinają dzisiejsze zachowanie; każdy projekt je łamie; koszt NIE jest kryterium sędziów | projekt mówi, które testy zastępuje testem budżetu instrukcji (§2 pkt 3) i testem telemetrii |
-| treść skilli `skills:` builderów (supabase-dev-guidelines, tailwind-react, ux-ui, security, sentry-integration, figma-design-to-code, agent-browser) | zostają (6a pkt 15); aktualność i stosowanie nieocenione — mini-run (c) to sprawdza | podzielić na stałą/referencyjną (§2 pkt 3) |
+| treść skilli `skills:` builderów (supabase-dev-guidelines, tailwind-react-guidelines, ux-ui-guidelines, security, sentry-integration, figma-design-to-code, agent-browser) | zostają (6a pkt 15); aktualność i stosowanie nieocenione — mini-run (c) to sprawdza | podzielić na stałą/referencyjną (§2 pkt 3) |
 | oś code-quality: `architecture-strategist.md` (angielski, „architektura") + fokus z trzema osiami w `dev-docs-review-wf.js:364` | prompt w dwóch miejscach (D3) | jedno miejsce promptu per oś |
 | `settings.json` `enabledPlugins dev-browser` vs `settings.local.json`; statusLine `npx -y ...@latest` | poza zakresem panelu | → etap higieny konta |
 
