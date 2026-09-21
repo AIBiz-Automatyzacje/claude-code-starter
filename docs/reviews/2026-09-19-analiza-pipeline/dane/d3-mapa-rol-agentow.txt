@@ -1,0 +1,65 @@
+D3 — mapa rol agentow pipeline'u: rola -> workflow -> plik agenta -> gdzie zyje prompt -> model -> telemetria (oferty-online po 06.09)
+Zrodla: grep agent( / agentType / label / model w .claude/workflows/*.js (szablon), dane/agents.csv (n agentow, mediana sredniego kontekstu na ture ctx_sr).
+Kontekst startowy DZIS: kazda rola bez pliku = general-purpose z pelnym MCP (62,0k tok, POMIARY §1); role z plikiem — plik BEZ `tools:` (0 z 16 plikow ma tools:),
+wiec start tez ~62k (niezmierzone osobno; POMIARY §1 mierzyl plik Z tools: = 11,6k). Legenda kolumny PLIK: nazwa = .claude/agents/<nazwa>.md; BRAK = agent() bez agentType.
+
+ROLA                        | WORKFLOW              | PLIK AGENTA              | GDZIE ZYJE PROMPT                                      | MODEL  | n   | ctx_sr med
+--- REVIEW (dev-docs-review-wf.js) ---
+review:security             | review                | security-sentinel (191 l)| plik agenta + fokus (72 zn) + reviewerPrompt + 3 bloki   | opus   | 23  | 206k
+review:performance          | review                | performance-oracle (153) | plik + fokus + reviewerPrompt + bloki                   | opus   | 23  | 193k
+review:code-quality         | review                | architecture-strategist  | plik (127 l, angielski, "architektura") + fokus 718 zn   | opus   | 14  | 218k
+                            |                       |  (127 l)                 |   z TRZEMA osiami (granice/YAGNI/typy) w workflowie      |        |     |
+review:spec-compliance      | review                | spec-compliance-reviewer | plik (64 l) + fokus 374 zn + BLOK_SEMANTYKA              | opus   | 23  | 224k
+review:correctness          | review                | BRAK (general-purpose)   | CALY prompt = fokus w workflowie (:365, ~1,1k zn)        | opus   | 23  | 222k
+review:test-coverage        | review                | BRAK                     | CALY prompt = testCoveragePrompt() w workflowie          | opus   | 23  | 219k
+review:e2e (+retry)         | review                | feature-tester-e2e (96 l)| plik (skills: agent-browser) + e2ePrompt() w workflowie  | opus   | 19  | 154k
+kontekst:diff (packager)    | review                | BRAK                     | kontekstPrompt() w workflowie                            | opus   | 23  | 132k
+dedup:semantyczny           | review                | BRAK                     | workflow                                                 | haiku  | 23  |  97k
+verify (sceptyk P1)         | review                | BRAK                     | workflow (:1235)                                         | opus   | 30  | 140k
+verify-batch (sceptyk P2)   | review                | BRAK                     | workflow (:1250)                                         | opus   | 105 | 139k
+scribe                      | review                | BRAK                     | scribePrompt() w workflowie                              | opus   | 23  | 165k
+scribe:inspekcja            | review                | BRAK                     | inspekcjaPrompt()                                        | haiku  | (w scribe)
+--- EXECUTE (dev-docs-execute-wf.js) ---
+planner                     | execute               | BRAK                     | plannerPrompt() w workflowie                             | opus   | 21  | 134k
+build:<IU>                  | execute               | feature-builder-data (105)| plik + skills: [supabase-dev-guidelines, security,     | opus   | 35  | 238k (wszystkie build)
+                            |                       |                          |   sentry-integration] + iu.prompt od plannera (med 16,9k zn) + BLOK_DLUGIE_KOMENDY
+build:<IU>                  | execute               | feature-builder-ui (107) | plik + skills: [tailwind-react, ux-ui, figma:figma-use, figma-design-to-code] + iu.prompt | opus | 15 |
+build:<IU>                  | execute               | feature-builder-fullstack| plik (123 l) + skills: 7 pozycji (unia data+ui) + iu.prompt | opus | 8 |
+domkniecie                  | execute               | BRAK                     | domknieciePrompt() + BLOK_DLUGIE_KOMENDY                 | opus   | 20  | 168k
+--- AUTOPILOT (dev-autopilot-wf.js, 19 wywolan agent(), ZERO agentType) ---
+bootstrap                   | autopilot             | BRAK                     | bootstrapPrompt()                                        | opus   | 12  | 128k
+stan:zapis (+retry)         | autopilot             | BRAK                     | zapiszStanPrompt()                                       | haiku  | 80  |  96k
+telemetria                  | autopilot             | BRAK                     | workflow (:1068)                                         | haiku  | 13  |  99k
+stop:commit-artefaktow      | autopilot             | BRAK                     | workflow (:1125)                                         | haiku  | 7   |  95k
+e2e:precheck                | autopilot             | BRAK                     | e2ePrecheckPrompt()                                      | haiku  | 11  |  87k
+e2e:env-up (+retry)         | autopilot             | BRAK                     | e2eEnvUpPrompt()                                         | opus   | 11  | 121k
+warmup:vitest               | autopilot             | BRAK                     | warmupPrompt()                                           | opus   | 11  | 119k
+e2e:db-sync                 | autopilot             | BRAK                     | e2eDbSyncPrompt()                                        | opus   | 23  | 128k
+fix                         | autopilot             | BRAK                     | fixPrompt()                                              | opus   | 63  | 166k
+verify-fix                  | autopilot             | BRAK                     | postFixVerifyPrompt()                                    | opus   | 5   | 147k
+fix:pre-skan                | autopilot             | BRAK                     | preSkanFixaPrompt()                                      | haiku  | 8   |  87k
+fix:kontrola                | autopilot             | BRAK                     | regresjaFixaPrompt()                                     | opus   | 8   | 127k
+fix:poprawka                | autopilot             | BRAK                     | fixPoprawkaPrompt()                                      | opus   | 5   | 141k
+zwin-do-poprawy             | autopilot             | BRAK                     | workflow (:1576)                                         | haiku  | 22  | 102k
+walidacja-koncowa           | autopilot             | BRAK                     | finalValidationPrompt()                                  | opus   | 9   | 143k
+e2e:env-down                | autopilot             | BRAK                     | e2eEnvDownPrompt()                                       | haiku  | 5   |  86k
+compound-refresh            | autopilot             | BRAK                     | refreshPrompt()                                          | opus   | 5   | 154k
+--- PR / COMPOUND / COMPLETE ---
+pr:start, pr:zbierz, pr:napraw, pr:merge-stan, pr:merge, pr:compound | dev-pr-wf | BRAK | workflow | opus | 2/3/7/2/-/2 | 140-183k
+compound                    | dev-compound-wf       | BRAK                     | workflow                                                 | opus   | 5   | 160k
+smoke-operatora (+retry), complete | dev-docs-complete-wf | BRAK             | workflow                                                 | opus   | 5+5 | 160-166k
+
+BILANS
+- Rol (etykiet) w workflowach: 36 bez pliku agenta + 9 slotow z plikiem (8 plikow: security-sentinel, performance-oracle, architecture-strategist,
+  spec-compliance-reviewer, feature-tester-e2e, feature-builder-data/ui/fullstack). W JEDNEJ fazie autopilota: ~24 rol bez pliku (krytyk L1 — potwierdzone).
+- Pliki agentow NIEuzywane przez workflowy: 8 (best-practices-researcher, framework-docs-researcher, learnings-researcher, repo-research-analyst,
+  spec-flow-analyzer, web-research-specialist — wolane ze skilli dev-plan/dev-prep/dev-ideate/dev-brainstorm; kieran-typescript-reviewer, code-simplicity-reviewer — martwe, do usuniecia wg 6a pkt 18).
+- Zaden z 16 plikow nie ma `tools:`; 4 maja `skills:` (3 buildery + tester e2e). `agent()` w Workflow nie ma opcji tools:/omitClaudeMd
+  -> allowlista dla 36 rol bez pliku = 36 nowych plikow agentow (albo wspolne pliki per KLASA roli: mechaniczny-haiku, orkiestracyjny-opus, reviewer, sceptyk, fix).
+- Prompt osi review zyje w DWOCH miejscach dla 4 osi (plik + fokus w workflowie), w JEDNYM (tylko workflow) dla correctness i test-coverage,
+  a dla code-quality plik mowi "architektura" po angielsku, a fokus w workflowie dopisuje trzy osie. "Odchudz prompt osi o polowe" (ETAP1) musi wskazac oba miejsca.
+- Telemetria potwierdza podzial rol na klasy: mechaniczne haiku 86-102k ctx/ture (stan:zapis, telemetria, precheck, pre-skan, env-down, zwin, dedup),
+  orkiestracyjne opus 119-168k (bootstrap, env-up, warmup, db-sync, fix, kontrola, walidacja, domkniecie, scribe, packager), reviewerzy 193-224k, buildery 238k.
+  Roznica reviewer vs mechaniczny (~120k/ture) to CLAUDE.md 89k zn z tamtego okresu + dossier + czytane pliki — zgodne z HANDOFF §3 pkt 3.
+- Sceptycy: 135 wywolan na 23 fazy (verify 30 + verify-batch 105) = najliczniejsza rola bez pliku; z decyzja 6a pkt 17 (sceptyk asymetryczny) ich prompt
+  i tak jest do przepisania — naturalne miejsce na pierwszy wspolny plik "sceptyk" z tools: allowlista.

@@ -208,6 +208,13 @@ Zweryfikowane grepem w tej sesji (`.claude/workflows/*.js` bez `__tests__`, `.cl
   (4–5 na oś) są marginalne wobec tła — budżet instrukcji musi być projektowany jako CAŁOŚĆ na rolę (cel: <150), inaczej listy dołożone do 300–500 istniejących
   nakazów nie mają lepszych szans niż reguły, które zastępują. Dubel learned-patterns w dossier = 13k tokenów × 6 reviewerów na fazę za nic.
 
+- **D3 (L15, L1b) GOTOWE** — `dane/d3-mapa-rol-agentow.txt`: 45 slotów ról w 6 workflowach = **36 bez pliku agenta + 9 z plikiem (8 plików)**; w jednej fazie
+  autopilota ~24 bez pliku (potwierdza L1). `dev-autopilot-wf.js` ma 19 wywołań i zero `agentType`. Prompt osi review żyje w dwóch miejscach dla 4 osi (plik + fokus
+  w workflowie), tylko w workflowie dla correctness i test-coverage, a code-quality = angielski plik „architecture-strategist" + fokus z trzema osiami. 0/16 plików
+  ma `tools:`, 4 mają `skills:`. Telemetria potwierdza trzy klasy ról po średnim kontekście na turę: mechaniczne haiku 86–102k, orkiestracyjne opus 119–168k,
+  reviewerzy 193–224k, buildery 238k. Sceptycy = 135 wywołań na 23 fazy, najliczniejsza rola bez pliku. **Wejście do panelu:** allowlista `tools:` dla ról bez
+  pliku = nowe pliki agentów; wariant do rozważenia przez panel: pliki per KLASA roli (mechaniczny / orkiestracyjny / reviewer / sceptyk / fix), nie per rola.
+
 **Dodatkowe wejścia do panelu (poza ETAP2 §6 i POMIARY §5):**
 
 - polecenia-listy jako założenie z **warunkiem odwrotu** w każdym projekcie + twardy budżet instrukcji per rola (z D2);
