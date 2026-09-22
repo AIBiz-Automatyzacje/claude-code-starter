@@ -1,0 +1,57 @@
+D5b — BASELINE JAKOSCI znormalizowany (2026-09-22). Skrypt: skrypty/d5b_baseline_jakosci.py. Miara: uwagi bota koszyka B o wadze P1/P2
+(realne defekty, ktore przeszly przez nasze review — ETAP1B). 19 PR oferty-online; PR 12 i 18 poza pipeline'em (reczne) — pokazane, wylaczone z sum.
+Pliki PR = lista z GitHuba (gh api pulls/N/files); pliki fixa = pliki commitow "poprawki po review fazy" / "kontrola diffu" obecne w PR.
+
+=== 1. PER PR: surowo vs na 100 plikow ===
+ PR  pliki  B P1/P2 na 100 pl.  pl. fixa  B P1/P2 w pl. fixa
+  1    121        6        5.0        17                   3
+  2    147       14        9.5        29                  11
+  3    117       10        8.5        14                   5
+  4     86       14       16.3        22                   2
+  5     56        4        7.1        13                   3
+  6     40        3        7.5        11                   2
+  7    122       13       10.7        36                  10
+  8    116        6        5.2        37                   4
+  9    157       21       13.4         0                   0
+ 10    113        9        8.0         0                   0
+ 11    160        5        3.1        54                   5
+ 12     72        3        4.2         0                   0 (poza pipeline)
+ 13     70        4        5.7        26                   3
+ 14    124        6        4.8        44                   3
+ 15    104        2        1.9         0                   0
+ 16    110        3        2.7         0                   0
+ 17    146        6        4.1        54                   4
+ 18     12        0        0.0         0                   0 (poza pipeline)
+ 19    129        3        2.3        57                   3
+RAZEM (17 PR pipeline'u): 1918 plikow, 129 B P1/P2 = 6.7 na 100 plikow; pliki fixow 414, w nich 58 B P1/P2 = 14.0 na 100 plikow fixa (vs 4.7 w pozostalych plikach)
+
+=== 2. SZUM: suma B P1/P2 w oknie 5 kolejnych PR (surowo i na 100 plikow) — jak bardzo rozrzut maskuje zmiane ===
+surowo: min 20 / max 54 (rozrzut 2.7x); na 100 plikow: min 3.3 / max 10.5 (rozrzut 3.2x)
+
+=== 3. PER TYP KODU (plik uwagi → typ po sciezce; mianownik = pliki tego typu we wszystkich PR pipeline'u) ===
+  dane-serwer       pliki   389  B P1/P2   66  na 100 plikow  17.0  (wszystkie uwagi bota 208)
+  dashboard-logika  pliki   166  B P1/P2   15  na 100 plikow   9.0  (wszystkie uwagi bota 78)
+  ui                pliki   186  B P1/P2   16  na 100 plikow   8.6  (wszystkie uwagi bota 116)
+  testy             pliki   559  B P1/P2   27  na 100 plikow   4.8  (wszystkie uwagi bota 135)
+  inne              pliki   618  B P1/P2    5  na 100 plikow   0.8  (wszystkie uwagi bota 16)
+
+=== 4. PER OS REVIEW (kolumna `etap` z klasyfikacji 1b = os, ktora powinna byla to zlapac; zastepuje filtr po nazwie klasy) ===
+  review:correctness         B razem   75  B P1/P2   56  na 100 plikow PR  2.92
+  review:test-coverage       B razem   43  B P1/P2   26  na 100 plikow PR  1.36
+  review:security            B razem   36  B P1/P2   33  na 100 plikow PR  1.72
+  review:spec-compliance     B razem   12  B P1/P2    7  na 100 plikow PR  0.36
+  review:code-quality        B razem   12  B P1/P2    0  na 100 plikow PR  0.00
+  review:performance         B razem    8  B P1/P2    5  na 100 plikow PR  0.26
+  review:e2e                 B razem    4  B P1/P2    1  na 100 plikow PR  0.05
+  domkniecie                 B razem    1  B P1/P2    0  na 100 plikow PR  0.00
+  kontrola                   B razem    1  B P1/P2    1  na 100 plikow PR  0.05
+
+=== 5. KLASY, KTORE WEDLUG MAPY SA "POD OBSERWACJA" (hook obslugi bledow, zal. 8) — pelne dopasowanie po klasie ===
+  sciezka-bledu:7, sciezka-bledu-bez-obslugi:4, pusty-catch:3, pii-do-sentry:2, granica-try-catch:2, sekret-do-sentry:1, console-log-z-reguly:1, blad-polkniety:1  | razem 21, w tym B P1/P2 12
+
+=== 6. EPOKA: trend w czasie (L16) — baseline do porownan = OSTATNIE PR pipeline'u, nie srednia z 17 ===
+  PR 1-7 (sierpien)              pliki   689  B P1/P2   64  na 100 plikow   9.3  (rozrzut per PR 5.0-16.3)
+  PR 8-11                        pliki   546  B P1/P2   41  na 100 plikow   7.5  (rozrzut per PR 3.1-13.4)
+  PR 13-19 (wrzesien, bez 18)    pliki   683  B P1/P2   24  na 100 plikow   3.5  (rozrzut per PR 1.9-5.7)
+  UWAGA: PR 9, 10, 15, 16 to czesci serwerowe zadan dzielonych na dwa PR — commity fixow pipeline'u sa w PR siostrzanym, wiec "pliki fixa" = 0
+  zanizaja mianownik plikow fixa; porownanie fix vs reszta w sekcji 1 jest przez to ostrozne (reszta zawiera czesc plikow po fixie).
