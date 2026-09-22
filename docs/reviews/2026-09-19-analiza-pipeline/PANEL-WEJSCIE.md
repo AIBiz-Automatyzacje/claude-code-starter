@@ -7,8 +7,10 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 ## 0. Co robi panel i kto co czyta
 
 - **Skład (HANDOFF §2 wiersz 4, §6 pkt 5):** 3 niezależne projekty pipeline'u „po" — **minimalistyczny** (minimalny koszt), **jakość-najpierw**
-  (maksymalna jakość), **hybrydowy** — → 3 sędziów → sceptyk (adwersarialna krytyka) na zwycięzcę → synteza. ~8 agentów, wszyscy `model: 'opus'`;
-  synteza w sesji głównej na Fable. Wnioski dotyczą szablonu (workspace-template), nie jednego projektu (HANDOFF §1).
+  (maksymalna jakość), **hybrydowy** — → 3 sędziów → sceptyk (adwersarialna krytyka) na zwycięzcę → synteza. ~8 agentów, **wszyscy na Fable** (6a pkt 19:
+  „zależy nam na jakości"), w **TRZECH osobnych runach** (projektanci → sesja główna czyta → sędziowie → sceptyk), synteza w sesji głównej; przed startem sprawdzić
+  limit Fable. Wnioski dotyczą szablonu (workspace-template), nie jednego projektu (HANDOFF §1). **Panel NIE buduje:** wynik = koncepcja docelowego pipeline'u
+  + kolejność wdrożenia; etap 5 robi z tego plan w iteracjach, implementacja faza po fazie z metryką w telemetrii (6a pkt 19). Żaden projektant nie pisze kodu.
 - **Każdy projektant dostaje:** ten plik + `dane/dane-digest.md` (model kosztu) + `ETAP1-ROZSTRZYGNIECIE.md` (werdykty osi po kontrach) +
   `ETAP2-ROZSTRZYGNIECIE.md` (mapa researchu) + hipotezy §5 tego pliku, każdy z innym priorytetem. NIE dostaje werdyktów workflow-A (HANDOFF §4, dane v1, zawyżone ~2×).
 - **Sędziowie (HANDOFF §1, 6a pkt 18 L17):** wymiary = koszt (o ile pipeline „dostarcza kod dobrze wykonany") i jakość = P1/P2 od CodeRabbit PO naszym
@@ -55,7 +57,9 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    skryptem z listą odrzutów; dopasowanie po katalogach, nie nazwach. Plus bramka „zielony main" w bootstrapie autopilota. Żaden skill nie dopisuje do CLAUDE.md (6a pkt 1).
 5. **Telemetria centralna, mechaniczna, ZERO agentów (6a pkt 18):** skrypt po zakończeniu runu czyta `journal.jsonl` + transkrypty (`usage`) i dopisuje
    jeden rekord per agent/faza do globalnego JSONL + skrypt raportu miesięcznego. Pełny cennik (cache read/write/output), nie sam output. Rekord: §12 (D5).
-6. **E2E → [MANUAL] zamiast STOP (6a pkt 18 L11):** test niewykonalny przez środowisko / limit zewnętrzny = checkbox przechodzi na [MANUAL] z powodem, run idzie dalej.
+6. **E2E → [MANUAL] zamiast STOP (6a pkt 18 L11, doprecyzowane 6a pkt 19):** warunek wstępny = środowisko E2E sprawdzone i działające PRZED startem autopilota
+   (doctor/precheck); test niewykonalny w trakcie runu przez środowisko / limit zewnętrzny = checkbox przechodzi na [MANUAL] z powodem, run idzie dalej,
+   a pozycja [MANUAL] **trafia do smoke operatora** (dev-docs-complete) — nie znika; ponowne stawianie środowiska w runie jest droższe niż test ręczny.
    Każdy projekt mówi wprost, co robi ze STOP-ami E2E i z 3 rekomendacjami z `../2026-09-19-przeglad-runow-po-naprawie.md` (parametryzacja E2E z `.env.e2e`,
    katalog zadania jako własne artefakty, kategoria przyczyny SKIP). Zapis ETAP1 „powtórka po STOP-ie E2E = sam tester" NIEAKTUALNY (§1 pkt 6).
 7. **Sceptyk asymetryczny (6a pkt 17):** verify dostaje sam zarzut (plik:linia + teza) BEZ uzasadnienia autora; odpowiada AGREE / DISAGREE_EVIDENCE
@@ -68,6 +72,11 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    Miara: P1/P2 od bota w plikach dotkniętych fixami po 5 zadaniach. NIE scalać `fix:kontrola` z `fix:poprawka` (ETAP1: 3 realne regresje złapane).
 10. **Zakaz powtórek sekwencyjnych review** (ETAP2 §0: sekwencyjna szkodzi, równoległa pomaga; 1 prawdziwy defekt za 4–5 fałszywych).
 11. **Polecenia-listy zamiast długich reguł** (ETAP1B §3, 6a pkt 18) — jako założenie z **warunkiem odwrotu** w każdym projekcie (§6) i w budżecie z pkt 3.
+12. **Scalenie dev-plan + dev-docs w jeden skill (6a pkt 19; dotąd hipoteza 6):** każdy projekt projektuje scalony skill z budżetem tokenów, na analizie tego,
+    co oba skille dziś robią i gdzie przepalają kontekst (HANDOFF §3 pkt 6: skille przed autopilotem = 2–5% kosztu zadania, dev-docs kopiuje 22–46% planu;
+    6a pkt 8 budżet pliku w IU; `dane/skille.csv`, `dane/koszt_skilli.txt`). dev-prep zostaje osobno (interaktywny).
+13. **Każda zmiana w projekcie ma wskazaną metrykę z rekordu telemetrii (6a pkt 19):** metryka, pole rekordu, baseline z etapu 0, horyzont — wg mapy walidacji
+    D5b (§12). Zmiana bez metryki = niekompletna.
 
 ## 2a. Twarde wejścia z etapów 1, 1b, 2 i pomiarów (rozstrzygnięte przed decyzjami operatora; obowiązują, o ile §1 nie mówi inaczej)
 
@@ -145,7 +154,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | 3 | roster 6 → 4–5 | **ROZSTRZYGNIĘTE w ETAP1 + L4:** performance ZASTĄP (z warunkiem odwrotu); security ZOSTAW-ODCHUDŹ (prompt 191 → ~90 linii, `plikiKodu>0`, warunkowe po stacku); correctness ZOSTAW-ODCHUDŹ + własny plik; spec-compliance ZOSTAW (otwarte: tylko fazy z kodem); code-quality ZOSTAW-ODCHUDŹ + lint (styl/progi zakazane w prompcie); test-coverage ZOSTAJE (falsyfikowalność); e2e ZOSTAW-ODCHUDŹ (harness → env-up, jedno źródło promptu, parametry z `.env.e2e`). Roster 6 → 5. | ETAP1 §1, §7; 6a pkt 18 |
 | 4 | powtórka po STOP-ie E2E = tylko tester | **NIEAKTUALNA (§1 pkt 6):** STOP środowiskowy/limitowy → [MANUAL], run idzie dalej, powtórka nie istnieje | 6a pkt 18 L11 |
 | 5 | P3 nie naprawiać automatycznie | **PRZYJĘTA:** builder fixa tylko P1/P2, P3 → known-issues/bot | 6a pkt 15 |
-| 6 | dev-plan + dev-docs = jeden skill | **OTWARTA dla panelu**, z uzupełnieniem: budżet pliku i rejestr stałych w plannerze (6a pkt 8, ETAP1B); dev-prep osobno; oszczędność = czas operatora, nie tokeny | HANDOFF §3 pkt 6 |
+| 6 | dev-plan + dev-docs = jeden skill | **WYMÓG (§2 pkt 12, 6a pkt 19)**, z uzupełnieniem: budżet pliku i rejestr stałych w plannerze (6a pkt 8, ETAP1B); dev-prep osobno; oszczędność = czas operatora + kontekst scalonego skilla | HANDOFF §3 pkt 6, 6a pkt 19 |
 | 7 | buildery Read zamiast Bash | **NIEAKTUALNA** (§1 pkt 1) | 6a pkt 15, 18 |
 | 8 | telemetria pełna | **PRZYJĘTA i rozszerzona:** mechaniczna, zero agentów, globalny JSONL + raport miesięczny (§2 pkt 5, §12) | 6a pkt 18 |
 | 9 | parametryzacja E2E w szablonie | **na listę zmian szablonu** (§10) + wejście panelu przez §2 pkt 6 | ETAP3 §7 |
@@ -173,6 +182,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | `coderabbit-setup/templates/coderabbit-base.yaml:54-55` (progi 300/50) | ROZSTRZYGNIĘTE: poprawić generator + opisać w skillu, jak konfigurować bota bez szumu (8 zmian z ETAP1B) | lista zmian szablonu |
 | 6 agentów researchowych (best-practices, framework-docs, learnings, repo-research, spec-flow, web-research) | wołane ze skilli dev-plan/dev-prep/dev-ideate/dev-brainstorm (1–3 odwołania), 0/16 z `tools:` | objąć allowlistą (klasa) albo zostawić z uzasadnieniem |
 | skille dev-ideate (403 l), dev-brainstorm (344), dev-docs-update (107) | 0 wystąpień w rozstrzygnięciach; dev-docs-update nakłada się na bootstrap stanu autopilota | objąć albo zostawić |
+| **wszystkie skille szablonu — użycie (D6, 6a pkt 19)** | *(do dopisania po D6: `dane/d6-audyt-skilli.txt` — uruchomienia, projekty, koszt, ostatnie użycie per skill; lista używane / nieużywane / kandydaci do usunięcia)* | nieużywane → usunąć albo jawnie zostawić z powodem |
 | skill `code-review` | drugi, niezależny roster review poza pipeline'em; po przeprojektowaniu osi zostanie ze starym | objąć albo zostawić |
 | `freshness-audit` (skill + `freshness-audit-wf.js` 16 kB) | gotowy mechanizm na „czy reviewer jest aktualny", nieużyty i nieoceniony | objąć albo zostawić |
 | `templates/e2e-env`, `templates/smoke-autopilot` | źródło parametryzacji E2E (`.env.e2e.example`); smoke-autopilot = jedyny scenariusz testowy maszynerii | objąć przez §2 pkt 6 |
@@ -247,3 +257,7 @@ hook Stop z `--skan --szybko` = pełna automatyzacja bez kroku w skillu.
 działa: cel ~4,5k / ~15k / ~25k); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria, MANUAL per powód, bramki
 PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord w tym kształcie
 (pola mogą być null, klucze nie mogą zniknąć) i punkt w runie, w którym wywołanie A jest możliwe.
+
+**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie. **Mapa walidacji zmian (D5b, do dopisania):**
+`dane/d5b-mapa-walidacji.txt` — dla każdego wymogu §2 i założenia §6: metryka, pole rekordu, baseline z etapu 0 (import `agents.csv` + odzyskana telemetria),
+horyzont; kontrola odwrotna: pola, których mapa potrzebuje, a rekord nie ma → dopisane do rekordu przed wdrożeniem. Wymóg §2 pkt 13 stoi na tej mapie.

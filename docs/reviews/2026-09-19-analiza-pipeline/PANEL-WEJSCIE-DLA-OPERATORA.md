@@ -16,8 +16,10 @@ Pakiet wejściowy zbiera to w jednym miejscu. Ten dokument tłumaczy, co w nim j
 ## Jak wygląda panel
 
 Trzech niezależnych projektantów dostaje ten sam materiał i inny priorytet: jeden ma zbudować pipeline najtańszy, drugi najlepszy jakościowo, trzeci
-hybrydę. Potem trzech sędziów ocenia projekty, sceptyk atakuje zwycięzcę, a synteza składa końcowy projekt. Około ośmiu agentów, wszyscy na Opusie,
-synteza w sesji głównej. Sędziowie mają dwa wymiary: koszt i jakość kodu mierzoną tym, ile poważnych uwag znajduje po nas CodeRabbit. Koszt wdrożenia
+hybrydę. Potem trzech sędziów ocenia projekty, sceptyk atakuje zwycięzcę, a synteza składa końcowy projekt. Około ośmiu agentów, wszyscy na Fable, bo tu
+liczy się głębia rozumowania, nie wolumen. Panel idzie w trzech osobnych runach (projektanci, sędziowie, sceptyk), żeby wyczerpanie limitu w połowie nie
+skasowało całości, a przed startem sprawdzamy stan limitu. Panel niczego nie buduje: jego wynikiem jest koncepcja docelowego pipeline'u i kolejność
+wdrożenia, a kod powstaje dopiero faza po fazie, każda z własną miarą w telemetrii. Sędziowie mają dwa wymiary: koszt i jakość kodu mierzoną tym, ile poważnych uwag znajduje po nas CodeRabbit. Koszt wdrożenia
 nie jest kryterium, bo zdecydowałeś, że zysk z lepszego procesu przewyższa koszt naprawy, a wdrożenie i tak pójdzie fazami. Szablon jako plugin nie jest
 wariantem; zbadany, odłożony na później.
 
@@ -93,7 +95,9 @@ Wiedza schodzi do warstw ładowanych warunkowo. Żaden skill nie dopisuje już d
 
 **Pięć. Telemetria mechaniczna, bez agentów.** Osobna część 6 tego dokumentu.
 
-**Sześć. E2E przełącza się na manual zamiast zatrzymywać run.** Jak w części 1. Do tego każdy projekt ma powiedzieć wprost, co robi z trzema
+**Sześć. E2E przełącza się na manual zamiast zatrzymywać run.** Jak w części 1, z Twoim doprecyzowaniem: warunkiem jest środowisko E2E sprawdzone przed
+startem autopilota, a checkbox przełączony na manual w trakcie runu trafia do smoke operatora na końcu zadania, nie znika. Ponowne stawianie środowiska
+w runie jest droższe niż test ręczny. Do tego każdy projekt ma powiedzieć wprost, co robi z trzema
 rekomendacjami z przeglądu runów: parametryzacja E2E w szablonie, katalog zadania jako własne artefakty (brudny tylko on nie jest powodem STOP-u),
 kategoria przyczyny pominięcia testu.
 
@@ -120,6 +124,13 @@ prawdziwy defekt za cztery do pięciu fałszywych. Równoległe próbki pomagaj�
 
 **Jedenaście. Polecenia-listy zamiast długich reguł, z warunkiem odwrotu.** To główny lek na ucieczki do bota i jedyny bez pomiaru, bo skuteczność
 da się zmierzyć dopiero po wdrożeniu. Każdy projekt wpisuje warunek, przy którym się z tego wycofa.
+
+**Dwanaście. Scalenie dev-plan z dev-docs w jeden skill.** Do wczoraj hipoteza otwarta dla panelu, od dziś wymóg. Odpalasz je zawsze po sobie i nic
+między nimi nie robisz, a dev-docs przepisuje od jednej piątej do połowy planu. Każdy projekt ma zaprojektować scalony skill z budżetem tokenów,
+na analizie tego, co oba dziś robią i gdzie przepalają kontekst. Dev-prep zostaje osobno, bo jest interaktywny.
+
+**Trzynaście. Każda zmiana ma metrykę.** Projekt, który proponuje zmianę bez wskazania, po którym polu telemetrii poznamy, że zadziałała, jest
+niekompletny. To wymóg oparty na mapie walidacji z części 6.
 
 ---
 
@@ -159,10 +170,11 @@ Na początku analizy zapisałem dziewięć hipotez. Panel dostaje je ze stanem, 
 
 Odchudzenie kontekstu: obowiązuje w wersji z Twoich decyzji. Mniej agentów na fazę: otwarte dla panelu, z ustaleniami powyżej. Roster review:
 rozstrzygnięte, sześć na pięć. Powtórka po zatrzymaniu E2E samym testerem: nieaktualne. P3 nie naprawiać automatycznie: przyjęte. Scalenie dev-plan
-z dev-docs w jeden skill: otwarte dla panelu, z Twoim uzupełnieniem o budżet pliku w jednostce pracy. Buildery czytające przez Read: nieaktualne.
+z dev-docs w jeden skill: od dziś wymóg, z Twoim uzupełnieniem o budżet pliku w jednostce pracy. Buildery czytające przez Read: nieaktualne.
 Telemetria pełna: przyjęta i rozszerzona. Parametryzacja E2E: na listę zmian szablonu.
 
-Zostają więc dwie prawdziwie otwarte kwestie projektowe: ile agentów na fazę i czy scalać planowanie z dokumentacją. Reszta to wbudowanie ustaleń.
+Zostaje więc jedna prawdziwie otwarta kwestia projektowa: ile agentów na fazę i jak je poskładać. Reszta to wbudowanie ustaleń, w tym zaprojektowanie
+scalonego skilla planowania.
 
 ---
 
@@ -204,7 +216,12 @@ i wybór zostaje na wdrożenie.
 **Co Ci to da.** Po miesiącu jeden skrypt odpowie, ile kosztuje faza i kto ją zjada, czy odchudzenie kontekstu zadziałało, które osie znajdują, a które
 tylko kosztują, na czym stają runy i czy ktoś nie przekroczył budżetu instrukcji. Bez powtarzania tej analizy.
 
-**To jest jedyna propozycja w pakiecie, nie decyzja.** Czeka na Twoje słowo: wariant główny z siatką, sam hook, albo poprawki do pól.
+**Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie.
+
+**Jak poznamy, że zmiany działają.** Rekord to dopiero połowa. Druga połowa to mapa walidacji, którą zrobimy przed panelem: dla każdego z trzynastu
+wymogów i każdego założenia z warunkiem odwrotu jedna linia z metryką, polem rekordu, punktem odniesienia sprzed zmiany i horyzontem, po ilu fazach
+patrzymy. Potem kontrola w drugą stronę: czy rekord ma wszystkie pola, których mapa potrzebuje. Jeśli czegoś brakuje, dopisujemy teraz, nie po
+wdrożeniu. Bez tego za miesiąc mielibyśmy dane, ale nie wiedzielibyśmy, na które patrzeć.
 
 ---
 
@@ -217,6 +234,10 @@ wołanych ze skilli planowania, trzy skille (ideate, brainstorm, docs-update) be
 w skillu code-review, nieużyty mechanizm freshness-audit, szablony E2E i smoke, siedemdziesiąt cztery testy workflowów, które każdy projekt łamie,
 treść skilli builderów do podziału na warstwy, prompt osi code-quality żyjący w dwóch miejscach. Każdy projekt musi powiedzieć przy każdym z nich:
 obejmuję albo zostawiam, i dlaczego.
+
+Do tego dochodzi audyt użycia wszystkich skilli szablonu, który zrobimy przed panelem: skrypt na danych z etapu zerowego policzy, który skill był
+uruchamiany, ile razy, w ilu projektach i za ile, a który nigdy. Panel dostanie listę „używane, nieużywane, kandydaci do usunięcia" jako fakt,
+a nie jako przeczucie.
 
 ---
 
@@ -240,4 +261,5 @@ zdanie decyzyjne bez żadnego ze słów-markerów nie weszło do kontroli. Skryp
 
 ## Co teraz
 
-Dwie rzeczy do Twojej decyzji: telemetria (część 6) i znak do etapu 4. Etap 4 to najpierw mini-run (część 8), potem panel. Oba wyłącznie na Twój znak.
+Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa. Potem mini-run na Opusie i panel w trzech runach na Fable, oba
+wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
