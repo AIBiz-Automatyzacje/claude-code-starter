@@ -139,10 +139,13 @@ typ=faza, nowe pola/grupy:
 
 typ=run, nowe pola:
   profil_stacku {supabase, react, node, expo, ...} (ten sam profil, ktory idzie do dossier — 6a pkt 6/18) | smoke {pozycje, z_manual}
-  (z result dev-docs-complete) | pr — TYLKO workflow dev-pr: {numer, tury, uwagi_razem, p1, p2, p3, koszyk{A,B,C,D},
-  klasy[{klasa, severity, plik, os, dlaczego, ma_regule}], rekomendacja} — klasyfikacja uwag bota w formacie coderabbit/klasyfikacja-574.csv
-  (slownik klas z ETAP1B; zrodlo: result etapu `zbierz` dev-pr-wf + `rekomendacja` z JS). NAJWAZNIEJSZE z dopisanych: bez run.pr zadna miara
-  JAKOSCI (P1/P2 od bota PO naszym review, HANDOFF §1) nie ma zrodla.
+  (z result dev-docs-complete) | pr — TYLKO workflow dev-pr: {numer, tury, pliki, uwagi_razem, p1, p2, p3, koszyk{A,B,C,D},
+  klasy[{klasa, severity, plik, os, ma_regule}], rekomendacja} — klasyfikacja uwag bota w formacie coderabbit/klasyfikacja-574.csv
+  (slownik klas z ETAP1B). NAJWAZNIEJSZE z dopisanych: bez run.pr zadna miara JAKOSCI (P1/P2 od bota PO naszym review, HANDOFF §1) nie ma zrodla.
+  Poprawka 2026-09-22 (mapa walidacji v2, poprawka 7): `pliki` = liczba plikow PR z gh (mianownik miary „na 100 plikow"); klasa/os/waga —
+  rozszerzony schemat ISTNIEJACEGO agenta `pr:zbierz` (dzis zwraca tylko klase decyzji napraw/odrzuc/do-operatora), zero nowych agentow;
+  `ma_regule` liczone skryptem (klasa ∈ indeks learned-patterns); pole `dlaczego` USUNIETE z runu (osad, nie mechanika) → probka w raporcie
+  miesiecznym; przed porownaniami kalibracja klasyfikatora na 2–3 starych PR vs 1b.
 
 typ=skill (NOWY, czwarty typ rekordu): epizod skilla w sesji glownej — port skrypty/koszt_skilli.py, zbierany przez `zbierz.mjs --skan`
   z transkryptow sesji glownych (<command-name> + tool_use Skill): skill, projekt, sesja, zrodlo (slash|Skill), start, koniec, tury,
@@ -152,4 +155,5 @@ typ=skill (NOWY, czwarty typ rekordu): epizod skilla w sesji glownej — port sk
 
 Import baseline (jednorazowo, plan etapu 5): agents.csv → agent (ctx_start dopelnic skryptem kontekst_1_tury.py, klasa_roli z d3, findingi
 z findingi-per-os), telemetria-odzyskana (33) → faza+run v0, skille.csv → skill, coderabbit/klasyfikacja-574.csv → run.pr dla 19 PR
-(jedyny baseline jakosci). Szczegoly: d5b-mapa-walidacji.txt §4.
+(tlo jakosci; wlasciwy baseline porownan = B0 zebrany po 8 zmianach .coderabbit.yaml). Szczegoly: d5b-mapa-walidacji.txt §4 i naglowek
+„MIARA JAKOSCI".

@@ -140,7 +140,8 @@ To ustalenia z etapów 1, 1b i 2, które nie przeszły przez Twoje decyzje, bo n
 wyszły przy czytaniu obok źródeł. Najważniejsze:
 
 Roster review z sześciu osi na pięć: performance zostaje zastąpiona narzędziami (limit rozmiaru bundle'a, advisors, pięć linii w correctness),
-z warunkiem powrotu, jeśli bot znajdzie więcej niż jeden poważny defekt wydajnościowy na pięć faz. Security ma prompt do skrócenia o połowę.
+z warunkiem powrotu, jeśli bot znajdzie co najmniej trzy poważne defekty wydajnościowe w oknie pięciu PR-ów (próg poprawiony w mapie walidacji;
+dawny „więcej niż jeden na pięć faz" liczył w złej jednostce i alarmowałby przypadkiem). Security ma prompt do skrócenia o połowę.
 Correctness dostaje własny plik agenta. Code-quality zostaje, ale z zakazem zgłaszania czegokolwiek, co łapie linter. Spec-compliance zostaje bez zmian,
 bo trzy z pięciu proponowanych cięć kasowały prawdziwe findingi.
 
@@ -227,17 +228,27 @@ samymi polami, więc cofnięcie zmiany nie będzie dyskusją, tylko odczytem.
 
 Horyzonty są trzy. Ustawienia widać po jednej fazie: kontekst startowy agenta per klasa roli (dziś sześćdziesiąt siedem do stu osiemnastu tysięcy
 tokenów, cel od czterech i pół do dwudziestu pięciu tysięcy), czas bramek, budżet instrukcji. Koszt i liczbę tur widać po pięciu fazach, bo
-rozrzut jest duży. Jakość widać po pięciu PR-ach, bo bot recenzuje PR, nie fazę: na przykład polecenia-listy mają obniżyć uwagi bota z koszyka B
-z dzisiejszych dziesięciu i pół na PR, a pętla fix ma mniej P1 i P2 od bota w plikach, których dotknęła naprawa.
+rozrzut jest duży. Jakość widać w oknie pięciu PR-ów, bo bot recenzuje PR, nie fazę.
+
+Jakość liczymy od wersji drugiej mapy (po Twojej akceptacji dziewięciu poprawek) jako poważne uwagi bota na sto plików PR-a, w podziale na typ kodu
+i oś, bo PR-y mają od 12 do 160 plików, a warstwa danych zbiera więcej uwag niż UI. Punkt odniesienia to wrzesień, 3,5 na sto plików, a nie średnia
+z całości, bo jakość poprawiała się sama od 9,3 w sierpniu. Wszystkie zmiany pipeline'u porównujemy z nowym punktem odniesienia zebranym po zmianie
+konfiguracji bota, bo po niej bot jest innym przyrządem. Warunek odwrotu jest jeden dla wszystkich założeń: co najmniej dwa razy więcej poważnych
+uwag osi niż oczekiwane w oknie pięciu PR-ów i co najmniej trzy. Przykład z pętli fix: w plikach po naprawie bot znajduje dziś trzy razy więcej
+poważnych defektów niż w pozostałych (14,0 wobec 4,7 na sto plików), i ten stosunek ma spadać.
 
 Kontrola w drugą stronę wykazała, że rekord telemetrii nie miał szesnastu rzeczy, których mapa potrzebuje. Dopisałem je teraz. Dwie są
 najważniejsze. Pierwsza: rekord runu dev-pr z klasyfikacją uwag bota, bo bez niego żadna miara jakości nie ma źródła, a jakość to połowa tego,
-co oceniają sędziowie. Druga: nowy typ rekordu dla skilli w sesji głównej, bo bez niego scalenie planu z docs nie miałoby odczytu. Reszta to
+co oceniają sędziowie. Klasyfikację robi ten sam agent zbierania co dziś, z rozszerzonym schematem, bez nowych agentów; ocena „dlaczego
+przeoczone" wypadła z runu i robimy ją raz w miesiącu na próbce. Druga: nowy typ rekordu dla skilli w sesji głównej, bo bez niego scalenie planu
+z docs nie miałoby odczytu. Reszta to
 mniejsze pola: długość promptu, werdykty sceptyka w trzech etykietach, rozmiar indeksu wiedzy i wycinka, pliki dotknięte fixem, wynik ESLint
 z listą reguł, profil stacku, pozycje smoke przeniesione z manual.
 
-Wniosek dla planu wdrożenia: pierwsza iteracja to telemetria z importem danych z etapu zerowego, bo bez niej nic nie ma odczytu. Każda kolejna
-iteracja wchodzi w parze ze swoim wpisem z mapy i ma zaplanowany moment odczytu. Trzy rzeczy mierzymy poza telemetrią, przed wdrożeniem:
+Wniosek dla planu wdrożenia: pierwsza iteracja to telemetria z importem danych z etapu zerowego, bo bez niej nic nie ma odczytu. Potem zmiana
+konfiguracji bota, kalibracja klasyfikatora uwag i nowy punkt odniesienia z dwóch–trzech zadań. Każda kolejna iteracja wchodzi w parze ze swoim
+wpisem z mapy i ma zaplanowany moment odczytu. Ustawienia i koszt mogą się zmieniać równolegle, zmiany jakościowe różnych osi też, a zmiany
+przekrojowe, które dotykają wszystkich osi naraz, dostają okno pięciu PR-ów dla siebie. Trzy rzeczy mierzymy poza telemetrią, przed wdrożeniem:
 skuteczność sceptyka na starych findingach, warstwy mechaniczne testów na trzydziestu jeden starych uwagach i to, czy treść skilli builderów jest
 w ogóle stosowana, co sprawdzi mini-run.
 

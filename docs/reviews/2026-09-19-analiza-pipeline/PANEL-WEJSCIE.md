@@ -163,9 +163,9 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 | założenie | na czym stoi | warunek odwrotu / pomiar | źródło |
 |---|---|---|---|
-| polecenia-listy domkną ~60–70% uwag B | oceny agentów etapu 1b, zero runów; IFScale jednocześnie uzasadnia i grozi | skuteczność mierzalna dopiero PO wdrożeniu (PR z warstwy walidacji/migracji vs PR 2, 4, 9 z 1b); wzór warunku: „>1 P1/P2 klasy X od bota na 5 faz przywraca regułę/oś"; budżet <150 z D2 | ETAP1B §3, ETAP3 §1.2 |
-| performance ZASTĄP (size-limit + advisors + 5-liniowa checklista w correctness) | advisors NIEZMIERZONE (do zmierzenia przy wdrożeniu bramki, na chmurze); size-limit dziś w szablonie nieobecny (0 wystąpień w `.claude/`), zmierzony tylko czas (0,8 s) | >1 P1/P2 klasy perf od bota na 5 faz → przywrócić oś warunkowo na tierze low | ETAP1 §1, ETAP3 L10 |
-| security odchudzone + warunkowe po stacku | jw. advisors | P1/P2 klasy security od bota po review (dziś 7+6 w dwóch klasach ucieczek) | ETAP1 §1, 6a pkt 18 |
+| polecenia-listy domkną ~60–70% uwag B | oceny agentów etapu 1b, zero runów; IFScale jednocześnie uzasadnia i grozi | skuteczność mierzalna dopiero PO wdrożeniu, porównanie w tym samym typie kodu względem B0 (baseline po zmianie `.coderabbit.yaml`); wzór warunku (D5b v2 — jednostka i próg poprawione): B P1/P2 bota osi na 100 plików w oknie 5 PR ≥ max(3, 2 × oczekiwana) przywraca regułę/oś, klasa = diagnoza (dawne „>1 P1/P2 klasy X na 5 faz" = 1–2 PR i fałszywy alarm); budżet <150 z D2 | ETAP1B §3, ETAP3 §1.2 |
+| performance ZASTĄP (size-limit + advisors + 5-liniowa checklista w correctness) | advisors NIEZMIERZONE (do zmierzenia przy wdrożeniu bramki, na chmurze); size-limit dziś w szablonie nieobecny (0 wystąpień w `.claude/`), zmierzony tylko czas (0,8 s) | ≥3 B P1/P2 osi performance od bota w oknie 5 PR → przywrócić oś warunkowo na tierze low (D5b v2; baseline 5 w 17 PR, wrzesień 1 na 683 pliki; dawne „>1 na 5 faz" alarmowałoby przypadkiem w ~20% okien) | ETAP1 §1, ETAP3 L10, D5b |
+| security odchudzone + warunkowe po stacku | jw. advisors | B P1/P2 osi security od bota na 100 plików, osobno per profil stacku (D5b v2: 33 w 17 PR = 1,72/100, wrzesień 0,88/100; próg odwrotu w oknie 5 PR ≥ max(3, 2 × oczekiwana), dziś 10; „7+6" z ETAP1 = inny zbiór, nieporównywalny) | ETAP1 §1, 6a pkt 18, D5b |
 | packager → JS (agent znika) | ETAP1: bilans ujemny (18,7 M kosztu vs 9,5 M routingu), jedyny pomiar: reviewerzy po dossier czytają 2× więcej Bashem (10,5 → 23 tur); ETAP2: z literatury | pomiar tur Bash/Read reviewerów z dossier i bez na tej samej maszynerii — po wdrożeniu; kierunek tani i odwracalny | ETAP1 §1, ETAP3 L18 |
 | sceptyk asymetryczny ~4× skuteczniejszy | 2 prace zewnętrzne (63–83% kill); u nas obalenia 12% / 19,2% / 10,9%, `obalone_n` per oś = artefakt | kill rate na archiwalnych findingach o znanych werdyktach — po wdrożeniu; ryzyko: kasowanie prawdziwych P1/P2 | ETAP3 L6 |
 | test-coverage scalone z correctness (tylko jako opcja wariantu) | jedyna zmierzona warstwa mechaniczna trafia 0/31 | dopiero po pomiarze warstw 2–3 (Stryker na atrapach i Zod) na plikach z 31 uwag | §1 pkt 2 |
@@ -260,21 +260,30 @@ PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2
 
 **Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie.
 
-**Mapa walidacji zmian (D5b, 2026-09-22; pełny tekst: `dane/d5b-mapa-walidacji.txt`, 21 wpisów).** Dla każdego z 13 wymogów §2 i 8 założeń §6:
-METRYKA (co liczymy, cel tam, gdzie decyzje go dają) → POLA rekordu (typ.pole) → BASELINE z etapu 0 (5 projektów, 2 941 agentów, 1 179 M jedn.;
-oferty-online po 06.09: 35,5 agenta i 740 tur/fazę) → HORYZONT → dla założeń dodatkowo ODWRÓT tymi samymi polami. **Konwencja horyzontów:**
-KONFIGURACJA = widać po 1 fazie (ctx_start per klasa, bramki, budżet instrukcji, telemetria); KOSZT/TURY = 5 faz (rozrzut tur p50 39 / p90 83);
-JAKOŚĆ = 5 PR (bot recenzuje PR, nie fazę). Przykłady: `tools:` → p50 `agent.ctx_start` per klasa roli vs dziś 67–118k (cel ~4,5k / ~15k / ~25k),
-1 faza; pętla fix → P1/P2 bota w `faza.fix.pliki[]` po 5 zadaniach vs D1 (39% urodzonych w fixie); polecenia-listy → koszyk B bota per PR vs 10,5/PR
-(200/19; „w-zakresie-ale-przeoczone" 164), odwrót >1 P1/P2 klasy X na 5 faz; sceptyk → DISAGREE_EVIDENCE/weryfikowane vs 12% / 19,2% / 10,9%, odwrót:
-kill rate >50% i bot zgłasza P1/P2 w miejscu obalonego; scalenie dev-plan+dev-docs → koszt i minuty epizodu vs 930k + 707k, 47 + 67 min.
+**Mapa walidacji zmian (D5b, 2026-09-22, wersja 2 po akceptacji 9 poprawek operatora — `PROPOZYCJA-POPRAWEK-MAPY-WALIDACJI.md`; pełny tekst:
+`dane/d5b-mapa-walidacji.txt`, 21 wpisów; liczby jakości: `skrypty/d5b_baseline_jakosci.py` → `dane/d5b-baseline-jakosci.txt`).** Dla każdego z 13 wymogów §2
+i 8 założeń §6: METRYKA → POLA rekordu (typ.pole) → BASELINE → HORYZONT → dla założeń ODWRÓT tymi samymi polami; pole bez producenta ma dopisek
+„WYMAGA ZMIANY: <miejsce>". **Konwencja horyzontów:** KONFIGURACJA = 1 faza (ctx_start per klasa, bramki, budżet instrukcji, telemetria); KOSZT/TURY
+= 5 faz (rozrzut tur p50 39 / p90 83); JAKOŚĆ = okno 5 PR (5 faz ≠ 5 PR: zadanie ma 3–6 faz i 1 PR). **MIARA JAKOŚCI (wspólna):** B P1/P2 bota
+NA 100 PLIKÓW PR (PR-y 12–160 plików), per typ kodu i per oś (kolumna `etap` z 1b, nie filtr po nazwie klasy); baseline = epoka wrześniowa PR 13–19
+(3,5/100; sierpień 9,3 — jakość spadała sama, średnia 6,7 dałaby fałszywą „poprawę", L16); porównania pipeline'u względem **B0 zebranego po 8 zmianach
+`.coderabbit.yaml`** (inny przyrząd); **próg odwrotu** per oś w oknie 5 PR ≥ max(3, 2 × oczekiwana), klasa = diagnoza (dziś: correctness 14, test 12,
+security 10, spec 4, perf 3). Przykłady: `tools:` → p50 `agent.ctx_start` per klasa vs dziś 67–118k (cel ~4,5k / ~15k / ~25k), 1 faza; pętla fix →
+B P1/P2 bota na 100 plików fixa vs reszta PR: dziś **14,0 vs 4,7 (wrzesień 7,2 vs 2,2) ≈ 3×**, cel: stosunek spada; sceptyk → DISAGREE_EVIDENCE/
+weryfikowane vs 12% / 19,2% / 10,9%, odwrót: kill rate >50% i ≥3 B P1/P2 w miejscach obalonych w oknie 5 PR; scalenie dev-plan+dev-docs → koszt
+i minuty epizodu vs 930k + 707k, 47 + 67 min. **Kolejność odczytów (mapa §6):** ustawienia i koszt równolegle; zmiany jakościowe rozłącznych osi
+równolegle w jednym oknie; zmiany przekrojowe (budżet instrukcji, wycinek wiedzy, polecenia-listy naraz, kontekst reviewerów, sceptyk, fix tylko P1/P2)
+mają okno 5 PR dla siebie.
 **Kontrola odwrotna (mapa → rekord D5): 16 brakujących pozycji dopisanych do rekordu (`d5-telemetria-rekord.txt` §7):** `agent.prompt_zn`,
 `agent.narzedzia.mcp`, `agent.weryfikowane`, `agent.werdykty{agree, disagree_evidence, disagree_concern}`, `faza.sceptyk`, `faza.wiedza{indeks_zn,
 claude_md_zn, wycinek_*}`, `faza.fix.pliki[]`, `faza.fix.linie_diff`, `faza.fix.p1_z_testem`, `faza.review_rundy`, `faza.dossier_zn`,
-`faza.bramki.eslint.{trafienia, reguly[]}` + `bramki.testyTypow`, `run.profil_stacku`, `run.smoke{pozycje, z_manual}`, **`run.pr{koszyk, klasy[], rekomendacja}`
-dla dev-pr — najważniejsze: bez niego żadna miara JAKOŚCI (P1/P2 od bota po naszym review, HANDOFF §1) nie ma źródła**, oraz **nowy typ `skill`**
+`faza.bramki.eslint.{trafienia, reguly[]}` + `bramki.testyTypow`, `run.profil_stacku`, `run.smoke{pozycje, z_manual}`, **`run.pr{pliki, koszyk, klasy[], rekomendacja}`
+dla dev-pr — najważniejsze: bez niego żadna miara JAKOŚCI (P1/P2 od bota po naszym review, HANDOFF §1) nie ma źródła** (producent: rozszerzony schemat
+istniejącego agenta `pr:zbierz` o klasę/oś/wagę, zero nowych agentów; `ma_regule` skryptem; pole „dlaczego przeoczone" wypada z runu → próbka w raporcie
+miesięcznym; przed porównaniami kalibracja klasyfikatora na 2–3 starych PR vs 1b), oraz **nowy typ `skill`**
 (epizod skilla w sesji głównej, port `koszt_skilli.py`) — bez niego §2 pkt 12 nie ma odczytu. Import baseline (plan etapu 5): `agents.csv` → agent,
-odzyskana telemetria → faza/run v0, `skille.csv` → skill, `klasyfikacja-574.csv` → `run.pr` dla 19 PR (jedyny baseline jakości; to załatwia otwartą decyzję
-o scaleniu odzyskanej telemetrii). Trzy rzeczy poza telemetrią, mierzone PRZED wdrożeniem: kill rate sceptyka na archiwalnych findingach, warstwy 2–3 testów
-na 31 uwagach, stosowanie treści `skills:`/wycinka (mini-run §11). **Konsekwencja dla etapu 5: iteracja 1 = telemetria + import baseline; każda kolejna
-iteracja wchodzi z parą (zmiana, wpis z mapy) i zaplanowanym odczytem po 1 / 5 fazach / 5 PR.** Wymóg §2 pkt 13 stoi na tej mapie.
+odzyskana telemetria → faza/run v0, `skille.csv` → skill, `klasyfikacja-574.csv` + rozmiary PR z gh → `run.pr` dla 19 PR (tło jakości i epoka wrześniowa;
+właściwy baseline porównań = B0; import załatwia otwartą decyzję o scaleniu odzyskanej telemetrii). Trzy rzeczy poza telemetrią, mierzone PRZED wdrożeniem: kill rate sceptyka na archiwalnych findingach, warstwy 2–3 testów
+na 31 uwagach, stosowanie treści `skills:`/wycinka (mini-run §11). **Konsekwencja dla etapu 5: iteracja 1 = telemetria + import baseline; potem 8 zmian
+`.coderabbit.yaml` + kalibracja klasyfikatora uwag bota + zebranie B0 z 2–3 zadań PRZED pierwszą zmianą pipeline'u; każda kolejna iteracja wchodzi z parą
+(zmiana, wpis z mapy), zaplanowanym odczytem po 1 / 5 fazach / oknie 5 PR i regułami kolejności odczytów.** Wymóg §2 pkt 13 stoi na tej mapie.

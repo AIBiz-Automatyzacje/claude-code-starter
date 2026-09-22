@@ -1,7 +1,7 @@
-# Propozycja poprawek mapy walidacji — do akceptacji operatora
+# Propozycja poprawek mapy walidacji — przyjęta 2026-09-22
 
-**Data:** 2026-09-22. **Status:** PROPOZYCJA. Mapa walidacji (`dane/d5b-mapa-walidacji.txt` i `MAPA-WALIDACJI-DLA-OPERATORA.md`) NIE jest jeszcze zmieniona.
-Poprawki wejdą do obu wersji mapy i do rekordu telemetrii dopiero po Twojej akceptacji.
+**Data:** 2026-09-22. **Status:** PRZYJĘTA przez operatora 2026-09-22 i WPROWADZONA do mapy walidacji (wersja 2 obu wersji), rekordu telemetrii
+(§7, pole `run.pr`), PANEL-WEJSCIE §6 i §12 oraz wersji dla operatora (części 2 i 6). Dokument zostaje jako zapis uzasadnień zmian.
 **Nowe liczby w tym dokumencie** policzył skrypt `skrypty/d5b_baseline_jakosci.py` (wynik: `dane/d5b-baseline-jakosci.txt`) z klasyfikacji 574 uwag
 bota z etapu 1b, z rozmiarów 19 PR-ów pobranych z GitHuba (tylko odczyt) i z commitów fixów w repo oferty-online. Zero agentów.
 
@@ -182,3 +182,6 @@ Te trzy reguły pozwalają iść równolegle tam, gdzie to bezpieczne, i czekać
 Obie wersje mapy dostaną poprawki 1–9. Rekord telemetrii dostanie dwie zmiany: pole „dlaczego przeszło" wypada z runu, a „czy klasa ma regułę"
 jest liczone skryptem. Plan etapu 5 dostanie dwa nowe kroki: punkt odniesienia po zmianie konfiguracji bota i kalibrację klasyfikatora uwag.
 Skrypt, który policzył nowe liczby, zostaje w katalogu i można go odpalić ponownie.
+
+**Korekta przy wprowadzaniu (2026-09-22):** próg odwrotu dla osi spec wynosi 4, nie 3 (oczekiwane w oknie 1,7 × 2 = 3,4, więc najmniejsza liczba
+całkowita spełniająca próg to 4). Pozostałe progi przeliczone bez zmian: correctness 14, test-coverage 12, security 10, wydajność 3.
