@@ -258,6 +258,23 @@ działa: cel ~4,5k / ~15k / ~25k); findingi per oś, kill rate sceptyka, P1/P2 p
 PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord w tym kształcie
 (pola mogą być null, klucze nie mogą zniknąć) i punkt w runie, w którym wywołanie A jest możliwe.
 
-**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie. **Mapa walidacji zmian (D5b, do dopisania):**
-`dane/d5b-mapa-walidacji.txt` — dla każdego wymogu §2 i założenia §6: metryka, pole rekordu, baseline z etapu 0 (import `agents.csv` + odzyskana telemetria),
-horyzont; kontrola odwrotna: pola, których mapa potrzebuje, a rekord nie ma → dopisane do rekordu przed wdrożeniem. Wymóg §2 pkt 13 stoi na tej mapie.
+**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie.
+
+**Mapa walidacji zmian (D5b, 2026-09-22; pełny tekst: `dane/d5b-mapa-walidacji.txt`, 21 wpisów).** Dla każdego z 13 wymogów §2 i 8 założeń §6:
+METRYKA (co liczymy, cel tam, gdzie decyzje go dają) → POLA rekordu (typ.pole) → BASELINE z etapu 0 (5 projektów, 2 941 agentów, 1 179 M jedn.;
+oferty-online po 06.09: 35,5 agenta i 740 tur/fazę) → HORYZONT → dla założeń dodatkowo ODWRÓT tymi samymi polami. **Konwencja horyzontów:**
+KONFIGURACJA = widać po 1 fazie (ctx_start per klasa, bramki, budżet instrukcji, telemetria); KOSZT/TURY = 5 faz (rozrzut tur p50 39 / p90 83);
+JAKOŚĆ = 5 PR (bot recenzuje PR, nie fazę). Przykłady: `tools:` → p50 `agent.ctx_start` per klasa roli vs dziś 67–118k (cel ~4,5k / ~15k / ~25k),
+1 faza; pętla fix → P1/P2 bota w `faza.fix.pliki[]` po 5 zadaniach vs D1 (39% urodzonych w fixie); polecenia-listy → koszyk B bota per PR vs 10,5/PR
+(200/19; „w-zakresie-ale-przeoczone" 164), odwrót >1 P1/P2 klasy X na 5 faz; sceptyk → DISAGREE_EVIDENCE/weryfikowane vs 12% / 19,2% / 10,9%, odwrót:
+kill rate >50% i bot zgłasza P1/P2 w miejscu obalonego; scalenie dev-plan+dev-docs → koszt i minuty epizodu vs 930k + 707k, 47 + 67 min.
+**Kontrola odwrotna (mapa → rekord D5): 16 brakujących pozycji dopisanych do rekordu (`d5-telemetria-rekord.txt` §7):** `agent.prompt_zn`,
+`agent.narzedzia.mcp`, `agent.weryfikowane`, `agent.werdykty{agree, disagree_evidence, disagree_concern}`, `faza.sceptyk`, `faza.wiedza{indeks_zn,
+claude_md_zn, wycinek_*}`, `faza.fix.pliki[]`, `faza.fix.linie_diff`, `faza.fix.p1_z_testem`, `faza.review_rundy`, `faza.dossier_zn`,
+`faza.bramki.eslint.{trafienia, reguly[]}` + `bramki.testyTypow`, `run.profil_stacku`, `run.smoke{pozycje, z_manual}`, **`run.pr{koszyk, klasy[], rekomendacja}`
+dla dev-pr — najważniejsze: bez niego żadna miara JAKOŚCI (P1/P2 od bota po naszym review, HANDOFF §1) nie ma źródła**, oraz **nowy typ `skill`**
+(epizod skilla w sesji głównej, port `koszt_skilli.py`) — bez niego §2 pkt 12 nie ma odczytu. Import baseline (plan etapu 5): `agents.csv` → agent,
+odzyskana telemetria → faza/run v0, `skille.csv` → skill, `klasyfikacja-574.csv` → `run.pr` dla 19 PR (jedyny baseline jakości; to załatwia otwartą decyzję
+o scaleniu odzyskanej telemetrii). Trzy rzeczy poza telemetrią, mierzone PRZED wdrożeniem: kill rate sceptyka na archiwalnych findingach, warstwy 2–3 testów
+na 31 uwagach, stosowanie treści `skills:`/wycinka (mini-run §11). **Konsekwencja dla etapu 5: iteracja 1 = telemetria + import baseline; każda kolejna
+iteracja wchodzi z parą (zmiana, wpis z mapy) i zaplanowanym odczytem po 1 / 5 fazach / 5 PR.** Wymóg §2 pkt 13 stoi na tej mapie.

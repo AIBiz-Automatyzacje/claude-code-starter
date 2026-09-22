@@ -1,0 +1,301 @@
+D5b — MAPA WALIDACJI ZMIAN (2026-09-22; HANDOFF 6a pkt 19). Zero agentow; kompilacja sesji glownej z PANEL-WEJSCIE §2/§6, rekordu D5
+(d5-telemetria-rekord.txt) i danych etapu 0 (dane-digest.md, kontekst_1_tury.txt, koszt_tabele.txt, koszt_zadan.txt, wartosc_reviewerow.txt,
+pomiar1/3/5/6, coderabbit/klasyfikacja-574.csv, d3-mapa-rol-agentow.txt, d6-audyt-skilli.txt).
+
+PO CO: wymog §2 pkt 13 mowi, ze kazda zmiana w projekcie panelu ma wskazana metryke z rekordu telemetrii. Ta mapa jest slownikiem, z ktorego
+projektant bierze metryke, a raport miesieczny (raport.mjs) liczy ja z tych samych pol. Bez mapy „metryka" bylaby slowem, nie liczba.
+
+JAK CZYTAC KAZDY WPIS:
+  METRYKA   — co liczymy i jak (jedna linia; „cel" tam, gdzie decyzje juz go daja).
+  POLA      — sciezka w rekordzie D5: typ.pole (agent.ctx_start, faza.bramki.advisors, run.stop_kategoria). [BRAK] = pola nie ma w rekordzie D5
+              i jest dopisane w sekcji 3 tej mapy oraz w d5-telemetria-rekord.txt §7.
+  BASELINE  — punkt odniesienia z etapu 0 (5 projektow, 2 941 agentow, 45 870 tur, 1 179 M jedn.; oferty-online po 06.09: 23 fazy, 35,5 agenta
+              i 740 tur/faze). Import do nowego pliku: sekcja 4.
+  HORYZONT  — po ilu fazach / zadaniach / PR-ach metryka jest czytelna. Konwencja: KONFIGURACJA = widac po 1 fazie (cecha ustawien, nie statystyka);
+              KOSZT/TURY = 5 faz (rozrzut tur p50 39 / p90 83 u buildera); JAKOSC = 5 PR-ow (bot recenzuje PR, nie faze; 1 zadanie ≈ 1 PR).
+  ODWROT    — tylko dla zalozen §6: warunek, ktory cofa zmiane, wyrazony tymi samymi polami.
+
+Jednostka kosztu wszedzie: jedn. = in×1 + cache_w×1,25 + cache_r×0,1 + out×5 (agent.koszt_jedn).
+
+================================================================================================================================
+=== 1. TRZYNASCIE TWARDYCH WYMOGOW §2 ===
+================================================================================================================================
+
+--- §2 pkt 1. Allowlista `tools:` u wszystkich agentow + pliki agentow PER KLASA ROLI ---
+METRYKA   (a) kontekst startowy: p50 agent.ctx_start per klasa_roli i per agentType; cel z §12: mechaniczne ~4,5k, reviewer ~15k, builder ~25k.
+          (b) czy plik per klasa jest w uzyciu: udzial agentow z agentType != 'workflow-subagent' (cel: 100% rol pipeline'u).
+          (c) czy allowlista nie odciela potrzebnego MCP: agent.narzedzia.mcp > 0 TYLKO u testera E2E / builderow UI z figma_screens.
+          (d) oplata za powolanie: suma agent.cache_w pierwszej tury / faza.koszt.jedn (dzis 22%).
+POLA      agent.ctx_start, agent.klasa_roli, agent.agentType, agent.cache_w, agent.narzedzia.mcp [BRAK], faza.koszt.jedn.
+BASELINE  ctx 1. tury p50 (kontekst_1_tury.txt): verify 76k, stan:zapis 67k, telemetria 65k, precheck 66k, planner 89k, reviewerzy 95–97k
+          (correctness 112k), build 118k, e2e 110k; per projekt p50: oferty 89k, claude-cron 93k, akademia 114k, Nawykometr 59k; trend 77k (08) → 101k (09).
+          Pomiar 1 na pustym agencie: 62,8k bez niczego → 39,3k z samym disallowedTools mcp__* → 11,6k z allowlista tools: → 4,5k + omitClaudeMd.
+          agentType: 2 252 / 2 942 agentow (77%) = workflow-subagent bez pliku; 0/16 plikow ma tools:; 498/514 agentow nie wolalo MCP.
+          Oplata za powolanie = 22% calosci (cache write 1. tury ~107k tok × 1,25).
+HORYZONT  KONFIGURACJA — 1 faza pokazuje ctx_start per klasa; potwierdzenie udzialu (d) po 5 fazach. Odczyt wstepny juz w mini-runie (§11 pkt e).
+
+--- §2 pkt 2. Kontekst per klasa roli (CLAUDE.md u builderow/reviewerow, omitClaudeMd mechaniczne, bypass zostaje, `skills:` zostaje) ---
+METRYKA   (a) kontekst na ture: p50 agent.ctx_sr per klasa_roli; (b) tury per rola: p50/p90 agent.tury; (c) udzial „kontekst × tury" w koszcie:
+          Σ(ctx_sr × tury × 0,1) / Σ koszt_jedn (dzis 40%); (d) koszt na agenta per rola (agent.koszt_jedn p50).
+          Czy tresc `skills:` jest STOSOWANA — to NIE jest metryka telemetrii, to mini-run (c) z §11.
+POLA      agent.ctx_sr, agent.tury, agent.koszt_jedn, agent.klasa_roli, agent.rola, agent.narzedzia.bash/read.
+BASELINE  ctx/ture (D3): mechaniczne haiku 86–102k, orkiestracyjne 119–168k, reviewerzy 193–224k, buildery 238k. Tury p50 (p90): build 39 (83),
+          fix 37 (109), reviewerzy 15–30, verify 7, planner 8. Koszt/agent: build 1 220k, fix 1 200k, test-coverage/spec 718k, security 561k,
+          correctness 931k, performance 468k, verify 150k. Narzedzia buildera: 37 Bash / 2 Read / 6 Edit / 3 Write; 78% komend Bash = czytanie.
+          Udzial kontekst×tury = 40% (26% czysty narzut). Dzwignia calosciowa po decyzjach: 25–35% kosztu fazy (§1 pkt 4).
+HORYZONT  KOSZT/TURY — 5 faz.
+
+--- §2 pkt 3. Budzet instrukcji w TRZECH WARSTWACH (stala <150 jako TEST szablonu; referencyjna doklejana po plikach IU; mechaniczna w linterze) ---
+METRYKA   (a) warstwa stala: max agent.instrukcje_stale per rola ≤ 150 (liczba z testu szablonu wpisana do rekordu; w runie zero STOP-ow);
+          (b) warstwa referencyjna: dlugosc promptu delegacji agent.prompt_zn per rola (czy doklejanie nie rozdmuchalo promptu; cel: reviewer/builder
+          bez wzrostu ponad dzisiejsze ~10k zn + wycinek 1–2k zn); (c) skutek: udzial uwag bota „w-zakresie-ale-przeoczone" w koszyku B per PR
+          (run.pr.klasy[].dlaczego) — czy agent PRZESTRZEGA instrukcji, ktora ma; (d) warstwa mechaniczna: faza.bramki.eslint.trafienia_reguly.
+POLA      agent.instrukcje_stale, agent.prompt_zn [BRAK], run.pr.* [BRAK], faza.bramki.eslint.trafienia + reguly [BRAK].
+BASELINE  D2 (pomiar6): reviewer security 365 instrukcji (gorna 710: learned-patterns ×2 eager + dossier), code-quality 310, builder danych 537
+          (iu.prompt 97, trzy skille 178, coding-rules 117–130); po 6a pkt 15/17 nadal reviewer ~310–320, builder ~520–530 = pasmo IFScale 150–500
+          (84–99% → ~68% przestrzegania). Prompt delegacji p50 (kontekst_1_tury): build 9,7k zn, fix 10,7k, reviewerzy 8–11k, verify-batch 11k,
+          scribe 24,5k, dedup 32k. Bot: koszyk B 200/574 uwag, z tego „w-zakresie-ale-przeoczone" 164 (82% B), „poza-zakresem-promptu" 30;
+          ETAP1: 45/68 ucieczek mialo regule w kontekscie.
+HORYZONT  (a) KONFIGURACJA — test szablonu pada od razu; (b) 1 faza; (c) JAKOSC — 5 PR.
+
+--- §2 pkt 4. learned-patterns: 3 poziomy, indeks GENEROWANY, wycinek per IU od orkiestratora, 8 zabezpieczen, plik poza .claude/rules/ ---
+METRYKA   (a) rozmiar warstwy zawsze ladowanej: faza.wiedza.indeks_zn i claude_md_zn (cel: CLAUDE.md ≤ ~20k zn, indeks ≤ limit z JS);
+          (b) wycinek: faza.wiedza.wycinek_wpisy_p50 / wycinek_zn_p50 (cel 1–2k zn per agent); (c) dubel zniknal: reviewer ctx_start bez 13k tok
+          learned-patterns w dossier (agent.ctx_start reviewerow, patrz pkt 1); (d) skutek: uwagi B bota klasy MAJACEJ wpis w indeksie / wszystkie B
+          per PR (run.pr.klasy[].ma_regule) — licznik ucieczek per wpis (zabezpieczenie 6) zasila sie z tego samego pola; (e) rozrost w czasie:
+          indeks_zn po 5 zadaniach vs po 1.
+POLA      faza.wiedza.{indeks_zn, wpisy_indeks, claude_md_zn, wycinek_wpisy_p50, wycinek_zn_p50} [BRAK], run.pr.klasy[].ma_regule [BRAK], agent.ctx_start.
+BASELINE  learned-patterns 46,9k zn (~13,4k tok) ladowany eager DO KAZDEGO agenta + drugi raz w dossier reviewerow (13k tok × 6 reviewerow/faze);
+          CLAUDE.md oferty-online 3,4k zn (22.08) → 89,7k (17.09), po odchudzeniu 20,6k; akademia 55k + 54k + 11k zn; ~37k tok instrukcji projektu
+          w kazdej turze kazdego agenta. Ucieczki z regula: 45/68 (66%). 49k zn do jednorazowej konwersji skryptem.
+HORYZONT  (a)(b)(c) KONFIGURACJA — 1 faza; (d) JAKOSC — 5 PR; (e) 5 zadan.
+
+--- §2 pkt 5. Telemetria centralna, mechaniczna, ZERO agentow ---
+METRYKA   (a) kompletnosc: udzial runow z rekordem run (cel 100%; run.zrodlo_statusu 'sesja' vs 'skan'; udzial status NIEZNANY → cel < 10%);
+          (b) koszt zbierania: liczba agentow rola 'telemetria' per run = 0; (c) pelnosc cennika: Σ cache_r + cache_w > 0 w kazdym rekordzie agent
+          (dzis telemetria widziala tylko output = 2%); (d) odpornosc: liczba rekordow w pliku rosnie monotonicznie (raport porownuje z poprzednim).
+POLA      run.zrodlo_statusu, run.status, agent.rola, agent.cache_r, agent.cache_w, agent.out, wspolne: klucz, ts.
+BASELINE  dzis 1 wpis/run przez agenta haiku (13 agentow telemetria w D3, 44 wywolan w etapie 0, ~65k ctx kazdy), plik 2× skasowany (`sed -i`),
+          32 wpisy odzyskane; tokenyRazemK = budget.spent() = tylko output = 2% kosztu; poziom agenta nie istnial.
+HORYZONT  KONFIGURACJA — kazdy run od pierwszego (to jest iteracja 1 wdrozenia, 6a pkt 19).
+
+--- §2 pkt 6. E2E → [MANUAL] zamiast STOP; srodowisko sprawdzone PRZED startem; MANUAL trafia do smoke operatora ---
+METRYKA   (a) STOP-y kategorii E2E-srodowisko per run (cel 0; run.stop_kategoria); (b) runy per zadanie (cel 1; liczba run per run.zadanie);
+          (c) manual per run i per powod (run.manual_razem, faza.e2e.manual[].powod); (d) czy MANUAL dotarl do smoke: run.smoke.z_manual ==
+          run.manual_razem; (e) precheck: run.e2eSrodowisko status + sekundy; (f) e2e pass/fail/skip per faza.
+POLA      run.stop_kategoria, run.manual_razem, faza.e2e.{pass,fail,skip,manual[]}, run.e2eSrodowisko, run.smoke.{pozycje, z_manual} [BRAK].
+BASELINE  13 runow po 06.09 na 5 zadan; 3/5 zadan po 2–3 runy; STOP-y: E2E FAIL na niemierzalnej asercji 1 (9b), E2E SKIP limit mailera stagingu 2
+          (samodzielna), P1 nierozwiazane 1 (9c), falszywy STOP „niezacommitowane" 1 (9b), execute blocked prog gzip 1 (faza-8). Os e2e: 1/13/51
+          findingow (65), 58 agentow, 500k/agent. Powtorki review po STOP-ie E2E: ~1,2 M tok wyj. w 2 zadaniach. MANUAL dzis nie istnieje (0).
+HORYZONT  5 zadan (STOP-y i runy per zadanie sa rzadkie — 1 zadanie nic nie mowi).
+
+--- §2 pkt 7. Sceptyk asymetryczny (sam zarzut; AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN; P1 = test padajacy przed poprawka) ---
+METRYKA   (a) kill rate = DISAGREE_EVIDENCE / weryfikowane per faza i per os (faza.sceptyk.*, faza.findingi_per_os.os.obalone);
+          (b) degradacje: DISAGREE_CONCERN / weryfikowane; (c) ryzyko kasowania prawdziwych: uwagi bota P1/P2 w miejscach obalonych findingow
+          (run.pr.klasy[].plik ∩ obalone plik:linia — liczone w raporcie, nie w runie); (d) P1 z testem: udzial P1 naprawionych z nowym testem
+          (faza.fix.p1_z_testem); (e) koszt: faza.koszt.per_etap.sceptycy (dzis 6%).
+POLA      faza.sceptyk.{agree, disagree_evidence, disagree_concern} [BRAK], agent.werdykty [BRAK], agent.weryfikowane [BRAK], faza.przebieg.obalone,
+          faza.przebieg.severityKorekty, faza.fix.p1_z_testem [BRAK], run.pr.klasy [BRAK], faza.koszt.per_etap.sceptycy.
+BASELINE  verify: 575 agentow (7 tur, 150k) + verify-batch 163 (5 tur, 207k) = 7,3% + 2,9% kosztu; 8,8 sceptykow/faze; obalone 12% (94 True /
+          13 False / 5 null), telemetria 19,2% na 96 fazach, per os 10,9%; korekty severity 64 (P3 16, P2 39, P1 9) — sceptyk czesciej
+          przeklasyfikowuje niz obala; literatura: 63–83% kill; furtka „fix odrzuca P2": 0,4% (2/493).
+HORYZONT  (a)(b)(e) 5 faz; (c) JAKOSC — 5 PR. Kill rate na archiwalnych findingach o znanych werdyktach = pomiar PRZED wdrozeniem (ETAP3 L6), poza telemetria.
+
+--- §2 pkt 8. Security WARUNKOWE po profilu stacku; advisors na chmurze zamiast regul RLS/search_path/auth.users ---
+METRYKA   (a) bramka advisors: faza.bramki.advisors.{status, sekundy, trafienia} (baseline BRAK — pierwszy pomiar przy wdrozeniu, L10);
+          (b) koszt osi: agent.koszt_jedn i tury reviewera security; (c) findingi security p1/p2 per faza; (d) skutek: uwagi bota klas security
+          (straznik-negatywny, konkatenacja-sql, round-trip-auth, RLS) per PR, ROZDZIELNIE dla projektow z supabase i bez (run.profil_stacku);
+          (e) instrukcje_stale reviewera security (prompt 191 → ~90 linii).
+POLA      faza.bramki.advisors, agent.koszt_jedn, agent.tury, faza.findingi_per_os.security, run.pr.klasy [BRAK], run.profil_stacku [BRAK],
+          agent.instrukcje_stale.
+BASELINE  security: 81 agentow, 19 tur, 561k/agent, 3,9% (oferty po 06.09: 4,0%); findingi 9/122/134 (265) — najwiecej ze wszystkich osi;
+          journale z etykietami: 58 findingow/15 agentow (2/27/29). Bot: straznik-negatywny P2 2, konkatenacja-sql P2 1, round-trip-auth P3 1;
+          ETAP1 ucieczki security: 7+6 w dwoch klasach. Advisors: niezmierzone (Docker off). Instrukcje: 365 (D2).
+HORYZONT  (a) KONFIGURACJA — 1 faza (czas i status); (b)(c) 5 faz; (d) JAKOSC — 5 PR na projekcie Supabase i 5 na projekcie bez.
+
+--- §2 pkt 9. Petla fix BEZ dodatkowej rundy review; fix tylko P1/P2, P3 → known-issues/bot; zakaz zmian poza miejscem ---
+METRYKA   (a) miara z 6a pkt 15: P1/P2 od bota w plikach dotknietych fixami po 5 zadaniach (run.pr.klasy[].plik ∩ faza.fix.pliki[]);
+          (b) koszt petli: faza.koszt.per_etap.fix (dzis 17%), tury fixa; (c) faza.fix.p3Pominiete > 0 (czy P3 naprawde nie sa naprawiane);
+          (d) regresje: faza.kontrolaFixa.{regresje, bezSladu}; (e) rozmiar diffu fixa: faza.fix.linie_diff (mniejszy diff = mniej nowych odkryc, D1).
+POLA      faza.fix.{naprawione, nierozwiazaneP2, p3Pominiete}, faza.fix.pliki[] [BRAK], faza.fix.linie_diff [BRAK], faza.kontrolaFixa.regresje,
+          faza.koszt.per_etap.fix, agent.tury (rola fix), run.pr.klasy [BRAK].
+BASELINE  fix: 116 agentow, 37 tur p50 (p90 109), 1 200k/agent, 11,8% calosci, 17% fazy po 06.09; naprawione 98% lacznie z P3 (P1 5, P2 82,
+          P3 138 → 221), nierozwiazane P1 0 / P2 1; fix:kontrola 18 agentow, 3 realne regresje zlapane (ETAP1). D1: 33 findingi po fixie =
+          13 urodzone w fixie (39%, jedyny P1) / 14 przeoczone w pliku fixa (42%) / 6 w kodzie nietknietym (18%); diff fixa 9b f4: 25 plikow +776/−219.
+HORYZONT  (a) JAKOSC — 5 zadan (tak w decyzji); (b)–(e) 5 faz.
+
+--- §2 pkt 10. Zakaz powtorek sekwencyjnych review ---
+METRYKA   (a) rundy review per faza w runie: faza.review_rundy (cel 1); (b) powtorki tej samej fazy miedzy runami tego zadania (liczba rekordow
+          faza z tym samym run.zadanie i faza.faza); (c) koszt review per faza (faza.koszt.per_etap.review) i „nowe findingi w powtorce" = 0.
+POLA      faza.review_rundy [BRAK — wyliczalne z agentow, ale tansze jako pole], faza.koszt.per_etap.review, run.zadanie, faza.faza.
+BASELINE  powtorka tej samej fazy dawala 12–18 nowych pozycji (9b f4 ×2, samodzielna f3 ×3); na tym samym kodzie ~50% powtarzalnosci, po fixie ~0%
+          (pomiar 4); 6 reviewerow ≈ 25% fazy; review nie zbiega.
+HORYZONT  5 zadan.
+
+--- §2 pkt 11. Polecenia-listy zamiast dlugich regul (zalozenie z warunkiem odwrotu) ---
+METRYKA   patrz zalozenie 1 w sekcji 2 (ta sama metryka: koszyk B bota per PR, per klasa, per os) + budzet z pkt 3.
+POLA      run.pr.klasy [BRAK], agent.instrukcje_stale.
+BASELINE  koszyk B 200/574 (P1 9, P2 123, P3 68) = 10,5 uwagi B na PR (19 PR); per os: correctness 74, test-coverage 44, security 31, code-quality 10,
+          spec 9, performance 7, e2e 4; klasy top: test-niefalsyfikowalny 31, bramka-czarna-lista 13, tekst-ui 12, cykl-zycia-react 12, sciezka-bledu 8.
+HORYZONT  JAKOSC — 5 PR.
+
+--- §2 pkt 12. Scalenie dev-plan + dev-docs w jeden skill z budzetem tokenow ---
+METRYKA   (a) koszt epizodu scalonego skilla vs suma dev-plan + dev-docs (skill.koszt_jedn); (b) czas operatora: skill.minuty (mediana, bo jeden
+          epizod dev-docs trwal 1 025 min z otwarta sesja); (c) artefakty: skill.artefakty.{plan_kb, zadania_kb} i udzial kopii (do policzenia
+          skryptem plan_vs_docs.py, nie w runie); (d) kontekst sesji glownej: skill.ctx_max; (e) budzet pliku w IU: faza.plannery… — nie, budzet pliku
+          to wynik bramki w dev-plan, zapis w skill.artefakty.iu_z_budzetem (liczba IU z podana dlugoscia/przyrostem).
+POLA      typ=skill [BRAK CALEGO TYPU — port skrypty/koszt_skilli.py]: skill, projekt, sesja, zrodlo (slash/Skill), tury, in/cache_w/cache_r/out,
+          koszt_jedn, minuty, tool_calls, agent_calls, workflow_calls, ctx_max, artefakty{plan_kb, zadania_kb, iu, iu_z_budzetem}.
+BASELINE  (skille.csv, 5 projektow, D6): dev-plan 19 ep., 930k/ep (mediana 900k), 17 tur, 1,7 subagenta, 47 min; dev-docs 17 ep., 707k/ep, 13 tur,
+          67 min; dev-prep 16 ep., 621k, 101 min; razem plan+docs ≈ 1,64 M/zadanie = 2–5% kosztu zadania (25–36 M/faze × 3–6 faz). Plan 57–137 kB,
+          zadania 29–69 kB, 22–46% tresci zadan = kopia planu; ctx_max sesji glownej przy dev-plan 323k (kazda tura 32k jedn.).
+HORYZONT  5 zadan (epizody maja duzy rozrzut: dev-plan 0,4–2,5 M).
+
+--- §2 pkt 13. Kazda zmiana ma wskazana metryke z rekordu ---
+METRYKA   pokrycie: liczba wymogow §2 i zalozen §6 z wpisem w tej mapie = 21/21; kazdy projekt panelu przy kazdej wlasnej zmianie podaje
+          (metryka, pole, baseline, horyzont) — sedziowie sprawdzaja obecnosc, nie wartosc.
+POLA      n/d (mapa jest artefaktem, nie polem).
+BASELINE  przed D5b: 0 wymogow z metryka; po D5b: 21/21, w tym 16 pozycji dopisanych do rekordu (sekcja 3).
+HORYZONT  przy projektach panelu (etap 4) i planie iteracji (etap 5).
+
+================================================================================================================================
+=== 2. OSIEM ZALOZEN Z WARUNKIEM ODWROTU §6 ===
+================================================================================================================================
+
+--- zal. 1. Polecenia-listy domkna ~60–70% uwag B ---
+METRYKA   uwagi koszyka B bota per PR (run.pr.koszyk.B), per klasa i per os (run.pr.klasy[]); cel −60–70% wzgledem baseline na porownywalnym PR
+          (PR z warstwy walidacji/migracji vs PR 2, 4, 9 z 1b); udzial „w-zakresie-ale-przeoczone" w B.
+POLA      run.pr.{uwagi_razem, koszyk{A,B,C,D}, klasy[{klasa, severity, os, dlaczego, ma_regule}]} [BRAK].
+BASELINE  B = 200/574 = 10,5/PR; PR 2: 20 B (1/15/7), PR 4: 22 B (0/15/13), PR 9: 27 B (3/19/14); „w-zakresie-ale-przeoczone" 164/200.
+ODWROT    >1 P1/P2 klasy X od bota na 5 faz (= na ~5 PR) przywraca regule / os dla klasy X (PANEL §6 wiersz 1).
+HORYZONT  JAKOSC — 5 PR. Skutecznosc mierzalna DOPIERO po wdrozeniu (ETAP3 §1.2) — zero runow przed.
+
+--- zal. 2. performance ZASTAP (size-limit + advisors + 5-liniowa checklista w correctness) ---
+METRYKA   (a) uwagi bota klas perf (N+1, limit, indeks, Promise.all po kolekcji) per 5 faz (run.pr.klasy[]); (b) bramki: faza.bramki.sizeLimit i
+          advisors {status, sekundy, trafienia}; (c) findingi perf w correctness (faza.findingi_per_os.correctness — klasa w opisie); (d) oszczednosc:
+          brak agenta review:performance = −3,0% fazy (agent.rola).
+POLA      run.pr.klasy [BRAK], faza.bramki.{sizeLimit, advisors}, faza.findingi_per_os.correctness, agent.rola.
+BASELINE  os performance: 78 agentow, 15 tur, 468k/agent, 3,1% (3,0% fazy po 06.09); findingi 7/71/105 (183), journale: 41/15 agentow (3/18/20);
+          bot klasy perf-podobne: 3 uwagi (wspolne-wiadro-limitu P2, limit-cudzej-uslugi P2, rate-limit-z-reguly P3), 0 P1; size-limit 0,8 s,
+          nieobecny w szablonie (0 wystapien); advisors niezmierzone.
+ODWROT    >1 P1/P2 klasy perf od bota na 5 faz → przywrocic os warunkowo na tierze low (PANEL §6 wiersz 2).
+HORYZONT  JAKOSC — 5 PR; bramki KONFIGURACJA — 1 faza.
+
+--- zal. 3. security odchudzone + warunkowe po stacku ---
+METRYKA   jak §2 pkt 8: bot klasy security per PR (rozdzielnie supabase / bez), findingi security p1/p2 per faza, koszt i tury reviewera.
+POLA      run.pr.klasy [BRAK], run.profil_stacku [BRAK], faza.findingi_per_os.security, faza.bramki.advisors, agent.koszt_jedn/tury.
+BASELINE  bot: 7+6 P1/P2 w dwoch klasach ucieczek security (ETAP1); klasyfikacja 574: 4 uwagi klas security (3 P2, 1 P3); nasza os 9/122/134; 561k/agent.
+ODWROT    P1/P2 klasy security od bota PO review > baseline (7+6 na 19 PR ≈ 0,7/PR) → przywrocic wyciete polecenia (PANEL §6 wiersz 3).
+HORYZONT  JAKOSC — 5 PR per profil stacku.
+
+--- zal. 4. packager (kontekst:diff) → JS, agent znika ---
+METRYKA   (a) tury Bash/Read reviewerow z dossier z JS vs z dossier agenta (agent.narzedzia.bash, agent.tury per rola review:*); (b) koszt roli
+          kontekst:diff → 0 (agent.rola); (c) jakosc bez zmian: faza.findingi_per_os per os na tym samym poziomie; (d) rozmiar dossier: faza.dossier_zn.
+POLA      agent.narzedzia.{bash, read}, agent.tury, agent.rola, faza.findingi_per_os, faza.przebieg.dossier, faza.dossier_zn [BRAK].
+BASELINE  kontekst:diff: 81 agentow, 8 tur, 230k/agent, 1,6%; ETAP1: reviewerzy PO dossier czytaja 2× wiecej Bashem (10,5 → 23 tur) — jedyny pomiar;
+          bilans ETAP1: 18,7 M kosztu vs 9,5 M routingu (ujemny); reviewer dzis 13–27 Bash / 3 Read.
+ODWROT    tury Bash reviewerow rosna > 23 (p50) albo findingi per os spadaja > 30% przy tym samym typie kodu → wrocic do packagera-agenta (tani, odwracalny).
+HORYZONT  KOSZT/TURY — 5 faz.
+
+--- zal. 5. sceptyk asymetryczny ~4× skuteczniejszy ---
+METRYKA   jak §2 pkt 7: kill rate (DISAGREE_EVIDENCE / weryfikowane), degradacje, bot P1/P2 w miejscach obalonych.
+POLA      faza.sceptyk.* [BRAK], agent.werdykty [BRAK], run.pr.klasy [BRAK].
+BASELINE  obalone 12% / 19,2% / 10,9% (trzy liczby, ETAP3 L6); literatura 63–83%.
+ODWROT    kill rate > 50% I jednoczesnie bot zglasza P1/P2 w miejscu obalonego findingu (>1 na 5 PR) → sceptyk kasuje prawdziwe → wrocic do
+          symetrycznego prompta dla P1 (sam zarzut + uzasadnienie autora).
+HORYZONT  5 faz (rate), 5 PR (kasowanie prawdziwych); pomiar kill rate na archiwalnych findingach PRZED wdrozeniem, poza telemetria.
+
+--- zal. 6. test-coverage scalone z correctness (TYLKO opcja wariantu, po pomiarze warstw 2–3) ---
+METRYKA   (a) warstwy mechaniczne: faza.bramki.stryker.{status, sekundy, trafienia} (mutanty przezyle jako lista do buildera, NIE score jako cel),
+          faza.bramki.testyTypow (vitest --typecheck + expectTypeOf); (b) uwagi bota klasy test-niefalsyfikowalny / test-kruchy per PR;
+          (c) findingi osi test (faza.findingi_per_os.test) i koszt reviewera test-coverage.
+POLA      faza.bramki.stryker, faza.bramki.testyTypow [BRAK], run.pr.klasy [BRAK], faza.findingi_per_os.test, agent.koszt_jedn (rola review:test-coverage).
+BASELINE  os test-coverage: 81 agentow, 26 tur, 718k/agent, 4,9% (5,4% fazy); findingi 7/81/114 (202); bot: test-niefalsyfikowalny 31 (22 P2, 9 P3),
+          test-kruchy 5 (P3); warstwa 1 (@vitest/eslint-plugin) trafia 0/31; Stryker: 122 s na 3 pliki (370 mutantow, 299 killed / 61 survived, score
+          80,8%), 5–15 min/faze → NIE do kazdego domkniecia.
+ODWROT    scalenie dopuszczalne DOPIERO gdy warstwy 2–3 trafiaja ≥ 20/31 na archiwalnych uwagach (pomiar przed); po scaleniu: >1 P1/P2 klasy test
+          od bota na 5 faz → przywrocic os.
+HORYZONT  pomiar warstw 2–3 PRZED (osobny, na 31 uwagach), potem JAKOSC 5 PR.
+
+--- zal. 7. batch sceptykow (4 findingi per sceptyk) ---
+METRYKA   (a) liczba agentow sceptykow per faza (faza.przebieg.sceptycy; dzis 8,8, hipoteza ~2–3); (b) obalone % i degradacje P2→P3 % przy batchu vs
+          pojedynczo (faza.sceptyk.*, agent.weryfikowane = rozmiar batcha); (c) koszt: faza.koszt.per_etap.sceptycy.
+POLA      faza.przebieg.sceptycy, faza.sceptyk.* [BRAK], agent.weryfikowane [BRAK], faza.koszt.per_etap.sceptycy.
+BASELINE  575 verify (1 finding, 3 na P1) + 163 verify-batch (P2 per plik) = 738 agentow / 105 runow; 8,8 sceptykow i 6% kosztu na faze;
+          obalone 10,9%, degradacja P2→P3 23%; hipoteza ETAP1: 105 → ~30 agentow/23 fazy ≈ −2% (sama oplata za powolanie).
+ODWROT    obalone < 5% albo degradacje > 35% przy batchu → wrocic do 1 finding/sceptyk dla P1/P2.
+HORYZONT  5 faz.
+
+--- zal. 8. hook error-handling-reminder.sh → wycofac po bramce ESLint ---
+METRYKA   (a) bramka ESLint z no-console + regula Sentry: faza.bramki.eslint.{status, trafienia, reguly[]} — czy regula lapie to, co lapal hook;
+          (b) po wycofaniu: uwagi bota klas sciezka-bledu / pusty-catch / console per PR nie rosna.
+POLA      faza.bramki.eslint.trafienia + reguly [BRAK], run.pr.klasy [BRAK].
+BASELINE  hook: exit 2 = dodatkowa tura w sesji glownej, liczba wyzwolen NIEZNANA (brak danych); ESLint: pierwsze wdrozenie = 188 zastanych bledow do
+          wyciszenia, pelny bieg 23,6 s zimny / 1,3 s z cache; bot: sciezka-bledu 8, sciezka-bledu-bez-obslugi 4, pusty-catch 3 (koszyk B).
+ODWROT    po wycofaniu hooka uwagi klas sciezka-bledu/pusty-catch/console rosna > baseline (15/19 PR ≈ 0,8/PR) → przywrocic hook.
+HORYZONT  KONFIGURACJA bramki — 1 faza; skutek — 5 PR.
+
+================================================================================================================================
+=== 3. KONTROLA ODWROTNA: pola, ktorych mapa potrzebuje, a rekord D5 NIE MA → dopisane do d5-telemetria-rekord.txt §7 ===
+================================================================================================================================
+Rekord D5 ma trzy typy (agent, faza, run) + pola wspolne — d5-telemetria-rekord.txt §2. Mapa potrzebuje dodatkowo 16 pozycji (15 pol/grup + 1 nowy typ):
+
+  1. agent.prompt_zn        — dlugosc promptu delegacji (pierwsza wiadomosc user, znaki). Zrodlo: transkrypt. Dla: §2 pkt 3(b), pkt 4(b).
+  2. agent.narzedzia.mcp    — liczba tool_use z nazwa mcp__*. Zrodlo: transkrypt. Dla: §2 pkt 1(c).
+  3. agent.weryfikowane     — liczba findingow w prompcie sceptyka (rozmiar batcha). Zrodlo: result/prompt. Dla: zal. 7.
+  4. agent.werdykty         — {agree, disagree_evidence, disagree_concern} per sceptyk. Zrodlo: result. Dla: §2 pkt 7, zal. 5.
+  5. faza.sceptyk           — agregat 4. per faza {agree, disagree_evidence, disagree_concern}. Dla: §2 pkt 7, zal. 5, 7.
+  6. faza.wiedza            — {indeks_zn, wpisy_indeks, claude_md_zn, wycinek_wpisy_p50, wycinek_zn_p50}. Zrodlo: rozmiar plikow w repo w chwili
+                              runu (docs/learned-patterns.md, CLAUDE.md) + prompty builderow/reviewerow (sekcja wycinka oznaczona markerem
+                              w prompcie — WYMOG dla orkiestratora: wycinek w bloku z naglowkiem stalym, zeby skrypt go odciol). Dla: §2 pkt 4.
+  7. faza.fix.pliki[]       — pliki dotkniete commitami fixa (git diff --name-only). Zrodlo: result fixa / git. Dla: §2 pkt 9(a).
+  8. faza.fix.linie_diff    — +/− linii diffu fixa. Zrodlo: git. Dla: §2 pkt 9(e).
+  9. faza.fix.p1_z_testem   — liczba P1 naprawionych z nowym testem padajacym przed poprawka. Zrodlo: result fixa. Dla: §2 pkt 7(d).
+ 10. faza.review_rundy      — liczba rund review w fazie (dzis wyliczalne z agentow review:* per faza; jako pole tansze). Dla: §2 pkt 10.
+ 11. faza.bramki.eslint.{trafienia, reguly[]} + faza.bramki.testyTypow {status, sekundy} — wynik bramek domkniecia z liczba trafien i top regul.
+                              Zrodlo: plik wyniku bramek zapisany przez skrypt domkniecia (JSON). Dla: §2 pkt 3(d), zal. 6, zal. 8.
+ 12. run.profil_stacku      — {supabase, react, node, expo, ...} z package.json + katalogow (ten sam profil, ktory idzie do dossier — §2 pkt 8).
+                              Dla: §2 pkt 8(d), zal. 3.
+ 13. run.pr (tylko workflow dev-pr) — {numer, tury, uwagi_razem, p1, p2, p3, koszyk{A,B,C,D}, klasy[{klasa, severity, plik, os, dlaczego,
+                              ma_regule}], rekomendacja} — klasyfikacja uwag bota per PR w formacie klasyfikacja-574.csv (jedna nazwa na klase —
+                              slownik klas, ETAP1B). Zrodlo: result etapu `zbierz` dev-pr-wf (watki[] po id) + `rekomendacja` liczona w JS
+                              (ETAP1B §4 zmiana 3). To NAJWAZNIEJSZE brakujace pole: bez niego zadna miara JAKOSCI (§2 pkt 3, 4, 8, 9, 11;
+                              zal. 1, 2, 3, 5, 6, 8) nie ma zrodla — miara jakosci z HANDOFF §1 = P1/P2 od bota PO naszym review.
+ 14. run.smoke              — {pozycje, z_manual} z result dev-docs-complete (smoke operatora). Dla: §2 pkt 6(d).
+ 15. faza.dossier_zn        — rozmiar dossier w znakach. Zrodlo: plik ctx w /tmp albo result packagera. Dla: zal. 4(d).
+ 16. typ=skill              — NOWY TYP rekordu: epizod skilla w sesji glownej (port skrypty/koszt_skilli.py; --skan sesji glownych po
+                              <command-name>/Skill tool): skill, projekt, sesja, zrodlo, tury, in/cache_w/cache_r/out, koszt_jedn, minuty,
+                              tool_calls, agent_calls, workflow_calls, ctx_max, artefakty{plan_kb, zadania_kb, iu, iu_z_budzetem}. Dla: §2 pkt 12.
+                              Klucz: sesja|skill|start. Uwaga: epizod konczy sie na nastepnej wiadomosci czlowieka — obejmuje rozmowe z operatorem.
+Pola D5, ktorych mapa NIE uzywa jako metryki (zostaja — kosztuja zero): identyfikatory (agent.id/etykieta/grupa/faza/model/sekundy, agent.in),
+agent.thinking, agent.ctx_max, agent.start/koniec, agent.wynik, agent.findingi (mapa czyta agregat faza.findingi_per_os), faza.przebieg.pominieci/
+e2eTryb/znalezione/poDedupJs/poDedupSem/weryfikowane/p3Odrzucone/tiery, faza.liczniki, faza.e2eSync, faza.sekundy, run.fazyZadania/fazyUkonczone/
+fazyZMetrykami, run.walidacja, run.solution, run.sekundy, run.koszt (wyliczalne z faz), run.powod, szablon (sha) — ten ostatni jest potrzebny
+raportowi do dzielenia na epoki „przed/po iteracji N", wiec zostaje jako klucz porownan, nie metryka.
+
+================================================================================================================================
+=== 4. IMPORT BASELINE DO NOWEGO PLIKU (jednorazowo, przy wdrozeniu iteracji 1 — plan etapu 5) ===
+================================================================================================================================
+Zeby raport.mjs mial punkt odniesienia w TYM SAMYM formacie, nie w tabelach z digestu:
+  agents.csv (2 941 wierszy) → typ=agent: projekt, run, sesja, id=agent, agentType, rola, model, tury, in/cache_w/cache_r/out/thinking,
+      koszt_jedn=koszt, narzedzia{razem=tool_calls, bash, read, grep, edit, write, structured}, start, koniec, sekundy, ctx_max, ctx_sr;
+      BRAK w csv: ctx_start (uzupelnic ze skryptu kontekst_1_tury.py — ten sam skan), klasa_roli (mapa z d3), findingi (z findingi-per-os/*.json
+      po run+rola), prompt_zn, werdykty. Oznaczyc szablon='etap0' i v=0.
+  telemetria-odzyskana-wszystko.json (33 wpisy v0) → typ=faza (raporty[]: liczniki, przebieg, fix, kontrolaFixa, e2eSync) + typ=run (status, powod,
+      fazyUkonczone, walidacja, e2eSrodowisko, solution); stop_kategoria z przegladu runow recznie dla 13 runow po 06.09.
+  koszt_zadan.txt → nic (wyliczalne z agentow po zadaniu).
+  skille.csv (149 epizodow) → typ=skill 1:1.
+  coderabbit/klasyfikacja-574.csv (19 PR) → run.pr dla 19 rekordow typ=run workflow=dev-pr (PR 1–19 oferty-online; recznie sklasyfikowane w 1b;
+      to jedyny baseline JAKOSCI — bez importu zal. 1–3, 5, 6, 8 nie maja punktu odniesienia).
+  Rozstrzyga to otwarta decyzje z przegladu runow (scalenie odzyskanej telemetrii z oryginalem) — import = scalenie.
+
+================================================================================================================================
+=== 5. HORYZONTY — kiedy pierwszy odczyt (streszczenie dla planu iteracji etapu 5) ===
+================================================================================================================================
+  po 1 fazie (KONFIGURACJA):  §2 pkt 1(a)(b)(c), pkt 3(a)(b), pkt 4(a)(b)(c), pkt 5, pkt 8(a); zal. 2 bramki, zal. 8 bramka.
+  po 5 fazach (KOSZT/TURY):   §2 pkt 1(d), pkt 2, pkt 7(a)(b)(e), pkt 8(b)(c), pkt 9(b)–(e), zal. 4, zal. 5 rate, zal. 7.
+  po 5 PR / 5 zadaniach (JAKOSC): §2 pkt 3(c), pkt 4(d)(e), pkt 6, pkt 9(a), pkt 10, pkt 11, pkt 12; zal. 1, 2, 3, 5 kasowanie, 6, 8 skutek.
+  PRZED wdrozeniem, poza telemetria: kill rate sceptyka na archiwalnych findingach (zal. 5); warstwy 2–3 testow na 31 uwagach (zal. 6);
+      stosowanie tresci `skills:` i wycinka — mini-run §11 (§2 pkt 2, 4).
+Konsekwencja dla etapu 5: iteracja 1 = telemetria (bez niej nic nie ma odczytu) + import baseline; kazda kolejna iteracja wchodzi z para
+(zmiana, wpis z tej mapy) i ma zaplanowany odczyt po 1 / 5 fazach / 5 PR.

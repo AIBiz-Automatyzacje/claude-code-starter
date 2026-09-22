@@ -218,10 +218,27 @@ tylko kosztują, na czym stają runy i czy ktoś nie przekroczył budżetu instr
 
 **Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie.
 
-**Jak poznamy, że zmiany działają.** Rekord to dopiero połowa. Druga połowa to mapa walidacji, którą zrobimy przed panelem: dla każdego z trzynastu
-wymogów i każdego założenia z warunkiem odwrotu jedna linia z metryką, polem rekordu, punktem odniesienia sprzed zmiany i horyzontem, po ilu fazach
-patrzymy. Potem kontrola w drugą stronę: czy rekord ma wszystkie pola, których mapa potrzebuje. Jeśli czegoś brakuje, dopisujemy teraz, nie po
-wdrożeniu. Bez tego za miesiąc mielibyśmy dane, ale nie wiedzielibyśmy, na które patrzeć.
+**Jak poznamy, że zmiany działają.** Mapa walidacji jest zrobiona (2026-09-22, plik `dane/d5b-mapa-walidacji.txt`). Problem był taki, że wymóg
+„każda zmiana ma metrykę" był zdaniem, a nie liczbą: za miesiąc mielibyśmy dane, ale nie wiedzielibyśmy, na które patrzeć. Mapa ma dwadzieścia
+jeden wpisów, po jednym na każdy z trzynastu wymogów i ośmiu założeń z warunkiem odwrotu. Każdy wpis mówi cztery rzeczy: co liczymy, z którego
+pola rekordu, jaki jest punkt odniesienia z etapu zerowego i po ilu fazach patrzymy. Założenia mają dodatkowo warunek odwrotu wyrażony tymi
+samymi polami, więc cofnięcie zmiany nie będzie dyskusją, tylko odczytem.
+
+Horyzonty są trzy. Ustawienia widać po jednej fazie: kontekst startowy agenta per klasa roli (dziś sześćdziesiąt siedem do stu osiemnastu tysięcy
+tokenów, cel od czterech i pół do dwudziestu pięciu tysięcy), czas bramek, budżet instrukcji. Koszt i liczbę tur widać po pięciu fazach, bo
+rozrzut jest duży. Jakość widać po pięciu PR-ach, bo bot recenzuje PR, nie fazę: na przykład polecenia-listy mają obniżyć uwagi bota z koszyka B
+z dzisiejszych dziesięciu i pół na PR, a pętla fix ma mniej P1 i P2 od bota w plikach, których dotknęła naprawa.
+
+Kontrola w drugą stronę wykazała, że rekord telemetrii nie miał szesnastu rzeczy, których mapa potrzebuje. Dopisałem je teraz. Dwie są
+najważniejsze. Pierwsza: rekord runu dev-pr z klasyfikacją uwag bota, bo bez niego żadna miara jakości nie ma źródła, a jakość to połowa tego,
+co oceniają sędziowie. Druga: nowy typ rekordu dla skilli w sesji głównej, bo bez niego scalenie planu z docs nie miałoby odczytu. Reszta to
+mniejsze pola: długość promptu, werdykty sceptyka w trzech etykietach, rozmiar indeksu wiedzy i wycinka, pliki dotknięte fixem, wynik ESLint
+z listą reguł, profil stacku, pozycje smoke przeniesione z manual.
+
+Wniosek dla planu wdrożenia: pierwsza iteracja to telemetria z importem danych z etapu zerowego, bo bez niej nic nie ma odczytu. Każda kolejna
+iteracja wchodzi w parze ze swoim wpisem z mapy i ma zaplanowany moment odczytu. Trzy rzeczy mierzymy poza telemetrią, przed wdrożeniem:
+skuteczność sceptyka na starych findingach, warstwy mechaniczne testów na trzydziestu jeden starych uwagach i to, czy treść skilli builderów jest
+w ogóle stosowana, co sprawdzi mini-run.
 
 ---
 
