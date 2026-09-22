@@ -218,7 +218,8 @@ tylko kosztują, na czym stają runy i czy ktoś nie przekroczył budżetu instr
 
 **Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie.
 
-**Jak poznamy, że zmiany działają.** Mapa walidacji jest zrobiona (2026-09-22, plik `dane/d5b-mapa-walidacji.txt`). Problem był taki, że wymóg
+**Jak poznamy, że zmiany działają.** Mapa walidacji jest zrobiona (2026-09-22, plik `dane/d5b-mapa-walidacji.txt`; wszystkie 21 wpisów prostą
+narracją, z kryteriami doboru: `MAPA-WALIDACJI-DLA-OPERATORA.md`). Problem był taki, że wymóg
 „każda zmiana ma metrykę" był zdaniem, a nie liczbą: za miesiąc mielibyśmy dane, ale nie wiedzielibyśmy, na które patrzeć. Mapa ma dwadzieścia
 jeden wpisów, po jednym na każdy z trzynastu wymogów i ośmiu założeń z warunkiem odwrotu. Każdy wpis mówi cztery rzeczy: co liczymy, z którego
 pola rekordu, jaki jest punkt odniesienia z etapu zerowego i po ilu fazach patrzymy. Założenia mają dodatkowo warunek odwrotu wyrażony tymi
