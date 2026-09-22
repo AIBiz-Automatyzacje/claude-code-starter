@@ -1,0 +1,280 @@
+D6 — AUDYT UZYCIA SKILLI SZABLONU (2026-09-22; HANDOFF 6a pkt 19). Skrypt: skrypty/d6_audyt_skilli.py. Zero agentow.
+
+ZASIEG I OGRANICZENIA (czytaj przed liczbami):
+- Inwentarz: 28 skilli w .claude/skills/ + 7 workflowow w .claude/workflows/ (wystawiane jako skille *-wf).
+- Zrodlo A (koszt): dane/skille.csv — 149 epizodow, 5 projektow etapu 0, sesje glowne, 2026-08-05..2026-09-18. Koszt = jednostki cennika
+  (in 1 / cache_w 1,25 / cache_r 0,1 / out 5) sumowane w epizodzie od wywolania do nastepnej wiadomosci czlowieka — obejmuje wszystko, co sesja zrobila
+  w tym czasie (rowniez rozmowe z operatorem), wiec to koszt "obslugi skilla w sesji", nie samego pliku SKILL.md.
+- Zrodlo B (liczba wywolan): skan 5228 plikow transkryptow we WSZYSTKICH katalogach ~/.claude/projects/ (sesje glowne + subagenci);
+  najstarszy transkrypt na dysku: 2026-08-03 — retencja transkryptow to ~7 tygodni, wiec "0 wywolan" znaczy "0 w oknie 2026-08-03..2026-09-22",
+  NIE "nigdy". Dlatego zrodlo C. Kanaly: slash = <command-name> w sesji glownej (operator wpisal /x); Skill = narzedzie Skill wywolane przez
+  model; Workflow = narzedzie Workflow (dla *-wf; /x-wf i Workflow x-wf to to samo uruchomienie liczone dwa razy — patrz kolumny); wstrzyk =
+  <command-name> w transkrypcie AGENTA (skills: z frontmatteru albo kontekst odziedziczony) — NIE wywolanie; dziecko = workflow wywolany z
+  dev-autopilot-wf przez workflow() (widoczny tylko w journal.jsonl jako faza "▸ x-wf #N", nie jako tool_use) — tylko journale nowego formatu
+  (z polem phase; 8 runow autopilota); ~100 starszych journali nie ma pol phase/label, wiec dla nich liczby "dziecko" sa zanizone.
+  Dedup po uuid wpisu i id tool_use (sesje wznawiane kopiuja wpisy).
+- Zrodlo C (slad z calego zycia): artefakty w 17 repozytoriach z zainstalowanym szablonem (.claude/skills/dev-plan): Nawykometr, akademia-automatyzacji-dashboard, chatbot-cloudnest-widget, claude-cron, gramywpadla, kurs_cc_demo, live-02-04, live-02-04-YT, live-02-04-demo, live-licznik, miter, n8n-egzamin-5, oferty-online, symulator-poczekalni, viberzy, workspace-template, workspace-template-mobile.
+  Artefakt moze tez powstac recznie lub innym narzedziem — to slad, nie dowod. Skille bez artefaktu wyjsciowego (code-review, security, gemini...) nie maja zrodla C.
+- Wstrzykniecia `skills:` (7 skilli-wytycznych) NIE sa wywolaniami: liczone po liczbie agentow danego agentType (meta.json) we wszystkich transkryptach.
+- Skille konta (figma:*, frontend-design, coolify-manager z konta, artifact-design...) sa POZA audytem (6a pkt 19: etap higieny konta).
+
+=== 1. TABELA: wszystkie skille i workflowy szablonu ===
+kolumny: A_n/A_koszt/A_min = epizody, laczny koszt (k jedn.) i laczne minuty ze skille.csv; A_proj = projekty w A; B_n = wywolania w skanie (wszystkie projekty),
+B_kanaly = slash/Skill/Workflow/wstrzyk; B_proj = liczba projektow (bez repo szablonu / razem); ostatnie = ostatnie zdarzenie B; dziecko = wywolania
+z autopilota wg journali (liczba / w ilu runach); wstrzyk = agenci z tym skillem w `skills:` (meta.json); art = artefakty w repozytoriach (C);
+dodany/zmiana = git; klasa = wynik. Wiersze posortowane po koszcie A, potem po B_n.
+
+skill                       A_n  A_koszt  A_min A_proj  B_n                       B_kanaly  B_proj   ostatnie  dziecko wstrzyk  art     dodany     zmiana  klasa
+dev-plan                     19   17667k    902      5   23              Skill:13/slash:10   5/5   2026-09-19        -       0   46 2026-03-26 2026-09-03  UZYWANY BEZPOSREDNIO
+dev-docs                     17   12016k   1132      5   21              Skill:11/slash:10   5/6   2026-09-20        -       0    - 2026-01-13 2026-09-03  UZYWANY BEZPOSREDNIO
+dev-prep                     16    9936k   1609      2   15               Skill:4/slash:11   2/2   2026-09-18        -       0    - 2026-08-24 2026-09-03  UZYWANY BEZPOSREDNIO
+coolify-manager               8    3810k     19      3    8                Skill:7/slash:1   3/3   2026-09-16        -       0    - 2026-03-30 2026-03-30  UZYWANY BEZPOSREDNIO
+dev-autopilot-wf             22    2946k      8      5  165 Skill:1/Workflow:54/slash:25/wstrzyk:85   5/5   2026-09-20        -       0    - 2026-06-21 2026-09-06  UZYWANY BEZPOSREDNIO
+sync-template                 8    2866k      9      4    8                        slash:8   4/4   2026-09-13        -       0    - 2026-07-14 2026-09-06  UZYWANY BEZPOSREDNIO
+dev-compound                  6    2561k     17      2    6                Skill:3/slash:3   3/3   2026-09-08        -       0  206 2026-03-26 2026-08-24  UZYWANY BEZPOSREDNIO
+dev-brainstorm                6    1910k    227      4    7                Skill:2/slash:5   4/4   2026-09-13        -       0    8 2026-03-26 2026-08-24  UZYWANY BEZPOSREDNIO
+dev-pr                        8    1585k      8      2   11                Skill:2/slash:9   2/2   2026-09-21        -       0    - 2026-09-03 2026-09-03  UZYWANY BEZPOSREDNIO
+zroastuj-mnie                 7    1576k     10      4    7                Skill:3/slash:4   4/4   2026-09-16        -       0    - 2026-03-30 2026-08-24  UZYWANY BEZPOSREDNIO
+coderabbit-setup              1     783k      6      1    1                        slash:1   1/1   2026-08-25        -       0    5 2026-07-21 2026-07-21  UZYWANY BEZPOSREDNIO
+security                      0       0k      0      0  157            Skill:1/wstrzyk:156   7/7   2026-09-20        -     148    - 2026-03-20 2026-07-06  UZYWANY BEZPOSREDNIO
+sentry-integration            0       0k      0      0  156                    wstrzyk:156   6/6   2026-09-20        -     148    - 2026-01-13 2026-08-24  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+supabase-dev-guidelines       0       0k      0      0   87             Skill:1/wstrzyk:86   4/4   2026-09-16        -     148    - 2026-01-13 2026-08-24  UZYWANY BEZPOSREDNIO
+dev-pr-wf                     0       0k      0      0   75                    Workflow:75   2/2   2026-09-21        -       0    - 2026-09-03 2026-09-03  UZYWANY BEZPOSREDNIO
+figma-design-to-code          0       0k      0      0   61                     wstrzyk:61   6/6   2026-09-16        -      53    - 2026-07-12 2026-07-12  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+agent-browser                 0       0k      0      0   59                     wstrzyk:59   4/4   2026-09-16        -      59    - 2026-03-26 2026-07-12  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+tailwind-react-guidelines     0       0k      0      0   39                     wstrzyk:39   3/3   2026-09-16        -      53    - 2026-01-13 2026-07-12  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+ux-ui-guidelines              0       0k      0      0   39                     wstrzyk:39   3/3   2026-09-16        -      53    - 2026-01-13 2026-07-12  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+freshness-audit-wf            0       0k      0      0    2                     Workflow:2   0/2   2026-08-23        -       0    - 2026-07-12 2026-07-12  SLAD (artefakty sprzed okna albo uzycie tylko w repo szablonu)
+bugfix                        0       0k      0      0    1                        Skill:1   1/1   2026-09-10        -       0    - 2026-04-10 2026-06-04  UZYWANY BEZPOSREDNIO
+dev-compound-refresh          0       0k      0      0    1                        Skill:1   1/1   2026-08-11        -       0    0 2026-03-26 2026-07-06  UZYWANY BEZPOSREDNIO
+dev-ideate                    1       0k      0      1    1                        slash:1   1/1   2026-09-02        -       0    1 2026-03-26 2026-07-12  UZYWANY BEZPOSREDNIO
+freshness-audit               0       0k      0      0    1                        Skill:1   0/1   2026-08-23        -       0    3 2026-07-12 2026-07-12  SLAD (artefakty sprzed okna albo uzycie tylko w repo szablonu)
+code-quality                  0       0k      0      0    0                              -   0/0            -        -       0    - 2026-03-20 2026-06-04  NIEUZYWANY
+code-review                   0       0k      0      0    0                              -   0/0            -        -       0    - 2026-01-13 2026-03-20  NIEUZYWANY
+dev-compound-wf               0       0k      0      0    0                              -   0/0            -      5/5       0    - 2026-06-21 2026-08-18  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-complete             0       0k      0      0    0                              -   0/0            -        -       0  101 2026-01-13 2026-08-24  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-complete-wf          0       0k      0      0    0                              -   0/0            -      5/5       0    - 2026-06-21 2026-08-24  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-execute              0       0k      0      0    0                              -   0/0            -        -       0    - 2026-01-13 2026-08-24  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-execute-wf           0       0k      0      0    0                              -   0/0            -     15/5       0    - 2026-06-21 2026-09-06  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-review               0       0k      0      0    0                              -   0/0            -        -       0    - 2026-03-26 2026-09-06  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-review-wf            0       0k      0      0    0                              -   0/0            -     18/8       0    - 2026-06-21 2026-09-06  UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)
+dev-docs-update               0       0k      0      0    0                              -   0/0            -        -       0    - 2026-01-13 2026-09-03  NIEUZYWANY
+gemini                        0       0k      0      0    0                              -   0/0            -        -       0    - 2026-01-13 2026-03-20  NIEUZYWANY
+
+=== 2. LISTY (kryteria: BEZPOSREDNIO = >=1 wywolanie slash/Skill/Workflow poza repo szablonu w oknie B; POSREDNIO = 0 takich wywolan, ale
+wstrzykiwany `skills:` do agentow, ktore powstaly, ALBO wolany jako dziecko autopilota, ALBO jego SKILL.md jest czytany przez agenta w runie;
+SLAD = 0 wywolan poza szablonem, ale artefakty z wczesniej albo uzycie tylko w repo szablonu; NIEUZYWANY = nic z powyzszego) ===
+[UZYWANY BEZPOSREDNIO]
+  - dev-plan (skill, 867 l, dodany 2026-03-26, zmiana 2026-09-03)
+      koszt A: 19 ep., 17667k (mediana 814k), 902 min
+      projekty B: oferty-online:17, akademia-automatyzacji-dashboard:2, claude-cron:2, Nawykometr:1, symulator-poczekalni:1 | kanaly: Skill:13, slash:10
+      artefakty C: Nawykometr:5, akademia-automatyzacji-dashboard:5, chatbot-cloudnest-widget:1, claude-cron:3, gramywpadla:10, kurs_cc_demo:1, live-02-04:2, live-02-04-demo:1, live-licznik:1, miter:1, n8n-egzamin-5:1, oferty-online:14, symulator-poczekalni:1 [docs/plans/*.md]
+      wolany/wspominany z: .claude/agents/learnings-researcher.md, .claude/skills/dev-brainstorm/SKILL.md, .claude/skills/dev-compound/SKILL.md, .claude/skills/dev-docs-execute/SKILL.md, .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-ideate/SKILL.md, .claude/skills/dev-prep/SKILL.md, .claude/skills/zroastuj-mnie/SKILL.md
+  - dev-docs (skill, 183 l, dodany 2026-01-13, zmiana 2026-09-03)
+      koszt A: 17 ep., 12016k (mediana 513k), 1132 min
+      projekty B: oferty-online:14, akademia-automatyzacji-dashboard:2, claude-cron:2, Nawykometr:1, symulator-poczekalni:1, workspace-template-mobile:1 | kanaly: Skill:11, slash:10
+      wolany/wspominany z: .claude/skills/dev-brainstorm/SKILL.md, .claude/skills/dev-compound/SKILL.md, .claude/skills/dev-plan/SKILL.md, .claude/skills/dev-prep/SKILL.md, .claude/skills/zroastuj-mnie/SKILL.md
+  - dev-prep (skill, 258 l, dodany 2026-08-24, zmiana 2026-09-03)
+      koszt A: 16 ep., 9936k (mediana 431k), 1609 min
+      projekty B: oferty-online:14, claude-cron:1 | kanaly: slash:11, Skill:4
+      wolany/wspominany z: .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-plan/SKILL.md
+  - coolify-manager (skill, 178 l, dodany 2026-03-30, zmiana 2026-03-30)
+      koszt A: 8 ep., 3810k (mediana 368k), 19 min
+      projekty B: oferty-online:6, akademia-automatyzacji-dashboard:1, symulator-poczekalni:1 | kanaly: Skill:7, slash:1
+  - dev-autopilot-wf (workflow, 1781 l, dodany 2026-06-21, zmiana 2026-09-06)
+      koszt A: 22 ep., 2946k (mediana 135k), 8 min
+      projekty B: oferty-online:137, claude-cron:12, akademia-automatyzacji-dashboard:8, Nawykometr:6, symulator-poczekalni:2 | kanaly: wstrzyk:85, Workflow:54, slash:25, Skill:1
+      wolany/wspominany z: .claude/templates/smoke-autopilot/README.md, .claude/workflows/dev-autopilot-wf.js
+  - sync-template (skill, 92 l, dodany 2026-07-14, zmiana 2026-09-06)
+      koszt A: 8 ep., 2866k (mediana 332k), 9 min
+      projekty B: oferty-online:3, akademia-automatyzacji-dashboard:2, claude-cron:2, Nawykometr:1 | kanaly: slash:8
+  - dev-compound (skill, 459 l, dodany 2026-03-26, zmiana 2026-08-24)
+      koszt A: 6 ep., 2561k (mediana 402k), 17 min
+      projekty B: oferty-online:3, claude-cron:2, gramywpadla:1 | kanaly: Skill:3, slash:3
+      SKILL.md czytany przez agenta w runie: dev-compound-wf, dev-pr-wf
+      artefakty C: Nawykometr:7, akademia-automatyzacji-dashboard:62, chatbot-cloudnest-widget:2, claude-cron:27, gramywpadla:56, kurs_cc_demo:1, live-02-04:1, live-licznik:1, miter:6, n8n-egzamin-5:2, oferty-online:40, symulator-poczekalni:1 [docs/solutions/**/*.md]
+      wolany/wspominany z: .claude/agents/learnings-researcher.md, .claude/skills/bugfix/SKILL.md, .claude/skills/dev-docs-complete/SKILL.md, .claude/skills/dev-pr/SKILL.md, .claude/skills/zroastuj-mnie/SKILL.md, .claude/workflows/dev-compound-wf.js, .claude/workflows/dev-docs-complete-wf.js, .claude/workflows/dev-pr-wf.js
+  - dev-brainstorm (skill, 344 l, dodany 2026-03-26, zmiana 2026-08-24)
+      koszt A: 6 ep., 1910k (mediana 248k), 227 min
+      projekty B: akademia-automatyzacji-dashboard:2, oferty-online:2, symulator-poczekalni:2, claude-cron:1 | kanaly: slash:5, Skill:2
+      artefakty C: akademia-automatyzacji-dashboard:2, chatbot-cloudnest-widget:1, claude-cron:1, gramywpadla:2, oferty-online:1, symulator-poczekalni:1 [docs/brainstorms/*.md]
+      wolany/wspominany z: .claude/skills/dev-compound/SKILL.md, .claude/skills/dev-ideate/SKILL.md, .claude/skills/dev-plan/SKILL.md, .claude/skills/dev-prep/SKILL.md, .claude/skills/zroastuj-mnie/SKILL.md
+  - dev-pr (skill, 184 l, dodany 2026-09-03, zmiana 2026-09-03)
+      koszt A: 8 ep., 1585k (mediana 201k), 8 min
+      projekty B: oferty-online:10, claude-cron:1 | kanaly: slash:9, Skill:2
+      wolany/wspominany z: .claude/workflows/dev-pr-wf.js
+  - zroastuj-mnie (skill, 61 l, dodany 2026-03-30, zmiana 2026-08-24)
+      koszt A: 7 ep., 1576k (mediana 223k), 10 min
+      projekty B: oferty-online:3, akademia-automatyzacji-dashboard:2, Nawykometr:1, claude-cron:1 | kanaly: slash:4, Skill:3
+      wolany/wspominany z: .claude/skills/dev-docs/SKILL.md
+  - coderabbit-setup (skill, 89 l, dodany 2026-07-21, zmiana 2026-07-21)
+      koszt A: 1 ep., 783k (mediana 783k), 6 min
+      projekty B: oferty-online:1 | kanaly: slash:1
+      artefakty C: Nawykometr:1, akademia-automatyzacji-dashboard:1, claude-cron:1, gramywpadla:1, oferty-online:1 [.coderabbit.yaml z naglowkiem generatora]
+  - security (skill, 193 l, dodany 2026-03-20, zmiana 2026-07-06)
+      projekty B: oferty-online:108, claude-cron:22, akademia-automatyzacji-dashboard:10, symulator-poczekalni:8, Nawykometr:6, gramywpadla:2, chatbot-cloudnest-widget:1 | kanaly: wstrzyk:156, Skill:1
+      wstrzyk: 148 agentow (feature-builder-data, feature-builder-fullstack) w 4 projektach
+      wolany/wspominany z: .claude/skills/coolify-manager/SKILL.md, .claude/skills/coolify-manager/references/api_endpoints.md, .claude/skills/coolify-manager/scripts/install_coolify_cli.sh, .claude/skills/freshness-audit/SKILL.md, .claude/skills/tailwind-react-guidelines/resources/file-organization.md, .claude/workflows/dev-docs-review-wf.js, .claude/workflows/freshness-audit-wf.js
+  - supabase-dev-guidelines (skill, 312 l, dodany 2026-01-13, zmiana 2026-08-24)
+      projekty B: oferty-online:75, Nawykometr:5, symulator-poczekalni:5, gramywpadla:2 | kanaly: wstrzyk:86, Skill:1
+      wstrzyk: 148 agentow (feature-builder-data, feature-builder-fullstack) w 4 projektach
+      wolany/wspominany z: .claude/skills/freshness-audit/SKILL.md, .claude/workflows/freshness-audit-wf.js
+  - dev-pr-wf (workflow, 454 l, dodany 2026-09-03, zmiana 2026-09-03)
+      projekty B: oferty-online:66, claude-cron:9 | kanaly: Workflow:75
+      wolany/wspominany z: .claude/workflows/dev-pr-wf.js
+  - bugfix (skill, 194 l, dodany 2026-04-10, zmiana 2026-06-04)
+      projekty B: gramywpadla:1 | kanaly: Skill:1
+      wolany/wspominany z: .claude/agents/learnings-researcher.md
+  - dev-compound-refresh (skill, 413 l, dodany 2026-03-26, zmiana 2026-07-06)
+      projekty B: gramywpadla:1 | kanaly: Skill:1
+      SKILL.md czytany przez agenta w runie: dev-autopilot-wf
+      artefakty C:  [docs/solutions/_archived/*]
+      wolany/wspominany z: .claude/skills/dev-compound/SKILL.md, .claude/workflows/dev-autopilot-wf.js
+  - dev-ideate (skill, 403 l, dodany 2026-03-26, zmiana 2026-07-12)
+      koszt A: 1 ep., 0k (mediana 0k), 0 min
+      projekty B: claude-cron:1 | kanaly: slash:1
+      artefakty C: claude-cron:1 [docs/ideation/*.md]
+      wolany/wspominany z: .claude/agents/learnings-researcher.md
+[UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)]
+  - sentry-integration (skill, 276 l, dodany 2026-01-13, zmiana 2026-08-24)
+      projekty B: oferty-online:108, claude-cron:22, akademia-automatyzacji-dashboard:10, symulator-poczekalni:8, Nawykometr:6, gramywpadla:2 | kanaly: wstrzyk:156
+      wstrzyk: 148 agentow (feature-builder-data, feature-builder-fullstack) w 4 projektach
+      wolany/wspominany z: .claude/workflows/freshness-audit-wf.js
+  - figma-design-to-code (skill, 52 l, dodany 2026-07-12, zmiana 2026-07-12)
+      projekty B: oferty-online:45, Nawykometr:7, symulator-poczekalni:5, claude-cron:2, akademia-automatyzacji-dashboard:1, gramywpadla:1 | kanaly: wstrzyk:61
+      wstrzyk: 53 agentow (feature-builder-ui, feature-builder-fullstack) w 4 projektach
+      wolany/wspominany z: .claude/agents/feature-builder-ui.md
+  - agent-browser (skill, 434 l, dodany 2026-03-26, zmiana 2026-07-12)
+      projekty B: oferty-online:45, akademia-automatyzacji-dashboard:7, claude-cron:4, symulator-poczekalni:3 | kanaly: wstrzyk:59
+      wstrzyk: 59 agentow (feature-tester-e2e) w 4 projektach
+      wolany/wspominany z: .claude/skills/dev-plan/SKILL.md
+  - tailwind-react-guidelines (skill, 185 l, dodany 2026-01-13, zmiana 2026-07-12)
+      projekty B: oferty-online:34, symulator-poczekalni:4, claude-cron:1 | kanaly: wstrzyk:39
+      wstrzyk: 53 agentow (feature-builder-ui, feature-builder-fullstack) w 4 projektach
+      wolany/wspominany z: .claude/workflows/freshness-audit-wf.js
+  - ux-ui-guidelines (skill, 332 l, dodany 2026-01-13, zmiana 2026-07-12)
+      projekty B: oferty-online:34, symulator-poczekalni:4, claude-cron:1 | kanaly: wstrzyk:39
+      wstrzyk: 53 agentow (feature-builder-ui, feature-builder-fullstack) w 4 projektach
+      wolany/wspominany z: .claude/workflows/freshness-audit-wf.js
+  - dev-compound-wf (workflow, 77 l, dodany 2026-06-21, zmiana 2026-08-18)
+      dziecko autopilota: 5 wywolan w 5 runach: oferty-online:4, akademia-automatyzacji-dashboard:1
+      wolany/wspominany z: .claude/workflows/dev-autopilot-wf.js, .claude/workflows/dev-compound-wf.js
+  - dev-docs-complete (skill, 143 l, dodany 2026-01-13, zmiana 2026-08-24)
+      SKILL.md czytany przez agenta w runie: dev-docs-complete-wf
+      artefakty C: Nawykometr:5, akademia-automatyzacji-dashboard:31, chatbot-cloudnest-widget:1, claude-cron:12, gramywpadla:32, kurs_cc_demo:3, live-licznik:1, miter:1, oferty-online:14, symulator-poczekalni:1 [docs/completed/*]
+      wolany/wspominany z: .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-pr/SKILL.md, .claude/workflows/dev-autopilot-wf.js, .claude/workflows/dev-docs-complete-wf.js
+  - dev-docs-complete-wf (workflow, 185 l, dodany 2026-06-21, zmiana 2026-08-24)
+      dziecko autopilota: 5 wywolan w 5 runach: oferty-online:4, akademia-automatyzacji-dashboard:1
+      wolany/wspominany z: .claude/workflows/dev-autopilot-wf.js, .claude/workflows/dev-docs-complete-wf.js
+  - dev-docs-execute (skill, 83 l, dodany 2026-01-13, zmiana 2026-08-24)
+      SKILL.md czytany przez agenta w runie: dev-docs-execute-wf
+      wolany/wspominany z: .claude/skills/dev-brainstorm/SKILL.md, .claude/skills/dev-docs-review/SKILL.md, .claude/skills/dev-docs-update/SKILL.md, .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-plan/SKILL.md, .claude/workflows/dev-docs-execute-wf.js
+  - dev-docs-execute-wf (workflow, 278 l, dodany 2026-06-21, zmiana 2026-09-06)
+      dziecko autopilota: 15 wywolan w 5 runach: oferty-online:14, akademia-automatyzacji-dashboard:1
+      wolany/wspominany z: .claude/workflows/dev-autopilot-wf.js, .claude/workflows/dev-docs-execute-wf.js
+  - dev-docs-review (skill, 130 l, dodany 2026-03-26, zmiana 2026-09-06)
+      SKILL.md czytany przez agenta w runie: dev-docs-review-wf
+      wolany/wspominany z: .claude/skills/code-review/SKILL.md, .claude/skills/dev-docs-execute/SKILL.md, .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-plan/SKILL.md, .claude/workflows/dev-docs-review-wf.js
+  - dev-docs-review-wf (workflow, 1392 l, dodany 2026-06-21, zmiana 2026-09-06)
+      dziecko autopilota: 18 wywolan w 8 runach: oferty-online:17, akademia-automatyzacji-dashboard:1
+      wolany/wspominany z: .claude/workflows/dev-autopilot-wf.js, .claude/workflows/dev-docs-review-wf.js
+[SLAD (artefakty sprzed okna albo uzycie tylko w repo szablonu)]
+  - freshness-audit-wf (workflow, 295 l, dodany 2026-07-12, zmiana 2026-07-12)
+      projekty B: workspace-template:1, workspace-template-mobile:1 | kanaly: Workflow:2
+      wolany/wspominany z: .claude/workflows/freshness-audit-wf.js
+  - freshness-audit (skill, 46 l, dodany 2026-07-12, zmiana 2026-07-12)
+      projekty B: workspace-template-mobile:1 | kanaly: Skill:1
+      artefakty C: symulator-poczekalni:1, workspace-template:1, workspace-template-mobile:1 [docs/reviews/freshness-*.md]
+[NIEUZYWANY]
+  - code-quality (skill, 216 l, dodany 2026-03-20, zmiana 2026-06-04)
+      wolany/wspominany z: .claude/workflows/dev-docs-review-wf.js
+  - code-review (skill, 158 l, dodany 2026-01-13, zmiana 2026-03-20)
+  - dev-docs-update (skill, 108 l, dodany 2026-01-13, zmiana 2026-09-03)
+  - gemini (skill, 72 l, dodany 2026-01-13, zmiana 2026-03-20)
+
+=== 3. AGENCI (meta.json) — ile razy powstal agent z `skills:` per projekt (zrodlo wstrzykniec) ===
+  oferty-online                            feature-builder-data         88
+  oferty-online                            feature-tester-e2e           45
+  oferty-online                            feature-builder-ui           25
+  claude-cron                              feature-builder-data         20
+  oferty-online                            feature-builder-fullstack    20
+  akademia-automatyzacji-dashboard         feature-builder-data         10
+  akademia-automatyzacji-dashboard         feature-tester-e2e           7
+  symulator-poczekalni                     feature-builder-data         7
+  claude-cron                              feature-tester-e2e           4
+  symulator-poczekalni                     feature-builder-ui           4
+  symulator-poczekalni                     feature-tester-e2e           3
+  claude-cron                              feature-builder-fullstack    2
+  akademia-automatyzacji-dashboard         feature-builder-ui           1
+  symulator-poczekalni                     feature-builder-fullstack    1
+
+=== 4. ARTEFAKTY per repozytorium (zrodlo C) ===
+repo                                   dev-compound dev-compound-r dev-brainstorm     dev-ideate       dev-plan dev-docs-compl coderabbit-set freshness-audi
+Nawykometr                                        7              0              0              0              5              5              1              0
+akademia-automatyzacji-dashboard                 62              0              2              0              5             31              1              0
+chatbot-cloudnest-widget                          2              0              1              0              1              1              0              0
+claude-cron                                      27              0              1              1              3             12              1              0
+gramywpadla                                      56              0              2              0             10             32              1              0
+kurs_cc_demo                                      1              0              0              0              1              3              0              0
+live-02-04                                        1              0              0              0              2              0              0              0
+live-02-04-YT                                     0              0              0              0              0              0              0              0
+live-02-04-demo                                   0              0              0              0              1              0              0              0
+live-licznik                                      1              0              0              0              1              1              0              0
+miter                                             6              0              0              0              1              1              0              0
+n8n-egzamin-5                                     2              0              0              0              1              0              0              0
+oferty-online                                    40              0              1              0             14             14              1              0
+symulator-poczekalni                              1              0              1              0              1              1              0              1
+viberzy                                           0              0              0              0              0              0              0              0
+workspace-template                                0              0              0              0              0              0              0              1
+workspace-template-mobile                         0              0              0              0              0              0              0              1
+
+=== 5. OCENA — propozycja do decyzji operatora i panelu (PANEL-WEJSCIE §7); liczby z tabeli 1, ocena reczna sesji glownej ===
+A. RDZEN PIPELINE'U — uzywany w kazdym zadaniu; nie do usuwania, tylko do przeprojektowania w panelu
+  - dev-prep                   skill      258 l  A: 16 ep. 9936k  B bezposr.:       Skill:4 slash:11  proj.(B): 2  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-18  zmiana: 2026-09-03
+  - dev-plan                   skill      867 l  A: 19 ep. 17667k  B bezposr.:      Skill:13 slash:10  proj.(B): 5  dziecko: 0  wstrzyk: 0  art: 46  ostatnie: 2026-09-19  zmiana: 2026-09-03
+  - dev-docs                   skill      183 l  A: 17 ep. 12016k  B bezposr.:      Skill:11 slash:10  proj.(B): 5  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-20  zmiana: 2026-09-03
+  - dev-autopilot-wf           workflow  1781 l  A: 22 ep. 2946k  B bezposr.: Skill:1 Workflow:54 slash:25  proj.(B): 5  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-20  zmiana: 2026-09-06
+  - dev-docs-execute-wf        workflow   278 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 15  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-09-06
+  - dev-docs-review-wf         workflow  1392 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 18  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-09-06
+  - dev-compound-wf            workflow    77 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 5  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-08-18
+  - dev-docs-complete-wf       workflow   185 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 5  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-08-24
+  - dev-pr                     skill      184 l  A: 8 ep. 1585k  B bezposr.:        Skill:2 slash:9  proj.(B): 2  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-21  zmiana: 2026-09-03
+  - dev-pr-wf                  workflow   454 l  A: 0 ep. 0k  B bezposr.:            Workflow:75  proj.(B): 2  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-21  zmiana: 2026-09-03
+  - dev-compound               skill      459 l  A: 6 ep. 2561k  B bezposr.:        Skill:3 slash:3  proj.(B): 3  dziecko: 0  wstrzyk: 0  art: 206  ostatnie: 2026-09-08  zmiana: 2026-08-24
+  - dev-docs-complete          skill      143 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: 101  ostatnie: -  zmiana: 2026-08-24
+  - dev-compound-refresh       skill      413 l  A: 0 ep. 0k  B bezposr.:                Skill:1  proj.(B): 1  dziecko: 0  wstrzyk: 0  art: 0  ostatnie: 2026-08-11  zmiana: 2026-07-06
+  dev-prep/dev-plan/dev-docs = 52 epizodow w 5 projektach (A); dev-docs → scalony z dev-plan (§2 pkt 12). Workflowy-dzieci nie maja wlasnych wywolan: wola je dev-autopilot-wf przez workflow() (widoczne w journalach nowego formatu: execute 15, review 18, compound 5, complete 5 w 5–8 runach; ok. 100 starszych journali nie ma pola phase, ale etap 0 pokazal te same role we wszystkich 105 runach). dev-docs-complete i dev-compound-refresh: SKILL.md czytany przez agenta w kazdym runie autopilota (workflow wstawia "Wykonaj skill .claude/skills/X/SKILL.md"), plus 1 reczne uzycie refresh.
+B. SKILLE-WYTYCZNE wstrzykiwane przez `skills:` — zero wywolan, za to w kazdym builderze/testerze; zostaja (6a pkt 15), dzielone na warstwe stala/referencyjna (§2 pkt 3)
+  - supabase-dev-guidelines    skill      312 l  A: 0 ep. 0k  B bezposr.:                Skill:1  proj.(B): 4  dziecko: 0  wstrzyk: 148  art: -  ostatnie: 2026-09-16  zmiana: 2026-08-24
+  - security                   skill      193 l  A: 0 ep. 0k  B bezposr.:                Skill:1  proj.(B): 7  dziecko: 0  wstrzyk: 148  art: -  ostatnie: 2026-09-20  zmiana: 2026-07-06
+  - sentry-integration         skill      276 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 6  dziecko: 0  wstrzyk: 148  art: -  ostatnie: 2026-09-20  zmiana: 2026-08-24
+  - tailwind-react-guidelines  skill      185 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 3  dziecko: 0  wstrzyk: 53  art: -  ostatnie: 2026-09-16  zmiana: 2026-07-12
+  - ux-ui-guidelines           skill      332 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 3  dziecko: 0  wstrzyk: 53  art: -  ostatnie: 2026-09-16  zmiana: 2026-07-12
+  - figma-design-to-code       skill       52 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 6  dziecko: 0  wstrzyk: 53  art: -  ostatnie: 2026-09-16  zmiana: 2026-07-12
+  - agent-browser              skill      434 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 4  dziecko: 0  wstrzyk: 59  art: -  ostatnie: 2026-09-16  zmiana: 2026-07-12
+  security+sentry+supabase: 148 agentow (feature-builder-data 125 + fullstack 23) w 4 projektach; tailwind/ux/figma: 53 agentow (ui 30 + fullstack 23); agent-browser: 59 testerow E2E. Jedyne reczne wywolanie: security 1x (chatbot-cloudnest-widget), supabase-dev-guidelines 1x. Czy wstrzyknieta tresc jest STOSOWANA — nie wiadomo, to sprawdza mini-run (c), PANEL-WEJSCIE §11.
+C. UZYWANE RZADKO, ALE CELOWO — poza pipeline'em, zostaja bez decyzji panelu
+  - coolify-manager            skill      178 l  A: 8 ep. 3810k  B bezposr.:        Skill:7 slash:1  proj.(B): 3  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-16  zmiana: 2026-03-30
+  - sync-template              skill       92 l  A: 8 ep. 2866k  B bezposr.:                slash:8  proj.(B): 4  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-13  zmiana: 2026-09-06
+  - zroastuj-mnie              skill       61 l  A: 7 ep. 1576k  B bezposr.:        Skill:3 slash:4  proj.(B): 4  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-16  zmiana: 2026-08-24
+  - dev-brainstorm             skill      344 l  A: 6 ep. 1910k  B bezposr.:        Skill:2 slash:5  proj.(B): 4  dziecko: 0  wstrzyk: 0  art: 8  ostatnie: 2026-09-13  zmiana: 2026-08-24
+  - coderabbit-setup           skill       89 l  A: 1 ep. 783k  B bezposr.:                slash:1  proj.(B): 1  dziecko: 0  wstrzyk: 0  art: 5  ostatnie: 2026-08-25  zmiana: 2026-07-21
+  coolify-manager 8 epizodow / 3 projekty (deploy, nie pipeline); sync-template 8 / 4 projekty (dystrybucja szablonu); zroastuj-mnie 7 / 4; dev-brainstorm 7 / 4 + 8 artefaktow docs/brainstorms w 6 repo; coderabbit-setup 1 epizod, ale 5 repo z wygenerowanym .coderabbit.yaml = uzywany raz na projekt, z natury (i tak do poprawy generatora — L19).
+D. KANDYDACI DO USUNIECIA — 0 wywolan w oknie, 0 artefaktow, zadna czesc maszynerii ich nie wola
+  - code-review                skill      158 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-03-20
+  - code-quality               skill      216 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-06-04
+  - gemini                     skill       72 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-03-20
+  - dev-docs-update            skill      108 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-09-03
+  - bugfix                     skill      194 l  A: 0 ep. 0k  B bezposr.:                Skill:1  proj.(B): 1  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-09-10  zmiana: 2026-06-04
+  code-review: drugi, niezalezny roster review poza pipeline'em (§7 juz go ma), ostatnia zmiana 2026-03-20. code-quality: jedyne "odwolanie" to nazwa OSI review w dev-docs-review-wf.js (klucz routingu), nie skill — kolizja nazw. gemini: ostatnia zmiana 2026-03-20, skill nie pojawia sie nawet na liscie skilli biezacej sesji. dev-docs-update: 0 odwolan, naklada sie na bootstrap stanu autopilota (§7). bugfix: 1 wywolanie w 7 tygodni na ~30 projektow (gramywpadla 2026-09-10) + 4 solutions z 05–06.2026 w gramywpadla — potwierdza L13 (kandydat do usuniecia, poza miara jakosci).
+E. DO DECYZJI — malo uzyc, ale nie zero; panel albo operator mowi, czy zostaje
+  - dev-ideate                 skill      403 l  A: 1 ep. 0k  B bezposr.:                slash:1  proj.(B): 1  dziecko: 0  wstrzyk: 0  art: 1  ostatnie: 2026-09-02  zmiana: 2026-07-12
+  - freshness-audit            skill       46 l  A: 0 ep. 0k  B bezposr.:                Skill:1  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: 3  ostatnie: 2026-08-23  zmiana: 2026-07-12
+  - freshness-audit-wf         workflow   295 l  A: 0 ep. 0k  B bezposr.:             Workflow:2  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: 2026-08-23  zmiana: 2026-07-12
+  - dev-docs-execute           skill       83 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-08-24
+  - dev-docs-review            skill      130 l  A: 0 ep. 0k  B bezposr.:                      0  proj.(B): 0  dziecko: 0  wstrzyk: 0  art: -  ostatnie: -  zmiana: 2026-09-06
+  dev-ideate: 1 wywolanie (claude-cron 2026-09-02, koszt 0 = przerwane) + 1 artefakt docs/ideation; 403 linie (§7: "0 wystapien w rozstrzygnieciach"). freshness-audit (+wf): 2 uruchomienia i 3 raporty — wszystkie z 2026-08-23, tylko w repo szablonu (+ symulator-poczekalni tego samego dnia); od tego czasu nic (§7: "nieuzyty i nieoceniony" — potwierdzone). dev-docs-execute / dev-docs-review jako SKILLE = tryb reczny pipeline'u: 0 wywolan w oknie (wszystko idzie autopilotem), ale ich SKILL.md czyta agent w runie (execute-wf, review-wf) — panel decyduje, czy tryb reczny zostaje, czy skill redukuje sie do samego workflowu.
+Kategoria D razem: 748 linii SKILL.md w 15 plikach (z zasobami). Usuniecie nie zmienia kosztu runow (skille nie sa ladowane do agentow),
+zmienia tylko liste skilli w sesji glownej operatora i utrzymanie szablonu.
+
+Skille KONTA widoczne w skille.csv, poza audytem (6a pkt 19: etap higieny konta): 2fc39ea68228:excalidraw (1), artifact-design (3), design (2), figma:figma-create-new-file (1), figma:figma-generate-design (3), figma:figma-use (13), frontend-design:frontend-design (5), init (1), skill-creator:skill-creator (1).

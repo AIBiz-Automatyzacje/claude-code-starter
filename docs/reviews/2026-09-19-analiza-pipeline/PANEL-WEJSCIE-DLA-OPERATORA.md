@@ -235,9 +235,30 @@ w skillu code-review, nieużyty mechanizm freshness-audit, szablony E2E i smoke,
 treść skilli builderów do podziału na warstwy, prompt osi code-quality żyjący w dwóch miejscach. Każdy projekt musi powiedzieć przy każdym z nich:
 obejmuję albo zostawiam, i dlaczego.
 
-Do tego dochodzi audyt użycia wszystkich skilli szablonu, który zrobimy przed panelem: skrypt na danych z etapu zerowego policzy, który skill był
-uruchamiany, ile razy, w ilu projektach i za ile, a który nigdy. Panel dostanie listę „używane, nieużywane, kandydaci do usunięcia" jako fakt,
-a nie jako przeczucie.
+Audyt użycia skilli szablonu jest zrobiony (2026-09-22, plik `dane/d6-audyt-skilli.txt`). Problem był taki, że w szablonie leży dwadzieścia osiem
+skilli i siedem workflowów, a nikt nie wiedział, które z nich ktokolwiek uruchamia. Skrypt policzył to z trzech źródeł: koszt z danych etapu zerowego
+(pięć projektów), liczba uruchomień ze wszystkich transkryptów na dysku (trzydzieści projektów, ale tylko ostatnie siedem tygodni, bo starsze
+transkrypty są kasowane) i ślady w repozytoriach z całego życia szablonu, na przykład katalog solutions jako ślad po skillu compound.
+
+Wynik w pięciu koszykach. Trzynaście elementów to rdzeń, używany w każdym zadaniu: prep, plan i docs (pięćdziesiąt dwa uruchomienia w pięciu
+projektach), autopilot z czterema workflowami-dziećmi, pr, compound, complete i refresh. Siedem skilli-wytycznych nikt nie uruchamia ręcznie, ale
+wchodzą do każdego buildera i testera przez definicję agenta: wytyczne Supabase, security i Sentry trafiły do stu czterdziestu ośmiu agentów,
+wytyczne UI do pięćdziesięciu trzech, agent-browser do pięćdziesięciu dziewięciu testerów; czy ta treść jest potem stosowana, sprawdzi mini-run.
+Pięć skilli używasz rzadko, ale celowo i poza pipeline'em: coolify-manager, sync-template, zroastuj-mnie, brainstorm i coderabbit-setup (ten
+ostatni raz na projekt, z natury, ale pięć repozytoriów ma wygenerowany przez niego plik).
+
+Pięć skilli to kandydaci do usunięcia, bo w siedem tygodni nikt ich nie uruchomił, nie zostawiły żadnego śladu w repozytoriach i żadna część
+maszynerii ich nie woła: code-review (drugi, niezależny roster review, ostatnia zmiana w marcu), code-quality (jedyne „odwołanie" to zbieżność
+nazwy z osią review w workflowie), gemini (marzec, nie ma go nawet na liście skilli sesji), docs-update (zero odwołań, dubluje bootstrap autopilota)
+i bugfix (jedno uruchomienie w siedem tygodni na trzydzieści projektów, co potwierdza Twoją wcześniejszą decyzję). Razem siedemset czterdzieści
+osiem linii instrukcji w piętnastu plikach. Usunięcie nic nie zmienia w koszcie runów, bo te skille nie ładują się do agentów; porządkuje listę
+skilli, którą widzisz w sesji, i to, co trzeba utrzymywać.
+
+Pięć zostaje do decyzji: ideate (jedno przerwane uruchomienie i jeden plik), freshness-audit ze swoim workflowem (dwa uruchomienia i trzy raporty,
+wszystko z jednego dnia w sierpniu, wyłącznie w repozytorium szablonu), oraz execute i review jako skille, czyli tryb ręczny pipeline'u: przez
+siedem tygodni nikt nie użył trybu ręcznego, wszystko szło autopilotem, ale ich treść czyta agent wewnątrz runu. Panel powie, czy tryb ręczny
+zostaje jako skill, czy redukuje się do samego workflowu. Skille z konta, nie z szablonu (Figma, frontend-design i podobne), audyt pomija zgodnie
+z Twoją decyzją, że to etap higieny konta.
 
 ---
 

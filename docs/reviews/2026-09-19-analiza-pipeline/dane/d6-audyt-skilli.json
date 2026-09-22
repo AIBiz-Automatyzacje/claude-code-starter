@@ -1,0 +1,1615 @@
+{
+ "zakres_A": [
+  "2026-08-05",
+  "2026-09-18"
+ ],
+ "najstarszy_transkrypt": "2026-08-03",
+ "pliki_skan": 5228,
+ "repozytoria": [
+  "Nawykometr",
+  "akademia-automatyzacji-dashboard",
+  "chatbot-cloudnest-widget",
+  "claude-cron",
+  "gramywpadla",
+  "kurs_cc_demo",
+  "live-02-04",
+  "live-02-04-YT",
+  "live-02-04-demo",
+  "live-licznik",
+  "miter",
+  "n8n-egzamin-5",
+  "oferty-online",
+  "symulator-poczekalni",
+  "viberzy",
+  "workspace-template",
+  "workspace-template-mobile"
+ ],
+ "agenci_typy": {
+  "Nawykometr|workflow-subagent": 184,
+  "Nawykometr|framework-docs-researcher": 1,
+  "Nawykometr|repo-research-analyst": 1,
+  "Nawykometr|best-practices-researcher": 1,
+  "Nawykometr|general-purpose": 1,
+  "Nawykometr|Explore": 2,
+  "Nawykometr|security-sentinel": 5,
+  "Nawykometr|feature-builder-mobile-data": 3,
+  "Nawykometr|code-simplicity-reviewer": 5,
+  "Nawykometr|feature-tester-mobile-e2e": 5,
+  "Nawykometr|kieran-typescript-reviewer": 5,
+  "Nawykometr|performance-oracle": 4,
+  "Nawykometr|spec-flow-analyzer": 5,
+  "Nawykometr|architecture-strategist": 5,
+  "Nawykometr|feature-builder-mobile-fullstack": 3,
+  "Nawykometr|feature-builder-mobile-ui": 4,
+  "akademia-automatyzacji-dashboard|workflow-subagent": 179,
+  "akademia-automatyzacji-dashboard|performance-oracle": 8,
+  "akademia-automatyzacji-dashboard|spec-compliance-reviewer": 1,
+  "akademia-automatyzacji-dashboard|security-sentinel": 8,
+  "akademia-automatyzacji-dashboard|feature-builder-data": 10,
+  "akademia-automatyzacji-dashboard|architecture-strategist": 8,
+  "akademia-automatyzacji-dashboard|general-purpose": 1,
+  "akademia-automatyzacji-dashboard|code-simplicity-reviewer": 7,
+  "akademia-automatyzacji-dashboard|feature-tester-e2e": 7,
+  "akademia-automatyzacji-dashboard|spec-flow-analyzer": 7,
+  "akademia-automatyzacji-dashboard|kieran-typescript-reviewer": 7,
+  "akademia-automatyzacji-dashboard|feature-builder-ui": 1,
+  "akademia-automatyzacji-dashboard|Explore": 1,
+  "claude-cron|repo-research-analyst": 1,
+  "claude-cron|learnings-researcher": 1,
+  "claude-cron|Explore": 10,
+  "claude-cron|workflow-subagent": 309,
+  "claude-cron|feature-builder-data": 20,
+  "claude-cron|security-sentinel": 10,
+  "claude-cron|architecture-strategist": 10,
+  "claude-cron|performance-oracle": 10,
+  "claude-cron|code-simplicity-reviewer": 5,
+  "claude-cron|spec-flow-analyzer": 5,
+  "claude-cron|feature-tester-e2e": 4,
+  "claude-cron|feature-builder-fullstack": 2,
+  "claude-cron|web-research-specialist": 1,
+  "claude-cron|spec-compliance-reviewer": 5,
+  "claude-cron|general-purpose": 5,
+  "demo-live-17-09|general-purpose": 3,
+  "demo-meta-daily|general-purpose": 3,
+  "gramywpadla|feature-builder-mobile-fullstack": 1,
+  "gramywpadla|Explore": 6,
+  "gramywpadla|feature-builder-mobile-data": 1,
+  "gramywpadla|general-purpose": 4,
+  "live-17-09-demo-x|web-research-specialist": 1,
+  "live-17-09-demo-x|general-purpose": 1,
+  "oferty-online|workflow-subagent": 1567,
+  "oferty-online|feature-builder-data": 88,
+  "oferty-online|performance-oracle": 55,
+  "oferty-online|general-purpose": 47,
+  "oferty-online|feature-tester-e2e": 45,
+  "oferty-online|architecture-strategist": 55,
+  "oferty-online|security-sentinel": 58,
+  "oferty-online|feature-builder-ui": 25,
+  "oferty-online|feature-builder-fullstack": 20,
+  "oferty-online|spec-compliance-reviewer": 33,
+  "oferty-online|Explore": 17,
+  "oferty-online|learnings-researcher": 8,
+  "oferty-online|framework-docs-researcher": 3,
+  "oferty-online|spec-flow-analyzer": 30,
+  "oferty-online|repo-research-analyst": 8,
+  "oferty-online|kieran-typescript-reviewer": 25,
+  "oferty-online|code-simplicity-reviewer": 25,
+  "oferty-online|best-practices-researcher": 2,
+  "strona-www-kurs-aa|general-purpose": 1,
+  "symulator-poczekalni|framework-docs-researcher": 1,
+  "symulator-poczekalni|best-practices-researcher": 1,
+  "symulator-poczekalni|workflow-subagent": 89,
+  "symulator-poczekalni|code-simplicity-reviewer": 3,
+  "symulator-poczekalni|architecture-strategist": 3,
+  "symulator-poczekalni|feature-builder-data": 7,
+  "symulator-poczekalni|kieran-typescript-reviewer": 3,
+  "symulator-poczekalni|feature-builder-fullstack": 1,
+  "symulator-poczekalni|feature-builder-ui": 4,
+  "symulator-poczekalni|security-sentinel": 3,
+  "symulator-poczekalni|feature-tester-e2e": 3,
+  "symulator-poczekalni|performance-oracle": 3,
+  "symulator-poczekalni|spec-flow-analyzer": 3,
+  "test-apki-cc|spec-flow-analyzer": 1,
+  "test-apki-cc|general-purpose": 20,
+  "test-apki-cc|workflow-subagent": 79,
+  "workspace-template|workflow-subagent": 128,
+  "workspace-template|claude-code-guide": 5,
+  "workspace-template|general-purpose": 1,
+  "workspace-template|z-allowlista-bez-claudemd": 1,
+  "workspace-template|z-allowlista": 1,
+  "workspace-template|fix-frontend": 1,
+  "workspace-template|port-skille": 1,
+  "workspace-template|fix-security-sentry": 1,
+  "workspace-template|port-workflows": 1,
+  "workspace-template|port-agent-templates": 1,
+  "workspace-template|fix-supabase": 1,
+  "workspace-template|web-research-specialist": 3,
+  "workspace-template|bez-mcp": 1,
+  "workspace-template-mobile|workflow-subagent": 160,
+  "workspace-template-mobile|expo-nowe": 1,
+  "workspace-template-mobile|fix-platform": 1,
+  "workspace-template-mobile|web-port": 1,
+  "workspace-template-mobile|fix-edge": 1,
+  "workspace-template-mobile|expo-diffs": 1,
+  "workspace-template-mobile|fix-p2": 1,
+  "kacper-trzepiecinski-workspace|grafika-a": 1,
+  "kacper-trzepiecinski-workspace|grafika-c": 1,
+  "kacper-trzepiecinski-workspace|grafika-b": 1,
+  "kacper-trzepiecinski-workspace|general-purpose": 154,
+  "kacper-trzepiecinski-workspace|ocena-rzepecki": 1,
+  "kacper-trzepiecinski-workspace|ocena-weglowski": 1,
+  "kacper-trzepiecinski-workspace|ocena-bentkowski": 1,
+  "kacper-trzepiecinski-workspace|ocena-kruczek": 1,
+  "kacper-trzepiecinski-workspace|ocena-markiewicz": 1,
+  "kacper-trzepiecinski-workspace|ocena-wojcicki": 1,
+  "kacper-trzepiecinski-workspace|ocena-regula": 1,
+  "kacper-trzepiecinski-workspace|fbig-kat02": 1,
+  "kacper-trzepiecinski-workspace|Explore": 6,
+  "kacper-trzepiecinski-workspace|research-onboarding": 1,
+  "kacper-trzepiecinski-workspace|research-monika": 1,
+  "kacper-trzepiecinski-workspace|kacper-1501": 1,
+  "kacper-trzepiecinski-workspace|negacz-2807": 1,
+  "kacper-trzepiecinski-workspace|negacz-2906": 1,
+  "kacper-trzepiecinski-workspace|negacz-0203": 1,
+  "kacper-trzepiecinski-workspace|neuron-limity": 1,
+  "kacper-trzepiecinski-workspace|neuron-ai-act": 1,
+  "kacper-trzepiecinski-workspace|kat07": 1,
+  "kacper-trzepiecinski-workspace|kat11": 1,
+  "kacper-trzepiecinski-workspace|kat01": 1,
+  "kacper-trzepiecinski-workspace|kat14": 1,
+  "kacper-trzepiecinski-workspace|kat02": 1,
+  "kacper-trzepiecinski-workspace|kat08": 1,
+  "kacper-trzepiecinski-workspace|kat13": 1,
+  "kacper-trzepiecinski-workspace|kat12": 1,
+  "kacper-trzepiecinski-workspace|kat06": 1,
+  "kacper-trzepiecinski-workspace|grafika-pipeline": 1,
+  "kacper-trzepiecinski-workspace|grafika-frankenstein": 1,
+  "kacper-trzepiecinski-workspace|grafika-typo": 1,
+  "kacper-trzepiecinski-workspace|grafika-przed-po": 1,
+  "kacper-trzepiecinski-workspace|grafika-designmd": 1,
+  "kacper-trzepiecinski-workspace|ekstrakcja-transkrypcji": 1,
+  "kacper-trzepiecinski-workspace|assets-viberzy": 1,
+  "kacper-trzepiecinski-workspace|yt-jev": 1,
+  "kacper-trzepiecinski-workspace|web-jev": 1,
+  "kacper-trzepiecinski-workspace|x-jev": 1,
+  "kacper-trzepiecinski-workspace|retro-2026-05-21": 1,
+  "kacper-trzepiecinski-workspace|retro-2026-01-15": 1,
+  "kacper-trzepiecinski-workspace|retro-2026-07-09": 1,
+  "kacper-trzepiecinski-workspace|retro-2025-12-18": 1,
+  "kacper-trzepiecinski-workspace|retro-2026-02-19": 1,
+  "kacper-trzepiecinski-workspace|retro-2026-04-02": 1,
+  "kacper-trzepiecinski-workspace|workflow-subagent": 108,
+  "kacper-trzepiecinski-workspace|web-research-specialist": 1,
+  "kacper-trzepiecinski-workspace|fb-kandydaci": 1,
+  "kacper-trzepiecinski-workspace|logo-impet": 1,
+  "kacper-trzepiecinski-workspace|synt-D": 1,
+  "kacper-trzepiecinski-workspace|synt-A": 1,
+  "kacper-trzepiecinski-workspace|synt-B": 1,
+  "kacper-trzepiecinski-workspace|ekstr-4": 1,
+  "kacper-trzepiecinski-workspace|synt-C": 1,
+  "kacper-trzepiecinski-workspace|ekstr-2": 1,
+  "kacper-trzepiecinski-workspace|ekstr-1": 1,
+  "kacper-trzepiecinski-workspace|ekstr-3": 1,
+  "kacper-trzepiecinski-workspace|ekstr-6": 1,
+  "kacper-trzepiecinski-workspace|ekstr-5": 1,
+  "kacper-trzepiecinski-workspace|hero-k3": 1,
+  "kacper-trzepiecinski-workspace|grafiki-sdd": 1,
+  "kacper-trzepiecinski-workspace|hero-k2": 1,
+  "kacper-trzepiecinski-workspace|hero-k1": 1,
+  "kacper-trzepiecinski-workspace|kat-14": 1,
+  "kacper-trzepiecinski-workspace|kat-09": 1,
+  "kacper-trzepiecinski-workspace|kat-11": 1,
+  "kacper-trzepiecinski-workspace|kat-02": 1,
+  "kacper-trzepiecinski-workspace|kat-07": 1,
+  "kacper-trzepiecinski-workspace|kat-12": 1,
+  "kacper-trzepiecinski-workspace|kat-04": 1,
+  "kacper-trzepiecinski-workspace|kat-01": 1,
+  "kacper-trzepiecinski-workspace|kat-06": 1,
+  "kacper-trzepiecinski-workspace|kat-05": 1,
+  "kacper-trzepiecinski-workspace|kat-10": 1,
+  "kacper-trzepiecinski-workspace|kat-08": 1,
+  "kacper-trzepiecinski-workspace|kat-03": 1,
+  "kacper-trzepiecinski-workspace|kat-13": 1,
+  "kacper-trzepiecinski-workspace|build-figma-mcp": 1,
+  "kacper-trzepiecinski-workspace|okladka-figma": 1,
+  "kacper-trzepiecinski-workspace|riso-anim": 1,
+  "kacper-trzepiecinski-workspace|ocena-ostoja": 1,
+  "kacper-trzepiecinski-workspace|oc-skotzke": 1,
+  "kacper-trzepiecinski-workspace|oc-miotk": 1,
+  "kacper-trzepiecinski-workspace|fbig01": 1,
+  "kacper-trzepiecinski-workspace|oc-kmita": 1,
+  "kacper-trzepiecinski-workspace|oc-ptaszynski": 1,
+  "kacper-trzepiecinski-workspace|oc-wojnar": 1,
+  "kacper-trzepiecinski-workspace|oc-kosecki": 1,
+  "kacper-trzepiecinski-workspace|oc-zielonko": 1,
+  "kacper-trzepiecinski-workspace|oc-jedynak": 1,
+  "kacper-trzepiecinski-workspace|fbig01b": 1,
+  "kacper-trzepiecinski-workspace|oc-bak": 1,
+  "kacper-trzepiecinski-workspace|dup-audit": 1,
+  "kacper-trzepiecinski-workspace|now-cut": 1,
+  "kacper-trzepiecinski-workspace|claude-code-guide": 3,
+  "kacper-trzepiecinski-workspace|fork": 1,
+  "kacper-trzepiecinski-workspace|eval1-with": 1,
+  "kacper-trzepiecinski-workspace|ident-od-zera": 1,
+  "kacper-trzepiecinski-workspace|eval2-with": 1,
+  "kacper-trzepiecinski-workspace|eval1-base": 1,
+  "kacper-trzepiecinski-workspace|eval2-base": 1,
+  "kacper-trzepiecinski-workspace|kie-nbpro": 2,
+  "kacper-trzepiecinski-workspace|kie-nb2": 2,
+  "kacper-trzepiecinski-workspace|kie-gpt": 2,
+  "kacper-trzepiecinski-workspace|claudemd": 1,
+  "kacper-trzepiecinski-workspace|skill": 1,
+  "kacper-trzepiecinski-workspace|zasady": 1,
+  "kacper-trzepiecinski-workspace|logo-glos": 1,
+  "kacper-trzepiecinski-workspace|logo-marker": 1,
+  "kacper-trzepiecinski-workspace|logo-kursor": 1,
+  "kacper-trzepiecinski-workspace|logo-fala": 1,
+  "kacper-trzepiecinski-workspace|audyt-skool": 1,
+  "kacper-trzepiecinski-workspace|audyt-konwertera": 1,
+  "kacper-trzepiecinski-workspace|grafiki-hero": 1,
+  "kacper-trzepiecinski-workspace-Zadania-projekty-mapowanie-tworcow|web-jev": 1,
+  "kacper-trzepiecinski-workspace-Zadania-projekty-mapowanie-tworcow|yt-jev": 1,
+  "kacper-trzepiecinski-workspace-Zadania-projekty-mapowanie-tworcow|x-jev": 1,
+  "workspace-template(scratch)|goly": 4,
+  "workspace-template(scratch)|pelny": 2,
+  "workspace-template(scratch)|workflow-subagent": 2,
+  "workspace-template(scratch)|general-purpose": 1
+ },
+ "skille": {
+  "dev-plan": {
+   "typ": "skill",
+   "A_n": 19,
+   "A_koszt_k": 17667,
+   "A_min": 902,
+   "A_koszt_mediana_k": 814,
+   "A_projekty": [
+    "Nawykometr",
+    "akademia-automatyzacji-dashboard",
+    "claude-cron",
+    "oferty-online",
+    "symulator-poczekalni"
+   ],
+   "B_n": 23,
+   "B_kanaly": {
+    "slash": 10,
+    "Skill": 13
+   },
+   "B_projekty": {
+    "Nawykometr": 1,
+    "akademia-automatyzacji-dashboard": 2,
+    "claude-cron": 2,
+    "oferty-online": 17,
+    "symulator-poczekalni": 1
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-19",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": {
+    "Nawykometr": 5,
+    "akademia-automatyzacji-dashboard": 5,
+    "chatbot-cloudnest-widget": 1,
+    "claude-cron": 3,
+    "gramywpadla": 10,
+    "kurs_cc_demo": 1,
+    "live-02-04": 2,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 1,
+    "live-licznik": 1,
+    "miter": 1,
+    "n8n-egzamin-5": 1,
+    "oferty-online": 14,
+    "symulator-poczekalni": 1,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [
+    ".claude/agents/learnings-researcher.md",
+    ".claude/skills/dev-brainstorm/SKILL.md",
+    ".claude/skills/dev-compound/SKILL.md",
+    ".claude/skills/zroastuj-mnie/SKILL.md",
+    ".claude/skills/dev-docs/SKILL.md",
+    ".claude/skills/dev-ideate/SKILL.md",
+    ".claude/skills/dev-prep/SKILL.md",
+    ".claude/skills/dev-docs-execute/SKILL.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-09-03",
+   "linie": 867,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-docs": {
+   "typ": "skill",
+   "A_n": 17,
+   "A_koszt_k": 12016,
+   "A_min": 1132,
+   "A_koszt_mediana_k": 513,
+   "A_projekty": [
+    "Nawykometr",
+    "akademia-automatyzacji-dashboard",
+    "claude-cron",
+    "oferty-online",
+    "symulator-poczekalni"
+   ],
+   "B_n": 21,
+   "B_kanaly": {
+    "slash": 10,
+    "Skill": 11
+   },
+   "B_projekty": {
+    "Nawykometr": 1,
+    "akademia-automatyzacji-dashboard": 2,
+    "claude-cron": 2,
+    "oferty-online": 14,
+    "symulator-poczekalni": 1,
+    "workspace-template-mobile": 1
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-20",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/skills/dev-brainstorm/SKILL.md",
+    ".claude/skills/dev-compound/SKILL.md",
+    ".claude/skills/zroastuj-mnie/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md",
+    ".claude/skills/dev-prep/SKILL.md"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-09-03",
+   "linie": 183,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-prep": {
+   "typ": "skill",
+   "A_n": 16,
+   "A_koszt_k": 9936,
+   "A_min": 1609,
+   "A_koszt_mediana_k": 431,
+   "A_projekty": [
+    "claude-cron",
+    "oferty-online"
+   ],
+   "B_n": 15,
+   "B_kanaly": {
+    "slash": 11,
+    "Skill": 4
+   },
+   "B_projekty": {
+    "claude-cron": 1,
+    "oferty-online": 14
+   },
+   "B_pierwsze": "2026-08-24",
+   "B_ostatnie": "2026-09-18",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/skills/dev-docs/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md"
+   ],
+   "dodany": "2026-08-24",
+   "zmiana": "2026-09-03",
+   "linie": 258,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "coolify-manager": {
+   "typ": "skill",
+   "A_n": 8,
+   "A_koszt_k": 3810,
+   "A_min": 19,
+   "A_koszt_mediana_k": 368,
+   "A_projekty": [
+    "akademia-automatyzacji-dashboard",
+    "oferty-online",
+    "symulator-poczekalni"
+   ],
+   "B_n": 8,
+   "B_kanaly": {
+    "slash": 1,
+    "Skill": 7
+   },
+   "B_projekty": {
+    "akademia-automatyzacji-dashboard": 1,
+    "oferty-online": 6,
+    "symulator-poczekalni": 1
+   },
+   "B_pierwsze": "2026-08-18",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [],
+   "dodany": "2026-03-30",
+   "zmiana": "2026-03-30",
+   "linie": 178,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-autopilot-wf": {
+   "typ": "workflow",
+   "A_n": 22,
+   "A_koszt_k": 2946,
+   "A_min": 8,
+   "A_koszt_mediana_k": 135,
+   "A_projekty": [
+    "Nawykometr",
+    "akademia-automatyzacji-dashboard",
+    "claude-cron",
+    "oferty-online",
+    "symulator-poczekalni"
+   ],
+   "B_n": 165,
+   "B_kanaly": {
+    "slash": 25,
+    "Workflow": 54,
+    "Skill": 1,
+    "wstrzyk": 85
+   },
+   "B_projekty": {
+    "Nawykometr": 6,
+    "akademia-automatyzacji-dashboard": 8,
+    "claude-cron": 12,
+    "oferty-online": 137,
+    "symulator-poczekalni": 2
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-20",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/templates/smoke-autopilot/README.md"
+   ],
+   "dodany": "2026-06-21",
+   "zmiana": "2026-09-06",
+   "linie": 1781,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "sync-template": {
+   "typ": "skill",
+   "A_n": 8,
+   "A_koszt_k": 2866,
+   "A_min": 9,
+   "A_koszt_mediana_k": 332,
+   "A_projekty": [
+    "Nawykometr",
+    "akademia-automatyzacji-dashboard",
+    "claude-cron",
+    "oferty-online"
+   ],
+   "B_n": 8,
+   "B_kanaly": {
+    "slash": 8
+   },
+   "B_projekty": {
+    "Nawykometr": 1,
+    "akademia-automatyzacji-dashboard": 2,
+    "claude-cron": 2,
+    "oferty-online": 3
+   },
+   "B_pierwsze": "2026-08-17",
+   "B_ostatnie": "2026-09-13",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [],
+   "dodany": "2026-07-14",
+   "zmiana": "2026-09-06",
+   "linie": 92,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-compound": {
+   "typ": "skill",
+   "A_n": 6,
+   "A_koszt_k": 2561,
+   "A_min": 17,
+   "A_koszt_mediana_k": 402,
+   "A_projekty": [
+    "claude-cron",
+    "oferty-online"
+   ],
+   "B_n": 6,
+   "B_kanaly": {
+    "Skill": 3,
+    "slash": 3
+   },
+   "B_projekty": {
+    "claude-cron": 2,
+    "gramywpadla": 1,
+    "oferty-online": 3
+   },
+   "B_pierwsze": "2026-08-08",
+   "B_ostatnie": "2026-09-08",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [
+    "dev-compound-wf",
+    "dev-pr-wf"
+   ],
+   "artefakty": {
+    "Nawykometr": 7,
+    "akademia-automatyzacji-dashboard": 62,
+    "chatbot-cloudnest-widget": 2,
+    "claude-cron": 27,
+    "gramywpadla": 56,
+    "kurs_cc_demo": 1,
+    "live-02-04": 1,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 1,
+    "miter": 6,
+    "n8n-egzamin-5": 2,
+    "oferty-online": 40,
+    "symulator-poczekalni": 1,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [
+    ".claude/workflows/dev-compound-wf.js",
+    ".claude/workflows/dev-docs-complete-wf.js",
+    ".claude/workflows/dev-pr-wf.js",
+    ".claude/agents/learnings-researcher.md",
+    ".claude/skills/dev-pr/SKILL.md",
+    ".claude/skills/zroastuj-mnie/SKILL.md",
+    ".claude/skills/dev-docs-complete/SKILL.md",
+    ".claude/skills/bugfix/SKILL.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-08-24",
+   "linie": 459,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-brainstorm": {
+   "typ": "skill",
+   "A_n": 6,
+   "A_koszt_k": 1910,
+   "A_min": 227,
+   "A_koszt_mediana_k": 248,
+   "A_projekty": [
+    "akademia-automatyzacji-dashboard",
+    "claude-cron",
+    "oferty-online",
+    "symulator-poczekalni"
+   ],
+   "B_n": 7,
+   "B_kanaly": {
+    "slash": 5,
+    "Skill": 2
+   },
+   "B_projekty": {
+    "akademia-automatyzacji-dashboard": 2,
+    "claude-cron": 1,
+    "oferty-online": 2,
+    "symulator-poczekalni": 2
+   },
+   "B_pierwsze": "2026-08-17",
+   "B_ostatnie": "2026-09-13",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": {
+    "Nawykometr": 0,
+    "akademia-automatyzacji-dashboard": 2,
+    "chatbot-cloudnest-widget": 1,
+    "claude-cron": 1,
+    "gramywpadla": 2,
+    "kurs_cc_demo": 0,
+    "live-02-04": 0,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 0,
+    "miter": 0,
+    "n8n-egzamin-5": 0,
+    "oferty-online": 1,
+    "symulator-poczekalni": 1,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [
+    ".claude/skills/dev-compound/SKILL.md",
+    ".claude/skills/zroastuj-mnie/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md",
+    ".claude/skills/dev-ideate/SKILL.md",
+    ".claude/skills/dev-prep/SKILL.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-08-24",
+   "linie": 344,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-pr": {
+   "typ": "skill",
+   "A_n": 8,
+   "A_koszt_k": 1585,
+   "A_min": 8,
+   "A_koszt_mediana_k": 201,
+   "A_projekty": [
+    "claude-cron",
+    "oferty-online"
+   ],
+   "B_n": 11,
+   "B_kanaly": {
+    "slash": 9,
+    "Skill": 2
+   },
+   "B_projekty": {
+    "claude-cron": 1,
+    "oferty-online": 10
+   },
+   "B_pierwsze": "2026-09-04",
+   "B_ostatnie": "2026-09-21",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-pr-wf.js"
+   ],
+   "dodany": "2026-09-03",
+   "zmiana": "2026-09-03",
+   "linie": 184,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "zroastuj-mnie": {
+   "typ": "skill",
+   "A_n": 7,
+   "A_koszt_k": 1576,
+   "A_min": 10,
+   "A_koszt_mediana_k": 223,
+   "A_projekty": [
+    "Nawykometr",
+    "akademia-automatyzacji-dashboard",
+    "claude-cron",
+    "oferty-online"
+   ],
+   "B_n": 7,
+   "B_kanaly": {
+    "Skill": 3,
+    "slash": 4
+   },
+   "B_projekty": {
+    "Nawykometr": 1,
+    "akademia-automatyzacji-dashboard": 2,
+    "claude-cron": 1,
+    "oferty-online": 3
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/skills/dev-docs/SKILL.md"
+   ],
+   "dodany": "2026-03-30",
+   "zmiana": "2026-08-24",
+   "linie": 61,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "coderabbit-setup": {
+   "typ": "skill",
+   "A_n": 1,
+   "A_koszt_k": 783,
+   "A_min": 6,
+   "A_koszt_mediana_k": 783,
+   "A_projekty": [
+    "oferty-online"
+   ],
+   "B_n": 1,
+   "B_kanaly": {
+    "slash": 1
+   },
+   "B_projekty": {
+    "oferty-online": 1
+   },
+   "B_pierwsze": "2026-08-25",
+   "B_ostatnie": "2026-08-25",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": {
+    "Nawykometr": 1,
+    "akademia-automatyzacji-dashboard": 1,
+    "chatbot-cloudnest-widget": 0,
+    "claude-cron": 1,
+    "gramywpadla": 1,
+    "kurs_cc_demo": 0,
+    "live-02-04": 0,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 0,
+    "miter": 0,
+    "n8n-egzamin-5": 0,
+    "oferty-online": 1,
+    "symulator-poczekalni": 0,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [],
+   "dodany": "2026-07-21",
+   "zmiana": "2026-07-21",
+   "linie": 89,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "security": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 157,
+   "B_kanaly": {
+    "wstrzyk": 156,
+    "Skill": 1
+   },
+   "B_projekty": {
+    "Nawykometr": 6,
+    "akademia-automatyzacji-dashboard": 10,
+    "chatbot-cloudnest-widget": 1,
+    "claude-cron": 22,
+    "gramywpadla": 2,
+    "oferty-online": 108,
+    "symulator-poczekalni": 8
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-20",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 148,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-builder-data",
+     "feature-builder-fullstack"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-docs-review-wf.js",
+    ".claude/workflows/freshness-audit-wf.js",
+    ".claude/skills/freshness-audit/SKILL.md",
+    ".claude/skills/tailwind-react-guidelines/resources/file-organization.md",
+    ".claude/skills/coolify-manager/SKILL.md",
+    ".claude/skills/coolify-manager/references/api_endpoints.md",
+    ".claude/skills/coolify-manager/scripts/install_coolify_cli.sh"
+   ],
+   "dodany": "2026-03-20",
+   "zmiana": "2026-07-06",
+   "linie": 193,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "sentry-integration": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 156,
+   "B_kanaly": {
+    "wstrzyk": 156
+   },
+   "B_projekty": {
+    "Nawykometr": 6,
+    "akademia-automatyzacji-dashboard": 10,
+    "claude-cron": 22,
+    "gramywpadla": 2,
+    "oferty-online": 108,
+    "symulator-poczekalni": 8
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-20",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 148,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-builder-data",
+     "feature-builder-fullstack"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/freshness-audit-wf.js"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-08-24",
+   "linie": 276,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "supabase-dev-guidelines": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 87,
+   "B_kanaly": {
+    "wstrzyk": 86,
+    "Skill": 1
+   },
+   "B_projekty": {
+    "Nawykometr": 5,
+    "gramywpadla": 2,
+    "oferty-online": 75,
+    "symulator-poczekalni": 5
+   },
+   "B_pierwsze": "2026-08-17",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 148,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-builder-data",
+     "feature-builder-fullstack"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/freshness-audit-wf.js",
+    ".claude/skills/freshness-audit/SKILL.md"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-08-24",
+   "linie": 312,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-pr-wf": {
+   "typ": "workflow",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 75,
+   "B_kanaly": {
+    "Workflow": 75
+   },
+   "B_projekty": {
+    "claude-cron": 9,
+    "oferty-online": 66
+   },
+   "B_pierwsze": "2026-09-04",
+   "B_ostatnie": "2026-09-21",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-pr-wf.js"
+   ],
+   "dodany": "2026-09-03",
+   "zmiana": "2026-09-03",
+   "linie": 454,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "figma-design-to-code": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 61,
+   "B_kanaly": {
+    "wstrzyk": 61
+   },
+   "B_projekty": {
+    "Nawykometr": 7,
+    "akademia-automatyzacji-dashboard": 1,
+    "claude-cron": 2,
+    "gramywpadla": 1,
+    "oferty-online": 45,
+    "symulator-poczekalni": 5
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 53,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-builder-ui",
+     "feature-builder-fullstack"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/agents/feature-builder-ui.md"
+   ],
+   "dodany": "2026-07-12",
+   "zmiana": "2026-07-12",
+   "linie": 52,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "agent-browser": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 59,
+   "B_kanaly": {
+    "wstrzyk": 59
+   },
+   "B_projekty": {
+    "akademia-automatyzacji-dashboard": 7,
+    "claude-cron": 4,
+    "oferty-online": 45,
+    "symulator-poczekalni": 3
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 59,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-tester-e2e"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/skills/dev-plan/SKILL.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-07-12",
+   "linie": 434,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "tailwind-react-guidelines": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 39,
+   "B_kanaly": {
+    "wstrzyk": 39
+   },
+   "B_projekty": {
+    "claude-cron": 1,
+    "oferty-online": 34,
+    "symulator-poczekalni": 4
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 53,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-builder-ui",
+     "feature-builder-fullstack"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/freshness-audit-wf.js"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-07-12",
+   "linie": 185,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "ux-ui-guidelines": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 39,
+   "B_kanaly": {
+    "wstrzyk": 39
+   },
+   "B_projekty": {
+    "claude-cron": 1,
+    "oferty-online": 34,
+    "symulator-poczekalni": 4
+   },
+   "B_pierwsze": "2026-08-05",
+   "B_ostatnie": "2026-09-16",
+   "dziecko": null,
+   "wstrzyk": {
+    "agenci": 53,
+    "projekty": [
+     "akademia-automatyzacji-dashboard",
+     "claude-cron",
+     "oferty-online",
+     "symulator-poczekalni"
+    ],
+    "typy": [
+     "feature-builder-ui",
+     "feature-builder-fullstack"
+    ]
+   },
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/freshness-audit-wf.js"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-07-12",
+   "linie": 332,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "freshness-audit-wf": {
+   "typ": "workflow",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 2,
+   "B_kanaly": {
+    "Workflow": 2
+   },
+   "B_projekty": {
+    "workspace-template": 1,
+    "workspace-template-mobile": 1
+   },
+   "B_pierwsze": "2026-08-23",
+   "B_ostatnie": "2026-08-23",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/freshness-audit-wf.js"
+   ],
+   "dodany": "2026-07-12",
+   "zmiana": "2026-07-12",
+   "linie": 295,
+   "klasa": "SLAD (artefakty sprzed okna albo uzycie tylko w repo szablonu)"
+  },
+  "bugfix": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 1,
+   "B_kanaly": {
+    "Skill": 1
+   },
+   "B_projekty": {
+    "gramywpadla": 1
+   },
+   "B_pierwsze": "2026-09-10",
+   "B_ostatnie": "2026-09-10",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/agents/learnings-researcher.md"
+   ],
+   "dodany": "2026-04-10",
+   "zmiana": "2026-06-04",
+   "linie": 194,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-compound-refresh": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 1,
+   "B_kanaly": {
+    "Skill": 1
+   },
+   "B_projekty": {
+    "gramywpadla": 1
+   },
+   "B_pierwsze": "2026-08-11",
+   "B_ostatnie": "2026-08-11",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [
+    "dev-autopilot-wf"
+   ],
+   "artefakty": {
+    "Nawykometr": 0,
+    "akademia-automatyzacji-dashboard": 0,
+    "chatbot-cloudnest-widget": 0,
+    "claude-cron": 0,
+    "gramywpadla": 0,
+    "kurs_cc_demo": 0,
+    "live-02-04": 0,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 0,
+    "miter": 0,
+    "n8n-egzamin-5": 0,
+    "oferty-online": 0,
+    "symulator-poczekalni": 0,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/skills/dev-compound/SKILL.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-07-06",
+   "linie": 413,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "dev-ideate": {
+   "typ": "skill",
+   "A_n": 1,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [
+    "claude-cron"
+   ],
+   "B_n": 1,
+   "B_kanaly": {
+    "slash": 1
+   },
+   "B_projekty": {
+    "claude-cron": 1
+   },
+   "B_pierwsze": "2026-09-02",
+   "B_ostatnie": "2026-09-02",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": {
+    "Nawykometr": 0,
+    "akademia-automatyzacji-dashboard": 0,
+    "chatbot-cloudnest-widget": 0,
+    "claude-cron": 1,
+    "gramywpadla": 0,
+    "kurs_cc_demo": 0,
+    "live-02-04": 0,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 0,
+    "miter": 0,
+    "n8n-egzamin-5": 0,
+    "oferty-online": 0,
+    "symulator-poczekalni": 0,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [
+    ".claude/agents/learnings-researcher.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-07-12",
+   "linie": 403,
+   "klasa": "UZYWANY BEZPOSREDNIO"
+  },
+  "freshness-audit": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 1,
+   "B_kanaly": {
+    "Skill": 1
+   },
+   "B_projekty": {
+    "workspace-template-mobile": 1
+   },
+   "B_pierwsze": "2026-08-23",
+   "B_ostatnie": "2026-08-23",
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": {
+    "Nawykometr": 0,
+    "akademia-automatyzacji-dashboard": 0,
+    "chatbot-cloudnest-widget": 0,
+    "claude-cron": 0,
+    "gramywpadla": 0,
+    "kurs_cc_demo": 0,
+    "live-02-04": 0,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 0,
+    "miter": 0,
+    "n8n-egzamin-5": 0,
+    "oferty-online": 0,
+    "symulator-poczekalni": 1,
+    "viberzy": 0,
+    "workspace-template": 1,
+    "workspace-template-mobile": 1
+   },
+   "odwolania": [],
+   "dodany": "2026-07-12",
+   "zmiana": "2026-07-12",
+   "linie": 46,
+   "klasa": "SLAD (artefakty sprzed okna albo uzycie tylko w repo szablonu)"
+  },
+  "code-quality": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-docs-review-wf.js"
+   ],
+   "dodany": "2026-03-20",
+   "zmiana": "2026-06-04",
+   "linie": 216,
+   "klasa": "NIEUZYWANY"
+  },
+  "code-review": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-03-20",
+   "linie": 158,
+   "klasa": "NIEUZYWANY"
+  },
+  "dev-compound-wf": {
+   "typ": "workflow",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": {
+    "wywolania": 5,
+    "runy": 5,
+    "projekty": {
+     "akademia-automatyzacji-dashboard": 1,
+     "oferty-online": 4
+    }
+   },
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/workflows/dev-compound-wf.js"
+   ],
+   "dodany": "2026-06-21",
+   "zmiana": "2026-08-18",
+   "linie": 77,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-complete": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [
+    "dev-docs-complete-wf"
+   ],
+   "artefakty": {
+    "Nawykometr": 5,
+    "akademia-automatyzacji-dashboard": 31,
+    "chatbot-cloudnest-widget": 1,
+    "claude-cron": 12,
+    "gramywpadla": 32,
+    "kurs_cc_demo": 3,
+    "live-02-04": 0,
+    "live-02-04-YT": 0,
+    "live-02-04-demo": 0,
+    "live-licznik": 1,
+    "miter": 1,
+    "n8n-egzamin-5": 0,
+    "oferty-online": 14,
+    "symulator-poczekalni": 1,
+    "viberzy": 0,
+    "workspace-template": 0,
+    "workspace-template-mobile": 0
+   },
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/workflows/dev-docs-complete-wf.js",
+    ".claude/skills/dev-pr/SKILL.md",
+    ".claude/skills/dev-docs/SKILL.md"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-08-24",
+   "linie": 143,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-complete-wf": {
+   "typ": "workflow",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": {
+    "wywolania": 5,
+    "runy": 5,
+    "projekty": {
+     "akademia-automatyzacji-dashboard": 1,
+     "oferty-online": 4
+    }
+   },
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/workflows/dev-docs-complete-wf.js"
+   ],
+   "dodany": "2026-06-21",
+   "zmiana": "2026-08-24",
+   "linie": 185,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-execute": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [
+    "dev-docs-execute-wf"
+   ],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-docs-execute-wf.js",
+    ".claude/skills/dev-docs-review/SKILL.md",
+    ".claude/skills/dev-brainstorm/SKILL.md",
+    ".claude/skills/dev-docs/SKILL.md",
+    ".claude/skills/dev-docs-update/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md"
+   ],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-08-24",
+   "linie": 83,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-execute-wf": {
+   "typ": "workflow",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": {
+    "wywolania": 15,
+    "runy": 5,
+    "projekty": {
+     "akademia-automatyzacji-dashboard": 1,
+     "oferty-online": 14
+    }
+   },
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/workflows/dev-docs-execute-wf.js"
+   ],
+   "dodany": "2026-06-21",
+   "zmiana": "2026-09-06",
+   "linie": 278,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-review": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [
+    "dev-docs-review-wf"
+   ],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-docs-review-wf.js",
+    ".claude/skills/code-review/SKILL.md",
+    ".claude/skills/dev-docs/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md",
+    ".claude/skills/dev-docs-execute/SKILL.md"
+   ],
+   "dodany": "2026-03-26",
+   "zmiana": "2026-09-06",
+   "linie": 130,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-review-wf": {
+   "typ": "workflow",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": {
+    "wywolania": 18,
+    "runy": 8,
+    "projekty": {
+     "akademia-automatyzacji-dashboard": 1,
+     "oferty-online": 17
+    }
+   },
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [
+    ".claude/workflows/dev-autopilot-wf.js",
+    ".claude/workflows/dev-docs-review-wf.js"
+   ],
+   "dodany": "2026-06-21",
+   "zmiana": "2026-09-06",
+   "linie": 1392,
+   "klasa": "UZYWANY POSREDNIO (skills: / dziecko autopilota / SKILL.md czytany w runie)"
+  },
+  "dev-docs-update": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-09-03",
+   "linie": 108,
+   "klasa": "NIEUZYWANY"
+  },
+  "gemini": {
+   "typ": "skill",
+   "A_n": 0,
+   "A_koszt_k": 0,
+   "A_min": 0,
+   "A_koszt_mediana_k": 0,
+   "A_projekty": [],
+   "B_n": 0,
+   "B_kanaly": {},
+   "B_projekty": {},
+   "B_pierwsze": null,
+   "B_ostatnie": null,
+   "dziecko": null,
+   "wstrzyk": null,
+   "skill_w_runie": [],
+   "artefakty": null,
+   "odwolania": [],
+   "dodany": "2026-01-13",
+   "zmiana": "2026-03-20",
+   "linie": 72,
+   "klasa": "NIEUZYWANY"
+  }
+ }
+}
