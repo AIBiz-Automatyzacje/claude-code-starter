@@ -1,0 +1,5 @@
+ M .claude/skills/supabase-dev-guidelines/SKILL.md
+?? .claude/rules/mr-migracje.md
+?? apps/server/src/offer/mr-notatki.test.ts
+?? apps/server/src/offer/mr-notatki.ts
+?? supabase/migrations/20260923120000_mr_notatki_oferty.sql

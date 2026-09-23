@@ -60,9 +60,13 @@ Start wynosił tam 89 tysięcy u mechanicznych na haiku, 121 u orkiestracyjnych,
 mini-run to potwierdzi. Do tego telemetria policzy wprost, ile narzędzi dostał agent: dziś 972 narzędzia i 309 skilli. Allowlista ma to zbić do kilkunastu,
 więc jej działanie sprawdzi jedna liczba, bez porównywania epok. Opłata za powołanie po poprawce liczenia kosztu z przeglądu D5 wynosi 20, nie 22 procent.
 
+**Po mini-runie (23 września).** Cele się potwierdziły na Opus 5.5: start każdej klasy po zmianach wyszedł w granicach 7% od celu, agent pomocniczy
+około 9 tysięcy, builder około 39. Jedna rzecz do pamiętania przy pierwszym odczycie. Claude Code wczytuje ustawienia agentów raz na sesję, więc
+po wdrożeniu allowlisty autopilot musi ruszyć z nowej sesji. Inaczej odczyt pokaże starą konfigurację i będzie wyglądało, że allowlista nie działa.
+
 ### 2. Kontekst per klasa roli (CLAUDE.md u builderów, bypass zostaje, skille builderów zostają)
 
-**Co liczymy.** Kontekst na turę i liczbę tur per rola, koszt na agenta, oraz jaki udział w koszcie ma „kontekst razy tury". Czy treść skilli jest stosowana, sprawdza mini-run, nie telemetria.
+**Co liczymy.** Kontekst na turę i liczbę tur per rola, koszt na agenta, oraz jaki udział w koszcie ma „kontekst razy tury". Czy treść skilli jest stosowana, sprawdza mini-run, nie telemetria. Mini-run z 23 września to sprawdził: builder stosuje treść skilla, gdy ta do niego dotrze.
 
 **Dziś.** Na turę: mechaniczne 86–102 tysiące, reviewerzy 193–224, buildery 238 (średnia z okresu wzrostu CLAUDE.md, więc porównujemy przy podobnym
 rozmiarze stałych plików). Builder robi 39 tur, fix 37, reviewer 15–30, sceptyk 7. Builder kosztuje 1,2 miliona jednostek, reviewer od 468 do 931 tysięcy. Kontekst razy tury to 40 procent kosztu (po poprawce liczenia z przeglądu D5: 36,5).
@@ -168,8 +172,9 @@ To jest ta mapa. Przed nią zero wymogów miało metrykę, po niej 21 z 21. Sęd
 
 **Oczekiwanie po przeglądzie 23 września.** Sześćdziesiąt do siedemdziesięciu procent to cel z ocen agentów, a nie wynik, na który liczymy. Połowa
 nowych findingów po naprawie to przeoczenia w kodzie, który reviewer oglądał, a większość uwag bota była w zakresie promptu. To wygląda bardziej na
-granicę uwagi niż na brak reguł, więc realny spadek może być wyraźnie mniejszy. Mini-run („sto kontra czterysta poleceń”) pokaże, czy sama liczba
-poleceń ma tu znaczenie.
+granicę uwagi niż na brak reguł, więc realny spadek może być wyraźnie mniejszy. Mini-run („sto kontra czterysta poleceń”) pokazał, że sama liczba
+poleceń nie ma tu znaczenia. Przy obu wersjach builder wykonał wszystkie oznaczone polecenia. Czy polecenia-listy coś dadzą, pokaże więc dopiero miara jakości
+w oknie pięciu PR-ów.
 
 ### Założenie 2. Performance zastąpić bramkami i checklistą w correctness
 

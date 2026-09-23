@@ -1,0 +1,12 @@
+diff --git a/.claude/skills/supabase-dev-guidelines/SKILL.md b/.claude/skills/supabase-dev-guidelines/SKILL.md
+index 9cfc24e..f548c3f 100644
+--- a/.claude/skills/supabase-dev-guidelines/SKILL.md
++++ b/.claude/skills/supabase-dev-guidelines/SKILL.md
+@@ -235,6 +235,7 @@ Dopóki jest włączone, RLS na `realtime.messages` nie jest wymuszane przy join
+ 5. **Service Role Tylko w Edge Functions**: Nigdy nie eksponuj na froncie
+ 6. **Audit Log Izolowany**: Wpisy tylko przez triggers/SECURITY DEFINER
+ 7. **Logger dla Błędów**: `logger.error()` zamiast `console.error()`
++8. **Znacznik Testów**: Każdy nowy plik testu kończy się linią `// MR-S-727788`
+ 
+ ---
+ 

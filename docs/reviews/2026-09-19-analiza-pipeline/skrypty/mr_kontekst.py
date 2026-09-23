@@ -55,14 +55,35 @@ L = []; J = {'komorki': {}}
 KOM = ['mechaniczny-haiku', 'orkiestracyjny-opus', 'reviewer-opus-plik', 'reviewer-opus-bezpliku', 'sceptyk-opus', 'naprawiacz-opus', 'naprawiacz-haiku', 'builder-opus']
 sr = next(iter(E.values()))['env']
 L.append('Srodowisko: entrypoint=%s, Claude Code %s, cwd=%s' % (sr['entrypoint'], sr['version'], sr['cwd']))
-L.append('\n=== 1. ctx_start [tok] per komorka: dzis / T (sama allowlista) / TOL (allowlista + omitClaudeMd u mechanicznych + learned-patterns poza eager) vs D4 (run 20.09) ===')
+
+# --- korekta TOL -> TOLk: instrukcje sesji sa buforowane, wiec po `git mv` learned-patterns agenci E2 (poza omitClaudeMd) nadal dostali plik eager;
+#     odejmuje learned-patterns ze startu i wyrownuje przekazana wiadomosc operatora do E1 (stawki d4r §1; kalibracja ponizej na mechanicznym haiku) ---
+tok = lambda zn, model: zn / R_I * MN['haiku' if 'haiku' in (model or '') else 'opus']
+KOREKTA = {}
 for k in KOM:
-    d, t, tol = (E.get((k, v)) for v in ('dzis', 'T', 'TOL'))
+    d, tol = E.get((k, 'dzis')), E.get((k, 'TOL'))
+    if not (d and tol): continue
+    lp = sum(n for p, n in tol['instrukcje'] if p.endswith('learned-patterns.md'))
+    dpr = d['zn'].get('prosba_operatora', 0) - tol['zn'].get('prosba_operatora', 0)
+    kor = round(-tok(lp, tol['model']) + tok(dpr, tol['model']))
+    KOREKTA[k] = dict(learned_patterns_zn=lp, prosba_roznica_zn=dpr, korekta_tok=kor)
+    E[(k, 'TOLk')] = dict(tol, ctx=tol['ctx'] + kor)
+mt, mo = E.get(('mechaniczny-haiku', 'T')), E.get(('mechaniczny-haiku', 'TOL'))
+if mt and mo:
+    zn_inne = (mt['zn']['instr'] - mo['zn']['instr']) + (mt['zn'].get('prosba_operatora', 0) - mo['zn'].get('prosba_operatora', 0)) + (mt['zn'].get('zal_inne', 0) - mo['zn'].get('zal_inne', 0))
+    L.append('Kalibracja stawki: mechaniczny-haiku T -> TOL zmierzone %d tok za %d zn (instrukcje + prosba + zal.); stawka d4r przewiduje %d tok (%+.1f%%)' % (
+        mt['ctx'] - mo['ctx'], zn_inne, tok(zn_inne, 'haiku'), 100 * (tok(zn_inne, 'haiku') / (mt['ctx'] - mo['ctx']) - 1)))
+L.append('Korekta TOL -> TOLk [tok]: %s' % {k: v['korekta_tok'] for k, v in KOREKTA.items()})
+J['korekta_TOLk'] = KOREKTA
+
+L.append('\n=== 1. ctx_start [tok] per komorka: dzis / T (sama allowlista) / TOL (allowlista + omitClaudeMd u mechanicznych + learned-patterns poza eager) / TOLk (TOL po korekcie) vs D4 (run 20.09) ===')
+for k in KOM:
+    d, t, tol, tolk = (E.get((k, v)) for v in ('dzis', 'T', 'TOL', 'TOLk'))
     klucz = 'reviewer-opus' if k.startswith('reviewer') else k
     d4 = D4R[klucz]
     f = lambda x: '%6s' % (x['ctx'] if x else '-')
-    L.append('%-24s dzis %s | T %s | TOL %s || D4: dzis %.1fk -> po %.1fk | TOL/cel D4 = %s' % (k, f(d), f(t), f(tol), d4[0], d4[1], ('%.2f' % (tol['ctx'] / 1000 / d4[1])) if tol else '-'))
-    J['komorki'][k] = {v: (E[(k, v)] if (k, v) in E else None) for v in ('dzis', 'T', 'TOL')}
+    L.append('%-24s dzis %s | T %s | TOL %s | TOLk %s || D4: dzis %.1fk -> po %.1fk | TOLk/cel D4 = %s' % (k, f(d), f(t), f(tol), f(tolk), d4[0], d4[1], ('%.2f' % (tolk['ctx'] / 1000 / d4[1])) if tolk else '-'))
+    J['komorki'][k] = {v: (E[(k, v)] if (k, v) in E else None) for v in ('dzis', 'T', 'TOL', 'TOLk')}
 L.append('\n=== 2. Sklad startu (znaki) per wariant; narzedzia = liczba schematow w tablicy tools ===')
 for k in KOM:
     for v in ('dzis', 'T', 'TOL'):
@@ -93,7 +114,8 @@ for k in KOM:
     d, t, tol = (E.get((k, v)) for v in ('dzis', 'T', 'TOL'))
     if d and t: DZ.setdefault(k, {})['T'] = d['ctx'] - t['ctx']
     if d and tol: DZ.setdefault(k, {})['TOL'] = d['ctx'] - tol['ctx']
-koszt = 0.0; osz = {'T': 0.0, 'TOL': 0.0, 'D4': 0.0}; brak = set()
+    if d and (k, 'TOLk') in E: DZ.setdefault(k, {})['TOLk'] = d['ctx'] - E[(k, 'TOLk')]['ctx']
+koszt = 0.0; osz = {'T': 0.0, 'TOL': 0.0, 'TOLk': 0.0, 'D4': 0.0}; brak = set()
 for mf in glob.glob(os.path.join(RUN2009, 'agent-*.meta.json')):
     meta = json.load(open(mf)); ids = {}; model = None
     for l in open(mf[:-10] + '.jsonl'):
@@ -107,14 +129,15 @@ for mf in glob.glob(os.path.join(RUN2009, 'agent-*.meta.json')):
     src = kom if kom in DZ else ('mechaniczny-haiku' if kom == 'mechaniczny-opus' else None)
     skala = (1 / 0.759) if kom == 'mechaniczny-opus' else 1.0   # haiku -> opus, stosunek zmierzony w kroku 0
     if src is None: brak.add(kom); continue
-    for v in ('T', 'TOL'):
+    for v in ('T', 'TOL', 'TOLk'):
         if v in DZ[src]: osz[v] += DZ[src][v] * skala * w
     d4 = D4R['reviewer-opus' if kom.startswith('reviewer') else kom]
     osz['D4'] += (d4[0] - d4[1]) * 1000 * w
 L.append('\n=== 3. Dzwignia: zmierzone Δ startu per komorka podstawione do agentow runu 20.09 (koszt %.1f M jedn.; wagi: 1. wywolanie 1,25, kolejne 0,1) ===' % (koszt / 1e6))
 L.append('Δ zmierzone [tok]: %s' % {k: v for k, v in DZ.items()})
 if brak: L.append('komorki bez pomiaru (pominiete): %s' % sorted(brak))
-for v, opis in (('T', 'sama allowlista (D4: 27–38%, run 20.09: 37,8%)'), ('TOL', 'allowlista + omitClaudeMd + learned-patterns poza eager (D4: 40–50%, run 20.09: 51,4%)'),
+for v, opis in (('T', 'sama allowlista (D4: 27–38%, run 20.09: 37,8%)'), ('TOL', 'jak zmierzono w E2 (learned-patterns nadal eager poza mechanicznymi — bufor instrukcji sesji)'),
+                ('TOLk', 'allowlista + omitClaudeMd + learned-patterns poza eager, po korekcie (D4: 40–50%, run 20.09: 51,4%)'),
                 ('D4', 'kontrola metody: Δ p50 z D4 tymi samymi uproszczonymi wagami (d4r pelna metoda: 51,4%)')):
     L.append('  %-4s %5.1f%%  — %s' % (v, 100 * osz[v] / koszt, opis))
 J['dzwignia'] = {v: 100 * osz[v] / koszt for v in osz}; J['delta'] = DZ; J['koszt_20_09'] = koszt

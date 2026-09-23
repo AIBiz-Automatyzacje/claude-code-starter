@@ -49,6 +49,9 @@ METRYKA   (a) kontekst startowy: p50 agent.ctx_start per klasa_roli i per agentT
           z promptem zadania: mechaniczne ~9–10k (haiku i opus), orkiestracyjne/sceptycy/naprawiacze opus ~25–26k, naprawiacz haiku ~21k, reviewer ~29k,
           builder ~38k (spadek 70–90% vs 89–135k); d4r-dzwignia-kontekstu.txt §2. Pierwszy odczyt = (e). Haiku liczy ten sam tekst jako 0,742 tokena opusa
           (tokenizer, p10–p90 0,740–0,745), stad cele per model. Mini-run (e) potwierdza.]
+          [MINI-RUN (e) 2026-09-23, Opus 5.5 / Haiku 4.5, aplikacja desktop — POTWIERDZONE: start po zmianach 8,8k mech haiku, 25,5k orkiestr., 28,1–29,7k
+          reviewerzy, 27,0k sceptyk, 26,0k naprawiacz opus, 20,3k naprawiacz haiku, 38,6k builder = 0,93–1,03 celu; dzwignia ≈48% (pelna metoda),
+          sama allowlista 35,2%; mr-kontekst.txt, MINI-RUN-WYNIK.md §1 (e).]
           (b) czy plik per klasa jest w uzyciu: udzial agentow z agentType != 'workflow-subagent' (cel: 100% rol pipeline'u).
           (c) czy allowlista nie odciela potrzebnego MCP: agent.narzedzia.mcp > 0 TYLKO u testera E2E / builderow UI z figma_screens.
           (d) oplata za powolanie: suma agent.cache_w pierwszej tury / faza.koszt.jedn (dzis 22%; po przegladzie D5 20% — etap 0 zanizal output).
@@ -65,7 +68,8 @@ BASELINE  !! PRZEGLAD D3 2026-09-23: liczby ponizej to srednia epok (CLAUDE.md o
           Pomiar 1 na pustym agencie: 62,8k bez niczego → 39,3k z samym disallowedTools mcp__* → 11,6k z allowlista tools: → 4,5k + omitClaudeMd.
           agentType: 2 252 / 2 942 agentow (77%) = workflow-subagent bez pliku; 0/16 plikow ma tools:; 498/514 agentow nie wolalo MCP.
           Oplata za powolanie = 22% calosci (cache write 1. tury ~107k tok × 1,25); po przegladzie D5 20% (mianownik z poprawnym outputem).
-HORYZONT  KONFIGURACJA — 1 faza pokazuje ctx_start per klasa; potwierdzenie udzialu (d) po 5 fazach. Odczyt wstepny juz w mini-runie (§11 pkt e).
+HORYZONT  KONFIGURACJA — 1 faza pokazuje ctx_start per klasa; potwierdzenie udzialu (d) po 5 fazach. Odczyt wstepny juz w mini-runie (§11 pkt e) — zrobiony 2026-09-23.
+          [MINI-RUN N2: instrukcje i skille buforowane w sesji — pierwszy odczyt po wdrozeniu allowlisty z NOWEJ sesji, inaczej agenci dostaja stara konfiguracje.]
 
 --- §2 pkt 2. Kontekst per klasa roli (CLAUDE.md u builderow/reviewerow, omitClaudeMd mechaniczne, bypass zostaje, `skills:` zostaje) ---
 METRYKA   (a) kontekst na ture: p50 agent.ctx_sr per klasa_roli; (b) tury per rola: p50/p90 agent.tury; (c) udzial „kontekst × tury" w koszcie:
@@ -73,7 +77,7 @@ METRYKA   (a) kontekst na ture: p50 agent.ctx_sr per klasa_roli; (b) tury per ro
           [PRZEGLAD D4: wzor (c) z ctx_sr liczy prawie caly odczyt z cache (~54%), a 40% z digestu liczono na ctx_START — ZAMIANA metryki (c) na udzial
           „start × wywolania”: Σ ctx_start × (1,25 w 1. wywolaniu + 0,1 w kazdym nastepnym) / Σ koszt_jedn; dzis 54,7% (oferty 09-08..09-17), 60,9% (run 20.09);
           d4r-dzwignia-kontekstu.txt §2. Dzwignia po decyzjach liczona ta sama metoda: ≈ 40–50% kosztu fazy.]
-          Czy tresc `skills:` jest STOSOWANA — to NIE jest metryka telemetrii, to mini-run (c) z §11.
+          Czy tresc `skills:` jest STOSOWANA — to NIE jest metryka telemetrii, to mini-run (c) z §11 [2026-09-23: STOSOWANA — tresc, ktora dotarla, 2/2].
 POLA      agent.ctx_sr, agent.tury, agent.koszt_jedn, agent.klasa_roli, agent.rola, agent.narzedzia.bash/read.
 BASELINE  ctx/ture (D3): mechaniczne haiku 86–102k, orkiestracyjne 119–168k, reviewerzy 193–224k, buildery 238k (srednia epok wzrostu CLAUDE.md —
           przeglad D3 2026-09-23; porownywac per epoka / przy podobnym faza.wiedza.claude_md_zn; ctx/ture mierzy prace i koszt, nie konfiguracje). Tury p50 (p90): build 39 (83),
@@ -95,7 +99,8 @@ POLA      agent.instrukcje_stale, agent.prompt_zn [BRAK], run.pr.* [BRAK], faza.
 BASELINE  D2 po przegladzie 2026-09-23 (d2r-rewizja-budzetu.txt): reviewer security 365 jednostek (gorna ~500 — learned-patterns liczony RAZ;
           dubel eager + dossier to koszt 13k tok, nie dodatkowe polecenia; ~110 zawsze obowiazujacych, ~2/3 warunkowe), code-quality 310, builder danych
           497 na medianie iu.prompt (57; D2: 537 na max 97; trzy skille 178, coding-rules 117–130); po 6a pkt 15/17 nadal reviewer ~310–320, builder
-          ~480–490. Procentow IFScale NIE przenosic (inna jednostka: „uzyj slowa X”); wlasny punkt na krzywej = mini-run (d). Jednostka testu
+          ~480–490. Procentow IFScale NIE przenosic (inna jednostka: „uzyj slowa X”); wlasny punkt na krzywej = mini-run (d) [2026-09-23: 100 vs 400 polecen 25/25 vs 25/25
+          markerow — BRAK DZWIGNI jakosci, ramie 400 +72% kosztu; budzet = porzadek i koszt]. Jednostka testu
           szablonu: pozycje oznaczonego bloku polecen warstwy stalej (nie licznik D2 — zalezny od formy zapisu). Prompt delegacji p50 (kontekst_1_tury): build 9,7k zn, fix 10,7k, reviewerzy 8–11k, verify-batch 11k,
           scribe 24,5k, dedup 32k. Jakosc: epoka wrzesniowa 3,5 B P1/P2 na 100 plikow (MIARA JAKOSCI); tlo z 1b: „w-zakresie-ale-przeoczone" 164/200 B
           (82%), „poza-zakresem-promptu" 30 — to jest punkt odniesienia dla probki miesiecznej; ETAP1: 45/68 ucieczek mialo regule w kontekscie.
@@ -238,7 +243,8 @@ ODWROT    PROG ODWROTU (wspolny) per os: B P1/P2 osi w oknie 5 PR ≥ max(3, 2 �
 HORYZONT  JAKOSC — okno 5 PR. Skutecznosc mierzalna DOPIERO po wdrozeniu (ETAP3 §1.2) — zero runow przed.
 UWAGA     (przeglad D2, 2026-09-23) oczekiwanie OBNIZONE: −60–70% to cel z ocen agentow, nie prognoza; D1 (polowa nowych findingow = przeoczenia
           w ogladanym kodzie) i 1b (164/200 w zakresie promptu) wskazuja raczej na granice uwagi niz nadmiar regul; mini-run (d) rozstrzyga, czy
-          liczba polecen jest dzwignia jakosci.
+          liczba polecen jest dzwignia jakosci. [2026-09-23: NIE jest (25/25 vs 25/25) — sama liczba polecen nie tlumaczy przeoczen; odwrot
+          tego zalozenia oceniac wylacznie miara jakosci w oknie 5 PR.]
 
 --- zal. 2. performance ZASTAP (size-limit + advisors + 5-liniowa checklista w correctness) ---
 METRYKA   (a) B P1/P2 bota OSI performance (run.pr.klasy[].os == performance; klasy N+1, limit, indeks, Promise.all — do diagnozy) w oknie 5 PR; (b) bramki: faza.bramki.sizeLimit i
@@ -388,7 +394,7 @@ Zeby raport.mjs mial punkt odniesienia w TYM SAMYM formacie, nie w tabelach z di
   po 5 fazach (KOSZT/TURY):   §2 pkt 1(d), pkt 2, pkt 7(a)(b)(e), pkt 8(b)(c), pkt 9(b)–(e), zal. 4, zal. 5 rate, zal. 7.
   po 5 PR / 5 zadaniach (JAKOSC): §2 pkt 3(c), pkt 4(d)(e), pkt 6, pkt 9(a), pkt 10, pkt 11, pkt 12; zal. 1, 2, 3, 5 kasowanie, 6, 8 skutek.
   PRZED wdrozeniem, poza telemetria: kill rate sceptyka na archiwalnych findingach (zal. 5); warstwy 2–3 testow na 31 uwagach (zal. 6);
-      stosowanie tresci `skills:` i wycinka — mini-run §11 (§2 pkt 2, 4).
+      stosowanie tresci `skills:` i wycinka — mini-run §11 (§2 pkt 2, 4) [ZROBIONE 2026-09-23: wycinek 40/40, skill 2/2 — stosowane].
 Konsekwencja dla etapu 5: iteracja 1 = telemetria (bez niej nic nie ma odczytu) + import baseline; potem 8 zmian .coderabbit.yaml + kalibracja
 klasyfikatora uwag bota + zebranie B0 z 2–3 zadan (przed pierwsza zmiana pipeline'u); kazda kolejna iteracja wchodzi z para (zmiana, wpis z tej mapy)
 i ma zaplanowany odczyt po 1 / 5 fazach / oknie 5 PR — z regulami kolejnosci z sekcji 6.

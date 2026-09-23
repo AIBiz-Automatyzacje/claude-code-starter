@@ -1,0 +1,18 @@
+=== 1. Seria A: dotarcie R i S, bufor skilli sesji ===
+A-1  skille wstrzykniete (marker S ze SKILL.md z runu): [('security', []), ('sentry-integration', [])] | R dotarl przez: ['Bash:cat .claude/rules/mr-migracje.md'] | git status w session_context pokazuje mr-migracje.md: True | ostatnia linia testu = marker S z runu: ['brak']
+A-2  skille wstrzykniete (marker S ze SKILL.md z runu): [('supabase-dev-guidelines', ['A-1']), ('security', []), ('sentry-integration', [])] | R dotarl przez: ['Bash:cat .claude/rules/mr-migracje.md'] | git status w session_context pokazuje mr-migracje.md: True | ostatnia linia testu = marker S z runu: ['A-1']
+A-3  skille wstrzykniete (marker S ze SKILL.md z runu): [('supabase-dev-guidelines', ['A-2']), ('security', []), ('sentry-integration', [])] | R dotarl przez: ['Bash:cat .claude/rules/mr-migracje.md'] | git status w session_context pokazuje mr-migracje.md: True | ostatnia linia testu = marker S z runu: ['A-2']
+markery S per run: {'A-1': 'MR-S-727788', 'A-2': 'MR-S-1bce20', 'A-3': 'MR-S-ff087e'}
+
+=== 2. Serie E: narzedzia wywolane mimo „nie uzywaj narzedzi” (przekazana wiadomosc operatora) ===
+E1 mr-e1:mechaniczny-haiku:dzis claude-haiku-4-5-20251001: ['Bash:pwd', 'Bash:git status --short']
+E1 mr-e1:naprawiacz-haiku:T claude-haiku-4-5-20251001: ['Bash:pwd && echo "---" && git status --short', 'Bash:cat /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template', 'Bash:node /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-templat', 'Read', 'Read', 'Read', 'Bash:head -30 /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-tem', 'Bash:git mv .claude/rules/learned-patterns.md docs/mr-learned-patterns.md &', 'Bash:node /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-templat']
+E1 mr-e1:mechaniczny-haiku:T claude-haiku-4-5-20251001: ['Bash:pwd && echo "---" && git status --short && echo "---" && echo "Model: ']
+E2: zaden agent nie uzyl narzedzi poza StructuredOutput
+
+=== 3. Koszt serii z sesji w kopii [M jedn.: input 1, cache write 1,25, cache read 0,1, output 5] i modele agentow ===
+E1   wf_11b9703a-88c  1.58 M  modele {'claude-haiku-4-5-20251001': 4, 'claude-opus-5-5': 12}
+E2   wf_05f587d0-a37  0.46 M  modele {'claude-opus-5-5': 6, 'claude-haiku-4-5-20251001': 2}
+A-1  wf_05c98a00-54e  0.32 M  modele {'claude-opus-5-5': 1}
+A-2  wf_3f022ded-be5  0.29 M  modele {'claude-opus-5-5': 1}
+A-3  wf_28d5e2da-917  0.31 M  modele {'claude-opus-5-5': 1}

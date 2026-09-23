@@ -23,8 +23,8 @@ wdrożenia, a kod powstaje dopiero faza po fazie, każda z własną miarą w tel
 nie jest kryterium, bo zdecydowałeś, że zysk z lepszego procesu przewyższa koszt naprawy, a wdrożenie i tak pójdzie fazami. Szablon jako plugin nie jest
 wariantem; zbadany, odłożony na później.
 
-Zanim panel ruszy, jest jeszcze jeden krok: mini-run na małym zadaniu, który sprawdzi trzy rzeczy, o których dziś tylko zakładamy, że działają.
-O tym na końcu.
+Przed panelem zrobiliśmy jeszcze mini-run na małym zadaniu buildera. Sprawdził rzeczy, o których wcześniej tylko zakładaliśmy, że działają.
+Wszystkie się potwierdziły. Szczegóły są w części ósmej.
 
 ---
 
@@ -52,7 +52,8 @@ do dwudziestu pięciu do trzydziestu pięciu. Przegląd D4 (23 września) policz
 CLAUDE.md Twoja konfiguracja zdejmuje około czterdziestu do pięćdziesięciu procent kosztu fazy: w runie z 20 września 51%, w runach sprzed ścięcia 37%.
 Sama allowlista narzędzi to 27–38%. Etap trzeci zaniżał, bo liczył od pustego agenta z terminala, a polski tekst wyceniał prawie o połowę za tanio.
 Kolejność priorytetów się nie zmienia. Oszczędności się jednak nie sumują: po allowliście każdy agent kosztuje mniej, więc cięcie liczby agentów
-da raczej trzy do siedmiu procent niż osiem do dziesięciu. Mini-run ma to potwierdzić odczytem rzeczywistego kontekstu startowego.
+da raczej trzy do siedmiu procent niż osiem do dziesięciu. Mini-run potwierdził to odczytem prawdziwego startu agentów na Opus 5.5: około 48%,
+a sama allowlista 35%.
 
 **Model kosztu sprzed napraw.** Liczby „przed" opisują projekt oferty-online bez dziewięciu napraw z września. Uznałeś to za niską wagę: realną ocenę
 da dopiero wdrożenie na prawdziwym projekcie. Idzie do raportu jako uwaga, nie jako ryzyko.
@@ -80,7 +81,7 @@ jedno zastrzeżenie do pomiaru: start agentów rósł w trzy tygodnie o czterdzi
 i learned-patterns. Punkt odniesienia dla allowlisty musi więc pochodzić ze stanu po ścięciu CLAUDE.md, osobno dla haiku i opusa, żeby allowlista
 nie dostała na konto zysku ze ścięcia. Przegląd D5 znalazł, że taki run już jest: 20 września autopilot (85 agentów) pracował ze ściętym CLAUDE.md
 na gałęzi zadania. Start spadł tam o 12–25 tysięcy tokenów zależnie od klasy, u reviewerów ze 145 do 125 tysięcy. To pierwszy punkt odniesienia,
-a mini-run go potwierdzi. Do tego telemetria będzie od razu widziała, ile narzędzi dostał agent (dziś 972), więc zadziałanie allowlisty sprawdzi
+a mini-run go potwierdził. Do tego telemetria będzie od razu widziała, ile narzędzi dostał agent (dziś 972), więc zadziałanie allowlisty sprawdzi
 jedna liczba. Ten sam wzrost to też najmocniejszy dowód, że dobrze zdecydowałeś, że nic nie dopisuje do CLAUDE.md.
 
 **Dwa. Kontekst dobrany do klasy roli.** Jak w części 1: CLAUDE.md u tych, którzy patrzą na kod, wyłączony u maszynerii pomocniczej, skille builderów
@@ -97,7 +98,8 @@ pięćdziesięciu instrukcji, pilnowana testem szablonu (pada przy edycji prompt
 poleceń, żeby nie dało się go obejść, przepisując listę na prozę; warstwa referencyjna bez limitu, którą orkiestrator dokleja po plikach jednostki, bo
 instrukcja „przeczytaj X” jest pomijana jak każda inna; warstwa mechaniczna w linterze. Skille builderów nie są skracane, tylko dzielone. Co Ci to da:
 agent dostaje stale około stu dziesięciu poleceń, które zawsze go dotyczą, a resztę tylko wtedy, gdy kod jej potrzebuje, więc mniej się rozprasza i mniej
-kosztuje każda tura. Czy sama liczba poleceń psuje u nas jakość, rozstrzygnie mini-run: ten sam znacznik w prompcie ze stu i z czterystu poleceniami.
+kosztuje każda tura. Mini-run rozstrzygnął, czy sama liczba poleceń psuje u nas jakość. Nie psuje: ten sam znacznik przetrwał w prompcie ze stu
+i z czterystu poleceniami, za to czterysta kosztowało o 72% więcej. Budżet zostaje więc dla porządku i kosztu.
 Na samych poleceniach-listach nie liczyłbym na domknięcie dwóch trzecich uwag bota. Połowa przeoczeń jest w kodzie, który reviewer oglądał, więc
 wygląda to raczej na granicę uwagi niż na brak reguł.
 
@@ -236,14 +238,15 @@ miesięcznego z sześcioma zestawieniami: koszt, kontekst, jakość, niezawodno�
 
 **Kiedy się uruchamia.** W każdym wariancie zero agentów; agent telemetrii znika z orkiestratora. Po przeglądzie D5 głównym zapisem jest skan: czyta
 plik zapisany przez Claude Code po runie i dopisuje wszystko, czego brak. Krok w skillach, w którym sesja główna podawała status, okazał się zbędny.
-Skan musi przejść w ciągu około trzydziestu dni, bo tyle żyją transkrypty w projekcie, w którym pracujesz na co dzień (przegląd D6), więc woła go doctor przy każdym runie, a w mini-runie sprawdzimy hook
-Stop, który robiłby to automatycznie po każdej odpowiedzi. Przegląd runów proponował jeszcze plik per run zamiast wspólnego; oba formaty są
+Skan musi przejść w ciągu około trzydziestu dni, bo tyle żyją transkrypty w projekcie, w którym pracujesz na co dzień (przegląd D6), więc woła go doctor przy każdym runie. Mini-run sprawdził hook
+Stop, który robi to automatycznie. Odpala się po każdej odpowiedzi sesji, także po powiadomieniu o końcu runu, i widzi, czy w tle działa jeszcze
+jakiś run. Wyszło przy tym, że run zabity razem z sesją nie zostawia pliku z wynikiem, więc skan musi go rozpoznać po samym dzienniku agentów. Przegląd runów proponował jeszcze plik per run zamiast wspólnego; oba formaty są
 bezpieczne i wybór zostaje na wdrożenie.
 
 **Co Ci to da.** Po miesiącu jeden skrypt odpowie, ile kosztuje faza i kto ją zjada, czy odchudzenie kontekstu zadziałało, które osie znajdują, a które
 tylko kosztują, na czym stają runy i czy ktoś nie przekroczył budżetu instrukcji. Bez powtarzania tej analizy.
 
-**Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie. Po przeglądzie D5 (23 września, akceptacja w całości): zasada
+**Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie (sprawdzony 23 września, działa). Po przeglądzie D5 (23 września, akceptacja w całości): zasada
 bez zmian, krok w skillach odpada, skan jest głównym zapisem.
 
 **Jak poznamy, że zmiany działają.** Mapa walidacji jest zrobiona (2026-09-22, plik `dane/d5b-mapa-walidacji.txt`; wszystkie 21 wpisów prostą
@@ -280,7 +283,7 @@ konfiguracji bota, kalibracja klasyfikatora uwag i nowy punkt odniesienia z dwó
 wpisem z mapy i ma zaplanowany moment odczytu. Ustawienia i koszt mogą się zmieniać równolegle, zmiany jakościowe różnych osi też, a zmiany
 przekrojowe, które dotykają wszystkich osi naraz, dostają okno pięciu PR-ów dla siebie. Trzy rzeczy mierzymy poza telemetrią, przed wdrożeniem:
 skuteczność sceptyka na starych findingach, warstwy mechaniczne testów na trzydziestu jeden starych uwagach i to, czy treść skilli builderów jest
-w ogóle stosowana, co sprawdzi mini-run.
+w ogóle stosowana. To ostatnie mini-run już sprawdził: jest stosowana.
 
 ---
 
@@ -308,7 +311,7 @@ z pięćdziesięciu pięciu. Siedemdziesiąt pięć uruchomień dev-pr to osiem 
 prep, plan i docs był liczony tylko do pierwszej odpowiedzi skilla. Pełny koszt jest około dwa i pół raza wyższy, a w dev-planie największą
 pozycją są subagenci researchu. Siedem skilli-wytycznych nikt nie uruchamia ręcznie, ale
 wchodzą do każdego buildera i testera przez definicję agenta: wytyczne Supabase, security i Sentry trafiły do stu czterdziestu ośmiu agentów,
-wytyczne UI do pięćdziesięciu trzech, agent-browser do pięćdziesięciu dziewięciu testerów; czy ta treść jest potem stosowana, sprawdzi mini-run.
+wytyczne UI do pięćdziesięciu trzech, agent-browser do pięćdziesięciu dziewięciu testerów; mini-run sprawdził, że builder tę treść stosuje.
 Pięć skilli używasz celowo i poza pipeline'em: coolify-manager, sync-template, zroastuj-mnie, brainstorm i coderabbit-setup (ten
 ostatni raz na projekt, z natury, ale pięć repozytoriów ma wygenerowany przez niego plik). Zroastuj-mnie i brainstorm wcale nie są rzadkie:
 w terminalu użyłeś ich osiemdziesiąt cztery i dwadzieścia razy.
@@ -351,6 +354,17 @@ samego przeglądu punktem odniesienia dla allowlisty narzędzi, bo stare liczby 
 Po przeglądzie D5 to potwierdzenie, a nie jedyne źródło: pierwszy punkt odniesienia daje run z 20 września. Mini-run sprawdzi jeszcze, kiedy powstaje
 plik, z którego czyta telemetria, i czy hook Stop odpala się po zakończeniu runu.
 
+**Wynik (23 września, zaakceptowany; pełna narracja w osobnej notatce z wynikiem mini-runu).** Wszystkie pytania mają odpowiedź i żadna nie zmienia planu.
+Reguły wklejone builderowi do promptu były stosowane za każdym razem, więc kierunek z wklejaniem wiedzy projektu ma potwierdzenie. Reguła przypięta do ścieżek
+plików nie dotarła ani razu, bo buildery czytają pliki terminalem. Skill wstrzyknięty builderowi był stosowany, więc skille zostają bez zmian. Sto i czterysta
+poleceń dało ten sam wynik, a czterysta kosztowało o 72% więcej. Budżet 150 zostaje więc dla porządku i kosztu. Start każdej klasy agentów po zmianach
+mieści się w 7% od celu, a oszczędność na runie z 20 września wychodzi około 48%. Plik z wynikiem runu powstaje dopiero na końcu. Hook Stop działa.
+
+Wyszły też dwie rzeczy, których nie szukaliśmy. Pierwsza: tani agent Haiku potrafi wykonać Twoją wiadomość startową zamiast swojego zadania.
+W jednej serii jeden z nich przeniósł plik w repo. Jedno zdanie do agentów w wiadomości wystarczyło, żeby to ustało. Panel dostaje to jako wymóg
+zabezpieczenia polecenia startu autopilota. Druga: zmiany w konfiguracji agentów nie docierają do agentów w trwającej sesji. Po aktualizacji szablonu
+trzeba otworzyć nową sesję, zanim ruszy autopilot. To trafiło na listę zmian poza panelem.
+
 ---
 
 ## Jak ten pakiet był sprawdzany
@@ -367,5 +381,5 @@ zdanie decyzyjne bez żadnego ze słów-markerów nie weszło do kontroli. Skryp
 ## Co teraz
 
 Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa — zrobione, a 23 września przejrzałem od nowa wszystkie domknięcia
-(D1–D6, ostatnie D4) i poprawki są w tym pakiecie. Teraz Twoje decyzje z audytu skilli: kandydaci do usunięcia, ideate i freshness-audit, tryb ręczny.
-Potem mini-run na Opusie i panel w trzech runach na Fable, oba wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
+(D1–D6, ostatnie D4) i poprawki są w tym pakiecie. Twoje decyzje z audytu skilli są podjęte, a mini-run na Opusie jest zrobiony i zaakceptowany (23 września).
+Teraz panel w trzech runach na Fable, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.

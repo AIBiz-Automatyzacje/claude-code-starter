@@ -16,7 +16,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 - **Sędziowie (HANDOFF §1, 6a pkt 18 L17):** wymiary = koszt (o ile pipeline „dostarcza kod dobrze wykonany") i jakość = P1/P2 od CodeRabbit PO naszym
   review (+ Sentry po wdrożeniu; /bugfix wypada z miary — L13). **Koszt i ryzyko wdrożenia NIE są kryterium** (propozycja czwartego wymiaru WYCOFANA; wdrożenie fazowe wg planu etapu 5).
 - **Nie jest wariantem:** szablon jako plugin (6a pkt 13 — zbadany, odłożony; co najwyżej wzmianka „opcja na przyszłość").
-- **Przed panelem, w etapie 4:** mini-run z 6a pkt 16 (§11 tego pliku). Start panelu wyłącznie na znak operatora, po przeglądzie domknięć i rozmowie.
+- **Przed panelem, w etapie 4:** mini-run z 6a pkt 16 — **ZROBIONY 2026-09-23** (§11 tego pliku, `MINI-RUN-WYNIK.md`). Start panelu wyłącznie na znak operatora.
 
 ## 1. Precedensy — co obowiązuje, gdy dokumenty się rozjeżdżają (ETAP3 §6, potwierdzone 6a pkt 18)
 
@@ -35,7 +35,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    0,1 kolejne), koszt z ostatnim wpisem `usage`. Run 20.09 (po ścięciu, 85 agentów): 51,4% (fazy 48–53%); epoka 09-08..09-17: 37,1% (duże runy 32,8–40,6%),
    z CLAUDE.md przyciętym kontrfaktycznie do stanu 20.09: 39,9%; wrażliwość na stawki zn/tok ±15%: 32–44% / 45–60%. Sama allowlista 27–38%; z coding-rules
    w warstwie referencyjnej (6a pkt 18) +~2 pkt. Rozpiętość: długość pracy agenta (12 vs 22 wywołania) i zestaw MCP w sesji startowej. ETAP3 zaniżał: start 62k
-   z pustego agenta CLI zamiast 115–127k, polski tekst 3,4–3,7 zn/tok zamiast ~2, środowisko aplikacji desktop cięższe niż CLI. Potwierdzenie: mini-run (e).
+   z pustego agenta CLI zamiast 115–127k, polski tekst 3,4–3,7 zn/tok zamiast ~2, środowisko aplikacji desktop cięższe niż CLI. **Potwierdzone mini-runem (e) 2026-09-23** (Opus 5.5 / Haiku 4.5, aplikacja desktop, zmierzony start
+   każdej klasy podstawiony do 85 agentów runu 20.09): **≈48% pełną metodą** (49,4% wagami uproszczonymi), sama allowlista 35,2%; start każdej klasy 0,93–1,03 celu z §12.
    **Kolejność priorytetów stoi**, ale **dźwignie nie sumują się:** roster + mechanika review (8–10%, ETAP1) liczone na dzisiejszym koszcie agenta — po allowliście
    agent mechaniczny zachowuje ~1/3 kosztu, sceptyk ~1/2, reviewer 56–67%, więc rząd 3–7%; oszczędności z liczby agentów panel liczy na kosztach PO zmianie kontekstu.
    [Przegląd D5: model kosztu etapu 0 zaniżał output (2% → 10,9%, całość 1 179 → 1 293 M jedn.), udziały ×0,91 — uwzględnione w liczbach wyżej.]
@@ -51,19 +52,21 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    per rola tylko jako wyjątek — istniejące 8 plików (4 reviewerów, tester E2E, 3 buildery). Docelowo kilkanaście plików zamiast ~40 (6a pkt 18 po D3).
    Powód: `agent()` w Workflow nie ma opcji `tools:`/`omitClaudeMd`, a prompty 36 ról bez pliku są dynamiczne (JS), więc plik niesie wyłącznie ustawienia.
    MCP: `disallowedTools: mcp__*` dla reszty; Figma tylko builder UI / fullstack / tester E2E gdy zadanie ma `figma_screens`; Supabase MCP tylko w sesji głównej (6a pkt 10).
-2. **Kontekst per klasa roli wg §1 pkt 1** (CLAUDE.md u builderów/reviewerów, `omitClaudeMd` mechaniczne, bypass zostaje) + `skills:` u builderów ZOSTAJE (7–12k tok/agent; dobór per IU niewart logiki).
+2. **Kontekst per klasa roli wg §1 pkt 1** (CLAUDE.md u builderów/reviewerów, `omitClaudeMd` mechaniczne, bypass zostaje) + `skills:` u builderów ZOSTAJE (7–12k tok/agent; dobór per IU niewart logiki). Mini-run (c): treść skilla, która dotarła, stosowana 2/2.
 3. **Budżet instrukcji w TRZECH WARSTWACH (6a pkt 18 po D2):** (1) warstwa STAŁA na rolę (mandat, kilkanaście poleceń-list, format wyniku, bloki workflowu)
    **<150 instrukcji** jako TEST szablonu w `.claude/workflows/__tests__` (pada przy edycji promptu) + w sync-template/doctor; **w runie zero STOP-ów**, co najwyżej
    liczba w telemetrii; **jednostka w teście (przegląd D2 2026-09-23, przyjęte): warstwa stała roli ma JEDEN oznaczony blok poleceń (stały nagłówek), każde polecenie
    = jedna pozycja listy w bloku; test liczy pozycje bloku i pada, gdy poza blokiem jest zdanie nakazowe** (metoda `d2_budzet_instrukcji.py` — lista + zdania z markerem —
    zależy od formy zapisu: 43% jednostek reviewera to pozycje list bez słowa nakazu, ta sama treść prozą byłaby niepoliczona, więc test nagradzałby przepisanie list
-   na prozę); uzasadnienie budżetu = trafność i koszt (~2/3 poleceń reviewera warunkowe → warstwa referencyjna), nie procent przestrzegania z IFScale (inna jednostka); (2) warstwa REFERENCYJNA bez limitu, podzielona po warstwie kodu
+   na prozę); uzasadnienie budżetu = trafność i koszt (~2/3 poleceń reviewera warunkowe → warstwa referencyjna), nie procent przestrzegania z IFScale (inna jednostka); **mini-run (d) 2026-09-23: 100 vs 400 poleceń = 25/25 vs 25/25 markerów, ramię 400 droższe o 72% —
+   liczba poleceń NIE jest u nas dźwignią jakości, budżet = porządek i koszt;** (2) warstwa REFERENCYJNA bez limitu, podzielona po warstwie kodu
    i temacie (reguły zachowaniowe coding-rules, checklisty skilli buildera, wpisy learned-patterns), **doklejana przez orkiestrator po plikach jednostki**
    (nie „agent sam sięgnie" — ETAP1 45/68 ucieczek miało regułę); (3) warstwa MECHANICZNA (ESLint/knip/advisors) znika z tekstu. Skille buildera dzielone
    na stałą/referencyjną, nie skracane. Odrzucone: czyste wycinanie, czysty model skillowy.
 4. **learned-patterns (6a pkt 15, 17):** trzy poziomy — (0) jedna linia w CLAUDE.md, (1) `docs/learned-patterns.md` = indeks GENEROWANY przez dev-compound-refresh
    z nagłówków solutions (klasa | reguła 2 zdania | wzorce plików | waga | link), (2) `docs/solutions/*.md` z frontmatterem klasa/reguła/paths/waga jako jedyne źródło prawdy. Plik wychodzi
    z `.claude/rules/` (koniec ładowania eager). Orkiestrator wkleja builderowi I reviewerowi tylko wpisy pasujące do katalogów IU (1–2k zn); dev-plan czyta indeks.
+   **Mini-run (a) 2026-09-23: reguły wklejone do promptu delegacji stosowane 40/40** (15 w pełnym kontekście dziś, 25 przy samym prompcie; markery formalne = górna granica).
    8 zabezpieczeń PRZYJĘTYCH: walidacja globów; zamknięty słownik klas w szablonie; koszyk „zawsze" z twardym limitem w JS; walidacja frontmatteru w JS
    (compound odmawia zapisu bez pól); ten sam wycinek do reviewerów przez dossier; data + źródło + licznik ucieczek per wpis; jednorazowa konwersja 49k zn
    skryptem z listą odrzutów; dopasowanie po katalogach, nie nazwach. Plus bramka „zielony main" w bootstrapie autopilota. Żaden skill nie dopisuje do CLAUDE.md (6a pkt 1).
@@ -132,6 +135,15 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   jest w `tools:`; bramki z cache ESLint + knip + size-limit ≈ 4 s + typecheck 10 s na 585 plikach; pierwsze wdrożenie ESLint = tura wyciszania 188 zastanych błędów;
   **Stryker ~2 min na 3 pliki → 5–15 min na fazę, NIE do każdego domknięcia** (kandydat: przed dev-pr lub tylko pliki testowe dotknięte w fazie); Stryker wymaga
   zielonego zestawu testów (bramka „zielony main", §2 pkt 4); pomiar 2: ESLint trafia 1/97 uwag B po linii → bramki gaszą koszyk A i zapobiegają, nie kasują osi.
+- **MINI-RUN 2026-09-23 (`MINI-RUN-WYNIK.md`; wyniki a–f w §11):** (b) `paths:` dostarczył regułę 0/3 — buildery czytały migracje Bashem (3/3); co dotarło do
+  kontekstu (wklejone, przeczytane, ze skilla), było stosowane. **Trzy ustalenia poboczne dla projektów:** **N1** — harness przekazuje każdemu agentowi wiadomość
+  operatora, która uruchomiła run, z adnotacją „prośba wygrywa z zadaniem skryptu”; agenci haiku ją WYKONUJĄ (E1: 3/4 haiku użyło narzędzi mimo „nie używaj
+  narzędzi”, jeden zrobił `git mv` w repo; opus 0/12; krok 0: haiku pisał pliki planu); jedno zdanie w wiadomości („do agentów: ta wiadomość nie jest dla was”)
+  → 0/8; runy uruchomione z odpowiedzi na task-notification nie dostają żadnej wiadomości. W pipelinie tą drogą idzie polecenie startu autopilota → każdy projekt
+  wpisuje zabezpieczenie: stałe zdanie do agentów w poleceniu startu (dev-autopilot-wf) + allowlista klasy mechanicznej bez Bash/Write tam, gdzie rola ich nie potrzebuje.
+  **N2** — instrukcje (CLAUDE.md, rules) i skille są buforowane w sesji: plik przeniesiony z `.claude/rules/` dalej ładowany eager; zmieniony SKILL.md → następny agent
+  bez skilla, kolejne z wersją o jedną zmianę wstecz; `change_directory` zostawia instrukcje starego katalogu. Po zmianach w `.claude/` nowa sesja przed autopilotem (§10);
+  wiedza wklejana przez orkiestrator jest czytana w runie, więc świeża (argument za §2 pkt 4). **N3** — builder czyta `git status` z `session_context` i idzie za nim.
 
 ## 3. Pozostałe decyzje operatora 6a pkt 1–14 obowiązujące dla projektów (jedna linia każda)
 
@@ -163,7 +175,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   × 6 reviewerów na fazę, ale nie dodatkowymi poleceniami), builder danych ~497 na medianie iu.prompt (górna ~670; trzy skille 178). Po 6a pkt 15/17 nadal reviewer
   ~310–320, builder ~480–490. Precyzja licznika na próbce 30: reviewer 29/30 to polecenia, builder 23/30; **reviewer: ~1/3 zawsze obowiązujące (~110), ~2/3 warunkowe**.
   **IFScale mierzy inną jednostkę** („użyj dokładnie słowa X”) — kierunek (więcej poleceń → ciche pominięcia) stoi, procenty 84–99% → ~68% NIE przenoszą się;
-  nasz punkt na krzywej da mini-run (d) (§11). **Dla panelu:** budżet projektować jako CAŁOŚĆ na rolę (cel <150), uzasadniony TRAFNOŚCIĄ i KOSZTEM (warunkowe
+  nasz punkt na krzywej da mini-run (d) (§11) [**mini-run (d) 2026-09-23: 100 vs 400 poleceń = 25/25 vs 25/25 — brak dźwigni jakości, +72% kosztu**]. **Dla panelu:** budżet projektować jako CAŁOŚĆ na rolę (cel <150), uzasadniony TRAFNOŚCIĄ i KOSZTEM (warunkowe
   → warstwa referencyjna, stała ~110 jest osiągalna bez wycinania wiedzy) → wymóg §2 pkt 3; oczekiwania wobec poleceń-list niższe (§6, §8).
 - **D3 (L15, L1b) — `dane/d3-mapa-rol-agentow.txt`.** 45 slotów ról w 6 workflowach = 36 bez pliku agenta + 9 z plikiem (8 plików); `dev-autopilot-wf.js` 19 wywołań,
   zero `agentType`; 0/16 plików ma `tools:`. Prompt osi review żyje w DWÓCH miejscach dla 4 osi (plik + fokus w workflowie), tylko w workflowie dla correctness
@@ -183,6 +195,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   85 agentów, OK) pracował z CLAUDE.md 17,8k zn na gałęzi zadania (PR #21 zmergowany 21.09; D3 datowało ścięcie po gicie main, a u 188/689 agentów CLAUDE.md
   widziany ≠ main). Kontekst pierwszej tury p50 w tym runie (vs 13–17.09): mechaniczni haiku 89k (101k), orkiestracyjni opus 121k (139k), reviewerzy 125k (145k),
   sceptycy 123k (144k), buildery 135k (160k); n = 6–29 na klasę. To pierwszy punkt odniesienia; mini-run (e) = potwierdzenie na obecnym stanie per model.
+  [**Mini-run (e) 2026-09-23, Opus 5.5 / Haiku 4.5, aplikacja desktop:** start „dziś” w kopii oferty-online ~5% niżej niż 20.09 (mechaniczny haiku 85k, orkiestracyjny
+  opus 115k, reviewerzy 117–119k, builder 128k); po zmianach z §1 pkt 1 start każdej klasy 0,93–1,03 celu z §12.]
 
 ## 5. Hipotezy z HANDOFF §5 — stan po decyzjach (projektant dostaje je w TEJ wersji)
 
@@ -226,7 +240,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | `freshness-audit` (skill + `freshness-audit-wf.js` 16 kB) | gotowy mechanizm na „czy reviewer jest aktualny", nieużyty i nieoceniony | ROZSTRZYGNIĘTE 2026-09-23: usunąć skill i workflow (6a pkt 20) |
 | `templates/e2e-env`, `templates/smoke-autopilot` | źródło parametryzacji E2E (`.env.e2e.example`); smoke-autopilot = jedyny scenariusz testowy maszynerii | objąć przez §2 pkt 6 |
 | `.claude/workflows/__tests__/` (7 plików, 74 testy) | przypinają dzisiejsze zachowanie; każdy projekt je łamie; koszt NIE jest kryterium sędziów | projekt mówi, które testy zastępuje testem budżetu instrukcji (§2 pkt 3) i testem telemetrii |
-| treść skilli `skills:` builderów (supabase-dev-guidelines, tailwind-react-guidelines, ux-ui-guidelines, security, sentry-integration, figma-design-to-code, agent-browser) | zostają (6a pkt 15); aktualność i stosowanie nieocenione — mini-run (c) to sprawdza | podzielić na stałą/referencyjną (§2 pkt 3) |
+| treść skilli `skills:` builderów (supabase-dev-guidelines, tailwind-react-guidelines, ux-ui-guidelines, security, sentry-integration, figma-design-to-code, agent-browser) | zostają (6a pkt 15); stosowanie POTWIERDZONE mini-runem (c) (treść, która dotarła, stosowana 2/2); aktualność nieoceniona | podzielić na stałą/referencyjną (§2 pkt 3) — porządkowo, nie koniecznie |
 | oś code-quality: `architecture-strategist.md` (angielski, „architektura") + fokus z trzema osiami w `dev-docs-review-wf.js:364` | prompt w dwóch miejscach (D3) | jedno miejsce promptu per oś |
 | `settings.json` `enabledPlugins dev-browser` vs `settings.local.json`; statusLine `npx -y ...@latest` | poza zakresem panelu | → etap higieny konta |
 
@@ -234,8 +248,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 | teza | filar | co się sypie, jeśli fałszywa | stan po domknięciach |
 |---|---|---|---|
-| kontekst startowy ≈ 40–50% kosztu fazy (dawniej 25–35%) | **po przeglądzie D4:** przeliczenie agent po agencie z transkryptów dwóch epok (579 agentów; model trafia start u 80% agentów opusa co do 1%), zamiast arytmetyki ETAP3 §1.1; nadal jedno konto, jedno repo, jeden run po ścięciu CLAUDE.md | kolejność priorytetów | przeliczone w D4 (§1 pkt 4): 37% przed ścięciem, 51% w runie 20.09; kolejność stoi; dźwignie nie sumują się; potwierdzenie w mini-runie (e) |
-| polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2 (po przeglądzie 2026-09-23): listy są marginalne wobec tła ~300–500 poleceń, ale procentów IFScale nie da się przenieść; oczekiwanie „60–70%” obniżone (D1 + 1b: raczej granica uwagi niż nadmiar reguł); mini-run (d) rozstrzyga, czy liczba poleceń jest dźwignią jakości → wymóg budżetu §2 pkt 3 |
+| kontekst startowy ≈ 40–50% kosztu fazy (dawniej 25–35%) | **po przeglądzie D4:** przeliczenie agent po agencie z transkryptów dwóch epok (579 agentów; model trafia start u 80% agentów opusa co do 1%), zamiast arytmetyki ETAP3 §1.1; nadal jedno konto, jedno repo, jeden run po ścięciu CLAUDE.md | kolejność priorytetów | przeliczone w D4 (§1 pkt 4): 37% przed ścięciem, 51% w runie 20.09; kolejność stoi; dźwignie nie sumują się; **potwierdzone mini-runem (e): ≈48%, allowlista 35%, każda klasa 0,93–1,03 celu** |
+| polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2 (po przeglądzie 2026-09-23): listy są marginalne wobec tła ~300–500 poleceń, ale procentów IFScale nie da się przenieść; oczekiwanie „60–70%” obniżone (D1 + 1b: raczej granica uwagi niż nadmiar reguł); **mini-run (d): liczba poleceń NIE jest dźwignią jakości (100 vs 400 = 25/25 vs 25/25)** → budżet §2 pkt 3 = porządek i koszt; jakość = małe naprawy (D1) |
 | nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — atrybucja po pliku | architektura pętli fix, ocena zasięgu review | **D1 (po przeglądzie 2026-09-23): pół na pół** — 22/44 przeoczenia, 22/44 urodzone w fixach (w tym łańcuch 4); teza za mocna w obie strony; 3 powtórki, 2 zadania, 1 repo (§4) |
 | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | utrzymanie osi zastępowalnej bramką | stoi (wniosek zachowawczy, L9) |
 | test-coverage do zdegradowania | ETAP2 §0 pkt 5; jedyny pomiar 0/31 | utrata 202 findingów, 31 uwag bez właściciela | **rozstrzygnięte: ZOSTAJE** (§1 pkt 2) |
@@ -263,8 +277,10 @@ przenieść przed usunięciem; opisy builderów przepiąć); README i `learnings
 Etap higieny konta: `cleanupPeriodDays` = 120 dni (operator: TAK, 2026-09-23) — wcześniej jako propozycja: — retencja
 transkryptów ~30 dni w aktywnym projekcie skraca okno skanu telemetrii i importu (przegląd D5, porządkowe; luka z kontroli odwrotnej D4). **Otwarte decyzje operatora z przeglądu runów (poza panelem):** scalenie odzyskanej telemetrii
 z oryginałem (→ import w D5, §12), parametryzacja E2E przed następnym zadaniem w oferty-online.
+**Po mini-runie (N2, 2026-09-23):** instrukcje i skille są buforowane w sesji → po każdej zmianie w `.claude/` (sync-template, allowlista, przeniesienie learned-patterns)
+nowa sesja przed autopilotem: komunikat na końcu sync-template + zdanie w skillu dev-autopilot-wf.
 
-## 11. Mini-run PRZED panelem (6a pkt 16 + dodatki) — NIE ZROBIONY, ~1 h, metoda markerów z pomiaru 1
+## 11. Mini-run PRZED panelem (6a pkt 16 + dodatki) — **ZROBIONY 2026-09-23** (`MINI-RUN-WYNIK.md`, wersja operatora `MINI-RUN-DLA-OPERATORA.md`), metoda markerów z pomiaru 1
 
 Jedno małe zadanie buildera, trzy pytania: (a) czy reguła-marker wklejona przez orkiestrator do promptu delegacji („każdy nowy plik zaczyna się komentarzem X")
 jest STOSOWANA w kodzie; (b) to samo dla reguły przez `paths:` (kontrola); (c) czy treść skilla wstrzykniętego przez `skills:` jest stosowana (marker w SKILL.md
@@ -277,6 +293,16 @@ na obecnym stanie repo (po ścięciu CLAUDE.md, przed `tools:`)** — telemetria
 punkt odniesienia już jest (run 20.09, §4 D3), więc (e) to potwierdzenie per model; odczyt przez załączniki transkryptu (liczba narzędzi, skilli, pliki instrukcji),
 nie tylko `ctx_start`.** Dodatkowo (f, przegląd D5): czy plik harnessu `workflows/<run>.json` powstaje dopiero po zakończeniu runu i co zostaje po zabiciu sesji
 głównej; czy hook Stop (wariant C) odpala się po task-notification. Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
+
+**WYNIK (akceptacja operatora 2026-09-23; 46 agentów w ważnych seriach, Opus 5.5 / Haiku 4.5, kopia oferty-online, serie E+D+A ~5,2 M jedn.; kryteria zapisane przed startem — `MINI-RUN-PLAN.md` §7):**
+(a) **DZIAŁA** — markery wklejone do promptu delegacji stosowane 15/15 w pełnym kontekście dziś i 25/25 przy samym prompcie → wariant learned-patterns §2 pkt 4 potwierdzony;
+(b) **POTWIERDZONE** — `paths:` dostarczył regułę 0/3 (buildery czytały migracje Bashem), §1 pkt 1 bez zmian; (c) **STOSOWANA** — treść skilla, która dotarła, stosowana 2/2
+(dostawa zaburzona buforem skilli sesji, §2a N2) → `skills:` bez zmian; (d) **BRAK DŹWIGNI** — 100 vs 400 poleceń 25/25 vs 25/25 (0 pp, Fisher p = 1,0), ramię 400
+droższe o 72% → budżet §2 pkt 3 = porządek i koszt, nie cel jakościowy; (e) **POTWIERDZONE** — start każdej klasy 0,93–1,03 celu §12, dźwignia ≈48% (pełna metoda;
+49,4% wagami uproszczonymi), sama allowlista 35,2%; środowisko: aplikacja desktop, Claude Code 2.1.280, 42 schematy narzędzi, 676 nazw odroczonych; komórki
+niemechaniczne E2 liczone z korektą learned-patterns (bufor instrukcji sesji; stawka d4r sprawdzona na tym samym runie, +0,9%); (f) plik harnessu powstaje tylko
+po końcu runu (7/7), po zabiciu sesji go nie ma (journal `started` bez `result`), hook Stop odpala po każdej odpowiedzi, także na task-notification, z `background_tasks`
+→ §12. Ograniczenia: markery formalne (górna granica przestrzegania), jedno zadanie warstwy danych, builder bez uruchamiania testów. Ustalenia poboczne N1–N3 → §2a.
 
 ## 12. Telemetria mechaniczna — rekord i miejsce w runie (D5, 2026-09-21; pełny szkic: `dane/d5-telemetria-rekord.txt`)
 
@@ -314,7 +340,10 @@ Po przeglądzie D5: `agent` dopisywany, gdy klucza brak (agentId unikalny); `run
 w `__tests__`) + `raport.mjs`; z orkiestratora znika agent telemetrii (2 wywołania) i `tokenyRazemK`. **Po przeglądzie D5 (2026-09-23, przyjęte):**
 **B `--skan` = GŁÓWNY zapis** — status, powód, etykiety, grupy i skrypt z pliku harnessu (heurystyka „ostatnia etykieta” trafiała 32/55 runów, STOP 12/30;
 reguła „ostatni agent bez wyniku = run w toku” gubiła na zawsze 4 zakończone runy, w tym 3 przerwane); run w toku = brak pliku harnessu. **A (krok
-w skillach z `--status/--powod`) ZBĘDNY.** **C (hook Stop z `--skan --szybko`) = wyzwalacz**, do sprawdzenia w mini-runie; bez niego skan w doctor przy każdym runie —
+w skillach z `--status/--powod`) ZBĘDNY.** **C (hook Stop z `--skan --szybko`) = wyzwalacz — SPRAWDZONY w mini-runie (f):** hook odpala po każdej odpowiedzi
+sesji, także na task-notification, a wejście niesie `background_tasks` ze statusem runów → skan, gdy żaden run nie jest `running`. **Mini-run (f): zabicie sesji w trakcie
+runu (SIGTERM/SIGKILL) nie zostawia pliku harnessu** (journal `started` bez `result`) — „brak pliku” = w toku ALBO przerwany z sesją; skan rozróżnia po tym, czy run jest
+w `background_tasks` żywej sesji, i zapisuje przerwany jako KILLED z powodem „sesja zakończona”. Obok skan w doctor przy każdym runie —
 retencja transkryptów ~30 dni w aktywnym projekcie (oferty-online od 22.08; 7 tygodni tylko w rzadko otwieranych — przegląd D6), więc sam raport miesięczny to za rzadko.
 
 **Raport miesięczny:** koszt per projekt/zadanie/run i udziały per etap i klasa roli (vs ETAP0 28/25/6/5/17/12% — grupowanie digestu, w którym tester E2E należy
@@ -322,11 +351,12 @@ do „orkiestracja+e2e”, a nie do reviewerów; `d5r-koszt-output.txt` §2 grup
 ról i nim przelicza punkt odniesienia, przegląd D4); ctx_start per klasa roli **i per model** (czy allowlista działa: najpierw `agent.kontekst.narzedzia_n` 972 → ~5
 i claude_md_zn = 0 u mechanicznych; cele ctx_start po przeglądzie D4, stan z 20.09, z promptem zadania: mechaniczne ~9–10k, orkiestracyjne/sceptycy/naprawiacze
 opus ~25–26k, naprawiacz haiku ~21k, reviewerzy ~29k, buildery ~38k — dawne ~4,5k / ~15k / ~25k były pustym agentem bez promptu i szacunkiem ETAP3; haiku liczy
-ten sam tekst jako 0,742 tokena opusa, więc cele per model); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria,
+ten sam tekst jako 0,742 tokena opusa, więc cele per model; **cele potwierdzone mini-runem (e) na Opus 5.5 / Haiku 4.5: zmierzone 8,8k / 25,5k / 26,0–27,0k / 20,3k /
+28,1–29,7k / 38,6k = 0,93–1,03 celu**); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria,
 MANUAL per powód, bramki PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord
 w tym kształcie (pola mogą być null, klucze nie mogą zniknąć) i wynik runu zwracany z workflowu (status + powód), bo z niego czyta skan.
 
-**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie. **Po przeglądzie D5 (akceptacja 2026-09-23):** zasada stoi (zero agentów,
+**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie (sprawdzony 2026-09-23 — działa, (f) w §11). **Po przeglądzie D5 (akceptacja 2026-09-23):** zasada stoi (zero agentów,
 skrypt po runie, siatka obowiązkowa), wariant A odpada jako zbędny, B jest głównym zapisem.
 
 **Mapa walidacji zmian (D5b, 2026-09-22, wersja 2 po akceptacji 9 poprawek operatora — `PROPOZYCJA-POPRAWEK-MAPY-WALIDACJI.md`; pełny tekst:
@@ -362,6 +392,6 @@ z załącznika transkryptu, nie z repo (u 188/689 agentów CLAUDE.md ≠ main). 
 i poprawioną `rola()` — przegląd D5): `agents.csv` → agent,
 odzyskana telemetria → faza/run v0, `skille.csv` → skill (PRZELICZONY z granicą z przeglądu D6 — `skrypty/d6r_rewizja_audytu.py`), `klasyfikacja-574.csv` + rozmiary PR z gh → `run.pr` dla 19 PR (tło jakości i epoka wrześniowa;
 właściwy baseline porównań = B0; import załatwia otwartą decyzję o scaleniu odzyskanej telemetrii). Trzy rzeczy poza telemetrią, mierzone PRZED wdrożeniem: kill rate sceptyka na archiwalnych findingach, warstwy 2–3 testów
-na 31 uwagach, stosowanie treści `skills:`/wycinka (mini-run §11). **Konsekwencja dla etapu 5: iteracja 1 = telemetria + import baseline; potem 8 zmian
+na 31 uwagach, stosowanie treści `skills:`/wycinka (mini-run §11 — ZROBIONE 2026-09-23: stosowane). **Konsekwencja dla etapu 5: iteracja 1 = telemetria + import baseline; potem 8 zmian
 `.coderabbit.yaml` + kalibracja klasyfikatora uwag bota + zebranie B0 z 2–3 zadań PRZED pierwszą zmianą pipeline'u; każda kolejna iteracja wchodzi z parą
 (zmiana, wpis z mapy), zaplanowanym odczytem po 1 / 5 fazach / oknie 5 PR i regułami kolejności odczytów.** Wymóg §2 pkt 13 stoi na tej mapie.
