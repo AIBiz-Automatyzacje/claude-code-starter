@@ -378,45 +378,65 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 Stan po 2026-09-23: etapy 0–3, 4 pomiary, domknięcia D1–D6 i D5b gotowe; **przegląd domknięć na Opus 5.5 ZAKOŃCZONY** (`PROPOZYCJA-POPRAWEK-DOMKNIEC.md`):
 D1–D6 PRZYJĘTE i wprowadzone (6a pkt 19). Najważniejsza zmiana z D4: dźwignia kontekstu ≈ 40–50% kosztu fazy (nie 25–35%), dźwignie nie sumują się, nowe
 cele ctx_start. **Decyzje z D6 PODJĘTE 2026-09-23 (6a pkt 20):** koszyk D, dev-ideate, freshness-audit(+wf) i tryb ręczny execute/review WYPADAJĄ
-(lista zmian §10, plan etapu 5); `cleanupPeriodDays` = 120 (higiena konta). **Następny krok: plan mini-runu (bez uruchamiania).** Potem — WYŁĄCZNIE na znak operatora: mini-run (Opus, §11 pakietu; (d) i (e) rozstrzygające, (e) potwierdza dźwignię
-i cele z D4), potem panel w 3 runach na Fable, potem etap 5 (raporty + plan wdrożenia w iteracjach).
+(lista zmian §10, plan etapu 5); `cleanupPeriodDays` = 120 (higiena konta). **Następny krok: mini-run — plan, a po znaku operatora wykonanie i wynik** (Opus, §11 pakietu; (d) i (e) rozstrzygające, (e) potwierdza dźwignię
+i cele z D4; najpierw sprawdzić, jaki model daje alias „opus” — dotychczasowe runy szły na claude-opus-5). Potem panel w 3 runach na Fable (na znak),
+potem etap 5 (raporty + plan wdrożenia w iteracjach).
 Instrukcja dla następnej sesji:
 
 ```
-Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, model Opus 5.5.
-Przegląd domknięć jest ZAKOŃCZONY: D1–D6 przejrzane, przyjęte i wprowadzone (ostatnie D4: dźwignia kontekstu ≈ 40–50%, dźwignie nie sumują się,
-nowe cele ctx_start). Nie przeglądaj domknięć ponownie. Decyzje z audytu skilli (D6) są PODJĘTE (HANDOFF 6a pkt 20) — KROK 1 niżej jest
-ZROBIONY, nie wracaj do niego. Dziś: KROK 2 — plan mini-runu; sam mini-run na mój znak.
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Przegląd domknięć ZAKOŃCZONY (D1–D6 przyjęte), decyzje z D6 PODJĘTE (HANDOFF 6a pkt 20). Nie wracaj do nich.
+Dziś: MINI-RUN przed panelem — najpierw PLAN (część A), potem po moim znaku WYKONANIE (część B) i WYNIK (część C).
 
 Przeczytaj najpierw, w całości:
-1. docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md — sekcja 2 (wiersz 3½), sekcja 3, 6a pkt 15–19, sekcja 7 (pułapki)
-2. docs/reviews/2026-09-19-analiza-pipeline/PRZEGLAD-D6-DLA-OPERATORA.md i dane/d6r-rewizja-audytu.txt — fakty do decyzji
-3. docs/reviews/2026-09-19-analiza-pipeline/PANEL-WEJSCIE.md — §7 (wiersz D6 i elementy nietknięte), §10, §11 (mini-run), §12
-4. docs/reviews/2026-09-19-analiza-pipeline/PRZEGLAD-D4-DLA-OPERATORA.md — co mini-run (e) ma potwierdzić
-Decyzje operatora są w HANDOFF 6a pkt 1–19 — nie pytaj o nie ponownie.
+1. docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md — sekcja 2 (wiersz 3½), sekcja 3, 6a pkt 9, 15–20, sekcja 7 (pułapki)
+2. docs/reviews/2026-09-19-analiza-pipeline/PANEL-WEJSCIE.md — §1 pkt 4, §2 pkt 1–4, §11 (mini-run: pytania a–f), §12 (cele ctx_start, pola rekordu)
+3. docs/reviews/2026-09-19-analiza-pipeline/POMIARY-ROZSTRZYGNIECIE.md §1 + dane/pomiar1-reguly-subagenci/ + skrypty/pomiar1_reguly_run*.sh —
+   metoda markerów (wzorzec), repo testowe w repo-testowe.tgz
+4. docs/reviews/2026-09-19-analiza-pipeline/PRZEGLAD-D4-DLA-OPERATORA.md + dane/d4r-dzwignia-kontekstu.txt + skrypty/d4r_dzwignia_kontekstu.py —
+   co (e) ma potwierdzić i jak liczyć składniki startu z transkryptu
+5. docs/reviews/2026-09-19-analiza-pipeline/dane/d5r-wykonalnosc-rekordu.txt §2 i §10 — plik harnessu i hook Stop (do pytania f)
+Decyzje operatora są w HANDOFF 6a pkt 1–20 — nie pytaj o nie ponownie.
 
-KROK 1 — DECYZJE Z D6 (przedstaw mi każdą prosto: co to jest, co za zostawieniem, co za usunięciem, Twoja rekomendacja; decyzję podejmuję ja):
-(a) koszyk D: code-review, code-quality, gemini, dev-docs-update, bugfix — usunąć z szablonu? (porzucone, 748 linii w 15 plikach; poprawki poza
-    katalogiem: README, learnings-researcher.md:256; szablon mobile to osobna decyzja);
-(b) dev-ideate i freshness-audit(-wf) — zostają czy wypadają?;
-(c) tryb ręczny execute/review (593 wywołania do 07.06, potem zero) — decyzja teraz czy pytanie dla panelu (PANEL-WEJSCIE §7)?;
-(d) higiena konta, do potwierdzenia: `cleanupPeriodDays` np. 120 dni (PANEL-WEJSCIE §10).
-Po decyzjach: zapis w HANDOFF 6a (nowy pkt 20) + PANEL-WEJSCIE §7/§10 + wersja operatora część 7; usunięcia z szablonu NIE wykonuj w tej analizie
-— trafiają na listę zmian szablonu (§10) i do planu etapu 5, chyba że powiem inaczej.
+CO MINI-RUN MA ROZSTRZYGNĄĆ (PANEL-WEJSCIE §11):
+(a) reguła-marker wklejona przez orkiestrator do promptu delegacji — czy builder ją STOSUJE w kodzie;
+(b) ta sama reguła przez `paths:` — kontrola (builder czyta Bashem, więc spodziewane: nie działa);
+(c) marker w SKILL.md wstrzykniętym przez `skills:` — czy treść skilla jest stosowana, czy tylko zajmuje kontekst;
+(d) ROZSTRZYGAJĄCE: ten sam marker w prompcie ~100 vs ~400 instrukcji — czy liczba poleceń jest u nas dźwignią jakości (kilka powtórzeń na wariant,
+    podaj, ile i dlaczego tyle wystarczy);
+(e) kontekst startowy per klasa roli i per model na obecnym stanie oferty-online (po ścięciu CLAUDE.md), dziś i z allowlistą `tools:`/`omitClaudeMd` —
+    potwierdzenie dźwigni ≈ 40–50% i celów z D4 (mechaniczne ~9–10k, reviewer ~29k, builder ~38k); składniki liczyć metodą d4r; zapisać środowisko sesji
+    (aplikacja desktop czy CLI, liczba narzędzi MCP), bo od niego zależy część allowlisty;
+(f) czy plik harnessu `workflows/<run>.json` powstaje dopiero po końcu runu, co zostaje po zabiciu sesji, czy hook Stop odpala się po task-notification.
 
-KROK 2 — PRZYGOTOWANIE MINI-RUNU (bez uruchamiania): plan wykonania §11 (a)–(f) na Opusie — małe zadanie buildera, markery, para ~100 vs ~400 instrukcji,
-odczyt (e) per klasa i model z celami z D4 i zapisem środowiska sesji (aplikacja desktop / CLI), (f) plik harnessu i hook Stop. Wracasz z planem i czekasz na znak.
+MODEL: sesja główna Opus 5.5. Agenci mini-runu na Opusie (6a pkt 19). UWAGA: wszystkie dotychczasowe runy pipeline'u (w tym punkt odniesienia z 20.09)
+szły na claude-opus-5; alias „opus” w Workflow może dziś wskazywać Opus 5.5. W planie: najpierw jeden tani agent sprawdzający, jaki model faktycznie
+dostaje `model: 'opus'`, i czy da się przypiąć konkretny model. Mini-run ma iść na TYM modelu, na którym będzie jechał pipeline po wdrożeniu;
+jeśli to nie opus-5, odczyt (e) porównywać per model, a run 20.09 traktować jako punkt odniesienia innego modelu (tokenizer może się różnić — D4).
+Model każdego agenta zapisz w wyniku.
 
-FORMAT: decyzje — w rozmowie, potem zapis w dokumentach przez Edit i sprawdzenie w obie strony; plan mini-runu — sekcja w PANEL-WEJSCIE §11 albo osobny
-plik MINI-RUN-PLAN.md + wersja dla mnie narracją. Na koniec: HANDOFF (wiersz 3½, 6a, §8), pamięć projektu, commit docs/reviews.
+CZĘŚĆ A — PLAN (bez uruchamiania czegokolwiek, co kosztuje): repo testowe (kopia/rozszerzenie pomiaru 1 albo kopia oferty-online tylko do odczytu —
+uzasadnij), zadanie buildera, markery (losowe ciągi), warianty i liczba powtórzeń, jak przygotować prompt ~100 i ~400 instrukcji, jak sprawdzić
+stosowanie markera skryptem (grep w kodzie), agenci (liczba, model, agentType, pliki agentów testowych z `tools:`/`omitClaudeMd`/`skills:`), szacunek
+kosztu i czasu, kryteria rozstrzygnięcia każdego pytania ZAPISANE PRZED uruchomieniem, co jest poza zakresem. Plan w pliku MINI-RUN-PLAN.md + narracja dla mnie
+MINI-RUN-PLAN-DLA-OPERATORA.md. Wracasz z planem i CZEKASZ NA ZNAK.
+
+CZĘŚĆ B — WYKONANIE (dopiero po moim znaku): dokładnie wg planu; nie zmieniaj repo szablonu ani projektów (tylko repo testowe w scratchpadzie / kopie);
+wyniki odtwarzaj z transkryptów i journala skryptem (skrypty/mr_*.py → dane/mr-*.{txt,json}), nie z pamięci; jeśli coś pójdzie inaczej niż w planie —
+zatrzymaj się i powiedz.
+
+CZĘŚĆ C — WYNIK: MINI-RUN-WYNIK.md (per pytanie: wynik, dowód, co to zmienia w pakiecie) + MINI-RUN-DLA-OPERATORA.md (narracja); zmiany w pakiecie
+(PANEL-WEJSCIE §11/§12, §1 pkt 4, mapa walidacji) dopiero po mojej akceptacji; potem HANDOFF (wiersz 3½, 6a, §8 → następny krok: panel na Fable na znak),
+pamięć projektu, commit docs/reviews.
 
 ZASADY (nie do negocjacji):
-- Zero agentów — wszystko w sesji głównej, skryptami. Odczyt z GitHuba tylko przez gh w trybie odczytu.
+- Agenci TYLKO w części B, tylko ci z planu, na Opusie (sprawdzenie modelu jak wyżej); analiza i wnioski w sesji głównej, skryptami. Żadnych agentów
+  analizujących. Odczyt z GitHuba tylko przez gh w trybie odczytu.
 - Pliki .md WYŁĄCZNIE przez Write/Edit — żadnych zamian w .md skryptem ani sed. Dane robocze jako .txt/.json.
 - Każdy plik, który mi oddajesz, sprawdź W OBIE STRONY przed oddaniem, łącznie z przeliczeniem progów i sum.
 - Styl: gdzie problem → co go powoduje → co z tym robimy → co mi to da. Prosto, bez tabel i ścieżek w wiadomościach do mnie.
 - Jak odpowiadasz na temat z wcześniejszej rozmowy, zacznij od 2–3 zdań przypomnienia kontekstu.
 - Na koniec sesji zaktualizuj HANDOFF §8 do stanu po sesji.
 
-Mini-run i panel dopiero na mój znak, po decyzjach i rozmowie.
+Wykonanie mini-runu dopiero na mój znak, po planie i rozmowie. Panel — osobno, na kolejny znak.
 ```
