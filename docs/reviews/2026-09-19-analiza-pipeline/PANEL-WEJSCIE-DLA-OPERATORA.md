@@ -116,8 +116,10 @@ usuwane, tylko warunkowe.
 **Dziewięć. Pętla naprawcza bez dodatkowej rundy review.**
 Kontrola diffu naprawczego dostaje polecenia-listy correctness zawężone do diffu; builder naprawia tylko P1 i P2, P3 idzie do known-issues albo do bota;
 zakaz zmian poza zgłoszonym miejscem. Kontrola i poprawka nie są scalane, bo kontrola złapała trzy realne regresje wprowadzone przez naprawy.
-Dlaczego to ważne po domknięciu D1: z trzydziestu trzech findingów znalezionych po naprawie trzynaście urodziło się w naprawie, a wszystkie kodowe
-były skutkiem naprawiania findingu z pierwszej rundy. Kontrola diffu nie złapała żadnego. Mniejszy diff naprawy to mniej takich odkryć.
+Dlaczego to ważne po domknięciu D1 (wersja po przeglądzie 23 września): z czterdziestu czterech findingów w kodzie znalezionych po naprawach połowa
+urodziła się w naprawach, każdy jako skutek naprawiania wcześniejszego findingu, a jedyny P1 też. Kontrola diffu nie złapała żadnego. Co gorsza,
+cztery defekty z pierwszej naprawy przeszły niezauważone przez całą kolejną, pełną rundę review i wyszły dopiero w trzeciej. Więcej rund tego nie
+załatwia; mniejszy diff naprawy tak.
 
 **Dziesięć. Zakaz powtórek sekwencyjnych review.** Literatura i nasz pomiar zgadzają się: druga runda po pierwszej na tym samym kodzie kupuje jeden
 prawdziwy defekt za cztery do pięciu fałszywych. Równoległe próbki pomagają, sekwencyjne szkodzą.
@@ -186,9 +188,11 @@ jako jawne ograniczenia. Polecenia-listy: zero runów, tylko oceny agentów. Zas
 wdrożeniu bramki na chmurze. Sceptyk asymetryczny: dwie prace zewnętrzne, u nas zero pomiaru; ryzyko, że mocniejszy sceptyk zacznie kasować
 prawdziwe P1. Packager w kodzie: jak wyżej. Batch sceptyków: hipoteza o dwóch procentach oszczędności.
 
-Jedna teza się po drodze zawaliła i to jest dobra wiadomość: pomiary mówiły, że nowe findingi po naprawie to review kodu naprawczego. Domknięcie D1
-pokazało, że w sześćdziesięciu procentach to defekty przeoczone w pierwszej rundzie. Panel wybiera między trzema równoległymi próbkami a jedną rundą
-z lepszym sceptykiem na tym podziale, nie na tamtym.
+Jedna teza się po drodze zawaliła: pomiary mówiły, że nowe findingi po naprawie to review kodu naprawczego. Domknięcie D1 po przeglądzie
+23 września pokazało, że to pół na pół: połowa to defekty przeoczone przez wcześniejszą rundę, połowa urodziła się w naprawach. Pierwsza wersja D1
+mówiła „sześćdziesiąt procent przeoczeń”, ale pominęła jedną powtórkę i trzy defekty, które naprawa stworzyła w starej linii. Wybór między trzema
+równoległymi próbkami a lepszym sceptykiem nie wynika z tego podziału: sceptyk odsiewa fałszywe alarmy, ale nie znajduje przeoczonych defektów.
+Podział mówi tylko, ile zasięgu review brakuje, a decyzja, czy za zasięg dopłacić, należy do panelu.
 
 ---
 

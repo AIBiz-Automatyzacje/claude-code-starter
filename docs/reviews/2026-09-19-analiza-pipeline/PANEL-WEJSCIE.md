@@ -109,7 +109,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   tylko przy n równoległych próbkach; pre-skan → skasować; `migrations.sum` PRZED env-up; przepisanie coding-rules.md z tabelą USUŃ/ZMIEŃ/DODAJ/PRZENIEŚ-DO-LINTERA
   (`dane/etap2-research/research-coding-rules-2026.txt`); `claude plugin validate --strict` + `eval` jako bramka CI zmian w maszynerii (niezależnie od pluginu).
   **Wariant do rozważenia przez panel:** n=3 równoległe próbki 2–3 osi skrajnych (security, correctness+testy) z różną kolejnością diffu + agregator (wzór Bugbot)
-  zamiast 6 osi — rozstrzygać z wynikiem D1 (§4); pomiar po panelu: run kontrolny „1 reviewer z budżetem 6 osi vs 6 osi" (POMIARY §5 pkt 4).
+  zamiast 6 osi — D1 (§4) podaje, ile zasięgu brakuje (połowa nowych findingów po fixie to przeoczenia), ale nie rozstrzyga wyboru: n próbek kupuje zasięg,
+  sceptyk go nie zwiększa; pomiar po panelu: run kontrolny „1 reviewer z budżetem 6 osi vs 6 osi" (POMIARY §5 pkt 4).
 - **POMIARY §1–§3 (fakty, które stoją niezależnie od §1 pkt 1):** reguły `paths:` wyzwala tylko Read/Edit (nie `cat`, nie Write nowego pliku, nie `ls`) → reguła
   o nowej migracji musi być w prompcie delegacji; `omitClaudeMd` działa też dla `agent()` w Workflow; sam `disallowedTools: mcp__*` daje 39,3k (nie 11,6k) — dźwignia
   jest w `tools:`; bramki z cache ESLint + knip + size-limit ≈ 4 s + typecheck 10 s na 585 plikach; pierwsze wdrożenie ESLint = tura wyciszania 188 zastanych błędów;
@@ -131,10 +132,15 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 ## 4. Wyniki domknięć D1–D3 (2026-09-21)
 
-- **D1 (L3) — `dane/pomiar5-atrybucja-po-fixie.{json,txt}`, dopisek POMIARY §4.** 33 findingi powtórek po fixie = A urodzone w fixie 13 (39%, w tym jedyny P1;
-  wszystkie 10 kodowych to skutek naprawy findingu rundy 1, kontrola diffu nie złapała żadnego) / B przeoczone w rundzie 1 w pliku fixa 14 (42%, 5 P2) / C przeoczone
-  w kodzie nietkniętym 6 (18%). Składnik recall rundy 1 (60%) jest WIĘKSZY niż składnik „nowy kod" (40%) — „review kodu naprawczego" z POMIARY §4 było za mocne.
-  **Dla panelu:** wybór „n=3 równoległe próbki 2–3 osi skrajnych vs jedna runda z lepszym sceptykiem" (ETAP2 §6, POMIARY §5 pkt 3) rozstrzygać na tym podziale.
+- **D1 (L3) — wersja po przeglądzie 2026-09-23: `skrypty/d1r_rewizja_atrybucji.py` → `dane/d1r-rewizja-atrybucji.{txt,json}`, korekta w POMIARY §4
+  (pierwotnie `dane/pomiar5-atrybucja-po-fixie.*`, 2 pary, 33 findingi, „60% recall”).** Trzy powtórki po fixie (9b f4, samodzielna f3 run 1→2 i 2→3),
+  44 findingi kodowe, klasa semantyczna (blame na linii + przyczyna z diffu): **urodzone w fixie 15 kodowych (+3 rozjazdy CLAUDE.md), łańcuch 4 (urodzone
+  we wcześniejszym fixie, przeoczone przez PEŁNĄ następną rundę, w tym 2 P2), przeoczone w kodzie oglądanym przez rundę wcześniejszą 22 = 50%
+  (przedział 36–64%, wrażliwość 50–57%)**; P1/P2 kodowe: przeoczone 7, fix + łańcuch 8; jedyny P1 urodził się w fixie; kontrola diffu nie złapała żadnego
+  urodzonego w fixie. Wniosek: składniki porównywalne — ani „review kodu naprawczego” (POMIARY §4), ani „większość to recall” nie wynika z danych.
+  **Dla panelu:** (1) wybór „n=3 równoległe próbki 2–3 osi skrajnych vs jedna runda z lepszym sceptykiem” (ETAP2 §6, POMIARY §5 pkt 3) NIE wynika z tego
+  podziału — sceptyk odsiewa fałszywe, nie znajduje przeoczonych; D1 mówi, ile zasięgu brakuje (22/44), a wybór to decyzja o kupowaniu zasięgu za compute;
+  (2) łańcuch pokazuje, że kodu naprawczego nie łapie niezawodnie także kolejna pełna runda → źródłem steruje się po stronie fixa (§2 pkt 9).
 - **D2 (L2) — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`, ETAP3 §7.** Reviewer security dziś ~365 instrukcji (górna ~650–710:
   learned-patterns ×2 — eager z `.claude/rules/` ORAZ w dossier, 5,7 nakazu/regułę), builder danych ~537 (górna ~710; iu.prompt od plannera 97, trzy skille 178).
   Po 6a pkt 15/17 nadal reviewer ~310–320, builder ~520–530 = pasmo IFScale 150–500 (84–99% → ~68% przestrzegania). Dubel learned-patterns w dossier = 13k tok × 6 reviewerów na fazę za nic.
@@ -197,7 +203,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 |---|---|---|---|
 | kontekst startowy = 25–35% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka ETAP3 §1.1 | kolejność priorytetów | przeliczone; kolejność stoi; potwierdzenie w mini-runie |
 | polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2: listy są marginalne wobec tła 300–500 nakazów → wymóg budżetu §2 pkt 3 |
-| nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — atrybucja po pliku | wybór n=3 vs sceptyk | **D1 obaliło w 60%:** większość to recall rundy 1 (§4) |
+| nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — atrybucja po pliku | architektura pętli fix, ocena zasięgu review | **D1 (po przeglądzie 2026-09-23): pół na pół** — 22/44 przeoczenia, 22/44 urodzone w fixach (w tym łańcuch 4); teza za mocna w obie strony; 3 powtórki, 2 zadania, 1 repo (§4) |
 | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | utrzymanie osi zastępowalnej bramką | stoi (wniosek zachowawczy, L9) |
 | test-coverage do zdegradowania | ETAP2 §0 pkt 5; jedyny pomiar 0/31 | utrata 202 findingów, 31 uwag bez właściciela | **rozstrzygnięte: ZOSTAJE** (§1 pkt 2) |
 | sceptyk asymetryczny ~4× skuteczniejszy | 2 prace zewnętrzne, zero pomiaru u nas | brak wzmocnienia albo kasowanie prawdziwych P1/P2 | przyjęty z warunkiem odwrotu (§6) |

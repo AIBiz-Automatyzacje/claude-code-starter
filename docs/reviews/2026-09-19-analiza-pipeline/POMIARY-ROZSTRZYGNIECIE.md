@@ -108,7 +108,8 @@ liczbę testów, nie mutantów). Warunek twardy: zielony zestaw testów, a main 
 
 ## 4. Pomiar 4 — inter-run agreement review (6 par runów tej samej fazy)
 
-Dopasowanie: ten sam plik i (|Δlinia| ≤ 3 lub podobieństwo opisu > 0,3). Kod „zmieniony" = commity w repo między startami obu scribe'ów (bez docs/, .claude/).
+Dopasowanie: ten sam plik i podobieństwo opisu > 0,45 (tak liczą skrypty; wcześniejszy opis „|Δlinia| ≤ 3 lub podobieństwo > 0,3” był
+niezgodny ze skryptem — sprostowanie z przeglądu domknięć 2026-09-23; kryterium luźniejsze daje te same liczby dla 9b i samodzielnej run 2, run 3: 13 nowych zamiast 14). Kod „zmieniony" = commity w repo między startami obu scribe'ów (bez docs/, .claude/).
 
 | zadanie / faza | kod zmieniony między runami | run1 → run2 | powtórzone | nowe (P1/P2/P3) | nowe w plikach zmienionych | nowe P1/P2 KOD w plikach NIEzmienionych |
 |---|---|---|---|---|---|---|
@@ -138,6 +139,17 @@ a **10 istniało przed fixem** w plikach, które runda 1 czytała i w których m
 B przeoczone w rundzie 1 w pliku dotkniętym fixem 14 (42%), C przeoczone w kodzie nietkniętym 6 (18%)**. P1/P2 kodowe: A 4 (1 P1), B 5, C 1. Oba składniki są realne:
 składnik A adresuje 6a pkt 15 (polecenia-listy w `fix:kontrola` + mały diff fixa — kontrola diffu nie złapała żadnego z 10 A), składnik B+C (60%, 6 P2) to recall
 rundy 1 — rozstrzygnięcie n=3 próbek vs lepszy sceptyk należy do panelu i dotyczy WIĘKSZEGO składnika.
+
+**Korekta D1 po przeglądzie domknięć (2026-09-23, PRZYJĘTA; `PROPOZYCJA-POPRAWEK-DOMKNIEC.md` sekcja D1, skrypt `skrypty/d1r_rewizja_atrybucji.py`,
+dane `dane/d1r-rewizja-atrybucji.{txt,json}`) — obowiązuje ZAMIAST liczb i wniosku powyżej:** (1) dołączona trzecia para (samodzielna f3 run 2→3), razem
+46 findingów, 44 kodowe; (2) klasa semantyczna zamiast samego blame — 3 findingi na starej linii, ale z defektem stworzonym przez fix (komentarz po usunięciu
+sond, duplikat stałej wprowadzonej fixem, zdarzenie analityczne niespójne z nowym stanem błędu). Wynik: **urodzone w fixie okna 18 (15 kod + 3 CLAUDE.md),
+łańcuch 4 (urodzone we wcześniejszym fixie 5c3c7ac, przeoczone przez PEŁNĄ rundę 2, znalezione w rundzie 3; 2 P2), przeoczone w kodzie oglądanym przez rundę
+wcześniejszą 22 = 50% kodowych (95% przedział 36–64%; wrażliwość na oceny ręczne 50–57%)**, środowisko E2E 2. P1/P2 kodowe: przeoczone 7, fix + łańcuch 8.
+Wniosek: **składniki mają podobną wagę** — „większy składnik recall” nie wynika z danych. Kontrola diffu nie złapała żadnego z 15 kodowych urodzonych w fixie
+ani 4 z łańcucha. **Lepszy sceptyk nie adresuje przeoczeń** (odsiewa fałszywe, nie znajduje brakujących); wybór n=3 vs sceptyk to decyzja o kupowaniu
+zasięgu, nie wniosek z podziału — D1 mówi tylko, ile zasięgu brakuje (22/44, 7 P1/P2 w trzech powtórkach dwóch faz). Łańcuch wzmacnia 6a pkt 15: kod
+naprawczy przechodzi także przez kolejną pełną rundę, więc źródłem steruje się po stronie fixa (mały diff), nie dokładaniem rund.
 
 ## 5. Co zmienia się w wejściach do etapów 3–4 po pomiarach
 

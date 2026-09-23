@@ -1,4 +1,5 @@
 D1 — atrybucja 33 nowych findingow powtorki review po fixie (2026-09-21)
+!!! ZASTAPIONE 2026-09-23 przez d1r-rewizja-atrybucji.txt (3 pary, klasa semantyczna): pol na pol, nie 60/40 — patrz PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D1.
 Skrypt: skrypty/d1_atrybucja_po_fixie.py <repo oferty-online>; dane: pomiar5-atrybucja-po-fixie.json
 Metoda: git blame -L linia na HEAD sprzed run2 (commity gałęzi odzyskane z reflogu — po squash-merge #19 nie ma ich w --all).
   A = linia powstala w commicie fixa (fix wprowadzil kod, ktory review 2 zglosil)

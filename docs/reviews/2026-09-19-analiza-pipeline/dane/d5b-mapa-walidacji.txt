@@ -150,9 +150,9 @@ BASELINE  fix: 116 agentow, 37 tur p50 (p90 109), 1 200k/agent, 11,8% calosci, 1
           P3 138 → 221), nierozwiazane P1 0 / P2 1; fix:kontrola 18 agentow, 3 realne regresje zlapane (ETAP1).
           (a) BOT w plikach fixa (d5b-baseline-jakosci.txt §1): 17 PR — 14,0 B P1/P2 na 100 plikow fixa vs 4,7 w pozostalych (58 uwag w 414 plikach
           fixa); epoka wrzesniowa 7,2 vs 2,2. Zastrzezenie: w PR 9, 10, 15, 16 (czesci serwerowe zadan dzielonych na dwa PR) commity fixow sa w PR
-          siostrzanym → pliki fixa zanizone, wynik ostrozny. Kontekst (NIE baseline tej metryki — dotyczy powtorki NASZEGO review): D1 33 findingi
-          po fixie = 13 urodzone w fixie (39%, jedyny P1) / 14 przeoczone w pliku fixa (42%) / 6 w kodzie nietknietym (18%); diff fixa 9b f4:
-          25 plikow +776/−219.
+          siostrzanym → pliki fixa zanizone, wynik ostrozny. Kontekst (NIE baseline tej metryki — dotyczy powtorki NASZEGO review): D1 po przegladzie
+          2026-09-23 (d1r-rewizja-atrybucji.txt): 44 kodowe findingi po fixie w 3 powtorkach = urodzone w fixie 15 (jedyny P1) + lancuch 4
+          (fix przeoczony przez pelna runde nastepna) / przeoczone 22 (50%); diff fixa 9b f4: 25 plikow +776/−219.
 HORYZONT  (a) JAKOSC — okno 5 PR (≈ 5 zadan, zgodnie z decyzja); (b)–(e) 5 faz.
 
 --- §2 pkt 10. Zakaz powtorek sekwencyjnych review ---

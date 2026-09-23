@@ -198,6 +198,9 @@ Zweryfikowane grepem w tej sesji (`.claude/workflows/*.js` bez `__tests__`, `.cl
 - **D1 (L3) GOTOWE** — `dane/pomiar5-atrybucja-po-fixie.{json,txt}`, dopisek w POMIARY §4: 33 findingi = A urodzone w fixie 13 (39%, wszystkie kodowe to skutek
   naprawy findingu rundy 1, w tym jedyny P1; kontrola diffu nie złapała żadnego) / B przeoczone w rundzie 1 w pliku fixa 14 (42%, 5 P2) / C przeoczone w kodzie
   nietkniętym 6 (18%). Składnik recall rundy 1 (60%) jest większy niż składnik „nowy kod" (40%).
+  **Korekta 2026-09-23 (przegląd domknięć, PRZYJĘTA; `dane/d1r-rewizja-atrybucji.txt`):** z trzecią parą (run 2→3) i klasą semantyczną 44 kodowe = urodzone
+  w fixie 18 + łańcuch 4 (fix po rundzie 1 przeoczony przez pełną rundę 2) + przeoczone 22 (50%, przedział 36–64%) — składniki porównywalne, „większy” nie
+  wynika z danych; lepszy sceptyk nie adresuje przeoczeń, więc podział nie rozstrzyga wyboru n=3 vs sceptyk (POMIARY §4, korekta D1).
 - **D2 (L2) GOTOWE** — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`. Jednostka = pozycja listy albo zdanie z markerem nakazu.
   Dziś (oferty-online): **reviewer security ~365 instrukcji** (dolna granica 319), z tego plik agenta 104, coding-rules 117, CLAUDE.md 46, learned-patterns 38 **×2**
   (eager z `.claude/rules/` ORAZ w całości w dossier — packager przepisuje go ponownie), bloki workflow 22; **builder danych ~537** (dolna 490): iu.prompt od plannera

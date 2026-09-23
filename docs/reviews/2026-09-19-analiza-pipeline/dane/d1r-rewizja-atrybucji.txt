@@ -1,0 +1,84 @@
+
+=== faza-9b-wielu-uzytkownikow f4: wf_cf90b5d6-f83 -> wf_29d462f8-85c; HEAD1 37e4895 HEAD2 cd7a51b; commity: cd7a51b docs(faza-9b-wielu-uzytkownikow): stan p, 825c2aa docs(faza-9b-wielu-uzytkownikow): stan p, 9f22103 fix(faza-9b): kontrola diffu naprawczego, 417a9fd fix(faza-9b): poprawki po review fazy 4; plikow kodu 23; run2 19, nowych 19
+  [A] P1 apps/dashboard/src/lib/analytics.ts:287 | dryf_ok=True odl_fix=0 odw_fix=True slowo_fix=False | Dynamiczny import SDK (linia 252) nie ma BUFORA wywołań sprzed gotowości: `track` i `identifyUser` przy `client === null` po prostu milczą (linie 287,
+  [B] P2 apps/dashboard/src/features/onboarding/use-first-steps.ts:273 | dryf_ok=True odl_fix=12 odw_fix=False slowo_fix=False | Checklista sonduje bazę przy KAŻDYM wejściu na /oferty, także na kontach, które onboarding dawno skończyły. Efekt startuje, gdy `isEligible` (stan `ak
+  [B] P2 apps/dashboard/src/features/onboarding/use-first-steps.ts:268 | dryf_ok=True odl_fix=7 odw_fix=False slowo_fix=False | „Zamknij checklistę" chowa kartę wyłącznie stanem LOKALNYM hooka (`useState(profile?.isFirstStepsDismissed === true)`), a wartość początkowa bierze si
+  [A] P2 apps/dashboard/src/features/offers/offers-page.tsx:67 | dryf_ok=True odl_fix=0 odw_fix=True slowo_fix=False | Przewodnik listy ofert startuje TAKŻE na ekranie błędu — `useScreenTour('oferty', state.status === 'loading' || firstSteps.status === 'ladowanie')` da
+  [A] P2 apps/dashboard/src/features/auth/session-context.tsx:65 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | Zdarzenie `logowanie` liczy przeładowania karty, a nie logowania — mimo że komentarz przy `hadSessionRef` (linie 40-45) twierdzi wprost, że „`INITIAL_
+  [B] P2 apps/dashboard/src/features/onboarding/use-screen-tour.ts:97 | dryf_ok=True odl_fix=5 odw_fix=False slowo_fix=False | Po zakończeniu przewodnika `markTourSeen` zapisuje kolumnę w bazie, ale profil, z którego hook czyta `tourSeen`, jest wczytywany RAZ w `AccessGate` na
+  [B] P2 apps/dashboard/src/features/help/texts.ts:95 | dryf_ok=True odl_fix=22 odw_fix=True slowo_fix=False | Zdanie `limitsDefaultNote` („Powyżej to wartości domyślne — swoje limity zobaczysz w Ustawieniach.") kieruje użytkownika w miejsce, w którym tych licz
+  [C] P2 apps/dashboard/src/features/account/use-profile.test.ts:189 | dryf_ok=False odl_fix=None odw_fix=True slowo_fix=False | Dwie z trzech nowych funkcji zapisu profilu nie mają ANI JEDNEGO testu dotykającego ich kodu: `markTourSeen` i `dismissFirstSteps` są w każdym teście 
+  [A] P2 apps/dashboard/src/lib/analytics.ts:222 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | Cała ścieżka produkcyjna analityki jest headless niesprawdzalna: `initAnalytics` kończy się cicho, gdy `VITE_POSTHOG_KEY` jest puste, a w repo (`.env.
+  [A] P3 apps/dashboard/src/lib/analytics.ts:270 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | `sanitize_properties` jest w posthog-js 1.433.0 OFICJALNIE PRZESTARZAŁE (`dist/module.no-external.js`: stała `cc = 'sanitize_properties is deprecated.
+  [C] P3 apps/server/src/offer/pages/app-privacy-page.ts:79 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Polityka prywatności panelu wylicza zdarzenie, którego katalog fazy 4 świadomie NIE zbiera: zdanie „Zbieramy zdarzenia z korzystania z panelu: logowan
+  [A] P3 apps/dashboard/src/features/help/help-page.tsx:51 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | `void resetTours(userId).then((isSaved) => { setRestartState(...); reloadProfile(); })` nie ma strażnika odmontowania — kliknięcie „Pokaż przewodnik p
+  [B] P3 apps/dashboard/src/features/help/help-sections.tsx:27 | dryf_ok=True odl_fix=12 odw_fix=False slowo_fix=False | `useState(false)` daje na desktopie pierwszy paint z sześcioma ZWINIĘTYMI sekcjami, a dopiero efekt po montażu przestawia je na otwarte — czyli jedno 
+  [B] P3 apps/dashboard/src/features/offers/offer-details-page.tsx:10 | dryf_ok=True odl_fix=332 odw_fix=False slowo_fix=False | Import spoza grupy lokalnej wstawiony w środek posortowanej grupy `./offer-*` — `import { useScreenTour } from '../onboarding/use-screen-tour.js';` st
+  [B] P3 apps/dashboard/src/features/help/help-page.tsx:43 | dryf_ok=True odl_fix=1 odw_fix=False slowo_fix=False | `track(ANALYTICS_EVENTS.tourRestarted)` („przewodnik_wlaczony_ponownie") leci PRZED zapisem i niezależnie od jego wyniku: przy `userId === null` oraz 
+  [B] P3 apps/dashboard/src/features/onboarding/use-first-steps.ts:293 | dryf_ok=True odl_fix=5 odw_fix=False slowo_fix=False | Komentarz przy `catch` opisuje kod, którego już nie ma, i mówi nieprawdę o zachowaniu: twierdzi, że „własnego reportera ma tylko jedna z czterech sond
+  [B] P3 apps/dashboard/src/features/onboarding/use-first-steps.test.ts:256 | dryf_ok=True odl_fix=32 odw_fix=True slowo_fix=False | Nie ma testu na jedyny nietrywialny wariant `anyOf` (use-first-steps.ts:213), czyli na to, co się dzieje, gdy konto NIE ma wiersza `mcp_tokens`, a `li
+  [A] P3 apps/dashboard/src/lib/analytics.test.ts:119 | dryf_ok=False odl_fix=0 odw_fix=True slowo_fix=False | Przypadek „adres bez https gasi analitykę" sprawdza tylko `captureException` × 1 przy JEDNYM wywołaniu `initAnalytics`, więc nie falsyfikuje ani zatrz
+  [B] P3 apps/dashboard/src/features/onboarding/use-first-steps.ts:335 | dryf_ok=True odl_fix=6 odw_fix=False slowo_fix=False | Po ukończeniu onboardingu (4/4) karta znika BEZ zapisu, więc `isEligible` zostaje `true` na zawsze i każde wejście na `/oferty` wykonuje komplet pięci
+
+=== samodzielna-rejestracja-czlonkow-aa f3: wf_8eefb073-6a9 -> wf_ce87b73b-89f; HEAD1 56a86b3 HEAD2 7fab9c5; commity: 7fab9c5 docs(samodzielna-rejestracja-czlonkow-aa, 4b4fd64 fix(samodzielna-rejestracja): kontrola d, 5c3c7ac fix(samodzielna-rejestracja): poprawki p; plikow kodu 20; run2 14, nowych 14
+  [B] P2 apps/dashboard/src/features/auth/login-form.tsx:115 | dryf_ok=True odl_fix=29 odw_fix=False slowo_fix=False | Granice warstw (coding-rules §14, CLAUDE.md „hooki use-*.ts jako jedyna warstwa danych; komponenty nie wołają bazy”): komponent `LoginForm` niesie ter
+  [X] P2 CLAUDE.md:73 | dryf_ok=None odl_fix=None odw_fix=False slowo_fix=True | Dokument sterujący rozjechał się z kodem po commicie naprawczym 5c3c7ac (learned-patterns 2026-09-11: diff przenoszący stałą między modułami kończy si
+  [X] P2 CLAUDE.md:73 | dryf_ok=None odl_fix=None odw_fix=False slowo_fix=True | IU-9 (R12): kontrakt POST /api/dostep/rejestracja w CLAUDE.md jest po turze poprawek nieaktualny. Fix P2 nr 3 z review-faza-3.md (wariant cialo zadani
+  [B?] P2 e2e/seeds/rejestracja-czlonek-seed.sql:? | dryf_ok=None odl_fix=None odw_fix=False slowo_fix=True | Scenariusz E2E [E2E] `rejestracja-czlonek-link` (jedyna droga E2E dowodząca trafienia hasha → `link_wyslany` → „Sprawdź skrzynkę” i powstania konta `a
+  [A] P3 apps/server/src/access/redirect-path.test.ts:18 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | Bramka `parseRedirectPath` jest zamknieta biala lista po originie (`new URL(value, base).origin`) i odrzuca wektory poprawnie (sprawdzone uruchomienie
+  [B] P3 apps/dashboard/src/features/auth/login-form.tsx:299 | dryf_ok=True odl_fix=14 odw_fix=False slowo_fix=False | Chunk `access-request-api` (ciągnie `schemas-*.js` = zod, 70,9 kB raw / 18,8 kB gzip — zmierzone na bieżącym dist) jest pobierany dopiero PO kliknięci
+  [A] P3 apps/dashboard/src/features/auth/login-form.tsx:285 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | Martwa instrukcja: `controllerRef.current?.abort()` w l. 285 stoi bezpośrednio po `const generation = nextGeneration();` (l. 284), a `nextGeneration` 
+  [A] P3 apps/dashboard/src/features/auth/login-form.tsx:285 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | Martwy kod i duplikacja w tej samej funkcji: l. 285 `controllerRef.current?.abort()` jest no-opem, bo `nextGeneration()` w l. 284 już przerwało kontro
+  [B] P3 apps/dashboard/src/features/access/registration-api.ts:143 | dryf_ok=True odl_fix=14 odw_fix=False slowo_fix=False | Odpowiedź 400 `nieprawidlowy_adres` z własnej bramki serwera (`emailSchema`) jest mapowana na `'blad'`, czyli karta pokazuje `AUTH_TEXTS.checkFailed` 
+  [B] P3 apps/dashboard/src/features/access/registration-api.ts:101 | dryf_ok=True odl_fix=16 odw_fix=False slowo_fix=False | YAGNI: `bodyOrNull` woła `readJsonBody(response, (cause) => new Error('POST /api/dostep/rejestracja: odpowiedź nie jest JSON-em', { cause }))` i w tym
+  [C] P3 apps/server/src/access/invitation-service.ts:265 | dryf_ok=True odl_fix=None odw_fix=True slowo_fix=False | Faza dołożyła drugą kopię ścieżki powrotu magic linku po stronie serwera: `registration-service.ts:91` eksportuje `DEFAULT_REGISTRATION_REDIRECT_PATH 
+  [C] P3 apps/dashboard/src/features/access/access-request-page.tsx:11 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Komentarz modułu jest nieprawdziwy po tej fazie: „`/chce-dostep` (D19) — ten sam formularz, co pod kartą logowania, na własnym adresie” — od IU-6 `Acc
+  [C] P3 e2e/seeds/faza-9b-zaproszenie-seed.sql:6 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Komentarz nagłówkowy seeda (l. 6, 10, 20) opisuje, że ekran `/zaproszenie` rozstrzyga przez `accept_invitation()` i że to ona „świadomie nie dopasowuj
+  [X] P3 CLAUDE.md:73 | dryf_ok=None odl_fix=None odw_fix=False slowo_fix=False | IU-9 (R12): zdanie "smoke end-to-end rejestracji jest niewykonalny na stagingu (wbudowany mailer oddaje email_address_not_authorized -> 503 nierozrozn
+
+=== samodzielna-rejestracja-czlonkow-aa f3: wf_ce87b73b-89f -> wf_feed7bad-902; HEAD1 7fab9c5 HEAD2 7af859e; commity: 7af859e docs(samodzielna-rejestracja): scenarius, 2c97286 docs(samodzielna-rejestracja-czlonkow-aa, 8d8400e fix(samodzielna-rejestracja): kontrola d, 2686e64 fix(samodzielna-rejestracja): poprawki p, 0581366 fix(samodzielna-rejestracja): poprawki p; plikow kodu 15; run2 15, nowych 13
+  [C] P2 apps/dashboard/src/features/access/access-request-api.ts:43 | dryf_ok=True odl_fix=None odw_fix=True slowo_fix=False | `submitAccessRequest` woła `fetch` z gołym `signal` bez sufitu czasu (checklista §4: klient HTTP bez limitu czasu). Do tej fazy jedynym konsumentem by
+  [C] P2 apps/dashboard/src/features/oauth/consent-cards.tsx:89 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=True | Ścieżka powrotu `/oauth/consent?authorization_id=…` (wprowadzona w fixie po review fazy 3) odsyła NOWO ZAŁOŻONEGO członka AA z maila z powrotem na str
+  [B] P2 apps/server/src/access/registration-service.ts:234 | dryf_ok=True odl_fix=141 odw_fix=False slowo_fix=False | Od tej fazy magic link zakładający konto wysyła SERWER z `emailRedirectTo = APP_ORIGIN + redirectPath`, gdzie `redirectPath` może być `/oauth/consent?
+  [X] P2 docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:? | dryf_ok=None odl_fix=None odw_fix=False slowo_fix=False | IU-6, scenariusz `[E2E] rejestracja-czlonek-link` (plan: seed `e2e/seeds/rejestracja-czlonek-seed.sql`, oczekiwane „Sprawdź skrzynkę” → `auth.users` m
+  [B] P3 apps/server/src/access/redirect-path.test.ts:48 | dryf_ok=False odl_fix=5 odw_fix=False slowo_fix=False | Tabela odmów `it.each` nie zawiera wektora z białym znakiem W ŚRODKU ścieżki, który w review fazy 8/4 obszedł bramkę harnessu (`/<TAB>/atakujacy.examp
+  [B] P3 e2e/seeds/rejestracja-czlonek-seed.sql:82 | dryf_ok=True odl_fix=37 odw_fix=False slowo_fix=False | Komentarz seeda każe operatorowi PODMIENIĆ `v_email` na adres na własnej domenie z MX przed ręcznym przebiegiem, a linia 82 kasuje `auth.users` po tym
+  [C] P3 apps/dashboard/src/features/access/access-request-api.ts:1 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Klient `submitAccessRequest` importuje `apiEnvelopeSchema` z `@oferty/shared/webhook-contract`, przez co chunk `access-request-api-*.js` (613 B) ciągn
+  [C] P3 apps/dashboard/src/features/access/invitation-page.tsx:139 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Efekt sondy automatycznej (`useEffect` -> `void runProbe()` -> `supabase.rpc('accept_terms')`) nie ma `AbortController` w sprzątaniu (coding-rules §13
+  [A] P3 apps/dashboard/src/features/auth/use-login-flow.ts:169 | dryf_ok=False odl_fix=0 odw_fix=False slowo_fix=False | Mapowanie wyniku `submitRegistration` → `LoginFormState` (switch l. 169–184) siedzi w hooku, podczas gdy bliźniacze mapowanie `stateAfterWaitlistSave`
+  [C] P3 apps/dashboard/src/features/access/access-request-api.ts:26 | dryf_ok=True odl_fix=None odw_fix=True slowo_fix=False | Doc-komentarz pola `email` w `SubmitAccessRequestInput` mówi „Adres w postaci kanonicznej (`emailSchema` z `packages/shared`)", ale nowy konsument z t
+  [C] P3 apps/server/src/limits/limit-messages.ts:178 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Tekst odmowy `konto_oczekujace` dla narzędzi MCP brzmi „To konto nie ma jeszcze dostępu. Otwórz panel i przyjmij zaproszenie." — od IU-7 konto `oczeku
+  [C] P3 apps/dashboard/src/features/auth/waitlist-question.tsx:26 | dryf_ok=True odl_fix=None odw_fix=False slowo_fix=False | Po przejściu `sending → question` karta wymienia całą zawartość: przycisk „Wyślij link”, który miał fokus (submit klawiszem Enter/klik), jest odmontow
+  [A] P3 apps/dashboard/src/features/auth/login-flow-state.ts:79 | dryf_ok=True odl_fix=0 odw_fix=False slowo_fix=False | Nowy moduł czystych przejść (`looksLikeEmail`, `messageForSendError`, `stateAfterWaitlistSave`) nie ma kolokowanego testu (coding-rules §6 „każdy nowy
+
+=== ZESTAWIENIE ===
+wf_cf90b5d6-f83->wf_29d462f8-85c: {'A': 7, 'B': 10, 'C': 2}
+wf_8eefb073-6a9->wf_ce87b73b-89f: {'B': 5, 'X': 3, 'A': 3, 'C': 3}
+wf_ce87b73b-89f->wf_feed7bad-902: {'C': 7, 'B': 3, 'X': 1, 'A': 2}
+RAZEM 46: {'A': 12, 'B': 18, 'C': 12, 'X': 4}
+B blisko fixa (<= 15 linii od hunka): 10/17
+B/C z odwolaniem do linii fixa lub slowem 'fix' w opisie: 8
+B/C, ktorych linia urodzila sie we WCZESNIEJSZYM fixie (blame -> commit fix(...) sprzed okna): 3 -> P2 apps/server/src/access/registration-service.ts:234 [5c3c7ac]; P3 apps/server/src/access/redirect-path.test.ts:48 [5c3c7ac]; P3 apps/dashboard/src/features/auth/waitlist-question.tsx:26 [5c3c7ac]
+
+=== KLASA SEMANTYCZNA (blame + RECZNE) ===
+wf_cf90b5d6-f83->wf_29d462f8-85c: {'FIX': 9, 'PRZEOCZONE': 10} | przeoczone/kod = 10/19 = 53%
+wf_8eefb073-6a9->wf_ce87b73b-89f: {'PRZEOCZONE': 6, 'FIX': 7, 'SRODOWISKO': 1} | przeoczone/kod = 6/13 = 46%
+wf_ce87b73b-89f->wf_feed7bad-902: {'PRZEOCZONE': 6, 'LANCUCH': 4, 'SRODOWISKO': 1, 'FIX': 2} | przeoczone/kod = 6/12 = 50%
+wszystkie: n_kod=44 {'FIX': 18, 'PRZEOCZONE': 22, 'LANCUCH': 4} | PRZEOCZONE 50% (95% Wilson 36%-64%, bez efektu klastra — 3 pary, 2 zadania, 1 repo) | FIX+LANCUCH 50%
+tylko P1/P2: n_kod=15 {'FIX': 6, 'PRZEOCZONE': 7, 'LANCUCH': 2} | PRZEOCZONE 47% (95% Wilson 25%-70%, bez efektu klastra — 3 pary, 2 zadania, 1 repo) | FIX+LANCUCH 53%
+D1 (pary 1-2): n_kod=32 {'FIX': 16, 'PRZEOCZONE': 16} | PRZEOCZONE 50% (95% Wilson 34%-66%, bez efektu klastra — 3 pary, 2 zadania, 1 repo) | FIX+LANCUCH 50%
+wrazliwosc — bez RECZNE->FIX dla help-page:43 (najslabsza ocena): PRZEOCZONE 23/44 = 52%; pary 1-2: 17/32 = 53%
+wrazliwosc — bez zadnego RECZNE->FIX w kodzie (sam blame; CLAUDE.md zostaje FIX): PRZEOCZONE 25/44 = 57%; pary 1-2: 19/32 = 59%
+Wyjatki RECZNE z uzasadnieniem:
+  P3 apps/dashboard/src/features/onboarding/use-first-steps.ts:293 -> FIX: komentarz nieaktualny, bo fix 417a9fd usunal probeOfferIds/visit-summary i nie poprawil komentarza
+  P3 apps/dashboard/src/features/help/help-page.tsx:43 -> FIX: fix 417a9fd wprowadzil stan blad; track zostal bezwarunkowy — niespojnosc powstala w fixie
+  P3 apps/server/src/access/invitation-service.ts:265 -> FIX: DEFAULT_REGISTRATION_REDIRECT_PATH wprowadzil fix 5c3c7ac (git log -S) — duplikat literalu powstal w fixie
+  P2 CLAUDE.md:73 -> FIX: dokument rozjechany z kodem po fixie 5c3c7ac (jak w D1)
+  P3 CLAUDE.md:73 -> FIX: jw.
+  P2 e2e/seeds/rejestracja-czlonek-seed.sql:? -> SRODOWISKO: scenariusz E2E nieodegrany: limit mailera
+  P2 docs/active/samodzielna-rejestracja-czlonkow-aa/samodzielna-rejestracja-czlonkow-aa-zadania.md:? -> SRODOWISKO: scenariusz E2E nigdy PASS — srodowisko
+  P2 apps/server/src/access/registration-service.ts:234 -> LANCUCH: redirectPath z fixa 5c3c7ac (pary 2); pelna runda 2 przeoczyla
+  P3 apps/server/src/access/redirect-path.test.ts:48 -> LANCUCH: plik utworzony fixem 5c3c7ac
+  P3 apps/dashboard/src/features/auth/waitlist-question.tsx:26 -> LANCUCH: plik utworzony fixem 5c3c7ac
+  P2 apps/dashboard/src/features/oauth/consent-cards.tsx:89 -> LANCUCH: sciezka powrotu wprowadzona fixem 5c3c7ac; linia findingu w pliku nietknietym
+dryf: identyfikator z opisu w oknie +-5 linii: 37/41 (reszta: 1 bez identyfikatora)
