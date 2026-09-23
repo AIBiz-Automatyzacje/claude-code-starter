@@ -6,7 +6,15 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 ## 0. Co robi panel i kto co czyta
 
-- **Skład (HANDOFF §2 wiersz 4, §6 pkt 5):** 3 niezależne projekty pipeline'u „po" — **minimalistyczny** (minimalny koszt), **jakość-najpierw**
+- **[2026-09-23, HANDOFF 6a pkt 23 — OBOWIĄZUJE: PANEL DECYZYJNY zamiast panelu projektowego opisanego niżej.]** Krok 0 w sesji głównej skryptami, bez agentów:
+  lista OTWARTYCH decyzji z opcjami i danymi (reszta = stały szkielet z §2), zestaw historyczny (68 ucieczek z ETAP1 §3 + uwagi B bota z klasą z
+  `dane/coderabbit/klasyfikacja-574.csv`), skrypt kosztu projektu (model kosztu etapu 0 + starty klas z mini-runu (e)). Run 1: projektanci PER ARCHITEKTURA
+  REVIEW (nie per priorytet), każdy broni swojej i w jej ramach rozstrzyga pozostałe otwarte decyzje; koszt liczy skrypt. Run 2: jeden sędzia jakości na
+  zestawie historycznym (przypadek × projekt → złapany / czym / nie) zamiast trzech sędziów. Run 3: sceptyk asymetryczny per otwarta decyzja, zarzut tylko
+  z dowodem. Synteza w sesji głównej = rekord per decyzja (wybór, dlaczego, metryka z mapy walidacji §12, warunek odwrotu) → plan iteracji etapu 5.
+  ~5–7 agentów na Opus 5.5. Z opisu niżej obowiązują nadal: materiał wejściowy projektantów, wyłączenie werdyktów workflow-A, kryteria koszt i jakość
+  (koszt wdrożenia NIE jest kryterium), „panel nie buduje”, plugin nie jest wariantem.
+- **Skład pierwotny (HANDOFF §2 wiersz 4, §6 pkt 5) — ZASTĄPIONY przez punkt wyżej:** 3 niezależne projekty pipeline'u „po" — **minimalistyczny** (minimalny koszt), **jakość-najpierw**
   (maksymalna jakość), **hybrydowy** — → 3 sędziów → sceptyk (adwersarialna krytyka) na zwycięzcę → synteza. ~8 agentów, **wszyscy na Opus 5.5** (decyzja operatora
   2026-09-23, 6a pkt 22 — zastępuje „na Fable” z 6a pkt 19; w skrypcie przypięty `model: 'claude-opus-5-5'`, pełny identyfikator przypina model — krok 0 mini-runu),
   w **TRZECH osobnych runach** (projektanci → sesja główna czyta → sędziowie → sceptyk), synteza w sesji głównej (Opus 5.5). Wnioski dotyczą szablonu (workspace-template), nie jednego projektu (HANDOFF §1). **Panel NIE buduje:** wynik = koncepcja docelowego pipeline'u

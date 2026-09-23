@@ -15,10 +15,19 @@ Pakiet wejściowy zbiera to w jednym miejscu. Ten dokument tłumaczy, co w nim j
 
 ## Jak wygląda panel
 
-Trzech niezależnych projektantów dostaje ten sam materiał i inny priorytet: jeden ma zbudować pipeline najtańszy, drugi najlepszy jakościowo, trzeci
-hybrydę. Potem trzech sędziów ocenia projekty, sceptyk atakuje zwycięzcę, a synteza składa końcowy projekt. Około ośmiu agentów, wszyscy na Opus 5.5.
-Tak zdecydowałeś 23 września, wcześniej plan zakładał Fable. Panel idzie w trzech osobnych runach (projektanci, sędziowie, sceptyk). Między nimi
-sesja główna czyta wyniki, a przerwanie jednego runu nie kasuje pozostałych. Panel niczego nie buduje: jego wynikiem jest koncepcja docelowego pipeline'u i kolejność
+**Zmiana z 23 września: zamiast panelu projektowego robimy panel decyzyjny.** Twoje decyzje i wymogi z tego pakietu przesądzają już szkielet nowego
+pipeline'u. Trzy pełne projekty („najtańszy”, „najlepszy”, „hybryda”) różniłyby się więc w kilku miejscach, a wybór hybrydy byłby z góry przewidywalny.
+Sędziowie bez danych oceniliby jakość opinią, a dobre pomysły przegranych projektów by przepadły.
+
+Dlatego najpierw sesja główna, bez agentów, wypisuje decyzje naprawdę otwarte, każdą z opcjami i danymi. Przygotowuje też zestaw prawdziwych błędów,
+które przeszły przez nasze review, i skrypt liczący koszt. Potem trzech projektantów broni trzech różnych sposobów robienia review, bo to największa
+pozycja kosztu. Każdy w ramach swojego sposobu rozstrzyga pozostałe otwarte decyzje. Jeden sędzia sprawdza na tych prawdziwych błędach, który projekt
+by je złapał i czym. Koszt liczy skrypt, a nie agent. Sceptyk atakuje każdą decyzję osobno i każdy zarzut musi mieć dowód. Na koniec sesja główna
+zapisuje każdą decyzję: co wybrano, dlaczego, czym to zmierzymy i kiedy się wycofać. Z tych zapisów powstaje plan wdrożenia. Około pięciu do siedmiu
+agentów, wszyscy na Opus 5.5 (wcześniej plan zakładał Fable), w trzech osobnych runach, między którymi sesja główna czyta wyniki.
+
+Poniżej opis, który obowiązywał wcześniej, zostawiony dla porządku: trzech niezależnych projektantów dostaje ten sam materiał i inny priorytet: jeden ma zbudować pipeline najtańszy, drugi najlepszy jakościowo, trzeci
+hybrydę. Potem trzech sędziów ocenia projekty, sceptyk atakuje zwycięzcę, a synteza składa końcowy projekt. Panel niczego nie buduje: jego wynikiem jest koncepcja docelowego pipeline'u i kolejność
 wdrożenia, a kod powstaje dopiero faza po fazie, każda z własną miarą w telemetrii. Sędziowie mają dwa wymiary: koszt i jakość kodu mierzoną tym, ile poważnych uwag znajduje po nas CodeRabbit. Koszt wdrożenia
 nie jest kryterium, bo zdecydowałeś, że zysk z lepszego procesu przewyższa koszt naprawy, a wdrożenie i tak pójdzie fazami. Szablon jako plugin nie jest
 wariantem; zbadany, odłożony na później.
@@ -382,4 +391,4 @@ zdanie decyzyjne bez żadnego ze słów-markerów nie weszło do kontroli. Skryp
 
 Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa — zrobione, a 23 września przejrzałem od nowa wszystkie domknięcia
 (D1–D6, ostatnie D4) i poprawki są w tym pakiecie. Twoje decyzje z audytu skilli są podjęte, a mini-run na Opusie jest zrobiony i zaakceptowany (23 września).
-Teraz panel w trzech runach na Opus 5.5, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
+Teraz panel decyzyjny w trzech runach na Opus 5.5, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
