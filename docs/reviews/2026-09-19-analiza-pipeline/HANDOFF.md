@@ -335,6 +335,16 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
       z listy w §D4 „Co się zmieni po akceptacji”. **PRZEGLĄD DOMKNIĘĆ ZAKOŃCZONY** (D1–D6 przyjęte). Dalej: decyzje operatora z D6 (koszyk D, dev-ideate
       i freshness-audit, tryb ręczny — ten ostatni jako pytanie dla panelu), potem mini-run na znak — §8.
 
+20. **Decyzje operatora po D6 (2026-09-23, po zakończeniu przeglądu domknięć):**
+    - **Koszyk D WYPADA z szablonu:** code-review, code-quality, gemini, dev-docs-update, bugfix. Przy usuwaniu: README, `learnings-researcher.md:256`;
+      szablon mobile — osobna decyzja (nie ruszać bez pytania).
+    - **dev-ideate i freshness-audit (skill + `freshness-audit-wf.js`) WYPADAJĄ.** Role freshness-audit-wf znikają z mapy ról (D3 porządkowe 4).
+    - **Tryb ręczny execute/review WYPADA** — przestaje być pytaniem dla panelu. UWAGA wdrożeniowa: workflowy `dev-docs-execute-wf` / `dev-docs-review-wf`
+      ZOSTAJĄ (woła je autopilot); SKILL.md dev-docs-execute/review czyta dziś agent w runie (D6) — przed usunięciem skilli treść potrzebna agentom przenieść
+      do workflowów/plików klas; opisy trzech builderów „wywoływany przez dev-docs-execute” przepiąć na workflow.
+    - **`cleanupPeriodDays` = 120 dni: TAK** — wykonanie w etapie higieny konta (ustawienie konta, nie szablonu).
+    - Usunięcia NIE są wykonywane w analizie — trafiają na listę zmian szablonu (PANEL-WEJSCIE §10) i do planu etapu 5. Panel projektuje bez tych elementów.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -367,16 +377,16 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 Stan po 2026-09-23: etapy 0–3, 4 pomiary, domknięcia D1–D6 i D5b gotowe; **przegląd domknięć na Opus 5.5 ZAKOŃCZONY** (`PROPOZYCJA-POPRAWEK-DOMKNIEC.md`):
 D1–D6 PRZYJĘTE i wprowadzone (6a pkt 19). Najważniejsza zmiana z D4: dźwignia kontekstu ≈ 40–50% kosztu fazy (nie 25–35%), dźwignie nie sumują się, nowe
-cele ctx_start. **Następny krok: decyzje operatora z D6** (fakty w `PRZEGLAD-D6-DLA-OPERATORA.md` i PANEL-WEJSCIE §7): (a) koszyk D — usunąć code-review,
-code-quality, gemini, dev-docs-update, bugfix? (b) dev-ideate i freshness-audit(-wf) — zostają czy wypadają? (c) tryb ręczny execute/review — zostaje jako
-pytanie dla panelu czy decyzja teraz? Potem — WYŁĄCZNIE na znak operatora: mini-run (Opus, §11 pakietu; (d) i (e) rozstrzygające, (e) potwierdza dźwignię
+cele ctx_start. **Decyzje z D6 PODJĘTE 2026-09-23 (6a pkt 20):** koszyk D, dev-ideate, freshness-audit(+wf) i tryb ręczny execute/review WYPADAJĄ
+(lista zmian §10, plan etapu 5); `cleanupPeriodDays` = 120 (higiena konta). **Następny krok: plan mini-runu (bez uruchamiania).** Potem — WYŁĄCZNIE na znak operatora: mini-run (Opus, §11 pakietu; (d) i (e) rozstrzygające, (e) potwierdza dźwignię
 i cele z D4), potem panel w 3 runach na Fable, potem etap 5 (raporty + plan wdrożenia w iteracjach).
 Instrukcja dla następnej sesji:
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, model Opus 5.5.
 Przegląd domknięć jest ZAKOŃCZONY: D1–D6 przejrzane, przyjęte i wprowadzone (ostatnie D4: dźwignia kontekstu ≈ 40–50%, dźwignie nie sumują się,
-nowe cele ctx_start). Nie przeglądaj domknięć ponownie. Dziś: moje decyzje z audytu skilli (D6), potem przygotowanie mini-runu — sam mini-run na mój znak.
+nowe cele ctx_start). Nie przeglądaj domknięć ponownie. Decyzje z audytu skilli (D6) są PODJĘTE (HANDOFF 6a pkt 20) — KROK 1 niżej jest
+ZROBIONY, nie wracaj do niego. Dziś: KROK 2 — plan mini-runu; sam mini-run na mój znak.
 
 Przeczytaj najpierw, w całości:
 1. docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md — sekcja 2 (wiersz 3½), sekcja 3, 6a pkt 15–19, sekcja 7 (pułapki)

@@ -328,7 +328,12 @@ Przy usuwaniu trzeba też poprawić README. Szablon mobilny ma własne kopie tyc
 Pięć zostaje do decyzji: ideate (jedno przerwane uruchomienie i jeden plik), freshness-audit ze swoim workflowem (dwa uruchomienia i trzy raporty,
 wszystko z jednego dnia w sierpniu, wyłącznie w repozytorium szablonu), oraz execute i review jako skille, czyli tryb ręczny pipeline'u, którego
 treść czyta też agent wewnątrz runu. Tryb ręczny był Twoim głównym trybem przez pół roku: prawie sześćset wywołań do 7 czerwca. Od wejścia
-autopilota nie użyłeś go ani razu, czyli od trzech i pół miesiąca. Panel powie, czy tryb ręczny zostaje jako skill, czy redukuje się do samego workflowu. Skille z konta, nie z szablonu (Figma, frontend-design i podobne), audyt pomija zgodnie
+autopilota nie użyłeś go ani razu, czyli od trzech i pół miesiąca.
+
+**Twoje decyzje z 23 września:** wszystkie pięć kandydatów do usunięcia wypada, a z koszyka do decyzji wypadają ideate, freshness-audit z workflowem
+i tryb ręczny execute i review. Workflowy execute i review zostają, bo woła je autopilot; przed usunięciem skilli przeniesiemy do nich to, co agent
+w runie dziś z tych skilli czyta. Usunięcia trafiają na listę zmian szablonu i do planu wdrożenia, a panel projektuje już bez tych elementów.
+Przechowywanie zapisów rozmów wydłużamy do 120 dni w etapie porządków na koncie. Skille z konta, nie z szablonu (Figma, frontend-design i podobne), audyt pomija zgodnie
 z Twoją decyzją, że to etap higieny konta.
 
 ---
