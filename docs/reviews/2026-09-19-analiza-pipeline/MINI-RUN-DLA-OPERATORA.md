@@ -112,6 +112,6 @@ jest czytana w trakcie runu, więc zawsze aktualna.
 
 Wynik jest wpisany do pakietu dla panelu. Pakiet ma teraz status i wyniki mini-runu, potwierdzone liczby oszczędności i cele startu, sposób uruchamiania
 telemetrii i obie nowe rzeczy jako wejście dla panelu. Nowa sesja po zmianach w konfiguracji jest na liście zmian, a mapa walidacji ma wyniki.
-Notatki przekazania i pamięć projektu są zaktualizowane. Następny krok to panel na Fable, na Twój znak.
+Notatki przekazania i pamięć projektu są zaktualizowane. Następny krok to panel na Opus 5.5, na Twój znak.
 Gotowa wiadomość startowa panelu leży w notatkach przekazania. Ma zdanie do agentów, żeby nie wykonywali Twojej wiadomości.
 Kopia oferty-online w katalogu tymczasowym zostaje do końca analizy. Usunę ją tylko za Twoją zgodą.

@@ -7,9 +7,9 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 ## 0. Co robi panel i kto co czyta
 
 - **Skład (HANDOFF §2 wiersz 4, §6 pkt 5):** 3 niezależne projekty pipeline'u „po" — **minimalistyczny** (minimalny koszt), **jakość-najpierw**
-  (maksymalna jakość), **hybrydowy** — → 3 sędziów → sceptyk (adwersarialna krytyka) na zwycięzcę → synteza. ~8 agentów, **wszyscy na Fable** (6a pkt 19:
-  „zależy nam na jakości"), w **TRZECH osobnych runach** (projektanci → sesja główna czyta → sędziowie → sceptyk), synteza w sesji głównej; przed startem sprawdzić
-  limit Fable. Wnioski dotyczą szablonu (workspace-template), nie jednego projektu (HANDOFF §1). **Panel NIE buduje:** wynik = koncepcja docelowego pipeline'u
+  (maksymalna jakość), **hybrydowy** — → 3 sędziów → sceptyk (adwersarialna krytyka) na zwycięzcę → synteza. ~8 agentów, **wszyscy na Opus 5.5** (decyzja operatora
+  2026-09-23, 6a pkt 22 — zastępuje „na Fable” z 6a pkt 19; w skrypcie przypięty `model: 'claude-opus-5-5'`, pełny identyfikator przypina model — krok 0 mini-runu),
+  w **TRZECH osobnych runach** (projektanci → sesja główna czyta → sędziowie → sceptyk), synteza w sesji głównej (Opus 5.5). Wnioski dotyczą szablonu (workspace-template), nie jednego projektu (HANDOFF §1). **Panel NIE buduje:** wynik = koncepcja docelowego pipeline'u
   + kolejność wdrożenia; etap 5 robi z tego plan w iteracjach, implementacja faza po fazie z metryką w telemetrii (6a pkt 19). Żaden projektant nie pisze kodu.
 - **Każdy projektant dostaje:** ten plik + `dane/dane-digest.md` (model kosztu) + `ETAP1-ROZSTRZYGNIECIE.md` (werdykty osi po kontrach) +
   `ETAP2-ROZSTRZYGNIECIE.md` (mapa researchu) + hipotezy §5 tego pliku, każdy z innym priorytetem. NIE dostaje werdyktów workflow-A (HANDOFF §4, dane v1, zawyżone ~2×).

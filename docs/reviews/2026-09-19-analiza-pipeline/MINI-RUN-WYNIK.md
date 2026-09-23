@@ -122,5 +122,5 @@ kanałem-artefaktem testu, przekazana wiadomość operatora w E1 (2 638 zn) i E2
 ## 4. Co po akceptacji (HANDOFF §8 pkt 6)
 
 PANEL-WEJSCIE §11 (status ZROBIONY + wynik a–f), §12 (cele ctx_start potwierdzone, wyzwalacz skanu), §1 pkt 4 (liczba z (e)), §2a (N1), §10 (N2: nowa sesja po zmianach
-`.claude/`); mapa walidacji; HANDOFF (wiersz 3¾, 6a, §8 → panel na Fable na znak); pamięć projektu; commit `docs/reviews`. Kopia oferty-online w scratchpadzie zostaje
+`.claude/`); mapa walidacji; HANDOFF (wiersz 3¾, 6a, §8 → panel na znak; model panelu: Opus 5.5 — 6a pkt 22); pamięć projektu; commit `docs/reviews`. Kopia oferty-online w scratchpadzie zostaje
 do końca analizy (usuwanie tylko za zgodą operatora).
