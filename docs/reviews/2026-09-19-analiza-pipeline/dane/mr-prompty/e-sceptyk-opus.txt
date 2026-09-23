@@ -1,0 +1,76 @@
+Adwersaryjnie OBAL ponizsze findingi z review fazy 1 (docs/active/cookie-consent-panelu-gtm). Wszystkie dotycza tego samego
+pliku, wiec kod otwierasz RAZ — ale oceniasz je OSOBNO. Domyslnie zakladaj ze finding jest NIEREALNY, chyba ze masz twardy dowod z kodu.
+
+WYJATEK od domyslnej skepsy: argument "to kod jednorazowy / throwaway / skrypt migracyjny / usuwany pozniej"
+NIE obala findingu i NIE uzasadnia severityKorekta w dol. Obalasz WYLACZNIE dowodem z kodu, ze wplyw nie zachodzi.
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+ .env.example                                       |   8 +
+ CLAUDE.md                                          | 140 ++++---
+ Dockerfile                                         |  10 +
+ apps/dashboard/src/lib/analytics.test.ts           | 276 +++++++++++++-
+ apps/dashboard/src/lib/analytics.ts                | 263 ++++++++++---
+ apps/dashboard/src/lib/consent.test.ts             | 182 +++++++++
+ apps/dashboard/src/lib/consent.ts                  | 131 +++++++
+ apps/dashboard/tsconfig.json                       |   5 +-
+ apps/dashboard/vite-plugins/gtm-container.test.ts  | 126 +++++++
+ apps/dashboard/vite-plugins/gtm-container.ts       | 145 +++++++
+ apps/dashboard/vite.config.ts                      |   9 +-
+ docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-kontekst.md |  34 ++
+ docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-plan.md     |  55 +++
+ docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-zadania.md  | 113 ++++++
+ docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md              |  24 +-
+ docs/operator/faza-10a-cookie-consent-panelu-przygotowanie.md               | 112 ++++++
+ docs/plans/2026-09-19-001-feat-cookie-consent-panelu-gtm-plan.md            | 417 +++++++++++++++++++++
+ scripts/dockerfile-invariants.test.ts              |   1 +
+ 18 files changed, 1932 insertions(+), 119 deletions(-)
+- apps/dashboard/vite-plugins/gtm-container.ts — nowa wtyczka Vite: parseGtmContainerId (biala lista ^GTM-[A-Z0-9]{5,10}$), buildGtmSnippets, injectGtmContainer + transformIndexHtml
+- apps/dashboard/vite-plugins/gtm-container.test.ts — nowe testy wtyczki GTM: parsowanie ID, brak ID = HTML identyczny, dokladnie 2 wystapienia ID, brak kotwicy = rzut
+- apps/dashboard/vite.config.ts — rejestracja gtmContainerPlugin z loadEnv (envDir = korzen repo) + test.include rozszerzone o vite-plugins/**/*.test.ts
+- apps/dashboard/tsconfig.json — include + vite-plugins oraz allowImportingTsExtensions dla natywnego loadera konfiguracji Vite
+- apps/dashboard/src/lib/consent.ts — nowy modul zgody: parser ciasteczka cookieyes-consent (dokladna nazwa, decodeURIComponent tylko URIError, literalne 'yes') + subskrypcja zdarzenia cookieyes_consent_update
+- apps/dashboard/src/lib/consent.test.ts — nowe testy parsera ciasteczka (prefiksy, wielkosc liter, kodowanie, uszkodzona wartosc) i subskrypcji zdarzen wraz z odpieciem
+- apps/dashboard/src/lib/analytics.ts — PostHog jako maszyna stanow bez_zgody/startuje/aktywna/wylaczona z numerem generacji po await import, opt_in/opt_out_capturing, lastOwnerId przez bootstrap.distinctID
+- apps/dashboard/src/lib/analytics.test.ts — rozszerzone testy: brak zgody = zero init/capture i pusty bufor, zgoda po fakcie, cofniecie i ponowna zgoda, cofniecie w trakcie importu (generacja), reset w stanie wylaczona
+- Dockerfile — ARG/ENV VITE_GTM_ID w etapie build + kopiowanie katalogu apps/dashboard/vite-plugins
+- scripts/dockerfile-invariants.test.ts — VITE_GTM_ID dopisane do DASHBOARD_BUILD_VARIABLES (straznik ARG+ENV i wpisu w .env.example)
+- .env.example — nowa buildowa zmienna VITE_GTM_ID z komentarzem (pusta = brak kontenera i banera)
+- CLAUDE.md — kondensacja dokumentu sterujacego (indeks faz + niezmienniki) — zmiana z commita bazowego widoczna w zakresie diffu
+- docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md — aktualizacja stanu MVP po zamknieciu poprzedniej fazy (dokument kanoniczny)
+- docs/plans/2026-09-19-001-feat-cookie-consent-panelu-gtm-plan.md — nowy plan techniczny fazy 10a: R1-R10, decyzje techniczne, IU-1..IU-7
+- docs/operator/faza-10a-cookie-consent-panelu-przygotowanie.md — nowa checklista operatora (CookieYes, GTM, dane przetwarzajacych)
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-plan.md — plan faz zadania dla autopilota (zakres, granice, kryteria akceptacji)
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-kontekst.md — kontekst zadania + dziennik implementacji fazy 1 i odchylen builderow
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-zadania.md — checkboxy IU-1..IU-7 z testami i weryfikacjami; faza 1 odhaczona w czesci implementacyjnej
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-1.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-docs-active-cookie-consent-panelu-gtm-faza-1.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+OSOBNO ZNACZY OSOBNO: brak dowodu przeciw jednemu findingowi NIE obala pozostalych, a obalenie jednego
+NIE jest argumentem przeciw kolejnym. Nie szukaj "wspolnego mianownika" i nie oceniaj listy jako calosci.
+
+0. [P2/TEST] apps/dashboard/src/lib/analytics.test.ts:468 — Kluczowa obietnica fazy — "bez zgody chunk SDK nie jest nawet pobierany" (komentarz nagłówkowy analytics.ts, punkt 7; R4; uzasadnienie bundle'owe ~98 KB gzip) — nie ma ani jednej asercji. Test "bez zgody nie ma ani SDK, ani bufora" sprawdza wyłącznie `posthogMock.init`/`capture`, a te są ciche także w implementacji, która chunk POBIERA i tylko nie woła `init`. Czyli regresja "import wyjechał przed bramkę zgody" przechodzi zielono, a to ona kosztuje transfer i jest argumentem prawnym. Akcja: w fabryce `vi.mock('posthog-js/dist/module.no-external', …)` (analytics.test.ts:36) inkrementuj licznik wywołań fabryki, zeruj go w `beforeEach` i w tym przypadku asertuj `expect(sdkImportCount).toBe(0)` przed zdarzeniem zgody oraz `toBe(1)` po nim (kontrola, żeby asercja nie była prawdziwa dla implementacji, która nie importuje nigdy).
+
+Dla KAZDEGO indeksu z listy zwroc osobny werdykt w werdykty[] z polem `indeks` rownym numerowi z listy.
+Gdy dla ktoregos indeksu nie potrafisz rozstrzygnac — POMIN go zamiast zgadywac; pominiety indeks zostanie
+oznaczony jako niezweryfikowany, a zgadniety werdykt cicho zabilby albo przepuscil realny finding.

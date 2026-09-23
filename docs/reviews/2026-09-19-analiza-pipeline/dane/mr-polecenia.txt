@@ -1,0 +1,19 @@
+Pula prawdziwych polecen buildera danych (z kopii oferty-online): 445 pozycji; odrzucone {'konflikt': 86, 'krotkie': 39, 'duplikat': 4}
+per zrodlo: {'CLAUDE.md': 30, '.claude/rules/coding-rules.md': 97, '.claude/agents/feature-builder-data.md': 32, '.claude/agents/feature-builder-fullstack.md': 36, '.claude/skills/supabase-dev-guidelines/SKILL.md': 50, '.claude/skills/security/SKILL.md': 57, '.claude/skills/sentry-integration/SKILL.md': 23, '.claude/skills/tailwind-react-guidelines/SKILL.md': 33, '.claude/skills/ux-ui-guidelines/SKILL.md': 74, '.claude/rules/learned-patterns.md': 13}
+ramie 400: 395 z puli + 5 markerow; ramie 100: 95 (losowy podzbior ramienia 400, ziarno 20260923) + 5 markerow
+wycinek learned-patterns do E2: 886 zn
+wpisy learned-patterns w A: ['**Limity usługi zewnętrznej przelicz per zasób, zanim uznasz', '**Liczba zza granicy zaufania sterująca ROZMIAREM potrzebuje', '**Licznik egzekwowany w bazie jest tak mocny, jak jego najsł']
+
+D100-1: blok 100 pozycji (markery na [10, 30, 50, 70, 90]) | caly prompt: 15307 zn, metoda D2 119 pozycji list + 7 zdan nakazowych
+D100-2: blok 100 pozycji (markery na [10, 30, 50, 70, 90]) | caly prompt: 15307 zn, metoda D2 119 pozycji list + 7 zdan nakazowych
+D100-3: blok 100 pozycji (markery na [10, 30, 50, 70, 90]) | caly prompt: 15307 zn, metoda D2 119 pozycji list + 7 zdan nakazowych
+D100-4: blok 100 pozycji (markery na [10, 30, 50, 70, 90]) | caly prompt: 15307 zn, metoda D2 119 pozycji list + 7 zdan nakazowych
+D100-5: blok 100 pozycji (markery na [10, 30, 50, 70, 90]) | caly prompt: 15307 zn, metoda D2 119 pozycji list + 7 zdan nakazowych
+D400-1: blok 400 pozycji (markery na [40, 120, 200, 280, 360]) | caly prompt: 47310 zn, metoda D2 419 pozycji list + 7 zdan nakazowych
+D400-2: blok 400 pozycji (markery na [40, 120, 200, 280, 360]) | caly prompt: 47310 zn, metoda D2 419 pozycji list + 7 zdan nakazowych
+D400-3: blok 400 pozycji (markery na [40, 120, 200, 280, 360]) | caly prompt: 47310 zn, metoda D2 419 pozycji list + 7 zdan nakazowych
+D400-4: blok 400 pozycji (markery na [40, 120, 200, 280, 360]) | caly prompt: 47310 zn, metoda D2 419 pozycji list + 7 zdan nakazowych
+D400-5: blok 400 pozycji (markery na [40, 120, 200, 280, 360]) | caly prompt: 47310 zn, metoda D2 419 pozycji list + 7 zdan nakazowych
+A-1: caly prompt 8326 zn, metoda D2 27 pozycji list + 7 zdan nakazowych
+A-2: caly prompt 8326 zn, metoda D2 27 pozycji list + 7 zdan nakazowych
+A-3: caly prompt 8326 zn, metoda D2 27 pozycji list + 7 zdan nakazowych

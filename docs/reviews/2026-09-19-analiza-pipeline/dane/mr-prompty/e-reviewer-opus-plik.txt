@@ -1,0 +1,85 @@
+Jestes reviewerem fazy 3 w folderze docs/active/cookie-consent-panelu-gtm.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Skup sie na: zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow.
+Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+=== SEMANTYKA I JEDNOSTKI POL (obowiazkowe, gdy faza tyka danych liczbowych/czasowych) ===
+Kod wewnetrznie spojny moze byc jednolicie BLEDNY: jesli fixture i implementacja przyjmuja to samo zle
+zalozenie o znaczeniu pola, testy przechodza, a produkt liczy zle.
+
+PROCEDURA (wykonaj ja, nie streszczaj):
+1. Wypisz pola liczbowe/czasowe dotkniete faza i dla KAZDEGO uruchom
+   `grep -rn "<nazwa_pola>" --include=*.ts --include=*.tsx --include=*.sql .` — masz zobaczyc WSZYSTKIE
+   uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
+2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
+   -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly `numeric` bez komentarza), NIE zgaduj
+   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
+   "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
+3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
+   RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
+   przeglad kodu nie daje takiej pewnosci jak realna liczba.
+
+Co sprawdzasz w kazdym uzyciu:
+- kwoty: calosc vs per-osoba vs per-jednostke; grosze vs zlote; brutto vs netto,
+- czas: sekundy vs milisekundy; UTC vs lokalny; timestamp vs data,
+- indeksy i skale: miesiac 0- vs 1-based; procenty jako 0..1 vs 0..100; licznik vs suma,
+- liczebnosci: liczba graczy vs liczba druzyn vs liczba miejsc.
+Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
+testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
+Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
+UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
+uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
+wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
+=== KONIEC BLOKU SEMANTYKI ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+CLAUDE.md | 3 +-; docs/CONCEPTS.md | 2 +-; docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-kontekst.md | 2 ++; docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-zadania.md | 21 ++++-------; docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md | 39 +++++++++++++++++++---; docs/design.md | 4 +--; docs/plans/2026-09-19-001-feat-cookie-consent-panelu-gtm-plan.md | 9 +++--; 7 files changed, 54 insertions(+), 26 deletions(-) (zakres acf19f2..3164fc8)
+- CLAUDE.md — nowy niezmiennik o zgodzie/GTM i uzupełnienie mapy kodu o lib/consent.ts oraz wtyczkę builda
+- docs/CONCEPTS.md — zdanie o braku banera cookies zawężone do strony oferty z odsyłaczem do fazy 10a
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-kontekst.md — dopisek o decyzji 1.7 = C i widgecie revisit consent w wymaganiach operatora
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-zadania.md — odhaczenie checkboxów fazy 3 i domknięcie list Do poprawy
+- docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md — sekcja Faza 10a (zakres, wyjście, dług CSP), uchylenie wpisu 9b, krok 7 i wpis w historii decyzji
+- docs/design.md — panel MA baner CookieYes renderowany przez dostawcę, strona oferty nadal bez banera
+- docs/plans/2026-09-19-001-feat-cookie-consent-panelu-gtm-plan.md — korekta planu fazy 3 (brak akapitu Rozstrzygnięte w fazie 10a, wpis 9b w części II, CONCEPTS.md mimo pustego grepu)
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-3.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-docs-active-cookie-consent-panelu-gtm-faza-3.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.

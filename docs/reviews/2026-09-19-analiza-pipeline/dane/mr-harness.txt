@@ -1,0 +1,15 @@
+=== f1/f2: runy workflow w projektach kopii i mr-f — plik harnessu vs journal ===
+5-4e9a-9fbc-0ea67b5fac8f-scratchpad-mr-f wf_75d849a3-0d0   journal: started 1 / result 0 | BRAK pliku harnessu
+5-4e9a-9fbc-0ea67b5fac8f-scratchpad-mr-f wf_e8db4d90-026   journal: started 1 / result 0 | BRAK pliku harnessu
+5-4e9a-9fbc-0ea67b5fac8f-scratchpad-mr-f wf_4a94ae2a-a8a   journal: started 1 / result 1 | harness: completed, mr-f2, mtime - (start+durationMs) = +0.0 s, mtime - ostatni zapis transkryptu = -0.1 s
+5-4e9a-9fbc-0ea67b5fac8f-scratchpad-mr-f wf_16ed06cc-c6e   journal: started 1 / result 1 | harness: completed, mr-f2, mtime - (start+durationMs) = +0.0 s, mtime - ostatni zapis transkryptu = -0.1 s
+fbc-0ea67b5fac8f-scratchpad-oferty-kopia wf_11b9703a-88c   journal: started 16 / result 15 | BRAK pliku harnessu
+
+=== f3: hook Stop (testowy, w .claude/settings.json kopii) — kazde zakonczenie odpowiedzi sesji ===
+18:06:50 sesja 86e1644e | zadania w tle: [('wkjkhis6s', 'workflow', 'running')] | koniec odpowiedzi: Seria D (sto kontra czterysta poleceń) ruszyła w tej sesji. Dziesięciu
+18:10:13 sesja 86e1644e | zadania w tle: [] | koniec odpowiedzi: Seria D się skończyła. Wszyscy dziesięciu builderów zakończyło zadanie
+18:17:16 sesja 86e1644e | zadania w tle: [] | koniec odpowiedzi: Seria D policzona. Wynik jest jednoznaczny: przy stu i przy czterystu 
+19:02:04 sesja 86e1644e | zadania w tle: [] | koniec odpowiedzi: Przeniosłem się do kopii tylko na chwilę, żeby agenci startowali w rep
+19:08:51 sesja 32225565 | zadania w tle: [] | koniec odpowiedzi: Hej! Jesteś na gałęzi `feature/instrukcja-dla-zaproszonych`, drzewo ro
+19:09:10 sesja 32225565 | zadania w tle: [('wziyzhqbw', 'workflow', 'running')] | koniec odpowiedzi: E1 wystartował (`wf_11b9703a-88c`). Czekam na powiadomienie o końcu.
+pola wejscia hooka: ['background_tasks', 'cwd', 'effort', 'hook_event_name', 'last_assistant_message', 'permission_mode', 'prompt_id', 'scratchpad_dir', 'session_crons', 'session_id', 'stop_hook_active', 'transcript_path']

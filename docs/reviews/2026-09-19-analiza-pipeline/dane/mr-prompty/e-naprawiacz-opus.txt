@@ -1,0 +1,62 @@
+Jestes czescia pipeline'u dev-autopilot. To JEDYNA tura poprawek po kontroli commita fix fazy 2.
+Kontrola diffu naprawczego znalazla ponizsze pozycje — to rzeczy, ktore wprowadzil albo pominal
+sam fix, nie nowe findingi z review.
+
+Folder zadania: docs/active/cookie-consent-panelu-gtm
+
+DO POPRAWY (lista autorytatywna):
+[
+  {
+    "zrodlo": "bramka-bez-testu-odmowy",
+    "plik": "apps/server/src/offer/pages/terms-attachment.ts:118",
+    "opis": "nowa bramka walidacyjna (Fail fast przy imporcie modulu: pusta lista dostawcow PANELU spoza EOG (buildTransferBasisSentence zwraca null) rzuca wyjatkiem, zamiast wyrenderowac kalekie zdanie „przetwarzaja: . Przekazujemy je tam…”.) nie ma testu ODMOWY. Wektory do pokrycia: przeniesienie Resend do regionu `'Niemcy'` i CookieYes do `'Irlandia'` — lista panelu spoza EOG pustoszeje, modul rzuca przy starcie procesu serwujacego TAKZE oferty | odebranie wszystkim wpisom zakresu `'panel'` (np. `scopes: ['oferty']`) — processorsForScope('panel') pustoszeje, gateway rzuca z komunikatem o EOG, ktory nie opisuje faktycznej przyczyny | usuniecie ostatniego wpisu spoza EOG z LEGAL_PROCESSORS — ta sama sciezka, bez zadnej asercji pilnujacej, ze odmowa faktycznie nastepuje | dopisanie dostawcy spoza EOG z pustym `name` — gate przepuszcza, zdanie dostaje ` ()` zamiast odmowy"
+  },
+  {
+    "zrodlo": "bramka-bez-testu-odmowy",
+    "plik": "apps/server/src/offer/pages/app-privacy-page.test.ts:214",
+    "opis": "nowa bramka walidacyjna (Skaner statycznosci dokumentu prawnego: `expect(html).not.toContain('<script')` (lustro w terms-page.test.ts:241) — ma pilnowac obietnicy „serwujemy je jako zwykly dokument bez skryptow”.) nie ma testu ODMOWY. Wektory do pokrycia: `<SCRIPT src=\"/x.js\">` wielkimi literami — `toContain` jest case-sensitive, przegladarka wykona, bramka milczy | `<svg onload=\"...\">` albo `onclick=` w szablonie — JS bez ani jednego wystapienia `<script` | `<link rel=\"modulepreload\" href=\"/x.js\">` albo `<iframe src=\"/x\">` ze sciezka WZGLEDNA — omija rownoczesnie bramke `<script` i bramke `https://` | `<meta http-equiv=\"refresh\" content=\"0;/x\">` — przekierowanie bez skryptu i bez adresu absolutnego | `<script` wstawiony do sekcji wyrenderowanej innym helperem niz legal-document (escapeHtml dotyczy tresci, nie szablonu)"
+  },
+  {
+    "zrodlo": "bramka-bez-testu-odmowy",
+    "plik": "apps/server/src/offer/pages/app-privacy-page.test.ts:128",
+    "opis": "nowa bramka walidacyjna (Licznik sekcji z wyjscia renderu: `expect(html.match(/<h2>/g) ?? []).toHaveLength(HEADINGS.length)` — zastapil tautologiczna asercje na fiksturze.) nie ma testu ODMOWY. Wektory do pokrycia: nagłowek wyrenderowany z atrybutem `<h2 id=\"pliki-cookie\">` — regexp `/<h2>/` nie trafia i licznik spada, choc dokument ma komplet sekcji | zmiana `headingTag` sekcji na `h3` w legal-document.ts — licznik spada, komunikat mowi o liczbie punktow, nie o znaczniku | dolozenie zalacznika/innego bloku renderowanego jako `<h2>` poza SECTIONS — licznik rosnie i test pada z powodu niezwiazanego z liczba punktow | tresc akapitu zawierajaca literal `<h2>` — escapeHtml zamienia go na encje, wiec ta sciezka jest zamknieta, ale zaden test tego nie utrwala"
+  }
+]
+
+Zasady:
+- Pusty `catch`: zaloguj albo re-throw. Nigdy nie zostawiaj pustego bloku (coding-rules §4).
+- `as` / `: any` / non-null `!`: zastap type guardem, `unknown` z zawezeniem albo jawna obsluga
+  nullowalnosci (coding-rules §10). `as const` jest dozwolone i nie jest tu zglaszane.
+- `console.log` w kodzie produkcyjnym: usun albo zamien na logger projektu.
+- Regresja: cofnij zmiane, o ktora nikt nie prosil, albo napraw to, co przestalo dzialac.
+- Brakujacy test odmowy: DOPISZ test sprawdzajacy, ze bramka ODRZUCA zle wejscie — po jednym na wektor
+  z listy. NIE oslabiaj i NIE modyfikuj istniejacych testow, zeby przeszly (zakaz twardy: coding-rules §2).
+
+Po poprawkach: pelna walidacja (typecheck, test, build — komendy z package.json), commit
+`fix([nazwa]): kontrola diffu naprawczego fazy 2` z jawnym pathspec zmienionych plikow
+(ZAKAZ `git add -A` i `git add .`). Gdy ktorejs pozycji NIE da sie zamknac bez ruszania kodu spoza tej
+fazy — zostaw ja i opisz w nienaprawione[]; to nie jest bramka blokujaca faze.
+
+=== DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
+(1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
+(2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
+(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
+    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+REGULY:
+- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+  Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
+  (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
+- NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
+- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
+  traktuj jako ZIMNY (pelna procedura tla powyzej).
+- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
+  wiec chroni WARM suite'y w oknie 180-600s.
+  NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
+  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
+  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
+  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+  Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
+=== KONIEC BLOKU DLUGICH KOMEND ===
+
+Zwroc {naprawione, pozostaje, walidacja, nierozwiazaneP1: 0, nierozwiazaneP2: 0, plikiBinarne, p3Pominiete: [], nienaprawione}.

@@ -1,0 +1,35 @@
+Srodowisko: entrypoint=claude-desktop, Claude Code 2.1.280, cwd=/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia
+
+=== 1. ctx_start [tok] per komorka: dzis / T (sama allowlista) / TOL (allowlista + omitClaudeMd u mechanicznych + learned-patterns poza eager) vs D4 (run 20.09) ===
+mechaniczny-haiku        dzis  59854 | T  13195 | TOL      - || D4: dzis 89.2k -> po 9.5k | TOL/cel D4 = -
+orkiestracyjny-opus      dzis  79811 | T  14723 | TOL      - || D4: dzis 121.2k -> po 24.8k | TOL/cel D4 = -
+reviewer-opus-plik       dzis  84004 | T  18965 | TOL      - || D4: dzis 125.2k -> po 28.8k | TOL/cel D4 = -
+reviewer-opus-bezpliku   dzis  82405 | T  17317 | TOL      - || D4: dzis 125.2k -> po 28.8k | TOL/cel D4 = -
+sceptyk-opus             dzis  81307 | T  16219 | TOL      - || D4: dzis 122.7k -> po 26.3k | TOL/cel D4 = -
+naprawiacz-opus          dzis  80317 | T  15229 | TOL      - || D4: dzis 122.6k -> po 26.2k | TOL/cel D4 = -
+naprawiacz-haiku         dzis  58986 | T  12327 | TOL      - || D4: dzis 88.3k -> po 20.9k | TOL/cel D4 = -
+builder-opus             dzis  97832 | T  32793 | TOL      - || D4: dzis 134.4k -> po 38.1k | TOL/cel D4 = -
+
+=== 2. Sklad startu (znaki) per wariant; narzedzia = liczba schematow w tablicy tools ===
+mechaniczny-haiku        dzis claude-haiku-4-5-20251001  ctx  59854 | narzedzia  42 (158585 zn) | odroczone  660 nazw ( 36356 zn) | skille  15785 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   4278 | prosba operatora    0 | sys  1919 | inne zal.  2299
+mechaniczny-haiku        T    claude-haiku-4-5-20251001  ctx  13195 | narzedzia   5 ( 30678 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   4278 | prosba operatora    0 | sys  1753 | inne zal.  2300
+orkiestracyjny-opus      dzis claude-opus-5-5            ctx  79811 | narzedzia  42 (137193 zn) | odroczone  660 nazw ( 36356 zn) | skille  29972 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   5872 | prosba operatora    0 | sys  1919 | inne zal.  2315
+orkiestracyjny-opus      T    claude-opus-5-5            ctx  14723 | narzedzia   5 (  9286 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   5872 | prosba operatora    0 | sys  1753 | inne zal.  2316
+reviewer-opus-plik       dzis claude-opus-5-5            ctx  84004 | narzedzia  42 (137193 zn) | odroczone  660 nazw ( 36356 zn) | skille  29972 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   8946 | prosba operatora    0 | sys  6674 | inne zal.  2315
+reviewer-opus-plik       T    claude-opus-5-5            ctx  18965 | narzedzia   5 (  9286 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   8946 | prosba operatora    0 | sys  6674 | inne zal.  2316
+reviewer-opus-bezpliku   dzis claude-opus-5-5            ctx  82405 | narzedzia  42 (137193 zn) | odroczone  660 nazw ( 36356 zn) | skille  29972 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt  10807 | prosba operatora    0 | sys  1919 | inne zal.  2315
+reviewer-opus-bezpliku   T    claude-opus-5-5            ctx  17317 | narzedzia   5 (  9286 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt  10807 | prosba operatora    0 | sys  1753 | inne zal.  2316
+sceptyk-opus             dzis claude-opus-5-5            ctx  81307 | narzedzia  42 (137193 zn) | odroczone  660 nazw ( 36356 zn) | skille  29972 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   8952 | prosba operatora    0 | sys  1919 | inne zal.  2315
+sceptyk-opus             T    claude-opus-5-5            ctx  16219 | narzedzia   5 (  9286 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   8952 | prosba operatora    0 | sys  1753 | inne zal.  2316
+naprawiacz-opus          dzis claude-opus-5-5            ctx  80317 | narzedzia  42 (137193 zn) | odroczone  660 nazw ( 36356 zn) | skille  29972 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   7028 | prosba operatora    0 | sys  1919 | inne zal.  2315
+naprawiacz-opus          T    claude-opus-5-5            ctx  15229 | narzedzia   5 (  9286 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   7028 | prosba operatora    0 | sys  1753 | inne zal.  2316
+naprawiacz-haiku         dzis claude-haiku-4-5-20251001  ctx  58986 | narzedzia  42 (158585 zn) | odroczone  660 nazw ( 36356 zn) | skille  15785 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   1904 | prosba operatora    0 | sys  1919 | inne zal.  2299
+naprawiacz-haiku         T    claude-haiku-4-5-20251001  ctx  12327 | narzedzia   5 ( 30678 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt   1904 | prosba operatora    0 | sys  1753 | inne zal.  2300
+builder-opus             dzis claude-opus-5-5            ctx  97832 | narzedzia  42 (137193 zn) | odroczone  660 nazw ( 36356 zn) | skille  29972 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt  37614 | prosba operatora    0 | sys  6869 | inne zal.  2315
+builder-opus             T    claude-opus-5-5            ctx  32793 | narzedzia   5 (  9286 zn) | odroczone    0 nazw (     0 zn) | skille      0 | agenci     0 | instrukcje  14215 zn ['CLAUDE.md', 'CLAUDE.md', 'coding-rules.md', 'MEMORY.md'] | prompt  37614 | prosba operatora    0 | sys  6869 | inne zal.  2316
+
+=== 3. Dzwignia: zmierzone Δ startu per komorka podstawione do agentow runu 20.09 (koszt 35.3 M jedn.; wagi: 1. wywolanie 1,25, kolejne 0,1) ===
+Δ zmierzone [tok]: {'mechaniczny-haiku': {'T': 46659}, 'orkiestracyjny-opus': {'T': 65088}, 'reviewer-opus-plik': {'T': 65039}, 'reviewer-opus-bezpliku': {'T': 65088}, 'sceptyk-opus': {'T': 65088}, 'naprawiacz-opus': {'T': 65088}, 'naprawiacz-haiku': {'T': 46659}, 'builder-opus': {'T': 65039}}
+  T     35.0%  — sama allowlista (D4: 27–38%, run 20.09: 37,8%)
+  TOL    0.0%  — allowlista + omitClaudeMd + learned-patterns poza eager (D4: 40–50%, run 20.09: 51,4%)
+  D4    53.2%  — kontrola metody: Δ p50 z D4 tymi samymi uproszczonymi wagami (d4r pelna metoda: 51,4%)

@@ -1,0 +1,84 @@
+Zadanie: docs/active/cookie-consent-panelu-gtm — Faza 2, IU-6. Wykonujesz PO IU-5 (lista `LEGAL_PROCESSORS` jest już rozszerzona do 7 dostawców, a `TRANSFER_BASIS_SENTENCE` wyprowadzone z listy).
+
+### IU-6: Polityka prywatności panelu — sekcja o plikach cookie; regulamin bez obietnicy „bez cookie"
+
+**Cel:** `/prywatnosc` i `/regulamin` na `APP_ORIGIN` mówią prawdę o banerze, kategoriach, cofnięciu zgody i PostHogu za zgodą.
+
+**Wymagania:** R7 — `/prywatnosc` dostaje sekcję o plikach cookie; zdanie „bez plików cookie i bez zapisu na Twoim urządzeniu" znika; regulamin i załącznik cytują listę 7 przetwarzających.
+
+**Zależności:** IU-3 (zachowanie kodu — PostHog startuje wyłącznie po zgodzie `analytics`, cofnięcie zatrzymuje wysyłkę bez przeładowania), IU-5 (lista dostawców); widget CookieYes „revisit consent" włączony przez operatora (checklista 2.6a) — to JEDYNY sposób cofnięcia zgody, nie ma linku w stopce.
+
+**Pliki:**
+- Modyfikuj: `apps/server/src/offer/pages/app-privacy-page.ts` (pkt 3 przepisany; nowa sekcja „Pliki cookie i zgoda" po pkt 3; zdanie o sesji logowania w pamięci przeglądarki; `EFFECTIVE_FROM` → data wdrożenia)
+- Modyfikuj: `apps/server/src/offer/pages/terms-page.ts` (tylko jeśli grep po „cookie", „urządzeniu", „śledz" wskaże zdanie sprzeczne; inaczej bez zmian poza datą, jeśli regulamin ma własną)
+- Test (unit): `apps/server/src/offer/pages/app-privacy-page.test.ts` (`HEADINGS` z nową sekcją i porządkiem; `COOKIE_PHRASES` `it.each` z kotwicą po obu stronach; asercja negatywna: dokument NIE zawiera „bez plików cookie"; `EFFECTIVE_FROM` nie równa się `'14 września 2026'`)
+- Test (unit): `apps/server/src/offer/pages/terms-page.test.ts` (asercja negatywna na zdanie sprzeczne, jeśli było)
+
+**Podejście:**
+- Sekcja „Pliki cookie i zgoda" (paragrafy czystym tekstem — renderer nie linkuje niczego poza `mailto:`): (1) panel wyświetla baner zgody przy pierwszym wejściu, obsługiwany przez CookieYes; (2) kategorie: niezbędne (zawsze), analityczne, funkcjonalne, reklamowe — dziś używana jest analityczna; (3) bez zgody analitycznej nie uruchamiamy PostHoga ani żadnego narzędzia analitycznego; (4) zgodę można zmienić lub cofnąć w każdej chwili przyciskiem ustawień cookies w lewym dolnym rogu panelu — zmiana działa natychmiast; (5) CookieYes zapisuje na urządzeniu plik cookie z zapisem decyzji (nazwa `cookieyes-consent`) i identyfikatorem zgody; (6) strony regulaminu i polityki nie ładują banera ani narzędzi.
+- Pkt 3 („Co zbieramy o korzystaniu z panelu"): PostHog wyłącznie po zgodzie; sam PostHog nie zapisuje cookie ani danych w przeglądarce (`persistence: 'memory'` zostaje); reszta punktu bez zmian.
+- Jedno zdanie o sesji logowania przechowywanej w pamięci przeglądarki jako niezbędnej do działania usługi (w pkt o logowaniu albo w nowej sekcji).
+- Numeracja nagłówków ciągła; odsyłacz do sekcji „Dane odbiorców" w tekście podąża za nowym numerem. Zasada z planu: numeracja ciągła, link do sekcji odbiorców podąża za nowym numerem — rozstrzygnij po przeczytaniu `HEADINGS` w teście.
+- Teksty przechodzą plik wzorców pisania i `docs/design.md` (bez „AI", bez „powered by", bez obietnic, których kod nie potwierdza — każde zdanie ma odpowiednik w IU-2/IU-3 albo w konfiguracji widgetu CookieYes z checklisty 2.6a).
+- Statyczność dokumentu: bez `https://` (istniejący strażnik) — nazwy dostawców bez adresów.
+
+**Teksty (verbatim):**
+- Nagłówek sekcji: `Pliki cookie i zgoda`
+- Opis miejsca cofnięcia zgody w treści: `przyciskiem ustawień cookies w lewym dolnym rogu panelu` (widget CookieYes, nie link w stopce)
+- Pozostałe zdania pisze builder według punktów powyżej; przechodzą self-check tekstów po napisaniu i akceptację operatora (checklista 3.2) przed merge'em.
+
+**Wzorce do naśladowania:**
+- Struktura `SECTIONS` i `EFFECTIVE_FROM` w `apps/server/src/offer/pages/app-privacy-page.ts`; kotwice `LIMIT_PHRASES` i `PROMISE_PHRASES` w testach tych stron.
+
+**Scenariusze testowe:**
+- [Unit] `HEADINGS` zawiera „Pliki cookie i zgoda" na właściwej pozycji, długość listy o 1 większa, porządek zachowany.
+- [Unit] `COOKIE_PHRASES` `it.each`: fragmenty z kotwicą po obu stronach dla: nazwy `cookieyes-consent`, frazy „w lewym dolnym rogu panelu", zdania „bez zgody … nie uruchamiamy", zdania o stronach dokumentów bez banera.
+- [Unit] Dokument NIE zawiera frazy „bez plików cookie" ani „bez zapisu na Twoim urządzeniu".
+- [Unit] `EFFECTIVE_FROM` różne od poprzedniej daty (`'14 września 2026'`); każdy `href` przechodzi `SAFE_HREF_PATTERN`; brak `https://`.
+
+**Weryfikacja (dla review/operatora, nie odhaczaj sam):**
+- `pnpm --filter @oferty/server exec vitest run src/offer/pages` zielone.
+- `grep -n "bez plików cookie\|bez zapisu na Twoim urządzeniu" apps/server/src/offer/pages/*.ts` → brak trafień.
+
+**Decyzje przywołane przez to IU:**
+- **D (Cofnięcie zgody przez widget CookieYes, nie przez link w stopce — decyzja 1.7 = C, 20.09.2026):** CookieYes renderuje własny pływający przycisk „revisit consent" w lewym dolnym rogu na każdej trasie SPA, więc wymóg „cofnięcie równie łatwe jak udzielenie" spełnia konfiguracja dostawcy, a `LegalLinks`, `texts.ts` i `app-layout.test.tsx` zostają NIETKNIĘTE (literał `'Regulamin · Prywatność'` nadal prawdziwy). Dawne IU-4 wycięte z planu — nie dodawaj linku w stopce.
+- **D (Źródło prawdy o zgodzie):** moduł `apps/dashboard/src/lib/consent.ts` parsuje ciasteczko `cookieyes-consent` na pary `klucz:wartość` i uznaje kategorię za udzieloną wyłącznie dla dosłownej wartości `yes`; zdarzenie `cookieyes_consent_update` rozstrzyga po `detail.accepted.includes('analytics')`. Nazwa kategorii to jedna stała `ANALYTICS_CONSENT_CATEGORY = 'analytics'`.
+- **D (Analityka jako maszyna stanów):** stan `'bez_zgody' | 'startuje' | 'aktywna' | 'wylaczona'`. Bez zgody `track`/`identifyUser` nie buforują niczego (R4 — zdarzenia i tożsamość sprzed zgody przepadają). Cofnięcie → `opt_out_capturing()` i stan `wylaczona`, w którym `track` jest no-opem. Ponowna zgoda → `opt_in_capturing({ captureEventName: false })` i `aktywna`. To są zachowania, które treść polityki ma opisywać prawdziwie.
+- **D (PostHog pozostaje w bundlu npm, nie w GTM).** `persistence: 'memory'` zostaje — PostHog nie zapisuje własnych cookie ani danych w przeglądarce.
+- **D (Dokumenty prawne na `APP_ORIGIN` renderowane bez skryptów)** — baner się na nich nie pojawia i to jest poprawne; zdanie (6) sekcji to opisuje.
+
+**Wyuczone reguły projektu:**
+- **Komunikat nie obiecuje czynności, której kod nie potwierdza.** Pytaj przy każdym zdaniu: „czy w miejscu, gdzie to zdanie się pokazuje, system WIE, że tak jest?". Tekst z zatwierdzonego planu przechodzi plik wzorców pisania TAK SAMO jak nowy — zatwierdzenie planu dotyczy zakresu, nie prawdziwości zdania wobec użytkownika.
+- **Każdy tekst dla użytkownika przechodzi self-check po napisaniu** (`docs/design.md` + plik wzorców pisania), także w turze poprawek po review.
+- **Test tekstu pisany z wyjścia implementacji UTRWALA wadę.** Odmieniaj CAŁĄ frazę jednym predykatem liczebnika; przypadki liczebników wypisz PRZED kodem.
+- **Literał-strażnik tekstu to fragment zdania z kotwicą po OBU stronach**, nigdy jedno słowo — `toContain('10 szablonów')` przepuszcza „110 szablonów", a „natychmiast" pasuje do każdego zdania. `toContain(x)` z `x` z danych wymaga wcześniej `expect(x).not.toBe('')`.
+- **Asercja `expect([404, 200]).toContain(status)` wolno napisać tylko dla wyniku REALNIE niedeterministycznego** — inaczej `it.each` z parą `[wejście, oczekiwany]`.
+- **Regexp będący bramką (biała lista `href`, `SAFE_HREF_PATTERN`) ma JEDNĄ kopię**; `grep` za lustrem obejmuje TAKŻE pliki `*.test.ts`.
+- **NIGDY nie modyfikuj ani nie osłabiaj istniejących asercji, żeby test przeszedł** — napraw implementację. Zmiany `HEADINGS`/`toHaveLength` są tu zamierzone przez plan, każda inna wymaga uzasadnienia.
+- **Skaner HTML stringiem** (jeśli dotykasz strażników dokumentu): atrybut wielowartościowy sprawdzaj po TOKENIE, nie `includes` prefiksu; bramki to zamknięte BIAŁE listy.
+- **Diff przenoszący stałą albo odpowiedzialność między modułami kończy się `grep`-em `CLAUDE.md` i dokumentu MVP za STARĄ lokalizacją.**
+- **Type safety:** bez `any`, bez `as` (poza `as const`), bez `!`; publiczne funkcje mają explicit return types. Pliki `.md` zapisuj narzędziami Edit/Write, nie przez Bash.
+
+Wymagania wykonania: zaimplementuj kod dla checkboxow implementacyjnych (POMIJAJ: Weryfikacja:, Operator:, [E2E], [Manual] — to dla review/operatora). Testy dla checkboxow Test: pisz RAZEM z kodem. Jesli dodajesz zaleznosc (bun add / npm install) — odnotuj to w odchyleniach.
+
+=== DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
+(1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
+(2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
+(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
+    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+REGULY:
+- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+  Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
+  (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
+- NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
+- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
+  traktuj jako ZIMNY (pelna procedura tla powyzej).
+- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
+  wiec chroni WARM suite'y w oknie 180-600s.
+  NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
+  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
+  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
+  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+  Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
+=== KONIEC BLOKU DLUGICH KOMEND ===

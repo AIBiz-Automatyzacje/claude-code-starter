@@ -1,0 +1,106 @@
+Zapisz plik stanu pipeline'u dev-autopilot: docs/active/cookie-consent-panelu-gtm/.autopilot-state.json (pelne nadpisanie).
+
+Tresc ponizej jest juz POPRAWNYM JSON-em wygenerowanym maszynowo. Twoje jedyne zadanie to przeniesc ja
+na dysk BAJT W BAJT. Nie formatuj, nie poprawiaj, nie skracaj, nie dodawaj komentarzy ani pol.
+
+--- POCZATEK TRESCI ---
+{
+  "wersja": 1,
+  "zadanie": "cookie-consent-panelu-gtm",
+  "fazy": [
+    {
+      "numer": 1,
+      "nazwa": "Kontener GTM i PostHog za zgodą",
+      "execute": "done",
+      "review": "done",
+      "fix": "done",
+      "otwarteFindingi": [],
+      "metryki": {
+        "liczniki": {
+          "p1": 0,
+          "p2": 5,
+          "p3": 4,
+          "operator": 4
+        },
+        "przebieg": {
+          "pominieci": [
+            "e2e"
+          ],
+          "e2eTryb": "pominiety",
+          "znalezione": 29,
+          "poDedupJs": 29,
+          "poDedupSem": 13,
+          "weryfikowane": 5,
+          "obalone": 0,
+          "p3Odrzucone": 0,
+          "e2eCheckboxy": 0,
+          "e2eStatus": "pominiety przez routing",
+          "e2ePass": 0,
+          "e2eFail": 0,
+          "e2eSkip": 0
+        }
+      }
+    },
+    {
+      "numer": 2,
+      "nazwa": "Dokumenty prawne panelu",
+      "execute": "done",
+      "review": "done",
+      "fix": "done",
+      "otwarteFindingi": [],
+      "metryki": {
+        "liczniki": {
+          "p1": 0,
+          "p2": 4,
+          "p3": 6,
+          "operator": 6
+        },
+        "przebieg": {
+          "pominieci": [
+            "e2e"
+          ],
+          "e2eTryb": "pominiety",
+          "znalezione": 34,
+          "poDedupJs": 32,
+          "poDedupSem": 18,
+          "weryfikowane": 6,
+          "obalone": 2,
+          "p3Odrzucone": 0,
+          "e2eCheckboxy": 0,
+          "e2eStatus": "pominiety przez routing",
+          "e2ePass": 0,
+          "e2eFail": 0,
+          "e2eSkip": 0
+        }
+      }
+    },
+    {
+      "numer": 3,
+      "nazwa": "Dokumenty sterujące",
+      "execute": "done",
+      "review": "pending",
+      "fix": "none",
+      "otwarteFindingi": [],
+      "metryki": null
+    }
+  ],
+  "zakonczenie": {
+    "walidacja": "pending",
+    "complete": "pending",
+    "compound": "pending"
+  }
+}
+--- KONIEC TRESCI ---
+
+1. ZAPIS: uzyj narzedzia Write z dokladnie ta trescia (bez linii "--- POCZATEK/KONIEC TRESCI ---").
+2. WALIDACJA (obowiazkowa, nie pomijaj): odczytaj plik Z DYSKU i sprawdz, ze parsuje sie jako JSON:
+   `node -e "JSON.parse(require('fs').readFileSync('docs/active/cookie-consent-panelu-gtm/.autopilot-state.json','utf8'));console.log('JSON-OK')"`
+   (brak node -> `python3 -c "import json;json.load(open('docs/active/cookie-consent-panelu-gtm/.autopilot-state.json'));print('JSON-OK')"`).
+   Wynik "JSON-OK" -> zwroc {zapisano:true, poprawnyJson:true}.
+   Blad parsowania -> ZAPISZ PONOWNIE (raz) i zwaliduj jeszcze raz. Nadal blad -> {zapisano:false, poprawnyJson:false}.
+3. POWOD tej walidacji (run feedback-marcin-poprawki, mobile, 2026-08-06): przy przepisywaniu tresci przez
+   agenta w opisie findingu wszedl NIEZAESCAPOWANY cudzyslow — plik przestal byc JSON-em. To jest plik,
+   z ktorego pipeline odtwarza stan po awarii: uszkodzony albo wywroci nastepny bootstrap, albo cicho skasuje
+   dowod, ze cala faza zostala wykonana, i pipeline powtorzy kilka godzin pracy. Zapis bez odczytu = brak dowodu.
+
+Nie modyfikuj ZADNYCH innych plikow.

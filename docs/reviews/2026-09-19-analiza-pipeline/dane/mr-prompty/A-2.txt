@@ -1,0 +1,65 @@
+To jest Twoje jedyne zadanie w tym przebiegu: wykonaj IU opisane poniżej.
+
+IU-MR: Notatki handlowca do oferty (warstwa danych)
+
+Folder zadania: docs/active/mr-notatki-oferty, Implementation Unit IU-MR.
+
+Cel: handlowiec zapisuje prywatne notatki do swojej opublikowanej oferty (np. „klient pytał o rabat”). Notatki widzi tylko właściciel oferty.
+
+Wymagania:
+- Tabela public.mr_notatki_oferty: id uuid (PK, gen_random_uuid()), oferta_id uuid (FK → public.offers(id), on delete cascade), autor_id uuid (FK → auth.users(id)), tresc text not null (1–2000 znaków, check w bazie), created_at timestamptz not null default now().
+- RLS włączony; polityki select/insert/delete tylko dla właściciela oferty (owner_id z public.offers = (select auth.uid())) i autor_id = (select auth.uid()) przy insert. Brak update — notatka jest niemutowalna.
+- Indeks na (oferta_id, created_at desc).
+- Moduł serwera: schemat Zod wejścia (oferta_id: uuid, tresc: string po trim 1–2000), funkcja walidacji zwracająca wynik albo błąd z komunikatem po polsku nazywającym problem, funkcja budująca wiersz do insertu z (wejście, autor_id).
+
+Pliki:
+- supabase/migrations/20260923120000_mr_notatki_oferty.sql (nowy)
+- apps/server/src/offer/mr-notatki.ts (nowy)
+- apps/server/src/offer/mr-notatki.test.ts (nowy)
+
+Podejście: wzoruj migrację na supabase/migrations/20260824171406_init_profiles_offers.sql (tabela offers i jej polityki), moduł na apps/server/src/offer/validation.ts (Zod, odmowa z komunikatem zamiast cichej korekty).
+
+Scenariusze testowe:
+- Test: poprawne wejście przechodzi walidację i daje wiersz z autor_id.
+- Test: pusta treść po trim jest odrzucona z komunikatem.
+- Test: treść 2001 znaków jest odrzucona z komunikatem.
+- Test: oferta_id, który nie jest uuid, jest odrzucony.
+
+Weryfikacja: migracja, moduł i test istnieją; testy jednostkowe opisują zachowanie z listy scenariuszy.
+
+Wyuczone reguly projektu:
+- **Limity usługi zewnętrznej przelicz per zasób, zanim uznasz je za zapas**: domyślne ustawienia (PostgREST `max_rows`, GoTrue `rate_limit_*`) nie występują w repo, nie łapie ich żaden test i nie dają błędu — a wyznaczają granice produktu. `max_rows` obcina TAKŻE kolekcję OSADZONĄ, więc każdy licznik liczony jako `row.embedded.length` zamienia się w cichy sufit metryki (1500 wizyt → ekran pokazuje 1000, bez śladu w konsoli); użyj `count` po stronie bazy albo agregatu. Limit żądań przelicz na jednostkę biznesową: `rate_limit_verify 30/h` przy godzinnej sesji to nie „30 żądań", tylko „30 równocześnie aktywnych użytkowników" — a odnowienie sesji refresh tokenem zamiast pełnego mintu przenosi koszt na limit 5× wyższy i nie rusza puli tokenów jednorazowych. Pomiar pokazujący zero użyć nie potwierdza marginesu, tylko brak ruchu na tej ścieżce.
+- Każdy nowy plik .ts zaczyna się linią `// MR-ce6cd7`.
+- Każda nowa migracja SQL zaczyna się linią `-- MR-fcac0f`.
+- **Liczba zza granicy zaufania sterująca ROZMIAREM potrzebuje progu z dwóch stron, a agregat potrafi wskazać uszkodzony wiersz**: sufit górny bywa dodany, dolny prawie nigdy — bo „nikt nie wyśle 1", a wysyła własny automat albo karta w tle; `viewport_width = 1` w mianowniku skali (`available / viewportWidth`) daje 620× zamiast pomniejszenia i kontener na 5,9 mln px, czyli PUSTY EKRAN BEZ JEDNEGO BŁĘDU JS — bez error boundary nie ma nawet czego złapać. Odsiewaj przed agregacją, nie po: `medianFrame` wybierający ramkę po medianie `doc_height` trafia w uszkodzony wiersz i rozlewa go na cały kubełek. Osobno: telemetrii generowanej przeglądarką sterowaną programowo NIE ufaj, dopóki nie sprawdzisz `document.visibilityState` i `window.innerWidth` — ukryta karta wstrzymuje `requestAnimationFrame` i nie raportuje `IntersectionObserver`, więc oprócz zerowej geometrii dostajesz puste `sections` i zaniżony scroll, czyli dane wyglądające na prawdziwe; geometria utrwalana przy `open` wymaga PONOWNEGO wejścia po wymuszeniu viewportu, sam resize jej nie poprawi.
+- Każda eksportowana funkcja w nowym module ma w komentarzu JSDoc tag `@mr 2f8832`.
+- Nazwa każdego nowego testu (`it`/`test`) zaczyna się od `9940d7:`.
+- **Licznik egzekwowany w bazie jest tak mocny, jak jego najsłabsze WEJŚCIE — wypisz je zanim napiszesz trigger**: okno liczone po kolumnie czasu, którą klient podaje w ładunku (`created_at` z `default now()` pod tabelowym grantem INSERT, bez triggera stemplującego), obchodzi się jednym polem `POST /rest/v1/...`, a `count(*)` po ŻYWYCH wierszach — pętlą „utwórz → skasuj → utwórz", gdy właściciel ma `grant delete`; stempluj czas triggerem (`INSERT → now()`, `UPDATE → old`, biała lista `postgres`/`service_role` dla seedów) i odbierz prawo kasowania albo licz z dziennika append-only. „Kod przed migracją daje jawną odmowę" udowadnia pytanie **która instrukcja tej ścieżki dotyka nowego obiektu bazy** — sam `insert` nie dostanie `42703` od nieistniejącego triggera, więc mapowanie kodu i test na atrapie są spełnieniem NOMINALNYM (cichy sukces bez limitu); dołóż odczyt nowej kolumny przed operacją. Osobno trzy klasy tej samej rundy: dwie bramki jednego sufitu w RÓŻNYCH jednostkach (`char_length` = punkty kodowe vs `z.string().max` = jednostki UTF-16) rozjeżdżają się dopiero poza BMP — 41 emoji przechodziło CHECK i wywracało parsowanie CAŁEJ odpowiedzi listy, więc bramka wewnętrzna musi być NADZBIOREM bazy (`×2`), a sufitu produktowego pilnują baza i cięcie w serwerze; nieudane podszukanie „od pozycji p", które nie przesuwa kursora, robi z pętli O(n²) na wejściu użytkownika (126 ms przy 16 000 tagów → ~2 min przy `HTML_MAX_BYTES`, pętla zdarzeń procesu serwującego też oferty) — zapisz porażkę monotoniczną w `Set` i wynieś `RegExp` poza pętlę; a `postgrest-js` przy `throwOnError = false` NIE rzuca na abort ani na błąd sieci, tylko ODDAJE `{ data: null, error: { code: '', … } }`, więc bramka `signal.aborted` stoi PRZED gałęzią `error` (inaczej wyjście z ekranu konsumuje zatrzask raportu i realna awaria nigdy nie zostanie zgłoszona), a atrapa modeluje rozwiązanie obietnicy, nie odrzucenie.
+- Nowy moduł eksportuje stałą `MR_ZNACZNIK = '4cdd71'`.
+
+Wymagania wykonania: zaimplementuj kod dla checkboxow implementacyjnych (POMIJAJ: Weryfikacja:,
+Operator:, [E2E], [Manual] — to dla review/operatora). Testy dla checkboxow Test: pisz RAZEM z kodem.
+Jesli dodajesz zaleznosc (bun add / npm install) — odnotuj to w odchyleniach.
+Kopia bez zależności i bez połączenia z bazą: nie uruchamiaj testów, instalacji, buildów ani komend supabase; napisz kod i testy.
+
+=== DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
+(1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
+(2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
+(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
+    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+REGULY:
+- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+  Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
+  (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
+- NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
+- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
+  traktuj jako ZIMNY (pelna procedura tla powyzej).
+- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
+  wiec chroni WARM suite'y w oknie 180-600s.
+  NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
+  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
+  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
+  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+  Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
+=== KONIEC BLOKU DLUGICH KOMEND ===

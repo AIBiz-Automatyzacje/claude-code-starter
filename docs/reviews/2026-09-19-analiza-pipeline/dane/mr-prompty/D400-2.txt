@@ -1,0 +1,458 @@
+To jest Twoje jedyne zadanie w tym przebiegu: wykonaj IU opisane poniżej.
+
+IU-MR: Notatki handlowca do oferty (warstwa danych)
+
+Folder zadania: docs/active/mr-notatki-oferty, Implementation Unit IU-MR.
+
+Cel: handlowiec zapisuje prywatne notatki do swojej opublikowanej oferty (np. „klient pytał o rabat”). Notatki widzi tylko właściciel oferty.
+
+Wymagania:
+- Tabela public.mr_notatki_oferty: id uuid (PK, gen_random_uuid()), oferta_id uuid (FK → public.offers(id), on delete cascade), autor_id uuid (FK → auth.users(id)), tresc text not null (1–2000 znaków, check w bazie), created_at timestamptz not null default now().
+- RLS włączony; polityki select/insert/delete tylko dla właściciela oferty (owner_id z public.offers = (select auth.uid())) i autor_id = (select auth.uid()) przy insert. Brak update — notatka jest niemutowalna.
+- Indeks na (oferta_id, created_at desc).
+- Moduł serwera: schemat Zod wejścia (oferta_id: uuid, tresc: string po trim 1–2000), funkcja walidacji zwracająca wynik albo błąd z komunikatem po polsku nazywającym problem, funkcja budująca wiersz do insertu z (wejście, autor_id).
+
+Pliki:
+- supabase/migrations/20260923120000_mr_notatki_oferty.sql (nowy)
+- apps/server/src/offer/mr-notatki.ts (nowy)
+- apps/server/src/offer/mr-notatki.test.ts (nowy)
+
+Podejście: wzoruj migrację na supabase/migrations/20260824171406_init_profiles_offers.sql (tabela offers i jej polityki), moduł na apps/server/src/offer/validation.ts (Zod, odmowa z komunikatem zamiast cichej korekty).
+
+Scenariusze testowe:
+- Test: poprawne wejście przechodzi walidację i daje wiersz z autor_id.
+- Test: pusta treść po trim jest odrzucona z komunikatem.
+- Test: treść 2001 znaków jest odrzucona z komunikatem.
+- Test: oferta_id, który nie jest uuid, jest odrzucony.
+
+Weryfikacja: migracja, moduł i test istnieją; testy jednostkowe opisują zachowanie z listy scenariuszy.
+
+=== POLECENIA (stosuj wszystkie) ===
+- `docs/*.md` — dokumenty żywe: `CONCEPTS.md`, `SPIKES.md`, `design.md`, `adaptacje-szablonu.md`; dokument MVP mieszka w `docs/brainstorms/`
+- `docs/diagramy/`, `docs/sesje/` — diagramy i handoffy między sesjami
+- **Klient nie widzi AI ani narzędzia.** Zero AI slopu w treści, zero „powered by AI", zero opisu analityki w miejscach dostępnych dla odbiorcy oferty. Ma widzieć lepiej przygotowanego handlowca.
+- **Opublikowana oferta jest niemutowalna.** Zmiana treści = nowy wiersz z nowym slugiem. To reguła domenowa, nie bug — i dzięki niej działa cache.
+- **Strony ofert bez Reacta.** Czysty HTML + CSS z szablonu, tracker jako vanilla JS. React kończy się na dashboardzie.
+- **MCP jest interfejsem sterowania**, nie dodatkiem. Narzędziem steruje się rozmową, nie formularzami.
+- **RLS jest jedyną linią obrony** — tokeny MCP z Supabase nie mają scope'ów. Testy RLS są obowiązkowe.
+- **Awaria trackingu nigdy nie degraduje oferty.** `POST /e` zawsze odpowiada 204; `/o/<slug>` serwuje z cache także przy niedostępnej bazie.
+- **Kolejność rolloutu jest wiążąca:** migracje na ref środowiska docelowego **PRZED** publikacją obrazu, potem obraz, potem **restart procesu Node**. Odwrotna kolejność daje rozjazd „kod przed migracją", który przez zasadę nr 7 bywa CICHY. Restart jest konieczny, bo `visit-service` ma zatrzaski niezgodności (`isReadingTimeUnsupported`, `isSectionPathUnsupported`, `isOfferOpenedRpcUnsupported`) i nic ich nie zeruje, a cache HTML ofert żyje w pamięci procesu.
+- **`packages/shared` jest jedynym miejscem kontraktów wspólnych** dla serwera i dashboardu: walidacja ENV (Zod, fail fast), typy bazy, regexpy i sufity walidacji, `product-contract.ts`, `access-contract.ts`. Duplikat po jednej stronie odsiewa dane cicho. Dashboard **nie importuje serwera**.
+- **Mutacje administratora idą przez RPC `security definer` z `is_admin()` w środku**, nigdy przez grant kolumnowy UPDATE — grant dałby to prawo każdemu kontu. Na `offers`, `visits`, `offer_decisions`, `offer_templates`, `template_assets` i `mcp_tokens` **nie ma i nie może być** polityki admina.
+- **Progi rozmiaru `t.js` i `c.js`:** realnym kontraktem wobec czytelnika jest **próg gzipowy** (krawędź Traefika kompresuje), próg źródła jest **kanarkiem przyrostu kodu**. Zielony test nie dowodzi zapasu — pomiar krawędzi `curl -H 'Accept-Encoding: gzip'` jest obowiązkową pozycją smoke'u każdej fazy ruszającej te pliki.
+- **Sesja MCP jest ODNAWIANA, nie mintowana od nowa** (`auth.refreshSession`; pełny mint tylko przy starcie procesu i jako fallback). Mint per wygaśnięcie dawał sufit ~30 równoczesnych użytkowników przez `rate_limit_verify` i unieważniał magic linki handlowców. Lookup hasha w `mcp_tokens` leci przy KAŻDYM żądaniu, więc unieważnienie tokenu działa natychmiast.
+- **GoTrue trzyma jedną pulę tokenów jednorazowych na konto** — `admin.generateLink` unieważnia wszystkie wcześniejsze niezależnie od typu. Nie „naprawiaj" tego zmianą typu linku.
+- **Odmowa limitu i odmowa dostępu są CZYTELNE, nigdy ciche** — odwrotnie niż `POST /e`. Brak funkcji lub kolumny (kod przed migracją) daje jawną odmowę z raportem, nie sukces bez limitu.
+- **Bramka bezpieczeństwa jest zamkniętą BIAŁĄ listą** (dozwolone `alg`, dozwolone `rel` ikon, dozwolone kroje), nigdy czarną — czarna lista przepuszcza wariant, o którym nie pomyślałeś.
+- **Nowa ścieżka wejścia do panelu z sesją = nowa bramka dostępu w tej samej turze.** `AccessGate` stoi na drzewie tras; strona renderowana z sesją poza nim (`/oauth/consent`) czyta profil sama TĄ SAMĄ funkcją (`needsTermsScreen`), nie kopią warunku.
+- `uznjvfdqrisbzbcwemjn` (`oferty-online`) — **aplikacja wdrożona na Coolify**: oferty `traferto.pl`, panel + MCP + OAuth `app.traferto.pl`, mailer `mail.traferto.pl` przez Resend.
+- Reguły kodowania i katalog anty-patternów AI: `.claude/rules/coding-rules.md` — obowiązują.
+- **Ten plik nie jest dziennikiem.** Decyzje fazowe idą do `docs/completed/<faza>/`, a tutaj wchodzi **najwyżej jeden wiersz w indeksie** albo nowy niezmiennik, gdy naprawdę musi być w kontekście każdej sesji. Akapit „Rozstrzygnięte w fazie N" w `CLAUDE.md` jest błędem — puchnie kontekst startowy każdej rozmowy.
+- Przy niejasnych instrukcjach **pytaj**, nie zgaduj — ten projekt ma dużo decyzji, które wyglądają na dowolne, a nie są.
+- Jeśli coś wygląda na sprzeczne — sprawdź daty i część III „Historia decyzji", zamiast zgadywać.
+- `CLAUDE.md` **musi zostać w katalogu głównym** — Claude Code wczytuje instrukcje projektu stamtąd; przeniesienie do `docs/` po cichu wyłączyłoby wszystkie zasady z tego pliku.
+- Tu jest tylko to, co trzeba mieć w głowie ZAWSZE:    `OFFER_ORIGIN` (strony ofert + endpoint zdarzeń) i `APP_ORIGIN` (dashboard, MCP, OAuth).
+- Domena wyłącznie z ENV, nigdy zaszyta w kodzie.
+- **W HTML oferty tylko ścieżki względne** — oferta jest niemutowalna, więc absolutny URL przeżyje zmianę domeny i się zepsuje, a naprawić go nie wolno.
+- **Zanim uznasz migrację za wdrożoną, sprawdź ją na bazie środowiska docelowego** — weryfikacja bez hasła: Management API `POST /v1/projects/<ref>/database/query` albo `select` na kolumnie przez PostgREST kluczem sekretnym.
+- **Przed dotknięciem obszaru przeczytaj podsumowanie jego fazy** — decyzje są wiążące i nie zmienia się ich bez nowej decyzji operatora.
+- Plik > 300 linii = refaktoruj. Podziel na mniejsze moduły
+- Funkcja > 50 linii = wyciągnij pod-funkcje. Jedna funkcja = jeden poziom abstrakcji
+- Klasa > 1 odpowiedzialność = podziel (Single Responsibility Principle)
+- NIGDY nie modyfikuj istniejących testów żeby "naprawić" failing test — napraw implementację
+- NIGDY nie usuwaj testów, chyba że usuwasz testowaną funkcjonalność
+- NIGDY nie osłabiaj asercji (np. `toBe(429)` na `toBeDefined()`) — to nie jest fix
+- NIGDY nie mockuj tego co testujesz — mockuj TYLKO zewnętrzne serwisy
+- Każdy test MUSI mieć minimum 1 asercję — zero assertion-free testów
+- Każda nowa funkcja = minimum 1 test happy path + 1 test error case
+- Nie ładuj pełnych datasetów w unit testach — używaj fixtures w `tests/fixtures/`
+- Pattern: Arrange-Act-Assert wewnątrz describe/it bloków
+- Każdy nowy plik .ts zaczyna się linią `// MR-7307c6`.
+- Testuj ZACHOWANIE (behavior), nie implementację (internal state)
+- Pisz testy WERTYKALNIE (tracer bullets): jeden test → jego implementacja → następny. NIGDY nie pisz wszystkich testów naraz, a potem całej implementacji (horizontal slicing) — to produkuje testy „kształtu" (struktur i sygnatur), nie zachowania; przechodzą, gdy zachowanie się psuje
+- Nigdy nie refaktoruj, gdy test jest RED — najpierw doprowadź do GREEN
+- Jedna odpowiedzialność per moduł/klasa/funkcja
+- Wyciągaj shared logic do dedykowanego modułu zamiast duplikować
+- Nie twórz abstrakcji "na przyszłość" — abstrakcja dopiero gdy jest 2+ użycia
+- Nie twórz konfiguracji dla wartości które nigdy się nie zmienią
+- Importy: grouped (stdlib, third-party, local), sorted alphabetically
+- Jeden eksport per plik dla głównych modułów
+- NIGDY nie łap wyjątków i nie ignoruj ich (empty catch block)
+- Rzucaj typed errors, nie string messages (`throw new AppError(...)`, nie `throw "coś poszło nie tak"`)
+- Fail fast — waliduj inputy na początku funkcji
+- Nie over-catchuj — łap KONKRETNE typy błędów, nie generyczne `Error`
+- API routes: ustandaryzowany format odpowiedzi `{ data, error: { code, message } }`
+- Używaj structured logging (JSON format, np. pino), nie `console.log`
+- Nie suppressuj błędów — finding zawsze wymaga naprawy, nie racjonalizacji
+- Nie zakładaj że biblioteka jest dostępna — sprawdź package.json / cargo.toml / requirements.txt PRZED użyciem
+- Nie dodawaj importów które nie są używane
+- Nie twórz "defensive code" na scenariusze które nie mogą wystąpić
+- Nie modyfikuj swoich własnych reguł / review scripts / hooks
+- Kiedy test failuje — napraw KOD, nie test
+- Nie obchodź blokad przez zmianę narzędzia (Edit zablokowany, więc sed, python -c)
+- Nie podejmuj autonomous decisions przy niejasnych instrukcjach — PYTAJ
+- Nie dismissuj findings jako "pre-existing" — napraw albo zgłoś
+- Sprawdź czy każdy nowy plik ma odpowiadający test
+- Sprawdź czy nie duplikujesz istniejącej logiki — grep codebase
+- Sprawdź dead code — usuwaj nieużywane importy, zmienne, funkcje
+- Wszystkie testy przechodzą
+- Brak hardcoded secrets/keys
+- Brak console.log w produkcyjnym kodzie
+- Każda nowa funkcja publiczna ma test
+- Funkcje i zmienne: `camelCase`
+- Pliki: kebab-case (`user-service.ts`, nie `UserService.ts`) — chyba że framework wymusza inną konwencję
+- Unikaj akronimów i skrótów chyba że powszechnie znane (`url`, `id` OK; `usrMgr` nie)
+- NIGDY nie zakładaj że biblioteka jest dostępna — sprawdź package.json / requirements.txt / go.mod
+- Preferuj istniejące biblioteki w projekcie > nowa dependency
+- Importy grouped: stdlib, third-party, local
+- Nie importuj bezpośrednio między packages w monorepo — używaj shared layer
+- Pinuj wersje — deklaruj exact versions w package.json
+- NIGDY nie konkatenuj user input do SQL queries — używaj parametrized queries
+- NIGDY nie używaj dynamicznego wykonywania kodu z user input
+- NIGDY nie deserializuj niezaufanych danych z zewnętrznych źródeł
+- NIGDY nie autoryzuj po `user_metadata` (Supabase) — jest edytowalne przez usera (`supabase.auth.updateUser`), więc RLS na tym polu = privilege escalation. Rolę trzymaj w `app_metadata` (server-side) lub dedykowanej tabeli ról; nie używaj też top-level claimu `role`
+- Skrypty migracyjne / ETL / importy / seedy walidują dane źródłowe jak input z granicy API — tożsamość (nigdy nie przepisuj `from_user`/`owner_id` z danych źródłowych), limity długości, kształt payloadu, przynależność do zasobu. „Jednorazowy / throwaway / usuwany później" nie znosi walidacji ani nie obniża severity findingu
+- Minimum privileges — nie dawaj więcej uprawnień niż potrzeba
+- Nie modyfikuj production database bezpośrednio
+- Rate limiting na KAŻDYM public endpoint
+- NIGDY nie używaj `any` — użyj `unknown` z type guards albo zdefiniuj interfejs
+- NIGDY nie używaj non-null assertions (`!`) — obsłuż nullability explicite
+- Użyj discriminated unions dla stanu, nie boolean flags
+- Wszystkie publiczne funkcje mają explicit return types
+- Strict mode ON — `"strict": true` w tsconfig
+- Zod/io-ts na granicach systemu (API, pliki, user input)
+- Istniejący kod — bądź surowy. Każda dodana złożoność wymaga uzasadnienia
+- Nowy izolowany kod — bądź pragmatyczny. Jeśli działa i jest testowalny, nie blokuj postępu
+- Duplication > Complexity — prosta duplikacja kodu jest LEPSZA niż złożona abstrakcja DRY
+- Dodanie nowego modułu nie jest nigdy problemem. Zrobienie modułu zbyt złożonym — jest
+- Przy modyfikacji istniejącego pliku pytaj: "Czy ta zmiana sprawia, że istniejący kod jest trudniejszy do zrozumienia?"
+- Preferuj ekstrakcję do nowego modułu/komponentu zamiast komplikowania istniejącego
+- Nie ładuj pełnych kolekcji gdy potrzebujesz subset — użyj pagination, limit, select konkretnych kolumn
+- Nowa dependency = uzasadnienie rozmiaru bundle (sprawdź bundlephobia)
+- Dynamic import / React.lazy() dla komponentów > 50KB
+- Nie optymalizuj przedwcześnie — ale MIERZ przed deklaracją "to wystarczy"
+- useEffect z async = ZAWSZE AbortController w cleanup function
+- setTimeout / setInterval = ZAWSZE cleanup w useEffect return (clearTimeout/clearInterval)
+- Więcej niż 1 boolean do stanu ładowania = użyj state machine (discriminated union)
+- Promise.allSettled gdy odpalasz równoległe operacje które mogą niezależnie failować
+- Promise.finally() do cleanup i state transitions — nie duplikuj logiki w resolve i reject
+- requestAnimationFrame w pętli = sprawdź cancel flag przed kolejnym requestAnimationFrame
+- Operacje wzajemnie wykluczające się (np. load preview) = zablokuj następną dopóki poprzednia się nie zakończy lub nie sfailuje
+- Zero circular dependencies między modułami — jeśli A importuje B, B nie może importować A
+- Respect layer boundaries — komponent UI nie woła bazy bezpośrednio, idzie przez serwis/hook
+- Single Responsibility dotyczy też plików — plik z komponentem nie zawiera logiki biznesowej
+- API contracts (interfejsy, typy propsów) są stabilne — zmiana interfejsu = świadoma decyzja, nie side-effect refaktoru
+- Nowa zależność między modułami = pytanie: "czy to nie tworzy nieodwracalnego couplingu?".
+- **Pliki:** — migracje, query files, Edge Functions, schematy Zod
+- **Podejście** — schema design, indeksy, RLS strategy
+- **Wzorce do naśladowania** — istniejące migracje, query files, edge functions
+- **Scenariusze testowe** — happy path, error cases, edge cases
+- Każda nowa migracja SQL zaczyna się linią `-- MR-333c3d`.
+- **Weryfikacja** — co musi być prawdziwe (np. RLS odrzuca anon, JWT walidowany)
+- Istniejące migracje w `supabase/migrations/` — naśladuj nazewnictwo (timestamp, opis)
+- Istniejące RLS policies — naśladuj wzorce (`(SELECT auth.uid())`, nie `auth.uid()` bezpośrednio)
+- Istniejące schematy Zod — naśladuj konwencje walidacji
+- **RLS na każdej tabeli z danymi użytkowników** — `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` + policies dla SELECT/INSERT/UPDATE/DELETE
+- **Policies używają `(SELECT auth.uid())`**, nie `auth.uid()` bezpośrednio (performance)
+- **Zod walidacja na każdym punkcie wejścia** — `req.json()` BEZ Zod parse to bug
+- **Service role key TYLKO w Edge Functions** — nigdy nie w `VITE_*` ani frontendzie
+- **JWT validation w Edge Functions** — `supabase.auth.getUser()` zamiast `getSession()` (server-side)
+- **Filtry zapytań** — `.eq()`, `.match()` zamiast `.from(...).select('*')` bez filtrów
+- **Konkretne kolumny** — `.select('id, name')` zamiast `.select('*')` (data exposure)
+- **Bez hardcoded secrets** w kodzie. Bez logowania PII (`console.log({ user, session })`)
+- **Migracje są idempotentne** lub używają `IF NOT EXISTS` / `CREATE OR REPLACE`
+- Type safety: bez `any`, explicit return types
+- RLS policies blokują nieautoryzowany dostęp (test fixture: anon user nie widzi cudzych rekordów)
+- **Atomowość** — JEDEN IU. NIE rusz innych plików.
+- **Security-first** — RLS/walidacja/JWT są nienaruszalne. Nie ma kompromisów żeby coś zadziałało szybciej.
+- **Testy razem z kodem** — minimum: happy path + nieautoryzowany dostęp + invalid input.
+- **Atak na niewiadome** — jeśli IU jest niejasne (np. brakuje policy dla DELETE), zwróć `Status: blocked` z pytaniem.
+- **Sekrety NIGDY w kodzie** — `.env.example` z placeholderami, `service_role` tylko w Edge Functions.
+- Twoja rola to atomowo wdrożyć JEDEN Implementation Unit z planu technicznego dotyczący backendu/danych, napisać towarzyszące testy i zwrócić ustrukturyzowany raport.
+- Przeczytaj cały blok Implementation Unit.
+- Przeczytaj `.claude/rules/learned-patterns.md` (jeśli istnieje) — reguły wyprodukowane z problemów rozwiązanych w poprzednich zadaniach tego projektu.
+- NIGDY nie osłabiaj RLS żeby test przeszedł.
+- Zwróć dokładnie ten format:   
+- **Data:** schemat Zod, query/mutation, RLS, walidacja inputu, autoryzacja
+- **UI:** komponent React, formularz, integracja z hookiem danych, accessibility
+- **SPEC.md (per-feature)** — pomiary 1:1 z Figmy. Najwyższy priorytet dla wartości UI (paddingi, kolory hex, fonty).
+- **DESIGN.md (projekt-wide)** — tokeny systemu designu.
+- **PNG screeny referencyjne** — Read jako image dla weryfikacji proporcji i wariantów.
+- Istniejące podobne fullstack flow (np. inne formularze z Supabase Auth, inne CRUD)
+- Wzorce hooków danych (`use<X>` w `src/hooks/`)
+- Wzorce schematów Zod współdzielonych UI/data
+- **Schema Zod (źródło prawdy typów)** — definiuje shape danych dla obu warstw
+- **Migracja / RLS** — jeśli IU jej wymaga
+- **Query / mutation / Edge Function** — warstwa danych zwraca typed result
+- **Hook wrapper** (`use<X>` z React Query lub natywny) — granica między data a UI
+- **Testy obu warstw** — unit testy data + RTL testy UI
+- **RLS na każdej dotykanej tabeli** + policies używają `(SELECT auth.uid())`
+- **Zod walidacja na granicach** — input użytkownika → schema → query
+- **Service role key tylko w Edge Functions** — nigdy nie w `VITE_*`
+- **JWT validation server-side** — `getUser()` zamiast `getSession()`
+- **Tailwind v4 tokens** — `bg-primary`, NIE `bg-[#3B82F6]`
+- **WCAG 2.2 AA** — aria, focus, kontrast, klawiatura
+- **React 19** — useActionState dla formularzy gdzie sensowne, bez forwardRef, bez zbędnych useMemo (Compiler)
+- **Type safety** — bez `any`, schema Zod jako źródło typów dla obu warstw (`z.infer<typeof schema>`)
+- **Testy minimum:** data → happy path + invalid input + nieautoryzowany dostęp; UI → render + interakcja + stan błędu
+- Manualny smoke test poprzez `dev-docs-execute` jeśli plan tego wymaga (zwykle robi to feature-tester-e2e w fazie review)
+- **Data pierwsze** — typy z schematu Zod są źródłem prawdy dla UI. Nigdy odwrotnie.
+- **Security-first** — RLS, JWT, walidacja są nienaruszalne.
+- **Testy obu warstw** — data i UI mają swoje testy. Brak unit testów po jednej stronie = `Status: partial`.
+- **Atak na niewiadome** — jeśli IU jest niejasne którą warstwę naprawdę dotyka, zwróć `Status: blocked` z pytaniem.
+- **Brak refaktoryzacji** — zgłoś w `Następne kroki dla orkiestratora`.
+- **Source of truth designu (warstwa UI)** — SPEC.md > DESIGN.md > ux-ui-guidelines. Rozjazdy raportuj w `Decyzje implementacyjne` (dekompozycja Data/UI).
+- **Brakujący pomiar → dopytaj Figmę** — wywołaj `mcp__plugin_figma_figma__get_design_context` zamiast halucynować. Halucynacja = `Status: partial`.
+- Warstwa danych (Data) nie konsumuje SPEC.md — pomiń kontekst designerski przy implementacji schema/RLS/query.
+- Praca z autentykacją (login, rejestracja, OAuth)
+- Tworzenie lub modyfikacja tabel bazy danych
+- Bezpieczeństwo i audit logging
+- [ ] Utwórz tabelę w migracji SQL
+- [ ] Włącz RLS: `ALTER TABLE tablename ENABLE ROW LEVEL SECURITY`
+- [ ] Zdefiniuj RLS policies dla SELECT, INSERT, UPDATE, DELETE
+- [ ] Używaj `(SELECT auth.uid())` w policies (nie email) — subquery dla wydajności
+- [ ] Dodaj indeksy dla często używanych kolumn
+- [ ] Utwórz funkcje API w `lib/supabase.ts`
+- [ ] Utwórz katalog `supabase/functions/function-name/`
+- [ ] Tryb `auth` per funkcja: `'user'` (JWT), `'secret'` (cron/pg_net), `'publishable'` (przed logowaniem), `'none'` (webhook zewnętrzny)
+- [ ] CORS załatwia wrapper (`cors: 'disabled'` dla webhooków) — bez `_shared/cors.ts`
+- [ ] Loguj błędy (bez wrażliwych danych)
+- [ ] RLS włączony na każdej tabeli
+- [ ] UUID (`auth.uid()`) w policies, nie email
+- [ ] Audit log bez INSERT policy dla authenticated (tylko triggers/SECURITY DEFINER)
+- [ ] Email enumeration protection włączone w Dashboard
+- OAuth (Google, Facebook, GitHub, Discord, etc.)
+- Domyślny `flowType` w `createClient` to `implicit` — PKCE włącz jawnie: `{ auth: { flowType: 'pkce' } }` (`@supabase/ssr` ma PKCE skonfigurowane); `detectSessionInUrl: true` domyślnie — nie wymieniaj `code` ręcznie w przeglądarce
+- Hook `useAuth()` zarządza sesją
+- Funkcja `ensure_user_profile()` jako fallback
+- `getSession()` dla UI, `getUser()` lub `getClaims()` dla krytycznych operacji
+- `profiles` - dane użytkowników (1:1 z auth.users)
+- Każda eksportowana funkcja w nowym module ma w komentarzu JSDoc tag `@mr 5bcdd0`.
+- `posts` - treści z własnością użytkownika
+- `bookmarks` - relacja many-to-many
+- `audit_log` - logowanie krytycznych operacji (write-only)
+- Public read: `USING (true)`
+- Own data: `USING ((SELECT auth.uid()) = user_id)`
+- Conditional: `USING (published = true OR (SELECT auth.uid()) = user_id)`
+- Service only: brak policies (tylko service_role)
+- Integracje z zewnętrznymi API
+- Operacje wymagające service_role
+- `constructEventAsync` dla Stripe webhooks
+- Runtime: **Deno 2.x** (upgrade z 1.45.2)
+- `deno.json` preferowany nad import maps
+- UUID w policies (nie email - email jest mutowalny)
+- SECURITY DEFINER dla uprawnionych operacji
+- Audit log izolowany (bez INSERT dla authenticated)
+- Logowanie przez triggers lub SECURITY DEFINER functions
+- Subscriptions dla zmian w tabelach
+- Presence dla statusu użytkowników
+- **RLS Zawsze Włączony**: Każda tabela musi mieć RLS
+- **UUID w Policies**: `auth.uid() = user_id`, nigdy email
+- **Service Role Tylko w Edge Functions**: Nigdy nie eksponuj na froncie
+- **Audit Log Izolowany**: Wpisy tylko przez triggers/SECURITY DEFINER
+- **Logger dla Błędów**: `logger.error()` zamiast `console.error()`
+- Zmiany w autentykacji lub autoryzacji (auth/authz)
+- Tworzenie nowych tabel w bazie danych (RLS policies)
+- Praca z danymi uzytkownikow (PII, GDPR)
+- **Zmapuj punkty wejscia:**
+- Form actions (React Hook Form + Zod)
+- API routes / Edge Functions (`req.json()`, `req.text()`, query params)
+- **Sprawdz walidacje Zod** na kazdym punkcie wejscia:
+- Czy schemat Zod istnieje?
+- Czy walidacja jest na granicy systemu (nie glebiej)?
+- Czy typy sa restrykcyjne (`z.string().email()`, nie `z.string()`)?
+- Czy sa limity dlugosci (`z.string().max(500)`)?
+- **Szukaj brakujacej walidacji** -- kazdy `req.json()` bez Zod parse to finding.
+- **Sprawdz wywolania `.rpc()`** -- czy funkcje PostgreSQL nie konkatenuja stringow w SQL
+- **Sprawdz RLS** na kazdej tabeli:
+- `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` -- czy jest?
+- Czy policies uzywaja `(SELECT auth.uid())` (nie `auth.email()`)?
+- **Sprawdz filtry** -- czy zapytania `.from()` maja odpowiednie `.eq()`, `.match()`
+- **Sprawdz `.rpc()` z raw SQL** -- szukaj konkatenacji stringow wewnatrz funkcji PostgreSQL
+- **Sprawdz user-generated URLs:**
+- **Content Security Policy** -- czy istnieje i czy jest restrykcyjna?
+- **Third-party content** -- czy jest sandboxowany (iframe sandbox)?
+- **Szukaj renderowania raw HTML** z zewnetrznych zrodel (markdown, CMS)
+- **Stworz macierz dostepu:**
+- **Zweryfikuj RLS policies** -- czy odzwierciedlaja macierz dostepu
+- **Edge Functions JWT** -- czy kazda chroniona funkcja wywoluje `supabase.auth.getUser()` / `getClaims()`?
+- **Sprawdz `getSession()` vs `getUser()`** -- `getSession()` nie weryfikuje tokena server-side
+- **Sprawdz role-based access** -- rola z `app_metadata` lub tabeli rol, NIGDY z `user_metadata` (edytowalne przez usera); brak hardcoded email/ID
+- **Fail-closed** -- blad sprawdzenia dostepu = odmowa, nigdy przyznanie (A10:2025)
+- Sprawdz `.env.example` -- czy nie zawiera prawdziwych wartosci
+- Sprawdz git history -- `git log --diff-filter=A -- "*.env*"`
+- Struktury bledow Supabase wyciekaja info o schemacie DB
+- Czy `SUPABASE_SERVICE_ROLE_KEY` jest TYLKO w Edge Functions?
+- Czy nie jest w zmiennych `VITE_*`?
+- Czy `captureException` nie wysyla danych osobowych?
+- Czy `beforeSend` filtruje wrazliwe dane?
+- Czy endpointy nie zwracaja wiecej danych niz potrzeba? (`select('*')` vs `select('id, name')`)
+- **Mysl jak atakujacy** -- zakladaj najgorszy scenariusz, nie optymistyczny
+- **Worst-case scenario** -- kazdy finding opisuj przez pryzmat "co najgorszego moze sie stac"
+- **Zawsze podawaj rozwiazanie** -- finding bez remediation jest bezuzyteczny
+- **Nie dismissuj jako pre-existing** -- istniejace luki sa nadal lukami
+- **Weryfikuj, nie zakladaj** -- "Supabase domyslnie to robi" nie wystarczy, sprawdz konfiguracje
+- **Defense in depth** -- jedna warstwa ochrony to za malo, waliduj na kazdej granicy
+- **Dokumentuj scope** -- jasno okresl co zostalo sprawdzone, a co nie
+- **OWASP Top 10 dla naszego stacku** -- `resources/owasp-react-supabase.md`
+- **Wzorce auth i bezpieczenstwa** -- `resources/auth-security-patterns.md`
+- Zmapuj endpointy vs wymagania autoryzacji.
+- Zwroc uwage na zmiany 2025: SSRF wchloniety do A01, nowe A03 (Software Supply Chain -- m.in.
+- [Dobre praktyki (Edge Functions / Supabase)](#dobre-praktyki-edge-functions--supabase)
+- [Error Levels](#error-levels)
+- [Quick Reference](#quick-reference)
+- [Context Enrichment](#context-enrichment)
+- [GDPR Compliance](#gdpr-compliance)
+- [Checklist dla Nowego Kodu](#checklist-dla-nowego-kodu)
+- [Common Mistakes](#common-mistakes)
+- **ALL ERRORS MUST BE CAPTURED TO SENTRY** - w produkcji każdy błąd musi trafić do Sentry
+- **MASKUJ DANE OSOBOWE** - email musi być maskowany: `user@example.com` → `us***@example.com`
+- Nazwa każdego nowego testu (`it`/`test`) zaczyna się od `a6662b:`.
+- **NIE WYSYŁAJ WRAŻLIWYCH DANYCH** - hasła, tokeny, klucze API NIGDY nie trafiają do Sentry
+- **UŻYWAJ ODPOWIEDNICH POZIOMÓW** - `fatal` tylko dla krytycznych, `error` dla operacji
+- [ ] Zaimportowano Sentry lub odpowiedni helper
+- [ ] Wszystkie bloki try/catch wysyłają do Sentry
+- [ ] Dodano znaczący kontekst (tagi, breadcrumbs)
+- [ ] Użyto odpowiedniego poziomu błędu
+- [ ] Brak wrażliwych danych w event (hasła, tokeny)
+- [ ] Email użytkownika jest maskowany
+- [ ] Przetestowano ścieżki błędów
+- **[react-sentry-patterns.md](resources/react-sentry-patterns.md)** - Pełna konfiguracja React + Vite, ErrorBoundary, performance, session replay
+- **[edge-functions-sentry.md](resources/edge-functions-sentry.md)** - Wzorce dla Supabase Edge Functions (Deno), shared helpers, Stripe tracking
+- Nadal stosuj:   **Zawsze używaj tego wzorca:**  Szczegóły: [edge-functions-sentry.md](resources/edge-functions-sentry.md)        **Inicjalizacja w `main.tsx`:**  **Użycie loggera (preferowane):**  **Bezpośrednie Sentry (gdy potrzeba więcej kontekstu):**   **Każda funkcja MUSI mieć Sentry z `withScope`:**    **ZAWSZE dodawaj kontekst do błędów:**     **Maskowanie emaili - OBOWIĄZKOWE:**     Przed każdym PR sprawdź:     **NIE RÓB:**  **RÓB:**    Szczegółowe wzorce znajdują się w:    **Skill Status**: COMPLETE **Progressive Disclosure**: Szczegółowe wzorce w plikach `resources/`
+- Tworzenie nowych komponentów React
+- Stylowanie z TailwindCSS v4 + shadcn/ui
+- Data fetching z React Query
+- Formularze z React Hook Form + Zod
+- Obsługa błędów i loading states
+- [ ] TypeScript interface dla props
+- [ ] Ref jako prop (nie forwardRef) - React 19
+- [ ] Import aliasy: `@/components`, `@/lib`, `@/hooks`
+- [ ] TailwindCSS utility classes
+- [ ] Default export na dole (dla lazy loading)
+- [ ] **React Compiler 1.0 (rekomendowany):** Nie używaj useCallback/useMemo - Compiler optymalizuje automatycznie
+- [ ] React Query (`useQuery`, `useMutation`) - nie useEffect
+- [ ] `useSuspenseQuery` dla Suspense-based data fetching (data zawsze zdefiniowane)
+- [ ] Early returns: loading → error → empty → data
+- [ ] `toast.promise()` dla feedback użytkownika
+- [ ] React Hook Form + Zod (`zodResolver`) — złożone formularze
+- [ ] `useActionState` (React 19) — proste formularze bez RHF
+- [ ] `aria-invalid` i `aria-describedby` dla a11y
+- [ ] `useMutation` dla submit
+- [ ] Suspense wrapper z fallback
+- [ ] Error Boundary (react-error-boundary)
+- **React Query dla data fetchingu** - nie useEffect; `useSuspenseQuery` dla Suspense
+- **React Hook Form + Zod dla formularzy** - `useActionState` dla prostych; nie useState
+- **React Compiler 1.0** - standardowo włączony; bez Compiler: memoizacja tylko dla memo children
+- **Suspense dla lazy components** - nie dla data (React Query obsługuje)
+- **Tailwind v4** - konfiguracja w CSS (`@theme`), OKLCH colors
+- **TypeScript strict** - no `any`, Zod dla runtime validation
+- **Error Boundaries** - react-error-boundary dla unexpected errors
+- **Sonner dla toasts** - `toast.success()`, `toast.promise()`
+- **Logger dla błędów** - `logger.error()` (production-safe)
+- Projektowanie nowych komponentów UI
+- Implementacja dostępności (WCAG 2.2, ARIA)
+- Responsive design i container queries
+- Nawigacja, tabele, wyszukiwanie, onboarding
+- [ ] Mobile-first styling (zaczynaj od mobile)
+- [ ] Container queries dla komponentów (`@container`)
+- [ ] Focus visible dla nawigacji klawiaturą
+- [ ] ARIA labels dla elementów interaktywnych
+- [ ] Touch targets min 24x24px (WCAG 2.2 AA, 2.5.8), rekomendowane 44x44px (Apple HIG / cel AAA, 2.5.5)
+- [ ] Contrast ratio min 4.5:1 (WCAG AA)
+- [ ] Dynamic viewport units (`min-h-dvh`)
+- [ ] `<search>` element dla obszarów wyszukiwania
+- [ ] Concentric border radius na zagnieżdżonych elementach (outer = inner + padding)
+- [ ] `tabular-nums` na dynamicznych liczbach (licznik, timer, cena)
+- [ ] Konkretne `transition-property`, nigdy `transition: all`
+- [ ] Labels powiązane z inputami (`htmlFor`)
+- [ ] Komunikaty błędów z `role="alert"`
+- [ ] Walidacja inline (nie tylko po submit)
+- [ ] Loading state z `useTransition` lub mutation
+- [ ] Success/error feedback (Sonner toast)
+- [ ] Focus na pierwszym błędzie
+- [ ] `aria-describedby` dla error messages
+- Focus visible i nie zasłonięty (2.4.11 Focus Not Obscured)
+- Touch targets min 24x24px (2.5.8 Target Size Minimum, AA); 44x44px to Apple HIG / cel AAA (2.5.5)
+- ARIA labels dla ikon/przycisków
+- `aria-label` dla przycisków z ikonami
+- `role="alert"` + `aria-live="polite"` dla błędów
+- `sr-only` dla tekstu screen reader only
+- Focus trap w modalach (react-focus-lock)
+- `sm: 640px` - Małe tablety
+- Fade in dla wchodzących elementów
+- AnimatePresence dla mount/unmount
+- `prefers-reduced-motion` - wymagane
+- Krótkie animacje (150-300ms)
+- Unikaj animacji layoutu (CLS)
+- CSS animations > JS gdy możliwe
+- Modale z focus trap (react-focus-lock)
+- Nowy moduł eksportuje stałą `MR_ZNACZNIK = 'c2bad7'`.
+- Formularze z inline validation
+- Toast notifications (Sonner)
+- Loading states (useTransition)
+- Optimistic updates (useOptimistic)
+- Pagination (number + cursor-based)
+- Responsive tables (cards na mobile)
+- Multi-step wizard ze StepIndicator
+- Progress save (localStorage)
+- **Typography polish** — text-wrap balance/pretty, font-smoothing macOS, tabular-nums dla dynamicznych liczb
+- **Surfaces** — concentric border radius, optical alignment ikon, shadow-as-border, image outlines, minimum hit area 40×40px
+- **Animation polish** — interruptible CSS transitions vs keyframes, subtelne wyjścia, contextual icon crossfade, `scale(0.96)` on press
+- **Performance** — nigdy `transition: all`, `will-change` oszczędnie i tylko dla transform/opacity/filter
+- `tabular-nums` na każdym liczniku/timerze/cenie → zero layout shift
+- `active:scale-[0.96]` na przyciskach → tactile feedback
+- **Mobile-First** + Container Queries
+- **OKLCH colors** zamiast HSL
+- **Dynamic viewport** (`dvh`) zamiast `vh`
+- **Focus States** widoczne i nie zasłonięte
+- **Touch Targets** min 24x24px (WCAG 2.2 AA, 2.5.8); 44x44px to Apple HIG / cel AAA
+- **useTransition** dla loading states (nie useState)
+- **View Transitions** dla nawigacji (z fallbackiem)
+- **Popover API** dla tooltipów i non-modal popovers (natywny)
+- **`<search>` element** zamiast `role="search"`
+- **Concentric radius** — outer = inner + padding na zagnieżdżonych powierzchniach
+- **Tabular numbers** — `font-variant-numeric: tabular-nums` na dynamicznych liczbach
+- **Specyficzne transitions** — nigdy `transition: all`, zawsze konkretne properties
+- **Scale on press** — `0.96` (nigdy poniżej `0.95`) dla tactile feedback
+- **tailwind-react-guidelines**: Komponenty React, Tailwind v4
+- OKLCH zapewnia lepszą percepcję jasności niż HSL:     **[Pełny Przewodnik: resources/design-system.md](resources/design-system.md)**     **Wymagania:**  **Kluczowe Wzorce:**  **[Pełny Przewodnik: resources/accessibility.md](resources/accessibility.md)**    **Mobile-First + Container Queries:**  **Breakpointy (viewport):**  **Container queries (komponent):**  **Dynamic Viewport Units:**  **[Pełny Przewodnik: resources/responsive-design.md](resources/responsive-design.md)**    **Motion (dawniej Framer Motion) Wzorce:**  **View Transitions API (Baseline 2025):**  **Kluczowe Zasady:**  **[Pełny Przewodnik: resources/animations.md](resources/animations.md)**    **Wzorce:**  **[Pełny Przewodnik: resources/component-ux.md](resources/component-ux.md)**    **Nawigacja:**  **Wyświetlanie danych:**  **Wyszukiwanie i filtrowanie:**  **Onboarding:**  **[Pełny Przewodnik: resources/patterns.md](resources/patterns.md)**    Micro-detale, które sprawiają, że interfejs wygląda dopracowany — uzupełnia macro UX patterns o szczegóły renderingu i micro-interakcje.
+- **Główne kategorie:**  **Quick wins:**  **[Pełne Pryncypia: resources/polish-checklist.md](resources/polish-checklist.md)**           
+- **Tokeny jednorazowe GoTrue to jedna pula na konto, nie sloty per typ**: każde `admin.generateLink` unieważnia WSZYSTKIE wcześniejsze tokeny jednorazowe konta niezależnie od `type` (ważny zostaje tylko ostatni), więc „mintuj `recovery`, a magic link przeżyje" nie działa — nie mieszaj sesji maszynowych z logowaniem ludzi w tej samej puli, a gdy musisz, opisz to jako znany kompromis zamiast pozorować naprawę. Typ mintu i typ konsumpcji to jedna para (`magiclink` → `verifyOtp({type:'email'})`) — trzymaj ją zablokowaną testem, bo rozjazd daje ten sam objaw `otp_expired`. Zanim wdrożysz zalecenie review dotyczące zewnętrznej usługi, zweryfikuj jego założenie pomiarem na żywej instancji.
+- **Klucz z danych nie jest polem obiektu, a zbiór pomiarów nie jest inwentarzem**: dla identyfikatora pochodzącego z JSON-a/`jsonb` (`toString`, `constructor`, `valueOf`, `hasOwnProperty`) `id in obj` zwraca `true` bez własnego klucza, a `obj[id] || 0` i `MAP[id] ?? id` oddają odziedziczoną FUNKCJĘ — pozycja znika z listy, etykietą staje się funkcja, a licznik cicho przestaje tykać; używaj `Object.hasOwn`/`Map`/`Object.create(null)`, a przy budżecie bajtowym testu wartościowego `>= 0` (nie `> 0` — zero jest poprawnym znacznikiem czasu). Osobno: lista pozycji zbudowana z kluczy obecnych w danych pomiarowych pokazuje wyłącznie to, co ktoś zrobił — element POMINIĘTY jest wtedy nieodróżnialny od nieistniejącego, choć zwykle to on niesie najwięcej informacji; skład bierz z osobnego źródła (utrwal go przy tworzeniu zasobu), a pozycje zmierzone spoza składu dokładaj na końcu. Niemutowalność zasobu nie zabrania dodania kolumny pochodnej z backfillem wyliczonym z jego treści — to nie jest zmiana treści.
+- **Limity usługi zewnętrznej przelicz per zasób, zanim uznasz je za zapas**: domyślne ustawienia (PostgREST `max_rows`, GoTrue `rate_limit_*`) nie występują w repo, nie łapie ich żaden test i nie dają błędu — a wyznaczają granice produktu. `max_rows` obcina TAKŻE kolekcję OSADZONĄ, więc każdy licznik liczony jako `row.embedded.length` zamienia się w cichy sufit metryki (1500 wizyt → ekran pokazuje 1000, bez śladu w konsoli); użyj `count` po stronie bazy albo agregatu. Limit żądań przelicz na jednostkę biznesową: `rate_limit_verify 30/h` przy godzinnej sesji to nie „30 żądań", tylko „30 równocześnie aktywnych użytkowników" — a odnowienie sesji refresh tokenem zamiast pełnego mintu przenosi koszt na limit 5× wyższy i nie rusza puli tokenów jednorazowych. Pomiar pokazujący zero użyć nie potwierdza marginesu, tylko brak ruchu na tej ścieżce.
+- **W `sandbox=""` origin jest NIEPRZEZROCZYSTY, więc `'self'` w CSP nie pasuje do niczego — a `@font-face` potrzebuje jeszcze CORS**: ramka bez `allow-same-origin` blokuje własne podzasoby (krój, obrazy) mimo tego samego hosta, więc dyrektywy CSP rozdziel po INTENCJI — jawny origin tam, gdzie zasób ma się załadować (`font-src`, `img-src`), `'self'` tam, gdzie niepasowanie JEST mechanizmem izolacji (`script-src`, `connect-src` tłumią tracker w podglądzie) — i dopiero potem dołóż `Access-Control-Allow-Origin` na statyce krojów, bo CSP i CORS to dwie osobne bramki dające ten sam objaw (naprawa jednej wygląda na nieskuteczną). Objawem nie jest wyjątek, tylko krój zastępczy o innych metrykach: tekst przepływa i nakładka na sztywnej geometrii kłamie bez śladu w konsoli. Test izolacji asertuj wartością (`expect(sandbox).toBe('')`), nie brakiem podłańcucha — `not.toContain('allow-scripts')` przepuszcza `allow-same-origin`, które unieważnia całe rozumowanie. Seed/fikstura musi budować dokument TYM SAMYM szablonem co produkcja, inaczej scenariusz jest niefalsyfikowalny i przepuści awarię, której szuka.
+- **Liczba zza granicy zaufania sterująca ROZMIAREM potrzebuje progu z dwóch stron, a agregat potrafi wskazać uszkodzony wiersz**: sufit górny bywa dodany, dolny prawie nigdy — bo „nikt nie wyśle 1", a wysyła własny automat albo karta w tle; `viewport_width = 1` w mianowniku skali (`available / viewportWidth`) daje 620× zamiast pomniejszenia i kontener na 5,9 mln px, czyli PUSTY EKRAN BEZ JEDNEGO BŁĘDU JS — bez error boundary nie ma nawet czego złapać. Odsiewaj przed agregacją, nie po: `medianFrame` wybierający ramkę po medianie `doc_height` trafia w uszkodzony wiersz i rozlewa go na cały kubełek. Osobno: telemetrii generowanej przeglądarką sterowaną programowo NIE ufaj, dopóki nie sprawdzisz `document.visibilityState` i `window.innerWidth` — ukryta karta wstrzymuje `requestAnimationFrame` i nie raportuje `IntersectionObserver`, więc oprócz zerowej geometrii dostajesz puste `sections` i zaniżony scroll, czyli dane wyglądające na prawdziwe; geometria utrwalana przy `open` wymaga PONOWNEGO wejścia po wymuszeniu viewportu, sam resize jej nie poprawi.
+- **Skrypt pod zamrożonym URL-em jedzie w nowej wersji na STARYM dokumencie — warunek widoczności pytaj o węzeł, nie o kod odpowiedzi**: gdy dokument jest niemutowalny (albo po prostu zbuforowany), nowa gałąź UI trafia na DOM, którego sama nie zbudowała, więc `if (kod === 'X') pokaż nowyWęzeł; else pokaż ogólny` przy nieistniejącym węźle gasi OBA komunikaty — klient nie widzi nic, a `show(null, true)` jest cichym no-opem; testuj każdą nową gałąź na markupie OKROJONYM o świeżo dodane węzły (to ścieżka produkcyjna, nie hipoteza) i asertuj, że okrojenie faktycznie coś usunęło, bo harness budujący HTML bieżącym rendererem nie reprezentuje żadnej opublikowanej wcześniej treści. Lustrzana pułapka po stronie danych: gdy konsument odsiewa wartość spoza zakresu CICHO (schema `.catch(undefined)`, endpoint zawsze 204), producent musi egzekwować ten sam sufit u siebie i przenosić resztę na kolejną wysyłkę zamiast zerować akumulator — inaczej cały pomiar przepada bez śladu; akumulator, który nie brudzi ładunku, dodatkowo rośnie aż poza sufit.
+- **„Własna kopia" dokumentu z referencjami nie jest samowystarczalna, a smoke kasowania kończy się otwarciem tego, co z zasobu korzysta**: niemutowalny `offers.html` niósł obrazy jako `/i/<id>`, więc bajty żyły wyłącznie w buckecie i kasowanie grafiki szablonu (decyzja „oferta ma własną kopię, więc jej nie używa") zostawiało w opublikowanej ofercie 404 bez jednego błędu — a tekst UI obiecywał „oferty pozostaną bez zmian". Zanim decyzja oprze się na „X ma kopię, więc nie zależy od Y", wypisz każdą referencję w X i warstwę, w której leży jej treść; scenariusz „usuń zasób" asertuj na konsumencie (`curl /i/<id>` w opublikowanym dokumencie), nie na podglądzie źródła; fałszywą obietnicę w tekście naprawiaj zachowaniem (odpięcie z `keep_until = max(expires_at)`, zasób NADAL liczony do limitu, sprzątanie obiekty→wiersze po terminie), nie zmianą tekstu.
+- **Licznik egzekwowany w bazie jest tak mocny, jak jego najsłabsze WEJŚCIE — wypisz je zanim napiszesz trigger**: okno liczone po kolumnie czasu, którą klient podaje w ładunku (`created_at` z `default now()` pod tabelowym grantem INSERT, bez triggera stemplującego), obchodzi się jednym polem `POST /rest/v1/...`, a `count(*)` po ŻYWYCH wierszach — pętlą „utwórz → skasuj → utwórz", gdy właściciel ma `grant delete`; stempluj czas triggerem (`INSERT → now()`, `UPDATE → old`, biała lista `postgres`/`service_role` dla seedów) i odbierz prawo kasowania albo licz z dziennika append-only. „Kod przed migracją daje jawną odmowę" udowadnia pytanie **która instrukcja tej ścieżki dotyka nowego obiektu bazy** — sam `insert` nie dostanie `42703` od nieistniejącego triggera, więc mapowanie kodu i test na atrapie są spełnieniem NOMINALNYM (cichy sukces bez limitu); dołóż odczyt nowej kolumny przed operacją. Osobno trzy klasy tej samej rundy: dwie bramki jednego sufitu w RÓŻNYCH jednostkach (`char_length` = punkty kodowe vs `z.string().max` = jednostki UTF-16) rozjeżdżają się dopiero poza BMP — 41 emoji przechodziło CHECK i wywracało parsowanie CAŁEJ odpowiedzi listy, więc bramka wewnętrzna musi być NADZBIOREM bazy (`×2`), a sufitu produktowego pilnują baza i cięcie w serwerze; nieudane podszukanie „od pozycji p", które nie przesuwa kursora, robi z pętli O(n²) na wejściu użytkownika (126 ms przy 16 000 tagów → ~2 min przy `HTML_MAX_BYTES`, pętla zdarzeń procesu serwującego też oferty) — zapisz porażkę monotoniczną w `Set` i wynieś `RegExp` poza pętlę; a `postgrest-js` przy `throwOnError = false` NIE rzuca na abort ani na błąd sieci, tylko ODDAJE `{ data: null, error: { code: '', … } }`, więc bramka `signal.aborted` stoi PRZED gałęzią `error` (inaczej wyjście z ekranu konsumuje zatrzask raportu i realna awaria nigdy nie zostanie zgłoszona), a atrapa modeluje rozwiązanie obietnicy, nie odrzucenie.
+- **Zapis, którego skutek widać na ekranie, kończy się odświeżeniem kopii w pamięci — ale zanim podepniesz `reload()` istniejącego hooka, sprawdź, CO JESZCZE stoi na jego wyniku**: profil czytany RAZ nad `<Outlet>` i zapisywany prosto do bazy (`markTourSeen`, `dismissFirstSteps`) daje dwie prawdy naraz — po odmontowaniu ekranu `useState(profile.cośTam)` wraca do wartości sprzed zapisu, więc jednorazowy przewodnik startuje przy KAŻDYM powrocie i drugi raz wysyła „zakończony", a „Zamknij" cofa się przy każdej nawigacji (zero błędów, zielone testy). Naprawa przez `reload()` tego samego hooka przenosi jednak uprawnienia odczytu AUTORYZUJĄCEGO na odczyt dla wygody: nieudany drugi odczyt zamienia panel w ekran awarii, a pusty — w wylogowanie, czyli zapis jawnie best-effort wyrzuca człowieka z sesji; kierowanie ma rozstrzygać WYŁĄCZNIE pierwszy odczyt (zatrzask `lastProfileRef`, jedna funkcja `admit()` dla obu dróg), każdy następny tylko odświeża. Lustrzana pułapka tej samej rundy: leniwy `await import()` SDK tworzy okno „API jest, klienta nie ma" — `track`/`identify` z sesji rozwiązanej w ~20 ms milkną, zanim chunk dojdzie po ~200 ms, więc cała sesja ląduje na anonimowym `distinct_id`; buforuj z twardym sufitem, opróżniaj w `finally` (start kończy się na pięć sposobów), tożsamość PRZED zdarzeniami, a test pisz na wywołaniach PRZED `await init()`.
+- **Docstring deklarujący niezmiennik KLASY nie jest dowodem — dowodem jest każdy konstruktor; a klasa z istniejącą regułą, która wraca po naszym review, potrzebuje w prompcie reviewera polecenia dającego LISTĘ, nie kolejnej zasady**: „`message` z zamkniętej listy, bez `cause`" było prawdą dla gałęzi GoTrue i fałszem dla gałęzi RPC obok (`new XError(error.message, …)` pod `captureException` — PostgREST cytuje argument `p_email`, adres osoby bez konta poszedł do Sentry); sprawdzaj `grep 'new XError('` i prowadź WSZYSTKIE gałęzie przez jedną funkcję-fabrykę, a test na wyciek karm fikturą, która wyciek NIESIE (bez adresu w wejściu `not.toContain` jest zawsze zielone). Strażnik przed `DELETE … CASCADE` w seedzie na bazie dzielonej to BIAŁA LISTA „dokładnie kształt wyniku tego scenariusza" (`left join`, każda kolumna nadawana przez produkcję) plus zarezerwowany fragment wartości podmienianej ręcznie (część lokalna adresu) — „nie admin i nie zaakceptowany regulamin" przepuszczało konto bez profilu i konto z listy oczekujących (czwarta oś klasy czarnej listy). Pięć klas PR #19 (Sentry, seed, tekst w 2. osobie, `as` w teście, progi 300/50) miało regułę w tym pliku albo u agenta i przeszło „ogólnym wrażeniem": powtórka klasy = dopisek do agenta w postaci `grep`/`wc -l` + „sprawdź każdą pozycję z listy", nie trzeci wpis o tym samym.
+=== KONIEC POLECEŃ ===
+
+Wymagania wykonania: zaimplementuj kod dla checkboxow implementacyjnych (POMIJAJ: Weryfikacja:,
+Operator:, [E2E], [Manual] — to dla review/operatora). Testy dla checkboxow Test: pisz RAZEM z kodem.
+Jesli dodajesz zaleznosc (bun add / npm install) — odnotuj to w odchyleniach.
+Kopia bez zależności i bez połączenia z bazą: nie uruchamiaj testów, instalacji, buildów ani komend supabase; napisz kod i testy.
+
+=== DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
+(1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
+(2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
+(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
+    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+REGULY:
+- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+  Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
+  (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
+- NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
+- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
+  traktuj jako ZIMNY (pelna procedura tla powyzej).
+- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
+  wiec chroni WARM suite'y w oknie 180-600s.
+  NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
+  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
+  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
+  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+  Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
+=== KONIEC BLOKU DLUGICH KOMEND ===

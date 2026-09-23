@@ -1,0 +1,644 @@
+{
+ "komorki": {
+  "mechaniczny-haiku": {
+   "dzis": {
+    "ctx": 59854,
+    "model": "claude-haiku-4-5-20251001",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 4278,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2299,
+     "skille": 15785,
+     "sys": 1919,
+     "tools_zn": 158585,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 13195,
+    "model": "claude-haiku-4-5-20251001",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 4278,
+     "zal_inne": 2300,
+     "sys": 1753,
+     "tools_zn": 30678,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "orkiestracyjny-opus": {
+   "dzis": {
+    "ctx": 79811,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 5872,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2315,
+     "skille": 29972,
+     "sys": 1919,
+     "tools_zn": 137193,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 14723,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 5872,
+     "zal_inne": 2316,
+     "sys": 1753,
+     "tools_zn": 9286,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "reviewer-opus-plik": {
+   "dzis": {
+    "ctx": 84004,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 8946,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2315,
+     "skille": 29972,
+     "sys": 6674,
+     "tools_zn": 137193,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 18965,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 8946,
+     "zal_inne": 2316,
+     "sys": 6674,
+     "tools_zn": 9286,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "reviewer-opus-bezpliku": {
+   "dzis": {
+    "ctx": 82405,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 10807,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2315,
+     "skille": 29972,
+     "sys": 1919,
+     "tools_zn": 137193,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 17317,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 10807,
+     "zal_inne": 2316,
+     "sys": 1753,
+     "tools_zn": 9286,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "sceptyk-opus": {
+   "dzis": {
+    "ctx": 81307,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 8952,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2315,
+     "skille": 29972,
+     "sys": 1919,
+     "tools_zn": 137193,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 16219,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 8952,
+     "zal_inne": 2316,
+     "sys": 1753,
+     "tools_zn": 9286,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "naprawiacz-opus": {
+   "dzis": {
+    "ctx": 80317,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 7028,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2315,
+     "skille": 29972,
+     "sys": 1919,
+     "tools_zn": 137193,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 15229,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 7028,
+     "zal_inne": 2316,
+     "sys": 1753,
+     "tools_zn": 9286,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "naprawiacz-haiku": {
+   "dzis": {
+    "ctx": 58986,
+    "model": "claude-haiku-4-5-20251001",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 1904,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2299,
+     "skille": 15785,
+     "sys": 1919,
+     "tools_zn": 158585,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 12327,
+    "model": "claude-haiku-4-5-20251001",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 1904,
+     "zal_inne": 2300,
+     "sys": 1753,
+     "tools_zn": 30678,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  },
+  "builder-opus": {
+   "dzis": {
+    "ctx": 97832,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 42,
+    "zn": {
+     "prompt": 37614,
+     "odroczone": 36356,
+     "odroczone_n": 660,
+     "zal_inne": 2315,
+     "skille": 29972,
+     "sys": 6869,
+     "tools_zn": 137193,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "T": {
+    "ctx": 32793,
+    "model": "claude-opus-5-5",
+    "narzedzia_n": 5,
+    "zn": {
+     "prompt": 37614,
+     "zal_inne": 2316,
+     "sys": 6869,
+     "tools_zn": 9286,
+     "instr": 14215
+    },
+    "instrukcje": [
+     [
+      "~/.claude/CLAUDE.md",
+      252
+     ],
+     [
+      "~/Documents/Kodowanie/CLAUDE.md",
+      437
+     ],
+     [
+      "~/Documents/Kodowanie/workspace-template/.claude/rules/coding-rules.md",
+      10542
+     ],
+     [
+      "~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/memory/MEMORY.md",
+      2984
+     ]
+    ],
+    "env": {
+     "entrypoint": "claude-desktop",
+     "version": "2.1.280",
+     "cwd": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia"
+    }
+   },
+   "TOL": null
+  }
+ },
+ "dzwignia": {
+  "T": 35.04467465511896,
+  "TOL": 0.0,
+  "D4": 53.22034749518606
+ },
+ "delta": {
+  "mechaniczny-haiku": {
+   "T": 46659
+  },
+  "orkiestracyjny-opus": {
+   "T": 65088
+  },
+  "reviewer-opus-plik": {
+   "T": 65039
+  },
+  "reviewer-opus-bezpliku": {
+   "T": 65088
+  },
+  "sceptyk-opus": {
+   "T": 65088
+  },
+  "naprawiacz-opus": {
+   "T": 65088
+  },
+  "naprawiacz-haiku": {
+   "T": 46659
+  },
+  "builder-opus": {
+   "T": 65039
+  }
+ },
+ "koszt_20_09": 35301545.15
+}

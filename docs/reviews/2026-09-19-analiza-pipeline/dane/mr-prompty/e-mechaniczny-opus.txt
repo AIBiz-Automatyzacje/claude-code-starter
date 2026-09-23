@@ -1,0 +1,59 @@
+Jestes context-packagerem review fazy 2 (docs/active/cookie-consent-panelu-gtm). Zbuduj WSPOLNA mape zmian dla reviewerow,
+zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam git diff).
+
+1. Ustal zakres zmian fazy 2: `git diff --stat` zmian tej fazy. Jesli faza ma osobne commity — diff od bazy fazy;
+   jak nie da sie wyodrebnic — uzyj diff vs main/origin/main.
+2. Zrzuc PELNY diff DOKLADNIE tego samego zakresu do pliku /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff — Bash, przekierowaniem powloki:
+   `git diff <ten sam zakres co w kroku 1> > /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff`
+   Tresc diffu ma NIGDY nie przejsc przez Twoja odpowiedz (to Twoje tokeny wyjsciowe) — tylko przekierowanie.
+   Potem `wc -c < /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff`. Gdy rozmiar > 307200 B, przytnij i oznacz uciecie:
+   `head -c 307200 /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff > /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff.tmp && mv /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff.tmp /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff && printf '\n%s\n' '=== DIFF PRZYCIETY (limit 300 KB) — dalsza czesc zmian fazy NIE jest w tym pliku ===' >> /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff`
+   Zwroc METADANE: diffPlik (sciezka albo "" gdy zrzut sie nie udal), diffZapisany (plik powstal i jest niepusty),
+   diffUciety (czy przycinales). Nieudany zrzut NIE jest bledem krytycznym — ustaw diffZapisany=false i lec dalej.
+3. Dla kazdego zmienionego pliku podaj jednolinijkowe "czego dotyczy" (np. "nowy hook useLobbyData — fetch + realtime").
+4. Ustal 4 FLAGI WARSTW (ui / dane / typowanie / nowyModul — opisy w schemacie). Oceniaj po TRESCI zmian,
+   nie po nazwie katalogu: projekt bez src/ tez ma warstwe danych, a plik .mjs z petla INSERT to "dane".
+   `typowanie` = sa pliki .ts/.tsx w diffie ALBO w korzeniu repo istnieje tsconfig.json (sprawdz).
+   Flagi decyduja, ktorzy reviewerzy sie odpala — pomylka w gore (true) jest tania, w dol (false) gubi reviewera.
+5. Policz `e2eCheckboxy`: niezaznaczone checkboxy `[E2E]` fazy 2 w docs/active/cookie-consent-panelu-gtm/*-zadania.md — z OBU prefiksow
+   (`Test: [E2E] ...` ORAZ `Weryfikacja: [E2E] ...`; grep `^- \[ \].*\[E2E\]` z wykluczeniem kopii `Operator:` i pozycji findingow `[P1]/[P2]/[P3]` z "Do poprawy"). To scenariusze wymagajace
+   przegladarki (agent-browser). CLI (`test`/`typecheck`/`grep`) i `[Manual]` nie licz.
+6. Ustal `figmaScreens`: w docs/active/cookie-consent-panelu-gtm/*-kontekst.md, sekcja "Designerski kontekst", pole `figma_screens`.
+   true tylko wtedy, gdy pole istnieje i ma co najmniej jeden wpis ekran -> sciezka mockupu; puste/null/brak = false.
+   To DRUGA praca testera obok checkboxow: visual diff z makietami odpala sie z tego pola, nie z checkboxa,
+   wiec bez tej flagi faza z makietami a bez `[E2E]` stracilaby porownanie z mockupem.
+7. ZBUDUJ DOSSIER FAZY -> /tmp/review-ctx-docs-active-cookie-consent-panelu-gtm-faza-2.md. To najwiekszy pojedynczy oszczednik w tym workflow: dotad KAZDY
+   z osmiu reviewerow czytal dokument wymagan (dziesiatki KB), caly plan techniczny i learned-patterns.md.
+   Ty i tak czytasz te zrodla, wiec przepisz z nich RAZ wylacznie to, co dotyczy fazy 2.
+   Wycinaj `grep -n` na naglowku + `Read` z offsetem i limitem — nigdy nie czytaj calych plikow do odpowiedzi.
+   Sklad pliku, dokladnie te cztery sekcje i w tej kolejnosci:
+
+   ```
+   # Dossier fazy 2 — docs/active/cookie-consent-panelu-gtm
+
+   ## Plan techniczny — sekcja fazy
+   [sekcja `### Faza 2` z planu technicznego (sciezka z "Zrodla" w docs/active/cookie-consent-panelu-gtm/*-plan.md),
+    ciecie od tego naglowka do nastepnego naglowka tego samego poziomu, w calosci i bez parafrazy]
+
+   ## Sledzenie wymagan — wiersze tej fazy
+   [wylacznie te wiersze tabeli "Sledzenie wymagan" z planu technicznego, ktorych ID przywoluja
+    jednostki implementacyjne tej fazy; naglowek tabeli zostaw, reszte wierszy pomin]
+
+   ## Reguly projektu (learned-patterns.md)
+   [.claude/rules/learned-patterns.md w CALOSCI, bez skracania; gdy pliku nie ma — "Brak pliku."]
+
+   ## Zadania i kontekst designerski fazy
+   [sekcja `## Faza 2` z docs/active/cookie-consent-panelu-gtm/*-zadania.md w calosci (checkboxy razem z prefiksami)
+    + pole `figma_screens` z sekcji "Designerski kontekst" w docs/active/cookie-consent-panelu-gtm/*-kontekst.md]
+   ```
+
+   Tresc przepisuj DOSLOWNIE — to ma zastapic czytanie zrodel, wiec parafraza albo skrot cicho odbiera
+   reviewerom fakty. Zwroc ctxPlik (sciezka albo "" gdy zapis sie nie udal) i ctxZapisany (plik powstal
+   i jest niepusty). Nieudany zapis NIE jest bledem krytycznym: ustaw ctxZapisany=false i lec dalej —
+   reviewerzy wroca wtedy do czytania pelnych dokumentow.
+8. PRE-SKAN MECHANICZNY (grep, nie ocena). W liniach DODANYCH przez diff tej fazy znajdz dwa wzorce:
+   - `pusty-catch`: `catch {}` albo `catch (e) {}` — takze z bialymi znakami i nowa linia miedzy klamrami,
+   - `then-bez-catch`: plik, w ktorym pojawilo sie `.then(`, a w CALYM tym pliku nie ma ani jednego `.catch(`.
+   Zwroc liste {wzorzec, plik} z numerem linii w polu plik. Zero trafien to poprawny wynik ([]).
+   NIE oceniaj, czy to defekt — od tego sa reviewerzy; Ty tylko wskazujesz miejsca.
+Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, figmaScreens, diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, preSkan}.

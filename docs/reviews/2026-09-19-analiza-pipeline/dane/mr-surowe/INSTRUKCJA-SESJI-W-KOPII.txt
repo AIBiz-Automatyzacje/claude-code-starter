@@ -1,0 +1,19 @@
+INSTRUKCJA DLA SESJI W KOPII (mini-run, serie E i A) — wykonaj dokładnie, krok po kroku, bez niczego więcej.
+
+Kontekst: to sesja wykonawcza mini-runu. Analizę robi inna sesja skryptami z zapisów. Ty tylko uruchamiasz przygotowane workflowy
+i skrypty w podanej kolejności. Nie analizuj wyników, nie poprawiaj kodu, nie używaj narzędzia Agent, nie commituj, nie edytuj plików
+poza tym, co robią podane skrypty. Jeśli którykolwiek krok zwróci błąd albo coś wygląda inaczej niż opisane — zatrzymaj się i napisz,
+co się stało. Po każdym Workflow poczekaj na powiadomienie o jego końcu, zanim przejdziesz dalej.
+
+0. Sprawdź: `pwd` ma zwrócić katalog kończący się na /scratchpad/oferty-kopia, a `git status --short` ma być pusty
+   (dopuszczalny jeden nieśledzony plik w docs/brainstorms/). Podaj model tej sesji (powinien być claude-opus-5-5).
+1. Workflow({scriptPath: "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/mr-workflow-E1.js"})  — 16 agentów, każdy jedna odpowiedź.
+2. Bash: git mv .claude/rules/learned-patterns.md docs/mr-learned-patterns.md
+3. Workflow({scriptPath: "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/mr-workflow-E2.js"})  — 8 agentów.
+4. Bash: git mv docs/mr-learned-patterns.md .claude/rules/learned-patterns.md && git status --short   (ma być pusto)
+5. Dla N = 1, potem 2, potem 3 (po kolei, nigdy równolegle):
+   a. Bash: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/mr_seria_a.sh przed N
+   b. Workflow({scriptPath: "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/mr-workflow-AN.js"})   (A1, A2, A3) — jeden builder, kilka–kilkanaście minut
+   c. Bash: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/mr_seria_a.sh po N
+6. Na koniec napisz jedną wiadomość: identyfikatory runów (wf_...) wszystkich pięciu workflowów w kolejności, identyfikator tej
+   sesji i ewentualne odstępstwa. Nic więcej.

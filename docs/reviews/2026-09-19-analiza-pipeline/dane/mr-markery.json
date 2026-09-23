@@ -1,0 +1,228 @@
+{
+ "ziarno": 20260923,
+ "runy": {
+  "D100-1": {
+   "seria": "D",
+   "ramie": 100,
+   "markery": {
+    "M1": "MR-9effc9",
+    "M2": "MR-433cbd",
+    "M3": "a7fa6a",
+    "M4": "191abf",
+    "M5": "72072f"
+   },
+   "pozycje": {
+    "M1": 10,
+    "M2": 30,
+    "M3": 50,
+    "M4": 70,
+    "M5": 90
+   }
+  },
+  "D100-2": {
+   "seria": "D",
+   "ramie": 100,
+   "markery": {
+    "M1": "MR-788cf4",
+    "M2": "MR-5e5d89",
+    "M3": "bd8f25",
+    "M4": "f65dfc",
+    "M5": "2363a5"
+   },
+   "pozycje": {
+    "M1": 10,
+    "M2": 30,
+    "M3": 50,
+    "M4": 70,
+    "M5": 90
+   }
+  },
+  "D100-3": {
+   "seria": "D",
+   "ramie": 100,
+   "markery": {
+    "M1": "MR-85d1df",
+    "M2": "MR-cf02b8",
+    "M3": "b5feb2",
+    "M4": "aabd1a",
+    "M5": "81b36e"
+   },
+   "pozycje": {
+    "M1": 10,
+    "M2": 30,
+    "M3": 50,
+    "M4": 70,
+    "M5": 90
+   }
+  },
+  "D100-4": {
+   "seria": "D",
+   "ramie": 100,
+   "markery": {
+    "M1": "MR-8c057f",
+    "M2": "MR-6ac1e4",
+    "M3": "610fab",
+    "M4": "ee9491",
+    "M5": "787f77"
+   },
+   "pozycje": {
+    "M1": 10,
+    "M2": 30,
+    "M3": 50,
+    "M4": 70,
+    "M5": 90
+   }
+  },
+  "D100-5": {
+   "seria": "D",
+   "ramie": 100,
+   "markery": {
+    "M1": "MR-2da4b9",
+    "M2": "MR-89ab0f",
+    "M3": "a98dc0",
+    "M4": "44c7f0",
+    "M5": "21bb51"
+   },
+   "pozycje": {
+    "M1": 10,
+    "M2": 30,
+    "M3": 50,
+    "M4": 70,
+    "M5": 90
+   }
+  },
+  "D400-1": {
+   "seria": "D",
+   "ramie": 400,
+   "markery": {
+    "M1": "MR-3088cd",
+    "M2": "MR-b7373d",
+    "M3": "b65463",
+    "M4": "8fb3c9",
+    "M5": "68b43c"
+   },
+   "pozycje": {
+    "M1": 40,
+    "M2": 120,
+    "M3": 200,
+    "M4": 280,
+    "M5": 360
+   }
+  },
+  "D400-2": {
+   "seria": "D",
+   "ramie": 400,
+   "markery": {
+    "M1": "MR-7307c6",
+    "M2": "MR-333c3d",
+    "M3": "5bcdd0",
+    "M4": "a6662b",
+    "M5": "c2bad7"
+   },
+   "pozycje": {
+    "M1": 40,
+    "M2": 120,
+    "M3": 200,
+    "M4": 280,
+    "M5": 360
+   }
+  },
+  "D400-3": {
+   "seria": "D",
+   "ramie": 400,
+   "markery": {
+    "M1": "MR-04ab64",
+    "M2": "MR-3b86f8",
+    "M3": "b78b85",
+    "M4": "243c7c",
+    "M5": "cad317"
+   },
+   "pozycje": {
+    "M1": 40,
+    "M2": 120,
+    "M3": 200,
+    "M4": 280,
+    "M5": 360
+   }
+  },
+  "D400-4": {
+   "seria": "D",
+   "ramie": 400,
+   "markery": {
+    "M1": "MR-5777ae",
+    "M2": "MR-1a2010",
+    "M3": "04e7c8",
+    "M4": "94a06d",
+    "M5": "92aebd"
+   },
+   "pozycje": {
+    "M1": 40,
+    "M2": 120,
+    "M3": 200,
+    "M4": 280,
+    "M5": 360
+   }
+  },
+  "D400-5": {
+   "seria": "D",
+   "ramie": 400,
+   "markery": {
+    "M1": "MR-ef5418",
+    "M2": "MR-ec90f7",
+    "M3": "5be0d4",
+    "M4": "a5a96b",
+    "M5": "3460e0"
+   },
+   "pozycje": {
+    "M1": 40,
+    "M2": 120,
+    "M3": 200,
+    "M4": 280,
+    "M5": 360
+   }
+  },
+  "A-1": {
+   "seria": "A",
+   "markery": {
+    "M1": "MR-283e5f",
+    "M2": "MR-dbca2f",
+    "M3": "6453b2",
+    "M4": "d347be",
+    "M5": "592274",
+    "R": "MR-R-0a720b",
+    "S": "MR-S-727788"
+   },
+   "regula_R": "---\npaths:\n  - \"supabase/migrations/**\"\n---\n\n# Migracje\n\n- Każda nowa migracja kończy się linią `-- MR-R-0a720b`.\n",
+   "skill_S": "8. **Znacznik Testów**: Każdy nowy plik testu kończy się linią `// MR-S-727788`"
+  },
+  "A-2": {
+   "seria": "A",
+   "markery": {
+    "M1": "MR-ce6cd7",
+    "M2": "MR-fcac0f",
+    "M3": "2f8832",
+    "M4": "9940d7",
+    "M5": "4cdd71",
+    "R": "MR-R-9abba9",
+    "S": "MR-S-1bce20"
+   },
+   "regula_R": "---\npaths:\n  - \"supabase/migrations/**\"\n---\n\n# Migracje\n\n- Każda nowa migracja kończy się linią `-- MR-R-9abba9`.\n",
+   "skill_S": "8. **Znacznik Testów**: Każdy nowy plik testu kończy się linią `// MR-S-1bce20`"
+  },
+  "A-3": {
+   "seria": "A",
+   "markery": {
+    "M1": "MR-d306e5",
+    "M2": "MR-0dbd80",
+    "M3": "17bcfb",
+    "M4": "34b600",
+    "M5": "d51de0",
+    "R": "MR-R-50f9f4",
+    "S": "MR-S-ff087e"
+   },
+   "regula_R": "---\npaths:\n  - \"supabase/migrations/**\"\n---\n\n# Migracje\n\n- Każda nowa migracja kończy się linią `-- MR-R-50f9f4`.\n",
+   "skill_S": "8. **Znacznik Testów**: Każdy nowy plik testu kończy się linią `// MR-S-ff087e`"
+  }
+ },
+ "wycinek_zn": 886
+}

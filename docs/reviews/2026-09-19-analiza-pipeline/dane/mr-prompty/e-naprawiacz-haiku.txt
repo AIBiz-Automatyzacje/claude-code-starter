@@ -1,0 +1,17 @@
+Mechaniczny skan commitow fix fazy 2. NIE oceniaj kodu, NIE interpretuj — tylko grep.
+
+1. Ustal zakres: `git log --oneline --grep="^fix("` -> pierwszy commit fixa tej fazy.
+   Diff: `git diff <pierwszy-commit-fixa>^..HEAD`. Gdy commitow fixa nie ma — `git diff HEAD`.
+2. Patrz WYLACZNIE na linie DODANE (zaczynajace sie od "+", bez naglowkow "+++"). Linie kontekstu
+   i usuniete pomijasz — szukamy tego, co fix WPROWADZIL, nie tego, co juz bylo.
+3. Zglos kazde trafienie ponizszych wzorcow (z pliku i trescia linii 1:1, bez wiodacego "+"):
+   - pusty-catch:    `catch {}` albo `catch (e) {}` — takze z bialymi znakami i nowa linia miedzy klamrami
+   - type-assertion: ` as ` w TypeScript, Z WYJATKIEM `as const`
+   - any:            `: any` (adnotacja typu)
+   - console-log:    `console.log`
+   - non-null:       operator `!` po wyrazeniu (`foo!.bar`, `foo!)`, `foo!;`, `foo!,`) — NIE mylic
+                     z negacja `!foo` ani z `!==`
+4. Zero trafien to poprawny i czesty wynik — zwroc {trafienia: []}. Nie dobieraj nic "na wszelki wypadek",
+   nie zglaszaj linii spoza diffu i nie zglaszaj plikow, ktorych fix nie tknal.
+
+Read-only: nie modyfikuj plikow, nie commituj, nie uruchamiaj testow.

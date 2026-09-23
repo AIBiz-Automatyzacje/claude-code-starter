@@ -1,0 +1,113 @@
+Jestes testerem scenariuszy/coverage dla fazy 2 w docs/active/cookie-consent-panelu-gtm.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Sprawdz: happy path, invalid inputs, boundary conditions, concurrent operations, scale.
+Test coverage: czy plan techniczny definiowal scenariusze testowe dla tej fazy (sekcja "Plan techniczny"
+dossier, a bez dossier — docs/plans/) i czy pliki testowe istnieja oraz maja asercje? Brakujace testy = P2 (typ TEST).
+Zwroc {findings:[...]} (severity P1/P2/P3, typ KOD/TEST/E2E/OPERATOR). Nie zapisuj plikow.
+
+=== DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
+(1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
+(2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
+(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
+    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+REGULY:
+- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+  Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
+  (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
+- NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
+- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
+  traktuj jako ZIMNY (pelna procedura tla powyzej).
+- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
+  wiec chroni WARM suite'y w oknie 180-600s.
+  NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
+  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
+  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
+  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+  Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
+=== KONIEC BLOKU DLUGICH KOMEND ===
+=== SEMANTYKA I JEDNOSTKI POL (obowiazkowe, gdy faza tyka danych liczbowych/czasowych) ===
+Kod wewnetrznie spojny moze byc jednolicie BLEDNY: jesli fixture i implementacja przyjmuja to samo zle
+zalozenie o znaczeniu pola, testy przechodza, a produkt liczy zle.
+
+PROCEDURA (wykonaj ja, nie streszczaj):
+1. Wypisz pola liczbowe/czasowe dotkniete faza i dla KAZDEGO uruchom
+   `grep -rn "<nazwa_pola>" --include=*.ts --include=*.tsx --include=*.sql .` — masz zobaczyc WSZYSTKIE
+   uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
+2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
+   -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly `numeric` bez komentarza), NIE zgaduj
+   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
+   "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
+3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
+   RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
+   przeglad kodu nie daje takiej pewnosci jak realna liczba.
+
+Co sprawdzasz w kazdym uzyciu:
+- kwoty: calosc vs per-osoba vs per-jednostke; grosze vs zlote; brutto vs netto,
+- czas: sekundy vs milisekundy; UTC vs lokalny; timestamp vs data,
+- indeksy i skale: miesiac 0- vs 1-based; procenty jako 0..1 vs 0..100; licznik vs suma,
+- liczebnosci: liczba graczy vs liczba druzyn vs liczba miejsc.
+Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
+testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
+Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
+UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
+uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
+wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
+=== KONIEC BLOKU SEMANTYKI ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+ apps/server/src/offer/pages/app-privacy-page.test.ts | 81 +++++++++++-----
+ apps/server/src/offer/pages/app-privacy-page.ts      | 73 ++++++++++----
+ apps/server/src/offer/pages/terms-attachment.ts      | 39 ++++++--
+ apps/server/src/offer/pages/terms-page.test.ts       | 36 +++++--
+ apps/server/src/routes/app-origin-pages.test.ts      |  5 +-
+ docs/active/cookie-consent-panelu-gtm/...-kontekst.md |  3 +
+ docs/active/cookie-consent-panelu-gtm/...-zadania.md  | 45 +++++-----
+ docs/plans/2026-09-19-001-feat-cookie-consent-panelu-gtm-plan.md |  6 +-
+ packages/shared/src/product-contract.test.ts          | 33 +++++++
+ packages/shared/src/product-contract.ts               | 14 ++++
+ 10 files changed, 257 insertions(+), 78 deletions(-)
+- packages/shared/src/product-contract.ts — LEGAL_PROCESSORS + wpisy CookieYes (Wielka Brytania) i Google (Irlandia) z komentarzem o zrodle i dacie pomiaru
+- packages/shared/src/product-contract.test.ts — testy kontraktu listy przetwarzajacych — unikalnosc nazw, niepuste role/region
+- apps/server/src/offer/pages/terms-attachment.ts — zdanie o transferze poza EOG wyprowadzane z listy dostawcow + biala lista EEA_REGIONS zamiast literalu z nazwa
+- apps/server/src/offer/pages/terms-page.test.ts — asercje na 7 przetwarzajacych i na zdanie o transferze wyprowadzone z LEGAL_PROCESSORS (Google w EOG nieobecny)
+- apps/server/src/offer/pages/app-privacy-page.ts — sekcja polityki prywatnosci panelu o plikach cookie (kategorie, cofniecie zgody, dostawcy, transfer); usuniete zdanie o braku cookies
+- apps/server/src/offer/pages/app-privacy-page.test.ts — testy nowej sekcji cookie i liczby przetwarzajacych (5 -> 7)
+- apps/server/src/routes/app-origin-pages.test.ts — korekta asercji strony prawnej po zmianie tresci
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-zadania.md — odhaczenie checkboxow fazy 2 i porzadki w liscie zadan
+- docs/active/cookie-consent-panelu-gtm/cookie-consent-panelu-gtm-kontekst.md — uzupelnienie kontekstu zadania o ustalenia fazy 2
+- docs/plans/2026-09-19-001-feat-cookie-consent-panelu-gtm-plan.md — aktualizacja statusu jednostek implementacyjnych fazy 2
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-docs-active-cookie-consent-panelu-gtm-faza-2.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-docs-active-cookie-consent-panelu-gtm-faza-2.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
