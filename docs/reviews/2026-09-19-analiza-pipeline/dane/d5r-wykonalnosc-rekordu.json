@@ -1,0 +1,154 @@
+{
+ "inwentarz": {
+  "runy": 156,
+  "nowy": 41,
+  "workflow": {
+   "dev-autopilot-wf": 55,
+   "e4-e5-operator-context": 1,
+   "sad-delivery-verify": 1,
+   "e6-operator-checklist-research": 1,
+   "e6-operator-checklist-verify": 1,
+   "regulamin-review": 1,
+   "recenzja-c3-c4": 1,
+   "audyt-finalny-c3-c5": 1,
+   "dev-pr-wf": 75,
+   "przeglad-skilla-teksty": 1,
+   "audyt-proba-1-powtorka": 2,
+   "claude-seo-recon": 1,
+   "przebudowa-umow-pawel": 1,
+   "audyt-skilla-wywiad": 1,
+   "audyt-proby-plugin-malwa": 1,
+   "wdrozenie-P1-P3": 1,
+   "pipeline-analiza-etap3-krytyk": 1,
+   "audyt-pipeline-2026-09": 1,
+   "pipeline-analiza-a": 1,
+   "pipeline-analiza-etap2-research": 1,
+   "pipeline-analiza-etap1": 1,
+   "pipeline-analiza-etap1b": 1,
+   "audyt-decku-live-17-09": 1,
+   "analiza-wtorna-live-17-09": 1,
+   "p3": 1,
+   "p2": 1,
+   "p1": 1
+  }
+ },
+ "plik_harnessu": {
+  "jest": 156,
+  "statusy": {
+   "dev-autopilot-wf | completed | STOP | True": 30,
+   "dev-autopilot-wf | completed | OK | False": 20,
+   "dev-pr-wf | completed | OK | False": 57,
+   "dev-pr-wf | completed | GOTOWY-DO-DECYZJI | False": 8,
+   "dev-pr-wf | completed | STOP | True": 6,
+   "dev-autopilot-wf | failed | None | False": 2,
+   "dev-autopilot-wf | killed | None | False": 3,
+   "dev-pr-wf | completed | GOTOWY-DO-MERGE | False": 2,
+   "dev-pr-wf | completed | OK | True": 2
+  }
+ },
+ "heurystyka_skanu": {
+  "STOP->NIEZNANY": 18,
+  "OK->OK": 20,
+  "STOP->STOP": 12,
+  "failed->NIEZNANY": 2,
+  "killed->NIEZNANY": 3
+ },
+ "w_toku_na_zawsze": {
+  "completed": 1,
+  "killed": 3
+ },
+ "etykiety": {
+  "stary | workflowProgress": 2530,
+  "nowy | workflowProgress": 721,
+  "stary | key (wczesniejsza proba)": 24,
+  "nowy | journal": 11,
+  "stary | BRAK": 28
+ },
+ "faza": {
+  "poziom runu (bez fazy z definicji)": 335,
+  "etykieta :faza-N": 583,
+  "najblizsza wczesniejsza grupa „Faza N”": 1691,
+  "grupa „Faza N”": 281,
+  "BRAK": 1
+ },
+ "wznowienia": {
+  "wywolania": 9,
+  "ten_sam_run": 9,
+  "dup_key": 41,
+  "poza_workflowProgress": 63
+ },
+ "wersja": {
+  "dev-autopilot-wf | NIE MA go w historii szablonu": 33,
+  "dev-autopilot-wf | zgodny z commitem szablonu": 22,
+  "dev-pr-wf | zgodny z commitem szablonu": 75
+ },
+ "repo": {
+  "razem": 11,
+  "bez_markera": 6,
+  "bez_gita": 1
+ },
+ "transkrypty": {
+  "2026-09 od 09-06": {
+   "agenci": 1253,
+   "wersja CC": 1253,
+   "zalacznik instructions z plikami": 1030,
+   "thinking_tokens": 1202
+  },
+  "2026-08 do 09-05": {
+   "agenci": 1310,
+   "wersja CC": 1310,
+   "zalacznik instructions z plikami": 0,
+   "thinking_tokens": 1017
+  },
+  "2026-09 do 09-05": {
+   "agenci": 751,
+   "wersja CC": 751,
+   "zalacznik instructions z plikami": 0,
+   "thinking_tokens": 701
+  }
+ },
+ "dev_pr": {
+  "etapy": {
+   "compound": 7,
+   "napraw": 23,
+   "zbierz": 21,
+   "start": 14,
+   "merge": 10
+  },
+  "watki_suma": 255,
+  "watki_unikalne": 178
+ },
+ "wyscig": {
+  "zdarzenia": 7538
+ },
+ "epoka_po_scieciu": {
+  "orkiestracyjny|opus": {
+   "n": 29,
+   "p50": 121094
+  },
+  "mechaniczny|haiku": {
+   "n": 20,
+   "p50": 89344
+  },
+  "builder|opus": {
+   "n": 6,
+   "p50": 134592
+  },
+  "reviewer|opus": {
+   "n": 15,
+   "p50": 125155
+  },
+  "sceptyk|opus": {
+   "n": 10,
+   "p50": 122745
+  },
+  "naprawiacz|opus": {
+   "n": 8,
+   "p50": 122900
+  },
+  "naprawiacz|haiku": {
+   "n": 3,
+   "p50": 88298
+  }
+ }
+}

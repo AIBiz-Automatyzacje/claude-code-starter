@@ -33,6 +33,8 @@ Miara jakości to uwagi bota po naszym review, zgodnie z Twoją decyzją z pocz�
 
 **Nowy punkt odniesienia po zmianie konfiguracji bota.** Osiem zmian konfiguracji CodeRabbita wchodzi przed pomiarem, a po nich bot komentuje inaczej. Dlatego w planie wdrożenia jest obowiązkowy krok: po zmianie konfiguracji, a przed pierwszą zmianą pipeline'u, zbieramy nowy punkt odniesienia z dwóch–trzech zadań. Z nim porównujemy wszystkie zmiany pipeline'u. Stare uwagi zostają jako tło.
 
+**Unikalne wątki bota na PR (przegląd D5, 23 września).** Dev-pr to kilka osobnych runów na jeden PR, a każda kolejna tura wypisuje ponownie wątki z poprzednich. Suma po runach dawała 255 wątków, unikalnych było 178, czyli zawyżenie o 43 procent, i to najmocniej w PR-ach z wieloma turami. Liczymy więc każdy wątek bota raz na PR. Punkt odniesienia z września pochodzi z GitHuba i już liczył każdą uwagę raz.
+
 **Jeden próg odwrotu dla wszystkich założeń.** Zmianę cofamy, gdy liczba poważnych uwag danej osi w oknie pięciu PR-ów jest co najmniej dwa razy większa od oczekiwanej z punktu odniesienia i wynosi co najmniej trzy. Klasa pojedynczego defektu służy do diagnozy, co wróciło, a nie do automatycznego cofania. Powód: liczby są małe. We wrześniu na sześć PR-ów przypadło 8 poważnych uwag correctness, 7 test-coverage, 6 security, 2 spec i jedna wydajnościowa. Dawny próg „więcej niż jedna" dla wydajności włączałby alarm przypadkiem mniej więcej w co piątym oknie, nowy w co dwudziestym. W oknie pięciu PR-ów progi wynoszą dziś: correctness 14, test-coverage 12, security 10, spec 4, wydajność 3.
 
 ---
@@ -48,16 +50,19 @@ Miara jakości to uwagi bota po naszym review, zgodnie z Twoją decyzją z pocz�
 **Kiedy patrzymy.** Po jednej fazie, wstępnie już w mini-runie. Cel: mechaniczne około 4,5 tysiąca, reviewer około 15, builder około 25.
 
 **Uwaga po przeglądzie 23 września.** Liczby „dziś” pochodzą z trzech tygodni, w których CLAUDE.md w oferty-online urósł z 14 do 87 tysięcy znaków,
-a start agentów rósł razem z nim, u reviewerów z 76 do 145 tysięcy tokenów. Po ścięciu CLAUDE.md do 21 tysięcy nie było żadnego pełnego runu.
-Właściwy punkt odniesienia zmierzy mini-run na obecnym stanie repo, zanim wejdzie allowlista, osobno dla każdej klasy i modelu, bo haiku
-startuje o około 35 tysięcy niżej niż opus przy tej samej konfiguracji. Bez tego allowlista dostałaby na konto zysk ze ścięcia CLAUDE.md.
+a start agentów rósł razem z nim, u reviewerów z 76 do 145 tysięcy tokenów. Właściwy punkt odniesienia musi pochodzić ze stanu po ścięciu CLAUDE.md,
+osobno dla każdej klasy i modelu, bo haiku startuje o około 35 tysięcy niżej niż opus przy tej samej konfiguracji. Bez tego allowlista dostałaby na konto
+zysk ze ścięcia CLAUDE.md. Przegląd D5 znalazł pierwszy taki run: 20 września autopilot (85 agentów) pracował ze ściętym CLAUDE.md na gałęzi zadania.
+Start wynosił tam 89 tysięcy u mechanicznych na haiku, 121 u orkiestracyjnych, 125 u reviewerów, 123 u sceptyków i 135 u builderów. Próby są małe, więc
+mini-run to potwierdzi. Do tego telemetria policzy wprost, ile narzędzi dostał agent: dziś 972 narzędzia i 309 skilli. Allowlista ma to zbić do kilkunastu,
+więc jej działanie sprawdzi jedna liczba, bez porównywania epok. Opłata za powołanie po poprawce liczenia kosztu z przeglądu D5 wynosi 20, nie 22 procent.
 
 ### 2. Kontekst per klasa roli (CLAUDE.md u builderów, bypass zostaje, skille builderów zostają)
 
 **Co liczymy.** Kontekst na turę i liczbę tur per rola, koszt na agenta, oraz jaki udział w koszcie ma „kontekst razy tury". Czy treść skilli jest stosowana, sprawdza mini-run, nie telemetria.
 
 **Dziś.** Na turę: mechaniczne 86–102 tysiące, reviewerzy 193–224, buildery 238 (średnia z okresu wzrostu CLAUDE.md, więc porównujemy przy podobnym
-rozmiarze stałych plików). Builder robi 39 tur, fix 37, reviewer 15–30, sceptyk 7. Builder kosztuje 1,2 miliona jednostek, reviewer od 468 do 931 tysięcy. Kontekst razy tury to 40 procent kosztu.
+rozmiarze stałych plików). Builder robi 39 tur, fix 37, reviewer 15–30, sceptyk 7. Builder kosztuje 1,2 miliona jednostek, reviewer od 468 do 931 tysięcy. Kontekst razy tury to 40 procent kosztu (po poprawce liczenia z przeglądu D5: 36,5).
 
 **Kiedy patrzymy.** Po pięciu fazach. Oczekiwana dźwignia całości: 25–35 procent kosztu fazy.
 
@@ -75,15 +80,15 @@ doklejanej. Test szablonu liczy pozycje jednego oznaczonego bloku poleceń, nie 
 
 **Co liczymy.** Rozmiar tego, co ładuje się zawsze (CLAUDE.md i indeks), rozmiar wycinka doklejanego builderowi i reviewerowi, zniknięcie dubla z dossier, oraz skutek: jaka część poważnych uwag bota dotyczy klas, które mają regułę w indeksie. To, czy klasa ma regułę, liczy skrypt, porównując ją z listą klas w indeksie, bez agenta. To samo pole zasila licznik ucieczek per wpis, jedno z ośmiu przyjętych zabezpieczeń.
 
-**Dziś.** Learned-patterns ma 46,9 tysiąca znaków i wchodzi do każdego agenta, a do reviewerów drugi raz przez dossier. CLAUDE.md oferty-online urósł z 3,4 do 89,7 tysiąca znaków w cztery tygodnie, po odchudzeniu 20,6. Dwie trzecie ucieczek miało regułę w kontekście.
+**Dziś.** Learned-patterns ma 46,9 tysiąca znaków i wchodzi do każdego agenta, a do reviewerów drugi raz przez dossier. CLAUDE.md oferty-online urósł z 3,4 do 89,7 tysiąca znaków w cztery tygodnie, po odchudzeniu 20,6. Dwie trzecie ucieczek miało regułę w kontekście. Rozmiary bierzemy z transkryptu agenta, czyli tak, jak agent je dostał, a nie z repo. Przegląd D5 pokazał, że u co czwartego agenta CLAUDE.md różnił się od gałęzi main, bo run pracuje na gałęzi zadania.
 
 **Kiedy patrzymy.** Rozmiary po jednej fazie, skutek po pięciu PR-ach, rozrost po pięciu zadaniach.
 
 ### 5. Telemetria mechaniczna, zero agentów
 
-**Co liczymy.** Czy każdy run ma rekord i skąd status (sesja czy skan), czy w runie nie ma agenta telemetrii, czy rekord agenta ma pełny cennik, czy plik tylko rośnie.
+**Co liczymy.** Czy każdy run ma rekord z prawdziwym statusem, czy w runie nie ma agenta telemetrii, czy rekord agenta ma pełny cennik, czy plik tylko rośnie. Po przeglądzie D5 status czytamy z pliku, który Claude Code zapisuje po każdym runie (jest dla wszystkich 156 runów), więc „status nieznany” ma się zdarzać tylko po awarii sesji. Dawne zgadywanie statusu po ostatnim agencie dałoby „nieznany” w 23 z 55 runów.
 
-**Dziś.** Jeden wpis na run pisany przez agenta haiku, który dwa razy skasował plik. Telemetria widziała tylko tokeny wyjściowe, czyli 2 procent kosztu. Poziom agenta nie istniał.
+**Dziś.** Jeden wpis na run pisany przez agenta haiku, który dwa razy skasował plik. Telemetria widziała tylko tokeny wyjściowe, czyli około 11 procent kosztu. Wcześniej pisałem 2 procent; przegląd D5 wykazał, że skrypt etapu zerowego zaniżał tokeny wyjściowe. Poziom agenta nie istniał.
 
 **Kiedy patrzymy.** Od pierwszego runu. To jest pierwsza iteracja wdrożenia.
 
@@ -221,11 +226,20 @@ Rekord telemetrii z D5 powstał od strony „co da się zebrać z dysku". Mapa p
 
 Reszta: długość promptu delegacji, liczba wywołań MCP, rozmiar batcha i werdykty sceptyka w trzech etykietach, rozmiar indeksu wiedzy i wycinka, pliki i rozmiar diffu fixa, P1 naprawione z testem, liczba rund review, rozmiar dossier, wynik ESLint z listą reguł, testy typów, profil stacku, pozycje smoke przeniesione z manual.
 
+**Po przeglądzie D5 (23 września) doszło jeszcze kilka pól:**
+- rozkład kontekstu startowego agenta, czyli ile dostał narzędzi, skilli i znaków CLAUDE.md;
+- wersja Claude Code;
+- numer próby i wynik „błąd” u agenta;
+- identyfikator wątku bota, potrzebny do liczenia każdego wątku raz;
+- wersja szablonu jako skrypt, który naprawdę się wykonał.
+
+Ta ostatnia potrzebuje jednej zmiany w synchronizacji szablonu: zapisu skrótu każdego pliku.
+
 **Część pól wymaga pracy, zanim skrypt cokolwiek odczyta.** Werdykty sceptyka, P1 naprawione z testem, wyniki bramek i pozycje smoke muszą najpierw pojawić się w wynikach workflowów, a klasyfikacja bota w schemacie agenta zbierania. W wersji technicznej każde takie pole ma dopisek „wymaga zmiany w" z nazwą miejsca, żeby plan etapu 5 to uwzględnił.
 
 ## Część 4. Skąd wezmą się liczby „przed"
 
-Jednorazowy import do nowego pliku w pierwszej iteracji wdrożenia: 2 941 agentów z etapu zerowego, 33 odzyskane wpisy starej telemetrii, 149 epizodów skilli, 19 sklasyfikowanych PR-ów razem z ich rozmiarem i osią uwag. To załatwia też Twoją otwartą decyzję o scaleniu odzyskanej telemetrii z oryginałem: import jest scaleniem. Zaimportowane uwagi bota są tłem. Właściwy punkt odniesienia jakości powstaje dopiero po zmianie konfiguracji bota.
+Jednorazowy import do nowego pliku w pierwszej iteracji wdrożenia: 2 941 agentów z etapu zerowego, 33 odzyskane wpisy starej telemetrii, 149 epizodów skilli, 19 sklasyfikowanych PR-ów razem z ich rozmiarem i osią uwag. To załatwia też Twoją otwartą decyzję o scaleniu odzyskanej telemetrii z oryginałem: import jest scaleniem. Zaimportowane uwagi bota są tłem. Właściwy punkt odniesienia jakości powstaje dopiero po zmianie konfiguracji bota. Przed importem agentów przeliczam ich koszt poprawionym sposobem (przegląd D5: stary skrypt zaniżał tokeny wyjściowe i sklejał trzy role naprawcze w jedną).
 
 ## Część 5. Kolejność odczytów, żeby zmiany się nie mieszały
 
@@ -236,6 +250,8 @@ Wszystkie odczyty jakości czytają ten sam strumień uwag bota, a każdy potrze
 - **Zmiany przekrojowe mają okno pięciu PR-ów dla siebie.** Budżet instrukcji, wycinek wiedzy, polecenia-listy wprowadzane we wszystkich osiach naraz, kontekst reviewerów, sceptyk asymetryczny i pętla fix tylko na P1 i P2 dotykają wszystkich osi jednocześnie. Druga zmiana jakościowa w tym samym oknie sprawi, że nie da się powiedzieć, która zadziałała.
 
 Zmiana przekrojowa, która jest też zmianą kosztu, na przykład kontekst, może wejść razem ze zmianami ustawień, ale jej odczyt jakości i tak zajmuje okno dla siebie. Która zmiana przekrojowa idzie pierwsza, rozstrzygnie plan etapu 5.
+
+Okresy przed i po zmianie rozdzielamy po tym, który skrypt naprawdę się wykonał, a nie po numerze wersji zapisanym w projekcie. Przegląd D5 pokazał, że 33 z 55 runów autopilota puściło lokalnie zmieniony skrypt, a znacznik wersji jest tylko w 5 z 11 repo.
 
 ## Co z tego wynika dla planu wdrożenia
 

@@ -11,7 +11,8 @@ JAK CZYTAC KAZDY WPIS:
   POLA      — sciezka w rekordzie D5: typ.pole (agent.ctx_start, faza.bramki.advisors, run.stop_kategoria). [BRAK] = pola nie ma w rekordzie D5
               i jest dopisane w sekcji 3 tej mapy oraz w d5-telemetria-rekord.txt §7.
   BASELINE  — punkt odniesienia z etapu 0 (5 projektow, 2 941 agentow, 45 870 tur, 1 179 M jedn.; oferty-online po 06.09: 23 fazy, 35,5 agenta
-              i 740 tur/faze). Import do nowego pliku: sekcja 4.
+              i 740 tur/faze). Import do nowego pliku: sekcja 4. [PRZEGLAD D5 2026-09-23: etap 0 zanizal output — po poprawce 1 293 M jedn.,
+              output 10,9% (nie 2%), udzialy liczone na calym koszcie ×0,91 (22% → 20%, 40% → 36,5%); d5r-koszt-output.txt]
   HORYZONT  — po ilu fazach / zadaniach / PR-ach metryka jest czytelna. Konwencja: KONFIGURACJA = widac po 1 fazie (cecha ustawien, nie statystyka);
               KOSZT/TURY = 5 faz (rozrzut tur p50 39 / p90 83 u buildera); JAKOSC = 5 PR-ow (bot recenzuje PR, nie faze; 1 zadanie ≈ 1 PR).
   ODWROT    — tylko dla zalozen §6: warunek, ktory cofa zmiane, wyrazony tymi samymi polami.
@@ -33,6 +34,8 @@ MIARA JAKOSCI (wspolna dla wszystkich wpisow „JAKOSC", poprawki 1–5 i 7):
     w kazdym oknie ktoras przekroczylaby „>1" przypadkiem). Uzasadnienie: dla perf oczekiwane ~0,8 w oknie; „>1" (≥2) = falszywy alarm ~20% okien,
     „≥3" = ~5% (Poisson). Oczekiwane w oknie ~570 plikow (epoka wrzesniowa): correctness 6,7 → prog 14; test 5,8 → 12; security 5,0 → 10;
     spec 1,7 → 4; perf 0,8 → 3; grupa klas obslugi bledow 0 → 3.
+  - [PRZEGLAD D5 2026-09-23] LICZYMY UNIKALNE WATKI BOTA per PR (klucz = zadanie z args runu dev-pr, run.pr.klasy[].id): kolejne tury `zbierz`
+    wypisuja stare watki ponownie — suma po runach 255 vs 178 unikalnych (+43%, najwiecej w PR-ach z wieloma turami). Baseline 1b (GitHub) bez zmian.
 
 Jednostka kosztu wszedzie: jedn. = in×1 + cache_w×1,25 + cache_r×0,1 + out×5 (agent.koszt_jedn).
 
@@ -44,17 +47,20 @@ Jednostka kosztu wszedzie: jedn. = in×1 + cache_w×1,25 + cache_r×0,1 + out×5
 METRYKA   (a) kontekst startowy: p50 agent.ctx_start per klasa_roli i per agentType; cel z §12: mechaniczne ~4,5k, reviewer ~15k, builder ~25k.
           (b) czy plik per klasa jest w uzyciu: udzial agentow z agentType != 'workflow-subagent' (cel: 100% rol pipeline'u).
           (c) czy allowlista nie odciela potrzebnego MCP: agent.narzedzia.mcp > 0 TYLKO u testera E2E / builderow UI z figma_screens.
-          (d) oplata za powolanie: suma agent.cache_w pierwszej tury / faza.koszt.jedn (dzis 22%).
+          (d) oplata za powolanie: suma agent.cache_w pierwszej tury / faza.koszt.jedn (dzis 22%; po przegladzie D5 20% — etap 0 zanizal output).
+          (e) [PRZEGLAD D5] bezposrednio: agent.kontekst.narzedzia_n (dzis 972 narzedzia, 309 skilli) → kilkanascie po `tools:`; agent.kontekst.claude_md_zn
+              = 0 u mechanicznych po omitClaudeMd — bez porownan ctx_start miedzy epokami.
 POLA      agent.ctx_start, agent.klasa_roli, agent.agentType, agent.cache_w, agent.narzedzia.mcp [BRAK], faza.koszt.jedn.
 BASELINE  !! PRZEGLAD D3 2026-09-23: liczby ponizej to srednia epok (CLAUDE.md oferty 13,8k → 87k zn w 08-31..09-17, ctx 1. tury rosl razem z nim:
-          mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k; zero runow po scieciu CLAUDE.md do 21k) — WLASCIWY punkt odniesienia =
+          mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k; [KOREKTA D5: run 20.09 wf_e5c34cd8-66c, 85 agentow, pracowal z CLAUDE.md 17,8k zn na galezi zadania — ctx 1. tury p50: mech haiku 89k,
+          orkiestr. opus 121k, reviewer 125k, sceptyk 123k, builder 135k; n 6–29 — PIERWSZY punkt odniesienia; mini-run (e) = potwierdzenie]) — WLASCIWY punkt odniesienia =
           mini-run (e) na obecnym stanie repo przed `tools:`, per klasa I per model (haiku ~93k vs opus ~127k przy tej samej konfiguracji);
           porownania ctx_start tylko przy podobnym faza.wiedza.claude_md_zn / indeks_zn (d3r-kontekst-per-klasa.txt). Tlo:
           ctx 1. tury p50 (kontekst_1_tury.txt): verify 76k, stan:zapis 67k, telemetria 65k, precheck 66k, planner 89k, reviewerzy 95–97k
           (correctness 112k), build 118k, e2e 110k; per projekt p50: oferty 89k, claude-cron 93k, akademia 114k, Nawykometr 59k; trend 77k (08) → 101k (09).
           Pomiar 1 na pustym agencie: 62,8k bez niczego → 39,3k z samym disallowedTools mcp__* → 11,6k z allowlista tools: → 4,5k + omitClaudeMd.
           agentType: 2 252 / 2 942 agentow (77%) = workflow-subagent bez pliku; 0/16 plikow ma tools:; 498/514 agentow nie wolalo MCP.
-          Oplata za powolanie = 22% calosci (cache write 1. tury ~107k tok × 1,25).
+          Oplata za powolanie = 22% calosci (cache write 1. tury ~107k tok × 1,25); po przegladzie D5 20% (mianownik z poprawnym outputem).
 HORYZONT  KONFIGURACJA — 1 faza pokazuje ctx_start per klasa; potwierdzenie udzialu (d) po 5 fazach. Odczyt wstepny juz w mini-runie (§11 pkt e).
 
 --- §2 pkt 2. Kontekst per klasa roli (CLAUDE.md u builderow/reviewerow, omitClaudeMd mechaniczne, bypass zostaje, `skills:` zostaje) ---
@@ -94,18 +100,22 @@ METRYKA   (a) rozmiar warstwy zawsze ladowanej: faza.wiedza.indeks_zn i claude_m
           (zabezpieczenie 6) zasila sie z tego samego pola; (e) rozrost w czasie:
           indeks_zn po 5 zadaniach vs po 1.
 POLA      faza.wiedza.{indeks_zn, wpisy_indeks, claude_md_zn, wycinek_wpisy_p50, wycinek_zn_p50} [BRAK], run.pr.klasy[].ma_regule [BRAK], agent.ctx_start.
+          [PRZEGLAD D5: claude_md_zn / indeks_zn = mediana agent.kontekst z zalacznika `instructions` transkryptu (tak jak widzi to agent), NIE rozmiar
+          pliku w repo — u 188/689 agentow CLAUDE.md widziany ≠ main w chwili startu]
 BASELINE  learned-patterns 46,9k zn (~13,4k tok) ladowany eager DO KAZDEGO agenta + drugi raz w dossier reviewerow (13k tok × 6 reviewerow/faze);
           CLAUDE.md oferty-online 3,4k zn (22.08) → 89,7k (17.09), po odchudzeniu 20,6k; akademia 55k + 54k + 11k zn; ~37k tok instrukcji projektu
           w kazdej turze kazdego agenta. Ucieczki z regula: 45/68 (66%). 49k zn do jednorazowej konwersji skryptem.
 HORYZONT  (a)(b)(c) KONFIGURACJA — 1 faza; (d) JAKOSC — 5 PR; (e) 5 zadan.
 
 --- §2 pkt 5. Telemetria centralna, mechaniczna, ZERO agentow ---
-METRYKA   (a) kompletnosc: udzial runow z rekordem run (cel 100%; run.zrodlo_statusu 'sesja' vs 'skan'; udzial status NIEZNANY → cel < 10%);
+METRYKA   (a) kompletnosc: udzial runow z rekordem run (cel 100%; [PRZEGLAD D5: status z pliku harnessu workflows/<run>.json, 156/156 runow;
+          run.zrodlo_statusu USUNIETE; NIEZNANY tylko przy braku pliku harnessu po awarii sesji → cel ~0%; dawny cel „< 10%” zakladal heurystyke,
+          ktora dalaby 23/55 = 42%]);
           (b) koszt zbierania: liczba agentow rola 'telemetria' per run = 0; (c) pelnosc cennika: Σ cache_r + cache_w > 0 w kazdym rekordzie agent
-          (dzis telemetria widziala tylko output = 2%); (d) odpornosc: liczba rekordow w pliku rosnie monotonicznie (raport porownuje z poprzednim).
-POLA      run.zrodlo_statusu, run.status, agent.rola, agent.cache_r, agent.cache_w, agent.out, wspolne: klucz, ts.
+          (dzis telemetria widziala tylko output = 2% [PRZEGLAD D5: ~11%]); (d) odpornosc: liczba rekordow w pliku rosnie monotonicznie (raport porownuje z poprzednim).
+POLA      run.status, agent.rola, agent.cache_r, agent.cache_w, agent.out (OSTATNI wpis usage per odpowiedz — przeglad D5), wspolne: klucz, ts.
 BASELINE  dzis 1 wpis/run przez agenta haiku (13 agentow telemetria w D3, 44 wywolan w etapie 0, ~65k ctx kazdy), plik 2× skasowany (`sed -i`),
-          32 wpisy odzyskane; tokenyRazemK = budget.spent() = tylko output = 2% kosztu; poziom agenta nie istnial.
+          32 wpisy odzyskane; tokenyRazemK = budget.spent() = tylko output = 2% kosztu [PRZEGLAD D5: ~11%]; poziom agenta nie istnial.
 HORYZONT  KONFIGURACJA — kazdy run od pierwszego (to jest iteracja 1 wdrozenia, 6a pkt 19).
 
 --- §2 pkt 6. E2E → [MANUAL] zamiast STOP; srodowisko sprawdzone PRZED startem; MANUAL trafia do smoke operatora ---
@@ -301,6 +311,7 @@ Rekord D5 ma trzy typy (agent, faza, run) + pola wspolne — d5-telemetria-rekor
   6. faza.wiedza            — {indeks_zn, wpisy_indeks, claude_md_zn, wycinek_wpisy_p50, wycinek_zn_p50}. Zrodlo: rozmiar plikow w repo w chwili
                               runu (docs/learned-patterns.md, CLAUDE.md) + prompty builderow/reviewerow (sekcja wycinka oznaczona markerem
                               w prompcie — WYMOG dla orkiestratora: wycinek w bloku z naglowkiem stalym, zeby skrypt go odciol). Dla: §2 pkt 4.
+                              [PRZEGLAD D5: rozmiar CLAUDE.md/indeksu z zalacznika `instructions` transkryptu agenta (agent.kontekst), nie z repo]
   7. faza.fix.pliki[]       — pliki dotkniete commitami fixa (git diff --name-only). Zrodlo: result fixa / git. Dla: §2 pkt 9(a).
   8. faza.fix.linie_diff    — +/− linii diffu fixa. Zrodlo: git. Dla: §2 pkt 9(e).
   9. faza.fix.p1_z_testem   — liczba P1 naprawionych z nowym testem padajacym przed poprawka. Zrodlo: result fixa. Dla: §2 pkt 7(d).
@@ -312,7 +323,7 @@ Rekord D5 ma trzy typy (agent, faza, run) + pola wspolne — d5-telemetria-rekor
  12. run.profil_stacku      — {supabase, react, node, expo, ...} z package.json + katalogow (ten sam profil, ktory idzie do dossier — §2 pkt 8).
                               Dla: §2 pkt 8(d), zal. 3.
  13. run.pr (tylko workflow dev-pr) — {numer, tury, pliki (liczba plikow PR — mianownik MIARY JAKOSCI, z gh bez agenta), uwagi_razem, p1, p2, p3,
-                              koszyk{A,B,C,D}, klasy[{klasa, severity, plik, os, ma_regule}], rekomendacja} — format klasyfikacja-574.csv (slownik klas,
+                              koszyk{A,B,C,D}, klasy[{id, klasa, severity, plik, os, ma_regule}], rekomendacja} — format klasyfikacja-574.csv (slownik klas,
                               ETAP1B). PRODUCENT (poprawka 7): WYMAGA ZMIANY — rozszerzony schemat ISTNIEJACEGO agenta `pr:zbierz` w dev-pr-wf o klase
                               ze slownika, os i wage (ten sam agent, ta sama tura, zero nowych agentow; dzis zwraca tylko klase DECYZJI napraw/odrzuc/
                               do-operatora); `ma_regule` liczone SKRYPTEM (klasa ∈ indeks learned-patterns); `rekomendacja` w JS (ETAP1B §4 zmiana 3).
@@ -320,6 +331,8 @@ Rekord D5 ma trzy typy (agent, faza, run) + pola wspolne — d5-telemetria-rekor
                               wymog „zbieranie nie zwieksza kosztu"; ocena w raporcie miesiecznym na probce. Przed porownaniami: KALIBRACJA nowego
                               klasyfikatora na 2–3 starych PR vs klasyfikacja 1b (rozjazd klas → poprawic slownik). To NAJWAZNIEJSZE brakujace pole: bez niego zadna miara JAKOSCI (§2 pkt 3, 4, 8, 9, 11;
                               zal. 1, 2, 3, 5, 6, 8) nie ma zrodla — miara jakosci z HANDOFF §1 = P1/P2 od bota PO naszym review.
+                              [PRZEGLAD D5: run dev-pr = jeden etap jednej tury; klucz PR = args.zadanie, numer z runu `start`; `id` watku bota
+                              w klasy[]; raport liczy UNIKALNE watki per PR (suma po runach zawyza o 43%)]
  14. run.smoke              — {pozycje, z_manual} z result dev-docs-complete (smoke operatora). Dla: §2 pkt 6(d).
                               WYMAGA ZMIANY: schemat wyniku dev-docs-complete-wf (pozycje [MANUAL] przeniesione do smoke).
  15. faza.dossier_zn        — rozmiar dossier w znakach. Zrodlo: plik ctx w /tmp albo result packagera. Dla: zal. 4(d).
@@ -330,7 +343,8 @@ Rekord D5 ma trzy typy (agent, faza, run) + pola wspolne — d5-telemetria-rekor
 Pola D5, ktorych mapa NIE uzywa jako metryki (zostaja — kosztuja zero): identyfikatory (agent.id/etykieta/grupa/faza/model/sekundy, agent.in),
 agent.thinking, agent.ctx_max, agent.start/koniec, agent.wynik, agent.findingi (mapa czyta agregat faza.findingi_per_os), faza.przebieg.pominieci/
 e2eTryb/znalezione/poDedupJs/poDedupSem/weryfikowane/p3Odrzucone/tiery, faza.liczniki, faza.e2eSync, faza.sekundy, run.fazyZadania/fazyUkonczone/
-fazyZMetrykami, run.walidacja, run.solution, run.sekundy, run.koszt (wyliczalne z faz), run.powod, szablon (sha) — ten ostatni jest potrzebny
+fazyZMetrykami, run.walidacja, run.solution, run.sekundy, run.koszt (wyliczalne z faz), run.powod, szablon (po D5: {marker, skrypt_sha, zgodny,
+dzieci_zmienione}) — ten ostatni jest potrzebny
 raportowi do dzielenia na epoki „przed/po iteracji N", wiec zostaje jako klucz porownan, nie metryka.
 
 ================================================================================================================================
@@ -340,7 +354,8 @@ Zeby raport.mjs mial punkt odniesienia w TYM SAMYM formacie, nie w tabelach z di
   agents.csv (2 941 wierszy) → typ=agent: projekt, run, sesja, id=agent, agentType, rola, model, tury, in/cache_w/cache_r/out/thinking,
       koszt_jedn=koszt, narzedzia{razem=tool_calls, bash, read, grep, edit, write, structured}, start, koniec, sekundy, ctx_max, ctx_sr;
       BRAK w csv: ctx_start (uzupelnic ze skryptu kontekst_1_tury.py — ten sam skan), klasa_roli (mapa z d3), findingi (z findingi-per-os/*.json
-      po run+rola), prompt_zn, werdykty. Oznaczyc szablon='etap0' i v=0.
+      po run+rola), prompt_zn, werdykty. Oznaczyc szablon='etap0' i v=0. [PRZEGLAD D5: agents.csv PRZED importem przeliczyc z OSTATNIM wpisem
+      usage per odpowiedz (out zanizony ~5×) i rola() dopasowujaca najdluzsza nazwe (43 agentow fix:kontrola/pre-skan/poprawka sklejonych w `fix`)]
   telemetria-odzyskana-wszystko.json (33 wpisy v0) → typ=faza (raporty[]: liczniki, przebieg, fix, kontrolaFixa, e2eSync) + typ=run (status, powod,
       fazyUkonczone, walidacja, e2eSrodowisko, solution); stop_kategoria z przegladu runow recznie dla 13 runow po 06.09.
   koszt_zadan.txt → nic (wyliczalne z agentow po zadaniu).
@@ -366,7 +381,8 @@ i ma zaplanowany odczyt po 1 / 5 fazach / oknie 5 PR — z regulami kolejnosci z
 === 6. KOLEJNOSC ODCZYTOW — kiedy zmiany moga biec rownolegle (poprawka 8) ===
 ================================================================================================================================
 Problem: wszystkie odczyty JAKOSCI czytaja ten sam strumien uwag bota i kazdy potrzebuje okna 5 PR (≈ 5 zadan). Kilkanascie iteracji po kolei =
-miesiace; wszystkie naraz = nie wiadomo, co zadzialalo. Epoki rozdziela pole `szablon` (sha) w rekordzie.
+miesiace; wszystkie naraz = nie wiadomo, co zadzialalo. Epoki rozdziela pole `szablon` w rekordzie [PRZEGLAD D5: po `szablon.skrypt_sha` (co sie
+wykonalo) + `zgodny`, NIE po sha repo projektu ani samym markerze — 33/55 runow autopilota wykonalo skrypt spoza historii szablonu].
   R1. USTAWIENIA i KOSZT moga biec rownolegle bez ograniczen: kontekst startowy, pliki agentow, bramki, budzet instrukcji, tury, telemetria czytaja
       rozne pola i nie zaklocaja sie (odczyt po 1 / 5 fazach).
   R2. Zmiany JAKOSCIOWE dotyczace ROZLACZNYCH osi moga biec rownolegle w tym samym oknie 5 PR — kazda czytana wylacznie po B P1/P2 swojej osi

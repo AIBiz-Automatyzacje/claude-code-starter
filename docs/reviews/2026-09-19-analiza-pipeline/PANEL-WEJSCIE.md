@@ -31,6 +31,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    (ten sam 1 agent, ten sam cykl). Obowiązuje 6a pkt 15.
 4. **Dźwignia kontekstu startowego = 25–35% kosztu fazy, nie 30–40%** (ETAP3 §1.1, przeliczenie dla konfiguracji z pkt 1; szacunek do potwierdzenia
    odczytem `usage` w mini-runie). Kolejność priorytetów bez zmian: kontekst > roster + mechanika review (8–10%, ETAP1).
+   **[Przegląd D5 2026-09-23: model kosztu etapu 0 zaniżał output (2% → 10,9%, całość 1 179 → 1 293 M jedn.), udziały liczone na całym koszcie ×0,91;
+   dźwignia do przeliczenia w D4 razem z epoką CLAUDE.md z D3. Udziały etapów fazy przesuwają się ≤0,4 pp — kolejność priorytetów stoi.]**
 5. **Model kosztu (etap 0) opisuje oferty-online BEZ napraw N1–N9 (L7):** operator — niska waga; do raportu jako uwaga, nie ryzyko. N1–N9 nie zmieniały liczby agentów na fazę.
 6. **STOP E2E ze środowiska / limitu zewnętrznego → [MANUAL], run idzie dalej (operator 2026-09-21, po D4):** obowiązuje 6a pkt 18 L11. **NIEAKTUALNY:** zapis ETAP1
    „powtórka po STOP-ie E2E = sam tester" (i HANDOFF §5 hipoteza 4, i rek. 3 przeglądu runów) — traci przedmiot, bo taki STOP nie zatrzymuje runu, więc nie ma po nim żadnej powtórki review.
@@ -60,6 +62,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    skryptem z listą odrzutów; dopasowanie po katalogach, nie nazwach. Plus bramka „zielony main" w bootstrapie autopilota. Żaden skill nie dopisuje do CLAUDE.md (6a pkt 1).
 5. **Telemetria centralna, mechaniczna, ZERO agentów (6a pkt 18):** skrypt po zakończeniu runu czyta `journal.jsonl` + transkrypty (`usage`) i dopisuje
    jeden rekord per agent/faza do globalnego JSONL + skrypt raportu miesięcznego. Pełny cennik (cache read/write/output), nie sam output. Rekord: §12 (D5).
+   Po przeglądzie D5 (2026-09-23): status i wynik runu skrypt czyta z pliku harnessu (`<sesja>/workflows/<run>.json`), więc zapis to skan bez kroku w skillach.
 6. **E2E → [MANUAL] zamiast STOP (6a pkt 18 L11, doprecyzowane 6a pkt 19):** warunek wstępny = środowisko E2E sprawdzone i działające PRZED startem autopilota
    (doctor/precheck); test niewykonalny w trakcie runu przez środowisko / limit zewnętrzny = checkbox przechodzi na [MANUAL] z powodem, run idzie dalej,
    a pozycja [MANUAL] **trafia do smoke operatora** (dev-docs-complete) — nie znika; ponowne stawianie środowiska w runie jest droższe niż test ręczny.
@@ -159,12 +162,16 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   = najliczniejsza rola bez pliku (naturalne miejsce na pierwszy wspólny plik klasy). **Dla panelu:** wymóg §2 pkt 1 (pliki per klasa).
   **Korekta po przeglądzie 2026-09-23 (`skrypty/d3r_kontekst_per_klasa.py` → `dane/d3r-kontekst-per-klasa.txt`):** (1) kontekst per klasa z telemetrii NIE jest punktem
   odniesienia — pochodzi z epoki, w której CLAUDE.md oferty-online rósł 13,8k → 87k zn (08-31 → 09-17), learned-patterns 7,8k → 45k, a kontekst PIERWSZEJ tury rósł
-  razem z nimi (mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k tok); po ścięciu CLAUDE.md do 21k (09-21) nie było żadnego pełnego runu; punkt
+  razem z nimi (mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k tok); po ścięciu CLAUDE.md do 21k (09-21) nie było żadnego pełnego runu [nieaktualne — korekta z przeglądu D5 niżej]; punkt
   odniesienia = mini-run (e) na obecnym stanie repo, przed `tools:`; porównania `ctx_start` tylko przy podobnym rozmiarze stałych plików (`faza.wiedza.*`);
   (2) CLAUDE.md nie tłumaczy różnicy między klasami (ładuje się obu): średni kontekst na turę mierzy PRACĘ (reviewer 25 tur, mechaniczny 5); na starcie różnica ~40k,
   głównie MODEL (haiku ~93k, opus ~127k przy tej samej konfiguracji bez pliku) → cele ctx_start sprawdzać per model; (3) klasy uzasadnia zestaw USTAWIEŃ roli (model,
   CLAUDE.md, Edit/skille, MCP), nie poziom kontekstu; (4) freshness-audit-wf (4 role) poza mapą do decyzji operatora po D6. Wzrost stałego kontekstu o 46–75k tok
   w 3 tygodnie bez zmiany pipeline'u = najmocniejszy dowód na 6a pkt 1 i 17 (nic nie dopisuje do CLAUDE.md, learned-patterns poza eager).
+  **Korekta z przeglądu D5 (2026-09-23, `skrypty/d5r_wykonalnosc_rekordu.py` §11):** „po ścięciu CLAUDE.md zero runów” jest fałszywe — run 20.09 (cookie-consent,
+  85 agentów, OK) pracował z CLAUDE.md 17,8k zn na gałęzi zadania (PR #21 zmergowany 21.09; D3 datowało ścięcie po gicie main, a u 188/689 agentów CLAUDE.md
+  widziany ≠ main). Kontekst pierwszej tury p50 w tym runie (vs 13–17.09): mechaniczni haiku 89k (101k), orkiestracyjni opus 121k (139k), reviewerzy 125k (145k),
+  sceptycy 123k (144k), buildery 135k (160k); n = 6–29 na klasę. To pierwszy punkt odniesienia; mini-run (e) = potwierdzenie na obecnym stanie per model.
 
 ## 5. Hipotezy z HANDOFF §5 — stan po decyzjach (projektant dostaje je w TEJ wersji)
 
@@ -216,7 +223,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 | teza | filar | co się sypie, jeśli fałszywa | stan po domknięciach |
 |---|---|---|---|
-| kontekst startowy = 25–35% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka ETAP3 §1.1 | kolejność priorytetów | przeliczone; kolejność stoi; potwierdzenie w mini-runie |
+| kontekst startowy = 25–35% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka ETAP3 §1.1 | kolejność priorytetów | przeliczone; kolejność stoi; potwierdzenie w mini-runie; **po D5: model etapu 0 zaniżał output (koszt ×1,097, udziały ×0,91) + epoka CLAUDE.md z D3 → przeliczenie w D4** |
 | polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2 (po przeglądzie 2026-09-23): listy są marginalne wobec tła ~300–500 poleceń, ale procentów IFScale nie da się przenieść; oczekiwanie „60–70%” obniżone (D1 + 1b: raczej granica uwagi niż nadmiar reguł); mini-run (d) rozstrzyga, czy liczba poleceń jest dźwignią jakości → wymóg budżetu §2 pkt 3 |
 | nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — atrybucja po pliku | architektura pętli fix, ocena zasięgu review | **D1 (po przeglądzie 2026-09-23): pół na pół** — 22/44 przeoczenia, 22/44 urodzone w fixach (w tym łańcuch 4); teza za mocna w obie strony; 3 powtórki, 2 zadania, 1 repo (§4) |
 | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | utrzymanie osi zastępowalnej bramką | stoi (wniosek zachowawczy, L9) |
@@ -249,40 +256,56 @@ testowym), czy tylko zajmuje kontekst. Dodatki: (d) ta sama para markerów w pro
 jedyny pomiar, czy liczba poleceń jest u nas dźwignią jakości (procenty IFScale mierzą inną jednostkę); marker ginie wyraźnie częściej przy ~400 → budżet 150 jest celem
 jakościowym; nie ginie → budżet zostaje jako porządek i koszt, a główną dźwignią jakości są małe naprawy (D1) i ewentualnie równoległe próbki; (e) odczyt `usage` pierwszej
 tury per klasa roli — potwierdzenie dźwigni 25–35% (ETAP3 §1.1); **po przeglądzie D3 (2026-09-23) to także PUNKT ODNIESIENIA kontekstu startowego per klasa i per model
-na obecnym stanie repo (po ścięciu CLAUDE.md, przed `tools:`)** — telemetria sprzed 09-21 miesza epoki różniące się prawie 2×. Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
+na obecnym stanie repo (po ścięciu CLAUDE.md, przed `tools:`)** — telemetria sprzed 09-21 miesza epoki różniące się prawie 2×; **po przeglądzie D5: pierwszy
+punkt odniesienia już jest (run 20.09, §4 D3), więc (e) to potwierdzenie per model; odczyt przez załączniki transkryptu (liczba narzędzi, skilli, pliki instrukcji),
+nie tylko `ctx_start`.** Dodatkowo (f, przegląd D5): czy plik harnessu `workflows/<run>.json` powstaje dopiero po zakończeniu runu i co zostaje po zabiciu sesji
+głównej; czy hook Stop (wariant C) odpala się po task-notification. Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
 
 ## 12. Telemetria mechaniczna — rekord i miejsce w runie (D5, 2026-09-21; pełny szkic: `dane/d5-telemetria-rekord.txt`)
 
 **Dziś:** jeden wpis per run dopisywany przez agenta haiku (`zapiszTelemetrie()`, `dev-autopilot-wf.js:1028-1087`, także w `stopRun()`), który 2× skasował plik;
-`tokenyRazemK` = `budget.spent()` = WYŁĄCZNIE tokeny wyjściowe (2% kosztu); poziom agenta nie istnieje. **Ograniczenie twarde:** skrypt workflowu nie ma dostępu
-do plików ani Node (workflow-authoring), więc orkiestrator nie dopisze rekordu sam; dziennik runu nie zapisuje wyniku końcowego (status/powód zna tylko sesja główna).
+`tokenyRazemK` = `budget.spent()` = WYŁĄCZNIE tokeny wyjściowe (~11% kosztu po przeglądzie D5; wcześniej podawane 2% — model etapu 0 brał pierwszy, częściowy
+wpis `usage`); poziom agenta nie istnieje. **Ograniczenie twarde:** skrypt workflowu nie ma dostępu do plików ani Node (workflow-authoring), więc orkiestrator nie
+dopisze rekordu sam. Dziennik runu nie zapisuje wyniku końcowego, ALE **(przegląd D5) harness zapisuje po każdym runie `<sesja>/workflows/<run>.json`** (156/156 runów,
+oba formaty journala): status completed/killed/failed, zwrócony wynik (OK/STOP + powód), argumenty, `log()`, pełny skrypt głównego workflowu i listę agentów
+z etykietą, grupą i próbą — więc status nie wymaga sesji głównej.
 
 **Źródła na dysku (zero tokenów, zweryfikowane na runie z 85 agentami):** `journal.jsonl` (label, phase, result strukturalny każdego agenta — w tym `findings`
 reviewerów), `agent-<id>.jsonl` (usage per odpowiedź API z cache read/write, model, timestampy, tool_use), `agent-<id>.meta.json` (agentType), `.autopilot-state.json`
-(metryki fazy). Etykiety agentów w workflowach-dzieciach nie niosą numeru fazy — do dopisania (`review:security:faza-2`), do tego czasu faza po kolejności grup.
+(metryki fazy). Etykiety agentów w workflowach-dzieciach nie niosą numeru fazy — faza = najbliższa wcześniejsza grupa „Faza N” (przegląd D5: 2 555/2 891 agentów
+autopilota z numerem, 335 poziom runu; „#N” w nazwie grupy to numer wywołania, nie fazy); dopisanie numeru do etykiet = wygoda, nie warunek.
 
 **Rekord (jeden plik `~/.claude/telemetry/pipeline.jsonl`, append-only, klucz idempotencji `run|typ|id`, trzy typy; alternatywa z rek. 1 przeglądu runów — plik per run
-+ globowanie katalogu — była lekiem na agenta kasującego wspólny plik; przy skrypcie, który nigdy nie otwiera pliku do nadpisania, oba formaty są bezpieczne, wybór przy wdrożeniu):**
++ globowanie katalogu — była lekiem na agenta kasującego wspólny plik; przy skrypcie, który nigdy nie otwiera pliku do nadpisania, oba formaty są bezpieczne, wybór przy wdrożeniu).
+Po przeglądzie D5: `agent` dopisywany, gdy klucza brak (agentId unikalny); `run` i `faza` — nowa wersja przy zmianie, raport bierze OSTATNIĄ per klucz (wznowienie
+= ten sam runId, 9/9; dwie sesje kończą odpowiedź w ciągu 2 s w 6,6% przypadków → deduplikacja przy odczycie, nie sprawdzanie kluczy przed zapisem):**
 - `agent` — id, etykieta, faza, rola (jak `rola()` w `koszt_agentow.py`), **klasa_roli** (mechaniczny/orkiestracyjny/reviewer/sceptyk/builder/naprawiacz/tester-e2e),
   agentType, model, tury, in/cache_w/cache_r/out/thinking, koszt_jedn (pełny cennik), **ctx_start** (kontekst pierwszej tury = miara dźwigni `tools:`), ctx_sr/max,
-  narzędzia, start/koniec/sekundy, wynik (ok/null/brak), findingi p1/p2/p3 (reviewerzy), obalone (sceptycy), instrukcje_stale (z testu budżetu, jeśli jest).
+  narzędzia, start/koniec/sekundy, wynik (ok/null/brak/**blad**), **proba**, findingi p1/p2/p3 (reviewerzy), obalone (sceptycy), instrukcje_stale (**po D5: liczone
+  tym samym modułem co test budżetu — blok poleceń w prompcie delegacji z transkryptu + w pliku agenta**), **kontekst {claude_md_zn, rules_zn, learned_zn,
+  narzedzia_n, skille_n}** (z załączników transkryptu — bezpośredni odczyt `tools:`/`omitClaudeMd`, np. 972 narzędzia i 309 skilli dziś), **cc_wersja**.
+  Koszt: ostatni wpis `usage` każdej odpowiedzi API (pierwszy zaniża output — przegląd D5).
 - `faza` — status, liczniki, przebieg (skrót jak dziś), **findingi_per_os**, e2e {pass, fail, skip, **manual[] z powodem** (L11)}, fix, kontrolaFixa (z `regresje`),
   **bramki** {typecheck, eslint, knip, sizeLimit, migracje, advisors, stryker: status + sekundy}, koszt per etap, sekundy.
-- `run` — status OK/STOP/NIEZNANY, powód, zrodlo_statusu (sesja/skan), **stop_kategoria** (E2E-środowisko / E2E-asercja / fix-FAIL / P1 / scribe / czystość / inne),
-  manual_razem, fazy, walidacja, e2eSrodowisko, solution, koszt razem, sekundy, szablon (sha).
+- `run` — status OK/STOP/KILLED/FAILED/NIEZNANY (NIEZNANY tylko bez pliku harnessu; `zrodlo_statusu` usunięte po D5), powód, **stop_kategoria** (E2E-środowisko /
+  E2E-asercja / fix-FAIL / P1 / scribe / czystość / inne), manual_razem, fazy, walidacja, e2eSrodowisko, solution, koszt razem, sekundy, **szablon {marker
+  `.template-version`, skrypt_sha — hash skryptu, który się wykonał, zgodny z manifestem, dzieci_zmienione}** (po D5: sha repo projektu nie mówi, co się
+  wykonało — 33/55 runów autopilota puściło skrypt spoza historii szablonu, marker brak w 6/11 repo; sync-template dopisuje hash per plik do manifestu).
 
 **Skrypt i miejsce w runie (propozycja, zero agentów w każdym wariancie):** `.claude/scripts/telemetria/zbierz.mjs` (Node, port `koszt_agentow.py`; test na fixture
-w `__tests__`) + `raport.mjs`. **A (główne):** sesja główna po task-notification wywołuje `zbierz.mjs --run <runId> --status <status> --powod <powód>` — krok
-w skillach wszystkich workflowów; z orkiestratora znika agent telemetrii (2 wywołania) i `tokenyRazemK`. **B (siatka, obowiązkowa):** `--skan` w raporcie
-i w doctor dopisuje każdy run bez rekordu (status z ostatniej etykiety w journalu albo NIEZNANY; run w toku pomijany). **C (do sprawdzenia w mini-runie):**
-hook Stop z `--skan --szybko` = pełna automatyzacja bez kroku w skillu.
+w `__tests__`) + `raport.mjs`; z orkiestratora znika agent telemetrii (2 wywołania) i `tokenyRazemK`. **Po przeglądzie D5 (2026-09-23, przyjęte):**
+**B `--skan` = GŁÓWNY zapis** — status, powód, etykiety, grupy i skrypt z pliku harnessu (heurystyka „ostatnia etykieta” trafiała 32/55 runów, STOP 12/30;
+reguła „ostatni agent bez wyniku = run w toku” gubiła na zawsze 4 zakończone runy, w tym 3 przerwane); run w toku = brak pliku harnessu. **A (krok
+w skillach z `--status/--powod`) ZBĘDNY.** **C (hook Stop z `--skan --szybko`) = wyzwalacz**, do sprawdzenia w mini-runie; bez niego skan w doctor przy każdym runie —
+retencja transkryptów ~7 tygodni (najstarszy 03.08), więc sam raport miesięczny to za rzadko.
 
-**Raport miesięczny:** koszt per projekt/zadanie/run i udziały per etap i klasa roli (vs ETAP0 28/25/6/5/17/12%); ctx_start per klasa roli (czy allowlista
-działa: cel ~4,5k / ~15k / ~25k); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria, MANUAL per powód, bramki
-PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord w tym kształcie
-(pola mogą być null, klucze nie mogą zniknąć) i punkt w runie, w którym wywołanie A jest możliwe.
+**Raport miesięczny:** koszt per projekt/zadanie/run i udziały per etap i klasa roli (vs ETAP0 28/25/6/5/17/12%); ctx_start per klasa roli **i per model** (czy allowlista
+działa: cel ~4,5k / ~15k / ~25k; po D5 wprost z `agent.kontekst.narzedzia_n`); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria,
+MANUAL per powód, bramki PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord
+w tym kształcie (pola mogą być null, klucze nie mogą zniknąć) i wynik runu zwracany z workflowu (status + powód), bo z niego czyta skan.
 
-**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie.
+**Decyzja operatora (6a pkt 19):** wariant A + siatka B przyjęte; C do sprawdzenia w mini-runie. **Po przeglądzie D5 (akceptacja 2026-09-23):** zasada stoi (zero agentów,
+skrypt po runie, siatka obowiązkowa), wariant A odpada jako zbędny, B jest głównym zapisem.
 
 **Mapa walidacji zmian (D5b, 2026-09-22, wersja 2 po akceptacji 9 poprawek operatora — `PROPOZYCJA-POPRAWEK-MAPY-WALIDACJI.md`; pełny tekst:
 `dane/d5b-mapa-walidacji.txt`, 21 wpisów; liczby jakości: `skrypty/d5b_baseline_jakosci.py` → `dane/d5b-baseline-jakosci.txt`).** Dla każdego z 13 wymogów §2
@@ -292,7 +315,9 @@ i 8 założeń §6: METRYKA → POLA rekordu (typ.pole) → BASELINE → HORYZON
 NA 100 PLIKÓW PR (PR-y 12–160 plików), per typ kodu i per oś (kolumna `etap` z 1b, nie filtr po nazwie klasy); baseline = epoka wrześniowa PR 13–19
 (3,5/100; sierpień 9,3 — jakość spadała sama, średnia 6,7 dałaby fałszywą „poprawę", L16); porównania pipeline'u względem **B0 zebranego po 8 zmianach
 `.coderabbit.yaml`** (inny przyrząd); **próg odwrotu** per oś w oknie 5 PR ≥ max(3, 2 × oczekiwana), klasa = diagnoza (dziś: correctness 14, test 12,
-security 10, spec 4, perf 3). Przykłady: `tools:` → p50 `agent.ctx_start` per klasa i model vs punkt odniesienia z mini-runu (e) na obecnym stanie repo (telemetria 67–118k to średnia epok, D3 po przeglądzie)
+security 10, spec 4, perf 3); **po przeglądzie D5: liczymy UNIKALNE wątki bota per PR (klucz = zadanie, `klasy[].id`) — suma po runach dev-pr zawyża
+o 43% (255 vs 178) i nierówno, najbardziej PR-y z wieloma turami**. Przykłady: `tools:` → `agent.kontekst.narzedzia_n` (dziś 972 → kilkanaście) i p50 `agent.ctx_start`
+per klasa i model vs punkt odniesienia z runu 20.09 (§4 D3) potwierdzonego mini-runem (e) (telemetria 67–118k to średnia epok, D3 po przeglądzie)
 (cel ~4,5k / ~15k / ~25k), 1 faza; pętla fix →
 B P1/P2 bota na 100 plików fixa vs reszta PR: dziś **14,0 vs 4,7 (wrzesień 7,2 vs 2,2) ≈ 3×**, cel: stosunek spada; sceptyk → DISAGREE_EVIDENCE/
 weryfikowane vs 12% / 19,2% / 10,9%, odwrót: kill rate >50% i ≥3 B P1/P2 w miejscach obalonych w oknie 5 PR; scalenie dev-plan+dev-docs → koszt
@@ -306,7 +331,10 @@ claude_md_zn, wycinek_*}`, `faza.fix.pliki[]`, `faza.fix.linie_diff`, `faza.fix.
 dla dev-pr — najważniejsze: bez niego żadna miara JAKOŚCI (P1/P2 od bota po naszym review, HANDOFF §1) nie ma źródła** (producent: rozszerzony schemat
 istniejącego agenta `pr:zbierz` o klasę/oś/wagę, zero nowych agentów; `ma_regule` skryptem; pole „dlaczego przeoczone" wypada z runu → próbka w raporcie
 miesięcznym; przed porównaniami kalibracja klasyfikatora na 2–3 starych PR vs 1b), oraz **nowy typ `skill`**
-(epizod skilla w sesji głównej, port `koszt_skilli.py`) — bez niego §2 pkt 12 nie ma odczytu. Import baseline (plan etapu 5): `agents.csv` → agent,
+(epizod skilla w sesji głównej, port `koszt_skilli.py`) — bez niego §2 pkt 12 nie ma odczytu. **Po przeglądzie D5 dochodzą (`d5-telemetria-rekord.txt` §8):**
+`agent.kontekst`, `agent.cc_wersja`, `agent.proba`, wynik `blad`, `run.szablon{marker, skrypt_sha, zgodny, dzieci_zmienione}`, `run.pr.klasy[].id`; `faza.wiedza`
+z załącznika transkryptu, nie z repo (u 188/689 agentów CLAUDE.md ≠ main). Import baseline (plan etapu 5; `agents.csv` PRZELICZONY z ostatnim wpisem `usage`
+i poprawioną `rola()` — przegląd D5): `agents.csv` → agent,
 odzyskana telemetria → faza/run v0, `skille.csv` → skill, `klasyfikacja-574.csv` + rozmiary PR z gh → `run.pr` dla 19 PR (tło jakości i epoka wrześniowa;
 właściwy baseline porównań = B0; import załatwia otwartą decyzję o scaleniu odzyskanej telemetrii). Trzy rzeczy poza telemetrią, mierzone PRZED wdrożeniem: kill rate sceptyka na archiwalnych findingach, warstwy 2–3 testów
 na 31 uwagach, stosowanie treści `skills:`/wycinka (mini-run §11). **Konsekwencja dla etapu 5: iteracja 1 = telemetria + import baseline; potem 8 zmian

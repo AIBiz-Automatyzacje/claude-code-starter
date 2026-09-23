@@ -208,6 +208,8 @@ bierze liczbę z testu, więc zmiana definicji w teście przechodzi sama).
 
 **Status: PRZYJĘTA 2026-09-23, z pomiarem punktu odniesienia w mini-runie (bez osobnego przebiegu)** — wprowadzona do PANEL-WEJSCIE §4/§11/§12,
 ETAP3 §7, mapy walidacji obu wersji (§2 pkt 1 i 2), PANEL-WEJSCIE-DLA-OPERATORA (część 2 pkt 1, część 8), `dane/d3-mapa-rol-agentow.txt`, HANDOFF.
+**Korekta z przeglądu D5 (poprawka 7, przyjęta):** zdanie „po ścięciu CLAUDE.md nie było żadnego pełnego runu” jest fałszywe — run 20.09 (85 agentów)
+pracował z CLAUDE.md 17,8k zn na gałęzi zadania; to pierwszy punkt odniesienia, mini-run (e) = potwierdzenie. Treść poniżej zostaje jako zapis przeglądu.
 **Przeliczenie:** `skrypty/d3r_kontekst_per_klasa.py` → `dane/d3r-kontekst-per-klasa.{txt,json}` (repo oferty-online, git tylko do odczytu;
 telemetria z `agents.csv` + pierwsza odpowiedź API każdego agenta z transkryptu).
 
@@ -286,3 +288,202 @@ każdy zysk z `tools:` zjadłby wzrost plików w ciągu kilku tygodni.
 - **Uzasadnienie decyzji:** HANDOFF 6a pkt 18 (uzasadnienie klas) i wiersz 3½.
 - **Mini-run:** PANEL-WEJSCIE §11 i wersja operatora część 8. Dodatek (e) staje się pomiarem punktu odniesienia per klasa i per model.
 - **Wersja operatora:** fragmenty o klasach ról.
+
+---
+
+## D5 — rekord telemetrii i miejsce jego zapisu
+
+**Status: PRZYJĘTA 2026-09-23 (w całości, poprawki 1–7 i porządkowe)** — wprowadzona do `dane/d5-telemetria-rekord.txt` (§8 + dopiski
+w §0–§7), PANEL-WEJSCIE §1 pkt 4/§2 pkt 5/§4/§8/§11/§12, PANEL-WEJSCIE-DLA-OPERATORA (część 6, fragmenty o D3), mapy walidacji obu wersji,
+`dane/dane-digest.md` §0, `dane/d3-mapa-rol-agentow.txt`, HANDOFF (§3 pkt 1–2, wiersz 3½, 6a pkt 19). Dźwignia 25–35% — przeliczenie w D4.
+**Przeliczenie:** `skrypty/d5r_wykonalnosc_rekordu.py` → `dane/d5r-wykonalnosc-rekordu.{txt,json}` (wszystkie 156 runów na dysku, oba formaty
+journala, repo projektów i historia szablonu tylko do odczytu) oraz `skrypty/d5r_koszt_output.py` → `dane/d5r-koszt-output.txt` (model kosztu
+etapu 0 przeliczony na tych samych 2 941 agentach).
+
+### Co się trzyma bez zmian
+
+- **Źródła są na dysku i wystarczają bez agentów.** Journal, transkrypt agenta i plik meta dają koszt, tury, kontekst pierwszej tury, narzędzia,
+  czasy i wynik strukturalny każdego agenta. Skrypt workflowu nie ma dostępu do plików, więc zapis musi być poza workflowem — to się zgadza.
+- **Identyfikator agenta jest unikalny.** Żaden z 3 314 agentów nie występuje w dwóch runach, także po wznowieniach. Klucz rekordu agenta jest bezpieczny.
+- **Pola wejścia i cache są liczone poprawnie.** W obrębie jednej odpowiedzi API różni się tylko liczba tokenów wyjściowych (poprawka 6).
+- **Findingi i werdykty dają się policzyć.** Wagi P1/P2/P3 są w wynikach reviewerów obu formatów, werdykty sceptyków w polach `realny`/`werdykty`.
+- **Etykieta, grupa i faza są dostępne także dla starych journali**, tylko z innego miejsca niż zakładał D5 (poprawka 1): etykietę i grupę ma
+  3 286 z 3 314 agentów (28 starych bez niej — dla nich zostaje klasyfikacja po prompcie z `koszt_agentow.py`), numer fazy 2 555 z 2 891 agentów
+  autopilota, 335 to agenci poziomu runu (bootstrap, zakończenie, compound, complete), jeden bez fazy.
+
+### Poprawka 1 (zmienia wniosek). Status i powód runu leżą na dysku — sesja główna nie musi ich przekazywać
+
+**Obecnie.** D5 §1(e): „status i powód runu zna tylko sesja główna”, więc wariant A to krok w skillach, w którym sesja główna po zakończeniu runu
+woła skrypt z argumentami `--status` i `--powod`. Siatka B (skan) ustala status z ostatniej etykiety w journalu, a run, którego ostatni agent nie ma
+wyniku, uznaje za trwający i pomija. „~100 starszych journali nie ma etykiet i grup” — HANDOFF i D6 traktują to jako lukę.
+
+**Proponuję.**
+
+- **Skan jest głównym zapisem.** Czyta plik, który harness Claude Code zapisuje po każdym runie w katalogu sesji (`workflows/<run>.json`).
+- **Wariant A odpada.** Znika krok w skillach, a razem z nim pole `zrodlo_statusu`. Status NIEZNANY zostaje tylko dla runu bez tego pliku (awaria sesji).
+- **Wyzwalacz C (hook Stop) zostaje do sprawdzenia w mini-runie** jako to, co pilnuje, żeby skan przeszedł na czas.
+
+**Dlaczego.**
+
+- **Plik jest dla 156 ze 156 runów, w obu formatach journala.** Ma zwrócony wynik (status OK/STOP i powód, cały obiekt raportu), status harnessu
+  (completed / killed / failed z treścią błędu), nazwę workflowu, argumenty (zadanie), czas trwania, wpisy `log()` i pełny skrypt, który się wykonał.
+  Ma też listę agentów z etykietą, grupą i numerem próby (ostatnia próba każdego wywołania; wcześniejsze dopasowuje się po kluczu wywołania
+  z journala) — także dla 115 starych journali bez tych pól.
+- **Heurystyka z D5 trafia 32 z 55 runów autopilota.** Wszystkie 20 OK rozpozna, ale STOP tylko 12 z 30, a przerwane i nieudane (5) w ogóle.
+  Liczone na ostatnim agencie przed agentem telemetrii, bo ten znika.
+- **Reguła „ostatni agent bez wyniku = run w toku” zgubiłaby na zawsze 4 zakończone runy,** w tym wszystkie 3 przerwane (killed). Nigdy nie trafiłyby do pliku.
+- **Mapa walidacji (§2 pkt 5) mierzy udział statusu NIEZNANY.** Przy samym skanie według D5 wyszłoby 23 z 55 (42%), a z plikiem harnessu zero.
+- **Skill, który ma „zawsze wywołać skrypt”, to kolejna instrukcja do pominięcia.** Mechaniczny skan jej nie potrzebuje.
+- **Retencja.** Najstarszy transkrypt na dysku jest z 3 sierpnia (około 7 tygodni, `cleanupPeriodDays` nieustawione). Skan musi przejść w tym oknie,
+  więc wyzwalacz (hook albo doctor przy każdym runie) jest potrzebny, a sam raport miesięczny to za rzadko.
+
+Decyzja operatora z 6a pkt 19 (zero agentów, skrypt po runie, siatka obowiązkowa) stoi. Zmienia się tylko to, że jej wariant A okazuje się zbędny.
+
+### Poprawka 2 (zmienia projekt zapisu). Wznowienia i dwie sesje naraz — „ostatni wygrywa przy odczycie”
+
+**Obecnie.** Klucz `run|typ|id`. Skrypt czyta istniejące klucze, nie dopisuje dubli, nigdy nie nadpisuje. §6: jeden plik JSONL albo plik per run, „decyzja przy wdrożeniu”.
+
+**Proponuję.**
+
+- **Rekordy `agent` — bez zmian:** dopisz, jeśli klucza nie ma.
+- **Rekordy `run` i `faza` — nowa wersja przy każdej zmianie:** z polem `ts`. Raport bierze ostatnią wersję per klucz.
+- **Zapis:** jedno dopisanie na partię wierszy.
+- **Poprawność nie zależy od sprawdzania kluczy przed zapisem.** Deduplikacja przy odczycie; blokada (np. katalog-zamek) tylko jako oszczędność pracy.
+
+**Dlaczego.**
+
+- **Wznowienie nie tworzy nowego runu.** Wszystkie 9 wywołań z `resumeFromRunId` (5 runów, jeden wznowiony w innej sesji) zwróciło ten sam identyfikator.
+  Nowi agenci dopisują się do tego samego katalogu, a wynik i status runu się zmieniają. Rekord `run` zapisany skanem po awarii jest więc nieaktualny,
+  a reguła „klucz istnieje → nie dopisuj” zablokowałaby wersję końcową na zawsze. Skill autopilota opisuje wznowienie po awarii jako normalny tryb pracy.
+- **Ponowne próby tego samego wywołania są częste.** Klucz wywołania powtarza się 41 razy, a 63 agentów z wcześniejszych prób nie ma na liście harnessu.
+  Rekord agenta potrzebuje więc pola `proba` i wyniku `blad` (typ `failed` w journalu), żeby koszt ponowień był widoczny.
+- **Wyścig nie jest teoretyczny.** Z 7 518 końców odpowiedzi w sesjach głównych 6,6% ma koniec odpowiedzi innej sesji w ciągu 2 sekund (10,4%
+  w ciągu 10 s). Przy skanie w hooku Stop dwa procesy przeczytają „jakich kluczy brak” i oba dopiszą to samo. Deduplikacja przy odczycie
+  czyni to nieszkodliwym bez względu na format pliku.
+
+### Poprawka 3 (zmienia źródło pola). Wersja szablonu: sha repo projektu nie mówi, co się wykonało
+
+**Obecnie.** Pole `szablon` = sha ostatniego commita dotykającego `.claude/` w repo projektu. Mapa walidacji (§6) dzieli nim epoki „przed/po iteracji N”.
+
+**Proponuję.**
+
+- **Pole `szablon` z trzech części:**
+  - `marker` — treść `.claude/.template-version`, sha szablonu z ostatniej synchronizacji, albo null;
+  - `skrypt_sha` — hash skryptu głównego workflowu z pliku harnessu, czyli dokładnie to, co się wykonało;
+  - `zgodny` — czy ten hash zgadza się z plikiem dostarczonym przez synchronizację.
+- **Do `zgodny` sync-template zapisuje w manifeście hash każdego pliku.** Dziś manifest ma same ścieżki. To jedna kolumna w skrypcie synchronizacji: WYMAGA ZMIANY.
+- **Workflowy-dzieci:** skrypt porównuje bieżące pliki z manifestem i oznacza, jeśli któryś zmienił się po starcie runu. Ich skryptów harness nie przechowuje.
+
+**Dlaczego.**
+
+- **Commit w repo projektu to wersja projektu, nie szablonu.** Nie widać w nim zmian niezacommitowanych, a jedno z 11 repo z autopilotem nie ma gita.
+- **Znacznika wersji brak w 6 z 11 repo.** Liczba obejmuje sam szablon i jego wersję mobilną.
+- **Lokalne zmiany są powszechne.** 33 z 55 runów autopilota wykonało skrypt, którego nie ma w żadnej wersji historii szablonu: oferty-online 29
+  (lokalny patch E2E, o którym mówi przegląd runów), Nawykometr 4. Dev-pr: 75 z 75 zgodnych.
+- **Epoki pomieszałyby się po cichu.** Porównanie „przed/po iteracji” po znaczniku wziąłoby runy oferty-online za wersję szablonu, której tam nie było.
+
+### Poprawka 4 (zmienia miarę jakości). Uwagi bota zsumowane po runach dev-pr zawyżają wynik o 43%
+
+**Obecnie.** `run.pr` (tylko workflow dev-pr): numer, tury, pliki, uwagi, klasy[{klasa, severity, plik, os, ma_regule}], rekomendacja — jeden rekord na run.
+
+**Proponuję.**
+
+- **Klucz PR to zadanie z argumentów runu.** Numer PR skrypt bierze z runu etapu `start` tego zadania albo z gh po gałęzi.
+- **`klasy[]` niesie identyfikator wątku bota.**
+- **Raport liczy unikalne wątki per PR.** Miara jakości „B P1/P2 na 100 plików PR” liczona wyłącznie na unikalnych wątkach.
+
+**Dlaczego.**
+
+- **Run dev-pr to jeden etap jednej tury, a nie cały PR.** 75 runów to start 14, zbierz 21, napraw 23, merge 10, compound 7. Numer PR ma w wyniku tylko 9 z nich.
+- **Kolejna tura `zbierz` wypisuje ponownie wątki z poprzednich.** Suma po runach: 255 wątków. Unikalnych per zadanie: 178. Suma zawyża więc o 43%.
+- **Zawyżenie nie rozkłada się równo.** Faza 7 z sześcioma zbiórkami ma 97 wobec 62, zadanie z jedną — 11 wobec 11. PR-y z większą liczbą tur,
+  czyli te z gorszym kodem, wyglądałyby jeszcze gorzej, a PR-y z jedną turą — względnie lepiej. Porównania B0 z oknami 5 PR byłyby skrzywione.
+- **Baseline 1b to nie dotyczy.** Klasyfikacja 574 uwag jest z GitHuba, po unikalnych komentarzach. Dotyczy B0 i wszystkich pomiarów po wdrożeniu.
+
+### Poprawka 5 (zmienia producentów pól dopisanych po D2 i D3)
+
+- **`agent.instrukcje_stale` nie ma producenta.** D5 bierze liczbę „z pliku wyniku testu budżetu, jeśli istnieje”, ale test biegnie w szablonie
+  i żadnego pliku w projekcie nie zostawia.
+  - **Propozycja:** jeden moduł liczący pozycje oznaczonego bloku poleceń (jednostka z D2, poprawka 3), używany przez test i przez skrypt telemetrii.
+  - **Co liczy skrypt:** blok w prompcie delegacji z transkryptu plus blok w pliku agenta.
+  - **Null**, dopóki prompty nie mają bloku.
+- **`faza.wiedza.*` z „rozmiaru plików w repo w chwili runu” jest złym źródłem.** U 188 z 689 agentów (27%) CLAUDE.md, który widział agent, różni się
+  od gałęzi main w chwili startu, bo run pracuje na gałęzi zadania.
+  - **Jest lepsze źródło.** Od 6 września transkrypt każdego agenta ma załącznik z listą plików instrukcji i ich treścią, dokładnie tak, jak agent je dostał
+    (1 030 z 1 253 agentów od tej daty).
+  - **Propozycja:** pole na poziomie agenta `agent.kontekst` {claude_md_zn, rules_zn, learned_zn, narzedzia_n, skille_n}.
+    Liczba dostępnych narzędzi i skilli jest w dwóch innych załącznikach od początku danych (np. 972 narzędzia i 309 skilli u agenta z 20 września).
+- **To daje bezpośredni odczyt `tools:` i `omitClaudeMd`.** Pytanie brzmi „czy lista narzędzi spadła z 972 do kilkunastu” i „czy agent mechaniczny
+  nie dostał CLAUDE.md”. Nie trzeba porównywać `ctx_start` między epokami, co D3 uznało za najsłabszy punkt.
+- **Raport miesięczny liczy `ctx_start` per klasa I per model** (D3: haiku ~93k, opus ~127k). Tak samo próg anomalii „ctx_start > progu klasy”.
+  Dziś D5 §4 pkt 2 grupuje per klasa i agentType.
+- **Do rekordu agenta dochodzi `cc_wersja`** (pole `version` jest w każdym wpisie transkryptu). D3 wskazało wersję narzędzia jako niewyjaśniony składnik wzrostu kontekstu.
+
+### Poprawka 6 (ustalenie przekrojowe, wychodzi poza D5). Model kosztu etapu 0 nie doliczał tokenów wyjściowych
+
+**Obecnie.** HANDOFF §3 pkt 1 i digest §0: skład kosztu cache read 59%, cache write 39%, output 2%. D5 §0: „tokenyRazemK = tylko output = 2% kosztu”.
+Rekord D5 ma być portem `koszt_agentow.py` z regułą „licz usage raz per message.id”.
+
+**Proponuję.** Port bierze **ostatni** wpis każdej odpowiedzi API, nie pierwszy. Liczby etapu 0 poprawić:
+
+- **Skład kosztu:** cache read 53,6%, cache write 35,5%, output 10,9%. Całość 1 293 M jednostek zamiast 1 179 M.
+- **Udziały liczone na całym koszcie mnożymy przez 0,91:** opłata za powołanie 22% → 20%, kontekst × tury 40% → 36,5%, czysty narzut 26% → 24%.
+- **Dźwignię 25–35% przeliczyć w D4** razem z poprawką epoki z D3.
+
+**Dlaczego.**
+
+- **Transkrypt agenta zapisuje odpowiedź API w kilku wpisach z tym samym identyfikatorem.** W 49% odpowiedzi wpisy mają różną liczbę tokenów
+  wyjściowych: pierwszy to stan w trakcie strumienia, ostatni to wartość końcowa. Pola wejścia i cache są identyczne. `koszt_agentow.py` bierze pierwszy
+  wpis — kontrola: odtwarza agents.csv u 2 941 z 2 941 agentów.
+- **Ostatni wpis zgadza się z licznikiem harnessu.** W 15 z 19 runów mieści się w ±15% od `budget.spent()` zapisanego w wyniku runu. Pierwszy wpis daje tam
+  9–43% licznika. W pozostałych 4 runach (27.08–07.09) oba są poniżej licznika, przyczyny nie sprawdziłem. We wszystkich 19 ostatni jest bliżej.
+- **Kolejność priorytetów się nie zmienia.** Udziały etapów fazy w oferty-online po 6 września przesuwają się najwyżej o 0,4 punktu procentowego.
+  Najbardziej zyskują role piszące dużo tekstu (planner, scribe, stan:zapis), ale to 2–3% kosztu.
+- **Koszt skilli w sesji głównej jest bez zmian** (dev-plan 930k, dev-docs 669k na epizod). W transkryptach sesji głównej wpisy mają już wartość końcową.
+- **Zdanie „telemetria widziała 2% kosztu” trzeba zmienić na „około 11%”.** Wniosek (liczyć cache, nie output) stoi, liczba nie.
+
+### Poprawka 7 (korekta przyjętego D3). Po ścięciu CLAUDE.md był pełny run
+
+**Obecnie (D3, przyjęte 2026-09-23).** „Po ścięciu CLAUDE.md do 21k nie było żadnego pełnego runu; jedyny późniejszy duży run z 20 września jest
+jeszcze sprzed ścięcia” → punkt odniesienia kontekstu startowego = wyłącznie mini-run (e).
+
+**Proponuję.**
+
+- **Zapisać, że punkt odniesienia już istnieje.** Run z 20 września (cookie-consent, 85 agentów, trzy fazy, status OK) pracował z CLAUDE.md 17,8 tys. znaków
+  i learned-patterns 45 tys. D3 datowało ścięcie po commicie na main, a ścięta wersja była już na gałęzi zadania (PR #21 zmergowany 21 września).
+- **Kontekst pierwszej tury w tym runie (p50), wobec 13–17 września:** mechaniczni na haiku 89k (wobec 101k), orkiestracyjni na opusie 121k (139k),
+  reviewerzy 125k (145k), sceptycy 123k (144k), buildery 135k (160k).
+- **Próby są małe:** od 6 do 29 agentów na klasę.
+- **Mini-run (e) zostaje, ale jako potwierdzenie** na obecnym stanie repo i per model, a nie jedyne źródło.
+
+**Dlaczego.** Rozmiar CLAUDE.md D3 brało z gita gałęzi main. Załącznik instrukcji w transkrypcie pokazuje, co agent naprawdę dostał (poprawka 5).
+Wniosek D3 (nie porównywać ze średnią z epok) stoi, ale punkt odniesienia ma już pierwszą realną wartość.
+
+### Porządkowe
+
+- **`rola()` z `koszt_agentow.py` skleja `fix:kontrola`, `fix:pre-skan` i `fix:poprawka` w `fix`** u etykiet nowego formatu (43 agentów w agents.csv),
+  bo krótsza alternatywa w wyrażeniu wygrywa. Udział pętli naprawczej się nie zmienia, ale per rola „fix” jest zawyżony, a pre-skan (haiku,
+  mechaniczny) wpada do naprawiaczy. Port musi dopasowywać najdłuższą nazwę.
+- **Numer fazy agentów workflowów-dzieci** brać z najbliższej wcześniejszej grupy „Faza N”. Numer „#N” w nazwie grupy to numer wywołania, nie fazy:
+  run zaczynający od fazy 2 ma review #1 = faza 2. Działa w obu formatach. Dopisanie numeru fazy do etykiet (wymóg D5) przestaje być konieczne,
+  zostaje wygodą.
+- **`totalTokens` z pliku harnessu nie jest kosztem** (≈ zapis do cache + wyjście, bez odczytu cache, np. 13 M wobec 164 M tokenów w runie z 20 września).
+  Nie używać.
+- **Retencja.** Warto rozważyć podniesienie `cleanupPeriodDays` w ustawieniach konta, np. do 120 dni. To zapas na import i na raport po przerwie.
+  Decyzja operatora, etap higieny konta.
+- **Do sprawdzenia w mini-runie, razem z wariantem C:** czy plik harnessu powstaje dopiero po zakończeniu runu (wtedy „brak pliku” = run w toku albo
+  awaria sesji) i co zostaje po zabiciu sesji głównej.
+
+### Co się zmieni po akceptacji
+
+- **Rekord:** `dane/d5-telemetria-rekord.txt` (§0, §1 pkt e, §2, §3, §4 pkt 2, §6, §7 run.pr i instrukcje_stale) — źródło statusu, zapis
+  „ostatni wygrywa”, pola `proba`, `blad`, `cc_wersja`, `kontekst`, `szablon{marker, skrypt_sha, zgodny}`, `run.pr` per zadanie z id wątków,
+  port z ostatnim wpisem usage i poprawioną `rola()`.
+- **Pakiet panelu:** PANEL-WEJSCIE §12 (wariant A → skan jako główny, liczba 2% → ~11%), §2 pkt 5, §4 (D3: punkt odniesienia z runu 20.09),
+  §11 (mini-run e jako potwierdzenie, dopisek o pliku harnessu).
+- **Wersje dla operatora:** PANEL-WEJSCIE-DLA-OPERATORA część 6.
+- **Mapa walidacji obu wersji:** §2 pkt 5 (NIEZNANY tylko przy braku pliku harnessu), §2 pkt 1 i 4 (odczyt przez `agent.kontekst`),
+  miara jakości (unikalne wątki per PR), §6 (epoki po `szablon.skrypt_sha`).
+- **Model kosztu:** HANDOFF §3 pkt 1–2 i digest §0 (skład kosztu, 22% → 20%, 40% → 36,5%).
+- **Dźwignia 25–35%:** do przeliczenia w D4.
+- **Wymagane zmiany w szablonie na listę etapu 5:** sync-template zapisuje hash per plik w manifeście.

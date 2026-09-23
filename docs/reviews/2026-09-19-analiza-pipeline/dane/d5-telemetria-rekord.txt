@@ -6,13 +6,14 @@ i dopisuje rekordy do globalnego JSONL; do tego skrypt raportu miesiecznego. Pro
 - zapiszTelemetrie() (:1028-1087): JEDEN wpis per run, dopisywany przez AGENTA haiku `telemetria:<status>` (prompt z heredoc + walidacja
   JSON). Wolany na koncu (Zakonczenie) i w stopRun() (:1146-1173). Ten agent 2x skasowal plik (HANDOFF §3 pkt 8).
 - `tokenyRazemK` = budget.spent() (:937) = WYLACZNIE tokeny wyjsciowe (workflow-authoring: "output tokens spent this turn") = 2% kosztu.
+  [KOREKTA 2026-09-23, przeglad D5: ~11% kosztu, nie 2% — model etapu 0 bral pierwszy (czesciowy) wpis usage kazdej odpowiedzi; §8 pkt 6]
   Pola `tokeny`/`tokenyEtapy` w raporcie fazy — to samo zrodlo. Cache read/write nie sa mierzone nigdzie w runie.
 - Schemat dzisiejszego wpisu: zadanie, status, powod, fazyUkonczone, fazyZadania, fazyZMetrykami, raporty[]{faza, gate, cykle, tokeny,
   tokenyEtapy, liczniki{p1,p2,p3,operator}, fix{naprawione,nierozwiazaneP2,p3Pominiete}, kontrolaFixa{pozycje,naprawione,walidacja,
   pominiete,bezSladu}, e2eSync (skrot 200 zn), przebieg{pominieci[],e2eTryb,znalezione,poDedupJs,poDedupSem,weryfikowane,obalone,
   p3Odrzucone,e2eCheckboxy,e2eStatus,e2ePass,e2eFail,e2eSkip,dossier,sceptycy,severityKorekty,tiery}, zrodlo run|stan},
   walidacja, e2eSrodowisko, solution, tokenyRazemK, ts, projekt. Plik: ~/.claude/telemetry/autopilot-runs.jsonl (32 wpisy odzyskane
-  + 20 kB nowych). Poziom: run i faza. Poziom AGENTA nie istnieje — a 22% kosztu to powolania agentow, 40% kontekst x tury.
+  + 20 kB nowych). Poziom: run i faza. Poziom AGENTA nie istnieje — a 22% kosztu to powolania agentow, 40% kontekst x tury [po korekcie D5: 20% / 36,5%].
 
 === 1. ZRODLA DANYCH NA DYSKU (zero tokenow; zweryfikowane 2026-09-21 na wf_e5c34cd8-66c, oferty-online, 85 agentow) ===
 (a) ~/.claude/projects/<slug-projektu>/<sesja>/subagents/workflows/wf_<run>/journal.jsonl
@@ -23,15 +24,22 @@ i dopisuje rekordy do globalnego JSONL; do tego skrypt raportu miesiecznego. Pro
     label = etykieta: bootstrap, e2e:precheck, planner:faza-1, build:IU-2, domkniecie:faza-1, stan:zapis, kontekst:diff, review:security,
     verify-batch:<plik>:<n>, scribe, fix:faza-1, fix:kontrola, telemetria:OK ... UWAGA: etykiety review:*/verify*/kontekst/dedup/scribe
     NIE niosa numeru fazy — faze wyznacza kolejnosc grup (`▸ dev-docs-review-wf #N` = N-te review w runie = N-ta faza z kolejki runu).
+    [KOREKTA 2026-09-23, §8 pkt 7: faza = najblizsza wczesniejsza grupa „Faza N” po phaseIndex; „#N” to numer wywolania]
 (b) agent-<id>.jsonl — transkrypt agenta: pierwszy wpis user = prompt; wpisy assistant z message.usage {input_tokens,
     cache_creation_input_tokens, cache_read_input_tokens, output_tokens, output_tokens_details.thinking_tokens}, message.model, message.id
     (jedna odpowiedz API = kilka wpisow z tym samym id — liczyc RAZ per id, HANDOFF §7), timestamp per wpis, content[].type=tool_use (name).
+    [KOREKTA 2026-09-23, §8 pkt 6: wpisy jednego id maja ROZNE output_tokens w 49% odpowiedzi — brac OSTATNI wpis, nie pierwszy]
 (c) agent-<id>.meta.json — {agentType, description (= label), workflowPhase (= phase), spawnDepth, ...}.
 (d) docs/active/<zadanie>/.autopilot-state.json (po complete: docs/completed/<zadanie>/) — nazwaZadania, branch, fazy[]{numer, status,
     metryki{liczniki, przebieg, fix, kontrolaFixa, ...}}, zakonczenie{walidacja,...}. Jedyne zrodlo metryk fazy niezaleznie od tego,
     czy agent stan:zapis istnieje (po decyzji "stan w prompcie nastepcy" plik na dysku zostaje).
 (e) STATUS I POWOD RUNU — tylko w sesji glownej (wynik Workflow / task-notification). Journal ich nie ma. Skrypt musi je dostac
     z zewnatrz (argument) albo oznaczyc NIEZNANY.
+    [NIEAKTUALNE 2026-09-23, przeglad D5: status, powod, wynik, skrypt i lista agentow sa w pliku harnessu — (f) nizej, §8 pkt 1]
+(f) ~/.claude/projects/<slug>/<sesja>/workflows/<run>.json — plik harnessu Claude Code, 156/156 runow w obu formatach journala:
+    workflowName, status (completed|killed|failed) + error, result (zwrocony obiekt: status OK/STOP, powod, raporty...), args, startTime,
+    durationMs, logs[] (wpisy log()), script (pelny skrypt GLOWNEGO workflowu; dzieci nie), workflowProgress[] (agenci: label, phaseTitle,
+    phaseIndex, agentId, model, attempt, state — ostatnia proba kazdego wywolania; wczesniejsze po `key` z journala), totalTokens (NIE koszt).
 Ograniczenie twarde: skrypt workflowu NIE ma dostepu do fs ani Node (workflow-authoring: "No filesystem or Node.js API access")
 — orkiestrator nie dopisze rekordu sam; jedyna droga w runie to agent (odrzucone). Trigger musi byc POZA workflowem.
 
@@ -40,6 +48,8 @@ Pola wspolne: v (wersja schematu, 1) | ts (czas dopisania, ISO) | typ: run|faza|
 | zadanie (nazwaZadania ze stanu / bootstrapu) | workflow (dev-autopilot | dev-pr | dev-compound | dev-docs-complete | dev-docs-review
 | dev-docs-execute — z nazwy skryptu/grupy) | szablon (git sha ostatniego commitu dotykajacego .claude/ w repo projektu — do porownan miedzy epokami)
 | klucz = run|typ|id (idempotencja: skrypt czyta istniejace klucze, nie dopisuje dubli, NIGDY nie nadpisuje pliku).
+[ZMIENIONE 2026-09-23, przeglad D5 §8 pkt 2–3: agent — dopisz, gdy klucza brak; run/faza — nowa wersja przy zmianie, raport bierze OSTATNIA
+per klucz; `szablon` = {marker, skrypt_sha, zgodny} zamiast sha repo projektu]
 
 typ=agent (jeden per agent; zrodlo a+b+c):
   id (agentId) | etykieta (label) | grupa (phase) | faza (int|null: z etykiety `:faza-N`, z grupy `Faza N`, albo po kolejnosci grup-dzieci)
@@ -66,7 +76,7 @@ typ=faza (jeden per faza runu; zrodlo d + agregacja rekordow agent + result revi
   | sekundy (od pierwszego do ostatniego agenta fazy) | e2eSync (skrot 200 zn)
 
 typ=run (jeden per run; zrodlo e + d + agregacja):
-  status (OK | STOP | NIEZNANY) | powod (tekst STOP, null) | zrodlo_statusu (sesja | skan) | fazyZadania | fazyUkonczone | fazyZMetrykami
+  status (OK | STOP | NIEZNANY) [po D5: + KILLED | FAILED] | powod (tekst STOP, null) | zrodlo_statusu (sesja | skan) [po D5: USUNIETE, §8 pkt 1] | fazyZadania | fazyUkonczone | fazyZMetrykami
   | walidacja | e2eSrodowisko | solution | koszt {agentow, tur, in, cache_w, cache_r, out, jedn} | sekundy | stop_kategoria
   (E2E-srodowisko | E2E-asercja | fix-FAIL | P1-nierozwiazane | scribe | czystosc-repo | inne — kategoria przyczyny, rekomendacja 3 z przegladu runow)
   | manual_razem (liczba checkboxow [MANUAL] w runie)
@@ -86,6 +96,9 @@ Tryby zbierz.mjs:
                                                    inaczej NIEZNANY. Siatka na runy po awarii i na zapomniane wywolanie.
   --skan --szybko                                 tylko katalogi wf_ zmodyfikowane po ostatnim zapisie (do hooka, patrz C).
 
+[ZMIENIONE 2026-09-23, przeglad D5 §8 pkt 1: --skan czyta status z pliku harnessu (§1 f), heurystyka „ostatnia etykieta” (32/55 trafien,
+STOP 12/30) i regula „run w toku = ostatni started bez result” (4 zakonczone runy zgubione na zawsze) ODPADAJA; w toku = brak pliku harnessu.
+Wariant A (krok w skillach z --status/--powod) ZBEDNY; B = glowny zapis; C (hook Stop) = wyzwalacz, do sprawdzenia w mini-runie.]
 Gdzie w runie (propozycja do potwierdzenia przez operatora; zero agentow w kazdym wariancie):
   A. GLOWNE: sesja glowna po task-notification o zakonczeniu Workflow — krok w skillach dev-autopilot-wf / dev-pr-wf / dev-compound-wf /
      dev-docs-complete-wf / dev-docs-review-wf: "uruchom `node .claude/scripts/telemetria/zbierz.mjs --run <runId> --status <status>
@@ -104,6 +117,9 @@ Wymog wdrozeniowy dla workflowow: etykiety agentow w workflowach-dzieciach niosa
    mechanika/fix/orkiestracja) i per klasa roli — porownanie z ETAP0 (28/25/6/5/17/12%).
 2. Kontekst: ctx_start p50/p90 per klasa roli i per agentType (czy allowlista tools: dziala: cel ~4,5k mechaniczne / ~15k reviewer / ~25k builder,
    ETAP3 §1.1); ctx_sr per klasa; tury per rola (cel correctness ~20, ETAP1).
+   [ZMIENIONE 2026-09-23, przeglad D5 §8 pkt 5: ctx_start per klasa I per MODEL (haiku ~93k vs opus ~127k przy tej samej konfiguracji) — takze
+   prog anomalii; efekt tools:/omitClaudeMd czytany wprost z agent.kontekst.narzedzia_n / claude_md_zn]
+   3a. [DOPISANE 2026-09-23] Jakosc z run.pr liczona na UNIKALNYCH watkach bota per PR (zadanie) — suma po runach dev-pr zawyza o 43%.
 3. Jakosc: findingi per os (p1/p2/p3, obalone przez sceptykow, kill rate sceptyka asymetrycznego), P1/P2 po fixie (kontrolaFixa.regresje,
    bezSladu), nierozwiazane P2, P3 pominiete; do zestawienia z uwagami CodeRabbita per PR (dev-pr) = miara jakosci z HANDOFF §1.
 4. Niezawodnosc: runy per zadanie (powtorki), STOP-y per kategoria, MANUAL per powod, bramki domkniecia PASS/FAIL i czas, e2e pass/fail/skip/manual.
@@ -119,6 +135,8 @@ Przeglad runow §7 rek. 1 proponowal plik per run (~/.claude/telemetry/runs/<ts>
 jako lek na agenta, ktory kasowal wspolny JSONL. Przy skrypcie mechanicznym (nigdy nie otwiera pliku w trybie nadpisania, walidacja JSON
 przed dopiskiem, klucz idempotencji) oba formaty sa bezpieczne; jeden JSONL jest prostszy dla raportu (jeden strumien), plik per run
 jest odporniejszy na rownolegle runy z dwoch sesji (brak wyscigu na append). Decyzja przy wdrozeniu; raport.mjs ma czytac oba (glob + jsonl).
+[UZUPELNIENIE 2026-09-23, przeglad D5 §8 pkt 2: wyscig jest realny (6,6% koncow odpowiedzi ma koniec innej sesji w ciagu 2 s); poprawnosc zapewnia
+deduplikacja PRZY ODCZYCIE (ostatnia wersja per klucz), nie sprawdzanie kluczy przed zapisem — oba formaty bezpieczne]
 Otwarta decyzja operatora z przegladu: scalenie autopilot-runs.odzyskane-2026-09-19.jsonl z oryginalem → zalatwia import v0 z §5.
 
 === 7. UZUPELNIENIE PO MAPIE WALIDACJI D5b (2026-09-22; pelne uzasadnienie per pole: d5b-mapa-walidacji.txt §3) ===
@@ -157,3 +175,45 @@ Import baseline (jednorazowo, plan etapu 5): agents.csv → agent (ctx_start dop
 z findingi-per-os), telemetria-odzyskana (33) → faza+run v0, skille.csv → skill, coderabbit/klasyfikacja-574.csv → run.pr dla 19 PR
 (tlo jakosci; wlasciwy baseline porownan = B0 zebrany po 8 zmianach .coderabbit.yaml). Szczegoly: d5b-mapa-walidacji.txt §4 i naglowek
 „MIARA JAKOSCI".
+
+=== 8. KOREKTA PO PRZEGLADZIE D5 (2026-09-23, Opus 5.5; PRZYJETA przez operatora w calosci) ===
+Zrodla: PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D5; skrypty/d5r_wykonalnosc_rekordu.py → d5r-wykonalnosc-rekordu.{txt,json} (156 runow, oba formaty
+journala); skrypty/d5r_koszt_output.py → d5r-koszt-output.txt (2 941 agentow etapu 0). Ta sekcja NADPISUJE sprzeczne zapisy §0–§7.
+
+1. ZRODLO STATUSU: plik harnessu <sesja>/workflows/<run>.json (§1 f) — 156/156 runow. Autopilot: 20 OK, 30 STOP (wszystkie z powodem),
+   3 killed, 2 failed; dev-pr: 59 OK, 8 GOTOWY-DO-DECYZJI, 2 GOTOWY-DO-MERGE, 6 STOP. `zbierz.mjs --skan` = GLOWNY zapis (status, powod,
+   etykiety, grupy, skrypt z tego pliku); wariant A (--status/--powod w skillach) ZBEDNY; pole run.zrodlo_statusu USUNIETE; run.status =
+   OK | STOP | KILLED | FAILED | NIEZNANY (NIEZNANY tylko gdy pliku harnessu brak po awarii sesji). Run w toku = brak pliku harnessu (do
+   potwierdzenia w mini-runie: czy plik powstaje dopiero po zakonczeniu; co zostaje po zabiciu sesji glownej). Wyzwalacz C (hook Stop) —
+   mini-run; bez niego skan w doctor przy kazdym runie, bo retencja transkryptow ~7 tyg. (najstarszy 2026-08-03, cleanupPeriodDays nieustawione).
+2. ZAPIS: typ=agent — dopisz, gdy klucza run|agent|agentId brak (agentId unikalny: 0 powtorzen w 3 314). typ=run i typ=faza — NOWA WERSJA
+   przy kazdej zmianie (pole ts), raport bierze OSTATNIA per klucz (wznowienie = ten sam runId, 9/9; nowi agenci i nowy status w tym samym runie).
+   Jedno dopisanie (appendFileSync) na partie wierszy; deduplikacja przy odczycie; blokada (katalog-zamek) tylko jako oszczednosc pracy.
+   typ=agent nowe pola: proba (attempt; 41 powtorzonych kluczy wywolania, 63 agentow z wczesniejszych prob) | wynik += 'blad' (typ `failed`).
+3. WERSJA: `szablon` = {marker: .claude/.template-version albo null (brak w 6/11 repo), skrypt_sha: git hash-object pola `script` pliku
+   harnessu (33/55 runow autopilota wykonalo skrypt spoza historii szablonu: oferty-online 29, Nawykometr 4), zgodny: bool (skrypt_sha ==
+   hash z manifestu), dzieci_zmienione: bool (pliki .claude/workflows/*-wf.js roznia sie od manifestu albo mtime > startTime)}.
+   WYMAGA ZMIANY: sync-template.sh zapisuje w .claude/.template-manifest hash (git blob) kazdego pliku obok sciezki.
+4. run.pr: run dev-pr = jeden ETAP jednej tury (start 14, zbierz 21, napraw 23, merge 10, compound 7 z 75); klucz PR = args.zadanie,
+   numer z runu `start` tego zadania albo gh po galezi (numer w wyniku ma 9/75). klasy[] += id (id watku bota, np. PRRT_...). Raport liczy
+   UNIKALNE watki per PR: suma po runach 255 vs unikalnych 178 (+43%, nierowno: faza-7 97 vs 62, zadanie z jedna zbiorka 11 vs 11).
+5. POLA PO D2/D3:
+   - agent.instrukcje_stale: jeden modul liczacy pozycje oznaczonego bloku polecen (jednostka z przegladu D2), wspolny dla testu szablonu
+     i zbierz.mjs; skrypt liczy blok w prompcie delegacji (transkrypt) + w pliku agenta (.claude/agents/<agentType>.md); null bez bloku.
+   - NOWE agent.kontekst {claude_md_zn, rules_zn, learned_zn, pamiec_zn (z zalacznika `instructions`: lista plikow z trescia, tak jak widzi je
+     agent — od 2026-09-06, 1 030/1 253 agentow), narzedzia_n (deferred_tools_delta.addedNames, np. 972), skille_n (skill_listing.skillCount,
+     np. 309)}. Bezposredni odczyt tools: (972 → kilkanascie) i omitClaudeMd (brak claude_md_zn), bez porownan ctx_start miedzy epokami.
+   - faza.wiedza.claude_md_zn / indeks_zn = mediana agent.kontekst z fazy (NIE rozmiar pliku w repo — u 188/689 agentow CLAUDE.md widziany
+     ≠ main w chwili startu, bo run pracuje na galezi zadania).
+   - NOWE agent.cc_wersja (pole `version` kazdego wpisu transkryptu).
+   - Raport §4 pkt 2 i anomalie: ctx_start per klasa I per model.
+6. KOSZT: transkrypt agenta ma kilka wpisow jednej odpowiedzi API; w 49% odpowiedzi rozni sie output_tokens (pierwszy = stan strumienia,
+   ostatni = koncowy; input/cache identyczne). Port koszt_agentow.py bierze OSTATNI wpis per message.id (koszt_agentow.py bral pierwszy).
+   Ostatni zgadza sie z budget.spent() w 15/19 runow (±15%). Model etapu 0 po poprawce: 1 293 M jedn. (nie 1 179 M), cache read 53,6%,
+   cache write 35,5%, output 10,9% (nie 2%). Sesja glowna (koszt_skilli.py) bez roznicy. Import baseline: agents.csv PRZELICZYC z ostatnim
+   wpisem (i poprawiona rola(), pkt 7) przed importem.
+7. PORT rola(): dopasowanie najdluzszej nazwy — koszt_agentow.py skleja fix:kontrola / fix:pre-skan / fix:poprawka w `fix` u etykiet nowego
+   formatu (43 agentow w agents.csv). Faza agentow workflowow-dzieci = najblizsza wczesniejsza grupa „Faza N” po phaseIndex („#N” w nazwie
+   grupy to numer WYWOLANIA, nie fazy); pokrycie 2 555/2 891 agentow autopilota z numerem fazy, 335 poziom runu, 1 brak. Etykieta i grupa:
+   3 286/3 314 (28 starych bez — klasyfikacja po prompcie). Wymog „numer fazy w etykietach” przestaje byc konieczny (zostaje wygoda).
+   totalTokens z pliku harnessu NIE jest kosztem (≈ cache write + output, bez cache read) — nie uzywac.

@@ -73,9 +73,11 @@ do kilkunastu tysięcy; nośnikiem są pliki agentów, ale nie po jednym na rol�
 reviewer, sceptyk, naprawiacz), bo prompty tych ról są i tak generowane w kodzie, a plik niesie wyłącznie ustawienia. Istniejące osiem plików zostaje
 jako wyjątki. Co Ci to da: kilkanaście plików zamiast czterdziestu i największą pojedynczą oszczędność całej analizy. Po przeglądzie 23 września
 jedno zastrzeżenie do pomiaru: start agentów rósł w trzy tygodnie o czterdzieści pięć do siedemdziesięciu pięciu tysięcy tokenów razem z CLAUDE.md
-i learned-patterns, a po ścięciu CLAUDE.md nie było jeszcze żadnego runu. Punkt odniesienia dla allowlisty zmierzy więc mini-run na obecnym stanie
-repo, osobno dla haiku i opusa, żeby allowlista nie dostała na konto zysku ze ścięcia CLAUDE.md. Ten sam wzrost to też najmocniejszy dowód,
-że dobrze zdecydowałeś, że nic nie dopisuje do CLAUDE.md.
+i learned-patterns. Punkt odniesienia dla allowlisty musi więc pochodzić ze stanu po ścięciu CLAUDE.md, osobno dla haiku i opusa, żeby allowlista
+nie dostała na konto zysku ze ścięcia. Przegląd D5 znalazł, że taki run już jest: 20 września autopilot (85 agentów) pracował ze ściętym CLAUDE.md
+na gałęzi zadania. Start spadł tam o 12–25 tysięcy tokenów zależnie od klasy, u reviewerów ze 145 do 125 tysięcy. To pierwszy punkt odniesienia,
+a mini-run go potwierdzi. Do tego telemetria będzie od razu widziała, ile narzędzi dostał agent (dziś 972), więc zadziałanie allowlisty sprawdzi
+jedna liczba. Ten sam wzrost to też najmocniejszy dowód, że dobrze zdecydowałeś, że nic nie dopisuje do CLAUDE.md.
 
 **Dwa. Kontekst dobrany do klasy roli.** Jak w części 1: CLAUDE.md u tych, którzy patrzą na kod, wyłączony u maszynerii pomocniczej, skille builderów
 zostają. Dlaczego skille zostają: działają, a dobieranie ich per jednostka pracy nie jest warte logiki w orkiestratorze.
@@ -207,30 +209,36 @@ Podział mówi tylko, ile zasięgu review brakuje, a decyzja, czy za zasięg dop
 
 ## Część 6. Telemetria, czyli jak za miesiąc zobaczysz, co działa
 
-**Gdzie był problem.** Dzisiejsza telemetria liczy wyłącznie tokeny wyjściowe, czyli dwa procent kosztu. Nie widzi poziomu agenta. Zapisuje ją agent
-haiku, który dwa razy skasował plik z historią. Progi alarmowe, które stroiliśmy przez tygodnie, oceniały niewłaściwą wielkość.
+**Gdzie był problem.** Dzisiejsza telemetria liczy wyłącznie tokeny wyjściowe, czyli około jedenastu procent kosztu. Wcześniej pisałem „dwa procent”;
+przegląd D5 wykazał, że mój skrypt z etapu zerowego brał niepełny zapis każdej odpowiedzi i zaniżał tokeny wyjściowe. Kolejność priorytetów się
+od tego nie zmienia. Telemetria nie widzi poziomu agenta. Zapisuje ją agent haiku, który dwa razy skasował plik z historią. Progi alarmowe, które
+stroiliśmy przez tygodnie, oceniały niewłaściwą wielkość.
 
 **Co go powoduje.** Pełne dane leżą na dysku: dziennik runu ma etykietę, fazę i wynik każdego agenta; transkrypt agenta ma zużycie tokenów z pełnym
-cennikiem, model, czasy i narzędzia; plik stanu zadania ma metryki fazy. Nikt ich nie składa. Sprawdziłem też dwie rzeczy, które ograniczają projekt:
-skrypt workflowu nie ma dostępu do plików ani powłoki, więc orkiestrator nie dopisze rekordu sam, a dziennik nie zapisuje końcowego wyniku runu.
-Status i powód zatrzymania zna tylko sesja główna.
+cennikiem, model, czasy i narzędzia; plik stanu zadania ma metryki fazy. Nikt ich nie składa. Skrypt workflowu nie ma dostępu do plików ani powłoki,
+więc orkiestrator nie dopisze rekordu sam. Pierwotnie sądziłem też, że status i powód zatrzymania zna tylko sesja główna. Przegląd D5 znalazł plik,
+który Claude Code zapisuje po każdym runie: jest w nim wynik, status (także „przerwany”), użyty skrypt i lista agentów, dla wszystkich 156 runów.
 
-**Co proponuję.** Jeden plik dopisywany wyłącznie na końcu, z kluczem, który uniemożliwia duplikaty, i trzy typy rekordu. Rekord agenta: klasa roli,
+**Co proponuję.** Jeden plik dopisywany wyłącznie na końcu i trzy typy rekordu. Po przeglądzie D5: rekord agenta dopisujemy raz, a rekord runu i fazy
+w nowej wersji przy każdej zmianie, bo wznowienie po awarii działa na tym samym runie; raport bierze ostatnią wersję, więc dwie sesje zapisujące
+naraz nie zrobią dubli. Wersję szablonu bierzemy ze skryptu, który naprawdę się wykonał, bo 33 z 55 runów autopilota puściło lokalnie zmieniony
+skrypt. Uwagi bota liczymy jako unikalne wątki na PR, bo kolejne tury wypisują stare wątki ponownie i suma zawyżałaby jakość o 43%. Rekord agenta: klasa roli,
 kontekst pierwszej tury (to jest bezpośrednia miara, czy allowlista działa), pełny cennik, narzędzia, czas, findingi u reviewerów, obalenia u sceptyków.
 Rekord fazy: findingi per oś, checkboxy przełączone na manual z powodem, wynik bramek domknięcia, regresje po naprawie, koszt per etap. Rekord runu:
 status z kategorią przyczyny zatrzymania. Skrypt w Node, będący portem skryptu, którym liczyłem model kosztu w etapie zerowym, plus skrypt raportu
 miesięcznego z sześcioma zestawieniami: koszt, kontekst, jakość, niezawodność, budżet instrukcji, anomalie.
 
-**Kiedy się uruchamia.** Trzy warianty, w każdym zero agentów. Główny: sesja główna po zakończeniu runu wywołuje skrypt z numerem runu, statusem
-i powodem, bo tylko ona to zna; agent telemetrii znika z orkiestratora. Siatka: tryb skanu wszystkich runów, wołany z raportu miesięcznego i z doctora,
-dopisuje każdy run bez rekordu, żeby nic nie zginęło po awarii. Do sprawdzenia w mini-runie: hook Stop, który robiłby skan automatycznie po każdej
-odpowiedzi. Przegląd runów proponował jeszcze plik per run zamiast wspólnego; przy skrypcie, który nigdy nie nadpisuje, oba formaty są bezpieczne
-i wybór zostaje na wdrożenie.
+**Kiedy się uruchamia.** W każdym wariancie zero agentów; agent telemetrii znika z orkiestratora. Po przeglądzie D5 głównym zapisem jest skan: czyta
+plik zapisany przez Claude Code po runie i dopisuje wszystko, czego brak. Krok w skillach, w którym sesja główna podawała status, okazał się zbędny.
+Skan musi przejść w ciągu około siedmiu tygodni, bo tyle żyją transkrypty, więc woła go doctor przy każdym runie, a w mini-runie sprawdzimy hook
+Stop, który robiłby to automatycznie po każdej odpowiedzi. Przegląd runów proponował jeszcze plik per run zamiast wspólnego; oba formaty są
+bezpieczne i wybór zostaje na wdrożenie.
 
 **Co Ci to da.** Po miesiącu jeden skrypt odpowie, ile kosztuje faza i kto ją zjada, czy odchudzenie kontekstu zadziałało, które osie znajdują, a które
 tylko kosztują, na czym stają runy i czy ktoś nie przekroczył budżetu instrukcji. Bez powtarzania tej analizy.
 
-**Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie.
+**Twoja decyzja:** wariant główny z siatką przyjęty, hook do sprawdzenia w mini-runie. Po przeglądzie D5 (23 września, akceptacja w całości): zasada
+bez zmian, krok w skillach odpada, skan jest głównym zapisem.
 
 **Jak poznamy, że zmiany działają.** Mapa walidacji jest zrobiona (2026-09-22, plik `dane/d5b-mapa-walidacji.txt`; wszystkie 21 wpisów prostą
 narracją, z kryteriami doboru: `MAPA-WALIDACJI-DLA-OPERATORA.md`). Problem był taki, że wymóg
@@ -314,6 +322,8 @@ procent się broni. Pytanie „sto kontra czterysta” jest od przeglądu 23 wrz
 poleceń psuje u nas jakość. Jeśli marker przy czterystu ginie wyraźnie częściej, budżet poniżej stu pięćdziesięciu jest celem jakościowym. Jeśli nie,
 budżet zostaje dla porządku i kosztu, a o jakości decydują przede wszystkim małe naprawy. Odczyt kontekstu pierwszej tury per klasa jest od tego
 samego przeglądu punktem odniesienia dla allowlisty narzędzi, bo stare liczby pochodzą z okresu, gdy CLAUDE.md był nawet cztery razy większy niż dziś.
+Po przeglądzie D5 to potwierdzenie, a nie jedyne źródło: pierwszy punkt odniesienia daje run z 20 września. Mini-run sprawdzi jeszcze, kiedy powstaje
+plik, z którego czyta telemetria, i czy hook Stop odpala się po zakończeniu runu.
 
 ---
 

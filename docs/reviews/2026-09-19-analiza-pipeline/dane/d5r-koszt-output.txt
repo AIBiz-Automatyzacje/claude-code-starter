@@ -1,0 +1,61 @@
+D5r — output w modelu kosztu: pierwszy vs ostatni wpis usage per message.id (przeglad D5, 2026-09-23)
+Agenci: 2941 (te same co dane/agents.csv), odpowiedzi API: 45870, odpowiedzi z roznym output_tokens w obrebie id: 22480 (49%)
+Pola rozne w obrebie jednego id: {'output_tokens': 22480}  (input/cache identyczne -> tylko output jest niedoliczony)
+Kontrola: koszt z pierwszym wpisem == koszt w agents.csv u 2941/2941 agentow (odtwarza etap 0)
+
+=== 1. Sklad kosztu (5 projektow, wszystkie runy) ===
+etap 0 (pierwszy wpis)      razem   1179 M jedn. | cache read 58.9% | cache write 38.9% | output  2.2% (5.2 M tok) | input 0.02%
+poprawione (ostatni wpis)   razem   1293 M jedn. | cache read 53.6% | cache write 35.5% | output 10.9% (28.1 M tok) | input 0.02%
+Udzialy liczone na koszcie etapu 0 (np. oplata za powolanie 22%, kontekst x tury 40%) maja licznik z cache -> po poprawce x 0.911
+   22% -> 20.1% | 40% -> 36.5% | 26% -> 23.7%
+
+=== 2. Udzialy per etap fazy — oferty-online po 06.09 (817 agentow; digest §1: execute 28, reviewerzy 25, fix 17, orkiestracja 12, sceptycy 6, mechanika 5) ===
+etap                                             etap 0    popr.   zmiana
+execute (planner+build+domkniecie)                28.7%    29.1%    +0.3 pp
+reviewerzy (review:*)                             29.3%    28.9%    -0.4 pp
+sceptycy (verify*)                                 6.2%     6.1%    -0.1 pp
+mechanika review (kontekst:diff+dedup+scribe)      4.7%     5.0%    +0.3 pp
+petla fix (fix*, zwin)                            17.9%    17.7%    -0.3 pp
+orkiestracja+e2e-env+zakonczenie                   8.8%     9.0%    +0.1 pp
+output w tym podzbiorze: etap 0 2.0% -> poprawione 9.4%
+Role z najwiekszym przesunieciem udzialu (pp):
+  fix                      n= 63   15.4% ->  15.1%  (output/koszt po poprawce 8%)
+  planner                  n= 21    1.5% ->   1.8%  (output/koszt po poprawce 24%)
+  scribe                   n= 23    2.6% ->   2.9%  (output/koszt po poprawce 20%)
+  stan:zapis               n= 80    2.6% ->   2.9%  (output/koszt po poprawce 15%)
+  build                    n= 58   22.7% ->  22.9%  (output/koszt po poprawce 11%)
+  review:spec-compliance   n= 23    4.8% ->   4.7%  (output/koszt po poprawce 6%)
+  verify-batch             n=105    4.6% ->   4.4%  (output/koszt po poprawce 6%)
+  domkniecie               n= 20    4.0% ->   3.9%  (output/koszt po poprawce 9%)
+
+=== 3. Kontrola: ostatni wpis vs budget.spent() runu (result.tokeny w pliku workflows/<run>.json harnessu) ===
+  wf_c46168d1-d93 tokeny=1401k  pierwszy   175213 (0.13)  ostatni  1347022 (0.96)
+  wf_51feac8b-a22 tokeny=926k   pierwszy   194669 (0.21)  ostatni   858641 (0.93)
+  wf_b6f21b08-fda tokeny=34k    pierwszy    12418 (0.37)  ostatni    29652 (0.87)
+  wf_3a1950f0-fe5 tokeny=1376k  pierwszy   152023 (0.11)  ostatni  1331472 (0.97)
+  wf_f1006761-e7c tokeny=302k   pierwszy    54865 (0.18)  ostatni   298915 (0.99)
+  wf_68c6753f-9e5 tokeny=692k   pierwszy   299912 (0.43)  ostatni   665961 (0.96)
+  wf_16546a4e-e81 tokeny=2985k  pierwszy   527741 (0.18)  ostatni  2718378 (0.91)
+  wf_78546669-f7d tokeny=217k   pierwszy     5185 (0.02)  ostatni    61715 (0.28)
+  wf_791b7c6e-c22 tokeny=830k   pierwszy    38630 (0.05)  ostatni   196736 (0.24)
+  wf_45eff655-3b8 tokeny=574k   pierwszy    53817 (0.09)  ostatni   550793 (0.96)
+  wf_68d07920-93d tokeny=1036k  pierwszy   121178 (0.12)  ostatni  1007889 (0.97)
+  wf_feed7bad-902 tokeny=359k   pierwszy    79964 (0.22)  ostatni   353048 (0.98)
+  wf_33ecc7cd-7ed tokeny=102k   pierwszy     1877 (0.02)  ostatni    26314 (0.26)
+  wf_29d462f8-85c tokeny=374k   pierwszy    45319 (0.12)  ostatni   379894 (1.02)
+  wf_437fa27d-fe0 tokeny=732k   pierwszy   102936 (0.14)  ostatni   713340 (0.97)
+  wf_fd824443-91a tokeny=959k   pierwszy   119360 (0.12)  ostatni   943882 (0.98)
+  wf_78323205-648 tokeny=580k   pierwszy   115137 (0.20)  ostatni   596331 (1.03)
+  wf_cfc8a9b8-385 tokeny=1258k  pierwszy    38666 (0.03)  ostatni   283307 (0.23)
+  wf_51a5d098-838 tokeny=1664k  pierwszy   210896 (0.13)  ostatni  1639429 (0.99)
+Ostatni wpis w +-15% od budget.spent(): 15/19 runow (pozostale 4: runy 08-27..09-07, oba wpisy ponizej budzetu — przyczyna NIESPRAWDZONA; w kazdym runie ostatni wpis blizej budzetu niz pierwszy)
+
+=== 4. Epizody skilli w sesji glownej (koszt_skilli.py bierze tez pierwszy wpis — sprawdzenie, czy to ma znaczenie w sesji glownej) ===
+skill                   ep.  koszt/ep e0 koszt/ep pop   zmiana   output/koszt
+dev-prep                 16         621k         621k      +0%     20% ->  20%
+dev-plan                 19         930k         930k      +0%     19% ->  19%
+dev-docs                 18         669k         669k      +0%     19% ->  19%
+dev-pr                   10         203k         203k      +0%      7% ->   7%
+dev-compound              6         427k         427k      +0%     12% ->  12%
+dev-brainstorm            6         318k         318k      +0%     25% ->  25%
+Wniosek sekcji 4: w transkryptach SESJI GLOWNEJ wpisy jednego id maja to samo usage — rozjazd dotyczy tylko transkryptow agentow workflowow; baseline skilli bez zmian.

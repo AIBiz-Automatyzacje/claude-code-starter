@@ -2,6 +2,9 @@ D3 — mapa rol agentow pipeline'u: rola -> workflow -> plik agenta -> gdzie zyj
 !!! KOREKTA 2026-09-23 (d3r-kontekst-per-klasa.txt, PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D3): ctx_sr per klasa miesza epoki wzrostu CLAUDE.md 13,8k -> 87k zn
 !!! i mierzy prace (tury), nie konfiguracje; zdanie o CLAUDE.md 89k jako przyczynie roznicy klas jest bledne (CLAUDE.md laduje sie obu); punkt odniesienia
 !!! = mini-run (e); klasy uzasadnia zestaw ustawien; freshness-audit-wf (4 role) poza mapa do decyzji operatora.
+!!! KOREKTA 2 (przeglad D5, 2026-09-23, d5r-wykonalnosc-rekordu.txt §11): run 20.09 wf_e5c34cd8-66c (85 agentow) pracowal z CLAUDE.md 17,8k zn na galezi
+!!! zadania — PIERWSZY punkt odniesienia po scieciu: ctx 1. tury p50 mech haiku 89k, orkiestr. opus 121k, reviewer 125k, sceptyk 123k, builder 135k
+!!! (n 6–29); mini-run (e) = potwierdzenie. Rola `fix` w agents.csv zawiera fix:kontrola/pre-skan/poprawka nowego formatu (43 agentow).
 Zrodla: grep agent( / agentType / label / model w .claude/workflows/*.js (szablon), dane/agents.csv (n agentow, mediana sredniego kontekstu na ture ctx_sr).
 Kontekst startowy DZIS: kazda rola bez pliku = general-purpose z pelnym MCP (62,0k tok, POMIARY §1); role z plikiem — plik BEZ `tools:` (0 z 16 plikow ma tools:),
 wiec start tez ~62k (niezmierzone osobno; POMIARY §1 mierzyl plik Z tools: = 11,6k). Legenda kolumny PLIK: nazwa = .claude/agents/<nazwa>.md; BRAK = agent() bez agentType.

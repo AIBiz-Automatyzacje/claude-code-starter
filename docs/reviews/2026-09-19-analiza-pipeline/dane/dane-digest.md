@@ -17,6 +17,14 @@ Wnioski: (1) koszt = liczba tur × rozmiar kontekstu; tokeny wyjściowe (jedyne,
 (2) cache write to w 65% **pierwsza tura każdego agenta** = „opłata za powołanie agenta" ~107k tokenów × 1,25 ≈ 134k jedn.,
 czyli **22% całego kosztu** to samo powoływanie agentów (35 agentów na fazę). Cache wygasania nie ma (odstępy między turami ~1 s).
 
+**KOREKTA 2026-09-23 (przegląd D5, `skrypty/d5r_koszt_output.py` → `d5r-koszt-output.txt`):** transkrypt agenta zapisuje jedną odpowiedź API w kilku
+wpisach; w 49% odpowiedzi różnią się `output_tokens` (pierwszy = stan strumienia, ostatni = końcowy; input/cache identyczne). `koszt_agentow.py` brał
+PIERWSZY. Z ostatnim: **1 293 M jedn. (nie 1 179 M), cache read 53,6%, cache write 35,5%, output 10,9% (28,1 M tok, nie 5,2 M)**; ostatni wpis zgadza się
+z `budget.spent()` w 15/19 runów (±15%). Udziały liczone na całym koszcie ×0,91: opłata za powołanie 22% → 20%, kontekst × tury 40% → 36,5%, czysty narzut
+26% → 24%. Udziały etapów fazy (§1, oferty-online po 06.09) przesuwają się ≤0,4 pp — kolejność bez zmian. Sesja główna (`skille.csv`) bez różnicy.
+Tabele poniżej zostają w wersji etapu 0 (output zaniżony ~5×). Osobno: `rola()` skleja `fix:kontrola`/`fix:pre-skan`/`fix:poprawka` w `fix` u etykiet
+nowego formatu (43 agentów) — „fix” w §1 jest zawyżony, pętla fix jako całość bez zmian.
+
 ## 1. Koszt per rola (wszystkie runy; udział w 1 179 M)
 
 | rola | agentów | tur/agent (p50) | udział | koszt/agent |

@@ -1,0 +1,113 @@
+D5r — wykonalnosc rekordu telemetrii na wszystkich runach na dysku (przeglad D5, 2026-09-23)
+
+=== 1. Inwentarz ===
+Runy (katalogi wf_): 156; journal nowego formatu (label+phase w started): 41, starego: 115
+Wg workflowName z pliku harnessu: dev-autopilot-wf 55, dev-pr-wf 75, inne (analityczne, jednorazowe) 26
+dev-autopilot-wf: nowy format 9, stary 46
+
+=== 2. Status i powod runu — plik harnessu <sesja>/workflows/<run>.json ===
+Plik istnieje: 156/156 runow (oba formaty journala). Klucze: agentCount 156, args 132, defaultModel 156, durationMs 156, error 5, logs 156, phases 153, result 156, runId 156, script 156, scriptPath 156, startTime 156, status 156, summary 156, taskId 156, timestamp 156, totalTokens 156, totalToolCalls 156, workflowName 156, workflowProgress 156
+workflowName | status harnessu | result.status | ma powod -> liczba runow:
+  dev-pr-wf        completed OK                 False 57
+  dev-autopilot-wf completed STOP               True  30
+  dev-autopilot-wf completed OK                 False 20
+  dev-pr-wf        completed GOTOWY-DO-DECYZJI  False 8
+  dev-pr-wf        completed STOP               True  6
+  dev-autopilot-wf killed    None               False 3
+  dev-autopilot-wf failed    None               False 2
+  dev-pr-wf        completed GOTOWY-DO-MERGE    False 2
+  dev-pr-wf        completed OK                 True  2
+Wniosek: status runu (OK/STOP + powod, killed/failed + error) jest na dysku dla KAZDEGO runu — nie tylko w sesji glownej.
+
+=== 3. Heurystyka skanu z D5 §3 (ostatnia etykieta: complete/compound-refresh -> OK, stop:commit-artefaktow -> STOP, inaczej NIEZNANY) ===
+prawdziwy status | heurystyka -> runy (ostatni agent przed agentem telemetrii):
+  OK       -> OK        20
+  STOP     -> NIEZNANY  18
+  STOP     -> STOP      12
+  failed   -> NIEZNANY  2
+  killed   -> NIEZNANY  3
+Heurystyka trafia 32/55 runow autopilota; STOP rozpoznany 12/30.
+Rodzaj ostatniego agenta -> runy: OK/complete 20, STOP/stop 12, STOP/bootstrap 8, STOP/e2e 3, STOP/stan 3, STOP/domkniecie 2, failed/warmup 2, killed/bootstrap 2, killed/stan 1, STOP/scribe 1, STOP/build 1
+
+=== 4. Regula D5 „pomijaj run w toku (ostatni started bez result)” ===
+Runy zakonczone, ktore regula uznalaby za „w toku” NA ZAWSZE (nigdy nie trafilyby do pliku): {'completed': 1, 'killed': 3}
+
+=== 5. Etykieta, grupa i numer fazy per agent ===
+Etykieta/grupa per agent (format journala, zrodlo) -> agenci:
+  nowy   journal                      11
+  nowy   workflowProgress             721
+  stary  BRAK                         28
+  stary  key (wczesniejsza proba)     24
+  stary  workflowProgress             2530
+Numer fazy u agentow dev-autopilot-wf (oba formaty) -> agenci:
+  najblizsza wczesniejsza grupa „Faza N”     1691
+  etykieta :faza-N                           583
+  poziom runu (bez fazy z definicji)         335
+  grupa „Faza N”                             281
+  BRAK                                       1
+Uwaga: „#N” w nazwie grupy-dziecka to numer WYWOLANIA, nie fazy (run zaczynajacy od fazy 2 ma review #1 = faza 2).
+
+=== 6. Wznowienia (resumeFromRunId) i idempotencja klucza run|typ|id ===
+Wywolania Workflow z resumeFromRunId: 9; wynik ma TEN SAM runId: 9; rozne runy wznawiane: 5; wznowione w INNEJ sesji niz start: 1
+Klucze agentow powtorzone w journalu (ponowna proba tego samego wywolania): 41; agenci spoza workflowProgress (wczesniejsze proby): 63
+agentId wystepujacy w wiecej niz jednym runie: 0 -> klucz run|agent|agentId jest unikalny
+Wniosek: wznowienie dopisuje do TEGO SAMEGO runu nowych agentow i zmienia status/wynik runu i faz. Rekordy run/faza zapisane skanem
+po awarii sa nieaktualne, a regula „nie dopisuj, jesli klucz istnieje” zablokowalaby wersje koncowa.
+
+=== 7. Wersja szablonu: skrypt z pliku harnessu vs historia szablonu; marker .template-version w repo projektow ===
+  dev-autopilot-wf NIE MA go w historii szablonu  33
+  dev-autopilot-wf zgodny z commitem szablonu     22
+  dev-pr-wf        zgodny z commitem szablonu     75
+  runy ze skryptem spoza historii szablonu per projekt: {('Nawykometr', 'dev-autopilot-wf'): 4, ('oferty-online', 'dev-autopilot-wf'): 29}
+Repo z workflowem autopilota: 11
+  Nawykometr                         marker=6fbd49d  git=tak
+  akademia-automatyzacji-dashboard   marker=e5ce4ea  git=tak
+  chatbot-cloudnest-widget           marker=BRAK     git=tak
+  claude-cron                        marker=5729d38  git=tak
+  gramywpadla                        marker=23e0d92  git=tak
+  live-licznik                       marker=BRAK     git=tak
+  oferty-online                      marker=5729d38  git=tak
+  symulator-poczekalni               marker=BRAK     git=tak
+  viberzy                            marker=BRAK     git=NIE
+  workspace-template                 marker=BRAK     git=tak
+  workspace-template-mobile          marker=BRAK     git=tak
+Marker brak w 6/11 repo, gita brak w 1. Manifest .template-manifest ma tylko sciezki (bez hashy) — nie wykryje lokalnej zmiany.
+Plik harnessu przechowuje skrypt GLOWNEGO workflowu (workflows/scripts/, pole script); skryptow workflowow-dzieci (execute/review/compound/complete) nie.
+
+=== 8. Transkrypty agentow: wersja Claude Code, zalaczniki kontekstu, thinking ===
+  2026-08 do 09-05  {'agenci': 1310, 'wersja CC': 1310, 'zalacznik instructions z plikami': 0, 'thinking_tokens': 1017}
+  2026-09 do 09-05  {'agenci': 751, 'wersja CC': 751, 'zalacznik instructions z plikami': 0, 'thinking_tokens': 701}
+  2026-09 od 09-06  {'agenci': 1253, 'wersja CC': 1253, 'zalacznik instructions z plikami': 1030, 'thinking_tokens': 1202}
+Zalacznik `instructions` (lista plikow CLAUDE.md/rules/learned-patterns z trescia, jak widzi je agent) jest od ~09-06 (CC ~2.1.263);
+`deferred_tools_delta` i `skill_listing` sa od poczatku danych. Pole `version` (wersja CC) jest w kazdym wpisie.
+
+=== 9. dev-pr-wf: jeden run = jeden ETAP jednej tury; watki bota powtarzaja sie miedzy turami ===
+Runy dev-pr-wf wg etapu: {'compound': 7, 'napraw': 23, 'zbierz': 21, 'start': 14, 'merge': 10}; numer PR w wyniku ma 9/75 (tylko etap start) — laczenie po args.zadanie
+Watki w wynikach pr:zbierz: suma po runach 255, unikalne id per zadanie 178 -> suma po runach zawyza o 43%
+  faza-7-szablony-i-grafiki                runow zbierz 6  watkow  97  unikalnych  62
+  faza-8-connector-oauth-i-dashboard       runow zbierz 5  watkow  64  unikalnych  43
+  zalaczniki-w-skrzynce                    runow zbierz 3  watkow  28  unikalnych  17
+  faza-9c-dokumenty-prawne                 runow zbierz 2  watkow  25  unikalnych  16
+  faza-9a-domena-mailer-limity             runow zbierz 2  watkow  25  unikalnych  25
+  samodzielna-rejestracja-czlonkow-aa      runow zbierz 1  watkow  11  unikalnych  11
+  cookie-consent-panelu-gtm                runow zbierz 2  watkow   5  unikalnych   4
+
+=== 10. Wyscig: jak czesto dwie sesje koncza odpowiedz naraz (wariant C = hook Stop ze skanem w kazdej sesji) ===
+Konce odpowiedzi w sesjach glownych (zdarzenia hooka Stop): 7538 w 931 sesjach
+  w oknie  2 s konczy tez INNA sesja: 494 (6.6%)
+  w oknie 10 s konczy tez INNA sesja: 781 (10.4%)
+Wniosek: przy skanie w hooku Stop dwa procesy czytajace „jakie klucze juz sa” i dopisujace brakujace to realny przypadek, nie teoria.
+
+=== 11. CLAUDE.md oferty-online: rozmiar widziany przez agenta (zalacznik instructions) vs git gałęzi main; epoka po scieciu ===
+Agenci z zalacznikiem instructions (od 09-06): rozmiar CLAUDE.md widziany vs main w chwili startu -> {'zgodny z main (±1 zn)': 501, 'INNY niz main w chwili startu': 188}
+Runy, w ktorych agent widzial CLAUDE.md <= 25k zn (po scieciu): wf_1bcc47bb-cf7 dev-pr-wf 2026-09-21 (1 agentow), wf_1e326932-43f dev-pr-wf 2026-09-21 (1 agentow), wf_6e526e5e-6d0 dev-pr-wf 2026-09-21 (1 agentow), wf_77efae9c-518 dev-pr-wf 2026-09-21 (1 agentow), wf_dae391e3-28f dev-pr-wf 2026-09-21 (1 agentow), wf_e5c34cd8-66c dev-autopilot-wf 2026-09-20 (85 agentow), wf_fc05fcea-00b dev-pr-wf 2026-09-21 (1 agentow)
+Kontekst pierwszej tury (p50, k tok) w tej epoce per klasa i model — D3r dla 09-13..09-17: mech 101k, orkiestr. 139k, sceptyk 144k, reviewer 145k, napr. 129k, builder 160k:
+  builder         opus  n=  6 p50= 135k
+  mechaniczny     haiku n= 20 p50=  89k
+  naprawiacz      haiku n=  3 p50=  88k
+  naprawiacz      opus  n=  8 p50= 123k
+  orkiestracyjny  opus  n= 29 p50= 121k
+  reviewer        opus  n= 15 p50= 125k
+  sceptyk         opus  n= 10 p50= 123k
+Rozmiar CLAUDE.md widziany w tych runach (zn): {'wf_77efae9c-518': [21007], 'wf_1bcc47bb-cf7': [20973], 'wf_1e326932-43f': [20973], 'wf_6e526e5e-6d0': [20973], 'wf_dae391e3-28f': [20973], 'wf_fc05fcea-00b': [20973], 'wf_e5c34cd8-66c': [17810]}
+Liczba narzedzi (deferred_tools_delta.addedNames) i skilli (skill_listing.skillCount) u tych agentow, p50: narzedzia 972, skille 309
