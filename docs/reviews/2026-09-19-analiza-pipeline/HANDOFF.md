@@ -346,23 +346,29 @@ Instrukcja dla następnej sesji:
 
 ```
 Kontynuujemy przegląd domknięć przed panelem (analiza pipeline'u dev-* w workspace-template). Nowa sesja po wyczyszczeniu kontekstu, model Opus 5.5.
-D1, D2, D3 i D5 są już przejrzane, przyjęte i wprowadzone. Zostały: D6, potem D4. D5b nie przeglądaj ponownie.
+D1, D2, D3 i D5 są już przejrzane, przyjęte i wprowadzone. Dziś kolejno: D6 (audyt skilli), potem D4 do końca. D5b nie przeglądaj ponownie.
 
 Przeczytaj najpierw, w całości:
 1. docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md — sekcja 2 (wiersz 3½), 6a pkt 15–19, sekcja 7 (pułapki)
-2. docs/reviews/2026-09-19-analiza-pipeline/PROPOZYCJA-POPRAWEK-DOMKNIEC.md — wzorzec wyniku i to, co już zmieniono w D1–D3
+2. docs/reviews/2026-09-19-analiza-pipeline/PROPOZYCJA-POPRAWEK-DOMKNIEC.md — wzorzec wyniku i to, co już zmieniono w D1–D3 i D5
 3. docs/reviews/2026-09-19-analiza-pipeline/PANEL-WEJSCIE.md — w całości
-4. docs/reviews/2026-09-19-analiza-pipeline/dane/d5-telemetria-rekord.txt
+4. docs/reviews/2026-09-19-analiza-pipeline/dane/d6-audyt-skilli.txt (+ skrypty/d6_audyt_skilli.py) — przedmiot D6
+5. docs/reviews/2026-09-19-analiza-pipeline/dane/d5r-wykonalnosc-rekordu.txt — źródła na dysku ustalone w D5 (przydadzą się w D6)
 Źródła (ETAP1/1B/2/3, POMIARY, surowe dane) czytaj tylko w zakresie potrzebnym do sprawdzenia konkretnej tezy. Decyzje operatora są w HANDOFF 6a
 pkt 1–19 — nie pytaj o nie ponownie i nie podważaj ich; podważasz liczby, metody i wnioski, na których stoją.
 
 CO SPRAWDZIĆ (po każdym domknięciu wracasz do mnie z wynikiem i czekasz na akceptację):
 - D6 (audyt skilli): retencja transkryptów (~7 tyg.), heurystyka epizodu (koszt obejmuje rozmowę z operatorem), klasyfikacja koszyków, czy „kandydaci
-  do usunięcia" mają jakiekolwiek użycie poza oknem (artefakty, odwołania w szablonie, repo mobile).
+  do usunięcia" mają jakiekolwiek użycie poza oknem (artefakty, odwołania w szablonie, repo mobile). Wiedza z D5 do wykorzystania: plik harnessu
+  `~/.claude/projects/<slug>/<sesja>/workflows/<run>.json` ma workflowName i listę grup (`▸ dev-docs-review-wf` itd.) TAKŻE dla 115 starych journali —
+  D6 liczył workflowy-dzieci tylko z nowych journali (execute 15, review 18, compound 5, complete 5), więc przelicz; run dev-pr-wf = jeden ETAP jednej
+  tury (75 runów ≠ 75 użyć); `skille.csv` (sesja główna) NIE ma błędu zaniżonego outputu z D5.
 - D4 NA KOŃCU (PANEL-WEJSCIE jako kompilacja): po poprawkach D1–D6 i mapie v2 — kontrola w obie strony (pakiet → źródła czytaniem, źródła → pakiet
   skryptem skrypty/d4_kontrola_odwrotna.py), spójność liczb między sekcjami i z wersją dla operatora; §6 założenia i §8 tezy na jednym filarze —
   czy po wszystkich poprawkach coś się przewraca (np. dźwignia 25–35% liczona na epoce sprzed ścięcia CLAUDE.md — patrz D3 — i na koszcie z zaniżonym
-  outputem — patrz D5 poprawka 6: całość 1 293 M zamiast 1 179 M, udziały ×0,91; run 20.09 po ścięciu jako punkt odniesienia).
+  outputem — patrz D5 poprawka 6: całość 1 293 M zamiast 1 179 M, udziały ×0,91; run 20.09 po ścięciu jako punkt odniesienia). Dźwignię przelicz
+  skryptem (skrypty/d4r_*.py) na danych z poprawionym outputem (skrypty/d5r_koszt_output.py) i dla epoki po ścięciu; wynik wpisz we wszystkie miejsca
+  z „25–35%” (PANEL-WEJSCIE §1 pkt 4/§5/§8, ETAP3 §1.1, wersje operatora, mapa §2 pkt 2).
 
 CO SZUKAĆ: normalizacja i jednostki; epoka i trend (średnia z całości zamiast stanu bieżącego, zmiana przyrządu); mała próba i moc statystyczna;
 artefakty metody (filtr po nazwie, regex, blame — przelicz niezależnie i sprawdź czytaniem próbki); ten sam fakt z różnymi liczbami w różnych
