@@ -380,6 +380,13 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     ~5–7 agentów. Wymogi §2, precedensy §1, założenia §6, elementy §7, rekord §12 i zabezpieczenia z mini-runu (N1, N2) obowiązują bez zmian.
     Start WYŁĄCZNIE na znak operatora; najpierw plan (część A).
 
+24. **PROMPT-AUDIT przed panelem (operator 2026-09-23: „rozpoczniemy nową sesję między innymi od tego, aby wykorzystać ten skill … i zrobić z nim analizę”).**
+    Nowa sesja zaczyna od `/claude-api prompt-audit` na maszynerii szablonu (skille, agenci, prompty w workflowach JS, reguły, CLAUDE.md, teksty hooków):
+    szukanie instrukcji pisanych pod starsze modele, które na Opus 5.5 / Haiku 4.5 szkodzą (przesadny nacisk, rusztowania zastąpione funkcjami API,
+    nadmierne rozpisanie metody, skamieliny, choreografia formatu). Wynik = raport + proponowany diff, BEZ nanoszenia zmian; ustalenia trafiają jako wejście
+    do panelu decyzyjnego (warstwa stała promptów ról, §2 pkt 3). Operator ma poza tym tematy-inspiracje do omówienia w tej samej sesji. Kolejność: audyt →
+    tematy operatora → (ewentualne dopiski 6a) → panel decyzyjny na znak. Instrukcja startowa: §8 „AKTUALNA”.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -415,8 +422,8 @@ D1–D6 PRZYJĘTE i wprowadzone (6a pkt 19). Najważniejsza zmiana z D4: dźwign
 cele ctx_start. **Decyzje z D6 PODJĘTE 2026-09-23 (6a pkt 20):** koszyk D, dev-ideate, freshness-audit(+wf) i tryb ręczny execute/review WYPADAJĄ
 (lista zmian §10, plan etapu 5); `cleanupPeriodDays` = 120 (higiena konta).
 **MINI-RUN ZROBIONY i ZAAKCEPTOWANY 2026-09-23 (6a pkt 21, wiersz 3¾):** `MINI-RUN-WYNIK.md` + `MINI-RUN-DLA-OPERATORA.md`; wyniki wpisane do PANEL-WEJSCIE
-(§11 = streszczenie a–f, §2a = ustalenia poboczne N1–N3), wersji operatora i mapy walidacji. **Następny krok: PANEL DECYZYJNY etapu 4 (6a pkt 23) na Opus 5.5 (6a pkt 22) — WYŁĄCZNIE na znak operatora; operator ma
-jeszcze przed nim tematy-inspiracje do omówienia (2026-09-23)**
+(§11 = streszczenie a–f, §2a = ustalenia poboczne N1–N3), wersji operatora i mapy walidacji. **Następny krok: nowa sesja od PROMPT-AUDIT maszynerii szablonu (6a pkt 24), potem tematy-inspiracje operatora; dopiero potem PANEL DECYZYJNY
+etapu 4 (6a pkt 23) na Opus 5.5 (6a pkt 22) — WYŁĄCZNIE na znak operatora**
 (instrukcja „AKTUALNA” niżej). Kopia oferty-online w scratchpadzie 86e1644e może zostać do końca analizy; usuwanie tylko za zgodą operatora.
 
 **Historia: MINI-RUN W TOKU (stan 2026-09-23 ~18:20, sesja 86e1644e) — zamknięte, zostawione jako zapis przebiegu:** plan `MINI-RUN-PLAN.md` + `MINI-RUN-PLAN-DLA-OPERATORA.md` ZAAKCEPTOWANY („Wszystko wygląda dobrze.
@@ -445,8 +452,46 @@ fix:pre-skan przez tę samą właściwość `rola()` co w d4r; mechaniczny opus 
 nie mieszczą się w 1500); wiadomość operatora przekazana agentom serii D: „Wszystko wygląda dobrze. Wykonaj to proszę.”; pierwsze dwie próby f2 nieważne
 (agent puścił sleep w tle / harness blokuje sam `sleep`) — ważne: TERM `wf_e8db4d90-026`, KILL `wf_75d849a3-0d0`.
 
-**AKTUALNA instrukcja dla następnej sesji — PANEL DECYZYJNY (wklej jako pierwszą wiadomość, gdy dajesz znak; zdanie „Do agentów…” zostaw — mini-run N1;
-jeśli po tematach-inspiracjach z 2026-09-23 doszły decyzje, sesja wpisuje je jako kolejne punkty 6a i poprawia tę instrukcję przed znakiem):**
+**AKTUALNA instrukcja dla następnej sesji — PROMPT-AUDIT (6a pkt 24). Wklej CAŁOŚĆ jako pierwszą wiadomość nowej sesji otwartej w workspace-template;
+pierwsza linia uruchamia skill, reszta to argumenty. Zdanie „Do agentów…” zostaw (mini-run N1):**
+
+```
+/claude-api prompt-audit
+Kontynuujemy analizę pipeline'u dev-* w workspace-template (sesja główna Opus 5.5, nowa po wyczyszczeniu kontekstu). Zadanie tej sesji: prompt-audit
+maszynerii szablonu według przewodnika skilla, potem rozmowa o moich tematach. Panel decyzyjny (HANDOFF 6a pkt 23) NIE w tej sesji.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Zanim zaczniesz Step 0 przewodnika, przeczytaj: docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md §2 (wiersze 3¾ i 4), 6a pkt 15–24, §7 (pułapki);
+PANEL-WEJSCIE.md §1, §2, §2a; MINI-RUN-WYNIK.md. To jest proweniencja: wiele zdań w promptach to lekarstwa na awarie udokumentowane w tej analizie
+i w docs/solutions/ — takie zdanie zostaje, dopóki nie pokażesz, że awaria nie występuje na modelu docelowym.
+
+Step 0 — ustalenia (wpisz je na górę raportu, nie pytaj):
+- ZAKRES: .claude/skills/*/SKILL.md (+ pliki, które skille czytają), .claude/agents/*.md, teksty promptów w .claude/workflows/*.js (stringi przekazywane
+  do agent()), .claude/rules/coding-rules.md, CLAUDE.md, .claude/templates/, komunikaty hooków z .claude/hooks/ trafiające do modelu. Poza zakresem:
+  docs/, testy __tests__ (tylko sprawdź, czy diff ich nie łamie), skille do usunięcia z 6a pkt 20 (code-review, code-quality, gemini, dev-docs-update,
+  bugfix, dev-ideate, freshness-audit + wf, tryb ręczny dev-docs-execute/review) — wymień je w inwentarzu jako pominięte.
+- MODEL DOCELOWY: Opus 5.5 (claude-opus-5-5) dla sesji głównej, builderów, reviewerów i orkiestracji; Haiku 4.5 dla ról z model: 'haiku' —
+  oceniaj każdy prompt względem modelu, na którym faktycznie jedzie. Przeczytaj shared/model-migration.md → Migrating to Claude Opus 5.5 (zmiany zachowania).
+- STAŁE OGRANICZENIA: coding-rules.md to reguły operatora — tylko raport, zero hunków w diffie bez jego decyzji. Nie przepisuj imperatywów w skillach
+  na łagodne rekomendacje: pamięć feedback „Skille mandatują akcje” — pasywne „zalecane X” Claude cicho pomija; atakuj nacisk (wersaliki, CRITICAL,
+  powtórzenia), nie tryb rozkazujący. Mini-run (d): liczba poleceń nie jest dźwignią jakości — szukaj instrukcji, które szkodzą, nie długości.
+
+Wykonanie: inwentarz i grepy sygnałów skryptem (skrypt do docs/reviews/2026-09-19-analiza-pipeline/skrypty/pa_*.py, wynik do dane/pa-*.txt), potem
+czytanie w sesji głównej, proweniencja przez git blame. Subagentów nie uruchamiaj bez mojej zgody — jeśli skala tego wymaga, pokaż inwentarz,
+podział i szacunek kosztu i zapytaj. Nie nanoś żadnych zmian w .claude/ ani CLAUDE.md.
+
+Wynik (katalog docs/reviews/2026-09-19-analiza-pipeline/):
+- PROMPT-AUDIT.md — raport wg Step 5 (lokalizacja file:line, cytat, wzorzec, dlaczego przestarzałe dla modelu docelowego, pewność, akcja), na górze
+  założenia Step 0, liczby per grupa, 2–3 najważniejsze ustalenia; osobna sekcja „co z tego dla panelu decyzyjnego” (wpływ na warstwę stałą ról §2 pkt 3,
+  które ustalenia są niezależne od panelu i mogą iść od razu jako zmiany szablonu §10);
+- dane/pa-proponowany.diff — diff wg Step 6 (hunk = jedno ustalenie; tylko pewność wysoka/średnia), sprawdzony pod kątem testów __tests__;
+- PROMPT-AUDIT-DLA-OPERATORA.md — narracja: problem → przyczyna → co proponujemy → co to daje, bez tabel i ścieżek.
+Sprawdź oba dokumenty w obie strony. Oddaj mi wynik i CZEKAJ. Po akceptacji: HANDOFF (6a, §8), PANEL-WEJSCIE (§2a lub §10 — wejście panelu),
+pamięć projektu, commit docs/reviews. Potem podam tematy-inspiracje.
+```
+
+**Następna po prompt-audicie — PANEL DECYZYJNY (wklej jako pierwszą wiadomość, gdy dajesz znak; zdanie „Do agentów…” zostaw — mini-run N1;
+jeśli po prompt-audicie i tematach-inspiracjach z 2026-09-23 doszły decyzje, sesja wpisuje je jako kolejne punkty 6a i poprawia tę instrukcję przed znakiem):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
