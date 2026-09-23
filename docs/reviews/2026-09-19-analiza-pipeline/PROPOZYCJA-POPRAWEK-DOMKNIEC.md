@@ -201,3 +201,88 @@ Liczby i wniosek D2 w: ETAP3 §7 (wiersz D2 i wniosek dla panelu), PANEL-WEJSCIE
 akceptacji poprawki 3), PANEL-WEJSCIE-DLA-OPERATORA część 2 punkt trzeci, mapa walidacji obu wersji (wpis §2 pkt 3, punkt odniesienia),
 HANDOFF wiersz 3½ i 6a pkt 18 (dopisek przy „tą samą metodą”, jeśli poprawka 3 przejdzie), rekord telemetrii bez zmian (`agent.instrukcje_stale`
 bierze liczbę z testu, więc zmiana definicji w teście przechodzi sama).
+
+---
+
+## D3 — mapa ról i klasy agentów
+
+**Status: PRZYJĘTA 2026-09-23, z pomiarem punktu odniesienia w mini-runie (bez osobnego przebiegu)** — wprowadzona do PANEL-WEJSCIE §4/§11/§12,
+ETAP3 §7, mapy walidacji obu wersji (§2 pkt 1 i 2), PANEL-WEJSCIE-DLA-OPERATORA (część 2 pkt 1, część 8), `dane/d3-mapa-rol-agentow.txt`, HANDOFF.
+**Przeliczenie:** `skrypty/d3r_kontekst_per_klasa.py` → `dane/d3r-kontekst-per-klasa.{txt,json}` (repo oferty-online, git tylko do odczytu;
+telemetria z `agents.csv` + pierwsza odpowiedź API każdego agenta z transkryptu).
+
+### Co się trzyma bez zmian
+
+- **Mapa ról jest kompletna dla sześciu workflowów pipeline'u.** Etykiety w obecnych workflowach szablonu pokrywają się z wierszami mapy.
+  Liczba 45 slotów (36 bez pliku, 9 z plikiem, 8 plików) się zgadza. Zero `agentType` w autopilocie i zero plików z `tools:` — potwierdzone.
+- **Prompt osi review w dwóch miejscach** (plik agenta i fokus w workflowie) — potwierdzone w kodzie.
+- **Decyzja „pliki agentów per klasa roli”** stoi. Poniżej poprawiam jej uzasadnienie, nie ją samą.
+
+### Poprawka 1 (zmienia wniosek). Kontekst per klasa z D3 nie nadaje się na punkt odniesienia
+
+**Obecnie.** D3: „telemetria pokazuje trzy klasy po kontekście na turę: mechaniczne 86–102k, orkiestracyjne 119–168k, reviewerzy 193–224k, buildery 238k”.
+Mapa walidacji bierze jako punkt „dziś” kontekst pierwszej tury z całego okresu (67–118k) i porównuje z nim efekt `tools:`.
+
+**Proponuję.**
+
+- **Nowy punkt odniesienia.** Kontekst pierwszej tury per klasa zmierzony na obecnym stanie repo, po ścięciu CLAUDE.md, a przed wprowadzeniem `tools:`.
+  Daje go dodatek (e) mini-runu. Stare liczby zostają jako tło.
+- **Reguła porównań `ctx_start` w telemetrii.** Porównujemy tylko przy podobnym rozmiarze stałych plików (pola `faza.wiedza.claude_md_zn` i rozmiar
+  indeksu wiedzy już są w rekordzie). Efekt `tools:` najczyściej mierzy para „z i bez” na tym samym stanie repo.
+
+**Dlaczego.** Telemetria pochodzi z okresu, w którym stały kontekst rósł z tygodnia na tydzień:
+
+- **CLAUDE.md** w oferty-online miał 13,8 tysiąca znaków na koniec sierpnia, 39 tysięcy tydzień później, 46 tysięcy 12 września i 87 tysięcy
+  17 września. 21 września został ścięty do 21 tysięcy.
+- **learned-patterns** urósł w tym czasie z 7,8 do 45 tysięcy.
+- **Kontekst pierwszej tury rósł równolegle we wszystkich klasach.** Mechaniczne z 55 do 101 tysięcy tokenów, reviewerzy z 76 do 145, buildery
+  z 89 do 160.
+- **Po ścięciu CLAUDE.md nie było ani jednego pełnego runu.** Ostatni agent w danych jest z 17 września, a jedyny późniejszy duży run z 20 września
+  jest jeszcze sprzed ścięcia. Liczby „dziś” opisują więc żaden konkretny stan, tylko średnią z epok, które różnią się prawie dwukrotnie.
+- **Porównanie z nimi po wdrożeniu `tools:` pokaże zysk, którego część da samo ścięcie CLAUDE.md.** Pliki projektu tłumaczą około 32 tysięcy
+  z 46–75 tysięcy przyrostu. Reszta (prompty zadań, wersja narzędzia, zestaw MCP i skilli konta) nie ma dziś wyjaśnienia, co tym bardziej
+  wymaga punktu odniesienia z jednej epoki.
+
+### Poprawka 2 (zmienia wniosek). CLAUDE.md nie tłumaczy różnicy między klasami
+
+**Obecnie.** D3: „różnica reviewer vs mechaniczny (~120k na turę) to CLAUDE.md 89k zn z tamtego okresu + dossier + czytane pliki”.
+
+**Proponuję.** „Różnica w średnim kontekście na turę to głównie praca: reviewer ma medianę 25 tur i czyta pliki, mechaniczny 5 tur. Na starcie
+różnica wynosi około 40 tysięcy, a większość z niej to model. Haiku startuje od około 93 tysięcy, opus od około 127 tysięcy przy tej samej
+konfiguracji bez pliku agenta. CLAUDE.md dostają dziś obie klasy, więc różnicy nie tłumaczy.”
+
+**Dlaczego.**
+
+- **Średni kontekst na turę zależy od tego, ile agent pracuje, a nie od tego, jak jest skonfigurowany.** Nie da się go więc użyć ani do grupowania
+  ról według ustawień, ani do sprawdzania `tools:`.
+- **Model okazuje się osobnym czynnikiem stałego narzutu.** Pięć agentów orkiestracyjnych na haiku ma ten sam start co mechaniczne na haiku.
+  Próba jest mała, ale kierunek jest wyraźny. Cel „~4,5 tysiąca dla mechanicznych” trzeba sprawdzić osobno per model.
+
+### Poprawka 3 (porządkowa). Uzasadnienie klas ról
+
+**Obecnie.** 6a pkt 18: „telemetria D3 pokazuje 4–5 zestawów ustawień”.
+
+**Proponuję.** „Klasy wynikają z ustawień, których rola potrzebuje: model, czy patrzy na kod (CLAUDE.md), czy edytuje (Edit, skille),
+czy potrzebuje MCP. Telemetria pokazuje poziomy kontekstu w trakcie pracy, nie zestawy ustawień.”
+
+**Dlaczego.** Decyzja jest dobra, ale oparta na liczbie, która mierzy co innego (poprawka 2).
+
+### Poprawka 4 (porządkowa). Siódmy workflow
+
+`freshness-audit-wf` ma cztery role (inwentarz, weryfikacja, sceptyk, scribe), a mapa ich nie obejmuje. Audyt skilli (D6) zostawił go
+do decyzji operatora. Do mapy wystarczy jedno zdanie: poza zakresem do tej decyzji, a jeśli zostaje, jego role przechodzą na pliki klas
+jak reszta.
+
+### Ustalenie dodatkowe dla panelu (fakt, bez zmiany decyzji)
+
+Wzrost stałego kontekstu o 46–75 tysięcy tokenów w trzy tygodnie, w jednym projekcie, bez zmiany pipeline'u, to najmocniejszy dowód
+na decyzje 6a pkt 1 i 17: żaden skill nie dopisuje do CLAUDE.md, learned-patterns wychodzi z ładowania bezwarunkowego. Bez tych decyzji
+każdy zysk z `tools:` zjadłby wzrost plików w ciągu kilku tygodni.
+
+### Co się zmieni po akceptacji
+
+- **D3 i punkty odniesienia:** `dane/d3-mapa-rol-agentow.txt` (dopisek korekty), PANEL-WEJSCIE §4 (D3) i §12 (przykład `tools:` „vs dziś 67–118k”),
+  mapa walidacji obu wersji (wpis §2 pkt 1: punkt odniesienia i reguła porównań).
+- **Uzasadnienie decyzji:** HANDOFF 6a pkt 18 (uzasadnienie klas) i wiersz 3½.
+- **Mini-run:** PANEL-WEJSCIE §11 i wersja operatora część 8. Dodatek (e) staje się pomiarem punktu odniesienia per klasa i per model.
+- **Wersja operatora:** fragmenty o klasach ról.

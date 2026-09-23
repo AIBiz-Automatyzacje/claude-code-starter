@@ -71,7 +71,11 @@ prawie żaden nie jest używany (498 z 514 agentów nie zawołało żadnego narz
 pola ograniczającego narzędzia, a trzydzieści sześć ról w ogóle nie ma pliku, bo orkiestrator woła je bez typu. Rozwiązanie: allowlista zbija start
 do kilkunastu tysięcy; nośnikiem są pliki agentów, ale nie po jednym na rolę, tylko po jednym na klasę (maszyneria pomocnicza, orkiestracyjne,
 reviewer, sceptyk, naprawiacz), bo prompty tych ról są i tak generowane w kodzie, a plik niesie wyłącznie ustawienia. Istniejące osiem plików zostaje
-jako wyjątki. Co Ci to da: kilkanaście plików zamiast czterdziestu i największą pojedynczą oszczędność całej analizy.
+jako wyjątki. Co Ci to da: kilkanaście plików zamiast czterdziestu i największą pojedynczą oszczędność całej analizy. Po przeglądzie 23 września
+jedno zastrzeżenie do pomiaru: start agentów rósł w trzy tygodnie o czterdzieści pięć do siedemdziesięciu pięciu tysięcy tokenów razem z CLAUDE.md
+i learned-patterns, a po ścięciu CLAUDE.md nie było jeszcze żadnego runu. Punkt odniesienia dla allowlisty zmierzy więc mini-run na obecnym stanie
+repo, osobno dla haiku i opusa, żeby allowlista nie dostała na konto zysku ze ścięcia CLAUDE.md. Ten sam wzrost to też najmocniejszy dowód,
+że dobrze zdecydowałeś, że nic nie dopisuje do CLAUDE.md.
 
 **Dwa. Kontekst dobrany do klasy roli.** Jak w części 1: CLAUDE.md u tych, którzy patrzą na kod, wyłączony u maszynerii pomocniczej, skille builderów
 zostają. Dlaczego skille zostają: działają, a dobieranie ich per jednostka pracy nie jest warte logiki w orkiestratorze.
@@ -308,7 +312,8 @@ czy tylko zajmuje kontekst; czy ten sam marker przeżywa w prompcie ze stu i z c
 roli. Odpowiedzi rozstrzygają wariant learned-patterns, czy skille builderów zostają bez zmian, i czy liczba dwadzieścia pięć do trzydziestu pięciu
 procent się broni. Pytanie „sto kontra czterysta” jest od przeglądu 23 września rozstrzygające, a nie dodatkowe: to jedyny pomiar tego, czy sama liczba
 poleceń psuje u nas jakość. Jeśli marker przy czterystu ginie wyraźnie częściej, budżet poniżej stu pięćdziesięciu jest celem jakościowym. Jeśli nie,
-budżet zostaje dla porządku i kosztu, a o jakości decydują przede wszystkim małe naprawy.
+budżet zostaje dla porządku i kosztu, a o jakości decydują przede wszystkim małe naprawy. Odczyt kontekstu pierwszej tury per klasa jest od tego
+samego przeglądu punktem odniesienia dla allowlisty narzędzi, bo stare liczby pochodzą z okresu, gdy CLAUDE.md był nawet cztery razy większy niż dziś.
 
 ---
 

@@ -157,6 +157,14 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   i test-coverage, a code-quality = angielski plik „architecture-strategist" + fokus z trzema osiami — „odchudź prompt o połowę" musi wskazać oba miejsca. Telemetria:
   3 klasy ról po kontekście na turę (mechaniczne haiku 86–102k, orkiestracyjne opus 119–168k, reviewerzy 193–224k, buildery 238k); sceptycy 135 wywołań/23 fazy
   = najliczniejsza rola bez pliku (naturalne miejsce na pierwszy wspólny plik klasy). **Dla panelu:** wymóg §2 pkt 1 (pliki per klasa).
+  **Korekta po przeglądzie 2026-09-23 (`skrypty/d3r_kontekst_per_klasa.py` → `dane/d3r-kontekst-per-klasa.txt`):** (1) kontekst per klasa z telemetrii NIE jest punktem
+  odniesienia — pochodzi z epoki, w której CLAUDE.md oferty-online rósł 13,8k → 87k zn (08-31 → 09-17), learned-patterns 7,8k → 45k, a kontekst PIERWSZEJ tury rósł
+  razem z nimi (mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k tok); po ścięciu CLAUDE.md do 21k (09-21) nie było żadnego pełnego runu; punkt
+  odniesienia = mini-run (e) na obecnym stanie repo, przed `tools:`; porównania `ctx_start` tylko przy podobnym rozmiarze stałych plików (`faza.wiedza.*`);
+  (2) CLAUDE.md nie tłumaczy różnicy między klasami (ładuje się obu): średni kontekst na turę mierzy PRACĘ (reviewer 25 tur, mechaniczny 5); na starcie różnica ~40k,
+  głównie MODEL (haiku ~93k, opus ~127k przy tej samej konfiguracji bez pliku) → cele ctx_start sprawdzać per model; (3) klasy uzasadnia zestaw USTAWIEŃ roli (model,
+  CLAUDE.md, Edit/skille, MCP), nie poziom kontekstu; (4) freshness-audit-wf (4 role) poza mapą do decyzji operatora po D6. Wzrost stałego kontekstu o 46–75k tok
+  w 3 tygodnie bez zmiany pipeline'u = najmocniejszy dowód na 6a pkt 1 i 17 (nic nie dopisuje do CLAUDE.md, learned-patterns poza eager).
 
 ## 5. Hipotezy z HANDOFF §5 — stan po decyzjach (projektant dostaje je w TEJ wersji)
 
@@ -240,7 +248,8 @@ jest STOSOWANA w kodzie; (b) to samo dla reguły przez `paths:` (kontrola); (c) 
 testowym), czy tylko zajmuje kontekst. Dodatki: (d) ta sama para markerów w prompcie ~100 vs ~400 instrukcji (6a pkt 18 po D2) — **po przeglądzie D2 (2026-09-23) test ROZSTRZYGAJĄCY, nie dodatek:**
 jedyny pomiar, czy liczba poleceń jest u nas dźwignią jakości (procenty IFScale mierzą inną jednostkę); marker ginie wyraźnie częściej przy ~400 → budżet 150 jest celem
 jakościowym; nie ginie → budżet zostaje jako porządek i koszt, a główną dźwignią jakości są małe naprawy (D1) i ewentualnie równoległe próbki; (e) odczyt `usage` pierwszej
-tury per klasa roli — potwierdzenie dźwigni 25–35% (ETAP3 §1.1). Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
+tury per klasa roli — potwierdzenie dźwigni 25–35% (ETAP3 §1.1); **po przeglądzie D3 (2026-09-23) to także PUNKT ODNIESIENIA kontekstu startowego per klasa i per model
+na obecnym stanie repo (po ścięciu CLAUDE.md, przed `tools:`)** — telemetria sprzed 09-21 miesza epoki różniące się prawie 2×. Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
 
 ## 12. Telemetria mechaniczna — rekord i miejsce w runie (D5, 2026-09-21; pełny szkic: `dane/d5-telemetria-rekord.txt`)
 
@@ -283,7 +292,8 @@ i 8 założeń §6: METRYKA → POLA rekordu (typ.pole) → BASELINE → HORYZON
 NA 100 PLIKÓW PR (PR-y 12–160 plików), per typ kodu i per oś (kolumna `etap` z 1b, nie filtr po nazwie klasy); baseline = epoka wrześniowa PR 13–19
 (3,5/100; sierpień 9,3 — jakość spadała sama, średnia 6,7 dałaby fałszywą „poprawę", L16); porównania pipeline'u względem **B0 zebranego po 8 zmianach
 `.coderabbit.yaml`** (inny przyrząd); **próg odwrotu** per oś w oknie 5 PR ≥ max(3, 2 × oczekiwana), klasa = diagnoza (dziś: correctness 14, test 12,
-security 10, spec 4, perf 3). Przykłady: `tools:` → p50 `agent.ctx_start` per klasa vs dziś 67–118k (cel ~4,5k / ~15k / ~25k), 1 faza; pętla fix →
+security 10, spec 4, perf 3). Przykłady: `tools:` → p50 `agent.ctx_start` per klasa i model vs punkt odniesienia z mini-runu (e) na obecnym stanie repo (telemetria 67–118k to średnia epok, D3 po przeglądzie)
+(cel ~4,5k / ~15k / ~25k), 1 faza; pętla fix →
 B P1/P2 bota na 100 plików fixa vs reszta PR: dziś **14,0 vs 4,7 (wrzesień 7,2 vs 2,2) ≈ 3×**, cel: stosunek spada; sceptyk → DISAGREE_EVIDENCE/
 weryfikowane vs 12% / 19,2% / 10,9%, odwrót: kill rate >50% i ≥3 B P1/P2 w miejscach obalonych w oknie 5 PR; scalenie dev-plan+dev-docs → koszt
 i minuty epizodu vs 930k + 707k, 47 + 67 min. **Kolejność odczytów (mapa §6):** ustawienia i koszt równolegle; zmiany jakościowe rozłącznych osi

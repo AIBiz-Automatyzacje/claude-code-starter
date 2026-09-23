@@ -47,11 +47,17 @@ Miara jakości to uwagi bota po naszym review, zgodnie z Twoją decyzją z pocz�
 
 **Kiedy patrzymy.** Po jednej fazie, wstępnie już w mini-runie. Cel: mechaniczne około 4,5 tysiąca, reviewer około 15, builder około 25.
 
+**Uwaga po przeglądzie 23 września.** Liczby „dziś” pochodzą z trzech tygodni, w których CLAUDE.md w oferty-online urósł z 14 do 87 tysięcy znaków,
+a start agentów rósł razem z nim, u reviewerów z 76 do 145 tysięcy tokenów. Po ścięciu CLAUDE.md do 21 tysięcy nie było żadnego pełnego runu.
+Właściwy punkt odniesienia zmierzy mini-run na obecnym stanie repo, zanim wejdzie allowlista, osobno dla każdej klasy i modelu, bo haiku
+startuje o około 35 tysięcy niżej niż opus przy tej samej konfiguracji. Bez tego allowlista dostałaby na konto zysk ze ścięcia CLAUDE.md.
+
 ### 2. Kontekst per klasa roli (CLAUDE.md u builderów, bypass zostaje, skille builderów zostają)
 
 **Co liczymy.** Kontekst na turę i liczbę tur per rola, koszt na agenta, oraz jaki udział w koszcie ma „kontekst razy tury". Czy treść skilli jest stosowana, sprawdza mini-run, nie telemetria.
 
-**Dziś.** Na turę: mechaniczne 86–102 tysiące, reviewerzy 193–224, buildery 238. Builder robi 39 tur, fix 37, reviewer 15–30, sceptyk 7. Builder kosztuje 1,2 miliona jednostek, reviewer od 468 do 931 tysięcy. Kontekst razy tury to 40 procent kosztu.
+**Dziś.** Na turę: mechaniczne 86–102 tysiące, reviewerzy 193–224, buildery 238 (średnia z okresu wzrostu CLAUDE.md, więc porównujemy przy podobnym
+rozmiarze stałych plików). Builder robi 39 tur, fix 37, reviewer 15–30, sceptyk 7. Builder kosztuje 1,2 miliona jednostek, reviewer od 468 do 931 tysięcy. Kontekst razy tury to 40 procent kosztu.
 
 **Kiedy patrzymy.** Po pięciu fazach. Oczekiwana dźwignia całości: 25–35 procent kosztu fazy.
 

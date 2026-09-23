@@ -1,0 +1,28 @@
+=== ROZMIAR PLIKOW STALEGO KONTEKSTU W REPO (znaki, koniec dnia) ===
+  2026-08-31: CLAUDE.md  13776 | learned-patterns   7798 | coding-rules  10542
+  2026-09-07: CLAUDE.md  39162 | learned-patterns  19271 | coding-rules  11016
+  2026-09-12: CLAUDE.md  46175 | learned-patterns  33998 | coding-rules  11016
+  2026-09-17: CLAUDE.md  86874 | learned-patterns  45122 | coding-rules  11016
+  2026-09-22: CLAUDE.md  21008 | learned-patterns  46897 | coding-rules  11016
+  (po 2026-09-21 ~12:30 CLAUDE.md = 21 008 zn; ostatni agent w agents.csv: 2026-09-17 — ZERO agentow w epoce po odchudzeniu)
+
+=== KONTEKST PIERWSZEJ TURY (p50, k tok) per klasa x tydzien  [n] ===
+  klasa             08-24..08-31 |  09-01..09-07 |  09-08..09-12 |  09-13..09-17 | ctx_sr p50 (D3) | tury p50
+  mechaniczny         55k [103] |    70k [138] |    85k [ 48] |   101k [ 67] | 99k (od 09-08) | 5
+  orkiestracyjny      73k [137] |    92k [173] |   115k [ 59] |   139k [ 97] | 146k (od 09-08) | 11.0
+  sceptyk             69k [209] |    93k [156] |   120k [ 33] |   144k [ 61] | 151k (od 09-08) | 5.0
+  reviewer            76k [138] |    97k [143] |   121k [ 47] |   145k [ 68] | 213k (od 09-08) | 25
+  naprawiacz          76k [ 16] |    98k [ 29] |   115k [ 17] |   129k [ 40] | 159k (od 09-08) | 25
+  builder             89k [ 37] |   114k [ 46] |   135k [ 18] |   160k [ 26] | 243k (od 09-08) | 57.5
+
+=== MODEL przy tej samej konfiguracji (general-purpose, bez pliku agenta), pierwsza tura p50 od 09-08 ===
+  mechaniczny      haiku  n= 115 p50=93k
+  orkiestracyjny   haiku  n=   5 p50=93k
+  orkiestracyjny   opus   n= 151 p50=127k
+  sceptyk          opus   n=  94 p50=142k
+
+=== SKAD ROZNICA reviewer vs mechaniczny (od 09-08) ===
+  ctx_sr p50: reviewer 213k, mechaniczny 99k
+  ctx_start p50: reviewer 132k, mechaniczny 93k
+  -> CLAUDE.md laduje sie OBU klasom (zaden agent nie ma dzis omitClaudeMd), wiec nie tlumaczy roznicy; roznica na starcie to model + prompt,
+     reszta narasta w trakcie pracy (tury x czytane pliki).

@@ -46,7 +46,11 @@ METRYKA   (a) kontekst startowy: p50 agent.ctx_start per klasa_roli i per agentT
           (c) czy allowlista nie odciela potrzebnego MCP: agent.narzedzia.mcp > 0 TYLKO u testera E2E / builderow UI z figma_screens.
           (d) oplata za powolanie: suma agent.cache_w pierwszej tury / faza.koszt.jedn (dzis 22%).
 POLA      agent.ctx_start, agent.klasa_roli, agent.agentType, agent.cache_w, agent.narzedzia.mcp [BRAK], faza.koszt.jedn.
-BASELINE  ctx 1. tury p50 (kontekst_1_tury.txt): verify 76k, stan:zapis 67k, telemetria 65k, precheck 66k, planner 89k, reviewerzy 95–97k
+BASELINE  !! PRZEGLAD D3 2026-09-23: liczby ponizej to srednia epok (CLAUDE.md oferty 13,8k → 87k zn w 08-31..09-17, ctx 1. tury rosl razem z nim:
+          mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k; zero runow po scieciu CLAUDE.md do 21k) — WLASCIWY punkt odniesienia =
+          mini-run (e) na obecnym stanie repo przed `tools:`, per klasa I per model (haiku ~93k vs opus ~127k przy tej samej konfiguracji);
+          porownania ctx_start tylko przy podobnym faza.wiedza.claude_md_zn / indeks_zn (d3r-kontekst-per-klasa.txt). Tlo:
+          ctx 1. tury p50 (kontekst_1_tury.txt): verify 76k, stan:zapis 67k, telemetria 65k, precheck 66k, planner 89k, reviewerzy 95–97k
           (correctness 112k), build 118k, e2e 110k; per projekt p50: oferty 89k, claude-cron 93k, akademia 114k, Nawykometr 59k; trend 77k (08) → 101k (09).
           Pomiar 1 na pustym agencie: 62,8k bez niczego → 39,3k z samym disallowedTools mcp__* → 11,6k z allowlista tools: → 4,5k + omitClaudeMd.
           agentType: 2 252 / 2 942 agentow (77%) = workflow-subagent bez pliku; 0/16 plikow ma tools:; 498/514 agentow nie wolalo MCP.
@@ -58,7 +62,8 @@ METRYKA   (a) kontekst na ture: p50 agent.ctx_sr per klasa_roli; (b) tury per ro
           Σ(ctx_sr × tury × 0,1) / Σ koszt_jedn (dzis 40%); (d) koszt na agenta per rola (agent.koszt_jedn p50).
           Czy tresc `skills:` jest STOSOWANA — to NIE jest metryka telemetrii, to mini-run (c) z §11.
 POLA      agent.ctx_sr, agent.tury, agent.koszt_jedn, agent.klasa_roli, agent.rola, agent.narzedzia.bash/read.
-BASELINE  ctx/ture (D3): mechaniczne haiku 86–102k, orkiestracyjne 119–168k, reviewerzy 193–224k, buildery 238k. Tury p50 (p90): build 39 (83),
+BASELINE  ctx/ture (D3): mechaniczne haiku 86–102k, orkiestracyjne 119–168k, reviewerzy 193–224k, buildery 238k (srednia epok wzrostu CLAUDE.md —
+          przeglad D3 2026-09-23; porownywac per epoka / przy podobnym faza.wiedza.claude_md_zn; ctx/ture mierzy prace i koszt, nie konfiguracje). Tury p50 (p90): build 39 (83),
           fix 37 (109), reviewerzy 15–30, verify 7, planner 8. Koszt/agent: build 1 220k, fix 1 200k, test-coverage/spec 718k, security 561k,
           correctness 931k, performance 468k, verify 150k. Narzedzia buildera: 37 Bash / 2 Read / 6 Edit / 3 Write; 78% komend Bash = czytanie.
           Udzial kontekst×tury = 40% (26% czysty narzut). Dzwignia calosciowa po decyzjach: 25–35% kosztu fazy (§1 pkt 4).

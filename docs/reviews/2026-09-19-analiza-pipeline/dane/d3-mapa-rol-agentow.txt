@@ -1,4 +1,7 @@
 D3 — mapa rol agentow pipeline'u: rola -> workflow -> plik agenta -> gdzie zyje prompt -> model -> telemetria (oferty-online po 06.09)
+!!! KOREKTA 2026-09-23 (d3r-kontekst-per-klasa.txt, PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D3): ctx_sr per klasa miesza epoki wzrostu CLAUDE.md 13,8k -> 87k zn
+!!! i mierzy prace (tury), nie konfiguracje; zdanie o CLAUDE.md 89k jako przyczynie roznicy klas jest bledne (CLAUDE.md laduje sie obu); punkt odniesienia
+!!! = mini-run (e); klasy uzasadnia zestaw ustawien; freshness-audit-wf (4 role) poza mapa do decyzji operatora.
 Zrodla: grep agent( / agentType / label / model w .claude/workflows/*.js (szablon), dane/agents.csv (n agentow, mediana sredniego kontekstu na ture ctx_sr).
 Kontekst startowy DZIS: kazda rola bez pliku = general-purpose z pelnym MCP (62,0k tok, POMIARY §1); role z plikiem — plik BEZ `tools:` (0 z 16 plikow ma tools:),
 wiec start tez ~62k (niezmierzone osobno; POMIARY §1 mierzyl plik Z tools: = 11,6k). Legenda kolumny PLIK: nazwa = .claude/agents/<nazwa>.md; BRAK = agent() bez agentType.

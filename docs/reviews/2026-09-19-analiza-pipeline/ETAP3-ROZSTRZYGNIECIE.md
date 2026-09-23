@@ -222,7 +222,8 @@ Zweryfikowane grepem w tej sesji (`.claude/workflows/*.js` bez `__tests__`, `.cl
   autopilota ~24 bez pliku (potwierdza L1). `dev-autopilot-wf.js` ma 19 wywołań i zero `agentType`. Prompt osi review żyje w dwóch miejscach dla 4 osi (plik + fokus
   w workflowie), tylko w workflowie dla correctness i test-coverage, a code-quality = angielski plik „architecture-strategist" + fokus z trzema osiami. 0/16 plików
   ma `tools:`, 4 mają `skills:`. Telemetria potwierdza trzy klasy ról po średnim kontekście na turę: mechaniczne haiku 86–102k, orkiestracyjne opus 119–168k,
-  reviewerzy 193–224k, buildery 238k. Sceptycy = 135 wywołań na 23 fazy, najliczniejsza rola bez pliku. **Wejście do panelu:** allowlista `tools:` dla ról bez
+  reviewerzy 193–224k, buildery 238k [KOREKTA 2026-09-23, przegląd domknięć, PRZYJĘTA: średni kontekst na turę mierzy pracę, nie konfigurację, i miesza epoki
+  wzrostu CLAUDE.md 13,8k → 87k zn; klasy uzasadnia zestaw ustawień; punkt odniesienia = mini-run (e) — `dane/d3r-kontekst-per-klasa.txt`]. Sceptycy = 135 wywołań na 23 fazy, najliczniejsza rola bez pliku. **Wejście do panelu:** allowlista `tools:` dla ról bez
   pliku = nowe pliki agentów; wariant do rozważenia przez panel: pliki per KLASA roli (mechaniczny / orkiestracyjny / reviewer / sceptyk / fix), nie per rola.
 
 **Dodatkowe wejścia do panelu (poza ETAP2 §6 i POMIARY §5):**
