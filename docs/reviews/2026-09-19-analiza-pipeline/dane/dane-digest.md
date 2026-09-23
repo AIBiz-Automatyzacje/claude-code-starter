@@ -76,6 +76,10 @@ dev-compound) to łącznie **2–5% kosztu zadania**. Koszt epizodu (`koszt_skil
 z człowiekiem), dev-docs 0,71 M (13 tur, 67 min), dev-prep 0,62 M (16 tur, 101 min), dev-compound 0,43 M, dev-brainstorm ~0,4 M,
 dev-pr ~0,3 M. Kontekst sesji głównej przy dev-plan: 323k (p50 ctx_max) — sesja główna jest „gruba", każda tura tam kosztuje 32k jedn.
 Scalenie dev-plan+dev-docs oszczędza czas operatora (~1–2 h przekazań) i jedno „przepisanie", nie tokeny autopilota.
+**[KOREKTA 2026-09-23, przegląd D6, przyjęta: powyższe koszty epizodów to „pierwsza odpowiedź skilla” — `koszt_skilli.py` zamyka epizod na każdej
+wiadomości typu user (także powrót subagenta, przerwanie), bez rozmowy z operatorem i bez subagentów; minuty to średnie zawyżone sesjami otwartymi
+na noc (mediany 8,9 / 5,9 / 17,1 min). Pełny koszt (do następnego skilla + subagenci): mediana dev-plan 2,39 M, dev-docs 0,56 M, dev-prep 1,40 M;
+skille przed autopilotem ~4–7% kosztu zadania w medianie, do ~1/5 w małych. `dane/d6r-rewizja-audytu.txt`.]**
 
 Artefakty (rozmiar): plan techniczny z dev-plan **57–137 kB** (285–563 linii treści); zadania z dev-docs 29–69 kB, z czego
 **22–46% treści to prawie dosłowne kopie planu**; kontekst 9–23 kB; plan faz 4–5 kB. Builder dostaje IU w prompcie (~9,7k znaków)

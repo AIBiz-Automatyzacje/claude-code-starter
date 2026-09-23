@@ -1,0 +1,106 @@
+D6r — PRZEGLAD AUDYTU SKILLI (D6), 2026-09-23. Skrypt: skrypty/d6r_rewizja_audytu.py. Zero agentow, odczyt z dysku.
+
+=== 1. Retencja transkryptow i zasieg history.jsonl ===
+Sesje glowne na dysku: 1289 plikow; najstarszy mtime 2026-08-03, najstarszy pierwszy wpis 2026-08-03.
+Pliki sesji glownych wg tygodnia ostatniej modyfikacji: 2026-08-03:6, 2026-08-10:16, 2026-08-17:29, 2026-08-24:153, 2026-08-31:272, 2026-09-07:323, 2026-09-14:381, 2026-09-21:109
+Najstarszy plik sesji per projekt (mtime, liczba plikow) — okno zalezy od aktywnosci projektu: oferty-online 2026-08-22 (305), claude-cron 2026-08-05 (18), Nawykometr 2026-08-12 (26), akademia-automatyzacji-dashboard 2026-08-17 (26), symulator-poczekalni 2026-08-28 (4), workspace-template 2026-08-24 (59)
+cleanupPeriodDays w ustawieniach konta: {'settings.json': None} (None = nieustawione, dziala wartosc domyslna narzedzia).
+history.jsonl: 80369 wpisow, 2025-10-05..2026-09-23 — wpisuje go tylko CLI (polecenia wpisane w terminalu), nie aplikacja desktop.
+  wpisy history per miesiac: 2025-10:36, 2025-11:1433, 2025-12:1514, 2026-01:4089, 2026-02:5066, 2026-03:27519, 2026-04:26509, 2026-05:4577, 2026-06:3256, 2026-07:2532, 2026-08:2022, 2026-09:1816
+Wiadomosci operatora w sesjach glownych wg entrypoint (dedup po uuid): 2026-08: claude-desktop=1723, cli=468, sdk-cli=80, sdk-py=3; 2026-09: claude-desktop=1418, cli=1992, sdk-cli=364, sdk-py=298
+
+=== 2. Slash-komendy skilli szablonu w history.jsonl (CLI, od 2025-10-05) vs okno transkryptow ===
+kolumny: hist_razem / hist_przed_oknem / hist_w_oknie | trans_okno = slash w transkryptach okna (wg entrypoint) | pierwsze..ostatnie w history | projekty history
+agent-browser               2 /    2 /   0 | trans_okno {}                                 | 2026-04-04..2026-06-23 | akademia-automatyzacji-dashboard:1, claude-cron:1
+bugfix                      1 /    1 /   0 | trans_okno {}                                 | 2026-04-19..2026-04-19 | akademia-automatyzacji-dashboard:1 <- D
+code-quality                1 /    1 /   0 | trans_okno {}                                 | 2026-07-13..2026-07-13 | claude-cron:1 <- D
+code-review                15 /   15 /   0 | trans_okno {}                                 | 2026-01-18..2026-01-23 | n8n-egzamin-5:8, allegro_scraper_project:6, test-auto-claude:1 <- D
+coderabbit-setup            2 /    2 /   0 | trans_okno {'claude-desktop': 1}              | 2026-07-21..2026-08-02 | akademia-automatyzacji-dashboard:1, claude-cron:1
+coolify-manager             4 /    4 /   0 | trans_okno {'claude-desktop': 1}              | 2026-04-02..2026-04-21 | live-02-04:2, kacper_trzepiecinski_workspace:2
+dev-brainstorm             20 /   20 /   0 | trans_okno {'claude-desktop': 5}              | 2026-03-26..2026-07-14 | akademia-automatyzacji-dashboard:6, Nawykometr:4, kacper_trzepiecinski_workspace:4, push-app-mobile:2
+dev-compound               35 /   35 /   0 | trans_okno {'claude-desktop': 3}              | 2026-03-26..2026-07-28 | akademia-automatyzacji-dashboard:12, live-02-04:7, gramywpadla:5, push-app-mobile:4
+dev-compound-refresh        1 /    1 /   0 | trans_okno {}                                 | 2026-05-20..2026-05-20 | gramywpadla:1
+dev-docs                  134 /  133 /   1 | trans_okno {'claude-desktop': 9}              | 2025-12-09..2026-08-23 | n8n-egzamin-5:36, gramywpadla:24, akademia-automatyzacji-dashboard:23, n8n_dashboard:6
+dev-docs-complete          56 /   56 /   0 | trans_okno {}                                 | 2025-12-29..2026-05-15 | n8n-egzamin-5:31, akademia-automatyzacji-dashboard:7, live-02-04:6, allegro_scraper_project:4
+dev-docs-execute          402 /  402 /   0 | trans_okno {}                                 | 2025-12-28..2026-06-07 | n8n-egzamin-5:223, akademia-automatyzacji-dashboard:43, n8n_dashboard:29, allegro_scraper_project:28 <- E
+dev-docs-review           191 /  191 /   0 | trans_okno {}                                 | 2025-12-28..2026-06-07 | n8n-egzamin-5:114, akademia-automatyzacji-dashboard:17, n8n_dashboard:13, push-app-mobile:9 <- E
+dev-docs-update             6 /    6 /   0 | trans_okno {}                                 | 2025-12-12..2026-02-04 | n8n-egzamin-5:5, piszemy_wirale:1 <- D
+dev-ideate                  1 /    1 /   0 | trans_okno {'claude-desktop': 1}              | 2026-03-27..2026-03-27 | live-02-04:1 <- E
+dev-plan                   84 /   74 /  10 | trans_okno {'claude-desktop': 10}             | 2026-03-26..2026-08-14 | gramywpadla:30, akademia-automatyzacji-dashboard:15, Nawykometr:12, claude-cron:8
+dev-pr                      0 /    0 /   0 | trans_okno {'claude-desktop': 9}              | -                      | 
+dev-prep                    0 /    0 /   0 | trans_okno {'claude-desktop': 11}             | -                      | 
+figma-design-to-code        0 /    0 /   0 | trans_okno {}                                 | -                      | 
+freshness-audit             0 /    0 /   0 | trans_okno {}                                 | -                      |  <- E
+gemini                     17 /   17 /   0 | trans_okno {}                                 | 2025-12-27..2026-03-16 | n8n_dashboard:5, live_15_01:4, n8n-egzamin-5:3, live:2 <- D
+security                    0 /    0 /   0 | trans_okno {}                                 | -                      | 
+sentry-integration          0 /    0 /   0 | trans_okno {}                                 | -                      | 
+supabase-dev-guidelines     0 /    0 /   0 | trans_okno {}                                 | -                      | 
+sync-template               6 /    3 /   3 | trans_okno {'claude-desktop': 8}              | 2026-07-21..2026-08-14 | claude-cron:2, Nawykometr:2, akademia-automatyzacji-dashboard:1, gramywpadla:1
+tailwind-react-guidelines    0 /    0 /   0 | trans_okno {}                                 | -                      | 
+ux-ui-guidelines            5 /    5 /   0 | trans_okno {}                                 | 2026-02-06..2026-07-31 | kacper_trzepiecinski_workspace:4, lp-fb-group-project:1
+zroastuj-mnie              84 /   82 /   2 | trans_okno {'claude-desktop': 4}              | 2026-03-25..2026-08-19 | gramywpadla:26, akademia-automatyzacji-dashboard:18, kacper_trzepiecinski_workspace:17, live-02-04:5
+dev-autopilot-wf           39 /   29 /  10 | trans_okno {'claude-desktop': 23, 'cli': 2}   | 2026-05-31..2026-09-06 | gramywpadla:16, Nawykometr:11, claude-cron:9, akademia-automatyzacji-dashboard:2
+dev-compound-wf             0 /    0 /   0 | trans_okno {}                                 | -                      | 
+dev-docs-complete-wf        0 /    0 /   0 | trans_okno {}                                 | -                      | 
+dev-docs-execute-wf         0 /    0 /   0 | trans_okno {}                                 | -                      | 
+dev-docs-review-wf          0 /    0 /   0 | trans_okno {}                                 | -                      | 
+dev-pr-wf                   0 /    0 /   0 | trans_okno {}                                 | -                      | 
+freshness-audit-wf          0 /    0 /   0 | trans_okno {}                                 | -                      |  <- E
+
+=== 3. Workflowy-dzieci autopilota i etapy dev-pr — z pliku harnessu (wszystkie runy, oba formaty journala) ===
+Pliki harnessu: 156; wg workflowName: {'dev-pr-wf': 75, 'dev-autopilot-wf': 55, 'audyt-proba-1-powtorka': 2, 'regulamin-review': 1, 'e6-operator-checklist-verify': 1, 'e6-operator-checklist-research': 1, 'sad-delivery-verify': 1, 'e4-e5-operator-context': 1, 'audyt-finalny-c3-c5': 1, 'recenzja-c3-c4': 1, 'p3': 1, 'p2': 1, 'p1': 1, 'analiza-wtorna-live-17-09': 1, 'audyt-decku-live-17-09': 1, 'audyt-proby-plugin-malwa': 1, 'audyt-skilla-wywiad': 1, 'przebudowa-umow-pawel': 1, 'claude-seo-recon': 1, 'wdrozenie-P1-P3': 1, 'przeglad-skilla-teksty': 1, 'pipeline-analiza-etap2-research': 1, 'pipeline-analiza-etap1': 1, 'pipeline-analiza-etap1b': 1, 'pipeline-analiza-etap3-krytyk': 1, 'pipeline-analiza-a': 1, 'audyt-pipeline-2026-09': 1}
+Runy dev-autopilot-wf: 55 w projektach {'symulator-poczekalni': 1, 'Nawykometr': 4, 'claude-cron': 8, 'akademia-automatyzacji-dashboard': 6, 'oferty-online': 36}; status (harness, wynik): {('completed', 'OK'): 20, ('completed', 'STOP'): 30, ('failed', None): 2, ('killed', None): 3}
+  dev-docs-execute-wf    wywolan  81 w 31 runach (D6: 15) — oferty-online:57, claude-cron:9, Nawykometr:6, akademia-automatyzacji-dashboard:6, symulator-poczekalni:3
+  dev-docs-review-wf     wywolan  84 w 34 runach (D6: 18) — oferty-online:58, claude-cron:10, akademia-automatyzacji-dashboard:8, Nawykometr:5, symulator-poczekalni:3
+  dev-compound-wf        wywolan  20 w 20 runach (D6: 5) — oferty-online:14, claude-cron:2, akademia-automatyzacji-dashboard:2, symulator-poczekalni:1, Nawykometr:1
+  dev-docs-complete-wf   wywolan  20 w 20 runach (D6: 5) — oferty-online:14, claude-cron:2, akademia-automatyzacji-dashboard:2, symulator-poczekalni:1, Nawykometr:1
+  agent compound-refresh w 20/55 runach, agent complete w 20/55 runach (D6: „SKILL.md czytany w kazdym runie autopilota”) — tylko runy dochodzace do Zakonczenia.
+Runy dev-pr-wf: 75; etapy {'compound': 7, 'zbierz': 21, 'start': 14, 'merge': 10, 'napraw': 23}; zadania (PR) unikalne: 8 — claude-cron: 1; oferty-online: 7
+
+=== 4. Epizod skilla: co liczy koszt_skilli.py, czego nie liczy ===
+Warianty granicy epizodu (start = <command-name> skilla albo narzedzie Skill, jak w koszt_skilli.py):
+  E0 = jak koszt_skilli.py: konczy go KAZDA wiadomosc typu user, ktora nie jest tool_result ani isMeta — takze <task-notification>
+       (powrot subagenta w tle), „[Request interrupted…]” i wyjscie komendy lokalnej (/model);
+  E1 = konczy go dopiero TEKST operatora albo wywolanie kolejnego skilla (powiadomienia, przerwania, /model nie koncza);
+  E2 = konczy go dopiero wywolanie kolejnego skilla albo koniec pliku sesji — z cala rozmowa operatora po drodze (gorna granica).
+  +sub = koszt subagentow powolanych narzedziem Agent w oknie E2 (meta.json toolUseId; ostatni wpis usage per odpowiedz API).
+Duplikaty: sesja wznowiona kopiuje wpisy do nowego pliku — epizod identyfikuje uuid wiadomosci otwierajacej (albo id wywolania Skill).
+Kontrola (ten sam zakres dat co skille.csv): skille.csv 149 epizodow, 86.5 M; E0 po deduplikacji kopii sesji 146 epizodow, 85.4 M. Duplikaty w skille.csv (ten sam projekt, skill, start): 3 epizody, 1.1 M (149 − 3 = 146). Po zakresie skille.csv doszlo 5 epizodow (09-19..09-23); tabele nizej licza wszystkie.
+
+Czym konczy sie epizod E0 (pierwsze zdarzenie po otwarciu), per skill przed autopilotem:
+  dev-prep  n=15: tekst operatora=8, przerwanie=3, koniec pliku=2, komenda lokalna=2
+  dev-plan  n=19: task-notification=7, tekst operatora=5, przerwanie=4, skill=2, koniec pliku=1
+  dev-docs  n=18: koniec pliku=15, przerwanie=2, tekst operatora=1
+
+Koszt na epizod (k jedn., mediana / srednia) i minuty (mediana / srednia), per wariant:
+  dev-prep       n=15 | E0   431 /   637 | E1   431 /   637 | E2  1401 /  1770 | E2+sub  1401 /  1828 | subagenci   2 | min E0  17.1 /  106.9, E1  17.1 /  106.9 | wiad. operatora w E2 (mediana)  3.0
+  dev-plan       n=19 | E0   814 /   930 | E1  1027 /  1244 | E2  1701 /  1947 | E2+sub  2392 /  2926 | subagenci  37 | min E0   8.9 /   47.5, E1  18.2 /   58.3 | wiad. operatora w E2 (mediana)  1.0
+  dev-docs       n=18 | E0   509 /   669 | E1   509 /   669 | E2   559 /   807 | E2+sub   559 /   807 | subagenci   0 | min E0   5.9 /   62.9, E1   5.9 /   62.9 | wiad. operatora w E2 (mediana)  0.0
+  dev-brainstorm n= 6 | E0   236 /   318 | E1   236 /   318 | E2   382 /   367 | E2+sub   382 /   443 | subagenci   1 | min E0  17.9 /   37.9, E1  17.9 /   37.9 | wiad. operatora w E2 (mediana)  0.5
+  dev-compound   n= 5 | E0   398 /   400 | E1   398 /   400 | E2   402 /  3742 | E2+sub   402 /  3742 | subagenci   0 | min E0   2.6 /    2.9, E1   2.6 /    2.9 | wiad. operatora w E2 (mediana)  0.0
+  dev-pr         n=10 | E0   179 /   203 | E1   276 /   604 | E2  3378 /  3770 | E2+sub  3378 /  3770 | subagenci   0 | min E0   0.3 /    0.9, E1  11.7 /   32.8 | wiad. operatora w E2 (mediana)  6.0
+  prep+plan+docs w zakresie skille.csv (D6: 52 epizody, 39,6 M z duplikatem): 51 epizodow, E0 39.2 M, E2 76.3 M, E2+sub 95.8 M.
+  dev-plan: suma E0 17.7 M, E1 23.6 M, E2 37.0 M, subagenci 18.6 M (37 agentow).
+
+Udzial skilli przed autopilotem (prep/brainstorm/plan/docs/ideate) w koszcie zadania, 19 zadan (przypisanie jak koszt_zadan.py; koszt runow z agents.csv, ktory zaniza output — po korekcie D5 udzialy ×~0,9):
+  E0     min  1.1%  mediana  4.1%  max  8.8%
+  E2     min  1.3%  mediana  6.4%  max 21.8%
+  E2sub  min  1.6%  mediana  7.9%  max 21.8%
+Uwaga: E2 bierze cala rozmowe do nastepnego skilla — czesc to watki poboczne (np. sprawdzanie srodowiska po dev-docs). To gorna granica.
+Epizody prep/plan/docs, w ktorych okno E2 trwa > 12 h (sesja zostawiona otwarta): 4 z 52.
+
+=== 5. Kandydaci D i E: odwolania w repo szablonu (git grep, bez docs/reviews i bez wlasnego katalogu), kopie w szablonie mobile ===
+  code-review          mobile: zmieniona  | odwolania: .claude/skills/code-quality/SKILL.md, README.md
+  code-quality         mobile: zmieniona  | odwolania: .claude/skills/dev-docs-review/SKILL.md, .claude/workflows/__tests__/findingi-po-stopie.test.mjs, .claude/workflows/dev-docs-review-wf.js, README.md
+  gemini               mobile: identyczna | odwolania: README.md
+  dev-docs-update      mobile: zmieniona  | odwolania: README.md
+  bugfix               mobile: zmieniona  | odwolania: .claude/agents/learnings-researcher.md, .claude/skills/dev-plan/SKILL.md, .claude/skills/dev-prep/SKILL.md, README.md
+  dev-ideate           mobile: zmieniona  | odwolania: .claude/agents/learnings-researcher.md, README.md
+  freshness-audit      mobile: zmieniona  | odwolania: README.md
+  freshness-audit-wf   mobile: brak       | odwolania: .claude/skills/freshness-audit/SKILL.md, .claude/workflows/freshness-audit-wf.js, README.md
+  dev-docs-execute     mobile: zmieniona  | odwolania: .claude/agents/feature-builder-data.md, .claude/agents/feature-builder-fullstack.md, .claude/agents/feature-builder-ui.md, .claude/skills/dev-brainstorm/SKILL.md, .claude/skills/dev-docs-review/SKILL.md, .claude/skills/dev-docs-update/SKILL.md, .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-plan/SKILL.md, .claude/workflows/dev-docs-execute-wf.js, .claude/workflows/dev-pr-wf.js, README.md
+  dev-docs-review      mobile: zmieniona  | odwolania: .claude/skills/code-review/SKILL.md, .claude/skills/dev-docs-execute/SKILL.md, .claude/skills/dev-docs/SKILL.md, .claude/skills/dev-plan/SKILL.md, .claude/workflows/dev-docs-review-wf.js, .claude/workflows/dev-pr-wf.js, README.md
+  Szablon mobile: pierwszy commit „skopiowane z workspace-template (web)”, brak markera i manifestu — osobna linia, usuniecie w web go nie dotyczy.
+Lista skilli agenta (skillCount 310, 29991 zn): kandydaci D 581 zn — code-review 270 zn, code-quality 14 zn, gemini nieobecny, dev-docs-update 80 zn, bugfix 217 zn.
+  Przy ~4 zn/tok (digest §3) to ~145 tok, czyli 0.14% kontekstu startowego ~107k tok (HANDOFF §3 pkt 2).
+  Skille szablonu na liscie BEZ opisu (model nie wie, kiedy ich uzyc; zostaje slash): code-quality, coderabbit-setup, dev-compound-refresh, dev-ideate, figma-design-to-code, freshness-audit, security, sentry-integration, dev-compound-wf, dev-docs-complete-wf, dev-docs-execute-wf, dev-docs-review-wf, dev-pr-wf, freshness-audit-wf.

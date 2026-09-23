@@ -1,0 +1,863 @@
+{
+ "najstarszy_per_projekt": {
+  "oferty-online": [
+   "2026-08-22",
+   305
+  ],
+  "claude-cron": [
+   "2026-08-05",
+   18
+  ],
+  "Nawykometr": [
+   "2026-08-12",
+   26
+  ],
+  "akademia-automatyzacji-dashboard": [
+   "2026-08-17",
+   26
+  ],
+  "symulator-poczekalni": [
+   "2026-08-28",
+   4
+  ],
+  "workspace-template": [
+   "2026-08-24",
+   59
+  ]
+ },
+ "history": {
+  "agent-browser": {
+   "razem": 2,
+   "przed_oknem": 2,
+   "pierwsze": "2026-04-04",
+   "ostatnie": "2026-06-23",
+   "projekty": {
+    "akademia-automatyzacji-dashboard": 1,
+    "claude-cron": 1
+   },
+   "trans_okno": {}
+  },
+  "bugfix": {
+   "razem": 1,
+   "przed_oknem": 1,
+   "pierwsze": "2026-04-19",
+   "ostatnie": "2026-04-19",
+   "projekty": {
+    "akademia-automatyzacji-dashboard": 1
+   },
+   "trans_okno": {}
+  },
+  "code-quality": {
+   "razem": 1,
+   "przed_oknem": 1,
+   "pierwsze": "2026-07-13",
+   "ostatnie": "2026-07-13",
+   "projekty": {
+    "claude-cron": 1
+   },
+   "trans_okno": {}
+  },
+  "code-review": {
+   "razem": 15,
+   "przed_oknem": 15,
+   "pierwsze": "2026-01-18",
+   "ostatnie": "2026-01-23",
+   "projekty": {
+    "test-auto-claude": 1,
+    "n8n-egzamin-5": 8,
+    "allegro_scraper_project": 6
+   },
+   "trans_okno": {}
+  },
+  "coderabbit-setup": {
+   "razem": 2,
+   "przed_oknem": 2,
+   "pierwsze": "2026-07-21",
+   "ostatnie": "2026-08-02",
+   "projekty": {
+    "akademia-automatyzacji-dashboard": 1,
+    "claude-cron": 1
+   },
+   "trans_okno": {
+    "claude-desktop": 1
+   }
+  },
+  "coolify-manager": {
+   "razem": 4,
+   "przed_oknem": 4,
+   "pierwsze": "2026-04-02",
+   "ostatnie": "2026-04-21",
+   "projekty": {
+    "live-02-04": 2,
+    "kacper_trzepiecinski_workspace": 2
+   },
+   "trans_okno": {
+    "claude-desktop": 1
+   }
+  },
+  "dev-brainstorm": {
+   "razem": 20,
+   "przed_oknem": 20,
+   "pierwsze": "2026-03-26",
+   "ostatnie": "2026-07-14",
+   "projekty": {
+    "live-02-04": 1,
+    "live-02-04-YT": 1,
+    "akademia-automatyzacji-dashboard": 6,
+    "miter": 1,
+    "push-app-mobile": 2,
+    "Nawykometr": 4,
+    "gramywpadla": 1,
+    "kacper_trzepiecinski_workspace": 4
+   },
+   "trans_okno": {
+    "claude-desktop": 5
+   }
+  },
+  "dev-compound": {
+   "razem": 35,
+   "przed_oknem": 35,
+   "pierwsze": "2026-03-26",
+   "ostatnie": "2026-07-28",
+   "projekty": {
+    "live-02-04": 7,
+    "akademia-automatyzacji-dashboard": 12,
+    "n8n-egzamin-5": 2,
+    "kurs_cc_demo": 1,
+    "push-app-mobile": 4,
+    "gramywpadla": 5,
+    "claude-cron": 4
+   },
+   "trans_okno": {
+    "claude-desktop": 3
+   }
+  },
+  "dev-compound-refresh": {
+   "razem": 1,
+   "przed_oknem": 1,
+   "pierwsze": "2026-05-20",
+   "ostatnie": "2026-05-20",
+   "projekty": {
+    "gramywpadla": 1
+   },
+   "trans_okno": {}
+  },
+  "dev-docs": {
+   "razem": 134,
+   "przed_oknem": 133,
+   "pierwsze": "2025-12-09",
+   "ostatnie": "2026-08-23",
+   "projekty": {
+    "piszemy_wirale": 5,
+    "n8n_dashboard": 6,
+    "kacper_trzepiecinski_workspace": 1,
+    "n8n-egzamin-5": 36,
+    "allegro_scraper_project": 3,
+    "lp-fb-group-project": 1,
+    "live-19-02-gierka": 2,
+    "live-02-04": 6,
+    "live-02-04-test": 1,
+    "live-02-04-F1": 1,
+    "live-02-04-new": 3,
+    "live-02-04-demo": 1,
+    "akademia-automatyzacji-dashboard": 23,
+    "kurs_cc_demo": 4,
+    "miter": 1,
+    "push-app-mobile": 6,
+    "gramywpadla": 24,
+    "Nawykometr": 2,
+    "claude-cron": 5,
+    "live-licznik": 2,
+    "workspace-template-mobile": 1
+   },
+   "trans_okno": {
+    "claude-desktop": 9
+   }
+  },
+  "dev-docs-complete": {
+   "razem": 56,
+   "przed_oknem": 56,
+   "pierwsze": "2025-12-29",
+   "ostatnie": "2026-05-15",
+   "projekty": {
+    "n8n_dashboard": 3,
+    "n8n-egzamin-5": 31,
+    "allegro_scraper_project": 4,
+    "live-19-02-gierka": 2,
+    "live-02-04": 6,
+    "akademia-automatyzacji-dashboard": 7,
+    "kurs_cc_demo": 2,
+    "push-app-mobile": 1
+   },
+   "trans_okno": {}
+  },
+  "dev-docs-execute": {
+   "razem": 402,
+   "przed_oknem": 402,
+   "pierwsze": "2025-12-28",
+   "ostatnie": "2026-06-07",
+   "projekty": {
+    "n8n_dashboard": 29,
+    "x-stats": 5,
+    "n8n-egzamin-5": 223,
+    "allegro_scraper_project": 28,
+    "lp-fb-group-project": 13,
+    "live-19-02-gierka": 19,
+    "live-02-04": 16,
+    "live-02-04-new": 2,
+    "live-02-04-demo": 2,
+    "akademia-automatyzacji-dashboard": 43,
+    "kurs_cc_demo": 2,
+    "push-app-mobile": 16,
+    "gramywpadla": 4
+   },
+   "trans_okno": {}
+  },
+  "dev-docs-review": {
+   "razem": 191,
+   "przed_oknem": 191,
+   "pierwsze": "2025-12-28",
+   "ostatnie": "2026-06-07",
+   "projekty": {
+    "n8n_dashboard": 13,
+    "x-stats": 3,
+    "n8n-egzamin-5": 114,
+    "allegro_scraper_project": 8,
+    "lp-fb-group-project": 5,
+    "live-19-02-gierka": 8,
+    "live-02-04": 7,
+    "live-02-04-new": 2,
+    "live-02-04-demo": 2,
+    "akademia-automatyzacji-dashboard": 17,
+    "push-app-mobile": 9,
+    "gramywpadla": 3
+   },
+   "trans_okno": {}
+  },
+  "dev-docs-update": {
+   "razem": 6,
+   "przed_oknem": 6,
+   "pierwsze": "2025-12-12",
+   "ostatnie": "2026-02-04",
+   "projekty": {
+    "piszemy_wirale": 1,
+    "n8n-egzamin-5": 5
+   },
+   "trans_okno": {}
+  },
+  "dev-ideate": {
+   "razem": 1,
+   "przed_oknem": 1,
+   "pierwsze": "2026-03-27",
+   "ostatnie": "2026-03-27",
+   "projekty": {
+    "live-02-04": 1
+   },
+   "trans_okno": {
+    "claude-desktop": 1
+   }
+  },
+  "dev-plan": {
+   "razem": 84,
+   "przed_oknem": 74,
+   "pierwsze": "2026-03-26",
+   "ostatnie": "2026-08-14",
+   "projekty": {
+    "live-02-04": 7,
+    "live-02-04-test": 1,
+    "live-02-04-new": 1,
+    "live-02-04-demo": 2,
+    "akademia-automatyzacji-dashboard": 15,
+    "n8n-egzamin-5": 1,
+    "miter": 1,
+    "kurs_cc_demo": 1,
+    "push-app-mobile": 4,
+    "gramywpadla": 30,
+    "Nawykometr": 12,
+    "claude-cron": 8,
+    "live-licznik": 1
+   },
+   "trans_okno": {
+    "claude-desktop": 10
+   }
+  },
+  "dev-pr": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {
+    "claude-desktop": 9
+   }
+  },
+  "dev-prep": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {
+    "claude-desktop": 11
+   }
+  },
+  "figma-design-to-code": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "freshness-audit": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "gemini": {
+   "razem": 17,
+   "przed_oknem": 17,
+   "pierwsze": "2025-12-27",
+   "ostatnie": "2026-03-16",
+   "projekty": {
+    "n8n_dashboard": 5,
+    "test_to_delete": 1,
+    "live": 2,
+    "live_15_01": 4,
+    "n8n-egzamin-5": 3,
+    "kacper_trzepiecinski_workspace": 1,
+    "Zadania": 1
+   },
+   "trans_okno": {}
+  },
+  "security": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "sentry-integration": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "supabase-dev-guidelines": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "sync-template": {
+   "razem": 6,
+   "przed_oknem": 3,
+   "pierwsze": "2026-07-21",
+   "ostatnie": "2026-08-14",
+   "projekty": {
+    "akademia-automatyzacji-dashboard": 1,
+    "claude-cron": 2,
+    "gramywpadla": 1,
+    "Nawykometr": 2
+   },
+   "trans_okno": {
+    "claude-desktop": 8
+   }
+  },
+  "tailwind-react-guidelines": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "ux-ui-guidelines": {
+   "razem": 5,
+   "przed_oknem": 5,
+   "pierwsze": "2026-02-06",
+   "ostatnie": "2026-07-31",
+   "projekty": {
+    "lp-fb-group-project": 1,
+    "kacper_trzepiecinski_workspace": 4
+   },
+   "trans_okno": {}
+  },
+  "zroastuj-mnie": {
+   "razem": 84,
+   "przed_oknem": 82,
+   "pierwsze": "2026-03-25",
+   "ostatnie": "2026-08-19",
+   "projekty": {
+    "kacper_trzepiecinski_workspace": 17,
+    "live-02-04": 5,
+    "live-02-04-YT": 1,
+    "akademia-automatyzacji-dashboard": 18,
+    "workspace-template": 1,
+    "miter": 1,
+    "push-app-mobile": 4,
+    "gramywpadla": 26,
+    "Nawykometr": 5,
+    "claude-cron": 5,
+    "live-licznik": 1
+   },
+   "trans_okno": {
+    "claude-desktop": 4
+   }
+  },
+  "dev-autopilot-wf": {
+   "razem": 39,
+   "przed_oknem": 29,
+   "pierwsze": "2026-05-31",
+   "ostatnie": "2026-09-06",
+   "projekty": {
+    "gramywpadla": 16,
+    "Nawykometr": 11,
+    "claude-cron": 9,
+    "akademia-automatyzacji-dashboard": 2,
+    "live-licznik": 1
+   },
+   "trans_okno": {
+    "claude-desktop": 23,
+    "cli": 2
+   }
+  },
+  "dev-compound-wf": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "dev-docs-complete-wf": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "dev-docs-execute-wf": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "dev-docs-review-wf": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "dev-pr-wf": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  },
+  "freshness-audit-wf": {
+   "razem": 0,
+   "przed_oknem": 0,
+   "pierwsze": null,
+   "ostatnie": null,
+   "projekty": {},
+   "trans_okno": {}
+  }
+ },
+ "dzieci": {
+  "dev-docs-execute-wf": {
+   "wywolania": 81,
+   "runy": 31,
+   "projekty": {
+    "symulator-poczekalni": 3,
+    "Nawykometr": 6,
+    "claude-cron": 9,
+    "akademia-automatyzacji-dashboard": 6,
+    "oferty-online": 57
+   }
+  },
+  "dev-docs-review-wf": {
+   "wywolania": 84,
+   "runy": 34,
+   "projekty": {
+    "symulator-poczekalni": 3,
+    "Nawykometr": 5,
+    "claude-cron": 10,
+    "akademia-automatyzacji-dashboard": 8,
+    "oferty-online": 58
+   }
+  },
+  "dev-compound-wf": {
+   "wywolania": 20,
+   "runy": 20,
+   "projekty": {
+    "symulator-poczekalni": 1,
+    "Nawykometr": 1,
+    "claude-cron": 2,
+    "akademia-automatyzacji-dashboard": 2,
+    "oferty-online": 14
+   }
+  },
+  "dev-docs-complete-wf": {
+   "wywolania": 20,
+   "runy": 20,
+   "projekty": {
+    "symulator-poczekalni": 1,
+    "Nawykometr": 1,
+    "claude-cron": 2,
+    "akademia-automatyzacji-dashboard": 2,
+    "oferty-online": 14
+   }
+  }
+ },
+ "refresh_runy": 20,
+ "complete_runy": 20,
+ "auto_runy": 55,
+ "dev_pr": {
+  "runy": 75,
+  "etapy": {
+   "compound": 7,
+   "zbierz": 21,
+   "start": 14,
+   "merge": 10,
+   "napraw": 23
+  },
+  "zadania": 8,
+  "per_projekt": {
+   "claude-cron": [
+    "zalaczniki-w-skrzynce"
+   ],
+   "oferty-online": [
+    "cookie-consent-panelu-gtm",
+    "faza-7-szablony-i-grafiki",
+    "faza-8-connector-oauth-i-dashboard",
+    "faza-9a-domena-mailer-limity",
+    "faza-9c-dokumenty-prawne",
+    "pomoc-dwie-sciezki",
+    "samodzielna-rejestracja-czlonkow-aa"
+   ]
+  }
+ },
+ "epizody": {
+  "dev-prep": {
+   "n": 15,
+   "E0": {
+    "mediana_k": 431,
+    "srednia_k": 637
+   },
+   "E1": {
+    "mediana_k": 431,
+    "srednia_k": 637
+   },
+   "E2": {
+    "mediana_k": 1401,
+    "srednia_k": 1770
+   },
+   "E2_sub": {
+    "mediana_k": 1401,
+    "srednia_k": 1828
+   },
+   "min_E0": {
+    "mediana": 17.1,
+    "srednia": 106.9
+   },
+   "min_E1": {
+    "mediana": 17.1,
+    "srednia": 106.9
+   },
+   "subagenci": 2,
+   "wiadomosci_operatora_E2_mediana": 3
+  },
+  "dev-plan": {
+   "n": 19,
+   "E0": {
+    "mediana_k": 814,
+    "srednia_k": 930
+   },
+   "E1": {
+    "mediana_k": 1027,
+    "srednia_k": 1244
+   },
+   "E2": {
+    "mediana_k": 1701,
+    "srednia_k": 1947
+   },
+   "E2_sub": {
+    "mediana_k": 2392,
+    "srednia_k": 2926
+   },
+   "min_E0": {
+    "mediana": 8.9,
+    "srednia": 47.5
+   },
+   "min_E1": {
+    "mediana": 18.2,
+    "srednia": 58.3
+   },
+   "subagenci": 37,
+   "wiadomosci_operatora_E2_mediana": 1
+  },
+  "dev-docs": {
+   "n": 18,
+   "E0": {
+    "mediana_k": 509,
+    "srednia_k": 669
+   },
+   "E1": {
+    "mediana_k": 509,
+    "srednia_k": 669
+   },
+   "E2": {
+    "mediana_k": 559,
+    "srednia_k": 807
+   },
+   "E2_sub": {
+    "mediana_k": 559,
+    "srednia_k": 807
+   },
+   "min_E0": {
+    "mediana": 5.9,
+    "srednia": 62.9
+   },
+   "min_E1": {
+    "mediana": 5.9,
+    "srednia": 62.9
+   },
+   "subagenci": 0,
+   "wiadomosci_operatora_E2_mediana": 0.0
+  },
+  "dev-brainstorm": {
+   "n": 6,
+   "E0": {
+    "mediana_k": 236,
+    "srednia_k": 318
+   },
+   "E1": {
+    "mediana_k": 236,
+    "srednia_k": 318
+   },
+   "E2": {
+    "mediana_k": 382,
+    "srednia_k": 367
+   },
+   "E2_sub": {
+    "mediana_k": 382,
+    "srednia_k": 443
+   },
+   "min_E0": {
+    "mediana": 17.9,
+    "srednia": 37.9
+   },
+   "min_E1": {
+    "mediana": 17.9,
+    "srednia": 37.9
+   },
+   "subagenci": 1,
+   "wiadomosci_operatora_E2_mediana": 0.5
+  },
+  "dev-compound": {
+   "n": 5,
+   "E0": {
+    "mediana_k": 398,
+    "srednia_k": 400
+   },
+   "E1": {
+    "mediana_k": 398,
+    "srednia_k": 400
+   },
+   "E2": {
+    "mediana_k": 402,
+    "srednia_k": 3742
+   },
+   "E2_sub": {
+    "mediana_k": 402,
+    "srednia_k": 3742
+   },
+   "min_E0": {
+    "mediana": 2.6,
+    "srednia": 2.9
+   },
+   "min_E1": {
+    "mediana": 2.6,
+    "srednia": 2.9
+   },
+   "subagenci": 0,
+   "wiadomosci_operatora_E2_mediana": 0
+  },
+  "dev-pr": {
+   "n": 10,
+   "E0": {
+    "mediana_k": 179,
+    "srednia_k": 203
+   },
+   "E1": {
+    "mediana_k": 276,
+    "srednia_k": 604
+   },
+   "E2": {
+    "mediana_k": 3378,
+    "srednia_k": 3770
+   },
+   "E2_sub": {
+    "mediana_k": 3378,
+    "srednia_k": 3770
+   },
+   "min_E0": {
+    "mediana": 0.3,
+    "srednia": 0.9
+   },
+   "min_E1": {
+    "mediana": 11.7,
+    "srednia": 32.8
+   },
+   "subagenci": 0,
+   "wiadomosci_operatora_E2_mediana": 6.0
+  }
+ },
+ "trio_zakres_csv": {
+  "n": 51,
+  "E0_M": 39.2,
+  "E2sub_M": 95.8
+ },
+ "udzial_skilli_w_zadaniu": {
+  "E0": {
+   "min": 1.1,
+   "mediana": 4.1,
+   "max": 8.8
+  },
+  "E2": {
+   "min": 1.3,
+   "mediana": 6.4,
+   "max": 21.8
+  },
+  "E2sub": {
+   "min": 1.6,
+   "mediana": 7.9,
+   "max": 21.8
+  }
+ },
+ "kandydaci": {
+  "code-review": {
+   "odwolania": [
+    ".claude/skills/code-quality/SKILL.md",
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "code-quality": {
+   "odwolania": [
+    ".claude/skills/dev-docs-review/SKILL.md",
+    ".claude/workflows/__tests__/findingi-po-stopie.test.mjs",
+    ".claude/workflows/dev-docs-review-wf.js",
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "gemini": {
+   "odwolania": [
+    "README.md"
+   ],
+   "mobile": "identyczna"
+  },
+  "dev-docs-update": {
+   "odwolania": [
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "bugfix": {
+   "odwolania": [
+    ".claude/agents/learnings-researcher.md",
+    ".claude/skills/dev-plan/SKILL.md",
+    ".claude/skills/dev-prep/SKILL.md",
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "dev-ideate": {
+   "odwolania": [
+    ".claude/agents/learnings-researcher.md",
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "freshness-audit": {
+   "odwolania": [
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "freshness-audit-wf": {
+   "odwolania": [
+    ".claude/skills/freshness-audit/SKILL.md",
+    ".claude/workflows/freshness-audit-wf.js",
+    "README.md"
+   ],
+   "mobile": "brak"
+  },
+  "dev-docs-execute": {
+   "odwolania": [
+    ".claude/agents/feature-builder-data.md",
+    ".claude/agents/feature-builder-fullstack.md",
+    ".claude/agents/feature-builder-ui.md",
+    ".claude/skills/dev-brainstorm/SKILL.md",
+    ".claude/skills/dev-docs-review/SKILL.md",
+    ".claude/skills/dev-docs-update/SKILL.md",
+    ".claude/skills/dev-docs/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md",
+    ".claude/workflows/dev-docs-execute-wf.js",
+    ".claude/workflows/dev-pr-wf.js",
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  },
+  "dev-docs-review": {
+   "odwolania": [
+    ".claude/skills/code-review/SKILL.md",
+    ".claude/skills/dev-docs-execute/SKILL.md",
+    ".claude/skills/dev-docs/SKILL.md",
+    ".claude/skills/dev-plan/SKILL.md",
+    ".claude/workflows/dev-docs-review-wf.js",
+    ".claude/workflows/dev-pr-wf.js",
+    "README.md"
+   ],
+   "mobile": "zmieniona"
+  }
+ },
+ "lista_skilli": {
+  "skillCount": 310,
+  "zn": 29991,
+  "kandydaci_d_zn": 581,
+  "bez_opisu": [
+   "code-quality",
+   "coderabbit-setup",
+   "dev-compound-refresh",
+   "dev-ideate",
+   "figma-design-to-code",
+   "freshness-audit",
+   "security",
+   "sentry-integration",
+   "dev-compound-wf",
+   "dev-docs-complete-wf",
+   "dev-docs-execute-wf",
+   "dev-docs-review-wf",
+   "dev-pr-wf",
+   "freshness-audit-wf"
+  ]
+ }
+}

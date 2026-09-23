@@ -140,7 +140,9 @@ da się zmierzyć dopiero po wdrożeniu. Każdy projekt wpisuje warunek, przy kt
 
 **Dwanaście. Scalenie dev-plan z dev-docs w jeden skill.** Do wczoraj hipoteza otwarta dla panelu, od dziś wymóg. Odpalasz je zawsze po sobie i nic
 między nimi nie robisz, a dev-docs przepisuje od jednej piątej do połowy planu. Każdy projekt ma zaprojektować scalony skill z budżetem tokenów,
-na analizie tego, co oba dziś robią i gdzie przepalają kontekst. Dev-prep zostaje osobno, bo jest interaktywny.
+na analizie tego, co oba dziś robią i gdzie przepalają kontekst. Dev-prep zostaje osobno, bo jest interaktywny. Po przeglądzie D6 wiadomo, gdzie jest
+koszt. Typowy dev-plan kosztuje 2,4 miliona jednostek, a nie 0,8, jak liczyliśmy dotąd, i największą pozycją są w nim subagenci researchu.
+Kopia planu w dev-docs to drobiazg. Skille przed autopilotem to w typowym zadaniu około 4–7 procent kosztu.
 
 **Trzynaście. Każda zmiana ma metrykę.** Projekt, który proponuje zmianę bez wskazania, po którym polu telemetrii poznamy, że zadziałała, jest
 niekompletny. To wymóg oparty na mapie walidacji z części 6.
@@ -287,27 +289,39 @@ obejmuję albo zostawiam, i dlaczego.
 
 Audyt użycia skilli szablonu jest zrobiony (2026-09-22, plik `dane/d6-audyt-skilli.txt`). Problem był taki, że w szablonie leży dwadzieścia osiem
 skilli i siedem workflowów, a nikt nie wiedział, które z nich ktokolwiek uruchamia. Skrypt policzył to z trzech źródeł: koszt z danych etapu zerowego
-(pięć projektów), liczba uruchomień ze wszystkich transkryptów na dysku (trzydzieści projektów, ale tylko ostatnie siedem tygodni, bo starsze
-transkrypty są kasowane) i ślady w repozytoriach z całego życia szablonu, na przykład katalog solutions jako ślad po skillu compound.
+(pięć projektów), liczba uruchomień ze wszystkich transkryptów na dysku (trzydzieści projektów, ale tylko ostatnie około trzydzieści dni w aktywnym
+projekcie, bo starsze transkrypty są kasowane) i ślady w repozytoriach z całego życia szablonu, na przykład katalog solutions jako ślad po skillu compound.
+Przegląd z 23 września dołożył czwarte źródło: historię poleceń wpisanych w terminalu, sięgającą października 2025. Poprawił też trzy rzeczy, opisane
+niżej przy koszykach. Pełna notatka jest w pliku z przeglądem D6 dla Ciebie.
 
 Wynik w pięciu koszykach. Trzynaście elementów to rdzeń, używany w każdym zadaniu: prep, plan i docs (pięćdziesiąt dwa uruchomienia w pięciu
-projektach), autopilot z czterema workflowami-dziećmi, pr, compound, complete i refresh. Siedem skilli-wytycznych nikt nie uruchamia ręcznie, ale
+projektach), autopilot z czterema workflowami-dziećmi, pr, compound, complete i refresh. Po przeglądzie liczby rdzenia są wyższe. Autopilot wywołał
+execute osiemdziesiąt jeden razy, a review osiemdziesiąt cztery. Complete i refresh działają tylko w runach, które doszły do końca: dwudziestu
+z pięćdziesięciu pięciu. Siedemdziesiąt pięć uruchomień dev-pr to osiem pull requestów rozbitych na etapy. Przegląd pokazał też, że koszt
+prep, plan i docs był liczony tylko do pierwszej odpowiedzi skilla. Pełny koszt jest około dwa i pół raza wyższy, a w dev-planie największą
+pozycją są subagenci researchu. Siedem skilli-wytycznych nikt nie uruchamia ręcznie, ale
 wchodzą do każdego buildera i testera przez definicję agenta: wytyczne Supabase, security i Sentry trafiły do stu czterdziestu ośmiu agentów,
 wytyczne UI do pięćdziesięciu trzech, agent-browser do pięćdziesięciu dziewięciu testerów; czy ta treść jest potem stosowana, sprawdzi mini-run.
-Pięć skilli używasz rzadko, ale celowo i poza pipeline'em: coolify-manager, sync-template, zroastuj-mnie, brainstorm i coderabbit-setup (ten
-ostatni raz na projekt, z natury, ale pięć repozytoriów ma wygenerowany przez niego plik).
+Pięć skilli używasz celowo i poza pipeline'em: coolify-manager, sync-template, zroastuj-mnie, brainstorm i coderabbit-setup (ten
+ostatni raz na projekt, z natury, ale pięć repozytoriów ma wygenerowany przez niego plik). Zroastuj-mnie i brainstorm wcale nie są rzadkie:
+w terminalu użyłeś ich osiemdziesiąt cztery i dwadzieścia razy.
 
-Pięć skilli to kandydaci do usunięcia, bo w siedem tygodni nikt ich nie uruchomił, nie zostawiły żadnego śladu w repozytoriach i żadna część
-maszynerii ich nie woła: code-review (drugi, niezależny roster review, ostatnia zmiana w marcu), code-quality (jedyne „odwołanie" to zbieżność
-nazwy z osią review w workflowie), gemini (marzec, nie ma go nawet na liście skilli sesji), docs-update (zero odwołań, dubluje bootstrap autopilota)
-i bugfix (jedno uruchomienie w siedem tygodni na trzydzieści projektów, co potwierdza Twoją wcześniejszą decyzję). Razem siedemset czterdzieści
-osiem linii instrukcji w piętnastu plikach. Usunięcie nic nie zmienia w koszcie runów, bo te skille nie ładują się do agentów; porządkuje listę
+Pięć skilli to kandydaci do usunięcia, bo od miesięcy nikt ich nie uruchamia i żadna część maszynerii ich nie woła: code-review (drugi,
+niezależny roster review, ostatnia zmiana w marcu), code-quality (jedyne „odwołanie" to zbieżność nazwy z osią review w workflowie), gemini
+(ostatnie użycie w marcu), docs-update (zero odwołań, dubluje bootstrap autopilota) i bugfix (dwa uruchomienia od kwietnia, co potwierdza Twoją
+wcześniejszą decyzję). Razem siedemset czterdzieści
+osiem linii instrukcji w piętnastu plikach. Usunięcie praktycznie nic nie zmienia w koszcie runów, bo te skille nie ładują się do agentów; porządkuje listę
 skilli, którą widzisz w sesji, i to, co trzeba utrzymywać.
 
+Przegląd z 23 września poprawił uzasadnienie, choć lista zostaje ta sama. Te skille nie są nieużywane, tylko porzucone. Historia terminala
+pokazuje, że code-review był używany w styczniu, gemini do marca, a docs-update do lutego. Gemini nie ma na liście skilli sesji z prostego
+powodu: da się go wywołać tylko komendą. To nie znaczy, że jest zepsuty. Code-quality i bugfix to pojedyncze wywołania. Usuwasz więc narzędzia, z których wyrosłeś razem z pipelinem.
+Przy usuwaniu trzeba też poprawić README. Szablon mobilny ma własne kopie tych skilli, więc decyzja o nim jest osobna.
+
 Pięć zostaje do decyzji: ideate (jedno przerwane uruchomienie i jeden plik), freshness-audit ze swoim workflowem (dwa uruchomienia i trzy raporty,
-wszystko z jednego dnia w sierpniu, wyłącznie w repozytorium szablonu), oraz execute i review jako skille, czyli tryb ręczny pipeline'u: przez
-siedem tygodni nikt nie użył trybu ręcznego, wszystko szło autopilotem, ale ich treść czyta agent wewnątrz runu. Panel powie, czy tryb ręczny
-zostaje jako skill, czy redukuje się do samego workflowu. Skille z konta, nie z szablonu (Figma, frontend-design i podobne), audyt pomija zgodnie
+wszystko z jednego dnia w sierpniu, wyłącznie w repozytorium szablonu), oraz execute i review jako skille, czyli tryb ręczny pipeline'u, którego
+treść czyta też agent wewnątrz runu. Tryb ręczny był Twoim głównym trybem przez pół roku: prawie sześćset wywołań do 7 czerwca. Od wejścia
+autopilota nie użyłeś go ani razu, czyli od trzech i pół miesiąca. Panel powie, czy tryb ręczny zostaje jako skill, czy redukuje się do samego workflowu. Skille z konta, nie z szablonu (Figma, frontend-design i podobne), audyt pomija zgodnie
 z Twoją decyzją, że to etap higieny konta.
 
 ---

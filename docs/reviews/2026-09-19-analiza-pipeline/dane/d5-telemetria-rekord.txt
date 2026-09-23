@@ -170,9 +170,10 @@ typ=skill (NOWY, czwarty typ rekordu): epizod skilla w sesji glownej — port sk
   in, cache_w, cache_r, out, koszt_jedn, minuty, tool_calls, agent_calls, workflow_calls, ctx_max, artefakty {plan_kb, zadania_kb, iu,
   iu_z_budzetem}. Klucz: sesja|skill|start. Potrzebny do §2 pkt 12 (scalenie dev-plan+dev-docs) — bez niego skille przed autopilotem
   (2–5% kosztu zadania, czas operatora) nie maja odczytu. Uwaga: epizod obejmuje rozmowe z operatorem do nastepnej wiadomosci czlowieka.
+  [NIEAKTUALNE po przegladzie D6 — granica epizodu, subagenci, deduplikacja i nowe pola: §9 nizej; udzial ~4–7% w medianie, nie 2–5%.]
 
 Import baseline (jednorazowo, plan etapu 5): agents.csv → agent (ctx_start dopelnic skryptem kontekst_1_tury.py, klasa_roli z d3, findingi
-z findingi-per-os), telemetria-odzyskana (33) → faza+run v0, skille.csv → skill, coderabbit/klasyfikacja-574.csv → run.pr dla 19 PR
+z findingi-per-os), telemetria-odzyskana (33) → faza+run v0, skille.csv → skill (przeliczone z granica z §9), coderabbit/klasyfikacja-574.csv → run.pr dla 19 PR
 (tlo jakosci; wlasciwy baseline porownan = B0 zebrany po 8 zmianach .coderabbit.yaml). Szczegoly: d5b-mapa-walidacji.txt §4 i naglowek
 „MIARA JAKOSCI".
 
@@ -186,6 +187,7 @@ journala); skrypty/d5r_koszt_output.py → d5r-koszt-output.txt (2 941 agentow e
    OK | STOP | KILLED | FAILED | NIEZNANY (NIEZNANY tylko gdy pliku harnessu brak po awarii sesji). Run w toku = brak pliku harnessu (do
    potwierdzenia w mini-runie: czy plik powstaje dopiero po zakonczeniu; co zostaje po zabiciu sesji glownej). Wyzwalacz C (hook Stop) —
    mini-run; bez niego skan w doctor przy kazdym runie, bo retencja transkryptow ~7 tyg. (najstarszy 2026-08-03, cleanupPeriodDays nieustawione).
+   [KOREKTA D6: ~30 dni w aktywnym projekcie (oferty-online od 2026-08-22); 7 tyg. tylko w rzadko otwieranych — okno skanu jest krotsze.]
 2. ZAPIS: typ=agent — dopisz, gdy klucza run|agent|agentId brak (agentId unikalny: 0 powtorzen w 3 314). typ=run i typ=faza — NOWA WERSJA
    przy kazdej zmianie (pole ts), raport bierze OSTATNIA per klucz (wznowienie = ten sam runId, 9/9; nowi agenci i nowy status w tym samym runie).
    Jedno dopisanie (appendFileSync) na partie wierszy; deduplikacja przy odczycie; blokada (katalog-zamek) tylko jako oszczednosc pracy.
@@ -217,3 +219,21 @@ journala); skrypty/d5r_koszt_output.py → d5r-koszt-output.txt (2 941 agentow e
    grupy to numer WYWOLANIA, nie fazy); pokrycie 2 555/2 891 agentow autopilota z numerem fazy, 335 poziom runu, 1 brak. Etykieta i grupa:
    3 286/3 314 (28 starych bez — klasyfikacja po prompcie). Wymog „numer fazy w etykietach” przestaje byc konieczny (zostaje wygoda).
    totalTokens z pliku harnessu NIE jest kosztem (≈ cache write + output, bez cache read) — nie uzywac.
+
+=== 9. KOREKTA PO PRZEGLADZIE D6 (2026-09-23, Opus 5.5; PRZYJETA przez operatora w calosci) ===
+Zrodla: PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D6; skrypty/d6r_rewizja_audytu.py → d6r-rewizja-audytu.{txt,json}. NADPISUJE typ=skill z §7.
+
+1. GRANICA EPIZODU typ=skill: koszt_skilli.py zamyka epizod na KAZDEJ wiadomosci typu user (takze <task-notification>, „[Request interrupted”,
+   wyjscie /model) — dev-plan 7/19 epizodow konczy sie na powrocie subagenta researchu, dev-prep 8/15 na pierwszej wiadomosci operatora.
+   Port NIE dziedziczy tej granicy: epizod trwa do wywolania nastepnego skilla (slash <command-name> skilla albo tool_use Skill) albo konca
+   pliku sesji. Komendy lokalne (/model, /compact...), powiadomienia i przerwania NIE koncza epizodu.
+2. SUBAGENCI: koszt agentow powolanych narzedziem Agent w oknie epizodu (agent-*.meta.json → toolUseId = id tool_use w sesji glownej;
+   ostatni wpis usage per odpowiedz API). Nowe pola: subagenci_n, subagenci_jedn. dev-plan: 37 agentow, 18,6 M z 55,6 M pelnego kosztu.
+3. DEDUPLIKACJA: sesja wznowiona kopiuje wpisy do nowego pliku (skille.csv ma 3 duplikaty, 1,1 M) — klucz epizodu = uuid wiadomosci
+   otwierajacej albo id tool_use Skill; usage sumowane po unikalnych message.id z wszystkich kopii. Klucz rekordu: sesja_pierwsza|klucz_epizodu.
+4. NOWE POLA: pierwsza_odpowiedz_jedn (koszt do pierwszej wiadomosci typu user — ciaglosc z dawnym liczeniem), wiadomosci_operatora (tekst
+   operatora w epizodzie; miara wysilku zamiast minut — mediana 3 prep / 1 plan / 0 docs), okno_h (czas zegarowy; >12 h = sesja zostawiona
+   otwarta, 4/52 epizodow). Minuty raportowac mediana, nie srednia.
+5. PUNKT ODNIESIENIA (mapa §2 pkt 12): pelny koszt mediana dev-plan 2,39 M, dev-docs 0,56 M, dev-prep 1,40 M (pierwsza odpowiedz: 0,81 / 0,51 /
+   0,43 M); udzial skilli przed autopilotem w koszcie zadania ~4–7% w medianie, do ~1/5 w malych zadaniach.
+6. RETENCJA (§8 pkt 1): ~30 dni w aktywnym projekcie — skan musi przejsc w tym oknie.

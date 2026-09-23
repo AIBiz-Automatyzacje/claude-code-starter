@@ -138,11 +138,11 @@ Ta sama metryka co założenie 1 poniżej: miara jakości w podziale na osie i t
 
 ### 12. Scalenie dev-plan i dev-docs
 
-**Co liczymy.** Koszt epizodu scalonego skilla wobec sumy dwóch dzisiejszych, czas operatora (mediana minut, bo jeden epizod dev-docs trwał 17 godzin z otwartą sesją), rozmiar artefaktów i udział kopii, kontekst sesji głównej. Stąd nowy typ rekordu: epizod skilla w sesji głównej.
+**Co liczymy.** Pełny koszt scalonego skilla wobec sumy dwóch dzisiejszych: od wywołania do następnego skilla albo do końca sesji, razem z subagentami, których skill powołał. Twój wysiłek mierzy liczba Twoich wiadomości w tym czasie, a nie minuty, bo jedna sesja zostawiona na noc potrafi trwać 17 godzin. Do tego rozmiar artefaktów, udział kopii i kontekst sesji głównej. Stąd nowy typ rekordu: epizod skilla w sesji głównej.
 
-**Dziś.** Dev-plan 930 tysięcy na epizod i 47 minut, dev-docs 707 tysięcy i 67 minut, razem 1,64 miliona na zadanie, czyli 2–5 procent kosztu zadania. Plan ma 57–137 kilobajtów, zadania 29–69, z czego 22–46 procent to kopia planu.
+**Dziś (po przeglądzie D6).** Typowy dev-plan kosztuje 2,4 miliona, z czego największa część to subagenci researchu. Typowy dev-docs kosztuje około pół miliona. Wcześniej podawane liczby (930 tysięcy i 47 minut dla planu, 707 tysięcy i 67 minut dla docs, 2–5 procent kosztu zadania) liczyły tylko pierwszą odpowiedź skilla i średnie zawyżone przez sesje otwarte na noc. Skille przed autopilotem to w typowym zadaniu około 4–7 procent kosztu, w małych zadaniach do jednej piątej. W typowym dev-planie piszesz jedną wiadomość, w dev-docs żadnej. Plan ma 57–137 kilobajtów, zadania 29–69, z czego 22–46 procent to kopia planu.
 
-**Kiedy patrzymy.** Po pięciu zadaniach, bo epizody mają rozrzut od 0,4 do 2,5 miliona.
+**Kiedy patrzymy.** Po pięciu zadaniach, bo koszt pojedynczych epizodów bardzo się różni.
 
 ### 13. Każda zmiana ma metrykę
 

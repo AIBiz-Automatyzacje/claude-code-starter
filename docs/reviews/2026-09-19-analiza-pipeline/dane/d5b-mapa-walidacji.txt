@@ -199,6 +199,13 @@ BASELINE  (skille.csv, 5 projektow, D6): dev-plan 19 ep., 930k/ep (mediana 900k)
           67 min; dev-prep 16 ep., 621k, 101 min; razem plan+docs ≈ 1,64 M/zadanie = 2–5% kosztu zadania (25–36 M/faze × 3–6 faz). Plan 57–137 kB,
           zadania 29–69 kB, 22–46% tresci zadan = kopia planu; ctx_max sesji glownej przy dev-plan 323k (kazda tura 32k jedn.).
 HORYZONT  5 zadan (epizody maja duzy rozrzut: dev-plan 0,4–2,5 M).
+KOREKTA 2026-09-23 (przeglad D6, PRZYJETA; skrypty/d6r_rewizja_audytu.py): powyzszy BASELINE to „pierwsza odpowiedz skilla” (epizod konczy
+          sie takze na <task-notification> i przerwaniu; rozmowa z operatorem i subagenci poza nim) — nie uzywac do porownan. NOWY BASELINE (pelny koszt =
+          do nastepnego skilla albo konca sesji + subagenci po toolUseId, deduplikacja kopii sesji): mediana dev-plan 2,39 M (pierwsza odp. 0,81 M; w danych
+          mediana 814k, nie 900k), dev-docs 0,56 M (0,51 M), dev-prep 1,40 M (0,43 M); subagenci researchu dev-planu 18,6 M z 55,6 M (19 ep.); udzial skilli
+          przed autopilotem ~4–7% kosztu zadania w medianie, do ~1/5 w malych. (b) czas operatora ZAMIAST minut: skill.wiadomosci_operatora (mediana
+          3 prep / 1 plan / 0 docs); minuty tylko mediana (8,9 plan / 5,9 docs / 17,1 prep — pierwsza odpowiedz). Pola dochodza: pierwsza_odpowiedz_jedn,
+          wiadomosci_operatora, subagenci_n, subagenci_jedn, okno_h (d5-telemetria-rekord.txt §9).
 
 --- §2 pkt 13. Kazda zmiana ma wskazana metryke z rekordu ---
 METRYKA   pokrycie: liczba wymogow §2 i zalozen §6 z wpisem w tej mapie = 21/21; kazdy projekt panelu przy kazdej wlasnej zmianie podaje

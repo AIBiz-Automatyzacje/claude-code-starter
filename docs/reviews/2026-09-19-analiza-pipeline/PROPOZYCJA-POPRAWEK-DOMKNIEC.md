@@ -487,3 +487,147 @@ Wniosek D3 (nie porównywać ze średnią z epok) stoi, ale punkt odniesienia ma
 - **Model kosztu:** HANDOFF §3 pkt 1–2 i digest §0 (skład kosztu, 22% → 20%, 40% → 36,5%).
 - **Dźwignia 25–35%:** do przeliczenia w D4.
 - **Wymagane zmiany w szablonie na listę etapu 5:** sync-template zapisuje hash per plik w manifeście.
+
+---
+
+## D6 — audyt użycia skilli szablonu
+
+**Status: PRZYJĘTA 2026-09-23 (w całości, poprawki 1–3 i porządkowe)** — wprowadzona do `dane/d6-audyt-skilli.txt` (dopisek korekty),
+PANEL-WEJSCIE §2 pkt 12/§7/§12, PANEL-WEJSCIE-DLA-OPERATORA część 7, map walidacji obu wersji (§2 pkt 12), `dane/d5-telemetria-rekord.txt`
+(typ `skill`, §8 pkt 1), HANDOFF (§3 pkt 6, wiersz 3½, 6a pkt 19), `dane/dane-digest.md` §2. Notatka dla operatora: `PRZEGLAD-D6-DLA-OPERATORA.md`.
+**Przeliczenie:** `skrypty/d6r_rewizja_audytu.py` → `dane/d6r-rewizja-audytu.{txt,json}`. Źródła, wszystkie tylko do odczytu: transkrypty
+sesji głównych i subagentów, pliki harnessu `<sesja>/workflows/<run>.json` (156 runów), `~/.claude/history.jsonl` (polecenia wpisane w terminalu
+od 5 października 2025), repo szablonu i szablonu mobile. Sesja główna przeczytała dodatkowo losową próbkę sześciu epizodów dev-prep i dev-plan.
+
+### Co się trzyma bez zmian
+
+- **Źródło kosztu odtwarza się.** Granica epizodu z `koszt_skilli.py`, policzona od nowa, daje na tym samym zakresie dat 146 epizodów i 85,4 M.
+  To dokładnie `skille.csv` (149 epizodów, 86,5 M) bez trzech duplikatów z kopii wznowionej sesji (1,1 M). Wpisy sesji głównej mają od razu
+  końcową liczbę tokenów wyjściowych, więc błąd z D5 tego źródła nie dotyczy — potwierdzone.
+- **Koszyk B się zgadza.** 148 agentów z wytycznymi Supabase, security i Sentry (buildery danych 125, fullstack 23), 53 z wytycznymi UI, 59 testerów
+  z agent-browser — zgodne z plikami meta agentów.
+- **Rdzeń (A) jest rdzeniem.** Przeliczenie niżej tylko podnosi liczby.
+- **Pięciu kandydatów do usunięcia (D) zostaje kandydatami.** Nic w maszynerii ich nie woła, a rozmiar się zgadza: 748 linii w 15 plikach.
+  Zmienia się uzasadnienie (poprawka 2), nie lista.
+
+### Poprawka 1 (zmienia wniosek). Epizod skilla ucina większość pracy przed autopilotem
+
+**Obecnie.** D6 i rekord D5 (typ `skill`): „koszt obejmuje rozmowę z operatorem”. HANDOFF §3 pkt 6, digest i PANEL-WEJSCIE §2 pkt 12:
+„skille przed autopilotem = 2–5% kosztu zadania”. Mapa walidacji §2 pkt 12, punkt odniesienia dla scalenia: dev-plan 930 tysięcy i 47 minut,
+dev-docs 707 tysięcy i 67 minut.
+
+**Proponuję.**
+
+- **Dzisiejszą liczbę nazwać „kosztem pierwszej odpowiedzi skilla”.** To dolna granica, a nie koszt skilla.
+- **Pełny koszt pracy przed autopilotem liczyć do wywołania następnego skilla albo do końca sesji, razem z subagentami, których skill powołał.**
+  Na tych samych 51 epizodach prep, plan i docs wychodzi 95,8 M zamiast 39,2 M, czyli 2,4 raza więcej.
+  - dev-plan: mediana 0,81 M → 2,39 M na epizod. Subagenci researchu (37 agentów) kosztowali 18,6 M — tyle, ile cały dev-plan w dzisiejszym
+    liczeniu (17,7 M), i jedną trzecią jego pełnego kosztu (55,6 M).
+  - dev-prep: mediana 0,43 M → 1,40 M. Przejście z Tobą przez decyzje odbywa się już poza epizodem.
+  - dev-docs: prawie bez zmian (0,51 M → 0,56 M), bo zwykle kończy sesję.
+- **Udział w koszcie zadania (19 zadań):** dolna granica — mediana 4,1% (od 1,1 do 8,8%); pełny koszt — mediana 7,9% (od 1,6 do 21,8%).
+  Po korekcie outputu runów z D5 (×~0,9) to około 4% i około 7%. Zamiast „2–5%” proponuję „około 4–7% w medianie, w małych zadaniach do jednej piątej”.
+- **Minuty: mediana, nie średnia, i nie jako czas operatora.** Mediany pierwszej odpowiedzi to 8,9 minuty dla planu, 5,9 dla docs i 17,1 dla prep.
+  Średnie 47 / 67 / 101 minut robią pojedyncze sesje zostawione otwarte na noc. Minuty nie mierzą też Twojego czasu, bo epizod kończy się, zanim
+  zaczniesz rozmowę. Twój wysiłek lepiej pokazuje liczba Twoich wiadomości w epizodzie: mediana 3 w prep, 1 w planie, 0 w docs.
+
+**Dlaczego.**
+
+- **`koszt_skilli.py` zamyka epizod na każdej wiadomości typu „user”.** Liczy się jako wiadomość także powrót subagenta w tle, przerwanie
+  i wyjście komendy lokalnej.
+  - dev-plan: 7 z 19 epizodów kończy się na powrocie subagenta researchu (plan pisze się dopiero po nim), 4 na przerwaniu, 5 na Twoim tekście.
+  - dev-prep: 8 z 15 kończy się na Twojej pierwszej wiadomości, a przejście przez dokument operatora następuje po niej.
+  - dev-docs: 15 z 18 dobiega końca sesji — tu liczenie jest poprawne.
+- **Subagenci nie są liczeni wcale.** Epizod sumuje tylko sesję główną.
+- **Próbka czytana ręcznie.** Sześć losowych epizodów prep i plan. W oknie pełnego liczenia jest praca przygotowawcza: checklista operatora,
+  odświeżenie makiety, „zanim odpalę dev-docs, czy mam coś wykonać”. W próbce nie ma wątków pobocznych. Mimo to pełne liczenie to górna granica:
+  4 z 52 epizodów ma okno dłuższe niż 12 godzin (sesja zostawiona na noc).
+
+**Co z tego wynika.**
+
+- **Decyzja o scaleniu (6a pkt 19) stoi.** Wniosek „oszczędza czas operatora, a nie tokeny autopilota” też stoi.
+- **Punkt odniesienia w mapie jest za niski około trzech razy dla planu i prep.** Porównanie scalonego skilla z nim pokazałoby fałszywy wzrost kosztu.
+- **Panel projektujący budżet scalonego skilla powinien wiedzieć, gdzie jest koszt.** Największa pozycja to subagenci researchu dev-planu (18,6 M
+  z 55,6 M), a nie kopia planu w dev-docs (cały dev-docs to mediana 0,56 M na epizod). Sześciu agentów researchowych nie ma `tools:` (PANEL-WEJSCIE §7), więc wymóg §2 pkt 1 dotyczy też ich.
+- **Rekord `skill` z D5 potrzebuje innej granicy** (port `koszt_skilli.py` nie może jej odziedziczyć):
+  - koniec epizodu = następny skill albo koniec sesji;
+  - subagenci po `toolUseId` z pliku meta;
+  - deduplikacja kopii po identyfikatorze wiadomości otwierającej;
+  - nowe pola `pierwsza_odpowiedz_jedn` i `wiadomosci_operatora`.
+
+### Poprawka 2 (zmienia uzasadnienie). Kandydaci do usunięcia i tryb ręczny były używane — zostały porzucone
+
+**Obecnie.** D6: kandydaci D „zero użyć w oknie, zero artefaktów”. Koszyk E: „tryb ręczny execute/review — 0 wywołań, wszystko autopilotem”.
+Okno transkryptów opisane jako „~7 tygodni”.
+
+**Proponuję.** Opisać je historią, która sięga dalej niż transkrypty. Plik `history.jsonl` zapisuje każde polecenie wpisane w terminalu od 5 października 2025.
+
+- **code-review:** 15 wywołań, wszystkie 18–23 stycznia 2026.
+- **gemini:** 17 wywołań od 27 grudnia do 16 marca. Zostawił raporty w `dev/gemini` w dwóch starych repo (n8n_dashboard, n8n-egzamin-5), spoza 17 repo audytu.
+- **dev-docs-update:** 6 wywołań od 12 grudnia do 4 lutego.
+- **code-quality:** 1 wywołanie, 13 lipca.
+- **bugfix:** 1 wywołanie 19 kwietnia i 1 w oknie (10 września).
+- **Tryb ręczny (koszyk E):** dev-docs-execute 402 wywołania i dev-docs-review 191, od 28 grudnia do 7 czerwca, potem zero. Pierwszy
+  `/dev-autopilot-wf` jest z 31 maja. Tryb ręczny był więc głównym trybem przez pół roku i został zastąpiony przez autopilota 3,5 miesiąca temu.
+
+Lista D zostaje, ale uzasadnienie brzmi „porzucone”, a nie „nieużywane”: code-review, gemini i dev-docs-update ostatni raz 6–8 miesięcy temu,
+code-quality i bugfix to pojedyncze wywołania (lipiec; kwiecień i wrzesień). Pytanie do panelu o tryb ręczny zostaje, a fakt dla niego brzmi: 593 wywołania do czerwca, zero przez 3,5 miesiąca.
+
+**Dlaczego.**
+
+- **„0 w oknie” nie znaczy „nigdy”, a okno jest krótsze, niż zapisano.** Transkrypty kasuje się po okresie bez aktywności.
+  - Najstarszy plik w aktywnym projekcie (oferty-online) jest z 22 sierpnia, czyli sprzed około 30 dni.
+  - Siedem tygodni zostaje tylko w rzadko otwieranych projektach, np. claude-cron od 5 sierpnia.
+  - Z tygodni 3–17 sierpnia zostało 51 plików, a w pełnych tygodniach od 24 sierpnia jest ich od 153 do 381.
+- **`history.jsonl` widzi tylko terminal.**
+  - 11 wywołań `/dev-prep` i 9 `/dev-pr` z aplikacji desktop w oknie w ogóle w nim nie ma.
+  - Wywołań przez model (narzędzie Skill) sprzed okna nie widać nigdzie.
+  - Do wniosku „porzucone” to wystarcza: przerwa jest długa i widać ją także w oknie transkryptów, gdzie liczą się również wywołania przez model.
+    Dla gemini historia terminala jest pełna, bo ten skill da się wywołać wyłącznie komendą.
+
+### Poprawka 3 (zmienia liczby). Workflowy-dzieci i dev-pr z pliku harnessu
+
+- **Workflowy-dzieci — wszystkie runy, oba formaty journala** (D6 liczył tylko nowy format):
+  - execute: 81 wywołań w 31 runach (D6: 15);
+  - review: 84 w 34 runach (D6: 18);
+  - compound: 20 (D6: 5);
+  - complete: 20 (D6: 5).
+- **dev-compound-refresh i dev-docs-complete: SKILL.md czyta agent tylko w runach, które doszły do zakończenia.** To 20 z 55 runów autopilota
+  (dokładnie te ze statusem OK), a nie „w każdym runie”. Klasa A się nie zmienia.
+- **dev-pr-wf: 75 runów to 8 PR w dwóch projektach** (oferty-online 7, claude-cron 1). Etapy: start 14, zbierz 21, napraw 23, merge 10, compound 7.
+  Zamiast „75 uruchomień” — „8 PR, 75 etapów”.
+- **Autopilot: 55 runów według pliku harnessu** (D6: 54 wywołania Workflow), w pięciu projektach. Statusy: 20 OK, 30 STOP, 3 przerwane, 2 nieudane.
+
+### Porządkowe
+
+- **Retencja w rekordzie D5 (§8 pkt 1) i w PANEL-WEJSCIE §12.** Zamiast „~7 tygodni (najstarszy 03.08)”: „około 30 dni w aktywnym projekcie,
+  dłużej tylko w rzadko otwieranych”. Skan telemetrii ma to okno. Rekomendacja podniesienia `cleanupPeriodDays` (etap higieny konta) zyskuje na wadze.
+- **Mapa walidacji §2 pkt 12, porządkowo.** „Mediana 900k” dla dev-plan to w danych 814k. Metryka mówi o medianie minut, a punkt odniesienia
+  podaje średnie. Po poprawce 1 obie liczby i tak się zmieniają.
+- **gemini „nie ma nawet na liście skilli sesji”.** Powód to `disable-model-invocation: true`: skill jest tylko dla komendy. To nie jest objaw
+  uszkodzenia.
+- **„Usunięcie nie zmienia kosztu runów” jest prawie prawdą.** Kandydaci D zajmują około 0,6 tysiąca znaków listy skilli każdego agenta, czyli około
+  0,14% kontekstu startowego. Po wprowadzeniu `tools:` bez narzędzia Skill to zero.
+- **Lista skilli przycina opisy.** 14 skilli szablonu jest na liście agenta bez opisu (310 skilli na koncie), m.in. dev-ideate, code-quality,
+  freshness-audit, coderabbit-setup i dev-compound-refresh. Model nie wie, kiedy ich użyć, więc zostaje im tylko komenda. To fakt dla etapu higieny konta.
+- **Usunięcie wymaga poprawek poza katalogiem skilla.**
+  - README wymienia wszystkich pięciu kandydatów.
+  - `learnings-researcher.md:256` wspomina `/bugfix` i `/dev-ideate`.
+  - Gdyby tryb ręczny execute odpadł, opisy trzech builderów („wywoływany przez dev-docs-execute”) trzeba przepiąć na workflow.
+  - Szablon mobile to osobna linia: skopiowany z web, bez znacznika wersji i manifestu. Ma wszystkich pięciu kandydatów, czterech już zmienionych,
+    więc usunięcie w web go nie dotyczy. Decyzja o mobile jest osobna.
+- **Koszyk C: słowo „rzadko” jest prawdziwe tylko w oknie.** zroastuj-mnie ma w terminalu 84 wywołania, dev-brainstorm 20. Proponuję „celowo, poza
+  pipeline'em” bez „rzadko” przy tych dwóch.
+
+### Co się zmieni po akceptacji
+
+- **Wynik D6:** `dane/d6-audyt-skilli.txt` — dopisek korekty na początku (dzieci, dev-pr, retencja, historia kandydatów, granica epizodu).
+- **Pakiet panelu:**
+  - PANEL-WEJSCIE §7, wiersz D6: liczby dzieci i dev-pr, D jako porzucone, tryb ręczny 593 → 0, okno ~30 dni;
+  - §2 pkt 12: udział skilli przed autopilotem i miejsce kosztu (subagenci researchu);
+  - §12: retencja i punkt odniesienia typu `skill`.
+- **Wersja dla operatora:** PANEL-WEJSCIE-DLA-OPERATORA część 7 (narracja koszyków D i E, okno transkryptów).
+- **Mapa walidacji obu wersji:** §2 pkt 12 — nowy punkt odniesienia (mediany, pełny koszt, wiadomości operatora).
+- **Rekord telemetrii:** `dane/d5-telemetria-rekord.txt` — typ `skill` (granica epizodu, subagenci, deduplikacja, dwa nowe pola) i §8 pkt 1 (retencja).
+- **Model kosztu:** HANDOFF §3 pkt 6 i digest §2 („2–5%” oraz koszt epizodu z dopiskiem, że to pierwsza odpowiedź).
+- **HANDOFF:** wiersz 3½ i 6a pkt 19.

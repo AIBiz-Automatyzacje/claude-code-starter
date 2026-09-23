@@ -1,5 +1,24 @@
 D6 — AUDYT UZYCIA SKILLI SZABLONU (2026-09-22; HANDOFF 6a pkt 19). Skrypt: skrypty/d6_audyt_skilli.py. Zero agentow.
 
+!!! KOREKTA 2026-09-23 (przeglad D6 na Opus 5.5, PRZYJETA przez operatora w calosci; PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D6,
+    skrypty/d6r_rewizja_audytu.py → dane/d6r-rewizja-audytu.{txt,json}). Ponizszy tekst zostaje jako zapis; te punkty go NADPISUJA:
+    1. KOSZT (zrodlo A): epizod z koszt_skilli.py = „koszt pierwszej odpowiedzi skilla” (dolna granica) — konczy go takze <task-notification>
+       (dev-plan 7/19), przerwanie i /model; rozmowa z operatorem po pierwszej wiadomosci i subagenci NIE sa liczeni. Pelny koszt (do nastepnego
+       skilla albo konca sesji + subagenci po toolUseId): prep+plan+docs 95,8 M zamiast 39,2 M (51 epizodow); dev-plan mediana 0,81 → 2,39 M
+       (subagenci researchu 18,6 M z 55,6 M), dev-prep 0,43 → 1,40 M, dev-docs 0,51 → 0,56 M. Udzial w koszcie zadania: ~4–7% w medianie (nie 2–5%),
+       w malych zadaniach do ~1/5. skille.csv ma 3 duplikaty z kopii wznowionych sesji (1,1 M). Minuty: mediany 8,9 / 5,9 / 17,1 (plan/docs/prep),
+       srednie zawyzaja sesje otwarte na noc; wysilek operatora = liczba jego wiadomosci (mediana 3 / 1 / 0 dla prep / plan / docs).
+    2. RETENCJA: ~30 dni w aktywnym projekcie (oferty-online od 2026-08-22), 7 tygodni tylko w rzadko otwieranych — nie „~7 tygodni” dla calosci.
+       ~/.claude/history.jsonl (tylko CLI, od 2025-10-05): kandydaci D byli uzywani, potem porzuceni — code-review 15 (styczen), gemini 17 (XII–III),
+       dev-docs-update 6 (XII–II), code-quality 1 (07-13), bugfix 1 (04-19) + 1 w oknie (09-10). Tryb reczny: dev-docs-execute 402 + dev-docs-review 191
+       wywolan do 2026-06-07, od wejscia autopilota zero. Lista D bez zmian, uzasadnienie „porzucone”, nie „nieuzywane”.
+    3. LICZBY z pliku harnessu (wszystkie runy, oba formaty journala): workflowy-dzieci execute 81 (31 runow), review 84 (34), compound 20, complete 20
+       (nie 15/18/5/5); compound-refresh i complete tylko w runach dochodzacych do Zakonczenia = 20/55 (nie „w kazdym runie”); dev-pr-wf 75 runow =
+       8 PR (etapy start 14, zbierz 21, napraw 23, merge 10, compound 7); autopilot 55 runow.
+    4. PORZADKOWE: gemini nie ma na liscie skilli przez disable-model-invocation (tylko komenda); kandydaci D = ~0,14% kontekstu startowego agenta
+       (lista skilli), po tools: zero; 14 skilli szablonu na liscie bez opisu (budzet listy, 310 skilli); usuniecie wymaga poprawek README
+       i learnings-researcher.md:256; szablon mobile = osobna linia z wlasnymi kopiami; koszyk C: zroastuj-mnie (84 w CLI) i dev-brainstorm (20) — „celowo”, nie „rzadko”.
+
 ZASIEG I OGRANICZENIA (czytaj przed liczbami):
 - Inwentarz: 28 skilli w .claude/skills/ + 7 workflowow w .claude/workflows/ (wystawiane jako skille *-wf).
 - Zrodlo A (koszt): dane/skille.csv — 149 epizodow, 5 projektow etapu 0, sesje glowne, 2026-08-05..2026-09-18. Koszt = jednostki cennika
