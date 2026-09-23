@@ -1,0 +1,93 @@
+
+=== reviewer security ===
+  agent security-sentinel                   104 (lista   91, w kodzie   0, lista bez markera   60)
+  bloki workflow                             22 (lista    1, w kodzie   0, lista bez markera    1)
+  learned-patterns (dossier, DUBEL)          38 (lista   37, w kodzie   0, lista bez markera    2)
+  CLAUDE.md                                  46 (lista   36, w kodzie   0, lista bez markera   24)
+  coding-rules                              117 (lista  117, w kodzie   0, lista bez markera   67)
+  learned-patterns (eager)                   38 (lista   37, w kodzie   0, lista bez markera    2)
+  RAZEM jak D2: 365 | w blokach kodu: 0 | dubel learned-patterns: 38 | pozycje list bez markera (poza kodem): 156
+  bez kodu i bez dubla: 327
+  PROBKA 30 (bez kodu i dubla) z ocena reczna P/W/N:
+   [ 0] N <CLAUDE.md> Tu jest tylko to, co trzeba mieć w głowie ZAWSZE:    `OFFER_ORIGIN` (strony ofert + endpoint zdarzeń) i `APP_ORIGIN` (dashboard, MCP, OAuth).
+   [ 1] W <agent security-sentinel> 4. **Remediation Roadmap**: Prioritized action items with implementation guidance
+   [ 2] P <coding-rules> - Używaj structured logging (JSON format, np. pino), nie `console.log`
+   [ 3] P <agent security-sentinel> - Look for privilege escalation possibilities
+   [ 4] P <agent security-sentinel> - Provide specific remediation steps for any gaps
+   [ 5] W <coding-rules> - Nowa dependency = uzasadnienie rozmiaru bundle (sprawdź bundlephobia)
+   [ 6] P <agent security-sentinel> - [ ] Zod validation on all form inputs and API boundaries
+   [ 7] W <coding-rules> - Pisz testy WERTYKALNIE (tracer bullets): jeden test → jego implementacja → następny. NIGDY nie pisz wszystkich testów naraz, a potem całej implementacji (hori
+   [ 8] W <learned-patterns (eager)> - **W kolejce at-least-once policz widoczność z CAŁEJ obsługi wiersza, a licznik o ziarnistości konta inkrementuj raz na turę**: `vt` porównuj z sumą wszystkich
+   [ 9] W <agent security-sentinel> - Check for Supabase `anon` key vs `service_role` key usage
+   [10] P <coding-rules> - Użyj discriminated unions dla stanu, nie boolean flags
+   [11] P <bloki workflow> Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+   [12] W <agent security-sentinel> - Ensure any raw HTML rendering uses DOMPurify sanitization
+   [13] W <agent security-sentinel> - [ ] No `service_role` key in frontend code
+   [14] W <coding-rules> 1. Wszystkie testy przechodzą
+   [15] W <coding-rules> - Po zakończeniu zmian ZAWSZE uruchom: typecheck, test, lint (w tej kolejności)
+   [16] P <agent security-sentinel> - Systematically check against each OWASP Top 10 vulnerability
+   [17] W <bloki workflow> /tmp wyczyszczone) — wroc do czytania pelnych dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+   [18] W <agent security-sentinel> - [ ] RLS policies use `auth.uid()` for user-scoped data
+   [19] W <coding-rules> - requestAnimationFrame w pętli = sprawdź cancel flag przed kolejnym requestAnimationFrame
+   [20] P <coding-rules> - Sprawdź czy nie duplikujesz istniejącej logiki — grep codebase
+   [21] W <agent security-sentinel> - Verify API keys are not exposed in client-side bundles (check Vite env variables -- only `VITE_` prefixed vars are exposed)
+   [22] W <learned-patterns (eager)> - **Health check kontenera to osobny klient, nie ruch produkcyjny**: sonda działa w minimalnym obrazie (`alpine` nie ma `curl`/`wget`), po pętli zwrotnej (`Host
+   [23] W <agent security-sentinel> - [ ] HTTPS enforced where needed
+   [24] P <bloki workflow> === KONIEC BLOKU GRANIC ZAUFANIA ===  === LIMIT I AKCYJNOSC P3 (nity) === LIMIT: zglos MAKSYMALNIE 5 findingow P3.
+   [25] W <learned-patterns (eager)> - **Zapis, którego skutek widać na ekranie, kończy się odświeżeniem kopii w pamięci — ale zanim podepniesz `reload()` istniejącego hooka, sprawdź, CO JESZCZE st
+   [26] W <learned-patterns (eager)> - **Granicę podziału PR wyznaczają kontrakty `packages/shared`, nie katalogi aplikacji — a tekst z zatwierdzonego planu przechodzi plik wzorców pisania jak każd
+   [27] P <agent security-sentinel> - Check for sensitive data in logs or error messages
+   [28] W <learned-patterns (eager)> - **W `sandbox=""` origin jest NIEPRZEZROCZYSTY, więc `'self'` w CSP nie pasuje do niczego — a `@font-face` potrzebuje jeszcze CORS**: ramka bez `allow-same-ori
+   [29] W <learned-patterns (eager)> - **Skrypt pod zamrożonym URL-em jedzie w nowej wersji na STARYM dokumencie — warunek widoczności pytaj o węzeł, nie o kod odpowiedzi**: gdy dokument jest niemu
+  OCENA: P 10, W 19, N 1 -> precyzja licznika (P+W)/30 = 97%; szacunek polecen w roli (bez kodu i dubla) = 316, w tym zawsze obowiazujacych (P) ~109
+
+=== builder data ===
+  agent feature-builder-data                 49 (lista   41, w kodzie   9, lista bez markera   26)
+  iu.prompt (mediana z 5)                    57 (lista   46, w kodzie   0, lista bez markera   30)
+  BLOK_DLUGIE_KOMENDY                        12 (lista    8, w kodzie   0, lista bez markera    4)
+  skill supabase-dev-guidelines              76 (lista   71, w kodzie   0, lista bez markera   62)
+  skill security                             73 (lista   70, w kodzie   7, lista bez markera   49)
+  skill sentry-integration                   29 (lista   23, w kodzie   0, lista bez markera   18)
+  CLAUDE.md                                  46 (lista   36, w kodzie   0, lista bez markera   24)
+  coding-rules                              117 (lista  117, w kodzie   0, lista bez markera   67)
+  learned-patterns (eager)                   38 (lista   37, w kodzie   0, lista bez markera    2)
+  RAZEM jak D2: 497 | w blokach kodu: 16 | dubel learned-patterns: 0 | pozycje list bez markera (poza kodem): 282
+  bez kodu i bez dubla: 481
+  PROBKA 30 (bez kodu i dubla) z ocena reczna P/W/N:
+   [ 0] N <skill supabase-dev-guidelines> - RLS dla izolacji danych
+   [ 1] W <iu.prompt (mediana z 5)> - Klasa uwag odrzucana hurtowo drugi raz (progi 50/300 linii dla `texts.ts` i testów) jest sygnałem do zmiany KONFIGURACJI recenzenta, nie kolejnego ręcznego od
+   [ 2] W <skill security> 3. **Szukaj brakujacej walidacji** -- kazdy `req.json()` bez Zod parse to finding.
+   [ 3] P <coding-rules> - NIGDY nie osłabiaj asercji (np. `toBe(429)` na `toBeDefined()`) — to nie jest fix
+   [ 4] P <agent feature-builder-data> 5. RLS policies blokują nieautoryzowany dostęp (test fixture: anon user nie widzi cudzych rekordów)
+   [ 5] P <agent feature-builder-data> **Testy razem z kodem.**  Obowiązkowe pryncypia (z załadowanych skilli):  Po napisaniu kodu uruchom kolejno:  Jeśli któryś krok się nie powiedzie — **napraw KOD
+   [ 6] P <coding-rules> - Duplication > Complexity — prosta duplikacja kodu jest LEPSZA niż złożona abstrakcja DRY
+   [ 7] N <skill sentry-integration> > **Stan SDK** > > - **React SDK:** v10+ (funkcyjne integracje, React 19 error hooks) ✅ > - **Edge Functions:** `npm:@sentry/deno@^10` na Deno 2.x, handler `exp
+   [ 8] P <iu.prompt (mediana z 5)> - [ ] Modyfikuj: `apps/server/src/routes/membership.test.ts`
+   [ 9] N <skill security> - Zmiany w autentykacji lub autoryzacji (auth/authz)
+   [10] W <CLAUDE.md> - **Odmowa limitu i odmowa dostępu są CZYTELNE, nigdy ciche** — odwrotnie niż `POST /e`. Brak funkcji lub kolumny (kod przed migracją) daje jawną odmowę z rapor
+   [11] W <agent feature-builder-data> 5. **Atak na niewiadome** — jeśli IU jest niejasne (np. brakuje policy dla DELETE), zwróć `Status: blocked` z pytaniem.
+   [12] W <learned-patterns (eager)> - **Blokada serializuje tylko ścieżki, które DOTYKAJĄ tego samego wiersza — i musi żyć do końca efektu, a nie do końca decyzji**: „atomowa decyzja w RPC" nie za
+   [13] N <skill sentry-integration> - [Resources](#resources)
+   [14] N <skill supabase-dev-guidelines> - "supabase/**"
+   [15] P <agent feature-builder-data> - Type safety: bez `any`, explicit return types
+   [16] P <iu.prompt (mediana z 5)> - Test (unit): jak wyżej
+   [17] W <skill security> 6. **Fail-closed** -- blad sprawdzenia dostepu = odmowa, nigdy przyznanie (A10:2025)
+   [18] W <skill security> 3. **Content Security Policy** -- czy istnieje i czy jest restrykcyjna?
+   [19] P <agent feature-builder-data> Przeczytaj `.claude/rules/learned-patterns.md` (jeśli istnieje) — reguły wyprodukowane z problemów rozwiązanych w poprzednich zadaniach tego projektu.
+   [20] W <skill supabase-dev-guidelines> - [ ] Dodaj indeksy dla często używanych kolumn
+   [21] P <iu.prompt (mediana z 5)> - [ ] Modyfikuj: `apps/server/src/access/membership-service.test.ts`
+   [22] N <CLAUDE.md> - `docs/diagramy/`, `docs/sesje/` — diagramy i handoffy między sesjami
+   [23] W <skill security> 1. **Stworz macierz dostepu:**
+   [24] P <agent feature-builder-data> 6. **Brak refaktoryzacji** — jeśli widzisz brzydką migrację, NIE naprawiaj. Zgłoś w `Następne kroki`.
+   [25] P <coding-rules> - Preferuj ekstrakcję do nowego modułu/komponentu zamiast komplikowania istniejącego
+   [26] W <CLAUDE.md> 7. **Awaria trackingu nigdy nie degraduje oferty.** `POST /e` zawsze odpowiada 204; `/o/<slug>` serwuje z cache także przy niedostępnej bazie.
+   [27] P <iu.prompt (mediana z 5)> - `pnpm --filter @oferty/server test` zielony
+   [28] N <skill supabase-dev-guidelines> - Tworzenie lub modyfikacja tabel bazy danych
+   [29] W <CLAUDE.md> **Zanim uznasz migrację za wdrożoną, sprawdź ją na bazie środowiska docelowego** — weryfikacja bez hasła: Management API `POST /v1/projects/<ref>/database/query
+  OCENA: P 12, W 11, N 7 -> precyzja licznika (P+W)/30 = 77%; szacunek polecen w roli (bez kodu i dubla) = 369, w tym zawsze obowiazujacych (P) ~192
+
+=== GORNA GRANICA BEZ PODWOJNEGO LICZENIA (te same zdania learned-patterns liczone RAZ) ===
+  reviewer security: 365 - dubel 38 - 38 pozycji LP + 211 nakazow LP = 500 (D2: reviewer ~711, builder ~710)
+  builder data: 497 - dubel 0 - 38 pozycji LP + 211 nakazow LP = 670 (D2: reviewer ~711, builder ~710)
+
+(iu.prompt buildera: dlugosci 5 ostatnich [11610, 12501, 16879, 17082, 23844] zn; D2 bralo maksimum)

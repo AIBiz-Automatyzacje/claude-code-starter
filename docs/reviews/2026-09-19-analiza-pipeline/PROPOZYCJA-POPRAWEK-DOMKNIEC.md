@@ -89,3 +89,115 @@ Liczby i wniosek D1 w: dopisku POMIARY §4 i jego rozstrzygnięciu, ETAP3 §7 (w
 mapie walidacji obu wersji (kontekst przy pętli naprawczej), HANDOFF wiersz 3½. Nowa wersja zdania dla panelu: „nowe findingi po naprawie są
 pół na pół przeoczeniami i kodem urodzonym w naprawach; kod naprawczy przechodzi także przez pełną kolejną rundę (łańcuch); wybór n=3 kontra
 sceptyk nie wynika z tego podziału — to decyzja o kupowaniu zasięgu”.
+
+---
+
+## D2 — ile instrukcji dostaje jeden agent
+
+**Status: PRZYJĘTA 2026-09-23 (poprawki 1–4 i porządkowe, w tym zmiana jednostki w teście budżetu)** — wprowadzona do ETAP3 §7, PANEL-WEJSCIE
+§2 pkt 3, §4, §6, §8, §11, PANEL-WEJSCIE-DLA-OPERATORA część 2 pkt 3, mapy walidacji obu wersji, HANDOFF (wiersz 3½, 6a pkt 18, 6a pkt 19).
+**Przeliczenie:** `skrypty/d2r_rewizja_budzetu.py` → `dane/d2r-rewizja-budzetu.{txt,json}`, oceny ręczne próbek `dane/d2r-oceny-probki.json`,
+same próbki `dane/d2r-probka-*.json`. Źródło IFScale sprawdzone w publikacji (arXiv 2507.11538).
+
+### Co się trzyma bez zmian
+
+- **Liczby odtwarzają się.** Ten sam licznik na dzisiejszych plikach daje dla reviewera security dokładnie 365.
+- **Licznik łapie w większości prawdziwe polecenia.** Na losowej próbce 30 jednostek reviewera 29 to polecenia, u buildera 23 z 30.
+- **Dubel learned-patterns jest prawdziwy.** Workflow review wkleja cały plik do dossier („w CAŁOŚCI, bez skracania”), a ten sam plik
+  reviewer ma już w kontekście z reguł. To 13 tysięcy tokenów na reviewera za nic, tak jak mówi D2.
+- **Kierunek decyzji po D2 (trzy warstwy, warstwa stała poniżej 150, test szablonu, zero STOP-ów w runie) ma teraz dodatkowe oparcie:**
+  około dwóch trzecich poleceń reviewera to polecenia warunkowe — dotyczą konkretnej technologii albo sytuacji (Supabase, HTML, kolejki,
+  kontener). To dokładnie ten materiał, który ma zejść do warstwy doklejanej po plikach jednostki. Po jego zdjęciu zostaje około 110 poleceń
+  obowiązujących zawsze, czyli cel poniżej 150 jest osiągalny bez wycinania wiedzy.
+
+### Poprawka 1 (zmienia wniosek). Progi IFScale są w innej jednostce
+
+**Obecnie.** „Reviewer ~310–320, builder ~520–530 = pasmo IFScale 150–500 (84–99% → ~68% przestrzegania)”. W wersji dla operatora: „przy
+pięciuset instrukcjach model przestrzega około dwóch trzecich. To wyjaśnia, dlaczego 45 z 68 defektów miało regułę i przeszło”.
+
+**Proponuję.** „IFScale pokazuje kierunek: im więcej poleceń naraz, tym więcej cichych pominięć, a wcześniejsze polecenia wygrywają z późniejszymi.
+Procentów z badania nie da się przenieść na nasze liczby, bo mierzą co innego. Nasz własny punkt na tej krzywej da dopiero mini-run, dodatek (d):
+ten sam marker w prompcie około 100 i około 400 instrukcji”. Zdanie „to wyjaśnia 45 z 68” zamienić na „jest z tym zgodne”.
+
+**Dlaczego.**
+
+- **W IFScale instrukcja to „użyj w raporcie dokładnie słowa X”.** Wszystkie obowiązują naraz, są od siebie niezależne i sprawdza je wyrażenie regularne.
+- **U nas jest inaczej.** W próbce reviewera 19 z 30 poleceń to polecenia warunkowe. Jedna reguła learned-patterns ma średnio prawie sześć zdań
+  nakazowych, a przestrzeganie wymaga osądu, nie wstawienia słowa. „365 u nas” i „500 w IFScale” to liczby różnych rzeczy.
+- **Cytowane procenty to najlepsze modele z badania.** Modele Claude w tym samym badaniu tracą szybciej: Opus 4 ma 94,6% przy 150 poleceniach,
+  67,9% przy 250 i 44,6% przy 500. Gdyby ktoś upierał się przy przeniesieniu liczb, wypadłoby gorzej, nie lepiej. Badanie jest z lipca 2025,
+  więc nasze modele pewnie są przesunięte. Tym bardziej potrzebny jest nasz pomiar, nie cudzy.
+- **„To wyjaśnia 45 z 68” jest mocniejsze niż dane.** Te same ucieczki tłumaczą też inne przyczyny. Reguła była na przykład warunkowa i nie
+  zadziałała w tym kontekście, albo była sformułowana zbyt ogólnie. Nie mamy pomiaru, który odróżnia te przyczyny.
+
+Decyzja o budżecie stoi bez zmian. Cel „poniżej 150” to cel projektowy, a nie próg wzięty z badania.
+
+### Poprawka 2 (zmienia liczbę). Górna granica liczyła learned-patterns dwa razy
+
+**Obecnie.** Górna granica reviewera ~650–710, buildera ~710. Wersja dla operatora: „licząc zdania w regułach, do siedmiuset”.
+
+**Proponuję.** Reviewer do około 500, builder do około 670.
+
+**Dlaczego.**
+
+- **Reviewer.** Dubel to te same zdania wklejone drugi raz. Kosztuje tokeny (poprawnie policzone), ale nie przynosi nowych poleceń, a IFScale liczy
+  różne polecenia. Bez dubla: 365 − 38 − 38 + 211 = 500.
+- **Builder.** D2 wzięło najdłuższy z pięciu ostatnich promptów zadania (97 poleceń), a mediana ma 57. Na medianie builder ma dziś 497
+  zamiast 537, górna granica wynosi 670, a po podjętych decyzjach około 480–490 zamiast 520–530.
+- **Wniosek się nie zmienia.** Oba nadal są wyraźnie ponad 150.
+
+### Poprawka 3 (zmienia sposób wdrożenia decyzji). Licznik zależy od formy zapisu
+
+**Obecnie.** Decyzja 6a pkt 18: warstwa stała poniżej 150 „liczona skryptem tą samą metodą co D2”, jako test szablonu.
+
+**Proponuję.** Zostawić cel, test i brak STOP-ów, ale zmienić definicję jednostki w teście:
+
+- Warstwa stała roli ma jeden jawnie oznaczony blok poleceń (stały nagłówek). Każde polecenie to jedna pozycja listy w tym bloku.
+- Test liczy pozycje w bloku.
+- Test pada także wtedy, gdy poza blokiem pojawia się zdanie nakazowe. Polecenie nie może się ukryć w prozie.
+
+**Dlaczego.**
+
+- **Licznik D2 liczy każdą pozycję listy, a zdanie prozą tylko wtedy, gdy ma słowo nakazu.** U reviewera 156 z 365 jednostek (43%) to pozycje
+  list bez takiego słowa, u buildera 282 z 497 (57%). Ta sama treść przepisana prozą w ogóle nie byłaby liczona.
+- **Test tą metodą nagradza przepisanie list na prozę.** Czyli dokładnie odwrotnie niż polecenia-listy, które sami zalecamy (ETAP1B, IFScale:
+  krótkie polecenia na początku). Autor promptu, który „zbija” liczbę, zrobi prompt gorszym, a test przejdzie.
+- **Jawny blok zamyka obie drogi.** Liczba poleceń staje się tym, co autor świadomie wpisał, a nie tym, co wyłapał regex.
+
+To zmienia szczegół decyzji operatora, więc wymaga Twojej zgody.
+
+### Poprawka 4 (zmienia uzasadnienie i oczekiwania; dopisana po rozmowie z operatorem)
+
+**Obecnie.** Budżet instrukcji jest uzasadniany procentem przestrzegania z IFScale. Polecenia-listy mają domknąć ~60–70% uwag B, bo dziś reguły
+toną w tle 300–500 nakazów. Dodatek (d) mini-runu, czyli 100 kontra 400 instrukcji, jest dopiskiem.
+
+**Proponuję.**
+
+- **Uzasadnienie budżetu: trafność i koszt.** Około dwóch trzecich poleceń reviewera nie dotyczy kodu, który ogląda. Zdjęcie ich do warstwy
+  referencyjnej opłaca się niezależnie od krzywej przestrzegania: mniej rozproszenia i mniejszy kontekst w każdej turze.
+- **Oczekiwania wobec poleceń-list niższe.** D1 (połowa nowych findingów to przeoczenia w oglądanym kodzie) i etap 1b (164 z 200 uwag B
+  w zakresie promptu, a mimo to przeoczone) wskazują raczej na granicę uwagi i osądu przy czytaniu kodu niż na nadmiar reguł. Założenie „60–70%”
+  zostaje z warunkiem odwrotu, ale nie jest oczekiwanym wynikiem.
+- **Mini-run (d) jako test rozstrzygający.** Jeśli marker przy ~400 instrukcjach ginie wyraźnie częściej niż przy ~100, liczba poleceń jest
+  u nas dźwignią jakości, a budżet 150 celem jakościowym. Jeśli nie ginie, budżet zostaje jako porządek i koszt, a główną dźwignią jakości są małe
+  naprawy (D1) i ewentualnie równoległe próbki (decyzja o kupowaniu zasięgu).
+
+**Dlaczego.** Po poprawce 1 procenty z IFScale nie opisują naszych poleceń. Decyzja o trzech warstwach stoi, ale panel nie powinien budować
+na liczbie, której nie zmierzyliśmy.
+
+### Porządkowe
+
+- **„Dolna granica” (same pozycje list) nie jest dolną granicą.** Liczy też rzeczy, które poleceniami nie są. W próbce buildera 7 z 30 to spis treści,
+  frontmatter skilla, listy „kiedy używać tego skilla” albo opis katalogów. Jednocześnie pomija polecenia zapisane prozą bez słowa nakazu.
+  Proponuję nazwę „liczba pozycji list”.
+- **Pliki od D2 się nie zmieniły** (CLAUDE.md 21 008 znaków, learned-patterns 46 897, coding-rules 11 016 — jak w D2), więc przeliczenie
+  porównuje to samo.
+- **Próbka ma 30 jednostek na rolę, więc udziały są przybliżone.** Polecenia zawsze obowiązujące u reviewera: 10 z 30, przedział 19–51%.
+  „Około 110” to rząd wielkości, nie liczba do testu.
+
+### Co się zmieni po akceptacji
+
+Liczby i wniosek D2 w: ETAP3 §7 (wiersz D2 i wniosek dla panelu), PANEL-WEJSCIE §4 (D2) i §2 pkt 3 (definicja jednostki w teście — tylko po
+akceptacji poprawki 3), PANEL-WEJSCIE-DLA-OPERATORA część 2 punkt trzeci, mapa walidacji obu wersji (wpis §2 pkt 3, punkt odniesienia),
+HANDOFF wiersz 3½ i 6a pkt 18 (dopisek przy „tą samą metodą”, jeśli poprawka 3 przejdzie), rekord telemetrii bez zmian (`agent.instrukcje_stale`
+bierze liczbę z testu, więc zmiana definicji w teście przechodzi sama).

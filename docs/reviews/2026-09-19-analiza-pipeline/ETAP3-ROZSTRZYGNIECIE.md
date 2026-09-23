@@ -210,6 +210,13 @@ Zweryfikowane grepem w tej sesji (`.claude/workflows/*.js` bez `__tests__`, `.cl
   **Wniosek dla panelu:** nawet po decyzjach każdy agent siedzi w paśmie IFScale 150–500 (84–99% → ~68%), a builder przy górnej krawędzi; polecenia-listy
   (4–5 na oś) są marginalne wobec tła — budżet instrukcji musi być projektowany jako CAŁOŚĆ na rolę (cel: <150), inaczej listy dołożone do 300–500 istniejących
   nakazów nie mają lepszych szans niż reguły, które zastępują. Dubel learned-patterns w dossier = 13k tokenów × 6 reviewerów na fazę za nic.
+  **Korekta 2026-09-23 (przegląd domknięć, PRZYJĘTA; `skrypty/d2r_rewizja_budzetu.py` → `dane/d2r-rewizja-budzetu.txt`):** (1) IFScale liczy instrukcje
+  „użyj dokładnie słowa X” (atomowe, zawsze obowiązujące, sprawdzane regexem) — nasze jednostki to w ~2/3 polecenia warunkowe i reguły wielozdaniowe, więc
+  procenty „84–99% → ~68%” NIE przenoszą się; kierunek (więcej poleceń → ciche pominięcia, przewaga wczesnych) stoi; Claude w IFScale traci szybciej (Opus 4:
+  94,6% / 67,9% / 44,6% przy 150 / 250 / 500); (2) górna granica bez podwójnego liczenia learned-patterns: reviewer ~500 (nie ~710), builder na medianie
+  iu.prompt (57, nie max 97) dziś 497, górna 670, po decyzjach ~480–490; (3) „dolna granica” = liczba pozycji list (liczy też spisy treści i opisy);
+  (4) budżet uzasadnia TRAFNOŚĆ i KOSZT (~2/3 poleceń reviewera warunkowe, ~110 zawsze obowiązujących), nie procent przestrzegania; mini-run (d) 100 vs 400
+  rozstrzyga, czy liczba poleceń jest u nas dźwignią jakości.
 
 - **D3 (L15, L1b) GOTOWE** — `dane/d3-mapa-rol-agentow.txt`: 45 slotów ról w 6 workflowach = **36 bez pliku agenta + 9 z plikiem (8 plików)**; w jednej fazie
   autopilota ~24 bez pliku (potwierdza L1). `dev-autopilot-wf.js` ma 19 wywołań i zero `agentType`. Prompt osi review żyje w dwóch miejscach dla 4 osi (plik + fokus

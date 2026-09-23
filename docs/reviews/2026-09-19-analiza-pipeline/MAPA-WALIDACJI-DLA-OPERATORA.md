@@ -59,7 +59,9 @@ Miara jakości to uwagi bota po naszym review, zgodnie z Twoją decyzją z pocz�
 
 **Co liczymy.** Warstwa stała: liczba instrukcji na rolę z testu szablonu, cel poniżej 150. Warstwa referencyjna: długość promptu delegacji, żeby doklejanie nie rozdmuchało go ponad dzisiejsze 10 tysięcy znaków plus 1–2 tysiące wycinka. Skutek: miara jakości w podziale na osie. To, czy agent przestrzega instrukcji, którą ma, sprawdzamy raz w miesiącu na próbce kilkunastu uwag, a nie w każdym runie.
 
-**Dziś.** Reviewer security ma 365 instrukcji, builder danych 537, po już podjętych decyzjach nadal 310–320 i 520–530. Prompt delegacji: builder 9,7 tysiąca znaków, reviewerzy 8–11 tysięcy, dedup 32 tysiące. Jakość: 3,5 poważnej uwagi na sto plików we wrześniu. Tło dla próbki miesięcznej: w etapie 1b 164 z 200 uwag B były w zakresie promptu, ale zostały przeoczone.
+**Dziś.** Reviewer security ma 365 instrukcji, builder danych około 500 (537 w pierwszej wersji, liczonej na najdłuższym prompcie zadania zamiast typowego),
+po już podjętych decyzjach nadal 310–320 i około 480–490. Około 110 poleceń reviewera obowiązuje zawsze, reszta jest warunkowa i ma zejść do warstwy
+doklejanej. Test szablonu liczy pozycje jednego oznaczonego bloku poleceń, nie słowa nakazu w tekście (przegląd 23 września). Prompt delegacji: builder 9,7 tysiąca znaków, reviewerzy 8–11 tysięcy, dedup 32 tysiące. Jakość: 3,5 poważnej uwagi na sto plików we wrześniu. Tło dla próbki miesięcznej: w etapie 1b 164 z 200 uwag B były w zakresie promptu, ale zostały przeoczone.
 
 **Kiedy patrzymy.** Test szablonu pada od razu, prompt po jednej fazie, skutek po pięciu PR-ach.
 
@@ -148,6 +150,11 @@ To jest ta mapa. Przed nią zero wymogów miało metrykę, po niej 21 z 21. Sęd
 **Odwrót.** Wspólny próg: poważne uwagi osi w oknie pięciu PR-ów co najmniej dwa razy powyżej oczekiwanych i co najmniej trzy. Wtedy wraca reguła lub oś, a klasa wskazuje, którą regułę przywrócić.
 
 **Kiedy patrzymy.** W oknie pięciu PR-ów. Przed wdrożeniem nie ma żadnego pomiaru, to oceny agentów z etapu 1b.
+
+**Oczekiwanie po przeglądzie 23 września.** Sześćdziesiąt do siedemdziesięciu procent to cel z ocen agentów, a nie wynik, na który liczymy. Połowa
+nowych findingów po naprawie to przeoczenia w kodzie, który reviewer oglądał, a większość uwag bota była w zakresie promptu. To wygląda bardziej na
+granicę uwagi niż na brak reguł, więc realny spadek może być wyraźnie mniejszy. Mini-run („sto kontra czterysta poleceń”) pokaże, czy sama liczba
+poleceń ma tu znaczenie.
 
 ### Założenie 2. Performance zastąpić bramkami i checklistą w correctness
 

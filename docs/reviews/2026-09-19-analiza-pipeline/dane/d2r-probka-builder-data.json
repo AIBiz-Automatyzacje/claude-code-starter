@@ -1,0 +1,242 @@
+[
+ {
+  "zrodlo": "skill supabase-dev-guidelines",
+  "typ": "lista",
+  "tekst": "- RLS dla izolacji danych",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 0
+ },
+ {
+  "zrodlo": "iu.prompt (mediana z 5)",
+  "typ": "lista",
+  "tekst": "- Klasa uwag odrzucana hurtowo drugi raz (progi 50/300 linii dla `texts.ts` i testów) jest sygnałem do zmiany KONFIGURACJI recenzenta, nie kolejnego ręcznego odrzucania — dokładnie to robi wpis `.coderabbit.yaml` w tym I",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 1
+ },
+ {
+  "zrodlo": "skill security",
+  "typ": "lista",
+  "tekst": "3. **Szukaj brakujacej walidacji** -- kazdy `req.json()` bez Zod parse to finding.",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 2
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- NIGDY nie osłabiaj asercji (np. `toBe(429)` na `toBeDefined()`) — to nie jest fix",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 3
+ },
+ {
+  "zrodlo": "agent feature-builder-data",
+  "typ": "lista",
+  "tekst": "5. RLS policies blokują nieautoryzowany dostęp (test fixture: anon user nie widzi cudzych rekordów)",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 4
+ },
+ {
+  "zrodlo": "agent feature-builder-data",
+  "typ": "zdanie",
+  "tekst": "**Testy razem z kodem.**  Obowiązkowe pryncypia (z załadowanych skilli):  Po napisaniu kodu uruchom kolejno:  Jeśli któryś krok się nie powiedzie — **napraw KOD, nie test, nie politykę bezpieczeństwa**.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 5
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Duplication > Complexity — prosta duplikacja kodu jest LEPSZA niż złożona abstrakcja DRY",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 6
+ },
+ {
+  "zrodlo": "skill sentry-integration",
+  "typ": "zdanie",
+  "tekst": "> **Stan SDK** > > - **React SDK:** v10+ (funkcyjne integracje, React 19 error hooks) ✅ > - **Edge Functions:** `npm:@sentry/deno@^10` na Deno 2.x, handler `export default { fetch: withSupabase(...) }` ⚠️ — `@sentry/deno",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 7
+ },
+ {
+  "zrodlo": "iu.prompt (mediana z 5)",
+  "typ": "lista",
+  "tekst": "- [ ] Modyfikuj: `apps/server/src/routes/membership.test.ts`",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 8
+ },
+ {
+  "zrodlo": "skill security",
+  "typ": "lista",
+  "tekst": "- Zmiany w autentykacji lub autoryzacji (auth/authz)",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 9
+ },
+ {
+  "zrodlo": "CLAUDE.md",
+  "typ": "lista",
+  "tekst": "- **Odmowa limitu i odmowa dostępu są CZYTELNE, nigdy ciche** — odwrotnie niż `POST /e`. Brak funkcji lub kolumny (kod przed migracją) daje jawną odmowę z raportem, nie sukces bez limitu.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 10
+ },
+ {
+  "zrodlo": "agent feature-builder-data",
+  "typ": "lista",
+  "tekst": "5. **Atak na niewiadome** — jeśli IU jest niejasne (np. brakuje policy dla DELETE), zwróć `Status: blocked` z pytaniem.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 11
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **Blokada serializuje tylko ścieżki, które DOTYKAJĄ tego samego wiersza — i musi żyć do końca efektu, a nie do końca decyzji**: „atomowa decyzja w RPC\" nie zamyka wyścigu, gdy druga ścieżka pisze do INNEJ tabeli (publi",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 12
+ },
+ {
+  "zrodlo": "skill sentry-integration",
+  "typ": "lista",
+  "tekst": "- [Resources](#resources)",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 13
+ },
+ {
+  "zrodlo": "skill supabase-dev-guidelines",
+  "typ": "lista",
+  "tekst": "- \"supabase/**\"",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 14
+ },
+ {
+  "zrodlo": "agent feature-builder-data",
+  "typ": "lista",
+  "tekst": "- Type safety: bez `any`, explicit return types",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 15
+ },
+ {
+  "zrodlo": "iu.prompt (mediana z 5)",
+  "typ": "lista",
+  "tekst": "- Test (unit): jak wyżej",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 16
+ },
+ {
+  "zrodlo": "skill security",
+  "typ": "lista",
+  "tekst": "6. **Fail-closed** -- blad sprawdzenia dostepu = odmowa, nigdy przyznanie (A10:2025)",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 17
+ },
+ {
+  "zrodlo": "skill security",
+  "typ": "lista",
+  "tekst": "3. **Content Security Policy** -- czy istnieje i czy jest restrykcyjna?",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 18
+ },
+ {
+  "zrodlo": "agent feature-builder-data",
+  "typ": "zdanie",
+  "tekst": "Przeczytaj `.claude/rules/learned-patterns.md` (jeśli istnieje) — reguły wyprodukowane z problemów rozwiązanych w poprzednich zadaniach tego projektu.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 19
+ },
+ {
+  "zrodlo": "skill supabase-dev-guidelines",
+  "typ": "lista",
+  "tekst": "- [ ] Dodaj indeksy dla często używanych kolumn",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 20
+ },
+ {
+  "zrodlo": "iu.prompt (mediana z 5)",
+  "typ": "lista",
+  "tekst": "- [ ] Modyfikuj: `apps/server/src/access/membership-service.test.ts`",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 21
+ },
+ {
+  "zrodlo": "CLAUDE.md",
+  "typ": "lista",
+  "tekst": "- `docs/diagramy/`, `docs/sesje/` — diagramy i handoffy między sesjami",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 22
+ },
+ {
+  "zrodlo": "skill security",
+  "typ": "lista",
+  "tekst": "1. **Stworz macierz dostepu:**",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 23
+ },
+ {
+  "zrodlo": "agent feature-builder-data",
+  "typ": "lista",
+  "tekst": "6. **Brak refaktoryzacji** — jeśli widzisz brzydką migrację, NIE naprawiaj. Zgłoś w `Następne kroki`.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 24
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Preferuj ekstrakcję do nowego modułu/komponentu zamiast komplikowania istniejącego",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 25
+ },
+ {
+  "zrodlo": "CLAUDE.md",
+  "typ": "lista",
+  "tekst": "7. **Awaria trackingu nigdy nie degraduje oferty.** `POST /e` zawsze odpowiada 204; `/o/<slug>` serwuje z cache także przy niedostępnej bazie.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 26
+ },
+ {
+  "zrodlo": "iu.prompt (mediana z 5)",
+  "typ": "lista",
+  "tekst": "- `pnpm --filter @oferty/server test` zielony",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 27
+ },
+ {
+  "zrodlo": "skill supabase-dev-guidelines",
+  "typ": "lista",
+  "tekst": "- Tworzenie lub modyfikacja tabel bazy danych",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 28
+ },
+ {
+  "zrodlo": "CLAUDE.md",
+  "typ": "zdanie",
+  "tekst": "**Zanim uznasz migrację za wdrożoną, sprawdź ją na bazie środowiska docelowego** — weryfikacja bez hasła: Management API `POST /v1/projects/<ref>/database/query` albo `select` na kolumnie przez PostgREST kluczem sekretny",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 29
+ }
+]

@@ -1,5 +1,7 @@
 D2 — budzet instrukcji per rola (oferty-online, /Users/kacper_trzepiecinski/Documents/Kodowanie/oferty-online)
 Skrypt: skrypty/d2_budzet_instrukcji.py
+!!! KOREKTA 2026-09-23: d2r-rewizja-budzetu.txt — gorna granica bez podwojnego liczenia LP (reviewer ~500), builder na medianie (497), procenty IFScale
+!!! nie przenosza sie (inna jednostka), test budzetu liczy oznaczony blok polecen. Patrz PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D2.
 
 === reviewer security ===
   plik agenta security-sentinel.md                             13129 zn ~  3751 tok | list   91 | zdan nakaz   13 | razem  104

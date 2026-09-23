@@ -77,14 +77,19 @@ jako wyjątki. Co Ci to da: kilkanaście plików zamiast czterdziestu i najwięk
 zostają. Dlaczego skille zostają: działają, a dobieranie ich per jednostka pracy nie jest warte logiki w orkiestratorze.
 
 **Trzy. Budżet instrukcji w trzech warstwach.**
-Problem: policzyliśmy, ile poleceń naprawdę dostaje jeden reviewer. Wyszło około trzystu sześćdziesięciu pięciu, a licząc zdania w regułach, do siedmiuset.
-Builder danych: pięćset trzydzieści siedem. Literatura mówi, że przy pięciuset instrukcjach model przestrzega około dwóch trzecich, a błędem jest ciche
-pominięcie. To wyjaśnia, dlaczego czterdzieści pięć z sześćdziesięciu ośmiu defektów, które CodeRabbit znalazł po nas, miało regułę i właściciela,
-a mimo to przeszło. Przyczyna: reguły dokładano latami, learned-patterns wchodził dwa razy (raz z reguł, raz w dossier), skille builderów niosą sto
-siedemdziesiąt osiem poleceń. Rozwiązanie, które wybrałeś: warstwa stała na rolę poniżej stu pięćdziesięciu instrukcji, pilnowana testem szablonu
-(pada przy edycji promptu, nigdy nie zatrzymuje runu); warstwa referencyjna bez limitu, którą orkiestrator dokleja po plikach jednostki, bo instrukcja
-„przeczytaj X" jest pomijana jak każda inna; warstwa mechaniczna w linterze. Skille builderów nie są skracane, tylko dzielone. Co Ci to da: polecenia-listy
-dostaną szansę, której nie miałyby dołożone do trzystu istniejących nakazów.
+Problem: policzyliśmy, ile poleceń naprawdę dostaje jeden reviewer. Wyszło około trzystu sześćdziesięciu pięciu, a licząc wszystkie zdania w regułach,
+do pięciuset (pierwsza wersja mówiła „do siedmiuset”, bo policzyła learned-patterns dwa razy). Builder danych: około pięciuset. Literatura pokazuje kierunek:
+im więcej poleceń naraz, tym więcej cichych pominięć. Procentów z tego badania nie da się jednak przenieść na nas, bo tam „polecenie” to „użyj w tekście
+słowa X”, a nasze reguły są w większości warunkowe i wymagają osądu. To, że czterdzieści pięć z sześćdziesięciu ośmiu defektów, które CodeRabbit znalazł
+po nas, miało regułę i właściciela, jest z tym zgodne, ale tego nie dowodzi. Mocniejszy argument dał przegląd 23 września: około dwóch trzecich poleceń
+reviewera dotyczy technologii albo sytuacji, których oglądany kod często w ogóle nie ma. Rozwiązanie, które wybrałeś: warstwa stała na rolę poniżej stu
+pięćdziesięciu instrukcji, pilnowana testem szablonu (pada przy edycji promptu, nigdy nie zatrzymuje runu); test liczy pozycje jednego oznaczonego bloku
+poleceń, żeby nie dało się go obejść, przepisując listę na prozę; warstwa referencyjna bez limitu, którą orkiestrator dokleja po plikach jednostki, bo
+instrukcja „przeczytaj X” jest pomijana jak każda inna; warstwa mechaniczna w linterze. Skille builderów nie są skracane, tylko dzielone. Co Ci to da:
+agent dostaje stale około stu dziesięciu poleceń, które zawsze go dotyczą, a resztę tylko wtedy, gdy kod jej potrzebuje, więc mniej się rozprasza i mniej
+kosztuje każda tura. Czy sama liczba poleceń psuje u nas jakość, rozstrzygnie mini-run: ten sam znacznik w prompcie ze stu i z czterystu poleceniami.
+Na samych poleceniach-listach nie liczyłbym na domknięcie dwóch trzecich uwag bota. Połowa przeoczeń jest w kodzie, który reviewer oglądał, więc
+wygląda to raczej na granicę uwagi niż na brak reguł.
 
 **Cztery. Learned-patterns w trzech poziomach z ośmioma zabezpieczeniami.**
 Problem: plik z nauczonymi wzorcami urósł do czterdziestu dziewięciu tysięcy znaków i wchodzi bezwarunkowo do trzydziestu pięciu agentów na fazę.
@@ -301,7 +306,9 @@ Godzina pracy na jednym małym zadaniu buildera, metodą markerów z pierwszego 
 jest stosowana w kodzie; czy reguła dostarczona warunkowo jest stosowana (kontrola); czy treść skilla wstrzykniętego w definicji agenta jest stosowana,
 czy tylko zajmuje kontekst; czy ten sam marker przeżywa w prompcie ze stu i z czterystu instrukcji; ile naprawdę wynosi kontekst startowy per klasa
 roli. Odpowiedzi rozstrzygają wariant learned-patterns, czy skille builderów zostają bez zmian, i czy liczba dwadzieścia pięć do trzydziestu pięciu
-procent się broni.
+procent się broni. Pytanie „sto kontra czterysta” jest od przeglądu 23 września rozstrzygające, a nie dodatkowe: to jedyny pomiar tego, czy sama liczba
+poleceń psuje u nas jakość. Jeśli marker przy czterystu ginie wyraźnie częściej, budżet poniżej stu pięćdziesięciu jest celem jakościowym. Jeśli nie,
+budżet zostaje dla porządku i kosztu, a o jakości decydują przede wszystkim małe naprawy.
 
 ---
 

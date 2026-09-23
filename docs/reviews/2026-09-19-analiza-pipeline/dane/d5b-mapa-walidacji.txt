@@ -72,9 +72,11 @@ METRYKA   (a) warstwa stala: max agent.instrukcje_stale per rola ≤ 150 (liczba
           (d) warstwa mechaniczna: faza.bramki.eslint.{trafienia, reguly[]}.
 POLA      agent.instrukcje_stale, agent.prompt_zn [BRAK], run.pr.* [BRAK], faza.bramki.eslint.{trafienia, reguly[]} [BRAK; WYMAGA ZMIANY: skrypt domkniecia
           fazy zapisuje JSON wyniku bramek].
-BASELINE  D2 (pomiar6): reviewer security 365 instrukcji (gorna 710: learned-patterns ×2 eager + dossier), code-quality 310, builder danych 537
-          (iu.prompt 97, trzy skille 178, coding-rules 117–130); po 6a pkt 15/17 nadal reviewer ~310–320, builder ~520–530 = pasmo IFScale 150–500
-          (84–99% → ~68% przestrzegania). Prompt delegacji p50 (kontekst_1_tury): build 9,7k zn, fix 10,7k, reviewerzy 8–11k, verify-batch 11k,
+BASELINE  D2 po przegladzie 2026-09-23 (d2r-rewizja-budzetu.txt): reviewer security 365 jednostek (gorna ~500 — learned-patterns liczony RAZ;
+          dubel eager + dossier to koszt 13k tok, nie dodatkowe polecenia; ~110 zawsze obowiazujacych, ~2/3 warunkowe), code-quality 310, builder danych
+          497 na medianie iu.prompt (57; D2: 537 na max 97; trzy skille 178, coding-rules 117–130); po 6a pkt 15/17 nadal reviewer ~310–320, builder
+          ~480–490. Procentow IFScale NIE przenosic (inna jednostka: „uzyj slowa X”); wlasny punkt na krzywej = mini-run (d). Jednostka testu
+          szablonu: pozycje oznaczonego bloku polecen warstwy stalej (nie licznik D2 — zalezny od formy zapisu). Prompt delegacji p50 (kontekst_1_tury): build 9,7k zn, fix 10,7k, reviewerzy 8–11k, verify-batch 11k,
           scribe 24,5k, dedup 32k. Jakosc: epoka wrzesniowa 3,5 B P1/P2 na 100 plikow (MIARA JAKOSCI); tlo z 1b: „w-zakresie-ale-przeoczone" 164/200 B
           (82%), „poza-zakresem-promptu" 30 — to jest punkt odniesienia dla probki miesiecznej; ETAP1: 45/68 ucieczek mialo regule w kontekscie.
 HORYZONT  (a) KONFIGURACJA — test szablonu pada od razu; (b) 1 faza; (c) JAKOSC — 5 PR.
@@ -203,6 +205,9 @@ BASELINE  epoka wrzesniowa 3,5/100 plikow; per typ: dane-serwer 4,3, logika dash
 ODWROT    PROG ODWROTU (wspolny) per os: B P1/P2 osi w oknie 5 PR ≥ max(3, 2 × oczekiwana z B0) przywraca regule/os; klasa = diagnoza, ktora regule
           przywrocic (PANEL §6 wiersz 1, jednostka poprawiona: okno PR, nie „5 faz").
 HORYZONT  JAKOSC — okno 5 PR. Skutecznosc mierzalna DOPIERO po wdrozeniu (ETAP3 §1.2) — zero runow przed.
+UWAGA     (przeglad D2, 2026-09-23) oczekiwanie OBNIZONE: −60–70% to cel z ocen agentow, nie prognoza; D1 (polowa nowych findingow = przeoczenia
+          w ogladanym kodzie) i 1b (164/200 w zakresie promptu) wskazuja raczej na granice uwagi niz nadmiar regul; mini-run (d) rozstrzyga, czy
+          liczba polecen jest dzwignia jakosci.
 
 --- zal. 2. performance ZASTAP (size-limit + advisors + 5-liniowa checklista w correctness) ---
 METRYKA   (a) B P1/P2 bota OSI performance (run.pr.klasy[].os == performance; klasy N+1, limit, indeks, Promise.all — do diagnozy) w oknie 5 PR; (b) bramki: faza.bramki.sizeLimit i

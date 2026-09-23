@@ -44,8 +44,11 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    MCP: `disallowedTools: mcp__*` dla reszty; Figma tylko builder UI / fullstack / tester E2E gdy zadanie ma `figma_screens`; Supabase MCP tylko w sesji głównej (6a pkt 10).
 2. **Kontekst per klasa roli wg §1 pkt 1** (CLAUDE.md u builderów/reviewerów, `omitClaudeMd` mechaniczne, bypass zostaje) + `skills:` u builderów ZOSTAJE (7–12k tok/agent; dobór per IU niewart logiki).
 3. **Budżet instrukcji w TRZECH WARSTWACH (6a pkt 18 po D2):** (1) warstwa STAŁA na rolę (mandat, kilkanaście poleceń-list, format wyniku, bloki workflowu)
-   **<150 instrukcji**, liczona skryptem metodą `skrypty/d2_budzet_instrukcji.py` jako TEST szablonu w `.claude/workflows/__tests__` (pada przy edycji promptu)
-   + w sync-template/doctor; **w runie zero STOP-ów**, co najwyżej liczba w telemetrii; (2) warstwa REFERENCYJNA bez limitu, podzielona po warstwie kodu
+   **<150 instrukcji** jako TEST szablonu w `.claude/workflows/__tests__` (pada przy edycji promptu) + w sync-template/doctor; **w runie zero STOP-ów**, co najwyżej
+   liczba w telemetrii; **jednostka w teście (przegląd D2 2026-09-23, przyjęte): warstwa stała roli ma JEDEN oznaczony blok poleceń (stały nagłówek), każde polecenie
+   = jedna pozycja listy w bloku; test liczy pozycje bloku i pada, gdy poza blokiem jest zdanie nakazowe** (metoda `d2_budzet_instrukcji.py` — lista + zdania z markerem —
+   zależy od formy zapisu: 43% jednostek reviewera to pozycje list bez słowa nakazu, ta sama treść prozą byłaby niepoliczona, więc test nagradzałby przepisanie list
+   na prozę); uzasadnienie budżetu = trafność i koszt (~2/3 poleceń reviewera warunkowe → warstwa referencyjna), nie procent przestrzegania z IFScale (inna jednostka); (2) warstwa REFERENCYJNA bez limitu, podzielona po warstwie kodu
    i temacie (reguły zachowaniowe coding-rules, checklisty skilli buildera, wpisy learned-patterns), **doklejana przez orkiestrator po plikach jednostki**
    (nie „agent sam sięgnie" — ETAP1 45/68 ucieczek miało regułę); (3) warstwa MECHANICZNA (ESLint/knip/advisors) znika z tekstu. Skille buildera dzielone
    na stałą/referencyjną, nie skracane. Odrzucone: czyste wycinanie, czysty model skillowy.
@@ -141,10 +144,14 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   **Dla panelu:** (1) wybór „n=3 równoległe próbki 2–3 osi skrajnych vs jedna runda z lepszym sceptykiem” (ETAP2 §6, POMIARY §5 pkt 3) NIE wynika z tego
   podziału — sceptyk odsiewa fałszywe, nie znajduje przeoczonych; D1 mówi, ile zasięgu brakuje (22/44), a wybór to decyzja o kupowaniu zasięgu za compute;
   (2) łańcuch pokazuje, że kodu naprawczego nie łapie niezawodnie także kolejna pełna runda → źródłem steruje się po stronie fixa (§2 pkt 9).
-- **D2 (L2) — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`, ETAP3 §7.** Reviewer security dziś ~365 instrukcji (górna ~650–710:
-  learned-patterns ×2 — eager z `.claude/rules/` ORAZ w dossier, 5,7 nakazu/regułę), builder danych ~537 (górna ~710; iu.prompt od plannera 97, trzy skille 178).
-  Po 6a pkt 15/17 nadal reviewer ~310–320, builder ~520–530 = pasmo IFScale 150–500 (84–99% → ~68% przestrzegania). Dubel learned-patterns w dossier = 13k tok × 6 reviewerów na fazę za nic.
-  **Dla panelu:** budżet projektować jako CAŁOŚĆ na rolę (cel <150), „4–5 poleceń na oś" to nie jest liczba, którą agent dostaje → wymóg §2 pkt 3.
+- **D2 (L2) — `skrypty/d2_budzet_instrukcji.py`, `dane/pomiar6-budzet-instrukcji.{json,txt}`, ETAP3 §7; wersja po przeglądzie 2026-09-23:
+  `skrypty/d2r_rewizja_budzetu.py` → `dane/d2r-rewizja-budzetu.txt`.** Reviewer security dziś ~365 jednostek (lista + zdanie z markerem nakazu; górna bez
+  podwójnego liczenia ~500 — learned-patterns ma 5,7 nakazu/regułę i wchodzi DWA razy: eager z `.claude/rules/` ORAZ w całości w dossier, co jest kosztem 13k tok
+  × 6 reviewerów na fazę, ale nie dodatkowymi poleceniami), builder danych ~497 na medianie iu.prompt (górna ~670; trzy skille 178). Po 6a pkt 15/17 nadal reviewer
+  ~310–320, builder ~480–490. Precyzja licznika na próbce 30: reviewer 29/30 to polecenia, builder 23/30; **reviewer: ~1/3 zawsze obowiązujące (~110), ~2/3 warunkowe**.
+  **IFScale mierzy inną jednostkę** („użyj dokładnie słowa X”) — kierunek (więcej poleceń → ciche pominięcia) stoi, procenty 84–99% → ~68% NIE przenoszą się;
+  nasz punkt na krzywej da mini-run (d) (§11). **Dla panelu:** budżet projektować jako CAŁOŚĆ na rolę (cel <150), uzasadniony TRAFNOŚCIĄ i KOSZTEM (warunkowe
+  → warstwa referencyjna, stała ~110 jest osiągalna bez wycinania wiedzy) → wymóg §2 pkt 3; oczekiwania wobec poleceń-list niższe (§6, §8).
 - **D3 (L15, L1b) — `dane/d3-mapa-rol-agentow.txt`.** 45 slotów ról w 6 workflowach = 36 bez pliku agenta + 9 z plikiem (8 plików); `dev-autopilot-wf.js` 19 wywołań,
   zero `agentType`; 0/16 plików ma `tools:`. Prompt osi review żyje w DWÓCH miejscach dla 4 osi (plik + fokus w workflowie), tylko w workflowie dla correctness
   i test-coverage, a code-quality = angielski plik „architecture-strategist" + fokus z trzema osiami — „odchudź prompt o połowę" musi wskazać oba miejsca. Telemetria:
@@ -169,7 +176,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 | założenie | na czym stoi | warunek odwrotu / pomiar | źródło |
 |---|---|---|---|
-| polecenia-listy domkną ~60–70% uwag B | oceny agentów etapu 1b, zero runów; IFScale jednocześnie uzasadnia i grozi | skuteczność mierzalna dopiero PO wdrożeniu, porównanie w tym samym typie kodu względem B0 (baseline po zmianie `.coderabbit.yaml`); wzór warunku (D5b v2 — jednostka i próg poprawione): B P1/P2 bota osi na 100 plików w oknie 5 PR ≥ max(3, 2 × oczekiwana) przywraca regułę/oś, klasa = diagnoza (dawne „>1 P1/P2 klasy X na 5 faz" = 1–2 PR i fałszywy alarm); budżet <150 z D2 | ETAP1B §3, ETAP3 §1.2 |
+| polecenia-listy domkną ~60–70% uwag B | oceny agentów etapu 1b, zero runów; IFScale jednocześnie uzasadnia i grozi (po przeglądzie D2: inna jednostka, tylko kierunek); **oczekiwanie obniżone** — D1 (połowa nowych findingów to przeoczenia w oglądanym kodzie) i 1b (164/200 B „w zakresie promptu”) wskazują raczej na granicę uwagi/osądu niż na nadmiar reguł | skuteczność mierzalna dopiero PO wdrożeniu, porównanie w tym samym typie kodu względem B0 (baseline po zmianie `.coderabbit.yaml`); wzór warunku (D5b v2 — jednostka i próg poprawione): B P1/P2 bota osi na 100 plików w oknie 5 PR ≥ max(3, 2 × oczekiwana) przywraca regułę/oś, klasa = diagnoza (dawne „>1 P1/P2 klasy X na 5 faz" = 1–2 PR i fałszywy alarm); budżet <150 z D2 | ETAP1B §3, ETAP3 §1.2 |
 | performance ZASTĄP (size-limit + advisors + 5-liniowa checklista w correctness) | advisors NIEZMIERZONE (do zmierzenia przy wdrożeniu bramki, na chmurze); size-limit dziś w szablonie nieobecny (0 wystąpień w `.claude/`), zmierzony tylko czas (0,8 s) | ≥3 B P1/P2 osi performance od bota w oknie 5 PR → przywrócić oś warunkowo na tierze low (D5b v2; baseline 5 w 17 PR, wrzesień 1 na 683 pliki; dawne „>1 na 5 faz" alarmowałoby przypadkiem w ~20% okien) | ETAP1 §1, ETAP3 L10, D5b |
 | security odchudzone + warunkowe po stacku | jw. advisors | B P1/P2 osi security od bota na 100 plików, osobno per profil stacku (D5b v2: 33 w 17 PR = 1,72/100, wrzesień 0,88/100; próg odwrotu w oknie 5 PR ≥ max(3, 2 × oczekiwana), dziś 10; „7+6" z ETAP1 = inny zbiór, nieporównywalny) | ETAP1 §1, 6a pkt 18, D5b |
 | packager → JS (agent znika) | ETAP1: bilans ujemny (18,7 M kosztu vs 9,5 M routingu), jedyny pomiar: reviewerzy po dossier czytają 2× więcej Bashem (10,5 → 23 tur); ETAP2: z literatury | pomiar tur Bash/Read reviewerów z dossier i bez na tej samej maszynerii — po wdrożeniu; kierunek tani i odwracalny | ETAP1 §1, ETAP3 L18 |
@@ -202,7 +209,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | teza | filar | co się sypie, jeśli fałszywa | stan po domknięciach |
 |---|---|---|---|
 | kontekst startowy = 25–35% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka ETAP3 §1.1 | kolejność priorytetów | przeliczone; kolejność stoi; potwierdzenie w mini-runie |
-| polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2: listy są marginalne wobec tła 300–500 nakazów → wymóg budżetu §2 pkt 3 |
+| polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2 (po przeglądzie 2026-09-23): listy są marginalne wobec tła ~300–500 poleceń, ale procentów IFScale nie da się przenieść; oczekiwanie „60–70%” obniżone (D1 + 1b: raczej granica uwagi niż nadmiar reguł); mini-run (d) rozstrzyga, czy liczba poleceń jest dźwignią jakości → wymóg budżetu §2 pkt 3 |
 | nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — atrybucja po pliku | architektura pętli fix, ocena zasięgu review | **D1 (po przeglądzie 2026-09-23): pół na pół** — 22/44 przeoczenia, 22/44 urodzone w fixach (w tym łańcuch 4); teza za mocna w obie strony; 3 powtórki, 2 zadania, 1 repo (§4) |
 | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | utrzymanie osi zastępowalnej bramką | stoi (wniosek zachowawczy, L9) |
 | test-coverage do zdegradowania | ETAP2 §0 pkt 5; jedyny pomiar 0/31 | utrata 202 findingów, 31 uwag bez właściciela | **rozstrzygnięte: ZOSTAJE** (§1 pkt 2) |
@@ -230,7 +237,9 @@ z oryginałem (→ import w D5, §12), parametryzacja E2E przed następnym zadan
 
 Jedno małe zadanie buildera, trzy pytania: (a) czy reguła-marker wklejona przez orkiestrator do promptu delegacji („każdy nowy plik zaczyna się komentarzem X")
 jest STOSOWANA w kodzie; (b) to samo dla reguły przez `paths:` (kontrola); (c) czy treść skilla wstrzykniętego przez `skills:` jest stosowana (marker w SKILL.md
-testowym), czy tylko zajmuje kontekst. Dodatki: (d) ta sama para markerów w prompcie ~100 vs ~400 instrukcji (6a pkt 18 po D2); (e) odczyt `usage` pierwszej
+testowym), czy tylko zajmuje kontekst. Dodatki: (d) ta sama para markerów w prompcie ~100 vs ~400 instrukcji (6a pkt 18 po D2) — **po przeglądzie D2 (2026-09-23) test ROZSTRZYGAJĄCY, nie dodatek:**
+jedyny pomiar, czy liczba poleceń jest u nas dźwignią jakości (procenty IFScale mierzą inną jednostkę); marker ginie wyraźnie częściej przy ~400 → budżet 150 jest celem
+jakościowym; nie ginie → budżet zostaje jako porządek i koszt, a główną dźwignią jakości są małe naprawy (D1) i ewentualnie równoległe próbki; (e) odczyt `usage` pierwszej
 tury per klasa roli — potwierdzenie dźwigni 25–35% (ETAP3 §1.1). Zero dodatkowych agentów analizujących. Wynik rozstrzyga wariant learned-patterns i czy `skills:` zostaje bez zmian.
 
 ## 12. Telemetria mechaniczna — rekord i miejsce w runie (D5, 2026-09-21; pełny szkic: `dane/d5-telemetria-rekord.txt`)

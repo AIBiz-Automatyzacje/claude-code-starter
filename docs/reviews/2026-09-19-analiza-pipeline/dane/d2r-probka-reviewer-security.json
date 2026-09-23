@@ -1,0 +1,242 @@
+[
+ {
+  "zrodlo": "CLAUDE.md",
+  "typ": "zdanie",
+  "tekst": "Tu jest tylko to, co trzeba mieć w głowie ZAWSZE:    `OFFER_ORIGIN` (strony ofert + endpoint zdarzeń) i `APP_ORIGIN` (dashboard, MCP, OAuth).",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 0
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "4. **Remediation Roadmap**: Prioritized action items with implementation guidance",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 1
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Używaj structured logging (JSON format, np. pino), nie `console.log`",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 2
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Look for privilege escalation possibilities",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 3
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Provide specific remediation steps for any gaps",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 4
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Nowa dependency = uzasadnienie rozmiaru bundle (sprawdź bundlephobia)",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 5
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- [ ] Zod validation on all form inputs and API boundaries",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 6
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Pisz testy WERTYKALNIE (tracer bullets): jeden test → jego implementacja → następny. NIGDY nie pisz wszystkich testów naraz, a potem całej implementacji (horizontal slicing) — to produkuje testy „kształtu\" (struktur i ",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 7
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **W kolejce at-least-once policz widoczność z CAŁEJ obsługi wiersza, a licznik o ziarnistości konta inkrementuj raz na turę**: `vt` porównuj z sumą wszystkich kroków (DNS bez własnego limitu, sekwencyjne odczyty z bazy",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 8
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Check for Supabase `anon` key vs `service_role` key usage",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 9
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Użyj discriminated unions dla stanu, nie boolean flags",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 10
+ },
+ {
+  "zrodlo": "bloki workflow",
+  "typ": "zdanie",
+  "tekst": "Naruszenie ktorejkolwiek reguly z sekcji \"Reguly projektu\" dossier zglos jako finding.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 11
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Ensure any raw HTML rendering uses DOMPurify sanitization",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 12
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- [ ] No `service_role` key in frontend code",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 13
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "1. Wszystkie testy przechodzą",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 14
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Po zakończeniu zmian ZAWSZE uruchom: typecheck, test, lint (w tej kolejności)",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 15
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Systematically check against each OWASP Top 10 vulnerability",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 16
+ },
+ {
+  "zrodlo": "bloki workflow",
+  "typ": "zdanie",
+  "tekst": "/tmp wyczyszczone) — wroc do czytania pelnych dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 17
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- [ ] RLS policies use `auth.uid()` for user-scoped data",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 18
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- requestAnimationFrame w pętli = sprawdź cancel flag przed kolejnym requestAnimationFrame",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 19
+ },
+ {
+  "zrodlo": "coding-rules",
+  "typ": "lista",
+  "tekst": "- Sprawdź czy nie duplikujesz istniejącej logiki — grep codebase",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 20
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Verify API keys are not exposed in client-side bundles (check Vite env variables -- only `VITE_` prefixed vars are exposed)",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 21
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **Health check kontenera to osobny klient, nie ruch produkcyjny**: sonda działa w minimalnym obrazie (`alpine` nie ma `curl`/`wget`), po pętli zwrotnej (`Host: 127.0.0.1:$PORT` — routing po `Host` odrzuci ją 404) i wid",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 22
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- [ ] HTTPS enforced where needed",
+  "w_kodzie": false,
+  "marker": false,
+  "i": 23
+ },
+ {
+  "zrodlo": "bloki workflow",
+  "typ": "zdanie",
+  "tekst": "=== KONIEC BLOKU GRANIC ZAUFANIA ===  === LIMIT I AKCYJNOSC P3 (nity) === LIMIT: zglos MAKSYMALNIE 5 findingow P3.",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 24
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **Zapis, którego skutek widać na ekranie, kończy się odświeżeniem kopii w pamięci — ale zanim podepniesz `reload()` istniejącego hooka, sprawdź, CO JESZCZE stoi na jego wyniku**: profil czytany RAZ nad `<Outlet>` i zap",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 25
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **Granicę podziału PR wyznaczają kontrakty `packages/shared`, nie katalogi aplikacji — a tekst z zatwierdzonego planu przechodzi plik wzorców pisania jak każdy inny**: 222 pliki w jednym PR to odmowa recenzji („Review ",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 26
+ },
+ {
+  "zrodlo": "agent security-sentinel",
+  "typ": "lista",
+  "tekst": "- Check for sensitive data in logs or error messages",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 27
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **W `sandbox=\"\"` origin jest NIEPRZEZROCZYSTY, więc `'self'` w CSP nie pasuje do niczego — a `@font-face` potrzebuje jeszcze CORS**: ramka bez `allow-same-origin` blokuje własne podzasoby (krój, obrazy) mimo tego sameg",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 28
+ },
+ {
+  "zrodlo": "learned-patterns (eager)",
+  "typ": "lista",
+  "tekst": "- **Skrypt pod zamrożonym URL-em jedzie w nowej wersji na STARYM dokumencie — warunek widoczności pytaj o węzeł, nie o kod odpowiedzi**: gdy dokument jest niemutowalny (albo po prostu zbuforowany), nowa gałąź UI trafia n",
+  "w_kodzie": false,
+  "marker": true,
+  "i": 29
+ }
+]
