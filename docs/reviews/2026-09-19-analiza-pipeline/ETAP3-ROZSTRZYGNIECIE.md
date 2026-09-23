@@ -57,6 +57,13 @@ dodatkowych agentów.**
 
 **Klasyfikacja:** ryzyko-do-raportu (liczba w raporcie: 25–35%, nie 30–40%) + fakt wejściowy do panelu: „allowlista wymaga pliku agenta per rola; dziś 9 ról ma plik, ~24 nie".
 
+**[KOREKTA 2026-09-23, przegląd D4 na Opus 5.5, PRZYJĘTA — `PROPOZYCJA-POPRAWEK-DOMKNIEC.md` §D4, `skrypty/d4r_dzwignia_kontekstu.py` →
+`dane/d4r-dzwignia-kontekstu.txt`:** powyższa arytmetyka zaniżała dźwignię. Liczona agent po agencie z transkryptów (Δ startu × wywołania API, koszt z ostatnim
+wpisem `usage`) ta sama konfiguracja daje **≈ 40–50% kosztu fazy po ścięciu CLAUDE.md**: run 20.09 51,4% (fazy 48–53%), epoka 09-08..09-17 37,1% (z CLAUDE.md
+przyciętym kontrfaktycznie 39,9%), sama allowlista 27–38%. Przyczyny zaniżenia: (1) start 62k z pustego agenta CLI zamiast 115–127k u agentów oferty-online;
+(2) tekst polski ~2 zn/tok, nie 3,4–3,7 (CLAUDE.md 20,6k zn ≈ 10,5k tok, coding-rules ≈ 5,6k); (3) aplikacja desktop ma schematy narzędzi 116–172k zn i nazwy
+MCP 26–55k zn (CLI z pomiaru 1b: 79k i 42k); (4) „30–40%” nie miało rachunku. Kolejność priorytetów stoi; dźwignie nie sumują się (roster 8–10% → rząd 3–7% po allowliście).]**
+
 ### 1.2 L2 — polecenia-listy bez pomiaru, budżet instrukcji nieznany
 
 **Zarzut (trafny):** szacunek „polecenia-listy domkną 60–70% uwag B" (ETAP1B §3) to oceny agentów z etapu 1b, bez runu. ETAP2 §0 pkt 1 (IFScale:
@@ -146,7 +153,7 @@ Pełne opisy, dowody i „co by musiało się stać" są w `dane/etap3-krytyk/kr
 
 | teza | filar | co się sypie, jeśli fałszywa | luki |
 |---|---|---|---|
-| kontekst startowy = 30–40% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka §5 | kolejność priorytetów — **po przeliczeniu §1.1: 25–35%, kolejność stoi** | L1, L8 |
+| kontekst startowy = 30–40% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka §5 | kolejność priorytetów — **po przeliczeniu §1.1: 25–35%, kolejność stoi** [przegląd D4 2026-09-23: ≈ 40–50%, liczone z transkryptów, kolejność stoi] | L1, L8 |
 | polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | cała strona jakościowa projektu „po": pipeline tańszy i gorszy naraz | L2, L12 |
 | nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — 3 pary, atrybucja po pliku | wybór n=3 vs sceptyk; „po STOP-ie E2E sam tester" | L3, L6 |
 | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | panel utrzyma oś zastępowalną bramką albo raport poda zły powód przewagi bota | L9, L4 |
@@ -230,7 +237,7 @@ Zweryfikowane grepem w tej sesji (`.claude/workflows/*.js` bez `__tests__`, `.cl
 
 - polecenia-listy jako założenie z **warunkiem odwrotu** w każdym projekcie + twardy budżet instrukcji per rola (z D2);
 - allowlista `tools:` wymaga pliku agenta per rola (~24 nowe pliki) — koszt wdrożenia, nie dźwignia;
-- dźwignia kontekstu: **25–35%**, nie 30–40%;
+- dźwignia kontekstu: **25–35%**, nie 30–40% [przegląd D4 2026-09-23: ≈ 40–50% kosztu fazy po ścięciu CLAUDE.md — §1.1, korekta];
 - E2E: każdy projekt mówi, co robi ze STOP-ami E2E (3 rekomendacje z przeglądu runów);
 - lista elementów nietkniętych (§5): objąć albo jawnie zostawić;
 - **propozycja dla operatora (L17):** sędziowie dostają czwarty wymiar — koszt wdrożenia i utrzymania jednoosobowego (pliki, testy `__tests__`, nowe agenty).

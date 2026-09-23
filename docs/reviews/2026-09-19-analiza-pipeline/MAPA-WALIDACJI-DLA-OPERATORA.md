@@ -14,7 +14,7 @@ Wymóg numer 13 z pakietu wejściowego mówi: każda zmiana w pipelinie ma wskaz
 
 **Metryka musi wychodzić z rekordu telemetrii, nie z osobnego pomiaru.** Jeśli czegoś nie da się policzyć skryptem z pliku, który i tak powstaje po runie, to nie jest metryka, tylko życzenie. Dlatego przy każdym wpisie stoi nazwa pola, a jeśli pola nie było, dopisałem je do rekordu od razu. Trzy rzeczy świadomie zostawiłem poza telemetrią, bo mierzy się je przed wdrożeniem, jednorazowo: skuteczność sceptyka na starych findingach, warstwy mechaniczne testów na 31 starych uwagach bota i to, czy treść skilli builderów jest w ogóle stosowana (mini-run).
 
-**Punkt odniesienia z etapu zerowego.** Pięć projektów, 2 941 agentów, 1 179 milionów jednostek kosztu, a dla oferty-online po 6 września: 35,5 agenta i 740 tur na fazę. Tam, gdzie etap zerowy nie mierzył (bramka advisors, hook obsługi błędów), napisałem wprost „brak" zamiast zgadywać. Dla jakości punkt odniesienia jest liczony inaczej, patrz niżej.
+**Punkt odniesienia z etapu zerowego.** Pięć projektów, 2 941 agentów, 1 293 miliony jednostek kosztu (pierwotnie 1 179; przegląd D5 poprawił zaniżone tokeny wyjściowe), a dla oferty-online po 6 września: 35,5 agenta i 740 tur na fazę. Tam, gdzie etap zerowy nie mierzył (bramka advisors, hook obsługi błędów), napisałem wprost „brak" zamiast zgadywać. Dla jakości punkt odniesienia jest liczony inaczej, patrz niżej.
 
 **Trzy horyzonty, dobrane do tego, jak szybko liczba się ustala.**
 - Po jednej fazie widać ustawienia: kontekst startowy agenta, czas bramek, budżet instrukcji, czy telemetria zapisała rekord. To cechy konfiguracji, nie statystyka.
@@ -47,11 +47,14 @@ Miara jakości to uwagi bota po naszym review, zgodnie z Twoją decyzją z pocz�
 
 **Dziś.** Agent mechaniczny startuje z 65–67 tysięcy tokenów, reviewer z 95–97, builder ze 118. Pomiar 1 pokazał, że pusty agent na Twoim koncie startuje z 62,8 tysiąca, a po allowliście z 11,6, a z pominięciem CLAUDE.md z 4,5. Trzy czwarte agentów nie ma żadnego pliku. Opłata za powołanie to 22 procent całego kosztu.
 
-**Kiedy patrzymy.** Po jednej fazie, wstępnie już w mini-runie. Cel: mechaniczne około 4,5 tysiąca, reviewer około 15, builder około 25.
+**Kiedy patrzymy.** Po jednej fazie, wstępnie już w mini-runie. Cel po przeglądzie D4 (23 września), liczony na runie z 20 września razem z promptem
+zadania: agenci pomocniczy około 9–10 tysięcy, orkiestracyjni i sceptycy około 25–26, reviewer około 29, builder około 38. To spadek o 70–90%. Wcześniejszy
+cel (4,5 / 15 / 25 tysięcy) był liczony od pustego agenta bez zadania i pokazałby, że allowlista nie działa, choć działałaby.
 
 **Uwaga po przeglądzie 23 września.** Liczby „dziś” pochodzą z trzech tygodni, w których CLAUDE.md w oferty-online urósł z 14 do 87 tysięcy znaków,
 a start agentów rósł razem z nim, u reviewerów z 76 do 145 tysięcy tokenów. Właściwy punkt odniesienia musi pochodzić ze stanu po ścięciu CLAUDE.md,
-osobno dla każdej klasy i modelu, bo haiku startuje o około 35 tysięcy niżej niż opus przy tej samej konfiguracji. Bez tego allowlista dostałaby na konto
+osobno dla każdej klasy i modelu, bo haiku startuje o około 35 tysięcy niżej niż opus przy tej samej konfiguracji. Przegląd D4 ustalił dlaczego:
+haiku liczy ten sam tekst jako około trzy czwarte tokenów opusa. Bez tego allowlista dostałaby na konto
 zysk ze ścięcia CLAUDE.md. Przegląd D5 znalazł pierwszy taki run: 20 września autopilot (85 agentów) pracował ze ściętym CLAUDE.md na gałęzi zadania.
 Start wynosił tam 89 tysięcy u mechanicznych na haiku, 121 u orkiestracyjnych, 125 u reviewerów, 123 u sceptyków i 135 u builderów. Próby są małe, więc
 mini-run to potwierdzi. Do tego telemetria policzy wprost, ile narzędzi dostał agent: dziś 972 narzędzia i 309 skilli. Allowlista ma to zbić do kilkunastu,
@@ -64,7 +67,8 @@ więc jej działanie sprawdzi jedna liczba, bez porównywania epok. Opłata za p
 **Dziś.** Na turę: mechaniczne 86–102 tysiące, reviewerzy 193–224, buildery 238 (średnia z okresu wzrostu CLAUDE.md, więc porównujemy przy podobnym
 rozmiarze stałych plików). Builder robi 39 tur, fix 37, reviewer 15–30, sceptyk 7. Builder kosztuje 1,2 miliona jednostek, reviewer od 468 do 931 tysięcy. Kontekst razy tury to 40 procent kosztu (po poprawce liczenia z przeglądu D5: 36,5).
 
-**Kiedy patrzymy.** Po pięciu fazach. Oczekiwana dźwignia całości: 25–35 procent kosztu fazy.
+**Kiedy patrzymy.** Po pięciu fazach. Oczekiwana dźwignia całości po przeglądzie D4: około 40–50 procent kosztu fazy (wcześniej zapisane 25–35).
+„Kontekst razy tury” liczymy od przeglądu D4 jako udział kontekstu startowego we wszystkich wywołaniach agenta: dziś 55–61 procent kosztu.
 
 ### 3. Budżet instrukcji w trzech warstwach
 

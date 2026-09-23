@@ -119,6 +119,10 @@ Wymog wdrozeniowy dla workflowow: etykiety agentow w workflowach-dzieciach niosa
    ETAP3 §1.1); ctx_sr per klasa; tury per rola (cel correctness ~20, ETAP1).
    [ZMIENIONE 2026-09-23, przeglad D5 §8 pkt 5: ctx_start per klasa I per MODEL (haiku ~93k vs opus ~127k przy tej samej konfiguracji) — takze
    prog anomalii; efekt tools:/omitClaudeMd czytany wprost z agent.kontekst.narzedzia_n / claude_md_zn]
+   [ZMIENIONE 2026-09-23, przeglad D4: cele ~4,5k/~15k/~25k NIEAKTUALNE. Cele ctx_start per klasa i model (stan z 20.09, z promptem zadania):
+   mechaniczne ~9–10k, orkiestracyjne/sceptycy/naprawiacze opus ~25–26k, naprawiacz haiku ~21k, reviewer ~29k, builder ~38k — z nich prog anomalii.
+   Haiku = 0,742 tokena opusa dla tego samego tekstu (tokenizer). Udzial „start × wywolania” w koszcie (1,25 pierwsze, 0,1 kolejne) i dzwignia metoda
+   skrypty/d4r_dzwignia_kontekstu.py jako zestawienie raportu. Grupowanie etapow do porownania z ETAP0 jawne i jedno (digest: tester E2E poza reviewerami).]
    3a. [DOPISANE 2026-09-23] Jakosc z run.pr liczona na UNIKALNYCH watkach bota per PR (zadanie) — suma po runach dev-pr zawyza o 43%.
 3. Jakosc: findingi per os (p1/p2/p3, obalone przez sceptykow, kill rate sceptyka asymetrycznego), P1/P2 po fixie (kontrolaFixa.regresje,
    bezSladu), nierozwiazane P2, P3 pominiete; do zestawienia z uwagami CodeRabbita per PR (dev-pr) = miara jakosci z HANDOFF §1.
@@ -205,6 +209,10 @@ journala); skrypty/d5r_koszt_output.py → d5r-koszt-output.txt (2 941 agentow e
    - NOWE agent.kontekst {claude_md_zn, rules_zn, learned_zn, pamiec_zn (z zalacznika `instructions`: lista plikow z trescia, tak jak widzi je
      agent — od 2026-09-06, 1 030/1 253 agentow), narzedzia_n (deferred_tools_delta.addedNames, np. 972), skille_n (skill_listing.skillCount,
      np. 309)}. Bezposredni odczyt tools: (972 → kilkanascie) i omitClaudeMd (brak claude_md_zn), bez porownan ctx_start miedzy epokami.
+     [PRZEGLAD D4 2026-09-23: agent.kontekst dostaje tez rozmiary w znakach — tools_zn (tablica tools z prompt_snapshot, z podzialem na narzedzia
+     z allowlisty i reszte), odroczone_zn (deferred_tools_delta.addedLines), skille_zn (skill_listing.content), instrukcje per plik {sciezka: zn};
+     z nimi raport przelicza dzwignie metoda d4r (stawki 3,61 / 1,85 / 1,97 zn/tok × mnoznik modelu). Rozmiar balastu narzedzi zalezy od serwerow MCP
+     w sesji startowej (nazwy MCP 26–55k zn miedzy runami).]
    - faza.wiedza.claude_md_zn / indeks_zn = mediana agent.kontekst z fazy (NIE rozmiar pliku w repo — u 188/689 agentow CLAUDE.md widziany
      ≠ main w chwili startu, bo run pracuje na galezi zadania).
    - NOWE agent.cc_wersja (pole `version` kazdego wpisu transkryptu).

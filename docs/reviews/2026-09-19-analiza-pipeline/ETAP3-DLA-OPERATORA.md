@@ -35,6 +35,8 @@ pliku definicji dla każdej roli agenta, a taki plik ma dziś dziewięć ról z 
 odchudzenia.
 
 **Co z tym robimy.** Przeliczyłem to na liczbach z pomiarów. Zostaje dwadzieścia pięć do trzydziestu pięciu procent zamiast trzydziestu do czterdziestu.
+*(Korekta z 23 września, przegląd D4, przyjęta: ta arytmetyka zaniżała wynik. Policzone agent po agencie na prawdziwych zapisach wychodzi około
+czterdziestu do pięćdziesięciu procent kosztu fazy po ścięciu CLAUDE.md. Szczegóły w notatce z przeglądu D4.)*
 Kolejność priorytetów się nie zmienia, bo następna zweryfikowana oszczędność to osiem do dziesięciu procent. Brakujące pliki agentów to praca do zrobienia,
 nie problem z pomiarem, i panel dostanie to jako koszt wdrożenia.
 

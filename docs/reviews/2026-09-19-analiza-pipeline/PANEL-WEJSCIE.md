@@ -16,7 +16,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 - **Sędziowie (HANDOFF §1, 6a pkt 18 L17):** wymiary = koszt (o ile pipeline „dostarcza kod dobrze wykonany") i jakość = P1/P2 od CodeRabbit PO naszym
   review (+ Sentry po wdrożeniu; /bugfix wypada z miary — L13). **Koszt i ryzyko wdrożenia NIE są kryterium** (propozycja czwartego wymiaru WYCOFANA; wdrożenie fazowe wg planu etapu 5).
 - **Nie jest wariantem:** szablon jako plugin (6a pkt 13 — zbadany, odłożony; co najwyżej wzmianka „opcja na przyszłość").
-- **Przed panelem, w etapie 4:** mini-run z 6a pkt 16 (§11 tego pliku). Start panelu wyłącznie na znak operatora, po D5 i rozmowie.
+- **Przed panelem, w etapie 4:** mini-run z 6a pkt 16 (§11 tego pliku). Start panelu wyłącznie na znak operatora, po przeglądzie domknięć i rozmowie.
 
 ## 1. Precedensy — co obowiązuje, gdy dokumenty się rozjeżdżają (ETAP3 §6, potwierdzone 6a pkt 18)
 
@@ -29,17 +29,24 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
    do buildera (ETAP2 §0 pkt 5), nie zamiennik. Scalenie z correctness = wyłącznie opcja wariantu, z warunkiem odwrotu i PO pomiarze warstw 2–3 na 31 uwagach klasy „test niefalsyfikowalny".
 3. **Brak lekkiej rundy correctness po fixie:** POMIARY §5 pkt 3 ją proponował, 6a pkt 15 ją wycofuje na rzecz poleceń-list correctness w `fix:kontrola`
    (ten sam 1 agent, ten sam cykl). Obowiązuje 6a pkt 15.
-4. **Dźwignia kontekstu startowego = 25–35% kosztu fazy, nie 30–40%** (ETAP3 §1.1, przeliczenie dla konfiguracji z pkt 1; szacunek do potwierdzenia
-   odczytem `usage` w mini-runie). Kolejność priorytetów bez zmian: kontekst > roster + mechanika review (8–10%, ETAP1).
-   **[Przegląd D5 2026-09-23: model kosztu etapu 0 zaniżał output (2% → 10,9%, całość 1 179 → 1 293 M jedn.), udziały liczone na całym koszcie ×0,91;
-   dźwignia do przeliczenia w D4 razem z epoką CLAUDE.md z D3. Udziały etapów fazy przesuwają się ≤0,4 pp — kolejność priorytetów stoi.]**
+4. **Dźwignia kontekstu startowego ≈ 40–50% kosztu fazy w stanie po ścięciu CLAUDE.md (przegląd D4 2026-09-23; wcześniej „25–35%” z ETAP3 §1.1)** —
+   konfiguracja z pkt 1: allowlista `tools:` u wszystkich, `omitClaudeMd` u mechanicznych, learned-patterns poza eager; CLAUDE.md, coding-rules, `skills:` zostają.
+   Liczone agent po agencie z transkryptów (`skrypty/d4r_dzwignia_kontekstu.py` → `dane/d4r-dzwignia-kontekstu.txt`): Δ startu × wywołania API (1,25 pierwsze,
+   0,1 kolejne), koszt z ostatnim wpisem `usage`. Run 20.09 (po ścięciu, 85 agentów): 51,4% (fazy 48–53%); epoka 09-08..09-17: 37,1% (duże runy 32,8–40,6%),
+   z CLAUDE.md przyciętym kontrfaktycznie do stanu 20.09: 39,9%; wrażliwość na stawki zn/tok ±15%: 32–44% / 45–60%. Sama allowlista 27–38%; z coding-rules
+   w warstwie referencyjnej (6a pkt 18) +~2 pkt. Rozpiętość: długość pracy agenta (12 vs 22 wywołania) i zestaw MCP w sesji startowej. ETAP3 zaniżał: start 62k
+   z pustego agenta CLI zamiast 115–127k, polski tekst 3,4–3,7 zn/tok zamiast ~2, środowisko aplikacji desktop cięższe niż CLI. Potwierdzenie: mini-run (e).
+   **Kolejność priorytetów stoi**, ale **dźwignie nie sumują się:** roster + mechanika review (8–10%, ETAP1) liczone na dzisiejszym koszcie agenta — po allowliście
+   agent mechaniczny zachowuje ~1/3 kosztu, sceptyk ~1/2, reviewer 56–67%, więc rząd 3–7%; oszczędności z liczby agentów panel liczy na kosztach PO zmianie kontekstu.
+   [Przegląd D5: model kosztu etapu 0 zaniżał output (2% → 10,9%, całość 1 179 → 1 293 M jedn.), udziały ×0,91 — uwzględnione w liczbach wyżej.]
 5. **Model kosztu (etap 0) opisuje oferty-online BEZ napraw N1–N9 (L7):** operator — niska waga; do raportu jako uwaga, nie ryzyko. N1–N9 nie zmieniały liczby agentów na fazę.
 6. **STOP E2E ze środowiska / limitu zewnętrznego → [MANUAL], run idzie dalej (operator 2026-09-21, po D4):** obowiązuje 6a pkt 18 L11. **NIEAKTUALNY:** zapis ETAP1
    „powtórka po STOP-ie E2E = sam tester" (i HANDOFF §5 hipoteza 4, i rek. 3 przeglądu runów) — traci przedmiot, bo taki STOP nie zatrzymuje runu, więc nie ma po nim żadnej powtórki review.
 
 ## 2. Twarde wymogi KAŻDEGO z trzech projektów (6a pkt 15–18; brak któregoś = projekt niekompletny)
 
-1. **Allowlista `tools:` u wszystkich agentów pipeline'u** (−50k tokenów startu na agenta na koncie z pełnym MCP; 498/514 agentów nie wołało MCP — 6a pkt 15).
+1. **Allowlista `tools:` u wszystkich agentów pipeline'u** (−50k tokenów startu na agenta na koncie z pełnym MCP w CLI; w runach z aplikacji desktop 54–77k
+   u opusa i 37–53k u haiku, zależnie od serwerów MCP w sesji — przegląd D4; 498/514 agentów nie wołało MCP — 6a pkt 15).
    Nośnik: **pliki agentów PER KLASA ROLI** jako domyślne (mechaniczny-haiku / orkiestracyjny-opus / reviewer / sceptyk / naprawiacz z Edit + skille),
    per rola tylko jako wyjątek — istniejące 8 plików (4 reviewerów, tester E2E, 3 buildery). Docelowo kilkanaście plików zamiast ~40 (6a pkt 18 po D3).
    Powód: `agent()` w Workflow nie ma opcji `tools:`/`omitClaudeMd`, a prompty 36 ról bez pliku są dynamiczne (JS), więc plik niesie wyłącznie ustawienia.
@@ -168,7 +175,8 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   razem z nimi (mechaniczne 55k → 101k, reviewerzy 76k → 145k, buildery 89k → 160k tok); po ścięciu CLAUDE.md do 21k (09-21) nie było żadnego pełnego runu [nieaktualne — korekta z przeglądu D5 niżej]; punkt
   odniesienia = mini-run (e) na obecnym stanie repo, przed `tools:`; porównania `ctx_start` tylko przy podobnym rozmiarze stałych plików (`faza.wiedza.*`);
   (2) CLAUDE.md nie tłumaczy różnicy między klasami (ładuje się obu): średni kontekst na turę mierzy PRACĘ (reviewer 25 tur, mechaniczny 5); na starcie różnica ~40k,
-  głównie MODEL (haiku ~93k, opus ~127k przy tej samej konfiguracji bez pliku) → cele ctx_start sprawdzać per model; (3) klasy uzasadnia zestaw USTAWIEŃ roli (model,
+  głównie MODEL (haiku ~93k, opus ~127k przy tej samej konfiguracji bez pliku) → cele ctx_start sprawdzać per model [przegląd D4: to tokenizer — ten sam tekst
+  to u haiku 0,742 tokena opusa, p10–p90 0,740–0,745 na 133 agentach]; (3) klasy uzasadnia zestaw USTAWIEŃ roli (model,
   CLAUDE.md, Edit/skille, MCP), nie poziom kontekstu; (4) freshness-audit-wf (4 role) poza mapą do decyzji operatora po D6. Wzrost stałego kontekstu o 46–75k tok
   w 3 tygodnie bez zmiany pipeline'u = najmocniejszy dowód na 6a pkt 1 i 17 (nic nie dopisuje do CLAUDE.md, learned-patterns poza eager).
   **Korekta z przeglądu D5 (2026-09-23, `skrypty/d5r_wykonalnosc_rekordu.py` §11):** „po ścięciu CLAUDE.md zero runów” jest fałszywe — run 20.09 (cookie-consent,
@@ -180,7 +188,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 | # | hipoteza (HANDOFF §5) | stan | źródło |
 |---|---|---|---|
-| 1 | odchudzić kontekst startowy agenta | **OBOWIĄZUJE w wersji §1 pkt 1 / §2 pkt 1–4**; dźwignia 25–35%; MCP/skille przez `tools:`; learned-patterns → wycinek od orkiestratora; dev-compound nie pisze do CLAUDE.md | 6a pkt 15, 17; ETAP3 §1.1 |
+| 1 | odchudzić kontekst startowy agenta | **OBOWIĄZUJE w wersji §1 pkt 1 / §2 pkt 1–4**; dźwignia ≈ 40–50% (przegląd D4; dawniej 25–35%); MCP/skille przez `tools:`; learned-patterns → wycinek od orkiestratora; dev-compound nie pisze do CLAUDE.md | 6a pkt 15, 17; ETAP3 §1.1 |
 | 2 | mniej agentów na fazę (35 → ~15) | **OTWARTA dla panelu** z ustaleniami: stan w prompcie następcy, precheck → env-up, pre-skan → ESLint, zwiń → stan:zapis, NIE scalać kontroli z poprawką, scribe review niższy tier (ETAP1); telemetria = skrypt, NIE agent (nadpisuje część hipotezy o scribe); dedup ZOSTAW z rolą zależną od wyboru n próbek (ETAP2); packager → JS jako założenie z warunkiem odwrotu (ETAP2, §6) | ETAP1 §1, ETAP2 §2, 6a pkt 18 |
 | 3 | roster 6 → 4–5 | **ROZSTRZYGNIĘTE w ETAP1 + L4:** performance ZASTĄP (z warunkiem odwrotu); security ZOSTAW-ODCHUDŹ (prompt 191 → ~90 linii, `plikiKodu>0`, warunkowe po stacku); correctness ZOSTAW-ODCHUDŹ + własny plik; spec-compliance ZOSTAW (otwarte: tylko fazy z kodem); code-quality ZOSTAW-ODCHUDŹ + lint (styl/progi zakazane w prompcie); test-coverage ZOSTAJE (falsyfikowalność); e2e ZOSTAW-ODCHUDŹ (harness → env-up, jedno źródło promptu, parametry z `.env.e2e`). Roster 6 → 5. | ETAP1 §1, §7; 6a pkt 18 |
 | 4 | powtórka po STOP-ie E2E = tylko tester | **NIEAKTUALNA (§1 pkt 6):** STOP środowiskowy/limitowy → [MANUAL], run idzie dalej, powtórka nie istnieje | 6a pkt 18 L11 |
@@ -200,7 +208,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 | packager → JS (agent znika) | ETAP1: bilans ujemny (18,7 M kosztu vs 9,5 M routingu), jedyny pomiar: reviewerzy po dossier czytają 2× więcej Bashem (10,5 → 23 tur); ETAP2: z literatury | pomiar tur Bash/Read reviewerów z dossier i bez na tej samej maszynerii — po wdrożeniu; kierunek tani i odwracalny | ETAP1 §1, ETAP3 L18 |
 | sceptyk asymetryczny ~4× skuteczniejszy | 2 prace zewnętrzne (63–83% kill); u nas obalenia 12% / 19,2% / 10,9%, `obalone_n` per oś = artefakt | kill rate na archiwalnych findingach o znanych werdyktach — po wdrożeniu; ryzyko: kasowanie prawdziwych P1/P2 | ETAP3 L6 |
 | test-coverage scalone z correctness (tylko jako opcja wariantu) | jedyna zmierzona warstwa mechaniczna trafia 0/31 | dopiero po pomiarze warstw 2–3 (Stryker na atrapach i Zod) na plikach z 31 uwag | §1 pkt 2 |
-| batch sceptyków (4 findingi per sceptyk) | hipoteza ETAP1: 105 → ~30 agentów/23 fazy ≈ −2% | odsetek obalonych i degradacji P2→P3 przy batchowaniu vs dziś (10,9% / 23%) | ETAP1 §1 |
+| batch sceptyków (4 findingi per sceptyk) | hipoteza ETAP1: 105 → ~30 agentów/23 fazy ≈ −2% (sama opłata za powołanie; po allowliście start sceptyka 123k → ~26k, więc ≈ −0,4% — przegląd D4, §1 pkt 4) | odsetek obalonych i degradacji P2→P3 przy batchowaniu vs dziś (10,9% / 23%) | ETAP1 §1 |
 | hook `error-handling-reminder.sh` → wycofać | 6a pkt 18 L14 | dopiero gdy bramka ESLint (`no-console` + reguła Sentry) wejdzie do domknięcia fazy | 6a pkt 18 |
 
 ## 7. Elementy nietknięte — każdy projekt OBEJMUJE albo JAWNIE ZOSTAWIA (ETAP3 §5 + rozstrzygnięcia 6a pkt 18)
@@ -226,7 +234,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 | teza | filar | co się sypie, jeśli fałszywa | stan po domknięciach |
 |---|---|---|---|
-| kontekst startowy = 25–35% kosztu fazy | POMIARY §1 (jedno konto, jedno repo) + arytmetyka ETAP3 §1.1 | kolejność priorytetów | przeliczone; kolejność stoi; potwierdzenie w mini-runie; **po D5: model etapu 0 zaniżał output (koszt ×1,097, udziały ×0,91) + epoka CLAUDE.md z D3 → przeliczenie w D4** |
+| kontekst startowy ≈ 40–50% kosztu fazy (dawniej 25–35%) | **po przeglądzie D4:** przeliczenie agent po agencie z transkryptów dwóch epok (579 agentów; model trafia start u 80% agentów opusa co do 1%), zamiast arytmetyki ETAP3 §1.1; nadal jedno konto, jedno repo, jeden run po ścięciu CLAUDE.md | kolejność priorytetów | przeliczone w D4 (§1 pkt 4): 37% przed ścięciem, 51% w runie 20.09; kolejność stoi; dźwignie nie sumują się; potwierdzenie w mini-runie (e) |
 | polecenia-listy domkną 60–70% uwag B | ETAP1B §3 — oceny agentów, zero runów | strona jakościowa projektu „po": tańszy i gorszy naraz | D2 (po przeglądzie 2026-09-23): listy są marginalne wobec tła ~300–500 poleceń, ale procentów IFScale nie da się przenieść; oczekiwanie „60–70%” obniżone (D1 + 1b: raczej granica uwagi niż nadmiar reguł); mini-run (d) rozstrzyga, czy liczba poleceń jest dźwignią jakości → wymóg budżetu §2 pkt 3 |
 | nowe findingi po fixie = review kodu naprawczego | POMIARY §4 — atrybucja po pliku | architektura pętli fix, ocena zasięgu review | **D1 (po przeglądzie 2026-09-23): pół na pół** — 22/44 przeoczenia, 22/44 urodzone w fixach (w tym łańcuch 4); teza za mocna w obie strony; 3 powtórki, 2 zadania, 1 repo (§4) |
 | bramki nie kasują żadnej dodatkowej osi | POMIARY §2 — jedna konfiguracja, ±3 linie, 97/200 | utrzymanie osi zastępowalnej bramką | stoi (wniosek zachowawczy, L9) |
@@ -236,8 +244,9 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 
 ## 9. Jawne ograniczenia do raportu etapu 5 (z ETAP3 §2, po decyzjach 6a pkt 18)
 
-L6 kill rate sceptyka niezmierzony · L7 model kosztu sprzed N1–N9 (uwaga, nie ryzyko) · L8 −50k = konto z pełnym MCP (**opisać jako wiedzę do podzielenia:
-jak radzić sobie z dużą liczbą MCP/skilli przez `tools:`**) · L9 pomiar 2: 97/200, ±3 linie, reguły ERROR nie liczone jako trafienia · L10 advisors niezmierzone
+L6 kill rate sceptyka niezmierzony · L7 model kosztu sprzed N1–N9 (uwaga, nie ryzyko) · L8 −50k = pusty agent w CLI na koncie z pełnym MCP; w runach z aplikacji
+desktop 54–77k (opus) / 37–53k (haiku) i zależnie od serwerów MCP podłączonych w sesji startowej, a tekst polski to ~2 zn/tok (przegląd D4) (**opisać jako wiedzę do
+podzielenia: jak radzić sobie z dużą liczbą MCP/skilli przez `tools:`**) · L9 pomiar 2: 97/200, ±3 linie, reguły ERROR nie liczone jako trafienia · L10 advisors niezmierzone
 (chmura) · L13 /bugfix zero danych · L16 miara sukcesu spadła 12,8 → 5,2/100 plików bez zmiany pipeline'u (typ kodu, nie rozmiar) — baseline per typ kodu przy
 pierwszym pomiarze · L18 packager bez pomiaru mandatu dossier · tabela tez §8. Do raportu dla operatora trzy zdania z ETAP2 §6 (reguły w tekście są pomijane;
 bot łapie nas modelem, nie linterami — po POMIARY §2; powtarzanie review kupuje 1 prawdziwy defekt za 4–5 fałszywych; sceptyk działa 4× słabiej, bo dostaje odpowiedź razem z pytaniem).
@@ -248,7 +257,8 @@ L19 generator `coderabbit-base.yaml` + opis w skillu · martwe agenty kieran/sim
 w szablonie (L11, ETAP1 e2e) · `/bugfix` kandydat do usunięcia (L13) · `error-handling-reminder.sh` po bramce ESLint (L14) · skrypt `doctor` (6a pkt 12) ·
 CLAUDE.md po merge'u + `docs/decisions/` (6a pkt 1, 11) · 8 zmian `.coderabbit.yaml` PRZED pomiarem dev-pr (6a pkt 11) · bramka „zielony main" w bootstrapie (6a pkt 17) ·
 drobne z przeglądu runów rek. 7 (`complete` pomija `*.bak`; `fazyUkonczone` liczyć po stanie zadania; stopka commita STOP z pustą linią) · bramka czystości: brudny
-wyłącznie katalog zadania → commit i kontynuacja, nie STOP (rek. 4). **Otwarte decyzje operatora z przeglądu runów (poza panelem):** scalenie odzyskanej telemetrii
+wyłącznie katalog zadania → commit i kontynuacja, nie STOP (rek. 4). Etap higieny konta (decyzja operatora): rozważyć `cleanupPeriodDays` np. 120 dni — retencja
+transkryptów ~30 dni w aktywnym projekcie skraca okno skanu telemetrii i importu (przegląd D5, porządkowe; luka z kontroli odwrotnej D4). **Otwarte decyzje operatora z przeglądu runów (poza panelem):** scalenie odzyskanej telemetrii
 z oryginałem (→ import w D5, §12), parametryzacja E2E przed następnym zadaniem w oferty-online.
 
 ## 11. Mini-run PRZED panelem (6a pkt 16 + dodatki) — NIE ZROBIONY, ~1 h, metoda markerów z pomiaru 1
@@ -258,7 +268,8 @@ jest STOSOWANA w kodzie; (b) to samo dla reguły przez `paths:` (kontrola); (c) 
 testowym), czy tylko zajmuje kontekst. Dodatki: (d) ta sama para markerów w prompcie ~100 vs ~400 instrukcji (6a pkt 18 po D2) — **po przeglądzie D2 (2026-09-23) test ROZSTRZYGAJĄCY, nie dodatek:**
 jedyny pomiar, czy liczba poleceń jest u nas dźwignią jakości (procenty IFScale mierzą inną jednostkę); marker ginie wyraźnie częściej przy ~400 → budżet 150 jest celem
 jakościowym; nie ginie → budżet zostaje jako porządek i koszt, a główną dźwignią jakości są małe naprawy (D1) i ewentualnie równoległe próbki; (e) odczyt `usage` pierwszej
-tury per klasa roli — potwierdzenie dźwigni 25–35% (ETAP3 §1.1); **po przeglądzie D3 (2026-09-23) to także PUNKT ODNIESIENIA kontekstu startowego per klasa i per model
+tury per klasa roli — potwierdzenie dźwigni ≈ 40–50% i celów `ctx_start` per klasa i model (przegląd D4, §1 pkt 4, §12; dawniej „25–35%” z ETAP3 §1.1);
+zapisać też zestaw narzędzi sesji, z której startuje mini-run (aplikacja desktop / CLI), bo od niego zależy część allowlisty; **po przeglądzie D3 (2026-09-23) to także PUNKT ODNIESIENIA kontekstu startowego per klasa i per model
 na obecnym stanie repo (po ścięciu CLAUDE.md, przed `tools:`)** — telemetria sprzed 09-21 miesza epoki różniące się prawie 2×; **po przeglądzie D5: pierwszy
 punkt odniesienia już jest (run 20.09, §4 D3), więc (e) to potwierdzenie per model; odczyt przez załączniki transkryptu (liczba narzędzi, skilli, pliki instrukcji),
 nie tylko `ctx_start`.** Dodatkowo (f, przegląd D5): czy plik harnessu `workflows/<run>.json` powstaje dopiero po zakończeniu runu i co zostaje po zabiciu sesji
@@ -282,11 +293,12 @@ autopilota z numerem, 335 poziom runu; „#N” w nazwie grupy to numer wywołan
 + globowanie katalogu — była lekiem na agenta kasującego wspólny plik; przy skrypcie, który nigdy nie otwiera pliku do nadpisania, oba formaty są bezpieczne, wybór przy wdrożeniu).
 Po przeglądzie D5: `agent` dopisywany, gdy klucza brak (agentId unikalny); `run` i `faza` — nowa wersja przy zmianie, raport bierze OSTATNIĄ per klucz (wznowienie
 = ten sam runId, 9/9; dwie sesje kończą odpowiedź w ciągu 2 s w 6,6% przypadków → deduplikacja przy odczycie, nie sprawdzanie kluczy przed zapisem):**
-- `agent` — id, etykieta, faza, rola (jak `rola()` w `koszt_agentow.py`), **klasa_roli** (mechaniczny/orkiestracyjny/reviewer/sceptyk/builder/naprawiacz/tester-e2e),
+- `agent` — id, etykieta, faza, rola (jak `rola()` w `koszt_agentow.py`, z dopasowaniem najdłuższej nazwy — przegląd D5), **klasa_roli** (mechaniczny/orkiestracyjny/reviewer/sceptyk/builder/naprawiacz/tester-e2e),
   agentType, model, tury, in/cache_w/cache_r/out/thinking, koszt_jedn (pełny cennik), **ctx_start** (kontekst pierwszej tury = miara dźwigni `tools:`), ctx_sr/max,
   narzędzia, start/koniec/sekundy, wynik (ok/null/brak/**blad**), **proba**, findingi p1/p2/p3 (reviewerzy), obalone (sceptycy), instrukcje_stale (**po D5: liczone
   tym samym modułem co test budżetu — blok poleceń w prompcie delegacji z transkryptu + w pliku agenta**), **kontekst {claude_md_zn, rules_zn, learned_zn,
-  narzedzia_n, skille_n}** (z załączników transkryptu — bezpośredni odczyt `tools:`/`omitClaudeMd`, np. 972 narzędzia i 309 skilli dziś), **cc_wersja**.
+  narzedzia_n, skille_n}** (z załączników transkryptu — bezpośredni odczyt `tools:`/`omitClaudeMd`, np. 972 narzędzia i 309 skilli dziś; po przeglądzie D4 także
+  rozmiary w znakach: tools_zn, odroczone_zn, skille_zn, instrukcje per plik — raport przelicza nimi dźwignię metodą `d4r_dzwignia_kontekstu.py`), **cc_wersja**.
   Koszt: ostatni wpis `usage` każdej odpowiedzi API (pierwszy zaniża output — przegląd D5).
 - `faza` — status, liczniki, przebieg (skrót jak dziś), **findingi_per_os**, e2e {pass, fail, skip, **manual[] z powodem** (L11)}, fix, kontrolaFixa (z `regresje`),
   **bramki** {typecheck, eslint, knip, sizeLimit, migracje, advisors, stryker: status + sekundy}, koszt per etap, sekundy.
@@ -302,8 +314,12 @@ reguła „ostatni agent bez wyniku = run w toku” gubiła na zawsze 4 zakończ
 w skillach z `--status/--powod`) ZBĘDNY.** **C (hook Stop z `--skan --szybko`) = wyzwalacz**, do sprawdzenia w mini-runie; bez niego skan w doctor przy każdym runie —
 retencja transkryptów ~30 dni w aktywnym projekcie (oferty-online od 22.08; 7 tygodni tylko w rzadko otwieranych — przegląd D6), więc sam raport miesięczny to za rzadko.
 
-**Raport miesięczny:** koszt per projekt/zadanie/run i udziały per etap i klasa roli (vs ETAP0 28/25/6/5/17/12%); ctx_start per klasa roli **i per model** (czy allowlista
-działa: cel ~4,5k / ~15k / ~25k; po D5 wprost z `agent.kontekst.narzedzia_n`); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria,
+**Raport miesięczny:** koszt per projekt/zadanie/run i udziały per etap i klasa roli (vs ETAP0 28/25/6/5/17/12% — grupowanie digestu, w którym tester E2E należy
+do „orkiestracja+e2e”, a nie do reviewerów; `d5r-koszt-output.txt` §2 grupuje inaczej: reviewerzy 29,3%, orkiestracja 8,8% — port raportu ma jedno jawne grupowanie
+ról i nim przelicza punkt odniesienia, przegląd D4); ctx_start per klasa roli **i per model** (czy allowlista działa: najpierw `agent.kontekst.narzedzia_n` 972 → ~5
+i claude_md_zn = 0 u mechanicznych; cele ctx_start po przeglądzie D4, stan z 20.09, z promptem zadania: mechaniczne ~9–10k, orkiestracyjne/sceptycy/naprawiacze
+opus ~25–26k, naprawiacz haiku ~21k, reviewerzy ~29k, buildery ~38k — dawne ~4,5k / ~15k / ~25k były pustym agentem bez promptu i szacunkiem ETAP3; haiku liczy
+ten sam tekst jako 0,742 tokena opusa, więc cele per model); findingi per oś, kill rate sceptyka, P1/P2 po fixie; runy per zadanie, STOP-y per kategoria,
 MANUAL per powód, bramki PASS/FAIL i czas; max instrukcje_stale per rola vs 150; anomalie (agent/faza > 2× mediany). **Wymóg dla każdego projektu panelu:** rekord
 w tym kształcie (pola mogą być null, klucze nie mogą zniknąć) i wynik runu zwracany z workflowu (status + powód), bo z niego czyta skan.
 
@@ -321,7 +337,7 @@ NA 100 PLIKÓW PR (PR-y 12–160 plików), per typ kodu i per oś (kolumna `etap
 security 10, spec 4, perf 3); **po przeglądzie D5: liczymy UNIKALNE wątki bota per PR (klucz = zadanie, `klasy[].id`) — suma po runach dev-pr zawyża
 o 43% (255 vs 178) i nierówno, najbardziej PR-y z wieloma turami**. Przykłady: `tools:` → `agent.kontekst.narzedzia_n` (dziś 972 → kilkanaście) i p50 `agent.ctx_start`
 per klasa i model vs punkt odniesienia z runu 20.09 (§4 D3) potwierdzonego mini-runem (e) (telemetria 67–118k to średnia epok, D3 po przeglądzie)
-(cel ~4,5k / ~15k / ~25k), 1 faza; pętla fix →
+(cele po przeglądzie D4: mechaniczne ~9–10k, orkiestracyjne/sceptycy ~25–26k, reviewerzy ~29k, buildery ~38k — spadek o 70–90%), 1 faza; pętla fix →
 B P1/P2 bota na 100 plików fixa vs reszta PR: dziś **14,0 vs 4,7 (wrzesień 7,2 vs 2,2) ≈ 3×**, cel: stosunek spada; sceptyk → DISAGREE_EVIDENCE/
 weryfikowane vs 12% / 19,2% / 10,9%, odwrót: kill rate >50% i ≥3 B P1/P2 w miejscach obalonych w oknie 5 PR; scalenie dev-plan+dev-docs → pełny koszt
 epizodu (do następnego skilla + subagenci) i liczba wiadomości operatora vs mediany dev-plan 2,39 M + dev-docs 0,56 M, wiadomości 1 + 0 (przegląd D6; dawne

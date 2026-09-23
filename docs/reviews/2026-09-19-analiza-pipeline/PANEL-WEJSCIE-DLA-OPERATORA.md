@@ -7,7 +7,7 @@ i przy każdej rzeczy odpowiedzieć na pytanie, dlaczego tak, a nie inaczej. Nie
 ## O co chodzi w tym dokumencie
 
 Przez trzy dni zebraliśmy model kosztu, ocenę każdego reviewera, analizę uwag CodeRabbita, research zewnętrzny, cztery pomiary, krytyka kompletności
-i pięć domknięć. Po drodze podjąłeś osiemnaście punktów decyzji. Leżą w pięciu dokumentach i w jednej długiej sekcji HANDOFF, a część z nich nadpisuje
+i domknięcia D1–D6 z mapą walidacji, a potem przegląd wszystkich domknięć. Po drodze podjąłeś dziewiętnaście punktów decyzji. Leżą w pięciu dokumentach i w jednej długiej sekcji HANDOFF, a część z nich nadpisuje
 wcześniejsze zapisy. Gdyby panel dostał to w tej postaci, każdy z trzech projektantów odczytałby sprzeczności po swojemu i porównywalibyśmy projekty
 zbudowane na różnych założeniach.
 
@@ -47,9 +47,12 @@ defektów, a degradacja była warunkowa i straciła swój warunek.
 **Lekka runda review po naprawie.** Pomiary ją proponowały. Ty ją wycofałeś na rzecz poleceń-list w kontroli diffu naprawczego, bo historia pokazuje,
 że każda dodatkowa runda po fixie to przepalone tokeny. Obowiązuje Twoja decyzja.
 
-**Ile daje odchudzenie kontekstu.** Pierwotna liczba trzydzieści do czterdziestu procent kosztu fazy była policzona dla wariantu, którego nie wybrałeś.
-Po przeliczeniu dla Twojej konfiguracji zostaje dwadzieścia pięć do trzydziestu pięciu. Kolejność priorytetów się nie zmienia, bo następna zweryfikowana
-oszczędność to osiem do dziesięciu procent. Mini-run ma to potwierdzić odczytem rzeczywistego kontekstu startowego.
+**Ile daje odchudzenie kontekstu.** Pierwotna liczba trzydzieści do czterdziestu procent kosztu fazy nie miała rachunku, a etap trzeci przeskalował ją
+do dwudziestu pięciu do trzydziestu pięciu. Przegląd D4 (23 września) policzył to wprost, agent po agencie, na prawdziwych zapisach runów. Po ścięciu
+CLAUDE.md Twoja konfiguracja zdejmuje około czterdziestu do pięćdziesięciu procent kosztu fazy: w runie z 20 września 51%, w runach sprzed ścięcia 37%.
+Sama allowlista narzędzi to 27–38%. Etap trzeci zaniżał, bo liczył od pustego agenta z terminala, a polski tekst wyceniał prawie o połowę za tanio.
+Kolejność priorytetów się nie zmienia. Oszczędności się jednak nie sumują: po allowliście każdy agent kosztuje mniej, więc cięcie liczby agentów
+da raczej trzy do siedmiu procent niż osiem do dziesięciu. Mini-run ma to potwierdzić odczytem rzeczywistego kontekstu startowego.
 
 **Model kosztu sprzed napraw.** Liczby „przed" opisują projekt oferty-online bez dziewięciu napraw z września. Uznałeś to za niską wagę: realną ocenę
 da dopiero wdrożenie na prawdziwym projekcie. Idzie do raportu jako uwaga, nie jako ryzyko.
@@ -61,15 +64,16 @@ po czym robić powtórki.
 
 ---
 
-## Część 2. Jedenaście rzeczy, które każdy z trzech projektów musi mieć
+## Część 2. Trzynaście rzeczy, które każdy z trzech projektów musi mieć
 
 To są Twoje decyzje z sekcji 6a, przetłumaczone na wymogi. Projekt, któremu brakuje któregoś, jest niekompletny, niezależnie od priorytetu.
 
 **Jeden. Allowlista narzędzi u każdego agenta pipeline'u, z plikami definicji per klasa roli.**
-Problem: każdy agent na Twoim koncie startuje z opisami dziewięciuset narzędzi i trzystu skilli, czyli sześćdziesiąt dwa tysiące tokenów, z których
-prawie żaden nie jest używany (498 z 514 agentów nie zawołało żadnego narzędzia MCP). Przyczyna: żaden z szesnastu plików agentów w szablonie nie ma
-pola ograniczającego narzędzia, a trzydzieści sześć ról w ogóle nie ma pliku, bo orkiestrator woła je bez typu. Rozwiązanie: allowlista zbija start
-do kilkunastu tysięcy; nośnikiem są pliki agentów, ale nie po jednym na rolę, tylko po jednym na klasę (maszyneria pomocnicza, orkiestracyjne,
+Problem: każdy agent na Twoim koncie startuje z opisami narzędzi, listą prawie tysiąca nazw narzędzi MCP i trzystu skilli, z których prawie nic
+nie jest używane (498 z 514 agentów nie zawołało żadnego narzędzia MCP). Pusty agent w terminalu to sześćdziesiąt dwa tysiące tokenów. W runach z aplikacji
+desktop jest gorzej: sam ten balast to 54–77 tysięcy tokenów na agenta opusa, zależnie od serwerów MCP podłączonych w sesji. Przyczyna: żaden z szesnastu
+plików agentów w szablonie nie ma pola ograniczającego narzędzia, a trzydzieści sześć ról w ogóle nie ma pliku, bo orkiestrator woła je bez typu.
+Rozwiązanie: allowlista zbija start agenta o 70–90%, na przykład u reviewera ze 125 do około 29 tysięcy (z CLAUDE.md i promptem zadania); nośnikiem są pliki agentów, ale nie po jednym na rolę, tylko po jednym na klasę (maszyneria pomocnicza, orkiestracyjne,
 reviewer, sceptyk, naprawiacz), bo prompty tych ról są i tak generowane w kodzie, a plik niesie wyłącznie ustawienia. Istniejące osiem plików zostaje
 jako wyjątki. Co Ci to da: kilkanaście plików zamiast czterdziestu i największą pojedynczą oszczędność całej analizy. Po przeglądzie 23 września
 jedno zastrzeżenie do pomiaru: start agentów rósł w trzy tygodnie o czterdzieści pięć do siedemdziesięciu pięciu tysięcy tokenów razem z CLAUDE.md
@@ -232,7 +236,7 @@ miesięcznego z sześcioma zestawieniami: koszt, kontekst, jakość, niezawodno�
 
 **Kiedy się uruchamia.** W każdym wariancie zero agentów; agent telemetrii znika z orkiestratora. Po przeglądzie D5 głównym zapisem jest skan: czyta
 plik zapisany przez Claude Code po runie i dopisuje wszystko, czego brak. Krok w skillach, w którym sesja główna podawała status, okazał się zbędny.
-Skan musi przejść w ciągu około siedmiu tygodni, bo tyle żyją transkrypty, więc woła go doctor przy każdym runie, a w mini-runie sprawdzimy hook
+Skan musi przejść w ciągu około trzydziestu dni, bo tyle żyją transkrypty w projekcie, w którym pracujesz na co dzień (przegląd D6), więc woła go doctor przy każdym runie, a w mini-runie sprawdzimy hook
 Stop, który robiłby to automatycznie po każdej odpowiedzi. Przegląd runów proponował jeszcze plik per run zamiast wspólnego; oba formaty są
 bezpieczne i wybór zostaje na wdrożenie.
 
@@ -249,8 +253,11 @@ jeden wpisów, po jednym na każdy z trzynastu wymogów i ośmiu założeń z wa
 pola rekordu, jaki jest punkt odniesienia z etapu zerowego i po ilu fazach patrzymy. Założenia mają dodatkowo warunek odwrotu wyrażony tymi
 samymi polami, więc cofnięcie zmiany nie będzie dyskusją, tylko odczytem.
 
-Horyzonty są trzy. Ustawienia widać po jednej fazie: kontekst startowy agenta per klasa roli (dziś sześćdziesiąt siedem do stu osiemnastu tysięcy
-tokenów, cel od czterech i pół do dwudziestu pięciu tysięcy), czas bramek, budżet instrukcji. Koszt i liczbę tur widać po pięciu fazach, bo
+Horyzonty są trzy. Ustawienia widać po jednej fazie: kontekst startowy agenta per klasa roli, czas bramek, budżet instrukcji. Dla kontekstu punktem
+odniesienia jest run z 20 września, pierwszy po ścięciu CLAUDE.md: od 89 tysięcy tokenów u agentów pomocniczych do 135 tysięcy u builderów. Cele po
+przeglądzie D4, razem z promptem zadania: pomocnicze około 9–10 tysięcy, reviewer około 29, builder około 38. Wcześniejszy cel „od czterech i pół
+do dwudziestu pięciu tysięcy” był liczony od pustego agenta i pokazałby, że allowlista nie działa, choć działałaby. Pierwszym sprawdzeniem jest i tak
+prosta liczba: ile narzędzi dostał agent, dziś 972. Koszt i liczbę tur widać po pięciu fazach, bo
 rozrzut jest duży. Jakość widać w oknie pięciu PR-ów, bo bot recenzuje PR, nie fazę.
 
 Jakość liczymy od wersji drugiej mapy (po Twojej akceptacji dziewięciu poprawek) jako poważne uwagi bota na sto plików PR-a, w podziale na typ kodu
@@ -331,8 +338,8 @@ z Twoją decyzją, że to etap higieny konta.
 Godzina pracy na jednym małym zadaniu buildera, metodą markerów z pierwszego pomiaru. Pięć pytań: czy reguła wklejona przez orkiestrator do promptu
 jest stosowana w kodzie; czy reguła dostarczona warunkowo jest stosowana (kontrola); czy treść skilla wstrzykniętego w definicji agenta jest stosowana,
 czy tylko zajmuje kontekst; czy ten sam marker przeżywa w prompcie ze stu i z czterystu instrukcji; ile naprawdę wynosi kontekst startowy per klasa
-roli. Odpowiedzi rozstrzygają wariant learned-patterns, czy skille builderów zostają bez zmian, i czy liczba dwadzieścia pięć do trzydziestu pięciu
-procent się broni. Pytanie „sto kontra czterysta” jest od przeglądu 23 września rozstrzygające, a nie dodatkowe: to jedyny pomiar tego, czy sama liczba
+roli. Odpowiedzi rozstrzygają wariant learned-patterns, czy skille builderów zostają bez zmian, i czy liczba czterdzieści do pięćdziesięciu
+procent z przeglądu D4 się broni (wcześniej zapisywana jako dwadzieścia pięć do trzydziestu pięciu). Pytanie „sto kontra czterysta” jest od przeglądu 23 września rozstrzygające, a nie dodatkowe: to jedyny pomiar tego, czy sama liczba
 poleceń psuje u nas jakość. Jeśli marker przy czterystu ginie wyraźnie częściej, budżet poniżej stu pięćdziesięciu jest celem jakościowym. Jeśli nie,
 budżet zostaje dla porządku i kosztu, a o jakości decydują przede wszystkim małe naprawy. Odczyt kontekstu pierwszej tury per klasa jest od tego
 samego przeglądu punktem odniesienia dla allowlisty narzędzi, bo stare liczby pochodzą z okresu, gdy CLAUDE.md był nawet cztery razy większy niż dziś.
@@ -345,11 +352,15 @@ plik, z którego czyta telemetria, i czy hook Stop odpala się po zakończeniu r
 
 Pierwsza wersja była pisana z pamięci lektury. Druga runda sprawdziła trzy podejrzane miejsca i dwadzieścia siedem liczb. Trzecia czytała pakiet obok
 źródeł zdanie po zdaniu i znalazła całą pominiętą kategorię (część 3). Czwarta poszła w drugą stronę: skrypt wyciągnął ze źródeł sto sześćdziesiąt
-cztery jednostki z markerem decyzji i dla każdej wskazał odpowiednik w pakiecie; sto osiemnaście o niższym pokryciu przejrzałem ręcznie, dopisałem
-dziewięć uzupełnień, a pozostałe czterdzieści cztery mają zapisaną klasyfikację, dlaczego pakiet ich nie potrzebuje. Jedyne ryzyko, o którym wiem:
+cztery jednostki z markerem decyzji i dla każdej wskazał odpowiednik w pakiecie; pięćdziesiąt osiem o niskim pokryciu przejrzałem ręcznie, a sześćdziesiąt
+o średnim wyrywkowo, dopisałem dziewięć uzupełnień, a pozostałe czterdzieści cztery mają zapisaną klasyfikację, dlaczego pakiet ich nie potrzebuje.
+(Pierwsza wersja tego zdania mówiła o stu osiemnastu przejrzanych ręcznie; przegląd D4 odtworzył kontrolę skryptem i poprawił liczbę.) Piąta runda,
+przegląd D4 z 23 września, powtórzyła kontrolę po wszystkich poprawkach D1–D6 i dołożyła do źródeł propozycje poprawek i projekt telemetrii:
+nic nie zginęło, brakowała jedna drobna rekomendacja o przechowywaniu zapisów rozmów, dopisana do porządków na koncie. Jedyne ryzyko, o którym wiem:
 zdanie decyzyjne bez żadnego ze słów-markerów nie weszło do kontroli. Skrypt zostaje w katalogu i można go odpalić po każdej zmianie.
 
 ## Co teraz
 
-Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa. Potem mini-run na Opusie i panel w trzech runach na Fable, oba
-wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
+Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa — zrobione, a 23 września przejrzałem od nowa wszystkie domknięcia
+(D1–D6, ostatnie D4) i poprawki są w tym pakiecie. Teraz Twoje decyzje z audytu skilli: kandydaci do usunięcia, ideate i freshness-audit, tryb ręczny.
+Potem mini-run na Opusie i panel w trzech runach na Fable, oba wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.

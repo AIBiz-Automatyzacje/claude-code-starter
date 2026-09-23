@@ -101,6 +101,14 @@ dev-compound (reguły do CLAUDE.md i learned-patterns). Akademia: 55k + 54k + 11
 Udział „kontekst startowy × tury × 0,1" w koszcie całkowitym: **40%**; czysty stały narzut (p10 projektu, bez promptu zadania): **26%**.
 Do tego „opłata za powołanie" (1. tura, cache write): **22%**. Razem ~50–60% kosztu to kontekst, którego agent nie potrzebował do zadania.
 
+**KOREKTA 2026-09-23 (przegląd D4, przyjęta; `skrypty/d4r_dzwignia_kontekstu.py` → `d4r-dzwignia-kontekstu.txt`):** skład wyżej liczył ~4 zn/tok dla
+wszystkiego. Stawki skalibrowane na pomiarze 1b i sprawdzone na 584 agentach oferty-online: schematy narzędzi i listy 3,61 zn/tok, nazwy narzędzi MCP (UUID)
+1,85, tekst polski ~2,0 (1,97 z pomiaru, 2,05 z dopasowania do danych); haiku liczy ten sam tekst jako 0,742 tokena opusa. Zmierzony skład startu opusa
+09-08..09-17 (p50 137,5k): schematy narzędzi 42k (to jest „system prompt 44k”), CLAUDE.md 30k, learned-patterns 21k, coding-rules 6k, nazwy MCP 16k,
+skille 8,5k, prompt 6k — instrukcje projektu ~58k tok, nie 33–37k. Run 20.09 (po ścięciu): CLAUDE.md 9k, learned-patterns 23k, nazwy MCP 30k.
+Udział „start × wywołania” (1,25 w pierwszym, 0,1 w kolejnych, koszt z ostatnim `usage`): 54,7% (09-08..09-17), 60,9% (run 20.09). Konfiguracja z decyzji
+6a pkt 15/17 zdejmuje ≈ 40–50% kosztu fazy po ścięciu CLAUDE.md (run 20.09 51,4%, epoka wcześniejsza 37,1%; sama allowlista 27–38%).
+
 ## 4. Tury i narzędzia — `koszt_tabele.txt` (ROZKŁADY) i mix narzędzi
 
 build: 39 tur/agent (p50; p90 83, max 136), 50 wywołań narzędzi: **37 Bash, 2 Read, 6 Edit, 3 Write**; kontekst średni 176k (p90 261k), max 204k.

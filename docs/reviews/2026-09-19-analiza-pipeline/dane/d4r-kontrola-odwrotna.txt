@@ -1,0 +1,145 @@
+# D4r — kontrola odwrotna po poprawkach D1–D6 (2026-09-23); pakiet PANEL-WEJSCIE.md: 115 jednostek
+0. pierwotna kontrola na wersji ac4fc72 (przed 9 uzupelnieniami): NISKIE (<0.30) — KANDYDACI NA LUKE: 58 | SREDNIE (0.30-0.49) — sprawdzic wyrywkowo: 60 | WYSOKIE (>=0.50): 46
+0. pierwotna kontrola na wersji 5ed33b7 (po 9 uzupelnieniach): NISKIE (<0.30) — KANDYDACI NA LUKE: 44 | SREDNIE (0.30-0.49) — sprawdzic wyrywkowo: 65 | WYSOKIE (>=0.50): 55
+   -> recznie przejrzano NISKIE (58), SREDNIE wyrywkowo; „118 przejrzanych recznie” w wersji operatora = NISKIE + SREDNIE, zawyzone.
+
+## A. Zrodla i markery z 2026-09-21 na obecnym pakiecie: 176 jednostek z markerem; <0,30: 37 (2026-09-21: 44); SPOZA dawnej listy 44: 2
+[0.26] ETAP3:26 -> pakiet:101
+    | L3 atrybucja po fixie | blokuje | **blokuje → domknięcie D1 przed panelem (~1 h)** | jedyna luka, gdzie fakt jest tani, a bez niego panel dostaje pytanie postawione na złym podziale |
+[0.29] HANDOFF §6a decyzje operatora:300 -> pakiet:313
+    - **Praca w nowych sesjach:** operator czyści kontekst po każdym większym kroku; każda sesja startuje od instrukcji z §8 tego pliku.
+Z dawnej listy 44 nie ma juz ponizej 0,30: 9 (pokrycie wzroslo po dopiskach albo jednostka zmienila brzmienie w zrodle)
+
+## B. NISKIE (<0,30) — przejrzec recznie: 11 z 103 jednostek nowych zrodel
+[0.16] PROPOZYCJA D1–D6:464 -> pakiet:313
+    - **`rola()` z `koszt_agentow.py` skleja `fix:kontrola`, `fix:pre-skan` i `fix:poprawka` w `fix`** u etykiet nowego formatu (43 agentów w agents.csv), bo krótsza alternatywa w wyrażeniu wygrywa. Udział pętli naprawczej się nie zmienia, ale per rola „fix” jest zawyżony, a pre-skan (haiku, mechaniczny) wpada do naprawiaczy. Port musi dopasowywać najdłuższą nazwę.
+[0.20] PROPOZYCJA D1–D6:563 -> pakiet:185
+    **Proponuję.** Opisać je historią, która sięga dalej niż transkrypty. Plik `history.jsonl` zapisuje każde polecenie wpisane w terminalu od 5 października 2025.
+[0.21] PROPOZYCJA D1–D6:72 -> pakiet:101
+    **Dlaczego.** Obecne sformułowanie każe panelowi wybierać na podstawie liczby, która nie ma związku z jednym z wariantów. ETAP3 zapisał „jeśli podział jest odwrotny, panel wybierze odwrotnie” — przy podziale pół na pół ta reguła nie wskazuje żadnego kierunku.
+[0.21] PROPOZYCJA D1–D6:308 -> pakiet:313
+    - **Pola wejścia i cache są liczone poprawnie.** W obrębie jednej odpowiedzi API różni się tylko liczba tokenów wyjściowych (poprawka 6).
+[0.22] PROPOZYCJA D1–D6:355 -> pakiet:57
+    - **Wznowienie nie tworzy nowego runu.** Wszystkie 9 wywołań z `resumeFromRunId` (5 runów, jeden wznowiony w innej sesji) zwróciło ten sam identyfikator. Nowi agenci dopisują się do tego samego katalogu, a wynik i status runu się zmieniają. Rekord `run` zapisany skanem po awarii jest więc nieaktualny, a reguła „klucz istnieje → nie dopisuj” zablokowałaby wersję końcową na zawsze. Skill autopilota opisuje wznowienie p…
+[0.23] PROPOZYCJA D1–D6:137 -> pakiet:313
+    **Obecnie.** Górna granica reviewera ~650–710, buildera ~710. Wersja dla operatora: „licząc zdania w regułach, do siedmiuset”.
+[0.24] PROPOZYCJA D1–D6:542 -> pakiet:313
+    - **Próbka czytana ręcznie.** Sześć losowych epizodów prep i plan. W oknie pełnego liczenia jest praca przygotowawcza: checklista operatora, odświeżenie makiety, „zanim odpalę dev-docs, czy mam coś wykonać”. W próbce nie ma wątków pobocznych. Mimo to pełne liczenie to górna granica: 4 z 52 epizodów ma okno dłuższe niż 12 godzin (sesja zostawiona na noc).
+[0.25] PROPOZYCJA D1–D6:33 -> pakiet:231
+    **Proponuję.** „Oba składniki mają podobną wagę: około połowy nowych findingów to przeoczenia wcześniejszej rundy, około połowy to kod urodzony w naprawach. Różnica mieści się w szumie tej próby. Teza »to wyłącznie review kodu naprawczego« była za mocna; teza »to głównie przeoczenia« też.”
+[0.25] PROPOZYCJA D1–D6:472 -> pakiet:305
+    - **Retencja.** Warto rozważyć podniesienie `cleanupPeriodDays` w ustawieniach konta, np. do 120 dni. To zapas na import i na raport po przerwie. Decyzja operatora, etap higieny konta.
+[0.25] PROPOZYCJA D1–D6:549 -> pakiet:313
+    - **Punkt odniesienia w mapie jest za niski około trzech razy dla planu i prep.** Porównanie scalonego skilla z nim pokazałoby fałszywy wzrost kosztu.
+[0.29] PROPOZYCJA D1–D6:405 -> pakiet:298
+    - **`agent.instrukcje_stale` nie ma producenta.** D5 bierze liczbę „z pliku wyniku testu budżetu, jeśli istnieje”, ale test biegnie w szablonie i żadnego pliku w projekcie nie zostawia.
+
+## B. SREDNIE (0,30–0,49): 47 z 103 jednostek nowych zrodel
+[0.31] PROPOZYCJA D1–D6:124 -> pakiet:153
+    - **W IFScale instrukcja to „użyj w raporcie dokładnie słowa X”.** Wszystkie obowiązują naraz, są od siebie niezależne i sprawdza je wyrażenie regularne.
+[0.31] PROPOZYCJA D1–D6:310 -> pakiet:276
+    - **Etykieta, grupa i faza są dostępne także dla starych journali**, tylko z innego miejsca niż zakładał D5 (poprawka 1): etykietę i grupę ma 3 286 z 3 314 agentów (28 starych bez niej — dla nich zostaje klasyfikacja po prompcie z `koszt_agentow.py`), numer fazy 2 555 z 2 891 agentów autopilota, 335 to agenci poziomu runu (bootstrap, zakończenie, compound, complete), jeden bez fazy.
+[0.31] PROPOZYCJA D1–D6:57 -> pakiet:313
+    **Dlaczego.** To zmienia wagę argumentu. Kod naprawczy nie jest tylko „nowym kodem, którego nikt nie oglądał”: pełna runda review po naprawie oglądała go i też przepuściła. Źródłem trzeba więc sterować po stronie naprawy (mały diff, zakaz zmian poza zgłoszonym miejscem), a nie liczyć na następną rundę. To wzmacnia decyzję 6a pkt 15 i pomiar bota z mapy walidacji (pliki po naprawie mają trzy razy więcej poważnych uwag…
+[0.32] PROPOZYCJA D1–D6:190 -> pakiet:48
+    - **„Dolna granica” (same pozycje list) nie jest dolną granicą.** Liczy też rzeczy, które poleceniami nie są. W próbce buildera 7 z 30 to spis treści, frontmatter skilla, listy „kiedy używać tego skilla” albo opis katalogów. Jednocześnie pomija polecenia zapisane prozą bez słowa nakazu. Proponuję nazwę „liczba pozycji list”.
+[0.33] PROPOZYCJA D1–D6:79 -> pakiet:313
+    - **Opis progu dopasowania w POMIARY §4 nie zgadza się ze skryptem.** Tekst mówi „podobieństwo opisu powyżej 0,3 albo różnica linii do trzech”, a skrypty (pomiar 4 i D1) liczą podobieństwo powyżej 0,45 w tym samym pliku, bez linii. Przeliczenie użyło luźniejszego kryterium z opisu: na parach 1–2 wynik bez zmian (19 i 14 nowych), w trzeciej 13 nowych zamiast 14. Do poprawy zdanie w POMIARY §4, liczby zostają.
+[0.33] PROPOZYCJA D1–D6:52 -> pakiet:144
+    **Proponuję.** Włączyć ją. Razem 46 findingów, 44 kodowe. Nowy fakt, którego dwie pary nie pokazywały: **cztery findingi trzeciej pary, w tym dwa P2, to defekty urodzone w naprawie po rundzie 1, których pełna runda 2 nie znalazła.** Znalazła je dopiero runda 3. Jeden z nich to P2 o nowo założonym członku, który przez ścieżkę powrotu dodaną w naprawie trafia na ekran zgody bez przyjęcia regulaminu. Kontrola diffu tamt…
+[0.33] PROPOZYCJA D1–D6:118 -> pakiet:254
+    **Proponuję.** „IFScale pokazuje kierunek: im więcej poleceń naraz, tym więcej cichych pominięć, a wcześniejsze polecenia wygrywają z późniejszymi. Procentów z badania nie da się przenieść na nasze liczby, bo mierzą co innego. Nasz własny punkt na tej krzywej da dopiero mini-run, dodatek (d): ten sam marker w prompcie około 100 i około 400 instrukcji”. Zdanie „to wyjaśnia 45 z 68” zamienić na „jest z tym zgodne”.
+[0.33] PROPOZYCJA D1–D6:185 -> pakiet:153
+    **Dlaczego.** Po poprawce 1 procenty z IFScale nie opisują naszych poleceń. Decyzja o trzech warstwach stoi, ale panel nie powinien budować na liczbie, której nie zmierzyliśmy.
+[0.33] PROPOZYCJA D1–D6:270 -> pakiet:144
+    **Dlaczego.** Decyzja jest dobra, ale oparta na liczbie, która mierzy co innego (poprawka 2).
+[0.33] PROPOZYCJA D1–D6:374 -> pakiet:313
+    - **Do `zgodny` sync-template zapisuje w manifeście hash każdego pliku.** Dziś manifest ma same ścieżki. To jedna kolumna w skrypcie synchronizacji: WYMAGA ZMIANY.
+[0.33] PROPOZYCJA D1–D6:443 -> pakiet:313
+    - **Zdanie „telemetria widziała 2% kosztu” trzeba zmienić na „około 11%”.** Wniosek (liczyć cache, nie output) stoi, liczba nie.
+[0.33] PROPOZYCJA D1–D6:530 -> pakiet:313
+    - **Minuty: mediana, nie średnia, i nie jako czas operatora.** Mediany pierwszej odpowiedzi to 8,9 minuty dla planu, 5,9 dla docs i 17,1 dla prep. Średnie 47 / 67 / 101 minut robią pojedyncze sesje zostawione otwarte na noc. Minuty nie mierzą też Twojego czasu, bo epizod kończy się, zanim zaczniesz rozmowę. Twój wysiłek lepiej pokazuje liczba Twoich wiadomości w epizodzie: mediana 3 w prep, 1 w planie, 0 w docs.
+[0.33] PROPOZYCJA D1–D6:539 -> pakiet:188
+    - dev-prep: 8 z 15 kończy się na Twojej pierwszej wiadomości, a przejście przez dokument operatora następuje po niej.
+[0.35] REKORD D5 §8–§9:226 -> pakiet:313
+    1. GRANICA EPIZODU typ=skill: koszt_skilli.py zamyka epizod na KAZDEJ wiadomosci typu user (takze <task-notification>, „[Request interrupted”, wyjscie /model) — dev-plan 7/19 epizodow konczy sie na powrocie subagenta researchu, dev-prep 8/15 na pierwszej wiadomosci operatora. Port NIE dziedziczy tej granicy: epizod trwa do wywolania nastepnego skilla (slash <command-name> skilla albo tool_use Skill) albo konca pliku …
+[0.36] PROPOZYCJA D1–D6:323 -> pakiet:300
+    - **Wariant A odpada.** Znika krok w skillach, a razem z nim pole `zrodlo_statusu`. Status NIEZNANY zostaje tylko dla runu bez tego pliku (awaria sesji).
+[0.36] PROPOZYCJA D1–D6:274 -> pakiet:153
+    `freshness-audit-wf` ma cztery role (inwentarz, weryfikacja, sceptyk, scribe), a mapa ich nie obejmuje. Audyt skilli (D6) zostawił go do decyzji operatora. Do mapy wystarczy jedno zdanie: poza zakresem do tej decyzji, a jeśli zostaje, jego role przechodzą na pliki klas jak reszta.
+[0.37] PROPOZYCJA D1–D6:30 -> pakiet:144
+    **Obecnie.** D1: 33 findingi = 39% urodzonych w naprawie, 42% przeoczonych w pliku naprawy, 18% przeoczonych w kodzie nietkniętym. Wniosek w pakiecie panelu: „składnik recall rundy 1 (60%) jest WIĘKSZY niż składnik »nowy kod« (40%)”, a w tabeli tez „D1 obaliło w 60%”.
+[0.37] PROPOZYCJA D1–D6:145 -> pakiet:153
+    - **Builder.** D2 wzięło najdłuższy z pięciu ostatnich promptów zadania (97 poleceń), a mediana ma 57. Na medianie builder ma dziś 497 zamiast 537, górna granica wynosi 670, a po podjętych decyzjach około 480–490 zamiast 520–530.
+[0.38] PROPOZYCJA D1–D6:13 -> pakiet:313
+    **Status: PRZYJĘTA 2026-09-23** — wprowadzona do POMIARY §4, ETAP3 §7, PANEL-WEJSCIE §2a/§4/§8, PANEL-WEJSCIE-DLA-OPERATORA, mapy walidacji, HANDOFF (wiersz 3½, 6a pkt 19); stary wynik `dane/pomiar5-atrybucja-po-fixie.txt` oznaczony jako zastąpiony.
+[0.38] PROPOZYCJA D1–D6:108 -> pakiet:153
+    - **Kierunek decyzji po D2 (trzy warstwy, warstwa stała poniżej 150, test szablonu, zero STOP-ów w runie) ma teraz dodatkowe oparcie:** około dwóch trzecich poleceń reviewera to polecenia warunkowe — dotyczą konkretnej technologii albo sytuacji (Supabase, HTML, kolejki, kontener). To dokładnie ten materiał, który ma zejść do warstwy doklejanej po plikach jednostki. Po jego zdjęciu zostaje około 110 poleceń obowiązują…
+[0.39] REKORD D5 §8–§9:217 -> pakiet:276
+    7. PORT rola(): dopasowanie najdluzszej nazwy — koszt_agentow.py skleja fix:kontrola / fix:pre-skan / fix:poprawka w `fix` u etykiet nowego formatu (43 agentow w agents.csv). Faza agentow workflowow-dzieci = najblizsza wczesniejsza grupa „Faza N” po phaseIndex („#N” w nazwie grupy to numer WYWOLANIA, nie fazy); pokrycie 2 555/2 891 agentow autopilota z numerem fazy, 335 poziom runu, 1 brak. Etykieta i grupa: 3 286/3 …
+[0.40] PROPOZYCJA D1–D6:133 -> pakiet:310
+    Decyzja o budżecie stoi bez zmian. Cel „poniżej 150” to cel projektowy, a nie próg wzięty z badania.
+[0.40] PROPOZYCJA D1–D6:195 -> pakiet:153
+    - **Próbka ma 30 jednostek na rolę, więc udziały są przybliżone.** Polecenia zawsze obowiązujące u reviewera: 10 z 30, przedział 19–51%. „Około 110” to rząd wielkości, nie liczba do testu.
+[0.40] PROPOZYCJA D1–D6:344 -> pakiet:276
+    **Obecnie.** Klucz `run|typ|id`. Skrypt czyta istniejące klucze, nie dopisuje dubli, nigdy nie nadpisuje. §6: jeden plik JSONL albo plik per run, „decyzja przy wdrożeniu”.
+[0.41] PROPOZYCJA D1–D6:495 -> pakiet:313
+    **Status: PRZYJĘTA 2026-09-23 (w całości, poprawki 1–3 i porządkowe)** — wprowadzona do `dane/d6-audyt-skilli.txt` (dopisek korekty), PANEL-WEJSCIE §2 pkt 12/§7/§12, PANEL-WEJSCIE-DLA-OPERATORA część 7, map walidacji obu wersji (§2 pkt 12), `dane/d5-telemetria-rekord.txt` (typ `skill`, §8 pkt 1), HANDOFF (§3 pkt 6, wiersz 3½, 6a pkt 19), `dane/dane-digest.md` §2. Notatka dla operatora: `PRZEGLAD-D6-DLA-OPERATORA.md`.
+[0.41] PROPOZYCJA D1–D6:200 -> pakiet:313
+    Liczby i wniosek D2 w: ETAP3 §7 (wiersz D2 i wniosek dla panelu), PANEL-WEJSCIE §4 (D2) i §2 pkt 3 (definicja jednostki w teście — tylko po akceptacji poprawki 3), PANEL-WEJSCIE-DLA-OPERATORA część 2 punkt trzeci, mapa walidacji obu wersji (wpis §2 pkt 3, punkt odniesienia), HANDOFF wiersz 3½ i 6a pkt 18 (dopisek przy „tą samą metodą”, jeśli poprawka 3 przejdzie), rekord telemetrii bez zmian (`agent.instrukcje_stale`…
+[0.41] PROPOZYCJA D1–D6:566 -> pakiet:216
+    - **gemini:** 17 wywołań od 27 grudnia do 16 marca. Zostawił raporty w `dev/gemini` w dwóch starych repo (n8n_dashboard, n8n-egzamin-5), spoza 17 repo audytu.
+[0.42] PROPOZYCJA D1–D6:67 -> pakiet:144
+    **Proponuję.** Zapisać, że przeoczenia zmniejsza tylko to, co poszerza zasięg review: równoległe próbki, polecenia-listy, wycinek wiedzy w prompcie. Sceptyk działa po drugiej stronie — odsiewa fałszywe alarmy, nie znajduje brakujących defektów. Wybór „n=3 kontra sceptyk” to wybór, czy kupować zasięg za dodatkowy koszt. D1 mówi tylko, ile zasięgu brakuje: co najmniej 22 z 44 kodowych findingów drugiej rundy, w tym 7 P…
+[0.42] PROPOZYCJA D1–D6:526 -> pakiet:313
+    - dev-prep: mediana 0,43 M → 1,40 M. Przejście z Tobą przez decyzje odbywa się już poza epizodem.
+[0.42] PROPOZYCJA D1–D6:267 -> pakiet:153
+    **Proponuję.** „Klasy wynikają z ustawień, których rola potrzebuje: model, czy patrzy na kod (CLAUDE.md), czy edytuje (Edit, skille), czy potrzebuje MCP. Telemetria pokazuje poziomy kontekstu w trakcie pracy, nie zestawy ustawień.”
+[0.42] PROPOZYCJA D1–D6:209 -> pakiet:313
+    **Status: PRZYJĘTA 2026-09-23, z pomiarem punktu odniesienia w mini-runie (bez osobnego przebiegu)** — wprowadzona do PANEL-WEJSCIE §4/§11/§12, ETAP3 §7, mapy walidacji obu wersji (§2 pkt 1 i 2), PANEL-WEJSCIE-DLA-OPERATORA (część 2 pkt 1, część 8), `dane/d3-mapa-rol-agentow.txt`, HANDOFF.
+[0.43] REKORD D5 §8–§9:195 -> pakiet:293
+    3. WERSJA: `szablon` = {marker: .claude/.template-version albo null (brak w 6/11 repo), skrypt_sha: git hash-object pola `script` pliku harnessu (33/55 runow autopilota wykonalo skrypt spoza historii szablonu: oferty-online 29, Nawykometr 4), zgodny: bool (skrypt_sha == hash z manifestu), dzieci_zmienione: bool (pliki .claude/workflows/*-wf.js roznia sie od manifestu albo mtime > startTime)}. WYMAGA ZMIANY: sync-temp…
+[0.43] PROPOZYCJA D1–D6:87 -> pakiet:144
+    Liczby i wniosek D1 w: dopisku POMIARY §4 i jego rozstrzygnięciu, ETAP3 §7 (wiersz D1), PANEL-WEJSCIE §2a (wariant n=3 „rozstrzygać z D1”), §4 (D1) i §8 (teza „nowe findingi po fixie”), PANEL-WEJSCIE-DLA-OPERATORA (punkt dziewiąty części 2 i akapit o tezie, która się zawaliła), mapie walidacji obu wersji (kontekst przy pętli naprawczej), HANDOFF wiersz 3½. Nowa wersja zdania dla panelu: „nowe findingi po naprawie są …
+[0.44] PROPOZYCJA D1–D6:296 -> pakiet:161
+    **Status: PRZYJĘTA 2026-09-23 (w całości, poprawki 1–7 i porządkowe)** — wprowadzona do `dane/d5-telemetria-rekord.txt` (§8 + dopiski w §0–§7), PANEL-WEJSCIE §1 pkt 4/§2 pkt 5/§4/§8/§11/§12, PANEL-WEJSCIE-DLA-OPERATORA (część 6, fragmenty o D3), mapy walidacji obu wersji, `dane/dane-digest.md` §0, `dane/d3-mapa-rol-agentow.txt`, HANDOFF (§3 pkt 1–2, wiersz 3½, 6a pkt 19). Dźwignia 25–35% — przeliczenie w D4.
+[0.44] PROPOZYCJA D1–D6:617 -> pakiet:216
+    - Szablon mobile to osobna linia: skopiowany z web, bez znacznika wersji i manifestu. Ma wszystkich pięciu kandydatów, czterech już zmienionych, więc usunięcie w web go nie dotyczy. Decyzja o mobile jest osobna.
+[0.44] PROPOZYCJA D1–D6:153 -> pakiet:48
+    **Proponuję.** Zostawić cel, test i brak STOP-ów, ale zmienić definicję jednostki w teście:
+[0.44] PROPOZYCJA D1–D6:580 -> pakiet:216
+    - Siedem tygodni zostaje tylko w rzadko otwieranych projektach, np. claude-cron od 5 sierpnia.
+[0.44] PROPOZYCJA D1–D6:629 -> pakiet:313
+    - **Wersja dla operatora:** PANEL-WEJSCIE-DLA-OPERATORA część 7 (narracja koszyków D i E, okno transkryptów).
+[0.44] REKORD D5 §8–§9:184 -> pakiet:300
+    1. ZRODLO STATUSU: plik harnessu <sesja>/workflows/<run>.json (§1 f) — 156/156 runow. Autopilot: 20 OK, 30 STOP (wszystkie z powodem), 3 killed, 2 failed; dev-pr: 59 OK, 8 GOTOWY-DO-DECYZJI, 2 GOTOWY-DO-MERGE, 6 STOP. `zbierz.mjs --skan` = GLOWNY zapis (status, powod, etykiety, grupy, skrypt z tego pliku); wariant A (--status/--powod w skillach) ZBEDNY; pole run.zrodlo_statusu USUNIETE; run.status = OK | STOP | KILLE…
+[0.45] PROPOZYCJA D1–D6:115 -> pakiet:153
+    **Obecnie.** „Reviewer ~310–320, builder ~520–530 = pasmo IFScale 150–500 (84–99% → ~68% przestrzegania)”. W wersji dla operatora: „przy pięciuset instrukcjach model przestrzega około dwóch trzecich. To wyjaśnia, dlaczego 45 z 68 defektów miało regułę i przeszło”.
+[0.45] REKORD D5 §8–§9:180 -> pakiet:153
+    === 8. KOREKTA PO PRZEGLADZIE D5 (2026-09-23, Opus 5.5; PRZYJETA przez operatora w calosci) === Zrodla: PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D5; skrypty/d5r_wykonalnosc_rekordu.py → d5r-wykonalnosc-rekordu.{txt,json} (156 runow, oba formaty journala); skrypty/d5r_koszt_output.py → d5r-koszt-output.txt (2 941 agentow etapu 0). Ta sekcja NADPISUJE sprzeczne zapisy §0–§7.
+[0.46] PROPOZYCJA D1–D6:64 -> pakiet:144
+    **Obecnie.** D1 i dopisek w POMIARY §4: „składnik B adresuje n równoległych próbek albo lepszy sceptyk”. Pakiet panelu (§4): wybór „n=3 równoległe próbki kontra jedna runda z lepszym sceptykiem” rozstrzygać na podziale z D1, bo „dotyczy WIĘKSZEGO składnika”.
+[0.46] PROPOZYCJA D1–D6:624 -> pakiet:313
+    - **Wynik D6:** `dane/d6-audyt-skilli.txt` — dopisek korekty na początku (dzieci, dev-pr, retencja, historia kandydatów, granica epizodu).
+[0.46] REKORD D5 §8–§9:234 -> pakiet:313
+    4. NOWE POLA: pierwsza_odpowiedz_jedn (koszt do pierwszej wiadomosci typu user — ciaglosc z dawnym liczeniem), wiadomosci_operatora (tekst operatora w epizodzie; miara wysilku zamiast minut — mediana 3 prep / 1 plan / 0 docs), okno_h (czas zegarowy; >12 h = sesja zostawiona otwarta, 4/52 epizodow). Minuty raportowac mediana, nie srednia.
+[0.47] PROPOZYCJA D1–D6:603 -> pakiet:216
+    - **Retencja w rekordzie D5 (§8 pkt 1) i w PANEL-WEJSCIE §12.** Zamiast „~7 tygodni (najstarszy 03.08)”: „około 30 dni w aktywnym projekcie, dłużej tylko w rzadko otwieranych”. Skan telemetrii ma to okno. Rekomendacja podniesienia `cleanupPeriodDays` (etap higieny konta) zyskuje na wadze.
+[0.48] PROPOZYCJA D1–D6:605 -> pakiet:313
+    - **Mapa walidacji §2 pkt 12, porządkowo.** „Mediana 900k” dla dev-plan to w danych 814k. Metryka mówi o medianie minut, a punkt odniesienia podaje średnie. Po poprawce 1 obie liczby i tak się zmieniają.
+[0.48] PROPOZYCJA D1–D6:459 -> pakiet:313
+    **Dlaczego.** Rozmiar CLAUDE.md D3 brało z gita gałęzi main. Załącznik instrukcji w transkrypcie pokazuje, co agent naprawdę dostał (poprawka 5). Wniosek D3 (nie porównywać ze średnią z epok) stoi, ale punkt odniesienia ma już pierwszą realną wartość.
+
+## B. WYSOKIE (>=0,50): 45
+
+## PRZEGLAD RECZNY (sesja glowna 2026-09-23; kategorie jak w d4-kontrola-odwrotna.txt: U uzasadnienie, M metadane, S pokryte innymi slowami,
+## N nieaktualne, P poza panelem, LUKA = brak w pakiecie)
+A: ETAP3:26 L3 -> D1 = N (§4 D1) | HANDOFF 6a pkt 19 „praca w nowych sesjach” = P (sposob pracy, nie wejscie panelu)
+B: PROPOZYCJA D5 porzadkowe rola() sklejanie fix = S §12 („agents.csv PRZELICZONY … poprawiona rola()”), ale opis pola `rola` w §12 nadal „jak rola()
+   w koszt_agentow.py” -> porzadkowe D4 | D6 popr. 2 history.jsonl = S §7 (korekta D6 pkt 1) | D1 popr. 3 „Dlaczego” = U (§4 D1 pkt 1)
+   | D5 „pola wejscia i cache poprawne” = U | D5 popr. 2 wznowienie = S §12 („wznowienie = ten sam runId, 9/9”) | D2 popr. 2 „Obecnie” = N (stara liczba)
+   | D6 popr. 1 proba czytana recznie = U | D1 popr. 1 pol na pol = S §4, §8 | D5 porzadkowe cleanupPeriodDays 120 dni = LUKA -> §10 (higiena konta)
+   | D6 popr. 1 „punkt odniesienia 3x za niski” = S §12 (mediany 2,39 M / 0,56 M) | D5 popr. 5 instrukcje_stale bez producenta = S §12 (pole agent)
+WYNIK: 1 luka (cleanupPeriodDays) + 1 porzadkowe (opis `rola` w §12); edycje pakietu po przegladach D1–D6 nie zgubily niczego z kontroli 2026-09-21
+(<0,30: 44 -> 37, dwie nowe ponizej progu pokryte). Srednie B (0,30–0,49) przeczytane z lista: kazda ma odpowiednik w pakiecie
+(najczesciej §4 i §12, po innych slowach). Ograniczenie jak w 2026-09-21: markery slowne.

@@ -1,0 +1,89 @@
+D4r — dzwignia kontekstu startowego przeliczona agent po agencie (przeglad D4, 2026-09-23)
+Konfiguracja wg 6a pkt 15/17 (jak ETAP3 §1.1): T = allowlista tools: u wszystkich; O = omitClaudeMd u mechanicznych; L = learned-patterns poza eager
+(wycinek 1500 zn w zamian) u pozostalych; CLAUDE.md, coding-rules, skills: zostaja. Roster bez zmian (agenci znikajacy = dzwignia rosteru, osobno).
+
+=== 1. Kalibracja: znaki -> tokeny (pomiar 1b, sonnet-5; roznice miedzy 4 konfiguracjami) ===
+  general    ctx_start  62009 | przewidziane  61253
+  bez_mcp    ctx_start  39273 | przewidziane  38517
+  allow      ctx_start  11577 | przewidziane  10821
+  allow_omit ctx_start   4467 | przewidziane   3711
+  stawki: schematy narzedzi/lista skilli/agentow 3.61 zn/tok | nazwy narzedzi odroczonych (MCP, UUID) 1.85 zn/tok | instrukcje i prompt (PL) 1.97 zn/tok
+  (ETAP3 §1.1 przyjmowal CLAUDE.md 20,6k zn ~6k tok = 3,4 zn/tok, coding-rules ~3k tok = 3,7 zn/tok — tekst polski kosztuje ~1,7x wiecej tokenow)
+  mnoznik per model (ctx_start / przewidywanie sonnet, agenci oferty-online z zalacznikiem):
+    claude-fable-5-1 n=   1  mediana 1.023  (p10 1.023, p90 1.023)
+    haiku   n= 133  mediana 0.742  (p10 0.740, p90 0.745)
+    opus    n= 451  mediana 1.016  (p10 1.008, p90 1.025)
+
+=== 2. Dzwignia per epoka (%% kosztu; koszt z ostatnim wpisem usage, w nawiasie z pierwszym = etap 0) ===
+przed scieciem CLAUDE.md (oferty-online 09-08..09-17): 494 agentow, 24 runow, koszt 367.6 M jedn.; CLAUDE.md p50 58516 zn, learned-patterns p50 40597 zn
+  RAZEM 37.1% (40.7% na koszcie etapu 0) | T allowlista 27.2% | O omitClaudeMd 2.3% | L learned-patterns 7.6%
+  wrazliwosc na stawki zn/tok +-15%: 32.2% .. 43.6%
+  wariant + C (coding-rules do warstwy referencyjnej, 6a pkt 18 po D2): 39.0%
+  kontrfakt: te same agenty z CLAUDE.md przycietym do 17 810 zn (stan runu 20.09): 39.9%
+  runy >= 20 agentow: wf_16546a4e-e81 09-12 n=135 32.8% (wywolania/agent 26), wf_cf90b5d6-f83 09-14 n=147 38.2% (wywolania/agent 26), wf_29d462f8-85c 09-14 n=41 47.5% (wywolania/agent 14), wf_8eefb073-6a9 09-16 n=88 36.3% (wywolania/agent 19), wf_ce87b73b-89f 09-16 n=29 39.1% (wywolania/agent 17), wf_feed7bad-902 09-16 n=34 40.6% (wywolania/agent 15)
+  wywolania/agent 22.0; udzial „start x wywolania” w koszcie 54.7%
+  per klasa: udzial w koszcie | dzwignia w klasie | Δ startu p50 [k tok] | start dzis p50 -> po zmianie p50 [k tok] (per model)
+    mechaniczny     haiku  n= 92    5.1% |  66.9% |  85.2k |  94.2k ->   8.8k
+    mechaniczny     opus   n= 14    1.5% |  71.7% | 120.0k | 127.9k ->   7.7k
+    orkiestracyjny  haiku  n=  4    0.2% |  56.6% |  60.2k |  98.2k ->  38.0k
+    orkiestracyjny  opus   n=104   16.2% |  42.9% |  78.8k | 135.8k ->  47.3k
+    reviewer        opus   n= 96   29.2% |  33.0% |  78.8k | 133.7k ->  52.3k
+    sceptyk         opus   n= 91    6.3% |  50.3% |  96.6k | 142.3k ->  47.1k
+    naprawiacz      haiku  n= 14    1.6% |  47.4% |  54.8k |  92.5k ->  35.6k
+    naprawiacz      opus   n= 40   14.9% |  35.0% |  78.8k | 129.3k ->  48.3k
+    builder         opus   n= 39   24.9% |  27.0% |  78.8k | 159.1k ->  68.1k
+  przepisania prefiksu w trakcie agenta (cache_read < 50% startu): 3 z 10856 wywolan; pierwsza tura czyta prefiks z cache u 130/494 agentow
+
+po scieciu: run 20.09 wf_e5c34cd8-66c: 85 agentow, 1 runow, koszt 35.3 M jedn.; CLAUDE.md p50 17810 zn, learned-patterns p50 45095 zn
+  RAZEM 51.4% (58.0% na koszcie etapu 0) | T allowlista 37.8% | O omitClaudeMd 3.3% | L learned-patterns 10.3%
+  wrazliwosc na stawki zn/tok +-15%: 44.7% .. 60.4%
+  wariant + C (coding-rules do warstwy referencyjnej, 6a pkt 18 po D2): 53.6%
+  kontrfakt: te same agenty z CLAUDE.md przycietym do 17 810 zn (stan runu 20.09): 51.4%
+  wywolania/agent 12.2; udzial „start x wywolania” w koszcie 60.9%
+  per klasa: udzial w koszcie | dzwignia w klasie | Δ startu p50 [k tok] | start dzis p50 -> po zmianie p50 [k tok] (per model)
+    mechaniczny     haiku  n= 20   10.0% |  66.8% |  79.8k |  89.2k ->   9.5k
+    mechaniczny     opus   n=  3    2.6% |  76.7% | 113.3k | 122.4k ->   9.1k
+    orkiestracyjny  opus   n= 20   23.6% |  56.0% |  96.4k | 121.2k ->  24.8k
+    reviewer        opus   n= 15   24.7% |  44.4% |  96.4k | 125.2k ->  28.8k
+    sceptyk         opus   n= 10    7.1% |  52.0% |  96.4k | 122.7k ->  26.3k
+    naprawiacz      haiku  n=  3    2.6% |  59.2% |  67.4k |  88.3k ->  20.9k
+    naprawiacz      opus   n=  8   16.1% |  46.4% |  96.4k | 122.6k ->  26.2k
+    builder         opus   n=  6   13.3% |  43.8% |  96.4k | 134.4k ->  38.1k
+  per faza (agenci poziomu runu — bootstrap, zakonczenie — osobno):
+    Faza 1   n= 27 koszt  14.1 M  dzwignia 48.1%
+    Faza 2   n= 26 koszt  10.4 M  dzwignia 50.8%
+    Faza 3   n= 22 koszt   8.4 M  dzwignia 52.5%
+    run      n= 10 koszt   2.4 M  dzwignia 68.6%
+  przepisania prefiksu w trakcie agenta (cache_read < 50% startu): 0 z 1041 wywolan; pierwsza tura czyta prefiks z cache u 18/85 agentow
+
+=== 3. Kontrola metody ETAP3 §1.1 na tych samych danych ===
+przed scieciem CLAUDE.md (oferty-online : sredni Δ startu 85.8k tok/agent (ETAP3: 49k), start dzis sredni 127.3k (ETAP3 zakladal 62k), udzial samej 1. tury w oszczednosci 39%
+po scieciu: run 20.09 wf_e5c34cd8-66c: sredni Δ startu 92.0k tok/agent (ETAP3: 49k), start dzis sredni 115.1k (ETAP3 zakladal 62k), udzial samej 1. tury w oszczednosci 54%
+
+=== 4. Sklad kontekstu 1. tury (p50 tokenow per skladnik; stawki z §1 x mnoznik modelu) — do HANDOFF §3 pkt 2 („107k = system 44k + CLAUDE.md+rules 33k + MCP 27k + skille 10k”) ===
+przed scieciem CLAUDE.md (ofer | opus n=384 | ctx_start p50 137.5k: schematy narzedzi (tablica tools) 42.3k, nazwy narzedzi odroczonych (MCP) 15.7k, lista skilli + agentow 8.5k, CLAUDE.md projektu 30.2k, learned-patterns 20.9k, coding-rules 5.7k, pozostale instrukcje (CLAUDE.md nadrzedne, MEMORY) 1.2k, prompt zadania 6.0k, system + inne zalaczniki 1.2k
+przed scieciem CLAUDE.md (ofer | haiku n=110 | ctx_start p50 94.0k: schematy narzedzi (tablica tools) 35.2k, nazwy narzedzi odroczonych (MCP) 11.5k, lista skilli + agentow 3.4k, CLAUDE.md projektu 22.0k, learned-patterns 15.3k, coding-rules 4.1k, pozostale instrukcje (CLAUDE.md nadrzedne, MEMORY) 0.9k, prompt zadania 1.4k, system + inne zalaczniki 0.8k
+po scieciu: run 20.09 wf_e5c34 | opus n=62 | ctx_start p50 122.9k: schematy narzedzi (tablica tools) 37.9k, nazwy narzedzi odroczonych (MCP) 30.4k, lista skilli + agentow 8.5k, CLAUDE.md projektu 9.2k, learned-patterns 23.2k, coding-rules 5.7k, pozostale instrukcje (CLAUDE.md nadrzedne, MEMORY) 1.3k, prompt zadania 4.1k, system + inne zalaczniki 1.2k
+po scieciu: run 20.09 wf_e5c34 | haiku n=23 | ctx_start p50 89.1k: schematy narzedzi (tablica tools) 32.0k, nazwy narzedzi odroczonych (MCP) 22.2k, lista skilli + agentow 3.2k, CLAUDE.md projektu 6.7k, learned-patterns 17.0k, coding-rules 4.1k, pozostale instrukcje (CLAUDE.md nadrzedne, MEMORY) 1.0k, prompt zadania 1.7k, system + inne zalaczniki 0.9k
+
+=== 5. Kontrole i liczby pomocnicze (cytowane w PROPOZYCJA §D4) ===
+dokladnosc modelu: u 80% agentow opusa |ctx_start / przewidywanie - 1| <= 0.9%; CLAUDE.md projektu u opusa 17810..86589 zn
+tablica tools (wszystkie schematy) 116063..171998 zn; nazwy narzedzi odroczonych 25634..55352 zn (pomiar 1b CLI: 78584 i 41743 zn)
+przed scieciem CLAUDE.md (ofer | opus: sama allowlista zdejmuje ze startu p10 54.0k / p50 62.1k / p90 76.5k tok
+przed scieciem CLAUDE.md (ofer | haiku: sama allowlista zdejmuje ze startu p10 36.7k / p50 42.6k / p90 53.1k tok
+przed scieciem CLAUDE.md (ofer | stan:zapis: sredni koszt agenta 203k -> po zmianie 62k jedn. (zostaje 31%)
+przed scieciem CLAUDE.md (ofer | sceptyk: sredni koszt agenta 256k -> po zmianie 127k jedn. (zostaje 50%)
+przed scieciem CLAUDE.md (ofer | mechaniczny: sredni koszt agenta 229k -> po zmianie 73k jedn. (zostaje 32%)
+przed scieciem CLAUDE.md (ofer | reviewer: sredni koszt agenta 1119k -> po zmianie 750k jedn. (zostaje 67%)
+po scieciu: run 20.09 wf_e5c34 | opus: sama allowlista zdejmuje ze startu p10 73.9k / p50 73.9k / p90 73.9k tok
+po scieciu: run 20.09 wf_e5c34 | haiku: sama allowlista zdejmuje ze startu p10 51.0k / p50 51.0k / p90 51.0k tok
+po scieciu: run 20.09 wf_e5c34 | stan:zapis: sredni koszt agenta 167k -> po zmianie 48k jedn. (zostaje 29%)
+po scieciu: run 20.09 wf_e5c34 | sceptyk: sredni koszt agenta 250k -> po zmianie 120k jedn. (zostaje 48%)
+po scieciu: run 20.09 wf_e5c34 | mechaniczny: sredni koszt agenta 193k -> po zmianie 60k jedn. (zostaje 31%)
+po scieciu: run 20.09 wf_e5c34 | reviewer: sredni koszt agenta 582k -> po zmianie 324k jedn. (zostaje 56%)
+kontrola niezalezna stawki dla instrukcji: r_i, przy ktorym iloraz ctx_start / przewidywanie ma najmniejszy rozrzut na agentach oferty-online
+(CLAUDE.md 18–87k zn — zla stawka dalaby iloraz rosnacy albo malejacy z rozmiarem instrukcji); pomiar 1b dal 1.97 zn/tok:
+  opus   n=451: najmniejszy rozrzut przy 2.05 zn/tok (0.80%)
+  haiku  n=133: najmniejszy rozrzut przy 2.05 zn/tok (0.23%)
+
+Wniosek metody: ETAP3 mnozyl „30–40%” (HANDOFF §5 hip. 1, bez wyliczenia) przez 49/57; tu liczba wychodzi wprost z Δ × wywolania.

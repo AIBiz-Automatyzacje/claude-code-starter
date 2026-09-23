@@ -631,3 +631,153 @@ code-quality i bugfix to pojedyncze wywołania (lipiec; kwiecień i wrzesień). 
 - **Rekord telemetrii:** `dane/d5-telemetria-rekord.txt` — typ `skill` (granica epizodu, subagenci, deduplikacja, dwa nowe pola) i §8 pkt 1 (retencja).
 - **Model kosztu:** HANDOFF §3 pkt 6 i digest §2 („2–5%” oraz koszt epizodu z dopiskiem, że to pierwsza odpowiedź).
 - **HANDOFF:** wiersz 3½ i 6a pkt 19.
+
+---
+
+## D4 — pakiet wejściowy panelu jako kompilacja i dźwignia kontekstu
+
+**Status: PRZYJĘTA 2026-09-23 (w całości, poprawki 1–3 i porządkowe)** — wprowadzona do PANEL-WEJSCIE §0/§1 pkt 4/§2 pkt 1/§4 D3/§5/§6/§8/§9/§10/§11/§12,
+ETAP3 §1.1/§4/§7, ETAP3-DLA-OPERATORA, PANEL-WEJSCIE-DLA-OPERATORA (wstęp, części 1, 2, 6, 8, „jak sprawdzany”, „co teraz”), mapy walidacji obu wersji,
+`dane/d5-telemetria-rekord.txt` (§4 pkt 2, §8 pkt 5), `dane/dane-digest.md` §3, HANDOFF (§3 pkt 2, wiersz 3½, 6a pkt 19, §8).
+Notatka dla operatora: `PRZEGLAD-D4-DLA-OPERATORA.md`.
+**Przeliczenie:** `skrypty/d4r_dzwignia_kontekstu.py` → `dane/d4r-dzwignia-kontekstu.{txt,json}` (dźwignia agent po agencie, oferty-online, transkrypty
+tylko do odczytu); `skrypty/d4r_kontrola_odwrotna.py` → `dane/d4r-kontrola-odwrotna.txt` (źródła → pakiet: pierwotne źródła na obecnym pakiecie, nowe
+źródła PROPOZYCJA D1–D6 i rekord D5 §8–§9, odtworzenie kontroli z 21.09 na wersjach z gita). Pakiet → źródła: czytanie obok źródeł i grep starych liczb
+w PANEL-WEJSCIE, wersji operatora, mapie walidacji obu wersji, rekordzie D5, notatce D6 i ETAP3.
+
+### Co się trzyma bez zmian
+
+- **Nic nie zginęło przy poprawkach D1–D6.** Pierwotna kontrola odwrotna na obecnym pakiecie: 176 jednostek z markerem, poniżej progu 37 (21.09: 44).
+  Spoza dawnej listy wypadły tylko dwie, obie pokryte: L3 z ETAP3 (dziś §4 D1) i zasada pracy w nowych sesjach (poza panelem).
+- **Nowe źródła są w pakiecie.** Z 103 jednostek PROPOZYCJI D1–D6 i rekordu D5 §8–§9 poniżej progu jest 11. Dziesięć to uzasadnienia albo treść
+  zapisana w pakiecie innymi słowami. Jedna to luka (porządkowe 7).
+- **Liczby zmienione w przeglądzie stoją wszędzie, gdzie pakiet ich używa:** pół na pół 22/44 (§4, §8), ~500/~670 i ~110 (§2 pkt 3, §4), 480–490,
+  run 20.09 jako punkt odniesienia (§4, §11, §12), output 10,9% i 1 293 M (§1 pkt 4, §12), 2,39 M i 4–7% (§2 pkt 12, §12), ~30 dni (§7, §12).
+  Stare zapisy zostały tylko w wersji operatora i w mapie dla operatora (porządkowe 4–5).
+- **Precedensy §1 pkt 1–3, 5–6, wymogi §2 i §2a, decyzje §3 — bez zmian.** Żadne z ośmiu założeń §6 się nie przewraca. Z tez §8 zmienia się jedna liczba
+  (teza 1, w górę), kierunek żadnej.
+- **Kolejność priorytetów stoi** i po przeliczeniu jest wyraźniejsza niż dotąd.
+
+### Poprawka 1 (zmienia liczbę). Dźwignia kontekstu to około 40–50% kosztu fazy, nie 25–35%
+
+**Obecnie.** ETAP3 §1.1, PANEL-WEJSCIE §1 pkt 4, §5, §8, §11, wersja operatora, mapa §2 pkt 2: „dźwignia kontekstu startowego = 25–35% kosztu fazy”.
+Liczone arytmetycznie: pusty agent 62k minus docelowy start klasy daje średnio 49k zamiast 57k, czyli 86% z „30–40%”.
+
+**Proponuję.** „Konfiguracja z decyzji 6a pkt 15/17 (allowlista `tools:` u wszystkich, `omitClaudeMd` u mechanicznych, learned-patterns poza ładowaniem
+eager; CLAUDE.md, coding-rules i `skills:` zostają) zdejmuje około 40–50% kosztu fazy w stanie po ścięciu CLAUDE.md. Sama allowlista to 27–38%.
+Mini-run (e) potwierdza per klasa i model.” Z coding-rules przeniesionym do warstwy referencyjnej (6a pkt 18 po D2) dochodzi około 2 punktów.
+
+**Dlaczego.**
+
+- **Liczone wprost, agent po agencie.** Dla każdego agenta: ile tokenów znika ze startu (Δ) razy waga każdego wywołania API — 1,25 za zapis w pierwszym,
+  0,1 za odczyt z cache w każdym następnym. Koszt w mianowniku z ostatnim wpisem `usage` (poprawka 6 z D5). Prefiks przepisany w trakcie agenta:
+  3 z 10 856 wywołań, więc odczyt z cache jest pewny. Pierwsza tura haiku czyta wspólny prefiks z cache (130 z 494 agentów) — policzone z wagą 0,1.
+- **Wyniki.** Przed ścięciem CLAUDE.md (09-08..09-17, 494 agentów, 24 runy): 37,1%, na koszcie etapu 0 40,7%. Duże runy 32,8–40,6%, jeden krótszy 47,5%.
+  Te same runy z CLAUDE.md przyciętym do stanu z 20.09 dają 39,9%. Run 20.09 (85 agentów, CLAUDE.md 17,8k zn): 51,4%, fazy 48,1 / 50,8 / 52,5%.
+  Składniki w runie 20.09: allowlista 37,8, learned-patterns 10,3, `omitClaudeMd` 3,3 (przed ścięciem 27,2 / 7,6 / 2,3).
+  Wrażliwość na przeliczenie znaków na tokeny (±15%): 32,2–43,6% przed ścięciem, 44,7–60,4% w runie 20.09.
+- **Skąd rozpiętość 40–50%.**
+  - Długość pracy agenta: w runie 20.09 12,2 wywołania na agenta, przed ścięciem 22,0. Im krótszy agent, tym większy udział startu w jego koszcie.
+  - Zestaw narzędzi w sesji, z której startuje autopilot: nazwy narzędzi MCP to 15,7 tys. tokenów na agenta opusa przed ścięciem i 30,4 tys. w runie 20.09.
+    Sama allowlista zdejmuje u opusa 54–77 tys. tokenów (p10–p90), u haiku 37–53 tys.
+  - Jeden run po ścięciu i jedno zadanie.
+- **Dlaczego ETAP3 wyszło za nisko — cztery przyczyny.**
+  - Punkt wyjścia: pusty agent w CLI workspace-template (62k), a agenci oferty-online startowali średnio ze 127k przed ścięciem i ze 115k w runie 20.09.
+  - Tekst polski kosztuje ~2 znaki na token, nie 3,4–3,7. CLAUDE.md 20,6k zn to ~10,5k tokenów, nie 6k; coding-rules ~5,6k, nie 3k.
+  - Środowisko aplikacji desktop jest cięższe niż CLI z pomiaru 1b. Schematy narzędzi zajmują 116–172 tys. znaków zamiast 79 tys., z czego sam Artifact
+    to 49 tys. Lista nazw MCP to 26–55 tys. znaków zamiast 42 tys.
+  - „30–40%” z HANDOFF §5 hip. 1 nigdy nie było wyliczone. ETAP3 przeskalował liczbę, która nie miała rachunku.
+- **Korekta outputu i epoka działają w przeciwne strony.** Output obniża wynik ×0,91 (40,7 → 37,1). Ścięcie CLAUDE.md podnosi go o 2,8 pkt (37,1 → 39,9),
+  bo zmniejsza koszt, a allowlista zostaje tej samej wielkości. Reszta różnicy do 51% to krótsi agenci i więcej MCP w runie 20.09.
+- **Kalibracja i kontrola.**
+  - Stawki z pomiaru 1b (cztery konfiguracje tego samego agenta, ta sama maszyna, 20.09): schematy i listy 3,61 zn/tok, nazwy MCP z UUID 1,85, tekst polski 1,97.
+  - Jeden mnożnik na model: opus 1,016 (p10–p90 1,008–1,025 na 451 agentach z CLAUDE.md od 18 do 87 tys. zn), haiku 0,742 (0,740–0,745 na 133).
+    U 80% agentów opusa model trafia start z dokładnością do 1%.
+  - Niezależnie, na samych danych oferty-online: stawka dla tekstu polskiego, przy której ten iloraz najmniej się rozjeżdża z rozmiarem instrukcji,
+    to 2,05 zn/tok u obu modeli (wobec 1,97 z pomiaru 1b). Różnica 4% mieści się w badanej wrażliwości ±15%.
+
+Kolejność priorytetów stoi: kontekst ≈ 40–50% wobec rosteru i mechaniki 8–10%, a po allowliście 3–7% (poprawka 2). Decyzje 6a pkt 15/17 bez zmian.
+
+### Poprawka 2 (zmienia wniosek). Dźwignie nie sumują się
+
+**Obecnie.** PANEL-WEJSCIE §1 pkt 4: „kontekst > roster + mechanika review (8–10%, ETAP1)”; §6: batch sceptyków ≈ −2% (sama opłata za powołanie);
+§5 hip. 2: 35 → ~15 agentów na fazę. Każda liczba policzona na dzisiejszym koszcie agenta.
+
+**Proponuję.** „Oszczędności z mniejszej liczby agentów panel liczy na koszcie agenta PO zmianie kontekstu.”
+
+**Dlaczego.**
+
+- **Po allowliście agent kosztuje mniej.** Agent mechaniczny zachowuje około jednej trzeciej dzisiejszego kosztu (stan:zapis 167–203 tys. → 48–62 tys. jedn.),
+  sceptyk około połowy (250–256 tys. → 120–127 tys.), reviewer 56–67%.
+- **Oszczędności liczone na opłacie za powołanie kurczą się najbardziej.** Start spada o 70–90%: mechaniczne 89k → ~9k, sceptyk 123k → ~26k.
+  - stan:zapis w prompcie następcy (ETAP1: 9,6 M jedn. na 23 fazy, w całości zapis startu) daje ~1 M.
+  - Batch sceptyków: ~−0,4% zamiast −2%.
+- **Roster i mechanika: rząd 3–7% zamiast 8–10%,** zależnie od tego, czy znikają agenci mechaniczni (zostaje 1/3 kosztu), czy reviewerzy (ponad połowa).
+  To szacunek z dźwigni per klasa, nie przeliczenie ETAP1 element po elemencie.
+- **Skutek dla panelu.** Projekt, który sumuje „kontekst + roster” na dzisiejszych liczbach, zawyży zysk z drugiej dźwigni. Minimalistyczny wariant
+  powinien wiedzieć, że cięcie agentów po allowliście daje mniej niż dziś.
+
+### Poprawka 3 (zmienia progi mapy walidacji). Cele kontekstu startowego
+
+**Obecnie.** PANEL-WEJSCIE §12 (dwa miejsca), mapa §2 pkt 1 (obie wersje), rekord D5 §4 pkt 2: „cel ~4,5k mechaniczne / ~15k reviewer / ~25k builder”.
+
+**Proponuję.**
+
+- **Cele `ctx_start` per klasa i model na stanie z 20.09, z promptem zadania** (bo `ctx_start` go zawiera):
+  - mechaniczne ~9–10k (haiku i opus);
+  - orkiestracyjne, sceptycy i naprawiacze na opusie ~25–26k (naprawiacz na haiku ~21k);
+  - reviewerzy ~29k, buildery ~38k.
+  To spadek o 70–90% wobec 89–135k.
+- **Pierwszy odczyt działania zostaje bez porównań:** `agent.kontekst.narzedzia_n` (972 → ~5) i `claude_md_zn` = 0 u mechanicznych.
+- **Mini-run (e) potwierdza cele.** Próg anomalii „ctx_start > progu klasy” bierze się z tych celów.
+
+**Dlaczego.**
+
+- **Skąd stare cele.** 4,5k to pusty agent bez promptu, 15k i 25k to szacunek ETAP3 z CLAUDE.md liczonym jako 6k tokenów i bez promptu zadania (4–6k).
+- **Co by się stało.** Po poprawnym wdrożeniu reviewer miałby ~29k, więc mapa pokazałaby, że allowlista nie działa, a próg anomalii alarmowałby w każdym runie.
+
+### Porządkowe
+
+1. **Haiku a opus to tokenizer, nie konfiguracja.** Ten sam tekst to u haiku 0,742 tokena opusa, stale (p10–p90 0,740–0,745). To doprecyzowuje D3
+   poprawkę 2 („różnica startu to głównie model”) i mapę dla operatora („haiku startuje ~35 tys. niżej przy tej samej konfiguracji”).
+   Cele per model zostają. Przeniesienie roli mechanicznej z opusa na haiku oszczędza też ~26% tokenów, nie tylko cenę.
+2. **Skład startu z HANDOFF §3 pkt 2 jest nieaktualny.** Tam: 107k = system prompt 44k + CLAUDE.md i reguły 33k + nazwy MCP 27k + skille 10k.
+   Zmierzony skład opusa przed ścięciem (p50 137,5k):
+   - schematy narzędzi 42k (to one są „system promptem 44k”);
+   - CLAUDE.md 30k, learned-patterns 21k, coding-rules 6k;
+   - nazwy MCP 16k, skille 8,5k, prompt 6k.
+   W runie 20.09 CLAUDE.md ma już 9k, a learned-patterns 23k: sam learned-patterns waży dziś ponad dwa razy więcej niż ścięty CLAUDE.md.
+3. **Środowisko sesji i L8.** „−50k” (§2 pkt 1, §9 L8) to pusty agent w CLI. W runach z aplikacji desktop allowlista zdejmuje 54–77 tys. tokenów u opusa
+   i 37–53 tys. u haiku. Liczba zależy od serwerów MCP podłączonych w sesji, z której startuje autopilot.
+   Do rekordu D5 (§8 pkt 5) dopisać w `agent.kontekst` rozmiary w znakach: tools_zn, odroczone_zn, skille_zn i instrukcje per plik.
+   Wtedy raport miesięczny przeliczy dźwignię tą samą metodą co `d4r_dzwignia_kontekstu.py`.
+4. **Wersja operatora ma stare zapisy.**
+   - Część 6: „skan w ciągu około siedmiu tygodni” → ~30 dni (D6); „dziś 67–118 tys., cel 4,5–25 tys.” → run 20.09 i cele z poprawki 3.
+   - Część 2 pkt 1: „62 tys. … allowlista zbija start do kilkunastu tysięcy” → liczby z poprawki 1 i 3.
+   - Nagłówek części 2: „Jedenaście rzeczy” → trzynaście. Wstęp: „osiemnaście punktów decyzji”, „pięć domknięć” → 19 punktów, D1–D6 i D5b.
+   - „Jak ten pakiet był sprawdzany”: „sto osiemnaście o niższym pokryciu przejrzałem ręcznie” → 58 niskich ręcznie i 60 średnich wyrywkowo
+     (odtworzone skryptem na wersji z 21.09: 58 / 60 / 46; HANDOFF mówi 58).
+5. **Mapa dla operatora.** „1 179 milionów jednostek” bez dopisku → 1 293 M po D5. §2 pkt 2: „oczekiwana dźwignia 25–35 procent” → 40–50.
+6. **Mapa techniczna §2 pkt 2, metryka (c).** Wzór `Σ(ctx_sr × tury × 0,1) / Σ koszt` z punktem odniesienia „dziś 40%” miesza dwie rzeczy.
+   40% z digestu liczono na kontekście PIERWSZEJ tury, a ten wzór liczy prawie cały odczyt z cache (~54%).
+   Proponuję metrykę z d4r: udział „start × wywołania” (1,25 w pierwszym, 0,1 w następnych). Dziś 54,7% przed ścięciem i 60,9% w runie 20.09.
+7. **Luka z kontroli odwrotnej.** Rekomendacja z D5 (porządkowe): podnieść `cleanupPeriodDays`, np. do 120 dni, bo retencja ~30 dni skraca okno skanu
+   i importu. Tego nie ma w pakiecie → §10 przy higienie konta.
+8. **§12, opis pola `rola`:** „jak `rola()` w `koszt_agentow.py`” → „z dopasowaniem najdłuższej nazwy (przegląd D5)”.
+   §0: „start panelu … po D5 i rozmowie” → „po przeglądzie domknięć i rozmowie”.
+9. **Grupowanie etapów fazy.** Raport miesięczny (§12) porównuje z „ETAP0 28/25/6/5/17/12%” z digestu. `d5r-koszt-output.txt` §2 grupuje role
+   inaczej: reviewerzy 29,3% zamiast 25%, orkiestracja 8,8% zamiast 12%. Tam tester E2E (3,1%) i stara oś simplicity (1,3%) trafiają do reviewerów
+   (sprawdzone na `agents.csv`, oferty-online po 06.09: sześć osi razem 24,9%).
+   Wniosek D5 (przesunięcia ≤0,4 pp) stoi. Port raportu musi mieć jedno jawne grupowanie ról i przeliczyć punkt odniesienia tym grupowaniem.
+
+### Co się zmieni po akceptacji
+
+- **PANEL-WEJSCIE:** §0; §1 pkt 4 (liczba, metoda, nieaddytywność); §2 pkt 1 (−50k → 54–77k / 37–53k w aplikacji); §5 wiersz 1; §6 wiersz batch
+  sceptyków (−0,4% po allowliście); §8 wiersz 1 (liczba i filar: przeliczenie z transkryptów dwóch epok zamiast arytmetyki); §9 L8; §10
+  (`cleanupPeriodDays`); §11 (e); §12 (cele, opis `rola`, grupowanie w raporcie).
+- **ETAP3:** dopisek korekty w §1.1, §4 (wiersz tezy) i §7 („25–35%”). **ETAP3-DLA-OPERATORA:** dopisek przy „dwadzieścia pięć do trzydziestu pięciu”.
+- **PANEL-WEJSCIE-DLA-OPERATORA:** części 1, 2 (nagłówek i pkt 1), 6 i 8, wstęp, „Jak ten pakiet był sprawdzany”.
+- **Mapa walidacji obu wersji:** §2 pkt 1 (cele, tokenizer), §2 pkt 2 (dźwignia, metryka c), punkt odniesienia 1 293 M w wersji operatora.
+- **Rekord D5:** §4 pkt 2 (cele, próg anomalii), §8 pkt 5 (rozmiary w znakach w `agent.kontekst`).
+- **Model kosztu:** HANDOFF §3 pkt 2–3 i digest §0/§3 — dopisek ze składem startu i udziałem „start × wywołania”.
+- **HANDOFF:** wiersz 3½, 6a pkt 19, §8 na stan po przeglądzie. **Pamięć projektu**, commit `docs/reviews`.
