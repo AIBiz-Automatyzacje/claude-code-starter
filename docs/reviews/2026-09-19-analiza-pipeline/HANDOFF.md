@@ -445,8 +445,8 @@ cele ctx_start. **Decyzje z D6 PODJĘTE 2026-09-23 (6a pkt 20):** koszyk D, dev-
 **PROMPT-AUDIT ZROBIONY i ZAAKCEPTOWANY W CAŁOŚCI 2026-09-24 (6a pkt 25, wiersz 3⅞):** `PROMPT-AUDIT.md` + `PROMPT-AUDIT-DLA-OPERATORA.md` + `dane/pa-proponowany.diff`
 (nie naniesiony); prompty maszynerii = nowy obszar zmian szablonu (PANEL-WEJSCIE §10 „Obszar: prompty”, §2a zasady warstwy stałej i otwarte decyzje,
 mapa walidacji §7 obu wersji, rekord D5 §10 pole `agent.effort`); ponowny prompt-audit przy każdej zmianie modelu i po wdrożeniu plików klas ról.
-**Następny krok: tematy-inspiracje operatora (w tej samej sesji, 2026-09-24; decyzje z nich → kolejne punkty 6a); potem PANEL DECYZYJNY etapu 4
-(6a pkt 23) na Opus 5.5 (6a pkt 22) — WYŁĄCZNIE na znak operatora** (instrukcja „AKTUALNA” niżej). Kopia oferty-online w scratchpadzie 86e1644e może zostać do końca analizy; usuwanie tylko za zgodą operatora.
+**Następny krok: nowa sesja na tematy-inspiracje operatora (instrukcja „AKTUALNA (najpierw)” niżej; decyzje z nich → kolejne punkty 6a); potem
+PANEL DECYZYJNY etapu 4 (6a pkt 23) na Opus 5.5 (6a pkt 22) — WYŁĄCZNIE na znak operatora** (instrukcja „AKTUALNA — PANEL DECYZYJNY” niżej). Kopia oferty-online w scratchpadzie 86e1644e może zostać do końca analizy; usuwanie tylko za zgodą operatora.
 
 **Historia: MINI-RUN W TOKU (stan 2026-09-23 ~18:20, sesja 86e1644e) — zamknięte, zostawione jako zapis przebiegu:** plan `MINI-RUN-PLAN.md` + `MINI-RUN-PLAN-DLA-OPERATORA.md` ZAAKCEPTOWANY („Wszystko wygląda dobrze.
 Wykonaj to proszę.”). Zrobione i policzone skryptami:
@@ -473,6 +473,24 @@ Drobne odstępstwa do wyniku: komórki E wybrane regułą mediany (reviewer z pl
 fix:pre-skan przez tę samą właściwość `rola()` co w d4r; mechaniczny opus niezmierzony, liczony z haiku ×1/0,759); wycinek learned-patterns w E2 = 886 zn (wpisy
 nie mieszczą się w 1500); wiadomość operatora przekazana agentom serii D: „Wszystko wygląda dobrze. Wykonaj to proszę.”; pierwsze dwie próby f2 nieważne
 (agent puścił sleep w tle / harness blokuje sam `sleep`) — ważne: TERM `wf_e8db4d90-026`, KILL `wf_75d849a3-0d0`.
+
+**AKTUALNA (najpierw) — TEMATY-INSPIRACJE OPERATORA (wklej jako pierwszą wiadomość nowej sesji otwartej w workspace-template; tematy operator
+podaje w następnej wiadomości; panel decyzyjny niżej — dopiero po tej sesji, na znak):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Zadanie tej sesji: rozmowa o moich tematach-inspiracjach — podam je w następnej wiadomości. Panel decyzyjny NIE w tej sesji.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj najpierw (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md §1, §2 (tabela etapów), 6a pkt 19–25, §7 (pułapki);
+PANEL-WEJSCIE.md §0, §2, §2a, §10; PROMPT-AUDIT-DLA-OPERATORA.md. Decyzje z 6a obowiązują — nie pytaj o nie ponownie.
+Potem potwierdź w 3–5 zdaniach, gdzie jesteśmy, i CZEKAJ na tematy.
+
+Zasady: nic nie uruchamiaj ani nie zmieniaj w .claude/ i CLAUDE.md bez mojej zgody; subagentów tylko za zgodą (pokaż zakres i koszt);
+liczby skryptem (skrypty/*.py → dane/), pliki .md tylko Write/Edit. Styl: gdzie problem → co go powoduje → co z tym robimy → co mi to da,
+przy nawiązaniu do wcześniejszego tematu 2–3 zdania przypomnienia. Decyzje, które podejmę, wpisz po mojej akceptacji jako kolejne punkty
+HANDOFF 6a (i do PANEL-WEJSCIE, jeśli dotyczą panelu), popraw instrukcję panelu w §8, zaktualizuj pamięć projektu, commit docs/reviews.
+```
 
 **Instrukcja PROMPT-AUDIT (6a pkt 24) — WYKONANA 2026-09-24, zostawiona jako wzór do ponownego audytu (6a pkt 25: przy każdej zmianie modelu;
 przy powtórce zmień datę i porównaj z poprzednim `PROMPT-AUDIT.md`):**
