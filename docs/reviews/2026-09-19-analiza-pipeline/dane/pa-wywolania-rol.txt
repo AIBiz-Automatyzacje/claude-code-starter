@@ -1,0 +1,74 @@
+# pa_wywolania.py — plikow harnessu: 167, agentow: 3402
+# pole effort we wpisach agentow: {'bez pola effort': 3402}
+
+## role z n>=5, malejaco po medianie wywolan narzedzi
+mediana_wywolan  max  n  mediana_tokenow  rola  model
+    65   197    75    196904  fix  claude-opus-5
+    53    68     7    263057  build:IU  claude-opus-5-5
+    52    80     5    244174  build:unit  claude-opus-5
+    44   149   167    209613  build:IU  claude-opus-5
+    35    75    17    187305  pr:napraw:tura  claude-opus-5
+    34   107    75    148852  domkniecie  claude-opus-5
+    33    52    12    146410  build:U  claude-opus-5
+    32    87    29    155528  fix:poprawka  claude-opus-5
+    29    56    38    233606  review:correctness  claude-opus-5
+    24    64     6    151222  pr:napraw:tura  claude-fable-5-1
+    24    82    82    195368  review:test-coverage  claude-opus-5
+    22    67    82    199329  review:spec-compliance  claude-opus-5
+    20    61    38    221298  review:code-quality  claude-opus-5
+    20    42    39    106816  fix:pre-skan  claude-haiku-4-5
+    19    51    38    167634  review:typescript  claude-opus-5
+    19    26     6    145634  pr:zbierz:tura  claude-fable-5-1
+    18    59    82    185224  review:security  claude-opus-5
+    18    29    24    128222  walidacja-koncowa  claude-opus-5
+    18    28    15    153167  pr:zbierz:tura  claude-opus-5
+    16    39    41    163208  review:architecture  claude-opus-5
+    16    30    20    139312  compound  claude-opus-5
+    16    49    78    182654  review:performance  claude-opus-5
+    15    30    36    149649  fix:kontrola  claude-opus-5
+    14    35    82    144425  scribe  claude-opus-5
+    13    19     5     99964  mr-d:D400  claude-opus-5-5
+    12    24    57    110487  e2e:db-sync  claude-opus-5
+    12    24    20    121890  compound-refresh  claude-opus-5
+    11    32    43    146487  review:simplicity  claude-opus-5
+    10    37    33     95388  e2e:env-up  claude-opus-5
+    10    23    79    119970  planner  claude-opus-5
+    10    20    82    115332  kontekst:diff  claude-opus-5
+    10    17     7    125365  verify:spójność  claude-fable-5
+     9    21    31    103804  verify-fix  claude-opus-5
+     8    32    18     92132  telemetria:OK  claude-haiku-4-5
+     8    31   567     93324  verify  claude-opus-5
+     8    25    17    114038  verify:C  claude-fable-5
+     8    17    39    111976  zwin-do-poprawy  claude-haiku-4-5
+     8    11    37    108171  warmup:vitest  claude-opus-5
+     7   863    60    131221  review:e2e  claude-opus-5
+     7    18     5     43621  mr-d:D100  claude-opus-5-5
+     6    18   172    142324  verify-batch  claude-opus-5
+     6    10    16    101262  verify  claude-fable-5
+     6    10     5     47579  swiezosc  claude-haiku-4-5
+     6    12    24     73648  telemetria:STOP  claude-haiku-4-5
+     5    24   290     80468  stan:zapis  claude-haiku-4-5
+     5    10    52    103206  bootstrap  claude-opus-5
+     4     5    12     80298  stop:commit-artefaktow  claude-haiku-4-5
+     4     4     5     61966  natywne-deps  claude-opus-5
+     4     6    10    125393  verify-batch  claude-opus-5-5
+     3     7    38     70002  e2e:precheck  claude-haiku-4-5
+     2     5    15     68844  e2e:env-down  claude-haiku-4-5
+     2     2     6     43616  sha-przed  claude-haiku-4-5
+     1     2    85     83878  dedup:semantyczny  claude-haiku-4-5
+
+## buildery i reviewerzy: liczba agentow per model (proweniencja strojenia promptow)
+    4  build  claude-fable-5
+  184  build  claude-opus-5
+    7  build  claude-opus-5-5
+    1  fix  claude-fable-5
+   39  fix  claude-haiku-4-5
+  140  fix  claude-opus-5
+    8  fix  claude-opus-5-5
+   20  review  claude-fable-5
+  584  review  claude-opus-5
+   20  review  claude-opus-5-5
+    3  scribe  claude-fable-5
+    1  scribe  claude-haiku-4-5
+   84  scribe  claude-opus-5
+    3  scribe  claude-opus-5-5

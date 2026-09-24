@@ -1,0 +1,7 @@
+(1) raport -> zrodla: cytaty OK 38, bledne 0; numery linii OK 80, poza plikiem 0
+(1b) wszystkie odwolania plik:linia w raporcie: OK 75, poza plikiem 0
+(2) diff <-> raport: hunkow w diffie 62, w mapie naglowka 62, w polach „Hunki:” raportu 62; ID w diffie 21; rozbieznosci 0
+(3) raport <-> operator: ID w raporcie 44, w diffie 21, flag 8, w wersji operatora 29; diff+flagi bez wzmianki u operatora: brak; ID operatora spoza raportu: brak
+(4) liczby: tabela Razem=43, diff 8+13=21 (w mapie 21), flagi 8 (w raporcie 8), niskie 14 (+PA-44 „add” = 15 wpisow); operator: „44 rzeczy, 21 poprawek, 8 decyzji” -> zgodne
+
+BLEDOW: 0

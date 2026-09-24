@@ -245,3 +245,11 @@ Zrodla: PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D6; skrypty/d6r_rewizja_audytu.py → 
 5. PUNKT ODNIESIENIA (mapa §2 pkt 12): pelny koszt mediana dev-plan 2,39 M, dev-docs 0,56 M, dev-prep 1,40 M (pierwsza odpowiedz: 0,81 / 0,51 /
    0,43 M); udzial skilli przed autopilotem w koszcie zadania ~4–7% w medianie, do ~1/5 w malych zadaniach.
 6. RETENCJA (§8 pkt 1): ~30 dni w aktywnym projekcie — skan musi przejsc w tym oknie.
+
+=== 10. UZUPELNIENIE PO PROMPT-AUDICIE (2026-09-24; PRZYJETE przez operatora w calosci, HANDOFF 6a pkt 25) ===
+1. NOWE POLE typ=agent: effort (low|medium|high|xhigh|max|null; null = efort sesji). Plik harnessu go NIE zapisuje (3 402/3 402 wpisow agentow
+   bez pola, skrypty/pa_wywolania.py), wiec skan wyprowadza je z pola `script` pliku harnessu (TIERY_DOMYSLNE i wywolania zEffortem/zEffortemAP
+   przy etykiecie) scalonego z `args.tiery`. Agent z model haiku: effort = null (Haiku 4.5 nie obsluguje efortu; harness pomija parametr — PA-23).
+   Po co: efort per klasa roli na Opus 5.5 to otwarta decyzja panelu (PA-22); bez pola porownanie kosztu przed/po zmianie tieru jest niemozliwe.
+2. BEZ NOWYCH POL (istniejace wystarcza): wywolania narzedzi roli mechanicznej = agent.narzedzia.razem per rola (PA-15: fix:pre-skan dzis mediana 20,
+   maks. 42, n=39); zmiany plikow reviewerow = faza.findingi_per_os + agent.obalone + potwierdzone P1/P2 (PA-01/02/05/07); epoka zmiany = szablon.skrypt_sha.

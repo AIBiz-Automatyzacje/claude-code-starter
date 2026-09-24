@@ -1,0 +1,185 @@
+# Prompt-audit: inwentarz powierzchni promptow (pa_inwentarz.py)
+repo: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template
+
+## skill: 28 plikow, w zakresie 19, linie w zakresie 5055, znaki 270727
+  .claude/skills/agent-browser/SKILL.md                                            434 l   17416 zn  [w zakresie]  wstrzykiwany skills: -> feature-tester-e2e
+  .claude/skills/bugfix/SKILL.md                                                   194 l    8581 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/code-quality/SKILL.md                                             216 l    9071 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/code-review/SKILL.md                                              158 l    5028 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/coderabbit-setup/SKILL.md                                          89 l    5035 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/coolify-manager/SKILL.md                                          178 l    7069 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-brainstorm/SKILL.md                                           344 l   19383 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-compound/SKILL.md                                             459 l   17411 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-compound-refresh/SKILL.md                                     413 l   25012 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-docs/SKILL.md                                                 183 l   23804 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-docs-complete/SKILL.md                                        143 l   11555 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-docs-execute/SKILL.md                                          83 l    6247 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-docs-review/SKILL.md                                          130 l   10320 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-docs-update/SKILL.md                                          108 l    6643 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-ideate/SKILL.md                                               403 l   17849 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-plan/SKILL.md                                                 867 l   60996 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-pr/SKILL.md                                                   184 l    8666 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/dev-prep/SKILL.md                                                 258 l   16583 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/figma-design-to-code/SKILL.md                                      52 l    4007 zn  [w zakresie]  wstrzykiwany skills: -> feature-builder-fullstack, feature-builder-ui
+  .claude/skills/freshness-audit/SKILL.md                                           46 l    2719 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/gemini/SKILL.md                                                    72 l    1857 zn  [POMINIETY (6a pkt 20)]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/security/SKILL.md                                                 193 l    7555 zn  [w zakresie]  wstrzykiwany skills: -> feature-builder-data, feature-builder-fullstack
+  .claude/skills/sentry-integration/SKILL.md                                       276 l    8308 zn  [w zakresie]  wstrzykiwany skills: -> feature-builder-data, feature-builder-fullstack
+  .claude/skills/supabase-dev-guidelines/SKILL.md                                  312 l   10519 zn  [w zakresie]  wstrzykiwany skills: -> feature-builder-data, feature-builder-fullstack
+  .claude/skills/sync-template/SKILL.md                                             92 l    5531 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+  .claude/skills/tailwind-react-guidelines/SKILL.md                                185 l    6484 zn  [w zakresie]  wstrzykiwany skills: -> feature-builder-fullstack, feature-builder-ui
+  .claude/skills/ux-ui-guidelines/SKILL.md                                         332 l   10923 zn  [w zakresie]  wstrzykiwany skills: -> feature-builder-fullstack, feature-builder-ui
+  .claude/skills/zroastuj-mnie/SKILL.md                                             61 l    4470 zn  [w zakresie]  sesja glowna (Skill) / agent czyta plik
+
+## skill-ref: 50 plikow, w zakresie 41, linie w zakresie 20103, znaki 569191
+  .claude/skills/agent-browser/references/authentication.md                        380 l   11263 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/commands.md                              457 l   21548 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/profiling.md                             120 l    3405 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/proxy-support.md                         194 l    4971 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/session-management.md                    180 l    5158 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/snapshot-refs.md                         219 l    5315 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/trust-boundaries.md                       50 l    4032 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/agent-browser/references/video-recording.md                       420 l   11146 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/bugfix/techniki/condition-based-waiting.md                         65 l    1953 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/bugfix/techniki/defense-in-depth.md                                68 l    1949 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/bugfix/techniki/root-cause-tracing.md                              74 l    1978 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/code-quality/resources/architecture-analysis.md                   213 l    7752 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/code-quality/resources/performance-analysis.md                    202 l    7479 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/code-quality/resources/simplicity-audit.md                        213 l    6803 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/code-review/resources/common-issues.md                           1070 l   25459 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/code-review/resources/review-patterns.md                          356 l    8839 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/code-review/resources/tech-stack-checklist.md                     283 l    8917 zn  [POMINIETY (6a pkt 20)]  referencja na zadanie (Read/cat)
+  .claude/skills/coderabbit-setup/reference/stack-blocks.md                        115 l    3948 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/coolify-manager/references/api_endpoints.md                       236 l    5596 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/coolify-manager/references/cli_commands.md                        472 l   14092 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/coolify-manager/references/wordpress_fixes.md                     234 l    5202 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/security/resources/auth-security-patterns.md                      562 l   19422 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/security/resources/owasp-react-supabase.md                        431 l   20175 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/sentry-integration/resources/edge-functions-sentry.md             491 l   16302 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/sentry-integration/resources/react-sentry-patterns.md             525 l   13265 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/supabase-dev-guidelines/resources/auth-patterns.md                624 l   18845 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/supabase-dev-guidelines/resources/cli-guide.md                    271 l    7482 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/supabase-dev-guidelines/resources/database-patterns.md            782 l   19263 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/supabase-dev-guidelines/resources/edge-functions.md               592 l   19149 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/supabase-dev-guidelines/resources/realtime.md                     402 l    9415 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/supabase-dev-guidelines/resources/security.md                     464 l   13598 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/component-patterns.md         549 l   12975 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/file-organization.md          867 l   21912 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/forms.md                      989 l   28350 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/loading-and-error-states.md   720 l   18294 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/performance.md                591 l   15674 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/styling-guide.md              672 l   16764 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/testing.md                   1013 l   25644 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/tailwind-react-guidelines/resources/typescript-standards.md       535 l   12625 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/accessibility.md                       832 l   21710 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/animation-polish.md                    399 l   11416 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/animations.md                          747 l   18372 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/component-ux.md                        874 l   25053 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/design-system.md                       669 l   16552 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/patterns.md                            897 l   27291 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/performance.md                         100 l    3225 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/polish-checklist.md                    144 l    7676 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/responsive-design.md                   862 l   21102 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/surfaces.md                            274 l    7737 zn  [w zakresie]  referencja na zadanie (Read/cat)
+  .claude/skills/ux-ui-guidelines/resources/typography-polish.md                   148 l    4227 zn  [w zakresie]  referencja na zadanie (Read/cat)
+
+## agent: 16 plikow, w zakresie 16, linie w zakresie 2244, znaki 135465
+  .claude/agents/architecture-strategist.md                                        127 l    8430 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/best-practices-researcher.md                                      126 l    7099 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/code-simplicity-reviewer.md                                       101 l    4144 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/feature-builder-data.md                                           105 l    5600 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/feature-builder-fullstack.md                                      123 l    6776 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/feature-builder-ui.md                                             107 l    6484 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/feature-tester-e2e.md                                              96 l   11273 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/framework-docs-researcher.md                                      115 l    6278 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/kieran-typescript-reviewer.md                                     139 l    6740 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/learnings-researcher.md                                           259 l   16992 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/performance-oracle.md                                             153 l    7229 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/repo-research-analyst.md                                          295 l   16593 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/security-sentinel.md                                              191 l   11197 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/spec-compliance-reviewer.md                                        64 l    3801 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/spec-flow-analyzer.md                                             105 l    6430 zn  [w zakresie]  plik agenta (system prompt subagenta)
+  .claude/agents/web-research-specialist.md                                        138 l   10399 zn  [w zakresie]  plik agenta (system prompt subagenta)
+
+## workflow: 7 plikow, w zakresie 6, linie w zakresie 4167, znaki 277695
+  .claude/workflows/dev-autopilot-wf.js                                           1781 l  118845 zn  [w zakresie]  stringi promptow agent() + orkiestrator
+  .claude/workflows/dev-compound-wf.js                                              77 l    4855 zn  [w zakresie]  stringi promptow agent() + orkiestrator
+  .claude/workflows/dev-docs-complete-wf.js                                        185 l   14287 zn  [w zakresie]  stringi promptow agent() + orkiestrator
+  .claude/workflows/dev-docs-execute-wf.js                                         278 l   15384 zn  [w zakresie]  stringi promptow agent() + orkiestrator
+  .claude/workflows/dev-docs-review-wf.js                                         1392 l   96230 zn  [w zakresie]  stringi promptow agent() + orkiestrator
+  .claude/workflows/dev-pr-wf.js                                                   454 l   28094 zn  [w zakresie]  stringi promptow agent() + orkiestrator
+  .claude/workflows/freshness-audit-wf.js                                          295 l   15960 zn  [POMINIETY (6a pkt 20)]  stringi promptow agent() + orkiestrator
+
+## regula: 1 plikow, w zakresie 1, linie w zakresie 217, znaki 10542
+  .claude/rules/coding-rules.md                                                    217 l   10542 zn  [w zakresie - TYLKO RAPORT (regula operatora)]  eager: sesja glowna + subagenci z CLAUDE.md
+
+## hook: 2 plikow, w zakresie 2, linie w zakresie 209, znaki 6307
+  .claude/hooks/error-handling-reminder.sh                                         126 l    3860 zn  [w zakresie]  hook Stop -> komunikat do modelu (exit 2 / stderr)
+  .claude/hooks/stop-build-check-enhanced.sh                                        83 l    2447 zn  [w zakresie]  hook Stop -> komunikat do modelu (exit 2 / stderr)
+
+## szablon: 7 plikow, w zakresie 7, linie w zakresie 271, znaki 15334
+  .claude/templates/e2e-env/.env.e2e.example                                        21 l    1214 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+  .claude/templates/e2e-env/README.md                                              121 l    8155 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+  .claude/templates/smoke-autopilot/README.md                                       48 l    3172 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+  .claude/templates/smoke-autopilot/plan-techniczny-smoke-autopilot.md              32 l    1019 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+  .claude/templates/smoke-autopilot/smoke-autopilot-kontekst.md                     16 l     521 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+  .claude/templates/smoke-autopilot/smoke-autopilot-plan.md                         16 l     545 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+  .claude/templates/smoke-autopilot/smoke-autopilot-zadania.md                      17 l     708 zn  [w zakresie]  kopiowany do docs/ projektu, czytany przez agentow
+
+## role workflow: prompt -> model (efort)
+  dev-autopilot-wf.js:1068  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1125  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1177  bootstrapPrompt              bootstrap                                sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1205  zapiszStanPrompt             stan:zapis                               haiku              -
+  dev-autopilot-wf.js:1210  zapiszStanPrompt             stan:zapis:retry                         sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1231  e2ePrecheckPrompt            e2e:precheck                             haiku              -
+  dev-autopilot-wf.js:1248  e2eEnvUpPrompt               e2e:env-up                               sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1252  e2eEnvUpPrompt               e2e:env-up:retry                         sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1276  warmupPrompt                 warmup:vitest                            sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1341  e2eDbSyncPrompt              e2e:db-sync:faza-${numerFazy}            sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1437  fixPrompt                    fix:faza-${numerFazy}                    sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1486  postFixVerifyPrompt          verify-fix:${f.plik}                     sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1509  preSkanFixaPrompt            fix:pre-skan:faza-${numerFazy}           haiku              }, 'low')
+  dev-autopilot-wf.js:1520  regresjaFixaPrompt           fix:kontrola:faza-${numerFazy}           sesja (Opus 5.5)   }, 'low')
+  dev-autopilot-wf.js:1539  fixPoprawkaPrompt            fix:poprawka:faza-${numerFazy}           sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1576  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1621  finalValidationPrompt        walidacja-koncowa                        sesja (Opus 5.5)   -
+  dev-autopilot-wf.js:1670  e2eEnvDownPrompt             e2e:env-down                             haiku              -
+  dev-autopilot-wf.js:1717  refreshPrompt                compound-refresh                         sesja (Opus 5.5)   -
+  dev-compound-wf.js:38    ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-complete-wf.js:106   smokePrompt                  smoke-operatora:${nazwaZadania}          sesja (Opus 5.5)   -
+  dev-docs-complete-wf.js:111   smokePrompt                  smoke-operatora-retry:${nazwaZadania}    sesja (Opus 5.5)   -
+  dev-docs-complete-wf.js:144   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-execute-wf.js:214   plannerPrompt                planner:faza-${faza}                     sesja (Opus 5.5)   -
+  dev-docs-execute-wf.js:233   promptIU                     build:${iu.id}                           sesja (Opus 5.5)   -
+  dev-docs-execute-wf.js:240   promptIU                     build:${iu.id}                           sesja (Opus 5.5)   -
+  dev-docs-execute-wf.js:277   domknieciePrompt             domkniecie:faza-${faza}                  sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:840   kontekstPrompt               kontekst:diff                            sesja (Opus 5.5)   tiery.packager
+  dev-docs-review-wf.js:902   reviewerPrompt               review:${r.key}                          sesja (Opus 5.5)   tiery.reviewer
+  dev-docs-review-wf.js:904   testCoveragePrompt           review:test-coverage                     sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:907   e2ePrompt                    review:e2e                               sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:927   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:1051  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:1235  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:1250  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:1340  scribePrompt                 scribe:faza-${faza}                      sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:1345  ?                            ?                                        sesja (Opus 5.5)   -
+  dev-docs-review-wf.js:1355  inspekcjaPrompt              scribe:faza-${faza}:inspekcja            haiku              -
+  dev-pr-wf.js:197   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-pr-wf.js:238   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-pr-wf.js:308   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-pr-wf.js:372   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-pr-wf.js:407   ?                            ?                                        sesja (Opus 5.5)   -
+  dev-pr-wf.js:422   ?                            ?                                        sesja (Opus 5.5)   -
+
+## skille wstrzykiwane przez skills: w plikach agentow
+  feature-builder-data.md: supabase-dev-guidelines, security, sentry-integration
+  feature-builder-fullstack.md: tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration, figma:figma-use, figma-design-to-code
+  feature-builder-ui.md: tailwind-react-guidelines, ux-ui-guidelines, figma:figma-use, figma-design-to-code
+  feature-tester-e2e.md: agent-browser
+
+## CLAUDE.md: w repo szablonu BRAK pliku w katalogu glownym (CLAUDE.md nalezy do projektu docelowego); grep odwolan:
+  .claude/skills/dev-compound/SKILL.md:158: **Bootstrap (pierwsze uruchomienie w projekcie):** jeśli `docs/CONCEPTS.md` nie istnieje, a projekt ma bogatą domenę (statusy/enumy o niestandardowym znaczeniu,
+  .claude/skills/dev-docs-complete/SKILL.md:115: - Dopisz decyzje architektoniczne do `CLAUDE.md`
+  .claude/skills/dev-docs-complete/SKILL.md:116: - Jeśli odkryto wzorce warte utrwalenia — dodaj regułę do `.claude/rules/learned-patterns.md` (utwórz plik, jeśli nie istnieje) lub zaktualizuj `CLAUDE.md`.
+  .claude/workflows/dev-docs-complete-wf.js:160: 6. Zaktualizuj dokumentacje projektu jesli istotne (CLAUDE.md / .claude/rules/).

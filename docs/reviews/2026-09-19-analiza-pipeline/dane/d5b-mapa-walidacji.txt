@@ -415,3 +415,31 @@ wykonalo) + `zgodny`, NIE po sha repo projektu ani samym markerze — 33/55 runo
       asymetryczny, petla fix tylko P1/P2 — dotykaja wszystkich osi naraz.
   Zmiana przekrojowa, ktora jest tez zmiana KOSZTU (np. kontekst), moze wejsc razem ze zmianami R1; jej odczyt jakosci i tak zajmuje okno R3.
   Kolejnosc zmian R3 = decyzja planu etapu 5 (ktora najpierw); ta mapa daje tylko regule, ze dwie zmiany R3 nie dziela okna.
+
+================================================================================================================================
+=== 7. OBSZAR „PROMPTY MASZYNERII” (prompt-audit 2026-09-24, HANDOFF 6a pkt 25; PANEL-WEJSCIE §10 „Obszar: prompty”) ===
+================================================================================================================================
+Poprawki faktow i kontraktow (PA-03, 04, 08, 09, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21) nie maja wlasnej metryki: zmieniaja tekst na zgodny z repo
+(kontrola: skrypty/pa_kontrola.py + ponowny prompt-audit = zero trafien danego wzorca). Metryki maja zmiany, ktore zmieniaja zachowanie:
+
+--- P1. Zakres fixa podany z FixResult.commity (PA-15) --- [R1: USTAWIENIA/KOSZT]
+METRYKA   mediana agent.narzedzia.razem dla rol fix:pre-skan i fix:kontrola; cel pre-skan ≤ 3 (dzis 20, maks. 42, n=39); fix:kontrola bez wzrostu
+          liczby trafien regresji (faza.kontrolaFixa.regresje) przy tym samym typie zadan.
+POLA      agent.rola, agent.narzedzia.razem, faza.kontrolaFixa.
+BASELINE  dane/pa-wywolania-rol.txt (pliki harnessu, 167 runow). HORYZONT po 5 fazach.
+
+--- P2. Compound z materialu runu zamiast „kontekstu z sesji” (PA-14) --- [R1]
+METRYKA   odsetek runow z compound.plik != null (dzis z telemetrii-odzyskanej) i przeglad reczny 3 pierwszych wpisow: czy dotycza problemu z runu,
+          nie tresci wiadomosci operatora.
+POLA      run.solution (compound.plik; dzis pole `solution` w autopilot-runs.jsonl), faza.findingi_per_os (zrodlo materialu). HORYZONT po 3 runach.
+
+--- P3. Pliki reviewerow bez przykladow, wzmacniaczy i drugiego formatu (PA-01, 02, 05, 06, 07) --- [R2: osie rozlaczne security / performance / code-quality, kazda czytana po swoich uwagach]
+METRYKA   per os: findingi znalezione, obalone przez sceptykow / weryfikowane, potwierdzone P1/P2, agent.narzedzia.razem reviewera; oczekiwanie:
+          mniej obalonych i mniej wywolan przy niezmienionej liczbie potwierdzonych P1/P2. ODWROT: spadek potwierdzonych P1/P2 danej osi ≥ max(3, 2×
+          oczekiwana) w oknie 5 PR (B P1/P2 bota tej osi) — przywrocic minimalna forme usunietej reguly, nie oryginal.
+POLA      faza.findingi_per_os, agent.obalone, agent.narzedzia.razem, run.pr (B P1/P2 per os). PRZED wdrozeniem: jedna historyczna faza przeczytana
+          starymi i nowymi plikami (PROMPT-AUDIT §4 „Weryfikacja”). HORYZONT po 5 fazach (koszt) / okno 5 PR (jakosc, R2 — osie rozlaczne).
+
+--- P4. Efort per klasa roli na Opus 5.5 (PA-22, decyzja panelu) --- [R1]
+METRYKA   koszt_jedn i tury per klasa roli przy zmianie tieru; jakosc jak P3 dla ról review. POLA agent.effort (NOWE, d5 §10), agent.koszt_jedn, agent.tury.
+          HORYZONT po 5 fazach; jakosc — okno 5 PR.

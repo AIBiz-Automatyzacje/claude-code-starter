@@ -21,6 +21,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   + kolejność wdrożenia; etap 5 robi z tego plan w iteracjach, implementacja faza po fazie z metryką w telemetrii (6a pkt 19). Żaden projektant nie pisze kodu.
 - **Każdy projektant dostaje:** ten plik + `dane/dane-digest.md` (model kosztu) + `ETAP1-ROZSTRZYGNIECIE.md` (werdykty osi po kontrach) +
   `ETAP2-ROZSTRZYGNIECIE.md` (mapa researchu) + hipotezy §5 tego pliku, każdy z innym priorytetem. NIE dostaje werdyktów workflow-A (HANDOFF §4, dane v1, zawyżone ~2×).
+  [2026-09-24, HANDOFF 6a pkt 25] Dostaje też `PROMPT-AUDIT.md` §4 (zasady pisania warstwy stałej ról + otwarte decyzje z prompt-auditu); streszczenie w §2a.
 - **Sędziowie (HANDOFF §1, 6a pkt 18 L17):** wymiary = koszt (o ile pipeline „dostarcza kod dobrze wykonany") i jakość = P1/P2 od CodeRabbit PO naszym
   review (+ Sentry po wdrożeniu; /bugfix wypada z miary — L13). **Koszt i ryzyko wdrożenia NIE są kryterium** (propozycja czwartego wymiaru WYCOFANA; wdrożenie fazowe wg planu etapu 5).
 - **Nie jest wariantem:** szablon jako plugin (6a pkt 13 — zbadany, odłożony; co najwyżej wzmianka „opcja na przyszłość").
@@ -152,6 +153,23 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   **N2** — instrukcje (CLAUDE.md, rules) i skille są buforowane w sesji: plik przeniesiony z `.claude/rules/` dalej ładowany eager; zmieniony SKILL.md → następny agent
   bez skilla, kolejne z wersją o jedną zmianę wstecz; `change_directory` zostawia instrukcje starego katalogu. Po zmianach w `.claude/` nowa sesja przed autopilotem (§10);
   wiedza wklejana przez orkiestrator jest czytana w runie, więc świeża (argument za §2 pkt 4). **N3** — builder czyta `git status` z `session_context` i idzie za nim.
+- **PROMPT-AUDIT 2026-09-24 (`PROMPT-AUDIT.md`, zaakceptowany w całości — HANDOFF 6a pkt 25).** Maszyneria oceniona względem modelu, na którym jedzie
+  każda rola (Opus 5.5; 9 ról Haiku 4.5); ~94% historii agentów opusowych to Opus 5, więc prompty i efort strojono pod poprzedni model.
+  **Zasady pisania warstwy stałej każdej klasy roli (wymóg projektu, uzupełnienie §2 pkt 3):** (1) pliki klas pisać od zera, nie przerabiać plików
+  z compound-engineering — mandat w 1–2 zdaniach, polecenia-listy z powodem przy każdym, bez dialogów-przykładów i bez tożsamości „expert/elite”,
+  bez wzmacniaczy („be paranoid”, „last line of defense”); (2) jeden format wyjścia = schemat workflowu, żadnego drugiego formatu raportu w pliku;
+  (3) czas teraźniejszy, zero dat, numerów poprawek i nazw incydentów w tekście dla modelu (historia w komentarzach JS i `docs/solutions/`) — test
+  budżetu warstwy stałej może odrzucać `20\d\d-\d\d-\d\d`, „jak dotąd”, „już nie”; (4) nacisk (wersaliki, „ZAKAZ”) tylko przy udokumentowanej awarii,
+  z powodem obok; (5) role mechaniczne dostają dokładne polecenie i dane wejściowe od orkiestratora, nie zadanie ustalenia zakresu (`fix:pre-skan`:
+  mediana 20 wywołań narzędzi na jedno polecenie gita); (6) nazwy narzędzi MCP w promptach i w allowliście `tools:` (§2 pkt 1) wyliczane z instalacji,
+  w prompcie po nazwie funkcji; (7) efort jest parametrem klasy roli obok modelu i `tools:`. Zasady (1)–(4) dotyczą też plików klas reviewerów, które
+  zastąpią dzisiejsze `security-sentinel` / `architecture-strategist` / `performance-oracle` (sprzeczności PA-03, PA-04 do usunięcia niezależnie — §10).
+  **Otwarte decyzje do kroku 0 panelu:** efort per klasa roli na Opus 5.5 (PA-22: domyślny `medium`, poziomy nie mapują się 1:1 z Opus 5, tiery
+  przypięte testem `sceptycy-p2.test.mjs:157`); liczba warstw weryfikacji — builder, domknięcie, fix, walidacja końcowa, hook tsc (PA-29; migracja
+  wskazuje polecenia weryfikacji jako kandydata do re-testu); obowiązkowy research w dev-plan przy głębokości „Lekka” (PA-30, §2 pkt 12); opisy
+  workflowów-dzieci w liście skilli każdego startu agenta (PA-31). Do projektu skilli builderów: `security` wstrzykiwany builderom to protokół audytu
+  z raportem — do warstwy referencyjnej jako reguły dla implementatora (PA-24); przy §2 pkt 4 usunąć krok „1.7 przeczytaj learned-patterns” z plików
+  builderów (PA-27, trzy kanały dziś).
 
 ## 3. Pozostałe decyzje operatora 6a pkt 1–14 obowiązujące dla projektów (jedna linia każda)
 
@@ -287,6 +305,24 @@ transkryptów ~30 dni w aktywnym projekcie skraca okno skanu telemetrii i import
 z oryginałem (→ import w D5, §12), parametryzacja E2E przed następnym zadaniem w oferty-online.
 **Po mini-runie (N2, 2026-09-23):** instrukcje i skille są buforowane w sesji → po każdej zmianie w `.claude/` (sync-template, allowlista, przeniesienie learned-patterns)
 nowa sesja przed autopilotem: komunikat na końcu sync-template + zdanie w skillu dev-autopilot-wf.
+
+**Obszar: prompty maszynerii (prompt-audit 2026-09-24, HANDOFF 6a pkt 25; `PROMPT-AUDIT.md`, diff `dane/pa-proponowany.diff` — 62 hunki, mapa hunk → ID
+w nagłówku, `git apply --include=<plik>` bierze pojedyncze pliki).** Stały obszar zmian szablonu, aktualizowany cyklicznie.
+- **Iteracja zmian szablonu, niezależnie od panelu** (poprawki faktów i kontraktów, każdy projekt i tak by je przyjął): PA-03 memoizacja vs React
+  Compiler (performance + fokus osi), PA-04 `getSession()` w security, PA-09 odwołania do nieistniejącego opisu w BLOK_SEMANTYKA, PA-12 nazwy narzędzi
+  Figma MCP, PA-13 planner „11 KB” i fałszywy powód, PA-14 compound bez „kontekstu z sesji”, PA-16 archiwizacja nie edytuje CLAUDE.md (6a pkt 1),
+  PA-19 niewykonalny krok buildera fullstack, PA-20 nieistniejące osie w spec-compliance, PA-08 / PA-10 / PA-11 frazy migracyjne, archeologia
+  incydentów, rok na sztywno, PA-15 hashe commitów fixa dla `fix:pre-skan` i `fix:kontrola`, PA-17 ton zasad Sentry, PA-18 hook error-handling
+  (do czasu bramki ESLint), PA-21 `Scope:` dla repo-research-analyst w dev-plan.
+- **Warunkowo:** PA-01, 02, 05, 06, 07 (pliki reviewerów) — teraz tylko, gdy pliki klas ról z panelu są dalej niż jedna iteracja; inaczej zasady z §2a.
+  PA-39 (trzy zachodzące checklisty security) = przepisanie security 191 → ~90 linii z ETAP1 (§2a). PA-22, 24, 27, 29, 30, 31 → panel (§2a).
+- **Decyzje operatora przy wdrożeniu:** PA-25 odświeżyć kopię `figma-design-to-code` z pluginu (brak sekcji o obrazach i ikonach, martwe linki) albo
+  przejść na `figma:figma-design-to-code`; PA-26 materiał do przepisania `coding-rules.md` (tabela „10 anty-patternów AI” = cechy modelu + powtórzenie,
+  „nie modyfikuj swoich reguł” vs compound, podwójne „uruchom testy przed gotowe”).
+- **Niskie (PA-23, 28, 32–38, 40–44):** przy okazji zmian w danym pliku; lista w `PROMPT-AUDIT.md` §3.
+- **Metryki:** `dane/d5b-mapa-walidacji.txt` §7 (nowe pole `agent.effort` — `dane/d5-telemetria-rekord.txt` §10).
+- **Cykl:** ponowny `/claude-api prompt-audit` z tym samym Step 0 przy każdej zmianie modelu pipeline'u, po wdrożeniu plików klas ról i po każdej iteracji
+  dotykającej promptów (`skrypty/pa_*.py` do powtórzenia, kontrola w obie strony). Po naniesieniu zmian — nowa sesja przed autopilotem (N2).
 
 ## 11. Mini-run PRZED panelem (6a pkt 16 + dodatki) — **ZROBIONY 2026-09-23** (`MINI-RUN-WYNIK.md`, wersja operatora `MINI-RUN-DLA-OPERATORA.md`), metoda markerów z pomiaru 1
 

@@ -262,6 +262,26 @@ Zmiana przekrojowa, która jest też zmianą kosztu, na przykład kontekst, moż
 
 Okresy przed i po zmianie rozdzielamy po tym, który skrypt naprawdę się wykonał, a nie po numerze wersji zapisanym w projekcie. Przegląd D5 pokazał, że 33 z 55 runów autopilota puściło lokalnie zmieniony skrypt, a znacznik wersji jest tylko w 5 z 11 repo.
 
+## Część 6. Obszar promptów (dopisany 24 września, po przeglądzie promptów)
+
+Przegląd promptów pod Opus 5.5 dołożył nowy obszar zmian. Większość jego poprawek to prostowanie faktów: nieaktualny rok, nazwy narzędzi, które nie
+istnieją, odwołania do rzeczy, których model nie widzi, sprzeczności między plikami. Te nie potrzebują miary w telemetrii — sprawdza je ponowny
+przegląd, który ma znaleźć zero takich miejsc. Miarę mają cztery zmiany, które zmieniają zachowanie.
+
+**Zakres dla kontroli poprawek.** Haiku sprawdzający commity fixa dostanie ich listę od orkiestratora zamiast szukać jej sam. Miara: liczba wywołań
+narzędzi tej roli, dziś w medianie dwadzieścia, cel najwyżej trzy. Odczyt po pięciu fazach, razem z innymi zmianami ustawień.
+
+**Compound z materiału runu.** Compound w autopilocie przestaje szukać „kontekstu z sesji”, której nie widzi. Miara: czy powstaje wpis w bazie wiedzy
+i czy trzy pierwsze dotyczą problemu z runu, a nie treści Twojej wiadomości. Odczyt po trzech runach.
+
+**Pliki reviewerów bez przykładowych rozmów, wezwań i drugiego formatu.** Miara per oś: ile findingów, ile obalili sceptycy, ile potwierdzonych
+poważnych, ile wywołań narzędzi. Oczekujemy mniej obalonych i mniej wywołań przy tej samej liczbie potwierdzonych. Odwrót tą samą regułą co wszędzie:
+gdy bot w oknie pięciu PR-ów znajdzie w danej osi wyraźnie więcej poważnych uwag, wracamy do najkrótszej formy usuniętej reguły. Trzy osie są rozłączne,
+więc mogą iść w jednym oknie. Przed wdrożeniem jedna historyczna faza przeczytana starymi i nowymi plikami.
+
+**Efort per klasa roli.** To decyzja panelu. Żeby ją zmierzyć, rekord agenta dostaje nowe pole z efortem — dziś plik, z którego czyta telemetria,
+w ogóle go nie zapisuje. Miara: koszt i tury klasy przy zmianie ustawienia, a dla reviewerów jakość jak wyżej.
+
 ## Co z tego wynika dla planu wdrożenia
 
 Pierwsza iteracja to telemetria z importem, bo bez niej nic nie ma odczytu. Potem osiem zmian konfiguracji bota, kalibracja klasyfikatora uwag i zebranie nowego punktu odniesienia jakości z dwóch–trzech zadań, zanim ruszy pierwsza zmiana pipeline'u. Każda następna iteracja wchodzi w parze ze swoim wpisem z tej mapy i ma zaplanowany moment odczytu, po jednej fazie, po pięciu fazach albo w oknie pięciu PR-ów, zgodnie z regułami kolejności z części 5. Zmiana bez wpisu jest niekompletna.

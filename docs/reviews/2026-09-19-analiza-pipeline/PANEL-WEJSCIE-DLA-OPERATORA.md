@@ -376,6 +376,29 @@ trzeba otworzyć nową sesję, zanim ruszy autopilot. To trafiło na listę zmia
 
 ---
 
+## Część 9. Przegląd promptów pod Opus 5.5 (24 września)
+
+Przed panelem przejrzeliśmy wszystko, co szablon mówi modelowi, metodą z przewodnika Anthropic. Przyjąłeś wynik w całości i prompty stały się
+osobnym obszarem zmian szablonu, który będziemy aktualizować. Pełna narracja jest w osobnej notatce z przeglądu promptów.
+
+Dla panelu wynikają z tego dwie rzeczy. Pierwsza to zasady pisania stałej części promptu każdej roli. Pliki ról piszemy od zera, a nie przerabiamy
+tych z compound-engineering, bo tamte były pisane pod czat: z przykładowymi rozmowami, tytułami w rodzaju „elitarny ekspert”, wezwaniami „bądź
+paranoiczny” i drugim formatem raportu, którego workflow nie przyjmuje. Każda reguła ma powód obok. W tekście dla modelu nie ma dat, numerów poprawek
+ani nazw incydentów, bo model nie zna poprzednich wersji i zdanie „jak dotąd” nic mu nie mówi. Mocne słowa tylko tam, gdzie stoi za nimi realna
+awaria. Role mechaniczne dostają dokładne polecenie i dane od orkiestratora, a nie zadanie do rozgryzienia: haiku sprawdzający poprawki robi dziś
+dwadzieścia wywołań narzędzi na coś, co jest jednym poleceniem gita. Nazwy narzędzi bierzemy z instalacji, bo nazwa narzędzia Figmy w obecnych
+promptach u Ciebie nie istnieje. Efort myślenia jest ustawieniem klasy roli, tak jak model i lista narzędzi.
+
+Druga to cztery otwarte decyzje, które panel dostaje do rozstrzygnięcia: efort per klasa roli na Opus 5.5 (ustawienia dobrano, gdy pipeline jechał
+na Opus 5); ile warstw sprawdzania wyników zostaje (builder, domknięcie, fix, walidacja końcowa i hook powtarzają te same komendy); czy dev-plan
+musi uruchamiać agentów researchu także przy małych planach; i czy opisy workflowów, które woła tylko autopilot, muszą wisieć na liście skilli każdego
+agenta. Do tego skill bezpieczeństwa u builderów to dziś protokół audytu z raportem — builderowi potrzebne są z niego reguły, nie audyt.
+
+Poprawki faktów i sprzeczności z przeglądu (szesnaście z dwudziestu jeden) nie czekają na panel: idą na listę zmian szablonu i do pierwszej iteracji
+wdrożenia. Przegląd powtarzamy przy każdej zmianie modelu i po wdrożeniu nowych plików ról.
+
+---
+
 ## Jak ten pakiet był sprawdzany
 
 Pierwsza wersja była pisana z pamięci lektury. Druga runda sprawdziła trzy podejrzane miejsca i dwadzieścia siedem liczb. Trzecia czytała pakiet obok
@@ -391,4 +414,4 @@ zdanie decyzyjne bez żadnego ze słów-markerów nie weszło do kontroli. Skryp
 
 Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa — zrobione, a 23 września przejrzałem od nowa wszystkie domknięcia
 (D1–D6, ostatnie D4) i poprawki są w tym pakiecie. Twoje decyzje z audytu skilli są podjęte, a mini-run na Opusie jest zrobiony i zaakceptowany (23 września).
-Teraz panel decyzyjny w trzech runach na Opus 5.5, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
+Przegląd promptów pod Opus 5.5 jest zrobiony i przyjęty (24 września, część 9). Teraz Twoje tematy do omówienia, potem panel decyzyjny w trzech runach na Opus 5.5, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.

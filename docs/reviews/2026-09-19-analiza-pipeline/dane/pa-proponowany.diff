@@ -1,0 +1,633 @@
+# Prompt-audit 2026-09-23/24 — PROPONOWANY diff (NIE naniesiony). Raport: ../PROMPT-AUDIT.md
+# Hunk = jedno ustalenie (ID w raporcie). Tylko pewnosc wysoka/srednia. Zastosowanie wybranych hunkow:
+#   git apply --include=<plik> dane/pa-proponowany.diff   albo   git apply dane/pa-proponowany.diff (calosc)
+# Sprawdzone: git apply --check na HEAD 46e854b = OK; kopia z naniesionym diffem: node --test .claude/workflows/__tests__/*.test.mjs = 74/74 PASS;
+#   bash -n hooks/error-handling-reminder.sh = OK; zakresFixa() i prompt compound-wf wyrenderowane w node (oba warianty).
+# Mapa hunkow (kolejnosc jak w pliku):
+#    1  PA-02  .claude/agents/architecture-strategist.md  -6,17 +6,2
+#    2  PA-06  .claude/agents/architecture-strategist.md  -25,6 +10,5
+#    3  PA-07  .claude/agents/architecture-strategist.md  -82,11 +66,3
+#    4  PA-07  .claude/agents/architecture-strategist.md  -94,3 +70,2
+#    5  PA-05  .claude/agents/architecture-strategist.md  -111,3 +86,3
+#    6  PA-01  .claude/agents/architecture-strategist.md  -118,3 +93,3
+#    7  PA-11  .claude/agents/best-practices-researcher.md  -21,3 +21,3
+#    8  PA-12  .claude/agents/feature-builder-fullstack.md  -36,3 +36,3
+#    9  PA-19  .claude/agents/feature-builder-fullstack.md  -80,3 +80,2
+#   10  PA-12  .claude/agents/feature-builder-fullstack.md  -122,2 +121,2
+#   11  PA-12  .claude/agents/feature-builder-ui.md  -36,3 +36,3
+#   12  PA-12  .claude/agents/feature-builder-ui.md  -106,2 +106,2
+#   13  PA-10  .claude/agents/feature-tester-e2e.md  -22,3 +22,3
+#   14  PA-11  .claude/agents/framework-docs-researcher.md  -21,3 +21,3
+#   15  PA-02  .claude/agents/performance-oracle.md  -6,29 +6,2
+#   16  PA-03  .claude/agents/performance-oracle.md  -65,3 +38,3
+#   17  PA-03  .claude/agents/performance-oracle.md  -148,3 +121,3
+#   18  PA-11  .claude/agents/repo-research-analyst.md  -33,3 +33,3
+#   19  PA-02  .claude/agents/security-sentinel.md  -6,26 +6,3
+#   20  PA-04  .claude/agents/security-sentinel.md  -64,3 +41,3
+#   21  PA-05  .claude/agents/security-sentinel.md  -162,3 +139,3
+#   22  PA-01  .claude/agents/security-sentinel.md  -176,8 +153,5
+#   23  PA-01  .claude/agents/security-sentinel.md  -189,3 +163
+#   24  PA-20  .claude/agents/spec-compliance-reviewer.md  -48,3 +48,3
+#   25  PA-11  .claude/agents/web-research-specialist.md  -28,3 +28,3
+#   26  PA-18  .claude/hooks/error-handling-reminder.sh  -81,4 +81,4
+#   27  PA-18  .claude/hooks/error-handling-reminder.sh  -99,5 +99,5
+#   28  PA-11  .claude/skills/dev-brainstorm/SKILL.md  -8,3 +8,3
+#   29  PA-11  .claude/skills/dev-compound/SKILL.md  -8,3 +8,3
+#   30  PA-11  .claude/skills/dev-compound-refresh/SKILL.md  -8,3 +8,3
+#   31  PA-11  .claude/skills/dev-docs/SKILL.md  -8,3 +8,3
+#   32  PA-08  .claude/skills/dev-docs/SKILL.md  -111,7 +111,5
+#   33  PA-11  .claude/skills/dev-docs-complete/SKILL.md  -8,3 +8,3
+#   34  PA-16  .claude/skills/dev-docs-complete/SKILL.md  -113,5 +113,3
+#   35  PA-11  .claude/skills/dev-plan/SKILL.md  -8,3 +8,3
+#   36  PA-21  .claude/skills/dev-plan/SKILL.md  -170,3 +170,3
+#   37  PA-12  .claude/skills/dev-plan/SKILL.md  -299,7 +299,7
+#   38  PA-11  .claude/skills/dev-prep/SKILL.md  -8,3 +8,3
+#   39  PA-17  .claude/skills/sentry-integration/SKILL.md  -30,9 +30,7
+#   40  PA-08  .claude/workflows/dev-autopilot-wf.js  -561,3 +561,3
+#   41  PA-15  .claude/workflows/dev-autopilot-wf.js  -693,7 +693,20
+#   42  PA-15  .claude/workflows/dev-autopilot-wf.js  -713,3 +726,3
+#   43  PA-15  .claude/workflows/dev-autopilot-wf.js  -717,4 +730,3
+#   44  PA-15  .claude/workflows/dev-autopilot-wf.js  -1508,3 +1520,3
+#   45  PA-15  .claude/workflows/dev-autopilot-wf.js  -1519,3 +1531,3
+#   46  PA-14  .claude/workflows/dev-compound-wf.js  -41,6 +41,11
+#   47  PA-11  .claude/workflows/dev-compound-wf.js  -48,3 +53,3
+#   48  PA-16  .claude/workflows/dev-docs-complete-wf.js  -159,3 +159,4
+#   49  PA-16  .claude/workflows/dev-docs-complete-wf.js  -163,3 +164,2
+#   50  PA-13  .claude/workflows/dev-docs-execute-wf.js  -131,5 +131,5
+#   51  PA-08  .claude/workflows/dev-docs-execute-wf.js  -195,3 +195,3
+#   52  PA-08  .claude/workflows/dev-docs-review-wf.js  -62,4 +62,4
+#   53  PA-08  .claude/workflows/dev-docs-review-wf.js  -72,3 +72,3
+#   54  PA-09  .claude/workflows/dev-docs-review-wf.js  -93,3 +93,3
+#   55  PA-09  .claude/workflows/dev-docs-review-wf.js  -107,5 +107,5
+#   56  PA-03  .claude/workflows/dev-docs-review-wf.js  -362,3 +362,3
+#   57  PA-08  .claude/workflows/dev-docs-review-wf.js  -399,3 +399,3
+#   58  PA-08  .claude/workflows/dev-docs-review-wf.js  -414,4 +414,4
+#   59  PA-08  .claude/workflows/dev-docs-review-wf.js  -439,3 +439,3
+#   60  PA-08  .claude/workflows/dev-docs-review-wf.js  -462,4 +462,4
+#   61  PA-10  .claude/workflows/dev-docs-review-wf.js  -554,7 +554,6
+#   62  PA-08  .claude/workflows/dev-docs-review-wf.js  -726,3 +725,3
+
+diff --git a/.claude/agents/architecture-strategist.md b/.claude/agents/architecture-strategist.md
+index 1b5b36e..ed9267d 100644
+--- a/.claude/agents/architecture-strategist.md
++++ b/.claude/agents/architecture-strategist.md
+@@ -6,17 +6,2 @@ model: inherit
+ 
+-<examples>
+-<example>
+-Context: The user wants to review recent code changes for architectural compliance.
+-user: "I just refactored the authentication service to use a new pattern"
+-assistant: "I'll use the architecture-strategist agent to review these changes from an architectural perspective"
+-<commentary>Since the user has made structural changes to a service, use the architecture-strategist agent to ensure the refactoring aligns with system architecture.</commentary>
+-</example>
+-<example>
+-Context: The user is adding a new feature module to the system.
+-user: "I've added a new notification module that integrates with Supabase Realtime"
+-assistant: "Let me analyze this with the architecture-strategist agent to ensure it fits properly within our system architecture"
+-<commentary>New module additions require architectural review to verify proper boundaries and integration patterns.</commentary>
+-</example>
+-</examples>
+-
+ You are a System Architecture Expert specializing in analyzing code changes and system design decisions. Your role is to ensure that all modifications align with established architectural patterns, maintain system integrity, and follow best practices for scalable, maintainable software systems.
+@@ -25,6 +10,5 @@ You are a System Architecture Expert specializing in analyzing code changes and
+ 
+-Od 2026-09-03 w `dev-docs-review-wf` jesteś jedynym reviewerem jakości wewnętrznej — przejęłeś role,
+-które wcześniej pełnili `code-simplicity-reviewer` i `kieran-typescript-reviewer` (byli trzema osobnymi
+-wejściami w tę samą warstwę i płacili trzy razy za wejście w te same pliki). **Przechodź wszystkie trzy
+-osie osobno.** Finding z jednej nie zwalnia z przejścia pozostałych.
++W `dev-docs-review-wf` jesteś jedynym reviewerem jakości wewnętrznej: struktura, YAGNI i typy to jedna
++warstwa, oceniana w jednym przejściu po plikach fazy. **Przechodź wszystkie trzy osie osobno.** Finding
++z jednej nie zwalnia z przejścia pozostałych.
+ 
+@@ -82,11 +66,3 @@ Page -> Component -> Hook -> Service -> Supabase Client -> Database
+ 
+-Your analysis follows this systematic approach:
+-
+-1. **Understand System Architecture**: Begin by examining the overall system structure through architecture documentation, README files, and existing code patterns. Map out the current architectural landscape including component relationships, service boundaries, and design patterns in use.
+-
+-2. **Analyze Change Context**: Evaluate how the proposed changes fit within the existing architecture. Consider both immediate integration points and broader system implications.
+-
+-3. **Identify Violations and Improvements**: Detect any architectural anti-patterns, violations of established principles, or opportunities for architectural enhancement. Pay special attention to coupling, cohesion, and separation of concerns.
+-
+-4. **Consider Long-term Implications**: Assess how these changes will affect system evolution, scalability, maintainability, and future development efforts.
++Scope is the change you were given (in phase review: the phase diff, plus the files it touches and imports). Read architecture docs or README only when a change crosses a boundary they define — not to map the whole system first.
+ 
+@@ -94,3 +70,2 @@ When conducting your analysis, you will:
+ 
+-- Read and analyze architecture documentation and README files to understand the intended system design
+ - Map component dependencies by examining import statements and module relationships
+@@ -111,3 +86,3 @@ Your evaluation must verify:
+ 
+-Provide your analysis in a structured format that includes:
++In phase review the workflow prompt defines the output (a findings list in its schema) — return exactly that. For a standalone review requested directly, use this structure:
+ 1. **Architecture Overview**: Brief summary of relevant architectural context
+@@ -118,3 +93,3 @@ Provide your analysis in a structured format that includes:
+ 
+-Be proactive in identifying architectural smells such as:
++Architectural smells to look for:
+ - Inappropriate intimacy between components
+diff --git a/.claude/agents/best-practices-researcher.md b/.claude/agents/best-practices-researcher.md
+index ad3aa01..1f04418 100644
+--- a/.claude/agents/best-practices-researcher.md
++++ b/.claude/agents/best-practices-researcher.md
+@@ -21,3 +21,3 @@ assistant: "Let me use the best-practices-researcher agent to research current S
+ 
+-**Note: The current year is 2026.** Use this when searching for recent documentation and best practices.
++Get the current date with `date +%F` before searching; use its year when looking for recent documentation and best practices.
+ 
+diff --git a/.claude/agents/feature-builder-fullstack.md b/.claude/agents/feature-builder-fullstack.md
+index bbc90a7..c85de97 100644
+--- a/.claude/agents/feature-builder-fullstack.md
++++ b/.claude/agents/feature-builder-fullstack.md
+@@ -36,3 +36,3 @@ Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj wszys
+ 
+-**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu — NIE zgaduj. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` z nagłówka SPEC.md i dopytaj Figmę. Warstwa danych (Data) nie konsumuje SPEC.md — pomiń kontekst designerski przy implementacji schema/RLS/query.
++**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu — NIE zgaduj. Wywołaj narzędzie `get_design_context` serwera Figma MCP (pełna nazwa zależy od podłączenia Figmy, np. `mcp__plugin_figma_figma__get_design_context` albo `mcp__plugin_design_figma__get_design_context`) z `fileKey` + `nodeId` z nagłówka SPEC.md i dopytaj Figmę. Warstwa danych (Data) nie konsumuje SPEC.md — pomiń kontekst designerski przy implementacji schema/RLS/query.
+ 
+@@ -80,3 +80,2 @@ Po napisaniu kodu uruchom kolejno:
+ 4. Build (jeśli IU dotyka publicznej trasy)
+-5. Manualny smoke test poprzez `dev-docs-execute` jeśli plan tego wymaga (zwykle robi to feature-tester-e2e w fazie review)
+ 
+@@ -122,2 +121,2 @@ Zwróć dokładnie ten format:
+ 8. **Source of truth designu (warstwa UI)** — SPEC.md > DESIGN.md > ux-ui-guidelines. Rozjazdy raportuj w `Decyzje implementacyjne` (dekompozycja Data/UI).
+-9. **Brakujący pomiar → dopytaj Figmę** — wywołaj `mcp__plugin_figma_figma__get_design_context` zamiast halucynować. Halucynacja = `Status: partial`.
++9. **Brakujący pomiar → dopytaj Figmę** — wywołaj `get_design_context` serwera Figma MCP zamiast halucynować. Halucynacja = `Status: partial`.
+diff --git a/.claude/agents/feature-builder-ui.md b/.claude/agents/feature-builder-ui.md
+index a74265e..ae4c860 100644
+--- a/.claude/agents/feature-builder-ui.md
++++ b/.claude/agents/feature-builder-ui.md
+@@ -36,3 +36,3 @@ Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj **wsz
+ 
+-**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu którego potrzebujesz (np. hover state, brakujący margines, kolor który nie ma tokenu) — **NIE zgaduj, NIE halucynuj**. Wywołaj `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` (oba w nagłówku SPEC.md) i dopytaj Figmę o ten konkretny fragment. Dopiero potem implementuj. Halucynowane wymiary to najczęstsza klasa rozjazdów z mockupem — patrz roadmap "figma:figma-use" / "figma-design-to-code" skille.
++**Reguła brakującego pomiaru:** Jeśli SPEC.md nie pokrywa pomiaru/wariantu którego potrzebujesz (np. hover state, brakujący margines, kolor który nie ma tokenu) — **NIE zgaduj, NIE halucynuj**. Wywołaj narzędzie `get_design_context` serwera Figma MCP (pełna nazwa zależy od podłączenia Figmy, np. `mcp__plugin_figma_figma__get_design_context` albo `mcp__plugin_design_figma__get_design_context`) z `fileKey` + `nodeId` (oba w nagłówku SPEC.md) i dopytaj Figmę o ten konkretny fragment. Dopiero potem implementuj. Halucynowane wymiary to najczęstsza klasa rozjazdów z mockupem — patrz roadmap "figma:figma-use" / "figma-design-to-code" skille.
+ 
+@@ -106,2 +106,2 @@ Zwróć dokładnie ten format:
+ 7. **Source of truth designu** — SPEC.md > DESIGN.md > ux-ui-guidelines. Gdy SPEC mówi "padding 18", a DESIGN tokens.spacing.md = 16 — implementujesz 18 i raportujesz rozjazd w `Decyzje implementacyjne`. Figma jest źródłem prawdy, gdy została zfetchowana do SPEC.
+-8. **Brakujący pomiar → dopytaj Figmę** — wywołaj `mcp__plugin_figma_figma__get_design_context` zamiast halucynować. Halucynowane wymiary = `Status: partial` z notą "brak danych z Figmy dla X".
++8. **Brakujący pomiar → dopytaj Figmę** — wywołaj `get_design_context` serwera Figma MCP zamiast halucynować. Halucynowane wymiary = `Status: partial` z notą "brak danych z Figmy dla X".
+diff --git a/.claude/agents/feature-tester-e2e.md b/.claude/agents/feature-tester-e2e.md
+index 5dbabf1..151fb79 100644
+--- a/.claude/agents/feature-tester-e2e.md
++++ b/.claude/agents/feature-tester-e2e.md
+@@ -22,3 +22,3 @@ Jesteś testerem E2E odpowiedzialnym za wizualną weryfikację implementacji UI
+ - Przeczytaj plik zadań w podanym folderze
+-- Znajdź WSZYSTKIE niezaznaczone checkboxy z markerem `[E2E]` w sekcji wskazanej fazy — **oba prefiksy**: `Test: [E2E] …` ORAZ `Weryfikacja: [E2E] …` (`grep -nE '^- \[ \].*\[E2E\]' | grep -v 'Operator:'` na sekcji fazy — kopie z prefiksem `Operator:` w Operator checklist nie są scenariuszami). Liczenie tylko jednego prefiksu to udokumentowana regresja (szablon mobile, etap-12b).
++- Znajdź WSZYSTKIE niezaznaczone checkboxy z markerem `[E2E]` w sekcji wskazanej fazy — **oba prefiksy**: `Test: [E2E] …` ORAZ `Weryfikacja: [E2E] …` (`grep -nE '^- \[ \].*\[E2E\]' | grep -vE 'Operator:|\[P[123]\]'` na sekcji fazy — kopie z prefiksem `Operator:` w Operator checklist i pozycje findingów `[P1]/[P2]/[P3]` w „Do poprawy" nie są scenariuszami). Liczenie tylko jednego prefiksu gubi scenariusze pisane pod drugim.
+ - Pomiń CLI (`test`/`typecheck`/`grep`) i `[Manual]`.
+diff --git a/.claude/agents/framework-docs-researcher.md b/.claude/agents/framework-docs-researcher.md
+index a2ea23a..2799e6f 100644
+--- a/.claude/agents/framework-docs-researcher.md
++++ b/.claude/agents/framework-docs-researcher.md
+@@ -21,3 +21,3 @@ assistant: "Let me use the framework-docs-researcher agent to investigate the Re
+ 
+-**Note: The current year is 2026.** Use this when searching for recent documentation and version information.
++Get the current date with `date +%F` before searching; use its year when looking for recent documentation and version information.
+ 
+diff --git a/.claude/agents/performance-oracle.md b/.claude/agents/performance-oracle.md
+index dbcfd0f..0f2d075 100644
+--- a/.claude/agents/performance-oracle.md
++++ b/.claude/agents/performance-oracle.md
+@@ -6,29 +6,2 @@ model: inherit
+ 
+-<examples>
+-<example>
+-Context: The user has just implemented a new feature that processes user data.
+-user: "I've implemented the user analytics dashboard. Can you check if it will scale?"
+-assistant: "I'll use the performance-oracle agent to analyze the scalability and performance characteristics of your implementation."
+-<commentary>
+-Since the user is concerned about scalability, use the performance-oracle agent to analyze the code for performance issues.
+-</commentary>
+-</example>
+-<example>
+-Context: The user is experiencing slow page loads.
+-user: "The dashboard page is taking over 3 seconds to load"
+-assistant: "Let me invoke the performance-oracle agent to identify the performance bottlenecks in your dashboard."
+-<commentary>
+-The user has a performance issue, so use the performance-oracle agent to analyze and identify bottlenecks.
+-</commentary>
+-</example>
+-<example>
+-Context: After writing a data processing algorithm.
+-user: "I've written a function to match users based on their preferences"
+-assistant: "I've implemented the matching function. Now let me use the performance-oracle agent to ensure it will scale efficiently."
+-<commentary>
+-After implementing an algorithm, proactively use the performance-oracle agent to verify its performance characteristics.
+-</commentary>
+-</example>
+-</examples>
+-
+ You are the Performance Oracle, an elite performance optimization expert specializing in identifying and resolving performance bottlenecks in software systems. Your deep expertise spans algorithmic complexity analysis, database optimization, memory management, caching strategies, and system scalability.
+@@ -65,3 +38,3 @@ When analyzing code, you systematically evaluate:
+ ### 4. React Performance
+-- Check for unnecessary re-renders (missing `useMemo`, `useCallback`, `React.memo`)
++- Check for unnecessary re-renders. With React Compiler enabled (the template default) a missing `useMemo` / `useCallback` / `React.memo` is not a finding — the Compiler memoizes; without the Compiler, flag it only for a handler passed to a `memo()` child
+ - Verify useEffect dependency arrays are correct (not causing infinite loops or stale closures)
+@@ -148,3 +121,3 @@ Always provide specific code examples for recommended optimizations. Include ben
+ - Always balance performance optimization with code maintainability
+-- Verify React component memoization and useEffect cleanup patterns
++- Verify useEffect cleanup patterns
+ - Check for proper use of Vite's code splitting and tree shaking
+diff --git a/.claude/agents/repo-research-analyst.md b/.claude/agents/repo-research-analyst.md
+index b849581..33b16b6 100644
+--- a/.claude/agents/repo-research-analyst.md
++++ b/.claude/agents/repo-research-analyst.md
+@@ -33,3 +33,3 @@ assistant: "I'll run a scoped analysis covering technology detection, architectu
+ 
+-**Note: The current year is 2026.** Use this when searching for recent documentation and patterns.
++Get the current date with `date +%F` when you need to judge how recent documentation or patterns are.
+ 
+diff --git a/.claude/agents/security-sentinel.md b/.claude/agents/security-sentinel.md
+index 14b9a8d..c333981 100644
+--- a/.claude/agents/security-sentinel.md
++++ b/.claude/agents/security-sentinel.md
+@@ -6,26 +6,3 @@ model: inherit
+ 
+-<examples>
+-<example>
+-Context: The user wants to ensure their newly implemented API endpoints are secure before deployment.
+-user: "I've just finished implementing the user authentication endpoints. Can you check them for security issues?"
+-assistant: "I'll use the security-sentinel agent to perform a comprehensive security review of your authentication endpoints."
+-<commentary>Since the user is asking for a security review of authentication code, use the security-sentinel agent to scan for vulnerabilities and ensure secure implementation.</commentary>
+-</example>
+-<example>
+-Context: The user is concerned about potential data exposure in their Supabase queries.
+-user: "I'm worried about unauthorized data access in our Supabase queries. Can you review the RLS policies?"
+-assistant: "Let me launch the security-sentinel agent to analyze your Supabase RLS policies and query patterns for security concerns."
+-<commentary>The user explicitly wants a security review focused on data access control, which is a core responsibility of the security-sentinel agent.</commentary>
+-</example>
+-<example>
+-Context: After implementing a new feature, the user wants to ensure no sensitive data is exposed.
+-user: "I've added the payment processing module. Please check if any sensitive data might be exposed."
+-assistant: "I'll deploy the security-sentinel agent to scan for sensitive data exposure and other security vulnerabilities in your payment processing module."
+-<commentary>Payment processing involves sensitive data, making this a perfect use case for the security-sentinel agent to identify potential data exposure risks.</commentary>
+-</example>
+-</examples>
+-
+-You are an elite Application Security Specialist with deep expertise in identifying and mitigating security vulnerabilities. You think like an attacker, constantly asking: Where are the vulnerabilities? What could go wrong? How could this be exploited?
+-
+-Your mission is to perform comprehensive security audits with laser focus on finding and reporting vulnerabilities before they can be exploited.
++You review code changes for security defects an attacker could exploit. Think like an attacker: for each change ask what input they control, which check they could bypass, and what the realistic impact would be.
+ 
+@@ -64,3 +41,3 @@ You will systematically execute these security scans:
+    - Check JWT token handling and validation
+-   - Verify that `supabase.auth.getSession()` is used correctly (not trusting client-side tokens on server)
++   - Server-side authorization takes identity from `getUser()` / `getClaims()` (or `ctx.userClaims` under `withSupabase`); `getSession()` used for authorization on the server is a finding — it does not verify the token
+ 
+@@ -162,3 +139,3 @@ For every review, you will verify:
+ 
+-Your security reports will include:
++In phase review the workflow prompt defines the output (a findings list in its schema) — return exactly that. The report layout below applies only to a standalone audit requested directly:
+ 
+@@ -176,8 +153,5 @@ Your security reports will include:
+ 
+-- Always assume the worst-case scenario
+ - Test edge cases and unexpected inputs
+ - Consider both external and internal threat actors
+-- Don't just find problems -- provide actionable solutions
+-- Use automated tools but verify findings manually
+-- Stay current with latest attack vectors and security best practices
++- Give each finding the line, the exploit path and a concrete remediation
+ - When reviewing React + Supabase applications, pay special attention to:
+@@ -189,3 +163 @@ Your security reports will include:
+   - Edge Function authentication and authorization
+-
+-You are the last line of defense. Be thorough, be paranoid, and leave no stone unturned in your quest to secure the application.
+diff --git a/.claude/agents/spec-compliance-reviewer.md b/.claude/agents/spec-compliance-reviewer.md
+index 52e3149..20cb673 100644
+--- a/.claude/agents/spec-compliance-reviewer.md
++++ b/.claude/agents/spec-compliance-reviewer.md
+@@ -48,3 +48,3 @@ sceptyk w kolejnym kroku i tak go obali, a Ty zapłacisz za oba.
+ 
+-Nie zgłaszaj: braku testów (to `test-coverage`), jakości kodu (to `architecture` i `typescript`),
++Nie zgłaszaj: braku testów (to `test-coverage`), jakości kodu i typów (to `code-quality`),
+ podatności (to `security`). Zgłaszasz wyłącznie rozjazd między zamówieniem a implementacją.
+diff --git a/.claude/agents/web-research-specialist.md b/.claude/agents/web-research-specialist.md
+index 0956ef6..05c466d 100644
+--- a/.claude/agents/web-research-specialist.md
++++ b/.claude/agents/web-research-specialist.md
+@@ -28,3 +28,3 @@ assistant: "Uruchomię web-research-specialist, żeby zmapować istniejące pode
+ 
+-**Uwaga: bieżący rok to 2026.** Używaj tego przy ocenie świeżości i trafności źródeł zewnętrznych.
++Datę bieżącą weź z `date +%F` przed oceną świeżości i trafności źródeł zewnętrznych.
+ 
+diff --git a/.claude/hooks/error-handling-reminder.sh b/.claude/hooks/error-handling-reminder.sh
+index 39e1b1c..24aeff9 100755
+--- a/.claude/hooks/error-handling-reminder.sh
++++ b/.claude/hooks/error-handling-reminder.sh
+@@ -81,4 +81,4 @@ for file in $EDGE_FILES; do
+ 
+-    # Tylko główne pliki funkcji (z Deno.serve)
+-    echo "$CONTENT" | grep -q 'Deno\.serve' || continue
++    # Tylko główne pliki funkcji: handler withSupabase (wzorzec skilla) albo legacy Deno.serve
++    echo "$CONTENT" | grep -qE 'withSupabase|Deno\.serve' || continue
+ 
+@@ -99,5 +99,5 @@ for file in $EDGE_FILES; do
+ 
+-        # Sprawdź flush
+-        if ! echo "$CONTENT" | grep -q 'await\s\+flush\s*('; then
+-            FILE_WARNINGS="${FILE_WARNINGS}\n     Brak await flush() — eventy Sentry mogą nie zostać wysłane"
++        # captureError flushuje wewnętrznie (sentry-integration) — wymagane jest samo await
++        if echo "$CONTENT" | grep -q 'captureError\s*(' && ! echo "$CONTENT" | grep -q 'await\s\+captureError\s*('; then
++            FILE_WARNINGS="${FILE_WARNINGS}\n     captureError() bez await — event Sentry może nie zostać wysłany przed odpowiedzią"
+         fi
+diff --git a/.claude/skills/dev-brainstorm/SKILL.md b/.claude/skills/dev-brainstorm/SKILL.md
+index 904d729..c4f3f01 100644
+--- a/.claude/skills/dev-brainstorm/SKILL.md
++++ b/.claude/skills/dev-brainstorm/SKILL.md
+@@ -8,3 +8,3 @@ argument-hint: "[pomysł na feature lub problem do zbadania]"
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
++Datę do dokumentów bierz z `date +%F`.
+ 
+diff --git a/.claude/skills/dev-compound/SKILL.md b/.claude/skills/dev-compound/SKILL.md
+index b146400..b060126 100644
+--- a/.claude/skills/dev-compound/SKILL.md
++++ b/.claude/skills/dev-compound/SKILL.md
+@@ -8,3 +8,3 @@ argument-hint: "[opcjonalnie: opis problemu lub --full]"
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
++Datę do dokumentów bierz z `date +%F`.
+ 
+diff --git a/.claude/skills/dev-compound-refresh/SKILL.md b/.claude/skills/dev-compound-refresh/SKILL.md
+index 5d98c8b..1af6a99 100644
+--- a/.claude/skills/dev-compound-refresh/SKILL.md
++++ b/.claude/skills/dev-compound-refresh/SKILL.md
+@@ -8,3 +8,3 @@ argument-hint: "[opcjonalnie: kategoria do przejrzenia]"
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
++Datę do dokumentów bierz z `date +%F`.
+ 
+diff --git a/.claude/skills/dev-docs/SKILL.md b/.claude/skills/dev-docs/SKILL.md
+index 6d55062..52738a2 100644
+--- a/.claude/skills/dev-docs/SKILL.md
++++ b/.claude/skills/dev-docs/SKILL.md
+@@ -8,3 +8,3 @@ argument-hint: "[ścieżka do planu z docs/plans/ lub nazwa zadania] — tworzy
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu plików.
++Datę do plików bierz z `date +%F`.
+ 
+@@ -111,7 +111,5 @@ Ostatnia aktualizacja: RRRR-MM-DD
+   „Otwarte pytania", `Pliki:` i `Wzorce do naśladowania:` w blokach IU).`
+-  **Nie przepisuj tych sekcji.** Do 2026-09-03 plik kontekstu je kopiował i była to kopia utrzymywana
+-  ręcznie: w zbadanym zadaniu „Decyzje techniczne" miały 1 linię wspólną z planem na 23, a „Odroczone"
+-  0 na 10 — czyli przepisanie, nie kopia, i drugie źródło prawdy, które po dwóch fazach kłamało.
+-  Żaden workflow tych sekcji nie czytał; execute-wf bierze z tego pliku wyłącznie „Designerski kontekst"
+-  i „Dziennik", a planner sięga po decyzje wprost do planu technicznego.
++  **Nie przepisuj tych sekcji.** Ręczna kopia planu w pliku kontekstu staje się drugim źródłem prawdy,
++  które po kilku fazach rozjeżdża się z planem. Żaden workflow tych sekcji nie czyta: execute-wf bierze
++  z tego pliku wyłącznie „Designerski kontekst" i „Dziennik", a planner sięga po decyzje wprost do planu technicznego.
+ - `## Designerski kontekst` — **dokładnie** ten blok (execute-wf kopiuje go do promptów builderów UI/fullstack):
+diff --git a/.claude/skills/dev-docs-complete/SKILL.md b/.claude/skills/dev-docs-complete/SKILL.md
+index 1ec22c3..484751b 100644
+--- a/.claude/skills/dev-docs-complete/SKILL.md
++++ b/.claude/skills/dev-docs-complete/SKILL.md
+@@ -8,3 +8,3 @@ Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu plików (`date +%F`).
++Datę do plików bierz z `date +%F`.
+ 
+@@ -113,5 +113,3 @@ Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone
+ 
+-6. **Zaktualizuj dokumentację projektu** (jeśli istotne):
+-   - Dopisz decyzje architektoniczne do `CLAUDE.md`
+-   - Jeśli odkryto wzorce warte utrwalenia — dodaj regułę do `.claude/rules/learned-patterns.md` (utwórz plik, jeśli nie istnieje) lub zaktualizuj `CLAUDE.md`.
++6. **Nie edytuj `CLAUDE.md` ani `.claude/rules/`.** `CLAUDE.md` uzgadnia się z kodem po merge'u pull requesta, nie przy archiwizacji; reguły do `learned-patterns.md` zapisuje `/dev-compound`. Decyzje architektoniczne zadania zostają w podsumowaniu z pkt 5.
+ 
+diff --git a/.claude/skills/dev-plan/SKILL.md b/.claude/skills/dev-plan/SKILL.md
+index d8f6be3..d141319 100644
+--- a/.claude/skills/dev-plan/SKILL.md
++++ b/.claude/skills/dev-plan/SKILL.md
+@@ -8,3 +8,3 @@ argument-hint: "[opcjonalnie: ścieżka do requirements doc lub opis feature'a]"
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu planów i wyszukiwaniu dokumentacji.
++Datę do planów bierz z `date +%F`; jej rok podawaj w zapytaniach o aktualną dokumentację.
+ 
+@@ -170,3 +170,3 @@ z frontmattera. Wzorzec poprawny: `dev-brainstorm/SKILL.md` (1.1, `web-research-
+ 
+-- Agent tool, `subagent_type: "repo-research-analyst"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania**
++- Agent tool, `subagent_type: "repo-research-analyst"` — jako prompt przekaż linię `Scope: technology, architecture, patterns, conventions`, a pod nią **wyłącznie podsumowanie kontekstu planowania** (bez `Scope:` agent przechodzi też konwencje issues z GitHuba i szablony issue/PR, które planu nie zasilają)
+ - Agent tool, `subagent_type: "learnings-researcher"` — jako prompt przekaż **wyłącznie podsumowanie kontekstu planowania**
+@@ -299,7 +299,7 @@ Sparsuj odpowiedź na listę `{name, fileKey, nodeId}` (z URL Figmy: `figma.com/
+ 
+-**Krok E — Fetch i wygeneruj SPEC.md.** Dla każdego ekranu wywołaj **sekwencyjnie** (Figma MCP rate limit):
++**Krok E — Fetch i wygeneruj SPEC.md.** Dla każdego ekranu wywołaj **sekwencyjnie** (Figma MCP rate limit) narzędzia serwera Figma MCP — pełne nazwy zależą od podłączenia Figmy (np. `mcp__plugin_figma_figma__*`, `mcp__plugin_design_figma__*` albo konektor claude.ai):
+ 
+-1. `mcp__plugin_figma_figma__get_design_context` z `fileKey` + `nodeId` — pobierz pełną hierarchię, pomiary, paddingi, typografię, autoLayout.
+-2. `mcp__plugin_figma_figma__get_variable_defs` z `fileKey` + `nodeId` — pobierz tokeny (kolory, spacing, font tokens) używane w tym frame.
+-3. `mcp__plugin_figma_figma__get_screenshot` z `fileKey` + `nodeId` — pobierz PNG. Zapisz jako `docs/plans/<feature-slug>-figma/<name>.png`.
++1. `get_design_context` z `fileKey` + `nodeId` — pobierz pełną hierarchię, pomiary, paddingi, typografię, autoLayout.
++2. `get_variable_defs` z `fileKey` + `nodeId` — pobierz tokeny (kolory, spacing, font tokens) używane w tym frame.
++3. `get_screenshot` z `fileKey` + `nodeId` — pobierz PNG. Zapisz jako `docs/plans/<feature-slug>-figma/<name>.png`.
+ 4. Odczytaj `width` i `height` z metadata frame'a (z odpowiedzi `get_design_context`) — to viewport designu dla tego ekranu.
+diff --git a/.claude/skills/dev-prep/SKILL.md b/.claude/skills/dev-prep/SKILL.md
+index c9c3d86..a5173d2 100644
+--- a/.claude/skills/dev-prep/SKILL.md
++++ b/.claude/skills/dev-prep/SKILL.md
+@@ -8,3 +8,3 @@ argument-hint: "[etap zbiorczego dokumentu wymagań, np. docs/brainstorms/mvp-re
+ 
+-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
++Datę do dokumentów bierz z `date +%F`.
+ 
+diff --git a/.claude/skills/sentry-integration/SKILL.md b/.claude/skills/sentry-integration/SKILL.md
+index c9237df..a46d05c 100644
+--- a/.claude/skills/sentry-integration/SKILL.md
++++ b/.claude/skills/sentry-integration/SKILL.md
+@@ -30,9 +30,7 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
+ 
+-**NIGDY NIE ŁAMIESZ TYCH ZASAD:**
+-
+-1. **ALL ERRORS MUST BE CAPTURED TO SENTRY** - w produkcji każdy błąd musi trafić do Sentry
+-2. **NIGDY `console.error` bez Sentry** - w Edge Functions każdy `console.error` musi mieć `captureError()`
+-3. **MASKUJ DANE OSOBOWE** - email musi być maskowany: `user@example.com` → `us***@example.com`
+-4. **NIE WYSYŁAJ WRAŻLIWYCH DANYCH** - hasła, tokeny, klucze API NIGDY nie trafiają do Sentry
+-5. **UŻYWAJ ODPOWIEDNICH POZIOMÓW** - `fatal` tylko dla krytycznych, `error` dla operacji
++1. **Błędy produkcyjne trafiają do Sentry** — nieobsłużony błąd, którego nie ma w Sentry, w produkcji nie istnieje dla nikogo.
++2. **`console.error` w Edge Functions idzie w parze z `captureError()`** — sam log funkcji nikt nie czyta.
++3. **Maskuj dane osobowe** — email jako `us***@example.com` (RODO).
++4. **Hasła, tokeny i klucze API nie trafiają do Sentry** — event jest widoczny dla każdego z dostępem do projektu Sentry.
++5. **Dobierz poziom** — `fatal` tylko dla awarii systemu, `error` dla nieudanej operacji (tabela Error Levels niżej).
+ 
+diff --git a/.claude/workflows/dev-autopilot-wf.js b/.claude/workflows/dev-autopilot-wf.js
+index 5b0171d..a49072f 100644
+--- a/.claude/workflows/dev-autopilot-wf.js
++++ b/.claude/workflows/dev-autopilot-wf.js
+@@ -561,3 +561,3 @@ w miare napraw (to widok dla czlowieka).
+ 
+-KOLEJNOSC PRACY (lista zawiera P1, P2 ORAZ P3 typu KOD/TEST — P3 nie sa juz odcinane):
++KOLEJNOSC PRACY (lista zawiera P1, P2 ORAZ P3 typu KOD/TEST):
+ 1. NAJPIERW wszystkie P1 (blocking). Kazdy musi zostac zamkniety albo policzony w nierozwiazaneP1.
+@@ -693,7 +693,20 @@ const REGRESJA_FIXA = {
+ 
+-function preSkanFixaPrompt(numerFazy) {
++// Zakres diffu fixa podany wprost z FixResult.commity — bez tego agent (haiku) szukal "pierwszego commita
++// fixa tej fazy" grepem po calej historii zadania: mediana 20 wywolan narzedzi na grep jednego diffu.
++// Gdy fix nie podal hashy, zostaje dotychczasowa instrukcja z grepem.
++function zakresFixa(numerFazy, commity) {
++  const hashe = (Array.isArray(commity) ? commity : [])
++    .map((c) => String(c).trim().split(/\s+/)[0])
++    .filter((h) => /^[0-9a-f]{7,40}$/i.test(h))
++  return hashe.length
++    ? `Zakres: commity fixa tej fazy (z raportu agenta fixa): ${hashe.join(' ')}.
++   Diff: \`git diff <najstarszy z nich>^..HEAD\` (kolejnosc: \`git log --no-walk --format=%h ${hashe.join(' ')}\`, ostatni = najstarszy).`
++    : `Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa fazy ${numerFazy} (komunikat konczy sie "fazy ${numerFazy}").
++   Diff: \`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.`
++}
++
++function preSkanFixaPrompt(numerFazy, commity) {
+   return `Mechaniczny skan commitow fix fazy ${numerFazy}. NIE oceniaj kodu, NIE interpretuj — tylko grep.
+ 
+-1. Ustal zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa tej fazy.
+-   Diff: \`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.
++1. ${zakresFixa(numerFazy, commity)}
+ 2. Patrz WYLACZNIE na linie DODANE (zaczynajace sie od "+", bez naglowkow "+++"). Linie kontekstu
+@@ -713,3 +726,3 @@ Read-only: nie modyfikuj plikow, nie commituj, nie uruchamiaj testow.`
+ 
+-function regresjaFixaPrompt(sciezka, numerFazy) {
++function regresjaFixaPrompt(sciezka, numerFazy, commity) {
+   return `Jestes NIEZALEZNYM kontrolerem commitow fix fazy ${numerFazy} (zadanie: ${sciezka}).
+@@ -717,4 +730,3 @@ Petla naprawcza nie ma nad soba re-review — jestes jedynym, kto oglada ten kod
+ 
+-Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa tej fazy, potem
+-\`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.
++${zakresFixa(numerFazy, commity)}
+ 
+@@ -1508,3 +1520,3 @@ for (const numerFazy of kolejka) {
+     // Stopien 1: mechaniczny grep po DODANYCH liniach. Agent tylko greppuje, decyzje podejmuje JS.
+-    const preSkan = await agent(preSkanFixaPrompt(numerFazy), zEffortemAP({ schema: PRE_SKAN_FIXA, model: 'haiku', label: `fix:pre-skan:faza-${numerFazy}` }, 'low'))
++    const preSkan = await agent(preSkanFixaPrompt(numerFazy, fix.commity), zEffortemAP({ schema: PRE_SKAN_FIXA, model: 'haiku', label: `fix:pre-skan:faza-${numerFazy}` }, 'low'))
+     if (preSkan && Array.isArray(preSkan.trafienia)) {
+@@ -1519,3 +1531,3 @@ for (const numerFazy of kolejka) {
+     // Stopien 2: jeden tani agent — regresje wprowadzone przez fix + nowe bramki walidacyjne bez testu odmowy.
+-    const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy), zEffortemAP({ schema: REGRESJA_FIXA, label: `fix:kontrola:faza-${numerFazy}` }, 'low'))
++    const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy, fix.commity), zEffortemAP({ schema: REGRESJA_FIXA, label: `fix:kontrola:faza-${numerFazy}` }, 'low'))
+     if (regresja) {
+diff --git a/.claude/workflows/dev-compound-wf.js b/.claude/workflows/dev-compound-wf.js
+index 1977e28..fe2d033 100644
+--- a/.claude/workflows/dev-compound-wf.js
++++ b/.claude/workflows/dev-compound-wf.js
+@@ -41,6 +41,11 @@ Wykonaj procedure ze skilla .claude/skills/dev-compound/SKILL.md w TRYBIE COMPAC
+ 
+-${sciezka ? `Kontekst zadania: ${sciezka}` : 'Bez dodatkowego kontekstu — wyciagnij z sesji i git diff.'}
++${sciezka ? `Kontekst zadania: ${sciezka}` : 'Bez katalogu zadania — material bierz z historii gita biezacej galezi.'}
++
++Nie widzisz rozmowy sesji glownej: jedynym kontekstem sa pliki i historia gita. W chwili compoundu zmiany
++zadania sa juz zacommitowane, wiec sam \`git diff\` jest zwykle pusty.
+ 
+ Kroki (compact, sekcja "Tryb Compact" skilla):
+-1. Wyciagnij kontekst z sesji + git diff / git diff --cached.
++1. Material: ${sciezka ? `raporty review \`${sciezka}/review-faza-*.md\` (findingi i obalenia), \`${sciezka}/known-issues.md\`,
++   sekcja \`## Dziennik\` w \`${sciezka}/*-kontekst.md\` oraz ` : ''}commity galezi zadania od odejscia od galezi glownej
++   (\`git log --oneline\`, diffy commitow \`fix(\`).
+ 2. Przeczytaj auto memory MEMORY.md (jesli istnieje) jako uzupelnienie.
+@@ -48,3 +53,3 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
+    performance-issues/typescript-errors/deployment-issues/testing-issues).
+-4. Zapisz JEDEN plik docs/solutions/<category>/YYYY-MM-DD-kebab-title.md (rok 2026) wg formatu ze skilla.
++4. Zapisz JEDEN plik docs/solutions/<category>/YYYY-MM-DD-kebab-title.md (data z \`date +%F\`) wg formatu ze skilla.
+    Jesli nie bylo nietrywialnego problemu wartego dokumentacji — ustaw plik=null.
+diff --git a/.claude/workflows/dev-docs-complete-wf.js b/.claude/workflows/dev-docs-complete-wf.js
+index c5298d0..247a123 100644
+--- a/.claude/workflows/dev-docs-complete-wf.js
++++ b/.claude/workflows/dev-docs-complete-wf.js
+@@ -159,3 +159,4 @@ Kroki (zgodnie ze skillem):
+    wiec bez stempla archiwum klamaloby ze complete jest pending).
+-6. Zaktualizuj dokumentacje projektu jesli istotne (CLAUDE.md / .claude/rules/).
++6. NIE edytuj CLAUDE.md ani .claude/rules/ — CLAUDE.md uzgadnia sie z kodem po merge'u pull requesta,
++   a reguly zapisal juz compound. Decyzje zadania zostaja w podsumowaniu z kroku 4.
+ 7. Usun pusty katalog docs/active/${nazwaZadania}/.
+@@ -163,3 +164,2 @@ Kroki (zgodnie ze skillem):
+    ${pathspec}
+-   oraz ew. CLAUDE.md / .claude/rules/<plik> — te TYLKO jesli faktycznie je zmieniles w kroku 6.
+    PRZED git add: dla kazdej sciezki z listy sprawdz, ze istnieje na dysku (\`test -e\`) LUB jest w indeksie
+diff --git a/.claude/workflows/dev-docs-execute-wf.js b/.claude/workflows/dev-docs-execute-wf.js
+index e77ad3f..47f8b0d 100644
+--- a/.claude/workflows/dev-docs-execute-wf.js
++++ b/.claude/workflows/dev-docs-execute-wf.js
+@@ -131,5 +131,5 @@ Referencja metodologii: przeczytaj .claude/skills/dev-docs-execute/SKILL.md sekc
+ 1b. Przeczytaj .claude/rules/learned-patterns.md (jesli istnieje) — reguly wyprodukowane z problemow
+-   rozwiazanych w poprzednich zadaniach tego projektu. Ten plik czytasz w CALOSCI (ok. 11 KB): reguly
+-   istotne dla danego IU DOPISZ do jego promptu (sekcja "Wyuczone reguly projektu:") — buildery nie maja
+-   gwarancji dostepu do project rules.
++   rozwiazanych w poprzednich zadaniach tego projektu. Ten plik czytasz w CALOSCI: reguly istotne dla
++   danego IU DOPISZ do jego promptu (sekcja "Wyuczone reguly projektu:") — regula wklejona do promptu
++   delegacji jest przez buildera stosowana, a regula czekajaca w pliku bywa pomijana.
+ 2. W sekcji \`### Faza ${faza}\` planu technicznego zlokalizuj Implementation Units tej fazy.
+@@ -195,3 +195,3 @@ ${BLOK_DLUGIE_KOMENDY}
+    "Decyzje techniczne", "Kluczowe pliki", "Odroczone do implementacji" ani "Wzorce do nasladowania" —
+-   plik kontekstu ich nie ma od 2026-09-03 i nie ma ich odtwarzac. Decyzja korygujaca plan idzie
++   te tresci zyja w planie technicznym, a kopia w pliku kontekstu rozjezdza sie z nim. Decyzja korygujaca plan idzie
+    do planu technicznego w docs/plans/ (punkt 4), a w Dzienniku zostaje jedno zdanie i wskaznik.
+diff --git a/.claude/workflows/dev-docs-review-wf.js b/.claude/workflows/dev-docs-review-wf.js
+index 09d6b24..897ef41 100644
+--- a/.claude/workflows/dev-docs-review-wf.js
++++ b/.claude/workflows/dev-docs-review-wf.js
+@@ -62,4 +62,4 @@ Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc by
+ Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+-AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+-dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
++AKCYJNOSC: P3 idzie do naprawy. Agent fixa dostaje Twoj opis jako zlecenie i nie ma jak dopytac,
++wiec nit bez wykonalnej tresci to zmarnowana tura.
+ Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+@@ -72,3 +72,3 @@ Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+ Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+-niz zero, bo teraz kosztuja ture agenta fixa.
++niz zero, bo kazdy kosztuje ture agenta fixa.
+ === KONIEC BLOKU LIMITU P3 ===`
+@@ -93,3 +93,3 @@ PROCEDURA (wykonaj ja, nie streszczaj):
+    -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly \`numeric\` bez komentarza), NIE zgaduj
+-   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
++   z nazwy zmiennej — nazwa typu \`price\` nie mowi, czy to kwota za calosc, czy za osobe. Zglos wtedy P2:
+    "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
+@@ -107,5 +107,5 @@ testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i
+ Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
+-UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
+-uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
+-wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
++UWAGA: gdy WSZYSTKIE uzycia czytaja pole jednakowo zle, porownanie uzyc miedzy soba niczego nie pokaze —
++wtedy zdradzaja je dopiero sprzeczne teksty w UI i realna liczba z bazy. Jednomyslnosc kodu nie jest
++dowodem poprawnosci.
+ === KONIEC BLOKU SEMANTYKI ===`
+@@ -362,3 +362,3 @@ const REVIEWERZY = [
+   { key: 'security', agentType: 'security-sentinel', fokus: 'auth, RLS policies, XSS, data exposure, Zod validation, API key exposure' },
+-  { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, memoization, useEffect cleanup' },
++  { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, useEffect cleanup' },
+   { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych' },
+@@ -399,3 +399,3 @@ UWAGA: ten zrzut jest PRZYCIETY (limit ${Math.round(LIMIT_DIFFU_B / 1024)} KB, z
+ Pliki z listy powyzej, ktorych w zrzucie nie ma, dobierz osobno (Read pliku albo \`git diff -- <plik>\`).` : ''}
+-Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.`
++Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.`
+     : ''
+@@ -414,4 +414,4 @@ wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem
+ 70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+-Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+-dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
++Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — przeczytaj pelne dokumenty
++(plan techniczny fazy, requirements doc, learned-patterns.md): brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
+     : ''
+@@ -439,3 +439,3 @@ function kontekstPrompt(sciezka, faza, diffPlik, ctxPlik) {
+   return `Jestes context-packagerem review fazy ${faza} (${sciezka}). Zbuduj WSPOLNA mape zmian dla reviewerow,
+-zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam git diff).
++zeby kazdy z nich nie musial od zera ustalac co sie zmienilo.
+ 
+@@ -462,4 +462,4 @@ zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam g
+    wiec bez tej flagi faza z makietami a bez \`[E2E]\` stracilaby porownanie z mockupem.
+-7. ZBUDUJ DOSSIER FAZY -> ${ctxPlik}. To najwiekszy pojedynczy oszczednik w tym workflow: dotad KAZDY
+-   z osmiu reviewerow czytal dokument wymagan (dziesiatki KB), caly plan techniczny i learned-patterns.md.
++7. ZBUDUJ DOSSIER FAZY -> ${ctxPlik}. Dossier zastepuje reviewerom czytanie dokumentu wymagan
++   (dziesiatki KB), calego planu technicznego i learned-patterns.md — kazdy z nich czytalby to osobno.
+    Ty i tak czytasz te zrodla, wiec przepisz z nich RAZ wylacznie to, co dotyczy fazy ${faza}.
+@@ -554,7 +554,6 @@ responsywnosc/viewport). Pomin tylko CLI (\`test\`/\`typecheck\`/\`grep\`) i \`[
+ 
+-BRAMKA (Poprawka 10) — policz checkboxy \`[E2E]\` z OBU prefiksow (Test: + Weryfikacja:). Jesli jest ICH ZERO ->
++BRAMKA — jesli checkboxow \`[E2E]\` (oba prefiksy) jest ZERO ->
+ zwroc OD RAZU {findings:[], przebiegi:[]}, POMIN preflight (curl) i agent-browser. Nie odpalaj srodowiska gdy nie ma
+-czego testowac. UWAGA — historyczny bug (regresja etap-12b, mobile): liczenie tylko \`Weryfikacja:\` skipowalo E2E
+-pisane pod \`Test: [E2E]\` i cicho degradowalo je do OPERATOR mimo gotowego srodowiska. "Zero" liczy sie
+-WYLACZNIE po realnym grepie obu prefiksow w sekcji fazy (\`grep -nE '^- \\[ \\].*\\[E2E\\]' | grep -vE 'Operator:|\\[P[123]\\]'\` —
++czego testowac. Liczenie samego \`Weryfikacja:\` gubi scenariusze pisane pod \`Test: [E2E]\` i cicho degraduje je
++do OPERATOR mimo gotowego srodowiska, dlatego "zero" liczy sie WYLACZNIE po realnym grepie obu prefiksow w sekcji fazy (\`grep -nE '^- \\[ \\].*\\[E2E\\]' | grep -vE 'Operator:|\\[P[123]\\]'\` —
+ kopie w Operator checklist i pozycje findingow w "Do poprawy" nie sa scenariuszami).
+@@ -726,3 +725,3 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
+    jako checkbox: "- [ ] 🔴/🟠/🟡 [severity] **plik:linia** — opis".
+-   P3 sa tu od 2026-09-03: orkiestrator przekazuje je agentowi fixa razem z P1/P2 (P3 typu E2E i OPERATOR
++   P3 sa tu, bo orkiestrator przekazuje je agentowi fixa razem z P1/P2 (P3 typu E2E i OPERATOR
+    NIE — te ida odpowiednio do bookkeepingu i do Operator checklist). Kazda pozycja P3 MUSI byc wykonalna
