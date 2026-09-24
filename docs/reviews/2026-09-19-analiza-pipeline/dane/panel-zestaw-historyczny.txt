@@ -1,0 +1,34 @@
+Panel decyzyjny — krok 0 (b): zestaw historyczny (skrypt panel_zestaw_historyczny.py)
+koszyk B w CSV: 200; bez test-kruchy: 195 (ETAP1B §1: 195)
+waga: {'P3': 63, 'P2': 123, 'P1': 9}
+P1/P2: 132
+epoka: {'wrzesien': 39, 'sierpien': 156}
+os_wlasciciel: [('correctness', 77), ('test-coverage', 39), ('security', 38), ('spec', 15), ('code-quality', 12), ('performance', 8), ('e2e', 4), ('domkniecie/kontrola-fixa', 2)]
+dlaczego: [('w-zakresie-ale-przeoczone', 164), ('poza-zakresem-promptu', 25), ('brak-mechanicznego-wejscia', 4), ('wymaga-calego-repo', 1), ('wymaga-uruchomienia', 1)]
+rodziny widoczne dla projektantów (ETAP1 §3 / ETAP1B §3): 168 przypadków, ogon: 27 (22 klas)
+ogon P1/P2: 14
+rodziny: [('test-niefalsyfikowalny', 39), ('cykl-zycia-wspolbieznosc', 33), ('sciezka-bledu', 20), ('bramka-czarna-lista', 15), ('tekst-ui', 12), ('kontrakt-duplikacja', 10), ('pii-sekret-w-bledzie', 10), ('parser-regexem', 9), ('walidacja-granicy', 7), ('granica-wartosci-migracja', 4), ('brak-timeoutu', 3), ('seed-vs-kontrakt', 3), ('spojnosc-dwoch-systemow', 2), ('dokument-sterujacy', 1)]
+treść wątku bota — sposób dopasowania: {'linia': 97, 'jedyny': 48, 'slowa': 49, 'niejednoznaczne': 1}
+
+compoundy z wzmianką o bocie: 19; z tagiem pr-NN: 14
+przypadki B z dopasowanym compoundem: 30 (odwołań plik:linia w compoundach: 68)
+PR przypadków z compoundem: {14: 2, 15: 1, 19: 4, 8: 2, 9: 16, 13: 5}
+  auth-issues/2026-09-08-bramka-opisana-tym-co-odrzuca-czarna-lista-alg-i-dopasowanie-prefiksem.md               pr=[] refs=3 dopasowane_B=0
+  deployment-issues/2026-09-06-limity-storage-remove-1000-i-lista-do-sprzatania-z-sufitem-prezentacyjnym.md      pr=[9] refs=0 dopasowane_B=0
+  deployment-issues/2026-09-09-polecenie-diagnostyczne-w-zrodle-prawdy-wypisujace-komplet-sekretow.md            pr=[] refs=0 dopasowane_B=0
+  deployment-issues/2026-09-11-przeniesienie-stalej-miedzy-pakietami-zostawia-w-claude-md-stare-zrodlo-liczby.md pr=[13] refs=4 dopasowane_B=1
+  deployment-issues/2026-09-13-podzial-pr-biegnie-po-kontraktach-shared-klaster-progow-rozmiaru-i-tekst-verbatim pr=[14] refs=3 dopasowane_B=1
+  runtime-errors/2026-09-06-odczyt-metryki-w-try-operacji-kompensacja-po-sukcesie-i-tresc-wyjatku.md             pr=[9] refs=3 dopasowane_B=3
+  runtime-errors/2026-09-06-skaner-html-regexpem-token-klasy-raw-text-i-komentarz-w-atrybucie.md                 pr=[8, 9] refs=2 dopasowane_B=7
+  runtime-errors/2026-09-08-dwa-systemy-bez-transakcji-kolejnosc-usuwania-i-jedna-porcja-blokujaca-sprzatanie.md pr=[] refs=3 dopasowane_B=0
+  runtime-errors/2026-09-13-granica-nazwy-znacznika-w-skanerze-raw-text-czarna-lista-wrocila-na-innej-osi.md     pr=[15] refs=2 dopasowane_B=1
+  runtime-errors/2026-09-17-klasy-z-istniejaca-regula-wracaja-po-naszym-review-docstring-niezmiennika-w-jednej-g pr=[19] refs=15 dopasowane_B=4
+  supabase-issues/2026-09-06-migracja-deduplikujaca-przed-unique-index-sufiks-numerowy-nie-gwarantuje-wolnej-naz pr=[8, 9] refs=1 dopasowane_B=4
+  supabase-issues/2026-09-08-serializacja-dwoch-sciezek-przez-wspolny-wiersz-i-asymetria-kryterium-po-rozszerzen pr=[10] refs=0 dopasowane_B=0
+  testing-issues/2026-09-06-testy-o-luznym-ksztalcie-strip-zamiast-strict-optional-chaining-atrapa-szersza-od-ko pr=[9] refs=6 dopasowane_B=4
+  testing-issues/2026-09-08-asercja-na-pominietym-polu-atrapa-ignorujaca-tozsamosc-i-test-utrwalajacy-zla-forme. pr=[] refs=5 dopasowane_B=0
+  testing-issues/2026-09-11-strazniki-tekstu-przepuszczajace-pusta-wartosc-zbior-statusow-i-trzy-kopie-regexpu-z pr=[13] refs=14 dopasowane_B=4
+  testing-issues/2026-09-13-straznik-negatywny-bez-badanej-zaleznosci-trzecia-kopia-plumbingu-rest-i-teza-bota-o pr=[14] refs=2 dopasowane_B=1
+  ui-bugs/2026-09-06-raport-do-sentry-w-renderze-bez-zatrzasku-nieczysty-updater-w-strictmode-i-wybor-po-mutowal pr=[8] refs=2 dopasowane_B=0
+  ui-bugs/2026-09-09-jeden-wybor-dwa-stany-efekt-bez-zrodla-zmiany-i-fokus-w-wezel-ukryty.md                     pr=[] refs=3 dopasowane_B=0
+  ui-bugs/2026-09-13-flaga-zamiast-generacji-w-petli-po-await-petla-ponowien-bez-sufitu-i-bramka-na-jednej-z-dwo pr=[14] refs=0 dopasowane_B=0
