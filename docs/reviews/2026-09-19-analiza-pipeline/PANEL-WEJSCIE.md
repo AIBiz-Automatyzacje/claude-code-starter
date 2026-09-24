@@ -22,6 +22,7 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
 - **Każdy projektant dostaje:** ten plik + `dane/dane-digest.md` (model kosztu) + `ETAP1-ROZSTRZYGNIECIE.md` (werdykty osi po kontrach) +
   `ETAP2-ROZSTRZYGNIECIE.md` (mapa researchu) + hipotezy §5 tego pliku, każdy z innym priorytetem. NIE dostaje werdyktów workflow-A (HANDOFF §4, dane v1, zawyżone ~2×).
   [2026-09-24, HANDOFF 6a pkt 25] Dostaje też `PROMPT-AUDIT.md` §4 (zasady pisania warstwy stałej ról + otwarte decyzje z prompt-auditu); streszczenie w §2a.
+  [2026-09-24, HANDOFF 6a pkt 26] Dostaje też `INSPIRACJE-POCOCK-PSTACK.md` §1 i §3 (B1, B2, B6, B7) — tło wymogów §2 pkt 14–16 i otwartej decyzji builder ↔ reviewer.
 - **Sędziowie (HANDOFF §1, 6a pkt 18 L17):** wymiary = koszt (o ile pipeline „dostarcza kod dobrze wykonany") i jakość = P1/P2 od CodeRabbit PO naszym
   review (+ Sentry po wdrożeniu; /bugfix wypada z miary — L13). **Koszt i ryzyko wdrożenia NIE są kryterium** (propozycja czwartego wymiaru WYCOFANA; wdrożenie fazowe wg planu etapu 5).
 - **Nie jest wariantem:** szablon jako plugin (6a pkt 13 — zbadany, odłożony; co najwyżej wzmianka „opcja na przyszłość").
@@ -105,6 +106,21 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
     bez `tools:` (§7) podlega wymogowi §2 pkt 1. dev-prep zostaje osobno (interaktywny; pełny koszt mediana 1,40 M, rozmowa z operatorem po pierwszej odpowiedzi).
 13. **Każda zmiana w projekcie ma wskazaną metrykę z rekordu telemetrii (6a pkt 19):** metryka, pole rekordu, baseline z etapu 0, horyzont — wg mapy walidacji
     D5b (§12). Zmiana bez metryki = niekompletna.
+14. **Skill weryfikacji aplikacji z mapą funkcji (6a pkt 26 (h); wystąpienie poteto 08:38–12:33, pstack `create-/maintain-verification-skill`):** per projekt,
+    generowany skillem szablonu z repo (nie z wywiadu), jednorazowo przechodzony na żywo przed oddaniem; sekcje Launch / Doctor / Drive / Evidence / Cleanup
+    + mapa funkcji (jeden wpis na funkcję: droga użytkownika, dowód działania, pliki kodu funkcji). Tester E2E czyta skill zamiast rozsianego przepisu
+    (`.env.e2e`, runner z re-seedem, port, doctor agent-browser); sprawdzenie środowiska przed startem (pkt 6) = sekcja Doctor; dev-docs-complete dopisuje
+    funkcje z zadania (scenariusze `[E2E]` z checklisty). Projekt mówi, kto i kiedy utrzymuje mapę (np. razem z pkt 16). **Przejście regresyjne po funkcjach
+    dotkniętych diffem ODŁOŻONE** — warunek powrotu: regresje w funkcjach nietkniętych planem (uwagi bota / Sentry). Koszt dziś: role E2E 4,7% kosztu runów,
+    tester 2,5% (`dane/insp-koszt-e2e.txt`).
+15. **Granice warstw jako reguły ESLint, bez nowej zależności (6a pkt 26 (i)):** zakaz importu klienta Supabase w komponentach i ekranach **bez wyjątku dla
+    auth** (wylogowanie przez wspólny hook; dozwolone: hooki, `lib/`, provider sesji) + `import-x/no-cycle`; wchodzą do zestawu bramek domknięcia fazy (§2a)
+    razem z posprzątaniem starych miejsc (§10). oferty-online: 5/88 plików `.tsx` z importem klienta, 1 wywołanie bazy + 5 auth (`dane/insp-granice.txt`).
+16. **Ogrodnik na zamknięciu zadania (6a pkt 26 (j); wystąpienie 20:43–26:43):** automatycznie w autopilocie po compound/compound-refresh, przed archiwizacją,
+    bez udziału operatora: agent mechaniczny uruchamia skrypt liczący w całym projekcie wyciszenia lint/TS, `any` i wymuszone rzutowania, komentarze
+    TODO/obejście/tymczasowo, puste `catch`, i porównuje z poprzednim pomiarem w telemetrii; agent oceny tylko przy wyraźnym przyroście albo co kilka zadań
+    (projekt podaje próg i N); wynik = sekcja „Ogród” w podsumowaniu zadania + propozycje (reguła lint teraz / sprzątanie jako zadanie / zostawić) do operatora;
+    zero zmian w kodzie bez decyzji. Warunek odwrotu: kilka zadań bez przyjętej propozycji → wyłączyć. Workflow nie uruchamia skryptu sam (D5) — stąd agent mechaniczny.
 
 ## 2a. Twarde wejścia z etapów 1, 1b, 2 i pomiarów (rozstrzygnięte przed decyzjami operatora; obowiązują, o ile §1 nie mówi inaczej)
 
@@ -170,6 +186,16 @@ ten plik NIE wprowadza żadnej nowej decyzji. Gdy dwa dokumenty mówią co inneg
   workflowów-dzieci w liście skilli każdego startu agenta (PA-31). Do projektu skilli builderów: `security` wstrzykiwany builderom to protokół audytu
   z raportem — do warstwy referencyjnej jako reguły dla implementatora (PA-24); przy §2 pkt 4 usunąć krok „1.7 przeczytaj learned-patterns” z plików
   builderów (PA-27, trzy kanały dziś).
+- **INSPIRACJE 2026-09-24 (`INSPIRACJE-POCOCK-PSTACK.md`, HANDOFF 6a pkt 26).** **Zasady pisania warstwy stałej 8–11** (Matt `writing-for-agents`):
+  (8) cel pozytywny zamiast zakazu — zakaz tylko jako twarda bariera i w parze z celem (tryb rozkazujący zostaje); (9) każdy krok kończy się kryterium
+  ukończenia, jasnym i wymagającym; (10) środowisko jest źródłem prawdy — bez kopii `package.json`, konfiguracji, `--help` w prompcie; (11) no-op rozstrzyga
+  uruchomienie, nie dyskusja. **Polecenie-lista test-coverage i jedna pozycja warstwy stałej builderów:** „czy test przeszedłby, gdyby każda importowana
+  funkcja zwracała `undefined`?” + 5 kształtów (słaba/brak asercji; tylko mock albo nieobecność; samoodniesienie; przypięta stała; fixture sprawdza fixture)
+  → przepisz asercję na konkretną wartość; usunięcie tylko zielonego testu, gdy nie da się przepisać, z wpisem w raporcie fazy (wyjątek w coding-rules §2).
+  **Bramki:** każda odbierana testem „przejście → podłożone naruszenie → porażka → przejście”; nowa reguła lint wchodzi razem z posprzątaniem starych miejsc.
+  **Otwarta decyzja do kroku 0:** rozkład reguł zachowaniowych builder ↔ reviewer (za: builder ~480–490 instrukcji, coding-rules 117–130, mini-run (d);
+  przeciw: ETAP1 45/68 ucieczek miało regułę, D1 — każdy finding to tura fixa); metryka: P1/P2 na fazę, tury fixa, ctx_start buildera. **Odrzucone przez
+  operatora** (nie wracać): skala pewności dowodu 1–5, lżejszy plan + „szwy testowe”, równoległe IU, zakaz komentarzy, drabina egzekwowania jako zasada przekrojowa.
 
 ## 3. Pozostałe decyzje operatora 6a pkt 1–14 obowiązujące dla projektów (jedna linia każda)
 
@@ -323,6 +349,21 @@ w nagłówku, `git apply --include=<plik>` bierze pojedyncze pliki).** Stały ob
 - **Metryki:** `dane/d5b-mapa-walidacji.txt` §7 (nowe pole `agent.effort` — `dane/d5-telemetria-rekord.txt` §10).
 - **Cykl:** ponowny `/claude-api prompt-audit` z tym samym Step 0 przy każdej zmianie modelu pipeline'u, po wdrożeniu plików klas ról i po każdej iteracji
   dotykającej promptów (`skrypty/pa_*.py` do powtórzenia, kontrola w obie strony). Po naniesieniu zmian — nowa sesja przed autopilotem (N2).
+- **Zasada zmian promptów (6a pkt 26 (f)):** treść zmian według wytycznych Anthropic (skill `claude-api` prompt-audit, przewodnik migracji modelu); zmiany
+  promptów reviewerów i builderów sprawdzane przed/po na jednej historycznej fazie metodą ślepą — zadanie bez słów eval/test/judge/candidate, sędzia widzi
+  neutralne etykiety i ocenia oba warianty w jednym przebiegu, przestrzeganie instrukcji oceniane z transkryptu (otwarte pliki), nie z deklaracji agenta.
+
+**Obszar: inspiracje 2026-09-24 (HANDOFF 6a pkt 26, `INSPIRACJE-POCOCK-PSTACK.md`) — zmiany szablonu poza panelem:**
+- **Compound ze szczeblem:** przed zapisem reguły pole `szczebel: kod | lint | regula`; `kod`/`lint` → `propozycjeBramek[]` w raporcie (obok
+  `propozycjeDoReviewerow[]`), decyzja operatora; do learned-patterns tylko `regula`. Przy przepisaniu compoundu pod §2 pkt 4 — jedno pole frontmattera więcej.
+- **coding-rules §2 — wyjątek od „nie usuwaj testów” (operator: TAK):** wolno usunąć tylko zielony test niefalsyfikowalny, gdy nie da się przepisać asercji;
+  czerwonego nigdy; każde usunięcie w raporcie fazy (nazwa + powód). Plik operatora — treść zatwierdzona, naniesienie w iteracji etapu 5.
+- **Odbiór bramek:** test porażki na podłożonym naruszeniu dla każdej bramki (ESLint, knip, size-limit, `migrations.sum`, niezmienność migracji, advisors,
+  zielony main, granice z §2 pkt 15).
+- **Lint a stary kod (operator):** kod poprawiamy PRZED uruchomieniem nowego workflow; pierwsze wdrożenie ESLint w projekcie = osobne zadanie sprzątające
+  (oferty-online 188 zastanych błędów — POMIARY §3; plus 5 plików z importem klienta Supabase z §2 pkt 15); każda późniejsza reguła lint (z compoundu,
+  ogrodnika) wchodzi razem z posprzątaniem starych miejsc w tej samej zmianie.
+- **Metryki:** `dane/d5b-mapa-walidacji.txt` §8.
 
 ## 11. Mini-run PRZED panelem (6a pkt 16 + dodatki) — **ZROBIONY 2026-09-23** (`MINI-RUN-WYNIK.md`, wersja operatora `MINI-RUN-DLA-OPERATORA.md`), metoda markerów z pomiaru 1
 

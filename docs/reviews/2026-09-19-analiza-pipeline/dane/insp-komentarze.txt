@@ -1,0 +1,17 @@
+uwag razem: 574; o komentarzach (heurystyka słowna): 11
+koszyk: A 2, B 6, C 1, D 2
+severity: 0 4, P2 4, P3 3
+klasy: parser-html-regexem 2, odpowiedz-bota-w-watku 2, organizacja-modulu 1, komentarz-rozmija-sie-z-kodem 1, bramka-czarna-lista 1, seed-niezgodny-z-kontraktem 1, tekst-ui 1, teza-obalona 1, komentarz-nieaktualny 1
+
+wszystkie trafienia (pr | koszyk | severity | klasa | streszczenie):
+16 | A | 0 | organizacja-modulu | Nieaktualny docstring kontraktu insertAsset — klasa 'docstring' wprost wskazana jako szum.
+2 | B | P3 | komentarz-rozmija-sie-z-kodem | Komentarz obiecuje walidacje ksztaltu wiersza, kod sprawdza tylko expires_at
+2 | B | P2 | bramka-czarna-lista | Markery w komentarzu HTML zaliczaja walidacje trackera i stopki
+4 | B | P3 | seed-niezgodny-z-kontraktem | Komentarz seeda sprzeczny z kontraktem kafla Ostatnia wizyta z CLAUDE.md
+7 | B | P2 | tekst-ui | Tresc polityki zmieniona, EFFECTIVE_FROM zostalo na starej dacie mimo komentarza
+9 | A | 0 | teza-obalona | Jedna stala zamiast lustrzanego testu progu — bot wycofal komentarz po kontrze operatora.
+9 | C | P3 | komentarz-nieaktualny | Komentarz twierdzi, ze /i/* stoi poza limiterem, a ma juz wlasne wiadro — zadna os nie sprawdza komentarzy.
+9 | B | P2 | parser-html-regexem | Usuwanie sekwencji komentarza wewnatrz wartosci atrybutu zmienia src skryptu — tracker nie dziala mimo zielonej bramki.
+9 | B | P2 | parser-html-regexem | Zla kolejnosc replace: komentarz w kodzie skryptu wycina rzeczywiste markery i odrzuca poprawny dokument.
+9 | D | 0 | odpowiedz-bota-w-watku | Potwierdzenie poprawki komentarza.
+9 | D | 0 | odpowiedz-bota-w-watku | Wycofanie komentarza o lustrzanych testach.

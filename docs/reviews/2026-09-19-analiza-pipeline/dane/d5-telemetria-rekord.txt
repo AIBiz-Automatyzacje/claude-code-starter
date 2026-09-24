@@ -253,3 +253,13 @@ Zrodla: PROPOZYCJA-POPRAWEK-DOMKNIEC.md §D6; skrypty/d6r_rewizja_audytu.py → 
    Po co: efort per klasa roli na Opus 5.5 to otwarta decyzja panelu (PA-22); bez pola porownanie kosztu przed/po zmianie tieru jest niemozliwe.
 2. BEZ NOWYCH POL (istniejace wystarcza): wywolania narzedzi roli mechanicznej = agent.narzedzia.razem per rola (PA-15: fix:pre-skan dzis mediana 20,
    maks. 42, n=39); zmiany plikow reviewerow = faza.findingi_per_os + agent.obalone + potwierdzone P1/P2 (PA-01/02/05/07); epoka zmiany = szablon.skrypt_sha.
+
+=== 11. UZUPELNIENIE PO INSPIRACJACH (2026-09-24; decyzje operatora, HANDOFF 6a pkt 26; mapa walidacji §8) ===
+1. NOWE POLE typ=faza: testy_usuniete[] {nazwa, powod, stan_przed: zielony|czerwony} — producent: raport fazy (buildery/fix) po wyjatku w coding-rules §2;
+   stan_przed = czerwony to naruszenie (usuwac wolno tylko zielony test niefalsyfikowalny). Mapa I2.
+2. NOWE POLE typ=run: ogrod {liczniki{wyciszenia_lint, wyciszenia_ts, any_rzutowania, komentarze_obejscia, puste_catch}, przyrost, propozycje, przyjete}
+   — producent: agent mechaniczny ogrodnika na zamknieciu zadania (PANEL-WEJSCIE §2 pkt 16); `przyjete` uzupelniane przy decyzji operatora (ostatni
+   wygrywa przy odczycie, jak run/faza). Mapa I8.
+3. Z COMPOUNDU: compound.szczebel (kod|lint|regula) i compound.propozycjeBramek[] w wyniku dev-compound-wf; skan przenosi je do run.solution. Mapa I1.
+4. BEZ NOWYCH POL: mapa funkcji (I6) i granice warstw (I7) czytane z istniejacych faza.e2e, agent.*, bramki.eslint, run.pr; mapa plik → funkcja
+   pochodzi z samego skilla weryfikacji projektu (nie z telemetrii).

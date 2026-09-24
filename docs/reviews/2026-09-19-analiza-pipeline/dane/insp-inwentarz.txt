@@ -1,0 +1,19 @@
+== mattpocock/skills
+HEAD c55ee46 z 2026-09-18, commitów 472
+skille (SKILL.md): 38 — engineering 18, in-progress 9, misc 4, productivity 7
+linie .md w skills/: 4064
+agenci (osobne pliki subagentów): 0
+skille wg kategorii:
+  engineering: ask-matt, code-review, codebase-design, diagnosing-bugs, domain-modeling, grill-with-docs, implement, improve-codebase-architecture, prototype, research, resolving-merge-conflicts, setup-matt-pocock-skills, tdd, to-spec, to-tickets, triage, wayfinder, wizard
+  in-progress: claude-handoff, implement-spec, loop-me, pr, retro, setup-ts-deep-modules, writing-beats, writing-fragments, writing-shape
+  misc: git-guardrails-claude-code, migrate-to-shoehorn, scaffold-exercises, setup-pre-commit
+  productivity: grill-me, grilling, handoff, teach, to-questionnaire, wait-what, writing-for-agents
+
+== pstack (cursor/plugins/pstack)
+HEAD 12d587d, ostatnia zmiana pstack 2026-09-23 fix(pstack): resolve rule conflicts and read the model rule the same way (#422)
+skille (SKILL.md): 47, w tym zasady principle-*: 23, pozostałe: 24
+playbooki poteto-mode: 23
+agenci: 2 — comment-sicko, poteto-agent
+linie .md w pstack/: 7549
+skille (bez zasad): architect, arena, automate-me, blast-radius, bro, create-verification-skill, figure-it-out, how, interrogate, maintain-verification-skill, make-bot-ui, no-comments, poteto-mode, recall, reflect, setup-pstack, show-me-your-work, swarm, tdd, teach, technical-writing, typescript-best-practices, unslop, why
+playbooki: authoring-a-skill, autonomous-run, autopilot-full, autopilot-stack, babysit, bug-fix, eval, feature, hillclimb, investigation, multi-phase-plan, opening-a-pr, orchestrate, pause-safely, perf-issue, prototype, refactoring, runtime-forensics, session-pickup, shipping, trace-forensics, visual-parity, worktree-cleanup

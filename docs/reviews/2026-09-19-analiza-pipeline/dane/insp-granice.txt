@@ -1,0 +1,7 @@
+oferty-online HEAD 1fb6ecd 2026-09-23; plików .tsx (bez testów): 88
+plików .tsx z importem klienta: 5; wywołań bazy: 1; wywołań auth: 5
+apps/dashboard/src/components/layout/app-layout.tsx — 230: supabase.auth.signOut [auth]
+apps/dashboard/src/features/access/invitation-page.tsx — 108: supabase.rpc [baza]
+apps/dashboard/src/features/access/no-access-page.tsx — 26: supabase.auth.signOut [auth]
+apps/dashboard/src/features/auth/access-gate.tsx — 136: supabase.auth.signOut [auth]
+apps/dashboard/src/features/auth/session-context.tsx — 75: supabase.auth.getSession [auth]; 88: supabase.auth.onAuthStateChange [auth]

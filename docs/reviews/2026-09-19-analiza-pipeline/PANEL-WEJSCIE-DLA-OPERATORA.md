@@ -397,6 +397,31 @@ agenta. Do tego skill bezpieczeństwa u builderów to dziś protokół audytu z 
 Poprawki faktów i sprzeczności z przeglądu (szesnaście z dwudziestu jeden) nie czekają na panel: idą na listę zmian szablonu i do pierwszej iteracji
 wdrożenia. Przegląd powtarzamy przy każdej zmianie modelu i po wdrożeniu nowych plików ról.
 
+## Część 10. Inspiracje od Matta Pococka i poteto (24 września)
+
+Omówiliśmy repozytorium skilli Matta Pococka i wystąpienie poteto z jej pluginem. Pełna narracja jest w osobnej notatce o inspiracjach.
+
+Panel dostaje trzy nowe wymogi, o których już zdecydowałeś, więc projektuje tylko ich kształt. Pierwszy to skill sprawdzania aplikacji z mapą funkcji:
+każdy projekt ma jeden przepis na uruchomienie aplikacji, sprawdzenie, czy środowisko żyje, klikanie, zbieranie dowodów i sprzątanie, a obok listę
+funkcji z opisem, jak do nich dojść i co dowodzi, że działają. Tester korzysta z tego przepisu, a nowe funkcje z każdego zadania trafiają do mapy.
+Sprawdzanie przy każdej fazie starych funkcji, których dotknęła zmiana, odłożyliśmy do czasu, aż telemetria pokaże, że psują się rzeczy spoza planu.
+Drugi to granice w kodzie pilnowane przez linter: komponenty nie importują klienta Supabase wcale, także przy wylogowaniu, które pójdzie przez wspólny
+hook, i nie ma cykli w importach. Trzeci to ogrodnik: na zamknięciu każdego zadania automat liczy w całym projekcie obejścia, wyciszenia i puste bloki
+obsługi błędów, porównuje z poprzednim razem i przy wyraźnym przyroście pokazuje Ci propozycje. Jeśli przez kilka zadań nie przyjmiesz żadnej, wyłączamy go.
+
+Panel dostaje też jedną otwartą decyzję: czy reguły kodowania ma nieść builder, czy reviewer. Za reviewerem przemawia to, że builder jest najbardziej
+obciążony, a więcej poleceń nie poprawiło wykonania. Za builderem to, że każdy błąd złapany dopiero w review to dodatkowa tura poprawek.
+
+Poza panelem, jako zmiany szablonu: compound oznacza, czy lekcja nadaje się do kodu, do lintu, czy tylko do opisu, i dwie pierwsze pokazuje Ci jako
+propozycje kontroli; reviewer testów i buildery dostają pytanie „czy ten test przeszedłby, gdyby każda funkcja zwracała pustą wartość”, a Twoje reguły
+kodowania dostają wyjątek — zielony, bezwartościowy test wolno usunąć, gdy nie da się go przepisać, z wpisem w raporcie; każdą kontrolę odbieramy
+dopiero, gdy raz złapie podłożony błąd; do zasad pisania promptów dochodzą cztery nowe; prompty zmieniamy według wytycznych Anthropic, a zmiany
+w reviewerach i builderach sprawdzamy przed i po na jednej starej fazie. Przed uruchomieniem nowego workflow poprawiamy stary kod, a każda późniejsza
+reguła lint wchodzi razem z posprzątaniem swoich starych naruszeń.
+
+Odrzuciłeś: skalę pewności dowodu w zgłoszeniach, lżejszy plan dla małych zadań, równoległą pracę builderów, zakaz komentarzy, sześć drobniejszych
+pomysłów z listy „na później” i drabinę szczebli jako zasadę dla całego panelu.
+
 ---
 
 ## Jak ten pakiet był sprawdzany
@@ -414,4 +439,4 @@ zdanie decyzyjne bez żadnego ze słów-markerów nie weszło do kontroli. Skryp
 
 Kolejność uzgodniona 2026-09-22: audyt skilli, mapa walidacji, po każdym rozmowa — zrobione, a 23 września przejrzałem od nowa wszystkie domknięcia
 (D1–D6, ostatnie D4) i poprawki są w tym pakiecie. Twoje decyzje z audytu skilli są podjęte, a mini-run na Opusie jest zrobiony i zaakceptowany (23 września).
-Przegląd promptów pod Opus 5.5 jest zrobiony i przyjęty (24 września, część 9). Teraz Twoje tematy do omówienia, potem panel decyzyjny w trzech runach na Opus 5.5, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.
+Przegląd promptów pod Opus 5.5 jest zrobiony i przyjęty (24 września, część 9), Twoje tematy-inspiracje też (24 września, część 10). Teraz panel decyzyjny w trzech runach na Opus 5.5, wyłącznie na Twój znak. Na końcu dwa raporty i plan wdrożenia w iteracjach.

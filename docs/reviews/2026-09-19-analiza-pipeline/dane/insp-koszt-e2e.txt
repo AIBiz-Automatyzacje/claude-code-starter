@@ -1,0 +1,9 @@
+agentów razem: 2941; koszt razem: 1,178,781,478
+role E2E razem: 198 wywołań, koszt 55,079,879 = 4.7% całości
+per rola: wywołania | udział w całości | mediana kosztu | mediana sekund | p90 sekund
+  review:e2e: 58 | 2.5% | 226,662 | 38 | 817
+  e2e:db-sync: 55 | 1.1% | 221,357 | 68 | 108
+  e2e:env-up: 34 | 0.6% | 210,454 | 56 | 141
+  e2e:precheck: 37 | 0.3% | 101,464 | 16 | 25
+  e2e:env-down: 13 | 0.1% | 88,555 | 11 | 14
+  review:e2e:retry: 1 | 0.0% | 431,671 | 133 | 133

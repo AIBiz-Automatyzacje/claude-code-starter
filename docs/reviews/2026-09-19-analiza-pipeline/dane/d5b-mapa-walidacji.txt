@@ -443,3 +443,49 @@ POLA      faza.findingi_per_os, agent.obalone, agent.narzedzia.razem, run.pr (B 
 --- P4. Efort per klasa roli na Opus 5.5 (PA-22, decyzja panelu) --- [R1]
 METRYKA   koszt_jedn i tury per klasa roli przy zmianie tieru; jakosc jak P3 dla ról review. POLA agent.effort (NOWE, d5 §10), agent.koszt_jedn, agent.tury.
           HORYZONT po 5 fazach; jakosc — okno 5 PR.
+
+================================================================================================================================
+=== 8. INSPIRACJE 2026-09-24 (HANDOFF 6a pkt 26; INSPIRACJE-POCOCK-PSTACK.md; PANEL-WEJSCIE §2 pkt 14–16, §2a, §10) ===
+================================================================================================================================
+
+--- I1. Compound ze szczeblem kod | lint | regula (6a pkt 26 a) --- [R1]
+METRYKA   rozklad nowych lekcji compoundu per szczebel; liczba propozycji bramek i odsetek wdrozonych; wpisy learned-patterns na zadanie (oczekiwanie: spadek);
+          powtorzenia tej samej klasy ucieczki po wdrozeniu bramki (slownik klas, PANEL-WEJSCIE §2a) = 0.
+POLA      run.solution, compound.szczebel [WYMAGA ZMIANY: schemat dev-compound-wf + frontmatter §2 pkt 4], compound.propozycjeBramek[], faza.wiedza.
+BASELINE  learned-patterns oferty-online: 38 wpisow, 50 167 B (HEAD 1fb6ecd, 2026-09-23); dzis 100% lekcji na szczeblu `regula`. HORYZONT po 5 zadaniach.
+
+--- I2. Pytanie „undefined” o testy + wyjatek usuwania w coding-rules §2 (6a pkt 26 b, c) --- [R2: os test-coverage]
+METRYKA   B P1/P2 bota osi test-coverage na 100 plikow PR (okno 5 PR; oczekiwana 5,8 → prog odwrotu 12, wspolna miara jakosci); findingi test-coverage
+          obalone przez sceptyka; liczba usunietych testow z raportu fazy (kontrola naduzycia: usuniecie czerwonego testu = 0, bramka).
+POLA      run.pr (per os), faza.findingi_per_os, agent.obalone, faza.testy_usuniete[] {nazwa, powod, stan_przed} [WYMAGA ZMIANY: schemat raportu fazy].
+BASELINE  epoka wrzesniowa (PR 13–19): os test-coverage 7 uwag B P1/P2 na 683 pliki. HORYZONT okno 5 PR.
+
+--- I3. Odbior bramek testem porazki (6a pkt 26 d) --- [KONFIGURACJA]
+METRYKA   kazda bramka ma test „przejscie → podlozone naruszenie → porazka → przejscie” (tak/nie); poza telemetria — lista w `.claude/workflows/__tests__`
+          albo w doctor. HORYZONT przy wdrozeniu kazdej bramki.
+
+--- I4. Zasady pisania 8–11 (6a pkt 26 e) --- jak §7: kontrola ponownym prompt-auditem (zero trafien wzorca), bez metryki w telemetrii.
+
+--- I5. Zmiany promptow wg Anthropic + slepe przed/po (6a pkt 26 f) --- metoda, nie metryka: przy kazdej iteracji zmieniajacej prompty reviewerow
+          lub builderow zapis przed/po z jednej historycznej fazy (findingi, obalone, potwierdzone P1/P2, narzedzia.razem); potem odczyt jak §7 P3.
+
+--- I6. Skill weryfikacji z mapa funkcji (PANEL-WEJSCIE §2 pkt 14) --- [R1 koszt E2E; R2 regresje]
+METRYKA   (a) faza.e2e: skip i manual z przyczyna srodowiskowa na faze (oczekiwanie: spadek), STOP/[MANUAL] E2E na run; (b) koszt i czas rol E2E
+          (dzis 4,7% kosztu runow; tester review:e2e 2,5%, p90 817 s; srodowisko env-up+db-sync+precheck+env-down 2,1%); (c) WARUNEK POWROTU do przejscia
+          regresyjnego: uwagi B bota / zgloszenia Sentry w plikach funkcji z mapy, ktorych nie dotykal plan zadania.
+POLA      faza.e2e {pass, fail, skip, manual[]}, agent.rola + agent.koszt_jedn + agent.sekundy, run.pr (plik uwagi), mapa: pliki per funkcja
+          [WYMAGA ZMIANY: format mapy funkcji ma pole plikow].
+BASELINE  dane/insp-koszt-e2e.txt (agents.csv, 2 941 agentow, 198 wywolan rol E2E). HORYZONT 5 faz; warunek (c) — okno 5 PR.
+
+--- I7. Granice warstw w ESLint, bez wyjatku dla auth (PANEL-WEJSCIE §2 pkt 15) --- [KONFIGURACJA + R2]
+METRYKA   bramka pada na podlozonym imporcie (I3); pliki komponentow/ekranow z importem klienta Supabase = 0 po zadaniu sprzatajacym (kontrola powtarzalna:
+          skrypty/insp_granice.py); uwagi B bota i findingi correctness/spec o wywolaniach bazy z UI i o cyklach importow.
+POLA      bramki.eslint.trafienia + reguly, run.pr (klasy architektury/warstw), faza.findingi_per_os.
+BASELINE  oferty-online: 5/88 plikow .tsx z importem klienta, 1 wywolanie bazy (rpc) + 5 auth (dane/insp-granice.txt). HORYZONT 1 faza; jakosc okno 5 PR.
+
+--- I8. Ogrodnik na zamknieciu zadania (PANEL-WEJSCIE §2 pkt 16) --- [R1] + ODWROT
+METRYKA   liczniki skryptu per zadanie (wyciszenia lint/TS, any/rzutowania, komentarze TODO/obejscie/tymczasowo, puste catch) i ich przyrost; propozycje
+          i odsetek przyjetych przez operatora; koszt rol ogrodnika / koszt zadania.
+ODWROT    N kolejnych zadan (N podaje projekt panelu) bez przyjetej propozycji → wylaczyc krok.
+POLA      run.ogrod {liczniki, przyrost, propozycje, przyjete} [WYMAGA ZMIANY: rekord D5 — nowe pole typu run], agent.rola + agent.koszt_jedn.
+BASELINE  pierwszy pomiar per projekt = punkt zero (brak danych historycznych). HORYZONT po 3–5 zadaniach.

@@ -282,6 +282,29 @@ więc mogą iść w jednym oknie. Przed wdrożeniem jedna historyczna faza przec
 **Efort per klasa roli.** To decyzja panelu. Żeby ją zmierzyć, rekord agenta dostaje nowe pole z efortem — dziś plik, z którego czyta telemetria,
 w ogóle go nie zapisuje. Miara: koszt i tury klasy przy zmianie ustawienia, a dla reviewerów jakość jak wyżej.
 
+## Część 7. Inspiracje (dopisane 24 września)
+
+**Compound ze szczeblami.** Miara: ile nowych lekcji compound kieruje do kodu, do lintu i do opisu; ile propozycji kontroli wdrożyłeś; ile wpisów
+przybywa w pliku wyuczonych reguł na zadanie. Punkt wyjścia: w oferty-online 38 wpisów, wszystkie jako tekst. Dobra kontrola to taka, po której ta sama
+klasa błędu już nie wraca. Odczyt po pięciu zadaniach.
+
+**Pytanie o bezwartościowe testy.** Miara jakości jak wszędzie: poważne uwagi bota w osi testów na sto plików, w oknie pięciu PR-ów, dziś siedem na
+683 pliki epoki wrześniowej. Do tego liczba usuniętych testów z raportu fazy, z kontrolą, że żaden nie był czerwony — to zabezpiecza wyjątek w Twoich regułach.
+
+**Odbiór kontroli i zasady pisania.** Nie mają miary w telemetrii. Kontrolę sprawdza jej własny test z podłożonym błędem, a zasady pisania ponowny przegląd promptów.
+
+**Skill sprawdzania aplikacji z mapą funkcji.** Miara: ile razy w fazie test w przeglądarce jest pomijany albo odkładany do ręcznego sprawdzenia
+z powodu środowiska, i ile kosztują role testowe — dziś 4,7% kosztu runów, sam tester 2,5%, stawianie i sprzątanie środowiska 2,1%. Warunek powrotu do
+sprawdzania starych funkcji w każdej fazie: bot albo Sentry zgłaszają błędy w funkcjach, których plan zadania nie dotykał.
+
+**Granice w kodzie.** Kontrola musi złapać podłożony zakazany import. Po zadaniu sprzątającym w oferty-online zero komponentów z importem klienta
+Supabase — dziś pięć, w tym jeden woła bazę. Jakość: uwagi bota o warstwach i cyklach w oknie pięciu PR-ów.
+
+**Ogrodnik.** Miara: liczniki obejść i wyciszeń z każdego zadania i ich przyrost, ile propozycji przyjąłeś, ile kosztuje. Punkt wyjścia to pierwszy
+pomiar w projekcie. Warunek odwrotu: kilka zadań z rzędu bez przyjętej propozycji — wyłączamy.
+
+Dwa nowe pola w rekordzie telemetrii (usunięte testy w fazie, wynik ogrodnika w runie) i dwa w wyniku compoundu są dopisane do projektu rekordu.
+
 ## Co z tego wynika dla planu wdrożenia
 
 Pierwsza iteracja to telemetria z importem, bo bez niej nic nie ma odczytu. Potem osiem zmian konfiguracji bota, kalibracja klasyfikatora uwag i zebranie nowego punktu odniesienia jakości z dwóch–trzech zadań, zanim ruszy pierwsza zmiana pipeline'u. Każda następna iteracja wchodzi w parze ze swoim wpisem z tej mapy i ma zaplanowany moment odczytu, po jednej fazie, po pięciu fazach albo w oknie pięciu PR-ów, zgodnie z regułami kolejności z części 5. Zmiana bez wpisu jest niekompletna.
