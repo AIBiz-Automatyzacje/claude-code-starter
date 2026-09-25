@@ -1,0 +1,6 @@
+panel_run2_przygotuj.py — porcje run 2
+S1a: przypadkow 39 (P1/P2 29), osie correctness; znaki przypadkow 30258, katalogow 103624
+S1b: przypadkow 38 (P1/P2 29), osie correctness; znaki przypadkow 33633, katalogow 103624
+S2: przypadkow 57 (P1/P2 28), osie test-coverage+code-quality+e2e+domkniecie/kontrola-fixa; znaki przypadkow 45799, katalogow 103624
+S3: przypadkow 61 (P1/P2 46), osie security+spec+performance; znaki przypadkow 46724, katalogow 103624
+skrypt: panel-run2.js, 263776 znakow, 271775 bajtow

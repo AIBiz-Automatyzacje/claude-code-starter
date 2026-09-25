@@ -1,0 +1,61 @@
+test_review_fazy.py — pochodzenie 195 uwag B i fazy do odtworzenia (oferty-online tylko czytane)
+
+pochodzenie zakresu linii wskazanego przez bota: faza 91, fix-review 34, pr-tura 27, faza-bez-review 21, poza-pipeline 13, kontrola 5, pakujacy 3, brak-watku 1
+zakres z liniami różnego pochodzenia (flaga mieszane): 16 (w tym z fazą: 1)
+przypadki z fazą pipeline'u: reguła ścisła 91, luźna 103, suma (kandydaci do klucza) 104; obie z fazą, ale różną: 2
+linia kotwicy obecna w stanie przed review przypisanej fazy: 106/106 par (przypadek, faza)
+  P1/P2: wszystkie 132 -> z fazą 67
+  ogon: wszystkie 27 -> z fazą 13
+  wrzesień: wszystkie 39 -> z fazą 27
+  per oś (wszystkie -> z fazą): correctness 77->38, test-coverage 39->25, security 38->13, spec 15->9, code-quality 12->8, performance 8->6, e2e 4->4, domkniecie/kontrola-fixa 2->1
+
+fazy z przypadkami: 37
+  46be55afc9 PR [3] faza 2 | przypadki 7 (P1/P2 4, ogon 1, wrzesień 0) | pliki 46 / kodu 38 / linie 2911 | baza a4225e4 | fix(faza-3-konto-i-dashboard): poprawki po review fazy 2
+  1de5a4c260 PR [8, 9, 11] faza 6 | przypadki 7 (P1/P2 2, ogon 1, wrzesień 0) | pliki 68 / kodu 48 / linie 1705 | baza 60f1951 | fix(faza-7-szablony-i-grafiki): poprawki po review fazy 6
+  2536643737 PR [14, 15] faza 4 | przypadki 6 (P1/P2 5, ogon 1, wrzesień 6) | pliki 80 / kodu 75 / linie 7208 | baza 72c07dc | fix(faza-9a-domena-mailer-limity): poprawki po review fazy 4
+  933a9016ec PR [17] faza 3 | przypadki 6 (P1/P2 3, ogon 1, wrzesień 6) | pliki 81 / kodu 75 / linie 9557 | baza 828eda9 | fix(faza-9b): poprawki po review fazy 3
+  b26128d294 PR [4, 9] faza 2 | przypadki 6 (P1/P2 3, ogon 0, wrzesień 0) | pliki 17 / kodu 10 / linie 2163 | baza 7f11a87 | fix(faza-4-tracking-i-widok-oferty): poprawki po review fazy
+  303ff625db PR [7] faza 4 | przypadki 6 (P1/P2 6, ogon 0, wrzesień 0) | pliki 42 / kodu 37 / linie 4042 | baza f373d38 | fix(faza-6-cta-i-webhooki): poprawki po review fazy 4
+  b8374c8091 PR [2, 4] faza 2 | przypadki 4 (P1/P2 2, ogon 2, wrzesień 0) | pliki 25 / kodu 20 / linie 1866 | baza c349bd1 | fix(faza-2-publikacja-ofert): poprawki po review fazy 2
+  2634b6770a PR [3] faza 1 | przypadki 4 (P1/P2 4, ogon 0, wrzesień 0) | pliki 47 / kodu 12 / linie 1427 | baza b06604d | fix(faza-3-konto-i-dashboard): poprawki po review fazy 1
+  5af000f884 PR [4, 11] faza 3 | przypadki 4 (P1/P2 2, ogon 1, wrzesień 0) | pliki 24 / kodu 18 / linie 1823 | baza 411a434 | fix(faza-4-tracking-i-widok-oferty): poprawki po review fazy
+  32975a10a0 PR [5] faza 2 | przypadki 4 (P1/P2 4, ogon 0, wrzesień 0) | pliki 33 / kodu 16 / linie 2119 | baza a7e8c64 | fix(faza-5-heatmapa): poprawki po review fazy 2
+  f56cd6ac33 PR [16] faza 2 | przypadki 3 (P1/P2 2, ogon 0, wrzesień 3) | pliki 73 / kodu 70 / linie 10394 | baza 0df8db0 | fix(faza-9b): poprawki po review fazy 2
+  212d5c5a35 PR [2] faza 3 | przypadki 3 (P1/P2 2, ogon 1, wrzesień 0) | pliki 25 / kodu 19 / linie 2436 | baza 58efb36 | fix(faza-2-publikacja-ofert): poprawki po review fazy 3
+  31491bc36f PR [6] faza 3 | przypadki 3 (P1/P2 2, ogon 0, wrzesień 0) | pliki 11 / kodu 8 / linie 1235 | baza 2a149d6 | fix(siatka-heatmapy-proporcjonalna): poprawki po review fazy
+  49091e160d PR [8] faza 4 | przypadki 3 (P1/P2 3, ogon 1, wrzesień 0) | pliki 46 / kodu 37 / linie 5224 | baza 925907a | fix(faza-7-szablony-i-grafiki): poprawki po review fazy 4
+  b5423898d3 PR [9] faza 3 | przypadki 3 (P1/P2 1, ogon 1, wrzesień 0) | pliki 29 / kodu 24 / linie 2922 | baza 8c77817 | fix(faza-7-szablony-i-grafiki): poprawki po review fazy 3
+  c74b9f92a4 PR [9] faza 2 | przypadki 3 (P1/P2 2, ogon 0, wrzesień 0) | pliki 27 / kodu 21 / linie 4862 | baza 64751b8 | fix(faza-7-szablony-i-grafiki): poprawki po review fazy 2
+  e588d0c0e5 PR [11] faza 6 | przypadki 3 (P1/P2 1, ogon 0, wrzesień 0) | pliki 38 / kodu 31 / linie 4777 | baza 40c812a | fix(faza 8/6): poprawki po review fazy 6
+  f3ee433811 PR [13] faza 2 | przypadki 3 (P1/P2 2, ogon 0, wrzesień 3) | pliki 21 / kodu 15 / linie 1378 | baza 05dd804 | fix(faza-9c): poprawki po review fazy 2
+  219ddaa253 PR [14] faza 3 | przypadki 2 (P1/P2 1, ogon 0, wrzesień 2) | pliki 39 / kodu 34 / linie 2512 | baza b189244 | fix(faza-9a-domena-mailer-limity): poprawki po review fazy 3
+  37e48957e3 PR [17] faza 4 | przypadki 2 (P1/P2 1, ogon 0, wrzesień 2) | pliki 58 / kodu 45 / linie 3348 | baza 4ef28cf | fix(faza-9b): poprawki po review fazy 4
+  56a86b398e PR [19] faza 3 | przypadki 2 (P1/P2 1, ogon 0, wrzesień 2) | pliki 35 / kodu 28 / linie 2650 | baza 20fe017 | fix(samodzielna-rejestracja): poprawki po review fazy 3
+  67f5f2cdf6 PR [1] faza 3 | przypadki 2 (P1/P2 2, ogon 1, wrzesień 0) | pliki 15 / kodu 9 / linie 809 | baza 6b816c0 | fix(faza-1-fundament): poprawki po review fazy 3
+  b2981b4a88 PR [2] faza 1 | przypadki 2 (P1/P2 1, ogon 1, wrzesień 0) | pliki 74 / kodu 10 / linie 1435 | baza ccf373f | fix(faza-2-publikacja-ofert): poprawki po review fazy 1
+  9d40529592 PR [4] faza 1 | przypadki 2 (P1/P2 2, ogon 0, wrzesień 0) | pliki 16 / kodu 5 / linie 699 | baza 8f3728e | fix(faza-4-tracking-i-widok-oferty): poprawki po review fazy
+  781cdde65a PR [7] faza 3 | przypadki 2 (P1/P2 2, ogon 0, wrzesień 0) | pliki 20 / kodu 13 / linie 2926 | baza b0d74fc | fix(faza-6-cta-i-webhooki): poprawki po review fazy 3
+  bdade68b9e PR [9] faza 1 | przypadki 2 (P1/P2 2, ogon 1, wrzesień 0) | pliki 61 / kodu 21 / linie 3622 | baza 1908271 | fix(faza-7-szablony-i-grafiki): poprawki po review fazy 1
+  6bfdb25751 PR [13] faza 1 | przypadki 2 (P1/P2 1, ogon 0, wrzesień 2) | pliki 38 / kodu 26 / linie 1249 | baza 5eafcda | fix(faza-9c): poprawki po review fazy 1
+  ec8a80edf0 PR [19] faza 2 | przypadki 1 (P1/P2 1, ogon 0, wrzesień 1) | pliki 16 / kodu 12 / linie 1670 | baza 76b75ae | fix(samodzielna-rejestracja): poprawki po review fazy 2
+  320ed2890b PR [1] faza 1 | przypadki 1 (P1/P2 1, ogon 0, wrzesień 0) | pliki 18 / kodu 3 / linie 170 | baza None | fix(faza-1-fundament): poprawki po review fazy 1
+  d7007f74a4 PR [1] faza 2 | przypadki 1 (P1/P2 0, ogon 0, wrzesień 0) | pliki 17 / kodu 7 / linie 1133 | baza fe9437e | fix(faza-1-fundament): poprawki po review fazy 2
+  981300b2b3 PR [2] faza 4 | przypadki 1 (P1/P2 0, ogon 0, wrzesień 0) | pliki 19 / kodu 15 / linie 900 | baza f74b4e4 | fix(faza-2-publikacja-ofert): poprawki po review fazy 4
+  ec3a12432d PR [3] faza 3 | przypadki 1 (P1/P2 1, ogon 0, wrzesień 0) | pliki 9 / kodu 3 / linie 400 | baza 5964f94 | fix(faza-3-konto-i-dashboard): poprawki po review fazy 3
+  a00168f9f4 PR [6] faza 2 | przypadki 1 (P1/P2 1, ogon 0, wrzesień 0) | pliki 15 / kodu 9 / linie 553 | baza 4c8ccc6 | fix(siatka-heatmapy-proporcjonalna): poprawki po review fazy
+  473192a0f1 PR [7] faza 1 | przypadki 1 (P1/P2 1, ogon 0, wrzesień 0) | pliki 34 / kodu 8 / linie 2422 | baza 65cdb32 | fix(faza-6-cta-i-webhooki): poprawki po review fazy 1
+  4b8b48d106 PR [9] faza 5 | przypadki 1 (P1/P2 0, ogon 0, wrzesień 0) | pliki 18 / kodu 12 / linie 786 | baza 79221c5 | fix(faza-7-szablony-i-grafiki): poprawki po review fazy 5
+  253d6bf7b5 PR [10] faza 4 | przypadki 1 (P1/P2 0, ogon 0, wrzesień 0) | pliki 41 / kodu 31 / linie 4320 | baza 8311797 | fix(faza 8/4): poprawki po review fazy 4
+  48ce1a52aa PR [11] faza 5 | przypadki 1 (P1/P2 1, ogon 0, wrzesień 0) | pliki 47 / kodu 42 / linie 5408 | baza 27f5fd9 | fix(faza 8/5): poprawki po review fazy 5
+
+POZA KLUCZEM (żadna reguła nie daje fazy): 91 (P1/P2 65); P1 w kluczu 3 z 9; pochodzenie: pr-tura 27, fix-review 27, faza-bez-review 18, poza-pipeline 11, kontrola 4, pakujacy 3, brak-watku 1
+W KLUCZU: 104 przypadków (tylko reguła luźna: 13); rodziny: test-niefalsyfikowalny 25, cykl-zycia-wspolbieznosc 20, sciezka-bledu 11, tekst-ui 7, kontrakt-duplikacja 7, pii-sekret-w-bledzie 6, walidacja-granicy 4, ogon:wartosc-graniczna 3, bramka-czarna-lista 3, brak-timeoutu 3, seed-vs-kontrakt 3, ogon:zamkniecie-procesu 1, ogon:walidacja-tekstu 1, ogon:komentarz-rozmija-sie-z-kodem 1, ogon:kontrakt-diagnostyki 1, ogon:cache-naglowki 1, ogon:zrodlo-czasu 1, spojnosc-dwoch-systemow 1, ogon:wymaga-przegladarki 1, parser-regexem 1, ogon:niespojnosc-transportow 1, ogon:round-trip-auth 1, ogon:minimum-privileges 1
+
+poza fazą wg reguły ścisłej (per pochodzenie, PR):
+  brak-watku 1: PR {2: 1}
+  faza-bez-review 21: PR {2: 1, 4: 5, 8: 3, 9: 1, 10: 4, 11: 1, 12: 6}
+  fix-review 34: PR {15: 1, 16: 2, 17: 2, 19: 2, 2: 6, 3: 1, 4: 3, 5: 1, 7: 3, 8: 2, 9: 4, 10: 2, 11: 3, 13: 2}
+  kontrola 5: PR {16: 1, 17: 1, 8: 1, 9: 2}
+  pakujacy 3: PR {16: 1, 9: 2}
+  poza-pipeline 13: PR {17: 1, 18: 1, 1: 2, 2: 1, 3: 1, 10: 4, 11: 2, 12: 1}
+  pr-tura 27: PR {14: 1, 17: 1, 1: 4, 2: 2, 4: 5, 7: 2, 8: 1, 9: 7, 10: 2, 11: 2}

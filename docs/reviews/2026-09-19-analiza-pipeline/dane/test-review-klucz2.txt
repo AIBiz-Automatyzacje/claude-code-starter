@@ -1,0 +1,43 @@
+test_review_klucz2.py — klucz 2: potwierdzone P1/P2 historycznego review fazy (raporty docs/completed w oferty-online)
+
+faz 37, z raportem 37, potwierdzonych P1/P2 KOD/TEST razem 210; bez raportu: —
+uwaga: raport w docs/completed to OSTATNI przebieg review fazy (przy powtórce review — wynik powtórki), więc klucz 2 to
+dolna granica znanych trafień; sędzia sprawdza obecność każdej pozycji w stanie przed review tak samo jak dla klucza 1.
+
+  219ddaa253 PR[14] f3 faza-9a-domena-mailer-limity/review-faza-3.md P1/P2 historyczne:  5
+  2536643737 PR[14, 15] f4 faza-9a-domena-mailer-limity/review-faza-4.md P1/P2 historyczne:  6
+  f56cd6ac33 PR[16] f2 faza-9b-wielu-uzytkownikow/review-faza-2.md   P1/P2 historyczne: 12
+  933a9016ec PR[17] f3 faza-9b-wielu-uzytkownikow/review-faza-3.md   P1/P2 historyczne:  7
+  37e48957e3 PR[17] f4 faza-9b-wielu-uzytkownikow/review-faza-4.md   P1/P2 historyczne:  8
+  56a86b398e PR[19] f3 samodzielna-rejestracja-czlonkow-aa/review-faza-3.md P1/P2 historyczne:  3
+  ec8a80edf0 PR[19] f2 samodzielna-rejestracja-czlonkow-aa/review-faza-2.md P1/P2 historyczne:  2
+  67f5f2cdf6 PR[1] f3 faza-1-fundament/review-faza-3.md             P1/P2 historyczne:  4
+  320ed2890b PR[1] f1 faza-1-fundament/review-faza-1.md             P1/P2 historyczne:  1
+  d7007f74a4 PR[1] f2 faza-1-fundament/review-faza-2.md             P1/P2 historyczne:  6
+  212d5c5a35 PR[2] f3 faza-2-publikacja-ofert/review-faza-3.md      P1/P2 historyczne:  9
+  b8374c8091 PR[2, 4] f2 faza-2-publikacja-ofert/review-faza-2.md      P1/P2 historyczne:  7
+  b2981b4a88 PR[2] f1 faza-2-publikacja-ofert/review-faza-1.md      P1/P2 historyczne:  5
+  981300b2b3 PR[2] f4 faza-2-publikacja-ofert/review-faza-4.md      P1/P2 historyczne:  4
+  46be55afc9 PR[3] f2 faza-3-konto-i-dashboard/review-faza-2.md     P1/P2 historyczne:  5
+  2634b6770a PR[3] f1 faza-3-konto-i-dashboard/review-faza-1.md     P1/P2 historyczne:  3
+  ec3a12432d PR[3] f3 faza-3-konto-i-dashboard/review-faza-3.md     P1/P2 historyczne:  1
+  5af000f884 PR[4, 11] f3 faza-4-tracking-i-widok-oferty/review-faza-3.md P1/P2 historyczne:  4
+  9d40529592 PR[4] f1 faza-4-tracking-i-widok-oferty/review-faza-1.md P1/P2 historyczne:  2
+  b26128d294 PR[4, 9] f2 faza-4-tracking-i-widok-oferty/review-faza-2.md P1/P2 historyczne:  7
+  32975a10a0 PR[5] f2 faza-5-heatmapa/review-faza-2.md              P1/P2 historyczne:  7
+  31491bc36f PR[6] f3 siatka-heatmapy-proporcjonalna/review-faza-3.md P1/P2 historyczne:  4
+  a00168f9f4 PR[6] f2 siatka-heatmapy-proporcjonalna/review-faza-2.md P1/P2 historyczne:  3
+  303ff625db PR[7] f4 faza-6-cta-i-webhooki/review-faza-4.md        P1/P2 historyczne:  8
+  781cdde65a PR[7] f3 faza-6-cta-i-webhooki/review-faza-3.md        P1/P2 historyczne:  5
+  473192a0f1 PR[7] f1 faza-6-cta-i-webhooki/review-faza-1.md        P1/P2 historyczne:  5
+  1de5a4c260 PR[8, 9, 11] f6 faza-7-szablony-i-grafiki/review-faza-6.md    P1/P2 historyczne:  5
+  49091e160d PR[8] f4 faza-7-szablony-i-grafiki/review-faza-4.md    P1/P2 historyczne: 12
+  b5423898d3 PR[9] f3 faza-7-szablony-i-grafiki/review-faza-3.md    P1/P2 historyczne:  8
+  bdade68b9e PR[9] f1 faza-7-szablony-i-grafiki/review-faza-1.md    P1/P2 historyczne:  7
+  c74b9f92a4 PR[9] f2 faza-7-szablony-i-grafiki/review-faza-2.md    P1/P2 historyczne:  6
+  4b8b48d106 PR[9] f5 faza-7-szablony-i-grafiki/review-faza-5.md    P1/P2 historyczne:  2
+  253d6bf7b5 PR[10] f4 faza-8-connector-oauth-i-dashboard/review-faza-4.md P1/P2 historyczne:  6
+  e588d0c0e5 PR[11] f6 faza-8-connector-oauth-i-dashboard/review-faza-6.md P1/P2 historyczne: 10
+  48ce1a52aa PR[11] f5 faza-8-connector-oauth-i-dashboard/review-faza-5.md P1/P2 historyczne: 12
+  f3ee433811 PR[13] f2 faza-9c-dokumenty-prawne/review-faza-2.md     P1/P2 historyczne:  4
+  6bfdb25751 PR[13] f1 faza-9c-dokumenty-prawne/review-faza-1.md     P1/P2 historyczne:  5

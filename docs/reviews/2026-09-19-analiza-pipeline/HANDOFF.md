@@ -36,7 +36,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 3¾ | Mini-run przed panelem (PANEL-WEJSCIE §11) | **GOTOWE 2026-09-23, wynik ZAAKCEPTOWANY** — `MINI-RUN-WYNIK.md` + `MINI-RUN-DLA-OPERATORA.md` (plan: `MINI-RUN-PLAN.md`, kryteria §7). (a) wklejone do promptu DZIAŁA 40/40; (b) `paths:` 0/3 — precedens bez zmian; (c) `skills:` STOSOWANA 2/2 (dostawa zaburzona buforem sesji); (d) 100 vs 400 poleceń 25/25 vs 25/25 — BRAK DŹWIGNI, +72% kosztu; (e) start każdej klasy 0,93–1,03 celu D4, dźwignia ≈48%, allowlista 35% (Opus 5.5, desktop; E2 z korektą learned-patterns); (f) plik harnessu tylko po końcu runu, po zabiciu sesji brak, hook Stop odpala na task-notification z `background_tasks`. Poboczne: N1 haiku wykonuje przekazaną wiadomość operatora (E1: `git mv` w repo; zdanie „do agentów” → 0/8), N2 instrukcje i skille buforowane w sesji, N3 builder idzie za `git status`. Skrypty `mr_*.py`, dane `mr-*`; wpisane do PANEL-WEJSCIE (§0, §1 pkt 4, §2 pkt 2–4, §2a, §4, §7, §8, §10, §11, §12), wersji operatora, mapy walidacji (obie wersje). Szczegóły 6a pkt 21. |
 | 3⅞ | Prompt-audit maszynerii szablonu pod Opus 5.5 / Haiku 4.5 (6a pkt 24) | **GOTOWE 2026-09-24, ZAAKCEPTOWANE W CAŁOŚCI (6a pkt 25)** — `PROMPT-AUDIT.md` + `PROMPT-AUDIT-DLA-OPERATORA.md`, diff `dane/pa-proponowany.diff` (62 hunki, 21 ustaleń; NIE naniesiony), skrypty `pa_inwentarz.py`, `pa_wywolania.py`, `pa_kontrola.py` (kontrola w obie strony: 0 błędów). 44 pozycje: 21 w diffie (8 wysoka, 13 średnia), 8 flag (decyzje operatora/panelu), 15 niskich. Sedno: pliki reviewerów security/performance/architecture to import z compound-engineering pisany pod czat (przykładowe dialogi, „last line of defense, be paranoid”, drugi format raportu) i dwie sprzeczności z resztą szablonu (memoizacja vs React Compiler, `getSession()`); prompty review/fix pisane jak dziennik zmian („teraz już nie”, „jak dotąd”, „w opisanym runie”); compound w autopilocie każe czytać sesję, której agent nie ma; `fix:pre-skan` (haiku) mediana 20 wywołań narzędzi na jedno polecenie gita; efort ról strojony na Opus 5 (~94% historii). **Prompty maszynerii = nowy obszar zmian szablonu** (PANEL-WEJSCIE §10 „Obszar: prompty”, zasady warstwy stałej w §2a, metryki w mapie walidacji §7). |
 | 3⅞b | Tematy-inspiracje operatora: mattpocock/skills + wystąpienie poteto (pstack) | **GOTOWE 2026-09-24, decyzje w 6a pkt 26** — `INSPIRACJE-POCOCK-PSTACK.md` (v2 po transkrypcji) + `INSPIRACJE-POCOCK-PSTACK-DLA-OPERATORA.md`, skrypty `insp_*.py`. Przyjęte poza panelem: compound ze szczeblem, pytanie „undefined” o testy + wyjątek w coding-rules §2, odbiór bramek „gryzie”, 4 zasady pisania, zmiany promptów wg Anthropic + ślepe przed/po, reguła lint razem z posprzątaniem. Nowe wymogi panelu §2 pkt 14–16: mapa funkcji (regresja odłożona), granice warstw w ESLint (bez wyjątku dla auth), ogrodnik na zamknięciu zadania. Otwarta decyzja: reguły builder ↔ reviewer. |
-| 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE — **zastąpiony PANELEM DECYZYJNYM (6a pkt 23)**: krok 0 skryptami (otwarte decyzje, zestaw historycznych ucieczek, koszt skryptem) → projektanci per architektura review → sędzia jakości na historii → sceptyk per decyzja → rekord per decyzja; Opus 5.5 (6a pkt 22), start WYŁĄCZNIE na znak operatora; instrukcja: §8 „AKTUALNA”. **PLAN (część A) ZAAKCEPTOWANY 2026-09-24 (D12 wchodzi, projektant C zostaje), wykonanie w nowej sesji wg §8 „WYKONANIE PANELU”:** `PANEL-PLAN.md` + `PANEL-PLAN-DLA-OPERATORA.md`; krok 0 (b) zrobiony skryptem `skrypty/panel_zestaw_historyczny.py` → `dane/panel-zestaw-historyczny.{jsonl,txt}` (195 B, 132 P1/P2, ogon 27; 68 ucieczek = te same wątki bota, compound jako kontekst 30 przypadków) |
+| 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE — **zastąpiony PANELEM DECYZYJNYM (6a pkt 23)**: krok 0 skryptami (otwarte decyzje, zestaw historycznych ucieczek, koszt skryptem) → projektanci per architektura review → sędzia jakości na historii → sceptyk per decyzja → rekord per decyzja; Opus 5.5 (6a pkt 22), start WYŁĄCZNIE na znak operatora; instrukcja: §8 „AKTUALNA”. **PLAN (część A) ZAAKCEPTOWANY 2026-09-24 (D12 wchodzi, projektant C zostaje), wykonanie w nowej sesji wg §8 „WYKONANIE PANELU”:** `PANEL-PLAN.md` + `PANEL-PLAN-DLA-OPERATORA.md`; krok 0 (b) zrobiony skryptem `skrypty/panel_zestaw_historyczny.py` → `dane/panel-zestaw-historyczny.{jsonl,txt}` (195 B, 132 P1/P2, ogon 27; 68 ucieczek = te same wątki bota, compound jako kontekst 30 przypadków). **WYKONANIE W TOKU (sesja 6e626ae3, 2026-09-24): krok 0 + RUN 1 ZROBIONE, notatka po run 1 oddana; operator kontynuuje w NOWEJ sesji (kontekst ~500k) wg §8 „KONTYNUACJA PANELU PO RUN 1” — stan w §8.** **RUN 2 ZROBIONY (sesja 1bd5477f): ocena papierowa przecenia (kalibracja 33% > 15%, STOP §10); operator 2026-09-25 (6a pkt 28): żadna koncepcja nie odpada przed prawdziwym testem → następny krok PLAN prawdziwego testu review w nowej sesji wg §8 „PLAN TESTU REVIEW”; run 3 wstrzymany.** **PLAN TESTU REVIEW ZAAKCEPTOWANY 2026-09-25 (6a pkt 29):** `TEST-REVIEW-PLAN.md` + wersja operatora; następny krok = skrypty przygotowawcze testu w NOWEJ sesji, bez agentów, wg §8 „PRZYGOTOWANIE TESTU REVIEW”. |
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` + publikacja jako artefakt (opcjonalnie) | NIE ZROBIONE |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
@@ -448,6 +448,27 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     pliki fixa ≈3× gorsze); **projektant C (1 reviewer + bramki) ZOSTAJE** („Koszty nas silniej wiążą dzisiaj niż efekt”). Wykonanie w NOWEJ sesji (kontekst sesji
     planu ~400k tokenów). Zestaw historyczny = 195 B (68 ucieczek ETAP1 to te same wątki bota; compound = kontekst), `dane/panel-zestaw-historyczny.*`.
 
+28. **Ocena papierowa nie rozstrzyga — prawdziwy test review przed wyborem (operator 2026-09-25, po run 2).** Run 2 (sędzia na opisach mechanizmów) przecenia:
+    dzisiejszemu pipeline’owi dał 32,8% (high) / 41,5% (medium) przy prawdziwym 0% (kalibracja > 15% dwukrotnie = STOP §10). Operator: „Jak to ma być koncepcja,
+    to jest bez sensu. To trzeba było uruchomić na prawdziwym przebiegu” i **„nie odrzucał żadnej koncepcji, dopóki nie wykonamy prawdziwych testów”** — żaden
+    z projektów A, B, C nie odpada na podstawie run 2; wynik run 2 zostaje jako informacja (które projekty mają konkretne polecenia na klasy błędów), nie podstawa
+    wyboru. **Następny krok: PLAN prawdziwego testu review (replay na historycznych fazach oferty-online: dziś vs A vs B vs C, znane uwagi bota jako klucz, bramki
+    uruchamiane naprawdę, koszt z transkryptów) — najpierw plan i koszt do akceptacji, bez uruchamiania agentów.** Run 3 (sceptycy) wstrzymany do decyzji po planie
+    testu; do ustalenia w planie, które z D2–D12 test obejmie, a które idą z warunkiem odwrotu i pomiarem po wdrożeniu.
+
+29. **Plan prawdziwego testu review ZAAKCEPTOWANY (operator 2026-09-25).** `TEST-REVIEW-PLAN.md` + `TEST-REVIEW-PLAN-DLA-OPERATORA.md`; liczby skryptami
+    `test_review_fazy.py`, `test_review_klucz2.py`, `test_review_plan.py` → `dane/test-review-{fazy,klucz2,plan}.*`. Istota: replay etapu znajdowania na
+    kopiach kodu z chwili tuż przed review historycznej fazy (historia ucięta — przyszłość niewidoczna), cztery warianty (0 = prawdziwy `dev-docs-review-wf`
+    ucięty przed weryfikacją, kontrola bajtowa promptów; A/B/C = prompty złożone skryptem z brzmienia katalogów), bramki naprawdę, ślepy sędzia na dwóch kluczach:
+    **klucz 1** = 104 uwagi B w 37 fazach (91 z 195 poza testem — tury PR, fixy, dopiski po autopilocie; P1 w kluczu 3 z 9), **klucz 2** = 210 potwierdzonych
+    P1/P2 historycznego review tych faz (odwrotna selekcja — czy wariant nie gubi dzisiejszych trafień). Decyzje operatora: (a) plan przyjęty — w nowej sesji
+    skrypty przygotowawcze bez agentów, przed pilotem złożone prompty A/B/C i koszt pilota do wglądu; (b) **moduł kontroli diffu fixa (D12) WCHODZI** (~44 M,
+    „jeżeli ten koszt da nam jak najwięcej informacji … akceptuję”; 2 commity fixa w pilocie jako próba harnessu); (c) efort wariantu 0 — operator: „sesje są
+    na high i medium” → **test bierze `high`** (konserwatywnie; ustawiany flagą sesji headless, nie dziedziczony z sesji głównej), potwierdzenie przy zgodzie
+    na pilot; (d) **przebieg fazami, nie wariantami** (kopia + bramki → 4 warianty naraz → sędzia → sceptycy → koszt i decyzja o następnej fazie); pilot jedna
+    faza naraz. Kolejność: pilot 3 faz + powtórka (26–66 + 8–22 M) → notatka → operator wybiera zakres etapu głównego (rekomendacja 75% = 21 faz, 232–605 M,
+    MDD ~20 pkt). Run 3 po teście: D1, D2, D5, D12 z liczbami z testu; D3, D4, D6–D11 jak PANEL-PLAN §6 z warunkiem odwrotu.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -475,6 +496,14 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   ten sam tekst jako 0,742 tokena opusa. Skład startu agenta jest w transkrypcie: `prompt_snapshot.tools` (schematy), `deferred_tools_delta.addedLines`,
   `skill_listing.content`, `instructions.files` — przed pierwszym wpisem `assistant`. Pierwsza tura opusa zapisuje cały start (cache_read 0), haiku czyta
   wspólny prefiks z cache. Liczbę „% kosztu”, której nie da się odtworzyć skryptem na transkryptach, traktuj jak hipotezę (tak padło „30–40%”).
+- Panel run 2 (2026-09-24): skrypt Workflow ma limit 512 KB (bajty — polskie znaki po 2); duże dane wklejaj w skrypt generowany Pythonem (nie przez `args`,
+  bo `args` pisze sesja główna — ~100k tokenów wyjścia), dane wspólne raz. `git log`/`git show` agenta to odczyt, nie alarm N1. **Ocena „na papierze”
+  (sędzia czyta opis mechanizmu) przecenia skuteczność — dzisiejszy pipeline 33% przy prawdziwych 0%; decyzje o jakości tylko z prawdziwego przebiegu (6a pkt 28).**
+- Plan testu review (2026-09-25): `git blame` na samej linii kotwicy uwagi bota myli się, gdy zakres kończy się `}` / `});` — bierz najpóźniejszy commit
+  wśród nietrywialnych linii zakresu (i drugą regułę do raportu). Gałęzie PR-ów dzielonych („część serwerowa”) widać dopiero z `git log --all --full-history`
+  (merge chowa gałąź boczną); commity skasowanych gałęzi (samodzielna rejestracja) są osiągalne przez commity bota z `pr-N-review-comments.json`
+  (`rev-list --children --all <commity bota>`). Wątek bota ↔ przypadek B: porównanie po normalizacji białych znaków (`tresc_bota` ma usunięte bloki `<details>`).
+  Raporty `review-faza-N.md` mają pięć formatów — parser P1/P2 sprawdzaj z licznikami „Statystyki”.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -577,7 +606,132 @@ Sprawdź oba dokumenty w obie strony. Oddaj mi wynik i CZEKAJ. Po akceptacji: HA
 pamięć projektu, commit docs/reviews. Potem podam tematy-inspiracje.
 ```
 
-**WYKONANIE PANELU (gdy znak pada w nowej sesji; zdanie „Do agentów…” zostaw — N1):**
+**STAN WYKONANIA PANELU PO RUN 1 (sesja 6e626ae3, 2026-09-24) — wejście dla sesji „KONTYNUACJA PANELU PO RUN 1”:**
+- **Krok 0 ZROBIONY.** N2: repo czyste, ostatnia zmiana w `.claude/` 2026-09-06, CLAUDE.md szablonu nie istnieje. Skrypty kosztu (PANEL-PLAN §3) w trzech plikach:
+  `skrypty/panel_koszt_dane.py` (transkrypty oferty-online od 09-06 → `dane/panel-koszt-referencja.json`: 949 agentów, 14 runów, 29 wykonań faz; rola() z poprawką —
+  d4r zlewał fix:pre-skan/kontrola/poprawka w „fix”; starsze transkrypty bez `prompt_snapshot` liczone kosztem), `skrypty/panel_koszt_model.py` (jednostka roli: d4r pełna
+  metoda, starty klas TOLk z mini-runu, tester = start buildera, zmiana modelu przez tokenizer 0,742), `skrypty/panel_koszt_projektu.py` (projekt 0 = `dane/panel-projekt0-role.json`,
+  walidacja, projekty; przyjmuje też `dane/panel-run1-projekty.json` — konwersja pól `wywolania`+`per` z runu 1) → `dane/panel-koszt.{txt,json}`. Częstości warunków z 26 faz
+  unikalnych 7 zadań: kod 0,96, testy 0,96, UI 0,58, migracja 0,27, [E2E] 0,50, zadanie z E2E 0,86; 3,71 fazy/zadanie, IU 2,69, findingi 26,7 na fazę.
+- **Walidacja:** suma faz runu 20.09 projekt 0 = 32,86 M vs 31,60 M (**+4,0% — OK**); pojedyncze fazy −10,8% / +15,8% / +16,0% (średni koszt roli) — kryterium ±5%
+  zinterpretowane jako suma faz, **operator jeszcze nie potwierdził tej interpretacji** (zgłoszone w notatce po run 1); dźwignia: kontrola mechaniki (Δ komórek mini-runu na 85 agentach)
+  47,8% vs 47,7% OK; na startach agentów z transkryptu 51,8% (d4r 51,4%), projekt 0 w fazach 50,5% — różnica = start w kopii mini-runu ~5% niższy. Kontrola poza próbą:
+  run 23.09 `wf_cf14fe26-014` (Opus 5.5) −9%, epoka 09-08..09-17 (duże fazy) **−39% → liczby bezwzględne projektów to dolna granica**, porównania względne.
+- **RUN 1 ZROBIONY:** `wf_43f84562-c04`, skrypt `skrypty/panel-run1.js`, wynik `dane/panel-run1-projekty.json` (klucze A/B/C), 5,15 M jedn., 3/3 `claude-opus-5-5`,
+  zero narzędzi zapisu (`dane/panel-modele.txt`; alarm B był fałszywy — `>0` w kodzie Pythona, regex poprawiony), 3/3 kompletne (`dane/panel-kompletnosc.txt`, bez tury naprawy).
+  Koszt zadania vs projekt 0 po zmianie kontekstu: **A −15,2%, B +3,1%, C −26,6%** (vs dziś −59% / −50% / −64%); agentów na fazę A 20,5, B 23,8, C 13,7 (dziś 28,4).
+  Katalogi: A 92, B 84, C 69 pozycji. Zbieżność: D3, D5, D8a, D8b, D9, D12; rozbieżność: D2 (A grupa po pliku, B/C batch 4; P1: A/B 3 sceptyków, C 1), D4, D6, D11.
+  Konflikty ze szkieletem zgłoszone przez projektantów (do syntezy): A usuwa verify-fix; B dedup → agregator + dwie próbki fix:kontrola; C bez agenta dedup, db-sync tylko przy migracji.
+- **Pułapki tej sesji:** `from panel_koszt_model import` zostawia `skrypty/__pycache__/` — usuwaj po uruchomieniu; skrypt Workflow zapisuje się w katalogu sesji pod slugiem
+  bieżącego cwd — kopię daj do `skrypty/panel-run{2,3}.js`; `panel_modele.py <run…>` szuka runów we wszystkich sesjach workspace-template (podaj na końcu wszystkie runy panelu naraz).
+- **Nic nie jest zacommitowane** (nowe pliki w `dane/` i `skrypty/`, zmiany w HANDOFF) — commit docs/reviews dopiero po akceptacji wyniku panelu.
+
+**STAN PO RUN 2 (sesja 1bd5477f, 2026-09-24/25) — TWARDE ZATRZYMANIE §10 (kalibracja) → DECYZJA OPERATORA 6a pkt 28: żadna koncepcja nie odpada przed
+prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja „PLAN TESTU REVIEW” niżej); run 3 wstrzymany:**
+- **Operator potwierdził** kryterium walidacji kosztu jako sumę faz runu 20.09 (+4,0% OK); pojedyncze fazy tylko do raportu.
+- **Katalog projektu 0:** `dane/panel-katalog-projekt0.json` — 60 mechanizmów z obecnych `.claude/` (review-wf, autopilot-wf, execute-wf, pliki reviewerów i builderów,
+  skille wstrzykiwane, coding-rules); learned-patterns jako jedna pozycja bez treści (treść zależy od epoki); oferty-online nie ma konfiguracji ESLint.
+- **Run 2:** skrypt generowany `skrypty/panel_run2_przygotuj.py` + `panel_run2_szablon.js` → `skrypty/panel-run2.js` (dane wklejone w skrypt jako stała zamiast
+  `args` — ta sama funkcja, bez ~100k tokenów wyjścia sesji głównej; limit skryptu 512 KB wymusił katalogi raz + neutralne klucze). **Odstępstwo:** 4 porcje zamiast 3
+  (S1 correctness 77 → S1a 39 + S1b 38), permutacja pełna 4×4; `klasy_docelowe` usunięte z katalogów (deklaracja autora, nie brzmienie), id neutralne `<etykieta><nr>`;
+  mapowanie `dane/panel-run2-mapowanie.json` (w scratchpadzie do końca runu). Medium `wf_13ccd655-c60` 1,98 M → kalibracja **41,5%** (> 15%), próbka 10: 6/10 to ogólna
+  procedura correctness R0-COR jako LISTA niska → łagodność potwierdzona → eskalacja high `wf_5d575d67-507` 2,34 M → **32,8% — ponownie > 15% = STOP §10.**
+  Model 8/8 claude-opus-5-5, zero zapisu (`panel_modele.py` — regex git poprawiony: git log/show to odczyt), zero odczytów docs/reviews przez sędziego.
+- **Wyniki (high, B+L szeroko; `dane/panel-pokrycie.txt`, medium w `*-medium.*`):** wszystkie 0 32,8% / A 70,8% / B 63,6% / C 57,9%; P1/P2 39,4 / 79,5 / 73,5 / 68,9%;
+  ogon 40,7 / 51,9 / 37,0 / 25,9%. **Wariant ścisły** (LISTA niska = MANDAT; §7 pliku): wszystkie 0 **3,1%** / A 45,1 / B 40,0 / C 28,2% (medium: 8,7 / 54,9 / 47,7 / 38,5%) —
+  kolumna 0 pod progiem w obu efortach; ranking A > B > C stały we wszystkich czterech wariantach. Stabilność medium vs high: zgodność B+L 87–91%.
+  Kolumna 0: LISTA z R0-COR 37 i R0-SEC1 (tryb atakującego) 20 — dzisiejsze listy „obejmują” przypadki, które mimo to uciekły → pokrycie ≠ złapanie.
+- **Przygotowane, NIEuruchomione:** `skrypty/panel_pokrycie.py` (wariant jako argv), `skrypty/panel_run3_szablon.js` + `panel_run3_przygotuj.py` (wejście: `dane/panel-run3-wejscie.json`
+  z wstępnymi wyborami — jeszcze nie napisane). Pułapka: `panel_pokrycie.py` bez argumentu nadpisuje `panel-pokrycie.{txt,json}` wynikiem high.
+
+**STAN PO PLANIE TESTU REVIEW (sesja 2026-09-25) — PLAN ZAAKCEPTOWANY (6a pkt 29); następny krok = „PRZYGOTOWANIE TESTU REVIEW” niżej:**
+- Pliki: `TEST-REVIEW-PLAN.md` (§2 wybór faz i klucze, §3 kopie, §4 warianty, §5 bramki i sędzia, §6 sceptycy, §7 koszt, §8 D2–D12, §11 zatrzymania, §12 przebieg
+  i lista skryptów do napisania), wersja operatora; dane `dane/test-review-{fazy,klucz2,plan}.{json,txt}`; skrypty `skrypty/test_review_{fazy,klucz2,plan}.py`
+  (kolejność uruchamiania: fazy → klucz2 → plan; `test_review_plan.py` importuje `panel_koszt_model` i sam sprząta `__pycache__`).
+- Zero agentów, zero zmian w `.claude/`, CLAUDE.md i oferty-online. Pilot: fazy b26128d, 2634b67, f3ee433 + powtórka b26128d + 2 commity fixa (moduł §2.6).
+- Commit docs/reviews zrobiony w tej sesji (obejmuje też dane i skrypty panelu z run 1 i run 2).
+
+**PRZYGOTOWANIE TESTU REVIEW (nowa sesja, 6a pkt 29; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Plan prawdziwego testu review ZAAKCEPTOWANY (HANDOFF 6a pkt 29). Zadanie tej sesji: skrypty przygotowawcze testu i przygotowanie pilota — BEZ uruchamiania agentów.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj najpierw (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 28–29, §7 (pułapki, w tym „Plan testu review”), §8 akapit
+„STAN PO PLANIE TESTU REVIEW”; TEST-REVIEW-PLAN.md w całości; dane/test-review-fazy.txt, dane/test-review-klucz2.txt, dane/test-review-plan.txt;
+dane/panel-run1-projekty.json (architektura, katalog[], role_koszt[], warstwa_stala[] A/B/C); .claude/workflows/dev-docs-review-wf.js (tylko odczyt);
+POMIARY-ROZSTRZYGNIECIE.md §3 (pułapki bramek); skill workflow-authoring. Decyzje z 6a obowiązują — nie pytaj o nie ponownie.
+
+Do zrobienia (TEST-REVIEW-PLAN §12 pkt 1): test_review_kopia.sh (lustro poza oferty-online, klon ucięty na fazie, overlay .claude/ szablonu, learned-patterns
+i CLAUDE.md z epoki, skip-worktree, instalacja, zapis stanu „przed”), test_review_bramki.py (konfiguracje ESLint z katalogów A/B/C, knip, size-limit, Stryker,
+migracje), test_review_warianty.py (wariant 0 ucięty przed Verify z kontrolą bajtową; A/B/C z brzmienia katalogów + dane/test-review-warunki.json),
+test_review_sedzia.py (pula i klucze z neutralnymi id, permutacja), test_review_uruchom.sh (przebieg fazami, sesje headless claude -p --model claude-opus-5-5,
+--strict-mcp-config, efort wariantu 0 high, limit kosztu po każdej fazie), test_review_skan.py (modele, przeciek, zapisy), test_review_wynik.py (metryki, koszt
+metodą panel_koszt_model). Moduł kontroli diffu fixa (§2.6) wchodzi. Kopie pilota (3 fazy + 2 commity fixa) przygotuj i sprawdź bramki na nich naprawdę (to nie są agenci).
+Wynik: złożone prompty A/B/C i wariantu 0 do mojego wglądu (plik .txt w dane/test-review/ + krótka notatka TEST-REVIEW-PRZYGOTOWANIE-DLA-OPERATORA.md) oraz koszt
+pilota z limitem. CZEKAJ na moją zgodę na pilot.
+
+Zasady: nic nie zmieniaj w .claude/, CLAUDE.md ani w oferty-online (kopie i lustro poza repo, poza Documents/Kodowanie); subagentów i sesji headless nie uruchamiaj
+bez mojej zgody; liczby skryptem (skrypty/*.py → dane/); pliki .md tylko Write/Edit. Styl: problem → przyczyna → co robimy → co mi to da. Jeśli kontekst zbliży
+się do ~400k, zatrzymaj się, zaktualizuj stan w HANDOFF §8 i daj mi instrukcję kontynuacji w czacie. Po akceptacji: HANDOFF (6a, §8), pamięć projektu, commit docs/reviews.
+```
+
+**PLAN TESTU REVIEW (ZROBIONE 2026-09-25 — zostawione dla historii; nowa sesja, 6a pkt 28; operator dostał tę instrukcję w czacie; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Panel decyzyjny W TOKU: run 1 (projekty A/B/C) i run 2 (sędzia na papierze) zrobione. Run 2 zatrzymał się na kalibracji: ocena papierowa
+przecenia (dzisiejszy pipeline 33% zamiast prawdziwych 0%). Moja decyzja (HANDOFF 6a pkt 28): żadnej koncepcji nie odrzucamy przed prawdziwym
+testem. Zadanie tej sesji: PLAN prawdziwego testu review — tylko plan i koszt, bez uruchamiania agentów.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj najpierw (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md §8 akapity „STAN WYKONANIA PANELU PO RUN 1” i „STAN PO RUN 2”,
+6a pkt 27–28, §7 (pułapki); PANEL-PLAN.md §2 (rubryka i „czego run 2 nie zmierzy”), §3, §8, §10, §11; PANEL-WEJSCIE.md §1, §2 pkt 7–11, §2a, §6, §12;
+POMIARY-ROZSTRZYGNIECIE.md §4 (powtórka review odtwarza ~50% findingów) i §5 pkt 4 (run kontrolny); dane/panel-koszt.txt, dane/panel-pokrycie.txt;
+dane/panel-run1-projekty.json (architektura, katalog[], role_koszt[] projektów A/B/C) i dane/panel-katalog-projekt0.json; skill workflow-authoring.
+Decyzje z 6a obowiązują — nie pytaj o nie ponownie.
+
+Cel testu: na prawdziwym kodzie oferty-online sprawdzić, ile znanych uwag bota (zestaw 195 B, dane/panel-zestaw-historyczny.jsonl) znajduje review
+dzisiejszego pipeline'u oraz review projektów A, B i C — wszystkie cztery warianty (żaden nie odpada) — i ile to kosztuje.
+Plan ma rozstrzygnąć, z liczbami ze skryptów:
+- wybór faz: które historyczne fazy oferty-online (gałęzie zadań, commity faz) zawierają przypadki B; stan kodu PRZED review/fixem tej fazy; pokrycie
+  osi, P1/P2, ogona i września; ile faz daje sensowny wynik przy losowości review (~50% powtarzalności) — powtórki czy więcej faz;
+- odtworzenie kodu: kopia/worktree poza repo, oferty-online i .claude/ bez żadnych zmian;
+- reviewerzy: dzisiejszy = obecne prompty z .claude/ bez zmian; A/B/C = prompty testowe złożone z brzmienia katalogów (nie pliki w .claude/),
+  z tym samym modelem i efortem co w projekcie; bramki (ESLint z regułami projektów, knip, Stryker, migrations.sum) uruchamiane naprawdę na kodzie fazy;
+- klucz: dopasowanie findingów do znanych uwag bota (plik, linia, klasa) przez ślepego sędziego dopasowania; osobno fałszywe alarmy (findingi spoza klucza);
+- koszt: z transkryptów tą samą metodą co panel_koszt_model.py, plus szacunek całego testu przed startem i twardy limit;
+- które z decyzji D2–D12 ten sam test może zmierzyć, a które zostają z warunkiem odwrotu do pomiaru po wdrożeniu (run 3 sceptyków wstrzymany do tej decyzji);
+- czego test nie zmierzy, ryzyka, twarde zatrzymania.
+Wynik: TEST-REVIEW-PLAN.md + TEST-REVIEW-PLAN-DLA-OPERATORA.md (prosty język, bez tabel i ścieżek), sprawdzone w obie strony. Oddaj i CZEKAJ na akceptację.
+
+Zasady: nic nie zmieniaj w .claude/, CLAUDE.md ani w oferty-online; subagentów nie uruchamiaj bez mojej zgody (pokaż zakres i koszt); liczby skryptem
+(skrypty/*.py → dane/); pliki .md tylko Write/Edit. Styl: problem → przyczyna → co robimy → co mi to da. Jeśli kontekst zbliży się do ~400k,
+zatrzymaj się, zaktualizuj stan w HANDOFF §8 i daj mi instrukcję kontynuacji w czacie. Po akceptacji: HANDOFF (6a, §8), pamięć projektu, commit docs/reviews.
+```
+
+**KONTYNUACJA PANELU PO RUN 1 (nowa sesja; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Panel decyzyjny W TOKU: krok 0 i run 1 zrobione w poprzedniej sesji, notatkę po run 1 przeczytałem — daję „dalej”.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj najpierw: docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md §8 akapit „STAN WYKONANIA PANELU PO RUN 1” (to jest stan — nie powtarzaj kroku 0 ani run 1),
+PANEL-PLAN.md w całości, HANDOFF §7 (pułapki); PANEL-WEJSCIE.md §1, §2, §2a, §6, §7, §12; dane/panel-koszt.txt, dane/panel-kompletnosc.txt; skrypty/panel-run1.js
+(wzór promptu i schematu, format katalog[]); skill workflow-authoring przed pisaniem skryptów runów. Decyzje z 6a obowiązują — nie pytaj o nie ponownie.
+Kryterium walidacji kosztu (±5%) przyjmuję jako sumę faz runu 20.09 — pojedyncze fazy tylko do raportu.
+Kolejność: katalog projektu 0 (dzisiejszy pipeline, ta sama szczegółowość i format katalog[] co w run 1, z obecnych promptów osi, plików reviewerów, bramek i workflowów
+.claude/ — tylko odczyt; zapis dane/panel-katalog-projekt0.json) → run 2 (sędzia wg PANEL-PLAN §5: 3 porcje, katalogi P/Q/R/S z permutacją, przypadki
+z dane/panel-zestaw-historyczny.jsonl przez args, effort medium, model claude-opus-5-5) → panel_modele.py + panel_pokrycie.py (kalibracja kolumną projektu 0, próg 15% z §10)
+→ wstępne wybory per decyzja → run 3 (sceptycy wg §6) → synteza (PANEL-WYNIK.md + PANEL-WYNIK-DLA-OPERATORA.md) i CZEKASZ na akceptację.
+Twarde zatrzymania: PANEL-PLAN §10. Jeśli kontekst sesji zbliży się do ~400k, zatrzymaj się po zakończonym runie, zaktualizuj ten akapit stanu w HANDOFF §8 i daj mi instrukcję
+kontynuacji. Pliki .md tylko Write/Edit; liczby skryptem; kontrola w obie strony; po akceptacji: HANDOFF (wiersz 4, 6a, §8), PANEL-WEJSCIE, mapa walidacji,
+pamięć projektu, commit docs/reviews.
+```
+
+**WYKONANIE PANELU (WYKONANE do run 1 w sesji 6e626ae3 — zostawione jako zapis; kontynuacja wyżej):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.

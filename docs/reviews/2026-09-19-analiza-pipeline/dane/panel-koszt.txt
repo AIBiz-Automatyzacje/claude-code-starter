@@ -1,0 +1,86 @@
+panel_koszt_projektu.py — koszt fazy i zadania w jednostkach cennika wzglednego (in 1 / cw 1,25 / cr 0,1 / out 5), metoda d4r
+
+=== 1. Dane referencyjne (oferty-online od 2026-09-06; fazy z wynikiem packagera) ===
+wykonan faz 29, faz unikalnych (zadanie, numer) 26, zadan 7, faz na zadanie 3.71; IU na faze 2.69; findingi reviewerow na faze 26.7
+czestosci warunkow (odsetek faz unikalnych): zawsze 1.00, faza_z_kodem 0.96, faza_z_testami 0.96, faza_z_ui 0.58, faza_z_migracja 0.27, faza_z_e2e 0.50, zadanie_z_e2e 0.86
+  zadanie_z_e2e = odsetek zadan z >= 1 faza z checkboxami [E2E]; faza_z_kodem = regex dev-docs-review-wf.js:851 na plikach diffu fazy
+wywolania na faze unikalna (srednia) i na zadanie, per rola — podstawa projektu 0:
+  faza    verify-batch           4.35  (jednostka run 20.09 n=10)
+  faza    stan:zapis             3.00  (jednostka run 20.09 n=11)
+  faza    build                  2.69  (jednostka run 20.09 n=6)
+  faza    verify                 1.04  (jednostka epoka 09-08..09-17 (kontrfakt CLAUDE.md) n=18)
+  faza    review:security        1.00  (jednostka run 20.09 n=3)
+  faza    scribe                 1.00  (jednostka run 20.09 n=3)
+  faza    planner                1.00  (jednostka run 20.09 n=3)
+  faza    review:spec-compliance 1.00  (jednostka run 20.09 n=3)
+  faza    dedup:semantyczny      1.00  (jednostka run 20.09 n=3)
+  faza    kontekst:diff          1.00  (jednostka run 20.09 n=3)
+  faza    e2e:db-sync            1.00  (jednostka run 20.09 n=3)
+  faza    domkniecie             1.00  (jednostka run 20.09 n=3)
+  faza    review:test-coverage   1.00  (jednostka run 20.09 n=3)
+  faza    fix                    1.00  (jednostka run 20.09 n=3)
+  faza    fix:kontrola           0.96  (jednostka run 20.09 n=3)
+  faza    zwin-do-poprawy        0.96  (jednostka run 20.09 n=3)
+  faza    review:correctness     0.96  (jednostka run 20.09 n=2)
+  faza    fix:pre-skan           0.96  (jednostka run 20.09 n=3)
+  faza    review:performance     0.96  (jednostka run 20.09 n=2)
+  faza    review:e2e             0.69  (jednostka epoka 09-08..09-17 (kontrfakt CLAUDE.md) n=11)
+  faza    fix:poprawka           0.69  (jednostka run 20.09 n=2)
+  faza    review:code-quality    0.62  (jednostka run 20.09 n=2)
+  faza    review:simplicity      0.35  (jednostka brak)
+  faza    verify-fix             0.15  (jednostka epoka 09-08..09-17 (kontrfakt CLAUDE.md) n=5)
+  zadanie stan:zapis             2.29  (jednostka run 20.09 n=11)
+  zadanie bootstrap              1.71  (jednostka run 20.09 n=1)
+  zadanie telemetria             1.71  (jednostka run 20.09 n=1)
+  zadanie e2e:precheck           1.71  (jednostka run 20.09 n=1)
+  zadanie warmup:vitest          1.71  (jednostka run 20.09 n=1)
+  zadanie e2e:env-up             1.71  (jednostka run 20.09 n=1)
+  zadanie walidacja-koncowa      1.43  (jednostka run 20.09 n=1)
+  zadanie stop                   0.86  (jednostka epoka 09-08..09-17 (kontrfakt CLAUDE.md) n=4)
+  zadanie compound-refresh       0.86  (jednostka run 20.09 n=1)
+  zadanie e2e:env-down           0.86  (jednostka run 20.09 n=1)
+  zadanie compound               0.86  (jednostka run 20.09 n=1)
+  zadanie smoke-operatora        0.86  (jednostka run 20.09 n=1)
+  zadanie complete               0.86  (jednostka run 20.09 n=1)
+
+=== 2. Walidacja projektu 0 na runie 20.09 (wf_e5c34cd8-66c) ===
+  Faza 1: rzeczywisty 14.07 M, projekt 0 12.55 M (-10.8%), agentow 27 vs 28.6
+  Faza 2: rzeczywisty 10.38 M, projekt 0 12.02 M (+15.8%), agentow 26 vs 28.6
+  Faza 3: rzeczywisty 7.14 M, projekt 0 8.29 M (+16.0%), agentow 19 vs 20.3
+  RAZEM fazy: rzeczywisty 31.60 M, projekt 0 32.86 M (+4.0%) — kryterium ±5%: OK
+  poziom zadania (bootstrap, zamkniecie): rzeczywisty 3.70 M, projekt 0 4.66 M (+25.9%)
+  dzwignia kontekstu — kontrola mechaniki (85 agentow runu 20.09, Δ startu z komorek mini-runu): 47.8% vs mini-run (e) 47.7%, kryterium ±5% wzgl.: OK
+  dzwignia na startach agentow z transkryptu (tryb liczenia projektow): 51.8% (d4r ta sama metoda: 51.4%); projekt 0, fazy runu 20.09: 50.5%
+  roznica 47,7 vs ~51%: start „dzis” w kopii mini-runu byl ~5% nizszy niz w runie 20.09 (inny zestaw MCP) — Δ mniejsza; projekty licza Δ od startu agenta
+
+=== 3. Kontrola poza proba (informacyjnie, nie kryterium) ===
+  run 23.09 wf_cf14fe26-014 (Opus 5.5, CLAUDE.md 21k zn): faz 3, rzeczywisty 40.6 M, projekt 0 (jednostki 20.09) 37.1 M (-9%)
+  epoka 09-08..09-17, fazy z builderami (kontrfakt CLAUDE.md 17 810 zn): faz 14, rzeczywisty 301.2 M, projekt 0 (jednostki 20.09) 185.1 M (-39%)
+  Wniosek: jednostki z runu 20.09 (male fazy: 8/7/0 plikow kodu) zanizaja koszt duzych faz epoki (34–75 plikow kodu) — liczby bezwzgledne
+  projektow sa dolna granica; porownanie projekt vs projekt 0 (ta sama baza jednostek) jest wzgledne i tego bledu nie dziedziczy w calosci.
+
+=== 4. Projekty (typowa faza z czestosci warunkow; wszystkie po zmianie kontekstu z PANEL-WEJSCIE §2 pkt 1) ===
+Nie liczy: efortu wprost (harness go nie zapisuje — wariant ±20% pracy rol ze zmienionym efortem), kosztu falszywych alarmow nowych list
+w petli fix, kosztu wdrozenia; jednostki licza token haiku jak opusa (w USD haiku 4x tanszy per token — skill claude-api).
+--- projekt 0 (dzisiejszy pipeline, wf 2026-09-06) ---
+  typowa faza 6.40 M jedn. (dzisiejszy kontekst 12.75 M), zadanie 25.41 M (3.71 faz); agentow na faze 28.4, na zadanie 122.8
+  udzial etapow w zadaniu: review 28.5%, execute 25.2%, fix 14.8%, sceptycy 9.4%, E2E 7.3%, mechanika 7.1%, zamkniecie 4.0%, orkiestracja 3.8%
+  bramki: typecheck + testy + build w domknieciu (agent) None s (domkniecie fazy) — razem 0 s
+--- projekt A (architektura A) ---
+  typowa faza 5.43 M jedn. (dzisiejszy kontekst 10.61 M), zadanie 21.54 M (3.71 faz); agentow na faze 20.5, na zadanie 89.2
+  vs projekt 0 po zmianie kontekstu: faza -15.2%, zadanie -15.2%; vs dzis: zadanie -58.6%
+  efort (praca rol ze zmienionym efortem ±20%): zadanie 18.85 .. 24.23 M
+  udzial etapow w zadaniu: execute 29.8%, review 27.6%, fix 14.4%, sceptycy 10.7%, E2E 7.5%, orkiestracja 4.4%, zamkniecie 4.3%, mechanika 1.3%
+  bramki: ESLint flat typed (G01–G13, G05 granice) 1.3 s (domknięcie, fix), knip --production --cache None s (domknięcie), tsc --noEmit 10 s (builder, domknięcie), size-limit 0.8 s (domknięcie fazy z UI), vitest --typecheck.only None s (domknięcie), Stryker diff-scoped, maks 3 pliki 122 s (domknięcie fazy z testami), migrations.sum None s (przed env-up, domknięcie), niezmienność migracji None s (domknięcie, fix:kontrola), advisors Management API None s (domknięcie fazy z migracją), PR ≤ 150 plików None s (dev-docs-complete), zielony main None s (bootstrap), ogrod.mjs None s (zamknięcie zadania) — razem 134.1 s
+--- projekt B (architektura B) ---
+  typowa faza 6.73 M jedn. (dzisiejszy kontekst 13.06 M), zadanie 26.19 M (3.71 faz); agentow na faze 23.8, na zadanie 98.8
+  vs projekt 0 po zmianie kontekstu: faza +5.1%, zadanie +3.1%; vs dzis: zadanie -49.7%
+  efort (praca rol ze zmienionym efortem ±20%): zadanie 22.86 .. 29.52 M
+  udzial etapow w zadaniu: review 36.0%, execute 24.5%, fix 15.0%, sceptycy 9.6%, E2E 6.7%, orkiestracja 3.4%, zamkniecie 3.2%, mechanika 1.5%
+  bramki: samosprawdzian IU (tsc + vitest related + eslint --cache na plikach IU) None s (builder, koniec IU; builder fixa na plikach fixa), ESLint typed --cache (reguły B-02…B-10) 1.3 s (domknięcie fazy (gates:faza), kontrola fixa), knip --production --cache 0.9 s (domknięcie fazy), size-limit 0.8 s (domknięcie fazy), typecheck (build shared + tsc) 9.9 s (domknięcie fazy), vitest --typecheck (expectTypeOf schemat vs kontrakt) None s (domknięcie fazy), migrations.sum --check None s (domknięcie fazy, bootstrap przed env-up, kontrola fixa), niezmienność migracji (git diff ∩ git ls-tree) None s (domknięcie fazy, kontrola fixa), advisors security + performance (Management API, chmura) None s (domknięcie fazy, gdy profil ma supabase), Stryker diff-scoped (linie dodane, pliki z testem zmienionym w fazie) 121 s (domknięcie fazy, gdy faza zmieniła plik testowy), zielony main (pełny zestaw testów) None s (bootstrap), walidacja końcowa (gates --pelny + testy + build) None s (raz na zadanie), PR ≤ 150 plików None s (dev-docs-complete), Doctor skilla verify-<app> None s (bootstrap, zadania z [E2E]) — razem 133.9 s
+--- projekt C (architektura C) ---
+  typowa faza 4.73 M jedn. (dzisiejszy kontekst 8.12 M), zadanie 18.65 M (3.71 faz); agentow na faze 13.7, na zadanie 61.2
+  vs projekt 0 po zmianie kontekstu: faza -26.2%, zadanie -26.6%; vs dzis: zadanie -64.2%
+  efort (praca rol ze zmienionym efortem ±20%): zadanie 16.26 .. 21.03 M
+  udzial etapow w zadaniu: execute 34.4%, review 20.3%, fix 17.5%, sceptycy 10.6%, E2E 8.0%, orkiestracja 5.0%, zamkniecie 4.2%
+  bramki: typecheck (tsc -b --noEmit, skrypt projektu) 9.9 s (domknięcie fazy, koniec fixa, samosprawdzenie buildera), build shared 1.2 s (domknięcie fazy), ESLint typowany z cache (G-03..G-12) 1.3 s (domknięcie fazy, koniec fixa), knip --cache 0.9 s (domknięcie fazy), size-limit 0.8 s (domknięcie fazy), vitest --typecheck (expectTypeOf) None s (domknięcie fazy), Stryker diff-scoped (sufit 900 s) 121 s (domknięcie fazy od It8, gdy faza dotknęła testów), migrations.sum --check None s (przed e2e:env-up i w domknięciu), niezmienność migracji (git diff ∩ git ls-tree) None s (domknięcie fazy i fix:kontrola), advisors (Management API, security + performance) None s (domknięcie fazy, projekt z supabase/), zielony main (pnpm test --run na bazie) None s (bootstrap autopilota), PR ≤ 150 plików None s (dev-docs-complete), ogrodnik licz.mjs None s (koniec zadania) — razem 135.1 s

@@ -1,0 +1,92 @@
+test_review_plan.py — koszt, wybór faz i moc testu review (zero agentów; jednostki cennika d4r, M = mln)
+
+=== 1. Koszt roli [M jedn.] = a + b × pliki_kodu (29 wykonań faz, kontekst dziś) i współczynnik po zmianie kontekstu ===
+  review:correctness       n= 28 a=0.54 b=0.019 mediana=1.09 po_zmianie×0.58
+  review:security          n= 29 a=0.38 b=0.016 mediana=0.71 po_zmianie×0.55
+  review:test-coverage     n= 29 a=0.46 b=0.023 mediana=1.00 po_zmianie×0.58
+  review:spec-compliance   n= 29 a=0.35 b=0.021 mediana=0.85 po_zmianie×0.55
+  review:code-quality      n= 19 a=0.36 b=0.014 mediana=0.70 po_zmianie×0.54
+  review:performance       n= 28 a=0.42 b=0.008 mediana=0.63 po_zmianie×0.55
+  kontekst:diff            n= 29 a=0.30 b=0.001 mediana=0.33 po_zmianie×0.25
+  dedup:semantyczny        n= 29 a=0.12 b=0.001 mediana=0.16 po_zmianie×0.41
+  verify                   n= 30 a=0.25 b=0.000 mediana=0.23 po_zmianie×0.44
+  verify-batch             n=125 a=0.22 b=0.000 mediana=0.21 po_zmianie×0.49
+  scribe                   n= 29 a=0.49 b=0.005 mediana=0.63 po_zmianie×0.49
+  fix:kontrola             n= 28 a=0.29 b=0.004 mediana=0.40 po_zmianie×0.45
+
+=== 2. Etap review na fazę o medianie plików kodu (kontekst dziś / po zmianie kontekstu) ===
+  wariant 0: 5.78 / 3.12 M (faza 19 plików kodu); role: kontekst:diff×1, correctness×1, security×1, test-coverage×1, spec-compliance×1, code-quality×1, performance×1, dedup×1
+  wariant A: 4.03 / 2.25 M (faza 19 plików kodu); role: review:correctness×0.96, review:security×0.96, review:test-coverage×0.96, review:spec-compliance×0.96, review:code-quality×0.96, dedup:semantyczny×1
+  wariant B: 6.19 / 3.45 M (faza 19 plików kodu); role: review:correctness×3, review:security×1, review:security×1.76, review:test-coverage×1, review:spec-compliance×1, review:code-quality×1, agregator×1
+  wariant C: 2.72 / 1.57 M (faza 19 plików kodu); role: review:kod×1, review:testy×1
+  sędzia dopasowania (1 na fazę): 0.90 M (widełki ×0,6–1,5)
+
+=== 3. Fazy w kolejności wartości (przypadki P1/P2 + ½ P3 na M jedn. całego testu fazy) ===
+   1. b26128d294 PR[4, 9] f2 kod 10 | przyp 6 (P1/P2 3, ogon 0, wrz 0) {'correctness': 2, 'test-coverage': 2, 'performance': 1, 'code-quality': 1} | test fazy 18.3 M (po zm. 10.3) | narast.: przyp 6 P1/P2 3 ogon 0 wrz 0 koszt 18 M (po zm. 10)
+   2. 2634b6770a PR[3] f1 kod 12 | przyp 4 (P1/P2 4, ogon 0, wrz 0) {'performance': 1, 'correctness': 1, 'test-coverage': 2} | test fazy 18.3 M (po zm. 10.4) | narast.: przyp 10 P1/P2 7 ogon 0 wrz 0 koszt 37 M (po zm. 21)
+   3. 32975a10a0 PR[5] f2 kod 16 | przyp 4 (P1/P2 4, ogon 0, wrz 0) {'correctness': 2, 'spec': 1, 'test-coverage': 1} | test fazy 20.1 M (po zm. 11.4) | narast.: przyp 14 P1/P2 11 ogon 0 wrz 0 koszt 57 M (po zm. 32)
+   4. 303ff625db PR[7] f4 kod 37 | przyp 6 (P1/P2 6, ogon 0, wrz 0) {'correctness': 2, 'performance': 1, 'security': 2, 'test-coverage': 1} | test fazy 30.2 M (po zm. 17.2) | narast.: przyp 20 P1/P2 17 ogon 0 wrz 0 koszt 87 M (po zm. 49)
+   5. 46be55afc9 PR[3] f2 kod 38 | przyp 7 (P1/P2 4, ogon 1, wrz 0) {'correctness': 5, 'code-quality': 2} | test fazy 31.1 M (po zm. 17.7) | narast.: przyp 27 P1/P2 21 ogon 1 wrz 0 koszt 118 M (po zm. 67)
+   6. 31491bc36f PR[6] f3 kod  8 | przyp 3 (P1/P2 2, ogon 0, wrz 0) {'test-coverage': 2, 'e2e': 1} | test fazy 16.1 M (po zm. 9.1) | narast.: przyp 30 P1/P2 23 ogon 1 wrz 0 koszt 134 M (po zm. 76)
+   7. 5af000f884 PR[4, 11] f3 kod 18 | przyp 4 (P1/P2 2, ogon 1, wrz 0) {'correctness': 2, 'test-coverage': 1, 'e2e': 1} | test fazy 21.0 M (po zm. 11.9) | narast.: przyp 34 P1/P2 25 ogon 2 wrz 0 koszt 155 M (po zm. 88)
+   8. 9d40529592 PR[4] f1 kod  5 | przyp 2 (P1/P2 2, ogon 0, wrz 0) {'spec': 2} | test fazy 14.4 M (po zm. 8.1) | narast.: przyp 36 P1/P2 27 ogon 2 wrz 0 koszt 169 M (po zm. 96)
+   9. b8374c8091 PR[2, 4] f2 kod 20 | przyp 4 (P1/P2 2, ogon 2, wrz 0) {'code-quality': 1, 'performance': 1, 'correctness': 1, 'spec': 1} | test fazy 21.8 M (po zm. 12.4) | narast.: przyp 40 P1/P2 29 ogon 4 wrz 0 koszt 191 M (po zm. 108)
+  10. f3ee433811 PR[13] f2 kod 15 | przyp 3 (P1/P2 2, ogon 0, wrz 3) {'test-coverage': 2, 'code-quality': 1} | test fazy 19.2 M (po zm. 10.9) | narast.: przyp 43 P1/P2 31 ogon 4 wrz 3 koszt 211 M (po zm. 119)
+  11. 1de5a4c260 PR[8, 9, 11] f6 kod 48 | przyp 7 (P1/P2 2, ogon 1, wrz 0) {'correctness': 1, 'test-coverage': 1, 'security': 2, 'e2e': 1, 'code-quality': 1, 'spec': 1} | test fazy 35.5 M (po zm. 20.2) | narast.: przyp 50 P1/P2 33 ogon 5 wrz 3 koszt 246 M (po zm. 140)
+  12. 67f5f2cdf6 PR[1] f3 kod  9 | przyp 2 (P1/P2 2, ogon 1, wrz 0) {'correctness': 1, 'security': 1} | test fazy 16.1 M (po zm. 9.2) | narast.: przyp 52 P1/P2 35 ogon 6 wrz 3 koszt 262 M (po zm. 149)
+  13. 2536643737 PR[14, 15] f4 kod 75 | przyp 6 (P1/P2 5, ogon 1, wrz 6) {'correctness': 3, 'test-coverage': 1, 'performance': 1, 'spec': 1} | test fazy 47.0 M (po zm. 26.9) | narast.: przyp 58 P1/P2 40 ogon 7 wrz 9 koszt 309 M (po zm. 176)
+  14. c74b9f92a4 PR[9] f2 kod 21 | przyp 3 (P1/P2 2, ogon 0, wrz 0) {'domkniecie/kontrola-fixa': 1, 'correctness': 1, 'test-coverage': 1} | test fazy 21.8 M (po zm. 12.4) | narast.: przyp 61 P1/P2 42 ogon 7 wrz 9 koszt 331 M (po zm. 188)
+  15. 212d5c5a35 PR[2] f3 kod 19 | przyp 3 (P1/P2 2, ogon 1, wrz 0) {'test-coverage': 1, 'correctness': 1, 'security': 1} | test fazy 21.9 M (po zm. 12.4) | narast.: przyp 64 P1/P2 44 ogon 8 wrz 9 koszt 353 M (po zm. 201)
+  16. 781cdde65a PR[7] f3 kod 13 | przyp 2 (P1/P2 2, ogon 0, wrz 0) {'correctness': 2} | test fazy 17.9 M (po zm. 10.2) | narast.: przyp 66 P1/P2 46 ogon 8 wrz 9 koszt 371 M (po zm. 211)
+  17. 49091e160d PR[8] f4 kod 37 | przyp 3 (P1/P2 3, ogon 1, wrz 0) {'correctness': 3} | test fazy 28.9 M (po zm. 16.5) | narast.: przyp 69 P1/P2 49 ogon 9 wrz 9 koszt 400 M (po zm. 227)
+  18. 933a9016ec PR[17] f3 kod 75 | przyp 6 (P1/P2 3, ogon 1, wrz 6) {'correctness': 4, 'test-coverage': 2} | test fazy 47.0 M (po zm. 26.9) | narast.: przyp 75 P1/P2 52 ogon 10 wrz 15 koszt 447 M (po zm. 254)
+  19. bdade68b9e PR[9] f1 kod 21 | przyp 2 (P1/P2 2, ogon 1, wrz 0) {'test-coverage': 1, 'security': 1} | test fazy 21.4 M (po zm. 12.2) | narast.: przyp 77 P1/P2 54 ogon 11 wrz 15 koszt 468 M (po zm. 266)
+  20. b2981b4a88 PR[2] f1 kod 10 | przyp 2 (P1/P2 1, ogon 1, wrz 0) {'correctness': 1, 'test-coverage': 1} | test fazy 16.5 M (po zm. 9.4) | narast.: przyp 79 P1/P2 55 ogon 12 wrz 15 koszt 485 M (po zm. 276)
+  21. b5423898d3 PR[9] f3 kod 24 | przyp 3 (P1/P2 1, ogon 1, wrz 0) {'test-coverage': 2, 'performance': 1} | test fazy 23.1 M (po zm. 13.2) | narast.: przyp 82 P1/P2 56 ogon 13 wrz 15 koszt 508 M (po zm. 289)
+  22. 320ed2890b PR[1] f1 kod  3 | przyp 1 (P1/P2 1, ogon 0, wrz 0) {'security': 1} | test fazy 12.5 M (po zm. 7.1) | narast.: przyp 83 P1/P2 57 ogon 13 wrz 15 koszt 520 M (po zm. 296)
+  23. ec3a12432d PR[3] f3 kod  3 | przyp 1 (P1/P2 1, ogon 0, wrz 0) {'test-coverage': 1} | test fazy 12.5 M (po zm. 7.1) | narast.: przyp 84 P1/P2 58 ogon 13 wrz 15 koszt 533 M (po zm. 303)
+  24. e588d0c0e5 PR[11] f6 kod 31 | przyp 3 (P1/P2 1, ogon 0, wrz 0) {'correctness': 2, 'spec': 1} | test fazy 26.2 M (po zm. 15.0) | narast.: przyp 87 P1/P2 59 ogon 13 wrz 15 koszt 559 M (po zm. 318)
+  25. 473192a0f1 PR[7] f1 kod  8 | przyp 1 (P1/P2 1, ogon 0, wrz 0) {'test-coverage': 1} | test fazy 15.2 M (po zm. 8.7) | narast.: przyp 88 P1/P2 60 ogon 13 wrz 15 koszt 574 M (po zm. 327)
+  26. a00168f9f4 PR[6] f2 kod  9 | przyp 1 (P1/P2 1, ogon 0, wrz 0) {'correctness': 1} | test fazy 15.7 M (po zm. 9.0) | narast.: przyp 89 P1/P2 61 ogon 13 wrz 15 koszt 590 M (po zm. 336)
+  27. 6bfdb25751 PR[13] f1 kod 26 | przyp 2 (P1/P2 1, ogon 0, wrz 2) {'code-quality': 1, 'spec': 1} | test fazy 23.6 M (po zm. 13.5) | narast.: przyp 91 P1/P2 62 ogon 13 wrz 17 koszt 613 M (po zm. 350)
+  28. 56a86b398e PR[19] f3 kod 28 | przyp 2 (P1/P2 1, ogon 0, wrz 2) {'spec': 1, 'security': 1} | test fazy 25.4 M (po zm. 14.5) | narast.: przyp 93 P1/P2 63 ogon 13 wrz 19 koszt 639 M (po zm. 364)
+  29. f56cd6ac33 PR[16] f2 kod 70 | przyp 3 (P1/P2 2, ogon 0, wrz 3) {'correctness': 1, 'test-coverage': 2} | test fazy 43.4 M (po zm. 25.0) | narast.: przyp 96 P1/P2 65 ogon 13 wrz 22 koszt 682 M (po zm. 389)
+  30. ec8a80edf0 PR[19] f2 kod 12 | przyp 1 (P1/P2 1, ogon 0, wrz 1) {'security': 1} | test fazy 18.0 M (po zm. 10.2) | narast.: przyp 97 P1/P2 66 ogon 13 wrz 23 koszt 700 M (po zm. 399)
+  31. 219ddaa253 PR[14] f3 kod 34 | przyp 2 (P1/P2 1, ogon 0, wrz 2) {'spec': 1, 'security': 1} | test fazy 27.1 M (po zm. 15.5) | narast.: przyp 99 P1/P2 67 ogon 13 wrz 25 koszt 727 M (po zm. 415)
+  32. 37e48957e3 PR[17] f4 kod 45 | przyp 2 (P1/P2 1, ogon 0, wrz 2) {'correctness': 1, 'security': 1} | test fazy 31.9 M (po zm. 18.4) | narast.: przyp 101 P1/P2 68 ogon 13 wrz 27 koszt 759 M (po zm. 433)
+  33. d7007f74a4 PR[1] f2 kod  7 | przyp 1 (P1/P2 0, ogon 0, wrz 0) {'security': 1} | test fazy 14.8 M (po zm. 8.4) | narast.: przyp 102 P1/P2 68 ogon 13 wrz 27 koszt 774 M (po zm. 442)
+  34. 48ce1a52aa PR[11] f5 kod 42 | przyp 1 (P1/P2 1, ogon 0, wrz 0) {'correctness': 1} | test fazy 30.2 M (po zm. 17.4) | narast.: przyp 103 P1/P2 69 ogon 13 wrz 27 koszt 804 M (po zm. 459)
+  35. 4b8b48d106 PR[9] f5 kod 12 | przyp 1 (P1/P2 0, ogon 0, wrz 0) {'e2e': 1} | test fazy 17.0 M (po zm. 9.7) | narast.: przyp 104 P1/P2 69 ogon 13 wrz 27 koszt 821 M (po zm. 469)
+  36. 981300b2b3 PR[2] f4 kod 15 | przyp 1 (P1/P2 0, ogon 0, wrz 0) {'code-quality': 1} | test fazy 18.3 M (po zm. 10.5) | narast.: przyp 105 P1/P2 69 ogon 13 wrz 27 koszt 840 M (po zm. 479)
+  37. 253d6bf7b5 PR[10] f4 kod 31 | przyp 1 (P1/P2 0, ogon 0, wrz 0) {'correctness': 1} | test fazy 25.3 M (po zm. 14.6) | narast.: przyp 106 P1/P2 69 ogon 13 wrz 27 koszt 865 M (po zm. 494)
+
+=== 4. Warianty zakresu (koszt całego testu: 4 warianty review + sędzia; widełki: po zmianie kontekstu i efort −20% .. dziś i efort +20%) ===
+  pełny: faz 37, par (przypadek, faza) 106 (P1/P2 69, ogon 13, wrzesień 27), klucz 2 (znane trafienia) 210, osie {'correctness': 39, 'test-coverage': 25, 'performance': 6, 'code-quality': 8, 'spec': 10, 'security': 13, 'e2e': 4, 'domkniecie/kontrola-fixa': 1}
+     koszt 395 .. 865 .. 1033 M (twardy limit 1549 M); per wariant (dziś): 0 251, A 181, B 271, C 126
+  75% przypadków: faz 21, par (przypadek, faza) 82 (P1/P2 56, ogon 13, wrzesień 15), klucz 2 (znane trafienia) 125, osie {'correctness': 32, 'test-coverage': 21, 'performance': 6, 'code-quality': 6, 'spec': 6, 'security': 7, 'e2e': 3, 'domkniecie/kontrola-fixa': 1}
+     koszt 232 .. 508 .. 605 M (twardy limit 907 M); per wariant (dziś): 0 147, A 106, B 158, C 75
+  50% przypadków: faz 13, par (przypadek, faza) 58 (P1/P2 40, ogon 7, wrzesień 9), klucz 2 (znane trafienia) 66, osie {'correctness': 20, 'test-coverage': 13, 'performance': 5, 'code-quality': 6, 'spec': 6, 'security': 5, 'e2e': 3}
+     koszt 141 .. 309 .. 367 M (twardy limit 551 M); per wariant (dziś): 0 90, A 65, B 96, C 46
+  pilot (2 fazy o najwyższej wartości + najwyżej ceniona faza wrześniowa): b26128d294 (PR[4, 9] f2, kod 10), 2634b6770a (PR[3] f1, kod 12), f3ee433811 (PR[13] f2, kod 15) | przypadków 13 | koszt 26 .. 56 .. 66 M
+  powtórka r=2 w pilocie (najmniejsza faza pilota, wszystkie warianty + sędzia): b26128d294 — 8 .. 18 .. 22 M
+  skala: run autopilota 20.09 (3 fazy, cały pipeline) = 35,3 M jedn. (panel-koszt.txt §2: 31,60 M fazy + 3,70 M poziom zadania)
+
+=== 5. Moc: połowa szerokości 95% CI różnicy odsetka złapanych między dwoma wariantami i MDD (80% mocy) ===
+  założenie: dziś 20% vs projekt 40%, rozrzut prawdziwej różnicy między przypadkami 0,15; powtarzalność review ~50% (POMIARY §4)
+  pełny, wszystkie  N=106 r=1 -> ±12.4 pkt proc., MDD 17.7 pkt
+  pełny, wszystkie  N=106 r=2 -> ±9.0 pkt proc., MDD 12.8 pkt
+  pełny, P1/P2      N= 69 r=1 -> ±15.3 pkt proc., MDD 21.9 pkt
+  pełny, P1/P2      N= 69 r=2 -> ±11.1 pkt proc., MDD 15.9 pkt
+  75%, wszystkie    N= 82 r=1 -> ±14.1 pkt proc., MDD 20.1 pkt
+  75%, wszystkie    N= 82 r=2 -> ±10.2 pkt proc., MDD 14.6 pkt
+  50%, wszystkie    N= 58 r=1 -> ±16.7 pkt proc., MDD 23.9 pkt
+  50%, wszystkie    N= 58 r=2 -> ±12.1 pkt proc., MDD 17.3 pkt
+  50%, P1/P2        N= 40 r=1 -> ±20.1 pkt proc., MDD 28.8 pkt
+  50%, P1/P2        N= 40 r=2 -> ±14.6 pkt proc., MDD 20.9 pkt
+  pilot             N= 13 r=1 -> ±35.3 pkt proc., MDD 50.5 pkt
+  pilot             N= 13 r=2 -> ±25.6 pkt proc., MDD 36.6 pkt
+  wniosek mechaniczny: r=2 przy tym samym N zawęża CI o 27%, podwojenie N o 29% (koszt w obu przypadkach ×2) — więcej faz daje
+  nieco więcej i dodatkowo szerszy przekrój klas; ale faz z przypadkami B jest 37 (106 przypadków) — ponad pełny zakres są już tylko powtórki.
+
+=== 6. Moduł opcjonalny: kontrola diffu fixa (przypadki urodzone w fixie review fazy) ===
+  przypadków 31 w 24 commitach fixa; P1/P2 22; koszt 4 warianty × 0.33 M + sędzia ≈ 44 M

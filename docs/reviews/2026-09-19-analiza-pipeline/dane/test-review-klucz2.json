@@ -1,0 +1,1237 @@
+{
+ "219ddaa253": {
+  "raport": "docs/completed/faza-9a-domena-mailer-limity/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:35",
+    "wiersz": "#### P2 · KOD · `apps/dashboard/src/features/offers/use-offer-details.ts:35` (źródło: security, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:267",
+    "wiersz": "#### P2 · KOD · `apps/dashboard/src/features/offers/use-offer-details.ts:267` (źródło: performance, zweryfikowany; sceptyk sugerował P3)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/visit-summary.ts:177",
+    "wiersz": "#### P2 · KOD · `apps/dashboard/src/features/offers/visit-summary.ts:177` (źródło: code-quality, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/visit-summary.test.ts:184",
+    "wiersz": "#### P2 · TEST · `apps/dashboard/src/features/offers/visit-summary.test.ts:184` (źródło: code-quality, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "visit-summary.ts",
+    "wiersz": "- **Dziennik kontekstu („jeden nowy blok `catch` w `visit-summary.ts` pomija przerwane żądanie\"):** twierdzenie nieprawdziwe wobec realnego kontraktu `postgrest"
+   }
+  ]
+ },
+ "2536643737": {
+  "raport": "docs/completed/faza-9a-domena-mailer-limity/review-faza-4.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/server/src/offer/template-headings.ts:101",
+    "wiersz": "#### P1 · KOD · `apps/server/src/offer/template-headings.ts:101` (źródło: performance, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offers-list.tsx:118",
+    "wiersz": "#### P2 · KOD · `apps/dashboard/src/features/offers/offers-list.tsx:118` (źródło: security, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/templates.test.ts:268",
+    "wiersz": "#### P2 · TEST · `apps/server/src/routes/templates.test.ts:268` (źródło: code-quality, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-card.tsx:67",
+    "wiersz": "#### P2 · KOD · `apps/dashboard/src/features/templates/template-card.tsx:67` (źródło: spec-compliance, zweryfikowany)"
+   },
+   {
+    "waga": "P2",
+    "plik": "packages/shared/src/template-contract.ts:73",
+    "wiersz": "#### P2 · KOD · `packages/shared/src/template-contract.ts:73` (źródło: spec-compliance, zweryfikowany; sceptyk sugerował P3)"
+   },
+   {
+    "waga": "P2",
+    "plik": "offer-address.ts",
+    "wiersz": "- **IU-10 (adres oferty):** spełnione. `offer-address.ts` jest jednym źródłem (ramka mapy przepięta), wiersz w widoku oferty ma `<code>` + „Kopiuj\" + dopisek o "
+   }
+  ]
+ },
+ "f56cd6ac33": {
+  "raport": "docs/completed/faza-9b-wielu-uzytkownikow/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/pages/app-privacy-page.ts:108",
+    "wiersz": "### 1. [KOD · security] `apps/server/src/offer/pages/app-privacy-page.ts:108`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/admin-accounts.ts:25",
+    "wiersz": "### 2. [KOD · security] `apps/server/src/routes/admin-accounts.ts:25`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql:207",
+    "wiersz": "### 3. [KOD · performance] `supabase/migrations/20260914120000_offer_events_admin_webhook.sql:207`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/membership-service.ts:162",
+    "wiersz": "### 4. [KOD · performance] `apps/server/src/access/membership-service.ts:162`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/admin-accounts-service.ts:200",
+    "wiersz": "### 5. [KOD · performance] `apps/server/src/access/admin-accounts-service.ts:200`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/admin-accounts-service.ts:139",
+    "wiersz": "### 6. [TEST · code-quality] `apps/server/src/access/admin-accounts-service.ts:139`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/admin-accounts-service.ts:198",
+    "wiersz": "### 7. [KOD · spec-compliance] `apps/server/src/access/admin-accounts-service.ts:198`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/admin-webhook.ts:90",
+    "wiersz": "### 8. [KOD · code-quality] `apps/server/src/routes/admin-webhook.ts:90`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/account-deletion-service.ts:227",
+    "wiersz": "### 9. [KOD · correctness] `apps/server/src/access/account-deletion-service.ts:227`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/account-deletion-service.ts:206",
+    "wiersz": "### 10. [KOD · test-coverage] `apps/server/src/access/account-deletion-service.ts:206`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/account.ts:172",
+    "wiersz": "### 11. [KOD · spec-compliance] `apps/server/src/routes/account.ts:172`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/self-account.ts:66",
+    "wiersz": "### 13. [TEST · test-coverage] `apps/server/src/access/self-account.ts:66`"
+   }
+  ]
+ },
+ "933a9016ec": {
+  "raport": "docs/completed/faza-9b-wielu-uzytkownikow/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/admin/use-admin-accounts.ts:228",
+    "wiersz": "### 1. [KOD · security] `apps/dashboard/src/features/admin/use-admin-accounts.ts:228`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/auth/login-form.tsx:5",
+    "wiersz": "### 2. [KOD · performance] `apps/dashboard/src/features/auth/login-form.tsx:5`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/access/access-request-form.tsx:77",
+    "wiersz": "### 3. [KOD · code-quality] `apps/dashboard/src/features/access/access-request-form.tsx:77`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/access/invitation-page.tsx:122",
+    "wiersz": "### 4. [KOD · correctness] `apps/dashboard/src/features/access/invitation-page.tsx:122`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/settings/use-account-deletion.ts:208",
+    "wiersz": "### 5. [KOD · correctness] `apps/dashboard/src/features/settings/use-account-deletion.ts:208`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/admin/admin-sections.tsx:147",
+    "wiersz": "### 6. [KOD · spec-compliance] `apps/dashboard/src/features/admin/admin-sections.tsx:147`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/admin/format.ts:239",
+    "wiersz": "### 7. [KOD · test-coverage] `apps/dashboard/src/features/admin/format.ts:239`"
+   }
+  ]
+ },
+ "37e48957e3": {
+  "raport": "docs/completed/faza-9b-wielu-uzytkownikow/review-faza-4.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/dashboard/src/lib/analytics.ts:287",
+    "wiersz": "### 1. [P1/KOD] `apps/dashboard/src/lib/analytics.ts:287` — brak bufora wywołań sprzed gotowości SDK"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:273",
+    "wiersz": "### 2. [P2/KOD] `apps/dashboard/src/features/onboarding/use-first-steps.ts:273` — sondy checklisty przy każdym wejściu na `/oferty`, dożywotnio"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/onboarding/use-first-steps.ts:268",
+    "wiersz": "### 3. [P2/KOD] `apps/dashboard/src/features/onboarding/use-first-steps.ts:268` — „Zamknij checklistę\" nie przeżywa nawigacji"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offers-page.tsx:67",
+    "wiersz": "### 4. [P2/KOD] `apps/dashboard/src/features/offers/offers-page.tsx:67` — przewodnik startuje także na ekranie błędu"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/auth/session-context.tsx:65",
+    "wiersz": "### 5. [P2/KOD] `apps/dashboard/src/features/auth/session-context.tsx:65` — zdarzenie `logowanie` liczy przeładowania karty"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/onboarding/use-screen-tour.ts:97",
+    "wiersz": "### 6. [P2/KOD] `apps/dashboard/src/features/onboarding/use-screen-tour.ts:97` — przewodnik wraca przy każdym powrocie na ekran"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/help/texts.ts:95",
+    "wiersz": "### 7. [P2/KOD] `apps/dashboard/src/features/help/texts.ts:95` — zdanie kieruje w miejsce, w którym limitów nie ma"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/account/use-profile.test.ts:189",
+    "wiersz": "### 8. [P2/TEST] `apps/dashboard/src/features/account/use-profile.test.ts:189` — dwie z trzech nowych funkcji zapisu bez żadnego testu"
+   }
+  ]
+ },
+ "56a86b398e": {
+  "raport": "docs/completed/samodzielna-rejestracja-czlonkow-aa/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/oauth/consent-cards.tsx:89",
+    "wiersz": "1. **[P2/KOD] `apps/dashboard/src/features/oauth/consent-cards.tsx:89`** (źródło: correctness)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/access/access-request-api.ts:43",
+    "wiersz": "2. **[P2/KOD] `apps/dashboard/src/features/access/access-request-api.ts:43`** (źródło: code-quality)"
+   },
+   {
+    "waga": "P2",
+    "plik": "CLAUDE.md:73",
+    "wiersz": "3. **[P2/KOD] `CLAUDE.md:73`** (źródło: correctness)"
+   }
+  ]
+ },
+ "ec8a80edf0": {
+  "raport": "docs/completed/samodzielna-rejestracja-czlonkow-aa/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/access.ts:179",
+    "wiersz": "1. **[P2/KOD] `apps/server/src/routes/access.ts:179`** (źródło: performance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/access/registration-service.ts:217",
+    "wiersz": "2. **[P2/KOD] `apps/server/src/access/registration-service.ts:217`** (źródło: test-coverage)"
+   }
+  ]
+ },
+ "67f5f2cdf6": {
+  "raport": "docs/completed/faza-1-fundament/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/tsconfig.json:1",
+    "wiersz": "### 🟠 P2 · KOD · `apps/server/tsconfig.json:1` — serwis z IU-4 nie startuje"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:99",
+    "wiersz": "### 🟠 P2 · KOD · `apps/server/src/app.ts:99` — host-guard zabije health check kontenera"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/observability/sentry.test.ts:49",
+    "wiersz": "### 🟠 P2 · TEST · `apps/server/src/observability/sentry.test.ts:49` — test inicjalizacji nie asertuje żadnej opcji"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/tsconfig.json",
+    "wiersz": "- **IU-4 (`docs/plans/`, cel „Proces nasłuchujący\")** — niespełniony w warstwie runtime: proces nie startuje (P2 `apps/server/tsconfig.json`). Zachowanie routin"
+   }
+  ]
+ },
+ "320ed2890b": {
+  "raport": "docs/completed/faza-1-fundament/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "packages/shared/src/env.ts:49",
+    "wiersz": "#### P2-1 · KOD · `packages/shared/src/env.ts:49`"
+   }
+  ]
+ },
+ "d7007f74a4": {
+  "raport": "docs/completed/faza-1-fundament/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260824171406_init_profiles_offers.sql:168",
+    "wiersz": "### P2 · KOD · `supabase/migrations/20260824171406_init_profiles_offers.sql:168`"
+   },
+   {
+    "waga": "P2",
+    "plik": "scripts/seed-test-users.ts:127",
+    "wiersz": "### P2 · KOD · `scripts/seed-test-users.ts:127`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:211",
+    "wiersz": "### P2 · TEST · `supabase/tests/rls.test.ts:211`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260824171406_init_profiles_offers.sql:145",
+    "wiersz": "### P2 · KOD · `supabase/migrations/20260824171406_init_profiles_offers.sql:145`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:138",
+    "wiersz": "### P2 · TEST · `supabase/tests/rls.test.ts:138`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:176",
+    "wiersz": "### P2 · TEST · `supabase/tests/rls.test.ts:176`"
+   }
+  ]
+ },
+ "212d5c5a35": {
+  "raport": "docs/completed/faza-2-publikacja-ofert/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/server/src/mcp/server.ts:164",
+    "wiersz": "### 1. `apps/server/src/mcp/server.ts:164` (KOD, security)"
+   },
+   {
+    "waga": "P1",
+    "plik": "apps/server/src/app.ts:441",
+    "wiersz": "### 2. `apps/server/src/app.ts:441` (KOD, security)"
+   },
+   {
+    "waga": "P1",
+    "plik": "apps/server/src/mcp/server.ts:561",
+    "wiersz": "### 3. `apps/server/src/mcp/server.ts:561` (KOD, performance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/repository.ts:170",
+    "wiersz": "### 4. `apps/server/src/offer/repository.ts:170` (TEST, security)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/server.ts:139",
+    "wiersz": "### 5. `apps/server/src/mcp/server.ts:139` (KOD, security)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts:186",
+    "wiersz": "### 6. `apps/server/src/mcp/tools/opublikuj-oferte.ts:186` (KOD, security)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/server.test.ts:257",
+    "wiersz": "### 7. `apps/server/src/mcp/server.test.ts:257` (TEST, performance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/mail-draft.ts:78",
+    "wiersz": "### 8. `apps/server/src/offer/mail-draft.ts:78` (KOD, spec-compliance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/validation.ts:220",
+    "wiersz": "### 9. `apps/server/src/offer/validation.ts:220` (KOD, spec-compliance)"
+   }
+  ]
+ },
+ "b8374c8091": {
+  "raport": "docs/completed/faza-2-publikacja-ofert/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260825171812_offers_brand_and_contact.sql:167",
+    "wiersz": "### 1. 🟠 KOD — `supabase/migrations/20260825171812_offers_brand_and_contact.sql:167`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:294",
+    "wiersz": "### 2. 🟠 KOD — `apps/server/src/app.ts:294`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/brand-contract.ts:155",
+    "wiersz": "### 3. 🟠 KOD — `apps/server/src/offer/brand-contract.ts:155`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:157",
+    "wiersz": "### 4. 🟠 KOD — `apps/server/src/app.ts:157` (spec-compliance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:159",
+    "wiersz": "### 5. 🟠 KOD — `apps/server/src/app.ts:159` (test-coverage)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/expired-page.ts:1",
+    "wiersz": "### 6. 🟠 TEST — `apps/server/src/offer/expired-page.ts:1`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/offer-origin-pages.test.ts:170",
+    "wiersz": "### 7. 🟠 TEST — `apps/server/src/routes/offer-origin-pages.test.ts:170`"
+   }
+  ]
+ },
+ "b2981b4a88": {
+  "raport": "docs/completed/faza-2-publikacja-ofert/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/template.css:17",
+    "wiersz": "### 1. 🟠 KOD — `apps/server/src/offer/template.css:17` — `unicode-range` wycina polską typografię"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/brand-contract.ts:109",
+    "wiersz": "### 2. 🟠 KOD — `apps/server/src/offer/brand-contract.ts:109` — brak progu kontrastu dla `--accent`, domyślny accent poniżej 4.5:1"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/template.css:253",
+    "wiersz": "### 3. 🟠 KOD — `apps/server/src/offer/template.css:253` — `.doc a:hover { color: var(--brand) }` gasi haczyki Z1 w pasie CTA"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/template.ts:1289",
+    "wiersz": "### 4. 🟠 KOD — `apps/server/src/offer/template.ts:1289` — komentarze inżynierskie w `<style>` każdej oferty"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/brand-contract.ts:52",
+    "wiersz": "6. 🟡 KOD — `apps/server/src/offer/brand-contract.ts:52` — `SELF_HOSTED_FONTS` to jednoelementowa tablica, której `file` nikt nie czyta; struktura służy tylko do"
+   }
+  ]
+ },
+ "981300b2b3": {
+  "raport": "docs/completed/faza-2-publikacja-ofert/review-faza-4.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/rate-limit.ts:126",
+    "wiersz": "### 🟠 P2 · KOD · `apps/server/src/rate-limit.ts:126` — skrajnie lewy wpis `X-Forwarded-For`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/rate-limit.ts:43",
+    "wiersz": "### 🟠 P2 · KOD · `apps/server/src/rate-limit.ts:43` — nieograniczony wzrost mapy okien i pełny przebieg przy każdym żądaniu"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:308",
+    "wiersz": "### 🟠 P2 · KOD · `apps/server/src/app.ts:308` — próg 1200/min nieprzeliczony po zmianie na klucz per-klient"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/rate-limit.test.ts:493",
+    "wiersz": "1. 🟡 **TEST · `apps/server/src/rate-limit.test.ts:493`** — brak testu na scenariusz ataku definiujący sens zmiany: żądanie od ZAUFANEGO proxy z podrobionym lewy"
+   }
+  ]
+ },
+ "46be55afc9": {
+  "raport": "docs/completed/faza-3-konto-i-dashboard/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts:90",
+    "wiersz": "### 1. `apps/dashboard/src/features/settings/use-mcp-token.ts:90` (KOD)"
+   },
+   {
+    "waga": "P1",
+    "plik": "supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:21",
+    "wiersz": "### 2. `supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:21` (KOD)"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:1",
+    "wiersz": "### 3. `supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:1` (KOD)"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:546",
+    "wiersz": "### 4. `supabase/tests/rls.test.ts:546` (TEST)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offers-list.tsx:8",
+    "wiersz": "### 5. `apps/dashboard/src/features/offers/offers-list.tsx:8` (KOD)"
+   }
+  ]
+ },
+ "2634b6770a": {
+  "raport": "docs/completed/faza-3-konto-i-dashboard/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:494",
+    "wiersz": "### 🟠 P2 · TEST · `supabase/tests/rls.test.ts:494`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260827183042_mcp_tokens.sql:27",
+    "wiersz": "### 🟠 P2 · KOD · `supabase/migrations/20260827183042_mcp_tokens.sql:27`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/token-service.test.ts:824",
+    "wiersz": "### 🟠 P2 · TEST · `apps/server/src/mcp/token-service.test.ts:824`"
+   }
+  ]
+ },
+ "ec3a12432d": {
+  "raport": "docs/completed/faza-3-konto-i-dashboard/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/token-service.ts:154",
+    "wiersz": "### 2. [KOD] `apps/server/src/mcp/token-service.ts:154`"
+   }
+  ]
+ },
+ "5af000f884": {
+  "raport": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/dashboard/src/features/offers/analytics.ts:165",
+    "wiersz": "### 1. `apps/dashboard/src/features/offers/analytics.ts:165` (KOD, spec-compliance)"
+   },
+   {
+    "waga": "P1",
+    "plik": "apps/dashboard/src/features/offers/offers-list.tsx:67",
+    "wiersz": "### 2. `apps/dashboard/src/features/offers/offers-list.tsx:67` (KOD, architecture)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/analytics.ts:181",
+    "wiersz": "### 3. `apps/dashboard/src/features/offers/analytics.ts:181` (KOD, spec-compliance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/use-offer-details.ts:127",
+    "wiersz": "### 4. `apps/dashboard/src/features/offers/use-offer-details.ts:127` (KOD, typescript)"
+   }
+  ]
+ },
+ "9d40529592": {
+  "raport": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260828120000_visits_tracking.sql:417",
+    "wiersz": "#### 1. [P2][KOD] `supabase/migrations/20260828120000_visits_tracking.sql:417` — brak sufitu liczby kluczy w scalaniu `sections`/`heat`"
+   },
+   {
+    "waga": "P2",
+    "plik": "packages/shared/src/database.types.ts:151",
+    "wiersz": "#### 2. [P2][KOD] `packages/shared/src/database.types.ts:151` — artefakt stagingu `e2e_env_marker` w kontrakcie typów"
+   }
+  ]
+ },
+ "b26128d294": {
+  "raport": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/tracking/visit-service.ts:137",
+    "wiersz": "### P2-1 · KOD · `apps/server/src/tracking/visit-service.ts:137`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/tracking/visit-service.ts:240",
+    "wiersz": "### P2-2 · KOD · `apps/server/src/tracking/visit-service.ts:240`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/events.ts:88",
+    "wiersz": "### P2-3 · KOD · `apps/server/src/routes/events.ts:88`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:118",
+    "wiersz": "### P2-4 · KOD · `apps/server/src/app.ts:118`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/tracking/visit-service.test.ts:1",
+    "wiersz": "### P2-5 · TEST · `apps/server/src/tracking/visit-service.test.ts:1`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/events.test.ts:1",
+    "wiersz": "### P2-6 · TEST · `apps/server/src/routes/events.test.ts:1`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/events.ts:93",
+    "wiersz": "### P2-7 · TEST · `apps/server/src/routes/events.ts:93`"
+   }
+  ]
+ },
+ "32975a10a0": {
+  "raport": "docs/completed/faza-5-heatmapa/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:214",
+    "wiersz": "### P1-1 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:214`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:56",
+    "wiersz": "### P2-1 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:56`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:326",
+    "wiersz": "### P2-2 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-card.tsx:326`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:185",
+    "wiersz": "### P2-3 · KOD · `apps/server/src/app.ts:185`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:227",
+    "wiersz": "### P2-4 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:227`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:310",
+    "wiersz": "### P2-5 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-card.tsx:310`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/texts.ts:66",
+    "wiersz": "### P2-6 · KOD · `apps/dashboard/src/features/offers/texts.ts:66`"
+   }
+  ]
+ },
+ "31491bc36f": {
+  "raport": "docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:181",
+    "wiersz": "### 1. [KOD] `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:181` — E2E FAIL: poziomy scroll strony w trybie „Wszystkie wizyty\""
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:117",
+    "wiersz": "### 2. [KOD] `apps/dashboard/src/features/offers/offer-heatmap-card.tsx:117` — brak `useMemo` na rachunku, który po fazie 3 jest drogi"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:34",
+    "wiersz": "### 3. [KOD] `apps/dashboard/src/features/offers/heatmap-grid.ts:34` — kontrakt siatki ręcznie zduplikowany zamiast w `packages/shared`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:332",
+    "wiersz": "### 4. [KOD] `apps/dashboard/src/features/offers/heatmap-grid.ts:332` — agregat miesza gęstości bez normalizacji wagi"
+   }
+  ]
+ },
+ "a00168f9f4": {
+  "raport": "docs/completed/siatka-heatmapy-proporcjonalna/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/static/t.js:63",
+    "wiersz": "#### 1. [KOD] `apps/server/static/t.js:63` — oś X miesza układ dokumentu z układem viewportu"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/offer-origin-pages.ts:231",
+    "wiersz": "#### 2. [KOD] `apps/server/src/routes/offer-origin-pages.ts:231` — próg rozmiaru trackera mierzony po gzipie, choć nic nie kompresuje"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/static/t.js:48",
+    "wiersz": "#### 3. [TEST] `apps/server/static/t.js:48` — gałąź NaN w `clampCell` bez testu"
+   }
+  ]
+ },
+ "303ff625db": {
+  "raport": "docs/completed/faza-6-cta-i-webhooki/review-faza-4.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:84",
+    "wiersz": "- [ ] 🔴 [P1] **apps/dashboard/src/features/offers/offer-details-page.tsx:84** — karta „Decyzje klienta\" renderuje się DOPIERO po bramce `if (summary.visitCount "
+   },
+   {
+    "waga": "P1",
+    "plik": "supabase/tests/rls.test.ts:1281",
+    "wiersz": "- [ ] 🔴 [P1] **supabase/tests/rls.test.ts:1281** — nowy `profiles_webhook_set_at_pair_check` rozwala istniejący pakiet RLS: `beforeAll` robi `admin.from('profil"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/webhook-settings.test.ts:336",
+    "wiersz": "- [ ] 🟠 [P2] **apps/server/src/routes/webhook-settings.test.ts:336** — test „awaria zapisu kończy się błędem, a adres nie trafia do logu\" jest niefalsyfikowalny"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts:92",
+    "wiersz": "- [ ] 🟠 [P2] **apps/dashboard/src/features/settings/use-webhook-settings.ts:92** — gałąź błędu ODCZYTU `profiles` połyka błąd bez śladu (`setState({ status: 'er"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/settings/webhook-card.tsx:230",
+    "wiersz": "- [ ] 🟠 [P2] **apps/dashboard/src/features/settings/webhook-card.tsx:230** — błąd ZAPISU pokazuje komunikat o błędzie ODCZYTU: gałąź `controller.isWriteFailed` "
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql:41",
+    "wiersz": "- [ ] 🟠 [P2] **supabase/migrations/20260902190000_profiles_webhook_set_at.sql:41** — `add constraint profiles_webhook_set_at_pair_check ((webhook_url is null) ="
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/webhooks/settings-service.ts:100",
+    "wiersz": "- [ ] 🟠 [P2] **apps/server/src/webhooks/settings-service.ts:100** — nowy moduł 156 linii z logiką domenową i ZERO plików testowych (jedyny moduł w `apps/server/"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx:120",
+    "wiersz": "- [ ] 🟠 [P2] **apps/dashboard/src/features/settings/webhook-card.test.tsx:120** — ścieżka „Usuń webhook\" nie ma ani jednego testu, choć to jedyna droga wycofani"
+   }
+  ]
+ },
+ "781cdde65a": {
+  "raport": "docs/completed/faza-6-cta-i-webhooki/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/index.ts:241",
+    "wiersz": "### 1. 🟠 KOD — `apps/server/src/index.ts:241`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/webhooks/deliver.ts:214",
+    "wiersz": "### 2. 🟠 KOD — `apps/server/src/webhooks/deliver.ts:214`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/webhooks/worker.ts:2910",
+    "wiersz": "### 3. 🟠 KOD — `apps/server/src/webhooks/worker.ts:2910` (`processRow`, gałąź `webhookUrl === null`)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/webhooks/worker.ts:132",
+    "wiersz": "### 4. 🟠 KOD — `apps/server/src/webhooks/worker.ts:132`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/webhooks/queue-store.ts:222",
+    "wiersz": "2. 🔵 KOD — `apps/server/src/webhooks/queue-store.ts:222` — `loadJob` robi TRZY sekwencyjne round-tripy PostgREST na KAŻDĄ wiadomość (`offer_decisions` → `offers"
+   }
+  ]
+ },
+ "473192a0f1": {
+  "raport": "docs/completed/faza-6-cta-i-webhooki/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "packages/shared/src/index.ts:28",
+    "wiersz": "### [P2] [KOD] `packages/shared/src/index.ts:28` — cały `webhook-contract` wchodzi do bundla dashboardu"
+   },
+   {
+    "waga": "P2",
+    "plik": "packages/shared/src/webhook-contract.ts:76",
+    "wiersz": "### [P2] [KOD] `packages/shared/src/webhook-contract.ts:76` — rozjazd lustra Zod ↔ CHECK przy `HTTPS://`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260902140000_webhook_queue.sql:314",
+    "wiersz": "### [P2] [KOD] `supabase/migrations/20260902140000_webhook_queue.sql:314` — stan `pominiete` (D20) nigdy nie powstaje"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:1841",
+    "wiersz": "### [P2] [TEST] `supabase/tests/rls.test.ts:1841` — blokada `for update` w `record_offer_acceptance` bez testu"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260902120000_offer_decisions_and_webhook.sql:203",
+    "wiersz": "### [P2] [TEST] `supabase/migrations/20260902120000_offer_decisions_and_webhook.sql:203` — trzy CHECK-i bez testu granicznego"
+   }
+  ]
+ },
+ "1de5a4c260": {
+  "raport": "docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/static/c.js:151",
+    "wiersz": "#### 1. [P2/KOD] `apps/server/static/c.js:151` — 409 `oferta_wygasla` na zastanym dokumencie oferty gasi wszystkie komunikaty"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/cta/cta-script.test.ts:92",
+    "wiersz": "#### 2. [P2/TEST] `apps/server/src/cta/cta-script.test.ts:92` — brak scenariusza dla zastanego dokumentu oferty"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/main.tsx:75",
+    "wiersz": "#### 3. [P2/KOD] `apps/dashboard/src/main.tsx:75` — dynamiczny import `App` rozbija bundle na dwa szeregowe chunki"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/static/logo-aa-napis.webp",
+    "wiersz": "#### 4. [P2/KOD] `apps/server/static/logo-aa-napis.webp` — 79 788 B na znak renderowany jako 22 px"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:81",
+    "wiersz": "#### 5. [P2/KOD] `apps/dashboard/src/features/offers/offer-details-page.tsx:81` — pobranie do ~2 MB heatmapy, którą karta i tak wyrzuca"
+   }
+  ]
+ },
+ "49091e160d": {
+  "raport": "docs/completed/faza-7-szablony-i-grafiki/review-faza-4.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx:283",
+    "wiersz": "### P2-1 · KOD · `apps/dashboard/src/features/templates/template-assets-card.tsx:283`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx:193",
+    "wiersz": "### P2-2 · KOD · `apps/dashboard/src/features/templates/template-assets-card.tsx:193`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx:310",
+    "wiersz": "### P2-3 · KOD · `apps/dashboard/src/features/templates/template-assets-card.tsx:310`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.tsx:110",
+    "wiersz": "### P2-4 · KOD · `apps/dashboard/src/features/templates/template-assets-card.tsx:110`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/templates.ts:292",
+    "wiersz": "### P2-5 · TEST · `apps/server/src/routes/templates.ts:292`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/delete-template.ts:61",
+    "wiersz": "### P2-6 · KOD · `apps/server/src/offer/delete-template.ts:61`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/templates-api.test.ts:1",
+    "wiersz": "### P2-7 · TEST · `apps/dashboard/src/features/templates/templates-api.test.ts:1`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx:57",
+    "wiersz": "### P2-8 · TEST · `apps/dashboard/src/features/templates/template-assets-card.test.tsx:57`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx:1",
+    "wiersz": "### P2-9 · TEST · `apps/dashboard/src/features/templates/template-assets-card.test.tsx:1`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/asset-upload-state.ts:165",
+    "wiersz": "### P2-10 · KOD · `apps/dashboard/src/features/templates/asset-upload-state.ts:165`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-preview-card.tsx:72",
+    "wiersz": "### P2-11 · KOD · `apps/dashboard/src/features/templates/template-preview-card.tsx:72`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/templates-page.tsx:54",
+    "wiersz": "### P2-12 · KOD · `apps/dashboard/src/features/templates/templates-page.tsx:54`"
+   }
+  ]
+ },
+ "b5423898d3": {
+  "raport": "docs/completed/faza-7-szablony-i-grafiki/review-faza-3.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/corrective-stylesheet.ts:51",
+    "wiersz": "#### 2. [P2/KOD] `apps/server/src/offer/corrective-stylesheet.ts:51` — `font-size: 17px !important` zabija mobilny próg 16 px"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/validation.ts:68",
+    "wiersz": "#### 3. [P2/KOD] `apps/server/src/offer/validation.ts:68` — brak markera `class=\"doc\"` unieważnia cały arkusz korygujący"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/validation.ts:73",
+    "wiersz": "#### 4. [P2/KOD] `apps/server/src/offer/validation.ts:73` — `REQUIRED_MARKERS` nie wymaga `<script src=\"/c.js\">`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/template-repository.ts:217",
+    "wiersz": "#### 5. [P2/KOD] `apps/server/src/offer/template-repository.ts:217` — brak unikalnego indeksu na `(owner_id, name)`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/tools/usun-szablon.ts:83",
+    "wiersz": "#### 6. [P2/KOD] `apps/server/src/mcp/tools/usun-szablon.ts:83` — kaskada zostawia osierocone obiekty w Storage"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/tools/pobierz-szablon.ts:34",
+    "wiersz": "#### 7. [P2/KOD] `apps/server/src/mcp/tools/pobierz-szablon.ts:34` — moduł-liść `zapisz-szablon.ts` stał się hubem kontraktu błędów"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/template-layout-2.css:120",
+    "wiersz": "#### 8. [P2/KOD] `apps/server/src/offer/template-layout-2.css:120` — waga nagłówków 600 zamiast zamówionych 700"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/mcp/server.test.ts:89",
+    "wiersz": "#### 9. [P2/TEST] `apps/server/src/mcp/server.test.ts:89` — brak testu rejestracji i wiring-u trzech nowych narzędzi MCP"
+   }
+  ]
+ },
+ "bdade68b9e": {
+  "raport": "docs/completed/faza-7-szablony-i-grafiki/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:2483",
+    "wiersz": "#### 🟠 [P2/TEST] `supabase/tests/rls.test.ts:2483`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/tests/rls.test.ts:2596",
+    "wiersz": "#### 🟠 [P2/TEST] `supabase/tests/rls.test.ts:2596`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260903120000_offer_templates.sql:394",
+    "wiersz": "#### 🟠 [P2/TEST] `supabase/migrations/20260903120000_offer_templates.sql:394`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260903120000_offer_templates.sql:432",
+    "wiersz": "#### 🟠 [P2/KOD] `supabase/migrations/20260903120000_offer_templates.sql:432`"
+   },
+   {
+    "waga": "P2",
+    "plik": "supabase/migrations/20260903120000_offer_templates.sql:363",
+    "wiersz": "#### 🟠 [P2/KOD] `supabase/migrations/20260903120000_offer_templates.sql:363`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/tracking/visit-service.ts:353",
+    "wiersz": "#### 🟠 [P2/KOD] `apps/server/src/tracking/visit-service.ts:353` — brak zatrzasku (wydajność)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/tracking/visit-service.ts:353",
+    "wiersz": "#### 🟠 [P2/KOD] `apps/server/src/tracking/visit-service.ts:353` — brak deduplikacji zgłoszenia (poprawność)"
+   }
+  ]
+ },
+ "c74b9f92a4": {
+  "raport": "docs/completed/faza-7-szablony-i-grafiki/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/app.ts:241",
+    "wiersz": "#### 2. [P2 / KOD] `apps/server/src/app.ts:241`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/template-assets.ts:448",
+    "wiersz": "#### 3. [P2 / KOD] `apps/server/src/routes/template-assets.ts:448`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/template-assets.ts:318",
+    "wiersz": "#### 4. [P2 / KOD] `apps/server/src/routes/template-assets.ts:318`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/template-assets.ts:413",
+    "wiersz": "#### 5. [P2 / KOD] `apps/server/src/routes/template-assets.ts:413`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/offer-images.ts:176",
+    "wiersz": "#### 6. [P2 / KOD] `apps/server/src/routes/offer-images.ts:176`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/assets/asset-repository.ts:1",
+    "wiersz": "#### 7. [P2 / TEST] `apps/server/src/assets/asset-repository.ts:1`"
+   }
+  ]
+ },
+ "4b8b48d106": {
+  "raport": "docs/completed/faza-7-szablony-i-grafiki/review-faza-5.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/static/t.js:165",
+    "wiersz": "#### 2. [P2 / KOD] `apps/server/static/t.js:165`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/static/t.js:98",
+    "wiersz": "#### 3. [P2 / KOD] `apps/server/static/t.js:98`"
+   }
+  ]
+ },
+ "253d6bf7b5": {
+  "raport": "docs/completed/faza-8-connector-oauth-i-dashboard/review-faza-4.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "e2e/print-magic-link.ts:139",
+    "wiersz": "### 🟠 [P2/KOD] `e2e/print-magic-link.ts:139` — bramka `--redirect` do obejścia białym znakiem"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/oauth/texts.ts:34",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/oauth/texts.ts:34` — ekran zgody opisuje węższy zakres, niż faktycznie nadaje"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/oauth/texts.ts:83",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/oauth/texts.ts:83` — nazwa klienta rozwijana jako wzorzec `$` w `String.replace`"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/App.tsx:15",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/App.tsx:15` — publiczna trasa zgody ciągnie cały bundel panelu"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/settings/use-connected-apps.ts:150",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/settings/use-connected-apps.ts:150` — komunikat o awarii przykleja się do kolejnego okna potwierdzenia"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/oauth/use-consent.test.ts:345",
+    "wiersz": "### 🟠 [P2/TEST] `apps/dashboard/src/features/oauth/use-consent.test.ts:345` — brak testu ścieżki błędu decyzji o zgodzie"
+   }
+  ]
+ },
+ "e588d0c0e5": {
+  "raport": "docs/completed/faza-8-connector-oauth-i-dashboard/review-faza-6.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/reading-path.ts:161",
+    "wiersz": "### P2-06 · KOD · `apps/dashboard/src/features/offers/reading-path.ts:161` — ta sama sekcja naraz w kaflu NAJDŁUŻEJ i NIE CZYTAŁ"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/reading-path.ts:318",
+    "wiersz": "### P2-07 · KOD · `apps/dashboard/src/features/offers/reading-path.ts:318` — `describePath` powtarza cel powrotu, gdy ostatni przebieg ma jeden krok"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-map-card.tsx:71",
+    "wiersz": "### P2-08 · KOD · `apps/dashboard/src/features/offers/offer-map-card.tsx:71` — czas na pasku „przewinięta\" jest stałą, nie pomiarem"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-visits-list.tsx:104",
+    "wiersz": "### P2-09 · KOD · `apps/dashboard/src/features/offers/offer-visits-list.tsx:104` — wizyta z niepustą ścieżką po odsiewie obiecuje rozwinięcie, którego nie ma"
+   },
+   {
+    "waga": "P2",
+    "plik": "offer-visits-list.test.tsx:206",
+    "wiersz": "1. wiersz listy pokazuje `0 kroków ścieżki` — dokładnie ten napis, który test `offer-visits-list.test.tsx:206` nazywa kłamstwem i jawnie wyklucza dla wizyty bez"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/texts.ts:157",
+    "wiersz": "### P2-10 · KOD · `apps/dashboard/src/features/offers/texts.ts:157` — teksty „brak zapisu kolejności\" twierdzą, że wizyta JEST STARSZA (fałsz dla dwóch z trzech"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/texts.ts:119",
+    "wiersz": "### P2-11 · KOD · `apps/dashboard/src/features/offers/texts.ts:119` — wymaganie R13 (self-check wzorcami pisania) nie zostało wykonane"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/texts.ts:377",
+    "wiersz": "### P2-12 · KOD · `apps/dashboard/src/features/offers/texts.ts:377` — licznik nad tabelą rozpoznaje filtr po `shown === total`, nie po ustawieniu filtra"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offers-stats.tsx:64",
+    "wiersz": "### P2-13 · KOD · `apps/dashboard/src/features/offers/offers-stats.tsx:64` — kafle listy w 24 px zamiast zamówionych 22 px, a rozjazd domknięty fałszywym zdanie"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx:143",
+    "wiersz": "8. **`apps/dashboard/src/features/offers/offer-details-page.tsx:143`** (code-quality) — gałąź `if (newestVisit === undefined)` powtarza w całości blok pustego s"
+   }
+  ]
+ },
+ "48ce1a52aa": {
+  "raport": "docs/completed/faza-8-connector-oauth-i-dashboard/review-faza-5.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/texts.ts:487",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/templates/texts.ts:487` — dwie sprzeczne liczby sekcji w jednym zdaniu metryczki"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/assets/asset-repository.ts:213",
+    "wiersz": "### 🟠 [P2/KOD] `apps/server/src/assets/asset-repository.ts:213` — `created_at asc` + `limit 200` chowa NAJNOWSZE grafiki"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:150",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/templates/template-details-page.tsx:150` — „kliknąłem Układ 1, dostałem UKLAD-1”"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:226",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/templates/template-details-page.tsx:226` — inline'owy obiekt propa unieważnia memoizację podglądu"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-details-page.tsx:117",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/templates/template-details-page.tsx:117` — trzy żądania w szeregu zamiast dwóch równolegle"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/use-template-details.ts:114",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/templates/use-template-details.ts:114` — zapis metryczki zrzuca stan do `loading` i odmontowuje całe szczegóły"
+   },
+   {
+    "waga": "P2",
+    "plik": "template-assets-card.tsx",
+    "wiersz": "2. lecą od nowa lista, PEŁNY dokument i `GET .../grafiki`, bo karta grafik montuje się od zera i traci swój overlay (`template-assets-card.tsx` resetuje stan po"
+   },
+   {
+    "waga": "P2",
+    "plik": "template-assets-card.tsx:238",
+    "wiersz": "3. jeżeli w tle trwa wgrywanie grafiki, cleanup karty (`template-assets-card.tsx:238`) przerywa XHR w połowie — blokada „operacje nie mogą lecieć naraz” chroni "
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/templates.ts:12",
+    "wiersz": "### 🟠 [P2/KOD] `apps/server/src/routes/templates.ts:12` — warstwa tras HTTP importuje moduł narzędzia MCP"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-asset-path.tsx:56",
+    "wiersz": "### 🟠 [P2/KOD] `apps/dashboard/src/features/templates/template-asset-path.tsx:56` — ekran twierdzi naraz, że skopiowało się i że się nie udało"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx:443",
+    "wiersz": "### 🟠 [P2/TEST] `apps/dashboard/src/features/templates/template-assets-card.test.tsx:443` — asercja utrwala odwrotność zamówienia fazy"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/template-details-page.test.tsx:71",
+    "wiersz": "### 🟠 [P2/TEST] `apps/dashboard/src/features/templates/template-details-page.test.tsx:71` — fikstura luźniejsza niż realne dane przepuszcza rozjazd metryczki"
+   }
+  ]
+ },
+ "f3ee433811": {
+  "raport": "docs/completed/faza-9c-dokumenty-prawne/review-faza-2.md",
+  "p12": [
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/pages/terms-page.ts:112",
+    "wiersz": "1. 🟠 **[P2/KOD]** `apps/server/src/offer/pages/terms-page.ts:112` (źródło: security; sceptyk sugeruje P3)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/offer/pages/terms-page.ts:76",
+    "wiersz": "2. 🟠 **[P2/KOD]** `apps/server/src/offer/pages/terms-page.ts:76` (źródło: correctness; sceptyk sugeruje P3)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/offer-origin-pages.test.ts:117",
+    "wiersz": "3. 🟠 **[P2/TEST]** `apps/server/src/routes/offer-origin-pages.test.ts:117` (źródło: test-coverage)"
+   },
+   {
+    "waga": "P2",
+    "plik": "docs/MVP.md:290",
+    "wiersz": "- **Finding 1 (P2)** — obietnica „usunięcie konta z Ustawień\" zgodna z brzmieniem planu, ale niezgodna z kodem (funkcja przyszła, `docs/MVP.md:290`) — reguła „k"
+   }
+  ]
+ },
+ "6bfdb25751": {
+  "raport": "docs/completed/faza-9c-dokumenty-prawne/review-faza-1.md",
+  "p12": [
+   {
+    "waga": "P1",
+    "plik": "packages/shared/src/product-contract.ts:76",
+    "wiersz": "1. 🔴 **[P1/KOD]** `packages/shared/src/product-contract.ts:76` (źródło: spec-compliance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/app-origin-pages.ts:1081",
+    "wiersz": "2. 🟠 **[P2/KOD]** `apps/server/src/routes/app-origin-pages.ts:1081` (źródło: security)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/app-origin-pages.ts:171",
+    "wiersz": "3. 🟠 **[P2/KOD]** `apps/server/src/routes/app-origin-pages.ts:171` (źródło: performance; sceptyk sugeruje P3)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/dashboard/src/features/templates/texts.ts:233",
+    "wiersz": "4. 🟠 **[P2/KOD]** `apps/dashboard/src/features/templates/texts.ts:233` (źródło: spec-compliance)"
+   },
+   {
+    "waga": "P2",
+    "plik": "apps/server/src/routes/template-assets.ts:103",
+    "wiersz": "5. 🟠 **[P2/KOD]** `apps/server/src/routes/template-assets.ts:103` (źródło: test-coverage)"
+   }
+  ]
+ }
+}

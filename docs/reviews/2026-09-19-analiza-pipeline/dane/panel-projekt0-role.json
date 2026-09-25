@@ -1,0 +1,418 @@
+{
+ "nazwa": "projekt 0 (dzisiejszy pipeline, wf 2026-09-06)",
+ "role_koszt": [
+  {
+   "rola": "planner",
+   "analog": "planner",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "build",
+   "analog": "build",
+   "klasa": "builder",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": {
+    "per": "iu",
+    "x": 1
+   },
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "domkniecie",
+   "analog": "domkniecie",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "stan:zapis",
+   "analog": "stan:zapis",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 3,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "e2e:db-sync",
+   "analog": "e2e:db-sync",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "kontekst:diff",
+   "analog": "kontekst:diff",
+   "klasa": "mechaniczny",
+   "model": "opus",
+   "effort": "low",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "review:spec-compliance",
+   "analog": "review:spec-compliance",
+   "klasa": "reviewer",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "review:security",
+   "analog": "review:security",
+   "klasa": "reviewer",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "review:test-coverage",
+   "analog": "review:test-coverage",
+   "klasa": "reviewer",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "review:correctness",
+   "analog": "review:correctness",
+   "klasa": "reviewer",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "faza_z_kodem",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "review:performance",
+   "analog": "review:performance",
+   "klasa": "reviewer",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "faza_z_kodem",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "review:code-quality",
+   "analog": "review:code-quality",
+   "klasa": "reviewer",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "faza_z_kodem",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzis faza z kodem (warunek code-quality = plikiKodu>0); w danych 0,62 + 0,35 review:simplicity przed scaleniem"
+  },
+  {
+   "rola": "review:e2e",
+   "analog": "review:e2e",
+   "klasa": "tester",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1.38,
+   "warunek": "faza_z_e2e",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "tester tylko w fazach z [E2E] (albo figma_screens / fail-open); 0,69 na faze przy 0,50 faz z [E2E] -> 1,38 na taka faze (w tym retry)"
+  },
+  {
+   "rola": "dedup:semantyczny",
+   "analog": "dedup:semantyczny",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "verify-batch",
+   "analog": "verify-batch",
+   "klasa": "sceptyk",
+   "model": "opus",
+   "effort": "medium",
+   "wywolania_na_faze": {
+    "per": "finding",
+    "x": 0.163
+   },
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "grupy sceptykow na finding reviewerow: 4,35 na faze / 26,7 findingow"
+  },
+  {
+   "rola": "verify",
+   "analog": "verify",
+   "klasa": "sceptyk",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": {
+    "per": "finding",
+    "x": 0.039
+   },
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "grupy sceptykow na finding reviewerow: 1,04 na faze / 26,7 findingow"
+  },
+  {
+   "rola": "verify-fix",
+   "analog": "verify-fix",
+   "klasa": "sceptyk",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.15,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "scribe",
+   "analog": "scribe",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "fix",
+   "analog": "fix",
+   "klasa": "naprawiacz",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "fix:pre-skan",
+   "analog": "fix:pre-skan",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 0.96,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "fix:kontrola",
+   "analog": "fix:kontrola",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.96,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "fix:poprawka",
+   "analog": "fix:poprawka",
+   "klasa": "naprawiacz",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.69,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "zwin-do-poprawy",
+   "analog": "zwin-do-poprawy",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 0.96,
+   "warunek": "zawsze",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; liczba wywolan = srednia na faze unikalna z dane/panel-koszt.txt §1"
+  },
+  {
+   "rola": "stan:zapis@zadanie",
+   "analog": "stan:zapis",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 2.29,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "bootstrap",
+   "analog": "bootstrap",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1.71,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "telemetria",
+   "analog": "telemetria",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 1.71,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "e2e:precheck",
+   "analog": "e2e:precheck",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 1.71,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "warmup:vitest",
+   "analog": "warmup:vitest",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1.71,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "e2e:env-up",
+   "analog": "e2e:env-up",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1.71,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "walidacja-koncowa",
+   "analog": "walidacja-koncowa",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 1.43,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "stop",
+   "analog": "stop",
+   "klasa": "orkiestracyjny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 0.86,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "compound-refresh",
+   "analog": "compound-refresh",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.86,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "e2e:env-down",
+   "analog": "e2e:env-down",
+   "klasa": "mechaniczny",
+   "model": "haiku",
+   "effort": "brak (haiku)",
+   "wywolania_na_faze": 0.86,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "compound",
+   "analog": "compound",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.86,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "smoke-operatora",
+   "analog": "smoke-operatora",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.86,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  },
+  {
+   "rola": "complete",
+   "analog": "complete",
+   "klasa": "orkiestracyjny",
+   "model": "opus",
+   "effort": "sesja",
+   "wywolania_na_faze": 0.86,
+   "warunek": "raz_na_zadanie",
+   "mnoznik_tur": 1.0,
+   "uzasadnienie": "dzisiejszy pipeline; wywolania na zadanie z powtorkami runow po STOP (dane/panel-koszt.txt §1)"
+  }
+ ],
+ "bramki": [
+  {
+   "nazwa": "typecheck + testy + build w domknieciu (agent)",
+   "gdzie": "domkniecie fazy",
+   "sekundy": null,
+   "zrodlo": "dzis w agencie domkniecia, bez osobnego pomiaru"
+  }
+ ]
+}

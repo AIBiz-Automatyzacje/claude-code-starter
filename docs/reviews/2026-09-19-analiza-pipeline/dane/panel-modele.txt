@@ -1,0 +1,19 @@
+=== wf_43f84562-c04 (6e626ae3-0c0e-4109-a7de-41c88f9c0d9f) ===
+  projektant:B (opus-5-5, high)            model claude-opus-5-5        koszt   2.37 M  wywolania API  23  narzedzia  25
+  projektant:A (opus-5-5, high)            model claude-opus-5-5        koszt   1.55 M  wywolania API  23  narzedzia  26
+  projektant:C (opus-5-5, high)            model claude-opus-5-5        koszt   1.23 M  wywolania API  22  narzedzia  22
+  RAZEM 5.15 M jedn.
+=== wf_13ccd655-c60 (1bd5477f-5453-4ada-a68f-16ecfbeccaf1) ===
+  sedzia:S2 (opus-5-5, medium)             model claude-opus-5-5        koszt   0.54 M  wywolania API   4  narzedzia   4
+  sedzia:S1b (opus-5-5, medium)            model claude-opus-5-5        koszt   0.39 M  wywolania API   2  narzedzia   2
+  sedzia:S1a (opus-5-5, medium)            model claude-opus-5-5        koszt   0.40 M  wywolania API   5  narzedzia   5
+  sedzia:S3 (opus-5-5, medium)             model claude-opus-5-5        koszt   0.65 M  wywolania API   3  narzedzia   3
+  RAZEM 1.98 M jedn.
+=== wf_5d575d67-507 (1bd5477f-5453-4ada-a68f-16ecfbeccaf1) ===
+  sedzia:S3 (opus-5-5, high)               model claude-opus-5-5        koszt   0.57 M  wywolania API   4  narzedzia   4
+  sedzia:S1b (opus-5-5, high)              model claude-opus-5-5        koszt   0.51 M  wywolania API   4  narzedzia   4
+  sedzia:S2 (opus-5-5, high)               model claude-opus-5-5        koszt   0.71 M  wywolania API   6  narzedzia   6
+  sedzia:S1a (opus-5-5, high)              model claude-opus-5-5        koszt   0.55 M  wywolania API   6  narzedzia   6
+  RAZEM 2.34 M jedn.
+
+STOP (PANEL-PLAN §10): brak — wszyscy agenci na claude-opus-5-5, zero narzedzi zapisu

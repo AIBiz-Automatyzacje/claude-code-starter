@@ -1,0 +1,191 @@
+panel_pokrycie.py — profil pokrycia per projekt (run 2, sędzia: opus-5-5, medium)
+ocenionych przypadków 195 / 195; trudnych 28; błędów spójności 0
+
+=== 1. Kalibracja (projekt 0 = dzisiejszy pipeline; każdy przypadek przeszedł przez niego) ===
+  projekt 0: BRAMKA+LISTA 81 / 195 = 41.5% (próg 15%) -> PRZEKROCZONY: czytać próbkę 10 ocen kolumny 0 przed użyciem wyników (PANEL-PLAN §10)
+    S1a: 11/39 = 28.2% (etykieta kolumny 0: S)
+    S1b: 25/38 = 65.8% (etykieta kolumny 0: R)
+    S2: 11/57 = 19.3% (etykieta kolumny 0: Q)
+    S3: 34/61 = 55.7% (etykieta kolumny 0: P)
+  próbka do przeczytania (kolumna 0, BRAMKA/LISTA): B-01-13, B-14-14, B-02-45, B-14-19, B-14-23, B-02-27, B-10-44, B-08-162, B-09-30, B-10-55
+    B-01-13 [P2] Zwolnienie z rate-limitu oparte na naglowku Host kontrolowanym przez klienta
+      -> LISTA R0-SEC1 (niska): P27 'bramka (limit)... wektory obejścia' obejmuje zwolnienie z limitu po Host; nagłówek Host nie jest w przykładach.
+    B-14-14 [P3] Galaz pustego konta zawsze uzywa formy 'wlasnych' — psuje sie dla limitu 1 i 2-4.
+      -> LISTA R0-COR (niska): R25: przejście na „wartości granicznej” limitu 2–4 daje „miejsce na 2 własnych”; kryteria listy są ogólne.
+    B-02-45 [P2] Brak testu offers_html_size_check — jedynej bariery przed wysadzeniem cache
+      -> LISTA R0-SEC1 (srednia): Q27 dla każdej bramki (limit) sprawdza test odmowy; limit 2 MB bez testu CHECK_VIOLATION = finding TEST.
+    B-14-19 [P2] Nowy efekt resetuje isStoppedRef na false, zanim stara petla po zmianie templateId zobaczy stop.
+      -> LISTA R0-COR (niska): R25: „wyścig async… wartości użytej po zmianie znaczenia” obejmuje reset isStoppedRef przed wznowieniem starej pętli.
+    B-14-23 [P2] Staly 429 = nieskonczone ponowienia tego samego pliku, isBusy nigdy nie spada, usuwanie zablokowane.
+      -> LISTA R0-COR (niska): R25: przejście „pętli… ścieżki błędu” przy stałym 429 pokazuje nieskończone ponowienia; kryteria listy są ogólne.
+    B-02-27 [P3] maxEntries: 0 pozwala zapisac wpis ponad limit
+      -> LISTA R0-COR (niska): S25: przejdź ścieżki na 'wartość graniczna... off-by-one' — maxEntries: 0 w konstruktorze cache.
+    B-10-44 [P2] Warunek nie obejmuje dokladnej sciezki /api — zwraca index.html 200 zamiast koperty not_found (klasa '/api bez
+      -> LISTA R0-COR (niska): P25 'każda gałąź warunku... wartość graniczna, brakujący else' obejmuje GET /api bez ukośnika w dashboard.ts:149.
+    B-08-162 [P3] Skan zrodel bez normalizacji wielkosci liter przepusci inny zapis domeny
+      -> LISTA R0-SEC1 (niska): Q27 wektor „wielkość liter” dla każdej bramki; skan źródeł bez normalizacji go przepuści.
+    B-09-30 [P1] left(name,68)+' (duplikat 19)' = 82 znaki wobec limitu 80 — migracja konczy sie 23514 i blokuje db push.
+      -> LISTA R0-COR (niska): R25: przejście na „wartości granicznej, wartości spoza zakresu” obejmuje left(name,68)+sufiks; kryteria listy nie wymieniają constraintu kolumny.
+    B-10-55 [P2] deleteAsset kasuje wiersz przed storage.remove — po bledzie brak storage_path do ponowienia, obiekt osierocony
+      -> LISTA R0-COR (niska): R25: przejście „ścieżki błędu… przerwanie w połowie” obejmuje awarię storage.remove po usunięciu wiersza; kryteria listy są ogólne.
+
+=== 2. Profil pokrycia per projekt ===
+  wszystkie (195)
+    0: n 195  BRAMKA   0 LISTA  81 E2E  2 WIEDZA  20 PROBKI  0 MANDAT  85 NIE   7 | B+L  41.5%  +E2E  42.6%  +WIEDZA  52.8%
+    A: n 195  BRAMKA  20 LISTA 129 E2E  2 WIEDZA   1 PROBKI  0 MANDAT  37 NIE   6 | B+L  76.4%  +E2E  77.4%  +WIEDZA  77.9%
+    B: n 195  BRAMKA  15 LISTA 113 E2E  3 WIEDZA   1 PROBKI 30 MANDAT  27 NIE   6 | B+L  65.6%  +E2E  67.2%  +WIEDZA  67.7%
+    C: n 195  BRAMKA  19 LISTA 101 E2E  3 WIEDZA   3 PROBKI  0 MANDAT  34 NIE  35 | B+L  61.5%  +E2E  63.1%  +WIEDZA  64.6%
+  P1/P2 (132)
+    0: n 132  BRAMKA   0 LISTA  63 E2E  1 WIEDZA   8 PROBKI  0 MANDAT  57 NIE   3 | B+L  47.7%  +E2E  48.5%  +WIEDZA  54.5%
+    A: n 132  BRAMKA  13 LISTA  99 E2E  1 WIEDZA   0 PROBKI  0 MANDAT  17 NIE   2 | B+L  84.8%  +E2E  85.6%  +WIEDZA  85.6%
+    B: n 132  BRAMKA  10 LISTA  92 E2E  1 WIEDZA   0 PROBKI 17 MANDAT  10 NIE   2 | B+L  77.3%  +E2E  78.0%  +WIEDZA  78.0%
+    C: n 132  BRAMKA  14 LISTA  82 E2E  1 WIEDZA   2 PROBKI  0 MANDAT  14 NIE  19 | B+L  72.7%  +E2E  73.5%  +WIEDZA  75.0%
+  ogon (klasy niewidoczne dla projektantów) (27)
+    0: n  27  BRAMKA   0 LISTA  13 E2E  2 WIEDZA   0 PROBKI  0 MANDAT  10 NIE   2 | B+L  48.1%  +E2E  55.6%  +WIEDZA  55.6%
+    A: n  27  BRAMKA   2 LISTA  12 E2E  2 WIEDZA   0 PROBKI  0 MANDAT  10 NIE   1 | B+L  51.9%  +E2E  59.3%  +WIEDZA  59.3%
+    B: n  27  BRAMKA   1 LISTA  10 E2E  2 WIEDZA   0 PROBKI 11 MANDAT   2 NIE   1 | B+L  40.7%  +E2E  48.1%  +WIEDZA  48.1%
+    C: n  27  BRAMKA   1 LISTA   6 E2E  2 WIEDZA   0 PROBKI  0 MANDAT   4 NIE  14 | B+L  25.9%  +E2E  33.3%  +WIEDZA  33.3%
+  ogon P1/P2 (14)
+    0: n  14  BRAMKA   0 LISTA   6 E2E  1 WIEDZA   0 PROBKI  0 MANDAT   5 NIE   2 | B+L  42.9%  +E2E  50.0%  +WIEDZA  50.0%
+    A: n  14  BRAMKA   2 LISTA   5 E2E  1 WIEDZA   0 PROBKI  0 MANDAT   5 NIE   1 | B+L  50.0%  +E2E  57.1%  +WIEDZA  57.1%
+    B: n  14  BRAMKA   1 LISTA   6 E2E  1 WIEDZA   0 PROBKI  5 MANDAT   0 NIE   1 | B+L  50.0%  +E2E  57.1%  +WIEDZA  57.1%
+    C: n  14  BRAMKA   1 LISTA   4 E2E  1 WIEDZA   0 PROBKI  0 MANDAT   1 NIE   7 | B+L  35.7%  +E2E  42.9%  +WIEDZA  42.9%
+  wrzesień (PR 13–19) (39)
+    0: n  39  BRAMKA   0 LISTA  15 E2E  0 WIEDZA   7 PROBKI  0 MANDAT  17 NIE   0 | B+L  38.5%  +E2E  38.5%  +WIEDZA  56.4%
+    A: n  39  BRAMKA   5 LISTA  28 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   6 NIE   0 | B+L  84.6%  +E2E  84.6%  +WIEDZA  84.6%
+    B: n  39  BRAMKA   5 LISTA  26 E2E  0 WIEDZA   0 PROBKI  1 MANDAT   7 NIE   0 | B+L  79.5%  +E2E  79.5%  +WIEDZA  79.5%
+    C: n  39  BRAMKA   4 LISTA  21 E2E  0 WIEDZA   1 PROBKI  0 MANDAT  13 NIE   0 | B+L  64.1%  +E2E  64.1%  +WIEDZA  66.7%
+
+  per oś-właściciel:
+  code-quality (12)
+    0: n  12  BRAMKA   0 LISTA   1 E2E  0 WIEDZA   7 PROBKI  0 MANDAT   4 NIE   0 | B+L   8.3%  +E2E   8.3%  +WIEDZA  66.7%
+    A: n  12  BRAMKA   4 LISTA   5 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   3 NIE   0 | B+L  75.0%  +E2E  75.0%  +WIEDZA  75.0%
+    B: n  12  BRAMKA   2 LISTA   5 E2E  0 WIEDZA   0 PROBKI  2 MANDAT   3 NIE   0 | B+L  58.3%  +E2E  58.3%  +WIEDZA  58.3%
+    C: n  12  BRAMKA   2 LISTA   3 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   7 NIE   0 | B+L  41.7%  +E2E  41.7%  +WIEDZA  41.7%
+  correctness (77)
+    0: n  77  BRAMKA   0 LISTA  36 E2E  0 WIEDZA   2 PROBKI  0 MANDAT  39 NIE   0 | B+L  46.8%  +E2E  46.8%  +WIEDZA  49.4%
+    A: n  77  BRAMKA   0 LISTA  57 E2E  0 WIEDZA   0 PROBKI  0 MANDAT  20 NIE   0 | B+L  74.0%  +E2E  74.0%  +WIEDZA  74.0%
+    B: n  77  BRAMKA   0 LISTA  46 E2E  0 WIEDZA   0 PROBKI 20 MANDAT  11 NIE   0 | B+L  59.7%  +E2E  59.7%  +WIEDZA  59.7%
+    C: n  77  BRAMKA   5 LISTA  36 E2E  0 WIEDZA   2 PROBKI  0 MANDAT  17 NIE  17 | B+L  53.2%  +E2E  53.2%  +WIEDZA  55.8%
+  domkniecie/kontrola-fixa (2)
+    0: n   2  BRAMKA   0 LISTA   1 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   1 | B+L  50.0%  +E2E  50.0%  +WIEDZA  50.0%
+    A: n   2  BRAMKA   2 LISTA   0 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L 100.0%  +E2E 100.0%  +WIEDZA 100.0%
+    B: n   2  BRAMKA   2 LISTA   0 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L 100.0%  +E2E 100.0%  +WIEDZA 100.0%
+    C: n   2  BRAMKA   2 LISTA   0 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L 100.0%  +E2E 100.0%  +WIEDZA 100.0%
+  e2e (4)
+    0: n   4  BRAMKA   0 LISTA   3 E2E  1 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L  75.0%  +E2E 100.0%  +WIEDZA 100.0%
+    A: n   4  BRAMKA   0 LISTA   3 E2E  1 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L  75.0%  +E2E 100.0%  +WIEDZA 100.0%
+    B: n   4  BRAMKA   0 LISTA   2 E2E  2 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L  50.0%  +E2E 100.0%  +WIEDZA 100.0%
+    C: n   4  BRAMKA   0 LISTA   2 E2E  2 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   0 | B+L  50.0%  +E2E 100.0%  +WIEDZA 100.0%
+  performance (8)
+    0: n   8  BRAMKA   0 LISTA   6 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   2 NIE   0 | B+L  75.0%  +E2E  75.0%  +WIEDZA  75.0%
+    A: n   8  BRAMKA   1 LISTA   5 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   2 NIE   0 | B+L  75.0%  +E2E  75.0%  +WIEDZA  75.0%
+    B: n   8  BRAMKA   1 LISTA   5 E2E  0 WIEDZA   0 PROBKI  2 MANDAT   0 NIE   0 | B+L  75.0%  +E2E  75.0%  +WIEDZA  75.0%
+    C: n   8  BRAMKA   1 LISTA   2 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   1 NIE   4 | B+L  37.5%  +E2E  37.5%  +WIEDZA  37.5%
+  security (38)
+    0: n  38  BRAMKA   0 LISTA  25 E2E  1 WIEDZA   7 PROBKI  0 MANDAT   3 NIE   2 | B+L  65.8%  +E2E  68.4%  +WIEDZA  86.8%
+    A: n  38  BRAMKA   4 LISTA  27 E2E  1 WIEDZA   1 PROBKI  0 MANDAT   3 NIE   2 | B+L  81.6%  +E2E  84.2%  +WIEDZA  86.8%
+    B: n  38  BRAMKA   1 LISTA  26 E2E  1 WIEDZA   1 PROBKI  6 MANDAT   1 NIE   2 | B+L  71.1%  +E2E  73.7%  +WIEDZA  76.3%
+    C: n  38  BRAMKA   0 LISTA  27 E2E  1 WIEDZA   1 PROBKI  0 MANDAT   1 NIE   8 | B+L  71.1%  +E2E  73.7%  +WIEDZA  76.3%
+  spec (15)
+    0: n  15  BRAMKA   0 LISTA   3 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   8 NIE   4 | B+L  20.0%  +E2E  20.0%  +WIEDZA  20.0%
+    A: n  15  BRAMKA   0 LISTA  10 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   1 NIE   4 | B+L  66.7%  +E2E  66.7%  +WIEDZA  66.7%
+    B: n  15  BRAMKA   0 LISTA  10 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   1 NIE   4 | B+L  66.7%  +E2E  66.7%  +WIEDZA  66.7%
+    C: n  15  BRAMKA   0 LISTA   9 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   0 NIE   6 | B+L  60.0%  +E2E  60.0%  +WIEDZA  60.0%
+  test-coverage (39)
+    0: n  39  BRAMKA   0 LISTA   6 E2E  0 WIEDZA   4 PROBKI  0 MANDAT  29 NIE   0 | B+L  15.4%  +E2E  15.4%  +WIEDZA  25.6%
+    A: n  39  BRAMKA   9 LISTA  22 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   8 NIE   0 | B+L  79.5%  +E2E  79.5%  +WIEDZA  79.5%
+    B: n  39  BRAMKA   9 LISTA  19 E2E  0 WIEDZA   0 PROBKI  0 MANDAT  11 NIE   0 | B+L  71.8%  +E2E  71.8%  +WIEDZA  71.8%
+    C: n  39  BRAMKA   9 LISTA  22 E2E  0 WIEDZA   0 PROBKI  0 MANDAT   8 NIE   0 | B+L  79.5%  +E2E  79.5%  +WIEDZA  79.5%
+
+  per rodzina (B+L% per projekt 0/A/B/C):
+    test-niefalsyfikowalny                 (39)  0  15%  A  79%  B  72%  C  79%
+    cykl-zycia-wspolbieznosc               (33)  0  48%  A  64%  B  58%  C  42%
+    sciezka-bledu                          (20)  0  40%  A  85%  B  70%  C  70%
+    bramka-czarna-lista                    (15)  0  87%  A  93%  B  87%  C  87%
+    tekst-ui                               (12)  0  17%  A  67%  B  67%  C  58%
+    kontrakt-duplikacja                    (10)  0  40%  A  90%  B  70%  C  60%
+    pii-sekret-w-bledzie                   (10)  0  30%  A  60%  B  60%  C  60%
+    parser-regexem                         ( 9)  0  33%  A 100%  B 100%  C 100%
+    walidacja-granicy                      ( 7)  0  57%  A 100%  B  43%  C  71%
+    ogon:wartosc-graniczna                 ( 5)  0 100%  A 100%  B  80%  C   0%
+    granica-wartosci-migracja              ( 4)  0  50%  A 100%  B  50%  C  50%
+    brak-timeoutu                          ( 3)  0 100%  A 100%  B 100%  C 100%
+    seed-vs-kontrakt                       ( 3)  0 100%  A 100%  B  67%  C  67%
+    spojnosc-dwoch-systemow                ( 2)  0  50%  A 100%  B 100%  C   0%
+    ogon:zaufanie-naglowkowi               ( 2)  0 100%  A 100%  B 100%  C 100%
+    ogon:kodowanie-uri                     ( 1)  0   0%  A   0%  B   0%  C 100%
+    ogon:konkatenacja-sql                  ( 1)  0 100%  A 100%  B 100%  C   0%
+    ogon:minimum-privileges                ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:falszywy-alarm-walidatora         ( 1)  0   0%  A 100%  B 100%  C 100%
+    ogon:niespojnosc-transportow           ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:komentarz-rozmija-sie-z-kodem     ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:round-trip-auth                   ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:kolejnosc-middleware              ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:walidacja-tekstu                  ( 1)  0 100%  A 100%  B 100%  C 100%
+    ogon:kolejnosc-rolloutu                ( 1)  0   0%  A 100%  B 100%  C 100%
+    ogon:wymaga-przegladarki               ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:cache-naglowki                    ( 1)  0 100%  A   0%  B   0%  C   0%
+    ogon:zrodlo-czasu                      ( 1)  0 100%  A 100%  B   0%  C   0%
+    ogon:grant-niepelny                    ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:naglowki-bezpieczenstwa           ( 1)  0 100%  A   0%  B   0%  C   0%
+    ogon:kontrakt-diagnostyki              ( 1)  0 100%  A 100%  B   0%  C 100%
+    ogon:porownanie-zbiorami               ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:zamkniecie-procesu                ( 1)  0   0%  A   0%  B   0%  C   0%
+    dokument-sterujacy                     ( 1)  0   0%  A 100%  B 100%  C 100%
+    ogon:zaszyta-domena                    ( 1)  0   0%  A   0%  B   0%  C   0%
+    ogon:cache-bez-inwalidacji             ( 1)  0   0%  A 100%  B 100%  C   0%
+
+=== 3. Kontrola pozycji etykiety (permutacja pełna: każdy projekt raz na P/Q/R/S) ===
+  P: ocen 195, B+L 64.1%
+  Q: ocen 195, B+L 49.7%
+  R: ocen 195, B+L 68.7%
+  S: ocen 195, B+L 62.6%
+
+=== 4. Mechanizmy najczęściej rozstrzygające B+L (per projekt, top 8) ===
+  0: R0-COR 38, R0-SEC1 23, R0-SEM 8, R0-CQ2 5, R0-TST1 3, R0-SEC3 2, R0-SEC2 1, R0-PK 1
+  A: L-COR-8 17, L-SEC-1 11, L-COR-9 10, L-COR-3 9, G16 9, L-COR-2 8, L-TST-2 7, L-SPC-5 6
+  B: C-06 14, S-01 14, C-11 11, B-17 9, C-03 8, C-02 8, T-03 6, T-01 5
+  C: L-C6 17, L-S1 15, G-17 9, L-C3 8, L-T1 8, L-C2 7, L-S3 5, L-T4 5
+
+=== 5. Przypadki, w których projekty się różnią (B+L w jednym, nie w innym) — materiał dla sceptyków ===
+  44 przypadków; B+L tylko w jednym projekcie A/B/C:
+    tylko A: 14 (P1/P2 8): B-02-41, B-03-64, B-03-68, B-04-88, B-04-96, B-04-97, B-07-134, B-08-179, B-09-35, B-09-37, B-10-58, B-12-88, B-14-11, B-16-60
+    tylko B: 0 (P1/P2 0): 
+    tylko C: 4 (P1/P2 2): B-03-60, B-04-105, B-04-107, B-07-143
+  żaden projekt A/B/C nie ma B+L: 42 (P1/P2 18)
+
+=== 7. Wariant ścisły (BRAMKA dowolna + LISTA z pewnością średnią; LISTA niska = MANDAT) — informacyjnie ===
+  wszystkie (195): 0   8.7%  A  54.9%  B  47.7%  C  38.5%
+  P1/P2 (132): 0  12.1%  A  65.2%  B  56.8%  C  45.5%
+  kolumna 0, LISTA per mechanizm: R0-COR 38, R0-SEC1 23, R0-SEM 8, R0-CQ2 5, R0-TST1 3, R0-SEC3 2, R0-SEC2 1, R0-PK 1
+
+=== 6. Trudne przypadki (28) ===
+  S1a B-03-55: Defekt ma dwie części: void IIFE (R04 odpala dzięki ignoreVoid: false) oraz zignorowany error z wyniku signOut, którego żadna bramka nie łapie. P01 i Q02 z domyślnym ignoreVoid nie odpalają.
+  S1a B-07-143: Pierwotny kod to 'void monitoring.flush(...).then(...)'. Bramki no-floating-promises bez ignoreVoid: false (P01, Q02) go pomijają, R04 łapie. Wynik zależy od ustawienia domyślnego ESLint.
+  S1a B-08-179: Nie jest pewne, czy react-hooks/refs lub immutability (P02, Q03, R05) wykrywa mutację refa wewnątrz updatera setState. Przyjąłem, że nie.
+  S1a B-04-88: Bot sam ocenia obecne ryzyko jako zerowe (Trivial). To raczej uwaga projektowa o symetrii bramek niż defekt kodu.
+  S1a B-02-36: P10 (Literal x-forwarded-for) odpaliłby na debug.ts, ale z innego powodu niż entryCount, więc nie liczyłem go jako BRAMKA.
+  S1a B-04-107: R27 zaliczone jako LISTA niska, bo parser tekstu ma regex (replace). Sam defekt to brak dekodowania URI, nie regex. To przypadek graniczny między LISTA a NIE.
+  S1b B-09-31: To uwaga o utrzymaniu kodu (duplikacja logiki), a nie defekt zachowania; o tym, czy wynik to WIEDZA czy MANDAT, rozstrzyga ogólna reguła DRY.
+  S1b B-10-57: Chodzi o błędną obietnicę w komunikacie 503 i skutek ponowienia. Listy o ponowieniach i o await pasują tylko częściowo, a lista tekstów ma warunek UI.
+  S1b B-16-60: Sprawdziłem plik: error.code jest typowany jako string, więc bramki typów milczą. Defekt ujawnia się tylko przy odpowiedzi niezgodnej z typem.
+  S1b B-15-48: Nie ustaliłem, czy rawTextNameAt używa regexu, czy ręcznego dopasowania. Od tego zależy, czy P27 i Q27 w ogóle się uruchamiają.
+  S1b B-17-91: Opis bota wskazuje delete-account-card.tsx, a nie plik z przypadku. Operacją jest zamknięcie dialogu (stan UI), więc listy „wszystkie drogi” pasują tylko częściowo.
+  S1b B-09-18: Ogólna lista R25 w katalogu R była liczona jako LISTA niska przy ścieżkach błędu i współbieżności. Ta granica LISTA/MANDAT jest dyskusyjna i dotyczy wielu przypadków.
+  S2 B-01-18: Defekt dotyczy opisu testu i konfiguracji proxy, nie kodu wprost; listy nagłówków (P30/R47/S39) trafiają w readClientKey tylko pośrednio.
+  S2 B-08-166: Brak testu przeglądarkowego to nie defekt kodu; E2E wykryje tylko ewentualny realny overflow, którego istnienia przypadek nie potwierdza.
+  S2 B-04-97: Defekt to komentarz seeda; E2E i listy semantyki pól łapią go tylko, jeśli asercja E2E opiera się na komentarzu.
+  S2 B-02-41: Gałąź nieosiągalna semantycznie: Stryker da NoCoverage, a nie przeżyty mutant, więc bramka nie odpala; listy gałęzi tylko pośrednio.
+  S2 B-05-111: Na podstawie historii kodu przyjęto catch { return null } (niepusty); no-empty wtedy nie odpala, odpalają tylko selektory CatchClause.
+  S2 B-09-16: Q22 wymieni pusty catch, ale jego brzmienie mówi „nie findingi”; kryterium daje dopiero mandatowa checklista Q40, stąd LISTA niska.
+  S2 B-09-20: Bramki z.object (P09/S10) mają warunek server/**; nie wiadomo, czy glob obejmuje apps/server/**/*.test.ts, więc przyjęto listę.
+  S3 B-03-54: Defekt w makiecie .design (plik HTML projektu), a nie w kodzie aplikacji; żaden katalog nie obejmuje makiet.
+  S3 B-04-102: Brak kolumny w grancie ujawnia się tylko w działaniu; ocena E2E zależy od tego, czy checkbox [E2E] fazy otwiera widok szczegółów oferty.
+  S3 B-14-9: Tekst pochodził verbatim z zatwierdzonego planu, więc defekt siedzi w specyfikacji; listy tekstów sprawdzają obiecaną czynność, a nie przypisanie przyczyny.
+  S3 B-01-16: Spór o politykę maskowania (częściowa maska kontra pełna redakcja), a nie jednoznaczny błąd; mechanizmy wiedzy wymagają maskowania, ale nie określają jego stopnia.
+  S3 B-12-87: Defekt dokumentacji archiwalnego szablonu, a nie kodu; wszystkie kolumny NIE.
+  S3 B-12-89: Niespójność liczb w README, a nie defekt kodu.
+  S3 B-12-90: PII w dokumentacji wersjonowanej; nie jest to defekt kodu i nie obejmuje go żadna lista.
+  S3 B-19-147: Wynik R09 (selektor dziecka '>') zależy od tego, czy error.message jest bezpośrednim argumentem konstruktora; nie zweryfikowano wersji kodu z PR.
+  S3 B-01-17: Q10 odpala, o ile readClientKey w app.ts nie jest jedynym plikiem wyłączonym z reguły.

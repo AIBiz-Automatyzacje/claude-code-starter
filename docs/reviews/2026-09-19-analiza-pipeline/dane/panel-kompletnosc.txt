@@ -1,0 +1,30 @@
+panel_kompletnosc.py — panel-run1-projekty.json
+--- projekt A ---
+  decyzje 12, wymogi 16, zalozenia 8, elementy 14, katalog 92 {'bramka': 24, 'lista': 42, 'e2e': 2, 'wiedza': 13, 'sceptyk': 2, 'kontrola-fixa': 8, 'mandat': 1}, role 38, warstwa stala 7 klas, wdrozenie 8 iteracji, ryzyka 8, niewiadome 9
+  konflikty ze szkieletem: 3
+    - D12 (2): finding wymagający nowej ścieżki idzie do IU następnej fazy, a przy ostatniej fazie do dodatkowej fazy N+1 z własnym review. To review nowego kodu, nie powtórka na tym samym kodzie, więc §2 pkt 9–10 w brzmieniu 
+    - Dossier 'w JS': JS nie ma powłoki (PANEL-WEJSCIE §12), więc komendy wykonuje istniejący agent domknięcia. Agent kontekst:diff znika zgodnie z §2a/§6, ale to nie jest czysty JS.
+    - Usunięcie verify-fix (0,15 wywołania/fazę, panel-koszt.txt §1): zastępuje go K-6 (test P1 pada na commicie sprzed poprawki). §2 pkt 7 wymaga testu, nie osobnego weryfikatora; zmiana spoza listy §2a.
+  BRAKI: brak
+  do przeczytania (slowa kluczowe nie trafily): zalozenia -; elementy -
+--- projekt B ---
+  decyzje 12, wymogi 16, zalozenia 8, elementy 14, katalog 84 {'bramka': 21, 'lista': 42, 'e2e': 1, 'wiedza': 3, 'kontrola-fixa': 8, 'probki': 4, 'sceptyk': 2, 'mandat': 3}, role 39, warstwa stala 15 klas, wdrozenie 6 iteracji, ryzyka 10, niewiadome 12
+  konflikty ze szkieletem: 5
+    - §2 pkt 7 („DISAGREE_CONCERN nie kasuje, obniża wagę”) — w B skutek CONCERN zależy od głosów: sporadyczny spada do P3, zgodny zostaje P1/P2 z adnotacją „niska waga”. Jeśli operator czyta „obniża wagę” jako zawsze −1 pozio
+    - PANEL-PLAN §1 D1 opis B („correctness+testy” jako oś skrajna) vs precedens §1 pkt 2 — rozstrzygnięte na korzyść precedensu: test-coverage nie jest próbkowany ani wchłonięty; zapisuję jawnie, bo zmienia to kształt archite
+    - §2a ETAP1/ETAP2 „dedup ZOSTAW” — B zmienia rolę dedupu na agregator zgodności (ETAP2 §2 przewiduje to wprost: „ma sens tylko, jeśli etap 4 wybierze n równoległych próbek”); ten sam agent haiku, bez nowego agenta — konfli
+    - §2 pkt 9 („sufit jednego cyklu w fix:kontrola zostaje”) — B uruchamia DWIE równoległe próbki kontroli w tym samym cyklu, wynik = suma regresji do jednej fix:poprawki; to nie jest dodatkowa runda ani cykl, ale zmienia lic
+    - §2a ETAP1 „roster 6 → 5” — B zachowuje 5 osi, ale correctness i security mają po 3 agentów; liczba OSI zgodna, liczba agentów review na fazę rośnie (ok. 6,2 → 9,4 wywołania bez testera).
+  BRAKI: brak
+  do przeczytania (slowa kluczowe nie trafily): zalozenia -; elementy -
+--- projekt C ---
+  decyzje 12, wymogi 16, zalozenia 8, elementy 14, katalog 69 {'bramka': 21, 'lista': 31, 'wiedza': 7, 'sceptyk': 1, 'kontrola-fixa': 7, 'e2e': 2}, role 24, warstwa stala 8 klas, wdrozenie 8 iteracji, ryzyka 10, niewiadome 10
+  konflikty ze szkieletem: 4
+    - ETAP1 §1 / §2a „dedup ZOSTAW”: w C agent dedup:semantyczny (haiku, 1 na fazę) znika, zastępuje go łączenie w JS po (plik, |Δlinia| ≤ 3, soczewka). Uzasadnienie z tego samego źródła: §2a/ETAP2 §2 — rola dedup „zagreguj i 
+    - ETAP1 §1 / §2a „roster 6 → 5” i „correctness własny plik agenta”, „security prompt 191 → ~90 linii”: C zachowuje soczewki correctness, security, spec i code-quality, ale jako bloki jednego promptu w jednym pliku klasy re
+    - ETAP1 §1 „e2e:db-sync” (dziś zawsze 1 na fazę) — w C tylko w fazach z migracją (0,27): środowisko E2E dostaje migracje przy env-up na starcie runu, db-sync ma sens tylko dla migracji dodanej w fazie. Nie jest twardym wej
+    - §2 pkt 3 (budżet < 150) vs architektura C: jedyny reviewer niesie cztery soczewki, więc jest najbliżej limitu (46 pozycji w projekcie) — mieści się, ale scalenie review:testy jako bloku (iteracja 9) podniesie go do ~62; 
+  BRAKI: brak
+  do przeczytania (slowa kluczowe nie trafily): zalozenia -; elementy -
+
+KOMPLETNE: A, B, C | NIEKOMPLETNE: -
