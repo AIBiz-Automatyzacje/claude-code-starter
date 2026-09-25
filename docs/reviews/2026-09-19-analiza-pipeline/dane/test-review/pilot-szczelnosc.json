@@ -1,0 +1,88 @@
+{
+ "fazy": [
+  {
+   "et": "f-b26128d",
+   "podsumowanie": {
+    "agentow": 49,
+    "model": 0,
+    "przeciek": 0,
+    "zapis": 0,
+    "n1": 0
+   },
+   "kopia": "bez zmian",
+   "uwagi": []
+  },
+  {
+   "et": "f-2634b67",
+   "podsumowanie": {
+    "agentow": 45,
+    "model": 0,
+    "przeciek": 0,
+    "zapis": 0,
+    "n1": 0
+   },
+   "kopia": "bez zmian",
+   "uwagi": [
+    "wf_9057886f-734 dedup:semantyczny: agent haiku wołał narzędzia ['Bash']"
+   ]
+  },
+  {
+   "et": "f-f3ee433",
+   "podsumowanie": {
+    "agentow": 33,
+    "model": 0,
+    "przeciek": 0,
+    "zapis": 0,
+    "n1": 0
+   },
+   "kopia": "bez zmian",
+   "uwagi": []
+  },
+  {
+   "et": "f-b26128d-r2",
+   "podsumowanie": {
+    "agentow": 55,
+    "model": 0,
+    "przeciek": 0,
+    "zapis": 0,
+    "n1": 0
+   },
+   "kopia": "bez zmian",
+   "uwagi": [
+    "wf_d99aeb26-436 dedup:semantyczny: agent haiku wołał narzędzia ['Read']"
+   ]
+  },
+  {
+   "et": "x-411a434",
+   "podsumowanie": {
+    "agentow": 8,
+    "model": 0,
+    "przeciek": 0,
+    "zapis": 0,
+    "n1": 0
+   },
+   "kopia": "bez zmian",
+   "uwagi": [
+    "wf_be6a70e0-7ba fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']"
+   ]
+  },
+  {
+   "et": "x-05dd804",
+   "podsumowanie": {
+    "agentow": 8,
+    "model": 0,
+    "przeciek": 0,
+    "zapis": 0,
+    "n1": 0
+   },
+   "kopia": "bez zmian",
+   "uwagi": [
+    "wf_2378f069-236 fix:pre-skan:faza-1: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff 05dd804^..HEAD | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+    "wf_2378f069-236 fix:pre-skan:faza-1: agent haiku wołał narzędzia ['Bash']"
+   ]
+  }
+ ],
+ "twarde_razem": 0,
+ "uwag_razem": 5,
+ "stan_po_linii": 20
+}

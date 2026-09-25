@@ -1,0 +1,15 @@
+{
+ "etykieta": "f-b26128d-r2",
+ "podsumowanie": {
+  "agentow": 55,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_d99aeb26-436 dedup:semantyczny: agent haiku wołał narzędzia ['Read']"
+ ]
+}

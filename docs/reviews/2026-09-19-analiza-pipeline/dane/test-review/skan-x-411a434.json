@@ -1,0 +1,15 @@
+{
+ "etykieta": "x-411a434",
+ "podsumowanie": {
+  "agentow": 8,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_be6a70e0-7ba fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

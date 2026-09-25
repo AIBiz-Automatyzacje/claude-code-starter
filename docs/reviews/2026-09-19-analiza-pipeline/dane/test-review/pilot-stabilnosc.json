@@ -1,0 +1,135 @@
+{
+ "klucze_wspolne": 13,
+ "obecne_w_obu": 11,
+ "obecnosc_zgodna": 12,
+ "warianty": {
+  "0": {
+   "findingow": [
+    24,
+    25
+   ],
+   "szum": [
+    16,
+    16
+   ],
+   "szum_P1P2": [
+    6,
+    6
+   ],
+   "szeroko": {
+    "oba": 7,
+    "tylko_f-b26128d": 0,
+    "tylko_f-b26128d-r2": 1,
+    "zlapane": [
+     7,
+     8
+    ]
+   },
+   "pelne": {
+    "oba": 3,
+    "tylko_f-b26128d": 2,
+    "tylko_f-b26128d-r2": 1,
+    "zlapane": [
+     5,
+     4
+    ]
+   }
+  },
+  "A": {
+   "findingow": [
+    21,
+    30
+   ],
+   "szum": [
+    19,
+    30
+   ],
+   "szum_P1P2": [
+    16,
+    19
+   ],
+   "szeroko": {
+    "oba": 5,
+    "tylko_f-b26128d": 3,
+    "tylko_f-b26128d-r2": 2,
+    "zlapane": [
+     8,
+     7
+    ]
+   },
+   "pelne": {
+    "oba": 5,
+    "tylko_f-b26128d": 3,
+    "tylko_f-b26128d-r2": 2,
+    "zlapane": [
+     8,
+     7
+    ]
+   }
+  },
+  "B": {
+   "findingow": [
+    28,
+    27
+   ],
+   "szum": [
+    46,
+    42
+   ],
+   "szum_P1P2": [
+    32,
+    33
+   ],
+   "szeroko": {
+    "oba": 9,
+    "tylko_f-b26128d": 0,
+    "tylko_f-b26128d-r2": 1,
+    "zlapane": [
+     9,
+     10
+    ]
+   },
+   "pelne": {
+    "oba": 7,
+    "tylko_f-b26128d": 0,
+    "tylko_f-b26128d-r2": 2,
+    "zlapane": [
+     7,
+     9
+    ]
+   }
+  },
+  "C": {
+   "findingow": [
+    33,
+    24
+   ],
+   "szum": [
+    46,
+    37
+   ],
+   "szum_P1P2": [
+    28,
+    27
+   ],
+   "szeroko": {
+    "oba": 7,
+    "tylko_f-b26128d": 0,
+    "tylko_f-b26128d-r2": 1,
+    "zlapane": [
+     7,
+     8
+    ]
+   },
+   "pelne": {
+    "oba": 7,
+    "tylko_f-b26128d": 0,
+    "tylko_f-b26128d-r2": 1,
+    "zlapane": [
+     7,
+     8
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,21 @@
+sesja 0c4f9585: narzędzia sesji ['Workflow']
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia  22
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  18
+sesja 1c4064eb: narzędzia sesji ['Workflow']
+  sedzia:x-411a434:p1[medium]                  claude-opus-5-5            narzędzia   4
+sesja 67b86a89: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia  17
+sesja 8661f2e7: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia  19
+sesja 98e6a893: narzędzia sesji ['Workflow']
+  fix:kontrola:faza-2                          claude-opus-5-5            narzędzia   7
+  fix:pre-skan:faza-2                          claude-haiku-4-5-20251001  narzędzia  23  (uwaga)
+sesja bd3c89cb: narzędzia sesji ['Workflow']
+  sedzia:x-411a434:p2[medium]                  claude-opus-5-5            narzędzia   4
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (1):
+  wf_be6a70e0-7ba fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 8, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 1
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

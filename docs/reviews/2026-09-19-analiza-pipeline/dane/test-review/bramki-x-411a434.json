@@ -1,0 +1,203 @@
+{
+ "etykieta": "x-411a434",
+ "sha": "411a43405a9a48978b51707015ec2a2ca4ff858f",
+ "baza": "b26128d294e58550f351432465b140a2059a2a1d",
+ "modul_fixa": true,
+ "pliki": 13,
+ "pliki_kodu": 10,
+ "pliki_ts": [
+  "apps/server/src/app.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/routes/events.test.ts",
+  "apps/server/src/routes/events.ts",
+  "apps/server/src/tracking/visit-service.test.ts",
+  "apps/server/src/tracking/visit-service.ts",
+  "packages/shared/src/env.test.ts",
+  "packages/shared/src/env.ts",
+  "scripts/dockerfile-invariants.test.ts",
+  "supabase/tests/rls.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 5.3,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-411a434/scripts/dockerfile-invariants.test.ts was not fou",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-411a434/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 454,
+     "regula": "max-lines",
+     "opis": "File has too many lines (385). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 391,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 460,
+     "regula": "max-lines",
+     "opis": "File has too many lines (361). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 263,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 22,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-411a434/scripts/dockerfile-invariants.test.ts was not fou",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-411a434/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 454,
+     "regula": "max-lines",
+     "opis": "File has too many lines (385). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 391,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 460,
+     "regula": "max-lines",
+     "opis": "File has too many lines (361). Maximum allowed is 360."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 21,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-411a434/scripts/dockerfile-invariants.test.ts was not fou",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-411a434/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.5,
+   "trafienia": [],
+   "zastane": 55,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 454,
+     "regula": "max-lines",
+     "opis": "File has too many lines (385). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 391,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 460,
+     "regula": "max-lines",
+     "opis": "File has too many lines (361). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 263,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 454,
+     "regula": "max-lines",
+     "opis": "File has too many lines (385). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 391,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 460,
+     "regula": "max-lines",
+     "opis": "File has too many lines (361). Maximum allowed is 360."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  }
+ }
+}

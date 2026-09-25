@@ -1,0 +1,16 @@
+{
+ "etykieta": "x-05dd804",
+ "podsumowanie": {
+  "agentow": 8,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_2378f069-236 fix:pre-skan:faza-1: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff 05dd804^..HEAD | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_2378f069-236 fix:pre-skan:faza-1: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

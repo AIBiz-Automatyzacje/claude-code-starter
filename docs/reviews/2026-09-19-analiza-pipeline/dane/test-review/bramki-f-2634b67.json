@@ -1,0 +1,2540 @@
+{
+ "etykieta": "f-2634b67",
+ "sha": "2634b6770a6fa4018d67a3c3dbeb19b89d91632c",
+ "baza": "b06604d",
+ "modul_fixa": false,
+ "pliki": 47,
+ "pliki_kodu": 11,
+ "pliki_ts": [
+  "apps/server/src/index.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/server.ts",
+  "apps/server/src/mcp/token-service.test.ts",
+  "apps/server/src/mcp/token-service.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+  "packages/shared/src/env.test.ts",
+  "packages/shared/src/env.ts",
+  "scripts/dockerfile-invariants.test.ts",
+  "supabase/tests/rls.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 4.8,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 110,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseMcpTokenResolver' has too many lines (91). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 2,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2634b67/scripts/dockerfile-invariants.test.ts was not fou",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2634b67/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async function 'buildAppWithMcp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 81,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 253,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 274,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 337,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 363,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 299,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 72,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUserById' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 92,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'generateLink' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 109,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'verifyOtp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 176,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 110,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseMcpTokenResolver' has too many lines (91). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 135,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 16,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2634b67/scripts/dockerfile-invariants.test.ts was not fou",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2634b67/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async function 'buildAppWithMcp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 81,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 253,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 274,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 337,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 363,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 299,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 72,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUserById' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 92,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'generateLink' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 109,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'verifyOtp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 176,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 110,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseMcpTokenResolver' has too many lines (91). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 18,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2634b67/scripts/dockerfile-invariants.test.ts was not fou",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2634b67/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.5,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ],
+   "zastane": 41
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/server/src/mcp/token-service.ts": 251,
+    "apps/server/src/mcp/server.ts": 120,
+    "packages/shared/src/env.ts": 20
+   },
+   "pliki_A": [
+    "apps/server/src/mcp/token-service.ts",
+    "apps/server/src/mcp/server.ts",
+    "packages/shared/src/env.ts"
+   ],
+   "wyniki": {
+    "apps/server": {
+     "status": "uruchomiona",
+     "sekundy": 9.3,
+     "statusy": {
+      "NoCoverage": 24,
+      "Killed": 90,
+      "Survived": 48
+     },
+     "przezyte": [
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 362,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 303,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 314,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 303,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 317,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 317,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 318,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 362,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 373,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+      },
+      {
+       "plik": "apps/server/src/mcp/server.ts",
+       "linia": 47,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 103,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 103,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 103,
+       "regula": "stryker/EqualityOperator",
+       "opis": "NoCoverage: EqualityOperator → typeof session.expires_in !== 'number'"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 103,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 103,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 104,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "NoCoverage: ArithmeticOperator → nowMs - session.expires_in * MILLISECONDS_PER_SECOND"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 104,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "NoCoverage: ArithmeticOperator → session.expires_in / MILLISECONDS_PER_SECOND"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 107,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 144,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 145,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 151,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 174,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 175,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 180,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 181,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 194,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 197,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 197,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 197,
+       "regula": "stryker/EqualityOperator",
+       "opis": "NoCoverage: EqualityOperator → oldest.done !== true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 197,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "NoCoverage: BooleanLiteral → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 197,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 201,
+       "regula": "stryker/CallExpression",
+       "opis": "NoCoverage: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 29,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 45,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 53,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 99,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 118,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 119,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 119,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 119,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 129,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 130,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 131,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 144,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → (email === undefined || email === null) && email.length === 0"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → email === undefined && email === null"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 150,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 154,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 155,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 160,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 165,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 166,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 166,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 166,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 170,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 169,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 174,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 180,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 193,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 194,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 194,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → sessions.size >= MAX_CACHED_SESSIONS"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 211,
+       "regula": "stryker/ArrowFunction",
+       "opis": "Survived: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 213,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 213,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → cached.expiresAtMs >= now() + SESSION_REFRESH_MARGIN_MS"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 222,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 228,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/mcp/token-service.ts",
+       "linia": 234,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      }
+     ]
+    },
+    "packages/shared": {
+     "status": "uruchomiona",
+     "sekundy": 1.9,
+     "statusy": {
+      "Killed": 3,
+      "Survived": 1
+     },
+     "przezyte": [
+      {
+       "plik": "packages/shared/src/env.ts",
+       "linia": 182,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 110,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseMcpTokenResolver' has too many lines (91). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 362,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 303,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 314,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 303,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 317,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 317,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 318,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 362,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 373,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → typeof session.expires_in !== 'number'"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 104,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → nowMs - session.expires_in * MILLISECONDS_PER_SECOND"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 104,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → session.expires_in / MILLISECONDS_PER_SECOND"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 144,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 145,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 151,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 175,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 180,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 181,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → oldest.done !== true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 201,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 45,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 99,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 118,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 129,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 144,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → (email === undefined || email === null) && email.length === 0"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → email === undefined && email === null"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 154,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 155,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 160,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 165,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 170,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 169,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 180,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 193,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → sessions.size >= MAX_CACHED_SESSIONS"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 211,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 213,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 213,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → cached.expiresAtMs >= now() + SESSION_REFRESH_MARGIN_MS"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 222,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 228,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 234,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "packages/shared/src/env.ts",
+     "linia": 182,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async function 'buildAppWithMcp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 81,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 253,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 274,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 337,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 363,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 299,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 72,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUserById' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 92,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'generateLink' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 109,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'verifyOtp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 176,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 110,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseMcpTokenResolver' has too many lines (91). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 135,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 362,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 303,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 314,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 303,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 317,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 317,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 318,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 362,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 373,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → typeof session.expires_in !== 'number'"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 104,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → nowMs - session.expires_in * MILLISECONDS_PER_SECOND"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 104,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → session.expires_in / MILLISECONDS_PER_SECOND"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 144,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 145,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 151,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 175,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 180,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 181,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → oldest.done !== true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 201,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 45,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 99,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 118,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 129,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 144,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → (email === undefined || email === null) && email.length === 0"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → email === undefined && email === null"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 154,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 155,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 160,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 165,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 170,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 169,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 180,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 193,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → sessions.size >= MAX_CACHED_SESSIONS"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 211,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 213,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 213,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → cached.expiresAtMs >= now() + SESSION_REFRESH_MARGIN_MS"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 222,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 228,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 234,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "packages/shared/src/env.ts",
+     "linia": 182,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async function 'buildAppWithMcp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 81,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 253,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 274,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 337,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 363,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 299,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/no-unsafe-argument",
+     "opis": "Unsafe argument of type `Context<BlankEnv, \"/mcp\", any>` assigned to a parameter of type `Context<any, any, {}>`."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 72,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUserById' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 92,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'generateLink' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 109,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'verifyOtp' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "linia": 176,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 110,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseMcpTokenResolver' has too many lines (91). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 362,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 303,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 314,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 303,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 317,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 317,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 318,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 362,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 373,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → typeof session.expires_in !== 'number'"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 103,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 104,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → nowMs - session.expires_in * MILLISECONDS_PER_SECOND"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 104,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → session.expires_in / MILLISECONDS_PER_SECOND"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 144,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 145,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 151,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 175,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 180,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 181,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → oldest.done !== true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 197,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 201,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 45,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 99,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 118,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 119,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 129,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 144,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → (email === undefined || email === null) && email.length === 0"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → email === undefined && email === null"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 154,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 155,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 160,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 165,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 170,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 169,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 180,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 193,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 194,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → sessions.size >= MAX_CACHED_SESSIONS"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 211,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 213,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 213,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → cached.expiresAtMs >= now() + SESSION_REFRESH_MARGIN_MS"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 222,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 228,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 234,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "packages/shared/src/env.ts",
+     "linia": 182,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 150,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 28,
+     "regula": "knip/exports",
+     "opis": "exports: hashMcpToken"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: McpTokenLookupError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: McpSessionMintError"
+    },
+    {
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "linia": 32,
+     "regula": "knip/types",
+     "opis": "types: McpTokenIdentity"
+    }
+   ]
+  }
+ }
+}

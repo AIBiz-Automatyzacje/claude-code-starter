@@ -1,0 +1,3595 @@
+{
+ "etykieta": "f-f3ee433",
+ "sha": "f3ee4338118c609fdc1a05115c718cec0b730fb5",
+ "baza": "05dd804",
+ "modul_fixa": false,
+ "pliki": 21,
+ "pliki_kodu": 15,
+ "pliki_ts": [
+  "apps/server/src/index.ts",
+  "apps/server/src/offer/aa-pages.test.ts",
+  "apps/server/src/offer/pages/app-privacy-page.test.ts",
+  "apps/server/src/offer/pages/app-privacy-page.ts",
+  "apps/server/src/offer/pages/legal-document.test.ts",
+  "apps/server/src/offer/pages/legal-document.ts",
+  "apps/server/src/offer/pages/privacy-page.ts",
+  "apps/server/src/offer/pages/terms-attachment.ts",
+  "apps/server/src/offer/pages/terms-page.test.ts",
+  "apps/server/src/offer/pages/terms-page.ts",
+  "apps/server/src/routes/app-origin-pages.test.ts",
+  "apps/server/src/routes/app-origin-pages.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "packages/shared/src/index.ts",
+  "packages/shared/src/product-contract.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.5,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 2,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.test.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (95). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "linia": 43,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 7,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.test.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (95). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "linia": 43,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 8,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ],
+   "zastane": 229
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/server/src/offer/pages/app-privacy-page.ts": 178,
+    "apps/server/src/offer/pages/terms-page.ts": 165,
+    "apps/server/src/routes/app-origin-pages.ts": 61,
+    "apps/server/src/offer/pages/legal-document.ts": 172
+   },
+   "pliki_A": [
+    "apps/server/src/offer/pages/app-privacy-page.ts",
+    "apps/server/src/offer/pages/legal-document.ts",
+    "apps/server/src/offer/pages/terms-page.ts"
+   ],
+   "wyniki": {
+    "apps/server": {
+     "status": "uruchomiona",
+     "sekundy": 35.8,
+     "statusy": {
+      "Killed": 141,
+      "Survived": 139
+     },
+     "przezyte": [
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 53,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 54,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 55,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 56,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 62,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 63,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 64,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 68,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 74,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 75,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 79,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 80,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 86,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 90,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 95,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 96,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 97,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 98,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 104,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 105,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 106,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 107,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 114,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 121,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 124,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 131,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 133,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 134,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 135,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 141,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 142,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+       "linia": 150,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 72,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 73,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 74,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 75,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 76,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 77,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 78,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 79,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 80,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 81,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 82,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 83,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 84,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 85,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 86,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 87,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 88,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 89,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 90,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 91,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 92,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 93,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 94,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 95,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 96,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 97,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 98,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 99,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 106,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 107,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 108,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 109,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 113,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 136,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 155,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 157,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 158,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 162,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 163,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 165,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 164,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 166,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 169,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 170,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/legal-document.ts",
+       "linia": 69,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)/g"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 33,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 35,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 34,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 36,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 37,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 38,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 39,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 40,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 45,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 46,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 47,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 48,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 49,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 50,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 51,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 52,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 53,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 54,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 55,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 56,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 62,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 68,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 69,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 74,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 75,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 77,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 76,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 78,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 79,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 80,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 81,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 82,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 87,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 88,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 89,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 90,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 91,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 92,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 93,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 99,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 100,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 101,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 103,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 105,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 106,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 112,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 114,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 115,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 116,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 117,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 122,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 123,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 124,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 129,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 130,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 131,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 132,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 138,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 137,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 139,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 140,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/pages/terms-page.ts",
+       "linia": 141,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 54,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 56,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 62,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 64,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 95,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 96,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 104,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 105,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 121,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 124,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 133,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 134,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 135,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 141,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 150,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 72,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 73,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 76,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 77,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 78,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 83,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 84,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 85,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 87,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 88,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 89,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 94,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 95,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 96,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 108,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 109,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 113,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 155,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 157,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 158,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 162,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 163,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 165,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 164,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 166,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 169,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 170,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 69,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)/g"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 33,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 35,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 34,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 37,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 38,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 40,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 45,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 46,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 48,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 49,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 51,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 54,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 56,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 62,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 69,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 74,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 77,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 76,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 78,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 87,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 88,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 89,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 100,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 101,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 103,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 105,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 112,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 115,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 116,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 117,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 122,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 123,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 124,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 129,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 132,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 138,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 137,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 139,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 140,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 141,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.test.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (95). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "linia": 43,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 54,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 56,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 62,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 64,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 95,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 96,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 104,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 105,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 121,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 124,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 133,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 134,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 135,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 141,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 150,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 72,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 73,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 76,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 77,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 78,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 83,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 84,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 85,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 87,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 88,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 89,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 94,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 95,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 96,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 108,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 109,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 113,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 155,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 157,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 158,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 162,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 163,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 165,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 164,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 166,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 169,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 170,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 69,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)/g"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 33,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 35,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 34,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 37,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 38,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 40,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 45,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 46,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 48,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 49,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 51,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 54,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 56,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 62,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 69,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 74,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 77,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 76,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 78,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 87,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 88,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 89,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 100,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 101,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 103,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 105,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 112,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 115,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 116,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 117,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 122,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 123,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 124,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 129,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 132,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 138,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 137,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 139,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 140,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 141,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.test.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (95). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "linia": 43,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 54,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 56,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 62,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 64,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 95,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 96,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 104,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 105,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 121,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 124,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 133,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 134,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 135,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 141,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/app-privacy-page.ts",
+     "linia": 150,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 72,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 73,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 76,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 77,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 78,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 83,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 84,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 85,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 87,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 88,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 89,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 94,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 95,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 96,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 107,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 108,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 109,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 113,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 155,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 157,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 158,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 162,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 163,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 165,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 164,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 166,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 169,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 170,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/legal-document.ts",
+     "linia": 69,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)/g"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 33,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 35,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 34,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 37,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 38,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 40,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 45,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 46,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 48,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 49,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 51,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 54,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 56,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 62,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 69,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 74,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 77,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 76,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 78,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 80,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 87,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 88,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 89,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 100,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 101,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 103,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 105,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 106,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 112,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 115,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 116,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 117,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 122,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 123,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 124,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 129,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 131,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 132,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 138,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 137,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 139,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 140,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "linia": 141,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/pages/terms-attachment.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: TERMS_ATTACHMENT_HEADING"
+    }
+   ]
+  }
+ }
+}

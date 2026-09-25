@@ -1,0 +1,516 @@
+Prompty wariantu 0 (dzisiejszy dev-docs-review-wf.js z HEAD szablonu, ucięty przed Verify) — wyrenderowane atrapą bez modeli dla fazy 2 zadania faza-4-tracking-i-widok-oferty.
+Mapa zmian packagera (kontekst) zastąpiona znacznikami <…> — w teście wypełnia ją prawdziwy agent kontekst:diff. Reviewerzy z agentType (security-sentinel, performance-oracle, architecture-strategist, spec-compliance-reviewer) dostają dodatkowo prompt systemowy ze swojego pliku .claude/agents/*.md (bez zmian).
+
+
+##### kontekst:diff | model sesji (claude-opus-5-5) | effort low
+Jestes context-packagerem review fazy 2 (docs/active/faza-4-tracking-i-widok-oferty). Zbuduj WSPOLNA mape zmian dla reviewerow,
+zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam git diff).
+
+1. Ustal zakres zmian fazy 2: `git diff --stat` zmian tej fazy. Jesli faza ma osobne commity — diff od bazy fazy;
+   jak nie da sie wyodrebnic — uzyj diff vs main/origin/main.
+2. Zrzuc PELNY diff DOKLADNIE tego samego zakresu do pliku /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff — Bash, przekierowaniem powloki:
+   `git diff <ten sam zakres co w kroku 1> > /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff`
+   Tresc diffu ma NIGDY nie przejsc przez Twoja odpowiedz (to Twoje tokeny wyjsciowe) — tylko przekierowanie.
+   Potem `wc -c < /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff`. Gdy rozmiar > 307200 B, przytnij i oznacz uciecie:
+   `head -c 307200 /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff > /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff.tmp && mv /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff.tmp /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff && printf '\n%s\n' '=== DIFF PRZYCIETY (limit 300 KB) — dalsza czesc zmian fazy NIE jest w tym pliku ===' >> /tmp/review-diff-docs-active-faza-4-tracking-i-widok-oferty-faza-2.diff`
+   Zwroc METADANE: diffPlik (sciezka albo "" gdy zrzut sie nie udal), diffZapisany (plik powstal i jest niepusty),
+   diffUciety (czy przycinales). Nieudany zrzut NIE jest bledem krytycznym — ustaw diffZapisany=false i lec dalej.
+3. Dla kazdego zmienionego pliku podaj jednolinijkowe "czego dotyczy" (np. "nowy hook useLobbyData — fetch + realtime").
+4. Ustal 4 FLAGI WARSTW (ui / dane / typowanie / nowyModul — opisy w schemacie). Oceniaj po TRESCI zmian,
+   nie po nazwie katalogu: projekt bez src/ tez ma warstwe danych, a plik .mjs z petla INSERT to "dane".
+   `typowanie` = sa pliki .ts/.tsx w diffie ALBO w korzeniu repo istnieje tsconfig.json (sprawdz).
+   Flagi decyduja, ktorzy reviewerzy sie odpala — pomylka w gore (true) jest tania, w dol (false) gubi reviewera.
+5. Policz `e2eCheckboxy`: niezaznaczone checkboxy `[E2E]` fazy 2 w docs/active/faza-4-tracking-i-widok-oferty/*-zadania.md — z OBU prefiksow
+   (`Test: [E2E] ...` ORAZ `Weryfikacja: [E2E] ...`; grep `^- \[ \].*\[E2E\]` z wykluczeniem kopii `Operator:` i pozycji findingow `[P1]/[P2]/[P3]` z "Do poprawy"). To scenariusze wymagajace
+   przegladarki (agent-browser). CLI (`test`/`typecheck`/`grep`) i `[Manual]` nie licz.
+6. Ustal `figmaScreens`: w docs/active/faza-4-tracking-i-widok-oferty/*-kontekst.md, sekcja "Designerski kontekst", pole `figma_screens`.
+   true tylko wtedy, gdy pole istnieje i ma co najmniej jeden wpis ekran -> sciezka mockupu; puste/null/brak = false.
+   To DRUGA praca testera obok checkboxow: visual diff z makietami odpala sie z tego pola, nie z checkboxa,
+   wiec bez tej flagi faza z makietami a bez `[E2E]` stracilaby porownanie z mockupem.
+7. ZBUDUJ DOSSIER FAZY -> /tmp/review-ctx-docs-active-faza-4-tracking-i-widok-oferty-faza-2.md. To najwiekszy pojedynczy oszczednik w tym workflow: dotad KAZDY
+   z osmiu reviewerow czytal dokument wymagan (dziesiatki KB), caly plan techniczny i learned-patterns.md.
+   Ty i tak czytasz te zrodla, wiec przepisz z nich RAZ wylacznie to, co dotyczy fazy 2.
+   Wycinaj `grep -n` na naglowku + `Read` z offsetem i limitem — nigdy nie czytaj calych plikow do odpowiedzi.
+   Sklad pliku, dokladnie te cztery sekcje i w tej kolejnosci:
+
+   ```
+   # Dossier fazy 2 — docs/active/faza-4-tracking-i-widok-oferty
+
+   ## Plan techniczny — sekcja fazy
+   [sekcja `### Faza 2` z planu technicznego (sciezka z "Zrodla" w docs/active/faza-4-tracking-i-widok-oferty/*-plan.md),
+    ciecie od tego naglowka do nastepnego naglowka tego samego poziomu, w calosci i bez parafrazy]
+
+   ## Sledzenie wymagan — wiersze tej fazy
+   [wylacznie te wiersze tabeli "Sledzenie wymagan" z planu technicznego, ktorych ID przywoluja
+    jednostki implementacyjne tej fazy; naglowek tabeli zostaw, reszte wierszy pomin]
+
+   ## Reguly projektu (learned-patterns.md)
+   [.claude/rules/learned-patterns.md w CALOSCI, bez skracania; gdy pliku nie ma — "Brak pliku."]
+
+   ## Zadania i kontekst designerski fazy
+   [sekcja `## Faza 2` z docs/active/faza-4-tracking-i-widok-oferty/*-zadania.md w calosci (checkboxy razem z prefiksami)
+    + pole `figma_screens` z sekcji "Designerski kontekst" w docs/active/faza-4-tracking-i-widok-oferty/*-kontekst.md]
+   ```
+
+   Tresc przepisuj DOSLOWNIE — to ma zastapic czytanie zrodel, wiec parafraza albo skrot cicho odbiera
+   reviewerom fakty. Zwroc ctxPlik (sciezka albo "" gdy zapis sie nie udal) i ctxZapisany (plik powstal
+   i jest niepusty). Nieudany zapis NIE jest bledem krytycznym: ustaw ctxZapisany=false i lec dalej —
+   reviewerzy wroca wtedy do czytania pelnych dokumentow.
+8. PRE-SKAN MECHANICZNY (grep, nie ocena). W liniach DODANYCH przez diff tej fazy znajdz dwa wzorce:
+   - `pusty-catch`: `catch {}` albo `catch (e) {}` — takze z bialymi znakami i nowa linia miedzy klamrami,
+   - `then-bez-catch`: plik, w ktorym pojawilo sie `.then(`, a w CALYM tym pliku nie ma ani jednego `.catch(`.
+   Zwroc liste {wzorzec, plik} z numerem linii w polu plik. Zero trafien to poprawny wynik ([]).
+   NIE oceniaj, czy to defekt — od tego sa reviewerzy; Ty tylko wskazujesz miejsca.
+Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, figmaScreens, diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, preSkan}.
+
+##### review:security | model sesji (claude-opus-5-5) | effort sesji (high)
+Jestes reviewerem fazy 2 w folderze docs/active/faza-4-tracking-i-widok-oferty.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Skup sie na: auth, RLS policies, XSS, data exposure, Zod validation, API key exposure.
+Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+<git diff --stat fazy>
+- apps/server/src/<plik fazy>.ts — <czego dotyczy — packager>
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-<sciezka>-faza-N.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-<sciezka>-faza-N.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+##### review:performance | model sesji (claude-opus-5-5) | effort sesji (high)
+Jestes reviewerem fazy 2 w folderze docs/active/faza-4-tracking-i-widok-oferty.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Skup sie na: N+1 queries, bundle size, lazy loading, memoization, useEffect cleanup.
+Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+<git diff --stat fazy>
+- apps/server/src/<plik fazy>.ts — <czego dotyczy — packager>
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-<sciezka>-faza-N.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-<sciezka>-faza-N.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+##### review:code-quality | model sesji (claude-opus-5-5) | effort sesji (high)
+Jestes reviewerem fazy 2 w folderze docs/active/faza-4-tracking-i-widok-oferty.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Skup sie na: jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych.
+Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+<git diff --stat fazy>
+- apps/server/src/<plik fazy>.ts — <czego dotyczy — packager>
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-<sciezka>-faza-N.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-<sciezka>-faza-N.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+##### review:correctness | model sesji (claude-opus-5-5) | effort sesji (high)
+Jestes reviewerem fazy 2 w folderze docs/active/faza-4-tracking-i-widok-oferty.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Skup sie na: POPRAWNOSC WYKONANIA — jedyna os, ktorej nikt inny nie ma. Nie oceniasz stylu, struktury ani typow: masz ZNALEZC DEFEKT, ktory w tym kodzie JEST. Procedura: wypisz sciezki wykonania zmienione w tej fazie (kazda galaz warunku, kazda petla, kazda sciezka bledu), potem przejdz KAZDA z nich krok po kroku na konkretnych danych wejsciowych — wartosc graniczna, pusta kolekcja, null, wartosc spoza zakresu, dwa rownolegle wywolania, przerwanie w polowie. Szukaj: off-by-one, odwrocony warunek, brakujaca galaz else, stan czytany przed zapisem, wyscig miedzy async operacjami, cleanup ktory nie odpala, wartosc uzyta po zmianie znaczenia. Kazdy finding MUSI miec scenariusz awarii: konkretne wejscie -> co sie stanie -> dlaczego to zle. Bez takiego scenariusza to nie jest finding poprawnosci.
+Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+<git diff --stat fazy>
+- apps/server/src/<plik fazy>.ts — <czego dotyczy — packager>
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-<sciezka>-faza-N.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-<sciezka>-faza-N.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+##### review:spec-compliance | model sesji (claude-opus-5-5) | effort sesji (high)
+Jestes reviewerem fazy 2 w folderze docs/active/faza-4-tracking-i-widok-oferty.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Skup sie na: zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow.
+Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
+Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
+
+=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
+OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
+danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
+oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== KONIEC BLOKU GRANIC ZAUFANIA ===
+=== SEMANTYKA I JEDNOSTKI POL (obowiazkowe, gdy faza tyka danych liczbowych/czasowych) ===
+Kod wewnetrznie spojny moze byc jednolicie BLEDNY: jesli fixture i implementacja przyjmuja to samo zle
+zalozenie o znaczeniu pola, testy przechodza, a produkt liczy zle.
+
+PROCEDURA (wykonaj ja, nie streszczaj):
+1. Wypisz pola liczbowe/czasowe dotkniete faza i dla KAZDEGO uruchom
+   `grep -rn "<nazwa_pola>" --include=*.ts --include=*.tsx --include=*.sql .` — masz zobaczyc WSZYSTKIE
+   uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
+2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
+   -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly `numeric` bez komentarza), NIE zgaduj
+   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
+   "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
+3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
+   RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
+   przeglad kodu nie daje takiej pewnosci jak realna liczba.
+
+Co sprawdzasz w kazdym uzyciu:
+- kwoty: calosc vs per-osoba vs per-jednostke; grosze vs zlote; brutto vs netto,
+- czas: sekundy vs milisekundy; UTC vs lokalny; timestamp vs data,
+- indeksy i skale: miesiac 0- vs 1-based; procenty jako 0..1 vs 0..100; licznik vs suma,
+- liczebnosci: liczba graczy vs liczba druzyn vs liczba miejsc.
+Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
+testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
+Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
+UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
+uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
+wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
+=== KONIEC BLOKU SEMANTYKI ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+<git diff --stat fazy>
+- apps/server/src/<plik fazy>.ts — <czego dotyczy — packager>
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-<sciezka>-faza-N.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-<sciezka>-faza-N.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+##### review:test-coverage | model sesji (claude-opus-5-5) | effort sesji (high)
+Jestes testerem scenariuszy/coverage dla fazy 2 w docs/active/faza-4-tracking-i-widok-oferty.
+Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.
+Sprawdz: happy path, invalid inputs, boundary conditions, concurrent operations, scale.
+Test coverage: czy plan techniczny definiowal scenariusze testowe dla tej fazy (sekcja "Plan techniczny"
+dossier, a bez dossier — docs/plans/) i czy pliki testowe istnieja oraz maja asercje? Brakujace testy = P2 (typ TEST).
+Zwroc {findings:[...]} (severity P1/P2/P3, typ KOD/TEST/E2E/OPERATOR). Nie zapisuj plikow.
+
+=== DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
+(1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
+(2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
+(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
+    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+REGULY:
+- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+  Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
+  (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
+- NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
+- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
+  traktuj jako ZIMNY (pelna procedura tla powyzej).
+- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
+  wiec chroni WARM suite'y w oknie 180-600s.
+  NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
+  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
+  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
+  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+  Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
+=== KONIEC BLOKU DLUGICH KOMEND ===
+=== SEMANTYKA I JEDNOSTKI POL (obowiazkowe, gdy faza tyka danych liczbowych/czasowych) ===
+Kod wewnetrznie spojny moze byc jednolicie BLEDNY: jesli fixture i implementacja przyjmuja to samo zle
+zalozenie o znaczeniu pola, testy przechodza, a produkt liczy zle.
+
+PROCEDURA (wykonaj ja, nie streszczaj):
+1. Wypisz pola liczbowe/czasowe dotkniete faza i dla KAZDEGO uruchom
+   `grep -rn "<nazwa_pola>" --include=*.ts --include=*.tsx --include=*.sql .` — masz zobaczyc WSZYSTKIE
+   uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
+2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
+   -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly `numeric` bez komentarza), NIE zgaduj
+   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
+   "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
+3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
+   RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
+   przeglad kodu nie daje takiej pewnosci jak realna liczba.
+
+Co sprawdzasz w kazdym uzyciu:
+- kwoty: calosc vs per-osoba vs per-jednostke; grosze vs zlote; brutto vs netto,
+- czas: sekundy vs milisekundy; UTC vs lokalny; timestamp vs data,
+- indeksy i skale: miesiac 0- vs 1-based; procenty jako 0..1 vs 0..100; licznik vs suma,
+- liczebnosci: liczba graczy vs liczba druzyn vs liczba miejsc.
+Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
+testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
+Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
+UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
+uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
+wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
+=== KONIEC BLOKU SEMANTYKI ===
+=== LIMIT I AKCYJNOSC P3 (nity) ===
+LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
+Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
+Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
+AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
+dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
+Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+  (a) DOKLADNIE JEDEN plik z numerem linii w polu `plik` (format `sciezka/plik.ts:123`, nie "?",
+      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
+  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien `as SessionRow` na guard `isSessionRow()` z linii 12" — nie "poprawic typowanie").
+"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
+"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
+niz zero, bo teraz kosztuja ture agenta fixa.
+=== KONIEC BLOKU LIMITU P3 ===
+
+=== MAPA ZMIAN FAZY (wspolna, zbudowana raz) ===
+<git diff --stat fazy>
+- apps/server/src/<plik fazy>.ts — <czego dotyczy — packager>
+
+=== PELNY DIFF FAZY (juz przygotowany) ===
+Plik: /tmp/review-diff-<sciezka>-faza-N.diff
+ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego `git diff` calej fazy.
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny `git diff` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.
+=== DOSSIER FAZY (juz przygotowane) ===
+Plik: /tmp/review-ctx-<sciezka>-faza-N.md
+Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
+gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
+wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
+70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
+dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.
+Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.
+
+##### dedup:semantyczny | model haiku | effort sesji (high)
+Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH reviewerow (faza 2, docs/active/faza-4-tracking-i-widok-oferty).
+Znajdz grupy wpisow opisujacych TEN SAM problem inna parafraza (ten sam plik/mechanizm i ta sama przyczyna).
+NIE lacz roznych problemow w tym samym pliku ani problemow o wspolnym objawie, ale innej przyczynie.
+W razie watpliwosci NIE laczyc. Zwroc wylacznie grupy 2+ indeksow; brak duplikatow => {duplikaty: []}.
+
+0. [P2/KOD] apps/server/src/a.ts:10 — opis 0
+1. [P3/KOD] apps/server/src/a.ts:11 — opis 1
+2. [P3/KOD] apps/server/src/a.ts:12 — opis 2
+3. [P3/KOD] apps/server/src/a.ts:13 — opis 3
+4. [P3/KOD] apps/server/src/a.ts:14 — opis 4
+5. [P3/KOD] apps/server/src/a.ts:15 — opis 5
+6. [P3/KOD] apps/server/src/a.ts:16 — opis 6
+7. [P3/KOD] apps/server/src/a.ts:17 — opis 7
+
+
+
+=== MODUŁ §2.6: kontrola diffu fixa (wariant 0) ===
+
+##### fix:pre-skan:faza-2 | model haiku | effort low
+Mechaniczny skan commitow fix fazy 2. NIE oceniaj kodu, NIE interpretuj — tylko grep.
+
+1. Ustal zakres: `git log --oneline --grep="^fix("` -> pierwszy commit fixa tej fazy.
+   Diff: `git diff <pierwszy-commit-fixa>^..HEAD`. Gdy commitow fixa nie ma — `git diff HEAD`.
+2. Patrz WYLACZNIE na linie DODANE (zaczynajace sie od "+", bez naglowkow "+++"). Linie kontekstu
+   i usuniete pomijasz — szukamy tego, co fix WPROWADZIL, nie tego, co juz bylo.
+3. Zglos kazde trafienie ponizszych wzorcow (z pliku i trescia linii 1:1, bez wiodacego "+"):
+   - pusty-catch:    `catch {}` albo `catch (e) {}` — takze z bialymi znakami i nowa linia miedzy klamrami
+   - type-assertion: ` as ` w TypeScript, Z WYJATKIEM `as const`
+   - any:            `: any` (adnotacja typu)
+   - console-log:    `console.log`
+   - non-null:       operator `!` po wyrazeniu (`foo!.bar`, `foo!)`, `foo!;`, `foo!,`) — NIE mylic
+                     z negacja `!foo` ani z `!==`
+4. Zero trafien to poprawny i czesty wynik — zwroc {trafienia: []}. Nie dobieraj nic "na wszelki wypadek",
+   nie zglaszaj linii spoza diffu i nie zglaszaj plikow, ktorych fix nie tknal.
+
+Read-only: nie modyfikuj plikow, nie commituj, nie uruchamiaj testow.
+
+##### fix:kontrola:faza-2 | model sesji (claude-opus-5-5) | effort low
+Jestes NIEZALEZNYM kontrolerem commitow fix fazy 2 (zadanie: docs/active/faza-4-tracking-i-widok-oferty).
+Petla naprawcza nie ma nad soba re-review — jestes jedynym, kto oglada ten kod.
+
+Zakres: `git log --oneline --grep="^fix("` -> pierwszy commit fixa tej fazy, potem
+`git diff <pierwszy-commit-fixa>^..HEAD`. Gdy commitow fixa nie ma — `git diff HEAD`.
+
+ZADANIE 1 — REGRESJE. Zglaszaj WYLACZNIE to, co zepsul TEN commit: kod dzialajacy przed fixem,
+ktory po nim nie dziala, oraz zmiany zachowania, o ktore nikt nie prosil (fix fazy 5 w projekcie
+zrodlowym dolozyl `loading="lazy"` do ramki, ktorej finding nie dotyczyl). NIE rob pelnego re-skanu
+fazy i NIE zglaszaj problemow, ktorych review nie wykrylo — na to jest review, nie Ty.
+
+ZADANIE 2 — NOWE BRAMKI WALIDACYJNE (obowiazkowe, nie pomijaj). Dla KAZDEJ nowej albo zmienionej
+bramki w diffie (wyrazenie regularne, allowlista, limit rozmiaru/dlugosci, porownanie originu,
+sprawdzenie roli, parsowanie wejscia) wypisz CO NAJMNIEJ 3 konkretne wektory obejscia — nie kategorie,
+tylko wejscia, ktore sprobujesz przepchnac (np. "//evil.com jako adres protokolowo-wzgledny",
+"JAVASCRIPT:alert(1) wielkimi literami", "wartosc druga na liscie srcset po przecinku").
+Potem sprawdz w testach, czy istnieje test ODMOWY — sprawdzajacy, ze zle wejscie zostaje ODRZUCONE,
+a nie tylko ze dobre przechodzi. Ustaw testOdmowy=false, gdy takiego testu nie ma.
+Bramka bez testu odmowy to bramka, ktorej nikt nie sprawdzil — nastepna zmiana rozszczelni ja po cichu.
+
+Zero regresji i zero nowych bramek to poprawny wynik: {regresje: [], bramki: []}.
+Read-only: nie modyfikuj plikow, nie commituj.
+

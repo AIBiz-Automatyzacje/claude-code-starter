@@ -1,0 +1,54 @@
+{
+ "zrodlo": ".claude/workflows/dev-docs-review-wf.js",
+ "wycinki": {
+  "const BLOK_ZAUFANIE = `": {
+   "zrodlo": "c4f6eb6a88894c42",
+   "wynik": "c4f6eb6a88894c42"
+  },
+  "const VERDICT = {": {
+   "zrodlo": "6b33647707603742",
+   "wynik": "6b33647707603742"
+  },
+  "const VERDICTS_BATCH = {": {
+   "zrodlo": "bc15ff990a8ffa53",
+   "wynik": "bc15ff990a8ffa53"
+  },
+  "const LIMIT_DIFFU_B = 300 * 1024": {
+   "zrodlo": "940bf3ced77de946",
+   "wynik": "940bf3ced77de946"
+  },
+  "const ZNACZNIK_UCIECIA = '=== DIFF PRZYC": {
+   "zrodlo": "73da092b56f54de5",
+   "wynik": "73da092b56f54de5"
+  },
+  "function mapaBlok(kontekst) {": {
+   "zrodlo": "81b146c7c92566da",
+   "wynik": "81b146c7c92566da"
+  },
+  "const TIERY_DOMYSLNE = { packager: 'low'": {
+   "zrodlo": "29647d140fbffe73",
+   "wynik": "29647d140fbffe73"
+  },
+  "const tiery = { ...TIERY_DOMYSLNE, ...((": {
+   "zrodlo": "6056329f9e0483f6",
+   "wynik": "6056329f9e0483f6"
+  },
+  "const zEffortem = (opts, effort) => (eff": {
+   "zrodlo": "388854c294cfc8a7",
+   "wynik": "388854c294cfc8a7"
+  },
+  "function kluczPliku(plik) {": {
+   "zrodlo": "d099546262271794",
+   "wynik": "d099546262271794"
+  },
+  "const MAKS_W_GRUPIE_P2 = 4": {
+   "zrodlo": "de23ad2be7e2acf9",
+   "wynik": "de23ad2be7e2acf9"
+  },
+  "const p1DoVerify = doWeryfikacji.filter(": {
+   "zrodlo": "fde2dc22d319490e",
+   "wynik": "fde2dc22d319490e"
+  }
+ },
+ "wycinki_rozne": []
+}

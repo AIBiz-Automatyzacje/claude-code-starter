@@ -1,0 +1,32 @@
+test_review_pilot.py wynik — analiza po pilocie
+ZGODNOŚĆ sędziego p1 vs p2: obecny 40/41 (97.6%); szeroko 148/148 (100.0%); pelne 142/148 (95.9%); finding 102/112 (91.1%)
+  f-b26128d: bez rozbieżności
+  f-2634b67: K5 wariant A pelne: p1 False, p2 True; K5 wariant B pelne: p1 True, p2 False; K5 wariant C pelne: p1 True, p2 False; K6 wariant A pelne: p1 False, p2 True
+  f-f3ee433: bez rozbieżności
+  f-b26128d-r2: K1 wariant 0 pelne: p1 False, p2 True; K1 wariant B pelne: p1 False, p2 True; K13 obecny: p1 False, p2 True
+  x-411a434: bez rozbieżności
+  x-05dd804: bez rozbieżności
+STABILNOŚĆ f-b26128d vs r2 (p1): kluczy wspólnych 13, obecnych w obu 11, obecność zgodna 12
+  wariant 0: {"findingow": [24, 25], "szum": [16, 16], "szum_P1P2": [6, 6], "szeroko": {"oba": 7, "tylko_f-b26128d": 0, "tylko_f-b26128d-r2": 1, "zlapane": [7, 8]}, "pelne": {"oba": 3, "tylko_f-b26128d": 2, "tylko_f-b26128d-r2": 1, "zlapane": [5, 4]}}
+  wariant A: {"findingow": [21, 30], "szum": [19, 30], "szum_P1P2": [16, 19], "szeroko": {"oba": 5, "tylko_f-b26128d": 3, "tylko_f-b26128d-r2": 2, "zlapane": [8, 7]}, "pelne": {"oba": 5, "tylko_f-b26128d": 3, "tylko_f-b26128d-r2": 2, "zlapane": [8, 7]}}
+  wariant B: {"findingow": [28, 27], "szum": [46, 42], "szum_P1P2": [32, 33], "szeroko": {"oba": 9, "tylko_f-b26128d": 0, "tylko_f-b26128d-r2": 1, "zlapane": [9, 10]}, "pelne": {"oba": 7, "tylko_f-b26128d": 0, "tylko_f-b26128d-r2": 2, "zlapane": [7, 9]}}
+  wariant C: {"findingow": [33, 24], "szum": [46, 37], "szum_P1P2": [28, 27], "szeroko": {"oba": 7, "tylko_f-b26128d": 0, "tylko_f-b26128d-r2": 1, "zlapane": [7, 8]}, "pelne": {"oba": 7, "tylko_f-b26128d": 0, "tylko_f-b26128d-r2": 1, "zlapane": [7, 8]}}
+KOSZT: zmierzony 49.40 M (w tym odrzucone 5.69) vs szacunek środek 93.4, górna 149.4, limit 224
+  f-b26128d: 10.52 M (odrzucone 0.00) vs szacunek [21.59, 37.45]; warianty {'0': 2.77, 'A': 1.74, 'B': 2.59, 'C': 0.85} vs górna {'0': 6.18, 'A': 4.46, 'B': 6.52, 'C': 3.27}
+  f-2634b67: 7.80 M (odrzucone 0.00) vs szacunek [20.75, 31.39]; warianty {'0': 2.05, 'A': 1.39, 'B': 2.02, 'C': 0.57} vs górna {'0': 6.25, 'A': 4.46, 'B': 6.64, 'C': 3.19}
+  f-f3ee433: 16.51 M (odrzucone 5.69) vs szacunek [21.69, 31.58]; warianty {'0': 3.27, 'A': 2.06, 'B': 2.88, 'C': 0.96} vs górna {'0': 6.59, 'A': 4.69, 'B': 7.04, 'C': 3.3}
+  f-b26128d-r2: 10.23 M (odrzucone 0.00) vs szacunek [21.59, 37.45]; warianty {'0': 2.59, 'A': 1.74, 'B': 2.37, 'C': 0.94} vs górna {'0': 6.18, 'A': 4.46, 'B': 6.52, 'C': 3.27}
+  x-411a434: 2.23 M (odrzucone 0.00) vs szacunek [3.73, 5.59]; warianty {'0': 0.46, 'A': 0.32, 'B': 0.72, 'C': 0.39} vs górna None
+  x-05dd804: 2.12 M (odrzucone 0.00) vs szacunek [3.73, 5.59]; warianty {'0': 0.36, 'A': 0.3, 'B': 0.59, 'C': 0.46} vs górna None
+ETAP GŁÓWNY po pilocie: proporcja wariantów [0.452, 0.344, 0.499, 0.434] (średnio 0.432), narzut na fazę 1.87 M
+  pełny: {"fazy": 37, "szacunek_przed_pilotem_sr": 864.8, "limit_przed_pilotem": 1548.9, "po_pilocie": 427.1, "w_tym_warianty": 357.9, "w_tym_narzut": 69.2}
+  75% przypadków: {"fazy": 21, "szacunek_przed_pilotem_sr": 507.7, "limit_przed_pilotem": 906.8, "po_pilocie": 249.6, "w_tym_warianty": 210.3, "w_tym_narzut": 39.3}
+  50% przypadków: {"fazy": 13, "szacunek_przed_pilotem_sr": 309.2, "limit_przed_pilotem": 551.2, "po_pilocie": 152.4, "w_tym_warianty": 128.1, "w_tym_narzut": 24.3}
+SZCZELNOŚĆ: twardych alarmów w końcowych skanach 0, uwag 5
+  f-b26128d: {'agentow': 49, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0} | kopia: bez zmian | uwagi: []
+  f-2634b67: {'agentow': 45, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0} | kopia: bez zmian | uwagi: ["wf_9057886f-734 dedup:semantyczny: agent haiku wołał narzędzia ['Bash']"]
+  f-f3ee433: {'agentow': 33, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0} | kopia: bez zmian | uwagi: []
+  f-b26128d-r2: {'agentow': 55, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0} | kopia: bez zmian | uwagi: ["wf_d99aeb26-436 dedup:semantyczny: agent haiku wołał narzędzia ['Read']"]
+  x-411a434: {'agentow': 8, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0} | kopia: bez zmian | uwagi: ["wf_be6a70e0-7ba fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']"]
+  x-05dd804: {'agentow': 8, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0} | kopia: bez zmian | uwagi: ['wf_2378f069-236 fix:pre-skan:faza-1: zapis Bashem poza kopią [\'> /tmp/added_lines.txt\']: git diff 05dd804^..HEAD | grep "^+" | grep -v "^+++" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt', "wf_2378f069-236 fix:pre-skan:faza-1: agent haiku wołał narzędzia ['Bash']"]
+KALIBRACJA: {"decyzji": 20, "niezgodnych": 0, "procent_bledow": 0.0, "prog": 15.0, "w_progu": true, "wg_typu": {"PEŁNE/CZĘŚCIOWE": 0, "BRAK": 0}, "szara_strefa_PELNE_CZESCIOWE": 3}

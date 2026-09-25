@@ -1,0 +1,13 @@
+{
+ "decyzji": 20,
+ "niezgodnych": 0,
+ "procent_bledow": 0.0,
+ "prog": 15.0,
+ "w_progu": true,
+ "wg_typu": {
+  "PEŁNE/CZĘŚCIOWE": 0,
+  "BRAK": 0
+ },
+ "szara_strefa_PELNE_CZESCIOWE": 3,
+ "niezgodne": []
+}

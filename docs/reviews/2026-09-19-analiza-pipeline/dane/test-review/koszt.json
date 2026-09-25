@@ -1,0 +1,320 @@
+{
+ "f-b26128d|wariantB": {
+  "zmierzony": 2592659.6999999997,
+  "po": 2345103.280630871,
+  "agentow": 10,
+  "pomiar": 55725.6
+ },
+ "f-b26128d|sedzia-p1": {
+  "zmierzony": 266360.5,
+  "po": 169657.3,
+  "agentow": 2,
+  "pomiar": 266360.5
+ },
+ "f-b26128d|sedzia-p2": {
+  "zmierzony": 322136.0,
+  "po": 218271.05000000002,
+  "agentow": 2,
+  "pomiar": 322136.0
+ },
+ "f-b26128d|wariantA": {
+  "zmierzony": 1738634.45,
+  "po": 1549262.5,
+  "agentow": 7,
+  "pomiar": 55694.549999999996
+ },
+ "f-b26128d|sceptycyC": {
+  "zmierzony": 214064.34999999998,
+  "po": 177812.09999999998,
+  "agentow": 3,
+  "pomiar": 51641.9
+ },
+ "f-b26128d|sceptycy0": {
+  "zmierzony": 749893.65,
+  "po": 631948.95,
+  "agentow": 9,
+  "pomiar": 107102.5
+ },
+ "f-b26128d|sceptycyA": {
+  "zmierzony": 724938.1000000001,
+  "po": 614728.75,
+  "agentow": 11,
+  "pomiar": 51720.1
+ },
+ "f-b26128d|wariant0": {
+  "zmierzony": 2771848.45,
+  "po": 2436698.363109355,
+  "agentow": 9,
+  "pomiar": 56014.15
+ },
+ "f-b26128d|wariantC": {
+  "zmierzony": 851887.3500000001,
+  "po": 537552.3500000001,
+  "agentow": 3,
+  "pomiar": 55535.25
+ },
+ "f-b26128d|sceptycyB": {
+  "zmierzony": 285939.65,
+  "po": 260382.05000000002,
+  "agentow": 3,
+  "pomiar": 51690.45
+ },
+ "f-2634b67|sedzia-p1": {
+  "zmierzony": 248360.45,
+  "po": 166457.2,
+  "agentow": 2,
+  "pomiar": 248360.45
+ },
+ "f-2634b67|wariantB": {
+  "zmierzony": 2023306.95,
+  "po": 1820227.7378059258,
+  "agentow": 11,
+  "pomiar": 56300.3
+ },
+ "f-2634b67|sceptycy0": {
+  "zmierzony": 436900.6,
+  "po": 370736.2,
+  "agentow": 7,
+  "pomiar": 93287.25
+ },
+ "f-2634b67|wariantC": {
+  "zmierzony": 565339.9000000001,
+  "po": 343842.70000000007,
+  "agentow": 3,
+  "pomiar": 56159.100000000006
+ },
+ "f-2634b67|sedzia-p2": {
+  "zmierzony": 249837.25,
+  "po": 167936.89999999997,
+  "agentow": 2,
+  "pomiar": 249837.25
+ },
+ "f-2634b67|sceptycyA": {
+  "zmierzony": 289587.75,
+  "po": 268482.05000000005,
+  "agentow": 5,
+  "pomiar": 49457.4
+ },
+ "f-2634b67|sceptycyC": {
+  "zmierzony": 206811.40000000002,
+  "po": 176689.25,
+  "agentow": 3,
+  "pomiar": 49648.350000000006
+ },
+ "f-2634b67|wariantA": {
+  "zmierzony": 1386866.55,
+  "po": 1208160.05,
+  "agentow": 7,
+  "pomiar": 56196.6
+ },
+ "f-2634b67|sceptycyB": {
+  "zmierzony": 339290.6,
+  "po": 310948.9,
+  "agentow": 6,
+  "pomiar": 49509.350000000006
+ },
+ "f-2634b67|wariant0": {
+  "zmierzony": 2048939.3500000003,
+  "po": 1760476.5130434781,
+  "agentow": 9,
+  "pomiar": 56665.950000000004
+ },
+ "f-f3ee433|wariantB": {
+  "zmierzony": 2883584.4000000004,
+  "po": 1879118.5729161194,
+  "agentow": 11,
+  "pomiar": 103839.5
+ },
+ "f-f3ee433|wariantC": {
+  "zmierzony": 961938.65,
+  "po": 511220.45,
+  "agentow": 3,
+  "pomiar": 103641.0
+ },
+ "f-f3ee433|wariantA": {
+  "zmierzony": 2058095.9,
+  "po": 1419180.6999999997,
+  "agentow": 7,
+  "pomiar": 103917.84999999999
+ },
+ "f-f3ee433|sceptycy0": {
+  "zmierzony": 375233.25,
+  "po": 245298.8878059258,
+  "agentow": 3,
+  "pomiar": 121914.95
+ },
+ "f-f3ee433|sedzia-p2": {
+  "zmierzony": 307130.9,
+  "po": 192384.95,
+  "agentow": 2,
+  "pomiar": 307130.9
+ },
+ "f-f3ee433|sceptycyB": {
+  "zmierzony": 217500.0,
+  "po": 149867.65,
+  "agentow": 2,
+  "pomiar": 96523.3
+ },
+ "f-f3ee433|sceptycyC": {
+  "zmierzony": 236293.69999999998,
+  "po": 159014.3,
+  "agentow": 2,
+  "pomiar": 96593.15
+ },
+ "f-f3ee433|wariant0": {
+  "zmierzony": 3265308.3,
+  "po": 2342792.988076416,
+  "agentow": 9,
+  "pomiar": 104231.6
+ },
+ "f-f3ee433|sedzia-p1": {
+  "zmierzony": 306780.25,
+  "po": 192034.3,
+  "agentow": 2,
+  "pomiar": 306780.25
+ },
+ "f-f3ee433|sceptycyA": {
+  "zmierzony": 212555.4,
+  "po": 144788.2,
+  "agentow": 2,
+  "pomiar": 96711.9
+ },
+ "f-f3ee433|odrzucone": {
+  "zmierzony": 5685036.249999999,
+  "po": 5685036.249999999,
+  "agentow": 27,
+  "pomiar": 5685036.249999999
+ },
+ "f-b26128d-r2|wariant0": {
+  "zmierzony": 2587671.15,
+  "po": 2307579.651494194,
+  "agentow": 9,
+  "pomiar": 58904.600000000006
+ },
+ "f-b26128d-r2|wariantA": {
+  "zmierzony": 1741240.35,
+  "po": 1521699.65,
+  "agentow": 7,
+  "pomiar": 58380.350000000006
+ },
+ "f-b26128d-r2|sedzia-p2": {
+  "zmierzony": 216208.85,
+  "po": 143179.28780592582,
+  "agentow": 2,
+  "pomiar": 216208.85
+ },
+ "f-b26128d-r2|sceptycyA": {
+  "zmierzony": 376537.55,
+  "po": 320861.65,
+  "agentow": 6,
+  "pomiar": 51630.25
+ },
+ "f-b26128d-r2|sedzia-p1": {
+  "zmierzony": 213649.05,
+  "po": 140614.0878059258,
+  "agentow": 2,
+  "pomiar": 213649.05
+ },
+ "f-b26128d-r2|sceptycy0": {
+  "zmierzony": 657356.1,
+  "po": 551939.7000000001,
+  "agentow": 8,
+  "pomiar": 110137.2
+ },
+ "f-b26128d-r2|sceptycyC": {
+  "zmierzony": 390074.2,
+  "po": 320685.95,
+  "agentow": 5,
+  "pomiar": 51782.350000000006
+ },
+ "f-b26128d-r2|wariantB": {
+  "zmierzony": 2365831.7,
+  "po": 2095605.428059258,
+  "agentow": 13,
+  "pomiar": 58496.65
+ },
+ "f-b26128d-r2|wariantC": {
+  "zmierzony": 941989.2000000001,
+  "po": 543083.8878059258,
+  "agentow": 4,
+  "pomiar": 58269.3
+ },
+ "f-b26128d-r2|sceptycyB": {
+  "zmierzony": 739054.6499999999,
+  "po": 624542.9999999999,
+  "agentow": 9,
+  "pomiar": 51726.450000000004
+ },
+ "x-411a434|wariantB": {
+  "zmierzony": 721950.35,
+  "po": 634374.95,
+  "agentow": 3,
+  "pomiar": 58632.25
+ },
+ "x-411a434|sedzia-p1": {
+  "zmierzony": 170005.8,
+  "po": 121272.25,
+  "agentow": 2,
+  "pomiar": 170005.8
+ },
+ "x-411a434|wariantA": {
+  "zmierzony": 324389.75,
+  "po": 273713.9,
+  "agentow": 2,
+  "pomiar": 57585.100000000006
+ },
+ "x-411a434|wariantC": {
+  "zmierzony": 387592.15,
+  "po": 362399.15,
+  "agentow": 2,
+  "pomiar": 58423.75
+ },
+ "x-411a434|wariant0": {
+  "zmierzony": 458139.55,
+  "po": 357990.55,
+  "agentow": 3,
+  "pomiar": 55232.0
+ },
+ "x-411a434|sedzia-p2": {
+  "zmierzony": 170754.2,
+  "po": 122016.0,
+  "agentow": 2,
+  "pomiar": 170754.2
+ },
+ "x-05dd804|wariantA": {
+  "zmierzony": 301747.85,
+  "po": 231854.58780592575,
+  "agentow": 2,
+  "pomiar": 101810.04999999999
+ },
+ "x-05dd804|sedzia-p1": {
+  "zmierzony": 202714.3,
+  "po": 149672.83780592578,
+  "agentow": 2,
+  "pomiar": 202714.3
+ },
+ "x-05dd804|wariantB": {
+  "zmierzony": 592894.7,
+  "po": 439154.5756118515,
+  "agentow": 3,
+  "pomiar": 103870.29999999999
+ },
+ "x-05dd804|wariantC": {
+  "zmierzony": 457773.5,
+  "po": 353241.6878059258,
+  "agentow": 2,
+  "pomiar": 101439.84999999999
+ },
+ "x-05dd804|sedzia-p2": {
+  "zmierzony": 202216.90000000002,
+  "po": 149178.1378059258,
+  "agentow": 2,
+  "pomiar": 202216.90000000002
+ },
+ "x-05dd804|wariant0": {
+  "zmierzony": 362124.3,
+  "po": 226839.9957392884,
+  "agentow": 3,
+  "pomiar": 98599.4
+ }
+}

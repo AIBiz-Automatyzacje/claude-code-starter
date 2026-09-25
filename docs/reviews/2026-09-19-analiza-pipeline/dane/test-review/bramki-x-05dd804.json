@@ -1,0 +1,312 @@
+{
+ "etykieta": "x-05dd804",
+ "sha": "05dd804d0af9517bfd2ffba2a712042d8cb08dbf",
+ "baza": "6bfdb257516ca4d7c92e970576a7302dd89e88f1",
+ "modul_fixa": true,
+ "pliki": 16,
+ "pliki_kodu": 14,
+ "pliki_ts": [
+  "apps/dashboard/src/features/templates/asset-upload-state.test.ts",
+  "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+  "apps/dashboard/src/features/templates/template-details-page.test.tsx",
+  "apps/dashboard/src/features/templates/texts.ts",
+  "apps/server/src/assets/limits.ts",
+  "apps/server/src/routes/app-origin-pages.test.ts",
+  "apps/server/src/routes/app-origin-pages.ts",
+  "apps/server/src/routes/static-assets.test.ts",
+  "apps/server/src/routes/template-assets.test.ts",
+  "apps/server/src/routes/template-assets.ts",
+  "packages/shared/src/format-bytes.test.ts",
+  "packages/shared/src/format-bytes.ts",
+  "packages/shared/src/index.ts",
+  "packages/shared/src/product-contract.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.5,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.test.ts",
+     "linia": 168,
+     "regula": "vitest/no-conditional-expect",
+     "opis": "Avoid calling `expect` inside conditional statements"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 57,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 52,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 62,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 66,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.test.ts",
+     "linia": 168,
+     "regula": "vitest/no-conditional-expect",
+     "opis": "Avoid calling `expect` inside conditional statements"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 55,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 52,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 62,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 66,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.ts",
+     "linia": 115,
+     "regula": "knip/exports",
+     "opis": "exports: buildLegalDocumentTitle"
+    }
+   ],
+   "zastane": 228,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 207979,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 7066,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.ts",
+     "linia": 115,
+     "regula": "knip/exports",
+     "opis": "exports: buildLegalDocumentTitle"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.test.ts",
+     "linia": 168,
+     "regula": "vitest/no-conditional-expect",
+     "opis": "Avoid calling `expect` inside conditional statements"
+    },
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.ts",
+     "linia": 115,
+     "regula": "knip/exports",
+     "opis": "exports: buildLegalDocumentTitle"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 52,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 62,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 66,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.ts",
+     "linia": 115,
+     "regula": "knip/exports",
+     "opis": "exports: buildLegalDocumentTitle"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.test.ts",
+     "linia": 168,
+     "regula": "vitest/no-conditional-expect",
+     "opis": "Avoid calling `expect` inside conditional statements"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 52,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 62,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    },
+    {
+     "plik": "apps/server/src/routes/static-assets.test.ts",
+     "linia": 66,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/routes/app-origin-pages.ts",
+     "linia": 115,
+     "regula": "knip/exports",
+     "opis": "exports: buildLegalDocumentTitle"
+    }
+   ]
+  }
+ }
+}

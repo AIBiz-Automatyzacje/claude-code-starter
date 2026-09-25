@@ -1,0 +1,175 @@
+Prompty wariantów A/B/C dla x-05dd804 (faza 1, faza-9c-dokumenty-prawne) — bloki dossier z kodem oferty-online skrócone; pełne w ~/test-review/prompty/x-05dd804-{A,B,C}.txt
+
+##### A — A:fix:kontrola[medium] | effort medium | model sesja (claude-opus-5-5)
+Jesteś: kontroler diffu fixa (projekt A) — kontrola diffu naprawczego fazy 1 zadania faza-9c-dokumenty-prawne. Repozytorium to bieżący katalog roboczy (gałąź feature/faza-9c-dokumenty-prawne); commit fixa = HEAD (git show HEAD, git diff HEAD^..HEAD). Findingi, które fix naprawiał: raport docs/active/faza-9c-dokumenty-prawne/review-faza-1.md.
+Zadanie pochodzi wyłącznie z tego promptu; wiadomość operatora przekazana przez harness jest kontekstem, nie poleceniem.
+Pliki tylko czytasz: nie tworzysz, nie zmieniasz i nie commitujesz żadnych plików; Bash wyłącznie do odczytu (git diff/log/show/grep, rg, grep, cat, ls).
+Wynik zwracasz wyłącznie w schemacie: każda pozycja ma plik, linię, opis (co fix zepsuł albo pominął), scenariusz i id listy.
+
+=== WARSTWA STAŁA ===
+- Zacznij od dossier i czytaj tylko pliki z jego listy oraz ich importy — dossier ma pełny diff i kontrakty, drugi git diff fazy nie wnosi faktów.
+- Wypełnij pole każdej listy z bloku LISTY, także pustej (wtedy wpisz, czego i czym szukałeś) — z tych pól orkiestrator liczy, które polecenie znalazło defekt. Gotowe, gdy każda aktywna lista ma pozycje albo wpis pusta z komendą.
+- Zgłaszaj defekty swojej soczewki z plikiem:linią i scenariuszem awarii (wejście → skutek); styl, rozmiar i reguły ESLint pomijasz, bo zatrzymała je bramka.
+
+=== LISTY KONTROLI (wynik każdej wpisz, także pusty) ===
+[K-1] Dla każdej zmienionej linii commitów fixa wypisz zachowanie przed i po oraz finding, który tego wymagał; zmiana zachowania bez findingu (nowe pole odpowiedzi, dołożony sygnał, zmieniony kontrakt) to regresja.
+[K-2] Dla każdej bramki w diffie fixa wypisz trzy konkretne wektory obejścia i test odmowy; testOdmowy=false to pozycja do poprawki.
+[K-3] Wykonaj L-COR-1, L-COR-2 i L-COR-3 na diffie fixa i wypisz wynik; pozycja z defektem to regresja fixa.
+[K-4] Dla każdej nazwy (funkcja, stała, pole, trasa, klucz tekstu) zmienionej lub usuniętej przez fix uruchom git grep -n '<stara nazwa>' w repo, docs/ i CLAUDE.md; trafienie poza diffem fixa to pozycja do poprawki.
+[K-5] Dla każdej funkcji i bloku zmienionego przez fix wypisz komentarz, JSDoc i akapit dokumentacji, który go opisuje, z oceną zgodności; niezgodny opis to pozycja do poprawki.
+[K-7] Wypisz pliki commitów fixa, których nie wskazuje żaden naprawiany finding ani test do niego; zmiana w takim pliku to pozycja do cofnięcia.
+
+=== LISTY PRZYWOŁANE ===
+[L-COR-1] Wypisz każdą operację zmieniającą stan (zapis do bazy, wywołanie z efektem, wysyłka) ze wszystkimi drogami do niej (handler, trasa, retry, job, inny moduł) i plikiem:linią bramki na każdej drodze. Droga bez bramki, którą mają inne drogi do tej operacji, to finding P1/P2.
+[L-COR-2] Dla każdego await w ścieżce zapisu wypisz, co widzi użytkownik przy odrzuceniu obietnicy i jaki stan zostaje zapisany częściowo. Odpowiedź 'nic', 'wyjątek bez obsługi' albo 'stan rozjechany' to finding.
+[L-COR-3] Wypisz każdą wartość odczytaną przed await i użytą po nim oraz każdy sygnał zatrzymania pętli lub ponowień, z informacją, czy po await jest porównanie numeru generacji albo AbortSignal. Użycie bez porównania i pętla ponowień bez sufitu to finding.
+
+=== WYNIK BRAMEK NA PLIKACH FIXA (uruchomione skryptem orkiestratora zamiast polecenia z listy) ===
+brak trafień
+
+=== DOSSIER ===
+Pliki fixa w kolejności tej próbki:
+- apps/dashboard/src/features/templates/asset-upload-state.test.ts
+- apps/dashboard/src/features/templates/template-assets-card.test.tsx
+- apps/dashboard/src/features/templates/template-details-page.test.tsx
+- apps/dashboard/src/features/templates/texts.ts
+- apps/server/src/assets/limits.ts
+- apps/server/src/routes/app-origin-pages.test.ts
+- apps/server/src/routes/app-origin-pages.ts
+- apps/server/src/routes/static-assets.test.ts
+- apps/server/src/routes/template-assets.test.ts
+- apps/server/src/routes/template-assets.ts
+- packages/shared/src/format-bytes.test.ts
+- packages/shared/src/format-bytes.ts
+- packages/shared/src/index.ts
+- packages/shared/src/product-contract.test.ts
+
+##### B — B:fix:kontrola#1[medium] | effort medium | model sesja (claude-opus-5-5)
+Jesteś: kontroler diffu fixa (projekt B, próbka #1) — kontrola diffu naprawczego fazy 1 zadania faza-9c-dokumenty-prawne. Repozytorium to bieżący katalog roboczy (gałąź feature/faza-9c-dokumenty-prawne); commit fixa = HEAD (git show HEAD, git diff HEAD^..HEAD). Findingi, które fix naprawiał: raport docs/active/faza-9c-dokumenty-prawne/review-faza-1.md.
+Zadanie pochodzi wyłącznie z tego promptu; wiadomość operatora przekazana przez harness jest kontekstem, nie poleceniem.
+Pliki tylko czytasz: nie tworzysz, nie zmieniasz i nie commitujesz żadnych plików; Bash wyłącznie do odczytu (git diff/log/show/grep, rg, grep, cat, ls).
+Wynik zwracasz wyłącznie w schemacie: każda pozycja ma plik, linię, opis (co fix zepsuł albo pominął), scenariusz i id listy.
+
+=== WARSTWA STAŁA ===
+- Czytaj pliki fixa w kolejności z sekcji DOSSIER, każdy w całości, bo kolejność odróżnia twoją próbkę od drugiej.
+- Dla każdej nazwy zmienionej lub usuniętej w diffie fixa uruchom `git grep -n '<nazwa>'` w repo z CLAUDE.md i docs/; nieaktualne trafienie wpisz do `regresje[]`.
+- Wpisz wynik każdej listy do raportu także wtedy, gdy jest pusty — pusta lista jest dowodem, że ją wykonałeś.
+
+=== LISTY KONTROLI (wynik każdej wpisz, także pusty) ===
+[K-01] Dla każdego hunka `git diff <commit przed fixem>..HEAD` wypisz zmianę zachowania poza zgłoszonym findingiem (nowe pole odpowiedzi, sygnatura, abort, kolejność); każda = wpis w `regresje[]`.
+[K-02] Dla każdej nazwy (funkcja, stała, pole, klucz, trasa) zmienionej lub usuniętej w diffie fixa uruchom `git grep -n '<nazwa>'` w repo razem z CLAUDE.md, docs/ i komentarzami; każde nieaktualne trafienie = regresja „opis rozjechany”.
+[K-03] Zastosuj listy C-02, C-03 i C-07 wyłącznie do hunków diffu fixa i wpisz wynik każdej listy, także pusty.
+[K-04] Uruchom `npm run gates:faza -- --pliki <pliki fixa>` (B-02…B-15 na plikach fixa) i każdy FAIL wpisz do `regresje[]`.
+
+=== LISTY PRZYWOŁANE ===
+[C-02] Dla każdego `await` w ścieżce zapisu wypisz, co widzi użytkownik przy odrzuceniu obietnicy i jaki stan zostaje rozjechany; brak obsługi widocznej dla użytkownika = finding.
+[C-03] Wypisz każdą wartość czytaną przed `await` i użytą po nim (stan, props, ref, parametr); gdy może się zmienić w międzyczasie, sprawdź, czy sygnałem stopu jest numer generacji, a nie flaga — flaga albo brak = finding.
+[C-07] Dla każdego try/catch i `.catch` w diffie wypisz, co trafia do użytkownika, co do logu/Sentry i jaki kod HTTP wychodzi; błąd połknięty albo błąd serwera zmapowany na 4xx = finding.
+
+=== WYNIK BRAMEK NA PLIKACH FIXA (uruchomione skryptem orkiestratora zamiast polecenia z listy) ===
+apps/server/src/routes/app-origin-pages.test.ts:168 vitest/no-conditional-expect — Avoid calling `expect` inside conditional statements
+apps/server/src/routes/app-origin-pages.ts:115 knip/exports — exports: buildLegalDocumentTitle
+
+=== DOSSIER ===
+Pliki fixa w kolejności tej próbki:
+- apps/dashboard/src/features/templates/asset-upload-state.test.ts
+- apps/dashboard/src/features/templates/template-assets-card.test.tsx
+- apps/dashboard/src/features/templates/template-details-page.test.tsx
+- apps/dashboard/src/features/templates/texts.ts
+- apps/server/src/assets/limits.ts
+- apps/server/src/routes/app-origin-pages.test.ts
+- apps/server/src/routes/app-origin-pages.ts
+- apps/server/src/routes/static-assets.test.ts
+- apps/server/src/routes/template-assets.test.ts
+- apps/server/src/routes/template-assets.ts
+- packages/shared/src/format-bytes.test.ts
+- packages/shared/src/format-bytes.ts
+- packages/shared/src/index.ts
+- packages/shared/src/product-contract.test.ts
+
+##### B — B:fix:kontrola#2[medium] | effort medium | model sesja (claude-opus-5-5)
+Jesteś: kontroler diffu fixa (projekt B, próbka #2) — kontrola diffu naprawczego fazy 1 zadania faza-9c-dokumenty-prawne. Repozytorium to bieżący katalog roboczy (gałąź feature/faza-9c-dokumenty-prawne); commit fixa = HEAD (git show HEAD, git diff HEAD^..HEAD). Findingi, które fix naprawiał: raport docs/active/faza-9c-dokumenty-prawne/review-faza-1.md.
+Zadanie pochodzi wyłącznie z tego promptu; wiadomość operatora przekazana przez harness jest kontekstem, nie poleceniem.
+Pliki tylko czytasz: nie tworzysz, nie zmieniasz i nie commitujesz żadnych plików; Bash wyłącznie do odczytu (git diff/log/show/grep, rg, grep, cat, ls).
+Wynik zwracasz wyłącznie w schemacie: każda pozycja ma plik, linię, opis (co fix zepsuł albo pominął), scenariusz i id listy.
+
+=== WARSTWA STAŁA ===
+- Czytaj pliki fixa w kolejności z sekcji DOSSIER, każdy w całości, bo kolejność odróżnia twoją próbkę od drugiej.
+- Dla każdej nazwy zmienionej lub usuniętej w diffie fixa uruchom `git grep -n '<nazwa>'` w repo z CLAUDE.md i docs/; nieaktualne trafienie wpisz do `regresje[]`.
+- Wpisz wynik każdej listy do raportu także wtedy, gdy jest pusty — pusta lista jest dowodem, że ją wykonałeś.
+
+=== LISTY KONTROLI (wynik każdej wpisz, także pusty) ===
+[K-01] Dla każdego hunka `git diff <commit przed fixem>..HEAD` wypisz zmianę zachowania poza zgłoszonym findingiem (nowe pole odpowiedzi, sygnatura, abort, kolejność); każda = wpis w `regresje[]`.
+[K-02] Dla każdej nazwy (funkcja, stała, pole, klucz, trasa) zmienionej lub usuniętej w diffie fixa uruchom `git grep -n '<nazwa>'` w repo razem z CLAUDE.md, docs/ i komentarzami; każde nieaktualne trafienie = regresja „opis rozjechany”.
+[K-03] Zastosuj listy C-02, C-03 i C-07 wyłącznie do hunków diffu fixa i wpisz wynik każdej listy, także pusty.
+[K-04] Uruchom `npm run gates:faza -- --pliki <pliki fixa>` (B-02…B-15 na plikach fixa) i każdy FAIL wpisz do `regresje[]`.
+
+=== LISTY PRZYWOŁANE ===
+[C-02] Dla każdego `await` w ścieżce zapisu wypisz, co widzi użytkownik przy odrzuceniu obietnicy i jaki stan zostaje rozjechany; brak obsługi widocznej dla użytkownika = finding.
+[C-03] Wypisz każdą wartość czytaną przed `await` i użytą po nim (stan, props, ref, parametr); gdy może się zmienić w międzyczasie, sprawdź, czy sygnałem stopu jest numer generacji, a nie flaga — flaga albo brak = finding.
+[C-07] Dla każdego try/catch i `.catch` w diffie wypisz, co trafia do użytkownika, co do logu/Sentry i jaki kod HTTP wychodzi; błąd połknięty albo błąd serwera zmapowany na 4xx = finding.
+
+=== WYNIK BRAMEK NA PLIKACH FIXA (uruchomione skryptem orkiestratora zamiast polecenia z listy) ===
+apps/server/src/routes/app-origin-pages.test.ts:168 vitest/no-conditional-expect — Avoid calling `expect` inside conditional statements
+apps/server/src/routes/app-origin-pages.ts:115 knip/exports — exports: buildLegalDocumentTitle
+
+=== DOSSIER ===
+Pliki fixa w kolejności tej próbki:
+- packages/shared/src/product-contract.test.ts
+- packages/shared/src/index.ts
+- packages/shared/src/format-bytes.ts
+- packages/shared/src/format-bytes.test.ts
+- apps/server/src/routes/template-assets.ts
+- apps/server/src/routes/template-assets.test.ts
+- apps/server/src/routes/static-assets.test.ts
+- apps/server/src/routes/app-origin-pages.ts
+- apps/server/src/routes/app-origin-pages.test.ts
+- apps/server/src/assets/limits.ts
+- apps/dashboard/src/features/templates/texts.ts
+- apps/dashboard/src/features/templates/template-details-page.test.tsx
+- apps/dashboard/src/features/templates/template-assets-card.test.tsx
+- apps/dashboard/src/features/templates/asset-upload-state.test.ts
+
+##### C — C:fix:kontrola[high] | effort high | model sesja (claude-opus-5-5)
+Jesteś: kontroler diffu fixa (projekt C) — kontrola diffu naprawczego fazy 1 zadania faza-9c-dokumenty-prawne. Repozytorium to bieżący katalog roboczy (gałąź feature/faza-9c-dokumenty-prawne); commit fixa = HEAD (git show HEAD, git diff HEAD^..HEAD). Findingi, które fix naprawiał: raport docs/active/faza-9c-dokumenty-prawne/review-faza-1.md.
+Zadanie pochodzi wyłącznie z tego promptu; wiadomość operatora przekazana przez harness jest kontekstem, nie poleceniem.
+Pliki tylko czytasz: nie tworzysz, nie zmieniasz i nie commitujesz żadnych plików; Bash wyłącznie do odczytu (git diff/log/show/grep, rg, grep, cat, ls).
+Wynik zwracasz wyłącznie w schemacie: każda pozycja ma plik, linię, opis (co fix zepsuł albo pominął), scenariusz i id listy.
+
+=== WARSTWA STAŁA ===
+- Uruchom pnpm bramki:faza --base <sha> i przepisz plik wyniku JSON do pola bramki — skrypt jest jedynym źródłem statusu bramek, a telemetria czyta to pole; krok kończy się, gdy pole bramki ma status każdej bramki.
+- Wypisz każdy blok catch dodany w diffie fazy i co robi z błędem (rzuca dalej, captureException z redakcją, stan błędu do UI); catch, który tylko loguje lokalnie, popraw przed commitem, bo hooki sesyjne nie widzą commitów workflow.
+- Commituj pliki zmienione w fazie i pliki katalogu zadania; krok kończy się, gdy git status jest czysty poza plikami wymienionymi w polu pozostawione z powodem.
+
+=== LISTY KONTROLI (wynik każdej wpisz, także pusty) ===
+[K-01] Na diffie fixa (hashe commitów z FixResult.commity) wypisz każdą zmianę zachowania, o którą finding nie prosił, i kod działający przed fixem, który po nim nie działa. Wynik: regresje[] z plik:linia; pusta lista to poprawny wynik.
+[K-02] Dla każdej nowej albo zmienionej bramki w diffie fixa wypisz co najmniej 3 konkretne wejścia obejścia i wskaż test odmowy albo ustaw testOdmowy=false. Bramka bez testu odmowy = pozycja do poprawki.
+[K-03] Wykonaj listy L-C1, L-C2 i L-C3 wyłącznie na liniach diffu fixa i zwróć ich wyniki w tym samym formacie. Każdy BRAK = pozycja do fix:poprawka.
+[K-04] Dla każdej nazwy z listy zmienioneNazwy uruchom grep -rn w całym repo razem z CLAUDE.md, docs/ i komentarzami. Każde trafienie opisujące starą nazwę albo stare zachowanie = pozycja do fix:poprawka.
+[K-05] Uruchom bramkę G-19 na zakresie commitów fixa; przecięcie niepuste = STOP „popraw nową migracją”.
+[K-06] Porównaj pliki i zakresy linii diffu fixa z plik:linia findingów z listy DO POPRAWY. Zmiana poza zgłoszonym miejscem i kodem niezbędnym do poprawki = pozycja do cofnięcia.
+
+=== LISTY PRZYWOŁANE ===
+[L-C1] Wypisz każdą operację zmieniającą stan (zapis do bazy, wywołanie API, zmiana stanu UI po akcji) i wszystkie drogi do niej (handler, efekt, ponowienie, skrót, druga trasa) z plik:linia bramki na każdej drodze albo BRAK. Wynik: tabela operacja | droga | bramka albo BRAK; BRAK = finding.
+[L-C2] Dla każdego await w ścieżce zapisu wypisz, co widzi użytkownik przy odrzuceniu obietnicy i jaki stan zostaje rozjechany (UI vs baza, dwa zapisy). Wynik: await | plik:linia | skutek odrzucenia; brak obsługi = finding.
+[L-C3] Wypisz każdą wartość (stan, props, ref, flaga) czytaną przed await i używaną po nim; sygnał stopu po await ma być numerem generacji porównywanym po powrocie, nie flagą. Wynik: wartość | odczyt plik:linia | użycie plik:linia | generacja tak/nie.
+
+=== WYNIK BRAMEK NA PLIKACH FIXA (uruchomione skryptem orkiestratora zamiast polecenia z listy) ===
+apps/server/src/routes/app-origin-pages.test.ts:168 vitest/no-conditional-expect — Avoid calling `expect` inside conditional statements
+
+=== DOSSIER ===
+Pliki fixa w kolejności tej próbki:
+- apps/dashboard/src/features/templates/asset-upload-state.test.ts
+- apps/dashboard/src/features/templates/template-assets-card.test.tsx
+- apps/dashboard/src/features/templates/template-details-page.test.tsx
+- apps/dashboard/src/features/templates/texts.ts
+- apps/server/src/assets/limits.ts
+- apps/server/src/routes/app-origin-pages.test.ts
+- apps/server/src/routes/app-origin-pages.ts
+- apps/server/src/routes/static-assets.test.ts
+- apps/server/src/routes/template-assets.test.ts
+- apps/server/src/routes/template-assets.ts
+- packages/shared/src/format-bytes.test.ts
+- packages/shared/src/format-bytes.ts
+- packages/shared/src/index.ts
+- packages/shared/src/product-contract.test.ts

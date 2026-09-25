@@ -1,0 +1,13 @@
+test_review_koszt_pilota.py — koszt pilota [M jedn.] (środek | górna); twardy limit = 1,5 × górna
+
+  f-b26128d     pliki kodu 10 | warianty  17.6 |  20.4 (0 6.2, A 4.5, B 6.5, C 3.3) | sędzia ×2 1.5 | 2.2 | K 13, sceptycy 1.7 | 13.6 | sesje 0.8 | RAZEM  21.6 |  37.5
+  f-2634b67     pliki kodu 12 | warianty  17.5 |  20.5 (0 6.3, A 4.5, B 6.6, C 3.2) | sędzia ×2 1.5 | 2.3 | K  7, sceptycy 0.9 | 7.3 | sesje 0.8 | RAZEM  20.8 |  31.4
+  f-f3ee433     pliki kodu 15 | warianty  18.4 |  21.6 (0 6.6, A 4.7, B 7.0, C 3.3) | sędzia ×2 1.6 | 2.5 | K  6, sceptycy 0.9 | 6.3 | sesje 0.8 | RAZEM  21.7 |  31.6
+  f-b26128d-r2  pliki kodu 10 | warianty  17.6 |  20.4 (0 6.2, A 4.5, B 6.5, C 3.3) | sędzia ×2 1.5 | 2.2 | K 13, sceptycy 1.7 | 13.6 | sesje 0.8 | RAZEM  21.6 |  37.5
+  x-411a434     moduł §2.6: 0 0.39, A 0.44, B 0.80, C 0.62, sędzia ×2 1.0, sesje 0.48 | RAZEM  3.7 |  5.6
+  x-05dd804     moduł §2.6: 0 0.39, A 0.44, B 0.80, C 0.62, sędzia ×2 1.0, sesje 0.48 | RAZEM  3.7 |  5.6
+
+  próba harnessu: 0.3
+  PILOT RAZEM: środek 93.4 M jedn., górna 149.4 M jedn., TWARDY LIMIT 224 M jedn. (skrypt przerywa po fazie, która go przekroczy)
+  skala: jeden run autopilota 20.09 (3 fazy, cały pipeline) = 35,3 M jedn.; plan §2.3: pilot 26..56..66 + powtórka 8..18..22 + moduł ~4 (bez 2. sędziego,
+  sceptyków na kluczu 2 i sesji uruchamiających)

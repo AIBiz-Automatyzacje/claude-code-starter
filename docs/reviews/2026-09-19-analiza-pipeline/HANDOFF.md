@@ -468,6 +468,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     na pilot; (d) **przebieg fazami, nie wariantami** (kopia + bramki → 4 warianty naraz → sędzia → sceptycy → koszt i decyzja o następnej fazie); pilot jedna
     faza naraz. Kolejność: pilot 3 faz + powtórka (26–66 + 8–22 M) → notatka → operator wybiera zakres etapu głównego (rekomendacja 75% = 21 faz, 232–605 M,
     MDD ~20 pkt). Run 3 po teście: D1, D2, D5, D12 z liczbami z testu; D3, D4, D6–D11 jak PANEL-PLAN §6 z warunkiem odwrotu.
+30. **Pilot testu review ZROBIONY i przyjęty; zakres etapu głównego wybrany (operator 2026-09-26).** Notatka `TEST-REVIEW-PILOT-DLA-OPERATORA.md`,
+    liczby `skrypty/test_review_pilot.py` → `dane/test-review/pilot*.json|txt` (stan w §8 „PILOT ZROBIONY”). Decyzje: (a) **zakres 50% przypadków = 13 faz**
+    (pierwsze 13 z `kolejnosc` w `dane/test-review-plan.json`), **jeden przebieg (r=1)**, MDD ~24 pkt — operator świadomie: security i ogon bez wniosku;
+    (b) moduł kontroli diffu fixa zostaje wg pkt 29(b); (c) jedna permutacja sędziego (zgodność p1/p2 „szeroko” 148/148); (d) **limit etapu ~300 M jedn.**
+    (1,5 × szacunek po pilocie: 152 M fazy + ~48 M moduł fixa); (e) konto CLI automatyzacje@aibiz.pl, `claude auth status` przed każdym runem;
+    (f) start etapu głównego dopiero na osobny znak operatora — najpierw przygotowanie bez agentów w nowej sesji.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -651,7 +657,71 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
 - Zero agentów, zero zmian w `.claude/`, CLAUDE.md i oferty-online. Pilot: fazy b26128d, 2634b67, f3ee433 + powtórka b26128d + 2 commity fixa (moduł §2.6).
 - Commit docs/reviews zrobiony w tej sesji (obejmuje też dane i skrypty panelu z run 1 i run 2).
 
-**PRZYGOTOWANIE TESTU REVIEW (nowa sesja, 6a pkt 29; zdanie „Do agentów…” zostaw — N1):**
+**STAN PRZYGOTOWANIA TESTU REVIEW (sesja 83cd0aa0, 2026-09-25) — PRZYGOTOWANIE ZROBIONE, PILOT CZEKA NA ZGODĘ OPERATORA (nic niezacommitowane):**
+- Notatka `TEST-REVIEW-PRZYGOTOWANIE-DLA-OPERATORA.md`; prompty do wglądu `dane/test-review/prompty-<et>.txt` i `prompty-wariant0.txt`; mapowanie warunków
+  `dane/test-review-warunki.json`; koszt pilota `dane/test-review/koszt-pilota.txt` (środek 93 / górna 149 / limit 224 M jedn.); przegląd klucza 2 `dane/test-review/klucz2-przeglad.json`.
+- Skrypty (kolejność): `test_review_kopia.sh` (stan / narzedzia / kopia) → `test_review_bramki.py` → `test_review_wariant0.py` (kontrola bajtowa, 27 różnic
+  dozwolonych, 18/18 wycinków) + `test_review_warianty.py` (moduł `test_review_dossier.py`, szablon `test_review_wariant_szablon.js`) → `test_review_sedzia.py klucze|pula`
+  (szablon `_sedzia_szablon.js`) → `test_review_sesja.py start|zbierz` (claude -p, deny, budżet) → `test_review_sceptycy.py wariant0|przygotuj` (szablon
+  `_sceptycy_szablon.js`) → `test_review_skan.py` → `test_review_wynik.py koszt|limit|metryki`; całość `test_review_uruchom.sh proba|pilot|faza`; suchy bieg
+  `test_review_suchy_bieg.mjs` (atrapa agent(), zero modeli).
+- Poza repo: `~/test-review/` (lustro, kopie f-b26128d, f-2634b67, f-f3ee433, f-b26128d-r2, x-411a434, x-05dd804; narzędzia; skrypty per faza; klucze sędziego;
+  pełne prompty). Pułapki: ESLint typowany PRZED buildem shared = fałszywe no-unsafe-* (naprawione: typecheck przed ESLint); knip --production liczy tylko wpisy
+  z „!”; size-limit wymaga package.json w katalogu uruchomienia.
+- **PRÓBA HARNESSU ZROBIONA (za zgodą operatora, 2026-09-25):** (a) workflow z 1 agentem haiku — `RUN wf_756aaf23-38e completed`, plik runu i transkrypt agenta
+  (claude-haiku-4-5) na dysku; (b) deny z --settings działa — Read pliku z Documents: „File is in a directory that is denied by your permission settings”;
+  (c) workflow z 5 agentami haiku po kolei — sesja `claude -p` trwała 48 s i zwróciła `completed` z kompletem wyników → **-p czeka na koniec Workflow w tle**.
+  Koszt próby ≈ 1,05 USD (3 sesje). Poprawka po próbie: stdin `claude -p` z /dev/null (ostrzeżenie „no stdin data received in 3s”).
+- **PILOT ZROBIONY (2026-09-25, sesja fb33cacc, konto CLI automatyzacje@aibiz.pl):** 6/6 faz (3 fazy + powtórka b26128d + 2 commity fixa), końcowe skany 0 twardych,
+  0 ról null / 194, stan po BEZ ZMIAN. Koszt 43,7 M jedn. (+5,7 M odrzuconej próby) vs środek 93,4. Liczby: `skrypty/test_review_pilot.py probka|wynik` →
+  `dane/test-review/pilot-{zgodnosc,stabilnosc,koszt,szczelnosc,kalibracja}.json`, `pilot.txt`, `pilot-kalibracja-{probka,oceny}.json`; metryki `metryki.txt`.
+  Kalibracja 0/20 (próg 15%), granica PEŁNE/CZĘŚCIOWE miękka (3/10 w szarej strefie) → porównania na „szeroko”; zgodność p1/p2 szeroko 148/148 → w etapie
+  głównym 1 permutacja. Etap główny po pilocie (proporcja wariantów 0,43 × szacunek „dziś” + narzut 1,87 M/fazę): 50% ~152 M, 75% ~250 M, pełny ~427 M.
+  Notatka `TEST-REVIEW-PILOT-DLA-OPERATORA.md` — **przyjęta 2026-09-26: zakres 50% (13 faz), r=1, moduł fixa zostaje, limit ~300 M (6a pkt 30)**;
+  następny krok = przygotowanie etapu głównego bez agentów w nowej sesji (tryb „etap” w `test_review_uruchom.sh`, LIMITY w `test_review_wynik.py`,
+  kopie + bramki 13 faz i commitów fixa, suchy bieg), start na osobny znak operatora.
+- **Zmiany mechanizmu w pilocie (wszystkie przetestowane):** skan zatrzymuje wyłącznie wg definicji §11 (skutek: HEAD/`git status`/odcisk nakładki `.claude/`
+  kopii; przeciek = odczyt miejsc zakazanych, 1 faza wypada, >1 = STOP; N1 = wykonanie wiadomości startowej) — reszta to UWAGI; wzorzec kopii innej fazy kończy
+  nazwę katalogu (`f-b26128d` ≠ `f-b26128d-r2`); `test_review_sesja.py gotowy|odrzuc` — krok zrobiony = run completed + sesja bez błędu + zero `<synthetic>`,
+  niedokończona próba → `~/test-review/odrzucone/` (koszt liczony); wznowienie = to samo polecenie (znaczniki `wyniki/<et>/_faza-ok`); null liczony per rola
+  (harness ponawia agentów, którzy utknęli — „stalled … retrying”); metryki: „brak sceptyków” w fazach fix. Pułapki: CLI `claude` ma własne logowanie
+  (sprawdzaj `claude auth status` przed runem — pilot padł raz na limicie tygodniowym innego konta); `<synthetic>` = błąd API wpisany przez harness.
+
+**PILOT TESTU REVIEW (nowa sesja na nowym koncie, 2026-09-25; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja (nowe konto), sesja główna na Opus 5.5.
+Przygotowanie testu review ZROBIONE w poprzedniej sesji (HANDOFF §8 „STAN PRZYGOTOWANIA TESTU REVIEW”). Zadanie tej sesji: próba harnessu,
+a po jej powodzeniu PILOT testu review — uruchamiany skryptem, nie dev-autopilotem.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Moja zgoda (wklejenie tej wiadomości = zgoda): (1) próba harnessu i pilot wg TEST-REVIEW-PLAN §12 pkt 2 — 3 fazy + powtórka b26128d + 2 commity
+fixa; (2) efort wariantu 0 = high; (3) twardy limit pilota 224 M jedn. (środek 93, górna 149 — dane/test-review/koszt-pilota.txt). Na etap
+główny zgody NIE ma.
+
+Przeczytaj najpierw (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md §8 akapit „STAN PRZYGOTOWANIA TESTU REVIEW”, §7 (pułapki),
+6a pkt 28–29; TEST-REVIEW-PRZYGOTOWANIE-DLA-OPERATORA.md; TEST-REVIEW-PLAN.md §5, §6, §10–§12; nagłówki (docstringi) skryptów
+skrypty/test_review_*.py i test_review_uruchom.sh. Decyzje z 6a obowiązują — nie pytaj o nie ponownie. Nie przepisuj skryptów bez potrzeby.
+
+Kolejność:
+1. Próba harnessu PRZESZŁA w poprzedniej sesji (HANDOFF §8: -p czeka na Workflow, deny działa). Na nowym koncie powtórz ją raz jako sprawdzenie
+   konta: skrypty/test_review_uruchom.sh proba (~1 min, ~0,7 USD). Warunek przejścia: RUN <id> completed z wynikiem {"ok":1,…} i ODMOWA
+   odczytu pliku z Documents. Jeśli nie przejdzie — zatrzymaj się, zdiagnozuj i opisz mi problem; pilota wtedy nie uruchamiaj.
+2. Pilot: skrypty/test_review_uruchom.sh pilot uruchom w TLE (Bash run_in_background, log do ~/test-review/sesje/pilot.log) i nadzoruj:
+   po każdej fazie przeczytaj dane/test-review/skan-<et>.txt i dane/test-review/koszt.txt. Twarde zatrzymania §11 (model, przeciek, zapis, N1,
+   limit kosztu, >10% agentów null, kontrola bajtowa) — skrypt przerywa sam; ty wtedy nie wznawiaj, tylko raportuj. Czas ~3–4 h.
+3. Po pilocie: skrypty/test_review_kopia.sh stan po (dowód „bez zmian”; różnica z moich commitów w oferty-online to nie alarm — sprawdź autora),
+   skrypty/test_review_wynik.py metryki (wszystkie etykiety), kalibracja sędziego: przeczytaj 20 decyzji (10 PEŁNE/CZĘŚCIOWE, 10 BRAK przy
+   findingach w tym samym pliku) na kopii i w ~/test-review/sedzia/*-mapowanie.json; zgodność sędziego p1 vs p2; stabilność b26128d vs r2.
+4. Wynik: dane/test-review/pilot-*.json + notatka TEST-REVIEW-PILOT-DLA-OPERATORA.md (koszt zmierzony vs szacunek, kalibracja, szczelność,
+   stabilność, pierwsze liczby złapań — bez wniosków o jakości, MDD pilota ~50 pkt) i ZATRZYMAJ SIĘ na moją decyzję o zakresie etapu głównego.
+
+Zasady: nic nie zmieniaj w .claude/, CLAUDE.md ani w oferty-online; liczby skryptem (skrypty/*.py → dane/); pliki .md tylko Write/Edit;
+__pycache__ usuwaj. Styl: problem → przyczyna → co robimy → co mi to da. Jeśli kontekst zbliży się do ~400k, zatrzymaj się, zaktualizuj stan
+w HANDOFF §8 i daj mi instrukcję kontynuacji w czacie. Po mojej akceptacji notatki: HANDOFF (6a, §8), pamięć projektu, commit docs/reviews.
+```
+
+**PRZYGOTOWANIE TESTU REVIEW (ZROBIONE 2026-09-25 w sesji 83cd0aa0 — zostawione dla historii; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.

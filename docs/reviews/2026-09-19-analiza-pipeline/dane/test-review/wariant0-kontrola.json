@@ -1,0 +1,144 @@
+{
+ "review": {
+  "zrodlo": ".claude/workflows/dev-docs-review-wf.js",
+  "zrodlo_sha": "59e0094b7587374c",
+  "linie_zrodla_do_verify": 1155,
+  "linie_roznic": [
+   "-  name: 'dev-docs-review-wf',",
+   "-  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/test zawsze; perf/code-quality/correctness/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 7 reviewerow rownolegle (tester E2E zwraca przebiegi[] per checkbox [E2E]) -> dedup 2-przebiegowy (JS + semantyczny haiku) -> detekcja blokera srodowiska po sygnaturze (JS) + globalny limit P3 po dedupie (round-robin po zrodle) -> adversarial verify P1/P2 (P1=3 niezaleznych sceptykow z konsensusem 2/3; P2 batchowane po pliku, jeden sceptyk na grupe do 4 findingow; findingi E2E testera i OPERATOR poza verify) -> scribe zapisuje raport + sekcje \"Przebieg review\" + bookkeeping checkboxow Weryfikacja:/Test: [E2E] (odznaczanie WYLACZNIE z wpisu PASS) -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii oraz blokerSrodowiska i e2eTesterFail dla orkiestratora.',",
+   "-  whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',",
+   "+  name: 'test-review-wariant0',",
+   "+  description: 'Test review (TEST-REVIEW-PLAN §4.1): dev-docs-review-wf.js z HEAD szablonu ucięty przed Verify — packager, reviewerzy wg routingu, dedup JS+haiku, globalny limit P3; tester E2E wyłączony; zwrot findingów przed weryfikacją',",
+   "-    { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 7: security, performance, code-quality, correctness, spec-compliance, test-coverage, e2e)' },",
+   "-    { title: 'Verify', detail: 'adversarial verify: P1 = 3 sceptykow (2/3), P2 = jeden sceptyk na grupe findingow z tego samego pliku' },",
+   "-    { title: 'Zapis', detail: 'raport + bookkeeping + severity gate' },",
+   "+    { title: 'Review', detail: 'context-packager + reviewerzy równolegle wg routingu domenowego (bez testera E2E)' },",
+   "-const e2eTryb = !domenaE2E",
+   "-  ? 'pominiety'",
+   "-  : (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-przegladarki' : 'przegladarka'",
+   "+const e2eTryb = 'pominiety' // TEST REVIEW (§3 pkt 4): tester E2E wyłączony we wszystkich wariantach; routing domeny liczony bez zmian",
+   "-phase('Verify')",
+   "+",
+   "+",
+   "+// TEST REVIEW: zwrot przed weryfikacją — to, co poszłoby do sceptyków (P1/P2 poza OPERATOR) + nity po globalnym limicie P3 + OPERATOR",
+   "+const doSedziego = [...doWeryfikacji, ...e2eBezVerify, ...nity, ...operatorowe]",
+   "+return {",
+   "+  findings: doSedziego.map((f) => ({ ...f, _zrodlo: f._zrodlo })),",
+   "+  przebieg: { aktywni: aktywni.map((r) => r.key), plikiFazy: plikiFazy.length, plikiKodu,",
+   "+    warstwy, e2eTryb, poDedupJs, poDedupSem: dedup.length, p3Odrzucone, dossier: !!(kontekst && kontekst.ctxZapisany),",
+   "+    diffZapisany: !!(kontekst && kontekst.diffZapisany), diffUciety: !!(kontekst && kontekst.diffUciety), kontekstNull: !kontekst,",
+   "+    nulle: wyniki.map((w, i) => (w ? null : etykietyZrodel[i])).filter(Boolean) },",
+   "+  pominieci,",
+   "+  kontekst, // mapa zmian packagera — wejście mapaBlok() sceptyków wariantu 0 w kroku weryfikacji (§6)",
+   "+}"
+  ],
+  "roznice_niedozwolone": [],
+  "wycinki": {
+   "const BLOK_ZAUFANIE": {
+    "zrodlo": "c4f6eb6a88894c42",
+    "wynik": "c4f6eb6a88894c42"
+   },
+   "const BLOK_LIMIT_P3": {
+    "zrodlo": "c40541a3b7846a46",
+    "wynik": "c40541a3b7846a46"
+   },
+   "const BLOK_SEMANTYKA": {
+    "zrodlo": "9fa2dc5d19aabc59",
+    "wynik": "9fa2dc5d19aabc59"
+   },
+   "const BLOK_DLUGIE_KOMENDY": {
+    "zrodlo": "5be0d0aeb73b7ac9",
+    "wynik": "5be0d0aeb73b7ac9"
+   },
+   "const FINDINGS": {
+    "zrodlo": "29a136d62d382266",
+    "wynik": "29a136d62d382266"
+   },
+   "const KONTEKST": {
+    "zrodlo": "7b9e1a5cb5e45a24",
+    "wynik": "7b9e1a5cb5e45a24"
+   },
+   "const REVIEWERZY": {
+    "zrodlo": "ec288dc4bf1cb237",
+    "wynik": "ec288dc4bf1cb237"
+   },
+   "function rereviewBlok": {
+    "zrodlo": "224f54d51080d499",
+    "wynik": "224f54d51080d499"
+   },
+   "function mapaBlok": {
+    "zrodlo": "81b146c7c92566da",
+    "wynik": "81b146c7c92566da"
+   },
+   "function kontekstPrompt": {
+    "zrodlo": "06f26847355c3b96",
+    "wynik": "06f26847355c3b96"
+   },
+   "function zrodlaBlok": {
+    "zrodlo": "1e0558153ab403f1",
+    "wynik": "1e0558153ab403f1"
+   },
+   "function reviewerPrompt": {
+    "zrodlo": "d01966b6214f41e8",
+    "wynik": "d01966b6214f41e8"
+   },
+   "function testCoveragePrompt": {
+    "zrodlo": "987f52287a6244e8",
+    "wynik": "987f52287a6244e8"
+   },
+   "const WARUNKI": {
+    "zrodlo": "9d38e5c95ae1d67f",
+    "wynik": "9d38e5c95ae1d67f"
+   },
+   "const TIERY_DOMYSLNE": {
+    "zrodlo": "29647d140fbffe73",
+    "wynik": "29647d140fbffe73"
+   },
+   "const poKluczu": {
+    "zrodlo": "ab4c9d9b40dd1bab",
+    "wynik": "ab4c9d9b40dd1bab"
+   },
+   "if (dedup.length > 1)": {
+    "zrodlo": "4ecca68adafbe6d8",
+    "wynik": "4ecca68adafbe6d8"
+   },
+   "function wybierzNity": {
+    "zrodlo": "da69406ad493463b",
+    "wynik": "da69406ad493463b"
+   }
+  },
+  "wycinki_rozne": []
+ },
+ "fix": {
+  "zrodlo": ".claude/workflows/dev-autopilot-wf.js",
+  "zrodlo_sha": "efc55647be77fc31",
+  "wywolania": [
+   "const preSkan = await agent(preSkanFixaPrompt(numerFazy), zEffortemAP({ schema: PRE_SKAN_FIXA, model: 'haiku', label: `fix:pre-skan:faza-${numerFazy}` }, 'low'))",
+   "const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy), zEffortemAP({ schema: REGRESJA_FIXA, label: `fix:kontrola:faza-${numerFazy}` }, 'low'))"
+  ],
+  "wycinki": {
+   "const PRE_SKAN_FIXA": {
+    "zrodlo": "f3e5858ebf0d0fe8",
+    "wynik": "f3e5858ebf0d0fe8"
+   },
+   "const REGRESJA_FIXA": {
+    "zrodlo": "78c14329acdca9dc",
+    "wynik": "78c14329acdca9dc"
+   },
+   "function preSkanFixaPrompt": {
+    "zrodlo": "e06b40392fc98b8d",
+    "wynik": "e06b40392fc98b8d"
+   },
+   "function regresjaFixaPrompt": {
+    "zrodlo": "91e26e7999ccfcd9",
+    "wynik": "91e26e7999ccfcd9"
+   },
+   "const zEffortemAP": {
+    "zrodlo": "2b68c5bcc50f757b",
+    "wynik": "2b68c5bcc50f757b"
+   }
+  },
+  "wycinki_rozne": []
+ },
+ "przechodzi": true
+}

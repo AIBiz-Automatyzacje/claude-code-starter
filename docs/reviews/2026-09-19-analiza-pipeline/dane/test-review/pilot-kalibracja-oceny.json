@@ -1,0 +1,22 @@
+[
+ {"nr": 1, "zgodne": true, "uwaga": "ta sama linia i ten sam mechanizm (ip_salt czytelna dla authenticated → odwrócenie ip_hash); F ujmuje to od strony dokumentu prawnego, rdzeń identyczny"},
+ {"nr": 2, "zgodne": true, "szara_strefa": true, "uwaga": "F w pliku testu (events.test.ts:319), K w kodzie (events.ts:93): wg definicji „ten sam defekt w innym miejscu” = CZĘŚCIOWE; F wprost wymienia brak testu 64/65 sekcji"},
+ {"nr": 3, "zgodne": true, "uwaga": "brak testu błędu rpc wspomniany w F pobocznie, główny temat F inny, inne miejsce — CZĘŚCIOWE trafne"},
+ {"nr": 4, "zgodne": true, "uwaga": "ta sama linia, ten sam brak asercji kolejności nagłówków"},
+ {"nr": 5, "zgodne": true, "uwaga": "to samo miejsce (events.ts:93), F wymienia refine sufitu kluczy bez testu"},
+ {"nr": 6, "zgodne": true, "szara_strefa": true, "uwaga": "jak #2: F w pliku testu z listą brakujących testów odmowy, w tym >64 kluczy — CZĘŚCIOWE zgodne z definicją miejsca"},
+ {"nr": 7, "zgodne": true, "uwaga": "dokładnie ten sam defekt w tym samym miejscu"},
+ {"nr": 8, "zgodne": true, "uwaga": "t.js:147 vs :151, ten sam mechanizm utraty przyrostów"},
+ {"nr": 9, "zgodne": true, "uwaga": "recordOpen, ±6 linii, ten sam mechanizm (drugi zapis pada po zapisanej wizycie → brak nagłówka X-Oo-Visit)"},
+ {"nr": 10, "zgodne": true, "szara_strefa": true, "uwaga": "K w pliku testu, F w kodzie (inne miejsce); PEŁNE obronione klauzulą „ta sama funkcja i ten sam mechanizm” (mergeIncrements, brak testu błędu rpc) — przy #2/#6 sędzia tej klauzuli nie użył"},
+ {"nr": 11, "zgodne": true, "uwaga": "inny defekt (samoodniesienie stałych nagłówków vs zduplikowany wzorzec href)"},
+ {"nr": 12, "zgodne": true, "uwaga": "inny defekt tego samego testu (dokładna nazwa sekretu vs skan całego Dockerfile)"},
+ {"nr": 13, "zgodne": true, "uwaga": "trafienie bramki lint o strictObject, nie niespójność odsiewu heat/sekcji"},
+ {"nr": 14, "zgodne": true, "uwaga": "ten sam punkt regulaminu, ale inna obietnica (cache 5 min po usunięciu oferty vs brak ścieżki usunięcia konta)"},
+ {"nr": 15, "zgodne": true, "uwaga": "klasyfikacja iPadOS po UA, nie deanonimizacja IP"},
+ {"nr": 16, "zgodne": true, "uwaga": "F to brak testów ścieżek błędu (dopasowany słusznie do K9), nie wadliwe zachowanie recordOpen z K12"},
+ {"nr": 17, "zgodne": true, "uwaga": "bramka o redakcji treści przed Sentry, nie brak limitu czasu"},
+ {"nr": 18, "zgodne": true, "uwaga": "nadużycie przyrostów bez powiązania z czasem, nie brak testu sufitu"},
+ {"nr": 19, "zgodne": true, "uwaga": "lint o zbędnej asercji typu, nie atrapy ignorujące URL"},
+ {"nr": 20, "zgodne": true, "uwaga": "brak testu sufitu cache (dopasowany słusznie do K3), nie brak limitu czasu wywołań Supabase"}
+]

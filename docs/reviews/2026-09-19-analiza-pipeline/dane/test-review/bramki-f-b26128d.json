@@ -1,0 +1,3121 @@
+{
+ "etykieta": "f-b26128d",
+ "sha": "b26128d294e58550f351432465b140a2059a2a1d",
+ "baza": "7f11a87",
+ "modul_fixa": false,
+ "pliki": 17,
+ "pliki_kodu": 10,
+ "pliki_ts": [
+  "apps/server/src/app.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/routes/events.test.ts",
+  "apps/server/src/routes/events.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "apps/server/src/routes/offer-origin-pages.ts",
+  "apps/server/src/tracker/tracker.test.ts",
+  "apps/server/src/tracking/visit-service.test.ts",
+  "apps/server/src/tracking/visit-service.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 5.7,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 204,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createEventRoutes' has too many lines (83). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 2,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'recordOpen' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 77,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'mergeIncrements' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 105,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 107,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 165,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (63). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 81,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 99,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 204,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createEventRoutes' has too many lines (83). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 239,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 145,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'boot' has too many lines (99). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 242,
+     "regula": "@typescript-eslint/no-unnecessary-type-assertion",
+     "opis": "This assertion is unnecessary since the receiver accepts the original type of the expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 212,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 228,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 241,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 255,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 311,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 5,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 183,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'recordOpen' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 77,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'mergeIncrements' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 105,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 107,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 165,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (63). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 81,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 99,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 204,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createEventRoutes' has too many lines (83). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 239,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 145,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'boot' has too many lines (99). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 242,
+     "regula": "@typescript-eslint/no-unnecessary-type-assertion",
+     "opis": "This assertion is unnecessary since the receiver accepts the original type of the expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 212,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 7,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 183,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.5,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ],
+   "zastane": 49
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/server/src/tracking/visit-service.ts": 367,
+    "apps/server/src/routes/offer-origin-pages.ts": 21,
+    "apps/server/src/routes/events.ts": 312
+   },
+   "pliki_A": [
+    "apps/server/src/tracking/visit-service.ts",
+    "apps/server/src/routes/events.ts",
+    "apps/server/src/routes/offer-origin-pages.ts"
+   ],
+   "wyniki": {
+    "apps/server": {
+     "status": "uruchomiona",
+     "sekundy": 13.6,
+     "statusy": {
+      "NoCoverage": 43,
+      "Killed": 185,
+      "Survived": 49,
+      "Timeout": 3
+     },
+     "przezyte": [
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 121,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 137,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 153,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 234,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 93,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 93,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_SECTION_KEYS"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 97,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 97,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_HEAT_KEYS"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 121,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 137,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 145,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → total >= maxBytes"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 167,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 222,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → context.env?.incoming?.socket.remoteAddress"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 222,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → context.env?.incoming.socket"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 222,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → context.env.incoming"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 284,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 286,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 291,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 291,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → offer.expiresAt >= now()"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 303,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 303,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 61,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 61,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 64,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[A-Za-z0-9_-]{1,64}$/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 64,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^[A-Za-z0-9_-]{1,64}/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 67,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])$/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 67,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 67,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^(?:[0-9]|1[^0-5]):(?:[0-9]|1[0-5])$/"
+      },
+      {
+       "plik": "apps/server/src/routes/events.ts",
+       "linia": 67,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[^0-5])$/"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 40,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 42,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 121,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 240,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 241,
+       "regula": "stryker/CallExpression",
+       "opis": "NoCoverage: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 254,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 255,
+       "regula": "stryker/CallExpression",
+       "opis": "NoCoverage: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 277,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 278,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "NoCoverage: BooleanLiteral → value.startsWith(BYTEA_PREFIX)"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 278,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 278,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 278,
+       "regula": "stryker/MethodExpression",
+       "opis": "NoCoverage: MethodExpression → value.endsWith(BYTEA_PREFIX)"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 278,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 279,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 282,
+       "regula": "stryker/MethodExpression",
+       "opis": "NoCoverage: MethodExpression → value"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 282,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 284,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 284,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 284,
+       "regula": "stryker/EqualityOperator",
+       "opis": "NoCoverage: EqualityOperator → salt.length === IP_SALT_BYTES"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 284,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 285,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 300,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 303,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 305,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 307,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 310,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 310,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 310,
+       "regula": "stryker/EqualityOperator",
+       "opis": "NoCoverage: EqualityOperator → error === null"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 310,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 311,
+       "regula": "stryker/CallExpression",
+       "opis": "NoCoverage: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 314,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 314,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 314,
+       "regula": "stryker/EqualityOperator",
+       "opis": "NoCoverage: EqualityOperator → data !== null"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 314,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 320,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 320,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 320,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 321,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 324,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "NoCoverage: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 50,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 107,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 107,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 107,
+       "regula": "stryker/UnaryOperator",
+       "opis": "Survived: UnaryOperator → +1"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 114,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 114,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → !VISIT_KEY_PATTERN.test(visitKey) && !SIGNATURE_PATTERN.test(provided)"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 114,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 118,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 119,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 121,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 138,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 143,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 204,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 205,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 205,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 205,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 240,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 254,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 60,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[A-Za-z0-9_-]{8,64}$/"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 60,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^[A-Za-z0-9_-]{8,64}/"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 63,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[A-Za-z0-9_-]{43}$/"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 63,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^[A-Za-z0-9_-]{43}/"
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 266,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/tracking/visit-service.ts",
+       "linia": 274,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 204,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createEventRoutes' has too many lines (83). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 121,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 153,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 234,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 93,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 93,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_SECTION_KEYS"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 97,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 97,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_HEAT_KEYS"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 121,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 145,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → total >= maxBytes"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 167,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env?.incoming?.socket.remoteAddress"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env?.incoming.socket"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env.incoming"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 286,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 291,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 291,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → offer.expiresAt >= now()"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 303,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 303,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 61,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 61,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 64,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{1,64}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 64,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{1,64}/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[^0-5]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[^0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 40,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 121,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 240,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 241,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 254,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 255,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 277,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → value.startsWith(BYTEA_PREFIX)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/MethodExpression",
+     "opis": "NoCoverage: MethodExpression → value.endsWith(BYTEA_PREFIX)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 279,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 282,
+     "regula": "stryker/MethodExpression",
+     "opis": "NoCoverage: MethodExpression → value"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 282,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → salt.length === IP_SALT_BYTES"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 285,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 300,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 303,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 305,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 307,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → error === null"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 311,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → data !== null"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 321,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 324,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "NoCoverage: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/UnaryOperator",
+     "opis": "Survived: UnaryOperator → +1"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !VISIT_KEY_PATTERN.test(visitKey) && !SIGNATURE_PATTERN.test(provided)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 118,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 119,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 121,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 138,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 143,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 204,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 240,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 254,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 60,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{8,64}$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 60,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{8,64}/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 63,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{43}$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 63,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{43}/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 266,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 274,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'recordOpen' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 77,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'mergeIncrements' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 105,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 107,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 165,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (63). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 81,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 99,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 204,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createEventRoutes' has too many lines (83). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 239,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 145,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'boot' has too many lines (99). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 242,
+     "regula": "@typescript-eslint/no-unnecessary-type-assertion",
+     "opis": "This assertion is unnecessary since the receiver accepts the original type of the expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 212,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 228,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 241,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 255,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 311,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 121,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 153,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 234,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 93,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 93,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_SECTION_KEYS"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 97,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 97,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_HEAT_KEYS"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 121,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 145,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → total >= maxBytes"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 167,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env?.incoming?.socket.remoteAddress"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env?.incoming.socket"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env.incoming"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 286,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 291,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 291,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → offer.expiresAt >= now()"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 303,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 303,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 61,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 61,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 64,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{1,64}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 64,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{1,64}/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[^0-5]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[^0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 40,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 121,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 240,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 241,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 254,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 255,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 277,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → value.startsWith(BYTEA_PREFIX)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/MethodExpression",
+     "opis": "NoCoverage: MethodExpression → value.endsWith(BYTEA_PREFIX)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 279,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 282,
+     "regula": "stryker/MethodExpression",
+     "opis": "NoCoverage: MethodExpression → value"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 282,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → salt.length === IP_SALT_BYTES"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 285,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 300,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 303,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 305,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 307,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → error === null"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 311,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → data !== null"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 321,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 324,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "NoCoverage: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/UnaryOperator",
+     "opis": "Survived: UnaryOperator → +1"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !VISIT_KEY_PATTERN.test(visitKey) && !SIGNATURE_PATTERN.test(provided)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 118,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 119,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 121,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 138,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 143,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 204,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 240,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 254,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 60,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{8,64}$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 60,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{8,64}/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 63,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{43}$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 63,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{43}/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 266,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 274,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 183,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'recordOpen' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 77,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'mergeIncrements' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 105,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 107,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 165,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (63). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 81,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 99,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 204,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createEventRoutes' has too many lines (83). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 239,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 145,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'boot' has too many lines (99). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 242,
+     "regula": "@typescript-eslint/no-unnecessary-type-assertion",
+     "opis": "This assertion is unnecessary since the receiver accepts the original type of the expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "linia": 212,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 121,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 153,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 234,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 93,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 93,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_SECTION_KEYS"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 97,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 97,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → Object.keys(value).length < MAX_HEAT_KEYS"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 121,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 145,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → total >= maxBytes"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 167,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env?.incoming?.socket.remoteAddress"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env?.incoming.socket"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → context.env.incoming"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 286,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 291,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 291,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → offer.expiresAt >= now()"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 303,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 303,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 61,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 61,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 64,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{1,64}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 64,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{1,64}/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[^0-5]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 67,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|1[0-5]):(?:[0-9]|1[^0-5])$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 40,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 121,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 240,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 241,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 254,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 255,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 277,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → value.startsWith(BYTEA_PREFIX)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/MethodExpression",
+     "opis": "NoCoverage: MethodExpression → value.endsWith(BYTEA_PREFIX)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 278,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 279,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 282,
+     "regula": "stryker/MethodExpression",
+     "opis": "NoCoverage: MethodExpression → value"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 282,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → salt.length === IP_SALT_BYTES"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 284,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 285,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 300,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 303,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 305,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 307,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → error === null"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 310,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 311,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/EqualityOperator",
+     "opis": "NoCoverage: EqualityOperator → data !== null"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 314,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 320,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 321,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 324,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "NoCoverage: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 107,
+     "regula": "stryker/UnaryOperator",
+     "opis": "Survived: UnaryOperator → +1"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !VISIT_KEY_PATTERN.test(visitKey) && !SIGNATURE_PATTERN.test(provided)"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 114,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 118,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 119,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 121,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 138,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 143,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 204,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 205,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 240,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 254,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 60,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{8,64}$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 60,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{8,64}/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 63,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{43}$/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 63,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{43}/"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 266,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 274,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 137,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 183,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 222,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 46,
+     "regula": "knip/exports",
+     "opis": "exports: EVENTS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/events.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: VISIT_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: TrackingOfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: VisitStoreError"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 172,
+     "regula": "knip/types",
+     "opis": "types: NewVisit"
+    },
+    {
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "linia": 182,
+     "regula": "knip/types",
+     "opis": "types: VisitIncrements"
+    }
+   ]
+  }
+ }
+}

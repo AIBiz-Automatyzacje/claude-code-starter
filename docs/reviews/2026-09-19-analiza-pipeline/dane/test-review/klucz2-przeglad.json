@@ -1,0 +1,7 @@
+{
+  "_opis": "Przegląd klucza 2 w sesji głównej przed testem (TEST-REVIEW-PLAN §2.2: „lista idzie do sędziego po przejrzeniu”). Pozycje wykluczone z klucza z powodem; klucz: <sha10 fazy>#<numer pozycji p12 od 1>. Przejrzane 2026-09-25: fazy pilota b26128d294 (7), 2634b6770a (3), f3ee433811 (4).",
+  "wykluczone": {
+    "f3ee433811#4": "duplikat pozycji #3 — wiersz „Finding 1 (P2)” z podsumowania soczewki spec-compliance opisuje ten sam defekt co `### … terms-page.ts:112` (obietnica usunięcia konta z Ustawień); parser test_review_klucz2.py wziął go za osobny finding"
+  },
+  "przejrzane_fazy": ["b26128d294", "2634b6770a", "f3ee433811"]
+}

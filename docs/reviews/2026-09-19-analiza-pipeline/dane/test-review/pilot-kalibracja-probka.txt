@@ -1,0 +1,119 @@
+#1 f-b26128d K10×F130 — sędzia: PEŁNE
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#1 P2 apps/server/src/tracking/visit-service.ts:137 — P2-1 · KOD · `apps/server/src/tracking/visit-service.ts:137`
+  treść: Deanonimizacja adresów IP czytelników przez właściciela oferty. Ta faza zaczyna zapisywać `visits.ip_hash = sha256(adres + offers.ip_salt)` i to sól jest JEDYNĄ ochroną adresu, ale `supabase/migrations/20260824171406_init_profiles_offers.sql:194` daje roli `authenticated` `grant select on table public.offers` — czyli PEŁNY SELECT, razem z kolumną `ip_salt`. Handlowiec (token MCP idzie prosto do PostgREST, RLS przepuszcza jego własne wiersze) czyta `ip_salt` swojej oferty i `visits.ip_hash` (gran
+  FINDING A P1 apps/server/src/tracking/visit-service.ts:137 — Polityka prywatności (/prywatnosc, sekcja 2) mówi odbiorcy, że adres IP „nie jest przechowywany w postaci, z której dałoby się go odtworzyć". Faza 2 zaczyna zapisywać ip_hash = sha256(adres + offers.ip_salt), a sól leży w tej samej bazie. Rola authenticated ma SELECT na całej tabeli offers (init: grant select on table public.offers), więc widzi też ip_salt, a do tego SELECT na visits.ip_hash (grant kolumnowy w migracji visits). Przestrzeń IPv4 to 2^32 wartości, więc przy znanej soli odwrócenie hasha to kwestia minut. Dokument prawny rozjeżdża się z tym, co faktycznie zapisuje implementacja.
+  sędzia: Ten sam mechanizm deanonimizacji przez sól w offers.
+
+#2 f-b26128d K12×F79 — sędzia: CZĘŚCIOWE
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#7 P2 apps/server/src/routes/events.ts:93 — P2-7 · TEST · `apps/server/src/routes/events.ts:93`
+  treść: Sufit liczby kluczy `sections` (`MAX_SECTION_KEYS = 64`, `sectionsSchema.refine`) nie ma testu granicznego, mimo że migracja `supabase/migrations/20260828150000_visits_merge_key_caps.sql` powstała właśnie po to, żeby ten sufit istniał po obu stronach (baza 64/256). Zestaw `it.each` w `events.test.ts` sprawdza komórkę spoza siatki i scroll spoza zakresu, ale nie liczność kluczy. Bramka jest realnie osiągalna: identyfikatory sekcji przychodzą z `data-section` w HTML oferty, którego walidacja publi
+  FINDING B P2 apps/server/src/routes/events.test.ts:319 — [T-05] Schemat ładunku ma niepokryte granice. Sufity liczby kluczy (events.ts:93 i :97, mutanty ConditionalExpression→true i `<=`→`<`) nie mają testu z 64/65 sekcjami ani z 256 komórkami. Kotwice regexów przeżyły: slug :61 (^/$), SECTION_ID :64 (^/$, zero testów niepoprawnego id sekcji), HEAT_CELL :67 (^/$, `1[^0-5]` w wierszu i kolumnie). Jedyna komórka negatywna '99:99' odpada także w każdym mutancie.
+  sędzia: Wymienia brak testów 64/65 sekcji wśród innych granic.
+
+#3 f-b26128d-r2 K9×F48 — sędzia: CZĘŚCIOWE
+  KLUCZ B-04-92 P3 apps/server/src/tracking/visit-service.test.ts:308 — Brak testu bledu RPC w mergeIncrements — sciezka zgloszenia do Sentry
+  treść: _📐 Maintainability & Code Quality_ | _🔵 Trivial_ | _⚡ Quick win_  **Brakuje testu błędu RPC w `mergeIncrements`.**  `createFakeClient` obsługuje już `failure.operation === 'rpc'`, ale żaden test tego nie używa. Ścieżka `throw new VisitStoreError(error.message)` w `mergeIncrements` pozostaje niepokryta, a właśnie ona decyduje, czy trasa `/e` zgłosi zdarzenie do Sentry.
+  FINDING 0 P2 apps/server/src/tracking/visit-service.ts:297 — Nowe funkcje publiczne `createSupabaseTrackingOfferLoader` i `parseIpSalt` nie mają żadnego testu. Reguła §6/§2 wymaga happy path i error case. To jedyne miejsce, które zamienia `bytea` z PostgREST (`\\x…`) na 32-bajtowy klucz HMAC i parsuje `expires_at`. Błąd tutaj (inny prefiks, zły rozmiar, NaN daty) wyłącza CAŁY tracking: każde zdarzenie kończy się wyjątkiem i cichym 204, a testy trasy go nie złapią, bo wstrzykują gotowy `TrackingOffer`. Brakuje też testów ścieżek błędu `statusError` w `recordOpen` i błędu `rpc` w `mergeIncrements`. Dopisz testy z atrapą klienta (wzorzec `createFakeClient`
+  sędzia: Wspomina też brak testu błędu rpc.
+
+#4 f-f3ee433 K5×F65 — sędzia: PEŁNE
+  KLUCZ docs/completed/faza-9c-dokumenty-prawne/review-faza-2.md#3 P2 apps/server/src/routes/offer-origin-pages.test.ts:117 — 3. 🟠 **[P2/TEST]** `apps/server/src/routes/offer-origin-pages.test.ts:117` (źródło: test-coverage)
+  treść: Scenariusz planu IU-4 „siedem nagłówków sekcji W TEJ SAMEJ KOLEJNOŚCI co przed zmianą" nie ma pokrycia: test `wydaje siedem numerowanych sekcji` robi tylko `toContain` per nagłówek (linie 117–133), bez asercji kolejności (`grep indexOf|sort(` w pliku = 0 trafień). Przenumerowanie sekcji (zakazane przez R4 — odwołanie wewnętrzne „punkt 5") przeszłoby na zielono.    **Akcja:** dołóż asercję pozycji jak w `app-privacy-page.test.ts:146-150` — `positions = headings.map(h => body.indexOf(`<h2>${h}</h2
+  FINDING C P3 apps/server/src/routes/offer-origin-pages.test.ts:117 — Plan IU-4 wymaga testu 'siedem nagłówków sekcji w tej samej kolejności co przed zmianą' dla /prywatnosc czytelnika (R4: numeracja bez zmian, bo 'punkt 5' to odwołanie wewnętrzne). Test sprawdza tylko toContain(heading), bez kolejności i bez obudowy <h2>. Ta sama fraza w akapicie spełniłaby asercję.
+  sędzia: Ten sam brak asercji kolejności nagłówków w teście /prywatnosc.
+
+#5 f-b26128d K12×F98 — sędzia: PEŁNE
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#7 P2 apps/server/src/routes/events.ts:93 — P2-7 · TEST · `apps/server/src/routes/events.ts:93`
+  treść: Sufit liczby kluczy `sections` (`MAX_SECTION_KEYS = 64`, `sectionsSchema.refine`) nie ma testu granicznego, mimo że migracja `supabase/migrations/20260828150000_visits_merge_key_caps.sql` powstała właśnie po to, żeby ten sufit istniał po obu stronach (baza 64/256). Zestaw `it.each` w `events.test.ts` sprawdza komórkę spoza siatki i scroll spoza zakresu, ale nie liczność kluczy. Bramka jest realnie osiągalna: identyfikatory sekcji przychodzą z `data-section` w HTML oferty, którego walidacja publi
+  FINDING C P3 apps/server/src/routes/events.ts:93 — Brak testów dla kilku bramek, co pokazują przeżyte mutanty. Sufity liczby kluczy (`.refine` :93/:97, zamiana na `true` przeżywa). Kotwice regexów slugu, sekcji i komórki (:61/:64/:67, bez `$` przeżywa, więc przechodzi slug 22-znakowy albo komórka `1:15x`). Granica limitu ciała (:145 `>` → `>=`), granica ważności (:291 `>` → `>=`). Ścieżki błędu `statusError` i `rpc` w visit-service.ts:240/:254 (`→ false` przeżywa).
+  sędzia: events.ts:93, refine sufitu kluczy bez testu.
+
+#6 f-b26128d-r2 K1×F36 — sędzia: CZĘŚCIOWE
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#7 P2 apps/server/src/routes/events.ts:93 — P2-7 · TEST · `apps/server/src/routes/events.ts:93`
+  treść: Sufit liczby kluczy `sections` (`MAX_SECTION_KEYS = 64`, `sectionsSchema.refine`) nie ma testu granicznego, mimo że migracja `supabase/migrations/20260828150000_visits_merge_key_caps.sql` powstała właśnie po to, żeby ten sufit istniał po obu stronach (baza 64/256). Zestaw `it.each` w `events.test.ts` sprawdza komórkę spoza siatki i scroll spoza zakresu, ale nie liczność kluczy. Bramka jest realnie osiągalna: identyfikatory sekcji przychodzą z `data-section` w HTML oferty, którego walidacja publi
+  FINDING 0 P2 apps/server/src/routes/events.test.ts:319 — Bramka Zod `/e` ma testy odmowy tylko dla części wektorów: nie-JSON, typ, brak geometrii, slug, ujemna geometria, komórka 99:99, scroll 500. Bez testu odmowy (każdy: 204, `merges` i `visits` puste, `loadOffer` niewywołany) zostają: (1) klucz sekcji spoza `SECTION_ID_PATTERN`, np. `{"<img src=x>":1}`, `{"a b":1}` i klucz 65-znakowy; (2) więcej niż 64 klucze `sections` (refine `MAX_SECTION_KEYS`); (3) wartość sekcji > 86400 oraz ujemna (`-1`); (4) licznik `heat` > 1 000 000 i niecałkowity (`1.5`); (5) komórka `"01:02"` / `"16:0"` / `"1:1 "`; (6) `visit` krótszy niż 10 i dłuższy niż 200 znaków; (
+  sędzia: Lista brakujących testów odmowy zawiera >64 kluczy sections.
+
+#7 f-b26128d K12×F63 — sędzia: PEŁNE
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#7 P2 apps/server/src/routes/events.ts:93 — P2-7 · TEST · `apps/server/src/routes/events.ts:93`
+  treść: Sufit liczby kluczy `sections` (`MAX_SECTION_KEYS = 64`, `sectionsSchema.refine`) nie ma testu granicznego, mimo że migracja `supabase/migrations/20260828150000_visits_merge_key_caps.sql` powstała właśnie po to, żeby ten sufit istniał po obu stronach (baza 64/256). Zestaw `it.each` w `events.test.ts` sprawdza komórkę spoza siatki i scroll spoza zakresu, ale nie liczność kluczy. Bramka jest realnie osiągalna: identyfikatory sekcji przychodzą z `data-section` w HTML oferty, którego walidacja publi
+  FINDING A P2 apps/server/src/routes/events.ts:93 — Brak testu granicy sufitu kluczy sekcji (64/65). Mutanty `<=`→`<` i refine→true przeżyły. Dla heat mutant refine→true jest równoważny, bo regex dopuszcza dokładnie 16×16=256 kluczy, ale mutant `<` nie jest.
+  sędzia: Brak testu granicy sufitu kluczy sekcji 64/65.
+
+#8 f-b26128d-r2 K5×F42 — sędzia: PEŁNE
+  KLUCZ B-04-96 P2 apps/server/static/t.js:151 — drain() zeruje bufory przed wysylka — nieudany sendBeacon gubi 10 s telemetrii
+  treść: _🗄️ Data Integrity & Integration_ | _🔵 Trivial_ | _⚡ Quick win_  **Nieudana wysyłka gubi przyrosty bezpowrotnie.**  `drain()` zeruje `sections`, `heat` i `dirty` przed wysyłką. Jeśli `sendBeacon` zwróci `false` (pełna kolejka przeglądarki) albo `fetch` odrzuci obietnicę, dane z tego okna przepadają i nie wrócą w kolejnym flushu. Przy `pagehide` to jest akceptowalne, ale przy okresowym flushu tracisz 10 s telemetrii bez śladu. Wystarczy przywrócić ładunek do buforów, gdy `sendBeacon` odpowie `fal
+  FINDING A P3 apps/server/static/t.js:147 — drain() zeruje bufory sections/heat przed wysyłką, a wynik sendBeacon (false przy pełnej kolejce albo odrzuceniu) jest ignorowany. Przyrosty przepadają bez śladu.
+  sędzia: Ten sam mechanizm utraty przyrostów.
+
+#9 f-b26128d-r2 K12×F105 — sędzia: PEŁNE
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#2 P2 apps/server/src/tracking/visit-service.ts:240 — P2-2 · KOD · `apps/server/src/tracking/visit-service.ts:240`
+  treść: `recordOpen` traktuje niepowodzenie WTÓRNEGO update'u `offers.status` tak samo jak niepowodzenie insertu wizyty: rzuca `VisitStoreError`, więc `handleOpen` nie zdąży ustawić nagłówka `X-Oo-Visit` (events.ts:786), route łapie wyjątek i oddaje 204 bez tokenu. Scenariusz: wiersz `visits` JEST już zapisany, ale tracker widzi odpowiedź bez nagłówka → `retry()` (t.js:2270) po 30 s wysyła drugi `open` → drugi `visit_key`, drugi wiersz `visits` dla tego samego czytelnika, przy czym pierwszy zostaje na z
+  FINDING A P2 apps/server/src/tracking/visit-service.ts:234 — recordOpen zapisuje do dwóch tabel (insert visits, potem update offers.status) bez transakcji i bez kompensacji. Gdy drugi zapis padnie, wiersz wizyty już istnieje, a wyjątek przerywa handleOpen przed wydaniem nagłówka X-Oo-Visit.
+  sędzia: Ten sam mechanizm.
+
+#10 f-b26128d-r2 K9×F77 — sędzia: PEŁNE
+  KLUCZ B-04-92 P3 apps/server/src/tracking/visit-service.test.ts:308 — Brak testu bledu RPC w mergeIncrements — sciezka zgloszenia do Sentry
+  treść: _📐 Maintainability & Code Quality_ | _🔵 Trivial_ | _⚡ Quick win_  **Brakuje testu błędu RPC w `mergeIncrements`.**  `createFakeClient` obsługuje już `failure.operation === 'rpc'`, ale żaden test tego nie używa. Ścieżka `throw new VisitStoreError(error.message)` w `mergeIncrements` pozostaje niepokryta, a właśnie ona decyduje, czy trasa `/e` zgłosi zdarzenie do Sentry.
+  FINDING A P2 apps/server/src/tracking/visit-service.ts:240 — Gałęzie błędu `statusError !== null` w recordOpen (update statusu oferty) i `error !== null` w mergeIncrements (rpc) nie mają testu. Mutanty 240 i 254 (ConditionalExpression → false) przeżyły. Atrapa createFakeClient obsługuje `operation: 'update'` i `'rpc'`, ale żaden test tego nie używa.
+  sędzia: Ten sam brak testu błędu rpc.
+
+#11 f-f3ee433 K1×F8 — sędzia: BRAK
+  KLUCZ B-13-102 P3 apps/server/src/offer/pages/terms-page.test.ts:119 — SAFE_HREF_PATTERN i collectHrefs w dwoch kopiach — korekta w jednym pliku zostawi drugi ze slabsza wersja.
+  treść: _📐 Maintainability & Code Quality_ | _🔵 Trivial_ | _⚡ Quick win_  **Biała lista `href` i `collectHrefs` istnieją w dwóch kopiach.** Oba pliki testowe mają ten sam regexp bezpieczeństwa i tę samą funkcję zbierającą atrybuty `href`, razem z tym samym komentarzem o `//host` i `/\host`. To jedna reguła bezpieczeństwa w dwóch miejscach — korekta wzorca w jednym pliku pozostawi drugi ze starą, słabszą wersją. - `apps/server/src/offer/pages/terms-page.test.ts#L129-L132`: zastąp wbudowany regexp importe
+  FINDING A P2 apps/server/src/offer/pages/terms-page.test.ts:89 — Samoodniesienie: test weryfikuje brzmienie nagłówków, które plan ustalił dosłownie, stałymi importowanymi z implementacji (`TERMS_ATTACHMENT_HEADING`, `DATA_CONTACT_HEADING`). To samo robią app-privacy-page.test.ts:43 i app-origin-pages.test.ts:273. Dosłowną asercję ma tylko nagłówek załącznika (w teście trasy). Nagłówek „Kontakt w sprawach danych osobowych” nie jest nigdzie zapisany dosłownie.
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 30
+
+#12 f-2634b67 K1×F69 — sędzia: BRAK
+  KLUCZ B-03-76 P2 scripts/dockerfile-invariants.test.ts:68 — Test skanuje caly Dockerfile — ARG w builderze i ENV w runtime zaliczy sie falszywie
+  treść: _🎯 Functional Correctness_ | _🟡 Minor_ | _⚡ Quick win_  **Sprawdzaj etap budowania dashboardu, nie cały Dockerfile.**  `matchAll` i `toContain` przeszukują cały plik, więc test przejdzie, gdy `ARG VITE_*` jest w etapie buildera, a odpowiadający `ENV` jest dopiero w etapie runtime. Wtedy Vite zbuduje dashboard bez zmiennej, mimo że test raportuje poprawną konfigurację.
+  FINDING 0 P3 scripts/dockerfile-invariants.test.ts:81 — Strażnik sprawdza tylko dokładną nazwę VITE_SUPABASE_SECRET_KEY. Przejdą przez niego np. ARG VITE_SUPABASE_SERVICE_ROLE_KEY albo VITE_SB_SECRET. Co zmienić: linie 81–82 zamienić na expect(DOCKERFILE).not.toMatch(/^(ARG|ENV) VITE_[A-Z0-9_]*(SECRET|SERVICE_ROLE)/m) oraz expect(ENV_EXAMPLE).not.toMatch(/^VITE_[A-Z0-9_]*(SECRET|SERVICE_ROLE)[A-Z0-9_]*=/m).
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 13
+
+#13 f-b26128d K13×F37 — sędzia: BRAK
+  KLUCZ B-04-88 P3 apps/server/src/routes/events.ts:97 — Jedna komorka heat spoza siatki uniewaznia caly beacon, sekcje sa odsiewane
+  treść: _🗄️ Data Integrity & Integration_ | _🔵 Trivial_ | _⚡ Quick win_  **Niespójność bramek: sekcje są odsiewane, a komórki `heat` odrzucają cały ładunek.**  `heatSchema` używa regexu w schemacie klucza, więc pojedyncza komórka spoza siatki unieważnia cały beacon — razem z `sections` i `scroll_depth_pct`. Dokładnie ten scenariusz uzasadniałeś przy sekcjach: oferta jest niemutowalna, więc cicha utrata telemetrii jest trwała. Klucze `heat` generuje wyłącznie nasz tracker, więc ryzyko jest dziś zerowe, a
+  FINDING B P2 apps/server/src/routes/events.ts:99 — bramka no-restricted-syntax: na granicy tylko z.strictObject z limitami długości pól
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 2
+
+#14 f-f3ee433 K4×F34 — sędzia: BRAK
+  KLUCZ docs/completed/faza-9c-dokumenty-prawne/review-faza-2.md#1 P2 apps/server/src/offer/pages/terms-page.ts:112 — 1. 🟠 **[P2/KOD]** `apps/server/src/offer/pages/terms-page.ts:112` (źródło: security; sceptyk sugeruje P3)
+  treść: Regulamin (pkt 7, linia 112) i polityka panelu (`app-privacy-page.ts:123` i `:142`) obiecują, że użytkownik „usunie konto z Ustawień" — w dashboardzie nie istnieje żadna ścieżka usunięcia konta (`grep apps/dashboard/src` po „usuń konto"/`deleteAccount`: zero trafień; `docs/MVP.md:290` opisuje to jako funkcję przyszłą). Reguła projektu: komunikat nie obiecuje czynności, której kod nie potwierdza — a to dokument prawny opisujący realizację prawa z art. 17 RODO, który idzie na dev/prod PRZED tą fun
+  FINDING 0 P3 apps/server/src/offer/pages/terms-page.ts:115 — Zdanie „Odbiorca, który otworzy adres usuniętej oferty, zobaczy informację, że strona nie istnieje” jest spoza wykazu planu (punkt 7 wykazu go nie zawiera) i nie jest prawdziwe natychmiast po usunięciu. `/o/<slug>` serwuje z cache w pamięci procesu z TTL do 5 min (`DEFAULT_TTL_MS` w `offer/cache.ts:15`), celowo także bez sięgania do bazy. Scenariusz: odbiorca otworzył ofertę minutę przed usunięciem konta; przez kolejne ~4 minuty każdy z linkiem dalej dostaje pełną treść, wbrew obietnicy „natychmiast” z tego samego punktu. Akcja: usunąć z akapitu w liniach 114–116 zdanie „Odbiorca, który otworz
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 3
+
+#15 f-b26128d-r2 K8×F125 — sędzia: BRAK
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#1 P2 apps/server/src/tracking/visit-service.ts:137 — P2-1 · KOD · `apps/server/src/tracking/visit-service.ts:137`
+  treść: Deanonimizacja adresów IP czytelników przez właściciela oferty. Ta faza zaczyna zapisywać `visits.ip_hash = sha256(adres + offers.ip_salt)` i to sól jest JEDYNĄ ochroną adresu, ale `supabase/migrations/20260824171406_init_profiles_offers.sql:194` daje roli `authenticated` `grant select on table public.offers` — czyli PEŁNY SELECT, razem z kolumną `ip_salt`. Handlowiec (token MCP idzie prosto do PostgREST, RLS przepuszcza jego własne wiersze) czyta `ip_salt` swojej oferty i `visits.ip_hash` (gran
+  FINDING A P3 apps/server/src/tracking/visit-service.ts:146 — Klasyfikacja urządzenia regexem po User-Agent nie rozpoznaje iPadów z iPadOS 13+ (domyślnie wysyłają desktopowy UA 'Macintosh'), więc lądują jako desktop.
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 9
+
+#16 f-b26128d-r2 K12×F66 — sędzia: BRAK
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#2 P2 apps/server/src/tracking/visit-service.ts:240 — P2-2 · KOD · `apps/server/src/tracking/visit-service.ts:240`
+  treść: `recordOpen` traktuje niepowodzenie WTÓRNEGO update'u `offers.status` tak samo jak niepowodzenie insertu wizyty: rzuca `VisitStoreError`, więc `handleOpen` nie zdąży ustawić nagłówka `X-Oo-Visit` (events.ts:786), route łapie wyjątek i oddaje 204 bez tokenu. Scenariusz: wiersz `visits` JEST już zapisany, ale tracker widzi odpowiedź bez nagłówka → `retry()` (t.js:2270) po 30 s wysyła drugi `open` → drugi `visit_key`, drugi wiersz `visits` dla tego samego czytelnika, przy czym pierwszy zostaje na z
+  FINDING C P2 apps/server/src/tracking/visit-service.ts:240 — Nowe ścieżki błędu bez testu odmowy: błąd warunkowego UPDATE statusu (L240, mutant → false przeżył) i błąd RPC merge_visit_increments (L254, mutant → false przeżył). createFakeClient obsługuje już failure {operation:'update'} i {operation:'rpc'}, ale nikt z nich nie korzysta. Propozycja: dwa testy `rejects.toBeInstanceOf(VisitStoreError)` z tymi awariami. Przy okazji: VisitStoreError.name (L50, mutant '' przeżył) można przypiąć `rejects.toMatchObject({ name: 'VisitStoreError', message: 'baza padła' })`.
+  sędzia: dopasowany do K9 (PEŁNE) | odległość linii 0
+
+#17 f-b26128d K3×F103 — sędzia: BRAK
+  KLUCZ B-04-95 P2 apps/server/src/tracking/visit-service.ts:229 — POST /e bez limitu czasu na insert/update/RPC — kumulacja zasobow procesu
+  treść: _🩺 Stability & Availability_ | _🟠 Major_ | _⚡ Quick win_  **Ustaw limit czasu dla żądań Supabase w `POST /e`.** `createSecretClient` nie ustawia `db.timeout` ani własnego `global.fetch`, a `handleOpen` i `handleDelta` oczekują na operacje `insert`, `update` i RPC. Przy niedostępnym Supabase żądania mogą pozostawać aktywne bez limitu i kumulować zasoby procesu; ustaw `db: { timeout: ... }` lub `global.fetch` z `AbortSignal`.   b44d23a
+  FINDING B P2 apps/server/src/tracking/visit-service.ts:228 — bramka no-restricted-syntax: zredaguj treść przed Sentry
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 1
+
+#18 f-b26128d K12×F46 — sędzia: BRAK
+  KLUCZ docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#7 P2 apps/server/src/routes/events.ts:93 — P2-7 · TEST · `apps/server/src/routes/events.ts:93`
+  treść: Sufit liczby kluczy `sections` (`MAX_SECTION_KEYS = 64`, `sectionsSchema.refine`) nie ma testu granicznego, mimo że migracja `supabase/migrations/20260828150000_visits_merge_key_caps.sql` powstała właśnie po to, żeby ten sufit istniał po obu stronach (baza 64/256). Zestaw `it.each` w `events.test.ts` sprawdza komórkę spoza siatki i scroll spoza zakresu, ale nie liczność kluczy. Bramka jest realnie osiągalna: identyfikatory sekcji przychodzą z `data-section` w HTML oferty, którego walidacja publi
+  FINDING A P3 apps/server/src/routes/events.ts:91 — Wielkość przyrostu w delcie nie jest powiązana z czasem, jaki upłynął od `last_seen_at`. Jeden beacon może zgłosić 86 400 s dla każdej z 64 sekcji i 1 000 000 dla każdej komórki heatmapy. Token wizyty jest ważny aż do wygaśnięcia oferty i można go używać wielokrotnie bez ograniczeń. Legalny tracker wysyła najwyżej ok. 10 s na sekcję na beacon.
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 2
+
+#19 f-b26128d-r2 K7×F100 — sędzia: BRAK
+  KLUCZ B-04-90 P2 apps/server/src/tracker/tracker.test.ts:197 — Atrapy fetch i sendBeacon ignoruja URL — literowka w ENDPOINT przejdzie
+  treść: _🗄️ Data Integrity & Integration_ | _🔵 Trivial_ | _⚡ Quick win_  **Atrapy `fetch` i `sendBeacon` ignorują URL — literówka w `ENDPOINT` przejdzie cały suite.**  Oba stuby przyjmują `_url` i nie sprawdzają go. Ścieżka względna `/e` jest kontraktem między trackerem a serwerem (Z4), a asercja z linii 447 wyłapie tylko adres absolutny. Zapisuj URL i asertuj `'/e'` przynajmniej w teście `open` i w teście beacona.  Also applies to: 205-211
+  FINDING BC P2 apps/server/src/tracker/tracker.test.ts:242 — bramka @typescript-eslint/no-unnecessary-type-assertion: This assertion is unnecessary since the receiver accepts the original type of the expression.
+  sędzia: bez dopasowania: POZA_KLUCZEM | odległość linii 45
+
+#20 f-2634b67 K2×F67 — sędzia: BRAK
+  KLUCZ B-03-70 P2 apps/server/src/mcp/token-service.ts:199 — Cztery wywolania Supabase bez limitu czasu (db.timeout nie obejmuje Auth)
+  treść: _🩺 Stability & Availability_ | _🟠 Major_ | _⚡ Quick win_  **Ustaw limit czasu dla wszystkich wywołań Supabase.**  Przy braku sesji w cache `lookupOwnerId` oraz `mintSession` wykonują cztery wywołania sieciowe, a oba klienci `createClient` używają domyślnego `fetch` bez limitu ustawionego przez aplikację. Skonfiguruj timeout przez `global.fetch`; `db.timeout` obejmuje tylko PostgREST, nie wywołania Auth.
+  FINDING C P2 apps/server/src/mcp/token-service.ts:194 — Sufit cache MAX_CACHED_SESSIONS i reorder LRU nie mają testu: mutanty 193/194 (>=, false), 197, 201, 222 (delete przed set) i 228 (wywołanie enforceCacheCeiling) przeżywają albo mają NoCoverage. Learned-pattern wymaga przy per-kluczowej mapie sufitu kluczy, więc ten sufit to kontrakt, który trzeba chronić testem. Propozycja: fabryka atrapy z 501 tokenami i ownerami. Najpierw resolve dla wszystkich, potem ponowny resolve pierwszego ownera, i asercja mintCalls === 502. Wariant LRU: owner używany na bieżąco nie zostaje wyrzucony.
+  sędzia: dopasowany do K3 (PEŁNE) | odległość linii 5

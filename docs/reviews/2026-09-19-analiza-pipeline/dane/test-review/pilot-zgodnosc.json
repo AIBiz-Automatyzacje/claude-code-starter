@@ -1,0 +1,60 @@
+{
+ "zgodnosc": {
+  "obecny": {
+   "zgodne": 40,
+   "z": 41,
+   "procent": 97.6
+  },
+  "szeroko": {
+   "zgodne": 148,
+   "z": 148,
+   "procent": 100.0
+  },
+  "pelne": {
+   "zgodne": 142,
+   "z": 148,
+   "procent": 95.9
+  },
+  "finding": {
+   "zgodne": 102,
+   "z": 112,
+   "procent": 91.1
+  }
+ },
+ "opis": "obecny = sędzia tak samo ocenił obecność klucza w kodzie; szeroko/pelne = para (klucz obecny w obu, wariant) złapana tak samo; finding = finding dopasowany w którejś permutacji do tych samych kluczy z tą samą oceną",
+ "fazy": [
+  {
+   "et": "f-b26128d",
+   "rozbieznosci": []
+  },
+  {
+   "et": "f-2634b67",
+   "rozbieznosci": [
+    "K5 wariant A pelne: p1 False, p2 True",
+    "K5 wariant B pelne: p1 True, p2 False",
+    "K5 wariant C pelne: p1 True, p2 False",
+    "K6 wariant A pelne: p1 False, p2 True"
+   ]
+  },
+  {
+   "et": "f-f3ee433",
+   "rozbieznosci": []
+  },
+  {
+   "et": "f-b26128d-r2",
+   "rozbieznosci": [
+    "K1 wariant 0 pelne: p1 False, p2 True",
+    "K1 wariant B pelne: p1 False, p2 True",
+    "K13 obecny: p1 False, p2 True"
+   ]
+  },
+  {
+   "et": "x-411a434",
+   "rozbieznosci": []
+  },
+  {
+   "et": "x-05dd804",
+   "rozbieznosci": []
+  }
+ ]
+}

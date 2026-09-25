@@ -1,0 +1,15 @@
+{
+ "etykieta": "f-2634b67",
+ "podsumowanie": {
+  "agentow": 45,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_9057886f-734 dedup:semantyczny: agent haiku wołał narzędzia ['Bash']"
+ ]
+}
