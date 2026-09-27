@@ -1,0 +1,497 @@
+[
+ {
+  "et": "f-b26128d",
+  "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#6",
+  "waga": "P2",
+  "plik": "apps/server/src/routes/events.test.ts",
+  "linia": 1,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "A",
+   "B"
+  ],
+  "zrodlo_0": [],
+  "opis": "Brak testu, że POST /e zużywa wiadro limitera originu ofert (jest tylko test odwrotny dla /t.js).",
+  "tresc": "Brak testu, że `POST /e` JEST liczony przez wiadro limitera originu ofert (bramka 1 łańcucha z planu IU-4). Test lustrzany istnieje tylko w drugą stronę — `offer-origin-pages.test.ts` dowodzi, że `/t.js` wiadra NIE zużywa (przez `offerRateLimit: {limit: 1}`). Dziś nic nie pilnuje, że jedyny publiczny endpoint zapisujący do bazy podlega limitowi: dopisanie `/e` do `UNCOUNTED_OFFER_PATHS` albo zamontowanie `eventRoutes` przed middlewarem limitera przejdzie cały zielony suite. To ta sama klasa martwej bramki, którą fazę wcześniej wyłapano przy testach negatywnych.\n\nScenariusz: app z `offerRateLim"
+ },
+ {
+  "et": "f-b26128d",
+  "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#4",
+  "waga": "P2",
+  "plik": "apps/server/src/app.ts",
+  "linia": 118,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "B"
+  ],
+  "zrodlo_0": [],
+  "opis": "Budżet limitera originu ofert policzony na odsłonę, a tracker wysyła kilka żądań na minutę na każdą otwartą kartę.",
+  "tresc": "Budżet limitera originu ofert przeliczony na ODSŁONĘ, a tracker generuje ~6 żądań na MINUTĘ na otwartą kartę. Komentarz uzasadniający próg `DEFAULT_OFFER_RATE_LIMIT = {limit:300, windowMs:60_000}` (app.ts:118-130) mówi: „jedna odsłona oferty to 1 żądanie dokumentu plus zdarzenia trackera — licząc z zapasem ~6 żądań liczonych na odsłonę\", skąd wyprowadza „~50 odsłon na minutę z jednego adresu\". Faktycznie `t.js` (FLUSH_MS=10000, static/t.js:9) wysyła beacon co 10 s DOPÓKI karta jest otwarta i czytana, więc jedna otwarta karta zużywa 6 żądań/min bez końca, a 5-minutowa lektura to ~31 żądań liczo"
+ },
+ {
+  "et": "f-b26128d",
+  "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#1",
+  "waga": "P2",
+  "plik": "apps/server/src/tracking/visit-service.ts",
+  "linia": 137,
+  "gubi": [
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Deanonimizacja IP: rola authenticated czyta sól offers.ip_salt, jedyną ochronę hasha adresu IP czytelnika oferty.",
+  "tresc": "Deanonimizacja adresów IP czytelników przez właściciela oferty. Ta faza zaczyna zapisywać `visits.ip_hash = sha256(adres + offers.ip_salt)` i to sól jest JEDYNĄ ochroną adresu, ale `supabase/migrations/20260824171406_init_profiles_offers.sql:194` daje roli `authenticated` `grant select on table public.offers` — czyli PEŁNY SELECT, razem z kolumną `ip_salt`. Handlowiec (token MCP idzie prosto do PostgREST, RLS przepuszcza jego własne wiersze) czyta `ip_salt` swojej oferty i `visits.ip_hash` (grant kolumnowy z migracji 20260828120000 obejmuje `ip_hash`), po czym odtwarza surowy adres brute-force"
+ },
+ {
+  "et": "f-32975a1",
+  "przypadek": "docs/completed/faza-5-heatmapa/review-faza-2.md#3",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "linia": 326,
+  "gubi": [
+   "A",
+   "B"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "performance"
+  ],
+  "opis": "Zwinięcie mapy na telefonie robi tylko CSS — iframe z ofertą i duży canvas i tak się montują i rysują.",
+  "tresc": "Zwinięcie mapy na telefonie robi wyłącznie CSS (`hidden … md:flex`), a `renderBody()` renderuje się bezwarunkowo — więc na telefonie i tak montuje się `<iframe src={/o/slug}>` z pełnym dokumentem oferty oraz canvas 1280×doc_height, na którym leci `simpleheat.draw()`.\n\nScenariusz: handlowiec otwiera widok oferty na telefonie w LTE i NIE dotyka przycisku „Pokaż mapę uwagi\" — mimo to pobiera cały dokument oferty i płaci ~21 MB ImageData na rysowanie, czyli dokładnie koszt, którego zwinięcie miało uniknąć. To samo dotyczy desktopu: blok jest daleko pod pierwszym ekranem, a dokument oferty ładuje s"
+ },
+ {
+  "et": "f-32975a1",
+  "przypadek": "docs/completed/faza-5-heatmapa/review-faza-2.md#5",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+  "linia": 227,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "A",
+   "C"
+  ],
+  "zrodlo_0": [],
+  "opis": "Canvas nakładki alokowany w pełnej rozdzielczości dokumentu (dziesiątki MB bufora) zamiast po skali.",
+  "tresc": "Canvas nakładki jest alokowany w PEŁNEJ rozdzielczości dokumentu (`width={frame.viewportWidth} height={frame.docHeight}`), nie w rozdzielczości po skali. Dla wizyty desktopowej z seeda (1440 × 9200) to 13,2 mln pikseli ≈ 53 MB bufora, plus drugi bufor tej samej wielkości tworzony wewnętrznie przez `simpleheat`. Safari/iOS ma twardy limit powierzchni canvasu ~16,7 mln px — oferta o `doc_height` 12 000 przy 1440 (długi landing to typowy przypadek tego produktu) przekracza go i nakładka wychodzi PUSTA bez błędu w konsoli: dokładnie cichy sufit z `learned-patterns.md`. Zaostrza to ścieżka mobilna "
+ },
+ {
+  "et": "f-32975a1",
+  "przypadek": "docs/completed/faza-5-heatmapa/review-faza-2.md#7",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/texts.ts",
+  "linia": 66,
+  "gubi": [
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "test-coverage"
+  ],
+  "opis": "Podpis mapy obiecuje czas zatrzymania, a waga komórki to licznik próbek ruchu i kliknięć.",
+  "tresc": "Podpis mapy opisuje wartość, której nie mierzymy: „Im cieplejszy kolor, tym dłużej klient zatrzymał się w tym miejscu\" — a waga komórki to LICZNIK próbek, nie czas. Źródło prawdy: komentarz kolumny w migracji `20260828120000_visits_tracking.sql:81` („wartość = licznik\") oraz tracker `apps/server/static/t.js:47-53` — `mark()` woła się z `mousemove` dławionego co `MOUSE_MS = 100` ORAZ z `pointerdown` bez dławienia.\n\nKonsekwencje: (a) na komputerze nieruchoma mysz przy czytanym akapicie daje ZERO, a machanie kursorem daje maksimum — czyli mapa ruchu, nie zatrzymania; (b) na urządzeniach dotykowyc"
+ },
+ {
+  "et": "f-303ff62",
+  "przypadek": "docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#4",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+  "linia": 92,
+  "gubi": [
+   "A",
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "code-quality"
+  ],
+  "opis": "Błąd odczytu profiles w hooku ustawień webhooka połykany bez zgłoszenia do Sentry (reszta pliku zgłasza).",
+  "tresc": ""
+ },
+ {
+  "et": "f-303ff62",
+  "przypadek": "docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#1",
+  "waga": "P1",
+  "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "linia": 84,
+  "gubi": [
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "performance",
+   "test-coverage"
+  ],
+  "opis": "Karta „Decyzje klienta” renderuje się dopiero za bramką liczby wizyt — bez wizyt decyzje klienta są niewidoczne.",
+  "tresc": ""
+ },
+ {
+  "et": "f-303ff62",
+  "przypadek": "docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#6",
+  "waga": "P2",
+  "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql",
+  "linia": 41,
+  "gubi": [
+   "B"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Migracja dodaje ograniczenie pary webhook_url/webhook_set_at bez backfillu i bez NOT VALID — push padnie na istniejących wierszach.",
+  "tresc": ""
+ },
+ {
+  "et": "f-46be55a",
+  "przypadek": "docs/completed/faza-3-konto-i-dashboard/review-faza-2.md#1",
+  "waga": "P1",
+  "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+  "linia": 90,
+  "gubi": [
+   "A"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "correctness"
+  ],
+  "opis": "Rotacja tokenu MCP wysyła created_at z zegara przeglądarki wbrew kontraktowi migracji z fazy 1 (czas z bazy).",
+  "tresc": "Upsert rotacji tokenu wysyła `created_at: createdAt.toISOString()` z zegara przeglądarki, wprost wbrew kontraktowi domkniętemu w fazie 1. Migracja `supabase/migrations/20260827210000_mcp_tokens_created_at_refresh.sql` (commit a4225e4, poprawka po review fazy 1) rozstrzyga to inaczej i uzasadnia wybór wprost: „Dlaczego trigger, a nie poszerzenie grantu INSERT o created_at: moment wystawienia tokenu to fakt serwerowy. Trigger ustawia go niezależnie od ładunku, więc klient nie może go ani pominąć, ani antydatować, a granty zostają wąskie.” Test RLS fazy 1 (`supabase/tests/rls.test.ts:546`) cement"
+ },
+ {
+  "et": "f-46be55a",
+  "przypadek": "docs/completed/faza-3-konto-i-dashboard/review-faza-2.md#5",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+  "linia": 8,
+  "gubi": [
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "spec-compliance"
+  ],
+  "opis": "Formatter daty dashboardu bez strefy Europe/Warsaw — termin oferty rozjeżdża się ze stroną serwera, testy zielone tylko dzięki strefie runnera.",
+  "tresc": "Rozjazd semantyki tego samego pola `offers.expires_at` między dwiema powierzchniami produktu. `apps/server/src/offer/validity-date.ts:11` definiuje `DISPLAY_TIME_ZONE = 'Europe/Warsaw'` z komentarzem, że obowiązuje WSZĘDZIE, gdzie ten sam termin jest pokazywany (to była już raz naprawiona regresja). Nowy formatter dashboardu `new Intl.DateTimeFormat('pl-PL', {day,month,year})` NIE ustawia `timeZone`, więc formatuje w strefie przeglądarki handlowca. Identycznie `created_at` w `mcp-token-card.tsx:8`.\n\nDowód: `TZ=Pacific/Honolulu npx vitest run src/features/offers/offers-page.test.tsx src/feature"
+ },
+ {
+  "et": "f-31491bc",
+  "przypadek": "docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md#3",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+  "linia": 34,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "A",
+   "B",
+   "C"
+  ],
+  "zrodlo_0": [],
+  "opis": "Kontrakt siatki (wzorzec komórki, liczba kolumn, progi) ręcznie zduplikowany między serwerem a dashboardem zamiast w packages/shared.",
+  "tresc": "`HEAT_CELL_PATTERN` (identyczny regexp), liczba kolumn 16 i progi gęstości 1/64/16 żyją równolegle w `apps/server/src/routes/events.ts` (88, 100–102) i `apps/dashboard/src/features/offers/heatmap-grid.ts` (16, 30–32, 34). Ta faza właśnie zapłaciła za duplikację: plan przewidywał rozszerzenie wzorca tylko po stronie serwera, a wykonawca musiał sam wykryć, że bez lustrzanej zmiany w dashboardzie mapa nowych, gęstych wizyt byłaby PUSTA — po cichu, bez czerwonego testu (żaden test nie porównuje obu stałych). Reguła projektu: shared logic idzie do `packages/shared`, zakaz dotyczy importów MIĘDZY ap"
+ },
+ {
+  "et": "f-31491bc",
+  "przypadek": "docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md#2",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "linia": 117,
+  "gubi": [
+   "A",
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "performance"
+  ],
+  "opis": "Kosztowne przeliczenia mapy (kubełki, dekodowanie punktów) w ciele komponentu bez useMemo — przy każdym renderze.",
+  "tresc": "`buildHeatBuckets(heat.visits, …)` (117) i `decodeHeatPoints(activeVisit, frame)` (141) wołane w ciele komponentu, bez `useMemo`. Po fazie 3 rachunek jest istotnie droższy (dekod per wizyta na własnej gęstości, `Map` na ułamkach, sortowanie tysięcy punktów) i wykonuje się w CAŁOŚCI przy każdej zmianie stanu karty: `setMode`, `setDevice`, `setVisitIndex`, `setMobileOpen`, oraz przy każdym re-renderze `offer-details-page`. Każdy przebieg zwraca NOWE tablice, więc `points` zmienia tożsamość i efekt rysujący w `offer-heatmap-frame.tsx:196` (`[points, …]`) odpala pełny `simpleheat.draw()` na buforz"
+ },
+ {
+  "et": "f-5af000f",
+  "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md#1",
+  "waga": "P1",
+  "plik": "apps/dashboard/src/features/offers/analytics.ts",
+  "linia": 165,
+  "gubi": [
+   "A",
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "test-coverage"
+  ],
+  "opis": "„Czas czytania” wizyty liczony jako suma sekund sekcji mierzonych równolegle — zawyża czas wielokrotnie.",
+  "tresc": "„Czas czytania\" wizyty liczony jako SUMA sekund wszystkich sekcji (`visitDurationSeconds` = `Object.values(visit.sections).reduce(...)`, konsumowany w `apps/dashboard/src/features/offers/offer-visits-list.tsx:11`) zawyża realny czas wizyty wielokrotnie, bo sekcje mierzą się RÓWNOLEGLE, nie rozłącznie. Tracker (`apps/server/static/t.js`, `settleAll` → `sections[id] += elapsed` dla KAŻDEJ aktualnie widocznej sekcji) przy jednym viewportcie obejmującym kilka `data-section` nabija ten sam odcinek czasu do wielu kluczy naraz. Dowód z realnych danych: przebieg E2E fazy 2 (`review-faza-2.md`, tabela "
+ },
+ {
+  "et": "f-5af000f",
+  "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md#4",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/use-offer-details.ts",
+  "linia": 127,
+  "gubi": [
+   "A",
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "code-quality"
+  ],
+  "opis": "Ręczny interfejs w maybeSingle<OfferDetailsRow>() zastępuje typ wywnioskowany z Database — typecheck nie pilnuje kolumn.",
+  "tresc": "`.maybeSingle<OfferDetailsRow>()` podstawia ręcznie napisany interfejs w miejsce typu wywnioskowanego przez supabase-js z `Database` i z łańcucha `OFFER_DETAILS_COLUMNS` — to `as` w przebraniu na granicy systemu. Typecheck przestaje pilnować, czy kolumny wypisane w stringu istnieją i mają ten kształt. Scenariusz awarii: migracja zmienia `offers.offer_title` na `title` albo `visits.scroll_depth_pct` na `read_pct` — `pnpm typecheck` i cały zestaw testów (mock supabase zwraca fikstury w starym kształcie) są zielone, a widok w produkcji renderuje `undefined` w nagłówku i `przeczytane undefined%`. "
+ },
+ {
+  "et": "f-9d40529",
+  "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-1.md#1",
+  "waga": "P2",
+  "plik": "supabase/migrations/20260828120000_visits_tracking.sql",
+  "linia": null,
+  "gubi": [
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Funkcja scalania wizyt w bazie dokłada klucze sekcji i mapy bez sufitu — skumulowany stan wizyty może rosnąć bez końca.",
+  "tresc": "`merge_visit_increments` scala sections/heat addytywnie po kluczach bez żadnego sufitu liczby kluczy po stronie bazy. Planowana walidacja Zod w POST /e (późniejsze IU) jest per-ładunek — nie ogranicza stanu SKUMULOWANEGO: odwiedzający z ważnym tokenem HMAC (realna wizyta) może w kolejnych beaconach słać wciąż nowe klucze sekcji/komórek i rozdąć wiersz do dziesiątek KB (TOAST). Skutek wydajnościowy podwójny: koszt `jsonb_sum_numeric` (full outer join O(liczby kluczy)) rośnie z każdym beaconem tej wizyty, a zapytanie widoku oferty w dashboardzie ciągnie sections per wizyta (plan, sekcja widoku)."
+ },
+ {
+  "et": "f-b8374c8",
+  "przypadek": "docs/completed/faza-2-publikacja-ofert/review-faza-2.md#2",
+  "waga": "P2",
+  "plik": "apps/server/src/app.ts",
+  "linia": 294,
+  "gubi": [
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Jedyne CSP originu ofert to frame-ancestors — HTML oferty zapisywany tokenem handlowca nie ma ochrony przed skryptami.",
+  "tresc": "Jedyne CSP na originie ofert to `frame-ancestors <APP_ORIGIN>`. Dokument oferty wychodzi wprost z kolumny `offers.html` (`apps/server/src/routes/offer.ts:114` — `context.html(offer.html)`), a ta kolumna jest zapisywana bezpośrednio przez PostgREST tokenem handlowca; renderer z `template.ts` (escaping, wyłącznie ścieżki względne, zamknięta lista krojów, logo tylko jako `data:`) nie jest na tej drodze wymuszony. Baza pilnuje kroju CHECK-iem właśnie po to, by z niemutowalnej oferty nie poszło żądanie do obcego hosta (decyzje 1.8/1.10 — wyciek IP czytelnika), ale treści `html` ta gwarancja nie obe"
+ },
+ {
+  "et": "f-b8374c8",
+  "przypadek": "docs/completed/faza-2-publikacja-ofert/review-faza-2.md#5",
+  "waga": "P2",
+  "plik": "apps/server/src/app.ts",
+  "linia": 159,
+  "gubi": [
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Brak testu utrwalającego klucz limitera; limit obejmuje też statykę, więc wielu odbiorców naraz dostaje 429.",
+  "tresc": "Ten sam dług limitera od strony pokrycia: brak testu, który utrwalałby oczekiwane klucowanie, a limit obejmuje też statykę. Scenariusz: handlowiec wysyła link do listy mailingowej, kilkudziesięciu odbiorców otwiera go w tej samej minucie, reszta dostaje 429 — awaria degraduje ofertę (zasada naczelna nr 7).\n**Akcja:** jak wyżej; do czasu IU-8 wyłączyć `/f/*` spod licznika i podnieść limit."
+ },
+ {
+  "et": "f-b8374c8",
+  "przypadek": "docs/completed/faza-2-publikacja-ofert/review-faza-2.md#1",
+  "waga": "P2",
+  "plik": "supabase/migrations/20260825171812_offers_brand_and_contact.sql",
+  "linia": 167,
+  "gubi": [
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Kolumna offers.html bez limitu rozmiaru, choć ta sama migracja ogranicza inne pola tekstowe publicznego API.",
+  "tresc": "Kolumna `offers.html` nie ma żadnego ograniczenia rozmiaru, choć ta sama migracja świadomie zakłada limity długości na `company_name`/`offer_title`/`client_name` z uzasadnieniem „text bez limitu na granicy publicznego API to zaproszenie do wiersza wielkości megabajta\". Grant `insert on table offers to authenticated` obejmuje `html`, a token MCP idzie prosto do PostgREST — planowana walidacja aplikacyjna „HTML ≤ 2 MB\" (R14, IU-7) jest z definicji omijalna, tak samo jak byłaby omijalna walidacja kolorów, dla której CHECK-i jednak dodano. Skutek jest już czynny, bo `/o/<slug>` serwuje: `apps/serv"
+ },
+ {
+  "et": "f-f3ee433",
+  "przypadek": "docs/completed/faza-9c-dokumenty-prawne/review-faza-2.md#3",
+  "waga": "P2",
+  "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+  "linia": 117,
+  "gubi": [
+   "A"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "test-coverage"
+  ],
+  "opis": "Test siedmiu sekcji strony prawnej nie sprawdza ich kolejności, której wymaga plan.",
+  "tresc": "Scenariusz planu IU-4 „siedem nagłówków sekcji W TEJ SAMEJ KOLEJNOŚCI co przed zmianą\" nie ma pokrycia: test `wydaje siedem numerowanych sekcji` robi tylko `toContain` per nagłówek (linie 117–133), bez asercji kolejności (`grep indexOf|sort(` w pliku = 0 trafień). Przenumerowanie sekcji (zakazane przez R4 — odwołanie wewnętrzne „punkt 5\") przeszłoby na zielono.\n   **Akcja:** dołóż asercję pozycji jak w `app-privacy-page.test.ts:146-150` — `positions = headings.map(h => body.indexOf(`<h2>${h}</h2>`))`, `every(p >= 0)`, `expect(positions).toEqual([...positions].sort((a,b)=>a-b))`.\n\n4. 🟠 **[P2/OP"
+ },
+ {
+  "et": "f-1de5a4c",
+  "przypadek": "docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#2",
+  "waga": "P2",
+  "plik": "apps/server/src/cta/cta-script.test.ts",
+  "linia": 92,
+  "gubi": [
+   "A",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Test CTA zawsze buduje HTML bieżącym rendererem — ścieżka ofert opublikowanych przed deployem jest niepokryta.",
+  "tresc": "NADAL OTWARTY (po `a2a296a` poszły wyłącznie commity docs/maszynerii). `boot()` w linii 92 zawsze buduje HTML bieżącym `renderCtaSection`, więc ścieżka produkcyjna — oferty opublikowane przed deployem, bez węzła `data-cta=\"msg-wygasla\"` — jest niepokryta. To bezpośrednia przyczyna, dla której finding #1 mógł powstać i przejść przez zielony zestaw testów.\n\nAkcja: dodaj do `HarnessOptions` (linie 49–57) pole `readonly withoutExpiredNode?: boolean`; w `boot()` przed `new JSDOM(...)` usuń z `markup` akapit `data-cta=\"msg-wygasla\"` (np. `markup.replace(/<p class=\"cta-msg cta-msg-onbrand\" data-cta=\""
+ },
+ {
+  "et": "f-1de5a4c",
+  "przypadek": "docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#1",
+  "waga": "P2",
+  "plik": "apps/server/static/c.js",
+  "linia": 151,
+  "gubi": [
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "security"
+  ],
+  "opis": "Gałąź „oferta wygasła” w c.js zakłada węzeł komunikatu, którego nie mają starsze, niemutowalne oferty.",
+  "tresc": "NADAL OTWARTE (brak commita naprawczego). Gałąź `oferta_wygasla` zakłada istnienie węzła `data-cta=\"msg-wygasla\"`, którego nie ma w ofertach opublikowanych przed tym deployem (dokument oferty jest niemutowalny — zasada naczelna nr 2). `expiredError` (`c.js:36`) jest wtedy `null`, `show(expiredError, true)` jest cichym no-opem, a `show(acceptError, !gone)` przy `gone === true` dodatkowo gasi komunikat ogólny — klient po 409 nie widzi żadnej informacji zwrotnej. To regresja wobec stanu sprzed fazy, w miejscu, gdzie cicha porażka kosztuje najwięcej (akceptacja, nie pomiar czytania).\n\nAkcja: w `c."
+ },
+ {
+  "et": "f-1de5a4c",
+  "przypadek": "docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#4",
+  "waga": "P2",
+  "plik": "apps/server/static/logo-aa-napis.webp",
+  "linia": null,
+  "gubi": [
+   "A",
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "performance"
+  ],
+  "opis": "Logo AA w .webp waży 80 kB przy wyświetlaniu ~20 px (zastąpiło SVG 5 kB) na stronach widzianych przez klienta.",
+  "tresc": "NADAL OTWARTE (plik nadal 79 788 B, mtime bez zmian). Znak AA waży 79 788 B przy 720×238 px, a renderuje się jako 22 px (`apps/server/src/offer/pages/root-page.ts:21`) i 20 px (`privacy-page.ts:100`) — na stronach widzianych przez klienta handlowca. Zastąpił SVG o 4 959 B, czyli zmiana pogorszyła koszt ~16×.\n\nAkcja: przekoduj do ~2× rozmiaru wyświetlania (jeden plik ok. 240×80 px, docelowo < 8 kB) albo wróć do wektora — i podmień OBIE kopie: `apps/server/static/logo-aa-napis.webp` oraz `apps/dashboard/src/assets/logo-aa-napis.webp` (dziś ten sam blob). [sceptyk sugerował P3]\n\n#### 5. [P2/KOD] "
+ },
+ {
+  "et": "f-1de5a4c",
+  "przypadek": "docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#5",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "linia": 81,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "B"
+  ],
+  "zrodlo_0": [],
+  "opis": "Hook mapy pobiera do ~2 MB danych także wtedy, gdy karta i tak nic nie rysuje.",
+  "tresc": "NADAL OTWARTE. `useOfferHeat(offer.id, offer.visits.length)` pobiera do 96 wierszy `visits.heat` (do ~2 MB wg `HEAT_BYTE_BUDGET`) także wtedy, gdy `OfferHeatmapCard` wychodzi wcześnie na `missingPreview` i dane są wyrzucane bez jednego rysunku.\n\nAkcja: dodaj trzeci parametr `isEnabled: boolean` w sygnaturze `useOfferHeat` (`apps/dashboard/src/features/offers/use-offer-heat.ts:103`), wracaj stanem bezczynnym gdy `false` (bez zapytania), a w wywołaniu przekaż `offerPreviewUrl(offer.slug) !== null`. [sceptyk sugerował P3]"
+ },
+ {
+  "et": "f-1de5a4c",
+  "przypadek": "docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#3",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/main.tsx",
+  "linia": 75,
+  "gubi": [
+   "A",
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "performance"
+  ],
+  "opis": "Dynamiczny import App dzieli bundle na dwa szeregowe pobrania bez modulepreload — dodatkowy round trip przy zimnym wejściu.",
+  "tresc": "NADAL OTWARTE. `const { App } = await import('./App.js')` dzieli bundle dashboardu na `index` (~365 kB) i `App` (~445 kB) ładowane szeregowo, bez `<link rel=\"modulepreload\">` — każde zimne wejście płaci dodatkowy round trip przed pierwszym renderem. Cel zmiany (Sentry wstaje przed fail-fastem walidacji ENV) da się osiągnąć bez podziału: ESM ewaluuje moduły w kolejności importów.\n\nAkcja: wynieś `initMonitoring()` do nowego `apps/dashboard/src/lib/monitoring.ts`, zaimportuj je statycznie jako pierwszy import w `main.tsx` (przed importem `App`), wróć do statycznego `import { App } from './App.js'"
+ },
+ {
+  "et": "f-67f5f2c",
+  "przypadek": "docs/completed/faza-1-fundament/review-faza-3.md#3",
+  "waga": "P2",
+  "plik": "apps/server/src/observability/sentry.test.ts",
+  "linia": 49,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "A",
+   "B",
+   "C"
+  ],
+  "zrodlo_0": [],
+  "opis": "Test Sentry.init nie sprawdza żadnej przekazanej opcji (beforeSend, sendDefaultPii).",
+  "tresc": "Test sprawdza wyłącznie, że `Sentry.init` zostało wywołane raz, i nie asertuje ANI JEDNEJ przekazanej opcji. `scrubEvent` jest testowany osobno jako czysta funkcja, więc usunięcie `beforeSend: scrubEvent` albo zmiana `sendDefaultPii` na `true` w `apps/server/src/observability/sentry.ts:62-69` zostawia cały zestaw zielony, a do zewnętrznego systemu zaczynają płynąć adresy IP, nagłówki i pełne e-maile — dokładnie to, przed czym IU-5 ma chronić. Scenariusz regresji: ktoś w kolejnej fazie dokłada `tracesSampleRate` i przy okazji nadpisuje obiekt opcji bez `beforeSend`; bramka Z5 przepuszcza.\n\nNapr"
+ },
+ {
+  "et": "f-67f5f2c",
+  "przypadek": "docs/completed/faza-1-fundament/review-faza-3.md#1",
+  "waga": "P2",
+  "plik": "apps/server/tsconfig.json",
+  "linia": 1,
+  "gubi": [
+   "B",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "spec-compliance"
+  ],
+  "opis": "Serwer z IU-4 nie startuje — import app.js nie rozwiązuje się przy uruchomieniu (ERR_MODULE_NOT_FOUND).",
+  "tresc": "Serwis z IU-4 nie da się uruchomić — celem IU było „Proces nasłuchujący\", a proces nie startuje. Zweryfikowane: `node --experimental-strip-types apps/server/src/index.ts` kończy się `Error [ERR_MODULE_NOT_FOUND]: Cannot find module '.../apps/server/src/app.js'`. Przyczyna: `tsconfig.base.json` narzuca `module: \"ESNext\"` + `moduleResolution: \"bundler\"` + `noEmit: true`, `apps/server/package.json` nie ma skryptu `build` ani `start`, a `@oferty/shared` eksportuje surowe `.ts` (`exports: {\".\": \"./src/index.ts\"}`) — nic nie produkuje `.js`, do których importy w `index.ts`/`app.ts` się odwołują. Typ"
+ },
+ {
+  "et": "f-67f5f2c",
+  "przypadek": "docs/completed/faza-1-fundament/review-faza-3.md#2",
+  "waga": "P2",
+  "plik": "apps/server/src/app.ts",
+  "linia": 99,
+  "gubi": [
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "correctness"
+  ],
+  "opis": "Host-guard zwraca 404 dla 127.0.0.1 — health check kontenera oznaczy deploy jako niezdrowy.",
+  "tresc": "Host-guard zwraca 404 dla każdego hosta innego niż APP_ORIGIN/OFFER_ORIGIN, także dla pętli zwrotnej. Container health check z IU-8 (curl/wget wewnątrz kontenera) uderza w `http://127.0.0.1:$PORT/healthz` z nagłówkiem `Host: 127.0.0.1:$PORT` — dostanie 404, Coolify oznaczy deploy jako unhealthy i zrobi rollback, mimo że serwis działa poprawnie. To dokładnie ta klasa pułapki, którą `docs/SPIKES.md` nazywa najdroższą w tej fazie (log pokazuje jednocześnie „nasłuchuję\" i „unhealthy\").\n\nNaprawa w tej fazie: dopuścić `/healthz` dla hosta pętli zwrotnej (`localhost`/`127.0.0.1`/`[::1]` z dowolnym po"
+ },
+ {
+  "et": "f-2536643",
+  "przypadek": "docs/completed/faza-9a-domena-mailer-limity/review-faza-4.md#4",
+  "waga": "P2",
+  "plik": "apps/dashboard/src/features/templates/template-card.tsx",
+  "linia": 67,
+  "gubi": [
+   "A",
+   "C"
+  ],
+  "lapie_tylko_nowy": [],
+  "zrodlo_0": [
+   "spec-compliance",
+   "test-coverage"
+  ],
+  "opis": "Zmiana poza zakresem: diff usuwa całą pigułkę pochodzenia szablonu, a plan kazał usunąć tylko „WBUDOWANY”.",
+  "tresc": "Scope creep wobec IU-12. Plan zamawia dokładnie: „`OriginPill` „WBUDOWANY\" znika z listy\" (dossier, IU-12, pole Pliki i Podejście). Diff usuwa z kafla CAŁY `OriginPill`, czyli także pigułkę „WŁASNY\" (`TEMPLATES_TEXTS.pillAuthored`) — zmiana widoczna dla użytkownika na każdym kaflu listy, o którą nikt nie prosił. Builder sam oznaczył ją w korektach fazy jako „DO POTWIERDZENIA PRZEZ OPERATORA w review\" (dossier, wiersz „IU-12, `OriginPill` usunięty z kafla W CAŁOŚCI\"), więc decyzja nie została podjęta — a testy (`template-card.test.tsx:68-69`, `templates-page.test.tsx:504-505`) już ją utrwalają "
+ },
+ {
+  "et": "f-2536643",
+  "przypadek": "docs/completed/faza-9a-domena-mailer-limity/review-faza-4.md#3",
+  "waga": "P2",
+  "plik": "apps/server/src/routes/templates.test.ts",
+  "linia": 268,
+  "gubi": [],
+  "lapie_tylko_nowy": [
+   "B"
+  ],
+  "zrodlo_0": [],
+  "opis": "Test „dokładnie pola kontraktu” niefalsyfikowalny — sprawdza wynik już przepuszczony przez nieścisły schemat.",
+  "tresc": "Test „każdy wpis listy ma DOKŁADNIE pola kontraktu — bez nadmiarowych i bez brakujących\" jest niefalsyfikowalny dla połowy, którą deklaruje. `strictTemplateSummarySchema.safeParse(row)` dostaje `row` z `payload.data.szablony`, czyli WYNIK `templateListResponseSchema` — a ten stoi na `z.object` (`packages/shared/src/template-contract.ts:87`), więc nadmiarowe pola (komentarz wymienia wprost „wyciek `html`\") zostały już zestrippowane, zanim strict je zobaczy. Brakującego pola pilnuje sam `templateListResponseSchema` (`naglowki` jest obowiązkowe), więc strict nie dokłada tu nic: żadna zmiana w `to"
+ }
+]

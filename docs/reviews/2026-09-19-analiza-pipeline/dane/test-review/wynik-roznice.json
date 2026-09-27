@@ -1,0 +1,312 @@
+{
+ "klucz1|fazy": {
+  "A": {
+   "tylko_A": 11,
+   "tylko_0": 6,
+   "szeroko": {
+    "roznica": 9.4,
+    "ci95": [
+     -1.8,
+     22.0
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": 7.5,
+    "ci95": [
+     -3.4,
+     19.3
+    ],
+    "jednostek": 13
+   }
+  },
+  "B": {
+   "tylko_B": 6,
+   "tylko_0": 6,
+   "szeroko": {
+    "roznica": 0.0,
+    "ci95": [
+     -10.7,
+     10.7
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": 1.9,
+    "ci95": [
+     -9.8,
+     15.8
+    ],
+    "jednostek": 13
+   }
+  },
+  "C": {
+   "tylko_C": 8,
+   "tylko_0": 6,
+   "szeroko": {
+    "roznica": 3.8,
+    "ci95": [
+     -11.1,
+     17.6
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": 7.5,
+    "ci95": [
+     -5.3,
+     22.6
+    ],
+    "jednostek": 13
+   }
+  }
+ },
+ "klucz2|fazy": {
+  "A": {
+   "tylko_A": 4,
+   "tylko_0": 11,
+   "szeroko": {
+    "roznica": -11.1,
+    "ci95": [
+     -25.0,
+     0.0
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": -6.3,
+    "ci95": [
+     -19.0,
+     6.9
+    ],
+    "jednostek": 13
+   }
+  },
+  "B": {
+   "tylko_B": 6,
+   "tylko_0": 14,
+   "szeroko": {
+    "roznica": -12.7,
+    "ci95": [
+     -23.1,
+     0.0
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": -7.9,
+    "ci95": [
+     -20.6,
+     6.8
+    ],
+    "jednostek": 13
+   }
+  },
+  "C": {
+   "tylko_C": 3,
+   "tylko_0": 19,
+   "szeroko": {
+    "roznica": -25.4,
+    "ci95": [
+     -39.1,
+     -13.6
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": -23.8,
+    "ci95": [
+     -36.6,
+     -11.1
+    ],
+    "jednostek": 13
+   }
+  }
+ },
+ "klucz1|fix": {
+  "A": {
+   "tylko_A": 15,
+   "tylko_0": 0,
+   "szeroko": {
+    "roznica": 50.0,
+    "ci95": [
+     30.0,
+     67.9
+    ],
+    "jednostek": 23
+   },
+   "pelne": {
+    "roznica": 43.3,
+    "ci95": [
+     23.1,
+     61.3
+    ],
+    "jednostek": 23
+   }
+  },
+  "B": {
+   "tylko_B": 16,
+   "tylko_0": 0,
+   "szeroko": {
+    "roznica": 53.3,
+    "ci95": [
+     36.0,
+     69.2
+    ],
+    "jednostek": 23
+   },
+   "pelne": {
+    "roznica": 50.0,
+    "ci95": [
+     32.3,
+     65.6
+    ],
+    "jednostek": 23
+   }
+  },
+  "C": {
+   "tylko_C": 15,
+   "tylko_0": 0,
+   "szeroko": {
+    "roznica": 50.0,
+    "ci95": [
+     33.3,
+     66.7
+    ],
+    "jednostek": 23
+   },
+   "pelne": {
+    "roznica": 46.7,
+    "ci95": [
+     29.6,
+     63.3
+    ],
+    "jednostek": 23
+   }
+  }
+ },
+ "klucz1|razem": {
+  "A": {
+   "tylko_A": 26,
+   "tylko_0": 6,
+   "szeroko": {
+    "roznica": 24.1,
+    "ci95": [
+     12.6,
+     38.2
+    ],
+    "jednostek": 36
+   },
+   "pelne": {
+    "roznica": 20.5,
+    "ci95": [
+     9.2,
+     33.9
+    ],
+    "jednostek": 36
+   }
+  },
+  "B": {
+   "tylko_B": 22,
+   "tylko_0": 6,
+   "szeroko": {
+    "roznica": 19.3,
+    "ci95": [
+     7.3,
+     33.9
+    ],
+    "jednostek": 36
+   },
+   "pelne": {
+    "roznica": 19.3,
+    "ci95": [
+     6.6,
+     34.8
+    ],
+    "jednostek": 36
+   }
+  },
+  "C": {
+   "tylko_C": 23,
+   "tylko_0": 6,
+   "szeroko": {
+    "roznica": 20.5,
+    "ci95": [
+     8.0,
+     34.9
+    ],
+    "jednostek": 36
+   },
+   "pelne": {
+    "roznica": 21.7,
+    "ci95": [
+     9.8,
+     36.4
+    ],
+    "jednostek": 36
+   }
+  }
+ },
+ "bilans P1/P2 (klucz1 P1/P2 + klucz2)|fazy": {
+  "A": {
+   "tylko_A": 10,
+   "tylko_0": 14,
+   "szeroko": {
+    "roznica": -4.0,
+    "ci95": [
+     -16.4,
+     7.3
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": -2.0,
+    "ci95": [
+     -13.5,
+     10.0
+    ],
+    "jednostek": 13
+   }
+  },
+  "B": {
+   "tylko_B": 11,
+   "tylko_0": 19,
+   "szeroko": {
+    "roznica": -8.1,
+    "ci95": [
+     -18.7,
+     3.3
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": -5.1,
+    "ci95": [
+     -16.5,
+     7.4
+    ],
+    "jednostek": 13
+   }
+  },
+  "C": {
+   "tylko_C": 8,
+   "tylko_0": 24,
+   "szeroko": {
+    "roznica": -16.2,
+    "ci95": [
+     -29.1,
+     -5.4
+    ],
+    "jednostek": 13
+   },
+   "pelne": {
+    "roznica": -13.1,
+    "ci95": [
+     -24.2,
+     -1.8
+    ],
+    "jednostek": 13
+   }
+  }
+ }
+}

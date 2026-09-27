@@ -1,0 +1,1450 @@
+{
+ "jednostki": {
+  "f-b26128d": {
+   "linie": 2163,
+   "pliki_kodu": 10,
+   "0": {
+    "findingi_agent": 24,
+    "findingi_agent_P1P2": 14,
+    "poza_agent": 16,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 21,
+    "findingi_agent_P1P2": 15,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 9,
+    "poza_bramka": 7,
+    "inna_uwaga_bota": 1
+   },
+   "B": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 12,
+    "poza_agent": 20,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 26,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 33,
+    "findingi_agent_P1P2": 12,
+    "poza_agent": 24,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 22,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-2634b67": {
+   "linie": 1427,
+   "pliki_kodu": 11,
+   "0": {
+    "findingi_agent": 19,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 22,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 15,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 1
+   },
+   "B": {
+    "findingi_agent": 31,
+    "findingi_agent_P1P2": 15,
+    "poza_agent": 23,
+    "poza_agent_P1P2": 9,
+    "poza_bramka": 20,
+    "inna_uwaga_bota": 1
+   },
+   "C": {
+    "findingi_agent": 22,
+    "findingi_agent_P1P2": 12,
+    "poza_agent": 14,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 19,
+    "inna_uwaga_bota": 1
+   }
+  },
+  "f-32975a1": {
+   "linie": 2119,
+   "pliki_kodu": 15,
+   "0": {
+    "findingi_agent": 29,
+    "findingi_agent_P1P2": 21,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 13,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 18,
+    "poza_agent": 22,
+    "poza_agent_P1P2": 13,
+    "poza_bramka": 5,
+    "inna_uwaga_bota": 3
+   },
+   "B": {
+    "findingi_agent": 27,
+    "findingi_agent_P1P2": 14,
+    "poza_agent": 23,
+    "poza_agent_P1P2": 10,
+    "poza_bramka": 10,
+    "inna_uwaga_bota": 2
+   },
+   "C": {
+    "findingi_agent": 32,
+    "findingi_agent_P1P2": 11,
+    "poza_agent": 27,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 12,
+    "inna_uwaga_bota": 2
+   }
+  },
+  "f-303ff62": {
+   "linie": 4042,
+   "pliki_kodu": 34,
+   "0": {
+    "findingi_agent": 38,
+    "findingi_agent_P1P2": 27,
+    "poza_agent": 20,
+    "poza_agent_P1P2": 14,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 30,
+    "findingi_agent_P1P2": 24,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 16,
+    "poza_bramka": 18,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 46,
+    "findingi_agent_P1P2": 25,
+    "poza_agent": 37,
+    "poza_agent_P1P2": 17,
+    "poza_bramka": 41,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 36,
+    "findingi_agent_P1P2": 18,
+    "poza_agent": 23,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 43,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-46be55a": {
+   "linie": 2911,
+   "pliki_kodu": 37,
+   "0": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 19,
+    "poza_agent": 20,
+    "poza_agent_P1P2": 11,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 39,
+    "findingi_agent_P1P2": 28,
+    "poza_agent": 32,
+    "poza_agent_P1P2": 23,
+    "poza_bramka": 9,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 36,
+    "findingi_agent_P1P2": 19,
+    "poza_agent": 28,
+    "poza_agent_P1P2": 11,
+    "poza_bramka": 9,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 39,
+    "findingi_agent_P1P2": 19,
+    "poza_agent": 34,
+    "poza_agent_P1P2": 16,
+    "poza_bramka": 10,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-31491bc": {
+   "linie": 1235,
+   "pliki_kodu": 7,
+   "0": {
+    "findingi_agent": 13,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   },
+   "A": {
+    "findingi_agent": 14,
+    "findingi_agent_P1P2": 6,
+    "poza_agent": 9,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 1
+   },
+   "B": {
+    "findingi_agent": 11,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 6,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 2
+   },
+   "C": {
+    "findingi_agent": 20,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-5af000f": {
+   "linie": 1823,
+   "pliki_kodu": 17,
+   "0": {
+    "findingi_agent": 21,
+    "findingi_agent_P1P2": 10,
+    "poza_agent": 16,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 17,
+    "poza_agent": 26,
+    "poza_agent_P1P2": 15,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 14,
+    "poza_agent": 27,
+    "poza_agent_P1P2": 13,
+    "poza_bramka": 6,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 24,
+    "findingi_agent_P1P2": 11,
+    "poza_agent": 22,
+    "poza_agent_P1P2": 10,
+    "poza_bramka": 8,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-9d40529": {
+   "linie": 699,
+   "pliki_kodu": 4,
+   "0": {
+    "findingi_agent": 20,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 15,
+    "poza_agent_P1P2": 9,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 17,
+    "findingi_agent_P1P2": 9,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 29,
+    "findingi_agent_P1P2": 17,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 13,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 17,
+    "findingi_agent_P1P2": 7,
+    "poza_agent": 15,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-b8374c8": {
+   "linie": 1866,
+   "pliki_kodu": 19,
+   "0": {
+    "findingi_agent": 32,
+    "findingi_agent_P1P2": 18,
+    "poza_agent": 24,
+    "poza_agent_P1P2": 12,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 33,
+    "findingi_agent_P1P2": 22,
+    "poza_agent": 26,
+    "poza_agent_P1P2": 16,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 29,
+    "findingi_agent_P1P2": 15,
+    "poza_agent": 22,
+    "poza_agent_P1P2": 10,
+    "poza_bramka": 18,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 27,
+    "findingi_agent_P1P2": 10,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 17,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-f3ee433": {
+   "linie": 1378,
+   "pliki_kodu": 15,
+   "0": {
+    "findingi_agent": 17,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 15,
+    "findingi_agent_P1P2": 9,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 20,
+    "findingi_agent_P1P2": 6,
+    "poza_agent": 17,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 23,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 19,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "f-1de5a4c": {
+   "linie": 1705,
+   "pliki_kodu": 46,
+   "0": {
+    "findingi_agent": 27,
+    "findingi_agent_P1P2": 12,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 9,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 26,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 19,
+    "poza_agent_P1P2": 9,
+    "poza_bramka": 8,
+    "inna_uwaga_bota": 2
+   },
+   "B": {
+    "findingi_agent": 26,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 20,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 24,
+    "inna_uwaga_bota": 1
+   },
+   "C": {
+    "findingi_agent": 21,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 18,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 24,
+    "inna_uwaga_bota": 1
+   }
+  },
+  "f-67f5f2c": {
+   "linie": 809,
+   "pliki_kodu": 9,
+   "0": {
+    "findingi_agent": 20,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 14,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 24,
+    "findingi_agent_P1P2": 14,
+    "poza_agent": 16,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 7,
+    "inna_uwaga_bota": 2
+   },
+   "B": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 19,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 9,
+    "inna_uwaga_bota": 2
+   },
+   "C": {
+    "findingi_agent": 26,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 19,
+    "poza_agent_P1P2": 10,
+    "poza_bramka": 9,
+    "inna_uwaga_bota": 3
+   }
+  },
+  "f-2536643": {
+   "linie": 7208,
+   "pliki_kodu": 70,
+   "0": {
+    "findingi_agent": 21,
+    "findingi_agent_P1P2": 9,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 21,
+    "findingi_agent_P1P2": 11,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 7,
+    "inna_uwaga_bota": 1
+   },
+   "B": {
+    "findingi_agent": 30,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 26,
+    "inna_uwaga_bota": 1
+   },
+   "C": {
+    "findingi_agent": 23,
+    "findingi_agent_P1P2": 10,
+    "poza_agent": 18,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 27,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-ed1ce60": {
+   "linie": 1059,
+   "pliki_kodu": 13,
+   "0": {
+    "findingi_agent": 0,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 0,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 19,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 19,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-43fb8e7": {
+   "linie": 1962,
+   "pliki_kodu": 26,
+   "0": {
+    "findingi_agent": 9,
+    "findingi_agent_P1P2": 9,
+    "poza_agent": 7,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   },
+   "A": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 7,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 27,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 25,
+    "inna_uwaga_bota": 1
+   },
+   "C": {
+    "findingi_agent": 17,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 16,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 11,
+    "inna_uwaga_bota": 1
+   }
+  },
+  "x-828eda9": {
+   "linie": 141,
+   "pliki_kodu": 5,
+   "0": {
+    "findingi_agent": 0,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 0,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 7,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 7,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 2,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 2,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-f3d5aca": {
+   "linie": 903,
+   "pliki_kodu": 13,
+   "0": {
+    "findingi_agent": 3,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 3,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 17,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 17,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 11,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 11,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-4ef28cf": {
+   "linie": 159,
+   "pliki_kodu": 6,
+   "0": {
+    "findingi_agent": 0,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 0,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 6,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 20,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 18,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 4,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 3,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-5c3c7ac": {
+   "linie": 664,
+   "pliki_kodu": 17,
+   "0": {
+    "findingi_agent": 0,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 0,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 31,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 31,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 11,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 7,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-f74b4e4": {
+   "linie": 862,
+   "pliki_kodu": 14,
+   "0": {
+    "findingi_agent": 3,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 3,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 14,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 43,
+    "findingi_agent_P1P2": 9,
+    "poza_agent": 38,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 11,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 16,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 14,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 5,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-58efb36": {
+   "linie": 541,
+   "pliki_kodu": 11,
+   "0": {
+    "findingi_agent": 3,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 2,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "A": {
+    "findingi_agent": 13,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 11,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   },
+   "B": {
+    "findingi_agent": 29,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 27,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 2
+   },
+   "C": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 2
+   }
+  },
+  "x-61195b8": {
+   "linie": 212,
+   "pliki_kodu": 3,
+   "0": {
+    "findingi_agent": 1,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 1,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 6,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 18,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 16,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 9,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-411a434": {
+   "linie": 459,
+   "pliki_kodu": 10,
+   "0": {
+    "findingi_agent": 13,
+    "findingi_agent_P1P2": 13,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 5
+   },
+   "A": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 28,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 14,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 14,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-6bd9990": {
+   "linie": 456,
+   "pliki_kodu": 10,
+   "0": {
+    "findingi_agent": 1,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 1,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 14,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "B": {
+    "findingi_agent": 33,
+    "findingi_agent_P1P2": 10,
+    "poza_agent": 28,
+    "poza_agent_P1P2": 7,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 3
+   },
+   "C": {
+    "findingi_agent": 15,
+    "findingi_agent_P1P2": 6,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   }
+  },
+  "x-b0d74fc": {
+   "linie": 548,
+   "pliki_kodu": 12,
+   "0": {
+    "findingi_agent": 4,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 2,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   },
+   "A": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 35,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 31,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 11,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 7,
+    "inna_uwaga_bota": 1
+   }
+  },
+  "x-d520107": {
+   "linie": 391,
+   "pliki_kodu": 10,
+   "0": {
+    "findingi_agent": 57,
+    "findingi_agent_P1P2": 57,
+    "poza_agent": 47,
+    "poza_agent_P1P2": 47,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 10
+   },
+   "A": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 31,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 27,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 4
+   },
+   "C": {
+    "findingi_agent": 13,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 13,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 4,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-dce71cf": {
+   "linie": 158,
+   "pliki_kodu": 8,
+   "0": {
+    "findingi_agent": 1,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 1,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 14,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 14,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 11,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 11,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-bcf98f4": {
+   "linie": 955,
+   "pliki_kodu": 21,
+   "0": {
+    "findingi_agent": 107,
+    "findingi_agent_P1P2": 107,
+    "poza_agent": 107,
+    "poza_agent_P1P2": 107,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 11,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 11,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 34,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 34,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 13,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 9,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 9,
+    "poza_agent_P1P2": 4,
+    "poza_bramka": 11,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-0ec2b19": {
+   "linie": 1141,
+   "pliki_kodu": 27,
+   "0": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 8,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   },
+   "B": {
+    "findingi_agent": 27,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 21,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 23,
+    "inna_uwaga_bota": 4
+   },
+   "C": {
+    "findingi_agent": 13,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 11,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 17,
+    "inna_uwaga_bota": 1
+   }
+  },
+  "x-40af319": {
+   "linie": 938,
+   "pliki_kodu": 14,
+   "0": {
+    "findingi_agent": 1,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 1,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 1
+   },
+   "B": {
+    "findingi_agent": 28,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 22,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 6,
+    "inna_uwaga_bota": 2
+   },
+   "C": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 7,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 6,
+    "inna_uwaga_bota": 1
+   }
+  },
+  "x-60f1951": {
+   "linie": 809,
+   "pliki_kodu": 28,
+   "0": {
+    "findingi_agent": 2,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 2,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 7,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 30,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 27,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 29,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 11,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 10,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 28,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-b02abfa": {
+   "linie": 178,
+   "pliki_kodu": 5,
+   "0": {
+    "findingi_agent": 1,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 1,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 7,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 22,
+    "findingi_agent_P1P2": 3,
+    "poza_agent": 20,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 7,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 6,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-925907a": {
+   "linie": 521,
+   "pliki_kodu": 20,
+   "0": {
+    "findingi_agent": 6,
+    "findingi_agent_P1P2": 6,
+    "poza_agent": 6,
+    "poza_agent_P1P2": 6,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 9,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 3
+   },
+   "B": {
+    "findingi_agent": 25,
+    "findingi_agent_P1P2": 8,
+    "poza_agent": 18,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 6
+   },
+   "C": {
+    "findingi_agent": 7,
+    "findingi_agent_P1P2": 5,
+    "poza_agent": 5,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 2
+   }
+  },
+  "x-b5295fd": {
+   "linie": 1075,
+   "pliki_kodu": 19,
+   "0": {
+    "findingi_agent": 2,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 2,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 12,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 11,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 38,
+    "findingi_agent_P1P2": 6,
+    "poza_agent": 37,
+    "poza_agent_P1P2": 5,
+    "poza_bramka": 5,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 13,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-7e437fc": {
+   "linie": 573,
+   "pliki_kodu": 9,
+   "0": {
+    "findingi_agent": 0,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 0,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 7,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 7,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 26,
+    "findingi_agent_P1P2": 4,
+    "poza_agent": 23,
+    "poza_agent_P1P2": 3,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 9,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 9,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-b7d0455": {
+   "linie": 1000,
+   "pliki_kodu": 21,
+   "0": {
+    "findingi_agent": 1,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 1,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 8,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 8,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 22,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 20,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 3,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 10,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 9,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 2,
+    "inna_uwaga_bota": 0
+   }
+  },
+  "x-05dd804": {
+   "linie": 271,
+   "pliki_kodu": 14,
+   "0": {
+    "findingi_agent": 0,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 0,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "A": {
+    "findingi_agent": 7,
+    "findingi_agent_P1P2": 1,
+    "poza_agent": 6,
+    "poza_agent_P1P2": 1,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   },
+   "B": {
+    "findingi_agent": 14,
+    "findingi_agent_P1P2": 2,
+    "poza_agent": 12,
+    "poza_agent_P1P2": 2,
+    "poza_bramka": 1,
+    "inna_uwaga_bota": 0
+   },
+   "C": {
+    "findingi_agent": 5,
+    "findingi_agent_P1P2": 0,
+    "poza_agent": 4,
+    "poza_agent_P1P2": 0,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 0
+   }
+  }
+ },
+ "razem": {
+  "fazy": {
+   "jednostek": 13,
+   "linie": 29385,
+   "0": {
+    "findingi_agent": 309,
+    "findingi_agent_P1P2": 175,
+    "poza_agent": 214,
+    "poza_agent_P1P2": 102,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 10,
+    "poza_agent_na_jednostke": 16.5,
+    "poza_agent_P1P2_na_jednostke": 7.8,
+    "poza_agent_na_100_linii": 0.73,
+    "poza_agent_P1P2_na_100_linii": 0.35,
+    "findingi_agent_P1P2_na_jednostke": 13.5
+   },
+   "A": {
+    "findingi_agent": 318,
+    "findingi_agent_P1P2": 199,
+    "poza_agent": 236,
+    "poza_agent_P1P2": 143,
+    "poza_bramka": 75,
+    "inna_uwaga_bota": 11,
+    "poza_agent_na_jednostke": 18.2,
+    "poza_agent_P1P2_na_jednostke": 11.0,
+    "poza_agent_na_100_linii": 0.8,
+    "poza_agent_P1P2_na_100_linii": 0.49,
+    "findingi_agent_P1P2_na_jednostke": 15.3
+   },
+   "B": {
+    "findingi_agent": 369,
+    "findingi_agent_P1P2": 171,
+    "poza_agent": 284,
+    "poza_agent_P1P2": 114,
+    "poza_bramka": 197,
+    "inna_uwaga_bota": 9,
+    "poza_agent_na_jednostke": 21.8,
+    "poza_agent_P1P2_na_jednostke": 8.8,
+    "poza_agent_na_100_linii": 0.97,
+    "poza_agent_P1P2_na_100_linii": 0.39,
+    "findingi_agent_P1P2_na_jednostke": 13.2
+   },
+   "C": {
+    "findingi_agent": 343,
+    "findingi_agent_P1P2": 139,
+    "poza_agent": 267,
+    "poza_agent_P1P2": 96,
+    "poza_bramka": 199,
+    "inna_uwaga_bota": 7,
+    "poza_agent_na_jednostke": 20.5,
+    "poza_agent_P1P2_na_jednostke": 7.4,
+    "poza_agent_na_100_linii": 0.91,
+    "poza_agent_P1P2_na_100_linii": 0.33,
+    "findingi_agent_P1P2_na_jednostke": 10.7
+   }
+  },
+  "fix": {
+   "jednostek": 24,
+   "linie": 15976,
+   "0": {
+    "findingi_agent": 223,
+    "findingi_agent_P1P2": 223,
+    "poza_agent": 203,
+    "poza_agent_P1P2": 203,
+    "poza_bramka": 0,
+    "inna_uwaga_bota": 20,
+    "poza_agent_na_jednostke": 8.5,
+    "poza_agent_P1P2_na_jednostke": 8.5,
+    "poza_agent_na_100_linii": 1.27,
+    "poza_agent_P1P2_na_100_linii": 1.27,
+    "findingi_agent_P1P2_na_jednostke": 9.3
+   },
+   "A": {
+    "findingi_agent": 243,
+    "findingi_agent_P1P2": 52,
+    "poza_agent": 216,
+    "poza_agent_P1P2": 40,
+    "poza_bramka": 7,
+    "inna_uwaga_bota": 9,
+    "poza_agent_na_jednostke": 9.0,
+    "poza_agent_P1P2_na_jednostke": 1.7,
+    "poza_agent_na_100_linii": 1.35,
+    "poza_agent_P1P2_na_100_linii": 0.25,
+    "findingi_agent_P1P2_na_jednostke": 2.2
+   },
+   "B": {
+    "findingi_agent": 622,
+    "findingi_agent_P1P2": 108,
+    "poza_agent": 565,
+    "poza_agent_P1P2": 83,
+    "poza_bramka": 166,
+    "inna_uwaga_bota": 22,
+    "poza_agent_na_jednostke": 23.5,
+    "poza_agent_P1P2_na_jednostke": 3.5,
+    "poza_agent_na_100_linii": 3.54,
+    "poza_agent_P1P2_na_100_linii": 0.52,
+    "findingi_agent_P1P2_na_jednostke": 4.5
+   },
+   "C": {
+    "findingi_agent": 249,
+    "findingi_agent_P1P2": 56,
+    "poza_agent": 223,
+    "poza_agent_P1P2": 42,
+    "poza_bramka": 111,
+    "inna_uwaga_bota": 10,
+    "poza_agent_na_jednostke": 9.3,
+    "poza_agent_P1P2_na_jednostke": 1.8,
+    "poza_agent_na_100_linii": 1.4,
+    "poza_agent_P1P2_na_100_linii": 0.26,
+    "findingi_agent_P1P2_na_jednostke": 2.3
+   }
+  }
+ }
+}

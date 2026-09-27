@@ -1,0 +1,249 @@
+{
+ "bramki": {
+  "fazy": {
+   "A": {
+    "przez_bramke": 3,
+    "tylko_bramka": 2
+   },
+   "B": {
+    "przez_bramke": 1,
+    "tylko_bramka": 0
+   },
+   "C": {
+    "przez_bramke": 5,
+    "tylko_bramka": 4
+   }
+  },
+  "fix": {
+   "A": {
+    "przez_bramke": 0,
+    "tylko_bramka": 0
+   },
+   "B": {
+    "przez_bramke": 3,
+    "tylko_bramka": 0
+   },
+   "C": {
+    "przez_bramke": 2,
+    "tylko_bramka": 0
+   }
+  },
+  "zrodla_0": {
+   "klucz1": {
+    "code-quality": 12,
+    "correctness": 3,
+    "performance": 3,
+    "security": 5,
+    "spec-compliance": 3,
+    "test-coverage": 3
+   },
+   "klucz2": {
+    "code-quality": 8,
+    "correctness": 9,
+    "performance": 6,
+    "security": 16,
+    "spec-compliance": 6,
+    "test-coverage": 13
+   },
+   "klucz2_gubi_A": {
+    "code-quality": 2,
+    "correctness": 1,
+    "performance": 4,
+    "security": 1,
+    "spec-compliance": 1,
+    "test-coverage": 3
+   },
+   "klucz2_gubi_B": {
+    "code-quality": 2,
+    "performance": 4,
+    "security": 4,
+    "spec-compliance": 2,
+    "test-coverage": 2
+   },
+   "klucz2_gubi_C": {
+    "code-quality": 2,
+    "correctness": 1,
+    "performance": 4,
+    "security": 7,
+    "spec-compliance": 3,
+    "test-coverage": 4
+   }
+  },
+  "kontrola_fixa_dzis": {
+   "findingi_wg_zrodla": {
+    "bramka-bez-testu-odmowy/-": 18,
+    "pre-skan/type-assertion": 199,
+    "regresja/-": 6
+   },
+   "klucze_z_findingiem_0_w_tym_samym_pliku": 1
+  }
+ },
+ "weryfikacja": {
+  "0": {
+   "szeroko_przed": 25,
+   "szeroko_po": 23,
+   "zabite_prawdziwe_B": [
+    "B-03-55",
+    "B-03-58"
+   ],
+   "P1P2_przed": 21,
+   "n": 53
+  },
+  "A": {
+   "szeroko_przed": 30,
+   "szeroko_po": 30,
+   "zabite_prawdziwe_B": [],
+   "P1P2_przed": 24,
+   "n": 53
+  },
+  "B": {
+   "szeroko_przed": 25,
+   "szeroko_po": 25,
+   "zabite_prawdziwe_B": [],
+   "P1P2_przed": 21,
+   "n": 53
+  },
+  "C": {
+   "szeroko_przed": 27,
+   "szeroko_po": 27,
+   "zabite_prawdziwe_B": [],
+   "P1P2_przed": 21,
+   "n": 53
+  }
+ },
+ "stryker": {
+  "stan_strykera": {
+   "f-1de5a4c": {
+    "aplikacje": {
+     "apps/dashboard": "nieuruchomio",
+     "apps/server": "nieuruchomio",
+     "packages/shared": "uruchomiona"
+    },
+    "sekundy_strykera": 11,
+    "sekundy_bramek_razem": 33
+   },
+   "f-2536643": {
+    "aplikacje": {
+     "apps/dashboard": "nieuruchomio",
+     "apps/server": "uruchomiona",
+     "packages/shared": "uruchomiona"
+    },
+    "sekundy_strykera": 33,
+    "sekundy_bramek_razem": 62
+   },
+   "f-2634b67": {
+    "aplikacje": {
+     "apps/server": "uruchomiona",
+     "packages/shared": "uruchomiona"
+    },
+    "sekundy_strykera": 11,
+    "sekundy_bramek_razem": 24
+   },
+   "f-303ff62": {
+    "aplikacje": {
+     "apps/dashboard": "uruchomiona",
+     "apps/server": "uruchomiona",
+     "packages/shared": "nieuruchomio"
+    },
+    "sekundy_strykera": 97,
+    "sekundy_bramek_razem": 116
+   },
+   "f-31491bc": {
+    "aplikacje": {
+     "apps/dashboard": "uruchomiona"
+    },
+    "sekundy_strykera": 29,
+    "sekundy_bramek_razem": 43
+   },
+   "f-32975a1": {
+    "aplikacje": {
+     "apps/dashboard": "uruchomiona"
+    },
+    "sekundy_strykera": 126,
+    "sekundy_bramek_razem": 143
+   },
+   "f-46be55a": {
+    "aplikacje": {
+     "apps/dashboard": "uruchomiona"
+    },
+    "sekundy_strykera": 76,
+    "sekundy_bramek_razem": 91
+   },
+   "f-5af000f": {
+    "aplikacje": {
+     "apps/dashboard": "uruchomiona"
+    },
+    "sekundy_strykera": 54,
+    "sekundy_bramek_razem": 69
+   },
+   "f-67f5f2c": {
+    "aplikacje": {
+     "apps/server": "uruchomiona"
+    },
+    "sekundy_strykera": 7,
+    "sekundy_bramek_razem": 16
+   },
+   "f-9d40529": {
+    "aplikacje": "nie dotyczy: faza nie zmieniła pary test ↔ plik produkcyjny z liniami dodanymi",
+    "sekundy_strykera": 0,
+    "sekundy_bramek_razem": 13
+   },
+   "f-b26128d": {
+    "aplikacje": {
+     "apps/server": "uruchomiona"
+    },
+    "sekundy_strykera": 14,
+    "sekundy_bramek_razem": 26
+   },
+   "f-b8374c8": {
+    "aplikacje": {
+     "apps/server": "uruchomiona",
+     "packages/shared": "uruchomiona"
+    },
+    "sekundy_strykera": 9,
+    "sekundy_bramek_razem": 21
+   },
+   "f-f3ee433": {
+    "aplikacje": {
+     "apps/server": "uruchomiona"
+    },
+    "sekundy_strykera": 36,
+    "sekundy_bramek_razem": 50
+   }
+  },
+  "n": 12,
+  "0": {
+   "zlapane": 1,
+   "przez_mutanta": 0
+  },
+  "A": {
+   "zlapane": 4,
+   "przez_mutanta": 0
+  },
+  "B": {
+   "zlapane": 3,
+   "przez_mutanta": 0
+  },
+  "C": {
+   "zlapane": 6,
+   "przez_mutanta": 5
+  },
+  "mutanty_w_promptach": {
+   "A": {
+    "faz_z_lista": 11,
+    "faz": 13,
+    "linii": 665
+   },
+   "B": {
+    "faz_z_lista": 12,
+    "faz": 13,
+    "linii": 746
+   },
+   "C": {
+    "faz_z_lista": 12,
+    "faz": 13,
+    "linii": 1294
+   }
+  }
+ }
+}

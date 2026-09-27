@@ -1,0 +1,1015 @@
+{
+ "klucz1|fazy": {
+  "P1/P2": {
+   "n": 36,
+   "0": {
+    "zlapane": 21,
+    "procent": 58.3
+   },
+   "A": {
+    "zlapane": 24,
+    "procent": 66.7
+   },
+   "B": {
+    "zlapane": 21,
+    "procent": 58.3
+   },
+   "C": {
+    "zlapane": 21,
+    "procent": 58.3
+   }
+  },
+  "P1": {
+   "n": 0,
+   "0": {
+    "zlapane": 0,
+    "procent": null
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": null
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": null
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": null
+   }
+  },
+  "P3": {
+   "n": 17,
+   "0": {
+    "zlapane": 4,
+    "procent": 23.5
+   },
+   "A": {
+    "zlapane": 6,
+    "procent": 35.3
+   },
+   "B": {
+    "zlapane": 4,
+    "procent": 23.5
+   },
+   "C": {
+    "zlapane": 6,
+    "procent": 35.3
+   }
+  },
+  "ogon": {
+   "n": 7,
+   "0": {
+    "zlapane": 2,
+    "procent": 28.6
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 42.9
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 42.9
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 14.3
+   }
+  },
+  "wrzesień": {
+   "n": 9,
+   "0": {
+    "zlapane": 3,
+    "procent": 33.3
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 33.3
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 33.3
+   },
+   "C": {
+    "zlapane": 3,
+    "procent": 33.3
+   }
+  },
+  "os=code-quality": {
+   "n": 5,
+   "0": {
+    "zlapane": 1,
+    "procent": 20.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 40.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 20.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 20.0
+   }
+  },
+  "os=correctness": {
+   "n": 18,
+   "0": {
+    "zlapane": 10,
+    "procent": 55.6
+   },
+   "A": {
+    "zlapane": 8,
+    "procent": 44.4
+   },
+   "B": {
+    "zlapane": 11,
+    "procent": 61.1
+   },
+   "C": {
+    "zlapane": 10,
+    "procent": 55.6
+   }
+  },
+  "os=e2e": {
+   "n": 3,
+   "0": {
+    "zlapane": 2,
+    "procent": 66.7
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 66.7
+   }
+  },
+  "os=performance": {
+   "n": 5,
+   "0": {
+    "zlapane": 3,
+    "procent": 60.0
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 60.0
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 60.0
+   },
+   "C": {
+    "zlapane": 3,
+    "procent": 60.0
+   }
+  },
+  "os=security": {
+   "n": 5,
+   "0": {
+    "zlapane": 4,
+    "procent": 80.0
+   },
+   "A": {
+    "zlapane": 5,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 4,
+    "procent": 80.0
+   },
+   "C": {
+    "zlapane": 3,
+    "procent": 60.0
+   }
+  },
+  "os=spec": {
+   "n": 5,
+   "0": {
+    "zlapane": 4,
+    "procent": 80.0
+   },
+   "A": {
+    "zlapane": 5,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 60.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 40.0
+   }
+  },
+  "os=test-coverage": {
+   "n": 12,
+   "0": {
+    "zlapane": 1,
+    "procent": 8.3
+   },
+   "A": {
+    "zlapane": 4,
+    "procent": 33.3
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 6,
+    "procent": 50.0
+   }
+  },
+  "rodzina=brak-timeoutu": {
+   "n": 3,
+   "0": {
+    "zlapane": 3,
+    "procent": 100.0
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 3,
+    "procent": 100.0
+   }
+  },
+  "rodzina=bramka-czarna-lista": {
+   "n": 2,
+   "0": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 50.0
+   }
+  },
+  "rodzina=cykl-zycia-wspolbieznosc": {
+   "n": 9,
+   "0": {
+    "zlapane": 5,
+    "procent": 55.6
+   },
+   "A": {
+    "zlapane": 5,
+    "procent": 55.6
+   },
+   "B": {
+    "zlapane": 6,
+    "procent": 66.7
+   },
+   "C": {
+    "zlapane": 5,
+    "procent": 55.6
+   }
+  },
+  "rodzina=kontrakt-duplikacja": {
+   "n": 4,
+   "0": {
+    "zlapane": 1,
+    "procent": 25.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 50.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 50.0
+   }
+  },
+  "rodzina=ogon:cache-naglowki": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=ogon:komentarz-rozmija-sie-z-kodem": {
+   "n": 1,
+   "0": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=ogon:wartosc-graniczna": {
+   "n": 2,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=ogon:wymaga-przegladarki": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=ogon:zamkniecie-procesu": {
+   "n": 1,
+   "0": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 100.0
+   }
+  },
+  "rodzina=ogon:zrodlo-czasu": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=pii-sekret-w-bledzie": {
+   "n": 2,
+   "0": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 50.0
+   }
+  },
+  "rodzina=sciezka-bledu": {
+   "n": 6,
+   "0": {
+    "zlapane": 4,
+    "procent": 66.7
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 33.3
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 50.0
+   },
+   "C": {
+    "zlapane": 4,
+    "procent": 66.7
+   }
+  },
+  "rodzina=seed-vs-kontrakt": {
+   "n": 2,
+   "0": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 100.0
+   }
+  },
+  "rodzina=tekst-ui": {
+   "n": 4,
+   "0": {
+    "zlapane": 3,
+    "procent": 75.0
+   },
+   "A": {
+    "zlapane": 4,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 50.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 25.0
+   }
+  },
+  "rodzina=test-niefalsyfikowalny": {
+   "n": 12,
+   "0": {
+    "zlapane": 1,
+    "procent": 8.3
+   },
+   "A": {
+    "zlapane": 4,
+    "procent": 33.3
+   },
+   "B": {
+    "zlapane": 3,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 6,
+    "procent": 50.0
+   }
+  },
+  "rodzina=walidacja-granicy": {
+   "n": 2,
+   "0": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 50.0
+   }
+  }
+ },
+ "klucz1|fix": {
+  "P1/P2": {
+   "n": 21,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 13,
+    "procent": 61.9
+   },
+   "B": {
+    "zlapane": 12,
+    "procent": 57.1
+   },
+   "C": {
+    "zlapane": 12,
+    "procent": 57.1
+   }
+  },
+  "P1": {
+   "n": 2,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 100.0
+   }
+  },
+  "P3": {
+   "n": 9,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 22.2
+   },
+   "B": {
+    "zlapane": 4,
+    "procent": 44.4
+   },
+   "C": {
+    "zlapane": 3,
+    "procent": 33.3
+   }
+  },
+  "ogon": {
+   "n": 2,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 50.0
+   }
+  },
+  "wrzesień": {
+   "n": 8,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 25.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 25.0
+   }
+  },
+  "os=code-quality": {
+   "n": 2,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 50.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 50.0
+   }
+  },
+  "os=correctness": {
+   "n": 10,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 30.0
+   },
+   "B": {
+    "zlapane": 4,
+    "procent": 40.0
+   },
+   "C": {
+    "zlapane": 4,
+    "procent": 40.0
+   }
+  },
+  "os=performance": {
+   "n": 2,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 100.0
+   }
+  },
+  "os=security": {
+   "n": 7,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 6,
+    "procent": 85.7
+   },
+   "B": {
+    "zlapane": 6,
+    "procent": 85.7
+   },
+   "C": {
+    "zlapane": 5,
+    "procent": 71.4
+   }
+  },
+  "os=spec": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 100.0
+   }
+  },
+  "os=test-coverage": {
+   "n": 8,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 25.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 25.0
+   }
+  },
+  "rodzina=bramka-czarna-lista": {
+   "n": 6,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 6,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 6,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 5,
+    "procent": 83.3
+   }
+  },
+  "rodzina=cykl-zycia-wspolbieznosc": {
+   "n": 4,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 25.0
+   }
+  },
+  "rodzina=granica-wartosci-migracja": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 100.0
+   }
+  },
+  "rodzina=kontrakt-duplikacja": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=ogon:cache-bez-inwalidacji": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 100.0
+   }
+  },
+  "rodzina=ogon:wartosc-graniczna": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=parser-regexem": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  },
+  "rodzina=sciezka-bledu": {
+   "n": 4,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 3,
+    "procent": 75.0
+   },
+   "B": {
+    "zlapane": 4,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 3,
+    "procent": 75.0
+   }
+  },
+  "rodzina=spojnosc-dwoch-systemow": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 100.0
+   }
+  },
+  "rodzina=tekst-ui": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 1,
+    "procent": 100.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 1,
+    "procent": 100.0
+   }
+  },
+  "rodzina=test-niefalsyfikowalny": {
+   "n": 8,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 2,
+    "procent": 25.0
+   },
+   "B": {
+    "zlapane": 2,
+    "procent": 25.0
+   },
+   "C": {
+    "zlapane": 2,
+    "procent": 25.0
+   }
+  },
+  "rodzina=walidacja-granicy": {
+   "n": 1,
+   "0": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "A": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "B": {
+    "zlapane": 0,
+    "procent": 0.0
+   },
+   "C": {
+    "zlapane": 0,
+    "procent": 0.0
+   }
+  }
+ },
+ "klucz2|fazy": {
+  "P1": {
+   "n": 8,
+   "0": {
+    "zlapane": 7,
+    "procent": 87.5
+   },
+   "A": {
+    "zlapane": 5,
+    "procent": 62.5
+   },
+   "B": {
+    "zlapane": 6,
+    "procent": 75.0
+   },
+   "C": {
+    "zlapane": 5,
+    "procent": 62.5
+   }
+  },
+  "P2": {
+   "n": 55,
+   "0": {
+    "zlapane": 46,
+    "procent": 83.6
+   },
+   "A": {
+    "zlapane": 41,
+    "procent": 74.5
+   },
+   "B": {
+    "zlapane": 39,
+    "procent": 70.9
+   },
+   "C": {
+    "zlapane": 32,
+    "procent": 58.2
+   }
+  }
+ }
+}

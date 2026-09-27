@@ -1,0 +1,158 @@
+test_review_analiza.py wynik — etap główny testu review (p1, szeroko = PEŁNE+CZĘŚCIOWE, tylko klucze obecne TAK); CI 95% bootstrap po jednostkach, 10000 losowań
+
+§1 KALIBRACJA SĘDZIEGO ETAPU: {"decyzji": 20, "niezgodnych": 0, "procent_bledow": 0.0, "prog": 15.0, "w_progu": true, "wg_typu": {"PEŁNE/CZĘŚCIOWE": 0, "BRAK": 0}, "szara_strefa": [2, 7, 16]}
+
+§2 ZŁAPANIA I RÓŻNICE vs 0 (sparowane po kluczu)
+  klucz1|fazy: n=53 | 0 szeroko 25/53 (47%), PEŁNE 20/53 (38%) | A szeroko 30/53 (57%), PEŁNE 24/53 (45%) | B szeroko 25/53 (47%), PEŁNE 21/53 (40%) | C szeroko 27/53 (51%), PEŁNE 24/53 (45%)
+      komplementarność: {"n": 53, "nikt": 13, "wszyscy": 12, "ktokolwiek": 40, "0+A": 36, "0+B": 31, "0+C": 33}
+      A − 0: szeroko +9.4 pkt [-1.8; 22.0], PEŁNE +7.5 pkt [-3.4; 19.3]; pary: tylko A 11, tylko 0 6
+      B − 0: szeroko +0.0 pkt [-10.7; 10.7], PEŁNE +1.9 pkt [-9.8; 15.8]; pary: tylko B 6, tylko 0 6
+      C − 0: szeroko +3.8 pkt [-11.1; 17.6], PEŁNE +7.5 pkt [-5.3; 22.6]; pary: tylko C 8, tylko 0 6
+  klucz2|fazy: n=63 | 0 szeroko 53/63 (84%), PEŁNE 44/63 (70%) | A szeroko 46/63 (73%), PEŁNE 40/63 (63%) | B szeroko 45/63 (71%), PEŁNE 39/63 (62%) | C szeroko 37/63 (59%), PEŁNE 29/63 (46%)
+      komplementarność: {"n": 63, "nikt": 3, "wszyscy": 30, "ktokolwiek": 60, "0+A": 57, "0+B": 59, "0+C": 56}
+      A − 0: szeroko -11.1 pkt [-25.0; 0.0], PEŁNE -6.3 pkt [-19.0; 6.9]; pary: tylko A 4, tylko 0 11
+      B − 0: szeroko -12.7 pkt [-23.1; 0.0], PEŁNE -7.9 pkt [-20.6; 6.8]; pary: tylko B 6, tylko 0 14
+      C − 0: szeroko -25.4 pkt [-39.1; -13.6], PEŁNE -23.8 pkt [-36.6; -11.1]; pary: tylko C 3, tylko 0 19
+  klucz1|fix: n=30 | 0 szeroko 0/30 (0%), PEŁNE 0/30 (0%) | A szeroko 15/30 (50%), PEŁNE 13/30 (43%) | B szeroko 16/30 (53%), PEŁNE 15/30 (50%) | C szeroko 15/30 (50%), PEŁNE 14/30 (47%)
+      komplementarność: {"n": 30, "nikt": 13, "wszyscy": 0, "ktokolwiek": 17, "0+A": 15, "0+B": 16, "0+C": 15}
+      A − 0: szeroko +50.0 pkt [30.0; 67.9], PEŁNE +43.3 pkt [23.1; 61.3]; pary: tylko A 15, tylko 0 0
+      B − 0: szeroko +53.3 pkt [36.0; 69.2], PEŁNE +50.0 pkt [32.3; 65.6]; pary: tylko B 16, tylko 0 0
+      C − 0: szeroko +50.0 pkt [33.3; 66.7], PEŁNE +46.7 pkt [29.6; 63.3]; pary: tylko C 15, tylko 0 0
+  klucz1|razem: n=83 | 0 szeroko 25/83 (30%), PEŁNE 20/83 (24%) | A szeroko 45/83 (54%), PEŁNE 37/83 (45%) | B szeroko 41/83 (49%), PEŁNE 36/83 (43%) | C szeroko 42/83 (51%), PEŁNE 38/83 (46%)
+      komplementarność: {"n": 83, "nikt": 26, "wszyscy": 12, "ktokolwiek": 57, "0+A": 51, "0+B": 47, "0+C": 48}
+      A − 0: szeroko +24.1 pkt [12.6; 38.2], PEŁNE +20.5 pkt [9.2; 33.9]; pary: tylko A 26, tylko 0 6
+      B − 0: szeroko +19.3 pkt [7.3; 33.9], PEŁNE +19.3 pkt [6.6; 34.8]; pary: tylko B 22, tylko 0 6
+      C − 0: szeroko +20.5 pkt [8.0; 34.9], PEŁNE +21.7 pkt [9.8; 36.4]; pary: tylko C 23, tylko 0 6
+  bilans P1/P2 (klucz1 P1/P2 + klucz2)|fazy: n=99 | 0 szeroko 74/99 (75%), PEŁNE 62/99 (63%) | A szeroko 70/99 (71%), PEŁNE 60/99 (61%) | B szeroko 66/99 (67%), PEŁNE 57/99 (58%) | C szeroko 58/99 (59%), PEŁNE 49/99 (49%)
+      komplementarność: {"n": 99, "nikt": 10, "wszyscy": 42, "ktokolwiek": 89, "0+A": 84, "0+B": 85, "0+C": 82}
+      A − 0: szeroko -4.0 pkt [-16.4; 7.3], PEŁNE -2.0 pkt [-13.5; 10.0]; pary: tylko A 10, tylko 0 14
+      B − 0: szeroko -8.1 pkt [-18.7; 3.3], PEŁNE -5.1 pkt [-16.5; 7.4]; pary: tylko B 11, tylko 0 19
+      C − 0: szeroko -16.2 pkt [-29.1; -5.4], PEŁNE -13.1 pkt [-24.2; -1.8]; pary: tylko C 8, tylko 0 24
+
+§3 PRZEKROJE (szeroko)
+  klucz1|fazy
+    P1/P2                                    n= 36 | 0 21 | A 24 | B 21 | C 21
+    P3                                       n= 17 | 0 4 | A 6 | B 4 | C 6
+    ogon                                     n=  7 | 0 2 | A 3 | B 3 | C 1
+    wrzesień                                 n=  9 | 0 3 | A 3 | B 3 | C 3
+    os=code-quality                          n=  5 | 0 1 | A 2 | B 1 | C 1
+    os=correctness                           n= 18 | 0 10 | A 8 | B 11 | C 10
+    os=e2e                                   n=  3 | 0 2 | A 3 | B 0 | C 2
+    os=performance                           n=  5 | 0 3 | A 3 | B 3 | C 3
+    os=security                              n=  5 | 0 4 | A 5 | B 4 | C 3
+    os=spec                                  n=  5 | 0 4 | A 5 | B 3 | C 2
+    os=test-coverage                         n= 12 | 0 1 | A 4 | B 3 | C 6
+    rodzina=brak-timeoutu                    n=  3 | 0 3 | A 3 | B 3 | C 3
+    rodzina=bramka-czarna-lista              n=  2 | 0 1 | A 1 | B 1 | C 1
+    rodzina=cykl-zycia-wspolbieznosc         n=  9 | 0 5 | A 5 | B 6 | C 5
+    rodzina=kontrakt-duplikacja              n=  4 | 0 1 | A 2 | B 1 | C 2
+    rodzina=ogon:cache-naglowki              n=  1 | 0 0 | A 0 | B 0 | C 0
+    rodzina=ogon:komentarz-rozmija-sie-z-kodem n=  1 | 0 1 | A 0 | B 1 | C 0
+    rodzina=ogon:wartosc-graniczna           n=  2 | 0 0 | A 0 | B 0 | C 0
+    rodzina=ogon:wymaga-przegladarki         n=  1 | 0 0 | A 1 | B 0 | C 0
+    rodzina=ogon:zamkniecie-procesu          n=  1 | 0 1 | A 1 | B 1 | C 1
+    rodzina=ogon:zrodlo-czasu                n=  1 | 0 0 | A 1 | B 1 | C 0
+    rodzina=pii-sekret-w-bledzie             n=  2 | 0 1 | A 2 | B 2 | C 1
+    rodzina=sciezka-bledu                    n=  6 | 0 4 | A 2 | B 3 | C 4
+    rodzina=seed-vs-kontrakt                 n=  2 | 0 2 | A 2 | B 0 | C 2
+    rodzina=tekst-ui                         n=  4 | 0 3 | A 4 | B 2 | C 1
+    rodzina=test-niefalsyfikowalny           n= 12 | 0 1 | A 4 | B 3 | C 6
+    rodzina=walidacja-granicy                n=  2 | 0 2 | A 2 | B 1 | C 1
+  klucz1|fix
+    P1/P2                                    n= 21 | 0 0 | A 13 | B 12 | C 12
+    P1                                       n=  2 | 0 0 | A 2 | B 2 | C 2
+    P3                                       n=  9 | 0 0 | A 2 | B 4 | C 3
+    ogon                                     n=  2 | 0 0 | A 1 | B 1 | C 1
+    wrzesień                                 n=  8 | 0 0 | A 2 | B 2 | C 2
+    os=code-quality                          n=  2 | 0 0 | A 1 | B 2 | C 1
+    os=correctness                           n= 10 | 0 0 | A 3 | B 4 | C 4
+    os=performance                           n=  2 | 0 0 | A 2 | B 2 | C 2
+    os=security                              n=  7 | 0 0 | A 6 | B 6 | C 5
+    os=spec                                  n=  1 | 0 0 | A 1 | B 0 | C 1
+    os=test-coverage                         n=  8 | 0 0 | A 2 | B 2 | C 2
+    rodzina=bramka-czarna-lista              n=  6 | 0 0 | A 6 | B 6 | C 5
+    rodzina=cykl-zycia-wspolbieznosc         n=  4 | 0 0 | A 0 | B 1 | C 1
+    rodzina=granica-wartosci-migracja        n=  1 | 0 0 | A 1 | B 1 | C 1
+    rodzina=kontrakt-duplikacja              n=  1 | 0 0 | A 0 | B 0 | C 0
+    rodzina=ogon:cache-bez-inwalidacji       n=  1 | 0 0 | A 1 | B 1 | C 1
+    rodzina=ogon:wartosc-graniczna           n=  1 | 0 0 | A 0 | B 0 | C 0
+    rodzina=parser-regexem                   n=  1 | 0 0 | A 0 | B 0 | C 0
+    rodzina=sciezka-bledu                    n=  4 | 0 0 | A 3 | B 4 | C 3
+    rodzina=spojnosc-dwoch-systemow          n=  1 | 0 0 | A 1 | B 1 | C 1
+    rodzina=tekst-ui                         n=  1 | 0 0 | A 1 | B 0 | C 1
+    rodzina=test-niefalsyfikowalny           n=  8 | 0 0 | A 2 | B 2 | C 2
+    rodzina=walidacja-granicy                n=  1 | 0 0 | A 0 | B 0 | C 0
+  klucz2|fazy
+    P1                                       n=  8 | 0 7 | A 5 | B 6 | C 5
+    P2                                       n= 55 | 0 46 | A 41 | B 39 | C 32
+
+§4 WKŁAD BRAMEK (klucz 1): {"fazy": {"A": {"przez_bramke": 3, "tylko_bramka": 2}, "B": {"przez_bramke": 1, "tylko_bramka": 0}, "C": {"przez_bramke": 5, "tylko_bramka": 4}}, "fix": {"A": {"przez_bramke": 0, "tylko_bramka": 0}, "B": {"przez_bramke": 3, "tylko_bramka": 0}, "C": {"przez_bramke": 2, "tylko_bramka": 0}}, "zrodla_0": {"klucz1": {"code-quality": 12, "correctness": 3, "performance": 3, "security": 5, "spec-compliance": 3, "test-coverage": 3}, "klucz2": {"code-quality": 8, "correctness": 9, "performance": 6, "security": 16, "spec-compliance": 6, "test-coverage": 13}, "klucz2_gubi_A": {"code-quality": 2, "correctness": 1, "performance": 4, "security": 1, "spec-compliance": 1, "test-coverage": 3}, "klucz2_gubi_B": {"code-quality": 2, "performance": 4, "security": 4, "spec-compliance": 2, "test-coverage": 2}, "klucz2_gubi_C": {"code-quality": 2, "correctness": 1, "performance": 4, "security": 7, "spec-compliance": 3, "test-coverage": 4}}, "kontrola_fixa_dzis": {"findingi_wg_zrodla": {"bramka-bez-testu-odmowy/-": 18, "pre-skan/type-assertion": 199, "regresja/-": 6}, "klucze_z_findingiem_0_w_tym_samym_pliku": 1}}
+   D5 Stryker (fazy, rodzina test-niefalsyfikowalny): {"n": 12, "0": {"zlapane": 1, "przez_mutanta": 0}, "A": {"zlapane": 4, "przez_mutanta": 0}, "B": {"zlapane": 3, "przez_mutanta": 0}, "C": {"zlapane": 6, "przez_mutanta": 5}, "mutanty_w_promptach": {"A": {"faz_z_lista": 11, "faz": 13, "linii": 665}, "B": {"faz_z_lista": 12, "faz": 13, "linii": 746}, "C": {"faz_z_lista": 12, "faz": 13, "linii": 1294}}}
+   stan Strykera per faza: {"f-1de5a4c": {"aplikacje": {"apps/dashboard": "nieuruchomio", "apps/server": "nieuruchomio", "packages/shared": "uruchomiona"}, "sekundy_strykera": 11, "sekundy_bramek_razem": 33}, "f-2536643": {"aplikacje": {"apps/dashboard": "nieuruchomio", "apps/server": "uruchomiona", "packages/shared": "uruchomiona"}, "sekundy_strykera": 33, "sekundy_bramek_razem": 62}, "f-2634b67": {"aplikacje": {"apps/server": "uruchomiona", "packages/shared": "uruchomiona"}, "sekundy_strykera": 11, "sekundy_bramek_razem": 24}, "f-303ff62": {"aplikacje": {"apps/dashboard": "uruchomiona", "apps/server": "uruchomiona", "packages/shared": "nieuruchomio"}, "sekundy_strykera": 97, "sekundy_bramek_razem": 116}, "f-31491bc": {"aplikacje": {"apps/dashboard": "uruchomiona"}, "sekundy_strykera": 29, "sekundy_bramek_razem": 43}, "f-32975a1": {"aplikacje": {"apps/dashboard": "uruchomiona"}, "sekundy_strykera": 126, "sekundy_bramek_razem": 143}, "f-46be55a": {"aplikacje": {"apps/dashboard": "uruchomiona"}, "sekundy_strykera": 76, "sekundy_bramek_razem": 91}, "f-5af000f": {"aplikacje": {"apps/dashboard": "uruchomiona"}, "sekundy_strykera": 54, "sekundy_bramek_razem": 69}, "f-67f5f2c": {"aplikacje": {"apps/server": "uruchomiona"}, "sekundy_strykera": 7, "sekundy_bramek_razem": 16}, "f-9d40529": {"aplikacje": "nie dotyczy: faza nie zmieniła pary test ↔ plik produkcyjny z liniami dodanymi", "sekundy_strykera": 0, "sekundy_bramek_razem": 13}, "f-b26128d": {"aplikacje": {"apps/server": "uruchomiona"}, "sekundy_strykera": 14, "sekundy_bramek_razem": 26}, "f-b8374c8": {"aplikacje": {"apps/server": "uruchomiona", "packages/shared": "uruchomiona"}, "sekundy_strykera": 9, "sekundy_bramek_razem": 21}, "f-f3ee433": {"aplikacje": {"apps/server": "uruchomiona"}, "sekundy_strykera": 36, "sekundy_bramek_razem": 50}}
+
+§5 PO WERYFIKACJI (fazy, klucz 1, sceptycy wariantu tylko na dopasowanych P1/P2)
+  0: szeroko przed 25 → po 23 z 53; zabite prawdziwe B 2 ['B-03-55', 'B-03-58']; złapanych P1/P2 przed 21
+  A: szeroko przed 30 → po 30 z 53; zabite prawdziwe B 0 []; złapanych P1/P2 przed 24
+  B: szeroko przed 25 → po 25 z 53; zabite prawdziwe B 0 []; złapanych P1/P2 przed 21
+  C: szeroko przed 27 → po 27 z 53; zabite prawdziwe B 0 []; złapanych P1/P2 przed 21
+
+§6 SZUM (findingi POZA KLUCZEM; agent = findingi reviewerów, bramka osobno)
+  fazy: jednostek 13, linii diffu kodu 29385
+    0: findingi agentów 309 (P1/P2 175, 13.5/jedn.) | POZA KLUCZEM agent 214 (P1/P2 102) = 16.5 (P1/P2 7.8) na jedn., 0.73 (P1/P2 0.35) na 100 linii | bramka poza kluczem 0 | inna uwaga bota 10
+    A: findingi agentów 318 (P1/P2 199, 15.3/jedn.) | POZA KLUCZEM agent 236 (P1/P2 143) = 18.2 (P1/P2 11.0) na jedn., 0.80 (P1/P2 0.49) na 100 linii | bramka poza kluczem 75 | inna uwaga bota 11
+    B: findingi agentów 369 (P1/P2 171, 13.2/jedn.) | POZA KLUCZEM agent 284 (P1/P2 114) = 21.8 (P1/P2 8.8) na jedn., 0.97 (P1/P2 0.39) na 100 linii | bramka poza kluczem 197 | inna uwaga bota 9
+    C: findingi agentów 343 (P1/P2 139, 10.7/jedn.) | POZA KLUCZEM agent 267 (P1/P2 96) = 20.5 (P1/P2 7.4) na jedn., 0.91 (P1/P2 0.33) na 100 linii | bramka poza kluczem 199 | inna uwaga bota 7
+  fix: jednostek 24, linii diffu kodu 15976
+    0: findingi agentów 223 (P1/P2 223, 9.3/jedn.) | POZA KLUCZEM agent 203 (P1/P2 203) = 8.5 (P1/P2 8.5) na jedn., 1.27 (P1/P2 1.27) na 100 linii | bramka poza kluczem 0 | inna uwaga bota 20
+    A: findingi agentów 243 (P1/P2 52, 2.2/jedn.) | POZA KLUCZEM agent 216 (P1/P2 40) = 9.0 (P1/P2 1.7) na jedn., 1.35 (P1/P2 0.25) na 100 linii | bramka poza kluczem 7 | inna uwaga bota 9
+    B: findingi agentów 622 (P1/P2 108, 4.5/jedn.) | POZA KLUCZEM agent 565 (P1/P2 83) = 23.5 (P1/P2 3.5) na jedn., 3.54 (P1/P2 0.52) na 100 linii | bramka poza kluczem 166 | inna uwaga bota 22
+    C: findingi agentów 249 (P1/P2 56, 2.3/jedn.) | POZA KLUCZEM agent 223 (P1/P2 42) = 9.3 (P1/P2 1.8) na jedn., 1.40 (P1/P2 0.26) na 100 linii | bramka poza kluczem 111 | inna uwaga bota 10
+
+§7 KOSZT [M jedn., PO = po zmianie kontekstu, netto bez sesji uruchamiającej]; brutto zmierzony całego etapu (37 jednostek, p1+p2 pilota): 185.70
+  fazy (pomiar = sędzia 2.71):
+    0: znajdowanie 34.17 (zmierzony 41.36), na jednostkę 2.63, złapane klucz1 25, na złapaną B 1.37 | weryfikacja dopasowanych 1.74
+    A: znajdowanie 19.46 (zmierzony 23.84), na jednostkę 1.50, złapane klucz1 30, na złapaną B 0.65, przyrost vs 0: -14.71 M za +5 złapań | weryfikacja dopasowanych 1.50
+    B: znajdowanie 24.96 (zmierzony 30.70), na jednostkę 1.92, złapane klucz1 25, na złapaną B 1.0, przyrost vs 0: -9.21 M za +0 złapań | weryfikacja dopasowanych 0.90
+    C: znajdowanie 5.77 (zmierzony 10.43), na jednostkę 0.44, złapane klucz1 27, na złapaną B 0.21, przyrost vs 0: -28.40 M za +2 złapań | weryfikacja dopasowanych 0.59
+  fix (pomiar = sędzia 3.70):
+    0: znajdowanie 5.15 (zmierzony 8.69), na jednostkę 0.21, złapane klucz1 0, na złapaną B None | weryfikacja dopasowanych 0.00
+    A: znajdowanie 5.49 (zmierzony 7.36), na jednostkę 0.23, złapane klucz1 15, na złapaną B 0.37, przyrost vs 0: +0.34 M za +15 złapań | weryfikacja dopasowanych 0.00
+    B: znajdowanie 11.84 (zmierzony 15.53), na jednostkę 0.49, złapane klucz1 16, na złapaną B 0.74, przyrost vs 0: +6.69 M za +16 złapań | weryfikacja dopasowanych 0.00
+    C: znajdowanie 8.20 (zmierzony 10.60), na jednostkę 0.34, złapane klucz1 15, na złapaną B 0.55, przyrost vs 0: +3.05 M za +15 złapań | weryfikacja dopasowanych 0.00
+
+§8 KLUCZ 2 — trafienia dzisiejszego review gubione przez nowy wariant (i łapane tylko przez nowy)
+  A gubi 11 (P1 2), łapie ponad 0: 4
+  B gubi 14 (P1 1), łapie ponad 0: 6
+  C gubi 19 (P1 2), łapie ponad 0: 3
+  f-b26128d docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#6 P2 apps/server/src/routes/events.test.ts:1 | gubi - | łapie tylko nowy AB | dziś łapie - | Brak testu, że POST /e zużywa wiadro limitera originu ofert (jest tylko test odwrotny dla /t.js).
+  f-b26128d docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#4 P2 apps/server/src/app.ts:118 | gubi - | łapie tylko nowy B | dziś łapie - | Budżet limitera originu ofert policzony na odsłonę, a tracker wysyła kilka żądań na minutę na każdą otwartą kartę.
+  f-b26128d docs/completed/faza-4-tracking-i-widok-oferty/review-faza-2.md#1 P2 apps/server/src/tracking/visit-service.ts:137 | gubi BC | łapie tylko nowy - | dziś łapie security | Deanonimizacja IP: rola authenticated czyta sól offers.ip_salt, jedyną ochronę hasha adresu IP czytelnika oferty.
+  f-32975a1 docs/completed/faza-5-heatmapa/review-faza-2.md#3 P2 apps/dashboard/src/features/offers/offer-heatmap-card.tsx:326 | gubi AB | łapie tylko nowy - | dziś łapie performance | Zwinięcie mapy na telefonie robi tylko CSS — iframe z ofertą i duży canvas i tak się montują i rysują.
+  f-32975a1 docs/completed/faza-5-heatmapa/review-faza-2.md#5 P2 apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:227 | gubi - | łapie tylko nowy AC | dziś łapie - | Canvas nakładki alokowany w pełnej rozdzielczości dokumentu (dziesiątki MB bufora) zamiast po skali.
+  f-32975a1 docs/completed/faza-5-heatmapa/review-faza-2.md#7 P2 apps/dashboard/src/features/offers/texts.ts:66 | gubi BC | łapie tylko nowy - | dziś łapie test-coverage | Podpis mapy obiecuje czas zatrzymania, a waga komórki to licznik próbek ruchu i kliknięć.
+  f-303ff62 docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#4 P2 apps/dashboard/src/features/settings/use-webhook-settings.ts:92 | gubi ABC | łapie tylko nowy - | dziś łapie code-quality | Błąd odczytu profiles w hooku ustawień webhooka połykany bez zgłoszenia do Sentry (reszta pliku zgłasza).
+  f-303ff62 docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#1 P1 apps/dashboard/src/features/offers/offer-details-page.tsx:84 | gubi C | łapie tylko nowy - | dziś łapie performance,test-coverage | Karta „Decyzje klienta” renderuje się dopiero za bramką liczby wizyt — bez wizyt decyzje klienta są niewidoczne.
+  f-303ff62 docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#6 P2 supabase/migrations/20260902190000_profiles_webhook_set_at.sql:41 | gubi B | łapie tylko nowy - | dziś łapie security | Migracja dodaje ograniczenie pary webhook_url/webhook_set_at bez backfillu i bez NOT VALID — push padnie na istniejących wierszach.
+  f-46be55a docs/completed/faza-3-konto-i-dashboard/review-faza-2.md#1 P1 apps/dashboard/src/features/settings/use-mcp-token.ts:90 | gubi A | łapie tylko nowy - | dziś łapie correctness | Rotacja tokenu MCP wysyła created_at z zegara przeglądarki wbrew kontraktowi migracji z fazy 1 (czas z bazy).
+  f-46be55a docs/completed/faza-3-konto-i-dashboard/review-faza-2.md#5 P2 apps/dashboard/src/features/offers/offers-list.tsx:8 | gubi BC | łapie tylko nowy - | dziś łapie spec-compliance | Formatter daty dashboardu bez strefy Europe/Warsaw — termin oferty rozjeżdża się ze stroną serwera, testy zielone tylko dzięki strefie runnera.
+  f-31491bc docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md#3 P2 apps/dashboard/src/features/offers/heatmap-grid.ts:34 | gubi - | łapie tylko nowy ABC | dziś łapie - | Kontrakt siatki (wzorzec komórki, liczba kolumn, progi) ręcznie zduplikowany między serwerem a dashboardem zamiast w packages/shared.
+  f-31491bc docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md#2 P2 apps/dashboard/src/features/offers/offer-heatmap-card.tsx:117 | gubi ABC | łapie tylko nowy - | dziś łapie performance | Kosztowne przeliczenia mapy (kubełki, dekodowanie punktów) w ciele komponentu bez useMemo — przy każdym renderze.
+  f-5af000f docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md#1 P1 apps/dashboard/src/features/offers/analytics.ts:165 | gubi ABC | łapie tylko nowy - | dziś łapie test-coverage | „Czas czytania” wizyty liczony jako suma sekund sekcji mierzonych równolegle — zawyża czas wielokrotnie.
+  f-5af000f docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md#4 P2 apps/dashboard/src/features/offers/use-offer-details.ts:127 | gubi ABC | łapie tylko nowy - | dziś łapie code-quality | Ręczny interfejs w maybeSingle<OfferDetailsRow>() zastępuje typ wywnioskowany z Database — typecheck nie pilnuje kolumn.
+  f-9d40529 docs/completed/faza-4-tracking-i-widok-oferty/review-faza-1.md#1 P2 supabase/migrations/20260828120000_visits_tracking.sql:None | gubi C | łapie tylko nowy - | dziś łapie security | Funkcja scalania wizyt w bazie dokłada klucze sekcji i mapy bez sufitu — skumulowany stan wizyty może rosnąć bez końca.
+  f-b8374c8 docs/completed/faza-2-publikacja-ofert/review-faza-2.md#2 P2 apps/server/src/app.ts:294 | gubi C | łapie tylko nowy - | dziś łapie security | Jedyne CSP originu ofert to frame-ancestors — HTML oferty zapisywany tokenem handlowca nie ma ochrony przed skryptami.
+  f-b8374c8 docs/completed/faza-2-publikacja-ofert/review-faza-2.md#5 P2 apps/server/src/app.ts:159 | gubi BC | łapie tylko nowy - | dziś łapie security | Brak testu utrwalającego klucz limitera; limit obejmuje też statykę, więc wielu odbiorców naraz dostaje 429.
+  f-b8374c8 docs/completed/faza-2-publikacja-ofert/review-faza-2.md#1 P2 supabase/migrations/20260825171812_offers_brand_and_contact.sql:167 | gubi BC | łapie tylko nowy - | dziś łapie security | Kolumna offers.html bez limitu rozmiaru, choć ta sama migracja ogranicza inne pola tekstowe publicznego API.
+  f-f3ee433 docs/completed/faza-9c-dokumenty-prawne/review-faza-2.md#3 P2 apps/server/src/routes/offer-origin-pages.test.ts:117 | gubi A | łapie tylko nowy - | dziś łapie test-coverage | Test siedmiu sekcji strony prawnej nie sprawdza ich kolejności, której wymaga plan.
+  f-1de5a4c docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#2 P2 apps/server/src/cta/cta-script.test.ts:92 | gubi AC | łapie tylko nowy - | dziś łapie security | Test CTA zawsze buduje HTML bieżącym rendererem — ścieżka ofert opublikowanych przed deployem jest niepokryta.
+  f-1de5a4c docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#1 P2 apps/server/static/c.js:151 | gubi C | łapie tylko nowy - | dziś łapie security | Gałąź „oferta wygasła” w c.js zakłada węzeł komunikatu, którego nie mają starsze, niemutowalne oferty.
+  f-1de5a4c docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#4 P2 apps/server/static/logo-aa-napis.webp:None | gubi ABC | łapie tylko nowy - | dziś łapie performance | Logo AA w .webp waży 80 kB przy wyświetlaniu ~20 px (zastąpiło SVG 5 kB) na stronach widzianych przez klienta.
+  f-1de5a4c docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#5 P2 apps/dashboard/src/features/offers/offer-details-page.tsx:81 | gubi - | łapie tylko nowy B | dziś łapie - | Hook mapy pobiera do ~2 MB danych także wtedy, gdy karta i tak nic nie rysuje.
+  f-1de5a4c docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md#3 P2 apps/dashboard/src/main.tsx:75 | gubi ABC | łapie tylko nowy - | dziś łapie performance | Dynamiczny import App dzieli bundle na dwa szeregowe pobrania bez modulepreload — dodatkowy round trip przy zimnym wejściu.
+  f-67f5f2c docs/completed/faza-1-fundament/review-faza-3.md#3 P2 apps/server/src/observability/sentry.test.ts:49 | gubi - | łapie tylko nowy ABC | dziś łapie - | Test Sentry.init nie sprawdza żadnej przekazanej opcji (beforeSend, sendDefaultPii).
+  f-67f5f2c docs/completed/faza-1-fundament/review-faza-3.md#1 P2 apps/server/tsconfig.json:1 | gubi BC | łapie tylko nowy - | dziś łapie spec-compliance | Serwer z IU-4 nie startuje — import app.js nie rozwiązuje się przy uruchomieniu (ERR_MODULE_NOT_FOUND).
+  f-67f5f2c docs/completed/faza-1-fundament/review-faza-3.md#2 P2 apps/server/src/app.ts:99 | gubi C | łapie tylko nowy - | dziś łapie correctness | Host-guard zwraca 404 dla 127.0.0.1 — health check kontenera oznaczy deploy jako niezdrowy.
+  f-2536643 docs/completed/faza-9a-domena-mailer-limity/review-faza-4.md#4 P2 apps/dashboard/src/features/templates/template-card.tsx:67 | gubi AC | łapie tylko nowy - | dziś łapie spec-compliance,test-coverage | Zmiana poza zakresem: diff usuwa całą pigułkę pochodzenia szablonu, a plan kazał usunąć tylko „WBUDOWANY”.
+  f-2536643 docs/completed/faza-9a-domena-mailer-limity/review-faza-4.md#3 P2 apps/server/src/routes/templates.test.ts:268 | gubi - | łapie tylko nowy B | dziś łapie - | Test „dokładnie pola kontraktu” niefalsyfikowalny — sprawdza wynik już przepuszczony przez nieścisły schemat.
+
+obecność kluczy: {('fazy', 'klucz1', 'NIE'): 4, ('fazy', 'klucz2', 'TAK'): 63, ('fazy', 'klucz1', 'TAK'): 53, ('fazy', 'klucz1', 'NIEPEWNE'): 1, ('fix', 'klucz1', 'TAK'): 30, ('fix', 'klucz1', 'NIE'): 1}

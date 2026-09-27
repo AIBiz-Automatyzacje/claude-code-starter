@@ -1,0 +1,122 @@
+[
+ {
+  "nr": 1,
+  "zgodne": true,
+  "uwaga": "Linia 46 to początek IIFE odczytu, kotwica 67 jego koniec — ta sama funkcja i mechanizm (odrzucony promise bez obsługi); bramka no-floating-promises trafia wprost.",
+  "szara_strefa": false
+ },
+ {
+  "nr": 2,
+  "zgodne": true,
+  "uwaga": "Ten sam test; finding wprost pisze, że asercja height ≤ 32000 przechodzi przy złej geometrii, ale proponuje inną naprawę (asercja szerokości) — CZĘŚCIOWE obronne, BRAK też byłby obronny.",
+  "szara_strefa": true
+ },
+ {
+  "nr": 3,
+  "zgodne": true,
+  "uwaga": "To samo miejsce i mechanizm (prefiks zamiast tokenu klasy).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 4,
+  "zgodne": true,
+  "uwaga": "Ta sama funkcja sendTest/runWrite, ten sam mechanizm (testState zostaje running).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 5,
+  "zgodne": true,
+  "uwaga": "Ta sama linia, ten sam mechanizm (timestamp sprzed await).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 6,
+  "zgodne": true,
+  "uwaga": "Ten sam defekt w tym samym miejscu (karta decyzji za bramką visitCount).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 7,
+  "zgodne": true,
+  "uwaga": "Ta sama bramka nagłówka i skutek (JWKS/getUser), inny wektor (losowy kid zamiast alg none) — CZĘŚCIOWE obronne, BRAK też byłby obronny.",
+  "szara_strefa": true
+ },
+ {
+  "nr": 8,
+  "zgodne": true,
+  "uwaga": "Ten sam pusty catch w offerPreviewUrl.",
+  "szara_strefa": false
+ },
+ {
+  "nr": 9,
+  "zgodne": true,
+  "uwaga": "Ten sam moduł bez testów (linia 59 vs 100 w tym samym module).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 10,
+  "zgodne": true,
+  "uwaga": "Ta sama duplikacja stałych siatki.",
+  "szara_strefa": false
+ },
+ {
+  "nr": 11,
+  "zgodne": true,
+  "uwaga": "Inny defekt (mutanty sortowania vs normalizacja wagi agregatu).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 12,
+  "zgodne": true,
+  "uwaga": "Inny defekt (brak roku w dacie vs brak pliku testów).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 13,
+  "zgodne": true,
+  "uwaga": "Inny mechanizm (require-await vs atrapa ignorująca argumenty).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 14,
+  "zgodne": true,
+  "uwaga": "Inny defekt (knip: martwy eksport vs brak timeZone).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 15,
+  "zgodne": true,
+  "uwaga": "Inny defekt (wzorzec URL vs markery w komentarzu HTML); finding słusznie dopasowany do innego klucza.",
+  "szara_strefa": false
+ },
+ {
+  "nr": 16,
+  "zgodne": true,
+  "uwaga": "Inny defekt (JSON zamiast strony przy 429 vs klucz limitera z XFF); finding wspomina wspólne wiadro tylko jako kontekst — BRAK obronne, CZĘŚCIOWE też byłoby obronne.",
+  "szara_strefa": true
+ },
+ {
+  "nr": 17,
+  "zgodne": true,
+  "uwaga": "Inny defekt (klucze heat w seedzie vs komentarz o started_at).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 18,
+  "zgodne": true,
+  "uwaga": "Inny defekt (karta aktywna przed odczytem vs komunikat „zapisano” po edycji).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 19,
+  "zgodne": true,
+  "uwaga": "Inny defekt (martwy re-eksport vs nakładka klikalności wiersza).",
+  "szara_strefa": false
+ },
+ {
+  "nr": 20,
+  "zgodne": true,
+  "uwaga": "Inny mechanizm (set-state-in-effect vs wyścig isStoppedRef po zmianie templateId).",
+  "szara_strefa": false
+ }
+]

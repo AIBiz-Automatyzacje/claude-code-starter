@@ -1,0 +1,615 @@
+[
+ {
+  "et": "f-46be55a",
+  "K": "K5",
+  "F": "F31",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "Floating promise w IIFE odczytu tokenu.",
+  "nr": 1,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-03-67",
+   "waga": "P2",
+   "os": "correctness",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+   "linia": 67,
+   "streszczenie": "Trzy async IIFE bez catch — przyciski trwale wylaczone, brak zdarzenia w Sentry",
+   "tresc": "_🩺 Stability & Availability_ | _🟠 Major_ | _⚡ Quick win_\n\n**Odrzucony promise w żadnym z trzech async IIFE nie jest obsłużony — UI potrafi zablokować się na stałe.**\n\n`hashMcpToken` rzuca `TypeError`, jeśli `crypto.subtle` nie istnieje (kontekst non-secure), a każdy wyjątek z warstwy klienta bazy również ląduje jako odrzucenie promise'a. Wtedy w `generate` i `revoke` `setIsBusy(false)` nie wykona się nigdy: przyciski zostają wyłączone, `isWriteFailed` pozostaje `false`, użytkownik nie widzi żadnego komunikatu, a Sentry nie dostaje zdarzenia. W efekcie odczytu karta zostaje na „Ładowanie…” bez stanu błędu. Dodaj `try/catch` z `Sentry.captureException` i `finally` dla `isBusy`.\n\nZgodnie z wytycznymi kodowania: „NIGDY nie łap wyjątków i nie ignoruj ich (empty catch block)… zawsze loguj albo re-throw”.\n\nAlso applies to: 78-105, 112-124",
+   "wycinek": "   61  \n   62        // Brak wiersza to poprawny wynik działania RLS na świeżym koncie,\n   63        // nie błąd odczytu.\n   64        setState(\n   65          data === null ? { status: 'absent' } : { status: 'active', createdAt: new Date(data.created_at) },\n   66        );\n   67      })();\n   68  \n   69      return () => {\n   70        controller.abort();\n   71      };\n   72    }, []);\n   73  "
+  },
+  "finding": {
+   "wlasciciele": [
+    "C"
+   ],
+   "rodzaj": "bramka",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+   "linia": 46,
+   "waga": "P2",
+   "opis": "bramka @typescript-eslint/no-floating-promises: Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler.",
+   "scenariusz": ""
+  }
+ },
+ {
+  "et": "f-31491bc",
+  "K": "K3",
+  "F": "F48",
+  "ocena": "CZĘŚCIOWE",
+  "uzasadnienie": "Ten sam test uznany za niefalsyfikowalny, ale autor proponuje dopisać asercję szerokości zamiast zaostrzyć asercję wysokości.",
+  "nr": 2,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-06-122",
+   "waga": "P2",
+   "os": "test-coverage",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+   "linia": 311,
+   "streszczenie": "Asercja wysokosci do MAX_FRAME_HEIGHT przejdzie przy trzykrotnym bledzie geometrii",
+   "tresc": "_🎯 Functional Correctness_ | _🟡 Minor_ | _⚡ Quick win_\n\n**Asercja wysokości jest zbyt luźna, żeby złapać regresję.**\n\n`frameOfVisit(broken)` podnosi `viewport_width` do 240, więc realna wysokość kontenera to ~9498 px. Górna granica `MAX_FRAME_HEIGHT` = 32 000 px przejdzie też przy trzykrotnym rozdmuchaniu. Sprawdź konkretną wartość, skoro geometria jest deterministyczna.\n\n 15ea4bb",
+   "wycinek": "  305      };\n  306      const container = renderWithFrame(frameOfVisit(broken), 620);\n  307      const outer = requireElement(screen.getByRole('group'), 'kontener zewnętrzny');\n  308      const height = Number.parseFloat(outer.style.height);\n  309  \n  310      expect(scaleOf(container)).toBeLessThanOrEqual(1);\n  311      expect(height).toBeLessThanOrEqual(MAX_FRAME_HEIGHT);\n  312      // Widok się renderuje: ramka i nakładka są w drzewie, nie ma pustego ekranu.\n  313      expect(container.querySelector('iframe')).not.toBeNull();\n  314      expect(container.querySelector('canvas')).not.toBeNull();\n  315    });\n  316  \n  317    it('nie powiększa podglądu ponad oryginał (kubełek Telefon w szerokiej kolumnie)', () => {"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+   "linia": 294,
+   "waga": "P3",
+   "opis": "Test „wizyta z ukrytej karty (viewport_width = 1) nie rozdmuchuje kontenera” miał dowodzić obu barier z D6, ale nie odróżnia działającego dolnego progu w clampDimension od jego braku. Przy kolumnie 620 px sam sufit MAX_SCALE przycina skalę 620/1 do 1, więc kontener ma 9498 px < MAX_FRAME_HEIGHT i wszystkie asercje (scale ≤ 1, height ≤ 32000, iframe i canvas obecne) przechodzą także wtedy, gdy frameOfVisit oddaje viewportWidth = 1. Brakuje asercji na szerokość wewnętrznego kontenera (np. `style.width === '240px'`).",
+   "scenariusz": "Ktoś cofa dolny próg w clampDimension (min = 1 zamiast MIN_USABLE_FRAME_WIDTH). Wtedy frameOfVisit({viewport_width: 1, doc_height: 9498}) daje {viewportWidth: 1, docHeight: 9498}, wewnętrzny div ma 1 px szerokości, a iframe renderuje ofertę w kolumnie o szerokości 1 px z mapą ściśniętą do jednej lin"
+  }
+ },
+ {
+  "et": "x-0ec2b19",
+  "K": "K1",
+  "F": "F28",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "To samo miejsce i ten sam mechanizm: dopasowanie prefiksu przepuszcza doc-uklad-2/document i odrzuca 'wrapper doc'.",
+  "nr": 3,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-09-12",
+   "waga": "P2",
+   "os": "security",
+   "plik": "apps/server/src/offer/validation.ts",
+   "linia": 79,
+   "streszczenie": "includes('class=\"doc') dopasowuje prefiks, nie token — class=\"doc-uklad-2\" przechodzi bramke.",
+   "tresc": "_🎯 Functional Correctness_ | _🟠 Major_ | _⚡ Quick win_\n\n**Marker kontenera dopasowuje prefiks, nie token klasy — luka w bramce.**\n\n`assertRequiredMarkers` robi zwykłe `includes('class=\"doc')`, więc dokument z `<div class=\"doc-uklad-2\">` (bez tokenu `doc`) przechodzi bramkę, a selektor `.doc` arkusza korygującego do niczego nie pasuje. To jest dokładnie ten scenariusz, przed którym ma bronić komentarz w liniach 75-78, i w niemutowalnym dokumencie nie da się go już naprawić. Odwrotnie: poprawny `class=\"wrapper doc\"` dostanie fałszywą odmowę, bo token `doc` nie stoi na początku atrybutu.\n\n ec9a5dd",
+   "wycinek": "   73    { needle: 'data-section=\"', label: 'sekcja z atrybutem data-section' },\n   74    { needle: 'class=\"cta\"', label: 'sekcja CTA (class=\"cta\")' },\n   75    // Kontener dokumentu jest haczykiem TEJ SAMEJ klasy, co tag trackera:\n   76    // arkusz korygujący (R7) celuje wyłącznie w `.doc`, więc dokument, w którym\n   77    // model nazwał kontener inaczej, przechodziłby bramkę z niezamrożoną\n   78    // geometrią — i nikt by się o tym nie dowiedział, bo oferta jest niemutowalna.\n   79    { needle: 'class=\"doc', label: 'kontener dokumentu (class=\"doc\")' },\n   80  ];\n   81  \n   82  /**\n   83   * Adres absolutny w dokumencie (Z4). Oferta jest niemutowalna, więc URL\n   84   * z domeną przeżyłby jej zmianę i zostałby zepsuty na zawsze — a poprawić go\n   85   * nie wolno. Wyjątkiem są wyłącznie zasoby `data:`, które domeny nie mają."
+  },
+  "finding": {
+   "wlasciciele": [
+    "A"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/offer/validation.ts",
+   "linia": 79,
+   "waga": "P2",
+   "opis": "Znacznik `class=\"doc` to dopasowanie PREFIKSU, a arkusz korygujący celuje w klasę `.doc`. Bramka przepuszcza więc kontener nazwany `document`, `docs`, `doc-wrapper` czy samo `doc-uklad-2` (bez `doc`), a przy żadnym z nich arkusz nie zamraża geometrii. Z drugiej strony odrzuca poprawne `class=\"wrapper doc\"` i `class='doc'`. Test odmowy sprawdza tylko wektor `dokument`. Zostaje dokładnie scenariusz z findingu (model przemianował kontener), tylko z angielską nazwą.",
+   "scenariusz": "Model przepisuje design system i daje `<div class=\"document\">` → `renderedHtml.includes('class=\"doc')` = true → publikacja przechodzi → `@layer oo-korekta { .doc {...} }` nie trafia w żaden element → oferta ma niezamrożone `--content`/`--gutter`/`font-size`, a dokumentu nie da się już poprawić (niem"
+  }
+ },
+ {
+  "et": "f-303ff62",
+  "K": "K12",
+  "F": "F15",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "Ten sam mechanizm.",
+  "nr": 4,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-07-131",
+   "waga": "P2",
+   "os": "correctness",
+   "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+   "linia": 227,
+   "streszczenie": "Awaria transportu zostawia testState w running do przeladowania widoku",
+   "tresc": "_🩺 Stability & Availability_ | _🟠 Major_ | _⚡ Quick win_\n\n**Awaria transportu zostawia `testState` w stanie `running` na stałe.**\n\n`runWrite` przechwytuje wyjątek z `callWebhookApi` i ustawia `isWriteFailed`, ale nie zmienia `testState`. Po odrzuconym `fetch` przycisk pokazuje `WEBHOOK_TEXTS.testInProgress` do przeładowania widoku. Ustaw wynik nieudany w bloku obsługi błędu wewnątrz `sendTest`.\n\nDorzuć też test awarii transportu dla „Wyślij test\" — obecny zestaw pokrywa tylko awarię przy zapisie adresu.\n\n 6a81b56",
+   "wycinek": "  221    }, [runWrite]);\n  222  \n  223    const sendTest = useCallback((): void => {\n  224      setTestState({ status: 'running' });\n  225  \n  226      runWrite(async () => {\n  227        const envelope = await callWebhookApi(`${WEBHOOK_API_PATH}/test`, { method: 'POST' });\n  228  \n  229        if (envelope.error !== null) {\n  230          setTestState({ status: 'failed', statusLabel: envelope.error.code ?? 'błąd' });\n  231  \n  232          return;\n  233        }"
+  },
+  "finding": {
+   "wlasciciele": [
+    "0"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+   "linia": 224,
+   "waga": "P2",
+   "opis": "`sendTest` ustawia `testState` na `{status:'running'}`, a potem wywołuje `runWrite`. Gdy `callWebhookApi` rzuci wyjątek, `runWrite` łapie go w `catch` i ustawia tylko `isWriteFailed`, a `testState` zostaje na `running`. Wyjątek pojawia się przy błędzie sieci, przy braku sesji albo gdy `response.json()` dostaje HTML, np. 502 lub 504 z proxy Coolify przy odbiorniku odpowiadającym dłużej niż timeout proxy (`WEBHOOK_HTTP_TIMEOUT_MS` to 10 s). Przycisk zostaje na zawsze podpisany „Wysyłanie…”, a pod kartą pojawia się mylący komunikat „Nie udało się wczytać ustawień webhooka”. Naprawa: w `sendTest` opakuj operację tak, żeby każda porażka transportu kończyła się `setTestState({ status: 'failed', statusLabel: 'brak odpowiedzi' })`. Na przykład `try/catch` wewnątrz przekazanej funkcji, który ustawia `failed` i rzuca dalej, żeby `runWrite` nadal zgłosił wyjątek do Sentry.",
+   "scenariusz": ""
+  }
+ },
+ {
+  "et": "f-b8374c8",
+  "K": "K2",
+  "F": "F81",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "Ta sama linia i ten sam mechanizm: timestamp sprzed await pozwala wydać ofertę po terminie.",
+  "nr": 5,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-02-40",
+   "waga": "P2",
+   "os": "correctness",
+   "plik": "apps/server/src/routes/offer.ts",
+   "linia": 97,
+   "streszczenie": "timestamp sprzed await loadOffer — wygasla oferta przechodzi warunek",
+   "tresc": "_🔒 Security & Privacy_ | _🟠 Major_ | _⚡ Quick win_\n\n**Pobierz czas ponownie po `await loadOffer`.** `timestamp` powstaje przed odczytem bazy, więc oferta może wygasnąć podczas wolnego `loadOffer` i nadal przejść warunek z linii 112 jako `offer.html`. Użyj świeżego `now()` po odczycie do `cache.set` i do porównania z `offer.expiresAt`.\n\n cb1b24f",
+   "wycinek": "   91  \n   92        // Czas życia wpisu przycina termin ważności — `set` odmawia zapisu\n   93        // oferty już po terminie.\n   94        cache.set(slug, offer, timestamp, offer.expiresAt);\n   95      }\n   96  \n   97      if (offer.expiresAt <= timestamp) {\n   98        context.header('Cache-Control', NO_STORE_CACHE_CONTROL);\n   99  \n  100        return context.html(\n  101          renderExpiredOfferPage({\n  102            brandColor: offer.brandColor,\n  103            accentColor: offer.accentColor,"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/routes/offer.ts",
+   "linia": 97,
+   "waga": "P2",
+   "opis": "C-03: `timestamp = now()` jest odczytywany przed `await loadOffer(slug)` (linia 72), a po await ten sam znacznik rozstrzyga o wygaśnięciu (linia 97) i o czasie życia wpisu (linia 94). Po długim zapytaniu serwis porównuje termin ważności z chwilą sprzed zapytania i może wydać treść oferty już po terminie. Terminu ważności nie da się tu cofnąć, a wydania treści po terminie też.",
+   "scenariusz": "Oferta ma expires_at = T+1 s. Żądanie przychodzi w T, zapytanie do bazy trwa 3 s (a bez limitu czasu z poprzedniego findingu dowolnie długo). W T+3 s warunek `offer.expiresAt <= timestamp` porównuje z T i jest fałszywy, więc wychodzi 200 z kolumną `html` po terminie. Oczekiwana była plansza wygaśnię"
+  }
+ },
+ {
+  "et": "f-303ff62",
+  "K": "K11",
+  "F": "F105",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "Ten sam defekt w tym samym miejscu.",
+  "nr": 6,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#1",
+   "waga": "P1",
+   "os": null,
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+   "linia": 84,
+   "streszczenie": "- [ ] 🔴 [P1] **apps/dashboard/src/features/offers/offer-details-page.tsx:84** — karta „Decyzje klienta\" renderuje się DOPIERO po bramce `if (summary.visitCount ",
+   "tresc": "",
+   "wycinek": "   78     * zależeć od danych. `M` w komunikacie limitu bierzemy z listy wizyt widoku\n   79     * (`offer.visits.length`), a nie z osobnego zapytania `count`.\n   80     */\n   81    const heat = useOfferHeat(offer.id, offer.visits.length);\n   82    const decisions = useOfferDecisions(offer.id);\n   83  \n   84    if (summary.visitCount === 0) {\n   85      return <OfferEmptyState />;\n   86    }\n   87  \n   88    return (\n   89      <>\n   90        <OfferStatTiles"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+   "linia": 84,
+   "waga": "P1",
+   "opis": "Karta „Decyzje klienta” (IU-9, R2, decyzja 1.7 = A) renderuje się tylko w gałęzi z wizytami. Przy `visitCount === 0` widok kończy się wcześniej na `OfferEmptyState`, więc decyzje pobrane przez `useOfferDecisions` nigdy nie trafiają na ekran. CTA celowo działa niezależnie od trackera (decyzja 1.1 = A, zasada nr 7), dlatego zdarzenie bez wiersza `visits` jest normalnym scenariuszem. Teksty 3.4 („Bez webhooka zobaczysz te zdarzenia tylko tutaj, w widoku oferty”, „znajdziesz je w widokach ofert”) obiecują coś, czego kod w tym przypadku nie robi. Seed E2E ma wizytę, więc tego nie wychwyci.",
+   "scenariusz": "Handlowiec nie ma webhooka. Tracker nie zapisał wizyty (np. insert `visits` pada na 42703 przy rozjeździe migracji, udokumentowanym 2026-09-01, albo `t.js` jest zablokowany). Klient wysyła pytanie przez `/c.js`, wiersz trafia do `offer_decisions`. Widok oferty pokazuje „brak wizyt”, a pytanie klient"
+  }
+ },
+ {
+  "et": "x-b5295fd",
+  "K": "K1",
+  "F": "F14",
+  "ocena": "CZĘŚCIOWE",
+  "uzasadnienie": "Ta sama bramka (l. 159) i ten sam skutek, czyli przepuszczenie tokenu do JWKS i getUser (amplifikacja). Wektorem jest jednak losowy kid przy asymetrycznym alg, a nie brak allowlisty alg / alg none.",
+  "nr": 7,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-10-41",
+   "waga": "P2",
+   "os": "security",
+   "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+   "linia": 161,
+   "streszczenie": "alg:\"none\" z niepustym kid przechodzi bramke i wymusza zadania JWKS/getUser — brak allowlisty algorytmow.",
+   "tresc": "_🩺 Stability & Availability_ | _🟠 Major_ | _⚡ Quick win_\n\n**Odrzucaj nieobsługiwane algorytmy przed `getClaims`.**\n\n`alg: \"none\"` z niepustym `kid` przechodzi bramkę. W `auth-js` 2.112.4 taki nagłówek może wywołać pobranie JWKS, a przy braku klucza także `getUser`, więc nadal pozwala wymuszać żądania do Auth. Użyj allowlisty algorytmów skonfigurowanych w projekcie, np. `ES256` i `RS256`.\n\n 85a10ad",
+   "wycinek": "  155    }\n  156  \n  157    const kid = Object.hasOwn(header, 'kid') ? header['kid'] : undefined;\n  158  \n  159    if (typeof kid !== 'string' || kid.length === 0) {\n  160      return 'brak_kid';\n  161    }\n  162  \n  163    return null;\n  164  }\n  165  \n  166  export function createSupabaseOAuthTokenVerifier({\n  167    supabaseUrl,"
+  },
+  "finding": {
+   "wlasciciele": [
+    "C"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+   "linia": 159,
+   "waga": "P2",
+   "opis": "Bramkę nagłówka da się obejść losowym niepustym `kid`. Fix twierdzi (nagłówek modułu, commit), że bramka 0 zamyka amplifikację żądań w Supabase. Tak nie jest. Dla `kid` spoza pamięci podręcznej `fetchJwk` pobiera `/.well-known/jwks.json` przy KAŻDYM żądaniu (cache trafia tylko przy znanym kid). Gdy klucza nie ma, zwraca null i `getClaims` robi fallback `getUser(token)`. Atrapa w teście (oauth-token-verifier.test.ts:151) woła `getUser` tylko dla braku alg/HS/braku kid, a nieznanego `kid` nie modeluje. Asercja „nie dotyka Auth” znów opisuje atrapę, a nie produkcję, czyli ten sam defekt, który naprawiał finding P2(a).",
+   "scenariusz": "Nieuwierzytelniony klient wysyła `Bearer <b64({\"alg\":\"ES256\",\"kid\":\"<losowy>\"})>.<b64({\"exp\":9999999999})>.x` z nowym kid co żądanie. Bramka 0 przepuszcza, auth-js robi GET jwks.json (pudło w cache) i potem GET /auth/v1/user. To dwa żądania do Supabase na każde żądanie, do 120/min z jednego adresu. "
+  }
+ },
+ {
+  "et": "x-6bd9990",
+  "K": "K1",
+  "F": "F36",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "Wskazuje linię 66 i opisuje pusty catch w offerPreviewUrl, który łamie regułę 4 i gasi błąd konfiguracji bez śladu.",
+  "nr": 8,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-05-111",
+   "waga": "P3",
+   "os": "code-quality",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+   "linia": 66,
+   "streszczenie": "Pusty catch {} przy new URL na VITE_OFFER_ORIGIN — blad konfiguracji bez sygnalu",
+   "tresc": "_🩺 Stability & Availability_ | _🟡 Minor_ | _⚡ Quick win_\n\n**Nie ignoruj błędu konfiguracji.** Gdy `new URL(...)` odrzuci nieprawidłowy `VITE_OFFER_ORIGIN`, pusty `catch` zwraca `null` bez sygnału diagnostycznego. Zgodnie z `coding-rules.md` zastąp `catch {}` logowaniem strukturalnym albo re-throw.\n\n_Source: Coding guidelines_\n\n 44a938e",
+   "wycinek": "   60    // drzewo i handlowiec dostałby białą stronę zamiast widoku oferty. Traktujemy\n   61    // ją dokładnie jak brak wartości: blok mapy się nie renderuje, reszta widoku\n   62    // oferty działa dalej.\n   63    try {\n   64      return new URL(`${OFFER_PATH_PREFIX}${encodeURIComponent(slug)}`, origin.trim()).toString();\n   65    } catch {\n   66      return null;\n   67    }\n   68  }\n   69  \n   70  /**\n   71   * Sufit powierzchni bufora nakładki. Canvas w PEŁNEJ rozdzielczości dokumentu\n   72   * to dla długiego landingu (1440 × 12 000) ponad 17 mln pikseli — powyżej"
+  },
+  "finding": {
+   "wlasciciele": [
+    "A"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+   "linia": 66,
+   "waga": "P3",
+   "opis": "Fix dodał pusty `catch {}` w offerPreviewUrl, bez logu i bez zawężenia do TypeError, wbrew regule 4 coding-rules („NIGDY nie używaj pustego catch {}”). Wcześniej kontekst fazy zapewniał „zero bloków catch”. Błędna konfiguracja VITE_OFFER_ORIGIN gaśnie teraz bez żadnego śladu w Sentry, a operator widzi tylko brak bloku.",
+   "scenariusz": "W Coolify VITE_OFFER_ORIGIN = 'oferta.example' (bez schematu). Blok mapy znika na każdej ofercie, w Sentry i w logach nie ma żadnego zdarzenia, a operator nie ma skąd się dowiedzieć o literówce."
+  }
+ },
+ {
+  "et": "f-303ff62",
+  "K": "K4",
+  "F": "F174",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "createSupabaseWebhookSettingsService nie ma testu.",
+  "nr": 9,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/faza-6-cta-i-webhooki/review-faza-4.md#7",
+   "waga": "P2",
+   "os": null,
+   "plik": "apps/server/src/webhooks/settings-service.ts",
+   "linia": 100,
+   "streszczenie": "- [ ] 🟠 [P2] **apps/server/src/webhooks/settings-service.ts:100** — nowy moduł 156 linii z logiką domenową i ZERO plików testowych (jedyny moduł w `apps/server/",
+   "tresc": "",
+   "wycinek": "   94        }\n   95  \n   96        return data.user.id;\n   97      },\n   98  \n   99      async saveUrl(ownerId: string, url: string, host: string): Promise<Date> {\n  100        const setAt = now();\n  101  \n  102        // Zapis adresu jest zarazem RESETEM stanu (D19): nowy adres nie dziedziczy\n  103        // ani wyłączenia, ani licznika porażek poprzedniego odbiornika.\n  104        await update(ownerId, {\n  105          webhook_url: url,\n  106          webhook_host: host,"
+  },
+  "finding": {
+   "wlasciciele": [
+    "0"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/webhooks/settings-service.ts",
+   "linia": 59,
+   "waga": "P2",
+   "opis": "Nowy moduł `createSupabaseWebhookSettingsService` nie ma żadnego testu, choć reguła mówi „każdy nowy plik ma test, happy path + error case”. Testy tras używają atrapy serwisu, więc nic nie sprawdza zachowania, na którym opiera się scenariusz planu „kliknięcie zeruje licznik i stan”. Niesprawdzone są: że `saveUrl` zeruje `webhook_failure_streak`/`webhook_disabled_at`/`webhook_last_error_*` i stempluje `webhook_set_at`, że `removeWebhook` czyści komplet kolumn (inaczej pary CHECK odrzucą zapis), że `enableWebhook` zeruje licznik, że `resolveOwnerId` używa `auth.getUser` (nie `getSession`) i zwraca null przy błędzie, oraz że błąd bazy daje `WebhookSettingsError`. Dodać settings-service.test.ts z atrapą `createClient` na wzór repository.test.ts.",
+   "scenariusz": ""
+  }
+ },
+ {
+  "et": "f-31491bc",
+  "K": "K1",
+  "F": "F45",
+  "ocena": "PEŁNE",
+  "uzasadnienie": "Ten sam defekt duplikacji stałych gęstości i wzorca, z propozycją jednego modułu w packages/shared.",
+  "nr": 10,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md#3",
+   "waga": "P2",
+   "os": null,
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+   "linia": 34,
+   "streszczenie": "3. [KOD] `apps/dashboard/src/features/offers/heatmap-grid.ts:34` — kontrakt siatki ręcznie zduplikowany zamiast w `packages/shared`",
+   "tresc": "`HEAT_CELL_PATTERN` (identyczny regexp), liczba kolumn 16 i progi gęstości 1/64/16 żyją równolegle w `apps/server/src/routes/events.ts` (88, 100–102) i `apps/dashboard/src/features/offers/heatmap-grid.ts` (16, 30–32, 34). Ta faza właśnie zapłaciła za duplikację: plan przewidywał rozszerzenie wzorca tylko po stronie serwera, a wykonawca musiał sam wykryć, że bez lustrzanej zmiany w dashboardzie mapa nowych, gęstych wizyt byłaby PUSTA — po cichu, bez czerwonego testu (żaden test nie porównuje obu stałych). Reguła projektu: shared logic idzie do `packages/shared`, zakaz dotyczy importów MIĘDZY apps.\n\nAkcja: przenieść `HEAT_COLS = 16`, `MIN_GRID_ROWS`/`MAX_GRID_ROWS`/`DEFAULT_GRID_ROWS` i `HEAT_CELL_PATTERN` do nowego modułu w `packages/shared/src`, importować w `events.ts` i `heatmap-grid.ts`; `apps/server/static/t.js` zostaje udokumentowanym wyjątkiem (budżet bajtowy, brak bundlera).",
+   "wycinek": "   28  /**\n   29   * Lustro `HEAT_CELL_PATTERN` z `apps/server/src/routes/events.ts` — dashboard\n   30   * nie importuje z `apps/server` (zakaz importów między paczkami monorepo).\n   31   * Klucz to `wiersz:kolumna`: wiersz 0–63 (sufit `grid_rows`), kolumna 0–15,\n   32   * oba bez zer wiodących.\n   33   */\n   34  const HEAT_CELL_PATTERN = /^(?:[0-9]|[1-5][0-9]|6[0-3]):(?:[0-9]|1[0-5])$/;\n   35  \n   36  /** Geometria jednego układu współrzędnych: ramka, na której rysujemy punkty. */\n   37  export interface HeatFrame {\n   38    readonly viewportWidth: number;\n   39    readonly docHeight: number;\n   40  }"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+   "linia": 24,
+   "waga": "P2",
+   "opis": "[Q-02] Stałe gęstości DEFAULT_GRID_ROWS=16, MIN_GRID_ROWS=1 i MAX_GRID_ROWS=64 dodane w tej fazie są kopią apps/server/src/routes/events.ts:100-102, mają te same nazwy i wartości. Do tego dochodzą MAX_ROWS=64 w apps/server/static/t.js:14 oraz CHECK 1–64 w migracji 20260831120000. Dashboard i serwer mogą je importować z jednego modułu w packages/shared, razem z HEAT_CELL_PATTERN, bo sufit wiersza we wzorcu wynika z MAX_GRID_ROWS - 1. t.js i migracja zostają lustrami, które pilnuje test.",
+   "scenariusz": "Ktoś podnosi sufit w serwerze i migracji do 96 wierszy, a w dashboardzie normalizeGridRows zostaje przy 64. Wizyty z grid_rows=80 dostają w dashboardzie wartość zastępczą 16, a wszystkie wiersze ≥16 są po cichu odrzucane przez `row >= gridRows`. Mapa pokazuje tylko górną część dokumentu, rozciągnięt"
+  }
+ },
+ {
+  "et": "f-31491bc",
+  "K": "K7",
+  "F": "F19",
+  "ocena": "BRAK",
+  "odleglosc_linii": 21,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 11,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md#4",
+   "waga": "P2",
+   "os": null,
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+   "linia": 332,
+   "streszczenie": "4. [KOD] `apps/dashboard/src/features/offers/heatmap-grid.ts:332` — agregat miesza gęstości bez normalizacji wagi",
+   "tresc": "Waga komórki to LICZBA PRÓBEK NA KOMÓRKĘ, a komórka wizyty 16-wierszowej pokrywa ~3× większy kawałek dokumentu niż komórka wizyty 51-wierszowej. Po złożeniu ułamków do jednej mapy `offer-heatmap-frame.tsx:222` normalizuje gradient przez `maxWeightOf(points)`, więc skalę koloru wyznaczają stare wizyty (16 wierszy), a nowe gęstsze rysują się blado przy tym samym zachowaniu czytelnika. Objaw cichy: mapa istnieje, punkty leżą poprawnie, kłamie tylko INTENSYWNOŚĆ, a blok nie ma legendy. Dotyczy każdej oferty z wizytami sprzed i po migracji `20260831120000` — całego okna migracyjnego.\n\nAkcja: w `aggregatePoints` sprowadzić wagę do gęstości próbek na jednostkę dokumentu (`weight * gridRows / DEFAULT_GRID_ROWS`) przed sumowaniem po położeniu, albo świadomie zapisać kompromis w kontekście fazy i dodać test porównujący intensywność wizyty 16- i 51-wierszowej o tym samym zachowaniu.\n\n---",
+   "wycinek": "  326   * `wiersz:kolumna` byłoby ciche i błędne przy mieszanych gęstościach: wiersz 4\n  327   * z siatki 51-wierszowej leży w 8% dokumentu, a z 16-wierszowej — w 28%.\n  328   *\n  329   * Wizyty o różnym `doc_height` składają się bez przeliczania, bo położenie jest\n  330   * ułamkiem dokumentu — dlatego kubełkujemy po szerokości (layout), nie po wysokości.\n  331   */\n  332  function aggregatePoints(visits: readonly HeatVisitRow[], frame: HeatFrame): readonly HeatPoint[] {\n  333    // `Map`, nie obiekt: klucz jest budowany z danych i mógłby kolidować z prototypem.\n  334    const totals = new Map<string, HeatFraction>();\n  335  \n  336    for (const visit of visits) {\n  337      const gridRows = normalizeGridRows(visit.grid_rows);\n  338  "
+  },
+  "finding": {
+   "wlasciciele": [
+    "C"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+   "linia": 353,
+   "waga": "P3",
+   "opis": "Wszystkie mutanty sortowania agregatu przeżyły: `() => undefined`, `+` zamiast `-` oraz `&&`; wariant z porównaniem fx nie ma nawet pokrycia (NoCoverage). W każdym teście kolejność wstawiania do Map jest już posortowana, np. test l.102: [0:0, 1:1], test l.309: [468.75, 500]. Żaden test nie ma dwóch punktów o tym samym fy. Albo trzeba dodać test z wejściem w odwrotnej kolejności i punktami w jednym wierszu (np. heat {'3:9':1,'3:2':1,'0:0':1} → oczekiwana kolejność y rosnąco, potem x rosnąco), albo usunąć sortowanie jako martwe, bo simpleheat nie zależy od kolejności.",
+   "scenariusz": "Usunięcie `.sort(...)` nie przewraca żadnego testu. Deterministyczna kolejność punktów, udokumentowana i uzasadniona w kodzie, jest więc niechroniona."
+  }
+ },
+ {
+  "et": "f-b8374c8",
+  "K": "K8",
+  "F": "F117",
+  "ocena": "BRAK",
+  "odleglosc_linii": 31,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 12,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/faza-2-publikacja-ofert/review-faza-2.md#6",
+   "waga": "P2",
+   "os": null,
+   "plik": "apps/server/src/offer/expired-page.ts",
+   "linia": 1,
+   "streszczenie": "6. 🟠 TEST — `apps/server/src/offer/expired-page.ts:1`",
+   "tresc": "Brak własnego pliku testowego; jedyne pokrycie to dwie asercje w `routes/offer.test.ts`. Nietestowane: fallback `safeColor` dla koloru spoza `#rrggbb`, `safeFontFamily` dla kroju spoza listy (wartość z bazy trafia prosto do atrybutu `style` — jedyne miejsce w fazie, gdzie dane z bazy wchodzą do CSS), escaping `companyName`/`contactEmail` w `mailto:`, formatowanie daty w `Europe/Warsaw` na granicy północy.\n**Akcja:** `apps/server/src/offer/expired-page.test.ts` z przypadkami: `red` → domyślny brand, `Comic Sans` → Inter, nazwa firmy ze znacznikiem → uciekło, 23:30 UTC → następny dzień w PL.",
+   "wycinek": "    1  import {\n    2    ALLOWED_FONT_FAMILIES,\n    3    BRAND_DEFAULTS,\n    4    HEX_COLOR_PATTERN,\n    5    RELATIVE_PATHS,\n    6    SELF_HOSTED_FONTS,\n    7  } from './brand-contract.js';"
+  },
+  "finding": {
+   "wlasciciele": [
+    "A"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/offer/expired-page.ts",
+   "linia": 32,
+   "waga": "P3",
+   "opis": "Formatter daty planszy ma tylko dzień i miesiąc, bez roku. Plansza obsługuje oferty wygasłe dowolnie dawno, więc bez roku data jest niejednoznaczna.",
+   "scenariusz": "Oferta wygasła 24.09.2025, a klient otwiera link 10.09.2026 i czyta „Ta oferta wygasła 24 września”. Wygląda to na datę przyszłą (za dwa tygodnie), co przeczy samemu nagłówkowi."
+  }
+ },
+ {
+  "et": "x-43fb8e7",
+  "K": "K1",
+  "F": "F21",
+  "ocena": "BRAK",
+  "odleglosc_linii": 0,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 13,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-16-62",
+   "waga": "P2",
+   "os": "test-coverage",
+   "plik": "apps/server/src/access/account-deletion-store.test.ts",
+   "linia": 44,
+   "streszczenie": "Atrapa rpc ignoruje nazwe i argumenty — test nie wykryje regresji begin_account_deletion(p_owner_id).",
+   "tresc": "_🎯 Functional Correctness_ | _🔵 Trivial_ | _⚡ Quick win_\n\n**Dodaj asercję wywołania RPC w teście store.**\n\nAtrapa `rpc` ignoruje nazwę i argumenty, więc testy adaptera nie wykryją regresji wywołania `begin_account_deletion` z `p_owner_id`. `Database` z `packages/shared/src/database.types.ts` zapewnia ochronę typów, a `supabase/tests/rls.test.ts` testuje RPC bezpośrednio, ale żaden z tych testów nie sprawdza wywołania z `createSupabaseAccountDeletionStore`.\n\n d1ee6de",
+   "wycinek": "   38            deleteUserCalls.push(ownerId);\n   39  \n   40            return deleteUserResult;\n   41          },\n   42        },\n   43      },\n   44      rpc: async (): Promise<typeof planResult> => planResult,\n   45    }),\n   46  }));\n   47  \n   48  function buildStore(): ReturnType<typeof createSupabaseAccountDeletionStore> {\n   49    return createSupabaseAccountDeletionStore({ supabaseUrl: SUPABASE_URL, secretKey: SECRET_KEY });\n   50  }"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B",
+    "C"
+   ],
+   "rodzaj": "bramka",
+   "plik": "apps/server/src/access/account-deletion-store.test.ts",
+   "linia": 44,
+   "waga": "P2",
+   "opis": "bramka @typescript-eslint/require-await: Async method 'rpc' has no 'await' expression.",
+   "scenariusz": ""
+  }
+ },
+ {
+  "et": "f-46be55a",
+  "K": "K12",
+  "F": "F82",
+  "ocena": "BRAK",
+  "odleglosc_linii": 6,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 14,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/faza-3-konto-i-dashboard/review-faza-2.md#5",
+   "waga": "P2",
+   "os": null,
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+   "linia": 8,
+   "streszczenie": "5. `apps/dashboard/src/features/offers/offers-list.tsx:8` (KOD)",
+   "tresc": "Rozjazd semantyki tego samego pola `offers.expires_at` między dwiema powierzchniami produktu. `apps/server/src/offer/validity-date.ts:11` definiuje `DISPLAY_TIME_ZONE = 'Europe/Warsaw'` z komentarzem, że obowiązuje WSZĘDZIE, gdzie ten sam termin jest pokazywany (to była już raz naprawiona regresja). Nowy formatter dashboardu `new Intl.DateTimeFormat('pl-PL', {day,month,year})` NIE ustawia `timeZone`, więc formatuje w strefie przeglądarki handlowca. Identycznie `created_at` w `mcp-token-card.tsx:8`.\n\nDowód: `TZ=Pacific/Honolulu npx vitest run src/features/offers/offers-page.test.tsx src/features/settings/settings-page.test.tsx` → 2 FAIL; w domyślnej strefie maszyny 45/45 PASS — zielone testy są tu skutkiem strefy runnera, nie poprawności.\n\nAkcja: wynieść `DISPLAY_TIME_ZONE` do `packages/shared` i użyć go w obu formatterach dashboardu, a testy przypiąć do strefy zamiast polegać na strefie ",
+   "wycinek": "    2  \n    3  import { ChevronIcon } from './offers-icons.js';\n    4  import { StatusBadge } from './status-badge.js';\n    5  import { OFFERS_TEXTS } from './texts.js';\n    6  import type { OfferListItem } from './use-offers.js';\n    7  \n    8  const DATE_FORMAT = new Intl.DateTimeFormat('pl-PL', {\n    9    day: '2-digit',\n   10    month: '2-digit',\n   11    year: 'numeric',\n   12  });\n   13  \n   14  export function formatOfferDate(date: Date): string {"
+  },
+  "finding": {
+   "wlasciciele": [
+    "A",
+    "B",
+    "C"
+   ],
+   "rodzaj": "bramka",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+   "linia": 14,
+   "waga": "P2",
+   "opis": "bramka knip/exports: exports: formatOfferDate",
+   "scenariusz": ""
+  }
+ },
+ {
+  "et": "x-f74b4e4",
+  "K": "K2",
+  "F": "F26",
+  "ocena": "BRAK",
+  "odleglosc_linii": 114,
+  "gdzie_sedzia_go_dal": "dopasowany do K1 (PEŁNE)",
+  "nr": 15,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-02-34",
+   "waga": "P2",
+   "os": "security",
+   "plik": "apps/server/src/offer/validation.ts",
+   "linia": 194,
+   "streszczenie": "Markery w komentarzu HTML zaliczaja walidacje trackera i stopki",
+   "tresc": "_🔒 Security & Privacy_ | _🟠 Major_ | _🏗️ Heavy lift_\n\n**Waliduj elementy HTML, nie fragmenty tekstu.**\n\nDokument z wymaganymi ciągami wewnątrz komentarza HTML przechodzi walidację, mimo że nie ma działającego trackera, stopki ani linku do prywatności. Sparsuj dokument i sprawdź rzeczywiste elementy oraz ich atrybuty, a następnie dodaj przypadek z markerami w komentarzu.",
+   "wycinek": "  188      if (!html.includes(marker.needle)) {\n  189        throw new OfferValidationError(\n  190          `Odmowa publikacji: dokument nie zawiera wymaganego elementu — ${marker.label}. ` +\n  191            'Złóż ofertę na szablonie z `pobierz_szablon` i nie usuwaj z niego haczyków.',\n  192        );\n  193      }\n  194    }\n  195  }\n  196  \n  197  function assertNoAbsoluteUrl(html: string): void {\n  198    const match = ABSOLUTE_URL_PATTERN.exec(html);\n  199  \n  200    if (match !== null) {"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/offer/validation.ts",
+   "linia": 80,
+   "waga": "P2",
+   "opis": "ABSOLUTE_URL_PATTERN `/https?:\\/\\//i` przeszukuje cały dokument, a komentarz obiecuje wyjątek dla zasobów `data:`, którego implementacja nie zawiera (zasobów data: nie wycina przed sprawdzeniem). Wzorzec odrzuca też widoczny tekst oferty, np. adres strony klienta w prozie. Przepuszcza za to adresy protocol-relative (`//host/…`), które również są absolutne i łamią Z4.",
+   "scenariusz": "(1) Logo handlowca jako `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'…>` daje odmowę publikacji, sprzeczną z komentarzem z l.76-79. Test „nie myli zasobu data:” sprawdza tylko base64 i tego nie wykrywa. (2) Akapit „Nowy sklep pod https://klient.pl” w treści oferty daje odmowę, cho"
+  }
+ },
+ {
+  "et": "f-b8374c8",
+  "K": "K6",
+  "F": "F130",
+  "ocena": "BRAK",
+  "odleglosc_linii": 118,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 16,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/faza-2-publikacja-ofert/review-faza-2.md#4",
+   "waga": "P2",
+   "os": null,
+   "plik": "apps/server/src/app.ts",
+   "linia": 157,
+   "streszczenie": "4. 🟠 KOD — `apps/server/src/app.ts:157` (spec-compliance)",
+   "tresc": "R15 planu („klucz limitera z adresu połączenia, X-Forwarded-For czytany wyłącznie od zaufanych proxy — **Termin: przed wystawieniem `/o/<slug>`**\") nie został domknięty, a IU-4/IU-5 wystawiły publicznie cały origin ofert. `readClientKey` dalej bierze klucz z `X-Forwarded-For`, a przy jego braku zwraca `SHARED_CLIENT_KEY` (157-165) — limit 120 żądań/min (app.ts:67) jest albo GLOBALNY, albo trywialnie omijalny/zatruwalny podrobionym nagłówkiem. Zweryfikowane na żywym procesie: jedna odsłona oferty to ~5 żądań (dokument + dwa kroje + dwie ikony), czyli ~24 odsłony na minutę na CAŁY produkt.\n**Akcja:** przenieść IU-8 przed wdrożenie originu ofert albo (minimum) wyłączyć `/o/*`, `/f/*` i strony AA spod wspólnego wiadra do czasu IU-8.",
+   "wycinek": "  151   * pokazują. Pozycja otwarta w checkliście operatora.\n  152   *\n  153   * Niezależnie od wyniku: wystawienie portu kontenera z pominięciem proxy\n  154   * **cicho wyłącza limit**. Przy wystawianiu publicznych tras zbierania zdarzeń\n  155   * trzeba przejść na adres z połączenia i jawną listę zaufanych proxy.\n  156   */\n  157  function readClientKey(forwardedFor: string | undefined): string {\n  158    if (forwardedFor === undefined || forwardedFor.length === 0) {\n  159      return SHARED_CLIENT_KEY;\n  160    }\n  161  \n  162    const [first] = forwardedFor.split(',');\n  163  "
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/server/src/app.ts",
+   "linia": 275,
+   "waga": "P3",
+   "opis": "Faza zmieniła kontrakt originu ofert na „stronę, nie JSON” (app.notFound, IU-4 „nieznany slug → strona, nie JSON”), ale limiter nadal odpowiada na originie ofert surowym JSON-em `{code:'rate_limited', message:'Zbyt wiele żądań'}`. Na originie ofert odpowiedź 429 dostaje odbiorca oferty, czyli klient handlowca (zasady nr 1 i 7). Dopóki IU-8 nie zmieni klucza limitera, brak XFF oznacza jedno wiadro dla wszystkich.",
+   "scenariusz": "Kilku odbiorców otwiera oferty w tym samym czasie. Każde wejście to /o/<slug>, /f/inter-v1.woff2 i favicon, a przy wspólnym kluczu limitera szybko przekracza limit. Kolejny klient pod linkiem oferty widzi w przeglądarce surowy JSON „rate_limited” zamiast oferty albo polskiej strony błędu."
+  }
+ },
+ {
+  "et": "f-5af000f",
+  "K": "K3",
+  "F": "F10",
+  "ocena": "BRAK",
+  "odleglosc_linii": 111,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 17,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-04-97",
+   "waga": "P3",
+   "os": "e2e",
+   "plik": "e2e/seeds/faza-4-wizyty-seed.sql",
+   "linia": 17,
+   "streszczenie": "Komentarz seeda sprzeczny z kontraktem kafla Ostatnia wizyta z CLAUDE.md",
+   "tresc": "_📐 Maintainability & Code Quality_ | _🟡 Minor_ | _⚡ Quick win_\n\n**Komentarz jest sprzeczny z zachowaniem kafla „Ostatnia wizyta\".**\n\nCLAUDE.md (linia 54) ustala, że kafel pokazuje `started_at` najnowszej wizyty, nie `last_seen_at`. Popraw komentarz, aby przebieg E2E asertował właściwą godzinę.",
+   "wycinek": "   11  -- stan od zera i żaden nie dotyka slugów drugiego.\n   12  --\n   13  -- Wartości, które przebiegi asertują tekstem (wyprowadzone z\n   14  -- `apps/dashboard/src/features/offers/analytics.ts`):\n   15  --   * kafel „Wizyty\" = `3`, wiersz mobilny listy = `3 wizyty · ok. 2 osoby`,\n   16  --   * kafel „Osoby (szacunek)\" = `2` (wizyty 1 i 3 dzielą parę hashy),\n   17  --   * „Ostatnia wizyta\" = `last_seen_at` wizyty 3 (najświeższa),\n   18  --   * paski sekcji (suma po wizytach, każdy inny → inna szerokość paska):\n   19  --       Wstęp `3 min 20 s` (200 s, maksimum), Diagnoza `30 s`,\n   20  --       Cena `1 min 05 s` (65 s), Wezwanie do działania `15 s`,\n   21  --   * wiersze wizyt od najnowszej (czas wizyty = suma sekund jej sekcji):\n   22  --       `Tablet · 43 s · przeczytane 30%`,\n   23  --       `Komputer · 1 min 50 s · przeczytane 60%`,"
+  },
+  "finding": {
+   "wlasciciele": [
+    "B"
+   ],
+   "rodzaj": "agent",
+   "plik": "e2e/seeds/faza-4-wizyty-seed.sql",
+   "linia": 128,
+   "waga": "P3",
+   "opis": "Seed wpisuje do visits.heat klucze '18', '34', '51', '5', '70', które łamią kontrakt komórki siatki 'wiersz:kolumna' (HEAT_CELL_PATTERN /^(?:[0-9]|1[0-5]):(?:[0-9]|1[0-5])$/ w apps/server/src/routes/events.ts:74). Tracker nigdy nie wyprodukowałby takich danych. Baza tego nie łapie, bo insert seeda omija walidację Zod. Seed powinien używać kluczy zgodnych z kontraktem, np. '4:8'.",
+   "scenariusz": "Faza 5 (heatmapa) reużywa ten seed w E2E. Parser siatki dostaje '18' bez dwukropka i albo pomija komórkę, albo rzuca wyjątek. Przebieg E2E pada albo przechodzi na pustej heatmapie, choć seed miał ją wypełniać."
+  }
+ },
+ {
+  "et": "f-303ff62",
+  "K": "K9",
+  "F": "F203",
+  "ocena": "BRAK",
+  "odleglosc_linii": 10,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 18,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-07-130",
+   "waga": "P2",
+   "os": "correctness",
+   "plik": "apps/dashboard/src/features/settings/accept-message-card.tsx",
+   "linia": 56,
+   "streszczenie": "Komunikat zapisano wisi po edycji pola — to samo z isSaveFailed",
+   "tresc": "_🎯 Functional Correctness_ | _🟡 Minor_ | _⚡ Quick win_\n\n**Komunikat „zapisano\" zostaje na ekranie po edycji pola.**\n\n`onChange` zmienia tylko `draft`. Hook zeruje `isAcceptSaved` wyłącznie na początku kolejnego `saveAcceptMessage`. Po udanym zapisie i późniejszej edycji tekstu użytkownik widzi zielone „zapisano\" obok treści, która nie jest zapisana. To samo dotyczy `isSaveFailed`: komunikat błędu wisi po zmianie treści.\n\nWystaw z kontrolera akcję czyszczącą oba stany i wołaj ją przy pierwszej zmianie po zapisie.\n\n 6a81b56",
+   "wycinek": "   50          // wygodą, nie zabezpieczeniem: wiążące są kontrakt i baza.\n   51          maxLength={ACCEPT_MESSAGE_MAX_CODE_POINTS}\n   52          placeholder={SYSTEM_ACCEPT_MESSAGE}\n   53          value={value}\n   54          onChange={(event) => {\n   55            setDraft(event.target.value);\n   56          }}\n   57          className={`${FIELD_CLASS} w-full text-sm leading-relaxed text-ink placeholder:text-ink-muted`}\n   58        />\n   59  \n   60        <div>\n   61          <button\n   62            type=\"button\""
+  },
+  "finding": {
+   "wlasciciele": [
+    "C"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/settings/accept-message-card.tsx",
+   "linia": 66,
+   "waga": "P2",
+   "opis": "Karta tekstu po akceptacji jest aktywna (textarea i „Zapisz”) także wtedy, gdy odczyt profilu jeszcze trwa albo się nie udał. `initialValue` jest wtedy `null`, więc pole pokazuje pustkę z placeholderem tekstu systemowego. Zapis nie ma bramki na stan odczytu, ta sama brakująca bramka co w L-C1: zapis `profiles.accept_message` z karty → BRAK.",
+   "scenariusz": "Odczyt `profiles` pada (chwilowy błąd sieci) albo handlowiec klika „Zapisz” przed jego końcem. Karta webhooka pokazuje alert, a karta tekstu wygląda jak „brak nadpisania”. Klik „Zapisz” z pustym polem wysyła `update({accept_message: null})` i po cichu kasuje własny tekst konta handlowca, a na ekrani"
+  }
+ },
+ {
+  "et": "f-5af000f",
+  "K": "K4",
+  "F": "F14",
+  "ocena": "BRAK",
+  "odleglosc_linii": 55,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 19,
+  "klucz": {
+   "zrodlo": "klucz2",
+   "przypadek": "docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md#2",
+   "waga": "P1",
+   "os": null,
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+   "linia": 67,
+   "streszczenie": "2. `apps/dashboard/src/features/offers/offers-list.tsx:67` (KOD, architecture)",
+   "tresc": "Klikalność całego wiersza desktopowego opiera się na `position: relative` na `<tr>` (`className=\"relative …\"`, linia 67) plus nakładce `after:absolute after:inset-0` na linku w `<th>` (linia 72). Elementy `table-row` historycznie nie były w WebKit blokiem zawierającym dla potomków `position:absolute` — jeśli przeglądarka to ignoruje, nakładka rozciąga się do najbliższego pozycjonowanego przodka, a tu żaden go nie ma (karta `overflow-hidden rounded-xl` nie jest pozycjonowana), więc każdy wiersz zakłada na CAŁĄ stronę niewidzialny link; ostatni w kolejności przechwytuje wszystkie kliknięcia i lista przestaje działać. Testy jsdom tego nie wychwycą (nie liczą layoutu), a scenariusz `lista-realne-liczniki` sprawdza tekst, nie klikalność.\n\n**Naprawa:** albo zweryfikować zachowanie w Safari/WebKit i dopisać ten dowód do przebiegu E2E, albo zakotwiczyć nakładkę deterministycznie — `relative` na ",
+   "wycinek": "   61              </tr>\n   62            </thead>\n   63            <tbody>\n   64              {offers.map((offer) => (\n   65                <tr\n   66                  key={offer.slug}\n   67                  className=\"relative border-t border-border first:border-t-0 hover:bg-surface-alt\"\n   68                >\n   69                  <th scope=\"row\" className=\"px-6 py-4.5 text-body-md font-semibold text-ink\">\n   70                    <Link\n   71                      to={offerDetailsPath(offer.slug)}\n   72                      className=\"after:absolute after:inset-0 after:content-['']\"\n   73                    >"
+  },
+  "finding": {
+   "wlasciciele": [
+    "A"
+   ],
+   "rodzaj": "agent",
+   "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+   "linia": 12,
+   "waga": "P3",
+   "opis": "Re-eksport formatOfferDate z offers-list.tsx istnieje tylko dla offers-list.test.tsx (knip). Funkcja mieszka w offer-dates.ts, więc test sprawdza ją przez niewłaściwy moduł.",
+   "scenariusz": "Ktoś usuwa martwy re-eksport zgłoszony przez knip → offers-list.test.tsx przestaje się kompilować, choć zachowanie się nie zmieniło. Test należy przenieść do offer-dates.test.ts."
+  }
+ },
+ {
+  "et": "f-2536643",
+  "K": "K9",
+  "F": "F9",
+  "ocena": "BRAK",
+  "odleglosc_linii": 2,
+  "gdzie_sedzia_go_dal": "bez dopasowania: POZA_KLUCZEM",
+  "nr": 20,
+  "klucz": {
+   "zrodlo": "klucz1",
+   "przypadek": "B-14-19",
+   "waga": "P2",
+   "os": "correctness",
+   "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+   "linia": 107,
+   "streszczenie": "Nowy efekt resetuje isStoppedRef na false, zanim stara petla po zmianie templateId zobaczy stop.",
+   "tresc": "_🗄️ Data Integrity & Integration_ | _🟠 Major_ | _🏗️ Heavy lift_\n\n**Reset `isStoppedRef` w nowym efekcie odbiera stopowi skuteczność dla pętli sprzed zmiany szablonu.**\n\nPrzy zmianie `templateId` React wykonuje cleanup i nowy efekt w jednym commicie: `isStoppedRef.current` wraca na `false`, zanim stara pętla `pump` wznowi się po `await`. Stara pętla nie widzi więc stopu, a `isPumpingRef` jest w tym czasie nadal `true`. Skutki są dwa i oba są realne: `enqueue` dla nowego szablonu nie startuje pętli (pliki zostają w stanie `czeka`), albo stara pętla podejmuje te pliki i wysyła je ze STARYM `templateId` z domknięcia. Powiąż stop z generacją efektu zamiast z jedną flagą boolowską.\n\n✅ Address",
+   "wycinek": "  101    // obiecuje wykonać raz.\n  102    useEffect(() => {\n  103      optionsRef.current = options;\n  104    });\n  105  \n  106    useEffect(() => {\n  107      isStoppedRef.current = false;\n  108      stateRef.current = EMPTY_QUEUE;\n  109      setState(EMPTY_QUEUE);\n  110      versionRef.current = null;\n  111  \n  112      return () => {\n  113        // Wyjście z ekranu albo zmiana szablonu: przerywamy bieżące żądanie,"
+  },
+  "finding": {
+   "wlasciciele": [
+    "C"
+   ],
+   "rodzaj": "bramka",
+   "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+   "linia": 109,
+   "waga": "P2",
+   "opis": "bramka react-hooks/set-state-in-effect: Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or",
+   "scenariusz": ""
+  }
+ }
+]
