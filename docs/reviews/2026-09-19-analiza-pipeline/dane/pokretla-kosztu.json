@@ -1,0 +1,772 @@
+{
+ "fazy": [
+  "f-1de5a4c",
+  "f-2536643",
+  "f-2634b67",
+  "f-303ff62",
+  "f-31491bc",
+  "f-32975a1",
+  "f-46be55a",
+  "f-5af000f",
+  "f-67f5f2c",
+  "f-9d40529",
+  "f-b26128d",
+  "f-b8374c8",
+  "f-f3ee433"
+ ],
+ "warianty": {
+  "0": {
+   "role": {
+    "dedup:semantyczny": {
+     "efort": "haiku",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 0.863,
+     "po_na_faze_M": 0.066,
+     "zmierzony_M": 1.472,
+     "wywolania_sr": 1.2,
+     "ctx_start_sr": 45801,
+     "output_sr": 10426,
+     "udzial_outputu_w_koszcie": 0.46,
+     "prompt_zn_sr": 31728,
+     "narzedzia_sr": {
+      "Bash": 0.1,
+      "Read": 0.2,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 0,
+     "polecenie_bezposrednio_udzial": 0.178
+    },
+    "kontekst:diff": {
+     "efort": "low",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 0.741,
+     "po_na_faze_M": 0.057,
+     "zmierzony_M": 1.678,
+     "wywolania_sr": 6.2,
+     "ctx_start_sr": 52178,
+     "output_sr": 4455,
+     "udzial_outputu_w_koszcie": 0.173,
+     "prompt_zn_sr": 6107,
+     "narzedzia_sr": {
+      "Bash": 5.1,
+      "Read": 0.2,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 0,
+     "polecenie_bezposrednio_udzial": 0.042
+    },
+    "review:code-quality": {
+     "efort": "high (sesja)",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 4.272,
+     "po_na_faze_M": 0.329,
+     "zmierzony_M": 5.068,
+     "wywolania_sr": 12.2,
+     "ctx_start_sr": 55161,
+     "output_sr": 14917,
+     "udzial_outputu_w_koszcie": 0.191,
+     "prompt_zn_sr": 7931,
+     "narzedzia_sr": {
+      "Bash": 7.5,
+      "Read": 5.6,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 35,
+     "polecenie_bezposrednio_udzial": 0.024
+    },
+    "review:correctness": {
+     "efort": "high (sesja)",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 6.728,
+     "po_na_faze_M": 0.518,
+     "zmierzony_M": 7.763,
+     "wywolania_sr": 21.4,
+     "ctx_start_sr": 52582,
+     "output_sr": 20545,
+     "udzial_outputu_w_koszcie": 0.172,
+     "prompt_zn_sr": 7999,
+     "narzedzia_sr": {
+      "Bash": 16.5,
+      "Read": 5.6,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 21,
+     "polecenie_bezposrednio_udzial": 0.022
+    },
+    "review:performance": {
+     "efort": "high (sesja)",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 3.486,
+     "po_na_faze_M": 0.268,
+     "zmierzony_M": 4.22,
+     "wywolania_sr": 11.5,
+     "ctx_start_sr": 54116,
+     "output_sr": 10579,
+     "udzial_outputu_w_koszcie": 0.163,
+     "prompt_zn_sr": 7283,
+     "narzedzia_sr": {
+      "Bash": 7.5,
+      "Read": 4.6,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 15,
+     "polecenie_bezposrednio_udzial": 0.026
+    },
+    "review:security": {
+     "efort": "high (sesja)",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 5.339,
+     "po_na_faze_M": 0.411,
+     "zmierzony_M": 6.292,
+     "wywolania_sr": 17.5,
+     "ctx_start_sr": 56232,
+     "output_sr": 17735,
+     "udzial_outputu_w_koszcie": 0.183,
+     "prompt_zn_sr": 7285,
+     "narzedzia_sr": {
+      "Bash": 13.6,
+      "Read": 4.3,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 41,
+     "polecenie_bezposrednio_udzial": 0.022
+    },
+    "review:spec-compliance": {
+     "efort": "high (sesja)",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 5.325,
+     "po_na_faze_M": 0.41,
+     "zmierzony_M": 6.245,
+     "wywolania_sr": 16.9,
+     "ctx_start_sr": 54945,
+     "output_sr": 13211,
+     "udzial_outputu_w_koszcie": 0.138,
+     "prompt_zn_sr": 9880,
+     "narzedzia_sr": {
+      "Bash": 12.5,
+      "Read": 4.9,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 21,
+     "polecenie_bezposrednio_udzial": 0.029
+    },
+    "review:test-coverage": {
+     "efort": "high (sesja)",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 7.417,
+     "po_na_faze_M": 0.571,
+     "zmierzony_M": 8.625,
+     "wywolania_sr": 24.5,
+     "ctx_start_sr": 53832,
+     "output_sr": 22209,
+     "udzial_outputu_w_koszcie": 0.167,
+     "prompt_zn_sr": 11015,
+     "narzedzia_sr": {
+      "Bash": 21.1,
+      "Read": 4.6,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 42,
+     "polecenie_bezposrednio_udzial": 0.03
+    }
+   },
+   "po_razem_M": 34.17
+  },
+  "A": {
+   "role": {
+    "dedup:semantyczny": {
+     "efort": "haiku",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 0.871,
+     "po_na_faze_M": 0.067,
+     "zmierzony_M": 1.34,
+     "wywolania_sr": 1.2,
+     "ctx_start_sr": 38239,
+     "output_sr": 10720,
+     "udzial_outputu_w_koszcie": 0.52,
+     "prompt_zn_sr": 11958,
+     "narzedzia_sr": {
+      "Bash": 0.1,
+      "Read": 0.1,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 0,
+     "polecenie_bezposrednio_udzial": 0.073
+    },
+    "review:code-quality": {
+     "efort": "low",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 1.037,
+     "po_na_faze_M": 0.08,
+     "zmierzony_M": 1.493,
+     "wywolania_sr": 5.1,
+     "ctx_start_sr": 50800,
+     "output_sr": 2701,
+     "udzial_outputu_w_koszcie": 0.118,
+     "prompt_zn_sr": 5007,
+     "narzedzia_sr": {
+      "Bash": 3.8,
+      "Read": 0.1,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 12,
+     "polecenie_bezposrednio_udzial": 0.036
+    },
+    "review:correctness": {
+     "efort": "high",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 4.962,
+     "po_na_faze_M": 0.382,
+     "zmierzony_M": 5.885,
+     "wywolania_sr": 18.1,
+     "ctx_start_sr": 51215,
+     "output_sr": 20479,
+     "udzial_outputu_w_koszcie": 0.226,
+     "prompt_zn_sr": 5713,
+     "narzedzia_sr": {
+      "Bash": 15.3,
+      "Read": 4.1,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 21,
+     "polecenie_bezposrednio_udzial": 0.019
+    },
+    "review:security": {
+     "efort": "high",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 4.0,
+     "po_na_faze_M": 0.308,
+     "zmierzony_M": 4.791,
+     "wywolania_sr": 16.5,
+     "ctx_start_sr": 51187,
+     "output_sr": 15705,
+     "udzial_outputu_w_koszcie": 0.213,
+     "prompt_zn_sr": 5675,
+     "narzedzia_sr": {
+      "Bash": 13.6,
+      "Read": 3.4,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 11,
+     "polecenie_bezposrednio_udzial": 0.022
+    },
+    "review:spec-compliance": {
+     "efort": "medium",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 4.946,
+     "po_na_faze_M": 0.38,
+     "zmierzony_M": 5.911,
+     "wywolania_sr": 21.5,
+     "ctx_start_sr": 50529,
+     "output_sr": 15517,
+     "udzial_outputu_w_koszcie": 0.171,
+     "prompt_zn_sr": 4480,
+     "narzedzia_sr": {
+      "Bash": 20.5,
+      "Read": 1.0,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 28,
+     "polecenie_bezposrednio_udzial": 0.016
+    },
+    "review:test-coverage": {
+     "efort": "medium",
+     "agentow": 13,
+     "faz": 13,
+     "po_M": 3.649,
+     "po_na_faze_M": 0.281,
+     "zmierzony_M": 4.42,
+     "wywolania_sr": 11.9,
+     "ctx_start_sr": 53491,
+     "output_sr": 18513,
+     "udzial_outputu_w_koszcie": 0.272,
+     "prompt_zn_sr": 10625,
+     "narzedzia_sr": {
+      "Bash": 12.2,
+      "Read": 0.1,
+      "Grep": 0.0,
+      "Glob": 0.0
+     },
+     "p1p2": 127,
+     "polecenie_bezposrednio_udzial": 0.037
+    }
+   },
+   "po_razem_M": 19.46
+  }
+ },
+ "rozklad_A_minus_0": {
+  "usuniete_w_A": {
+   "role": [
+    "review:performance",
+    "kontekst:diff"
+   ],
+   "delta_M": -4.23,
+   "delta_na_faze_M": -0.325
+  },
+  "efort_nizszy_w_A": {
+   "role": [
+    "review:test-coverage",
+    "review:spec-compliance",
+    "review:code-quality"
+   ],
+   "delta_M": -7.38,
+   "delta_na_faze_M": -0.568
+  },
+  "ten_sam_efort": {
+   "role": [
+    "review:correctness",
+    "review:security"
+   ],
+   "delta_M": -3.11,
+   "delta_na_faze_M": -0.239
+  },
+  "reszta": {
+   "role": [
+    "dedup:semantyczny"
+   ],
+   "delta_M": 0.01,
+   "delta_na_faze_M": 0.001
+  },
+  "razem_delta_M": -14.71
+ },
+ "wklad": {
+  "0|klucz1": {
+   "zlapane": 25,
+   "udzial": {
+    "review:code-quality": 12,
+    "review:correctness": 3,
+    "review:performance": 3,
+    "review:security": 5,
+    "review:spec-compliance": 3,
+    "review:test-coverage": 3
+   },
+   "jedyny": {
+    "review:code-quality": 10,
+    "review:correctness": 3,
+    "review:performance": 2,
+    "review:security": 3,
+    "review:spec-compliance": 2,
+    "review:test-coverage": 2
+   }
+  },
+  "0|klucz2": {
+   "zlapane": 53,
+   "udzial": {
+    "review:code-quality": 8,
+    "review:correctness": 9,
+    "review:performance": 6,
+    "review:security": 16,
+    "review:spec-compliance": 6,
+    "review:test-coverage": 13
+   },
+   "jedyny": {
+    "review:code-quality": 8,
+    "review:correctness": 6,
+    "review:performance": 5,
+    "review:security": 16,
+    "review:spec-compliance": 5,
+    "review:test-coverage": 8
+   }
+  },
+  "A|klucz1": {
+   "zlapane": 30,
+   "udzial": {
+    "review:code-quality": 2,
+    "review:correctness": 9,
+    "review:security": 3,
+    "review:spec-compliance": 10,
+    "review:test-coverage": 5
+   },
+   "jedyny": {
+    "review:code-quality": 1,
+    "review:correctness": 8,
+    "review:security": 3,
+    "review:spec-compliance": 10,
+    "review:test-coverage": 5
+   }
+  },
+  "A|klucz2": {
+   "zlapane": 46,
+   "udzial": {
+    "review:code-quality": 1,
+    "review:correctness": 15,
+    "review:security": 8,
+    "review:spec-compliance": 11,
+    "review:test-coverage": 15
+   },
+   "jedyny": {
+    "review:code-quality": 1,
+    "review:correctness": 12,
+    "review:security": 7,
+    "review:spec-compliance": 8,
+    "review:test-coverage": 14
+   }
+  }
+ },
+ "sceptycy": {
+  "0": {
+   "agentow": 30,
+   "findingow": 29,
+   "po_M": 1.74,
+   "po_na_finding_M": 0.06,
+   "agentow_na_finding": 1.03
+  },
+  "A": {
+   "agentow": 27,
+   "findingow": 25,
+   "po_M": 1.5,
+   "po_na_finding_M": 0.06,
+   "agentow_na_finding": 1.08
+  },
+  "B": {
+   "agentow": 14,
+   "findingow": 26,
+   "po_M": 0.9,
+   "po_na_finding_M": 0.034,
+   "agentow_na_finding": 0.54
+  },
+  "C": {
+   "agentow": 10,
+   "findingow": 20,
+   "po_M": 0.59,
+   "po_na_finding_M": 0.029,
+   "agentow_na_finding": 0.5
+  }
+ },
+ "pokretla": {
+  "baza_znajdowania_na_faze_M": 2.628,
+  "udzial_review_w_zadaniu": 0.285,
+  "udzial_sceptykow_w_zadaniu": 0.094,
+  "pokretla": [
+   {
+    "id": "efort test-coverage high→medium (+ lista mutantów)",
+    "decyzja": "D6",
+    "opis": "A: medium + listy L-TST + mutanty",
+    "delta_na_faze_M": -0.29,
+    "proc_znajdowania": -11.0,
+    "proc_zadania": -3.1,
+    "jakosc": {
+     "klucz1_0_A": [
+      3,
+      5
+     ],
+     "klucz2_0_A": [
+      13,
+      15
+     ],
+     "p1p2_0_A": [
+      42,
+      127
+     ]
+    },
+    "wyw_0_A": [
+     24.5,
+     11.9
+    ],
+    "out_0_A": [
+     22209,
+     18513
+    ]
+   },
+   {
+    "id": "efort spec high→medium",
+    "decyzja": "D6",
+    "opis": "A: medium + listy L-SPC + sekcja planu",
+    "delta_na_faze_M": -0.03,
+    "proc_znajdowania": -1.1,
+    "proc_zadania": -0.3,
+    "jakosc": {
+     "klucz1_0_A": [
+      3,
+      10
+     ],
+     "klucz2_0_A": [
+      6,
+      11
+     ],
+     "p1p2_0_A": [
+      21,
+      28
+     ]
+    },
+    "wyw_0_A": [
+     16.9,
+     21.5
+    ],
+    "out_0_A": [
+     13211,
+     15517
+    ]
+   },
+   {
+    "id": "efort code-quality high→low",
+    "decyzja": "D6",
+    "opis": "A: low + listy L-CQ + „nie zgłaszaj tego, co łapie lint”",
+    "delta_na_faze_M": -0.249,
+    "proc_znajdowania": -9.5,
+    "proc_zadania": -2.7,
+    "jakosc": {
+     "klucz1_0_A": [
+      12,
+      2
+     ],
+     "klucz2_0_A": [
+      8,
+      1
+     ],
+     "p1p2_0_A": [
+      35,
+      12
+     ]
+    },
+    "wyw_0_A": [
+     12.2,
+     5.1
+    ],
+    "out_0_A": [
+     14917,
+     2701
+    ]
+   },
+   {
+    "id": "kształt polecenia correctness (listy A, ten sam efort)",
+    "decyzja": "D10 / §2 pkt 11",
+    "opis": "A: high, listy L-COR, krótsze polecenie",
+    "delta_na_faze_M": -0.136,
+    "proc_znajdowania": -5.2,
+    "proc_zadania": -1.5,
+    "jakosc": {
+     "klucz1_0_A": [
+      3,
+      9
+     ],
+     "klucz2_0_A": [
+      9,
+      15
+     ],
+     "p1p2_0_A": [
+      21,
+      21
+     ]
+    },
+    "wyw_0_A": [
+     21.4,
+     18.1
+    ],
+    "out_0_A": [
+     20545,
+     20479
+    ]
+   },
+   {
+    "id": "kształt polecenia security (listy A, ten sam efort)",
+    "decyzja": "D10 / §2 pkt 11",
+    "opis": "A: high, listy L-SEC, krótsze polecenie",
+    "delta_na_faze_M": -0.103,
+    "proc_znajdowania": -3.9,
+    "proc_zadania": -1.1,
+    "jakosc": {
+     "klucz1_0_A": [
+      5,
+      3
+     ],
+     "klucz2_0_A": [
+      16,
+      8
+     ],
+     "p1p2_0_A": [
+      41,
+      11
+     ]
+    },
+    "wyw_0_A": [
+     17.5,
+     16.5
+    ],
+    "out_0_A": [
+     17735,
+     15705
+    ]
+   },
+   {
+    "id": "usunięcie reviewera performance",
+    "decyzja": "poza D (6a pkt 32: 6 reviewerów zostaje)",
+    "opis": "A: brak roli",
+    "delta_na_faze_M": -0.268,
+    "proc_znajdowania": -10.2,
+    "proc_zadania": -2.9,
+    "jakosc": {
+     "klucz1_0_A": [
+      3,
+      0
+     ],
+     "klucz2_0_A": [
+      6,
+      0
+     ],
+     "p1p2_0_A": [
+      15,
+      null
+     ]
+    },
+    "wyw_0_A": [
+     11.5,
+     null
+    ],
+    "out_0_A": [
+     10579,
+     null
+    ]
+   },
+   {
+    "id": "packager → skrypt (dossier bez agenta)",
+    "decyzja": "D3 (przesądzone §6)",
+    "opis": "A: dossier ze skryptu + mandat",
+    "delta_na_faze_M": -0.057,
+    "proc_znajdowania": -2.2,
+    "proc_zadania": -0.6,
+    "jakosc": {
+     "klucz1_0_A": [
+      0,
+      0
+     ],
+     "klucz2_0_A": [
+      0,
+      0
+     ],
+     "p1p2_0_A": [
+      0,
+      null
+     ]
+    },
+    "wyw_0_A": [
+     6.2,
+     null
+    ],
+    "out_0_A": [
+     4455,
+     null
+    ]
+   },
+   {
+    "id": "długość tekstu polecenia reviewera (sam tekst, bez zmiany zachowania)",
+    "decyzja": "nowa pozycja (porządek, nie koszt)",
+    "proc_kosztu_roli": 2.6,
+    "proc_znajdowania": 2.6,
+    "proc_zadania": 0.7,
+    "opis": "koszt zapisu i odczytu tekstu polecenia z cache ÷ koszt roli (ważone kosztem ról 0)"
+   },
+   {
+    "id": "warunek „faza z kodem” dla security / spec / test-coverage",
+    "decyzja": "D4 (spec) + ETAP1 (security)",
+    "delta_na_faze_M": -0.054,
+    "proc_znajdowania": -2.0,
+    "proc_zadania": -0.6,
+    "opis": "odsetek faz bez kodu (panel) × koszt trzech ról rdzenia"
+   },
+   {
+    "id": "batch sceptyków po 4 findingi niezależnie od pliku (B) zamiast grupy po pliku (0)",
+    "decyzja": "D2",
+    "delta_na_faze_M": -0.343,
+    "proc_weryfikacji": -42.3,
+    "proc_zadania": -4.0,
+    "opis": "koszt na zweryfikowany finding 0 vs B × findingi P1/P2 reviewerów 0 na fazę (13.5); asymetria B też różni — górna granica"
+   }
+  ],
+  "podzial_A_minus_0": {
+   "role_bez_straty": [
+    "review:correctness",
+    "review:spec-compliance",
+    "review:test-coverage",
+    "kontekst:diff"
+   ],
+   "delta_bez_straty_M": -6.65,
+   "proc_bez_straty": -19.5,
+   "delta_ze_strata_M": -8.06,
+   "proc_ze_strata": -23.6
+  }
+ },
+ "panel": {
+  "czestosci": {
+   "faza_z_kodem": 0.9615384615384616,
+   "faza_z_testami": 0.9615384615384616,
+   "faza_z_ui": 0.5769230769230769,
+   "faza_z_migracja": 0.2692307692307692,
+   "faza_z_e2e": 0.5,
+   "zawsze": 1.0,
+   "zadanie_z_e2e": 0.8571428571428571
+  },
+  "na_faze": {
+   "stan:zapis": 3.0,
+   "review:security": 1.0,
+   "scribe": 1.0,
+   "build": 2.6923076923076925,
+   "planner": 1.0,
+   "fix:kontrola": 0.9615384615384616,
+   "zwin-do-poprawy": 0.9615384615384616,
+   "review:correctness": 0.9615384615384616,
+   "review:spec-compliance": 1.0,
+   "dedup:semantyczny": 1.0,
+   "fix:pre-skan": 0.9615384615384616,
+   "verify-batch": 4.346153846153846,
+   "review:e2e": 0.6923076923076923,
+   "kontekst:diff": 1.0,
+   "review:simplicity": 0.34615384615384615,
+   "e2e:db-sync": 1.0,
+   "domkniecie": 1.0,
+   "review:performance": 0.9615384615384616,
+   "fix:poprawka": 0.6923076923076923,
+   "review:test-coverage": 1.0,
+   "fix": 1.0,
+   "verify": 1.0384615384615385,
+   "review:code-quality": 0.6153846153846154,
+   "verify-fix": 0.15384615384615385
+  },
+  "udzialy_zadania_po": {
+   "zamkniecie": 0.04,
+   "mechanika": 0.071,
+   "sceptycy": 0.094,
+   "orkiestracja": 0.038,
+   "execute": 0.252,
+   "fix": 0.148,
+   "review": 0.285,
+   "E2E": 0.073
+  }
+ },
+ "kontrola": {
+  "0": {
+   "suma_rol_po": 34.17,
+   "wynik_koszt_znajdowanie_po": 34.17
+  },
+  "A": {
+   "suma_rol_po": 19.46,
+   "wynik_koszt_znajdowanie_po": 19.46
+  }
+ }
+}

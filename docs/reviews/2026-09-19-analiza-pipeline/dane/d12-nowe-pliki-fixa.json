@@ -1,0 +1,359 @@
+{
+ "razem": {
+  "commitow": 24,
+  "z_nowym_plikiem_kodu": 20,
+  "kluczy": 30,
+  "kluczy_w_nowych": 6,
+  "p1p2_w_nowych": 4,
+  "p1p2": 21,
+  "nowych_plikow_kodu": 45,
+  "plikow_kodu": 350,
+  "z_nowym_plikiem_produkcyjnym": 16,
+  "nowych_produkcyjnych": 25,
+  "kluczy_w_nowych_produkcyjnych": 3,
+  "p1p2_w_nowych_produkcyjnych": 1
+ },
+ "commity": [
+  {
+   "et": "x-ed1ce60",
+   "plikow": 15,
+   "plikow_kodu": 13,
+   "nowych": 3,
+   "nowych_kodu": 3,
+   "nowych_produkcyjnych": [
+    "apps/server/src/offer/markup-hidden.ts",
+    "apps/server/src/offer/markup-tag-scan.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 1,
+   "kluczy": 1,
+   "kluczy_w_nowych": 1,
+   "wagi_w_nowych": [
+    "P2"
+   ]
+  },
+  {
+   "et": "x-43fb8e7",
+   "plikow": 30,
+   "plikow_kodu": 28,
+   "nowych": 5,
+   "nowych_kodu": 5,
+   "nowych_produkcyjnych": [
+    "apps/server/src/routes/admin-invitations.ts",
+    "apps/server/src/access/access-requests-retention.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 1,
+   "wagi_w_nowych": [
+    "P2"
+   ]
+  },
+  {
+   "et": "x-828eda9",
+   "plikow": 6,
+   "plikow_kodu": 6,
+   "nowych": 0,
+   "nowych_kodu": 0,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-f3d5aca",
+   "plikow": 17,
+   "plikow_kodu": 16,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [
+    "e2e/seeds/faza-9b-admin-cofnij-seed.sql"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 2,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-4ef28cf",
+   "plikow": 6,
+   "plikow_kodu": 6,
+   "nowych": 1,
+   "nowych_kodu": 1,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-5c3c7ac",
+   "plikow": 21,
+   "plikow_kodu": 18,
+   "nowych": 3,
+   "nowych_kodu": 3,
+   "nowych_produkcyjnych": [
+    "apps/dashboard/src/features/auth/waitlist-question.tsx",
+    "apps/server/src/access/redirect-path.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-f74b4e4",
+   "plikow": 15,
+   "plikow_kodu": 14,
+   "nowych": 4,
+   "nowych_kodu": 4,
+   "nowych_produkcyjnych": [
+    "apps/server/src/offer/validity-date.ts",
+    "apps/server/src/mcp/constants.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 4,
+   "kluczy_w_nowych": 1,
+   "wagi_w_nowych": [
+    "P2"
+   ]
+  },
+  {
+   "et": "x-58efb36",
+   "plikow": 13,
+   "plikow_kodu": 12,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [
+    "supabase/migrations/20260825190500_offers_html_size_limit.sql"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-61195b8",
+   "plikow": 4,
+   "plikow_kodu": 3,
+   "nowych": 0,
+   "nowych_kodu": 0,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-411a434",
+   "plikow": 13,
+   "plikow_kodu": 11,
+   "nowych": 1,
+   "nowych_kodu": 1,
+   "nowych_produkcyjnych": [
+    "supabase/migrations/20260828173000_offers_ip_salt_out_of_select_grant.sql"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 0,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-6bd9990",
+   "plikow": 12,
+   "plikow_kodu": 10,
+   "nowych": 0,
+   "nowych_kodu": 0,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-b0d74fc",
+   "plikow": 14,
+   "plikow_kodu": 13,
+   "nowych": 1,
+   "nowych_kodu": 1,
+   "nowych_produkcyjnych": [
+    "packages/shared/src/offer-slug.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 2,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-d520107",
+   "plikow": 12,
+   "plikow_kodu": 11,
+   "nowych": 1,
+   "nowych_kodu": 1,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 1,
+   "wagi_w_nowych": [
+    "P2"
+   ]
+  },
+  {
+   "et": "x-dce71cf",
+   "plikow": 11,
+   "plikow_kodu": 8,
+   "nowych": 1,
+   "nowych_kodu": 1,
+   "nowych_produkcyjnych": [
+    "apps/dashboard/src/lib/monitoring.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-bcf98f4",
+   "plikow": 24,
+   "plikow_kodu": 22,
+   "nowych": 1,
+   "nowych_kodu": 1,
+   "nowych_produkcyjnych": [
+    "e2e/seeds/faza-7-szablony-pusty-seed.sql"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-0ec2b19",
+   "plikow": 31,
+   "plikow_kodu": 28,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [
+    "apps/server/src/mcp/tools/template-tool-errors.ts",
+    "supabase/migrations/20260904160000_offer_templates_unique_name.sql"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 2,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-40af319",
+   "plikow": 15,
+   "plikow_kodu": 14,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-60f1951",
+   "plikow": 28,
+   "plikow_kodu": 28,
+   "nowych": 3,
+   "nowych_kodu": 3,
+   "nowych_produkcyjnych": [
+    "apps/server/src/http/json-payload.ts",
+    "apps/server/src/observability/recording-logger.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-b02abfa",
+   "plikow": 7,
+   "plikow_kodu": 5,
+   "nowych": 0,
+   "nowych_kodu": 0,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-925907a",
+   "plikow": 22,
+   "plikow_kodu": 21,
+   "nowych": 4,
+   "nowych_kodu": 4,
+   "nowych_produkcyjnych": [
+    "apps/server/src/mcp/tools/template-name.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-b5295fd",
+   "plikow": 20,
+   "plikow_kodu": 19,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [
+    "apps/server/src/mcp/verified-owner.ts",
+    "apps/server/src/mcp/token-classifier.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  },
+  {
+   "et": "x-7e437fc",
+   "plikow": 12,
+   "plikow_kodu": 9,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [
+    "apps/server/src/tracking/merge-contract-ladder.ts",
+    "apps/server/src/tracking/visit-store-error.ts"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 1,
+   "kluczy": 1,
+   "kluczy_w_nowych": 1,
+   "wagi_w_nowych": [
+    "P3"
+   ]
+  },
+  {
+   "et": "x-b7d0455",
+   "plikow": 23,
+   "plikow_kodu": 21,
+   "nowych": 3,
+   "nowych_kodu": 3,
+   "nowych_produkcyjnych": [
+    "apps/dashboard/src/features/settings/connected-app-format.ts",
+    "apps/dashboard/src/features/settings/disconnect-dialog.tsx"
+   ],
+   "kluczy_w_nowych_produkcyjnych": 1,
+   "kluczy": 2,
+   "kluczy_w_nowych": 1,
+   "wagi_w_nowych": [
+    "P3"
+   ]
+  },
+  {
+   "et": "x-05dd804",
+   "plikow": 16,
+   "plikow_kodu": 14,
+   "nowych": 2,
+   "nowych_kodu": 2,
+   "nowych_produkcyjnych": [],
+   "kluczy_w_nowych_produkcyjnych": 0,
+   "kluczy": 1,
+   "kluczy_w_nowych": 0,
+   "wagi_w_nowych": []
+  }
+ ]
+}

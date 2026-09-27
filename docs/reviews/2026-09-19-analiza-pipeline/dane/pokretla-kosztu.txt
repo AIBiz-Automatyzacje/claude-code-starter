@@ -1,0 +1,60 @@
+pokretla_kosztu.py — koszt ról review w teście (13 faz etapu, p1), M jedn.; PO = po zmianie kontekstu (jak test_review_wynik.koszt)
+
+=== wariant 0 — razem PO 34.17 M (2.63 M na fazę) ===
+  rola                     efort         agt  faz      PO  PO/faz    wyw    ctx0 out/agt   out%  prompt Bash/Read/Grep/Glob         P1P2  pol%
+  dedup:semantyczny        haiku          13   13    0.86   0.066    1.2   45801   10426    46%   31728 0.1/0.2/0.0/0.0                0  17.8%
+  kontekst:diff            low            13   13    0.74   0.057    6.2   52178    4455    17%    6107 5.1/0.2/0.0/0.0                0   4.2%
+  review:code-quality      high (sesja)   13   13    4.27   0.329   12.2   55161   14917    19%    7931 7.5/5.6/0.0/0.0               35   2.4%
+  review:correctness       high (sesja)   13   13    6.73   0.518   21.4   52582   20545    17%    7999 16.5/5.6/0.0/0.0              21   2.2%
+  review:performance       high (sesja)   13   13    3.49   0.268   11.5   54116   10579    16%    7283 7.5/4.6/0.0/0.0               15   2.6%
+  review:security          high (sesja)   13   13    5.34   0.411   17.5   56232   17735    18%    7285 13.6/4.3/0.0/0.0              41   2.2%
+  review:spec-compliance   high (sesja)   13   13    5.33   0.410   16.9   54945   13211    14%    9880 12.5/4.9/0.0/0.0              21   2.9%
+  review:test-coverage     high (sesja)   13   13    7.42   0.571   24.5   53832   22209    17%   11015 21.1/4.6/0.0/0.0              42   3.0%
+
+=== wariant A — razem PO 19.46 M (1.50 M na fazę) ===
+  rola                     efort         agt  faz      PO  PO/faz    wyw    ctx0 out/agt   out%  prompt Bash/Read/Grep/Glob         P1P2  pol%
+  dedup:semantyczny        haiku          13   13    0.87   0.067    1.2   38239   10720    52%   11958 0.1/0.1/0.0/0.0                0   7.3%
+  review:code-quality      low            13   13    1.04   0.080    5.1   50800    2701    12%    5007 3.8/0.1/0.0/0.0               12   3.6%
+  review:correctness       high           13   13    4.96   0.382   18.1   51215   20479    23%    5713 15.3/4.1/0.0/0.0              21   1.9%
+  review:security          high           13   13    4.00   0.308   16.5   51187   15705    21%    5675 13.6/3.4/0.0/0.0              11   2.2%
+  review:spec-compliance   medium         13   13    4.95   0.380   21.5   50529   15517    17%    4480 20.5/1.0/0.0/0.0              28   1.6%
+  review:test-coverage     medium         13   13    3.65   0.281   11.9   53491   18513    27%   10625 12.2/0.1/0.0/0.0             127   3.7%
+
+=== rozkład różnicy A − 0 (PO) ===
+  usuniete_w_A       {"role": ["review:performance", "kontekst:diff"], "delta_M": -4.23, "delta_na_faze_M": -0.325}
+  efort_nizszy_w_A   {"role": ["review:test-coverage", "review:spec-compliance", "review:code-quality"], "delta_M": -7.38, "delta_na_faze_M": -0.568}
+  ten_sam_efort      {"role": ["review:correctness", "review:security"], "delta_M": -3.11, "delta_na_faze_M": -0.239}
+  reszta             {"role": ["dedup:semantyczny"], "delta_M": 0.01, "delta_na_faze_M": 0.001}
+  razem_delta_M      -14.71
+
+=== weryfikacja w teście (tylko dopasowane P1/P2 klucza 1) ===
+  0: {"agentow": 30, "findingow": 29, "po_M": 1.74, "po_na_finding_M": 0.06, "agentow_na_finding": 1.03}
+  A: {"agentow": 27, "findingow": 25, "po_M": 1.5, "po_na_finding_M": 0.06, "agentow_na_finding": 1.08}
+  B: {"agentow": 14, "findingow": 26, "po_M": 0.9, "po_na_finding_M": 0.034, "agentow_na_finding": 0.54}
+  C: {"agentow": 10, "findingow": 20, "po_M": 0.59, "po_na_finding_M": 0.029, "agentow_na_finding": 0.5}
+
+=== wkład ról w klucze (fazy, obecne; udział = klucze z findingiem roli, jedyny = tylko ta rola) ===
+  0|klucz1: {"zlapane": 25, "udzial": {"review:code-quality": 12, "review:correctness": 3, "review:performance": 3, "review:security": 5, "review:spec-compliance": 3, "review:test-coverage": 3}, "jedyny": {"review:code-quality": 10, "review:correctness": 3, "review:performance": 2, "review:security": 3, "review:spec-compliance": 2, "review:test-coverage": 2}}
+  0|klucz2: {"zlapane": 53, "udzial": {"review:code-quality": 8, "review:correctness": 9, "review:performance": 6, "review:security": 16, "review:spec-compliance": 6, "review:test-coverage": 13}, "jedyny": {"review:code-quality": 8, "review:correctness": 6, "review:performance": 5, "review:security": 16, "review:spec-compliance": 5, "review:test-coverage": 8}}
+  A|klucz1: {"zlapane": 30, "udzial": {"review:code-quality": 2, "review:correctness": 9, "review:security": 3, "review:spec-compliance": 10, "review:test-coverage": 5}, "jedyny": {"review:code-quality": 1, "review:correctness": 8, "review:security": 3, "review:spec-compliance": 10, "review:test-coverage": 5}}
+  A|klucz2: {"zlapane": 46, "udzial": {"review:code-quality": 1, "review:correctness": 15, "review:security": 8, "review:spec-compliance": 11, "review:test-coverage": 15}, "jedyny": {"review:code-quality": 1, "review:correctness": 12, "review:security": 7, "review:spec-compliance": 8, "review:test-coverage": 14}}
+
+=== dane panelu (dane/panel-koszt.json) ===
+  częstości warunków: {"faza_z_kodem": 0.9615384615384616, "faza_z_testami": 0.9615384615384616, "faza_z_ui": 0.5769230769230769, "faza_z_migracja": 0.2692307692307692, "faza_z_e2e": 0.5, "zawsze": 1.0, "zadanie_z_e2e": 0.8571428571428571}
+  wywołania na fazę (review): {"review:security": 1.0, "review:correctness": 0.96, "review:spec-compliance": 1.0, "dedup:semantyczny": 1.0, "verify-batch": 4.35, "review:e2e": 0.69, "kontekst:diff": 1.0, "review:simplicity": 0.35, "review:performance": 0.96, "review:test-coverage": 1.0, "verify": 1.04, "review:code-quality": 0.62, "verify-fix": 0.15}
+
+=== POKRĘTŁA (baza: znajdowanie 0 = 2.628 M/fazę; review 28.5% i sceptycy 9.4% kosztu zadania — panel, kolumna PO) ===
+  {"id": "efort test-coverage high→medium (+ lista mutantów)", "decyzja": "D6", "opis": "A: medium + listy L-TST + mutanty", "delta_na_faze_M": -0.29, "proc_znajdowania": -11.0, "proc_zadania": -3.1, "jakosc": {"klucz1_0_A": [3, 5], "klucz2_0_A": [13, 15], "p1p2_0_A": [42, 127]}, "wyw_0_A": [24.5, 11.9], "out_0_A": [22209, 18513]}
+  {"id": "efort spec high→medium", "decyzja": "D6", "opis": "A: medium + listy L-SPC + sekcja planu", "delta_na_faze_M": -0.03, "proc_znajdowania": -1.1, "proc_zadania": -0.3, "jakosc": {"klucz1_0_A": [3, 10], "klucz2_0_A": [6, 11], "p1p2_0_A": [21, 28]}, "wyw_0_A": [16.9, 21.5], "out_0_A": [13211, 15517]}
+  {"id": "efort code-quality high→low", "decyzja": "D6", "opis": "A: low + listy L-CQ + „nie zgłaszaj tego, co łapie lint”", "delta_na_faze_M": -0.249, "proc_znajdowania": -9.5, "proc_zadania": -2.7, "jakosc": {"klucz1_0_A": [12, 2], "klucz2_0_A": [8, 1], "p1p2_0_A": [35, 12]}, "wyw_0_A": [12.2, 5.1], "out_0_A": [14917, 2701]}
+  {"id": "kształt polecenia correctness (listy A, ten sam efort)", "decyzja": "D10 / §2 pkt 11", "opis": "A: high, listy L-COR, krótsze polecenie", "delta_na_faze_M": -0.136, "proc_znajdowania": -5.2, "proc_zadania": -1.5, "jakosc": {"klucz1_0_A": [3, 9], "klucz2_0_A": [9, 15], "p1p2_0_A": [21, 21]}, "wyw_0_A": [21.4, 18.1], "out_0_A": [20545, 20479]}
+  {"id": "kształt polecenia security (listy A, ten sam efort)", "decyzja": "D10 / §2 pkt 11", "opis": "A: high, listy L-SEC, krótsze polecenie", "delta_na_faze_M": -0.103, "proc_znajdowania": -3.9, "proc_zadania": -1.1, "jakosc": {"klucz1_0_A": [5, 3], "klucz2_0_A": [16, 8], "p1p2_0_A": [41, 11]}, "wyw_0_A": [17.5, 16.5], "out_0_A": [17735, 15705]}
+  {"id": "usunięcie reviewera performance", "decyzja": "poza D (6a pkt 32: 6 reviewerów zostaje)", "opis": "A: brak roli", "delta_na_faze_M": -0.268, "proc_znajdowania": -10.2, "proc_zadania": -2.9, "jakosc": {"klucz1_0_A": [3, 0], "klucz2_0_A": [6, 0], "p1p2_0_A": [15, null]}, "wyw_0_A": [11.5, null], "out_0_A": [10579, null]}
+  {"id": "packager → skrypt (dossier bez agenta)", "decyzja": "D3 (przesądzone §6)", "opis": "A: dossier ze skryptu + mandat", "delta_na_faze_M": -0.057, "proc_znajdowania": -2.2, "proc_zadania": -0.6, "jakosc": {"klucz1_0_A": [0, 0], "klucz2_0_A": [0, 0], "p1p2_0_A": [0, null]}, "wyw_0_A": [6.2, null], "out_0_A": [4455, null]}
+  {"id": "długość tekstu polecenia reviewera (sam tekst, bez zmiany zachowania)", "decyzja": "nowa pozycja (porządek, nie koszt)", "proc_kosztu_roli": 2.6, "proc_znajdowania": 2.6, "proc_zadania": 0.7, "opis": "koszt zapisu i odczytu tekstu polecenia z cache ÷ koszt roli (ważone kosztem ról 0)"}
+  {"id": "warunek „faza z kodem” dla security / spec / test-coverage", "decyzja": "D4 (spec) + ETAP1 (security)", "delta_na_faze_M": -0.054, "proc_znajdowania": -2.0, "proc_zadania": -0.6, "opis": "odsetek faz bez kodu (panel) × koszt trzech ról rdzenia"}
+  {"id": "batch sceptyków po 4 findingi niezależnie od pliku (B) zamiast grupy po pliku (0)", "decyzja": "D2", "delta_na_faze_M": -0.343, "proc_weryfikacji": -42.3, "proc_zadania": -4.0, "opis": "koszt na zweryfikowany finding 0 vs B × findingi P1/P2 reviewerów 0 na fazę (13.5); asymetria B też różni — górna granica"}
+  podział A − 0 (role bez straty trafień vs ze stratą): {"role_bez_straty": ["review:correctness", "review:spec-compliance", "review:test-coverage", "kontekst:diff"], "delta_bez_straty_M": -6.65, "proc_bez_straty": -19.5, "delta_ze_strata_M": -8.06, "proc_ze_strata": -23.6}
+
+=== kontrola ===
+  {"0": {"suma_rol_po": 34.17, "wynik_koszt_znajdowanie_po": 34.17}, "A": {"suma_rol_po": 19.46, "wynik_koszt_znajdowanie_po": 19.46}}

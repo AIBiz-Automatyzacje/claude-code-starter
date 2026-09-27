@@ -1,0 +1,26 @@
+d12_nowe_pliki_fixa.py — 24 commity fixa z testu review (moduł §2.6), klucz 1 fixa obecny
+  razem: {"commitow": 24, "z_nowym_plikiem_kodu": 20, "kluczy": 30, "kluczy_w_nowych": 6, "p1p2_w_nowych": 4, "p1p2": 21, "nowych_plikow_kodu": 45, "plikow_kodu": 350, "z_nowym_plikiem_produkcyjnym": 16, "nowych_produkcyjnych": 25, "kluczy_w_nowych_produkcyjnych": 3, "p1p2_w_nowych_produkcyjnych": 1}
+  x-ed1ce60   plików  15 (kod  13)  nowych  3 (kod  3)  kluczy 1, w nowych 1 ['P2']  nowe produkcyjne: apps/server/src/offer/markup-hidden.ts, apps/server/src/offer/markup-tag-scan.ts
+  x-43fb8e7   plików  30 (kod  28)  nowych  5 (kod  5)  kluczy 1, w nowych 1 ['P2']  nowe produkcyjne: apps/server/src/routes/admin-invitations.ts, apps/server/src/access/access-requests-retention.ts
+  x-828eda9   plików   6 (kod   6)  nowych  0 (kod  0)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
+  x-f3d5aca   plików  17 (kod  16)  nowych  2 (kod  2)  kluczy 2, w nowych 0 []  nowe produkcyjne: e2e/seeds/faza-9b-admin-cofnij-seed.sql
+  x-4ef28cf   plików   6 (kod   6)  nowych  1 (kod  1)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
+  x-5c3c7ac   plików  21 (kod  18)  nowych  3 (kod  3)  kluczy 1, w nowych 0 []  nowe produkcyjne: apps/dashboard/src/features/auth/waitlist-question.tsx, apps/server/src/access/redirect-path.ts
+  x-f74b4e4   plików  15 (kod  14)  nowych  4 (kod  4)  kluczy 4, w nowych 1 ['P2']  nowe produkcyjne: apps/server/src/offer/validity-date.ts, apps/server/src/mcp/constants.ts
+  x-58efb36   plików  13 (kod  12)  nowych  2 (kod  2)  kluczy 1, w nowych 0 []  nowe produkcyjne: supabase/migrations/20260825190500_offers_html_size_limit.sql
+  x-61195b8   plików   4 (kod   3)  nowych  0 (kod  0)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
+  x-411a434   plików  13 (kod  11)  nowych  1 (kod  1)  kluczy 0, w nowych 0 []  nowe produkcyjne: supabase/migrations/20260828173000_offers_ip_salt_out_of_select_grant.sql
+  x-6bd9990   plików  12 (kod  10)  nowych  0 (kod  0)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
+  x-b0d74fc   plików  14 (kod  13)  nowych  1 (kod  1)  kluczy 2, w nowych 0 []  nowe produkcyjne: packages/shared/src/offer-slug.ts
+  x-d520107   plików  12 (kod  11)  nowych  1 (kod  1)  kluczy 1, w nowych 1 ['P2']  nowe produkcyjne: -
+  x-dce71cf   plików  11 (kod   8)  nowych  1 (kod  1)  kluczy 1, w nowych 0 []  nowe produkcyjne: apps/dashboard/src/lib/monitoring.ts
+  x-bcf98f4   plików  24 (kod  22)  nowych  1 (kod  1)  kluczy 1, w nowych 0 []  nowe produkcyjne: e2e/seeds/faza-7-szablony-pusty-seed.sql
+  x-0ec2b19   plików  31 (kod  28)  nowych  2 (kod  2)  kluczy 2, w nowych 0 []  nowe produkcyjne: apps/server/src/mcp/tools/template-tool-errors.ts, supabase/migrations/20260904160000_offer_templates_unique_name.sql
+  x-40af319   plików  15 (kod  14)  nowych  2 (kod  2)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
+  x-60f1951   plików  28 (kod  28)  nowych  3 (kod  3)  kluczy 1, w nowych 0 []  nowe produkcyjne: apps/server/src/http/json-payload.ts, apps/server/src/observability/recording-logger.ts
+  x-b02abfa   plików   7 (kod   5)  nowych  0 (kod  0)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
+  x-925907a   plików  22 (kod  21)  nowych  4 (kod  4)  kluczy 1, w nowych 0 []  nowe produkcyjne: apps/server/src/mcp/tools/template-name.ts
+  x-b5295fd   plików  20 (kod  19)  nowych  2 (kod  2)  kluczy 1, w nowych 0 []  nowe produkcyjne: apps/server/src/mcp/verified-owner.ts, apps/server/src/mcp/token-classifier.ts
+  x-7e437fc   plików  12 (kod   9)  nowych  2 (kod  2)  kluczy 1, w nowych 1 ['P3']  nowe produkcyjne: apps/server/src/tracking/merge-contract-ladder.ts, apps/server/src/tracking/visit-store-error.ts
+  x-b7d0455   plików  23 (kod  21)  nowych  3 (kod  3)  kluczy 2, w nowych 1 ['P3']  nowe produkcyjne: apps/dashboard/src/features/settings/connected-app-format.ts, apps/dashboard/src/features/settings/disconnect-dialog.tsx
+  x-05dd804   plików  16 (kod  14)  nowych  2 (kod  2)  kluczy 1, w nowych 0 []  nowe produkcyjne: -
