@@ -37,7 +37,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 3⅞ | Prompt-audit maszynerii szablonu pod Opus 5.5 / Haiku 4.5 (6a pkt 24) | **GOTOWE 2026-09-24, ZAAKCEPTOWANE W CAŁOŚCI (6a pkt 25)** — `PROMPT-AUDIT.md` + `PROMPT-AUDIT-DLA-OPERATORA.md`, diff `dane/pa-proponowany.diff` (62 hunki, 21 ustaleń; NIE naniesiony), skrypty `pa_inwentarz.py`, `pa_wywolania.py`, `pa_kontrola.py` (kontrola w obie strony: 0 błędów). 44 pozycje: 21 w diffie (8 wysoka, 13 średnia), 8 flag (decyzje operatora/panelu), 15 niskich. Sedno: pliki reviewerów security/performance/architecture to import z compound-engineering pisany pod czat (przykładowe dialogi, „last line of defense, be paranoid”, drugi format raportu) i dwie sprzeczności z resztą szablonu (memoizacja vs React Compiler, `getSession()`); prompty review/fix pisane jak dziennik zmian („teraz już nie”, „jak dotąd”, „w opisanym runie”); compound w autopilocie każe czytać sesję, której agent nie ma; `fix:pre-skan` (haiku) mediana 20 wywołań narzędzi na jedno polecenie gita; efort ról strojony na Opus 5 (~94% historii). **Prompty maszynerii = nowy obszar zmian szablonu** (PANEL-WEJSCIE §10 „Obszar: prompty”, zasady warstwy stałej w §2a, metryki w mapie walidacji §7). |
 | 3⅞b | Tematy-inspiracje operatora: mattpocock/skills + wystąpienie poteto (pstack) | **GOTOWE 2026-09-24, decyzje w 6a pkt 26** — `INSPIRACJE-POCOCK-PSTACK.md` (v2 po transkrypcji) + `INSPIRACJE-POCOCK-PSTACK-DLA-OPERATORA.md`, skrypty `insp_*.py`. Przyjęte poza panelem: compound ze szczeblem, pytanie „undefined” o testy + wyjątek w coding-rules §2, odbiór bramek „gryzie”, 4 zasady pisania, zmiany promptów wg Anthropic + ślepe przed/po, reguła lint razem z posprzątaniem. Nowe wymogi panelu §2 pkt 14–16: mapa funkcji (regresja odłożona), granice warstw w ESLint (bez wyjątku dla auth), ogrodnik na zamknięciu zadania. Otwarta decyzja: reguły builder ↔ reviewer. |
 | 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE — **zastąpiony PANELEM DECYZYJNYM (6a pkt 23)**: krok 0 skryptami (otwarte decyzje, zestaw historycznych ucieczek, koszt skryptem) → projektanci per architektura review → sędzia jakości na historii → sceptyk per decyzja → rekord per decyzja; Opus 5.5 (6a pkt 22), start WYŁĄCZNIE na znak operatora; instrukcja: §8 „AKTUALNA”. **PLAN (część A) ZAAKCEPTOWANY 2026-09-24 (D12 wchodzi, projektant C zostaje), wykonanie w nowej sesji wg §8 „WYKONANIE PANELU”:** `PANEL-PLAN.md` + `PANEL-PLAN-DLA-OPERATORA.md`; krok 0 (b) zrobiony skryptem `skrypty/panel_zestaw_historyczny.py` → `dane/panel-zestaw-historyczny.{jsonl,txt}` (195 B, 132 P1/P2, ogon 27; 68 ucieczek = te same wątki bota, compound jako kontekst 30 przypadków). **WYKONANIE W TOKU (sesja 6e626ae3, 2026-09-24): krok 0 + RUN 1 ZROBIONE, notatka po run 1 oddana; operator kontynuuje w NOWEJ sesji (kontekst ~500k) wg §8 „KONTYNUACJA PANELU PO RUN 1” — stan w §8.** **RUN 2 ZROBIONY (sesja 1bd5477f): ocena papierowa przecenia (kalibracja 33% > 15%, STOP §10); operator 2026-09-25 (6a pkt 28): żadna koncepcja nie odpada przed prawdziwym testem → następny krok PLAN prawdziwego testu review w nowej sesji wg §8 „PLAN TESTU REVIEW”; run 3 wstrzymany.** **PLAN TESTU REVIEW ZAAKCEPTOWANY 2026-09-25 (6a pkt 29):** `TEST-REVIEW-PLAN.md` + wersja operatora; następny krok = skrypty przygotowawcze testu w NOWEJ sesji, bez agentów, wg §8 „PRZYGOTOWANIE TESTU REVIEW”. **TEST REVIEW ZROBIONY I PRZEANALIZOWANY 2026-09-27 (6a pkt 30–32):** `TEST-REVIEW-WYNIK.md` + wersja operatora; decyzja D1: obecna architektura review zostaje + 3 dodatki, D12 rozstrzygnięta (kontrola diffu fixa wg A); **Run 3 (sceptycy) POMINIĘTY (6a pkt 33)**; następny krok = decyzje D2–D11 (+ D12 cz. 2) z metryką i warunkiem odwrotu oraz plan wdrożenia wg §8 „DECYZJE I PLAN WDROŻENIA”. **DECYZJE D2–D12 I PLAN WDROŻENIA ZAAKCEPTOWANE 2026-09-27 (6a pkt 34):** `PANEL-WYNIK.md` + `PANEL-WYNIK-DLA-OPERATORA.md` — etap 4 ZAMKNIĘTY. |
-| 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | NIE ZROBIONE — **bez publikacji jako strony (operator 2026-09-27)**; forma (pełna / skrócona / bez raportów) do wyboru operatora — 6a pkt 34, §8 |
+| 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | NIE ZROBIONE — **forma SKRÓCONA, bez publikacji jako strony (operator 2026-09-27, 6a pkt 35)**; instrukcja §8 „RAPORTY ETAPU 5” |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -515,6 +515,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     learned-patterns, dev-pr, higieny konta, coding-rules) — operator zapytał; kontrola „źródła → dokument” musi iść po CAŁEJ historii ustaleń (6a 1–N,
     PANEL-WEJSCIE), nie po liście zadań sesji; skrypt `panel_wynik_pokrycie.py` jest wzorem. **Raporty etapu 5: bez publikacji jako strony** (operator);
     forma do wyboru (pełna / skrócona / bez raportów) — §8.
+35. **Raporty etapu 5 — FORMA SKRÓCONA (operator 2026-09-27: „Wybieram opcję 2, skróconą.”), bez publikacji jako strony.** `RAPORT-DLA-OPERATORA.md`
+    w pełni (prosty język: dziś / po, co zyska, czego wymaga, higiena konta i L8, trzy lekcje z ETAP2 §6, ryzyka prostymi słowami, jak czytać pierwszy
+    pomiar); `RAPORT-TECHNICZNY.md` jako SPIS (decyzja per element w jednej linii + plik z dowodem, mapa plików analizy, ograniczenia L6–L18 i tezy
+    PANEL-WEJSCIE §8 ze stanem po teście, ścieżki do danych i skryptów, szybkie zyski) + JEDNA nowa liczba: koszt typowego zadania po całym planie,
+    liczony skryptem kosztu panelu na docelowym składzie ról. Treści nie kopiować — odsyłać do PANEL-WYNIK i plików etapów. Jedna sesja, bez agentów.
+    Instrukcja: §8 „RAPORTY ETAPU 5”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -770,9 +776,47 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   dalej. **Run 3 POMINIĘTY (6a pkt 33).** Następny krok: „DECYZJE I PLAN WDROŻENIA” niżej.
 - **DECYZJE I PLAN WDROŻENIA ZROBIONE I ZAAKCEPTOWANE (2026-09-27, bez agentów; 6a pkt 34):** `PANEL-WYNIK.md` (§0 skrót, §1 pokrętła kosztu K1–K13,
   §2 rekordy D1–D12, §3 cofnięte ustalenia, §4 plan w iteracjach, §4a pełna lista 65 ustaleń → iteracja, §5 docelowy pipeline, §6 ograniczenia,
-  §7 kontrola) + `PANEL-WYNIK-DLA-OPERATORA.md`. **Następny krok: raporty etapu 5 — forma czeka na wybór operatora** (pełna / skrócona / bez raportów;
-  bez publikacji jako strony); instrukcja startowa dopisywana po wyborze. Potem wdrożenie It. 1 w osobnej sesji, z planem do akceptacji przed pierwszą
-  edycją `.claude/`.
+  §7 kontrola) + `PANEL-WYNIK-DLA-OPERATORA.md`. **Następny krok: raporty etapu 5 w FORMIE SKRÓCONEJ (6a pkt 35)** wg instrukcji „RAPORTY ETAPU 5”
+  niżej; bez publikacji jako strony. Potem wdrożenie It. 1 w osobnej sesji, z planem do akceptacji przed pierwszą edycją `.claude/`.
+
+**RAPORTY ETAPU 5 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Decyzje i plan wdrożenia ZAAKCEPTOWANE (HANDOFF 6a pkt 34). Zadanie tej sesji: dwa raporty etapu 5 w FORMIE SKRÓCONEJ (6a pkt 35) —
+BEZ agentów, BEZ zmian w .claude/, BEZ publikacji jako strony.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj najpierw (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md §1, §2, §3, 6a pkt 32–35, §7; PANEL-WYNIK.md (całość) i wersję
+operatora; PANEL-WEJSCIE.md §8 (tezy na jednym filarze) i §9 (ograniczenia L6–L18, trzy zdania z ETAP2 §6); TEST-REVIEW-WYNIK-DLA-OPERATORA.md;
+dane/panel-koszt.txt i docstringi skrypty/panel_koszt_{dane,model,projektu}.py. Pozostałe pliki etapów czytaj tylko po to, żeby wskazać dowód.
+Decyzje z 6a obowiązują — nie pytaj o nie ponownie.
+
+Do zrobienia:
+1. Koszt „po” skryptem (jedyna nowa liczba): tabela ról docelowego pipeline'u (PANEL-WYNIK §5 i §4) jako dane/panel-projekt-docelowy.json
+   w formacie projektu dla skrypty/panel_koszt_projektu.py → dane/raport-koszt-po.{txt,json}: faza i zadanie dziś vs po całym planie, udziały etapów,
+   osobno wkład allowlisty / kontekstu i pokręteł review (dźwignie nie sumują się — liczy model per rola, nie dodawanie procentów); przy każdej liczbie
+   zastrzeżenie z panel-koszt.txt §3 (małe fazy runu 20.09 zaniżają duże — liczby bezwzględne to dolna granica, porównanie względne).
+   PUŁAPKI: panel_koszt_projektu.py ZAWSZE zapisuje do dane/panel-koszt.{txt,json} — przekieruj wyjście do raport-koszt-po (flaga albo mały wrapper)
+   i sprawdź `git diff dane/panel-koszt.*` = pusty; model nie liczy efortu wprost (wariant ±20% pracy) — pokrętła efortu i list z testu
+   (dane/pokretla-kosztu.json) wprowadzaj jako mnożnik pracy roli z odesłaniem do liczby z testu, nie jako nowe założenie.
+2. RAPORT-DLA-OPERATORA.md — w pełni, prostym językiem, wniosek na górze: dziś / po w 5–8 punktach; co zyskam (koszt, czas, jakość) z liczbami;
+   czego to wymaga ode mnie (decyzje, zadanie sprzątające ESLint w oferty-online, 2–3 zadania na B0, nowe sesje po zmianach .claude/); higiena konta
+   i L8 (jak radzić sobie z dużą liczbą MCP i skilli — allowlista); trzy lekcje z ETAP2 §6; co może się nie udać (tezy §8 i ograniczenia prostymi słowami);
+   jak za miesiąc czytać pierwszy pomiar (które liczby, gdzie, kiedy cofamy zmianę). Na koniec mapa „gdzie jesteśmy / co dalej / czego ode mnie chcesz”.
+3. RAPORT-TECHNICZNY.md — SPIS, nie opowieść: decyzja per element pipeline'u (roster, sceptycy, fix, bramki, wiedza, kontekst, skille, telemetria,
+   E2E, dev-pr, bot, usunięcia) w jednej linii + plik z dowodem; mapa plików analizy (co leży gdzie, który plik jest aktualny, które zapisy są
+   nieaktualne — np. HANDOFF §4, §5, ETAP1 performance ZASTĄP); ograniczenia L6–L18 i tezy §8 ze stanem po teście review; ścieżki do danych i skryptów;
+   szybkie zyski (co najtańsze w It. 3c); odesłania do PANEL-WYNIK zamiast kopiowania.
+4. Kontrola w obie strony: raporty → źródła (każda liczba w pliku danych) i źródła → raporty skryptem wg wzoru skrypty/panel_wynik_pokrycie.py
+   (6a pkt 1–35, PANEL-WEJSCIE §8–§9, PANEL-WYNIK §1–§6) — wynik dane/raporty-pokrycie.txt, braki dopisać przed oddaniem.
+Oddaj i CZEKAJ na akceptację.
+
+Zasady: nic nie zmieniaj w .claude/, CLAUDE.md ani oferty-online; zero agentów i sesji headless; liczby skryptem; pliki .md tylko Write/Edit
+(JSON zawierający „.md” też przez Write — md-guard); __pycache__ usuwaj. Styl: problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Po akceptacji: HANDOFF (§2 wiersz 5, 6a, §8 → instrukcja startowa wdrożenia iteracji 1 z planem do akceptacji przed pierwszą edycją .claude/),
+pamięć projektu, commit docs/reviews.
+```
 
 **DECYZJE I PLAN WDROŻENIA (WYKONANA 2026-09-27 — zostawiona dla historii; zdanie „Do agentów…” zostaw — N1):**
 
