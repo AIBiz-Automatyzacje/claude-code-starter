@@ -2,7 +2,8 @@
 
 **Data:** 2026-09-27. **Status:** ZAAKCEPTOWANY 2026-09-27 (HANDOFF 6a pkt 32): obecna architektura review zostaje + trzy dodatki (kontrola diffu fixa wg A,
 bramki lint/knip, lista mutantów dla reviewera testów) + obniżanie kosztu po jednym pokrętle z pomiarem; A/B/C nie idą dalej jako osobne projekty
-(rekomendacja §12 zawężona: „A + soczewka wydajności” nie jest osobnym kandydatem, tylko źródłem pokręteł optymalizacji). Zero agentów, zero sesji headless, zero zmian
+(rekomendacja §12 zawężona: „A + soczewka wydajności” nie jest osobnym kandydatem, tylko źródłem pokręteł optymalizacji). **Run 3 (sceptycy) pominięty
+(6a pkt 33)** — odwołania do run 3 w §0 i §12 są nieaktualne; decyzje D2–D11 zapadają w sesji głównej z warunkiem odwrotu (HANDOFF §8 „DECYZJE I PLAN WDROŻENIA”). Zero agentów, zero sesji headless, zero zmian
 w `.claude/`, CLAUDE.md i oferty-online (kopie, lustro i transkrypty tylko czytane). **Wersja dla operatora:** `TEST-REVIEW-WYNIK-DLA-OPERATORA.md`.
 **Podstawa:** HANDOFF 6a pkt 29–31, §7, §8 „STAN PRZYGOTOWANIA ETAPU GŁÓWNEGO” / „ETAP GŁÓWNY ZROBIONY”; TEST-REVIEW-PLAN §5.2–§5.3, §6, §8–§11;
 TEST-REVIEW-PILOT-DLA-OPERATORA; TEST-REVIEW-ETAP-DLA-OPERATORA.

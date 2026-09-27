@@ -119,6 +119,6 @@ według A, bramki lint/knip i listę mutantów dla recenzenta testów. Koszt obn
 projekty. Po dodaniu recenzenta wydajności A byłby w praktyce obecnym pipeline'em z niższym wysiłkiem i listami kontrolnymi, więc służy jako źródło
 pomysłów na optymalizację.
 
-**Co dalej:** w nowej sesji, bez agentów — wstępne wybory dla pozostałych decyzji (D2–D11) z liczbami z testu i przygotowanie run 3 (sceptycy).
-Lista pokręteł kosztu obecnego review idzie tam jako opcje. Run 3 uruchomię dopiero po Twojej zgodzie i po pokazaniu kosztu.
-Instrukcja startowa: HANDOFF §8 „WSTĘPNE WYBORY I PRZYGOTOWANIE RUN 3”.
+**Co dalej:** run 3 (sceptycy) pomijamy (HANDOFF 6a pkt 33). Zostały małe, odwracalne zmiany, a o nich rozstrzygnie pomiar na prawdziwych PR-ach,
+nie ocena na papierze. W nowej sesji, bez agentów: decyzje dla pozostałych punktów (D2–D11), każda z danymi, miarą i warunkiem odwrotu, lista pokręteł
+kosztu obecnego review i plan wdrożenia w iteracjach. Instrukcja startowa: HANDOFF §8 „DECYZJE I PLAN WDROŻENIA”.
