@@ -1,0 +1,18 @@
+{
+ "etykieta": "x-4ef28cf",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_37f43481-449 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff f96f1b4^..HEAD | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_37f43481-449 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/all_added.txt']: git diff f96f1b4^..HEAD | grep \"^+\" | grep -v \"^+++\" > /tmp/all_added.txt && echo \"=== PUSTY-CATCH ===\" && grep -n \"catc",
+  "wf_37f43481-449 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/diff_unified.txt']: git diff f96f1b4^..HEAD --unified=0 > /tmp/diff_unified.txt && echo \"Total diff lines: $(wc -l < /tmp/diff_unified.txt)\"",
+  "wf_37f43481-449 fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

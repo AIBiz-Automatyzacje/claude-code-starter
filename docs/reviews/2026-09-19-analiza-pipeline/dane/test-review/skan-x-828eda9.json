@@ -1,0 +1,15 @@
+{
+ "etykieta": "x-828eda9",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_fbf159df-bab fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

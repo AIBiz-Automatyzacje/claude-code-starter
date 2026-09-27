@@ -1,0 +1,350 @@
+{
+ "etykieta": "x-b0d74fc",
+ "sha": "b0d74fce538e71c67ac6e4171ffd2bc6c2dcdc76",
+ "baza": "924917ee8ffead37d6a971236f55af722be62e69",
+ "modul_fixa": true,
+ "pliki": 14,
+ "pliki_kodu": 12,
+ "pliki_ts": [
+  "apps/server/src/cta/cta-script.test.ts",
+  "apps/server/src/cta/decision-service.test.ts",
+  "apps/server/src/cta/decision-service.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/offer/pages/privacy-page.ts",
+  "apps/server/src/routes/decisions.test.ts",
+  "apps/server/src/routes/decisions.ts",
+  "apps/server/src/routes/events.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "apps/server/src/routes/offer.ts",
+  "packages/shared/src/index.ts",
+  "packages/shared/src/offer-slug.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.7,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 4.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 235,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 244,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 245,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 264,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 266,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 157,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 177,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 197,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 259,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'acceptedAt' is assigned a value but never used."
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 426,
+     "regula": "vitest/valid-expect",
+     "opis": "Expect takes at most 1 argument"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 24,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 235,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 244,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 245,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 264,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 266,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 259,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'acceptedAt' is assigned a value but never used."
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 426,
+     "regula": "vitest/valid-expect",
+     "opis": "Expect takes at most 1 argument"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 24,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 205,
+     "regula": "knip/exports",
+     "opis": "exports: createSupabaseDecisionOfferLoader"
+    }
+   ],
+   "zastane": 79,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 205,
+     "regula": "knip/exports",
+     "opis": "exports: createSupabaseDecisionOfferLoader"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 235,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 244,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 245,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 264,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 266,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 157,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 177,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 197,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 259,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'acceptedAt' is assigned a value but never used."
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 426,
+     "regula": "vitest/valid-expect",
+     "opis": "Expect takes at most 1 argument"
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 205,
+     "regula": "knip/exports",
+     "opis": "exports: createSupabaseDecisionOfferLoader"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 205,
+     "regula": "knip/exports",
+     "opis": "exports: createSupabaseDecisionOfferLoader"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 235,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 244,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 245,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 264,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.test.ts",
+     "linia": 266,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 259,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'acceptedAt' is assigned a value but never used."
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 426,
+     "regula": "vitest/valid-expect",
+     "opis": "Expect takes at most 1 argument"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/cta/decision-service.ts",
+     "linia": 205,
+     "regula": "knip/exports",
+     "opis": "exports: createSupabaseDecisionOfferLoader"
+    }
+   ]
+  }
+ }
+}

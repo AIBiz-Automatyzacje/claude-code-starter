@@ -1,0 +1,22 @@
+{
+ "etykieta": "x-40af319",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff 40af319^..HEAD > /tmp/diff.txt && wc -l /tmp/diff.txt",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: cat /tmp/diff.txt | grep \"^+[^+]\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added_content.txt']: cat /tmp/added_lines.txt | sed 's/^+//' > /tmp/added_content.txt && echo \"=== PUSTY CATCH ===\" && grep -n \"catch\\s*{\\s*}",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/ts_added.txt']: git diff 40af319^..HEAD -U0 -- \"*.ts\" \"*.tsx\" | grep \"^+[^+]\" | sed 's/^+//' > /tmp/ts_added.txt && wc -l /tmp/ts_added.",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/all_added.txt']: cat /tmp/diff.txt | grep \"^+[^+]\" | sed 's/^+//' > /tmp/all_added.txt && echo \"Total added lines: $(wc -l < /tmp/all_add",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/full_diff_u0.txt']: git diff 40af319^..HEAD --unified=0 > /tmp/full_diff_u0.txt && head -100 /tmp/full_diff_u0.txt",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/ts_lines.txt']: git diff 40af319^..HEAD -- '*.ts' '*.tsx' | grep \"^+[^+]\" | sed 's/^+//' > /tmp/ts_lines.txt && echo \"Total TS lines: $(",
+  "wf_7d1f7f5d-de7 fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

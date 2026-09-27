@@ -1,0 +1,230 @@
+{
+ "etykieta": "x-d520107",
+ "sha": "d5201075fa4bd6f236e007d397044549c4dd64cd",
+ "baza": "303ff625dbae87af5e1838f76acf1fb170a14ad3",
+ "modul_fixa": true,
+ "pliki": 12,
+ "pliki_kodu": 10,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+  "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "apps/dashboard/src/features/settings/texts.ts",
+  "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+  "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+  "apps/dashboard/src/features/settings/webhook-card.tsx",
+  "apps/server/src/routes/webhook-settings.test.ts",
+  "apps/server/src/routes/webhook-settings.ts",
+  "apps/server/src/webhooks/settings-service.test.ts",
+  "supabase/tests/rls.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 8.9,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-d520107/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 4.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 65,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 16,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-d520107/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 4.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 65,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 19,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-d520107/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 1
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [],
+   "zastane": 118,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 161616,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 5723,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ]
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 65,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 65,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 70,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  }
+ }
+}

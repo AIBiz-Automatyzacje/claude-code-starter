@@ -1,0 +1,19 @@
+{
+ "etykieta": "f-32975a1",
+ "podsumowanie": {
+  "agentow": 33,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_5df38e05-7e6 review:correctness: zapis Bashem poza kopią ['> t.html']: mkdir -p /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-32975a1/6d79a2f6-724f-5339-ab13-8682968",
+  "wf_5df38e05-7e6 review:correctness: zapis Bashem poza kopią ['cp ', '> srv.mjs']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-32975a1/6d79a2f6-724f-5339-ab13-868296823bea/",
+  "wf_5df38e05-7e6 review:correctness: zapis Bashem poza kopią ['sed -i']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-32975a1/6d79a2f6-724f-5339-ab13-868296823bea/",
+  "wf_5df38e05-7e6 review:correctness: zapis Bashem poza kopią ['> srv2.mjs']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-32975a1/6d79a2f6-724f-5339-ab13-868296823bea/",
+  "wf_5df38e05-7e6 review:correctness: zapis Bashem poza kopią ['> c.html']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-32975a1/6d79a2f6-724f-5339-ab13-868296823bea/"
+ ]
+}

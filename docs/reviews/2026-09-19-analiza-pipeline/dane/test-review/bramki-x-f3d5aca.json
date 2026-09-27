@@ -1,0 +1,229 @@
+{
+ "etykieta": "x-f3d5aca",
+ "sha": "f3d5aca65eacc5738ee1db087137f89dbecfed6c",
+ "baza": "6c5fed46abf217295c3e7b966165955cab3f6583",
+ "modul_fixa": true,
+ "pliki": 17,
+ "pliki_kodu": 13,
+ "pliki_ts": [
+  "apps/dashboard/src/features/settings/settings-page.test.tsx",
+  "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+  "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+  "apps/server/src/webhooks/payload.ts",
+  "packages/shared/src/env.test.ts",
+  "packages/shared/src/env.ts",
+  "packages/shared/src/webhook-contract.test.ts",
+  "packages/shared/src/webhook-contract.ts",
+  "scripts/seed-test-users.ts",
+  "supabase/tests/migration-9b-access.test.ts",
+  "supabase/tests/migration-9b-events.test.ts",
+  "supabase/tests/migration-scan.test-helper.ts",
+  "supabase/tests/rls.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 9.5,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 4.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/seed-test-users.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/scripts/seed-test-users.ts was not found by the p",
+    "supabase/tests/migration-9b-access.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-9b-access.test.ts was no",
+    "supabase/tests/migration-9b-events.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-9b-events.test.ts was no",
+    "supabase/tests/migration-scan.test-helper.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-scan.test-helper.ts was ",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 5
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 4.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 12,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/seed-test-users.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/scripts/seed-test-users.ts was not found by the p",
+    "supabase/tests/migration-9b-access.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-9b-access.test.ts was no",
+    "supabase/tests/migration-9b-events.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-9b-events.test.ts was no",
+    "supabase/tests/migration-scan.test-helper.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-scan.test-helper.ts was ",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 5
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 4.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 15,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/seed-test-users.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/scripts/seed-test-users.ts was not found by the p",
+    "supabase/tests/migration-9b-access.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-9b-access.test.ts was no",
+    "supabase/tests/migration-9b-events.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-9b-events.test.ts was no",
+    "supabase/tests/migration-scan.test-helper.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/migration-scan.test-helper.ts was ",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-f3d5aca/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 5
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/webhooks/payload.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: WEBHOOK_PAYLOAD_VERSION"
+    }
+   ],
+   "zastane": 264,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 216222,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 7187,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ]
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/webhooks/payload.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: WEBHOOK_PAYLOAD_VERSION"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "apps/server/src/webhooks/payload.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: WEBHOOK_PAYLOAD_VERSION"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/webhooks/payload.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: WEBHOOK_PAYLOAD_VERSION"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/webhooks/payload.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: WEBHOOK_PAYLOAD_VERSION"
+    }
+   ]
+  }
+ }
+}

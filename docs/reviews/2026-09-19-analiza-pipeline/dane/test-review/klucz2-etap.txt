@@ -1,0 +1,75 @@
+test_review_etap.py klucz2 — pozycje klucza 2 do przeglądu (fazy etapu poza przejrzanymi w pilocie); sygnały: DUPLIKAT_MIEJSCA = ten sam plik:linia co wcześniejsza pozycja, BEZ_NAGLOWKA = wiersz spoza nagłówka ###/####
+
+== f-32975a1 (32975a10a0) — docs/completed/faza-5-heatmapa/review-faza-2.md
+  32975a10a0#1 P1 apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:214 | ### P1-1 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:214`
+  32975a10a0#2 P2 apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:56 | ### P2-1 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:56`
+  32975a10a0#3 P2 apps/dashboard/src/features/offers/offer-heatmap-card.tsx:326 | ### P2-2 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-card.tsx:326`
+  32975a10a0#4 P2 apps/server/src/app.ts:185 | ### P2-3 · KOD · `apps/server/src/app.ts:185`
+  32975a10a0#5 P2 apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:227 | ### P2-4 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:227`
+  32975a10a0#6 P2 apps/dashboard/src/features/offers/offer-heatmap-card.tsx:310 | ### P2-5 · KOD · `apps/dashboard/src/features/offers/offer-heatmap-card.tsx:310`
+  32975a10a0#7 P2 apps/dashboard/src/features/offers/texts.ts:66 | ### P2-6 · KOD · `apps/dashboard/src/features/offers/texts.ts:66`
+
+== f-303ff62 (303ff625db) — docs/completed/faza-6-cta-i-webhooki/review-faza-4.md
+  303ff625db#1 P1 apps/dashboard/src/features/offers/offer-details-page.tsx:84 | - [ ] 🔴 [P1] **apps/dashboard/src/features/offers/offer-details-page.tsx:84** — karta „Decyzje klienta" renderuje się DOPIERO po bramce `if (summary.visitCount   <<BEZ_NAGLOWKA
+  303ff625db#2 P1 supabase/tests/rls.test.ts:1281 | - [ ] 🔴 [P1] **supabase/tests/rls.test.ts:1281** — nowy `profiles_webhook_set_at_pair_check` rozwala istniejący pakiet RLS: `beforeAll` robi `admin.from('profil  <<BEZ_NAGLOWKA
+  303ff625db#3 P2 apps/server/src/routes/webhook-settings.test.ts:336 | - [ ] 🟠 [P2] **apps/server/src/routes/webhook-settings.test.ts:336** — test „awaria zapisu kończy się błędem, a adres nie trafia do logu" jest niefalsyfikowalny  <<BEZ_NAGLOWKA
+  303ff625db#4 P2 apps/dashboard/src/features/settings/use-webhook-settings.ts:92 | - [ ] 🟠 [P2] **apps/dashboard/src/features/settings/use-webhook-settings.ts:92** — gałąź błędu ODCZYTU `profiles` połyka błąd bez śladu (`setState({ status: 'er  <<BEZ_NAGLOWKA
+  303ff625db#5 P2 apps/dashboard/src/features/settings/webhook-card.tsx:230 | - [ ] 🟠 [P2] **apps/dashboard/src/features/settings/webhook-card.tsx:230** — błąd ZAPISU pokazuje komunikat o błędzie ODCZYTU: gałąź `controller.isWriteFailed`   <<BEZ_NAGLOWKA
+  303ff625db#6 P2 supabase/migrations/20260902190000_profiles_webhook_set_at.sql:41 | - [ ] 🟠 [P2] **supabase/migrations/20260902190000_profiles_webhook_set_at.sql:41** — `add constraint profiles_webhook_set_at_pair_check ((webhook_url is null) =  <<BEZ_NAGLOWKA
+  303ff625db#7 P2 apps/server/src/webhooks/settings-service.ts:100 | - [ ] 🟠 [P2] **apps/server/src/webhooks/settings-service.ts:100** — nowy moduł 156 linii z logiką domenową i ZERO plików testowych (jedyny moduł w `apps/server/  <<BEZ_NAGLOWKA
+  303ff625db#8 P2 apps/dashboard/src/features/settings/webhook-card.test.tsx:120 | - [ ] 🟠 [P2] **apps/dashboard/src/features/settings/webhook-card.test.tsx:120** — ścieżka „Usuń webhook" nie ma ani jednego testu, choć to jedyna droga wycofani  <<BEZ_NAGLOWKA
+
+== f-46be55a (46be55afc9) — docs/completed/faza-3-konto-i-dashboard/review-faza-2.md
+  46be55afc9#1 P1 apps/dashboard/src/features/settings/use-mcp-token.ts:90 | ### 1. `apps/dashboard/src/features/settings/use-mcp-token.ts:90` (KOD)
+  46be55afc9#2 P1 supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:21 | ### 2. `supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:21` (KOD)
+  46be55afc9#3 P2 supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:1 | ### 3. `supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql:1` (KOD)
+  46be55afc9#4 P2 supabase/tests/rls.test.ts:546 | ### 4. `supabase/tests/rls.test.ts:546` (TEST)
+  46be55afc9#5 P2 apps/dashboard/src/features/offers/offers-list.tsx:8 | ### 5. `apps/dashboard/src/features/offers/offers-list.tsx:8` (KOD)
+
+== f-31491bc (31491bc36f) — docs/completed/siatka-heatmapy-proporcjonalna/review-faza-3.md
+  31491bc36f#1 P2 apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:181 | ### 1. [KOD] `apps/dashboard/src/features/offers/offer-heatmap-frame.tsx:181` — E2E FAIL: poziomy scroll strony w trybie „Wszystkie wizyty"
+  31491bc36f#2 P2 apps/dashboard/src/features/offers/offer-heatmap-card.tsx:117 | ### 2. [KOD] `apps/dashboard/src/features/offers/offer-heatmap-card.tsx:117` — brak `useMemo` na rachunku, który po fazie 3 jest drogi
+  31491bc36f#3 P2 apps/dashboard/src/features/offers/heatmap-grid.ts:34 | ### 3. [KOD] `apps/dashboard/src/features/offers/heatmap-grid.ts:34` — kontrakt siatki ręcznie zduplikowany zamiast w `packages/shared`
+  31491bc36f#4 P2 apps/dashboard/src/features/offers/heatmap-grid.ts:332 | ### 4. [KOD] `apps/dashboard/src/features/offers/heatmap-grid.ts:332` — agregat miesza gęstości bez normalizacji wagi
+
+== f-5af000f (5af000f884) — docs/completed/faza-4-tracking-i-widok-oferty/review-faza-3.md
+  5af000f884#1 P1 apps/dashboard/src/features/offers/analytics.ts:165 | ### 1. `apps/dashboard/src/features/offers/analytics.ts:165` (KOD, spec-compliance)
+  5af000f884#2 P1 apps/dashboard/src/features/offers/offers-list.tsx:67 | ### 2. `apps/dashboard/src/features/offers/offers-list.tsx:67` (KOD, architecture)
+  5af000f884#3 P2 apps/dashboard/src/features/offers/analytics.ts:181 | ### 3. `apps/dashboard/src/features/offers/analytics.ts:181` (KOD, spec-compliance)
+  5af000f884#4 P2 apps/dashboard/src/features/offers/use-offer-details.ts:127 | ### 4. `apps/dashboard/src/features/offers/use-offer-details.ts:127` (KOD, typescript)
+
+== f-9d40529 (9d40529592) — docs/completed/faza-4-tracking-i-widok-oferty/review-faza-1.md
+  9d40529592#1 P2 supabase/migrations/20260828120000_visits_tracking.sql:417 | #### 1. [P2][KOD] `supabase/migrations/20260828120000_visits_tracking.sql:417` — brak sufitu liczby kluczy w scalaniu `sections`/`heat`
+  9d40529592#2 P2 packages/shared/src/database.types.ts:151 | #### 2. [P2][KOD] `packages/shared/src/database.types.ts:151` — artefakt stagingu `e2e_env_marker` w kontrakcie typów
+
+== f-b8374c8 (b8374c8091) — docs/completed/faza-2-publikacja-ofert/review-faza-2.md
+  b8374c8091#1 P2 supabase/migrations/20260825171812_offers_brand_and_contact.sql:167 | ### 1. 🟠 KOD — `supabase/migrations/20260825171812_offers_brand_and_contact.sql:167`
+  b8374c8091#2 P2 apps/server/src/app.ts:294 | ### 2. 🟠 KOD — `apps/server/src/app.ts:294`
+  b8374c8091#3 P2 apps/server/src/offer/brand-contract.ts:155 | ### 3. 🟠 KOD — `apps/server/src/offer/brand-contract.ts:155`
+  b8374c8091#4 P2 apps/server/src/app.ts:157 | ### 4. 🟠 KOD — `apps/server/src/app.ts:157` (spec-compliance)
+  b8374c8091#5 P2 apps/server/src/app.ts:159 | ### 5. 🟠 KOD — `apps/server/src/app.ts:159` (test-coverage)
+  b8374c8091#6 P2 apps/server/src/offer/expired-page.ts:1 | ### 6. 🟠 TEST — `apps/server/src/offer/expired-page.ts:1`
+  b8374c8091#7 P2 apps/server/src/routes/offer-origin-pages.test.ts:170 | ### 7. 🟠 TEST — `apps/server/src/routes/offer-origin-pages.test.ts:170`
+
+== f-1de5a4c (1de5a4c260) — docs/completed/faza-7-szablony-i-grafiki/review-faza-6.md
+  1de5a4c260#1 P2 apps/server/static/c.js:151 | #### 1. [P2/KOD] `apps/server/static/c.js:151` — 409 `oferta_wygasla` na zastanym dokumencie oferty gasi wszystkie komunikaty
+  1de5a4c260#2 P2 apps/server/src/cta/cta-script.test.ts:92 | #### 2. [P2/TEST] `apps/server/src/cta/cta-script.test.ts:92` — brak scenariusza dla zastanego dokumentu oferty
+  1de5a4c260#3 P2 apps/dashboard/src/main.tsx:75 | #### 3. [P2/KOD] `apps/dashboard/src/main.tsx:75` — dynamiczny import `App` rozbija bundle na dwa szeregowe chunki
+  1de5a4c260#4 P2 apps/server/static/logo-aa-napis.webp | #### 4. [P2/KOD] `apps/server/static/logo-aa-napis.webp` — 79 788 B na znak renderowany jako 22 px
+  1de5a4c260#5 P2 apps/dashboard/src/features/offers/offer-details-page.tsx:81 | #### 5. [P2/KOD] `apps/dashboard/src/features/offers/offer-details-page.tsx:81` — pobranie do ~2 MB heatmapy, którą karta i tak wyrzuca
+
+== f-67f5f2c (67f5f2cdf6) — docs/completed/faza-1-fundament/review-faza-3.md
+  67f5f2cdf6#1 P2 apps/server/tsconfig.json:1 | ### 🟠 P2 · KOD · `apps/server/tsconfig.json:1` — serwis z IU-4 nie startuje
+  67f5f2cdf6#2 P2 apps/server/src/app.ts:99 | ### 🟠 P2 · KOD · `apps/server/src/app.ts:99` — host-guard zabije health check kontenera
+  67f5f2cdf6#3 P2 apps/server/src/observability/sentry.test.ts:49 | ### 🟠 P2 · TEST · `apps/server/src/observability/sentry.test.ts:49` — test inicjalizacji nie asertuje żadnej opcji
+  67f5f2cdf6#4 P2 apps/server/tsconfig.json | - **IU-4 (`docs/plans/`, cel „Proces nasłuchujący")** — niespełniony w warstwie runtime: proces nie startuje (P2 `apps/server/tsconfig.json`). Zachowanie routin  <<BEZ_NAGLOWKA
+
+== f-2536643 (2536643737) — docs/completed/faza-9a-domena-mailer-limity/review-faza-4.md
+  2536643737#1 P1 apps/server/src/offer/template-headings.ts:101 | #### P1 · KOD · `apps/server/src/offer/template-headings.ts:101` (źródło: performance, zweryfikowany)
+  2536643737#2 P2 apps/dashboard/src/features/offers/offers-list.tsx:118 | #### P2 · KOD · `apps/dashboard/src/features/offers/offers-list.tsx:118` (źródło: security, zweryfikowany)
+  2536643737#3 P2 apps/server/src/routes/templates.test.ts:268 | #### P2 · TEST · `apps/server/src/routes/templates.test.ts:268` (źródło: code-quality, zweryfikowany)
+  2536643737#4 P2 apps/dashboard/src/features/templates/template-card.tsx:67 | #### P2 · KOD · `apps/dashboard/src/features/templates/template-card.tsx:67` (źródło: spec-compliance, zweryfikowany)
+  2536643737#5 P2 packages/shared/src/template-contract.ts:73 | #### P2 · KOD · `packages/shared/src/template-contract.ts:73` (źródło: spec-compliance, zweryfikowany; sceptyk sugerował P3)
+  2536643737#6 P2 offer-address.ts | - **IU-10 (adres oferty):** spełnione. `offer-address.ts` jest jednym źródłem (ramka mapy przepięta), wiersz w widoku oferty ma `<code>` + „Kopiuj" + dopisek o   <<BEZ_NAGLOWKA
+
+RAZEM pozycji do przeglądu: 52

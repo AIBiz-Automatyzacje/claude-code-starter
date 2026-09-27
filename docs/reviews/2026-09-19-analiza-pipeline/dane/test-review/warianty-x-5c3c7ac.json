@@ -1,0 +1,110 @@
+{
+ "etykieta": "x-5c3c7ac",
+ "faza": 3,
+ "zadanie": "samodzielna-rejestracja-czlonkow-aa",
+ "baza": "56a86b398e700d1041327f37082de4be9eacb24a",
+ "modul_fixa": true,
+ "plan_techniczny": "docs/plans/2026-09-16-001-feat-samodzielna-rejestracja-czlonkow-aa-plan.md",
+ "sekcja_planu_zn": 18089,
+ "wiedza_zn": 1744,
+ "sygnaly": {
+  "kod": true,
+  "testy": true,
+  "tsx": true,
+  "klient": true,
+  "serwer": true,
+  "granica": true,
+  "teksty": true,
+  "zmiana_eksportu": true,
+  "seed": true,
+  "profil_supabase": true,
+  "fix": true,
+  "nierozstrzygalny": true,
+  "await": true,
+  "atrapy": true,
+  "sql_rpc": true,
+  "ui": true,
+  "dane": true,
+  "lint_A": true
+ },
+ "warianty": {
+  "A": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-5c3c7ac/wariantA.js",
+   "bajty": 13298,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "medium",
+     "listy": [
+      "K-1",
+      "K-2",
+      "K-3",
+      "K-4",
+      "K-5",
+      "K-7"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 4199
+   },
+   "agregacja": "Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH soczewek. Zna"
+  },
+  "B": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-5c3c7ac/wariantB.js",
+   "bajty": 19833,
+   "role": [
+    {
+     "rola": "fix:kontrola#1",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    },
+    {
+     "rola": "fix:kontrola#2",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    }
+   ],
+   "agentow_review": 2,
+   "prompt_zn": {
+    "fix:kontrola#1": 5072,
+    "fix:kontrola#2": 5072
+   },
+   "agregacja": "Jestes agregatorem findingow review (bez narzedzi). Grupuj findingi opisujące te"
+  },
+  "C": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-5c3c7ac/wariantC.js",
+   "bajty": 14259,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "high",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04",
+      "K-05",
+      "K-06"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 5497
+   },
+   "agregacja": "JS"
+  }
+ }
+}

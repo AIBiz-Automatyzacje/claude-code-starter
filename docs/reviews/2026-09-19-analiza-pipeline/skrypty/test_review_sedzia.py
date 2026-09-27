@@ -73,7 +73,7 @@ def klucze(et):
     wyklucz = json.load(open(os.path.join(BASE, 'dane', 'test-review', 'klucz2-przeglad.json')))['wykluczone']
     for i, x in enumerate(p12):
         if '%s#%d' % (sha10, i + 1) in wyklucz: continue   # przegląd klucza 2 w sesji głównej (dane/test-review/klucz2-przeglad.json)
-        plik, _, lin = x['plik'].rpartition(':')
+        plik, _, lin = x['plik'].rpartition(':') if ':' in x['plik'] else (x['plik'], '', '')   # pozycja bez linii (np. 1de5a4c260#4 — plik .webp)
         n, wyc = kotwica(k, plik, None, int(lin) if lin.isdigit() else None)
         K.append({'zrodlo': 'klucz2', 'przypadek': '%s#%d' % (raport, i + 1), 'waga': x['waga'], 'plik': plik, 'linia': n, 'wycinek': wyc,
                   'streszczenie': x['wiersz'].lstrip('# '), 'tresc': opis_z_raportu(raport, x['wiersz'])})

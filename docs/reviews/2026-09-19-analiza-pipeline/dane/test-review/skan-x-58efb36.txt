@@ -1,0 +1,22 @@
+sesja 3a0d2684: narzędzia sesji ['Workflow']
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  16
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia  15
+sesja 516c8dba: narzędzia sesji ['Workflow']
+  fix:kontrola:faza-2                          claude-opus-5-5            narzędzia   8
+  fix:pre-skan:faza-2                          claude-haiku-4-5-20251001  narzędzia  16  (uwaga)
+sesja 5790ac94: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia  17
+sesja b03b6770: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia  15
+sesja db42666b: narzędzia sesji ['Workflow']
+  sedzia:x-58efb36:p1[medium]                  claude-opus-5-5            narzędzia   2
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (4):
+  wf_57772412-700 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff c349bd1^..HEAD > /tmp/diff.txt && wc -l /tmp/diff.txt
+  wf_57772412-700 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: cat /tmp/diff.txt | grep "^+[^+]" | cat -n > /tmp/added_lines.txt && head -50 /tmp/added_lines.txt
+  wf_57772412-700 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/scan_patterns.sh']: cat > /tmp/scan_patterns.sh << 'EOF' #!/bin/bash  # Read the diff and extract added lines with their file paths # We nee
+  wf_57772412-700 fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 7, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 4
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

@@ -1,0 +1,2191 @@
+{
+ "etykieta": "f-46be55a",
+ "sha": "46be55afc97a53538b0cd6204317abd2adf7c111",
+ "baza": "a4225e4",
+ "modul_fixa": false,
+ "pliki": 46,
+ "pliki_kodu": 37,
+ "pliki_ts": [
+  "apps/dashboard/src/App.test.tsx",
+  "apps/dashboard/src/App.tsx",
+  "apps/dashboard/src/components/copy-button.tsx",
+  "apps/dashboard/src/components/layout/app-layout.test.tsx",
+  "apps/dashboard/src/components/layout/app-layout.tsx",
+  "apps/dashboard/src/components/layout/nav-icons.tsx",
+  "apps/dashboard/src/features/auth/auth-callback-page.test.tsx",
+  "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+  "apps/dashboard/src/features/auth/auth-card.tsx",
+  "apps/dashboard/src/features/auth/login-page.test.tsx",
+  "apps/dashboard/src/features/auth/login-page.tsx",
+  "apps/dashboard/src/features/auth/require-session.test.tsx",
+  "apps/dashboard/src/features/auth/require-session.tsx",
+  "apps/dashboard/src/features/auth/session-context.tsx",
+  "apps/dashboard/src/features/auth/texts.ts",
+  "apps/dashboard/src/features/offers/offers-icons.tsx",
+  "apps/dashboard/src/features/offers/offers-list.tsx",
+  "apps/dashboard/src/features/offers/offers-page.test.tsx",
+  "apps/dashboard/src/features/offers/offers-page.tsx",
+  "apps/dashboard/src/features/offers/offers-stats.tsx",
+  "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+  "apps/dashboard/src/features/offers/status-badge.tsx",
+  "apps/dashboard/src/features/offers/texts.ts",
+  "apps/dashboard/src/features/offers/use-offers.test.ts",
+  "apps/dashboard/src/features/offers/use-offers.ts",
+  "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+  "apps/dashboard/src/features/settings/mcp-token.test.ts",
+  "apps/dashboard/src/features/settings/mcp-token.ts",
+  "apps/dashboard/src/features/settings/settings-page.test.tsx",
+  "apps/dashboard/src/features/settings/settings-page.tsx",
+  "apps/dashboard/src/features/settings/texts.ts",
+  "apps/dashboard/src/features/settings/use-mcp-token.ts",
+  "apps/dashboard/src/features/settings/webhook-placeholder.tsx",
+  "apps/dashboard/src/lib/supabase.ts",
+  "apps/dashboard/src/routes.ts",
+  "apps/dashboard/vite.config.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 6.6,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 4,
+     "regula": "no-restricted-imports",
+     "opis": "'../../lib/supabase.js' import is restricted from being used by a pattern. klient bazy tylko w hookach, lib/ i providerze sesji"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 44,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'LoginPage' has too many lines (87). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+     "linia": 120,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 38,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useMcpToken' has too many lines (71). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 4,
+     "regula": "no-restricted-imports",
+     "opis": "'../../lib/supabase.js' import is restricted from being used by a pattern. Baza i auth tylko przez hook z src/hooks albo lib/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 44,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'LoginPage' has too many lines (87). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+     "linia": 120,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 38,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useMcpToken' has too many lines (71). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 49,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`FormEvent` is deprecated. FormEvent doesn't actually exist.\nYou probably meant to use {@link ChangeEvent}, {@link InputEvent}, {@link SubmitEvent}, or just {@link SyntheticEvent} instead\ndepending on the event type."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 45,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/copy-button.tsx",
+     "linia": 43,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 4,
+     "regula": "no-restricted-imports",
+     "opis": "'../../lib/supabase.js' import is restricted from being used by a pattern. klient bazy tylko w hookach, lib/ i providerze sesji"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 88,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 44,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'LoginPage' has too many lines (87). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 106,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/session-context.tsx",
+     "linia": 41,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 71,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+     "linia": 120,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 38,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useMcpToken' has too many lines (71). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 46,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 78,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 111,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 49,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`FormEvent` is deprecated. FormEvent doesn't actually exist.\nYou probably meant to use {@link ChangeEvent}, {@link InputEvent}, {@link SubmitEvent}, or just {@link SyntheticEvent} instead\ndepending on the event type."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 45,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ],
+   "zastane": 44
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.5,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 136347,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 4533,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/dashboard/src/features/offers/use-offers.ts": 97,
+    "apps/dashboard/src/features/offers/offers-page.tsx": 45,
+    "apps/dashboard/src/features/auth/auth-callback-page.tsx": 64,
+    "apps/dashboard/src/App.tsx": 34,
+    "apps/dashboard/src/features/auth/login-page.tsx": 145,
+    "apps/dashboard/src/features/auth/require-session.tsx": 58,
+    "apps/dashboard/src/components/layout/app-layout.tsx": 149,
+    "apps/dashboard/src/features/settings/mcp-token.ts": 58,
+    "apps/dashboard/src/features/settings/settings-page.tsx": 33
+   },
+   "pliki_A": [
+    "apps/dashboard/src/components/layout/app-layout.tsx",
+    "apps/dashboard/src/features/auth/login-page.tsx",
+    "apps/dashboard/src/features/offers/use-offers.ts"
+   ],
+   "wyniki": {
+    "apps/dashboard": {
+     "status": "uruchomiona",
+     "sekundy": 76.1,
+     "statusy": {
+      "NoCoverage": 4,
+      "Survived": 61,
+      "Killed": 178
+     },
+     "przezyte": [
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 133,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 134,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "NoCoverage: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 32,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 31,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 27,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 28,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 63,
+       "regula": "stryker/ArrowFunction",
+       "opis": "Survived: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 93,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 94,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 94,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → false"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 110,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 145,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → children && <Outlet />"
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 9,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+       "linia": 10,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 52,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 29,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 29,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+/"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 33,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → error.code === RATE_LIMIT_CODE && error.status === RATE_LIMIT_STATUS"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 33,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 33,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 46,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 47,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 47,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 50,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 52,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 52,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 56,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → email"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 63,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 63,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 118,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 118,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 118,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → state.status !== 'error'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 118,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 127,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 136,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 136,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 136,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → state.status !== 'sending'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 136,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+       "linia": 10,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 78,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 44,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → expiresAt.getTime() <= now.getTime()"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 75,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 75,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 75,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 78,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 82,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → error !== null && data === null"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 82,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 82,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 91,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 92,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+       "linia": 94,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+       "linia": 22,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /#/"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+       "linia": 22,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+       "linia": 55,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+       "linia": 55,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+       "linia": 63,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+       "linia": 35,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+       "linia": 11,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+       "linia": 35,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+       "linia": 35,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+       "linia": 57,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+       "linia": 23,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+       "linia": 29,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+       "linia": 29,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → state.status !== 'error'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/settings-page.tsx",
+       "linia": 26,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 4,
+     "regula": "no-restricted-imports",
+     "opis": "'../../lib/supabase.js' import is restricted from being used by a pattern. klient bazy tylko w hookach, lib/ i providerze sesji"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 44,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'LoginPage' has too many lines (87). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+     "linia": 120,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 38,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useMcpToken' has too many lines (71). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 133,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 134,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 32,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 27,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 28,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 63,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 93,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 94,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 94,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 110,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 145,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → children && <Outlet />"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 9,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 10,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 29,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 29,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → error.code === RATE_LIMIT_CODE && error.status === RATE_LIMIT_STATUS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 46,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 47,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 50,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 56,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → email"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 63,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'error'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 127,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'sending'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 10,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 78,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 44,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → expiresAt.getTime() <= now.getTime()"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 78,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → error !== null && data === null"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 91,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 92,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 94,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 4,
+     "regula": "no-restricted-imports",
+     "opis": "'../../lib/supabase.js' import is restricted from being used by a pattern. Baza i auth tylko przez hook z src/hooks albo lib/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 44,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'LoginPage' has too many lines (87). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+     "linia": 120,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 38,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useMcpToken' has too many lines (71). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 133,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 134,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 32,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 27,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 28,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 63,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 93,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 94,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 94,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 110,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 145,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → children && <Outlet />"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 9,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 10,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 29,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 29,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → error.code === RATE_LIMIT_CODE && error.status === RATE_LIMIT_STATUS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 46,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 47,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 50,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 56,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → email"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 63,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'error'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 127,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'sending'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 10,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 78,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 44,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → expiresAt.getTime() <= now.getTime()"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 78,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → error !== null && data === null"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 91,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 92,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 94,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 22,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /#/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 22,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 55,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 55,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 63,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 35,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 11,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 35,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 35,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 57,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+     "linia": 23,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+     "linia": 29,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+     "linia": 29,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'error'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.tsx",
+     "linia": 26,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 49,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`FormEvent` is deprecated. FormEvent doesn't actually exist.\nYou probably meant to use {@link ChangeEvent}, {@link InputEvent}, {@link SubmitEvent}, or just {@link SyntheticEvent} instead\ndepending on the event type."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 45,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/copy-button.tsx",
+     "linia": 43,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 4,
+     "regula": "no-restricted-imports",
+     "opis": "'../../lib/supabase.js' import is restricted from being used by a pattern. klient bazy tylko w hookach, lib/ i providerze sesji"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 88,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 44,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'LoginPage' has too many lines (87). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 106,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/session-context.tsx",
+     "linia": 41,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 71,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/mcp-token-card.tsx",
+     "linia": 120,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ActiveToken' has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 38,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useMcpToken' has too many lines (71). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 46,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 78,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 111,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 133,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 134,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 32,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 27,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 28,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 63,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 93,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 94,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 94,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 110,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 145,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → children && <Outlet />"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 9,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 10,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 29,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 29,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → error.code === RATE_LIMIT_CODE && error.status === RATE_LIMIT_STATUS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 46,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 47,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 47,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 50,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 56,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → email"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 63,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'error'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 118,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 127,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'sending'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 10,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 78,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 44,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → expiresAt.getTime() <= now.getTime()"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 75,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 78,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → error !== null && data === null"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 91,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 92,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 94,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 22,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /#/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 22,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 55,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 55,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/auth-callback-page.tsx",
+     "linia": 63,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 35,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 11,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 35,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 35,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+     "linia": 57,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+     "linia": 23,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+     "linia": 29,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-page.tsx",
+     "linia": 29,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status !== 'error'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.tsx",
+     "linia": 26,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "linia": 49,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`FormEvent` is deprecated. FormEvent doesn't actually exist.\nYou probably meant to use {@link ChangeEvent}, {@link InputEvent}, {@link SubmitEvent}, or just {@link SyntheticEvent} instead\ndepending on the event type."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 45,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: formatOfferDate"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: countByStatus"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: mcpAddCommand"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "linia": 43,
+     "regula": "knip/exports",
+     "opis": "exports: displayStatusFor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 12,
+     "regula": "knip/types",
+     "opis": "types: McpTokenState"
+    }
+   ]
+  }
+ }
+}

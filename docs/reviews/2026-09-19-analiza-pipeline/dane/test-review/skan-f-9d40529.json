@@ -1,0 +1,16 @@
+{
+ "etykieta": "f-9d40529",
+ "podsumowanie": {
+  "agentow": 30,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_6d819971-5de kontekst:diff: Write /tmp/review-ctx-docs-active-faza-4-tracking-i-widok-oferty-faza-1.md (deny w --settings)",
+  "wf_6d819971-5de dedup:semantyczny: agent haiku wołał narzędzia ['Read']"
+ ]
+}

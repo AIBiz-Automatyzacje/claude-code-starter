@@ -1,0 +1,18 @@
+{
+ "etykieta": "x-7e437fc",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_5ad808e6-c61 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/faza8-2-diff.txt']: git diff 7e437fc^..HEAD > /tmp/faza8-2-diff.txt && wc -l /tmp/faza8-2-diff.txt",
+  "wf_5ad808e6-c61 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added-lines.txt']: grep \"^+\" /tmp/faza8-2-diff.txt | grep -v \"^+++\" > /tmp/added-lines.txt && wc -l /tmp/added-lines.txt",
+  "wf_5ad808e6-c61 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/clean-lines.txt']: cat /tmp/added-lines.txt | sed 's/^+//' > /tmp/clean-lines.txt && wc -l /tmp/clean-lines.txt",
+  "wf_5ad808e6-c61 fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

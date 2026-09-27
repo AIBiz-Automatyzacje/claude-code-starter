@@ -1,0 +1,26 @@
+{
+ "etykieta": "f-2536643",
+ "podsumowanie": {
+  "agentow": 32,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_834cff77-61e C:review:kod[high]: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && cp /private/tmp/claude-501/-Users-kacper-trzep",
+  "wf_9a8c800e-e92 review:security: zapis Bashem poza kopią ['sed -i']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server; F=/private/tmp/claude-501/-Users-kacper-trzepiec",
+  "wf_9a8c800e-e92 review:security: zapis Bashem poza kopią ['>/i,']: cat > /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-2536643/df3429ab-48c9-5974-ae88-4b2a5d77ae",
+  "wf_9a8c800e-e92 kontekst:diff: zapis Bashem poza kopią ['mv ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643; R=72c07dc..2536643; F=/tmp/review-diff-docs-active-faza-9a-d",
+  "wf_9a8c800e-e92 review:performance: zapis Bashem poza kopią ['sed -i']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && S=/private/tmp/claude-501/-Users-kacper-trzepi",
+  "wf_9a8c800e-e92 review:performance: zapis Bashem poza kopią ['sed -i']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && S=/private/tmp/claude-501/-Users-kacper-trzepi",
+  "wf_9a8c800e-e92 review:code-quality: zapis Bashem poza kopią ['sed -i']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-2536643/df3429ab-48c9-5974-ae88-4b2a5d77ae94/",
+  "wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> src/offer/zz-perf.test.ts']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && cat > src/offer/zz-perf.test.ts <<'EOF' import",
+  "wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> src/offer/zz-perf.test.ts', '> /tmp/perf.log']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && ls src/offer/zz-perf.test.ts 2>&1; cat > src/o",
+  "wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> src/offer/zz-perf.test.ts', '> /tmp/perf.log']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && cat > src/offer/zz-perf.test.ts <<'EOF' import",
+  "wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> zz-race.test.ts', '>> zz-race.test.ts']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/dashboard/src/features/templates && sed -n 1,122p use-te",
+  "wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> zz-stale.test.ts', '>> zz-stale.test.ts']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/dashboard/src/features/templates && sed -n 1,58p use-tem"
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "etykieta": "x-43fb8e7",
+ "faza": 2,
+ "zadanie": "faza-9b-wielu-uzytkownikow",
+ "baza": "f56cd6ac33bad42de8dbbbaeea337db73909d21d",
+ "modul_fixa": true,
+ "plan_techniczny": "docs/plans/2026-09-13-001-feat-faza-9b-wielu-uzytkownikow-plan.md",
+ "sekcja_planu_zn": 26623,
+ "wiedza_zn": 1698,
+ "sygnaly": {
+  "kod": true,
+  "testy": true,
+  "serwer": true,
+  "granica": true,
+  "migracja": true,
+  "profil_supabase": true,
+  "fix": true,
+  "nierozstrzygalny": true,
+  "await": true,
+  "regex": true,
+  "zapytania": true,
+  "cache": true,
+  "zod": true,
+  "atrapy": true,
+  "middleware": true,
+  "ponawialna": true,
+  "parser": true,
+  "sql_rpc": true,
+  "dane": true,
+  "lint_A": true
+ },
+ "warianty": {
+  "A": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-43fb8e7/wariantA.js",
+   "bajty": 14181,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "medium",
+     "listy": [
+      "K-1",
+      "K-2",
+      "K-3",
+      "K-4",
+      "K-5",
+      "K-7"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 5057
+   },
+   "agregacja": "Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH soczewek. Zna"
+  },
+  "B": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-43fb8e7/wariantB.js",
+   "bajty": 23635,
+   "role": [
+    {
+     "rola": "fix:kontrola#1",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    },
+    {
+     "rola": "fix:kontrola#2",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    }
+   ],
+   "agentow_review": 2,
+   "prompt_zn": {
+    "fix:kontrola#1": 6911,
+    "fix:kontrola#2": 6911
+   },
+   "agregacja": "Jestes agregatorem findingow review (bez narzedzi). Grupuj findingi opisujące te"
+  },
+  "C": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-43fb8e7/wariantC.js",
+   "bajty": 15161,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "high",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04",
+      "K-05",
+      "K-06"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 6369
+   },
+   "agregacja": "JS"
+  }
+ }
+}

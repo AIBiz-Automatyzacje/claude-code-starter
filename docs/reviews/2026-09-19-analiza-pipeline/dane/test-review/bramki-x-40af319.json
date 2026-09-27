@@ -1,0 +1,310 @@
+{
+ "etykieta": "x-40af319",
+ "sha": "40af319e81cad9884cdb9a0d7543f22f17aa4701",
+ "baza": "c74b9f92a42b98698553a5ef4f4348d9a0d549b0",
+ "modul_fixa": true,
+ "pliki": 15,
+ "pliki_kodu": 14,
+ "pliki_ts": [
+  "apps/server/src/app.test.ts",
+  "apps/server/src/app.ts",
+  "apps/server/src/assets/asset-repository.test.ts",
+  "apps/server/src/assets/asset-repository.ts",
+  "apps/server/src/assets/image-pipeline.test.ts",
+  "apps/server/src/assets/image-pipeline.ts",
+  "apps/server/src/assets/limits.test.ts",
+  "apps/server/src/assets/limits.ts",
+  "apps/server/src/assets/storage-client.ts",
+  "apps/server/src/routes/offer-images.test.ts",
+  "apps/server/src/routes/offer-images.ts",
+  "apps/server/src/routes/template-assets.test.ts",
+  "apps/server/src/routes/template-assets.ts",
+  "packages/shared/src/template-asset-contract.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 8.1,
+   "kod_wyjscia": 2,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 106,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 111,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'single' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 138,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'upstream' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 159,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteAsset' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 44,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/assets/image-pipeline.ts",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 106,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 111,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'single' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 138,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'upstream' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 159,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteAsset' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 35,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/assets/image-pipeline.ts",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [],
+   "zastane": 135,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 106,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 111,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'single' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 138,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'upstream' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 159,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteAsset' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/assets/image-pipeline.ts",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "knip": []
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 106,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'maybeSingle' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 111,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'single' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 132,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/assets/asset-repository.test.ts",
+     "linia": 138,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'upstream' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 159,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteAsset' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/assets/image-pipeline.ts",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "knip": []
+  }
+ }
+}

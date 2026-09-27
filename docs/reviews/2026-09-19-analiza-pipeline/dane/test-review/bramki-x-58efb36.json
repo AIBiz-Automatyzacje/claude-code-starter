@@ -1,0 +1,193 @@
+{
+ "etykieta": "x-58efb36",
+ "sha": "58efb3653a02f15d06631b43cc749d9d3e6abf65",
+ "baza": "b8374c8091b1f6de0377cb63675e1f294a5210dc",
+ "modul_fixa": true,
+ "pliki": 13,
+ "pliki_kodu": 11,
+ "pliki_ts": [
+  "apps/server/src/app.test.ts",
+  "apps/server/src/app.ts",
+  "apps/server/src/offer/brand-contract.ts",
+  "apps/server/src/offer/cache.test.ts",
+  "apps/server/src/offer/cache.ts",
+  "apps/server/src/offer/expired-page.test.ts",
+  "apps/server/src/offer/expired-page.ts",
+  "apps/server/src/offer/template.test.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "apps/server/src/routes/offer.test.ts",
+  "apps/server/src/routes/offer.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 5.7,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 70,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createOfferCache' has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 25,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 1.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 70,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createOfferCache' has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 25,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 31,
+     "regula": "knip/types",
+     "opis": "types: OfferCacheByteBudget"
+    }
+   ],
+   "zastane": 17,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 31,
+     "regula": "knip/types",
+     "opis": "types: OfferCacheByteBudget"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 70,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createOfferCache' has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 31,
+     "regula": "knip/types",
+     "opis": "types: OfferCacheByteBudget"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 31,
+     "regula": "knip/types",
+     "opis": "types: OfferCacheByteBudget"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 70,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createOfferCache' has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 227,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 31,
+     "regula": "knip/types",
+     "opis": "types: OfferCacheByteBudget"
+    }
+   ]
+  }
+ }
+}

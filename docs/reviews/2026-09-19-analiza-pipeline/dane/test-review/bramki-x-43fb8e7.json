@@ -1,0 +1,862 @@
+{
+ "etykieta": "x-43fb8e7",
+ "sha": "43fb8e7344b8dc50b852bacc4977c74985992484",
+ "baza": "f56cd6ac33bad42de8dbbbaeea337db73909d21d",
+ "modul_fixa": true,
+ "pliki": 30,
+ "pliki_kodu": 26,
+ "pliki_ts": [
+  "apps/server/src/access/access-requests-retention.ts",
+  "apps/server/src/access/account-deletion-service.test.ts",
+  "apps/server/src/access/account-deletion-service.ts",
+  "apps/server/src/access/account-deletion-store.test.ts",
+  "apps/server/src/access/admin-accounts-service.test.ts",
+  "apps/server/src/access/admin-accounts-service.ts",
+  "apps/server/src/access/admin-guard.ts",
+  "apps/server/src/access/invitation-service.test.ts",
+  "apps/server/src/access/invitation-service.ts",
+  "apps/server/src/access/membership-service.ts",
+  "apps/server/src/access/self-account.test.ts",
+  "apps/server/src/assets/detached-assets-sweeper.ts",
+  "apps/server/src/cta/decision-service.ts",
+  "apps/server/src/http/offer-origin.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/routes/access.ts",
+  "apps/server/src/routes/account.test.ts",
+  "apps/server/src/routes/account.ts",
+  "apps/server/src/routes/admin-accounts.test.ts",
+  "apps/server/src/routes/admin-accounts.ts",
+  "apps/server/src/routes/admin-invitations.ts",
+  "apps/server/src/routes/admin-webhook.ts",
+  "apps/server/src/routes/membership.ts",
+  "apps/server/src/webhooks/payload.ts",
+  "apps/server/src/webhooks/queue-message.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 10.5,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/no-misused-promises",
+     "opis": "Expected a non-Promise value to be spread in an object."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 68,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 37,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 44,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/no-misused-promises",
+     "opis": "Expected a non-Promise value to be spread in an object."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 104,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listUsers' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 118,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/invitation-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/self-account.test.ts",
+     "linia": 48,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 77,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createAdminInvitationsRoutes' has too many lines (143). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 100,
+     "regula": "max-lines-per-function",
+     "opis": "Async arrow function has too many lines (86). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 65,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/http/offer-origin.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 37,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 44,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/no-misused-promises",
+     "opis": "Expected a non-Promise value to be spread in an object."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 104,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listUsers' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 118,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/invitation-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/self-account.test.ts",
+     "linia": 48,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 77,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createAdminInvitationsRoutes' has too many lines (143). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 100,
+     "regula": "max-lines-per-function",
+     "opis": "Async arrow function has too many lines (86). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 52,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/http/offer-origin.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.8,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 26,
+     "regula": "knip/exports",
+     "opis": "exports: AccessRequestsRetentionError"
+    },
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 44,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 147,
+     "regula": "knip/exports",
+     "opis": "exports: USAGE_FETCH_CONCURRENCY"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 154,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 132,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_GUARD_TEXTS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 141,
+     "regula": "knip/exports",
+     "opis": "exports: refuseAdmin"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 30,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: INVITATION_TEXTS"
+    }
+   ],
+   "zastane": 330,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ]
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/no-misused-promises",
+     "opis": "Expected a non-Promise value to be spread in an object."
+    },
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 26,
+     "regula": "knip/exports",
+     "opis": "exports: AccessRequestsRetentionError"
+    },
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 44,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 147,
+     "regula": "knip/exports",
+     "opis": "exports: USAGE_FETCH_CONCURRENCY"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 154,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 132,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_GUARD_TEXTS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 141,
+     "regula": "knip/exports",
+     "opis": "exports: refuseAdmin"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 30,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: INVITATION_TEXTS"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 68,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 37,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 44,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/no-misused-promises",
+     "opis": "Expected a non-Promise value to be spread in an object."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 104,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listUsers' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 118,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/invitation-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/self-account.test.ts",
+     "linia": 48,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 77,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createAdminInvitationsRoutes' has too many lines (143). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 100,
+     "regula": "max-lines-per-function",
+     "opis": "Async arrow function has too many lines (86). Maximum allowed is 60."
+    },
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 26,
+     "regula": "knip/exports",
+     "opis": "exports: AccessRequestsRetentionError"
+    },
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 44,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 147,
+     "regula": "knip/exports",
+     "opis": "exports: USAGE_FETCH_CONCURRENCY"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 154,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 132,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_GUARD_TEXTS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 141,
+     "regula": "knip/exports",
+     "opis": "exports: refuseAdmin"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 30,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: INVITATION_TEXTS"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/http/offer-origin.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 26,
+     "regula": "knip/exports",
+     "opis": "exports: AccessRequestsRetentionError"
+    },
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 44,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 147,
+     "regula": "knip/exports",
+     "opis": "exports: USAGE_FETCH_CONCURRENCY"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 154,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 132,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_GUARD_TEXTS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 141,
+     "regula": "knip/exports",
+     "opis": "exports: refuseAdmin"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 30,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: INVITATION_TEXTS"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 37,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'deleteUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/account-deletion-store.test.ts",
+     "linia": 44,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/no-misused-promises",
+     "opis": "Expected a non-Promise value to be spread in an object."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 104,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listUsers' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.test.ts",
+     "linia": 118,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'rpc' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/invitation-service.test.ts",
+     "linia": 108,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'eq' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/access/self-account.test.ts",
+     "linia": 48,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 77,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createAdminInvitationsRoutes' has too many lines (143). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 100,
+     "regula": "max-lines-per-function",
+     "opis": "Async arrow function has too many lines (86). Maximum allowed is 60."
+    },
+    {
+     "plik": "supabase/migrations/20260914100000_access_invitations_admin.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "supabase/migrations/20260914120000_offer_events_admin_webhook.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/http/offer-origin.ts",
+     "linia": 63,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 26,
+     "regula": "knip/exports",
+     "opis": "exports: AccessRequestsRetentionError"
+    },
+    {
+     "plik": "apps/server/src/access/access-requests-retention.ts",
+     "linia": 44,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 147,
+     "regula": "knip/exports",
+     "opis": "exports: USAGE_FETCH_CONCURRENCY"
+    },
+    {
+     "plik": "apps/server/src/access/admin-accounts-service.ts",
+     "linia": 154,
+     "regula": "knip/exports",
+     "opis": "exports: SUPABASE_REQUEST_TIMEOUT_MS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 132,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_GUARD_TEXTS"
+    },
+    {
+     "plik": "apps/server/src/access/admin-guard.ts",
+     "linia": 141,
+     "regula": "knip/exports",
+     "opis": "exports: refuseAdmin"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 50,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-accounts.ts",
+     "linia": 51,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATIONS_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 30,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITATION_PATH"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: ADMIN_INVITE_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/routes/admin-invitations.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: INVITATION_TEXTS"
+    }
+   ]
+  }
+ }
+}

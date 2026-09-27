@@ -1,0 +1,59 @@
+sesja 036b943e: narzędzia sesji ['Workflow']
+  B:review:correctness#2[medium]               claude-opus-5-5            narzędzia  14
+  B:review:security#3[medium]                  claude-opus-5-5            narzędzia   9
+  B:review:security#1[medium]                  claude-opus-5-5            narzędzia  10
+  B:review:correctness#3[medium]               claude-opus-5-5            narzędzia  18
+  B:agregator[haiku]                           claude-haiku-4-5-20251001  narzędzia   1
+  B:review:spec[medium]                        claude-opus-5-5            narzędzia  21
+  B:review:test-coverage[medium]               claude-opus-5-5            narzędzia  29
+  B:review:security#2[medium]                  claude-opus-5-5            narzędzia  13
+  B:review:correctness#1[medium]               claude-opus-5-5            narzędzia  14
+  B:review:code-quality[medium]                claude-opus-5-5            narzędzia  20
+sesja 1b7bea36: narzędzia sesji ['Workflow']
+  verify-batch:apps/dashboard/src/features/tem claude-opus-5-5            narzędzia   5
+  verify-batch:supabase/migrations/20260913160 claude-opus-5-5            narzędzia   4
+sesja 2a8f23fb: narzędzia sesji ['Workflow']
+  B:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   6
+sesja 51aecf8b: narzędzia sesji ['Workflow']
+sesja 7a81b3d1: narzędzia sesji ['Workflow']
+  A:verify-batch:1[medium]                     claude-opus-5-5            narzędzia   3
+  A:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   6
+sesja 8f2ceb49: narzędzia sesji ['Workflow']
+  sedzia:f-2536643:p1[medium]                  claude-opus-5-5            narzędzia   2
+sesja 910d3ce0: narzędzia sesji ['Workflow']
+  C:review:kod[high]                           claude-opus-5-5            narzędzia  23  (uwaga)
+  C:review:testy[medium]                       claude-opus-5-5            narzędzia  14
+sesja bb414e0d: narzędzia sesji ['Workflow']
+  A:review:code-quality[low]                   claude-opus-5-5            narzędzia   6
+  A:review:test-coverage[medium]               claude-opus-5-5            narzędzia  23
+  A:dedup:semantyczny[haiku]                   claude-haiku-4-5-20251001  narzędzia   1
+  A:review:correctness[high]                   claude-opus-5-5            narzędzia  37
+  A:review:security[high]                      claude-opus-5-5            narzędzia  23
+  A:review:spec-compliance[medium]             claude-opus-5-5            narzędzia  35
+sesja df3429ab: narzędzia sesji ['Workflow']
+  review:security                              claude-opus-5-5            narzędzia  27  (uwaga)
+  dedup:semantyczny                            claude-haiku-4-5-20251001  narzędzia   1
+  review:correctness                           claude-opus-5-5            narzędzia  46
+  kontekst:diff                                claude-opus-5-5            narzędzia   8  (uwaga)
+  review:performance                           claude-opus-5-5            narzędzia  38  (uwaga)
+  review:code-quality                          claude-opus-5-5            narzędzia  46  (uwaga)
+  review:spec-compliance                       claude-opus-5-5            narzędzia  33
+  review:test-coverage                         claude-opus-5-5            narzędzia  63  (uwaga)
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (12):
+  wf_834cff77-61e C:review:kod[high]: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && cp /private/tmp/claude-501/-Users-kacper-trzep
+  wf_9a8c800e-e92 review:security: zapis Bashem poza kopią ['sed -i']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server; F=/private/tmp/claude-501/-Users-kacper-trzepiec
+  wf_9a8c800e-e92 review:security: zapis Bashem poza kopią ['>/i,']: cat > /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-2536643/df3429ab-48c9-5974-ae88-4b2a5d77ae
+  wf_9a8c800e-e92 kontekst:diff: zapis Bashem poza kopią ['mv ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643; R=72c07dc..2536643; F=/tmp/review-diff-docs-active-faza-9a-d
+  wf_9a8c800e-e92 review:performance: zapis Bashem poza kopią ['sed -i']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && S=/private/tmp/claude-501/-Users-kacper-trzepi
+  wf_9a8c800e-e92 review:performance: zapis Bashem poza kopią ['sed -i']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && S=/private/tmp/claude-501/-Users-kacper-trzepi
+  wf_9a8c800e-e92 review:code-quality: zapis Bashem poza kopią ['sed -i']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-2536643/df3429ab-48c9-5974-ae88-4b2a5d77ae94/
+  wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> src/offer/zz-perf.test.ts']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && cat > src/offer/zz-perf.test.ts <<'EOF' import
+  wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> src/offer/zz-perf.test.ts', '> /tmp/perf.log']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && ls src/offer/zz-perf.test.ts 2>&1; cat > src/o
+  wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> src/offer/zz-perf.test.ts', '> /tmp/perf.log']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/server && cat > src/offer/zz-perf.test.ts <<'EOF' import
+  wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> zz-race.test.ts', '>> zz-race.test.ts']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/dashboard/src/features/templates && sed -n 1,122p use-te
+  wf_9a8c800e-e92 review:test-coverage: zapis Bashem poza kopią ['rm ', '> zz-stale.test.ts', '>> zz-stale.test.ts']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/apps/dashboard/src/features/templates && sed -n 1,58p use-tem
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 32, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 12
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

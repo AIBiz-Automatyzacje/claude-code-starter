@@ -1,0 +1,17 @@
+{
+ "etykieta": "f-303ff62",
+ "podsumowanie": {
+  "agentow": 32,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_cd48cdad-9c8 A:dedup:semantyczny[haiku]: zapis Bashem poza kopią ['> /tmp/findings_analysis.txt']: cat > /tmp/findings_analysis.txt << 'EOF' Analiza duplikatów (grupy 2+ indeksów):  GRUPA 1: [0, 10, 32] - Plik: supabase",
+  "wf_cd48cdad-9c8 A:dedup:semantyczny[haiku]: agent haiku wołał narzędzia ['Bash']",
+  "wf_fd48881a-77d review:code-quality: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-303ff62/apps/server && cat > /private/tmp/claude-501/-Users-kacper-tr"
+ ]
+}

@@ -1,0 +1,106 @@
+{
+ "etykieta": "x-6bd9990",
+ "faza": 2,
+ "zadanie": "faza-5-heatmapa",
+ "baza": "32975a10a04c353df2dbf3cfa0719095b5f1a3e3",
+ "modul_fixa": true,
+ "plan_techniczny": null,
+ "sekcja_planu_zn": 0,
+ "wiedza_zn": 0,
+ "sygnaly": {
+  "kod": true,
+  "testy": true,
+  "tsx": true,
+  "klient": true,
+  "serwer": true,
+  "granica": true,
+  "teksty": true,
+  "profil_supabase": true,
+  "fix": true,
+  "nierozstrzygalny": true,
+  "hooki": true,
+  "ui": true,
+  "dane": true,
+  "lint_A": true
+ },
+ "warianty": {
+  "A": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-6bd9990/wariantA.js",
+   "bajty": 12891,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "medium",
+     "listy": [
+      "K-1",
+      "K-2",
+      "K-3",
+      "K-4",
+      "K-5",
+      "K-7"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 3800
+   },
+   "agregacja": "Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH soczewek. Zna"
+  },
+  "B": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-6bd9990/wariantB.js",
+   "bajty": 16331,
+   "role": [
+    {
+     "rola": "fix:kontrola#1",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    },
+    {
+     "rola": "fix:kontrola#2",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    }
+   ],
+   "agentow_review": 2,
+   "prompt_zn": {
+    "fix:kontrola#1": 3356,
+    "fix:kontrola#2": 3356
+   },
+   "agregacja": "Jestes agregatorem findingow review (bez narzedzi). Grupuj findingi opisujące te"
+  },
+  "C": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-6bd9990/wariantC.js",
+   "bajty": 12711,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "high",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04",
+      "K-05",
+      "K-06"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 3976
+   },
+   "agregacja": "JS"
+  }
+ }
+}

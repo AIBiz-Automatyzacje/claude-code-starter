@@ -1,0 +1,1456 @@
+{
+ "etykieta": "f-b8374c8",
+ "sha": "b8374c8091b1f6de0377cb63675e1f294a5210dc",
+ "baza": "c349bd1",
+ "modul_fixa": false,
+ "pliki": 25,
+ "pliki_kodu": 19,
+ "pliki_ts": [
+  "apps/server/src/app.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/offer/aa-pages.ts",
+  "apps/server/src/offer/cache.test.ts",
+  "apps/server/src/offer/cache.ts",
+  "apps/server/src/offer/expired-page.ts",
+  "apps/server/src/offer/html.ts",
+  "apps/server/src/offer/pages/aa-design.ts",
+  "apps/server/src/offer/pages/privacy-page.ts",
+  "apps/server/src/offer/pages/root-page.ts",
+  "apps/server/src/offer/repository.ts",
+  "apps/server/src/offer/template.ts",
+  "apps/server/src/routes/dashboard.test.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "apps/server/src/routes/offer-origin-pages.ts",
+  "apps/server/src/routes/offer.test.ts",
+  "apps/server/src/routes/offer.ts",
+  "packages/shared/src/env.test.ts",
+  "packages/shared/src/env.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 5.4,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 2,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 1.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 103,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 47,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 85,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (108). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 112,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 124,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 148,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 167,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 182,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 189,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 201,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 205,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 216,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 4,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-invalid-void-type",
+     "opis": "void is not valid as a constituent in a union type"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 126,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 1.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 47,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 85,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (108). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 112,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 124,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 148,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 167,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 182,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 189,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 201,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 205,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 216,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 5,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-invalid-void-type",
+     "opis": "void is not valid as a constituent in a union type"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 126,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.5,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ],
+   "zastane": 17
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "packages/shared/src/env.ts": 7,
+    "apps/server/src/routes/offer-origin-pages.ts": 207,
+    "apps/server/src/routes/offer.ts": 118,
+    "apps/server/src/offer/cache.ts": 104
+   },
+   "pliki_A": [
+    "apps/server/src/routes/offer-origin-pages.ts",
+    "apps/server/src/routes/offer.ts",
+    "apps/server/src/offer/cache.ts"
+   ],
+   "wyniki": {
+    "apps/server": {
+     "status": "uruchomiona",
+     "sekundy": 7.0,
+     "statusy": {
+      "NoCoverage": 4,
+      "Killed": 112,
+      "Survived": 29
+     },
+     "przezyte": [
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 195,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 195,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "NoCoverage: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 195,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 196,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 79,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 89,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → assetPath"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 97,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 97,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 98,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 148,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 183,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 183,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → !context.res.ok && context.get('originKind') !== 'offer'"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 183,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 183,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 189,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 202,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 203,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 29,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 45,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 42,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 48,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 53,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer-origin-pages.ts",
+       "linia": 56,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/offer/cache.ts",
+       "linia": 60,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/offer/cache.ts",
+       "linia": 87,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → expiresAt < now"
+      },
+      {
+       "plik": "apps/server/src/offer/cache.ts",
+       "linia": 88,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/offer/cache.ts",
+       "linia": 95,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/offer/cache.ts",
+       "linia": 15,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → 5 / 60_000"
+      },
+      {
+       "plik": "apps/server/src/routes/offer.ts",
+       "linia": 79,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/offer.ts",
+       "linia": 79,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/offer.ts",
+       "linia": 26,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+      },
+      {
+       "plik": "apps/server/src/routes/offer.ts",
+       "linia": 26,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+      },
+      {
+       "plik": "apps/server/src/routes/offer.ts",
+       "linia": 39,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      }
+     ]
+    },
+    "packages/shared": {
+     "status": "uruchomiona",
+     "sekundy": 1.8,
+     "statusy": {},
+     "przezyte": []
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 196,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 89,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → assetPath"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 148,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !context.res.ok && context.get('originKind') !== 'offer'"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 189,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 202,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 203,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 45,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 48,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 56,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 60,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 87,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → expiresAt < now"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 88,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 95,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 15,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → 5 / 60_000"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 79,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 26,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 26,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 103,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 47,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 85,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (108). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 112,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 124,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 148,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 167,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 182,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 189,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 201,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 205,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 216,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 196,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 89,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → assetPath"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 148,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !context.res.ok && context.get('originKind') !== 'offer'"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 189,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 202,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 203,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 45,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 48,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 56,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 60,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 87,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → expiresAt < now"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 88,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 95,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 15,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → 5 / 60_000"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 79,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 26,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 26,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-invalid-void-type",
+     "opis": "void is not valid as a constituent in a union type"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 126,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "linia": 57,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 47,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 85,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (108). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 88,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 112,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 124,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 135,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 148,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 167,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 182,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 189,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 201,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 205,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 216,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "NoCoverage: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 195,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 196,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 89,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → assetPath"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 97,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 98,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 148,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !context.res.ok && context.get('originKind') !== 'offer'"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 183,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 189,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 202,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 203,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 45,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 48,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 53,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 56,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 60,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 87,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → expiresAt < now"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 88,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 95,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/offer/cache.ts",
+     "linia": 15,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → 5 / 60_000"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 79,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 79,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 26,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /[A-Za-z0-9_-]{21}$/"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 26,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^[A-Za-z0-9_-]{21}/"
+    },
+    {
+     "plik": "apps/server/src/routes/offer.ts",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-invalid-void-type",
+     "opis": "void is not valid as a constituent in a union type"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 126,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from a function is forbidden. Please move it before the `return` statement."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 39,
+     "regula": "knip/exports",
+     "opis": "exports: OfferLookupError"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "linia": 29,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_STATIC_ROOT"
+    }
+   ]
+  }
+ }
+}

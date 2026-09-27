@@ -1,0 +1,27 @@
+sesja 313f3b32: narzędzia sesji ['Workflow']
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia  28
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  21
+sesja 688d0a51: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia  23
+sesja b6a8016b: narzędzia sesji ['Workflow']
+  fix:kontrola:faza-3                          claude-opus-5-5            narzędzia   5
+  fix:pre-skan:faza-3                          claude-haiku-4-5-20251001  narzędzia  17  (uwaga)
+sesja c0d962a6: narzędzia sesji ['Workflow']
+  sedzia:x-0ec2b19:p1[medium]                  claude-opus-5-5            narzędzia   3
+sesja ea6b7428: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia  24
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (9):
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/diff_faza3.txt']: git diff a4225e4^..HEAD > /tmp/diff_faza3.txt && wc -l /tmp/diff_faza3.txt
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: grep "^+" /tmp/diff_faza3.txt | grep -v "^+++" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_patterns.py']: cat > /tmp/scan_patterns.py << 'EOF' import re import sys  # Wzorce do szukania patterns = {     'pusty-catch': r'catch\
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_patterns2.py']: cat > /tmp/scan_patterns2.py << 'EOF' import re import sys  # Wzorce do szukania patterns = {     'pusty-catch': r'catch
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_code_only.py']: cat > /tmp/scan_code_only.py << 'EOF' import re import sys  patterns = {     'pusty-catch': r'catch\s*(?:\([^)]*\))?\s*\
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_final.py']: cat > /tmp/scan_final.py << 'EOF' import re import sys  patterns_raw = {     'pusty-catch': r'catch\s*(?:\([^)]*\))?\s*\
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_prod_only.py']: cat > /tmp/scan_prod_only.py << 'EOF' import re import sys  patterns_raw = {     'pusty-catch': r'catch\s*(?:\([^)]*\))?
+  wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/find_all_patterns.py']: cat > /tmp/find_all_patterns.py << 'EOF' import re import sys  patterns_raw = {     'pusty-catch': r'catch\s*(?:\([^)]*\
+  wf_d40cca91-9dd fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 7, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 9
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

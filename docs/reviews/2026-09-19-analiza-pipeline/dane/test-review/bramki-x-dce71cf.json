@@ -1,0 +1,133 @@
+{
+ "etykieta": "x-dce71cf",
+ "sha": "dce71cf067496defa23ca6fe6acddb96f6bab397",
+ "baza": "1de5a4c2607944072aa9f27b58edc18b46e34c4c",
+ "modul_fixa": true,
+ "pliki": 11,
+ "pliki_kodu": 8,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+  "apps/dashboard/src/features/offers/use-offer-heat.ts",
+  "apps/dashboard/src/lib/monitoring.ts",
+  "apps/dashboard/src/main.tsx",
+  "apps/server/src/cta/cta-script.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 8.6,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 8,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 120,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 9,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [],
+   "zastane": 191,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 178466,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 6054,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "B": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 120,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  }
+ }
+}

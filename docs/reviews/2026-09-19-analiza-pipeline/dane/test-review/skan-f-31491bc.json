@@ -1,0 +1,16 @@
+{
+ "etykieta": "f-31491bc",
+ "podsumowanie": {
+  "agentow": 27,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_29f3d609-d52 A:dedup:semantyczny[haiku]: agent haiku wołał narzędzia ['Read']",
+  "wf_3ce7143e-86d review:correctness: zapis Bashem poza kopią ['; git merge']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-31491bc; git log --format='%h %ad %s' --date=iso -1 b161809; git log "
+ ]
+}

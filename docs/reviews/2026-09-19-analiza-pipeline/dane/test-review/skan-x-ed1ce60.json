@@ -1,0 +1,18 @@
+{
+ "etykieta": "x-ed1ce60",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_1c7c8a6e-edc fix:pre-skan:faza-1: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff 3a00b1c..ed1ce60 | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_1c7c8a6e-edc fix:pre-skan:faza-1: zapis Bashem poza kopią ['> /tmp/ts_diff.txt']: git diff 3a00b1c..ed1ce60 -- '*.ts' '*.tsx' > /tmp/ts_diff.txt && wc -l /tmp/ts_diff.txt",
+  "wf_1c7c8a6e-edc fix:pre-skan:faza-1: zapis Bashem poza kopią ['> /tmp/ts_added.txt']: cat /tmp/ts_diff.txt | grep \"^+\" | grep -v \"^+++\" | sed 's/^+//' > /tmp/ts_added.txt && wc -l /tmp/ts_added.txt && head ",
+  "wf_1c7c8a6e-edc fix:pre-skan:faza-1: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

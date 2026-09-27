@@ -1,0 +1,5028 @@
+{
+ "etykieta": "f-303ff62",
+ "sha": "303ff625dbae87af5e1838f76acf1fb170a14ad3",
+ "baza": "f373d38",
+ "modul_fixa": false,
+ "pliki": 41,
+ "pliki_kodu": 34,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/offer-decisions-card.test.tsx",
+  "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+  "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+  "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "apps/dashboard/src/features/offers/texts.ts",
+  "apps/dashboard/src/features/offers/use-offer-decisions.test.ts",
+  "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+  "apps/dashboard/src/features/settings/accept-message-card.tsx",
+  "apps/dashboard/src/features/settings/settings-page.test.tsx",
+  "apps/dashboard/src/features/settings/settings-page.tsx",
+  "apps/dashboard/src/features/settings/texts.ts",
+  "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+  "apps/dashboard/src/features/settings/webhook-api.ts",
+  "apps/dashboard/src/features/settings/webhook-card-status.tsx",
+  "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+  "apps/dashboard/src/features/settings/webhook-card.tsx",
+  "apps/dashboard/src/features/settings/webhook-state.ts",
+  "apps/server/src/app.ts",
+  "apps/server/src/cta/accept-message.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/server.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+  "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+  "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+  "apps/server/src/offer/repository.ts",
+  "apps/server/src/routes/webhook-settings.test.ts",
+  "apps/server/src/routes/webhook-settings.ts",
+  "apps/server/src/webhooks/payload.ts",
+  "apps/server/src/webhooks/settings-service.ts",
+  "packages/shared/src/index.ts",
+  "packages/shared/src/webhook-contract.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 6.9,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 62,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useWebhookSettings' has too many lines (180). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 167,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 235,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 37,
+     "regula": "no-restricted-syntax",
+     "opis": "fetch wymaga signal: AbortSignal.timeout(ms)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 46,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 107,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 103,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createWebhookSettingsRoutes' has too many lines (142). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 155,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseWebhookSettingsService' has too many lines (73). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 4,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 62,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useWebhookSettings' has too many lines (180). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 37,
+     "regula": "no-restricted-syntax",
+     "opis": "dodaj signal: AbortSignal.timeout(ms)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'json' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 105,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'call[1].body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 126,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 107,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 84,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 342,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 247,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 265,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 267,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publishOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 321,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (69). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 380,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'failing' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 283,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 55,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveOwnerId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'saveUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'enableWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'readUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 187,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 333,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 103,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createWebhookSettingsRoutes' has too many lines (142). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseWebhookSettingsService' has too many lines (73). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 75,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 150,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 29,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 284,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 104,
+     "regula": "@typescript-eslint/no-unnecessary-type-conversion",
+     "opis": "Passing a string to String() does not change the type or value of the string."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 178,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 4.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 98,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 109,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 62,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useWebhookSettings' has too many lines (180). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 77,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 259,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 37,
+     "regula": "no-restricted-syntax",
+     "opis": "fetch z signal: AbortSignal.timeout(ms)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'json' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 105,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'call[1].body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 126,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 107,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 84,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 342,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 247,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 265,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 267,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publishOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 321,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (69). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 380,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'failing' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 55,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveOwnerId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'saveUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'enableWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'readUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 187,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 333,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 103,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createWebhookSettingsRoutes' has too many lines (142). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseWebhookSettingsService' has too many lines (73). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 29,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 284,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 104,
+     "regula": "@typescript-eslint/no-unnecessary-type-conversion",
+     "opis": "Passing a string to String() does not change the type or value of the string."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 178,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ],
+   "zastane": 104
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 161590,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 5723,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/dashboard/src/features/offers/offer-decisions-card.tsx": 228,
+    "apps/dashboard/src/features/settings/settings-page.tsx": 21,
+    "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts": 227,
+    "apps/dashboard/src/features/offers/use-offer-decisions.ts": 148,
+    "apps/dashboard/src/features/settings/webhook-card.tsx": 237,
+    "packages/shared/src/database.types.ts": 3,
+    "apps/dashboard/src/features/offers/offer-details-page.tsx": 16,
+    "apps/server/src/routes/webhook-settings.ts": 298,
+    "apps/server/src/mcp/server.ts": 10
+   },
+   "pliki_A": [
+    "apps/server/src/routes/webhook-settings.ts",
+    "apps/dashboard/src/features/settings/webhook-card.tsx",
+    "apps/dashboard/src/features/offers/offer-decisions-card.tsx"
+   ],
+   "wyniki": {
+    "apps/dashboard": {
+     "status": "uruchomiona",
+     "sekundy": 73.9,
+     "statusy": {
+      "NoCoverage": 11,
+      "Killed": 150,
+      "Survived": 49
+     },
+     "przezyte": [
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 102,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 33,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 36,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 55,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → characters.length >= QUESTION_PREVIEW_LIMIT"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 57,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 57,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → characters"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 57,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 102,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 220,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 220,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → className && ''"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 220,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 24,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 25,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+       "linia": 26,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 118,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 104,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 114,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 114,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 114,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 118,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 142,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 143,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+       "linia": 145,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 86,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 114,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 127,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 128,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "NoCoverage: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 129,
+       "regula": "stryker/CallExpression",
+       "opis": "NoCoverage: CallExpression → ;"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 138,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 139,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "NoCoverage: BooleanLiteral → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 165,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 166,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "NoCoverage: BooleanLiteral → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 50,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 63,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 68,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 86,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 86,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 86,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → state.status === 'disabled'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 86,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 91,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 93,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 95,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 95,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 114,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 149,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 149,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 177,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 177,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 199,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 199,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 211,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 29,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 30,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 31,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 32,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 36,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 37,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 39,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 41,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+       "linia": 42,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      }
+     ]
+    },
+    "apps/server": {
+     "status": "uruchomiona",
+     "sekundy": 21.0,
+     "statusy": {
+      "NoCoverage": 17,
+      "Killed": 152,
+      "Survived": 76
+     },
+     "przezyte": [
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 108,
+       "regula": "stryker/ArrowFunction",
+       "opis": "NoCoverage: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 136,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 140,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 148,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 149,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 150,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 174,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 178,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 212,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 220,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 221,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 230,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 238,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 239,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 248,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 265,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 266,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 93,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → scheme?.toLowerCase() !== 'bearer' && token === undefined"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → scheme.toLowerCase"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 96,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 115,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 120,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 136,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 136,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 148,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 154,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 154,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → typeof payload === 'object' || payload !== null"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 154,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 154,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 163,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 163,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 168,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → shape.error.issues[0]?.message && TEXTS.badRequest"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 168,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → shape.error.issues[0].message"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 174,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 189,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 203,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 212,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 219,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 219,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 230,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 237,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 237,
+       "regula": "stryker/BooleanLiteral",
+       "opis": "Survived: BooleanLiteral → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 248,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 256,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/routes/webhook-settings.ts",
+       "linia": 34,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 59,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 130,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 142,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 142,
+       "regula": "stryker/ArrowFunction",
+       "opis": "Survived: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 142,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 155,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 169,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 208,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → ctx.http.authInfo"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 210,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 210,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 202,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 212,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 212,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 216,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 217,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 217,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 218,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 42,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 33,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 42,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 43,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 44,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 52,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 52,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 65,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 66,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 73,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 74,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 81,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 82,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 90,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 91,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 92,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 94,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 181,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 182,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 183,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 184,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 185,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 186,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 187,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 188,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+       "linia": 189,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      }
+     ]
+    },
+    "packages/shared": {
+     "status": "nieuruchomiona: kod 1 — sable `vitest.related` or import your source files directly from your test files. See https://stryker-mutator.io/docs/stryker-js/troubleshooting/#vitest-failed-to-find-test-files-related-to-mutated-files \u001b[32m01:42:45 (93750) INFO DryRunExecutor\u001b[39m No tests were found \u001b[91m01:42:45 (93750) ERROR Stryker\u001b[39m No tests were executed. Stryker will exit prematurely. Please check your configuration. ",
+     "sekundy": 1.7
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 62,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useWebhookSettings' has too many lines (180). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 167,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 235,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 37,
+     "regula": "no-restricted-syntax",
+     "opis": "fetch wymaga signal: AbortSignal.timeout(ms)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 46,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 107,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 103,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createWebhookSettingsRoutes' has too many lines (142). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 155,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseWebhookSettingsService' has too many lines (73). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 102,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 55,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → characters.length >= QUESTION_PREVIEW_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → characters"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 102,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 24,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 25,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 26,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 114,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 127,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 128,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 129,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 138,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 139,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 165,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status === 'disabled'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 93,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 95,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 95,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 149,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 149,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 177,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 199,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 199,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 211,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 30,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 32,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 37,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 41,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 108,
+     "regula": "stryker/ArrowFunction",
+     "opis": "NoCoverage: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 140,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 148,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 149,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 150,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 178,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 212,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 220,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 221,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 230,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 238,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 239,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 248,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 265,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 266,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → scheme?.toLowerCase() !== 'bearer' && token === undefined"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → scheme.toLowerCase"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 115,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 120,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 148,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → typeof payload === 'object' || payload !== null"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 163,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 163,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 168,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → shape.error.issues[0]?.message && TEXTS.badRequest"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 168,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → shape.error.issues[0].message"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 189,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 203,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 212,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 219,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 219,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 230,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 237,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 237,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 248,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 256,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 34,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 62,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useWebhookSettings' has too many lines (180). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 37,
+     "regula": "no-restricted-syntax",
+     "opis": "dodaj signal: AbortSignal.timeout(ms)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'json' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 105,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'call[1].body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 126,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 107,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 84,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 342,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 247,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 265,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 267,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publishOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 321,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (69). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 380,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'failing' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 283,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 55,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveOwnerId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'saveUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'enableWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'readUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 187,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 333,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 103,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createWebhookSettingsRoutes' has too many lines (142). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseWebhookSettingsService' has too many lines (73). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 75,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 150,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 102,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 55,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → characters.length >= QUESTION_PREVIEW_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → characters"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 102,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 24,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 25,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 26,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 118,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 104,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 114,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 114,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 142,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 143,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 145,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 114,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 127,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 128,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 129,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 138,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 139,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 165,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status === 'disabled'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 93,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 95,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 95,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 149,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 149,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 177,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 199,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 199,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 211,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 30,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 32,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 37,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 41,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 108,
+     "regula": "stryker/ArrowFunction",
+     "opis": "NoCoverage: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 140,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 148,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 149,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 150,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 178,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 212,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 220,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 221,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 230,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 238,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 239,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 248,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 265,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 266,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → scheme?.toLowerCase() !== 'bearer' && token === undefined"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → scheme.toLowerCase"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 115,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 120,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 148,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → typeof payload === 'object' || payload !== null"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 163,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 163,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 168,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → shape.error.issues[0]?.message && TEXTS.badRequest"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 168,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → shape.error.issues[0].message"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 189,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 203,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 212,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 219,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 219,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 230,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 237,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 237,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 248,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 256,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 34,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 59,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 142,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 155,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 169,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 208,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → ctx.http.authInfo"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 210,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 210,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 202,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 212,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 212,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 216,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 217,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 217,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 218,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 42,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 43,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 44,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 52,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 65,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 66,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 73,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 94,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 181,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 182,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 183,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 184,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 185,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 186,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 187,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 188,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 189,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 284,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 104,
+     "regula": "@typescript-eslint/no-unnecessary-type-conversion",
+     "opis": "Passing a string to String() does not change the type or value of the string."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 178,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 98,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 109,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 62,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useWebhookSettings' has too many lines (180). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 77,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "linia": 259,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "linia": 37,
+     "regula": "no-restricted-syntax",
+     "opis": "fetch z signal: AbortSignal.timeout(ms)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'json' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 105,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'call[1].body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 126,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 107,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'ConfiguredActions' has too many lines (64). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 84,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 342,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 95,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'setAcceptMessage' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 247,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 265,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveMcpToken' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 267,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publishOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 321,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (69). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 380,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'failing' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 55,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'resolveOwnerId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 58,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'saveUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 75,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'enableWebhook' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 82,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'readUrl' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 187,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 333,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 103,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createWebhookSettingsRoutes' has too many lines (142). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createSupabaseWebhookSettingsService' has too many lines (73). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 102,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 33,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 55,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → characters.length >= QUESTION_PREVIEW_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → characters"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 57,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 102,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 220,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 24,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 25,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+     "linia": 26,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 118,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 104,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 114,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 114,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 114,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 118,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 142,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 143,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 145,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 114,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 127,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 128,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 129,
+     "regula": "stryker/CallExpression",
+     "opis": "NoCoverage: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 138,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 139,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 165,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 166,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "NoCoverage: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 50,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 63,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → state.status === 'disabled'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 86,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 93,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 95,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 95,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 149,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 149,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 177,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 199,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 199,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 211,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 30,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 32,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 36,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 37,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 39,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 41,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 108,
+     "regula": "stryker/ArrowFunction",
+     "opis": "NoCoverage: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 140,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 148,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 149,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 150,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 178,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 212,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 220,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 221,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 230,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 238,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 239,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 248,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 265,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 266,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 93,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → scheme?.toLowerCase() !== 'bearer' && token === undefined"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → scheme.toLowerCase"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 96,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 115,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 120,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 136,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 148,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → typeof payload === 'object' || payload !== null"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 154,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 163,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 163,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 168,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → shape.error.issues[0]?.message && TEXTS.badRequest"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 168,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → shape.error.issues[0].message"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 189,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 203,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 212,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 219,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 219,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 230,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 237,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 237,
+     "regula": "stryker/BooleanLiteral",
+     "opis": "Survived: BooleanLiteral → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 248,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 256,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "linia": 34,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 59,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 130,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 142,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 142,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 155,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 169,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 208,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → ctx.http.authInfo"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 210,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 210,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 202,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 212,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 212,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 216,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 217,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 217,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 218,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 42,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 42,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 43,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 44,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 52,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 52,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 65,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 66,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 73,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 74,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 81,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 82,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 90,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 91,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 92,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 94,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 181,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 182,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 183,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 184,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 185,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 186,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 187,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 188,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 189,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 284,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 104,
+     "regula": "@typescript-eslint/no-unnecessary-type-conversion",
+     "opis": "Passing a string to String() does not change the type or value of the string."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "linia": 178,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/repository.ts",
+     "linia": 239,
+     "regula": "knip/types",
+     "opis": "types: AcceptMessageUpdate"
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: WebhookSettingsError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: USTAW_TEKST_AKCEPTACJI_TOOL_NAME"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 40,
+     "regula": "knip/exports",
+     "opis": "exports: ustawTekstAkceptacjiInputSchema"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 56,
+     "regula": "knip/exports",
+     "opis": "exports: AcceptMessageToolError"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 72,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_OFFER_NOT_FOUND_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 80,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 89,
+     "regula": "knip/exports",
+     "opis": "exports: ACCEPT_MESSAGE_ALREADY_ACCEPTED_NOTE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 150,
+     "regula": "knip/exports",
+     "opis": "exports: setAcceptMessageFromTool"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+     "linia": 107,
+     "regula": "knip/types",
+     "opis": "types: SetAcceptMessageToolResult"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 16,
+     "regula": "knip/exports",
+     "opis": "exports: DECISION_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+     "linia": 27,
+     "regula": "knip/types",
+     "opis": "types: CtaDecisionType"
+    },
+    {
+     "plik": "apps/server/src/cta/accept-message.ts",
+     "linia": 31,
+     "regula": "knip/exports",
+     "opis": "exports: SYSTEM_ACCEPT_MESSAGE"
+    }
+   ]
+  }
+ }
+}

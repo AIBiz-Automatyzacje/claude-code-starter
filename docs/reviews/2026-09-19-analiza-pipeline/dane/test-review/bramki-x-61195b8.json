@@ -1,0 +1,134 @@
+{
+ "etykieta": "x-61195b8",
+ "sha": "61195b8725af87f16fd9071e50020ec191de63f8",
+ "baza": "981300b2b3000fb678265b4560adb45294dc530a",
+ "modul_fixa": true,
+ "pliki": 4,
+ "pliki_kodu": 3,
+ "pliki_ts": [
+  "apps/server/src/app.ts",
+  "apps/server/src/rate-limit.test.ts",
+  "apps/server/src/rate-limit.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 6.3,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 1.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 3,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 1.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 3,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: SHARED_CLIENT_KEY"
+    }
+   ],
+   "zastane": 40,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: SHARED_CLIENT_KEY"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: SHARED_CLIENT_KEY"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: SHARED_CLIENT_KEY"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: SHARED_CLIENT_KEY"
+    }
+   ]
+  }
+ }
+}

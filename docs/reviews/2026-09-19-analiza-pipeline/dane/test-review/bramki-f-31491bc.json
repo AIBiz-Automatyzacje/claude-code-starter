@@ -1,0 +1,759 @@
+{
+ "etykieta": "f-31491bc",
+ "sha": "31491bc36fb7e0369eb9e2805e7472d528bbab11",
+ "baza": "2a149d6",
+ "modul_fixa": false,
+ "pliki": 11,
+ "pliki_kodu": 7,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+  "apps/dashboard/src/features/offers/heatmap-grid.ts",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+  "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+  "apps/dashboard/src/features/offers/use-offer-heat.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 6.7,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 5,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 254,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 9,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 254,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 11,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ],
+   "zastane": 63
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.5,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 162477,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 5446,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx": 16,
+    "apps/dashboard/src/features/offers/heatmap-grid.ts": 150,
+    "apps/dashboard/src/features/offers/use-offer-heat.ts": 4
+   },
+   "pliki_A": [
+    "apps/dashboard/src/features/offers/heatmap-grid.ts",
+    "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+    "apps/dashboard/src/features/offers/use-offer-heat.ts"
+   ],
+   "wyniki": {
+    "apps/dashboard": {
+     "status": "uruchomiona",
+     "sekundy": 28.7,
+     "statusy": {
+      "NoCoverage": 1,
+      "Killed": 62,
+      "Survived": 18
+     },
+     "przezyte": [
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 353,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "NoCoverage: ArithmeticOperator → a.fx + b.fx"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 132,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → row > gridRows"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 153,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → value <= MIN_GRID_ROWS"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 149,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 153,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → value >= MAX_GRID_ROWS"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 287,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 287,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → Number.isFinite(visit.viewport_width) || Number.isFinite(visit.doc_height)"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 289,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → visit.viewport_width > MIN_USABLE_FRAME_WIDTH"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 290,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → visit.doc_height > MIN_USABLE_FRAME_HEIGHT"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 299,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 299,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → usable.length >= 0"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 353,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 353,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 353,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → a.fy - b.fy && a.fx - b.fx"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 353,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → a.fy + b.fy"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 353,
+       "regula": "stryker/ArrowFunction",
+       "opis": "Survived: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 34,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /^(?:[0-9]|[1-5][0-9]|6[^0-3]):(?:[0-9]|1[0-5])$/"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 185,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 185,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → available >= 0"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → a.fx + b.fx"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 132,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → row > gridRows"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → value <= MIN_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 149,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → value >= MAX_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 287,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 287,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → Number.isFinite(visit.viewport_width) || Number.isFinite(visit.doc_height)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 289,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → visit.viewport_width > MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 290,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → visit.doc_height > MIN_USABLE_FRAME_HEIGHT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 299,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 299,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → usable.length >= 0"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → a.fy - b.fy && a.fx - b.fx"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.fy + b.fy"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 34,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|[1-5][0-9]|6[^0-3]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 185,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 185,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → available >= 0"
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 254,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → a.fx + b.fx"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 132,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → row > gridRows"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → value <= MIN_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 149,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → value >= MAX_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 287,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 287,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → Number.isFinite(visit.viewport_width) || Number.isFinite(visit.doc_height)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 289,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → visit.viewport_width > MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 290,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → visit.doc_height > MIN_USABLE_FRAME_HEIGHT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 299,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 299,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → usable.length >= 0"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → a.fy - b.fy && a.fx - b.fx"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.fy + b.fy"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 34,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|[1-5][0-9]|6[^0-3]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 185,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 185,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → available >= 0"
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 254,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → a.fx + b.fx"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 132,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → row > gridRows"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → value <= MIN_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 149,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → value >= MAX_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 287,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 287,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → Number.isFinite(visit.viewport_width) || Number.isFinite(visit.doc_height)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 289,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → visit.viewport_width > MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 290,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → visit.doc_height > MIN_USABLE_FRAME_HEIGHT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 299,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 299,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → usable.length >= 0"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → a.fy - b.fy && a.fx - b.fx"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.fy + b.fy"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 353,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 34,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /^(?:[0-9]|[1-5][0-9]|6[^0-3]):(?:[0-9]|1[0-5])$/"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 185,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 185,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → available >= 0"
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_GRID_ROWS"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 240,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 241,
+     "regula": "knip/exports",
+     "opis": "exports: MIN_USABLE_FRAME_HEIGHT"
+    }
+   ]
+  }
+ }
+}

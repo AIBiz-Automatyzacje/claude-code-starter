@@ -1,0 +1,25 @@
+sesja 1e2eb861: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia   8
+sesja 600461fd: narzędzia sesji ['Workflow']
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia   7
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  11
+sesja 66d19e85: narzędzia sesji ['Workflow']
+  sedzia:x-b02abfa:p1[medium]                  claude-opus-5-5            narzędzia   2
+sesja 822c383c: narzędzia sesji ['Workflow']
+  fix:kontrola:faza-5                          claude-opus-5-5            narzędzia   3
+  fix:pre-skan:faza-5                          claude-haiku-4-5-20251001  narzędzia  15  (uwaga)
+sesja 98b0b66f: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia   7
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (7):
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: zapis Bashem poza kopią ['> /tmp/phase5_diff.txt']: git diff b02abfa^..HEAD > /tmp/phase5_diff.txt && wc -l /tmp/phase5_diff.txt
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff b02abfa^..HEAD | grep "^+[^+]" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: zapis Bashem poza kopią ['> /tmp/scan_patterns.py']: cat > /tmp/scan_patterns.py << 'EOF' import re import sys  findings = [] current_file = None  with open('/tmp/phase5_dif
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: zapis Bashem poza kopią ['> /tmp/verify_patterns.sh']: cat > /tmp/verify_patterns.sh << 'EOF' #!/bin/bash  echo "=== Checking for pusty-catch ===" git diff b02abfa^..HEAD | gr
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: zapis Bashem poza kopią ['> /tmp/added_code.txt']: git diff b02abfa^..HEAD | grep "^+[^+]" | grep -vE "^\+\+" > /tmp/added_code.txt && wc -l /tmp/added_code.txt
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: zapis Bashem poza kopią ['> /tmp/detailed_scan.py']: cat > /tmp/detailed_scan.py << 'EOF' #!/usr/bin/env python3 import re  findings = [] current_file = None  with open('/tm
+  wf_df5ca45a-bbf fix:pre-skan:faza-5: agent haiku wołał narzędzia ['Bash']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 7, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 7
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

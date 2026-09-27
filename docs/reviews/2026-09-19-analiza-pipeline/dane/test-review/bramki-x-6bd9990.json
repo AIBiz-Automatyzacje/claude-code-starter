@@ -1,0 +1,215 @@
+{
+ "etykieta": "x-6bd9990",
+ "sha": "6bd9990fc7ac0600eafe2c8b4101b20534c31333",
+ "baza": "32975a10a04c353df2dbf3cfa0719095b5f1a3e3",
+ "modul_fixa": true,
+ "pliki": 12,
+ "pliki_kodu": 10,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+  "apps/dashboard/src/features/offers/heatmap-grid.ts",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+  "apps/dashboard/src/features/offers/texts.ts",
+  "apps/server/src/app.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "apps/server/src/routes/offer.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.1,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 26,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 274,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 26,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 274,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 151,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 152,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_HEIGHT"
+    }
+   ],
+   "zastane": 60,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 162294,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 5446,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 151,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 152,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_HEIGHT"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 151,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 152,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_HEIGHT"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 274,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 151,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 152,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_HEIGHT"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 274,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 151,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_WIDTH"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 152,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_FRAME_HEIGHT"
+    }
+   ]
+  }
+ }
+}

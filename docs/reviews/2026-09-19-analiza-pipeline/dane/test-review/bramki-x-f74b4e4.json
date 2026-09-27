@@ -1,0 +1,418 @@
+{
+ "etykieta": "x-f74b4e4",
+ "sha": "f74b4e4497691c90a329dcd6d2510d4760607ec9",
+ "baza": "212d5c5a35bb4fe545f1e75c9b3848d2fb38d636",
+ "modul_fixa": true,
+ "pliki": 15,
+ "pliki_kodu": 14,
+ "pliki_ts": [
+  "apps/server/src/app.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/mcp/constants.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/server.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+  "apps/server/src/offer/expired-page.ts",
+  "apps/server/src/offer/mail-draft.ts",
+  "apps/server/src/offer/repository.test.ts",
+  "apps/server/src/offer/validation.test.ts",
+  "apps/server/src/offer/validation.ts",
+  "apps/server/src/offer/validity-date.test.ts",
+  "apps/server/src/offer/validity-date.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 6.3,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 135,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createMcpRoutes' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 464,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 468,
+     "regula": "max-lines",
+     "opis": "File has too many lines (373). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 39,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'insert' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 14,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 135,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createMcpRoutes' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 464,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 468,
+     "regula": "max-lines",
+     "opis": "File has too many lines (373). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 39,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'insert' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 15,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_PATH"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: USER_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 52,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 92,
+     "regula": "knip/exports",
+     "opis": "exports: PUBLISH_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 97,
+     "regula": "knip/exports",
+     "opis": "exports: MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/offer/mail-draft.ts",
+     "linia": 17,
+     "regula": "knip/exports",
+     "opis": "exports: formatValidityDate"
+    }
+   ],
+   "zastane": 33,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_PATH"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: USER_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 52,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 92,
+     "regula": "knip/exports",
+     "opis": "exports: PUBLISH_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 97,
+     "regula": "knip/exports",
+     "opis": "exports: MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/offer/mail-draft.ts",
+     "linia": 17,
+     "regula": "knip/exports",
+     "opis": "exports: formatValidityDate"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 135,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createMcpRoutes' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 464,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 468,
+     "regula": "max-lines",
+     "opis": "File has too many lines (373). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 39,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'insert' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_PATH"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: USER_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 52,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 92,
+     "regula": "knip/exports",
+     "opis": "exports: PUBLISH_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 97,
+     "regula": "knip/exports",
+     "opis": "exports: MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/offer/mail-draft.ts",
+     "linia": 17,
+     "regula": "knip/exports",
+     "opis": "exports: formatValidityDate"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_PATH"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: USER_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 52,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 92,
+     "regula": "knip/exports",
+     "opis": "exports: PUBLISH_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 97,
+     "regula": "knip/exports",
+     "opis": "exports: MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/offer/mail-draft.ts",
+     "linia": 17,
+     "regula": "knip/exports",
+     "opis": "exports: formatValidityDate"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 135,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'createMcpRoutes' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 464,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'publish' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 468,
+     "regula": "max-lines",
+     "opis": "File has too many lines (373). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/repository.test.ts",
+     "linia": 39,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'insert' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_PATH"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 15,
+     "regula": "knip/exports",
+     "opis": "exports: USER_TOKEN_HEADER"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.ts",
+     "linia": 52,
+     "regula": "knip/exports",
+     "opis": "exports: MCP_MAX_BODY_BYTES"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 92,
+     "regula": "knip/exports",
+     "opis": "exports: PUBLISH_FAILURE_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+     "linia": 97,
+     "regula": "knip/exports",
+     "opis": "exports: MISSING_USER_TOKEN_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/offer/mail-draft.ts",
+     "linia": 17,
+     "regula": "knip/exports",
+     "opis": "exports: formatValidityDate"
+    }
+   ]
+  }
+ }
+}

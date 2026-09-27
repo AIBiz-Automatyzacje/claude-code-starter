@@ -243,7 +243,7 @@ def main():
     war = D.warunki()
     fix = et.startswith('x-')
     if fix:
-        numer = int(re.search(r'po review fazy (\d+)', meta_k['temat']).group(1))
+        numer = int(re.search(r'(?:po review|kontrola diffu naprawczego) fazy (\d+)', meta_k['temat']).group(1))   # 4 commity kontroli w module §2.6
         rap = os.path.join(k, 'docs', 'active', meta_k['zadanie'], 'review-faza-%d.md' % numer)
         fix_p1 = os.path.exists(rap) and bool(re.search(r'^#{2,4} .*\bP1\b', open(rap, encoding='utf-8').read(), re.M))
     else:

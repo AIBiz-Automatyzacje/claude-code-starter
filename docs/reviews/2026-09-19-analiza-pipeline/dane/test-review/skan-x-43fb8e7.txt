@@ -1,0 +1,20 @@
+sesja 15cc4702: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia  31
+sesja 34f237d4: narzędzia sesji ['Workflow']
+  sedzia:x-43fb8e7:p1[medium]                  claude-opus-5-5            narzędzia   2
+sesja 8d4660dd: narzędzia sesji ['Workflow']
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia  27
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  22
+sesja 90c29731: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia  28
+sesja 99c101af: narzędzia sesji ['Workflow']
+  fix:pre-skan:faza-2                          claude-haiku-4-5-20251001  narzędzia  34  (uwaga)
+  fix:kontrola:faza-2                          claude-opus-5-5            narzędzia   7
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (2):
+  wf_f1bd04f6-fae fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff 43fb8e7^..HEAD > /tmp/diff.txt 2>&1 && wc -l /tmp/diff.txt
+  wf_f1bd04f6-fae fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 7, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 2
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

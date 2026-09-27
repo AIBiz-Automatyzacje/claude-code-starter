@@ -1,0 +1,922 @@
+{
+ "etykieta": "x-60f1951",
+ "sha": "60f1951eb67356958644ccfa19792262a8634345",
+ "baza": "b02abfad216aaa945a2c4f0e03e8e610d76de8e1",
+ "modul_fixa": true,
+ "pliki": 28,
+ "pliki_kodu": 28,
+ "pliki_ts": [
+  "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+  "apps/dashboard/src/features/templates/template-delete-action.test.tsx",
+  "apps/dashboard/src/features/templates/templates-page.test.tsx",
+  "apps/dashboard/src/features/templates/use-templates.test.ts",
+  "apps/dashboard/src/test/require-element.ts",
+  "apps/server/src/cta/cta-script.test.ts",
+  "apps/server/src/cta/decision-service.test.ts",
+  "apps/server/src/http/json-payload.test.ts",
+  "apps/server/src/http/json-payload.ts",
+  "apps/server/src/http/limited-body.test.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/tools/pobierz-szablon.ts",
+  "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+  "apps/server/src/mcp/tools/zapisz-szablon.ts",
+  "apps/server/src/observability/recording-logger.ts",
+  "apps/server/src/offer/template-repository.test.ts",
+  "apps/server/src/routes/decisions.test.ts",
+  "apps/server/src/routes/decisions.ts",
+  "apps/server/src/routes/offer-images.test.ts",
+  "apps/server/src/routes/template-assets.test.ts",
+  "apps/server/src/routes/webhook-settings.test.ts",
+  "apps/server/src/routes/webhook-settings.ts",
+  "apps/server/src/tracker/tracker.test.ts",
+  "apps/server/src/webhooks/deliver.test.ts",
+  "apps/server/src/webhooks/ssrf-guard.test.ts",
+  "apps/server/src/webhooks/ssrf-guard.ts",
+  "apps/server/src/webhooks/worker.test.ts",
+  "packages/shared/src/webhook-contract.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.3,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 4.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 173,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 177,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 178,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 480,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 481,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 578,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 579,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 347,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 351,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 352,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 153,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 155,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 116,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 118,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 258,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 260,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 263,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 297,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 298,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 307,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 547,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 548,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 549,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 608,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 170,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 88,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 128,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 4.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 173,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 177,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 178,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 480,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 481,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 578,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 579,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 347,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 351,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 352,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 153,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 155,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 116,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 118,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 258,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 260,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 263,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 297,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 298,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 307,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 547,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 548,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 549,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 608,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 170,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 88,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 127,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/observability/recording-logger.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/server/src/observability/recording-logger.ts"
+    }
+   ],
+   "zastane": 184,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 172350,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 6041,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/observability/recording-logger.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/server/src/observability/recording-logger.ts"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 173,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 177,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 178,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 480,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 481,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 578,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 579,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 347,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 351,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 352,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 153,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 155,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 116,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 118,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 258,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 260,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 263,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 297,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 298,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 307,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 547,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 548,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 549,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 608,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 170,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 88,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/observability/recording-logger.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/server/src/observability/recording-logger.ts"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/observability/recording-logger.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/server/src/observability/recording-logger.ts"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 173,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 175,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 177,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 178,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 480,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 481,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 578,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 579,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 347,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 349,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 351,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 352,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 153,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/decisions.test.ts",
+     "linia": 155,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 116,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/offer-images.test.ts",
+     "linia": 118,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 258,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 260,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 263,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 297,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 298,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 307,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 547,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 548,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 549,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 608,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    },
+    {
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "linia": 170,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "linia": 88,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/observability/recording-logger.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/server/src/observability/recording-logger.ts"
+    }
+   ]
+  }
+ }
+}

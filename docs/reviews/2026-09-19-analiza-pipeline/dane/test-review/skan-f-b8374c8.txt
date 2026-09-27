@@ -1,0 +1,44 @@
+sesja 082f7e0a: narzędzia sesji ['Workflow']
+sesja 16512f66: narzędzia sesji ['Workflow']
+  B:review:spec[medium]                        claude-opus-5-5            narzędzia  21
+  B:review:security#2[medium]                  claude-opus-5-5            narzędzia  15
+  B:review:security#1[medium]                  claude-opus-5-5            narzędzia  15
+  B:review:test-coverage[medium]               claude-opus-5-5            narzędzia   7
+  B:review:security#3[medium]                  claude-opus-5-5            narzędzia  20
+  B:review:code-quality[medium]                claude-opus-5-5            narzędzia   8
+  B:review:correctness#1[medium]               claude-opus-5-5            narzędzia  14
+  B:review:correctness#2[medium]               claude-opus-5-5            narzędzia   8
+  B:review:correctness#3[medium]               claude-opus-5-5            narzędzia  12
+  B:agregator[haiku]                           claude-haiku-4-5-20251001  narzędzia   1
+sesja 1724194b: narzędzia sesji ['Workflow']
+  review:correctness                           claude-opus-5-5            narzędzia  21
+  review:test-coverage                         claude-opus-5-5            narzędzia  24
+  review:spec-compliance                       claude-opus-5-5            narzędzia  17
+  review:security                              claude-opus-5-5            narzędzia  19
+  review:performance                           claude-opus-5-5            narzędzia  10
+  review:code-quality                          claude-opus-5-5            narzędzia  12
+  kontekst:diff                                claude-opus-5-5            narzędzia   5
+  dedup:semantyczny                            claude-haiku-4-5-20251001  narzędzia   1
+sesja 2cc570fc: narzędzia sesji ['Workflow']
+  C:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   3
+sesja 35bbd2ec: narzędzia sesji ['Workflow']
+  A:review:spec-compliance[medium]             claude-opus-5-5            narzędzia  24
+  A:review:code-quality[low]                   claude-opus-5-5            narzędzia   9
+  A:review:security[high]                      claude-opus-5-5            narzędzia  18
+  A:dedup:semantyczny[haiku]                   claude-haiku-4-5-20251001  narzędzia   1
+  A:review:correctness[high]                   claude-opus-5-5            narzędzia  17
+  A:review:test-coverage[medium]               claude-opus-5-5            narzędzia   8
+sesja 759ab3d7: narzędzia sesji ['Workflow']
+sesja 7f1bf8d9: narzędzia sesji ['Workflow']
+  sedzia:f-b8374c8:p1[medium]                  claude-opus-5-5            narzędzia   2
+sesja 874d6b75: narzędzia sesji ['Workflow']
+  B:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   3
+sesja e211d177: narzędzia sesji ['Workflow']
+  C:review:kod[high]                           claude-opus-5-5            narzędzia  17
+  C:review:testy[medium]                       claude-opus-5-5            narzędzia   4
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (0)
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 29, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 0
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

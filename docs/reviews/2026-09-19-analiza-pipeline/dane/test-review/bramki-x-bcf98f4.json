@@ -1,0 +1,425 @@
+{
+ "etykieta": "x-bcf98f4",
+ "sha": "bcf98f4a62d8f5a8b50e28e23b2436a8acf40720",
+ "baza": "49091e160dda67fed5ef8d9934d7fb5bd3107bd7",
+ "modul_fixa": true,
+ "pliki": 24,
+ "pliki_kodu": 21,
+ "pliki_ts": [
+  "apps/dashboard/src/features/templates/asset-upload-state.ts",
+  "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+  "apps/dashboard/src/features/templates/template-assets-card.tsx",
+  "apps/dashboard/src/features/templates/template-preview-card.test.tsx",
+  "apps/dashboard/src/features/templates/template-preview-card.tsx",
+  "apps/dashboard/src/features/templates/templates-api.test.ts",
+  "apps/dashboard/src/features/templates/templates-page.tsx",
+  "apps/dashboard/src/features/templates/texts.ts",
+  "apps/dashboard/src/features/templates/use-templates.test.ts",
+  "apps/dashboard/src/features/templates/use-templates.ts",
+  "apps/server/src/assets/storage-client.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+  "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+  "apps/server/src/mcp/tools/usun-szablon.test.ts",
+  "apps/server/src/offer/delete-template.test.ts",
+  "apps/server/src/offer/delete-template.ts",
+  "apps/server/src/routes/template-assets.test.ts",
+  "apps/server/src/routes/templates.test.ts",
+  "apps/server/src/routes/templates.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 8.5,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 13,
+     "regula": "@typescript-eslint/consistent-type-imports",
+     "opis": "`import()` type annotations are forbidden."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 164,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 186,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.test.ts",
+     "linia": 299,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/assets/storage-client.ts",
+     "linia": 135,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 160,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/delete-template.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 196,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeMany' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/templates.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 88,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.9,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 164,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 186,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.test.ts",
+     "linia": 299,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 160,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/delete-template.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 196,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeMany' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/templates.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 94,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [],
+   "zastane": 183,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 172011,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 6041,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 13,
+     "regula": "@typescript-eslint/consistent-type-imports",
+     "opis": "`import()` type annotations are forbidden."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 164,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 186,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.test.ts",
+     "linia": 299,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/assets/storage-client.ts",
+     "linia": 135,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 160,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/delete-template.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 196,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeMany' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/templates.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 164,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 186,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.test.ts",
+     "linia": 299,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 160,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/delete-template.test.ts",
+     "linia": 67,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 196,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeMany' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/templates.test.ts",
+     "linia": 115,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObjects' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": []
+  }
+ }
+}

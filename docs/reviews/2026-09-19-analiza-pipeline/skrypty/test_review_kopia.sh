@@ -3,7 +3,7 @@
 # Zero agentow. oferty-online i workspace-template sa tylko czytane (clone --mirror, cp z .claude szablonu).
 #
 # Uzycie:
-#   test_review_kopia.sh stan <przed|po>                 — dowod "bez zmian" (§3 pkt 7): refy + status oferty-online, status .claude/CLAUDE.md szablonu
+#   test_review_kopia.sh stan <przed|po>[-etap]          — dowod "bez zmian" (§3 pkt 7): refy + status oferty-online, status .claude/CLAUDE.md szablonu
 #   test_review_kopia.sh narzedzia                       — jednorazowo: narzedzia bramek w ~/test-review/_narzedzia (NIE w kopii — package.json kopii zostaje czysty)
 #   test_review_kopia.sh kopia <sha> <etykieta> <zadanie> [--bez-instalacji]
 #        klon uciety na <sha> (tylko przodkowie), main = commit main z epoki, galaz feature/<zadanie>, overlay .claude/ szablonu z HEAD
@@ -34,12 +34,14 @@ stan() {
 
 case ${1:-} in
 stan)
-  [[ ${2:-} == przed || ${2:-} == po ]] || { echo "stan <przed|po>"; exit 1 }
+  # przed|po = pilot (stan przed z przygotowania 2026-09-25); przed-etap|po-etap = etap glowny (stan przed zapisany na starcie etapu)
+  [[ ${2:-} =~ ^(przed|po)(-etap)?$ ]] || { echo "stan <przed|po|przed-etap|po-etap>"; exit 1 }
   stan $DANE/stan-$2.txt
   echo "zapisano $DANE/stan-$2.txt ($(wc -l < $DANE/stan-$2.txt) linii)"
-  if [[ $2 == po ]]; then
-    if diff -q $DANE/stan-przed.txt $DANE/stan-po.txt >/dev/null; then echo "BEZ ZMIAN: oferty-online i .claude/CLAUDE.md szablonu identyczne jak przed"
-    else echo "STOP §11: roznica stanu"; diff $DANE/stan-przed.txt $DANE/stan-po.txt; exit 2; fi
+  if [[ $2 == po* ]]; then
+    PRZED=$DANE/stan-przed${2#po}.txt
+    if diff -q $PRZED $DANE/stan-$2.txt >/dev/null; then echo "BEZ ZMIAN: oferty-online i .claude/CLAUDE.md szablonu identyczne jak przed"
+    else echo "STOP §11: roznica stanu"; diff $PRZED $DANE/stan-$2.txt; exit 2; fi
   fi
   ;;
 

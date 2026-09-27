@@ -1,0 +1,717 @@
+{
+ "etykieta": "x-0ec2b19",
+ "sha": "0ec2b19e20b7a802d24623a9a181ed51de127b89",
+ "baza": "b5423898d3604c5160e7040c50f96ac5f65e0003",
+ "modul_fixa": true,
+ "pliki": 31,
+ "pliki_kodu": 27,
+ "pliki_ts": [
+  "apps/server/src/assets/asset-repository.test.ts",
+  "apps/server/src/assets/asset-repository.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/server.ts",
+  "apps/server/src/mcp/tools/lista-szablonow.test.ts",
+  "apps/server/src/mcp/tools/lista-szablonow.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+  "apps/server/src/mcp/tools/pobierz-szablon.test.ts",
+  "apps/server/src/mcp/tools/pobierz-szablon.ts",
+  "apps/server/src/mcp/tools/template-repository.fake.ts",
+  "apps/server/src/mcp/tools/template-tool-errors.ts",
+  "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+  "apps/server/src/mcp/tools/usun-szablon.test.ts",
+  "apps/server/src/mcp/tools/usun-szablon.ts",
+  "apps/server/src/mcp/tools/zapisz-szablon.test.ts",
+  "apps/server/src/mcp/tools/zapisz-szablon.ts",
+  "apps/server/src/offer/corrective-stylesheet.test.ts",
+  "apps/server/src/offer/corrective-stylesheet.ts",
+  "apps/server/src/offer/template-layout-2.test.ts",
+  "apps/server/src/offer/template-repository.test.ts",
+  "apps/server/src/offer/template-repository.ts",
+  "apps/server/src/offer/validation.test.ts",
+  "apps/server/src/offer/validation.ts",
+  "apps/server/src/routes/offer-images.test.ts",
+  "apps/server/src/routes/template-assets.test.ts",
+  "scripts/dockerfile-invariants.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 9.4,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-0ec2b19/scripts/dockerfile-invariants.test.ts was not fou"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 225,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 121,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 511,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (78). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-repository.fake.ts",
+     "linia": 83,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 279,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 290,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 23,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 40,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 139,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 142,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 165,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 99,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 228,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-0ec2b19/scripts/dockerfile-invariants.test.ts was not fou"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 121,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 511,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (78). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-repository.fake.ts",
+     "linia": 83,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 279,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 290,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 23,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 40,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 139,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 142,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 92,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 228,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-0ec2b19/scripts/dockerfile-invariants.test.ts was not fou"
+   ],
+   "nieobjete_n": 1
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.8,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/corrective-stylesheet.ts",
+     "linia": 45,
+     "regula": "knip/exports",
+     "opis": "exports: MOBILE_MEDIA_QUERY"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 34,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_LIMIT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_NAME_CONFLICT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_FAILURE_MESSAGE"
+    }
+   ],
+   "zastane": 162,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/corrective-stylesheet.ts",
+     "linia": 45,
+     "regula": "knip/exports",
+     "opis": "exports: MOBILE_MEDIA_QUERY"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 34,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_LIMIT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_NAME_CONFLICT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_FAILURE_MESSAGE"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 225,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 121,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 511,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (78). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-repository.fake.ts",
+     "linia": 83,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 279,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 290,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 23,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 40,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 139,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 142,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 165,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/offer/corrective-stylesheet.ts",
+     "linia": 45,
+     "regula": "knip/exports",
+     "opis": "exports: MOBILE_MEDIA_QUERY"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 34,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_LIMIT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_NAME_CONFLICT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_FAILURE_MESSAGE"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 228,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/corrective-stylesheet.ts",
+     "linia": 45,
+     "regula": "knip/exports",
+     "opis": "exports: MOBILE_MEDIA_QUERY"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 34,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_LIMIT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_NAME_CONFLICT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_FAILURE_MESSAGE"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 121,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 122,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 511,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (78). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 370,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 381,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+     "linia": 384,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-repository.fake.ts",
+     "linia": 83,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 279,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'findId' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 290,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 23,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'flush' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 40,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 45,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 139,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/usun-szablon.test.ts",
+     "linia": 142,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'removeObject' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.test.ts",
+     "linia": 110,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'listStoragePaths' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/server/src/assets/asset-repository.ts",
+     "linia": 228,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/corrective-stylesheet.ts",
+     "linia": 45,
+     "regula": "knip/exports",
+     "opis": "exports: MOBILE_MEDIA_QUERY"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 34,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_LIMIT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 42,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_NAME_CONFLICT_MESSAGE"
+    },
+    {
+     "plik": "apps/server/src/mcp/tools/template-tool-errors.ts",
+     "linia": 64,
+     "regula": "knip/exports",
+     "opis": "exports: TEMPLATE_FAILURE_MESSAGE"
+    }
+   ]
+  }
+ }
+}

@@ -6,9 +6,11 @@ Użycie:
         message.id, cennik d4r: panel_koszt_dane.sklad) per krok i wariant, kolumny: ZMIERZONY i PRZELICZONY do bazy „po zmianie kontekstu”
         (Referencja.po_zmianie z klasą roli); sesje uruchamiające i sędzia = „koszt pomiaru”. Wyjście dane/test-review/koszt.{txt,json} (narastająco).
   python3 skrypty/test_review_wynik.py limit <zakres> <etykieta> [<etykieta> …]   — kod 3, gdy suma kosztu zmierzonego > twardy limit zakresu
-        (pilot: 1,5 × górna z dane/test-review/koszt-pilota.json; etap główny wg dane/test-review-plan.txt §4 × 1,5).
-  python3 skrypty/test_review_wynik.py metryki <etykieta> [<etykieta> …] — złapane PEŁNE / PEŁNE+CZĘŚCIOWE per wariant, osobno klucz 1 i 2 (tylko K
-        obecne = TAK), wkład bramek, szum (F poza kluczem: na fazę i na 100 linii diffu, P1/P2 osobno), złapane po weryfikacji → dane/test-review/metryki.txt."""
+        (pilot: 1,5 × górna z dane/test-review/koszt-pilota.json; etap główny 50%: 300 M wg HANDOFF 6a pkt 30(d)).
+  python3 skrypty/test_review_wynik.py metryki [--etap] <etykieta> [<etykieta> …] — złapane PEŁNE / PEŁNE+CZĘŚCIOWE per wariant, osobno klucz 1 i 2
+        (tylko K obecne = TAK), wkład bramek, szum (F poza kluczem: na fazę i na 100 linii diffu, P1/P2 osobno), złapane po weryfikacji
+        → dane/test-review/metryki.txt. --etap (etap główny, r=1): tylko permutacja p1 (także w fazach pilota) i klucz 2 bez „po weryfikacji”
+        (sceptycy na kluczu 2 tylko w pilocie, plan §6) → dane/test-review/metryki-etap.txt."""
 import glob, json, os, re, sys
 
 sys.dont_write_bytecode = True
@@ -20,7 +22,9 @@ TR = os.path.expanduser('~/test-review')
 PROJ = os.path.expanduser('~/.claude/projects')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(BASE, 'dane', 'test-review')
-LIMITY = {'50%': 551.0, '75%': 907.0, 'pelny': 1549.0}   # dane/test-review-plan.txt §4 × 1,5; pilot — z koszt-pilota.json (1,5 × górna)
+# etap główny 50% (13 faz + moduł fixa, r=1): HANDOFF 6a pkt 30(d) = 1,5 × szacunek po pilocie (152 M fazy + ~48 M moduł fixa); liczy też
+# jednostki pilota wchodzące do etapu. Stare limity planu (551 / 907 / 1549 M) zastąpione decyzją; pilot — z koszt-pilota.json (1,5 × górna).
+LIMITY = {'50%': 300.0}
 MAX_NULL = 0.10   # §11: > 10% agentów zwróciło null = twarde zatrzymanie
 
 
@@ -133,10 +137,11 @@ def zabite(et, w):
     return {fids.get((d.get('opis') or '')[:200]) for d in dec if d.get('zabity')} - {None}
 
 
-def metryki(ets):
-    L, pod = ['test_review_wynik.py metryki — tylko K obecne (TAK); PEŁNE / PEŁNE+CZĘŚCIOWE; F = findingi agentów i bramek'], {}
+def metryki(ets, etap=False):
+    L, pod = ['test_review_wynik.py metryki%s — tylko K obecne (TAK); PEŁNE / PEŁNE+CZĘŚCIOWE; F = findingi agentów i bramek'
+              % (' --etap (p1, klucz 2 bez weryfikacji)' if etap else '')], {}
     for et in ets:
-        for sp in sorted(glob.glob(os.path.join(TR, 'wyniki', et, 'sedzia-p*.json'))):
+        for sp in sorted(glob.glob(os.path.join(TR, 'wyniki', et, 'sedzia-p1.json' if etap else 'sedzia-p*.json'))):
             perm = re.search(r'sedzia-p(\d+)', sp).group(1)
             sed = json.load(open(sp)); mp = json.load(open(os.path.join(TR, 'sedzia', '%s-p%s-mapowanie.json' % (et, perm))))
             br = json.load(open(os.path.join(OUT, 'bramki-%s.json' % et)))
@@ -148,7 +153,7 @@ def metryki(ets):
                     sz = sum(any(w in mp['F'].get(d['f'], {}).get('wlasciciele', []) for d in k['dopasowania']) for k in ks)
                     bram = sum(any(w in mp['F'].get(d['f'], {}).get('wlasciciele', []) and mp['F'][d['f']]['rodzaj'] == 'bramka' for d in k['dopasowania']) for k in ks)
                     zab = zabite(et, w)   # None w fazach fix (x-*): plan nie przewiduje tam sceptyków
-                    po_ver = 'brak sceptyków' if zab is None else sum(
+                    po_ver = 'brak sceptyków' if zab is None or (etap and zr == 'klucz2') else sum(
                         any(w in mp['F'].get(d['f'], {}).get('wlasciciele', []) and d['f'] not in zab for d in k['dopasowania']) for k in ks)
                     L.append('  %-10s p%s wariant %s %s: K obecne %2d | PEŁNE %2d | szeroko %2d | przez bramki %d | szeroko po weryfikacji %s' % (
                         et, perm, w, zr, len(ks), pel, sz, bram, po_ver))
@@ -159,7 +164,7 @@ def metryki(ets):
     L.append('RAZEM (wszystkie fazy i permutacje):')
     for (w, zr), (n, p, s) in sorted(pod.items()):
         L.append('  wariant %s %s: %d/%d PEŁNE (%.0f%%), %d/%d szeroko (%.0f%%)' % (w, zr, p, n, 100 * p / n if n else 0, s, n, 100 * s / n if n else 0))
-    open(os.path.join(OUT, 'metryki.txt'), 'w').write('\n'.join(L) + '\n')
+    open(os.path.join(OUT, 'metryki-etap.txt' if etap else 'metryki.txt'), 'w').write('\n'.join(L) + '\n')
     print('\n'.join(L))
 
 
@@ -167,5 +172,5 @@ if __name__ == '__main__':
     t = sys.argv[1]
     if t == 'koszt': koszt(sys.argv[2:])
     elif t == 'limit': sys.exit(limit(sys.argv[2], sys.argv[3:]))
-    elif t == 'metryki': metryki(sys.argv[2:])
+    elif t == 'metryki': metryki([a for a in sys.argv[2:] if a != '--etap'], '--etap' in sys.argv)
     else: raise SystemExit(__doc__)

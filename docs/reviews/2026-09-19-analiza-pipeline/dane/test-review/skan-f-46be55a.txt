@@ -1,0 +1,51 @@
+sesja 057424e6: narzędzia sesji ['Workflow']
+  A:review:security[high]                      claude-opus-5-5            narzędzia  18
+  A:dedup:semantyczny[haiku]                   claude-haiku-4-5-20251001  narzędzia   1
+  A:review:code-quality[low]                   claude-opus-5-5            narzędzia   5
+  A:review:correctness[high]                   claude-opus-5-5            narzędzia  28
+  A:review:test-coverage[medium]               claude-opus-5-5            narzędzia  17
+  A:review:spec-compliance[medium]             claude-opus-5-5            narzędzia  26
+sesja 62c812c5: narzędzia sesji ['Workflow']
+  A:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   5
+sesja 6b00fa2f: narzędzia sesji ['Workflow']
+  sedzia:f-46be55a:p1[medium]                  claude-opus-5-5            narzędzia   2
+sesja 89f5ab0b: narzędzia sesji ['Workflow']
+  C:review:kod[high]                           claude-opus-5-5            narzędzia  15
+  C:review:testy[medium]                       claude-opus-5-5            narzędzia   6
+sesja 9a2b8b12: narzędzia sesji ['Workflow']
+  verify-batch:apps/dashboard/src/components/l claude-opus-5-5            narzędzia   4
+  verify-batch:apps/dashboard/src/features/aut claude-opus-5-5            narzędzia   8
+  verify-batch:apps/dashboard/src/features/aut claude-opus-5-5            narzędzia   5
+  verify-batch:apps/dashboard/src/features/set claude-opus-5-5            narzędzia   3
+sesja b7651528: narzędzia sesji ['Workflow']
+  B:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   4
+sesja d0b68f4c: narzędzia sesji ['Workflow']
+  B:review:correctness#1[medium]               claude-opus-5-5            narzędzia  10
+  B:review:security#2[medium]                  claude-opus-5-5            narzędzia  12
+  B:review:code-quality[medium]                claude-opus-5-5            narzędzia  14
+  B:review:security#3[medium]                  claude-opus-5-5            narzędzia   9
+  B:agregator[haiku]                           claude-haiku-4-5-20251001  narzędzia   1
+  B:review:test-coverage[medium]               claude-opus-5-5            narzędzia  11
+  B:review:correctness#3[medium]               claude-opus-5-5            narzędzia  13
+  B:review:security#1[medium]                  claude-opus-5-5            narzędzia  10
+  B:review:spec[medium]                        claude-opus-5-5            narzędzia  16
+  B:review:correctness#2[medium]               claude-opus-5-5            narzędzia   9
+sesja da4a9501: narzędzia sesji ['Workflow']
+  review:test-coverage                         claude-opus-5-5            narzędzia  27
+  review:correctness                           claude-opus-5-5            narzędzia  26
+  review:performance                           claude-opus-5-5            narzędzia  13  (uwaga)
+  review:code-quality                          claude-opus-5-5            narzędzia  13
+  review:spec-compliance                       claude-opus-5-5            narzędzia  27
+  kontekst:diff                                claude-opus-5-5            narzędzia   8  (uwaga)
+  dedup:semantyczny                            claude-haiku-4-5-20251001  narzędzia   1
+  review:security                              claude-opus-5-5            narzędzia  25
+sesja ebac0379: narzędzia sesji ['Workflow']
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (3):
+  wf_b32f9d6d-278 review:performance: zapis Bashem poza kopią ['rm ', '> vite.tmpcfg.mjs']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-46be55a/apps/dashboard && S=/private/tmp/claude-501/-Users-kacper-trz
+  wf_b32f9d6d-278 review:performance: zapis Bashem poza kopią ['rm ', '> vite.tmpcfg.mjs']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-46be55a/apps/dashboard && S=/private/tmp/claude-501/-Users-kacper-trz
+  wf_b32f9d6d-278 kontekst:diff: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-46be55a; P=docs/plans/2026-08-27-001-feat-faza-3-konto-i-dashboard-pl
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 33, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 3
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

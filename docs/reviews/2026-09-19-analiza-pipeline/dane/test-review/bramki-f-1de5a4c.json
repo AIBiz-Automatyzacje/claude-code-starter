@@ -1,0 +1,1058 @@
+{
+ "etykieta": "f-1de5a4c",
+ "sha": "1de5a4c2607944072aa9f27b58edc18b46e34c4c",
+ "baza": "60f1951",
+ "modul_fixa": false,
+ "pliki": 68,
+ "pliki_kodu": 46,
+ "pliki_ts": [
+  "apps/dashboard/src/App.test.tsx",
+  "apps/dashboard/src/App.tsx",
+  "apps/dashboard/src/components/copy-button.test.tsx",
+  "apps/dashboard/src/components/copy-button.tsx",
+  "apps/dashboard/src/components/error-boundary.test.tsx",
+  "apps/dashboard/src/components/error-boundary.tsx",
+  "apps/dashboard/src/components/layout/app-layout.test.tsx",
+  "apps/dashboard/src/components/layout/app-layout.tsx",
+  "apps/dashboard/src/features/auth/require-session.tsx",
+  "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+  "apps/dashboard/src/features/offers/heatmap-grid.ts",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+  "apps/dashboard/src/features/offers/texts.ts",
+  "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+  "apps/dashboard/src/features/offers/use-offer-heat.ts",
+  "apps/dashboard/src/features/settings/settings-page.test.tsx",
+  "apps/dashboard/src/features/settings/texts.ts",
+  "apps/dashboard/src/features/settings/use-mcp-token.ts",
+  "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+  "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+  "apps/dashboard/src/main.tsx",
+  "apps/server/src/cta/cta-script.test.ts",
+  "apps/server/src/offer/aa-pages.test.ts",
+  "apps/server/src/offer/aa-pages.ts",
+  "apps/server/src/offer/cta-section.test.ts",
+  "apps/server/src/offer/cta-section.ts",
+  "apps/server/src/offer/expired-page.test.ts",
+  "apps/server/src/offer/expired-page.ts",
+  "apps/server/src/offer/pages/aa-design.test.ts",
+  "apps/server/src/offer/pages/aa-design.ts",
+  "apps/server/src/routes/offer-origin-pages.test.ts",
+  "apps/server/src/routes/offer-origin-pages.ts",
+  "apps/server/src/routes/offer.test.ts",
+  "apps/server/src/routes/offer.ts",
+  "apps/server/src/webhooks/settings-service.test.ts",
+  "apps/server/src/webhooks/settings-service.ts",
+  "packages/shared/src/webhook-contract.test.ts",
+  "packages/shared/src/webhook-contract.ts",
+  "scripts/dockerfile-invariants.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.4,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 4.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 72,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 58,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 10,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-1de5a4c/scripts/dockerfile-invariants.test.ts was not fou"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 4.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'abortSignal' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 31,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 72,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-call",
+     "opis": "Unsafe call of an `any` typed value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-member-access",
+     "opis": "Unsafe member access .mockRestore on an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 58,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 492,
+     "regula": "max-lines",
+     "opis": "File has too many lines (371). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 107,
+     "regula": "@typescript-eslint/no-unsafe-return",
+     "opis": "Unsafe return of a value of type `any`."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 288,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 291,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 302,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 340,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 356,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'select' has no 'await' expression."
+    },
+    {
+     "plik": "packages/shared/src/webhook-contract.test.ts",
+     "linia": 218,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    }
+   ],
+   "zastane_poza_liniami_fazy": 50,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 100,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-1de5a4c/scripts/dockerfile-invariants.test.ts was not fou"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 4.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'abortSignal' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 31,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 72,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-call",
+     "opis": "Unsafe call of an `any` typed value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-member-access",
+     "opis": "Unsafe member access .mockRestore on an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 58,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 492,
+     "regula": "max-lines",
+     "opis": "File has too many lines (371). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 107,
+     "regula": "@typescript-eslint/no-unsafe-return",
+     "opis": "Unsafe return of a value of type `any`."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 288,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 291,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 302,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 340,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 356,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'select' has no 'await' expression."
+    },
+    {
+     "plik": "packages/shared/src/webhook-contract.test.ts",
+     "linia": 218,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    }
+   ],
+   "zastane_poza_liniami_fazy": 58,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 100,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "nieobjete": [
+    "scripts/dockerfile-invariants.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-1de5a4c/scripts/dockerfile-invariants.test.ts was not fou"
+   ],
+   "nieobjete_n": 1
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ],
+   "zastane": 184
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 175333,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 6054,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/dashboard/src/App.tsx": 23,
+    "apps/server/src/routes/offer.ts": 70,
+    "apps/dashboard/src/features/offers/offer-heatmap-card.tsx": 27,
+    "apps/server/src/offer/cta-section.ts": 15,
+    "apps/dashboard/src/features/offers/heatmap-grid.ts": 28,
+    "apps/server/src/offer/pages/aa-design.ts": 15,
+    "apps/server/src/offer/expired-page.ts": 6,
+    "apps/dashboard/src/components/layout/app-layout.tsx": 66,
+    "apps/dashboard/src/components/error-boundary.tsx": 81,
+    "apps/server/src/offer/aa-pages.ts": 27,
+    "apps/server/src/webhooks/settings-service.ts": 29,
+    "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx": 28,
+    "packages/shared/src/webhook-contract.ts": 28,
+    "apps/server/src/routes/offer-origin-pages.ts": 4,
+    "apps/dashboard/src/features/offers/use-offer-heat.ts": 51,
+    "apps/dashboard/src/components/copy-button.tsx": 27
+   },
+   "pliki_A": [
+    "apps/dashboard/src/components/error-boundary.tsx",
+    "apps/server/src/routes/offer.ts",
+    "apps/dashboard/src/components/layout/app-layout.tsx"
+   ],
+   "wyniki": {
+    "apps/dashboard": {
+     "status": "nieuruchomiona: kod 1 — >\u001b[39m           \u001b[36m</div>\u001b[39m           \u001b[36m<time\u001b[39m             \u001b[33mclass\u001b[39m=\u001b[32m\"order-2 ml-auto text-xs text-ink-muted tabular-nums md:order-3 md:ml-0 md:text-label\"\u001b[39m             \u001b[33mdatetime\u001b[39m=\u001b[32m\"2026-08-28T14:51:00.000Z\"\u001b[39m           \u001b[36m>\u001b[39m             \u001b[0m28.08.2026, 16:... \u001b[91m01:47:33 (97795) ERROR Stryker\u001b[39m There were failed tests in the initial test run. ",
+     "sekundy": 4.2
+    },
+    "apps/server": {
+     "status": "nieuruchomiona: kod 1 — perTest\" coverage analysis). This may take a while. \u001b[91m01:47:38 (97870) ERROR DryRunExecutor\u001b[39m One or more tests failed in the initial test run: \t/c.js — kontrakt pliku tracker `/t.js` nie urósł przez tę fazę — strażnik regresji D2 \t\t/t.js (źródło): 7690 B: expected 7690 to be less than or equal to 7680 \u001b[91m01:47:38 (97870) ERROR Stryker\u001b[39m There were failed tests in the initial test run. ",
+     "sekundy": 5.0
+    },
+    "packages/shared": {
+     "status": "uruchomiona",
+     "sekundy": 1.9,
+     "statusy": {
+      "NoCoverage": 1,
+      "Killed": 2
+     },
+     "przezyte": [
+      {
+       "plik": "packages/shared/src/webhook-contract.ts",
+       "linia": 99,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 72,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 58,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'abortSignal' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 31,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 72,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-call",
+     "opis": "Unsafe call of an `any` typed value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-member-access",
+     "opis": "Unsafe member access .mockRestore on an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 58,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 492,
+     "regula": "max-lines",
+     "opis": "File has too many lines (371). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 107,
+     "regula": "@typescript-eslint/no-unsafe-return",
+     "opis": "Unsafe return of a value of type `any`."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 288,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 291,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 302,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 340,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 356,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'select' has no 'await' expression."
+    },
+    {
+     "plik": "packages/shared/src/webhook-contract.test.ts",
+     "linia": 218,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "packages/shared/src/webhook-contract.ts",
+     "linia": 99,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 100,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'abortSignal' has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 31,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+     "linia": 72,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-call",
+     "opis": "Unsafe call of an `any` typed value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/no-unsafe-member-access",
+     "opis": "Unsafe member access .mockRestore on an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+     "linia": 58,
+     "regula": "vitest/prefer-called-with",
+     "opis": "Prefer toHaveBeenCalledWith(/* expected args */)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 492,
+     "regula": "max-lines",
+     "opis": "File has too many lines (371). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+     "linia": 107,
+     "regula": "@typescript-eslint/no-unsafe-return",
+     "opis": "Unsafe return of a value of type `any`."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 288,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 291,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 302,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 324,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 338,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 340,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 345,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/offer.test.ts",
+     "linia": 356,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'loadOffer' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.test.ts",
+     "linia": 64,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'select' has no 'await' expression."
+    },
+    {
+     "plik": "packages/shared/src/webhook-contract.test.ts",
+     "linia": 218,
+     "regula": "@typescript-eslint/unbound-method",
+     "opis": "A method that is not declared with `this: void` may cause unintentional scoping of `this` when separated from its object.\nConsider using an arrow function or explicitly `.bind()`ing the method to avoid calling the method with an unintended `this` value. \nIf a function does not access `this`, it can "
+    },
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "packages/shared/src/webhook-contract.ts",
+     "linia": 99,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 119,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "linia": 100,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, the types have no overlap."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "linia": 33,
+     "regula": "knip/exports",
+     "opis": "exports: aaMarketingLink"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 24,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_HEAT_ROW_BYTES"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 32,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_BYTE_BUDGET"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 41,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 48,
+     "regula": "knip/exports",
+     "opis": "exports: estimateHeatBytes"
+    },
+    {
+     "plik": "apps/dashboard/src/features/settings/texts.ts",
+     "linia": 138,
+     "regula": "knip/exports",
+     "opis": "exports: webhookErrorLabel"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 354,
+     "regula": "knip/exports",
+     "opis": "exports: MAX_AGGREGATED_POINTS"
+    }
+   ]
+  }
+ }
+}

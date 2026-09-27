@@ -1,0 +1,16 @@
+{
+ "etykieta": "x-b5295fd",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_d3a88e62-130 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff fa77b30..b5295fd | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_d3a88e62-130 fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

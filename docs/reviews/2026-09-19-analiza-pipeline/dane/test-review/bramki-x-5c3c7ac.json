@@ -1,0 +1,453 @@
+{
+ "etykieta": "x-5c3c7ac",
+ "sha": "5c3c7ac1eeb7bd7aa02d60c1ebb60e4ff49c0287",
+ "baza": "56a86b398e700d1041327f37082de4be9eacb24a",
+ "modul_fixa": true,
+ "pliki": 21,
+ "pliki_kodu": 17,
+ "pliki_ts": [
+  "apps/dashboard/src/features/access/access-request-form.tsx",
+  "apps/dashboard/src/features/access/registration-api.test.ts",
+  "apps/dashboard/src/features/access/registration-api.ts",
+  "apps/dashboard/src/features/auth/login-form.test.tsx",
+  "apps/dashboard/src/features/auth/login-form.tsx",
+  "apps/dashboard/src/features/auth/waitlist-question.tsx",
+  "apps/server/src/access/redirect-path.test.ts",
+  "apps/server/src/access/redirect-path.ts",
+  "apps/server/src/access/registration-service.fake.ts",
+  "apps/server/src/access/registration-service.test.ts",
+  "apps/server/src/access/registration-service.ts",
+  "apps/server/src/routes/access-email-gate.ts",
+  "apps/server/src/routes/access.test.ts",
+  "apps/server/src/routes/access.ts",
+  "packages/shared/src/access-contract.ts",
+  "packages/shared/src/index.ts",
+  "packages/shared/src/product-contract.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 14.2,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'AccessRequestForm' has too many lines (84). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_props' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 60,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'fetchMock.mock.calls[0]?.[1]?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/prefer-promise-reject-errors",
+     "opis": "Expected the Promise rejection reason to be an Error."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-form.test.tsx",
+     "linia": 317,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'init?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/server/src/access/registration-service.fake.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'register' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/access.test.ts",
+     "linia": 475,
+     "regula": "max-lines",
+     "opis": "File has too many lines (475). Maximum allowed is 360."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 26,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'AccessRequestForm' has too many lines (84). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_props' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 60,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'fetchMock.mock.calls[0]?.[1]?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/prefer-promise-reject-errors",
+     "opis": "Expected the Promise rejection reason to be an Error."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-form.test.tsx",
+     "linia": 317,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'init?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/server/src/access/registration-service.fake.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'register' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/access.test.ts",
+     "linia": 475,
+     "regula": "max-lines",
+     "opis": "File has too many lines (475). Maximum allowed is 360."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 28,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.8,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/access/registration-service.ts",
+     "linia": 91,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_REGISTRATION_REDIRECT_PATH"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/exports",
+     "opis": "exports: REGISTRATION_OUTCOMES"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/types",
+     "opis": "types: RegistrationOutcome"
+    },
+    {
+     "plik": "apps/server/src/access/redirect-path.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: REDIRECT_PATH_MAX_LENGTH"
+    }
+   ],
+   "zastane": 396,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 261734,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 9444,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/access/registration-service.ts",
+     "linia": 91,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_REGISTRATION_REDIRECT_PATH"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/exports",
+     "opis": "exports: REGISTRATION_OUTCOMES"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/types",
+     "opis": "types: RegistrationOutcome"
+    },
+    {
+     "plik": "apps/server/src/access/redirect-path.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: REDIRECT_PATH_MAX_LENGTH"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'AccessRequestForm' has too many lines (84). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_props' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 60,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'fetchMock.mock.calls[0]?.[1]?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/prefer-promise-reject-errors",
+     "opis": "Expected the Promise rejection reason to be an Error."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-form.test.tsx",
+     "linia": 317,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'init?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/server/src/access/registration-service.fake.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'register' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/access.test.ts",
+     "linia": 475,
+     "regula": "max-lines",
+     "opis": "File has too many lines (475). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/server/src/access/registration-service.ts",
+     "linia": 91,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_REGISTRATION_REDIRECT_PATH"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/exports",
+     "opis": "exports: REGISTRATION_OUTCOMES"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/types",
+     "opis": "types: RegistrationOutcome"
+    },
+    {
+     "plik": "apps/server/src/access/redirect-path.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: REDIRECT_PATH_MAX_LENGTH"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/access/registration-service.ts",
+     "linia": 91,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_REGISTRATION_REDIRECT_PATH"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/exports",
+     "opis": "exports: REGISTRATION_OUTCOMES"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/types",
+     "opis": "types: RegistrationOutcome"
+    },
+    {
+     "plik": "apps/server/src/access/redirect-path.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: REDIRECT_PATH_MAX_LENGTH"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'AccessRequestForm' has too many lines (84). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/access-request-form.tsx",
+     "linia": 58,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_props' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 60,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'fetchMock.mock.calls[0]?.[1]?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/prefer-promise-reject-errors",
+     "opis": "Expected the Promise rejection reason to be an Error."
+    },
+    {
+     "plik": "apps/dashboard/src/features/auth/login-form.test.tsx",
+     "linia": 317,
+     "regula": "@typescript-eslint/no-base-to-string",
+     "opis": "'init?.body' may use Object's default stringification format ('[object Object]') when stringified."
+    },
+    {
+     "plik": "apps/server/src/access/registration-service.fake.ts",
+     "linia": 36,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'register' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/routes/access.test.ts",
+     "linia": 475,
+     "regula": "max-lines",
+     "opis": "File has too many lines (475). Maximum allowed is 360."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/access/registration-api.test.ts",
+     "linia": 99,
+     "regula": "@typescript-eslint/no-confusing-void-expression",
+     "opis": "Returning a void expression from an arrow function shorthand is forbidden. Please add braces to the arrow function."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/access/registration-service.ts",
+     "linia": 91,
+     "regula": "knip/exports",
+     "opis": "exports: DEFAULT_REGISTRATION_REDIRECT_PATH"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/exports",
+     "opis": "exports: REGISTRATION_OUTCOMES"
+    },
+    {
+     "plik": "packages/shared/src/access-contract.ts",
+     "linia": 204,
+     "regula": "knip/types",
+     "opis": "types: RegistrationOutcome"
+    },
+    {
+     "plik": "apps/server/src/access/redirect-path.ts",
+     "linia": 21,
+     "regula": "knip/exports",
+     "opis": "exports: REDIRECT_PATH_MAX_LENGTH"
+    }
+   ]
+  }
+ }
+}

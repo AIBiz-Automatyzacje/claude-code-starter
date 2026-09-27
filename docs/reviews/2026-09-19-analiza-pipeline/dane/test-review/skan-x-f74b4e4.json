@@ -1,0 +1,17 @@
+{
+ "etykieta": "x-f74b4e4",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_d63cab34-68d fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff f74b4e4^..HEAD > /tmp/diff.txt 2>&1 && cat /tmp/diff.txt | head -100",
+  "wf_d63cab34-68d fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_diff.sh']: cat > /tmp/scan_diff.sh << 'EOF' #!/bin/bash cd /Users/kacper_trzepiecinski/test-review/kopie/x-f74b4e4  git diff f74b4e",
+  "wf_d63cab34-68d fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

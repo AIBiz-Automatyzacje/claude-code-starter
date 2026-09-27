@@ -1,0 +1,171 @@
+{
+ "etykieta": "x-ed1ce60",
+ "sha": "ed1ce60f3589a5ff90fbfd059782fbc4d07be0ef",
+ "baza": "3a00b1cda571c4bbc120c16739436e022941b021",
+ "modul_fixa": true,
+ "pliki": 15,
+ "pliki_kodu": 13,
+ "pliki_ts": [
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/server.ts",
+  "apps/server/src/offer/mail-draft.ts",
+  "apps/server/src/offer/markup-hidden.ts",
+  "apps/server/src/offer/markup-scan.test.ts",
+  "apps/server/src/offer/markup-scan.ts",
+  "apps/server/src/offer/markup-tag-scan.ts",
+  "apps/server/src/offer/offer-favicon.test.ts",
+  "apps/server/src/offer/offer-favicon.ts",
+  "apps/server/src/offer/validation-favicon.test.ts",
+  "apps/server/src/offer/validation.test.ts",
+  "apps/server/src/offer/validation.ts",
+  "apps/server/src/routes/static-assets.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 9.2,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 248,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 51,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 248,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    }
+   ],
+   "zastane_poza_liniami_fazy": 51,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/offer/markup-tag-scan.ts",
+     "linia": 25,
+     "regula": "knip/exports",
+     "opis": "exports: isAsciiLetter"
+    }
+   ],
+   "zastane": 236,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/markup-tag-scan.ts",
+     "linia": 25,
+     "regula": "knip/exports",
+     "opis": "exports: isAsciiLetter"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 248,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy tylko z.strictObject z limitami długości pól"
+    },
+    {
+     "plik": "apps/server/src/offer/markup-tag-scan.ts",
+     "linia": 25,
+     "regula": "knip/exports",
+     "opis": "exports: isAsciiLetter"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/markup-tag-scan.ts",
+     "linia": 25,
+     "regula": "knip/exports",
+     "opis": "exports: isAsciiLetter"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 248,
+     "regula": "no-restricted-syntax",
+     "opis": "na granicy API z.strictObject obejmujący całą kopertę"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/offer/markup-tag-scan.ts",
+     "linia": 25,
+     "regula": "knip/exports",
+     "opis": "exports: isAsciiLetter"
+    }
+   ]
+  }
+ }
+}

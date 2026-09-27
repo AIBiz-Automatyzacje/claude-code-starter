@@ -1,0 +1,18 @@
+{
+ "etykieta": "x-58efb36",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_57772412-700 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff c349bd1^..HEAD > /tmp/diff.txt && wc -l /tmp/diff.txt",
+  "wf_57772412-700 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: cat /tmp/diff.txt | grep \"^+[^+]\" | cat -n > /tmp/added_lines.txt && head -50 /tmp/added_lines.txt",
+  "wf_57772412-700 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/scan_patterns.sh']: cat > /tmp/scan_patterns.sh << 'EOF' #!/bin/bash  # Read the diff and extract added lines with their file paths # We nee",
+  "wf_57772412-700 fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

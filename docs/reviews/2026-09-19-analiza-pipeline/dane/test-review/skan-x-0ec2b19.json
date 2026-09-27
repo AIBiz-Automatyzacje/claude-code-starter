@@ -1,0 +1,23 @@
+{
+ "etykieta": "x-0ec2b19",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/diff_faza3.txt']: git diff a4225e4^..HEAD > /tmp/diff_faza3.txt && wc -l /tmp/diff_faza3.txt",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: grep \"^+\" /tmp/diff_faza3.txt | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_patterns.py']: cat > /tmp/scan_patterns.py << 'EOF' import re import sys  # Wzorce do szukania patterns = {     'pusty-catch': r'catch\\",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_patterns2.py']: cat > /tmp/scan_patterns2.py << 'EOF' import re import sys  # Wzorce do szukania patterns = {     'pusty-catch': r'catch",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_code_only.py']: cat > /tmp/scan_code_only.py << 'EOF' import re import sys  patterns = {     'pusty-catch': r'catch\\s*(?:\\([^)]*\\))?\\s*\\",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_final.py']: cat > /tmp/scan_final.py << 'EOF' import re import sys  patterns_raw = {     'pusty-catch': r'catch\\s*(?:\\([^)]*\\))?\\s*\\",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/scan_prod_only.py']: cat > /tmp/scan_prod_only.py << 'EOF' import re import sys  patterns_raw = {     'pusty-catch': r'catch\\s*(?:\\([^)]*\\))?",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/find_all_patterns.py']: cat > /tmp/find_all_patterns.py << 'EOF' import re import sys  patterns_raw = {     'pusty-catch': r'catch\\s*(?:\\([^)]*\\",
+  "wf_d40cca91-9dd fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

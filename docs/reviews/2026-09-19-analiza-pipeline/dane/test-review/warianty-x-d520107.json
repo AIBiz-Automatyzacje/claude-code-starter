@@ -1,0 +1,109 @@
+{
+ "etykieta": "x-d520107",
+ "faza": 4,
+ "zadanie": "faza-6-cta-i-webhooki",
+ "baza": "303ff625dbae87af5e1838f76acf1fb170a14ad3",
+ "modul_fixa": true,
+ "plan_techniczny": null,
+ "sekcja_planu_zn": 0,
+ "wiedza_zn": 0,
+ "sygnaly": {
+  "kod": true,
+  "testy": true,
+  "tsx": true,
+  "klient": true,
+  "serwer": true,
+  "granica": true,
+  "teksty": true,
+  "migracja": true,
+  "profil_supabase": true,
+  "fix": true,
+  "nierozstrzygalny": true,
+  "await": true,
+  "atrapy": true,
+  "ponawialna": true,
+  "sql_rpc": true,
+  "ui": true,
+  "dane": true
+ },
+ "warianty": {
+  "A": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-d520107/wariantA.js",
+   "bajty": 13120,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "medium",
+     "listy": [
+      "K-1",
+      "K-2",
+      "K-3",
+      "K-4",
+      "K-5",
+      "K-7"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 4023
+   },
+   "agregacja": "Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH soczewek. Zna"
+  },
+  "B": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-d520107/wariantB.js",
+   "bajty": 17269,
+   "role": [
+    {
+     "rola": "fix:kontrola#1",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    },
+    {
+     "rola": "fix:kontrola#2",
+     "effort": "medium",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04"
+     ]
+    }
+   ],
+   "agentow_review": 2,
+   "prompt_zn": {
+    "fix:kontrola#1": 3814,
+    "fix:kontrola#2": 3814
+   },
+   "agregacja": "Jestes agregatorem findingow review (bez narzedzi). Grupuj findingi opisujące te"
+  },
+  "C": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/x-d520107/wariantC.js",
+   "bajty": 13362,
+   "role": [
+    {
+     "rola": "fix:kontrola",
+     "effort": "high",
+     "listy": [
+      "K-01",
+      "K-02",
+      "K-03",
+      "K-04",
+      "K-05",
+      "K-06"
+     ]
+    }
+   ],
+   "agentow_review": 1,
+   "prompt_zn": {
+    "fix:kontrola": 4612
+   },
+   "agregacja": "JS"
+  }
+ }
+}

@@ -1,0 +1,19 @@
+{
+ "etykieta": "f-67f5f2c",
+ "podsumowanie": {
+  "agentow": 30,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_6795dfcd-3bb review:correctness: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-67f5f2c/apps/server; cat > /private/tmp/claude-501/-Users-kacper-trze",
+  "wf_6795dfcd-3bb dedup:semantyczny: agent haiku wołał narzędzia ['Read']",
+  "wf_6795dfcd-3bb review:test-coverage: zapis Bashem poza kopią ['sed -i']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-67f5f2c/059e7b05-8ed2-5ab2-857e-83cd1a8ffa60/",
+  "wf_6795dfcd-3bb review:test-coverage: zapis Bashem poza kopią ['> probe.test.ts']: cd /private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-kopie-f-67f5f2c/059e7b05-8ed2-5ab2-857e-83cd1a8ffa60/",
+  "wf_6795dfcd-3bb review:security: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-67f5f2c/apps/server; cat > /private/tmp/claude-501/-Users-kacper-trze"
+ ]
+}

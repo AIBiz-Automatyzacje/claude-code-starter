@@ -1,0 +1,16 @@
+{
+ "etykieta": "x-43fb8e7",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_f1bd04f6-fae fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff 43fb8e7^..HEAD > /tmp/diff.txt 2>&1 && wc -l /tmp/diff.txt",
+  "wf_f1bd04f6-fae fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

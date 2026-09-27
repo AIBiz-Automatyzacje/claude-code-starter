@@ -1,0 +1,16 @@
+{
+ "etykieta": "x-f3d5aca",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_890a3e69-65d fix:pre-skan:faza-1: zapis Bashem poza kopią ['> /tmp/diff_lines.txt']: git diff f3d5aca^..HEAD | grep \"^+\" | grep -v \"^+++\" > /tmp/diff_lines.txt && wc -l /tmp/diff_lines.txt",
+  "wf_890a3e69-65d fix:pre-skan:faza-1: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

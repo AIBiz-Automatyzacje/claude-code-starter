@@ -1,0 +1,233 @@
+{
+ "etykieta": "x-925907a",
+ "sha": "925907a78ca9c094527d421fdf0965f3282820cb",
+ "baza": "0ec2b19e20b7a802d24623a9a181ed51de127b89",
+ "modul_fixa": true,
+ "pliki": 22,
+ "pliki_kodu": 20,
+ "pliki_ts": [
+  "apps/dashboard/src/components/layout/app-layout.test.tsx",
+  "apps/dashboard/src/features/auth/auth-callback-page.test.tsx",
+  "apps/dashboard/src/features/auth/login-page.test.tsx",
+  "apps/dashboard/src/features/auth/require-session.test.tsx",
+  "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+  "apps/dashboard/src/features/offers/offers-list.test.tsx",
+  "apps/dashboard/src/features/offers/offers-page.test.tsx",
+  "apps/dashboard/src/features/settings/settings-page.test.tsx",
+  "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+  "apps/dashboard/src/test/fake-session.ts",
+  "apps/dashboard/src/test/require-element.ts",
+  "apps/server/src/mcp/tools/pobierz-szablon.ts",
+  "apps/server/src/mcp/tools/template-name.test.ts",
+  "apps/server/src/mcp/tools/template-name.ts",
+  "apps/server/src/mcp/tools/usun-szablon.test.ts",
+  "apps/server/src/mcp/tools/usun-szablon.ts",
+  "apps/server/src/mcp/tools/zapisz-szablon.test.ts",
+  "apps/server/src/mcp/tools/zapisz-szablon.ts",
+  "e2e/print-magic-link.ts",
+  "supabase/tests/rls.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.9,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 4.0,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "e2e/print-magic-link.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-925907a/e2e/print-magic-link.ts was not found by the proj",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-925907a/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 4.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 19,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "e2e/print-magic-link.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-925907a/e2e/print-magic-link.ts was not found by the proj",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-925907a/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 19,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "e2e/print-magic-link.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-925907a/e2e/print-magic-link.ts was not found by the proj",
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-925907a/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 2
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/test/fake-session.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/fake-session.ts"
+    },
+    {
+     "plik": "apps/dashboard/src/test/require-element.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/require-element.ts"
+    }
+   ],
+   "zastane": 166,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 165659,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 5723,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ]
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/test/fake-session.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/fake-session.ts"
+    },
+    {
+     "plik": "apps/dashboard/src/test/require-element.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/require-element.ts"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    },
+    {
+     "plik": "apps/dashboard/src/test/fake-session.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/fake-session.ts"
+    },
+    {
+     "plik": "apps/dashboard/src/test/require-element.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/require-element.ts"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/test/fake-session.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/fake-session.ts"
+    },
+    {
+     "plik": "apps/dashboard/src/test/require-element.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/require-element.ts"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "supabase/migrations/20260904160000_offer_templates_unique_name.sql",
+     "linia": null,
+     "regula": "niezmiennosc-migracji",
+     "opis": "zmieniona migracja obecna w bazie — popraw nową migracją"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/test/fake-session.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/fake-session.ts"
+    },
+    {
+     "plik": "apps/dashboard/src/test/require-element.ts",
+     "linia": null,
+     "regula": "knip/files",
+     "opis": "files: apps/dashboard/src/test/require-element.ts"
+    }
+   ]
+  }
+ }
+}

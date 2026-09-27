@@ -1,0 +1,41 @@
+test_review_etap.py koszt — szacunek etapu głównego [M jedn., cennik d4r] metodą z pilota (dane/test-review/pilot-koszt.json)
+  proporcja wariantów do szacunku „dziś”: średnia 0.432, największa 0.499; narzut na fazę 1.87 M; commit fixa (średnia pilota) 2.17 M
+  f-b26128d  pilot: zmierzone 10.52
+  f-2634b67  pilot: zmierzone 7.80
+  f-32975a1  środek 10.18  górna 12.40
+  f-303ff62  środek 14.40  górna 17.27
+  f-46be55a  środek 14.77  górna 17.71
+  f-31491bc  środek 8.53  górna 10.50
+  f-5af000f  środek 10.54  górna 12.82
+  f-9d40529  środek 7.80  górna 9.65
+  f-b8374c8  środek 10.91  górna 13.24
+  f-f3ee433  pilot: zmierzone 16.51
+  f-1de5a4c  środek 16.60  górna 19.82
+  f-67f5f2c  środek 8.52  górna 10.49
+  f-2536643  środek 21.33  górna 25.29
+  x-ed1ce60  środek 2.17  górna 3.26
+  x-43fb8e7  środek 2.17  górna 3.26
+  x-828eda9  środek 2.17  górna 3.26
+  x-f3d5aca  środek 2.17  górna 3.26
+  x-4ef28cf  środek 2.17  górna 3.26
+  x-5c3c7ac  środek 2.17  górna 3.26
+  x-f74b4e4  środek 2.17  górna 3.26
+  x-58efb36  środek 2.17  górna 3.26
+  x-61195b8  środek 2.17  górna 3.26
+  x-411a434  pilot: zmierzone 2.23
+  x-6bd9990  środek 2.17  górna 3.26
+  x-b0d74fc  środek 2.17  górna 3.26
+  x-d520107  środek 2.17  górna 3.26
+  x-dce71cf  środek 2.17  górna 3.26
+  x-bcf98f4  środek 2.17  górna 3.26
+  x-0ec2b19  środek 2.17  górna 3.26
+  x-40af319  środek 2.17  górna 3.26
+  x-60f1951  środek 2.17  górna 3.26
+  x-b02abfa  środek 2.17  górna 3.26
+  x-925907a  środek 2.17  górna 3.26
+  x-b5295fd  środek 2.17  górna 3.26
+  x-7e437fc  środek 2.17  górna 3.26
+  x-b7d0455  środek 2.17  górna 3.26
+  x-05dd804  pilot: zmierzone 2.12
+NOWE jednostki: środek 171.4, górna 221.0 M; jednostki pilota w liczniku limitu 39.2 M
+LICZNIK LIMITU na końcu etapu: środek 210.6, górna 260.2 M vs limit 300 M (6a pkt 30(d))

@@ -1,0 +1,20 @@
+{
+ "etykieta": "x-bcf98f4",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_fd71565f-bf1 fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/phase4_diff.txt']: git diff 57ef12f^..HEAD > /tmp/phase4_diff.txt && wc -l /tmp/phase4_diff.txt",
+  "wf_fd71565f-bf1 fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/scan_patterns.sh', '> /tmp/added_lines.txt', '> /tmp/added_clean.txt']: cat > /tmp/scan_patterns.sh << 'EOF' #!/bin/bash  # Wzorce do szukania: # 1. pusty-catch: catch {} albo catch (e) {} — z",
+  "wf_fd71565f-bf1 fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/find_issues.sh', '> /tmp/added_lines.txt']: cat > /tmp/find_issues.sh << 'EOFSCRIPT' #!/bin/bash  # Wyciągnij linie dodane grep '^+' /tmp/phase4_diff.txt | grep -v ",
+  "wf_fd71565f-bf1 fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/scan_code.sh', '> /tmp/all_added.txt', '> /tmp/code_files.txt', '> /tmp/file_added.txt']: cat > /tmp/scan_code.sh << 'EOFSCRIPT' #!/bin/bash  # Wyciągnij linie dodane z diffa grep '^+' /tmp/phase4_diff.txt | gr",
+  "wf_fd71565f-bf1 fix:pre-skan:faza-4: zapis Bashem poza kopią ['> 5:']: python3 << 'EOFPYTHON' import re import sys  # Czytaj diff with open('/tmp/phase4_diff.txt', 'r', encoding='utf-8', erro",
+  "wf_fd71565f-bf1 fix:pre-skan:faza-4: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

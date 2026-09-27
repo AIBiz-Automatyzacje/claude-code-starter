@@ -1,4 +1,22 @@
 test_review_wynik.py koszt — M jedn. (cennik d4r); ZMIERZONY = środowisko testu, PO = przeliczony do bazy „po zmianie kontekstu”; POMIAR = sesje uruchamiające i sędzia (nie koszt wariantu)
+  f-1de5a4c   sceptycy0        agentów   1  zmierzony    0.09  po    0.09  w tym pomiar   0.09
+  f-1de5a4c   sceptycyA        agentów   3  zmierzony    0.22  po    0.17  w tym pomiar   0.07
+  f-1de5a4c   sceptycyB        agentów   1  zmierzony    0.07  po    0.07  w tym pomiar   0.07
+  f-1de5a4c   sceptycyC        agentów   1  zmierzony    0.07  po    0.07  w tym pomiar   0.07
+  f-1de5a4c   sedzia-p1        agentów   2  zmierzony    0.29  po    0.16  w tym pomiar   0.29
+  f-1de5a4c   wariant0         agentów   9  zmierzony    4.34  po    3.60  w tym pomiar   0.08
+  f-1de5a4c   wariantA         agentów   7  zmierzony    2.67  po    2.21  w tym pomiar   0.07
+  f-1de5a4c   wariantB         agentów  11  zmierzony    3.08  po    2.50  w tym pomiar   0.07
+  f-1de5a4c   wariantC         agentów   3  zmierzony    1.19  po    0.62  w tym pomiar   0.07
+  f-2536643   sceptycy0        agentów   3  zmierzony    0.45  po    0.29  w tym pomiar   0.16
+  f-2536643   sceptycyA        agentów   3  zmierzony    0.40  po    0.24  w tym pomiar   0.11
+  f-2536643   sceptycyB        agentów   2  zmierzony    0.28  po    0.19  w tym pomiar   0.11
+  f-2536643   sceptycyC        agentów   1  zmierzony    0.11  po    0.11  w tym pomiar   0.11
+  f-2536643   sedzia-p1        agentów   2  zmierzony    0.35  po    0.20  w tym pomiar   0.35
+  f-2536643   wariant0         agentów   9  zmierzony    6.27  po    4.42  w tym pomiar   0.12
+  f-2536643   wariantA         agentów   7  zmierzony    3.39  po    2.34  w tym pomiar   0.12
+  f-2536643   wariantB         agentów  11  zmierzony    4.54  po    2.84  w tym pomiar   0.12
+  f-2536643   wariantC         agentów   3  zmierzony    1.71  po    0.83  w tym pomiar   0.12
   f-2634b67   sceptycy0        agentów   7  zmierzony    0.44  po    0.37  w tym pomiar   0.09
   f-2634b67   sceptycyA        agentów   5  zmierzony    0.29  po    0.27  w tym pomiar   0.05
   f-2634b67   sceptycyB        agentów   6  zmierzony    0.34  po    0.31  w tym pomiar   0.05
@@ -9,6 +27,69 @@ test_review_wynik.py koszt — M jedn. (cennik d4r); ZMIERZONY = środowisko tes
   f-2634b67   wariantA         agentów   7  zmierzony    1.39  po    1.21  w tym pomiar   0.06
   f-2634b67   wariantB         agentów  11  zmierzony    2.02  po    1.82  w tym pomiar   0.06
   f-2634b67   wariantC         agentów   3  zmierzony    0.57  po    0.34  w tym pomiar   0.06
+  f-303ff62   sceptycy0        agentów   3  zmierzony    0.30  po    0.24  w tym pomiar   0.11
+  f-303ff62   sceptycyA        agentów   2  zmierzony    0.15  po    0.12  w tym pomiar   0.06
+  f-303ff62   sceptycyB        agentów   2  zmierzony    0.16  po    0.12  w tym pomiar   0.06
+  f-303ff62   sceptycyC        agentów   2  zmierzony    0.15  po    0.12  w tym pomiar   0.06
+  f-303ff62   sedzia-p1        agentów   2  zmierzony    0.32  po    0.19  w tym pomiar   0.32
+  f-303ff62   wariant0         agentów   9  zmierzony    5.65  po    4.89  w tym pomiar   0.07
+  f-303ff62   wariantA         agentów   7  zmierzony    2.74  po    2.30  w tym pomiar   0.07
+  f-303ff62   wariantB         agentów  11  zmierzony    3.38  po    2.86  w tym pomiar   0.07
+  f-303ff62   wariantC         agentów   3  zmierzony    1.32  po    0.69  w tym pomiar   0.07
+  f-31491bc   sceptycy0        agentów   1  zmierzony    0.07  po    0.07  w tym pomiar   0.07
+  f-31491bc   sceptycyA        agentów   2  zmierzony    0.15  po    0.12  w tym pomiar   0.06
+  f-31491bc   sceptycyB        agentów   1  zmierzony    0.06  po    0.06  w tym pomiar   0.06
+  f-31491bc   sceptycyC        agentów   2  zmierzony    0.18  po    0.14  w tym pomiar   0.06
+  f-31491bc   sedzia-p1        agentów   2  zmierzony    0.23  po    0.16  w tym pomiar   0.23
+  f-31491bc   wariant0         agentów   9  zmierzony    2.28  po    1.84  w tym pomiar   0.07
+  f-31491bc   wariantA         agentów   7  zmierzony    1.37  po    1.11  w tym pomiar   0.07
+  f-31491bc   wariantB         agentów   9  zmierzony    1.73  po    1.45  w tym pomiar   0.07
+  f-31491bc   wariantC         agentów   3  zmierzony    0.63  po    0.40  w tym pomiar   0.07
+  f-32975a1   sceptycy0        agentów   4  zmierzony    0.24  po    0.19  w tym pomiar   0.08
+  f-32975a1   sceptycyA        agentów   3  zmierzony    0.22  po    0.18  w tym pomiar   0.06
+  f-32975a1   sceptycyB        agentów   1  zmierzony    0.06  po    0.06  w tym pomiar   0.06
+  f-32975a1   sceptycyC        agentów   2  zmierzony    0.13  po    0.10  w tym pomiar   0.06
+  f-32975a1   sedzia-p1        agentów   2  zmierzony    0.26  po    0.15  w tym pomiar   0.26
+  f-32975a1   wariant0         agentów   9  zmierzony    3.55  po    3.06  w tym pomiar   0.09
+  f-32975a1   wariantA         agentów   7  zmierzony    1.91  po    1.63  w tym pomiar   0.09
+  f-32975a1   wariantB         agentów  11  zmierzony    2.38  po    2.11  w tym pomiar   0.09
+  f-32975a1   wariantC         agentów   3  zmierzony    0.96  po    0.63  w tym pomiar   0.09
+  f-46be55a   sceptycy0        agentów   5  zmierzony    0.40  po    0.35  w tym pomiar   0.10
+  f-46be55a   sceptycyA        agentów   2  zmierzony    0.13  po    0.11  w tym pomiar   0.05
+  f-46be55a   sceptycyB        agentów   2  zmierzony    0.13  po    0.11  w tym pomiar   0.05
+  f-46be55a   sceptycyC        agentów   1  zmierzony    0.05  po    0.05  w tym pomiar   0.05
+  f-46be55a   sedzia-p1        agentów   2  zmierzony    0.25  po    0.15  w tym pomiar   0.25
+  f-46be55a   wariant0         agentów   9  zmierzony    3.48  po    3.05  w tym pomiar   0.06
+  f-46be55a   wariantA         agentów   7  zmierzony    2.07  po    1.86  w tym pomiar   0.06
+  f-46be55a   wariantB         agentów  11  zmierzony    2.11  po    1.88  w tym pomiar   0.06
+  f-46be55a   wariantC         agentów   3  zmierzony    0.82  po    0.47  w tym pomiar   0.06
+  f-5af000f   sceptycy0        agentów   2  zmierzony    0.14  po    0.12  w tym pomiar   0.07
+  f-5af000f   sceptycyA        agentów   2  zmierzony    0.12  po    0.10  w tym pomiar   0.05
+  f-5af000f   sceptycyB        agentów   1  zmierzony    0.05  po    0.05  w tym pomiar   0.05
+  f-5af000f   sceptycyC        agentów   1  zmierzony    0.05  po    0.05  w tym pomiar   0.05
+  f-5af000f   sedzia-p1        agentów   2  zmierzony    0.28  po    0.19  w tym pomiar   0.28
+  f-5af000f   wariant0         agentów   9  zmierzony    2.81  po    2.54  w tym pomiar   0.06
+  f-5af000f   wariantA         agentów   7  zmierzony    1.43  po    1.25  w tym pomiar   0.06
+  f-5af000f   wariantB         agentów  11  zmierzony    2.08  po    1.82  w tym pomiar   0.06
+  f-5af000f   wariantC         agentów   3  zmierzony    0.70  po    0.46  w tym pomiar   0.06
+  f-67f5f2c   sceptycy0        agentów   2  zmierzony    0.16  po    0.13  w tym pomiar   0.06
+  f-67f5f2c   sceptycyA        agentów   2  zmierzony    0.10  po    0.09  w tym pomiar   0.05
+  f-67f5f2c   sceptycyB        agentów   2  zmierzony    0.12  po    0.10  w tym pomiar   0.05
+  f-67f5f2c   sceptycyC        agentów   2  zmierzony    0.10  po    0.09  w tym pomiar   0.05
+  f-67f5f2c   sedzia-p1        agentów   2  zmierzony    0.20  po    0.13  w tym pomiar   0.20
+  f-67f5f2c   wariant0         agentów   9  zmierzony    1.55  po    1.30  w tym pomiar   0.05
+  f-67f5f2c   wariantA         agentów   7  zmierzony    1.09  po    0.96  w tym pomiar   0.05
+  f-67f5f2c   wariantB         agentów  10  zmierzony    1.04  po    0.95  w tym pomiar   0.05
+  f-67f5f2c   wariantC         agentów   3  zmierzony    0.45  po    0.35  w tym pomiar   0.05
+  f-9d40529   sceptycy0        agentów   2  zmierzony    0.17  po    0.15  w tym pomiar   0.08
+  f-9d40529   sceptycyA        agentów   2  zmierzony    0.12  po    0.10  w tym pomiar   0.05
+  f-9d40529   sceptycyB        agentów   2  zmierzony    0.12  po    0.12  w tym pomiar   0.05
+  f-9d40529   sceptycyC        agentów   1  zmierzony    0.05  po    0.05  w tym pomiar   0.05
+  f-9d40529   sedzia-p1        agentów   2  zmierzony    0.19  po    0.12  w tym pomiar   0.19
+  f-9d40529   wariant0         agentów   9  zmierzony    1.47  po    1.29  w tym pomiar   0.06
+  f-9d40529   wariantA         agentów   7  zmierzony    1.05  po    0.87  w tym pomiar   0.06
+  f-9d40529   wariantB         agentów  11  zmierzony    1.50  po    1.34  w tym pomiar   0.06
+  f-9d40529   wariantC         agentów   3  zmierzony    0.56  po    0.38  w tym pomiar   0.06
   f-b26128d   sceptycy0        agentów   9  zmierzony    0.75  po    0.63  w tym pomiar   0.11
   f-b26128d   sceptycyA        agentów  11  zmierzony    0.72  po    0.61  w tym pomiar   0.05
   f-b26128d   sceptycyB        agentów   3  zmierzony    0.29  po    0.26  w tym pomiar   0.05
@@ -19,16 +100,15 @@ test_review_wynik.py koszt — M jedn. (cennik d4r); ZMIERZONY = środowisko tes
   f-b26128d   wariantA         agentów   7  zmierzony    1.74  po    1.55  w tym pomiar   0.06
   f-b26128d   wariantB         agentów  10  zmierzony    2.59  po    2.35  w tym pomiar   0.06
   f-b26128d   wariantC         agentów   3  zmierzony    0.85  po    0.54  w tym pomiar   0.06
-  f-b26128d-r2 sceptycy0        agentów   8  zmierzony    0.66  po    0.55  w tym pomiar   0.11
-  f-b26128d-r2 sceptycyA        agentów   6  zmierzony    0.38  po    0.32  w tym pomiar   0.05
-  f-b26128d-r2 sceptycyB        agentów   9  zmierzony    0.74  po    0.62  w tym pomiar   0.05
-  f-b26128d-r2 sceptycyC        agentów   5  zmierzony    0.39  po    0.32  w tym pomiar   0.05
-  f-b26128d-r2 sedzia-p1        agentów   2  zmierzony    0.21  po    0.14  w tym pomiar   0.21
-  f-b26128d-r2 sedzia-p2        agentów   2  zmierzony    0.22  po    0.14  w tym pomiar   0.22
-  f-b26128d-r2 wariant0         agentów   9  zmierzony    2.59  po    2.31  w tym pomiar   0.06
-  f-b26128d-r2 wariantA         agentów   7  zmierzony    1.74  po    1.52  w tym pomiar   0.06
-  f-b26128d-r2 wariantB         agentów  13  zmierzony    2.37  po    2.10  w tym pomiar   0.06
-  f-b26128d-r2 wariantC         agentów   4  zmierzony    0.94  po    0.54  w tym pomiar   0.06
+  f-b8374c8   sceptycy0        agentów   1  zmierzony    0.06  po    0.06  w tym pomiar   0.06
+  f-b8374c8   sceptycyA        agentów   1  zmierzony    0.05  po    0.05  w tym pomiar   0.05
+  f-b8374c8   sceptycyB        agentów   2  zmierzony    0.10  po    0.10  w tym pomiar   0.05
+  f-b8374c8   sceptycyC        agentów   2  zmierzony    0.12  po    0.10  w tym pomiar   0.05
+  f-b8374c8   sedzia-p1        agentów   2  zmierzony    0.24  po    0.15  w tym pomiar   0.24
+  f-b8374c8   wariant0         agentów   9  zmierzony    2.81  po    2.57  w tym pomiar   0.06
+  f-b8374c8   wariantA         agentów   7  zmierzony    1.86  po    1.67  w tym pomiar   0.05
+  f-b8374c8   wariantB         agentów  11  zmierzony    2.26  po    2.08  w tym pomiar   0.06
+  f-b8374c8   wariantC         agentów   3  zmierzony    0.63  po    0.43  w tym pomiar   0.05
   f-f3ee433   odrzucone        agentów  27  zmierzony    5.69  po    5.69  w tym pomiar   5.69
   f-f3ee433   sceptycy0        agentów   3  zmierzony    0.38  po    0.25  w tym pomiar   0.12
   f-f3ee433   sceptycyA        agentów   2  zmierzony    0.21  po    0.14  w tym pomiar   0.10
@@ -40,16 +120,120 @@ test_review_wynik.py koszt — M jedn. (cennik d4r); ZMIERZONY = środowisko tes
   f-f3ee433   wariantA         agentów   7  zmierzony    2.06  po    1.42  w tym pomiar   0.10
   f-f3ee433   wariantB         agentów  11  zmierzony    2.88  po    1.88  w tym pomiar   0.10
   f-f3ee433   wariantC         agentów   3  zmierzony    0.96  po    0.51  w tym pomiar   0.10
-  x-05dd804   sedzia-p1        agentów   2  zmierzony    0.20  po    0.15  w tym pomiar   0.20
-  x-05dd804   sedzia-p2        agentów   2  zmierzony    0.20  po    0.15  w tym pomiar   0.20
-  x-05dd804   wariant0         agentów   3  zmierzony    0.36  po    0.23  w tym pomiar   0.10
-  x-05dd804   wariantA         agentów   2  zmierzony    0.30  po    0.23  w tym pomiar   0.10
-  x-05dd804   wariantB         agentów   3  zmierzony    0.59  po    0.44  w tym pomiar   0.10
-  x-05dd804   wariantC         agentów   2  zmierzony    0.46  po    0.35  w tym pomiar   0.10
+  x-0ec2b19   sedzia-p1        agentów   2  zmierzony    0.20  po    0.14  w tym pomiar   0.20
+  x-0ec2b19   wariant0         agentów   3  zmierzony    0.40  po    0.31  w tym pomiar   0.07
+  x-0ec2b19   wariantA         agentów   2  zmierzony    0.48  po    0.40  w tym pomiar   0.07
+  x-0ec2b19   wariantB         agentów   3  zmierzony    1.00  po    0.83  w tym pomiar   0.07
+  x-0ec2b19   wariantC         agentów   2  zmierzony    0.59  po    0.51  w tym pomiar   0.07
+  x-40af319   sedzia-p1        agentów   2  zmierzony    0.17  po    0.13  w tym pomiar   0.17
+  x-40af319   wariant0         agentów   3  zmierzony    0.34  po    0.24  w tym pomiar   0.07
+  x-40af319   wariantA         agentów   2  zmierzony    0.31  po    0.27  w tym pomiar   0.07
+  x-40af319   wariantB         agentów   3  zmierzony    0.62  po    0.52  w tym pomiar   0.07
+  x-40af319   wariantC         agentów   2  zmierzony    0.43  po    0.37  w tym pomiar   0.07
   x-411a434   sedzia-p1        agentów   2  zmierzony    0.17  po    0.12  w tym pomiar   0.17
   x-411a434   sedzia-p2        agentów   2  zmierzony    0.17  po    0.12  w tym pomiar   0.17
   x-411a434   wariant0         agentów   3  zmierzony    0.46  po    0.36  w tym pomiar   0.06
   x-411a434   wariantA         agentów   2  zmierzony    0.32  po    0.27  w tym pomiar   0.06
   x-411a434   wariantB         agentów   3  zmierzony    0.72  po    0.63  w tym pomiar   0.06
   x-411a434   wariantC         agentów   2  zmierzony    0.39  po    0.36  w tym pomiar   0.06
-  RAZEM zmierzony 49.40 M jedn.
+  x-43fb8e7   sedzia-p1        agentów   2  zmierzony    0.26  po    0.16  w tym pomiar   0.26
+  x-43fb8e7   wariant0         agentów   3  zmierzony    0.75  po    0.40  w tym pomiar   0.12
+  x-43fb8e7   wariantA         agentów   2  zmierzony    0.84  po    0.60  w tym pomiar   0.12
+  x-43fb8e7   wariantB         agentów   3  zmierzony    1.30  po    0.89  w tym pomiar   0.12
+  x-43fb8e7   wariantC         agentów   2  zmierzony    0.83  po    0.61  w tym pomiar   0.12
+  x-4ef28cf   sedzia-p1        agentów   2  zmierzony    0.25  po    0.17  w tym pomiar   0.25
+  x-4ef28cf   wariant0         agentów   3  zmierzony    0.73  po    0.38  w tym pomiar   0.12
+  x-4ef28cf   wariantA         agentów   2  zmierzony    0.37  po    0.26  w tym pomiar   0.12
+  x-4ef28cf   wariantB         agentów   3  zmierzony    0.78  po    0.52  w tym pomiar   0.12
+  x-4ef28cf   wariantC         agentów   2  zmierzony    0.48  po    0.34  w tym pomiar   0.12
+  x-58efb36   sedzia-p1        agentów   2  zmierzony    0.13  po    0.11  w tym pomiar   0.13
+  x-58efb36   wariant0         agentów   3  zmierzony    0.32  po    0.26  w tym pomiar   0.05
+  x-58efb36   wariantA         agentów   2  zmierzony    0.34  po    0.32  w tym pomiar   0.06
+  x-58efb36   wariantB         agentów   3  zmierzony    0.57  po    0.53  w tym pomiar   0.06
+  x-58efb36   wariantC         agentów   2  zmierzony    0.37  po    0.35  w tym pomiar   0.05
+  x-5c3c7ac   sedzia-p1        agentów   2  zmierzony    0.31  po    0.19  w tym pomiar   0.31
+  x-5c3c7ac   wariant0         agentów   3  zmierzony    0.69  po    0.37  w tym pomiar   0.14
+  x-5c3c7ac   wariantA         agentów   2  zmierzony    0.60  po    0.41  w tym pomiar   0.14
+  x-5c3c7ac   wariantB         agentów   3  zmierzony    1.11  po    0.71  w tym pomiar   0.14
+  x-5c3c7ac   wariantC         agentów   2  zmierzony    0.95  po    0.65  w tym pomiar   0.14
+  x-60f1951   sedzia-p1        agentów   2  zmierzony    0.19  po    0.14  w tym pomiar   0.19
+  x-60f1951   wariant0         agentów   3  zmierzony    0.51  po    0.39  w tym pomiar   0.07
+  x-60f1951   wariantA         agentów   2  zmierzony    0.41  po    0.34  w tym pomiar   0.07
+  x-60f1951   wariantB         agentów   3  zmierzony    0.58  po    0.48  w tym pomiar   0.07
+  x-60f1951   wariantC         agentów   2  zmierzony    0.54  po    0.44  w tym pomiar   0.07
+  x-61195b8   sedzia-p1        agentów   2  zmierzony    0.12  po    0.10  w tym pomiar   0.12
+  x-61195b8   wariant0         agentów   3  zmierzony    0.22  po    0.20  w tym pomiar   0.05
+  x-61195b8   wariantA         agentów   2  zmierzony    0.17  po    0.16  w tym pomiar   0.05
+  x-61195b8   wariantB         agentów   3  zmierzony    0.39  po    0.37  w tym pomiar   0.05
+  x-61195b8   wariantC         agentów   2  zmierzony    0.28  po    0.27  w tym pomiar   0.06
+  x-6bd9990   sedzia-p1        agentów   2  zmierzony    0.15  po    0.12  w tym pomiar   0.15
+  x-6bd9990   wariant0         agentów   3  zmierzony    0.35  po    0.27  w tym pomiar   0.06
+  x-6bd9990   wariantA         agentów   2  zmierzony    0.29  po    0.26  w tym pomiar   0.06
+  x-6bd9990   wariantB         agentów   3  zmierzony    0.57  po    0.51  w tym pomiar   0.06
+  x-6bd9990   wariantC         agentów   2  zmierzony    0.46  po    0.41  w tym pomiar   0.06
+  x-7e437fc   sedzia-p1        agentów   2  zmierzony    0.21  po    0.16  w tym pomiar   0.21
+  x-7e437fc   wariant0         agentów   3  zmierzony    0.31  po    0.21  w tym pomiar   0.08
+  x-7e437fc   wariantA         agentów   2  zmierzony    0.45  po    0.36  w tym pomiar   0.09
+  x-7e437fc   wariantB         agentów   3  zmierzony    0.78  po    0.62  w tym pomiar   0.09
+  x-7e437fc   wariantC         agentów   2  zmierzony    0.49  po    0.39  w tym pomiar   0.09
+  x-828eda9   sedzia-p1        agentów   2  zmierzony    0.24  po    0.17  w tym pomiar   0.24
+  x-828eda9   wariant0         agentów   3  zmierzony    0.46  po    0.28  w tym pomiar   0.12
+  x-828eda9   wariantA         agentów   2  zmierzony    0.29  po    0.20  w tym pomiar   0.12
+  x-828eda9   wariantB         agentów   3  zmierzony    0.47  po    0.30  w tym pomiar   0.12
+  x-828eda9   wariantC         agentów   2  zmierzony    0.39  po    0.26  w tym pomiar   0.12
+  x-925907a   sedzia-p1        agentów   2  zmierzony    0.17  po    0.13  w tym pomiar   0.17
+  x-925907a   wariant0         agentów   3  zmierzony    0.37  po    0.28  w tym pomiar   0.07
+  x-925907a   wariantA         agentów   2  zmierzony    0.22  po    0.19  w tym pomiar   0.07
+  x-925907a   wariantB         agentów   3  zmierzony    0.48  po    0.40  w tym pomiar   0.07
+  x-925907a   wariantC         agentów   2  zmierzony    0.31  po    0.27  w tym pomiar   0.07
+  x-b02abfa   sedzia-p1        agentów   2  zmierzony    0.17  po    0.12  w tym pomiar   0.17
+  x-b02abfa   wariant0         agentów   3  zmierzony    0.30  po    0.22  w tym pomiar   0.07
+  x-b02abfa   wariantA         agentów   2  zmierzony    0.28  po    0.24  w tym pomiar   0.07
+  x-b02abfa   wariantB         agentów   3  zmierzony    0.50  po    0.42  w tym pomiar   0.07
+  x-b02abfa   wariantC         agentów   2  zmierzony    0.29  po    0.26  w tym pomiar   0.07
+  x-b0d74fc   sedzia-p1        agentów   2  zmierzony    0.17  po    0.13  w tym pomiar   0.17
+  x-b0d74fc   wariant0         agentów   3  zmierzony    0.44  po    0.31  w tym pomiar   0.07
+  x-b0d74fc   wariantA         agentów   2  zmierzony    0.33  po    0.29  w tym pomiar   0.07
+  x-b0d74fc   wariantB         agentów   3  zmierzony    0.71  po    0.60  w tym pomiar   0.07
+  x-b0d74fc   wariantC         agentów   2  zmierzony    0.59  po    0.50  w tym pomiar   0.07
+  x-b5295fd   sedzia-p1        agentów   2  zmierzony    0.23  po    0.17  w tym pomiar   0.23
+  x-b5295fd   wariant0         agentów   3  zmierzony    0.48  po    0.32  w tym pomiar   0.08
+  x-b5295fd   wariantA         agentów   2  zmierzony    0.47  po    0.38  w tym pomiar   0.09
+  x-b5295fd   wariantB         agentów   3  zmierzony    0.76  po    0.62  w tym pomiar   0.09
+  x-b5295fd   wariantC         agentów   2  zmierzony    0.62  po    0.51  w tym pomiar   0.09
+  x-b7d0455   sedzia-p1        agentów   2  zmierzony    0.19  po    0.14  w tym pomiar   0.19
+  x-b7d0455   wariant0         agentów   3  zmierzony    0.50  po    0.31  w tym pomiar   0.09
+  x-b7d0455   wariantA         agentów   2  zmierzony    0.38  po    0.31  w tym pomiar   0.09
+  x-b7d0455   wariantB         agentów   3  zmierzony    0.74  po    0.57  w tym pomiar   0.09
+  x-b7d0455   wariantC         agentów   2  zmierzony    0.52  po    0.41  w tym pomiar   0.09
+  x-bcf98f4   sedzia-p1        agentów   2  zmierzony    0.20  po    0.15  w tym pomiar   0.20
+  x-bcf98f4   wariant0         agentów   3  zmierzony    0.53  po    0.42  w tym pomiar   0.07
+  x-bcf98f4   wariantA         agentów   2  zmierzony    0.41  po    0.35  w tym pomiar   0.07
+  x-bcf98f4   wariantB         agentów   3  zmierzony    0.64  po    0.53  w tym pomiar   0.07
+  x-bcf98f4   wariantC         agentów   2  zmierzony    0.44  po    0.38  w tym pomiar   0.07
+  x-d520107   sedzia-p1        agentów   2  zmierzony    0.18  po    0.14  w tym pomiar   0.18
+  x-d520107   wariant0         agentów   3  zmierzony    0.38  po    0.30  w tym pomiar   0.07
+  x-d520107   wariantA         agentów   2  zmierzony    0.31  po    0.27  w tym pomiar   0.07
+  x-d520107   wariantB         agentów   3  zmierzony    0.82  po    0.72  w tym pomiar   0.07
+  x-d520107   wariantC         agentów   2  zmierzony    0.43  po    0.38  w tym pomiar   0.07
+  x-dce71cf   sedzia-p1        agentów   2  zmierzony    0.16  po    0.12  w tym pomiar   0.16
+  x-dce71cf   wariant0         agentów   3  zmierzony    0.33  po    0.24  w tym pomiar   0.07
+  x-dce71cf   wariantA         agentów   2  zmierzony    0.29  po    0.25  w tym pomiar   0.07
+  x-dce71cf   wariantB         agentów   3  zmierzony    0.48  po    0.41  w tym pomiar   0.07
+  x-dce71cf   wariantC         agentów   2  zmierzony    0.56  po    0.47  w tym pomiar   0.07
+  x-ed1ce60   sedzia-p1        agentów   2  zmierzony    0.27  po    0.17  w tym pomiar   0.27
+  x-ed1ce60   wariant0         agentów   3  zmierzony    0.63  po    0.32  w tym pomiar   0.11
+  x-ed1ce60   wariantA         agentów   2  zmierzony    0.48  po    0.34  w tym pomiar   0.12
+  x-ed1ce60   wariantB         agentów   3  zmierzony    0.84  po    0.60  w tym pomiar   0.12
+  x-ed1ce60   wariantC         agentów   2  zmierzony    0.79  po    0.58  w tym pomiar   0.12
+  x-f3d5aca   sedzia-p1        agentów   2  zmierzony    0.25  po    0.17  w tym pomiar   0.25
+  x-f3d5aca   wariant0         agentów   3  zmierzony    0.54  po    0.29  w tym pomiar   0.12
+  x-f3d5aca   wariantA         agentów   2  zmierzony    0.68  po    0.48  w tym pomiar   0.12
+  x-f3d5aca   wariantB         agentów   3  zmierzony    1.24  po    0.85  w tym pomiar   0.12
+  x-f3d5aca   wariantC         agentów   2  zmierzony    0.88  po    0.64  w tym pomiar   0.12
+  x-f74b4e4   sedzia-p1        agentów   2  zmierzony    0.15  po    0.12  w tym pomiar   0.15
+  x-f74b4e4   wariant0         agentów   3  zmierzony    0.24  po    0.21  w tym pomiar   0.05
+  x-f74b4e4   wariantA         agentów   2  zmierzony    0.38  po    0.35  w tym pomiar   0.06
+  x-f74b4e4   wariantB         agentów   3  zmierzony    0.90  po    0.83  w tym pomiar   0.05
+  x-f74b4e4   wariantC         agentów   2  zmierzony    0.59  po    0.54  w tym pomiar   0.05
+  RAZEM zmierzony 183.57 M jedn.

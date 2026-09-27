@@ -1,0 +1,18 @@
+{
+ "etykieta": "x-5c3c7ac",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_297ffaed-590 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/faza3_diff.txt']: git diff 5c3c7ac^..HEAD > /tmp/faza3_diff.txt && wc -l /tmp/faza3_diff.txt",
+  "wf_297ffaed-590 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: cat /tmp/faza3_diff.txt | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt",
+  "wf_297ffaed-590 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> ts_changes.txt']: cd /tmp && echo \"=== Wyciąg diff dla plików TypeScript/JavaScript ===\" && cat faza3_diff.txt | awk ' /^diff --git.*\\.(ts",
+  "wf_297ffaed-590 fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

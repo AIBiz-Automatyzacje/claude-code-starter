@@ -474,6 +474,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (b) moduł kontroli diffu fixa zostaje wg pkt 29(b); (c) jedna permutacja sędziego (zgodność p1/p2 „szeroko” 148/148); (d) **limit etapu ~300 M jedn.**
     (1,5 × szacunek po pilocie: 152 M fazy + ~48 M moduł fixa); (e) konto CLI automatyzacje@aibiz.pl, `claude auth status` przed każdym runem;
     (f) start etapu głównego dopiero na osobny znak operatora — najpierw przygotowanie bez agentów w nowej sesji.
+31. **Etap główny testu review ZROBIONY; zgoda na analizę (operator 2026-09-26/27).** Start za zgodą, wyniki 5 jednostek pilota wzięte bez powtórki
+    (p1 pilota = etap); 37/37 jednostek, 183,6 / 300 M, 0 twardych (§8 „ETAP GŁÓWNY ZROBIONY”, notatka `TEST-REVIEW-ETAP-DLA-OPERATORA.md`).
+    Decyzje: (a) **zgoda na analizę i raport** `TEST-REVIEW-WYNIK.md` + wersja operatora — bez agentów, w **nowej sesji** (kontekst tej wyczerpany);
+    (b) commit docs/reviews od razu. Operator źle odczytał klucz 2 jako „dzisiejszy pipeline łapie lepiej” → w raporcie wyniku oba klucze opisywać
+    jako **zysk (klucz 1) i strata (klucz 2) względem dziś**, z wprost napisaną stronniczością każdego klucza.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -687,7 +692,66 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   (harness ponawia agentów, którzy utknęli — „stalled … retrying”); metryki: „brak sceptyków” w fazach fix. Pułapki: CLI `claude` ma własne logowanie
   (sprawdzaj `claude auth status` przed runem — pilot padł raz na limicie tygodniowym innego konta); `<synthetic>` = błąd API wpisany przez harness.
 
-**PILOT TESTU REVIEW (nowa sesja na nowym koncie, 2026-09-25; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**STAN PRZYGOTOWANIA ETAPU GŁÓWNEGO (sesja c1385269, 2026-09-26) — PRZYGOTOWANIE ZROBIONE BEZ AGENTÓW, START CZEKA NA ZNAK OPERATORA (nic niezacommitowane):**
+- Jednostki: `skrypty/test_review_etap.py lista` → `dane/test-review/etap.{json,txt}`: 13 faz (pierwsze z `kolejnosc`) + 24 commity fixa (`fix_modul`, w tym 4 commity
+  „kontrola diffu naprawczego”) = 37; **5 z pilota** (f-b26128d, f-2634b67, f-f3ee433, x-411a434, x-05dd804 — znacznik `_faza-ok`, wynik p1 wchodzi do etapu, nie
+  powtarzane), **32 nowe** (10 faz, 22 fixa). Kolejność: najpierw fazy, potem fixy. Klucz 1: 89 (nowe 74), klucz 2: 66 (nowe 52).
+- Koszt (`test_review_etap.py koszt` → `dane/test-review/etap-koszt.txt`, metoda z pilota): nowe jednostki środek 171 / górna 221 M; licznik limitu z jednostkami
+  pilota 39 M → na końcu środek 211 / górna 260 M vs **limit 300 M** (`test_review_wynik.LIMITY['50%']`, stare 551/907/1549 usunięte).
+- `test_review_uruchom.sh etap przygotuj` ZROBIONE (kopie ~/test-review/kopie/*, bramki `dane/test-review/bramki-*`, skrypty wariantów, klucze sędziego — 0 błędów;
+  bramki nieuruchomione wyłącznie 3 „z definicji” jak w pilocie); `etap suchy` ZROBIONE (atrapa agent(): 128 skryptów wariantów wykonane, deny 149–150 wpisów,
+  licznik limitu 39,18 / 300 M, null 0 / 143). `claude auth status` = automatyzacje@aibiz.pl (max). Refy oferty-online bez zmian od 25.09.
+- Poprawki mechanizmu: (a) `test_review_warianty.py` — numer fazy także z tematu „kontrola diffu naprawczego fazy N”; (b) `test_review_sedzia.py` — pozycja klucza 2
+  bez linii (1de5a4c260#4, plik .webp) nie gubi już ścieżki; (c) `test_review_uruchom.sh` — następny krok nie startuje na niepełnym wejściu (`krok_kompletny`: warianty,
+  sędzia, sceptycy muszą być `gotowy`, inaczej STOP i wznowienie tym samym poleceniem; w pilocie sędzia mógł ruszyć na puli bez wariantu po limicie konta);
+  (d) `test_review_kopia.sh stan przed-etap|po-etap` (stan „przed” zapisywany na starcie etapu); (e) `test_review_wynik.py metryki --etap` → `metryki-etap.txt`
+  (tylko p1, klucz 2 bez „po weryfikacji”, bo sceptycy na kluczu 2 tylko w pilocie wg planu §6).
+- Przegląd klucza 2 (10 nowych faz, `dane/test-review/klucz2-etap.txt`): wykluczone 2 pozycje (67f5f2cdf6#4 duplikat, 2536643737#6 nie-finding) →
+  `dane/test-review/klucz2-przeglad.json`. Kotwica nieodnaleziona: 9d40529592 klucz2 #1 (linia 417 poza plikiem w stanie fazy), 1de5a4c260 klucz2 #4 (.webp).
+- **Do wiadomości operatora:** raport `review-faza-N.md` jest w stanie commitu fixa tylko w 2 z 24 commitów (scribe commituje go po fixie; tak samo w pilocie) —
+  kontrola fixa we wszystkich wariantach pracuje na samym diffie, jak dzisiejsza `fix:kontrola` (dostaje tylko numer fazy i ścieżkę), a zdanie w promptach A/B/C
+  „Findingi … raport review-faza-N.md” wskazuje zwykle plik nieobecny. Zostawione jak w pilocie (porównywalność).
+- Start (po znaku operatora): `zsh skrypty/test_review_uruchom.sh etap` w TLE, log `~/test-review/sesje/etap.log`; wznowienie = to samo polecenie. Nadzór po każdej
+  jednostce: `dane/test-review/skan-<et>.txt`, `dane/test-review/koszt.txt`. Czas: jednostki po kolei, ~8–10 h; limit okna 5-godzinnego konta (~130 M) wypadnie
+  zapewne raz — skrypt stanie na STOP „niedokończony”, wznowić po odnowieniu okna. Nie commitować w trakcie runu (stan „po” porównuje HEAD workspace-template).
+- **ETAP GŁÓWNY ZROBIONY (2026-09-26, 15:35–18:50, start za zgodą operatora; wyniki pilota wzięte bez powtórki):** 37/37 jednostek `_faza-ok`, 0 wypadłych,
+  0 przerwań, 0 ról null / 593, końcowe skany 0 twardych, kopie bez zmian, `stan po-etap` = BEZ ZMIAN. Licznik 183,6 / 300 M (z koszt.json: pilot 37,1,
+  10 faz 95,4 vs 123,6 szacunku, 22 fixy 51,1 vs 47,7 → nowe 146,5 vs 171). Notatka `TEST-REVIEW-ETAP-DLA-OPERATORA.md`. Uwagi skanu 126: 95 zapisów Bashem do /tmp/scratchpadu,
+  30 × haiku z narzędziami, 1 Write packagera zablokowany deny; wariant 0 (reviewer test-coverage, f-2536643) tworzył w kopii tymczasowe testy `zz-*.test.ts`
+  i je usuwał — kopia czysta. Surowe metryki `dane/test-review/metryki-etap.txt` (p1, klucz 2 bez weryfikacji): klucz 1 szeroko 0 30% / A 54% / B 49% / C 51%;
+  klucz 2 szeroko 0 84% / A 73% / B 71% / C 59% — bez kalibracji sędziego etapu, bez CI i przekrojów. Następny krok (zgoda jest, 6a pkt 31): analiza wyniku →
+  `TEST-REVIEW-WYNIK.md` + wersja operatora w NOWEJ sesji wg instrukcji „ANALIZA WYNIKU TESTU REVIEW” niżej. Commit docs/reviews zrobiony 2026-09-27.
+
+**ANALIZA WYNIKU TESTU REVIEW (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
+Etap główny testu review ZROBIONY (HANDOFF 6a pkt 31, §8 „ETAP GŁÓWNY ZROBIONY”). Moja zgoda: analiza wyniku i raport — BEZ agentów.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj najpierw (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 29–31, §7, §8 akapity „STAN PRZYGOTOWANIA ETAPU GŁÓWNEGO”
+(z „ETAP GŁÓWNY ZROBIONY”); TEST-REVIEW-PLAN.md §5.2–§5.3, §6, §8, §9, §11; TEST-REVIEW-PILOT-DLA-OPERATORA.md; TEST-REVIEW-ETAP-DLA-OPERATORA.md;
+dane/test-review/metryki-etap.txt, etap.txt, etap-koszt.txt, koszt.txt; docstringi skryptów test_review_{wynik,pilot,etap}.py.
+Decyzje z 6a obowiązują — nie pytaj o nie ponownie.
+
+Do zrobienia (skrypt skrypty/test_review_analiza.py → dane/test-review/wynik-*.json|txt; liczby tylko skryptem):
+1. kalibracja sędziego etapu: próbka 20 decyzji (10 PEŁNE/CZĘŚCIOWE, 10 BRAK przy findingach w tym samym pliku) z nowych jednostek, ziarno stałe,
+   czytasz na kopiach i w ~/test-review/sedzia/*-p1-mapowanie.json; próg 15% (plan §5.2);
+2. różnice A/B/C vs 0 sparowane po przypadku, osobno klucz 1 (zysk) i klucz 2 (strata), CI bootstrapem po fazach; „szeroko” jako miara główna;
+3. przekroje: P1/P2, ogon, wrzesień, oś, rodzina; moduł fixa (x-*) osobno; wkład bramek; szum (POZA KLUCZEM na fazę i na 100 linii, P1/P2);
+   złapane po weryfikacji (sceptycy, tylko klucz 1); koszt na fazę i na złapaną uwagę B (metodą panel_koszt_model, kolumna „po zmianie kontekstu”);
+4. klucz 2 — lista trafień, które każdy wariant GUBI względem 0, z wagą (P1/P2) i jednym zdaniem, czego dotyczą;
+5. wnioski dla D2–D12 wg planu §8 (co test rozstrzyga, co idzie z warunkiem odwrotu).
+Wynik: TEST-REVIEW-WYNIK.md + TEST-REVIEW-WYNIK-DLA-OPERATORA.md (prosty język; oba klucze opisane jako zysk i strata względem dziś,
+ze stronniczością każdego klucza wprost — 6a pkt 31). Sprawdź oba dokumenty w obie strony. Oddaj i CZEKAJ na akceptację.
+
+Zasady: nic nie zmieniaj w .claude/, CLAUDE.md ani oferty-online; zero agentów i sesji headless; liczby skryptem (skrypty/*.py → dane/);
+pliki .md tylko Write/Edit; __pycache__ usuwaj. Styl: problem → przyczyna → co robimy → co mi to da; na koniec mapa „gdzie jesteśmy / co dalej /
+czego ode mnie chcesz”. Jeśli kontekst zbliży się do ~400k, zatrzymaj się, zaktualizuj stan w HANDOFF §8 i daj mi instrukcję kontynuacji.
+Po akceptacji: HANDOFF (6a, §8), pamięć projektu, commit docs/reviews.
+```
+
+**PILOT TESTU REVIEW (ZROBIONE 2026-09-25 — zostawione dla historii; nowa sesja na nowym koncie; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja (nowe konto), sesja główna na Opus 5.5.

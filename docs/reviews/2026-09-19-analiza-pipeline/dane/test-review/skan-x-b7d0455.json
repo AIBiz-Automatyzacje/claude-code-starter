@@ -1,0 +1,18 @@
+{
+ "etykieta": "x-b7d0455",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_dfdf6de0-92a fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff b7d0455^..HEAD 2>&1 | awk '/^\\+/ && !/^\\+\\+\\+/ { print }' | sed 's/^+//' > /tmp/added_lines.txt && wc -l /tmp/a",
+  "wf_dfdf6de0-92a fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/full_diff.txt']: git diff b7d0455^..HEAD 2>&1 > /tmp/full_diff.txt && cat /tmp/full_diff.txt | sed -n '/^diff.*lib\\/monitoring/,/^diff/p'",
+  "wf_dfdf6de0-92a fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/catch_lines.txt']: cat /tmp/full_diff.txt | awk '/^@@.*@@/{flag=1} flag && /^diff/{flag=0} flag && /^\\+/ && !/^\\+\\+\\+/' | sed 's/^+//' | gr",
+  "wf_dfdf6de0-92a fix:pre-skan:faza-4: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

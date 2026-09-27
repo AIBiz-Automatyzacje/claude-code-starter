@@ -1,0 +1,454 @@
+test_review_wynik.py metryki --etap (p1, klucz 2 bez weryfikacji) — tylko K obecne (TAK); PEŁNE / PEŁNE+CZĘŚCIOWE; F = findingi agentów i bramek
+  f-b26128d  p1 wariant 0 klucz1: K obecne  5 | PEŁNE  1 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-b26128d  p1 wariant 0 klucz2: K obecne  7 | PEŁNE  4 | szeroko  5 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b26128d  p1 wariant 0 szum: POZA KLUCZEM 16 (P1/P2 6) na 10 plików kodu
+  f-b26128d  p1 wariant A klucz1: K obecne  5 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-b26128d  p1 wariant A klucz2: K obecne  7 | PEŁNE  6 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b26128d  p1 wariant A szum: POZA KLUCZEM 19 (P1/P2 16) na 10 plików kodu
+  f-b26128d  p1 wariant B klucz1: K obecne  5 | PEŁNE  2 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-b26128d  p1 wariant B klucz2: K obecne  7 | PEŁNE  5 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b26128d  p1 wariant B szum: POZA KLUCZEM 46 (P1/P2 32) na 10 plików kodu
+  f-b26128d  p1 wariant C klucz1: K obecne  5 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-b26128d  p1 wariant C klucz2: K obecne  7 | PEŁNE  4 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b26128d  p1 wariant C szum: POZA KLUCZEM 46 (P1/P2 28) na 10 plików kodu
+  f-2634b67  p1 wariant 0 klucz1: K obecne  4 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-2634b67  p1 wariant 0 klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2634b67  p1 wariant 0 szum: POZA KLUCZEM 13 (P1/P2 8) na 11 plików kodu
+  f-2634b67  p1 wariant A klucz1: K obecne  4 | PEŁNE  1 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-2634b67  p1 wariant A klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2634b67  p1 wariant A szum: POZA KLUCZEM 19 (P1/P2 12) na 11 plików kodu
+  f-2634b67  p1 wariant B klucz1: K obecne  4 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-2634b67  p1 wariant B klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2634b67  p1 wariant B szum: POZA KLUCZEM 43 (P1/P2 29) na 11 plików kodu
+  f-2634b67  p1 wariant C klucz1: K obecne  4 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-2634b67  p1 wariant C klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2634b67  p1 wariant C szum: POZA KLUCZEM 33 (P1/P2 24) na 11 plików kodu
+  f-32975a1  p1 wariant 0 klucz1: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-32975a1  p1 wariant 0 klucz2: K obecne  7 | PEŁNE  5 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-32975a1  p1 wariant 0 szum: POZA KLUCZEM 21 (P1/P2 13) na 15 plików kodu
+  f-32975a1  p1 wariant A klucz1: K obecne  3 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-32975a1  p1 wariant A klucz2: K obecne  7 | PEŁNE  4 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-32975a1  p1 wariant A szum: POZA KLUCZEM 27 (P1/P2 18) na 15 plików kodu
+  f-32975a1  p1 wariant B klucz1: K obecne  3 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-32975a1  p1 wariant B klucz2: K obecne  7 | PEŁNE  3 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-32975a1  p1 wariant B szum: POZA KLUCZEM 33 (P1/P2 20) na 15 plików kodu
+  f-32975a1  p1 wariant C klucz1: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-32975a1  p1 wariant C klucz2: K obecne  7 | PEŁNE  2 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-32975a1  p1 wariant C szum: POZA KLUCZEM 39 (P1/P2 18) na 15 plików kodu
+  f-303ff62  p1 wariant 0 klucz1: K obecne  6 | PEŁNE  4 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji 4
+  f-303ff62  p1 wariant 0 klucz2: K obecne  8 | PEŁNE  7 | szeroko  8 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-303ff62  p1 wariant 0 szum: POZA KLUCZEM 20 (P1/P2 14) na 34 plików kodu
+  f-303ff62  p1 wariant A klucz1: K obecne  6 | PEŁNE  4 | szeroko  4 | przez bramki 3 | szeroko po weryfikacji 4
+  f-303ff62  p1 wariant A klucz2: K obecne  8 | PEŁNE  6 | szeroko  7 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-303ff62  p1 wariant A szum: POZA KLUCZEM 39 (P1/P2 34) na 34 plików kodu
+  f-303ff62  p1 wariant B klucz1: K obecne  6 | PEŁNE  3 | szeroko  3 | przez bramki 1 | szeroko po weryfikacji 3
+  f-303ff62  p1 wariant B klucz2: K obecne  8 | PEŁNE  5 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-303ff62  p1 wariant B szum: POZA KLUCZEM 78 (P1/P2 58) na 34 plików kodu
+  f-303ff62  p1 wariant C klucz1: K obecne  6 | PEŁNE  3 | szeroko  4 | przez bramki 1 | szeroko po weryfikacji 4
+  f-303ff62  p1 wariant C klucz2: K obecne  8 | PEŁNE  6 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-303ff62  p1 wariant C szum: POZA KLUCZEM 66 (P1/P2 51) na 34 plików kodu
+  f-46be55a  p1 wariant 0 klucz1: K obecne  7 | PEŁNE  4 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji 2
+  f-46be55a  p1 wariant 0 klucz2: K obecne  5 | PEŁNE  4 | szeroko  5 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-46be55a  p1 wariant 0 szum: POZA KLUCZEM 20 (P1/P2 11) na 37 plików kodu
+  f-46be55a  p1 wariant A klucz1: K obecne  7 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-46be55a  p1 wariant A klucz2: K obecne  5 | PEŁNE  4 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-46be55a  p1 wariant A szum: POZA KLUCZEM 41 (P1/P2 32) na 37 plików kodu
+  f-46be55a  p1 wariant B klucz1: K obecne  7 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-46be55a  p1 wariant B klucz2: K obecne  5 | PEŁNE  3 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-46be55a  p1 wariant B szum: POZA KLUCZEM 37 (P1/P2 20) na 37 plików kodu
+  f-46be55a  p1 wariant C klucz1: K obecne  7 | PEŁNE  4 | szeroko  4 | przez bramki 4 | szeroko po weryfikacji 4
+  f-46be55a  p1 wariant C klucz2: K obecne  5 | PEŁNE  2 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-46be55a  p1 wariant C szum: POZA KLUCZEM 44 (P1/P2 26) na 37 plików kodu
+  f-31491bc  p1 wariant 0 klucz1: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-31491bc  p1 wariant 0 klucz2: K obecne  4 | PEŁNE  1 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-31491bc  p1 wariant 0 szum: POZA KLUCZEM 8 (P1/P2 2) na 7 plików kodu
+  f-31491bc  p1 wariant A klucz1: K obecne  3 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-31491bc  p1 wariant A klucz2: K obecne  4 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-31491bc  p1 wariant A szum: POZA KLUCZEM 12 (P1/P2 7) na 7 plików kodu
+  f-31491bc  p1 wariant B klucz1: K obecne  3 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-31491bc  p1 wariant B klucz2: K obecne  4 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-31491bc  p1 wariant B szum: POZA KLUCZEM 10 (P1/P2 6) na 7 plików kodu
+  f-31491bc  p1 wariant C klucz1: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-31491bc  p1 wariant C klucz2: K obecne  4 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-31491bc  p1 wariant C szum: POZA KLUCZEM 17 (P1/P2 7) na 7 plików kodu
+  f-5af000f  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-5af000f  p1 wariant 0 klucz2: K obecne  4 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-5af000f  p1 wariant 0 szum: POZA KLUCZEM 16 (P1/P2 6) na 17 plików kodu
+  f-5af000f  p1 wariant A klucz1: K obecne  2 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-5af000f  p1 wariant A klucz2: K obecne  4 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-5af000f  p1 wariant A szum: POZA KLUCZEM 30 (P1/P2 19) na 17 plików kodu
+  f-5af000f  p1 wariant B klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-5af000f  p1 wariant B klucz2: K obecne  4 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-5af000f  p1 wariant B szum: POZA KLUCZEM 33 (P1/P2 19) na 17 plików kodu
+  f-5af000f  p1 wariant C klucz1: K obecne  2 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-5af000f  p1 wariant C klucz2: K obecne  4 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-5af000f  p1 wariant C szum: POZA KLUCZEM 30 (P1/P2 18) na 17 plików kodu
+  f-9d40529  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  1 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-9d40529  p1 wariant 0 klucz2: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-9d40529  p1 wariant 0 szum: POZA KLUCZEM 15 (P1/P2 9) na 4 plików kodu
+  f-9d40529  p1 wariant A klucz1: K obecne  2 | PEŁNE  1 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-9d40529  p1 wariant A klucz2: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-9d40529  p1 wariant A szum: POZA KLUCZEM 13 (P1/P2 8) na 4 plików kodu
+  f-9d40529  p1 wariant B klucz1: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-9d40529  p1 wariant B klucz2: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-9d40529  p1 wariant B szum: POZA KLUCZEM 21 (P1/P2 13) na 4 plików kodu
+  f-9d40529  p1 wariant C klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-9d40529  p1 wariant C klucz2: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-9d40529  p1 wariant C szum: POZA KLUCZEM 15 (P1/P2 7) na 4 plików kodu
+  f-b8374c8  p1 wariant 0 klucz1: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-b8374c8  p1 wariant 0 klucz2: K obecne  7 | PEŁNE  4 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b8374c8  p1 wariant 0 szum: POZA KLUCZEM 24 (P1/P2 12) na 19 plików kodu
+  f-b8374c8  p1 wariant A klucz1: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-b8374c8  p1 wariant A klucz2: K obecne  7 | PEŁNE  3 | szeroko  6 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b8374c8  p1 wariant A szum: POZA KLUCZEM 28 (P1/P2 18) na 19 plików kodu
+  f-b8374c8  p1 wariant B klucz1: K obecne  3 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-b8374c8  p1 wariant B klucz2: K obecne  7 | PEŁNE  2 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b8374c8  p1 wariant B szum: POZA KLUCZEM 40 (P1/P2 28) na 19 plików kodu
+  f-b8374c8  p1 wariant C klucz1: K obecne  3 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-b8374c8  p1 wariant C klucz2: K obecne  7 | PEŁNE  2 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-b8374c8  p1 wariant C szum: POZA KLUCZEM 38 (P1/P2 24) na 19 plików kodu
+  f-f3ee433  p1 wariant 0 klucz1: K obecne  3 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-f3ee433  p1 wariant 0 klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-f3ee433  p1 wariant 0 szum: POZA KLUCZEM 13 (P1/P2 5) na 15 plików kodu
+  f-f3ee433  p1 wariant A klucz1: K obecne  3 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-f3ee433  p1 wariant A klucz2: K obecne  3 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-f3ee433  p1 wariant A szum: POZA KLUCZEM 13 (P1/P2 9) na 15 plików kodu
+  f-f3ee433  p1 wariant B klucz1: K obecne  3 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji 0
+  f-f3ee433  p1 wariant B klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-f3ee433  p1 wariant B szum: POZA KLUCZEM 21 (P1/P2 9) na 15 plików kodu
+  f-f3ee433  p1 wariant C klucz1: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji 1
+  f-f3ee433  p1 wariant C klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-f3ee433  p1 wariant C szum: POZA KLUCZEM 23 (P1/P2 11) na 15 plików kodu
+  f-1de5a4c  p1 wariant 0 klucz1: K obecne  7 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-1de5a4c  p1 wariant 0 klucz2: K obecne  5 | PEŁNE  3 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-1de5a4c  p1 wariant 0 szum: POZA KLUCZEM 21 (P1/P2 9) na 46 plików kodu
+  f-1de5a4c  p1 wariant A klucz1: K obecne  7 | PEŁNE  4 | szeroko  5 | przez bramki 0 | szeroko po weryfikacji 5
+  f-1de5a4c  p1 wariant A klucz2: K obecne  5 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-1de5a4c  p1 wariant A szum: POZA KLUCZEM 27 (P1/P2 17) na 46 plików kodu
+  f-1de5a4c  p1 wariant B klucz1: K obecne  7 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-1de5a4c  p1 wariant B klucz2: K obecne  5 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-1de5a4c  p1 wariant B szum: POZA KLUCZEM 44 (P1/P2 27) na 46 plików kodu
+  f-1de5a4c  p1 wariant C klucz1: K obecne  7 | PEŁNE  2 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-1de5a4c  p1 wariant C klucz2: K obecne  5 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-1de5a4c  p1 wariant C szum: POZA KLUCZEM 42 (P1/P2 27) na 46 plików kodu
+  f-67f5f2c  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  1 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-67f5f2c  p1 wariant 0 klucz2: K obecne  3 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-67f5f2c  p1 wariant 0 szum: POZA KLUCZEM 14 (P1/P2 4) na 9 plików kodu
+  f-67f5f2c  p1 wariant A klucz1: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-67f5f2c  p1 wariant A klucz2: K obecne  3 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-67f5f2c  p1 wariant A szum: POZA KLUCZEM 23 (P1/P2 15) na 9 plików kodu
+  f-67f5f2c  p1 wariant B klucz1: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-67f5f2c  p1 wariant B klucz2: K obecne  3 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-67f5f2c  p1 wariant B szum: POZA KLUCZEM 28 (P1/P2 16) na 9 plików kodu
+  f-67f5f2c  p1 wariant C klucz1: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-67f5f2c  p1 wariant C klucz2: K obecne  3 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-67f5f2c  p1 wariant C szum: POZA KLUCZEM 28 (P1/P2 19) na 9 plików kodu
+  f-2536643  p1 wariant 0 klucz1: K obecne  6 | PEŁNE  2 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-2536643  p1 wariant 0 klucz2: K obecne  5 | PEŁNE  3 | szeroko  4 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2536643  p1 wariant 0 szum: POZA KLUCZEM 13 (P1/P2 3) na 70 plików kodu
+  f-2536643  p1 wariant A klucz1: K obecne  6 | PEŁNE  2 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-2536643  p1 wariant A klucz2: K obecne  5 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2536643  p1 wariant A szum: POZA KLUCZEM 20 (P1/P2 13) na 70 plików kodu
+  f-2536643  p1 wariant B klucz1: K obecne  6 | PEŁNE  1 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji 3
+  f-2536643  p1 wariant B klucz2: K obecne  5 | PEŁNE  5 | szeroko  5 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2536643  p1 wariant B szum: POZA KLUCZEM 47 (P1/P2 34) na 70 plików kodu
+  f-2536643  p1 wariant C klucz1: K obecne  6 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji 2
+  f-2536643  p1 wariant C klucz2: K obecne  5 | PEŁNE  2 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  f-2536643  p1 wariant C szum: POZA KLUCZEM 45 (P1/P2 35) na 70 plików kodu
+  x-ed1ce60  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant 0 szum: POZA KLUCZEM 0 (P1/P2 0) na 13 plików kodu
+  x-ed1ce60  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant A szum: POZA KLUCZEM 10 (P1/P2 1) na 13 plików kodu
+  x-ed1ce60  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant B szum: POZA KLUCZEM 21 (P1/P2 3) na 13 plików kodu
+  x-ed1ce60  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-ed1ce60  p1 wariant C szum: POZA KLUCZEM 9 (P1/P2 2) na 13 plików kodu
+  x-43fb8e7  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant 0 szum: POZA KLUCZEM 7 (P1/P2 7) na 26 plików kodu
+  x-43fb8e7  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant A szum: POZA KLUCZEM 15 (P1/P2 10) na 26 plików kodu
+  x-43fb8e7  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant B szum: POZA KLUCZEM 52 (P1/P2 33) na 26 plików kodu
+  x-43fb8e7  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-43fb8e7  p1 wariant C szum: POZA KLUCZEM 27 (P1/P2 16) na 26 plików kodu
+  x-828eda9  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant 0 szum: POZA KLUCZEM 0 (P1/P2 0) na 5 plików kodu
+  x-828eda9  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant A szum: POZA KLUCZEM 8 (P1/P2 2) na 5 plików kodu
+  x-828eda9  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant B szum: POZA KLUCZEM 11 (P1/P2 5) na 5 plików kodu
+  x-828eda9  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-828eda9  p1 wariant C szum: POZA KLUCZEM 3 (P1/P2 3) na 5 plików kodu
+  x-f3d5aca  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant 0 szum: POZA KLUCZEM 3 (P1/P2 3) na 13 plików kodu
+  x-f3d5aca  p1 wariant A klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant A szum: POZA KLUCZEM 14 (P1/P2 6) na 13 plików kodu
+  x-f3d5aca  p1 wariant B klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant B szum: POZA KLUCZEM 20 (P1/P2 11) na 13 plików kodu
+  x-f3d5aca  p1 wariant C klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f3d5aca  p1 wariant C szum: POZA KLUCZEM 13 (P1/P2 6) na 13 plików kodu
+  x-4ef28cf  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant 0 szum: POZA KLUCZEM 0 (P1/P2 0) na 6 plików kodu
+  x-4ef28cf  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant A szum: POZA KLUCZEM 6 (P1/P2 0) na 6 plików kodu
+  x-4ef28cf  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant B szum: POZA KLUCZEM 21 (P1/P2 3) na 6 plików kodu
+  x-4ef28cf  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-4ef28cf  p1 wariant C szum: POZA KLUCZEM 4 (P1/P2 1) na 6 plików kodu
+  x-5c3c7ac  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant 0 szum: POZA KLUCZEM 0 (P1/P2 0) na 17 plików kodu
+  x-5c3c7ac  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant A szum: POZA KLUCZEM 10 (P1/P2 3) na 17 plików kodu
+  x-5c3c7ac  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant B szum: POZA KLUCZEM 42 (P1/P2 13) na 17 plików kodu
+  x-5c3c7ac  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-5c3c7ac  p1 wariant C szum: POZA KLUCZEM 17 (P1/P2 8) na 17 plików kodu
+  x-f74b4e4  p1 wariant 0 klucz1: K obecne  4 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant 0 szum: POZA KLUCZEM 3 (P1/P2 3) na 14 plików kodu
+  x-f74b4e4  p1 wariant A klucz1: K obecne  4 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant A szum: POZA KLUCZEM 10 (P1/P2 3) na 14 plików kodu
+  x-f74b4e4  p1 wariant B klucz1: K obecne  4 | PEŁNE  3 | szeroko  3 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant B szum: POZA KLUCZEM 49 (P1/P2 16) na 14 plików kodu
+  x-f74b4e4  p1 wariant C klucz1: K obecne  4 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-f74b4e4  p1 wariant C szum: POZA KLUCZEM 19 (P1/P2 7) na 14 plików kodu
+  x-58efb36  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant 0 szum: POZA KLUCZEM 2 (P1/P2 2) na 11 plików kodu
+  x-58efb36  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant A szum: POZA KLUCZEM 11 (P1/P2 2) na 11 plików kodu
+  x-58efb36  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant B szum: POZA KLUCZEM 30 (P1/P2 6) na 11 plików kodu
+  x-58efb36  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-58efb36  p1 wariant C szum: POZA KLUCZEM 12 (P1/P2 2) na 11 plików kodu
+  x-61195b8  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant 0 szum: POZA KLUCZEM 1 (P1/P2 1) na 3 plików kodu
+  x-61195b8  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant A szum: POZA KLUCZEM 6 (P1/P2 0) na 3 plików kodu
+  x-61195b8  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant B szum: POZA KLUCZEM 17 (P1/P2 1) na 3 plików kodu
+  x-61195b8  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-61195b8  p1 wariant C szum: POZA KLUCZEM 9 (P1/P2 1) na 3 plików kodu
+  x-411a434  p1 wariant 0 klucz1: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant 0 szum: POZA KLUCZEM 8 (P1/P2 8) na 10 plików kodu
+  x-411a434  p1 wariant A klucz1: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant A szum: POZA KLUCZEM 10 (P1/P2 1) na 10 plików kodu
+  x-411a434  p1 wariant B klucz1: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant B szum: POZA KLUCZEM 32 (P1/P2 8) na 10 plików kodu
+  x-411a434  p1 wariant C klucz1: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-411a434  p1 wariant C szum: POZA KLUCZEM 17 (P1/P2 3) na 10 plików kodu
+  x-6bd9990  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant 0 szum: POZA KLUCZEM 1 (P1/P2 1) na 10 plików kodu
+  x-6bd9990  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant A szum: POZA KLUCZEM 12 (P1/P2 2) na 10 plików kodu
+  x-6bd9990  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant B szum: POZA KLUCZEM 30 (P1/P2 9) na 10 plików kodu
+  x-6bd9990  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-6bd9990  p1 wariant C szum: POZA KLUCZEM 12 (P1/P2 4) na 10 plików kodu
+  x-b0d74fc  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant 0 szum: POZA KLUCZEM 2 (P1/P2 2) na 12 plików kodu
+  x-b0d74fc  p1 wariant A klucz1: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant A szum: POZA KLUCZEM 8 (P1/P2 1) na 12 plików kodu
+  x-b0d74fc  p1 wariant B klucz1: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant B szum: POZA KLUCZEM 42 (P1/P2 14) na 12 plików kodu
+  x-b0d74fc  p1 wariant C klucz1: K obecne  2 | PEŁNE  2 | szeroko  2 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b0d74fc  p1 wariant C szum: POZA KLUCZEM 15 (P1/P2 9) na 12 plików kodu
+  x-d520107  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant 0 szum: POZA KLUCZEM 47 (P1/P2 47) na 10 plików kodu
+  x-d520107  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant A szum: POZA KLUCZEM 11 (P1/P2 3) na 10 plików kodu
+  x-d520107  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant B szum: POZA KLUCZEM 31 (P1/P2 9) na 10 plików kodu
+  x-d520107  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-d520107  p1 wariant C szum: POZA KLUCZEM 17 (P1/P2 8) na 10 plików kodu
+  x-dce71cf  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant 0 szum: POZA KLUCZEM 1 (P1/P2 1) na 8 plików kodu
+  x-dce71cf  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant A szum: POZA KLUCZEM 8 (P1/P2 2) na 8 plików kodu
+  x-dce71cf  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant B szum: POZA KLUCZEM 14 (P1/P2 5) na 8 plików kodu
+  x-dce71cf  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-dce71cf  p1 wariant C szum: POZA KLUCZEM 12 (P1/P2 4) na 8 plików kodu
+  x-bcf98f4  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant 0 szum: POZA KLUCZEM 107 (P1/P2 107) na 21 plików kodu
+  x-bcf98f4  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant A szum: POZA KLUCZEM 11 (P1/P2 2) na 21 plików kodu
+  x-bcf98f4  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant B szum: POZA KLUCZEM 47 (P1/P2 21) na 21 plików kodu
+  x-bcf98f4  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-bcf98f4  p1 wariant C szum: POZA KLUCZEM 20 (P1/P2 15) na 21 plików kodu
+  x-0ec2b19  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant 0 szum: POZA KLUCZEM 8 (P1/P2 8) na 27 plików kodu
+  x-0ec2b19  p1 wariant A klucz1: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant A szum: POZA KLUCZEM 8 (P1/P2 1) na 27 plików kodu
+  x-0ec2b19  p1 wariant B klucz1: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant B szum: POZA KLUCZEM 44 (P1/P2 25) na 27 plików kodu
+  x-0ec2b19  p1 wariant C klucz1: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-0ec2b19  p1 wariant C szum: POZA KLUCZEM 28 (P1/P2 18) na 27 plików kodu
+  x-40af319  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant 0 szum: POZA KLUCZEM 1 (P1/P2 1) na 14 plików kodu
+  x-40af319  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant A szum: POZA KLUCZEM 10 (P1/P2 3) na 14 plików kodu
+  x-40af319  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant B szum: POZA KLUCZEM 28 (P1/P2 7) na 14 plików kodu
+  x-40af319  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-40af319  p1 wariant C szum: POZA KLUCZEM 13 (P1/P2 7) na 14 plików kodu
+  x-60f1951  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant 0 szum: POZA KLUCZEM 2 (P1/P2 2) na 28 plików kodu
+  x-60f1951  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant A szum: POZA KLUCZEM 7 (P1/P2 0) na 28 plików kodu
+  x-60f1951  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 1 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant B szum: POZA KLUCZEM 56 (P1/P2 29) na 28 plików kodu
+  x-60f1951  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 1 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-60f1951  p1 wariant C szum: POZA KLUCZEM 38 (P1/P2 29) na 28 plików kodu
+  x-b02abfa  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant 0 szum: POZA KLUCZEM 1 (P1/P2 1) na 5 plików kodu
+  x-b02abfa  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant A szum: POZA KLUCZEM 7 (P1/P2 1) na 5 plików kodu
+  x-b02abfa  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant B szum: POZA KLUCZEM 20 (P1/P2 2) na 5 plików kodu
+  x-b02abfa  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b02abfa  p1 wariant C szum: POZA KLUCZEM 6 (P1/P2 1) na 5 plików kodu
+  x-925907a  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant 0 szum: POZA KLUCZEM 6 (P1/P2 6) na 20 plików kodu
+  x-925907a  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant A szum: POZA KLUCZEM 9 (P1/P2 2) na 20 plików kodu
+  x-925907a  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant B szum: POZA KLUCZEM 20 (P1/P2 5) na 20 plików kodu
+  x-925907a  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-925907a  p1 wariant C szum: POZA KLUCZEM 5 (P1/P2 3) na 20 plików kodu
+  x-b5295fd  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant 0 szum: POZA KLUCZEM 2 (P1/P2 2) na 19 plików kodu
+  x-b5295fd  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant A szum: POZA KLUCZEM 11 (P1/P2 0) na 19 plików kodu
+  x-b5295fd  p1 wariant B klucz1: K obecne  1 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant B szum: POZA KLUCZEM 42 (P1/P2 10) na 19 plików kodu
+  x-b5295fd  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b5295fd  p1 wariant C szum: POZA KLUCZEM 14 (P1/P2 3) na 19 plików kodu
+  x-7e437fc  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant 0 szum: POZA KLUCZEM 0 (P1/P2 0) na 9 plików kodu
+  x-7e437fc  p1 wariant A klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant A szum: POZA KLUCZEM 7 (P1/P2 0) na 9 plików kodu
+  x-7e437fc  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 1 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant B szum: POZA KLUCZEM 26 (P1/P2 6) na 9 plików kodu
+  x-7e437fc  p1 wariant C klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-7e437fc  p1 wariant C szum: POZA KLUCZEM 9 (P1/P2 0) na 9 plików kodu
+  x-b7d0455  p1 wariant 0 klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant 0 szum: POZA KLUCZEM 1 (P1/P2 1) na 21 plików kodu
+  x-b7d0455  p1 wariant A klucz1: K obecne  2 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant A szum: POZA KLUCZEM 8 (P1/P2 1) na 21 plików kodu
+  x-b7d0455  p1 wariant B klucz1: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant B szum: POZA KLUCZEM 23 (P1/P2 5) na 21 plików kodu
+  x-b7d0455  p1 wariant C klucz1: K obecne  2 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-b7d0455  p1 wariant C szum: POZA KLUCZEM 11 (P1/P2 3) na 21 plików kodu
+  x-05dd804  p1 wariant 0 klucz1: K obecne  1 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant 0 klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant 0 szum: POZA KLUCZEM 0 (P1/P2 0) na 14 plików kodu
+  x-05dd804  p1 wariant A klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant A klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant A szum: POZA KLUCZEM 6 (P1/P2 1) na 14 plików kodu
+  x-05dd804  p1 wariant B klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 1 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant B klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant B szum: POZA KLUCZEM 13 (P1/P2 3) na 14 plików kodu
+  x-05dd804  p1 wariant C klucz1: K obecne  1 | PEŁNE  1 | szeroko  1 | przez bramki 1 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant C klucz2: K obecne  0 | PEŁNE  0 | szeroko  0 | przez bramki 0 | szeroko po weryfikacji brak sceptyków
+  x-05dd804  p1 wariant C szum: POZA KLUCZEM 4 (P1/P2 0) na 14 plików kodu
+RAZEM (wszystkie fazy i permutacje):
+  wariant 0 klucz1: 20/83 PEŁNE (24%), 25/83 szeroko (30%)
+  wariant 0 klucz2: 44/63 PEŁNE (70%), 53/63 szeroko (84%)
+  wariant A klucz1: 37/83 PEŁNE (45%), 45/83 szeroko (54%)
+  wariant A klucz2: 40/63 PEŁNE (63%), 46/63 szeroko (73%)
+  wariant B klucz1: 36/83 PEŁNE (43%), 41/83 szeroko (49%)
+  wariant B klucz2: 39/63 PEŁNE (62%), 45/63 szeroko (71%)
+  wariant C klucz1: 38/83 PEŁNE (46%), 42/83 szeroko (51%)
+  wariant C klucz2: 29/63 PEŁNE (46%), 37/63 szeroko (59%)

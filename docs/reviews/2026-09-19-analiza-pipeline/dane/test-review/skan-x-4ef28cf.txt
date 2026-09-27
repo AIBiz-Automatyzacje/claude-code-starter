@@ -1,0 +1,22 @@
+sesja 2c5a9cf3: narzędzia sesji ['Workflow']
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia  15
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  13
+sesja a0b50a23: narzędzia sesji ['Workflow']
+  fix:pre-skan:faza-3                          claude-haiku-4-5-20251001  narzędzia  39  (uwaga)
+  fix:kontrola:faza-3                          claude-opus-5-5            narzędzia   4
+sesja bc118c24: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia  11
+sesja d0407b2c: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia  16
+sesja e55d69e4: narzędzia sesji ['Workflow']
+  sedzia:x-4ef28cf:p1[medium]                  claude-opus-5-5            narzędzia   2
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (4):
+  wf_37f43481-449 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff f96f1b4^..HEAD | grep "^+" | grep -v "^+++" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt
+  wf_37f43481-449 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/all_added.txt']: git diff f96f1b4^..HEAD | grep "^+" | grep -v "^+++" > /tmp/all_added.txt && echo "=== PUSTY-CATCH ===" && grep -n "catc
+  wf_37f43481-449 fix:pre-skan:faza-3: zapis Bashem poza kopią ['> /tmp/diff_unified.txt']: git diff f96f1b4^..HEAD --unified=0 > /tmp/diff_unified.txt && echo "Total diff lines: $(wc -l < /tmp/diff_unified.txt)"
+  wf_37f43481-449 fix:pre-skan:faza-3: agent haiku wołał narzędzia ['Bash', 'Read']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 7, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 4
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

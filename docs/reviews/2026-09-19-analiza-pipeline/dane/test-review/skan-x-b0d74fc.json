@@ -1,0 +1,16 @@
+{
+ "etykieta": "x-b0d74fc",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_d9ed4434-6d9 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/phase2_fix.diff']: git diff b0d74fc^..HEAD > /tmp/phase2_fix.diff 2>&1 && wc -l /tmp/phase2_fix.diff",
+  "wf_d9ed4434-6d9 fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash', 'Read']"
+ ]
+}

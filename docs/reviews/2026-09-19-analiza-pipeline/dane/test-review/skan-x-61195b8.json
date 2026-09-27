@@ -1,0 +1,16 @@
+{
+ "etykieta": "x-61195b8",
+ "podsumowanie": {
+  "agentow": 7,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_93f912e0-c27 fix:pre-skan:faza-4: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: git diff 61195b8^..HEAD | grep \"^+\" | grep -v \"^+++\" > /tmp/added_lines.txt && head -100 /tmp/added_lines.txt",
+  "wf_93f912e0-c27 fix:pre-skan:faza-4: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

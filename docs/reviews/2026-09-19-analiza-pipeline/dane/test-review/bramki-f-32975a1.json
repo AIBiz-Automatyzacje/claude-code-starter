@@ -1,0 +1,2981 @@
+{
+ "etykieta": "f-32975a1",
+ "sha": "32975a10a04c353df2dbf3cfa0719095b5f1a3e3",
+ "baza": "a7e8c64",
+ "modul_fixa": false,
+ "pliki": 33,
+ "pliki_kodu": 15,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+  "apps/dashboard/src/features/offers/heatmap-grid.ts",
+  "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+  "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+  "apps/dashboard/src/features/offers/texts.ts",
+  "apps/dashboard/src/features/offers/use-offer-details.test.ts",
+  "apps/dashboard/src/features/offers/use-offer-details.ts",
+  "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+  "apps/dashboard/src/features/offers/use-offer-heat.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.0,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 205,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 102,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapCard' has too many lines (196). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 181,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 16,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_canvas' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 89,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapFrame' has too many lines (115). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 92,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (93). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 102,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapCard' has too many lines (196). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 181,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 16,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_canvas' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 75,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 89,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapFrame' has too many lines (115). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 64,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 102,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 147,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 3,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 215,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 92,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (93). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 102,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapCard' has too many lines (196). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 181,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 16,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_canvas' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 75,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 89,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapFrame' has too many lines (115). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 64,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 102,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 147,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 62,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 73,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 5,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 215,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ],
+   "zastane": 57
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 162014,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 5419,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/dashboard/src/features/offers/use-offer-details.ts": 17,
+    "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx": 234,
+    "apps/dashboard/src/features/offers/heatmap-grid.ts": 256,
+    "apps/dashboard/src/features/offers/offer-details-page.tsx": 19,
+    "apps/dashboard/src/features/offers/offer-heatmap-card.tsx": 333,
+    "apps/dashboard/src/features/offers/use-offer-heat.ts": 106
+   },
+   "pliki_A": [
+    "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+    "apps/dashboard/src/features/offers/heatmap-grid.ts",
+    "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx"
+   ],
+   "wyniki": {
+    "apps/dashboard": {
+     "status": "uruchomiona",
+     "sekundy": 126.4,
+     "statusy": {
+      "NoCoverage": 16,
+      "Killed": 280,
+      "Survived": 84
+     },
+     "przezyte": [
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 105,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 201,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "NoCoverage: ArithmeticOperator → a.col + b.col"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 85,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 96,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → typeof value !== 'number' && !Number.isFinite(value)"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 96,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 105,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 105,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → row === undefined && col === undefined"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 105,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 105,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 157,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → [...visits]"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 158,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 158,
+       "regula": "stryker/ArrowFunction",
+       "opis": "Survived: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 158,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 158,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → a.doc_height + b.doc_height"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 158,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → startedAtMs(a) + startedAtMs(b)"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 164,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 164,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → sorted.length * 2"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 164,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 168,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → sorted[middle - 1] && fallback"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 168,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → middle + 1"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 170,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → startedAtMs(lower) < startedAtMs(upper)"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 201,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 201,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 201,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → a.row - b.row && a.col - b.col"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 201,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → a.row + b.row"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 200,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → [...totals.values()]"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 201,
+       "regula": "stryker/ArrowFunction",
+       "opis": "Survived: ArrowFunction → () => undefined"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+       "linia": 245,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → bucket.visitCount >= best.visitCount"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 129,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 289,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 290,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 55,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 124,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 129,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 162,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 205,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → buckets.buckets"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 209,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → activeBucket.device"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 235,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 243,
+       "regula": "stryker/OptionalChaining",
+       "opis": "Survived: OptionalChaining → buckets.isTruncated"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 262,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → className && ''"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 262,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 262,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 288,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 288,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 288,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → mode !== 'all'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 288,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 295,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 295,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 295,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → mode !== 'single'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 295,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 326,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 326,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 29,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 30,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 31,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+       "linia": 36,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 157,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 161,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 162,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 174,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 177,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 177,
+       "regula": "stryker/LogicalOperator",
+       "opis": "NoCoverage: LogicalOperator → className && ''"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 177,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 217,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 218,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 220,
+       "regula": "stryker/BlockStatement",
+       "opis": "NoCoverage: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 221,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 52,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → origin"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 56,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → origin"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 99,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 114,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 114,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → available >= 0"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 135,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 142,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 154,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 156,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 157,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 157,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 157,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 157,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → status === 'loading'"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 165,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 166,
+       "regula": "stryker/CallExpression",
+       "opis": "Survived: CallExpression → ;"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 168,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 174,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 174,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 190,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → className && ''"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 190,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 190,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 196,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 197,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → ``"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 24,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 25,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 26,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+       "linia": 27,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+       "linia": 58,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+       "linia": 58,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+       "linia": 68,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+       "linia": 84,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+       "linia": 84,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+       "linia": 103,
+       "regula": "stryker/ArrayDeclaration",
+       "opis": "Survived: ArrayDeclaration → []"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 205,
+     "regula": "@typescript-eslint/consistent-type-assertions",
+     "opis": "Do not use any type assertions."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 102,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapCard' has too many lines (196). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 181,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 16,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_canvas' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 89,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapFrame' has too many lines (115). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → a.col + b.col"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 85,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 96,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → typeof value !== 'number' && !Number.isFinite(value)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → row === undefined && col === undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 157,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → [...visits]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.doc_height + b.doc_height"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → startedAtMs(a) + startedAtMs(b)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → sorted.length * 2"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 168,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → sorted[middle - 1] && fallback"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 168,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → middle + 1"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 170,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → startedAtMs(lower) < startedAtMs(upper)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → a.row - b.row && a.col - b.col"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.row + b.row"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 200,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → [...totals.values()]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 245,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → bucket.visitCount >= best.visitCount"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 129,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 289,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 290,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 124,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 129,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 162,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 205,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → buckets.buckets"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 209,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → activeBucket.device"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 235,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 243,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → buckets.isTruncated"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → mode !== 'all'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → mode !== 'single'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 326,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 326,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 30,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 36,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 161,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 162,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/LogicalOperator",
+     "opis": "NoCoverage: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 217,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 218,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 220,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 221,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 52,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → origin"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 56,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → origin"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 114,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → available >= 0"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 135,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 142,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 154,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 156,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → status === 'loading'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 165,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 166,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 168,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 196,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 197,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 24,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 25,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 26,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 27,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 92,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (93). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 102,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapCard' has too many lines (196). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 181,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 16,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_canvas' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 75,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 89,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapFrame' has too many lines (115). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 64,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 102,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 147,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → a.col + b.col"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 85,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 96,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → typeof value !== 'number' && !Number.isFinite(value)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → row === undefined && col === undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 157,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → [...visits]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.doc_height + b.doc_height"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → startedAtMs(a) + startedAtMs(b)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → sorted.length * 2"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 168,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → sorted[middle - 1] && fallback"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 168,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → middle + 1"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 170,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → startedAtMs(lower) < startedAtMs(upper)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → a.row - b.row && a.col - b.col"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.row + b.row"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 200,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → [...totals.values()]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 245,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → bucket.visitCount >= best.visitCount"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 129,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 289,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 290,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 124,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 129,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 162,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 205,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → buckets.buckets"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 209,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → activeBucket.device"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 235,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 243,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → buckets.isTruncated"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → mode !== 'all'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → mode !== 'single'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 326,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 326,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 30,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 36,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 161,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 162,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/LogicalOperator",
+     "opis": "NoCoverage: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 217,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 218,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 220,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 221,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 52,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → origin"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 56,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → origin"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 114,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → available >= 0"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 135,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 142,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 154,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 156,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → status === 'loading'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 165,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 166,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 168,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 196,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 197,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 24,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 25,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 26,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 27,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 58,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 58,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 84,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 84,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 103,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 215,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "linia": 92,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (93). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 102,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapCard' has too many lines (196). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 181,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'renderBody' has too many lines (66). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 16,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_canvas' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "linia": 75,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 89,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'OfferHeatmapFrame' has too many lines (115). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 64,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (75). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 102,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "linia": 147,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 62,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 73,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "NoCoverage: ArithmeticOperator → a.col + b.col"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 85,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 96,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → typeof value !== 'number' && !Number.isFinite(value)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 96,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → row === undefined && col === undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 105,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 157,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → [...visits]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.doc_height + b.doc_height"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 158,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → startedAtMs(a) + startedAtMs(b)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → sorted.length * 2"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 164,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 168,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → sorted[middle - 1] && fallback"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 168,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → middle + 1"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 170,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → startedAtMs(lower) < startedAtMs(upper)"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → a.row - b.row && a.col - b.col"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → a.row + b.row"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 200,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → [...totals.values()]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 201,
+     "regula": "stryker/ArrowFunction",
+     "opis": "Survived: ArrowFunction → () => undefined"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 245,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → bucket.visitCount >= best.visitCount"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 129,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 289,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 290,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 55,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 124,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → [\"Stryker was here\"]"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 129,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 162,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 205,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → buckets.buckets"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 209,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → activeBucket.device"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 235,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 243,
+     "regula": "stryker/OptionalChaining",
+     "opis": "Survived: OptionalChaining → buckets.isTruncated"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 262,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → mode !== 'all'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 288,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → mode !== 'single'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 295,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 326,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 326,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 29,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 30,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 31,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "linia": 36,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 161,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 162,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/LogicalOperator",
+     "opis": "NoCoverage: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 177,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 217,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 218,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 220,
+     "regula": "stryker/BlockStatement",
+     "opis": "NoCoverage: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 221,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 52,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → origin"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 56,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → origin"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 99,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 114,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 114,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → available >= 0"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 135,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 142,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 154,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 156,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 157,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → status === 'loading'"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 165,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 166,
+     "regula": "stryker/CallExpression",
+     "opis": "Survived: CallExpression → ;"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 168,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 174,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → className && ''"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 190,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 196,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 197,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → ``"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 24,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 25,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 26,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 27,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 58,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 58,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 68,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 84,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 84,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 103,
+     "regula": "stryker/ArrayDeclaration",
+     "opis": "Survived: ArrayDeclaration → []"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 215,
+     "regula": "@typescript-eslint/no-deprecated",
+     "opis": "`scrolling` is deprecated."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: HEAT_VISIT_LIMIT"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "linia": 49,
+     "regula": "knip/exports",
+     "opis": "exports: offerPreviewUrl"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "linia": 47,
+     "regula": "knip/types",
+     "opis": "types: HeatBucket"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,210 @@
+{
+ "etykieta": "x-4ef28cf",
+ "sha": "4ef28cf0e69ca53d34f253a01b6ece9d42b75656",
+ "baza": "f96f1b4d5a30bd0cf59a2a6d9e04224a24cbf089",
+ "modul_fixa": true,
+ "pliki": 6,
+ "pliki_kodu": 6,
+ "pliki_ts": [
+  "apps/dashboard/src/features/access/registration-mode-api.test.ts",
+  "apps/dashboard/src/features/access/registration-mode-api.ts",
+  "apps/dashboard/src/features/admin/admin-sections.test.tsx",
+  "apps/dashboard/src/features/admin/admin-sections.tsx",
+  "apps/dashboard/src/features/admin/use-admin-accounts.test.ts",
+  "apps/dashboard/src/features/settings/use-account-deletion.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 12.7,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/admin/use-admin-accounts.test.ts",
+     "linia": 295,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 3,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/admin/use-admin-accounts.test.ts",
+     "linia": 295,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 3,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.9,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 87,
+     "regula": "knip/exports",
+     "opis": "exports: toSourceFilter"
+    },
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 75,
+     "regula": "knip/types",
+     "opis": "types: AccountSourceFilter"
+    }
+   ],
+   "zastane": 373,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 243246,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 7474,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 87,
+     "regula": "knip/exports",
+     "opis": "exports: toSourceFilter"
+    },
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 75,
+     "regula": "knip/types",
+     "opis": "types: AccountSourceFilter"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/admin/use-admin-accounts.test.ts",
+     "linia": 295,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 87,
+     "regula": "knip/exports",
+     "opis": "exports: toSourceFilter"
+    },
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 75,
+     "regula": "knip/types",
+     "opis": "types: AccountSourceFilter"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 87,
+     "regula": "knip/exports",
+     "opis": "exports: toSourceFilter"
+    },
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 75,
+     "regula": "knip/types",
+     "opis": "types: AccountSourceFilter"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/admin/use-admin-accounts.test.ts",
+     "linia": 295,
+     "regula": "@typescript-eslint/no-unsafe-assignment",
+     "opis": "Unsafe assignment of an `any` value."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 87,
+     "regula": "knip/exports",
+     "opis": "exports: toSourceFilter"
+    },
+    {
+     "plik": "apps/dashboard/src/features/admin/admin-sections.tsx",
+     "linia": 75,
+     "regula": "knip/types",
+     "opis": "types: AccountSourceFilter"
+    }
+   ]
+  }
+ }
+}

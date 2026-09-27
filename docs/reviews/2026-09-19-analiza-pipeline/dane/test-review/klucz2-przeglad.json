@@ -1,7 +1,23 @@
 {
-  "_opis": "Przegląd klucza 2 w sesji głównej przed testem (TEST-REVIEW-PLAN §2.2: „lista idzie do sędziego po przejrzeniu”). Pozycje wykluczone z klucza z powodem; klucz: <sha10 fazy>#<numer pozycji p12 od 1>. Przejrzane 2026-09-25: fazy pilota b26128d294 (7), 2634b6770a (3), f3ee433811 (4).",
-  "wykluczone": {
-    "f3ee433811#4": "duplikat pozycji #3 — wiersz „Finding 1 (P2)” z podsumowania soczewki spec-compliance opisuje ten sam defekt co `### … terms-page.ts:112` (obietnica usunięcia konta z Ustawień); parser test_review_klucz2.py wziął go za osobny finding"
-  },
-  "przejrzane_fazy": ["b26128d294", "2634b6770a", "f3ee433811"]
+ "_opis": "Przegląd klucza 2 w sesji głównej przed testem (TEST-REVIEW-PLAN §2.2: „lista idzie do sędziego po przejrzeniu”). Pozycje wykluczone z klucza z powodem; klucz: <sha10 fazy>#<numer pozycji p12 od 1>. Przejrzane 2026-09-25: fazy pilota b26128d294 (7), 2634b6770a (3), f3ee433811 (4). Przejrzane 2026-09-26 (przygotowanie etapu głównego, dane/test-review/klucz2-etap.txt): 10 faz etapu, 52 pozycje; wykluczone 2 (sygnał BEZ_NAGLOWKA; pozostałe BEZ_NAGLOWKA w 303ff625db to prawdziwe pozycje raportu w formacie listy z checkboxem).",
+ "wykluczone": {
+  "f3ee433811#4": "duplikat pozycji #3 — wiersz „Finding 1 (P2)” z podsumowania soczewki spec-compliance opisuje ten sam defekt co `### … terms-page.ts:112` (obietnica usunięcia konta z Ustawień); parser test_review_klucz2.py wziął go za osobny finding",
+  "67f5f2cdf6#4": "duplikat pozycji #1 — punkt „IU-4 … niespełniony” z sekcji zgodności ze specyfikacją odsyła do tego samego P2 `apps/server/tsconfig.json` (serwis nie startuje); parser test_review_klucz2.py wziął go za osobny finding",
+  "2536643737#6": "nie finding — punkt „IU-10 (adres oferty): spełnione” z sekcji zgodności ze specyfikacją; parser wziął wiersz listy z nazwą pliku w backtickach za pozycję P2"
+ },
+ "przejrzane_fazy": [
+  "b26128d294",
+  "2634b6770a",
+  "f3ee433811",
+  "32975a10a0",
+  "303ff625db",
+  "46be55afc9",
+  "31491bc36f",
+  "5af000f884",
+  "9d40529592",
+  "b8374c8091",
+  "1de5a4c260",
+  "67f5f2cdf6",
+  "2536643737"
+ ]
 }

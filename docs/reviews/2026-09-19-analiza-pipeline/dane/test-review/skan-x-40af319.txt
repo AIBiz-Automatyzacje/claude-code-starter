@@ -1,0 +1,26 @@
+sesja 0d3ad440: narzędzia sesji ['Workflow']
+  sedzia:x-40af319:p1[medium]                  claude-opus-5-5            narzędzia   2
+sesja 4024e95b: narzędzia sesji ['Workflow']
+  C:fix:kontrola[high]                         claude-opus-5-5            narzędzia  17
+sesja bc12403c: narzędzia sesji ['Workflow']
+  B:fix:kontrola#1[medium]                     claude-opus-5-5            narzędzia  10
+  B:fix:kontrola#2[medium]                     claude-opus-5-5            narzędzia  17
+sesja eb6a5b44: narzędzia sesji ['Workflow']
+  fix:pre-skan:faza-2                          claude-haiku-4-5-20251001  narzędzia  20  (uwaga)
+  fix:kontrola:faza-2                          claude-opus-5-5            narzędzia   5
+sesja f83dc4d3: narzędzia sesji ['Workflow']
+  A:fix:kontrola[medium]                       claude-opus-5-5            narzędzia  10
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (8):
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/diff.txt']: git diff 40af319^..HEAD > /tmp/diff.txt && wc -l /tmp/diff.txt
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added_lines.txt']: cat /tmp/diff.txt | grep "^+[^+]" > /tmp/added_lines.txt && wc -l /tmp/added_lines.txt
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/added_content.txt']: cat /tmp/added_lines.txt | sed 's/^+//' > /tmp/added_content.txt && echo "=== PUSTY CATCH ===" && grep -n "catch\s*{\s*}
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/ts_added.txt']: git diff 40af319^..HEAD -U0 -- "*.ts" "*.tsx" | grep "^+[^+]" | sed 's/^+//' > /tmp/ts_added.txt && wc -l /tmp/ts_added.
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/all_added.txt']: cat /tmp/diff.txt | grep "^+[^+]" | sed 's/^+//' > /tmp/all_added.txt && echo "Total added lines: $(wc -l < /tmp/all_add
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/full_diff_u0.txt']: git diff 40af319^..HEAD --unified=0 > /tmp/full_diff_u0.txt && head -100 /tmp/full_diff_u0.txt
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: zapis Bashem poza kopią ['> /tmp/ts_lines.txt']: git diff 40af319^..HEAD -- '*.ts' '*.tsx' | grep "^+[^+]" | sed 's/^+//' > /tmp/ts_lines.txt && echo "Total TS lines: $(
+  wf_7d1f7f5d-de7 fix:pre-skan:faza-2: agent haiku wołał narzędzia ['Bash']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 7, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 8
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

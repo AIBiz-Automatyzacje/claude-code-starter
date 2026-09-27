@@ -1,0 +1,243 @@
+{
+ "etykieta": "x-b5295fd",
+ "sha": "b5295fd307c144d3fd58b7cea2e3f647fffb3d2e",
+ "baza": "fa77b309b384ca11e05c605a81f2717cc794928e",
+ "modul_fixa": true,
+ "pliki": 20,
+ "pliki_kodu": 19,
+ "pliki_ts": [
+  "apps/server/src/http/oauth-token.ts",
+  "apps/server/src/index.ts",
+  "apps/server/src/mcp/oauth-metadata.ts",
+  "apps/server/src/mcp/oauth-token-verifier.test.ts",
+  "apps/server/src/mcp/oauth-token-verifier.ts",
+  "apps/server/src/mcp/server.test.ts",
+  "apps/server/src/mcp/server.ts",
+  "apps/server/src/mcp/token-classifier.ts",
+  "apps/server/src/mcp/tools/lista-szablonow.ts",
+  "apps/server/src/mcp/tools/opublikuj-oferte.ts",
+  "apps/server/src/mcp/tools/pobierz-szablon.ts",
+  "apps/server/src/mcp/tools/usun-szablon.ts",
+  "apps/server/src/mcp/tools/zapisz-szablon.ts",
+  "apps/server/src/mcp/verified-owner.ts",
+  "apps/server/src/offer/delete-template.ts",
+  "apps/server/src/offer/repository.ts",
+  "apps/server/src/offer/template-repository.ts",
+  "apps/server/src/routes/well-known.test.ts",
+  "apps/server/src/routes/well-known.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 7.7,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 2.5,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 2.4,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.test.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 544,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'list' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-classifier.ts",
+     "linia": 1,
+     "regula": "@typescript-eslint/consistent-type-imports",
+     "opis": "All imports in the declaration are only used as types. Use `import type`."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 63,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 2.6,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.test.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 544,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'list' has no 'await' expression."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 57,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [],
+   "nieobjete_n": 0
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+     "linia": 90,
+     "regula": "knip/types",
+     "opis": "types: OAuthDenialReason"
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 126,
+     "regula": "knip/types",
+     "opis": "types: VerifiedOwnerId"
+    }
+   ],
+   "zastane": 198,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "nie dotyczy: faza bez plików UI dashboardu"
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+     "linia": 90,
+     "regula": "knip/types",
+     "opis": "types: OAuthDenialReason"
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 126,
+     "regula": "knip/types",
+     "opis": "types: VerifiedOwnerId"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.test.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 544,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'list' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/token-classifier.ts",
+     "linia": 1,
+     "regula": "@typescript-eslint/consistent-type-imports",
+     "opis": "All imports in the declaration are only used as types. Use `import type`."
+    },
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+     "linia": 90,
+     "regula": "knip/types",
+     "opis": "types: OAuthDenialReason"
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 126,
+     "regula": "knip/types",
+     "opis": "types: VerifiedOwnerId"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+     "linia": 90,
+     "regula": "knip/types",
+     "opis": "types: OAuthDenialReason"
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 126,
+     "regula": "knip/types",
+     "opis": "types: VerifiedOwnerId"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.test.ts",
+     "linia": 120,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function 'getUser' has no 'await' expression."
+    },
+    {
+     "plik": "apps/server/src/mcp/server.test.ts",
+     "linia": 544,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async method 'list' has no 'await' expression."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/mcp/oauth-token-verifier.ts",
+     "linia": 90,
+     "regula": "knip/types",
+     "opis": "types: OAuthDenialReason"
+    },
+    {
+     "plik": "apps/server/src/offer/template-repository.ts",
+     "linia": 126,
+     "regula": "knip/types",
+     "opis": "types: VerifiedOwnerId"
+    }
+   ]
+  }
+ }
+}

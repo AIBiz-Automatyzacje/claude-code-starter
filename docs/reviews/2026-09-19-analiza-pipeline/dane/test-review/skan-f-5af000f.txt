@@ -1,0 +1,45 @@
+sesja 291b2e8e: narzędzia sesji ['Workflow']
+sesja 54e3d2f4: narzędzia sesji ['Workflow']
+  B:review:security#1[medium]                  claude-opus-5-5            narzędzia   4
+  B:review:spec[medium]                        claude-opus-5-5            narzędzia  20
+  B:review:correctness#2[medium]               claude-opus-5-5            narzędzia  12
+  B:review:security#2[medium]                  claude-opus-5-5            narzędzia   4
+  B:review:correctness#1[medium]               claude-opus-5-5            narzędzia  20
+  B:review:correctness#3[medium]               claude-opus-5-5            narzędzia  18
+  B:review:test-coverage[medium]               claude-opus-5-5            narzędzia   9
+  B:review:code-quality[medium]                claude-opus-5-5            narzędzia  13
+  B:review:security#3[medium]                  claude-opus-5-5            narzędzia   7
+  B:agregator[haiku]                           claude-haiku-4-5-20251001  narzędzia   2  (uwaga)
+sesja 56a7b2e7: narzędzia sesji ['Workflow']
+  kontekst:diff                                claude-opus-5-5            narzędzia   6
+  review:security                              claude-opus-5-5            narzędzia  27
+  review:code-quality                          claude-opus-5-5            narzędzia   9
+  review:correctness                           claude-opus-5-5            narzędzia  16
+  review:test-coverage                         claude-opus-5-5            narzędzia  22
+  dedup:semantyczny                            claude-haiku-4-5-20251001  narzędzia   1
+  review:performance                           claude-opus-5-5            narzędzia   9
+  review:spec-compliance                       claude-opus-5-5            narzędzia  20
+sesja 6e9c9e43: narzędzia sesji ['Workflow']
+  sedzia:f-5af000f:p1[medium]                  claude-opus-5-5            narzędzia   3
+sesja 87594f03: narzędzia sesji ['Workflow']
+  verify-batch:apps/dashboard/src/features/off claude-opus-5-5            narzędzia   2
+sesja 95c16d9a: narzędzia sesji ['Workflow']
+sesja a0793f62: narzędzia sesji ['Workflow']
+  A:verify-batch:0[medium]                     claude-opus-5-5            narzędzia   3
+sesja cb50b0bc: narzędzia sesji ['Workflow']
+  C:review:kod[high]                           claude-opus-5-5            narzędzia  18
+  C:review:testy[medium]                       claude-opus-5-5            narzędzia   5
+sesja e7582ce7: narzędzia sesji ['Workflow']
+  A:review:spec-compliance[medium]             claude-opus-5-5            narzędzia  14
+  A:review:code-quality[low]                   claude-opus-5-5            narzędzia   5
+  A:review:correctness[high]                   claude-opus-5-5            narzędzia  20
+  A:review:security[high]                      claude-opus-5-5            narzędzia  24
+  A:dedup:semantyczny[haiku]                   claude-haiku-4-5-20251001  narzędzia   1
+  A:review:test-coverage[medium]               claude-opus-5-5            narzędzia   9
+
+kopia fazy: bez zmian (HEAD = sha fazy, git status pusty, odcisk nakładki zgodny)
+UWAGI bez zatrzymania (1):
+  wf_ab5bca0b-0b7 B:agregator[haiku]: agent haiku wołał narzędzia ['Bash']
+pominięte sesje spoza fazy (nie są sesjami testu tej fazy): brak
+podsumowanie: {'agentow': 29, 'model': 0, 'przeciek': 0, 'zapis': 0, 'n1': 0}, uwag 1
+STOP §11: brak — modele zgodne z projektem, kopia bez zmian, zero przecieku, zero N1

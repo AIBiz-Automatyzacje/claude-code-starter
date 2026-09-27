@@ -1,0 +1,310 @@
+{
+ "etykieta": "x-b7d0455",
+ "sha": "b7d0455eb1161b3a36d1822e3e5e6f13416cf793",
+ "baza": "253d6bf7b55d80b863a54a2b45438025447abde5",
+ "modul_fixa": true,
+ "pliki": 23,
+ "pliki_kodu": 21,
+ "pliki_ts": [
+  "apps/dashboard/src/App.test.tsx",
+  "apps/dashboard/src/App.tsx",
+  "apps/dashboard/src/features/oauth/consent-page.test.tsx",
+  "apps/dashboard/src/features/oauth/consent-page.tsx",
+  "apps/dashboard/src/features/oauth/consent-request.test.ts",
+  "apps/dashboard/src/features/oauth/consent-request.ts",
+  "apps/dashboard/src/features/oauth/texts.test.ts",
+  "apps/dashboard/src/features/oauth/texts.ts",
+  "apps/dashboard/src/features/oauth/use-consent.test.ts",
+  "apps/dashboard/src/features/oauth/use-consent.ts",
+  "apps/dashboard/src/features/settings/connected-app-format.ts",
+  "apps/dashboard/src/features/settings/connected-apps-card.test.tsx",
+  "apps/dashboard/src/features/settings/connected-apps-card.tsx",
+  "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+  "apps/dashboard/src/features/settings/use-connected-apps.test.ts",
+  "apps/dashboard/src/features/settings/use-connected-apps.ts",
+  "apps/dashboard/src/lib/monitoring.ts",
+  "e2e/print-magic-link.test.ts",
+  "e2e/print-magic-link.ts",
+  "e2e/print-oauth-consent-url.test.ts",
+  "e2e/print-oauth-consent-url.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 8.6,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 3.2,
+   "konfiguracja": "_narzedzia/konfig/eslint-A-fix.mjs",
+   "trafienia": [],
+   "zastane_poza_liniami_fazy": 0,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "e2e/print-magic-link.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-magic-link.test.ts was not found by the",
+    "e2e/print-magic-link.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-magic-link.ts was not found by the proj",
+    "e2e/print-oauth-consent-url.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-oauth-consent-url.test.ts was not found",
+    "e2e/print-oauth-consent-url.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-oauth-consent-url.ts was not found by t"
+   ],
+   "nieobjete_n": 4
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 3.1,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+     "linia": 33,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'DisconnectDialog' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_hint' is defined but never used."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 15,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 212,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx",
+     "linia": 219,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "nieobjete": [
+    "e2e/print-magic-link.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-magic-link.test.ts was not found by the",
+    "e2e/print-magic-link.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-magic-link.ts was not found by the proj",
+    "e2e/print-oauth-consent-url.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-oauth-consent-url.test.ts was not found",
+    "e2e/print-oauth-consent-url.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-oauth-consent-url.ts was not found by t"
+   ],
+   "nieobjete_n": 4
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 3.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+     "linia": 33,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'DisconnectDialog' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_hint' is defined but never used."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 23,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 212,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx",
+     "linia": 219,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "nieobjete": [
+    "e2e/print-magic-link.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-magic-link.test.ts was not found by the",
+    "e2e/print-magic-link.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-magic-link.ts was not found by the proj",
+    "e2e/print-oauth-consent-url.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-oauth-consent-url.test.ts was not found",
+    "e2e/print-oauth-consent-url.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/x-b7d0455/e2e/print-oauth-consent-url.ts was not found by t"
+   ],
+   "nieobjete_n": 4
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: stripQueryFromRequestUrl"
+    }
+   ],
+   "zastane": 208,
+   "projekty": "B (K-04: B-11 na plikach fixa)"
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 195235,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 6709,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "nie dotyczy: moduł fixa"
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: stripQueryFromRequestUrl"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+     "linia": 33,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'DisconnectDialog' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_hint' is defined but never used."
+    },
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: stripQueryFromRequestUrl"
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 212,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx",
+     "linia": 219,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: stripQueryFromRequestUrl"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/settings/disconnect-dialog.tsx",
+     "linia": 33,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'DisconnectDialog' has too many lines (72). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "@typescript-eslint/no-unused-vars",
+     "opis": "'_hint' is defined but never used."
+    }
+   ],
+   "mutanty_przezyte": [],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 212,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/App.test.tsx",
+     "linia": 231,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    },
+    {
+     "plik": "apps/dashboard/src/features/oauth/consent-page.test.tsx",
+     "linia": 219,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary optional chain on a non-nullish value."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/dashboard/src/lib/monitoring.ts",
+     "linia": 14,
+     "regula": "knip/exports",
+     "opis": "exports: stripQueryFromRequestUrl"
+    }
+   ]
+  }
+ }
+}

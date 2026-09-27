@@ -1,0 +1,39 @@
+test_review_etap.py lista — etap główny: 13 faz + 24 commitów fixa (moduł §2.6); pilot = znacznik _faza-ok w ~/test-review/wyniki
+  f-b26128d  faza     faza 2  faza-4-tracking-i-widok-oferty         klucz1 6 klucz2  7  [pilot — pomijana]
+  f-2634b67  faza     faza 1  faza-3-konto-i-dashboard               klucz1 4 klucz2  3  [pilot — pomijana]
+  f-32975a1  faza     faza 2  faza-5-heatmapa                        klucz1 4 klucz2  7
+  f-303ff62  faza     faza 4  faza-6-cta-i-webhooki                  klucz1 6 klucz2  8
+  f-46be55a  faza     faza 2  faza-3-konto-i-dashboard               klucz1 7 klucz2  5
+  f-31491bc  faza     faza 3  siatka-heatmapy-proporcjonalna         klucz1 3 klucz2  4
+  f-5af000f  faza     faza 3  faza-4-tracking-i-widok-oferty         klucz1 4 klucz2  4
+  f-9d40529  faza     faza 1  faza-4-tracking-i-widok-oferty         klucz1 2 klucz2  2
+  f-b8374c8  faza     faza 2  faza-2-publikacja-ofert                klucz1 4 klucz2  7
+  f-f3ee433  faza     faza 2  faza-9c-dokumenty-prawne               klucz1 3 klucz2  4  [pilot — pomijana]
+  f-1de5a4c  faza     faza 6  faza-7-szablony-i-grafiki              klucz1 7 klucz2  5
+  f-67f5f2c  faza     faza 3  faza-1-fundament                       klucz1 2 klucz2  4
+  f-2536643  faza     faza 4  faza-9a-domena-mailer-limity           klucz1 6 klucz2  6
+  x-ed1ce60  fix      faza 1  faza-9a-domena-mailer-limity           klucz1 1 klucz2  0  raport fazy: brak
+  x-43fb8e7  fix      faza 2  faza-9b-wielu-uzytkownikow             klucz1 1 klucz2  0  raport fazy: brak
+  x-828eda9  kontrola faza 2  faza-9b-wielu-uzytkownikow             klucz1 1 klucz2  0  raport fazy: brak
+  x-f3d5aca  fix      faza 1  faza-9b-wielu-uzytkownikow             klucz1 2 klucz2  0  raport fazy: brak
+  x-4ef28cf  kontrola faza 3  faza-9b-wielu-uzytkownikow             klucz1 1 klucz2  0  raport fazy: jest
+  x-5c3c7ac  fix      faza 3  samodzielna-rejestracja-czlonkow-aa    klucz1 1 klucz2  0  raport fazy: brak
+  x-f74b4e4  fix      faza 3  faza-2-publikacja-ofert                klucz1 4 klucz2  0  raport fazy: brak
+  x-58efb36  fix      faza 2  faza-2-publikacja-ofert                klucz1 1 klucz2  0  raport fazy: brak
+  x-61195b8  fix      faza 4  faza-2-publikacja-ofert                klucz1 1 klucz2  0  raport fazy: brak
+  x-411a434  fix      faza 2  faza-4-tracking-i-widok-oferty         klucz1 1 klucz2  0  raport fazy: brak  [pilot — pomijana]
+  x-6bd9990  fix      faza 2  faza-5-heatmapa                        klucz1 1 klucz2  0  raport fazy: brak
+  x-b0d74fc  fix      faza 2  faza-6-cta-i-webhooki                  klucz1 2 klucz2  0  raport fazy: brak
+  x-d520107  fix      faza 4  faza-6-cta-i-webhooki                  klucz1 1 klucz2  0  raport fazy: brak
+  x-dce71cf  fix      faza 6  faza-7-szablony-i-grafiki              klucz1 1 klucz2  0  raport fazy: jest
+  x-bcf98f4  fix      faza 4  faza-7-szablony-i-grafiki              klucz1 1 klucz2  0  raport fazy: brak
+  x-0ec2b19  fix      faza 3  faza-7-szablony-i-grafiki              klucz1 2 klucz2  0  raport fazy: brak
+  x-40af319  fix      faza 2  faza-7-szablony-i-grafiki              klucz1 1 klucz2  0  raport fazy: brak
+  x-60f1951  kontrola faza 5  faza-7-szablony-i-grafiki              klucz1 1 klucz2  0  raport fazy: brak
+  x-b02abfa  fix      faza 5  faza-7-szablony-i-grafiki              klucz1 1 klucz2  0  raport fazy: brak
+  x-925907a  kontrola faza 3  faza-7-szablony-i-grafiki              klucz1 1 klucz2  0  raport fazy: brak
+  x-b5295fd  fix      faza 3  faza-8-connector-oauth-i-dashboard     klucz1 1 klucz2  0  raport fazy: brak
+  x-7e437fc  fix      faza 2  faza-8-connector-oauth-i-dashboard     klucz1 1 klucz2  0  raport fazy: brak
+  x-b7d0455  fix      faza 4  faza-8-connector-oauth-i-dashboard     klucz1 2 klucz2  0  raport fazy: brak
+  x-05dd804  fix      faza 1  faza-9c-dokumenty-prawne               klucz1 1 klucz2  0  raport fazy: brak  [pilot — pomijana]
+RAZEM: jednostek 37, z pilota 5, do uruchomienia 32 (faz 10, fixa 22); klucz1 89 (nowe 74), klucz2 66 (nowe 52); commity fixa z raportem fazy w stanie commitu 2 z 24; błędów kontroli 0

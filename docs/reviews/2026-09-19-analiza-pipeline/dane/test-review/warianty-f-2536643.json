@@ -1,0 +1,403 @@
+{
+ "etykieta": "f-2536643",
+ "faza": 4,
+ "zadanie": "faza-9a-domena-mailer-limity",
+ "baza": "72c07dc",
+ "modul_fixa": false,
+ "plan_techniczny": "docs/plans/2026-09-12-001-feat-faza-9a-domena-mailer-limity-plan.md",
+ "sekcja_planu_zn": 30071,
+ "wiedza_zn": 1402,
+ "sygnaly": {
+  "kod": true,
+  "testy": true,
+  "tsx": true,
+  "klient": true,
+  "serwer": true,
+  "granica": true,
+  "teksty": true,
+  "migracja": true,
+  "zmiana_eksportu": true,
+  "seed": true,
+  "profil_supabase": true,
+  "nierozstrzygalny": true,
+  "await": true,
+  "hooki": true,
+  "regex": true,
+  "zapytania": true,
+  "cache": true,
+  "zod": true,
+  "atrapy": true,
+  "ponawialna": true,
+  "parser": true,
+  "sql_rpc": true,
+  "ui": true,
+  "dane": true,
+  "mutanty_A": true,
+  "lint_A": true,
+  "mutanty_B": true,
+  "mutanty_C": true
+ },
+ "warianty": {
+  "A": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/f-2536643/wariantA.js",
+   "bajty": 49265,
+   "role": [
+    {
+     "rola": "review:correctness",
+     "effort": "high",
+     "listy": [
+      "L-COR-1",
+      "L-COR-2",
+      "L-COR-3",
+      "L-COR-4",
+      "L-COR-5",
+      "L-COR-6",
+      "L-COR-7",
+      "L-COR-8",
+      "L-COR-9",
+      "L-COR-10",
+      "L-COR-11"
+     ],
+     "nieaktywne": [],
+     "schemat_listy": [
+      "L-COR-1",
+      "L-COR-2",
+      "L-COR-3",
+      "L-COR-4",
+      "L-COR-5",
+      "L-COR-6",
+      "L-COR-7",
+      "L-COR-8",
+      "L-COR-9",
+      "L-COR-10",
+      "L-COR-11"
+     ]
+    },
+    {
+     "rola": "review:security",
+     "effort": "high",
+     "listy": [
+      "L-SEC-1",
+      "L-SEC-2",
+      "L-SEC-3",
+      "L-SEC-5",
+      "L-SEC-6",
+      "L-SEC-7",
+      "L-SEC-8",
+      "L-SEC-9",
+      "L-SEC-10"
+     ],
+     "nieaktywne": [
+      "L-SEC-4"
+     ],
+     "schemat_listy": [
+      "L-SEC-1",
+      "L-SEC-2",
+      "L-SEC-3",
+      "L-SEC-5",
+      "L-SEC-6",
+      "L-SEC-7",
+      "L-SEC-8",
+      "L-SEC-9",
+      "L-SEC-10"
+     ]
+    },
+    {
+     "rola": "review:test-coverage",
+     "effort": "medium",
+     "listy": [
+      "L-TST-1",
+      "L-TST-2",
+      "L-TST-3",
+      "L-TST-4",
+      "L-TST-5",
+      "L-TST-6",
+      "L-TST-7"
+     ],
+     "nieaktywne": [],
+     "schemat_listy": [
+      "L-TST-1",
+      "L-TST-2",
+      "L-TST-3",
+      "L-TST-4",
+      "L-TST-5",
+      "L-TST-6",
+      "L-TST-7"
+     ]
+    },
+    {
+     "rola": "review:spec-compliance",
+     "effort": "medium",
+     "listy": [
+      "L-SPC-1",
+      "L-SPC-3",
+      "L-SPC-4",
+      "L-SPC-5"
+     ],
+     "nieaktywne": [
+      "L-SPC-2"
+     ],
+     "schemat_listy": [
+      "L-SPC-1",
+      "L-SPC-3",
+      "L-SPC-4",
+      "L-SPC-5"
+     ]
+    },
+    {
+     "rola": "review:code-quality",
+     "effort": "low",
+     "listy": [
+      "L-CQ-1",
+      "L-CQ-2",
+      "L-CQ-3",
+      "L-CQ-4",
+      "L-CQ-5",
+      "L-CQ-6"
+     ],
+     "nieaktywne": [],
+     "schemat_listy": [
+      "L-CQ-1",
+      "L-CQ-2",
+      "L-CQ-3",
+      "L-CQ-4",
+      "L-CQ-5",
+      "L-CQ-6"
+     ]
+    }
+   ],
+   "agentow_review": 5,
+   "prompt_zn": {
+    "review:correctness": 6930,
+    "review:security": 6735,
+    "review:test-coverage": 7758,
+    "review:spec-compliance": 5204,
+    "review:code-quality": 6072
+   },
+   "agregacja": "Ponizej ponumerowana lista findingow z code review od NIEZALEZNYCH soczewek. Zna"
+  },
+  "B": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/f-2536643/wariantB.js",
+   "bajty": 390332,
+   "role": [
+    {
+     "rola": "review:correctness#1",
+     "effort": "medium",
+     "listy": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13"
+     ],
+     "nieaktywne": []
+    },
+    {
+     "rola": "review:correctness#2",
+     "effort": "medium",
+     "listy": [
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13",
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04"
+     ],
+     "nieaktywne": []
+    },
+    {
+     "rola": "review:correctness#3",
+     "effort": "medium",
+     "listy": [
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13",
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08"
+     ],
+     "nieaktywne": []
+    },
+    {
+     "rola": "review:security#1",
+     "effort": "medium",
+     "listy": [
+      "S-01",
+      "S-02",
+      "S-03",
+      "S-05",
+      "S-06",
+      "S-08",
+      "S-10"
+     ],
+     "nieaktywne": [
+      "S-04",
+      "S-07",
+      "S-09"
+     ]
+    },
+    {
+     "rola": "review:security#2",
+     "effort": "medium",
+     "listy": [
+      "S-05",
+      "S-06",
+      "S-08",
+      "S-10",
+      "S-01",
+      "S-02",
+      "S-03"
+     ],
+     "nieaktywne": [
+      "S-04",
+      "S-07",
+      "S-09"
+     ]
+    },
+    {
+     "rola": "review:security#3",
+     "effort": "medium",
+     "listy": [
+      "S-08",
+      "S-10",
+      "S-01",
+      "S-02",
+      "S-03",
+      "S-05",
+      "S-06"
+     ],
+     "nieaktywne": [
+      "S-04",
+      "S-07",
+      "S-09"
+     ]
+    },
+    {
+     "rola": "review:code-quality",
+     "effort": "medium",
+     "listy": [
+      "Q-01",
+      "Q-02",
+      "Q-03",
+      "Q-04"
+     ],
+     "nieaktywne": []
+    },
+    {
+     "rola": "review:test-coverage",
+     "effort": "medium",
+     "listy": [
+      "T-01",
+      "T-02",
+      "T-03",
+      "T-04",
+      "T-05",
+      "T-06"
+     ],
+     "nieaktywne": []
+    },
+    {
+     "rola": "review:spec",
+     "effort": "medium",
+     "listy": [
+      "P-01",
+      "P-03",
+      "P-04"
+     ],
+     "nieaktywne": [
+      "P-02"
+     ]
+    }
+   ],
+   "agentow_review": 9,
+   "prompt_zn": {
+    "review:correctness#1": 41449,
+    "review:correctness#2": 41165,
+    "review:correctness#3": 41163,
+    "review:security#1": 39931,
+    "review:security#2": 39740,
+    "review:security#3": 39740,
+    "review:code-quality": 40264,
+    "review:test-coverage": 42628,
+    "review:spec": 38880
+   },
+   "agregacja": "Jestes agregatorem findingow review (bez narzedzi). Grupuj findingi opisujące te"
+  },
+  "C": {
+   "skrypt": "/Users/kacper_trzepiecinski/test-review/skrypty/f-2536643/wariantC.js",
+   "bajty": 417130,
+   "role": [
+    {
+     "rola": "review:kod",
+     "effort": "high",
+     "listy": [
+      "L-C1",
+      "L-C2",
+      "L-C3",
+      "L-C4",
+      "L-C5",
+      "L-C6",
+      "L-S1",
+      "L-S2",
+      "L-S3",
+      "L-P1",
+      "L-P3",
+      "L-P4",
+      "L-Q1",
+      "L-Q2",
+      "L-Q3"
+     ],
+     "nieaktywne": [
+      "L-S4",
+      "L-S5",
+      "L-P2"
+     ],
+     "dossier_zn": 188665
+    },
+    {
+     "rola": "review:testy",
+     "effort": "medium",
+     "listy": [
+      "L-T0",
+      "L-T1",
+      "L-T2",
+      "L-T3",
+      "L-T4",
+      "L-T5",
+      "L-T6"
+     ],
+     "nieaktywne": [],
+     "dossier_zn": 188665
+    }
+   ],
+   "agentow_review": 2,
+   "prompt_zn": {
+    "review:kod": 194645,
+    "review:testy": 192046
+   },
+   "agregacja": "JS"
+  }
+ }
+}

@@ -1,0 +1,20 @@
+# oferty-online: for-each-ref
+f7b22973d23cdd48e4e46fa72a1d9e40a9eb93ee refs/heads/feature/faza-8-connector-oauth-i-dashboard
+4c2746f811d2607e9443e9a8db8314e64529134c refs/heads/feature/faza-8-serwer
+87d095f5ad53c87bc9a1cc80c94f55e989e16d6b refs/heads/feature/instrukcja-dla-zaproszonych
+eb63043daeac5cd4804e6f6503634bff7ddd48c5 refs/heads/main
+eb63043daeac5cd4804e6f6503634bff7ddd48c5 refs/remotes/origin/HEAD
+f7b22973d23cdd48e4e46fa72a1d9e40a9eb93ee refs/remotes/origin/feature/faza-8-connector-oauth-i-dashboard
+4c2746f811d2607e9443e9a8db8314e64529134c refs/remotes/origin/feature/faza-8-serwer
+87d095f5ad53c87bc9a1cc80c94f55e989e16d6b refs/remotes/origin/feature/instrukcja-dla-zaproszonych
+0f9e332bcb0c00b9e8a0ba52e705a655392e860b refs/remotes/origin/feature/pomoc-chat-i-cowork
+dae3d1b8e300c8dbc158700d5dffd386f7915e24 refs/remotes/origin/feature/pomoc-dwie-sciezki
+b45d0dcea55200055535cae927675030124bd9e0 refs/remotes/origin/fix/nazwy-chunkow-panelu-a-blokery
+eb63043daeac5cd4804e6f6503634bff7ddd48c5 refs/remotes/origin/main
+# oferty-online: status --porcelain
+ M docs/brainstorms/2026-08-24-fazy-wdrozenia-mvp-requirements.md
+# oferty-online: HEAD
+eb63043daeac5cd4804e6f6503634bff7ddd48c5
+# workspace-template: status --porcelain -- .claude CLAUDE.md
+# workspace-template: HEAD
+b1e099e935e46576283dbbf70d451f424f983309

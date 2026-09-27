@@ -1,0 +1,15 @@
+{
+ "etykieta": "f-5af000f",
+ "podsumowanie": {
+  "agentow": 29,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_ab5bca0b-0b7 B:agregator[haiku]: agent haiku wołał narzędzia ['Bash']"
+ ]
+}

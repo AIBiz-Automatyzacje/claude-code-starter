@@ -1,0 +1,17 @@
+{
+ "etykieta": "f-46be55a",
+ "podsumowanie": {
+  "agentow": 33,
+  "model": 0,
+  "przeciek": 0,
+  "zapis": 0,
+  "n1": 0
+ },
+ "stop": [],
+ "kopia": [],
+ "uwagi": [
+  "wf_b32f9d6d-278 review:performance: zapis Bashem poza kopią ['rm ', '> vite.tmpcfg.mjs']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-46be55a/apps/dashboard && S=/private/tmp/claude-501/-Users-kacper-trz",
+  "wf_b32f9d6d-278 review:performance: zapis Bashem poza kopią ['rm ', '> vite.tmpcfg.mjs']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-46be55a/apps/dashboard && S=/private/tmp/claude-501/-Users-kacper-trz",
+  "wf_b32f9d6d-278 kontekst:diff: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/kopie/f-46be55a; P=docs/plans/2026-08-27-001-feat-faza-3-konto-i-dashboard-pl"
+ ]
+}

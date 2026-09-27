@@ -1,0 +1,1624 @@
+{
+ "etykieta": "f-2536643",
+ "sha": "25366437371890bcd86a1007378d0967f4f884c3",
+ "baza": "72c07dc",
+ "modul_fixa": false,
+ "pliki": 78,
+ "pliki_kodu": 70,
+ "pliki_ts": [
+  "apps/dashboard/src/features/offers/copy-address-button.test.tsx",
+  "apps/dashboard/src/features/offers/copy-address-button.tsx",
+  "apps/dashboard/src/features/offers/offer-address-row.test.tsx",
+  "apps/dashboard/src/features/offers/offer-address-row.tsx",
+  "apps/dashboard/src/features/offers/offer-address.test.ts",
+  "apps/dashboard/src/features/offers/offer-address.ts",
+  "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+  "apps/dashboard/src/features/offers/offer-details-page.tsx",
+  "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+  "apps/dashboard/src/features/offers/offers-list.test.tsx",
+  "apps/dashboard/src/features/offers/offers-list.tsx",
+  "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+  "apps/dashboard/src/features/offers/offers-stats.tsx",
+  "apps/dashboard/src/features/offers/onboarding-empty-state.tsx",
+  "apps/dashboard/src/features/offers/texts.ts",
+  "apps/dashboard/src/features/templates/asset-tiles.test.tsx",
+  "apps/dashboard/src/features/templates/asset-tiles.tsx",
+  "apps/dashboard/src/features/templates/asset-upload-state.test.ts",
+  "apps/dashboard/src/features/templates/asset-upload-state.ts",
+  "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+  "apps/dashboard/src/features/templates/template-assets-card.tsx",
+  "apps/dashboard/src/features/templates/template-card.test.tsx",
+  "apps/dashboard/src/features/templates/template-card.tsx",
+  "apps/dashboard/src/features/templates/template-details-page.test.tsx",
+  "apps/dashboard/src/features/templates/template-list-state.ts",
+  "apps/dashboard/src/features/templates/template-preview-page.test.tsx",
+  "apps/dashboard/src/features/templates/template-texts-format.test.ts",
+  "apps/dashboard/src/features/templates/template-texts-format.ts",
+  "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+  "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+  "apps/dashboard/src/features/templates/templates-api.test.ts",
+  "apps/dashboard/src/features/templates/templates-api.ts",
+  "apps/dashboard/src/features/templates/templates-page.test.tsx",
+  "apps/dashboard/src/features/templates/templates-page.tsx",
+  "apps/dashboard/src/features/templates/texts.ts",
+  "apps/dashboard/src/features/templates/upload-drop-zone.test.tsx",
+  "apps/dashboard/src/features/templates/upload-drop-zone.tsx",
+  "apps/dashboard/src/features/templates/upload-queue-list.test.tsx",
+  "apps/dashboard/src/features/templates/upload-queue-list.tsx",
+  "apps/dashboard/src/features/templates/upload-queue-refusals.test.ts",
+  "apps/dashboard/src/features/templates/upload-queue-refusals.ts",
+  "apps/dashboard/src/features/templates/upload-queue-state.test.ts",
+  "apps/dashboard/src/features/templates/upload-queue-state.ts",
+  "apps/dashboard/src/features/templates/use-abort-registry.test.ts",
+  "apps/dashboard/src/features/templates/use-abort-registry.ts",
+  "apps/dashboard/src/features/templates/use-template-asset-mutations.test.ts",
+  "apps/dashboard/src/features/templates/use-template-asset-mutations.ts",
+  "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+  "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+  "apps/dashboard/src/features/templates/use-template-details.test.ts",
+  "apps/dashboard/src/features/templates/use-templates.test.ts",
+  "apps/server/src/mcp/tools/template-repository.fake.ts",
+  "apps/server/src/offer/brand-contract.ts",
+  "apps/server/src/offer/template-headings.test.ts",
+  "apps/server/src/offer/template-headings.ts",
+  "apps/server/src/offer/template-repository.test.ts",
+  "apps/server/src/offer/template-repository.ts",
+  "apps/server/src/rate-limit.test.ts",
+  "apps/server/src/rate-limit.ts",
+  "apps/server/src/routes/template-assets.test.ts",
+  "apps/server/src/routes/template-assets.ts",
+  "apps/server/src/routes/templates.test.ts",
+  "apps/server/src/routes/templates.ts",
+  "packages/shared/src/index.ts",
+  "packages/shared/src/template-asset-contract.ts",
+  "packages/shared/src/template-contract.test.ts",
+  "packages/shared/src/template-contract.ts",
+  "supabase/tests/rls.test.ts"
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "uruchomiona",
+   "sekundy": 8.8,
+   "kod_wyjscia": 0,
+   "bledy_ts": 0,
+   "trafienia": []
+  },
+  "eslint-A": {
+   "status": "uruchomiona",
+   "sekundy": 5.8,
+   "konfiguracja": "_narzedzia/konfig/eslint-A.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 81,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useTemplateAssetQueue' has too many lines (131). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 24,
+   "ostrzezenia_na_liniach_fazy": [],
+   "nieobjete": [
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-B": {
+   "status": "uruchomiona",
+   "sekundy": 6.3,
+   "konfiguracja": "_narzedzia/konfig/eslint-B.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/copy-address-button.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.test.tsx",
+     "linia": 33,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 977,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1005,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1020,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 255,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (89). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 275,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 146,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (77). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/asset-upload-state.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 508,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 519,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 520,
+     "regula": "max-lines",
+     "opis": "File has too many lines (503). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 438,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-page.test.tsx",
+     "linia": 509,
+     "regula": "max-lines",
+     "opis": "File has too many lines (378). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-list.test.tsx",
+     "linia": 16,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 15,
+     "regula": "@typescript-eslint/consistent-type-imports",
+     "opis": "`import()` type annotations are forbidden."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 123,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 205,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (94). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 383,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 81,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useTemplateAssetQueue' has too many lines (131). Maximum allowed is 60."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 133,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 193,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 1
+  },
+  "eslint-C": {
+   "status": "uruchomiona",
+   "sekundy": 6.7,
+   "konfiguracja": "_narzedzia/konfig/eslint-C.mjs",
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/copy-address-button.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.test.tsx",
+     "linia": 33,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 977,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1005,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1020,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 255,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (89). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 275,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 146,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (77). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/asset-upload-state.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 508,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 519,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 520,
+     "regula": "max-lines",
+     "opis": "File has too many lines (503). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-page.test.tsx",
+     "linia": 509,
+     "regula": "max-lines",
+     "opis": "File has too many lines (378). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-list.test.tsx",
+     "linia": 16,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-abort-registry.ts",
+     "linia": 65,
+     "regula": "react-hooks/refs",
+     "opis": "Error: Cannot access refs during render\n\nReact refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (htt"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 123,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 205,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (94). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 383,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 81,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useTemplateAssetQueue' has too many lines (131). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 109,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    }
+   ],
+   "zastane_poza_liniami_fazy": 130,
+   "ostrzezenia_na_liniach_fazy": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 193,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "nieobjete": [
+    "supabase/tests/rls.test.ts: Parsing error: /Users/kacper_trzepiecinski/test-review/kopie/f-2536643/supabase/tests/rls.test.ts was not found by the p"
+   ],
+   "nieobjete_n": 1
+  },
+  "knip": {
+   "status": "uruchomiona",
+   "sekundy": 0.7,
+   "trafienia": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ],
+   "zastane": 259
+  },
+  "vitest-typecheck": {
+   "status": "nieuruchomiona: brak plików *.test-d.ts w stanie historycznym (bramka zakłada testy typów dodawane przez IU)"
+  },
+  "size-limit": {
+   "status": "uruchomiona",
+   "sekundy": 0.6,
+   "wyniki": [
+    {
+     "name": "dashboard js",
+     "passed": true,
+     "size": 214599,
+     "sizeLimit": 600000
+    },
+    {
+     "name": "dashboard css",
+     "passed": true,
+     "size": 7166,
+     "sizeLimit": 60000
+    }
+   ],
+   "trafienia": []
+  },
+  "migracje-niezmiennosc": {
+   "status": "uruchomiona",
+   "trafienia": []
+  },
+  "migrations-sum": {
+   "status": "nieuruchomiona: brak supabase/migrations.sum w stanie historycznym (plik tworzy wdrożenie bramki)"
+  },
+  "advisors": {
+   "status": "nieuruchomiona: wymaga projektu Supabase w stanie historycznym na chmurze (6a: zero Dockera)"
+  },
+  "stryker": {
+   "status": "uruchomiona",
+   "pliki": {
+    "apps/dashboard/src/features/templates/template-thumbnail.tsx": 109,
+    "apps/dashboard/src/features/templates/upload-drop-zone.tsx": 105,
+    "apps/dashboard/src/features/templates/templates-page.tsx": 39,
+    "apps/server/src/routes/template-assets.ts": 25,
+    "apps/dashboard/src/features/offers/offer-address-row.tsx": 121,
+    "apps/dashboard/src/features/offers/offer-details-page.tsx": 8,
+    "apps/dashboard/src/features/offers/offers-stats.tsx": 21,
+    "apps/dashboard/src/features/templates/upload-queue-refusals.ts": 89,
+    "apps/dashboard/src/features/templates/template-assets-card.tsx": 52,
+    "packages/shared/src/database.types.ts": 7,
+    "apps/dashboard/src/features/offers/copy-address-button.tsx": 70,
+    "apps/dashboard/src/features/templates/upload-queue-list.tsx": 98,
+    "apps/dashboard/src/features/templates/use-template-asset-queue.ts": 297,
+    "apps/server/src/rate-limit.ts": 60,
+    "apps/dashboard/src/features/offers/offer-address.ts": 30,
+    "apps/dashboard/src/features/templates/template-card.tsx": 24,
+    "apps/dashboard/src/features/templates/asset-upload-state.ts": 21,
+    "apps/dashboard/src/features/templates/use-template-asset-mutations.ts": 82,
+    "apps/server/src/routes/templates.ts": 6,
+    "apps/dashboard/src/features/templates/upload-queue-state.ts": 244,
+    "apps/dashboard/src/features/templates/use-abort-registry.ts": 66,
+    "apps/dashboard/src/features/offers/offers-list.tsx": 54,
+    "apps/dashboard/src/features/templates/asset-tiles.tsx": 40,
+    "packages/shared/src/template-contract.ts": 32,
+    "apps/server/src/offer/template-repository.ts": 24,
+    "apps/dashboard/src/features/templates/template-texts-format.ts": 8,
+    "apps/dashboard/src/features/templates/templates-api.ts": 80,
+    "apps/server/src/offer/template-headings.ts": 228
+   },
+   "pliki_A": [
+    "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+    "apps/dashboard/src/features/templates/upload-queue-state.ts",
+    "apps/server/src/offer/template-headings.ts"
+   ],
+   "wyniki": {
+    "apps/dashboard": {
+     "status": "nieuruchomiona: kod 1 —             \u001b[33mclass\u001b[39m=\u001b[32m\"order-2 ml-auto text-xs text-ink-muted tabular-nums md:order-3 md:ml-0 md:text-label\"\u001b[39m             \u001b[33mdatetime\u001b[39m=\u001b[32m\"2026-08-28T14:51:00.000Z\"\u001b[39m           \u001b[36m>\u001b[39m             \u001b[0m28.08.2026, 16:51\u001b[0m           \u001b[36m</time>\u001b[39m           \u001b[36m<div\u001b[39m ... \u001b[91m01:48:58 (99102) ERROR Stryker\u001b[39m There were failed tests in the initial test run. ",
+     "sekundy": 4.9
+    },
+    "apps/server": {
+     "status": "uruchomiona",
+     "sekundy": 25.4,
+     "statusy": {
+      "NoCoverage": 1,
+      "Killed": 158,
+      "Survived": 24
+     },
+     "przezyte": [
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 185,
+       "regula": "stryker/StringLiteral",
+       "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 91,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 101,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → end - 1"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 91,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 110,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → closing.end - 1"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 97,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 141,
+       "regula": "stryker/ArithmeticOperator",
+       "opis": "Survived: ArithmeticOperator → match.index - match[0].length"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 169,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 197,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 197,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → codePoint < MAX_CODE_POINT"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 198,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 198,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → codePoint >= SURROGATE_RANGE_END"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 213,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → false"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 213,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → text.length < maxLength"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 213,
+       "regula": "stryker/BlockStatement",
+       "opis": "Survived: BlockStatement → {}"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 52,
+       "regula": "stryker/Regex",
+       "opis": "Survived: Regex → /&(?:#x([0-9a-f]+)|#(\\d+)|([a-z]+));/gi"
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 72,
+       "regula": "stryker/StringLiteral",
+       "opis": "Survived: StringLiteral → \"\""
+      },
+      {
+       "plik": "apps/server/src/offer/template-headings.ts",
+       "linia": 72,
+       "regula": "stryker/ObjectLiteral",
+       "opis": "Survived: ObjectLiteral → {}"
+      },
+      {
+       "plik": "apps/server/src/rate-limit.ts",
+       "linia": 153,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/rate-limit.ts",
+       "linia": 153,
+       "regula": "stryker/LogicalOperator",
+       "opis": "Survived: LogicalOperator → !windows.has(clientKey) || windows.size >= maxTrackedClients"
+      },
+      {
+       "plik": "apps/server/src/rate-limit.ts",
+       "linia": 156,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/rate-limit.ts",
+       "linia": 153,
+       "regula": "stryker/ConditionalExpression",
+       "opis": "Survived: ConditionalExpression → true"
+      },
+      {
+       "plik": "apps/server/src/rate-limit.ts",
+       "linia": 153,
+       "regula": "stryker/EqualityOperator",
+       "opis": "Survived: EqualityOperator → windows.size < maxTrackedClients"
+      },
+      {
+       "plik": "apps/server/src/routes/template-assets.ts",
+       "linia": 99,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → Math.max(UPLOAD_RETRY_AFTER_SECONDS.max, Math.max(UPLOAD_RETRY_AFTER_SECONDS.min"
+      },
+      {
+       "plik": "apps/server/src/routes/template-assets.ts",
+       "linia": 101,
+       "regula": "stryker/MethodExpression",
+       "opis": "Survived: MethodExpression → Math.min(UPLOAD_RETRY_AFTER_SECONDS.min, seconds)"
+      }
+     ]
+    },
+    "packages/shared": {
+     "status": "uruchomiona",
+     "sekundy": 2.3,
+     "statusy": {
+      "Killed": 7
+     },
+     "przezyte": []
+    }
+   }
+  }
+ },
+ "git_status_po_bramkach": [],
+ "projekty": {
+  "A": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 81,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useTemplateAssetQueue' has too many lines (131). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 185,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 91,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 101,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → end - 1"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 91,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 110,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → closing.end - 1"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 97,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 141,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → match.index - match[0].length"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 169,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 197,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → codePoint < MAX_CODE_POINT"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 198,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 198,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → codePoint >= SURROGATE_RANGE_END"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → text.length < maxLength"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 52,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /&(?:#x([0-9a-f]+)|#(\\d+)|([a-z]+));/gi"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 72,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 72,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    }
+   ],
+   "ostrzezenia_eslint": [],
+   "knip": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ]
+  },
+  "B": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/copy-address-button.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.test.tsx",
+     "linia": 33,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 977,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1005,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1020,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 255,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (89). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 275,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 146,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (77). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/asset-upload-state.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 508,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 519,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 520,
+     "regula": "max-lines",
+     "opis": "File has too many lines (503). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 438,
+     "regula": "no-restricted-syntax",
+     "opis": "zredaguj treść przed Sentry"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-page.test.tsx",
+     "linia": 509,
+     "regula": "max-lines",
+     "opis": "File has too many lines (378). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-list.test.tsx",
+     "linia": 16,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 15,
+     "regula": "@typescript-eslint/consistent-type-imports",
+     "opis": "`import()` type annotations are forbidden."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 123,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 205,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (94). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 383,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 81,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useTemplateAssetQueue' has too many lines (131). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 185,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 91,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 101,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → end - 1"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 91,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 110,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → closing.end - 1"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 97,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 141,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → match.index - match[0].length"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 169,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 197,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → codePoint < MAX_CODE_POINT"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 198,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 198,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → codePoint >= SURROGATE_RANGE_END"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → text.length < maxLength"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 52,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /&(?:#x([0-9a-f]+)|#(\\d+)|([a-z]+));/gi"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 72,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 72,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !windows.has(clientKey) || windows.size >= maxTrackedClients"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 156,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → windows.size < maxTrackedClients"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.ts",
+     "linia": 99,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → Math.max(UPLOAD_RETRY_AFTER_SECONDS.max, Math.max(UPLOAD_RETRY_AFTER_SECONDS.min"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.ts",
+     "linia": 101,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → Math.min(UPLOAD_RETRY_AFTER_SECONDS.min, seconds)"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 193,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ]
+  },
+  "C": {
+   "trafienia": [
+    {
+     "plik": "apps/dashboard/src/features/offers/copy-address-button.test.tsx",
+     "linia": 30,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.test.tsx",
+     "linia": 33,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 977,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (62). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1005,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+     "linia": 1020,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 255,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (89). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-list.test.tsx",
+     "linia": 275,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 146,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (77). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/asset-upload-state.test.ts",
+     "linia": 29,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (76). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 508,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (88). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 519,
+     "regula": "@typescript-eslint/require-await",
+     "opis": "Async arrow function has no 'await' expression."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+     "linia": 520,
+     "regula": "max-lines",
+     "opis": "File has too many lines (503). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-page.test.tsx",
+     "linia": 509,
+     "regula": "max-lines",
+     "opis": "File has too many lines (378). Maximum allowed is 360."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-list.test.tsx",
+     "linia": 16,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-abort-registry.ts",
+     "linia": 65,
+     "regula": "react-hooks/refs",
+     "opis": "Error: Cannot access refs during render\n\nReact refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (htt"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 123,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (61). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 205,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (94). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.test.ts",
+     "linia": 383,
+     "regula": "max-lines-per-function",
+     "opis": "Arrow function has too many lines (67). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 81,
+     "regula": "max-lines-per-function",
+     "opis": "Function 'useTemplateAssetQueue' has too many lines (131). Maximum allowed is 60."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 109,
+     "regula": "react-hooks/set-state-in-effect",
+     "opis": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "linia": 293,
+     "regula": "@typescript-eslint/no-floating-promises",
+     "opis": "Promises must be awaited, end with a call to .catch, or end with a call to .then with a rejection handler."
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ],
+   "mutanty_przezyte": [
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 185,
+     "regula": "stryker/StringLiteral",
+     "opis": "NoCoverage: StringLiteral → \"Stryker was here!\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 91,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 101,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → end - 1"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 91,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 110,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → closing.end - 1"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 97,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 141,
+     "regula": "stryker/ArithmeticOperator",
+     "opis": "Survived: ArithmeticOperator → match.index - match[0].length"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 169,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 197,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 197,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → codePoint < MAX_CODE_POINT"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 198,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 198,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → codePoint >= SURROGATE_RANGE_END"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → false"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → text.length < maxLength"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 213,
+     "regula": "stryker/BlockStatement",
+     "opis": "Survived: BlockStatement → {}"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 52,
+     "regula": "stryker/Regex",
+     "opis": "Survived: Regex → /&(?:#x([0-9a-f]+)|#(\\d+)|([a-z]+));/gi"
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 72,
+     "regula": "stryker/StringLiteral",
+     "opis": "Survived: StringLiteral → \"\""
+    },
+    {
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "linia": 72,
+     "regula": "stryker/ObjectLiteral",
+     "opis": "Survived: ObjectLiteral → {}"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/LogicalOperator",
+     "opis": "Survived: LogicalOperator → !windows.has(clientKey) || windows.size >= maxTrackedClients"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 156,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/ConditionalExpression",
+     "opis": "Survived: ConditionalExpression → true"
+    },
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 153,
+     "regula": "stryker/EqualityOperator",
+     "opis": "Survived: EqualityOperator → windows.size < maxTrackedClients"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.ts",
+     "linia": 99,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → Math.max(UPLOAD_RETRY_AFTER_SECONDS.max, Math.max(UPLOAD_RETRY_AFTER_SECONDS.min"
+    },
+    {
+     "plik": "apps/server/src/routes/template-assets.ts",
+     "linia": 101,
+     "regula": "stryker/MethodExpression",
+     "opis": "Survived: MethodExpression → Math.min(UPLOAD_RETRY_AFTER_SECONDS.min, seconds)"
+    }
+   ],
+   "ostrzezenia_eslint": [
+    {
+     "plik": "apps/dashboard/src/features/offers/offers-stats.test.tsx",
+     "linia": 193,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+     "linia": 59,
+     "regula": "@typescript-eslint/no-unnecessary-condition",
+     "opis": "Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined."
+    }
+   ],
+   "knip": [
+    {
+     "plik": "apps/server/src/rate-limit.ts",
+     "linia": 29,
+     "regula": "knip/types",
+     "opis": "types: RateLimitVerdict"
+    },
+    {
+     "plik": "apps/dashboard/src/features/offers/offer-address-row.tsx",
+     "linia": 18,
+     "regula": "knip/exports",
+     "opis": "exports: OfferAddressField"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+     "linia": 47,
+     "regula": "knip/exports",
+     "opis": "exports: templateBrandColor"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/templates-api.ts",
+     "linia": 133,
+     "regula": "knip/exports",
+     "opis": "exports: parseRetryAfterSeconds"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 76,
+     "regula": "knip/exports",
+     "opis": "exports: createQueueItems"
+    },
+    {
+     "plik": "apps/dashboard/src/features/templates/upload-queue-state.ts",
+     "linia": 19,
+     "regula": "knip/types",
+     "opis": "types: QueueItemStatus"
+    }
+   ]
+  }
+ }
+}
