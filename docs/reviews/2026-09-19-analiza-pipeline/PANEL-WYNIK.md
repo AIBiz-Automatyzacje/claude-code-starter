@@ -263,6 +263,10 @@ Obecna architektura: 6 osobnych reviewerów + tester E2E zostaje i jest optymali
 
 ## 4. Plan wdrożenia w iteracjach (zadanie 3)
 
+**Dopisek 2026-09-28 (HANDOFF 6a pkt 36, RAPORT-TECHNICZNY §2):** (1) oferty-online = materiał do nauki — B0 i okna jakości liczone na NOWYCH
+projektach (pierwsze 2–3 zadania = B0), zadanie sprzątające ESLint w oferty-online (It. 2) wypada, tempo 6,1 PR/tydzień i „≈ 2 miesiące” nieaktualne
+dla nowych projektów, baseline'y wrześniowe = tło; (2) higiena konta (§4a I) = **KROK 0 przed It. 1**, z widokiem globalnym całego komputera.
+
 Reguły kolejności z mapy §6: **R1** ustawienia i koszt — równolegle bez ograniczeń (odczyt 1 / 5 faz); **R2** zmiany jakościowe rozłącznych osi —
 równolegle w jednym oknie; **R3** zmiany przekrojowe — okno 5 PR dla siebie. Każda iteracja = para (zmiana, wpis mapy). Po każdej zmianie w `.claude/`
 nowa sesja przed autopilotem (N2). Zmiany promptów reviewerów i builderów — ślepy test przed/po na jednej historycznej fazie (6a pkt 26 f, I5).

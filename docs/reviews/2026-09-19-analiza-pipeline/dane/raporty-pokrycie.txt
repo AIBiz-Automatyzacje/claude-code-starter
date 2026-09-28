@@ -1,0 +1,12 @@
+raporty_pokrycie.py — kontrola raportów etapu 5 w obie strony
+
+=== A. Źródła → raporty (HANDOFF 6a pkt 1–35, PANEL-WEJSCIE §8–§9, PANEL-WYNIK §1–§6, zadanie sesji) ===
+pozycji 171, z miejscem 171, BRAK 0
+
+=== B. Raporty → źródła (liczby w korpusie dane/ + dokumenty etapów, po zaokrągleniu) ===
+liczb sprawdzonych 247, bez źródła 0
+  przeliczenia jawne: 2,5 ← bramki ≤ 143 s na fazę (TEST-REVIEW-WYNIK §7) = ~2,4 min, zaokrąglone „~2,5 minuty”; −64,1 ← suma naiwna −51,2 + (−12,9) — dane/raport-koszt-po.txt §3 podaje −64.1; 19,3 ← K1 + K2 + K4 + K9 = 11,0 + 1,1 + 5,2 + 2,0 (dane/pokretla-kosztu.txt POKRĘTŁA); 120 ← cleanupPeriodDays = 120 dni (HANDOFF 6a pkt 20); 150 ← PR ≤ 150 plików; warstwa stała < 150 (PANEL-WYNIK It. 3c, It. 9)
+  UWAGA: część B jest słaba (korpus ma ~70 tys. wartości — prawie każda liczba coś trafia); mocna kontrola = część C.
+
+=== C. Liczby kluczowe → konkretny plik (napis w raporcie i dokładny napis w źródle) ===
+par 84, zgodnych 84, NIEZGODNYCH 0

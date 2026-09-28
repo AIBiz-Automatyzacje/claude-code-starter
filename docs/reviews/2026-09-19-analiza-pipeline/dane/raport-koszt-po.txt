@@ -1,0 +1,65 @@
+raport_koszt_po.py — koszt typowej fazy i zadania: dzis vs po calym planie (PANEL-WYNIK §4–§5), M jedn. (in 1 / cw 1,25 / cr 0,1 / out 5)
+† = liczba bezwzgledna to DOLNA GRANICA: jednostki z malych faz runu 20.09 (8/7/0 plikow kodu) zanizaja koszt duzych faz epoki o ~39% (dane/panel-koszt.txt §3); porownania wzgledne (%, ta sama baza jednostek) tego bledu nie dziedzicza w calosci.
+Typowa faza i zadanie jak w panelu: 3.71 faz na zadanie, 2.69 IU i 26.7 findingu na faze (dane/panel-koszt.txt §1).
+
+=== 0. Kontrola: ten skrypt na projekcie 0 = model panelu (panel_koszt_projektu.koszt i dane/panel-koszt.json) ===
+  projekt 0 dzis: zadanie 52.04 M (model 52.04); po zmianie kontekstu: faza 6.40 / zadanie 25.41 M (model 6.40 / 25.41; panel-koszt.json 25.41) — ZGODNE (< 0,1%)
+
+=== 1. Mnozniki pracy roli z testu review (kalibracja w kontekscie TOLk: koszt roli na faze = cel x dzis) ===
+  review:spec-compliance   cel x0.927  (baza 0.284 M/faze -> 0.263 M)  mnoznik pracy 0.952 | review:spec-compliance: 0 0.410 -> A 0.380 M/faze, efort high (sesja) -> medium, tury 16.9 -> 21.5 (K2, dane/pokretla-kosztu.json)
+  review:test-coverage     cel x0.492  (baza 0.322 M/faze -> 0.158 M)  mnoznik pracy 0.366 | review:test-coverage: 0 0.571 -> A 0.281 M/faze, efort high (sesja) -> medium, tury 24.5 -> 11.9 (K1, dane/pokretla-kosztu.json)
+  review:correctness       cel x0.737  (baza 0.432 M/faze -> 0.319 M)  mnoznik pracy 0.658 | review:correctness: 0 0.518 -> A 0.382 M/faze, efort high (sesja) -> high, tury 21.4 -> 18.1 (K4, dane/pokretla-kosztu.json)
+  verify-batch             cel x0.577  (baza 0.528 M/faze -> 0.305 M)  mnoznik pracy 0.334 | weryfikacja na finding: 0 0.060 -> B 0.035 M (K11, dane/pokretla-kosztu.json)
+  fix:kontrola             cel x1.066  (baza 0.260 M/faze -> 0.277 M)  mnoznik pracy 1.943 | kontrola fixa: 0 5.15 -> A 5.49 M na 24 commity (D12 cz. 1, dane/test-review/wynik-koszt.json)
+  Pozostale zmiany bez liczby z testu: usuniecia rol (liczba wywolan 0), warunek „faza z kodem” (K9) przez czestosc warunku 0,96.
+
+=== 2. Faza i zadanie: dzis vs po (typowa faza; † przy kazdej liczbie bezwzglednej) ===
+  S0 projekt 0, kontekst dzis                                                         faza  12.75 M†  zadanie  52.04 M†  (  +0.0% vs dzis)  agentow faza 28.4 / zadanie 122.8
+  S1 projekt 0 + allowlista (It. 3a: tools:, omitClaudeMd u mechanicznych)            faza   7.79 M†  zadanie  31.10 M†  ( -40.2% vs dzis)  agentow faza 28.4 / zadanie 122.8
+  S2 projekt 0 + pelny kontekst (It. 3a + learned-patterns poza eager, It. 8) = „po” panelu faza   6.40 M†  zadanie  25.41 M†  ( -51.2% vs dzis)  agentow faza 28.4 / zadanie 122.8
+  S3 docelowy, kontekst dzis (same zmiany rol i pokretla)                             faza  11.15 M†  zadanie  45.31 M†  ( -12.9% vs dzis)  agentow faza 23.2 / zadanie 99.0
+  S4 docelowy + allowlista (It. 3a)                                                   faza   7.02 M†  zadanie  28.03 M†  ( -46.1% vs dzis)  agentow faza 23.2 / zadanie 99.0
+  S5 docelowy + pelny kontekst = PO CALYM PLANIE                                      faza   5.65 M†  zadanie  22.37 M†  ( -57.0% vs dzis)  agentow faza 23.2 / zadanie 99.0
+
+  udzialy etapow w zadaniu († — udzialy liczone na malych fazach; w duzych fazach review i fix maja wiecej):
+    S0: review 24.8%, execute 23.0%, fix 13.6%, mechanika 11.3%, sceptycy 9.6%, E2E 8.8%, zamkniecie 4.7%, orkiestracja 4.1%
+    S2: review 28.5%, execute 25.2%, fix 14.8%, sceptycy 9.4%, E2E 7.3%, mechanika 7.1%, zamkniecie 4.0%, orkiestracja 3.8%
+    S5: execute 28.7%, review 27.2%, fix 18.6%, E2E 8.1%, sceptycy 6.6%, orkiestracja 4.3%, zamkniecie 4.1%, mechanika 2.5%
+
+  etap review (6 reviewerow; tester E2E w etapie E2E, packager w „mechanice”) na zadanie:
+    S0 review 12.92 M†
+    S2 review 7.23 M†
+    S5 review 6.08 M†
+    review S5 vs S2 (te same starty): -15.9%  (PANEL-WYNIK §5: pokretla K1, K2, K4, K7, K9 ≈ −20% kosztu znajdowania — tu bez K7, bo packager to etap „mechanika”)
+
+=== 3. Wklad dzwigni — kazda liczona modelem per rola, NIE dodawaniem procentow ===
+  kontekst razem (allowlista + learned-patterns) na dzisiejszych rolach S0 -> S2: zadanie  -51.2%
+    w tym sama allowlista (It. 3a)                                   S0 -> S1: zadanie  -40.2%
+    learned-patterns poza eager (It. 8) po allowliscie               S1 -> S2: zadanie  -18.3%
+  pokretla i zmiany rol w dzisiejszym kontekscie                     S0 -> S3: zadanie  -12.9%
+  pokretla i zmiany rol po zmianie kontekstu                         S2 -> S5: zadanie  -12.0%
+  kontekst na docelowych rolach                                      S3 -> S5: zadanie  -50.6%
+  CALY PLAN                                                          S0 -> S5: zadanie  -57.0%
+  suma procentow „kontekst” + „pokretla w dzisiejszym kontekscie” = -64.1% — ZLA (dzwignie nie sumuja sie); poprawnie: -57.0% (S0 -> S5)
+  kontrola: (1 + kontekst) x (1 + pokretla po kontekscie) - 1 = -57.0% = caly plan
+
+=== 4. Grupy zmian rol osobno (na projekcie 0 po zmianie kontekstu S2; kazda grupa sama) ===
+  usuniecia mechaniki: stan:zapis, packager, telemetria, e2e:precheck (It. 1, 3d, 3e)                  -1.122 M†   -4.4% zadania po kontekscie  ( -2.2% dzisiejszego zadania)
+  pokretla review: K1 test-coverage, K2 spec, K4 correctness, K9 warunek faza z kodem (It. 4b, 7a, 7b) -1.149 M†   -4.5% zadania po kontekscie  ( -2.2% dzisiejszego zadania)
+  batch sceptykow P2 po 4 (K11, D2, It. 5)                                                             -0.829 M†   -3.3% zadania po kontekscie  ( -1.6% dzisiejszego zadania)
+  kontrola diffu fixa wg A zamiast pre-skan + kontrola + verify-fix (D12 cz. 1, It. 3)                 -0.012 M†   -0.0% zadania po kontekscie  ( -0.0% dzisiejszego zadania)
+  nowe role: ogrodnik skan + ocena (I8, R1; wartosci z projektu A)                                     +0.075 M†   +0.3% zadania po kontekscie  ( +0.1% dzisiejszego zadania)
+  suma grup -3.038 M vs wszystkie naraz -3.038 M (roznica -0.000 M — grupy dotykaja rozlacznych rol, wiec tu sumuja sie; nie sumuje sie kontekst z grupami, §3)
+  te same grupy w dzisiejszym kontekscie (S0):
+    mechanika        -7.8% zadania dzis (po zmianie kontekstu ta sama zmiana:  -2.2% dzisiejszego zadania)
+    review           -2.4% zadania dzis (po zmianie kontekstu ta sama zmiana:  -2.2% dzisiejszego zadania)
+    sceptycy         -1.6% zadania dzis (po zmianie kontekstu ta sama zmiana:  -1.6% dzisiejszego zadania)
+    kontrola_fixa    -1.7% zadania dzis (po zmianie kontekstu ta sama zmiana:  -0.0% dzisiejszego zadania)
+    nowe             +0.5% zadania dzis (po zmianie kontekstu ta sama zmiana:  +0.1% dzisiejszego zadania)
+
+=== 5. Poza liczba glowna (bez liczby z testu) ===
+  fix tylko P1/P2 (It. 6) jako praca fixa x0.6 (projekt A: P3 odpada (138 z 225 naprawianych to P3), część stała zostaje — założenie A, nie pomiar): zadanie 21.84 M† (-2.4% vs S5, -58.0% vs dzis)
+  Nieliczone w ogole: efort sesji dzis (±15%, K12 — dotyczy obu stron), mniej powtorek runu po STOP dzieki E2E → [MANUAL], samosprawdzenie
+  buildera (D7), wycinek wiedzy (≤ 2k zn), warstwa stala < 150 (K10: tekst ≤ 2,6% kosztu roli), koszt falszywych alarmow list w petli fix,
+  skille przed autopilotem (scalony dev-plan, research warunkowy — D8a/D8b; dzis ~4–7% kosztu zadania, dane/d6r-rewizja-audytu.txt),
+  roznica cen haiku/opus w USD (jednostki licza token haiku jak opusa; w USD haiku ~4x tanszy).

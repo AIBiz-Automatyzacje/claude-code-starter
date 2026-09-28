@@ -1,0 +1,400 @@
+{
+ "kontrola_zgodnosci": {
+  "ok": true,
+  "moj_po": 25410597.869663857,
+  "model_po": 25410597.869663857,
+  "moj_dzis": 52037135.91553454,
+  "model_dzis": 52037135.91553454
+ },
+ "mnozniki": [
+  {
+   "rola": "review:spec-compliance",
+   "cel": 0.926829268292683,
+   "baza": 283566.5833333333,
+   "bez_mnoznika": 272660.17628205125,
+   "mnoznik_pracy": 0.9516432409956619,
+   "opis": "review:spec-compliance: 0 0.410 -> A 0.380 M/faze, efort high (sesja) -> medium, tury 16.9 -> 21.5 (K2, dane/pokretla-kosztu.json)",
+   "obciety": false
+  },
+  {
+   "rola": "review:test-coverage",
+   "cel": 0.49211908931698783,
+   "baza": 321522.85,
+   "bez_mnoznika": 309156.5865384615,
+   "mnoznik_pracy": 0.3661800999446262,
+   "opis": "review:test-coverage: 0 0.571 -> A 0.281 M/faze, efort high (sesja) -> medium, tury 24.5 -> 11.9 (K1, dane/pokretla-kosztu.json)",
+   "obciety": false
+  },
+  {
+   "rola": "review:correctness",
+   "cel": 0.7374517374517374,
+   "baza": 432399.6634615385,
+   "bez_mnoznika": 432399.6634615385,
+   "mnoznik_pracy": 0.6583528598622592,
+   "opis": "review:correctness: 0 0.518 -> A 0.382 M/faze, efort high (sesja) -> high, tury 21.4 -> 18.1 (K4, dane/pokretla-kosztu.json)",
+   "obciety": false
+  },
+  {
+   "rola": "verify-batch",
+   "cel": 0.576923076923077,
+   "baza": 527860.8092351245,
+   "bez_mnoznika": 527860.8092351245,
+   "mnoznik_pracy": 0.33375023230064826,
+   "opis": "weryfikacja na finding: 0 0.060 -> B 0.035 M (K11, dane/pokretla-kosztu.json)",
+   "obciety": false
+  },
+  {
+   "rola": "fix:kontrola",
+   "cel": 1.066019417475728,
+   "baza": 260106.624,
+   "bez_mnoznika": 170652.12800000003,
+   "mnoznik_pracy": 1.942656698008861,
+   "opis": "kontrola fixa: 0 5.15 -> A 5.49 M na 24 commity (D12 cz. 1, dane/test-review/wynik-koszt.json)",
+   "obciety": false
+  }
+ ],
+ "wklad": {
+  "kontekst razem (allowlista + learned-patterns) na dzisiejszych rolach": -51.168338874549626,
+  "  w tym sama allowlista (It. 3a)": -40.22588458527677,
+  "  learned-patterns poza eager (It. 8) po allowliscie": -18.306342491816395,
+  "pokretla i zmiany rol w dzisiejszym kontekscie": -12.93691792916205,
+  "pokretla i zmiany rol po zmianie kontekstu": -11.954813558597099,
+  "kontekst na docelowych rolach": -50.61749933760065,
+  "CALY PLAN": -57.006072919663154
+ },
+ "grupy": {
+  "mechanika": {
+   "delta_zadanie": -1122139.4467278942,
+   "proc": -4.416029298025873,
+   "proc_dzis": -2.1564204620125995,
+   "proc_w_kontekscie_dzis": -7.769476968099357
+  },
+  "review": {
+   "delta_zadanie": -1149361.4483099952,
+   "proc": -4.523157834401633,
+   "proc_dzis": -2.2087331058642654,
+   "proc_w_kontekscie_dzis": -2.4053767703397098
+  },
+  "sceptycy": {
+   "delta_zadanie": -829495.5573694818,
+   "proc": -3.264368519088507,
+   "proc_dzis": -1.5940453731271826,
+   "proc_w_kontekscie_dzis": -1.5940453731271897
+  },
+  "kontrola_fixa": {
+   "delta_zadanie": -11604.291035786271,
+   "proc": -0.0456671310738419,
+   "proc_dzis": -0.022300018691693724,
+   "proc_w_kontekscie_dzis": -1.6901130215139135
+  },
+  "nowe": {
+   "delta_zadanie": 74811.14400000125,
+   "proc": 0.29440922399277214,
+   "proc_dzis": 0.14376491458221866,
+   "proc_w_kontekscie_dzis": 0.5220942039181308
+  }
+ },
+ "wariant_fix": {
+  "zadanie": 21837883.60164927,
+  "vs_S5": -2.390958980699076,
+  "vs_dzis": -58.034040080345676
+ },
+ "scenariusze": {
+  "S0": {
+   "faza": 12754743.282306748,
+   "zadanie": 52037135.91553454,
+   "etapy_faza": {
+    "execute": 3225573.027564103,
+    "mechanika": 1478017.0295151514,
+    "E2E": 870916.7101329989,
+    "review": 3477318.658653846,
+    "sceptycy": 1349944.7123573152,
+    "orkiestracja": 450168.7,
+    "fix": 1902804.4440833335
+   },
+   "etapy_zadanie": {
+    "sceptycy": 5014080.360184314,
+    "orkiestracja": 2150779.677064024,
+    "zamkniecie": 2439979.3984999997,
+    "E2E": 4596496.62377971,
+    "fix": 7067559.363738096,
+    "review": 12915755.017857144,
+    "execute": 11980699.816666668,
+    "mechanika": 5871785.657744588
+   },
+   "agenci_faza": 28.378769230769237,
+   "agenci_zadanie": 122.83685714285716
+  },
+  "S1": {
+   "faza": 7789219.179174629,
+   "zadanie": 31104737.68066801,
+   "etapy_faza": {
+    "execute": 2109625.7374486756,
+    "mechanika": 455343.92441210314,
+    "E2E": 524546.2556363638,
+    "review": 2327106.2910256414,
+    "sceptycy": 870854.1781971417,
+    "orkiestracja": 270934.65,
+    "fix": 1230808.1424547033
+   },
+   "etapy_zadanie": {
+    "sceptycy": 3234601.2333036694,
+    "orkiestracja": 1237400.59119,
+    "zamkniecie": 1312129.1471372992,
+    "E2E": 2471832.6607922083,
+    "fix": 4571573.1005460415,
+    "review": 8643537.652380954,
+    "execute": 7835752.739095081,
+    "mechanika": 1797910.5562227606
+   },
+   "agenci_faza": 28.378769230769237,
+   "agenci_zadanie": 122.83685714285716
+  },
+  "S2": {
+   "faza": 6404101.257934279,
+   "zadanie": 25410597.869663857,
+   "etapy_faza": {
+    "execute": 1726518.4028332909,
+    "mechanika": 455343.92441210314,
+    "E2E": 402851.8214090909,
+    "review": 1946536.392948718,
+    "sceptycy": 643364.5323763724,
+    "orkiestracja": 218393.0,
+    "fix": 1011093.1839547034
+   },
+   "etapy_zadanie": {
+    "sceptycy": 2389639.691683669,
+    "orkiestracja": 956733.05215,
+    "zamkniecie": 1018460.8286372991,
+    "E2E": 1849589.8162337663,
+    "fix": 3755488.9689746127,
+    "review": 7229992.316666667,
+    "execute": 6412782.639095081,
+    "mechanika": 1797910.5562227606
+   },
+   "agenci_faza": 28.378769230769237,
+   "agenci_zadanie": 122.83685714285716
+  },
+  "S3": {
+   "faza": 11154277.360509196,
+   "zadanie": 45305134.34945533,
+   "etapy_faza": {
+    "execute": 3225573.027564103,
+    "mechanika": 377873.262,
+    "E2E": 870916.7101329989,
+    "review": 3140325.4180832068,
+    "sceptycy": 1079989.2148474965,
+    "orkiestracja": 450168.7,
+    "fix": 2009431.0278813913
+   },
+   "etapy_zadanie": {
+    "sceptycy": 4011388.5122907013,
+    "orkiestracja": 2150779.677064024,
+    "zamkniecie": 2187836.8625,
+    "E2E": 4443233.42277971,
+    "fix": 7463600.960702311,
+    "review": 11664065.838594768,
+    "execute": 11980699.816666668,
+    "mechanika": 1403529.2588571429
+   },
+   "agenci_faza": 23.153384615384617,
+   "agenci_zadanie": 99.04828571428573
+  },
+  "S4": {
+   "faza": 7023545.738778615,
+   "zadanie": 28034585.020867713,
+   "etapy_faza": {
+    "execute": 2109625.7374486756,
+    "mechanika": 150403.23470865923,
+    "E2E": 524546.2556363638,
+    "review": 2010871.0030191042,
+    "sceptycy": 619730.1317130505,
+    "orkiestracja": 270934.65,
+    "fix": 1337434.7262527617
+   },
+   "etapy_zadanie": {
+    "sceptycy": 2301854.774934188,
+    "orkiestracja": 1237400.59119,
+    "zamkniecie": 1236119.6719999998,
+    "E2E": 2428252.5202922085,
+    "fix": 4967614.697510257,
+    "review": 7468949.439785245,
+    "execute": 7835752.739095081,
+    "mechanika": 558640.5860607343
+   },
+   "agenci_faza": 23.153384615384617,
+   "agenci_zadanie": 99.04828571428573
+  },
+  "S5": {
+   "faza": 5652721.638192111,
+   "zadanie": 22372808.270220697,
+   "etapy_faza": {
+    "execute": 1726518.4028332909,
+    "mechanika": 150403.23470865923,
+    "E2E": 402851.8214090909,
+    "review": 1637092.9260960273,
+    "sceptycy": 399742.4853922813,
+    "orkiestracja": 218393.0,
+    "fix": 1117719.7677527615
+   },
+   "etapy_zadanie": {
+    "sceptycy": 1484757.8028856164,
+    "orkiestracja": 956733.05215,
+    "zamkniecie": 921723.0799999998,
+    "E2E": 1806009.6757337663,
+    "fix": 4151530.5659388285,
+    "review": 6080630.868356673,
+    "execute": 6412782.639095081,
+    "mechanika": 558640.5860607343
+   },
+   "agenci_faza": 23.153384615384617,
+   "agenci_zadanie": 99.04828571428573
+  }
+ },
+ "role_S0_S5": {
+  "planner": {
+   "dzis": 309504.13333333336,
+   "po": 139218.18333333338
+  },
+  "build": {
+   "dzis": 2099654.060897436,
+   "po": 1183147.5694999574
+  },
+  "domkniecie": {
+   "dzis": 816414.8333333334,
+   "po": 404152.65
+  },
+  "stan:zapis": {
+   "dzis": 500447.31818181823,
+   "po": 0.0
+  },
+  "e2e:db-sync": {
+   "dzis": 240839.86666666667,
+   "po": 73566.70000000001
+  },
+  "kontekst:diff": {
+   "dzis": 302914.8333333333,
+   "po": 0.0
+  },
+  "review:spec-compliance": {
+   "dzis": 516121.3,
+   "po": 262817.8089430895
+  },
+  "review:security": {
+   "dzis": 558144.3666666667,
+   "po": 296839.8557692308
+  },
+  "review:test-coverage": {
+   "dzis": 555831.3333333334,
+   "po": 158227.5321366025
+  },
+  "review:correctness": {
+   "dzis": 746522.9086538461,
+   "po": 318873.8830932581
+  },
+  "review:performance": {
+   "dzis": 560520.3846153846,
+   "po": 309379.014423077
+  },
+  "review:code-quality": {
+   "dzis": 540178.3653846154,
+   "po": 290954.83173076925
+  },
+  "review:e2e": {
+   "dzis": 630076.8434663322,
+   "po": 329285.1214090909
+  },
+  "dedup:semantyczny": {
+   "dzis": 185018.75,
+   "po": 75570.41666666666
+  },
+  "verify-batch": {
+   "dzis": 1086438.2850888462,
+   "po": 304535.0822510334
+  },
+  "verify": {
+   "dzis": 216876.65674274132,
+   "po": 95207.40314124791
+  },
+  "verify-fix": {
+   "dzis": 46629.77052572761,
+   "po": 0.0
+  },
+  "scribe": {
+   "dzis": 450168.7,
+   "po": 218393.0
+  },
+  "fix": {
+   "dzis": 884626.3333333334,
+   "po": 467991.1
+  },
+  "fix:pre-skan": {
+   "dzis": 296781.616,
+   "po": 0.0
+  },
+  "fix:kontrola": {
+   "dzis": 382828.336,
+   "po": 277278.71179805824
+  },
+  "fix:poprawka": {
+   "dzis": 635349.77475,
+   "po": 372449.9559547034
+  },
+  "zwin-do-poprawy": {
+   "dzis": 192854.512,
+   "po": 74832.81804199256
+  },
+  "stan:zapis@zadanie": {
+   "dzis": 382008.11954545457,
+   "po": 0.0
+  },
+  "bootstrap": {
+   "dzis": 365442.8175,
+   "po": 111106.1385
+  },
+  "telemetria": {
+   "dzis": 389427.1065,
+   "po": 0.0
+  },
+  "e2e:precheck": {
+   "dzis": 287661.501,
+   "po": 0.0
+  },
+  "warmup:vitest": {
+   "dzis": 442841.436,
+   "po": 126294.01649999997
+  },
+  "e2e:env-up": {
+   "dzis": 515577.65400000004,
+   "po": 146879.42400000003
+  },
+  "walidacja-koncowa": {
+   "dzis": 577484.4789999999,
+   "po": 208076.43999999994
+  },
+  "stop": {
+   "dzis": 113281.68813545228,
+   "po": 34452.91364999998
+  },
+  "compound-refresh": {
+   "dzis": 357771.91099999996,
+   "po": 143780.64799999996
+  },
+  "e2e:env-down": {
+   "dzis": 115582.53799999999,
+   "po": 16889.969999999987
+  },
+  "compound": {
+   "dzis": 406098.579,
+   "po": 190468.715
+  },
+  "smoke-operatora": {
+   "dzis": 313850.163,
+   "po": 145094.04
+  },
+  "complete": {
+   "dzis": 395347.16,
+   "po": 179131.593
+  }
+ }
+}

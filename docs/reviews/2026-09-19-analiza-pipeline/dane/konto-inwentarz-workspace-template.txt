@@ -1,0 +1,104 @@
+INWENTARZ KONTA CLAUDE CODE — projekt /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template (użycie: ostatnie 30 dni, z transkryptów)
+Poziomy: user = ~/.claude/settings.json, ~/.claude.json, ~/.claude/skills | project = .claude/settings.json, .mcp.json, .claude/skills | local = .claude/settings.local.json, ~/.claude.json projects[ścieżka] | plugin | claude.ai (aktywne konto)
+
+=== 1. PLUGINY (stan u:user / p:project / l:local → efektywnie w tym projekcie) ===
+  ON   aibiz@aibiz                                    u:on  p:-   l:-   marketplace | skille  13, agenci 0, MCP -, hooki SessionStart,UserPromptSubmit,PreToolUse,UserPromptExpansion | użycie: 383× w 5 proj., ostatnio 2026-09-27 | always-on ~2790 tok
+  ON   ccc-skills@ccc                                 u:on  p:-   l:-   marketplace | skille   3, agenci 0, MCP -, hooki - | użycie: 2× w 1 proj., ostatnio 2026-09-25 | always-on ~438 tok
+  ON   claude-powerline@claude-powerline              u:on  p:-   l:-   marketplace | skille   0, agenci 0, MCP -, hooki - | użycie: statusLine | always-on ~33 tok
+  ON   cowork-plugin-management@synced                u:-   p:-   l:-   claude.ai | skille   2, agenci 0, MCP -, hooki - | użycie: 0 | always-on ~259 tok
+  ON   design@synced                                  u:-   p:-   l:-   claude.ai | skille   7, agenci 0, MCP asana,atlassian,figma,gmail,google calendar,intercom,linear,notion,slack, hooki - | użycie: 37× w 1 proj., ostatnio 2026-09-16 | always-on ~619 tok
+  ON   figma@claude-plugins-official                  u:on  p:-   l:-   marketplace | skille  14, agenci 0, MCP figma, hooki - | użycie: 543× w 4 proj., ostatnio 2026-09-16 | always-on ~2135 tok
+  ON   frontend-design@claude-plugins-official        u:on  p:-   l:-   marketplace | skille   1, agenci 0, MCP -, hooki - | użycie: 14× w 8 proj., ostatnio 2026-09-22 | always-on ~80 tok
+  ON   hookify@claude-plugins-official                u:on  p:-   l:-   marketplace | skille   1, agenci 1, MCP -, hooki PreToolUse,PostToolUse,Stop,UserPromptSubmit | użycie: 0 | always-on ~294 tok
+  ON   hostinger@claude-plugins-official              u:on  p:-   l:-   marketplace | skille   7, agenci 0, MCP hostinger, hooki - | użycie: 68× w 4 proj., ostatnio 2026-09-17 | always-on ~849 tok
+  ON   posthog@claude-plugins-official                u:on  p:-   l:-   marketplace | skille 164, agenci 1, MCP posthog, hooki SessionEnd,PreToolUse | użycie: 62× w 3 proj., ostatnio 2026-09-25 | always-on ~30164 tok
+  ON   security-guidance@claude-plugins-official      u:on  p:-   l:-   marketplace | skille   0, agenci 0, MCP -, hooki SessionStart,UserPromptSubmit,PostToolUse,Stop,SubagentStop | użycie: niewidoczne (tylko hooki) | always-on ~0 tok
+  ON   sentry@claude-plugins-official                 u:on  p:-   l:-   marketplace | skille   8, agenci 0, MCP sentry, hooki - | użycie: 56× w 2 proj., ostatnio 2026-09-23 | always-on ~1066 tok
+  ON   skill-creator@claude-plugins-official          u:on  p:-   l:-   marketplace | skille   1, agenci 0, MCP -, hooki - | użycie: 4× w 3 proj., ostatnio 2026-09-19 | always-on ~114 tok
+  ON   strona-przez-rozmowe@synced                    u:-   p:-   l:-   claude.ai | skille   6, agenci 0, MCP -, hooki PreToolUse | użycie: 3× w 2 proj., ostatnio 2026-08-26 | always-on ~2462 tok
+  ON   supabase@claude-plugins-official               u:on  p:-   l:-   marketplace | skille   2, agenci 6, MCP -, hooki - | użycie: 1× w 1 proj., ostatnio 2026-09-16 | always-on ~636 tok
+  off  claude-md-management@claude-plugins-official   u:-   p:-   l:-   marketplace | skille   1, agenci 0, MCP -, hooki - | użycie: 0
+  off  codex@openai-codex                             u:-   p:-   l:-   marketplace | skille   3, agenci 1, MCP -, hooki SessionStart,SessionEnd,Stop | użycie: 0
+  off  dev-browser@dev-browser-marketplace            u:on  p:on  l:off marketplace | skille   1, agenci 0, MCP -, hooki - | użycie: 25× w 1 proj., ostatnio 2026-09-25
+  off  discord@claude-plugins-official                u:off p:-   l:-   marketplace | skille   2, agenci 0, MCP discord, hooki - | użycie: 0
+  off  nanobanana@mag-claude-plugins                  u:-   p:-   l:-   marketplace | skille   2, agenci 2, MCP -, hooki - | użycie: 0
+  off  ralph-loop@claude-plugins-official             u:-   p:-   l:-   marketplace | skille   0, agenci 0, MCP -, hooki Stop | użycie: 0
+  off  ralph-wiggum@claude-code-plugins               u:-   p:-   l:-   marketplace | skille   0, agenci 0, MCP -, hooki Stop | użycie: 0
+  off  ralph-wiggum@claude-plugins-official           u:-   p:-   l:-   marketplace | skille   0, agenci 0, MCP -, hooki Stop | użycie: 0
+  off  telegram@claude-plugins-official               u:off p:-   l:-   marketplace | skille   2, agenci 0, MCP telegram, hooki - | użycie: 0
+  off  traferto@oferty-plugin                         u:-   p:-   l:-   marketplace | skille   3, agenci 0, MCP oferty, hooki - | użycie: 9× w 2 proj., ostatnio 2026-09-22
+  off  ui-ux-pro-max@ui-ux-pro-max-skill              u:-   p:-   l:-   marketplace | skille   0, agenci 0, MCP -, hooki - | użycie: niewidoczne (tylko hooki)
+  SUMA always-on aktywnych pluginów: ~41939 tok na KAŻDĄ sesję (15 pluginów; bez schematów narzędzi MCP)
+
+=== 2. SERWERY MCP aktywne w tym projekcie (local > project > user > plugin > konektory claude.ai) ===
+  context7           user                                                         | użycie: 15× w 1 proj., ostatnio 2026-09-15
+  playwright         user                                       wyłączony w /mcp  | użycie: 473× w 4 proj., ostatnio 2026-09-23
+  airtable           user                                                         | użycie: 68× w 2 proj., ostatnio 2026-09-27
+  mobbin             user                                                         | użycie: 3× w 1 proj., ostatnio 2026-09-10
+  Fakturownia        user                                                         | użycie: 11× w 2 proj., ostatnio 2026-09-27
+  figma              plugin figma@claude-plugins-official                         | użycie: 506× w 4 proj., ostatnio 2026-09-16
+  hostinger          plugin hostinger@claude-plugins-official                     | użycie: 65× w 4 proj., ostatnio 2026-09-17
+  posthog            plugin posthog@claude-plugins-official                       | użycie: 62× w 3 proj., ostatnio 2026-09-25
+  sentry             plugin sentry@claude-plugins-official                        | użycie: 56× w 2 proj., ostatnio 2026-09-23
+  asana              plugin design@synced                                         | użycie: 0
+  atlassian          plugin design@synced                                         | użycie: 0
+  figma              plugin design@synced                                         | użycie: 37× w 1 proj., ostatnio 2026-09-16
+  gmail              plugin design@synced                                         | użycie: 0
+  google calendar    plugin design@synced                                         | użycie: 0
+  intercom           plugin design@synced                                         | użycie: 0
+  linear             plugin design@synced                                         | użycie: 0
+  notion             plugin design@synced                                         | użycie: 0
+  slack              plugin design@synced                                         | użycie: 0
+  konektory claude.ai: WŁĄCZONE — lista na claude.ai/customize/connectors i w /mcp (nazw nie ma na dysku)
+  inne serwery z transkryptów (konektory claude.ai, wbudowane w aplikację, inne projekty): 26 — najczęstsze: Claude_Browser 1020×, apify 202×, 67788bcf-d411-4870-bfe8-59fddb77682b 189×, claude_ai_Ahrefs 64×, easytools 59×, oferty 52×, supabase 46×, 8c7d9775-c6c8-48c1-9026-11d75abfac76 37×
+
+=== 3. SKILLE widoczne w tym projekcie (per źródło) ===
+  user                                           9 (użyte w 30 dni:   3) find-skills, graphify, puls, ralph-tui-create-beads, ralph-tui-create-beads-rust, ralph-tui-create-json, ralph-tui-prd, remotion-best-practices, skool
+  claude.ai (aktywne konto)                      8 (użyte w 30 dni:   0) docs, docx, import-memory, morning, pdf, pptx, skill-creator, xlsx
+  project                                       28 (użyte w 30 dni:  14) agent-browser, bugfix, code-quality, code-review, coderabbit-setup, coolify-manager, dev-brainstorm, dev-compound, dev-compound-refresh, dev-docs …
+  plugin aibiz@aibiz                            13 (użyte w 30 dni:  10) classroom-pull, daily, deleguj, kie-generate, koniec-sesji, kontekst-firmowy, kontekst-sygnaly, memory-update, onboard, reflect …
+  plugin ccc-skills@ccc                          3 (użyte w 30 dni:   1) excalidraw, streak, uat-testing
+  plugin figma@claude-plugins-official          14 (użyte w 30 dni:   4) figma-code-connect, figma-create-new-file, figma-design-to-code, figma-generate-design, figma-generate-diagram, figma-generate-library, figma-generative-plugins, figma-implement-motion, figma-shaders, figma-swiftui …
+  plugin frontend-design@claude-plugins-official   1 (użyte w 30 dni:   1) frontend-design
+  plugin hookify@claude-plugins-official         1 (użyte w 30 dni:   0) writing-rules
+  plugin hostinger@claude-plugins-official       7 (użyte w 30 dni:   1) agency-hosting-deploy-php-site, agency-hosting-deploy-static-site, hosting-deploy-nodejs-app, hosting-deploy-static-site, hosting-deploy-wordpress-plugin, hosting-deploy-wordpress-site, hosting-deploy-wordpress-theme
+  plugin posthog@claude-plugins-official       164 (użyte w 30 dni:   0) adding-warehouse-person-properties, analyzing-expensive-users, analyzing-experiment-session-replays, analyzing-task-runs, assessing-heatmaps, auditing-endpoints, auditing-experiments-flags, auditing-warehouse-source-health, auditing-warehouse-view-health, authoring-data-quality-checks …
+  plugin sentry@claude-plugins-official          8 (użyte w 30 dni:   0) sentry-create-alert, sentry-debug-issue, sentry-fix-stack-traces, sentry-get-started, sentry-instrument, sentry-otel-exporter-setup, sentry-setup-releases, sentry-snapshots-cocoa
+  plugin skill-creator@claude-plugins-official   1 (użyte w 30 dni:   1) skill-creator
+  plugin supabase@claude-plugins-official        2 (użyte w 30 dni:   1) supabase, supabase-postgres-best-practices
+  plugin cowork-plugin-management@synced         2 (użyte w 30 dni:   0) cowork-plugin-customizer, create-cowork-plugin
+  plugin design@synced                           7 (użyte w 30 dni:   0) accessibility-review, design-critique, design-handoff, design-system, research-synthesis, user-research, ux-copy
+  plugin strona-przez-rozmowe@synced             6 (użyte w 30 dni:   3) budowa, grafiki, publikacja, styl, teksty, wywiad
+  RAZEM ~274 skilli na liście modelu w KAŻDEJ sesji (bez wbudowanych); skillOverrides: brak
+  agenci: user 13, project 16, z pluginów 8
+  katalogi synchronizacji innych kont (nie ładują się): 2
+
+=== 4. HOOKI (zdarzenia) per poziom — każdy odpala w każdej sesji tego projektu ===
+  user                                         Notification, Stop, SubagentStop, PostToolUse, UserPromptSubmit, PreToolUse
+  project                                      Stop
+  local                                        -
+  plugin aibiz@aibiz                           SessionStart, UserPromptSubmit, PreToolUse, UserPromptExpansion
+  plugin hookify@claude-plugins-official       PreToolUse, PostToolUse, Stop, UserPromptSubmit
+  plugin posthog@claude-plugins-official       SessionEnd, PreToolUse
+  plugin security-guidance@claude-plugins-official SessionStart, UserPromptSubmit, PostToolUse, Stop, SubagentStop
+  plugin strona-przez-rozmowe@synced           PreToolUse
+
+=== 5. ~/.claude.json: wpisów projektów 121, dla nieistniejących katalogów 42 (szum, nie koszt) ===
+
+=== 6. REKOMENDACJE (komendy uruchamiasz Ty — skrypt niczego nie zmienia) ===
+   1. plugin ccc-skills@ccc: globalny, używany w 1 proj. (nie w tym) → przenieś: claude plugin disable ccc-skills@ccc --scope user, a w projektach, które go używają: claude plugin install ccc-skills@ccc --scope local (albo tylko tu: .claude/settings.local.json → "enabledPlugins": {"ccc-skills@ccc": false})
+   2. plugin cowork-plugin-management@synced (z konta claude.ai, działa w każdym projekcie): 0 użyć w 30 dni → w projektach kodu .claude/settings.local.json → "enabledPlugins": {"cowork-plugin-management@synced": false}, albo wyłącz go na claude.ai
+   3. plugin hookify@claude-plugins-official: globalny, 0 użyć w 30 dni → claude plugin disable hookify@claude-plugins-official --scope user (UWAGA: ma hooki PreToolUse,PostToolUse,Stop,UserPromptSubmit — ich użycia nie widać w transkryptach; sprawdź, czy z nich korzystasz)
+   4. plugin posthog@claude-plugins-official: globalny, używany w 3 proj. (nie w tym) → przenieś: claude plugin disable posthog@claude-plugins-official --scope user, a w projektach, które go używają: claude plugin install posthog@claude-plugins-official --scope local (albo tylko tu: .claude/settings.local.json → "enabledPlugins": {"posthog@claude-plugins-official": false}) (UWAGA: ma hooki SessionEnd,PreToolUse — ich użycia nie widać w transkryptach; sprawdź, czy z nich korzystasz)
+   5. plugin posthog@claude-plugins-official wnosi 164 skilli na listę każdej sesji → jeśli używasz tylko jego MCP: .claude/settings.json → "skillOverrides" z wartością "off" dla nieużywanych skilli, albo przenieś plugin na poziom projektu
+   6. plugin security-guidance@claude-plugins-official: globalny, 0 użyć w 30 dni → claude plugin disable security-guidance@claude-plugins-official --scope user (UWAGA: ma hooki SessionStart,UserPromptSubmit,PostToolUse,Stop,SubagentStop — ich użycia nie widać w transkryptach; sprawdź, czy z nich korzystasz)
+   7. plugin sentry@claude-plugins-official: globalny, używany w 2 proj. (nie w tym) → przenieś: claude plugin disable sentry@claude-plugins-official --scope user, a w projektach, które go używają: claude plugin install sentry@claude-plugins-official --scope local (albo tylko tu: .claude/settings.local.json → "enabledPlugins": {"sentry@claude-plugins-official": false})
+   8. plugin strona-przez-rozmowe@synced (z konta claude.ai, działa w każdym projekcie): użyty w 2 proj. → w projektach kodu .claude/settings.local.json → "enabledPlugins": {"strona-przez-rozmowe@synced": false}, albo wyłącz go na claude.ai (UWAGA: ma hooki PreToolUse — ich użycia nie widać w transkryptach; sprawdź, czy z nich korzystasz)
+   9. plugin supabase@claude-plugins-official: globalny, używany w 1 proj. (nie w tym) → przenieś: claude plugin disable supabase@claude-plugins-official --scope user, a w projektach, które go używają: claude plugin install supabase@claude-plugins-official --scope local (albo tylko tu: .claude/settings.local.json → "enabledPlugins": {"supabase@claude-plugins-official": false})
+  10. plugin ralph-loop@claude-plugins-official: 1 martwych wpisów project/local w installed_plugins.json (szum w `claude plugin list`)
+  11. plugin ralph-wiggum@claude-plugins-official: 1 martwych wpisów project/local w installed_plugins.json (szum w `claude plugin list`)
+  12. MCP context7 (user): używany w 1 proj. (nie w tym) → przenieś na --scope local w tych projektach (claude mcp get context7 pokaże konfigurację), potem claude mcp remove context7 --scope user
+  13. MCP airtable (user): używany w 2 proj. (nie w tym) → przenieś na --scope local w tych projektach (claude mcp get airtable pokaże konfigurację), potem claude mcp remove airtable --scope user
+  14. MCP mobbin (user): używany w 1 proj. (nie w tym) → przenieś na --scope local w tych projektach (claude mcp get mobbin pokaże konfigurację), potem claude mcp remove mobbin --scope user
+  15. MCP Fakturownia (user): używany w 2 proj. (nie w tym) → przenieś na --scope local w tych projektach (claude mcp get Fakturownia pokaże konfigurację), potem claude mcp remove Fakturownia --scope user
+  16. konektory claude.ai ładują się do każdej sesji → w projektach kodu "disableClaudeAiConnectors": true w .claude/settings.json (sprawdź w /mcp, że zniknęły — aplikacja desktop rejestruje je inaczej niż terminal) albo wyłącz nieużywane na claude.ai/customize/connectors

@@ -37,7 +37,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 3⅞ | Prompt-audit maszynerii szablonu pod Opus 5.5 / Haiku 4.5 (6a pkt 24) | **GOTOWE 2026-09-24, ZAAKCEPTOWANE W CAŁOŚCI (6a pkt 25)** — `PROMPT-AUDIT.md` + `PROMPT-AUDIT-DLA-OPERATORA.md`, diff `dane/pa-proponowany.diff` (62 hunki, 21 ustaleń; NIE naniesiony), skrypty `pa_inwentarz.py`, `pa_wywolania.py`, `pa_kontrola.py` (kontrola w obie strony: 0 błędów). 44 pozycje: 21 w diffie (8 wysoka, 13 średnia), 8 flag (decyzje operatora/panelu), 15 niskich. Sedno: pliki reviewerów security/performance/architecture to import z compound-engineering pisany pod czat (przykładowe dialogi, „last line of defense, be paranoid”, drugi format raportu) i dwie sprzeczności z resztą szablonu (memoizacja vs React Compiler, `getSession()`); prompty review/fix pisane jak dziennik zmian („teraz już nie”, „jak dotąd”, „w opisanym runie”); compound w autopilocie każe czytać sesję, której agent nie ma; `fix:pre-skan` (haiku) mediana 20 wywołań narzędzi na jedno polecenie gita; efort ról strojony na Opus 5 (~94% historii). **Prompty maszynerii = nowy obszar zmian szablonu** (PANEL-WEJSCIE §10 „Obszar: prompty”, zasady warstwy stałej w §2a, metryki w mapie walidacji §7). |
 | 3⅞b | Tematy-inspiracje operatora: mattpocock/skills + wystąpienie poteto (pstack) | **GOTOWE 2026-09-24, decyzje w 6a pkt 26** — `INSPIRACJE-POCOCK-PSTACK.md` (v2 po transkrypcji) + `INSPIRACJE-POCOCK-PSTACK-DLA-OPERATORA.md`, skrypty `insp_*.py`. Przyjęte poza panelem: compound ze szczeblem, pytanie „undefined” o testy + wyjątek w coding-rules §2, odbiór bramek „gryzie”, 4 zasady pisania, zmiany promptów wg Anthropic + ślepe przed/po, reguła lint razem z posprzątaniem. Nowe wymogi panelu §2 pkt 14–16: mapa funkcji (regresja odłożona), granice warstw w ESLint (bez wyjątku dla auth), ogrodnik na zamknięciu zadania. Otwarta decyzja: reguły builder ↔ reviewer. |
 | 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE — **zastąpiony PANELEM DECYZYJNYM (6a pkt 23)**: krok 0 skryptami (otwarte decyzje, zestaw historycznych ucieczek, koszt skryptem) → projektanci per architektura review → sędzia jakości na historii → sceptyk per decyzja → rekord per decyzja; Opus 5.5 (6a pkt 22), start WYŁĄCZNIE na znak operatora; instrukcja: §8 „AKTUALNA”. **PLAN (część A) ZAAKCEPTOWANY 2026-09-24 (D12 wchodzi, projektant C zostaje), wykonanie w nowej sesji wg §8 „WYKONANIE PANELU”:** `PANEL-PLAN.md` + `PANEL-PLAN-DLA-OPERATORA.md`; krok 0 (b) zrobiony skryptem `skrypty/panel_zestaw_historyczny.py` → `dane/panel-zestaw-historyczny.{jsonl,txt}` (195 B, 132 P1/P2, ogon 27; 68 ucieczek = te same wątki bota, compound jako kontekst 30 przypadków). **WYKONANIE W TOKU (sesja 6e626ae3, 2026-09-24): krok 0 + RUN 1 ZROBIONE, notatka po run 1 oddana; operator kontynuuje w NOWEJ sesji (kontekst ~500k) wg §8 „KONTYNUACJA PANELU PO RUN 1” — stan w §8.** **RUN 2 ZROBIONY (sesja 1bd5477f): ocena papierowa przecenia (kalibracja 33% > 15%, STOP §10); operator 2026-09-25 (6a pkt 28): żadna koncepcja nie odpada przed prawdziwym testem → następny krok PLAN prawdziwego testu review w nowej sesji wg §8 „PLAN TESTU REVIEW”; run 3 wstrzymany.** **PLAN TESTU REVIEW ZAAKCEPTOWANY 2026-09-25 (6a pkt 29):** `TEST-REVIEW-PLAN.md` + wersja operatora; następny krok = skrypty przygotowawcze testu w NOWEJ sesji, bez agentów, wg §8 „PRZYGOTOWANIE TESTU REVIEW”. **TEST REVIEW ZROBIONY I PRZEANALIZOWANY 2026-09-27 (6a pkt 30–32):** `TEST-REVIEW-WYNIK.md` + wersja operatora; decyzja D1: obecna architektura review zostaje + 3 dodatki, D12 rozstrzygnięta (kontrola diffu fixa wg A); **Run 3 (sceptycy) POMINIĘTY (6a pkt 33)**; następny krok = decyzje D2–D11 (+ D12 cz. 2) z metryką i warunkiem odwrotu oraz plan wdrożenia wg §8 „DECYZJE I PLAN WDROŻENIA”. **DECYZJE D2–D12 I PLAN WDROŻENIA ZAAKCEPTOWANE 2026-09-27 (6a pkt 34):** `PANEL-WYNIK.md` + `PANEL-WYNIK-DLA-OPERATORA.md` — etap 4 ZAMKNIĘTY. |
-| 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | NIE ZROBIONE — **forma SKRÓCONA, bez publikacji jako strony (operator 2026-09-27, 6a pkt 35)**; instrukcja §8 „RAPORTY ETAPU 5” |
+| 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -521,6 +521,16 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     PANEL-WEJSCIE §8 ze stanem po teście, ścieżki do danych i skryptów, szybkie zyski) + JEDNA nowa liczba: koszt typowego zadania po całym planie,
     liczony skryptem kosztu panelu na docelowym składzie ról. Treści nie kopiować — odsyłać do PANEL-WYNIK i plików etapów. Jedna sesja, bez agentów.
     Instrukcja: §8 „RAPORTY ETAPU 5”.
+36. **Raporty etapu 5 ZAAKCEPTOWANE (operator 2026-09-28: „wszystko jest dla mnie ok, zgadzam się”) + dwie zmiany założeń.**
+    `RAPORT-DLA-OPERATORA.md`, `RAPORT-TECHNICZNY.md`; nowa liczba `dane/raport-koszt-po.txt` (zadanie 52,04 → 22,37 M†, −57,0%; dźwignie nie sumują się:
+    −51,2% kontekst, potem −12,0% zmiany ról; allowlista sama −40,2%, learned-patterns poza eager −18,3% po allowliście — przesłanka zamiany It. 7 ↔ It. 8).
+    (a) **oferty-online = materiał do nauki, nie miejsce wdrożenia** (operator: nie będzie tam pracował, buduje nowe projekty): B0 = pierwsze 2–3 zadania
+    NOWEGO projektu; zadanie sprzątające ESLint w oferty-online WYPADA; It. 3e zostaje, ale nie blokuje; tempo i „≈ 2 miesiące” nieznane dla nowych
+    projektów; liczby mapy walidacji z oferty = tło, progi względem B0; historia oferty tylko do odczytu (kalibracja klasyfikatora, ślepe testy na kopiach).
+    Szczegóły RAPORT-TECHNICZNY §2; dopisek w PANEL-WYNIK §4. (b) **Higiena konta = KROK 0 przed It. 1** (wcześniej „równolegle z It. 1”): B0 musi
+    powstać na uporządkowanym koncie; konto dokłada ~41,9k tok always-on do KAŻDEJ sesji (posthog ~30,2k, 164 skille; `dane/konto-inwentarz-workspace-template.txt`).
+    Decyzje per element podejmuje operator (nie chce globalnie m.in. frontend-design; część do skasowania) — lista w raporcie to tylko kierunek.
+    **Widok GLOBALNY całego komputera** (wszystkie projekty, nie jeden) jest wymogiem kroku 0 (operator 2026-09-28). Instrukcja: §8 „KROK 0 — PORZĄDKI KONTA”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -778,8 +788,49 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   §2 rekordy D1–D12, §3 cofnięte ustalenia, §4 plan w iteracjach, §4a pełna lista 65 ustaleń → iteracja, §5 docelowy pipeline, §6 ograniczenia,
   §7 kontrola) + `PANEL-WYNIK-DLA-OPERATORA.md`. **Następny krok: raporty etapu 5 w FORMIE SKRÓCONEJ (6a pkt 35)** wg instrukcji „RAPORTY ETAPU 5”
   niżej; bez publikacji jako strony. Potem wdrożenie It. 1 w osobnej sesji, z planem do akceptacji przed pierwszą edycją `.claude/`.
+- **RAPORTY ETAPU 5 ZROBIONE I ZAAKCEPTOWANE (2026-09-28; 6a pkt 36):** oferty-online = materiał do nauki; higiena konta = KROK 0 przed It. 1.
+  **Następny krok: „KROK 0 — PORZĄDKI KONTA” niżej** (nowa sesja). Po nim It. 1 (telemetria) z planem do akceptacji przed pierwszą edycją `.claude/`.
 
-**RAPORTY ETAPU 5 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**KROK 0 — PORZĄDKI KONTA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
+Zadanie: KROK 0 — porządki na moim koncie Claude Code na CAŁYM KOMPUTERZE (wszystkie projekty): pluginy, MCP, skille, agenci, hooki,
+konektory i pluginy z claude.ai. Cel: poziom user (globalny) zawiera tylko to, czego używam wszędzie; reszta w projektach albo usunięta.
+BEZ agentów, BEZ zmian w .claude/ szablonu i w CLAUDE.md. Komendy zmieniające konto uruchamiam JA.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF 6a pkt 36, RAPORT-DLA-OPERATORA.md cz. 4, RAPORT-TECHNICZNY.md §2a,
+dane/konto-inwentarz-workspace-template.txt, skrypty/konto_inwentarz.py (docstring + reguły poziomów z dokumentacji Claude Code).
+
+Do zrobienia:
+1. Dopisz do skrypty/konto_inwentarz.py tryb --globalnie (tylko odczyt, nazwy bez wartości):
+   (a) poziom user — każdy plugin, MCP, skill, agent, hook, statusLine, pluginy/skille z claude.ai (aktywne konto);
+   (b) mapa wszystkich projektów z ~/.claude.json i installed_plugins.json: co każdy projekt włącza/wyłącza na poziomie project/local
+       (enabledPlugins, .mcp.json, MCP local, disabledMcpServers, własne skille/agenci/hooki), katalogi nieistniejące osobno;
+   (c) użycie każdego elementu w CAŁYM komputerze: z transkryptów 30 dni (ile razy, w których projektach, ostatnio) + dłuższa historia
+       komend z ~/.claude/history.jsonl (0 w 30 dniach ≠ nigdy);
+   (d) koszt always-on każdego pluginu (claude plugin details) i suma na sesję.
+   Wynik: dane/konto-inwentarz-globalny-przed.txt. Pokaż mi skrót: co zaśmieca kontekst najbardziej.
+2. Przejdź ze mną przez inwentarz po kategoriach (pluginy user → pluginy claude.ai → MCP user → skille user → agenci user → hooki user
+   → konektory claude.ai → wpisy w projektach). Przy każdym elemencie dane (użycie, projekty, koszt), a ja decyduję:
+   GLOBALNIE / TYLKO W PROJEKTACH: <lista> / USUŃ. Nie proponuj za mnie gotowej listy — daj dane i pytaj po jednej kategorii.
+3. Decyzje zapisuj w KROK0-DECYZJE.md (element, poziom dziś, decyzja, komendy, jak przywrócić).
+4. Przed jakąkolwiek zmianą: kopia ~/.claude/settings.json, ~/.claude.json, ~/.claude/plugins/installed_plugins.json i list skilli/agentów
+   do katalogu kopii poza repo (podaj ścieżki). Nic nie kasuj bez mojego potwierdzenia dokładnej ścieżki.
+5. Wypisz komendy per decyzja (claude plugin disable/uninstall/install --scope, claude mcp remove/add --scope, wpisy enabledPlugins/
+   disableClaudeAiConnectors/skillOverrides w settings) — uruchamiam je ja; pluginy/konektory z claude.ai: co zmienić na claude.ai.
+6. Po moich zmianach: nowa sesja (N2), inwentarz --globalnie ponownie → dane/konto-inwentarz-globalny-po.txt i różnica przed/po
+   (tokeny always-on na sesję, liczba skilli, MCP, hooki).
+7. Ustal ze mną, gdzie ma żyć narzędzie inwentarza (rekomendacja: skill na moim koncie, np. /konto).
+8. Propozycja (bez edycji) profilu .claude/settings.json szablonu dla nowych projektów (It. 3c).
+
+Oddaj i CZEKAJ na akceptację. Po akceptacji: HANDOFF (§2, 6a, §8 → instrukcja startowa It. 1 — telemetria, z planem do akceptacji
+przed pierwszą edycją .claude/), pamięć projektu, commit docs/reviews.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**RAPORTY ETAPU 5 (WYKONANA 2026-09-27/28 — zostawiona dla historii; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja po wyczyszczeniu kontekstu, sesja główna na Opus 5.5.
