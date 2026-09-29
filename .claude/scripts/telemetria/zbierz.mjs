@@ -18,6 +18,9 @@ import { PLIK_BLEDOW, PLIK_DANYCH, zapiszBlad } from './zapis.mjs'
 import { KATALOG_PROJEKTOW } from './zrodla.mjs'
 
 const ZNACZNIK = join(homedir(), '.claude', 'telemetry', 'zbierz-znacznik.txt')
+// Hook bez znacznika (pierwsze uruchomienie na maszynie) skanuje tylko ostatnia dobe — pelny skan historii (~25 s)
+// zatrzymalby sesje; robi go reczny --skan albo raport.mjs.
+const OKNO_PIERWSZEGO_HOOKA_MS = 24 * 60 * 60 * 1000
 
 const { values: opcje } = parseArgs({
   options: {
@@ -68,7 +71,8 @@ function glowna() {
   const szybko = opcje.hook || opcje.szybko
   const wynik = zbierzWszystko({
     projekty: opcje.projekty, plik: opcje.plik, bledy: opcje.bledy, terazMs, szybko,
-    znacznikMs: szybko ? czytajZnacznik(opcje.znacznik) : undefined, sesjeWToku, pominSesje,
+    znacznikMs: szybko ? czytajZnacznik(opcje.znacznik) ?? (opcje.hook ? terazMs - OKNO_PIERWSZEGO_HOOKA_MS : undefined) : undefined,
+    sesjeWToku, pominSesje,
   })
   if (wynik) writeFileSync(opcje.znacznik, String(terazMs))
   return wynik

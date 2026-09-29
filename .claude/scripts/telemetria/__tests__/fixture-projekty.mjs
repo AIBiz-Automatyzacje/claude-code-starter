@@ -19,10 +19,10 @@ export const transkrypt = (id, out) => jsonl([
 
 /**
  * Jeden projekt, jedna sesja: run wf_aaa-111 zakonczony (plik harnessu) i run wf_bbb-222 bez pliku harnessu.
+ * @param {string} [katalog] katalog projektow (domyslnie nowy katalog tymczasowy)
  * @returns {string} katalog projektow
  */
-export function zbudujFixture() {
-  const katalog = mkdtempSync(join(tmpdir(), 'telemetria-projekty-'))
+export function zbudujFixture(katalog = mkdtempSync(join(tmpdir(), 'telemetria-projekty-'))) {
   const sesja = join(katalog, '-Users-u-Kodowanie-projekt', 'sesja-1')
   const run = join(sesja, 'subagents', 'workflows', 'wf_aaa-111')
   mkdirSync(run, { recursive: true })
