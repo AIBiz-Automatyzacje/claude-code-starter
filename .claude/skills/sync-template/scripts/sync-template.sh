@@ -53,6 +53,17 @@ command -v git >/dev/null 2>&1 || { echo "BŁĄD: brak 'git' w PATH." >&2; exit 
 
 VERSION_FILE="$PROJECT_DIR/$MANAGED_ROOT/.template-version"
 MANIFEST_FILE="$PROJECT_DIR/$MANAGED_ROOT/.template-manifest"
+# Odciski plików (hash gita) z chwili syncu — telemetria porównuje z nimi skrypt, który się faktycznie wykonał
+# (`run.szablon.zgodny`, .claude/scripts/telemetria/szablon.mjs). Osobny plik, żeby nie zmieniać formatu manifestu,
+# na którym stoi wykrywanie usuniętych plików (REMOVE).
+HASHES_FILE="$PROJECT_DIR/$MANAGED_ROOT/.template-hashes"
+# Wywolywana po zapisie manifestu. Jeden proces gita dla wszystkich plików (stdin-paths), wiersz: <hash>\t<ścieżka względna>.
+zapisz_hashe() {
+  local hashe
+  hashe="$(printf '%s\n' "${MANAGED[@]/#/$PROJECT_DIR/}" | git hash-object --stdin-paths)"
+  paste <(printf '%s\n' "$hashe") <(printf '%s\n' "${MANAGED[@]}") > "$HASHES_FILE"
+}
+
 
 # --- Przygotuj źródło (klon albo lokalna ścieżka) ---
 TMP_CLONE=""
@@ -166,6 +177,7 @@ if [[ "${#ADD[@]}" -eq 0 && "${#UPDATE[@]}" -eq 0 && "${#REMOVE[@]}" -eq 0 ]]; t
   # Treść identyczna, różnił się tylko SHA — zaktualizuj marker i wyjdź.
   printf '%s\n' "$UPSTREAM_SHA" > "$VERSION_FILE"
   printf '%s\n' "${MANAGED[@]}" > "$MANIFEST_FILE"
+  zapisz_hashe
   echo "APPLIED: brak różnic w plikach — zaktualizowano tylko marker wersji."
   exit 0
 fi
@@ -240,6 +252,7 @@ for rel in "${REMOVE[@]+"${REMOVE[@]}"}"; do prune_empty_dirs "$rel"; done
 # --- Zaktualizuj marker wersji i manifest ---
 printf '%s\n' "$UPSTREAM_SHA" > "$VERSION_FILE"
 printf '%s\n' "${MANAGED[@]}" > "$MANIFEST_FILE"
+zapisz_hashe
 
 echo "APPLIED: zaaplikowano zmiany."
 if [[ "${#UPDATE[@]}" -gt 0 || "${#REMOVE[@]}" -gt 0 ]]; then

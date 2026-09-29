@@ -78,8 +78,9 @@ Nie modyfikuj skryptu „w locie", żeby obejść błąd konfiguracji — zdiagn
 ## Higiena repo
 
 Katalog backupów `.claude/.backups/` i pliki `.claude/.template-version` /
-`.claude/.template-manifest` to lokalne bookkeeping — zasugeruj userowi dodanie
-`.claude/.backups/` do `.gitignore` projektu, jeśli jeszcze go tam nie ma.
+`.claude/.template-manifest` / `.claude/.template-hashes` to lokalne bookkeeping — zasugeruj userowi dodanie
+`.claude/.backups/` do `.gitignore` projektu, jeśli jeszcze go tam nie ma. `.template-hashes` (hash gita
+każdego pliku z chwili syncu) czyta telemetria: czy run wykonał dokładnie wersję z szablonu (`run.szablon.zgodny`).
 
 ## Uwagi techniczne
 
