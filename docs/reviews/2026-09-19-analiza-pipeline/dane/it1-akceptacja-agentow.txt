@@ -1,0 +1,12 @@
+It. 1 krok 1 — akceptacja rekordu agent na prawdziwych danych (2026-09-29)
+Agenci odnalezieni: 2941 / 2941 z dane/agents.csv
+Suma kosztu: 1293.2 M jedn. vs wzorzec 1293 M (d5r §1) — odchylenie 0.02% (tolerancja 0.5%) → ZALICZONE
+
+Udzialy etapow — oferty-online po 06.09 (817 agentow; wzorzec d5r §2 „popr.”, tolerancja ±0.3 pp):
+  execute        29.1% vs  29.1%  (-0.04 pp) OK
+  reviewerzy     28.9% vs  28.9%  (+0.00 pp) OK
+  sceptycy        6.2% vs   6.1%  (+0.08 pp) OK
+  mechanika       5.0% vs   5.0%  (-0.01 pp) OK
+  fix            17.7% vs  17.7%  (-0.01 pp) OK
+  orkiestracja    9.0% vs   9.0%  (-0.02 pp) OK
+Udzialy → ZALICZONE
