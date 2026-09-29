@@ -97,6 +97,19 @@ export function czytajHarness(run) {
 }
 
 /**
+ * Katalog projektu, w ktorym pracowal run (`cwd` wpisow transkryptu agenta) — potrzebny do `git show` commitow fixa.
+ * @param {Run} run
+ * @returns {string | null} null = run bez transkryptow
+ */
+export function katalogProjektu(run) {
+  for (const plik of readdirSync(run.katalogRunu).filter((n) => n.startsWith('agent-') && n.endsWith('.jsonl'))) {
+    const cwd = czytajJsonl(join(run.katalogRunu, plik)).wpisy.find((w) => typeof w.cwd === 'string')?.cwd
+    if (typeof cwd === 'string') return cwd
+  }
+  return null
+}
+
+/**
  * Rekordy `agent` jednego runu — po jednym na transkrypt (takze wczesniejsze proby spoza workflowProgress).
  * @param {Run} run
  * @returns {Array<import('./agent.mjs').RekordAgenta>}

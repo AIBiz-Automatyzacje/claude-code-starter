@@ -1,0 +1,150 @@
+// Rekord `run` telemetrii (d5-telemetria-rekord.txt §2, §7, §8 pkt 1 i 3–4, §11). Czyste funkcje.
+// Status: plik harnessu (przeglad D5); run bez pliku: w toku albo przerwany razem z sesja (mini-run (f), decyzja O6).
+
+/** @typedef {'OK' | 'STOP' | 'KILLED' | 'FAILED'} Status */
+/** @typedef {{ status: Status, powod: string | null }} StatusRunu */
+
+// 3 h ciszy w journalu = run nie zyje (najdluzszy agent w historii: 6 016 s). Pozniejszy plik harnessu nadpisuje wersje.
+export const PROG_CISZY_MS = 3 * 60 * 60 * 1000
+
+// Statusy wyniku workflowu, ktore oznaczaja zatrzymanie na bramce (reszta, np. GOTOWY-DO-MERGE w dev-pr, to sukces etapu).
+const STATUSY_STOP = new Set(['STOP', 'BLAD'])
+
+/** @param {unknown} x @returns {Record<string, unknown>} */
+function obiekt(x) {
+  return x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x)) : {}
+}
+/** @param {unknown} x @returns {string | null} */
+const tekstLubNull = (x) => (typeof x === 'string' && x ? x : null)
+
+/**
+ * @param {Record<string, unknown>} harness plik harnessu
+ * @returns {StatusRunu}
+ */
+export function statusRunu(harness) {
+  if (harness.status === 'killed') return { status: 'KILLED', powod: tekstLubNull(harness.error) }
+  if (harness.status === 'failed') return { status: 'FAILED', powod: tekstLubNull(harness.error) }
+  const wynik = obiekt(harness.result)
+  const zatrzymany = typeof wynik.status === 'string' && STATUSY_STOP.has(wynik.status)
+  return { status: zatrzymany ? 'STOP' : 'OK', powod: tekstLubNull(wynik.powod) }
+}
+
+/**
+ * Run bez pliku harnessu. null = w toku (zywa sesja go prowadzi albo byl aktywny niedawno) — skan go pomija.
+ * @param {{ wTokuWSesji: boolean, ostatniaAktywnoscMs: number, terazMs: number }} we
+ * @returns {StatusRunu | null}
+ */
+export function statusBezHarnessu(we) {
+  if (we.wTokuWSesji) return null
+  if (we.terazMs - we.ostatniaAktywnoscMs <= PROG_CISZY_MS) return null
+  return { status: 'KILLED', powod: 'sesja zakonczona' }
+}
+
+// Kolejnosc ma znaczenie: „P1 nierozwiazane po fixie” to P1, nie fix-FAIL; „walidacja fixa” to fix, nie walidacja koncowa;
+// „execute zwrocil partial” bywa opisany slowami o testach E2E, a to STOP buildera. `bramka-wejscia` = etap start dev-pr.
+const DOPISEK_STOP_RUN = ' UWAGA: poza katalogiem zadania'
+
+/** @type {Array<[RegExp, string]>} */
+const KATEGORIE_STOPU = [
+  [/niezacommitowane zmiany|branch mismatch|nie jest czyste/i, 'czystosc'],
+  [/^warunek \d+ nie ?spe[lł]niony|warunki bramki/i, 'bramka-wejscia'],
+  [/^execute fazy/i, 'execute'],
+  [/scribe padl/i, 'scribe'],
+  [/\bP1\b/, 'P1'],
+  [/fix|tura poprawkowa|BINARNE/i, 'fix-FAIL'],
+  [/SRODOWISK|\.env\.e2e|env-up|agent-browser/i, 'E2E-srodowisko'],
+  [/E2E/, 'E2E-asercja'],
+  [/walidacja koncowa/i, 'walidacja'],
+]
+
+/**
+ * @param {string | null} powod
+ * @returns {string | null}
+ */
+export function kategoriaStopu(powod) {
+  if (!powod) return null
+  // stopRun dokleja do KAZDEGO powodu ostrzezenie o brudnym drzewie poza zadaniem — to skutek, nie przyczyna STOP-u.
+  const przyczyna = powod.split(DOPISEK_STOP_RUN)[0]
+  return KATEGORIE_STOPU.find(([re]) => re.test(przyczyna))?.[1] ?? 'inne'
+}
+
+/**
+ * @typedef {object} KosztAgenta
+ * @property {number} koszt_jedn
+ * @property {number} tury
+ * @property {number} in
+ * @property {number} cache_w
+ * @property {number} cache_r
+ * @property {number} out
+ * @property {string | null} start
+ * @property {string | null} koniec
+ */
+
+/** @param {KosztAgenta[]} agenci */
+export function sumaKosztu(agenci) {
+  const s = { agentow: agenci.length, tur: 0, in: 0, cache_w: 0, cache_r: 0, out: 0, jedn: 0 }
+  for (const a of agenci) {
+    s.tur += a.tury; s.in += a.in; s.cache_w += a.cache_w; s.cache_r += a.cache_r; s.out += a.out; s.jedn += a.koszt_jedn
+  }
+  return s
+}
+
+/** @param {KosztAgenta[]} agenci @returns {number | null} */
+export function sekundyAgentow(agenci) {
+  const starty = agenci.map((a) => (a.start ? Date.parse(a.start) : NaN)).filter(Number.isFinite)
+  const konce = agenci.map((a) => (a.koniec ? Date.parse(a.koniec) : NaN)).filter(Number.isFinite)
+  if (!starty.length || !konce.length) return null
+  return Math.round((Math.max(...konce) - Math.min(...starty)) / 1000)
+}
+
+/** @param {string} sciezka @returns {string | null} ostatni segment sciezki zadania (`@docs/active/x/` -> `x`) */
+const nazwaZSciezki = (sciezka) => sciezka.replace(/^@/, '').replace(/\/+$/, '').split('/').pop() || null
+
+/**
+ * Zadanie z argumentow runu: autopilot = sciezka jako tekst, execute/review = { sciezka }, dev-pr = { zadanie },
+ * complete = { nazwaZadania }.
+ * @param {unknown} args
+ * @returns {string | null}
+ */
+function zadanieZArgumentow(args) {
+  if (typeof args === 'string') return nazwaZSciezki(args)
+  const a = obiekt(args)
+  const sciezka = tekstLubNull(a.sciezka)
+  return tekstLubNull(a.zadanie) ?? tekstLubNull(a.nazwaZadania) ?? (sciezka ? nazwaZSciezki(sciezka) : null)
+}
+
+/**
+ * @param {{ harness: Record<string, unknown> | null, status: StatusRunu, agenci: KosztAgenta[], bootstrap: unknown }} we
+ */
+export function rekordRunu(we) {
+  const wynik = obiekt(we.harness?.result)
+  const bootstrap = obiekt(we.bootstrap)
+  const raporty = Array.isArray(wynik.raporty) ? wynik.raporty : null
+  const nazwaWorkflowu = tekstLubNull(we.harness?.workflowName)
+  const czasMs = we.harness?.durationMs
+  return {
+    typ: 'run',
+    workflow: nazwaWorkflowu ? nazwaWorkflowu.replace(/-wf$/, '') : null,
+    zadanie: tekstLubNull(bootstrap.nazwaZadania) ?? tekstLubNull(wynik.nazwaZadania) ?? zadanieZArgumentow(we.harness?.args),
+    status: we.status.status,
+    powod: we.status.powod,
+    stop_kategoria: we.status.status === 'STOP' ? kategoriaStopu(we.status.powod) : null,
+    fazyZadania: Array.isArray(bootstrap.fazy) ? bootstrap.fazy.length : null,
+    fazyUkonczone: raporty ? raporty.length : typeof wynik.fazyUkonczone === 'number' ? wynik.fazyUkonczone : null,
+    walidacja: tekstLubNull(wynik.walidacja),
+    e2eSrodowisko: tekstLubNull(wynik.e2eSrodowisko),
+    solution: tekstLubNull(wynik.solution),
+    koszt: sumaKosztu(we.agenci),
+    sekundy: typeof czasMs === 'number' ? Math.round(czasMs / 1000) : sekundyAgentow(we.agenci),
+    // Producenci w pozniejszych krokach / iteracjach: szablon (krok 3), pr (krok 8), MANUAL (It. 3e),
+    // profil stacku i smoke (It. 3), ogrod (R1). Klucze sa od razu — raport nie moze zgadywac ksztaltu.
+    szablon: null,
+    pr: null,
+    manual_razem: null,
+    profil_stacku: null,
+    smoke: null,
+    ogrod: null,
+  }
+}
+
+/** @typedef {ReturnType<typeof rekordRunu>} RekordRunu */
