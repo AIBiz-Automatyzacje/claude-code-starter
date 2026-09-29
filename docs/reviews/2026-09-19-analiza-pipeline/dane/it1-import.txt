@@ -1,0 +1,7 @@
+It. 1 krok 10 — import historii bez zrodla maszynowego (2026-09-29)
+(a) PR oferty-online: 19 rekordow typ pr; uwag 574 (oczekiwane 574); klas spoza slownika: 0; pliki PR z gh: min 12, max 160
+    B P1/P2 na 100 plikow (miara mapy walidacji; tlo — baseline porownan = B0): #1 5.0, #2 9.5, #3 8.5, #4 16.3, #5 7.1, #6 7.5, #7 10.7, #8 5.2, #9 13.4, #10 8.0, #11 3.1, #12 4.2, #13 5.7, #14 4.8, #15 1.9, #16 2.7, #17 4.1, #18 0.0, #19 2.3
+    kontrola vs d5b-baseline-jakosci.txt (17 PR pipeline'u, bez #12 i #18): 6.7 na 100 plikow (wzorzec 6.7)
+(b) stara telemetria: 73 wpisow z 3 zrodel → 42 unikalnych run_v0 (klucz projekt|zadanie|ts)
+Dopisanych do /Users/kacper_trzepiecinski/.claude/telemetry/pipeline.jsonl: 0 (0 przy ponownym uruchomieniu)
+→ ZALICZONE

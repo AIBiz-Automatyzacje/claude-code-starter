@@ -1,0 +1,135 @@
+{
+ "1": {
+  "changedFiles": 121,
+  "createdAt": "2026-08-25T07:30:26Z",
+  "headRefName": "feature/faza-1-fundament",
+  "mergedAt": "2026-08-25T08:45:38Z",
+  "number": 1
+ },
+ "2": {
+  "changedFiles": 147,
+  "createdAt": "2026-08-26T15:43:45Z",
+  "headRefName": "feature/faza-2-publikacja-ofert",
+  "mergedAt": "2026-08-26T20:30:56Z",
+  "number": 2
+ },
+ "3": {
+  "changedFiles": 117,
+  "createdAt": "2026-08-28T07:29:06Z",
+  "headRefName": "feature/faza-3-konto-i-dashboard",
+  "mergedAt": "2026-08-28T08:03:01Z",
+  "number": 3
+ },
+ "4": {
+  "changedFiles": 86,
+  "createdAt": "2026-08-28T20:13:28Z",
+  "headRefName": "feature/faza-4-tracking-i-widok-oferty",
+  "mergedAt": "2026-08-29T07:34:31Z",
+  "number": 4
+ },
+ "5": {
+  "changedFiles": 56,
+  "createdAt": "2026-08-31T11:19:28Z",
+  "headRefName": "feature/faza-5-heatmapa",
+  "mergedAt": "2026-08-31T17:21:54Z",
+  "number": 5
+ },
+ "6": {
+  "changedFiles": 40,
+  "createdAt": "2026-09-01T13:24:13Z",
+  "headRefName": "feature/siatka-heatmapy-proporcjonalna",
+  "mergedAt": "2026-09-01T16:29:46Z",
+  "number": 6
+ },
+ "7": {
+  "changedFiles": 122,
+  "createdAt": "2026-09-03T09:01:12Z",
+  "headRefName": "feature/faza-6-cta-i-webhooki",
+  "mergedAt": "2026-09-03T10:53:47Z",
+  "number": 7
+ },
+ "8": {
+  "changedFiles": 116,
+  "createdAt": "2026-09-05T17:03:16Z",
+  "headRefName": "feature/faza-7-szablony-i-grafiki",
+  "mergedAt": "2026-09-06T06:33:23Z",
+  "number": 8
+ },
+ "9": {
+  "changedFiles": 157,
+  "createdAt": "2026-09-05T20:03:22Z",
+  "headRefName": "feature/faza-7-serwer",
+  "mergedAt": "2026-09-06T06:32:29Z",
+  "number": 9
+ },
+ "10": {
+  "changedFiles": 113,
+  "createdAt": "2026-09-08T15:06:10Z",
+  "headRefName": "feature/faza-8-serwer",
+  "mergedAt": "2026-09-08T20:44:19Z",
+  "number": 10
+ },
+ "11": {
+  "changedFiles": 160,
+  "createdAt": "2026-09-08T20:55:13Z",
+  "headRefName": "feature/faza-8-connector-oauth-i-dashboard",
+  "mergedAt": "2026-09-09T05:20:51Z",
+  "number": 11
+ },
+ "12": {
+  "changedFiles": 72,
+  "createdAt": "2026-09-10T20:38:06Z",
+  "headRefName": "chore/tura-porzadkowa-faza-9",
+  "mergedAt": "2026-09-10T21:09:10Z",
+  "number": 12
+ },
+ "13": {
+  "changedFiles": 70,
+  "createdAt": "2026-09-11T12:00:47Z",
+  "headRefName": "feature/faza-9c-dokumenty-prawne",
+  "mergedAt": "2026-09-11T12:55:30Z",
+  "number": 13
+ },
+ "14": {
+  "changedFiles": 124,
+  "createdAt": "2026-09-13T09:41:40Z",
+  "headRefName": "feature/faza-9a-domena-mailer-limity",
+  "mergedAt": "2026-09-13T12:25:27Z",
+  "number": 14
+ },
+ "15": {
+  "changedFiles": 104,
+  "createdAt": "2026-09-13T10:10:48Z",
+  "headRefName": "feature/faza-9a-serwer",
+  "mergedAt": "2026-09-13T11:44:22Z",
+  "number": 15
+ },
+ "16": {
+  "changedFiles": 110,
+  "createdAt": "2026-09-15T16:54:49Z",
+  "headRefName": "feature/faza-9b-serwer",
+  "mergedAt": "2026-09-15T17:42:40Z",
+  "number": 16
+ },
+ "17": {
+  "changedFiles": 146,
+  "createdAt": "2026-09-15T17:44:48Z",
+  "headRefName": "feature/faza-9b-dashboard",
+  "mergedAt": "2026-09-15T19:20:31Z",
+  "number": 17
+ },
+ "18": {
+  "changedFiles": 12,
+  "createdAt": "2026-09-16T13:12:53Z",
+  "headRefName": "fix/root-originu-ofert-przekierowanie",
+  "mergedAt": "2026-09-16T13:57:23Z",
+  "number": 18
+ },
+ "19": {
+  "changedFiles": 129,
+  "createdAt": "2026-09-17T08:11:13Z",
+  "headRefName": "feature/samodzielna-rejestracja-czlonkow-aa",
+  "mergedAt": "2026-09-17T09:25:23Z",
+  "number": 19
+ }
+}
