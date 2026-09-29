@@ -4,7 +4,7 @@ export const meta = {
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
-    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja) -> telemetria (1 linia JSONL do ~/.claude/telemetry/autopilot-runs.jsonl; takze na sciezkach STOP)' },
+    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
   ],
 }
 
@@ -189,7 +189,7 @@ const ZAPIS_STANU = {
   additionalProperties: false,
   properties: {
     zapisano: { type: 'boolean' },
-    // Pole opcjonalne, bo tego samego schematu uzywa telemetria (dopisuje linie JSONL, nie stan).
+    // Pole opcjonalne, bo tego samego schematu uzywa zwijanie sekcji "Do poprawy" (zapisuje md, nie JSON).
     // Dla .autopilot-state.json jest OBOWIAZKOWE — patrz zapiszStanPrompt: agent ma je ustawic
     // po REALNYM sparsowaniu pliku z dysku, nie po samym wywolaniu Write.
     poprawnyJson: { type: ['boolean', 'null'], description: 'plik odczytany z dysku po zapisie sparsowal sie jako JSON' },
@@ -934,15 +934,10 @@ if (!sciezka) {
   }
 }
 
-const tokSpent = () => (typeof budget !== 'undefined' && budget && budget.spent ? budget.spent() : 0)
-
-// Stan runu zadeklarowany PRZED pierwsza bramka (port z mobile, 2026-08-08). Powod: telemetria zapisuje
-// sie teraz takze na sciezkach STOP, a helper telemetrii nie moze siegac do bindingow w martwej strefie —
-// kazda zmienna, ktora czyta, musi istniec, zanim jakikolwiek STOP bedzie mogl zapasc.
-// UWAGA dla strojenia progow: tokRunStart mierzy odtad od POCZATKU runu (z bootstrapem, env-up i warmupem),
-// wczesniej liczyl dopiero od pierwszej fazy — wpisy sprzed tej zmiany maja nizsze tokenyRazemK przy tej
-// samej pracy. Bootstrap to realny koszt runu, wiec liczymy go, ale porownania miedzy epokami wymagaja uwagi.
-const tokRunStart = tokSpent()
+// Stan runu zadeklarowany PRZED pierwsza bramka (port z mobile, 2026-08-08): stopRun czyta `raporty`, a kazda zmienna,
+// ktora czyta, musi istniec, zanim jakikolwiek STOP bedzie mogl zapasc.
+// Telemetria (It. 1): zapis i koszt robi skrypt po runie (.claude/scripts/telemetria/zbierz.mjs z hooka Stop) z pliku
+// harnessu i transkryptow — workflow nie wola agenta telemetrii i nie liczy tokenow z budzetu runu (tylko output, ~11% kosztu).
 const historia = {}
 const raporty = []
 let kolejka
@@ -987,17 +982,6 @@ function skrotPrzebiegu(p) {
   }
 }
 
-// Skrot `e2eSync` do telemetrii (audyt 2026-09-06, N6). `raporty[].e2eSync` niesie PELNY raport agenta
-// db-sync — to celowe, bo `raporty` wracaja do operatora w wyniku runu i w STOP-ie, a tekst bywa cenny
-// ("Storage odrzuca klucz sb_secret_ podany tylko jako Bearer, dziala z naglowkiem apikey"). Ale w JSONL
-// ten sam tekst zajmowal 35-45% wpisu (3 335 z 7 450 B), a analiza telemetrii potrzebuje statusu, nie
-// instrukcji dla czlowieka. Pelna tresc zostaje w logu runu (log przy wywolaniu db-sync) i w wyniku.
-const E2E_SYNC_LIMIT_TELEMETRII = 200
-function skrotE2eSync(tekst) {
-  if (typeof tekst !== 'string' || tekst.length <= E2E_SYNC_LIMIT_TELEMETRII) return tekst
-  return `${tekst.slice(0, E2E_SYNC_LIMIT_TELEMETRII).trimEnd()}… [uciete: ${tekst.length} znakow, pelna tresc w logu runu]`
-}
-
 // Podsumowanie tury poprawkowej po kontroli diffu naprawczego (audyt 2026-09-06, N9).
 // Do tej pory do stanu i telemetrii szlo tylko {pozycje, naprawione, walidacja} — a agent poprawki
 // podaje w nienaprawione[] uzasadnienia pozycji, ktorych nie ruszyl, i orkiestrator je WYRZUCAL.
@@ -1014,76 +998,6 @@ function podsumujKontroleFixa(pozycje, poprawka) {
     pominiete,
     bezSladu: Math.max(0, pozycje - naprawione - pominiete.length),
   }
-}
-
-// Telemetria (best-effort): JEDNA linia JSONL do globalnego ~/.claude/telemetry/autopilot-runs.jsonl,
-// wspolnego dla wszystkich projektow na maszynie. Wpis powstaje TAKZE przy STOP (port z mobile).
-// Powod (run feedback-marcin-poprawki, mobile): run trwal ~10h, spalil 136 agentow i zatrzymal sie 5x na
-// bramkach, a poniewaz nigdy nie doszedl do konca, nie zostawil ANI JEDNEJ linii telemetrii. Dane o tym,
-// ile kosztuja awarie srodowiskowe — czyli dokladnie to, czego potrzeba do strojenia bramek — przepadly
-// w calosci. Wpis STOP niesie status i powod, wiec analiza rozroznia "run sie udal" od "run padl na bramce X".
-// Telemetria opisuje CALE zadanie, nie tylko ten run (2026-07-27): `kolejka` filtruje po pending, wiec
-// faza domknieta we WCZESNIEJSZYM runie nie wchodzi do petli — jej wiersz odtwarzamy ze stanu
-// (zrodlo:'stan', null tam, gdzie stan nie zna wartosci; gate/cykle/tokeny sa liczone w petli runu).
-async function zapiszTelemetrie(status, powod) {
-  const raportyTelemetrii = ((stan && stan.fazy) || [])
-    .map((f) => {
-      const zRunu = raporty.find((r) => r.faza === f.numer)
-      if (zRunu) return { ...zRunu, e2eSync: skrotE2eSync(zRunu.e2eSync), zrodlo: 'run' }
-      if (!f.metryki) return null
-      return {
-        faza: f.numer,
-        gate: null,
-        cykle: null,
-        tokeny: null,
-        // Swiadomie NIE utrwalamy tokenyEtapy w stanie: tokeny opisuja RUN, nie faze. Liczby z runu, ktory
-        // te faze zrobil, doklejone do wpisu innego runu podpieralyby jego koszt cudzymi danymi.
-        tokenyEtapy: null,
-        liczniki: f.metryki.liczniki || null,
-        fix: null,
-        e2eSync: 'n/a',
-        przebieg: skrotPrzebiegu(f.metryki.przebieg),
-        zrodlo: 'stan',
-      }
-    })
-    .filter(Boolean)
-  const zeStanu = raportyTelemetrii.filter((r) => r.zrodlo === 'stan').map((r) => r.faza)
-  if (zeStanu.length) log(`Telemetria: dokladam metryki faz z wczesniejszych runow: ${zeStanu.join(', ')}`)
-
-  const wpis = {
-    zadanie: (stan && stan.nazwaZadania) || 'nieznane',
-    status,
-    powod: powod || null,
-    fazyUkonczone: raporty.length,
-    // Ile faz ma ZADANIE (ze stanu), nie ile z nich zdazylo dac metryki — inaczej wczesny STOP raportowal
-    // "zadanie 1-fazowe" dla zadania o pieciu fazach i analiza pokrycia byla systematycznie zanizona.
-    fazyZadania: (stan && stan.fazy && stan.fazy.length) || raportyTelemetrii.length,
-    fazyZMetrykami: raportyTelemetrii.length,
-    raporty: raportyTelemetrii,
-    walidacja: status === 'OK' ? 'PASS' : null,
-    e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
-    solution: !!(compound && compound.plik),
-    tokenyRazemK: Math.round((tokSpent() - tokRunStart) / 1000),
-  }
-  const tele = await agent(
-    `Dopisz JEDNA linie telemetrii pipeline'u dev-autopilot do globalnego pliku ~/.claude/telemetry/autopilot-runs.jsonl.
-1. Bash: mkdir -p ~/.claude/telemetry
-2. Ustal: ts = \`date -Iseconds\`, projekt = \`basename "$(git rev-parse --show-toplevel)"\`.
-3. Wez ponizszy obiekt, dodaj do niego pola "ts" i "projekt", zserializuj do JEDNEJ linii JSON (bez pretty-print):
-${JSON.stringify(wpis)}
-4. Dopisz te linie na koncu pliku (append, >>). NIE nadpisuj istniejacej zawartosci.
-   Pola tekstowe (zwlaszcza "powod") zawieraja cudzyslowy i backticki — zapisuj przez heredoc z CYTOWANYM
-   delimiterem (\`cat >> plik <<'EOF'\`), nigdy przez \`echo "..."\` z interpolacja powloki.
-5. WALIDACJA (obowiazkowa): sprawdz, ze OSTATNIA linia pliku parsuje sie jako JSON:
-   \`tail -1 ~/.claude/telemetry/autopilot-runs.jsonl | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{JSON.parse(d);console.log('JSONL-OK')})"\`
-   "JSONL-OK" -> {zapisano:true, poprawnyJson:true}. Blad -> usun te wadliwa ostatnia linie
-   (\`sed -i '' -e '$d' <plik>\` na macOS) i zwroc {zapisano:false, poprawnyJson:false} — lepiej BRAK wpisu
-   niz linia, ktora psuje parsowanie calego pliku analitykom. To ta sama klasa bledu, ktora uszkodzila
-   .autopilot-state.json: model przepisujacy tekst z cudzyslowami bez sprawdzenia wyniku.
-Nie modyfikuj zadnych innych plikow.`,
-    { schema: ZAPIS_STANU, label: `telemetria:${status}`, model: 'haiku' }
-  )
-  if (!tele || !tele.zapisano) log('Telemetria: zapis nie powiodl sie (best-effort, run niezagrozony)')
 }
 
 // Wynik sprzatania artefaktow przy STOP-ie (plan B2).
@@ -1144,8 +1058,8 @@ Nie modyfikuj plikow, nie uruchamiaj testow, nie przelaczaj brancha.`,
 
 // Kazde zatrzymanie runu przechodzi TEDY — inaczej bramka, ktora zadziala, nie zostawia po sobie danych.
 async function stopRun(obj) {
-  // Ten sam try/catch co przy telemetrii i z tego samego powodu: to wywolanie wola agenta, a najczestsza
-  // przyczyna STOP-u bywa przeciazenie API. Rzucony wyjatek zabralby operatorowi komunikat bramki.
+  // try/catch, bo to wywolanie wola agenta, a najczestsza przyczyna STOP-u bywa przeciazenie API (529).
+  // Rzucony wyjatek zabralby operatorowi komunikat bramki (`powod`, `naprawa`).
   let artefakty = null
   try {
     artefakty = await zacommitujArtefaktyStop(obj.faza)
@@ -1161,14 +1075,6 @@ async function stopRun(obj) {
     if (brudne.length) {
       powod = `${powod} UWAGA: poza katalogiem zadania zostaly niezacommitowane zmiany (${brudne.join(', ')}) — NIE tknelismy ich, ale bramka czystosci nastepnego runu na nich stanie.`
     }
-  }
-  // try/catch jest KRYTYCZNY, nie ozdobny: telemetria wola agenta, a najczestsza przyczyna STOP-u bywa
-  // przeciazenie API (529). Gdyby to wywolanie RZUCILO, wyjatek poszedlby w gore i run zginalby BEZ
-  // zwrocenia obiektu STOP — operator stracilby `powod` i `naprawa`, czyli cala wartosc bramki.
-  try {
-    await zapiszTelemetrie('STOP', powod)
-  } catch (e) {
-    log(`Telemetria STOP nie zapisala sie (${e && e.message ? e.message : e}) — best-effort, komunikat STOP wraca normalnie`)
   }
   return { status: 'STOP', ...obj, powod, artefaktyStop: artefakty }
 }
@@ -1291,7 +1197,6 @@ for (const numerFazy of kolejka) {
     return await stopRun({ powod: `kolejka zawiera faze ${numerFazy} nieobecna w fazy[] — niespojny stan bootstrapu`, raporty })
   }
   phase(`Faza ${numerFazy}`)
-  const tokFazaStart = tokSpent()
   let gateFazy = 'CZYSTE'
   let cykle = 0
   let e2eSync = null
@@ -1303,17 +1208,9 @@ for (const numerFazy of kolejka) {
   let fixInfo = null
   // Wynik kontroli diffu naprawczego (plan B5) — do raportu fazy i telemetrii.
   let kontrolaFixa = null
-  // Atrybucja tokenow per etap: "faza = 298k" nie mowi, czy placimy za buildery, czy za reviewerow,
-  // wiec kazdy etap ma wlasny akumulator. null (a NIE 0) = etapu w tym runie nie bylo (przy resume byl
-  // juz 'done'); 0 = wykonal sie i nic nie kosztowal. Dopisujemy delte na KONCU bloku etapu — sciezki
-  // STOP wracaja przed raporty.push, wiec ich pomiar i tak nie ma gdzie trafic.
-  const tokEtapy = { execute: null, review: null, fix: null }
-  // += zamiast =, bo etap moze wykonac sie wielokrotnie (cykle fixa) — wtedy koszt ma sie SUMOWAC.
-  const dopiszEtap = (etap, start) => { tokEtapy[etap] = (tokEtapy[etap] || 0) + (tokSpent() - start) }
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
   if (faza.execute === 'pending') {
-    const tokEtapStart = tokSpent()
     const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy })
     if (!exec || exec.status !== 'completed') {
       return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty })
@@ -1321,14 +1218,10 @@ for (const numerFazy of kolejka) {
     faza.execute = 'done'
     await zapiszStan()
     log(`Faza ${numerFazy}: Execute OK (${exec.iu.length} IU)`)
-    dopiszEtap('execute', tokEtapStart)
   }
 
   // 2) REVIEW — tylko gdy pending. Faza ukonczona z otwartymi findingami idzie PROSTO do fix (Bug 1).
   if (faza.review === 'pending') {
-    // Etap "review" obejmuje e2e db-sync + review-wf (reviewerzy, dedup, adversarial verify) — to jeden
-    // blok warunkowy i jeden wywolywany workflow, wiec i jedna pozycja w atrybucji.
-    const tokEtapStart = tokSpent()
     // Findingi z PRZERWANEGO podejscia do tej fazy (STOP na blokerze srodowiska albo padzie testera
     // E2E zostawia review=pending z niepusta lista). Zapamietane PRZED review, bo `faza.otwarteFindingi`
     // zaraz zostanie nadpisane wynikiem nowego przebiegu — patrz polaczFindingiPoPowtorce (audyt N2).
@@ -1426,14 +1319,10 @@ for (const numerFazy of kolejka) {
     faza.otwarteFindingi = polaczFindingiPoPowtorce(otwartePoReview(review.findings), findingiPrzedPowtorka)
     faza.fix = faza.otwarteFindingi.length ? 'pending' : 'none'
     await zapiszStan()
-    dopiszEtap('review', tokEtapStart)
   }
 
   // 3) FIX — bez re-review; gate z self-reportu + lista findingow przekazana wprost (md tylko jako widok).
   if (faza.fix === 'pending') {
-    // Etap "fix" obejmuje agenta fixa I targeted verify P1/KOD — verify jest czescia tego samego bloku
-    // warunkowego (bramka gate'u fixa), wiec jego koszt nalezy do fixa, nie do review.
-    const tokEtapStart = tokSpent()
     const fix = await agent(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi), { schema: FIX_RESULT, label: `fix:faza-${numerFazy}` })
     if (!fix) {
       return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
@@ -1594,24 +1483,15 @@ Nie commituj — orkiestrator zrobi to sam. Zwroc {zapisano: true} po realnym za
       { schema: ZAPIS_STANU, model: 'haiku', label: `zwin-do-poprawy:faza-${numerFazy}` }
     )
     if (zwijanie && zwijanie.zapisano) log(`Faza ${numerFazy}: zamkniete pozycje sekcji "Do poprawy" zwiniete do wskaznika na review-faza-${numerFazy}.md (niezaznaczone zostaly — czyta je dev-docs-complete)`)
-    dopiszEtap('fix', tokEtapStart)
   } else if (faza.fix === 'none') {
     gateFazy = 'CZYSTE'
   }
 
   historia[numerFazy] = cykle
-  const tokFazy = Math.round((tokSpent() - tokFazaStart) / 1000)
-  // Delta 0 po resume = agenci fazy wrocili z journala (cache), nie "darmowa faza" — oznacz w raporcie.
-  const tokFazyOpis = tokFazy === 0 ? '0k (z cache — resume)' : `${tokFazy}k`
-  // null przechodzi przez zaokraglenie jako null — inaczej etap nieobecny w runie zlalby sie z etapem
-  // darmowym (0k) i cala atrybucja przestalaby cokolwiek rozstrzygac.
-  const naK = (v) => (v === null ? null : Math.round(v / 1000))
-  const tokenyEtapy = { execute: naK(tokEtapy.execute), review: naK(tokEtapy.review), fix: naK(tokEtapy.fix) }
-  const opisEtapow = ['execute', 'review', 'fix'].map((e) => `${e} ${tokenyEtapy[e] === null ? 'n/a' : `${tokenyEtapy[e]}k`}`).join(', ')
-  log(`Faza ${numerFazy}: koniec — gate ${gateFazy}, cykle ${cykle}, ~${tokFazyOpis} tokenow (${opisEtapow})`)
+  log(`Faza ${numerFazy}: koniec — gate ${gateFazy}, cykle ${cykle}`)
   // przebieg = metryki routingu/dedupu/verify (z review-wf albo ze stanu po resume) — dane do
   // strojenia progow: kogo routing pomija, ile dedup sklei, ile verify obala.
-  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, tokeny: tokFazyOpis, tokenyEtapy, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy) })
+  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy) })
 }
 
 // ── Zakonczenie ──────────────────────────────────────────────────────────
@@ -1707,7 +1587,7 @@ Wykonaj skill .claude/skills/dev-compound-refresh/SKILL.md w TRYBIE AUTONOMICZNY
   Gdy nie zmieniles zadnego pliku albo commit sie nie udal — zwroc commit: "" i nie przerywaj.
 Zwroc obiekt zgodny ze schematem RefreshResult (commit = hash commita lub "").`
 
-// `compound` jest zadeklarowany na gorze pliku (czyta go telemetria, takze na sciezkach STOP).
+// `compound` jest zadeklarowany na gorze pliku razem z reszta stanu runu (czyta go wynik runu na koncu).
 let refresh = null
 if (stan.zakonczenie.compound === 'pending') {
   compound = await workflow('dev-compound-wf', { sciezka })
@@ -1754,18 +1634,12 @@ if (stan.zakonczenie.complete === 'pending') {
   }
 }
 
-const tokRazem = Math.round((tokSpent() - tokRunStart) / 1000)
-log(`Autopilot koniec: ${kolejka.length} faz, ~${tokRazem}k tokenow lacznie`)
-
-// TELEMETRIA sciezki sukcesu — sama funkcja (z komentarzem o zakresie danych) siedzi na gorze pliku,
-// bo wolaja ja takze wszystkie sciezki STOP przez stopRun().
-await zapiszTelemetrie('OK', null)
+log(`Autopilot koniec: ${kolejka.length} faz (koszt runu: raport telemetrii — .claude/scripts/telemetria/raport.mjs)`)
 
 return {
   status: 'OK',
   nazwaZadania: stan.nazwaZadania,
   fazyUkonczone: kolejka.length,
-  tokeny: `${tokRazem}k`,
   historia,
   raporty,
   walidacja: stan.walidacjaWynik || 'done w poprzednim runie',

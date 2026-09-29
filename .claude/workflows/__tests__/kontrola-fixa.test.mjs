@@ -1,14 +1,14 @@
-// Testy dwoch helperow dev-autopilot-wf.js z audytu 2026-09-06: skrot `e2eSync` do telemetrii (N6)
-// i bilans tury poprawkowej po kontroli diffu naprawczego (N9).
+// Testy dev-autopilot-wf.js: bilans tury poprawkowej po kontroli diffu naprawczego (audyt 2026-09-06, N9) oraz strażnik
+// It. 1 — orkiestrator nie powołuje agenta telemetrii i nie liczy tokenów z budget.spent().
 //
-// Uruchomienie:  node --test .claude/workflows/__tests__/telemetria-i-kontrola-fixa.test.mjs
+// Uruchomienie:  node --test .claude/workflows/__tests__/kontrola-fixa.test.mjs
 //   albo caly katalog:  node --test '.claude/workflows/__tests__/*.test.mjs'   (glob w apostrofach)
 //
-// N6: `e2eSync` to swobodny raport agenta db-sync; w JSONL zajmowal 35-45% wpisu (3 335 z 7 450 B),
-//     a analiza telemetrii potrzebuje statusu, nie instrukcji dla czlowieka. Pelny tekst zostaje
-//     w `raporty[]` (wynik runu / STOP) i w logu — skracamy WYLACZNIE to, co idzie do pliku telemetrii.
 // N9: `kontrolaFixa` szla do stanu jako {pozycje, naprawione, walidacja} i gubila `nienaprawione[]`
 //     z odpowiedzi agenta. Przy 61 pozycjach / 55 naprawionych / PASS dwie pozycje nie mialy sladu.
+// Skrot `e2eSync` (N6) przeniesiony razem z testami do telemetrii (.claude/scripts/telemetria/faza.mjs) — It. 1 krok 7.
+// Telemetria (It. 1): zapis robi skrypt po runie (hook Stop), nie agent — agent haiku dwa razy skasowal wspolny plik,
+// a budget.spent() liczy tylko tokeny wyjsciowe (~11% kosztu; decyzja O3: usunac wszystkie trzy liczniki).
 
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -36,36 +36,22 @@ function wytnij(kotwica, koniec, opis) {
 }
 
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
-const { skrotE2eSync, podsumujKontroleFixa, E2E_SYNC_LIMIT_TELEMETRII } = new Function(
-  `${wytnij('const E2E_SYNC_LIMIT_TELEMETRII =', '\n', 'E2E_SYNC_LIMIT_TELEMETRII')}
-   ${wytnij('function skrotE2eSync(', '\n}', 'skrotE2eSync')}
-   ${wytnij('function podsumujKontroleFixa(', '\n}', 'podsumujKontroleFixa')}
-   return { skrotE2eSync, podsumujKontroleFixa, E2E_SYNC_LIMIT_TELEMETRII }`,
+const { podsumujKontroleFixa } = new Function(
+  `${wytnij('function podsumujKontroleFixa(', '\n}', 'podsumujKontroleFixa')}
+   return { podsumujKontroleFixa }`,
 )()
 
-// ── N6 ────────────────────────────────────────────────────────────────────
+// ── Telemetria It. 1: bez agenta i bez budget.spent() ─────────────────────
+// Strażnik regresji na zrodle — skryptu workflowu nie da sie uruchomic w tescie (wymaga runtime'u Workflow).
 
-test('krotki e2eSync i "n/a" przechodza bez zmian', () => {
-  assert.equal(skrotE2eSync('n/a'), 'n/a')
-  assert.equal(skrotE2eSync('aktualna: Remote database is up to date'), 'aktualna: Remote database is up to date')
+test('orkiestrator nie powoluje agenta telemetrii', () => {
+  assert.doesNotMatch(zrodlo, /label: `telemetria:/, 'zapis telemetrii robi zbierz.mjs z hooka Stop, nie agent w runie')
+  assert.doesNotMatch(zrodlo, /autopilot-runs\.jsonl/, 'stary plik telemetrii nie jest juz zapisywany z workflowu')
 })
 
-test('dlugi e2eSync jest ucinany do limitu z jawnym znacznikiem i dlugoscia oryginalu', () => {
-  const dlugi = 'zsynchronizowano: ' + 'x'.repeat(3300)
-  const s = skrotE2eSync(dlugi)
-  assert.ok(s.length < 300, `skrot ma ${s.length} znakow — telemetria nie moze dalej niesc calego raportu agenta`)
-  assert.ok(s.startsWith('zsynchronizowano: '), 'status na poczatku musi przetrwac — to jedyna czesc, ktorej analiza uzywa')
-  assert.match(s, /uciete: 3318 znakow/, 'odbiorca ma wiedziec, ze to skrot i ile przepadlo')
-  assert.match(s, /pelna tresc w logu runu/, 'skrot ma wskazywac, gdzie jest reszta')
-})
-
-test('e2eSync inny niz string (null z padnietego agenta) nie wywala telemetrii', () => {
-  assert.equal(skrotE2eSync(null), null)
-  assert.equal(skrotE2eSync(undefined), undefined)
-})
-
-test('limit jest sensowny: miesci status i zdanie, nie miesci raportu', () => {
-  assert.ok(E2E_SYNC_LIMIT_TELEMETRII >= 120 && E2E_SYNC_LIMIT_TELEMETRII <= 400, `limit ${E2E_SYNC_LIMIT_TELEMETRII} — poza rozsadnym zakresem`)
+test('orkiestrator nie liczy tokenow z budget.spent() — koszt tylko z telemetrii (pelny cennik)', () => {
+  assert.doesNotMatch(zrodlo, /budget\.spent/)
+  assert.doesNotMatch(zrodlo, /tokenyEtapy|tokenyRazemK/)
 })
 
 // ── N9 ────────────────────────────────────────────────────────────────────
