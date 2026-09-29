@@ -945,7 +945,7 @@ const tokSpent = () => (typeof budget !== 'undefined' && budget && budget.spent 
 const tokRunStart = tokSpent()
 const historia = {}
 const raporty = []
-let kolejka = []
+let kolejka
 let e2eEnv = null
 let stan = null
 let compound = null
@@ -1491,7 +1491,7 @@ for (const numerFazy of kolejka) {
       werdykty.forEach((w, i) => { if (!w) log(`verify-fix: brak werdyktu dla P1 ${p1Kod[i].plik} (agent null) — przepuszczam z ostrzezeniem`) })
       if (nadalOtwarte.length) {
         // Zawez liste do realnie otwartych — kolejny run wraca wprost do fixa z ta zawezona lista.
-        faza.otwarteFindingi = nadalOtwarte.map((f, i) => ({ ...f, opis: `[NIEZAMKNIETY po fixie] ${f.opis}` }))
+        faza.otwarteFindingi = nadalOtwarte.map((f) => ({ ...f, opis: `[NIEZAMKNIETY po fixie] ${f.opis}` }))
         await zapiszStan()
         return await stopRun({
           powod: `Faza ${numerFazy}: niezalezna weryfikacja wykryla ${nadalOtwarte.length}x P1 NADAL otwarte po fixie (self-report fixa mowil "naprawione") — wymagana reczna interwencja. Po naprawie odpal SWIEZY run.`,

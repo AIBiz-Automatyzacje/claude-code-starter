@@ -41,14 +41,22 @@ function wytnijFragment() {
   return zrodlo.slice(start, koniec + 3)
 }
 
-// eslint-disable-next-line no-new-func — jedyna droga do niewyeksportowanej jednostki w skrypcie workflowu;
+/** @typedef {import('./typy.mjs').Finding} Finding */
+/** @typedef {import('./typy.mjs').PrzebiegE2e} PrzebiegE2e */
+
+// Wyjatek od no-new-func: jedyna droga do niewyeksportowanej jednostki w skrypcie workflowu;
 // wejsciem jest plik z tego repo, nie dane uzytkownika.
+/** @type {{ wykryjBlokerSrodowiska: (findingi: Finding[], przebiegiTestera: PrzebiegE2e[] | null) => { wykryty: boolean, klasa: string, dowod: string } | null }} */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { wykryjBlokerSrodowiska } = new Function(
   `${wytnijFragment()}\nreturn { wykryjBlokerSrodowiska }`
 )()
 
 // Odwzorowanie miejsca wywolania z workflowu (dwa filtry, ktorych nie ma w samej funkcji).
 // Test `wiring` nizej pilnuje, ze wywolanie w workflowie nadal wyglada tak samo.
+/**
+ * @param {{ findingi: Finding[], przebiegi: PrzebiegE2e[] | null, e2eTryb: string }} wejscie
+ */
 function wykryjJakWorkflow({ findingi, przebiegi, e2eTryb }) {
   if (e2eTryb !== 'przegladarka') return null
   return wykryjBlokerSrodowiska(findingi.filter((f) => f._zrodlo === 'e2e'), przebiegi)
@@ -56,6 +64,7 @@ function wykryjJakWorkflow({ findingi, przebiegi, e2eTryb }) {
 
 const FAIL_PRZEBIEG = [{ checkbox: 'Test: [E2E] `logowanie`', flow: 'logowanie', wynik: 'FAIL', dowod: '—' }]
 const PASS_PRZEBIEG = [{ checkbox: 'Test: [E2E] `logowanie`', flow: 'logowanie', wynik: 'PASS', dowod: '—' }]
+/** @type {(opis: string, plik?: string) => Finding} */
 const e2e = (opis, plik = '?') => ({ severity: 'P2', typ: 'E2E', plik, opis, _zrodlo: 'e2e' })
 
 // ── 6 przypadkow POZYTYWNYCH — realne komunikaty runtime, ktore MAJA zatrzymac run ──

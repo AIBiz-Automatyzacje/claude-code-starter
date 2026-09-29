@@ -19,6 +19,11 @@ const KATALOG = dirname(fileURLToPath(import.meta.url))
 const PLIK_WORKFLOWU = resolve(KATALOG, '../dev-docs-review-wf.js')
 const zrodlo = readFileSync(PLIK_WORKFLOWU, 'utf8')
 
+/**
+ * @param {string} odMarkera
+ * @param {string} doMarkera
+ * @returns {string}
+ */
 function wytnij(odMarkera, doMarkera) {
   const start = zrodlo.indexOf(odMarkera)
   assert.notEqual(start, -1, `nie znaleziono "${odMarkera}" — kotwica testu wymaga aktualizacji`)
@@ -36,13 +41,20 @@ const fragment = [
   wytnij('function grupujPoPliku(', '\n}'),
 ].join('\n')
 
-// eslint-disable-next-line no-new-func — jedyna droga do niewyeksportowanych jednostek w skrypcie workflowu;
+/** @typedef {import('./typy.mjs').Finding} Finding */
+/** @typedef {import('./typy.mjs').Glos} Glos */
+
+// Wyjatek od no-new-func: jedyna droga do niewyeksportowanych jednostek w skrypcie workflowu;
 // wejsciem jest plik z tego repo, nie dane uzytkownika.
+/** @type {{ domknijWerdykty: (f: Finding, glosy: Glos[]) => Finding & { potwierdzony: boolean, _uzasadnienie?: string }, grupujPoPliku: (lista: Finding[], maks: number) => Finding[][], liczniki: () => { przyjete: number, odrzucone: number } }} */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { domknijWerdykty, grupujPoPliku, liczniki } = new Function(
   `${fragment}\nreturn { domknijWerdykty, grupujPoPliku, liczniki: () => ({ przyjete: severityKorektyPrzyjete, odrzucone: severityKorektyOdrzucone }) }`
 )()
 
+/** @type {(severity: string, plik: string, typ?: string) => Finding} */
 const finding = (severity, plik, typ = 'KOD') => ({ severity, typ, plik, opis: `problem w ${plik}`, _zrodlo: 'security' })
+/** @type {(realny: boolean, severityKorekta?: string | null) => Glos} */
 const glos = (realny, severityKorekta = null) => ({ realny, uzasadnienie: '—', severityKorekta })
 
 // ── Grupowanie P2 po pliku ─────────────────────────────────────────────────
@@ -54,8 +66,8 @@ test('findingi z tego samego pliku trafiaja do jednej grupy, niezaleznie od nume
     finding('P2', 'src/worker.ts:132'),
   ], 4)
   assert.equal(grupy.length, 2)
-  assert.equal(grupy.find((g) => g[0].plik.startsWith('src/deliver.ts')).length, 2)
-  assert.equal(grupy.find((g) => g[0].plik.startsWith('src/worker.ts')).length, 1)
+  assert.equal(grupy.find((g) => g[0].plik.startsWith('src/deliver.ts'))?.length, 2)
+  assert.equal(grupy.find((g) => g[0].plik.startsWith('src/worker.ts'))?.length, 1)
 })
 
 test('grupa jest tniona do maksymalnego rozmiaru — dluga lista rozmywa skepse', () => {

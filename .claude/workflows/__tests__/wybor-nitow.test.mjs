@@ -30,12 +30,17 @@ function wytnijFragment() {
   return zrodlo.slice(start, koniec + 3)
 }
 
-// eslint-disable-next-line no-new-func — jedyna droga do niewyeksportowanej jednostki w skrypcie workflowu;
+/** @typedef {import('./typy.mjs').Finding} Finding */
+
+// Wyjatek od no-new-func: jedyna droga do niewyeksportowanej jednostki w skrypcie workflowu;
 // wejsciem jest plik z tego repo, nie dane uzytkownika.
+/** @type {{ wybierzNity: (nityLista: Finding[], limit: number, plikiWaznych: Set<string>) => Finding[], kluczPliku: (plik: string | null | undefined) => string }} */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { wybierzNity, kluczPliku } = new Function(
   `${wytnijFragment()}\nreturn { wybierzNity, kluczPliku }`
 )()
 
+/** @type {(zrodloAgenta: string, plik: string, typ?: string) => Finding} */
 const nit = (zrodloAgenta, plik, typ = 'KOD') => ({ severity: 'P3', typ, plik, opis: `nit w ${plik}`, _zrodlo: zrodloAgenta })
 
 // ── Prog LIMIT_P3_GLOBALNY ─────────────────────────────────────────────────

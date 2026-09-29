@@ -28,6 +28,12 @@ const zrodlo = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
 
 // Ekstrakcja ze zrodla — workflowy sa skryptami runtime'u Workflow, `import()` ich nie zaladuje.
 // `new Function` z interpolacja jest tu bezpieczny: wklejamy fragment z pliku w tym repo, nie z inputu.
+/**
+ * @param {string} kotwica
+ * @param {string} koniec
+ * @param {string} opis
+ * @returns {string}
+ */
 function wytnij(kotwica, koniec, opis) {
   const start = zrodlo.indexOf(kotwica)
   assert.notEqual(start, -1, `nie znaleziono "${kotwica}" — kotwica testu (${opis}) wymaga aktualizacji`)
@@ -39,14 +45,19 @@ function wytnij(kotwica, koniec, opis) {
 // `log` jest globalna runtime'u Workflow — w Node jej nie ma, wiec podstawiamy szpiega. Przy okazji
 // mozemy sprawdzic, ze operator w ogole dostaje informacje o przeniesieniu (cicha naprawa jest gorsza
 // od zadnej: nikt by nie wiedzial, skad na liscie fixa wziely sie findingi sprzed STOP-u).
+/** @type {string[]} */
 const logi = []
+/** @typedef {import('./typy.mjs').Finding} Finding */
+/** @type {{ otwartePoReview: (findings: Finding[]) => Finding[], polaczFindingiPoPowtorce: (nowe: Finding[], poprzednie: Finding[] | null) => Finding[] }} */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { otwartePoReview, polaczFindingiPoPowtorce } = new Function(
   'log',
   `${wytnij('function otwartePoReview(', '\n}', 'otwartePoReview')}
    ${wytnij('function polaczFindingiPoPowtorce(', '\n}', 'polaczFindingiPoPowtorce')}
    return { otwartePoReview, polaczFindingiPoPowtorce }`,
-)((m) => logi.push(m))
+)((/** @type {string} */ m) => logi.push(m))
 
+/** @type {(severity: string, typ: string, plik: string, opis: string) => Finding} */
 const f = (severity, typ, plik, opis) => ({ severity, typ, plik, opis })
 
 test('normalna sciezka: brak poprzednich findingow nie zmienia wyniku review', () => {

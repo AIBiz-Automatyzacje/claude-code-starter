@@ -39,6 +39,13 @@ const zrodloReview = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 
 // obcego kodu. Tutaj jest bezpieczny i swiadomy — interpolujemy WYLACZNIE fragmenty wyciete z plikow
 // tego repo (nie z wejscia uzytkownika, nie z sieci), a test biegnie lokalnie. NIE kopiuj tego do
 // kodu produkcyjnego: tam obowiazuje coding-rules §9 (zero dynamicznego wykonywania kodu z inputu).
+/**
+ * @param {string} zrodlo
+ * @param {string} kotwica
+ * @param {string} koniec
+ * @param {string} opis
+ * @returns {string}
+ */
 function wytnij(zrodlo, kotwica, koniec, opis) {
   const start = zrodlo.indexOf(kotwica)
   assert.notEqual(start, -1, `nie znaleziono "${kotwica}" — kotwica testu (${opis}) wymaga aktualizacji`)
@@ -52,6 +59,17 @@ const kodFinding = wytnij(zrodloAutopilot, 'const FINDING_OTWARTY = {', "\n}", '
 const kodSkrot = wytnij(zrodloAutopilot, 'function skrotPrzebiegu(', '\n}', 'skrotPrzebiegu')
 const kodOtwarte = wytnij(zrodloAutopilot, 'function otwartePoReview(', '\n}', 'otwartePoReview')
 
+/** @typedef {import('./typy.mjs').Finding} Finding */
+/**
+ * Czesci schematow stanu, ktore czyta ten test (METRYKI_FAZY.przebieg, FINDING_OTWARTY.severity).
+ * @type {{
+ *   METRYKI_FAZY: { properties: { przebieg: { properties: Record<string, unknown>, required: string[] } } },
+ *   FINDING_OTWARTY: { properties: { severity: { enum: string[] } } },
+ *   skrotPrzebiegu: (p: object) => Record<string, unknown>,
+ *   otwartePoReview: (findings: Finding[]) => Finding[],
+ * }}
+ */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { METRYKI_FAZY, FINDING_OTWARTY, skrotPrzebiegu, otwartePoReview } = new Function(
   `${kodMetryki}\n${kodFinding}\n${kodSkrot}\n${kodOtwarte}\nreturn { METRYKI_FAZY, FINDING_OTWARTY, skrotPrzebiegu, otwartePoReview }`,
 )()
@@ -79,6 +97,7 @@ test('skrotPrzebiegu przepisuje metryki kosztu review do stanu', () => {
 })
 
 test('skrotPrzebiegu na przebiegu ze STARSZEGO runu daje null, nie zero', () => {
+  /** @type {Partial<typeof PRZEBIEG_Z_REVIEW>} */
   const stary = { ...PRZEBIEG_Z_REVIEW }
   delete stary.dossier; delete stary.sceptycy; delete stary.severityKorekty; delete stary.tiery
   const s = skrotPrzebiegu(stary)
@@ -130,6 +149,7 @@ test('FINDING_OTWARTY dopuszcza severity, ktore realnie produkuje otwartePoRevie
 
 test('dossierOpis rozroznia "nie powstalo" od "nie mierzono"', () => {
   const kod = wytnij(zrodloReview, 'function dossierOpis(', '\n}', 'dossierOpis')
+  // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
   const { dossierOpis } = new Function(`${kod}\nreturn { dossierOpis }`)()
   assert.match(dossierOpis(true), /^TAK/)
   assert.match(dossierOpis(false), /^NIE/, 'false to realny sygnal cichego fallbacku — musi byc widoczny')

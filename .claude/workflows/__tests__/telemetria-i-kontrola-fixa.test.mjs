@@ -21,6 +21,12 @@ const zrodlo = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
 
 // Ekstrakcja ze zrodla — workflowy sa skryptami runtime'u Workflow, `import()` ich nie zaladuje.
 // `new Function` z interpolacja jest tu bezpieczny: wklejamy fragment z pliku w tym repo, nie z inputu.
+/**
+ * @param {string} kotwica
+ * @param {string} koniec
+ * @param {string} opis
+ * @returns {string}
+ */
 function wytnij(kotwica, koniec, opis) {
   const start = zrodlo.indexOf(kotwica)
   assert.notEqual(start, -1, `nie znaleziono "${kotwica}" — kotwica testu (${opis}) wymaga aktualizacji`)
@@ -29,6 +35,7 @@ function wytnij(kotwica, koniec, opis) {
   return zrodlo.slice(start, stop + koniec.length)
 }
 
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { skrotE2eSync, podsumujKontroleFixa, E2E_SYNC_LIMIT_TELEMETRII } = new Function(
   `${wytnij('const E2E_SYNC_LIMIT_TELEMETRII =', '\n', 'E2E_SYNC_LIMIT_TELEMETRII')}
    ${wytnij('function skrotE2eSync(', '\n}', 'skrotE2eSync')}
