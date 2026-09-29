@@ -82,6 +82,7 @@ test('rekord run autopilota: zadanie i liczba faz z bootstrapu, koszt z agentow,
   assert.equal(r.fazyUkonczone, 1)
   assert.deepEqual(r.koszt, { agentow: 2, tur: 3, in: 2, cache_w: 15, cache_r: 20, out: 4, jedn: 150 })
   assert.equal(r.sekundy, 180)
+  assert.equal(r.start, '2026-09-23T10:00:00.000Z', 'start runu = najwczesniejszy agent, gdy harness nie ma startTime')
 })
 
 test('rekord run bez harnessu (KILLED): zadanie z argumentow niedostepne, sekundy z agentow', () => {
@@ -89,6 +90,7 @@ test('rekord run bez harnessu (KILLED): zadanie z argumentow niedostepne, sekund
   assert.equal(r.workflow, null)
   assert.equal(r.zadanie, null)
   assert.equal(r.sekundy, 180)
+  assert.equal(r.start, '2026-09-23T10:00:00.000Z')
 })
 
 test('rekord run ma klucze pol z producentem w pozniejszych iteracjach (null)', () => {

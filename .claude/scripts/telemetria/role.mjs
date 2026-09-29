@@ -27,7 +27,7 @@ export function rola(etykieta) {
   if (sceptyk) return sceptyk[1]
   const pr = etykieta.match(/^pr:([a-z-]+)/)
   if (pr) return `pr:${pr[1]}`
-  const bezNumerow = etykieta.replace(/:faza-\d+$|:IU-\d+(\.\d+)?$|:tura-\d+$|:\d+$/, '')
+  const bezNumerow = etykieta.replace(/:retry$/, '').replace(/:faza-\d+$|:IU-\d+(\.\d+)?$|:tura-\d+$|:\d+$/, '')
   return ROLE_Z_OGONEM.find((r) => bezNumerow === r || bezNumerow.startsWith(`${r}:`)) ?? bezNumerow
 }
 

@@ -27,6 +27,12 @@ test('compound-refresh nie skleja sie w compound', () => {
   assert.equal(rola('compound'), 'compound')
 })
 
+test('ponowienie (:retry) wraca do swojej roli', () => {
+  assert.equal(rola('review:e2e:retry'), 'review:e2e')
+  assert.equal(rola('e2e:env-up:retry'), 'e2e:env-up')
+  assert.equal(rola('stan:zapis:retry'), 'stan:zapis')
+})
+
 test('pr:zbierz z numerem tury traci numer', () => {
   assert.equal(rola('pr:zbierz:tura-2'), 'pr:zbierz')
 })

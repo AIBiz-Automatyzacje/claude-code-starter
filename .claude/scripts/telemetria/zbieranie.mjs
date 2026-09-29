@@ -10,7 +10,9 @@ import { analizujTranskrypt } from './transkrypt.mjs'
 import { dopisz, doZapisu, odczytajRekordy, zapiszBlad, zZamkiem } from './zapis.mjs'
 import { czytajJsonl, katalogProjektu, znajdzRuny } from './zrodla.mjs'
 
-export const WERSJA_REKORDU = 1
+// Podbijana przy kazdej zmianie logiki wyliczania rekordu — skan dopisze wtedy nowe wersje wszystkich rekordow.
+// 2: rola bez sufiksu :retry, /exit i inne komendy sesji nie sa skillami, run.start.
+export const WERSJA_REKORDU = 2
 // Zapas tylu minut przed znacznikiem ostatniego skanu: transkrypt bywa dopisywany chwile po hooku Stop.
 const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 

@@ -45,6 +45,8 @@ export function doZapisu(rekordy, ostatnie) {
   return rekordy.filter((r) => {
     const poprzedni = ostatnie.get(r.klucz)
     if (!poprzedni) return true
+    // Nowsza wersja logiki wyliczania (pole v) nadpisuje przy odczycie takze rekordy jednorazowe.
+    if (poprzedni.v !== r.v) return true
     return !TYPY_JEDNORAZOWE.has(r.typ) && bezCzasu(poprzedni) !== bezCzasu(r)
   })
 }

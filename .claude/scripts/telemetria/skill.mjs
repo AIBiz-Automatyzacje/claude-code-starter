@@ -24,8 +24,9 @@ import { kosztJednostek } from './cennik.mjs'
  */
 
 const RE_KOMENDA = /<command-name>\/?([\w:-]+)<\/command-name>/
-// Komendy wbudowane Claude Code — nie sa skillami, nie otwieraja ani nie zamykaja epizodu (lista z d6r_rewizja_audytu.py).
-const RE_LOKALNA = /^\s*<command-name>\/?(model|clear|compact|context|cost|mcp|effort|fast|config|status|resume|rename|login|permissions|hooks|memory|agents|ide|doctor|help|add-dir|export|release-notes|usage|plugin|reload-plugins|skills|statusline|output-style|terminal-setup|vim|init)<\/command-name>/
+// Komendy wbudowane Claude Code — nie sa skillami, nie otwieraja ani nie zamykaja epizodu (lista z d6r_rewizja_audytu.py
+// + komendy sesji spotkane w telemetrii: exit, quit, rewind, logout...).
+const RE_LOKALNA = /^\s*<command-name>\/?(model|clear|compact|context|cost|mcp|effort|fast|config|status|resume|rename|login|permissions|hooks|memory|agents|ide|doctor|help|add-dir|export|release-notes|usage|plugin|reload-plugins|skills|statusline|output-style|terminal-setup|vim|init|exit|quit|rewind|logout|upgrade|feedback|bug|todos|bashes|tasks|privacy-settings|theme|sandbox|copy)<\/command-name>/
 
 /** @param {unknown} c @returns {string} */
 function tekst(c) {

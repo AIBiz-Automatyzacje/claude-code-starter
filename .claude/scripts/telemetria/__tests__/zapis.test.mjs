@@ -52,6 +52,18 @@ test('agent zapisany raz nie dostaje nowej wersji (agentId unikalny, rekord skon
   }
 })
 
+test('agent zapisany starsza wersja logiki (v) dostaje nowa wersje rekordu', () => {
+  const k = katalog()
+  const plik = join(k, 'pipeline.jsonl')
+  try {
+    dopisz(plik, [rekord('wf_1|agent|a1', { v: 1, rola: 'review:e2e:retry' })])
+    const nowszy = rekord('wf_1|agent|a1', { v: 2, rola: 'review:e2e' })
+    assert.deepEqual(doZapisu([nowszy], odczytajRekordy(plik).ostatnie), [nowszy])
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+})
+
 test('uszkodzona linia w pliku: odczyt ja pomija i liczy, reszta rekordow jest', () => {
   const k = katalog()
   const plik = join(k, 'pipeline.jsonl')

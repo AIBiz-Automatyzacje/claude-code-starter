@@ -1,0 +1,17 @@
+It. 1 krok 6 — akceptacja raport.mjs na prawdziwym pliku telemetrii (2026-09-29)
+
+Udzialy etapow oferty-online 06–19.09 vs d5r §2 (±0,3 pp):
+  execute           29.1% vs 29.1% OK
+  review            28.9% vs 28.9% OK
+  fix               17.7% vs 17.7% OK
+  orkiestracja      9% vs 9% OK
+  sceptycy          6.2% vs 6.1% OK
+  mechanika_review  5% vs 5% OK
+
+ctx_start p50 20.09 vs punkt odniesienia D3 (±1k):
+  mechaniczny|claude-haiku     89k (n=23) vs 89k OK
+  orkiestracyjny|claude-opus   121k (n=23) vs 121k OK
+  reviewer|claude-opus         125k (n=15) vs 125k OK
+  sceptyk|claude-opus          123k (n=10) vs 123k OK
+  builder|claude-opus          135k (n=6) vs 135k OK
+→ ZALICZONE

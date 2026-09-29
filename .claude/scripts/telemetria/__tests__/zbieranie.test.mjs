@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { zbierzWszystko } from '../zbieranie.mjs'
+import { WERSJA_REKORDU, zbierzWszystko } from '../zbieranie.mjs'
 import { odczytajRekordy } from '../zapis.mjs'
 import { zbudujFixture } from './fixture-projekty.mjs'
 
@@ -32,7 +32,7 @@ test('pelny skan: rekord run, faza, agenci i epizody skilli ze wspolnymi polami'
     const run = r.get('wf_aaa-111|run|wf_aaa-111')
     assert.equal(run?.status, 'OK')
     assert.equal(run?.projekt, 'projekt', 'projekt = nazwa katalogu repo (cwd), nie slug')
-    assert.equal(run?.v, 1)
+    assert.equal(run?.v, WERSJA_REKORDU)
     assert.equal(typeof run?.ts, 'string')
     assert.equal(r.get('wf_aaa-111|agent|a1')?.zadanie, 'zadanie-x', 'agent niesie zadanie runu')
     assert.ok(r.has('wf_aaa-111|faza|1'))

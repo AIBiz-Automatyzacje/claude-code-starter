@@ -89,6 +89,11 @@ export function sumaKosztu(agenci) {
   return s
 }
 
+/** @param {KosztAgenta[]} agenci @returns {string | null} najwczesniejszy start agenta (ISO) */
+function startAgentow(agenci) {
+  return agenci.map((a) => a.start).filter((s) => typeof s === 'string').sort()[0] ?? null
+}
+
 /** @param {KosztAgenta[]} agenci @returns {number | null} */
 export function sekundyAgentow(agenci) {
   const starty = agenci.map((a) => (a.start ? Date.parse(a.start) : NaN)).filter(Number.isFinite)
@@ -127,6 +132,7 @@ export function rekordRunu(we) {
     typ: 'run',
     workflow: nazwaWorkflowu ? nazwaWorkflowu.replace(/-wf$/, '') : null,
     zadanie: tekstLubNull(bootstrap.nazwaZadania) ?? tekstLubNull(wynik.nazwaZadania) ?? zadanieZArgumentow(we.harness?.args),
+    start: typeof we.harness?.startTime === 'number' ? new Date(we.harness.startTime).toISOString() : startAgentow(we.agenci),
     status: we.status.status,
     powod: we.status.powod,
     stop_kategoria: we.status.status === 'STOP' ? kategoriaStopu(we.status.powod) : null,

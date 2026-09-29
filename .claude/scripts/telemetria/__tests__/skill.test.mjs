@@ -94,6 +94,16 @@ test('subagent bez transkryptu: koszt nieznany nie jest zerem', () => {
   assert.equal(r.subagenci_jedn, null)
 })
 
+test('/exit i inne komendy wbudowane nie sa skillami', () => {
+  const e = epizodySesji([
+    user('u1', '<command-name>/dev-plan</command-name>'),
+    asystent('m1', 10),
+    user('u2', '<command-name>/exit</command-name>'),
+    asystent('m2', 10),
+  ], 's')
+  assert.deepEqual(e.map((x) => x.skill), ['dev-plan'])
+})
+
 test('skill wywolany w pierwszej odpowiedzi innego skilla nie otwiera epizodu (zagniezdzenie)', () => {
   const zagniezdzony = epizodySesji([
     user('u1', '<command-name>/dev-pr</command-name>'),
