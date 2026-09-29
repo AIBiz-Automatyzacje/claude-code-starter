@@ -237,3 +237,23 @@ Zero nowych agentów i zero nowych zależności.
 Kroki 1–10 po kolei (krok 8 czeka na Twoją akceptację słownika), po każdym: `node --check` wszystkich zmienionych `.mjs`/`.js`,
 `node --test` obu katalogów testów, commit. Potem nowa sesja (N2) i odczyt §3; HANDOFF (§2, 6a pkt 38, §8 → instrukcja It. 2), pamięć projektu,
 commit `docs/reviews`.
+
+## 7. Wynik wdrożenia (2026-09-29/30) — szczegóły i odstępstwa: HANDOFF 6a pkt 38
+
+| krok | commit | akceptacja na prawdziwych danych (`dane/it1-akceptacja-*.txt`, `dane/it1-import.txt`) |
+|---|---|---|
+| plan | `d4c73a7` | decyzje O1–O10 |
+| 0 narzędzia | `f801ce1`, `bd1747c` | 63 znaleziska TS/ESLint poprawione bez zmiany zachowania; próby porażki TS i lint złapane |
+| 1 agent | `1259808` | 2 941/2 941 agentów, 1 293,2 M vs 1 293 M (0,02%), udziały etapów = d5r §2 |
+| 2 run, faza | `0d73ed7` | 428/428 runów z rekordem, statusy sprzed D5 6/6, pliki fixa 79/79, pełny skan 13 s |
+| 3 szablon | `62d2088` | 55 runów autopilota, 33 skrypty spoza historii szablonu = D5 |
+| 4 zbierz + skill | `c9c8403` | mediany dev-plan/docs/prep 2 392/559/1 401 k = D6 (n 19/18/15); drugi skan 0; tryb szybki 75 ms |
+| 5 hook Stop | `75fd0ed` | hook 0,10 s na maszynie; pierwszy pełny skan: 5 332 rekordy historii |
+| 6 raport | `a34f3a9` | udziały 06–19.09 = d5r §2; `ctx_start` 20.09 = D3 (89/121/125/123/135k) |
+| 7 orkiestrator | `6eb90d0` | strażnik: brak agenta `telemetria:*`, brak `budget.spent` |
+| 8 słownik klas | `4296660` | 109 → 33 klasy, 19 nadpisań; review subagenta PRZYJĄĆ Z POPRAWKAMI (wszystkie wprowadzone) |
+| 9 sync-template | `a946c3b` | test na prawdziwym sync z lokalnym źródłem |
+| 10 import | `b7a4fe7` | 19 PR, 574 uwagi, 0 spoza słownika; B P1/P2 = 6,7/100 plików = d5b; 42 `run_v0` |
+
+**Korekta planu:** w kroku 6 wzorcem `ctx_start` jest punkt odniesienia z runu 20.09 (D3 korekta 2), nie cele po It. 3a — tak jest w skrypcie
+akceptacji. **Odczyt §3 (smoke) — w nowej sesji** wg HANDOFF §8 „IT. 1 — ODCZYT (SMOKE)”.

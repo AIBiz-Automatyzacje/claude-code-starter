@@ -39,6 +39,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE — **zastąpiony PANELEM DECYZYJNYM (6a pkt 23)**: krok 0 skryptami (otwarte decyzje, zestaw historycznych ucieczek, koszt skryptem) → projektanci per architektura review → sędzia jakości na historii → sceptyk per decyzja → rekord per decyzja; Opus 5.5 (6a pkt 22), start WYŁĄCZNIE na znak operatora; instrukcja: §8 „AKTUALNA”. **PLAN (część A) ZAAKCEPTOWANY 2026-09-24 (D12 wchodzi, projektant C zostaje), wykonanie w nowej sesji wg §8 „WYKONANIE PANELU”:** `PANEL-PLAN.md` + `PANEL-PLAN-DLA-OPERATORA.md`; krok 0 (b) zrobiony skryptem `skrypty/panel_zestaw_historyczny.py` → `dane/panel-zestaw-historyczny.{jsonl,txt}` (195 B, 132 P1/P2, ogon 27; 68 ucieczek = te same wątki bota, compound jako kontekst 30 przypadków). **WYKONANIE W TOKU (sesja 6e626ae3, 2026-09-24): krok 0 + RUN 1 ZROBIONE, notatka po run 1 oddana; operator kontynuuje w NOWEJ sesji (kontekst ~500k) wg §8 „KONTYNUACJA PANELU PO RUN 1” — stan w §8.** **RUN 2 ZROBIONY (sesja 1bd5477f): ocena papierowa przecenia (kalibracja 33% > 15%, STOP §10); operator 2026-09-25 (6a pkt 28): żadna koncepcja nie odpada przed prawdziwym testem → następny krok PLAN prawdziwego testu review w nowej sesji wg §8 „PLAN TESTU REVIEW”; run 3 wstrzymany.** **PLAN TESTU REVIEW ZAAKCEPTOWANY 2026-09-25 (6a pkt 29):** `TEST-REVIEW-PLAN.md` + wersja operatora; następny krok = skrypty przygotowawcze testu w NOWEJ sesji, bez agentów, wg §8 „PRZYGOTOWANIE TESTU REVIEW”. **TEST REVIEW ZROBIONY I PRZEANALIZOWANY 2026-09-27 (6a pkt 30–32):** `TEST-REVIEW-WYNIK.md` + wersja operatora; decyzja D1: obecna architektura review zostaje + 3 dodatki, D12 rozstrzygnięta (kontrola diffu fixa wg A); **Run 3 (sceptycy) POMINIĘTY (6a pkt 33)**; następny krok = decyzje D2–D11 (+ D12 cz. 2) z metryką i warunkiem odwrotu oraz plan wdrożenia wg §8 „DECYZJE I PLAN WDROŻENIA”. **DECYZJE D2–D12 I PLAN WDROŻENIA ZAAKCEPTOWANE 2026-09-27 (6a pkt 34):** `PANEL-WYNIK.md` + `PANEL-WYNIK-DLA-OPERATORA.md` — etap 4 ZAMKNIĘTY. |
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
+| It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), CZEKA NA ODCZYT (smoke w nowej sesji)** — plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 1 — ODCZYT (SMOKE)” |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -554,6 +555,32 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (e) **Otwarte po stronie operatora:** token Airtable w workspace wyciekł w sesji 8d1f302f i w N3 był nadal ten sam (porównanie skrótem) —
     unieważnić w Airtable i wpisać nowy (`claude mcp add-json airtable … -s local` w workspace).
     Następny krok: It. 1 telemetria — §8 „IT. 1 — TELEMETRIA”.
+38. **It. 1 — TELEMETRIA + IMPORT WDROŻONE (2026-09-29/30, sesja 335da867; plan zaakceptowany decyzja po decyzji; czeka na odczyt smoke).**
+    `IT1-PLAN.md` (§4 decyzje, §7 wynik) + `IT1-PLAN-DLA-OPERATORA.md`. **Decyzje operatora:** O10 narzędzia jakości w repo szablonu z krokiem 0
+    („To, co proponujesz, to jest gorsze podejście. Przecież możemy dodać” → „tak, O10 z krokiem 0”); O2 pełny skan zamiast importu CSV; O3 usunąć
+    wszystkie trzy liczniki `budget.spent()`; O7 25–35 klas + `inna` BEZ akceptacji operatora — zamiast niej review niezależnego subagenta (wyjątek
+    od „bez agentów”); O9 smoke teraz; O1, O4, O5, O6, O8 wg rekomendacji. Pytanie operatora przy O1 „czy agent Haiku zostaje?” — agent telemetrii
+    (haiku) USUNIĘTY; pozostali mechaniczni haiku zostają do It. 3.
+    (a) **Kod (11 commitów, 191 testów, `pnpm typecheck && pnpm test && pnpm lint` zielone):** `package.json` (pnpm, TS 7.0.2 strict/checkJs,
+    ESLint 10 z procesorem workflowów, no-new-func/no-eval) + poprawki 63 znalezisk bez zmiany zachowania; `.claude/scripts/telemetria/` (17 modułów
+    ≤ 210 l.: transkrypt, role, harness, agent, run, faza, git, szablon, skill, zapis, zbieranie, zbierz CLI, raport-sekcje, raport CLI); hook Stop
+    `zbierz.mjs --hook` (0,1 s, exit 0, pusty stdout; pierwszy hook bez znacznika = tylko ostatnia doba); `dev-autopilot-wf.js` bez agenta telemetrii
+    i bez `tokeny`/`tokenyEtapy`/`tokenyRazemK`; `dev-pr-wf.js` z `KLASY_BLEDOW` (33 klasy) i polami `klasaBledu`/`os`/`waga`/`plikiPr`/`prNumer`;
+    `sync-template.sh` zapisuje `.claude/.template-hashes`; README (wiersz dev-autopilot-wf), SKILL.md sync-template.
+    (b) **Akceptacje na prawdziwych danych (skrypty `it1_akceptacja_*.mjs`, wyniki `dane/it1-akceptacja-*.txt`):** koszt 2 941 agentów 1 293,2 M vs
+    1 293 M (0,02%), udziały etapów = d5r §2; statusy runów sprzed D5 6/6, pliki fixa A/M 79/79; 55 runów autopilota, 33 skrypty spoza historii
+    szablonu = D5; mediany skilli 2 392 / 559 / 1 401 k = D6 (n 19/18/15); raport: udziały i `ctx_start` 20.09 (89/121/125/123/135k) = D3;
+    import: 19 PR, 574 uwagi, B P1/P2 = 6,7 na 100 plików = d5b; 42 unikalne `run_v0` z 73 starych wpisów.
+    (c) **Dane:** `~/.claude/telemetry/pipeline.jsonl` — pełna historia maszyny (428 runów, 1 730 sesji, 4 142 agentów, 669 epizodów skilli + import)
+    zapisana przed wygaśnięciem transkryptów (O2); stary `autopilot-runs.jsonl` nietknięty.
+    (d) **Odstępstwa od planu (do wiadomości):** efort czytany z transkryptu (pole `effort` wpisów `assistant`), nie z etykiet; kategorie STOP
+    rozszerzone o `execute`, `walidacja`, `bramka-wejscia` (dane: „inne” 4 → 0), kategoria liczona bez dopisku `stopRun` o brudnym drzewie;
+    „w toku” liczone po SESJI (`background_tasks` podaje id zadania, nie `wf_`); epizody skilli zapisywane także otwarte (`otwarty: true`), bez
+    epizodów żywej sesji hooka; wersja rekordu `v` (dziś 3) — zmiana logiki = nowe wersje rekordów; import PR jako typ `pr` (PR = kilka runów dev-pr);
+    **korekta planu:** wzorzec `ctx_start` w kroku 6 to punkt odniesienia 20.09 (D3), a nie cele po It. 3a (8,8k/25,5k…).
+    (e) **Otwarte:** kompakcja `pipeline.jsonl` (każde podbicie `v` dopisuje ~5,3 tys. rekordów; dziś 20 MB, hook 0,14 s — do rozważenia przy ~100 MB);
+    skan w doctor → It. 3c (O5); push szablonu do GitHuba — decyzja operatora (projekty dostaną zmiany dopiero po push + sync-template).
+    Następny krok: §8 „IT. 1 — ODCZYT (SMOKE)” w NOWEJ sesji (N2: `.claude/` zmienione).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -595,6 +622,14 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   `test_review_wynik.koszt` na pełnej liście jednostek (analiza robi to do katalogu tymczasowego). Hook `md-guard` blokuje też heredoc, którego TREŚĆ
   zawiera „.md” (np. klucze `…/review-faza-2.md#3` w JSON) — takie pliki JSON pisz narzędziem Write. Wariant 0 zapisuje reviewera findingu w `_zrodlo`
   (kontrola fixa: `zrodlo` pre-skan/regresja/bramka-bez-testu-odmowy) — z tego wynika, czyje trafienia gubią nowe warianty.
+- It. 1 (2026-09-30): repo szablonu ma teraz `tsconfig.json`, więc hook Stop szablonu `stop-build-check-enhanced.sh` uruchamia `tsc` po KAŻDEJ
+  odpowiedzi w tym repo i blokuje ją przy błędach typów — `pnpm typecheck` przed końcem tury. Testy: `pnpm test` (glob `.claude/**/__tests__`),
+  lint `pnpm lint` (workflowy przez procesor owijający jak runtime). Efort agenta jest w transkrypcie (pole `effort` wpisów `assistant`, 98,5%
+  opus; haiku brak) — plik harnessu go nie ma. `background_tasks` w wejściu hooka Stop niesie id ZADANIA (np. `wkjkhis6s`), nie `wf_…`.
+  Agent fixa zapisuje `commity[]` jako „hash opis” — do gita tylko pierwszy token. `stopRun` dokleja do KAŻDEGO powodu „UWAGA: poza katalogiem
+  zadania…” — kategorię STOP-u licz z części przed dopiskiem. Rekord `agent` jest jednorazowy — zmiana logiki wyliczania wymaga podbicia
+  `WERSJA_REKORDU` w `zbieranie.mjs` (inaczej stare rekordy zostaną ze starą logiką). Przegląd D5 zapisano 2026-09-23 10:07 UTC — porównania
+  „sprzed D5” filtruj po tej chwili (run `wf_cf14fe26-014` z 15:57 był już po).
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -815,8 +850,38 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   **Następny krok: „KROK 0 — PORZĄDKI KONTA” niżej** (nowa sesja). Po nim It. 1 (telemetria) z planem do akceptacji przed pierwszą edycją `.claude/`.
 - **KROK 0 ZROBIONY I ZAAKCEPTOWANY (2026-09-29; 6a pkt 37, wiersz K0):** konto uporządkowane (48 skilli, 87 narzędzi MCP na starcie), skill `/konto`
   w workspace, wymóg instalacji per projekt → It. 3c. Otwarte u operatora: nowy token Airtable. **Następny krok: „IT. 1 — TELEMETRIA” niżej** (nowa sesja).
+- **IT. 1 WDROŻONE (2026-09-29/30; 6a pkt 38, wiersz It.1):** telemetria bez agentów działa na całej historii maszyny (akceptacje zaliczone),
+  hook Stop 0,1 s, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii. **Następny krok: „IT. 1 — ODCZYT
+  (SMOKE)” niżej** (nowa sesja — N2). Otwarte u operatora: nowy token Airtable; push szablonu do GitHuba (decyzja).
 
-**IT. 1 — TELEMETRIA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**IT. 1 — ODCZYT (SMOKE) (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
+It. 1 (telemetria) WDROŻONA (HANDOFF 6a pkt 38). Zadanie tej sesji: ODCZYT It. 1 — jeden run smoke-autopilot i sprawdzenie telemetrii.
+BEZ zmian w .claude/ i CLAUDE.md, chyba że odczyt wykaże błąd skanu — wtedy poprawka test → kod w .claude/scripts/telemetria/ i znów nowa sesja.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF 6a pkt 38 i §7 (ostatni punkt); IT1-PLAN.md §3 i §7;
+.claude/templates/smoke-autopilot/README.md; MINI-RUN-WYNIK.md (ODSTĘPSTWO: sesja przeniesiona change_directory ma instrukcje ze starego katalogu).
+
+Do zrobienia:
+1. Przygotuj projekt roboczy (oryginał nietknięty): lokalny klon oferty-online do katalogu roboczego poza repo szablonu, gałąź
+   test/smoke-autopilot, pnpm install; sync-template z TEMPLATE_LOCAL_SRC=<workspace-template> (sprawdź, że powstał .claude/.template-hashes);
+   fixture smoke wg README (docs/active/smoke-autopilot/, docs/plans/); git czysty. Szacunek kosztu runu: ~5–10 M jedn., 30–40 agentów,
+   30–45 min (najtańszy prawdziwy run z 1 fazą: 8,6 M). Podaj mi ścieżkę i gotową instrukcję dla sesji w kopii.
+2. JA otwieram osobną sesję desktop W TEJ KOPII i puszczam /dev-autopilot-wf docs/active/smoke-autopilot; wracam z identyfikatorem runu.
+3. Sprawdź (bez żadnej komendy z mojej strony po runie — zapis robi hook): w ~/.claude/telemetry/pipeline.jsonl rekord run ze statusem
+   = plik harnessu, rekordy faza i agent dla każdego agenta z workflowProgress, szablon.zgodny = true, effort u agentów opus, 0 agentów
+   telemetria:* w pliku harnessu, wynik runu bez pól tokeny/tokenyEtapy; asercje smoke'a z README (smokeStatus, plik w docs/operator/).
+4. node .claude/scripts/telemetria/zbierz.mjs --skan (każdy plik harnessu ma rekord run, 0 NIEZNANY) i raport.mjs za wrzesień
+   → docs/reviews/telemetria/ — pokaż mi skrót (koszt per etap, kontekst per klasa, STOP-y, skille).
+5. Wynik odczytu → IT1-ODCZYT.md + IT1-ODCZYT-DLA-OPERATORA.md; oddaj i CZEKAJ na akceptację. Po niej: HANDOFF (§2, 6a, §8 → instrukcja
+   It. 2 — bot, dev-pr i B0), pamięć projektu, commit docs/reviews; sprzątanie kopii tylko za moją zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**IT. 1 — TELEMETRIA (WYKONANA 2026-09-29/30 — zostawiona dla historii; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.

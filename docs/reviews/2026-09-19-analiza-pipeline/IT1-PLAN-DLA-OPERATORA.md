@@ -2,6 +2,16 @@
 
 Wersja techniczna: `IT1-PLAN.md`. Ten plik mówi, co zrobimy, po co i o czym decydujesz.
 
+## Stan na 30 września: wdrożone, czeka na sprawdzenie jednym runem
+
+Wszystkie dziesięć kroków jest zrobione i zapisane w gicie. Telemetria zbiera się już sama po każdej odpowiedzi Claude'a, w dziesiątą część
+sekundy, bez żadnego agenta. Zanim cokolwiek uznałem za gotowe, każdy kawałek przeliczył prawdziwą historię i musiał dać te same liczby co
+analiza — i dał: ten sam koszt co do dziesiątej części procenta, te same statusy runów, te same mediany skilli, ten sam kontekst startowy
+agentów, ta sama miara jakości z pull requestów oferty-online. Cała historia komputera jest już zapisana, zanim stare transkrypty wygasną.
+Listę klas błędów sprawdził niezależny agent; znalazł kilkanaście rzeczy do poprawy i wszystkie są wprowadzone. Po drodze wyszła jedna pomyłka
+w moim planie: jako wzór kontekstu startowego wpisałem cele na przyszłość zamiast stanu dzisiejszego — sprawdzian liczy już z właściwym wzorem.
+Został ostatni krok: jeden mały run testowy w nowej sesji, żeby zobaczyć, że hook zapisuje nowy run sam. Instrukcja jest w HANDOFF.
+
 ## Najważniejsze na początek
 
 Plan jest gotowy: dziesięć małych kroków, każdy osobnym commitem, w każdym najpierw test, potem kod. Po drodze wyszły dwie dobre wiadomości,
