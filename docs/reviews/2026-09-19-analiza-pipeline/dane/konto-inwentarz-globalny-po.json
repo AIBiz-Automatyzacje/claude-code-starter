@@ -1,0 +1,1439 @@
+{
+ "wygenerowano": "2026-09-29 10:59",
+ "dni": 30,
+ "historia_od": "2025-10-05",
+ "always_on": 113,
+ "start": {
+  "skille": 75,
+  "skille_zn": 29983,
+  "bez_opisu": {
+   "anthropic-skills": [
+    "skill-creator",
+    "xlsx"
+   ]
+  },
+  "narzedzia_mcp": 203,
+  "serwery_mcp": 20,
+  "instrukcje_zn": 6554
+ },
+ "projekty": [
+  "/",
+  "~",
+  "~/.claude/plugins/marketplaces/thedotmack",
+  "~/Documents/Kodowanie/Nawykometr",
+  "~/Documents/Kodowanie/Test-plugin-zespolowy",
+  "~/Documents/Kodowanie/aa-praca",
+  "~/Documents/Kodowanie/aibiz-plugin",
+  "~/Documents/Kodowanie/akademia-automatyzacji-dashboard",
+  "~/Documents/Kodowanie/allegro_scraper_project",
+  "~/Documents/Kodowanie/boks_app",
+  "~/Documents/Kodowanie/chatbot-cloudnest-widget",
+  "~/Documents/Kodowanie/claude-cron",
+  "~/Documents/Kodowanie/clawl",
+  "~/Documents/Kodowanie/cud_chatka",
+  "~/Documents/Kodowanie/demo-meta-daily",
+  "~/Documents/Kodowanie/gramywpadla",
+  "~/Documents/Kodowanie/hyperdesign",
+  "~/Documents/Kodowanie/kurs_cc_aa",
+  "~/Documents/Kodowanie/kurs_cc_demo",
+  "~/Documents/Kodowanie/live",
+  "~/Documents/Kodowanie/live-02-04",
+  "~/Documents/Kodowanie/live-02-04-YT",
+  "~/Documents/Kodowanie/live-02-04-demo",
+  "~/Documents/Kodowanie/live-17-09-demo-x",
+  "~/Documents/Kodowanie/live-19-02-gierka",
+  "~/Documents/Kodowanie/live-licznik",
+  "~/Documents/Kodowanie/lp-fb-group-project",
+  "~/Documents/Kodowanie/miter",
+  "~/Documents/Kodowanie/n8n-egzamin-5",
+  "~/Documents/Kodowanie/obsidian-claude-launcher",
+  "~/Documents/Kodowanie/oferty-online",
+  "~/Documents/Kodowanie/remotion_skool_lekcja",
+  "~/Documents/Kodowanie/symulator-poczekalni",
+  "~/Documents/Kodowanie/team_agent_test",
+  "~/Documents/Kodowanie/test-apki-cc",
+  "~/Documents/Kodowanie/test-apki-cc/kurs",
+  "~/Documents/Kodowanie/test-do-usuniecia-asap",
+  "~/Documents/Kodowanie/test-zespolowu-plugin-inne-konto",
+  "~/Documents/Kodowanie/url-to-video",
+  "~/Documents/Kodowanie/viberzy",
+  "~/Documents/Kodowanie/video_generate_plugin",
+  "~/Documents/Kodowanie/workspace-template",
+  "~/Documents/Kodowanie/workspace-template-mobile",
+  "~/Documents/kacper_trzepiecinski_workspace",
+  "~/Documents/kodowanie/NBP",
+  "~/Documents/kodowanie/allegro_link/peppers-scraper",
+  "~/Documents/kodowanie/asystent-aa",
+  "~/Documents/kodowanie/claude-code-infrastructure",
+  "~/Documents/kodowanie/freelance-platform",
+  "~/Documents/kodowanie/kurs_cc_aa_poczatek",
+  "~/Documents/kodowanie/live-19-02-strategia",
+  "~/Documents/kodowanie/live_yt",
+  "~/Documents/kodowanie/n8n-worker",
+  "~/Documents/kodowanie/n8n_2",
+  "~/Documents/kodowanie/n8n_dashboard",
+  "~/Documents/kodowanie/piszemy_wirale",
+  "~/Documents/kodowanie/projekt",
+  "~/Documents/kodowanie/rabatosfera - deale",
+  "~/Documents/kodowanie/ralph-tui-przyklad",
+  "~/Documents/kodowanie/skool_activity",
+  "~/Documents/kodowanie/suby",
+  "~/Documents/kodowanie/vider-download",
+  "~/Documents/kodowanie/workflow-animator",
+  "~/Documents/kodowanie/x-stats",
+  "~/Documents/kodowanie/youtube_test",
+  "~/Documents/test-traferto",
+  "~/Library/Application Support/CodexBar/ClaudeProbe",
+  "~/claude-cron",
+  "~/live_15_01",
+  "~/live_page_AA"
+ ],
+ "elementy": [
+  {
+   "id": "plugin:aibiz@aibiz",
+   "kat": 1,
+   "nazwa": "aibiz@aibiz",
+   "poziom": "user: wyłączony",
+   "tok": 2378,
+   "wnosi": "11 skilli; hooki: SessionStart, UserPromptSubmit, PreToolUse, UserPromptExpansion",
+   "opis": "Private team plugin for AIBIZ — Team OS (skrzynka, delegacja), system zadań Obsidian, publikacja lekcji na Skool, grafiki AI z brand guidelines, kalibracja asystenta.",
+   "uz30": {
+    "n": 414,
+    "ost": "2026-09-29",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      408
+     ],
+     [
+      "workspace-template",
+      2
+     ],
+     [
+      "claude-jobs-164d4262-tmp-vault-test",
+      2
+     ],
+     [
+      "akademia-automatyzacji-dashboard",
+      1
+     ],
+     [
+      "oferty-online",
+      1
+     ]
+    ],
+    "lproj": 5
+   },
+   "dluzej": [
+    "historia komend: 584× w 17 proj., ostatnio 2026-09-28",
+    "licznik Claude Code: 11635×, ostatnio 2026-09-29"
+   ],
+   "uwagi": [
+    "hooki odpalają przy każdym zdarzeniu; licznik Claude Code wlicza te odpalenia",
+    "ustawiony w 3 proj.: ~ (project OFF), ~/Documents/kacper_trzepiecinski_workspace (local on), ~/Documents/Kodowanie/Test-plugin-zespolowy (local OFF)"
+   ]
+  },
+  {
+   "id": "plugin:claude-powerline@claude-powerline",
+   "kat": 1,
+   "nazwa": "claude-powerline@claude-powerline",
+   "poziom": "user: włączony",
+   "tok": 33,
+   "wnosi": "nic poza opisem",
+   "opis": "Claude Powerline statusline setup wizard",
+   "uz30": null,
+   "dluzej": [
+    "licznik Claude Code: 0×, ostatnio 2026-06-09"
+   ],
+   "uwagi": [
+    "statusLine uruchamia npx @owloops/claude-powerline — nie zależy od pluginu",
+    "ustawiony w 1 proj.: ~ (project on)"
+   ]
+  },
+  {
+   "id": "plugin:dev-browser@dev-browser-marketplace",
+   "kat": 1,
+   "nazwa": "dev-browser@dev-browser-marketplace",
+   "poziom": "user: wyłączony",
+   "tok": 135,
+   "wnosi": "1 skilli",
+   "opis": "",
+   "uz30": {
+    "n": 29,
+    "ost": "2026-09-29",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      29
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [
+    "licznik Claude Code: 10×, ostatnio 2026-09-29"
+   ],
+   "uwagi": [
+    "ustawiony w 27 proj.: ~ (project OFF), ~/claude-cron (project on), ~/Documents/Kodowanie/akademia-automatyzacji-dashboard (project on), ~/Documents/Kodowanie/chatbot-cloudnest-widget (project on), ~/Documents/Kodowanie/claude-cron (project on), ~/Documents/Kodowanie/gramywpadla (project on) …"
+   ]
+  },
+  {
+   "id": "plugin:figma@claude-plugins-official",
+   "kat": 1,
+   "nazwa": "figma@claude-plugins-official",
+   "poziom": "user: wyłączony",
+   "tok": 2135,
+   "wnosi": "14 skilli; MCP: figma",
+   "opis": "Plugin that includes the Figma MCP server and Skills for common workflows",
+   "uz30": {
+    "n": 543,
+    "ost": "2026-09-16",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      307
+     ],
+     [
+      "oferty-online",
+      107
+     ],
+     [
+      "Nawykometr",
+      96
+     ],
+     [
+      "symulator-poczekalni",
+      33
+     ]
+    ],
+    "lproj": 4
+   },
+   "dluzej": [
+    "licznik Claude Code: 1269×, ostatnio 2026-09-16"
+   ],
+   "uwagi": [
+    "ustawiony w 2 proj.: ~ (project OFF), ~/Documents/kacper_trzepiecinski_workspace (local on)"
+   ]
+  },
+  {
+   "id": "plugin:frontend-design@claude-plugins-official",
+   "kat": 1,
+   "nazwa": "frontend-design@claude-plugins-official",
+   "poziom": "user: włączony",
+   "tok": 80,
+   "wnosi": "1 skilli",
+   "opis": "Frontend design skill for UI/UX implementation",
+   "uz30": {
+    "n": 15,
+    "ost": "2026-09-28",
+    "proj": [
+     [
+      "oferty-online",
+      5
+     ],
+     [
+      "kacper_trzepiecinski_workspace",
+      2
+     ],
+     [
+      "vibersi-demo",
+      2
+     ],
+     [
+      "workspace-template",
+      2
+     ],
+     [
+      "test-kurs-strona-w-cc-1",
+      1
+     ],
+     [
+      "test-apki-cc",
+      1
+     ],
+     [
+      "demo-live-17-09",
+      1
+     ],
+     [
+      "gramywpadla",
+      1
+     ]
+    ],
+    "lproj": 8
+   },
+   "dluzej": [
+    "historia komend: 36× w 7 proj., ostatnio 2026-07-24",
+    "licznik Claude Code: 15×, ostatnio 2026-09-28"
+   ],
+   "uwagi": [
+    "ustawiony w 1 proj.: ~ (project on)"
+   ]
+  },
+  {
+   "id": "plugin:posthog@claude-plugins-official",
+   "kat": 1,
+   "nazwa": "posthog@claude-plugins-official",
+   "poziom": "user: wyłączony",
+   "tok": 30164,
+   "wnosi": "164 skilli; 1 agent(ów); MCP: posthog; hooki: SessionEnd, PreToolUse",
+   "opis": "Access PostHog analytics, feature flags, experiments, error tracking, and insights directly from your AI coding tool. Optionally capture Claude Code sessions to PostHog LLM Analytics.",
+   "uz30": {
+    "n": 62,
+    "ost": "2026-09-25",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      41
+     ],
+     [
+      "oferty-online",
+      16
+     ],
+     [
+      "Nawykometr",
+      5
+     ]
+    ],
+    "lproj": 3
+   },
+   "dluzej": [
+    "licznik Claude Code: 2174×, ostatnio 2026-09-29"
+   ],
+   "uwagi": [
+    "hooki odpalają przy każdym zdarzeniu; licznik Claude Code wlicza te odpalenia",
+    "ustawiony w 2 proj.: ~ (project OFF), ~/Documents/kacper_trzepiecinski_workspace (local on)"
+   ]
+  },
+  {
+   "id": "plugin:skill-creator@claude-plugins-official",
+   "kat": 1,
+   "nazwa": "skill-creator@claude-plugins-official",
+   "poziom": "user: wyłączony",
+   "tok": 114,
+   "wnosi": "1 skilli",
+   "opis": "Create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis.",
+   "uz30": {
+    "n": 4,
+    "ost": "2026-09-19",
+    "proj": [
+     [
+      "workspace-template",
+      2
+     ],
+     [
+      "kacper_trzepiecinski_workspace",
+      1
+     ],
+     [
+      "oferty-online",
+      1
+     ]
+    ],
+    "lproj": 3
+   },
+   "dluzej": [
+    "historia komend: 20× w 6 proj., ostatnio 2026-08-27",
+    "licznik Claude Code: 8×, ostatnio 2026-09-17"
+   ],
+   "uwagi": [
+    "ustawiony w 2 proj.: ~ (project OFF), ~/Documents/kacper_trzepiecinski_workspace (local on)"
+   ]
+  },
+  {
+   "id": "hook:Stop:hook_handler.py",
+   "kat": 6,
+   "nazwa": "Stop → hook_handler.py",
+   "poziom": "user (~/.claude/settings.json)",
+   "tok": null,
+   "wnosi": "hook",
+   "opis": "Odtwarza dźwięk macOS: Notification = Ping (Claude czeka na Ciebie), Stop = Hero (koniec odpowiedzi), SubagentStop = Submarine (koniec subagenta), PostToolUse = Pop tylko po TodoWrite. Nic nie dokłada do kontekstu.",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "odpala w każdej sesji każdego projektu; w transkryptach brak śladu"
+   ]
+  },
+  {
+   "id": "konektor:Ahrefs",
+   "kat": 7,
+   "nazwa": "Ahrefs",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 64,
+    "ost": "2026-09-20",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      64
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, terminal"
+   ]
+  },
+  {
+   "id": "konektor:Buffer",
+   "kat": 7,
+   "nazwa": "Buffer",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Claude Code Remote",
+   "kat": 7,
+   "nazwa": "Claude Code Remote",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Claude Docs",
+   "kat": 7,
+   "nazwa": "Claude Docs",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "konektor:Cookieyes",
+   "kat": 7,
+   "nazwa": "Cookieyes",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 1,
+    "ost": "2026-09-18",
+    "proj": [
+     [
+      "oferty-online",
+      1
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "aplikacja desktop, kiedykolwiek połączony, podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "konektor:Easycart",
+   "kat": 7,
+   "nazwa": "Easycart",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Figma",
+   "kat": 7,
+   "nazwa": "Figma",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Gmail",
+   "kat": 7,
+   "nazwa": "Gmail",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Google Calendar",
+   "kat": 7,
+   "nazwa": "Google Calendar",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Google Drive",
+   "kat": 7,
+   "nazwa": "Google Drive",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 5,
+    "ost": "2026-09-23",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      5
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, terminal"
+   ]
+  },
+  {
+   "id": "konektor:Heygen",
+   "kat": 7,
+   "nazwa": "Heygen",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Mailerlite",
+   "kat": 7,
+   "nazwa": "Mailerlite",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 2,
+    "ost": "2026-09-18",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      2
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, terminal"
+   ]
+  },
+  {
+   "id": "konektor:Mobbin",
+   "kat": 7,
+   "nazwa": "Mobbin",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "konektor:Neuronwriter",
+   "kat": 7,
+   "nazwa": "Neuronwriter",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 24,
+    "ost": "2026-09-15",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      24
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, terminal"
+   ]
+  },
+  {
+   "id": "konektor:PostHog",
+   "kat": 7,
+   "nazwa": "PostHog",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Replicate",
+   "kat": 7,
+   "nazwa": "Replicate",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "konektor:Sentry",
+   "kat": 7,
+   "nazwa": "Sentry",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Supabase",
+   "kat": 7,
+   "nazwa": "Supabase",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 16,
+    "ost": "2026-09-17",
+    "proj": [
+     [
+      "oferty-online",
+      9
+     ],
+     [
+      "symulator-poczekalni",
+      6
+     ],
+     [
+      "gramywpadla",
+      1
+     ]
+    ],
+    "lproj": 3
+   },
+   "dluzej": [],
+   "uwagi": [
+    "aplikacja desktop, kiedykolwiek połączony, podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "konektor:Traferteo",
+   "kat": 7,
+   "nazwa": "Traferteo",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:Traferto",
+   "kat": 7,
+   "nazwa": "Traferto",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "konektor:Vime",
+   "kat": 7,
+   "nazwa": "Vime",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 4,
+    "ost": "2026-09-01",
+    "proj": [
+     [
+      "kacper_trzepiecinski_workspace",
+      4
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony, terminal"
+   ]
+  },
+  {
+   "id": "konektor:nieznany (67788bcf…) — narzędzia: use_figma, get_screenshot, get_design_context",
+   "kat": 7,
+   "nazwa": "nieznany (67788bcf…) — narzędzia: use_figma, get_screenshot, get_design_context",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 189,
+    "ost": "2026-09-15",
+    "proj": [
+     [
+      "oferty-online",
+      189
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "aplikacja desktop"
+   ]
+  },
+  {
+   "id": "konektor:nieznany (733fc5fd…) — narzędzia: lista_szablonow",
+   "kat": 7,
+   "nazwa": "nieznany (733fc5fd…) — narzędzia: lista_szablonow",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 1,
+    "ost": "2026-09-22",
+    "proj": [
+     [
+      "oferty-online",
+      1
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "aplikacja desktop"
+   ]
+  },
+  {
+   "id": "konektor:nieznany (8c7d9775…) — narzędzia: usun_szablon, lista_szablonow, opublikuj_oferte",
+   "kat": 7,
+   "nazwa": "nieznany (8c7d9775…) — narzędzia: usun_szablon, lista_szablonow, opublikuj_oferte",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 37,
+    "ost": "2026-09-09",
+    "proj": [
+     [
+      "oferty-online",
+      37
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "aplikacja desktop"
+   ]
+  },
+  {
+   "id": "konektor:nieznany (be92b7ec…) — narzędzia: get_sentry_resource, search_events, execute_sentry_tool",
+   "kat": 7,
+   "nazwa": "nieznany (be92b7ec…) — narzędzia: get_sentry_resource, search_events, execute_sentry_tool",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": {
+    "n": 18,
+    "ost": "2026-09-10",
+    "proj": [
+     [
+      "gramywpadla",
+      18
+     ]
+    ],
+    "lproj": 1
+   },
+   "dluzej": [],
+   "uwagi": [
+    "aplikacja desktop"
+   ]
+  },
+  {
+   "id": "konektor:oferty",
+   "kat": 7,
+   "nazwa": "oferty",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "kiedykolwiek połączony"
+   ]
+  },
+  {
+   "id": "konektor:visualize",
+   "kat": 7,
+   "nazwa": "visualize",
+   "poziom": "konto claude.ai (każdy projekt)",
+   "tok": null,
+   "wnosi": "konektor",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "podłączony w tej sesji"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kacper_trzepiecinski_workspace",
+   "kat": 8,
+   "nazwa": "~/Documents/kacper_trzepiecinski_workspace",
+   "poziom": "ostatnio 2026-09-29",
+   "tok": null,
+   "wnosi": "local włącza: aibiz@aibiz, figma@claude-plugins-official, posthog@claude-plugins-official, skill-creator@claude-plugins-official, traferto@oferty-plugin; installed_plugins: aibiz@aibiz(local), figma@claude-plugins-official(local), posthog@claude-plugins-official(local), skill-creator@claude-plugins-official(local), traferto@oferty-plugin(local); MCP local: Fakturownia, airtable, apify, clickup, easytools, mobbin, whimsical-desktop; wyłączone MCP: claude-in-chrome, claude.ai Audioscrape, claude.ai Canva, claude.ai Core, claude.ai Gmail, claude.ai Google Calendar, claude.ai Notion, clickup, context7, playwright, plugin:discord:discord, plugin:figma:figma-desktop, plugin:sentry:sentry, plugin:supabase:supabase, plugin:telegram:telegram; własne skille 30, agenci 0; hooki project: PostToolUse",
+   "uz30": {
+    "n": 2231,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/workspace-template",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/workspace-template",
+   "poziom": "ostatnio 2026-09-29",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local WYŁĄCZA: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); wyłączone MCP: playwright; własne skille 28, agenci 16; hooki project: Stop",
+   "uz30": {
+    "n": 153,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": [
+    "wpis zapisany 2× (wielkość liter)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/claude-cron",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/claude-cron",
+   "poziom": "ostatnio 2026-09-28",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 28, agenci 16; hooki project: Stop",
+   "uz30": {
+    "n": 65,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/cud_chatka",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/cud_chatka",
+   "poziom": "ostatnio 2026-09-27",
+   "tok": null,
+   "wnosi": ".mcp.json: airtable, supabase; MCP local: serena; własne skille 0, agenci 1",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "wpis zapisany 2× (wielkość liter)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/nawykometr",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/Nawykometr",
+   "poziom": "ostatnio 2026-09-27",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 45, agenci 15; hooki project: Stop",
+   "uz30": {
+    "n": 118,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/akademia-automatyzacji-dashboard",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/akademia-automatyzacji-dashboard",
+   "poziom": "ostatnio 2026-09-25",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local włącza: codex@openai-codex; installed_plugins: codex@openai-codex(local), dev-browser@dev-browser-marketplace(project); wyłączone MCP: airtable, claude-in-chrome, context7, playwright; własne skille 31, agenci 18; hooki project: Stop",
+   "uz30": {
+    "n": 79,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/oferty-online",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/oferty-online",
+   "poziom": "ostatnio 2026-09-25",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 29, agenci 16; hooki project: Stop",
+   "uz30": {
+    "n": 1570,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/test-traferto",
+   "kat": 8,
+   "nazwa": "~/Documents/test-traferto",
+   "poziom": "ostatnio 2026-09-22",
+   "tok": null,
+   "wnosi": "local włącza: traferto@oferty-plugin",
+   "uz30": {
+    "n": 16,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/chatbot-cloudnest-widget",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/chatbot-cloudnest-widget",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; własne skille 27, agenci 15; hooki project: Stop",
+   "uz30": {
+    "n": 63,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/demo-meta-daily",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/demo-meta-daily",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "własne skille 1, agenci 0",
+   "uz30": {
+    "n": 2,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/gramywpadla",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/gramywpadla",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local włącza: osobisty-asystent@osobisty-asystent; local WYŁĄCZA: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(local), dev-browser@dev-browser-marketplace(project); .mcp.json: supabase; MCP local: mobbin; własne skille 40, agenci 15; hooki project: Stop",
+   "uz30": {
+    "n": 144,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/n8n-egzamin-5",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/n8n-egzamin-5",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; wyłączone MCP: claude-in-chrome, claude.ai Gmail, claude.ai Google Calendar, context7, plugin:claude-mem:mcp-search, plugin:figma:figma-desktop, plugin:sentry:sentry, plugin:supabase:supabase; własne skille 24, agenci 13; hooki project: Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "wpis zapisany 2× (wielkość liter)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/symulator-poczekalni",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/symulator-poczekalni",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 28, agenci 15; hooki project: Stop",
+   "uz30": {
+    "n": 125,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/test-apki-cc",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/test-apki-cc",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "własne skille 6, agenci 0",
+   "uz30": {
+    "n": 111,
+    "ost": "",
+    "proj": [],
+    "lproj": 0
+   },
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/viberzy",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/viberzy",
+   "poziom": "ostatnio 2026-09-21",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 27, agenci 15; hooki project: Stop",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live-licznik",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/live-licznik",
+   "poziom": "ostatnio 2026-09-16",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local włącza: osobisty-asystent@osobisty-asystent, skille-live@skille-live-09-07; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 23, agenci 16; hooki project: Stop",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/workspace-template-mobile",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/workspace-template-mobile",
+   "poziom": "ostatnio 2026-09-16",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local WYŁĄCZA: dev-browser@dev-browser-marketplace; installed_plugins: dev-browser@dev-browser-marketplace(project); własne skille 44, agenci 15; hooki project: Stop",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/kurs_cc_demo",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/kurs_cc_demo",
+   "poziom": "ostatnio 2026-08-03",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local WYŁĄCZA: claude-md-management@claude-plugins-official; installed_plugins: claude-md-management@claude-plugins-official(project); .mcp.json: supabase; własne skille 26, agenci 14; hooki project: Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/test-plugin-zespolowy",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/Test-plugin-zespolowy",
+   "poziom": "ostatnio 2026-08-01",
+   "tok": null,
+   "wnosi": "local WYŁĄCZA: aibiz@aibiz; własne skille 2, agenci 0",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski",
+   "kat": 8,
+   "nazwa": "~",
+   "poziom": "ostatnio 2026-06-28",
+   "tok": null,
+   "wnosi": "project włącza: claude-powerline@claude-powerline, frontend-design@claude-plugins-official; project WYŁĄCZA: aibiz@aibiz, dev-browser@dev-browser-marketplace, figma@claude-plugins-official, posthog@claude-plugins-official, skill-creator@claude-plugins-official; MCP local: mobbin, stripe; hooki project: Stop; disableClaudeAiConnectors",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "UWAGA: .claude/ tego katalogu = konto (~/.claude)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/aa-praca",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/aa-praca",
+   "poziom": "ostatnio 2026-04-30",
+   "tok": null,
+   "wnosi": "project włącza: ui-ux-pro-max@ui-ux-pro-max-skill; installed_plugins: ui-ux-pro-max@ui-ux-pro-max-skill(project); własne skille 1, agenci 0",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/miter",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/miter",
+   "poziom": "ostatnio 2026-04-18",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; własne skille 25, agenci 13; hooki project: Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/live",
+   "poziom": "ostatnio 2026-04-09",
+   "tok": null,
+   "wnosi": "project włącza: ralph-wiggum@claude-code-plugins; installed_plugins: ralph-wiggum@claude-code-plugins(project); MCP local: serpapi; wyłączone MCP: context7, playwright, serpapi; własne skille 3, agenci 0",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "wpis zapisany 2× (wielkość liter)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/allegro_scraper_project",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/allegro_scraper_project",
+   "poziom": "ostatnio 2026-04-04",
+   "tok": null,
+   "wnosi": "MCP local: brightdata; wyłączone MCP: airtable; własne skille 6, agenci 7; hooki local: PostToolUse",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "wpis zapisany 2× (wielkość liter)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live-02-04",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/live-02-04",
+   "poziom": "ostatnio 2026-04-03",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; local WYŁĄCZA: dev-browser@dev-browser-marketplace; wyłączone MCP: airtable, claude.ai Gmail, claude.ai Google Calendar, context7, playwright; własne skille 23, agenci 12; hooki project: Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/claude-cron",
+   "kat": 8,
+   "nazwa": "~/claude-cron",
+   "poziom": "ostatnio 2026-04-02",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; własne skille 23, agenci 16; hooki project: Stop",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live-02-04-demo",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/live-02-04-demo",
+   "poziom": "ostatnio 2026-04-02",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; własne skille 24, agenci 12; hooki project: Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live-02-04-yt",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/live-02-04-YT",
+   "poziom": "ostatnio 2026-04-02",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; własne skille 24, agenci 12; hooki project: Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/lp-fb-group-project",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/lp-fb-group-project",
+   "poziom": "ostatnio 2026-02-24",
+   "tok": null,
+   "wnosi": "MCP local: netlify; wyłączone MCP: airtable; własne skille 4, agenci 0",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live-19-02-gierka",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/live-19-02-gierka",
+   "poziom": "ostatnio 2026-02-20",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; .mcp.json: supabase; wyłączone MCP: airtable, claude-in-chrome, claude.ai Audioscrape, claude.ai Canva, claude.ai Core, claude.ai Notion; własne skille 7, agenci 6; hooki project: PostToolUse,Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/video_generate_plugin",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/video_generate_plugin",
+   "poziom": "ostatnio 2026-02-09",
+   "tok": null,
+   "wnosi": "własne skille 1, agenci 0",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/remotion_skool_lekcja",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/remotion_skool_lekcja",
+   "poziom": "ostatnio 2026-02-08",
+   "tok": null,
+   "wnosi": "własne skille 1, agenci 0",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/n8n-worker",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/n8n-worker",
+   "poziom": "ostatnio 2026-02-04",
+   "tok": null,
+   "wnosi": "MCP local: n8n-mcp; wyłączone MCP: airtable, claude-in-chrome, context7, playwright; własne skille 8, agenci 1; hooki local: UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/asystent-aa",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/asystent-aa",
+   "poziom": "ostatnio 2026-01-27",
+   "tok": null,
+   "wnosi": "wyłączone MCP: airtable, context7, playwright",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/live_15_01",
+   "kat": 8,
+   "nazwa": "~/live_15_01",
+   "poziom": "ostatnio 2026-01-15",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; własne skille 7, agenci 6; hooki project: PostToolUse,Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/n8n_dashboard",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/n8n_dashboard",
+   "poziom": "ostatnio 2026-01-11",
+   "tok": null,
+   "wnosi": "project włącza: code-simplifier@claude-plugins-official, dev-browser@dev-browser-marketplace, nanobanana@mag-claude-plugins; MCP local: serena; wyłączone MCP: airtable, context7, playwright; własne skille 3, agenci 0; hooki local: PostToolUse",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/x-stats",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/x-stats",
+   "poziom": "ostatnio 2026-01-10",
+   "tok": null,
+   "wnosi": "local włącza: ralph-wiggum@claude-plugins-official; wyłączone MCP: airtable, context7, playwright",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/nbp",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/NBP",
+   "poziom": "ostatnio 2026-01-09",
+   "tok": null,
+   "wnosi": "local włącza: nanobanana@mag-claude-plugins; installed_plugins: nanobanana@mag-claude-plugins(local)",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/piszemy_wirale",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/piszemy_wirale",
+   "poziom": "ostatnio 2026-01-08",
+   "tok": null,
+   "wnosi": "project włącza: dev-browser@dev-browser-marketplace; .mcp.json: supabase; MCP local: sentry, serena, supabase; wyłączone MCP: airtable, context7, gemini-cli, playwright, sentry, serena, supabase; własne skille 5, agenci 6; hooki project: PostToolUse,Stop,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/live_page_aa",
+   "kat": 8,
+   "nazwa": "~/live_page_AA",
+   "poziom": "ostatnio 2026-01-07",
+   "tok": null,
+   "wnosi": "wyłączone MCP: airtable, context7, playwright",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/live_yt",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/live_yt",
+   "poziom": "ostatnio 2025-12-18",
+   "tok": null,
+   "wnosi": "wyłączone MCP: airtable, playwright, plugin:claude-mem:claude-mem-search",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/kurs_cc_aa",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/kurs_cc_aa",
+   "poziom": "ostatnio 2025-12-15",
+   "tok": null,
+   "wnosi": "MCP local: netlify; wyłączone MCP: airtable; własne skille 3, agenci 1; hooki project: PostToolUse,UserPromptSubmit",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [
+    "wpis zapisany 2× (wielkość liter)"
+   ]
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/claude-code-infrastructure",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/claude-code-infrastructure",
+   "poziom": "ostatnio 2025-12-07",
+   "tok": null,
+   "wnosi": "MCP local: chrome-devtools, netlify; wyłączone MCP: airtable, chrome-devtools",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/suby",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/suby",
+   "poziom": "ostatnio 2025-12-03",
+   "tok": null,
+   "wnosi": "MCP local: clickup; wyłączone MCP: project",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/rabatosfera - deale",
+   "kat": 8,
+   "nazwa": "~/Documents/kodowanie/rabatosfera - deale",
+   "poziom": "ostatnio 2025-11-19",
+   "tok": null,
+   "wnosi": ".mcp.json: airtable, supabase",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "projekt:/users/kacper_trzepiecinski/documents/kodowanie/test-apki-cc/kurs",
+   "kat": 8,
+   "nazwa": "~/Documents/Kodowanie/test-apki-cc/kurs",
+   "poziom": "ostatnio -",
+   "tok": null,
+   "wnosi": "MCP local: sentry",
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": []
+  },
+  {
+   "id": "grupa:kopie",
+   "kat": 8,
+   "nazwa": "Kopie testowe i tymczasowe (~/test-review/kopie, /private/tmp): 39",
+   "poziom": "grupa",
+   "tok": null,
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [],
+   "wnosi": "/private/tmp/claude-501/-Users-kacper-trzepiecinski-Documents-Kodowanie-workspace-template/86e1644e-2ec5-4e9a-9fbc-0ea67b5fac8f/scratchpad/oferty-kopia, ~/test-review/kopie/f-1de5a4c, ~/test-review/kopie/f-2536643, ~/test-review/kopie/f-2634b67, ~/test-review/kopie/f-303ff62, ~/test-review/kopie/f-31491bc, ~/test-review/kopie/f-32975a1, ~/test-review/kopie/f-46be55a, ~/test-review/kopie/f-5af000f, ~/test-review/kopie/f-67f5f2c, ~/test-review/kopie/f-9d40529, ~/test-review/kopie/f-b26128d, ~/test-review/kopie/f-b26128d-r2, ~/test-review/kopie/f-b8374c8, ~/test-review/kopie/f-f3ee433, ~/test-review/kopie/x-05dd804, ~/test-review/kopie/x-0ec2b19, ~/test-review/kopie/x-40af319, ~/test-review/kopie/x-411a434, ~/test-review/kopie/x-43fb8e7, ~/test-review/kopie/x-4ef28cf, ~/test-review/kopie/x-58efb36, ~/test-review/kopie/x-5c3c7ac, ~/test-review/kopie/x-60f1951, ~/test-review/kopie/x-61195b8, ~/test-review/kopie/x-6bd9990, ~/test-review/kopie/x-7e437fc, ~/test-review/kopie/x-828eda9, ~/test-review/kopie/x-925907a, ~/test-review/kopie/x-b02abfa, ~/test-review/kopie/x-b0d74fc, ~/test-review/kopie/x-b5295fd, ~/test-review/kopie/x-b7d0455, ~/test-review/kopie/x-bcf98f4, ~/test-review/kopie/x-d520107, ~/test-review/kopie/x-dce71cf, ~/test-review/kopie/x-ed1ce60, ~/test-review/kopie/x-f3d5aca, ~/test-review/kopie/x-f74b4e4"
+  },
+  {
+   "id": "grupa:brak",
+   "kat": 8,
+   "nazwa": "Wpisy katalogów, których już nie ma: 42",
+   "poziom": "grupa",
+   "tok": null,
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [],
+   "wnosi": "~/Documents/.ralph-worktrees/kacper_trzepiecinski_workspace/worker-w0-1, ~/Documents/.ralph-worktrees/kacper_trzepiecinski_workspace/worker-w0-2, ~/Documents/allegro_link, ~/Documents/allegro_link/peppers-scraper, ~/Documents/claude code, ~/Documents/claude code/nano banana agent ai, ~/Documents/cud_chatka, ~/Documents/kodowanie/call-me, ~/Documents/kodowanie/kurs_cc_aa_2, ~/Documents/Kodowanie/kurs_cc_demo/.claude/worktrees/peaceful-shannon-b85d47, ~/Documents/Kodowanie/live-02-04-F1, ~/Documents/Kodowanie/live-02-04-new, ~/Documents/Kodowanie/live-02-04-test, ~/Documents/kodowanie/llm-council, ~/Documents/kodowanie/n8n-dash-weryfikacja, ~/Documents/kodowanie/n8n-dashboard-akademia-automatyzacji, ~/Documents/kodowanie/n8n-egzamin, ~/Documents/kodowanie/n8n-egzamin-3, ~/Documents/kodowanie/n8n-egzamin-4, ~/Documents/kodowanie/n8n-egzaminy-2, ~/Documents/kodowanie/n8n_dashboard_test, ~/Documents/kodowanie/open_router_test, ~/Documents/Kodowanie/push-app-mobile, ~/Documents/kodowanie/ralph-test, ~/Documents/kodowanie/ralph-tui, ~/Documents/kodowanie/ralph-tui/ralph-tui, ~/Documents/kodowanie/test-auto-claude, ~/Documents/kodowanie/test_2_2, ~/Documents/kodowanie/test_tets, ~/Documents/kodowanie/test_to_delete, ~/Documents/koszty 10.25, ~/Documents/kurs-asystent-ai, ~/Documents/Live, ~/Documents/live-09-07, ~/Documents/niokola, ~/Documents/pawel, ~/Documents/piszemy_wirale, ~/Documents/przykład-dla-aa, ~/Documents/rag, ~/Documents/Test21, ~/Documents/voult-Tomek, ~/live_15_01/ga4-realtime-dashboard/trees/new-design-1"
+  },
+  {
+   "id": "grupa:puste",
+   "kat": 8,
+   "nazwa": "Projekty bez własnej konfiguracji: 24",
+   "poziom": "grupa",
+   "tok": null,
+   "uz30": null,
+   "dluzej": [],
+   "uwagi": [],
+   "wnosi": "/, ~/.claude/plugins/marketplaces/thedotmack, ~/Documents/Kodowanie/aibiz-plugin, ~/Documents/kodowanie/allegro_link/peppers-scraper, ~/Documents/Kodowanie/boks_app, ~/Documents/Kodowanie/clawl, ~/Documents/kodowanie/freelance-platform, ~/Documents/Kodowanie/hyperdesign, ~/Documents/kodowanie/kurs_cc_aa_poczatek, ~/Documents/Kodowanie/live-17-09-demo-x, ~/Documents/kodowanie/live-19-02-strategia, ~/Documents/kodowanie/n8n_2, ~/Documents/Kodowanie/obsidian-claude-launcher, ~/Documents/kodowanie/projekt, ~/Documents/kodowanie/ralph-tui-przyklad, ~/Documents/kodowanie/skool_activity, ~/Documents/Kodowanie/team_agent_test, ~/Documents/Kodowanie/test-do-usuniecia-asap, ~/Documents/Kodowanie/test-zespolowu-plugin-inne-konto, ~/Documents/Kodowanie/url-to-video, ~/Documents/kodowanie/vider-download, ~/Documents/kodowanie/workflow-animator, ~/Documents/kodowanie/youtube_test, ~/Library/Application Support/CodexBar/ClaudeProbe"
+  }
+ ]
+}

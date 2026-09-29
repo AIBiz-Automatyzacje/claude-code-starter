@@ -1,0 +1,298 @@
+INWENTARZ GLOBALNY KONTA CLAUDE CODE — 2026-09-29 10:58 | użycie: transkrypty 30 dni + history.jsonl od 2025-10-05 + liczniki ~/.claude.json
+Tylko odczyt, same nazwy. Poziomy: pluginy local > project > user; MCP local > project > user > plugin > claude.ai; skille user + project + plugin + claude.ai. Użycie „0” = brak w transkryptach okna; historia i liczniki pokazują dłuższy okres.
+
+=== 0. SKRÓT: co ładuje się do KAŻDEJ sesji w KAŻDYM projekcie (always-on; bez schematów narzędzi MCP) ===
+  ~    80 tok   70.8%  frontend-design@claude-plugins-official
+  ~    33 tok   29.2%  claude-powerline@claude-powerline
+  ~     0 tok    0.0%  skille user (szac.)
+  ~     0 tok    0.0%  skille claude.ai (szac.)
+  ~     0 tok    0.0%  agenci user (szac.)
+  ~   113 tok  RAZEM na sesję (pluginy: `claude plugin details`; skille/agenci: opis ÷ 1,8 zn/tok PL, 2,85 EN)
+
+=== 1a. PLUGINY poziomu user (~/.claude/settings.json enabledPlugins) — ładują się w KAŻDYM projekcie, który ich nie wyłącza ===
+  off aibiz@aibiz                                  | always-on ~2378 tok | skille 11, agenci 0, MCP -, hooki SessionStart,UserPromptSubmit,PreToolUse,UserPromptExpansion
+       użycie 30 dni: 414× w 5 proj. (kacper_trzepiecinski_workspace 408, workspace-template 2, claude-jobs-164d4262-tmp-vault-test 2), ost. 2026-09-29 | historia /kom.: 584× (w oknie 58), 17 proj., ost. 2026-09-28 | licznik CC 11635×, ost. 2026-09-29
+  ON  claude-powerline@claude-powerline            | always-on ~33 tok | skille 0, agenci 0, MCP -, hooki -
+       użycie 30 dni: 0 | licznik CC 0×, ost. 2026-06-09 | statusLine
+  off dev-browser@dev-browser-marketplace          | always-on ~135 tok | skille 1, agenci 0, MCP -, hooki -
+       użycie 30 dni: 29× w 1 proj. (kacper_trzepiecinski_workspace 29), ost. 2026-09-29 | licznik CC 10×, ost. 2026-09-29
+  off figma@claude-plugins-official                | always-on ~2135 tok | skille 14, agenci 0, MCP figma, hooki -
+       użycie 30 dni: 543× w 4 proj. (kacper_trzepiecinski_workspace 307, oferty-online 107, Nawykometr 96), ost. 2026-09-16 | licznik CC 1269×, ost. 2026-09-16
+  ON  frontend-design@claude-plugins-official      | always-on ~80 tok | skille 1, agenci 0, MCP -, hooki -
+       użycie 30 dni: 15× w 8 proj. (oferty-online 5, kacper_trzepiecinski_workspace 2, vibersi-demo 2), ost. 2026-09-28 | historia /kom.: 36× (w oknie 0), 7 proj., ost. 2026-07-24 | licznik CC 15×, ost. 2026-09-28
+  off posthog@claude-plugins-official              | always-on ~30164 tok | skille 164, agenci 1, MCP posthog, hooki SessionEnd,PreToolUse
+       użycie 30 dni: 62× w 3 proj. (kacper_trzepiecinski_workspace 41, oferty-online 16, Nawykometr 5), ost. 2026-09-25 | licznik CC 2174×, ost. 2026-09-29
+  off skill-creator@claude-plugins-official        | always-on ~114 tok | skille 1, agenci 0, MCP -, hooki -
+       użycie 30 dni: 4× w 3 proj. (workspace-template 2, kacper_trzepiecinski_workspace 1, oferty-online 1), ost. 2026-09-19 | historia /kom.: 20× (w oknie 0), 6 proj., ost. 2026-08-27 | licznik CC 8×, ost. 2026-09-17
+
+=== 1b. PLUGINY z konta claude.ai (aktywne konto; CLI: @synced, aplikacja desktop: @inline) — w KAŻDYM projekcie ===
+  ON  cowork-plugin-management@inline              | tylko w aplikacji desktop (brak kopii @synced)
+  ON  design@inline                                | tylko w aplikacji desktop (brak kopii @synced)
+  ON  strona-przez-rozmowe@inline                  | tylko w aplikacji desktop (brak kopii @synced)
+  katalogi synchronizacji innych kont (nie ładują się): 0
+
+=== 1c. SERWERY MCP poziomu user (~/.claude.json mcpServers) + z pluginów user + rozszerzenia aplikacji desktop ===
+
+=== 1d. SKILLE poziomu user (~/.claude/skills): 0 skilli, ~0 tok always-on (szacunek z opisu; lista skilli w każdej sesji) ===
+
+
+=== 1f. AGENCI poziomu user (~/.claude/agents): 0, ~0 tok always-on (opis w narzędziu Agent każdej sesji) ===
+
+=== 1g. HOOKI poziomu user — odpalają w KAŻDEJ sesji każdego projektu (brak śladu w transkryptach) ===
+  Stop               ~/.claude/settings.json: hook_handler.py
+  statusLine: npx -y @owloops/claude-powerline@latest
+  ~/.claude/CLAUDE.md: 0 zn | ~/.claude/rules: 0 plików | output-styles: ADHD.md
+
+=== 2. KONEKTORY claude.ai i inne serwery z transkryptów 30 dni (nazw konektorów nie ma w plikach konta) ===
+  -- inny (rozszerzenie / usunięty / spoza map): 4
+     playwright                                 473× w 4 proj., ost. 2026-09-23
+     oferty                                      52× w 2 proj., ost. 2026-09-21
+     context7                                    15× w 1 proj., ost. 2026-09-15
+     computer-use                                10× w 1 proj., ost. 2026-09-27
+  -- konektor claude.ai (CLI): 5
+     claude_ai_Ahrefs                            64× w 1 proj., ost. 2026-09-20
+     claude_ai_Neuronwriter                      24× w 1 proj., ost. 2026-09-15
+     claude_ai_Google_Drive                       5× w 1 proj., ost. 2026-09-23
+     claude_ai_Vime                               4× w 1 proj., ost. 2026-09-01
+     claude_ai_Mailerlite                         2× w 1 proj., ost. 2026-09-18
+  -- konektor claude.ai (aplikacja desktop, nazwa = UUID): 6
+     67788bcf-d411-4870-bfe8-59fddb77682b       189× w 1 proj., ost. 2026-09-15 | narzędzia: use_figma, get_screenshot, get_design_context
+     8c7d9775-c6c8-48c1-9026-11d75abfac76        37× w 1 proj., ost. 2026-09-09 | narzędzia: usun_szablon, lista_szablonow, opublikuj_oferte
+     be92b7ec-6180-46b4-8f1c-e4729842496b        18× w 1 proj., ost. 2026-09-10 | narzędzia: get_sentry_resource, search_events, execute_sentry_tool
+     e87cf519-3e1d-4304-a628-5c99a88ddeeb        16× w 3 proj., ost. 2026-09-17 | narzędzia: execute_sql, list_organizations, list_projects
+     733fc5fd-468c-4790-be9e-e7664f4b522b         1× w 1 proj., ost. 2026-09-22 | narzędzia: lista_szablonow
+     0bdbe947-1a7c-4a07-8233-69ed2f83595b         1× w 1 proj., ost. 2026-09-18 | narzędzia: list_domains
+  -- projektowy (cud_chatka): 1
+     supabase                                    46× w 1 proj., ost. 2026-09-10
+  -- projektowy (kacper_trzepiecinski_workspace): 4
+     apify                                      202× w 1 proj., ost. 2026-09-15
+     easytools                                   75× w 1 proj., ost. 2026-09-29
+     airtable                                    70× w 2 proj., ost. 2026-09-28
+     Fakturownia                                 35× w 2 proj., ost. 2026-09-29
+  -- projektowy (~): 1
+     mobbin                                       3× w 1 proj., ost. 2026-09-10
+  -- wbudowany w aplikację: 10
+     Claude_Browser                             972× w 14 proj., ost. 2026-09-28
+     Claude_Code_iOS_Simulator                   35× w 2 proj., ost. 2026-09-25
+     ccd_session                                 23× w 5 proj., ost. 2026-09-25
+     ccd_pr                                      23× w 3 proj., ost. 2026-09-25
+     claude-in-chrome                            13× w 3 proj., ost. 2026-09-23
+     ccd_connectors                              10× w 2 proj., ost. 2026-09-22
+     ccd_session_mgmt                             5× w 3 proj., ost. 2026-09-25
+     terminal                                     4× w 1 proj., ost. 2026-09-21
+     ccd_directory                                2× w 1 proj., ost. 2026-09-23
+     visualize                                    1× w 1 proj., ost. 2026-09-01
+  kiedykolwiek połączone konektory claude.ai (~/.claude.json): claude.ai Google Drive, claude.ai Gmail, claude.ai Google Calendar, claude.ai Claude Code Remote, claude.ai Ahrefs, claude.ai Neuronwriter, claude.ai Mailerlite, claude.ai Replicate, claude.ai Supabase, claude.ai Buffer, claude.ai Vime, claude.ai Easycart, claude.ai PostHog, claude.ai Sentry, claude.ai Cookieyes, claude.ai Heygen, claude.ai Figma, claude.ai Claude Docs, claude.ai Traferto, claude.ai Traferteo, claude.ai oferty
+  czekają na autoryzację (mcpNeedsAuthNoticed): claude.ai Vime, apify, plugin:design:slack, plugin:design:linear, plugin:design:asana, plugin:design:atlassian, plugin:design:notion, plugin:design:intercom, claude.ai Mailerlite, plugin:supabase:supabase, plugin:hostinger:hostinger, plugin:figma:figma, claude.ai Sentry, supabase, mobbin, Fakturownia
+
+=== 3. MAPA PROJEKTÓW (~/.claude.json + installed_plugins.json; ścieżki scalone bez rozróżniania wielkości liter): 70 istniejących, 39 kopii testowych/tymczasowych, 42 nieistniejących ===
+  ~/Documents/kacper_trzepiecinski_workspace  [ost. aktywność 2026-09-29, wywołań narzędzi MCP/Skill/Agent w 30 dni: 2231]
+      local włącza: aibiz@aibiz, figma@claude-plugins-official, posthog@claude-plugins-official, skill-creator@claude-plugins-official, traferto@oferty-plugin
+      installed_plugins: aibiz@aibiz(local), figma@claude-plugins-official(local), posthog@claude-plugins-official(local), skill-creator@claude-plugins-official(local), traferto@oferty-plugin(local)
+      MCP local: Fakturownia, airtable, apify, clickup, easytools, mobbin, whimsical-desktop
+      wyłączone MCP: claude-in-chrome, claude.ai Audioscrape, claude.ai Canva, claude.ai Core, claude.ai Gmail, claude.ai Google Calendar, claude.ai Notion, clickup, context7, playwright, plugin:discord:discord, plugin:figma:figma-desktop, plugin:sentry:sentry, plugin:supabase:supabase, plugin:telegram:telegram
+      własne skille 30, agenci 0
+      hooki project: PostToolUse
+  ~/Documents/Kodowanie/workspace-template  [ost. aktywność 2026-09-29, wywołań narzędzi MCP/Skill/Agent w 30 dni: 153, 2 wpisy (wielkość liter)]
+      project włącza: dev-browser@dev-browser-marketplace
+      local WYŁĄCZA: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      wyłączone MCP: playwright
+      własne skille 28, agenci 16
+      hooki project: Stop
+  ~/Documents/Kodowanie/claude-cron  [ost. aktywność 2026-09-28, wywołań narzędzi MCP/Skill/Agent w 30 dni: 65]
+      project włącza: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 28, agenci 16
+      hooki project: Stop
+  ~/Documents/Kodowanie/cud_chatka  [ost. aktywność 2026-09-27, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0, 2 wpisy (wielkość liter)]
+      .mcp.json: airtable, supabase
+      własne skille 0, agenci 1
+  ~/Documents/Kodowanie/Nawykometr  [ost. aktywność 2026-09-27, wywołań narzędzi MCP/Skill/Agent w 30 dni: 118]
+      project włącza: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 45, agenci 15
+      hooki project: Stop
+  ~/Documents/Kodowanie/akademia-automatyzacji-dashboard  [ost. aktywność 2026-09-25, wywołań narzędzi MCP/Skill/Agent w 30 dni: 79]
+      project włącza: dev-browser@dev-browser-marketplace
+      local włącza: codex@openai-codex
+      installed_plugins: codex@openai-codex(local), dev-browser@dev-browser-marketplace(project)
+      wyłączone MCP: airtable, claude-in-chrome, context7, playwright
+      własne skille 31, agenci 18
+      hooki project: Stop
+  ~/Documents/Kodowanie/oferty-online  [ost. aktywność 2026-09-25, wywołań narzędzi MCP/Skill/Agent w 30 dni: 1570]
+      project włącza: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 29, agenci 16
+      hooki project: Stop
+  ~/Documents/test-traferto  [ost. aktywność 2026-09-22, wywołań narzędzi MCP/Skill/Agent w 30 dni: 16]
+      local włącza: traferto@oferty-plugin
+  ~/Documents/Kodowanie/chatbot-cloudnest-widget  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 63]
+      project włącza: dev-browser@dev-browser-marketplace
+      własne skille 27, agenci 15
+      hooki project: Stop
+  ~/Documents/Kodowanie/demo-meta-daily  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 2]
+      własne skille 1, agenci 0
+  ~/Documents/Kodowanie/gramywpadla  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 144]
+      project włącza: dev-browser@dev-browser-marketplace
+      local włącza: osobisty-asystent@osobisty-asystent
+      local WYŁĄCZA: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(local), dev-browser@dev-browser-marketplace(project)
+      .mcp.json: supabase
+      MCP local: mobbin
+      własne skille 40, agenci 15
+      hooki project: Stop
+  ~/Documents/Kodowanie/n8n-egzamin-5  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0, 2 wpisy (wielkość liter)]
+      project włącza: dev-browser@dev-browser-marketplace
+      wyłączone MCP: claude-in-chrome, claude.ai Gmail, claude.ai Google Calendar, context7, plugin:claude-mem:mcp-search, plugin:figma:figma-desktop, plugin:sentry:sentry, plugin:supabase:supabase
+      własne skille 24, agenci 13
+      hooki project: Stop,UserPromptSubmit
+  ~/Documents/Kodowanie/symulator-poczekalni  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 125]
+      project włącza: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 28, agenci 15
+      hooki project: Stop
+  ~/Documents/Kodowanie/test-apki-cc  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 111]
+      własne skille 6, agenci 0
+  ~/Documents/Kodowanie/viberzy  [ost. aktywność 2026-09-21, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 27, agenci 15
+      hooki project: Stop
+  ~/Documents/Kodowanie/live-licznik  [ost. aktywność 2026-09-16, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      local włącza: osobisty-asystent@osobisty-asystent, skille-live@skille-live-09-07
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 23, agenci 16
+      hooki project: Stop
+  ~/Documents/Kodowanie/workspace-template-mobile  [ost. aktywność 2026-09-16, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      local WYŁĄCZA: dev-browser@dev-browser-marketplace
+      installed_plugins: dev-browser@dev-browser-marketplace(project)
+      własne skille 44, agenci 15
+      hooki project: Stop
+  ~/Documents/Kodowanie/kurs_cc_demo  [ost. aktywność 2026-08-03, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      local WYŁĄCZA: claude-md-management@claude-plugins-official
+      installed_plugins: claude-md-management@claude-plugins-official(project)
+      .mcp.json: supabase
+      własne skille 26, agenci 14
+      hooki project: Stop,UserPromptSubmit
+  ~/Documents/Kodowanie/Test-plugin-zespolowy  [ost. aktywność 2026-08-01, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      local WYŁĄCZA: aibiz@aibiz
+      własne skille 2, agenci 0
+  ~  [ost. aktywność 2026-06-28, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0 — UWAGA: .claude/ tego katalogu = konto (~/.claude), to NIE jest osobny projekt]
+      project włącza: claude-powerline@claude-powerline, frontend-design@claude-plugins-official
+      project WYŁĄCZA: aibiz@aibiz, dev-browser@dev-browser-marketplace, figma@claude-plugins-official, posthog@claude-plugins-official, skill-creator@claude-plugins-official
+      MCP local: mobbin, stripe
+      hooki project: Stop
+      disableClaudeAiConnectors
+  ~/Documents/Kodowanie/aa-praca  [ost. aktywność 2026-04-30, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: ui-ux-pro-max@ui-ux-pro-max-skill
+      installed_plugins: ui-ux-pro-max@ui-ux-pro-max-skill(project)
+      własne skille 1, agenci 0
+  ~/Documents/Kodowanie/miter  [ost. aktywność 2026-04-18, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      własne skille 25, agenci 13
+      hooki project: Stop,UserPromptSubmit
+  ~/Documents/Kodowanie/live  [ost. aktywność 2026-04-09, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0, 2 wpisy (wielkość liter)]
+      project włącza: ralph-wiggum@claude-code-plugins
+      installed_plugins: ralph-wiggum@claude-code-plugins(project)
+      wyłączone MCP: context7, playwright, serpapi
+      własne skille 3, agenci 0
+  ~/Documents/Kodowanie/allegro_scraper_project  [ost. aktywność 2026-04-04, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0, 2 wpisy (wielkość liter)]
+      wyłączone MCP: airtable
+      własne skille 6, agenci 7
+      hooki local: PostToolUse
+  ~/Documents/Kodowanie/live-02-04  [ost. aktywność 2026-04-03, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      local WYŁĄCZA: dev-browser@dev-browser-marketplace
+      wyłączone MCP: airtable, claude.ai Gmail, claude.ai Google Calendar, context7, playwright
+      własne skille 23, agenci 12
+      hooki project: Stop,UserPromptSubmit
+  ~/claude-cron  [ost. aktywność 2026-04-02, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      własne skille 23, agenci 16
+      hooki project: Stop
+  ~/Documents/Kodowanie/live-02-04-demo  [ost. aktywność 2026-04-02, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      własne skille 24, agenci 12
+      hooki project: Stop,UserPromptSubmit
+  ~/Documents/Kodowanie/live-02-04-YT  [ost. aktywność 2026-04-02, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      własne skille 24, agenci 12
+      hooki project: Stop,UserPromptSubmit
+  ~/Documents/Kodowanie/lp-fb-group-project  [ost. aktywność 2026-02-24, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      MCP local: netlify
+      wyłączone MCP: airtable
+      własne skille 4, agenci 0
+  ~/Documents/Kodowanie/live-19-02-gierka  [ost. aktywność 2026-02-20, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      .mcp.json: supabase
+      wyłączone MCP: airtable, claude-in-chrome, claude.ai Audioscrape, claude.ai Canva, claude.ai Core, claude.ai Notion
+      własne skille 7, agenci 6
+      hooki project: PostToolUse,Stop,UserPromptSubmit
+  ~/Documents/Kodowanie/video_generate_plugin  [ost. aktywność 2026-02-09, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      własne skille 1, agenci 0
+  ~/Documents/Kodowanie/remotion_skool_lekcja  [ost. aktywność 2026-02-08, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      własne skille 1, agenci 0
+  ~/Documents/kodowanie/n8n-worker  [ost. aktywność 2026-02-04, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      MCP local: n8n-mcp
+      wyłączone MCP: airtable, claude-in-chrome, context7, playwright
+      własne skille 8, agenci 1
+      hooki local: UserPromptSubmit
+  ~/Documents/kodowanie/asystent-aa  [ost. aktywność 2026-01-27, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      wyłączone MCP: airtable, context7, playwright
+  ~/live_15_01  [ost. aktywność 2026-01-15, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      własne skille 7, agenci 6
+      hooki project: PostToolUse,Stop,UserPromptSubmit
+  ~/Documents/kodowanie/n8n_dashboard  [ost. aktywność 2026-01-11, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: code-simplifier@claude-plugins-official, dev-browser@dev-browser-marketplace, nanobanana@mag-claude-plugins
+      MCP local: serena
+      wyłączone MCP: airtable, context7, playwright
+      własne skille 3, agenci 0
+      hooki local: PostToolUse
+  ~/Documents/kodowanie/x-stats  [ost. aktywność 2026-01-10, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      local włącza: ralph-wiggum@claude-plugins-official
+      wyłączone MCP: airtable, context7, playwright
+  ~/Documents/kodowanie/NBP  [ost. aktywność 2026-01-09, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      local włącza: nanobanana@mag-claude-plugins
+      installed_plugins: nanobanana@mag-claude-plugins(local)
+  ~/Documents/kodowanie/piszemy_wirale  [ost. aktywność 2026-01-08, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      project włącza: dev-browser@dev-browser-marketplace
+      .mcp.json: supabase
+      MCP local: sentry, serena, supabase
+      wyłączone MCP: airtable, context7, gemini-cli, playwright, sentry, serena, supabase
+      własne skille 5, agenci 6
+      hooki project: PostToolUse,Stop,UserPromptSubmit
+  ~/live_page_AA  [ost. aktywność 2026-01-07, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      wyłączone MCP: airtable, context7, playwright
+  ~/Documents/kodowanie/live_yt  [ost. aktywność 2025-12-18, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      wyłączone MCP: airtable, playwright, plugin:claude-mem:claude-mem-search
+  ~/Documents/Kodowanie/kurs_cc_aa  [ost. aktywność 2025-12-15, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0, 2 wpisy (wielkość liter)]
+      MCP local: netlify
+      wyłączone MCP: airtable
+      własne skille 3, agenci 1
+      hooki project: PostToolUse,UserPromptSubmit
+  ~/Documents/kodowanie/claude-code-infrastructure  [ost. aktywność 2025-12-07, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      MCP local: chrome-devtools, netlify
+      wyłączone MCP: airtable, chrome-devtools
+  ~/Documents/kodowanie/suby  [ost. aktywność 2025-12-03, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      MCP local: clickup
+      wyłączone MCP: project
+  ~/Documents/kodowanie/rabatosfera - deale  [ost. aktywność 2025-11-19, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      .mcp.json: airtable, supabase
+  ~/Documents/Kodowanie/test-apki-cc/kurs  [ost. aktywność -, wywołań narzędzi MCP/Skill/Agent w 30 dni: 0]
+      MCP local: sentry
+  -- bez własnej konfiguracji Claude (24): ~/Documents/Kodowanie/aibiz-plugin (2026-09-28), ~/Documents/Kodowanie/boks_app (2026-09-27), ~/Documents/Kodowanie/obsidian-claude-launcher (2026-09-26), ~/Documents/Kodowanie/live-17-09-demo-x (2026-09-21), ~/Documents/Kodowanie/test-do-usuniecia-asap (2026-09-21), ~/Library/Application Support/CodexBar/ClaudeProbe (2026-08-29), / (2026-08-17), ~/Documents/Kodowanie/test-zespolowu-plugin-inne-konto (2026-07-31), ~/Documents/Kodowanie/hyperdesign (2026-06-09), ~/Documents/Kodowanie/url-to-video (2026-06-03), ~/Documents/Kodowanie/clawl (2026-02-08), ~/Documents/Kodowanie/team_agent_test (2026-02-08), ~/Documents/kodowanie/live-19-02-strategia (2026-01-26), ~/Documents/kodowanie/freelance-platform (2026-01-22), ~/Documents/kodowanie/ralph-tui-przyklad (2026-01-21), ~/Documents/kodowanie/workflow-animator (2026-01-15), ~/Documents/kodowanie/vider-download (2026-01-06), ~/Documents/kodowanie/projekt (2025-12-31), ~/Documents/kodowanie/kurs_cc_aa_poczatek (2025-12-17), ~/Documents/kodowanie/n8n_2 (2025-12-01), ~/.claude/plugins/marketplaces/thedotmack (-), ~/Documents/kodowanie/allegro_link/peppers-scraper (-), ~/Documents/kodowanie/skool_activity (-), ~/Documents/kodowanie/youtube_test (-)
+  -- kopie testowe/tymczasowe (39, np. ~/test-review/kopie): hooki project: Stop; installed_plugins: dev-browser@dev-browser-marketplace(project); project włącza: dev-browser@dev-browser-marketplace; własne skille 29, agenci 16; własne skille 30, agenci 16
+  -- nieistniejące katalogi (42; szum w ~/.claude.json i `claude plugin list`, nie koszt): ~/Documents/.ralph-worktrees/kacper_trzepiecinski_workspace/worker-w0-1, ~/Documents/.ralph-worktrees/kacper_trzepiecinski_workspace/worker-w0-2, ~/Documents/allegro_link, ~/Documents/allegro_link/peppers-scraper, ~/Documents/claude code, ~/Documents/claude code/nano banana agent ai, ~/Documents/cud_chatka, ~/Documents/kodowanie/call-me, ~/Documents/kodowanie/kurs_cc_aa_2, ~/Documents/Kodowanie/kurs_cc_demo/.claude/worktrees/peaceful-shannon-b85d47, ~/Documents/Kodowanie/live-02-04-F1, ~/Documents/Kodowanie/live-02-04-new, ~/Documents/Kodowanie/live-02-04-test, ~/Documents/kodowanie/llm-council, ~/Documents/kodowanie/n8n-dash-weryfikacja, ~/Documents/kodowanie/n8n-dashboard-akademia-automatyzacji, ~/Documents/kodowanie/n8n-egzamin, ~/Documents/kodowanie/n8n-egzamin-3, ~/Documents/kodowanie/n8n-egzamin-4, ~/Documents/kodowanie/n8n-egzaminy-2, ~/Documents/kodowanie/n8n_dashboard_test, ~/Documents/kodowanie/open_router_test, ~/Documents/Kodowanie/push-app-mobile, ~/Documents/kodowanie/ralph-test, ~/Documents/kodowanie/ralph-tui, ~/Documents/kodowanie/ralph-tui/ralph-tui, ~/Documents/kodowanie/test-auto-claude, ~/Documents/kodowanie/test_2_2, ~/Documents/kodowanie/test_tets, ~/Documents/kodowanie/test_to_delete, ~/Documents/koszty 10.25, ~/Documents/kurs-asystent-ai, ~/Documents/Live, ~/Documents/live-09-07, ~/Documents/niokola, ~/Documents/pawel, ~/Documents/piszemy_wirale, ~/Documents/przykład-dla-aa, ~/Documents/rag, ~/Documents/Test21, ~/Documents/voult-Tomek, ~/live_15_01/ga4-realtime-dashboard/trees/new-design-1
+
+=== 7. POMIAR STARTU najnowszej sesji głównej w /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template (z transkryptu; porównuj przed/po w tym samym projekcie i aplikacji) ===
+  transkrypt: 9825ccd5-570f-4770-b8cf-60f144e9449f.jsonl
+  skille na liście: 75, tekst listy 29983 zn; BEZ OPISU (budżet listy ucięty): 2 — model widzi tylko nazwę, więc sam ich nie wywoła
+     anthropic-skills               2: skill-creator, xlsx
+  narzędzia odroczone (same nazwy): 231, w tym MCP 203 z 20 serwerów; tekst 9629 zn
+  serwery MCP wg liczby narzędzi: plugin_design_figma 40, 674cb8d5-a580-45d5-a4d0-73f063b56e10 29, e87cf519-3e1d-4304-a628-5c99a88ddeeb 29, claude-in-chrome 23, ccd_session_mgmt 20, 0bdbe947-1a7c-4a07-8233-69ed2f83595b 10, ccd_sidebar 9, scheduled-tasks 6, 1a59c906-04da-521d-bda7-7f71b9f9e01c 5, ccd_pr 5, ccd_view 4, ccd_window 4, terminal 4, 3ceab4b4-dd51-493f-b73d-074003daba3e 3, ccd_connectors 3, mcp-registry 3, 6f616b42-0ed8-571e-823f-ee4aca6b7ce9 2, ccd_directory 2, Claude_Code_iOS_Simulator 1, ccd_session 1
+  instrukcje serwerów MCP: 6554 zn (plugin:design:figma 2084, 1a59c906-04da-521d-bda7-7f71b9f9e01c 1914, e87cf519-3e1d-4304-a628-5c99a88ddeeb 1344, claude-in-chrome 1022, 674cb8d5-a580-45d5-a4d0-73f063b56e10 190)

@@ -38,6 +38,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 3⅞b | Tematy-inspiracje operatora: mattpocock/skills + wystąpienie poteto (pstack) | **GOTOWE 2026-09-24, decyzje w 6a pkt 26** — `INSPIRACJE-POCOCK-PSTACK.md` (v2 po transkrypcji) + `INSPIRACJE-POCOCK-PSTACK-DLA-OPERATORA.md`, skrypty `insp_*.py`. Przyjęte poza panelem: compound ze szczeblem, pytanie „undefined” o testy + wyjątek w coding-rules §2, odbiór bramek „gryzie”, 4 zasady pisania, zmiany promptów wg Anthropic + ślepe przed/po, reguła lint razem z posprzątaniem. Nowe wymogi panelu §2 pkt 14–16: mapa funkcji (regresja odłożona), granice warstw w ESLint (bez wyjątku dla auth), ogrodnik na zamknięciu zadania. Otwarta decyzja: reguły builder ↔ reviewer. |
 | 4 | Panel projektowy: 3 niezależne projekty pipeline'u „po" (minimalistyczny / jakość-najpierw / hybrydowy) → sędziowie → adwersarialna krytyka → synteza | NIE ZROBIONE — **zastąpiony PANELEM DECYZYJNYM (6a pkt 23)**: krok 0 skryptami (otwarte decyzje, zestaw historycznych ucieczek, koszt skryptem) → projektanci per architektura review → sędzia jakości na historii → sceptyk per decyzja → rekord per decyzja; Opus 5.5 (6a pkt 22), start WYŁĄCZNIE na znak operatora; instrukcja: §8 „AKTUALNA”. **PLAN (część A) ZAAKCEPTOWANY 2026-09-24 (D12 wchodzi, projektant C zostaje), wykonanie w nowej sesji wg §8 „WYKONANIE PANELU”:** `PANEL-PLAN.md` + `PANEL-PLAN-DLA-OPERATORA.md`; krok 0 (b) zrobiony skryptem `skrypty/panel_zestaw_historyczny.py` → `dane/panel-zestaw-historyczny.{jsonl,txt}` (195 B, 132 P1/P2, ogon 27; 68 ucieczek = te same wątki bota, compound jako kontekst 30 przypadków). **WYKONANIE W TOKU (sesja 6e626ae3, 2026-09-24): krok 0 + RUN 1 ZROBIONE, notatka po run 1 oddana; operator kontynuuje w NOWEJ sesji (kontekst ~500k) wg §8 „KONTYNUACJA PANELU PO RUN 1” — stan w §8.** **RUN 2 ZROBIONY (sesja 1bd5477f): ocena papierowa przecenia (kalibracja 33% > 15%, STOP §10); operator 2026-09-25 (6a pkt 28): żadna koncepcja nie odpada przed prawdziwym testem → następny krok PLAN prawdziwego testu review w nowej sesji wg §8 „PLAN TESTU REVIEW”; run 3 wstrzymany.** **PLAN TESTU REVIEW ZAAKCEPTOWANY 2026-09-25 (6a pkt 29):** `TEST-REVIEW-PLAN.md` + wersja operatora; następny krok = skrypty przygotowawcze testu w NOWEJ sesji, bez agentów, wg §8 „PRZYGOTOWANIE TESTU REVIEW”. **TEST REVIEW ZROBIONY I PRZEANALIZOWANY 2026-09-27 (6a pkt 30–32):** `TEST-REVIEW-WYNIK.md` + wersja operatora; decyzja D1: obecna architektura review zostaje + 3 dodatki, D12 rozstrzygnięta (kontrola diffu fixa wg A); **Run 3 (sceptycy) POMINIĘTY (6a pkt 33)**; następny krok = decyzje D2–D11 (+ D12 cz. 2) z metryką i warunkiem odwrotu oraz plan wdrożenia wg §8 „DECYZJE I PLAN WDROŻENIA”. **DECYZJE D2–D12 I PLAN WDROŻENIA ZAAKCEPTOWANE 2026-09-27 (6a pkt 34):** `PANEL-WYNIK.md` + `PANEL-WYNIK-DLA-OPERATORA.md` — etap 4 ZAMKNIĘTY. |
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
+| K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -531,6 +532,28 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     powstać na uporządkowanym koncie; konto dokłada ~41,9k tok always-on do KAŻDEJ sesji (posthog ~30,2k, 164 skille; `dane/konto-inwentarz-workspace-template.txt`).
     Decyzje per element podejmuje operator (nie chce globalnie m.in. frontend-design; część do skasowania) — lista w raporcie to tylko kierunek.
     **Widok GLOBALNY całego komputera** (wszystkie projekty, nie jeden) jest wymogiem kroku 0 (operator 2026-09-28). Instrukcja: §8 „KROK 0 — PORZĄDKI KONTA”.
+37. **KROK 0 — porządki konta ZAKOŃCZONE (2026-09-28/29; sesje 8d1f302f, N2 9825ccd5, N3 3e95dbdd; operator 2026-09-29: „tak, visualize zostaje”).**
+    `KROK0-DECYZJE.md` (decyzje per element, kopie w `~/claude-konto-kopie/2026-09-28-przed-krok0/`, komendy, wyniki N2 i N3); dane
+    `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`; skrypty `skrypty/konto_*.py`, `skrypty/krok0_*.{py,sh}`.
+    (a) **Wynik** (start sesji w workspace-template, aplikacja desktop): always-on poziomu user ~46,2k → ~0,1k tok; skille 303 (248 bez opisu) → 48 (0);
+    narzędzia MCP 265 z 30 serwerów → 87 z 14 (wbudowane w aplikację + konektor `visualize`); instrukcje MCP 5 100 → 1 022 zn; hooki: tylko Stop.
+    B0 (It. 2) powstanie na uporządkowanym koncie.
+    (b) **Wniosek N2:** aplikacja desktop omija klucze `syncClaudeAiPlugins`, `syncClaudeAiSkills`, `disableClaudeAiConnectors` w `~/.claude/settings.json`
+    (działają tylko w terminalowym `claude`) — pluginy claude.ai wstrzykuje jako `<nazwa>@inline`, konektory jako jawne `mcpServers` sesji.
+    Pluginy wyłącza `"<nazwa>@inline": false` w `enabledPlugins` (potwierdzone w N3), konektory — menu konektorów w sesji zakładki Code (trwale).
+    Konektor `visualize` (funkcja Anthropic, 2 narzędzia, ~50 tok) wraca w każdej sesji — ZOSTAJE (operator).
+    (c) **Narzędzie inwentarza:** skill `/konto` w `~/Documents/kacper_trzepiecinski_workspace/.claude/skills/konto/` (skrypty w `scripts/`,
+    commit `c6e4db3c3` w repo workspace); źródło skryptów zostaje w `skrypty/` tej analizy.
+    (d) **WYMÓG OPERATORA → It. 3c:** w szablonie instrukcja instalacji z WSZYSTKIMI wymaganymi pluginami, skillami i narzędziami, instalowanymi
+    PER PROJEKT, nie globalnie (KROK0-DECYZJE „WYMÓG OPERATORA”: pluginy dev-browser i figma, narzędzia agent-browser, jq, git, gh, node, supabase CLI
+    warunkowo, Dynamic Workflows), razem z profilem `.claude/settings.json` szablonu (KROK0-DECYZJE pkt 8: `extraKnownMarketplaces` + `enabledPlugins`
+    dev-browser, figma + `disableClaudeAiConnectors`). Z (b): `disableClaudeAiConnectors` w profilu chroni tylko terminalowe `claude` — kursantom
+    w aplikacji desktop NIE wyłączy konektorów ani pluginów claude.ai; instrukcja instalacji mówi to wprost i pokazuje, jak zrobić to w aplikacji
+    (menu konektorów w sesji Code; pluginy: `"<nazwa>@inline": false` — decyzja kursanta). Do sprawdzenia w It. 3c na czystym koncie: czy wpisy
+    projektu proponują instalację marketplace'ów i pluginów per projekt.
+    (e) **Otwarte po stronie operatora:** token Airtable w workspace wyciekł w sesji 8d1f302f i w N3 był nadal ten sam (porównanie skrótem) —
+    unieważnić w Airtable i wpisać nowy (`claude mcp add-json airtable … -s local` w workspace).
+    Następny krok: It. 1 telemetria — §8 „IT. 1 — TELEMETRIA”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -790,8 +813,36 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   niżej; bez publikacji jako strony. Potem wdrożenie It. 1 w osobnej sesji, z planem do akceptacji przed pierwszą edycją `.claude/`.
 - **RAPORTY ETAPU 5 ZROBIONE I ZAAKCEPTOWANE (2026-09-28; 6a pkt 36):** oferty-online = materiał do nauki; higiena konta = KROK 0 przed It. 1.
   **Następny krok: „KROK 0 — PORZĄDKI KONTA” niżej** (nowa sesja). Po nim It. 1 (telemetria) z planem do akceptacji przed pierwszą edycją `.claude/`.
+- **KROK 0 ZROBIONY I ZAAKCEPTOWANY (2026-09-29; 6a pkt 37, wiersz K0):** konto uporządkowane (48 skilli, 87 narzędzi MCP na starcie), skill `/konto`
+  w workspace, wymóg instalacji per projekt → It. 3c. Otwarte u operatora: nowy token Airtable. **Następny krok: „IT. 1 — TELEMETRIA” niżej** (nowa sesja).
 
-**KROK 0 — PORZĄDKI KONTA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**IT. 1 — TELEMETRIA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
+KROK 0 (porządki konta) ZAKOŃCZONY (HANDOFF 6a pkt 37). Zadanie tej sesji: It. 1 — telemetria + import. NAJPIERW PLAN do mojej akceptacji,
+dopiero po niej pierwsza edycja .claude/. BEZ agentów i BEZ zmian w CLAUDE.md.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF 6a pkt 34, 36, 37; PANEL-WYNIK §4 (wiersz It. 1) i §4a (C: zamknięty słownik klas,
+test telemetrii); PANEL-WEJSCIE §2 pkt 5 i §12 + dane/d5-telemetria-rekord.txt; RAPORT-TECHNICZNY (wiersz „Telemetria”). Kod dziś:
+.claude/workflows/dev-autopilot-wf.js, dev-docs-review-wf.js (agent telemetrii, tokenyRazemK), __tests__/metryki-w-stanie.test.mjs,
+__tests__/telemetria-i-kontrola-fixa.test.mjs.
+
+Do zrobienia:
+1. Plan It. 1 → IT1-PLAN.md + IT1-PLAN-DLA-OPERATORA.md. Elementy (PANEL-WYNIK §4 It. 1): zbierz.mjs (skan pliku harnessu, hook Stop jako
+   wyzwalacz, skan w doctor) i raport.mjs; agent telemetrii i tokenyRazemK znikają; efort w etykietach agentów → agent.effort; pr:zbierz
+   z klasą/osią/wagą → run.pr (zamknięty słownik klas); faza.fix.pliki[] ze statusem A/M (D12); sync-template zapisuje hash per plik
+   (run.szablon.skrypt_sha); import agents.csv (przeliczony), odzyskanej telemetrii, skille.csv, klasyfikacja-574.csv.
+   Per element: pliki .claude/, które się zmieniają; test (najpierw test, potem kod — coding-rules §2); jak sprawdzę, że działa
+   (odczyt It. 1: 1 run → każdy run ma rekord z prawdziwym statusem, 0 agentów telemetrii); jak cofnąć.
+2. Sprawdź w kodzie (grep), co już istnieje, żeby nie dublować; otwarte decyzje wypisz z opcjami i rekomendacją.
+3. Oddaj plan i CZEKAJ na akceptację. Po niej: edycje .claude/ po jednej zmianie (test → kod → typecheck, test, lint), potem nowa sesja
+   przed pierwszym autopilotem (N2), HANDOFF (§2, 6a, §8), pamięć projektu, commit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**KROK 0 — PORZĄDKI KONTA (WYKONANA 2026-09-28/29 — zostawiona dla historii; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
