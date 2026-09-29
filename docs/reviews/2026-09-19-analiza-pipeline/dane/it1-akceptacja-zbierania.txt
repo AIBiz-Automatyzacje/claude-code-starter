@@ -1,0 +1,11 @@
+It. 1 krok 4 — akceptacja zbierania na prawdziwych danych (2026-09-29)
+Pelny skan: {"runow":428,"sesji":1730,"dopisanych":5332,"bledow":0} w 23.8 s
+Drugi pelny skan: dopisanych 0 (oczekiwane 0; wyjatek: epizody otwarte w zywych sesjach) w 23.8 s
+Tryb szybki bez zmian: {"runow":0,"sesji":3,"dopisanych":0,"bledow":0} w 75 ms (limit 1000 ms) → OK
+Rekordy wg typu: run 428, faza 93, agent 4142, skill 669; linii uszkodzonych: 0
+
+Epizody skilli (projekty etapu 0, start < 2026-09-23T10:53:00.463Z) — mediana E2 + subagenci vs d6r §4, tolerancja ±2%:
+  dev-plan  n=19 mediana  2392k vs 2392k (0.0%) OK
+  dev-docs  n=18 mediana   559k vs 559k (0.0%) OK
+  dev-prep  n=15 mediana  1401k vs 1401k (0.0%) OK
+→ ZALICZONE

@@ -33,7 +33,7 @@ const kategorie = new Map()
 const dolicz = (m, k) => m.set(k, (m.get(k) ?? 0) + 1)
 
 for (const run of runy) {
-  const r = rekordyRunu(run, { terazMs: Date.now(), runyWToku: new Set() })
+  const r = rekordyRunu(run, { terazMs: Date.now(), sesjeWToku: new Set() })
   if (!r) { pominiete++; continue }
   rekordowRun++
   const klucz = `${r.run.workflow ?? '(bez harnessu)'}|${r.run.status}`

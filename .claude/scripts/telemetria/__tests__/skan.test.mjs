@@ -13,7 +13,7 @@ import { SKRYPT_RUNU, zbudujFixture } from './fixture-projekty.mjs'
 test('run zakonczony: rekord run ze statusem z harnessu, faza i agenci', () => {
   const katalog = zbudujFixture()
   try {
-    const r = rekordyRunu(znajdzRuny(katalog)[0], { terazMs: Date.now(), runyWToku: new Set() })
+    const r = rekordyRunu(znajdzRuny(katalog)[0], { terazMs: Date.now(), sesjeWToku: new Set() })
     assert.ok(r)
     assert.equal(r.run.status, 'OK')
     assert.equal(r.run.workflow, 'dev-docs-review')
@@ -27,11 +27,11 @@ test('run zakonczony: rekord run ze statusem z harnessu, faza i agenci', () => {
   }
 })
 
-test('run bez harnessu prowadzony przez zywa sesje: pominiety', () => {
+test('run bez harnessu w sesji z dzialajacym workflowem: pominiety (w toku)', () => {
   const katalog = zbudujFixture()
   try {
     const wToku = znajdzRuny(katalog)[1]
-    assert.equal(rekordyRunu(wToku, { terazMs: Date.now(), runyWToku: new Set([wToku.run]) }), null)
+    assert.equal(rekordyRunu(wToku, { terazMs: Date.now(), sesjeWToku: new Set([wToku.sesja]) }), null)
   } finally {
     rmSync(katalog, { recursive: true, force: true })
   }
@@ -40,7 +40,7 @@ test('run bez harnessu prowadzony przez zywa sesje: pominiety', () => {
 test('run bez harnessu, cichy ponad prog, bez sesji: KILLED', () => {
   const katalog = zbudujFixture()
   try {
-    const r = rekordyRunu(znajdzRuny(katalog)[1], { terazMs: Date.now() + PROG_CISZY_MS + 60000, runyWToku: new Set() })
+    const r = rekordyRunu(znajdzRuny(katalog)[1], { terazMs: Date.now() + PROG_CISZY_MS + 60000, sesjeWToku: new Set() })
     assert.equal(r?.run.status, 'KILLED')
     assert.equal(r?.run.powod, 'sesja zakonczona')
   } finally {

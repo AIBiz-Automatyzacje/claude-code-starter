@@ -55,11 +55,11 @@ export default [
   },
   {
     files: ['**/*.mjs', 'eslint.config.js'],
-    languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: globals.node },
+    languageOptions: { ecmaVersion: 2024, sourceType: 'module', globals: globals.node },
   },
   {
     files: ['.claude/workflows/*.js'],
     processor: procesorWorkflowow,
-    languageOptions: { ecmaVersion: 2023, sourceType: 'script', globals: GLOBALNE_WORKFLOWU },
+    languageOptions: { ecmaVersion: 2024, sourceType: 'script', globals: GLOBALNE_WORKFLOWU },
   },
 ]

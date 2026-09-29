@@ -32,14 +32,15 @@ function ostatniaAktywnosc(run) {
 /**
  * Rekordy jednego runu; null = run w toku (pomijany do nastepnego skanu).
  * @param {Run} run
- * @param {{ terazMs: number, runyWToku: Set<string> }} kontekst runyWToku = runy prowadzone przez zywa sesje (z hooka)
+ * @param {{ terazMs: number, sesjeWToku: Set<string> }} kontekst sesjeWToku = sesje z dzialajacym workflowem (hook: background_tasks);
+ *   run bez pliku harnessu w takiej sesji jest w toku (background_tasks podaje id zadania, nie wf_ runu)
  * @returns {RekordyRunu | null}
  */
 export function rekordyRunu(run, kontekst) {
   const harness = czytajHarness(run)
   const status = harness
     ? statusRunu(harness)
-    : statusBezHarnessu({ wTokuWSesji: kontekst.runyWToku.has(run.run), ostatniaAktywnoscMs: ostatniaAktywnosc(run), terazMs: kontekst.terazMs })
+    : statusBezHarnessu({ wTokuWSesji: kontekst.sesjeWToku.has(run.sesja), ostatniaAktywnoscMs: ostatniaAktywnosc(run), terazMs: kontekst.terazMs })
   if (!status) return null
   const agenci = agenciRunu(run)
   const journal = czytajJournal(run.katalogRunu)
