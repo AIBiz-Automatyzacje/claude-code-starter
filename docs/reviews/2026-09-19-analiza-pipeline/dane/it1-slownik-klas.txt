@@ -1,0 +1,170 @@
+It. 1 krok 8 — zamkniety slownik klas uwag bota (po review subagenta, z nadpisaniami 19 uwag; 33 klas z `inna`)
+Wejscie: 574 uwag, 109 starych nazw; P1/P2: 141
+
+cykl-zycia-ui  [os: correctness]  n=15  P1=0 P2=10 P3=5 0=0  udzial P1/P2 7.1%
+   efekt, timer albo stan UI zyje dluzej niz komponent albo przezywa zmiane propsa/identyfikatora (zmiana propsa, odmontowanie → tu; dwie rownolegle operacje → wyscig)
+   stare: cykl-zycia-react, stan-ui-nieczyszczony | ETAP1/1B: ETAP1: cykl zycia i wspolbieznosc UI; ETAP1B: cykl zycia React
+   np. Hook tworzy setTimeout, ale sprzata je tylko gdy konsument zawola releaseAll — timer przezywa unmount.
+   np. Nowy efekt resetuje isStoppedRef na false, zanim stara petla po zmianie templateId zobaczy stop.
+wyscig-i-wspolbieznosc  [os: correctness]  n=7  P1=0 P2=7 P3=0 0=0  udzial P1/P2 5.0%
+   dwie rownolegle operacje albo wartosc sprzed await psuja wynik
+   stare: cykl-zycia-wspolbieznosc, wyscig-rownolegly, wartosc-po-await | ETAP1/1B: ETAP1B: wyscigi
+   np. timestamp sprzed await loadOffer — wygasla oferta przechodzi warunek
+   np. Rownolegle odswiezenie sesji robi dwa minty — drugi verifyOtp zwraca 500
+sciezka-bledu  [os: correctness]  n=16  P1=0 P2=15 P3=1 0=0  udzial P1/P2 10.6%
+   blad psuje stan dla uzytkownika albo niszczy dane zamiast byc obsluzony (skutek dla uzytkownika/danych → tu; brak sladu tylko dla operatora → polkniety-blad)
+   stare: sciezka-bledu, sciezka-bledu-bez-obslugi, nieobsluzone-odrzucenie, granica-try-catch, utrata-danych-przy-bledzie, niespojnosc-transportow | ETAP1/1B: ETAP1B: sciezka bledu bez obslugi; ETAP1: granica try/catch
+   np. handleLogout ignoruje error i odrzucony promise z signOut
+   np. void handleSubmit porzuca odrzucenie — stan sending i trwale wylaczony przycisk
+bramka-na-jednej-drodze  [os: correctness]  n=9  P1=0 P2=4 P3=5 0=0  udzial P1/P2 2.8%
+   warunek chroni jedna droge do operacji, a inna go omija
+   stare: bramka-na-jednej-z-dwoch-drog, wszystkie-drogi-do-operacji, asymetria-bramek, kolejnosc-middleware | ETAP1/1B: ETAP1B: bramka na jednej z dwoch drog
+   np. isDeleteBlocked blokuje wyzwalacz, ale nie juz otwarty alertdialog — usuwanie rownolegle z uploadem.
+   np. 'Anuluj' podczas statusu 'usuwanie' zamyka dialog, a operacja usuwania konta trwa dalej bez widoku wyniku.
+dopasowanie-tekstu  [os: correctness]  n=14  P1=1 P2=11 P3=2 0=0  udzial P1/P2 8.5%
+   parsowanie albo porownanie tekstu, HTML, URI lub zbiorow daje zly wynik (regex, includes, wielkosc liter, Set gubi krotnosc); gdy skutkiem jest obejscie kontroli dostepu → bramka-czarna-lista
+   stare: parser-regexem, parser-html-regexem, parser-tokenizer, dopasowanie-fragmentu, walidacja-tekstu, kodowanie-uri, porownanie-zbiorami, falszywy-alarm-walidatora | ETAP1/1B: ETAP1B: parser regexem
+   np. rawTextNameAt dopasowuje 'script'/'style' bez sprawdzenia nastepnego znaku — <script-x> maskuje widoczna tresc
+   np. Data i slowo o waznosci sprawdzane osobno — walidacja przepuszcza zly tekst
+wartosc-graniczna  [os: correctness]  n=7  P1=1 P2=1 P3=5 0=0  udzial P1/P2 1.4%
+   zle zachowanie na granicy zakresu: 0, 1, limit, maksymalna dlugosc
+   stare: wartosc-graniczna, granica-wartosci-migracja, kontrakt-diagnostyki | ETAP1/1B: ETAP1B: granica wartosci w migracji
+   np. hasMore liczone po odfiltrowanych wierszach — jeden odrzucony wiersz urywa doczytywanie starszych zdarzen.
+   np. left(name,68)+' (duplikat 19)' = 82 znaki wobec limitu 80 — migracja konczy sie 23514 i blokuje db push.
+limit-czasu-i-ponowien  [os: correctness]  n=6  P1=0 P2=6 P3=0 0=0  udzial P1/P2 4.3%
+   wywolanie bez limitu czasu albo petla ponowien bez sufitu
+   stare: brak-timeoutu, petla-ponowien-bez-sufitu, zamkniecie-procesu | ETAP1/1B: ETAP1B: brak timeoutu (performance → correctness)
+   np. Staly 429 = nieskonczone ponowienia tego samego pliku, isBusy nigdy nie spada, usuwanie zablokowane.
+   np. Klient anonymous i klient w revoke bez AbortSignal.timeout — zadanie administratora moze wisiec bez konca.
+spojnosc-dwoch-systemow  [os: correctness]  n=4  P1=0 P2=3 P3=1 0=0  udzial P1/P2 2.1%
+   kod zaklada o innym systemie (baza, cudze API, drugi proces) cos, co nie jest prawda
+   stare: spojnosc-dwoch-systemow, kontrakt-vs-implementacja, zrodlo-czasu, limit-cudzej-uslugi | ETAP1/1B: ETAP1: spojnosc dwoch systemow
+   np. vt liczony na jedna wiadomosc, porcja obslugiwana sekwencyjnie — duplikat u odbiorcy
+   np. listStoragePaths obiecuje wszystkie sciezki, limit 200 — osierocone obiekty w buckecie po kasowaniu szablonu.
+bramka-czarna-lista  [os: security]  n=13  P1=1 P2=12 P3=0 0=0  udzial P1/P2 9.2%
+   kontrola dostepu wylicza, co blokuje (albo dopasowuje niedokladnie), i domyslnie przepuszcza reszte
+   stare: bramka-czarna-lista | ETAP1/1B: ETAP1/1B: bramka czarna lista; ETAP1: straznik seeda
+   np. Guard seeda nie potwierdza pochodzenia konta — po podmianie v_email 'delete from auth.users' moze usunac cudze
+   np. Brak normalizacji originow — host:443 omija granice Z3
+zaufanie-danym-klienta  [os: security]  n=3  P1=0 P2=3 P3=0 0=0  udzial P1/P2 2.1%
+   decyzja (limit, dostep) oparta na danych, ktore kontroluje klient: naglowek, content-length
+   stare: zaufanie-naglowkowi
+   np. Zwolnienie z rate-limitu oparte na naglowku Host kontrolowanym przez klienta
+   np. Niezweryfikowany X-Forwarded-For jako klucz limitera — klient omija limit
+pii-i-sekrety  [os: security]  n=10  P1=2 P2=5 P3=3 0=0  udzial P1/P2 5.0%
+   dane osobowe albo sekret trafiaja do logu, Sentry, repo albo argv
+   stare: pii-w-message, pii-do-sentry, pii-w-repo, pii-w-logu, sekret-do-sentry, sekret-w-argv | ETAP1/1B: ETAP1B: PII/sekret w message/Sentry; ETAP1: ladunek wyjatku (PII w message)
+   np. Po zewnetrznym wylogowaniu tozsamosc nie jest zerowana — track() nadal wysyla zdarzenia z ID bylego uzytkownik
+   np. error.message PostgREST z adresem e-mail idzie do RegistrationServiceError i captureException; scrubEvent nie 
+walidacja-granicy-api  [os: security]  n=7  P1=1 P2=5 P3=1 0=0  udzial P1/P2 4.3%
+   dane z zewnatrz wchodza bez walidacji ksztaltu (Zod) na granicy
+   stare: walidacja-granicy-api, walidacja-granicy, zod-granica | ETAP1/1B: ETAP1B: walidacja koperty
+   np. isSummaryRow przyjmuje dowolny string jako last_visit_at; bledny timestamp cicho staje sie null.
+   np. Koperta 2xx z niezerowym error przepuszcza tryb — shouldCreateUser moze wyjsc true mimo zamknietej rejestracji
+uprawnienia-naglowki-sql  [os: security]  n=4  P1=0 P2=4 P3=0 0=0  udzial P1/P2 2.8%
+   grant bazy za szeroki albo za waski, brak naglowkow bezpieczenstwa HTTP, sklejanie SQL
+   stare: grant-niepelny, minimum-privileges, konkatenacja-sql, naglowki-bezpieczenstwa
+   np. Dokument dashboardu bez X-Frame-Options/frame-ancestors — clickjacking na sesji Supabase
+   np. Staly delimiter $seed$ w bloku DO — ownerEmail moze zamknac blok przedwczesnie
+test-niefalsyfikowalny  [os: test]  n=32  P1=0 P2=23 P3=9 0=0  udzial P1/P2 16.3%
+   test przechodzi takze wtedy, gdy zachowanie jest zepsute
+   stare: test-niefalsyfikowalny, straznik-negatywny | ETAP1/1B: ETAP1/1B: test niefalsyfikowalny; ETAP1B: straznik negatywny
+   np. Atrapa Sentry w tescie modulu, ktory Sentry nie uzywa — asercja captureException zawsze przechodzi.
+   np. Atrapa rpc ignoruje nazwe i argumenty — test nie wykryje regresji begin_account_deletion(p_owner_id).
+luka-pokrycia  [os: test]  n=7  P1=0 P2=2 P3=5 0=0  udzial P1/P2 1.4%
+   zachowanie z planu albo sciezka bledu nie ma testu
+   stare: luka-pokrycia, test-brak-pokrycia, wymaga-przegladarki | ETAP1/1B: ETAP1B: luka pokrycia
+   np. Brak testow createSupabaseOfferLoader — sciezki chroniacej ip_salt i owner_id
+   np. Brak testu offers_html_size_check — jedynej bariery przed wysadzeniem cache
+test-kruchy  [os: test]  n=5  P1=0 P2=0 P3=5 0=0  udzial P1/P2 0.0%
+   test pada od zmiany niezwiazanej z zachowaniem (twarde liczby, kolejnosc)
+   stare: test-kruchy
+   np. Limit rozmiaru trackera ma 4 bajty zapasu — kazda zmiana wywali test
+   np. settle() liczy mikrozadania — kazdy nowy await w /c.js wywraca testy
+tekst-ui  [os: spec]  n=14  P1=0 P2=6 P3=8 0=0  udzial P1/P2 4.3%
+   tekst dla uzytkownika obiecuje cos, czego kod nie robi, albo niesie zle dane
+   stare: tekst-ui, zaszyta-domena | ETAP1/1B: ETAP1: tekst dla uzytkownika; ETAP1B: tekst UI obiecuje czynnosc
+   np. Zaszyty adres oferty-app-dev w instrukcji MCP dla uzytkownika produkcyjnego (Z4)
+   np. Polityka pomija ua_hash, ktory zapisuje migracja visits_tracking
+kontrakt-wspolny  [os: spec]  n=3  P1=0 P2=3 P3=0 0=0  udzial P1/P2 2.1%
+   dwie warstwy (SQL, Zod, typ, dwie bramki) JUZ opisuja to samo pole inaczej (kopia na razie zgodna → duplikacja)
+   stare: kontrakt-shared | ETAP1/1B: ETAP1B: kontrakt shared
+   np. char_length(80) w SQL vs z.string().max(80) w UTF-16 — 80 emoji przechodzi w bazie, odpada w Zod.
+   np. Bramka szablonu mierzy rozmiar bez arkusza korygujacego — zapisze szablon, ktorym nie da sie opublikowac ofert
+zgodnosc-prawna  [os: brak]  n=3  P1=0 P2=3 P3=0 0=0  udzial P1/P2 2.1%
+   dokument prawny niezgodny z przepisami (np. brak elementow z art. 13 RODO)
+   stare: zgodnosc-prawna, obowiazek-informacyjny
+   np. Brak administratora, podstawy prawnej i prawa skargi (art. 13 RODO)
+   np. Brak podstaw prawnych i praw z art. 13 RODO; zaden reviewer nie ma domeny prawnej (operator odroczyl).
+polkniety-blad  [os: code-quality]  n=6  P1=0 P2=0 P3=6 0=0  udzial P1/P2 0.0%
+   pusty catch albo blad polkniety: operator nie widzi przyczyny (kod bledu, stderr)
+   stare: pusty-catch, blad-polkniety | ETAP1/1B: ETAP1B: pusty catch
+   np. stderr pg_dump ladujе do bufora i ginie — operator widzi tylko Command failed
+   np. Pusty catch {} przy new URL na VITE_OFFER_ORIGIN — blad konfiguracji bez sygnalu
+duplikacja  [os: code-quality]  n=6  P1=0 P2=0 P3=5 0=1  udzial P1/P2 0.0%
+   ta sama logika albo stala w dwoch miejscach, na razie zgodnych, ktore moga sie rozjechac
+   stare: duplikacja-logiki, duplikacja-w-testach | ETAP1/1B: ETAP1: lustrzana duplikacja w testach; ETAP1B: duplikacja
+   np. Dwie fabryki testowe maja identyczne ciala
+   np. Reczny OfferRow duplikuje kontrakt tabeli zamiast typu z Database
+martwy-kod-lub-komentarz  [os: code-quality]  n=3  P1=0 P2=0 P3=3 0=0  udzial P1/P2 0.0%
+   nieosiagalna galaz albo komentarz, ktory nie zgadza sie z kodem
+   stare: martwa-galaz, komentarz-rozmija-sie-z-kodem, komentarz-nieaktualny | ETAP1/1B: ETAP1B: martwa galaz
+   np. Komentarz obiecuje walidacje ksztaltu wiersza, kod sprawdza tylko expires_at
+   np. Nieosiagalna galaz TRUSTED_PROXY_EMPTY_MESSAGE, test przechodzi z innego powodu
+cache-i-zapytania  [os: performance]  n=4  P1=0 P2=1 P3=3 0=0  udzial P1/P2 0.7%
+   zbedne zapytania, zly cache albo wspolne wiadro limitera spowalnia / blokuje klientow
+   stare: cache-naglowki, cache-bez-inwalidacji, round-trip-auth, wspolne-wiadro-limitu
+   np. Po zapelnieniu mapy nowi klienci dziela jedno wiadro i dostaja 429 (lamie zasade 7)
+   np. res.ok pomija 304 — odpowiedz warunkowa traci Cache-Control
+seed-e2e  [os: e2e]  n=4  P1=0 P2=2 P3=2 0=0  udzial P1/P2 1.4%
+   seed testow E2E niezgodny z kontraktem migracji
+   stare: seed-niezgodny-z-kontraktem, seed-dane-zrodlowe | ETAP1/1B: ETAP1B: seed niezgodny z kontraktem
+   np. grid_rows w seedzie lamia kontrakt trackera — E2E testuje stan niemozliwy
+   np. replace na literale daty moze cicho nie trafic — seed zielony z bledna data, brak straznika.
+migracja-bazy  [os: brak]  n=8  P1=2 P2=3 P3=3 0=0  udzial P1/P2 3.5%
+   migracja blokuje tabele, nie jest idempotentna albo wchodzi w zlej kolejnosci
+   stare: blokada-migracji, migracja-blokujaca, idempotencja-migracji, kolizja-nazw-migracji, kolejnosc-rolloutu | ETAP1/1B: ETAP1B: poprawka w wypchnietej migracji (domkniecie fazy)
+   np. Brak bramki wymuszajacej migracje grid_rows przed publikacja obrazu dashboardu
+   np. Deduplikacja moze ustawic nazwe na juz istniejaca — CREATE UNIQUE INDEX konczy migracje bledem 23505.
+a11y  [os: brak]  n=16  P1=0 P2=2 P3=14 0=0  udzial P1/P2 1.4%
+   dostepnosc: fokus, klawiatura, kontrast, atrybuty ARIA
+   stare: a11y, a11y-fokus, kontrast-a11y, a11y-klawiatura, a11y-drobiazg, a11y-postep
+   np. Prog kontrastu 3:1 daje 2.6:1 dla tekstu pomocniczego z opacity 0.82
+   np. Klikalny <tr> bez fokusu i obslugi Enter/Spacja
+wada-dokumentu-sterujacego  [os: brak]  n=3  P1=1 P2=1 P3=1 0=0  udzial P1/P2 1.4%
+   CLAUDE.md, plan albo instrukcja projektu kaze zrobic cos zlego albo sama sobie przeczy
+   stare: wada-dokumentu-sterujacego | ETAP1/1B: ETAP1: wada w dokumencie sterujacym
+   np. Linia 58 odwraca kontrakt rozmiaru /t.js wzgledem linii 52 — gzip jako twardy limit
+   np. Polecenie 'coolify app env list --show-sensitive' w CLAUDE.md wypisuje hasla i tokeny do transkryptu.
+prog-rozmiaru  [os: brak]  n=80  P1=0 P2=0 P3=22 0=58  udzial P1/P2 0.0%
+   plik albo funkcja przekracza prog linii z konwencji
+   stare: prog-rozmiaru | ETAP1/1B: ETAP1: progi rozmiaru 300/50 linii
+   np. AppLayout 118 linii vs prog 50; bot sam wycofal w #39 jako uwage bez defektu.
+   np. 53 linie vs prog 50 (+6%, <=20%); bot wycofal w #33.
+konwencja-kodu  [os: brak]  n=55  P1=0 P2=0 P3=23 0=32  udzial P1/P2 0.0%
+   bot cytuje regule projektu (typowanie as/any, eksporty, importy, style, console, Act/Assert, rate limit)
+   stare: asercja-typu-w-tescie, asercja-typu, zakaz-as, as-const-dozwolony, zakaz-any, jeden-eksport-per-plik, styl-inline, styl-tailwind, kolejnosc-importow, console-log-z-reguly, rate-limit-z-reguly, act-assert, organizacja-modulu, kierunek-zaleznosci
+   np. Typ BrandLogoSize obok komponentu lamie regule 'jeden export per plik' z path_instructions.
+   np. 'as const' w tablicy testowej — czysta reguła stylu, zero wplywu na zachowanie.
+preferencja-bota  [os: brak]  n=11  P1=0 P2=0 P3=5 0=6  udzial P1/P2 0.0%
+   sugestia bota bez defektu i bez reguly projektu (rada, preferencja formatowania)
+   stare: preferencje-bota, preferencja-bota, rada-operacyjna, walidacja-zod-z-reguly, makieta-designu | ETAP1/1B: ETAP1: preferencje bota
+   np. Rozdziel Act i Assert — preferencja formatowania testu, nie defekt.
+   np. Brak lang i title w makiecie .design
+teza-obalona  [os: brak]  n=9  P1=0 P2=0 P3=0 0=9  udzial P1/P2 0.0%
+   uwaga bota nieprawdziwa albo wycofana przez samego bota
+   stare: teza-obalona, teza-falszywa
+   np. Indeks zlozony dla limitow; przy 50 ofertach na konto zbedny — bot wycofal w #52.
+   np. Teza o sb_secret_ jako Bearer obalona pomiarem na stagingu — bot wycofal (#59).
+odpowiedz-bota  [os: brak]  n=189  P1=0 P2=0 P3=0 0=189  udzial P1/P2 0.0%
+   odpowiedz bota w watku (potwierdzenie poprawki), nie nowa uwaga
+   stare: odpowiedz-bota, odpowiedz-bota-w-watku
+   np. Potwierdzenie poprawki w watku.
+   np. Potwierdzenie poprawki (licznik generacji).
+inna  [os: brak]  n=1  P1=0 P2=0 P3=1 0=0  udzial P1/P2 0.0%
+   nic z listy nie pasuje — uzasadnienie w polu uzasadnienie
+   stare: artefakt-w-repo
+   np. schema-diff.txt zapisywany w repo bez wpisu w .gitignore
+
+Kontrola: kazda stara nazwa ma klase (0 brakow, 0 dubli); `inna` = 0.2% uwag (limit 5%) → OK
+Klasy > 10% P1/P2 (maja byc jednorodne — ocenia review): test-niefalsyfikowalny 16.3%, sciezka-bledu 10.6%

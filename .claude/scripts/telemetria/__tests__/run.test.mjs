@@ -98,3 +98,33 @@ test('rekord run ma klucze pol z producentem w pozniejszych iteracjach (null)', 
   const pola = new Map(Object.entries(r))
   for (const k of ['manual_razem', 'profil_stacku', 'smoke', 'pr', 'ogrod', 'szablon']) assert.ok(pola.has(k), k)
 })
+
+test('run.pr z etapu zbierz dev-pr: klasy uwag, wagi, liczba plikow PR', () => {
+  const r = rekordRunu({
+    harness: {
+      workflowName: 'dev-pr-wf', args: { zadanie: 'z1', etap: 'zbierz', tura: 2 },
+      result: {
+        status: 'OK', etap: 'zbierz', tura: 2, plikiPr: 40, prNumer: 17,
+        watki: [
+          { id: 'PRRT_1', plik: 'a.ts:1', klasa: 'napraw', klasaBledu: 'sciezka-bledu', os: 'correctness', waga: 'P2' },
+          { id: 'PRRT_2', plik: 'b.ts:2', klasa: 'odrzuc', klasaBledu: 'preferencja-bota', os: 'brak', waga: '0' },
+          { id: 'PRRT_3', plik: 'c.ts:3', klasa: 'napraw', klasaBledu: 'bramka-czarna-lista', os: 'security', waga: 'P1' },
+        ],
+      },
+    },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
+  })
+  assert.deepEqual(r.pr, {
+    numer: 17, tura: 2, pliki: 40, uwagi_razem: 3, p1: 1, p2: 1, p3: 0, koszyk: null, rekomendacja: null,
+    klasy: [
+      { id: 'PRRT_1', klasa: 'sciezka-bledu', severity: 'P2', plik: 'a.ts:1', os: 'correctness', decyzja: 'napraw', ma_regule: null },
+      { id: 'PRRT_2', klasa: 'preferencja-bota', severity: '0', plik: 'b.ts:2', os: 'brak', decyzja: 'odrzuc', ma_regule: null },
+      { id: 'PRRT_3', klasa: 'bramka-czarna-lista', severity: 'P1', plik: 'c.ts:3', os: 'security', decyzja: 'napraw', ma_regule: null },
+    ],
+  })
+})
+
+test('run.pr tylko dla etapu zbierz — start, napraw, merge i autopilot maja pr = null', () => {
+  const r = rekordRunu({ harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'napraw' } }, status: { status: 'OK', powod: null }, agenci: [], bootstrap: null })
+  assert.equal(r.pr, null)
+})

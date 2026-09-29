@@ -105,6 +105,30 @@ export function sekundyAgentow(agenci) {
 /** @param {string} sciezka @returns {string | null} ostatni segment sciezki zadania (`@docs/active/x/` -> `x`) */
 const nazwaZSciezki = (sciezka) => sciezka.replace(/^@/, '').replace(/\/+$/, '').split('/').pop() || null
 
+/** @param {unknown} x @returns {number | null} */
+const liczbaLubNull = (x) => (typeof x === 'number' ? x : null)
+
+/**
+ * `run.pr` z wyniku etapu `zbierz` dev-pr (klasa bledu, os i waga ze slownika KLASY_BLEDOW w dev-pr-wf.js; It. 1 krok 8).
+ * Jeden run = jedna tura; raport liczy UNIKALNE watki per zadanie (suma po turach zawyza o 43% — przeglad D5 §8 pkt 4).
+ * @param {Record<string, unknown>} wynik wynik runu z pliku harnessu
+ */
+function rekordPr(wynik) {
+  const watki = Array.isArray(wynik.watki) ? wynik.watki.map(obiekt) : []
+  /** @param {string} waga */
+  const ile = (waga) => watki.filter((w) => w.waga === waga).length
+  return {
+    numer: liczbaLubNull(wynik.prNumer), tura: liczbaLubNull(wynik.tura), pliki: liczbaLubNull(wynik.plikiPr),
+    uwagi_razem: watki.length, p1: ile('P1'), p2: ile('P2'), p3: ile('P3'),
+    // Koszyk A–D (ETAP1B) i rekomendacja liczona w JS — producent w It. 2; ma_regule — indeks learned-patterns (It. 8).
+    koszyk: null, rekomendacja: null,
+    klasy: watki.map((w) => ({
+      id: tekstLubNull(w.id), klasa: tekstLubNull(w.klasaBledu), severity: tekstLubNull(w.waga), plik: tekstLubNull(w.plik),
+      os: tekstLubNull(w.os), decyzja: tekstLubNull(w.klasa), ma_regule: null,
+    })),
+  }
+}
+
 /**
  * Zadanie z argumentow runu: autopilot = sciezka jako tekst, execute/review = { sciezka }, dev-pr = { zadanie },
  * complete = { nazwaZadania }.
@@ -144,9 +168,9 @@ export function rekordRunu(we) {
     koszt: sumaKosztu(we.agenci),
     sekundy: typeof czasMs === 'number' ? Math.round(czasMs / 1000) : sekundyAgentow(we.agenci),
     szablon: we.szablon ?? null,
-    // Producenci w pozniejszych krokach / iteracjach: pr (krok 8), MANUAL (It. 3e), profil stacku i smoke (It. 3),
+    // Producenci w pozniejszych iteracjach: MANUAL (It. 3e), profil stacku i smoke (It. 3),
     // ogrod (R1). Klucze sa od razu — raport nie moze zgadywac ksztaltu.
-    pr: null,
+    pr: nazwaWorkflowu === 'dev-pr-wf' && wynik.etap === 'zbierz' ? rekordPr(wynik) : null,
     manual_razem: null,
     profil_stacku: null,
     smoke: null,

@@ -1,0 +1,31 @@
+It. 1 krok 8 — review słownika klas uwag bota przez niezależnego subagenta (2026-09-30; decyzja O7: zamiast akceptacji operatora)
+Agent: general-purpose (Opus 5.5), tylko odczyt; wejście: dane/it1-slownik-klas.txt (projekt 33 klas), skrypty/it1_slownik_klas.py,
+dane/coderabbit/klasyfikacja-574.csv, ETAP1 §3, ETAP1B §3. Koszt: 125k tokenów, 8 wywołań narzędzi, 3 min.
+
+WERDYKT: PRZYJĄĆ Z POPRAWKAMI.
+
+Uwagi recenzenta (skrót) → co zrobiono
+1. Worek `bramka-czarna-lista` (trzy przyczyny) → wydzielona `zaufanie-danym-klienta` (security; stara nazwa zaufanie-naglowkowi
+   + 2#24 content-length); 17#117 → walidacja-granicy-api; 19#150 (strażnik seeda, P1) → bramka-czarna-lista (ETAP1 §3).
+   `test-niefalsyfikowalny` jednorodny (jedno polecenie: „jaka zmiana implementacji nie złamie testu”) — zostaje; 9#26 (seed) → seed-e2e.
+2. Złe przypisania P1/P2 → nadpisania per uwaga (NADPISANIA w skrypcie, dane/it1-slownik-nadpisania.csv, 19 uwag):
+   10#59 → dopasowanie-tekstu; 2#52 (stara nazwa falszywy-alarm-walidatora) → dopasowanie-tekstu (mapowanie nazwy);
+   9#35, 9#37 → migracja-bazy; 7#131, 7#158 → sciezka-bledu; 10#57 → tekst-ui; 11#65 → cykl-zycia-ui; 9#34 → bramka-czarna-lista;
+   9#13 → kontrakt-wspolny.
+   4#102 (grant za wąski) — ZAMIAST przeniesienia do spojnosc-dwoch-systemow poszerzony opis klasy uprawnień („grant za szeroki albo
+   za wąski”) i nazwa `uprawnienia-naglowki-sql` (obejmuje też nagłówki bezpieczeństwa, 1#4): przyczyną rozjazdu był opis, nie uwaga.
+3. Pary nakładające się → reguły rozstrzygające dopisane do opisów klas:
+   sciezka-bledu vs polkniety-blad (skutek dla użytkownika/danych vs brak śladu dla operatora; 9#22, 10#49 → polkniety-blad);
+   cykl-zycia-ui vs wyscig-i-wspolbieznosc (zmiana propsa/odmontowanie vs dwie równoległe operacje; 8#176 → cykl-zycia-ui, 12#86 zostaje);
+   bramka-czarna-lista vs dopasowanie-tekstu (skutek = obejście kontroli → bramka; 9#12 zostaje w bramce, 4#105 w dopasowaniu);
+   kontrakt-wspolny vs duplikacja (wartości JUŻ się różnią vs kopia na razie zgodna; 3#64, 3#65, 13#107 → duplikacja);
+   konwencja-kodu vs preferencja-bota (bot cytuje regułę projektu → konwencja);
+   tekst-ui vs zgodnosc-prawna (z opisu zgodnosc-prawna usunięte „albo z tym, co zbiera kod”; 4#85 zostaje w tekst-ui).
+4. Osie → kontrakt-wspolny po przeniesieniu duplikacji spójny (spec); limit-czasu-i-ponowien zostaje w correctness (ETAP1B).
+5. Nazwy → parser-tekstu przemianowany na `dopasowanie-tekstu` z szerszym opisem; cache-i-zapytania opis + „wiadro limitera”.
+6. Liczba klas → `konwencja-typow` scalona z `konwencja-kodu` (obie 0 P1/P2, to samo działanie); z nową `zaufanie-danym-klienta` = 33 klasy
+   z `inna`.
+
+Kontrola po poprawkach (skrypty/it1_slownik_klas.py): 109/109 starych nazw z klasą, 0 dubli, 19 nadpisań na istniejące uwagi,
+`inna` 0,2%; klasy > 10% P1/P2: test-niefalsyfikowalny 16,3% (jednorodna wg recenzenta), sciezka-bledu 10,6% (po dołączeniu 7#131,
+7#158 — jedna przyczyna: błąd psuje stan dla użytkownika; jedno polecenie naprawcze z ETAP1B „każda ścieżka błędu w diffie”).

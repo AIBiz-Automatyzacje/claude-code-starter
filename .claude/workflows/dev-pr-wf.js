@@ -77,6 +77,48 @@ const START = {
 
 const KLASY = ['napraw', 'napraw-szerzej', 'odrzuc', 'do-operatora']
 
+// Zamkniety slownik klas BLEDU (It. 1, L12): miara jakosci „P1/P2 bota na 100 plikow per klasa i os” wymaga jednej nazwy na
+// klase — historycznie 109 nazw od trzech klasyfikatorow. Zrodlo: docs/reviews/2026-09-19-analiza-pipeline/dane/it1-slownik-klas.*
+// (po review subagenta). `os` = reviewer, ktory powinien byl zlapac uwage; `brak` = dzis zadna os albo nie-defekt.
+// Zmiana listy = swiadoma decyzja (porownania miedzy epokami) — test __tests__/klasy-bledow.test.mjs.
+const KLASY_BLEDOW = {
+  'cykl-zycia-ui': { os: 'correctness', opis: 'efekt, timer albo stan UI zyje dluzej niz komponent albo przezywa zmiane propsa/identyfikatora (zmiana propsa, odmontowanie → tu; dwie rownolegle operacje → wyscig)' },
+  'wyscig-i-wspolbieznosc': { os: 'correctness', opis: 'dwie rownolegle operacje albo wartosc sprzed await psuja wynik' },
+  'sciezka-bledu': { os: 'correctness', opis: 'blad psuje stan dla uzytkownika albo niszczy dane zamiast byc obsluzony (skutek dla uzytkownika/danych → tu; brak sladu tylko dla operatora → polkniety-blad)' },
+  'bramka-na-jednej-drodze': { os: 'correctness', opis: 'warunek chroni jedna droge do operacji, a inna go omija' },
+  'dopasowanie-tekstu': { os: 'correctness', opis: 'parsowanie albo porownanie tekstu, HTML, URI lub zbiorow daje zly wynik (regex, includes, wielkosc liter, Set gubi krotnosc); gdy skutkiem jest obejscie kontroli dostepu → bramka-czarna-lista' },
+  'wartosc-graniczna': { os: 'correctness', opis: 'zle zachowanie na granicy zakresu: 0, 1, limit, maksymalna dlugosc' },
+  'limit-czasu-i-ponowien': { os: 'correctness', opis: 'wywolanie bez limitu czasu albo petla ponowien bez sufitu' },
+  'spojnosc-dwoch-systemow': { os: 'correctness', opis: 'kod zaklada o innym systemie (baza, cudze API, drugi proces) cos, co nie jest prawda' },
+  'bramka-czarna-lista': { os: 'security', opis: 'kontrola dostepu wylicza, co blokuje (albo dopasowuje niedokladnie), i domyslnie przepuszcza reszte' },
+  'zaufanie-danym-klienta': { os: 'security', opis: 'decyzja (limit, dostep) oparta na danych, ktore kontroluje klient: naglowek, content-length' },
+  'pii-i-sekrety': { os: 'security', opis: 'dane osobowe albo sekret trafiaja do logu, Sentry, repo albo argv' },
+  'walidacja-granicy-api': { os: 'security', opis: 'dane z zewnatrz wchodza bez walidacji ksztaltu (Zod) na granicy' },
+  'uprawnienia-naglowki-sql': { os: 'security', opis: 'grant bazy za szeroki albo za waski, brak naglowkow bezpieczenstwa HTTP, sklejanie SQL' },
+  'test-niefalsyfikowalny': { os: 'test', opis: 'test przechodzi takze wtedy, gdy zachowanie jest zepsute' },
+  'luka-pokrycia': { os: 'test', opis: 'zachowanie z planu albo sciezka bledu nie ma testu' },
+  'test-kruchy': { os: 'test', opis: 'test pada od zmiany niezwiazanej z zachowaniem (twarde liczby, kolejnosc)' },
+  'tekst-ui': { os: 'spec', opis: 'tekst dla uzytkownika obiecuje cos, czego kod nie robi, albo niesie zle dane' },
+  'kontrakt-wspolny': { os: 'spec', opis: 'dwie warstwy (SQL, Zod, typ, dwie bramki) JUZ opisuja to samo pole inaczej (kopia na razie zgodna → duplikacja)' },
+  'zgodnosc-prawna': { os: 'brak', opis: 'dokument prawny niezgodny z przepisami (np. brak elementow z art. 13 RODO)' },
+  'polkniety-blad': { os: 'code-quality', opis: 'pusty catch albo blad polkniety: operator nie widzi przyczyny (kod bledu, stderr)' },
+  'duplikacja': { os: 'code-quality', opis: 'ta sama logika albo stala w dwoch miejscach, na razie zgodnych, ktore moga sie rozjechac' },
+  'martwy-kod-lub-komentarz': { os: 'code-quality', opis: 'nieosiagalna galaz albo komentarz, ktory nie zgadza sie z kodem' },
+  'cache-i-zapytania': { os: 'performance', opis: 'zbedne zapytania, zly cache albo wspolne wiadro limitera spowalnia / blokuje klientow' },
+  'seed-e2e': { os: 'e2e', opis: 'seed testow E2E niezgodny z kontraktem migracji' },
+  'migracja-bazy': { os: 'brak', opis: 'migracja blokuje tabele, nie jest idempotentna albo wchodzi w zlej kolejnosci' },
+  'a11y': { os: 'brak', opis: 'dostepnosc: fokus, klawiatura, kontrast, atrybuty ARIA' },
+  'wada-dokumentu-sterujacego': { os: 'brak', opis: 'CLAUDE.md, plan albo instrukcja projektu kaze zrobic cos zlego albo sama sobie przeczy' },
+  'prog-rozmiaru': { os: 'brak', opis: 'plik albo funkcja przekracza prog linii z konwencji' },
+  'konwencja-kodu': { os: 'brak', opis: 'bot cytuje regule projektu (typowanie as/any, eksporty, importy, style, console, Act/Assert, rate limit)' },
+  'preferencja-bota': { os: 'brak', opis: 'sugestia bota bez defektu i bez reguly projektu (rada, preferencja formatowania)' },
+  'teza-obalona': { os: 'brak', opis: 'uwaga bota nieprawdziwa albo wycofana przez samego bota' },
+  'odpowiedz-bota': { os: 'brak', opis: 'odpowiedz bota w watku (potwierdzenie poprawki), nie nowa uwaga' },
+  'inna': { os: 'brak', opis: 'nic z listy nie pasuje — uzasadnienie w polu uzasadnienie' },
+}
+const OSIE_UWAG = ['security', 'correctness', 'spec', 'test', 'performance', 'code-quality', 'e2e', 'brak']
+const WAGI_UWAG = ['P1', 'P2', 'P3', '0']
+
 const ZEBRANE = {
   type: 'object',
   additionalProperties: false,
@@ -97,14 +139,19 @@ const ZEBRANE = {
             description: 'wplyw na TERAZ i na DALSZY CIAG: czy to klasa bledu, ktora sie powtorzy; czy dotyka kontraktu, schematu bazy albo granicy zaufania; czy blokuje kolejne fazy. To jest to, co operator widzi przy wyborze',
           },
           klaster: { type: ['string', 'null'], description: 'identyfikator wspolnej przyczyny — watki z tym samym klastrem zamyka JEDNA naprawa' },
+          klasaBledu: { type: 'string', enum: Object.keys(KLASY_BLEDOW), description: 'klasa BLEDU ze slownika (niezalezna od decyzji w polu klasa)' },
+          os: { type: 'string', enum: OSIE_UWAG, description: 'ktory reviewer pipeline\'u powinien byl to zlapac; domyslnie os klasy ze slownika' },
+          waga: { type: 'string', enum: WAGI_UWAG, description: 'P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny, 0 nie-defekt' },
         },
-        required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt'],
+        required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga'],
       },
     },
+    prNumer: { type: ['integer', 'null'], description: 'numer pull requesta z gh pr view' },
+    plikiPr: { type: ['integer', 'null'], description: 'liczba zmienionych plikow PR (gh pr view --json changedFiles) — mianownik miary jakosci' },
     recenzjaAktualna: { type: 'boolean', description: 'czy pobrana recenzja dotyczy biezacego headRefOid' },
     uwagi: { type: ['string', 'null'], description: 'cokolwiek, co operator powinien wiedziec o samym zbieraniu (np. ucieta lista watkow)' },
   },
-  required: ['watki', 'recenzjaAktualna'],
+  required: ['watki', 'recenzjaAktualna', 'plikiPr'],
 }
 
 const NAPRAWA = {
@@ -239,7 +286,8 @@ if (etap === 'zbierz') {
     `Jestes klasyfikatorem uwag z code review bota dla pull requesta zadania "${zadanie}" (tura ${tura}).
 Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE commitujesz.
 
-1. Ustal numer PR (\`gh pr view --json number,headRefOid\`) i pobierz WSZYSTKIE watki review przez GraphQL
+1. Ustal numer PR i liczbe zmienionych plikow (\`gh pr view --json number,headRefOid,changedFiles\` → \`prNumer\`, \`plikiPr\`)
+   i pobierz WSZYSTKIE watki review przez GraphQL
    (zapytanie w bloku gh nizej). Wez tylko te z \`isResolved: false\`. Dolacz tresc recenzji ogolnych
    (\`gh pr view --json reviews\`) jako pozycje z plikiem "(recenzja ogolna)".
 2. Ustal \`recenzjaAktualna\`: czy najnowsza recenzja bota dotyczy biezacego \`headRefOid\`. Gdy recenzja jest
@@ -259,7 +307,12 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
    - czy dotyka kontraktu API, schematu bazy albo granicy zaufania (walidacja, autoryzacja, wejscie z zewnatrz)?
    - czy blokuje kolejne fazy z mapy faz zadania?
    Uwaga dotyczaca nazwy zmiennej i uwaga o braku walidacji na endpointcie NIE moga miec tego samego wpisu.
-5. KLASTRUJ watki o wspolnej przyczynie: nadaj im ten sam \`klaster\` (krotki identyfikator, np.
+5. Dla KAZDEGO watku przypisz \`klasaBledu\` — DOKLADNIE jedna nazwe z listy (opis rozstrzyga; nic nie pasuje → \`inna\`
+   i powod w uzasadnieniu), \`os\` (ktory nasz reviewer powinien byl to zlapac; domyslnie os podana przy klasie) i \`waga\`
+   (P1 bezpieczenstwo / utrata danych / awaria, P2 defekt zachowania, P3 drobny, 0 nie-defekt: preferencja, konwencja bez skutku,
+   teza obalona). Klasa bledu opisuje CO jest zle; decyzja z punktu 3 — co z tym robimy. To dwa niezalezne pola.
+${Object.entries(KLASY_BLEDOW).map(([k, v]) => `   - \`${k}\` [os: ${v.os}] — ${v.opis}`).join('\n')}
+6. KLASTRUJ watki o wspolnej przyczynie: nadaj im ten sam \`klaster\` (krotki identyfikator, np.
    "brak-limitu-czasu-http"). Jedna naprawa zamyka wtedy kilka komentarzy i tak tez zostana policzone.
 
 Nie zgaduj tresci watku z samego tytulu — przeczytaj komentarze i zajrzyj do wskazanego pliku.
@@ -286,7 +339,8 @@ Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
     log(`/dev-pr: ${odrzuconeBezCytatu.length}x klasa "odrzuc" bez cytatu ze zrodla decyzji -> przeklasyfikowane na "do-operatora"`)
   }
   log(`/dev-pr tura ${tura}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
-  return { status: 'OK', etap, tura, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, uwagi: wynik.uwagi || null }
+  // plikiPr i prNumer ida do wyniku runu — z niego telemetria buduje run.pr (miara: P1/P2 bota na 100 plikow PR).
+  return { status: 'OK', etap, tura, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, uwagi: wynik.uwagi || null }
 }
 
 // ── Etap: napraw (Faza 4 — naprawa, odpowiedzi, commit, push) ─────────────
