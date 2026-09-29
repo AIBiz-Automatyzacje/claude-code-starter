@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 export const CWD_PROJEKTU = '/Users/u/Kodowanie/projekt'
+export const SKRYPT_RUNU = "export const meta = { name: 'dev-docs-review-wf' }\n"
 
 /** @param {unknown[]} wpisy */
 export const jsonl = (wpisy) => wpisy.map((w) => JSON.stringify(w)).join('\n') + '\n'
@@ -37,7 +38,7 @@ export function zbudujFixture() {
   writeFileSync(join(run, 'agent-a2.meta.json'), JSON.stringify({ description: 'scribe' }))
   writeFileSync(join(run, 'agent-a2.jsonl'), transkrypt('m2', 20))
   writeFileSync(join(sesja, 'workflows', 'wf_aaa-111.json'), JSON.stringify({
-    runId: 'wf_aaa-111', status: 'completed', workflowName: 'dev-docs-review-wf', durationMs: 60000,
+    runId: 'wf_aaa-111', status: 'completed', workflowName: 'dev-docs-review-wf', durationMs: 60000, startTime: 1000, script: SKRYPT_RUNU,
     args: { sciezka: 'docs/active/zadanie-x', faza: 1 },
     result: { status: 'OK' },
     workflowProgress: [

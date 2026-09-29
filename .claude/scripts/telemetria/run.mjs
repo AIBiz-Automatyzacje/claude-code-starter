@@ -114,7 +114,8 @@ function zadanieZArgumentow(args) {
 }
 
 /**
- * @param {{ harness: Record<string, unknown> | null, status: StatusRunu, agenci: KosztAgenta[], bootstrap: unknown }} we
+ * @param {{ harness: Record<string, unknown> | null, status: StatusRunu, agenci: KosztAgenta[], bootstrap: unknown,
+ *   szablon?: import('./szablon.mjs').WersjaSzablonu | null }} we
  */
 export function rekordRunu(we) {
   const wynik = obiekt(we.harness?.result)
@@ -136,9 +137,9 @@ export function rekordRunu(we) {
     solution: tekstLubNull(wynik.solution),
     koszt: sumaKosztu(we.agenci),
     sekundy: typeof czasMs === 'number' ? Math.round(czasMs / 1000) : sekundyAgentow(we.agenci),
-    // Producenci w pozniejszych krokach / iteracjach: szablon (krok 3), pr (krok 8), MANUAL (It. 3e),
-    // profil stacku i smoke (It. 3), ogrod (R1). Klucze sa od razu — raport nie moze zgadywac ksztaltu.
-    szablon: null,
+    szablon: we.szablon ?? null,
+    // Producenci w pozniejszych krokach / iteracjach: pr (krok 8), MANUAL (It. 3e), profil stacku i smoke (It. 3),
+    // ogrod (R1). Klucze sa od razu — raport nie moze zgadywac ksztaltu.
     pr: null,
     manual_razem: null,
     profil_stacku: null,

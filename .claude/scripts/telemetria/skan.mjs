@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { rekordyFaz } from './faza.mjs'
 import { zmianyCommitow } from './git.mjs'
 import { rekordRunu, statusBezHarnessu, statusRunu } from './run.mjs'
+import { wersjaSzablonu } from './szablon.mjs'
 import { agenciRunu, czytajHarness, czytajJournal, katalogProjektu } from './zrodla.mjs'
 
 /** @typedef {import('./zrodla.mjs').Run} Run */
@@ -45,7 +46,16 @@ export function rekordyRunu(run, kontekst) {
   const bootstrap = agenci.find((a) => a.rola === 'bootstrap')
   const repo = katalogProjektu(run)
   return {
-    run: rekordRunu({ harness, status, agenci, bootstrap: bootstrap ? journal.get(bootstrap.id)?.wynik : null }),
+    run: rekordRunu({
+      harness, status, agenci,
+      bootstrap: bootstrap ? journal.get(bootstrap.id)?.wynik : null,
+      szablon: wersjaSzablonu({
+        workflowName: typeof harness?.workflowName === 'string' ? harness.workflowName : null,
+        skrypt: typeof harness?.script === 'string' ? harness.script : null,
+        startMs: typeof harness?.startTime === 'number' ? harness.startTime : null,
+        repo,
+      }),
+    }),
     fazy: rekordyFaz({
       wynikRunu: harness?.result,
       agenci,

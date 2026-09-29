@@ -7,7 +7,8 @@ import assert from 'node:assert/strict'
 import { PROG_CISZY_MS } from '../run.mjs'
 import { rekordyRunu } from '../skan.mjs'
 import { znajdzRuny } from '../zrodla.mjs'
-import { zbudujFixture } from './fixture-projekty.mjs'
+import { hashBloba } from '../szablon.mjs'
+import { SKRYPT_RUNU, zbudujFixture } from './fixture-projekty.mjs'
 
 test('run zakonczony: rekord run ze statusem z harnessu, faza i agenci', () => {
   const katalog = zbudujFixture()
@@ -18,6 +19,7 @@ test('run zakonczony: rekord run ze statusem z harnessu, faza i agenci', () => {
     assert.equal(r.run.workflow, 'dev-docs-review')
     assert.equal(r.run.zadanie, 'zadanie-x', 'dev-docs-review dostaje sciezke zadania w args.sciezka')
     assert.equal(r.run.koszt.agentow, 2)
+    assert.equal(r.run.szablon?.skrypt_sha, hashBloba(SKRYPT_RUNU), 'hash skryptu z pliku harnessu')
     assert.deepEqual(r.fazy.map((f) => f.faza), [1])
     assert.equal(r.agenci.length, 2)
   } finally {

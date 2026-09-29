@@ -1,0 +1,4 @@
+It. 1 krok 3 — akceptacja run.szablon.skrypt_sha na prawdziwych danych (2026-09-29)
+Wersje .claude/workflows/dev-autopilot-wf.js w historii szablonu: 16
+Runy autopilota sprzed przegladu D5: 55 (wzorzec 55); skrypt spoza historii: 33 (wzorzec 33) — Nawykometr 4, oferty-online 29
+→ ZALICZONE
