@@ -47,7 +47,19 @@ test('jakosc bota: unikalne watki per zadanie (ta sama uwaga w 2 turach = 1), P1
     { typ: 'run', zadanie: 'z1', pr: { pliki: 50, klasy: [{ id: 'A', severity: 'P1' }, { id: 'C', severity: 'P2' }] } },
     { typ: 'run', zadanie: 'z2', pr: null },
   ]
-  assert.deepEqual(jakoscBota(runy), [{ zadanie: 'z1', pliki: 50, watki: 3, p1p2: 2, p1p2_na_100_plikow: 4 }])
+  assert.deepEqual(jakoscBota(runy), [{ zadanie: 'z1', pliki: 50, watki: 3, bez_wagi: 0, p1p2: 2, p1p2_na_100_plikow: 4 }])
+})
+
+test('jakosc bota: watek bez wagi (runy dev-pr sprzed slownika klas) to brak klasyfikacji, nie zero P1/P2', () => {
+  const runy = [
+    // Ksztalt z prawdziwego run.pr sprzed kroku 8 It. 1: severity i pliki null
+    { typ: 'run', zadanie: 'stare', pr: { pliki: null, klasy: [{ id: 'A', severity: null }, { id: 'B', severity: null }] } },
+    { typ: 'run', zadanie: 'mieszane', pr: { pliki: 20, klasy: [{ id: 'C', severity: 'P2' }, { id: 'D', severity: null }] } },
+  ]
+  assert.deepEqual(jakoscBota(runy), [
+    { zadanie: 'stare', pliki: 0, watki: 2, bez_wagi: 2, p1p2: 0, p1p2_na_100_plikow: null },
+    { zadanie: 'mieszane', pliki: 20, watki: 2, bez_wagi: 1, p1p2: 1, p1p2_na_100_plikow: 5 },
+  ])
 })
 
 test('niezawodnosc: statusy per workflow i kategorie STOP', () => {
@@ -72,6 +84,15 @@ test('skille: mediana pelnego kosztu (wlasny + subagenci) i wiadomosci operatora
     { typ: 'skill', skill: 'dev-plan', koszt_jedn: 9999, subagenci_jedn: 0, wiadomosci_operatora: 0, otwarty: true },
   ])
   assert.deepEqual(s, [{ skill: 'dev-plan', n: 2, pelny_p50: 300, wiadomosci_p50: 3 }])
+})
+
+test('skille: komendy lokalne z rekordow starszej wersji skanu (v1: exit, copy) nie sa skillami', () => {
+  const s = skillePerNazwa([
+    { typ: 'skill', skill: 'exit', koszt_jedn: 5_779_000, subagenci_jedn: 0, wiadomosci_operatora: 20, otwarty: false, v: 1 },
+    { typ: 'skill', skill: 'copy', koszt_jedn: 100, subagenci_jedn: 0, wiadomosci_operatora: 1, otwarty: false, v: 1 },
+    { typ: 'skill', skill: 'dev-pr', koszt_jedn: 200, subagenci_jedn: 0, wiadomosci_operatora: 2, otwarty: false, v: 4 },
+  ])
+  assert.deepEqual(s.map((x) => x.skill), ['dev-pr'])
 })
 
 test('findingi per os: suma z rekordow faz, faza bez findingow nie psuje sumy', () => {

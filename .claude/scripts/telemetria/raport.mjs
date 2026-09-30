@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { anomalie, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa } from './raport-sekcje.mjs'
+import { anomalie, czyPipeline, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa } from './raport-sekcje.mjs'
 import { zbierzWszystko } from './zbieranie.mjs'
 import { PLIK_BLEDOW, PLIK_DANYCH, odczytajRekordy } from './zapis.mjs'
 import { KATALOG_PROJEKTOW } from './zrodla.mjs'
@@ -39,8 +39,13 @@ if (!op['bez-skanu']) {
 const wszystkie = [...odczytajRekordy(op.plik).ostatnie.values()]
 /** @param {Record<string, unknown>} r */
 const wOkresie = (r) => typeof r.start === 'string' && r.start >= OD && r.start < DO_WYL && (!op.projekt || r.projekt === op.projekt)
-const agenci = wszystkie.filter((r) => r.typ === 'agent' && wOkresie(r))
-const runy = wszystkie.filter((r) => r.typ === 'run' && wOkresie(r))
+// Przynaleznosc do pipeline'u po workflowie runu (z calej historii — run moze zaczac sie przed okresem, a jego agenci w nim).
+const workflowRunu = new Map(wszystkie.filter((r) => r.typ === 'run').map((r) => [r.run, r.workflow]))
+const agenciOkresu = wszystkie.filter((r) => r.typ === 'agent' && wOkresie(r))
+const runyOkresu = wszystkie.filter((r) => r.typ === 'run' && wOkresie(r))
+const agenci = agenciOkresu.filter((r) => czyPipeline(workflowRunu.get(r.run)))
+const runy = runyOkresu.filter((r) => czyPipeline(r.workflow))
+const agenciPoza = agenciOkresu.filter((r) => !czyPipeline(workflowRunu.get(r.run)))
 const idRunow = new Set(runy.map((r) => r.run))
 const fazy = wszystkie.filter((r) => r.typ === 'faza' && idRunow.has(r.run))
 const skille = wszystkie.filter((r) => r.typ === 'skill' && wOkresie(r))
@@ -56,7 +61,8 @@ out.push('', '1. Koszt (jednostki wzgledne: in 1, cache write 1,25, cache read 0
 out.push(`   razem ${m(koszt.razem)}; agentow: ${agenci.length}; runow: ${runy.length}; faz: ${fazy.length}; poza etapami fazy ${m(koszt.poza_etapami)}`)
 for (const [etap, v] of Object.entries(koszt.etapy).sort((a, b) => b[1].jedn - a[1].jedn)) out.push(`   ${etap.padEnd(17)} ${m(v.jedn).padStart(9)}  ${v.udzial}%`)
 const perProjekt = Map.groupBy(agenci, (a) => String(a.projekt))
-out.push('   per projekt: ' + [...perProjekt].map(([p, l]) => `${p} ${m(l.reduce((s, a) => s + Number(a.koszt_jedn), 0))}`).join('; '))
+out.push(`   poza pipeline'em (analizy, testy): ${runyOkresu.length - runy.length} runow, ${agenciPoza.length} agentow, ${m(agenciPoza.reduce((s, a) => s + Number(a.koszt_jedn), 0))} — pominiete w sekcjach 1–5 i 7`)
+out.push('   per projekt: ' +[...perProjekt].map(([p, l]) => `${p} ${m(l.reduce((s, a) => s + Number(a.koszt_jedn), 0))}`).join('; '))
 
 out.push('', `2. Kontekst startowy per klasa roli i model (${ODNIESIENIE_CTX}; ${CELE_CTX})`)
 for (const w of kontekstPerKlasa(agenci)) {
@@ -69,7 +75,11 @@ for (const [klasa, poziomy] of Object.entries(efortPerKlasa(agenci))) out.push(`
 out.push('', '4. Jakosc')
 out.push('   findingi reviewerow per os: ' + (Object.entries(findingiPerOs(fazy)).map(([os, v]) => `${os} P1 ${v.p1} / P2 ${v.p2} / P3 ${v.p3}`).join('; ') || 'brak'))
 const bot = jakoscBota(runy)
-out.push('   uwagi bota (unikalne watki per zadanie): ' + (bot.map((b) => `${b.zadanie}: ${b.p1p2} P1/P2 z ${b.watki} watkow, ${b.p1p2_na_100_plikow ?? '—'} na 100 plikow`).join('; ') || 'brak rekordow run.pr'))
+/** @param {ReturnType<typeof jakoscBota>[number]} b */
+const opisBota = (b) => b.bez_wagi === b.watki
+  ? `${b.zadanie}: ${b.watki} watkow bez klasyfikacji (sprzed slownika klas)`
+  : `${b.zadanie}: ${b.p1p2} P1/P2 z ${b.watki} watkow, ${b.p1p2_na_100_plikow ?? '—'} na 100 plikow${b.bez_wagi ? `, ${b.bez_wagi} bez klasyfikacji` : ''}`
+out.push('   uwagi bota (unikalne watki per zadanie): ' + (bot.map(opisBota).join('; ') || 'brak rekordow run.pr'))
 
 const nz = niezawodnosc(runy)
 out.push('', '5. Niezawodnosc')

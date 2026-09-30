@@ -1,6 +1,7 @@
 // Obliczenia raportu miesiecznego telemetrii (d5-telemetria-rekord.txt §4) — czyste funkcje na rekordach z pipeline.jsonl.
 
 import { etapRoli } from './faza.mjs'
+import { KOMENDY_LOKALNE } from './skill.mjs'
 
 /** @typedef {Record<string, unknown>} Rekord */
 
@@ -8,6 +9,12 @@ import { etapRoli } from './faza.mjs'
 const liczba = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null)
 /** @param {unknown} x @returns {Record<string, unknown>} */
 const obiekt = (x) => (x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x)) : {})
+
+// Raport opisuje pipeline dev-*. Workflowy analiz i testow (test-review-*, mr-*, panel-*) maja inna konfiguracje agentow
+// (13 narzedzi, maly CLAUDE.md) i falszowaly kontekst per klasa (odczyt It. 1 §5a). Run bez harnessu (workflow null)
+// zostaje — nie wiadomo, czyj byl, a jego KILLED jest sygnalem niezawodnosci.
+/** @param {unknown} workflow */
+export const czyPipeline = (workflow) => workflow === null || workflow === undefined || (typeof workflow === 'string' && workflow.startsWith('dev-'))
 
 /**
  * Kwantyl bez interpolacji — ta sama definicja co w skryptach analizy (v[min(n-1, floor(p*n))]).
@@ -73,6 +80,7 @@ export function efortPerKlasa(agenci) {
 // Uwagi bota P1/P2 na 100 plikow PR — miara jakosci z mapy walidacji (PANEL-WEJSCIE §12). Unikalne watki per zadanie:
 // suma po runach dev-pr zawyza o 43% (przeglad D5 §8 pkt 4).
 const NA_STO = 100
+const WAGI = new Set(['P1', 'P2', 'P3'])
 
 /** @param {Rekord[]} runy */
 export function jakoscBota(runy) {
@@ -89,8 +97,12 @@ export function jakoscBota(runy) {
     perZadanie.set(r.zadanie, z)
   }
   return [...perZadanie].map(([zadanie, z]) => {
-    const p1p2 = [...z.watki.values()].filter((s) => s === 'P1' || s === 'P2').length
-    return { zadanie, pliki: z.pliki, watki: z.watki.size, p1p2, p1p2_na_100_plikow: z.pliki ? Math.round((p1p2 / z.pliki) * NA_STO * 10) / 10 : null }
+    const wagi = [...z.watki.values()]
+    // Runy dev-pr sprzed slownika klas (It. 1 krok 8) nie zapisywaly wagi — to brak danych, nie zero P1/P2.
+    const bezWagi = wagi.filter((s) => !WAGI.has(s)).length
+    const p1p2 = wagi.filter((s) => s === 'P1' || s === 'P2').length
+    const liczalne = z.pliki && bezWagi < wagi.length
+    return { zadanie, pliki: z.pliki, watki: z.watki.size, bez_wagi: bezWagi, p1p2, p1p2_na_100_plikow: liczalne ? Math.round((p1p2 / z.pliki) * NA_STO * 10) / 10 : null }
   })
 }
 
@@ -123,7 +135,7 @@ export function anomalie(agenci) {
 
 /** @param {Rekord[]} skille */
 export function skillePerNazwa(skille) {
-  const zamkniete = skille.filter((s) => s.otwarty !== true)
+  const zamkniete = skille.filter((s) => s.otwarty !== true && !KOMENDY_LOKALNE.has(String(s.skill)))
   return [...Map.groupBy(zamkniete, (s) => String(s.skill))].map(([skill, lista]) => ({
     skill, n: lista.length,
     pelny_p50: kwantyl(lista.map((s) => (liczba(s.koszt_jedn) ?? 0) + (liczba(s.subagenci_jedn) ?? 0)), 0.5),
