@@ -598,8 +598,14 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (e) **Obserwacje do It. 3 (nie blokują):** fixture smoke'a w monorepo (`src/lib` poza bramkami) wymusza cykl fixa; commit archiwizacji dostaje
     komunikat commita feature; szablon śledzi `.claude/skills/ux-ui-guidelines/.DS_Store`; rekord, którego nowa logika skanu już nie tworzy,
     zostaje w pliku (dziś 3, filtr w raporcie) — mechanizm ogólny przy drugim przypadku (It. 3c, doctor).
-    (f) **Otwarte u operatora:** push szablonu do GitHuba (projekty dostaną telemetrię v4 dopiero po push + `sync-template`); sprzątanie kopii
-    `~/Documents/Kodowanie/_smoke-it1-oferty-online` (tylko za zgodą na ścieżkę); nowy token Airtable.
+    (f) **Otwarte u operatora:** push szablonu do GitHuba (projekty dostaną telemetrię v4 dopiero po push + `sync-template`); nowy token Airtable.
+    Kopia `~/Documents/Kodowanie/_smoke-it1-oferty-online` USUNIĘTA 2026-09-30 za zgodą operatora (oryginał nietknięty); transkrypty sesji kopii
+    zostają w `~/.claude/projects/` (źródło rekordów telemetrii).
+    (g) **Kolejny etap — ustalenie z operatorem (2026-09-30):** It. 2 ma dwie części o różnej naturze. **2A (sesja w szablonie):** konfiguracja bota,
+    4 zmiany dev-pr, kalibracja klasyfikatora — robota jak It. 1 (plan → akceptacja → test → kod). **2B (czas kalendarzowy u operatora):** B0 =
+    pierwsze 2–3 zadania NOWEGO projektu na szablonie po 2A, bez żadnych zmian pipeline'u w tym czasie. **Wszystko od It. 3 czeka na B0**
+    (B0 kosztu i jakości to punkt odniesienia każdej dalszej zmiany), więc ścieżką krytyczną jest nowy projekt operatora, nie praca w szablonie.
+    Kolejność: 2A → push szablonu do GitHuba → nowy projekt z `sync-template` → 2–3 zadania (autopilot + dev-pr) → odczyt B0 → It. 3.
     Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” (nowa sesja).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -882,17 +888,19 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   (SMOKE)” niżej** (nowa sesja — N2). Otwarte u operatora: nowy token Airtable; push szablonu do GitHuba (decyzja).
 - **IT. 1 ODCZYTANE I ZAAKCEPTOWANE (2026-09-30; 6a pkt 39, wiersz It.1):** smoke `wf_031f0eae-204` OK (4,78 M), wszystkie asercje TAK, pełny skan
   427/427; poprawiony skan (`run.walidacja`, v4) i 3 wady raportu (tylko dev-\*, „bez klasyfikacji”, komendy lokalne). **Następny krok: „IT. 2 — BOT,
-  DEV-PR I B0” niżej** (nowa sesja). Otwarte u operatora: push szablonu do GitHuba; sprzątanie kopii `_smoke-it1-oferty-online`; token Airtable.
+  DEV-PR I B0” niżej** (nowa sesja; część 2A w szablonie, B0 = 2B na nowym projekcie operatora — 6a pkt 39 g). Kopia smoke usunięta.
+  Otwarte u operatora: push szablonu do GitHuba (po 2A); wybór nowego projektu na B0; token Airtable.
 
 **IT. 2 — BOT, DEV-PR I B0 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
-It. 1 (telemetria) ODCZYTANA I ZAAKCEPTOWANA (HANDOFF 6a pkt 39). Zadanie tej sesji: It. 2 — konfiguracja bota, 4 zmiany dev-pr, kalibracja
-klasyfikatora i plan zebrania B0. NAJPIERW PLAN do mojej akceptacji, dopiero po niej pierwsza edycja .claude/. BEZ agentów i BEZ zmian w CLAUDE.md.
+It. 1 (telemetria) ODCZYTANA I ZAAKCEPTOWANA (HANDOFF 6a pkt 39). Zadanie tej sesji: It. 2A w szablonie — konfiguracja bota, 4 zmiany dev-pr,
+kalibracja klasyfikatora — oraz plan części 2B (B0 na moim nowym projekcie; 6a pkt 39 g: wszystko od It. 3 czeka na B0).
+NAJPIERW PLAN do mojej akceptacji, dopiero po niej pierwsza edycja .claude/. BEZ agentów i BEZ zmian w CLAUDE.md.
 Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
 
-Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF 6a pkt 36 (a), 38, 39 i §7 (dwa ostatnie punkty); PANEL-WYNIK §4 (dopisek
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF 6a pkt 36 (a), 38, 39 (zwłaszcza g) i §7 (dwa ostatnie punkty); PANEL-WYNIK §4 (dopisek
 2026-09-28 i wiersz It. 2) i §4a C; ETAP1B-ROZSTRZYGNIECIE.md; IT1-ODCZYT.md §4–6. Kod dziś: .claude/skills/dev-pr/SKILL.md,
 .claude/workflows/dev-pr-wf.js (KLASY_BLEDOW, etapy start/zbierz/napraw/merge/compound), .claude/skills/coderabbit-setup/ (SKILL.md, templates/,
 reference/stack-blocks.md), .claude/scripts/telemetria/ (run.pr, raport §4 „uwagi bota”).
@@ -907,10 +915,14 @@ Do zrobienia:
    Każdy krok: test → kod → pnpm typecheck → pnpm test → pnpm lint → commit; warunek odwrotu i sposób cofnięcia per krok.
 2. Kalibracja klasyfikatora: 2–3 stare PR-y oferty-online (tylko odczyt, historia/kopie) — klasy z pr:zbierz vs klasyfikacja 1b
    (dane/coderabbit/klasyfikacja-574.csv); niezgodność → poprawka schematu pr:zbierz PRZED B0 (warunek odwrotu PANEL-WYNIK §4).
-3. B0 (6a pkt 36 a): pierwsze 2–3 zadania NOWEGO projektu, bez zmian pipeline'u po It. 2 — w planie: co B0 mierzy (jakość per oś i typ kodu,
-   pliki fixa / reszta, uwagi bota P1/P2 na 100 plików; koszt per rola z efortem — wszystko z raport.mjs), jak projekt dostaje szablon
-   (push do GitHuba albo TEMPLATE_LOCAL_SRC — decyzja moja) i kiedy liczę B0 zamkniętym. Zadanie sprzątające ESLint w oferty-online WYPADA.
-4. Oddaj plan i CZEKAJ na akceptację (decyzje z rekomendacją pierwszą). Po wdrożeniu: HANDOFF (§2, 6a, §8), pamięć projektu, commit docs/reviews.
+3. Plan 2B — B0 (6a pkt 36 a, 39 g): pierwsze 2–3 zadania NOWEGO projektu, bez zmian pipeline'u od syncu do końca B0 — w planie: co B0 mierzy
+   (jakość per oś i typ kodu, pliki fixa / reszta, uwagi bota P1/P2 na 100 plików; koszt per rola z efortem — wszystko z raport.mjs
+   --projekt), jak projekt dostaje szablon (rekomendacja: push do GitHuba po 2A + sync-template; decyzja moja), które zadania się liczą
+   (autopilot + dev-pr do merge'a), kiedy B0 jest zamknięte i jaka instrukcja sesji odczytu B0. Zapytaj mnie, który projekt i kiedy startuje.
+   Zadanie sprzątające ESLint w oferty-online WYPADA.
+4. Oddaj plan i CZEKAJ na akceptację (decyzje z rekomendacją pierwszą). Po wdrożeniu 2A: smoke dev-pr nie istnieje — w planie napisz, jak
+   sprawdzisz 4 zmiany dev-pr bez prawdziwego PR-a (testy JS bramek + ewentualnie PR na kopii) i czy odczyt 2A zostaje na pierwszy PR z B0.
+   Na końcu: HANDOFF (§2, 6a, §8 → instrukcja startu B0 dla sesji w nowym projekcie), pamięć projektu, commit docs/reviews.
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
 
