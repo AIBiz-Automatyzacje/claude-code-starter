@@ -58,7 +58,7 @@ wstaw_fixture_zadania() {
 
 wstaw_pakiet() {
   mkdir -p "$KOPIA/$PAKIET/src"
-  cp "$SZABLON_SMOKE/pakiet/package.json" "$SZABLON_SMOKE/pakiet/tsconfig.json" "$KOPIA/$PAKIET/"
+  cp "$SZABLON_SMOKE/pakiet/package.json" "$SZABLON_SMOKE/pakiet/tsconfig.json" "$SZABLON_SMOKE/pakiet/vitest.config.ts" "$KOPIA/$PAKIET/"
 }
 
 echo "Źródło: $ZRODLO"

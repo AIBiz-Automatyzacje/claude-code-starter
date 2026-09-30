@@ -22,7 +22,7 @@ bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-zrodlowy> <ka
   `.claude/.backups/` w `.git/info/exclude`;
 - sync maszynerii z LOKALNEGO szablonu (pliki sledzone przez gita — zacommituj zmiany `.claude/` przed skryptem) → commit;
 - fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` + (projekt pnpm workspace) pakiet `packages/smoke-autopilot`
-  z `package.json`/`tsconfig.json` z `pakiet/`, `pnpm install` → commit. Git kopii czysty.
+  z plikami z `pakiet/`, `pnpm install` → commit. Git kopii czysty.
 
 Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania kosztu zaleza od efortu) i uruchom
 `/dev-autopilot-wf docs/active/smoke-autopilot`. Odczyt: `docs/reviews/2026-09-19-analiza-pipeline/skrypty/smoke_odczyt.py <wf_id>`
@@ -66,5 +66,5 @@ Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 ## Pliki
 
 - `przygotuj-kopie.sh` + `__tests__/przygotuj-kopie.test.mjs` (skladnia, `--dry-run`);
-- `pakiet/` — `package.json` i `tsconfig.json` pakietu fixture (P6 dolozy konfiguracje bramek i defekt mechaniczny);
+- `pakiet/` — `package.json`, `tsconfig.json`, `vitest.config.ts` pakietu fixture (`passWithNoTests`: przed build pakiet nie ma testow) (P6 dolozy konfiguracje bramek i defekt mechaniczny);
 - `smoke-autopilot-{plan,zadania,kontekst}.md`, `plan-techniczny-smoke-autopilot.md` — fixture zadania; `{{KATALOG_KODU}}` wstawia skrypt.
