@@ -40,6 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **NASTĘPNY KROK** — §8 „PLAN POPRAWY SZABLONU”: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -606,7 +607,17 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     pierwsze 2–3 zadania NOWEGO projektu na szablonie po 2A, bez żadnych zmian pipeline'u w tym czasie. **Wszystko od It. 3 czeka na B0**
     (B0 kosztu i jakości to punkt odniesienia każdej dalszej zmiany), więc ścieżką krytyczną jest nowy projekt operatora, nie praca w szablonie.
     Kolejność: 2A → push szablonu do GitHuba → nowy projekt z `sync-template` → 2–3 zadania (autopilot + dev-pr) → odczyt B0 → It. 3.
-    Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” (nowa sesja).
+    Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” (nowa sesja). **UCHYLONE przez pkt 40.**
+40. **ZMIANA ZAŁOŻEŃ: B0 NIE BLOKUJE — poprawiamy cały szablon teraz (operator 2026-09-30).** Dosłownie: „Po prostu chcę zgodnie z naszymi
+    rzeczami, które znaliśmy, poprawić cały nasz szablon. Jak poprawię, będę mógł wchodzić w nowe projekty i budować, ale będziemy sobie mierzyć.
+    Mamy do tego telemetrię, więc to już jest skończone. Po prostu przejdźmy już do poprawy.”
+    **Skutki:** (1) iteracje z PANEL-WYNIK §4 (It. 2–9 + R1) i cała lista §4a wdrażane w szablonie JEDNA PO DRUGIEJ bez okien jakości i bez B0
+    jako warunku; kolejność wg zależności i ryzyka, nie wg okien W1–W7. (2) Pomiar = telemetria It. 1 na nowych projektach operatora PO poprawie
+    (raport.mjs --projekt); warunki odwrotu z §4 zostają jako progi do odczytu później, nie jako bramki wdrożenia. (3) Zabezpieczenie w trakcie:
+    testy szablonu (typecheck/test/lint) + smoke-autopilot po każdej paczce zmian w workflowach (sprawdza mechanikę, ~5 M, ~20 min; odniesienie
+    kosztu `wf_031f0eae-204`: 4,78 M, kontekst opus 73–84k). (4) Ślepe testy przed/po dla zmian promptów reviewerów/builderów (6a pkt 26 f, I5,
+    warunek 7c) — do decyzji operatora w planie poprawy (rekomendacja w planie). (5) Część „B0 na nowym projekcie” (pkt 39 g) wypada jako warunek;
+    pierwszy nowy projekt po poprawie = pierwszy odczyt. Następny krok: §8 „PLAN POPRAWY SZABLONU” (nowa sesja).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -890,8 +901,39 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   427/427; poprawiony skan (`run.walidacja`, v4) i 3 wady raportu (tylko dev-\*, „bez klasyfikacji”, komendy lokalne). **Następny krok: „IT. 2 — BOT,
   DEV-PR I B0” niżej** (nowa sesja; część 2A w szablonie, B0 = 2B na nowym projekcie operatora — 6a pkt 39 g). Kopia smoke usunięta.
   Otwarte u operatora: push szablonu do GitHuba (po 2A); wybór nowego projektu na B0; token Airtable.
+- **ZMIANA ZAŁOŻEŃ (2026-09-30; 6a pkt 40):** B0 nie blokuje — cały szablon poprawiamy teraz wg ustaleń analizy, pomiar telemetrią na nowych
+  projektach po poprawie. **Następny krok: „PLAN POPRAWY SZABLONU” niżej** (nowa sesja). Instrukcja „IT. 2 — BOT, DEV-PR I B0” UCHYLONA
+  (jej zakres 2A wchodzi do planu poprawy jako jedna z paczek). Otwarte u operatora: push szablonu do GitHuba (po poprawie); token Airtable.
 
-**IT. 2 — BOT, DEV-PR I B0 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**PLAN POPRAWY SZABLONU (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
+It. 1 (telemetria) zakończona (HANDOFF 6a pkt 39). ZMIANA ZAŁOŻEŃ (6a pkt 40): B0 nie blokuje — poprawiamy cały szablon teraz wg wszystkiego,
+co ustaliliśmy w analizie; mierzymy potem telemetrią na nowych projektach. Zadanie tej sesji: JEDEN PLAN POPRAWY całego szablonu do mojej
+akceptacji. Dopiero po akceptacji wdrażanie — paczka po paczce, w kolejnych sesjach. W tej sesji BEZ edycji .claude/ i CLAUDE.md.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF 6a pkt 20, 25, 26, 34, 36, 38–40 i §7; PANEL-WYNIK §4 (cała tabela z 3a–3e i R1),
+§4a (pełna lista uzgodnionych zmian → iteracja), §5 (docelowy pipeline); PROMPT-AUDIT.md + dane/pa-proponowany.diff (zaakceptowany, NIE naniesiony);
+INSPIRACJE-POCOCK-PSTACK.md (decyzje 6a pkt 26); IT1-ODCZYT.md §5–6. Kod: .claude/ (workflows, agents, skills dev-*, rules, hooks, templates).
+
+Do zrobienia:
+1. PLAN-POPRAWY.md + PLAN-POPRAWY-DLA-OPERATORA.md: KAŻDA uzgodniona zmiana (PANEL-WYNIK §4 i §4a, diff prompt-audit, inspiracje, obserwacje
+   IT1-ODCZYT §6) przypisana do jednej paczki; paczki ułożone wg zależności i ryzyka (np. co dotyka tych samych plików — raz, w jednej paczce;
+   diff prompt-audit uzgodniony ze zmianami plików reviewerów/builderów z It. 7c/9, żeby nie pisać ich dwa razy). Per paczka: pliki, testy
+   (test → kod → pnpm typecheck → pnpm test → pnpm lint → commit), smoke-autopilot po paczce zmieniającej workflowy (odniesienie
+   wf_031f0eae-204: 4,78 M, kontekst opus 73–84k), sposób cofnięcia, próg z PANEL-WYNIK §4 do późniejszego odczytu telemetrią, szacunek sesji.
+2. Kompletność sprawdź SKRYPTEM względem całej historii ustaleń (lista źródeł wyżej → każda pozycja ma paczkę albo jawne „wypada” z powodem),
+   w obie strony (plan → źródła i źródła → plan); wynik do dane/. Potem jeden niezależny subagent przegląda plan (kompletność, kolejność,
+   konflikty plików); mnie jedno zdanie o wyniku.
+3. Decyzje do mnie, każda z rekomendacją pierwszą: czy zostają ślepe testy przed/po dla zmian promptów reviewerów/builderów (6a pkt 26 f, 7c);
+   kiedy push szablonu do GitHuba; czy smoke po każdej paczce czy po grupie.
+4. Oddaj plan i CZEKAJ na akceptację. Po niej: HANDOFF (§2, 6a, §8 → instrukcja pierwszej paczki), pamięć projektu, commit docs/reviews.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**IT. 2 — BOT, DEV-PR I B0 (UCHYLONA 2026-09-30 przez 6a pkt 40 — zakres 2A wchodzi do planu poprawy; zostawiona dla historii):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.
