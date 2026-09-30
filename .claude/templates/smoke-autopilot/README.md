@@ -1,25 +1,48 @@
 # Smoke-test pipeline'u dev-autopilot-wf
 
 Mikro-zadanie przepuszczajace CALA mechanike pipeline'u (bootstrap → warmup → execute →
-review → fix → walidacja → compound → complete) w kilka-kilkanascie minut, na trywialnym kodzie.
+review → fix → walidacja → compound → complete) w ~20 minut, na trywialnym kodzie.
 Cel: wykrywac bugi WORKFLOW za grosze, zamiast odkrywac je po 3h realnego runu.
 
 ## Kiedy odpalac
 
-- Po KAZDEJ zmianie plikow `.claude/workflows/*-wf.js` (przed kopiowaniem do projektu / przed runem w boju).
+- Po KAZDEJ paczce zmian w `.claude/workflows/*-wf.js` (przed merge'em do main szablonu).
 - Przy podejrzeniu regresji pipeline'u.
 
-## Jak uzyc (w projekcie docelowym)
+## Jak uzyc — zawsze na KOPII projektu
 
-1. Skopiuj zawartosc tego folderu (bez README):
-   - `smoke-autopilot-plan.md`, `smoke-autopilot-zadania.md`, `smoke-autopilot-kontekst.md`
-     → `docs/active/smoke-autopilot/`
-   - `plan-techniczny-smoke-autopilot.md` → `docs/plans/`
-2. Upewnij sie ze git jest czysty i jestes na branchu roboczym (np. `test/smoke-autopilot`).
-3. Odpal: `/dev-autopilot-wf docs/active/smoke-autopilot`
-4. Oczekiwany wynik: status OK, 1 faza, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane.
-5. Asercje fazy "Smoke operatora" (complete-wf) — fixture ma celowo 1 pozycje `[Manual]` w `## Operator checklist faza 1`,
-   zeby przepuscic DODATNIA galaz (bez niej faza zawsze konczy sie "brak pozycji" i regresja smoke'u jest niewidoczna):
+Smoke nie rusza oryginalu projektu. Skrypt robi kopie w jednym kroku:
+
+```bash
+bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-zrodlowy> <katalog-kopii>
+```
+
+- najpierw `--dry-run` (trzeci argument) — pokazuje kroki, niczego nie tworzy;
+- kopia = `git clone` lokalny, `remote remove origin` (push niemozliwy), bez `.env` i `supabase/.temp`, galaz `test/smoke-autopilot`,
+  `.claude/.backups/` w `.git/info/exclude`;
+- sync maszynerii z LOKALNEGO szablonu (pliki sledzone przez gita — zacommituj zmiany `.claude/` przed skryptem) → commit;
+- fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` + (projekt pnpm workspace) pakiet `packages/smoke-autopilot`
+  z `package.json`/`tsconfig.json` z `pakiet/`, `pnpm install` → commit. Git kopii czysty.
+
+Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania kosztu zaleza od efortu) i uruchom
+`/dev-autopilot-wf docs/active/smoke-autopilot`. Odczyt: `docs/reviews/2026-09-19-analiza-pipeline/skrypty/smoke_odczyt.py <wf_id>`
+(porownanie z referencja). Po odczycie kopie usun (tylko za zgoda operatora na dokladna sciezke).
+
+## Co fixture celowo cwiczy
+
+- **Pakiet workspace** (`packages/smoke-autopilot`): kod zadania jest objety `pnpm -r run test` i `typecheck` kopii, odciety od
+  zastanych bledow projektu. Bez tego (fixture w `src/lib` monorepo) review zawsze zglaszal kod poza bramkami i wymuszal
+  przypadkowy cykl fixa. Projekt bez `pnpm-workspace.yaml` → kod w `src/lib` jak dawniej.
+- **Celowy defekt: test niefalsyfikowalny.** Plan kaze napisac happy path jako `typeof wynik === 'number'` — przechodzi takze
+  dla `a - b`. Oczekiwane: review zglasza P2 test-coverage na ten test, fix zastepuje asercje wartoscia (`toBe(5)`), kontrola
+  fixa bez regresji. Brak findingu na tym tescie = regresja review; brak fixa = regresja petli fix.
+- **Pozycja `[Manual]`** w `## Operator checklist faza 1` — dodatnia galaz fazy "Smoke operatora" (complete-wf).
+
+## Oczekiwany wynik i asercje
+
+1. Status OK, 1 faza, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane.
+2. Review: >= 1 potwierdzony P2 na tescie happy path; fix go naprawia.
+3. Asercje fazy "Smoke operatora" (complete-wf):
    - log complete-wf: `Smoke operatora: docs/operator/<data>-smoke-autopilot-smoke.md (N pozycji)` BEZ fragmentu
      `UWAGA: ... [E2E] nieuruchomionych` (e2eNieuruchomione musi byc 0; fixture celowo nie ma `[E2E]`, bo bramka setupu
      zatrzymalaby run bez `.env.e2e`);
@@ -30,19 +53,18 @@ Cel: wykrywac bugi WORKFLOW za grosze, zamiast odkrywac je po 3h realnego runu.
    Wariant negatywny (drugi run): usun sekcje `## Operator checklist faza 1` z fixture → oczekiwane
    `Smoke operatora: brak pozycji do recznego sprawdzenia — plik nie powstal`, `smokeStatus: "brak-pozycji"`, brak pliku w `docs/operator/`.
 
-## Test resume (Bug 1 — scenariusz celowy)
+## Test resume (scenariusz celowy)
 
 Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 1. Przywroc folder z `docs/completed/smoke-autopilot/` do `docs/active/`.
 2. W `.autopilot-state.json` ustaw fazie 1: `"fix": "pending"` i wstaw 1 sztuczny finding do
-   `otwarteFindingi` (np. `{"severity":"P2","typ":"TEST","plik":"src/lib/smoke-autopilot.ts","opis":"brakuje testu wartosci ujemnych"}`),
+   `otwarteFindingi` (np. `{"severity":"P2","typ":"TEST","plik":"packages/smoke-autopilot/src/smoke-autopilot.ts","opis":"brakuje testu wartosci ujemnych"}`),
    `zakonczenie` ustaw na pending.
-3. Odpal ponownie — orkiestrator MUSI pojsc PROSTO do fixa (zero execute, zero review).
+3. Odpal ponownie (swiezy run) — orkiestrator MUSI pojsc PROSTO do fixa (zero execute, zero review).
    W logach: brak `Execute OK`, brak linii `Review fazy 1:`, jest `Fix fazy 1:`.
 
-## Sprzatanie po smoke
+## Pliki
 
-- `git log --oneline` → revert/usun commity smoke (feat/fix/docs ze "smoke-autopilot").
-- Usun `src/lib/smoke-autopilot.ts` + test (jesli revert ich nie zdjal).
-- Usun `docs/completed/smoke-autopilot/` i wpisy w dokumentacji projektu, jesli complete cos dopisal.
-- Usun `docs/operator/<data>-smoke-autopilot-smoke.md` (jesli revert commita archiwizacji go nie zdjal).
+- `przygotuj-kopie.sh` + `__tests__/przygotuj-kopie.test.mjs` (skladnia, `--dry-run`);
+- `pakiet/` — `package.json` i `tsconfig.json` pakietu fixture (P6 dolozy konfiguracje bramek i defekt mechaniczny);
+- `smoke-autopilot-{plan,zadania,kontekst}.md`, `plan-techniczny-smoke-autopilot.md` — fixture zadania; `{{KATALOG_KODU}}` wstawia skrypt.

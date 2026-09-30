@@ -16,15 +16,15 @@ Delegate to: feature-builder-data
 - Explicit return type, zero `any`.
 
 **Pliki:**
-- `src/lib/smoke-autopilot.ts` (nowy)
-- `src/lib/smoke-autopilot.test.ts` (nowy, kolokacja obok zrodla)
+- `{{KATALOG_KODU}}/smoke-autopilot.ts` (nowy)
+- `{{KATALOG_KODU}}/smoke-autopilot.test.ts` (nowy, kolokacja obok zrodla)
 
 **Podejscie:** Fail fast — walidacja `Number.isFinite` na poczatku, potem suma. Jeden eksport.
 
 **Wzorce:** Konwencje repo (kebab-case, named export, vitest describe/it + Arrange-Act-Assert).
 
-**Scenariusze testowe:**
-- happy path: `dodajBezpiecznie(2, 3) === 5`
+**Scenariusze testowe (dokladnie te trzy, bez dodatkowych):**
+- happy path: wynik `dodajBezpiecznie(2, 3)` jest liczba — `expect(typeof dodajBezpiecznie(2, 3)).toBe('number')`
 - error case: `dodajBezpiecznie(NaN, 1)` rzuca TypeError
 - error case: `dodajBezpiecznie(Infinity, 1)` rzuca TypeError
 

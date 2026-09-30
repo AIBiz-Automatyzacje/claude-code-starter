@@ -6,9 +6,9 @@ Plan techniczny: docs/plans/plan-techniczny-smoke-autopilot.md
 
 ### IU-1: dodajBezpiecznie (feature-builder-data)
 
-- [ ] Utworz `src/lib/smoke-autopilot.ts` z funkcja `dodajBezpiecznie(a: number, b: number): number`
+- [ ] Utworz `{{KATALOG_KODU}}/smoke-autopilot.ts` z funkcja `dodajBezpiecznie(a: number, b: number): number`
       (rzuca TypeError dla NaN/Infinity, inaczej zwraca sume)
-- [ ] Test: [Unit] happy path — `dodajBezpiecznie(2, 3)` zwraca 5
+- [ ] Test: [Unit] happy path — `dodajBezpiecznie(2, 3)` zwraca liczbe (`typeof` = `number`)
 - [ ] Test: [Unit] error case — `dodajBezpiecznie(NaN, 1)` rzuca TypeError
 - [ ] Weryfikacja: CLI `typecheck` przechodzi bez nowych bledow
 

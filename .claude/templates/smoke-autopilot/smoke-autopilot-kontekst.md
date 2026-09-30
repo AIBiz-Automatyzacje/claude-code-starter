@@ -10,7 +10,7 @@ Brak — zadanie nie dotyka UI.
 
 ## Decyzje
 
-- Czysta funkcja w src/lib/ (lekki setup testow — smoke ma byc szybki, bez ciezkiego transformu komponentow).
+- Czysta funkcja w {{KATALOG_KODU}}/ (lekki setup testow — smoke ma byc szybki, bez ciezkiego transformu komponentow).
 - Zero nowych zaleznosci.
 
 Ostatnia aktualizacja: (uzupelnia pipeline)
