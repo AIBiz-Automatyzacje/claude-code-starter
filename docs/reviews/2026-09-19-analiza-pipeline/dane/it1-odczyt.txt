@@ -1,0 +1,25 @@
+== 1. Run smoke wf_031f0eae-204
+harness: status completed | wynik.status OK | agentCount 31 | sekundy 1135
+rekord run: status OK | v 4 | walidacja PASS | koszt jedn 4778877 | agentow 31 | szablon {'marker': '0d3876f46bce1df4675d9271a068a31c43eab099', 'skrypt_sha': '5ae7561b559b073a5dbf9604817bc9cb9461a49f', 'zgodny': True, 'dzieci_zmienione': False}
+rekordy faza: 1 | agent: 31 | agenci w workflowProgress: 31
+agenci bez rekordu: [] | rekordy spoza harnessu: []
+model/effort: {'claude-opus-5-5/medium': 20, 'claude-haiku-4-5-20251001/None': 9, 'claude-opus-5-5/low': 2}
+opus bez effort: []
+agenci telemetria:* w harnessie: []
+pola token* w wyniku: []
+smoke: smokeStatus plik | smokeOperatora docs/operator/2026-09-30-smoke-autopilot-smoke.md
+
+== 2. Pełny skan: pliki harnessu vs rekordy run
+plików 427 | z rekordem run 427 | bez rekordu [] | runów bez pliku (KILLED) 2
+statusy: {'STOP': 36, 'OK': 385, 'FAILED': 2, 'KILLED': 6}
+wersje rekordów (bez importu): {4: 5368, 1: 3}
+walidacja w runach autopilota: {'None': 31, 'PASS': 22, 'FAIL': 4}
+
+== 3. Kontekst startowy per klasa/model: n, ctx_start p50 [k], narzędzia p50
+smoke: {'builder/claude-opus-5-5': (1, 84, 40), 'mechaniczny/claude-haiku-4-5-20251001': (9, 52, 40), 'mechaniczny/claude-opus-5-5': (1, 74, 40), 'naprawiacz/claude-opus-5-5': (1, 77, 40), 'orkiestracyjny/claude-opus-5-5': (11, 73, 40), 'reviewer/claude-opus-5-5': (5, 76, 40), 'sceptyk/claude-opus-5-5': (3, 73, 40)}
+dev-* opus 5.5 wrzesień: {'builder/claude-opus-5-5': (8, 136, 685.0), 'mechaniczny/claude-opus-5-5': (4, 116, 685.0), 'naprawiacz/claude-opus-5-5': (6, 116, 685.0), 'orkiestracyjny/claude-opus-5-5': (34, 114, 685.0), 'reviewer/claude-opus-5-5': (23, 118, 685), 'sceptyk/claude-opus-5-5': (13, 115, 685), 'tester-e2e/claude-opus-5-5': (2, 135, 685.0)}
+wszystkie workflowy opus 5.5 wrzesień (= raport §2): {'builder/claude-opus-5-5': (8, 136, 685.0), 'mechaniczny/claude-opus-5-5': (18, 50, 13.0), 'naprawiacz/claude-opus-5-5': (6, 116, 685.0), 'orkiestracyjny/claude-opus-5-5': (546, 54, 13.0), 'reviewer/claude-opus-5-5': (107, 51, 13), 'sceptyk/claude-opus-5-5': (50, 45, 13.0), 'tester-e2e/claude-opus-5-5': (2, 135, 685.0)}
+workflowy agentów opus 5.5 wrzesień (top 5): [('test-review-wariant0', 98), ('dev-autopilot', 90), ('test-review-wariant0-verify', 37), ('mr-e1', 24), ('test-review-wariant0-fix', 24)]
+
+== 4. Rekordy starszych wersji, których bieżący skan już nie wytwarza
+[('skill', 'copy', 1), ('skill', 'exit', 1), ('skill', 'copy', 1)]

@@ -1,0 +1,83 @@
+Raport telemetrii pipeline'u dev-* — 2026-09-01 … 2026-09-30 (wygenerowano 2026-09-30T09:34:52.439Z)
+
+1. Koszt (jednostki wzgledne: in 1, cache write 1,25, cache read 0,1, out 5)
+   razem 1013.3 M; agentow: 1928; runow: 112; faz: 60; poza etapami fazy 37.1 M
+   review              306.1 M  30.2%
+   execute             273.0 M  26.9%
+   fix                 168.3 M  16.6%
+   orkiestracja         98.6 M  9.7%
+   sceptycy             77.9 M  7.7%
+   mechanika_review     52.4 M  5.2%
+   poza pipeline'em (analizy, testy): 280 runow, 935 agentow, 306.2 M — pominiete w sekcjach 1–5 i 7
+   per projekt: Nawykometr 116.7 M; akademia-automatyzacji-dashboard 15.4 M; claude-cron 60.5 M; oferty-online 816.0 M; mr-f 0.1 M; _smoke-it1-oferty-online 4.8 M
+
+2. Kontekst startowy per klasa roli i model (odniesienie 20.09: mechaniczny haiku 89k, orkiestracyjny opus 121k, reviewer 125k, sceptyk 123k, builder 135k; cele po It. 3a: mechaniczny ~9–10k, orkiestracyjny/sceptyk/naprawiacz opus ~25–26k, naprawiacz haiku ~21k, reviewer ~29k, builder ~38k)
+   builder         claude-opus-5              n=120  ctx_start p50 132k p90 161k  narzedzia p50 561  CLAUDE.md p50 46866 zn
+   builder         claude-opus-5-5            n=8  ctx_start p50 136k p90 155k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+   mechaniczny     <synthetic>                n=1  ctx_start p50 0k p90 0k  narzedzia p50 568  CLAUDE.md p50 — zn
+   mechaniczny     claude-haiku-4-5-20251001  n=395  ctx_start p50 81k p90 102k  narzedzia p50 561  CLAUDE.md p50 46866 zn
+   mechaniczny     claude-opus-5              n=51  ctx_start p50 110k p90 140k  narzedzia p50 560  CLAUDE.md p50 46866 zn
+   mechaniczny     claude-opus-5-5            n=4  ctx_start p50 116k p90 116k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+   mechaniczny     null                       n=3  ctx_start p50 — p90 —  narzedzia p50 568  CLAUDE.md p50 59208 zn
+   naprawiacz      claude-opus-5              n=77  ctx_start p50 115k p90 142k  narzedzia p50 561  CLAUDE.md p50 50840 zn
+   naprawiacz      claude-opus-5-5            n=6  ctx_start p50 118k p90 120k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+   orkiestracyjny  <synthetic>                n=2  ctx_start p50 0k p90 0k  narzedzia p50 561  CLAUDE.md p50 — zn
+   orkiestracyjny  claude-fable-5-1           n=18  ctx_start p50 95k p90 112k  narzedzia p50 568  CLAUDE.md p50 21699 zn
+   orkiestracyjny  claude-haiku-4-5-20251001  n=27  ctx_start p50 66k p90 103k  narzedzia p50 532  CLAUDE.md p50 9089 zn
+   orkiestracyjny  claude-opus-5              n=435  ctx_start p50 109k p90 140k  narzedzia p50 560  CLAUDE.md p50 46866 zn
+   orkiestracyjny  claude-opus-5-5            n=34  ctx_start p50 114k p90 119k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+   reviewer        claude-opus-5              n=313  ctx_start p50 108k p90 143k  narzedzia p50 560  CLAUDE.md p50 46866 zn
+   reviewer        claude-opus-5-5            n=23  ctx_start p50 118k p90 120k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+   sceptyk         <synthetic>                n=2  ctx_start p50 0k p90 0k  narzedzia p50 561  CLAUDE.md p50 — zn
+   sceptyk         claude-opus-5              n=359  ctx_start p50 103k p90 144k  narzedzia p50 561  CLAUDE.md p50 46866 zn
+   sceptyk         claude-opus-5-5            n=13  ctx_start p50 115k p90 116k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+   tester-e2e      claude-opus-5              n=35  ctx_start p50 121k p90 150k  narzedzia p50 547  CLAUDE.md p50 46866 zn
+   tester-e2e      claude-opus-5-5            n=2  ctx_start p50 135k p90 135k  narzedzia p50 685  CLAUDE.md p50 21699 zn
+
+3. Efort per klasa roli (brak = efort sesji albo model bez efortu, np. haiku)
+   naprawiacz      high 27, medium 56
+   mechaniczny     brak 399, high 5, low 43, medium 7
+   sceptyk         high 77, medium 295, brak 2
+   orkiestracyjny  high 125, brak 29, medium 322, low 40
+   tester-e2e      high 17, medium 20
+   reviewer        high 112, medium 224
+   builder         high 44, medium 84
+
+4. Jakosc
+   findingi reviewerow per os: security P1 8 / P2 126 / P3 124; spec-compliance P1 11 / P2 114 / P3 73; e2e P1 1 / P2 18 / P3 35; typescript P1 1 / P2 40 / P3 41; simplicity P1 0 / P2 19 / P3 51; architecture P1 4 / P2 36 / P3 44; test-coverage P1 15 / P2 178 / P3 159; performance P1 9 / P2 105 / P3 84; code-quality P1 2 / P2 84 / P3 145; correctness P1 9 / P2 98 / P3 82
+   uwagi bota (unikalne watki per zadanie): zalaczniki-w-skrzynce: 17 watkow bez klasyfikacji (sprzed slownika klas); faza-8-connector-oauth-i-dashboard: 43 watkow bez klasyfikacji (sprzed slownika klas); cookie-consent-panelu-gtm: 4 watkow bez klasyfikacji (sprzed slownika klas); samodzielna-rejestracja-czlonkow-aa: 11 watkow bez klasyfikacji (sprzed slownika klas); faza-9c-dokumenty-prawne: 16 watkow bez klasyfikacji (sprzed slownika klas); faza-9a-domena-mailer-limity: 25 watkow bez klasyfikacji (sprzed slownika klas); faza-7-szablony-i-grafiki: 62 watkow bez klasyfikacji (sprzed slownika klas)
+
+5. Niezawodnosc
+   dev-autopilot        STOP 19, OK 14, FAILED 2
+   dev-pr               OK 69, STOP 6
+   (bez harnessu)       KILLED 2
+   STOP per kategoria: czystosc 6; E2E-srodowisko 5; execute 4; bramka-wejscia 4; walidacja 4; scribe 1; P1 1
+
+6. Skille w sesji glownej (pelny koszt = wlasny + subagenci; epizody zamkniete)
+   skill-creator:skill-creator n=1  pelny p50 9578k  wiadomosci operatora p50 7
+   dev-pr                   n=3  pelny p50 5744k  wiadomosci operatora p50 7
+   wpis-blog                n=1  pelny p50 5273k  wiadomosci operatora p50 25
+   reflect                  n=2  pelny p50 4124k  wiadomosci operatora p50 0
+   remotion-best-practices  n=1  pelny p50 4068k  wiadomosci operatora p50 5
+   dev-plan                 n=7  pelny p50 3224k  wiadomosci operatora p50 0
+   skool                    n=2  pelny p50 2997k  wiadomosci operatora p50 5
+   ccc-skills:excalidraw    n=2  pelny p50 2873k  wiadomosci operatora p50 5
+   figma-use                n=1  pelny p50 2844k  wiadomosci operatora p50 11
+   dev-browser:dev-browser  n=3  pelny p50 2809k  wiadomosci operatora p50 4
+   figma:figma-use          n=10  pelny p50 2536k  wiadomosci operatora p50 5
+   dev-ideate               n=1  pelny p50 2501k  wiadomosci operatora p50 2
+   frontend-design:frontend-design n=6  pelny p50 2482k  wiadomosci operatora p50 3
+   meeting-transcripts      n=2  pelny p50 2209k  wiadomosci operatora p50 8
+   akademia-classroom-sync  n=1  pelny p50 2129k  wiadomosci operatora p50 5
+
+7. Anomalie (agent > 2× mediany swojej roli), top 10
+   review:e2e               19.6 M  wf_51feac8b-a22 ad9ab034dfc05fb8a
+   fix                      7.0 M  wf_2b8059ec-41a aaad82d248d1a4103
+   fix                      5.6 M  wf_51feac8b-a22 aa65fc96a601051d4
+   build                    5.6 M  wf_16546a4e-e81 a53ebbab23f201eeb
+   build                    5.1 M  wf_a9762098-930 af17adcd328bdd2e2
+   fix                      5.0 M  wf_a9762098-930 a0ee6ee3882ae7ef0
+   build                    4.8 M  wf_2b8059ec-41a a9de4f417c48e7963
+   fix                      4.7 M  wf_cf90b5d6-f83 afc08c3decd2f137d
+   fix                      4.7 M  wf_a9762098-930 a683e4943e3f80fbd
+   build                    4.4 M  wf_cf90b5d6-f83 a92e0f9e5f00aee6f
