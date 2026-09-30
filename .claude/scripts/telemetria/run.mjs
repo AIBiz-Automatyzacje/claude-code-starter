@@ -17,6 +17,16 @@ function obiekt(x) {
 /** @param {unknown} x @returns {string | null} */
 const tekstLubNull = (x) => (typeof x === 'string' && x ? x : null)
 
+const WYNIKI_WALIDACJI = new Set(['PASS', 'FAIL'])
+
+// Autopilot zwraca pelny obiekt walidacji koncowej ({ wynik, typecheck, testy, ... }); stary agent telemetrii zapisywal
+// sam wynik. „done w poprzednim runie” = wynik nieznany w tym runie.
+/** @param {unknown} walidacja @returns {string | null} */
+function wynikWalidacji(walidacja) {
+  const wynik = typeof walidacja === 'string' ? walidacja : obiekt(walidacja).wynik
+  return typeof wynik === 'string' && WYNIKI_WALIDACJI.has(wynik) ? wynik : null
+}
+
 /**
  * @param {Record<string, unknown>} harness plik harnessu
  * @returns {StatusRunu}
@@ -162,7 +172,7 @@ export function rekordRunu(we) {
     stop_kategoria: we.status.status === 'STOP' ? kategoriaStopu(we.status.powod) : null,
     fazyZadania: Array.isArray(bootstrap.fazy) ? bootstrap.fazy.length : null,
     fazyUkonczone: raporty ? raporty.length : typeof wynik.fazyUkonczone === 'number' ? wynik.fazyUkonczone : null,
-    walidacja: tekstLubNull(wynik.walidacja),
+    walidacja: wynikWalidacji(wynik.walidacja),
     e2eSrodowisko: tekstLubNull(wynik.e2eSrodowisko),
     solution: tekstLubNull(wynik.solution),
     koszt: sumaKosztu(we.agenci),

@@ -85,6 +85,20 @@ test('rekord run autopilota: zadanie i liczba faz z bootstrapu, koszt z agentow,
   assert.equal(r.start, '2026-09-23T10:00:00.000Z', 'start runu = najwczesniejszy agent, gdy harness nie ma startTime')
 })
 
+test('walidacja koncowa z wyniku autopilota: obiekt walidacji → PASS/FAIL, inaczej null', () => {
+  /** @param {unknown} walidacja */
+  const walidacjaRunu = (walidacja) => rekordRunu({
+    harness: { workflowName: 'dev-autopilot-wf', result: { status: 'OK', walidacja } },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
+  }).walidacja
+  // Ksztalt z prawdziwego pliku harnessu (wf_031f0eae-204): pelny obiekt walidacji koncowej
+  assert.equal(walidacjaRunu({ wynik: 'PASS', typecheck: 'PASS', lint: 'SKIPPED', testy: 'PASS. ...', bledy: [] }), 'PASS')
+  assert.equal(walidacjaRunu({ wynik: 'FAIL', bledy: ['typecheck'] }), 'FAIL')
+  assert.equal(walidacjaRunu('PASS'), 'PASS', 'stary agent telemetrii zapisywal sam wynik')
+  assert.equal(walidacjaRunu('done w poprzednim runie'), null, 'wynik nieznany w tym runie')
+  assert.equal(walidacjaRunu(undefined), null)
+})
+
 test('rekord run bez harnessu (KILLED): zadanie z argumentow niedostepne, sekundy z agentow', () => {
   const r = rekordRunu({ harness: null, status: { status: 'KILLED', powod: 'sesja zakonczona' }, agenci: AGENCI, bootstrap: null })
   assert.equal(r.workflow, null)
