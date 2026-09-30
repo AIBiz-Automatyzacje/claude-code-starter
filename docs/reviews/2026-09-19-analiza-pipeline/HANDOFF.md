@@ -40,7 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
-| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **NASTĘPNY KROK** — §8 „PLAN POPRAWY SZABLONU”: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **NASTĘPNY KROK: P0 — §8 „P0 — SIATKA BEZPIECZEŃSTWA”** (nowa sesja). Stan paczek: P0 ☐ P1 ☐ P2 ☐ P3 ☐ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -618,6 +618,25 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     kosztu `wf_031f0eae-204`: 4,78 M, kontekst opus 73–84k). (4) Ślepe testy przed/po dla zmian promptów reviewerów/builderów (6a pkt 26 f, I5,
     warunek 7c) — do decyzji operatora w planie poprawy (rekomendacja w planie). (5) Część „B0 na nowym projekcie” (pkt 39 g) wypada jako warunek;
     pierwszy nowy projekt po poprawie = pierwszy odczyt. Następny krok: §8 „PLAN POPRAWY SZABLONU” (nowa sesja).
+41. **PLAN POPRAWY SZABLONU ZAAKCEPTOWANY (operator 2026-09-30: „Akceptuję plan, decyzje 1–3 wg rekomendacji”).** `PLAN-POPRAWY.md` (technicznie: paczki,
+    pliki, hunki, testy, smoke, cofnięcie, progi do odczytu, §4 wspólne pliki, §5 wypada/zrobione/odłożone) + `PLAN-POPRAWY-DLA-OPERATORA.md`.
+    (a) **Kształt:** 17 paczek — I porządek i koszt P0 siatka (skrypt kopii smoke, odczyt vs referencja, `pa_hunk.py`, test odwołań), P1 porządki i usunięcia
+    (+ 4 łaty faktów reviewerów: PA-03, 04, 09, 20), P2 instalacja per projekt i doctor, P3 kontekst i efort (klasy ról, allowlista, D9, N1), P4 start i koniec
+    runu, P5 dev-pr i bot (+ warunek decyzji w bootstrapie); II mechanika fazy P6 bramki, P7 dossier i stan ze skryptu, P8 pętla fix (It. 3 + It. 6), P9 sceptycy;
+    III P10 wiedza (przed reviewerami — zamiana It. 7 ↔ 8), P11 reviewerzy, P12 buildery i coding-rules; IV P13 scalony dev-plan, P14 E2E i skill weryfikacji,
+    P15 ogrodnik, P16 zamknięcie (prompt-audit, karta odczytu). Treść plików reviewerów pisana raz w P11, builderów w P12.
+    (b) **Decyzje operatora (rekomendacje §6):** D-1 ślepe testy ZOSTAJĄ jako dwa testy — reviewerzy: stare i nowe pliki na bieżącym zestawie, 7 z 13 faz
+    `~/test-review`, jeden przebieg sędziego (~30–40 M, 2 sesje); buildery 1–2 fazy (~10–15 M); osobno kill rate sceptyka na archiwum przed merge'em P9.
+    `~/test-review` NIE usuwać do końca P12. D-2 push po każdej zamkniętej grupie (po P5, P9, P12, P16), zawsze po zielonym smoke'u. D-3 smoke po każdej paczce
+    zmieniającej workflowy (15; P7 i P14 z drugim przebiegiem), gałąź `popr/Pn-<nazwa>`, merge `--ff-only` po zielonym smoke'u.
+    (c) **Kontrola:** `skrypty/plan_poprawy_pokrycie.py` (rejestr 395 pozycji: PANEL-WYNIK §2–§5, 65 pozycji PANEL-WYNIK, PA-01…44, 62 hunki, INSPIRACJE, 6a,
+    IT1-ODCZYT, PANEL-WEJSCIE) → 0 braków; odbiór skryptu 7/7 podłożonych naruszeń; przegląd niezależnego subagenta — 25 uwag (1 blokująca: P7 bez kanału dossier
+    i stanu), wszystkie naniesione (`dane/plan-poprawy-przeglad.txt`).
+    (d) **Odstępstwa od wcześniejszych zapisów (przyjęte z planem):** 4 łaty faktów reviewerów w P1 zamiast w P11 (fałszywe findingi w smoke'ach P3–P10);
+    `stan:zapis` zostaje tam, gdzie w danym miejscu nie startuje inny agent (runtime nie pisze plików; lista miejsc do HANDOFF w P7); PA-27 w P10 (razem
+    z przeniesieniem learned-patterns); warunek „CLAUDE.md uzgodniony” w bootstrapie w P5, nie w P4; B0 i progi „względem B0” → pierwsze 5 PR nowego projektu.
+    (e) **Decyzje przy wdrożeniu (w paczkach):** PA-25 kopia Figmy (P3, rekomendacja: plugin), coding-rules wiersz po wierszu (P12), próg i N ogrodnika (P15),
+    kryterium kalibracji klasyfikatora (P5). Następny krok: §8 „P0 — SIATKA BEZPIECZEŃSTWA” (nowa sesja).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -674,6 +693,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   sprawdzaj sumy przed/po podbiciu `v` (ostatni rekord per `klucz` wygrywa; raport po v4 = identyczny). Raport liczy pipeline po `run.workflow`
   (`dev-*` lub nieznany) — agenci analiz w tym samym pliku telemetrii mają 13 narzędzi i fałszują medianę kontekstu. Przy nowym polu w wyniku
   funkcji raportu istniejący `deepEqual` trzeba rozszerzyć — nazwij to w wyniku (zmiana kontraktu, nie osłabienie asercji).
+- Plan poprawy (2026-09-30): `git apply --include=<plik>` bierze WSZYSTKIE hunki pliku — pojedynczy hunk tylko przez `skrypty/pa_hunk.py` (P0); `filterdiff`
+  niezainstalowany. Diff prompt-auditu na HEAD 95e8763: `--check` OK, autopilot z przesunięciem −111 linii. Tagi w `PLAN-POPRAWY.md` muszą pasować do `RE_TAG`
+  w `plan_poprawy_pokrycie.py` (tag spoza wzorca jest cicho pomijany — skończy się „BRAK” pozycji, nie błędem tagu); po każdej zmianie planu uruchom skrypt.
+  Skrypt workflowu nie czyta plików: każdy nowy wynik skryptu (dossier, bramki) musi wrócić do orkiestratora polem schematu agenta, który go uruchomił (P7).
+  Pisanie `.md` przez `python3 -` w Bash przeszło w tej sesji (hook md-guard nie zablokował) — mimo to `.md` domyślnie Write/Edit.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -905,7 +929,34 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   projektach po poprawie. **Następny krok: „PLAN POPRAWY SZABLONU” niżej** (nowa sesja). Instrukcja „IT. 2 — BOT, DEV-PR I B0” UCHYLONA
   (jej zakres 2A wchodzi do planu poprawy jako jedna z paczek). Otwarte u operatora: push szablonu do GitHuba (po poprawie); token Airtable.
 
-**PLAN POPRAWY SZABLONU (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+- **PLAN POPRAWY ZAAKCEPTOWANY (2026-09-30; 6a pkt 41):** 17 paczek, decyzje 1–3 wg rekomendacji. **Następny krok: „P0 — SIATKA BEZPIECZEŃSTWA” niżej**
+  (nowa sesja). Każda kolejna paczka: instrukcja dopisywana tutaj na końcu poprzedniej sesji (wzór: instrukcja P0). Otwarte u operatora: token Airtable.
+
+**P0 — SIATKA BEZPIECZEŃSTWA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P0 — siatka bezpieczeństwa (PLAN-POPRAWY.md §3 P0).
+Plan zaakceptowany (HANDOFF 6a pkt 41), decyzje: ślepe testy jako dwa testy, push po każdej grupie, smoke po każdej paczce zmieniającej workflowy.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): PLAN-POPRAWY.md §1 (zasady wspólne) i §3 P0; HANDOFF 6a pkt 39 (a), 41 i §7 (trzy ostatnie
+punkty: kopia do smoke'a, odczyt It. 1, plan poprawy); IT1-ODCZYT.md §1–§2 i §6; skrypty/it1_odczyt.py. Kod: .claude/templates/smoke-autopilot/,
+.claude/workflows/__tests__/, .claude/workflows/*.js (agentType, workflow(), ścieżki skills/rules), .claude/agents/.
+
+Do zrobienia (gałąź popr/P0-siatka z main; test → kod → pnpm typecheck → pnpm test → pnpm lint → commit, krok po kroku):
+1. Test spójności odwołań .claude/workflows/__tests__/odwolania.test.mjs (agentType → plik albo lista wbudowanych, enum IU_PLAN, ścieżki
+   .claude/skills/*/SKILL.md i .claude/rules/*, workflow('<x>'), skills: agentów) — najpierw porażka na podłożonym złym odwołaniu, potem zielony.
+2. Skrypt kopii .claude/templates/smoke-autopilot/przygotuj-kopie.sh (HANDOFF §7) + --dry-run w teście; fixture jako osobny pakiet workspace kopii
+   z celowym testem niefalsyfikowalnym; README smoke'a.
+3. skrypty/pa_hunk.py H<nn> (pojedynczy hunk z dane/pa-proponowany.diff) + sprawdzenie 62 hunków pojedynczym --check → lista łata / treść (dane/).
+4. skrypty/smoke_odczyt.py <wf_id> — porównanie z referencją (koszt, agenci per rola, model i efort z transkryptu, ctx_start per klasa, status, gate).
+5. Smoke R0: przygotuj kopię oferty-online (podaj mi dokładną ścieżkę), ja uruchamiam /dev-autopilot-wf w osobnej sesji desktop w kopii na efort medium,
+   Ty odczytujesz skryptem → dane/smoke-P0.txt. Zielony → merge --ff-only do main.
+6. Po paczce: HANDOFF (§2 stan paczek, 6a, §8 → instrukcja P1), pamięć projektu, commit docs/reviews. Kopię usuwam tylko za zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**PLAN POPRAWY SZABLONU (ZROBIONA 2026-09-30 — plan zaakceptowany, 6a pkt 41; zostawiona dla historii):**
 
 ```
 Kontynuujemy analizę pipeline'u dev-* w workspace-template. Nowa sesja, Opus 5.5.

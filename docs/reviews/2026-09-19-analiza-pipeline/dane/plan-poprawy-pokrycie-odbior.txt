@@ -1,0 +1,9 @@
+Odbiór skryptu plan_poprawy_pokrycie.py (2026-09-30) — podłożone naruszenia na kopii planu w scratchpadzie (plan w repo nietknięty):
+usunieta pozycja D2        exit=1  BRAK D2
+dubel D2 (P9 i P15)        exit=1  DUBEL D2 + POZYCJA D2 w P15 nie występuje w Zakres
+hunk H39 usuniety          exit=1  HUNK H39 przypisany 0 razy + BRAK PA-17 (hunki bez paczki)
+nieznany tag PA-99         exit=1  NIEZNANY TAG
+punkt Zakres bez tagu      exit=1  PUNKT BEZ TAGU + POZYCJA PWE-skille-split nie w Zakres
+wspólny plik bez opisu §4  exit=1  WSPÓLNY PLIK bez opisu: .claude/settings.json (P2, P6)
+plik hunka poza Pliki      exit=1  HUNK H39: plik nie na liście Pliki P12
+Plan w repo: exit=0, KOMPLETNY — 0 braków (dane/plan-poprawy-pokrycie.txt).

@@ -1,0 +1,98 @@
+plik → paczki (z linii Pliki:), 97 plików, 36 wspólnych
+*    .claude/agents/architecture-strategist.md                              P3, P11
+     .claude/agents/best-practices-researcher.md                            P3
+     .claude/agents/code-simplicity-reviewer.md                             P11
+*    .claude/agents/correctness-reviewer.md                                 P3, P11
+*    .claude/agents/feature-builder-data.md                                 P3, P10, P12
+*    .claude/agents/feature-builder-fullstack.md                            P3, P10, P12
+*    .claude/agents/feature-builder-ui.md                                   P3, P10, P12
+*    .claude/agents/feature-tester-e2e.md                                   P3, P14
+     .claude/agents/framework-docs-researcher.md                            P3
+     .claude/agents/kieran-typescript-reviewer.md                           P11
+     .claude/agents/klasa-mechaniczny.md                                    P3
+     .claude/agents/klasa-naprawiacz.md                                     P3
+     .claude/agents/klasa-orkiestracyjny.md                                 P3
+     .claude/agents/klasa-sceptyk.md                                        P3
+*    .claude/agents/learnings-researcher.md                                 P1, P3
+*    .claude/agents/performance-oracle.md                                   P1, P3, P11
+     .claude/agents/repo-research-analyst.md                                P3
+*    .claude/agents/security-sentinel.md                                    P1, P3, P11
+*    .claude/agents/spec-compliance-reviewer.md                             P1, P3, P11
+     .claude/agents/spec-flow-analyzer.md                                   P3
+*    .claude/agents/test-coverage-reviewer.md                               P3, P11
+     .claude/agents/web-research-specialist.md                              P3
+*    .claude/hooks/error-handling-reminder.sh                               P1, P6
+     .claude/hooks/stop-build-check-enhanced.sh                             P6
+     .claude/rules/coding-rules.md                                          P12
+     .claude/scripts/bramki/                                                P6
+*    .claude/scripts/doctor/                                                P2, P3, P6, P11
+*    .claude/scripts/dossier/                                               P7, P10
+     .claude/scripts/ogrod/                                                 P15
+     .claude/scripts/plan/                                                  P13
+     .claude/scripts/telemetria/__tests__/agent.test.mjs                    P9
+     .claude/scripts/telemetria/agent.mjs                                   P9
+*    .claude/scripts/telemetria/faza.mjs                                    P6, P7, P9, P10, P14
+*    .claude/scripts/telemetria/role.mjs                                    P7, P8
+     .claude/scripts/telemetria/zbieranie.mjs                               P15
+*    .claude/scripts/wiedza/                                                P10, P12
+*    .claude/settings.json                                                  P2, P6
+     .claude/skills/agent-browser/                                          P14
+     .claude/skills/bugfix/                                                 P1
+     .claude/skills/code-quality/                                           P1
+     .claude/skills/code-review/                                            P1
+*    .claude/skills/coderabbit-setup/SKILL.md                               P5, P12
+     .claude/skills/coderabbit-setup/reference/stack-blocks.md              P5
+*    .claude/skills/coderabbit-setup/templates/coderabbit-base.yaml         P5, P12
+     .claude/skills/coderabbit-setup/templates/reviews/                     P5
+*    .claude/skills/dev-brainstorm/SKILL.md                                 P1, P13
+     .claude/skills/dev-compound-refresh/SKILL.md                           P10
+     .claude/skills/dev-compound/SKILL.md                                   P10
+     .claude/skills/dev-docs-complete/SKILL.md                              P4
+     .claude/skills/dev-docs-execute/                                       P1
+     .claude/skills/dev-docs-review/                                        P1
+     .claude/skills/dev-docs-update/                                        P1
+     .claude/skills/dev-docs/                                               P13
+     .claude/skills/dev-docs/SKILL.md                                       P3
+     .claude/skills/dev-ideate/                                             P1
+     .claude/skills/dev-plan/                                               P13
+*    .claude/skills/dev-pr/SKILL.md                                         P5, P10, P12
+*    .claude/skills/dev-prep/SKILL.md                                       P2, P13
+     .claude/skills/freshness-audit/                                        P1
+     .claude/skills/gemini/                                                 P1
+     .claude/skills/security/                                               P12
+     .claude/skills/sentry-integration/SKILL.md                             P12
+     .claude/skills/supabase-dev-guidelines/                                P12
+     .claude/skills/sync-template/SKILL.md                                  P2
+*    .claude/skills/sync-template/scripts/__tests__/sync-template.test.mjs  P1, P2
+     .claude/skills/sync-template/scripts/sync-template.sh                  P2
+     .claude/skills/tailwind-react-guidelines/                              P12
+     .claude/skills/ux-ui-guidelines/                                       P12
+     .claude/skills/weryfikacja-setup/                                      P14
+     .claude/templates/bramki/                                              P6
+     .claude/templates/e2e-env/                                             P14
+*    .claude/templates/smoke-autopilot/                                     P0, P6, P13, P14
+     .claude/workflows/__tests__/dev-pr.test.mjs                            P5
+     .claude/workflows/__tests__/findingi-po-stopie.test.mjs                P8
+     .claude/workflows/__tests__/klasy-rol.test.mjs                         P3
+     .claude/workflows/__tests__/kontrakt-docs-active.test.mjs              P13
+     .claude/workflows/__tests__/kontrola-fixa.test.mjs                     P8
+*    .claude/workflows/__tests__/metryki-w-stanie.test.mjs                  P7, P8
+     .claude/workflows/__tests__/odwolania.test.mjs                         P0
+*    .claude/workflows/__tests__/sceptycy-p2.test.mjs                       P3, P7, P9, P11
+*    .claude/workflows/__tests__/start-koniec.test.mjs                      P4, P5
+*    .claude/workflows/__tests__/warstwa-stala.test.mjs                     P11, P12
+*    .claude/workflows/dev-autopilot-wf.js                                  P3, P4, P5, P7, P8, P10, P12, P14, P15
+*    .claude/workflows/dev-compound-wf.js                                   P3, P10
+*    .claude/workflows/dev-docs-complete-wf.js                              P3, P4, P8, P10, P14, P15
+*    .claude/workflows/dev-docs-execute-wf.js                               P1, P3, P6, P7, P10, P12
+*    .claude/workflows/dev-docs-review-wf.js                                P1, P3, P7, P8, P9, P10, P11, P14
+*    .claude/workflows/dev-pr-wf.js                                         P3, P5, P10
+     .claude/workflows/freshness-audit-wf.js                                P1
+     .github/workflows/maszyneria.yml                                       P2
+     .gitignore                                                             P1
+*    README.md                                                              P1, P2, P3, P6, P10, P13, P16
+     docs/reviews/2026-09-19-analiza-pipeline/KARTA-ODCZYTU.md              P16
+     docs/reviews/2026-09-19-analiza-pipeline/skrypty/pa_hunk.py            P0
+     docs/reviews/2026-09-19-analiza-pipeline/skrypty/smoke_odczyt.py       P0
+     docs/reviews/2026-09-19-analiza-pipeline/skrypty/test_review_sceptycy.py P9
+     skrypty/test_review_*                                                  P11

@@ -1,0 +1,5 @@
+plan_poprawy_pokrycie.py — rejestr 395 pozycji (DIFF 62, PANEL-WYNIK 65 65, PROMPT-AUDIT 44, RĘCZNY 224)
+źródła → plan: pozycji do przypisania 333 (bez hunków), PA z hunkami pokrywane przez hunki: 21; hunków 62
+przypisania wg miejsca: P0 4, P1 13, P2 10, P3 27, P4 17, P5 13, P6 25, P7 8, P8 14, P9 3, P10 16, P11 37, P12 21, P13 7, P14 14, P15 5, P16 4, WYPADA 63, ZASADY 9, DECYZJE 6
+plan → źródła: tagów w planie 390, punktów Zakres 126; paczek 17; plików wspólnych 36
+WYNIK: KOMPLETNY — 0 braków

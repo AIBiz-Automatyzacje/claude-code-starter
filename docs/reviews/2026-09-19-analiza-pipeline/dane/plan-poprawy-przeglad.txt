@@ -1,0 +1,36 @@
+Przegląd PLAN-POPRAWY.md — niezależny subagent (general-purpose, Opus 5.5, tylko odczyt), 2026-09-30, 53 wywołania narzędzi, ~10 min.
+Werdykt: „planu nie da się przyjąć bez poprawek; układ paczek i kolejność grup są dobre”. 25 uwag: 1 blokująca, 14 ważnych, 10 drobnych.
+Ocena sesji głównej: wszystkie trafne (sprawdzone na kodzie: 13 × zapiszStan, odwołania learned-patterns/coding-rules, metryki-w-stanie:128–147,
+sceptycy-p2:168, agent.mjs:58–62). Wszystkie naniesione. Kolumna „naniesione” = miejsce w planie.
+
+ #  waga        uwaga                                                                   naniesione
+ 1  blokująca   P7: brak kanału dossier (workflow nie czyta plików) i stanu (13 zapisów)  P7 Zakres: EXECUTE_RESULT.dossier → stan → args review + zapasowy agent;
+                                                                                        stan przejmują agenci startujący w miejscu, reszta stan:zapis (odstępstwo w HANDOFF);
+                                                                                        test i smoke wznowienia po STOP
+ 2  ważna       git apply --include bierze całe pliki; H44/H45 nie wejdą po P3          §1 (pa_hunk.py z P0, łata vs treść, lista hunków „treść”), P0, P8
+ 3  ważna       P10: martwe odwołania do .claude/rules/learned-patterns.md; PA-27       P10 Zakres + Pliki (autopilot 1584/1614, complete 170, review 410/464/480/508,
+                                                                                        dev-pr SKILL 138/153, builderzy 1.7); PA-27 → P10; test odwołań .claude/rules/*
+ 4  ważna       P12: odbiorcy coding-rules poza listą plików                             P12 Zakres + Pliki; P5 stała ścieżki; P11 odwołania po temacie
+ 5  ważna       testy przypięte do zmienianego zachowania                                P7 (sceptycy-p2:168, metryki:150, faza.mjs:161), P8 (metryki:128–147, complete:67), P11
+ 6  ważna       P9: werdyktySceptyka liczy z pola realny                                 P9 Zakres + Pliki (agent.mjs + test)
+ 7  ważna       P9: kill rate miał być przed wdrożeniem                                   P9 (W4-5pre wrócił z P11; archiwum ~/test-review, przed merge'em)
+ 8  ważna       P11: wrześniowe „przed” nieporównywalne                                   P11 + §6 D-1 (oba warianty na bieżącym zestawie, jeden przebieg sędziego, 7 faz)
+ 9  ważna       grupa (a) faktów reviewerów odsunięta do P11                              P1 (H16, H17, H20, H24, H54, H55, H56) + §0 pkt 3 (wyjątek z powodem)
+10  ważna       security: warunek = advisors faktycznie ok, nie profil                    P11 security
+11  ważna       P14: STOP na starcie vs [MANUAL] w trakcie                               P14 Zakres, Testy, Smoke (dwa przebiegi)
+12  ważna       smoke nie ćwiczy bramek/dossier/mutantów                                  P0 (pakiet fixture), P6 (konfiguracje + defekt mechaniczny w fixture)
+13  ważna       P4 ↔ P5: kontrakt warunku bootstrapu                                     P4 (pole claude_md w pliku decyzji), A-cmd-bootstrap → P5 (+ smoke P5)
+14  ważna       P13: cały kontrakt docs/active/                                           P13 Zakres + test kontrakt-docs-active
+15  ważna       D9/N2: workflow nie ma SKILL.md                                           P3 (whenToUse zostaje z trybami wznowienia; N1 także w dev-docs:171)
+16  drobna      opis H51                                                                  P6
+17  drobna      hunki sprzeczne z kierunkiem paczki                                       §1 lista „treść”, P4 (H48), P8, P10 (H50), P7 (H59/H60 wypadają)
+18  drobna      §4 „rozłączne” nieprawdziwe dla autopilota                                §4 wstęp
+19  drobna      hook error-handling bez ESLint                                            P6 (wyłączenie warunkowe)
+20  drobna      P3 smoke bez sprawdzenia modelu; R0 z przypiętym efortem                  P3 Smoke, P0 Smoke
+21  drobna      test odwołań: wbudowane agentType, enum                                   P0
+22  drobna      pozycje spoza rejestru                                                    rejestr +4: PWE-budzet-doctor (P11), D-d9-doctor (P3), 6a-25-klasy (§1), PWE-d10-regen (P12)
+23  drobna      P14 zależy od P7; N1 wcześniej; liczba smoke'ów                           §2 (P14 ← P7; 15 smoke'ów, bo P5 dostał smoke), P3 (N1)
+24  drobna      słownik klas dla skryptu wiedzy                                            P10 (kopia + test równości)
+25  drobna      koszt zielonego main; podbijanie WERSJA_REKORDU                          P4 (cache po SHA), §1 (podbicie tylko przy zmianie logiki starych pól)
+
+Po naniesieniu: plan_poprawy_pokrycie.py → KOMPLETNY, 0 braków (395 pozycji).

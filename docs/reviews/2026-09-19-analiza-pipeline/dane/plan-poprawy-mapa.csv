@@ -1,0 +1,396 @@
+id;typ;zrodlo;nazwa;miejsce;powod_wypada
+H01;DIFF;PA-02;.claude/agents/architecture-strategist.md;P11;
+H02;DIFF;PA-06;.claude/agents/architecture-strategist.md;P11;
+H03;DIFF;PA-07;.claude/agents/architecture-strategist.md;P11;
+H04;DIFF;PA-07;.claude/agents/architecture-strategist.md;P11;
+H05;DIFF;PA-05;.claude/agents/architecture-strategist.md;P11;
+H06;DIFF;PA-01;.claude/agents/architecture-strategist.md;P11;
+H07;DIFF;PA-11;.claude/agents/best-practices-researcher.md;P3;
+H08;DIFF;PA-12;.claude/agents/feature-builder-fullstack.md;P3;
+H09;DIFF;PA-19;.claude/agents/feature-builder-fullstack.md;P3;
+H10;DIFF;PA-12;.claude/agents/feature-builder-fullstack.md;P3;
+H11;DIFF;PA-12;.claude/agents/feature-builder-ui.md;P3;
+H12;DIFF;PA-12;.claude/agents/feature-builder-ui.md;P3;
+H13;DIFF;PA-10;.claude/agents/feature-tester-e2e.md;P14;
+H14;DIFF;PA-11;.claude/agents/framework-docs-researcher.md;P3;
+H15;DIFF;PA-02;.claude/agents/performance-oracle.md;P11;
+H16;DIFF;PA-03;.claude/agents/performance-oracle.md;P1;
+H17;DIFF;PA-03;.claude/agents/performance-oracle.md;P1;
+H18;DIFF;PA-11;.claude/agents/repo-research-analyst.md;P3;
+H19;DIFF;PA-02;.claude/agents/security-sentinel.md;P11;
+H20;DIFF;PA-04;.claude/agents/security-sentinel.md;P1;
+H21;DIFF;PA-05;.claude/agents/security-sentinel.md;P11;
+H22;DIFF;PA-01;.claude/agents/security-sentinel.md;P11;
+H23;DIFF;PA-01;.claude/agents/security-sentinel.md;P11;
+H24;DIFF;PA-20;.claude/agents/spec-compliance-reviewer.md;P1;
+H25;DIFF;PA-11;.claude/agents/web-research-specialist.md;P3;
+H26;DIFF;PA-18;.claude/hooks/error-handling-reminder.sh;P1;
+H27;DIFF;PA-18;.claude/hooks/error-handling-reminder.sh;P1;
+H28;DIFF;PA-11;.claude/skills/dev-brainstorm/SKILL.md;P1;
+H29;DIFF;PA-11;.claude/skills/dev-compound/SKILL.md;P10;
+H30;DIFF;PA-11;.claude/skills/dev-compound-refresh/SKILL.md;P10;
+H31;DIFF;PA-11;.claude/skills/dev-docs/SKILL.md;P13;
+H32;DIFF;PA-08;.claude/skills/dev-docs/SKILL.md;P13;
+H33;DIFF;PA-11;.claude/skills/dev-docs-complete/SKILL.md;P4;
+H34;DIFF;PA-16;.claude/skills/dev-docs-complete/SKILL.md;P4;
+H35;DIFF;PA-11;.claude/skills/dev-plan/SKILL.md;P13;
+H36;DIFF;PA-21;.claude/skills/dev-plan/SKILL.md;P13;
+H37;DIFF;PA-12;.claude/skills/dev-plan/SKILL.md;P13;
+H38;DIFF;PA-11;.claude/skills/dev-prep/SKILL.md;P2;
+H39;DIFF;PA-17;.claude/skills/sentry-integration/SKILL.md;P12;
+H40;DIFF;PA-08;.claude/workflows/dev-autopilot-wf.js;P8;
+H41;DIFF;PA-15;.claude/workflows/dev-autopilot-wf.js;P8;
+H42;DIFF;PA-15;.claude/workflows/dev-autopilot-wf.js;P8;
+H43;DIFF;PA-15;.claude/workflows/dev-autopilot-wf.js;P8;
+H44;DIFF;PA-15;.claude/workflows/dev-autopilot-wf.js;P8;
+H45;DIFF;PA-15;.claude/workflows/dev-autopilot-wf.js;P8;
+H46;DIFF;PA-14;.claude/workflows/dev-compound-wf.js;P10;
+H47;DIFF;PA-11;.claude/workflows/dev-compound-wf.js;P10;
+H48;DIFF;PA-16;.claude/workflows/dev-docs-complete-wf.js;P4;
+H49;DIFF;PA-16;.claude/workflows/dev-docs-complete-wf.js;P4;
+H50;DIFF;PA-13;.claude/workflows/dev-docs-execute-wf.js;P10;
+H51;DIFF;PA-08;.claude/workflows/dev-docs-execute-wf.js;P6;
+H52;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P8;
+H53;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P8;
+H54;DIFF;PA-09;.claude/workflows/dev-docs-review-wf.js;P1;
+H55;DIFF;PA-09;.claude/workflows/dev-docs-review-wf.js;P1;
+H56;DIFF;PA-03;.claude/workflows/dev-docs-review-wf.js;P1;
+H57;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P7;
+H58;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P7;
+H59;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P7;
+H60;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P7;
+H61;DIFF;PA-10;.claude/workflows/dev-docs-review-wf.js;P14;
+H62;DIFF;PA-08;.claude/workflows/dev-docs-review-wf.js;P8;
+PW01;PANEL-WYNIK 65;6a pkt 1;żaden skill nie dopisuje do CLAUDE.md (dev-docs-complete:115-116, complete-wf:160);P4;
+PW02;PANEL-WYNIK 65;6a pkt 1;decyzje fazowe → docs/decisions/ + 1 linia indeksu;P4;
+PW03;PANEL-WYNIK 65;6a pkt 1, 11;uzgodnienie CLAUDE.md dopiero po merge’u, bramka rozmiaru w JS, bootstrap sprawdza wpis;P5;
+PW04;PANEL-WYNIK 65;6a pkt 2;dev-pr: 4 zmiany z ETAP1B §4 (zbierz w każdej turze, guard uzasadnień, rekomendacja w JS, raport per tura);P5;
+PW05;PANEL-WYNIK 65;6a pkt 2;dev-pr: sufit 3 tur, tryb interaktywny zostaje;P5;
+PW06;PANEL-WYNIK 65;6a pkt 3, 17;higiena konta: MCP i pluginy per projekt, audyt pluginów (osobny etap);WYPADA;Higiena konta, audyt pluginów, `cleanupPeriodDays` 120, globalny CLAUDE.md — KROK 0 (6a pkt 37).
+PW07;PANEL-WYNIK 65;6a pkt 4, 17;learned-patterns: format klasa → reguła (2 zdania) → źródło;P10;
+PW08;PANEL-WYNIK 65;6a pkt 17;learned-patterns: indeks generowany przez dev-compound-refresh z frontmatteru solutions;P10;
+PW09;PANEL-WYNIK 65;6a pkt 17;learned-patterns wychodzi z .claude/rules/ (koniec ładowania eager);P10;
+PW10;PANEL-WYNIK 65;6a pkt 17;8 zabezpieczeń learned-patterns;P10;
+PW11;PANEL-WYNIK 65;6a pkt 17;jednorazowa konwersja 49k zn skryptem z listą odrzutów;P10;
+PW12;PANEL-WYNIK 65;6a pkt 5;coding-rules.md: przepisanie (tabela USUŃ/ZMIEŃ/DODAJ/PRZENIEŚ-DO-LINTERA, PA-26);P12;
+PW13;PANEL-WYNIK 65;6a pkt 26 c;wyjątek w coding-rules §2: usunąć wolno tylko zielony test niefalsyfikowalny;P12;
+PW14;PANEL-WYNIK 65;6a pkt 6, 18 L10;profil stacku w dossier każdego reviewera;P7;
+PW15;PANEL-WYNIK 65;6a pkt 8;budżet pliku: wymiary + ten sam próg z tolerancją 20% w ESLint i .coderabbit.yaml;P13;
+PW16;PANEL-WYNIK 65;6a pkt 10;MCP per agent: Figma tylko UI/fullstack/tester przy figma_screens, Supabase MCP tylko sesja główna;P3;
+PW17;PANEL-WYNIK 65;6a pkt 12;doctor: skrypt bash, narzędzia wyliczane z projektu + sekcja „Wymagania” w README;P2;
+PW18;PANEL-WYNIK 65;6a pkt 13;szablon jako plugin — nie teraz;WYPADA;"Szablon jako plugin — nie teraz (6a pkt 13); bramka `validate` wchodzi niezależnie (P2)."
+PW19;PANEL-WYNIK 65;6a pkt 15;"bypass i czytanie Bashem zostają; paths: to bonus";WYPADA;Tryb bypass i czytanie Bashem zostają (6a pkt 15).
+PW20;PANEL-WYNIK 65;6a pkt 15;skills: u builderów zostaje;WYPADA;"`skills:` u builderów zostaje (6a pkt 15; podział treści — P12)."
+PW21;PANEL-WYNIK 65;6a pkt 17;bramka „zielony main” w bootstrapie;P4;
+PW22;PANEL-WYNIK 65;6a pkt 18 L8;wiedza do podzielenia: jak radzić sobie z dużą liczbą MCP/skilli (allowlista);WYPADA;L8 (jak radzić sobie z dużą liczbą MCP i skilli) — w RAPORT-DLA-OPERATORA (6a pkt 36).
+PW23;PANEL-WYNIK 65;6a pkt 18 L13 / 20;usunięcie /bugfix i koszyka D, dev-ideate, freshness-audit, tryb ręczny;P1;
+PW24;PANEL-WYNIK 65;6a pkt 20;usunięcie: poprawki README i learnings-researcher.md:256;P1;
+PW25;PANEL-WYNIK 65;6a pkt 20;szablon mobile — osobna decyzja;WYPADA;Szablon mobile — osobna decyzja operatora (własne, zmienione kopie).
+PW26;PANEL-WYNIK 65;6a pkt 20;opisy builderów „wywoływany przez dev-docs-execute” przepiąć na workflow;P3;
+PW27;PANEL-WYNIK 65;6a pkt 18 L19;generator coderabbit-base.yaml + opis w skillu;P5;
+PW28;PANEL-WYNIK 65;6a pkt 18 L14;"hook tsc w sesji głównej zostaje; error-handling-reminder wycofać po ESLint";P6;
+PW29;PANEL-WYNIK 65;6a pkt 18 L14;kieran-typescript-reviewer i code-simplicity-reviewer: treść do list, pliki usunąć;P11;
+PW30;PANEL-WYNIK 65;6a pkt 18;budżet instrukcji w trzech warstwach (stała <150, referencyjna, mechaniczna);P11;
+PW31;PANEL-WYNIK 65;6a pkt 18 L10;advisors przez Management API na chmurze, zero Dockera;P6;
+PW32;PANEL-WYNIK 65;6a pkt 19;E2E → [MANUAL] z przejściem do smoke operatora;P14;
+PW33;PANEL-WYNIK 65;6a pkt 21 N1;zdanie N1 w poleceniu startu;P3;
+PW34;PANEL-WYNIK 65;6a pkt 21 N2;nowa sesja po zmianach w .claude/ (komunikat sync-template, zdanie w dev-autopilot-wf);P2;
+PW35;PANEL-WYNIK 65;6a pkt 25;prompt-audit (a) poprawki faktów;ZASADY;
+PW36;PANEL-WYNIK 65;6a pkt 25;prompt-audit (b) pliki reviewerów PA-01, 02, 05, 06, 07;P11;
+PW37;PANEL-WYNIK 65;6a pkt 25;prompt-audit (c) PA-25 (kopia figma-design-to-code) — decyzja operatora;P3;
+PW38;PANEL-WYNIK 65;6a pkt 25;cykliczny prompt-audit przy zmianie modelu i po iteracjach dotykających promptów;P16;
+PW39;PANEL-WYNIK 65;6a pkt 25;"PA-24 skill security u builderów → reguły; PA-27 krok 1.7";P12;
+PW40;PANEL-WYNIK 65;6a pkt 26 a;compound ze szczeblem kod | lint | reguła;P10;
+PW41;PANEL-WYNIK 65;6a pkt 26 b;pytanie „undefined” o testy (lista test-coverage + builder);P11;
+PW42;PANEL-WYNIK 65;6a pkt 26 d;odbiór każdej bramki testem porażki;P6;
+PW43;PANEL-WYNIK 65;6a pkt 26 e;zasady pisania 1–11 warstwy stałej;P11;
+PW44;PANEL-WYNIK 65;6a pkt 26 f;ślepy test przed/po przy zmianie promptów;DECYZJE;
+PW45;PANEL-WYNIK 65;6a pkt 26 g;lint: stary kod sprzątany przed nowym workflow (zadanie sprzątające);P6;
+PW46;PANEL-WYNIK 65;6a pkt 26 h;skill weryfikacji z mapą funkcji;P14;
+PW47;PANEL-WYNIK 65;6a pkt 26 h;przejście regresyjne po funkcjach — odłożone z warunkiem;WYPADA;Przejście regresyjne po funkcjach z mapy — warunek w P14 (uwagi bota / Sentry w funkcjach nietkniętych planem).
+PW48;PANEL-WYNIK 65;6a pkt 26 i;granice warstw w ESLint;P6;
+PW49;PANEL-WYNIK 65;6a pkt 26 j;ogrodnik;P15;
+PW50;PANEL-WYNIK 65;6a pkt 20;cleanupPeriodDays 120;WYPADA;Higiena konta, audyt pluginów, `cleanupPeriodDays` 120, globalny CLAUDE.md — KROK 0 (6a pkt 37).
+PW51;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;precheck → env-up;P14;
+PW52;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;dedup zostaje;WYPADA;"Dedup (JS + haiku) zostaje (PANEL-WEJSCIE §2a; K13 bez pokrętła)."
+PW53;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;test-coverage: brak zEffortem/agentType w wywołaniu (dev-docs-review-wf.js:904);P3;
+PW54;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;spec-compliance: duplikat fokusu REVIEWERZY:368;P11;
+PW55;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;correctness — własny plik agenta;P3;
+PW56;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;bramka niezmienności migracji (domknięcie + kontrola fixa);P6;
+PW57;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;seedy z właścicielem (e2e / security), e2e/seeds jako granica zaufania w bocie;P14;
+PW58;PANEL-WYNIK 65;PANEL-WEJSCIE §2a / 6a pkt 17;zamknięty słownik klas (L12);WYPADA;"Zamknięty słownik klas — It. 1 (`KLASY_BLEDOW`, 33 klasy; 6a pkt 38)."
+PW59;PANEL-WYNIK 65;PANEL-WEJSCIE §2a;claude plugin validate --strict + eval jako bramka CI zmian maszynerii;P2;
+PW60;PANEL-WYNIK 65;PANEL-WEJSCIE §7;"__tests__ szablonu (74 testy; test TIERY sceptycy-p2.test.mjs)";ZASADY;
+PW61;PANEL-WYNIK 65;PANEL-WEJSCIE §7;oś code-quality: prompt w dwóch miejscach → jedno;P11;
+PW62;PANEL-WYNIK 65;PANEL-WEJSCIE §7;templates/smoke-autopilot;P0;
+PW63;PANEL-WYNIK 65;PANEL-WEJSCIE §7;settings: enabledPlugins dev-browser, statusLine npx @latest → higiena konta;WYPADA;statusLine `npx …@latest` — KROK 0 zdecydował: bez zmian (KROK0-DECYZJE pkt 8).
+PW64;PANEL-WYNIK 65;PANEL-WEJSCIE §9 / ETAP2 §6;raport etapu 5: dwa raporty (techniczny + dla operatora) z ograniczeniami L6–L18;WYPADA;Raporty etapu 5 — 6a pkt 36.
+PW65;PANEL-WYNIK 65;6a pkt 12, §2 pkt 14;sekcja Doctor / zielony main / doctor w bootstrapie;P4;
+PA-01;PROMPT-AUDIT;PROMPT-AUDIT §3;wzmacniacze w plikach reviewerów;hunki:P11;
+PA-02;PROMPT-AUDIT;PROMPT-AUDIT §3;dialogi-przykłady czatu i tożsamość „elite” w plikach reviewerów;hunki:P11;
+PA-03;PROMPT-AUDIT;PROMPT-AUDIT §3;memoizacja: reviewer performance każe szukać tego, czego builder ma nie robić;hunki:P1;
+PA-04;PROMPT-AUDIT;PROMPT-AUDIT §3;`getSession()` po stronie serwera: reviewer łagodniejszy niż skille;hunki:P1;
+PA-05;PROMPT-AUDIT;PROMPT-AUDIT §3;format raportu w pliku reviewera kontra schemat workflowu;hunki:P11;
+PA-06;PROMPT-AUDIT;PROMPT-AUDIT §3;architecture: opis zmiany zamiast zasady;hunki:P11;
+PA-07;PROMPT-AUDIT;PROMPT-AUDIT §3;architecture: „najpierw zmapuj cały system”;hunki:P11;
+PA-08;PROMPT-AUDIT;PROMPT-AUDIT §3;frazy migracyjne w promptach review / fix / execute / dev-docs;hunki:P13|P6|P7|P8;
+PA-09;PROMPT-AUDIT;PROMPT-AUDIT §3;odwołanie do opisu, którego w prompcie nie ma (BLOK_SEMANTYKA);hunki:P1;
+PA-10;PROMPT-AUDIT;PROMPT-AUDIT §3;archeologia incydentu E2E i niezgodna definicja liczenia;hunki:P14;
+PA-11;PROMPT-AUDIT;PROMPT-AUDIT §3;rok wpisany na sztywno;hunki:P1|P10|P13|P2|P3|P4;
+PA-12;PROMPT-AUDIT;PROMPT-AUDIT §3;nazwy narzędzi Figma MCP wpisane na sztywno;hunki:P13|P3;
+PA-13;PROMPT-AUDIT;PROMPT-AUDIT §3;planner: nieaktualny rozmiar i fałszywe uzasadnienie;P10;
+PA-14;PROMPT-AUDIT;PROMPT-AUDIT §3;compound w autopilocie: „kontekst z sesji”, której agent nie ma;P10;
+PA-15;PROMPT-AUDIT;PROMPT-AUDIT §3;zakres diffu fixa dla ról mechanicznych;P8;
+PA-16;PROMPT-AUDIT;PROMPT-AUDIT §3;archiwizacja dopisuje do CLAUDE.md wbrew decyzji operatora;hunki:P4;
+PA-17;PROMPT-AUDIT;PROMPT-AUDIT §3;sentry-integration: „NIGDY NIE ŁAMIESZ TYCH ZASAD / ALL ERRORS MUST”;hunki:P12;
+PA-18;PROMPT-AUDIT;PROMPT-AUDIT §3;hook error-handling: sprawdza wzorzec sprzed migracji i żąda czegoś sprzecznego ze skillem;P1;
+PA-19;PROMPT-AUDIT;PROMPT-AUDIT §3;builder fullstack: krok, którego nie da się wykonać;hunki:P3;
+PA-20;PROMPT-AUDIT;PROMPT-AUDIT §3;spec-compliance odsyła do osi, których nie ma;hunki:P1;
+PA-21;PROMPT-AUDIT;PROMPT-AUDIT §3;dev-plan woła repo-research-analyst bez `Scope:`;hunki:P13;
+PA-22;PROMPT-AUDIT;PROMPT-AUDIT §3;efort ról po przejściu na Opus 5.5.;P3;
+PA-23;PROMPT-AUDIT;PROMPT-AUDIT §3;"`dev-autopilot-wf.js:1509`: efort `'low'` przekazywany agentowi `model: 'haiku'`; Haiku 4.";P8;
+PA-24;PROMPT-AUDIT;PROMPT-AUDIT §3;skill `security` wstrzykiwany builderom to protokół audytu.;P12;
+PA-25;PROMPT-AUDIT;PROMPT-AUDIT §3;`figma-design-to-code` to nieaktualna kopia skilla vendora.;P3;
+PA-26;PROMPT-AUDIT;PROMPT-AUDIT §3;`coding-rules.md` (TYLKO RAPORT, reguły operatora).;P12;
+PA-27;PROMPT-AUDIT;PROMPT-AUDIT §3;learned-patterns dociera do buildera trzema kanałami.;P10;
+PA-28;PROMPT-AUDIT;PROMPT-AUDIT §3;`stan:zapis` (n=290, mediana 5 wywołań), `telemetria` (mediana 6–8, maks. 32), scribe (med;P7;
+PA-29;PROMPT-AUDIT;PROMPT-AUDIT §3;weryfikacja w pięciu warstwach.;P6;
+PA-30;PROMPT-AUDIT;PROMPT-AUDIT §3;dev-plan zawsze uruchamia agentów researchu.;P13;
+PA-31;PROMPT-AUDIT;PROMPT-AUDIT §3;"opisy skilli i workflowów szablonu to ~12k zn w liście skilli każdego startu agenta; opisy";P3;
+PA-32;PROMPT-AUDIT;PROMPT-AUDIT §3;`dev-docs-review-wf.js:536` „To zakaz, nie sugestia… pod zadnym pozorem” — nacisk z udokum;WYPADA;„To zakaz, nie sugestia” przy testerze — nacisk z udokumentowaną awarią, zostaje do re-testu (PROMPT-AUDIT, zasada proweniencji).
+PA-33;PROMPT-AUDIT;PROMPT-AUDIT §3;`dev-docs-review-wf.js:60` „zglos MAKSYMALNIE 5 findingow P3” — klamra liczbowa (1f), ale;P8;
+PA-34;PROMPT-AUDIT;PROMPT-AUDIT §3;`agents/learnings-researcher.md:229-250` „RÓB / NIE RÓB” powtarza kroki 3–6 (1c, powtórzen;WYPADA;RÓB / NIE RÓB w learnings-researcher — duplikaty zgodne, bez zmian.
+PA-35;PROMPT-AUDIT;PROMPT-AUDIT §3;wzmacniacze w agentach researchu („Be systematic, thorough”, `repo-research-analyst.md:295;P3;
+PA-36;PROMPT-AUDIT;PROMPT-AUDIT §3;`kieran-typescript-reviewer.md`, `code-simplicity-reviewer.md`: poza audytem (do usunięcia;P11;
+PA-37;PROMPT-AUDIT;PROMPT-AUDIT §3;hooki Stop nie czytają `stop_hook_active` i przy trwałych ostrzeżeniach zwracają exit 2 po;P6;
+PA-38;PROMPT-AUDIT;PROMPT-AUDIT §3;`skills/dev-docs-complete/SKILL.md:120` „Zapytaj: Czy chcesz udokumentować… /dev-compound”;P4;
+PA-39;PROMPT-AUDIT;PROMPT-AUDIT §3;security-sentinel: trzy zachodzące checklisty i pozycje niewykonalne w review diffu.;P11;
+PA-40;PROMPT-AUDIT;PROMPT-AUDIT §3;`performance-oracle.md:100-105` progi „O(n log n)”, „200 ms”, „5 KB per feature” — niespra;P11;
+PA-41;PROMPT-AUDIT;PROMPT-AUDIT §3;`skills/dev-compound-refresh/SKILL.md:200-220` „Strategia subagentów” — zachęta do delegac;P10;
+PA-42;PROMPT-AUDIT;PROMPT-AUDIT §3;"`~/.claude/CLAUDE.md` (blok graphify) trafia do każdego agenta; higiena konta, nie szablon";WYPADA;Higiena konta, audyt pluginów, `cleanupPeriodDays` 120, globalny CLAUDE.md — KROK 0 (6a pkt 37).
+PA-43;PROMPT-AUDIT;PROMPT-AUDIT §3;`dev-autopilot-wf.js:355` „Model potrafi 'odczytać' uszkodzony JSON i zmyślić stan faz” —;WYPADA;„Model potrafi odczytać uszkodzony JSON…” — powód twardego zakazu, zostaje.
+PA-44;PROMPT-AUDIT;PROMPT-AUDIT §3;(wzmianka);P12;
+6a-20-cleanup;RĘCZNY;HANDOFF 6a pkt 20;cleanupPeriodDays = 120;WYPADA;Higiena konta, audyt pluginów, `cleanupPeriodDays` 120, globalny CLAUDE.md — KROK 0 (6a pkt 37).
+6a-20-ideate;RĘCZNY;HANDOFF 6a pkt 20;dev-ideate i freshness-audit (+wf) wypadają;P1;
+6a-20-koszykD;RĘCZNY;HANDOFF 6a pkt 20;koszyk D wypada (code-review, code-quality, gemini, dev-docs-update, bugfix);P1;
+6a-20-mobile;RĘCZNY;HANDOFF 6a pkt 20;szablon mobile — nie ruszać bez pytania;WYPADA;Szablon mobile — osobna decyzja operatora (własne, zmienione kopie).
+6a-20-reczny;RĘCZNY;HANDOFF 6a pkt 20;tryb ręczny wypada, treść SKILL.md do workflowów, opisy builderów;P1;
+6a-25-a;RĘCZNY;HANDOFF 6a pkt 25;prompt-audit (a) do pierwszej iteracji;ZASADY;
+6a-25-b;RĘCZNY;HANDOFF 6a pkt 25;prompt-audit (b) pliki reviewerów;P11;
+6a-25-c;RĘCZNY;HANDOFF 6a pkt 25;prompt-audit (c) PA-25/PA-26 decyzje przy wdrożeniu;P3;
+6a-25-cykl;RĘCZNY;HANDOFF 6a pkt 25;obszar aktualizowany cyklicznie (ponowny prompt-audit);P16;
+6a-25-effort;RĘCZNY;HANDOFF 6a pkt 25;rekord agent z polem effort;WYPADA;Pole `effort` w rekordzie agenta — It. 1 (efort z transkryptu).
+6a-25-klasy;RĘCZNY;HANDOFF 6a pkt 25;ponowny prompt-audit po wdrożeniu plików klas ról i po iteracjach promptów;ZASADY;
+6a-26-a;RĘCZNY;HANDOFF 6a pkt 26;(a) compound ze szczeblem;P10;
+6a-26-b;RĘCZNY;HANDOFF 6a pkt 26;(b) pytanie „undefined”;P11;
+6a-26-c;RĘCZNY;HANDOFF 6a pkt 26;(c) wyjątek w coding-rules §2;P12;
+6a-26-d;RĘCZNY;HANDOFF 6a pkt 26;(d) odbiór bramek testem porażki;P6;
+6a-26-e;RĘCZNY;HANDOFF 6a pkt 26;(e) zasady 8–11 pisania;P11;
+6a-26-f;RĘCZNY;HANDOFF 6a pkt 26;(f) prompty wg Anthropic + ślepy test;DECYZJE;
+6a-26-g;RĘCZNY;HANDOFF 6a pkt 26;(g) lint a stary kod;P6;
+6a-26-h;RĘCZNY;HANDOFF 6a pkt 26;(h) skill weryfikacji z mapą funkcji;P14;
+6a-26-i;RĘCZNY;HANDOFF 6a pkt 26;(i) granice warstw w ESLint bez dependency-cruiser;P6;
+6a-26-j;RĘCZNY;HANDOFF 6a pkt 26;(j) ogrodnik automatycznie na zamknięciu;P15;
+6a-26-k;RĘCZNY;HANDOFF 6a pkt 26;(k) rozkład reguł builder ↔ reviewer;P12;
+6a-26-odrz;RĘCZNY;HANDOFF 6a pkt 26;odrzucone: zakaz komentarzy i sześć pozycji „na później”;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+6a-34-c;RĘCZNY;HANDOFF 6a pkt 34;(c) allowlista w It. 3 równolegle jako R1;P3;
+6a-36-a;RĘCZNY;HANDOFF 6a pkt 36;(a) oferty-online = materiał do nauki (kopie, tło);ZASADY;
+6a-36-b;RĘCZNY;HANDOFF 6a pkt 36;(b) higiena konta = KROK 0;WYPADA;Higiena konta, audyt pluginów, `cleanupPeriodDays` 120, globalny CLAUDE.md — KROK 0 (6a pkt 37).
+6a-37-d;RĘCZNY;HANDOFF 6a pkt 37;(d) instrukcja instalacji per projekt + profil settings.json;P2;
+6a-37-d2;RĘCZNY;HANDOFF 6a pkt 37;(d) test na czystym koncie: propozycja instalacji per projekt;P2;
+6a-37-d3;RĘCZNY;HANDOFF 6a pkt 37;(d) disableClaudeAiConnectors tylko terminal — instrukcja mówi wprost;P2;
+6a-37-e;RĘCZNY;HANDOFF 6a pkt 37;(e) token Airtable;WYPADA;Token Airtable — po stronie operatora.
+6a-38-e1;RĘCZNY;HANDOFF 6a pkt 38;(e) kompakcja pipeline.jsonl;WYPADA;Kompakcja `pipeline.jsonl` — przy ~100 MB (dziś 27,6 MB).
+6a-38-e2;RĘCZNY;HANDOFF 6a pkt 38;(e) skan w doctor (O5);P2;
+6a-38-e3;RĘCZNY;HANDOFF 6a pkt 38/39;push szablonu do GitHuba — decyzja;DECYZJE;
+6a-40-1;RĘCZNY;HANDOFF 6a pkt 40;(1) wdrożenie jedna po drugiej wg zależności i ryzyka;ZASADY;
+6a-40-2;RĘCZNY;HANDOFF 6a pkt 40;(2) pomiar telemetrią po poprawie, progi do odczytu;P16;
+6a-40-3;RĘCZNY;HANDOFF 6a pkt 40;(3) testy + smoke po paczce zmian w workflowach;P0;
+6a-40-4;RĘCZNY;HANDOFF 6a pkt 40;(4) ślepe testy — decyzja operatora;DECYZJE;
+6a-40-5;RĘCZNY;HANDOFF 6a pkt 40;(5) B0 wypada jako warunek;WYPADA;Część „B0 na nowym projekcie” jako warunek — jw.
+A-cmd-bootstrap;RĘCZNY;PANEL-WYNIK §4a A;bootstrap sprawdza wpis docs/decisions/ ostatniego merge’a;P5;
+A-cmd-complete;RĘCZNY;PANEL-WYNIK §4a A;żaden skill nie dopisuje do CLAUDE.md (complete);P4;
+A-cmd-decisions;RĘCZNY;PANEL-WYNIK §4a A;decyzje fazowe → docs/decisions/ + indeks;P4;
+A-cmd-merge;RĘCZNY;PANEL-WYNIK §4a A;uzgodnienie CLAUDE.md w dev-pr po merge’u z bramką rozmiaru;P5;
+A-lp;RĘCZNY;PANEL-WYNIK §4a A;learned-patterns: trzy poziomy, 8 zabezpieczeń, konwersja;P10;
+A-lp-swap;RĘCZNY;PANEL-WYNIK §4a A;możliwa zamiana It. 7 ↔ It. 8;P10;
+B-budzet-bot;RĘCZNY;PANEL-WYNIK §4a B;ten sam próg z tolerancją w .coderabbit.yaml;P5;
+B-budzet-eslint;RĘCZNY;PANEL-WYNIK §4a B;ten sam próg z tolerancją w ESLint max-lines;P6;
+B-budzet-plan;RĘCZNY;PANEL-WYNIK §4a B;budżet pliku z wymiarami w IU;P13;
+B-plan;RĘCZNY;PANEL-WYNIK §4a B;scalony dev-plan;P13;
+B-prep;RĘCZNY;PANEL-WYNIK §4a B;dev-prep bez zmian;WYPADA;"dev-prep bez zmian merytorycznych (PANEL §4a B; P2 dokłada tylko doctor)."
+C-bot;RĘCZNY;PANEL-WYNIK §4a C;generator bota + opis w skillu + 8 zmian;P5;
+C-devpr;RĘCZNY;PANEL-WYNIK §4a C;dev-pr 4 zmiany + sufit 3 tur;P5;
+C-slownik;RĘCZNY;PANEL-WYNIK §4a C;zamknięty słownik klas;WYPADA;"Zamknięty słownik klas — It. 1 (`KLASY_BLEDOW`, 33 klasy; 6a pkt 38)."
+D-badacz;RĘCZNY;PANEL-WYNIK §4a D;6 agentów researchowych w klasie badacz;P3;
+D-bypass;RĘCZNY;PANEL-WYNIK §4a D;bypass i czytanie Bashem zostają;WYPADA;Tryb bypass i czytanie Bashem zostają (6a pkt 15).
+D-claude;RĘCZNY;PANEL-WYNIK §4a D;CLAUDE.md u builderów/reviewerów, omitClaudeMd u mechanicznych;P3;
+D-corr;RĘCZNY;PANEL-WYNIK §4a D;correctness własny plik agenta;P3;
+D-d9-doctor;RĘCZNY;PANEL-WYNIK §2 D9;warunek wstępny: stały test w doctor, że dziecko z flagą się uruchamia;P3;
+D-mcp;RĘCZNY;PANEL-WYNIK §4a D;MCP per agent (Figma przy figma_screens, Supabase tylko sesja główna);P3;
+D-skills;RĘCZNY;PANEL-WYNIK §4a D;skills: u builderów zostaje;WYPADA;"`skills:` u builderów zostaje (6a pkt 15; podział treści — P12)."
+D-tools;RĘCZNY;PANEL-WYNIK §4a D;allowlista tools: w plikach klas ról;P3;
+D10;RĘCZNY;PANEL-WYNIK §2;rozkład reguł builder ↔ reviewer;P12;
+D11;RĘCZNY;PANEL-WYNIK §2;kolejność wdrożenia (okna W1–W7);WYPADA;Kolejność wdrożenia z oknami W1–W7 — zastąpiona przez 6a pkt 40 (1) i §2 tego planu.
+D12a;RĘCZNY;PANEL-WYNIK §2;D12 cz. 1 — kontrola po fixie wg A;P8;
+D12b;RĘCZNY;PANEL-WYNIK §2;D12 cz. 2 — nowa IU dla nowego pliku: nie teraz;WYPADA;"Nowa IU dla findingu wymagającego nowego pliku — nie teraz; warunek powrotu w P8 (≥ 3 B P1/P2 w plikach dodanych przez fix w oknie 5 PR)."
+D2;RĘCZNY;PANEL-WYNIK §2;grupowanie sceptyków: P2 batch 4, P1 ×3;P9;
+D3;RĘCZNY;PANEL-WYNIK §2;dossier po przejściu packagera do skryptu, bez mandatu;P7;
+D4;RĘCZNY;PANEL-WYNIK §2;spec/security/test-coverage tylko w fazach z kodem;P11;
+D5;RĘCZNY;PANEL-WYNIK §2;Stryker w domknięciu fazy, lista mutantów;P6;
+D6-1;RĘCZNY;PANEL-WYNIK §2 D6;efort jawny (krok 1);P3;
+D6-2;RĘCZNY;PANEL-WYNIK §2 D6;test-coverage medium (krok 2);P11;
+D6-3;RĘCZNY;PANEL-WYNIK §2 D6;spec medium (krok 3);P11;
+D6-4;RĘCZNY;PANEL-WYNIK §2 D6;klasy poza review (krok 4);P3;
+D7-1;RĘCZNY;PANEL-WYNIK §2 D7;warstwa 1: samosprawdzenie buildera na plikach IU;P12;
+D7-2;RĘCZNY;PANEL-WYNIK §2 D7;warstwa 2: skrypt bramek w domknięciu;P6;
+D7-3;RĘCZNY;PANEL-WYNIK §2 D7;warstwa 3: bramki na plikach fixa;P8;
+D7-4;RĘCZNY;PANEL-WYNIK §2 D7;warstwa 4: walidacja końcowa raz na zadanie;WYPADA;Walidacja końcowa raz na zadanie bez zmian (D7 warstwa 4).
+D8a;RĘCZNY;PANEL-WYNIK §2;kształt scalonego dev-plan;P13;
+D8b;RĘCZNY;PANEL-WYNIK §2;research warunkowy przy „Lekka”;P13;
+D9;RĘCZNY;PANEL-WYNIK §2;disable-model-invocation dla workflowów-dzieci;P3;
+E-904;RĘCZNY;PANEL-WYNIK §4a E;wywołanie test-coverage bez zEffortem/agentType (:904);P3;
+E-cq;RĘCZNY;PANEL-WYNIK §4a E;prompt code-quality w jednym miejscu (It. 7c);P11;
+E-dedup;RĘCZNY;PANEL-WYNIK §4a E;dedup zostaje;WYPADA;"Dedup (JS + haiku) zostaje (PANEL-WEJSCIE §2a; K13 bez pokrętła)."
+E-kieran;RĘCZNY;PANEL-WYNIK §4a E;kieran/simplicity: treść do list, pliki usunięte;P11;
+E-precheck;RĘCZNY;PANEL-WYNIK §4a E;precheck → env-up;P14;
+E-spec;RĘCZNY;PANEL-WYNIK §4a E;spec-compliance: martwe odwołania + duplikat fokusu :368;P11;
+F-ci;RĘCZNY;PANEL-WYNIK §4a F;bramka CI: claude plugin validate --strict + eval;P2;
+F-cr;RĘCZNY;PANEL-WYNIK §4a F;coding-rules przepisanie (USUŃ/ZMIEŃ/DODAJ/PRZENIEŚ, PA-26);P12;
+F-cr2-pole;RĘCZNY;PANEL-WYNIK §4a F;pole faza.testy_usuniete[] (I2);P6;
+F-cr2-tekst;RĘCZNY;PANEL-WYNIK §4a F;wyjątek w coding-rules §2 (tekst);P12;
+F-doctor;RĘCZNY;PANEL-WYNIK §4a F;doctor: bash, lista z projektu, Wymagania w README;P2;
+F-migr;RĘCZNY;PANEL-WYNIK §4a F;bramka niezmienności migracji w domknięciu + migrations.sum;P6;
+F-migr-fix;RĘCZNY;PANEL-WYNIK §4a F;niezmienność migracji w kontroli fixa;P8;
+F-migr-sum;RĘCZNY;PANEL-WYNIK §4a F;migrations.sum przed env-up;P14;
+F-seedy-bot;RĘCZNY;PANEL-WYNIK §4a F;seedy: e2e/seeds jako granica zaufania w bocie;P5;
+F-seedy-e2e;RĘCZNY;PANEL-WYNIK §4a F;seedy: tester sprawdza seed vs kontrakt migracji;P14;
+F-seedy-sec;RĘCZNY;PANEL-WYNIK §4a F;seedy: security — strażnicy w seedach;P11;
+F-smoke;RĘCZNY;PANEL-WYNIK §4a F;templates/smoke-autopilot jako scenariusz po każdej iteracji;P0;
+F-tests;RĘCZNY;PANEL-WYNIK §4a F;__tests__: każda iteracja aktualizuje testy przypinające zachowanie;ZASADY;
+F-zielony;RĘCZNY;PANEL-WYNIK §4a F;zielony main w bootstrapie;P4;
+G-mobile;RĘCZNY;PANEL-WYNIK §4a G;szablon mobile — osobna decyzja;WYPADA;Szablon mobile — osobna decyzja operatora (własne, zmienione kopie).
+G-usun;RĘCZNY;PANEL-WYNIK §4a G;usunięcia z 6a pkt 20 + README + learnings-researcher:256 + przeniesienie treści;P1;
+H-24-27;RĘCZNY;PANEL-WYNIK §4a H;PA-24 i PA-27 w It. 8;P12;
+H-a;RĘCZNY;PANEL-WYNIK §4a H;prompt-audit grupa (a);ZASADY;
+H-b;RĘCZNY;PANEL-WYNIK §4a H;prompt-audit grupa (b) po ślepym teście;P11;
+H-c;RĘCZNY;PANEL-WYNIK §4a H;PA-25, PA-26 — decyzje operatora przy wdrożeniu;P12;
+H-cykl;RĘCZNY;PANEL-WYNIK §4a H;ponowny prompt-audit po iteracjach promptów;P16;
+I-konto;RĘCZNY;PANEL-WYNIK §4a I;higiena konta;WYPADA;Higiena konta, audyt pluginów, `cleanupPeriodDays` 120, globalny CLAUDE.md — KROK 0 (6a pkt 37).
+INS-A1-bld;RĘCZNY;INSPIRACJE A1;pytanie „undefined” — pozycja warstwy stałej buildera;P12;
+INS-A1-lint;RĘCZNY;INSPIRACJE A1;część mechaniczna — reguły wtyczki vitest;P6;
+INS-A1-rev;RĘCZNY;INSPIRACJE A1;pytanie „undefined” + 5 kształtów — lista test-coverage;P11;
+INS-A2;RĘCZNY;INSPIRACJE A2;drabina egzekwowania w compoundzie (szczebel);P10;
+INS-A3;RĘCZNY;INSPIRACJE A3;bramka odebrana, gdy „gryzie”;P6;
+INS-A4;RĘCZNY;INSPIRACJE A4;cztery zasady writing-for-agents;P11;
+INS-A5;RĘCZNY;INSPIRACJE A5;ślepa ewaluacja zmian promptów;DECYZJE;
+INS-B1;RĘCZNY;INSPIRACJE B1;skill weryfikacji z mapą funkcji;P14;
+INS-B2;RĘCZNY;INSPIRACJE B2;standardy u reviewera vs buildera;P12;
+INS-B3;RĘCZNY;INSPIRACJE B3;poziom pewności dowodu 1–5;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-B4;RĘCZNY;INSPIRACJE B4;lżejszy plan + szwy testowe;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-B5;RĘCZNY;INSPIRACJE B5;równoległe IU w worktree;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-B6;RĘCZNY;INSPIRACJE B6;granice warstw grafem importów;P6;
+INS-B7;RĘCZNY;INSPIRACJE B7;ogrodnik;P15;
+INS-B8;RĘCZNY;INSPIRACJE B8;komentarze jako nośnik obejść — obserwować;P15;
+INS-C1;RĘCZNY;INSPIRACJE C1;katalog odrzucanych wzorców bota;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-C2;RĘCZNY;INSPIRACJE C2;porażka CI: klasyfikacja;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-C3;RĘCZNY;INSPIRACJE C3;dziennik decyzji / „Na co zwrócić uwagę”;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-C4;RĘCZNY;INSPIRACJE C4;opis PR z ryzykiem;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-C5;RĘCZNY;INSPIRACJE C5;wizard kont i sekretów;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-C6;RĘCZNY;INSPIRACJE C6;ankieta dla klienta;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+INS-N-formalna;RĘCZNY;INSPIRACJE §4;weryfikacja formalna;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-interrogate;RĘCZNY;INSPIRACJE §4;interrogate (wiele modeli);WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-matt;RĘCZNY;INSPIRACJE §4;pozostałe skille Matta;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-orchestrate;RĘCZNY;INSPIRACJE §4;orchestrate / swarm / arena;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-petla;RĘCZNY;INSPIRACJE §4;pętla zewnętrzna Slack/Sentry;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-poteto;RĘCZNY;INSPIRACJE §4;router poteto-mode;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-setup;RĘCZNY;INSPIRACJE §4;setup-pstack;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-shipping;RĘCZNY;INSPIRACJE §4;shipping / auto-merge;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-N-sicko;RĘCZNY;INSPIRACJE §4;osobny agent komentarzy;WYPADA;"„Nie bierzemy” z INSPIRACJE §4: router poteto-mode; interrogate; osobny agent komentarzy; auto-merge; orchestrate / swarm / arena; pętla zewnętrzna Slack/Sentry; weryfikacja formalna; setup-pstack; pozostałe skille Matta (handoff, tracker, teach, grill-with-docs itd.)."
+INS-drabina;RĘCZNY;HANDOFF 6a pkt 26;drabina egzekwowania jako zasada przekrojowa — odrzucona;WYPADA;"skala pewności dowodu 1–5; lżejszy plan + „szwy testowe”; równoległe IU w worktree; drabina egzekwowania jako zasada przekrojowa (szczebel zostaje w compoundzie — P10); zakaz komentarzy i sześć pozycji „na później”: katalog odrzucanych uwag bota, porażki CI, dziennik decyzji, opis PR z ryzykiem, wizard, ankieta dla klienta."
+IT1-5;RĘCZNY;IT1-ODCZYT §5;ogólny mechanizm dla osieroconych rekordów;WYPADA;Ogólny mechanizm dla rekordów, których skan już nie tworzy — przy drugim przypadku (dziś filtr komend lokalnych wystarcza).
+IT1-6a;RĘCZNY;IT1-ODCZYT §6;fixture smoke’a w monorepo poza bramkami;P0;
+IT1-6b;RĘCZNY;IT1-ODCZYT §6;commit archiwizacji z komunikatem feature;P4;
+IT1-6c;RĘCZNY;IT1-ODCZYT §6;.DS_Store śledzony w gicie;P1;
+J-d12;RĘCZNY;PANEL-WYNIK §4a J;D12 cz. 2 — odłożone;WYPADA;"Nowa IU dla findingu wymagającego nowego pliku — nie teraz; warunek powrotu w P8 (≥ 3 B P1/P2 w plikach dodanych przez fix w oknie 5 PR)."
+J-plugin;RĘCZNY;PANEL-WYNIK §4a J;szablon jako plugin — nie teraz;WYPADA;"Szablon jako plugin — nie teraz (6a pkt 13); bramka `validate` wchodzi niezależnie (P2)."
+J-reczny;RĘCZNY;PANEL-WYNIK §4a J;tryb ręczny execute/review usunięty;P1;
+J-regres;RĘCZNY;PANEL-WYNIK §4a J;przejście regresyjne — odłożone;WYPADA;Przejście regresyjne po funkcjach z mapy — warunek w P14 (uwagi bota / Sentry w funkcjach nietkniętych planem).
+K-raporty;RĘCZNY;PANEL-WYNIK §4a K;raporty etapu 5;WYPADA;Raporty etapu 5 — 6a pkt 36.
+PWE-1b;RĘCZNY;PANEL-WEJSCIE §2a (ETAP1);domknięcie pkt 1b nie jest duplikatem hooka;WYPADA;Domknięcie pkt 1b (audyt error-handlingu) nie jest duplikatem hooka — zostaje (P6 go nie rusza).
+PWE-C;RĘCZNY;PANEL-WEJSCIE §2a (ETAP1B);28 uwag C i preferencje bota zostają botowi;WYPADA;28 uwag C i preferencje bota zostają botowi (ETAP1B).
+PWE-N2;RĘCZNY;PANEL-WEJSCIE §10;N2: komunikat na końcu sync-template;P2;
+PWE-N3;RĘCZNY;PANEL-WEJSCIE §2a (mini-run);N3: builder idzie za git status z session_context;P4;
+PWE-S27-p1test;RĘCZNY;PANEL-WEJSCIE §2 pkt 7;naprawa P1 zawiera test padający przed poprawką;P8;
+PWE-advisors;RĘCZNY;PANEL-WEJSCIE §2 pkt 8;security warunkowe po profilu stacku (advisors przejmuje RLS);P11;
+PWE-budzet-doctor;RĘCZNY;PANEL-WEJSCIE §2 pkt 3;test budżetu warstwy stałej także w sync-template/doctor + liczba w telemetrii;P11;
+PWE-ctx;RĘCZNY;PANEL-WEJSCIE §2a (ETAP2);correctness wzmocniony mechanicznie (no-floating-promises, react-hooks);P6;
+PWE-d10-regen;RĘCZNY;PANEL-WEJSCIE §2a (ETAP1B);tabela klas ucieczek u buildera regenerowana z compoundów;P12;
+PWE-e2e-prompt;RĘCZNY;PANEL-WEJSCIE §2a (ETAP1);e2e: harness → env-up, jedno źródło promptu;P14;
+PWE-komendy;RĘCZNY;HANDOFF 6a pkt 6;komendy-listy per technologia u reviewerów;P11;
+PWE-rek7-bak;RĘCZNY;PANEL-WEJSCIE §10 rek. 7;complete pomija *.bak;P4;
+PWE-rek7-fazy;RĘCZNY;PANEL-WEJSCIE §10 rek. 7;fazyUkonczone po stanie zadania;P4;
+PWE-rek7-stopka;RĘCZNY;PANEL-WEJSCIE §10 rek. 7;stopka commita STOP z pustą linią;P4;
+PWE-scribe;RĘCZNY;PANEL-WEJSCIE §2a (ETAP1);scribe review: niższy tier + krótszy prompt;P8;
+PWE-skille-split;RĘCZNY;PANEL-WEJSCIE §2 pkt 3 / §7;skille buildera dzielone na stałą/referencyjną;P12;
+PWE-zwin;RĘCZNY;PANEL-WEJSCIE §2a (ETAP1);zwin-do-poprawy → stan w JS;P7;
+R1-1;RĘCZNY;PANEL-WYNIK §4 R1;scalony dev-plan (D8a/D8b);P13;
+R1-2-bld;RĘCZNY;PANEL-WYNIK §4 R1;zawężenie samosprawdzenia buildera (D7);P12;
+R1-2-fix;RĘCZNY;PANEL-WYNIK §4 R1;zawężenie weryfikacji fixa — bramki na plikach fixa (D7);P8;
+R1-3;RĘCZNY;PANEL-WYNIK §4 R1;compound ze szczeblem (I1);P10;
+R1-4;RĘCZNY;PANEL-WYNIK §4 R1;skill weryfikacji z mapą funkcji (I6);P14;
+R1-5;RĘCZNY;PANEL-WYNIK §4 R1;ogrodnik (I8);P15;
+R1-6;RĘCZNY;PANEL-WYNIK §4 R1;hook error-handling wycofany po bramce ESLint;P6;
+R1-7;RĘCZNY;PANEL-WYNIK §4 R1;efort klas poza review (D6 krok 4);P3;
+S3-1;RĘCZNY;PANEL-WYNIK §3;performance zostaje;P11;
+S3-2;RĘCZNY;PANEL-WYNIK §3;security bez skracania do ślepego testu;P11;
+S3-3;RĘCZNY;PANEL-WYNIK §3;code-quality: lint jako wejście, prompt i high zostają;P11;
+S3-4;RĘCZNY;PANEL-WYNIK §3;test-coverage osobno (nie scalone z correctness);P11;
+S3-5;RĘCZNY;PANEL-WYNIK §3;listy per oś, nie naraz;P11;
+S3-6;RĘCZNY;PANEL-WYNIK §3;PA-01/02/05/06/07 tylko po ślepym teście;P11;
+W4-2a;RĘCZNY;PANEL-WYNIK §4 It. 2;generator coderabbit-base.yaml + 8 zmian .coderabbit.yaml;P5;
+W4-2b;RĘCZNY;PANEL-WYNIK §4 It. 2;4 zmiany dev-pr + sufit 3 tur;P5;
+W4-2c;RĘCZNY;PANEL-WYNIK §4 It. 2;kalibracja klasyfikatora na 2–3 starych PR vs 1b;P5;
+W4-2d;RĘCZNY;PANEL-WYNIK §4 It. 2;B0 z 2–3 zadań bez zmian pipeline’u;WYPADA;"B0 z 2–3 zadań — 6a pkt 40 (5): B0 nie jest warunkiem; pierwszy nowy projekt po poprawie = pierwszy odczyt."
+W4-2e;RĘCZNY;PANEL-WYNIK §4 It. 2;zadanie sprzątające ESLint w oferty-online;WYPADA;"Zadanie sprzątające ESLint w oferty-online — 6a pkt 36 (a): oferty to materiał do nauki; nowe projekty dostają konfigurację od pierwszego commita (P6)."
+W4-3;RĘCZNY;PANEL-WYNIK §4 It. 3;kontrola diffu fixa wg katalogu A (K-1…K-7, K-6 zastępuje verify-fix);P8;
+W4-3a-n1;RĘCZNY;PANEL-WYNIK §4 It. 3a;zdanie N1 w poleceniu startu;P3;
+W4-3a-omit;RĘCZNY;PANEL-WYNIK §4 It. 3a;omitClaudeMd dla mechanicznych;P3;
+W4-3a-tools;RĘCZNY;PANEL-WYNIK §4 It. 3a;allowlista tools: + pliki klas ról;P3;
+W4-3b;RĘCZNY;PANEL-WYNIK §4 It. 3b;efort jawny: reviewerzy high, sceptyk P2 medium, P1 high, mechaniczni haiku;P3;
+W4-3c-czystosc;RĘCZNY;PANEL-WYNIK §4 It. 3c;bramka czystości: brudny tylko katalog zadania → commit (rek. 4);P4;
+W4-3c-pr150;RĘCZNY;PANEL-WYNIK §4 It. 3c;PR ≤ 150 plików (bramka w dev-docs-complete);P4;
+W4-3c-rek7;RĘCZNY;PANEL-WYNIK §4 It. 3c;drobne z przeglądu runów rek. 7;P4;
+W4-3c-zielony;RĘCZNY;PANEL-WYNIK §4 It. 3c;zielony main w bootstrapie;P4;
+W4-3d;RĘCZNY;PANEL-WYNIK §4 It. 3d;packager → skrypt;P7;
+W4-3d-stan;RĘCZNY;PANEL-WYNIK §4 It. 3d;stan fazy w prompcie następcy zamiast stan:zapis;P7;
+W4-3e-doctor;RĘCZNY;PANEL-WYNIK §4 It. 3e;sekcja Doctor przed startem;P14;
+W4-3e-env;RĘCZNY;PANEL-WYNIK §4 It. 3e;parametryzacja .env.e2e;P14;
+W4-3e-manual;RĘCZNY;PANEL-WYNIK §4 It. 3e;E2E → [MANUAL] z przejściem do smoke;P14;
+W4-3pre;RĘCZNY;PANEL-WYNIK §4 It. 3;fix:pre-skan znika;P8;
+W4-4a;RĘCZNY;PANEL-WYNIK §4 It. 4a;bramki lint/knip/size-limit/tsc/typecheck/migracje/advisors w domknięciu;P6;
+W4-4a-granice;RĘCZNY;PANEL-WYNIK §4 It. 4a;granice warstw w ESLint (§2 pkt 15);P6;
+W4-4a-odbior;RĘCZNY;PANEL-WYNIK §4 It. 4a;każda bramka odebrana testem porażki (I3);P6;
+W4-4b-review;RĘCZNY;PANEL-WYNIK §4 It. 4b;mutanty jako wejście test-coverage (ułożenie C) + efort medium;P11;
+W4-4b-stryker;RĘCZNY;PANEL-WYNIK §4 It. 4b;Stryker diff-scoped w skrypcie bramek (produkcja listy mutantów);P6;
+W4-5;RĘCZNY;PANEL-WYNIK §4 It. 5;sceptyk asymetryczny + batch 4 dla P2;P9;
+W4-5pre;RĘCZNY;PANEL-WYNIK §4 It. 5;kill rate na archiwalnych findingach przed wdrożeniem;P9;
+W4-6;RĘCZNY;PANEL-WYNIK §4 It. 6;fix tylko P1/P2, P3 → known-issues/bot, zakaz zmian poza miejscem;P8;
+W4-7a;RĘCZNY;PANEL-WYNIK §4 It. 7a;polecenia-listy correctness z katalogu A (bez L-COR-6/7);P11;
+W4-7b;RĘCZNY;PANEL-WYNIK §4 It. 7b;spec: listy L-SPC + sekcja planu + medium + warunek D4;P11;
+W4-7c;RĘCZNY;PANEL-WYNIK §4 It. 7c;pliki reviewerów security/performance/code-quality wg PA po ślepym teście;P11;
+W4-8-d10;RĘCZNY;PANEL-WYNIK §4 It. 8;D10 zapobiegalne jako zdania + PA-27 + PA-24;P12;
+W4-8-lp;RĘCZNY;PANEL-WYNIK §4 It. 8;learned-patterns trzy poziomy + wycinek od orkiestratora;P10;
+W4-9-bld;RĘCZNY;PANEL-WYNIK §4 It. 9;warstwa stała < 150 — buildery;P12;
+W4-9-rev;RĘCZNY;PANEL-WYNIK §4 It. 9;warstwa stała < 150 — reviewerzy, test budżetu;P11;
+W4-N2;RĘCZNY;PANEL-WYNIK §4 (reguły);po każdej zmianie w .claude/ nowa sesja przed autopilotem (N2);ZASADY;
+W4-slepy;RĘCZNY;PANEL-WYNIK §4 (reguły);ślepy test przed/po zmian promptów reviewerów i builderów;DECYZJE;
+Z-freshness;RĘCZNY;PANEL-WYNIK §5;znika freshness-audit;P1;
+Z-ideate;RĘCZNY;PANEL-WYNIK §5;znika dev-ideate;P1;
+Z-koszykD;RĘCZNY;PANEL-WYNIK §5;znikają skille koszyka D;P1;
+Z-packager;RĘCZNY;PANEL-WYNIK §5;znika agent packager;P7;
+Z-preskan;RĘCZNY;PANEL-WYNIK §5;znika fix:pre-skan;P8;
+Z-reczny;RĘCZNY;PANEL-WYNIK §5;znika tryb ręczny execute/review jako skille;P1;
+Z-stan;RĘCZNY;PANEL-WYNIK §5;znika stan:zapis;P7;
+Z-telemetria;RĘCZNY;PANEL-WYNIK §5;znika agent telemetrii;WYPADA;Agent telemetrii znika — It. 1.
+Z-verifyfix;RĘCZNY;PANEL-WYNIK §5;znika verify-fix;P8;
