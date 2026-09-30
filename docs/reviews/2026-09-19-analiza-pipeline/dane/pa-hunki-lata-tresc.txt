@@ -1,0 +1,69 @@
+pa_hunk.py --sprawdz — pojedyncze `git apply --check` na HEAD 7ad9c40 (docs/reviews/2026-09-19-analiza-pipeline/dane/pa-proponowany.diff)
+hunk  PA     paczka  check  wynik   plik  [powód]
+H01   PA-02  P11     OK     ŁATA    .claude/agents/architecture-strategist.md  
+H02   PA-06  P11     OK     ŁATA    .claude/agents/architecture-strategist.md  
+H03   PA-07  P11     OK     ŁATA    .claude/agents/architecture-strategist.md  
+H04   PA-07  P11     OK     ŁATA    .claude/agents/architecture-strategist.md  
+H05   PA-05  P11     OK     ŁATA    .claude/agents/architecture-strategist.md  
+H06   PA-01  P11     OK     ŁATA    .claude/agents/architecture-strategist.md  
+H07   PA-11  P3      OK     ŁATA    .claude/agents/best-practices-researcher.md  
+H08   PA-12  P3      OK     ŁATA    .claude/agents/feature-builder-fullstack.md  
+H09   PA-19  P3      OK     ŁATA    .claude/agents/feature-builder-fullstack.md  
+H10   PA-12  P3      OK     ŁATA    .claude/agents/feature-builder-fullstack.md  
+H11   PA-12  P3      OK     ŁATA    .claude/agents/feature-builder-ui.md  
+H12   PA-12  P3      OK     ŁATA    .claude/agents/feature-builder-ui.md  
+H13   PA-10  P14     OK     ŁATA    .claude/agents/feature-tester-e2e.md  
+H14   PA-11  P3      OK     ŁATA    .claude/agents/framework-docs-researcher.md  
+H15   PA-02  P11     OK     ŁATA    .claude/agents/performance-oracle.md  
+H16   PA-03  P1      OK     ŁATA    .claude/agents/performance-oracle.md  
+H17   PA-03  P1      OK     ŁATA    .claude/agents/performance-oracle.md  
+H18   PA-11  P3      OK     ŁATA    .claude/agents/repo-research-analyst.md  
+H19   PA-02  P11     OK     ŁATA    .claude/agents/security-sentinel.md  
+H20   PA-04  P1      OK     ŁATA    .claude/agents/security-sentinel.md  
+H21   PA-05  P11     OK     ŁATA    .claude/agents/security-sentinel.md  
+H22   PA-01  P11     OK     ŁATA    .claude/agents/security-sentinel.md  
+H23   PA-01  P11     OK     ŁATA    .claude/agents/security-sentinel.md  
+H24   PA-20  P1      OK     ŁATA    .claude/agents/spec-compliance-reviewer.md  
+H25   PA-11  P3      OK     ŁATA    .claude/agents/web-research-specialist.md  
+H26   PA-18  P1      OK     ŁATA    .claude/hooks/error-handling-reminder.sh  
+H27   PA-18  P1      OK     ŁATA    .claude/hooks/error-handling-reminder.sh  
+H28   PA-11  P1      OK     ŁATA    .claude/skills/dev-brainstorm/SKILL.md  
+H29   PA-11  P10     OK     ŁATA    .claude/skills/dev-compound/SKILL.md  
+H30   PA-11  P10     OK     ŁATA    .claude/skills/dev-compound-refresh/SKILL.md  
+H31   PA-11  P13     OK     ŁATA    .claude/skills/dev-docs/SKILL.md  
+H32   PA-08  P13     OK     ŁATA    .claude/skills/dev-docs/SKILL.md  
+H33   PA-11  P4      OK     ŁATA    .claude/skills/dev-docs-complete/SKILL.md  
+H34   PA-16  P4      OK     ŁATA    .claude/skills/dev-docs-complete/SKILL.md  
+H35   PA-11  P13     OK     ŁATA    .claude/skills/dev-plan/SKILL.md  
+H36   PA-21  P13     OK     ŁATA    .claude/skills/dev-plan/SKILL.md  
+H37   PA-12  P13     OK     ŁATA    .claude/skills/dev-plan/SKILL.md  
+H38   PA-11  P2      OK     ŁATA    .claude/skills/dev-prep/SKILL.md  
+H39   PA-17  P12     OK     ŁATA    .claude/skills/sentry-integration/SKILL.md  
+H40   PA-08  P8      OK     TREŚĆ   .claude/workflows/dev-autopilot-wf.js  z góry (§1)
+H41   PA-15  P8      OK     ŁATA    .claude/workflows/dev-autopilot-wf.js  
+H42   PA-15  P8      OK     ŁATA    .claude/workflows/dev-autopilot-wf.js  
+H43   PA-15  P8      OK     ŁATA    .claude/workflows/dev-autopilot-wf.js  
+H44   PA-15  P8      OK     TREŚĆ   .claude/workflows/dev-autopilot-wf.js  z góry (§1)
+H45   PA-15  P8      OK     TREŚĆ   .claude/workflows/dev-autopilot-wf.js  z góry (§1)
+H46   PA-14  P10     OK     ŁATA    .claude/workflows/dev-compound-wf.js  
+H47   PA-11  P10     OK     ŁATA    .claude/workflows/dev-compound-wf.js  
+H48   PA-16  P4      OK     TREŚĆ   .claude/workflows/dev-docs-complete-wf.js  z góry (§1)
+H49   PA-16  P4      OK     ŁATA    .claude/workflows/dev-docs-complete-wf.js  
+H50   PA-13  P10     OK     TREŚĆ   .claude/workflows/dev-docs-execute-wf.js  z góry (§1)
+H51   PA-08  P6      OK     ŁATA    .claude/workflows/dev-docs-execute-wf.js  
+H52   PA-08  P8      OK     TREŚĆ   .claude/workflows/dev-docs-review-wf.js  z góry (§1)
+H53   PA-08  P8      OK     TREŚĆ   .claude/workflows/dev-docs-review-wf.js  z góry (§1)
+H54   PA-09  P1      OK     ŁATA    .claude/workflows/dev-docs-review-wf.js  
+H55   PA-09  P1      OK     ŁATA    .claude/workflows/dev-docs-review-wf.js  
+H56   PA-03  P1      OK     ŁATA    .claude/workflows/dev-docs-review-wf.js  
+H57   PA-08  P7      OK     ŁATA    .claude/workflows/dev-docs-review-wf.js  
+H58   PA-08  P7      OK     ŁATA    .claude/workflows/dev-docs-review-wf.js  
+H59   PA-08  P7      OK     WYPADA  .claude/workflows/dev-docs-review-wf.js  z kontekstPrompt (P7)
+H60   PA-08  P7      OK     WYPADA  .claude/workflows/dev-docs-review-wf.js  z kontekstPrompt (P7)
+H61   PA-10  P14     OK     ŁATA    .claude/workflows/dev-docs-review-wf.js  
+H62   PA-08  P8      OK     TREŚĆ   .claude/workflows/dev-docs-review-wf.js  z góry (§1)
+
+razem 62: TREŚĆ 8, WYPADA 2, ŁATA 52
+check OK 62 / 62
+hunki bez paczki w PLAN-POPRAWY: —
+UWAGA: wynik dotyczy HEAD 7ad9c40 — paczka przed `git apply` powtarza pojedyncze `--check` (wcześniejsze paczki zmieniają pliki).
