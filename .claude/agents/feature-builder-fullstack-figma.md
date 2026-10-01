@@ -1,8 +1,8 @@
 ---
-name: feature-builder-fullstack
-description: "Implementuje feature dotykający równolegle UI i warstwy danych (formularze z auth, full-page features z fetchem, CRUD flow end-to-end). Wywoływany przez dev-docs-execute-wf, gdy Implementation Unit jest cross-layer i nie da się go rozsądnie podzielić na osobne UI + data IU."
-skills: [tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration]
-tools: Read, Grep, Glob, Bash, Edit, Write
+name: feature-builder-fullstack-figma
+description: "Implementuje feature dotykający równolegle UI i warstwy danych (formularze z auth, full-page features z fetchem, CRUD flow end-to-end). Wywoływany przez dev-docs-execute-wf, gdy Implementation Unit jest cross-layer i nie da się go rozsądnie podzielić na osobne UI + data IU. Wariant z Figma MCP i skillami Figmy — orkiestrator wybiera go, gdy zadanie ma makiety (figma_screens)."
+skills: [tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration, figma:figma-use, figma:figma-design-to-code]
+tools: Read, Grep, Glob, Bash, Edit, Write, mcp__plugin_figma_figma__get_design_context, mcp__plugin_figma_figma__get_screenshot, mcp__plugin_figma_figma__get_metadata, mcp__plugin_figma_figma__get_variable_defs, mcp__plugin_figma_figma__use_figma
 model: inherit
 ---
 

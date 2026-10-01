@@ -1,8 +1,8 @@
 ---
-name: feature-builder-ui
-description: "Implementuje warstwę UI (komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność). Wywoływany przez dev-docs-execute-wf, gdy Implementation Unit dotyka tylko warstwy prezentacji (*.tsx w src/components, src/features, src/pages, *.css)."
-skills: [tailwind-react-guidelines, ux-ui-guidelines]
-tools: Read, Grep, Glob, Bash, Edit, Write
+name: feature-builder-ui-figma
+description: "Implementuje warstwę UI (komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność). Wywoływany przez dev-docs-execute-wf, gdy Implementation Unit dotyka tylko warstwy prezentacji (*.tsx w src/components, src/features, src/pages, *.css). Wariant z Figma MCP i skillami Figmy — orkiestrator wybiera go, gdy zadanie ma makiety (figma_screens)."
+skills: [tailwind-react-guidelines, ux-ui-guidelines, figma:figma-use, figma:figma-design-to-code]
+tools: Read, Grep, Glob, Bash, Edit, Write, mcp__plugin_figma_figma__get_design_context, mcp__plugin_figma_figma__get_screenshot, mcp__plugin_figma_figma__get_metadata, mcp__plugin_figma_figma__get_variable_defs, mcp__plugin_figma_figma__use_figma
 model: inherit
 ---
 

@@ -32,6 +32,10 @@ const FIGMA_MCP = ['add_code_connect_map', 'create_new_file', 'generate_diagram'
   'get_code_connect_suggestions', 'get_context_for_code_connect', 'get_design_context', 'get_figjam', 'get_libraries', 'get_metadata',
   'get_screenshot', 'get_variable_defs', 'search_design_system', 'send_code_connect_mappings', 'upload_assets', 'use_figma', 'whoami']
   .map((n) => `mcp__plugin_figma_figma__${n}`)
+// Agenci z wariantem `<nazwa>-figma.md` (Figma MCP + skille Figmy); orkiestrator wybiera wariant przy zadaniu z makietami.
+// Tester E2E go nie ma: porownuje zrzut z PNG makiety z dysku, Figma MCP nie wola.
+const Z_WARIANTEM_FIGMA = ['feature-builder-ui', 'feature-builder-fullstack']
+const SUFIKS_FIGMA = '-figma'
 
 /**
  * Pola frontmattera jako mapa klucz → surowa wartosc (jedna linia).
@@ -80,6 +84,45 @@ function naruszeniaTools(korzen) {
     const lista = narzedzia(fm)
     if (!lista.length) wyniki.push(`${nazwa}: brak tools:`)
     for (const n of lista.filter((x) => !znane.has(x))) wyniki.push(`${nazwa}: nieznane narzedzie ${n}`)
+  }
+  return wyniki
+}
+
+/**
+ * @param {string} tekst
+ * @returns {string}  tresc pliku agenta po frontmatterze
+ */
+function tresc(tekst) {
+  return tekst.split(/^---$/m).slice(2).join('---')
+}
+
+/**
+ * MCP w `tools:` tylko w wariantach `-figma`; wariant istnieje dla Z_WARIANTEM_FIGMA, ma tresc identyczna z plikiem bazowym
+ * i w `tools:` kazde narzedzie MCP, ktore wymienia jego tresc.
+ * @param {string} korzen
+ * @returns {string[]}
+ */
+function naruszeniaMcp(korzen) {
+  const katalog = join(korzen, AGENCI)
+  const czytaj = (/** @type {string} */ nazwa) => readFileSync(join(katalog, `${nazwa}.md`), 'utf8')
+  const wszyscy = agenci(korzen)
+  /** @type {string[]} */
+  const wyniki = []
+  for (const [nazwa, fm] of wszyscy) {
+    const mcp = narzedzia(fm).filter((n) => n.startsWith('mcp__'))
+    if (!nazwa.endsWith(SUFIKS_FIGMA)) {
+      if (mcp.length) wyniki.push(`${nazwa}: MCP poza wariantem ${SUFIKS_FIGMA}`)
+      continue
+    }
+    const bazowy = nazwa.slice(0, -SUFIKS_FIGMA.length)
+    if (fm.get('name') !== nazwa) wyniki.push(`${nazwa}: name: inne niz nazwa pliku`)
+    if (!wszyscy.has(bazowy)) wyniki.push(`${nazwa}: brak pliku bazowego ${bazowy}`)
+    else if (tresc(czytaj(nazwa)) !== tresc(czytaj(bazowy))) wyniki.push(`${nazwa}: tresc rozna od ${bazowy}`)
+    const wTresci = new Set(tresc(czytaj(nazwa)).match(/mcp__\w+/g) ?? [])
+    for (const n of [...wTresci].filter((x) => !mcp.includes(x))) wyniki.push(`${nazwa}: tresc wola ${n} spoza tools:`)
+  }
+  for (const nazwa of Z_WARIANTEM_FIGMA) {
+    if (!wszyscy.has(`${nazwa}${SUFIKS_FIGMA}`)) wyniki.push(`${nazwa}: brak wariantu ${SUFIKS_FIGMA}`)
   }
   return wyniki
 }
@@ -189,4 +232,22 @@ test('tools: podlozony agent bez tools: i literowka w nazwie narzedzia sa zglasz
 
 test('tools: kazdy agent pipeline\'u w repo szablonu ma allowliste ze znanych narzedzi', () => {
   assert.deepEqual(naruszeniaTools(REPO), [])
+})
+
+test('MCP: podlozone MCP w pliku bazowym, rozna tresc wariantu, narzedzie spoza tools: i brak wariantu sa zglaszane', () => {
+  const g = 'mcp__plugin_figma_figma__get_design_context'
+  const wynik = naPodlozonym({
+    [`${AGENCI}/feature-builder-ui.md`]: `---\nname: feature-builder-ui\ntools: Read, ${g}\n---\nWolaj ${g}.\n`,
+    [`${AGENCI}/feature-builder-ui-figma.md`]: '---\nname: feature-builder-ui-figma\ntools: Read\n---\nInna tresc, wolaj mcp__plugin_figma_figma__use_figma.\n',
+  }, naruszeniaMcp)
+  assert.deepEqual(wynik.sort(), [
+    'feature-builder-fullstack: brak wariantu -figma',
+    'feature-builder-ui-figma: tresc rozna od feature-builder-ui',
+    'feature-builder-ui-figma: tresc wola mcp__plugin_figma_figma__use_figma spoza tools:',
+    'feature-builder-ui: MCP poza wariantem -figma',
+  ])
+})
+
+test('MCP: repo szablonu ma Figma MCP wylacznie w wariantach -figma o tresci plikow bazowych', () => {
+  assert.deepEqual(naruszeniaMcp(REPO), [])
 })

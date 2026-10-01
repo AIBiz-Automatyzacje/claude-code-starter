@@ -281,7 +281,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | Skill | Do czego |
 |-------|----------|
 | **`agent-browser`** | Automatyzacja przeglądarki przez CLI (nawigacja, formularze, screenshoty, scraping, testowanie UI) z ref-based selection (`@e1`, `@e2`). Silnik E2E dla `feature-tester-e2e`. |
-| **`figma-design-to-code`** | Implementacja designu Figma jako kod (kierunek design→code). Zaimportowany lokalnie z oficjalnego pluginu Figma (v2.2.78) — działa też bez zainstalowanego pluginu. Preładowany do builderów UI/fullstack. |
+| **`figma:figma-design-to-code`** | Implementacja designu Figma jako kod (kierunek design→code). Skill pluginu `figma` (instalacja w kroku 3), bez kopii w `.claude/skills/`. Preładowany do wariantów builderów z Figmą (`feature-builder-ui-figma`, `feature-builder-fullstack-figma`). |
 | **`zroastuj-mnie`** | Bezlitosny wywiad stress-testujący plan/projekt. Research docs przed sesją, wykrywanie sprzeczności, scenariusze. Na końcu sugeruje utrwalenie (m.in. terminu do `docs/CONCEPTS.md`). |
 | **`coolify-manager`** | Zarządzanie i troubleshooting deploymentów Coolify (CLI + API): serwery, WordPress, kontenery, SSL, bazy, env, backupy. |
 | **`coderabbit-setup`** | Tworzy `.coderabbit.yaml` dopasowany do stacku projektu (detekcja z `package.json` i struktury katalogów: Expo/RN, Next.js, React+Vite, Node, Supabase — bloki można łączyć). Standard między projektami: review po polsku, profil assertive, eslint/actionlint/gitleaks/trufflehog/semgrep/osvScanner, guidelines z `coding-rules.md`. Do `filePatterns` trafiają tylko pliki istniejące w repo; YAML walidowany przed oddaniem. Przypomina o jednorazowej instalacji aplikacji GitHub CodeRabbit na repo. |
