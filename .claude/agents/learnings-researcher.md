@@ -1,6 +1,7 @@
 ---
 name: learnings-researcher
 description: "Przeszukuje docs/solutions/ pod kątem aplikowalnych wniosków z przeszłości przez metadane frontmatter (bugi, wzorce architektoniczne, wzorce projektowe, konwencje, wnioski workflow). Używaj przed implementacją feature'a, podejmowaniem decyzji lub rozpoczęciem pracy w udokumentowanym obszarze, żeby wiedza instytucjonalna przenosiła się dalej i nie powtarzać błędów."
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 model: inherit
 ---
 
