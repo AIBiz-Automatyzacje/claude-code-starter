@@ -695,8 +695,6 @@ ${JSON.stringify(przebieg.e2ePrzebiegi || [], null, 2)}
 Findingi OBALONE przez adversarial verify (JSON; NIE sa do naprawy — same do raportu):
 ${JSON.stringify(obalone || [], null, 2)}
 
-Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7.
-
 1. Zapisz ${sciezka}/review-faza-${faza}.md — pelny raport (findings posortowane P1->P2->P3, statystyki).
    FORMAT NAGLOWKOW JEST STALY — skopiuj DOKLADNIE, nie wymyslaj wlasnego (audyt 2026-09-06: dziesiec
    raportow jednego pipeline'u mialo PIEC roznych konwencji i nie dalo sie ich zagregowac bez recznego parsera):
@@ -712,7 +710,7 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
    kazdy finding jako "### <SEVERITY> · <TYP> · \`<plik:linia>\`" — separator to spacja, srodkowa kropka (·),
    spacja; typ to KOD | TEST | E2E; OPERATOR bez typu. BEZ numeracji ("1."), BEZ emoji, BEZ nawiasow
    kwadratowych, BEZ "P2-1". Tresc findingu pod naglowkiem; sugestie sceptykow zapisuj w tresci ZAWSZE
-   w postaci "*(sceptyk sugerowal P3 — utrzymane P2)*". Wzorzec w SKILL.md sekcja 4 jest ten sam.
+   w postaci "*(sceptyk sugerowal P3 — utrzymane P2)*".
 1b. W tym samym raporcie, PO liscie findingow a PRZED blokiem "## Przebieg review" z punktu 7
    (ten blok musi zostac OSTATNI — po nim orkiestrator poznaje, ze zapis sie domknal),
    dopisz sekcje "## Obalone przez verify (nie do naprawy)"
@@ -742,7 +740,9 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
    jej powod, NIE dodawaj drugiej; sekcje "## Do poprawy po review fazy ${faza}" i "## Operator checklist faza ${faza}"
    zapisuj jako calosc z TEGO review (stare pozycje, ktorych tu nie ma, usun).
    To nie sa zadania do fix, tylko warunki srodowiskowe dla operatora.
-3. Bookkeeping checkboxow "Weryfikacja:" i "Test: [E2E]" (sekcja 4.7): re-parsuj niezaznaczone wiersze fazy ${faza}
+2b. W ${sciezka}/*-kontekst.md dopisz do sekcji \`## Dziennik\` jedna pozycje o tym review: gate, liczniki
+   P1/P2/P3/OPERATOR, sciezka raportu i najwazniejszy wniosek.
+3. Bookkeeping checkboxow "Weryfikacja:" i "Test: [E2E]": re-parsuj niezaznaczone wiersze fazy ${faza}
    pasujace do regex ^\\s*-\\s*\\[\\s*\\]\\s*(Weryfikacja:|Test:\\s*\\[E2E\\]) — oba prefiksy, bo scenariusz [E2E]
    z planu laduje pod "Test:", a jego JEDYNYM wlascicielem odznaczenia jest ten bookkeeping (execute go nie rusza).
    REGULA ZERO: linia z markerem [E2E] (dowolny prefiks) = ZAWSZE kategoria E2E, niezaleznie od innych slow.
@@ -757,8 +757,30 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
    "(SKIP — …)" (flow przebiegl), istniejacy "(FAIL: …)" zostaw — fix zastapi go po swoim re-runie (P2 juz jest).
    SKIP lub BRAK wpisu -> [ ] z suffixem "(SKIP — <powod>)" (zastap istniejacy suffix, nie dopisuj drugiego)
    + kopia do "## Operator checklist faza ${faza}" (format "- [ ] Operator: ...", [E2E] -> [Manual]; bez duplikatu).
-   BRAK FINDINGU NIE JEST DOWODEM PASS. Manual->zostaw z adnotacja; Niejasne->P3).
-   Odznacz/anotuj w pliku zadan. Dopisz sekcje "Bookkeeping checkboxow Weryfikacja: / Test: [E2E]" do raportu.${przebieg.e2eTesterFail ? `
+   BRAK FINDINGU NIE JEST DOWODEM PASS).
+   Linie bez markera [E2E] klasyfikujesz po tresci, od gory, pierwsza pasujaca kategoria wygrywa:
+   - CLI (bun run, npm run, pnpm, yarn, make, tsc, vitest, bun test, cargo, pytest, ruff, eslint): uruchom komende
+     przez Bash; exit 0 -> [x]; inny kod -> [ ] z suffixem " (FAIL: <skrot bledu>)" i finding P2.
+   - Grep / istnienie pliku (grep, rg, test -f, ls, "brak referencji do", "plik istnieje", "import nie istnieje"):
+     uruchom; PASS -> [x]; FAIL -> [ ] z suffixem " (FAIL)" i finding P2.
+   - E2E browser bez markera (URL, agent-browser, "viewport", "kliknij", "screenshot", 🌐): jak [E2E] wyzej.
+   - Manual ("recznie", "operator", "symulator", "device", "emulator", "QA", "tester czlowiek"): [ ] z suffixem
+     " — wymaga operatora (checklist)"; to oczekiwana reczna weryfikacja, bez findingu.
+   - Niejasne (nic nie pasuje): [ ] z suffixem " — klasyfikacja niejasna, wymaga recznej decyzji" i finding P3
+     z notatka dla planisty: "checkbox nieautomatyzowalny — przenies do Operator checklist albo przeformuluj na CLI/E2E".
+   Checkboxy spoza fazy ${faza} zostawiasz bez zmian.
+   Odznacz/anotuj w pliku zadan. Do raportu, przed blokiem "## Przebieg review", dopisz sekcje:
+     ## Bookkeeping checkboxow Weryfikacja: / Test: [E2E]
+     - Odznaczone automatycznie (CLI/grep): X
+     - Odznaczone na podstawie przebiegow E2E testera: Y
+     - Pozostawione dla operatora (Manual): Z
+     - Niejasne (P3): W
+     - Failujace (P2): V
+     ### Szczegoly
+     - [x] CLI: \`<tresc>\` -> PASS (komenda: \`<komenda>\`)
+     - [ ] Manual: \`<tresc>\` — wymaga operatora
+     - [ ] Niejasne: \`<tresc>\` — wymaga przeformulowania w planie
+     - [ ] FAIL: \`<tresc>\` — \`<skrot bledu>\` (P2)${przebieg.e2eTesterFail ? `
    UWAGA — TESTER E2E PADL (${przebieg.e2eStatus}). Orkiestrator ZATRZYMA run i review tej fazy POWTORZY sie z testerem.
    Zadnego checkboxa \`[E2E]\` NIE odznaczaj, NIE dopisuj suffixow i NIE kopiuj ich do Operator checklist —
    to review zostanie uniewaznione, a kopie zostalyby w smoke'u operatora jako reczne scenariusze.` : przebieg.e2eWykonany ? '' : `
@@ -766,7 +788,7 @@ Referencja procedury: .claude/skills/dev-docs-review/SKILL.md sekcje 4, 4.5, 4.7
    Zadnego checkboxa \`[E2E]\` NIE odznaczaj — nie ma przebiegu, ktory by to potwierdzil.
    Kazdy taki checkbox zostaw \`- [ ]\` i przenies jego kopie do "## Operator checklist faza ${faza}"
    (format "- [ ] Operator: ...", [E2E] -> [Manual] w kopii), bo weryfikacja nie zostala wykonana.`}
-4. Policz liczniki: p1/p2/p3 (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL.
+4. Policz liczniki: p1/p2/p3 (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL; P3 z bookkeepingu: Niejasne.
 5. Ustaw severityGate: BLOKUJE (sa P1) / ZASTRZEZENIA (tylko P2) / CZYSTE (zero P1/P2 — sam P3/OPERATOR nie blokuje gate'u).
 6. Policz e2e {passed, failed, skipped} Z LISTY "Przebiegi E2E" (checkboxy bez wpisu licz jako skipped).
 7. Na koniec raportu wklej DOKLADNIE ten blok (1:1, NIE przeliczaj liczb — sa policzone przez orkiestratora):

@@ -115,17 +115,15 @@ function plannerPrompt(sciezka, faza) {
 Folder zadania: ${sciezka}
 Faza do wykonania: ${faza}
 
-Referencja metodologii: przeczytaj .claude/skills/dev-docs-execute/SKILL.md sekcje 2.5, 3, 3a
-(strategia delegacji, granice scope'u, mandatory designerski kontekst).
-
 1. CZYTAJ WYCINKAMI, NIE CALYMI PLIKAMI. Cztery dokumenty tego zadania to lacznie 120-175 KB, a plik
    zadan rosnie w trakcie jednego zadania z 23 KB do 59 KB (sekcje "Do poprawy po review") i jest czytany
-   przy KAZDEJ fazie. Do zbudowania jednostek fazy ${faza} potrzebujesz czterech wycinkow. Kazdy bierz
+   przy KAZDEJ fazie. Do zbudowania jednostek fazy ${faza} potrzebujesz pieciu wycinkow. Kazdy bierz
    przez \`grep -n\` naglowka, a potem \`Read\` z \`offset\` i \`limit\` — nigdy nie ladujesz calego pliku:
    - z \`${sciezka}/*-plan.md\`: tabela \`## Fazy\` i sekcja \`## Zrodla\` (stamtad masz sciezke planu technicznego),
    - z \`${sciezka}/*-zadania.md\`: blok od \`## Faza ${faza}\` do NASTEPNEGO naglowka tego samego poziomu,
    - z \`${sciezka}/*-kontekst.md\`: sekcja \`## Designerski kontekst\`,
-   - z planu technicznego w \`docs/plans/\`: sekcja \`### Faza ${faza}\` (tam sa Implementation Units tej fazy).
+   - z planu technicznego w \`docs/plans/\`: sekcja \`### Faza ${faza}\` (tam sa Implementation Units tej fazy),
+   - z planu technicznego: sekcja zaczynajaca sie od \`## Granice\` (wykluczenia zadania), jesli plan ja ma.
    Po wiecej siegaj TYLKO wtedy, gdy jednostka odsyla do czegos, czego w tych wycinkach nie ma
    (np. decyzja opisana przy innej fazie). Nie czytaj dokumentow "dla kontekstu".
 1b. Przeczytaj .claude/rules/learned-patterns.md (jesli istnieje) — reguly wyprodukowane z problemow
@@ -151,10 +149,23 @@ Referencja metodologii: przeczytaj .claude/skills/dev-docs-execute/SKILL.md sekc
      Podobnie z tekstami: gdy jednostka odsyla do "tekstow verbatim z sekcji X", wklej te teksty DOSLOWNIE.
      Nie streszczaj i nie parafrazuj — tekst widoczny dla uzytkownika inny niz zatwierdzony to finding P2.
    - sciezka zadania ${sciezka} + numer IU
-   - dla feature-builder-ui|fullstack: doklej "Mandatory designerski kontekst" z sekcji "Designerski kontekst"
-     w ${sciezka}/*-kontekst.md (DESIGN.md, SPEC.md, screeny). Dla -data pomijaj.
+   - wykluczenia z sekcji \`## Granice\` planu technicznego jako blok "Czego zadanie nie obejmuje:" z dopiskiem:
+     "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
+     zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.
+   - dla feature-builder-ui|fullstack: gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
+     i ma choc jedna niepusta sciezke, doklej blok (sciezki z tej sekcji):
+       ## Mandatory designerski kontekst (przeczytaj przed implementacja)
+       - DESIGN.md (tokeny calego projektu): <sciezka z design_md albo "brak — bazuj na ux-ui-guidelines">
+       - SPEC.md (pomiary tej funkcji z Figmy): <sciezka z figma_spec albo "brak — projektujesz w oparciu o DESIGN.md">
+       - Screeny referencyjne (PNG): <nazwa>: <sciezka>, jedna linia na screen
+       Te pliki sa zrodlem prawdy o designie, od najbardziej konkretnego: SPEC.md > DESIGN.md > ux-ui-guidelines.
+       Gdy SPEC.md nie ma potrzebnego pomiaru, pobierz go z Figmy przez mcp__plugin_figma_figma__get_design_context
+       (fileKey i nodeId z naglowka SPEC.md). Wymiarow nie zgadujesz.
+     Sekcji brak albo wszystkie pola puste/null — blok pomin. Dla feature-builder-data blok pomijasz zawsze.
    - NIE kopiuj "Skills in play:" — skille sa wstrzykiwane z frontmatter subagenta.
-   - agentType = wartosc pola "Delegate to:" z IU.
+   - agentType = wartosc pola "Delegate to:" z IU. IU bez tego pola (plan starszy niz delegacja) — dobierz
+     agentType po plikach jednostki: tylko warstwa danych -> feature-builder-data, tylko UI -> feature-builder-ui,
+     obie -> feature-builder-fullstack.
    DOPISZ DOSLOWNIE na koncu promptu KAZDEGO IU blok "Wymagania wykonania":
    "Wymagania wykonania: zaimplementuj kod dla checkboxow implementacyjnych (POMIJAJ: Weryfikacja:,
    Operator:, [E2E], [Manual] — to dla review/operatora). Testy dla checkboxow Test: pisz RAZEM z kodem.
@@ -176,9 +187,11 @@ Faza: ${faza}
 Raporty builderow:
 ${podsumowanieIU}
 
-1. System-Wide Test Check (.claude/skills/dev-docs-execute/SKILL.md sekcja 4.5): typecheck bez nowych bledow,
+1. System-Wide Test Check: typecheck bez nowych bledow,
    istniejace testy przechodza, nowe testy pokrywaja happy path + error case, checkboxy "Test:" napisane i przechodza,
    importy nie lamia modulow, build (vite build) przechodzi. Komendy z package.json.
+   Checkbox "Test:" tej fazy bez napisanego testu — napisz ten test przed zamknieciem fazy ("Test: [E2E]" pomijasz,
+   patrz punkt 2). Kazde sprawdzenie z odpowiedzia "nie" naprawiasz przed commitem.
    UWAGA: jesli ktorykolwiek builder raportowal dodanie zaleznosci — pierwszy vitest jest ZIMNY (procedura tla z bloku).
 1b. AUDYT ERROR-HANDLINGU (przed commitem — hooki sesyjne nie widza zmian commitowanych przez workflow):
    przejrzyj git diff tej fazy pod katem: (a) console.log/console.error w kodzie PRODUKCYJNYM
