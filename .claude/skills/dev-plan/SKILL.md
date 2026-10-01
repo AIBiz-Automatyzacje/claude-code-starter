@@ -164,7 +164,7 @@ Przygotuj zwięzłe podsumowanie kontekstu planowania (akapit lub dwa) jako inpu
 
 Uruchom tych agentów równolegle. **Zawsze przez `subagent_type` z nazwą agenta — nigdy jako `Explore`
 z doklejonym plikiem `.claude/agents/<nazwa>.md` do promptu.** `Explore` jest read-only i nie ma
-narzędzi sieciowych, więc research zewnętrzny (Context7, WebFetch) po cichu nie działa, a definicja agenta
+narzędzi sieciowych, więc research zewnętrzny (WebSearch, WebFetch) po cichu nie działa, a definicja agenta
 wklejona w prompt to instrukcja dla modelu, nie system prompt subagenta — traci `model:` i `tools:`
 z frontmattera. Wzorzec poprawny: `dev-brainstorm/SKILL.md` (1.1, `web-research-specialist`).
 

@@ -27,10 +27,15 @@ const NARZEDZIA_ZAPISU = ['Edit', 'Write']
 // Poza pipeline'em: nie wola ich zaden workflow ani skill, usuwane w P11 (PANEL-WYNIK §4a E) — bez allowlisty.
 const POZA_PIPELINE = ['kieran-typescript-reviewer', 'code-simplicity-reviewer']
 const WBUDOWANE = ['Read', 'Grep', 'Glob', 'Bash', 'Edit', 'Write', 'WebSearch', 'WebFetch', 'Skill']
-// Narzedzia serwera MCP pluginu figma 2.2.120 (`.mcp.json` pluginu, ideToolTitles) — plugin wymagany per projekt od P2.
-const FIGMA_MCP = ['add_code_connect_map', 'create_new_file', 'generate_diagram', 'generate_figma_design', 'get_code_connect_map',
-  'get_code_connect_suggestions', 'get_context_for_code_connect', 'get_design_context', 'get_figjam', 'get_libraries', 'get_metadata',
-  'get_screenshot', 'get_variable_defs', 'search_design_system', 'send_code_connect_mappings', 'upload_assets', 'use_figma', 'whoami']
+// Narzedzia serwera MCP pluginu figma 2.2.120 — lista z serwera w sesji (`.mcp.json` pluginu, ideToolTitles, ma tylko czesc,
+// np. bez download_assets). Plugin wymagany per projekt od P2.
+const FIGMA_MCP = ['add_code_connect_map', 'create_generative_plugin', 'create_new_file', 'create_shader', 'download_assets', 'export_video',
+  'generate_diagram', 'generate_figma_design', 'get_code_connect_map', 'get_code_connect_suggestions', 'get_context_for_code_connect',
+  'get_design_context', 'get_figjam', 'get_generative_plugin', 'get_libraries', 'get_metadata', 'get_motion_context', 'get_screenshot',
+  'get_shader', 'get_variable_defs', 'list_file_components_for_code_connect', 'list_file_shaders', 'list_generative_plugins', 'list_shaders',
+  'search_design_system', 'send_code_connect_mappings', 'update_generative_plugin', 'update_shader', 'upload_assets', 'use_figma',
+  'weave_cancel_tool_run', 'weave_find_model', 'weave_get_model_run_output', 'weave_get_tool_inputs', 'weave_get_tool_run_output',
+  'weave_list_tools', 'weave_run_model', 'weave_run_tool', 'weave_upload_asset', 'whoami']
   .map((n) => `mcp__plugin_figma_figma__${n}`)
 // Agenci z wariantem `<nazwa>-figma.md` (Figma MCP + skille Figmy); orkiestrator wybiera wariant przy zadaniu z makietami.
 // Tester E2E go nie ma: porownuje zrzut z PNG makiety z dysku, Figma MCP nie wola.

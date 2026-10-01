@@ -320,7 +320,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 |-------|------|
 | `repo-research-analyst` | Struktura repo, konwencje, wzorce implementacyjne (dev-plan). |
 | `learnings-researcher` | Szuka w `docs/solutions/` + `docs/CONCEPTS.md` powiązanych wniosków (dev-plan). |
-| `best-practices-researcher` | Best practices online (Context7, WebSearch) (dev-plan). |
+| `best-practices-researcher` | Best practices online (WebSearch, WebFetch) (dev-plan). |
 | `framework-docs-researcher` | Dokumentacja frameworków/bibliotek, wersje, ograniczenia (dev-plan). |
 | `web-research-specialist` | Iteracyjny research w sieci — prior art, wzorce konkurencji (dev-brainstorm). |
 | `spec-flow-analyzer` | Analiza specyfikacji **przed** implementacją: kompletność user flow, edge case'y, luki w handoffach (`dev-plan` 1.5). W review fazy już nie występuje — tam pracuje `spec-compliance-reviewer`. |
