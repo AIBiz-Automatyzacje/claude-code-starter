@@ -4,7 +4,7 @@
 # Hook Stop — sprawdza edytowane pliki pod kątem poprawnego error handlingu
 #
 # Frontend (src/): wykrywa console.log/warn/error → sugeruje Sentry
-# Edge Functions (supabase/functions/): wymaga captureError + flush w catch
+# Edge Functions (supabase/functions/, handler withSupabase albo Deno.serve): wymaga await captureError w catch
 #
 # Exit codes: 0 = OK, 2 = blocking (Claude widzi stderr i kontynuuje pracę)
 # UWAGA: exit 1 = non-blocking, stderr trafia TYLKO do verbose mode — Claude NIE widzi!
@@ -79,8 +79,8 @@ for file in $EDGE_FILES; do
 
     CONTENT=$(cat "$PROJECT_DIR/$file")
 
-    # Tylko główne pliki funkcji (z Deno.serve)
-    echo "$CONTENT" | grep -q 'Deno\.serve' || continue
+    # Tylko główne pliki funkcji: handler withSupabase (wzorzec skilla) albo legacy Deno.serve
+    echo "$CONTENT" | grep -qE 'withSupabase|Deno\.serve' || continue
 
     FILE_WARNINGS=""
 
@@ -97,9 +97,9 @@ for file in $EDGE_FILES; do
             FILE_WARNINGS="${FILE_WARNINGS}\n     Brak captureError() — wymagany w catch block"
         fi
 
-        # Sprawdź flush
-        if ! echo "$CONTENT" | grep -q 'await\s\+flush\s*('; then
-            FILE_WARNINGS="${FILE_WARNINGS}\n     Brak await flush() — eventy Sentry mogą nie zostać wysłane"
+        # captureError flushuje wewnętrznie (sentry-integration) — wymagane jest samo await
+        if echo "$CONTENT" | grep -q 'captureError\s*(' && ! echo "$CONTENT" | grep -q 'await\s\+captureError\s*('; then
+            FILE_WARNINGS="${FILE_WARNINGS}\n     captureError() bez await — event Sentry może nie zostać wysłany przed odpowiedzią"
         fi
     fi
 
