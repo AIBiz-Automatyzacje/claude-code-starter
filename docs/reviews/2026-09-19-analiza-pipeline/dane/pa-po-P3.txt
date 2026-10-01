@@ -1,0 +1,53 @@
+Kontrola prompt-auditu po P3 sesja 1/2 (2026-10-01, gałąź popr/P3-agenci, HEAD 6a8362d).
+Skrypty pa_kontrola.py i pa_inwentarz.py uruchomione na KOPII w scratchpadzie (piszą do dane/ — baza pa-kontrola.txt / pa-sygnaly.* zostaje).
+pa_inwentarz.py na kopii z jedną poprawką: pomija podkatalogi .claude/hooks/ (na repo wywraca się na .claude/hooks/__tests__ — IsADirectoryError).
+
+== (A) pa_kontrola.py — raport -> źródła (kierunek: ustalenie -> plik)
+(1) raport -> zrodla: cytaty OK 28, bledne 10; numery linii OK 80, poza plikiem 0
+(1b) wszystkie odwolania plik:linia w raporcie: OK 75, poza plikiem 0
+  CYTAT NIEZNALEZIONY: PA-03 „Check for unnecessary re-renders (missing `useMemo`, `useCallback`, `R”
+  CYTAT NIEZNALEZIONY: PA-03 „Verify React component memoization”
+  CYTAT NIEZNALEZIONY: PA-03 „…lazy loading, memoization, useEffect cleanup”
+  CYTAT NIEZNALEZIONY: PA-09 „to jest dokladnie ten moment, w ktorym poprzednio poszlo zle”
+  CYTAT NIEZNALEZIONY: PA-09 „UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo ”
+  CYTAT NIEZNALEZIONY: PA-19 „5. Manualny smoke test poprzez `dev-docs-execute` jeśli plan tego wyma”
+  CYTAT NIEZNALEZIONY: PA-20 „jakości kodu (to `architecture` i `typescript`)”
+  CYTAT NIEZNALEZIONY: PA-04 „Verify that `supabase.auth.getSession()` is used correctly (not trusti”
+  CYTAT NIEZNALEZIONY: PA-18 „grep -q 'Deno\.serve' || continue”
+  CYTAT NIEZNALEZIONY: PA-18 „Brak await flush() — eventy Sentry mogą nie zostać wysłane”
+(2) diff <-> raport: hunkow w diffie 62, w mapie naglowka 62, w polach „Hunki:” raportu 62; ID w diffie 21; rozbieznosci 0
+(3) raport <-> operator: ID w raporcie 44, w diffie 21, flag 8, w wersji operatora 29; diff+flagi bez wzmianki u operatora: brak; ID operatora spoza raportu: brak
+(4) liczby: tabela Razem=43, diff 8+13=21 (w mapie 21), flagi 8 (w raporcie 8), niskie 14 (+PA-44 „add” = 15 wpisow); operator: „44 rzeczy, 21 poprawek, 8 decyzji” -> zgodne
+
+BLEDOW: 10
+
+Interpretacja: 10 cytatów nieznalezionych = pozycje zamknięte łatami: PA-03, PA-04, PA-09, PA-18, PA-20 (P1), PA-19 (P3, H09).
+Żaden brakujący cytat nie dotyczy pozycji otwartej. Baza (dane/pa-kontrola.txt, przed P1): BLEDOW 0.
+
+== (B) pa_inwentarz.py — sygnały per plik agenta (kierunek: plik -> sygnał), przed = dane/pa-sygnaly.json, po = pa-sygnaly-po-P3.json
+  architecture-strategist.md                 2 ->   2  
+  best-practices-researcher.md               2 ->   1  
+  code-simplicity-reviewer.md                1 ->   1  
+  feature-builder-data.md                    6 ->   6  
+  feature-builder-fullstack-figma.md         0 ->   4  {'o5-delegacja-subagenci': 1, '2-historia-incydenty': 1, '1d-tozsamosc': 1, '1a-nacisk-wersaliki': 1}
+  feature-builder-fullstack.md               4 ->   4  
+  feature-builder-ui-figma.md                0 ->   5  {'o5-delegacja-subagenci': 1, '2-historia-incydenty': 1, '1d-tozsamosc': 1, '1d-modele-przypiete': 1, '1d-tlumienie-narracji': 1}
+  feature-builder-ui.md                      5 ->   5  
+  feature-tester-e2e.md                      3 ->   3  
+  framework-docs-researcher.md               2 ->   2  
+  kieran-typescript-reviewer.md              4 ->   4  
+  klasa-mechaniczny-odczyt.md                0 ->   1  {'1d-modele-przypiete': 1}
+  klasa-mechaniczny.md                       0 ->   1  {'1d-modele-przypiete': 1}
+  learnings-researcher.md                   12 ->  12  
+  performance-oracle.md                      1 ->   1  
+  repo-research-analyst.md                  14 ->  14  
+  security-sentinel.md                       3 ->   3  
+  spec-compliance-reviewer.md                1 ->   1  
+  spec-flow-analyzer.md                      0 ->   0  
+  web-research-specialist.md                 8 ->   8  
+  RAZEM szablon: 653 -> 584
+
+Interpretacja: nowe pliki klas — 1 trafienie każdy = linia konfiguracji 'model: haiku' (nie tekst promptu);
+warianty -figma — trafienia = kopia treści pliku bazowego (test klasy-rol pilnuje identyczności; P12 przepisuje oba pliki).
+Pliki ruszone w P3 (badacze, role): liczba trafień bez wzrostu. Kontrola dodanych linii .md (git diff -U0 main..HEAD, import RX): 0 nowych
+trafień w nowej treści (klasy, mandaty correctness/test-coverage, opisy, łaty H07/H09/H14/H18/H25, PA-35, Context7 -> WebFetch).

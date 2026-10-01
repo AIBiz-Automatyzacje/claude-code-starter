@@ -1,0 +1,799 @@
+{
+ "per_plik": {
+  ".claude/skills/agent-browser/SKILL.md": {
+   "1a-nacisk-wersaliki": 5,
+   "o5-zakres-scope": 1
+  },
+  ".claude/skills/agent-browser/references/authentication.md": {
+   "1d-frazy-migracyjne": 1,
+   "o5-zakres-scope": 3
+  },
+  ".claude/skills/agent-browser/references/commands.md": {
+   "o5-zakres-scope": 3,
+   "2-historia-incydenty": 1
+  },
+  ".claude/skills/agent-browser/references/session-management.md": {
+   "o5-zakres-scope": 4,
+   "1a-wykrzykniki": 1
+  },
+  ".claude/skills/agent-browser/references/snapshot-refs.md": {
+   "1a-nacisk-wersaliki": 2,
+   "o5-zakres-scope": 1
+  },
+  ".claude/skills/agent-browser/references/trust-boundaries.md": {
+   "1a-asekuracja": 1
+  },
+  ".claude/skills/agent-browser/references/video-recording.md": {
+   "2-historia-incydenty": 1,
+   "1c-kroki-choreografia": 5
+  },
+  ".claude/skills/coderabbit-setup/SKILL.md": {
+   "1a-nacisk-wersaliki": 3
+  },
+  ".claude/skills/coderabbit-setup/reference/stack-blocks.md": {
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/dev-brainstorm/SKILL.md": {
+   "o5-zakres-scope": 21,
+   "o5-delegacja-subagenci": 1
+  },
+  ".claude/skills/dev-compound/SKILL.md": {
+   "1c-kroki-choreografia": 7,
+   "1d-modele-przypiete": 2,
+   "o5-zakres-scope": 2,
+   "1b-mysl-krok-po-kroku": 1,
+   "2-historia-incydenty": 1
+  },
+  ".claude/skills/dev-compound-refresh/SKILL.md": {
+   "o5-zakres-scope": 2,
+   "1d-frazy-migracyjne": 1,
+   "o5-delegacja-subagenci": 12,
+   "1c-nie-halucynuj": 1,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/dev-docs/SKILL.md": {
+   "1a-nacisk-wersaliki": 3,
+   "o5-weryfikacja-samokontrola": 1,
+   "o5-zakres-scope": 2,
+   "1c-nie-halucynuj": 1,
+   "1d-anty-formatowanie": 1,
+   "1b-mysl-krok-po-kroku": 1,
+   "2-historia-incydenty": 1,
+   "o5-delegacja-subagenci": 1
+  },
+  ".claude/skills/dev-docs-complete/SKILL.md": {
+   "1d-tozsamosc": 1,
+   "1c-nie-halucynuj": 1,
+   "1a-wykrzykniki": 5,
+   "1a-nacisk-wersaliki": 1,
+   "o5-dlugosc-odpowiedzi": 1
+  },
+  ".claude/skills/dev-plan/SKILL.md": {
+   "o5-zakres-scope": 10,
+   "1c-nie-halucynuj": 1,
+   "1a-nie-badz-zbyt": 1,
+   "o5-dlugosc-odpowiedzi": 3,
+   "o5-delegacja-subagenci": 15,
+   "2-historia-incydenty": 4,
+   "1a-nacisk-wersaliki": 8,
+   "1d-frazy-migracyjne": 1,
+   "1b-mysl-krok-po-kroku": 1
+  },
+  ".claude/skills/dev-pr/SKILL.md": {
+   "1a-wykrzykniki": 1
+  },
+  ".claude/skills/dev-prep/SKILL.md": {
+   "1a-nacisk-wersaliki": 1,
+   "2-historia-incydenty": 1,
+   "o5-delegacja-subagenci": 1,
+   "1c-nie-halucynuj": 1
+  },
+  ".claude/skills/security/SKILL.md": {
+   "1c-kroki-choreografia": 6,
+   "1a-nacisk-wersaliki": 5,
+   "o5-zakres-scope": 2
+  },
+  ".claude/skills/security/resources/auth-security-patterns.md": {
+   "1a-nacisk-wersaliki": 13,
+   "1a-wykrzykniki": 1
+  },
+  ".claude/skills/security/resources/owasp-react-supabase.md": {
+   "1a-nacisk-wersaliki": 3
+  },
+  ".claude/skills/sentry-integration/SKILL.md": {
+   "1a-wykrzykniki": 1,
+   "1a-nacisk-wersaliki": 8,
+   "o5-zakres-scope": 15
+  },
+  ".claude/skills/sentry-integration/resources/edge-functions-sentry.md": {
+   "o5-zakres-scope": 26,
+   "1a-nacisk-wersaliki": 8,
+   "2-historia-incydenty": 2,
+   "1a-wykrzykniki": 1,
+   "3-scolding-cross-ref": 1
+  },
+  ".claude/skills/sentry-integration/resources/react-sentry-patterns.md": {
+   "o5-zakres-scope": 7,
+   "1a-nacisk-wersaliki": 2
+  },
+  ".claude/skills/supabase-dev-guidelines/SKILL.md": {
+   "1d-frazy-migracyjne": 1,
+   "1a-nacisk-wersaliki": 3
+  },
+  ".claude/skills/supabase-dev-guidelines/resources/database-patterns.md": {
+   "1a-nacisk-wersaliki": 1,
+   "o5-dlugosc-odpowiedzi": 1
+  },
+  ".claude/skills/supabase-dev-guidelines/resources/edge-functions.md": {
+   "1a-wykrzykniki": 3,
+   "1a-nacisk-wersaliki": 4,
+   "2-historia-incydenty": 2
+  },
+  ".claude/skills/supabase-dev-guidelines/resources/realtime.md": {
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/supabase-dev-guidelines/resources/security.md": {
+   "1a-nacisk-wersaliki": 5,
+   "1a-wykrzykniki": 2,
+   "1a-asekuracja": 1
+  },
+  ".claude/skills/sync-template/SKILL.md": {
+   "o5-dlugosc-odpowiedzi": 1
+  },
+  ".claude/skills/tailwind-react-guidelines/resources/file-organization.md": {
+   "1b-parametry-api": 1,
+   "1a-wykrzykniki": 3
+  },
+  ".claude/skills/tailwind-react-guidelines/resources/forms.md": {
+   "1a-wykrzykniki": 9
+  },
+  ".claude/skills/tailwind-react-guidelines/resources/loading-and-error-states.md": {
+   "1a-wykrzykniki": 2,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/tailwind-react-guidelines/resources/performance.md": {
+   "2-historia-incydenty": 2,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/tailwind-react-guidelines/resources/styling-guide.md": {
+   "2-historia-incydenty": 1
+  },
+  ".claude/skills/tailwind-react-guidelines/resources/typescript-standards.md": {
+   "2-historia-incydenty": 2
+  },
+  ".claude/skills/ux-ui-guidelines/SKILL.md": {
+   "1d-modele-przypiete": 2
+  },
+  ".claude/skills/ux-ui-guidelines/resources/accessibility.md": {
+   "1d-modele-przypiete": 4,
+   "1a-wykrzykniki": 2,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/ux-ui-guidelines/resources/component-ux.md": {
+   "1a-wykrzykniki": 3,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/skills/ux-ui-guidelines/resources/design-system.md": {
+   "1a-wykrzykniki": 2,
+   "1d-modele-przypiete": 2
+  },
+  ".claude/skills/ux-ui-guidelines/resources/typography-polish.md": {
+   "1b-kadencja-limit-slow": 1
+  },
+  ".claude/skills/zroastuj-mnie/SKILL.md": {
+   "1c-kroki-choreografia": 1,
+   "o5-zakres-scope": 2,
+   "2-historia-incydenty": 1
+  },
+  ".claude/agents/architecture-strategist.md": {
+   "1d-tozsamosc": 1,
+   "2-historia-incydenty": 1
+  },
+  ".claude/agents/best-practices-researcher.md": {
+   "1d-tozsamosc": 1
+  },
+  ".claude/agents/code-simplicity-reviewer.md": {
+   "1d-tozsamosc": 1
+  },
+  ".claude/agents/feature-builder-data.md": {
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 1,
+   "1d-tozsamosc": 1,
+   "1a-nacisk-wersaliki": 3
+  },
+  ".claude/agents/feature-builder-fullstack-figma.md": {
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 1,
+   "1d-tozsamosc": 1,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/agents/feature-builder-fullstack.md": {
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 1,
+   "1d-tozsamosc": 1,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/agents/feature-builder-ui-figma.md": {
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 1,
+   "1d-tozsamosc": 1,
+   "1d-modele-przypiete": 1,
+   "1d-tlumienie-narracji": 1
+  },
+  ".claude/agents/feature-builder-ui.md": {
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 1,
+   "1d-tozsamosc": 1,
+   "1d-modele-przypiete": 1,
+   "1d-tlumienie-narracji": 1
+  },
+  ".claude/agents/feature-tester-e2e.md": {
+   "1d-tozsamosc": 1,
+   "1c-nie-halucynuj": 1,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/agents/framework-docs-researcher.md": {
+   "1d-tozsamosc": 1,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/agents/kieran-typescript-reviewer.md": {
+   "1a-nacisk-wersaliki": 2,
+   "3-scolding-cross-ref": 1,
+   "1a-nie-badz-zbyt": 1
+  },
+  ".claude/agents/klasa-mechaniczny-odczyt.md": {
+   "1d-modele-przypiete": 1
+  },
+  ".claude/agents/klasa-mechaniczny.md": {
+   "1d-modele-przypiete": 1
+  },
+  ".claude/agents/learnings-researcher.md": {
+   "1d-tozsamosc": 1,
+   "1c-kroki-choreografia": 8,
+   "o5-dlugosc-odpowiedzi": 1,
+   "1c-nie-halucynuj": 1,
+   "1a-wykrzykniki": 1
+  },
+  ".claude/agents/performance-oracle.md": {
+   "o5-zakres-scope": 1
+  },
+  ".claude/agents/repo-research-analyst.md": {
+   "o5-zakres-scope": 13,
+   "1d-tozsamosc": 1
+  },
+  ".claude/agents/security-sentinel.md": {
+   "1d-tozsamosc": 1,
+   "1a-nacisk-wersaliki": 1,
+   "o5-zakres-scope": 1
+  },
+  ".claude/agents/spec-compliance-reviewer.md": {
+   "1d-tozsamosc": 1
+  },
+  ".claude/agents/web-research-specialist.md": {
+   "1d-tozsamosc": 1,
+   "1c-kroki-choreografia": 5,
+   "1d-frazy-migracyjne": 1,
+   "o5-dlugosc-odpowiedzi": 1
+  },
+  ".claude/workflows/dev-autopilot-wf.js": {
+   "o5-zakres-scope": 6,
+   "1a-nacisk-wersaliki": 28,
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 4,
+   "1d-frazy-migracyjne": 1,
+   "o5-weryfikacja-samokontrola": 1,
+   "1d-anty-formatowanie": 1,
+   "1c-kroki-choreografia": 6,
+   "1a-asekuracja": 1,
+   "1d-modele-przypiete": 6,
+   "1a-wykrzykniki": 1,
+   "1a-nie-badz-zbyt": 1
+  },
+  ".claude/workflows/dev-compound-wf.js": {
+   "1a-nacisk-wersaliki": 3,
+   "1d-modele-przypiete": 1
+  },
+  ".claude/workflows/dev-docs-complete-wf.js": {
+   "1a-nacisk-wersaliki": 6,
+   "1a-wykrzykniki": 2,
+   "1a-nie-badz-zbyt": 1
+  },
+  ".claude/workflows/dev-docs-execute-wf.js": {
+   "o5-delegacja-subagenci": 3,
+   "1a-nacisk-wersaliki": 3,
+   "2-historia-incydenty": 2
+  },
+  ".claude/workflows/dev-docs-review-wf.js": {
+   "1a-nacisk-wersaliki": 22,
+   "1d-modele-przypiete": 3,
+   "o5-delegacja-subagenci": 1,
+   "2-historia-incydenty": 3,
+   "1b-mysl-krok-po-kroku": 1,
+   "o5-zakres-scope": 2,
+   "1c-nie-halucynuj": 1,
+   "1a-wykrzykniki": 5
+  },
+  ".claude/workflows/dev-pr-wf.js": {
+   "1a-nacisk-wersaliki": 10,
+   "1a-wykrzykniki": 1,
+   "1a-asekuracja": 1
+  },
+  ".claude/rules/coding-rules.md": {
+   "1a-nacisk-wersaliki": 22,
+   "o5-zakres-scope": 1,
+   "3-scolding-cross-ref": 5
+  },
+  ".claude/hooks/error-handling-reminder.sh": {
+   "1a-nacisk-wersaliki": 1,
+   "1a-wykrzykniki": 1
+  },
+  ".claude/hooks/stop-build-check-enhanced.sh": {
+   "1a-nacisk-wersaliki": 1,
+   "1a-wykrzykniki": 1
+  },
+  ".claude/templates/e2e-env/.env.e2e.example": {
+   "1a-nacisk-wersaliki": 2
+  },
+  ".claude/templates/e2e-env/README.md": {
+   "1d-frazy-migracyjne": 1,
+   "1a-nacisk-wersaliki": 3,
+   "1c-kroki-choreografia": 1,
+   "2-historia-incydenty": 1
+  },
+  ".claude/templates/smoke-autopilot/README.md": {
+   "2-historia-incydenty": 3,
+   "2-czas-przeszly-oferty": 1,
+   "o5-weryfikacja-samokontrola": 2,
+   "1a-nacisk-wersaliki": 1
+  },
+  ".claude/templates/smoke-autopilot/przygotuj-kopie.sh": {
+   "2-historia-incydenty": 1,
+   "o5-weryfikacja-samokontrola": 2
+  },
+  ".claude/templates/smoke-autopilot/__tests__/przygotuj-kopie.test.mjs": {
+   "o5-delegacja-subagenci": 3,
+   "2-historia-incydenty": 1
+  },
+  ".claude/skills/agent-browser/references/profiling.md": {},
+  ".claude/skills/agent-browser/references/proxy-support.md": {},
+  ".claude/skills/coolify-manager/SKILL.md": {},
+  ".claude/skills/coolify-manager/references/api_endpoints.md": {},
+  ".claude/skills/coolify-manager/references/cli_commands.md": {},
+  ".claude/skills/coolify-manager/references/wordpress_fixes.md": {},
+  ".claude/skills/supabase-dev-guidelines/resources/auth-patterns.md": {},
+  ".claude/skills/supabase-dev-guidelines/resources/cli-guide.md": {},
+  ".claude/skills/tailwind-react-guidelines/SKILL.md": {},
+  ".claude/skills/tailwind-react-guidelines/resources/component-patterns.md": {},
+  ".claude/skills/tailwind-react-guidelines/resources/testing.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/animation-polish.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/animations.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/patterns.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/performance.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/polish-checklist.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/responsive-design.md": {},
+  ".claude/skills/ux-ui-guidelines/resources/surfaces.md": {},
+  ".claude/agents/spec-flow-analyzer.md": {}
+ },
+ "rozmiar": {
+  ".claude/skills/agent-browser/SKILL.md": [
+   434,
+   17416
+  ],
+  ".claude/skills/agent-browser/references/authentication.md": [
+   380,
+   11263
+  ],
+  ".claude/skills/agent-browser/references/commands.md": [
+   457,
+   21548
+  ],
+  ".claude/skills/agent-browser/references/profiling.md": [
+   120,
+   3405
+  ],
+  ".claude/skills/agent-browser/references/proxy-support.md": [
+   194,
+   4971
+  ],
+  ".claude/skills/agent-browser/references/session-management.md": [
+   180,
+   5158
+  ],
+  ".claude/skills/agent-browser/references/snapshot-refs.md": [
+   219,
+   5315
+  ],
+  ".claude/skills/agent-browser/references/trust-boundaries.md": [
+   50,
+   4032
+  ],
+  ".claude/skills/agent-browser/references/video-recording.md": [
+   420,
+   11146
+  ],
+  ".claude/skills/coderabbit-setup/SKILL.md": [
+   89,
+   5035
+  ],
+  ".claude/skills/coderabbit-setup/reference/stack-blocks.md": [
+   115,
+   3948
+  ],
+  ".claude/skills/coolify-manager/SKILL.md": [
+   178,
+   7069
+  ],
+  ".claude/skills/coolify-manager/references/api_endpoints.md": [
+   236,
+   5596
+  ],
+  ".claude/skills/coolify-manager/references/cli_commands.md": [
+   472,
+   14092
+  ],
+  ".claude/skills/coolify-manager/references/wordpress_fixes.md": [
+   234,
+   5202
+  ],
+  ".claude/skills/dev-brainstorm/SKILL.md": [
+   344,
+   19329
+  ],
+  ".claude/skills/dev-compound/SKILL.md": [
+   459,
+   17411
+  ],
+  ".claude/skills/dev-compound-refresh/SKILL.md": [
+   413,
+   25012
+  ],
+  ".claude/skills/dev-docs/SKILL.md": [
+   181,
+   23636
+  ],
+  ".claude/skills/dev-docs-complete/SKILL.md": [
+   143,
+   11555
+  ],
+  ".claude/skills/dev-plan/SKILL.md": [
+   867,
+   61026
+  ],
+  ".claude/skills/dev-pr/SKILL.md": [
+   184,
+   8666
+  ],
+  ".claude/skills/dev-prep/SKILL.md": [
+   266,
+   17377
+  ],
+  ".claude/skills/security/SKILL.md": [
+   193,
+   7555
+  ],
+  ".claude/skills/security/resources/auth-security-patterns.md": [
+   562,
+   19422
+  ],
+  ".claude/skills/security/resources/owasp-react-supabase.md": [
+   431,
+   20175
+  ],
+  ".claude/skills/sentry-integration/SKILL.md": [
+   276,
+   8308
+  ],
+  ".claude/skills/sentry-integration/resources/edge-functions-sentry.md": [
+   491,
+   16302
+  ],
+  ".claude/skills/sentry-integration/resources/react-sentry-patterns.md": [
+   525,
+   13265
+  ],
+  ".claude/skills/supabase-dev-guidelines/SKILL.md": [
+   312,
+   10519
+  ],
+  ".claude/skills/supabase-dev-guidelines/resources/auth-patterns.md": [
+   624,
+   18845
+  ],
+  ".claude/skills/supabase-dev-guidelines/resources/cli-guide.md": [
+   271,
+   7482
+  ],
+  ".claude/skills/supabase-dev-guidelines/resources/database-patterns.md": [
+   782,
+   19263
+  ],
+  ".claude/skills/supabase-dev-guidelines/resources/edge-functions.md": [
+   592,
+   19149
+  ],
+  ".claude/skills/supabase-dev-guidelines/resources/realtime.md": [
+   402,
+   9415
+  ],
+  ".claude/skills/supabase-dev-guidelines/resources/security.md": [
+   464,
+   13598
+  ],
+  ".claude/skills/sync-template/SKILL.md": [
+   101,
+   6367
+  ],
+  ".claude/skills/tailwind-react-guidelines/SKILL.md": [
+   185,
+   6484
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/component-patterns.md": [
+   549,
+   12975
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/file-organization.md": [
+   867,
+   21912
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/forms.md": [
+   989,
+   28350
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/loading-and-error-states.md": [
+   720,
+   18294
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/performance.md": [
+   591,
+   15674
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/styling-guide.md": [
+   672,
+   16764
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/testing.md": [
+   1013,
+   25644
+  ],
+  ".claude/skills/tailwind-react-guidelines/resources/typescript-standards.md": [
+   535,
+   12625
+  ],
+  ".claude/skills/ux-ui-guidelines/SKILL.md": [
+   332,
+   10923
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/accessibility.md": [
+   832,
+   21710
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/animation-polish.md": [
+   399,
+   11416
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/animations.md": [
+   747,
+   18372
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/component-ux.md": [
+   874,
+   25053
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/design-system.md": [
+   669,
+   16552
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/patterns.md": [
+   897,
+   27291
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/performance.md": [
+   100,
+   3225
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/polish-checklist.md": [
+   144,
+   7676
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/responsive-design.md": [
+   862,
+   21102
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/surfaces.md": [
+   274,
+   7737
+  ],
+  ".claude/skills/ux-ui-guidelines/resources/typography-polish.md": [
+   148,
+   4227
+  ],
+  ".claude/skills/zroastuj-mnie/SKILL.md": [
+   61,
+   4470
+  ],
+  ".claude/agents/architecture-strategist.md": [
+   128,
+   8460
+  ],
+  ".claude/agents/best-practices-researcher.md": [
+   127,
+   7127
+  ],
+  ".claude/agents/code-simplicity-reviewer.md": [
+   101,
+   4144
+  ],
+  ".claude/agents/correctness-reviewer.md": [
+   8,
+   571
+  ],
+  ".claude/agents/feature-builder-data.md": [
+   106,
+   5647
+  ],
+  ".claude/agents/feature-builder-fullstack-figma.md": [
+   123,
+   7020
+  ],
+  ".claude/agents/feature-builder-fullstack.md": [
+   123,
+   6660
+  ],
+  ".claude/agents/feature-builder-ui-figma.md": [
+   108,
+   6850
+  ],
+  ".claude/agents/feature-builder-ui.md": [
+   108,
+   6490
+  ],
+  ".claude/agents/feature-tester-e2e.md": [
+   97,
+   11303
+  ],
+  ".claude/agents/framework-docs-researcher.md": [
+   116,
+   6312
+  ],
+  ".claude/agents/kieran-typescript-reviewer.md": [
+   139,
+   6740
+  ],
+  ".claude/agents/klasa-mechaniczny-odczyt.md": [
+   9,
+   401
+  ],
+  ".claude/agents/klasa-mechaniczny.md": [
+   9,
+   531
+  ],
+  ".claude/agents/klasa-naprawiacz.md": [
+   8,
+   447
+  ],
+  ".claude/agents/klasa-orkiestracyjny.md": [
+   8,
+   497
+  ],
+  ".claude/agents/klasa-sceptyk.md": [
+   8,
+   429
+  ],
+  ".claude/agents/learnings-researcher.md": [
+   259,
+   16926
+  ],
+  ".claude/agents/performance-oracle.md": [
+   154,
+   7399
+  ],
+  ".claude/agents/repo-research-analyst.md": [
+   296,
+   16561
+  ],
+  ".claude/agents/security-sentinel.md": [
+   192,
+   11338
+  ],
+  ".claude/agents/spec-compliance-reviewer.md": [
+   65,
+   3824
+  ],
+  ".claude/agents/spec-flow-analyzer.md": [
+   106,
+   6481
+  ],
+  ".claude/agents/test-coverage-reviewer.md": [
+   8,
+   542
+  ],
+  ".claude/agents/web-research-specialist.md": [
+   139,
+   10436
+  ],
+  ".claude/workflows/dev-autopilot-wf.js": [
+   1655,
+   110482
+  ],
+  ".claude/workflows/dev-compound-wf.js": [
+   77,
+   4855
+  ],
+  ".claude/workflows/dev-docs-complete-wf.js": [
+   185,
+   14287
+  ],
+  ".claude/workflows/dev-docs-execute-wf.js": [
+   291,
+   16779
+  ],
+  ".claude/workflows/dev-docs-review-wf.js": [
+   1414,
+   97780
+  ],
+  ".claude/workflows/dev-pr-wf.js": [
+   508,
+   34671
+  ],
+  ".claude/rules/coding-rules.md": [
+   217,
+   10542
+  ],
+  ".claude/hooks/error-handling-reminder.sh": [
+   126,
+   4103
+  ],
+  ".claude/hooks/stop-build-check-enhanced.sh": [
+   83,
+   2447
+  ],
+  ".claude/templates/e2e-env/.env.e2e.example": [
+   21,
+   1214
+  ],
+  ".claude/templates/e2e-env/README.md": [
+   121,
+   8155
+  ],
+  ".claude/templates/smoke-autopilot/README.md": [
+   77,
+   5457
+  ],
+  ".claude/templates/smoke-autopilot/plan-techniczny-smoke-autopilot.md": [
+   32,
+   1143
+  ],
+  ".claude/templates/smoke-autopilot/przygotuj-kopie.sh": [
+   119,
+   6132
+  ],
+  ".claude/templates/smoke-autopilot/smoke-autopilot-kontekst.md": [
+   16,
+   530
+  ],
+  ".claude/templates/smoke-autopilot/smoke-autopilot-plan.md": [
+   16,
+   554
+  ],
+  ".claude/templates/smoke-autopilot/smoke-autopilot-zadania.md": [
+   17,
+   744
+  ],
+  ".claude/templates/smoke-autopilot/__tests__/przygotuj-kopie.test.mjs": [
+   132,
+   6038
+  ],
+  ".claude/templates/smoke-autopilot/pakiet/package.json": [
+   10,
+   189
+  ],
+  ".claude/templates/smoke-autopilot/pakiet/tsconfig.json": [
+   15,
+   348
+  ],
+  ".claude/templates/smoke-autopilot/pakiet/vitest.config.ts": [
+   9,
+   283
+  ]
+ }
+}
