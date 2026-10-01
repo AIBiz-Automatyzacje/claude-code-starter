@@ -231,6 +231,13 @@ test('profil szablonu (.claude/settings.json): oba pluginy projektu z komenda in
     ['UWAGA', 'nie zainstalowany', 'claude plugin install figma@claude-plugins-official --scope project'])
 }))
 
+test('profil szablonu: pluginy na koncu w kolejnosci zapisu Claude Code — install --scope project nie brudzi drzewa', () => {
+  // Claude Code przy `claude plugin install --scope project` przepisuje plik z tymi kluczami na koncu (test na czystym koncie 2026-10-01);
+  // inna kolejnosc = zmieniony .claude/settings.json po instalacji, a brudne drzewo zatrzymuje bootstrap autopilota.
+  const profil = JSON.parse(readFileSync(resolve(dirname(SKRYPT), '..', '..', 'settings.json'), 'utf8'))
+  assert.deepEqual(Object.keys(profil).slice(-2), ['enabledPlugins', 'extraKnownMarketplaces'])
+})
+
 test('plugin wylaczony w settings.local.json → nie dotyczy (lokalny plik wygrywa jak w Claude Code)', () => zSrodowiskiem((s) => {
   json(s.projekt, '.claude/settings.json', {
     enabledPlugins: { 'dev-browser@dev-browser-marketplace': true, 'figma@claude-plugins-official': true },

@@ -77,8 +77,9 @@ nie płacą za nie kontekstem.
 1. Sklonuj repo: `git clone https://github.com/AIBiz-Automatyzacje/claude-code-starter.git`
 2. Skopiuj folder `.claude/` do swojego projektu i zacommituj go. `.claude/settings.json` jest wspólny dla projektu,
    `.claude/settings.local.json` zostaje tylko Twój.
-3. **Pluginy projektu.** Profil `.claude/settings.json` włącza dwa pluginy i zna marketplace dev-browser. Po otwarciu projektu
-   i zaufaniu folderowi Claude Code może zaproponować ich instalację. Jeśli nie zaproponuje — w terminalu, w katalogu projektu:
+3. **Pluginy projektu.** Profil `.claude/settings.json` włącza dwa pluginy i zna marketplace dev-browser. Claude Code sam dodaje
+   marketplace'y, ale pluginów **nie instaluje i nie proponuje** (sprawdzone na czystym koncie, Claude Code 2.1.286) - bez
+   tych komend sesja ich nie ładuje. W terminalu, w katalogu projektu:
    ```bash
    claude plugin marketplace add sawyerhood/dev-browser
    claude plugin install dev-browser@dev-browser-marketplace --scope project
@@ -87,7 +88,8 @@ nie płacą za nie kontekstem.
    - `figma` — czytanie makiet Figma przez `/dev-plan` i buildery UI. Bez makiet niepotrzebny.
    - `dev-browser` — przeglądarka do Twojej ręcznej pracy z Claude. Pipeline go nie woła (E2E idzie przez `agent-browser`).
 
-   Nie chcesz któregoś? Wyłącz go tylko u siebie: `"<id pluginu>": false` w `enabledPlugins` w `.claude/settings.local.json`.
+   Instalacja nie zmienia `.claude/settings.json` (profil ma klucze w kolejności, w jakiej zapisuje je Claude Code), więc drzewo
+   zostaje czyste. Nie chcesz któregoś? Wyłącz go tylko u siebie: `"<id pluginu>": false` w `enabledPlugins` w `.claude/settings.local.json`.
 4. **Narzędzia systemowe** — lista w [Wymagania](#wymagania); doctor (krok 6) powie, czego brakuje w Twoim projekcie.
 5. **Dynamic Workflows** — wpisz `/config` i ustaw **Dynamic workflows** na `true`. To ustawienie Twojego konta: projekt może je
    tylko wyłączyć, nie włączyć. Bez tego `dev-autopilot-wf` nie istnieje - a to on prowadzi całą implementację. Objaw: pliki

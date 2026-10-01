@@ -1,16 +1,4 @@
 {
-  "extraKnownMarketplaces": {
-    "dev-browser-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "sawyerhood/dev-browser"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "dev-browser@dev-browser-marketplace": true,
-    "figma@claude-plugins-official": true
-  },
   "disableClaudeAiConnectors": true,
   "hooks": {
     "Stop": [
@@ -36,5 +24,17 @@
   "statusLine": {
     "type": "command",
     "command": "npx -y @owloops/claude-powerline@latest --style=powerline"
+  },
+  "enabledPlugins": {
+    "dev-browser@dev-browser-marketplace": true,
+    "figma@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "dev-browser-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "sawyerhood/dev-browser"
+      }
+    }
   }
 }
