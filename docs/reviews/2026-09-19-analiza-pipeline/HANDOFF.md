@@ -710,7 +710,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (d) **Przejście na kopii** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P2-oferty-online` (bez runu): doctor OK (supabase, agent-browser, coolify,
     docker wyliczone z projektu; 1 UWAGA: plugin dev-browser niezainstalowany — także w szablonie); podłożony PATH bez `/opt/homebrew/bin` → BRAK gh, supabase,
     exit 1; przywrócenie → exit 0. Bramki bazowe kopii: znany kod 7 (11 testów `opublikuj-oferte`, data — 6a pkt 42 g), kopia nienaprawiana (smoke w P2 = nie).
-    (e) **Otwarte:** kopie `_smoke-P1-oferty-online` i `_smoke-P2-oferty-online` czekają na decyzję operatora o usunięciu.
+    (e) Kopie `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P1-oferty-online` i `…/_smoke-P2-oferty-online` USUNIĘTE 2026-10-01 za zgodą operatora.
     Następny krok: §8 „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 2/2)” (nowa sesja).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -1032,8 +1032,8 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
 
 - **P2 SESJA 1/2 ZROBIONA (2026-10-01; 6a pkt 44):** `doctor.sh` (lista z projektu, 15 testów na fixture z podmienionym PATH), wołanie w sync-template
   (pierwsza instalacja) + komunikat N2, dev-prep krok 1.3 + łata H38, doctor w skrypcie kopii (kod 8); przejście na kopii oferty-online: doctor OK.
-  Gałąź `popr/P2-doctor` NIEZMERGOWANA. **Następny krok: „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 2/2)” niżej** (nowa sesja — N2). Otwarte u operatora:
-  zgoda na usunięcie kopii `_smoke-P1-oferty-online` i `_smoke-P2-oferty-online`; oryginał oferty-online czerwony na main (6a pkt 42 g); token Airtable.
+  Gałąź `popr/P2-doctor` NIEZMERGOWANA. **Następny krok: „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 2/2)” niżej** (nowa sesja — N2). Kopie P1 i P2
+  usunięte za zgodą. Otwarte u operatora: oryginał oferty-online czerwony na main (6a pkt 42 g); token Airtable.
 
 **P2 — INSTALACJA PER PROJEKT I DOCTOR, sesja 2/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
