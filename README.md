@@ -68,15 +68,72 @@ Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po dro
 
 Im dłużej pracujesz w projekcie, tym mniej błędów Claude powtarza.
 
-## Jak zacząć - 4 kroki
+## Instalacja (wszystko per projekt)
+
+Wszystko, czego szablon potrzebuje, instalujesz **w projekcie**, nie globalnie na koncie: skille, agenci, reguły i hooki
+przychodzą z folderem `.claude/`, a pluginy instalujesz w zakresie projektu (`--scope project`). Inne Twoje projekty
+nie płacą za nie kontekstem.
 
 1. Sklonuj repo: `git clone https://github.com/AIBiz-Automatyzacje/claude-code-starter.git`
-2. Skopiuj folder `.claude/` do swojego projektu.
-3. **Włącz Dynamic Workflows**: wpisz `/config` i ustaw **Dynamic workflows** na `true`. Bez tego
-   Claude nie widzi plików z `.claude/workflows/`, więc `dev-autopilot-wf` w ogóle nie da się odpalić -
-   a to on prowadzi całą implementację. Objaw: pliki `*-wf.js` leżą w projekcie, ale Claude twierdzi,
-   że nie zna workflow o tej nazwie, albo komenda nic nie robi.
-4. Odpal Claude Code i wpisz `/dev-brainstorm` - opisz, co chcesz zbudować. Resztą pokieruje pipeline.
+2. Skopiuj folder `.claude/` do swojego projektu i zacommituj go. `.claude/settings.json` jest wspólny dla projektu,
+   `.claude/settings.local.json` zostaje tylko Twój.
+3. **Pluginy projektu.** Profil `.claude/settings.json` włącza dwa pluginy i zna marketplace dev-browser. Po otwarciu projektu
+   i zaufaniu folderowi Claude Code może zaproponować ich instalację. Jeśli nie zaproponuje — w terminalu, w katalogu projektu:
+   ```bash
+   claude plugin marketplace add sawyerhood/dev-browser
+   claude plugin install dev-browser@dev-browser-marketplace --scope project
+   claude plugin install figma@claude-plugins-official --scope project
+   ```
+   - `figma` — czytanie makiet Figma przez `/dev-plan` i buildery UI. Bez makiet niepotrzebny.
+   - `dev-browser` — przeglądarka do Twojej ręcznej pracy z Claude. Pipeline go nie woła (E2E idzie przez `agent-browser`).
+
+   Nie chcesz któregoś? Wyłącz go tylko u siebie: `"<id pluginu>": false` w `enabledPlugins` w `.claude/settings.local.json`.
+4. **Narzędzia systemowe** — lista w [Wymagania](#wymagania); doctor (krok 6) powie, czego brakuje w Twoim projekcie.
+5. **Dynamic Workflows** — wpisz `/config` i ustaw **Dynamic workflows** na `true`. To ustawienie Twojego konta: projekt może je
+   tylko wyłączyć, nie włączyć. Bez tego `dev-autopilot-wf` nie istnieje - a to on prowadzi całą implementację. Objaw: pliki
+   `*-wf.js` leżą w projekcie, ale Claude twierdzi, że nie zna workflow o tej nazwie, albo komenda nic nie robi.
+6. **Sprawdzian — doctor:**
+   ```bash
+   bash .claude/scripts/doctor/doctor.sh
+   ```
+   `WYNIK: OK` = można startować. `BRAK` = zainstaluj z kolumny „Instalacja” i uruchom doctor ponownie. Doctor uruchamia się
+   też sam przy pierwszym `/sync-template` i w `/dev-prep`.
+7. Otwórz **nową** sesję Claude Code (skille i ustawienia wczytują się na starcie sesji) i wpisz `/dev-brainstorm` - opisz,
+   co chcesz zbudować. Resztą pokieruje pipeline.
+
+### Konektory i pluginy z konta claude.ai
+
+Profil ma `"disableClaudeAiConnectors": true`: konektory z Twojego konta claude.ai (Gmail, Drive, Supabase…) nie wchodzą
+do sesji projektu i nie zjadają kontekstu. **Działa to tylko w terminalowym `claude`.** Aplikacja desktop omija ten klucz:
+
+- **konektory** wyłączasz w aplikacji: sesja zakładki Code → menu konektorów → odznacz. Wyłączenie zostaje na kolejne sesje.
+- **pluginy z claude.ai** (Claude Code widzi je jako `<nazwa>@inline`; nazwę zdradza prefiks ich skilli, np. `design:`)
+  wyłącza wpis `"<nazwa>@inline": false` w `enabledPlugins` w `~/.claude/settings.json`. To Twoja decyzja: wyłączasz je
+  w Claude Code, na claude.ai zostają.
+
+## Wymagania
+
+Doctor wylicza listę z Twojego projektu — narzędzie warunkowe sprawdza tylko wtedy, gdy projekt go używa. **BRAK** blokuje
+(run by się na tym zatrzymał; `/dev-prep` oznacza pozycję `[blokuje: faza 1]`), **UWAGA** nie blokuje.
+
+| Element | Kiedy sprawdzany | Przy braku | Instalacja (macOS) |
+|---|---|---|---|
+| git | zawsze | BRAK | `brew install git` |
+| gh + zalogowanie | zawsze (`/dev-pr`) | BRAK | `brew install gh && gh auth login` |
+| node ≥ 22 | zawsze | BRAK | `brew install node` |
+| menedżer pakietów z lockfile (pnpm / yarn / bun / npm) | jest lockfile | BRAK | np. `npm install -g pnpm` |
+| supabase CLI | jest katalog `supabase/` | BRAK | `brew install supabase/tap/supabase` |
+| agent-browser | checkbox `[E2E]` w `docs/` | BRAK | `npm install -g agent-browser && agent-browser install` |
+| jq | hook projektu woła `jq` | BRAK | `brew install jq` |
+| Dynamic Workflows | zawsze | BRAK | `/config` → Dynamic workflows: `true` |
+| coolify CLI | Coolify w `CLAUDE.md`, `.env.example` albo `.github/workflows/` | UWAGA | `bash .claude/skills/coolify-manager/scripts/install_coolify_cli.sh` |
+| docker | jest `Dockerfile` | UWAGA | `brew install --cask docker` |
+| pluginy projektu (figma, dev-browser) | włączone w `.claude/settings.json` | UWAGA | komendy z kroku 3 |
+| telemetria | zawsze | UWAGA | nic — gdy brak zapisu z ostatniej doby, doctor sam nadrabia skanem |
+
+Jedyny wyjątek od „per projekt”: **agent-browser instalujesz globalnie** — skill `agent-browser` i tester E2E wołają go z `PATH`,
+więc lokalna devDependency projektu nie wystarczy (doctor pokaże ją jako BRAK). Na Linuksie zamiast `brew` użyj menedżera
+pakietów dystrybucji.
 
 Chcesz zrozumieć, jak to działa pod maską? Niżej masz pełną dokumentację: pipeline `dev-*`,
 workflowy, wszystkich 15 agentów i pułapki, na które sami wpadliśmy.
@@ -132,9 +189,9 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 > **Wymagane włączenie w Claude Code.** Dynamic Workflows są funkcją samego Claude Code, sterowaną
 > przez `/config` → **Dynamic workflows**. Gdy jest ustawione na `false`, Claude nie widzi żadnego
 > pliku z `.claude/workflows/` - `dev-autopilot-wf` nie istnieje dla niego, mimo że leży w projekcie.
-> Tego nie da się dowieźć w szablonie: to ustawienie Twojego klienta, nie repozytorium (`.claude/settings.json`
-> go nie obsługuje). Skopiowanie folderu `.claude/` **nie** włącza tego za Ciebie - sprawdź `/config`
-> przed pierwszym uruchomieniem. Skille `dev-*` (`/dev-brainstorm`, `/dev-plan`, `/dev-docs`) działają
+> Tego nie da się dowieźć w szablonie: to ustawienie Twojego konta, nie repozytorium (`.claude/settings.json`
+> projektu może je tylko wyłączyć, nie włączyć). Skopiowanie folderu `.claude/` **nie** włącza tego za Ciebie - sprawdź
+> `/config` albo doctor (`bash .claude/scripts/doctor/doctor.sh`, wiersz „Dynamic Workflows”) przed pierwszym uruchomieniem. Skille `dev-*` (`/dev-brainstorm`, `/dev-plan`, `/dev-docs`) działają
 > niezależnie od tego przełącznika; blokuje on wyłącznie workflowy `-wf`.
 
 | Workflow | Co robi |
