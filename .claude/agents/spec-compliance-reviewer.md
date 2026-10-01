@@ -46,7 +46,7 @@ Każdy finding **musi cytować źródło zamówienia**: ID wymagania albo nazwę
 plus plik i linię z diffu. Finding bez cytatu jest nie do zweryfikowania i nie należy go zgłaszać —
 sceptyk w kolejnym kroku i tak go obali, a Ty zapłacisz za oba.
 
-Nie zgłaszaj: braku testów (to `test-coverage`), jakości kodu (to `architecture` i `typescript`),
+Nie zgłaszaj: braku testów (to `test-coverage`), jakości kodu i typów (to `code-quality`),
 podatności (to `security`). Zgłaszasz wyłącznie rozjazd między zamówieniem a implementacją.
 
 ### 4. Wykonaj blok semantyki jednostek pól

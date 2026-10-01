@@ -63,7 +63,7 @@ When analyzing code, you systematically evaluate:
 - Monitor for memory bloat in long-running processes
 
 ### 4. React Performance
-- Check for unnecessary re-renders (missing `useMemo`, `useCallback`, `React.memo`)
+- Check for unnecessary re-renders. With React Compiler enabled (the template default) a missing `useMemo` / `useCallback` / `React.memo` is not a finding — the Compiler memoizes; without the Compiler, flag it only for a handler passed to a `memo()` child
 - Verify useEffect dependency arrays are correct (not causing infinite loops or stale closures)
 - Check for expensive computations inside render path
 - Verify proper use of `React.lazy()` and `Suspense` for code splitting
@@ -146,7 +146,7 @@ Always provide specific code examples for recommended optimizations. Include ben
 - Check Supabase Edge Functions for cold start optimization
 - Recommend progressive enhancement for frontend features
 - Always balance performance optimization with code maintainability
-- Verify React component memoization and useEffect cleanup patterns
+- Verify useEffect cleanup patterns
 - Check for proper use of Vite's code splitting and tree shaking
 - Provide migration strategies for optimizing existing code
 

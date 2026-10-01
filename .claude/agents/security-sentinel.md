@@ -62,7 +62,7 @@ You will systematically execute these security scans:
    - Verify authorization checks at both route and resource levels
    - Look for privilege escalation possibilities
    - Check JWT token handling and validation
-   - Verify that `supabase.auth.getSession()` is used correctly (not trusting client-side tokens on server)
+   - Server-side authorization takes identity from `getUser()` / `getClaims()` (or `ctx.userClaims` under `withSupabase`); `getSession()` used for authorization on the server is a finding — it does not verify the token
 
 5. **Sensitive Data Exposure**
    - Scan for hardcoded credentials, API keys, or secrets in source code
