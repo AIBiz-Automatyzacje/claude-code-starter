@@ -40,7 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
-| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 sesja 1/2 ZROBIONA 2026-10-01 (6a pkt 44): doctor + wołanie w sync-template, dev-prep i skrypcie kopii; gałąź `popr/P2-doctor` niezmergowana. NASTĘPNY KROK: P2 — §8 „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 2/2)”** (nowa sesja). Stan paczek: P0 ☑ P1 ☑ P2 ◐ (sesja 1/2) P3 ☐ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922`; test na czystym koncie u operatora. NASTĘPNY KROK: P3 — §8 „P3 — KONTEKST I EFORT AGENTÓW (sesja 1/2)”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ☐ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -713,6 +713,32 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (e) Kopie `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P1-oferty-online` i `…/_smoke-P2-oferty-online` USUNIĘTE 2026-10-01 za zgodą operatora.
     Następny krok: §8 „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 2/2)” (nowa sesja).
 
+45. **P2 sesja 2/2 — PAKIET ZAMKNIĘTY (2026-10-01, sesja e8cdef04).** 4 commity na `popr/P2-doctor` (1d81220, 4ec3d5c, 70f9a92, 5d28922), merge `--ff-only`
+    do main `5d28922` (smoke P2 = nie, doctor przeszedł na kopii w sesji 1). Testy szablonu 235/235, typecheck i lint zielone, `actionlint` OK.
+    (a) **Profil `.claude/settings.json`** wg KROK0-DECYZJE pkt 8: `extraKnownMarketplaces` dev-browser, `enabledPlugins` dev-browser + figma, `disableClaudeAiConnectors`;
+    hooki i statusLine bez zmian. Marketplace `claude-plugins-official` dochodzi sam, gdy włączony jest plugin z niego (binarka 2.1.286, funkcja budująca listę
+    znanych marketplace'ów) — figma nie potrzebuje wpisu. Test: doctor na prawdziwym profilu szablonu pokazuje oba pluginy z komendą per projekt.
+    (b) **Decyzja operatora: pluginy w doctor zostają UWAGA** (rekomendacja przyjęta; dev-browser nie jest wołany przez żaden skill, agenta ani workflow — E2E idzie
+    przez CLI agent-browser; figma tylko przy makietach). Doctor: `false` w `.claude/settings.local.json` = „nie dotyczy” (lokalny plik wygrywa jak w Claude Code) —
+    na szablonie dev-browser jest wyłączony lokalnie przez operatora.
+    (c) **Korekta sesji 1 (zmiana kontraktu testu, nazwana w commicie 4ec3d5c):** agent-browser tylko w `node_modules/.bin` = BRAK, nie OK. Skill `agent-browser`
+    (`command -v agent-browser`) i `feature-tester-e2e` wołają gołe `agent-browser` z PATH — lokalna devDependency dawała fałszywe OK. README: agent-browser
+    jedynym wyjątkiem od „per projekt” (instalacja globalna). Wariant per projekt (`pnpm exec agent-browser` w skillu i testerze) → kandydat do P14.
+    (d) **README:** „Jak zacząć - 4 kroki” → „Instalacja (wszystko per projekt)” (7 kroków: `.claude/`, pluginy `--scope project` z komendami awaryjnymi,
+    narzędzia, Dynamic Workflows, doctor jako sprawdzian, nowa sesja) + „Konektory i pluginy z konta claude.ai” (`disableClaudeAiConnectors` tylko w terminalowym
+    `claude`; aplikacja desktop: menu konektorów sesji Code; pluginy `"<nazwa>@inline": false` w `~/.claude/settings.json` — decyzja kursanta) + „Wymagania”
+    (tabela doctora). Dynamic Workflows: binarka ma `enableWorkflows` z flagą `restrictive: false` — projekt może je tylko wyłączyć, nie włączyć (README poprawione).
+    (e) **Bramka CI `.github/workflows/maszyneria.yml`:** push do `main` i `popr/**` + `pull_request`; `pnpm install --frozen-lockfile` → `pnpm typecheck && pnpm test
+    && pnpm lint`; akcje przypięte (checkout v7.0.1, pnpm/action-setup v6.1.0, setup-node v7.0.0), `contents: read`. **Bez `claude plugin validate --strict`
+    i `claude plugin eval` — powód:** validate na repo bez `.claude-plugin/` zwraca „Validation passed” z pustą listą `contents` (na `.`, `.claude`, `.claude/skills`,
+    `.claude/agents` — nic nie sprawdza); przez tymczasowy manifest pluginu sprawdza tylko frontmatter skilli (brak `description`), nieznanych pól agenta nie łapie
+    (podłożone `nieznane_pole` przeszło `--strict`) — wartość za mała na drugi krok CI. `eval` wymaga zestawu `evals/` (repo nie ma) i klucza API z kosztem runów.
+    CI nie był jeszcze uruchomiony na GitHubie (push = decyzja operatora); lokalnie testy zielone z pustym HOME (jak na runnerze), Linuksa nie było jak sprawdzić (brak dockera).
+    (f) **Otwarte u operatora:** test na czystym koncie (instrukcja w czacie 2026-10-01: klon szablonu + `CLAUDE_CONFIG_DIR` w pustym katalogu, terminalowe `claude`)
+    — czy zaufanie folderowi proponuje instalację marketplace'u i pluginów per projekt; wynik dopisać tutaj, README krok 3 poprawić, jeśli propozycji nie ma.
+    Doctor czyta pluginy z `$HOME/.claude`, nie z `CLAUDE_CONFIG_DIR` (do testu `claude plugin list`). Push szablonu do GitHuba; token Airtable.
+    Następny krok: §8 „P3 — KONTEKST I EFORT AGENTÓW (sesja 1/2)”.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -790,6 +816,10 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   podają, ustalaj z binarki (`strings ~/.local/share/claude/versions/<wersja> | grep -o '.\{80\}<klucz>.\{80\}'`). `coolify version` wypisuje na stdout
   komunikat o aktualizacji przed wersją. Doctor nie zależy od jq (JSON czyta node). Kontrola prompt-auditu na dodanych liniach: przekaż do skryptu TYLKO
   pliki promptów (.md) — trafienia w komentarzach .sh/.mjs (np. „N2”) to konwencja komentarzy kodu, nie prompt.
+- P2 sesja 2 (2026-10-01): `claude plugin validate` na katalogu bez `.claude-plugin/` przechodzi pusto (`--json` → `contents: []`) — nie traktuj „passed” jako dowodu.
+  Wyszukiwanie w binarce Claude Code: `strings` całej binarki + grep z `.\{0,200\}` trwa > 2 min (timeout narzędzia) — zawężaj wzorzec do krótkiego klucza bez
+  szerokich kontekstów albo pytaj claude-code-guide. Zachowanie Claude Code zależy od `.claude/settings.local.json` (gitignored globalnie u operatora) —
+  sprawdzając szablon „jak u kursanta”, użyj świeżego `git clone`, nie katalogu roboczego.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -1034,8 +1064,38 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   (pierwsza instalacja) + komunikat N2, dev-prep krok 1.3 + łata H38, doctor w skrypcie kopii (kod 8); przejście na kopii oferty-online: doctor OK.
   Gałąź `popr/P2-doctor` NIEZMERGOWANA. **Następny krok: „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 2/2)” niżej** (nowa sesja — N2). Kopie P1 i P2
   usunięte za zgodą. Otwarte u operatora: oryginał oferty-online czerwony na main (6a pkt 42 g); token Airtable.
+- **P2 ZROBIONA (2026-10-01; 6a pkt 45):** profil pluginów per projekt, doctor (`settings.local.json`, agent-browser z PATH), README „Instalacja” i „Wymagania”,
+  CI `maszyneria.yml` (sam pnpm); merge do main `5d28922`. **Następny krok: „P3 — KONTEKST I EFORT AGENTÓW (sesja 1/2)” niżej** (nowa sesja — N2).
+  Otwarte u operatora: test na czystym koncie (6a pkt 45 f); instalacja figmy w szablonie per projekt przed P3 (nazwy narzędzi Figma z instalacji — H08–H12);
+  decyzja PA-25 przy P3; oryginał oferty-online czerwony na main (6a pkt 42 g); push szablonu; token Airtable.
 
-**P2 — INSTALACJA PER PROJEKT I DOCTOR, sesja 2/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**P3 — KONTEKST I EFORT AGENTÓW, sesja 1/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P3 — kontekst i efort agentów (PLAN-POPRAWY.md §3 P3), sesja 1 z 2.
+P2 zrobiona (HANDOFF 6a pkt 44, 45): doctor, profil pluginów per projekt (figma, dev-browser), README Instalacja/Wymagania, CI maszyneria.yml; merge do main 5d28922.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): PLAN-POPRAWY.md §1 (zasady wspólne), §3 P3, §4 (wiersze dev-*-wf.js, sceptycy-p2.test.mjs, pliki
+reviewerów i builderów, doctor); HANDOFF 6a pkt 45 i §7 (trzy ostatnie punkty); POMIARY-ROZSTRZYGNIECIE.md (1) (allowlista tools:, omitClaudeMd);
+PANEL-WYNIK.md §4 It. 3a (cele ctx_start); dane/pa-hunki-lata-tresc.txt (H07–H12, H14, H18, H25).
+Kod: .claude/agents/ (16 plików), wywołania agent() we wszystkich .claude/workflows/*-wf.js, TIERY_DOMYSLNE (dev-docs-review-wf.js), .claude/scripts/doctor/.
+
+Podział P3 na sesje (propozycja — potwierdź albo zmień na starcie): sesja 1 = pliki agentów (bez zmian w workflowach), sesja 2 = workflowy (agentType w każdym
+agent(), efort/TIERY, D9 z warunkiem wstępnym, N1/N2, ostrzeżenie doctora o fladze D9) + smoke.
+
+Do zrobienia w sesji 1 (gałąź popr/P3-agenci z main; test → kod → pnpm typecheck → pnpm test → pnpm lint → commit, krok po kroku):
+1. klasy-rol.test.mjs (najpierw czerwony) w części plików: każdy plik agenta pipeline'u ma tools:; mcp__ tylko w wariantach z Figmą; mechaniczni mają omitClaudeMd.
+2. 4 pliki klas (mechaniczny-haiku, orkiestracyjny-opus, sceptyk, naprawiacz) + correctness-reviewer.md i test-coverage-reviewer.md (mandat 1–2 zdania).
+3. tools: w 8 plikach ról i 6 badaczach (bez Edit/Write; łaty H07, H14, H18, H25; PA-35); buildery UI/fullstack: H08–H12, nazwy narzędzi Figma z instalacji
+   pluginu (wymaga figmy zainstalowanej w szablonie per projekt — mój krok przed sesją), wariant pliku z Figmą.
+4. PA-25 — decyzja do mnie z rekomendacją (plan: figma:figma-design-to-code z pluginu, lokalna kopia i zdanie README out).
+5. Kontrola prompt-auditu na dodanych liniach .md (0 nowych trafień) i skrypty pa_*.py dla plików klas ról w obie strony (PLAN-POPRAWY §1).
+Po sesji: HANDOFF (§2, 6a, §8 → instrukcja P3 sesja 2/2), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**P2 — INSTALACJA PER PROJEKT I DOCTOR, sesja 2/2 (WYKONANA 2026-10-01 — 6a pkt 45; zostawiona jako wzór):**
 
 ```
 Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P2 — instalacja per projekt i doctor (PLAN-POPRAWY.md §3 P2), sesja 2 z 2.
