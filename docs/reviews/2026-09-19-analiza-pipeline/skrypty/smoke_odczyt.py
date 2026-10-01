@@ -1,7 +1,7 @@
 """Odczyt smoke'a paczki (PLAN-POPRAWY §1, P0) — run vs referencja z rekordów telemetrii i pliku harnessu (uogólnienie it1_odczyt.py).
 
 Użycie: python3 smoke_odczyt.py <wf_id> [--ref <wf_id>] > ../dane/smoke-<paczka>.txt
-Referencja domyślna = REFERENCJA (R0 po smoke'u P0; wcześniej wf_031f0eae-204 z It. 1).
+Referencja domyślna = REFERENCJA = R0 (smoke P0, wf_588f7b18-d71); It. 1 = wf_031f0eae-204 (--ref).
 
 Porównuje: status, gate i przebieg review, koszt (całość, per etap, per rola), agentów per rola, model/efort (z transkryptu —
 pole `effort` rekordu agenta), ctx_start per klasa roli, zgodność szablonu, smokeStatus. Rekordy pisze hook Stop ~30 s po końcu
@@ -16,7 +16,7 @@ import sys
 
 PLIK = os.path.expanduser('~/.claude/telemetry/pipeline.jsonl')
 HARNESS = os.path.expanduser('~/.claude/projects/*/*/workflows/wf_*.json')
-REFERENCJA = 'wf_031f0eae-204'
+REFERENCJA = 'wf_588f7b18-d71'  # R0 — smoke P0 (2026-10-01): 3,92 M, 29 agentów, 13 min, gate CZYSTE
 
 
 def ostatnie_rekordy(run_id):
