@@ -139,7 +139,7 @@ test('projekt z supabase/ wymaga supabase CLI, bez — nie', () => zSrodowiskiem
   assert.equal(doctor(s).status, 0)
 }))
 
-test('checkbox [E2E] w docs/ wymaga agent-browser; wystarczy lokalny w node_modules/.bin', () => zSrodowiskiem((s) => {
+test('checkbox [E2E] w docs/ wymaga agent-browser w PATH; sam lokalny w node_modules/.bin to BRAK', () => zSrodowiskiem((s) => {
   plik(s.projekt, 'docs/active/x/x-zadania.md', '- [x] Test: [Unit] cos\n')
   assert.equal(wiersz(doctor(s).stdout, 'agent-browser')[1], 'nie dotyczy')
 
@@ -148,11 +148,18 @@ test('checkbox [E2E] w docs/ wymaga agent-browser; wystarczy lokalny w node_modu
   assert.notEqual(brak.status, 0)
   assert.equal(wiersz(brak.stdout, 'agent-browser')[1], 'BRAK')
 
+  // skill agent-browser i feature-tester-e2e wolaja gole `agent-browser` — lokalna kopia poza PATH run nie znajdzie
   plik(s.projekt, 'node_modules/.bin/agent-browser', '#!/bin/sh\necho "agent-browser 0.31.1"\n')
   chmodSync(join(s.projekt, 'node_modules/.bin/agent-browser'), 0o755)
   const lokalny = doctor(s)
-  assert.equal(lokalny.status, 0, lokalny.stdout)
-  assert.deepEqual(wiersz(lokalny.stdout, 'agent-browser').slice(1, 3), ['OK', 'agent-browser 0.31.1 (node_modules/.bin)'])
+  assert.notEqual(lokalny.status, 0, lokalny.stdout)
+  assert.deepEqual(wiersz(lokalny.stdout, 'agent-browser').slice(1),
+    ['BRAK', 'agent-browser 0.31.1 tylko w node_modules/.bin — pipeline woła agent-browser z PATH', 'npm install -g agent-browser && agent-browser install'])
+
+  atrapa(s.bin, 'agent-browser', 'echo "agent-browser 0.31.1"')
+  const globalny = doctor(s)
+  assert.equal(globalny.status, 0, globalny.stdout)
+  assert.deepEqual(wiersz(globalny.stdout, 'agent-browser').slice(1, 3), ['OK', 'agent-browser 0.31.1'])
 }))
 
 test('Coolify i Dockerfile → coolify i docker jako UWAGA, nie blokuja', () => zSrodowiskiem((s) => {

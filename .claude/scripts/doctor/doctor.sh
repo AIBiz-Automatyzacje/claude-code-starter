@@ -102,15 +102,16 @@ sprawdz_menedzera() {
   fi
 }
 
-# agent-browser wystarcza lokalny (devDependency projektu) — feature-tester-e2e woła go z katalogu projektu.
+# agent-browser musi być w PATH: skill agent-browser i feature-tester-e2e wołają gołe `agent-browser`,
+# więc sama devDependency projektu (node_modules/.bin) w runie go nie znajdzie.
 sprawdz_agent_browser() {
-  local lokalny="$PROJEKT/node_modules/.bin/agent-browser"
+  local lokalny="$PROJEKT/node_modules/.bin/agent-browser" instalacja="npm install -g agent-browser && agent-browser install"
   if command -v agent-browser >/dev/null 2>&1; then
     wiersz agent-browser OK "$(wersja agent-browser --version)" "—"
   elif [[ -x "$lokalny" ]]; then
-    wiersz agent-browser OK "$(wersja "$lokalny" --version) (node_modules/.bin)" "—"
+    wiersz agent-browser BRAK "$(wersja "$lokalny" --version) tylko w node_modules/.bin — pipeline woła agent-browser z PATH" "$instalacja"
   else
-    wiersz agent-browser BRAK "brak w PATH i w node_modules/.bin" "npm install -g agent-browser && agent-browser install"
+    wiersz agent-browser BRAK "brak w PATH" "$instalacja"
   fi
 }
 
