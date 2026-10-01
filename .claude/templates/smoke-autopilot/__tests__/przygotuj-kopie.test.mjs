@@ -78,3 +78,37 @@ test('istniejacy katalog kopii: blad bez zadnego kroku', () => {
     rmSync(zrodlo, { recursive: true, force: true })
   }
 })
+
+test('--dry-run: po przygotowaniu bazowe bramki kopii (typecheck, test) przed startem runu', () => {
+  const zrodlo = projektZrodlowy({ workspace: true })
+  try {
+    const wynik = uruchom([zrodlo, join(tmpdir(), `smoke-kopia-${process.pid}-c`), '--dry-run'])
+    assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
+    const kroki = wynik.stdout.split('\n')
+    const commitFixture = kroki.findIndex((l) => l.includes('test(smoke): fixture'))
+    const bramki = kroki.findIndex((l) => l.includes('bazowe bramki'))
+    assert.ok(commitFixture >= 0 && bramki > commitFixture, `bramki po commicie fixture:\n${wynik.stdout}`)
+    assert.match(wynik.stdout, /pnpm typecheck[\s\S]*pnpm test/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+  }
+})
+
+test('--env <plik>: atrapy zmiennych kopiowane jako .env kopii; brak pliku = blad przed klonem', () => {
+  const zrodlo = projektZrodlowy({ workspace: true })
+  const atrapy = join(zrodlo, 'atrapy.env')
+  writeFileSync(atrapy, 'VITE_SUPABASE_URL=http://127.0.0.1:54321\n')
+  try {
+    const kopia = join(tmpdir(), `smoke-kopia-${process.pid}-d`)
+    const wynik = uruchom([zrodlo, kopia, '--env', atrapy, '--dry-run'])
+    assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
+    assert.ok(wynik.stdout.includes(`cp ${atrapy} ${kopia}/.env`), wynik.stdout)
+
+    const brak = uruchom([zrodlo, kopia, '--env', join(zrodlo, 'nie-ma.env'), '--dry-run'])
+    assert.equal(brak.status, 2)
+    assert.match(brak.stderr, /nie-ma\.env/)
+    assert.doesNotMatch(brak.stdout, /^\+ /m)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+  }
+})

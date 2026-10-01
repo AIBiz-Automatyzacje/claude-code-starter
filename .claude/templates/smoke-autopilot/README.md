@@ -17,12 +17,17 @@ Smoke nie rusza oryginalu projektu. Skrypt robi kopie w jednym kroku:
 bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-zrodlowy> <katalog-kopii>
 ```
 
-- najpierw `--dry-run` (trzeci argument) — pokazuje kroki, niczego nie tworzy;
+- najpierw `--dry-run` — pokazuje kroki, niczego nie tworzy;
+- `--env <plik>` — atrapy zmiennych (BEZ sekretow) kopiowane jako `.env` kopii, gdy testy projektu bez nich nie startuja
+  (oferty-online: `docs/reviews/2026-09-19-analiza-pipeline/dane/smoke-oferty-atrapy.env`); `.env` jest w `.gitignore`, git zostaje czysty;
 - kopia = `git clone` lokalny, `remote remove origin` (push niemozliwy), bez `.env` i `supabase/.temp`, galaz `test/smoke-autopilot`,
   `.claude/.backups/` w `.git/info/exclude`;
 - sync maszynerii z LOKALNEGO szablonu (pliki sledzone przez gita — zacommituj zmiany `.claude/` przed skryptem) → commit;
 - fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` + (projekt pnpm workspace) pakiet `packages/smoke-autopilot`
-  z plikami z `pakiet/`, `pnpm install` → commit. Git kopii czysty.
+  z plikami z `pakiet/`, `pnpm install` → commit. Git kopii czysty;
+- **bazowe bramki** `pnpm typecheck` + `pnpm test` w kopii (log `.git/smoke-bramki.log`). Czerwone = kod 7, runu NIE odpalaj:
+  domkniecie execute uruchamia cale `pnpm test` projektu, wiec zastany czerwony test zatrzyma run niezaleznie od pakietu fixture
+  (smoke P0, `wf_75b15ba0-837`: testy z data, ktora minela). Napraw w kopii osobnym commitem, sprawdz ponownie.
 
 Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania kosztu zaleza od efortu) i uruchom
 `/dev-autopilot-wf docs/active/smoke-autopilot`. Odczyt: `docs/reviews/2026-09-19-analiza-pipeline/skrypty/smoke_odczyt.py <wf_id>`

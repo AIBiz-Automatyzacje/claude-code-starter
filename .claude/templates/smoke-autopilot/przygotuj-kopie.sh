@@ -3,11 +3,14 @@
 # przygotuj-kopie.sh — kopia projektu do smoke'a pipeline'u dev-autopilot-wf (PLAN-POPRAWY P0, HANDOFF §7).
 # Oryginał zostaje nietknięty: kopia to lokalny klon bez remote (push niemożliwy), bez .env i supabase/.temp,
 # na gałęzi test/smoke-autopilot, z maszynerią zsynchronizowaną z LOKALNEGO szablonu i z fixture smoke'a.
-# Po skrypcie git kopii jest czysty (dwa commity: sync szablonu, fixture) — autopilot może startować od razu.
+# Po skrypcie git kopii jest czysty (dwa commity: sync szablonu, fixture), a bazowe bramki (`pnpm typecheck`, `pnpm test`)
+# zielone — inaczej skrypt kończy się kodem 7 i runu nie wolno odpalać (smoke P0: domknięcie execute uruchamia CAŁE
+# `pnpm test` projektu, więc zastany czerwony test zatrzymuje run niezależnie od pakietu fixture).
 #
 # Użycie:
-#   przygotuj-kopie.sh <projekt-źródłowy> <katalog-kopii>             # przygotuj kopię
-#   przygotuj-kopie.sh <projekt-źródłowy> <katalog-kopii> --dry-run   # tylko pokaż kroki, nic nie twórz
+#   przygotuj-kopie.sh <projekt-źródłowy> <katalog-kopii> [--env <plik>] [--dry-run]
+#     --env <plik>  atrapy zmiennych (BEZ sekretów) kopiowane jako .env kopii — dla testów, które bez nich nie startują
+#     --dry-run     tylko pokaż kroki, nic nie twórz
 #
 # Fixture: w projekcie pnpm workspace (pnpm-workspace.yaml) kod zadania trafia do osobnego pakietu
 # packages/smoke-autopilot — objętego `pnpm -r run test/typecheck` kopii i odciętego od zastanych błędów projektu.
@@ -21,15 +24,19 @@ GALAZ="test/smoke-autopilot"
 PAKIET="packages/smoke-autopilot"
 
 DRY_RUN=0
+PLIK_ENV=""
 declare -a POZYCYJNE=()
-for arg in "$@"; do
-  case "$arg" in
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
     --dry-run) DRY_RUN=1 ;;
-    -*) echo "Nieznana opcja: $arg" >&2; exit 2 ;;
-    *) POZYCYJNE+=("$arg") ;;
+    --env) [[ -n "${2:-}" ]] || { echo "BŁĄD: --env wymaga ścieżki pliku." >&2; exit 2; }; PLIK_ENV="$2"; shift ;;
+    -*) echo "Nieznana opcja: $1" >&2; exit 2 ;;
+    *) POZYCYJNE+=("$1") ;;
   esac
+  shift
 done
-[[ "${#POZYCYJNE[@]}" -eq 2 ]] || { echo "Użycie: $0 <projekt-źródłowy> <katalog-kopii> [--dry-run]" >&2; exit 2; }
+[[ "${#POZYCYJNE[@]}" -eq 2 ]] || { echo "Użycie: $0 <projekt-źródłowy> <katalog-kopii> [--env <plik>] [--dry-run]" >&2; exit 2; }
+[[ -z "$PLIK_ENV" || -f "$PLIK_ENV" ]] || { echo "BŁĄD: plik atrap zmiennych $PLIK_ENV nie istnieje." >&2; exit 2; }
 ZRODLO="$(cd "${POZYCYJNE[0]}" && pwd)"
 KOPIA="${POZYCYJNE[1]}"
 
@@ -68,6 +75,7 @@ krok git clone --quiet "$ZRODLO" "$KOPIA"
 krok git -C "$KOPIA" remote remove origin
 krok git -C "$KOPIA" switch --quiet -c "$GALAZ"
 krok rm -rf "$KOPIA/.env" "$KOPIA/supabase/.temp"
+[[ -z "$PLIK_ENV" ]] || krok cp "$PLIK_ENV" "$KOPIA/.env"
 echo "+ echo '.claude/.backups/' >> $KOPIA/.git/info/exclude"
 [[ "$DRY_RUN" -eq 1 ]] || echo '.claude/.backups/' >> "$KOPIA/.git/info/exclude"
 
@@ -85,9 +93,18 @@ krok pnpm install --dir "$KOPIA" --silent
 krok git -C "$KOPIA" add -A
 krok git -C "$KOPIA" commit --quiet -m "test(smoke): fixture smoke-autopilot"
 
+# Log bramek w .git/ — nie brudzi drzewa kopii.
+LOG_BRAMEK="$KOPIA/.git/smoke-bramki.log"
+echo "+ bazowe bramki kopii: pnpm typecheck, pnpm test (log: $LOG_BRAMEK)"
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "DRY-RUN: nic nie utworzono."
-else
-  echo "GOTOWE. Git kopii: $(git -C "$KOPIA" status --porcelain | wc -l | tr -d ' ') zmian (oczekiwane 0), gałąź $GALAZ."
-  echo "Otwórz $KOPIA w osobnej sesji desktop (efort medium) i uruchom: /dev-autopilot-wf docs/active/smoke-autopilot"
+  exit 0
 fi
+if ! (cd "$KOPIA" && pnpm typecheck && pnpm test) > "$LOG_BRAMEK" 2>&1; then
+  echo "BAZA CZERWONA: bramki kopii padają PRZED runem — run zatrzymałby się w domknięciu execute." >&2
+  grep -E "FAIL |error TS|Tests .*failed|ERR_PNPM" "$LOG_BRAMEK" | head -20 >&2 || true
+  echo "Napraw zastane błędy w kopii osobnym commitem (oryginał nietknięty) i sprawdź ponownie: (cd $KOPIA && pnpm typecheck && pnpm test)" >&2
+  exit 7
+fi
+echo "GOTOWE. Git kopii: $(git -C "$KOPIA" status --porcelain | wc -l | tr -d ' ') zmian (oczekiwane 0), gałąź $GALAZ, bramki zielone."
+echo "Otwórz $KOPIA w osobnej sesji desktop (efort medium) i uruchom: /dev-autopilot-wf docs/active/smoke-autopilot"
