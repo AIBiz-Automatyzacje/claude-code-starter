@@ -1075,7 +1075,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   usunięte za zgodą. Otwarte u operatora: oryginał oferty-online czerwony na main (6a pkt 42 g); token Airtable.
 - **P2 ZROBIONA (2026-10-01; 6a pkt 45):** profil pluginów per projekt, doctor (`settings.local.json`, agent-browser z PATH), README „Instalacja” i „Wymagania”,
   CI `maszyneria.yml` (sam pnpm); merge do main `5d28922`. **Następny krok: „P3 — KONTEKST I EFORT AGENTÓW (sesja 1/2)” niżej** (nowa sesja — N2).
-  Test na czystym koncie zrobiony (6a pkt 45 f — pluginy nie instalują się same; kolejność kluczy poprawiona, 0730d04). Otwarte u operatora: instalacja figmy w szablonie per projekt przed P3 (nazwy narzędzi Figma z instalacji — H08–H12);
+  Test na czystym koncie zrobiony (6a pkt 45 f — pluginy nie instalują się same; kolejność kluczy poprawiona, 0730d04). Figma zainstalowana w szablonie per projekt 2026-10-01 (2.2.120, scope project; drzewo czyste, doctor 0 uwag; narzędzia `mcp__plugin_figma_figma__*` widoczne w sesji). Otwarte u operatora:
   decyzja PA-25 przy P3; oryginał oferty-online czerwony na main (6a pkt 42 g); push szablonu; token Airtable.
 
 **P3 — KONTEKST I EFORT AGENTÓW, sesja 1/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
@@ -1097,7 +1097,7 @@ Do zrobienia w sesji 1 (gałąź popr/P3-agenci z main; test → kod → pnpm ty
 1. klasy-rol.test.mjs (najpierw czerwony) w części plików: każdy plik agenta pipeline'u ma tools:; mcp__ tylko w wariantach z Figmą; mechaniczni mają omitClaudeMd.
 2. 4 pliki klas (mechaniczny-haiku, orkiestracyjny-opus, sceptyk, naprawiacz) + correctness-reviewer.md i test-coverage-reviewer.md (mandat 1–2 zdania).
 3. tools: w 8 plikach ról i 6 badaczach (bez Edit/Write; łaty H07, H14, H18, H25; PA-35); buildery UI/fullstack: H08–H12, nazwy narzędzi Figma z instalacji
-   pluginu (wymaga figmy zainstalowanej w szablonie per projekt — mój krok przed sesją), wariant pliku z Figmą.
+   pluginu (figma 2.2.120 zainstalowana w szablonie per projekt 2026-10-01), wariant pliku z Figmą.
 4. PA-25 — decyzja do mnie z rekomendacją (plan: figma:figma-design-to-code z pluginu, lokalna kopia i zdanie README out).
 5. Kontrola prompt-auditu na dodanych liniach .md (0 nowych trafień) i skrypty pa_*.py dla plików klas ról w obie strony (PLAN-POPRAWY §1).
 Po sesji: HANDOFF (§2, 6a, §8 → instrukcja P3 sesja 2/2), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
