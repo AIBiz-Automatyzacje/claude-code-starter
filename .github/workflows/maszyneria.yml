@@ -1,0 +1,26 @@
+# Bramka zmian maszynerii szablonu (PLAN-POPRAWY P2): testy, typecheck i lint skryptów oraz workflowów z .claude/.
+# Bez `claude plugin validate --strict` i `claude plugin eval`: repo nie jest pluginem (brak .claude-plugin/),
+# validate przechodzi wtedy bez sprawdzenia czegokolwiek, a eval wymaga zestawu evals/ i klucza API.
+name: maszyneria
+
+on:
+  push:
+    branches: [main, 'popr/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  bramka:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck && pnpm test && pnpm lint
