@@ -1,0 +1,108 @@
+Smoke: wf_8936d61f-1cb (projekt _smoke-P1-oferty-online) vs referencja wf_588f7b18-d71 (projekt _smoke-P0-oferty-online)
+  metryka                            referencja             run                    Δ
+== 1. Run
+  status                             OK                     OK                     
+  powód STOP                         —                      —                      
+  fazy ukończone / zadania           1/1                    1/1                    
+  walidacja końcowa                  PASS                   PASS                   
+  szablon zgodny                     —                      True                   ≠
+  smokeStatus (harness)              plik                   plik                   
+  koszt [jedn.]                      3.92 M                 3.77 M                 -4%
+  agentów                            29                     28                     -3%
+  tur                                146                    139                    -5%
+  czas [min]                         13                     13                     +0%
+
+== 2. Fazy: gate, review, fix
+ faza 1
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    1                      2                      +100%
+  potwierdzone p3                    3                      2                      -33%
+  review znalezione                  5                      5                      +0%
+  review poDedupSem                  4                      4                      +0%
+  review weryfikowane                1                      2                      +100%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               ['performance', 'e2e'] ['performance', 'e2e'] 
+  fix naprawione                     4                      4                      +0%
+  kontrola fixa: regresje            0                      0                      
+  fix dotknął testów (run)           ['packages/smoke-autopilot/src/smoke-autopilot.test.ts']
+  koszt fazy                         2.45 M                 2.62 M                 +7%
+    etap execute                     0.50 M                 0.46 M                 -8%
+    etap fix                         0.44 M                 0.57 M                 +29%
+    etap mechanika_review            0.39 M                 0.39 M                 +1%
+    etap orkiestracja                0.25 M                 0.27 M                 +7%
+    etap review                      0.77 M                 0.80 M                 +4%
+    etap sceptycy                    0.11 M                 0.14 M                 +26%
+
+== 3. Agenci per rola: liczba, koszt
+  bootstrap                          1 × 0.11 M             1 × 0.11 M             
+    Δ koszt                          -1%
+  build                              1 × 0.15 M             1 × 0.14 M             ≠
+    Δ koszt                          -7%
+  complete                           1 × 0.18 M             1 × 0.17 M             ≠
+    Δ koszt                          -4%
+  compound                           1 × 0.26 M             1 × 0.13 M             ≠
+    Δ koszt                          -49%
+  compound-refresh                   1 × 0.15 M             —                      ≠
+  dedup:semantyczny                  1 × 0.09 M             1 × 0.08 M             ≠
+    Δ koszt                          -12%
+  domkniecie                         1 × 0.19 M             1 × 0.17 M             ≠
+    Δ koszt                          -11%
+  e2e:precheck                       1 × 0.10 M             1 × 0.08 M             ≠
+    Δ koszt                          -22%
+  fix                                1 × 0.18 M             1 × 0.24 M             ≠
+    Δ koszt                          +37%
+  fix:kontrola                       1 × 0.10 M             1 × 0.11 M             ≠
+    Δ koszt                          +3%
+  fix:pre-skan                       1 × 0.09 M             1 × 0.15 M             ≠
+    Δ koszt                          +65%
+  kontekst:diff                      1 × 0.13 M             1 × 0.13 M             
+    Δ koszt                          -2%
+  planner                            1 × 0.15 M             1 × 0.14 M             ≠
+    Δ koszt                          -6%
+  review:code-quality                1 × 0.17 M             1 × 0.15 M             ≠
+    Δ koszt                          -10%
+  review:correctness                 1 × 0.16 M             1 × 0.17 M             ≠
+    Δ koszt                          +2%
+  review:security                    1 × 0.11 M             1 × 0.14 M             ≠
+    Δ koszt                          +28%
+  review:spec-compliance             1 × 0.13 M             1 × 0.15 M             ≠
+    Δ koszt                          +20%
+  review:test-coverage               1 × 0.19 M             1 × 0.18 M             ≠
+    Δ koszt                          -6%
+  scribe                             1 × 0.17 M             1 × 0.19 M             ≠
+    Δ koszt                          +9%
+  smoke-operatora                    1 × 0.18 M             1 × 0.18 M             
+    Δ koszt                          +2%
+  stan:zapis                         5 × 0.41 M             5 × 0.43 M             ≠
+    Δ koszt                          +4%
+  verify-batch                       1 × 0.11 M             1 × 0.14 M             ≠
+    Δ koszt                          +26%
+  walidacja-koncowa                  1 × 0.20 M             1 × 0.18 M             ≠
+    Δ koszt                          -9%
+  warmup:vitest                      1 × 0.13 M             1 × 0.13 M             
+    Δ koszt                          +0%
+  zwin-do-poprawy                    1 × 0.07 M             1 × 0.07 M             
+    Δ koszt                          +2%
+
+== 4. Model / efort (transkrypt)
+  haiku-4-5-20251001/None            9                      9                      +0%
+  opus-5-5/low                       2                      2                      +0%
+  opus-5-5/medium                    18                     17                     -6%
+
+== 5. ctx_start per klasa/model: n, p50 [k], max [k]
+  builder/opus-5-5                   (1, 84, 84)            (1, 83, 83)            ≠
+    Δ p50                            -1%
+  mechaniczny/haiku-4-5-20251001     (9, 52, 53)            (9, 52, 53)            
+    Δ p50                            +0%
+  mechaniczny/opus-5-5               (1, 74, 74)            (1, 73, 73)            ≠
+    Δ p50                            -1%
+  naprawiacz/opus-5-5                (1, 76, 76)            (1, 76, 76)            
+    Δ p50                            +0%
+  orkiestracyjny/opus-5-5            (11, 72, 77)           (10, 72, 77)           ≠
+    Δ p50                            +0%
+  reviewer/opus-5-5                  (5, 76, 77)            (5, 75, 77)            ≠
+    Δ p50                            -1%
+  sceptyk/opus-5-5                   (1, 73, 73)            (1, 72, 72)            ≠
+    Δ p50                            -1%

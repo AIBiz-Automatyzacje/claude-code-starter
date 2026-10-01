@@ -40,7 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
-| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. NASTĘPNY KROK: P1 — §8 „P1 — PORZĄDKI I USUNIĘCIA”** (nowa sesja). Stan paczek: P0 ☑ P1 ☐ P2 ☐ P3 ☐ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. NASTĘPNY KROK: P2 — §8 „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 1/2)”** (nowa sesja). Stan paczek: P0 ☑ P1 ☑ P2 ☐ P3 ☐ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -664,6 +664,31 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     Obie kopie `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P0-oferty-online` (przed i po bramkach bazowych) USUNIĘTE 2026-10-01 za zgodą operatora;
     transkrypty zostają w `~/.claude/projects/` (źródło rekordów telemetrii).
     Następny krok: §8 „P1 — PORZĄDKI I USUNIĘCIA” (nowa sesja).
+43. **P1 — PORZĄDKI I USUNIĘCIA ZROBIONE, smoke zielony, merge `--ff-only` do main `5a4f593` (2026-10-01, sesja 3eb1bc37).** Gałąź `popr/P1-porzadki`,
+    7 commitów (bf6ed1d…5a4f593), testy szablonu 214/214 (210 − 1 test składni usuniętego workflowu + 1 sync + 4 hook), typecheck i lint zielone.
+    (a) **Wklejenie trybu ręcznego** (`bf6ed1d`): planner — wycinek `## Granice` planu technicznego → blok „Czego zadanie nie obejmuje:” w prompcie IU (builder
+    zwraca `blocked`, gdy jednostka wymaga takiej pracy), szablon bloku designerskiego (SPEC > DESIGN > ux-ui, Figma `get_design_context`), agentType dla IU bez
+    `Delegate to:` (enum IU_PLAN nie pozwala na inline); domknięcie — brakujący test z checkboxa `Test:` dopisywany przed commitem; scribe — kategorie
+    CLI/Grep/E2E/Manual/Niejasne z sygnałami, format sekcji bookkeepingu, wpis review do `## Dziennik` (pkt 2b), P3 z bookkeepingu w licznikach.
+    Kontrola wzorców prompt-auditu na DODANYCH liniach (SYGNALY z `pa_inwentarz.py`): 0 trafień, w usuniętych 4.
+    (b) **Usunięcie** (`0eb0ebb`): 9 skilli + `freshness-audit-wf.js`; `odwolania.test.mjs` czerwony przy usunięciu przed wklejeniem (2 martwe ścieżki SKILL.md),
+    zielony po. README (przepływ, listy, scenariusze ręczne 2–4 usunięte), `learnings-researcher.md:256`, ponad plan: martwe `/dev-docs-execute` w `dev-docs`
+    (handoff ręczny), `dev-brainstorm:300`, `dev-plan:865`, komentarz `dev-docs-review-wf.js`.
+    (c) **Test sync-template** (`23d1e13`): usunięty skill znika z projektu razem z katalogiem, lokalny zostaje; mutacja (bez `rm`) → czerwony. W kopii smoke
+    prawdziwy sync zdjął 20 plików usuniętych skilli, lokalny `excalidraw-diagram` został. (d) `.DS_Store` z indeksu (`e334193`; wpis w `.gitignore` już był).
+    (e) **Łaty** (każda z pojedynczym `--check` tuż przed `apply`, wszystkie OK): H16 H17 H20 H24 (`9cf3e78`), H26 H27 + test hooka 2/4 → 4/4 (`88ef016`;
+    nagłówek hooka dopasowany do kodu), H28 H54 H55 H56 (`5a4f593`).
+    (f) **Smoke `wf_8936d61f-1cb`** (`dane/smoke-P1.txt`): OK, 1 faza, gate CZYSTE, 28 agentów, 3,77 M (−4% vs R0), 13 min, walidacja PASS, szablon zgodny;
+    celowy defekt złapany (P2 test-coverage `typeof`), fix 4/4; efort 17× medium / 2× low, haiku 9; ctx_start bez zmian (±1%). Brak compound-refresh: compound
+    nic nie zapisał (R0 zapisał regułę o dacie z commita przygotowania kopii — tym razem nie, choć commit był). Raport scribe ma nową sekcję bookkeepingu i wpis
+    w Dzienniku — wklejka działa. Kopia: kod 7 jak w P0 (11 testów `opublikuj-oferte`, data 30.09.2026) → commit w kopii `54d6730` (data → 2099; test „30 dni od
+    publikacji” liczy od stałego NOW i zostaje przy 24.09.2026).
+    (g) **Dwa ślady z podsumowania sesji runu — nie defekty:** `kontrolaFixa: null` w raporcie fazy jest z założenia (`dev-autopilot-wf.js:1432` — pole
+    wypełnia się tylko przy turze poprawkowej po kontroli diffu; tak samo w R0); „4 agenty z pustym wynikiem” to puste listy (`findings: []` ×3, `trafienia: []`),
+    żaden `null` w journalu (R0: 2 puste listy reviewerów). Obserwacja do P7/P8: `null` nie odróżnia „kontrola nic nie znalazła” od „kontrola nie ruszyła”.
+    (h) **Poza P1, zostawione właścicielom:** rok 2026 na sztywno w 6 skillach (`dev-docs`, `dev-plan`, `dev-compound`, `dev-docs-complete`, `dev-compound-refresh`,
+    `dev-prep` — ten ostatni H38 w P2). Kopia `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P1-oferty-online` czeka na decyzję operatora o usunięciu.
+    Następny krok: §8 „P2 — INSTALACJA PER PROJEKT I DOCTOR (sesja 1/2)” (nowa sesja).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -731,6 +756,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   przez gita → zacommituj `.claude/` szablonu przed skryptem. Na macOS nie ma `timeout` w powłoce. Odczyt: `smoke_odczyt.py <wf_id>` (domyślnie vs R0 `wf_588f7b18-d71`);
   id runu = najnowszy `~/.claude/projects/*<slug kopii>*/*/workflows/wf_*.json`. Rekord `effort` agenta jest już w telemetrii (z transkryptu) — skrypt go nie liczy sam.
   Hunk z prompt-auditu: `python3 skrypty/pa_hunk.py H<nn> > /tmp/h.diff && git apply --check /tmp/h.diff && git apply /tmp/h.diff` (z katalogu repo).
+- P1 (2026-10-01): „0 nowych trafień” prompt-auditu sprawdzaj na DODANYCH liniach diffu (import `SYGNALY`/`RX` z `pa_inwentarz.py`, linie `+` z `git diff -U0`,
+  w `.js` bez komentarzy) — samo `pa_inwentarz.py` nadpisuje `dane/pa-sygnaly.*` i liczy całe pliki. Regex łapie m.in. `scope`, `poza zakres`, `4.5`, `w runie`,
+  daty, `D1`–`D6`, `Krok N` na początku linii, wersaliki NIGDY/TYLKO/MUSI. Naprawa fikstury w kopii: zamieniaj datę WYGASANIA, nie każdą datę w pliku —
+  test „30 dni od publikacji” liczy od stałego NOW. `tsc` w szablonie wymaga JSDoc `@param` w nowych testach `.mjs` (inaczej TS7006).
+  Ślady „null”/„pusty wynik” z podsumowania sesji runu sprawdzaj w `subagents/workflows/<wf>/journal.jsonl` (wiersze `type: result`) i porównuj z R0.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -966,8 +996,37 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   (nowa sesja). Każda kolejna paczka: instrukcja dopisywana tutaj na końcu poprzedniej sesji (wzór: instrukcja P0). Otwarte u operatora: token Airtable.
 - **P0 ZROBIONA (2026-10-01; 6a pkt 42):** test odwołań, skrypt kopii z bramkami bazowymi, `pa_hunk.py`, `smoke_odczyt.py`; smoke R0 `wf_588f7b18-d71` zielony
   (3,92 M, 29 agentów, 13 min), merge do main. **Następny krok: „P1 — PORZĄDKI I USUNIĘCIA” niżej** (nowa sesja — N2). Kopia smoke usunięta. Otwarte u operatora: oryginał oferty-online czerwony na main od 2026-10-01 (6a pkt 42 g); token Airtable.
+- **P1 ZROBIONA (2026-10-01; 6a pkt 43):** tryb ręczny wklejony do promptów, 9 skilli + freshness-audit-wf usunięte, test usunięć w sync-template, `.DS_Store`,
+  10 łat prompt-auditu; smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **Następny krok: „P2 — INSTALACJA PER PROJEKT I DOCTOR
+  (sesja 1/2)” niżej** (nowa sesja — N2). Otwarte u operatora: zgoda na usunięcie kopii `_smoke-P1-oferty-online`; oryginał oferty-online czerwony na main
+  (6a pkt 42 g); token Airtable.
 
-**P1 — PORZĄDKI I USUNIĘCIA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**P2 — INSTALACJA PER PROJEKT I DOCTOR, sesja 1/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P2 — instalacja per projekt i doctor (PLAN-POPRAWY.md §3 P2), sesja 1 z 2.
+P0 i P1 zrobione (HANDOFF 6a pkt 42, 43). P1: 9 skilli usunięte, tryb ręczny w promptach, smoke wf_8936d61f-1cb zielony.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): PLAN-POPRAWY.md §1 (zasady wspólne), §3 P2, §4 (wiersze settings.json, README,
+sync-template.test.mjs, dev-prep, doctor); HANDOFF 6a pkt 37 (d), 38 (e2), 43 i §7 (dwa ostatnie punkty: P0, P1); KROK0-DECYZJE.md pkt 8 (profil settings.json);
+dane/pa-hunki-lata-tresc.txt (H38). Kod: .claude/settings.json, .claude/skills/sync-template/ (skrypt, SKILL.md, testy), .claude/skills/dev-prep/SKILL.md,
+.claude/scripts/telemetria/ (zbierz.mjs --skan), README.md, package.json.
+
+Do zrobienia w sesji 1 (gałąź popr/P2-doctor z main; test → kod → pnpm typecheck → pnpm test → pnpm lint → commit, krok po kroku):
+1. .claude/scripts/doctor/doctor.sh + __tests__: lista narzędzi wyliczana z projektu (git, gh + auth, node + menedżer z lockfile, jq, supabase CLI przy supabase/,
+   agent-browser przy checkboxach [E2E], coolify przy konfiguracji Coolify, docker przy Dockerfile), pluginy projektu, Dynamic Workflows, świeżość telemetrii;
+   tabela brak / wersja + komenda instalacji; exit ≠ 0 przy braku obowiązkowego. Testy na katalogach-fixture z podmienionym PATH — najpierw czerwony na
+   podłożonym braku, potem zielony.
+2. Wywołanie doctor w sync-template (pierwsza instalacja) + komunikat końcowy N2 („po zmianie .claude/ otwórz nową sesję przed autopilotem”) z testem;
+   dev-prep: krok doctor + łata H38 (pa_hunk.py, pojedyncze git apply --check przed).
+3. Doctor w skrypcie kopii z P0 (przygotuj-kopie.sh) — przejście na kopii oferty-online (bez runu autopilota; smoke w P2 = nie).
+Sesja 2 (instrukcja dopisana na końcu sesji 1): profil settings.json, README „Instalacja”/„Wymagania”, bramka CI, test na czystym koncie (mój krok).
+Po sesji: HANDOFF (§2, 6a, §8 → instrukcja sesji 2), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**P1 — PORZĄDKI I USUNIĘCIA (WYKONANA 2026-10-01 — 6a pkt 43; zostawiona jako wzór):**
 
 ```
 Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P1 — porządki i usunięcia (PLAN-POPRAWY.md §3 P1).
