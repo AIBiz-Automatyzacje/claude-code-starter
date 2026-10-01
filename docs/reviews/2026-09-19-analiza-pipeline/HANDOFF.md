@@ -744,7 +744,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     README krok 3: „marketplace'y dodają się same, pluginy nie — wymagane komendy”. Ubocznie: czyste konto w terminalu ładuje plugin claude.ai
     `cowork-plugin-management@synced` („Synced from claude.ai”) — w terminalu sufiks `@synced`, w aplikacji `@inline`; README opisuje tylko
     zweryfikowany wyłącznik aplikacji (`@inline: false`) — wyłącznik terminalowy do sprawdzenia (P16 przegląd README albo przy okazji).
-    Doctor czyta pluginy z `$HOME/.claude`, nie z `CLAUDE_CONFIG_DIR`. Katalogi testowe czekają na zgodę operatora na usunięcie.
+    Doctor czyta pluginy z `$HOME/.claude`, nie z `CLAUDE_CONFIG_DIR`. Katalogi testowe USUNIĘTE 2026-10-01 za zgodą operatora.
     Otwarte u operatora: push szablonu do GitHuba; token Airtable.
     Następny krok: §8 „P3 — KONTEKST I EFORT AGENTÓW (sesja 1/2)”.
 
