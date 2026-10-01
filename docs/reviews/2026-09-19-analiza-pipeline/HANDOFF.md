@@ -661,7 +661,8 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (compound +45% vs It. 1) → P10 (zakres compoundu = commity runu, nie gałęzi od main); walidacja końcowa: równoległe `pnpm -r test` przerwane, dashboard dokończony osobno,
     strażnik czasu `markup-scan.test.ts` 228 ms > 200 ms pod obciążeniem (test oferty) → P6 (bramki domknięcia, klasyfikacja porażek zastanych).
     (g) **Do operatora, poza szablonem:** oryginał oferty-online jest od 2026-10-01 czerwony na main (11 testów `opublikuj-oferte`), a 4 testy dashboardu zależą od `.env`.
-    Kopia `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P0-oferty-online` czeka na zgodę na usunięcie (pierwsza kopia P0 usunięta za zgodą 2026-10-01).
+    Obie kopie `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P0-oferty-online` (przed i po bramkach bazowych) USUNIĘTE 2026-10-01 za zgodą operatora;
+    transkrypty zostają w `~/.claude/projects/` (źródło rekordów telemetrii).
     Następny krok: §8 „P1 — PORZĄDKI I USUNIĘCIA” (nowa sesja).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -964,8 +965,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
 - **PLAN POPRAWY ZAAKCEPTOWANY (2026-09-30; 6a pkt 41):** 17 paczek, decyzje 1–3 wg rekomendacji. **Następny krok: „P0 — SIATKA BEZPIECZEŃSTWA” niżej**
   (nowa sesja). Każda kolejna paczka: instrukcja dopisywana tutaj na końcu poprzedniej sesji (wzór: instrukcja P0). Otwarte u operatora: token Airtable.
 - **P0 ZROBIONA (2026-10-01; 6a pkt 42):** test odwołań, skrypt kopii z bramkami bazowymi, `pa_hunk.py`, `smoke_odczyt.py`; smoke R0 `wf_588f7b18-d71` zielony
-  (3,92 M, 29 agentów, 13 min), merge do main. **Następny krok: „P1 — PORZĄDKI I USUNIĘCIA” niżej** (nowa sesja — N2). Otwarte u operatora: zgoda na usunięcie
-  kopii `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P0-oferty-online`; oryginał oferty-online czerwony na main od 2026-10-01 (6a pkt 42 g); token Airtable.
+  (3,92 M, 29 agentów, 13 min), merge do main. **Następny krok: „P1 — PORZĄDKI I USUNIĘCIA” niżej** (nowa sesja — N2). Kopia smoke usunięta. Otwarte u operatora: oryginał oferty-online czerwony na main od 2026-10-01 (6a pkt 42 g); token Airtable.
 
 **P1 — PORZĄDKI I USUNIĘCIA (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
