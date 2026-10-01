@@ -100,7 +100,7 @@ def zbierz_pliki():
             pliki.append((f'.claude/workflows/{w}', 'workflow', 'POMINIETY (6a pkt 20)' if w in POMINIETE_WF else 'w zakresie',
                           'stringi promptow agent() + orkiestrator'))
     pliki.append(('.claude/rules/coding-rules.md', 'regula', 'w zakresie - TYLKO RAPORT (regula operatora)', 'eager: sesja glowna + subagenci z CLAUDE.md'))
-    for h in sorted(os.listdir(f'{C}/hooks')):
+    for h in sorted(x for x in os.listdir(f'{C}/hooks') if os.path.isfile(f'{C}/hooks/{x}')):
         pliki.append((f'.claude/hooks/{h}', 'hook', 'w zakresie', 'hook Stop -> komunikat do modelu (exit 2 / stderr)'))
     for root, _, fs in os.walk(f'{C}/templates'):
         for f in sorted(fs):

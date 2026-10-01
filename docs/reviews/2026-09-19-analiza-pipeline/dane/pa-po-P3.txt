@@ -1,6 +1,6 @@
 Kontrola prompt-auditu po P3 sesja 1/2 (2026-10-01, gałąź popr/P3-agenci, HEAD 6a8362d).
 Skrypty pa_kontrola.py i pa_inwentarz.py uruchomione na KOPII w scratchpadzie (piszą do dane/ — baza pa-kontrola.txt / pa-sygnaly.* zostaje).
-pa_inwentarz.py na kopii z jedną poprawką: pomija podkatalogi .claude/hooks/ (na repo wywraca się na .claude/hooks/__tests__ — IsADirectoryError).
+pa_inwentarz.py pomija podkatalogi .claude/hooks/ (wywracał się na .claude/hooks/__tests__ — IsADirectoryError); poprawka w repo za zgodą operatora 2026-10-01.
 
 == (A) pa_kontrola.py — raport -> źródła (kierunek: ustalenie -> plik)
 (1) raport -> zrodla: cytaty OK 28, bledne 10; numery linii OK 80, poza plikiem 0

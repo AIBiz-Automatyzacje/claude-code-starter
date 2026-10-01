@@ -776,7 +776,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (f) **Prompt-audit (`dane/pa-po-P3.txt`, `dane/pa-sygnaly-po-P3.{txt,json}`):** dodane linie `.md` — 0 nowych trafień w nowej treści (trafienia tylko w kopiach
     treści wariantów `-figma` i w linii `model: haiku`); `pa_kontrola.py` — 10 cytatów zniknęło = PA-03/04/09/18/20 (P1) + PA-19 (P3), żaden z otwartych;
     `pa_inwentarz.py` 653 → 584 trafień. Skrypty uruchomione na kopii (piszą do `dane/`); `pa_inwentarz.py` na repo wywraca się na `.claude/hooks/__tests__`
-    (katalog) — poprawka na kopii (pomija podkatalogi), plik w repo NIEZMIENIONY.
+    (katalog) — poprawka (pomija podkatalogi) najpierw na kopii, potem w repo za zgodą operatora.
     (g) **Ustalenia dla sesji 2:** frontmatter agenta obsługuje `effort:` (binarka 2.1.286, lista pól: name, description, prompt, tools, disallowedTools, model,
     effort, permissionMode, mcpServers, hooks, maxTurns, skills, initialPrompt, memory, background, omitClaudeMd, isolation) — efort klasy może iść do pliku
     zamiast TIERY; claude-code-guide (docs sub-agents): `Skill` w `tools:` = ładowanie dowolnego skilla na żądanie, bez niego agent nie ma narzędzia Skill; `skills:` tylko preładowuje treść; pierwszeństwo `effort:` pliku vs opcji `effort` w `agent()` NIEUDOKUMENTOWANE → sprawdzić w smoke'u (efort z transkryptu). **Mapa rola → klasa (subagent, 43 wywołania `agent(`, wszystkie mieszczą się w klasach poza trzema problemami):**
@@ -878,7 +878,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   krótkiego klucza w Pythonie `bytes.find`, nie `grep -a -o '.\{2500\}…'` — ten przekracza 2 min). `tools:` w pliku = lista po przecinku; nazwy MCP
   bierz z listy narzędzi serwera w sesji (ToolSearch / lista deferred), nie z `ideToolTitles` w `.mcp.json` pluginu (niepełne: brak `download_assets`).
   `pa_kontrola.py` i `pa_inwentarz.py` piszą do `dane/` — uruchamiaj na kopii skryptów w scratchpadzie (`skrypty/` + PROMPT-AUDIT*.md + `dane/pa-proponowany.diff`),
-  wynik zapisuj obok bazy (`*-po-P3.*`). `pa_inwentarz.py` na repo wywraca się na `.claude/hooks/__tests__` (katalog) — na kopii filtr `os.path.isfile`.
+  wynik zapisuj obok bazy (`*-po-P3.*`). `pa_inwentarz.py` pomija podkatalogi `.claude/hooks/` (filtr `os.path.isfile`, poprawione 2026-10-01).
   Przy kontroli dodanych linii pomijaj linie konfiguracji frontmattera (`model: haiku` łapie wzorzec 1d-modele-przypiete). Nowe pliki agentów pojawiają się
   w liście agentów sesji głównej od razu — opis klasy mówi „z sesji nie używaj”.
 
@@ -1134,7 +1134,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   `tools:` w plikach ról i 6 badaczach, `correctness-reviewer.md` + `test-coverage-reviewer.md`, warianty `feature-builder-{ui,fullstack}-figma.md`, PA-25
   (skill `figma:figma-design-to-code` z pluginu, lokalna kopia usunięta), test `klasy-rol.test.mjs`; 5 commitów na `popr/P3-agenci` (NIEZMERGOWANA).
   Workflowy bez zmian. **Następny krok: „P3 — KONTEKST I EFORT AGENTÓW (sesja 2/2)” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu;
-  token Airtable; poprawka `pa_inwentarz.py` (pomija podkatalogi hooks) — do decyzji, plik analizy.
+  token Airtable.
 
 **P3 — KONTEKST I EFORT AGENTÓW, sesja 2/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
