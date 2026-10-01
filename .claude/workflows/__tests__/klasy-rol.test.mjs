@@ -24,6 +24,14 @@ const KLASY_MECHANICZNE = ['klasa-mechaniczny', 'klasa-mechaniczny-odczyt']
 const BADACZE = ['best-practices-researcher', 'framework-docs-researcher', 'learnings-researcher', 'repo-research-analyst',
   'spec-flow-analyzer', 'web-research-specialist']
 const NARZEDZIA_ZAPISU = ['Edit', 'Write']
+// Poza pipeline'em: nie wola ich zaden workflow ani skill, usuwane w P11 (PANEL-WYNIK §4a E) — bez allowlisty.
+const POZA_PIPELINE = ['kieran-typescript-reviewer', 'code-simplicity-reviewer']
+const WBUDOWANE = ['Read', 'Grep', 'Glob', 'Bash', 'Edit', 'Write', 'WebSearch', 'WebFetch', 'Skill']
+// Narzedzia serwera MCP pluginu figma 2.2.120 (`.mcp.json` pluginu, ideToolTitles) — plugin wymagany per projekt od P2.
+const FIGMA_MCP = ['add_code_connect_map', 'create_new_file', 'generate_diagram', 'generate_figma_design', 'get_code_connect_map',
+  'get_code_connect_suggestions', 'get_context_for_code_connect', 'get_design_context', 'get_figjam', 'get_libraries', 'get_metadata',
+  'get_screenshot', 'get_variable_defs', 'search_design_system', 'send_code_connect_mappings', 'upload_assets', 'use_figma', 'whoami']
+  .map((n) => `mcp__plugin_figma_figma__${n}`)
 
 /**
  * Pola frontmattera jako mapa klucz → surowa wartosc (jedna linia).
@@ -56,6 +64,24 @@ function agenci(korzen) {
  */
 function narzedzia(fm) {
   return (fm?.get('tools') ?? '').split(',').map((n) => n.trim()).filter(Boolean)
+}
+
+/**
+ * Kazdy agent pipeline'u ma `tools:`, a kazda pozycja to znane narzedzie (literowka = agent bez narzedzia, bez bledu).
+ * @param {string} korzen
+ * @returns {string[]}
+ */
+function naruszeniaTools(korzen) {
+  const znane = new Set([...WBUDOWANE, ...FIGMA_MCP])
+  /** @type {string[]} */
+  const wyniki = []
+  for (const [nazwa, fm] of agenci(korzen)) {
+    if (POZA_PIPELINE.includes(nazwa)) continue
+    const lista = narzedzia(fm)
+    if (!lista.length) wyniki.push(`${nazwa}: brak tools:`)
+    for (const n of lista.filter((x) => !znane.has(x))) wyniki.push(`${nazwa}: nieznane narzedzie ${n}`)
+  }
+  return wyniki
 }
 
 /**
@@ -150,4 +176,17 @@ test('badacze: podlozony brak tools:, inna lista i Write sa zglaszane', () => {
 
 test('badacze: repo szablonu ma jedna allowliste bez Edit/Write w szesciu plikach', () => {
   assert.deepEqual(naruszeniaBadaczy(REPO), [])
+})
+
+test('tools: podlozony agent bez tools: i literowka w nazwie narzedzia sa zglaszane, plik spoza pipeline\'u nie', () => {
+  const wynik = naPodlozonym({
+    [`${AGENCI}/bez-tools.md`]: '---\nname: bez-tools\n---\n',
+    [`${AGENCI}/literowka.md`]: '---\nname: literowka\ntools: Read, Websearch, mcp__plugin_figma_figma__get_screenshot\n---\n',
+    [`${AGENCI}/kieran-typescript-reviewer.md`]: '---\nname: kieran-typescript-reviewer\n---\n',
+  }, naruszeniaTools)
+  assert.deepEqual(wynik.sort(), ['bez-tools: brak tools:', 'literowka: nieznane narzedzie Websearch'])
+})
+
+test('tools: kazdy agent pipeline\'u w repo szablonu ma allowliste ze znanych narzedzi', () => {
+  assert.deepEqual(naruszeniaTools(REPO), [])
 })

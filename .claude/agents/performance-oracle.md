@@ -1,6 +1,7 @@
 ---
 name: performance-oracle
 description: "Analyzes code for performance bottlenecks, algorithmic complexity, database queries, memory usage, and scalability. Use after implementing features or when performance concerns arise."
+tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 

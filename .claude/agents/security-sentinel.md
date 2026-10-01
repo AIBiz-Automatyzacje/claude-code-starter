@@ -1,6 +1,7 @@
 ---
 name: security-sentinel
 description: "Performs security audits for vulnerabilities, input validation, auth/authz, hardcoded secrets, and OWASP compliance. Use when reviewing code for security issues or before deployment."
+tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 

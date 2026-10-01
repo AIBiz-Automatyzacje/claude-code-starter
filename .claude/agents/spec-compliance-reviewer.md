@@ -1,6 +1,7 @@
 ---
 name: spec-compliance-reviewer
 description: "Sprawdza, czy implementacja fazy odpowiada wymaganiom i jednostkom implementacyjnym z planu — brakujące, częściowe, błędne i niezamówione zachowanie. Używaj PO implementacji, w review fazy. Do analizy specyfikacji PRZED implementacją użyj spec-flow-analyzer."
+tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 

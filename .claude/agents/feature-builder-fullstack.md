@@ -1,7 +1,8 @@
 ---
 name: feature-builder-fullstack
-description: "Implementuje feature dotykający równolegle UI i warstwy danych (formularze z auth, full-page features z fetchem, CRUD flow end-to-end). Wywoływany przez dev-docs-execute gdy Implementation Unit jest cross-layer i nie da się go rozsądnie podzielić na osobne UI + data IU."
+description: "Implementuje feature dotykający równolegle UI i warstwy danych (formularze z auth, full-page features z fetchem, CRUD flow end-to-end). Wywoływany przez dev-docs-execute-wf, gdy Implementation Unit jest cross-layer i nie da się go rozsądnie podzielić na osobne UI + data IU."
 skills: [tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration, figma:figma-use, figma-design-to-code]
+tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 ---
 

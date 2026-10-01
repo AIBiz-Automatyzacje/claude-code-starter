@@ -2,6 +2,7 @@
 name: feature-tester-e2e
 description: "Weryfikuje scenariusze E2E w przeglądarce przez agent-browser. Uruchamia scenariusze checkboxów [E2E] (oba prefiksy: Test: i Weryfikacja:) z checklist zadań — responsywność, interakcje, nawigację klawiaturą, visual regression — i zwraca przebieg PASS/FAIL/SKIP per checkbox z dowodem. Nie pisze seedów, nie modyfikuje pliku zadań. Jeśli zadanie ma figma_screens — robi side-by-side visual comparison z mockupami."
 skills: [agent-browser]
+tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 

@@ -1,7 +1,8 @@
 ---
 name: feature-builder-data
-description: "Implementuje warstwę danych (zapytania Supabase, RLS policies, migracje SQL, walidacja Zod, Edge Functions, autoryzacja). Wywoływany przez dev-docs-execute gdy Implementation Unit dotyka tylko warstwy danych (src/lib, src/hooks z data-fetching, supabase/migrations, supabase/functions)."
+description: "Implementuje warstwę danych (zapytania Supabase, RLS policies, migracje SQL, walidacja Zod, Edge Functions, autoryzacja). Wywoływany przez dev-docs-execute-wf, gdy Implementation Unit dotyka tylko warstwy danych (src/lib, src/hooks z data-fetching, supabase/migrations, supabase/functions)."
 skills: [supabase-dev-guidelines, security, sentry-integration]
+tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 ---
 
