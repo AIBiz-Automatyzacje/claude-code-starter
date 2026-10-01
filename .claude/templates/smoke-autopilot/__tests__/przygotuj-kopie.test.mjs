@@ -112,3 +112,21 @@ test('--env <plik>: atrapy zmiennych kopiowane jako .env kopii; brak pliku = bla
     rmSync(zrodlo, { recursive: true, force: true })
   }
 })
+
+// P2 (PLAN-POPRAWY): doctor kopii przed bazowymi bramkami — brak narzedzia (np. supabase CLI przy supabase/) ma wyjsc
+// przy przygotowaniu kopii, nie w runie; czerwony doctor = kod 8 i brak komendy runu.
+test('--dry-run: doctor kopii po commicie fixture i przed bazowymi bramkami', () => {
+  const zrodlo = projektZrodlowy({ workspace: true })
+  try {
+    const kopia = join(tmpdir(), `smoke-kopia-${process.pid}-e`)
+    const wynik = uruchom([zrodlo, kopia, '--dry-run'])
+    assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
+    const kroki = wynik.stdout.split('\n')
+    const commitFixture = kroki.findIndex((l) => l.includes('test(smoke): fixture'))
+    const doctor = kroki.findIndex((l) => l.includes(`bash ${kopia}/.claude/scripts/doctor/doctor.sh ${kopia}`))
+    const bramki = kroki.findIndex((l) => l.includes('bazowe bramki'))
+    assert.ok(commitFixture >= 0 && doctor > commitFixture && bramki > doctor, `kolejnosc fixture → doctor → bramki:\n${wynik.stdout}`)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+  }
+})

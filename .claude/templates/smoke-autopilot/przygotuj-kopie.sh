@@ -6,6 +6,7 @@
 # Po skrypcie git kopii jest czysty (dwa commity: sync szablonu, fixture), a bazowe bramki (`pnpm typecheck`, `pnpm test`)
 # zielone — inaczej skrypt kończy się kodem 7 i runu nie wolno odpalać (smoke P0: domknięcie execute uruchamia CAŁE
 # `pnpm test` projektu, więc zastany czerwony test zatrzymuje run niezależnie od pakietu fixture).
+# Przed bramkami doctor kopii (P2): brak obowiązkowego narzędzia = kod 8, runu też nie odpalać.
 #
 # Użycie:
 #   przygotuj-kopie.sh <projekt-źródłowy> <katalog-kopii> [--env <plik>] [--dry-run]
@@ -92,6 +93,14 @@ fi
 krok pnpm install --dir "$KOPIA" --silent
 krok git -C "$KOPIA" add -A
 krok git -C "$KOPIA" commit --quiet -m "test(smoke): fixture smoke-autopilot"
+
+# Doctor kopii (PLAN-POPRAWY P2): brak narzędzia, którego wymaga projekt (supabase CLI, agent-browser, gh…), wychodzi
+# teraz — w runie zatrzymałby fazę w połowie. Kod 8 = brak obowiązkowego, runu nie odpalać.
+if ! krok bash "$KOPIA/.claude/scripts/doctor/doctor.sh" "$KOPIA"; then
+  echo "BRAK NARZĘDZIA: doctor kopii zgłosił brak obowiązkowego (wiersze BRAK wyżej) — run zatrzymałby się w środku." >&2
+  echo "Zainstaluj (kolumna Instalacja) i sprawdź ponownie: bash $KOPIA/.claude/scripts/doctor/doctor.sh $KOPIA" >&2
+  exit 8
+fi
 
 # Log bramek w .git/ — nie brudzi drzewa kopii.
 LOG_BRAMEK="$KOPIA/.git/smoke-bramki.log"
