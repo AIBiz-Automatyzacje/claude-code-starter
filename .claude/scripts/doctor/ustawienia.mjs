@@ -25,7 +25,8 @@ const obiekt = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? /** @ty
 const normalna = (sciezka) => (existsSync(sciezka) ? realpathSync(sciezka) : sciezka).toLowerCase()
 
 /**
- * Pluginy wlaczone w `.claude/settings.json` projektu (bez `@inline` — to wylaczniki pluginow claude.ai) i ich instalacja:
+ * Pluginy wlaczone w `.claude/settings.json` projektu (bez `@inline` — to wylaczniki pluginow claude.ai; `false` w settings.local.json
+ * wygrywa jak w Claude Code) i ich instalacja:
  * zakres `user` albo `project`/`local` dla TEGO projektu (Claude Code zapisuje sciezke projektu przy instalacji).
  * @param {string} projekt
  * @param {string} dom
@@ -41,9 +42,12 @@ export function wierszePluginow(projekt, dom) {
   const zainstalowane = obiekt(czytajJson(join(dom, '.claude', 'plugins', 'installed_plugins.json')).plugins)
   const znaneMarketplace = czytajJson(join(dom, '.claude', 'plugins', 'known_marketplaces.json'))
   const dodatkoweMarketplace = obiekt(ustawienia.extraKnownMarketplaces)
+  const lokalne = obiekt(czytajJson(join(projekt, '.claude', 'settings.local.json')).enabledPlugins)
   const sciezkaProjektu = normalna(projekt)
 
   return wlaczone.map((id) => {
+    if (lokalne[id] === false) return /** @type {Wiersz} */ ([`plugin ${id}`, 'nie dotyczy', 'wyłączony w .claude/settings.local.json', '—'])
+
     const lista = /** @type {Instalacja[]} */ (Array.isArray(zainstalowane[id]) ? zainstalowane[id] : [])
     const trafienie = lista.find((i) => i.scope === 'user' || (typeof i.projectPath === 'string' && normalna(i.projectPath) === sciezkaProjektu))
     if (trafienie) return /** @type {Wiersz} */ ([`plugin ${id}`, 'OK', `${trafienie.version ?? '?'} (${trafienie.scope})`, '—'])

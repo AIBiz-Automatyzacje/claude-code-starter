@@ -3,7 +3,7 @@
 // na katalog z atrapami narzedzi + dowiazaniami do narzedzi systemowych, ktorych uzywa sam skrypt.
 
 import { execFileSync, spawnSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -210,6 +210,29 @@ test('plugin zainstalowany dla innego projektu sie nie liczy; nieznany marketpla
     'UWAGA', 'nie zainstalowany',
     'claude plugin marketplace add sawyerhood/dev-browser && claude plugin install dev-browser@dev-browser-marketplace --scope project',
   ])
+}))
+
+test('profil szablonu (.claude/settings.json): oba pluginy projektu z komenda instalacji per projekt, bez blokady', () => zSrodowiskiem((s) => {
+  plik(s.projekt, '.claude/settings.json', readFileSync(resolve(dirname(SKRYPT), '..', '..', 'settings.json'), 'utf8'))
+  const w = doctor(s)
+  assert.equal(w.status, 0, w.stdout)
+  assert.deepEqual(wiersz(w.stdout, 'plugin dev-browser@dev-browser-marketplace').slice(1), [
+    'UWAGA', 'nie zainstalowany',
+    'claude plugin marketplace add sawyerhood/dev-browser && claude plugin install dev-browser@dev-browser-marketplace --scope project',
+  ])
+  assert.deepEqual(wiersz(w.stdout, 'plugin figma@claude-plugins-official').slice(1),
+    ['UWAGA', 'nie zainstalowany', 'claude plugin install figma@claude-plugins-official --scope project'])
+}))
+
+test('plugin wylaczony w settings.local.json → nie dotyczy (lokalny plik wygrywa jak w Claude Code)', () => zSrodowiskiem((s) => {
+  json(s.projekt, '.claude/settings.json', {
+    enabledPlugins: { 'dev-browser@dev-browser-marketplace': true, 'figma@claude-plugins-official': true },
+  })
+  json(s.projekt, '.claude/settings.local.json', { enabledPlugins: { 'dev-browser@dev-browser-marketplace': false } })
+  const w = doctor(s)
+  assert.deepEqual(wiersz(w.stdout, 'plugin dev-browser@dev-browser-marketplace').slice(1, 3),
+    ['nie dotyczy', 'wyłączony w .claude/settings.local.json'])
+  assert.equal(wiersz(w.stdout, 'plugin figma@claude-plugins-official')[1], 'UWAGA')
 }))
 
 test('Dynamic Workflows: domyslnie wlaczone; enableWorkflows false w ustawieniach usera → BRAK; local wygrywa', () => zSrodowiskiem((s) => {
