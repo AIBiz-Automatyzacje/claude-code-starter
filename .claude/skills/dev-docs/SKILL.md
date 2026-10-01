@@ -171,8 +171,6 @@ Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej*
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<nazwa>" })
    Po STOP bramki (E2E, fix FAIL, P1) i naprawie — świeży run z tymi samymi args, BEZ resumeFromRunId.
    Po awarii runu (crash) — resume: Workflow({ scriptPath, resumeFromRunId, args }) z tymi samymi args.
-
-   Ręczna kontrola faza po fazie (zamiast autopilota): /dev-docs-execute docs/active/<nazwa> → /dev-docs-review docs/active/<nazwa> 1 → … → /dev-docs-complete <nazwa>
 ```
 
 Jeśli bramka ma czerwone pozycje — `➡️ Następny krok` wskazuje najpierw ich usunięcie (setup środowiska E2E, odhaczenie przygotowania, opt-out `[E2E]` → `[Manual]`), potem **obowiązkowy commit tych zmian** (każda z tych dróg modyfikuje śledzone pliki: operator checklist ze ścieżki `operator_prep`, `docs/active/<nazwa>/`, plan techniczny, `.gitignore` po setupie e2e), np. `git add <dokładne ścieżki> && git commit -m "docs(<nazwa>): przygotowanie operatora"` i `git status --short` puste — bootstrap autopilota zatrzyma run na brudnym drzewie. Dopiero potem autopilot. Gdy użytkownik usuwa czerwone pozycje w tej samej sesji, zrób ten commit sam przed wywołaniem `Workflow`. Gdy użytkownik wybierze uruchomienie autopilota, **uruchom go toolem `Workflow`** w bieżącej sesji — nie opisuj tylko komendy.

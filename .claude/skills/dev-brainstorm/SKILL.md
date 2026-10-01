@@ -297,7 +297,7 @@ Przedstaw tylko pasujące opcje:
 - **Zadaj więcej pytań** — kontynuuj doprecyzowywanie scope'u, preferencji lub edge cases
 - **Gotowe na teraz** — wróć później
 
-**Nie oferuj przejścia bezpośrednio do implementacji** (`/dev-docs-execute`, buildery, autopilot) z pominięciem `/dev-plan` i `/dev-docs`. Kod powstaje wyłącznie z Implementation Units planu technicznego — bez planu nie ma `Delegate to:`, scenariuszy `[E2E]`, seedów ani stanu zadania, więc cały harness (review, bramki E2E, resume) nie ma na czym pracować. Nawet dla lekkiego scope'u właściwa ścieżka to krótki plan (`/dev-plan` w głębokości Lekkiej).
+**Nie oferuj przejścia bezpośrednio do implementacji** (buildery, autopilot) z pominięciem `/dev-plan` i `/dev-docs`. Kod powstaje wyłącznie z Implementation Units planu technicznego — bez planu nie ma `Delegate to:`, scenariuszy `[E2E]`, seedów ani stanu zadania, więc cały harness (review, bramki E2E, resume) nie ma na czym pracować. Nawet dla lekkiego scope'u właściwa ścieżka to krótki plan (`/dev-plan` w głębokości Lekkiej).
 
 #### 4.2 Obsłuż wybraną opcję
 

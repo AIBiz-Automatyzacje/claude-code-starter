@@ -862,6 +862,6 @@ Na podstawie wyboru:
 - **Otwórz plan w edytorze** -> Otwórz `docs/plans/<nazwa_pliku>.md` używając mechanizmu otwierania plików platformy (np. `open` na macOS), potem wróć do opcji
 - **Inne** -> Przyjmij wolny tekst do rewizji i wróć do opcji
 
-**Nie oferuj `/dev-docs-execute` ani autopilota bezpośrednio z planu.** Wykonanie zawsze idzie przez `/dev-docs` (branch + `docs/active/` + stan zadania) — bez tego autopilot nie ma czego wznawiać, a review nie ma gdzie zapisywać findingów.
+**Nie oferuj autopilota bezpośrednio z planu.** Wykonanie zawsze idzie przez `/dev-docs` (branch + `docs/active/` + stan zadania) — bez tego autopilot nie ma czego wznawiać, a review nie ma gdzie zapisywać findingów.
 
 NIGDY NIE KODUJ! Badaj, decyduj i zapisz plan.

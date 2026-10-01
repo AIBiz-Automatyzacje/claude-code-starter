@@ -830,7 +830,7 @@ const faza = args && args.faza
 // Poprawka 1: w re-review orkiestrator przekazuje findingi z poprzedniego cyklu -> targetowana weryfikacja.
 const poprzednie = (args && args.poprzednieFindingi) || []
 // Status srodowiska przegladarkowego E2E od orkiestratora ('gotowe' | 'pominieto' | 'niepowodzenie' | 'brak').
-// undefined = run standalone (reczne /dev-docs-review) — wtedy NIE wiemy nic o srodowisku i nie wolno nam
+// undefined = run standalone (Workflow z args {sciezka, faza}, bez autopilota) — wtedy NIE wiemy nic o srodowisku i nie wolno nam
 // niczego ograniczac: FAIL-OPEN, zachowanie dokladnie jak przed ta zmiana.
 const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa

@@ -253,7 +253,6 @@ Gdy nie znaleziono trafnych wniosków — powiedz to wprost, dołącz kontekst w
 
 Ten agent jest wywoływany przez:
 - `/dev-plan` — by zasilić planowanie wiedzą instytucjonalną (Krok 1.1 Research lokalny, równolegle z repo-research-analyst)
-- `/bugfix`, `/dev-ideate` — by wydobyć wcześniejsze wnioski istotne dla naprawy lub tematu ideacji (gdy podłączone)
 - Samodzielne wywołanie przed pracą w udokumentowanym obszarze
 
 Wyjście jest konsumowane jako proza — żaden wywołujący nie parsuje konkretnych etykiet pól — więc priorytetyzuj wydestylowane, aktionowalne wnioski nad strukturalną sztywnością.

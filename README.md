@@ -111,10 +111,10 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 ## Pipeline `dev-*` — przegląd
 
 ```
-/dev-ideate → /dev-brainstorm → /dev-prep → /dev-plan → /dev-docs → [ dev-autopilot-wf ] → /dev-pr → merge
-  (pomysły)     (CO budować)   (CO ma       (JAK)      (struktura)   (cały pipeline auto)   (review bota,
-                                dostarczyć                                                   tury poprawek,
-                                człowiek)                                                    compound)
+/dev-brainstorm → /dev-prep → /dev-plan → /dev-docs → [ dev-autopilot-wf ] → /dev-pr → merge
+  (CO budować)   (CO ma       (JAK)      (struktura)   (cały pipeline auto)   (review bota,
+                  dostarczyć                                                   tury poprawek,
+                  człowiek)                                                    compound)
 
 dev-autopilot-wf orkiestruje:
   bootstrap → per faza( execute-wf → review-wf + adversarial verify → fix ) → compound-wf → compound-refresh(scoped) → complete-wf
@@ -123,7 +123,7 @@ dev-autopilot-wf orkiestruje:
 Zasady ogólne:
 - Skille `dev-*` **działają BEZ argumentów** (wyciągają kontekst z sesji). Argumenty są opcjonalne.
 - Skille bez `disable-model-invocation` mogą być wołane programowo przez inne skille i agentów.
-- Fazę implementacji domyślnie prowadzi **`dev-autopilot-wf`** (dynamic workflow). Skille `/dev-docs-execute` i `/dev-docs-review` możesz odpalać też ręcznie, faza po fazie.
+- Fazę implementacji prowadzi **`dev-autopilot-wf`** (dynamic workflow).
 
 ### Dynamic Workflows (`-wf`)
 
@@ -145,7 +145,6 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `dev-docs-complete-wf` | Dwie fazy: **smoke operatora** (`docs/operator/<data>-<zadanie>-smoke.md` — co sprawdzić ręcznie po zielonym automacie; `[E2E]` nieuruchomione jako czerwona flaga) → archiwizacja: `docs/active/<zadanie>` → `docs/completed/`, podsumowanie, aktualizacja docs projektu, commit (jawnym pathspecem, także wyjścia compound). |
 | `dev-pr-wf` | Mechanika obsługi pull requesta, wołana etapami przez skill `/dev-pr`: **bramka wejścia** (gałąź inna niż główna, czyste drzewo, zadanie istnieje) i utworzenie PR przez `gh pr create --body-file` (nigdy stdin — przy pustym stdin `gh` kończy się kodem 0 i tworzy PR z pustym opisem) → **zebranie i klasyfikacja** nierozwiązanych wątków przez GraphQL (`napraw` / `napraw-szerzej` / `odrzuć` / `do-operatora`, każdy z polem `wplywNaProjekt` i klastrem wspólnej przyczyny; `odrzuć` bez cytatu ze źródła decyzji JS przeklasyfikowuje na `do-operatora`) → **naprawa** wybranych wątków + odpowiedzi w wątkach + commit jawnym pathspecem i push → **bramka merge'a** (pięć warunków liczonych w JS) → **compound** z pętlą zwrotną do reviewerów. |
 | `dev-compound-wf` | Dokumentuje rozwiązane problemy do `docs/solutions/`, ocenia rule-worthy do `learned-patterns.md`, aktualizuje `docs/CONCEPTS.md` — i **commituje te artefakty** (whitelist ścieżek, bez `git add -A`), żeby nie zostawiać brudnego drzewa blokującego następny run. |
-| `freshness-audit-wf` | Cykliczny audyt aktualności skilli technicznych: inwentaryzacja twierdzeń o świecie (wersje, piny, wzorce API) → weryfikacja w **żywych** źródłach (oficjalne docs, changelogi GitHub, npm — przez WebFetch/WebSearch/context7, zakaz pamięci modelu) → adversarial verify P1/P2 → raport do `docs/reviews/freshness-<data>.md`. Niczego nie zmienia w skillach — tylko raportuje. |
 
 **Jak odpalać:** toolem `Workflow`, np. `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js"}, args)`.
 **RESUME po przerwanym runie:** `Workflow({scriptPath, resumeFromRunId})` + **ZAWSZE przekaż `args` ponownie** (te same, np. ścieżkę zadania — `args` NIE przeżywa między wywołaniami). Stan wznowienia czyta z `.autopilot-state.json` (źródło prawdy); checkboxy w `.md` to tylko widok dla człowieka.
@@ -157,8 +156,6 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 ### Pipeline `dev-*`
 
 #### Discovery
-
-**`/dev-ideate`** — generowanie pomysłów na ulepszenia. 4 agenty skanują projekt z różnych perspektyw (tech debt, UX, performance, product), Devil's Advocate filtruje słabe. → `docs/ideation/`
 
 **`/dev-brainstorm`** *(opcjonalny — „pusta kartka")* — walidacja pomysłu (**CO** budować). Interaktywny dialog: jedno pytanie na raz, pressure test, eksploracja podejść. → `docs/brainstorms/*-requirements.md`
 - **Kiedy:** nowy feature bez wymagań, kilka konkurencyjnych kierunków, niejasno ujęty problem. **Kiedy nie:** wymagania już są (etap w zbiorczym `mvp-requirements.md`, lista poprawek z feedbacku, bug/tech-debt, „zrób jak w X") — wtedy od razu `/dev-plan`, który czyta takie źródła bezpośrednio.
@@ -175,7 +172,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 - **Przygotowanie dla operatora (dokument #1):** sekcja „Wymagania wstępne operatora" w planie + plik `docs/operator/<slug>-przygotowanie.md` — wyłącznie to, czego Claude nie zrobi sam (konsole OAuth, sekrety w `.env`, `.env.e2e` wg `.claude/templates/e2e-env/` gdy plan ma `[E2E]`, assety graficzne, migracje na projekcie głównym, decyzje do podjęcia). Każda pozycja: po co / jak / dowód wykonania + marker blokady z jednej rodziny: `[blokuje: planowanie]` albo `[blokuje: faza N]` (`/dev-prep` pisze pierwszy, `/dev-plan` podmienia go na drugi, gdy zna numer fazy; `/dev-docs` grepuje `^- \[ \].*\[blokuje:` w bramce gotowości i zatrzymuje handoff na pozycjach blokujących planowanie lub fazę 1). Frontmatter `operator_prep:`.
 
 **`/dev-docs`** — **transformacja planu technicznego w zadanie dla autopilota**, bez nowej treści (zero własnych ryzyk/szacunków — to, czego nie ma w planie, nie pojawi się w zadaniu; brak planu → odesłanie do `/dev-plan`). Branch `feature/[nazwa]` (bezpiecznie: istniejący → checkout, brudne drzewo → STOP) + 3 pliki w `docs/active/[nazwa]/`: plan (mapa faz 1:1 z planem), kontekst (pliki, decyzje, wzorce, designerski kontekst SPEC.md/DESIGN.md/Figma), zadania (checkboxy wg kontraktu parserów: impl. / `Test:` / `Weryfikacja:` / `## Operator checklist faza N`, jedna nośna linia `Test: [E2E]` per scenariusz).
-- **Handoff = autopilot:** na końcu bramka gotowości (`[E2E]` vs `.env.e2e`, niezaznaczone blokery z `docs/operator/<slug>-przygotowanie.md`, branch) i gotowe wywołanie `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/[nazwa]"})`. Ścieżka ręczna (`/dev-docs-execute` → `/dev-docs-review`) tylko jako alternatywa.
+- **Handoff = autopilot:** na końcu bramka gotowości (`[E2E]` vs `.env.e2e`, niezaznaczone blokery z `docs/operator/<slug>-przygotowanie.md`, branch) i gotowe wywołanie `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/[nazwa]"})`.
 
 #### Implementacja
 
@@ -184,13 +181,11 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 - **Stop conditions:** P1 po cyklu fix (limit fix = 1 — drugi cykl naprawiał 0 findingów przy koszcie pełnego re-review; każdy P1/KOD po fixie przechodzi dodatkowo **niezależny targeted verify**), błąd buildu/testów, git conflict.
 - **Myk:** walidację brancha robisz **w sesji PRZED** odpaleniem — workflow nie pyta o branch switch.
 
-**`/dev-docs-execute docs/active/[nazwa]`** *(workflow: `dev-docs-execute-wf`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Dla IU dotykających UI doklejany mandatory kontekst designerski. Na końcu: System-Wide Test Check, checkboxy, incremental commits.
+**`dev-docs-execute-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Dla IU dotykających UI doklejany mandatory kontekst designerski. Na końcu: System-Wide Test Check, checkboxy, incremental commits.
 
-**`/dev-docs-review docs/active/[nazwa] [faza]`** *(workflow: `dev-docs-review-wf` — skill jest cienkim wrapperem wołającym workflow)* — code review fazy. context-packager (mapa zmian + flagi warstw + **dossier fazy**, żeby reviewerzy nie czytali ośmiokrotnie tych samych dokumentów) → **do 7 reviewerów równolegle** (Security, Performance, Code-quality, Correctness, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 niezależnych sceptyków z konsensusem 2/3, P2 = jeden sceptyk na grupę findingów z tego samego pliku**) → scribe zapisuje raport + `## Przebieg review` + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
+**`dev-docs-review-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — code review fazy. context-packager (mapa zmian + flagi warstw + **dossier fazy**, żeby reviewerzy nie czytali ośmiokrotnie tych samych dokumentów) → **do 7 reviewerów równolegle** (Security, Performance, Code-quality, Correctness, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 niezależnych sceptyków z konsensusem 2/3, P2 = jeden sceptyk na grupę findingów z tego samego pliku**) → scribe zapisuje raport + `## Przebieg review` + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
 - **Routing domenowy:** rdzeń (`security`, `spec-compliance`, `test-coverage`) odpala się zawsze; `code-quality` i `correctness` — gdy faza ma choć jeden plik kodu; `performance` — gdy dotyka warstwy danych albo ma ≥5 plików kodu. **W praktyce faza z kodem dostaje pełny skład** — pomijany bywa tylko tester E2E; routing przycina wyłącznie fazy czysto dokumentacyjne (audyt 2026-09-06: w 10 fazach dwóch projektów jedynym pominiętym był `e2e`). Osobne reviewery architektury, prostoty i typów nie istnieją od 2026-09-03 — to trzy osie wewnątrz `code-quality` (konsolidacja B12; `architecture-strategist` i `code-simplicity-reviewer` zostały w repo na wypadek odwrotu). Tester przeglądarki odpala się po **policzonej pracy**, nie po warstwie: potrzebuje niezaznaczonego checkboxa `[E2E]` albo makiet `figma_screens` do visual diffu, więc faza UI bez ani jednego scenariusza go nie budzi. Gdy packager nie zwróci flag → pełny skład (fail-open). Pominięcie E2E blokuje odznaczanie browserowych checkboxów `Weryfikacja:` (idą do Operator checklist).
 - **Myk E2E:** `feature-tester-e2e` testuje w **prawdziwej przeglądarce** (agent-browser) na dev serverze Vite (`localhost:5173`), nie w headless symulacji. Preflight: `curl localhost:5173`. Zwraca **jawny przebieg per checkbox `[E2E]`** (`przebiegi[]` PASS/FAIL/SKIP z dowodem, oba prefiksy `Test:`/`Weryfikacja:`) i **nie pisze do pliku zadań** — odznacza scribe, wyłącznie z wpisu PASS. Przy `figma_screens` robi side-by-side visual diff z mockupami (manualna akceptacja = finding OPERATOR, nie auto-checkbox). Bez `.env.e2e` weryfikacje E2E lądują jako OPERATOR (do ręcznego sprawdzenia).
-
-**`/dev-docs-update docs/active/[nazwa]`** — zapis stanu przed kompaktowaniem kontekstu. Commituje WIP, aktualizuje 3 pliki zadania, dokumentuje niedokończoną pracę.
 
 #### Zamknięcie
 
@@ -221,20 +216,15 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | **`ux-ui-guidelines`** | Design system (OKLCH), dostępność (WCAG 2.2, ARIA, natywny `inert`), responsive (container queries), animacje (Motion, View Transitions, `interpolate-size`), interface polish. |
 | **`security`** | Audyt bezpieczeństwa: **OWASP Top 10:2025**, RLS, `app_metadata` vs `user_metadata`, SSRF, CSP dla Vite, `getClaims` + asymetryczne JWT. |
 | **`sentry-integration`** | Error tracking + performance dla React + Edge Functions (Deno 2.x): `beforeSend`, source maps (`@sentry/vite-plugin`), release tracking, `await captureError`. |
-| **`bugfix`** | Systematyczna naprawa bugów w działającej aplikacji (Sentry, failujące E2E, zgłoszenia). |
 
 ### Skille narzędziowe
 
 | Skill | Do czego |
 |-------|----------|
-| **`code-quality`** *(poza pipeline)* | Audyt jakości (stack-agnostic): architektura (SOLID, circular deps), performance (Big O, N+1), prostota (YAGNI, LOC), wzorce. **Uruchamiasz ręcznie** — żaden agent, workflow ani skill `dev-*` go nie ładuje. |
-| **`code-review`** *(poza pipeline)* | Code review pod nasz stack — raport z klasyfikacją problemów (krytyczne/poważne/drobne/sugestie). **Uruchamiasz ręcznie** — review w pipelinie robi `dev-docs-review-wf`, nie ten skill. |
 | **`agent-browser`** | Automatyzacja przeglądarki przez CLI (nawigacja, formularze, screenshoty, scraping, testowanie UI) z ref-based selection (`@e1`, `@e2`). Silnik E2E dla `feature-tester-e2e`. |
 | **`figma-design-to-code`** | Implementacja designu Figma jako kod (kierunek design→code). Zaimportowany lokalnie z oficjalnego pluginu Figma (v2.2.78) — działa też bez zainstalowanego pluginu. Preładowany do builderów UI/fullstack. |
 | **`zroastuj-mnie`** | Bezlitosny wywiad stress-testujący plan/projekt. Research docs przed sesją, wykrywanie sprzeczności, scenariusze. Na końcu sugeruje utrwalenie (m.in. terminu do `docs/CONCEPTS.md`). |
-| **`gemini`** | Uruchamia Gemini CLI jako subagenta (analiza kodu, audyt UX/security). Zapisuje feedback do `Zasoby/gemini/`. |
 | **`coolify-manager`** | Zarządzanie i troubleshooting deploymentów Coolify (CLI + API): serwery, WordPress, kontenery, SSL, bazy, env, backupy. |
-| **`freshness-audit`** *(workflow: `freshness-audit-wf`)* | Cykliczny audyt aktualności skilli technicznych względem **żywej** dokumentacji (oficjalne docs, changelogi GitHub, npm). Weryfikuje wersje/piny/wzorce API z URL-i, nie z pamięci modelu; adversarial verify P1/P2; raport do `docs/reviews/freshness-<data>.md`. Odpalaj okresowo (np. raz w miesiącu). Nic nie zmienia w skillach — tylko raportuje. |
 | **`coderabbit-setup`** | Tworzy `.coderabbit.yaml` dopasowany do stacku projektu (detekcja z `package.json` i struktury katalogów: Expo/RN, Next.js, React+Vite, Node, Supabase — bloki można łączyć). Standard między projektami: review po polsku, profil assertive, eslint/actionlint/gitleaks/trufflehog/semgrep/osvScanner, guidelines z `coding-rules.md`. Do `filePatterns` trafiają tylko pliki istniejące w repo; YAML walidowany przed oddaniem. Przypomina o jednorazowej instalacji aplikacji GitHub CodeRabbit na repo. |
 | **`sync-template`** | Aktualizuje maszynerię `.claude/` (skille, agenci, reguły, hooki, workflows, templates + `settings.json`) w projekcie docelowym, zaciągając najnowszą wersję z tego repo (`claude-code-starter`, branch `main`). Jedno uruchomienie sprawdza po SHA commita, czy coś się zmieniło, i **automatycznie aplikuje** — szablon zawsze wygrywa, ale nadpisywane/usuwane pliki najpierw trafiają do backupu (`.claude/.backups/`). Pliki lokalne projektu (`settings.local.json`, własne skille) pozostają nietknięte. Argumenty: `--dry-run` (podgląd), `--force` (twardy reset do wersji z szablonu). |
 
@@ -265,7 +255,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 >
 > **`kieran-typescript-reviewer` i `code-simplicity-reviewer` zostają w repo, ale od 2026-09-03 nie są wołane przez `dev-docs-review-wf`** — ich role przejął `architecture-strategist` jako jeden reviewer `code-quality`. Zostają, bo (a) da się je wywołać ręcznie przez Agent tool, (b) są potrzebne przy warunku odwrotu tej konsolidacji (mierz `poDedupSem` i liczbę potwierdzonych P1/P2 typu KOD przez 5 faz; spadek potwierdzonych = rozdziel z powrotem).
 
-### Research (wołani przez `dev-plan`, `dev-brainstorm`, `dev-ideate`)
+### Research (wołani przez `dev-plan`, `dev-brainstorm`)
 
 | Agent | Rola |
 |-------|------|
@@ -273,7 +263,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `learnings-researcher` | Szuka w `docs/solutions/` + `docs/CONCEPTS.md` powiązanych wniosków (dev-plan). |
 | `best-practices-researcher` | Best practices online (Context7, WebSearch) (dev-plan). |
 | `framework-docs-researcher` | Dokumentacja frameworków/bibliotek, wersje, ograniczenia (dev-plan). |
-| `web-research-specialist` | Iteracyjny research w sieci — prior art, wzorce konkurencji (dev-brainstorm, dev-ideate). |
+| `web-research-specialist` | Iteracyjny research w sieci — prior art, wzorce konkurencji (dev-brainstorm). |
 | `spec-flow-analyzer` | Analiza specyfikacji **przed** implementacją: kompletność user flow, edge case'y, luki w handoffach (`dev-plan` 1.5). W review fazy już nie występuje — tam pracuje `spec-compliance-reviewer`. |
 
 ---
@@ -303,7 +293,6 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 ```
 docs/
-├── ideation/                 ← pomysły z /dev-ideate
 ├── brainstorms/              ← requirements docs z /dev-brainstorm (lub zbiorczy, np. mvp-requirements.md)
 ├── plans/                    ← plany techniczne z /dev-plan (IU w fazach)
 ├── operator/                 ← dokumenty dla człowieka: <slug>-przygotowanie.md (z /dev-prep, uzupełniany
@@ -336,28 +325,7 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 /dev-pr 3                               ← PR, recenzja bota, do 3 tur poprawek, bramka merge'a, compound
 ```
 
-**2. Nowy feature krok po kroku (ręczna kontrola)**
-```
-/dev-ideate  →  (/dev-brainstorm)  →  /dev-plan  →  /dev-docs
-/dev-docs-execute docs/active/nazwa
-/dev-docs-review  docs/active/nazwa 1
-/dev-docs-execute docs/active/nazwa          ← faza 2 …
-/dev-docs-complete nazwa                     ← też generuje smoke operatora
-/dev-pr                                      ← PR, review bota, tury poprawek, compound
-```
-
-**3. Szybki feature (bez pełnego pipeline'u)**
-```
-[rozmowa + plan mode]  →  /dev-docs  →  /dev-docs-execute docs/active/nazwa  →  /dev-docs-complete nazwa
-```
-
-**4. Bugfix z dokumentacją**
-```
-/bugfix [opis lub link Sentry]
-/dev-compound                           ← udokumentuj rozwiązanie do docs/solutions/
-```
-
-**5. Maintenance bazy wiedzy**
+**2. Maintenance bazy wiedzy**
 ```
 /dev-compound-refresh                   ← przejrzyj całość
 /dev-compound-refresh supabase-issues   ← tylko jedna kategoria
