@@ -64,6 +64,17 @@ zapisz_hashe() {
   paste <(printf '%s\n' "$hashe") <(printf '%s\n' "${MANAGED[@]}") > "$HASHES_FILE"
 }
 
+# Pierwsza instalacja (brak .template-version przed syncem): doctor projektu (PLAN-POPRAWY P2) — brak narzędzia ma
+# wyjść teraz, nie w pierwszym runie. Wynik doctora nie zmienia kodu wyjścia syncu: sync się udał, braki to zadanie
+# dla usera (tabela z komendami instalacji). Szablon sprzed P2 nie ma doctora — wtedy krok się nie odbywa.
+doctor_pierwszej_instalacji() {
+  local doctor="$PROJECT_DIR/$MANAGED_ROOT/scripts/doctor/doctor.sh" kod=0
+  [[ -z "$LOCAL_SHA" && -f "$doctor" ]] || return 0
+  echo "--- DOCTOR (pierwsza instalacja) ---"
+  bash "$doctor" "$PROJECT_DIR" || kod=$?
+  echo "DOCTOR_KOD: $kod"
+}
+
 
 # --- Przygotuj źródło (klon albo lokalna ścieżka) ---
 TMP_CLONE=""
@@ -179,6 +190,7 @@ if [[ "${#ADD[@]}" -eq 0 && "${#UPDATE[@]}" -eq 0 && "${#REMOVE[@]}" -eq 0 ]]; t
   printf '%s\n' "${MANAGED[@]}" > "$MANIFEST_FILE"
   zapisz_hashe
   echo "APPLIED: brak różnic w plikach — zaktualizowano tylko marker wersji."
+  doctor_pierwszej_instalacji
   exit 0
 fi
 
@@ -258,3 +270,6 @@ echo "APPLIED: zaaplikowano zmiany."
 if [[ "${#UPDATE[@]}" -gt 0 || "${#REMOVE[@]}" -gt 0 ]]; then
   echo "BACKUP: $BACKUP_DIR"
 fi
+# N2: instrukcje i skille są buforowane w sesji — autopilot w sesji sprzed syncu działałby na starej maszynerii.
+echo "NOWA SESJA: .claude/ się zmieniło — otwórz nową sesję Claude Code przed /dev-autopilot-wf (bieżąca sesja ma w pamięci starą maszynerię)."
+doctor_pierwszej_instalacji

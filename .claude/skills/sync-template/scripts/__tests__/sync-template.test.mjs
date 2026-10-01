@@ -108,3 +108,61 @@ test('skill usuniety w szablonie znika z projektu, lokalny skill projektu zostaj
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+// P2 (PLAN-POPRAWY): N2 — instrukcje i skille sa buforowane w sesji, wiec po zmianie .claude/ autopilot w starej sesji
+// dzialalby na starej maszynerii. Komunikat ma wyjsc po kazdym syncu, ktory cos zmienil, i tylko wtedy.
+test('sync, ktory zmienil .claude/, konczy sie komunikatem o nowej sesji; UP_TO_DATE — bez komunikatu', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    assert.match(sync(zrodlo, projekt), /NOWA SESJA: \.claude\/ się zmieniło — otwórz nową sesję Claude Code przed \/dev-autopilot-wf/)
+    assert.doesNotMatch(sync(zrodlo, projekt), /NOWA SESJA/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
+// P2: pierwsza instalacja (brak .template-version) uruchamia doctor z projektu — brak narzedzia wychodzi przed pierwszym
+// runem. Wynik doctora nie zmienia kodu wyjscia syncu (sync sie udal); kolejne synci doctora nie wolaja.
+test('pierwsza instalacja uruchamia doctor projektu, kolejny sync — nie', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    mkdirSync(join(zrodlo, '.claude', 'scripts', 'doctor'), { recursive: true })
+    writeFileSync(join(zrodlo, '.claude', 'scripts', 'doctor', 'doctor.sh'), 'echo "DOCTOR-ATRAPA $1"\nexit 1\n')
+    git(zrodlo, ['add', '.'])
+    git(zrodlo, ['commit', '-q', '-m', 'doctor'])
+
+    const pierwszy = sync(zrodlo, projekt)
+    assert.match(pierwszy, new RegExp(`DOCTOR-ATRAPA ${projekt}`))
+    assert.match(pierwszy, /DOCTOR_KOD: 1/)
+
+    writeFileSync(join(zrodlo, '.claude', 'settings.json'), '{"a":1}\n')
+    git(zrodlo, ['commit', '-qam', 'zmiana'])
+    assert.doesNotMatch(sync(zrodlo, projekt), /DOCTOR/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
+test('pierwszy sync projektu, ktory ma juz identyczne .claude/ (skopiowane recznie), tez uruchamia doctor', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    mkdirSync(join(zrodlo, '.claude', 'scripts', 'doctor'), { recursive: true })
+    writeFileSync(join(zrodlo, '.claude', 'scripts', 'doctor', 'doctor.sh'), 'echo "DOCTOR-ATRAPA $1"\n')
+    git(zrodlo, ['add', '.'])
+    git(zrodlo, ['commit', '-q', '-m', 'doctor'])
+    execFileSync('cp', ['-R', join(zrodlo, '.claude'), join(projekt, '.claude')])
+
+    const wyjscie = sync(zrodlo, projekt)
+    assert.match(wyjscie, /brak różnic/)
+    assert.match(wyjscie, /DOCTOR-ATRAPA/)
+    assert.doesNotMatch(wyjscie, /NOWA SESJA/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})

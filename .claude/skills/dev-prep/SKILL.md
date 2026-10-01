@@ -6,7 +6,7 @@ argument-hint: "[etap zbiorczego dokumentu wymagań, np. docs/brainstorms/mvp-re
 
 # Operator checklist etapu — przygotowanie przed `/dev-plan`
 
-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
+Datę do dokumentów bierz z `date +%F`.
 
 `/dev-prep` odpowiada na jedno pytanie: **co człowiek musi dostarczyć poza kodem, zanim ruszy etap**. Produkuje jeden dokument w `docs/operator/` — i nic więcej. Nazwa domyślna to `<feature-slug>-przygotowanie.md`, ale gdy w katalogu jest już seria checklist, skill dziedziczy jej konwencję (0.3).
 
@@ -123,6 +123,14 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
 
 Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, zamiast czytać plik po pliku.
+
+#### 1.3 Narzędzia maszyny (doctor)
+
+Uruchom `bash .claude/scripts/doctor/doctor.sh`. Skrypt wylicza z projektu, czego wymaga pipeline (git, gh z logowaniem, node, menedżer z lockfile, supabase CLI przy `supabase/`, agent-browser przy checkboxach `[E2E]`, pluginy projektu, Dynamic Workflows), i wypisuje tabelę z komendą instalacji przy każdym braku.
+
+- Każdy wiersz `BRAK` przepisz do sekcji 2 jako pozycję z markerem **[blokuje: faza 1]** — run autopilota zatrzymałby się na tym narzędziu, a `/dev-docs` nie przekaże zadania autopilotowi, dopóki pozycja jest otwarta. „Jak" = komenda z kolumny „Instalacja", „Dowód" = `bash .claude/scripts/doctor/doctor.sh` pokazuje `OK` w tym wierszu.
+- Każdy wiersz `UWAGA` przepisz do sekcji 2 bez markera — nie blokuje runu.
+- Wszystkie wiersze `OK` / `nie dotyczy` → nic nie dopisuj.
 
 ### Faza 2: Wyprowadź listy
 
