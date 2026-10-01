@@ -79,3 +79,32 @@ test('sync bez roznic w plikach (--force) tez zapisuje odciski', () => {
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+// P1 (PLAN-POPRAWY): szablon usuwa skille — sync ma je zdjac z projektu razem z katalogiem,
+// zostawiajac kopie w .backups/ i nie ruszajac skilli dodanych lokalnie przez projekt.
+test('skill usuniety w szablonie znika z projektu, lokalny skill projektu zostaje', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    mkdirSync(join(zrodlo, '.claude', 'skills', 'stary', 'resources'), { recursive: true })
+    writeFileSync(join(zrodlo, '.claude', 'skills', 'stary', 'SKILL.md'), '---\nname: stary\n---\n')
+    writeFileSync(join(zrodlo, '.claude', 'skills', 'stary', 'resources', 'opis.md'), 'opis\n')
+    git(zrodlo, ['add', '.'])
+    git(zrodlo, ['commit', '-q', '-m', 'skill stary'])
+    sync(zrodlo, projekt)
+    mkdirSync(join(projekt, '.claude', 'skills', 'wlasny'), { recursive: true })
+    writeFileSync(join(projekt, '.claude', 'skills', 'wlasny', 'SKILL.md'), '---\nname: wlasny\n---\n')
+
+    git(zrodlo, ['rm', '-rq', '.claude/skills/stary'])
+    git(zrodlo, ['commit', '-q', '-m', 'usun skill stary'])
+    const wyjscie = sync(zrodlo, projekt)
+
+    assert.match(wyjscie, /USUNIETE:\n {2}\.claude\/skills\/stary\/SKILL\.md\n {2}\.claude\/skills\/stary\/resources\/opis\.md/)
+    assert.throws(() => statSync(join(projekt, '.claude', 'skills', 'stary')), { code: 'ENOENT' })
+    assert.equal(readFileSync(join(projekt, '.claude', 'skills', 'wlasny', 'SKILL.md'), 'utf8'), '---\nname: wlasny\n---\n')
+    assert.ok(!readFileSync(join(projekt, '.claude', '.template-hashes'), 'utf8').includes('skills/stary'))
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
