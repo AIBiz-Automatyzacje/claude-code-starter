@@ -91,7 +91,7 @@ PROCEDURA (wykonaj ja, nie streszczaj):
    uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
 2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
    -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly \`numeric\` bez komentarza), NIE zgaduj
-   z nazwy zmiennej — to jest dokladnie ten moment, w ktorym poprzednio poszlo zle. Zglos wtedy P2:
+   z nazwy zmiennej — nazwa typu \`price\` nie mowi, czy to kwota za calosc, czy za osobe. Zglos wtedy P2:
    "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
 3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
    RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
@@ -105,9 +105,9 @@ Co sprawdzasz w kazdym uzyciu:
 Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
 testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
 Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
-UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo zle, wiec kanal "rozjazd miedzy
-uzyciami" NIE zadzialal — zadzialaly dopiero sprzeczne teksty w UI i realna liczba z bazy. Nie opieraj sie
-wylacznie na porownywaniu uzyc miedzy soba: jednomyslnosc kodu nie jest dowodem poprawnosci.
+UWAGA: gdy WSZYSTKIE uzycia czytaja pole jednakowo zle, porownanie uzyc miedzy soba niczego nie pokaze —
+wtedy zdradzaja je dopiero sprzeczne teksty w UI i realna liczba z bazy. Jednomyslnosc kodu nie jest
+dowodem poprawnosci.
 === KONIEC BLOKU SEMANTYKI ===`
 
 // Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec przy
@@ -360,7 +360,7 @@ const KONTEKST = {
 // Spadek samego `poDedupSem` bez spadku potwierdzonych to sukces, nie regresja: mniej duplikatow.
 const REVIEWERZY = [
   { key: 'security', agentType: 'security-sentinel', fokus: 'auth, RLS policies, XSS, data exposure, Zod validation, API key exposure' },
-  { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, memoization, useEffect cleanup' },
+  { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, useEffect cleanup' },
   { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych' },
   { key: 'correctness', agentType: 'general-purpose', fokus: 'POPRAWNOSC WYKONANIA — jedyna os, ktorej nikt inny nie ma. Nie oceniasz stylu, struktury ani typow: masz ZNALEZC DEFEKT, ktory w tym kodzie JEST. Procedura: wypisz sciezki wykonania zmienione w tej fazie (kazda galaz warunku, kazda petla, kazda sciezka bledu), potem przejdz KAZDA z nich krok po kroku na konkretnych danych wejsciowych — wartosc graniczna, pusta kolekcja, null, wartosc spoza zakresu, dwa rownolegle wywolania, przerwanie w polowie. Szukaj: off-by-one, odwrocony warunek, brakujaca galaz else, stan czytany przed zapisem, wyscig miedzy async operacjami, cleanup ktory nie odpala, wartosc uzyta po zmianie znaczenia. Kazdy finding MUSI miec scenariusz awarii: konkretne wejscie -> co sie stanie -> dlaczego to zle. Bez takiego scenariusza to nie jest finding poprawnosci' },
   // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY

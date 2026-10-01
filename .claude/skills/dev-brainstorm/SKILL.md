@@ -6,7 +6,7 @@ argument-hint: "[pomysł na feature lub problem do zbadania]"
 
 # Brainstorm — walidacja pomysłu
 
-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu dokumentów.
+Datę do dokumentów bierz z `date +%F`.
 
 Brainstorming odpowiada na pytanie **CO** budować poprzez dialog. Poprzedza `/dev-plan`, który odpowiada na pytanie **JAK** to zbudować.
 
