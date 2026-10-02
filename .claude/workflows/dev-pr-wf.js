@@ -722,8 +722,8 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    \`## <data z \`date +%F\`> ${zadanie}\` z jedna linia na propozycje: \`- <agent> ← <klasa>: <regula> (wystapila w: <podstawa>)\`.
    Gdy pliku nie ma, utworz go z naglowkiem \`# Propozycje do reviewerow\` i zdaniem: "Propozycje z compoundu /dev-pr —
    wdrozenie w plikach agentow jest decyzja operatora." Sciezke zwroc w plikPropozycji (bez propozycji: null).
-5. Zacommituj TYLKO artefakty bazy wiedzy jawnym pathspec (docs/solutions/, .claude/rules/learned-patterns.md,
-   docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md — te, ktore realnie zmieniles). ZAKAZ \`git add -A\` i \`git add .\`.
+5. Zacommituj tylko artefakty bazy wiedzy jawnym pathspec (docs/solutions/, .claude/rules/learned-patterns.md,
+   docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
 
 Zwroc obiekt zgodny ze schematem.`,
     { schema: COMPOUND_PR, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:compound:${zadanie}` }
