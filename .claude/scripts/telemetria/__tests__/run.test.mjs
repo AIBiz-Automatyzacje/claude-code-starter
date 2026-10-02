@@ -149,6 +149,14 @@ test('run.pr z etapu zbierz dev-pr: klasy uwag, wagi, liczba plikow PR', () => {
   })
 })
 
+test('run.pr.rekomendacja z wyniku etapu zbierz (P5) — wartosc liczona w JS dev-pr-wf, przepisana 1:1', () => {
+  const r = rekordRunu({
+    harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'zbierz', tura: 1, rekomendacja: 'KOLEJNA TURA — 2 watkow do naprawy (tura 1 z 3)', watki: [] } },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
+  })
+  assert.equal(r.pr?.rekomendacja, 'KOLEJNA TURA — 2 watkow do naprawy (tura 1 z 3)')
+})
+
 test('run.pr tylko dla etapu zbierz — start, napraw, merge i autopilot maja pr = null', () => {
   const r = rekordRunu({ harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'napraw' } }, status: { status: 'OK', powod: null }, agenci: [], bootstrap: null })
   assert.equal(r.pr, null)

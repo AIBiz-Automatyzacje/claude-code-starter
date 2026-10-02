@@ -132,8 +132,8 @@ function rekordPr(wynik) {
   return {
     numer: liczbaLubNull(wynik.prNumer), tura: liczbaLubNull(wynik.tura), pliki: liczbaLubNull(wynik.plikiPr),
     uwagi_razem: watki.length, p1: ile('P1'), p2: ile('P2'), p3: ile('P3'),
-    // Koszyk A–D (ETAP1B) i rekomendacja liczona w JS — producent w It. 2; ma_regule — indeks learned-patterns (It. 8).
-    koszyk: null, rekomendacja: null,
+    // Rekomendacja liczona w JS dev-pr-wf (P5); koszyk A–D (ETAP1B) — producent w It. 2; ma_regule — indeks learned-patterns (It. 8).
+    koszyk: null, rekomendacja: tekstLubNull(wynik.rekomendacja),
     klasy: watki.map((w) => ({
       id: tekstLubNull(w.id), klasa: tekstLubNull(w.klasaBledu), severity: tekstLubNull(w.waga), plik: tekstLubNull(w.plik),
       os: tekstLubNull(w.os), decyzja: tekstLubNull(w.klasa), ma_regule: null,
