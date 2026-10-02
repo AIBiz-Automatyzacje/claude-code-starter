@@ -6,7 +6,7 @@ argument-hint: "[nazwa zadania z docs/active/]"
 
 Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone zadanie: $ARGUMENTS
 
-**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu plików (`date +%F`).
+Datę do plików bierz z `date +%F`.
 
 ## Instrukcje
 
@@ -102,7 +102,7 @@ Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone 
    - Dodane zależności
 
 5. **Utwórz podsumowanie ukończenia** w `docs/completed/$ARGUMENTS/`:
-   - Przenieś wszystkie pliki z `docs/active/$ARGUMENTS/` (plan, kontekst, zadania, raporty review, known-issues, `.autopilot-state.json` — w tym ostatnim ustaw `"complete": "done"`)
+   - Przenieś wszystkie pliki z `docs/active/$ARGUMENTS/` poza `*.bak` (plan, kontekst, zadania, raporty review, known-issues, `.autopilot-state.json` — w tym ostatnim ustaw `"complete": "done"`)
    - Dodaj `[zadanie]-podsumowanie.md` zawierający:
      - Data ukończenia
      - Co zostało dostarczone
@@ -111,16 +111,32 @@ Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone 
      - Wyciągnięte wnioski
      - Link do smoke'u operatora (jeśli powstał) i liczba pozycji do ręcznego sprawdzenia
 
-6. **Zaktualizuj dokumentację projektu** (jeśli istotne):
-   - Dopisz decyzje architektoniczne do `CLAUDE.md`
-   - Jeśli odkryto wzorce warte utrwalenia — dodaj regułę do `.claude/rules/learned-patterns.md` (utwórz plik, jeśli nie istnieje) lub zaktualizuj `CLAUDE.md`.
+6. **Nie edytuj `CLAUDE.md` ani `.claude/rules/`.** `CLAUDE.md` uzgadnia się z kodem po merge'u pull requesta, nie przy archiwizacji; reguły do `learned-patterns.md` zapisuje `/dev-compound`. Decyzje architektoniczne zadania zapisujesz w pkt 6a.
 
-6.5 **Sugestia dokumentowania problemów:**
-   - Jeśli podczas pracy napotkano nietrywialne problemy warte udokumentowania:
-   - Zapytaj: "Czy chcesz udokumentować rozwiązane problemy? Uruchom `/dev-compound`"
+6a. **Zapisz decyzje zadania** w `docs/decisions/<YYYY-MM-DD>-$ARGUMENTS.md` (`mkdir -p docs/decisions`). Plik powstaje zawsze — jest wejściem kroku, który po merge'u PR uzgadnia `CLAUDE.md` z kodem:
+
+   ```markdown
+   ---
+   zadanie: $ARGUMENTS
+   data: YYYY-MM-DD
+   claude_md: do-uzgodnienia
+   ---
+
+   # Decyzje — $ARGUMENTS
+
+   ## Decyzje
+   - <decyzja> — <dlaczego> (<plik / moduł>)
+
+   ## Do CLAUDE.md po merge'u
+   - <fakt o projekcie, który zmienił się w tym zadaniu: komenda, struktura, konwencja> albo „brak”
+   ```
+
+   Źródło: sekcja `## Dziennik` w `[zadanie]-kontekst.md` i wnioski z pkt 4; decyzji brak → „brak decyzji architektonicznych”. Potem dopisz jedną linię na końcu `docs/decisions/README.md` (gdy pliku nie ma, utwórz go z nagłówkiem `# Decyzje zadań` i zdaniem: „Jeden plik na zarchiwizowane zadanie; `claude_md: do-uzgodnienia` = CLAUDE.md jeszcze nieuzgodniony z kodem po merge'u PR.”):
+   `- [YYYY-MM-DD $ARGUMENTS](YYYY-MM-DD-$ARGUMENTS.md) — <jedno zdanie: co zadanie dostarczyło>`
 
 7. **Posprzątaj**:
-   - Usuń pusty katalog `docs/active/$ARGUMENTS/`
+   - Usuń pusty katalog `docs/active/$ARGUMENTS/`. Pliki `*.bak` (kopie robocze operatora) nie idą do archiwum: zostają w `docs/active/$ARGUMENTS/` — wymień je w podsumowaniu dla użytkownika
+   - Commit: `docs($ARGUMENTS): archiwum`
    - Potwierdź ukończenie użytkownikowi
 
 ## Format wyjściowy
@@ -133,11 +149,7 @@ Jesteś specjalistą ds. zamykania zadań. Zarchiwizuj i udokumentuj ukończone 
 🧪 Smoke operatora: docs/operator/YYYY-MM-DD-$ARGUMENTS-smoke.md (N pozycji[, ⚠️ E [E2E] nieuruchomionych])
    → przejdź go w przeglądarce/na urządzeniu zanim zmergujesz; ramka „Jak kontynuować w nowej sesji" jest na końcu pliku
 
-📝 Zaktualizowana dokumentacja:
-   - [lista co gdzie dodano, lub "Nie wymagane"]
+📝 Decyzje: docs/decisions/YYYY-MM-DD-$ARGUMENTS.md (claude_md: do-uzgodnienia — CLAUDE.md uzgadnia się po merge'u PR)
 
-🎉 Świetna robota nad ukończeniem tego zadania!
-
-💡 Rozwiązane problemy warte udokumentowania?
-   → /dev-compound do zapisu rozwiązania
+💡 Rozwiązane problemy warte udokumentowania? → /dev-compound (w autopilocie compound już się odbył)
 ```

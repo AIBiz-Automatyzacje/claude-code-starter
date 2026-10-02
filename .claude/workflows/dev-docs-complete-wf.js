@@ -28,12 +28,76 @@ const COMPLETE_RESULT = {
   properties: {
     archiwum: { type: 'string', description: 'sciezka docs/completed/<zadanie>/' },
     pliki: { type: 'array', items: { type: 'string' } },
-    aktualizacje: { type: 'array', items: { type: 'string' }, description: 'co gdzie dopisano (lub puste)' },
     rezultaty: { type: 'array', items: { type: 'string' } },
     commit: { type: 'string', description: 'hash commita archiwizacji ("" gdy nie bylo czego commitowac)' },
+    decyzje: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        plik: { type: 'string', description: 'sciezka docs/decisions/<data>-<zadanie>.md ("" gdy nie powstal)' },
+        claudeMd: { type: 'string', description: 'wartosc pola claude_md odczytana z dysku' },
+      },
+      required: ['plik', 'claudeMd'],
+    },
+    plikiPr: { type: 'array', items: { type: 'string' }, description: 'git diff --name-only <merge-base z main> HEAD po commicie' },
   },
-  required: ['archiwum', 'pliki', 'commit'],
+  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'plikiPr'],
 }
+
+const DOPISEK_RESULT = {
+  type: 'object',
+  additionalProperties: false,
+  properties: { zapisano: { type: 'boolean' }, commit: { type: 'string' } },
+  required: ['zapisano', 'commit'],
+}
+
+// ── Archiwum (P4) ─────────────────────────────────────────────────────────
+// Archiwizacja nie edytuje CLAUDE.md ani .claude/rules/: CLAUDE.md oferty urosl 3,4k -> 89,7k zn w 4 tygodnie, a czyta go
+// kazdy builder i reviewer. Decyzje zadania ida do docs/decisions/<data>-<zadanie>.md z polem claude_md — CLAUDE.md
+// uzgadnia sie z kodem po merge'u PR. Funkcje czyste: __tests__/start-koniec.test.mjs.
+
+// Bot recenzji odmowil PR-a z 222 plikami (ETAP1 §5) — prog z zapasem; przekroczenie to UWAGA, nie STOP.
+const PROG_PLIKOW_PR = 150
+
+// Pathspec git add: wylacznie sciezki z tej listy. *.bak to kopie robocze operatora (np. stanu przed reczna edycja) —
+// nie wchodza do archiwum. Wyjscia compound (solution, learned-patterns) przychodza z autopilota.
+function pathspecArchiwum(nazwaZadania, smokePlik, dodatkowe) {
+  return [
+    `docs/active/${nazwaZadania}`, `docs/completed/${nazwaZadania}`,
+    ...(smokePlik ? [smokePlik, 'docs/operator'] : []),
+    'docs/decisions', ...dodatkowe, "':(exclude,glob)**/*.bak'",
+  ].join(' ')
+}
+
+// Komunikat liczony tutaj: agent dal raz commitowi archiwizacji temat commita feature (IT1-ODCZYT §6).
+function komunikatArchiwum(nazwaZadania) {
+  return `docs(${nazwaZadania}): archiwum`
+}
+
+function szkieletDecyzji(nazwaZadania) {
+  return `---\nzadanie: ${nazwaZadania}\ndata: <data z \`date +%F\`>\nclaude_md: do-uzgodnienia\n---\n`
+}
+
+function sprawdzDecyzje(decyzje, nazwaZadania) {
+  const wzor = new RegExp(`^docs/decisions/\\d{4}-\\d{2}-\\d{2}-${nazwaZadania}\\.md$`)
+  if (!decyzje || !wzor.test(decyzje.plik)) return `UWAGA: brak pliku decyzji docs/decisions/<data>-${nazwaZadania}.md (zwrocono: ${(decyzje && decyzje.plik) || 'nic'})`
+  if (decyzje.claudeMd !== 'do-uzgodnienia') return `UWAGA: ${decyzje.plik} ma claude_md: ${decyzje.claudeMd || 'brak'} zamiast do-uzgodnienia`
+  return null
+}
+
+// Katalog do propozycji podzialu: dwa pierwsze segmenty (apps/web, src/lib), plik w korzeniu osobno.
+function bramkaRozmiaruPr(pliki) {
+  if (pliki.length <= PROG_PLIKOW_PR) return null
+  const grupy = {}
+  for (const p of pliki) {
+    const s = p.split('/')
+    const k = s.length > 2 ? `${s[0]}/${s[1]}` : s.length === 2 ? s[0] : '(korzen)'
+    grupy[k] = (grupy[k] || 0) + 1
+  }
+  const lista = Object.entries(grupy).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(', ')
+  return `UWAGA: PR ma ${pliki.length} plików (próg ${PROG_PLIKOW_PR}) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (${lista}).`
+}
+// ── Koniec archiwum ───────────────────────────────────────────────────────
 
 // smokeStatus liczony w JS (agent archiwizacji nie wie tego lepiej niz orkiestrator):
 //   'plik'           = smoke powstal (sciezka w smokeOperatora)
@@ -46,7 +110,7 @@ const nazwaZadania = typeof args === 'string' ? args : args && args.nazwaZadania
 // docs/CONCEPTS.md, learned-patterns.md) — nikt inny ich nie commituje.
 const dodatkowePathspec = (args && Array.isArray(args.dodatkowePathspec)) ? args.dodatkowePathspec.filter((x) => typeof x === 'string' && x) : []
 if (!nazwaZadania) {
-  return { archiwum: '', pliki: [], aktualizacje: ['BLAD: brak args {nazwaZadania}'], rezultaty: [], commit: '', smokeOperatora: '', smokeStatus: 'nie-uruchomiono' }
+  return { archiwum: '', pliki: [], rezultaty: ['BLAD: brak args {nazwaZadania}'], commit: '', uwagi: [], smokeOperatora: '', smokeStatus: 'nie-uruchomiono' }
 }
 
 const smokePrompt = `Jestes autorem checklisty smoke dla OPERATORA (czlowieka) po zamknieciu zadania: ${nazwaZadania}.
@@ -138,7 +202,8 @@ const podsumowanieSmoke = smokeStatus === 'plik'
 // zostaja w indeksie, git dopasowuje pathspec do indeksu) — ale NIE po `git mv`/`git rm` (wpisy znikaja z indeksu
 // i pathspec pada). Dlatego prompt zakazuje `git mv`/`git rm`, a krok 8 kaze sprawdzic `git ls-files`.
 // docs/operator katalogowo obok dokladnej sciezki smoke'u: agent mogl zapisac plik pod inna data/nazwa niz zwrocil.
-const pathspec = `docs/active/${nazwaZadania} docs/completed/${nazwaZadania}${smokeStatus === 'plik' ? ` ${smokePlik} docs/operator` : ''}${dodatkowePathspec.length ? ` ${dodatkowePathspec.join(' ')}` : ''}`
+const pathspec = pathspecArchiwum(nazwaZadania, smokeStatus === 'plik' ? smokePlik : '', dodatkowePathspec)
+const komunikat = komunikatArchiwum(nazwaZadania)
 
 phase('Archiwizacja')
 const wynik = await agent(
@@ -151,18 +216,24 @@ Kroki (zgodnie ze skillem):
 1. Zlokalizuj docs/active/${nazwaZadania}/.
 2. Zweryfikuj ukonczenie (czytaj *-zadania.md wg puli z kroku 2 skilla). Jesli zostaly nieukonczone — i tak archiwizuj (tryb autopilota), ale wypisz je w rezultaty.
 3. Wyciagnij kluczowe wnioski z *-kontekst.md.
-4. Przenies wszystkie pliki do docs/completed/${nazwaZadania}/ przez zwykle \`mv\` (NIE \`git mv\`, NIE \`git rm\` —
+4. Przenies wszystkie pliki poza *.bak do docs/completed/${nazwaZadania}/ przez zwykle \`mv\` (NIE \`git mv\`, NIE \`git rm\` —
    pathspec w kroku 8 zaklada, ze wpisy docs/active/ sa nadal w indeksie) + dodaj ${nazwaZadania}-podsumowanie.md
    (data ukonczenia, co dostarczono, kluczowe decyzje, glowne pliki, wnioski${podsumowanieSmoke}).
+   Pliki *.bak to kopie robocze operatora: zostaja w docs/active/${nazwaZadania}/, wypisz je w rezultaty.
 5. Jesli wsrod przenoszonych plikow jest .autopilot-state.json: ustaw w nim "complete": "done"
    (stempel archiwizacji — orkiestrator celowo nie zapisuje stanu po przeniesieniu folderu,
    wiec bez stempla archiwum klamaloby ze complete jest pending).
-6. Zaktualizuj dokumentacje projektu jesli istotne (CLAUDE.md / .claude/rules/).
-7. Usun pusty katalog docs/active/${nazwaZadania}/.
+6. Nie edytuj CLAUDE.md ani .claude/rules/ — CLAUDE.md uzgadnia sie z kodem po merge'u pull requesta, a reguly
+   zapisal juz compound. Decyzje zadania ida do pliku z kroku 6a.
+6a. Plik decyzji (krok 6a skilla): docs/decisions/<data>-${nazwaZadania}.md (data z \`date +%F\`, \`mkdir -p docs/decisions\`),
+   zaczynajacy sie dokladnie od frontmattera (z data wstawiona w miejsce znacznika):
+${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md po merge'u" wg skilla, zrodlo — sekcja "## Dziennik" w *-kontekst.md.
+   Na koniec docs/decisions/README.md dopisz jedna linie indeksu wg skilla (brak pliku — utworz go z naglowkiem ze skilla).
+   Odczytaj pole z dysku: \`grep -m1 '^claude_md:' <plik>\` -> decyzje.claudeMd (sama wartosc), decyzje.plik = sciezka.
+7. Usun katalog docs/active/${nazwaZadania}/, jesli jest pusty (zostaly w nim *.bak — zostaw go).
 8. Zacommituj archiwizacje. Pathspec do git add (NIC poza tym, zadnego git add -A):
    ${pathspec}
-   oraz ew. CLAUDE.md / .claude/rules/<plik> — te TYLKO jesli faktycznie je zmieniles w kroku 6.
-   PRZED git add: dla kazdej sciezki z listy sprawdz, ze istnieje na dysku (\`test -e\`) LUB jest w indeksie
+   PRZED git add: dla kazdej sciezki z listy (poza wpisem ':(exclude…)') sprawdz, ze istnieje na dysku (\`test -e\`) LUB jest w indeksie
    (\`git ls-files <sciezka> | grep -q .\`); sciezke, ktora nie spelnia zadnego warunku, POMIN i opisz w rezultaty
    (nieistniejacy pathspec = fatal i git add nie stage'uje NICZEGO). Jesli docs/active/${nazwaZadania} nie ma juz
    w indeksie (uzyles git mv wbrew krokowi 4) — pomin te sciezke, rename'y sa juz zestage'owane.
@@ -172,14 +243,35 @@ Kroki (zgodnie ze skillem):
    takze tutaj dodawaj wylacznie sciezki istniejace na dysku lub w indeksie.
    Powod: dwa runy z rzedu zostawily te pliki w drzewie, a brudne drzewo blokuje bramke bootstrapu
    nastepnego runu autopilota (STOP "niezacommitowane zmiany").
-   Commit z message "docs(${nazwaZadania}): archiwizacja zadania — completed + podsumowanie${smokeStatus === 'plik' ? ' + smoke operatora' : ''}".
+   Commit: \`git commit -m "${komunikat}"\` — temat dokladnie taki, w jednej linii; stopke (np. Co-Authored-By) dopisujesz
+   wylacznie drugim \`-m\` (git oddzieli ja pusta linia). Sprawdz \`git log -1 --format=%s\` = "${komunikat}".
    Jesli git commit nie powiedzie sie lub nie ma zmian — zwroc commit: "" i opisz powod w rezultaty (nie przerywaj archiwizacji).
+9. Pliki PR-a: \`git diff --name-only "$(git merge-base HEAD main)" HEAD\` (brak galezi main -> master; brak obu -> []) -> plikiPr[].
 
 NIE uruchamiaj /dev-compound (zrobi to orkiestrator). Dzialaj autonomicznie.
 Zwroc obiekt zgodny ze schematem CompleteResult (commit = hash z kroku 8 lub "").`,
   { schema: COMPLETE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `complete:${nazwaZadania}` }
 )
 if (!wynik) {
-  return { archiwum: '', pliki: [], aktualizacje: ['BLAD: agent archiwizacji zwrocil null'], rezultaty: [], commit: '', smokeOperatora: smokePlik, smokeStatus }
+  return { archiwum: '', pliki: [], rezultaty: ['BLAD: agent archiwizacji zwrocil null'], commit: '', uwagi: [], smokeOperatora: smokePlik, smokeStatus }
 }
-return { ...wynik, smokeOperatora: smokePlik, smokeStatus }
+
+// Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a PR ponad progiem omija bot.
+const uwagaPr = bramkaRozmiaruPr(wynik.plikiPr || [])
+const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), uwagaPr].filter(Boolean)
+for (const u of uwagi) log(u)
+if (uwagaPr && wynik.commit) {
+  const dopisek = await agent(
+    `Dopisz na koncu pliku docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md sekcje (tresc 1:1):
+
+## Rozmiar PR — uwaga
+
+${uwagaPr}
+
+Potem \`git add docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md\` i \`git commit -m "docs(${nazwaZadania}): rozmiar PR w podsumowaniu"\`
+(stopka tylko drugim \`-m\`). Nic poza tym nie zmieniaj. Zwroc {zapisano, commit} (commit = krotki hash albo "").`,
+    { schema: DOPISEK_RESULT, agentType: 'klasa-mechaniczny', label: `complete:uwaga-pr:${nazwaZadania}` }
+  )
+  if (!dopisek || !dopisek.zapisano) log('UWAGA: sekcja o rozmiarze PR nie trafila do podsumowania — jest w wyniku runu')
+}
+return { ...wynik, uwagi, smokeOperatora: smokePlik, smokeStatus }
