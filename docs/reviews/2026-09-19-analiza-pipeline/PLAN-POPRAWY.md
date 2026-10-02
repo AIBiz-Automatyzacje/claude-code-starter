@@ -686,7 +686,7 @@ ruszają P5, P8, P10 i P15 — przy wykonaniu jedna po drugiej to nie konflikt, 
 - `.claude/scripts/telemetria/faza.mjs` — każda paczka tylko swoje pole: P6 `bramki`, `testy_usuniete`; P7 `dossier_zn`, `review_rundy`; P9 `sceptyk`; P10 `wiedza`; P14 `e2e.manual`.
 - `.claude/scripts/telemetria/role.mjs` — P7 i P8: role, które znikają.
 - `.claude/scripts/dossier/` — P7 tworzy; P10 dokłada blok wycinka.
-- `.claude/scripts/doctor/` — P2 tworzy; P3 ostrzeżenie o fladze D9; P6 sprawdzenie devDependencies bramek; P11 licznik warstwy stałej.
+- `.claude/scripts/doctor/` — P2 tworzy; P3 ostrzeżenie o fladze D9 (odpadło: flaga nie działa w workflowach projektu, D9 ścieżką odwrotu — HANDOFF 6a pkt 47); P6 sprawdzenie devDependencies bramek; P11 licznik warstwy stałej.
 - `.claude/scripts/wiedza/` — P10 tworzy; P12 dokłada dobór zdań D10.
 - `.claude/settings.json` — P2 profil pluginów; P6 hook warunkowy.
 - `README.md` — P1 lista skilli; P2 Instalacja i Wymagania; P3 PA-25; P6 bramki; P10 jedna linia CLAUDE.md i konwersja; P13 przepływ bez dev-docs; P16 przegląd całości.

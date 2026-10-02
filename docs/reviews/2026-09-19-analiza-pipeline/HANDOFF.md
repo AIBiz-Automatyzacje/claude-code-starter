@@ -40,7 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
-| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922` + poprawka po teście czystego konta `0730d04`. **P3 SESJA 1/2 ZROBIONA 2026-10-01 (6a pkt 46): pięć plików klas ról, `tools:` w plikach ról i badaczy, warianty builderów `-figma`, PA-25 (skill figma z pluginu), test `klasy-rol.test.mjs`; gałąź `popr/P3-agenci` niezmergowana. NASTĘPNY KROK: §8 „P3 — KONTEKST I EFORT AGENTÓW (sesja 2/2)”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ◐ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922` + poprawka po teście czystego konta `0730d04`. **P3 SESJA 1/2 ZROBIONA 2026-10-01 (6a pkt 46): pięć plików klas ról, `tools:` w plikach ról i badaczy, warianty builderów `-figma`, PA-25 (skill figma z pluginu), test `klasy-rol.test.mjs`; gałąź `popr/P3-agenci` niezmergowana. **P3 ZROBIONA 2026-10-02 (6a pkt 47): `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga nie istnieje dla workflowów projektu — krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0; haiku start 52k → 8k, opus 72–84k → 49–60k), merge do main `3933432`. NASTĘPNY KROK: §8 „P4 — START I KONIEC RUNU”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ☑ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -792,6 +792,43 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     narzędzia Agent: decyzja w sesji 2 (zdanie w prompcie „w pipelinie piszesz zastępstwo sam” vs Agent w klasie). Badacze: nic spoza allowlisty.
     Poprawione od razu (57697d8): `download_assets`/`get_motion_context` w wariantach; Context7 w README:323 i `dev-plan/SKILL.md:167`.
     Następny krok: §8 „P3 — KONTEKST I EFORT AGENTÓW (sesja 2/2)”.
+47. **P3 sesja 2/2 — WORKFLOWY I SMOKE (2026-10-01/02, sesja 86d8fb12). P3 ZROBIONA, merge `--ff-only` do main `3933432`.** Commity sesji: b7ee084, 1326613,
+    1999105, 3933432 (plus 5 z sesji 1). Testy szablonu 250/250, typecheck i lint zielone.
+    (a) **agentType (b7ee084):** 38 z 43 wywołań `agent()` dostało `agentType` wg mapy 6a pkt 46 (g) (5 miało już: buildery, reviewerzy, tester E2E);
+    `model: 'haiku'` zniknął z opcji (model z pliku klasy); `stan:zapis:retry` → klasa-orkiestracyjny; correctness `general-purpose` → `correctness-reviewer`,
+    test-coverage → `test-coverage-reviewer`. IU_PLAN: warianty `-figma` w enum, planner bierze je, gdy kontekst designerski ma niepuste `figma_spec`
+    albo `figma_screens`. **Decyzje operatora 2026-10-01:** compound-refresh — zdanie w `refreshPrompt` „subagentów nie uruchamiasz, 1–2 dokumenty piszesz
+    sam” (klasa bez narzędzia Agent; rekomendacja przyjęta); efort jawnie w `agent()`, nie `effort:` we frontmatterze (rekomendacja przyjęta: trzy klasy
+    potrzebują różnych efortów per rola, pierwszeństwo pliku nad opcją nieudokumentowane — przez to smoke go nie sprawdzał, bo pliki efortu nie mają).
+    (b) **Efort D6 (1326613):** review-wf `TIERY_DOMYSLNE = { packager low, sceptykP2 medium, sceptykP1 high, reviewer high, scribe low }` (test-coverage :904,
+    tester E2E i scribe przez `zEffortem`); pozostałe workflowy `effort:` w opcjach — orkiestracyjny medium, naprawiacz i buildery high, verify-fix high,
+    kontrola diffu fixa low (bez zmian; D6 jej nie wymienia), haiku bez efortu (pre-skan stracił `low`). `zEffortemAP` usunięty (martwy). Zmiana kontraktu
+    `sceptycy-p2.test.mjs` nazwana w commicie.
+    (c) **Testy:** `klasy-rol.test.mjs` przekroczyłby 300 linii → testy wywołań w nowym `wywolania-agentow.test.mjs` (każde `agent()` ma `agentType` z plikiem,
+    zgodność z mapą klas, bez `model:`, warianty `-figma` w enum, efort = tabela D6), wspólny odczyt w `__tests__/agenci-pipeline.mjs` (parser czyta opcje
+    z jednej linii `{ schema: X, …, label: … }` i liczy, czy liczba `agent(` = liczba linii opcji — inny kształt opcji = błąd testu, nie cichy brak).
+    (d) **D9 — warunek wstępny NIE przeszedł; ścieżka odwrotu (decyzja operatora 2026-10-02, 1999105).** Binarka 2.1.287: loader workflowów projektu
+    (`.claude/workflows/`) bierze z `meta` tylko `name`, `description`, `title`, `whenToUse`, `phases` — `disableModelInvocation` jest cicho pomijane
+    (flagę mają tylko workflowy wbudowane); docs workflowów (claude-code-guide) pola nie znają. Do listy skilli trafia `description` + `whenToUse`
+    (`phases` dopiero po wywołaniu). Zrobione: opisy 4 dzieci po jednym zdaniu (było 230–1001 zn, jest ≤ 160; `lista-skilli.test.mjs`), `description`
+    autopilota skrócony do routingu, tryby wznowienia zostają w `whenToUse`. **Odpada:** flaga w meta, ostrzeżenie doctora (§4 PLAN-POPRAWY poprawiony),
+    punkt smoke'a „dzieci mimo flagi” — dzieci ruszyły normalnie. Zysk mały: dzieci miały ~1,8k zn (po P1), nie ~12k z czasu panelu.
+    (e) **N1/N2 (3933432):** `whenToUse` autopilota — zdanie o nowej sesji po zmianach `.claude/` i „do agentów workflow: ta wiadomość nie jest dla was”;
+    ta sama linia N1 w handoffie `dev-docs/SKILL.md` przy komendzie `Workflow`. Prompt-audit dodanych linii (`git diff -U0 e5de7c7..HEAD`, wzorce z
+    `pa_inwentarz.py`): 4 trafienia, wszystkie w treści sprzed sesji na liniach, którym doszło `agentType` albo dopisek — w nowej treści 0.
+    (f) **Smoke `wf_2894ee9c-566` (`dane/smoke-P3.txt`), sesja kopii na efort medium:** status OK, 1/1 faza, walidacja PASS; **2,82 M (−28% vs R0 3,92 M)**,
+    28 agentów, 17 min (+31% — reviewerzy na high). Efort z transkryptu = tabela co do sztuki: opus/high 7 (5 reviewerów, build, fix), low 3 (packager,
+    scribe, kontrola fixa), medium 9 (8 orkiestracyjnych + verify-batch), haiku 9 bez efortu — sesja medium nie nadpisała opcji. `ctx_start`: haiku
+    52k → 8k (cel 9–10k osiągnięty), opus 72–84k → 49–60k (−21…−33%). **Reszta do celu 25–38k to `instructions`:** CLAUDE.md kopii 22,1k zn, coding-rules
+    10,5k, **learned-patterns 48,0k zn (~24k tok)** — wyjęcie learned-patterns z eager = P10 (cele It. 3a je zakładały). Odmów „brak narzędzia” 0
+    (błędy narzędzi to zwykłe potknięcia: zapis bez odczytu u haiku `stan:zapis`, regex ugrep w pre-skanie, pathspec z wiodącą spacją w complete, zablokowane
+    `sleep`); naprawiacz Skill nie wołał. Review: gate ZASTRZEZENIA (R0 CZYSTE) — znalezione 15 vs 5, potwierdzone P2 4 vs 1 przy reviewerach na high;
+    2 P2 w fixture (testy błędnego wejścia tylko na `a`) zostały w known-issues kopii jako „poza 3 scenariuszami planu” — materiał dla P8/P11, nie defekt
+    paczki. Compound nic nie zapisał (`plik: null`, faza trywialna) → **compound-refresh się nie uruchomił; zdanie o subagentach niesprawdzone w runie.**
+    „Pusty wynik jednego z 28 agentów” z podsumowania sesji runu: w journalu 28/28 wyników niepustych — to compound z `plik: null`.
+    (g) **Kopia:** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P3-oferty-online` (kod 7 jak w P1 → commit w kopii `2f8acff`, data wygaśnięcia
+    fikstury `opublikuj-oferte` → 2099). Usuwanie tylko za zgodą operatora na tę ścieżkę.
+    Następny krok: §8 „P4 — START I KONIEC RUNU”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -881,6 +918,13 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   wynik zapisuj obok bazy (`*-po-P3.*`). `pa_inwentarz.py` pomija podkatalogi `.claude/hooks/` (filtr `os.path.isfile`, poprawione 2026-10-01).
   Przy kontroli dodanych linii pomijaj linie konfiguracji frontmattera (`model: haiku` łapie wzorzec 1d-modele-przypiete). Nowe pliki agentów pojawiają się
   w liście agentów sesji głównej od razu — opis klasy mówi „z sesji nie używaj”.
+- P3 sesja 2 (2026-10-02): pola `meta` workflowu, które naprawdę działają, ustalaj z binarki (funkcja walidująca meta zwraca tylko name/description/title/
+  whenToUse/phases; nieznane pole NIE jest błędem — znika po cichu). Szukaj w Pythonie `re.finditer` po krótkim kluczu i drukuj okno ±600 B tylko tam,
+  gdzie w oknie jest „workflow” (całość < 1 min). Efort i model agenta w smoke'u: sekcja 4 `smoke_odczyt.py` (z transkryptu); skład startu agenta =
+  wpisy przed pierwszym `assistant` w `subagents/workflows/<wf>/agent-*.jsonl` (załącznik `instructions.files[]` z rozmiarami CLAUDE.md i reguł —
+  u klas z `omitClaudeMd` go nie ma). Pustych wyników szukaj w `journal.jsonl` (`type: result`, pole `result`), nie w podsumowaniu sesji runu.
+  Testy statyczne wywołań `agent()`: opcje w JEDNEJ linii `{ schema: X, …, label: … }` — inaczej `wywolania-agentow.test.mjs` zgłosi niezgodność liczby.
+  Sesja runu smoke'a kończy podsumowaniem z pytaniem do operatora („dać zielone światło?”) — to pytanie o kopię, nie zadanie dla sesji szablonu.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -1135,8 +1179,42 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   (skill `figma:figma-design-to-code` z pluginu, lokalna kopia usunięta), test `klasy-rol.test.mjs`; 5 commitów na `popr/P3-agenci` (NIEZMERGOWANA).
   Workflowy bez zmian. **Następny krok: „P3 — KONTEKST I EFORT AGENTÓW (sesja 2/2)” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu;
   token Airtable.
+- **P3 ZROBIONA (2026-10-02; 6a pkt 47):** `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga `disableModelInvocation` nie działa
+  w workflowach projektu → krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0), merge do main `3933432`.
+  **Następny krok: „P4 — START I KONIEC RUNU” niżej** (nowa sesja — N2). Otwarte u operatora: zgoda na usunięcie kopii `_smoke-P3-oferty-online`;
+  oryginał oferty-online czerwony na main (6a pkt 42 g); push szablonu; token Airtable.
 
-**P3 — KONTEKST I EFORT AGENTÓW, sesja 2/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**P4 — START I KONIEC RUNU (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P4 — start i koniec runu (PLAN-POPRAWY.md §3 P4).
+P3 zrobiona (HANDOFF 6a pkt 46, 47): klasy ról, agentType i efort jawny w każdym agent(), D9 ścieżką odwrotu; merge do main 3933432.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): PLAN-POPRAWY.md §1 (zasady wspólne), §3 P4 i P5 (kontrakt docs/decisions/ z polem claude_md),
+§4 (wiersze dev-autopilot-wf.js, dev-docs-complete-wf.js, start-koniec.test.mjs, doctor); HANDOFF 6a pkt 47 i §7 (trzy ostatnie punkty);
+dane/pa-hunki-lata-tresc.txt (H33, H34, H48, H49).
+Kod: bootstrap i STOP w .claude/workflows/dev-autopilot-wf.js (bootstrapPrompt, bramka brancha i czystości, commit artefaktów przy STOP, fazyUkonczone),
+.claude/workflows/dev-docs-complete-wf.js (:160 i commit archiwizacji), .claude/skills/dev-docs-complete/SKILL.md (:115), .claude/scripts/doctor/.
+
+Podział (propozycja — potwierdź albo zmień na starcie): jedna sesja; gdy bootstrap okaże się duży — sesja 1 = archiwizacja i decyzje, sesja 2 = bootstrap + smoke.
+
+Do zrobienia (gałąź popr/P4-start-koniec z main; test → kod → pnpm typecheck → pnpm test → pnpm lint → commit, krok po kroku):
+1. start-koniec.test.mjs (najpierw czerwony): decyzja bootstrapu (STOP / dalej) dla doctor FAIL, czerwony main, zielony main z cache po SHA bazy,
+   brudny tylko katalog zadania vs brudne poza nim; fazyUkonczone; stopka STOP z pustą linią; pathspec archiwizacji bez CLAUDE.md i *.bak,
+   komunikat docs(<zadanie>): archiwum; plik decyzji z polem claude_md: do-uzgodnienia. Logika decyzji = funkcje czyste (wzór kontrola-fixa.test.mjs).
+2. Archiwizacja bez edycji CLAUDE.md i .claude/rules/ (H33, H34, H49 łatą przez pa_hunk.py, H48 jako treść); bez „Zapytaj…” i „🎉” (PA-38);
+   decyzje z Dziennika → docs/decisions/<data>-<zadanie>.md + linia indeksu docs/decisions/README.md; bramka PR ≤ 150 plików (UWAGA, nie STOP).
+3. Bootstrap: doctor, zielony main (wynik ze SHA bazy w stanie zadania), czystość — brudny wyłącznie katalog zadania = commit i dalej; STOP z gotową komendą.
+4. Kontrola prompt-auditu na dodanych liniach (0 nowych trafień). Smoke: kopia oferty-online skryptem z P0, daj mi wszystkie komendy (cd do kopii,
+   claude --effort medium, /dev-autopilot-wf docs/active/smoke-autopilot); odczyt smoke_odczyt.py vs R0 i --ref wf_2894ee9c-566 (P3)
+   (oczekiwania: PLAN P4 „Smoke” — bootstrap PASS, plik w docs/decisions/ z claude_md: do-uzgodnienia, CLAUDE.md nietknięty, commit docs(smoke-autopilot): archiwum).
+Po zielonym smoke'u merge --ff-only popr/P4-start-koniec do main.
+Po sesji: HANDOFF (§2, 6a, §8 → instrukcja P5), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**P3 — KONTEKST I EFORT AGENTÓW, sesja 2/2 (WYKONANA 2026-10-02 — 6a pkt 47; zostawiona jako wzór):**
 
 ```
 Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P3 — kontekst i efort agentów (PLAN-POPRAWY.md §3 P3), sesja 2 z 2.
