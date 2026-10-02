@@ -36,7 +36,7 @@ const complete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'u
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const A = new Function(
   `${wytnij(autopilot, '// ── Bramka wejscia (P4)', '// ── Koniec bramki wejscia')}
-   return { decyzjaWejscia, decyzjaTestowStartu, fazyUkonczone, instrukcjaCommita }`,
+   return { decyzjaWejscia, decyzjaTestowStartu, decyzjaClaudeMd, fazyUkonczone, instrukcjaCommita }`,
 )()
 
 // eslint-disable-next-line no-new-func -- jw.
@@ -137,6 +137,45 @@ test('testy startu: agent bez wyniku albo projekt bez testow = uwaga, bez STOP-u
     assert.equal(d.stop, null)
     assert.equal(d.cache, null)
     assert.ok(d.uwaga)
+  }
+})
+
+// ── Warunek CLAUDE.md po merge'u (P5) ─────────────────────────────────────
+
+/** @param {string} plik @param {string} pole @returns {string} linia `git grep` na galezi main */
+const linia = (plik, pole) => `main:docs/decisions/${plik}:claude_md: ${pole}`
+
+test('claude_md: plik decyzji na main z do-uzgodnienia = STOP z komenda uzgodnienia i swiezego runu', () => {
+  const d = A.decyzjaClaudeMd({ glowna: 'main', katalog: true, linie: [linia('2026-10-02-smoke-autopilot.md', 'do-uzgodnienia')] }, ZADANIE)
+  assert.ok(d.stop, 'nieuzgodniony CLAUDE.md zatrzymuje run przed faza 1')
+  assert.match(d.stop.powod, /^start: CLAUDE\.md nieuzgodniony po merge'u/, 'kategoria telemetrii: start')
+  assert.match(d.stop.powod, /docs\/decisions\/2026-10-02-smoke-autopilot\.md/)
+  assert.match(d.stop.naprawa, /git switch main/)
+  assert.match(d.stop.naprawa, /\/dev-pr --claude-md smoke-autopilot/)
+  assert.match(d.stop.naprawa, /\/dev-autopilot-wf docs\/active\/zadanie-x/)
+})
+
+test('claude_md: wszystkie pliki uzgodniono = dalej, bez uwagi', () => {
+  const d = A.decyzjaClaudeMd({ glowna: 'main', katalog: true, linie: [linia('2026-09-30-a.md', 'uzgodniono'), linia('2026-10-01-b.md', 'uzgodniono')] }, ZADANIE)
+  assert.deepEqual(d, { stop: null, uwaga: null })
+})
+
+test('claude_md: kazdy nieuzgodniony plik na main trafia do STOP-u, takze starszy niz ostatni (decyzja operatora 2026-10-02)', () => {
+  const d = A.decyzjaClaudeMd({ glowna: 'main', katalog: true, linie: [
+    linia('2026-09-28-stare.md', 'do-uzgodnienia'), linia('2026-09-30-srodkowe.md', 'uzgodniono'), linia('2026-10-01-nowe.md', 'do-uzgodnienia'),
+  ] }, ZADANIE)
+  assert.ok(d.stop)
+  assert.ok(d.stop.powod.includes('2026-09-28-stare.md') && d.stop.powod.includes('2026-10-01-nowe.md'))
+  assert.ok(!d.stop.powod.includes('srodkowe'))
+  assert.match(d.stop.naprawa, /--claude-md stare/)
+  assert.match(d.stop.naprawa, /--claude-md nowe/)
+})
+
+test('claude_md: brak docs/decisions/ na main (projekt sprzed zmiany) albo brak galezi glownej = ostrzezenie, nie STOP', () => {
+  for (const decyzje of [{ glowna: 'main', katalog: false, linie: [] }, { glowna: null, katalog: false, linie: [] }]) {
+    const d = A.decyzjaClaudeMd(decyzje, ZADANIE)
+    assert.equal(d.stop, null)
+    assert.match(d.uwaga ?? '', /docs\/decisions/)
   }
 })
 

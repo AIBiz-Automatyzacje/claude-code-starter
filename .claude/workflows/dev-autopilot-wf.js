@@ -159,8 +159,19 @@ const PLAN_STATE = {
         doctorKod: { type: ['integer', 'null'], description: 'kod wyjscia doctor.sh (0 OK, 1 brak obowiazkowego); null = brak skryptu' },
         doctorWynik: { type: 'string', description: 'linia WYNIK z doctora ("" gdy brak)' },
         kodJakPrzyTescie: { type: ['boolean', 'null'], description: 'od bazaZielona.sha zmiany tylko w docs/; null = brak bazaZielona' },
+        // Pliki decyzji na galezi glownej (P5) — czy CLAUDE.md uzgodniono po merge'u, liczy decyzjaClaudeMd.
+        decyzje: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            glowna: { type: ['string', 'null'], description: 'main albo master; null = zadnej' },
+            katalog: { type: 'boolean', description: 'docs/decisions istnieje na galezi glownej' },
+            linie: { type: 'array', items: { type: 'string' }, description: "wyjscie git grep -e '^claude_md:' 1:1" },
+          },
+          required: ['glowna', 'katalog', 'linie'],
+        },
       },
-      required: ['zmiany', 'doctorKod', 'doctorWynik', 'kodJakPrzyTescie'],
+      required: ['zmiany', 'doctorKod', 'doctorWynik', 'kodJakPrzyTescie', 'decyzje'],
     },
     // Wynik zielonego startu z pliku stanu (przepisany 1:1) — swiezy run po STOP-ie przed faza 1 nie powtarza testow.
     bazaZielona: {
@@ -369,6 +380,11 @@ Folder zadania: ${sciezka}
 
 1a. DOCTOR: \`bash .claude/scripts/doctor/doctor.sh; echo "KOD=$?"\` (timeout Bash 300000). wejscie.doctorKod = liczba
    z linii KOD=, wejscie.doctorWynik = linia zaczynajaca sie od "WYNIK:". Brak pliku skryptu -> doctorKod null, doctorWynik "".
+
+1b. DECYZJE NA GALEZI GLOWNEJ: wejscie.decyzje.glowna = "main", gdy \`git rev-parse --verify --quiet refs/heads/main\` zwraca SHA,
+   inaczej "master" przy tym samym sprawdzeniu, inaczej null (wtedy katalog false, linie []).
+   katalog: \`git cat-file -e <glowna>:docs/decisions && echo TAK || echo NIE\` -> TAK = true.
+   linie: \`git grep -e '^claude_md:' <glowna> -- 'docs/decisions/*.md'\` — kazda linia wyjscia 1:1 (brak trafien = []).
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
 
@@ -1039,6 +1055,27 @@ function decyzjaTestowStartu(wynik, sciezka) {
   return { stop: null, cache: { sha: wynik.sha, wynik: 'PASS' }, uwaga: null }
 }
 
+// CLAUDE.md uzgadnia sie z kodem po merge'u PR (/dev-pr --claude-md), nie przy archiwizacji (P4). Kazdy plik decyzji na
+// galezi glownej z `do-uzgodnienia` zatrzymuje kolejne zadanie: wg reguly „tylko ostatni” pominiete uzgodnienie zostaloby
+// nieuzgodnione na zawsze (decyzja operatora 2026-10-02). Linie z `git grep -e '^claude_md:' <glowna> -- 'docs/decisions/*.md'`.
+function decyzjaClaudeMd(decyzje, sciezka) {
+  if (!decyzje.glowna || !decyzje.katalog) {
+    return { stop: null, uwaga: `brak docs/decisions/ na galezi glownej (${decyzje.glowna || 'nie ustalono'}) — warunek CLAUDE.md po merge'u pominiety` }
+  }
+  const pliki = decyzje.linie
+    .map((l) => l.slice(decyzje.glowna.length + 1).match(/^(docs\/decisions\/([^:]+)\.md):claude_md:\s*(\S+)/))
+    .filter((m) => m && m[3] === 'do-uzgodnienia')
+    .map((m) => ({ plik: m[1], zadanie: m[2].replace(/^\d{4}-\d{2}-\d{2}-/, '') }))
+  if (!pliki.length) return { stop: null, uwaga: null }
+  return {
+    stop: {
+      powod: `start: CLAUDE.md nieuzgodniony po merge'u — ${pliki.map((p) => p.plik).join(', ')} (claude_md: do-uzgodnienia)`,
+      naprawa: `\`git switch ${decyzje.glowna}\` (z remote takze \`git pull --ff-only\`), potem ${pliki.map((p) => `/dev-pr --claude-md ${p.zadanie}`).join(', ')} (albo recznie claude_md: uzgodniono i commit na ${decyzje.glowna}), wroc na galaz zadania i swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+    },
+    uwaga: null,
+  }
+}
+
 function fazyUkonczone(fazy) {
   return fazy.filter((f) => f.execute === 'done' && f.review === 'done' && (f.fix === 'done' || f.fix === 'none')).length
 }
@@ -1231,6 +1268,11 @@ const wejscie = decyzjaWejscia(sciezka, stan.wejscie, stan.fazy, stan.bazaZielon
 for (const u of wejscie.uwagi) log(`Bramka wejscia: ${u}`)
 if (wejscie.stop) {
   return await stopRun({ ...wejscie.stop, stan })
+}
+const claudeMd = decyzjaClaudeMd(stan.wejscie.decyzje, sciezka)
+if (claudeMd.uwaga) log(`Bramka wejscia: ${claudeMd.uwaga}`)
+if (claudeMd.stop) {
+  return await stopRun({ ...claudeMd.stop, stan })
 }
 if (wejscie.commitZadania) {
   const commitZadania = await zacommitujKatalogZadania(`docs(${stan.nazwaZadania}): zmiany w katalogu zadania przed runem`, 'start:commit-zadania')
