@@ -827,7 +827,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     paczki. Compound nic nie zapisał (`plik: null`, faza trywialna) → **compound-refresh się nie uruchomił; zdanie o subagentach niesprawdzone w runie.**
     „Pusty wynik jednego z 28 agentów” z podsumowania sesji runu: w journalu 28/28 wyników niepustych — to compound z `plik: null`.
     (g) **Kopia:** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P3-oferty-online` (kod 7 jak w P1 → commit w kopii `2f8acff`, data wygaśnięcia
-    fikstury `opublikuj-oferte` → 2099). Usuwanie tylko za zgodą operatora na tę ścieżkę.
+    fikstury `opublikuj-oferte` → 2099). USUNIĘTA 2026-10-02 za zgodą operatora.
     Następny krok: §8 „P4 — START I KONIEC RUNU”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -1181,7 +1181,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   token Airtable.
 - **P3 ZROBIONA (2026-10-02; 6a pkt 47):** `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga `disableModelInvocation` nie działa
   w workflowach projektu → krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0), merge do main `3933432`.
-  **Następny krok: „P4 — START I KONIEC RUNU” niżej** (nowa sesja — N2). Otwarte u operatora: zgoda na usunięcie kopii `_smoke-P3-oferty-online`;
+  **Następny krok: „P4 — START I KONIEC RUNU” niżej** (nowa sesja — N2). Kopia `_smoke-P3-oferty-online` usunięta za zgodą. Otwarte u operatora:
   oryginał oferty-online czerwony na main (6a pkt 42 g); push szablonu; token Airtable.
 
 **P4 — START I KONIEC RUNU (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
