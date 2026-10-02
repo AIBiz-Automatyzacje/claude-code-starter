@@ -1,7 +1,7 @@
 export const meta = {
   name: 'dev-docs-review-wf',
-  description: 'Code review fazy: context-packager (mapa zmian + flagi warstw raz) -> routing v2 domenowy (rdzen security/spec/test zawsze; perf/code-quality/correctness/E2E tylko gdy ich domena jest w fazie obecna; fail-open bez flag) -> do 7 reviewerow rownolegle (tester E2E zwraca przebiegi[] per checkbox [E2E]) -> dedup 2-przebiegowy (JS + semantyczny haiku) -> detekcja blokera srodowiska po sygnaturze (JS) + globalny limit P3 po dedupie (round-robin po zrodle) -> adversarial verify P1/P2 (P1=3 niezaleznych sceptykow z konsensusem 2/3; P2 batchowane po pliku, jeden sceptyk na grupe do 4 findingow; findingi E2E testera i OPERATOR poza verify) -> scribe zapisuje raport + sekcje "Przebieg review" + bookkeeping checkboxow Weryfikacja:/Test: [E2E] (odznaczanie WYLACZNIE z wpisu PASS) -> severity gate. Zwraca przebieg (metryki routingu/dedupu/verify) dla telemetrii oraz blokerSrodowiska i e2eTesterFail dla orkiestratora.',
-  whenToUse: 'Review jednej fazy. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
+  description: 'Code review jednej fazy: reviewerzy, verify P1/P2, raport, severity gate.',
+  whenToUse: 'Wolany przez dev-autopilot-wf; standalone: args {sciezka, faza}.',
   phases: [
     { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 7: security, performance, code-quality, correctness, spec-compliance, test-coverage, e2e)' },
     { title: 'Verify', detail: 'adversarial verify: P1 = 3 sceptykow (2/3), P2 = jeden sceptyk na grupe findingow z tego samego pliku' },

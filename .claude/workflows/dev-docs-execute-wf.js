@@ -1,7 +1,7 @@
 export const meta = {
   name: 'dev-docs-execute-wf',
-  description: 'Wykonanie JEDNEJ fazy zadania: planner czyta IU z docs/plans/, buildery (feature-builder-*) implementuja je przez agentType, potem walidacja + commit + aktualizacja dokumentacji.',
-  whenToUse: 'Pojedyncza faza implementacji. Wolany przez dev-autopilot lub standalone z args {sciezka, faza}.',
+  description: 'Wykonanie jednej fazy zadania: buildery per IU, walidacja, commit.',
+  whenToUse: 'Wolany przez dev-autopilot-wf; standalone: args {sciezka, faza}.',
   phases: [
     { title: 'Plan IU', detail: 'wczytaj plan techniczny, zbuduj prompty builderow' },
     { title: 'Build', detail: 'jeden builder per Implementation Unit' },

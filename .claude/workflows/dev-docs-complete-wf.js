@@ -1,7 +1,7 @@
 export const meta = {
   name: 'dev-docs-complete-wf',
-  description: 'Archiwizacja ukonczonego zadania: generuje smoke operatora (docs/operator/), przenosi docs/active/<zadanie> -> docs/completed/, tworzy podsumowanie, aktualizuje dokumentacje projektu i commituje archiwizacje.',
-  whenToUse: 'Po ukonczeniu wszystkich faz. Wolany przez dev-autopilot lub standalone z args {nazwaZadania}.',
+  description: 'Archiwizacja ukonczonego zadania: smoke operatora, docs/completed/, commit.',
+  whenToUse: 'Wolany przez dev-autopilot-wf; standalone: args {nazwaZadania}.',
   phases: [{ title: 'Smoke operatora' }, { title: 'Archiwizacja' }],
 }
 
