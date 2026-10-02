@@ -362,7 +362,7 @@ const REVIEWERZY = [
   { key: 'security', agentType: 'security-sentinel', fokus: 'auth, RLS policies, XSS, data exposure, Zod validation, API key exposure' },
   { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, useEffect cleanup' },
   { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych' },
-  { key: 'correctness', agentType: 'general-purpose', fokus: 'POPRAWNOSC WYKONANIA — jedyna os, ktorej nikt inny nie ma. Nie oceniasz stylu, struktury ani typow: masz ZNALEZC DEFEKT, ktory w tym kodzie JEST. Procedura: wypisz sciezki wykonania zmienione w tej fazie (kazda galaz warunku, kazda petla, kazda sciezka bledu), potem przejdz KAZDA z nich krok po kroku na konkretnych danych wejsciowych — wartosc graniczna, pusta kolekcja, null, wartosc spoza zakresu, dwa rownolegle wywolania, przerwanie w polowie. Szukaj: off-by-one, odwrocony warunek, brakujaca galaz else, stan czytany przed zapisem, wyscig miedzy async operacjami, cleanup ktory nie odpala, wartosc uzyta po zmianie znaczenia. Kazdy finding MUSI miec scenariusz awarii: konkretne wejscie -> co sie stanie -> dlaczego to zle. Bez takiego scenariusza to nie jest finding poprawnosci' },
+  { key: 'correctness', agentType: 'correctness-reviewer', fokus: 'POPRAWNOSC WYKONANIA — jedyna os, ktorej nikt inny nie ma. Nie oceniasz stylu, struktury ani typow: masz ZNALEZC DEFEKT, ktory w tym kodzie JEST. Procedura: wypisz sciezki wykonania zmienione w tej fazie (kazda galaz warunku, kazda petla, kazda sciezka bledu), potem przejdz KAZDA z nich krok po kroku na konkretnych danych wejsciowych — wartosc graniczna, pusta kolekcja, null, wartosc spoza zakresu, dwa rownolegle wywolania, przerwanie w polowie. Szukaj: off-by-one, odwrocony warunek, brakujaca galaz else, stan czytany przed zapisem, wyscig miedzy async operacjami, cleanup ktory nie odpala, wartosc uzyta po zmianie znaczenia. Kazdy finding MUSI miec scenariusz awarii: konkretne wejscie -> co sie stanie -> dlaczego to zle. Bez takiego scenariusza to nie jest finding poprawnosci' },
   // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY
   // (spec/IU) jako punkt odniesienia; pozostali dostaja procedure posrednio przez test-coverage.
   { key: 'spec-compliance', semantyka: true, agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
@@ -859,7 +859,7 @@ phase('Review')
 // deterministyczna z (sciezka, faza) — retry packagera nadpisuje ten sam plik zamiast mnozyc smieci.
 const diffPlik = `/tmp/review-diff-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.diff`
 const ctxPlik = `/tmp/review-ctx-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.md`
-const kontekst = await agent(kontekstPrompt(sciezka, faza, diffPlik, ctxPlik), zEffortem({ schema: KONTEKST, label: 'kontekst:diff', phase: 'Review' }, tiery.packager))
+const kontekst = await agent(kontekstPrompt(sciezka, faza, diffPlik, ctxPlik), zEffortem({ schema: KONTEKST, agentType: 'klasa-orkiestracyjny', label: 'kontekst:diff', phase: 'Review' }, tiery.packager))
 
 // Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy. Poprzedni prog "<=2 pliki" nie odpalil ani raz
 // (realne fazy: 6-15 plikow), a regexy po sciezce nie trafialy w projekty bez src/. Teraz decyduja
@@ -923,7 +923,7 @@ log(kontekst && kontekst.ctxZapisany
 const thunki = aktywni.map((r) => () =>
   agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 )
-thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, label: 'review:test-coverage', phase: 'Review' }))
+thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }))
 if (e2eTryb !== 'pominiety') {
   log(`Tester E2E: tryb ${e2eTryb} (srodowisko: ${srodowiskoE2E === undefined ? 'nieznane — run standalone' : srodowiskoE2E})`)
   thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst), { schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }))
@@ -1077,7 +1077,7 @@ NIE lacz roznych problemow w tym samym pliku ani problemow o wspolnym objawie, a
 W razie watpliwosci NIE laczyc. Zwroc wylacznie grupy 2+ indeksow; brak duplikatow => {duplikaty: []}.
 
 ${lista}`,
-    { schema: DEDUP_GRUPY, label: 'dedup:semantyczny', model: 'haiku', phase: 'Review' }
+    { schema: DEDUP_GRUPY, agentType: 'klasa-mechaniczny-odczyt', label: 'dedup:semantyczny', phase: 'Review' }
   )
   if (grupy && Array.isArray(grupy.duplikaty)) {
     const doUsuniecia = new Set()
@@ -1259,7 +1259,7 @@ const p1Zweryfikowane = await parallel(
 
 Finding [${f.severity}/${f.typ}] ${f.plik}: ${f.opis}
 Sprawdz kod. Czy to prawdziwy problem czy false positive? Zwroc werdykt.`,
-          zEffortem({ schema: VERDICT, label: `verify:${f.plik}:${i}`, phase: 'Verify' }, tiery.sceptykP1)
+          zEffortem({ schema: VERDICT, agentType: 'klasa-sceptyk', label: `verify:${f.plik}:${i}`, phase: 'Verify' }, tiery.sceptykP1)
         )
       )
     ).then((werdykty) => domknijWerdykty(f, werdykty.filter(Boolean)))
@@ -1281,7 +1281,7 @@ ${lista}
 Dla KAZDEGO indeksu z listy zwroc osobny werdykt w werdykty[] z polem \`indeks\` rownym numerowi z listy.
 Gdy dla ktoregos indeksu nie potrafisz rozstrzygnac — POMIN go zamiast zgadywac; pominiety indeks zostanie
 oznaczony jako niezweryfikowany, a zgadniety werdykt cicho zabilby albo przepuscil realny finding.`,
-      zEffortem({ schema: VERDICTS_BATCH, label: `verify-batch:${kluczPliku(grupa[0].plik)}:${grupa.length}`, phase: 'Verify' }, tiery.sceptykP2)
+      zEffortem({ schema: VERDICTS_BATCH, agentType: 'klasa-sceptyk', label: `verify-batch:${kluczPliku(grupa[0].plik)}:${grupa.length}`, phase: 'Verify' }, tiery.sceptykP2)
     ).then((wynik) => {
       const werdykty = (wynik && Array.isArray(wynik.werdykty)) ? wynik.werdykty : []
       return grupa.map((f, i) => {
@@ -1359,14 +1359,14 @@ const przebieg = {
 
 // Faza 3: scribe zapisuje raport + bookkeeping + liczy severity gate
 phase('Zapis')
-let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone), { schema: REVIEW_RESULT, label: `scribe:faza-${faza}` })
+let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone), { schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}` })
 if (!wynik) {
   // Scribe padl — jedna ponowna proba (to JEDYNY agent zapisujacy review-faza-N.md i sekcje
   // "Do poprawy"; bez tych artefaktow fix dziala bez kontekstu, a czlowiek bez widoku).
   log(`Scribe fazy ${faza} padl — ponawiam raz`)
   wynik = await agent(
     `${scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
-    { schema: REVIEW_RESULT, label: `scribe:faza-${faza}:retry` }
+    { schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}:retry` }
   )
 }
 if (!wynik) {
@@ -1374,7 +1374,7 @@ if (!wynik) {
   // team-os-onboarding-instalatory, faza 2, 2026-07-26: raport 363 linie + komplet sekcji i
   // bookkeeping juz na dysku, APIError dopiero na returnie). Bez tej inspekcji leci scribeFail
   // i autopilot kaze powtorzyc cale review — 150-250k tokenow za prace, ktora juz jest zrobiona.
-  const inspekcja = await agent(inspekcjaPrompt(sciezka, faza), { schema: INSPEKCJA_RAPORTU, model: 'haiku', label: `scribe:faza-${faza}:inspekcja` })
+  const inspekcja = await agent(inspekcjaPrompt(sciezka, faza), { schema: INSPEKCJA_RAPORTU, agentType: 'klasa-mechaniczny-odczyt', label: `scribe:faza-${faza}:inspekcja` })
   if (inspekcja && inspekcja.kompletny) {
     // Liczniki i gate z JS, nie z galezi scribeFail: tam 'BLOKUJE' bylo bezpiecznikiem dla braku
     // raportu, tutaj raport jest — gate ma odpowiadac realnym findingom.

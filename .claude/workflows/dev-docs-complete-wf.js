@@ -103,12 +103,12 @@ Nie wymyslaj pozycji spoza zrodel (1)-(5). Nie modyfikuj *-zadania.md ani raport
 Zwroc obiekt zgodny ze schematem.`
 
 phase('Smoke operatora')
-let smoke = await agent(smokePrompt, { schema: SMOKE_RESULT, label: `smoke-operatora:${nazwaZadania}` })
+let smoke = await agent(smokePrompt, { schema: SMOKE_RESULT, agentType: 'klasa-orkiestracyjny', label: `smoke-operatora:${nazwaZadania}` })
 if (!smoke) {
   // Jeden retry po null (wzorzec env-up w autopilocie): null to realny, obslugiwany stan agenta, a smoke jest
   // JEDYNYM kanalem, ktorym Operator checklist/[Manual] docieraja do czlowieka — bez retry cicho gina.
   log('Smoke operatora: agent zwrocil null — retry raz')
-  smoke = await agent(smokePrompt, { schema: SMOKE_RESULT, label: `smoke-operatora-retry:${nazwaZadania}` })
+  smoke = await agent(smokePrompt, { schema: SMOKE_RESULT, agentType: 'klasa-orkiestracyjny', label: `smoke-operatora-retry:${nazwaZadania}` })
 }
 const smokePlik = (smoke && smoke.plik) || ''
 const smokeStatus = !smoke ? 'agent-null' : (smokePlik ? 'plik' : 'brak-pozycji')
@@ -177,7 +177,7 @@ Kroki (zgodnie ze skillem):
 
 NIE uruchamiaj /dev-compound (zrobi to orkiestrator). Dzialaj autonomicznie.
 Zwroc obiekt zgodny ze schematem CompleteResult (commit = hash z kroku 8 lub "").`,
-  { schema: COMPLETE_RESULT, label: `complete:${nazwaZadania}` }
+  { schema: COMPLETE_RESULT, agentType: 'klasa-orkiestracyjny', label: `complete:${nazwaZadania}` }
 )
 if (!wynik) {
   return { archiwum: '', pliki: [], aktualizacje: ['BLAD: agent archiwizacji zwrocil null'], rezultaty: [], commit: '', smokeOperatora: smokePlik, smokeStatus }

@@ -54,7 +54,7 @@ const IU_PLAN = {
           nazwa: { type: 'string' },
           agentType: {
             type: 'string',
-            enum: ['feature-builder-ui', 'feature-builder-data', 'feature-builder-fullstack'],
+            enum: ['feature-builder-ui', 'feature-builder-data', 'feature-builder-fullstack', 'feature-builder-ui-figma', 'feature-builder-fullstack-figma'],
           },
           prompt: { type: 'string', description: 'KOMPLETNY blok IU gotowy do wyslania builderowi (Cel, Wymagania, Pliki, Podejscie, Wzorce, Scenariusze testowe, Weryfikacja) + sciezka zadania + numer IU + doklejony designerski kontekst gdy UI/fullstack' },
         },
@@ -152,7 +152,7 @@ Faza do wykonania: ${faza}
    - wykluczenia z sekcji \`## Granice\` planu technicznego jako blok "Czego zadanie nie obejmuje:" z dopiskiem:
      "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
      zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.
-   - dla feature-builder-ui|fullstack: gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
+   - dla feature-builder-ui|fullstack (takze wariantow -figma): gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
      i ma choc jedna niepusta sciezke, doklej blok (sciezki z tej sekcji):
        ## Mandatory designerski kontekst (przeczytaj przed implementacja)
        - DESIGN.md (tokeny calego projektu): <sciezka z design_md albo "brak — bazuj na ux-ui-guidelines">
@@ -166,6 +166,8 @@ Faza do wykonania: ${faza}
    - agentType = wartosc pola "Delegate to:" z IU. IU bez tego pola (plan starszy niz delegacja) — dobierz
      agentType po plikach jednostki: tylko warstwa danych -> feature-builder-data, tylko UI -> feature-builder-ui,
      obie -> feature-builder-fullstack.
+     Gdy sekcja "Designerski kontekst" ma niepuste figma_spec albo figma_screens, builder UI i fullstack bierzesz
+     w wariancie z Figma: feature-builder-ui-figma, feature-builder-fullstack-figma (tylko one maja narzedzia Figma MCP).
    DOPISZ DOSLOWNIE na koncu promptu KAZDEGO IU blok "Wymagania wykonania":
    "Wymagania wykonania: zaimplementuj kod dla checkboxow implementacyjnych (POMIJAJ: Weryfikacja:,
    Operator:, [E2E], [Manual] — to dla review/operatora). Testy dla checkboxow Test: pisz RAZEM z kodem.
@@ -224,7 +226,7 @@ if (!sciezka || faza === undefined) {
 }
 
 phase('Plan IU')
-const plan = await agent(plannerPrompt(sciezka, faza), { schema: IU_PLAN, label: `planner:faza-${faza}` })
+const plan = await agent(plannerPrompt(sciezka, faza), { schema: IU_PLAN, agentType: 'klasa-orkiestracyjny', label: `planner:faza-${faza}` })
 
 // Null-guard: planner zabity/blad -> kontrolowany blocked zamiast TypeError (ktory wykoleilby caly autopilot).
 if (!plan) {
@@ -287,5 +289,5 @@ if (buildResults.length !== plan.iu.length) {
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults), { schema: EXECUTE_RESULT, label: `domkniecie:faza-${faza}` })
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', label: `domkniecie:faza-${faza}` })
 return wynik

@@ -268,7 +268,7 @@ STAN PULL REQUESTA:
   c) Odczytaj stan nowego PR tym samym \`gh pr view --json ...\` i zwroc prUtworzony=true.
 
 Nie pushuj, nie mergeuj, nie zmieniaj kodu. Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
-    { schema: START, label: `pr:start:${zadanie}` }
+    { schema: START, agentType: 'klasa-orkiestracyjny', label: `pr:start:${zadanie}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Bramka wejscia zwrocila null (agent padl) — sprobuj ponownie albo sprawdz `gh auth status`.' }
   if (wynik.bramka === 'STOP') {
@@ -317,7 +317,7 @@ ${Object.entries(KLASY_BLEDOW).map(([k, v]) => `   - \`${k}\` [os: ${v.os}] — 
 
 Nie zgaduj tresci watku z samego tytulu — przeczytaj komentarze i zajrzyj do wskazanego pliku.
 Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
-    { schema: ZEBRANE, label: `pr:zbierz:tura-${tura}` }
+    { schema: ZEBRANE, agentType: 'klasa-orkiestracyjny', label: `pr:zbierz:tura-${tura}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Zbieranie watkow zwrocilo null (agent padl).' }
 
@@ -392,7 +392,7 @@ ${JSON.stringify(doOdrzucenia, null, 2)}
 
 Watek, ktorego nie zamknales, wpisz do nieruszone[] — nie udawaj, ze zostal zaadresowany.
 ${BLOK_KOMEND_PROJEKTU}${BLOK_GH}`,
-    { schema: NAPRAWA, label: `pr:napraw:tura-${tura}` }
+    { schema: NAPRAWA, agentType: 'klasa-naprawiacz', label: `pr:napraw:tura-${tura}` }
   )
   if (!wynik) return { status: 'BLAD', etap, tura, powod: 'Agent naprawczy zwrocil null — zmiany moga byc czesciowo na dysku, sprawdz `git status`.' }
 
@@ -436,7 +436,7 @@ nie zmieniaj kodu i nie odpowiadaj w watkach — masz TYLKO odczytac fakty.
    i watki, na ktore odpowiedzielismy odmowa z cytatem, NIE licza sie do zadnej z tych liczb.
 
 Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
-    { schema: MERGE_STAN, label: `pr:merge-stan:${zadanie}` }
+    { schema: MERGE_STAN, agentType: 'klasa-orkiestracyjny', label: `pr:merge-stan:${zadanie}` }
   )
   if (!stan) return { status: 'BLAD', etap, powod: 'Odczyt stanu PR zwrocil null (agent padl).' }
 
@@ -463,7 +463,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
 w kodzie orkiestratora (mergeable, mergeStateStatus, zero watkow do naprawy, zero do operatora, CI zielone).
 Wykonaj merge: \`gh pr merge --squash --delete-branch\`. Gdy komenda zwroci blad — NIE probuj innych strategii
 ani \`--admin\`: zwroc zmergowany=false z trescia bledu. Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
-    { schema: MERGE_WYNIK, label: `pr:merge:${zadanie}` }
+    { schema: MERGE_WYNIK, agentType: 'klasa-orkiestracyjny', label: `pr:merge:${zadanie}` }
   )
   if (!merge) return { status: 'BLAD', etap, stan, powod: 'Merge zwrocil null — sprawdz stan PR recznie przed ponowieniem.' }
   log(`/dev-pr: merge ${merge.zmergowany ? 'wykonany' : 'NIE wykonany'} — ${merge.detal}`)
@@ -498,7 +498,7 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    docs/CONCEPTS.md — te, ktore realnie zmieniles). ZAKAZ \`git add -A\` i \`git add .\`.
 
 Zwroc obiekt zgodny ze schematem.`,
-    { schema: COMPOUND_PR, label: `pr:compound:${zadanie}` }
+    { schema: COMPOUND_PR, agentType: 'klasa-orkiestracyjny', label: `pr:compound:${zadanie}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Compound zwrocil null — baza wiedzy nie zostala zasilona.' }
   log(`/dev-pr compound: ${wynik.pliki.length} wpisow w docs/solutions/, regula: ${wynik.regula}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)

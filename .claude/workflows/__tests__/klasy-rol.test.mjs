@@ -7,15 +7,15 @@
 // agentowi, mechaniczny bez `omitClaudeMd`. Kazde sprawdzenie ma test na podlozonym zlym pliku w katalogu tymczasowym,
 // zeby zielony wynik na repo znaczyl "allowlista jest", a nie "sprawdzenie niczego nie widzi".
 
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { AGENCI, agenci, naPodlozonym, narzedzia, tresc, typyDynamiczne, wywolaniaAgentow } from './agenci-pipeline.mjs'
+
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
-const AGENCI = '.claude/agents'
 
 // Klasy mechaniczne (haiku, bez CLAUDE.md). Wariant `-odczyt` dla rol, ktore tylko czytaja (dedup, inspekcja) — N1:
 // haiku wykonuje przekazana wiadomosc operatora, wiec rola bez potrzeby zapisu nie dostaje Bash/Edit/Write.
@@ -43,39 +43,6 @@ const Z_WARIANTEM_FIGMA = ['feature-builder-ui', 'feature-builder-fullstack']
 const SUFIKS_FIGMA = '-figma'
 
 /**
- * Pola frontmattera jako mapa klucz → surowa wartosc (jedna linia).
- * @param {string} tekst
- * @returns {Map<string, string>}
- */
-function frontmatter(tekst) {
-  const blok = tekst.split(/^---$/m)[1] ?? ''
-  return new Map(blok.split('\n')
-    .map((linia) => linia.match(/^([\w-]+):\s*(.*)$/))
-    .filter((m) => m !== null)
-    .map((m) => [m[1] ?? '', (m[2] ?? '').trim()]))
-}
-
-/**
- * @param {string} korzen
- * @returns {Map<string, Map<string, string>>}  nazwa agenta → frontmatter
- */
-function agenci(korzen) {
-  const katalog = join(korzen, AGENCI)
-  if (!existsSync(katalog)) return new Map()
-  return new Map(readdirSync(katalog)
-    .filter((p) => p.endsWith('.md'))
-    .map((p) => [p.slice(0, -'.md'.length), frontmatter(readFileSync(join(katalog, p), 'utf8'))]))
-}
-
-/**
- * @param {Map<string, string> | undefined} fm
- * @returns {string[]}  narzedzia z `tools:` (lista po przecinku)
- */
-function narzedzia(fm) {
-  return (fm?.get('tools') ?? '').split(',').map((n) => n.trim()).filter(Boolean)
-}
-
-/**
  * Kazdy agent pipeline'u ma `tools:`, a kazda pozycja to znane narzedzie (literowka = agent bez narzedzia, bez bledu).
  * @param {string} korzen
  * @returns {string[]}
@@ -91,14 +58,6 @@ function naruszeniaTools(korzen) {
     for (const n of lista.filter((x) => !znane.has(x))) wyniki.push(`${nazwa}: nieznane narzedzie ${n}`)
   }
   return wyniki
-}
-
-/**
- * @param {string} tekst
- * @returns {string}  tresc pliku agenta po frontmatterze
- */
-function tresc(tekst) {
-  return tekst.split(/^---$/m).slice(2).join('---')
 }
 
 /**
@@ -175,24 +134,6 @@ function naruszeniaMechanicznych(korzen) {
   return wyniki
 }
 
-/**
- * @param {Record<string, string>} drzewo  sciezka wzgledna → tresc
- * @param {(korzen: string) => string[]} sprawdzenie
- * @returns {string[]}
- */
-function naPodlozonym(drzewo, sprawdzenie) {
-  const korzen = mkdtempSync(join(tmpdir(), 'klasy-rol-'))
-  try {
-    for (const [sciezka, tresc] of Object.entries(drzewo)) {
-      mkdirSync(dirname(join(korzen, sciezka)), { recursive: true })
-      writeFileSync(join(korzen, sciezka), tresc)
-    }
-    return sprawdzenie(korzen)
-  } finally {
-    rmSync(korzen, { recursive: true, force: true })
-  }
-}
-
 test('mechaniczni: podlozony brak omitClaudeMd, model opus i omitClaudeMd u reviewera sa zglaszane', () => {
   const wynik = naPodlozonym({
     [`${AGENCI}/klasa-mechaniczny.md`]: '---\nname: klasa-mechaniczny\nmodel: opus\n---\n',
@@ -255,4 +196,82 @@ test('MCP: podlozone MCP w pliku bazowym, rozna tresc wariantu, narzedzie spoza 
 
 test('MCP: repo szablonu ma Figma MCP wylacznie w wariantach -figma o tresci plikow bazowych', () => {
   assert.deepEqual(naruszeniaMcp(REPO), [])
+})
+
+// ── Wywolania agent() w workflowach ─────────────────────────────────────────
+// agent() bez agentType dziedziczy wszystkie narzedzia sesji (z MCP) i jej model, a `model:` w opcjach omija plik
+// klasy. Mapa rola → klasa z HANDOFF 6a pkt 46 (g); etykiety z `${...}` zamienionym na `*`. Rola spoza mapy =
+// klasa-orkiestracyjny. Wywolania z typem z pola (reviewerzy, buildery) sprawdza sie po liscie mozliwych typow.
+const MAPA_KLAS = /** @type {const} */ ([
+  [/^(stop:commit-artefaktow|stan:zapis|e2e:precheck|e2e:env-down|fix:pre-skan:faza-\*|zwin-do-poprawy:faza-\*)$/, 'klasa-mechaniczny'],
+  [/^(dedup:semantyczny|scribe:faza-\*:inspekcja)$/, 'klasa-mechaniczny-odczyt'],
+  [/^(verify:\*:\*|verify-batch:\*:\*|verify-fix:\*|fix:kontrola:faza-\*)$/, 'klasa-sceptyk'],
+  [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
+  [/^review:test-coverage$/, 'test-coverage-reviewer'],
+  [/^review:e2e(:retry)?$/, 'feature-tester-e2e'],
+])
+const KLASA_DOMYSLNA = 'klasa-orkiestracyjny'
+
+/**
+ * @param {string} etykieta
+ * @returns {string}
+ */
+function klasaRoli(etykieta) {
+  return MAPA_KLAS.find(([wzorzec]) => wzorzec.test(etykieta))?.[1] ?? KLASA_DOMYSLNA
+}
+
+/**
+ * Kazde agent() ma agentType z istniejacym plikiem agenta, bez `model:` w opcjach, a typ stały zgadza sie z mapa klas.
+ * Enum builderow ma warianty -figma.
+ * @param {string} korzen
+ * @returns {string[]}
+ */
+function naruszeniaWywolan(korzen) {
+  const { wywolania, niezgodnosci } = wywolaniaAgentow(korzen)
+  const pliki = agenci(korzen)
+  const dynamiczne = typyDynamiczne(korzen)
+  const wyniki = [...niezgodnosci]
+  for (const w of wywolania) {
+    const gdzie = `${w.plik}:${w.linia} ${w.etykieta}`
+    const typy = w.agentType ? [w.agentType] : w.agentTypeZPola ? (dynamiczne[w.agentTypeZPola] ?? []) : []
+    if (!typy.length) wyniki.push(`${gdzie}: brak agentType`)
+    for (const t of typy.filter((x) => !pliki.has(x))) wyniki.push(`${gdzie}: agentType ${t} bez pliku agenta`)
+    if (w.agentType && w.agentType !== klasaRoli(w.etykieta)) wyniki.push(`${gdzie}: ${w.agentType}, mapa klas: ${klasaRoli(w.etykieta)}`)
+    if (w.maModel) wyniki.push(`${gdzie}: model: w opcjach zamiast w pliku klasy`)
+  }
+  for (const nazwa of Z_WARIANTEM_FIGMA) {
+    if (!(dynamiczne.iu ?? []).includes(`${nazwa}${SUFIKS_FIGMA}`)) wyniki.push(`IU_PLAN: brak ${nazwa}${SUFIKS_FIGMA} w enum agentType`)
+  }
+  return wyniki
+}
+
+test('agent(): podlozone wywolanie bez agentType, z model:, z typem bez pliku i z obca klasa sa zglaszane', () => {
+  const wf = [
+    "await agent(p, { schema: A, label: 'bootstrap' })",
+    "await agent(p, { schema: A, agentType: 'klasa-mechaniczny', label: 'stan:zapis', model: 'haiku' })",
+    "await agent(p, { schema: A, agentType: 'general-purpose', label: 'review:correctness' })",
+    "await agent(p, { schema: A, agentType: 'klasa-orkiestracyjny', label: `verify-fix:${f.plik}` })",
+    'await agent(p,',
+    '  { schema: A, agentType: r.agentType, label: `review:${r.key}` })',
+    "const REVIEWERZY = [{ key: 'security', agentType: 'security-sentinel' }]",
+  ].join('\n')
+  const wynik = naPodlozonym({
+    [`${AGENCI}/klasa-mechaniczny.md`]: '---\nname: klasa-mechaniczny\n---\n',
+    [`${AGENCI}/klasa-orkiestracyjny.md`]: '---\nname: klasa-orkiestracyjny\n---\n',
+    '.claude/workflows/dev-docs-review-wf.js': wf,
+    '.claude/workflows/dev-docs-execute-wf.js': "agentType: { type: 'string', enum: ['feature-builder-ui-figma'] }",
+  }, naruszeniaWywolan)
+  assert.deepEqual(wynik, [
+    'dev-docs-review-wf.js:1 bootstrap: brak agentType',
+    'dev-docs-review-wf.js:2 stan:zapis: model: w opcjach zamiast w pliku klasy',
+    'dev-docs-review-wf.js:3 review:correctness: agentType general-purpose bez pliku agenta',
+    'dev-docs-review-wf.js:3 review:correctness: general-purpose, mapa klas: klasa-orkiestracyjny',
+    'dev-docs-review-wf.js:4 verify-fix:*: klasa-orkiestracyjny, mapa klas: klasa-sceptyk',
+    'dev-docs-review-wf.js:6 review:*: agentType security-sentinel bez pliku agenta',
+    'IU_PLAN: brak feature-builder-fullstack-figma w enum agentType',
+  ])
+})
+
+test('agent(): kazde wywolanie w workflowach szablonu ma agentType klasy albo roli z plikiem, bez model:', () => {
+  assert.deepEqual(naruszeniaWywolan(REPO), [])
 })
