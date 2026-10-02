@@ -226,7 +226,7 @@ if (!sciezka || faza === undefined) {
 }
 
 phase('Plan IU')
-const plan = await agent(plannerPrompt(sciezka, faza), { schema: IU_PLAN, agentType: 'klasa-orkiestracyjny', label: `planner:faza-${faza}` })
+const plan = await agent(plannerPrompt(sciezka, faza), { schema: IU_PLAN, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `planner:faza-${faza}` })
 
 // Null-guard: planner zabity/blad -> kontrolowany blocked zamiast TypeError (ktory wykoleilby caly autopilot).
 if (!plan) {
@@ -245,14 +245,14 @@ if (plan.strategia === 'parallel') {
   // IU niezalezne — wszystkie buildery rownolegle (bariera, czekamy na komplet)
   builds = await parallel(
     plan.iu.map((iu) => () =>
-      agent(promptIU(iu), { schema: BUILD_RESULT, agentType: iu.agentType, label: `build:${iu.id}`, phase: 'Build' })
+      agent(promptIU(iu), { schema: BUILD_RESULT, agentType: iu.agentType, effort: 'high', label: `build:${iu.id}`, phase: 'Build' })
     )
   )
 } else {
   // serial — IU zalezne / wspolne pliki, kolejnosc ma znaczenie
   builds = []
   for (const iu of plan.iu) {
-    const r = await agent(promptIU(iu), { schema: BUILD_RESULT, agentType: iu.agentType, label: `build:${iu.id}`, phase: 'Build' })
+    const r = await agent(promptIU(iu), { schema: BUILD_RESULT, agentType: iu.agentType, effort: 'high', label: `build:${iu.id}`, phase: 'Build' })
     builds.push(r)
     // null (builder zabity/blad) traktuj jak blocked — kolejne IU moga zalezec od tego
     if (!r || r.status === 'blocked') break
@@ -289,5 +289,5 @@ if (buildResults.length !== plan.iu.length) {
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', label: `domkniecie:faza-${faza}` })
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 return wynik

@@ -835,10 +835,11 @@ const poprzednie = (args && args.poprzednieFindingi) || []
 const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
-// Domyslnie taniej tam, gdzie praca jest mechaniczna: packager przepisuje sekcje i liczy checkboxy,
-// sceptyk P2 sprawdza jeden plik. Reviewerzy i sceptycy P1 zostaja na tierze sesji — tam kupujemy
-// jakosc osadu, a P1 dodatkowo bramkuje twardy STOP.
-const TIERY_DOMYSLNE = { packager: 'low', sceptykP2: 'medium', sceptykP1: null, reviewer: null }
+// Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
+// Reviewerzy (z test-coverage i testerem E2E) i sceptycy P1 `high` — tam kupujemy jakosc osadu, a P1 bramkuje
+// twardy STOP. Taniej tam, gdzie praca jest mechaniczna: packager i scribe przepisuja (`low`), sceptyk P2 sprawdza
+// jeden plik (`medium`). `null` w args.tiery = efort sesji. Haiku (dedup, inspekcja) efortu nie dostaje.
+const TIERY_DOMYSLNE = { packager: 'low', sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', scribe: 'low' }
 const tiery = { ...TIERY_DOMYSLNE, ...((args && args.tiery) || {}) }
 // `effort: undefined` bywa traktowane inaczej niz brak pola — dokladamy klucz tylko gdy tier jest ustawiony.
 const zEffortem = (opts, effort) => (effort ? { ...opts, effort } : opts)
@@ -923,10 +924,10 @@ log(kontekst && kontekst.ctxZapisany
 const thunki = aktywni.map((r) => () =>
   agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 )
-thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), { schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }))
+thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.reviewer)))
 if (e2eTryb !== 'pominiety') {
   log(`Tester E2E: tryb ${e2eTryb} (srodowisko: ${srodowiskoE2E === undefined ? 'nieznane — run standalone' : srodowiskoE2E})`)
-  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst), { schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }))
+  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst), zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }, tiery.reviewer)))
 }
 
 const wyniki = await parallel(thunki)
@@ -948,7 +949,7 @@ if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
   log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — packager padl'}) — ponawiam raz`)
   wyniki[indeksE2e] = await agent(
     `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst)}\n\n(PONOWNA PROBA — poprzedni przebieg ${powod}. KAZDY checkbox [E2E] fazy MUSI miec wpis PASS/FAIL/SKIP w przebiegi[] (przy zerze checkboxow zwroc {findings:[], przebiegi:[]}); jesli scenariusz w przegladarce milczy >120s, loguj postep do pliku i czytaj go w tle zgodnie z blokiem dlugich komend.)`,
-    { schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }
+    zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }, tiery.reviewer)
   )
 }
 const e2eWynik = e2eAktywny ? wyniki[indeksE2e] : null
@@ -1359,14 +1360,14 @@ const przebieg = {
 
 // Faza 3: scribe zapisuje raport + bookkeeping + liczy severity gate
 phase('Zapis')
-let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone), { schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}` })
+let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone), zEffortem({ schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}` }, tiery.scribe))
 if (!wynik) {
   // Scribe padl — jedna ponowna proba (to JEDYNY agent zapisujacy review-faza-N.md i sekcje
   // "Do poprawy"; bez tych artefaktow fix dziala bez kontekstu, a czlowiek bez widoku).
   log(`Scribe fazy ${faza} padl — ponawiam raz`)
   wynik = await agent(
     `${scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
-    { schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}:retry` }
+    zEffortem({ schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}:retry` }, tiery.scribe)
   )
 }
 if (!wynik) {

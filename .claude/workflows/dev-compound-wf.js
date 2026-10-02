@@ -72,6 +72,6 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
 
 NIE tworz plikow tymczasowych — tylko finalny plik. Zwroc obiekt zgodny ze schematem CompoundResult
 (commit = hash z kroku 7 lub "").`,
-  { schema: COMPOUND_RESULT, agentType: 'klasa-orkiestracyjny', label: 'compound' }
+  { schema: COMPOUND_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'compound' }
 )
 return wynik

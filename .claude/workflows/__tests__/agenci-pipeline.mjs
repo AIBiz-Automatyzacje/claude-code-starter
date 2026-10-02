@@ -99,7 +99,7 @@ function tieryDomyslne(zrodlo) {
  * @returns {string | null | undefined}
  */
 function effortLinii(linia, tiery) {
-  const literal = linia.match(/effort: '(\w+)'/)?.[1]
+  const literal = linia.match(/effort: '(\w+)'/)?.[1] ?? linia.match(/\}, '(\w+)'\)/)?.[1]
   if (literal) return literal
   const tier = linia.match(/\}, tiery\.(\w+)\)/)?.[1]
   if (!tier) return null

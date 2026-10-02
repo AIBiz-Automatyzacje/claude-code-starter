@@ -854,10 +854,7 @@ Zwroc obiekt zgodny ze schematem ValidationResult.`
 // ── Helpery orkiestratora (deterministycznie, w JS) ───────────────────────
 
 // Filar 3: liczniki i gate liczone z findings[], nie z self-reportu scribe'a.
-// Ten sam wzorzec co w dev-docs-review-wf.js: `effort: undefined` bywa traktowane inaczej niz brak pola,
-// wiec klucz dokladamy tylko dla ustawionego tieru. Kontrola diffu naprawczego to praca mechaniczna
-// (grep po dodanych liniach, przeglad jednego commita) — nie kupujemy tam tieru sesji.
-const zEffortemAP = (opts, effort) => (effort ? { ...opts, effort } : opts)
+// Efort kazdego agent() jest jawny w opcjach (tabela D6, pilnuje __tests__/klasy-rol.test.mjs); haiku bez efortu.
 
 function policzFindingi(findings) {
   const istotne = (findings || []).filter((f) => f.typ !== 'OPERATOR')
@@ -1080,7 +1077,7 @@ async function stopRun(obj) {
 }
 
 phase('Bootstrap')
-stan = await agent(bootstrapPrompt(sciezka), { schema: PLAN_STATE, agentType: 'klasa-orkiestracyjny', label: 'bootstrap' })
+stan = await agent(bootstrapPrompt(sciezka), { schema: PLAN_STATE, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'bootstrap' })
 if (!stan) {
   return await stopRun({ powod: 'bootstrap nie zwrocil stanu (agent null)' })
 }
@@ -1113,7 +1110,7 @@ async function zapiszStan() {
   // Jedna ponowna proba (na modelu glownym — haiku wlasnie pokazal, ze nie uniosl przepisania tresci).
   if (!w || !w.zapisano || w.poprawnyJson === false) {
     log(`Zapis .autopilot-state.json nieudany (${!w ? 'agent null' : w.poprawnyJson === false ? 'plik nie parsuje sie jako JSON' : 'zapisano=false'}) — ponawiam raz`)
-    w = await agent(zapiszStanPrompt(sciezka, tresc), { schema: ZAPIS_STANU, agentType: 'klasa-orkiestracyjny', label: 'stan:zapis:retry' })
+    w = await agent(zapiszStanPrompt(sciezka, tresc), { schema: ZAPIS_STANU, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'stan:zapis:retry' })
   }
   if (!w || !w.zapisano || w.poprawnyJson === false) {
     log('OSTRZEZENIE: .autopilot-state.json NIE zostal poprawnie zapisany po 2 probach — resume bedzie polegac na parse md, a uszkodzony plik moze wywrocic nastepny bootstrap. Sprawdz go recznie przed kolejnym runem.')
@@ -1151,11 +1148,11 @@ if (optIn === false && precheck.zadanieWymagaE2E) {
 
 if (optIn !== false) {
   // Opt-in TAK lub nieznany -> odpal env-up (ma wlasny self-skip gdy .env.e2e faktycznie nie ma).
-  e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, agentType: 'klasa-orkiestracyjny', label: 'e2e:env-up', phase: 'Bootstrap' })
+  e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'e2e:env-up', phase: 'Bootstrap' })
   if (!e2eEnv && optIn === true) {
     // Opt-in POTWIERDZONY przez precheck, a ciezki env-up padl -> jeden retry (infra hiccup bywa przejsciowy).
     log('E2E env-up: agent zwrocil null przy potwierdzonym .env.e2e — retry raz')
-    e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, agentType: 'klasa-orkiestracyjny', label: 'e2e:env-up:retry', phase: 'Bootstrap' })
+    e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'e2e:env-up:retry', phase: 'Bootstrap' })
     if (!e2eEnv) {
       // Drugi null przy potwierdzonym opt-in -> STOP (nie degraduj cicho, jak przy 'niepowodzenie').
       return await stopRun({
@@ -1179,7 +1176,7 @@ const e2eAktywne = !!e2eEnv && e2eEnv.status === 'gotowe'
 
 // Filar 1: rozgrzewka cache vitest — PO bramce E2E (tani gate first). Self-skip gdy brak vitest; warm = sekundy.
 // Chroni tez walidacje koncowa przy pustej kolejce (np. resume po ukonczonych fazach na zimnej maszynie).
-const warmup = await agent(warmupPrompt(sciezka), { schema: WARMUP_RESULT, agentType: 'klasa-orkiestracyjny', label: 'warmup:vitest', phase: 'Bootstrap' })
+const warmup = await agent(warmupPrompt(sciezka), { schema: WARMUP_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'warmup:vitest', phase: 'Bootstrap' })
 if (!warmup) {
   return await stopRun({ powod: 'rozgrzewka nie zwrocila wyniku (agent null)', stan })
 }
@@ -1231,7 +1228,7 @@ for (const numerFazy of kolejka) {
     // tester E2E trafi na brak danych i sklasyfikuje OPERATOR, a detal (np. blad SQL
     // migracji = potencjalny defekt kodu!) zostaje w logu i raporcie fazy dla operatora.
     if (e2eAktywne) {
-      e2eSync = await agent(e2eDbSyncPrompt(sciezka, numerFazy), { schema: E2E_DB_SYNC_RESULT, agentType: 'klasa-orkiestracyjny', label: `e2e:db-sync:faza-${numerFazy}` })
+      e2eSync = await agent(e2eDbSyncPrompt(sciezka, numerFazy), { schema: E2E_DB_SYNC_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `e2e:db-sync:faza-${numerFazy}` })
       log(`E2E db-sync fazy ${numerFazy}: ${e2eSync ? `${e2eSync.status} — ${e2eSync.detal}` : 'agent zwrocil null'}`)
     }
     const review = await workflow('dev-docs-review-wf', {
@@ -1323,7 +1320,7 @@ for (const numerFazy of kolejka) {
 
   // 3) FIX — bez re-review; gate z self-reportu + lista findingow przekazana wprost (md tylko jako widok).
   if (faza.fix === 'pending') {
-    const fix = await agent(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', label: `fix:faza-${numerFazy}` })
+    const fix = await agent(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}` })
     if (!fix) {
       return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
@@ -1372,7 +1369,7 @@ for (const numerFazy of kolejka) {
     if (p1Kod.length) {
       const werdykty = await parallel(
         p1Kod.map((f) => () =>
-          agent(postFixVerifyPrompt(sciezka, numerFazy, f), { schema: POSTFIX_VERDICT, agentType: 'klasa-sceptyk', label: `verify-fix:${f.plik}` })
+          agent(postFixVerifyPrompt(sciezka, numerFazy, f), { schema: POSTFIX_VERDICT, agentType: 'klasa-sceptyk', effort: 'high', label: `verify-fix:${f.plik}` })
         )
       )
       // null (weryfikator padl) nie blokuje — infra hiccup to nie dowod zlej naprawy; logujemy.
@@ -1395,7 +1392,7 @@ for (const numerFazy of kolejka) {
     // zamkniety — nie to, co fix przy okazji wprowadzil. Dwa stopnie, od najtanszego.
     const doPoprawki = []
     // Stopien 1: mechaniczny grep po DODANYCH liniach. Agent tylko greppuje, decyzje podejmuje JS.
-    const preSkan = await agent(preSkanFixaPrompt(numerFazy), zEffortemAP({ schema: PRE_SKAN_FIXA, agentType: 'klasa-mechaniczny', label: `fix:pre-skan:faza-${numerFazy}` }, 'low'))
+    const preSkan = await agent(preSkanFixaPrompt(numerFazy), { schema: PRE_SKAN_FIXA, agentType: 'klasa-mechaniczny', label: `fix:pre-skan:faza-${numerFazy}` })
     if (preSkan && Array.isArray(preSkan.trafienia)) {
       // console.log w plikach testowych nie jest naruszeniem "brak console.log w kodzie produkcyjnym" —
       // filtr trzymamy w JS, zeby agent nie musial rozstrzygac wyjatkow (i nie mogl ich sobie rozszerzyc).
@@ -1406,7 +1403,7 @@ for (const numerFazy of kolejka) {
       log(`Faza ${numerFazy}: pre-skan diffu fixa zwrocil null — pomijam stopien 1 (best-effort, faza niezagrozona)`)
     }
     // Stopien 2: jeden tani agent — regresje wprowadzone przez fix + nowe bramki walidacyjne bez testu odmowy.
-    const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy), zEffortemAP({ schema: REGRESJA_FIXA, agentType: 'klasa-sceptyk', label: `fix:kontrola:faza-${numerFazy}` }, 'low'))
+    const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy), { schema: REGRESJA_FIXA, agentType: 'klasa-sceptyk', effort: 'low', label: `fix:kontrola:faza-${numerFazy}` })
     if (regresja) {
       for (const r of regresja.regresje || []) doPoprawki.push({ zrodlo: 'regresja', plik: r.plik, opis: r.opis })
       const bezTestu = (regresja.bramki || []).filter((b) => !b.testOdmowy)
@@ -1425,7 +1422,7 @@ for (const numerFazy of kolejka) {
     // druga tura zaczelaby scigac wlasny ogon i nie da sie jej ograniczyc niczym poza licznikiem.
     if (doPoprawki.length) {
       log(`Faza ${numerFazy}: kontrola diffu naprawczego zwraca ${doPoprawki.length} pozycji do fixa (jeden cykl):\n  ${doPoprawki.map((p) => `[${p.zrodlo}] ${p.plik} — ${p.opis}`).join('\n  ')}`)
-      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', label: `fix:poprawka:faza-${numerFazy}` })
+      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:poprawka:faza-${numerFazy}` })
       if (!poprawka) {
         log(`Faza ${numerFazy}: tura poprawkowa zwrocila null — pozycje zostaja otwarte, faza idzie dalej (P3-klasa, nie bramka)`)
       } else {
@@ -1498,7 +1495,7 @@ Nie commituj — orkiestrator zrobi to sam. Zwroc {zapisano: true} po realnym za
 phase('Zakonczenie')
 
 if (stan.zakonczenie.walidacja === 'pending') {
-  const walidacja = await agent(finalValidationPrompt(sciezka), { schema: VALIDATION_RESULT, agentType: 'klasa-orkiestracyjny', label: 'walidacja-koncowa' })
+  const walidacja = await agent(finalValidationPrompt(sciezka), { schema: VALIDATION_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'walidacja-koncowa' })
   if (!walidacja) {
     return await stopRun({ powod: 'walidacja koncowa zwrocila null', historia, raporty })
   }
@@ -1595,7 +1592,7 @@ if (stan.zakonczenie.compound === 'pending') {
   // Scoped refresh ZARAZ po compound — dedup/prune bazy dla dotknietej kategorii + CONCEPTS.md.
   // Odpala sie tylko gdy compound cos zapisal (compound.plik != null). Best-effort: nie blokuje complete.
   if (compound && compound.plik) {
-    refresh = await agent(refreshPrompt(compound.plik, compound.kategoria), { schema: REFRESH_RESULT, agentType: 'klasa-orkiestracyjny', label: 'compound-refresh' })
+    refresh = await agent(refreshPrompt(compound.plik, compound.kategoria), { schema: REFRESH_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'compound-refresh' })
     log(`Compound-refresh (scoped): ${refresh ? `${refresh.przejrzano} dok., slownik=${refresh.slownik}, commit=${refresh.commit || 'brak'}` : 'agent zwrocil null'}`)
   }
   stan.zakonczenie.compound = 'done'
