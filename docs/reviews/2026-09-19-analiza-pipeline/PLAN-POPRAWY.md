@@ -251,6 +251,7 @@ przed startem zamiast w środku runu.
   - Bootstrap autopilota, STOP z gotową komendą przed pierwszą fazą: doctor (P2), zielony main (testy na bazie gałęzi; wynik w stanie zadania z SHA bazy — świeży
     run po STOP-ie na tej samej bazie nie powtarza pełnych testów), bramka czystości: brudny wyłącznie katalog zadania → commit i dalej (rek. 4). Warunek
     „CLAUDE.md uzgodniony po ostatnim merge'u” — P5 (razem ze znacznikiem, który go zamyka). [W4-3c-zielony] [F-zielony] [PW21] [PW65] [W4-3c-czystosc]
+    Wdrożenie (HANDOFF 6a pkt 48): „baza” = HEAD startu przy czystym drzewie, nie merge-base w worktree; cache `bazaZielona` trafia, gdy od SHA zmiany tylko w `docs/`.
   - N3 (builder idzie za `git status` z `session_context`) — czyste drzewo na starcie usuwa źródło, bez osobnej zmiany. [PWE-N3]
 - **Pliki:** `.claude/workflows/dev-autopilot-wf.js` (bootstrap, STOP, `fazyUkonczone`), `.claude/workflows/dev-docs-complete-wf.js`, `.claude/skills/dev-docs-complete/SKILL.md`,
   `.claude/workflows/__tests__/start-koniec.test.mjs` (nowy)

@@ -40,7 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
-| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922` + poprawka po teście czystego konta `0730d04`. **P3 SESJA 1/2 ZROBIONA 2026-10-01 (6a pkt 46): pięć plików klas ról, `tools:` w plikach ról i badaczy, warianty builderów `-figma`, PA-25 (skill figma z pluginu), test `klasy-rol.test.mjs`; gałąź `popr/P3-agenci` niezmergowana. **P3 ZROBIONA 2026-10-02 (6a pkt 47): `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga nie istnieje dla workflowów projektu — krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0; haiku start 52k → 8k, opus 72–84k → 49–60k), merge do main `3933432`. NASTĘPNY KROK: §8 „P4 — START I KONIEC RUNU”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ☑ P4 ☐ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922` + poprawka po teście czystego konta `0730d04`. **P3 SESJA 1/2 ZROBIONA 2026-10-01 (6a pkt 46): pięć plików klas ról, `tools:` w plikach ról i badaczy, warianty builderów `-figma`, PA-25 (skill figma z pluginu), test `klasy-rol.test.mjs`; gałąź `popr/P3-agenci` niezmergowana. **P3 ZROBIONA 2026-10-02 (6a pkt 47): `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga nie istnieje dla workflowów projektu — krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0; haiku start 52k → 8k, opus 72–84k → 49–60k), merge do main `3933432`. **P4 ZROBIONA 2026-10-02 (6a pkt 48): bramka wejścia autopilota (czystość, doctor, zielony start z cache po SHA), archiwizacja bez CLAUDE.md z `docs/decisions/` (`claude_md: do-uzgodnienia`), bramka PR ≤ 150, `fazyUkonczone` po stanie; smoke w dwóch runach — STOP na czerwonej bazie `wf_ec07d4a4-d06`, potem `wf_f330324d-8a5` zielony (2,84 M, −27% vs R0); merge do main `8f5ff82`. NASTĘPNY KROK: §8 „P5 — DEV-PR I BOT”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ☑ P4 ☑ P5 ☐ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -829,6 +829,40 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (g) **Kopia:** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P3-oferty-online` (kod 7 jak w P1 → commit w kopii `2f8acff`, data wygaśnięcia
     fikstury `opublikuj-oferte` → 2099). USUNIĘTA 2026-10-02 za zgodą operatora.
     Następny krok: §8 „P4 — START I KONIEC RUNU”.
+48. **P4 — START I KONIEC RUNU (2026-10-02, jedna sesja). P4 ZROBIONA, merge `--ff-only` do main `8f5ff82`.** Commity: 5317d6f (archiwizacja),
+    3e8444a (bramka wejścia), 8f5ff82 (telemetria). Testy szablonu 271/271 (+21), typecheck i lint zielone. Podział: jedna sesja (potwierdzony na starcie).
+    (a) **Archiwizacja (5317d6f):** H33, H34, H49 łatami (`pa_hunk.py` → `git apply --check` OK), H48 jako treść; krok 6 nie edytuje CLAUDE.md
+    ani `.claude/rules/`; nowy krok 6a — `docs/decisions/<data>-<zadanie>.md` z frontmatterem `zadanie / data / claude_md: do-uzgodnienia`, sekcje
+    „Decyzje” i „Do CLAUDE.md po merge'u” (wejście dla kroku P5), linia indeksu w `docs/decisions/README.md` (plik tworzony z nagłówkiem, gdy go nie ma);
+    plik powstaje zawsze, także bez decyzji. Pathspec z funkcji `pathspecArchiwum` (z `docs/decisions`, bez CLAUDE.md, `':(exclude,glob)**/*.bak'`);
+    `*.bak` nie jest przenoszony — zostaje w `docs/active/<zadanie>/` i trafia do `rezultaty`. Komunikat `docs(<zadanie>): archiwum` z JS + sprawdzenie
+    `git log -1 --format=%s`. Bramka PR: agent zwraca `plikiPr[]` (`git diff --name-only <merge-base z main> HEAD`), JS `bramkaRozmiaruPr` (> 150 →
+    UWAGA z podziałem po dwóch pierwszych segmentach ścieżki); przy UWADZE agent `complete:uwaga-pr:*` (haiku) dopisuje sekcję do podsumowania.
+    `sprawdzDecyzje` → UWAGA, gdy pliku nie ma albo pole ≠ `do-uzgodnienia`. Wynik complete-wf: `uwagi[]`, autopilot: `uwagiArchiwum`. Pole
+    `aktualizacje` usunięte ze schematu (było „co dopisano do CLAUDE.md”). Skill: krok 6a, `*.bak` poza archiwum, bez „Zapytaj…” i „🎉” (PA-38).
+    (b) **Bramka wejścia (3e8444a), funkcje czyste w bloku „Bramka wejscia (P4)”:** bootstrap zbiera `wejscie {zmiany (git status --porcelain
+    --untracked-files=all), doctorKod, doctorWynik, kodJakPrzyTescie}`; `branch.czysty` usunięty (decyzja w JS). `decyzjaWejscia`: brudne poza
+    katalogiem zadania → STOP „niezacommitowane zmiany poza katalogiem zadania: …” z komendą; doctor kod 1 → STOP „start: doctor — …”; doctor bez
+    wyniku → uwaga; brudny wyłącznie katalog zadania → commit `start:commit-zadania` (haiku) i dalej. **Zielony start — interpretacja „testy na bazie
+    gałęzi”:** testy (typecheck + test) na HEAD startu, nie na merge-base w worktree — drzewo jest czyste po bramce, a gałąź może już nieść poprawkę
+    czerwonego testu z main (kopia smoke'a: main czerwony, gałąź z poprawką zielona — test merge-base dałby fałszywy STOP). Cache: `bazaZielona {sha,
+    wynik: PASS}` w `.autopilot-state.json` (zapis od razu po PASS); trafienie, gdy od `sha` zmiany tylko w `docs/` (`git diff --quiet <sha> HEAD --
+    . ':(exclude)docs'` w bootstrapie). Faza z `execute=done` → bez testów startu (kod faz testuje domknięcie). FAIL nie trafia do cache; agent null
+    lub `BRAK-TESTOW` → uwaga, run idzie dalej. `fazyUkonczone` = fazy domknięte w zadaniu (OK i STOP), nowe `fazyWRunie`. Commit katalogu zadania
+    wspólny dla STOP i startu (`zacommitujKatalogZadania`), stopka commita tylko drugim `-m`.
+    (c) **Telemetria (8f5ff82):** `rekordRunu.fazyUkonczone` bierze wartość z wyniku, gdy jest liczbą (stare wyniki OK miały = liczba raportów → stare
+    rekordy bez zmian, `WERSJA_REKORDU` bez podbicia); kategoria STOP `start` (`^start: `) dla bramki wejścia — próg „STOP-y środowiska w środku runu = 0”.
+    Mapa klas w `wywolania-agentow.test.mjs`: + `start:commit-zadania`, `complete:uwaga-pr:*` → klasa-mechaniczny (nowe role, nazwane w commicie).
+    (d) **Prompt-audit dodanych linii:** 2 trafienia w nowej treści (`WYLACZNIE`, `⚠️`) poprawione → 0.
+    (e) **Smoke w dwóch runach (decyzja operatora: najpierw czerwona baza).** Run 1 `wf_ec07d4a4-d06` na kopii z wygasłą fiksturą: STOP „start: testy
+    na starcie galezi czerwone (95a71cc): …opublikuj-oferte.test.ts…” z komendą odtworzenia i świeżego runu; 60 s, 3 agentów, 116k tok., fazy 0, czerwony
+    wynik poza cache. Run 2 `wf_f330324d-8a5` po poprawce w kopii (`027aa17`): OK, 1/1 faza, walidacja PASS, **2,84 M (−27% vs R0, +1% vs P3)**, 30 agentów
+    (+`start:testy` 0,10 M), 17 min; `bazaZielona {027aa17, PASS}` w stanie; `docs/decisions/2026-10-02-smoke-autopilot.md` z `claude_md: do-uzgodnienia`
+    + indeks; CLAUDE.md i `.claude/rules/` nietknięte (diff 0); commit `90ce44a` z tematem `docs(smoke-autopilot): archiwum` i stopką po pustej linii;
+    `uwagiArchiwum: []`. Odczyt: `dane/smoke-P4.txt` (vs R0), `dane/smoke-P4-vs-P3.txt`.
+    (f) **Kopia:** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P4-oferty-online` (kod 7 → poprawka fikstury w kopii `027aa17`: `EXPIRES_AT`
+    i dwa zdania maila → 2099, linia 202 zostaje `24.09.2026` — test „30 dni od publikacji” liczy od NOW). Do usunięcia za zgodą operatora.
+    Następny krok: §8 „P5 — DEV-PR I BOT”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -925,6 +959,13 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   u klas z `omitClaudeMd` go nie ma). Pustych wyników szukaj w `journal.jsonl` (`type: result`, pole `result`), nie w podsumowaniu sesji runu.
   Testy statyczne wywołań `agent()`: opcje w JEDNEJ linii `{ schema: X, …, label: … }` — inaczej `wywolania-agentow.test.mjs` zgłosi niezgodność liczby.
   Sesja runu smoke'a kończy podsumowaniem z pytaniem do operatora („dać zielone światło?”) — to pytanie o kopię, nie zadanie dla sesji szablonu.
+- P4 (2026-10-02): kopia oferty (kod 7) — data w `apps/server/src/mcp/tools/opublikuj-oferte.test.ts` siedzi w TRZECH miejscach: `EXPIRES_AT` (:57)
+  i zdanie maila (:64, :347) → 2099; cel `replace` w :202 zostaje `24.09.2026` (30 dni od stałego NOW). Funkcje czyste workflowów testowane ekstrakcją
+  bloku między kotwicami (`// ── Bramka wejscia (P4)` … `// ── Koniec bramki wejscia` w autopilocie, `// ── Archiwum (P4)` … `// ── Koniec archiwum`
+  w complete-wf) — nowa funkcja do testu idzie do środka bloku, kotwic nie ruszaj. Etykieta `agent()` musi być literałem (mapa klas w
+  `wywolania-agentow.test.mjs`): jedna funkcja z dwiema rolami = dwa wywołania w ternary, nie `label: zmienna`. Prompt-audit dodanych linii:
+  `git diff -U0 main -- <pliki>` + `RX` z `pa_inwentarz.py` (import przez `importlib`, skrypt w scratchpadzie). Run STOP w kopii kończy się w sesji
+  kopii pytaniem do operatora o naprawę main — to nie zadanie dla sesji szablonu.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -1183,8 +1224,47 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   w workflowach projektu → krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0), merge do main `3933432`.
   **Następny krok: „P4 — START I KONIEC RUNU” niżej** (nowa sesja — N2). Kopia `_smoke-P3-oferty-online` usunięta za zgodą. Otwarte u operatora:
   oryginał oferty-online czerwony na main (6a pkt 42 g); push szablonu; token Airtable.
+- **P4 ZROBIONA (2026-10-02; 6a pkt 48):** bramka wejścia autopilota (czystość z commitem katalogu zadania, doctor, zielony start na HEAD z cache
+  `bazaZielona`), archiwizacja bez CLAUDE.md z `docs/decisions/<data>-<zadanie>.md` (`claude_md: do-uzgodnienia`) i indeksem, bramka PR ≤ 150 (UWAGA),
+  `fazyUkonczone` po stanie zadania, kategoria STOP `start` w telemetrii; smoke: STOP na czerwonej bazie `wf_ec07d4a4-d06`, potem `wf_f330324d-8a5`
+  zielony (2,84 M), merge do main `8f5ff82`. **Następny krok: „P5 — DEV-PR I BOT” niżej** (nowa sesja — N2). Kopia `_smoke-P4-oferty-online` ma plik
+  decyzji z `do-uzgodnienia` (materiał smoke'a P5) — usuwanie tylko za zgodą. Otwarte u operatora: oryginał oferty-online czerwony na main
+  (wygasła fikstura `opublikuj-oferte`, propozycja: `vi.useFakeTimers()` w oryginale — osobna sesja); push szablonu; token Airtable.
 
-**P4 — START I KONIEC RUNU (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**P5 — DEV-PR I BOT (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P5 — dev-pr i bot (PLAN-POPRAWY.md §3 P5).
+P4 zrobiona (HANDOFF 6a pkt 48): bramka wejścia autopilota, docs/decisions/ z polem claude_md: do-uzgodnienia, merge do main 8f5ff82.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): PLAN-POPRAWY.md §1 (zasady wspólne), §3 P5, §4 (wiersze dev-autopilot-wf.js, dev-pr-wf.js,
+dev-pr/SKILL.md, coderabbit-setup, start-koniec.test.mjs); ETAP1B-ROZSTRZYGNIECIE.md §2 (8 zmian generatora) i §4 (dev-pr); HANDOFF 6a pkt 48 i §7 (ostatni punkt).
+Kod: .claude/workflows/dev-pr-wf.js (zbierz, napraw, merge, :278 guard, compound — tylko zapis propozycji), .claude/skills/dev-pr/SKILL.md,
+.claude/skills/coderabbit-setup/ (SKILL.md, templates/coderabbit-base.yaml, templates/reviews/, reference/stack-blocks.md),
+bramka wejścia w .claude/workflows/dev-autopilot-wf.js (blok „Bramka wejscia (P4)”, decyzjaWejscia) i .claude/workflows/__tests__/start-koniec.test.mjs.
+
+Podział (propozycja — potwierdź albo zmień na starcie): sesja 1 = dev-pr (4 zmiany, krok CLAUDE.md po merge'u z polem claude_md: uzgodniono)
++ warunek decyzji w bootstrapie + smoke bootstrapu; sesja 2 = generator bota (8 zmian, stała ścieżki coding-rules, walidacja YAML) + kalibracja pr:zbierz.
+
+Do zrobienia (gałąź popr/P5-dev-pr z main; test → kod → pnpm typecheck → pnpm test → pnpm lint → commit, krok po kroku):
+1. dev-pr.test.mjs (najpierw czerwony): guard uzasadnień (odrzuca sam backtick, przyjmuje dokument + ≥ 20 zn), token tury, rekomendacja dla czterech
+   stanów (MERGUJ / NIE MERGUJ — warunek / KOLEJNA TURA / DECYZJA OPERATORA), złączenie raportu po id z watki[], bramka rozmiaru CLAUDE.md, zmiana pola
+   claude_md; start-koniec.test.mjs: do-uzgodnienia → STOP z komendą, uzgodniono → dalej, brak docs/decisions/ → ostrzeżenie (funkcja w bloku P4).
+2. dev-pr: zbierz w każdej turze, napraw odrzuca wątki bez tokenu tury (JS); guard :278; rekomendacja w JS jako pierwszy wiersz raportu; raport
+   = tabela per tura, propozycje do docs/reviews/propozycje-do-reviewerow.md; sufit 3 tur. Krok „uzgodnij CLAUDE.md” po POTWIERDZONYM merge'u:
+   wejście = plik docs/decisions/ zadania (sekcja „Do CLAUDE.md po merge'u”), bramka rozmiaru CLAUDE.md w JS, na końcu claude_md: uzgodniono.
+3. Bootstrap autopilota na main: ostatni zmergowany plik docs/decisions/ z claude_md: do-uzgodnienia → STOP „uzgodnij CLAUDE.md” z komendą.
+4. Generator: 8 zmian ETAP1B §2 + e2e/seeds/*.sql jako granica zaufania; coderabbit-setup — opis konfiguracji bez szumu; stała ścieżki coding-rules.
+5. Kontrola prompt-auditu na dodanych liniach (0 nowych trafień). Smoke: kopia _smoke-P4-oferty-online (plik decyzji do-uzgodnienia) albo nowa kopia
+   skryptem z P0 — oczekiwany STOP z komendą, po zmianie pola PASS; daj mi wszystkie komendy. Kalibracja: pr:zbierz na 2–3 starych PR oferty-online
+   (odczyt) vs dane/coderabbit/klasyfikacja-574.csv — pokaż koszt (~2–4 M) przed startem.
+Po zielonym smoke'u merge --ff-only popr/P5-dev-pr do main.
+Po sesji: HANDOFF (§2, 6a, §8 → instrukcja następnej), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**P4 — START I KONIEC RUNU (WYKONANA 2026-10-02 — 6a pkt 48; zostawiona jako wzór):**
 
 ```
 Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P4 — start i koniec runu (PLAN-POPRAWY.md §3 P4).
