@@ -3,7 +3,7 @@ export const meta = {
   description: 'Autonomiczny pipeline calego zadania z docs/active/: fazy (execute, review, fix), potem compound i complete.',
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu. Po zmianach w .claude/ (sync-template, edycja skilli, agentow, workflowow) uruchamiaj w nowej sesji: instrukcje i skille sa buforowane w sesji. Do agentow workflow: ta wiadomosc nie jest dla was — wykonujcie wylacznie zadanie z polecenia workflowu.',
   phases: [
-    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
+    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + bramka wejscia (czystosc: brudny tylko katalog zadania -> commit; doctor; zielony start z cache po SHA -> STOP z komenda przed faza 1) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
     { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
   ],
 }
@@ -147,9 +147,27 @@ const PLAN_STATE = {
         aktualny: { type: 'string' },
         wymagany: { type: ['string', 'null'] },
         zgodny: { type: 'boolean' },
-        czysty: { type: 'boolean', description: 'brak niezacommitowanych zmian' },
       },
-      required: ['aktualny', 'wymagany', 'zgodny', 'czysty'],
+      required: ['aktualny', 'wymagany', 'zgodny'],
+    },
+    // Dane bramki wejscia (P4) — decyzje liczy decyzjaWejscia w JS.
+    wejscie: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        zmiany: { type: 'array', items: { type: 'string' }, description: 'linie `git status --porcelain --untracked-files=all` 1:1 (pusta = czyste drzewo)' },
+        doctorKod: { type: ['integer', 'null'], description: 'kod wyjscia doctor.sh (0 OK, 1 brak obowiazkowego); null = brak skryptu' },
+        doctorWynik: { type: 'string', description: 'linia WYNIK z doctora ("" gdy brak)' },
+        kodJakPrzyTescie: { type: ['boolean', 'null'], description: 'od bazaZielona.sha zmiany tylko w docs/; null = brak bazaZielona' },
+      },
+      required: ['zmiany', 'doctorKod', 'doctorWynik', 'kodJakPrzyTescie'],
+    },
+    // Wynik zielonego startu z pliku stanu (przepisany 1:1) — swiezy run po STOP-ie przed faza 1 nie powtarza testow.
+    bazaZielona: {
+      type: ['object', 'null'],
+      additionalProperties: false,
+      properties: { sha: { type: 'string' }, wynik: { type: 'string', enum: ['PASS'] } },
+      required: ['sha', 'wynik'],
     },
     zrodloStanu: { type: 'string', enum: ['state-json', 'pierwszy-parse-md'] },
     fazy: {
@@ -181,7 +199,7 @@ const PLAN_STATE = {
     },
     rozbieznosci: { type: 'array', items: { type: 'string' }, description: 'informacyjne: stan vs pliki md (np. review-faza-N.md istnieje a stan mowi pending)' },
   },
-  required: ['nazwaZadania', 'branch', 'zrodloStanu', 'fazy', 'zakonczenie', 'rozbieznosci'],
+  required: ['nazwaZadania', 'branch', 'wejscie', 'zrodloStanu', 'fazy', 'zakonczenie', 'rozbieznosci'],
 }
 
 const ZAPIS_STANU = {
@@ -344,9 +362,13 @@ function bootstrapPrompt(sciezka) {
 
 Folder zadania: ${sciezka}
 
-1. GIT: uruchom \`git branch --show-current\` i \`git status --short\`.
+1. GIT: uruchom \`git branch --show-current\` i \`git status --porcelain --untracked-files=all\`.
    Przeczytaj wymagany branch z dokumentacji w ${sciezka}/ (szukaj "Branch:").
-   Ustaw branch.zgodny (aktualny == wymagany lub wymagany == null) oraz branch.czysty (pusty status).
+   Ustaw branch.zgodny (aktualny == wymagany lub wymagany == null). Linie statusu wpisz 1:1 do wejscie.zmiany
+   (bez interpretacji — czy zmiany blokuja run, liczy orkiestrator).
+
+1a. DOCTOR: \`bash .claude/scripts/doctor/doctor.sh; echo "KOD=$?"\` (timeout Bash 300000). wejscie.doctorKod = liczba
+   z linii KOD=, wejscie.doctorWynik = linia zaczynajaca sie od "WYNIK:". Brak pliku skryptu -> doctorKod null, doctorWynik "".
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
 
@@ -362,6 +384,8 @@ Folder zadania: ${sciezka}
       checkboxow md — plik stanu jest ZRODLEM PRAWDY, checkboxy to tylko widok dla czlowieka.
       Pole "metryki" fazy (jesli obecne) PRZEPISZ 1:1 — nie licz go sam, nie uzupelniaj, nie zeruj;
       to zapis telemetrii z runu, w ktorym review sie odbylo. Gdy pola nie ma, pomin je (null).
+      Pole "bazaZielona" (jesli obecne i nie null) przepisz 1:1 i ustaw wejscie.kodJakPrzyTescie:
+      \`git diff --quiet <bazaZielona.sha> HEAD -- . ':(exclude)docs' && echo TAK || echo NIE\` -> TAK = true, NIE = false.
       zrodloStanu = "state-json". Dodatkowo porownaj informacyjnie z plikami (np. istnieje
       ${sciezka}/review-faza-N.md a stan mowi review=pending) i wpisz różnice do rozbieznosci[]
       (NIE koryguj stanu samodzielnie).
@@ -387,6 +411,7 @@ Folder zadania: ${sciezka}
 3. zakonczenie: przy pierwszym parse ustaw walidacja/complete/compound = "pending"
    (chyba ze zadanie jest juz w docs/completed/ — wtedy "done").
 4. nazwaZadania = ostatni segment sciezki ${sciezka}.
+5. Bez pliku stanu albo bez pola bazaZielona: bazaZielona = null, wejscie.kodJakPrzyTescie = null.
 
 Zwroc obiekt zgodny ze schematem. Nie modyfikuj zadnych plikow — to read-only bootstrap.`
 }
@@ -413,6 +438,36 @@ ${trescJson}
    dowod, ze cala faza zostala wykonana, i pipeline powtorzy kilka godzin pracy. Zapis bez odczytu = brak dowodu.
 
 Nie modyfikuj ZADNYCH innych plikow.`
+}
+
+const TESTY_STARTU = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    wynik: { type: 'string', enum: ['PASS', 'FAIL', 'BRAK-TESTOW'] },
+    sha: { type: 'string', description: 'krotki hash HEAD, na ktorym biegly testy' },
+    komenda: { type: 'string', description: 'komenda do odtworzenia, np. "pnpm typecheck && pnpm test"' },
+    bledy: { type: 'array', items: { type: 'string' }, description: 'przy FAIL: plik testu albo typecheck + jednozdaniowy objaw' },
+  },
+  required: ['wynik', 'sha', 'komenda', 'bledy'],
+}
+
+// Zielony start (P4): testy na drzewie, od ktorego run zaczyna prace. Drzewo jest czyste (bramka czystosci wyzej),
+// wiec HEAD = kod startu; galaz moze juz niesc poprawke zastanego czerwonego testu z main.
+function testyStartuPrompt() {
+  return `Sprawdzasz, czy run dev-autopilot startuje z zielonego kodu: typecheck i pelne testy projektu na biezacym HEAD.
+${BLOK_DLUGIE_KOMENDY}
+
+1. \`git rev-parse --short HEAD\` -> sha.
+2. Komendy z package.json scripts (pm z lockfile: pnpm-lock -> pnpm, bun.lock/bun.lockb -> bun, yarn.lock -> yarn,
+   package-lock -> npm): typecheck (brak skryptu -> \`tsc --noEmit\` przy tsconfig.json, inaczej pomin) i test.
+   Brak skryptu test -> wynik "BRAK-TESTOW", komenda "", bledy [] i koniec.
+3. Uruchom typecheck, potem test wg BLOKU DLUGICH KOMEND (tlo + polling, flake infra wg procedury z bloku).
+   komenda = to, co uruchomiles, w jednej linii (np. "pnpm typecheck && pnpm test").
+4. Realny FAIL -> wynik "FAIL" i do bledy[] plik testu (albo "typecheck") z jednozdaniowym objawem. Nic nie naprawiaj:
+   decyzje o STOP-ie podejmuje orkiestrator, a operator naprawia kod sam.
+
+Nie modyfikuj plikow i nie commituj. Zwroc {wynik, sha, komenda, bledy}.`
 }
 
 function warmupPrompt(sciezka) {
@@ -919,6 +974,81 @@ function polaczFindingiPoPowtorce(nowe, poprzednie) {
   return [...swieze, ...przeniesione]
 }
 
+// ── Bramka wejscia (P4) ───────────────────────────────────────────────────
+// Przed pierwsza faza: czystosc drzewa, doctor, zielony start. Agenci zbieraja dane (bootstrap) i wykonuja (commit,
+// testy); decyzja zapada tutaj, w funkcjach czystych (__tests__/start-koniec.test.mjs). Brak srodowiska ma wyjsc przed
+// startem, nie w domknieciu fazy: zastany czerwony test zatrzymywal run dopiero po zaplaceniu za execute (smoke P0).
+
+// Sciezki z linii `git status --porcelain` (rename `a -> b` daje obie strony, cudzyslow przy spacjach zdjety).
+function sciezkiZmian(linie) {
+  return linie.flatMap((l) => l.slice(3).split(' -> ')).map((s) => s.replace(/^"(.*)"$/, '$1'))
+}
+
+function komendaSwiezegoRunu(sciezka) {
+  return `/dev-autopilot-wf ${sciezka}`
+}
+
+// Zielony start sprawdzamy przed pierwsza faza. Gdy faza ma execute=done, kod faz testuje juz domkniecie execute.
+function decyzjaWejscia(sciezka, wejscie, fazy, cache) {
+  const uwagi = []
+  const poza = sciezkiZmian(wejscie.zmiany).filter((s) => s !== sciezka && !s.startsWith(`${sciezka}/`))
+  if (poza.length) {
+    return {
+      stop: {
+        powod: `niezacommitowane zmiany poza katalogiem zadania: ${poza.join(', ')}`,
+        naprawa: `Sprawdz \`git status --short\`, zacommituj albo odloz te zmiany (\`git stash -u\`), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+      },
+      commitZadania: false, testyStartu: false, uwagi,
+    }
+  }
+  if (wejscie.doctorKod === 1) {
+    return {
+      stop: {
+        powod: `start: doctor — ${wejscie.doctorWynik || 'brak obowiazkowego narzedzia'}`,
+        naprawa: `Zainstaluj braki z kolumny Instalacja (\`bash .claude/scripts/doctor/doctor.sh\` pokazuje tabele), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+      },
+      commitZadania: false, testyStartu: false, uwagi,
+    }
+  }
+  if (wejscie.doctorKod !== 0) uwagi.push(`doctor bez wyniku (kod ${wejscie.doctorKod ?? 'brak'}) — sprawdzenie narzedzi pominiete`)
+  let testyStartu = true
+  if (fazy.some((f) => f.execute === 'done')) {
+    testyStartu = false
+    uwagi.push('zielony start pominiety: zadanie w toku, kod faz testuje domkniecie execute')
+  } else if (cache && cache.wynik === 'PASS' && wejscie.kodJakPrzyTescie === true) {
+    testyStartu = false
+    uwagi.push(`zielony start z cache: testy PASS na ${cache.sha}, od tego czasu zmiany tylko w docs/`)
+  }
+  return { stop: null, commitZadania: wejscie.zmiany.length > 0, testyStartu, uwagi }
+}
+
+// Czerwony wynik nie trafia do cache: po naprawie testy ida jeszcze raz. Brak wyniku nie zatrzymuje runu (padniety agent
+// to nie dowod czerwonego kodu) — wtedy run zachowuje sie jak przed P4, a domkniecie fazy i tak uruchomi testy.
+function decyzjaTestowStartu(wynik, sciezka) {
+  if (!wynik) return { stop: null, cache: null, uwaga: 'testy startu bez wyniku (agent null) — zielony start niepotwierdzony' }
+  if (wynik.wynik === 'BRAK-TESTOW') return { stop: null, cache: null, uwaga: 'projekt bez skryptu testow — zielony start nie dotyczy' }
+  if (wynik.wynik === 'FAIL') {
+    return {
+      stop: {
+        powod: `start: testy na starcie galezi czerwone (${wynik.sha}): ${(wynik.bledy || []).join(' | ') || 'brak szczegolow'}`,
+        naprawa: `Odtworz: \`${wynik.komenda}\`. Czerwony test zastany na main napraw na main i wciagnij do galezi (\`git merge main\`) albo commitem na galezi zadania. Potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+      },
+      cache: null, uwaga: null,
+    }
+  }
+  return { stop: null, cache: { sha: wynik.sha, wynik: 'PASS' }, uwaga: null }
+}
+
+function fazyUkonczone(fazy) {
+  return fazy.filter((f) => f.execute === 'done' && f.review === 'done' && (f.fix === 'done' || f.fix === 'none')).length
+}
+
+// Agent haiku wpisal raz Co-Authored-By w druga linie tematu (commit 2c97286, przeglad runow 19.09) — stopka bez pustej linii.
+function instrukcjaCommita(temat) {
+  return `\`git commit -m "${temat}"\` — temat w jednej linii. Stopke (np. Co-Authored-By) dopisujesz wylacznie drugim \`-m\`: git oddziela ja wtedy pusta linia.`
+}
+// ── Koniec bramki wejscia ─────────────────────────────────────────────────
+
 // ── Orkiestracja ──────────────────────────────────────────────────────────
 
 // Sanityzacja args — UI wstrzykuje prefix '@' (mention) i czesto trailing '/'.
@@ -1033,24 +1163,30 @@ async function zacommitujArtefaktyStop(faza) {
     return null
   }
   const opisFazy = Number.isInteger(faza) ? ` (faza ${faza})` : ''
-  return await agent(
-    `Pipeline dev-autopilot zatrzymuje sie na bramce. Zacommituj WYLACZNIE wlasne artefakty pipeline'u,
-zeby bootstrap nastepnego runu nie stanal na bramce czystosci z powodu plikow, ktore sam wygenerowal.
+  return await zacommitujKatalogZadania(`docs(${stan.nazwaZadania}): stan pipeline'u po STOP${opisFazy}`, 'stop:commit-artefaktow')
+}
+
+// Commit WYLACZNIE katalogu zadania: przy STOP-ie (artefakty pipeline'u) i na starcie (zmiany operatora w katalogu
+// zadania, rek. 4 przegladu runow — wczesniej falszywy STOP "niezacommitowane zmiany" po edycji zadan).
+async function zacommitujKatalogZadania(temat, etykieta) {
+  const polecenie = `Zacommituj tylko zmiany w katalogu zadania \`${sciezka}/\` — to pliki zadania i artefakty pipeline'u,
+a brudne drzewo zatrzymuje bootstrap kolejnego runu na bramce czystosci.
 
 1. \`git status --short\` — zapamietaj pelna liste.
-2. Z tej listy wyodrebnij sciezki SPOZA \`${sciezka}/\`. NIE dotykaj ich w zaden sposob: nie dodawaj,
-   nie stashuj, nie cofaj. Zwroc je w brudnePozaZadaniem[] — ida do komunikatu STOP dla operatora.
+2. Z tej listy wyodrebnij sciezki SPOZA \`${sciezka}/\`. Nie dotykaj ich w zaden sposob: nie dodawaj,
+   nie stashuj, nie cofaj. Zwroc je w brudnePozaZadaniem[] — ida do komunikatu dla operatora.
 3. Jesli w \`${sciezka}/\` sa jakiekolwiek zmiany (zmodyfikowane, nowe lub usuniete):
-   \`git add ${sciezka}/\` — DOKLADNIE ten pathspec, ZAKAZ \`git add -A\` i \`git add .\` —
-   a potem \`git commit -m "docs(${stan.nazwaZadania}): stan pipeline'u po STOP${opisFazy}"\`.
+   \`git add ${sciezka}/\` — dokladnie ten pathspec, bez \`git add -A\` i \`git add .\` — a potem
+   ${instrukcjaCommita(temat)}
    Zwroc zacommitowano=true i krotki hash z \`git rev-parse --short HEAD\`.
 4. Jesli w \`${sciezka}/\` nie ma zmian — nic nie commituj, zwroc zacommitowano=false i commit=null.
-5. Gdy \`git commit\` zwroci blad (np. hook odrzucil), NIE probuj obchodzic go flagami (\`--no-verify\`,
+5. Gdy \`git commit\` zwroci blad (np. hook odrzucil), nie obchodz go flagami (\`--no-verify\`,
    \`-f\`): zwroc zacommitowano=false i commit=null. Falszywy commit jest gorszy niz brudne drzewo.
 
-Nie modyfikuj plikow, nie uruchamiaj testow, nie przelaczaj brancha.`,
-    { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'stop:commit-artefaktow' }
-  )
+Nie modyfikuj plikow, nie uruchamiaj testow, nie przelaczaj brancha.`
+  return etykieta === 'stop:commit-artefaktow'
+    ? await agent(polecenie, { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'stop:commit-artefaktow' })
+    : await agent(polecenie, { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'start:commit-zadania' })
 }
 
 // Kazde zatrzymanie runu przechodzi TEDY — inaczej bramka, ktora zadziala, nie zostawia po sobie danych.
@@ -1073,7 +1209,9 @@ async function stopRun(obj) {
       powod = `${powod} UWAGA: poza katalogiem zadania zostaly niezacommitowane zmiany (${brudne.join(', ')}) — NIE tknelismy ich, ale bramka czystosci nastepnego runu na nich stanie.`
     }
   }
-  return { status: 'STOP', ...obj, powod, artefaktyStop: artefakty }
+  // Fazy domkniete w zadaniu (nie w tym runie): STOP na fazie 3 z 3 po dwoch zielonych to nie porazka calego zadania.
+  const ukonczone = stan && Array.isArray(stan.fazy) ? fazyUkonczone(stan.fazy) : null
+  return { status: 'STOP', ...obj, powod, fazyUkonczone: ukonczone, artefaktyStop: artefakty }
 }
 
 phase('Bootstrap')
@@ -1086,10 +1224,37 @@ if (!stan) {
 if (!stan.branch.zgodny) {
   return await stopRun({ powod: `branch mismatch: jestes na "${stan.branch.aktualny}", wymagany "${stan.branch.wymagany}"`, stan })
 }
-if (!stan.branch.czysty) {
-  return await stopRun({ powod: 'niezacommitowane zmiany — zacommituj/stash przed autopilotem (po awarii runu: NAJPIERW git status, kod faz zwykle JEST na dysku)', stan })
-}
 for (const r of stan.rozbieznosci || []) log(`Bootstrap rozbieznosc (informacyjna): ${r}`)
+
+// Bramka wejscia (P4): STOP z gotowa komenda przed pierwsza faza, decyzja w decyzjaWejscia.
+const wejscie = decyzjaWejscia(sciezka, stan.wejscie, stan.fazy, stan.bazaZielona || null)
+for (const u of wejscie.uwagi) log(`Bramka wejscia: ${u}`)
+if (wejscie.stop) {
+  return await stopRun({ ...wejscie.stop, stan })
+}
+if (wejscie.commitZadania) {
+  const commitZadania = await zacommitujKatalogZadania(`docs(${stan.nazwaZadania}): zmiany w katalogu zadania przed runem`, 'start:commit-zadania')
+  if (!commitZadania || !commitZadania.zacommitowano || commitZadania.brudnePozaZadaniem.length) {
+    return await stopRun({
+      powod: `niezacommitowane zmiany w katalogu zadania — commit na starcie sie nie udal${commitZadania && commitZadania.brudnePozaZadaniem.length ? ` (poza zadaniem: ${commitZadania.brudnePozaZadaniem.join(', ')})` : ''}`,
+      naprawa: `Zacommituj recznie: \`git add ${sciezka}/ && git commit -m "docs(${stan.nazwaZadania}): zmiany w katalogu zadania"\`, potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+      stan,
+    })
+  }
+  log(`Bramka wejscia: zmiany w katalogu zadania zacommitowane (${commitZadania.commit || 'brak hasha'})`)
+}
+if (wejscie.testyStartu) {
+  const testy = await agent(testyStartuPrompt(), { schema: TESTY_STARTU, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'start:testy' })
+  const d = decyzjaTestowStartu(testy, sciezka)
+  if (d.stop) return await stopRun({ ...d.stop, stan })
+  if (d.uwaga) log(`Bramka wejscia: ${d.uwaga}`)
+  if (d.cache) {
+    stan.bazaZielona = d.cache
+    log(`Bramka wejscia: zielony start (${testy.komenda}) na ${d.cache.sha}`)
+    // Od razu na dysk: STOP srodowiska E2E nizej commituje katalog zadania, wiec swiezy run wezmie wynik z cache.
+    await zapiszStan()
+  }
+}
 
 // Filar 2: kolejka liczona w JS ze stanu — zero interpretacji LLM.
 kolejka = stan.fazy
@@ -1101,7 +1266,7 @@ log(`Autopilot: ${stan.nazwaZadania} (stan: ${stan.zrodloStanu}) — fazy do wyk
 // Utrwalanie stanu: tresc liczona w JS, zapis przez tani leaf-agent (haiku). Best-effort z ostrzezeniem.
 async function zapiszStan() {
   const tresc = JSON.stringify(
-    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie },
+    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie, bazaZielona: stan.bazaZielona || null },
     null,
     2
   )
@@ -1613,7 +1778,7 @@ if (stan.zakonczenie.complete === 'pending') {
     : []
   complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec })
   if (complete && (!complete.archiwum || !complete.commit)) {
-    log(`UWAGA: archiwizacja NIE domknieta (archiwum=${complete.archiwum || 'brak'}, commit=${complete.commit || 'brak'}): ${[...(complete.aktualizacje || []), ...(complete.rezultaty || [])].join('; ') || 'bez szczegolow'} — zadanie moglo zostac w docs/active/, sprawdz git status`)
+    log(`UWAGA: archiwizacja NIE domknieta (archiwum=${complete.archiwum || 'brak'}, commit=${complete.commit || 'brak'}): ${(complete.rezultaty || []).join('; ') || 'bez szczegolow'} — zadanie moglo zostac w docs/active/, sprawdz git status`)
   }
   // Smoke operatora (dokument #2 dla czlowieka) powstaje w complete-wf z sekcji "Operator checklist faza N",
   // [Manual] i findingow OPERATOR — to jest lista "co sprawdzic recznie po zielonym automacie".
@@ -1632,18 +1797,21 @@ if (stan.zakonczenie.complete === 'pending') {
   }
 }
 
-log(`Autopilot koniec: ${kolejka.length} faz (koszt runu: raport telemetrii — .claude/scripts/telemetria/raport.mjs)`)
+log(`Autopilot koniec: ${kolejka.length} faz w tym runie, ${fazyUkonczone(stan.fazy)}/${stan.fazy.length} domknietych w zadaniu (koszt runu: raport telemetrii — .claude/scripts/telemetria/raport.mjs)`)
 
 return {
   status: 'OK',
   nazwaZadania: stan.nazwaZadania,
-  fazyUkonczone: kolejka.length,
+  fazyUkonczone: fazyUkonczone(stan.fazy),
+  fazyWRunie: kolejka.length,
   historia,
   raporty,
   walidacja: stan.walidacjaWynik || 'done w poprzednim runie',
   e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
   archiwum: complete && complete.archiwum,
   archiwumCommit: (complete && complete.commit) || '',
+  // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
+  uwagiArchiwum: (complete && complete.uwagi) || [],
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
