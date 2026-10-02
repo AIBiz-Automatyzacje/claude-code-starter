@@ -57,6 +57,9 @@ test('kategoria STOP-u z powodu — prawdziwe komunikaty autopilota', () => {
     kategoriaStopu('execute fazy 2 zwrocil "blocked": klucz. UWAGA: poza katalogiem zadania zostaly niezacommitowane zmiany (a.ts)'),
     'execute', 'dopisek stopRun o brudnym drzewie nie jest przyczyna STOP-u',
   )
+  assert.equal(kategoriaStopu('start: doctor — WYNIK: BRAK obowiązkowych: gh'), 'start', 'bramka wejscia autopilota (P4)')
+  assert.equal(kategoriaStopu('start: testy na starcie galezi czerwone (abc1234): src/a.test.ts'), 'start')
+  assert.equal(kategoriaStopu('niezacommitowane zmiany poza katalogiem zadania: src/a.ts'), 'czystosc')
   assert.equal(kategoriaStopu('cos nowego'), 'inne')
   assert.equal(kategoriaStopu(null), null)
 })
@@ -83,6 +86,14 @@ test('rekord run autopilota: zadanie i liczba faz z bootstrapu, koszt z agentow,
   assert.deepEqual(r.koszt, { agentow: 2, tur: 3, in: 2, cache_w: 15, cache_r: 20, out: 4, jedn: 150 })
   assert.equal(r.sekundy, 180)
   assert.equal(r.start, '2026-09-23T10:00:00.000Z', 'start runu = najwczesniejszy agent, gdy harness nie ma startTime')
+})
+
+test('fazy ukonczone z wyniku autopilota (stan zadania, P4) maja pierwszenstwo przed liczba raportow tego runu', () => {
+  const r = rekordRunu({
+    harness: { workflowName: 'dev-autopilot-wf', result: { status: 'OK', fazyUkonczone: 3, fazyWRunie: 1, raporty: [{ faza: 3 }] } },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: { nazwaZadania: 'z', fazy: [{}, {}, {}] },
+  })
+  assert.equal(r.fazyUkonczone, 3, 'wpis "OK, 1 z 3" wygladal na porazke (przeglad runow 19.09, W6)')
 })
 
 test('walidacja koncowa z wyniku autopilota: obiekt walidacji → PASS/FAIL, inaczej null', () => {

@@ -51,12 +51,14 @@ export function statusBezHarnessu(we) {
 }
 
 // Kolejnosc ma znaczenie: „P1 nierozwiazane po fixie” to P1, nie fix-FAIL; „walidacja fixa” to fix, nie walidacja koncowa;
-// „execute zwrocil partial” bywa opisany slowami o testach E2E, a to STOP buildera. `bramka-wejscia` = etap start dev-pr.
+// „execute zwrocil partial” bywa opisany slowami o testach E2E, a to STOP buildera. `bramka-wejscia` = etap start dev-pr,
+// `start` = bramka wejscia autopilota przed faza 1 (doctor, zielony start; P4).
 const DOPISEK_STOP_RUN = ' UWAGA: poza katalogiem zadania'
 
 /** @type {Array<[RegExp, string]>} */
 const KATEGORIE_STOPU = [
   [/niezacommitowane zmiany|branch mismatch|nie jest czyste/i, 'czystosc'],
+  [/^start: /, 'start'],
   [/^warunek \d+ nie ?spe[lł]niony|warunki bramki/i, 'bramka-wejscia'],
   [/^execute fazy/i, 'execute'],
   [/scribe padl/i, 'scribe'],
@@ -171,7 +173,8 @@ export function rekordRunu(we) {
     powod: we.status.powod,
     stop_kategoria: we.status.status === 'STOP' ? kategoriaStopu(we.status.powod) : null,
     fazyZadania: Array.isArray(bootstrap.fazy) ? bootstrap.fazy.length : null,
-    fazyUkonczone: raporty ? raporty.length : typeof wynik.fazyUkonczone === 'number' ? wynik.fazyUkonczone : null,
+    // Autopilot od P4 zwraca fazy domkniete w zadaniu; starsze wyniki — liczba faz tego runu (= raporty), wiec stare rekordy bez zmian.
+    fazyUkonczone: typeof wynik.fazyUkonczone === 'number' ? wynik.fazyUkonczone : raporty ? raporty.length : null,
     walidacja: wynikWalidacji(wynik.walidacja),
     e2eSrodowisko: tekstLubNull(wynik.e2eSrodowisko),
     solution: tekstLubNull(wynik.solution),
