@@ -861,7 +861,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     + indeks; CLAUDE.md i `.claude/rules/` nietknięte (diff 0); commit `90ce44a` z tematem `docs(smoke-autopilot): archiwum` i stopką po pustej linii;
     `uwagiArchiwum: []`. Odczyt: `dane/smoke-P4.txt` (vs R0), `dane/smoke-P4-vs-P3.txt`.
     (f) **Kopia:** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P4-oferty-online` (kod 7 → poprawka fikstury w kopii `027aa17`: `EXPIRES_AT`
-    i dwa zdania maila → 2099, linia 202 zostaje `24.09.2026` — test „30 dni od publikacji” liczy od NOW). Do usunięcia za zgodą operatora.
+    i dwa zdania maila → 2099, linia 202 zostaje `24.09.2026` — test „30 dni od publikacji” liczy od NOW). ZOSTAJE do smoke'a P5 (decyzja operatora 2026-10-02); usunięcie po P5 tylko za zgodą.
     Następny krok: §8 „P5 — DEV-PR I BOT”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -1228,7 +1228,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   `bazaZielona`), archiwizacja bez CLAUDE.md z `docs/decisions/<data>-<zadanie>.md` (`claude_md: do-uzgodnienia`) i indeksem, bramka PR ≤ 150 (UWAGA),
   `fazyUkonczone` po stanie zadania, kategoria STOP `start` w telemetrii; smoke: STOP na czerwonej bazie `wf_ec07d4a4-d06`, potem `wf_f330324d-8a5`
   zielony (2,84 M), merge do main `8f5ff82`. **Następny krok: „P5 — DEV-PR I BOT” niżej** (nowa sesja — N2). Kopia `_smoke-P4-oferty-online` ma plik
-  decyzji z `do-uzgodnienia` (materiał smoke'a P5) — usuwanie tylko za zgodą. Otwarte u operatora: oryginał oferty-online czerwony na main
+  decyzji z `do-uzgodnienia` (materiał smoke'a P5) — ZOSTAJE do P5 (decyzja operatora 2026-10-02), potem usuwanie tylko za zgodą. Otwarte u operatora: oryginał oferty-online czerwony na main
   (wygasła fikstura `opublikuj-oferte`, propozycja: `vi.useFakeTimers()` w oryginale — osobna sesja); push szablonu; token Airtable.
 
 **P5 — DEV-PR I BOT (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
