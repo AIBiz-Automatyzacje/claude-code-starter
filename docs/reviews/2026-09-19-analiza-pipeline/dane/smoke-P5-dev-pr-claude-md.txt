@@ -1,0 +1,82 @@
+Smoke: wf_477d96d9-bd5 (projekt _smoke-P4-oferty-online) vs referencja wf_f330324d-8a5 (projekt _smoke-P4-oferty-online)
+  metryka                            referencja             run                    Δ
+== 1. Run
+  status                             OK                     OK                     
+  powód STOP                         —                      —                      
+  fazy ukończone / zadania           1/1                    None/None              ≠
+  walidacja końcowa                  PASS                   —                      ≠
+  szablon zgodny                     True                   True                   
+  smokeStatus (harness)              plik                   —                      ≠
+  koszt [jedn.]                      2.84 M                 0.10 M                 -97%
+  agentów                            30                     2                      -93%
+  tur                                165                    9                      -95%
+  czas [min]                         17                     0                      -100%
+
+== 2. Fazy: gate, review, fix
+ faza 1
+  status / gate                      OK / CZYSTE            None / None            ≠
+  cykle fix                          1                      —                      
+  potwierdzone p1                    0                      —                      
+  potwierdzone p2                    1                      —                      
+  potwierdzone p3                    6                      —                      
+  review znalezione                  10                     —                      
+  review poDedupSem                  7                      —                      
+  review weryfikowane                1                      —                      
+  review obalone                     0                      —                      
+  pominięci reviewerzy               ['performance', 'e2e'] —                      ≠
+  fix naprawione                     7                      —                      
+  kontrola fixa: regresje            0                      —                      
+  fix dotknął testów (run)           NIE
+  koszt fazy                         1.92 M                 —                      
+    etap execute                     0.43 M                 —                      
+    etap fix                         0.36 M                 —                      
+    etap mechanika_review            0.28 M                 —                      
+    etap orkiestracja                0.08 M                 —                      
+    etap review                      0.70 M                 —                      
+    etap sceptycy                    0.07 M                 —                      
+
+== 3. Agenci per rola: liczba, koszt
+  bootstrap                          1 × 0.08 M             —                      ≠
+  build                              1 × 0.15 M             —                      ≠
+  complete                           1 × 0.17 M             —                      ≠
+  compound                           1 × 0.08 M             —                      ≠
+  dedup:semantyczny                  1 × 0.06 M             —                      ≠
+  domkniecie                         1 × 0.18 M             —                      ≠
+  e2e:precheck                       1 × 0.06 M             —                      ≠
+  fix                                1 × 0.19 M             —                      ≠
+  fix:kontrola                       1 × 0.07 M             —                      ≠
+  fix:pre-skan                       1 × 0.06 M             —                      ≠
+  kontekst:diff                      1 × 0.10 M             —                      ≠
+  planner                            1 × 0.10 M             —                      ≠
+  pr:claude-md                       —                      1 × 0.07 M             ≠
+  pr:claude-md-commit                —                      1 × 0.02 M             ≠
+  review:code-quality                1 × 0.14 M             —                      ≠
+  review:correctness                 1 × 0.14 M             —                      ≠
+  review:security                    1 × 0.13 M             —                      ≠
+  review:spec-compliance             1 × 0.14 M             —                      ≠
+  review:test-coverage               1 × 0.15 M             —                      ≠
+  scribe                             1 × 0.12 M             —                      ≠
+  smoke-operatora                    1 × 0.14 M             —                      ≠
+  stan:zapis                         6 × 0.16 M             —                      ≠
+  start:testy                        1 × 0.10 M             —                      ≠
+  verify-batch                       1 × 0.07 M             —                      ≠
+  walidacja-koncowa                  1 × 0.14 M             —                      ≠
+  warmup:vitest                      1 × 0.09 M             —                      ≠
+  zwin-do-poprawy                    1 × 0.03 M             —                      ≠
+
+== 4. Model / efort (transkrypt)
+  haiku-4-5-20251001/None            10                     1                      -90%
+  opus-5-5/high                      7                      0                      -100%
+  opus-5-5/low                       3                      0                      -100%
+  opus-5-5/medium                    10                     1                      -90%
+
+== 5. ctx_start per klasa/model: n, p50 [k], max [k]
+  builder/opus-5-5                   (1, 59, 59)            —                      ≠
+  mechaniczny/haiku-4-5-20251001     (10, 8, 9)             —                      ≠
+  mechaniczny/opus-5-5               (1, 50, 50)            —                      ≠
+  naprawiacz/opus-5-5                (1, 59, 59)            —                      ≠
+  orkiestracyjny/haiku-4-5-20251001  —                      (1, 7, 7)              ≠
+  orkiestracyjny/opus-5-5            (11, 49, 55)           (1, 47, 47)            ≠
+    Δ p50                            -4%
+  reviewer/opus-5-5                  (5, 51, 53)            —                      ≠
+  sceptyk/opus-5-5                   (1, 48, 48)            —                      ≠
