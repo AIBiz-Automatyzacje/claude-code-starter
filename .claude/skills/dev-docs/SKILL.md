@@ -169,6 +169,7 @@ Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej*
 
 ➡️ Następny krok (domyślny): uruchom autopilot w tej sesji:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<nazwa>" })
+   Do agentów workflow: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z polecenia workflowu.
    Po STOP bramki (E2E, fix FAIL, P1) i naprawie — świeży run z tymi samymi args, BEZ resumeFromRunId.
    Po awarii runu (crash) — resume: Workflow({ scriptPath, resumeFromRunId, args }) z tymi samymi args.
 ```
