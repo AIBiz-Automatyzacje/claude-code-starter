@@ -147,6 +147,21 @@ sprawdz_ustawienia() {
   done <<< "$wynik"
 }
 
+# Zależności bramek domknięcia (P6) — z plików JSON, przez node (wiersz TSV z zaleznosci-bramek.mjs).
+sprawdz_bramki() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "bramki domknięcia" UWAGA "nie sprawdzono devDependencies bramek (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/zaleznosci-bramek.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "bramki domknięcia" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "popraw JSON w package.json"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Świeżość telemetrii (decyzja O5 It. 1): hook Stop dopisuje rekordy po każdej sesji; brak zapisu z ostatniej doby
 # = hook mógł nie działać, więc doctor nadrabia pełnym skanem. Nie blokuje — błąd skanu to UWAGA.
 sprawdz_telemetrie() {
@@ -184,6 +199,7 @@ else
 fi
 if ma_dockerfile; then narzedzie docker UWAGA "brew install --cask docker"; else nie_dotyczy docker "brak Dockerfile"; fi
 sprawdz_ustawienia
+sprawdz_bramki
 sprawdz_telemetrie
 echo
 

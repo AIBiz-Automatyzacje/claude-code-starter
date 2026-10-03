@@ -280,3 +280,43 @@ test('telemetria bez zapisu z ostatniej doby → doctor uruchamia zbierz.mjs --s
   assert.deepEqual(wiersz(w.stdout, 'telemetria').slice(1, 3), ['OK', 'brak zapisu z ostatniej doby — skan: runow: 0, sesji: 0, dopisanych: 0, bledow: 0'])
   assert.equal(existsSync(join(s.dom, '.claude/telemetry/zbierz-znacznik.txt')), true, 'skan nie ruszyl')
 }))
+
+// ── Bramki domkniecia (P6): devDependencies z .claude/templates/bramki/package.json w projekcie z konfiguracja z szablonu ──
+
+/** @type {Record<string, string>} */
+const WYMAGANE_BRAMKI = JSON.parse(readFileSync(resolve(dirname(SKRYPT), '..', '..', 'templates', 'bramki', 'package.json'), 'utf8')).devDependencies
+const ESLINT_Z_SZABLONU = '// Konfiguracja ESLint z szablonu (.claude/templates/bramki) — w projekcie kopiuj jako eslint.config.ts\nexport default []\n'
+
+/** @param {string} projekt @param {string} nazwa @param {string} wersja */
+function zainstaluj(projekt, nazwa, wersja) {
+  mkdirSync(join(projekt, 'node_modules', nazwa), { recursive: true })
+  writeFileSync(join(projekt, 'node_modules', nazwa, 'package.json'), JSON.stringify({ name: nazwa, version: wersja }))
+}
+
+test('bramki: projekt bez eslint.config.* z szablonu → nie dotyczy (starszy projekt, ESLint = osobne zadanie)', () => zSrodowiskiem((s) => {
+  writeFileSync(join(s.projekt, 'eslint.config.js'), 'export default []\n')
+  assert.equal(wiersz(doctor(s).stdout, 'bramki domknięcia')[1], 'nie dotyczy')
+}))
+
+test('bramki: konfiguracja z szablonu bez zaleznosci → UWAGA z komenda instalacji dokladnych wersji; komplet → OK', () => zSrodowiskiem((s) => {
+  writeFileSync(join(s.projekt, 'eslint.config.ts'), ESLINT_Z_SZABLONU)
+  writeFileSync(join(s.projekt, 'pnpm-lock.yaml'), '')
+  atrapa(s.bin, 'pnpm', 'echo 10.28.1')
+  const brak = wiersz(doctor(s).stdout, 'bramki domknięcia')
+  assert.equal(brak[1], 'UWAGA')
+  assert.match(brak[2], /brak: .*eslint/)
+  assert.match(brak[3], /^pnpm add -D -E .*typescript-eslint@8\.70\.1/)
+  assert.equal(doctor(s).status, 0, 'brak zaleznosci bramek nie blokuje runu — bramki daja wtedy status brak')
+
+  for (const [nazwa, wersja] of Object.entries(WYMAGANE_BRAMKI)) zainstaluj(s.projekt, nazwa, wersja)
+  assert.equal(wiersz(doctor(s).stdout, 'bramki domknięcia')[1], 'OK')
+}))
+
+test('bramki: typescript >= 6.1 w projekcie → UWAGA (typescript-eslint i Stryker wymagaja API JS < 6.1)', () => zSrodowiskiem((s) => {
+  writeFileSync(join(s.projekt, 'eslint.config.ts'), ESLINT_Z_SZABLONU)
+  for (const [nazwa, wersja] of Object.entries(WYMAGANE_BRAMKI)) zainstaluj(s.projekt, nazwa, wersja)
+  zainstaluj(s.projekt, 'typescript', '7.0.2')
+  const w = wiersz(doctor(s).stdout, 'bramki domknięcia')
+  assert.equal(w[1], 'UWAGA')
+  assert.match(w[2], /typescript 7\.0\.2/)
+}))
