@@ -206,3 +206,32 @@ test('bramki.mjs na konfiguracjach szablonu: czysto -> defekty (kazda bramka z r
     usun(repo)
   }
 })
+
+// Uklad smoke'a P6 (kopia oferty-online): migracje w korzeniu repo, konfiguracje i narzedzia bramek w pakiecie workspace.
+test('monorepo: bramki z korzenia biegna tez w pakiecie z narzedziami, trafienia ze sciezka od korzenia', () => {
+  const repo = noweRepo()
+  try {
+    const pakiet = join(repo, 'packages', 'app')
+    zapisz(repo, { 'package.json': JSON.stringify({ name: 'mono', private: true }), '.gitignore': 'node_modules\ndist\n', 'supabase/migrations/1_init.sql': 'create table t (id int);\n' })
+    symlinkSync(join(BRAMKI, 'node_modules'), join(repo, 'node_modules'))
+    zapisz(pakiet, {
+      'package.json': JSON.stringify({ name: 'app', private: true, type: 'module' }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { strict: true, module: 'ESNext', moduleResolution: 'bundler', noEmit: true, types: [] }, include: ['src'] }),
+      'src/suma.ts': SUMA,
+    })
+    symlinkSync(join(BRAMKI, 'node_modules'), join(pakiet, 'node_modules'))
+    copyFileSync(join(BRAMKI, 'eslint.config.szablon.ts'), join(pakiet, 'eslint.config.ts'))
+    const baza = commit(repo, 'baza')
+
+    zapisz(repo, {
+      'packages/app/src/defekty.ts': "export function parsuj(t: string): number | null {\n  try {\n    return Number(JSON.parse(t))\n  } catch {}\n  return null\n}\n",
+      'supabase/migrations/1_init.sql': 'create table t (id bigint);\n',
+    })
+    const { kod, wynik } = bramki(repo, baza)
+    assert.equal(kod, 1)
+    assert.deepEqual(wynik.eslint.trafienia.map((t) => [t.plik, t.regula]), [['packages/app/src/defekty.ts', 'no-empty']])
+    assert.deepEqual(wynik.migracje.trafienia.map((t) => t.plik), ['supabase/migrations/1_init.sql'])
+  } finally {
+    usun(repo)
+  }
+})

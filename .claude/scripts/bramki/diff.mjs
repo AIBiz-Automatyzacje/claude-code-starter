@@ -75,9 +75,10 @@ export function zmianyFazy(repo, baza) {
   } catch (e) {
     throw new Error(`baza fazy "${baza}" nie jest commitem w ${repo}`, { cause: e })
   }
-  const diffU0 = git(repo, ['diff', '-U0', '--no-color', '--no-renames', '--no-ext-diff', baza, '--'])
+  // --relative: projekt w podkatalogu repo (pakiet monorepo) — sciezki wzgledem projektu, zmiany spoza niego pominiete.
+  const diffU0 = git(repo, ['diff', '-U0', '--no-color', '--no-renames', '--no-ext-diff', '--relative', baza, '--'])
   const dodaneLinie = parsujDiffU0(diffU0)
-  const zmienione = git(repo, ['diff', '--name-only', '--no-renames', '--diff-filter=AM', baza, '--']).split('\n').filter(Boolean)
+  const zmienione = git(repo, ['diff', '--name-only', '--no-renames', '--relative', '--diff-filter=AM', baza, '--']).split('\n').filter(Boolean)
   const niesledzone = git(repo, ['ls-files', '--others', '--exclude-standard']).split('\n').filter(Boolean)
   for (const plik of niesledzone) {
     const ileLinii = readFileSync(join(repo, plik), 'utf8').split('\n').length - 1

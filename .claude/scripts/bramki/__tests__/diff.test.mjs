@@ -1,5 +1,6 @@
 // Test zmian fazy: linie dodane wzgledem bazy (z plikami niezacommitowanymi i nieśledzonymi) i zakresy linii.
 
+import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -62,4 +63,22 @@ test('zmianyFazy: nieznana baza = blad z nazwa bazy', () => {
 test('parsujDiffU0: dodana linia "++ b/..." nie jest naglowkiem pliku', () => {
   const diff = ['diff --git a/src/a.ts b/src/a.ts', '--- a/src/a.ts', '+++ b/src/a.ts', '@@ -0,0 +1,2 @@', '+++ b/udaje-naglowek', '+druga', '@@ -5 +7 @@', '+x'].join('\n')
   assert.deepEqual(parsujDiffU0(diff), { 'src/a.ts': [1, 2, 7] })
+})
+
+// HANDOFF 6a pkt 51 (d): `--projekt` w podkatalogu monorepo — git diff zwraca sciezki od korzenia repo, a bramki
+// porownuja je ze sciezkami wzgledem projektu (raporty narzedzi, istnienie pliku). Zmiany spoza pakietu nie naleza do niego.
+test('zmianyFazy w podkatalogu repo: sciezki wzgledem pakietu, zmiany spoza pakietu pominiete', () => {
+  const repo = noweRepo()
+  try {
+    zapisz(repo, { 'packages/p/src/a.ts': 'a1\n', 'src/korzen.ts': 'k1\n' })
+    const baza = commit(repo, 'baza')
+    zapisz(repo, { 'packages/p/src/a.ts': 'a1\na2\n', 'packages/p/src/nowy.ts': 'n1\n', 'src/korzen.ts': 'k1\nk2\n' })
+    const z = zmianyFazy(join(repo, 'packages', 'p'), baza)
+    assert.deepEqual(z.pliki, ['src/a.ts', 'src/nowy.ts'])
+    assert.deepEqual(z.dodaneLinie, { 'src/a.ts': [2], 'src/nowy.ts': [1] })
+    assert.match(z.diffU0, /^\+\+\+ b\/src\/a\.ts$/m)
+    assert.doesNotMatch(z.diffU0, /korzen/)
+  } finally {
+    usun(repo)
+  }
 })

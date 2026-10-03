@@ -60,3 +60,17 @@ test('projekt bez supabase/migrations = pominieta', () => {
     usun(repo)
   }
 })
+
+test('projekt w podkatalogu repo: edycja migracji pakietu = porazka ze sciezka wzgledem pakietu', () => {
+  const repo = noweRepo()
+  try {
+    zapisz(repo, { 'packages/p/supabase/migrations/001_init.sql': 'create table t (id int);\n' })
+    const baza = commit(repo, 'baza')
+    zapisz(repo, { 'packages/p/supabase/migrations/001_init.sql': 'create table t (id bigint);\n' })
+    const w = bramkaNiezmiennoscMigracji(join(repo, 'packages', 'p'), baza)
+    assert.equal(w.status, 'porazka')
+    assert.deepEqual(w.trafienia.map((t) => t.plik), ['supabase/migrations/001_init.sql'])
+  } finally {
+    usun(repo)
+  }
+})

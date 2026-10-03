@@ -20,8 +20,8 @@ export function bramkaNiezmiennoscMigracji(projekt, baza) {
   if (!wBazie && !existsSync(join(projekt, KATALOG_MIGRACJI))) {
     return { status: 'pominieta', sekundy: null, trafienia: [], powod: `projekt bez ${KATALOG_MIGRACJI}` }
   }
-  // Bez wykrywania zmian nazw: M i D dotycza wylacznie plikow obecnych w bazie.
-  const zmiany = git(projekt, ['diff', '--name-status', '--no-renames', '--diff-filter=MD', baza, '--', KATALOG_MIGRACJI])
+  // Bez wykrywania zmian nazw: M i D dotycza wylacznie plikow obecnych w bazie. --relative: projekt w podkatalogu repo.
+  const zmiany = git(projekt, ['diff', '--name-status', '--no-renames', '--relative', '--diff-filter=MD', baza, '--', KATALOG_MIGRACJI])
   const trafienia = zmiany.split('\n').filter(Boolean).map((wiersz) => {
     const [status, plik] = wiersz.split('\t')
     const co = status === 'D' ? 'usunieta' : 'zmieniona'
