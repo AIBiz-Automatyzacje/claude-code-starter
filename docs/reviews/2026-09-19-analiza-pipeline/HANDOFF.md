@@ -983,7 +983,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     Hooki: `error-handling-reminder.sh` wychodzi przy znaczniku w `eslint.config.*`; oba hooki Stop przy `stop_hook_active: true`; `settings.json` bez zmian.
     Telemetria: `faza.bramki` / `faza.testy_usuniete` z wyniku ostatniego `domkniecie` (10 kluczy — zmiana kontraktu testu z 8), `WERSJA_REKORDU` bez zmian.
     Doctor: wiersz „bramki domknięcia” (UWAGA z `pnpm add -D -E`, TS ≥ 6.1 = UWAGA, bez konfiguracji z szablonu — nie dotyczy).
-    (d) **Smoke** `wf_4bbe1753-420` (kopia `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P6-oferty-online`, w kopii commit `c94141c` — data → 2099):
+    (d) **Smoke** `wf_4bbe1753-420` (kopia `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P6-oferty-online`, w kopii commit `c94141c` — data → 2099; USUNIĘTA 2026-10-03 za zgodą operatora, transkrypty zostają w `~/.claude/projects/`):
     OK, gate CZYSTE, walidacja PASS. Bramki pierwszego przebiegu: eslint porażka (`no-empty`), migracje porażka, stryker 2 mutanty (`a - b` z testu `typeof`),
     po naprawie wszystkie ok; razem 6,8 s (budżet 143 s). Commit fazy: migracja przywrócona, catch zawężony do `SyntaxError` + rethrow, nowe
     `supabase/migrations.sum` (36 migracji). `faza.bramki` w rekordzie telemetrii. Koszt 3,87 M (+36% vs P5 `wf_b96dcd26-cea`): execute −12%,
@@ -1406,7 +1406,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   `ostrzezeniaEslint`, `mutanty`, `testyUsuniete` w `EXECUTE_RESULT`; hook error-handling warunkowy, `stop_hook_active`; `faza.bramki`/`testy_usuniete`;
   doctor; README „Bramki domknięcia”; bramki w pakietach monorepo. Smoke `wf_4bbe1753-420` zielony = nowa referencja R-P6 (3,87 M; większy fixture).
   Merge do main `20e20b8`. **Następny krok: „P7 — DOSSIER I STAN FAZY ZE SKRYPTU, SESJA 1” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu;
-  oryginał oferty-online czerwony na main; token Airtable; usunięcie kopii `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P6-oferty-online`.
+  oryginał oferty-online czerwony na main; token Airtable. Kopia smoke'a P6 usunięta 2026-10-03 za zgodą operatora.
 
 **P7 — DOSSIER I STAN FAZY ZE SKRYPTU, SESJA 1 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
