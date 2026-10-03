@@ -1,0 +1,12 @@
+# Pakiet bramek (PLAN-POPRAWY P6): zaleznosci narzedzi bramek domkniecia jako osobny pakiet — korzen szablonu zostaje
+# na TypeScript 7, a typescript-eslint (reguly typowane) wymaga TypeScript < 6.1. Testy konfiguracji z
+# .claude/templates/bramki/ biegna na jego node_modules.
+packages:
+  - .claude/templates/bramki
+
+# Stryker importuje `typescript` bez deklaracji zaleznosci; w szablonie wspinaczka po katalogach trafia na TypeScript 7
+# korzenia (bez API JS). Peer = typescript pakietu bramek (5.9.3), jak w projekcie z bramkami.
+packageExtensions:
+  '@stryker-mutator/core@10':
+    peerDependencies:
+      typescript: '>=5'

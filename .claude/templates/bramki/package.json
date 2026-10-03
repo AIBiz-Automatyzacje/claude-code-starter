@@ -1,0 +1,24 @@
+{
+  "name": "@szablon/bramki",
+  "private": true,
+  "description": "devDependencies bramek domkniecia fazy (.claude/scripts/bramki) — lista do instalacji w projekcie (README, doctor).",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@size-limit/file": "14.0.1",
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/vitest-runner": "10.0.0",
+    "@vitest/eslint-plugin": "1.6.27",
+    "eslint": "10.11.0",
+    "eslint-import-resolver-typescript": "4.4.4",
+    "eslint-plugin-import-x": "4.17.1",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.12.0",
+    "jiti": "2.7.0",
+    "knip": "6.38.0",
+    "size-limit": "14.0.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.1",
+    "vitest": "4.1.11"
+  }
+}

@@ -1,0 +1,3 @@
+[
+  { "name": "aplikacja JS", "path": "dist/assets/*.js", "limit": "250 kB" }
+]
