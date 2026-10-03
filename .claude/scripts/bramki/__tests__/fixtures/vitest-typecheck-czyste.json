@@ -1,0 +1,53 @@
+{
+ "numTotalTestSuites": 1,
+ "numPassedTestSuites": 1,
+ "numFailedTestSuites": 0,
+ "numPendingTestSuites": 0,
+ "numTotalTests": 1,
+ "numPassedTests": 1,
+ "numFailedTests": 0,
+ "numPendingTests": 0,
+ "numTodoTests": 0,
+ "snapshot": {
+  "added": 0,
+  "failure": false,
+  "filesAdded": 0,
+  "filesRemoved": 0,
+  "filesRemovedList": [],
+  "filesUnmatched": 0,
+  "filesUpdated": 0,
+  "matched": 0,
+  "total": 0,
+  "unchecked": 0,
+  "uncheckedKeysByFile": [],
+  "unmatched": 0,
+  "updated": 0,
+  "didUpdate": false
+ },
+ "startTime": 1791020189272,
+ "success": true,
+ "testResults": [
+  {
+   "assertionResults": [
+    {
+     "ancestorTitles": [
+      "src/suma.test-d.ts"
+     ],
+     "fullName": "src/suma.test-d.ts typ wyniku",
+     "status": "passed",
+     "title": "typ wyniku",
+     "failureMessages": [],
+     "meta": {
+      "typecheck": true
+     },
+     "tags": []
+    }
+   ],
+   "startTime": 1791020189272,
+   "endTime": 1791020189272,
+   "status": "passed",
+   "message": "",
+   "name": "__PROJEKT__/src/suma.test-d.ts"
+  }
+ ]
+}

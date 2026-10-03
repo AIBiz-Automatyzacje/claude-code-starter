@@ -1,0 +1,14 @@
+[
+ {
+  "name": "app js",
+  "passed": false,
+  "size": 5043,
+  "sizeLimit": 1000
+ },
+ {
+  "name": "maly",
+  "passed": true,
+  "size": 58,
+  "sizeLimit": 10000
+ }
+]

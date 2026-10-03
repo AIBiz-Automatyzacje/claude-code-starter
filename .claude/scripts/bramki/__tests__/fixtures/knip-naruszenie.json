@@ -1,0 +1,70 @@
+{
+ "issues": [
+  {
+   "file": "src/suma.test-d.ts",
+   "binaries": [],
+   "catalog": [],
+   "catalogReferences": [],
+   "dependencies": [],
+   "devDependencies": [],
+   "duplicates": [],
+   "enumMembers": [],
+   "exports": [],
+   "files": [
+    {
+     "name": "src/suma.test-d.ts"
+    }
+   ],
+   "namespaceMembers": [],
+   "optionalPeerDependencies": [],
+   "types": [],
+   "unlisted": [],
+   "unresolved": []
+  },
+  {
+   "file": "src/suma.test.ts",
+   "binaries": [],
+   "catalog": [],
+   "catalogReferences": [],
+   "dependencies": [],
+   "devDependencies": [],
+   "duplicates": [],
+   "enumMembers": [],
+   "exports": [],
+   "files": [
+    {
+     "name": "src/suma.test.ts"
+    }
+   ],
+   "namespaceMembers": [],
+   "optionalPeerDependencies": [],
+   "types": [],
+   "unlisted": [],
+   "unresolved": []
+  },
+  {
+   "file": "src/suma.ts",
+   "binaries": [],
+   "catalog": [],
+   "catalogReferences": [],
+   "dependencies": [],
+   "devDependencies": [],
+   "duplicates": [],
+   "enumMembers": [],
+   "exports": [
+    {
+     "name": "nieuzywana",
+     "line": 8,
+     "col": 14,
+     "pos": 116
+    }
+   ],
+   "files": [],
+   "namespaceMembers": [],
+   "optionalPeerDependencies": [],
+   "types": [],
+   "unlisted": [],
+   "unresolved": []
+  }
+ ]
+}

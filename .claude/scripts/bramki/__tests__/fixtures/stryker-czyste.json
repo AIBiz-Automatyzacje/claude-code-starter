@@ -1,0 +1,165 @@
+{
+ "files": {
+  "src/suma.ts": {
+   "language": "typescript",
+   "mutants": [
+    {
+     "id": "1",
+     "mutatorName": "ConditionalExpression",
+     "replacement": "false",
+     "statusReason": "expected 2 to be +0 // Object.is equality",
+     "status": "Killed",
+     "static": false,
+     "testsCompleted": 1,
+     "killedBy": [
+      "0"
+     ],
+     "coveredBy": [
+      "0"
+     ],
+     "location": {
+      "end": {
+       "column": 12,
+       "line": 2
+      },
+      "start": {
+       "column": 7,
+       "line": 2
+      }
+     }
+    },
+    {
+     "id": "0",
+     "mutatorName": "ConditionalExpression",
+     "replacement": "true",
+     "statusReason": "expected +0 to be 5 // Object.is equality",
+     "status": "Killed",
+     "static": false,
+     "testsCompleted": 1,
+     "killedBy": [
+      "0"
+     ],
+     "coveredBy": [
+      "0"
+     ],
+     "location": {
+      "end": {
+       "column": 12,
+       "line": 2
+      },
+      "start": {
+       "column": 7,
+       "line": 2
+      }
+     }
+    },
+    {
+     "id": "2",
+     "mutatorName": "EqualityOperator",
+     "replacement": "a <= 0",
+     "statusReason": "expected +0 to be 3 // Object.is equality",
+     "status": "Killed",
+     "static": false,
+     "testsCompleted": 1,
+     "killedBy": [
+      "0"
+     ],
+     "coveredBy": [
+      "0"
+     ],
+     "location": {
+      "end": {
+       "column": 12,
+       "line": 2
+      },
+      "start": {
+       "column": 7,
+       "line": 2
+      }
+     }
+    },
+    {
+     "id": "3",
+     "mutatorName": "EqualityOperator",
+     "replacement": "a >= 0",
+     "statusReason": "expected +0 to be 5 // Object.is equality",
+     "status": "Killed",
+     "static": false,
+     "testsCompleted": 1,
+     "killedBy": [
+      "0"
+     ],
+     "coveredBy": [
+      "0"
+     ],
+     "location": {
+      "end": {
+       "column": 12,
+       "line": 2
+      },
+      "start": {
+       "column": 7,
+       "line": 2
+      }
+     }
+    },
+    {
+     "id": "4",
+     "mutatorName": "BlockStatement",
+     "replacement": "{}",
+     "statusReason": "expected 2 to be +0 // Object.is equality",
+     "status": "Killed",
+     "static": false,
+     "testsCompleted": 1,
+     "killedBy": [
+      "0"
+     ],
+     "coveredBy": [
+      "0"
+     ],
+     "location": {
+      "end": {
+       "column": 4,
+       "line": 4
+      },
+      "start": {
+       "column": 14,
+       "line": 2
+      }
+     }
+    },
+    {
+     "id": "5",
+     "mutatorName": "ArithmeticOperator",
+     "replacement": "a - b",
+     "statusReason": "expected -1 to be 5 // Object.is equality",
+     "status": "Killed",
+     "static": false,
+     "testsCompleted": 1,
+     "killedBy": [
+      "0"
+     ],
+     "coveredBy": [
+      "0"
+     ],
+     "location": {
+      "end": {
+       "column": 15,
+       "line": 5
+      },
+      "start": {
+       "column": 10,
+       "line": 5
+      }
+     }
+    }
+   ]
+  }
+ },
+ "schemaVersion": "1.0",
+ "thresholds": {
+  "high": 80,
+  "low": 60,
+  "break": null
+ }
+}
