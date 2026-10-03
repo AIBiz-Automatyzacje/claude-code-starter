@@ -1,0 +1,81 @@
+KALIBRACJA P5 — prompt etapu zbierz (dev-pr-wf.js) vs dane/coderabbit/klasyfikacja-574.csv (2026-10-03)
+PR oferty-online: 2, 4, 16 (81 watkow inline; zlaczenie: watek -> id pierwszego komentarza -> wiersz CSV pozycyjnie w PR,
+sciezki zgodne 1:1 dla tych PR; klasy CSV przez it1-slownik-klas.csv + it1-slownik-nadpisania.csv).
+Uruchomienie: skrypt Workflow generowany z dev-pr-wf.js (skrypty/kalibracja_p5_generuj.mjs) — prompt, ZEBRANE, KLASY_BLEDOW bez zmian;
+podmiana kroku 1: -R AIBiz-Automatyzacje/oferty-online <nr>, takze watki rozwiazane; pliki z git show <head>:<plik>; zero zapisow w GitHubie.
+Run 1 wf_7419aeb3-b2b (prompt z main dd3ed11): 3 agenty klasa-orkiestracyjny medium, subagent_tokens 171 743, 3,3 min.
+Run 2 wf_d529887a-7ef (po poprawce wagi, ed613b8): 3 agenty, subagent_tokens 190 192, 4,8 min.
+
+## Run 1 (bez korekty JS)
+PR 16: watkow 20, zlaczonych 19, bez referencji 1 (recenzje ogolne / inne)
+PR 2: watkow 34, zlaczonych 32, bez referencji 2 (recenzje ogolne / inne)
+PR 4: watkow 30, zlaczonych 30, bez referencji 0 (recenzje ogolne / inne)
+
+ZLACZONE: 81
+klasaBledu zgodna: 66/81
+os zgodna:         71/81
+waga zgodna:       46/81
+defekt/nie-defekt: 59/81
+P1/P2 vs reszta:   67/81
+
+macierz wag (ref -> zbierz): [(('0', '0'), 4), (('0', 'P3'), 19), (('P1', 'P1'), 1), (('P2', '0'), 1), (('P2', 'P2'), 19), (('P2', 'P3'), 13), (('P3', '0'), 2), (('P3', 'P3'), 22)]
+
+koszyk ref -> decyzja zbierz: [(('A', 'do-operatora'), 3), (('A', 'napraw'), 16), (('A', 'napraw-szerzej'), 6), (('A', 'odrzuc'), 2), (('B', 'do-operatora'), 3), (('B', 'napraw'), 43), (('B', 'odrzuc'), 3), (('C', 'do-operatora'), 4), (('C', 'napraw'), 1)]
+
+rozbieznosci klas (ref -> zbierz):
+  2x tekst-ui -> zgodnosc-prawna
+  1x wartosc-graniczna -> teza-obalona
+  1x test-niefalsyfikowalny -> luka-pokrycia
+  1x test-niefalsyfikowalny -> konwencja-kodu
+  1x konwencja-kodu -> martwy-kod-lub-komentarz
+  1x konwencja-kodu -> duplikacja
+  1x preferencja-bota -> a11y
+  1x bramka-czarna-lista -> dopasowanie-tekstu
+  1x wartosc-graniczna -> dopasowanie-tekstu
+  1x preferencja-bota -> konwencja-kodu
+  1x martwy-kod-lub-komentarz -> test-niefalsyfikowalny
+  1x bramka-na-jednej-drodze -> sciezka-bledu
+  1x seed-e2e -> martwy-kod-lub-komentarz
+  1x uprawnienia-naglowki-sql -> teza-obalona
+
+## Run 1 z korekta JS wagaWatku
+ZLACZONE: 81
+klasaBledu zgodna: 66/81
+os zgodna:         71/81
+waga zgodna:       58/81
+defekt/nie-defekt: 71/81
+P1/P2 vs reszta:   67/81
+
+macierz wag (ref -> zbierz): [(('0', '0'), 16), (('0', 'P3'), 7), (('P1', 'P1'), 1), (('P2', '0'), 1), (('P2', 'P2'), 19), (('P2', 'P3'), 13), (('P3', '0'), 2), (('P3', 'P3'), 22)]
+
+## Run 2 (prompt po poprawce + korekta JS)
+PR 4: watkow 30, zlaczonych 30, bez referencji 0 (recenzje ogolne / inne)
+PR 16: watkow 19, zlaczonych 18, bez referencji 1 (recenzje ogolne / inne)
+PR 2: watkow 34, zlaczonych 32, bez referencji 2 (recenzje ogolne / inne)
+
+ZLACZONE: 80
+klasaBledu zgodna: 67/80
+os zgodna:         70/80
+waga zgodna:       60/80
+defekt/nie-defekt: 70/80
+P1/P2 vs reszta:   71/80
+
+macierz wag (ref -> zbierz): [(('0', '0'), 19), (('0', 'P3'), 4), (('P1', 'P1'), 1), (('P2', '0'), 1), (('P2', 'P1'), 2), (('P2', 'P2'), 23), (('P2', 'P3'), 7), (('P3', '0'), 5), (('P3', 'P2'), 1), (('P3', 'P3'), 17)]
+
+koszyk ref -> decyzja zbierz: [(('A', 'do-operatora'), 4), (('A', 'napraw'), 15), (('A', 'napraw-szerzej'), 6), (('A', 'odrzuc'), 2), (('B', 'do-operatora'), 2), (('B', 'napraw'), 43), (('B', 'napraw-szerzej'), 1), (('B', 'odrzuc'), 2), (('C', 'do-operatora'), 2), (('C', 'napraw'), 2), (('C', 'odrzuc'), 1)]
+
+rozbieznosci klas (ref -> zbierz):
+  2x tekst-ui -> zgodnosc-prawna
+  1x bramka-na-jednej-drodze -> sciezka-bledu
+  1x seed-e2e -> martwy-kod-lub-komentarz
+  1x uprawnienia-naglowki-sql -> teza-obalona
+  1x wartosc-graniczna -> spojnosc-dwoch-systemow
+  1x test-niefalsyfikowalny -> konwencja-kodu
+  1x konwencja-kodu -> martwy-kod-lub-komentarz
+  1x konwencja-kodu -> duplikacja
+  1x preferencja-bota -> a11y
+  1x bramka-czarna-lista -> dopasowanie-tekstu
+  1x wartosc-graniczna -> kontrakt-wspolny
+  1x preferencja-bota -> konwencja-kodu
+
+Pominiety w run 2 watek PRRT_kwDOUAmLOM6inwnP (PR 16): isResolved + isOutdated, bez linii — w produkcji zbierz bierze tylko nierozwiazane.
