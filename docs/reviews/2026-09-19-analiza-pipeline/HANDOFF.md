@@ -898,7 +898,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `dane/smoke-P5-stop.txt`, `dane/smoke-P5-dev-pr-claude-md.txt`. Uwaga z sesji kopii: agent sesji sprawdził `git grep 'claude_md: do-uzgodnienia'`
     bez kotwicy i trafił zdanie z README indeksu — bramka używa `^claude_md:`, README jej nie łapie.
     (e) **Kopia:** `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P4-oferty-online` — sesja 2 jej nie potrzebuje (kalibracja czyta GitHub
-    oryginału); usunięcie tylko za zgodą operatora.
+    oryginału); USUNIĘTA 2026-10-03 za zgodą operatora.
     Następny krok: §8 „P5 — DEV-PR I BOT, SESJA 2/2”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -1277,7 +1277,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
 - **P5 SESJA 1/2 ZROBIONA (2026-10-03; 6a pkt 49):** dev-pr (token tury, guard odrzuceń z `docs/decisions/`, rekomendacja w JS w każdej turze,
   tabela tury, sufit 3, propozycje do `docs/reviews/propozycje-do-reviewerow.md`, etap `claude-md` z bramką przyrostu 2000 zn i pushem), STOP
   bootstrapu przy każdym nieuzgodnionym pliku decyzji na main; smoke STOP → `/dev-pr --claude-md` → PASS (2,85 M), merge do main `dd3ed11`.
-  **Następny krok: „P5 — DEV-PR I BOT, SESJA 2/2” niżej** (nowa sesja — N2). Kopia `_smoke-P4-oferty-online` do usunięcia za zgodą. Otwarte
+  **Następny krok: „P5 — DEV-PR I BOT, SESJA 2/2” niżej** (nowa sesja — N2). Kopia `_smoke-P4-oferty-online` usunięta za zgodą. Otwarte
   u operatora: oryginał oferty-online czerwony na main; push szablonu; token Airtable.
 
 **P5 — DEV-PR I BOT, SESJA 2/2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
