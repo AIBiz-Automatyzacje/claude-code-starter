@@ -94,11 +94,59 @@ const WYNIK_BRAMKI = {
   },
   required: ['status', 'sekundy', 'trafienia'],
 }
-const TRAFIENIE_BRAMKI = {
-  type: 'object',
+// Dossier fazy dla review (PLAN-POPRAWY P7) — kopia schematu KONTEKST z dev-docs-review-wf.js (workflowy sa self-contained;
+// zgodnosc pilnuje domkniecie-bramki.test.mjs). Review liczy z niego routing reviewerow bez agenta context-packagera.
+const DOSSIER = {
+  type: ['object', 'null'],
+  description: 'wynik JSON skryptu dossier 1:1; null gdy skrypt padl',
   additionalProperties: false,
-  properties: { plik: { type: ['string', 'null'] }, linia: { type: ['integer', 'null'] }, regula: { type: 'string' }, opis: { type: 'string' } },
-  required: ['plik', 'linia', 'regula', 'opis'],
+  properties: {
+    diffStat: { type: 'string', description: 'git diff --stat fazy (lub "brak zmian")' },
+    pliki: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          plik: { type: 'string' },
+          czegoDotyczy: { type: 'string', description: 'jednolinijkowe co zmieniono w pliku' },
+        },
+        required: ['plik', 'czegoDotyczy'],
+      },
+    },
+    warstwy: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        ui: { type: 'boolean', description: 'faza tyka warstwy prezentacji: komponenty, style, HTML, szablony, public/' },
+        dane: { type: 'boolean', description: 'faza tyka danych/IO: SQL, migracje, zapytania, fetch/HTTP, cache, petle po rekordach, praca na plikach' },
+        typowanie: { type: 'boolean', description: 'w diffie sa pliki .ts/.tsx ALBO projekt ma tsconfig.json (statyczne typowanie w gre)' },
+        nowyModul: { type: 'boolean', description: 'faza dodaje nowy modul/plik zrodlowy albo przesuwa granice warstw (nie: edycja istniejacego pliku)' },
+      },
+      required: ['ui', 'dane', 'typowanie', 'nowyModul'],
+    },
+    e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych przegladarki/agent-browser (0 gdy brak)' },
+    figmaScreens: { type: 'boolean', description: 'czy plik kontekstu zadania ma niepuste pole figma_screens (mapa ekran -> mockup) — tester robi wtedy visual diff nawet bez checkboxow [E2E]' },
+    diffPlik: { type: 'string', description: 'sciezka zrzutu diffu fazy (pusty string gdy zrzut sie nie udal)' },
+    ctxPlik: { type: 'string', description: 'sciezka dossier fazy (pusty string gdy zapis sie nie udal)' },
+    ctxZapisany: { type: 'boolean', description: 'true tylko gdy dossier realnie powstalo i jest niepuste' },
+    preSkan: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          wzorzec: { type: 'string', enum: ['pusty-catch', 'then-bez-catch'] },
+          plik: { type: 'string', description: 'plik:linia' },
+        },
+        required: ['wzorzec', 'plik'],
+      },
+      description: 'mechaniczne trafienia w DODANYCH liniach diffu fazy (pusty catch, .then bez .catch w tym samym pliku)',
+    },
+    diffZapisany: { type: 'boolean', description: 'true tylko gdy plik zrzutu realnie powstal i jest niepusty' },
+    diffUciety: { type: 'boolean', description: 'true gdy zrzut przekroczyl limit i zostal przyciety ze znacznikiem' },
+  },
+  required: ['pliki', 'warstwy', 'e2eCheckboxy'],
 }
 
 const EXECUTE_RESULT = {
@@ -131,8 +179,6 @@ const EXECUTE_RESULT = {
       description: 'pierwszy przebieg skryptu bramek; poNaprawie = status z przebiegu po naprawie (null gdy nie bylo)',
       properties: Object.fromEntries(NAZWY_BRAMEK.map((n) => [n, WYNIK_BRAMKI])),
     },
-    ostrzezeniaEslint: { type: 'array', items: TRAFIENIE_BRAMKI, description: 'eslint.ostrzezenia — wejscie review code-quality' },
-    mutanty: { type: 'array', items: TRAFIENIE_BRAMKI, description: 'stryker.trafienia (przezyte mutanty) — wejscie review test-coverage' },
     testyUsuniete: {
       type: 'array',
       items: {
@@ -142,6 +188,7 @@ const EXECUTE_RESULT = {
         required: ['plik', 'nazwa', 'uzasadnienie'],
       },
     },
+    dossier: DOSSIER,
   },
   required: ['fazaNumer', 'status', 'iu'],
 }
@@ -223,7 +270,13 @@ function bazaFazy(plan) {
   return /^[0-9a-f]{7,40}$/.test(plan.baza || '') ? plan.baza : 'HEAD'
 }
 
-function domknieciePrompt(sciezka, faza, buildResults, baza) {
+// Wynik bramek w pliku artefaktow fazy (wzor nazwy jak w .claude/scripts/dossier/sciezki.mjs): kazdy przebieg bramek go
+// nadpisuje, wiec skrypt dossier bierze ostatni — kod po naprawie, ktory ogladaja reviewerzy.
+function plikBramek(sciezka, faza) {
+  return `/tmp/bramki-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.json`
+}
+
+function domknieciePrompt(sciezka, faza, buildResults, baza, plikBramek) {
   const podsumowanieIU = buildResults
     .map((b) => `- ${b.id}: ${b.status}${b.odchylenia && b.odchylenia.length ? ` (odchylenia: ${b.odchylenia.join('; ')})` : ''}`)
     .join('\n')
@@ -242,19 +295,19 @@ ${podsumowanieIU}
    patrz punkt 2). Kazde sprawdzenie z odpowiedzia "nie" naprawiasz przed commitem.
    UWAGA: jesli ktorykolwiek builder raportowal dodanie zaleznosci — pierwszy vitest jest ZIMNY (procedura tla z bloku).
 1a. BRAMKI MECHANICZNE (po punkcie 1, przed commitem — skrypt czyta drzewo robocze):
-   \`node .claude/scripts/bramki/bramki.mjs --baza ${baza}\`
-   Kod 0 = bez porazek, 1 = sa porazki. Wynik (JSON na stdout): {bramka: {status, sekundy, trafienia: [{plik, linia, regula,
+   \`node .claude/scripts/bramki/bramki.mjs --baza ${baza} > ${plikBramek}; echo "kod: $?"\`, potem Read ${plikBramek}.
+   Kod 0 = bez porazek, 1 = sa porazki. Wynik (JSON w pliku): {bramka: {status, sekundy, trafienia: [{plik, linia, regula,
    opis}], powod?, ostrzezenia?, zastane?}}. Status: ok | porazka | brak | blad | pominieta.
    - porazka: napraw KAZDE trafienie w kodzie — regula i plik:linia mowia, co poprawic. Lista bramek jest kompletna:
      Nie uruchamiaj ESLint, tsc ani knipa osobno i nie szukaj innych uwag lintera. Nie wylaczasz reguly (eslint-disable,
      zmiana konfiguracji narzedzia) — poprawiasz kod. Trafienie bramki migracje albo migracjeSuma: przywroc plik
      (\`git checkout ${baza} -- <plik>\`), a zmiane schematu zapisz NOWA migracja.
-   - Po naprawie uruchom bramki jeszcze raz. Porazka w drugim przebiegu: status=partial, w problem nazwa bramki i trafienia.
+   - Po naprawie uruchom bramki jeszcze raz ta sama komenda. Porazka w drugim przebiegu: status=partial, w problem nazwa bramki i trafienia.
    - blad: narzedzie padlo — powod do odchylen, narzedzia nie naprawiasz. brak, pominieta: nic nie robisz.
    - Pole bramki: dla kazdej bramki z PIERWSZEGO przebiegu {status, sekundy, trafienia: liczba trafien}, poNaprawie =
      status z drugiego przebiegu (null, gdy drugiego nie bylo).
-   - ostrzezenia bramki eslint przepisz do pola ostrzezeniaEslint, trafienia bramki stryker (przezyte mutanty) do pola
-     mutanty — bez naprawy, to wejscie dla review fazy.
+   - ostrzezenia bramki eslint i trafienia bramki stryker zostawiasz bez naprawy — review fazy dostaje
+     je w dossier (punkt 6).
    - Kazde trafienie bramki testyUsuniete przepisz do pola testyUsuniete z uzasadnieniem (funkcja usunieta w tej fazie
      albo nowa nazwa testu). Test usuniety bez usuniecia testowanej funkcji przywroc.
    - Na koniec \`node .claude/scripts/bramki/bramki.mjs --dopisz-sume\` — dopisuje nowe migracje do supabase/migrations.sum
@@ -276,6 +329,10 @@ ${BLOK_DLUGIE_KOMENDY}
    do planu technicznego w docs/plans/ (punkt 4), a w Dzienniku zostaje jedno zdanie i wskaznik.
 4. Aktualizuj plan techniczny w docs/plans/ (odznacz test scenarios / verification dla tej fazy).
 5. Commit inkrementalny: feat/fix/refactor([nazwa]): [co i dlaczego]. Staguj tylko zmienione pliki (nie git add .).
+6. DOSSIER FAZY (po commicie):
+   \`node .claude/scripts/dossier/dossier.mjs --sciezka ${sciezka} --faza ${faza}${baza === 'HEAD' ? '' : ` --baza ${baza}`} --bramki ${plikBramek}\`
+   Wynik (JSON na stdout) przepisz 1:1 do pola dossier. Kod wyjscia inny niz 0: dossier = null, stderr do odchylen —
+   status fazy od tego nie zalezy.
 
 Dzialaj autonomicznie. Zwroc obiekt zgodny ze schematem ExecuteResult
 (status=completed tylko gdy walidacja PASS, zadna bramka nie konczy sie porazka i wszystkie IU completed).`
@@ -353,5 +410,5 @@ if (buildResults.length !== plan.iu.length) {
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan)), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza)), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 return wynik
