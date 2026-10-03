@@ -57,7 +57,8 @@ test('przejscie -> zly typ w tescie typow -> porazka z plikiem i nazwa testu -> 
     zapisz(repo, { 'src/suma.test-d.ts': TEST_TYPOW('string') })
     const w = bramka(repo)
     assert.equal(w.status, 'porazka')
-    assert.deepEqual(w.trafienia.map((t) => [t.plik, t.regula]), [['src/suma.test-d.ts', 'vitest-typecheck']])
+    // Raport typecheck nie ma `location` (vitest 4.1.11, takze z --includeTaskLocation) — linia definicji testu z pliku.
+    assert.deepEqual(w.trafienia.map((t) => [t.plik, t.linia, t.regula]), [['src/suma.test-d.ts', 4, 'vitest-typecheck']])
     assert.match(w.trafienia[0].opis, /^typ wyniku: .*Expected string, Actual number/)
 
     zapisz(repo, { 'src/suma.test-d.ts': TEST_TYPOW('number') })

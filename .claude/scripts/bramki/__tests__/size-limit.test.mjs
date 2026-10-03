@@ -1,5 +1,6 @@
 // Odbior bramki size-limit: atrapa wypisuje nagrane wyjscie size-limit 14 (fixtures/size-limit-*.json).
 // Przejscie -> paczka ponad budzet -> porazka z nazwa pozycji i rozmiarem -> przejscie; rozmiar 0 = sciezka bez plikow = blad.
+// Build przed pomiarem (decyzja operatora P6): skrypt `build` projektu odswieza dist, ktory mierzy @size-limit/file.
 
 import { chmodSync } from 'node:fs'
 import { join } from 'node:path'
@@ -61,6 +62,48 @@ test('size-limit zwraca obiekt bledu zamiast listy = blad z komunikatem', () => 
     const w = bramka(repo)
     assert.equal(w.status, 'blad')
     assert.match(w.powod ?? '', /did not find files/)
+  } finally {
+    usun(repo)
+  }
+})
+
+// Build kopiuje src/app.js do dist/app.js — atrapa size-limit patrzy na dist, wiec wynik zalezy od tego, czy build pobiegl.
+const BUILD_KOPIUJACY = 'node -e "require(\'node:fs\').mkdirSync(\'dist\',{recursive:true});require(\'node:fs\').copyFileSync(\'src/app.js\',\'dist/app.js\')"'
+
+test('skrypt build projektu biegnie przed pomiarem: zmiana zrodla bez recznego builda = porazka', () => {
+  const repo = noweRepo()
+  try {
+    zapisz(repo, {
+      '.size-limit.json': '[]\n',
+      'package.json': JSON.stringify({ scripts: { build: BUILD_KOPIUJACY } }),
+      'src/app.js': 'maly\n',
+      'dist/app.js': 'maly\n',
+    })
+    atrapa(repo, { nazwa: 'size-limit', znacznik: 'dist/app.js', wzorzec: 'duzy', naruszenie: 'size-limit-naruszenie.json', czyste: 'size-limit-czyste.json' })
+    assert.equal(bramka(repo).status, 'ok')
+
+    zapisz(repo, { 'src/app.js': 'duzy\n' })
+    const w = bramka(repo)
+    assert.equal(w.status, 'porazka')
+    assert.match(w.trafienia[0].opis, /> limit/)
+  } finally {
+    usun(repo)
+  }
+})
+
+test('nieudany build = blad z koncowka wyjscia builda, size-limit nie biegnie', () => {
+  const repo = noweRepo()
+  try {
+    zapisz(repo, {
+      '.size-limit.json': '[]\n',
+      'package.json': JSON.stringify({ scripts: { build: 'node -e "console.error(\'vite: blad kompilacji\');process.exit(1)"' } }),
+      'dist/app.js': 'maly\n',
+    })
+    atrapa(repo, { nazwa: 'size-limit', znacznik: 'dist/app.js', wzorzec: 'duzy', naruszenie: 'size-limit-naruszenie.json', czyste: 'size-limit-czyste.json' })
+    const w = bramka(repo)
+    assert.equal(w.status, 'blad')
+    assert.match(w.powod ?? '', /build.*vite: blad kompilacji/s)
+    assert.throws(() => argumentyAtrapy(repo, 'size-limit'), /ENOENT/)
   } finally {
     usun(repo)
   }

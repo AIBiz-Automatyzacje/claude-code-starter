@@ -16,7 +16,7 @@ const KONFIGURACJE = {
 }
 
 /** @param {string} projekt @returns {Record<string, unknown>} */
-function packageJson(projekt) {
+export function packageJson(projekt) {
   const sciezka = join(projekt, 'package.json')
   if (!existsSync(sciezka)) return {}
   const dane = JSON.parse(readFileSync(sciezka, 'utf8'))

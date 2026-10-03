@@ -11,11 +11,11 @@ const DEFINICJA_TESTU = /^\s*(?:it|test)(?:\.(?:only|skip|concurrent|todo|fails)
 /** @typedef {import('./uruchom.mjs').WynikBramki} WynikBramki */
 /** @typedef {import('./uruchom.mjs').Trafienie} Trafienie */
 
-/** @param {string} tekst @returns {string[]} nazwy testow zdefiniowanych w tekscie */
-function nazwyTestow(tekst) {
-  return tekst.split('\n').flatMap((l) => {
+/** @param {string} tekst @returns {{ nazwa: string, linia: number }[]} definicje it(/test( w tekscie z numerem linii */
+export function definicjeTestow(tekst) {
+  return tekst.split('\n').flatMap((l, i) => {
     const m = DEFINICJA_TESTU.exec(l)
-    return m ? [m[2]] : []
+    return m ? [{ nazwa: m[2], linia: i + 1 }] : []
   })
 }
 
@@ -62,6 +62,6 @@ export function usunieteTesty(diffU0, nazwyObecne) {
  */
 export function bramkaTestyUsuniete(projekt, zmiany) {
   const obecne = zmiany.pliki.filter((p) => PLIK_TESTOW.test(p) && existsSync(join(projekt, p)))
-  const nazwyObecne = new Set(obecne.flatMap((p) => nazwyTestow(readFileSync(join(projekt, p), 'utf8'))))
+  const nazwyObecne = new Set(obecne.flatMap((p) => definicjeTestow(readFileSync(join(projekt, p), 'utf8')).map((d) => d.nazwa)))
   return { status: 'ok', sekundy: null, trafienia: usunieteTesty(zmiany.diffU0, nazwyObecne) }
 }

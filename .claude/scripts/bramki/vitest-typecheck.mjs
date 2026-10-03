@@ -1,7 +1,11 @@
 // Bramka `vitest --typecheck`: testy typow (*.test-d.ts, expectTypeOf) — lapia zmiane kontraktu typow, ktorej testy
 // wartosci nie widza. Projekt bez testow typow = pominieta; nieudany test typu = porazka.
 
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { git, wzgledna } from './diff.mjs'
+import { definicjeTestow } from './testy-usuniete.mjs'
 import { bladNarzedzia, uruchom } from './uruchom.mjs'
 
 const SUFIT_SEKUND = 600
@@ -30,9 +34,11 @@ export function bramkaVitestTypecheck(projekt, narzedzie) {
   }
   const trafienia = raport.testResults.flatMap((plik) => {
     const sciezka = wzgledna(projekt, plik.name)
+    // Tryb typecheck nie podaje `location` (vitest 4.1.11, takze z --includeTaskLocation): linia definicji testu po tytule.
+    const definicje = definicjeTestow(readFileSync(join(projekt, sciezka), 'utf8'))
     const nieudane = plik.assertionResults.filter((a) => a.status === 'failed').map((a) => ({
       plik: sciezka,
-      linia: a.location?.line ?? null,
+      linia: a.location?.line ?? definicje.find((d) => d.nazwa === a.title)?.linia ?? null,
       regula: 'vitest-typecheck',
       opis: `${a.title}: ${(a.failureMessages ?? []).join(' ')}`,
     }))

@@ -1,9 +1,17 @@
 // Bramka size-limit: budzet rozmiaru paczki z konfiguracji projektu. Pozycja ponad limit = porazka. Pozycja z rozmiarem 0
 // to sciezka, ktora nie wskazuje zadnego pliku (size-limit zwraca wtedy passed: true) — blad, bo budzet nie zostal sprawdzony.
+// Build przed pomiarem (decyzja operatora P6): @size-limit/file mierzy dist, ktory bez builda jest nieaktualny wzgledem fazy.
 
+import { packageJson } from './narzedzia.mjs'
 import { bladNarzedzia, uruchom } from './uruchom.mjs'
 
 const SUFIT_SEKUND = 300
+
+/** @param {string} projekt @returns {boolean} */
+function maBuild(projekt) {
+  const skrypty = packageJson(projekt).scripts
+  return typeof skrypty === 'object' && skrypty !== null && 'build' in skrypty
+}
 
 /** @typedef {import('./uruchom.mjs').WynikBramki} WynikBramki */
 /** @typedef {{ name: string, passed: boolean, size: number, sizeLimit?: number }} PozycjaSizeLimit */
@@ -14,6 +22,11 @@ const SUFIT_SEKUND = 300
  * @returns {WynikBramki}
  */
 export function bramkaSizeLimit(projekt, narzedzie) {
+  if (maBuild(projekt)) {
+    // npm jest zawsze obok node; `npm run` wola skrypt projektu niezaleznie od menedzera pakietow.
+    const build = uruchom('npm', ['run', 'build'], { cwd: projekt, sufitSekund: SUFIT_SEKUND })
+    if (build.kod !== 0) return bladNarzedzia(build, 'size-limit (build przed pomiarem)')
+  }
   const p = uruchom(narzedzie.bin, ['--json'], { cwd: projekt, sufitSekund: SUFIT_SEKUND })
   /** @type {PozycjaSizeLimit[] | { error: string }} */
   let raport
