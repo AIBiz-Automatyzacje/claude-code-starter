@@ -3,7 +3,7 @@ export const meta = {
   description: 'Code review jednej fazy: reviewerzy, verify P1/P2, raport, severity gate.',
   whenToUse: 'Wolany przez dev-autopilot-wf; standalone: args {sciezka, faza}.',
   phases: [
-    { title: 'Review', detail: 'context-packager + reviewerzy rownolegle wg routingu domenowego (do 7: security, performance, code-quality, correctness, spec-compliance, test-coverage, e2e)' },
+    { title: 'Review', detail: 'dossier fazy (z domkniecia albo zapasowy agent) + reviewerzy rownolegle wg routingu domenowego (do 7: security, performance, code-quality, correctness, spec-compliance, test-coverage, e2e)' },
     { title: 'Verify', detail: 'adversarial verify: P1 = 3 sceptykow (2/3), P2 = jeden sceptyk na grupe findingow z tego samego pliku' },
     { title: 'Zapis', detail: 'raport + bookkeeping + severity gate' },
   ],
@@ -267,27 +267,14 @@ const INSPEKCJA_RAPORTU = {
   required: ['kompletny', 'raportSciezka', 'e2e'],
 }
 
-// Zrzut diffu fazy (2026-07-27): packager przekierowaniem powloki (`git diff ... > plik`) sklada
-// artefakt, ktory reviewerzy czytaja JEDNYM Read zamiast kazdy odpalac wlasny `git diff` i samodzielnie
-// ustalac zakres. Diff NIE przechodzi przez output packagera — wynik strukturalny agenta to jego tokeny
-// WYJSCIOWE, wiec zwracanie tresci diffu w schemacie kosztowaloby dokladnie tyle, ile chcemy zaoszczedzic
-// (plus ryzyko uciecia i przeklamania). W schemacie leca WYLACZNIE metadane artefaktu.
-// HIPOTEZA: to ma obnizyc koszt fazy review (realne fazy: 224-298k tokenow). Weryfikacja przez telemetrie —
-// rozbicie tokenow per etap zbiera dev-autopilot-wf.js; nastepny run pokaze, czy review faktycznie tanieje.
-// Limit 300 KB: przy ~4 znakach na token to ~75k tokenow, czyli gorna granica, przy ktorej reviewer ma
-// jeszcze miejsce na plan/spec/learned-patterns i wlasne Read. Powyzej i tak nikt tego nie czyta w calosci.
-const LIMIT_DIFFU_B = 300 * 1024
-const ZNACZNIK_UCIECIA = '=== DIFF PRZYCIETY (limit 300 KB) — dalsza czesc zmian fazy NIE jest w tym pliku ==='
-
-// Poprawka 9: wspolna mapa zmian zbudowana RAZ zamiast 7x niezaleznie przez kazdego reviewera.
-// Routing v2 (2026-07-26): packager zwraca tez FLAGI WARSTW i liczbe browserowych checkboxow.
-// Wczesniej routing zgadywal warstwe regexami po sciezce (src/hooks|lib, .sql) — nie trafial
-// w projekty bez src/ (Node/CLI), wiec warunek nigdy nie odpalal. Packager i tak czyta caly diff.
+// Pole dossier fazy (PLAN-POPRAWY P7): wynik skryptu .claude/scripts/dossier/ — mapa zmian, flagi warstw, liczba [E2E],
+// metadane plikow diffu i dossier. Kopia schematu w dev-docs-execute-wf.js (DOSSIER, pole EXECUTE_RESULT) — przy zmianie
+// synchronizuj; zgodnosc pilnuje domkniecie-bramki.test.mjs. Poza `required` pola, ktorych brak degraduje do fail-open.
 const KONTEKST = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    diffStat: { type: 'string', description: 'git diff --stat fazy (lub "brak zmian")' },
+    diffStat: { type: 'string', description: 'liczba plikow i linii fazy, np. "4 plikow, +12 −3"' },
     pliki: {
       type: 'array',
       items: {
@@ -295,7 +282,7 @@ const KONTEKST = {
         additionalProperties: false,
         properties: {
           plik: { type: 'string' },
-          czegoDotyczy: { type: 'string', description: 'jednolinijkowe co zmieniono w pliku' },
+          czegoDotyczy: { type: 'string', description: 'status pliku i liczby linii, np. "dodany (+12)"' },
         },
         required: ['plik', 'czegoDotyczy'],
       },
@@ -313,19 +300,12 @@ const KONTEKST = {
     },
     e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych przegladarki/agent-browser (0 gdy brak)' },
     // Druga, niezalezna od checkboxow praca testera: visual diff z makietami (feature-tester-e2e §3.5).
-    // Poza `required` — starszy packager jej nie zwroci i routing wraca wtedy do fail-open po `warstwy.ui`.
     figmaScreens: { type: 'boolean', description: 'czy plik kontekstu zadania ma niepuste pole figma_screens (mapa ekran -> mockup) — tester robi wtedy visual diff nawet bez checkboxow [E2E]' },
-    // Metadane artefaktu z diffem — NIGDY tresc diffu (patrz komentarz przy LIMIT_DIFFU_B).
-    // Poza `required`: gdy packager ich nie zwroci, mapa dziala jak dotad (fail-open), zamiast
-    // wywalic caly obiekt kontekstu na walidacji schematu i stracic rowniez flagi routingu.
+    // Metadane artefaktow — NIGDY tresc diffu (przez wynik agenta zapasowego przeszlaby jako jego tokeny wyjsciowe).
     diffPlik: { type: 'string', description: 'sciezka zrzutu diffu fazy (pusty string gdy zrzut sie nie udal)' },
-    // Dossier fazy (2026-09-03, plan B3) — drugi artefakt packagera obok zrzutu diffu. Poza `required`
-    // z tego samego powodu co diffPlik: nieudany zapis ma degradowac do starej sciezki (kazdy czyta pelne
-    // dokumenty sam), a nie wywalac calego obiektu kontekstu na walidacji schematu i gubic flagi routingu.
     ctxPlik: { type: 'string', description: 'sciezka dossier fazy (pusty string gdy zapis sie nie udal)' },
     ctxZapisany: { type: 'boolean', description: 'true tylko gdy dossier realnie powstalo i jest niepuste' },
-    // Wsparcie deterministyczne dla reviewerow (plan B6): dwa wzorce, ktore packager i tak widzi w diffie,
-    // a ktore reviewer potrafi przeoczyc, bo kod wyglada poprawnie. Poza `required` — brak pola = brak bloku.
+    // Wsparcie deterministyczne dla reviewerow (plan B6): dwa wzorce, ktore reviewer potrafi przeoczyc, bo kod wyglada poprawnie.
     preSkan: {
       type: 'array',
       items: {
@@ -343,6 +323,17 @@ const KONTEKST = {
     diffUciety: { type: 'boolean', description: 'true gdy zrzut przekroczyl limit i zostal przyciety ze znacznikiem' },
   },
   required: ['pliki', 'warstwy', 'e2eCheckboxy'],
+}
+
+// Wynik zapasowego agenta: kod wyjscia skryptu osobno, zeby JS (nie agent) decydowal, czy dossier jest.
+const ZAPAS_DOSSIER = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    kodWyjscia: { type: 'integer', description: 'kod wyjscia komendy dossier.mjs' },
+    dossier: { ...KONTEKST, type: ['object', 'null'] },
+  },
+  required: ['kodWyjscia', 'dossier'],
 }
 
 // ── Reviewerzy (leaf-agenci przez agentType) ───────────────────────────────
@@ -384,9 +375,8 @@ Cel: zweryfikowac skutecznosc napraw, nie wygenerowac nowa liste.`
 }
 
 // Wspolna mapa zmian doklejana do promptu reviewera — punkt startu zamiast wlasnego "co sie zmienilo".
-// FAIL-OPEN dwuwarstwowy: (a) brak zrzutu (packager padl / zrzut sie nie udal) => blok o pliku znika;
-// (b) `diffZapisany` to DEKLARACJA agenta o wlasnej pracy, nie fakt sprawdzony przez workflow, a /tmp bywa
-// czyszczone — wiec sam blok niesie tez instrukcje na nieudany Read. Reviewer nigdy nie zostaje bez diffu.
+// FAIL-OPEN dwuwarstwowy: (a) brak dossier albo pusty diff => blok o pliku znika; (b) workflow nie sprawdza plikow,
+// a /tmp bywa czyszczone miedzy execute a review — wiec sam blok niesie instrukcje na nieudany Read.
 function mapaBlok(kontekst) {
   if (!kontekst || !kontekst.pliki || !kontekst.pliki.length) return ''
   const lista = kontekst.pliki.map((p) => `- ${p.plik} — ${p.czegoDotyczy}`).join('\n')
@@ -395,25 +385,25 @@ function mapaBlok(kontekst) {
 === PELNY DIFF FAZY (juz przygotowany) ===
 Plik: ${kontekst.diffPlik}
 ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego \`git diff\` calej fazy.${kontekst.diffUciety ? `
-UWAGA: ten zrzut jest PRZYCIETY (limit ${Math.round(LIMIT_DIFFU_B / 1024)} KB, znacznik uciecia na koncu pliku) — NIE jest pelnym obrazem zmian.
+UWAGA: ten zrzut jest PRZYCIETY (limit 300 KB, znacznik uciecia na koncu pliku) — NIE jest pelnym obrazem zmian.
 Pliki z listy powyzej, ktorych w zrzucie nie ma, dobierz osobno (Read pliku albo \`git diff -- <plik>\`).` : ''}
-Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy dokladnie jak dotad: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.`
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.`
     : ''
-  // Dossier fazy (2026-09-03, plan B3). Ten sam wzorzec fail-open co przy diffie: gdy packager go nie
-  // zbudowal albo Read padnie, blok znika / niesie instrukcje powrotu do pelnych dokumentow. Reviewer
-  // nigdy nie zostaje bez zrodla prawdy o wymaganiach — zmieniamy DROGE do faktow, nie ich dostepnosc.
+  // Dossier fazy. Ten sam wzorzec fail-open co przy diffie: gdy go nie ma albo Read padnie, blok znika / niesie
+  // instrukcje powrotu do pelnych dokumentow — zmieniamy DROGE do faktow, nie ich dostepnosc.
   const ctxBlok = kontekst.ctxZapisany && kontekst.ctxPlik
     ? `
 === DOSSIER FAZY (juz przygotowane) ===
 Plik: ${kontekst.ctxPlik}
-Zawiera sekcje planu technicznego dla TEJ fazy, przywolane wiersze "Sledzenie wymagan",
-cale .claude/rules/learned-patterns.md oraz zadania i kontekst designerski fazy.
+Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip,
+przezyte mutanty), sekcje planu technicznego TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+cale .claude/rules/learned-patterns.md, zadania fazy i kontekst designerski.
 ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
 gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
 wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
 70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
-Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — wroc do czytania pelnych
-dokumentow dokladnie jak dotad: brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
+Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — przeczytaj pelne dokumenty
+(plan techniczny fazy, requirements doc, learned-patterns.md): brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
     : ''
   // Pre-skan (plan B6): dwa wzorce, ktore JS widzi na pewno, podane reviewerom jako WSKAZOWKA, nie werdykt.
   // Klasyfikacja zostaje przy reviewerze — pusty catch w bloku, ktory za chwile i tak rzuca, bywa poprawny.
@@ -435,70 +425,8 @@ ${diffBlok}${ctxBlok}${preSkanBlok}
 Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.`
 }
 
-function kontekstPrompt(sciezka, faza, diffPlik, ctxPlik) {
-  return `Jestes context-packagerem review fazy ${faza} (${sciezka}). Zbuduj WSPOLNA mape zmian dla reviewerow,
-zeby kazdy z nich nie musial od zera ustalac co sie zmienilo (dotad 7x ten sam git diff).
-
-1. Ustal zakres zmian fazy ${faza}: \`git diff --stat\` zmian tej fazy. Jesli faza ma osobne commity — diff od bazy fazy;
-   jak nie da sie wyodrebnic — uzyj diff vs main/origin/main.
-2. Zrzuc PELNY diff DOKLADNIE tego samego zakresu do pliku ${diffPlik} — Bash, przekierowaniem powloki:
-   \`git diff <ten sam zakres co w kroku 1> > ${diffPlik}\`
-   Tresc diffu ma NIGDY nie przejsc przez Twoja odpowiedz (to Twoje tokeny wyjsciowe) — tylko przekierowanie.
-   Potem \`wc -c < ${diffPlik}\`. Gdy rozmiar > ${LIMIT_DIFFU_B} B, przytnij i oznacz uciecie:
-   \`head -c ${LIMIT_DIFFU_B} ${diffPlik} > ${diffPlik}.tmp && mv ${diffPlik}.tmp ${diffPlik} && printf '\\n%s\\n' '${ZNACZNIK_UCIECIA}' >> ${diffPlik}\`
-   Zwroc METADANE: diffPlik (sciezka albo "" gdy zrzut sie nie udal), diffZapisany (plik powstal i jest niepusty),
-   diffUciety (czy przycinales). Nieudany zrzut NIE jest bledem krytycznym — ustaw diffZapisany=false i lec dalej.
-3. Dla kazdego zmienionego pliku podaj jednolinijkowe "czego dotyczy" (np. "nowy hook useLobbyData — fetch + realtime").
-4. Ustal 4 FLAGI WARSTW (ui / dane / typowanie / nowyModul — opisy w schemacie). Oceniaj po TRESCI zmian,
-   nie po nazwie katalogu: projekt bez src/ tez ma warstwe danych, a plik .mjs z petla INSERT to "dane".
-   \`typowanie\` = sa pliki .ts/.tsx w diffie ALBO w korzeniu repo istnieje tsconfig.json (sprawdz).
-   Flagi decyduja, ktorzy reviewerzy sie odpala — pomylka w gore (true) jest tania, w dol (false) gubi reviewera.
-5. Policz \`e2eCheckboxy\`: niezaznaczone checkboxy \`[E2E]\` fazy ${faza} w ${sciezka}/*-zadania.md — z OBU prefiksow
-   (\`Test: [E2E] ...\` ORAZ \`Weryfikacja: [E2E] ...\`; grep \`^- \\[ \\].*\\[E2E\\]\` z wykluczeniem kopii \`Operator:\` i pozycji findingow \`[P1]/[P2]/[P3]\` z "Do poprawy"). To scenariusze wymagajace
-   przegladarki (agent-browser). CLI (\`test\`/\`typecheck\`/\`grep\`) i \`[Manual]\` nie licz.
-6. Ustal \`figmaScreens\`: w ${sciezka}/*-kontekst.md, sekcja "Designerski kontekst", pole \`figma_screens\`.
-   true tylko wtedy, gdy pole istnieje i ma co najmniej jeden wpis ekran -> sciezka mockupu; puste/null/brak = false.
-   To DRUGA praca testera obok checkboxow: visual diff z makietami odpala sie z tego pola, nie z checkboxa,
-   wiec bez tej flagi faza z makietami a bez \`[E2E]\` stracilaby porownanie z mockupem.
-7. ZBUDUJ DOSSIER FAZY -> ${ctxPlik}. To najwiekszy pojedynczy oszczednik w tym workflow: dotad KAZDY
-   z osmiu reviewerow czytal dokument wymagan (dziesiatki KB), caly plan techniczny i learned-patterns.md.
-   Ty i tak czytasz te zrodla, wiec przepisz z nich RAZ wylacznie to, co dotyczy fazy ${faza}.
-   Wycinaj \`grep -n\` na naglowku + \`Read\` z offsetem i limitem — nigdy nie czytaj calych plikow do odpowiedzi.
-   Sklad pliku, dokladnie te cztery sekcje i w tej kolejnosci:
-
-   \`\`\`
-   # Dossier fazy ${faza} — ${sciezka}
-
-   ## Plan techniczny — sekcja fazy
-   [sekcja \`### Faza ${faza}\` z planu technicznego (sciezka z "Zrodla" w ${sciezka}/*-plan.md),
-    ciecie od tego naglowka do nastepnego naglowka tego samego poziomu, w calosci i bez parafrazy]
-
-   ## Sledzenie wymagan — wiersze tej fazy
-   [wylacznie te wiersze tabeli "Sledzenie wymagan" z planu technicznego, ktorych ID przywoluja
-    jednostki implementacyjne tej fazy; naglowek tabeli zostaw, reszte wierszy pomin]
-
-   ## Reguly projektu (learned-patterns.md)
-   [.claude/rules/learned-patterns.md w CALOSCI, bez skracania; gdy pliku nie ma — "Brak pliku."]
-
-   ## Zadania i kontekst designerski fazy
-   [sekcja \`## Faza ${faza}\` z ${sciezka}/*-zadania.md w calosci (checkboxy razem z prefiksami)
-    + pole \`figma_screens\` z sekcji "Designerski kontekst" w ${sciezka}/*-kontekst.md]
-   \`\`\`
-
-   Tresc przepisuj DOSLOWNIE — to ma zastapic czytanie zrodel, wiec parafraza albo skrot cicho odbiera
-   reviewerom fakty. Zwroc ctxPlik (sciezka albo "" gdy zapis sie nie udal) i ctxZapisany (plik powstal
-   i jest niepusty). Nieudany zapis NIE jest bledem krytycznym: ustaw ctxZapisany=false i lec dalej —
-   reviewerzy wroca wtedy do czytania pelnych dokumentow.
-8. PRE-SKAN MECHANICZNY (grep, nie ocena). W liniach DODANYCH przez diff tej fazy znajdz dwa wzorce:
-   - \`pusty-catch\`: \`catch {}\` albo \`catch (e) {}\` — takze z bialymi znakami i nowa linia miedzy klamrami,
-   - \`then-bez-catch\`: plik, w ktorym pojawilo sie \`.then(\`, a w CALYM tym pliku nie ma ani jednego \`.catch(\`.
-   Zwroc liste {wzorzec, plik} z numerem linii w polu plik. Zero trafien to poprawny wynik ([]).
-   NIE oceniaj, czy to defekt — od tego sa reviewerzy; Ty tylko wskazujesz miejsca.
-Nie oceniaj jakosci, nie zglaszaj findingow. Zwroc obiekt {diffStat, pliki[], warstwy{}, e2eCheckboxy, figmaScreens, diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, preSkan}.`
-}
-
-// Zrodla wymagan podawane reviewerowi. Gdy packager zbudowal dossier (plan B3), lektura zaczyna sie
-// i zwykle konczy na nim; bez dossier wracamy do brzmienia sprzed zmiany, czyli kazdy czyta pelne dokumenty.
+// Zrodla wymagan podawane reviewerowi. Z dossier lektura zaczyna sie i zwykle konczy na nim; bez dossier
+// kazdy czyta pelne dokumenty.
 function zrodlaBlok(faza, kontekst) {
   return (kontekst && kontekst.ctxZapisany && kontekst.ctxPlik)
     ? `Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
@@ -625,11 +553,11 @@ ${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprze
 // fallback do czytania pelnych dokumentow — wygladal w danych identycznie jak sukces.
 // Kazdy formater toleruje brak pola: przebieg ze starszego runu ich nie ma i ma to byc widoczne
 // jako "brak danych", nie jako zero.
-function dossierOpis(d) {
-  // Trzy stany, nie dwa. `false` znaczy "packager probowal i nie zapisal dossier" — to realny sygnal,
-  // ze reviewerzy czytali pelne dokumenty. Brak pola znaczy tylko "nie mierzono" (przebieg ze starszego
-  // runu) i NIE wolno go raportowac jako fallback: raport oskarzalby pipeline o cos, czego nie zmierzono.
-  if (d === true) return 'TAK — reviewerzy czytali dossier'
+function dossierOpis(d, zrodlo) {
+  // Trzy stany, nie dwa. `false` znaczy "dossier nie powstalo" — to realny sygnal, ze reviewerzy czytali pelne
+  // dokumenty. Brak pola znaczy tylko "nie mierzono" (przebieg ze starszego runu) i NIE wolno go raportowac
+  // jako fallback: raport oskarzalby pipeline o cos, czego nie zmierzono.
+  if (d === true) return `TAK — reviewerzy czytali dossier (${zrodlo === 'zapas' ? 'zapasowy agent w review' : 'skrypt z domkniecia fazy'})`
   if (d === false) return 'NIE — fallback: pelne dokumenty (drozej)'
   return 'brak danych'
 }
@@ -657,7 +585,7 @@ function przebiegBlok(p) {
   const pom = p.pominieci.length ? p.pominieci.map((x) => `${x.key} (${x.powod})`).join('; ') : 'brak — pelny sklad'
   const w = p.warstwy
     ? `ui=${p.warstwy.ui} dane=${p.warstwy.dane} typowanie=${p.warstwy.typowanie} nowyModul=${p.warstwy.nowyModul}`
-    : 'brak flag (packager padl) — fail-open, pelny sklad'
+    : 'brak flag (brak dossier) — fail-open, pelny sklad'
   return `## Przebieg review
 
 | Etap | Wartosc |
@@ -673,7 +601,7 @@ function przebiegBlok(p) {
 | Findingi: znalezione -> dedup JS -> dedup semantyczny | ${p.znalezione} -> ${p.poDedupJs} -> ${p.poDedupSem} |
 | P3 odrzucone limitem globalnym | ${p.p3Odrzucone || 0} |
 | Adversarial verify: weryfikowane / obalone / bez glosow | ${p.weryfikowane} / ${p.obalone} / ${p.niezweryfikowane} |
-| Dossier fazy | ${dossierOpis(p.dossier)} |
+| Dossier fazy | ${dossierOpis(p.dossier, p.dossierZrodlo)} |
 | Sceptycy: P1 (3 glosy) / P2 grupy / P2 findingi | ${sceptycyOpis(p.sceptycy)} |
 | Severity ruszone przez sceptykow: przyjete / odrzucone | ${korektyOpis(p.severityKorekty)} |
 | Tiery rozumowania | ${tieryOpis(p.tiery)} |`
@@ -823,6 +751,86 @@ function podsumujFindingi(findings) {
   return { liczniki, severityGate }
 }
 
+// ── Dossier i routing (P7) ─────────────────────────────────────────────────
+// Dossier liczy skrypt .claude/scripts/dossier/ — w domknieciu execute-wf (pole dossier w EXECUTE_RESULT, autopilot
+// przekazuje je w args) albo tu, zapasowym agentem, gdy args go nie niosa (swiezy run po STOP-ie miedzy execute
+// a review, review uruchomione samodzielnie). Skrypt workflowu nie czyta plikow, wiec skrypt dossier uruchamia agent.
+const PLIK_KODU = /\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte|py|go|rs|sh|sql)$/i
+const WARSTWY_DOSSIER = ['ui', 'dane', 'typowanie', 'nowyModul']
+
+// Ksztalt pola dossier, z ktorego liczy sie routing. Niepelny obiekt = brak dossier (fail-open nizej).
+function czyDossier(d) {
+  return !!d && Array.isArray(d.pliki) && !!d.warstwy && WARSTWY_DOSSIER.every((k) => typeof d.warstwy[k] === 'boolean') && Number.isInteger(d.e2eCheckboxy)
+}
+
+// Zrodlo dossier: args (domkniecie w tym runie) -> zapasowy agent -> brak. `zapas` zwraca dossier albo null.
+async function dossierFazy(a, zapas) {
+  if (a && czyDossier(a.dossier)) return { kontekst: a.dossier, zrodlo: 'domkniecie' }
+  const d = await zapas()
+  return czyDossier(d) ? { kontekst: d, zrodlo: 'zapas' } : { kontekst: null, zrodlo: null }
+}
+
+// Bez SHA bazy skrypt bierze merge-base z galezia glowna. Baza trafia do komendy powloki — tylko SHA.
+function dossierPrompt(sciezka, faza, baza) {
+  const zBaza = typeof baza === 'string' && /^[0-9a-f]{7,40}$/.test(baza) ? ` --baza ${baza}` : ''
+  return `Uruchom w korzeniu repo (Bash): \`node .claude/scripts/dossier/dossier.mjs --sciezka ${sciezka} --faza ${faza}${zBaza}\`
+Skrypt zapisuje diff i dossier fazy ${faza} w /tmp i wypisuje jedna linie JSON na stdout.
+Zwroc kodWyjscia (kod wyjscia komendy) i dossier = ten JSON 1:1, bez zmian i bez skracania. Kod inny niz 0: dossier = null.`
+}
+
+// Warunek per reviewer: brak wpisu = rdzen (zawsze aktywny).
+// `plikiKodu > 0` przy `dane` (2026-07-27): faza czysto dokumentacyjna (run team-os-onboarding-instalatory,
+// faza 3 — 5 plikow md, 0 kodu) dostawala flage dane=true i budzila performance-oracle nad markdownem.
+// Perf nie ma czego mierzyc bez ani jednego pliku kodu — a >=5 plikow kodu i tak lapie duze fazy niezaleznie od flagi.
+const WARUNKI = {
+  performance: (w, plikiKodu) => (w.dane && plikiKodu > 0) || plikiKodu >= 5,
+  // Warunek `code-quality` to ALTERNATYWA trzech dotychczasowych warunkow (architecture OR typescript
+  // OR simplicity). Simplicity byl w rdzeniu (zawsze aktywny), wiec formalnie ta alternatywa jest zawsze
+  // prawdziwa dla fazy z kodem — zapis zostaje jawny, zeby przy warunku odwrotu bylo widac, z czego
+  // powstal, i zeby rozdzielenie z powrotem bylo mechaniczne.
+  'code-quality': (w, plikiKodu) => w.nowyModul || plikiKodu >= 3 || w.typowanie || plikiKodu > 0,
+  // Poprawnosc wymaga kodu do przesledzenia. Faza czysto dokumentacyjna nie ma sciezek wykonania.
+  correctness: (_, plikiKodu) => plikiKodu > 0,
+}
+
+// Tryb testera E2E (2026-07-30) — trzy stany zamiast wlacz/wylacz. Domena decyduje, CZY tester ma co robic;
+// status srodowiska decyduje, CZYM moze to robic. Obserwacja z runu rownolegle-joby (faza 1): tester
+// przywolany bez srodowiska (e2eSrodowisko: "pominieto") dal 1 passed / 1 failed / 3 skipped — czesc tej
+// pracy zrobilby scribe za darmo, ale ten jeden fail byl realny. Wiec: ograniczamy zakres i MIERZYMY.
+//   'przegladarka'     = domena obecna + srodowisko gotowe ALBO nieznane (standalone) -> jak dotad,
+//   'bez-przegladarki' = domena obecna, ale srodowisko ZNANE i != 'gotowe' -> tylko HTTP/CLI,
+//   'pominiety'        = brak warstwy UI i zero browserowych checkboxow -> tester nie startuje.
+// Domena: checkboxy [E2E] albo makiety Figmy do visual diffu (feature-tester-e2e §3.5 wisi na `figma_screens`).
+// Do 2026-09-02 warunkiem bylo `warstwy.ui` — 10 z 18 uruchomien testera szlo w tryb `przegladarka` przy
+// `e2eCheckboxy: 0`. Gdy liczba jest NIEZNANA (brak dossier), wracamy do `warstwy.ui` — bez faktow nie wycinamy testera.
+function trybTesteraE2e(warstwy, e2eLiczbaZnana, e2eCheckboxy, figmaScreens, srodowiskoE2E) {
+  const domenaE2E = !warstwy || (e2eLiczbaZnana ? (e2eCheckboxy > 0 || figmaScreens) : warstwy.ui)
+  if (!domenaE2E) return 'pominiety'
+  return (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-przegladarki' : 'przegladarka'
+}
+
+// Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy: reviewer odpala sie, gdy jego domena jest w fazie OBECNA
+// wg flag warstw z dossier. Rdzen nietykalny: security (XSS/wyciek siedzi tez w "czysto UI" pliku),
+// spec-compliance, test-coverage. Warunkowi: performance, code-quality, correctness, e2e.
+// FAIL-OPEN: brak dossier albo flag => PELNY sklad — bez faktow nie pomijamy nikogo.
+function routingReviewerow(kontekst, srodowiskoE2E) {
+  const plikiFazy = (kontekst && kontekst.pliki) || []
+  const warstwy = (kontekst && kontekst.warstwy) || null
+  const plikiKodu = plikiFazy.filter((p) => PLIK_KODU.test(p.plik)).length
+  const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy, plikiKodu))
+  // Liczba NIEZNANA (brak dossier), nie zero — bramkowanie retry/STOP licznikiem zamienialoby awarie w cicha degradacje.
+  const e2eLiczbaZnana = !!(kontekst && Number.isInteger(kontekst.e2eCheckboxy))
+  const e2eCheckboxy = e2eLiczbaZnana ? kontekst.e2eCheckboxy : 0
+  const figmaScreens = !!(kontekst && kontekst.figmaScreens)
+  const e2eTryb = trybTesteraE2e(warstwy, e2eLiczbaZnana, e2eCheckboxy, figmaScreens, srodowiskoE2E)
+  const pominieci = [
+    ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: 'domena nieobecna w mapie zmian fazy' })),
+    ...(e2eTryb === 'pominiety' ? [{ key: 'e2e', powod: `zero checkboxow [E2E] (${e2eCheckboxy}) i brak makiet figma_screens${e2eLiczbaZnana ? '' : ' — liczba nieznana, decydowal brak warstwy UI'}` }] : []),
+  ]
+  return { plikiFazy, plikiKodu, warstwy, e2eCheckboxy, e2eLiczbaZnana, figmaScreens, aktywni, e2eTryb, pominieci }
+}
+// ── Koniec dossier i routingu
+
 // ── Orkiestracja ──────────────────────────────────────────────────────────
 
 const sciezka = args && args.sciezka
@@ -837,9 +845,9 @@ const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
 // Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
 // Reviewerzy (z test-coverage i testerem E2E) i sceptycy P1 `high` — tam kupujemy jakosc osadu, a P1 bramkuje
-// twardy STOP. Taniej tam, gdzie praca jest mechaniczna: packager i scribe przepisuja (`low`), sceptyk P2 sprawdza
-// jeden plik (`medium`). `null` w args.tiery = efort sesji. Haiku (dedup, inspekcja) efortu nie dostaje.
-const TIERY_DOMYSLNE = { packager: 'low', sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', scribe: 'low' }
+// twardy STOP. Taniej tam, gdzie praca jest mechaniczna: scribe przepisuje (`low`), sceptyk P2 sprawdza
+// jeden plik (`medium`). `null` w args.tiery = efort sesji. Haiku (dedup, inspekcja, zapasowe dossier) efortu nie dostaje.
+const TIERY_DOMYSLNE = { sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', scribe: 'low' }
 const tiery = { ...TIERY_DOMYSLNE, ...((args && args.tiery) || {}) }
 // `effort: undefined` bywa traktowane inaczej niz brak pola — dokladamy klucz tylko gdy tier jest ustawiony.
 const zEffortem = (opts, effort) => (effort ? { ...opts, effort } : opts)
@@ -852,74 +860,20 @@ const poprzKod = poprzednie.filter((f) => f.typ === 'KOD')
 const poprzTest = poprzednie.filter((f) => f.typ === 'TEST')
 const poprzE2e = poprzednie.filter((f) => f.typ === 'E2E' || f.typ === 'OPERATOR')
 
-// Faza 1: context-packager RAZ (mapa zmian), potem reviewerzy rownolegle (bariera — potrzebujemy kompletu do dedup)
+// Faza 1: dossier fazy, potem reviewerzy rownolegle (bariera — potrzebujemy kompletu do dedup)
 phase('Review')
-// Poprawka 9: zbuduj diff/mape raz; reviewerzy dostaja ja inline zamiast kazdy odkrywac zmiany od zera.
-// Null (agent skipniety/blad) -> reviewerzy robia wlasna dyskryminacje jak dotad (fallback w mapaBlok).
-// Sciezka zrzutu diffu: POZA repo (drzewo robocze usera zostaje czyste, artefakt nie wpadnie do commita),
-// deterministyczna z (sciezka, faza) — retry packagera nadpisuje ten sam plik zamiast mnozyc smieci.
-const diffPlik = `/tmp/review-diff-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.diff`
-const ctxPlik = `/tmp/review-ctx-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.md`
-const kontekst = await agent(kontekstPrompt(sciezka, faza, diffPlik, ctxPlik), zEffortem({ schema: KONTEKST, agentType: 'klasa-orkiestracyjny', label: 'kontekst:diff', phase: 'Review' }, tiery.packager))
-
-// Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy. Poprzedni prog "<=2 pliki" nie odpalil ani raz
-// (realne fazy: 6-15 plikow), a regexy po sciezce nie trafialy w projekty bez src/. Teraz decyduja
-// FLAGI WARSTW od packagera: reviewer odpala sie, gdy jego domena jest w fazie OBECNA.
-// Rdzen nietykalny: security (XSS/wyciek siedzi tez w "czysto UI" pliku), spec-compliance, test-coverage.
-// Warunkowi: performance, code-quality, correctness, e2e.
-// FAIL-OPEN: brak mapy albo brak flag (packager padl) => PELNY sklad — bez faktow nie pomijamy nikogo.
-const plikiFazy = (kontekst && kontekst.pliki) || []
-const warstwy = (kontekst && kontekst.warstwy) || null
-const e2eCheckboxy = (kontekst && Number.isInteger(kontekst.e2eCheckboxy)) ? kontekst.e2eCheckboxy : 0
-const plikiKodu = plikiFazy.filter((p) => /\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte|py|go|rs|sh|sql)$/i.test(p.plik)).length
-
-// Warunek per reviewer: brak wpisu = rdzen (zawsze aktywny).
-// `plikiKodu > 0` przy `dane` (2026-07-27): faza czysto dokumentacyjna (run team-os-onboarding-instalatory,
-// faza 3 — 5 plikow md, 0 kodu) dostawala flage dane=true od packagera i budzila performance-oracle
-// nad markdownem. Perf nie ma czego mierzyc bez ani jednego pliku kodu — a >=5 plikow kodu i tak lapie
-// duze fazy niezaleznie od flagi.
-const WARUNKI = {
-  performance: (w) => (w.dane && plikiKodu > 0) || plikiKodu >= 5,
-  // Warunek `code-quality` to ALTERNATYWA trzech dotychczasowych warunkow (architecture OR typescript
-  // OR simplicity). Simplicity byl w rdzeniu (zawsze aktywny), wiec formalnie ta alternatywa jest zawsze
-  // prawdziwa dla fazy z kodem — zapis zostaje jawny, zeby przy warunku odwrotu bylo widac, z czego
-  // powstal, i zeby rozdzielenie z powrotem bylo mechaniczne.
-  'code-quality': (w) => w.nowyModul || plikiKodu >= 3 || w.typowanie || plikiKodu > 0,
-  // Poprawnosc wymaga kodu do przesledzenia. Faza czysto dokumentacyjna nie ma sciezek wykonania.
-  correctness: () => plikiKodu > 0,
-}
-const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy))
-// Liczba checkboxow [E2E] pochodzi z packagera; gdy packager padl (null) liczba jest NIEZNANA, nie zero —
-// bramkowanie retry/STOP licznikiem zamienialoby awarie dwoch agentow (529/watchdog) w cicha degradacje.
-const e2eLiczbaZnana = !!(kontekst && Number.isInteger(kontekst.e2eCheckboxy))
-// Flaga `figmaScreens` jest poza `required` schematu — starszy/padniety packager jej nie zwroci i wtedy
-// dzialamy jak dotad (fail-open ponizej po `warstwy.ui`).
-const figmaScreens = !!(kontekst && kontekst.figmaScreens)
-// Do 2026-09-02 warunkiem bylo `warstwy.ui`, czyli KAZDA faza dotykajaca prezentacji budzila testera —
-// takze taka, ktora nie ma ani jednego scenariusza do odegrania. W telemetrii: 10 z 18 uruchomien testera
-// szlo w tryb `przegladarka` przy `e2eCheckboxy: 0`. Teraz decyduje POLICZONA praca: checkboxy [E2E] albo
-// makiety Figmy do visual diffu (feature-tester-e2e §3.5 wisi na `figma_screens`, nie na checkboxie).
-// Gdy packager padl i liczba jest NIEZNANA, wracamy do `warstwy.ui` — bez faktow nie wycinamy testera.
-const domenaE2E = !warstwy || (e2eLiczbaZnana ? (e2eCheckboxy > 0 || figmaScreens) : warstwy.ui)
-// Tryb testera E2E (2026-07-30) — trzy stany zamiast wlacz/wylacz. Domena decyduje, CZY tester ma co robic;
-// status srodowiska decyduje, CZYM moze to robic. Obserwacja z runu rownolegle-joby (faza 1): tester
-// przywolany bez srodowiska (e2eSrodowisko: "pominieto") dal 1 passed / 1 failed / 3 skipped — czesc tej
-// pracy zrobilby scribe za darmo, ale ten jeden fail byl realny. Wiec: ograniczamy zakres i MIERZYMY.
-//   'przegladarka'     = domena obecna + srodowisko gotowe ALBO nieznane (standalone) -> jak dotad,
-//   'bez-przegladarki' = domena obecna, ale srodowisko ZNANE i != 'gotowe' -> tylko HTTP/CLI,
-//   'pominiety'        = brak warstwy UI i zero browserowych checkboxow -> tester nie startuje.
-const e2eTryb = !domenaE2E
-  ? 'pominiety'
-  : (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-przegladarki' : 'przegladarka'
-const pominieci = [
-  ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: 'domena nieobecna w mapie zmian fazy' })),
-  ...(e2eTryb === 'pominiety' ? [{ key: 'e2e', powod: `zero checkboxow [E2E] (${e2eCheckboxy}) i brak makiet figma_screens${e2eLiczbaZnana ? '' : ' — liczba nieznana, decydowal brak warstwy UI'}` }] : []),
-]
+// Brak dossier (zapasowy agent padl, skrypt z kodem != 0) => routing fail-open (pelny sklad), reviewerzy robia wlasny
+// diff (mapaBlok). Plik z /tmp zniknal miedzy execute a review => reviewer wraca do pelnych dokumentow (mapaBlok).
+const { kontekst, zrodlo: zrodloDossier } = await dossierFazy(args, async () => {
+  const z = await agent(dossierPrompt(sciezka, faza, args.baza), { schema: ZAPAS_DOSSIER, agentType: 'klasa-mechaniczny', label: 'dossier:zapas', phase: 'Review' })
+  return z && z.kodWyjscia === 0 ? z.dossier : null
+})
+const { plikiFazy, plikiKodu, warstwy, e2eCheckboxy, e2eLiczbaZnana, figmaScreens, aktywni, e2eTryb, pominieci } = routingReviewerow(kontekst, srodowiskoE2E)
 if (pominieci.length) log(`Routing v2: pomijam ${pominieci.map((p) => p.key).join(', ')} (${plikiFazy.length} plikow, ${plikiKodu} kodu)`)
 else log(`Routing v2: pelny sklad (${plikiFazy.length} plikow${warstwy ? '' : ', brak flag warstw — fail-open'})`)
 log(kontekst && kontekst.ctxZapisany
-  ? `Dossier fazy: ${kontekst.ctxPlik} — reviewerzy czytaja je zamiast pelnego planu i dokumentu wymagan`
-  : 'Dossier fazy NIE powstalo — reviewerzy czytaja pelne dokumenty jak przed zmiana (fail-open, drozej)')
+  ? `Dossier fazy (${zrodloDossier === 'zapas' ? 'zapasowy agent' : 'domkniecie fazy'}): ${kontekst.ctxPlik} — reviewerzy czytaja je zamiast pelnego planu i dokumentu wymagan`
+  : 'Dossier fazy NIE powstalo — reviewerzy czytaja pelne dokumenty (fail-open, drozej)')
 
 const thunki = aktywni.map((r) => () =>
   agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
@@ -937,7 +891,7 @@ const wyniki = await parallel(thunki)
 // jeden retry (jak env-up w autopilocie), a po drugim nullu twarda flaga e2eTesterFail dla orkiestratora.
 const e2eAktywny = e2eTryb !== 'pominiety'
 const indeksE2e = e2eAktywny ? thunki.length - 1 : -1
-// `e2eLiczbaZnana` policzone wyzej przy routingu (ten sam fakt: czy packager podal liczbe checkboxow).
+// `e2eLiczbaZnana` policzone wyzej przy routingu (ten sam fakt: czy dossier podalo liczbe checkboxow).
 const e2eMozeMiecCheckboxy = e2eCheckboxy > 0 || !e2eLiczbaZnana
 // Wynik "wykonany, ale bez ani jednego przebiegu" przy checkboxach [E2E] jest rownowazny nullowi: tester nie
 // dowiodl niczego (przerwany po preflighcie, zapomnial raportowac) — bez retry cala faza spadlaby do OPERATOR.
@@ -946,7 +900,7 @@ let e2eRetry = false
 if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
   e2eRetry = true
   const powod = wyniki[indeksE2e] ? 'zwrocil wynik BEZ zadnego wpisu przebiegi[]' : 'zwrocil null (watchdog/API)'
-  log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — packager padl'}) — ponawiam raz`)
+  log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — brak dossier'}) — ponawiam raz`)
   wyniki[indeksE2e] = await agent(
     `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst)}\n\n(PONOWNA PROBA — poprzedni przebieg ${powod}. KAZDY checkbox [E2E] fazy MUSI miec wpis PASS/FAIL/SKIP w przebiegi[] (przy zerze checkboxow zwroc {findings:[], przebiegi:[]}); jesli scenariusz w przegladarce milczy >120s, loguj postep do pliku i czytaj go w tle zgodnie z blokiem dlugich komend.)`,
     zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }, tiery.reviewer)
@@ -956,7 +910,7 @@ const e2eWynik = e2eAktywny ? wyniki[indeksE2e] : null
 const e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.przebiegi : []
 // "Wykonany" = dal przebiegi (albo realnie nie bylo czego testowac). Null 2x = NIE wykonany; pusto 2x przy ZNANEJ
 // liczbie checkboxow > 0 = NIE wykonany -> twarda flaga dla orkiestratora (STOP, review pending). Przy liczbie
-// NIEZNANEJ (packager padl) drugi pusty wynik jest AKCEPTOWANY jako "brak checkboxow" — tester sam grepuje sekcje
+// NIEZNANEJ (brak dossier) drugi pusty wynik jest AKCEPTOWANY jako "brak checkboxow" — tester sam grepuje sekcje
 // fazy, a gdyby sie mylil, scribe zostawi [E2E] jako [ ] i completion-gate to zlapie (nie ma tu cichej zieleni).
 const e2eWykonany = !!e2eWynik && !(e2eMozeMiecCheckboxy && e2ePrzebiegi.length === 0 && e2eCheckboxy > 0)
 const e2eTesterFail = e2eAktywny && e2eMozeMiecCheckboxy && !e2eWykonany
@@ -965,8 +919,8 @@ const e2eStatus = !e2eAktywny
   : e2eTesterFail
     ? (e2eWynik ? 'padl (2x wynik bez zadnego przebiegu) — zadnego dowodu' : 'padl (agent null 2x) — zadnego przebiegu')
     : e2eWynik
-      ? (e2ePrzebiegi.length === 0 ? `wykonany — brak checkboxow [E2E] w fazie${e2eRetry ? ' (po retry; liczba z packagera nieznana)' : ''}` : `wykonany (tryb ${e2eTryb})${e2eRetry ? ' (po retry)' : ''}`)
-      : 'bez checkboxow [E2E] (packager policzyl 0, tester nic nie zwrocil — OK)'
+      ? (e2ePrzebiegi.length === 0 ? `wykonany — brak checkboxow [E2E] w fazie${e2eRetry ? ' (po retry; liczba z dossier nieznana)' : ''}` : `wykonany (tryb ${e2eTryb})${e2eRetry ? ' (po retry)' : ''}`)
+      : 'bez checkboxow [E2E] (dossier: 0, tester nic nie zwrocil — OK)'
 if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZnana ? e2eCheckboxy : 'nieznanej liczbie'} checkboxow [E2E] — review zapisze sie BEZ odznaczania [E2E], orkiestrator zatrzyma run (review pending)`)
 
 // Dedup przebieg 1 — JS (po pliku + poczatku opisu): lapie identyczne sformulowania za darmo.
@@ -1330,9 +1284,10 @@ const przebieg = {
   warstwy,
   e2eCheckboxy,
   figmaScreens,
-  // Czy packager zbudowal dossier fazy (plan B3). Bez tej metryki cichy fallback do czytania pelnych
+  // Czy dossier fazy powstalo i skad (domkniecie / zapas). Bez tej metryki cichy fallback do czytania pelnych
   // dokumentow wygladalby w telemetrii identycznie jak brak oszczednosci z samej zmiany.
   dossier: !!(kontekst && kontekst.ctxZapisany),
+  dossierZrodlo: zrodloDossier,
   e2eTryb,
   aktywni: [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])],
   pominieci,

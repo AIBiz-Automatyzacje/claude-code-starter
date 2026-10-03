@@ -147,11 +147,14 @@ test('FINDING_OTWARTY dopuszcza severity, ktore realnie produkuje otwartePoRevie
   )
 })
 
-test('dossierOpis rozroznia "nie powstalo" od "nie mierzono"', () => {
+// Zmiana kontraktu (P7): dossier liczy skrypt w domknieciu fazy albo zapasowy agent w review — raport nazywa zrodlo,
+// bo zapasowy agent po STOP-ie miedzy execute a review to sciezka do sprawdzenia w smoke'u (PLAN-POPRAWY P7).
+test('dossierOpis rozroznia "nie powstalo" od "nie mierzono" i nazywa zrodlo dossier', () => {
   const kod = wytnij(zrodloReview, 'function dossierOpis(', '\n}', 'dossierOpis')
   // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
   const { dossierOpis } = new Function(`${kod}\nreturn { dossierOpis }`)()
-  assert.match(dossierOpis(true), /^TAK/)
+  assert.match(dossierOpis(true, 'domkniecie'), /^TAK — .*domkniecia fazy/)
+  assert.match(dossierOpis(true, 'zapas'), /^TAK — .*zapasowy agent/)
   assert.match(dossierOpis(false), /^NIE/, 'false to realny sygnal cichego fallbacku — musi byc widoczny')
   // Przebieg ze starszego runu nie ma tego pola. Raportowanie go jako "NIE" oskarzaloby pipeline
   // o fallback, ktorego nikt nie zmierzyl — i zafalszowaloby prog "efekt dossier" przy porownaniach.

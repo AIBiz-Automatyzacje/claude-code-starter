@@ -101,7 +101,7 @@ const DOSSIER = {
   description: 'wynik JSON skryptu dossier 1:1; null gdy skrypt padl',
   additionalProperties: false,
   properties: {
-    diffStat: { type: 'string', description: 'git diff --stat fazy (lub "brak zmian")' },
+    diffStat: { type: 'string', description: 'liczba plikow i linii fazy, np. "4 plikow, +12 −3"' },
     pliki: {
       type: 'array',
       items: {
@@ -109,7 +109,7 @@ const DOSSIER = {
         additionalProperties: false,
         properties: {
           plik: { type: 'string' },
-          czegoDotyczy: { type: 'string', description: 'jednolinijkowe co zmieniono w pliku' },
+          czegoDotyczy: { type: 'string', description: 'status pliku i liczby linii, np. "dodany (+12)"' },
         },
         required: ['plik', 'czegoDotyczy'],
       },

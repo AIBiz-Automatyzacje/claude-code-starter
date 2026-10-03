@@ -166,7 +166,8 @@ test('wiring — grupa, ktorej thunk padl, schodzi do niezweryfikowanej zamiast 
 })
 
 // Zmiana kontraktu (P3, tabela D6): reviewer i sceptyk P1 przypiete na `high` zamiast efortu sesji (null), scribe `low`.
-test('wiring — tiery sa wystawione przez args, z tanszym packagerem, scribe i sceptykiem P2', () => {
-  assert.match(zrodlo, /const TIERY_DOMYSLNE = \{ packager: 'low', sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', scribe: 'low' \}/)
+// Zmiana kontraktu (P7): tier `packager` znika razem z agentem kontekst:diff — dossier liczy skrypt, zapasowy agent to haiku bez efortu.
+test('wiring — tiery sa wystawione przez args, z tanszym scribe i sceptykiem P2, bez packagera', () => {
+  assert.match(zrodlo, /const TIERY_DOMYSLNE = \{ sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', scribe: 'low' \}/)
   assert.match(zrodlo, /const tiery = \{ \.\.\.TIERY_DOMYSLNE, \.\.\.\(\(args && args\.tiery\) \|\| \{\}\) \}/)
 })

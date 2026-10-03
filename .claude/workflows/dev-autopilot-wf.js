@@ -109,7 +109,7 @@ const METRYKI_FAZY = {
         // "efekt dossier" i "batchowanie sceptykow" byly niemierzalne: `additionalProperties: false`
         // wymazywal te pola przy PIERWSZYM zapiszStan, wiec do telemetrii nie mialy jak dojsc.
         // `dossier: false` = cichy fallback do czytania pelnych dokumentow, nieodrozniany od sukcesu.
-        dossier: { type: ['boolean', 'null'], description: 'czy packager zbudowal dossier fazy (false = reviewerzy czytali pelne dokumenty)' },
+        dossier: { type: ['boolean', 'null'], description: 'czy dossier fazy powstalo (false = reviewerzy czytali pelne dokumenty)' },
         sceptycy: {
           type: ['object', 'null'],
           additionalProperties: false,
@@ -1414,12 +1414,16 @@ for (const numerFazy of kolejka) {
   let kontrolaFixa = null
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
+  // Dossier fazy z domkniecia (P7) idzie do review; faza wznowiona z execute: done go nie ma — review-wf odtwarza je
+  // zapasowym agentem (kod mogl sie zmienic po STOP-ie, plik w /tmp bylby nieaktualny).
+  let dossierZExecute = null
   if (faza.execute === 'pending') {
     const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy })
     if (!exec || exec.status !== 'completed') {
       return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty })
     }
     faza.execute = 'done'
+    dossierZExecute = exec.dossier || null
     await zapiszStan()
     log(`Faza ${numerFazy}: Execute OK (${exec.iu.length} IU)`)
   }
@@ -1442,6 +1446,7 @@ for (const numerFazy of kolejka) {
       sciezka,
       faza: numerFazy,
       poprzednieFindingi: faza.otwarteFindingi.length ? faza.otwarteFindingi : null,
+      dossier: dossierZExecute,
       // Status srodowiska przegladarkowego (2026-07-30): routing v2 sam z diffu NIE wie, czy przegladarka
       // stoi, wiec w runie rownolegle-joby (faza 1) przywolal testera przy e2eSrodowisko: "pominieto"
       // — wynik 1 passed / 1 failed / 3 skipped. Z tym sygnalem review-wf da mu tryb bez przegladarki.
@@ -1496,7 +1501,7 @@ for (const numerFazy of kolejka) {
       faza.metryki = { liczniki: policzFindingi(review.findings), przebieg: skrotPrzebiegu(review.przebieg) }
       await zapiszStan()
       return await stopRun({
-        powod: `Faza ${numerFazy}: tester E2E (agent-browser) ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} przy ${review.przebieg && review.przebieg.e2eLiczbaZnana ? `${review.przebieg.e2eCheckboxy} checkboxach [E2E]` : 'nieznanej liczbie checkboxow [E2E] (packager kontekst:diff tez padl — szukaj 529/watchdoga, nie przegladarki)'}. Nie degraduje cicho do OPERATOR: review pozostaje pending.`,
+        powod: `Faza ${numerFazy}: tester E2E (agent-browser) ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} przy ${review.przebieg && review.przebieg.e2eLiczbaZnana ? `${review.przebieg.e2eCheckboxy} checkboxach [E2E]` : 'nieznanej liczbie checkboxow [E2E] (dossier tez nie powstalo — szukaj 529/watchdoga, nie przegladarki)'}. Nie degraduje cicho do OPERATOR: review pozostaje pending.`,
         naprawa: 'Sprawdz dev server Vite (port 5173, /tmp/autopilot-vite.log), agent-browser (`agent-browser doctor`) albo 529 Overloaded i odpal SWIEZY run (te same args, BEZ resumeFromRunId) — review tej fazy powtorzy sie z testerem. Jesli srodowisko stoi, a tester pada 2x na tym samym flow — flow prawdopodobnie wisi na powierzchni poza kontrola headless (popup OAuth, natywny dialog przegladarki): odegraj scenariusz recznie, zeby zobaczyc gdzie, i rozwaz [E2E] -> [Manual].',
         faza: numerFazy, findings: review.findings, raporty,
       })
