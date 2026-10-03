@@ -14,6 +14,11 @@
 
 set -e
 
+# stop_hook_active: Claude kontynuuje juz po blokadzie hooka Stop — druga blokada w tej turze to petla.
+if grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
+    exit 0
+fi
+
 # Konfiguracja
 ERROR_THRESHOLD=3
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"

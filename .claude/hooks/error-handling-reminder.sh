@@ -2,6 +2,7 @@
 
 # Error Handling Reminder
 # Hook Stop — sprawdza edytowane pliki pod kątem poprawnego error handlingu
+# Wyłączony w projekcie z eslint.config.* z szablonu (.claude/templates/bramki) — tam pracę robi ESLint w bramkach.
 #
 # Frontend (src/): wykrywa console.log/warn/error → sugeruje Sentry
 # Edge Functions (supabase/functions/, handler withSupabase albo Deno.serve): wymaga await captureError w catch
@@ -11,8 +12,19 @@
 
 set -e
 
+# stop_hook_active: Claude kontynuuje juz po blokadzie hooka Stop — druga blokada w tej turze to petla.
+if grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
+    exit 0
+fi
+
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$PROJECT_DIR"
+
+# Projekt z konfiguracja ESLint z szablonu (komentarz ze sciezka .claude/templates/bramki): no-console, no-empty
+# i no-floating-promises lapia to samo w bramce domkniecia fazy (PLAN-POPRAWY P6). Hook dziala w projektach bez niej.
+if grep -qs '\.claude/templates/bramki' eslint.config.*; then
+    exit 0
+fi
 
 # Pobierz listę zmienionych plików TS/TSX (staged + unstaged + untracked)
 CHANGED_FILES=$(
