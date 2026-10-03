@@ -125,6 +125,27 @@ function kontrolaFixaFazy(raport, agenci, journal) {
   return { ...zRaportu, regresje: Array.isArray(regresje) ? regresje.length : null }
 }
 
+// Bramki domkniecia (P6): nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs i w EXECUTE_RESULT dev-docs-execute-wf.
+const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'advisors', 'testyUsuniete', 'stryker']
+
+/**
+ * Bramki i testy usuniete z wyniku ostatniego domkniecia fazy (EXECUTE_RESULT): per bramka {status, sekundy, trafienia,
+ * poNaprawie} z pierwszego przebiegu skryptu; bramka nieobecna w wyniku albo faza bez domkniecia = null.
+ * @param {AgentFazy[]} agenci
+ * @param {Map<string, WynikJournala>} journal
+ */
+function bramkiFazy(agenci, journal) {
+  const domkniecie = agenci.filter((a) => a.rola === 'domkniecie').at(-1)
+  const wynik = obiekt(domkniecie ? journal.get(domkniecie.id)?.wynik : null)
+  const zWyniku = obiekt(wynik.bramki)
+  const bramki = Object.fromEntries(NAZWY_BRAMEK.map((n) => {
+    const b = obiekt(zWyniku[n])
+    if (!Object.keys(b).length) return [n, null]
+    return [n, { status: b.status ?? null, sekundy: liczbaLubNull(b.sekundy), trafienia: liczbaLubNull(b.trafienia), poNaprawie: b.poNaprawie ?? null }]
+  }))
+  return { bramki, testyUsuniete: Array.isArray(wynik.testyUsuniete) ? wynik.testyUsuniete : null }
+}
+
 /**
  * @param {{ wynikRunu: unknown, agenci: AgentFazy[], journal: Map<string, WynikJournala>, zmianyFixa: (commity: string[]) => ZmianyCommitow }} we
  */
@@ -140,6 +161,7 @@ export function rekordyFaz(we) {
     const raport = raporty.find((r) => r.faza === numer) ?? {}
     const agenci = we.agenci.filter((a) => a.faza === numer)
     const przebieg = obiekt(raport.przebieg)
+    const domkniecie = bramkiFazy(agenci, we.journal)
     return {
       typ: 'faza',
       faza: numer,
@@ -159,13 +181,12 @@ export function rekordyFaz(we) {
       sekundy: sekundyAgentow(agenci),
       e2eSync: typeof raport.e2eSync === 'string' ? skrotE2eSync(raport.e2eSync) : null,
       review_rundy: agenci.filter((a) => a.rola === 'kontekst:diff').length,
-      // Producenci w pozniejszych iteracjach: bramki (It. 4a), sceptyk asymetryczny (It. 5), wiedza (It. 8),
-      // dossier ze skryptu (It. 3d), testy usuniete (It. 4b).
-      bramki: { typecheck: null, eslint: null, knip: null, sizeLimit: null, migracje: null, advisors: null, stryker: null, testyTypow: null },
+      bramki: domkniecie.bramki,
+      // Producenci w pozniejszych paczkach: sceptyk asymetryczny (P9), wiedza (P10), dossier ze skryptu (P7).
       sceptyk: null,
       wiedza: null,
       dossier_zn: null,
-      testy_usuniete: null,
+      testy_usuniete: domkniecie.testyUsuniete,
     }
   })
 }

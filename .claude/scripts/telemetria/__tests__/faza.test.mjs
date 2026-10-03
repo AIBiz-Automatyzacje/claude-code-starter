@@ -120,7 +120,38 @@ test('etapRoli: role mechaniczne review i petla fix', () => {
 test('pola z producentem w pozniejszych iteracjach istnieja (null)', () => {
   const pola = new Map(Object.entries(fazy()[0]))
   for (const k of ['bramki', 'sceptyk', 'wiedza', 'dossier_zn', 'testy_usuniete']) assert.ok(pola.has(k), k)
-  assert.deepEqual(Object.keys(fazy()[0].bramki).sort(), ['advisors', 'eslint', 'knip', 'migracje', 'sizeLimit', 'stryker', 'testyTypow', 'typecheck'])
+})
+
+// ── Bramki domkniecia (P6): producent z wyniku agenta domkniecie (EXECUTE_RESULT) ──
+
+// Zmiana kontraktu (P6 sesja 2): klucze = 10 bramek skryptu .claude/scripts/bramki (doszly migracjeSuma i testyUsuniete).
+const BRAMKI = ['advisors', 'eslint', 'knip', 'migracje', 'migracjeSuma', 'sizeLimit', 'stryker', 'testyTypow', 'testyUsuniete', 'typecheck']
+
+test('faza bez domkniecia: bramki z null na kazdej bramce, testy_usuniete null', () => {
+  const f = fazy()[0]
+  assert.deepEqual(Object.keys(f.bramki).sort(), BRAMKI)
+  assert.ok(Object.values(f.bramki).every((b) => b === null))
+  assert.equal(f.testy_usuniete, null)
+})
+
+test('bramki i testy_usuniete z wyniku domkniecia fazy; bramka nieobecna w wyniku = null', () => {
+  const testUsuniety = { plik: 'src/a.test.ts', nazwa: 'dodaje', uzasadnienie: 'zmiana nazwy na "dodaje liczby"' }
+  /** @type {Map<string, import('../agent.mjs').WynikJournala>} */
+  const journal = new Map(JOURNAL)
+  journal.set('d1', { rozpoczety: true, maWynik: true, wynik: {
+    fazaNumer: 1, status: 'completed', iu: [],
+    bramki: {
+      eslint: { status: 'porazka', sekundy: 1.4, trafienia: 1, poNaprawie: 'ok' },
+      stryker: { status: 'ok', sekundy: 12.5, trafienia: 3, poNaprawie: null },
+    },
+    testyUsuniete: [testUsuniety],
+  } })
+  const agenci = [...AGENCI, agent('d1', 'domkniecie', 1, 50)]
+  const f = rekordyFaz({ wynikRunu: WYNIK_RUNU, agenci, journal, zmianyFixa: gitFake })[0]
+  assert.deepEqual(f.bramki.eslint, { status: 'porazka', sekundy: 1.4, trafienia: 1, poNaprawie: 'ok' })
+  assert.deepEqual(f.bramki.stryker, { status: 'ok', sekundy: 12.5, trafienia: 3, poNaprawie: null })
+  assert.equal(f.bramki.typecheck, null)
+  assert.deepEqual(f.testy_usuniete, [testUsuniety])
 })
 
 // ── Skrot e2eSync (przeniesiony z dev-autopilot-wf.js razem z testami N6, audyt 2026-09-06) ──
