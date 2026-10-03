@@ -91,6 +91,7 @@ nie płacą za nie kontekstem.
    Instalacja nie zmienia `.claude/settings.json` (profil ma klucze w kolejności, w jakiej zapisuje je Claude Code), więc drzewo
    zostaje czyste. Nie chcesz któregoś? Wyłącz go tylko u siebie: `"<id pluginu>": false` w `enabledPlugins` w `.claude/settings.local.json`.
 4. **Narzędzia systemowe** — lista w [Wymagania](#wymagania); doctor (krok 6) powie, czego brakuje w Twoim projekcie.
+   Nowy projekt: od pierwszego commita dołóż też [bramki domknięcia](#bramki-domknięcia).
 5. **Dynamic Workflows** — wpisz `/config` i ustaw **Dynamic workflows** na `true`. To ustawienie Twojego konta: projekt może je
    tylko wyłączyć, nie włączyć. Bez tego `dev-autopilot-wf` nie istnieje - a to on prowadzi całą implementację. Objaw: pliki
    `*-wf.js` leżą w projekcie, ale Claude twierdzi, że nie zna workflow o tej nazwie, albo komenda nic nie robi.
@@ -113,6 +114,31 @@ do sesji projektu i nie zjadają kontekstu. **Działa to tylko w terminalowym `c
   wyłącza wpis `"<nazwa>@inline": false` w `enabledPlugins` w `~/.claude/settings.json`. To Twoja decyzja: wyłączasz je
   w Claude Code, na claude.ai zostają.
 
+### Bramki domknięcia
+
+Domknięcie każdej fazy uruchamia skrypt `.claude/scripts/bramki/bramki.mjs` zamiast agenta, który „gra lintera”: tsc, ESLint,
+`vitest --typecheck`, knip, size-limit, niezmienność migracji i `supabase/migrations.sum`, advisors Supabase, testy usunięte
+w fazie i Stryker na liniach zmienionych w fazie. Porażki domknięcie naprawia przed commitem. Ostrzeżenia ESLint i przeżyte
+mutanty idą do review fazy. Bramka bez narzędzia w projekcie daje status `brak` i nie blokuje, więc działa tylko to,
+co zainstalujesz. W nowym projekcie, od pierwszego commita:
+
+```bash
+cp .claude/templates/bramki/eslint.config.szablon.ts eslint.config.ts
+cp .claude/templates/bramki/knip.json .claude/templates/bramki/.size-limit.json .claude/templates/bramki/stryker.config.json .
+pnpm add -D -E $(node -p "Object.entries(require('./.claude/templates/bramki/package.json').devDependencies).map(([n, v]) => n + '@' + v).join(' ')")
+echo '.stryker-tmp/' >> .gitignore
+```
+
+- **TypeScript < 6.1.** Reguły typowane ESLint (typescript-eslint) i Stryker potrzebują API JS TypeScriptu, którego TS 7 nie ma.
+  Lista instaluje 5.9.3.
+- **size-limit** mierzy `dist/assets/*.js` (wyjście Vite). Bramka sama odpala `npm run build` przed pomiarem. Limit 250 kB
+  w `.size-limit.json` dopasuj do projektu.
+- **advisors** (Supabase Management API) wymagają `SUPABASE_ACCESS_TOKEN` w środowisku i projektu podlinkowanego
+  (`supabase link`) albo `SUPABASE_PROJECT_REF`. Bez tokenu bramka ma status `brak`.
+- **Istniejący projekt:** ESLint wprowadzasz osobnym zadaniem sprzątającym (każda reguła razem z poprawą starych miejsc).
+  Dopóki projekt nie ma `eslint.config.*` z szablonu, hook `error-handling-reminder.sh` działa jak dotąd.
+- Doctor sprawdza, czy paczki z listy są zainstalowane (wiersz „bramki domknięcia”).
+
 ## Wymagania
 
 Doctor wylicza listę z Twojego projektu — narzędzie warunkowe sprawdza tylko wtedy, gdy projekt go używa. **BRAK** blokuje
@@ -131,6 +157,7 @@ Doctor wylicza listę z Twojego projektu — narzędzie warunkowe sprawdza tylko
 | coolify CLI | Coolify w `CLAUDE.md`, `.env.example` albo `.github/workflows/` | UWAGA | `bash .claude/skills/coolify-manager/scripts/install_coolify_cli.sh` |
 | docker | jest `Dockerfile` | UWAGA | `brew install --cask docker` |
 | pluginy projektu (figma, dev-browser) | włączone w `.claude/settings.json` | UWAGA | komendy z kroku 3 |
+| devDependencies bramek, typescript < 6.1 | jest `eslint.config.*` z szablonu | UWAGA | komenda z [Bramki domknięcia](#bramki-domknięcia) |
 | telemetria | zawsze | UWAGA | nic — gdy brak zapisu z ostatniej doby, doctor sam nadrabia skanem |
 
 Jedyny wyjątek od „per projekt”: **agent-browser instalujesz globalnie** — skill `agent-browser` i tester E2E wołają go z `PATH`,
@@ -342,7 +369,10 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 - **`.claude/rules/coding-rules.md`** — 14 sekcji reguł (rozmiar plików, testowanie, error handling, type safety, bezpieczeństwo, performance, async/race, architektura) + **katalog 10 anty-patternów AI**. Ładowane do każdej sesji.
 - **`.claude/rules/learned-patterns.md`** — reguły wyprodukowane przez `/dev-compound` (tworzone per projekt, limit ~50).
-- **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi).
+- **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi). `error-handling-reminder.sh` wyłącza się
+  w projekcie z `eslint.config.*` z szablonu (tam to samo łapie ESLint w bramkach).
+- **`.claude/scripts/bramki/`** + **`.claude/templates/bramki/`** — skrypt bramek domknięcia fazy i konfiguracje dla nowego projektu
+  (ESLint, knip, size-limit, Stryker, lista devDependencies); patrz [Bramki domknięcia](#bramki-domknięcia).
 - **`.claude/templates/e2e-env/`** — opcjonalne środowisko E2E (agent-browser na dedykowanej bazie Supabase e2e). Opt-in przez `.env.e2e`.
 - **`.claude/templates/smoke-autopilot/`** — smoke-test po każdej zmianie `.claude/workflows/*-wf.js`.
 
