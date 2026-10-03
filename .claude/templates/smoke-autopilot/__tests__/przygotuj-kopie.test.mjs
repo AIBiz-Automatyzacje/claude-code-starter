@@ -2,7 +2,7 @@
 // Pelny bieg (clone, pnpm install, sync) sprawdza smoke paczki — tu bez sieci i bez instalacji.
 
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,10 +12,10 @@ import assert from 'node:assert/strict'
 const SKRYPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'przygotuj-kopie.sh')
 
 /**
- * @param {{ workspace: boolean }} opcje
+ * @param {{ workspace: boolean, migracje?: string[] }} opcje
  * @returns {string}
  */
-function projektZrodlowy({ workspace }) {
+function projektZrodlowy({ workspace, migracje = [] }) {
   const katalog = mkdtempSync(join(tmpdir(), 'smoke-zrodlo-'))
   const git = (/** @type {string[]} */ argumenty) => execFileSync('git', ['-C', katalog, ...argumenty])
   git(['init', '-q'])
@@ -23,6 +23,8 @@ function projektZrodlowy({ workspace }) {
   git(['config', 'user.name', 't'])
   writeFileSync(join(katalog, 'package.json'), '{}\n')
   if (workspace) writeFileSync(join(katalog, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n")
+  if (migracje.length) mkdirSync(join(katalog, 'supabase', 'migrations'), { recursive: true })
+  for (const m of migracje) writeFileSync(join(katalog, 'supabase', 'migrations', m), 'select 1;\n')
   git(['add', '.'])
   git(['commit', '-q', '-m', 'start'])
   return katalog
@@ -126,6 +128,30 @@ test('--dry-run: doctor kopii po commicie fixture i przed bazowymi bramkami', ()
     const doctor = kroki.findIndex((l) => l.includes(`bash ${kopia}/.claude/scripts/doctor/doctor.sh ${kopia}`))
     const bramki = kroki.findIndex((l) => l.includes('bazowe bramki'))
     assert.ok(commitFixture >= 0 && doctor > commitFixture && bramki > doctor, `kolejnosc fixture → doctor → bramki:\n${wynik.stdout}`)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+  }
+})
+
+// P6: defekt mechaniczny fixture'u — edycja pierwszej migracji projektu (sledzonej w gicie), konfiguracje bramek w pakiecie.
+test('--dry-run: migracja defektu = pierwsza migracja projektu; pakiet z konfiguracjami bramek', () => {
+  const zrodlo = projektZrodlowy({ workspace: true, migracje: ['20260102_b.sql', '20260101_a.sql'] })
+  try {
+    const wynik = uruchom([zrodlo, join(tmpdir(), `smoke-kopia-${process.pid}-f`), '--dry-run'])
+    assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
+    assert.match(wynik.stdout, /^Migracja defektu: supabase\/migrations\/20260101_a\.sql$/m)
+    assert.match(wynik.stdout, /wstaw-pakiet\.mjs .*packages\/smoke-autopilot/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+  }
+})
+
+test('--dry-run bez migracji: defekt migracji pominiety (linie z {{MIGRACJA}} usuniete z fixture)', () => {
+  const zrodlo = projektZrodlowy({ workspace: true })
+  try {
+    const wynik = uruchom([zrodlo, join(tmpdir(), `smoke-kopia-${process.pid}-g`), '--dry-run'])
+    assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
+    assert.match(wynik.stdout, /^Migracja defektu: brak/m)
   } finally {
     rmSync(zrodlo, { recursive: true, force: true })
   }

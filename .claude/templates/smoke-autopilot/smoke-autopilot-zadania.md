@@ -10,6 +10,9 @@ Plan techniczny: docs/plans/plan-techniczny-smoke-autopilot.md
       (rzuca TypeError dla NaN/Infinity, inaczej zwraca sume)
 - [ ] Test: [Unit] happy path — `dodajBezpiecznie(2, 3)` zwraca liczbe (`typeof` = `number`)
 - [ ] Test: [Unit] error case — `dodajBezpiecznie(NaN, 1)` rzuca TypeError
+- [ ] Dodaj w tym samym pliku `parsujLiczbe(tekst: string): number | null` dokladnie wg planu technicznego (pusty `catch` — celowy defekt)
+- [ ] Test: [Unit] `parsujLiczbe('7')` zwraca 7
+- [ ] Dopisz na koncu `{{MIGRACJA}}` linie komentarza wg planu technicznego (celowy defekt)
 - [ ] Weryfikacja: CLI `typecheck` przechodzi bez nowych bledow
 
 ## Operator checklist faza 1

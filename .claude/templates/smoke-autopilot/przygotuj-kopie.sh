@@ -16,6 +16,9 @@
 # Fixture: w projekcie pnpm workspace (pnpm-workspace.yaml) kod zadania trafia do osobnego pakietu
 # packages/smoke-autopilot — objętego `pnpm -r run test/typecheck` kopii i odciętego od zastanych błędów projektu.
 # Bez workspace: src/lib (jak przed P0).
+# Bramki (P6): pakiet dostaje konfiguracje z .claude/templates/bramki i devDependencies bramek (wstaw-pakiet.mjs),
+# a fixture zadania — defekt mechaniczny: pusty catch i edycje pierwszej migracji projektu ({{MIGRACJA}}; projekt
+# bez migracji — linie z defektem migracji usuniete).
 
 set -euo pipefail
 
@@ -47,6 +50,8 @@ git -C "$ZRODLO" rev-parse --git-dir >/dev/null 2>&1 || { echo "BŁĄD: $ZRODLO 
   echo "UWAGA: .claude/ szablonu ma niezacommitowane zmiany — sync bierze pliki śledzone przez gita." >&2
 
 if [[ -f "$ZRODLO/pnpm-workspace.yaml" ]]; then KATALOG_KODU="$PAKIET/src"; else KATALOG_KODU="src/lib"; fi
+# Pierwsza migracja śledzona w gicie źródła = ta sama w klonie.
+MIGRACJA="$(git -C "$ZRODLO" ls-files 'supabase/migrations/*.sql' | sort | head -1)"
 
 # Każdy krok przez `krok`: w --dry-run tylko wypisany, inaczej wypisany i wykonany.
 krok() {
@@ -54,24 +59,28 @@ krok() {
   [[ "$DRY_RUN" -eq 1 ]] || "$@"
 }
 
-# Fixture zadania: docs/active/smoke-autopilot + docs/plans, katalog kodu wstawiony w miejsce {{KATALOG_KODU}}.
+# Fixture zadania: docs/active/smoke-autopilot + docs/plans, katalog kodu w miejsce {{KATALOG_KODU}}, migracja defektu
+# w miejsce {{MIGRACJA}} (bez migracji — linie z {{MIGRACJA}} znikają).
+podstaw() {
+  if [[ -n "$MIGRACJA" ]]; then
+    sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e "s#{{MIGRACJA}}#$MIGRACJA#g" "$1"
+  else
+    sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e '/{{MIGRACJA}}/d' "$1"
+  fi
+}
+
 wstaw_fixture_zadania() {
   mkdir -p "$KOPIA/docs/active/smoke-autopilot" "$KOPIA/docs/plans"
   for plik in smoke-autopilot-plan.md smoke-autopilot-zadania.md smoke-autopilot-kontekst.md; do
-    sed "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" "$SZABLON_SMOKE/$plik" > "$KOPIA/docs/active/smoke-autopilot/$plik"
+    podstaw "$SZABLON_SMOKE/$plik" > "$KOPIA/docs/active/smoke-autopilot/$plik"
   done
-  sed "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" "$SZABLON_SMOKE/plan-techniczny-smoke-autopilot.md" \
-    > "$KOPIA/docs/plans/plan-techniczny-smoke-autopilot.md"
-}
-
-wstaw_pakiet() {
-  mkdir -p "$KOPIA/$PAKIET/src"
-  cp "$SZABLON_SMOKE/pakiet/package.json" "$SZABLON_SMOKE/pakiet/tsconfig.json" "$SZABLON_SMOKE/pakiet/vitest.config.ts" "$KOPIA/$PAKIET/"
+  podstaw "$SZABLON_SMOKE/plan-techniczny-smoke-autopilot.md" > "$KOPIA/docs/plans/plan-techniczny-smoke-autopilot.md"
 }
 
 echo "Źródło: $ZRODLO"
 echo "Kopia:  $KOPIA"
 echo "Kod zadania: $KATALOG_KODU"
+echo "Migracja defektu: ${MIGRACJA:-brak (projekt bez supabase/migrations — defekt migracji pominięty)}"
 krok git clone --quiet "$ZRODLO" "$KOPIA"
 krok git -C "$KOPIA" remote remove origin
 krok git -C "$KOPIA" switch --quiet -c "$GALAZ"
@@ -87,8 +96,7 @@ krok git -C "$KOPIA" commit --quiet -m "chore(smoke): sync szablonu z $SZABLON"
 echo "+ fixture zadania → docs/active/smoke-autopilot, docs/plans"
 [[ "$DRY_RUN" -eq 1 ]] || wstaw_fixture_zadania
 if [[ "$KATALOG_KODU" == "$PAKIET/src" ]]; then
-  echo "+ pakiet fixture → $PAKIET"
-  [[ "$DRY_RUN" -eq 1 ]] || wstaw_pakiet
+  krok node "$SZABLON_SMOKE/wstaw-pakiet.mjs" "$KOPIA/$PAKIET"
 fi
 krok pnpm install --dir "$KOPIA" --silent
 krok git -C "$KOPIA" add -A

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json --noEmit false --outDir dist/assets",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   }

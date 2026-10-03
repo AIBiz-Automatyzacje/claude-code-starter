@@ -44,11 +44,19 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
   dla `a - b`. Oczekiwane: review zglasza P2 test-coverage na ten test, fix zastepuje asercje wartoscia (`toBe(5)`), kontrola
   fixa bez regresji. Brak findingu na tym tescie = regresja review; brak fixa = regresja petli fix.
 - **Pozycja `[Manual]`** w `## Operator checklist faza 1` — dodatnia galaz fazy "Smoke operatora" (complete-wf).
+- **Bramki domkniecia (P6).** Pakiet dostaje konfiguracje z `.claude/templates/bramki` i devDependencies bramek
+  (`wstaw-pakiet.mjs`), plus `build` dla size-limit. Celowe defekty mechaniczne z planu: pusty `catch` w `parsujLiczbe` i linia
+  komentarza dopisana do pierwszej migracji projektu (`{{MIGRACJA}}`; projekt bez migracji — ten defekt znika z fixture).
+  Bramki z korzenia kopii biegna tez w pakiecie (wlasne narzedzia), migracje sprawdzaja w korzeniu.
 
 ## Oczekiwany wynik i asercje
 
 1. Status OK, 1 faza, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane.
 2. Review: >= 1 potwierdzony P2 na tescie happy path; fix go naprawia.
+2a. Bramki (wynik agenta `domkniecie:faza-1` w `journal.jsonl`, pole `bramki`): `eslint` porazka z `no-empty`,
+   `migracje` porazka; `poNaprawie` obu = `ok`; `stryker` z trafieniami (pole `mutanty` niepuste — test `typeof` przepuszcza
+   mutanty sumy); suma `sekundy` bramek <= 143. Commit fazy: migracja bez zmian wzgledem bazy, `catch` raportuje albo rzuca,
+   nowy `supabase/migrations.sum`. Rekord telemetrii fazy: `bramki.eslint.status = "porazka"`.
 3. Asercje fazy "Smoke operatora" (complete-wf):
    - log complete-wf: `Smoke operatora: docs/operator/<data>-smoke-autopilot-smoke.md (N pozycji)` BEZ fragmentu
      `UWAGA: ... [E2E] nieuruchomionych` (e2eNieuruchomione musi byc 0; fixture celowo nie ma `[E2E]`, bo bramka setupu
@@ -73,5 +81,6 @@ Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 ## Pliki
 
 - `przygotuj-kopie.sh` + `__tests__/przygotuj-kopie.test.mjs` (skladnia, `--dry-run`);
-- `pakiet/` — `package.json`, `tsconfig.json`, `vitest.config.ts` pakietu fixture (`passWithNoTests`: przed build pakiet nie ma testow) (P6 dolozy konfiguracje bramek i defekt mechaniczny);
+- `pakiet/` — `package.json`, `tsconfig.json`, `vitest.config.ts` pakietu fixture (`passWithNoTests`: przed build pakiet nie ma testow);
+- `wstaw-pakiet.mjs` + `__tests__/wstaw-pakiet.test.mjs` — pakiet z konfiguracjami i devDependencies bramek (P6);
 - `smoke-autopilot-{plan,zadania,kontekst}.md`, `plan-techniczny-smoke-autopilot.md` — fixture zadania; `{{KATALOG_KODU}}` wstawia skrypt.

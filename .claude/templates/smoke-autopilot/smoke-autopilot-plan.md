@@ -14,3 +14,4 @@ funkcje pomocnicza z testami. Wartosc biznesowa: zerowa. Wartosc diagnostyczna: 
 
 Jedna funkcja `dodajBezpiecznie` w `{{KATALOG_KODU}}/smoke-autopilot.ts` (walidacja wejscia + suma) wraz z testami
 (happy path + error case). Brak UI, brak bazy, brak zaleznosci zewnetrznych.
+Celowe defekty mechaniczne dla bramek domkniecia: pusty `catch` w `parsujLiczbe` i edycja migracji `{{MIGRACJA}}`.
