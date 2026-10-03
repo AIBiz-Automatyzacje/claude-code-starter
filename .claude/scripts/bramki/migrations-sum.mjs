@@ -57,10 +57,12 @@ export function bramkaMigrationsSum(projekt) {
 
 /**
  * Dopisuje do sumy migracje, ktorych w niej nie ma (tworzy plik, gdy go brak). Istniejacych wpisow nie zmienia.
+ * Projekt bez katalogu migracji: nic (domkniecie fazy wola dopisanie zawsze).
  * @param {string} projekt
  * @returns {string[]} dopisane nazwy
  */
 export function dopiszSume(projekt) {
+  if (!existsSync(join(projekt, KATALOG_MIGRACJI))) return []
   const zapisane = wpisy(projekt)
   const nowe = migracje(projekt).filter((n) => !zapisane.has(n))
   if (nowe.length) appendFileSync(join(projekt, PLIK_SUMY), nowe.map((n) => `${skrot(projekt, n)}  ${n}\n`).join(''))

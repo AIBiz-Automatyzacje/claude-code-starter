@@ -2,7 +2,7 @@
 // usunieta = porazka niezaleznie od bazy fazy (lapie tez edycje migracji z wczesniejszej fazy w kontroli fixa i przed env-up).
 
 import { execFileSync } from 'node:child_process'
-import { readFileSync, rmSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -81,10 +81,12 @@ test('projekt bez supabase/migrations = pominieta', () => {
   }
 })
 
-test('dopiszSume w projekcie bez supabase/migrations = blad z nazwa katalogu', () => {
+// Zmiana kontraktu (P6 sesja 2): dawniej blad; domkniecie fazy wola --dopisz-sume zawsze, takze w projekcie bez migracji.
+test('dopiszSume w projekcie bez supabase/migrations: nic nie dopisuje i nie tworzy pliku (domkniecie wola ja zawsze)', () => {
   const repo = noweRepo()
   try {
-    assert.throws(() => dopiszSume(repo), /supabase\/migrations/)
+    assert.deepEqual(dopiszSume(repo), [])
+    assert.equal(existsSync(join(repo, 'supabase', 'migrations.sum')), false)
   } finally {
     usun(repo)
   }
