@@ -150,7 +150,7 @@ const ZEBRANE = {
           klaster: { type: ['string', 'null'], description: 'identyfikator wspolnej przyczyny — watki z tym samym klastrem zamyka JEDNA naprawa' },
           klasaBledu: { type: 'string', enum: Object.keys(KLASY_BLEDOW), description: 'klasa BLEDU ze slownika (niezalezna od decyzji w polu klasa)' },
           os: { type: 'string', enum: OSIE_UWAG, description: 'ktory reviewer pipeline\'u powinien byl to zlapac; domyslnie os klasy ze slownika' },
-          waga: { type: 'string', enum: WAGI_UWAG, description: 'P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny, 0 nie-defekt' },
+          waga: { type: 'string', enum: WAGI_UWAG, description: 'skutek, gdy defekt zostaje (nie koszt naprawy): P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny bez skutku dla uzytkownika i danych, 0 nie-defekt' },
         },
         required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga'],
       },
@@ -363,6 +363,14 @@ function komendaUzgodnienia(plik) {
   if (!/^docs\/decisions\/[\w.-]+\.md$/.test(plik || '')) return null
   return `node -e 'const fs=require("fs");const p=process.argv[1];const t=fs.readFileSync(p,"utf8");const n=t.replace(/^claude_md: do-uzgodnienia$/m,"claude_md: uzgodniono");if(n===t){console.error("brak pola claude_md: do-uzgodnienia w "+p);process.exit(3)}fs.writeFileSync(p,n)' ${plik}`
 }
+// Kalibracja (PR 2, 4, 16 oferty-online vs klasyfikacja-574.csv): 19 z 23 uwag nie-defektow dostalo od agenta P3 zamiast 0
+// (12x prog-rozmiaru). Te klasy z definicji nie sa defektem — wage ustawia JS, agent ocenia wage tylko tam, gdzie jest skutek.
+const KLASY_NIE_DEFEKT = ['prog-rozmiaru', 'preferencja-bota', 'teza-obalona', 'odpowiedz-bota']
+
+function wagaWatku(w) {
+  return KLASY_NIE_DEFEKT.includes(w.klasaBledu) ? '0' : w.waga
+}
+
 // ── Koniec decyzji dev-pr ─────────────────────────────────────────────────
 
 // ── Wejscie ───────────────────────────────────────────────────────────────
@@ -457,8 +465,10 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
    Uwaga dotyczaca nazwy zmiennej i uwaga o braku walidacji na endpointcie NIE moga miec tego samego wpisu.
 5. Dla KAZDEGO watku przypisz \`klasaBledu\` — DOKLADNIE jedna nazwe z listy (opis rozstrzyga; nic nie pasuje → \`inna\`
    i powod w uzasadnieniu), \`os\` (ktory nasz reviewer powinien byl to zlapac; domyslnie os podana przy klasie) i \`waga\`
-   (P1 bezpieczenstwo / utrata danych / awaria, P2 defekt zachowania, P3 drobny, 0 nie-defekt: preferencja, konwencja bez skutku,
-   teza obalona). Klasa bledu opisuje CO jest zle; decyzja z punktu 3 — co z tym robimy. To dwa niezalezne pola.
+   (P1 bezpieczenstwo / utrata danych / awaria, P2 defekt zachowania, P3 drobny, 0 nie-defekt: prog rozmiaru, preferencja,
+   konwencja bez skutku, teza obalona). Waga opisuje skutek, gdy defekt zostaje — nie koszt naprawy i nie to, ze poprawka juz jest.
+   Test, ktory przechodzi przy zepsutym zachowaniu, i bramka, ktora przepuszcza zly tekst, maja wage zachowania, ktorego pilnuja
+   (zwykle P2). Klasa bledu opisuje CO jest zle; decyzja z punktu 3 — co z tym robimy. To dwa niezalezne pola.
 ${Object.entries(KLASY_BLEDOW).map(([k, v]) => `   - \`${k}\` [os: ${v.os}] — ${v.opis}`).join('\n')}
 6. KLASTRUJ watki o wspolnej przyczynie: nadaj im ten sam \`klaster\` (krotki identyfikator, np.
    "brak-limitu-czasu-http"). Jedna naprawa zamyka wtedy kilka komentarzy i tak tez zostana policzone.
@@ -473,7 +483,9 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
 
   // Liczniki w JS (Filar 3: agent nigdy nie liczy tego, co JS wie na pewno).
   const token = tokenTury(tura, wynik.headRefOid)
-  const watki = (wynik.watki || []).map((w) => ({ ...w, token }))
+  const watki = (wynik.watki || []).map((w) => ({ ...w, waga: wagaWatku(w), token }))
+  const wagiPoprawione = (wynik.watki || []).filter((w) => wagaWatku(w) !== w.waga).length
+  if (wagiPoprawione) log(`/dev-pr: ${wagiPoprawione}x waga klasy nie-defektu ustawiona na 0`)
   const licznik = {}
   for (const k of KLASY) licznik[k] = watki.filter((w) => w.klasa === k).length
   const klastry = [...new Set(watki.map((w) => w.klaster).filter(Boolean))]

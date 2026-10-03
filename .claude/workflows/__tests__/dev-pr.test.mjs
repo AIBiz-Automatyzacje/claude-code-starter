@@ -34,7 +34,7 @@ function wytnij(kotwica, koniec) {
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const P = new Function(
   `${wytnij('// ── Decyzje dev-pr (P5)', '// ── Koniec decyzji dev-pr')}
-   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia }`,
+   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT }`,
 )()
 
 // ── Guard uzasadnien odrzucenia ───────────────────────────────────────────
@@ -54,6 +54,28 @@ test('guard: nazwa dokumentu decyzji + co najmniej 20 znakow uzasadnienia = odrz
 
 test('guard: nazwa dokumentu bez uzasadnienia (ponizej 20 znakow) albo puste pole = odrzucenie niedozwolone', () => {
   for (const u of ['CLAUDE.md', 'wg CLAUDE.md, krotko', '', undefined]) assert.equal(P.odrzucenieUzasadnione(u), false, String(u))
+})
+
+// ── Waga watku (kalibracja P5) ────────────────────────────────────────────
+// Kalibracja na PR 2, 4, 16 oferty-online: 19 z 23 uwag nie-defektow (12x prog-rozmiaru) dostalo od agenta P3 zamiast 0.
+
+/** @type {{ KLASY_BLEDOW: Record<string, { os: string }> }} */
+// eslint-disable-next-line no-new-func -- ekstrakcja slownika z pliku workflowu tego repo, nie z inputu
+const { KLASY_BLEDOW } = new Function(`${wytnij('const KLASY_BLEDOW = {', '\n}')}\n return { KLASY_BLEDOW }`)()
+
+test('waga: klasa nie-defektu ze slownika = waga 0 niezaleznie od wagi agenta', () => {
+  for (const klasaBledu of ['prog-rozmiaru', 'preferencja-bota', 'teza-obalona', 'odpowiedz-bota']) {
+    assert.equal(P.wagaWatku({ klasaBledu, waga: 'P3' }), '0', klasaBledu)
+  }
+})
+
+test('waga: klasa defektu albo konwencja-kodu = waga agenta bez zmian', () => {
+  assert.equal(P.wagaWatku({ klasaBledu: 'test-niefalsyfikowalny', waga: 'P2' }), 'P2')
+  assert.equal(P.wagaWatku({ klasaBledu: 'konwencja-kodu', waga: 'P3' }), 'P3')
+})
+
+test('waga: kazda klasa nie-defektu istnieje w slowniku z osia brak', () => {
+  for (const k of P.KLASY_NIE_DEFEKT) assert.equal(KLASY_BLEDOW[k]?.os, 'brak', k)
 })
 
 // ── Token tury ────────────────────────────────────────────────────────────
