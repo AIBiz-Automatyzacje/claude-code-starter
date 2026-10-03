@@ -40,7 +40,7 @@ Potem operator zmienił cel na **analizę i plan odchudzenia całego procesu dev
 | 5 | Dwa raporty (techniczny + dla człowieka) do `docs/reviews/` ~~+ publikacja jako artefakt~~ | **GOTOWE I ZAAKCEPTOWANE 2026-09-28 (6a pkt 36)** — forma skrócona (6a pkt 35): `RAPORT-DLA-OPERATORA.md` + `RAPORT-TECHNICZNY.md` (spis); koszt „po” `skrypty/raport_koszt_po.py` → `dane/raport-koszt-po.{txt,json}` (zadanie 52,0 → 22,4 M†, −57%; kontekst −51%, pokrętła po kontekście −12%); kontrola `skrypty/raporty_pokrycie.py` (171/171, 84/84 liczb); inwentarz konta `skrypty/konto_inwentarz.py`. **Zmiany operatora: oferty-online = materiał do nauki (pomiar na nowych projektach); higiena konta = KROK 0 przed It. 1.** Następny krok: §8 „KROK 0 — PORZĄDKI KONTA” |
 | K0 | Krok 0 — porządki konta Claude Code na całym komputerze (przed It. 1, 6a pkt 36 b) | **GOTOWE I ZAAKCEPTOWANE 2026-09-29 (6a pkt 37)** — `KROK0-DECYZJE.md` (decyzje per element, kopie, komendy, wyniki N2 i N3); dane `dane/konto-inwentarz-globalny-{przed,po,po-n3}.{txt,json}`. Start sesji: skille 303 (248 bez opisu) → 48 (0), narzędzia MCP 265 / 30 serwerów → 87 / 14, always-on user ~46,2k → ~0,1k tok. Narzędzie: skill `/konto` w repo workspace. Następny krok: It. 1 telemetria (§8). |
 | It.1 | Telemetria + import (PANEL-WYNIK §4 wiersz 1) | **WDROŻONE 2026-09-29/30 (6a pkt 38), ODCZYTANE I ZAAKCEPTOWANE 2026-09-30 (6a pkt 39)** — odczyt `IT1-ODCZYT.md` + `IT1-ODCZYT-DLA-OPERATORA.md` (smoke `wf_031f0eae-204` OK, 4,78 M; poprawka skanu `run.walidacja` v4 + 3 wady raportu); plan `IT1-PLAN.md` + `IT1-PLAN-DLA-OPERATORA.md` (decyzje O1–O10, §7 wynik); `.claude/scripts/telemetria/` (zbierz.mjs + raport.mjs), hook Stop, agent telemetrii usunięty, słownik klas w dev-pr, hashe w sync-template, import historii; commity `d4c73a7`…`b7a4fe7`; akceptacje na prawdziwych danych `dane/it1-akceptacja-*.txt` (wszystkie ZALICZONE). Następny krok: §8 „IT. 2 — BOT, DEV-PR I B0” |
-| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922` + poprawka po teście czystego konta `0730d04`. **P3 SESJA 1/2 ZROBIONA 2026-10-01 (6a pkt 46): pięć plików klas ról, `tools:` w plikach ról i badaczy, warianty builderów `-figma`, PA-25 (skill figma z pluginu), test `klasy-rol.test.mjs`; gałąź `popr/P3-agenci` niezmergowana. **P3 ZROBIONA 2026-10-02 (6a pkt 47): `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga nie istnieje dla workflowów projektu — krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0; haiku start 52k → 8k, opus 72–84k → 49–60k), merge do main `3933432`. **P4 ZROBIONA 2026-10-02 (6a pkt 48): bramka wejścia autopilota (czystość, doctor, zielony start z cache po SHA), archiwizacja bez CLAUDE.md z `docs/decisions/` (`claude_md: do-uzgodnienia`), bramka PR ≤ 150, `fazyUkonczone` po stanie; smoke w dwóch runach — STOP na czerwonej bazie `wf_ec07d4a4-d06`, potem `wf_f330324d-8a5` zielony (2,84 M, −27% vs R0); merge do main `8f5ff82`. **P5 SESJA 1/2 ZROBIONA 2026-10-03 (6a pkt 49): dev-pr (token tury, guard odrzuceń, rekomendacja w JS, tabela tury, sufit 3 tur, etap `claude-md` po merge'u z bramką przyrostu 2000 zn), STOP bootstrapu przy nieuzgodnionym CLAUDE.md na main; smoke: STOP `wf_1c847902-82a` → `/dev-pr --claude-md` `wf_477d96d9-bd5` → PASS `wf_b96dcd26-cea` (2,85 M, +0% vs P4); merge do main `dd3ed11`. **P5 ZROBIONA 2026-10-03 (6a pkt 50): generator bota (8 zmian ETAP1B §2, próg 360/60, wyjątki w bloku głównym, seedy E2E, stała `CODING_RULES`, sekcja „Bot bez szumu”), test schematem CodeRabbit (devDependencies `yaml`, `ajv` za zgodą); kalibracja `zbierz` na PR 2, 4, 16 → waga = skutek, klasy nie-defektu = 0 w JS (defekt/nie-defekt 73% → 88%); merge do main `ed613b8`. Grupa 1 (P0–P5) zamknięta — push szablonu wg D-2 czeka na operatora. NASTĘPNY KROK: §8 „P6 — SKRYPT BRAMEK DOMKNIĘCIA, SESJA 1”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ☑ P4 ☑ P5 ☑ P6 ☐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
+| Popr. | Poprawa całego szablonu wg ustaleń analizy (6a pkt 40: B0 nie blokuje; pomiar telemetrią na nowych projektach po poprawie) | **PLAN ZAAKCEPTOWANY 2026-09-30 (6a pkt 41)** — `PLAN-POPRAWY.md` + `PLAN-POPRAWY-DLA-OPERATORA.md`: 17 paczek P0–P16 w 4 grupach, 32–38 sesji, 15 smoke'ów; kompletność skryptem `plan_poprawy_pokrycie.py` 395/395; decyzje 1–3 wg rekomendacji. **P0 ZROBIONA 2026-10-01 (6a pkt 42): smoke R0 `wf_588f7b18-d71` zielony (3,92 M), merge do main `8e356f2`. **P1 ZROBIONA 2026-10-01 (6a pkt 43): smoke `wf_8936d61f-1cb` zielony (3,77 M, −4% vs R0), merge do main `5a4f593`. **P2 ZROBIONA 2026-10-01 (6a pkt 44, 45): doctor, profil pluginów w `.claude/settings.json`, README „Instalacja” i „Wymagania”, bramka CI `maszyneria.yml` (sam pnpm — validate/eval nie działają na repo bez manifestu pluginu); merge do main `5d28922` + poprawka po teście czystego konta `0730d04`. **P3 SESJA 1/2 ZROBIONA 2026-10-01 (6a pkt 46): pięć plików klas ról, `tools:` w plikach ról i badaczy, warianty builderów `-figma`, PA-25 (skill figma z pluginu), test `klasy-rol.test.mjs`; gałąź `popr/P3-agenci` niezmergowana. **P3 ZROBIONA 2026-10-02 (6a pkt 47): `agentType` w każdym `agent()`, efort jawny wg D6, D9 ścieżką odwrotu (flaga nie istnieje dla workflowów projektu — krótkie opisy dzieci), N1/N2; smoke `wf_2894ee9c-566` zielony (2,82 M, −28% vs R0; haiku start 52k → 8k, opus 72–84k → 49–60k), merge do main `3933432`. **P4 ZROBIONA 2026-10-02 (6a pkt 48): bramka wejścia autopilota (czystość, doctor, zielony start z cache po SHA), archiwizacja bez CLAUDE.md z `docs/decisions/` (`claude_md: do-uzgodnienia`), bramka PR ≤ 150, `fazyUkonczone` po stanie; smoke w dwóch runach — STOP na czerwonej bazie `wf_ec07d4a4-d06`, potem `wf_f330324d-8a5` zielony (2,84 M, −27% vs R0); merge do main `8f5ff82`. **P5 SESJA 1/2 ZROBIONA 2026-10-03 (6a pkt 49): dev-pr (token tury, guard odrzuceń, rekomendacja w JS, tabela tury, sufit 3 tur, etap `claude-md` po merge'u z bramką przyrostu 2000 zn), STOP bootstrapu przy nieuzgodnionym CLAUDE.md na main; smoke: STOP `wf_1c847902-82a` → `/dev-pr --claude-md` `wf_477d96d9-bd5` → PASS `wf_b96dcd26-cea` (2,85 M, +0% vs P4); merge do main `dd3ed11`. **P5 ZROBIONA 2026-10-03 (6a pkt 50): generator bota (8 zmian ETAP1B §2, próg 360/60, wyjątki w bloku głównym, seedy E2E, stała `CODING_RULES`, sekcja „Bot bez szumu”), test schematem CodeRabbit (devDependencies `yaml`, `ajv` za zgodą); kalibracja `zbierz` na PR 2, 4, 16 → waga = skutek, klasy nie-defektu = 0 w JS (defekt/nie-defekt 73% → 88%); merge do main `ed613b8`. Grupa 1 (P0–P5) zamknięta — push szablonu wg D-2 czeka na operatora. **P6 SESJA 1/2 ZROBIONA 2026-10-03 (6a pkt 51): `.claude/scripts/bramki/` — 10 bramek, CLI z wynikiem JSON, odbiór każdej testem porażki (ESLint i tsc prawdziwe, knip/size-limit/Stryker/vitest na nagranym wyjściu), bez nowych zależności; gałąź `popr/P6-bramki` niezmergowana. NASTĘPNY KROK: §8 „P6 — SKRYPT BRAMEK DOMKNIĘCIA, SESJA 2”** (nowa sesja — N2). Stan paczek: P0 ☑ P1 ☑ P2 ☑ P3 ☑ P4 ☑ P5 ☑ P6 ◐ P7 ☐ P8 ☐ P9 ☐ P10 ☐ P11 ☐ P12 ☐ P13 ☐ P14 ☐ P15 ☐ P16 ☐. Poprzedni zapis: jeden plan paczek do akceptacji, potem wdrażanie paczka po paczce w kolejnych sesjach |
 
 **Jak wznowić etap 1–3:** skrypt workflow A leży w `skrypty/workflow-A-pipeline-analiza-a.js` (ścieżki już przepisane na
 `docs/reviews/2026-09-19-analiza-pipeline/dane`). Najprościej: uruchomić go ponownie jako NOWY workflow (`Workflow({script: <treść pliku>})`),
@@ -928,6 +928,37 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     P2 → P3 7. Koszt obu runów ~0,36 M (subagent_tokens 172k + 190k) — szacunek planu 2–4 M był 10× za wysoki. Słownik klas bez zmian (rozbieżności
     pojedyncze; 2× `tekst-ui` → `zgodnosc-prawna` przy polityce prywatności — opis słownika wspiera wybór agenta).
     (d) **Grupa 1 (P0–P5) zamknięta:** push szablonu wg D-2 (PLAN-POPRAWY §6) — decyzja operatora, nie wykonany.
+51. **P6 SESJA 1/2 — SKRYPT BRAMEK (2026-10-03). Gałąź `popr/P6-bramki` NIEZMERGOWANA (merge po smoke'u sesji 2).** Commity: 1e82bc3 (diff,
+    wykrycie, ESLint), 18c7356 (tsc, vitest --typecheck), a27cff0 (knip, size-limit), bcbde99 (migracje, migrations.sum), 9ec7958 (testy usunięte),
+    2ce2dea (Stryker), 97c3d34 (advisors), d69f784 (CLI). Testy szablonu 354/354 (+48), typecheck i lint zielone. **Decyzje operatora:** bez nowych
+    zależności szablonu w sesji 1; podział sesji wg propozycji.
+    (a) **Skrypt** `.claude/scripts/bramki/` (14 modułów, największy 111 l.): `bramki.mjs --baza <commit sprzed fazy> [--projekt]` → JSON
+    `{bramka: {status, sekundy, trafienia[{plik, linia, regula, opis}], powod?, ostrzezenia?, zastane?}}`, kod 1 przy porażce, 2 przy złych argumentach;
+    `--dopisz-sume` dopisuje nowe migracje. Bramki po kolei: `typecheck` (tsc, pierwszy — lekcja z testu review), `eslint`, `testyTypow`, `knip`,
+    `sizeLimit`, `migracje`, `migracjeSuma`, `advisors`, `testyUsuniete`, `stryker` (ostatni). Statusy: ok / porazka / brak / blad / pominieta;
+    `stryker` i `testyUsuniete` informacyjne (lista bez porażki). Stan = drzewo robocze (bramki przed commitem domknięcia) z plikami nieśledzonymi.
+    Narzędzie = binarka w `node_modules/.bin` projektu + plik konfiguracji (knip i size-limit także klucz w package.json); vitest bez konfiguracji.
+    (b) **Zakres trafień:** ESLint — error w zmienionym pliku = porażka, warn tylko na liniach fazy = `ostrzezenia` (wejście code-quality); tsc —
+    każdy błąd projektu (błąd tsconfig to też błąd pliku `tsconfig.json(…): error TS6046`); knip — problemy w plikach fazy, reszta `zastane`;
+    size-limit — pozycja ponad limit, a pozycja z `size: 0` (size-limit zwraca wtedy `passed: true`!) i obiekt `{error}` = blad; niezmienność —
+    M/D plików z bazy fazy w `supabase/migrations`; `migrations.sum` — format sha256sum (ręcznie `shasum -a 256 -c`), wpis raz zapisany się nie
+    zmienia, brak pliku = brak; advisors — `GET /v1/projects/{ref}/advisors/{security,performance}` (sprawdzone w OpenAPI 2026-10-03), token
+    `SUPABASE_ACCESS_TOKEN` tylko w nagłówku, ref z `SUPABASE_PROJECT_REF` albo `supabase/.temp/project-ref`, ERROR = porażka, WARN = ostrzeżenie;
+    testy usunięte — `it(`/`test(` zniknięte z pliku testów, nazwa nieobecna w żadnym pliku testów fazy (zmiana nazwy też trafia na listę);
+    Stryker — `--mutate plik:od-do` tylko z linii fazy w plikach z testem obok (`x.test.ts`), przeżyte = Survived + NoCoverage, raport
+    (`jsonReporter.fileName` z konfiguracji JSON albo `reports/mutation/mutation.json`) czytany i usuwany.
+    (c) **Odbiór:** prawdziwie ESLint 10 + `@eslint/js` i tsc (TypeScript 7) szablonu przez dowiązanie `node_modules`, git na repo testowym, lokalny
+    serwer HTTP w miejsce Management API. knip, size-limit, Stryker, vitest — atrapy w `node_modules/.bin` fixture'u wypisujące wyjście NAGRANE raz
+    prawdziwymi narzędziami z `~/test-review/_narzedzia` (knip 6.38, size-limit 14.0.1, Stryker 10, vitest 4.1.11; `__tests__/fixtures/`, bez ścieżek
+    lokalnych). Kontrola na prawdziwych narzędziach (scratchpad, bez zmian w szablonie): faza czysta kod 0; faza z 6 defektami (pusty catch, martwy
+    eksport, osłabiony test ze zmianą nazwy, zły test typu, edycja migracji, paczka ponad budżet) kod 1, każda bramka z właściwą regułą, drzewo
+    czyste po bramkach, ~3,6 s; Stryker złapał `b - a` na linii zmienionej w fazie.
+    (d) **Ustalenia dla sesji 2:** Stryker diff-scoped NIE łapie osłabionego testu niezmienionego kodu (z założenia — mutuje tylko linie fazy);
+    size-limit z `@size-limit/file` mierzy `dist` — bez builda w bramce wynik jest nieaktualny (decyzja w konfiguracji: preset esbuild albo build
+    przed bramką), plugin musi być w devDependencies projektu; vitest JSON nie podaje linii testu bez `includeTaskLocation: true`; `--projekt`
+    w podkatalogu monorepo: `git diff` zwraca ścieżki od korzenia repo — przed użyciem na pakiecie fixture'u dodać `--relative` (test).
+    (e) **Prompt-audit:** sesja nie zmieniła plików z promptem; `pa_dodane.py main <pliki skryptu>` = 4 trafienia `o5-delegacja-subagenci` na
+    `spawnSync` (API Node) — fałszywe, kod nie zmieniany pod wzorzec.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -1042,6 +1073,13 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   i literału promptu, podmiany z asercją „dokładnie 1 trafienie”), suchy przebieg z atrapą `agent` przed uruchomieniem. Wynik runu czytaj z
   `journal.jsonl` (`type: result`), nie z pliku output zadania (ucięty). Wątek PR → komentarz: `reviewThreads.nodes.comments(first:1).databaseId`
   = `id` w `bot-comments.jsonl`. W zsh `echo =====` pada (`=cmd`) — separator `echo '---'`. Regex w teście: `export` nie ma „s” (`e[kx]sport` go nie łapie).
+- P6 sesja 1 (2026-10-03): narzędzia projektu bez instalacji w szablonie — `~/test-review/_narzedzia/node_modules` (ESLint-wtyczki, knip, Stryker,
+  size-limit, vitest, typescript 5.9) dowiązany jako `node_modules` projektu w scratchpadzie; size-limit wymaga pluginu w devDependencies
+  `package.json` projektu (inaczej tylko komunikat „Install Size Limit preset”). Shim pnpm w `node_modules/.bin` liczy ścieżki od `$0` —
+  dowiązanie do niego pada; w fixture skrypt `exec <szablon>/node_modules/.bin/<narzędzie> "$@"`. macOS: `/var` → `/private/var`, raporty
+  narzędzi mają różne warianty — ścieżki z raportów porównuj po `realpath` (`wzgledna()` w `bramki/diff.mjs`). Parser diffu: nagłówki `---`/`+++`
+  tylko między `diff --git` a `@@` (usunięta linia „-- komentarz” wygląda jak nagłówek). `pa_dodane.py` na plikach skryptów łapie `spawnSync`
+  wzorcem `o5-delegacja-subagenci` — fałszywe; audyt dotyczy linii promptów. Pliki `.md` tylko Write/Edit, także przy hurtowej podmianie.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
@@ -1315,8 +1353,45 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   kalibracja `zbierz` (2 runy, ~0,36 M) → `wagaWatku` w JS + opis wagi = skutek; merge do main `ed613b8`. **Grupa 1 zamknięta — push szablonu (D-2) czeka
   na decyzję operatora. Następny krok: „P6 — SKRYPT BRAMEK DOMKNIĘCIA, SESJA 1” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu (koniec
   grupy 1); oryginał oferty-online czerwony na main; token Airtable.
+- **P6 SESJA 1/2 ZROBIONA (2026-10-03; 6a pkt 51):** `.claude/scripts/bramki/` — CLI `bramki.mjs --baza` z wynikiem JSON, 10 bramek (tsc, ESLint
+  error/warn, vitest --typecheck, knip, size-limit, niezmienność migracji, migrations.sum, advisors, testy usunięte, Stryker diff-scoped), odbiór każdej
+  testem porażki, bez nowych zależności szablonu; 354/354 testów. Gałąź `popr/P6-bramki` NIEZMERGOWANA. **Następny krok: „P6 — SKRYPT BRAMEK
+  DOMKNIĘCIA, SESJA 2” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu; oryginał oferty-online czerwony na main; token Airtable.
 
-**P6 — SKRYPT BRAMEK DOMKNIĘCIA, SESJA 1 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**P6 — SKRYPT BRAMEK DOMKNIĘCIA, SESJA 2 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+
+```
+Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P6 — skrypt bramek domknięcia (PLAN-POPRAWY.md §3 P6), sesja 2/2.
+P6 sesja 1 zrobiona (HANDOFF 6a pkt 51): .claude/scripts/bramki/ (CLI bramki.mjs --baza → JSON, 10 bramek, odbiór testami), gałąź popr/P6-bramki niezmergowana — pracuj na niej.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): PLAN-POPRAWY.md §1, §3 P6, §4 (wiersze dev-docs-execute-wf.js, hooki, settings.json, faza.mjs,
+doctor, README, smoke-autopilot); ETAP2-ROZSTRZYGNIECIE.md §2 (code-quality, correctness, test-coverage, domknięcie); HANDOFF 6a pkt 51 (zwłaszcza (d))
+i §7 (ostatni punkt). Kod: .claude/scripts/bramki/bramki.mjs (nagłówek = kontrakt wyniku), domknięcie w .claude/workflows/dev-docs-execute-wf.js
+(domknieciePrompt, EXECUTE_RESULT, skąd baza fazy), .claude/hooks/error-handling-reminder.sh i stop-build-check-enhanced.sh, .claude/settings.json,
+.claude/scripts/telemetria/faza.mjs (placeholder bramki / testy_usuniete), .claude/scripts/doctor/, .claude/templates/smoke-autopilot/; hunk H51.
+
+Do zrobienia (test → kod → pnpm typecheck → pnpm test → pnpm lint → commit, krok po kroku):
+1. .claude/templates/bramki/: eslint.config.ts (ESLint 10 flat; recommendedTypeChecked error, strictTypeChecked warn; max-lines 360/60 ze skip*;
+   import-x/order, import-x/no-cycle; zakaz importu klienta Supabase w komponentach i ekranach bez wyjątku dla auth; no-empty, no-floating-promises,
+   no-console; react-hooks v6+ z regułami kompilatora; wtyczka vitest na słabe asercje), knip.json, .size-limit.json (pokaż mi wybór: preset esbuild
+   bez builda albo build przed bramką), stryker.config.json (jsonReporter.fileName w katalogu ignorowanym); vitest includeTaskLocation.
+   Test konfiguracji prawdziwymi narzędziami = zależności szablonu — najpierw pokaż listę i wersje (te z ~/test-review/_narzedzia), czekaj na zgodę.
+2. Domknięcie fazy: domknieciePrompt uruchamia bramki.mjs z bazą fazy, naprawia porażki (nie gra lintera), ostrzeżenia ESLint i przeżyte mutanty
+   przekazuje w EXECUTE_RESULT, uzasadnia testy usunięte, po naprawie --dopisz-sume; pkt 1b zostaje; krok 3 bez archeologii (H51).
+3. Hook error-handling-reminder kończy się od razu przy eslint.config.* z szablonu; stop_hook_active w obu hookach Stop; settings.json.
+4. Telemetria: producent faza.bramki.* i faza.testy_usuniete + test; doctor: devDependencies bramek; README: bramki i instalacja.
+5. Fixture smoke'a: konfiguracje z templates/bramki + devDependencies + defekt mechaniczny (edycja istniejącej migracji, pusty catch); jeśli bramki
+   biegną na pakiecie w monorepo — --projekt w podkatalogu wymaga git diff --relative (6a pkt 51 d), z testem.
+6. Prompt-audit dodanych linii: python3 docs/reviews/2026-09-19-analiza-pipeline/skrypty/pa_dodane.py main <pliki z promptem> (0 trafień).
+Smoke: kopia oferty skryptem z P0 z fixture'em z konfiguracjami i defektem — daj mi wszystkie komendy; oczekiwane: ESLint łapie pusty catch,
+niezmienność łapie edycję migracji, Stryker zwraca mutanty, domknięcie naprawia wskazane, faza.bramki w rekordzie, bramki razem ≤ 143 s.
+Merge --ff-only popr/P6-bramki do main po zielonym smoke'u.
+Po sesji: HANDOFF (§2, 6a, §8 → instrukcja P7), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**P6 — SKRYPT BRAMEK DOMKNIĘCIA, SESJA 1 (WYKONANA 2026-10-03 — 6a pkt 51; zostawiona jako wzór):**
 
 ```
 Wdrażamy plan poprawy szablonu workspace-template. Nowa sesja, Opus 5.5. Paczka P6 — skrypt bramek domknięcia (PLAN-POPRAWY.md §3 P6), sesja 1.
