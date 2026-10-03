@@ -206,3 +206,27 @@ test('wznowienie po STOP-ie miedzy execute a review: baza z pliku stanu trafia d
   assert.equal(polecenia.length, 1)
   assert.match(polecenia[0], /dossier\.mjs --sciezka docs\/active\/smoke-autopilot --faza 1 --baza abc1234/)
 })
+
+// ── Zwiniecie sekcji „Do poprawy” w fixie (P7, PWE-zwin) ─────────────────────
+
+// eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
+const { blokZwinieciaDoPoprawy } = new Function(
+  `${wytnij('function blokZwinieciaDoPoprawy(', '\n}')}
+   return { blokZwinieciaDoPoprawy }`,
+)()
+
+test('blokZwinieciaDoPoprawy: sekcja i raport fazy z JS; zaznaczone wiersze zwijane, niezaznaczone zostaja doslownie', () => {
+  const blok = blokZwinieciaDoPoprawy('docs/active/x', 3)
+  assert.match(blok, /"## Do poprawy po review fazy 3" pliku docs\/active\/x\/\*-zadania\.md/)
+  assert.match(blok, /usun wiersze zaznaczone \(`- \[x\]`\)/)
+  assert.ok(blok.includes('`Zamkniete cyklem fix: <liczba usunietych wierszy> pozycji — pelna tresc findingow i uzasadnienia w `review-faza-3.md`.`'))
+  assert.match(blok, /Wiersze niezaznaczone \(`- \[ \]`\) zostaja doslownie/)
+  assert.match(blok, /"## Operator checklist faza 3"/)
+})
+
+test('wiring: zwiniecie w poleceniu fixa przed commitem; agent zwin-do-poprawy znika', () => {
+  const fix = wytnij('function fixPrompt(', '\n}')
+  assert.ok(fix.indexOf('${blokZwinieciaDoPoprawy(sciezka, numerFazy)}') < fix.indexOf('Kolejnosc: KOD -> TEST -> E2E. Po naprawach'))
+  assert.notEqual(fix.indexOf('${blokZwinieciaDoPoprawy(sciezka, numerFazy)}'), -1)
+  assert.doesNotMatch(zrodlo, /zwin-do-poprawy|Zwin ZAMKNIETE pozycje/)
+})

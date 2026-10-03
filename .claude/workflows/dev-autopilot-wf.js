@@ -220,12 +220,10 @@ const ZAPIS_STANU = {
   additionalProperties: false,
   properties: {
     zapisano: { type: 'boolean' },
-    // Pole opcjonalne, bo tego samego schematu uzywa zwijanie sekcji "Do poprawy" (zapisuje md, nie JSON).
-    // Dla .autopilot-state.json jest OBOWIAZKOWE — patrz zapiszStanPrompt: agent ma je ustawic
-    // po REALNYM sparsowaniu pliku z dysku, nie po samym wywolaniu Write.
+    // Agent ustawia je po REALNYM sparsowaniu pliku z dysku, nie po samym wywolaniu Write (patrz zapiszStanPrompt).
     poprawnyJson: { type: ['boolean', 'null'], description: 'plik odczytany z dysku po zapisie sparsowal sie jako JSON' },
   },
-  required: ['zapisano'],
+  required: ['zapisano', 'poprawnyJson'],
 }
 
 // ── Stan fazy (P7) ──────────────────────────────────────────────────────────
@@ -650,6 +648,17 @@ function e2eEnvDownPrompt() {
 Zwroc {posprzatano, detal}.`
 }
 
+// Zwiniecie sekcji "Do poprawy" robi fix, ktory i tak edytuje plik zadan (P7; wczesniej osobny agent po fixie, plan B8).
+// Plik zadan czytaja planner, tester E2E i scribe kazdej nastepnej fazy; pelna tresc findingow zostaje w review-faza-N.md.
+function blokZwinieciaDoPoprawy(sciezka, numerFazy) {
+  return `ZWINIECIE SEKCJI "Do poprawy" (po naprawach, przed commitem): w sekcji "## Do poprawy po review fazy ${numerFazy}" pliku ${sciezka}/*-zadania.md
+usun wiersze zaznaczone (\`- [x]\`) i wstaw w ich miejsce jedna linie:
+\`Zamkniete cyklem fix: <liczba usunietych wierszy> pozycji — pelna tresc findingow i uzasadnienia w \`review-faza-${numerFazy}.md\`.\`
+Wiersze niezaznaczone (\`- [ ]\`) zostaja doslownie, razem z adnotacjami: dev-docs-complete zbiera z nich [P1]/[P2] do domkniecia
+zadania i otwarte P3 do smoke'u operatora. Pozostale sekcje pliku, w tym "## Operator checklist faza ${numerFazy}", zostaja bez zmian.
+Plik zadan czytaja kolejne fazy, a pelna tresc findingow jest w raporcie review — w pliku zadan wystarczy slad cyklu fix.`
+}
+
 function fixPrompt(sciezka, numerFazy, otwarteFindingi) {
   return `Jestes czescia pipeline'u dev-autopilot. Naprawiasz problemy z review fazy ${numerFazy}.
 WAZNE: to JEDYNY przebieg fix tej fazy — po nim NIE ma ponownego review. Twoj raport jest
@@ -707,6 +716,8 @@ KLASYFIKUJ kazdy finding przed naprawa:
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
 walidacja koncowa audytuje git diff testow w commitach fix i zglosi kazda taka zmiane.
+
+${blokZwinieciaDoPoprawy(sciezka, numerFazy)}
 
 Kolejnosc: KOD -> TEST -> E2E. Po naprawach: pelna walidacja (typecheck, test, build —
 komendy z package.json), commit \`fix([nazwa]): poprawki po review fazy ${numerFazy}\`,
@@ -1760,32 +1771,6 @@ for (const numerFazy of kolejka) {
     faza.fix = 'done'
     faza.otwarteFindingi = []
     oznaczStan()
-    // ZWIN SEKCJE "Do poprawy" ZAMKNIETEJ FAZY (plan B8). Plik zadan jest czytany przy KAZDEJ nastepnej
-    // fazie — przez plannera, testera E2E i scribe'a — a w trakcie jednego zadania puchnie z 23 KB do 59 KB
-    // wlasnie tymi sekcjami. Pelna tresc findingow i tak zostaje w review-faza-K.md; w pliku zadan
-    // potrzebny jest tylko slad, ze faza przeszla przez fix.
-    // Best-effort: to porzadki, nie bramka — null nie moze zatrzymac fazy, ktora wlasnie sie domknela.
-    const zwijanie = await agent(
-      `Zwin ZAMKNIETE pozycje sekcji "## Do poprawy po review fazy ${numerFazy}" w ${sciezka}/*-zadania.md.
-
-1. Znajdz te sekcje (\`grep -n "## Do poprawy po review fazy ${numerFazy}"\`). Gdy jej nie ma — nic nie rob,
-   zwroc zapisano=false. To poprawny wynik: faza mogla nie miec findingow.
-2. Policz w niej wiersze ZAZNACZONE (\`- [x]\`) i NIEZAZNACZONE (\`- [ ]\`).
-3. USUN wszystkie wiersze \`- [x]\` z tej sekcji i wstaw w ich miejsce JEDNA linie:
-   \`Zamkniete cyklem fix: <N> pozycji — pelna tresc findingow i uzasadnienia w \\\`review-faza-${numerFazy}.md\\\`.\`
-4. KAZDY wiersz \`- [ ]\` ZOSTAW DOSLOWNIE, razem z adnotacjami (np. "przeniesione do known-issues").
-   To NIE jest kosmetyka: \`dev-docs-complete\` grepuje wlasnie te niezaznaczone wiersze — [P1]/[P2] ida
-   do puli domkniecia zadania, a otwarte P3 do smoke'u operatora. Usuniecie ich skasowaloby te wejscia
-   po cichu i zadanie domknieto by jako czyste.
-5. NIE ruszaj: zadnej innej sekcji, checkboxow implementacyjnych, \`Test:\`, \`Weryfikacja:\`, \`[E2E]\`,
-   \`[Manual]\` ani sekcji "## Operator checklist faza ${numerFazy}" — ta zostaje w calosci, bo jej pozycje
-   sa dla czlowieka i trafiaja pozniej do smoke'u operatora. Sekcje innych faz zostaw nietkniete.
-
-Nie commituj — orkiestrator zrobi to sam. Zwroc {zapisano: true} po realnym zapisie pliku
-(zapisano=false takze wtedy, gdy nie bylo ani jednego wiersza \`- [x]\` do zwiniecia).`,
-      { schema: ZAPIS_STANU, agentType: 'klasa-mechaniczny', label: `zwin-do-poprawy:faza-${numerFazy}` }
-    )
-    if (zwijanie && zwijanie.zapisano) log(`Faza ${numerFazy}: zamkniete pozycje sekcji "Do poprawy" zwiniete do wskaznika na review-faza-${numerFazy}.md (niezaznaczone zostaly — czyta je dev-docs-complete)`)
   } else if (faza.fix === 'none') {
     gateFazy = 'CZYSTE'
   }
