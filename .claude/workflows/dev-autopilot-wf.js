@@ -255,7 +255,7 @@ ${tresc}
 }
 
 function zapisPotwierdzony(wynik) {
-  return !!wynik && wynik.stanZapisany === true
+  return Boolean(wynik) && wynik.stanZapisany === true
 }
 
 // Stan po udanym execute fazy — zapisuje go domkniecie execute-wf (z baza fazy wstawiona w JS), zanim autopilot dostanie wynik.
