@@ -23,9 +23,11 @@ Sygnały: `expo` w dependencies, katalog `app/` z Expo Router, `app.json`/`app.c
         głównie strukturę UI.
     - path: "components/**/*.tsx"
       instructions: |
-        Komponenty React Native. Mały, jeden export per plik. Używaj
-        NativeWind (className) zamiast StyleSheet gdzie się da. Każdy
-        interaktywny element ma accessibilityLabel.
+        Komponenty React Native. Mały komponent, jeden eksport per plik
+        z komponentem-ekranem; pliki-kolekcje (ikony, kafle) i typ propsów
+        obok komponentu są wyjątkiem. Używaj NativeWind (className) zamiast
+        StyleSheet gdzie się da. Każdy interaktywny element ma
+        accessibilityLabel.
 ```
 
 ## Next.js
@@ -45,9 +47,11 @@ Sygnały: `next` w dependencies, katalog `app/` lub `pages/`, `next.config.*`.
         wyciągaj do services/hooków, plik strony to głównie struktura UI.
     - path: "components/**/*.tsx"
       instructions: |
-        Komponenty React. Mały, jeden export per plik. Tailwind zamiast
-        inline styles. Każdy interaktywny element dostępny z klawiatury
-        (focus-visible, aria-label gdzie brak tekstu).
+        Komponenty React. Mały komponent, jeden eksport per plik
+        z komponentem-ekranem; pliki-kolekcje (ikony, kafle) i typ propsów
+        obok komponentu są wyjątkiem. Tailwind zamiast inline styles. Każdy
+        interaktywny element dostępny z klawiatury (focus-visible,
+        aria-label gdzie brak tekstu).
 ```
 
 ## React web (Vite)
@@ -66,9 +70,11 @@ Sygnały: `vite` w devDependencies + `react` w dependencies, katalog `src/`.
         wyciągaj do hooków/services, plik strony zawiera głównie strukturę UI.
     - path: "src/components/**/*.tsx"
       instructions: |
-        Komponenty React. Mały, jeden export per plik. Tailwind (className)
-        zamiast inline styles. Każdy interaktywny element dostępny
-        z klawiatury (focus-visible, aria-label gdzie brak tekstu).
+        Komponenty React. Mały komponent, jeden eksport per plik
+        z komponentem-ekranem; pliki-kolekcje (ikony, kafle) i typ propsów
+        obok komponentu są wyjątkiem. Tailwind (className) zamiast inline
+        styles. Każdy interaktywny element dostępny z klawiatury
+        (focus-visible, aria-label gdzie brak tekstu).
 ```
 
 ## Node backend
