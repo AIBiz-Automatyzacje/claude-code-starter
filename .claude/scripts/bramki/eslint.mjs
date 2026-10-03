@@ -1,9 +1,10 @@
 // Bramka ESLint: lint plikow kodu zmienionych w fazie konfiguracja projektu. Error w zmienionym pliku = porazka (naprawa
 // w domknieciu); warn na linii fazy = ostrzezenie (wejscie dla code-quality); warn na starych liniach pomijany.
 
-import { existsSync, realpathSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 
+import { wzgledna } from './diff.mjs'
 import { bladNarzedzia, uruchom } from './uruchom.mjs'
 
 const SUFIT_SEKUND = 600
@@ -36,9 +37,8 @@ export function bramkaEslint(projekt, narzedzie, zmiany) {
   const trafienia = []
   /** @type {Trafienie[]} */
   const ostrzezenia = []
-  const korzen = realpathSync(projekt)
   for (const wynikPliku of raport) {
-    const plik = relative(korzen, wynikPliku.filePath)
+    const plik = wzgledna(projekt, wynikPliku.filePath)
     const linieFazy = new Set(zmiany.dodaneLinie[plik] ?? [])
     for (const m of wynikPliku.messages) {
       const t = { plik, linia: m.line ?? null, regula: m.ruleId ?? (m.fatal ? 'parsowanie' : 'eslint'), opis: m.message }

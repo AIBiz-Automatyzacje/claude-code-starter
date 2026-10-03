@@ -2,8 +2,8 @@
 // (domkniecie uruchamia bramki PRZED commitem), wiec diff obejmuje commity fazy, zmiany niezacommitowane i pliki nieśledzone.
 
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { isAbsolute, join, relative } from 'node:path'
 
 // Duzy diff fazy (lockfile, wygenerowane typy) nie moze wywrocic bramek limitem bufora.
 const BUFOR_GITA = 64 * 1024 * 1024
@@ -77,4 +77,17 @@ export function zmianyFazy(repo, baza) {
     dodaneLinie[plik] = Array.from({ length: Math.max(ileLinii, 1) }, (_, i) => i + 1)
   }
   return { pliki: [...new Set([...zmienione, ...niesledzone])].sort(), dodaneLinie, diffU0 }
+}
+
+/**
+ * Sciezka z raportu narzedzia (bezwzgledna albo wzgledna) jako sciezka wzgledem projektu. Obie strony po realpath:
+ * na macOS katalog tymczasowy /var to dowiazanie do /private/var, a narzedzia raportuja rozne warianty.
+ * @param {string} projekt
+ * @param {string} sciezka
+ * @returns {string}
+ */
+export function wzgledna(projekt, sciezka) {
+  if (!isAbsolute(sciezka)) return sciezka
+  const prawdziwa = (/** @type {string} */ s) => (existsSync(s) ? realpathSync(s) : s)
+  return relative(prawdziwa(projekt), prawdziwa(sciezka))
 }
