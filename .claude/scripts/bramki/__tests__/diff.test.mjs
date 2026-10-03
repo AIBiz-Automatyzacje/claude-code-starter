@@ -58,3 +58,8 @@ test('zmianyFazy: nieznana baza = blad z nazwa bazy', () => {
     usun(repo)
   }
 })
+
+test('parsujDiffU0: dodana linia "++ b/..." nie jest naglowkiem pliku', () => {
+  const diff = ['diff --git a/src/a.ts b/src/a.ts', '--- a/src/a.ts', '+++ b/src/a.ts', '@@ -0,0 +1,2 @@', '+++ b/udaje-naglowek', '+druga', '@@ -5 +7 @@', '+x'].join('\n')
+  assert.deepEqual(parsujDiffU0(diff), { 'src/a.ts': [1, 2, 7] })
+})

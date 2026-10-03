@@ -26,13 +26,20 @@ export function parsujDiffU0(diff) {
   const wynik = {}
   /** @type {string | null} */
   let plik = null
+  // Naglowki `---`/`+++` tylko miedzy `diff --git` a pierwszym `@@` — dodana linia "++ b/x" wyglada tak samo.
+  let wNaglowku = false
   for (const linia of diff.split('\n')) {
-    if (linia.startsWith('+++ ')) {
+    if (linia.startsWith('diff --git ')) {
+      wNaglowku = true
+      continue
+    }
+    if (wNaglowku && linia.startsWith('+++ ')) {
       plik = linia.startsWith('+++ b/') ? linia.slice(6) : null
       if (plik) wynik[plik] = []
       continue
     }
-    const hunk = plik && /^@@ -\S+ \+(\d+)(?:,(\d+))? @@/.exec(linia)
+    const hunk = /^@@ -\S+ \+(\d+)(?:,(\d+))? @@/.exec(linia)
+    if (hunk) wNaglowku = false
     if (!hunk || !plik) continue
     const start = Number(hunk[1])
     const ile = hunk[2] === undefined ? 1 : Number(hunk[2])
