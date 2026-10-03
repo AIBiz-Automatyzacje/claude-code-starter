@@ -44,6 +44,7 @@ const IU_PLAN = {
     fazaNazwa: { type: 'string' },
     strategia: { type: 'string', enum: ['serial', 'parallel'], description: 'serial gdy IU maja zaleznosci/wspolne pliki; parallel gdy niezalezne' },
     poza: { type: 'boolean', description: 'true gdy faza juz ukonczona / nic do zrobienia' },
+    baza: { type: 'string', description: 'pelny SHA z `git rev-parse HEAD` przed faza — od niego bramki domkniecia licza zmiany fazy' },
     iu: {
       type: 'array',
       items: {
@@ -62,7 +63,7 @@ const IU_PLAN = {
       },
     },
   },
-  required: ['fazaNumer', 'strategia', 'poza', 'iu'],
+  required: ['fazaNumer', 'strategia', 'poza', 'baza', 'iu'],
 }
 
 const BUILD_RESULT = {
@@ -77,6 +78,27 @@ const BUILD_RESULT = {
     pytanie: { type: ['string', 'null'], description: 'wypelnione gdy status=blocked' },
   },
   required: ['id', 'status'],
+}
+
+// Bramki domkniecia (PLAN-POPRAWY P6): kolejnosc i nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs.
+const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'advisors', 'testyUsuniete', 'stryker']
+const STATUS_BRAMKI = { type: 'string', enum: ['ok', 'porazka', 'brak', 'blad', 'pominieta'] }
+const WYNIK_BRAMKI = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    status: STATUS_BRAMKI,
+    sekundy: { type: ['number', 'null'] },
+    trafienia: { type: 'integer', description: 'liczba trafien' },
+    poNaprawie: { type: ['string', 'null'], enum: [...STATUS_BRAMKI.enum, null] },
+  },
+  required: ['status', 'sekundy', 'trafienia'],
+}
+const TRAFIENIE_BRAMKI = {
+  type: 'object',
+  additionalProperties: false,
+  properties: { plik: { type: ['string', 'null'] }, linia: { type: ['integer', 'null'] }, regula: { type: 'string' }, opis: { type: 'string' } },
+  required: ['plik', 'linia', 'regula', 'opis'],
 }
 
 const EXECUTE_RESULT = {
@@ -103,6 +125,23 @@ const EXECUTE_RESULT = {
     testy: { type: 'string', description: 'PASS/FAIL z liczbami lub "brak"' },
     odchylenia: { type: 'array', items: { type: 'string' } },
     problem: { type: ['string', 'null'] },
+    bramki: {
+      type: 'object',
+      additionalProperties: false,
+      description: 'pierwszy przebieg skryptu bramek; poNaprawie = status z przebiegu po naprawie (null gdy nie bylo)',
+      properties: Object.fromEntries(NAZWY_BRAMEK.map((n) => [n, WYNIK_BRAMKI])),
+    },
+    ostrzezeniaEslint: { type: 'array', items: TRAFIENIE_BRAMKI, description: 'eslint.ostrzezenia — wejscie review code-quality' },
+    mutanty: { type: 'array', items: TRAFIENIE_BRAMKI, description: 'stryker.trafienia (przezyte mutanty) — wejscie review test-coverage' },
+    testyUsuniete: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: { plik: { type: 'string' }, nazwa: { type: 'string' }, uzasadnienie: { type: 'string' } },
+        required: ['plik', 'nazwa', 'uzasadnienie'],
+      },
+    },
   },
   required: ['fazaNumer', 'status', 'iu'],
 }
@@ -115,6 +154,7 @@ function plannerPrompt(sciezka, faza) {
 Folder zadania: ${sciezka}
 Faza do wykonania: ${faza}
 
+0. \`git rev-parse HEAD\` -> pole baza (pelny SHA). To commit sprzed fazy: bramki domkniecia licza od niego zmiany fazy.
 1. CZYTAJ WYCINKAMI, NIE CALYMI PLIKAMI. Cztery dokumenty tego zadania to lacznie 120-175 KB, a plik
    zadan rosnie w trakcie jednego zadania z 23 KB do 59 KB (sekcje "Do poprawy po review") i jest czytany
    przy KAZDEJ fazie. Do zbudowania jednostek fazy ${faza} potrzebujesz pieciu wycinkow. Kazdy bierz
@@ -177,7 +217,13 @@ Faza do wykonania: ${faza}
 Zwroc obiekt zgodny ze schematem IUPlan. Sam nie implementuj kodu.`
 }
 
-function domknieciePrompt(sciezka, faza, buildResults) {
+// Baza fazy dla bramek domkniecia: SHA z plannera (HEAD przed builderami). Bez poprawnego SHA — HEAD domkniecia:
+// buildery nie commituja, wiec zmiany fazy i tak sa w drzewie roboczym. Wartosc trafia do komendy powloki.
+function bazaFazy(plan) {
+  return /^[0-9a-f]{7,40}$/.test(plan.baza || '') ? plan.baza : 'HEAD'
+}
+
+function domknieciePrompt(sciezka, faza, buildResults, baza) {
   const podsumowanieIU = buildResults
     .map((b) => `- ${b.id}: ${b.status}${b.odchylenia && b.odchylenia.length ? ` (odchylenia: ${b.odchylenia.join('; ')})` : ''}`)
     .join('\n')
@@ -195,6 +241,24 @@ ${podsumowanieIU}
    Checkbox "Test:" tej fazy bez napisanego testu — napisz ten test przed zamknieciem fazy ("Test: [E2E]" pomijasz,
    patrz punkt 2). Kazde sprawdzenie z odpowiedzia "nie" naprawiasz przed commitem.
    UWAGA: jesli ktorykolwiek builder raportowal dodanie zaleznosci — pierwszy vitest jest ZIMNY (procedura tla z bloku).
+1a. BRAMKI MECHANICZNE (po punkcie 1, przed commitem — skrypt czyta drzewo robocze):
+   \`node .claude/scripts/bramki/bramki.mjs --baza ${baza}\`
+   Kod 0 = bez porazek, 1 = sa porazki. Wynik (JSON na stdout): {bramka: {status, sekundy, trafienia: [{plik, linia, regula,
+   opis}], powod?, ostrzezenia?, zastane?}}. Status: ok | porazka | brak | blad | pominieta.
+   - porazka: napraw KAZDE trafienie w kodzie — regula i plik:linia mowia, co poprawic. Lista bramek jest kompletna:
+     Nie uruchamiaj ESLint, tsc ani knipa osobno i nie szukaj innych uwag lintera. Nie wylaczasz reguly (eslint-disable,
+     zmiana konfiguracji narzedzia) — poprawiasz kod. Trafienie bramki migracje albo migracjeSuma: przywroc plik
+     (\`git checkout ${baza} -- <plik>\`), a zmiane schematu zapisz NOWA migracja.
+   - Po naprawie uruchom bramki jeszcze raz. Porazka w drugim przebiegu: status=partial, w problem nazwa bramki i trafienia.
+   - blad: narzedzie padlo — powod do odchylen, narzedzia nie naprawiasz. brak, pominieta: nic nie robisz.
+   - Pole bramki: dla kazdej bramki z PIERWSZEGO przebiegu {status, sekundy, trafienia: liczba trafien}, poNaprawie =
+     status z drugiego przebiegu (null, gdy drugiego nie bylo).
+   - ostrzezenia bramki eslint przepisz do pola ostrzezeniaEslint, trafienia bramki stryker (przezyte mutanty) do pola
+     mutanty — bez naprawy, to wejscie dla review fazy.
+   - Kazde trafienie bramki testyUsuniete przepisz do pola testyUsuniete z uzasadnieniem (funkcja usunieta w tej fazie
+     albo nowa nazwa testu). Test usuniety bez usuniecia testowanej funkcji przywroc.
+   - Na koniec \`node .claude/scripts/bramki/bramki.mjs --dopisz-sume\` — dopisuje nowe migracje do supabase/migrations.sum
+     (plik commitujesz razem z migracjami).
 1b. AUDYT ERROR-HANDLINGU (przed commitem — hooki sesyjne nie widza zmian commitowanych przez workflow):
    przejrzyj git diff tej fazy pod katem: (a) console.log/console.error w kodzie PRODUKCYJNYM
    (testy i skrypty narzedziowe sa OK) — zamien na structured logging lub Sentry; (b) bloki catch
@@ -208,13 +272,13 @@ ${BLOK_DLUGIE_KOMENDY}
 3. Aktualizuj ${sciezka}/*-kontekst.md: zmiany i decyzje tej fazy dopisz do sekcji \`## Dziennik\`
    (jedna sekcja, chronologicznie) plus "Ostatnia aktualizacja". NIE zakladaj w tym pliku sekcji
    "Decyzje techniczne", "Kluczowe pliki", "Odroczone do implementacji" ani "Wzorce do nasladowania" —
-   plik kontekstu ich nie ma od 2026-09-03 i nie ma ich odtwarzac. Decyzja korygujaca plan idzie
+   te tresci zyja w planie technicznym, a kopia w pliku kontekstu rozjezdza sie z nim. Decyzja korygujaca plan idzie
    do planu technicznego w docs/plans/ (punkt 4), a w Dzienniku zostaje jedno zdanie i wskaznik.
 4. Aktualizuj plan techniczny w docs/plans/ (odznacz test scenarios / verification dla tej fazy).
 5. Commit inkrementalny: feat/fix/refactor([nazwa]): [co i dlaczego]. Staguj tylko zmienione pliki (nie git add .).
 
 Dzialaj autonomicznie. Zwroc obiekt zgodny ze schematem ExecuteResult
-(status=completed tylko gdy walidacja PASS i wszystkie IU completed).`
+(status=completed tylko gdy walidacja PASS, zadna bramka nie konczy sie porazka i wszystkie IU completed).`
 }
 
 // ── Orkiestracja ──────────────────────────────────────────────────────────
@@ -289,5 +353,5 @@ if (buildResults.length !== plan.iu.length) {
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan)), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 return wynik
