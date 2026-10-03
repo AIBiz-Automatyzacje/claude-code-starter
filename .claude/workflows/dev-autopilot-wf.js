@@ -194,6 +194,8 @@ const PLAN_STATE = {
           fix: { type: 'string', enum: ['done', 'pending', 'none'], description: 'none = review nie zostawil otwartych P1/P2' },
           otwarteFindingi: { type: 'array', items: FINDING_OTWARTY },
           metryki: METRYKI_FAZY,
+          // Baza fazy z execute-wf (P7) — poza `required`, bo stany sprzed P7 jej nie maja.
+          baza: { type: ['string', 'null'], description: 'SHA HEAD przed builderami fazy; null = nieznana' },
         },
         required: ['numer', 'nazwa', 'execute', 'review', 'fix', 'otwarteFindingi'],
       },
@@ -226,6 +228,44 @@ const ZAPIS_STANU = {
   required: ['zapisano'],
 }
 
+// ── Stan fazy (P7) ──────────────────────────────────────────────────────────
+// Tresc .autopilot-state.json liczy JS; zapis dokleja sie do polecenia agenta, ktory w tym miejscu i tak startuje
+// (mapa 14 miejsc: HANDOFF 6a pkt 54). Przed pod-workflowem i po niepotwierdzonym zapisie zostaje agent `stan:zapis`.
+function trescStanu(stan) {
+  return JSON.stringify(
+    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie, bazaZielona: stan.bazaZielona || null },
+    null,
+    2
+  )
+}
+
+// Pole potwierdzenia w schemacie kazdego agenta, ktoremu autopilot dokleja zapis stanu.
+const POLE_STANU = { type: ['boolean', 'null'], description: 'true po zapisie pliku stanu i odczycie z wynikiem JSON-OK' }
+
+function blokZapisuStanu(sciezka, tresc) {
+  const plik = `${sciezka}/.autopilot-state.json`
+  return `Zapis stanu pipeline'u:
+a) Narzedziem Write zapisz plik ${plik} (pelne nadpisanie) z trescia miedzy znacznikami, bez znacznikow
+   i bez zmian w tresci.
+b) Odczytaj plik z dysku: \`node -e "JSON.parse(require('fs').readFileSync('${plik}','utf8'));console.log('JSON-OK')"\`.
+   Bez wyniku JSON-OK zapisz plik jeszcze raz i powtorz odczyt.
+c) Pole stanZapisany w wyniku: true po odczycie z wynikiem JSON-OK, w kazdym innym przypadku false.
+Z tego pliku pipeline wznawia fazy po zatrzymaniu, dlatego tresc idzie na dysk bajt w bajt.
+--- POCZATEK STANU ---
+${tresc}
+--- KONIEC STANU ---`
+}
+
+function zapisPotwierdzony(wynik) {
+  return !!wynik && wynik.stanZapisany === true
+}
+
+// Stan po udanym execute fazy — zapisuje go domkniecie execute-wf (z baza fazy wstawiona w JS), zanim autopilot dostanie wynik.
+function stanPoExecute(stan, numer) {
+  return { ...stan, fazy: stan.fazy.map((f) => (f.numer === numer ? { ...f, execute: 'done' } : f)) }
+}
+// ── Koniec stanu fazy
+
 const WARMUP_RESULT = {
   type: 'object',
   additionalProperties: false,
@@ -251,6 +291,7 @@ const E2E_PRECHECK = {
     istnieje: { type: 'boolean', description: 'true = plik .env.e2e istnieje w korzeniu repo (srodowisko E2E skonfigurowane)' },
     zadanieWymagaE2E: { type: 'boolean', description: 'true = plan zadania ma co najmniej jeden NIEZAZNACZONY checkbox z markerem [E2E] (zadanie deklaruje E2E jako deliverable)' },
     liczbaScenariuszy: { type: 'integer', description: 'ile niezaznaczonych checkboxow [E2E] znaleziono w planie zadania (0 gdy zadnego)' },
+    stanZapisany: POLE_STANU,
   },
   required: ['istnieje', 'zadanieWymagaE2E', 'liczbaScenariuszy'],
 }
@@ -282,6 +323,7 @@ const E2E_DOWN_RESULT = {
   properties: {
     posprzatano: { type: 'boolean' },
     detal: { type: 'string' },
+    stanZapisany: POLE_STANU,
   },
   required: ['posprzatano', 'detal'],
 }
@@ -330,6 +372,7 @@ const FIX_RESULT = {
       items: { type: 'string' },
       description: 'pliki zmienione w tej fazie, ktore git widzi jako binarne (numstat "-"), a NIE sa legalnymi binariami — typowa przyczyna: surowe bajty sterujace w pliku zrodlowym',
     },
+    stanZapisany: POLE_STANU,
   },
   // p3Pominiete w required z tego samego powodu co plikiBinarne: pusta lista MUSI znaczyc "przeszedlem
   // po wszystkich P3", a pole opcjonalne pozwoliloby agentowi cicho pominac cala trzecia grupe.
@@ -362,6 +405,7 @@ const VALIDATION_RESULT = {
     knownIssuesZamkniete: { type: ['integer', 'null'], description: 'ile wpisow known-issues.md przeniesiono do sekcji "Zamkniete" (higiena, NIE wplywa na wynik)' },
     wynik: { type: 'string', enum: ['PASS', 'FAIL'] },
     bledy: { type: 'array', items: { type: 'string' } },
+    stanZapisany: POLE_STANU,
   },
   required: ['wynik'],
 }
@@ -400,6 +444,7 @@ Folder zadania: ${sciezka}
       checkboxow md — plik stanu jest ZRODLEM PRAWDY, checkboxy to tylko widok dla czlowieka.
       Pole "metryki" fazy (jesli obecne) PRZEPISZ 1:1 — nie licz go sam, nie uzupelniaj, nie zeruj;
       to zapis telemetrii z runu, w ktorym review sie odbylo. Gdy pola nie ma, pomin je (null).
+      Pole "baza" fazy (jesli obecne) przepisz 1:1 — od niej review liczy diff fazy po wznowieniu. Gdy pola nie ma, pomin je.
       Pole "bazaZielona" (jesli obecne i nie null) przepisz 1:1 i ustaw wejscie.kodJakPrzyTescie:
       \`git diff --quiet <bazaZielona.sha> HEAD -- . ':(exclude)docs' && echo TAK || echo NIE\` -> TAK = true, NIE = false.
       zrodloStanu = "state-json". Dodatkowo porownaj informacyjnie z plikami (np. istnieje
@@ -1107,6 +1152,9 @@ const raporty = []
 let kolejka
 let e2eEnv = null
 let stan = null
+// Stan fazy do zapisu (P7): tresc czekajaca na nastepnego agenta i tresc doklejona do jego polecenia.
+let stanDoZapisu = null
+let stanDoklejony = null
 let compound = null
 
 // Normalizacja metryk przebiegu do SKROTU (schemat METRYKI_FAZY + telemetria): review-wf zwraca
@@ -1176,12 +1224,13 @@ const COMMIT_ARTEFAKTOW = {
       items: { type: 'string' },
       description: 'sciezki z `git status --short` SPOZA katalogu zadania — nietkniete, ida do komunikatu STOP',
     },
+    stanZapisany: POLE_STANU,
   },
   required: ['zacommitowano', 'brudnePozaZadaniem'],
 }
 
 // Najczestszy STOP w telemetrii (6 na 39 runow) to "niezacommitowane zmiany" — i ZAWSZE bezposrednio
-// po innym zatrzymaniu. Mechanizm: `zapiszStan()` zapisuje .autopilot-state.json, scribe zapisuje
+// po innym zatrzymaniu. Mechanizm: zapis stanu tworzy .autopilot-state.json, scribe zapisuje
 // review-faza-N.md, po czym run staje na bramce i NIKT tego nie commituje. Bootstrap nastepnego runu
 // widzi brudne drzewo i zatrzymuje sie na bramce czystosci — operator dostaje falszywy STOP o cudzych
 // zmianach, ktorych nie ma, i musi recznie zacommitowac artefakty pipeline'u.
@@ -1221,8 +1270,9 @@ a brudne drzewo zatrzymuje bootstrap kolejnego runu na bramce czystosci.
    \`-f\`): zwroc zacommitowano=false i commit=null. Falszywy commit jest gorszy niz brudne drzewo.
 
 Nie modyfikuj plikow, nie uruchamiaj testow, nie przelaczaj brancha.`
+  // Przy STOP-ie agent najpierw zapisuje zalegly stan (P7), wiec plik stanu trafia do tego samego commita.
   return etykieta === 'stop:commit-artefaktow'
-    ? await agent(polecenie, { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'stop:commit-artefaktow' })
+    ? await agent(zeStanem(polecenie), { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'stop:commit-artefaktow' })
     : await agent(polecenie, { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'start:commit-zadania' })
 }
 
@@ -1235,6 +1285,13 @@ async function stopRun(obj) {
     artefakty = await zacommitujArtefaktyStop(obj.faza)
   } catch (e) {
     log(`Commit artefaktow przy STOP nie powiodl sie (${e && e.message ? e.message : e}) — best-effort, komunikat STOP wraca normalnie`)
+  }
+  // Stan oznaczony przed STOP-em zapisuje agent commita; gdy go pominieto, padl albo nie potwierdzil — zapis zapasowy.
+  try {
+    await potwierdzStan(artefakty)
+    await zapiszZaleglyStan()
+  } catch (e) {
+    log(`Zapis stanu przy STOP nie powiodl sie (${e && e.message ? e.message : e}) — sprawdz .autopilot-state.json przed swiezym runem`)
   }
   let powod = obj.powod
   if (artefakty) {
@@ -1293,8 +1350,8 @@ if (wejscie.testyStartu) {
   if (d.cache) {
     stan.bazaZielona = d.cache
     log(`Bramka wejscia: zielony start (${testy.komenda}) na ${d.cache.sha}`)
-    // Od razu na dysk: STOP srodowiska E2E nizej commituje katalog zadania, wiec swiezy run wezmie wynik z cache.
-    await zapiszStan()
+    // Zapisuje e2e:precheck (nastepny agent); STOP srodowiska E2E commituje katalog zadania, wiec swiezy run wezmie wynik z cache.
+    oznaczStan()
   }
 }
 
@@ -1305,13 +1362,8 @@ kolejka = stan.fazy
 
 log(`Autopilot: ${stan.nazwaZadania} (stan: ${stan.zrodloStanu}) — fazy do wykonania: ${kolejka.join(', ') || 'brak'}`)
 
-// Utrwalanie stanu: tresc liczona w JS, zapis przez tani leaf-agent (haiku). Best-effort z ostrzezeniem.
-async function zapiszStan() {
-  const tresc = JSON.stringify(
-    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie, bazaZielona: stan.bazaZielona || null },
-    null,
-    2
-  )
+// Zapis zapasowy: tani leaf-agent (haiku) przed pod-workflowem i po niepotwierdzonym zapisie nastepcy. Best-effort z ostrzezeniem.
+async function zapiszStan(tresc) {
   let w = await agent(zapiszStanPrompt(sciezka, tresc), { schema: ZAPIS_STANU, agentType: 'klasa-mechaniczny', label: 'stan:zapis' })
   // Nieudany zapis LUB plik, ktory nie sparsowal sie z dysku, to ten sam problem: stanu na dysku NIE MA.
   // Jedna ponowna proba (na modelu glownym — haiku wlasnie pokazal, ze nie uniosl przepisania tresci).
@@ -1322,6 +1374,34 @@ async function zapiszStan() {
   if (!w || !w.zapisano || w.poprawnyJson === false) {
     log('OSTRZEZENIE: .autopilot-state.json NIE zostal poprawnie zapisany po 2 probach — resume bedzie polegac na parse md, a uszkodzony plik moze wywrocic nastepny bootstrap. Sprawdz go recznie przed kolejnym runem.')
   }
+}
+
+// Stan fazy (P7): oznaczStan() liczy tresc w JS po kazdej zmianie stanu; zapisuje ja nastepny agent z doklejonym blokiem
+// (zeStanem + potwierdzStan). Przed pod-workflowem zalegly stan idzie do agenta stan:zapis; po complete-wf zapisu nie ma.
+function oznaczStan() {
+  stanDoZapisu = trescStanu(stan)
+}
+
+function zeStanem(polecenie) {
+  if (!stanDoZapisu) return polecenie
+  stanDoklejony = stanDoZapisu
+  stanDoZapisu = null
+  return `${polecenie}\n\nPrzed zadaniem opisanym wyzej wykonaj zapis stanu. Ten zapis jest czescia zadania, takze gdy polecenie wyzej zabrania zmian w plikach.\n${blokZapisuStanu(sciezka, stanDoklejony)}`
+}
+
+async function potwierdzStan(wynik) {
+  const tresc = stanDoklejony
+  stanDoklejony = null
+  if (!tresc || zapisPotwierdzony(wynik)) return
+  log(`Zapis stanu doklejony do agenta niepotwierdzony (${wynik ? `stanZapisany=${wynik.stanZapisany}` : 'agent null'}) — zapis zapasowy`)
+  await zapiszStan(tresc)
+}
+
+async function zapiszZaleglyStan() {
+  if (!stanDoZapisu) return
+  const tresc = stanDoZapisu
+  stanDoZapisu = null
+  await zapiszStan(tresc)
 }
 
 // Srodowisko E2E PRZED warmupem: tani gate (precheck + wczesne checki env-up) zatrzymuje run
@@ -1338,7 +1418,8 @@ async function zapiszStan() {
 // PRECHECK: tani, deterministyczny sygnal opt-in ODDZIELONY od ciezkiego env-up. Bez niego flake env-up
 // (null) na projekcie opt-in degradowalby cicho E2E — a completion-gate wylapalby to dopiero na KONCU runu
 // (najdrozszy moment). Z precheckiem: opt-in potwierdzony -> null env-up = STOP, nie degradacja.
-const precheck = await agent(e2ePrecheckPrompt(sciezka), { schema: E2E_PRECHECK, agentType: 'klasa-mechaniczny', label: 'e2e:precheck', phase: 'Bootstrap' })
+const precheck = await agent(zeStanem(e2ePrecheckPrompt(sciezka)), { schema: E2E_PRECHECK, agentType: 'klasa-mechaniczny', label: 'e2e:precheck', phase: 'Bootstrap' })
+await potwierdzStan(precheck)
 const optIn = precheck ? precheck.istnieje : null // null = precheck padl (nie wiemy — env-up ma self-skip)
 
 // BRAMKA SETUPU (port z mobile, regresja e3-core-loop): zadanie DEKLARUJE scenariusze [E2E], a repo nie ma
@@ -1415,16 +1496,24 @@ for (const numerFazy of kolejka) {
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
   // Dossier fazy z domkniecia (P7) idzie do review; faza wznowiona z execute: done go nie ma — review-wf odtwarza je
-  // zapasowym agentem (kod mogl sie zmienic po STOP-ie, plik w /tmp bylby nieaktualny).
+  // zapasowym agentem (kod mogl sie zmienic po STOP-ie, plik w /tmp bylby nieaktualny) z baza fazy utrwalona w stanie.
+  // Stan „execute done” z baza zapisuje domkniecie execute-wf (args.stanPoExecute); bez potwierdzenia — zapis zapasowy.
   let dossierZExecute = null
   if (faza.execute === 'pending') {
-    const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy })
+    await zapiszZaleglyStan()
+    const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy, stanPoExecute: trescStanu(stanPoExecute(stan, numerFazy)) })
     if (!exec || exec.status !== 'completed') {
+      // Domkniecie mialo zapisac stan tylko przy completed; gdy mimo to potwierdzilo zapis, STOP nadpisuje go stanem z pamieci.
+      if (exec && exec.stanZapisany) oznaczStan()
       return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty })
     }
     faza.execute = 'done'
+    faza.baza = exec.baza || null
     dossierZExecute = exec.dossier || null
-    await zapiszStan()
+    if (!zapisPotwierdzony(exec)) {
+      log(`Faza ${numerFazy}: domkniecie nie potwierdzilo zapisu stanu — zapis zapasowy`)
+      await zapiszStan(trescStanu(stan))
+    }
     log(`Faza ${numerFazy}: Execute OK (${exec.iu.length} IU)`)
   }
 
@@ -1442,11 +1531,14 @@ for (const numerFazy of kolejka) {
       e2eSync = await agent(e2eDbSyncPrompt(sciezka, numerFazy), { schema: E2E_DB_SYNC_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `e2e:db-sync:faza-${numerFazy}` })
       log(`E2E db-sync fazy ${numerFazy}: ${e2eSync ? `${e2eSync.status} — ${e2eSync.detal}` : 'agent zwrocil null'}`)
     }
+    await zapiszZaleglyStan()
     const review = await workflow('dev-docs-review-wf', {
       sciezka,
       faza: numerFazy,
       poprzednieFindingi: faza.otwarteFindingi.length ? faza.otwarteFindingi : null,
       dossier: dossierZExecute,
+      // Baza fazy ze stanu (P7): zapasowy agent dossier po STOP-ie miedzy execute a review liczy diff od niej, nie od main.
+      baza: faza.baza || null,
       // Status srodowiska przegladarkowego (2026-07-30): routing v2 sam z diffu NIE wie, czy przegladarka
       // stoi, wiec w runie rownolegle-joby (faza 1) przywolal testera przy e2eSrodowisko: "pominieto"
       // — wynik 1 passed / 1 failed / 3 skipped. Z tym sygnalem review-wf da mu tryb bez przegladarki.
@@ -1458,7 +1550,7 @@ for (const numerFazy of kolejka) {
     // Scribe padl 2x: raport review-faza-N.md i sekcja "Do poprawy" NIE powstaly. Nie oznaczamy
     // review=done (utrwalone done nigdy juz nie odtworzy raportu) — STOP; kolejny run powtorzy review.
     if (review.scribeFail) {
-      await zapiszStan()
+      oznaczStan()
       return await stopRun({
         powod: `Faza ${numerFazy}: scribe padl 2x — findingi zweryfikowane (P1/P2 w wyniku), ale raport review-faza-${numerFazy}.md nie zostal zapisany. Review pozostaje pending; odpal SWIEZY run (reviewerzy odpala sie ponownie).`,
         faza: numerFazy, findings: review.findings, raporty,
@@ -1478,7 +1570,7 @@ for (const numerFazy of kolejka) {
       // findingi E2E powstaly na zepsutym srodowisku i po naprawie wymagaja powtorki.
       faza.otwarteFindingi = polaczFindingiPoPowtorce(otwartePoReview(review.findings), findingiPrzedPowtorka)
       faza.metryki = { liczniki: policzFindingi(review.findings), przebieg: skrotPrzebiegu(review.przebieg) }
-      await zapiszStan()
+      oznaczStan()
       return await stopRun({
         powod: `Faza ${numerFazy}: scenariusz E2E padl na BLOKERZE SRODOWISKA (${b.klasa}), nie na defekcie kodu. Dowod z outputu: "${b.dowod}". Kazdy kolejny scenariusz padlby tak samo, wiec zatrzymuje run zamiast ciagnac go na zepsutym srodowisku.`,
         naprawa: b.klasa === 'dev-server-nieosiagalny'
@@ -1499,7 +1591,7 @@ for (const numerFazy of kolejka) {
       // `faza.review` zostaje `pending` (bez przebiegu w przegladarce faza z E2E nie ma dowodu).
       faza.otwarteFindingi = polaczFindingiPoPowtorce(otwartePoReview(review.findings), findingiPrzedPowtorka)
       faza.metryki = { liczniki: policzFindingi(review.findings), przebieg: skrotPrzebiegu(review.przebieg) }
-      await zapiszStan()
+      oznaczStan()
       return await stopRun({
         powod: `Faza ${numerFazy}: tester E2E (agent-browser) ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} przy ${review.przebieg && review.przebieg.e2eLiczbaZnana ? `${review.przebieg.e2eCheckboxy} checkboxach [E2E]` : 'nieznanej liczbie checkboxow [E2E] (dossier tez nie powstalo — szukaj 529/watchdoga, nie przegladarki)'}. Nie degraduje cicho do OPERATOR: review pozostaje pending.`,
         naprawa: 'Sprawdz dev server Vite (port 5173, /tmp/autopilot-vite.log), agent-browser (`agent-browser doctor`) albo 529 Overloaded i odpal SWIEZY run (te same args, BEZ resumeFromRunId) — review tej fazy powtorzy sie z testerem. Jesli srodowisko stoi, a tester pada 2x na tym samym flow — flow prawdopodobnie wisi na powierzchni poza kontrola headless (popup OAuth, natywny dialog przegladarki): odegraj scenariusz recznie, zeby zobaczyc gdzie, i rozwaz [E2E] -> [Manual].',
@@ -1527,12 +1619,14 @@ for (const numerFazy of kolejka) {
     faza.metryki = { liczniki, przebieg: skrotPrzebiegu(przebiegFazy) }
     faza.otwarteFindingi = polaczFindingiPoPowtorce(otwartePoReview(review.findings), findingiPrzedPowtorka)
     faza.fix = faza.otwarteFindingi.length ? 'pending' : 'none'
-    await zapiszStan()
+    oznaczStan()
   }
 
   // 3) FIX — bez re-review; gate z self-reportu + lista findingow przekazana wprost (md tylko jako widok).
   if (faza.fix === 'pending') {
-    const fix = await agent(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}` })
+    // Stan po review (fix pending) zapisuje agent fixa (P7).
+    const fix = await agent(zeStanem(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi)), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}` })
+    await potwierdzStan(fix)
     if (!fix) {
       return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
@@ -1553,7 +1647,7 @@ for (const numerFazy of kolejka) {
     // Semantyka jak w sasiednich STOP-ach: fix zostaje 'pending', wiec swiezy run wraca wprost do fixa.
     const plikiBinarne = fix.plikiBinarne || []
     if (plikiBinarne.length) {
-      await zapiszStan()
+      oznaczStan()
       return await stopRun({
         powod: `Faza ${numerFazy}: po fixie git widzi jako BINARNE pliki, ktore powinny byc tekstem: ${plikiBinarne.join(', ')}. Najprawdopodobniej wpisano do nich SUROWE bajty sterujace zamiast sekwencji ucieczki (np. literalny U+001F zamiast \\x1f w regexie). Kazdy kolejny agent, ktory zrobi Read takiego pliku, rozlaczy sie na APIError — pipeline bedzie umieral w kolko, dopoki plik nie zostanie naprawiony.`,
         naprawa: `Napraw ${plikiBinarne.join(', ')} POZA pipelinem i NIE otwieraj ich Readem (to samo rozlaczenie dotyczy kazdej sesji): albo cofnij zmiane (\`git checkout <commit-sprzed-fixa> -- <plik>\`), albo przepisz plik od nowa z sekwencjami ucieczki (\\x00-\\x1f\\x7f-\\x9f zamiast literalnych bajtow). Potwierdz \`file <plik>\` = "... text" i \`git diff --numstat\` = liczby zamiast "-", zacommituj, potem odpal SWIEZY run (te same args, BEZ resumeFromRunId).`,
@@ -1563,7 +1657,7 @@ for (const numerFazy of kolejka) {
 
     if (fix.walidacja === 'FAIL' || fix.nierozwiazaneP1 > 0) {
       // Stan NIE oznacza fix=done — resume wroci wprost do fixa z ta sama lista.
-      await zapiszStan()
+      oznaczStan()
       return await stopRun({
         powod: fix.nierozwiazaneP1 > 0
           ? `Faza ${numerFazy}: ${fix.nierozwiazaneP1}x P1 nierozwiazane po fixie — wymagana reczna interwencja`
@@ -1590,7 +1684,7 @@ for (const numerFazy of kolejka) {
       if (nadalOtwarte.length) {
         // Zawez liste do realnie otwartych — kolejny run wraca wprost do fixa z ta zawezona lista.
         faza.otwarteFindingi = nadalOtwarte.map((f) => ({ ...f, opis: `[NIEZAMKNIETY po fixie] ${f.opis}` }))
-        await zapiszStan()
+        oznaczStan()
         return await stopRun({
           powod: `Faza ${numerFazy}: niezalezna weryfikacja wykryla ${nadalOtwarte.length}x P1 NADAL otwarte po fixie (self-report fixa mowil "naprawione") — wymagana reczna interwencja. Po naprawie odpal SWIEZY run.`,
           faza: numerFazy, fix, nadalOtwarte, raporty,
@@ -1646,7 +1740,7 @@ for (const numerFazy of kolejka) {
         // Walidacja FAIL po turze poprawkowej JEST bramka: zostawilibysmy faze z niedzialajacym typecheckiem
         // albo czerwonymi testami, a nastepna faza budowalaby na tym.
         if (poprawka.walidacja === 'FAIL') {
-          await zapiszStan()
+          oznaczStan()
           return await stopRun({
             powod: `Faza ${numerFazy}: tura poprawkowa po kontroli diffu naprawczego zakonczyla sie walidacja FAIL — kod fazy zostal w stanie, w ktorym typecheck/testy/build nie przechodza.`,
             naprawa: 'Sprawdz ostatni commit `fix(...): kontrola diffu naprawczego` i doprowadz walidacje do zieleni recznie, potem odpal SWIEZY run (te same args, BEZ resumeFromRunId).',
@@ -1665,7 +1759,7 @@ for (const numerFazy of kolejka) {
     }
     faza.fix = 'done'
     faza.otwarteFindingi = []
-    await zapiszStan()
+    oznaczStan()
     // ZWIN SEKCJE "Do poprawy" ZAMKNIETEJ FAZY (plan B8). Plik zadan jest czytany przy KAZDEJ nastepnej
     // fazie — przez plannera, testera E2E i scribe'a — a w trakcie jednego zadania puchnie z 23 KB do 59 KB
     // wlasnie tymi sekcjami. Pelna tresc findingow i tak zostaje w review-faza-K.md; w pliku zadan
@@ -1707,7 +1801,8 @@ Nie commituj — orkiestrator zrobi to sam. Zwroc {zapisano: true} po realnym za
 phase('Zakonczenie')
 
 if (stan.zakonczenie.walidacja === 'pending') {
-  const walidacja = await agent(finalValidationPrompt(sciezka), { schema: VALIDATION_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'walidacja-koncowa' })
+  const walidacja = await agent(zeStanem(finalValidationPrompt(sciezka)), { schema: VALIDATION_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'walidacja-koncowa' })
+  await potwierdzStan(walidacja)
   if (!walidacja) {
     return await stopRun({ powod: 'walidacja koncowa zwrocila null', historia, raporty })
   }
@@ -1736,7 +1831,7 @@ if (stan.zakonczenie.walidacja === 'pending') {
         f.fix = 'none'
         f.otwarteFindingi = []
       }
-      await zapiszStan()
+      oznaczStan()
     }
     const naprawaE2e = e2eOtwarte.length
       ? ` E2E: ${fazyDoPowtorki.length ? `fazy ${fazyDoPowtorki.join(', ')} cofniete do review=pending — po naprawie (srodowisko/kod) odpal SWIEZY run (te same args, BEZ resumeFromRunId): review tych faz powtorzy sie z testerem, ktory ponowi flow i odznaczy zrodlowe checkboxy po PASS.` : 'nie udalo sie ustalic faz z niezaznaczonymi [E2E] — recznie ustaw im review:"pending" w .autopilot-state.json i odpal swiezy run.'} Alternatywy: (b) recznie odegraj scenariusz w przegladarce na srodowisku z .env.e2e (dev server \`--mode e2e\` + seed flow przez psql), przy PASS zaznacz [x] i usun suffix (SKIP/FAIL) w zadaniach + commit; (c) swiadomy opt-out: [E2E] -> [Manual] w zadaniach i planie (NIE dla linii z "(FAIL:" — to ukryloby znany defekt). Jesli srodowisko stoi, a ten sam flow pada/wisi przy kazdym runie — flow prawdopodobnie dotyka powierzchni poza kontrola headless (popup OAuth, natywny dialog przegladarki): odegraj go recznie, zeby zobaczyc gdzie, i rozwaz opt-out.`
@@ -1749,14 +1844,15 @@ if (stan.zakonczenie.walidacja === 'pending') {
   }
   stan.zakonczenie.walidacja = 'done'
   stan.walidacjaWynik = walidacja
-  await zapiszStan()
+  oznaczStan()
 }
 
 // Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP
 // celowo zostawia dev server Vite zywy (operator debuguje na gotowym srodowisku; nasz .pid
 // pozwala nastepnemu runowi przejac lub ubic proces).
 if (e2eAktywne) {
-  const down = await agent(e2eEnvDownPrompt(), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
+  const down = await agent(zeStanem(e2eEnvDownPrompt()), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
+  await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)
 }
 
@@ -1776,6 +1872,7 @@ const REFRESH_RESULT = {
     // i blokowaly bramke bootstrapu nastepnego runu. W required z tego samego powodu co plikiBinarne:
     // brak commita musi byc jawny, pole opcjonalne = agent cicho pomija commit.
     commit: { type: 'string', description: 'hash commita zmian bazy wiedzy ("" gdy nic nie zmieniono albo commit sie nie udal)' },
+    stanZapisany: POLE_STANU,
   },
   required: ['przejrzano', 'slownik', 'commit'],
 }
@@ -1800,15 +1897,18 @@ Zwroc obiekt zgodny ze schematem RefreshResult (commit = hash commita lub "").`
 // `compound` jest zadeklarowany na gorze pliku razem z reszta stanu runu (czyta go wynik runu na koncu).
 let refresh = null
 if (stan.zakonczenie.compound === 'pending') {
+  await zapiszZaleglyStan()
   compound = await workflow('dev-compound-wf', { sciezka })
+  // compound=done przed refreshem (P7): stan zapisuje refresh; bez refresha — zapis zalegly przed complete-wf.
+  stan.zakonczenie.compound = 'done'
+  oznaczStan()
   // Scoped refresh ZARAZ po compound — dedup/prune bazy dla dotknietej kategorii + CONCEPTS.md.
   // Odpala sie tylko gdy compound cos zapisal (compound.plik != null). Best-effort: nie blokuje complete.
   if (compound && compound.plik) {
-    refresh = await agent(refreshPrompt(compound.plik, compound.kategoria), { schema: REFRESH_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'compound-refresh' })
+    refresh = await agent(zeStanem(refreshPrompt(compound.plik, compound.kategoria)), { schema: REFRESH_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'compound-refresh' })
+    await potwierdzStan(refresh)
     log(`Compound-refresh (scoped): ${refresh ? `${refresh.przejrzano} dok., slownik=${refresh.slownik}, commit=${refresh.commit || 'brak'}` : 'agent zwrocil null'}`)
   }
-  stan.zakonczenie.compound = 'done'
-  await zapiszStan()
 }
 
 let complete = null
@@ -1823,6 +1923,7 @@ if (stan.zakonczenie.complete === 'pending') {
   const dodatkowePathspec = compound
     ? ['docs/solutions', 'docs/CONCEPTS.md', '.claude/rules/learned-patterns.md']
     : []
+  await zapiszZaleglyStan()
   complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec })
   if (complete && (!complete.archiwum || !complete.commit)) {
     log(`UWAGA: archiwizacja NIE domknieta (archiwum=${complete.archiwum || 'brak'}, commit=${complete.commit || 'brak'}): ${(complete.rezultaty || []).join('; ') || 'bez szczegolow'} — zadanie moglo zostac w docs/active/, sprawdz git status`)

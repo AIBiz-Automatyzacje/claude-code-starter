@@ -189,6 +189,7 @@ const EXECUTE_RESULT = {
       },
     },
     dossier: DOSSIER,
+    stanZapisany: { type: ['boolean', 'null'], description: 'true po zapisie pliku stanu i odczycie z wynikiem JSON-OK' },
   },
   required: ['fazaNumer', 'status', 'iu'],
 }
@@ -268,6 +269,35 @@ Zwroc obiekt zgodny ze schematem IUPlan. Sam nie implementuj kodu.`
 // buildery nie commituja, wiec zmiany fazy i tak sa w drzewie roboczym. Wartosc trafia do komendy powloki.
 function bazaFazy(plan) {
   return /^[0-9a-f]{7,40}$/.test(plan.baza || '') ? plan.baza : 'HEAD'
+}
+
+// Stan zadania po execute (P7): autopilot podaje go w args.stanPoExecute, JS wstawia baze fazy, domkniecie zapisuje plik.
+// Baza w stanie pozwala odtworzyc dossier fazy po STOP-ie miedzy execute a review (args.baza review-wf).
+function stanZBaza(tresc, faza, baza) {
+  const stan = JSON.parse(tresc)
+  const sha = /^[0-9a-f]{7,40}$/.test(baza) ? baza : null
+  return JSON.stringify({ ...stan, fazy: stan.fazy.map((f) => (f.numer === faza ? { ...f, baza: sha } : f)) }, null, 2)
+}
+
+// Kopia blokZapisuStanu z dev-autopilot-wf.js (workflow nie importuje modulow; zgodnosc pilnuje stan-fazy.test.mjs).
+function blokZapisuStanu(sciezka, tresc) {
+  const plik = `${sciezka}/.autopilot-state.json`
+  return `Zapis stanu pipeline'u:
+a) Narzedziem Write zapisz plik ${plik} (pelne nadpisanie) z trescia miedzy znacznikami, bez znacznikow
+   i bez zmian w tresci.
+b) Odczytaj plik z dysku: \`node -e "JSON.parse(require('fs').readFileSync('${plik}','utf8'));console.log('JSON-OK')"\`.
+   Bez wyniku JSON-OK zapisz plik jeszcze raz i powtorz odczyt.
+c) Pole stanZapisany w wyniku: true po odczycie z wynikiem JSON-OK, w kazdym innym przypadku false.
+Z tego pliku pipeline wznawia fazy po zatrzymaniu, dlatego tresc idzie na dysk bajt w bajt.
+--- POCZATEK STANU ---
+${tresc}
+--- KONIEC STANU ---`
+}
+
+function punktZapisuStanu(sciezka, faza, baza, stanPoExecute) {
+  if (!stanPoExecute) return ''
+  return `\n\nZAPIS STANU (po punkcie 6), gdy zwracasz status=completed; przy innym statusie pomin go i zwroc stanZapisany=false.
+${blokZapisuStanu(sciezka, stanZBaza(stanPoExecute, faza, baza))}`
 }
 
 // Wynik bramek w pliku artefaktow fazy (wzor nazwy jak w .claude/scripts/dossier/sciezki.mjs): kazdy przebieg bramek go
@@ -410,5 +440,6 @@ if (buildResults.length !== plan.iu.length) {
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza)), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
-return wynik
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza)) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
+// Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.
+return wynik && { ...wynik, baza: bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan) }
