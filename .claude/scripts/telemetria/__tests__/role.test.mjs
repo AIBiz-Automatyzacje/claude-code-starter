@@ -62,3 +62,16 @@ test('stary run bez etykiet: rola z poczatku promptu', () => {
   assert.equal(klasyfikujPoPrompcie('Adwersaryjnie OBAL ponizsze findingi'), 'verify-batch')
   assert.equal(klasyfikujPoPrompcie('cos zupelnie innego'), null)
 })
+
+// P7: dossier liczy skrypt; zapasowy agent `dossier:zapas` (klasa mechaniczna) zastapil packagera `kontekst:diff`,
+// a zwijanie „Do poprawy” robi fix — role kontekst:diff i zwin-do-poprawy wychodza z mapy (stan:zapis zostaje).
+test('dossier:zapas: rola mechaniczna z etykiety i z poczatku promptu; kontekst:diff i zwin-do-poprawy poza mapa', () => {
+  assert.equal(rola('dossier:zapas'), 'dossier:zapas')
+  assert.equal(klasaRoli('dossier:zapas'), 'mechaniczny')
+  assert.equal(klasyfikujPoPrompcie('Uruchom w korzeniu repo (Bash): `node .claude/scripts/dossier/dossier.mjs --sciezka docs/active/x --faza 1`'), 'dossier:zapas')
+  assert.equal(klasaRoli('kontekst:diff'), 'orkiestracyjny')
+  assert.equal(klasaRoli('zwin-do-poprawy'), 'orkiestracyjny')
+  assert.equal(rola('zwin-do-poprawy:faza-2'), 'zwin-do-poprawy')
+  assert.equal(klasyfikujPoPrompcie('Jestes context-packagerem fazy 1'), null)
+  assert.equal(klasyfikujPoPrompcie('Zwin ZAMKNIETE pozycje sekcji'), null)
+})

@@ -305,6 +305,7 @@ const KONTEKST = {
     diffPlik: { type: 'string', description: 'sciezka zrzutu diffu fazy (pusty string gdy zrzut sie nie udal)' },
     ctxPlik: { type: 'string', description: 'sciezka dossier fazy (pusty string gdy zapis sie nie udal)' },
     ctxZapisany: { type: 'boolean', description: 'true tylko gdy dossier realnie powstalo i jest niepuste' },
+    ctxZnaki: { type: 'integer', description: 'liczba znakow dossier fazy (telemetria: faza.dossier_zn)' },
     // Wsparcie deterministyczne dla reviewerow (plan B6): dwa wzorce, ktore reviewer potrafi przeoczyc, bo kod wyglada poprawnie.
     preSkan: {
       type: 'array',

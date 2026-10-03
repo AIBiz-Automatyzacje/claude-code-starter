@@ -8,7 +8,7 @@ import { sekundyAgentow, sumaKosztu } from './run.mjs'
 /**
  * Minimum rekordu agenta, ktore czyta agregacja fazy.
  * @typedef {import('./run.mjs').KosztAgenta & { id: string, rola: string | null, faza: number | null,
- *   klasa_roli: string | null, findingi: { p1: number, p2: number, p3: number } | null }} AgentFazy
+ *   klasa_roli: string | null, findingi: { p1: number, p2: number, p3: number } | null, grupa?: string | null }} AgentFazy
  */
 
 // Skrot `e2eSync` (przeniesiony z dev-autopilot-wf.js, audyt 2026-09-06 N6): pelny raport agenta db-sync
@@ -31,7 +31,7 @@ export function skrotE2eSync(tekst) {
 // To samo co w d5r_koszt_output.py §2 — udzialy z telemetrii sa wprost porownywalne z analiza.
 const ETAPY_ROL = {
   execute: ['build', 'planner', 'domkniecie', 'warmup:vitest'],
-  mechanika_review: ['kontekst:diff', 'dedup:semantyczny', 'scribe'],
+  mechanika_review: ['dossier:zapas', 'dedup:semantyczny', 'scribe'],
   orkiestracja: ['stan:zapis', 'bootstrap', 'telemetria', 'stop', 'e2e:precheck', 'e2e:env-up', 'e2e:env-down', 'e2e:db-sync',
     'walidacja-koncowa', 'compound', 'compound-refresh', 'complete', 'smoke-operatora'],
 }
@@ -44,7 +44,7 @@ export function etapRoli(rola) {
   if (!rola) return null
   if (rola.startsWith('review:')) return 'review'
   if (rola.startsWith('verify')) return 'sceptycy'
-  if (rola.startsWith('fix') || rola === 'zwin-do-poprawy') return 'fix'
+  if (rola.startsWith('fix')) return 'fix'
   if (ETAPY_ROL.execute.includes(rola)) return 'execute'
   if (ETAPY_ROL.mechanika_review.includes(rola)) return 'mechanika_review'
   if (rola === 'stop:commit-artefaktow' || ETAPY_ROL.orkiestracja.includes(rola)) return 'orkiestracja'
@@ -146,6 +146,26 @@ function bramkiFazy(agenci, journal) {
   return { bramki, testyUsuniete: Array.isArray(wynik.testyUsuniete) ? wynik.testyUsuniete : null }
 }
 
+// Uruchomienia review-wf w fazie = rozne grupy harnessu dziecka review („▸ dev-docs-review-wf”, „… #2”).
+const GRUPA_REVIEW = /dev-docs-review-wf/
+
+/** @param {AgentFazy[]} agenci */
+function rundyReview(agenci) {
+  return new Set(agenci.map((a) => a.grupa).filter((g) => typeof g === 'string' && GRUPA_REVIEW.test(g))).size
+}
+
+/**
+ * Znaki dossier fazy (P7): z zapasowego agenta, gdy byl (to dossier dostalo review), inaczej z ostatniego domkniecia.
+ * @param {AgentFazy[]} agenci
+ * @param {Map<string, WynikJournala>} journal
+ * @returns {number | null}
+ */
+function znakiDossier(agenci, journal) {
+  const zrodlo = agenci.filter((a) => a.rola === 'dossier:zapas').at(-1) ?? agenci.filter((a) => a.rola === 'domkniecie').at(-1)
+  const dossier = obiekt(obiekt(zrodlo ? journal.get(zrodlo.id)?.wynik : null).dossier)
+  return liczbaLubNull(dossier.ctxZnaki)
+}
+
 /**
  * @param {{ wynikRunu: unknown, agenci: AgentFazy[], journal: Map<string, WynikJournala>, zmianyFixa: (commity: string[]) => ZmianyCommitow }} we
  */
@@ -180,12 +200,12 @@ export function rekordyFaz(we) {
       koszt: kosztFazy(agenci),
       sekundy: sekundyAgentow(agenci),
       e2eSync: typeof raport.e2eSync === 'string' ? skrotE2eSync(raport.e2eSync) : null,
-      review_rundy: agenci.filter((a) => a.rola === 'kontekst:diff').length,
+      review_rundy: rundyReview(agenci),
       bramki: domkniecie.bramki,
-      // Producenci w pozniejszych paczkach: sceptyk asymetryczny (P9), wiedza (P10), dossier ze skryptu (P7).
+      // Producenci w pozniejszych paczkach: sceptyk asymetryczny (P9), wiedza (P10).
       sceptyk: null,
       wiedza: null,
-      dossier_zn: null,
+      dossier_zn: znakiDossier(agenci, we.journal),
       testy_usuniete: domkniecie.testyUsuniete,
     }
   })

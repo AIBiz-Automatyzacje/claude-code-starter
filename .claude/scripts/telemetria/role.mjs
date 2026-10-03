@@ -4,12 +4,13 @@
 // Role, ktorych etykieta niesie ogon (`build:IU-2`, `scribe:inspekcja`). Kolejnosc = od najdluzszej, zeby
 // `fix:kontrola` nie wpadl w `fix`, a `compound-refresh` w `compound`.
 const ROLE_Z_OGONEM = [
-  'fix:pre-skan', 'fix:kontrola', 'fix:poprawka', 'compound-refresh', 'smoke-operatora', 'zwin-do-poprawy', 'e2e:db-sync',
-  'kontekst:diff', 'stan:zapis', 'domkniecie', 'telemetria', 'compound', 'complete', 'planner', 'scribe', 'build', 'stop', 'fix',
+  'fix:pre-skan', 'fix:kontrola', 'fix:poprawka', 'compound-refresh', 'smoke-operatora', 'e2e:db-sync',
+  'stan:zapis', 'domkniecie', 'telemetria', 'compound', 'complete', 'planner', 'scribe', 'build', 'stop', 'fix',
 ]
 
+// P7: kontekst:diff (packager) i zwin-do-poprawy wyszly z pipeline'u — dossier liczy skrypt, zwijanie robi fix.
 const MECHANICZNE = new Set([
-  'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'kontekst:diff', 'zwin-do-poprawy', 'e2e:env-down',
+  'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'dossier:zapas', 'e2e:env-down',
   'fix:pre-skan', 'stop:commit-artefaktow',
 ])
 const SCEPTYCY = new Set(['verify', 'verify-batch', 'verify-fix'])
@@ -63,9 +64,9 @@ const POCZATKI_PROMPTU = [
   [/Dokumentujesz rozwiazane problemy/, 'compound'], [/To JEDYNA tura poprawek po kontroli/, 'fix:poprawka'],
   [/Naprawiasz problemy z review fazy/, 'fix'], [/^Sprzatanie srodowiska E2E/, 'e2e:env-down'], [/^Pipeline dev-autopilot zatrzymuje sie/, 'stop'],
   [/^Jestes agentem synchronizacji bazy e2e/, 'e2e:db-sync'], [/^Ponizej ponumerowana lista findingow/, 'dedup:semantyczny'],
-  [/^Jestes scribe review/, 'scribe'], [/^Zwin ZAMKNIETE pozycje/, 'zwin-do-poprawy'], [/^Jestes testerem E2E w przegladarce/, 'review:e2e'],
+  [/^Jestes scribe review/, 'scribe'], [/^Jestes testerem E2E w przegladarce/, 'review:e2e'],
   [/^Jestes testerem scenariuszy\/coverage/, 'review:test-coverage'], [/^Mechaniczny skan commitow fix/, 'fix:pre-skan'],
-  [/^Jestes NIEZALEZNYM kontrolerem commitow fix/, 'fix:kontrola'], [/^Jestes context-packagerem/, 'kontekst:diff'],
+  [/^Jestes NIEZALEZNYM kontrolerem commitow fix/, 'fix:kontrola'], [/^Uruchom w korzeniu repo \(Bash\): `node \.claude\/scripts\/dossier\/dossier\.mjs/, 'dossier:zapas'],
   [/^Jestes rozgrzewka cache/, 'warmup:vitest'], [/^Wykonaj pelna walidacje calego projektu/, 'walidacja-koncowa'],
   [/^Jestes autorem checklisty smoke/, 'smoke-operatora'], [/Weryfikujesz poprawke findingu|verify-fix/, 'verify-fix'],
   [/(Ścieżka zadania|Ścieżka dokumentacji zadania|^Zadanie: docs\/active\/|Implementation Unit|Numer IU)/, 'build'],

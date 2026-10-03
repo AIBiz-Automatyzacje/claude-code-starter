@@ -16,12 +16,15 @@ const agent = (id, rola, faza, koszt, inne = {}) => ({
   findingi: null, start: '2026-09-23T10:00:00.000Z', koniec: '2026-09-23T10:10:00.000Z', ...inne,
 })
 
+// Grupa harnessu dziecka review-wf (kolejne wywolanie w tym samym runie: „▸ dev-docs-review-wf #2”).
+const REVIEW_WF = '▸ dev-docs-review-wf'
+
 const AGENCI = [
   agent('b1', 'build', 1, 400),
-  agent('k1', 'kontekst:diff', 1, 20),
-  agent('r1', 'review:security', 1, 200, { findingi: { p1: 1, p2: 2, p3: 0 } }),
-  agent('r2', 'review:correctness', 1, 150, { findingi: { p1: 0, p2: 1, p3: 3 } }),
-  agent('v1', 'verify-batch', 1, 60),
+  agent('k1', 'dossier:zapas', 1, 20, { grupa: REVIEW_WF }),
+  agent('r1', 'review:security', 1, 200, { findingi: { p1: 1, p2: 2, p3: 0 }, grupa: REVIEW_WF }),
+  agent('r2', 'review:correctness', 1, 150, { findingi: { p1: 0, p2: 1, p3: 3 }, grupa: REVIEW_WF }),
+  agent('v1', 'verify-batch', 1, 60, { grupa: REVIEW_WF }),
   agent('f1', 'fix', 1, 170, { koniec: '2026-09-23T10:30:00.000Z' }),
   agent('fk', 'fix:kontrola', 1, 30),
   agent('s1', 'stan:zapis', null, 10),
@@ -106,20 +109,42 @@ test('sekundy fazy od pierwszego do ostatniego agenta', () => {
   assert.equal(fazy()[0].sekundy, 30 * 60)
 })
 
-test('review_rundy = liczba uruchomien packagera w fazie', () => {
+// Zmiana kontraktu (P7): review_rundy liczone z uruchomien review-wf (grupy harnessu), nie z agentow kontekst:diff,
+// ktorych juz nie ma — dossier liczy skrypt w domknieciu, zapasowy agent startuje tylko bez dossier w args.
+test('review_rundy = liczba uruchomien review-wf w fazie (rozne grupy harnessu dziecka review)', () => {
   assert.equal(fazy()[0].review_rundy, 1)
+  assert.equal(fazy()[1].review_rundy, 0)
+  const druga = [...AGENCI, agent('r3', 'review:security', 1, 100, { grupa: `${REVIEW_WF} #2` })]
+  const f = rekordyFaz({ wynikRunu: WYNIK_RUNU, agenci: druga, journal: JOURNAL, zmianyFixa: gitFake })
+  assert.equal(f[0].review_rundy, 2)
+})
+
+test('dossier_zn = znaki dossier fazy: z zapasowego agenta (to dossier dostalo review), inaczej z domkniecia; brak = null', () => {
+  /** @type {Map<string, import('../agent.mjs').WynikJournala>} */
+  const journal = new Map(JOURNAL)
+  journal.set('k1', { rozpoczety: true, maWynik: true, wynik: { kodWyjscia: 0, dossier: { ctxZnaki: 5400 } } })
+  journal.set('d1', { rozpoczety: true, maWynik: true, wynik: { status: 'completed', dossier: { ctxZnaki: 6100 } } })
+  const zDomknieciem = [...AGENCI, agent('d1', 'domkniecie', 1, 50), agent('d2', 'domkniecie', 2, 50)]
+  const f = rekordyFaz({ wynikRunu: WYNIK_RUNU, agenci: zDomknieciem, journal, zmianyFixa: gitFake })
+  assert.equal(f[0].dossier_zn, 5400)
+  const bezZapasu = rekordyFaz({ wynikRunu: WYNIK_RUNU, agenci: zDomknieciem.filter((a) => a.id !== 'k1'), journal, zmianyFixa: gitFake })
+  assert.equal(bezZapasu[0].dossier_zn, 6100)
+  assert.equal(f[1].dossier_zn, null, 'domkniecie bez wyniku w journalu')
 })
 
 test('etapRoli: role mechaniczne review i petla fix', () => {
   assert.equal(etapRoli('scribe'), 'mechanika_review')
-  assert.equal(etapRoli('zwin-do-poprawy'), 'fix')
+  // Zmiana kontraktu (P7): role kontekst:diff i zwin-do-poprawy wyszly z pipeline'u; zapasowy agent dossier to mechanika review.
+  assert.equal(etapRoli('dossier:zapas'), 'mechanika_review')
+  assert.equal(etapRoli('kontekst:diff'), null)
+  assert.equal(etapRoli('fix:poprawka'), 'fix')
   assert.equal(etapRoli('warmup:vitest'), 'execute')
   assert.equal(etapRoli('pr:zbierz'), null)
 })
 
 test('pola z producentem w pozniejszych iteracjach istnieja (null)', () => {
   const pola = new Map(Object.entries(fazy()[0]))
-  for (const k of ['bramki', 'sceptyk', 'wiedza', 'dossier_zn', 'testy_usuniete']) assert.ok(pola.has(k), k)
+  for (const k of ['bramki', 'sceptyk', 'wiedza', 'testy_usuniete']) assert.ok(pola.has(k), k)
 })
 
 // ── Bramki domkniecia (P6): producent z wyniku agenta domkniecie (EXECUTE_RESULT) ──

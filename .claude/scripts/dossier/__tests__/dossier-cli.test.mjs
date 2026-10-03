@@ -46,7 +46,7 @@ const DOKUMENTY = {
 /**
  * @typedef {{ diffStat: string, pliki: { plik: string, czegoDotyczy: string }[], warstwy: Record<string, boolean>, e2eCheckboxy: number,
  *   figmaScreens: boolean, diffPlik: string, diffZapisany: boolean, diffUciety: boolean, ctxPlik: string, ctxZapisany: boolean,
- *   preSkan: { wzorzec: string, plik: string }[] }} Dossier
+ *   ctxZnaki: number, preSkan: { wzorzec: string, plik: string }[] }} Dossier
  */
 
 /** @param {string[]} argumenty @param {string} cwd @returns {{ kod: number | null, wynik: Dossier, stderr: string }} */
@@ -87,6 +87,7 @@ test('dossier: wynik zgodny ze schematem KONTEKST review-wf; flagi, [E2E], figma
     assert.equal(wynik.diffZapisany, true)
     assert.equal(wynik.diffUciety, false)
     assert.equal(wynik.ctxZapisany, true)
+    assert.equal(wynik.ctxZnaki, readFileSync(wynik.ctxPlik, 'utf8').length, 'rozmiar dossier dla telemetrii (faza.dossier_zn)')
     assert.match(readFileSync(wynik.diffPlik, 'utf8'), /\+export const Lista/)
   })
 })

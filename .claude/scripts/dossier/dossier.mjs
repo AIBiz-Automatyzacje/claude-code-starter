@@ -12,7 +12,7 @@
 //   Bez --bramki: bramki-<zadanie>-faza-N.json z katalogu wyjscia (domkniecie zapisuje tam wynik bramek), o ile istnieje.
 // Wynik (stdout, JSON) = pole `dossier` w schemacie KONTEKST z dev-docs-review-wf.js:
 //   { diffStat, pliki: [{ plik, czegoDotyczy }], warstwy: { ui, dane, typowanie, nowyModul }, e2eCheckboxy, figmaScreens,
-//     diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, preSkan: [{ wzorzec, plik }] }
+//     diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, ctxZnaki, preSkan: [{ wzorzec, plik }] }
 // Kod wyjscia: 0 = dossier zapisane, 2 = zle argumenty (takze baza, ktora nie jest commitem).
 
 import { spawnSync } from 'node:child_process'
@@ -105,6 +105,7 @@ const wynik = {
   ctxPlik: sciezki.dossier,
   // writeFileSync rzuca przy nieudanym zapisie (kod 1) — tu plik juz jest.
   ctxZapisany: true,
+  ctxZnaki: tresc.length,
   preSkan: sygnaly,
 }
 process.stdout.write(`${JSON.stringify(wynik)}\n`)
