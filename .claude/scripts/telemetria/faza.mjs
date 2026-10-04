@@ -147,6 +147,7 @@ function fixFazy(raport, agenci, journal, zmianyFixa) {
   return {
     naprawione: liczbaLubNull(zRaportu.naprawione),
     nierozwiazaneP2: liczbaLubNull(zRaportu.nierozwiazaneP2),
+    // P8: fix bez P3 — pole tylko w runach sprzed P8, w nowych null
     p3Pominiete: liczbaLubNull(zRaportu.p3Pominiete),
     pliki: zmiany.ok ? zmiany.pliki : null,
     pliki_blad: zmiany.ok ? null : zmiany.powod,

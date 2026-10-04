@@ -11,7 +11,7 @@ const ROLE_Z_OGONEM = [
 // P7: kontekst:diff (packager) i zwin-do-poprawy wyszly z pipeline'u — dossier liczy skrypt, zwijanie robi fix.
 const MECHANICZNE = new Set([
   'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'dossier:zapas', 'e2e:env-down',
-  'fix:pre-skan', 'stop:commit-artefaktow',
+  'fix:pre-skan', 'stop:commit-artefaktow', 'start:p3-known-issues',
 ])
 // P8: fix:pre-skan i verify-fix wyszly z pipeline'u (listy K kontroli fixa), ale rozpoznanie zostaje dla starych runow —
 // bez fix:pre-skan w ROLE_Z_OGONEM etykieta sklejalaby sie w `fix`, a fixFazy czytalaby wynik pre-skanu jako commity fixa.

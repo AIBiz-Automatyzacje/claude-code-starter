@@ -136,9 +136,10 @@ test('przeniesienie zostawia slad w logu runu', () => {
   assert.equal(logi.length, 0, 'normalna sciezka nie ma zasmiecac logu')
 })
 
+// Zmiana kontraktu (P8): otwartePoReview nie przepuszcza P3, wiec finding wejsciowy to P2 (asercja bez zmian).
 test('kontrakt z otwartePoReview: przeniesione findingi maja ksztalt FINDING_OTWARTY', () => {
   const poprzednie = otwartePoReview([
-    { severity: 'P3', typ: 'KOD', plik: 'x.ts:1', opis: 'nit', _zrodlo: 'code-quality' },
+    { severity: 'P2', typ: 'KOD', plik: 'x.ts:1', opis: 'defekt', _zrodlo: 'code-quality' },
   ])
   const wynik = polaczFindingiPoPowtorce([], poprzednie)
   assert.deepEqual(

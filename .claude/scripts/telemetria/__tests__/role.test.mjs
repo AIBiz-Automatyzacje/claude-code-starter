@@ -75,3 +75,8 @@ test('dossier:zapas: rola mechaniczna z etykiety i z poczatku promptu; kontekst:
   assert.equal(klasyfikujPoPrompcie('Jestes context-packagerem fazy 1'), null)
   assert.equal(klasyfikujPoPrompcie('Zwin ZAMKNIETE pozycje sekcji'), null)
 })
+
+test('P8: zapis P3 ze stanu sprzed P8 do known-issues to rola mechaniczna', () => {
+  assert.equal(rola('start:p3-known-issues'), 'start:p3-known-issues')
+  assert.equal(klasaRoli(rola('start:p3-known-issues')), 'mechaniczny')
+})

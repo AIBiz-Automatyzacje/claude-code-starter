@@ -53,11 +53,8 @@ const FINDING_OTWARTY = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    // 'P3' doszlo 2026-09-06 (audyt N2). Plan B1 (commit 3007df4) wpuscil P3 typu KOD/TEST do petli
-    // naprawczej przez `otwartePoReview`, ale ten enum zostal na ['P1','P2'] — rozjazd producenta
-    // ze schematem. W JEDNYM runie bug byl niewidoczny (fix czyta `faza.otwarteFindingi` z pamieci),
-    // ale przy WZNOWIENIU miedzy runami stan idzie przez bootstrap-agenta i te findingi znikaly.
-    // Dowod z produkcji: oferty-online, STOP na fazie 6 zapisal 13 P3, swiezy run ich nie zobaczyl.
+    // 'P3' zostaje dla stanow sprzed P8 (plan B1 slal P3 do fixa): bootstrap przepisuje stan przez ten schemat, a P3 spoza
+    // enumu znikalyby przy wznowieniu (oferty-online, faza 6: 13 utraconych P3). Orkiestrator przenosi je do known-issues.
     severity: { type: 'string', enum: ['P1', 'P2', 'P3'] },
     typ: { type: 'string', enum: ['KOD', 'TEST', 'E2E'] },
     plik: { type: 'string' },
@@ -344,22 +341,6 @@ const FIX_RESULT = {
     nienaprawione: { type: 'array', items: { type: 'string' } },
     nierozwiazaneP1: { type: 'integer', description: 'P1 ktorych fix NIE zamknal (krytyczne -> STOP)' },
     nierozwiazaneP2: { type: 'integer', description: 'P2 przeniesione do known-issues (graceful)' },
-    // P3 weszly do fixa w 2026-09-03 (plan B1). Zasada "napraw albo uzasadnij": pominiecie musi byc
-    // NAZWANE, inaczej wracamy do stanu sprzed zmiany, tylko drozej — agent cicho przepuszczalby nity
-    // i raportowal komplet. To pole NIE karmi zadnej bramki: P3 nie blokuje przejscia do nastepnej fazy.
-    p3Pominiete: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          plik: { type: 'string', description: 'plik:linia z findingu' },
-          powod: { type: 'string', description: 'JEDNO zdanie, co konkretnie stoi na przeszkodzie — nie "to nit" ani "niski priorytet"' },
-        },
-        required: ['plik', 'powod'],
-      },
-      description: 'P3 z listy, ktorych NIE naprawiles, kazdy z jednozdaniowym uzasadnieniem (pusta lista = naprawiles wszystkie)',
-    },
     // Guard plikow binarnych (run team-os-onboarding-instalatory, 2026-07-26): fix wpisal do
     // scripts/inbox/invite.mjs regex z SUROWYMI bajtami sterujacymi zamiast sekwencji \x.. — plik
     // przestal byc tekstem (git: "Bin 9804 -> 15506 bytes") i KAZDY kolejny agent padal na jego Read
@@ -372,9 +353,7 @@ const FIX_RESULT = {
     },
     stanZapisany: POLE_STANU,
   },
-  // p3Pominiete w required z tego samego powodu co plikiBinarne: pusta lista MUSI znaczyc "przeszedlem
-  // po wszystkich P3", a pole opcjonalne pozwoliloby agentowi cicho pominac cala trzecia grupe.
-  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne', 'p3Pominiete'],
+  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne'],
 }
 
 const VALIDATION_RESULT = {
@@ -644,8 +623,8 @@ function blokZwinieciaDoPoprawy(sciezka, numerFazy) {
   return `ZWINIECIE SEKCJI "Do poprawy" (po naprawach, przed commitem): w sekcji "## Do poprawy po review fazy ${numerFazy}" pliku ${sciezka}/*-zadania.md
 usun wiersze zaznaczone (\`- [x]\`) i wstaw w ich miejsce jedna linie:
 \`Zamkniete cyklem fix: <liczba usunietych wierszy> pozycji — pelna tresc findingow i uzasadnienia w \`review-faza-${numerFazy}.md\`.\`
-Wiersze niezaznaczone (\`- [ ]\`) zostaja doslownie, razem z adnotacjami: dev-docs-complete zbiera z nich [P1]/[P2] do domkniecia
-zadania i otwarte P3 do smoke'u operatora. Pozostale sekcje pliku, w tym "## Operator checklist faza ${numerFazy}", zostaja bez zmian.
+Wiersze niezaznaczone (\`- [ ]\`) zostaja doslownie, razem z adnotacjami: dev-docs-complete zbiera z nich otwarte [P1]/[P2]
+do domkniecia zadania i do smoke'u operatora. Pozostale sekcje pliku, w tym "## Operator checklist faza ${numerFazy}", zostaja bez zmian.
 Plik zadan czytaja kolejne fazy, a pelna tresc findingow jest w raporcie review — w pliku zadan wystarczy slad cyklu fix.`
 }
 
@@ -674,16 +653,9 @@ moze tam nie byc — wtedy zrodlem jest opis z listy powyzej).
 Checkboxy w sekcji "Do poprawy po review fazy ${numerFazy}" w ${sciezka}/*-zadania.md odznaczaj
 w miare napraw (to widok dla czlowieka).
 
-KOLEJNOSC PRACY (lista zawiera P1, P2 ORAZ P3 typu KOD/TEST — P3 nie sa juz odcinane):
+KOLEJNOSC PRACY (lista zawiera P1 i P2; P3 z tej fazy sa w ${sciezka}/known-issues.md i nie sa do naprawy):
 1. NAJPIERW wszystkie P1 (blocking). Kazdy musi zostac zamkniety albo policzony w nierozwiazaneP1.
 2. POTEM wszystkie P2 (important).
-3. NA KONIEC P3 (nity). Przy kazdym P3 obowiazuje zasada "napraw albo uzasadnij": naprawiasz go tak
-   samo jak P2, ALBO wpisujesz go do p3Pominiete[] z JEDNYM zdaniem, dlaczego nie. Zdania w rodzaju
-   "to nit", "niski priorytet", "pre-existing" NIE sa uzasadnieniem — powiedz, co konkretnie stoi na
-   przeszkodzie (np. "zmiana wymaga refaktoru modulu X spoza zakresu tej fazy", "sugestia jest sprzeczna
-   z decyzja D4 z planu"). Uzasadnienie wraca do orkiestratora i trafia do raportu — nie znika po cichu.
-P3 NIE blokuje przejscia do nastepnej fazy. Nie zatrzymuj sie na nim i nie ryzykuj dla niego regresji:
-gdy naprawa P3 wymagalaby ruszenia kodu spoza tej fazy, to jest wlasnie przypadek na p3Pominiete[].
 
 MIEJSCE ZMIAN: zmieniasz kod wskazany przez findingi i testy do nich. Zmiana w pliku, ktorego nie wskazuje zaden
 finding, wraca do cofniecia — kontrola fixa porownuje pliki commitow z lista findingow (K-7).
@@ -942,7 +914,7 @@ Orkiestrator liczy roznice i pozycje bez sladu wypisuje jako ostrzezenie — "PA
 zastepuje uzasadnienia.
 ${BLOK_DLUGIE_KOMENDY}
 
-Zwroc {naprawione, pozostaje, walidacja, nierozwiazaneP1: 0, nierozwiazaneP2: 0, plikiBinarne, p3Pominiete: [], nienaprawione}.`
+Zwroc {naprawione, pozostaje, walidacja, nierozwiazaneP1: 0, nierozwiazaneP2: 0, plikiBinarne, nienaprawione}.`
 }
 
 function finalValidationPrompt(sciezka) {
@@ -1025,21 +997,51 @@ function policzFindingi(findings) {
   }
 }
 
-// P3 wchodza do petli naprawczej od 2026-09-03 (decyzja operatora po audycie 2026-09-02, pozycja B1).
-// Dowod: 741 wygenerowanych P3 przy ZERZE naprawionych przez autopilota — a CodeRabbit naprawial czesc
-// z nich dzien pozniej jako realne bledy (udokumentowane pary commitow). Placilismy trzy razy za ich
-// wygenerowanie i ani razu za skorzystanie z nich.
-// P3 typu OPERATOR zostaja POZA fixem — to warunki srodowiskowe (odpal cos recznie, sprawdz w konsoli),
-// nie defekt kodu; ida do "## Operator checklist faza N" i do smoke'u operatora.
-// Severity gate sie NIE zmienia: P3 nadal nie blokuje przejscia do nastepnej fazy (patrz gateFazy nizej) —
-// gdyby blokowal, jeden nit zatrzymywalby caly run.
+// Fix naprawia tylko P1/P2 (P8; odwraca plan B1 z 2026-09-03). Fix naprawial 98% findingow lacznie z P3 (138 z 225),
+// a kazda zmiana w kodzie to nowa powierzchnia dla defektow urodzonych w fixie — po fixie nie ma re-review. P3 zapisuje
+// scribe do known-issues (sekcja "## P3 faza N"), skad ida do opisu PR i bota.
+// OPERATOR zostaje poza fixem — to warunki srodowiskowe, ida do "## Operator checklist faza N" i smoke'u operatora.
 function otwartePoReview(findings) {
   return (findings || [])
-    .filter((f) => f.typ !== 'OPERATOR' && (
-      f.severity === 'P1' || f.severity === 'P2' ||
-      (f.severity === 'P3' && (f.typ === 'KOD' || f.typ === 'TEST'))
-    ))
+    .filter((f) => f.typ !== 'OPERATOR' && (f.severity === 'P1' || f.severity === 'P2'))
     .map((f) => ({ severity: f.severity, typ: f.typ, plik: f.plik, opis: f.opis }))
+}
+
+// Stan sprzed P8 trzyma P3 w otwarteFindingi (plan B1 slal je do fixa). Przy wznowieniu P3 wychodza z listy fixa
+// do known-issues; faza po review bez P1/P2 nie ma czego naprawiac. Funkcja nie zmienia wejscia — orkiestrator
+// podmienia stan dopiero po potwierdzonym zapisie known-issues, zeby P3 nie zniknely przy padzie agenta.
+function odlozP3ZeStanu(fazy) {
+  const odlozone = []
+  const po = fazy.map((f) => {
+    const p3 = f.otwarteFindingi.filter((x) => x.severity === 'P3')
+    if (!p3.length) return f
+    odlozone.push({ faza: f.numer, findingi: p3 })
+    const otwarteFindingi = f.otwarteFindingi.filter((x) => x.severity !== 'P3')
+    const fix = f.review === 'done' && f.fix === 'pending' && !otwarteFindingi.length ? 'none' : f.fix
+    return { ...f, otwarteFindingi, fix }
+  })
+  return { fazy: po, odlozone }
+}
+
+// Sekcja "## P3 faza N" ma ten sam format co u scribe'a w dev-docs-review-wf.js — walidacja koncowa przeglada ja
+// jak kazdy wpis known-issues, smoke operatora ja pomija, opis PR bierze ja do "Swiadomie nienaprawione".
+function p3KnownIssuesPrompt(sciezka, odlozone) {
+  const sekcje = odlozone.map(({ faza, findingi }) => `## P3 faza ${faza}\n${findingi.map((f) => `- 🟡 [P3] ${f.plik} — ${f.opis}`).join('\n')}`).join('\n\n')
+  return `Zapisz nity P3 do ${sciezka}/known-issues.md. Stan pipeline'u sprzed zmiany trzymal je na liscie fixa; fix naprawia
+teraz P1 i P2, a P3 zostaja w known-issues.
+
+Sekcje (tresc gotowa, przenies wiersze bez zmian):
+--- POCZATEK SEKCJI ---
+${sekcje}
+--- KONIEC SEKCJI ---
+
+1. Plik nie istnieje: utworz go z ta trescia (bez linii POCZATEK/KONIEC SEKCJI).
+2. Plik istnieje: dla kazdej sekcji "## P3 faza N" — naglowek juz jest: dopisz pod nim wiersze, ktorych tam nie ma
+   (ten sam plik:linia i ten sam opis = ten sam wiersz), bez duplikatow i bez usuwania istniejacych; naglowka nie ma:
+   wstaw cala sekcje przed "## Zamkniete" (gdy jest), inaczej na koncu pliku. Pozostale sekcje zostaja bez zmian.
+3. \`git add ${sciezka}/known-issues.md\` i ${instrukcjaCommita('docs(known-issues): P3 ze stanu sprzed zmiany fixa')}
+   Gdy plik juz mial wszystkie wiersze, nie commituj.
+Zwroc zapisano=true, gdy wszystkie wiersze sa w pliku (dopisane teraz albo juz byly), i hash commita albo null.`
 }
 
 // Scalenie findingow, gdy faza jest reviewowana PONOWNIE (audyt 2026-09-06, N2).
@@ -1256,6 +1258,16 @@ function podsumujKontroleFixa(pozycje, poprawka) {
 }
 
 // Wynik sprzatania artefaktow przy STOP-ie (plan B2).
+const P3_KNOWN_ISSUES = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    zapisano: { type: 'boolean', description: 'true, gdy kazdy wiersz P3 jest w known-issues.md (dopisany teraz albo juz byl)' },
+    commit: { type: ['string', 'null'], description: 'krotki hash nowego commita albo null' },
+  },
+  required: ['zapisano', 'commit'],
+}
+
 const COMMIT_ARTEFAKTOW = {
   type: 'object',
   additionalProperties: false,
@@ -1396,6 +1408,22 @@ if (wejscie.testyStartu) {
     // Zapisuje e2e:precheck (nastepny agent); STOP srodowiska E2E commituje katalog zadania, wiec swiezy run wezmie wynik z cache.
     oznaczStan()
   }
+}
+
+// Stan sprzed P8 (P3 na liscie fixa): P3 do known-issues, potem stan bez nich. Bez zapisu P3 zniknelyby przy wznowieniu.
+const p3ZeStanu = odlozP3ZeStanu(stan.fazy)
+if (p3ZeStanu.odlozone.length) {
+  const zapisP3 = await agent(p3KnownIssuesPrompt(sciezka, p3ZeStanu.odlozone), { schema: P3_KNOWN_ISSUES, agentType: 'klasa-mechaniczny', label: 'start:p3-known-issues' })
+  if (!zapisP3 || !zapisP3.zapisano) {
+    return await stopRun({
+      powod: `stan sprzed zmiany fixa trzyma P3 na liscie fixa (fazy ${p3ZeStanu.odlozone.map((o) => o.faza).join(', ')}), a zapis do known-issues.md sie nie udal`,
+      naprawa: `Sprawdz ${sciezka}/known-issues.md i odpal swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+      stan,
+    })
+  }
+  stan.fazy = p3ZeStanu.fazy
+  oznaczStan()
+  log(`Stan sprzed zmiany fixa: ${p3ZeStanu.odlozone.reduce((n, o) => n + o.findingi.length, 0)}x P3 przeniesione do known-issues (fix naprawia P1/P2)`)
 }
 
 // Filar 2: kolejka liczona w JS ze stanu — zero interpretacji LLM.
@@ -1674,14 +1702,8 @@ for (const numerFazy of kolejka) {
       return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
     cykle = 1
-    // p3Pominiete idzie do raportu i telemetrii, ale NIE do zadnej bramki (plan B1: severity gate bez zmian).
-    // Bez tego kanalu "napraw albo uzasadnij" bylo deklaracja — uzasadnienia gineleby w kontekscie agenta.
-    const p3Pominiete = fix.p3Pominiete || []
-    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2, p3Pominiete: p3Pominiete.length }
+    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2 }
     log(`Fix fazy ${numerFazy}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
-    if (p3Pominiete.length) {
-      log(`Faza ${numerFazy}: ${p3Pominiete.length}x P3 swiadomie pominiete (nie blokuja gate'u):\n  ${p3Pominiete.map((p) => `${p.plik} — ${p.powod}`).join('\n  ')}`)
-    }
 
     // Guard plikow binarnych PRZED gate'em walidacji: uszkodzony plik zrodlowy jest PRZYCZYNA,
     // a typecheck/testy failuja wtornie — na "walidacja FAIL" operator szuka defektu logiki zamiast

@@ -125,26 +125,30 @@ test('METRYKI_FAZY nie wymaga nowych pol — resume starszego zadania nie moze p
   }
 })
 
-test('FINDING_OTWARTY dopuszcza severity, ktore realnie produkuje otwartePoReview', () => {
-  // Plan B1: P3 typu KOD/TEST wchodza do petli naprawczej, wiec ladują w otwarteFindingi.
+// Zmiana kontraktu (P8): fix naprawia tylko P1/P2 — otwartePoReview przestaje przepuszczac P3 (odwrocenie planu B1),
+// P3 zapisuje scribe do known-issues. FINDING_OTWARTY zostaje przy P3: stan sprzed P8 moze je trzymac, a bootstrap
+// bez P3 w enumie wymazalby je przy wznowieniu, zanim orkiestrator przeniesie je do known-issues (odlozP3ZeStanu).
+test('otwartePoReview przepuszcza do fixa tylko P1/P2 typu KOD/TEST/E2E', () => {
   const findings = [
     { severity: 'P1', typ: 'KOD', plik: 'a.ts:1', opis: 'p1' },
     { severity: 'P2', typ: 'TEST', plik: 'b.ts:2', opis: 'p2' },
-    { severity: 'P3', typ: 'KOD', plik: 'c.ts:3', opis: 'p3 kod' },
-    { severity: 'P3', typ: 'TEST', plik: 'd.ts:4', opis: 'p3 test' },
-    { severity: 'P3', typ: 'E2E', plik: 'e.ts:5', opis: 'p3 e2e — poza fixem' },
+    { severity: 'P2', typ: 'E2E', plik: 'g.ts:7', opis: 'p2 e2e' },
+    { severity: 'P3', typ: 'KOD', plik: 'c.ts:3', opis: 'p3 kod — known-issues' },
+    { severity: 'P3', typ: 'TEST', plik: 'd.ts:4', opis: 'p3 test — known-issues' },
     { severity: 'P2', typ: 'OPERATOR', plik: 'f.ts:6', opis: 'operator — poza fixem' },
   ]
-  const otwarte = otwartePoReview(findings)
-  const produkowane = [...new Set(otwarte.map((f) => f.severity))].sort()
-  const dopuszczane = FINDING_OTWARTY.properties.severity.enum
+  assert.deepEqual(otwartePoReview(findings).map((f) => f.plik), ['a.ts:1', 'b.ts:2', 'g.ts:7'])
+})
 
-  assert.ok(produkowane.includes('P3'), 'otwartePoReview ma przepuszczac P3 typu KOD/TEST (plan B1) — jesli nie przepuszcza, to regresja B1')
-  const odrzucane = produkowane.filter((s) => !dopuszczane.includes(s))
-  assert.deepEqual(
-    odrzucane, [],
-    `severity ${odrzucane.join(', ')} trafia do otwarteFindingi, ale FINDING_OTWARTY.severity ich nie dopuszcza — przy WZNOWIENIU miedzy runami bootstrap je wymaze i findingi przepadna (dowod: oferty-online, faza 6, 13 utraconych P3).`,
-  )
+test('FINDING_OTWARTY dopuszcza severity z otwartePoReview i P3 ze stanu sprzed P8', () => {
+  const otwarte = otwartePoReview([
+    { severity: 'P1', typ: 'KOD', plik: 'a.ts:1', opis: 'p1' },
+    { severity: 'P2', typ: 'TEST', plik: 'b.ts:2', opis: 'p2' },
+  ])
+  const dopuszczane = FINDING_OTWARTY.properties.severity.enum
+  const odrzucane = [...new Set(otwarte.map((f) => f.severity))].filter((s) => !dopuszczane.includes(s))
+  assert.deepEqual(odrzucane, [], `severity ${odrzucane.join(', ')} trafia do otwarteFindingi, ale FINDING_OTWARTY ich nie dopuszcza — bootstrap wymazalby je przy wznowieniu`)
+  assert.ok(dopuszczane.includes('P3'), 'stan sprzed P8 trzyma P3 w otwarteFindingi — bez P3 w enumie bootstrap wymaze je przed przeniesieniem do known-issues (dowod: oferty-online, faza 6, 13 utraconych P3)')
 })
 
 // Zmiana kontraktu (P7): dossier liczy skrypt w domknieciu fazy albo zapasowy agent w review — raport nazywa zrodlo,
