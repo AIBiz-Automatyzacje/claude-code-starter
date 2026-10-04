@@ -22,11 +22,11 @@
  */
 
 /**
- * Glos sceptyka w verify.
+ * Glos sceptyka asymetrycznego w verify (P9).
  * @typedef {object} Glos
- * @property {boolean} realny
+ * @property {string} etykieta AGREE | DISAGREE_EVIDENCE | DISAGREE_CONCERN
+ * @property {string} dowod linia kodu albo test przeczacy tezie (DISAGREE_EVIDENCE); inaczej ""
  * @property {string} uzasadnienie
- * @property {string | null} severityKorekta
  */
 
 export {}

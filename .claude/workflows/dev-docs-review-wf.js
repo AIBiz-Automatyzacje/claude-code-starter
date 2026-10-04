@@ -162,20 +162,28 @@ const E2E_RESULT = {
   required: ['findings', 'przebiegi'],
 }
 
+// Sceptyk asymetryczny (P9, §2 pkt 7): etykieta sporu zamiast `realny`; dowod wymagany tylko przy DISAGREE_EVIDENCE.
+// O kasacji i obnizeniu wagi decyduje JS (`domknijWerdykty`), wiec `severityKorekta` zniknela.
+const ETYKIETA_SCEPTYKA = {
+  type: 'string',
+  enum: ['AGREE', 'DISAGREE_EVIDENCE', 'DISAGREE_CONCERN'],
+  description: 'AGREE = kod potwierdza teze; DISAGREE_EVIDENCE = linia kodu albo test przeczy tezie; DISAGREE_CONCERN = watpliwosc bez takiego dowodu',
+}
+const DOWOD_SCEPTYKA = { type: 'string', description: 'DISAGREE_EVIDENCE: plik:linia albo test, ktory przeczy tezie; pozostale etykiety: ""' }
 const VERDICT = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    realny: { type: 'boolean', description: 'czy finding jest prawdziwy po probie obalenia' },
+    etykieta: ETYKIETA_SCEPTYKA,
+    dowod: DOWOD_SCEPTYKA,
     uzasadnienie: { type: 'string' },
-    severityKorekta: { type: ['string', 'null'], enum: ['P1', 'P2', 'P3', null] },
   },
-  required: ['realny', 'uzasadnienie'],
+  required: ['etykieta', 'dowod', 'uzasadnienie'],
 }
 
-// Werdykty grupowe dla P2 (plan B4). Jeden sceptyk ocenia do MAKS_W_GRUPIE_P2 findingow z tego samego
-// pliku, ale KAZDY osobno. `indeks` wiaze werdykt z pozycja listy w prompcie; brak wpisu dla indeksu
-// jest DOZWOLONY i znaczy "nie rozstrzygniete" — obslugujemy go jak zero glosow, nigdy jak obalenie.
+// Werdykty porcji P2: jeden sceptyk ocenia do MAKS_W_GRUPIE_P2 zarzutow, KAZDY osobno. `indeks` wiaze werdykt
+// z pozycja listy w prompcie; brak wpisu dla indeksu jest DOZWOLONY i znaczy "nie rozstrzygniete" — obslugujemy
+// go jak zero glosow, nigdy jak obalenie.
 const VERDICTS_BATCH = {
   type: 'object',
   additionalProperties: false,
@@ -186,12 +194,12 @@ const VERDICTS_BATCH = {
         type: 'object',
         additionalProperties: false,
         properties: {
-          indeks: { type: 'integer', description: 'numer findingu z ponumerowanej listy w prompcie' },
-          realny: { type: 'boolean', description: 'czy finding jest prawdziwy po probie obalenia' },
+          indeks: { type: 'integer', description: 'numer zarzutu z ponumerowanej listy w prompcie' },
+          etykieta: ETYKIETA_SCEPTYKA,
+          dowod: DOWOD_SCEPTYKA,
           uzasadnienie: { type: 'string' },
-          severityKorekta: { type: ['string', 'null'], enum: ['P1', 'P2', 'P3', null] },
         },
-        required: ['indeks', 'realny', 'uzasadnienie'],
+        required: ['indeks', 'etykieta', 'dowod', 'uzasadnienie'],
       },
     },
   },
@@ -560,9 +568,9 @@ function sceptycyOpis(s) {
   return `${s.p1 ?? '?'} / ${s.p2Grupy ?? '?'} / ${s.p2Findingi ?? '?'}${oszczednosc}`
 }
 
-function korektyOpis(k) {
-  if (!k) return 'brak danych'
-  return `${k.przyjete ?? '?'} / ${k.odrzucone ?? '?'}`
+function etykietyOpis(e) {
+  if (!e) return 'brak danych'
+  return `${e.agree} / ${e.disagree_evidence} / ${e.disagree_concern} / ${e.degradacje}`
 }
 
 function tieryOpis(t) {
@@ -593,7 +601,7 @@ function przebiegBlok(p) {
 | Adversarial verify: weryfikowane / obalone / bez glosow | ${p.weryfikowane} / ${p.obalone} / ${p.niezweryfikowane} |
 | Dossier fazy | ${dossierOpis(p.dossier, p.dossierZrodlo)} |
 | Sceptycy: P1 (3 glosy) / P2 grupy / P2 findingi | ${sceptycyOpis(p.sceptycy)} |
-| Severity ruszone przez sceptykow: przyjete / odrzucone | ${korektyOpis(p.severityKorekty)} |
+| Sceptycy: AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN (glosy) / obnizone wagi (findingi) | ${etykietyOpis(p.sceptyk)} |
 | Tiery rozumowania | ${tieryOpis(p.tiery)} |`
 }
 
@@ -624,8 +632,8 @@ ${JSON.stringify(obalone || [], null, 2)}
      ## Findingi OPERATOR
      ### OPERATOR · \`sciezka/plik.sql:20\`
    Zawsze wszystkie cztery sekcje (pusta = "Brak."); finding jako "### <SEVERITY> · <TYP> · \`<plik:linia>\`"
-   (typ KOD | TEST | E2E; OPERATOR bez typu), bez numeracji, emoji, nawiasow kwadratowych i "P2-1". Tresc findingu pod naglowkiem; sugestie sceptykow w postaci
-   "*(sceptyk sugerowal P3 — utrzymane P2)*".
+   (typ KOD | TEST | E2E; OPERATOR bez typu), bez numeracji, emoji, nawiasow kwadratowych i "P2-1". Tresc findingu pod naglowkiem; adnotacje
+   "[sceptyk: …]" z opisu jako "*(sceptyk: …)*".
 1b. W tym samym raporcie, po findingach i przed blokiem "## Przebieg review" z punktu 7 (ten blok jest OSTATNI — po nim
    orkiestrator poznaje, ze zapis sie domknal), sekcja "## Obalone przez verify (nie do naprawy)": jedna linia na finding
    \`- [severity/typ] plik — opis · obalone: powodObalenia (zrodlo: X)\`; pusta lista = "Brak — kazdy weryfikowany finding
@@ -1105,54 +1113,43 @@ if (p3Odrzucone) {
   log(`Limit P3: z ${wszystkieNity.length} nitow po dedupie zostawiam ${nity.length} (odrzucone: ${p3Odrzucone}) — prog LIMIT_P3_GLOBALNY=${LIMIT_P3_GLOBALNY}\n  odrzucone: ${odrzucone.join(' | ')}`)
 }
 
-// Poprawka 8: P1 (blocking) -> 3 sceptykow (konsensus 2/3). P2 (important) -> 1 sceptyk.
-// Verify bylo 55% calego runu (dane wf_ed163076: 114/208 agentow). 3x na kazdy P2 to nadmiar —
-// P2 nie blokuje merge'a, wystarczy jeden glos czy realny.
-//
-// Plan B4 (2026-09-03): P2 sa dodatkowo BATCHOWANE po pliku. Sceptyk P2 i tak zaczyna od otwarcia pliku
-// i zbudowania sobie obrazu zmian; przy trzech findingach w tym samym pliku placilismy za to trzy razy.
-// Jeden sceptyk na grupe (maks 4 findingi z jednego pliku) robi to raz. P1 zostaja BEZ ZMIAN — tam
-// niezaleznosc glosow jest cala wartoscia mechanizmu i konsensus 2/3 nie ma sensu bez trzech osobnych agentow.
+// P1 (blocking) -> 3 niezaleznych sceptykow, kasacja przy 2/3 — niezaleznosc glosow jest cala wartoscia mechanizmu.
+// P2 -> jeden sceptyk na porcje do MAKS_W_GRUPIE_P2 zarzutow (P9, D2); P2 nie blokuje merge'a.
 const MAKS_W_GRUPIE_P2 = 4
-// Ile razy sceptycy w ogole ruszaja severity: `przyjete` = korekta zgodnej wiekszosci (>=2 glosy),
-// `odrzucone` = sugestia pojedynczego glosu, ktora poszla do opisu zamiast do severity. Drugi licznik
-// mowi, ile P2 bylo o krok od przeklasyfikowania przez jeden glos — bez niego zmiana z A7 jest niewidoczna.
-let severityKorektyPrzyjete = 0
-let severityKorektyOdrzucone = 0
+// Sceptyk asymetryczny (P9): glos to etykieta. Liczniki: etykiety = glosy (po regule dowodu), degradacje = findingi.
+// Ida do przebiegu -> stan -> telemetria `faza.sceptyk` (progi P9: obalenia < 5%, degradacje > 35%).
+const sceptykLiczniki = { agree: 0, disagree_evidence: 0, disagree_concern: 0, degradacje: 0 }
+const NIZSZA_WAGA = { P1: 'P2', P2: 'P3' }
 
-// Domkniecie werdyktow -> finding. JEDNO miejsce dla P1 i dla batchowanych P2, zeby regula z A7
-// (pojedynczy glos nie rusza severity) nie rozjechala sie miedzy dwiema sciezkami.
+// Obala tylko dowod: DISAGREE_EVIDENCE bez linii kodu albo testu w `dowod` jest watpliwoscia (CONCERN).
+function etykietaGlosu(v) {
+  if (v.etykieta === 'DISAGREE_EVIDENCE' && !String(v.dowod || '').trim()) return 'DISAGREE_CONCERN'
+  return v.etykieta
+}
+
+// Domkniecie werdyktow -> finding. JEDNO miejsce dla P1 (3 glosy) i porcji P2 (1 glos).
+// Wiekszosc = wiecej niz polowa glosujacych: 1 z 1, 2 z 2, 2 z 3. Wiekszosc DISAGREE_EVIDENCE kasuje; wiekszosc
+// sprzeciwu bez wiekszosci dowodow obniza wage o jeden stopien (P1 -> P2, P2 -> P3 do known-issues), nie kasuje.
+// Pojedynczy glos nie rusza P1 (ominalby twardy STOP).
 function domknijWerdykty(f, glosy) {
   // 0 glosow (sceptyk padl albo nie zwrocil werdyktu dla tego indeksu) != konsensus — przepusc bez kill,
   // ale oznacz w opisie. Cicha zamiana na "obalony" gubilaby realne findingi na awarii infrastruktury.
   if (glosy.length === 0) {
     return { ...f, potwierdzony: true, opis: `[NIEZWERYFIKOWANY — 0 glosow sceptykow] ${f.opis}` }
   }
-  // Uzasadnienia sceptykow zostaja przy findingu (pole wewnetrzne, jak _zrodlo) — potrzebne do sekcji
-  // "Obalone przez verify" w raporcie (plan B11). Dane sa juz w pamieci procesu, koszt zerowy.
-  const _uzasadnienie = glosy.map((v) => v.uzasadnienie).filter(Boolean).join(' | ')
-  const realne = glosy.filter((v) => v.realny).length
-  // potwierdzony gdy wiekszosc sceptykow NIE zdolala obalic
-  const potwierdzony = realne >= Math.ceil(glosy.length / 2)
-  // Korekta severity tylko gdy zgodna WIEKSZOSC glosujacych ja proponuje — pojedynczy glos
-  // nie moze zdegradowac P1 (ominalby twardy STOP) ani awansowac P2.
-  //
-  // Przy JEDNYM glosie "wiekszosc" jest pojeciem pustym: `1 > 0.5` przepuszczalo korekte kazdego
-  // pojedynczego sceptyka, a P2 ma z definicji dokladnie jednego — wiec regula z komentarza nie
-  // obowiazywala dla ZADNEGO findingu waznego (audyt 2026-09-02, A7).
-  // Teraz sugestia jednego glosu idzie do OPISU, gdzie widzi ja fix i czlowiek, a severity zostaje.
-  const korekty = glosy.map((v) => v.severityKorekta).filter(Boolean)
-  const zliczone = {}
-  for (const k of korekty) zliczone[k] = (zliczone[k] || 0) + 1
-  const [najczestsza, ileGlosow] = Object.entries(zliczone).sort((a, b) => b[1] - a[1])[0] || [null, 0]
-  if (glosy.length === 1) {
-    const sugestia = najczestsza && najczestsza !== f.severity
-    if (sugestia) severityKorektyOdrzucone++
-    return { ...f, potwierdzony, _uzasadnienie, opis: sugestia ? `${f.opis} [sceptyk sugeruje ${najczestsza}]` : f.opis }
-  }
-  const severity = ileGlosow > glosy.length / 2 ? najczestsza : f.severity
-  if (severity !== f.severity) severityKorektyPrzyjete++
-  return { ...f, potwierdzony, severity, _uzasadnienie }
+  const etykiety = glosy.map(etykietaGlosu)
+  for (const e of etykiety) sceptykLiczniki[e.toLowerCase()]++
+  // Uzasadnienia i dowody zostaja przy findingu (pole wewnetrzne, jak _zrodlo) — sekcja "Obalone przez verify" (plan B11).
+  const _uzasadnienie = glosy.map((v) => [v.uzasadnienie, v.dowod && `dowod: ${v.dowod}`].filter(Boolean).join(' — ')).filter(Boolean).join(' | ')
+  const wiekszosc = Math.floor(glosy.length / 2) + 1
+  const dowody = etykiety.filter((e) => e === 'DISAGREE_EVIDENCE').length
+  const sprzeciwy = etykiety.filter((e) => e !== 'AGREE').length
+  if (dowody >= wiekszosc) return { ...f, potwierdzony: false, _uzasadnienie }
+  const nizsza = NIZSZA_WAGA[f.severity]
+  if (sprzeciwy < wiekszosc || !nizsza) return { ...f, potwierdzony: true, _uzasadnienie }
+  sceptykLiczniki.degradacje++
+  const opis = `${f.opis} [sceptyk: ${f.severity} → ${nizsza}, sprzeciw bez dowodu obalenia]`
+  return { ...f, potwierdzony: true, severity: nizsza, _uzasadnienie, opis }
 }
 
 // Porcje P2 po `maks` niezaleznie od pliku (P9, D2): grupa po pliku dawala 80% grup jednoelementowych, wiec ~1 agent
@@ -1169,20 +1166,29 @@ const p1DoVerify = doWeryfikacji.filter((f) => f.severity === 'P1')
 const p2DoVerify = doWeryfikacji.filter((f) => f.severity !== 'P1')
 const grupyP2 = porcjujP2(p2DoVerify, MAKS_W_GRUPIE_P2)
 
-const skepsaBlok = `Domyslnie zakladaj ze finding jest NIEREALNY, chyba ze masz twardy dowod z kodu.
+// Sceptyk dostaje sam zarzut: waga, plik:linia i teza. Autor (_zrodlo), os i typ zostaja w JS — literatura
+// (ETAP2 §1): sceptyk bez uzasadnienia autora obala ~4x skuteczniej; test review: B (asymetryczny) 0 zabitych prawdziwych.
+function zarzutSceptyka(f) {
+  return `[${f.severity}] ${f.plik} — ${f.opis}`
+}
 
-WYJATEK od domyslnej skepsy: argument "to kod jednorazowy / throwaway / skrypt migracyjny / usuwany pozniej"
-NIE obala findingu i NIE uzasadnia severityKorekta w dol. Obalasz WYLACZNIE dowodem z kodu, ze wplyw nie zachodzi.${BLOK_ZAUFANIE}${mapaBlok(kontekst)}`
+const skepsaBlok = `Dostajesz sam zarzut (waga, plik:linia, teza) bez uzasadnienia autora; autor jest celowo ukryty, teze sprawdzasz w kodzie.
+Odpowiadasz jedna etykieta:
+- AGREE — kod potwierdza teze;
+- DISAGREE_EVIDENCE — w polu \`dowod\` wskazujesz linie kodu (plik:linia) albo test, ktory przeczy tezie; tylko ta etykieta usuwa zarzut;
+- DISAGREE_CONCERN — masz watpliwosc bez takiej linii albo testu; zarzut zostaje z waga nizsza o stopien.
+Bez wskazanej linii albo testu wybierasz DISAGREE_CONCERN, bo usuwa tylko dowod.
+Argument "kod jednorazowy / usuwany pozniej" nie przeczy tezie i nie jest powodem do DISAGREE_CONCERN (granice zaufania nizej).${BLOK_ZAUFANIE}${mapaBlok(kontekst)}`
 
 const p1Zweryfikowane = await parallel(
   p1DoVerify.map((f) => () =>
     parallel(
       Array.from({ length: 3 }, (_, i) => () =>
         agent(
-          `Adwersaryjnie OBAL ten finding z review fazy ${faza} (${sciezka}). ${skepsaBlok}
+          `Sprawdz zarzut z review fazy ${faza} (${sciezka}). ${skepsaBlok}
 
-Finding [${f.severity}/${f.typ}] ${f.plik}: ${f.opis}
-Sprawdz kod. Czy to prawdziwy problem czy false positive? Zwroc werdykt.`,
+Zarzut: ${zarzutSceptyka(f)}
+Sprawdz kod i zwroc werdykt.`,
           zEffortem({ schema: VERDICT, agentType: 'klasa-sceptyk', label: `verify:${f.plik}:${i}`, phase: 'Verify' }, tiery.sceptykP1)
         )
       )
@@ -1191,21 +1197,18 @@ Sprawdz kod. Czy to prawdziwy problem czy false positive? Zwroc werdykt.`,
 )
 
 const p2Wyniki = await parallel(
-  grupyP2.map((grupa) => () => {
-    const lista = grupa.map((f, i) => `${i}. [${f.severity}/${f.typ}] ${f.plik} — ${f.opis}`).join('\n')
+  grupyP2.map((grupa, n) => () => {
+    const lista = grupa.map((f, i) => `${i}. ${zarzutSceptyka(f)}`).join('\n')
     return agent(
-      `Adwersaryjnie OBAL ponizsze findingi z review fazy ${faza} (${sciezka}). Wszystkie dotycza tego samego
-pliku, wiec kod otwierasz RAZ — ale oceniasz je OSOBNO. ${skepsaBlok}
+      `Sprawdz zarzuty z review fazy ${faza} (${sciezka}); kazdy oceniasz osobno. ${skepsaBlok}
 
-OSOBNO ZNACZY OSOBNO: brak dowodu przeciw jednemu findingowi NIE obala pozostalych, a obalenie jednego
-NIE jest argumentem przeciw kolejnym. Nie szukaj "wspolnego mianownika" i nie oceniaj listy jako calosci.
+Ocena jednego zarzutu nie jest argumentem za ani przeciw pozostalym; nie szukaj wspolnego mianownika listy.
 
 ${lista}
 
-Dla KAZDEGO indeksu z listy zwroc osobny werdykt w werdykty[] z polem \`indeks\` rownym numerowi z listy.
-Gdy dla ktoregos indeksu nie potrafisz rozstrzygnac — POMIN go zamiast zgadywac; pominiety indeks zostanie
-oznaczony jako niezweryfikowany, a zgadniety werdykt cicho zabilby albo przepuscil realny finding.`,
-      zEffortem({ schema: VERDICTS_BATCH, agentType: 'klasa-sceptyk', label: `verify-batch:${kluczPliku(grupa[0].plik)}:${grupa.length}`, phase: 'Verify' }, tiery.sceptykP2)
+Dla kazdego indeksu z listy zwroc osobny werdykt w werdykty[] z polem \`indeks\` rownym numerowi z listy.
+Indeks, ktorego nie potrafisz rozstrzygnac, pomin: zostanie oznaczony jako niezweryfikowany, a zgadniety werdykt cicho zabilby albo przepuscil prawdziwy zarzut.`,
+      zEffortem({ schema: VERDICTS_BATCH, agentType: 'klasa-sceptyk', label: `verify-batch:${n}:${grupa.length}`, phase: 'Verify' }, tiery.sceptykP2)
     ).then((wynik) => {
       const werdykty = (wynik && Array.isArray(wynik.werdykty)) ? wynik.werdykty : []
       return grupa.map((f, i) => {
@@ -1221,7 +1224,7 @@ const p2Zweryfikowane = p2Wyniki.flatMap((wynikGrupy, i) =>
   Array.isArray(wynikGrupy) ? wynikGrupy : grupyP2[i].map((f) => domknijWerdykty(f, []))
 )
 if (grupyP2.length) {
-  log(`Verify P2: ${p2DoVerify.length} findingow w ${grupyP2.length} grupach po pliku (maks ${MAKS_W_GRUPIE_P2} na grupe), tier ${tiery.sceptykP2 || 'sesji'}`)
+  log(`Verify P2: ${p2DoVerify.length} findingow w ${grupyP2.length} porcjach (maks ${MAKS_W_GRUPIE_P2}), tier ${tiery.sceptykP2 || 'sesji'}`)
 }
 const zweryfikowane = [...p1Zweryfikowane, ...p2Zweryfikowane]
 
@@ -1266,8 +1269,8 @@ const przebieg = {
   p3Odrzucone,
   weryfikowane: doWeryfikacji.length,
   obalone: doWeryfikacji.length - potwierdzoneKod.length,
-  severityKorekty: { przyjete: severityKorektyPrzyjete, odrzucone: severityKorektyOdrzucone },
-  // Ile agentow realnie kosztowal verify (plan B4): P1 x3 + jeden na grupe P2 zamiast jednego na finding.
+  sceptyk: { ...sceptykLiczniki },
+  // Ile agentow kosztowal verify: P1 x3 + jeden na porcje P2 (P9: po 4 niezaleznie od pliku).
   sceptycy: { p1: p1DoVerify.length * 3, p2Grupy: grupyP2.length, p2Findingi: p2DoVerify.length },
   tiery,
   e2eWykonany,

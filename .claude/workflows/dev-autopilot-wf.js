@@ -112,16 +112,19 @@ const METRYKI_FAZY = {
           additionalProperties: false,
           properties: {
             p1: { type: ['integer', 'null'], description: 'liczba agentow-sceptykow P1 (3 na finding)' },
-            p2Grupy: { type: ['integer', 'null'], description: 'liczba agentow-sceptykow P2 po batchowaniu per plik' },
+            p2Grupy: { type: ['integer', 'null'], description: 'liczba agentow-sceptykow P2 (porcje po 4)' },
             p2Findingi: { type: ['integer', 'null'], description: 'liczba findingow P2 poddanych verify' },
           },
         },
-        severityKorekty: {
+        // P9: etykiety sceptyka asymetrycznego (glosy po regule dowodu) i degradacje (findingi) -> telemetria faza.sceptyk.
+        sceptyk: {
           type: ['object', 'null'],
           additionalProperties: false,
           properties: {
-            przyjete: { type: ['integer', 'null'], description: 'korekty severity przyjete (zgodna wiekszosc sceptykow)' },
-            odrzucone: { type: ['integer', 'null'], description: 'sugestie pojedynczego sceptyka odrzucone przez regule (plan A7)' },
+            agree: { type: ['integer', 'null'] },
+            disagree_evidence: { type: ['integer', 'null'], description: 'glosy obalajace z linia kodu albo testem' },
+            disagree_concern: { type: ['integer', 'null'], description: 'glosy sprzeciwu bez dowodu (obnizaja wage, nie kasuja)' },
+            degradacje: { type: ['integer', 'null'], description: 'findingi z waga obnizona o stopien (P1 -> P2, P2 -> P3)' },
           },
         },
         tiery: { type: ['object', 'null'], additionalProperties: { type: ['string', 'null'] }, description: 'tier rozumowania per rola (plan B4)' },
@@ -1232,8 +1235,13 @@ function skrotPrzebiegu(p) {
     sceptycy: p.sceptycy
       ? { p1: p.sceptycy.p1 ?? null, p2Grupy: p.sceptycy.p2Grupy ?? null, p2Findingi: p.sceptycy.p2Findingi ?? null }
       : null,
-    severityKorekty: p.severityKorekty
-      ? { przyjete: p.severityKorekty.przyjete ?? null, odrzucone: p.severityKorekty.odrzucone ?? null }
+    sceptyk: p.sceptyk
+      ? {
+          agree: p.sceptyk.agree ?? null,
+          disagree_evidence: p.sceptyk.disagree_evidence ?? null,
+          disagree_concern: p.sceptyk.disagree_concern ?? null,
+          degradacje: p.sceptyk.degradacje ?? null,
+        }
       : null,
     tiery: p.tiery || null,
   }

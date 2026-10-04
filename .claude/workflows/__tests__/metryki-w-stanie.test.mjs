@@ -81,7 +81,7 @@ const PRZEBIEG_Z_REVIEW = {
   znalezione: 34, poDedupJs: 34, poDedupSem: 19, weryfikowane: 8, obalone: 1, p3Odrzucone: 0,
   e2eCheckboxy: 0, e2eStatus: 'pominiety przez routing', e2ePass: 0, e2eFail: 0, e2eSkip: 0,
   dossier: true,
-  severityKorekty: { przyjete: 2, odrzucone: 3 },
+  sceptyk: { agree: 7, disagree_evidence: 2, disagree_concern: 3, degradacje: 3 },
   sceptycy: { p1: 6, p2Grupy: 4, p2Findingi: 11 },
   tiery: { packager: 'haiku', reviewer: null, sceptykP1: null, sceptykP2: 'medium' },
 }
@@ -92,19 +92,21 @@ test('skrotPrzebiegu przepisuje metryki kosztu review do stanu', () => {
   const s = skrotPrzebiegu(PRZEBIEG_Z_REVIEW)
   assert.equal(s.dossier, true, 'dossier musi przejsc — bez niego prog "efekt dossier" jest niemierzalny, a cichy fallback nieodrozialny od sukcesu')
   assert.deepEqual(s.sceptycy, { p1: 6, p2Grupy: 4, p2Findingi: 11 }, 'sceptycy musza przejsc — bez nich nie widac, czy batchowanie P2 dziala')
-  assert.deepEqual(s.severityKorekty, { przyjete: 2, odrzucone: 3 }, 'severityKorekty musza przejsc — to jedyny pomiar reguly z planu A7')
+  // Zmiana kontraktu (P9): etykiety sceptyka asymetrycznego zastepuja severityKorekty (regula A7 nie obowiazuje dla P2).
+  assert.deepEqual(s.sceptyk, { agree: 7, disagree_evidence: 2, disagree_concern: 3, degradacje: 3 }, 'etykiety musza przejsc — progi P9 (obalenia, degradacje) stoja na faza.sceptyk')
+  assert.ok(!('severityKorekty' in s), 'severityKorekty nie ma juz producenta')
   assert.deepEqual(s.tiery, PRZEBIEG_Z_REVIEW.tiery)
 })
 
 test('skrotPrzebiegu na przebiegu ze STARSZEGO runu daje null, nie zero', () => {
   /** @type {Partial<typeof PRZEBIEG_Z_REVIEW>} */
   const stary = { ...PRZEBIEG_Z_REVIEW }
-  delete stary.dossier; delete stary.sceptycy; delete stary.severityKorekty; delete stary.tiery
+  delete stary.dossier; delete stary.sceptycy; delete stary.sceptyk; delete stary.tiery
   const s = skrotPrzebiegu(stary)
   // Zero znaczyloby "zmierzone i wyszlo zero". Brak danych ma byc odrozialny od pomiaru.
   assert.equal(s.dossier, null)
   assert.equal(s.sceptycy, null)
-  assert.equal(s.severityKorekty, null)
+  assert.equal(s.sceptyk, null)
   assert.equal(s.tiery, null)
 })
 
@@ -120,7 +122,7 @@ test('METRYKI_FAZY dopuszcza KAZDY klucz, ktory produkuje skrotPrzebiegu', () =>
 
 test('METRYKI_FAZY nie wymaga nowych pol — resume starszego zadania nie moze paść', () => {
   const wymagane = METRYKI_FAZY.properties.przebieg.required
-  for (const nowe of ['dossier', 'sceptycy', 'severityKorekty', 'tiery', 'p3Odrzucone', 'e2eCheckboxy']) {
+  for (const nowe of ['dossier', 'sceptycy', 'sceptyk', 'tiery', 'p3Odrzucone', 'e2eCheckboxy']) {
     assert.ok(!wymagane.includes(nowe), `${nowe} nie moze byc w "required" — stany zapisane wczesniej tego pola nie maja i bootstrap wywalilby sie na walidacji`)
   }
 })
@@ -168,7 +170,8 @@ test('dossierOpis rozroznia "nie powstalo" od "nie mierzono" i nazywa zrodlo dos
 
 test('przebiegBlok renderuje metryki kosztu review w raporcie fazy', () => {
   // Raport jest jedynym miejscem, w ktorym te liczby widzi czlowiek — telemetria jest do strojenia progow.
-  for (const kotwica of ['| Dossier fazy |', '| Sceptycy:', '| Severity ruszone przez sceptykow:', '| Tiery rozumowania |']) {
+  // Zmiana kontraktu (P9): wiersz korekt severity zastapiony etykietami sceptyka asymetrycznego.
+  for (const kotwica of ['| Dossier fazy |', '| Sceptycy:', '| Sceptycy: AGREE / DISAGREE_EVIDENCE / DISAGREE_CONCERN', '| Tiery rozumowania |']) {
     assert.ok(zrodloReview.includes(kotwica), `przebiegBlok nie renderuje wiersza "${kotwica}" — metryka bedzie zyla wylacznie w zywym logu workflowu`)
   }
 })
