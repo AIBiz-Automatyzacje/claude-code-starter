@@ -203,3 +203,32 @@ test('e2eSync inny niz string (null z padnietego agenta) nie wywala telemetrii',
 test('limit jest sensowny: miesci status i zdanie, nie miesci raportu', () => {
   assert.ok(E2E_SYNC_LIMIT_TELEMETRII >= 120 && E2E_SYNC_LIMIT_TELEMETRII <= 400, `limit ${E2E_SYNC_LIMIT_TELEMETRII} — poza rozsadnym zakresem`)
 })
+
+// P8: fix:kontrola z listami K-1…K-7 katalogu A i bramkami na plikach fixa. listy = liczba pozycji per lista (K-6: testy P1
+// niezielone przed poprawka), p1_z_testem = P1 z testem czerwonym na kodzie sprzed poprawki. Stary wynik (regresje) — oba null.
+test('kontrola fixa P8: pozycje per lista K i bramki; p1_z_testem z K-6; stary format = null', () => {
+  /** @param {number} n */
+  const lista = (n) => ({ sprawdzono: 'git diff', pozycje: Array.from({ length: n }, (_, i) => ({ plik: `a.ts:${i}`, opis: 'x' })) })
+  const wynik = {
+    listy: {
+      'K-1': lista(1), 'K-2': lista(0), 'K-3': lista(2), 'K-4': lista(0), 'K-5': lista(0), 'K-7': lista(1),
+      'K-6': { sprawdzono: 'worktree', testy: [
+        { finding: 'a.ts:1', test: 'a.test.ts', czerwonyPrzedPoprawka: true },
+        { finding: 'b.ts:1', test: 'b.test.ts', czerwonyPrzedPoprawka: false },
+        { finding: 'c.ts:1', test: null, czerwonyPrzedPoprawka: false },
+      ] },
+    },
+    bramki: lista(2),
+  }
+  /** @type {Map<string, import('../agent.mjs').WynikJournala>} */
+  const journal = new Map(JOURNAL)
+  journal.set('fk', { rozpoczety: true, maWynik: true, wynik })
+  const [f] = rekordyFaz({ wynikRunu: WYNIK_RUNU, agenci: AGENCI, journal, zmianyFixa: gitFake })
+  assert.deepEqual(f.kontrolaFixa?.listy, { 'K-1': 1, 'K-2': 0, 'K-3': 2, 'K-4': 0, 'K-5': 0, 'K-6': 2, 'K-7': 1, bramki: 2 })
+  assert.equal(f.kontrolaFixa?.regresje, null)
+  assert.equal(f.fix?.p1_z_testem, 1)
+
+  const [stary] = fazy()
+  assert.equal(stary.kontrolaFixa?.listy, null)
+  assert.equal(stary.fix?.p1_z_testem, null)
+})

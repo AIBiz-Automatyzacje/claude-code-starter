@@ -86,6 +86,48 @@ function findingiPerOs(agenci) {
 }
 
 /**
+ * Wynik agenta fix:kontrola fazy z journala (pusty obiekt, gdy agenta albo wyniku brak).
+ * @param {AgentFazy[]} agenci
+ * @param {Map<string, WynikJournala>} journal
+ */
+function wynikKontroli(agenci, journal) {
+  const kontrola = agenci.find((a) => a.rola === 'fix:kontrola')
+  return obiekt(kontrola ? journal.get(kontrola.id)?.wynik : null)
+}
+
+/**
+ * Testy P1 z listy K-6 kontroli fixa (P8); null = kontrola bez list K (wynik sprzed P8 albo brak agenta).
+ * @param {Record<string, unknown>} kontrola
+ * @returns {Array<Record<string, unknown>> | null}
+ */
+function testyK6(kontrola) {
+  const testy = obiekt(obiekt(kontrola.listy)['K-6']).testy
+  return Array.isArray(testy) ? testy.map(obiekt) : null
+}
+
+/**
+ * Pozycje per lista K-1…K-7 i bramki (P8). K-6 jak pozycjeKontroliFixa w dev-autopilot-wf: test P1 brakujacy albo
+ * zielony przed poprawka. null = kontrola bez list K.
+ * @param {Record<string, unknown>} kontrola
+ * @returns {Record<string, number> | null}
+ */
+function pozycjeList(kontrola) {
+  const listy = obiekt(kontrola.listy)
+  if (!Object.keys(listy).length) return null
+  /** @type {Record<string, number>} */
+  const wynik = {}
+  for (const id of Object.keys(listy).sort()) {
+    const pozycje = obiekt(listy[id]).pozycje
+    wynik[id] = id === 'K-6'
+      ? (testyK6(kontrola) ?? []).filter((t) => t.czerwonyPrzedPoprawka !== true).length
+      : Array.isArray(pozycje) ? pozycje.length : 0
+  }
+  const bramki = obiekt(kontrola.bramki).pozycje
+  wynik.bramki = Array.isArray(bramki) ? bramki.length : 0
+  return wynik
+}
+
+/**
  * @param {Record<string, unknown>} raport wpis raporty[] wyniku runu
  * @param {AgentFazy[]} agenci
  * @param {Map<string, WynikJournala>} journal
@@ -101,6 +143,7 @@ function fixFazy(raport, agenci, journal, zmianyFixa) {
     return Array.isArray(c) ? c.map((x) => (typeof x === 'string' ? x.trim().split(/\s+/)[0] : '')).filter((x) => RE_HASH.test(x)) : []
   })
   const zmiany = zmianyFixa(commity)
+  const testy = testyK6(wynikKontroli(agenci, journal))
   return {
     naprawione: liczbaLubNull(zRaportu.naprawione),
     nierozwiazaneP2: liczbaLubNull(zRaportu.nierozwiazaneP2),
@@ -108,7 +151,7 @@ function fixFazy(raport, agenci, journal, zmianyFixa) {
     pliki: zmiany.ok ? zmiany.pliki : null,
     pliki_blad: zmiany.ok ? null : zmiany.powod,
     linie_diff: zmiany.ok ? zmiany.linie : null,
-    p1_z_testem: null,
+    p1_z_testem: testy ? testy.filter((t) => t.czerwonyPrzedPoprawka === true).length : null,
   }
 }
 
@@ -118,11 +161,11 @@ function fixFazy(raport, agenci, journal, zmianyFixa) {
  * @param {Map<string, WynikJournala>} journal
  */
 function kontrolaFixaFazy(raport, agenci, journal) {
-  const kontrola = agenci.find((a) => a.rola === 'fix:kontrola')
   const zRaportu = obiekt(raport.kontrolaFixa)
-  if (!kontrola && !Object.keys(zRaportu).length) return null
-  const regresje = obiekt(kontrola ? journal.get(kontrola.id)?.wynik : null).regresje
-  return { ...zRaportu, regresje: Array.isArray(regresje) ? regresje.length : null }
+  if (!agenci.some((a) => a.rola === 'fix:kontrola') && !Object.keys(zRaportu).length) return null
+  const kontrola = wynikKontroli(agenci, journal)
+  const regresje = kontrola.regresje
+  return { ...zRaportu, regresje: Array.isArray(regresje) ? regresje.length : null, listy: pozycjeList(kontrola) }
 }
 
 // Bramki domkniecia (P6): nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs i w EXECUTE_RESULT dev-docs-execute-wf.

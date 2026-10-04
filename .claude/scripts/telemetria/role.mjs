@@ -13,6 +13,8 @@ const MECHANICZNE = new Set([
   'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'dossier:zapas', 'e2e:env-down',
   'fix:pre-skan', 'stop:commit-artefaktow',
 ])
+// P8: fix:pre-skan i verify-fix wyszly z pipeline'u (listy K kontroli fixa), ale rozpoznanie zostaje dla starych runow —
+// bez fix:pre-skan w ROLE_Z_OGONEM etykieta sklejalaby sie w `fix`, a fixFazy czytalaby wynik pre-skanu jako commity fixa.
 const SCEPTYCY = new Set(['verify', 'verify-batch', 'verify-fix'])
 const NAPRAWIACZE = new Set(['fix', 'fix:poprawka'])
 
