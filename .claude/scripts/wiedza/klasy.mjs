@@ -1,0 +1,45 @@
+// Slownik klas bledow dla wiedzy projektu (PLAN-POPRAWY P10): kopia KLASY_BLEDOW i KLASY_NIE_DEFEKT z dev-pr-wf.js
+// (workflow nie jest modulem node). Rownosc pilnuje __tests__/klasy.test.mjs — zmiana slownika w workflowie wymaga kopii tutaj.
+
+/** @type {Record<string, { os: string, opis: string }>} */
+export const KLASY_BLEDOW = {
+  'cykl-zycia-ui': { os: 'correctness', opis: 'efekt, timer albo stan UI zyje dluzej niz komponent albo przezywa zmiane propsa/identyfikatora (zmiana propsa, odmontowanie → tu; dwie rownolegle operacje → wyscig)' },
+  'wyscig-i-wspolbieznosc': { os: 'correctness', opis: 'dwie rownolegle operacje albo wartosc sprzed await psuja wynik' },
+  'sciezka-bledu': { os: 'correctness', opis: 'blad psuje stan dla uzytkownika albo niszczy dane zamiast byc obsluzony (skutek dla uzytkownika/danych → tu; brak sladu tylko dla operatora → polkniety-blad)' },
+  'bramka-na-jednej-drodze': { os: 'correctness', opis: 'warunek chroni jedna droge do operacji, a inna go omija' },
+  'dopasowanie-tekstu': { os: 'correctness', opis: 'parsowanie albo porownanie tekstu, HTML, URI lub zbiorow daje zly wynik (regex, includes, wielkosc liter, Set gubi krotnosc); gdy skutkiem jest obejscie kontroli dostepu → bramka-czarna-lista' },
+  'wartosc-graniczna': { os: 'correctness', opis: 'zle zachowanie na granicy zakresu: 0, 1, limit, maksymalna dlugosc' },
+  'limit-czasu-i-ponowien': { os: 'correctness', opis: 'wywolanie bez limitu czasu albo petla ponowien bez sufitu' },
+  'spojnosc-dwoch-systemow': { os: 'correctness', opis: 'kod zaklada o innym systemie (baza, cudze API, drugi proces) cos, co nie jest prawda' },
+  'bramka-czarna-lista': { os: 'security', opis: 'kontrola dostepu wylicza, co blokuje (albo dopasowuje niedokladnie), i domyslnie przepuszcza reszte' },
+  'zaufanie-danym-klienta': { os: 'security', opis: 'decyzja (limit, dostep) oparta na danych, ktore kontroluje klient: naglowek, content-length' },
+  'pii-i-sekrety': { os: 'security', opis: 'dane osobowe albo sekret trafiaja do logu, Sentry, repo albo argv' },
+  'walidacja-granicy-api': { os: 'security', opis: 'dane z zewnatrz wchodza bez walidacji ksztaltu (Zod) na granicy' },
+  'uprawnienia-naglowki-sql': { os: 'security', opis: 'grant bazy za szeroki albo za waski, brak naglowkow bezpieczenstwa HTTP, sklejanie SQL' },
+  'test-niefalsyfikowalny': { os: 'test', opis: 'test przechodzi takze wtedy, gdy zachowanie jest zepsute' },
+  'luka-pokrycia': { os: 'test', opis: 'zachowanie z planu albo sciezka bledu nie ma testu' },
+  'test-kruchy': { os: 'test', opis: 'test pada od zmiany niezwiazanej z zachowaniem (twarde liczby, kolejnosc)' },
+  'tekst-ui': { os: 'spec', opis: 'tekst dla uzytkownika obiecuje cos, czego kod nie robi, albo niesie zle dane' },
+  'kontrakt-wspolny': { os: 'spec', opis: 'dwie warstwy (SQL, Zod, typ, dwie bramki) JUZ opisuja to samo pole inaczej (kopia na razie zgodna → duplikacja)' },
+  'zgodnosc-prawna': { os: 'brak', opis: 'dokument prawny niezgodny z przepisami (np. brak elementow z art. 13 RODO)' },
+  'polkniety-blad': { os: 'code-quality', opis: 'pusty catch albo blad polkniety: operator nie widzi przyczyny (kod bledu, stderr)' },
+  'duplikacja': { os: 'code-quality', opis: 'ta sama logika albo stala w dwoch miejscach, na razie zgodnych, ktore moga sie rozjechac' },
+  'martwy-kod-lub-komentarz': { os: 'code-quality', opis: 'nieosiagalna galaz albo komentarz, ktory nie zgadza sie z kodem' },
+  'cache-i-zapytania': { os: 'performance', opis: 'zbedne zapytania, zly cache albo wspolne wiadro limitera spowalnia / blokuje klientow' },
+  'seed-e2e': { os: 'e2e', opis: 'seed testow E2E niezgodny z kontraktem migracji' },
+  'migracja-bazy': { os: 'brak', opis: 'migracja blokuje tabele, nie jest idempotentna albo wchodzi w zlej kolejnosci' },
+  'a11y': { os: 'brak', opis: 'dostepnosc: fokus, klawiatura, kontrast, atrybuty ARIA' },
+  'wada-dokumentu-sterujacego': { os: 'brak', opis: 'CLAUDE.md, plan albo instrukcja projektu kaze zrobic cos zlego albo sama sobie przeczy' },
+  'prog-rozmiaru': { os: 'brak', opis: 'plik albo funkcja przekracza prog linii z konwencji' },
+  'konwencja-kodu': { os: 'brak', opis: 'bot cytuje regule projektu (typowanie as/any, eksporty, importy, style, console, Act/Assert, rate limit)' },
+  'preferencja-bota': { os: 'brak', opis: 'sugestia bota bez defektu i bez reguly projektu (rada, preferencja formatowania)' },
+  'teza-obalona': { os: 'brak', opis: 'uwaga bota nieprawdziwa albo wycofana przez samego bota' },
+  'odpowiedz-bota': { os: 'brak', opis: 'odpowiedz bota w watku (potwierdzenie poprawki), nie nowa uwaga' },
+  'inna': { os: 'brak', opis: 'nic z listy nie pasuje — uzasadnienie w polu uzasadnienie' },
+}
+
+/** @type {string[]} */
+export const KLASY_NIE_DEFEKT = ['prog-rozmiaru', 'preferencja-bota', 'teza-obalona', 'odpowiedz-bota']
+
+// Klasa wpisu wiedzy = defekt; „inna” otwieralaby zamkniety slownik.
+export const KLASY_WIEDZY = Object.keys(KLASY_BLEDOW).filter((k) => !KLASY_NIE_DEFEKT.includes(k) && k !== 'inna')
