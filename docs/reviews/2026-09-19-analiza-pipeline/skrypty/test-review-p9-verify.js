@@ -248,10 +248,13 @@ function porcjujP2(lista, maks) {
 
 
 // wejście: args {sciezka, faza, kontekst (mapa packagera wariantu 0 bez zrzutów /tmp), findings (P1/P2 w kształcie dedupu wariantu 0)}
-const sciezka = args.sciezka
-const faza = args.faza
-const kontekst = args.kontekst || null
-const doWeryfikacji = args.findings || []
+// sesja uruchamiajaca bywa, ze poda args jako tekst JSON (2 z 14 faz w pierwszym przebiegu) — wtedy findings byly puste
+const wejscie = typeof args === 'string' ? JSON.parse(args) : args
+const sciezka = wejscie.sciezka
+const faza = wejscie.faza
+const kontekst = wejscie.kontekst || null
+const doWeryfikacji = wejscie.findings || []
+if (!doWeryfikacji.length) throw new Error('kill rate P9: brak findingow w args')
 phase('Verify')
 const p1DoVerify = doWeryfikacji.filter((f) => f.severity === 'P1')
 const p2DoVerify = doWeryfikacji.filter((f) => f.severity !== 'P1')

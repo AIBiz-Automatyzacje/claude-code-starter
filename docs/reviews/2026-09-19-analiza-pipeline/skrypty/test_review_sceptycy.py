@@ -23,6 +23,7 @@ Kill rate sceptyka asymetrycznego P9 (PLAN-POPRAWY §3 P9, W4-5pre) — przed me
                                                             → dane/test-review/kill-rate-p9.json + dane/kill-rate-p9.txt"""
 import concurrent.futures, glob, hashlib, json, os, re, subprocess, sys
 
+import panel_koszt_dane as KD
 import test_review_wariant0 as W0
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -145,7 +146,10 @@ def p9():
     meta = ("export const meta = {\n  name: 'test-review-p9-verify',\n  description: 'Kill rate P9: wycinek Verify z dev-docs-review-wf.js (sceptyk asymetryczny) na findingach dopasowanych przez sędziego',\n"
             "  phases: [{ title: 'Verify', detail: 'P1 = 3 sceptyków (2/3 dowodem), P2 = porcje po 4' }],\n}\n")
     wej = ("// wejście: args {sciezka, faza, kontekst (mapa packagera wariantu 0 bez zrzutów /tmp), findings (P1/P2 w kształcie dedupu wariantu 0)}\n"
-           "const sciezka = args.sciezka\nconst faza = args.faza\nconst kontekst = args.kontekst || null\nconst doWeryfikacji = args.findings || []\nphase('Verify')\n")
+           "// sesja uruchamiajaca bywa, ze poda args jako tekst JSON (2 z 14 faz w pierwszym przebiegu) — wtedy findings byly puste\n"
+           "const wejscie = typeof args === 'string' ? JSON.parse(args) : args\n"
+           "const sciezka = wejscie.sciezka\nconst faza = wejscie.faza\nconst kontekst = wejscie.kontekst || null\nconst doWeryfikacji = wejscie.findings || []\n"
+           "if (!doWeryfikacji.length) throw new Error('kill rate P9: brak findingow w args')\nphase('Verify')\n")
     zwrot = ("return { projekt: 'P9', liczniki: sceptykLiczniki, decyzje: zweryfikowane.filter(Boolean).map((f) => ({ plik: f.plik, opis: f.opis, "
              "severity: f.severity, zabity: !f.potwierdzony, uzasadnienie: f._uzasadnienie || '' })) }\n")
     js = meta + '\n' + '\n\n'.join(czesci[:-1]) + '\n\n' + wej + verify + '\n' + zwrot
@@ -204,7 +208,8 @@ def decyzje(et, plik_wyniku, plik_fids):
     """Decyzje sceptyków → {fid: decyzja}; dopasowanie po początku opisu (P9 dopisuje adnotację na końcu, awaria — prefiks NIEZWERYFIKOWANY)."""
     sciezka = os.path.join(TR, 'wyniki', et, plik_wyniku)
     if not os.path.exists(sciezka): return None
-    fids = json.load(open(os.path.join(TR, 'skrypty', et, plik_fids)))
+    # sceptycy0.fids.json (wrzesień) trzyma sam F-id, sceptycyP9.fids.json — {id, waga, klucze}
+    fids = {k: v if isinstance(v, dict) else {'id': v} for k, v in json.load(open(os.path.join(TR, 'skrypty', et, plik_fids))).items()}
     wynik = {}
     for dz in json.load(open(sciezka)).get('decyzje', []):
         opis = re.sub(r'^\[NIEZWERYFIKOWANY — 0 glosow sceptykow\] ', '', dz.get('opis') or '')
@@ -214,13 +219,23 @@ def decyzje(et, plik_wyniku, plik_fids):
     return wynik
 
 
+def koszt_runu(et, plik):
+    """Koszt agentów runu sceptyków [M jedn.] i ich liczba — transkrypty z katalogu sesji zapisanego przy zbieraniu wyniku (cennik d4r)."""
+    kat = (json.load(open(os.path.join(TR, 'wyniki', et, plik))).get('_run') or {}).get('katalog')
+    agenci = [a for a in (KD.sklad(jf) for jf in glob.glob(os.path.join(kat or '/brak', 'subagents', 'workflows', '*', 'agent-*.jsonl'))) if a]
+    return sum(a['koszt'] for a in agenci) / 1e6, len(agenci)
+
+
 def wynik_p9():
     rek, liczniki = [], {'agree': 0, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0}
+    koszt = {'P9': [0.0, 0, 0], '0': [0.0, 0, 0]}   # M jedn., agentów, findingów
     for et in fazy_p9():
         nowe = decyzje(et, 'sceptycyP9.json', 'sceptycyP9.fids.json')
         if nowe is None: raise SystemExit('%s: brak wyniku P9 — najpierw uruchom-p9' % et)
         for k, v in json.load(open(os.path.join(TR, 'wyniki', et, 'sceptycyP9.json')))['liczniki'].items(): liczniki[k] += v
         stare = decyzje(et, 'sceptycy0.json', 'sceptycy0.fids.json') or {}
+        for w, plik, n in (('P9', 'sceptycyP9.json', len(nowe)), ('0', 'sceptycy0.json', len(stare))):
+            if n: koszt[w] = [x + y for x, y in zip(koszt[w], [*koszt_runu(et, plik), n])]
         for fid, dz in nowe.items():
             st = stare.get(fid)
             rek.append({'et': et, 'f': fid, 'waga': dz['waga'], 'klucze': dz['klucze'], 'p9': 'zabity' if dz['zabity'] else
@@ -236,9 +251,11 @@ def wynik_p9():
         L.append('%-22s %3d  %3d  %10d  %11d  %13d  %s' % (nazwa, len(lista), ile(lista, 'waga', 'P1'), ile(lista, 'p9', 'zabity'), ile(lista, 'p9', 'obnizony'),
                  ile(lista, 'p9', 'niezweryfikowany'), dzis if nazwa == 'klucz 1' else '— (dziś mierzony tylko klucz 1)'))
     L += ['', 'glosy: AGREE %(agree)d, DISAGREE_EVIDENCE %(disagree_evidence)d, DISAGREE_CONCERN %(disagree_concern)d; findingi obniżone %(degradacje)d' % liczniki, '',
+          'koszt: P9 %.2f M / %d agentów / %d findingów = %.3f M na finding; dziś (klucz 1) %.2f M / %d / %d = %.3f M na finding'
+          % (*koszt['P9'], koszt['P9'][0] / max(koszt['P9'][2], 1), *koszt['0'], koszt['0'][0] / max(koszt['0'][2], 1)), '',
           'Kryterium (PLAN-POPRAWY §3 P9, decyzja 4): nie merge, gdy P9 zabija na kluczu 1 więcej niż dziś albo > ~10% na kluczu 2.', '', 'Zabite i obniżone przez P9:']
     L += ['  %s %s %s [%s] %s → %s' % (r['p9'], r['et'], r['f'], r['waga'], '+'.join(r['klucze']), r['uzasadnienie'][:200]) for r in rek if r['p9'] in ('zabity', 'obnizony')]
-    json.dump({'liczniki': liczniki, 'rekordy': rek}, open(os.path.join(BASE, 'dane', 'test-review', 'kill-rate-p9.json'), 'w'), ensure_ascii=False, indent=1)
+    json.dump({'liczniki': liczniki, 'koszt': koszt, 'rekordy': rek}, open(os.path.join(BASE, 'dane', 'test-review', 'kill-rate-p9.json'), 'w'), ensure_ascii=False, indent=1)
     open(os.path.join(BASE, 'dane', 'kill-rate-p9.txt'), 'w').write('\n'.join(L) + '\n')
     print('\n'.join(L))
 

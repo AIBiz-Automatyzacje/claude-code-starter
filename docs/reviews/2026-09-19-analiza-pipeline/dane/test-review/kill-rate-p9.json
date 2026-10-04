@@ -1,0 +1,840 @@
+{
+ "liczniki": {
+  "agree": 97,
+  "disagree_evidence": 1,
+  "disagree_concern": 0,
+  "degradacje": 0
+ },
+ "koszt": {
+  "P9": [
+   3.7142965,
+   58,
+   74
+  ],
+  "0": [
+   3.00303425,
+   37,
+   36
+  ]
+ },
+ "rekordy": [
+  {
+   "et": "f-1de5a4c",
+   "f": "F48",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "main.tsx:72-75 wola initMonitoring() i dopiero potem `await import('./App.js')` (top-level await). Przegladarka zaczyna wiec pobierac chunk App dopiero po pobraniu i wykonaniu entry, bo preload-helper Vite odpala sie dopiero przy wywolaniu importu, a nie z index.html. Wodospad jest strukturalnie rea"
+  },
+  {
+   "et": "f-1de5a4c",
+   "f": "F34",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "c.js:36 `expiredError = node('msg-wygasla')` daje null dla ofert sprzed wdrozenia. Wezel doszedl w tym commicie (cta-section.ts:162, a w 60f1951 go nie ma), a HTML oferty jest niemutowalny. show() przy null nic nie robi (c.js:52-54). Przy 409 gone=true, wiec show(acceptError, false) w c.js:153 ukryw"
+  },
+  {
+   "et": "f-1de5a4c",
+   "f": "F60",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "apps/server/static/logo-aa-napis.webp ma 79 788 B przy 720x238 px (ls, sips), a obok lezy dawny logo-aa.svg o wadze 4 959 B. Ta sama kopia jest w apps/dashboard/src/assets. Sloty wyswietlania to 22 px (root-page.ts:21), 20 px (privacy-page.ts:100) i w-30 w app-layout.tsx:60, wiec rozdzielczosc pliku"
+  },
+  {
+   "et": "f-2536643",
+   "f": "F33",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza tezę. W apps/server/src/offer/template-headings.ts:101 pętla po `tagSpans(rendered)` woła `closingTagFrom` dla każdego `<h1>`/`<h2>`. Ta funkcja (linie 131-142) za każdym razem buduje nowy RegExp `<\\/h1\\b[^>]*>` i robi `exec` od `end + 1` do końca maski. Niezamknięty nagłówek kończy s"
+  },
+  {
+   "et": "f-2536643",
+   "f": "F6",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "offers-list.tsx:118 w handleRowClick odsiewa tylko `closest('a, button')`. CopyAddressButton (copy-address-button.tsx:118) renderuje AddressCopyFailure, czyli span role=alert i OfferAddressField z polem, wewnątrz <td> wiersza <tr onClick>. Komórka nie ma stopPropagation ani markera wyłączenia, więc "
+  },
+  {
+   "et": "f-2536643",
+   "f": "F1",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Przed fazą template-card.tsx renderował OriginPill (linia 113 w 72c07dc), a w obecnej wersji kafla (linie 61-77) nie ma żadnej pigułki, także „WŁASNY”. Plan w linii 712 nazywa tylko zniknięcie „WBUDOWANY”. Sekcja korekt planu (linia 803) i plik kontekstu oznaczają pełne usunięcie jako „DO POTWIERDZE"
+  },
+  {
+   "et": "f-2536643",
+   "f": "F74",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "use-template-asset-queue.ts:106-125: cleanup ustawia isStoppedRef=true i woła releaseAll, które rozwiązuje obietnice wait w mikrozadaniu. Zaraz potem w tym samym commicie setup nowego efektu synchronicznie ustawia isStoppedRef=false. Stara pętla wraca z await, w waitForLimit (linia 234) i pump (lini"
+  },
+  {
+   "et": "f-2536643",
+   "f": "F23",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "template-headings.test.ts nie ma testu budżetu czasu: brak performance/Date.now, a repeat pojawia się tylko w testach długości nagłówka. Oba wektory są w kodzie kwadratowe. (1) Dla każdego niezamkniętego <h1> closingTagFrom (linie 131-142) przeszukuje regexpem od end+1 do końca dokumentu, a resumeFr"
+  },
+  {
+   "et": "f-2536643",
+   "f": "F96",
+   "waga": "P2",
+   "klucze": [
+    "klucz1",
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Teza się potwierdza. CHECK w migracji (linia 60) mierzy `pg_catalog.char_length(h) <= 80`, czyli punkty kodowe. Kontrakt `naglowki` w packages/shared/src/template-contract.ts używa `z.string().max(TEMPLATE_HEADING_LIMITS.length)`, czyli jednostek UTF-16. Komentarz w migracji (linie 43-46) godzi te d"
+  },
+  {
+   "et": "f-2634b67",
+   "f": "F76",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Kod potwierdza tezę. W supabase/migrations/20260827183042_mcp_tokens.sql:78 rola authenticated dostaje tylko `grant insert (owner_id, token_hash)`. Linia 79 daje UPDATE także na `created_at`, ale PostgREST robi upsert jako `INSERT (<kolumny ładunku>) ... ON CONFLICT DO UPDATE SET <kolumny ładunku>`,"
+  },
+  {
+   "et": "f-2634b67",
+   "f": "F47",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "W token-service.test.ts nie ma żadnego testu odwołującego się do sufitu (grep po MAX_CACHED/500/sufit nic nie zwraca). Blok 'cache sesji' sprawdza tylko ponowne użycie sesji i lookup przy każdym żądaniu. Ani eksmisja w enforceCacheCeiling (token-service.ts:193-203), ani własność delete-przed-set (to"
+  },
+  {
+   "et": "f-2634b67",
+   "f": "F20",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "W token-service.ts:118-120 i 165-167 createClient dostaje tylko opcje auth, bez global.fetch i bez timeoutu. Domyślny fetch supabase-js nie ma deadline'u. lookupOwnerId (127-139) idzie do bazy przy każdym żądaniu, także przy nieznanym Bearerze (240-245). mintSession wykonuje po kolei getUserById, ge"
+  },
+  {
+   "et": "f-2634b67",
+   "f": "F80",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "W token-service.ts:205-223, gdy w mapie leży przeterminowana sesja, dwa równoległe żądania łapią tę samą `pending`. Oba czekają w `await pending.catch` i oba widzą wygaśnięcie. Po wznowieniu żadne nie sprawdza ponownie sessions.get(ownerId), więc każde wywołuje mintSession i nadpisuje wpis. Deduplik"
+  },
+  {
+   "et": "f-2634b67",
+   "f": "F17",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Migracja w linii 79 nadaje UPDATE także na owner_id. W bloku 'tokeny MCP' w rls.test.ts są testy insert z cudzym owner_id (571), update token_hash cudzego wiersza (588) i delete (614), a upsert występuje tylko z własnym owner_id (631). Nie ma testu update({owner_id: tenantA.id}) na własnym wierszu B"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F98",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza tezę. W apps/dashboard/src/features/offers/offer-details-page.tsx:82 jest `useOfferDecisions(offer.id)`, ale linie 84-86 kończą render przez `if (summary.visitCount === 0) return <OfferEmptyState />`. Dlatego `<OfferDecisionsCard>` (l. 99) i zdanie D18 `previewNote` (l. 114) w ogóle s"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F165",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Migracja supabase/migrations/20260902190000_profiles_webhook_set_at.sql dodaje CHECK profiles_webhook_set_at_pair_check ((webhook_url is null) = (webhook_set_at is null)) i nie zakłada żadnego triggera, który stemplowałby webhook_set_at. Poza tą migracją w supabase/ nie ma ani jednego wystąpienia we"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F103",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "offer-details-page.tsx:81-85: hook useOfferDecisions(offer.id) jest wołany zawsze, a przy visitCount===0 komponent zwraca <OfferEmptyState /> bez OfferDecisionsCard. Zapytanie leci, ale jego wyniku nikt nie renderuje. Ofertę zaakceptowaną przy zgubionych wizytach handlowiec widzi wtedy jako „brak wi"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F1",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "use-webhook-settings.ts:230 wstawia envelope.error.code jako statusLabel. Serwer zwraca kody takie jak 'zbyt_wiele_testow' (webhook-settings.ts:256) i 'brak_autoryzacji' (:120), które trafiają do szablonu webhookTestFailedLabel (texts.ts:108) „Test nie dotarł (…). Sprawdź adres…”. Serwerowe message "
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F15",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "sendTest (:224) ustawia 'running', a catch w runWrite (:123-125) ustawia tylko isWriteFailed. isTesting w webhook-card.tsx:149 zostaje true. Przy isWriteFailed karta pokazuje WEBHOOK_TEXTS.loadError „Nie udało się wczytać ustawień webhooka” (webhook-card.tsx:230-233, texts.ts:89), co jest mylące. re"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F42",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "webhook-api.ts:46 robi `(await response.json()) as ApiEnvelope` bez sprawdzenia kształtu odpowiedzi. use-webhook-settings.ts:167 i :235 rzutują data przez `as`. Nazwy pól (nazwa_serwera, wynik, status) to literały zdublowane w webhook-settings.ts:201/285/291. Ścieżka WEBHOOK_API_PATH jest zdefiniowa"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F194",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "webhook-api.ts:37-44: fetch nie dostaje signal ani limitu czasu. W use-webhook-settings.ts:115-130 runWrite zdejmuje isBusy dopiero w finally po await operation(), więc żądanie, które nigdy nie wraca, zostawia isBusy=true. Na tym fladze wiszą disabled przycisków w webhook-card.tsx:69/126/137/156/164"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F183",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "webhook-card.tsx:230-234: przy isWriteFailed karta pokazuje WEBHOOK_TEXTS.loadError, czyli tekst o awarii wczytania z poleceniem odświeżenia strony (texts.ts:89). Osobnego tekstu writeError nie ma. Test 'awaria transportu przy zapisie' (webhook-card.test.tsx:211) sprawdza tylko toBeDefined() na role"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F117",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Atrapa loggera (webhook-settings.test.ts:95-101) zapisuje surowe argumenty, a report() w webhook-settings.ts:115 loguje obiekt { err: error, path }. String(obiekt) daje '[object Object]', więc not.toContain(SECRET_PATH) w liniach 335-339 przejdzie zawsze. Atrapa rzuca Error z pełnym URL-em w message"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F196",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Numer linii 3832 jest błędny, bo plik ma 414 linii, ale sama teza się potwierdza. W webhook-settings.test.ts przypadki 401 (linie 233, 246) dotyczą wyłącznie zapisu adresu. DELETE i POST /wlacz mają tylko happy path (344, 353), a dla /test, /wlacz i DELETE nie ma testu 503 zapis_nieudany. W webhook-"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F174",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "W apps/server/src/webhooks/ nie ma settings-service.test.ts. Jedyny test, który odwołuje się do tego modułu (routes/webhook-settings.test.ts:13), importuje tylko typ WebhookSettingsService i używa atrapy serwisu. Prawdziwej implementacji createSupabaseWebhookSettingsService nie testuje nic: ani zero"
+  },
+  {
+   "et": "f-303ff62",
+   "f": "F185",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Migracja dodaje kolumnę webhook_set_at jako nullable (linie 19-20), a potem od razu nakłada CHECK (webhook_url is null) = (webhook_set_at is null) (linie 39-42). Nie ma żadnego UPDATE uzupełniającego istniejące wiersze. Każdy profil z niepustym webhook_url, wpisanym przed tą migracją, łamie ten CHEC"
+  },
+  {
+   "et": "f-31491bc",
+   "f": "F6",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Potwierdzone w kodzie. heatmap-grid.ts:341 buduje klucz z dokładnych ułamków `${fy}:${fx}`, a fy = (row+0.5)/gridRows (cellToFraction). Przy różnych gridRows te same miejsca dokumentu prawie nigdy nie dają identycznego fy, więc wagi się nie scalają. Tracker liczy rows = round(docHeight/100) raz na w"
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F20",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza tezę. apps/server/src/routes/events.ts:89-94 przyjmuje viewport_width do 32767 i doc_height do 10 000 000. CHECK-i w supabase/migrations/20260828120000_visits_tracking.sql:57-59 mają ten sam zakres. heatmap-grid.ts:133-135 (frameOfVisit) i :156-171 (medianFrame) przepisują te wartości"
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F44",
+   "waga": "P1",
+   "klucze": [
+    "klucz1",
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Kod potwierdza tezę. apps/dashboard/src/features/offers/texts.ts:74 ma caption 'Im cieplejszy kolor, tym dłużej klient zatrzymał się w tym miejscu.', a :97 ma mobileLead 'Zobacz, gdzie klient zatrzymał się najdłużej.'. Oba teksty opisują czas postoju. Tracker robi coś innego. W apps/server/static/t."
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F94",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "offer-heatmap-card.tsx:324-330: gdy isMobileOpen=false, kontener z renderBody() dostaje tylko klasę 'hidden … md:flex', ale renderBody() → renderMapArea() i tak montuje OfferHeatmapFrame (linie 152-158 i 171-177). Ramka renderuje iframe bez loading=lazy (offer-heatmap-frame.tsx:209-223) i canvas o w"
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F124",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Wariant isMobileOpen (offer-heatmap-card.tsx:326) to zwykły 'flex flex-col' w szerokości karty, bez nakładki pełnoekranowej i bez przycisku zamknięcia. Plan (docs/plans/...-plan.md:286) wymaga pełnego ekranu, a texts.ts:99-100 (mobileNote) obiecuje użytkownikowi „otwieramy ją na pełnym ekranie”. Odr"
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F9",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "offer-heatmap-frame.test.tsx ma wyłącznie przypadki pozytywne z FRAME 1280×4200 (linia 25) oraz przypadek pustego originu. Brakuje testu dla skrajnej geometrii, dla limitów canvasu i dla simpleheat rzucającego w draw. Kod też nie ma żadnej bramki: frameOfVisit (heatmap-grid.ts:133-134) przepisuje vi"
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F8",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "offer-heatmap-frame.tsx:56 wywołuje new URL(path, origin.trim()) bez try/catch. Sprawdziłem w Node: new URL('/o/x','oferty.example.pl') rzuca TypeError: Invalid URL. Wywołanie biegnie w renderze (linia 100). main.tsx renderuje <App/> bez ErrorBoundary, a grep 'Boundary|errorElement' w apps/dashboard"
+  },
+  {
+   "et": "f-32975a1",
+   "f": "F15",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "W offer-heatmap-frame.tsx:210 jest `sandbox=\"\"` bez `allow-same-origin`, więc dokument w ramce dostaje origin nieprzezroczysty. Kroje z @font-face przeglądarka zawsze pobiera w trybie CORS, a origin nieprzezroczysty jest wobec /f/inter-v1.woff2 cross-origin. Serwer w offer-origin-pages.ts:191-219 us"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F57",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza tezę. W apps/dashboard/src/features/offers/offers-list.tsx:8-12 `DATE_FORMAT` to `new Intl.DateTimeFormat('pl-PL', {day, month, year})` bez `timeZone`, więc data liczy się w strefie przeglądarki. Ta sama stała formatuje `offer.expiresAt` w kolumnie „Wygasa” (linia 89) i w mobilnym opi"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F110",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza tezę. apps/dashboard/src/features/settings/use-mcp-token.ts:87-92 wysyła upsert `{owner_id, token_hash, created_at}`, a komentarz w liniach 83-86 uzasadnia to datą rotacji. Migracja supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql powstała w commicie 46be55a i"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F50",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "zabity",
+   "dzis": "zabity",
+   "uzasadnienie": "Główna teza zarzutu się nie potwierdza. W zainstalowanej wersji auth-js 2.112.4 `_signOut` przy błędzie z endpointu /logout (innym niż 401/403/404) najpierw wywołuje `removeCurrentSession()`, a dopiero potem zwraca `{ error }`, jeśli zakres nie jest 'others'. Przy `scope: 'local'` sesja jest więc us"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F107",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "zabity",
+   "uzasadnienie": "login-page.tsx:63-80 ustawia `sending` i czeka na `signInWithOtp` bez try/catch/finally. auth-js rzuca dalej każdy wyjątek, który nie jest AuthError (`if (isAuthError(error)) ... throw error`). Gdy tak się stanie, stan zostaje na `sending`, a guard z linii 52 blokuje każdą kolejną próbę wysłania. Uż"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F133",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "session-context.tsx:41-43 wywołuje `getSession().then(...)` bez `.catch`. `getSession` działa przez `_useSession` i blokadę storage, a wyjątki spoza AuthError (np. timeout blokady) odrzucają obietnicę. Wtedy `state` zostaje na `loading`, chyba że wcześniej przyjdzie zdarzenie z `onAuthStateChange`. "
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F4",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "use-mcp-token.ts:75-104 i 108-123 wywołują `setIsBusy(false)` dopiero po `await`, bez try/finally. `hashMcpToken` (mcp-token.ts:44) odwołuje się do `crypto.subtle.digest`. Poza bezpiecznym kontekstem `crypto.subtle` jest undefined, więc odwołanie rzuca TypeError, który staje się odrzuceniem obietnic"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F140",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Migracja 20260827194500 (grant INSERT created_at) ma timestamp starszy niż 20260827210000 (trigger z fixa fazy 1). Jeśli 210000 jest już na zdalnej bazie, `supabase db push` bez `--include-all` odmówi wstawienia starszej 194500. Dashboard (use-mcp-token.ts:87-91) wysyła created_at w ładunku, więc be"
+  },
+  {
+   "et": "f-46be55a",
+   "f": "F84",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Upserty w rls.test.ts:519, 532, 644 i 704 wysyłają tylko { owner_id, token_hash }, a komentarz przy linii 546 wprost mówi, że ładunek rotacji nie niesie created_at. Dashboard wysyła created_at w use-mcp-token.ts:87-91. Na żywej bazie nie jest więc sprawdzone ani to, że ten kształt zapisu nie kończy "
+  },
+  {
+   "et": "f-5af000f",
+   "f": "F23",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza tezę. Funkcja visitDurationSeconds (apps/dashboard/src/features/offers/analytics.ts:165-167) sumuje wszystkie wartości visit.sections. Ten wynik trafia do formatDuration w offer-visits-list.tsx:11 i wyświetla się jako czas wizyty. Tracker (apps/server/static/t.js:56-98) liczy jednak c"
+  },
+  {
+   "et": "f-5af000f",
+   "f": "F39",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "analytics.ts:201-206 liczy lastVisitAt jako max(lastSeenAt), a offer-visits-list.tsx wyświetla formatOfferDateTime(visit.startedAt) i sortuje po startedAt (byNewestFirst). Fikstura w offer-details-page.test.tsx ma przy pierwszej wizycie last_seen_at == started_at (12:32), choć sekcje sumują się do 2"
+  },
+  {
+   "et": "f-5af000f",
+   "f": "F40",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "sortedSectionIds (analytics.ts ok. 182) bierze identyfikatory wyłącznie z Object.keys(visit.sections). t.js:64-67 dopisuje sekcję tylko gdy elapsed > 0, a t.js:134 serializuje tylko istniejące klucze. Sekcja, której nikt nie zobaczył, nie pojawi się więc wcale, a stan hasTime:false pojawia się tylko"
+  },
+  {
+   "et": "f-5af000f",
+   "f": "F96",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "W pliku zadań linie 149-152 (nie 127) to nieodhaczone scenariusze [E2E] widok-oferty-dane, widok-oferty-pusty, lista-realne-liczniki oraz nieodhaczona weryfikacja idempotentności przez psql. W kopii repo jest tylko .env.example, pliku .env.e2e brak. Zastrzeżenia o nakładających się sekcjach nie ocen"
+  },
+  {
+   "et": "f-67f5f2c",
+   "f": "F79",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Kod potwierdza zarzut. W apps/server/src/app.ts:95-104 middleware `app.use('*', ...)` jest zarejestrowany przed `app.route('/', createHealthRoutes(buildInfo))` (linia 135). Dla Host `localhost:3000` funkcja resolveOriginKind (linie 63-73) zwraca null, bo hosty pochodzą wyłącznie z APP_ORIGIN i OFFER"
+  },
+  {
+   "et": "f-67f5f2c",
+   "f": "F5",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "apps/server/package.json ma tylko skrypty typecheck i test, bez dev i start, więc root-owe `pnpm -r --parallel --if-present run dev` pomija serwer. index.ts importuje './app.js' itd., a tsconfig.base ma moduleResolution: bundler i nie ma rewriteRelativeImportExtensions ani kroku build. Uruchomienie "
+  },
+  {
+   "et": "f-67f5f2c",
+   "f": "F12",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Numer linii 706 jest błędny, bo sentry.ts ma 77 linii, ale teza się potwierdza. W scrubEvent (sentry.ts:40-43) z request są usuwane tylko headers, cookies, query_string i data, a `url` zostaje. W @sentry/core 10.71 (build/cjs/utils/request.js:120-129) `url: absoluteUrl` powstaje z request.url, czyli"
+  },
+  {
+   "et": "f-9d40529",
+   "f": "F77",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "database.types.ts:13 ma PostgrestVersion \"14.17\" (przed fazą, w 0b75fcb, było \"14.15\"), a linie 17-28 zawierają blok e2e_env_marker. Żadna migracja w supabase/migrations nie tworzy tej tabeli. Faza 3 (kontekst, pkt 7, linia 112) świadomie wycięła oba artefakty, żeby nie wprowadzać dryfu, a tu wrócił"
+  },
+  {
+   "et": "f-9d40529",
+   "f": "F3",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Migracja definiuje sections i heat w liniach 63-65 bez żadnego CHECK. jsonb_sum_numeric (linia 122) sumuje dowolne klucze i dowolne wartości liczbowe, także ujemne, a merge_visit_increments (linie 155-156) przyjmuje każdy kształt. Funkcję woła tylko service_role, ale jedyną planowaną barierą jest wa"
+  },
+  {
+   "et": "f-9d40529",
+   "f": "F68",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Komentarz kolumny (linia 77) i nagłówek (linia 14) ustalają kontrakt ua_hash = sha256(user-agent) bez soli, a ip_hash ma sól z offers.ip_salt. Kolumna ua_hash jest w grancie SELECT dla authenticated (linia 262). Komentarz w liniach 254-255 twierdzi, że hashe są nieodwracalne i nie niosą PII. Przestr"
+  },
+  {
+   "et": "f-9d40529",
+   "f": "F74",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "run_visits_retention (linie 196-197) kasuje wiersze visits starsze niż 12 miesięcy. Plan, decyzja 4 (linia 94), każe liczyć liczniki na liście po stronie klienta z surowych wierszy visits i odracza agregaty SQL do fazy 9 z powodów wydajnościowych, nie retencyjnych. Linia 49 planu potwierdza, że faza"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F100",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Kod potwierdza tezę we wszystkich punktach. (1) supabase/migrations/20260824171406_init_profiles_offers.sql:194 daje `grant select, insert, delete on table public.offers to authenticated`, czyli grant na całą tabelę, łącznie z `ip_salt`. Żadna późniejsza migracja (20260825062126, 20260825171812, 202"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F10",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Tabela it.each w events.test.ts (ok. l. 319-357) obejmuje tylko nie-JSON, nieznany typ, brak geometrii, zły slug, ujemną geometrię, komórkę 99:99 i scroll 500. Nie ma przypadków dla 65 kluczy sekcji (refine z events.ts:93), dla kluczy sekcji spoza SECTION_ID_PATTERN, dla granicznych kluczy heat, dla"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F43",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Narzędzie publikacji przyjmuje surowy HTML (validation.ts:184), a validation.ts:71 sprawdza jedynie obecność needle 'data-section=\"', nie samą wartość. Tracker (t.js:66 i 134) bierze jako klucz sections dowolny id z atrybutu. sectionsSchema (events.ts:88-93) jest polem obowiązkowym deltaEventSchema,"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F64",
+   "waga": "P2",
+   "klucze": [
+    "klucz1",
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "visit-service.test.ts importuje tylko classifyDevice, createCachedTrackingOfferLoader, createSupabaseVisitStore i funkcje tokenu oraz hashy (l. 7-18). createSupabaseTrackingOfferLoader nie jest testowany nigdzie, a parseIpSalt nie jest eksportowany i nie ma pokrycia. Atrapa klienta nie ma select ani"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F2",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "visit-service.ts: recordOpen najpierw robi INSERT do visits, potem osobny UPDATE offers, a przy statusError rzuca VisitStoreError. events.ts:236-251 ustawia X-Oo-Visit dopiero po powrocie z recordOpen, więc wyjątek z UPDATE (złapany w l. 299) oznacza 204 bez nagłówka, mimo że wiersz już jest w bazie"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F124",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "visit-service.ts:203-207 tworzy klienta tylko z opcjami auth, bez global.fetch z sygnałem. W apps/server/src nie ma żadnego AbortSignal ani timeoutu poza index.ts (shutdown) i sentry.ts. events.ts:283-299 czeka na cachedLoader oraz na recordOpen i mergeIncrements bez Promise.race, więc gdy PostgREST"
+  },
+  {
+   "et": "f-b26128d",
+   "f": "F134",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "t.js:88-89 pomija tylko pusty id i nie sprawdza jego formatu. events.ts:64 i 88-93 waliduje każdy klucz regexem ^[A-Za-z0-9_-]{1,64}$ w sectionsSchema, a ta wchodzi do deltaEventSchema (events.ts:99-106). Jeden zły klucz unieważnia więc cały ładunek razem z heat i scroll. Bramka publikacji (validati"
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F61",
+   "waga": "P1",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "Kod potwierdza tezę. 20260824171406_init_profiles_offers.sql:194 daje `grant select, insert, delete on table public.offers to authenticated`. Grant obejmuje całą tabelę, więc należy do niego też kolumna `ip_salt` (linia 82). W kolejnych migracjach nie ma żadnego kolumnowego revoke SELECT ani INSERT "
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F43",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "app.ts:339 wybiera offerRequestCounter dla każdego żądania originu ofert, a isUncountedStaticPath (app.ts:153) wyłącza z licznika tylko statykę i /t.js. POST /e liczy się więc do tego samego wiadra 300/min co /o/<slug>. W t.js:199 jest setInterval(flush, 10000). settle (t.js:62-70) ustawia dirty=tru"
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F36",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "it.each w events.test.ts:319-357 sprawdza tylko 7 wektorów: nie-JSON, typ, brak geometrii, slug, ujemną geometrię, komórkę 99:99 i scroll 500. Schemat w events.ts:64-103 egzekwuje SECTION_ID_PATTERN, MAX_SECTION_KEYS, MAX_SECTION_SECONDS, nonnegative, int i MAX_HEAT_COUNT, HEAT_CELL_PATTERN bez zer "
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F32",
+   "waga": "P2",
+   "klucze": [
+    "klucz1"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "createSecretClient (visit-service.ts:203-207) przekazuje tylko opcje auth: nie ma global.fetch z sygnałem ani żadnego timeoutu. W src poza testami nie ma AbortSignal ani timeoutu dla klienta. Z tego klienta korzystają loader oferty i store wizyt na ścieżce /e. Domyślny headersTimeout undici (~300 s)"
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F48",
+   "waga": "P2",
+   "klucze": [
+    "klucz1",
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "visit-service.test.ts testuje tylko createCachedTrackingOfferLoader, recordOpen (happy path i błąd insert) oraz happy path mergeIncrements. createSupabaseTrackingOfferLoader nie występuje w żadnym pliku testowym, tylko w index.ts i w samym źródle. Atrapa createFakeClient nie ma metody select/maybeSi"
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F72",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "visit-service.ts:216-242: recordOpen robi INSERT do visits, potem osobny UPDATE offers.status i przy błędzie UPDATE rzuca VisitStoreError. events.ts:236-251: nagłówek X-Oo-Visit ustawiany dopiero po powrocie recordOpen, a catch w events.ts:299 zwraca 204 bez niego. t.js:166-172: brak nagłówka wywołu"
+  },
+  {
+   "et": "f-b26128d-r2",
+   "f": "F123",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "validation.ts:71 sprawdza tylko, czy w dokumencie występuje podłańcuch 'data-section=\"'. Wartości atrybutu nie sprawdza, a opublikuj_oferte przyjmuje surowy HTML od Claude'a. t.js:88-89 przyjmuje każdą niepustą wartość jako klucz sekcji. events.ts:88-93: sectionsSchema używa z.record z kluczem z.str"
+  },
+  {
+   "et": "f-b8374c8",
+   "f": "F123",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Pozycje operatorskie dotyczace pomiaru X-Forwarded-For i wpisania TRUSTED_PROXY_IPS sa nadal otwarte: docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-zadania.md:85 i :87 oraz plan :146 i :285. Komentarz w apps/server/src/app.ts:128-155 sam przyznaje, ze konfiguracja proxy nie jest rozstr"
+  },
+  {
+   "et": "f-b8374c8",
+   "f": "F76",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Na originie ofert jedyny naglowek CSP to `frame-ancestors ${config.APP_ORIGIN}` (apps/server/src/app.ts:294). routes/offer.ts:114 zwraca surowe offer.html. Init migracja (20260824171406_init_profiles_offers.sql:194) daje roli authenticated `grant insert` na calej tabeli offers. Polityka offers_inser"
+  },
+  {
+   "et": "f-b8374c8",
+   "f": "F127",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Plan R15 (docs/plans/2026-08-25-001-feat-faza-2-publikacja-ofert-plan.md:58) mowi wprost: „Termin: przed wystawieniem /o/<slug>”. Mimo to limiter w app.ts:273 dalej uzywa readClientKey z lewego wpisu XFF (app.ts:157-165), a pozycje IU-8 w zadaniach (:203-212) sa otwarte. Limiter to globalny middlewa"
+  },
+  {
+   "et": "f-b8374c8",
+   "f": "F119",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "apps/server/src/offer/cache.ts:23 ogranicza tylko liczbe wpisow (DEFAULT_MAX_ENTRIES = 200) i nie liczy bajtow. Kolumna `html text not null` (init migracja :81) nie ma CHECK na rozmiar; w zadnej z trzech migracji nie ma octet_length(html). INSERT jest dostepny dla authenticated przez PostgREST (:194"
+  },
+  {
+   "et": "f-b8374c8",
+   "f": "F113",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": null,
+   "uzasadnienie": "Plik expired-page.ts jest nowy w b8374c8, a w apps/server/src/offer/ nie ma expired-page.test.ts. Plansza jest testowana tylko pośrednio w routes/offer.test.ts:96-108 i 143-158, i to wyłącznie na poprawnych danych (sprawdzane są nagłówek, companyName i mailto). Nie ma żadnego testu odmowy dla złośli"
+  },
+  {
+   "et": "f-f3ee433",
+   "f": "F64",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "terms-page.ts:112 obiecuje „Konto usuniesz z Ustawień”, a punkt 6 obiecuje tryb ograniczony z panelem tylko do odczytu. Grep po apps/dashboard/src, apps/server/src i supabase/migrations (szukałem m.in. usuń konto, deleteUser, tylko do odczytu, ograniczon) nie znajduje żadnej ścieżki usunięcia konta "
+  },
+  {
+   "et": "f-f3ee433",
+   "f": "F6",
+   "waga": "P2",
+   "klucze": [
+    "klucz2"
+   ],
+   "p9": "utrzymany",
+   "dzis": "utrzymany",
+   "uzasadnienie": "offer-origin-pages.test.ts:117-134 sprawdza nagłówki pojedynczo przez toContain(heading), na gołym tekście, bez <h2> i bez kolejności. Nie istnieje privacy-page.test.ts. Asercje kolejności przez indexOf/sort są tylko w app-privacy-page.test.ts:71-75 i terms-page.test.ts:66-69. Plan (linia 343) wymag"
+  }
+ ]
+}

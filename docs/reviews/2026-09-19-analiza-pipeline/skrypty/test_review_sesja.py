@@ -98,11 +98,18 @@ def skrypt_i_args(et, krok, w):
             return cel, a
         return os.path.join(d, 'wariant%s.js' % w), {}
     if krok == 'sceptycy':
-        if w in ('0', 'P9'):   # P9: kill rate sceptyka asymetrycznego (test_review_sceptycy.py p9)
-            nazwa = 'test-review-wariant0-verify.js' if w == '0' else 'test-review-p9-verify.js'
-            cel = os.path.join(TR, 'skrypty', nazwa)
-            shutil.copyfile(os.path.join(BASE, 'skrypty', nazwa), cel)
-            return cel, json.load(open(os.path.join(d, 'sceptycy%s.args.json' % w)))
+        if w == '0':
+            cel = os.path.join(TR, 'skrypty', 'test-review-wariant0-verify.js')
+            shutil.copyfile(os.path.join(BASE, 'skrypty', 'test-review-wariant0-verify.js'), cel)
+            return cel, json.load(open(os.path.join(d, 'sceptycy0.args.json')))
+        if w == 'P9':   # kill rate P9: args wklejone do skryptu fazy — sesja przepisujaca ~10 KB JSON-u myli nawiasy (f-1de5a4c)
+            src = open(os.path.join(BASE, 'skrypty', 'test-review-p9-verify.js'), encoding='utf-8').read()
+            linia = "const wejscie = typeof args === 'string' ? JSON.parse(args) : args\n"
+            if src.count(linia) != 1: raise SystemExit('test-review-p9-verify.js: brak linii wejscia — przegeneruj (test_review_sceptycy.py p9)')
+            wej = json.load(open(os.path.join(d, 'sceptycyP9.args.json')))
+            cel = os.path.join(d, 'sceptycyP9.js')
+            open(cel, 'w', encoding='utf-8').write(src.replace(linia, 'const wejscie = %s\n' % json.dumps(wej, ensure_ascii=False)))
+            return cel, {}
         return os.path.join(d, 'sceptycy%s.js' % w), {}
     if krok.startswith('sedzia-p'):
         return os.path.join(d, 'sedzia-%s.js' % krok[7:]), {}

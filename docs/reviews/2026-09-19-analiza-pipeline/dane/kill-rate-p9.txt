@@ -1,0 +1,15 @@
+Kill rate sceptyka asymetrycznego P9 na archiwum ~/test-review (findingi P1/P2 wariantu 0 dopasowane przez sędziego = prawdziwe)
+
+zbiór                    N   P1   P9 zabite  P9 obniżone  P9 niezweryf.  dziś zabite
+klucz 1                 21    1           1            0              0  2
+tylko klucz 2           53   11           0            0              0  — (dziś mierzony tylko klucz 1)
+razem                   74   12           1            0              0  — (dziś mierzony tylko klucz 1)
+
+glosy: AGREE 97, DISAGREE_EVIDENCE 1, DISAGREE_CONCERN 0; findingi obniżone 0
+
+koszt: P9 3.71 M / 58 agentów / 74 findingów = 0.050 M na finding; dziś (klucz 1) 3.00 M / 37 / 36 = 0.083 M na finding
+
+Kryterium (PLAN-POPRAWY §3 P9, decyzja 4): nie merge, gdy P9 zabija na kluczu 1 więcej niż dziś albo > ~10% na kluczu 2.
+
+Zabite i obniżone przez P9:
+  zabity f-46be55a F50 [P2] klucz1 → Główna teza zarzutu się nie potwierdza. W zainstalowanej wersji auth-js 2.112.4 `_signOut` przy błędzie z endpointu /logout (innym niż 401/403/404) najpierw wywołuje `removeCurrentSession()`, a dopier
