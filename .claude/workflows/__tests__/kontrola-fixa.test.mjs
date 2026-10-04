@@ -201,3 +201,12 @@ test('straznik P8: brak agentow fix:pre-skan i verify-fix — zastapione listami
   assert.doesNotMatch(zrodlo, /PRE_SKAN_FIXA|POSTFIX_VERDICT|REGRESJA_FIXA/)
   assert.match(zrodlo, /agent\(kontrolaFixaPrompt\(sciezka, numerFazy, fix\.commity, faza\.otwarteFindingi\), \{ schema: KONTROLA_FIXA/)
 })
+
+// Smoke P8 (wf_9317b7cf-cdf): K-7 zglosil edycje pliku zadan (odznaczenie checkboxa, zwiniecie "Do poprawy", ktore fixPrompt sam
+// zleca), a tura poprawek ja cofnela. Katalog zadania to ksiegowosc pipeline'u, nie zmiana kodu spoza findingow.
+test('kontrolaFixaPrompt: K-7 pomija pliki katalogu zadania (ksiegowosc pipeline\'u)', () => {
+  const p = kontrolaFixaPrompt('docs/active/x', 2, ['abc1234'], [{ severity: 'P2', typ: 'KOD', plik: 'src/b.ts:9', opis: 'stan rozjechany' }])
+  const k7 = p.slice(p.indexOf('\nK-7:'), p.indexOf('\n', p.indexOf('\nK-7:') + 1 + 200))
+  assert.match(k7, /docs\/active\/x\//, 'K-7 nazywa katalog zadania jako wyjatek')
+  assert.match(k7, /pomin/i)
+})
