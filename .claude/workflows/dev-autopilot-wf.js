@@ -16,8 +16,8 @@ export const meta = {
 //          nie liczy checkboxow. Orkiestrator liczy kolejke i przejscia w JS.
 // Filar 3: trust-but-verify — gate'y liczone w JS z review.findings[], null-guardy po kazdym
 //          await, warmup wymaga dowodu (kontrolny warm-run w sekundach).
-// Re-review po fixie USUNIETY (decyzja usera, dane wf_3c9d3864); od 2026-07-12 gate P1 wzmocniony
-// TARGETED VERIFY: kazdy P1/KOD z listy fixa dostaje 1 niezaleznego weryfikatora (tanszy substytut re-review).
+// Re-review po fixie USUNIETY (decyzja usera, dane wf_3c9d3864). Commity fixa oglada kontrola diffu naprawczego
+// (P8: listy K-1…K-7, w tym K-6 — test P1 pada na kodzie sprzed poprawki; zastapila targeted verify z 2026-07-12).
 // Mitygacja test-weakeningu: zakaz modyfikacji asercji w fixPrompt + git diff testow w walidacji.
 // RESUME vs CACHE: resumeFromRunId odtwarza wyniki agentow z journala po prefiksie wywolan — sluzy
 // TYLKO do wznowienia po awarii runu. Po STOP bramki srodowiskowej operator naprawia i odpala
@@ -340,7 +340,7 @@ const FIX_RESULT = {
     },
     e2eReweryfikacja: { type: 'string', description: 'X/Y passed lub "n/a"' },
     walidacja: { type: 'string', enum: ['PASS', 'FAIL'] },
-    commity: { type: 'array', items: { type: 'string' } },
+    commity: { type: 'array', items: { type: 'string' }, description: 'hashe commitow utworzonych w tym przebiegu — zakres kontroli fixa' },
     nienaprawione: { type: 'array', items: { type: 'string' } },
     nierozwiazaneP1: { type: 'integer', description: 'P1 ktorych fix NIE zamknal (krytyczne -> STOP)' },
     nierozwiazaneP2: { type: 'integer', description: 'P2 przeniesione do known-issues (graceful)' },
@@ -375,16 +375,6 @@ const FIX_RESULT = {
   // p3Pominiete w required z tego samego powodu co plikiBinarne: pusta lista MUSI znaczyc "przeszedlem
   // po wszystkich P3", a pole opcjonalne pozwoliloby agentowi cicho pominac cala trzecia grupe.
   required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne', 'p3Pominiete'],
-}
-
-const POSTFIX_VERDICT = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    nadalOtwarty: { type: 'boolean', description: 'true = problem wciaz istnieje w kodzie lub naprawa jest pozorna' },
-    uzasadnienie: { type: 'string' },
-  },
-  required: ['nadalOtwarty', 'uzasadnienie'],
 }
 
 const VALIDATION_RESULT = {
@@ -695,6 +685,11 @@ KOLEJNOSC PRACY (lista zawiera P1, P2 ORAZ P3 typu KOD/TEST — P3 nie sa juz od
 P3 NIE blokuje przejscia do nastepnej fazy. Nie zatrzymuj sie na nim i nie ryzykuj dla niego regresji:
 gdy naprawa P3 wymagalaby ruszenia kodu spoza tej fazy, to jest wlasnie przypadek na p3Pominiete[].
 
+MIEJSCE ZMIAN: zmieniasz kod wskazany przez findingi i testy do nich. Zmiana w pliku, ktorego nie wskazuje zaden
+finding, wraca do cofniecia — kontrola fixa porownuje pliki commitow z lista findingow (K-7).
+NAPRAWA P1: najpierw test, ktory odtwarza defekt i pada na obecnym kodzie, potem poprawka. Kontrola fixa uruchamia
+ten test na kodzie sprzed poprawki (K-6); test zielony przed poprawka albo jego brak wraca do tury poprawek.
+
 KLASYFIKUJ kazdy finding przed naprawa:
 - Typ KOD (blad implementacji/security/perf/architektury): napraw kod -> uruchom unit testy -> odznacz checkbox.
 - Typ TEST (brakujacy test): NIE ruszaj kodu produkcyjnego, napisz test (min 1 asercja, nie assertion-free)
@@ -757,130 +752,184 @@ nierozwiazaneP2 (P2 przeniesione do known-issues), walidacja (PASS/FAIL pelnej w
 plikiBinarne (pliki zrodlowe, ktore przestaly byc tekstem -> orkiestrator zrobi STOP).`
 }
 
-// ── Kontrola diffu naprawczego (plan B5) ──────────────────────────────────
-// Powod z dowodu: fix fazy 5 w oferty-online dodal `loading="lazy"` do ramki i PUSTY `catch`;
-// jedno i drugie CodeRabbit usunal dzien pozniej (44a938e). Petla naprawcza nie ma nad soba
-// re-review, wiec commit fixa byl dotad jedynym kodem w pipelinie, ktorego nikt nie ogladal.
-// Dwa stopnie, od najtanszego: mechaniczny grep po DODANYCH liniach, potem jeden tani agent.
+// ── Kontrola diffu naprawczego (P8: listy K-1…K-7 katalogu A) ─────────────
+// Po fixie nie ma re-review, wiec commity fixa oglada jeden agent kontroli. Dawna kontrola (regresje + nowe bramki)
+// zlapala 0 z 30 defektow urodzonych w fixie (test review), pre-skan haiku dal 199 trafien bez defektu, a verify-fix
+// sprawdzal sama deklaracje naprawy P1. Listy K daja polecenie per klasa defektu, K-6 zastepuje verify-fix (test P1
+// pada na kodzie sprzed poprawki), bramki P6 biegna na plikach fixa (w tym niezmiennosc migracji). Pole kazdej listy
+// jest wymagane: pusta lista ma wpis, czego i czym szukano.
 
-const PRE_SKAN_FIXA = {
+const WYNIK_LISTY_KONTROLI = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    trafienia: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          wzorzec: { type: 'string', enum: ['pusty-catch', 'type-assertion', 'any', 'console-log', 'non-null'] },
-          plik: { type: 'string' },
-          linia: { type: 'string', description: 'DODANA linia diffu 1:1, bez wiodacego "+"' },
-        },
-        required: ['wzorzec', 'plik', 'linia'],
-      },
-    },
-  },
-  required: ['trafienia'],
-}
-
-const REGRESJA_FIXA = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    regresje: {
+    sprawdzono: { type: 'string', description: 'co i jaka komenda sprawdzono — takze przy zerze pozycji albo gdy warunek listy nie zachodzi' },
+    pozycje: {
       type: 'array',
       items: {
         type: 'object',
         additionalProperties: false,
         properties: {
           plik: { type: 'string', description: 'plik:linia' },
-          opis: { type: 'string', description: 'co commit fixa zepsul — nie co bylo zepsute wczesniej' },
+          opis: { type: 'string', description: 'co commity fixa zmienily albo pominely i co poprawic' },
         },
         required: ['plik', 'opis'],
       },
     },
-    bramki: {
+  },
+  required: ['sprawdzono', 'pozycje'],
+}
+
+// K-6: agent podaje wyniki testow P1, pozycje liczy JS (pozycjeKontroliFixa).
+const WYNIK_K6 = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    sprawdzono: WYNIK_LISTY_KONTROLI.properties.sprawdzono,
+    testy: {
       type: 'array',
       items: {
         type: 'object',
         additionalProperties: false,
         properties: {
-          plik: { type: 'string', description: 'plik:linia nowej bramki walidacyjnej' },
-          opis: { type: 'string', description: 'co bramka ma przepuszczac, a czego nie' },
-          wektory: { type: 'array', items: { type: 'string' }, description: 'co najmniej 3 konkretne proby obejscia' },
-          testOdmowy: { type: 'boolean', description: 'czy istnieje test, ktory sprawdza ODRZUCENIE zlego wejscia (nie tylko przyjecie dobrego)' },
+          finding: { type: 'string', description: 'plik:linia findingu P1' },
+          test: { type: ['string', 'null'], description: 'plik testu dodanego przez fix dla tego P1; null = fix nie dodal testu' },
+          czerwonyPrzedPoprawka: { type: 'boolean', description: 'true = test pada na rodzicu najstarszego commita fixa' },
         },
-        required: ['plik', 'opis', 'wektory', 'testOdmowy'],
+        required: ['finding', 'test', 'czerwonyPrzedPoprawka'],
       },
     },
   },
-  required: ['regresje', 'bramki'],
+  required: ['sprawdzono', 'testy'],
 }
 
-function preSkanFixaPrompt(numerFazy) {
-  return `Mechaniczny skan commitow fix fazy ${numerFazy}. NIE oceniaj kodu, NIE interpretuj — tylko grep.
-
-1. Ustal zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa tej fazy.
-   Diff: \`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.
-2. Patrz WYLACZNIE na linie DODANE (zaczynajace sie od "+", bez naglowkow "+++"). Linie kontekstu
-   i usuniete pomijasz — szukamy tego, co fix WPROWADZIL, nie tego, co juz bylo.
-3. Zglos kazde trafienie ponizszych wzorcow (z pliku i trescia linii 1:1, bez wiodacego "+"):
-   - pusty-catch:    \`catch {}\` albo \`catch (e) {}\` — takze z bialymi znakami i nowa linia miedzy klamrami
-   - type-assertion: \` as \` w TypeScript, Z WYJATKIEM \`as const\`
-   - any:            \`: any\` (adnotacja typu)
-   - console-log:    \`console.log\`
-   - non-null:       operator \`!\` po wyrazeniu (\`foo!.bar\`, \`foo!)\`, \`foo!;\`, \`foo!,\`) — NIE mylic
-                     z negacja \`!foo\` ani z \`!==\`
-4. Zero trafien to poprawny i czesty wynik — zwroc {trafienia: []}. Nie dobieraj nic "na wszelki wypadek",
-   nie zglaszaj linii spoza diffu i nie zglaszaj plikow, ktorych fix nie tknal.
-
-Read-only: nie modyfikuj plikow, nie commituj, nie uruchamiaj testow.`
+const KONTROLA_FIXA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    listy: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        'K-1': WYNIK_LISTY_KONTROLI, 'K-2': WYNIK_LISTY_KONTROLI, 'K-3': WYNIK_LISTY_KONTROLI, 'K-4': WYNIK_LISTY_KONTROLI,
+        'K-5': WYNIK_LISTY_KONTROLI, 'K-6': WYNIK_K6, 'K-7': WYNIK_LISTY_KONTROLI,
+      },
+      required: ['K-1', 'K-2', 'K-3', 'K-4', 'K-5', 'K-6', 'K-7'],
+    },
+    bramki: WYNIK_LISTY_KONTROLI,
+  },
+  required: ['listy', 'bramki'],
 }
 
-function regresjaFixaPrompt(sciezka, numerFazy) {
-  return `Jestes NIEZALEZNYM kontrolerem commitow fix fazy ${numerFazy} (zadanie: ${sciezka}).
-Petla naprawcza nie ma nad soba re-review — jestes jedynym, kto oglada ten kod.
-
-Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa tej fazy, potem
-\`git diff <pierwszy-commit-fixa>^..HEAD\`. Gdy commitow fixa nie ma — \`git diff HEAD\`.
-
-ZADANIE 1 — REGRESJE. Zglaszaj WYLACZNIE to, co zepsul TEN commit: kod dzialajacy przed fixem,
-ktory po nim nie dziala, oraz zmiany zachowania, o ktore nikt nie prosil (fix fazy 5 w projekcie
-zrodlowym dolozyl \`loading="lazy"\` do ramki, ktorej finding nie dotyczyl). NIE rob pelnego re-skanu
-fazy i NIE zglaszaj problemow, ktorych review nie wykrylo — na to jest review, nie Ty.
-
-ZADANIE 2 — NOWE BRAMKI WALIDACYJNE (obowiazkowe, nie pomijaj). Dla KAZDEJ nowej albo zmienionej
-bramki w diffie (wyrazenie regularne, allowlista, limit rozmiaru/dlugosci, porownanie originu,
-sprawdzenie roli, parsowanie wejscia) wypisz CO NAJMNIEJ 3 konkretne wektory obejscia — nie kategorie,
-tylko wejscia, ktore sprobujesz przepchnac (np. "//evil.com jako adres protokolowo-wzgledny",
-"JAVASCRIPT:alert(1) wielkimi literami", "wartosc druga na liscie srcset po przecinku").
-Potem sprawdz w testach, czy istnieje test ODMOWY — sprawdzajacy, ze zle wejscie zostaje ODRZUCONE,
-a nie tylko ze dobre przechodzi. Ustaw testOdmowy=false, gdy takiego testu nie ma.
-Bramka bez testu odmowy to bramka, ktorej nikt nie sprawdzil — nastepna zmiana rozszczelni ja po cichu.
-
-Zero regresji i zero nowych bramek to poprawny wynik: {regresje: [], bramki: []}.
-Read-only: nie modyfikuj plikow, nie commituj.`
+// Zakres diffu fixa podany wprost z FixResult.commity — bez tego agent szukal "pierwszego commita fixa tej fazy"
+// grepem po calej historii zadania (pre-skan: mediana 20 wywolan narzedzi na jeden diff). Gdy fix nie podal hashy,
+// zostaje grep po komunikacie commita fixa tej fazy.
+function zakresFixa(numerFazy, commity) {
+  const hashe = (Array.isArray(commity) ? commity : [])
+    .map((c) => String(c).trim().split(/\s+/)[0])
+    .filter((h) => /^[0-9a-f]{7,40}$/i.test(h))
+  return hashe.length
+    ? `Zakres: commity fixa tej fazy (z raportu agenta fixa): ${hashe.join(' ')}.
+Najstarszy: ostatni wiersz \`git log --no-walk --format=%h ${hashe.join(' ')}\`. Diff fixa: \`git diff <najstarszy>^..HEAD\`.`
+    : `Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa fazy ${numerFazy} (komunikat konczy sie "fazy ${numerFazy}").
+Diff fixa: \`git diff <pierwszy-commit-fixa>^..HEAD\`; ten commit jest najstarszym commitem fixa.`
 }
 
-function fixPoprawkaPrompt(sciezka, numerFazy, pozycje) {
+// Pozycje do tury poprawkowej z wyniku fix:kontrola: pozycje list K-1…K-7 i bramek ze zrodlem. K-6 liczy JS z testow P1:
+// test brakujacy albo zielony na kodzie sprzed poprawki nie odtwarza defektu (zastepuje dawny verify-fix).
+function pozycjeKontroliFixa(kontrola) {
+  const listy = (kontrola && kontrola.listy) || {}
+  const zList = Object.keys(listy).sort().flatMap((id) => {
+    if (id !== 'K-6') return (listy[id].pozycje || []).map((p) => ({ zrodlo: id, plik: p.plik, opis: p.opis }))
+    return (listy[id].testy || []).filter((t) => t.czerwonyPrzedPoprawka !== true).map((t) => ({
+      zrodlo: 'K-6',
+      plik: t.finding,
+      opis: t.test
+        ? `test ${t.test} przechodzi na kodzie sprzed poprawki — nie odtwarza defektu P1; popraw test tak, zeby padal przed poprawka`
+        : 'naprawa P1 bez testu — dopisz test, ktory pada na kodzie sprzed poprawki',
+    }))
+  })
+  const zBramek = ((kontrola && kontrola.bramki && kontrola.bramki.pozycje) || []).map((p) => ({ zrodlo: 'bramki', plik: p.plik, opis: p.opis }))
+  return [...zList, ...zBramek]
+}
+
+function kontrolaFixaPrompt(sciezka, numerFazy, commity, findingi) {
+  const p1 = findingi.filter((f) => f.severity === 'P1').map((f) => f.plik)
+  const worktree = `/tmp/kontrola-fixa-faza-${numerFazy}`
+  const plikBramek = `/tmp/bramki-fix-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${numerFazy}.json`
+  return `Kontrola commitow fixa fazy ${numerFazy} (zadanie: ${sciezka}). Po fixie nie ma re-review: oceniasz to, co commity
+fixa zmienily albo pominely, wg list K-1…K-7 i bramek mechanicznych. Kodu nie poprawiasz — pozycje z wyniku dostaje
+jedna tura poprawek.
+
+${zakresFixa(numerFazy, commity)}
+
+Findingi, ktore fix naprawial (lista orkiestratora):
+${JSON.stringify(findingi, null, 2)}
+
+Wynik kazdej listy ma pole sprawdzono: co i jaka komenda sprawdziles, takze przy zerze pozycji i gdy warunek listy
+nie zachodzi. Pozycja = {plik: "plik:linia", opis: co commity fixa zmienily albo pominely i co poprawic}. Problemy kodu
+sprzed fixa nie sa pozycjami — ocenialo je review fazy.
+
+K-1 (regresja, zmiana kontraktu): dla kazdej zmienionej linii commitow fixa wypisz zachowanie przed i po oraz finding,
+ktory tego wymagal. Zmiana zachowania bez findingu (nowe pole odpowiedzi, dolozony sygnal, zmieniony kontrakt) to pozycja.
+K-2 (gdy diff fixa dodaje albo zmienia bramke walidacyjna: wyrazenie regularne, allowlista, limit rozmiaru, porownanie
+originu, sprawdzenie roli, parsowanie wejscia): dla kazdej bramki wypisz trzy konkretne wejscia obejscia i test odmowy,
+czyli test, ze zle wejscie zostaje odrzucone. Bramka bez testu odmowy to pozycja z wejsciami obejscia w opisie.
+K-3 (defekt urodzony w fixie): wykonaj na diffie fixa trzy listy correctness; kazdy defekt to pozycja.
+  L-COR-1: kazda operacja zmieniajaca stan (zapis do bazy, wywolanie z efektem, wysylka) ze wszystkimi drogami do niej
+  (handler, trasa, retry, job, inny modul) i plikiem:linia bramki na kazdej drodze. Droga bez bramki, ktora maja inne
+  drogi do tej operacji, to defekt.
+  L-COR-2: dla kazdego await w sciezce zapisu: co widzi uzytkownik przy odrzuceniu obietnicy i jaki stan zostaje zapisany
+  czesciowo. Odpowiedz "nic", "wyjatek bez obslugi" albo "stan rozjechany" to defekt.
+  L-COR-3 (gdy diff fixa ma await): kazda wartosc odczytana przed await i uzyta po nim oraz kazdy sygnal zatrzymania
+  petli lub ponowien, z informacja, czy po await jest porownanie numeru generacji albo AbortSignal. Uzycie bez porownania
+  i petla ponowien bez sufitu to defekt.
+K-4 (gdy fix zmienil albo usunal nazwe: funkcja, stala, pole, trasa, klucz tekstu): dla kazdej starej nazwy uruchom
+\`git grep -n '<stara nazwa>'\` w calym repo, w tym docs/ i CLAUDE.md. Trafienie poza diffem fixa to pozycja.
+K-5: dla kazdej funkcji i bloku zmienionego przez fix wypisz komentarz, JSDoc i akapit dokumentacji, ktory go opisuje,
+z ocena zgodnosci. Opis niezgodny z kodem po fixie to pozycja.
+K-6 (P1 naprawiane przez fix: ${p1.length ? p1.join(', ') : 'brak — zwroc testy: [] i wpisz to w sprawdzono'}): dla kazdego P1 wskaz
+test dodany przez fix i uruchom go na rodzicu najstarszego commita fixa. Worktree: \`git worktree add --detach ${worktree} <najstarszy>^\`
+(gdy katalog zostal z poprzedniego przebiegu, najpierw \`git worktree remove --force ${worktree}\`), skopiuj do niego plik testu
+z HEAD, dowiaz zaleznosci (\`ln -s "$(git rev-parse --show-toplevel)/node_modules" ${worktree}/node_modules\`, w monorepo takze
+node_modules pakietu z testem), uruchom sam ten plik testu komenda testow z package.json, na koniec
+\`git worktree remove --force ${worktree}\`. Wpis: {finding: plik:linia P1, test: plik testu albo null, czerwonyPrzedPoprawka:
+czy test padl na kodzie sprzed poprawki}. Czy wpis jest pozycja, liczy orkiestrator.
+K-7: wypisz pliki commitow fixa, ktorych nie wskazuje zaden finding z listy ani test do niego. Zmiana w takim pliku to
+pozycja do cofniecia.
+
+Bramki mechaniczne na plikach fixa (drzewo robocze = stan po fixie):
+\`node .claude/scripts/bramki/bramki.mjs --baza <najstarszy>^ > ${plikBramek}; echo "kod: $?"\`, potem Read ${plikBramek}.
+Kazde trafienie bramki ze statusem porazka to pozycja w bramki.pozycje, opis "<bramka>: <regula> — <opis>" (migracje
+i migracjeSuma = edycja wypchnietej migracji). Status blad, brak i pominieta wpisz w bramki.sprawdzono; ostrzezenia
+eslint i trafienia strykera pomijasz.
+
+Repo zostaje bez zmian: piszesz jedynie worktree K-6 i plik wyniku bramek w /tmp, nie commitujesz.
+${BLOK_DLUGIE_KOMENDY}`
+}
+
+function fixPoprawkaPrompt(sciezka, numerFazy, pozycje, commity) {
   return `Jestes czescia pipeline'u dev-autopilot. To JEDYNA tura poprawek po kontroli commita fix fazy ${numerFazy}.
 Kontrola diffu naprawczego znalazla ponizsze pozycje — to rzeczy, ktore wprowadzil albo pominal
 sam fix, nie nowe findingi z review.
 
 Folder zadania: ${sciezka}
+${zakresFixa(numerFazy, commity)}
 
 DO POPRAWY (lista autorytatywna):
 ${JSON.stringify(pozycje, null, 2)}
 
-Zasady:
-- Pusty \`catch\`: zaloguj albo re-throw. Nigdy nie zostawiaj pustego bloku (coding-rules §4).
-- \`as\` / \`: any\` / non-null \`!\`: zastap type guardem, \`unknown\` z zawezeniem albo jawna obsluga
-  nullowalnosci (coding-rules §10). \`as const\` jest dozwolone i nie jest tu zglaszane.
-- \`console.log\` w kodzie produkcyjnym: usun albo zamien na logger projektu.
-- Regresja: cofnij zmiane, o ktora nikt nie prosil, albo napraw to, co przestalo dzialac.
-- Brakujacy test odmowy: DOPISZ test sprawdzajacy, ze bramka ODRZUCA zle wejscie — po jednym na wektor
-  z listy. NIE oslabiaj i NIE modyfikuj istniejacych testow, zeby przeszly (zakaz twardy: coding-rules §2).
+Zasady wg pola zrodlo:
+- K-1, K-3: cofnij zmiane zachowania, o ktora nie prosil zaden finding, albo napraw defekt wprowadzony przez fix.
+- K-2: dopisz test odmowy — po jednym na wejscie obejscia z opisu; test sprawdza, ze bramka odrzuca zle wejscie.
+- K-4: zaktualizuj odwolania do starej nazwy wskazane w opisie (kod, docs/, CLAUDE.md).
+- K-5: popraw komentarz, JSDoc albo akapit dokumentacji, zeby opisywal kod po fixie.
+- K-6: test P1 ma padac na kodzie sprzed poprawki — dopisz brakujacy test albo przerob test dodany przez fix, zeby
+  odtwarzal defekt.
+- K-7: cofnij zmiane w pliku, ktorego nie wskazuje zaden finding (\`git diff <najstarszy commit fixa>^ -- <plik>\`).
+- bramki: napraw trafienie w kodzie wg reguly; edycja wypchnietej migracji = przywroc plik z rodzica najstarszego
+  commita fixa, a zmiane schematu zapisz nowa migracja. Reguly nie wylaczasz (eslint-disable, zmiana konfiguracji).
+Testow sprzed fixa nie oslabiasz i nie zmieniasz, zeby przeszly (coding-rules §2).
 
 Po poprawkach: pelna walidacja (typecheck, test, build — komendy z package.json), commit
 \`fix([nazwa]): kontrola diffu naprawczego fazy ${numerFazy}\` z jawnym pathspec zmienionych plikow
@@ -894,23 +943,6 @@ zastepuje uzasadnienia.
 ${BLOK_DLUGIE_KOMENDY}
 
 Zwroc {naprawione, pozostaje, walidacja, nierozwiazaneP1: 0, nierozwiazaneP2: 0, plikiBinarne, p3Pominiete: [], nienaprawione}.`
-}
-
-function postFixVerifyPrompt(sciezka, numerFazy, finding) {
-  return `Jestes NIEZALEZNYM weryfikatorem naprawy po cyklu fix fazy ${numerFazy} (zadanie: ${sciezka}).
-Agent fix zadeklarowal, ze ponizszy finding P1 zostal naprawiony. NIE ufaj deklaracji — sprawdz KOD.
-
-FINDING [${finding.severity}/${finding.typ}] ${finding.plik}:
-${finding.opis}
-
-1. Przeczytaj aktualny stan pliku ${finding.plik} (i powiazanych) oraz commit(y) fix tej fazy
-   (git log --oneline --grep="^fix(" + git show odpowiedniego commita).
-2. Ocen MERYTORYCZNIE: czy naprawa adresuje PRZYCZYNE findingu, czy tylko objaw / czy jest pozorna
-   (np. wyciszenie, obejscie, zmiana nieistotnego fragmentu).
-3. Kontekst findingu: ${sciezka}/review-faza-${numerFazy}.md (jesli istnieje).
-
-Zwroc {nadalOtwarty, uzasadnienie}. nadalOtwarty=true gdy problem wciaz istnieje lub naprawa jest pozorna.
-Read-only — nie modyfikuj plikow.`
 }
 
 function finalValidationPrompt(sciezka) {
@@ -1678,68 +1710,17 @@ for (const numerFazy of kolejka) {
       })
     }
 
-    // TARGETED VERIFY po fixie (tanszy substytut usunietego re-review): kazdy P1 typu KOD
-    // z listy przekazanej fixowi dostaje 1 niezaleznego weryfikatora. Gate P1 wraca do werdyktu
-    // obiektywnego zamiast wylacznie self-reportu fixa (anty-patterny #2/#7: pozorna naprawa).
-    // P1 typu TEST/E2E pomijamy: TEST lapie walidacja (testy musza przejsc), E2E zweryfikowal fix w przegladarce.
-    const p1Kod = faza.otwarteFindingi.filter((f) => f.severity === 'P1' && f.typ === 'KOD')
-    if (p1Kod.length) {
-      const werdykty = await parallel(
-        p1Kod.map((f) => () =>
-          agent(postFixVerifyPrompt(sciezka, numerFazy, f), { schema: POSTFIX_VERDICT, agentType: 'klasa-sceptyk', effort: 'high', label: `verify-fix:${f.plik}` })
-        )
-      )
-      // null (weryfikator padl) nie blokuje — infra hiccup to nie dowod zlej naprawy; logujemy.
-      const nadalOtwarte = p1Kod.filter((f, i) => werdykty[i] && werdykty[i].nadalOtwarty)
-      werdykty.forEach((w, i) => { if (!w) log(`verify-fix: brak werdyktu dla P1 ${p1Kod[i].plik} (agent null) — przepuszczam z ostrzezeniem`) })
-      if (nadalOtwarte.length) {
-        // Zawez liste do realnie otwartych — kolejny run wraca wprost do fixa z ta zawezona lista.
-        faza.otwarteFindingi = nadalOtwarte.map((f) => ({ ...f, opis: `[NIEZAMKNIETY po fixie] ${f.opis}` }))
-        oznaczStan()
-        return await stopRun({
-          powod: `Faza ${numerFazy}: niezalezna weryfikacja wykryla ${nadalOtwarte.length}x P1 NADAL otwarte po fixie (self-report fixa mowil "naprawione") — wymagana reczna interwencja. Po naprawie odpal SWIEZY run.`,
-          faza: numerFazy, fix, nadalOtwarte, raporty,
-        })
-      }
-      log(`Faza ${numerFazy}: targeted verify — wszystkie ${p1Kod.length}x P1/KOD potwierdzone jako zamkniete`)
-    }
-
-    // KONTROLA DIFFU NAPRAWCZEGO (plan B5). Commit fixa byl dotad jedynym kodem w pipelinie, ktorego
-    // nikt nie ogladal: po fixie NIE ma re-review, a targeted verify sprawdza tylko, czy P1 zostal
-    // zamkniety — nie to, co fix przy okazji wprowadzil. Dwa stopnie, od najtanszego.
-    const doPoprawki = []
-    // Stopien 1: mechaniczny grep po DODANYCH liniach. Agent tylko greppuje, decyzje podejmuje JS.
-    const preSkan = await agent(preSkanFixaPrompt(numerFazy), { schema: PRE_SKAN_FIXA, agentType: 'klasa-mechaniczny', label: `fix:pre-skan:faza-${numerFazy}` })
-    if (preSkan && Array.isArray(preSkan.trafienia)) {
-      // console.log w plikach testowych nie jest naruszeniem "brak console.log w kodzie produkcyjnym" —
-      // filtr trzymamy w JS, zeby agent nie musial rozstrzygac wyjatkow (i nie mogl ich sobie rozszerzyc).
-      const istotne = preSkan.trafienia.filter((t) => !(t.wzorzec === 'console-log' && /\.(test|spec)\./i.test(t.plik || '')))
-      for (const t of istotne) doPoprawki.push({ zrodlo: 'pre-skan', wzorzec: t.wzorzec, plik: t.plik, opis: `commit fix wprowadzil: ${t.linia}` })
-      if (istotne.length) log(`Faza ${numerFazy}: pre-skan diffu fixa — ${istotne.length}x naruszenie coding-rules w dodanych liniach (${[...new Set(istotne.map((t) => t.wzorzec))].join(', ')})`)
-    } else if (!preSkan) {
-      log(`Faza ${numerFazy}: pre-skan diffu fixa zwrocil null — pomijam stopien 1 (best-effort, faza niezagrozona)`)
-    }
-    // Stopien 2: jeden tani agent — regresje wprowadzone przez fix + nowe bramki walidacyjne bez testu odmowy.
-    const regresja = await agent(regresjaFixaPrompt(sciezka, numerFazy), { schema: REGRESJA_FIXA, agentType: 'klasa-sceptyk', effort: 'low', label: `fix:kontrola:faza-${numerFazy}` })
-    if (regresja) {
-      for (const r of regresja.regresje || []) doPoprawki.push({ zrodlo: 'regresja', plik: r.plik, opis: r.opis })
-      const bezTestu = (regresja.bramki || []).filter((b) => !b.testOdmowy)
-      for (const b of bezTestu) {
-        doPoprawki.push({
-          zrodlo: 'bramka-bez-testu-odmowy',
-          plik: b.plik,
-          opis: `nowa bramka walidacyjna (${b.opis}) nie ma testu ODMOWY. Wektory do pokrycia: ${(b.wektory || []).join(' | ')}`,
-        })
-      }
-      if ((regresja.bramki || []).length) log(`Faza ${numerFazy}: kontrola diffu fixa — ${regresja.bramki.length} nowych bramek walidacyjnych, bez testu odmowy: ${bezTestu.length}`)
-    } else {
-      log(`Faza ${numerFazy}: kontrola diffu fixa zwrocila null — pomijam stopien 2 (best-effort, faza niezagrozona)`)
-    }
+    // KONTROLA DIFFU NAPRAWCZEGO (P8): jeden agent z listami K-1…K-7 katalogu A i bramkami P6 na plikach fixa,
+    // zakres z hashy FixResult.commity. Pozycje liczy JS (K-6 z wynikow testow P1 — zastepuje dawny verify-fix).
+    // Agent padl = faza idzie dalej bez kontroli (best-effort, jak dotad).
+    const kontrola = await agent(kontrolaFixaPrompt(sciezka, numerFazy, fix.commity, faza.otwarteFindingi), { schema: KONTROLA_FIXA, agentType: 'klasa-sceptyk', effort: 'medium', label: `fix:kontrola:faza-${numerFazy}` })
+    if (!kontrola) log(`Faza ${numerFazy}: kontrola diffu fixa zwrocila null — faza idzie dalej bez kontroli (best-effort)`)
+    const doPoprawki = pozycjeKontroliFixa(kontrola)
     // JEDEN cykl poprawkowy, twardo. To kontrola wlasnej roboty pipeline'u, nie kolejna runda review —
     // druga tura zaczelaby scigac wlasny ogon i nie da sie jej ograniczyc niczym poza licznikiem.
     if (doPoprawki.length) {
       log(`Faza ${numerFazy}: kontrola diffu naprawczego zwraca ${doPoprawki.length} pozycji do fixa (jeden cykl):\n  ${doPoprawki.map((p) => `[${p.zrodlo}] ${p.plik} — ${p.opis}`).join('\n  ')}`)
-      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:poprawka:faza-${numerFazy}` })
+      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki, fix.commity), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:poprawka:faza-${numerFazy}` })
       if (!poprawka) {
         log(`Faza ${numerFazy}: tura poprawkowa zwrocila null — pozycje zostaja otwarte, faza idzie dalej (P3-klasa, nie bramka)`)
       } else {
@@ -1759,8 +1740,8 @@ for (const numerFazy of kolejka) {
           })
         }
       }
-    } else {
-      log(`Faza ${numerFazy}: kontrola diffu naprawczego czysta — zero naruszen coding-rules, zero regresji, kazda nowa bramka ma test odmowy`)
+    } else if (kontrola) {
+      log(`Faza ${numerFazy}: kontrola diffu naprawczego czysta — zero pozycji z list K-1…K-7 i bramek na plikach fixa`)
     }
 
     gateFazy = fix.nierozwiazaneP2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'

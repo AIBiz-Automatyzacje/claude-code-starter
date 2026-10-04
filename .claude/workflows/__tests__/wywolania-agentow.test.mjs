@@ -21,9 +21,9 @@ const SUFIKS_FIGMA = '-figma'
 // klasy. Mapa rola → klasa z HANDOFF 6a pkt 46 (g); etykiety z `${...}` zamienionym na `*`. Rola spoza mapy =
 // klasa-orkiestracyjny. Wywolania z typem z pola (reviewerzy, buildery) sprawdza sie po liscie mozliwych typow.
 const MAPA_KLAS = /** @type {const} */ ([
-  [/^(stop:commit-artefaktow|start:commit-zadania|complete:uwaga-pr:\*|pr:claude-md-commit:\*|stan:zapis|e2e:precheck|e2e:env-down|fix:pre-skan:faza-\*|dossier:zapas)$/, 'klasa-mechaniczny'],
+  [/^(stop:commit-artefaktow|start:commit-zadania|complete:uwaga-pr:\*|pr:claude-md-commit:\*|stan:zapis|e2e:precheck|e2e:env-down|dossier:zapas)$/, 'klasa-mechaniczny'],
   [/^(dedup:semantyczny|scribe:faza-\*:inspekcja)$/, 'klasa-mechaniczny-odczyt'],
-  [/^(verify:\*:\*|verify-batch:\*:\*|verify-fix:\*|fix:kontrola:faza-\*)$/, 'klasa-sceptyk'],
+  [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*)$/, 'klasa-sceptyk'],
   [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
   [/^review:test-coverage$/, 'test-coverage-reviewer'],
   [/^review:e2e(:retry)?$/, 'feature-tester-e2e'],
@@ -68,7 +68,7 @@ test('agent(): podlozone wywolanie bez agentType, z model:, z typem bez pliku i 
     "await agent(p, { schema: A, label: 'bootstrap' })",
     "await agent(p, { schema: A, agentType: 'klasa-mechaniczny', label: 'stan:zapis', model: 'haiku' })",
     "await agent(p, { schema: A, agentType: 'general-purpose', label: 'review:correctness' })",
-    "await agent(p, { schema: A, agentType: 'klasa-orkiestracyjny', label: `verify-fix:${f.plik}` })",
+    "await agent(p, { schema: A, agentType: 'klasa-orkiestracyjny', label: `verify:${k}:${f.plik}` })",
     'await agent(p,',
     '  { schema: A, agentType: r.agentType, label: `review:${r.key}` })',
     "const REVIEWERZY = [{ key: 'security', agentType: 'security-sentinel' }]",
@@ -84,7 +84,7 @@ test('agent(): podlozone wywolanie bez agentType, z model:, z typem bez pliku i 
     'dev-docs-review-wf.js:2 stan:zapis: model: w opcjach zamiast w pliku klasy',
     'dev-docs-review-wf.js:3 review:correctness: agentType general-purpose bez pliku agenta',
     'dev-docs-review-wf.js:3 review:correctness: general-purpose, mapa klas: klasa-orkiestracyjny',
-    'dev-docs-review-wf.js:4 verify-fix:*: klasa-orkiestracyjny, mapa klas: klasa-sceptyk',
+    'dev-docs-review-wf.js:4 verify:*:*: klasa-orkiestracyjny, mapa klas: klasa-sceptyk',
     'dev-docs-review-wf.js:6 review:*: agentType security-sentinel bez pliku agenta',
     'IU_PLAN: brak feature-builder-fullstack-figma w enum agentType',
   ])
@@ -103,10 +103,10 @@ const EFORT_KLASY = /** @type {Record<string, string | null>} */ ({
   'klasa-orkiestracyjny': 'medium', 'klasa-naprawiacz': 'high', 'klasa-sceptyk': 'high', 'klasa-mechaniczny': null, 'klasa-mechaniczny-odczyt': null,
 })
 const EFORT_ROLI = 'high'
-// Wyjatki w klasie: scribe przepisuje (low), sceptyk P2 jeden plik (medium), kontrola diffu fixa — low
-// sprzed P3 (D6 jej nie wymienia, zostaje stan testowany w It. 1). Packager (kontekst:diff, low) zniknal w P7.
+// Wyjatki w klasie: scribe przepisuje (low), sceptyk P2 jeden plik (medium), kontrola diffu fixa — medium od P8
+// (listy K-1…K-7, katalog A: opus medium; wczesniej low). Packager (kontekst:diff, low) zniknal w P7.
 const EFORT_WYJATKI = /** @type {const} */ ([
-  [/^scribe:faza-\*(:retry)?$/, 'low'], [/^verify-batch:/, 'medium'], [/^fix:kontrola:/, 'low'],
+  [/^scribe:faza-\*(:retry)?$/, 'low'], [/^verify-batch:/, 'medium'], [/^fix:kontrola:/, 'medium'],
 ])
 
 /**

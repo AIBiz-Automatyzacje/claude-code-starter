@@ -143,9 +143,10 @@ test('wiring: nastepcy dostaja zapis doklejony przez zeStanem, potwierdzaja go p
 
 test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika; stan:zapis tylko w zapisie zapasowym', () => {
   assert.doesNotMatch(zrodlo, /await zapiszStan\(\)/)
-  // 14 miejsc mapy minus execute (zapisuje domkniecie) plus STOP po execute, gdy domkniecie zapisalo juz stan „done”
+  // 14 miejsc mapy minus execute (zapisuje domkniecie) plus STOP po execute, gdy domkniecie zapisalo juz stan „done”;
+  // P8: minus STOP verify-fix (agent usuniety, K-6 kontroli fixa daje pozycje do poprawki zamiast STOP-u) = 13
   const kod = zrodlo.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')
-  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 14)
+  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 13)
   assert.equal(zrodlo.match(/label: 'stan:zapis'/g)?.length, 1)
 })
 
