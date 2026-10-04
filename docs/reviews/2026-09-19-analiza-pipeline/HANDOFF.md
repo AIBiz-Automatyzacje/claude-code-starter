@@ -1109,7 +1109,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (g) **`smoke_odczyt.py` (6a pkt 55 e):** wiersze `kontrola fixa: listy`, `fix: P1 z testem (K-6)`; sekcja 2b z journala runu: agenci
     `fix:pre-skan`/`verify-fix`, P3 KOD/TEST u scribe'a, P3 na liście fixa (z transkryptu `agent-<id>.jsonl`), wpis `sprawdzono` per K-1…K-7 i bramki.
     (h) **Smoke** (kopia `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P8-oferty-online`, commit środowiska `2698228` jak 6a pkt 54 e;
-    kopia ISTNIEJE — usunięcie tylko za zgodą operatora): **`wf_9317b7cf-cdf` OK, CZYSTE, 3,62 M (+4% vs R-P7), 27 agentów, 21 min** → nowa
+    USUNIĘTA 2026-10-04 za zgodą operatora, transkrypty zostają w `~/.claude/projects/`): **`wf_9317b7cf-cdf` OK, CZYSTE, 3,62 M (+4% vs R-P7), 27 agentów, 21 min** → nowa
     referencja **R-P8**. 0 `fix:pre-skan`, 0 `verify-fix`; `fix:kontrola` z wpisem dla K-1…K-7 i bramek (pozycje K-5 2, K-7 1 → `fix:poprawka`);
     0 P3 na liście fixa, 3 P3 u scribe'a → `known-issues.md` `## P3 faza 1` (2 otwarte + 1 przeniesiony przez walidację do `## Zamkniete`);
     smoke operatora bez P3 (jedno zdanie, że zostają w known-issues). Etap fix 0,579 M vs 0,581 M R-P7 (`fix:kontrola` 0,15 M vs 0,08 M — efort
@@ -1576,7 +1576,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   `start:p3-known-issues`); blok limitu P3 i scribe pod nową semantykę (prompt scribe −16%); smoke operatora bez P3; `smoke_odczyt.py` z listami K.
   Smoke `wf_9317b7cf-cdf` zielony = nowa referencja **R-P8** (3,62 M, etap fix 0,58 M). Poprawka K-7 (katalog zadania = księgowość) po smoke'u,
   zmergowana bez osobnego smoke'a — sprawdza ją smoke P9. 456/456 testów, merge do main `e08e1f4`. **Następny krok: „P9 — SCEPTYCY, SESJA 1” niżej**
-  (nowa sesja — N2). Po P9 zamyka się grupa II → push szablonu (D-2). Kopia `_smoke-P8-oferty-online` czeka na decyzję operatora o usunięciu.
+  (nowa sesja — N2). Po P9 zamyka się grupa II → push szablonu (D-2). Kopia `_smoke-P8-oferty-online` usunięta 2026-10-04 za zgodą operatora.
 
 **P9 — SCEPTYCY, SESJA 1 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
