@@ -1083,7 +1083,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (d) **Telemetria:** `kontrolaFixa.listy` = pozycje per lista + `bramki` (z journala `fix:kontrola`), `fix.p1_z_testem` (placeholder) = P1 z testem
     czerwonym przed poprawką; wynik sprzed P8 → oba `null`, `regresje` bez zmian logiki → `WERSJA_REKORDU` bez zmian. **Odstępstwo od §4 („role,
     które znikają”):** `role.mjs` zostawia rozpoznanie `fix:pre-skan` i `verify-fix` dla starych runów — bez `fix:pre-skan` w `ROLE_Z_OGONEM`
-    etykieta skleiłaby się w `fix`, a `fixFazy` czytałaby wynik pre-skanu jako commity fixa (pilnuje test D5); tylko komentarz.
+    etykieta skleiłaby się w `fix`, a `fixFazy` czytałaby wynik pre-skanu jako commity fixa (pilnuje test D5); tylko komentarz. Odstępstwo zaakceptowane przez operatora 2026-10-04.
     (e) **Do sesji 2:** `smoke_odczyt.py` czyta „kontrola fixa: regresje” — po P8 `null`; dołożyć odczyt `kontrolaFixa.listy` i `p1_z_testem`.
     Telemetria klasy `fix:kontrola` = `orkiestracyjny` (mapa D3), agentType = `klasa-sceptyk` — rozjazd zastany od P3, bez zmian.
 
