@@ -8,6 +8,8 @@ pole `effort` rekordu agenta), ctx_start per klasa roli, zgodność szablonu, sm
 runu — bez rekordów skrypt kończy się błędem, nie pustym porównaniem.
 P8: kontrolaFixa.listy i fix.p1_z_testem z rekordów faz; z journala runu — wpis `sprawdzono` per lista K-1…K-7 i bramki,
 P3 na liście fixa (prompt agenta fix:faza-N) i agenci fix:pre-skan / verify-fix (po P8 ma ich nie być).
+P9 (smoke_sceptycy.py): faza.sceptyk, agent.werdykty/obalone, verify-batch vs ⌈P2/4⌉, etykiety i błędy schematu w journalu,
+wiersz sceptyków w raporcie review i „Zamkniete cyklem fix” w archiwum kopii; K-7: pozycje na plikach docs/active/<zadanie>/.
 """
 import collections
 import glob
@@ -15,6 +17,8 @@ import json
 import os
 import statistics
 import sys
+
+import smoke_sceptycy
 
 PLIK = os.path.expanduser('~/.claude/telemetry/pipeline.jsonl')
 HARNESS = os.path.expanduser('~/.claude/projects/*/*/workflows/wf_*.json')
@@ -155,9 +159,8 @@ def p3_w_prompcie_fixa(katalog, agent_id):
     return None
 
 
-def sekcja_kontrola_journal(run_id):
+def sekcja_kontrola_journal(run_id, wyniki, katalog):
     print('\n== 2b. Kontrola fixa i P3 (journal runu %s)' % run_id)
-    wyniki, katalog = agenci_journala(run_id)
     if katalog is None:
         print('  brak katalogu runu w ~/.claude/projects/*/*/subagents/workflows/')
         return
@@ -179,6 +182,9 @@ def sekcja_kontrola_journal(run_id):
                 pozycje = len(w.get('testy') or []) if lista == 'K-6' else len(w.get('pozycje') or [])
                 sprawdzono = (w.get('sprawdzono') or 'BRAK WPISU').replace('\n', ' ')
                 print('  %-34s %-3s %s' % ('%s %s' % (etykieta, lista), pozycje, sprawdzono[:110]))
+            # Poprawka K-7 z P8: katalog zadania to księgowość fixa, nie „zmiana poza findingiem”.
+            ksiegowosc = [p['plik'] for p in (listy.get('K-7') or {}).get('pozycje') or [] if p.get('plik', '').startswith('docs/active/')]
+            print('  %-34s %d %s' % (etykieta + ' K-7 docs/active/', len(ksiegowosc), ksiegowosc or ''))
 
 
 def sekcja_role(ref, run):
@@ -214,7 +220,11 @@ def main(argumenty):
     print('  %-34s %-22s %-22s %s' % ('metryka', 'referencja', 'run', 'Δ'))
     sekcja_run(ref, run)
     sekcja_fazy(ref, run)
-    sekcja_kontrola_journal(run_id)
+    wyniki, katalog = agenci_journala(run_id)
+    sekcja_kontrola_journal(run_id, wyniki, katalog)
+    smoke_sceptycy.sekcja_sceptycy(ref, run, wiersz)
+    smoke_sceptycy.sekcja_sceptycy_journal(wyniki, katalog)
+    smoke_sceptycy.sekcja_kopia(wyniki, katalog, run['run']['zadanie'])
     sekcja_role(ref, run)
     sekcja_model(ref, run)
 
