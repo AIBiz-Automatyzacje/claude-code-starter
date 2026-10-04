@@ -169,6 +169,22 @@ function kontrolaFixaFazy(raport, agenci, journal) {
   return { ...zRaportu, regresje: Array.isArray(regresje) ? regresje.length : null, listy: pozycjeList(kontrola) }
 }
 
+/**
+ * Etykiety sceptykow fazy (P9) z przebiegu review — liczone w review-wf po regule EVIDENCE bez dowodu = CONCERN;
+ * przebieg sprzed P9 (bez pola albo z null ze stanu) = null.
+ * @param {Record<string, unknown>} przebieg
+ */
+function sceptykFazy(przebieg) {
+  if (przebieg.sceptyk === null || typeof przebieg.sceptyk !== 'object') return null
+  const s = obiekt(przebieg.sceptyk)
+  return {
+    agree: liczbaLubNull(s.agree),
+    disagree_evidence: liczbaLubNull(s.disagree_evidence),
+    disagree_concern: liczbaLubNull(s.disagree_concern),
+    degradacje: liczbaLubNull(s.degradacje),
+  }
+}
+
 // Bramki domkniecia (P6): nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs i w EXECUTE_RESULT dev-docs-execute-wf.
 const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'advisors', 'testyUsuniete', 'stryker']
 
@@ -246,8 +262,8 @@ export function rekordyFaz(we) {
       e2eSync: typeof raport.e2eSync === 'string' ? skrotE2eSync(raport.e2eSync) : null,
       review_rundy: rundyReview(agenci),
       bramki: domkniecie.bramki,
-      // Producenci w pozniejszych paczkach: sceptyk asymetryczny (P9), wiedza (P10).
-      sceptyk: null,
+      sceptyk: sceptykFazy(przebieg),
+      // Producent w pozniejszej paczce: wiedza (P10).
       wiedza: null,
       dossier_zn: znakiDossier(agenci, we.journal),
       testy_usuniete: domkniecie.testyUsuniete,

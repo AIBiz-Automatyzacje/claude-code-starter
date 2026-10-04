@@ -147,6 +147,18 @@ test('pola z producentem w pozniejszych iteracjach istnieja (null)', () => {
   for (const k of ['bramki', 'sceptyk', 'wiedza', 'testy_usuniete']) assert.ok(pola.has(k), k)
 })
 
+// ── Sceptyk asymetryczny (P9): producent z przebiegu review (etykiety po regule workflowu) ──
+
+test('faza.sceptyk z przebiegu review: liczniki etykiet i degradacje; przebieg sprzed P9 = null', () => {
+  const sceptyk = { agree: 5, disagree_evidence: 1, disagree_concern: 2, degradacje: 2 }
+  const raport = { ...WYNIK_RUNU.raporty[0], przebieg: { ...WYNIK_RUNU.raporty[0].przebieg, sceptyk } }
+  const [f] = rekordyFaz({ wynikRunu: { ...WYNIK_RUNU, raporty: [raport] }, agenci: AGENCI, journal: JOURNAL, zmianyFixa: gitFake })
+  assert.deepEqual(f.sceptyk, sceptyk)
+  assert.equal(fazy()[0].sceptyk, null)
+  const zeStanu = { ...WYNIK_RUNU.raporty[0], przebieg: { sceptyk: null } }
+  assert.equal(rekordyFaz({ wynikRunu: { ...WYNIK_RUNU, raporty: [zeStanu] }, agenci: AGENCI, journal: JOURNAL, zmianyFixa: gitFake })[0].sceptyk, null)
+})
+
 // ── Bramki domkniecia (P6): producent z wyniku agenta domkniecie (EXECUTE_RESULT) ──
 
 // Zmiana kontraktu (P6 sesja 2): klucze = 10 bramek skryptu .claude/scripts/bramki (doszly migracjeSuma i testyUsuniete).

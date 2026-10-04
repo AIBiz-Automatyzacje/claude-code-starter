@@ -54,11 +54,33 @@ function findingiPerWaga(wynik) {
   }
 }
 
-/** @param {unknown} wynik @returns {{ weryfikowane: number, obalone: number }} */
+/**
+ * Etykieta glosu po regule workflowu (P9): DISAGREE_EVIDENCE bez linii albo testu w `dowod` liczy sie jak CONCERN.
+ * @param {Record<string, unknown>} w
+ */
+function etykietaGlosu(w) {
+  if (w.etykieta === 'DISAGREE_EVIDENCE' && !String(w.dowod ?? '').trim()) return 'DISAGREE_CONCERN'
+  return w.etykieta
+}
+
+/**
+ * Werdykty sceptyka: od P9 etykiety (EVIDENCE = obalenie, CONCERN = degradacja), wczesniej pole `realny`.
+ * @param {unknown} wynik
+ * @returns {{ weryfikowane: number, obalone: number, etykiety: { agree: number, disagree_evidence: number, disagree_concern: number } | null }}
+ */
 function werdyktySceptyka(wynik) {
   const o = obiekt(wynik)
-  const werdykty = Array.isArray(o.werdykty) ? listaObiektow(o.werdykty) : 'realny' in o ? [o] : []
-  return { weryfikowane: werdykty.length, obalone: werdykty.filter((w) => w.realny === false).length }
+  const werdykty = Array.isArray(o.werdykty) ? listaObiektow(o.werdykty) : 'realny' in o || 'etykieta' in o ? [o] : []
+  if (!werdykty.some((w) => 'etykieta' in w)) {
+    return { weryfikowane: werdykty.length, obalone: werdykty.filter((w) => w.realny === false).length, etykiety: null }
+  }
+  const etykiety = werdykty.map(etykietaGlosu)
+  const ile = (/** @type {string} */ e) => etykiety.filter((x) => x === e).length
+  return {
+    weryfikowane: werdykty.length,
+    obalone: ile('DISAGREE_EVIDENCE'),
+    etykiety: { agree: ile('AGREE'), disagree_evidence: ile('DISAGREE_EVIDENCE'), disagree_concern: ile('DISAGREE_CONCERN') },
+  }
 }
 
 /**
@@ -87,8 +109,8 @@ export function rekordAgenta(we) {
     findingi: klasa === 'reviewer' || klasa === 'tester-e2e' ? findingiPerWaga(wynik) : null,
     weryfikowane: sceptyk ? sceptyk.weryfikowane : null,
     obalone: sceptyk ? sceptyk.obalone : null,
-    // Sceptyk asymetryczny (It. 5) i test budzetu instrukcji (It. 9) — klucze juz teraz, wartosci pozniej.
-    werdykty: null,
+    werdykty: sceptyk ? sceptyk.etykiety : null,
+    // Test budzetu instrukcji (It. 9) — klucz juz teraz, wartosc pozniej.
     instrukcje_stale: null,
   }
 }

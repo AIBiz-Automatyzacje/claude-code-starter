@@ -97,6 +97,45 @@ test('sceptyk P1: pojedynczy werdykt', () => {
   assert.equal(r.obalone, 1)
 })
 
+// P9: sceptyk asymetryczny odpowiada etykieta zamiast pola `realny` — bez mapowania weryfikowane/obalone wyszlyby 0.
+test('sceptyk z etykietami: EVIDENCE z dowodem = obalenie, CONCERN = degradacja, liczniki per etykieta', () => {
+  const r = zbuduj({
+    meta: { description: 'verify-batch:0:4' },
+    harness: null,
+    journal: {
+      rozpoczety: true,
+      maWynik: true,
+      wynik: {
+        werdykty: [
+          { indeks: 0, etykieta: 'AGREE', dowod: '', uzasadnienie: 'x' },
+          { indeks: 1, etykieta: 'DISAGREE_EVIDENCE', dowod: 'src/a.ts:12', uzasadnienie: 'x' },
+          { indeks: 2, etykieta: 'DISAGREE_CONCERN', dowod: '', uzasadnienie: 'x' },
+          { indeks: 3, etykieta: 'DISAGREE_EVIDENCE', dowod: ' ', uzasadnienie: 'bez dowodu' },
+        ],
+      },
+    },
+  })
+  assert.equal(r.weryfikowane, 4)
+  assert.equal(r.obalone, 1, 'EVIDENCE bez linii albo testu nie obala — workflow liczy go jak CONCERN')
+  assert.deepEqual(r.werdykty, { agree: 1, disagree_evidence: 1, disagree_concern: 2 })
+})
+
+test('sceptyk P1 z etykieta: pojedynczy werdykt', () => {
+  const r = zbuduj({
+    meta: { description: 'verify:src/a.ts:0' },
+    harness: null,
+    journal: { rozpoczety: true, maWynik: true, wynik: { etykieta: 'DISAGREE_EVIDENCE', dowod: 'src/a.test.ts:4', uzasadnienie: 'x' } },
+  })
+  assert.equal(r.weryfikowane, 1)
+  assert.equal(r.obalone, 1)
+  assert.deepEqual(r.werdykty, { agree: 0, disagree_evidence: 1, disagree_concern: 0 })
+})
+
+test('sceptyk sprzed P9 (pole realny): werdykty bez etykiet = null', () => {
+  const r = zbuduj({ meta: { description: 'verify:src/a.ts:0' }, harness: null, journal: { rozpoczety: true, maWynik: true, wynik: { realny: true } } })
+  assert.equal(r.werdykty, null)
+})
+
 test('stary run bez etykiety: rola z promptu', () => {
   const r = zbuduj({ meta: {}, harness: null })
   assert.equal(r.etykieta, null)
@@ -106,5 +145,5 @@ test('stary run bez etykiety: rola z promptu', () => {
 test('pola z producentem w pozniejszych iteracjach istnieja jako null', () => {
   const r = zbuduj({})
   const pola = new Map(Object.entries(r))
-  for (const pole of ['instrukcje_stale', 'werdykty']) assert.ok(pola.has(pole) && pola.get(pole) === null, pole)
+  for (const pole of ['instrukcje_stale']) assert.ok(pola.has(pole) && pola.get(pole) === null, pole)
 })
