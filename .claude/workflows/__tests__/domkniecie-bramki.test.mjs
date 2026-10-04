@@ -29,7 +29,7 @@ function wytnij(kotwica, koniec, z = zrodlo) {
 const wf = new Function(
   `${wytnij('const BLOK_DLUGIE_KOMENDY', '=== KONIEC BLOKU DLUGICH KOMEND ===`')}
    ${wytnij('const IU_PLAN = {', '\n}')}
-   ${wytnij('const NAZWY_BRAMEK', "required: ['fazaNumer', 'status', 'iu'],\n}")}
+   ${wytnij('const NAZWY_BRAMEK', "required: ['fazaNumer', 'status', 'iu', 'stanZapisany'],\n}")}
    ${wytnij('function bazaFazy(', '\n}')}
    ${wytnij('function plikBramek(', '\n}')}
    ${wytnij('function domknieciePrompt(', '\n}')}

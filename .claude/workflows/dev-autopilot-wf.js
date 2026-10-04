@@ -291,7 +291,7 @@ const E2E_PRECHECK = {
     liczbaScenariuszy: { type: 'integer', description: 'ile niezaznaczonych checkboxow [E2E] znaleziono w planie zadania (0 gdy zadnego)' },
     stanZapisany: POLE_STANU,
   },
-  required: ['istnieje', 'zadanieWymagaE2E', 'liczbaScenariuszy'],
+  required: ['istnieje', 'zadanieWymagaE2E', 'liczbaScenariuszy', 'stanZapisany'],
 }
 
 const E2E_ENV_RESULT = {
@@ -323,7 +323,7 @@ const E2E_DOWN_RESULT = {
     detal: { type: 'string' },
     stanZapisany: POLE_STANU,
   },
-  required: ['posprzatano', 'detal'],
+  required: ['posprzatano', 'detal', 'stanZapisany'],
 }
 
 const FIX_RESULT = {
@@ -356,7 +356,7 @@ const FIX_RESULT = {
     },
     stanZapisany: POLE_STANU,
   },
-  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne'],
+  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne', 'stanZapisany'],
 }
 
 const VALIDATION_RESULT = {
@@ -377,7 +377,7 @@ const VALIDATION_RESULT = {
     bledy: { type: 'array', items: { type: 'string' } },
     stanZapisany: POLE_STANU,
   },
-  required: ['wynik'],
+  required: ['wynik', 'stanZapisany'],
 }
 
 // ── Prompty leaf-agentow ──────────────────────────────────────────────────
@@ -1289,7 +1289,7 @@ const COMMIT_ARTEFAKTOW = {
     },
     stanZapisany: POLE_STANU,
   },
-  required: ['zacommitowano', 'brudnePozaZadaniem'],
+  required: ['zacommitowano', 'brudnePozaZadaniem', 'stanZapisany'],
 }
 
 // Najczestszy STOP w telemetrii (6 na 39 runow) to "niezacommitowane zmiany" — i ZAWSZE bezposrednio
@@ -1870,7 +1870,7 @@ const REFRESH_RESULT = {
     commit: { type: 'string', description: 'hash commita zmian bazy wiedzy ("" gdy nic nie zmieniono albo commit sie nie udal)' },
     stanZapisany: POLE_STANU,
   },
-  required: ['przejrzano', 'slownik', 'commit'],
+  required: ['przejrzano', 'slownik', 'commit', 'stanZapisany'],
 }
 
 const refreshPrompt = (plik, kategoria) =>

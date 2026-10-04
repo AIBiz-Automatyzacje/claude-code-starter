@@ -141,6 +141,18 @@ test('wiring: nastepcy dostaja zapis doklejony przez zeStanem, potwierdzaja go p
   assert.equal(zrodlo.match(/await potwierdzStan\(/g)?.length, NASTEPCY.length)
 })
 
+/** @param {string} schemat tekst stalej schematu @returns {string[]} pola z ostatniego (najwyzszego) `required` */
+function wymagane(schemat) {
+  const linie = schemat.split('\n').filter((l) => /^ {2}required: \[/.test(l))
+  assert.equal(linie.length, 1, 'jedno required na najwyzszym poziomie schematu')
+  return linie[0].replace(/^ {2}required: \[|\],?$/g, '').split(',').map((p) => p.trim().replace(/'/g, ''))
+}
+
+test('stanZapisany w required kazdego schematu z doklejonym stanem — haiku pomijal pole opcjonalne (R-P9: stan:zapis 2x)', () => {
+  for (const [, schemat] of NASTEPCY) assert.ok(wymagane(wytnij(`const ${schemat} = {`, '\n}')).includes('stanZapisany'), schemat)
+  assert.ok(wymagane(wytnij('const EXECUTE_RESULT = {', '\n}', zrodloExecute)).includes('stanZapisany'), 'EXECUTE_RESULT')
+})
+
 test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika; stan:zapis tylko w zapisie zapasowym', () => {
   assert.doesNotMatch(zrodlo, /await zapiszStan\(\)/)
   // 14 miejsc mapy minus execute (zapisuje domkniecie) plus STOP po execute, gdy domkniecie zapisalo juz stan „done”;

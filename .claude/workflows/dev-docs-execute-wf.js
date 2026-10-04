@@ -192,7 +192,7 @@ const EXECUTE_RESULT = {
     dossier: DOSSIER,
     stanZapisany: { type: ['boolean', 'null'], description: 'true po zapisie pliku stanu i odczycie z wynikiem JSON-OK' },
   },
-  required: ['fazaNumer', 'status', 'iu'],
+  required: ['fazaNumer', 'status', 'iu', 'stanZapisany'],
 }
 
 // ── Buildery promptow ──────────────────────────────────────────────────────
