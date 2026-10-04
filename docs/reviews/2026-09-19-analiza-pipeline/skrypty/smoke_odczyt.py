@@ -6,6 +6,8 @@ Referencja domyślna = REFERENCJA = R0 (smoke P0, wf_588f7b18-d71); It. 1 = wf_0
 Porównuje: status, gate i przebieg review, koszt (całość, per etap, per rola), agentów per rola, model/efort (z transkryptu —
 pole `effort` rekordu agenta), ctx_start per klasa roli, zgodność szablonu, smokeStatus. Rekordy pisze hook Stop ~30 s po końcu
 runu — bez rekordów skrypt kończy się błędem, nie pustym porównaniem.
+P8: kontrolaFixa.listy i fix.p1_z_testem z rekordów faz; z journala runu — wpis `sprawdzono` per lista K-1…K-7 i bramki,
+P3 na liście fixa (prompt agenta fix:faza-N) i agenci fix:pre-skan / verify-fix (po P8 ma ich nie być).
 """
 import collections
 import glob
@@ -16,6 +18,8 @@ import sys
 
 PLIK = os.path.expanduser('~/.claude/telemetry/pipeline.jsonl')
 HARNESS = os.path.expanduser('~/.claude/projects/*/*/workflows/wf_*.json')
+KATALOG_RUNU = os.path.expanduser('~/.claude/projects/*/*/subagents/workflows/%s')
+LISTY_K = ('K-1', 'K-2', 'K-3', 'K-4', 'K-5', 'K-6', 'K-7', 'bramki')
 REFERENCJA = 'wf_588f7b18-d71'  # R0 — smoke P0 (2026-10-01): 3,92 M, 29 agentów, 13 min, gate CZYSTE
 
 
@@ -109,6 +113,9 @@ def sekcja_fazy(ref, run):
         wiersz('fix naprawione', (r.get('fix') or {}).get('naprawione'), (s.get('fix') or {}).get('naprawione'))
         wiersz('kontrola fixa: regresje', (r.get('kontrolaFixa') or {}).get('regresje'),
                (s.get('kontrolaFixa') or {}).get('regresje'))
+        wiersz('kontrola fixa: listy', (r.get('kontrolaFixa') or {}).get('listy'), (s.get('kontrolaFixa') or {}).get('listy'),
+               liczbowy=False)
+        wiersz('fix: P1 z testem (K-6)', (r.get('fix') or {}).get('p1_z_testem'), (s.get('fix') or {}).get('p1_z_testem'))
         testy = [p['plik'] for p in ((s.get('fix') or {}).get('pliki') or []) if '.test.' in p['plik']]
         print('  %-34s %s' % ('fix dotknął testów (run)', testy or 'NIE'))
         etapy_r = (r.get('koszt') or {}).get('per_etap') or {}
@@ -116,6 +123,62 @@ def sekcja_fazy(ref, run):
         wiersz('koszt fazy', (r.get('koszt') or {}).get('jedn'), (s.get('koszt') or {}).get('jedn'), mln)
         for etap in sorted(set(etapy_r) | set(etapy_s)):
             wiersz('  etap ' + etap, etapy_r.get(etap), etapy_s.get(etap), mln)
+
+
+def agenci_journala(run_id):
+    """[(etykieta, agentId, wynik)] z journal.jsonl runu; pusta lista, gdy katalogu runu nie ma."""
+    katalogi = glob.glob(KATALOG_RUNU % run_id)
+    if not katalogi:
+        return [], None
+    etykiety, wyniki = {}, []
+    for linia in open(os.path.join(katalogi[0], 'journal.jsonl'), encoding='utf-8'):
+        if not linia.strip():
+            continue
+        r = json.loads(linia)
+        if r.get('type') == 'started':
+            etykiety[r['agentId']] = r.get('label') or ''
+        elif r.get('type') == 'result':
+            wyniki.append((etykiety.get(r['agentId'], ''), r['agentId'], r.get('result')))
+    return wyniki, katalogi[0]
+
+
+def p3_w_prompcie_fixa(katalog, agent_id):
+    """Liczba findingów P3 na liście „OTWARTE FINDINGI DO NAPRAWY” w poleceniu agenta fixa (transkrypt agenta)."""
+    plik = os.path.join(katalog, 'agent-%s.jsonl' % agent_id)
+    if not os.path.exists(plik):
+        return None
+    for linia in open(plik, encoding='utf-8'):
+        tresc = json.loads(linia).get('message', {}).get('content')
+        if isinstance(tresc, str) and 'OTWARTE FINDINGI DO NAPRAWY' in tresc:
+            lista = tresc.split('OTWARTE FINDINGI DO NAPRAWY', 1)[1].split('FINDINGI Z PREFIKSEM', 1)[0]
+            return lista.count('"severity": "P3"')
+    return None
+
+
+def sekcja_kontrola_journal(run_id):
+    print('\n== 2b. Kontrola fixa i P3 (journal runu %s)' % run_id)
+    wyniki, katalog = agenci_journala(run_id)
+    if katalog is None:
+        print('  brak katalogu runu w ~/.claude/projects/*/*/subagents/workflows/')
+        return
+    for rola in ('fix:pre-skan', 'verify-fix'):
+        print('  %-34s %d' % ('agenci ' + rola, sum(1 for e, _, _ in wyniki if e.startswith(rola + ':'))))
+    for etykieta, agent_id, wynik in wyniki:
+        if etykieta.startswith('scribe:') and isinstance(wynik, dict):
+            p3 = sum(1 for f in wynik.get('findings') or [] if f.get('severity') == 'P3' and f.get('typ') in ('KOD', 'TEST'))
+            print('  %-34s %d' % (etykieta + ': P3 KOD/TEST', p3))
+        elif etykieta.startswith('fix:faza-'):
+            print('  %-34s %s' % (etykieta + ': P3 na liście', p3_w_prompcie_fixa(katalog, agent_id)))
+        elif etykieta.startswith('fix:kontrola:') and isinstance(wynik, dict):
+            if 'listy' not in wynik:
+                print('  %-34s %s' % (etykieta, 'bez list K (kontrola sprzed P8)'))
+                continue
+            listy = dict(wynik['listy'], bramki=wynik.get('bramki'))
+            for lista in LISTY_K:
+                w = listy.get(lista) or {}
+                pozycje = len(w.get('testy') or []) if lista == 'K-6' else len(w.get('pozycje') or [])
+                sprawdzono = (w.get('sprawdzono') or 'BRAK WPISU').replace('\n', ' ')
+                print('  %-34s %-3s %s' % ('%s %s' % (etykieta, lista), pozycje, sprawdzono[:110]))
 
 
 def sekcja_role(ref, run):
@@ -151,6 +214,7 @@ def main(argumenty):
     print('  %-34s %-22s %-22s %s' % ('metryka', 'referencja', 'run', 'Δ'))
     sekcja_run(ref, run)
     sekcja_fazy(ref, run)
+    sekcja_kontrola_journal(run_id)
     sekcja_role(ref, run)
     sekcja_model(ref, run)
 
