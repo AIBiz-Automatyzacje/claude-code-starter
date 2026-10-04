@@ -1498,8 +1498,8 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
 - **P7 ZROBIONA (2026-10-04; 6a pkt 54):** stan fazy w JS z zapisem u agenta, który i tak startuje (`stan:zapis` tylko przed pod-workflowem i jako
   zapas — lista w pkt 54 a), zwijanie „Do poprawy” w fixie, baza fazy w stanie → `args.baza` review, telemetria `dossier_zn` / `review_rundy` / role;
   431/431 testów. Smoke A `wf_17eac746-574` = nowa referencja R-P7 (3,49 M), wznowienie `wf_56ef0a6d-2d7` → `wf_c3f62710-562` zielone. Merge do main
-  `b0e961a`. **Następny krok: „P8 — PĘTLA FIX, SESJA 1” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu; oryginał oferty-online
-  czerwony na main (data w teście MCP, strażnik czasu); token Airtable. Kopie smoke'a P7 usunięte 2026-10-04 za zgodą operatora.
+  `b0e961a`. **Następny krok: „P8 — PĘTLA FIX, SESJA 1” niżej** (nowa sesja — N2). Szablon wypchnięty 2026-10-04 (`origin/main` = `7d7508f`).
+  Otwarte u operatora: oryginał oferty-online czerwony na main (data w teście MCP, strażnik czasu); token Airtable. Kopie smoke'a P7 usunięte 2026-10-04 za zgodą operatora.
 
 **P8 — PĘTLA FIX, SESJA 1 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
