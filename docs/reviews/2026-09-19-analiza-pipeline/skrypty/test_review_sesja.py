@@ -98,10 +98,11 @@ def skrypt_i_args(et, krok, w):
             return cel, a
         return os.path.join(d, 'wariant%s.js' % w), {}
     if krok == 'sceptycy':
-        if w == '0':
-            cel = os.path.join(TR, 'skrypty', 'test-review-wariant0-verify.js')
-            shutil.copyfile(os.path.join(BASE, 'skrypty', 'test-review-wariant0-verify.js'), cel)
-            return cel, json.load(open(os.path.join(d, 'sceptycy0.args.json')))
+        if w in ('0', 'P9'):   # P9: kill rate sceptyka asymetrycznego (test_review_sceptycy.py p9)
+            nazwa = 'test-review-wariant0-verify.js' if w == '0' else 'test-review-p9-verify.js'
+            cel = os.path.join(TR, 'skrypty', nazwa)
+            shutil.copyfile(os.path.join(BASE, 'skrypty', nazwa), cel)
+            return cel, json.load(open(os.path.join(d, 'sceptycy%s.args.json' % w)))
         return os.path.join(d, 'sceptycy%s.js' % w), {}
     if krok.startswith('sedzia-p'):
         return os.path.join(d, 'sedzia-%s.js' % krok[7:]), {}

@@ -1,0 +1,57 @@
+{
+ "zrodlo": ".claude/workflows/dev-docs-review-wf.js",
+ "wycinki": {
+  "const BLOK_ZAUFANIE = `": {
+   "zrodlo": "4597f653359a4616",
+   "wynik": "4597f653359a4616"
+  },
+  "const ETYKIETA_SCEPTYKA = {": {
+   "zrodlo": "04dd2ed8340db8bc",
+   "wynik": "04dd2ed8340db8bc"
+  },
+  "const DOWOD_SCEPTYKA = { type: 'string',": {
+   "zrodlo": "738b33f5de0a8f86",
+   "wynik": "738b33f5de0a8f86"
+  },
+  "const VERDICT = {": {
+   "zrodlo": "c184a646ad66cb1d",
+   "wynik": "c184a646ad66cb1d"
+  },
+  "const VERDICTS_BATCH = {": {
+   "zrodlo": "4502c8c25d9befcf",
+   "wynik": "4502c8c25d9befcf"
+  },
+  "function mapaBlok(kontekst) {": {
+   "zrodlo": "391a1e34ba29a023",
+   "wynik": "391a1e34ba29a023"
+  },
+  "const TIERY_DOMYSLNE = { sceptykP2: 'med": {
+   "zrodlo": "58bcc2cccba7a065",
+   "wynik": "58bcc2cccba7a065"
+  },
+  "const tiery = { ...TIERY_DOMYSLNE, ...((": {
+   "zrodlo": "6056329f9e0483f6",
+   "wynik": "6056329f9e0483f6"
+  },
+  "const zEffortem = (opts, effort) => (eff": {
+   "zrodlo": "388854c294cfc8a7",
+   "wynik": "388854c294cfc8a7"
+  },
+  "function kluczPliku(plik) {": {
+   "zrodlo": "d099546262271794",
+   "wynik": "d099546262271794"
+  },
+  "const MAKS_W_GRUPIE_P2 = 4": {
+   "zrodlo": "022d15adfdaabfd1",
+   "wynik": "022d15adfdaabfd1"
+  },
+  "const p1DoVerify = doWeryfikacji.filter(": {
+   "zrodlo": "44f262490152018f",
+   "wynik": "BRAK"
+  }
+ },
+ "wycinki_rozne": [
+  "const p1DoVerify = doWeryfikacji.filter("
+ ],
+ "zmiana": "Verify bez agentType (2 miejsca)"
+}

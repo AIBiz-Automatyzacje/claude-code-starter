@@ -19,6 +19,7 @@ async function agent(prompt, o = {}) {
   if (props.trafienia) return { trafienia: [{ wzorzec: 'any', plik: 'a.ts', linia: 'x: any' }] }
   if (props.regresje) return { regresje: [{ plik: 'a.ts:1', opis: 'r' }], bramki: [{ plik: 'a.ts:2', opis: 'b', wektory: ['1', '2', '3'], testOdmowy: false }] }
   if (props.realny) return { realny: n % 2 === 0, uzasadnienie: 'u', severityKorekta: null }
+  if (props.etykieta) return { etykieta: ['AGREE', 'DISAGREE_EVIDENCE', 'DISAGREE_CONCERN'][n % 3], dowod: n % 2 ? 'a.ts:1' : '', uzasadnienie: 'u' }
   if (props.werdykty) {
     const w = props.werdykty.items.properties
     return { werdykty: [0, 1, 2, 3].map((i) => (w.etykieta ? { indeks: i, etykieta: ['AGREE', 'DISAGREE_EVIDENCE', 'DISAGREE_CONCERN'][(i + n) % 3], dowod: i % 2 ? 'a.ts:1' : '', uzasadnienie: 'u' } : { indeks: i, realny: i % 2 === 0, uzasadnienie: 'u' })) }
