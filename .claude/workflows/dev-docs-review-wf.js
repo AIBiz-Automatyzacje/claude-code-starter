@@ -58,7 +58,7 @@ LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosc
 Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
 Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
 AKCYJNOSC: P3 laduje w known-issues zadania i w opisie PR. Czyta go operator albo bot bez kontekstu tego review,
-wiec nit bez wykonalnej tresci zostaje martwym wpisem. Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+wiec nit bez wykonalnej tresci zostaje martwym wpisem. P3 zglaszasz wtedy, gdy Twoj opis spelnia oba warunki:
   (a) DOKLADNIE JEDEN plik z numerem linii w polu \`plik\` (format \`sciezka/plik.ts:123\`, nie "?",
       nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
   (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
