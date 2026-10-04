@@ -1155,25 +1155,19 @@ function domknijWerdykty(f, glosy) {
   return { ...f, potwierdzony, severity, _uzasadnienie }
 }
 
-// Grupowanie P2 po SCIEZCE pliku (bez numeru linii) w porcje po maks `maks`. Dwa findingi w tym samym
-// pliku to jedno wejscie w plik dla sceptyka; porcja jest ograniczona, bo dlugie listy rozmywaja skepse.
-function grupujPoPliku(lista, maks) {
-  const poPliku = new Map()
-  for (const f of lista) {
-    const k = kluczPliku(f.plik)
-    if (!poPliku.has(k)) poPliku.set(k, [])
-    poPliku.get(k).push(f)
-  }
-  const grupy = []
-  for (const wPliku of poPliku.values()) {
-    for (let i = 0; i < wPliku.length; i += maks) grupy.push(wPliku.slice(i, i + maks))
-  }
-  return grupy
+// Porcje P2 po `maks` niezaleznie od pliku (P9, D2): grupa po pliku dawala 80% grup jednoelementowych, wiec ~1 agent
+// na finding. Sortowanie po pliku (stabilne) zostawia findingi z jednego pliku obok siebie — sceptyk otwiera go raz.
+// Porcja jest ograniczona, bo dlugie listy rozmywaja skepse.
+function porcjujP2(lista, maks) {
+  const poPliku = [...lista].sort((a, b) => kluczPliku(a.plik).localeCompare(kluczPliku(b.plik)))
+  const porcje = []
+  for (let i = 0; i < poPliku.length; i += maks) porcje.push(poPliku.slice(i, i + maks))
+  return porcje
 }
 
 const p1DoVerify = doWeryfikacji.filter((f) => f.severity === 'P1')
 const p2DoVerify = doWeryfikacji.filter((f) => f.severity !== 'P1')
-const grupyP2 = grupujPoPliku(p2DoVerify, MAKS_W_GRUPIE_P2)
+const grupyP2 = porcjujP2(p2DoVerify, MAKS_W_GRUPIE_P2)
 
 const skepsaBlok = `Domyslnie zakladaj ze finding jest NIEREALNY, chyba ze masz twardy dowod z kodu.
 
