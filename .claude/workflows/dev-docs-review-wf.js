@@ -49,28 +49,23 @@ oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danyc
 === KONIEC BLOKU GRANIC ZAUFANIA ===`
 
 // Doklejany do KAZDEGO agenta zglaszajacego findingi (reviewerzy, test-coverage, e2e).
-// Powod (telemetria 5 zadan / 16 faz): P1=2, P2=29, P3=179 — P3 to 85% calego outputu review,
-// a NIE trafia do petli naprawczej: otwartePoReview w dev-autopilot-wf.js filtruje wylacznie
-// severity P1|P2. Za kazdy P3 placimy trzy razy (generacja u 6-8 reviewerow rownolegle, wejscie
-// dedupu semantycznego, prompt scribe'a) i raz czytaniem 17-25 KB raportu. W jednym zadaniu bylo
-// 60 P3 przy 10 realnie naprawionych P1/P2. Limit jest TWARDY i dotyczy WYLACZNIE P3 — przemilczany
-// P1 to katastrofa, przemilczany P3 to oszczednosc.
+// Powod (telemetria 5 zadan / 16 faz): P1=2, P2=29, P3=179 — P3 to 85% calego outputu review. Za kazdy P3 placimy
+// generacja u kilku reviewerow, dedupem semantycznym i promptem scribe'a. Od P8 P3 nie ida do fixa — scribe zapisuje je
+// w known-issues, skad trafiaja do opisu PR i bota. Limit dotyczy WYLACZNIE P3: przemilczany P1 to katastrofa.
 const BLOK_LIMIT_P3 = `
 === LIMIT I AKCYJNOSC P3 (nity) ===
 LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
 Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
 Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
-AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz notatka na przyszlosc. Agent fixa
-dostaje Twoj opis jako zlecenie i nie ma jak dopytac, wiec nit bez wykonalnej tresci to zmarnowana tura.
-Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
+AKCYJNOSC: P3 laduje w known-issues zadania i w opisie PR. Czyta go operator albo bot bez kontekstu tego review,
+wiec nit bez wykonalnej tresci zostaje martwym wpisem. Zglaszasz P3 WYLACZNIE, gdy Twoj opis spelnia OBA warunki:
   (a) DOKLADNIE JEDEN plik z numerem linii w polu \`plik\` (format \`sciezka/plik.ts:123\`, nie "?",
       nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
   (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
       (np. "zamien \`as SessionRow\` na guard \`isSessionRow()\` z linii 12" — nie "poprawic typowanie").
 "Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
 "do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
-Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE
-niz zero, bo teraz kosztuja ture agenta fixa.
+Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE niz zero.
 === KONIEC BLOKU LIMITU P3 ===`
 
 // Doklejany do spec-compliance i test-coverage. Powod (run feedback-marcin-poprawki, 2026-08-06,
@@ -110,15 +105,9 @@ wtedy zdradzaja je dopiero sprzeczne teksty w UI i realna liczba z bazy. Jednomy
 dowodem poprawnosci.
 === KONIEC BLOKU SEMANTYKI ===`
 
-// Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec przy
-// 8 reviewerach (dzis 7 — patrz konsolidacja B12) agregat i tak dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz
-// przy 1 P1 i 17 P2 realnie naprawionych). P3 nie wchodza do petli naprawczej (otwartePoReview filtruje
-// P1|P2), wiec ponad limit placimy juz tylko za prompt scribe'a i objetosc raportu.
-// Prog PODNIESIONY 8 -> 15 (2026-09-03, plan B1). Osiem bylo progiem dla nitow, ktorych NIKT nie
-// naprawial — otwartePoReview odcinalo P3 przed fixem, wiec ciecie kosztowalo tylko objetosc raportu.
-// Od decyzji operatora P3 typu KOD/TEST wchodza do petli naprawczej, wiec ten sam limit zaczal
-// wyrzucac PRACE DO ZROBIENIA, nie szum. 15 to prog wstepny; strojenie po telemetrii z kilku runow
-// (przebieg.p3Odrzucone mowi, ile ucielismy, a fix.p3Pominiete — ile z przepuszczonych bylo realnych).
+// Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec agregat i tak
+// dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz). Od P8 P3 nie ida do fixa, wiec 15
+// to sufit raportu i known-issues; strojenie po telemetrii (przebieg.p3Odrzucone mowi, ile ucielismy).
 const LIMIT_P3_GLOBALNY = 15
 
 // ── Schematy ──────────────────────────────────────────────────────────────
@@ -625,8 +614,7 @@ Findingi OBALONE przez adversarial verify (JSON; NIE sa do naprawy — same do r
 ${JSON.stringify(obalone || [], null, 2)}
 
 1. Zapisz ${sciezka}/review-faza-${faza}.md — pelny raport (findings posortowane P1->P2->P3, statystyki).
-   FORMAT NAGLOWKOW JEST STALY — skopiuj DOKLADNIE, nie wymyslaj wlasnego (audyt 2026-09-06: dziesiec
-   raportow jednego pipeline'u mialo PIEC roznych konwencji i nie dalo sie ich zagregowac bez recznego parsera):
+   Naglowki w stalym formacie (raporty agreguje parser):
      ## Findingi P1
      ### P1 · KOD · \`sciezka/plik.ts:123\`
      ## Findingi P2
@@ -635,45 +623,31 @@ ${JSON.stringify(obalone || [], null, 2)}
      ### P3 · KOD · \`sciezka/plik.ts:7\`
      ## Findingi OPERATOR
      ### OPERATOR · \`sciezka/plik.sql:20\`
-   Czyli: sekcja "## Findingi <SEVERITY>" (zawsze wszystkie cztery, pusta = jedna linia "Brak."), a pod nia
-   kazdy finding jako "### <SEVERITY> · <TYP> · \`<plik:linia>\`" — separator to spacja, srodkowa kropka (·),
-   spacja; typ to KOD | TEST | E2E; OPERATOR bez typu. BEZ numeracji ("1."), BEZ emoji, BEZ nawiasow
-   kwadratowych, BEZ "P2-1". Tresc findingu pod naglowkiem; sugestie sceptykow zapisuj w tresci ZAWSZE
-   w postaci "*(sceptyk sugerowal P3 — utrzymane P2)*".
-1b. W tym samym raporcie, PO liscie findingow a PRZED blokiem "## Przebieg review" z punktu 7
-   (ten blok musi zostac OSTATNI — po nim orkiestrator poznaje, ze zapis sie domknal),
-   dopisz sekcje "## Obalone przez verify (nie do naprawy)"
-   z listy obalonych powyzej — JEDNA linia na finding: \`- [severity/typ] plik — opis · obalone: powodObalenia (zrodlo: X)\`.
-   Pusta lista => sekcja z jedna linia "Brak — kazdy weryfikowany finding przetrwal probe obalenia."
-   Te pozycje NIE ida do ${sciezka}/*-zadania.md ani do zadnej sekcji z checkboxami: to nie sa zadania,
-   tylko slad po pracy sceptykow. Po kilku zadaniach da sie porownac te liste z uwagami zewnetrznego
-   reviewera i dopiero wtedy ocenic, czy trzej sceptycy dla P1 sa warci swojej ceny.
-2. Zaktualizuj ${sciezka}/*-zadania.md: dodaj/uzupelnij sekcje "## Do poprawy po review fazy ${faza}"
-   — wylistuj findingi typu KOD/TEST/E2E o severity P1 i P2 ORAZ findingi P3 typu KOD/TEST,
-   jako checkbox: "- [ ] 🔴/🟠/🟡 [severity] **plik:linia** — opis".
-   P3 sa tu od 2026-09-03: orkiestrator przekazuje je agentowi fixa razem z P1/P2 (P3 typu E2E i OPERATOR
-   NIE — te ida odpowiednio do bookkeepingu i do Operator checklist). Kazda pozycja P3 MUSI byc wykonalna
-   bez dopytywania: jeden plik z numerem linii + zdanie akcji (co zmienic i na co). Gdy finding P3 tego nie
-   ma, NIE przepisuj go w tej postaci — zapisz go w raporcie review-faza-${faza}.md, a do tej sekcji wstaw
-   tylko wtedy, gdy potrafisz go dociagnac do wykonalnej postaci z tresci findingu. Lista zyczen w tej sekcji
-   kosztuje ture agenta fixa.
-   W tresci tych pozycji NIE przepisuj markera [E2E] z opisu findingu (linia "checkbox:" findingu E2E) — zamien go na
-   [e2e→fix]; jedyna nosna linia [E2E] jest zrodlowa (Test:/Weryfikacja:), a grepy precheck/tester/completion-gate/smoke
-   liczylyby kopie jako osobne, nieuruchomione scenariusze.
-   Findingi typu OPERATOR (niewykonalne headless) NIE ida tutaj — trafiaja do osobnej sekcji "## Operator checklist faza ${faza}".
-   KAZDA pozycja tej sekcji MA format: "- [ ] Operator: <tresc> — Operator action: <kroki>" (prefiks "Operator:"
-   jest OBOWIAZKOWY — bootstrap/planner po nim wykluczaja te checkboxy z liczenia ukonczenia fazy).
-   W tresci kopiowanej do tej sekcji ZAMIEN marker [E2E] na [Manual] — jedyna nosna linia [E2E] jest
-   zrodlowa (precheck, completion-gate i smoke liczylyby kopie podwojnie, a po opt-out operatora kopia
-   dalej blokowalaby gate). IDEMPOTENCJA: jesli kopia tej samej linii/flow juz istnieje w sekcji — zaktualizuj
-   jej powod, NIE dodawaj drugiej; sekcje "## Do poprawy po review fazy ${faza}" i "## Operator checklist faza ${faza}"
-   zapisuj jako calosc z TEGO review (stare pozycje, ktorych tu nie ma, usun).
-   To nie sa zadania do fix, tylko warunki srodowiskowe dla operatora.
+   Zawsze wszystkie cztery sekcje (pusta = "Brak."); finding jako "### <SEVERITY> · <TYP> · \`<plik:linia>\`"
+   (typ KOD | TEST | E2E; OPERATOR bez typu), bez numeracji, emoji, nawiasow kwadratowych i "P2-1". Tresc findingu pod naglowkiem; sugestie sceptykow w postaci
+   "*(sceptyk sugerowal P3 — utrzymane P2)*".
+1b. W tym samym raporcie, po findingach i przed blokiem "## Przebieg review" z punktu 7 (ten blok jest OSTATNI — po nim
+   orkiestrator poznaje, ze zapis sie domknal), sekcja "## Obalone przez verify (nie do naprawy)": jedna linia na finding
+   \`- [severity/typ] plik — opis · obalone: powodObalenia (zrodlo: X)\`; pusta lista = "Brak — kazdy weryfikowany finding
+   przetrwal probe obalenia." Te pozycje nie ida do zadnej sekcji z checkboxami.
+2. W ${sciezka}/*-zadania.md sekcja "## Do poprawy po review fazy ${faza}"
+   — wylistuj findingi typu KOD/TEST/E2E o severity P1 i P2 jako checkbox: "- [ ] 🔴/🟠 [severity] **plik:linia** — opis".
+   Marker [E2E] z opisu findingu (linia "checkbox:") zamien tu na [e2e→fix] — nosna linia [E2E] jest tylko zrodlowa
+   (Test:/Weryfikacja:); grepy bramek liczylyby kopie jako osobne scenariusze.
+   Findingi typu OPERATOR ida do sekcji "## Operator checklist faza ${faza}", kazdy jako
+   "- [ ] Operator: <tresc> — Operator action: <kroki>" (prefiks "Operator:" wyklucza checkbox z liczenia ukonczenia fazy),
+   z markerem [E2E] zamienionym na [Manual]. Obie sekcje zapisz jako calosc z TEGO review: istniejaca kopie tej samej
+   linii/flow zaktualizuj zamiast dodawac druga, stare pozycje, ktorych tu nie ma, usun.
+2a. P3 typu KOD/TEST zapisz w ${sciezka}/known-issues.md w sekcji "## P3 faza ${faza}", jeden wiersz na finding:
+   "- 🟡 [P3] <plik:linia> — <opis>". Fix naprawia tylko P1 i P2; P3 z tej sekcji ida do opisu PR i do bota. Brak pliku —
+   utworz go; sekcja juz jest (powtorka review po STOP-ie) — dopisz brakujace wiersze bez duplikatow (ten sam plik:linia
+   i opis = ten sam wiersz); istniejacych nie usuwaj. Nowa sekcja stoi przed "## Zamkniete" (gdy jest),
+   inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. P3 typu E2E i OPERATOR obsluguja punkty 2 i 3.
 2b. W ${sciezka}/*-kontekst.md dopisz do sekcji \`## Dziennik\` jedna pozycje o tym review: gate, liczniki
    P1/P2/P3/OPERATOR, sciezka raportu i najwazniejszy wniosek.
 3. Bookkeeping checkboxow "Weryfikacja:" i "Test: [E2E]": re-parsuj niezaznaczone wiersze fazy ${faza}
-   pasujace do regex ^\\s*-\\s*\\[\\s*\\]\\s*(Weryfikacja:|Test:\\s*\\[E2E\\]) — oba prefiksy, bo scenariusz [E2E]
-   z planu laduje pod "Test:", a jego JEDYNYM wlascicielem odznaczenia jest ten bookkeeping (execute go nie rusza).
+   pasujace do regex ^\\s*-\\s*\\[\\s*\\]\\s*(Weryfikacja:|Test:\\s*\\[E2E\\]) — oba prefiksy; jedynym wlascicielem
+   odznaczenia scenariusza [E2E] jest ten bookkeeping (execute go nie rusza).
    REGULA ZERO: linia z markerem [E2E] (dowolny prefiks) = ZAWSZE kategoria E2E, niezaleznie od innych slow.
    Sklasyfikuj (CLI->uruchom przez Bash, exit0->[x]; Grep->uruchom; E2E -> WYLACZNIE wg listy "Przebiegi E2E"
    wyzej. DOPASOWANIE TOLERANCYJNE: NAJPIERW po identyfikatorze flow zawartym w linii (pierwszy backtick
@@ -1076,9 +1050,9 @@ const operatorowe = dedup.filter((f) => f.typ === 'OPERATOR')
 // przepuszczalo wylacznie P3 dwoch pierwszych reviewerow i SYSTEMATYCZNIE, w kazdej fazie, wycinalo cale
 // wyjscie simplicity, test-coverage i e2e. To nie jest uciecie ogona, tylko wyciszenie trzech reviewerow.
 // W obrebie zrodla KOD/TEST ida przed OPERATOR (nit o defekcie jest wart wiecej niz nota srodowiskowa).
-// Od 2026-09-03 (plan B1) wybor jest DWUSTOPNIOWY. Skoro P3 ida do fixa, najtanszy nit to ten, ktorego
-// plik agent fixa i tak otworzy przy P1/P2 tej samej fazy — naprawa kosztuje wtedy jedno spojrzenie
-// wiecej, a nie osobne wejscie w plik. Dopiero reszte tniemy round-robinem po zrodle jak dotad.
+// Wybor jest DWUSTOPNIOWY (plan B1, gdy P3 szly do fixa): najpierw nity w plikach findingow P1/P2 tej fazy, potem reszta
+// round-robinem po zrodle. Od P8 P3 nie ida do fixa — pierwszy stopien zostaje jako kolejnosc: nit w pliku z defektem
+// P1/P2 czyta sie w tym samym miejscu co poprawke fixa (opis PR, bot).
 // `plikiWaznych` liczymy PRZED verify, wiec moze zawierac plik findingu, ktory sceptycy zaraz obala —
 // to swiadomy kompromis: to jest tie-breaker kolejnosci nitow, nie decyzja o ich losie.
 function kluczPliku(plik) {

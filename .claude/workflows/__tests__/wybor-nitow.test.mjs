@@ -4,10 +4,10 @@
 //   albo caly katalog:  node --test '.claude/workflows/__tests__/*.test.mjs'   (glob w apostrofach)
 // Dlaczego ekstrakcja ze zrodla zamiast importu — patrz naglowek bloker-srodowiska.test.mjs.
 //
-// Kontekst (audyt 2026-09-02, pozycja B1): od decyzji operatora P3 typu KOD/TEST wchodza do petli
-// naprawczej, wiec `wybierzNity` przestal ucinac szum, a zaczal ucinac PRACE DO ZROBIENIA. Stad
-// dwa stopnie: najpierw nity w plikach, ktore agent fixa i tak otworzy przy P1/P2 tej fazy, potem
-// reszta round-robinem po zrodle. Round-robin jest starszy i ma wlasny powod (bez niego `slice`
+// Kontekst (audyt 2026-09-02, pozycja B1; P8): dwa stopnie powstaly, gdy P3 szly do fixa — najpierw nity w plikach
+// findingow P1/P2 tej fazy, potem reszta round-robinem po zrodle. Od P8 P3 laduja w known-issues, a kolejnosc zostaje;
+// test kolejnosci ponizej uzywa nazwy z czasow B1 ("pliki, ktore fix otworzy") = pliki findingow P1/P2.
+// Round-robin jest starszy i ma wlasny powod (bez niego `slice`
 // systematycznie wyciszal simplicity/test-coverage/e2e) — te testy pilnuja obu wlasnosci naraz.
 
 import { readFileSync } from 'node:fs'
@@ -45,7 +45,7 @@ const nit = (zrodloAgenta, plik, typ = 'KOD') => ({ severity: 'P3', typ, plik, o
 
 // ── Prog LIMIT_P3_GLOBALNY ─────────────────────────────────────────────────
 
-test('prog globalny P3 wynosi 15 (podniesiony z 8, bo P3 ida teraz do fixa)', () => {
+test('prog globalny P3 wynosi 15 (sufit raportu i known-issues; P8: P3 poza fixem)', () => {
   const m = zrodlo.match(/^const LIMIT_P3_GLOBALNY = (\d+)$/m)
   assert.ok(m, 'nie znaleziono deklaracji LIMIT_P3_GLOBALNY')
   assert.equal(Number(m[1]), 15)
