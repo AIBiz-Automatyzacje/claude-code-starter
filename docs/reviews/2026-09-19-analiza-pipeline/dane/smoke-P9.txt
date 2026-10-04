@@ -1,0 +1,147 @@
+Smoke: wf_34ba05c9-cca (projekt _smoke-P9-oferty-online) vs referencja wf_9317b7cf-cdf (projekt _smoke-P8-oferty-online)
+  metryka                            referencja             run                    Δ
+== 1. Run
+  status                             OK                     OK                     
+  powód STOP                         —                      —                      
+  fazy ukończone / zadania           1/1                    1/1                    
+  walidacja końcowa                  PASS                   PASS                   
+  szablon zgodny                     True                   True                   
+  smokeStatus (harness)              plik                   plik                   
+  koszt [jedn.]                      3.62 M                 3.49 M                 -4%
+  agentów                            27                     28                     +4%
+  tur                                177                    176                    -1%
+  czas [min]                         21                     18                     -14%
+
+== 2. Fazy: gate, review, fix
+ faza 1
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    5                      5                      +0%
+  potwierdzone p3                    3                      4                      +33%
+  review znalezione                  20                     18                     -10%
+  review poDedupSem                  8                      9                      +12%
+  review weryfikowane                5                      5                      +0%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               ['e2e']                ['e2e']                
+  fix naprawione                     5                      5                      +0%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 1, 'bramki': 0} {'K-1': 0, 'K-2': 1, 'K-3': 0, 'K-4': 0, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['packages/smoke-autopilot/src/smoke-autopilot.test.ts']
+  koszt fazy                         2.44 M                 2.32 M                 -5%
+    etap execute                     0.50 M                 0.50 M                 +1%
+    etap fix                         0.58 M                 0.53 M                 -8%
+    etap mechanika_review            0.28 M                 0.19 M                 -32%
+    etap orkiestracja                0.00 M                 0.00 M                 
+    etap review                      0.92 M                 0.95 M                 +4%
+    etap sceptycy                    0.17 M                 0.15 M                 -12%
+
+== 2b. Kontrola fixa i P3 (journal runu wf_34ba05c9-cca)
+  agenci fix:pre-skan                0
+  agenci verify-fix                  0
+  scribe:faza-1: P3 KOD/TEST         4
+  fix:faza-1: P3 na liście           0
+  fix:kontrola:faza-1 K-1            0   git log --no-walk --format=%h cc3f9bb (najstarszy = cc3f9bb), git diff cc3f9bb^..HEAD -- . ':!docs/active'. sm
+  fix:kontrola:faza-1 K-2            1   Bramka LICZBA_CALKOWITA /^-?[0-9]{1,15}$/ (smoke-autopilot.ts:20) i Number.isSafeInteger (:26). Proby obejscia
+  fix:kontrola:faza-1 K-3            0   L-COR-1: diff fixa nie zawiera operacji zmieniajacej stan (to czysta funkcja parsujaca plus testy), wiec nie m
+  fix:kontrola:faza-1 K-4            0   Fix nie zmienil ani nie usunal zadnej nazwy: parsujLiczbe i dodajBezpiecznie zostaly, doszla stala LICZBA_CALK
+  fix:kontrola:faza-1 K-5            1   Komentarze w smoke-autopilot.ts:18-19 (biala lista, uzasadnienie, ze BigInt przyjmuje pusty tekst, biale znaki
+  fix:kontrola:faza-1 K-6            0   Lista findingow naprawianych przez fix ma wylacznie P2 (5 pozycji), P1 = 0. Testy pustej listy, worktree nie p
+  fix:kontrola:faza-1 K-7            0   git diff cc3f9bb^..HEAD --stat obejmuje 3 pliki. packages/smoke-autopilot/src/smoke-autopilot.ts wskazuje find
+  fix:kontrola:faza-1 bramki         0   node .claude/scripts/bramki/bramki.mjs --baza cc3f9bb^ > /tmp/bramki-fix-docs-active-smoke-autopilot-faza-1.js
+  fix:kontrola:faza-1 K-7 docs/active/ 0 
+
+== 2c. Sceptycy (P9): etykiety, porcje P2, werdykty agentów
+ faza 1
+  faza.sceptyk                       —                      {'agree': 5, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              —                      {'agree': 5, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          5                      5                      +0%
+  verify-batch vs ⌈P2/4⌉             2 batch (przebieg 2) ≤ ⌈5/4⌉=2 OK 2 batch (przebieg 2) ≤ ⌈5/4⌉=2 OK 
+  agenci verify (P1 ×3)              0                      0                      
+
+== 2d. Sceptycy w journalu runu: etykiety w wyniku, błędy schematu
+  verify-batch:1:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  sceptycy failed (journal)          0
+
+== 2e. Kopia: raport review i archiwum zadań
+  kopia                              /Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P9-oferty-online
+  docs/completed/smoke-autopilot/review-faza-1.md 5 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  archiwum: „Zamkniete cyklem fix”   ['Zamkniete cyklem fix: 5 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-1.md`.']
+
+== 3. Agenci per rola: liczba, koszt
+  bootstrap                          1 × 0.08 M             1 × 0.09 M             ≠
+    Δ koszt                          +5%
+  build                              1 × 0.13 M             1 × 0.17 M             ≠
+    Δ koszt                          +32%
+  complete                           2 × 0.21 M             2 × 0.22 M             ≠
+    Δ koszt                          +6%
+  compound                           1 × 0.14 M             1 × 0.12 M             ≠
+    Δ koszt                          -16%
+  compound-refresh                   1 × 0.19 M             1 × 0.17 M             ≠
+    Δ koszt                          -14%
+  dedup:semantyczny                  1 × 0.15 M             1 × 0.06 M             ≠
+    Δ koszt                          -58%
+  domkniecie                         1 × 0.26 M             1 × 0.22 M             ≠
+    Δ koszt                          -16%
+  e2e:precheck                       1 × 0.02 M             1 × 0.02 M             
+    Δ koszt                          -7%
+  fix                                1 × 0.27 M             1 × 0.22 M             ≠
+    Δ koszt                          -16%
+  fix:kontrola                       1 × 0.15 M             1 × 0.13 M             ≠
+    Δ koszt                          -18%
+  fix:poprawka                       1 × 0.16 M             1 × 0.19 M             ≠
+    Δ koszt                          +17%
+  planner                            1 × 0.11 M             1 × 0.11 M             
+    Δ koszt                          +6%
+  review:code-quality                1 × 0.17 M             1 × 0.16 M             ≠
+    Δ koszt                          -3%
+  review:correctness                 1 × 0.12 M             1 × 0.15 M             ≠
+    Δ koszt                          +24%
+  review:performance                 1 × 0.12 M             1 × 0.15 M             ≠
+    Δ koszt                          +26%
+  review:security                    1 × 0.16 M             1 × 0.16 M             
+    Δ koszt                          +1%
+  review:spec-compliance             1 × 0.14 M             1 × 0.15 M             ≠
+    Δ koszt                          +8%
+  review:test-coverage               1 × 0.21 M             1 × 0.18 M             ≠
+    Δ koszt                          -16%
+  scribe                             1 × 0.13 M             1 × 0.13 M             
+    Δ koszt                          -2%
+  smoke-operatora                    1 × 0.14 M             1 × 0.13 M             ≠
+    Δ koszt                          -4%
+  stan:zapis                         1 × 0.03 M             2 × 0.06 M             ≠
+    Δ koszt                          +72%
+  start:testy                        1 × 0.09 M             1 × 0.11 M             ≠
+    Δ koszt                          +14%
+  verify-batch                       2 × 0.17 M             2 × 0.15 M             ≠
+    Δ koszt                          -12%
+  walidacja-koncowa                  1 × 0.18 M             1 × 0.16 M             ≠
+    Δ koszt                          -10%
+  warmup:vitest                      1 × 0.09 M             1 × 0.09 M             
+    Δ koszt                          +1%
+
+== 4. Model / efort (transkrypt)
+  haiku-4-5-20251001/None            4                      5                      +25%
+  opus-5-5/high                      9                      9                      +0%
+  opus-5-5/low                       1                      1                      +0%
+  opus-5-5/medium                    13                     13                     +0%
+
+== 5. ctx_start per klasa/model: n, p50 [k], max [k]
+  builder/opus-5-5                   (1, 60, 60)            (1, 60, 60)            
+    Δ p50                            +0%
+  mechaniczny/haiku-4-5-20251001     (3, 8, 10)             (4, 8, 10)             ≠
+    Δ p50                            +0%
+  naprawiacz/opus-5-5                (2, 59, 61)            (2, 59, 61)            
+    Δ p50                            +0%
+  orkiestracyjny/haiku-4-5-20251001  (1, 7, 7)              (1, 7, 7)              
+    Δ p50                            +0%
+  orkiestracyjny/opus-5-5            (12, 49, 54)           (12, 49, 55)           ≠
+    Δ p50                            +0%
+  reviewer/opus-5-5                  (6, 51, 53)            (6, 51, 52)            ≠
+    Δ p50                            +0%
+  sceptyk/opus-5-5                   (2, 49, 49)            (2, 49, 49)            
+    Δ p50                            +0%
