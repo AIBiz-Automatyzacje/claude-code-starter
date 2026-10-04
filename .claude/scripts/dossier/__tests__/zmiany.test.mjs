@@ -35,6 +35,26 @@ test('zmianyDossier: dodane, zmienione, usuniete i niesledzone pliki fazy ze sta
   }
 })
 
+// 6a pkt 54 (f): stan autopilota trafial do listy plikow i diffu w obu przebiegach smoke'a P7 — reviewerzy dostawali
+// artefakt pipeline'u, a routing liczyl go jako nie-kod.
+test('zmianyDossier: pomija .autopilot-state.json zadania (sledzony i niesledzony) na liscie plikow i w diffie', () => {
+  const repo = noweRepo()
+  try {
+    zapisz(repo, { 'src/a.ts': 'export const a = 1\n', 'docs/active/x/.autopilot-state.json': '{"v":1}\n' })
+    const baza = commit(repo, 'baza')
+    zapisz(repo, { 'src/a.ts': 'export const a = 2\n', 'docs/active/x/.autopilot-state.json': '{"v":2}\n' })
+    commit(repo, 'faza')
+    zapisz(repo, { 'docs/active/y/.autopilot-state.json': '{"v":1}\n' })
+
+    const { pliki, diff } = zmianyDossier(repo, baza)
+    assert.deepEqual(pliki.map((p) => p.plik), ['src/a.ts'])
+    assert.doesNotMatch(diff, /autopilot-state/)
+    assert.match(diff, /\+export const a = 2/)
+  } finally {
+    usun(repo)
+  }
+})
+
 test('zapiszDiff: ponizej limitu caly; powyzej przyciety ze znacznikiem; pusty diff = niezapisany', () => {
   const katalog = mkdtempSync(join(tmpdir(), 'diff-'))
   try {
