@@ -2,7 +2,7 @@
 // skrypt wyciaga kandydatow (regula, zrodla, waga, wzorce plikow z tresci solution), agent dopisuje klase ze slownika,
 // skrypt sprawdza i zapisuje; czego nie da sie zapisac — lista odrzutow dla operatora. Fixture: fragment pliku oferty.
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
@@ -10,7 +10,7 @@ import assert from 'node:assert/strict'
 
 import { noweRepo, usun, zapisz } from '../../bramki/__tests__/repo-testowe.mjs'
 import { czytajFrontmatter } from '../frontmatter.mjs'
-import { kandydaci, zastosuj } from '../konwersja.mjs'
+import { archiwizuj, kandydaci, zastosuj } from '../konwersja.mjs'
 import { plikiRepo } from '../wpisy.mjs'
 
 const LP = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures/learned-patterns-oferty.md'), 'utf8')
@@ -59,6 +59,15 @@ test('kandydaci: wzorce plikow z sciezek cytowanych w solution, ktore istnieja w
     assert.deepEqual(k[1].paths, ['src/lib/**'])
     assert.deepEqual(k[0].paths, ['Dockerfile'])
     assert.deepEqual(k[2].paths, [])
+  })
+})
+
+test('kandydaci: sciezki dokumentacji (docs/, .claude/, pliki .md) nie sa wzorcami — wiedza dotyczy kodu', () => {
+  wRepo((repo) => {
+    zapisz(repo, { 'CLAUDE.md': '', 'docs/completed/f1/plan.md': '', '.claude/rules/x.md': '' })
+    const lp = LP.replace(TESTY, LIMITER)
+    zapisz(repo, { [LIMITER]: solution('high', '2026-08-25', 'Zob. `CLAUDE.md`, docs/completed/f1/plan.md, .claude/rules/x.md i `src/lib/ip.ts`.') })
+    assert.deepEqual(kandydaci(lp, repo, plikiRepo(repo))[1].paths, ['src/lib/**'])
   })
 })
 
@@ -150,5 +159,18 @@ test('zastosuj: Source z segmentem .. w pliku projektu nie wyprowadza zapisu poz
     assert.deepEqual(w.zapisane, [])
     assert.match(w.odrzuty[0].powod, /^solution spoza zrodel reguly albo poza docs\/solutions/)
     assert.equal(readFileSync(join(repo, 'docs/poza.md'), 'utf8'), '---\ntitle: poza\n---\n')
+  })
+})
+
+test('archiwizuj: stary plik przeniesiony (nie skasowany) do docs/archiwum/, odrzuty z tytulem i powodem obok', () => {
+  wRepo((repo) => {
+    zapisz(repo, { '.claude/rules/learned-patterns.md': LP })
+    const a = archiwizuj(repo, LP, [{ nr: 4, tytul: 'Regula bez zrodla', powod: 'brak solution: brak linii Source' }], DZIS)
+    assert.deepEqual(a, { plik: `docs/archiwum/learned-patterns-${DZIS}.md`, odrzuty: `docs/archiwum/learned-patterns-odrzuty-${DZIS}.md` })
+    assert.equal(existsSync(join(repo, '.claude/rules/learned-patterns.md')), false)
+    assert.equal(readFileSync(join(repo, a.plik), 'utf8'), LP)
+    const odrzuty = readFileSync(join(repo, a.odrzuty), 'utf8')
+    assert.match(odrzuty, /^- nr 4 — Regula bez zrodla: brak solution: brak linii Source$/m)
+    assert.match(odrzuty, /\(1 z 4 regul\)/)
   })
 })

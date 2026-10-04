@@ -3,7 +3,7 @@
 // cytowanych w solution) → agent dopisuje klase ze slownika i poprawia regule/wzorce → zastosowanie z walidacja
 // jak przy compoundzie. Czego nie da sie zapisac, trafia na liste odrzutow dla operatora.
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { posix, join } from 'node:path'
 
 import { czytajFrontmatter, ustawPola } from './frontmatter.mjs'
@@ -11,12 +11,15 @@ import { liczZdania, walidujWpis } from './walidacja.mjs'
 import { POLA_ROZPOZNAJACE } from './wpisy.mjs'
 
 export const PLIK_LEARNED_PATTERNS = '.claude/rules/learned-patterns.md'
+const ARCHIWUM = 'docs/archiwum'
 const REGULA = /^- \*\*(.+?)\*\*:?\s*(.*)$/
 const ZRODLO = /^\s+Source:\s*(\S+)/
 const WAGA_Z_SEVERITY = /** @type {Record<string, string>} */ ({ critical: 'wysoka', high: 'wysoka', medium: 'srednia', low: 'niska' })
 const SZCZEBEL_KONWERSJI = 'regula'
 const POWOD_KONWERSJI = 'konwersja learned-patterns: regula tekstowa sprzed P10, bez bramki mechanicznej'
 const MAKS_REGULA_ZN = 400
+// Wzorce wiedzy wskazuja kod: dokumentacja cytowana w solution (plany, archiwum zadan, reguly) nie jest kandydatem.
+const DOKUMENTACJA = /^(?:docs|\.claude)\/|\.md$/
 
 /**
  * @typedef {{ nr: number, tytul: string, tresc: string, zrodla: string[], solution: string | null, klasa: string,
@@ -55,10 +58,11 @@ function regulaZTytulu(tytul) {
 function wzorceZTresci(tresc, pliki) {
   const tokeny = [...tresc.matchAll(/`([^`\s]+)`/g)].map((m) => m[1])
     .concat([...tresc.matchAll(/[\w.@-]+(?:\/[\w.@-]+)+/g)].map((m) => m[0]))
+  const kod = pliki.filter((p) => !DOKUMENTACJA.test(p))
   /** @type {Map<string, number>} */
   const licznik = new Map()
   for (const token of tokeny) {
-    const trafione = pliki.filter((p) => p === token || (token.includes('/') && p.endsWith(`/${token}`)))
+    const trafione = kod.filter((p) => p === token || (token.includes('/') && p.endsWith(`/${token}`)))
     for (const p of new Set(trafione.map((t) => (posix.dirname(t) === '.' ? t : `${posix.dirname(t)}/**`)))) {
       licznik.set(p, (licznik.get(p) ?? 0) + 1)
     }
@@ -180,4 +184,31 @@ export function zastosuj(projekt, tekst, propozycje, pliki, dzis) {
     zapisane.set(p.solution, k.nr)
   }
   return { zapisane: [...zapisane.entries()].map(([plik, nr]) => ({ nr, plik })), odrzuty }
+}
+
+/**
+ * Przenosi stary plik do docs/archiwum/ (wyjscie z ladowania eager, cofniecie = przeniesienie z powrotem) i zapisuje
+ * obok liste odrzutow dla operatora.
+ * @param {string} projekt
+ * @param {string} tekst tresc .claude/rules/learned-patterns.md
+ * @param {Odrzut[]} odrzuty
+ * @param {string} dzis
+ * @returns {{ plik: string, odrzuty: string }}
+ */
+export function archiwizuj(projekt, tekst, odrzuty, dzis) {
+  const plik = `${ARCHIWUM}/learned-patterns-${dzis}.md`
+  const plikOdrzutow = `${ARCHIWUM}/learned-patterns-odrzuty-${dzis}.md`
+  mkdirSync(join(projekt, ARCHIWUM), { recursive: true })
+  renameSync(join(projekt, PLIK_LEARNED_PATTERNS), join(projekt, plik))
+  writeFileSync(join(projekt, plikOdrzutow), [
+    `# Odrzuty konwersji learned-patterns (${dzis})`,
+    '',
+    `Reguly, ktore nie trafily do wiedzy projektu (${odrzuty.length} z ${reguly(tekst).length} regul). Decyzja operatora: dopisac pola`,
+    'w solution recznie i sprawdzic `node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>`, albo pominac.',
+    `Pelne brzmienie regul: \`${plik}\`.`,
+    '',
+    ...odrzuty.map((o) => `- nr ${o.nr} — ${o.tytul}: ${o.powod}`),
+    '',
+  ].join('\n'))
+  return { plik, odrzuty: plikOdrzutow }
 }
