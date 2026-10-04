@@ -239,3 +239,14 @@ test('bramka rozmiaru PR: do progu bez uwagi, powyzej UWAGA z liczba i propozycj
   assert.match(u, /apps\/web: 120/)
   assert.match(u, /packages\/core: 31/)
 })
+
+// P8: fix naprawia tylko P1/P2, P3 zostaja w known-issues (sekcje "## P3 faza N") — smoke operatora ich nie bierze.
+test('smoke operatora: z "Do poprawy" i known-issues otwarte P1/P2; sekcje "## P3 faza N" zostaja w known-issues', () => {
+  /** @type {(nazwaZadania: string) => string} */
+  // eslint-disable-next-line no-new-func -- jw.
+  const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
+  const p = smokePrompt('zadanie-x')
+  assert.match(p, /otwarte \[P1\]\/\[P2\] z\s+"## Do poprawy po review fazy N"/)
+  assert.match(p, /sekcje "## P3 faza N" pomin/)
+  assert.doesNotMatch(p, /otwarte P3/)
+})

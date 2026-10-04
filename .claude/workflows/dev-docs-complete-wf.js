@@ -128,8 +128,9 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
    srodowiskowe (dev server w trybie e2e, seedy na projekt e2e) NIE sa pozycjami smoke'u: uruchomienie apki
    to tylko check "aplikacja wstaje (dev server)" w sekcji 0; kroki pod przebieg E2E pomin calkowicie
    (smoke leci na projekcie GLOWNYM, nie e2e).
-4. Otwarte wpisy z docs/active/${nazwaZadania}/known-issues.md (jesli plik istnieje) i otwarte P3 z
-   "## Do poprawy po review fazy N". "Otwarte" = poza sekcja "## Zamkniete"; gdy sekcji nie ma — pomin wpisy,
+4. Otwarte wpisy z docs/active/${nazwaZadania}/known-issues.md (jesli plik istnieje) i otwarte [P1]/[P2] z
+   "## Do poprawy po review fazy N". Z known-issues sekcje "## P3 faza N" pomin — nity zostaja w known-issues
+   (opis PR, bot), smoke ich nie sprawdza. "Otwarte" = poza sekcja "## Zamkniete"; gdy sekcji nie ma — pomin wpisy,
    ktore same lub pozniejsza faza oznaczaja jako ZAMKNIETY/naprawione. Z OBU zrodel bierz WYLACZNIE wpisy
    opisujace zachowanie na ekranie/w przegladarce lub flow do recznego przejscia; notatki srodowiskowe, dane
    testowe i pulapki narzedziowe pomin.

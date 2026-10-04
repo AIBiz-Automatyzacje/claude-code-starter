@@ -27,7 +27,7 @@ Datę do plików bierz z `date +%F`.
    1. niezaznaczone checkboxy z `## Operator checklist faza N` w `*-zadania.md` (wszystkie fazy),
    2. scenariusze `[Manual]` z `*-zadania.md` i z planu technicznego (ścieżka w `Plan techniczny:`),
    3. findingi typu OPERATOR z `review-faza-*.md` (poza fix: natywne okna przeglądarki, fizyczne urządzenie, warunki środowiskowe),
-   4. otwarte wpisy z `docs/active/$ARGUMENTS/known-issues.md` (jeśli istnieje) oraz otwarte P3 z `## Do poprawy po review fazy N`. „Otwarte" = poza sekcją `## Zamkniete`; gdy sekcji nie ma, pomiń wpisy, które same lub późniejsza faza oznaczają jako ZAMKNIĘTY/naprawione/zweryfikowane — ale jeśli zamknięto tylko bloker, a sama weryfikacja (np. przebieg E2E w przeglądarce) pozostała, wpisz ją jako checkbox do wykonania, nie jako „znany problem". Z obu źródeł bierz **wyłącznie** wpisy opisujące zachowanie na ekranie/urządzeniu lub flow do ręcznego przejścia; notatki środowiskowe (`.env.local`, projekt Supabase, restart dev servera), dane testowe i pułapki narzędziowe pomiń,
+   4. otwarte wpisy z `docs/active/$ARGUMENTS/known-issues.md` (jeśli istnieje) oraz otwarte `[P1]`/`[P2]` z `## Do poprawy po review fazy N`. Sekcje `## P3 faza N` w known-issues pomiń — nity zostają w known-issues (opis PR, bot), smoke ich nie sprawdza. „Otwarte" = poza sekcją `## Zamkniete`; gdy sekcji nie ma, pomiń wpisy, które same lub późniejsza faza oznaczają jako ZAMKNIĘTY/naprawione/zweryfikowane — ale jeśli zamknięto tylko bloker, a sama weryfikacja (np. przebieg E2E w przeglądarce) pozostała, wpisz ją jako checkbox do wykonania, nie jako „znany problem". Z obu źródeł bierz **wyłącznie** wpisy opisujące zachowanie na ekranie/urządzeniu lub flow do ręcznego przejścia; notatki środowiskowe (`.env.local`, projekt Supabase, restart dev servera), dane testowe i pułapki narzędziowe pomiń,
    5. **czerwona flaga:** niezaznaczone `[E2E]` (`grep -nE '^- \[ \].*\[E2E\]' docs/active/$ARGUMENTS/*-zadania.md | grep -vE 'Operator:|\[P[123]\]'` — ten sam grep co completion-gate autopilota; kopie `Operator:` w Operator checklist i pozycje findingów `[P1]/[P2]/[P3]` w „Do poprawy" nie są scenariuszami; brak trafień = exit 1, to nie błąd). Rozdziel: linie z suffixem `(FAIL:` → sekcja `## ⚠️ E2E przebiegło i padło (znany defekt)` z odesłaniem do known-issues (**nie** radź zmiany na `[Manual]` — ukryłaby znany defekt); pozostałe → `## ⚠️ E2E nieuruchomione`. Obie sekcje na początku dokumentu.
 
    **Hierarchia stanu i dedup** (źródła się nakładają — scribe review kopiuje każdy finding OPERATOR do `## Operator checklist faza N`, a `[Manual]` z IU też tam ląduje):
@@ -82,7 +82,7 @@ Datę do plików bierz z `date +%F`.
    ## 2. …
 
    ## Znane problemy (nie blokują, sprawdź czy nadal występują)
-   - <z known-issues / P3 widocznych dla użytkownika>
+   - <z known-issues (bez sekcji `## P3 faza N`) / otwartych P1/P2 widocznych dla użytkownika>
 
    ## Jak kontynuować w nowej sesji
    Skopiuj jako pierwszą wiadomość:
