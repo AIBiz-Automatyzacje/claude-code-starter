@@ -1048,7 +1048,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (d) **Telemetria:** skrypt dossier zwraca `ctxZnaki` (pole w `KONTEKST` i `DOSSIER`); `faza.dossier_zn` z `dossier:zapas`, inaczej z domknięcia;
     `review_rundy` = różne grupy harnessu `▸ dev-docs-review-wf…` w fazie (pole `grupa`); `role.mjs`: wchodzi `dossier:zapas` (etykieta i początek
     promptu), wychodzą `kontekst:diff` i `zwin-do-poprawy`. Zmiany kontraktu w `faza.test.mjs` nazwane w commicie. `WERSJA_REKORDU` bez zmian.
-    (e) **Smoke** (kopie `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P7-oferty-online` i `_smoke-P7b-oferty-online` — do usunięcia za zgodą):
+    (e) **Smoke** (kopie `/Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P7-oferty-online` i `_smoke-P7b-oferty-online` — USUNIĘTE 2026-10-04 za zgodą operatora, transkrypty zostają w `~/.claude/projects/`):
     baza kopii czerwona na zastanych testach oryginału → w obu kopiach commit środowiska (`5798e89`, `44b70c0`): `vi.setSystemTime(NOW)` w
     `apps/server/src/mcp/tools/opublikuj-oferte.test.ts` (`EXPIRES_AT` minęło 2026-09-30) i `TIME_LIMIT_MS` 200 → 1000 w `markup-scan.test.ts`
     (strażnik czasu pod obciążeniem `pnpm -r`, 208–271 ms; za zgodą operatora). **A `wf_17eac746-574`:** OK, CZYSTE, 3,49 M (−10% vs R-P6), 28 agentów
@@ -1499,7 +1499,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   zapas — lista w pkt 54 a), zwijanie „Do poprawy” w fixie, baza fazy w stanie → `args.baza` review, telemetria `dossier_zn` / `review_rundy` / role;
   431/431 testów. Smoke A `wf_17eac746-574` = nowa referencja R-P7 (3,49 M), wznowienie `wf_56ef0a6d-2d7` → `wf_c3f62710-562` zielone. Merge do main
   `b0e961a`. **Następny krok: „P8 — PĘTLA FIX, SESJA 1” niżej** (nowa sesja — N2). Otwarte u operatora: push szablonu; oryginał oferty-online
-  czerwony na main (data w teście MCP, strażnik czasu); token Airtable; zgoda na usunięcie kopii `_smoke-P7-oferty-online` i `_smoke-P7b-oferty-online`.
+  czerwony na main (data w teście MCP, strażnik czasu); token Airtable. Kopie smoke'a P7 usunięte 2026-10-04 za zgodą operatora.
 
 **P8 — PĘTLA FIX, SESJA 1 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
