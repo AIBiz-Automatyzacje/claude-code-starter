@@ -16,7 +16,7 @@ import assert from 'node:assert/strict'
 import { MAKS_POLECEN, liczbaPolecen, naruszeniaWarstwy } from '../../scripts/doctor/warstwa-stala.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
-const ROLE_Z_WARSTWA = ['correctness-reviewer', 'spec-compliance-reviewer']
+const ROLE_Z_WARSTWA = ['correctness-reviewer', 'spec-compliance-reviewer', 'test-coverage-reviewer']
 
 /**
  * @param {string} cialo

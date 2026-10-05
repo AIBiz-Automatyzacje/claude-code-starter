@@ -68,43 +68,6 @@ wiec nit bez wykonalnej tresci zostaje martwym wpisem. P3 zglaszasz wtedy, gdy T
 Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE niz zero.
 === KONIEC BLOKU LIMITU P3 ===`
 
-// Doklejany do test-coverage (spec-compliance ma te procedure jako liste w pliku roli). Powod (run feedback-marcin-poprawki, 2026-08-06,
-// repo mobile — klasa bledu w pelni przenosna): `price_pln` to koszt CALEGO turnieju, ale trzy miejsca
-// w kodzie czytaly go jako kwote OD GRACZA — rejestr wplat pokazywal "zebrano 640 zl z 1280 zl"
-// zamiast 80 z 160 (8x zawyzenie), a jeden ekran jednoczesnie "5,00 zl za osobe" i "40 zl od gracza".
-// Unit testy byly ZIELONE, bo fixture'y powielaly to samo bledne zalozenie; zaden z 8 reviewerow tego
-// nie zglosil, bo kod jest wewnetrznie spojny. Wylapal to dopiero E2E na realnych danych — najdrozsza
-// mozliwa sciezka.
-const BLOK_SEMANTYKA = `
-=== SEMANTYKA I JEDNOSTKI POL (obowiazkowe, gdy faza tyka danych liczbowych/czasowych) ===
-Kod wewnetrznie spojny moze byc jednolicie BLEDNY: jesli fixture i implementacja przyjmuja to samo zle
-zalozenie o znaczeniu pola, testy przechodza, a produkt liczy zle.
-
-PROCEDURA (wykonaj ja, nie streszczaj):
-1. Wypisz pola liczbowe/czasowe dotkniete faza i dla KAZDEGO uruchom
-   \`grep -rn "<nazwa_pola>" --include=*.ts --include=*.tsx --include=*.sql .\` — masz zobaczyc WSZYSTKIE
-   uzycia, takze te spoza diffu. Bez tego kroku "sprawdz kazde uzycie" jest deklaracja, nie weryfikacja.
-2. Ustal znaczenie U ZRODLA, w tej kolejnosci: komentarz/CHECK w migracji SQL -> spec albo IU w docs/plans/
-   -> requirements doc. Gdy WSZYSTKIE trzy milcza (typowo goly \`numeric\` bez komentarza), NIE zgaduj
-   z nazwy zmiennej — nazwa typu \`price\` nie mowi, czy to kwota za calosc, czy za osobe. Zglos wtedy P2:
-   "pole <X> nie ma zdefiniowanej semantyki w zadnym zrodle prawdy" + wskaz uzycia, ktore sie rozjezdzaja.
-3. Gdy srodowisko E2E jest aktywne (istnieje .env.e2e): odczytaj JEDEN realny wiersz z bazy e2e i porownaj
-   RZAD WIELKOSCI z wartoscia, ktora apka pokazuje uzytkownikowi. Rozjazd 8x widac natychmiast, a zaden
-   przeglad kodu nie daje takiej pewnosci jak realna liczba.
-
-Co sprawdzasz w kazdym uzyciu:
-- kwoty: calosc vs per-osoba vs per-jednostke; grosze vs zlote; brutto vs netto,
-- czas: sekundy vs milisekundy; UTC vs lokalny; timestamp vs data,
-- indeksy i skale: miesiac 0- vs 1-based; procenty jako 0..1 vs 0..100; licznik vs suma,
-- liczebnosci: liczba graczy vs liczba druzyn vs liczba miejsc.
-Rozjazd miedzy dwoma uzyciami TEGO SAMEGO pola = P1 (KOD), nawet gdy testy sa zielone — zwlaszcza gdy
-testy sa zielone, bo to znaczy, ze fixture tez jest skazony. Podaj oba miejsca i zrodlo prawdy.
-Sygnal alarmowy: dwa rozne teksty w UI opisujace te sama wartosc ("za osobe" i "od gracza" obok siebie).
-UWAGA: gdy WSZYSTKIE uzycia czytaja pole jednakowo zle, porownanie uzyc miedzy soba niczego nie pokaze —
-wtedy zdradzaja je dopiero sprzeczne teksty w UI i realna liczba z bazy. Jednomyslnosc kodu nie jest
-dowodem poprawnosci.
-=== KONIEC BLOKU SEMANTYKI ===`
-
 // Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec agregat i tak
 // dochodzil do 20-24 P3 na faze (run feedback-marcin-poprawki: 90 P3 na 5 faz). Od P8 P3 nie ida do fixa, wiec 15
 // to sufit raportu i known-issues; strojenie po telemetrii (przebieg.p3Odrzucone mowi, ile ucielismy).
@@ -368,8 +331,8 @@ const REVIEWERZY = [
   { key: 'correctness', agentType: 'correctness-reviewer', fokus: 'poprawnosc wykonania zmienionych sciezek wg list z pliku Twojej roli' },
   // Polecenia-listy osi (wymagania <-> implementacja, teksty, dokument prawny, semantyka pol) siedza w pliku roli.
   { key: 'spec-compliance', agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji z zamowieniem fazy wg list z pliku Twojej roli' },
-  // test-coverage ma wlasny prompt (testCoveragePrompt); wpis tu daje mu ten sam routing co pozostalym osiom.
-  { key: 'test-coverage', agentType: 'test-coverage-reviewer' },
+  // Polecenia-listy osi (mutanty z dossier, pytanie „undefined”, 5 ksztaltow testu, semantyka pol w fixture'ach) siedza w pliku roli.
+  { key: 'test-coverage', agentType: 'test-coverage-reviewer', fokus: 'testy fazy wg list z pliku Twojej roli' },
 ]
 
 // Blok doklejany w trybie re-review (po cyklu fix) — targetowana weryfikacja zamiast pelnego re-skanu.
@@ -450,23 +413,15 @@ Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako fi
 Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.`
 }
 
-function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst) {
-  return `Jestes reviewerem fazy ${faza} w folderze ${sciezka}.
+// Polecenie reviewera osi (wszystkie osie). Mandat, procedura, wagi i kryterium konca sa w pliku roli (agentType);
+// polecenie podaje zrodla faktow, schemat wyniku i bloki wspolne. `dodatki` = blok tylko tej osi (test-coverage
+// uruchamia testy, wiec dostaje blok dlugich komend). Osie bez list w pliku roli (security, performance) niosa fokus tematow.
+function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = '') {
+  return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
-Skup sie na: ${fokus}.
-Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
-Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
-${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
-}
-
-function testCoveragePrompt(sciezka, faza, poprzednie, kontekst) {
-  return `Jestes testerem scenariuszy/coverage dla fazy ${faza} w ${sciezka}.
-${zrodlaBlok(faza, kontekst)}
-Sprawdz: happy path, invalid inputs, boundary conditions, concurrent operations, scale.
-Test coverage: czy plan techniczny definiowal scenariusze testowe dla tej fazy (sekcja "Plan techniczny"
-dossier, a bez dossier — docs/plans/) i czy pliki testowe istnieja oraz maja asercje? Brakujace testy = P2 (typ TEST).
-Zwroc {findings:[...]} (severity P1/P2/P3, typ KOD/TEST/E2E/OPERATOR). Nie zapisuj plikow.
-${BLOK_DLUGIE_KOMENDY}${BLOK_SEMANTYKA}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+Kazdy finding dostaje wage P1 (blokuje), P2 (wazny) albo P3 (nit) i typ KOD, TEST, E2E albo OPERATOR.
+Wynik to obiekt {findings:[...]} zgodny ze schematem; pliki projektu zostaja bez zmian.
+${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 // Blok trybu `bez-przegladarki` — doklejany, gdy orkiestrator zglosil, ze srodowiska E2E NIE MA.
@@ -888,7 +843,7 @@ log(kontekst && kontekst.ctxZapisany
 // Jedna linia opcji na tier: test D6 (wywolania-agentow.test.mjs) czyta efort z linii opcji, a etykieta
 // `review:${r.key}` nie mowi, ktora to os.
 function wywolajOs(r) {
-  if (r.key === 'test-coverage') return agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.testCoverage))
+  if (r.key === 'test-coverage') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzTest, kontekst, BLOK_DLUGIE_KOMENDY), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.testCoverage))
   if (r.key === 'spec-compliance') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: 'spec-compliance-reviewer', label: 'review:spec-compliance', phase: 'Review' }, tiery.spec))
   return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 }
