@@ -62,3 +62,24 @@ test('profil bez supabase/ i bez tsconfig; monorepo z pnpm-workspace.yaml; brak 
     rmSync(pusty, { recursive: true, force: true })
   }
 })
+
+// Komendy-listy reviewerow per technologia maja warunek w profilu stacku (PLAN-POPRAWY P11). W monorepo framework siedzi
+// w package.json pakietu (apps/web), nie w korzeniu — bez tych linii warunki „React w profilu” bylyby falszywe.
+test('profil monorepo: znane paczki kazdego pakietu workspace z katalogow apps/ i packages/; pakiet bez znanych pominiety', () => {
+  const katalog = projekt({
+    'package.json': JSON.stringify({ devDependencies: { typescript: '5.9.3' } }),
+    'pnpm-workspace.yaml': 'packages:\n  - apps/*\n  - packages/*\n',
+    'apps/web/package.json': JSON.stringify({ dependencies: { react: '19.2.0' }, devDependencies: { vite: '7.0.0', 'babel-plugin-react-compiler': '1.0.0' } }),
+    'apps/api/package.json': JSON.stringify({ dependencies: { hono: '4.9.0', zod: '4.4.3' } }),
+    'packages/narzedzia/package.json': JSON.stringify({ dependencies: { 'left-pad': '1.0.0' } }),
+  })
+  try {
+    const profil = profilStacku(katalog)
+    assert.match(profil, /^- Paczki: typescript 5\.9\.3$/m)
+    assert.match(profil, /^- Paczki apps\/api: hono 4\.9\.0, zod 4\.4\.3$/m)
+    assert.match(profil, /^- Paczki apps\/web: react 19\.2\.0, vite 7\.0\.0, babel-plugin-react-compiler 1\.0\.0$/m)
+    assert.doesNotMatch(profil, /packages\/narzedzia/)
+  } finally {
+    rmSync(katalog, { recursive: true, force: true })
+  }
+})

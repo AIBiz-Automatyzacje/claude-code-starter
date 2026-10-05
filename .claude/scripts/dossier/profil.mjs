@@ -5,8 +5,9 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 // Paczki, ktore zmieniaja to, czego reviewer szuka (framework, dane, walidacja, testy, typy). Kolejnosc = kolejnosc w profilu.
+// Pozycje list reviewerow per technologia maja warunek na tej liscie (np. React Compiler zmienia, czy brak memoizacji to finding).
 const ZNANE_PACZKI = [
-  'react', 'next', 'vite', 'expo', 'react-native', 'vue', 'svelte', '@sveltejs/kit', 'astro',
+  'react', 'next', 'vite', 'expo', 'react-native', 'vue', 'svelte', '@sveltejs/kit', 'astro', 'babel-plugin-react-compiler',
   'express', 'fastify', 'hono', '@supabase/supabase-js', 'prisma', 'drizzle-orm', 'zod', '@tanstack/react-query',
   'tailwindcss', 'vitest', 'jest', '@playwright/test', 'typescript', 'eslint',
 ]
@@ -17,21 +18,45 @@ function wpisy(katalog) {
   return existsSync(katalog) ? readdirSync(katalog) : []
 }
 
-/** @param {string} projekt @returns {string} */
-function paczki(projekt) {
-  const plik = join(projekt, 'package.json')
-  if (!existsSync(plik)) return 'Paczki: brak package.json'
+/**
+ * @param {string} plik package.json
+ * @returns {string[] | string} znane paczki z wersja albo powod, ze pliku nie da sie odczytac
+ */
+function znanePaczki(plik) {
   /** @type {{ dependencies?: Record<string, string>, devDependencies?: Record<string, string> }} */
   let pkg
   try {
     pkg = JSON.parse(readFileSync(plik, 'utf8'))
   } catch (e) {
     if (!(e instanceof SyntaxError)) throw e
-    return `Paczki: package.json nie parsuje sie (${e.message})`
+    return `package.json nie parsuje sie (${e.message})`
   }
   const wersje = { ...pkg.devDependencies, ...pkg.dependencies }
-  const znalezione = ZNANE_PACZKI.filter((p) => p in wersje).map((p) => `${p} ${wersje[p]}`)
+  return ZNANE_PACZKI.filter((p) => p in wersje).map((p) => `${p} ${wersje[p]}`)
+}
+
+/** @param {string} projekt @returns {string} */
+function paczki(projekt) {
+  const plik = join(projekt, 'package.json')
+  if (!existsSync(plik)) return 'Paczki: brak package.json'
+  const znalezione = znanePaczki(plik)
+  if (typeof znalezione === 'string') return `Paczki: ${znalezione}`
   return `Paczki: ${znalezione.join(', ') || 'zadna ze znanych (framework, dane, testy)'}`
+}
+
+/**
+ * W monorepo framework siedzi w package.json pakietu, nie w korzeniu. Pakiet bez znanych paczek nie dostaje linii.
+ * @param {string} projekt
+ * @returns {string[]}
+ */
+function paczkiPakietow(projekt) {
+  return KATALOGI_MONOREPO.flatMap((k) => wpisy(join(projekt, k)).sort().map((n) => `${k}/${n}`))
+    .filter((pakiet) => existsSync(join(projekt, pakiet, 'package.json')))
+    .flatMap((pakiet) => {
+      const znalezione = znanePaczki(join(projekt, pakiet, 'package.json'))
+      if (typeof znalezione === 'string') return [`Paczki ${pakiet}: ${znalezione}`]
+      return znalezione.length ? [`Paczki ${pakiet}: ${znalezione.join(', ')}`] : []
+    })
 }
 
 /** @param {string} projekt @returns {string} */
@@ -55,5 +80,5 @@ function uklad(projekt) {
  */
 export function profilStacku(projekt) {
   const typescript = existsSync(join(projekt, 'tsconfig.json')) ? 'TypeScript: tsconfig.json' : 'TypeScript: brak tsconfig.json'
-  return [paczki(projekt), supabase(projekt), typescript, uklad(projekt)].map((l) => `- ${l}`).join('\n')
+  return [paczki(projekt), ...paczkiPakietow(projekt), supabase(projekt), typescript, uklad(projekt)].map((l) => `- ${l}`).join('\n')
 }

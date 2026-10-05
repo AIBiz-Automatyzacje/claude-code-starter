@@ -365,7 +365,7 @@ Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczys
     ? `
 === DOSSIER FAZY (juz przygotowane) ===
 Plik: ${kontekst.ctxPlik}
-Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip,
+Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip, advisors,
 przezyte mutanty), sekcje planu technicznego TEJ fazy, przywolane wiersze "Sledzenie wymagan",
 wycinek wiedzy projektu dla plikow fazy, zadania fazy i kontekst designerski.
 ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,

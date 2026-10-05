@@ -1,4 +1,4 @@
-// Bloki z wyniku bramek domkniecia w dossier: ostrzezenia ESLint (code-quality), knip (martwy kod), przezyte mutanty
+// Bloki z wyniku bramek domkniecia w dossier: ostrzezenia ESLint (code-quality), knip (martwy kod), ostrzezenia advisors (security), przezyte mutanty
 // (test-coverage). Zrodlo = plik z OSTATNIEGO przebiegu bramek (domkniecie nadpisuje go po naprawie — HANDOFF 6a pkt 52 e).
 
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -74,5 +74,23 @@ test('blokBramek: brak pliku albo zly JSON = jedna linia z powodem, bez blokow',
     assert.match(blokBramek(plik), /^Brak wyniku bramek: plik .* nie jest JSON-em/)
   } finally {
     sprzataj()
+  }
+})
+
+// Advisors (lint bazy Supabase) jako wejscie security (PLAN-POPRAWY P11): ERROR zatrzymuje domkniecie, WARN przechodzi —
+// bez tej listy security, ktore przy statusie ok pomija RLS i search_path, nie zobaczyloby ostrzezen wcale.
+test('blokBramek: ostrzezenia advisors (WARN) jako wejscie security; bez ostrzezen = "brak"', () => {
+  const warn = { plik: null, linia: null, regula: 'advisors/function_search_path_mutable', opis: 'Function Search Path Mutable: public.licz' }
+  const { plik, sprzataj } = plikWyniku({ ...WYNIK, advisors: { status: 'ok', sekundy: 1.4, trafienia: [], ostrzezenia: [warn] } })
+  try {
+    assert.match(blokBramek(plik), /### Ostrzezenia advisors[^\n]*wejscie security\n- \? advisors\/function_search_path_mutable — Function Search Path Mutable: public\.licz/)
+  } finally {
+    sprzataj()
+  }
+  const bez = plikWyniku(WYNIK)
+  try {
+    assert.match(blokBramek(bez.plik), /### Ostrzezenia advisors[^\n]*\n- brak\n/)
+  } finally {
+    bez.sprzataj()
   }
 })
