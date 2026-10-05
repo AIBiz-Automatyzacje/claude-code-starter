@@ -21,6 +21,7 @@ import { klasaRoli, klasyfikujPoPrompcie, rola } from './role.mjs'
  * @property {WynikJournala | null} journal
  * @property {AnalizaTranskryptu} analiza
  * @property {number | null} faza
+ * @property {number | null} instrukcjeStale pozycje bloku `## Polecenia` pliku roli (zrodla.mjs)
  */
 
 /** @param {unknown} x @returns {Array<Record<string, unknown>>} */
@@ -110,8 +111,7 @@ export function rekordAgenta(we) {
     weryfikowane: sceptyk ? sceptyk.weryfikowane : null,
     obalone: sceptyk ? sceptyk.obalone : null,
     werdykty: sceptyk ? sceptyk.etykiety : null,
-    // Test budzetu instrukcji (It. 9) — klucz juz teraz, wartosc pozniej.
-    instrukcje_stale: null,
+    instrukcje_stale: we.instrukcjeStale,
   }
 }
 

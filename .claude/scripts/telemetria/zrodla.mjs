@@ -6,6 +6,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
+import { liczbaPolecen } from '../doctor/warstwa-stala.mjs'
 import { rekordAgenta } from './agent.mjs'
 import { agenciHarnessu, fazyAgentow } from './harness.mjs'
 import { analizujTranskrypt } from './transkrypt.mjs'
@@ -110,6 +111,21 @@ export function katalogProjektu(run) {
 }
 
 /**
+ * Liczba instrukcji warstwy stalej roli: pozycje bloku `## Polecenia` pliku agenta w projekcie runu (ten sam licznik co
+ * test szablonu i doctor). Plik czytany w chwili skanu — hook Stop skanuje zaraz po sesji, wiec to zwykle wersja z runu.
+ * @param {string | null} repo katalog projektu runu
+ * @param {string | null} agentType
+ * @returns {number | null} null = brak projektu, typu, pliku albo bloku polecen
+ */
+export function instrukcjeStale(repo, agentType) {
+  if (!repo || !agentType) return null
+  const plik = join(repo, '.claude', 'agents', `${agentType}.md`)
+  if (!existsSync(plik)) return null
+  const polecen = liczbaPolecen(readFileSync(plik, 'utf8'))
+  return polecen > 0 ? polecen : null
+}
+
+/**
  * Rekordy `agent` jednego runu — po jednym na transkrypt (takze wczesniejsze proby spoza workflowProgress).
  * @param {Run} run
  * @returns {Array<import('./agent.mjs').RekordAgenta>}
@@ -121,14 +137,17 @@ export function agenciRunu(run) {
   const fazy = fazyAgentow(postep)
   const journal = czytajJournal(run.katalogRunu)
   const pliki = readdirSync(run.katalogRunu).filter((n) => n.startsWith('agent-') && n.endsWith('.jsonl'))
+  const repo = katalogProjektu(run)
   return pliki.map((plik) => {
     const id = plik.slice('agent-'.length, -'.jsonl'.length)
     const plikMeta = join(run.katalogRunu, `agent-${id}.meta.json`)
     const meta = existsSync(plikMeta) ? JSON.parse(readFileSync(plikMeta, 'utf8')) : {}
+    const harness = wpisyHarnessu.get(id) ?? null
     return rekordAgenta({
       id,
       meta,
-      harness: wpisyHarnessu.get(id) ?? null,
+      harness,
+      instrukcjeStale: instrukcjeStale(repo, harness?.agentType ?? meta.agentType ?? null),
       journal: journal.get(id) ?? null,
       analiza: analizujTranskrypt(czytajJsonl(join(run.katalogRunu, plik)).wpisy),
       faza: fazy.get(id) ?? null,

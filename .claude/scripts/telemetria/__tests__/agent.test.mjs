@@ -55,6 +55,7 @@ const zbuduj = (nadpisz) =>
     journal: { rozpoczety: true, maWynik: true, wynik: { findings: [{ severity: 'P1' }, { severity: 'P2' }, { severity: 'P2' }, { severity: 'P3' }] } },
     analiza: analizujTranskrypt(TRANSKRYPT),
     faza: 1,
+    instrukcjeStale: null,
     ...nadpisz,
   })
 
@@ -142,8 +143,10 @@ test('stary run bez etykiety: rola z promptu', () => {
   assert.equal(r.rola, 'review:?')
 })
 
-test('pola z producentem w pozniejszych iteracjach istnieja jako null', () => {
-  const r = zbuduj({})
-  const pola = new Map(Object.entries(r))
-  for (const pole of ['instrukcje_stale']) assert.ok(pola.has(pole) && pola.get(pole) === null, pole)
+// Zmiana kontraktu (P11): instrukcje_stale ma producenta (liczba polecen pliku roli z zrodla.mjs) — rekord przenosi
+// wartosc z wejscia, a null zostaje dla agenta bez pliku roli z blokiem polecen.
+test('instrukcje_stale: liczba polecen z wejscia; null bez pliku roli z blokiem', () => {
+  assert.equal(zbuduj({ instrukcjeStale: 32 }).instrukcje_stale, 32)
+  const pola = new Map(Object.entries(zbuduj({})))
+  assert.ok(pola.has('instrukcje_stale') && pola.get('instrukcje_stale') === null)
 })
