@@ -317,7 +317,8 @@ const ZAPAS_DOSSIER = {
 // i code-simplicity usuniete w P11 po przeniesieniu tresci (async i usuniecia -> correctness, sygnaly wydzielenia
 // i YAGNI -> code-quality). Cofniecie osi = przywrocenie pliku roli z main sprzed P11 (PLAN-POPRAWY P11).
 const REVIEWERZY = [
-  { key: 'security', agentType: 'security-sentinel', fokus: 'auth, RLS policies, XSS, data exposure, Zod validation, API key exposure' },
+  // Polecenia-listy osi (bramki i proby obejscia, walidacja, auth, RLS warunkowo po advisors, sekrety, seedy) siedza w pliku roli.
+  { key: 'security', agentType: 'security-sentinel', fokus: 'bezpieczenstwo zmienionego kodu wg list z pliku Twojej roli' },
   { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, useEffect cleanup' },
   // Polecenia-listy osi (granice, YAGNI, typy, lint i knip z dossier, duplikaty stalych i kontraktow) siedza w pliku roli.
   { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu wg list z pliku Twojej roli' },
@@ -409,7 +410,7 @@ Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycine
 
 // Polecenie reviewera osi (wszystkie osie). Mandat, procedura, wagi i kryterium konca sa w pliku roli (agentType);
 // polecenie podaje zrodla faktow, schemat wyniku i bloki wspolne. `dodatki` = blok tylko tej osi (test-coverage
-// uruchamia testy, wiec dostaje blok dlugich komend). Osie bez list w pliku roli (security, performance) niosa fokus tematow.
+// uruchamia testy, wiec dostaje blok dlugich komend). Os bez list w pliku roli (performance) niesie fokus tematow.
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = '') {
   return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
