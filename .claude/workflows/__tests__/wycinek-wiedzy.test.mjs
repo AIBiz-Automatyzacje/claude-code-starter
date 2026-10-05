@@ -15,6 +15,8 @@ import assert from 'node:assert/strict'
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const zrodloExecute = readFileSync(resolve(KATALOG, '../dev-docs-execute-wf.js'), 'utf8')
 const zrodloReview = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
+const zrodloAutopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
+const zrodloPr = readFileSync(resolve(KATALOG, '../dev-pr-wf.js'), 'utf8')
 
 /** @param {string} zrodlo @param {string} kotwica @param {string} koniec @returns {string} */
 function wytnij(zrodlo, kotwica, koniec) {
@@ -31,6 +33,12 @@ const plannerPrompt = new Function(`${wytnij(zrodloExecute, 'function plannerPro
 /** @type {(faza: number, kontekst: unknown) => string} */
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const zrodlaBlok = new Function(`${wytnij(zrodloReview, 'function zrodlaBlok(', '\n}')}\nreturn zrodlaBlok`)()
+
+/** @type {(sciezka: string, faza: number, findingi: unknown[]) => string} */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
+const fixPrompt = new Function('BLOK_DLUGIE_KOMENDY', `${wytnij(zrodloAutopilot, 'function blokZwinieciaDoPoprawy(', '\n}')}
+${wytnij(zrodloAutopilot, 'function fixPrompt(', '\n}')}
+return fixPrompt`)('')
 
 const planner = plannerPrompt('docs/active/x', 2)
 
@@ -54,4 +62,16 @@ test('buildery (z wariantami -figma): bez kroku czytania pliku regul — reguly 
     const plik = readFileSync(resolve(KATALOG, `../../agents/feature-builder-${nazwa}.md`), 'utf8')
     assert.doesNotMatch(plik, /learned-patterns|### 1\.7\. Wyuczone reguły/, `feature-builder-${nazwa}`)
   }
+})
+
+test('fix autopilota: wycinek wiedzy po plikach z findingow — poprawka nie lamie reguly, ktora znal builder (6a pkt 60 g2)', () => {
+  const p = fixPrompt('docs/active/x', 2, [{ severity: 'P2', typ: 'KOD', plik: 'src/a.ts:10', opis: 'defekt' }])
+  assert.match(p, /`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki <pliki z pola plik findingow, bez :linia, po przecinku>`/)
+  assert.match(p, /reguly z poprzednich zadan tego projektu, ktore builder dostal w prompcie/)
+})
+
+test('tura poprawek /dev-pr: wycinek wiedzy po plikach z watkow do naprawy, z blizniaczymi miejscami (6a pkt 60 g2)', () => {
+  const napraw = wytnij(zrodloPr, "if (etap === 'napraw') {", '// ── Etap: merge')
+  assert.match(napraw, /\\`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i blizniacze miejsca z napraw-szerzej, bez :linia, po przecinku>\\`/)
+  assert.ok(napraw.indexOf('wiedza.mjs wycinek') < napraw.indexOf('1. NAPRAWA'), 'reguly przed naprawa, nie po niej')
 })

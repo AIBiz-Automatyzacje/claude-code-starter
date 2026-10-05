@@ -662,6 +662,9 @@ KOLEJNOSC PRACY (lista zawiera P1 i P2; P3 z tej fazy sa w ${sciezka}/known-issu
 
 MIEJSCE ZMIAN: zmieniasz kod wskazany przez findingi i testy do nich. Zmiana w pliku, ktorego nie wskazuje zaden
 finding, wraca do cofniecia — kontrola fixa porownuje pliki commitow z lista findingow (K-7); pliki w ${sciezka}/ to ksiegowosc.
+REGULY PROJEKTU dla poprawianych plikow, przed naprawa: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z pola plik findingow, bez :linia, po przecinku>\`
+(pole tresc; pusta — brak regul dla tych plikow). To reguly z poprzednich zadan tego projektu, ktore builder dostal w prompcie;
+poprawka lamiaca ktorakolwiek z nich to nowy defekt w miejscu, ktorego po fixie nie przeglada zaden reviewer.
 NAPRAWA P1: najpierw test, ktory odtwarza defekt i pada na obecnym kodzie, potem poprawka. Kontrola fixa uruchamia
 ten test na kodzie sprzed poprawki (K-6); test zielony przed poprawka albo jego brak wraca do tury poprawek.
 

@@ -371,7 +371,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 Trzy poziomy: **solution** w `docs/solutions/` z polami wiedzy we frontmatterze (`klasa`, `regula`, `paths`, `waga`, `szczebel`,
 `szczebel_powod`, `zrodlo`, `ucieczki`) → **indeks** `docs/learned-patterns.md` (jeden wiersz na regułę, generuje go
 `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz`) → **wycinek** do 2000 zn dla plików jednostki albo fazy (planner wkleja
-go builderowi, dossier niesie go reviewerom). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
+go builderowi, dossier niesie go reviewerom, fix autopilota i tura poprawek `/dev-pr` liczą go dla poprawianych plików). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
 
 - **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
   Do indeksu idzie tylko `regula`; `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja.
