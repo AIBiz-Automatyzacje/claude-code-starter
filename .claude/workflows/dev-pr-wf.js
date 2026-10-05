@@ -767,7 +767,7 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    NIE PIERWSZY RAZ — porownaj z wpisami w docs/solutions/ i z indeksem docs/learned-patterns.md. Dla klasy, ktora
    pojawia sie po raz DRUGI albo kolejny, zaproponuj regule do KONKRETNEGO agenta-reviewera
    (.claude/agents/<nazwa>.md), np. brakujacy naglowek bezpieczenstwa -> security-sentinel,
-   brak limitu czasu w kliencie HTTP -> architecture-strategist, rozjazd z wymaganiem -> spec-compliance-reviewer.
+   brak limitu czasu w kliencie HTTP -> correctness-reviewer, rozjazd z wymaganiem -> spec-compliance-reviewer.
    **NIE EDYTUJ plikow agentow.** To sa PROPOZYCJE do raportu — wdrozenie jest decyzja operatora,
    bo zmiana promptu reviewera dotyka kazdej przyszlej fazy kazdego zadania.
 4. Gdy propozycje sa niepuste, dopisz na koncu docs/reviews/propozycje-do-reviewerow.md sekcje

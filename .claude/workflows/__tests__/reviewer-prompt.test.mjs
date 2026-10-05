@@ -5,12 +5,16 @@
 // Uruchomienie:  node --test .claude/workflows/__tests__/reviewer-prompt.test.mjs
 
 import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-const zrodlo = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../dev-docs-review-wf.js'), 'utf8')
+import { liczbaPolecen } from '../../scripts/doctor/warstwa-stala.mjs'
+
+const KATALOG = dirname(fileURLToPath(import.meta.url))
+const AGENCI = resolve(KATALOG, '../../agents')
+const zrodlo = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
 
 /** @param {string} kotwica @param {string} koniec @returns {string} */
 function wytnij(kotwica, koniec) {
@@ -54,4 +58,19 @@ test('reviewerPrompt: bez tozsamosci "Jestes" (mandat jest w pliku roli)', () =>
 test('wiring: test-coverage przez reviewerPrompt z blokiem dlugich komend; osobnego polecenia i bloku semantyki brak', () => {
   assert.match(zrodlo, /r\.key === 'test-coverage'\) return agent\(reviewerPrompt\(sciezka, faza, r\.fokus, poprzTest, kontekst, BLOK_DLUGIE_KOMENDY\)/)
   assert.doesNotMatch(zrodlo, /function testCoveragePrompt|BLOK_SEMANTYKA/)
+})
+
+// Prompt osi w jednym miejscu: os, ktorej plik roli ma blok polecen, dostaje w fokusie sama nazwe osi — procedura
+// w fokusie i w pliku rozjezdza sie przy pierwszej zmianie jednego z nich.
+// eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
+const REVIEWERZY = /** @type {{ key: string, agentType: string, fokus: string }[]} */ (new Function(`${wytnij('const REVIEWERZY = [', '\n]')}\nreturn REVIEWERZY`)())
+const MAKS_FOKUSU_OSI_Z_PLIKIEM = 80
+
+test('fokus: os z blokiem polecen w pliku roli niesie w fokusie sama nazwe osi', () => {
+  const zPlikiem = REVIEWERZY.filter((r) => liczbaPolecen(readFileSync(join(AGENCI, `${r.agentType}.md`), 'utf8')) > 0)
+  assert.ok(zPlikiem.some((r) => r.key === 'code-quality'))
+  for (const r of zPlikiem) {
+    assert.match(r.fokus, /wg list z pliku Twojej roli$/, r.key)
+    assert.ok(r.fokus.length <= MAKS_FOKUSU_OSI_Z_PLIKIEM, `${r.key}: fokus ${r.fokus.length} zn.`)
+  }
 })

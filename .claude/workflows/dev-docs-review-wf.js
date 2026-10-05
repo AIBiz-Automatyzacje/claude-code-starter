@@ -312,21 +312,15 @@ const ZAPAS_DOSSIER = {
 
 // ── Reviewerzy (leaf-agenci przez agentType) ───────────────────────────────
 
-// KONSOLIDACJA 2026-09-03 (plan B12) — najbardziej ryzykowna zmiana z calej rundy.
-// `architecture`, `simplicity` i `typescript` byly trzema osobnymi wejsciami w te sama warstwe: jakosc
-// wewnetrzna kodu. Kazdy z nich czytal ten sam diff i kazdy placil za wlasne wejscie w te same pliki,
-// a ich findingi regularnie laczyl dopiero dedup semantyczny. Zwolnione miejsce oddajemy osi, ktorej
-// w zestawie NIE BYLO: POPRAWNOSCI. Osiem par oczu ogladalo strukture, typy, spec i bezpieczenstwo,
-// ale nikt nie mial wprost zadania "przesledz wykonanie zmienionych sciezek i znajdz defekt, ktory tam jest".
-//
-// WARUNEK ODWROTU (mierz przez 5 faz, zanim uznasz zmiane za dobra): `przebieg.poDedupSem` oraz liczba
-// POTWIERDZONYCH P1/P2 typu KOD. Jesli liczba potwierdzonych spadnie — rozdziel z powrotem na trzech
-// reviewerow (przywroc wpisy `architecture`/`simplicity`/`typescript` i ich warunki routingu z WARUNKI).
-// Spadek samego `poDedupSem` bez spadku potwierdzonych to sukces, nie regresja: mniej duplikatow.
+// code-quality = jeden reviewer jakosci wewnetrznej (konsolidacja B12: architecture + simplicity + typescript czytaly ten
+// sam diff i placily trzy razy za wejscie w te same pliki; zwolnione miejsce dostala os correctness). Pliki kieran
+// i code-simplicity usuniete w P11 po przeniesieniu tresci (async i usuniecia -> correctness, sygnaly wydzielenia
+// i YAGNI -> code-quality). Cofniecie osi = przywrocenie pliku roli z main sprzed P11 (PLAN-POPRAWY P11).
 const REVIEWERZY = [
   { key: 'security', agentType: 'security-sentinel', fokus: 'auth, RLS policies, XSS, data exposure, Zod validation, API key exposure' },
   { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, useEffect cleanup' },
-  { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych' },
+  // Polecenia-listy osi (granice, YAGNI, typy, lint i knip z dossier, duplikaty stalych i kontraktow) siedza w pliku roli.
+  { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu wg list z pliku Twojej roli' },
   // Procedura osi (polecenia-listy) siedzi w pliku roli correctness-reviewer.md — fokus nazywa tylko os.
   { key: 'correctness', agentType: 'correctness-reviewer', fokus: 'poprawnosc wykonania zmienionych sciezek wg list z pliku Twojej roli' },
   // Polecenia-listy osi (wymagania <-> implementacja, teksty, dokument prawny, semantyka pol) siedza w pliku roli.
