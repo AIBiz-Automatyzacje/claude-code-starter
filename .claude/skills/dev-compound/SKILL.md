@@ -206,16 +206,20 @@ pól nie zostaje w bazie.
 - `ucieczki` — ile razy ta klasa uciekła naszemu review: 0, gdy znalazło ją review fazy; co najmniej 1 dla uwagi bota na PR.
   Gdy indeks `docs/learned-patterns.md` ma już regułę tej klasy o tym samym sensie, przepisz jej treść dosłownie
   i daj `ucieczki` o 1 większe niż w tamtym solution — indeks zostawia wtedy nowszy wpis.
+- `bramka` — tylko przy szczeblu `kod` albo `lint`, gdy bramka jest już wdrożona: gdzie (np. `eslint.config.js
+  no-restricted-syntax`). Dopisuje je ten, kto wdraża bramkę, nie compound. Do tego czasu lekcja trafia do indeksu i wycinków
+  jak reguła; z polem `bramka` wypada z nich, bo pilnuje jej mechanizm.
 
 Po zapisie pliku:
 
 1. `node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>` — kod 0 = pola poprawne. Kod 1: popraw pola wg `bledy`
    i sprawdź drugi raz; gdy dalej kod 1, usuń plik i podaj błędy w podsumowaniu (odmowa zapisu).
-2. Szczebel `regula`: `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` — skrypt generuje indeks z solutions.
-   `zapisany: false` z `bledy` (koszyk „zawsze” albo rozmiar indeksu) = indeks zostaje bez zmian; podaj błędy
-   w podsumowaniu, porządkuje je `/dev-compound-refresh`. Indeksu nie edytujesz ręcznie.
-3. Szczebel `kod` albo `lint`: indeksu nie ruszasz — w podsumowaniu **Propozycja bramki** (typ albo reguła lint
-   do wdrożenia), decyzja operatora.
+2. Po każdym zapisanym solution: `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` — skrypt generuje indeks
+   z solutions (szczebel `regula` oraz `kod`/`lint` bez pola `bramka`). `zapisany: false` z `bledy` (koszyk „zawsze” albo
+   rozmiar indeksu) = indeks zostaje bez zmian; podaj błędy w podsumowaniu, porządkuje je `/dev-compound-refresh`.
+   Indeksu nie edytujesz ręcznie.
+3. Szczebel `kod` albo `lint`: w podsumowaniu także **Propozycja bramki** (typ albo reguła lint do wdrożenia),
+   decyzja operatora.
 
 ### Krok 5: Podsumowanie
 
@@ -229,8 +233,8 @@ Plik: docs/solutions/[category]/[filename].md
 Aby uzyskać bogatszą dokumentację (cross-referencje, diagnostyka, strategia zapobiegania),
 uruchom /dev-compound --full w świeżej sesji.
 
-Wiedza: szczebel [regula — indeks zapisany / bramka indeksu: błędy] albo
-Propozycja bramki: [kod|lint] [klasa] — [reguła] ([szczebel_powod])
+Wiedza: szczebel [regula|kod|lint] — [indeks zapisany / bramka indeksu: błędy]
+Propozycja bramki (kod, lint): [kod|lint] [klasa] — [reguła] ([szczebel_powod])
 [Odmowa zapisu: błędy z wiedza.mjs sprawdz]
 ```
 
@@ -354,8 +358,8 @@ Zastosuj **Krok 4.5** także w trybie full — jeśli w sesji pojawił się term
 
 ### Po zapisie: pola wiedzy
 
-Ta sama sekcja **Pola wiedzy** co w trybie Compact: pola we frontmatterze, `wiedza.mjs sprawdz`, indeks dla szczebla
-`regula`, propozycja bramki dla `kod` i `lint`.
+Ta sama sekcja **Pola wiedzy** co w trybie Compact: pola we frontmatterze, `wiedza.mjs sprawdz`, indeks po każdym
+zapisanym solution, propozycja bramki dla `kod` i `lint`.
 
 ---
 
@@ -425,7 +429,7 @@ Wyniki zadań:
 
 Plik: docs/solutions/auth-issues/2026-03-24-supabase-rls-policy-bypass.md
 
-Wiedza: [szczebel regula — indeks zapisany / bramka indeksu / Propozycja bramki: kod|lint / Odmowa zapisu]
+Wiedza: [szczebel — indeks zapisany / bramka indeksu; Propozycja bramki: kod|lint / Odmowa zapisu]
 
 Ta dokumentacja będzie wyszukiwalna jako referencja gdy podobne
 problemy pojawią się w przyszłości.

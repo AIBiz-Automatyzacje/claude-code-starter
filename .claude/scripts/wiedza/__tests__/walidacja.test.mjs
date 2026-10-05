@@ -59,3 +59,10 @@ test('czyZawsze: wpis z globem ** obowiazuje kazdy plik (koszyk „zawsze”)', 
   assert.equal(czyZawsze(['**']), true)
   assert.equal(czyZawsze(['src/**']), false)
 })
+
+test('walidujWpis: pole bramka (gdzie wdrozona) tylko przy szczeblu kod albo lint, niepuste', () => {
+  const lint = { ...WPIS, szczebel: 'lint', szczebel_powod: 'no-restricted-syntax wykryje odczyt naglowka' }
+  assert.deepEqual(walidujWpis({ ...lint, bramka: 'eslint.config.js no-restricted-syntax' }, PLIKI), { ok: true, bledy: [] })
+  assert.match(walidujWpis({ ...lint, bramka: ' ' }, PLIKI).bledy.join('\n'), /^bramka: pusta/m)
+  assert.match(walidujWpis({ ...WPIS, bramka: 'eslint.config.js' }, PLIKI).bledy.join('\n'), /^bramka: tylko przy szczeblu kod albo lint/m)
+})

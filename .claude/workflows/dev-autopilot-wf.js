@@ -1978,7 +1978,7 @@ return {
   solution: compound && compound.plik,
   wiedza: compound && compound.wiedza,
   indeks: compound && compound.indeks,
-  // Szczebel kod/lint z compoundu (P10): propozycje bramek do decyzji operatora — do indeksu nie ida.
+  // Szczebel kod/lint z compoundu (P10): propozycje bramek do decyzji operatora — do wdrozenia bramki ida do indeksu jak regula.
   propozycjeBramek: (compound && compound.propozycjeBramek) || [],
   uwagaIndeksu: uwagaIndeksu(compound, refresh),
   refresh: refresh ? refresh.slownik : 'pominieto',

@@ -22,12 +22,13 @@ const WPISY = [
   wpis('docs/solutions/a/ui.md', { paths: ['src/components/**/*.tsx'], waga: 'wysoka' }),
   wpis('docs/solutions/a/sql.md', { paths: ['supabase/migrations/**'] }),
   wpis('docs/solutions/a/zawsze.md', { paths: ['**'], waga: 'niska' }),
-  wpis('docs/solutions/a/lint.md', { paths: ['src/lib/**'], szczebel: 'lint' }),
+  wpis('docs/solutions/a/lint.md', { paths: ['src/lib/**'], szczebel: 'lint', bramka: 'eslint.config.js no-restricted-syntax' }),
+  wpis('docs/solutions/a/kod.md', { paths: ['src/lib/**'], szczebel: 'kod' }),
 ]
 
-test('wycinek: reguly z globami pasujacymi do plikow (takze nowych, jeszcze nieistniejacych) + koszyk „zawsze”', () => {
+test('wycinek: reguly z globami pasujacymi do plikow (takze nowych, jeszcze nieistniejacych) + koszyk „zawsze”; kod/lint z wdrozona bramka poza wycinkiem', () => {
   const w = wycinek(WPISY, ['src/lib/nowy-modul.ts', 'src/components/oferta/Karta.tsx'])
-  assert.deepEqual(w.pliki, ['docs/solutions/a/zawsze.md', 'docs/solutions/a/ui.md', 'docs/solutions/a/lib.md'])
+  assert.deepEqual(w.pliki, ['docs/solutions/a/zawsze.md', 'docs/solutions/a/ui.md', 'docs/solutions/a/lib.md', 'docs/solutions/a/kod.md'])
   assert.match(w.tresc, /^- \[niska\] sciezka-bledu: Regula docs\/solutions\/a\/zawsze\.md\. \(docs\/solutions\/a\/zawsze\.md\)$/m)
   assert.doesNotMatch(w.tresc, /sql\.md|lint\.md/)
   assert.equal(w.zn, w.tresc.length)

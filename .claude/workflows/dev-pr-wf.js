@@ -261,7 +261,7 @@ const COMPOUND_PR = {
     indeks: {
       type: 'string',
       enum: ['zapisany', 'bramka', 'bez zmian'],
-      description: 'wynik `wiedza.mjs indeks --zapisz`: zapisany / bramka (zapisany=false, plik indeksu bez zmian) / bez zmian (zaden wpis ze szczeblem regula)',
+      description: 'wynik `wiedza.mjs indeks --zapisz`: zapisany / bramka (zapisany=false, plik indeksu bez zmian) / bez zmian (brak zapisanych wpisow)',
     },
     propozycjeDoReviewerow: {
       type: 'array',
@@ -284,8 +284,8 @@ const COMPOUND_PR = {
   required: ['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji'],
 }
 
-// Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): do indeksu nie ida, operator decyduje
-// o bramce. Kopia z dev-compound-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
+// Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): operator decyduje o bramce, a do jej
+// wdrozenia (pole `bramka`) lekcja idzie do indeksu i wycinka jak regula. Kopia z dev-compound-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
 function propozycjeBramek(wpisy) {
   return wpisy
     .filter((w) => w.szczebel === 'kod' || w.szczebel === 'lint')
@@ -760,9 +760,9 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    Kazdy solution ma pola wiedzy (sekcja "Pola wiedzy" skilla): klasa = klasaBledu watku, ucieczki co najmniej 1
    (bot znalazl te klase po naszym review).
 2. Pola kazdego zapisanego solution: \`node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>\`. Kod 1 = popraw pola wg
-   \`bledy\` i sprawdz drugi raz; dalej kod 1 — usun plik i dopisz "<tytul>: <bledy>" do odmowy. Gdy ktorys wpis ma
-   szczebel regula: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` (generuje docs/learned-patterns.md;
-   \`zapisany: false\` = bramka indeksu, plik bez zmian, indeks=bramka). Wpisy kod i lint do indeksu nie ida.
+   \`bledy\` i sprawdz drugi raz; dalej kod 1 — usun plik i dopisz "<tytul>: <bledy>" do odmowy.
+   Po zapisie wpisow: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` (wpisy regula oraz kod/lint bez pola bramka;
+   generuje docs/learned-patterns.md; \`zapisany: false\` = bramka indeksu, plik bez zmian, indeks=bramka). Pola bramka nie ustawiasz.
 3. PETLA ZWROTNA DO REVIEWEROW. Sprawdz, czy ktoras klasa uwagi wystepuje w tym pull requescie
    NIE PIERWSZY RAZ — porownaj z wpisami w docs/solutions/ i z indeksem docs/learned-patterns.md. Dla klasy, ktora
    pojawia sie po raz DRUGI albo kolejny, zaproponuj regule do KONKRETNEGO agenta-reviewera

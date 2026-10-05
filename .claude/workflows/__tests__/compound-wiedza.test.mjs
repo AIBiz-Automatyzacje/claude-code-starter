@@ -60,9 +60,11 @@ test('compound-wf: pola wiedzy sprawdza skrypt przed commitem — odmowa = plik 
   assert.match(zrodloCompound, /required: \['plik', 'wiedza', 'odmowa', 'indeks', 'commit'\]/)
 })
 
-test('compound-wf: do indeksu tylko szczebel regula, indeks generuje skrypt, whitelista bez .claude/rules', () => {
-  assert.match(promptZadania, /Szczebel regula: `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
-  assert.match(promptZadania, /Szczebel kod albo lint -> indeksu nie ruszasz/)
+test('compound-wf: indeks po kazdym zapisanym solution (regula i kod/lint bez wdrozonej bramki), whitelista bez .claude/rules', () => {
+  assert.match(promptZadania, /Indeks po kazdym zapisanym solution: `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
+  assert.match(promptZadania, /szczebel regula oraz kod\/lint bez pola bramka — do wdrozenia bramki lekcja dziala jak regula/)
+  assert.match(promptZadania, /Pola bramka nie ustawiasz/)
+  assert.doesNotMatch(promptZadania, /indeksu nie ruszasz/)
   assert.match(promptZadania, /`git add docs\/solutions\/ docs\/CONCEPTS\.md docs\/learned-patterns\.md`/)
   assert.doesNotMatch(zrodloCompound, /\.claude\/rules\/learned-patterns/)
 })
@@ -93,6 +95,8 @@ test('dev-pr compound: pola wiedzy przez sprawdz, indeks skryptem, propozycje br
   assert.match(etapPr, /propozycjeBramek\(wynik\.wpisy\)/)
   assert.match(zrodloPr, /required: \['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji'\]/)
   assert.match(etapPr, /docs\/learned-patterns\.md/)
+  assert.match(etapPr, /Po zapisie wpisow: \\`node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz\\` \(wpisy regula oraz kod\/lint bez pola bramka/)
+  assert.doesNotMatch(etapPr, /Wpisy kod i lint do indeksu nie ida/)
   assert.doesNotMatch(zrodloPr, /\.claude\/rules\/learned-patterns|rule-worthy|limit ~50/)
 })
 
@@ -166,4 +170,11 @@ test('whitelisty bazy wiedzy: refresh autopilota, dodatkowy pathspec archiwum i 
   assert.match(zrodloAutopilot, /\? \['docs\/solutions', 'docs\/CONCEPTS\.md', 'docs\/learned-patterns\.md'\]/)
   assert.match(zrodloAutopilot, /Indeks wiedzy: \\`node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz\\`/)
   assert.match(zrodloComplete, /artefakty bazy wiedzy — docs\/solutions\/, docs\/CONCEPTS\.md, docs\/learned-patterns\.md/)
+})
+
+test('skill dev-compound: kod/lint do wdrozenia bramki w indeksie jak regula; pole bramka ustawia wdrozenie (6a pkt 60 g3b)', () => {
+  const sekcja = skill.slice(skill.indexOf('### Pola wiedzy'), skill.indexOf('### Krok 5'))
+  assert.match(sekcja, /- `bramka` — tylko przy szczeblu `kod` albo `lint`/)
+  assert.match(sekcja, /Po każdym zapisanym solution: `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
+  assert.doesNotMatch(skill, /indeksu nie ruszasz|Do indeksu idzie tylko/)
 })

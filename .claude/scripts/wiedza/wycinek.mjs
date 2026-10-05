@@ -1,12 +1,12 @@
 // Wycinek wiedzy (PLAN-POPRAWY P10): reguly projektu dla plikow jednostki (planner → prompt buildera) albo fazy
 // (dossier → reviewerzy). Dopasowanie globami `paths` po sciezkach plikow, nie po nazwach w tresci; koszyk „zawsze”
-// dochodzi zawsze. Limit znakow; reszta odeslana do indeksu.
+// dochodzi zawsze; lekcje kod/lint bez wdrozonej bramki jak regula. Limit znakow; reszta odeslana do indeksu.
 
 import { posix } from 'node:path'
 
 import { PLIK_INDEKSU, bezDuplikatow } from './indeks.mjs'
 import { czyZawsze } from './walidacja.mjs'
-import { pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
+import { czyObowiazuje, pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 
 export const MAKS_WYCINEK_ZN = 2000
 
@@ -30,7 +30,7 @@ function linia(w) {
  * @returns {{ tresc: string, zn: number, wpisy: number, pominiete: number, pliki: string[] }}
  */
 export function wycinek(wpisy, pliki, limitZn = MAKS_WYCINEK_ZN) {
-  const regulyPlikow = wpisy.filter((w) => pole(w, 'szczebel') === 'regula' && pasuje(w, pliki))
+  const regulyPlikow = wpisy.filter((w) => czyObowiazuje(w) && pasuje(w, pliki))
   const dopasowane = bezDuplikatow(regulyPlikow).unikalne.sort(porownajWpisy)
   const stopka = (/** @type {number} */ n) => `+${n} regul poza limitem wycinka — pelna lista: ${PLIK_INDEKSU}`
   /** @type {Wpis[]} */

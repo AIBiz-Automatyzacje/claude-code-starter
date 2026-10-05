@@ -374,7 +374,10 @@ Trzy poziomy: **solution** w `docs/solutions/` z polami wiedzy we frontmatterze 
 go builderowi, dossier niesie go reviewerom, fix autopilota i tura poprawek `/dev-pr` liczą go dla poprawianych plików). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
 
 - **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
-  Do indeksu idzie tylko `regula`; `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja.
+  `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja. Do wdrożenia bramki lekcja działa
+  jak reguła (indeks, wycinek). Po wdrożeniu dopisz w solution `bramka: <gdzie, np. eslint.config.js no-restricted-syntax>`
+  i odśwież indeks (`wiedza.mjs indeks --zapisz`) — lekcja wypada z indeksu i wycinków, pilnuje jej bramka. Wynik `indeks`
+  podaje `bramki: { propozycje, wdrozone }` (odsetek wdrożonych propozycji).
 - **Bramka indeksu:** koszyk „zawsze” (`paths: ["**"]`) najwyżej 5 wpisów, indeks do 40 000 zn (~75 reguł). Limit dotyczy indeksu,
   nie wiedzy — porządkuje go `/dev-compound-refresh` (zawężenie `paths`, scalenie, archiwum; treści reguł nie skraca).
   Pełny indeks widać w wyniku autopilota i raporcie `/dev-pr`: „Indeks wiedzy pełny — uruchom `/dev-compound-refresh`

@@ -7,6 +7,9 @@ import { posix } from 'node:path'
 import { KLASY_WIEDZY } from './klasy.mjs'
 
 export const POLA_WIEDZY = ['klasa', 'regula', 'paths', 'waga', 'szczebel', 'szczebel_powod', 'date', 'zrodlo', 'ucieczki']
+// Pole opcjonalne: gdzie wdrozono bramke dla lekcji `kod`/`lint` (np. eslint.config.js no-restricted-syntax). Bez niego
+// lekcja dziala jak regula (indeks, wycinek); z nim wypada z obu — pilnuje jej mechanizm.
+export const POLE_BRAMKI = 'bramka'
 export const WAGI = ['wysoka', 'srednia', 'niska']
 export const SZCZEBLE = ['regula', 'kod', 'lint']
 export const GLOB_ZAWSZE = '**'
@@ -65,6 +68,13 @@ function poprawnaData(data) {
   return /^\d{4}-\d{2}-\d{2}$/.test(data) && !Number.isNaN(d.getTime()) && d.toISOString().startsWith(data)
 }
 
+/** @param {Pola} pola @returns {string | null} */
+function bladBramki(pola) {
+  if (!(POLE_BRAMKI in pola)) return null
+  if (!tekst(pola[POLE_BRAMKI])) return 'bramka: pusta — podaj, gdzie wdrozono bramke (plik i regula), albo usun pole'
+  return ['kod', 'lint'].includes(tekst(pola.szczebel)) ? null : 'bramka: tylko przy szczeblu kod albo lint'
+}
+
 /**
  * @param {Pola} pola pola frontmattera solution
  * @param {string[] | null} plikiRepo
@@ -85,6 +95,7 @@ export function walidujWpis(pola, plikiRepo) {
     poprawnaData(tekst(pola.date)) ? null : `date: "${tekst(pola.date)}" nie jest data RRRR-MM-DD`,
     tekst(pola.zrodlo) ? null : 'zrodlo: brak (zadanie, PR albo commit)',
     /^\d+$/.test(tekst(pola.ucieczki)) ? null : `ucieczki: "${tekst(pola.ucieczki)}" nie jest liczba >= 0`,
+    bladBramki(pola),
   ].filter((b) => b !== null)
   return { ok: !bledy.length, bledy }
 }

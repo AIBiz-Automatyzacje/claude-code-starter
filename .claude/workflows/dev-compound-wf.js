@@ -30,7 +30,7 @@ const COMPOUND_RESULT = {
     indeks: {
       type: 'string',
       enum: ['zapisany', 'bramka', 'bez zmian'],
-      description: 'wynik `wiedza.mjs indeks --zapisz`: zapisany / bramka (zapisany=false, plik indeksu bez zmian) / bez zmian (szczebel kod albo lint, brak solution)',
+      description: 'wynik `wiedza.mjs indeks --zapisz`: zapisany / bramka (zapisany=false, plik indeksu bez zmian) / bez zmian (brak solution)',
     },
     slownik: {
       type: 'string',
@@ -48,8 +48,8 @@ const COMPOUND_RESULT = {
   required: ['plik', 'wiedza', 'odmowa', 'indeks', 'commit'],
 }
 
-// Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): do indeksu nie ida, operator decyduje
-// o bramce. Kopia w dev-pr-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
+// Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): operator decyduje o bramce, a do jej
+// wdrozenia (pole `bramka`) lekcja idzie do indeksu i wycinka jak regula. Kopia w dev-pr-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
 function propozycjeBramek(wpisy) {
   return wpisy
     .filter((w) => w.szczebel === 'kod' || w.szczebel === 'lint')
@@ -81,9 +81,10 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
 5. Sprawdzenie pol: \`node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>\`. Kod 1 = popraw pola wg \`bledy\` i sprawdz
    drugi raz. Gdy dalej kod 1 — usun plik (solution bez poprawnych pol wiedzy nie zostaje w bazie), zwroc plik=null,
    wiedza=null i bledy w odmowa.
-6. Szczebel regula: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` — skrypt generuje docs/learned-patterns.md
-   z solutions. \`zapisany: true\` -> indeks=zapisany; \`zapisany: false\` (bramka koszyka "zawsze" albo rozmiaru) -> indeks=bramka,
-   indeksu nie edytujesz recznie. Szczebel kod albo lint -> indeksu nie ruszasz, indeks="bez zmian" (to propozycja bramki dla operatora).
+6. Indeks po kazdym zapisanym solution: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` — skrypt generuje docs/learned-patterns.md
+   z solutions (szczebel regula oraz kod/lint bez pola bramka — do wdrozenia bramki lekcja dziala jak regula). \`zapisany: true\` -> indeks=zapisany;
+   \`zapisany: false\` (bramka koszyka "zawsze" albo rozmiaru) -> indeks=bramka, indeksu nie edytujesz recznie. Brak solution -> indeks="bez zmian".
+   Szczebel kod albo lint jest tez propozycja bramki dla operatora. Pola bramka nie ustawiasz: dopisuje je wdrozenie bramki.
 7. Slownik domenowy (sekcja skilla o docs/CONCEPTS.md): jesli w materiale pojawil sie/uscisnil termin domenowy o znaczeniu
    PROJEKTOWO-SPECYFICZNYM (encja, nazwany proces, status/enum o niestandardowym sensie) — dodaj/zaktualizuj
    JEDNO haslo w docs/CONCEPTS.md (cienki indeks: 1-2 zdania + link do CLAUDE.md; tylko domenowe, nie techniczne;

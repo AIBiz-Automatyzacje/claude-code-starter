@@ -17,13 +17,27 @@ function wpis(plik, zmiany = {}) {
   }
 }
 
-test('generujIndeks: wiersz klasa | regula | wzorce | waga | link; szczebel kod i lint poza indeksem', () => {
-  const w = generujIndeks([wpis('docs/solutions/a/x.md'), wpis('docs/solutions/a/kod.md', { szczebel: 'kod' }), wpis('docs/solutions/a/lint.md', { szczebel: 'lint' })])
+test('generujIndeks: wiersz klasa | regula | wzorce | waga | link; kod i lint bez wdrozonej bramki dzialaja jak regula, z bramka poza indeksem', () => {
+  const w = generujIndeks([
+    wpis('docs/solutions/a/x.md'),
+    wpis('docs/solutions/a/kod.md', { szczebel: 'kod' }),
+    wpis('docs/solutions/a/lint.md', { szczebel: 'lint', bramka: 'eslint.config.js no-restricted-syntax' }),
+  ])
   assert.deepEqual(w.bledy, [])
-  assert.equal(w.wpisy, 1)
+  assert.equal(w.wpisy, 2)
   assert.match(w.tresc, /\| sciezka-bledu \| Regula z docs\/solutions\/a\/x\.md\. \| `src\/lib\/\*\*` \| srednia \| \[solution\]\(solutions\/a\/x\.md\) \|/)
-  assert.doesNotMatch(w.tresc, /kod\.md|lint\.md/)
+  assert.match(w.tresc, /solutions\/a\/kod\.md/)
+  assert.doesNotMatch(w.tresc, /lint\.md/)
   assert.equal(w.zn, w.tresc.length)
+})
+
+test('generujIndeks: licznik propozycji bramek — lekcje kod/lint i te z wdrozona bramka (metryka wdrozen)', () => {
+  const w = generujIndeks([
+    wpis('docs/solutions/a/x.md'),
+    wpis('docs/solutions/a/kod.md', { szczebel: 'kod' }),
+    wpis('docs/solutions/a/lint.md', { szczebel: 'lint', bramka: 'eslint.config.js no-restricted-syntax' }),
+  ])
+  assert.deepEqual(w.bramki, { propozycje: 2, wdrozone: 1 })
 })
 
 test('generujIndeks: dedup po klasie i tresci reguly (wielkosc liter, spacje, interpunkcja) — zostaje nowszy wpis', () => {

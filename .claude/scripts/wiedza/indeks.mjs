@@ -1,10 +1,10 @@
 // Indeks wiedzy projektu docs/learned-patterns.md (PLAN-POPRAWY P10, poziom 1): generowany z frontmatteru solutions,
-// jeden wiersz na regule (klasa | regula | wzorce plikow | waga | link). Do indeksu tylko szczebel `regula` — `kod` i `lint`
-// sa propozycjami bramek. Dedup po klasie i tresci reguly, koszyk „zawsze” z twardym limitem, bramka rozmiaru:
+// jeden wiersz na regule (klasa | regula | wzorce plikow | waga | link). Do indeksu szczebel `regula` oraz `kod`/`lint`
+// bez pola `bramka` — do wdrozenia bramki lekcja dziala jak regula. Dedup po klasie i tresci reguly, koszyk „zawsze” z twardym limitem, bramka rozmiaru:
 // limit dotyczy indeksu, nie wiedzy — po przekroczeniu refresh scala albo archiwizuje solutions.
 
 import { czyZawsze } from './walidacja.mjs'
-import { pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
+import { czyObowiazuje, pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 
 export const MAKS_ZAWSZE = 5
 export const MAKS_INDEKS_ZN = 40000
@@ -49,10 +49,10 @@ function wiersz(w) {
 
 /**
  * @param {Wpis[]} wpisy zwalidowane wpisy solutions
- * @returns {{ tresc: string, zn: number, wpisy: number, zawsze: number, duplikaty: { plik: string, duplikatZ: string }[], bledy: string[] }}
+ * @returns {{ tresc: string, zn: number, wpisy: number, zawsze: number, duplikaty: { plik: string, duplikatZ: string }[], bramki: { propozycje: number, wdrozone: number }, bledy: string[] }}
  */
 export function generujIndeks(wpisy) {
-  const { unikalne, duplikaty } = bezDuplikatow(wpisy.filter((w) => pole(w, 'szczebel') === 'regula'))
+  const { unikalne, duplikaty } = bezDuplikatow(wpisy.filter(czyObowiazuje))
   const posortowane = unikalne.sort(porownajWpisy)
   const zawsze = posortowane.filter((w) => czyZawsze(sciezkiWpisu(w)))
   const tresc = [
@@ -73,5 +73,8 @@ export function generujIndeks(wpisy) {
       : null,
     tresc.length > MAKS_INDEKS_ZN ? `indeks: ${tresc.length} zn, limit ${MAKS_INDEKS_ZN} — scal albo zarchiwizuj solutions (dev-compound-refresh)` : null,
   ].filter((b) => b !== null)
-  return { tresc, zn: tresc.length, wpisy: posortowane.length, zawsze: zawsze.length, duplikaty, bledy }
+  // Metryka wdrozen bramek (6a pkt 60 g3b): lekcje kod/lint z polem `bramka` wsrod wszystkich lekcji kod/lint.
+  const propozycje = wpisy.filter((w) => pole(w, 'szczebel') !== 'regula')
+  const bramki = { propozycje: propozycje.length, wdrozone: propozycje.filter((w) => !czyObowiazuje(w)).length }
+  return { tresc, zn: tresc.length, wpisy: posortowane.length, zawsze: zawsze.length, duplikaty, bramki, bledy }
 }

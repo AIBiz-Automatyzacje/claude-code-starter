@@ -7,7 +7,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { czytajFrontmatter } from './frontmatter.mjs'
-import { POLA_WIEDZY, WAGI, czyZawsze, walidujWpis } from './walidacja.mjs'
+import { POLA_WIEDZY, POLE_BRAMKI, WAGI, czyZawsze, walidujWpis } from './walidacja.mjs'
 
 export const KATALOG_SOLUTIONS = 'docs/solutions'
 const ARCHIWUM = '_archived'
@@ -27,6 +27,15 @@ export function pole(w, pole) {
 export function sciezkiWpisu(w) {
   const v = w.pola.paths
   return Array.isArray(v) ? v : []
+}
+
+/**
+ * Wpis obowiazuje agentow (indeks, wycinek): szczebel `regula` albo lekcja `kod`/`lint`, ktorej bramki jeszcze nie wdrozono.
+ * @param {Wpis} w
+ * @returns {boolean}
+ */
+export function czyObowiazuje(w) {
+  return pole(w, 'szczebel') === 'regula' || !pole(w, POLE_BRAMKI)
 }
 
 /** @param {Wpis} a @param {Wpis} b @returns {number} */
