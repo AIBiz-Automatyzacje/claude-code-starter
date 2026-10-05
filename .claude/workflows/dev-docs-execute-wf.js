@@ -146,6 +146,19 @@ const DOSSIER = {
     },
     diffZapisany: { type: 'boolean', description: 'true tylko gdy plik zrzutu realnie powstal i jest niepusty' },
     diffUciety: { type: 'boolean', description: 'true gdy zrzut przekroczyl limit i zostal przyciety ze znacznikiem' },
+    wiedza: {
+      type: 'object',
+      additionalProperties: false,
+      description: 'wiedza projektu w dossier (telemetria: faza.wiedza)',
+      properties: {
+        indeksZn: { type: ['integer', 'null'], description: 'znaki docs/learned-patterns.md (null gdy brak pliku)' },
+        claudeMdZn: { type: ['integer', 'null'], description: 'znaki CLAUDE.md projektu (null gdy brak pliku)' },
+        wycinekZn: { type: 'integer', description: 'znaki wycinka regul dla plikow fazy' },
+        wycinekWpisy: { type: 'integer', description: 'reguly w wycinku' },
+        wycinekPominiete: { type: 'integer', description: 'reguly dopasowane, ale poza limitem wycinka' },
+      },
+      required: ['indeksZn', 'claudeMdZn', 'wycinekZn', 'wycinekWpisy', 'wycinekPominiete'],
+    },
   },
   required: ['pliki', 'warstwy', 'e2eCheckboxy'],
 }
@@ -215,10 +228,6 @@ Faza do wykonania: ${faza}
    - z planu technicznego: sekcja zaczynajaca sie od \`## Granice\` (wykluczenia zadania), jesli plan ja ma.
    Po wiecej siegaj TYLKO wtedy, gdy jednostka odsyla do czegos, czego w tych wycinkach nie ma
    (np. decyzja opisana przy innej fazie). Nie czytaj dokumentow "dla kontekstu".
-1b. Przeczytaj .claude/rules/learned-patterns.md (jesli istnieje) — reguly wyprodukowane z problemow
-   rozwiazanych w poprzednich zadaniach tego projektu. Ten plik czytasz w CALOSCI (ok. 11 KB): reguly
-   istotne dla danego IU DOPISZ do jego promptu (sekcja "Wyuczone reguly projektu:") — buildery nie maja
-   gwarancji dostepu do project rules.
 2. W sekcji \`### Faza ${faza}\` planu technicznego zlokalizuj Implementation Units tej fazy.
 3. Jesli faza ${faza} jest juz ukonczona albo nie ma niezaznaczonych checkboxow IMPLEMENTACYJNYCH -> ustaw poza=true, iu=[].
    Do ukonczenia NIE licza sie (pomijaj calkowicie): checkboxy z prefiksem "Weryfikacja:", "Operator:",
@@ -238,6 +247,10 @@ Faza do wykonania: ${faza}
      Podobnie z tekstami: gdy jednostka odsyla do "tekstow verbatim z sekcji X", wklej te teksty DOSLOWNIE.
      Nie streszczaj i nie parafrazuj — tekst widoczny dla uzytkownika inny niz zatwierdzony to finding P2.
    - sciezka zadania ${sciezka} + numer IU
+   - reguly projektu dla plikow jednostki (z pola Pliki):
+     \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki jednostki po przecinku>\`. Niepuste pole \`tresc\`
+     wyniku wklej jako blok "Wyuczone reguly projektu:" (pusta tresc — blok pomin), bo
+     regula wklejona do promptu delegacji jest przez buildera stosowana, a regula czekajaca w pliku bywa pomijana.
    - wykluczenia z sekcji \`## Granice\` planu technicznego jako blok "Czego zadanie nie obejmuje:" z dopiskiem:
      "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
      zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.

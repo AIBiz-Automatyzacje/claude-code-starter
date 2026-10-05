@@ -1,4 +1,4 @@
-// CLI dossier na repo-fixture: zadanie w docs/active/ (plan, zadania, kontekst), plan techniczny, learned-patterns,
+// CLI dossier na repo-fixture: zadanie w docs/active/ (plan, zadania, kontekst), plan techniczny, wiedza projektu (solutions z polami),
 // wynik bramek z ostatniego przebiegu. Wynik JSON = pole `dossier` w ksztalcie dzisiejszego KONTEKST z
 // dev-docs-review-wf.js (walidacja schematem wycietym ze zrodla workflowu), plik dossier z sekcjami w stalej kolejnosci.
 
@@ -29,6 +29,12 @@ function schematKontekst() {
   return new Function(`${kod}\nreturn KONTEKST`)()
 }
 
+/** @param {string} klasa @param {string} regula @param {string} glob @returns {string} solution z polami wiedzy */
+function solution(klasa, regula, glob) {
+  return ['---', `title: "${klasa}"`, 'date: 2026-09-01', `klasa: ${klasa}`, `regula: "${regula}"`, 'paths:', `  - ${glob}`,
+    'waga: wysoka', 'szczebel: regula', 'szczebel_powod: "osad"', 'zrodlo: "zadanie x"', 'ucieczki: 0', '---', '', '# Problem', ''].join('\n')
+}
+
 const DOKUMENTY = {
   [`${ZADANIE}/oferty-plan.md`]: '# Plan: oferty\n\n## Źródła\n\n- Plan techniczny: docs/plans/plan-oferty.md\n',
   [`${ZADANIE}/oferty-zadania.md`]: [
@@ -40,13 +46,16 @@ const DOKUMENTY = {
     '# Plan techniczny', '', '## Śledzenie wymagań', '', '- R1. Lista ofert', '- R2. Eksport', '', '## Implementation Units', '',
     '### Faza 1 — Dane', '', '**Wymagania:** [R1]', '', '### Faza 2 — UI', '', '**Wymagania:** [R2]', '',
   ].join('\n'),
-  '.claude/rules/learned-patterns.md': '# Wyuczone reguly\n\n- Zawsze waliduj wejscie Zod.\n',
+  'docs/solutions/api/walidacja.md': solution('walidacja-granicy-api', 'Waliduj wejscie Zod na granicy API.', 'src/**'),
+  'docs/solutions/db/migracje.md': solution('migracja-bazy', 'Migracje pisz idempotentnie.', 'supabase/**'),
+  'docs/learned-patterns.md': '# Wiedza projektu — indeks\n',
+  'CLAUDE.md': '# Projekt\n\nIndeks wiedzy: docs/learned-patterns.md\n',
 }
 
 /**
  * @typedef {{ diffStat: string, pliki: { plik: string, czegoDotyczy: string }[], warstwy: Record<string, boolean>, e2eCheckboxy: number,
  *   figmaScreens: boolean, diffPlik: string, diffZapisany: boolean, diffUciety: boolean, ctxPlik: string, ctxZapisany: boolean,
- *   ctxZnaki: number, preSkan: { wzorzec: string, plik: string }[] }} Dossier
+ *   ctxZnaki: number, preSkan: { wzorzec: string, plik: string }[], wiedza: Record<string, number | null> }} Dossier
  */
 
 /** @param {string[]} argumenty @param {string} cwd @returns {{ kod: number | null, wynik: Dossier, stderr: string }} */
@@ -92,6 +101,18 @@ test('dossier: wynik zgodny ze schematem KONTEKST review-wf; flagi, [E2E], figma
   })
 })
 
+test('dossier: wiedza dla telemetrii — rozmiar indeksu i CLAUDE.md, wycinek regul po plikach fazy', () => {
+  naZadaniu((repo, baza, wyjscie) => {
+    const { wynik } = cli(['--sciezka', ZADANIE, '--faza', '1', '--baza', baza, '--wyjscie', wyjscie], repo)
+    const tresc = readFileSync(wynik.ctxPlik, 'utf8')
+    const wycinek = tresc.slice(tresc.indexOf('## Reguly projektu'), tresc.indexOf('## Zadania fazy'))
+    assert.deepEqual(wynik.wiedza, {
+      indeksZn: DOKUMENTY['docs/learned-patterns.md'].length, claudeMdZn: DOKUMENTY['CLAUDE.md'].length,
+      wycinekZn: wycinek.split('\n').filter((l) => l.startsWith('- [')).join('\n').length, wycinekWpisy: 1, wycinekPominiete: 0,
+    })
+  })
+})
+
 test('dossier: plik z sekcjami w stalej kolejnosci, wycinki fazy doslownie, bramki z pliku ostatniego przebiegu', () => {
   naZadaniu((repo, baza, wyjscie) => {
     const bramki = join(wyjscie, 'bramki.json')
@@ -100,7 +121,7 @@ test('dossier: plik z sekcjami w stalej kolejnosci, wycinki fazy doslownie, bram
     const tresc = readFileSync(wynik.ctxPlik, 'utf8')
     const wrappery = [
       'Zmiany fazy', 'Profil stacku', 'Sygnaly diffu (pre-skan: miejsca, nie findingi)', 'Bramki domkniecia (ostatni przebieg)',
-      'Plan techniczny — sekcja fazy', 'Sledzenie wymagan — wiersze tej fazy', 'Reguly projektu (learned-patterns.md)',
+      'Plan techniczny — sekcja fazy', 'Sledzenie wymagan — wiersze tej fazy', 'Reguly projektu — wycinek wiedzy dla plikow fazy',
       'Zadania fazy', 'Designerski kontekst zadania',
     ].map((s) => tresc.indexOf(`\n## ${s}\n`))
     assert.ok(wrappery.every((i, k) => i !== -1 && (k === 0 || i > wrappery[k - 1])), `kolejnosc sekcji: ${wrappery.join(', ')}`)
@@ -109,7 +130,8 @@ test('dossier: plik z sekcjami w stalej kolejnosci, wycinki fazy doslownie, bram
     assert.match(tresc, /### Faza 1 — Dane\n\n\*\*Wymagania:\*\* \[R1\]/)
     assert.doesNotMatch(tresc, /Faza 2 — UI|inna faza|R2\. Eksport/)
     assert.match(tresc, /- R1\. Lista ofert/)
-    assert.match(tresc, /Zawsze waliduj wejscie Zod/)
+    assert.match(tresc, /- \[wysoka\] walidacja-granicy-api: Waliduj wejscie Zod na granicy API\. \(docs\/solutions\/api\/walidacja\.md\)/)
+    assert.doesNotMatch(tresc, /Migracje pisz idempotentnie/, 'regula dla plikow spoza fazy nie wchodzi do wycinka')
     assert.match(tresc, /- src\/oferty\.ts:1 complexity — za zlozone/)
     assert.match(tresc, /react 19\.1\.0/)
   })
@@ -122,6 +144,7 @@ test('dossier: bez --baza merge-base z galezia glowna albo HEAD (zapisane w plik
     const tresc = readFileSync(wynik.ctxPlik, 'utf8')
     assert.match(tresc, /Baza fazy: \S+ \(zastepcza/)
     assert.match(tresc, /Brak pliku zadan w docs\/active\/brak/)
+    assert.match(tresc, /## Reguly projektu — wycinek wiedzy dla plikow fazy\n\nBrak regul dla plikow fazy \(indeks: docs\/learned-patterns\.md\)\./)
     assert.equal(wynik.e2eCheckboxy, 0)
     assert.equal(wynik.diffZapisany, false, 'HEAD bez zmian w drzewie = pusty diff')
     assert.equal(existsSync(wynik.ctxPlik), true)

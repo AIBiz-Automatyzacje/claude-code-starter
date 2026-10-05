@@ -8,11 +8,13 @@
 // Pliki (sciezki deterministyczne z zadania i fazy — ponowne uruchomienie nadpisuje):
 //   review-diff-<zadanie>-faza-N.diff   pelny diff fazy (limit 300 KB, znacznik uciecia),
 //   review-ctx-<zadanie>-faza-N.md      dossier: zmiany, profil stacku, sygnaly diffu, bramki (ostatni przebieg),
-//                                       sekcja planu fazy, wiersze wymagan, learned-patterns, zadania fazy, kontekst designerski.
+//                                       sekcja planu fazy, wiersze wymagan, wycinek wiedzy dla plikow fazy, zadania fazy,
+//                                       kontekst designerski.
 //   Bez --bramki: bramki-<zadanie>-faza-N.json z katalogu wyjscia (domkniecie zapisuje tam wynik bramek), o ile istnieje.
 // Wynik (stdout, JSON) = pole `dossier` w schemacie KONTEKST z dev-docs-review-wf.js:
 //   { diffStat, pliki: [{ plik, czegoDotyczy }], warstwy: { ui, dane, typowanie, nowyModul }, e2eCheckboxy, figmaScreens,
-//     diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, ctxZnaki, preSkan: [{ wzorzec, plik }] }
+//     diffPlik, diffZapisany, diffUciety, ctxPlik, ctxZapisany, ctxZnaki, preSkan: [{ wzorzec, plik }],
+//     wiedza: { indeksZn, claudeMdZn, wycinekZn, wycinekWpisy, wycinekPominiete } }
 // Kod wyjscia: 0 = dossier zapisane, 2 = zle argumenty (takze baza, ktora nie jest commitem).
 
 import { spawnSync } from 'node:child_process'
@@ -23,6 +25,7 @@ import { blokBramek } from './bramki-blok.mjs'
 import { profilStacku } from './profil.mjs'
 import { sciezkiArtefaktow } from './sciezki.mjs'
 import { dodaneLinie, preSkan, warstwy } from './sygnaly.mjs'
+import { wiedzaFazy } from './wiedza-blok.mjs'
 import { wycinkiZadania } from './zadanie.mjs'
 import { bazaZastepcza, zapiszDiff, zmianyDossier } from './zmiany.mjs'
 
@@ -72,6 +75,7 @@ const dodane = dodaneLinie(diff)
 const sygnaly = preSkan(a.projekt, dodane)
 const zapisDiffu = zapiszDiff(diff, sciezki.diff)
 const zadanie = wycinkiZadania(a.projekt, a.sciezka, a.faza)
+const wiedza = wiedzaFazy(a.projekt, pliki.map((p) => p.plik))
 const plikBramek = a.bramki ?? (existsSync(sciezki.bramki) ? sciezki.bramki : null)
 const diffStat = `${pliki.length} plikow, +${pliki.reduce((s, p) => s + p.dodane, 0)} −${pliki.reduce((s, p) => s + p.usuniete, 0)}`
 
@@ -87,7 +91,7 @@ const tresc = [
   '## Bramki domkniecia (ostatni przebieg)', '', blokBramek(plikBramek), '',
   '## Plan techniczny — sekcja fazy', '', zadanie.planFazy, '',
   '## Sledzenie wymagan — wiersze tej fazy', '', zadanie.wymagania, '',
-  '## Reguly projektu (learned-patterns.md)', '', zadanie.reguly, '',
+  '## Reguly projektu — wycinek wiedzy dla plikow fazy', '', wiedza.blok, '',
   '## Zadania fazy', '', zadanie.zadaniaFazy, '',
   '## Designerski kontekst zadania', '', zadanie.designerski, '',
 ].join('\n')
@@ -107,5 +111,6 @@ const wynik = {
   ctxZapisany: true,
   ctxZnaki: tresc.length,
   preSkan: sygnaly,
+  wiedza: wiedza.wiedza,
 }
 process.stdout.write(`${JSON.stringify(wynik)}\n`)

@@ -319,6 +319,19 @@ const KONTEKST = {
     },
     diffZapisany: { type: 'boolean', description: 'true tylko gdy plik zrzutu realnie powstal i jest niepusty' },
     diffUciety: { type: 'boolean', description: 'true gdy zrzut przekroczyl limit i zostal przyciety ze znacznikiem' },
+    wiedza: {
+      type: 'object',
+      additionalProperties: false,
+      description: 'wiedza projektu w dossier (telemetria: faza.wiedza)',
+      properties: {
+        indeksZn: { type: ['integer', 'null'], description: 'znaki docs/learned-patterns.md (null gdy brak pliku)' },
+        claudeMdZn: { type: ['integer', 'null'], description: 'znaki CLAUDE.md projektu (null gdy brak pliku)' },
+        wycinekZn: { type: 'integer', description: 'znaki wycinka regul dla plikow fazy' },
+        wycinekWpisy: { type: 'integer', description: 'reguly w wycinku' },
+        wycinekPominiete: { type: 'integer', description: 'reguly dopasowane, ale poza limitem wycinka' },
+      },
+      required: ['indeksZn', 'claudeMdZn', 'wycinekZn', 'wycinekWpisy', 'wycinekPominiete'],
+    },
   },
   required: ['pliki', 'warstwy', 'e2eCheckboxy'],
 }
@@ -395,13 +408,14 @@ Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczys
 Plik: ${kontekst.ctxPlik}
 Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip,
 przezyte mutanty), sekcje planu technicznego TEJ fazy, przywolane wiersze "Sledzenie wymagan",
-cale .claude/rules/learned-patterns.md, zadania fazy i kontekst designerski.
+wycinek wiedzy projektu dla plikow fazy, zadania fazy i kontekst designerski.
 ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
 gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
 wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
 70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
 Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — przeczytaj pelne dokumenty
-(plan techniczny fazy, requirements doc, learned-patterns.md): brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
+(plan techniczny fazy, requirements doc) i policz wycinek wiedzy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z mapy zmian po przecinku>\`;
+brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
     : ''
   // Pre-skan (plan B6): dwa wzorce, ktore JS widzi na pewno, podane reviewerom jako WSKAZOWKA, nie werdykt.
   // Klasyfikacja zostaje przy reviewerze — pusty catch w bloku, ktory za chwile i tak rzuca, bywa poprawny.
@@ -431,7 +445,7 @@ function zrodlaBlok(faza, kontekst) {
 Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
 Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.`
     : `Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Files:, Test scenarios:, Patterns to follow:).
-Przeczytaj tez .claude/rules/learned-patterns.md (jesli istnieje) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.`
+Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.`
 }
 
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, semantyka) {
