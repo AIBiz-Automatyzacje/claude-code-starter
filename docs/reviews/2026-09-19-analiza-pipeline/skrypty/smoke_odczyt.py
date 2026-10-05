@@ -10,6 +10,8 @@ P8: kontrolaFixa.listy i fix.p1_z_testem z rekordów faz; z journala runu — wp
 P3 na liście fixa (prompt agenta fix:faza-N) i agenci fix:pre-skan / verify-fix (po P8 ma ich nie być).
 P9 (smoke_sceptycy.py): faza.sceptyk, agent.werdykty/obalone, verify-batch vs ⌈P2/4⌉, etykiety i błędy schematu w journalu,
 wiersz sceptyków w raporcie review i „Zamkniete cyklem fix” w archiwum kopii; K-7: pozycje na plikach docs/active/<zadanie>/.
+P10 (smoke_wiedza.py): learned_zn, faza.wiedza, blok „Wyuczone reguly projektu:” i wywołania wycinka w promptach plannera,
+builderów i fixa, wynik compoundu (wiedza, indeks, propozycjeBramek, uwagaIndeksu).
 """
 import collections
 import glob
@@ -19,6 +21,7 @@ import statistics
 import sys
 
 import smoke_sceptycy
+import smoke_wiedza
 
 PLIK = os.path.expanduser('~/.claude/telemetry/pipeline.jsonl')
 HARNESS = os.path.expanduser('~/.claude/projects/*/*/workflows/wf_*.json')
@@ -225,6 +228,9 @@ def main(argumenty):
     smoke_sceptycy.sekcja_sceptycy(ref, run, wiersz)
     smoke_sceptycy.sekcja_sceptycy_journal(wyniki, katalog)
     smoke_sceptycy.sekcja_kopia(wyniki, katalog, run['run']['zadanie'])
+    smoke_wiedza.sekcja_wiedza(ref, run, wiersz)
+    smoke_wiedza.sekcja_wiedza_journal(wyniki, katalog)
+    smoke_wiedza.sekcja_compound(run)
     sekcja_role(ref, run)
     sekcja_model(ref, run)
 
