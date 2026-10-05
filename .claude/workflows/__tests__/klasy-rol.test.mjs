@@ -24,8 +24,6 @@ const KLASY_MECHANICZNE = ['klasa-mechaniczny', 'klasa-mechaniczny-odczyt']
 const BADACZE = ['best-practices-researcher', 'framework-docs-researcher', 'learnings-researcher', 'repo-research-analyst',
   'spec-flow-analyzer', 'web-research-specialist']
 const NARZEDZIA_ZAPISU = ['Edit', 'Write']
-// Poza pipeline'em: nie wola ich zaden workflow ani skill, usuwane w P11 (PANEL-WYNIK §4a E) — bez allowlisty.
-const POZA_PIPELINE = ['kieran-typescript-reviewer', 'code-simplicity-reviewer']
 const WBUDOWANE = ['Read', 'Grep', 'Glob', 'Bash', 'Edit', 'Write', 'WebSearch', 'WebFetch', 'Skill']
 // Narzedzia serwera MCP pluginu figma 2.2.120 — lista z serwera w sesji (`.mcp.json` pluginu, ideToolTitles, ma tylko czesc,
 // np. bez download_assets). Plugin wymagany per projekt od P2.
@@ -52,7 +50,6 @@ function naruszeniaTools(korzen) {
   /** @type {string[]} */
   const wyniki = []
   for (const [nazwa, fm] of agenci(korzen)) {
-    if (POZA_PIPELINE.includes(nazwa)) continue
     const lista = narzedzia(fm)
     if (!lista.length) wyniki.push(`${nazwa}: brak tools:`)
     for (const n of lista.filter((x) => !znane.has(x))) wyniki.push(`${nazwa}: nieznane narzedzie ${n}`)
@@ -167,11 +164,12 @@ test('badacze: repo szablonu ma jedna allowliste bez Edit/Write w szesciu plikac
   assert.deepEqual(naruszeniaBadaczy(REPO), [])
 })
 
-test('tools: podlozony agent bez tools: i literowka w nazwie narzedzia sa zglaszane, plik spoza pipeline\'u nie', () => {
+// Zmiana kontraktu (P11): wyjatek dla plikow spoza pipeline'u znika razem z nimi (kieran, code-simplicity usuniete) —
+// kazdy plik w .claude/agents/ ma allowliste.
+test('tools: podlozony agent bez tools: i literowka w nazwie narzedzia sa zglaszane', () => {
   const wynik = naPodlozonym({
     [`${AGENCI}/bez-tools.md`]: '---\nname: bez-tools\n---\n',
     [`${AGENCI}/literowka.md`]: '---\nname: literowka\ntools: Read, Websearch, mcp__plugin_figma_figma__get_screenshot\n---\n',
-    [`${AGENCI}/kieran-typescript-reviewer.md`]: '---\nname: kieran-typescript-reviewer\n---\n',
   }, naruszeniaTools)
   assert.deepEqual(wynik.sort(), ['bez-tools: brak tools:', 'literowka: nieznane narzedzie Websearch'])
 })
