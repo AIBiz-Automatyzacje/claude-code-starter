@@ -114,7 +114,7 @@ function dossierZeSkryptu(pliki) {
   }
 }
 
-test('kontrakt skrypt → routing: faza z fetch w nowym module budzi caly sklad, faza czysto dokumentacyjna tylko rdzen', () => {
+test('kontrakt skrypt → routing: faza z fetch w nowym module budzi caly sklad, faza czysto dokumentacyjna nikogo (D4)', () => {
   const kod = dossierZeSkryptu({ 'src/oferty.ts': 'export const pobierz = () => fetch("/o").then((r) => r.json()).catch(() => null)\n', 'src/Lista.tsx': 'export const L = () => <ul />\n' })
   assert.equal(czyDossier(kod), true)
   const r = routingReviewerow(kod)
@@ -123,8 +123,30 @@ test('kontrakt skrypt → routing: faza z fetch w nowym module budzi caly sklad,
 
   const dokumentacja = dossierZeSkryptu({ 'README.md': '# x\n\nWiecej opisu.\n' })
   const rd = routingReviewerow(dokumentacja, 'gotowe')
-  assert.deepEqual(klucze(rd), ['security', 'spec-compliance', 'test-coverage'])
+  assert.deepEqual(klucze(rd), [])
+  assert.deepEqual(rd.pominieci.map((p) => p.key).sort(), ['code-quality', 'correctness', 'performance', 'security', 'spec-compliance', 'test-coverage'])
   assert.equal(rd.plikiKodu, 0)
+})
+
+// D4 (PLAN-POPRAWY P11): security, spec i test-coverage tylko w fazach z kodem; spec takze przy tekstach UI
+// i dokumencie prawnym bez kodu — tam rozjazd tekst/czynnosc i dokument/migracja jest jego lista.
+const OSIE_D4 = ['security', 'spec-compliance', 'test-coverage']
+const kluczeD4 = (/** @type {Routing} */ r) => klucze(r).filter((k) => OSIE_D4.includes(k))
+/** @param {string[]} pliki @returns {Dossier} */
+const bezKodu = (pliki) => ({ ...DOSSIER, warstwy: { ...WARSTWY, nowyModul: false }, pliki: pliki.map((plik) => ({ plik, czegoDotyczy: 'zmieniony' })) })
+
+test('routing D4: faza bez kodu z tekstami UI albo dokumentem prawnym budzi tylko spec', () => {
+  assert.deepEqual(kluczeD4(routingReviewerow(bezKodu(['src/locales/pl.json']), 'gotowe')), ['spec-compliance'])
+  assert.deepEqual(kluczeD4(routingReviewerow(bezKodu(['docs/legal/regulamin.md']), 'gotowe')), ['spec-compliance'])
+  assert.deepEqual(kluczeD4(routingReviewerow(bezKodu(['public/polityka-prywatnosci.html']), 'gotowe')), ['spec-compliance'])
+  const r = routingReviewerow(bezKodu(['docs/plans/plan.md']), 'gotowe')
+  assert.deepEqual(kluczeD4(r), [])
+  assert.ok(r.pominieci.some((p) => p.key === 'security' && /kod/.test(p.powod)))
+})
+
+test('routing D4: faza z jednym plikiem kodu budzi security, spec i test-coverage', () => {
+  const r = routingReviewerow(bezKodu(['supabase/migrations/001_x.sql']), 'gotowe')
+  assert.deepEqual(kluczeD4(r), OSIE_D4)
 })
 
 test('wiring: agent kontekst:diff i jego prompt znikaja (H59, H60); zapasowy agent klasy mechanicznej', () => {

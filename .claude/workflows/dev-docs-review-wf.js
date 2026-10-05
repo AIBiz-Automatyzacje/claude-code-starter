@@ -781,7 +781,15 @@ Zwroc kodWyjscia (kod wyjscia komendy) i dossier = ten JSON 1:1, bez zmian i bez
 // `plikiKodu > 0` przy `dane` (2026-07-27): faza czysto dokumentacyjna (run team-os-onboarding-instalatory,
 // faza 3 — 5 plikow md, 0 kodu) dostawala flage dane=true i budzila performance-oracle nad markdownem.
 // Perf nie ma czego mierzyc bez ani jednego pliku kodu — a >=5 plikow kodu i tak lapie duze fazy niezaleznie od flagi.
+// D4 (PLAN-POPRAWY P11): teksty UI i dokument prawny bez kodu budza spec — jego listy porownuja tekst z czynnoscia
+// i dokument z migracja. Wzorce po sciezce: katalogi tlumaczen, pliki HTML/PO, nazwy dokumentow prawnych.
+const PLIK_TEKSTOW_UI = /(^|\/)(locales?|i18n|translations?|lang|messages)\/|\.(html?|po)$/i
+const DOKUMENT_PRAWNY = /(^|\/)[^/]*(regulamin|polityk|privacy|terms|legal|rodo|gdpr|cookies?)[^/]*$/i
 const WARUNKI = {
+  // D4: bez pliku kodu nie ma wejscia ani testu do oceny — security i test-coverage tylko w fazach z kodem.
+  security: (_, plikiKodu) => plikiKodu > 0,
+  'test-coverage': (_, plikiKodu) => plikiKodu > 0,
+  'spec-compliance': (_, plikiKodu, sciezki) => plikiKodu > 0 || sciezki.some((p) => PLIK_TEKSTOW_UI.test(p) || DOKUMENT_PRAWNY.test(p)),
   performance: (w, plikiKodu) => (w.dane && plikiKodu > 0) || plikiKodu >= 5,
   // Warunek `code-quality` to ALTERNATYWA trzech dotychczasowych warunkow (architecture OR typescript
   // OR simplicity). Simplicity byl w rdzeniu (zawsze aktywny), wiec formalnie ta alternatywa jest zawsze
@@ -809,21 +817,22 @@ function trybTesteraE2e(warstwy, e2eLiczbaZnana, e2eCheckboxy, figmaScreens, sro
 }
 
 // Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy: reviewer odpala sie, gdy jego domena jest w fazie OBECNA
-// wg flag warstw z dossier. Rdzen nietykalny: security (XSS/wyciek siedzi tez w "czysto UI" pliku),
-// spec-compliance, test-coverage. Warunkowi: performance, code-quality, correctness, e2e.
+// wg flag warstw z dossier. Od P11 (D4) kazda os ma warunek: security i test-coverage — faza z kodem (XSS/wyciek
+// siedzi tez w "czysto UI" pliku .tsx, wiec bez flag warstw), spec — kod albo teksty UI / dokument prawny.
 // FAIL-OPEN: brak dossier albo flag => PELNY sklad — bez faktow nie pomijamy nikogo.
 function routingReviewerow(kontekst, srodowiskoE2E) {
   const plikiFazy = (kontekst && kontekst.pliki) || []
   const warstwy = (kontekst && kontekst.warstwy) || null
   const plikiKodu = plikiFazy.filter((p) => PLIK_KODU.test(p.plik)).length
-  const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy, plikiKodu))
+  const sciezki = plikiFazy.map((p) => p.plik)
+  const aktywni = REVIEWERZY.filter((r) => !warstwy || !WARUNKI[r.key] || WARUNKI[r.key](warstwy, plikiKodu, sciezki))
   // Liczba NIEZNANA (brak dossier), nie zero — bramkowanie retry/STOP licznikiem zamienialoby awarie w cicha degradacje.
   const e2eLiczbaZnana = !!(kontekst && Number.isInteger(kontekst.e2eCheckboxy))
   const e2eCheckboxy = e2eLiczbaZnana ? kontekst.e2eCheckboxy : 0
   const figmaScreens = !!(kontekst && kontekst.figmaScreens)
   const e2eTryb = trybTesteraE2e(warstwy, e2eLiczbaZnana, e2eCheckboxy, figmaScreens, srodowiskoE2E)
   const pominieci = [
-    ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: 'domena nieobecna w mapie zmian fazy' })),
+    ...REVIEWERZY.filter((r) => !aktywni.includes(r)).map((r) => ({ key: r.key, powod: `domena nieobecna w mapie zmian fazy (plikow kodu: ${plikiKodu})` })),
     ...(e2eTryb === 'pominiety' ? [{ key: 'e2e', powod: `zero checkboxow [E2E] (${e2eCheckboxy}) i brak makiet figma_screens${e2eLiczbaZnana ? '' : ' — liczba nieznana, decydowal brak warstwy UI'}` }] : []),
   ]
   return { plikiFazy, plikiKodu, warstwy, e2eCheckboxy, e2eLiczbaZnana, figmaScreens, aktywni, e2eTryb, pominieci }
