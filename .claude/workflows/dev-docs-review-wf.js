@@ -319,7 +319,8 @@ const ZAPAS_DOSSIER = {
 const REVIEWERZY = [
   // Polecenia-listy osi (bramki i proby obejscia, walidacja, auth, RLS warunkowo po advisors, sekrety, seedy) siedza w pliku roli.
   { key: 'security', agentType: 'security-sentinel', fokus: 'bezpieczenstwo zmienionego kodu wg list z pliku Twojej roli' },
-  { key: 'performance', agentType: 'performance-oracle', fokus: 'N+1 queries, bundle size, lazy loading, useEffect cleanup' },
+  // Polecenia-listy osi (zlozonosc, N+1 i indeksy, pamiec, rendery z warunkiem React Compilera, paczka, Edge Functions) siedza w pliku roli.
+  { key: 'performance', agentType: 'performance-oracle', fokus: 'wydajnosc zmienionego kodu wg list z pliku Twojej roli' },
   // Polecenia-listy osi (granice, YAGNI, typy, lint i knip z dossier, duplikaty stalych i kontraktow) siedza w pliku roli.
   { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu wg list z pliku Twojej roli' },
   // Procedura osi (polecenia-listy) siedzi w pliku roli correctness-reviewer.md — fokus nazywa tylko os.
@@ -410,7 +411,7 @@ Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycine
 
 // Polecenie reviewera osi (wszystkie osie). Mandat, procedura, wagi i kryterium konca sa w pliku roli (agentType);
 // polecenie podaje zrodla faktow, schemat wyniku i bloki wspolne. `dodatki` = blok tylko tej osi (test-coverage
-// uruchamia testy, wiec dostaje blok dlugich komend). Os bez list w pliku roli (performance) niesie fokus tematow.
+// uruchamia testy, wiec dostaje blok dlugich komend).
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = '') {
   return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
