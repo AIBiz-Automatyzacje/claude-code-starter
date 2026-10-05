@@ -1779,7 +1779,8 @@ Prompt-audit dodanych linii: python3 docs/reviews/2026-09-19-analiza-pipeline/sk
    z 6a pkt 54 e), konwersja `/dev-compound-refresh --konwersja` i linia w CLAUDE.md kopii, run w nowej sesji; odczyt smoke_odczyt.py <wf>
    --ref wf_844929f5-f35; daj mi komendy pojedynczo. Gdy zabraknie miejsca — smoke i merge w sesji 4.
 7. Merge --ff-only popr/P10-wiedza do main po zielonym smoke'u; nowa referencja R-P10 = run z punktu 6.
-Po sesji: HANDOFF (§2, 6a, §8 → instrukcja P11), pamięć projektu, commit docs/reviews. Kopie usuwam tylko za zgodą na dokładną ścieżkę.
+Po sesji: HANDOFF (§2, 6a, §8 → instrukcja P11), pamięć projektu, commit docs/reviews; instrukcję następnej sesji wklej mi w czacie.
+Kopie usuwam tylko za zgodą na dokładną ścieżkę.
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
 
