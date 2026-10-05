@@ -1287,7 +1287,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     → **nowa referencja R-P10 = `wf_5b0d08ef-0a3`.**
     (g) **Obserwacje na później:** wycinek reviewerów w dossier trafił w limit 2000 zn przy 4 regułach (2 „zawsze” to ~800 zn) — przy P11 (reviewerzy
     na docelowym wycinku) sprawdzić, czy limit wystarcza; `fix:poprawka` bez wycinka (b). Kopie `_smoke-P10-oferty-online` i `_smoke-P10b-oferty-online`
-    czekają na decyzję operatora (usunięcie tylko za zgodą na dokładną ścieżkę).
+    USUNIĘTE 2026-10-05 za zgodą operatora (transkrypty zostają w `~/.claude/projects/`).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -1797,7 +1797,7 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
 - **P10 ZROBIONA (2026-10-05; 6a pkt 61):** limit indeksu 40 000 zn, wycinek dla fixa i tury /dev-pr, `uwagaIndeksu` przy pełnym indeksie, wąski
   refresh bez porządkowania pod limit, `kod`/`lint` bez `bramka` w indeksie i wycinku, `smoke_wiedza.py`; 543/543 testów. Smoke `wf_5b0d08ef-0a3`
   zielony (2,23 M; fix wywołał wycinek; indeks zapisany, 40 wpisów) = nowa referencja **R-P10**. Merge `--ff-only` do main. **Następny krok:
-  „P11 — REVIEWERZY, SESJA 1” niżej** (nowa sesja — N2). Kopie `_smoke-P10-oferty-online` i `_smoke-P10b-oferty-online` czekają na decyzję operatora.
+  „P11 — REVIEWERZY, SESJA 1” niżej** (nowa sesja — N2). Kopie `_smoke-P10-oferty-online` i `_smoke-P10b-oferty-online` usunięte za zgodą operatora.
 
 **P11 — REVIEWERZY, SESJA 1 (AKTUALNA — nowa sesja; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
