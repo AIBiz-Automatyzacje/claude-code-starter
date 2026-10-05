@@ -376,7 +376,9 @@ go builderowi, dossier niesie go reviewerom, fix autopilota i tura poprawek `/de
 - **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
   Do indeksu idzie tylko `regula`; `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja.
 - **Bramka indeksu:** koszyk „zawsze” (`paths: ["**"]`) najwyżej 5 wpisów, indeks do 40 000 zn (~75 reguł). Limit dotyczy indeksu,
-  nie wiedzy — porządkuje go `/dev-compound-refresh` (zawężenie `paths`, scalenie, archiwum).
+  nie wiedzy — porządkuje go `/dev-compound-refresh` (zawężenie `paths`, scalenie, archiwum; treści reguł nie skraca).
+  Pełny indeks widać w wyniku autopilota i raporcie `/dev-pr`: „Indeks wiedzy pełny — uruchom `/dev-compound-refresh`
+  (pełny przegląd)”. Wąski przegląd po compoundzie autopilota bramki rozmiaru nie rusza.
 - **Jedna linia w `CLAUDE.md` projektu** (CLAUDE.md należy do projektu — szablon go nie edytuje), żeby sesja główna wiedziała,
   gdzie szukać:
 

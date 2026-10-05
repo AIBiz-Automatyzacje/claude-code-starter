@@ -1871,9 +1871,18 @@ const REFRESH_RESULT = {
     // i blokowaly bramke bootstrapu nastepnego runu. W required z tego samego powodu co plikiBinarne:
     // brak commita musi byc jawny, pole opcjonalne = agent cicho pomija commit.
     commit: { type: 'string', description: 'hash commita zmian bazy wiedzy ("" gdy nic nie zmieniono albo commit sie nie udal)' },
+    indeks: { type: 'string', enum: ['zapisany', 'bramka', 'bez zmian'], description: 'wynik `wiedza.mjs indeks --zapisz` po akcjach: zapisany / bramka (zapisany=false) / bez zmian (nie uruchomiony)' },
     stanZapisany: POLE_STANU,
   },
-  required: ['przejrzano', 'slownik', 'commit', 'stanZapisany'],
+  required: ['przejrzano', 'slownik', 'commit', 'indeks', 'stanZapisany'],
+}
+
+// Pelny indeks wiedzy (P10, 6a pkt 60 g3a): waski refresh nie porzadkuje indeksu pod limit (w smoke'u P10 skrocil regule —
+// utrata tresci), wiec bramka z compoundu idzie do operatora zdaniem w wyniku runu. Kopia zdania w dev-pr-wf.js (test rownosci).
+const INDEKS_PELNY = 'Indeks wiedzy pelny — uruchom /dev-compound-refresh (pelny przeglad)'
+function uwagaIndeksu(compound, refresh) {
+  if (!compound || compound.indeks !== 'bramka') return ''
+  return refresh && refresh.indeks === 'zapisany' ? '' : INDEKS_PELNY
 }
 
 const refreshPrompt = (plik, kategoria) =>
@@ -1885,6 +1894,8 @@ Wykonaj skill .claude/skills/dev-compound-refresh/SKILL.md w TRYBIE AUTONOMICZNY
 - Wykonuj bezpieczne akcje (Keep/Update/Archive/Replace gdy dowody wystarczajace); niejednoznaczne oznacz stale. Best-effort — nie blokuj.
 - Subagentow nie uruchamiasz: zakres to 1-2 dokumenty, wiec badanie i dokument zastepczy (Replace) piszesz sam.
 - Indeks wiedzy: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` po akcjach (Faza 1.7 skilla).
+  Bramka rozmiaru indeksu (\`indeks: ... zn, limit\`): tresci regul nie skracasz, nie scalasz i nie archiwizujesz solutions pod limit —
+  to zadanie pelnego przegladu, ktory uruchamia operator; zwroc indeks="bramka". Skrocona regula traci tresc, ktora dostaja buildery.
 - PO wykonaniu akcji ZACOMMITUJ zmienione dokumenty bazy wiedzy. Kto zapisuje, ten commituje: dwa runy
   z rzedu zostawily artefakty bazy wiedzy niezacommitowane, a brudne drzewo blokuje bramke bootstrapu
   nastepnego runu autopilota (STOP "niezacommitowane zmiany").
@@ -1945,6 +1956,7 @@ if (stan.zakonczenie.complete === 'pending') {
   }
 }
 
+if (uwagaIndeksu(compound, refresh)) log(uwagaIndeksu(compound, refresh))
 log(`Autopilot koniec: ${kolejka.length} faz w tym runie, ${fazyUkonczone(stan.fazy)}/${stan.fazy.length} domknietych w zadaniu (koszt runu: raport telemetrii — .claude/scripts/telemetria/raport.mjs)`)
 
 return {
@@ -1968,5 +1980,6 @@ return {
   indeks: compound && compound.indeks,
   // Szczebel kod/lint z compoundu (P10): propozycje bramek do decyzji operatora — do indeksu nie ida.
   propozycjeBramek: (compound && compound.propozycjeBramek) || [],
+  uwagaIndeksu: uwagaIndeksu(compound, refresh),
   refresh: refresh ? refresh.slownik : 'pominieto',
 }

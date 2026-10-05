@@ -173,6 +173,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
 <tabela każdej tury z pola `tabela` etapu napraw, w kolejności tur>
 
 📚 Baza wiedzy: <N wpisów w docs/solutions/>, indeks: <indeks>, odmowy: <odmowy albo „brak”>
+   <uwagaIndeksu z etapu compound, gdy niepusta: „Indeks wiedzy pełny — uruchom `/dev-compound-refresh` (pełny przegląd)”>
 
 🧱 Propozycje bramek (do Twojej decyzji, NIE wdrożone; zapis: solution ze szczeblem kod/lint):
    - [<szczebel>] <klasa>: <propozycja> — <powod> (<solution>)

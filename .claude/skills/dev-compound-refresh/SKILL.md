@@ -176,6 +176,8 @@ po Update, Replace i Archive generujesz go od nowa — ręcznie go nie edytujesz
    - indeks ponad limit znaków — scal solutions o tej samej klasie i sensie reguły (Replace jednym następcą) albo zarchiwizuj
      te o najmniejszej wartości (najniższa waga, zero ucieczek, najwęższe `paths`).
    Potem wygeneruj indeks jeszcze raz. Limit dotyczy indeksu, nie wiedzy: solution poza indeksem zostaje w bazie.
+   Treści reguł nie skracasz, żeby zmieścić indeks — skrócona reguła traci to, co dostają buildery i reviewerzy.
+   Wąski przegląd z autopilota bramki rozmiaru nie porządkuje: zwraca ją operatorowi, który uruchamia pełny przegląd.
 4. `duplikaty` w wyniku = ta sama klasa i treść reguły w kilku solutions; indeks bierze nowszy wpis — starszy oceń jak każdy
    dokument (Keep, gdy wnosi własny opis problemu; Archive, gdy jest redundantny).
 

@@ -292,6 +292,10 @@ function propozycjeBramek(wpisy) {
     .map((w) => ({ szczebel: w.szczebel, klasa: w.klasa, propozycja: w.regula, powod: w.szczebelPowod, solution: w.plik }))
 }
 
+// Pelny indeks wiedzy (P10, 6a pkt 60 g3a): bramka indeksu idzie do operatora zdaniem w raporcie. Kopia z dev-autopilot-wf.js
+// (rownosc pilnuje indeks-pelny.test.mjs).
+const INDEKS_PELNY = 'Indeks wiedzy pelny — uruchom /dev-compound-refresh (pelny przeglad)'
+
 // ── Decyzje dev-pr (P5) ───────────────────────────────────────────────────
 // Decyzje etapow zapadaja tutaj, w funkcjach czystych (__tests__/dev-pr.test.mjs); agenci zbieraja fakty i wykonuja.
 
@@ -781,7 +785,8 @@ Zwroc obiekt zgodny ze schematem.`,
   log(`/dev-pr compound: ${wynik.wpisy.length} wpisow w docs/solutions/, indeks: ${wynik.indeks}, odmow: ${wynik.odmowy.length}, propozycji bramek: ${bramki.length}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)
   // Propozycje mialy zero artefaktow w repo mimo 19 compoundow (ETAP1B §4) — brak pliku przy niepustej liscie widac w logu.
   if (wynik.propozycjeDoReviewerow.length && !wynik.plikPropozycji) log('/dev-pr compound: UWAGA — propozycje bez zapisu do docs/reviews/propozycje-do-reviewerow.md')
-  return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki }
+  if (wynik.indeks === 'bramka') log(`/dev-pr compound: ${INDEKS_PELNY}`)
+  return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
 }
 
 return { status: 'BLAD', powod: `Nieznany etap "${etap}". Dozwolone: start, zbierz, napraw, merge, claude-md, compound.` }
