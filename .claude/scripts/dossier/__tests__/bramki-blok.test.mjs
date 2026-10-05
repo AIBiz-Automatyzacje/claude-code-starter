@@ -17,7 +17,10 @@ const WYNIK = {
   },
   knip: { status: 'ok', sekundy: 2, trafienia: [], zastane: 3 },
   stryker: {
-    status: 'ok', sekundy: 30, trafienia: [{ plik: 'src/a.ts', linia: 7, regula: 'stryker/ArithmeticOperator', opis: 'a - b przezyl' }],
+    status: 'ok', sekundy: 30, trafienia: [
+      { plik: 'src/a.ts', linia: 7, regula: 'stryker/ArithmeticOperator', opis: 'Survived: a - b' },
+      { plik: 'src/a.ts', linia: 9, regula: 'stryker/BlockStatement', opis: 'NoCoverage: {}' },
+    ],
   },
   advisors: { status: 'brak', sekundy: 0, trafienia: [], powod: 'brak SUPABASE_ACCESS_TOKEN' },
 }
@@ -30,14 +33,34 @@ function plikWyniku(tresc) {
   return { plik, sprzataj: () => rmSync(katalog, { recursive: true, force: true }) }
 }
 
-test('blokBramek: statusy wszystkich bramek, ostrzezenia ESLint, knip z liczba zastanych, przezyte mutanty', () => {
+test('blokBramek: statusy wszystkich bramek, ostrzezenia ESLint, knip z liczba zastanych', () => {
   const { plik, sprzataj } = plikWyniku(WYNIK)
   try {
     const blok = blokBramek(plik)
     assert.match(blok, /typecheck ok, eslint ok, knip ok, stryker ok, advisors brak/)
     assert.match(blok, /### Ostrzezenia ESLint[^\n]*\n- src\/a\.ts:4 complexity — Function has a complexity of 12/)
     assert.match(blok, /### knip[^\n]*zastane poza faza: 3[^\n]*\n- brak/)
-    assert.match(blok, /### Przezyte mutanty[^\n]*\n- src\/a\.ts:7 stryker\/ArithmeticOperator — a - b przezyl/)
+  } finally {
+    sprzataj()
+  }
+})
+
+// Zmiana kontraktu (P11): blok mutantow ulozony jak w projekcie C (PANEL-WYNIK D5) — mutant z id, ktore reviewer cytuje
+// w findingu, mutator → zamiennik i status z legenda (Survived = test przechodzi przez linie, NoCoverage = zaden test).
+test('blokBramek: mutanty z id, mutatorem, zamiennikiem i statusem; legenda statusow', () => {
+  const { plik, sprzataj } = plikWyniku(WYNIK)
+  try {
+    const blok = blokBramek(plik)
+    assert.match(blok, /### Przezyte mutanty[^\n]*\n.*Survived.*NoCoverage.*\n- M1 src\/a\.ts:7 ArithmeticOperator → `a - b` \(Survived\)\n- M2 src\/a\.ts:9 BlockStatement → `\{\}` \(NoCoverage\)$/)
+  } finally {
+    sprzataj()
+  }
+})
+
+test('blokBramek: zero mutantow = "brak" bez legendy', () => {
+  const { plik, sprzataj } = plikWyniku({ ...WYNIK, stryker: { status: 'pominieta', sekundy: null, trafienia: [] } })
+  try {
+    assert.match(blokBramek(plik), /### Przezyte mutanty[^\n]*\n- brak$/)
   } finally {
     sprzataj()
   }
