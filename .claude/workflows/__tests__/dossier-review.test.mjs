@@ -84,7 +84,7 @@ test('dossierPrompt: zapasowy agent uruchamia skrypt dossier; --baza tylko z SHA
 
 test('routingReviewerow: brak dossier = pelny sklad i tester w przegladarce (fail-open)', () => {
   const r = routingReviewerow(null)
-  assert.deepEqual(klucze(r), ['security', 'performance', 'code-quality', 'correctness', 'spec-compliance'])
+  assert.deepEqual(klucze(r), ['security', 'performance', 'code-quality', 'correctness', 'spec-compliance', 'test-coverage'])
   assert.equal(r.e2eTryb, 'przegladarka')
 })
 
@@ -118,12 +118,12 @@ test('kontrakt skrypt → routing: faza z fetch w nowym module budzi caly sklad,
   const kod = dossierZeSkryptu({ 'src/oferty.ts': 'export const pobierz = () => fetch("/o").then((r) => r.json()).catch(() => null)\n', 'src/Lista.tsx': 'export const L = () => <ul />\n' })
   assert.equal(czyDossier(kod), true)
   const r = routingReviewerow(kod)
-  assert.deepEqual(klucze(r), ['security', 'performance', 'code-quality', 'correctness', 'spec-compliance'])
+  assert.deepEqual(klucze(r), ['security', 'performance', 'code-quality', 'correctness', 'spec-compliance', 'test-coverage'])
   assert.equal(r.e2eTryb, 'przegladarka')
 
   const dokumentacja = dossierZeSkryptu({ 'README.md': '# x\n\nWiecej opisu.\n' })
   const rd = routingReviewerow(dokumentacja, 'gotowe')
-  assert.deepEqual(klucze(rd), ['security', 'spec-compliance'])
+  assert.deepEqual(klucze(rd), ['security', 'spec-compliance', 'test-coverage'])
   assert.equal(rd.plikiKodu, 0)
 })
 

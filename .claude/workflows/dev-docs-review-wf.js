@@ -369,6 +369,8 @@ const REVIEWERZY = [
   // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY
   // (spec/IU) jako punkt odniesienia; pozostali dostaja procedure posrednio przez test-coverage.
   { key: 'spec-compliance', semantyka: true, agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
+  // test-coverage ma wlasny prompt (testCoveragePrompt); wpis tu daje mu ten sam routing co pozostalym osiom.
+  { key: 'test-coverage', agentType: 'test-coverage-reviewer' },
 ]
 
 // Blok doklejany w trybie re-review (po cyklu fix) — targetowana weryfikacja zamiast pelnego re-skanu.
@@ -842,10 +844,12 @@ const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
 // Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
-// Reviewerzy (z test-coverage i testerem E2E) i sceptycy P1 `high` — tam kupujemy jakosc osadu, a P1 bramkuje
+// Reviewerzy (z testerem E2E) i sceptycy P1 `high` — tam kupujemy jakosc osadu, a P1 bramkuje
 // twardy STOP. Taniej tam, gdzie praca jest mechaniczna: scribe przepisuje (`low`), sceptyk P2 sprawdza
 // jeden plik (`medium`). `null` w args.tiery = efort sesji. Haiku (dedup, inspekcja, zapasowe dossier) efortu nie dostaje.
-const TIERY_DOMYSLNE = { sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', scribe: 'low' }
+// P11 (PANEL K1, K2): spec i test-coverage `medium` — prowadza je polecenia-listy z wejsciem z dossier (sekcja planu,
+// mutanty), nie wlasny osad. Warunek odwrotu: B P1/P2 osi >= prog po obnizeniu efortu -> poziom wyzej.
+const TIERY_DOMYSLNE = { sceptykP2: 'medium', sceptykP1: 'high', reviewer: 'high', spec: 'medium', testCoverage: 'medium', scribe: 'low' }
 const tiery = { ...TIERY_DOMYSLNE, ...((args && args.tiery) || {}) }
 // `effort: undefined` bywa traktowane inaczej niz brak pola — dokladamy klucz tylko gdy tier jest ustawiony.
 const zEffortem = (opts, effort) => (effort ? { ...opts, effort } : opts)
@@ -873,10 +877,14 @@ log(kontekst && kontekst.ctxZapisany
   ? `Dossier fazy (${zrodloDossier === 'zapas' ? 'zapasowy agent' : 'domkniecie fazy'}): ${kontekst.ctxPlik} — reviewerzy czytaja je zamiast pelnego planu i dokumentu wymagan`
   : 'Dossier fazy NIE powstalo — reviewerzy czytaja pelne dokumenty (fail-open, drozej)')
 
-const thunki = aktywni.map((r) => () =>
-  agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
-)
-thunki.push(() => agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.reviewer)))
+// Jedna linia opcji na tier: test D6 (wywolania-agentow.test.mjs) czyta efort z linii opcji, a etykieta
+// `review:${r.key}` nie mowi, ktora to os.
+function wywolajOs(r) {
+  if (r.key === 'test-coverage') return agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.testCoverage))
+  if (r.key === 'spec-compliance') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: 'spec-compliance-reviewer', label: 'review:spec-compliance', phase: 'Review' }, tiery.spec))
+  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
+}
+const thunki = aktywni.map((r) => () => wywolajOs(r))
 if (e2eTryb !== 'pominiety') {
   log(`Tester E2E: tryb ${e2eTryb} (srodowisko: ${srodowiskoE2E === undefined ? 'nieznane — run standalone' : srodowiskoE2E})`)
   thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst), zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }, tiery.reviewer)))
@@ -977,10 +985,10 @@ function wykryjBlokerSrodowiska(findingi, przebiegiTestera) {
   return null
 }
 
-// Etykieta zrodla per finding — kolejnosc `wyniki` odpowiada kolejnosci `thunki` (aktywni, potem
-// test-coverage, potem opcjonalnie e2e). Potrzebna do sprawiedliwego przyciecia P3 (patrz wybierzNity):
+// Etykieta zrodla per finding — kolejnosc `wyniki` odpowiada kolejnosci `thunki` (aktywni z test-coverage,
+// potem opcjonalnie e2e). Potrzebna do sprawiedliwego przyciecia P3 (patrz wybierzNity):
 // bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
-const etykietyZrodel = [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
+const etykietyZrodel = [...aktywni.map((r) => r.key), ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
 const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
 // Wejscie zawezone do findingow TESTERA (audyt 2026-09-02, finding A1): sygnatura w opisie reviewera kodu
 // mowi o kodzie, nie o srodowisku. I tylko w trybie `przegladarka` — w `bez-przegladarki` odmowa polaczenia
@@ -1276,7 +1284,7 @@ const przebieg = {
   dossier: !!(kontekst && kontekst.ctxZapisany),
   dossierZrodlo: zrodloDossier,
   e2eTryb,
-  aktywni: [...aktywni.map((r) => r.key), 'test-coverage', ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])],
+  aktywni: [...aktywni.map((r) => r.key), ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])],
   pominieci,
   znalezione: wszystkie.length,
   poDedupJs,

@@ -26,6 +26,7 @@ const MAPA_KLAS = /** @type {const} */ ([
   [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*)$/, 'klasa-sceptyk'],
   [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
   [/^review:test-coverage$/, 'test-coverage-reviewer'],
+  [/^review:spec-compliance$/, 'spec-compliance-reviewer'],
   [/^review:e2e(:retry)?$/, 'feature-tester-e2e'],
 ])
 const KLASA_DOMYSLNA = 'klasa-orkiestracyjny'
@@ -105,8 +106,11 @@ const EFORT_KLASY = /** @type {Record<string, string | null>} */ ({
 const EFORT_ROLI = 'high'
 // Wyjatki w klasie: scribe przepisuje (low), sceptyk P2 jeden plik (medium), kontrola diffu fixa — medium od P8
 // (listy K-1…K-7, katalog A: opus medium; wczesniej low). Packager (kontekst:diff, low) zniknal w P7.
+// Reviewerzy spec i test-coverage — medium od P11 (katalog A: polecenia-listy z wejsciem z dossier zamiast przegladu
+// wlasnym osadem; PANEL K1, K2).
 const EFORT_WYJATKI = /** @type {const} */ ([
   [/^scribe:faza-\*(:retry)?$/, 'low'], [/^verify-batch:/, 'medium'], [/^fix:kontrola:/, 'medium'],
+  [/^review:(spec-compliance|test-coverage)$/, 'medium'],
 ])
 
 /**
