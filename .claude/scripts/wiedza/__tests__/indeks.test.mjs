@@ -48,10 +48,17 @@ test('generujIndeks: koszyk „zawsze” ponad limit = blad bramki z lista pliko
 })
 
 test('generujIndeks: indeks ponad limit znakow = blad bramki rozmiaru', () => {
-  const dlugie = Array.from({ length: 80 }, (_, i) => wpis(`docs/solutions/a/${i}.md`, { regula: `${'Dluga regula numer '.repeat(15)}${i}.` }))
+  const dlugie = Array.from({ length: Math.ceil(MAKS_INDEKS_ZN / 250) }, (_, i) => wpis(`docs/solutions/a/${i}.md`, { regula: `${'Dluga regula numer '.repeat(15)}${i}.` }))
   const w = generujIndeks(dlugie)
   assert.ok(w.zn > MAKS_INDEKS_ZN)
   assert.match(w.bledy.join('\n'), new RegExp(`indeks: ${w.zn} zn, limit ${MAKS_INDEKS_ZN}`))
+})
+
+test('generujIndeks: 75 regul po ~400 zn (projekt rozwijany latami) miesci sie w limicie indeksu', () => {
+  const regula = `${'Regula projektu o typowej dlugosci. '.repeat(10)}`.trim()
+  const w = generujIndeks(Array.from({ length: 75 }, (_, i) => wpis(`docs/solutions/a/${i}.md`, { regula: `${regula} Numer ${i}.` })))
+  assert.equal(w.wpisy, 75)
+  assert.deepEqual(w.bledy, [])
 })
 
 test('generujIndeks: znak | i nowa linia w regule nie lamia tabeli', () => {

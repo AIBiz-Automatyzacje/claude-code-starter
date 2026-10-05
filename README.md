@@ -289,7 +289,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 **`/dev-compound`** — dokumentowanie rozwiązanego problemu. Bez argumentów = wyciąga kontekst z sesji autonomicznie. Compact mode domyślny, `--full` dla pełnego formatu. Solution dostaje pola wiedzy i szczebel (`kod` → `lint` → `regula`); `wiedza.mjs sprawdz` pilnuje pól, reguły trafiają do indeksu `docs/learned-patterns.md`, `kod`/`lint` to propozycja bramki dla Ciebie. Jeśli pojawił się termin domenowy → dopisuje hasło do `docs/CONCEPTS.md` (Krok 4.5). → `docs/solutions/[category]/`
 - **Kategorie:** build-errors, runtime-errors, supabase-issues, auth-issues, ui-bugs, performance-issues, typescript-errors, deployment-issues, testing-issues.
 
-**`/dev-compound-refresh`** — przegląd aktualności bazy wiedzy. Autonomicznie przegląda `docs/solutions/`: Keep / Update / Replace / Archive. Generuje indeks `docs/learned-patterns.md` od nowa (bramka: koszyk „zawsze” ≤ 5, indeks ≤ 20 000 zn — porządek robi w solutions), `--konwersja` przenosi stary plik reguł do pól wiedzy (patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd)), przegląda też `docs/CONCEPTS.md` (usuwa martwe hasła, scala duplikaty).
+**`/dev-compound-refresh`** — przegląd aktualności bazy wiedzy. Autonomicznie przegląda `docs/solutions/`: Keep / Update / Replace / Archive. Generuje indeks `docs/learned-patterns.md` od nowa (bramka: koszyk „zawsze” ≤ 5, indeks ≤ 40 000 zn — porządek robi w solutions), `--konwersja` przenosi stary plik reguł do pól wiedzy (patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd)), przegląda też `docs/CONCEPTS.md` (usuwa martwe hasła, scala duplikaty).
 - **Myk:** pełny refresh (bez argumentu) przegląda całą bazę — uruchamiaj okresowo. W autopilocie odpala się **automatycznie, ale scoped** (tylko dotknięta kategoria + CONCEPTS.md, i tylko gdy compound coś zapisał).
 
 ### Skille techniczne (guidelines pod stack)
@@ -375,7 +375,7 @@ go builderowi, dossier niesie go reviewerom). Indeks nie leży w `.claude/rules/
 
 - **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
   Do indeksu idzie tylko `regula`; `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja.
-- **Bramka indeksu:** koszyk „zawsze” (`paths: ["**"]`) najwyżej 5 wpisów, indeks do 20 000 zn. Limit dotyczy indeksu,
+- **Bramka indeksu:** koszyk „zawsze” (`paths: ["**"]`) najwyżej 5 wpisów, indeks do 40 000 zn (~75 reguł). Limit dotyczy indeksu,
   nie wiedzy — porządkuje go `/dev-compound-refresh` (zawężenie `paths`, scalenie, archiwum).
 - **Jedna linia w `CLAUDE.md` projektu** (CLAUDE.md należy do projektu — szablon go nie edytuje), żeby sesja główna wiedziała,
   gdzie szukać:

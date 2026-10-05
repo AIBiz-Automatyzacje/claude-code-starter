@@ -7,7 +7,7 @@ import { czyZawsze } from './walidacja.mjs'
 import { pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 
 export const MAKS_ZAWSZE = 5
-export const MAKS_INDEKS_ZN = 20000
+export const MAKS_INDEKS_ZN = 40000
 export const PLIK_INDEKSU = 'docs/learned-patterns.md'
 
 /** @typedef {import('./wpisy.mjs').Wpis} Wpis */
