@@ -158,3 +158,12 @@ test('skill dev-compound-refresh: tryb konwersji — przygotuj, klasa od tego sa
   assert.match(konwersja, /docs\/archiwum\/learned-patterns-odrzuty-/)
   assert.match(konwersja, /CLAUDE\.md projektu nie edytujesz/)
 })
+
+test('whitelisty bazy wiedzy: refresh autopilota, dodatkowy pathspec archiwum i siatka complete-wf z indeksem w docs/', () => {
+  const zrodloAutopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
+  const zrodloComplete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'utf8')
+  assert.match(zrodloAutopilot, /Staguj po whiteliscie: \\`git add docs\/solutions\/ docs\/CONCEPTS\.md docs\/learned-patterns\.md\\`/)
+  assert.match(zrodloAutopilot, /\? \['docs\/solutions', 'docs\/CONCEPTS\.md', 'docs\/learned-patterns\.md'\]/)
+  assert.match(zrodloAutopilot, /Indeks wiedzy: \\`node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz\\`/)
+  assert.match(zrodloComplete, /artefakty bazy wiedzy — docs\/solutions\/, docs\/CONCEPTS\.md, docs\/learned-patterns\.md/)
+})

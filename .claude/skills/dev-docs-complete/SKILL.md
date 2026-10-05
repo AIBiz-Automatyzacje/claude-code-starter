@@ -59,7 +59,7 @@ Datę do plików bierz z `date +%F`.
 
    Dlaczego to nie jest formalność: <1–3 zdania o klasie błędów niewidocznych w testach w tym stacku,
    np. Tailwind cicho ignoruje nieistniejące klasy; scroll i overflow zachowują się inaczej na realnym
-   urządzeniu dotykowym niż w emulowanym viewporcie — z learned-patterns / known-issues projektu, jeśli są>.
+   urządzeniu dotykowym niż w emulowanym viewporcie — z indeksu wiedzy `docs/learned-patterns.md` / known-issues projektu, jeśli są>.
 
    ## ⚠️ E2E przebiegło i padło (znany defekt)   ← tylko gdy są linie z suffixem `(FAIL:`
    - [ ] [E2E] <treść checkboxa> — defekt opisany w `docs/completed/<zadanie>/known-issues.md` (faza N); napraw kod i uruchom scenariusz ponownie (tester agent-browser w review autopilota). NIE zmieniaj na `[Manual]`.
@@ -111,7 +111,7 @@ Datę do plików bierz z `date +%F`.
      - Wyciągnięte wnioski
      - Link do smoke'u operatora (jeśli powstał) i liczba pozycji do ręcznego sprawdzenia
 
-6. **Nie edytuj `CLAUDE.md` ani `.claude/rules/`.** `CLAUDE.md` uzgadnia się z kodem po merge'u pull requesta, nie przy archiwizacji; reguły do `learned-patterns.md` zapisuje `/dev-compound`. Decyzje architektoniczne zadania zapisujesz w pkt 6a.
+6. **Nie edytuj `CLAUDE.md` ani `.claude/rules/`.** `CLAUDE.md` uzgadnia się z kodem po merge'u pull requesta, nie przy archiwizacji; reguły wiedzy projektu zapisuje `/dev-compound` (pola w `docs/solutions/`, indeks `docs/learned-patterns.md`). Decyzje architektoniczne zadania zapisujesz w pkt 6a.
 
 6a. **Zapisz decyzje zadania** w `docs/decisions/<YYYY-MM-DD>-$ARGUMENTS.md` (`mkdir -p docs/decisions`). Plik powstaje zawsze — jest wejściem kroku, który po merge'u PR uzgadnia `CLAUDE.md` z kodem:
 

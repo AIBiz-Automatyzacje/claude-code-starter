@@ -60,7 +60,7 @@ const DOPISEK_RESULT = {
 const PROG_PLIKOW_PR = 150
 
 // Pathspec git add: wylacznie sciezki z tej listy. *.bak to kopie robocze operatora (np. stanu przed reczna edycja) —
-// nie wchodza do archiwum. Wyjscia compound (solution, learned-patterns) przychodza z autopilota.
+// nie wchodza do archiwum. Wyjscia compound (solution, indeks wiedzy) przychodza z autopilota.
 function pathspecArchiwum(nazwaZadania, smokePlik, dodatkowe) {
   return [
     `docs/active/${nazwaZadania}`, `docs/completed/${nazwaZadania}`,
@@ -107,7 +107,7 @@ function bramkaRozmiaruPr(pliki) {
 //   'nie-uruchomiono' = early return (brak args)
 const nazwaZadania = typeof args === 'string' ? args : args && args.nazwaZadania
 // Dodatkowe sciezki do commita archiwizacji (autopilot przekazuje wyjscia compound/refresh: solution,
-// docs/CONCEPTS.md, learned-patterns.md) — nikt inny ich nie commituje.
+// docs/CONCEPTS.md, docs/learned-patterns.md) — nikt inny ich nie commituje.
 const dodatkowePathspec = (args && Array.isArray(args.dodatkowePathspec)) ? args.dodatkowePathspec.filter((x) => typeof x === 'string' && x) : []
 if (!nazwaZadania) {
   return { archiwum: '', pliki: [], rezultaty: ['BLAD: brak args {nazwaZadania}'], commit: '', uwagi: [], smokeOperatora: '', smokeStatus: 'nie-uruchomiono' }
@@ -239,7 +239,7 @@ ${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md
    (nieistniejacy pathspec = fatal i git add nie stage'uje NICZEGO). Jesli docs/active/${nazwaZadania} nie ma juz
    w indeksie (uzyles git mv wbrew krokowi 4) — pomin te sciezke, rename'y sa juz zestage'owane.
    SIATKA BEZPIECZENSTWA: sprawdz \`git status --porcelain\` i jesli wisza niezacommitowane
-   artefakty bazy wiedzy — docs/solutions/, docs/CONCEPTS.md, .claude/rules/learned-patterns.md
+   artefakty bazy wiedzy — docs/solutions/, docs/CONCEPTS.md, docs/learned-patterns.md
    — dolacz je do TEGO commita (compound albo compound-refresh nie domknal swojego commita);
    takze tutaj dodawaj wylacznie sciezki istniejace na dysku lub w indeksie.
    Powod: dwa runy z rzedu zostawily te pliki w drzewie, a brudne drzewo blokuje bramke bootstrapu

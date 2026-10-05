@@ -18,8 +18,6 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
 // Typy agentow wbudowane w Claude Code (bez pliku w .claude/agents/), uzywane w workflowach szablonu.
 const AGENCI_WBUDOWANI = ['general-purpose']
-// Pliki, ktorych szablon nie ma, bo tworzy je pipeline w projekcie (learned-patterns: dev-compound przy pierwszej regule).
-const TWORZONE_W_PROJEKCIE = ['.claude/rules/learned-patterns.md']
 
 /**
  * @param {string} katalog
@@ -93,7 +91,7 @@ function naruszeniaSciezek(korzen) {
   for (const plik of [...workflowy, ...agenci, ...skille]) {
     const sciezki = trafienia(readFileSync(plik, 'utf8'), /(\.claude\/(?:agents|hooks|rules|scripts|skills|templates|workflows)\/[\w.*<>{}/-]+)/g)
       .map((s) => s.replace(/\.+$/, ''))
-      .filter((s) => !/[*<>{}]/.test(s) && !TWORZONE_W_PROJEKCIE.includes(s))
+      .filter((s) => !/[*<>{}]/.test(s))
     for (const sciezka of new Set(sciezki)) {
       if (!existsSync(join(korzen, sciezka))) wyniki.push(`${relative(korzen, plik)}: ${sciezka} nie istnieje`)
     }
@@ -173,7 +171,7 @@ test('agentType: repo szablonu nie ma martwych odwolan do agentow', () => {
   assert.deepEqual(naruszeniaAgentow(REPO), [])
 })
 
-test('sciezki .claude/: podlozona sciezka do nieistniejacego skilla i reguly jest zglaszana, wzorce i pliki projektu nie', () => {
+test('sciezki .claude/: podlozona sciezka do nieistniejacego skilla i reguly jest zglaszana (takze stary plik regul projektu), wzorce nie', () => {
   const wynik = naPodlozonym({
     '.claude/skills/jest/SKILL.md': 'Czytaj .claude/skills/jest/SKILL.md i .claude/skills/usuniety/SKILL.md.\n',
     '.claude/agents/a.md': 'Regula: `.claude/rules/brak.md`. Wzorzec .claude/skills/<nazwa>/SKILL.md, .claude/workflows/*.js.\n'
@@ -182,6 +180,7 @@ test('sciezki .claude/: podlozona sciezka do nieistniejacego skilla i reguly jes
   }, naruszeniaSciezek)
   assert.deepEqual(wynik, [
     '.claude/agents/a.md: .claude/rules/brak.md nie istnieje',
+    '.claude/agents/a.md: .claude/rules/learned-patterns.md nie istnieje',
     '.claude/skills/jest/SKILL.md: .claude/skills/usuniety/SKILL.md nie istnieje',
   ])
 })

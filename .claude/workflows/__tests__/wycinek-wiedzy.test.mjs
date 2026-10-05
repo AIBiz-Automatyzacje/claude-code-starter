@@ -48,3 +48,10 @@ test('reviewer bez dossier: wycinek tym samym skryptem po plikach fazy, bez star
   assert.match(zrodlaBlok(3, { ctxZapisany: true, ctxPlik: '/tmp/c.md' }), /sekcji "Reguly projektu" dossier/)
   assert.doesNotMatch(zrodloReview, /\.claude\/rules\/learned-patterns/)
 })
+
+test('buildery (z wariantami -figma): bez kroku czytania pliku regul — reguly przychodza w prompcie od plannera (PA-27)', () => {
+  for (const nazwa of ['ui', 'ui-figma', 'data', 'fullstack', 'fullstack-figma']) {
+    const plik = readFileSync(resolve(KATALOG, `../../agents/feature-builder-${nazwa}.md`), 'utf8')
+    assert.doesNotMatch(plik, /learned-patterns|### 1\.7\. Wyuczone reguły/, `feature-builder-${nazwa}`)
+  }
+})

@@ -1881,10 +1881,11 @@ Wykonaj skill .claude/skills/dev-compound-refresh/SKILL.md w TRYBIE AUTONOMICZNY
 - Cel: czy nowy solution (${plik}) podwaza/zastepuje siostrzany dokument w tej kategorii; dedup i weryfikacja hasel w docs/CONCEPTS.md; napraw nieaktualne referencje.
 - Wykonuj bezpieczne akcje (Keep/Update/Archive/Replace gdy dowody wystarczajace); niejednoznaczne oznacz stale. Best-effort — nie blokuj.
 - Subagentow nie uruchamiasz: zakres to 1-2 dokumenty, wiec badanie i dokument zastepczy (Replace) piszesz sam.
+- Indeks wiedzy: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` po akcjach (Faza 1.7 skilla).
 - PO wykonaniu akcji ZACOMMITUJ zmienione dokumenty bazy wiedzy. Kto zapisuje, ten commituje: dwa runy
   z rzedu zostawily artefakty bazy wiedzy niezacommitowane, a brudne drzewo blokuje bramke bootstrapu
   nastepnego runu autopilota (STOP "niezacommitowane zmiany").
-  Staguj WYLACZNIE po whiteliscie: \`git add docs/solutions/ docs/CONCEPTS.md .claude/rules/learned-patterns.md\`
+  Staguj po whiteliscie: \`git add docs/solutions/ docs/CONCEPTS.md docs/learned-patterns.md\`
   (pomin sciezki, ktorych nie ma na dysku). ZAKAZ \`git add -A\` i \`git add .\`.
   Message: \`docs(solutions): odswiezenie bazy wiedzy — <co zmieniono>\`.
   Gdy nie zmieniles zadnego pliku albo commit sie nie udal — zwroc commit: "" i nie przerywaj.
@@ -1913,11 +1914,11 @@ if (stan.zakonczenie.complete === 'pending') {
   // Refresh sam commituje po whiteliscie (patrz refreshPrompt), ale to best-effort: gdy jego commit sie nie
   // uda (albo compound nie domknie swojego), run konczylby sie OK z brudnym drzewem i nastepny bootstrap
   // STOP-owalby. Katalogowo, nie punktowo: refresh edytuje TAKZE siostrzane solutions (Update/Replace/Archive ->
-  // docs/solutions/_archived/), CONCEPTS.md i learned-patterns.md niezaleznie od pol CompoundResult, a nie
+  // docs/solutions/_archived/), CONCEPTS.md i indeks docs/learned-patterns.md niezaleznie od pol CompoundResult, a nie
   // raportuje sciezek. Bootstrap gwarantuje czyste drzewo na starcie, wiec wszystko brudne pod tymi sciezkami
   // pochodzi z tego runu. complete-wf pomija sciezki nieistniejace (krok 8), wiec brak katalogu nie szkodzi.
   const dodatkowePathspec = compound
-    ? ['docs/solutions', 'docs/CONCEPTS.md', '.claude/rules/learned-patterns.md']
+    ? ['docs/solutions', 'docs/CONCEPTS.md', 'docs/learned-patterns.md']
     : []
   await zapiszZaleglyStan()
   complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec })

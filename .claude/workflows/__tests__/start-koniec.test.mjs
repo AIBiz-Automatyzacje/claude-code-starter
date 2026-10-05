@@ -200,13 +200,13 @@ test('instrukcja commita: temat w pierwszym -m, stopka tylko w drugim -m (git ws
 // ── Archiwizacja (dev-docs-complete-wf) ───────────────────────────────────
 
 test('pathspec archiwum: katalogi zadania, smoke, decyzje i wyjscia compound; bez CLAUDE.md, .claude/rules/ i *.bak', () => {
-  const p = C.pathspecArchiwum('zadanie-x', 'docs/operator/2026-10-02-zadanie-x-smoke.md', ['docs/solutions', '.claude/rules/learned-patterns.md'])
-  for (const s of ['docs/active/zadanie-x', 'docs/completed/zadanie-x', 'docs/operator/2026-10-02-zadanie-x-smoke.md', 'docs/decisions', 'docs/solutions']) {
+  const p = C.pathspecArchiwum('zadanie-x', 'docs/operator/2026-10-02-zadanie-x-smoke.md', ['docs/solutions', 'docs/learned-patterns.md'])
+  for (const s of ['docs/active/zadanie-x', 'docs/completed/zadanie-x', 'docs/operator/2026-10-02-zadanie-x-smoke.md', 'docs/decisions', 'docs/solutions', 'docs/learned-patterns.md']) {
     assert.ok(p.split(' ').includes(s), `brak ${s}`)
   }
   assert.ok(!p.includes('CLAUDE.md'))
   assert.ok(p.includes("':(exclude,glob)**/*.bak'"), 'kopie robocze operatora nie wchodza do archiwum')
-  assert.deepEqual(p.split(' ').filter((/** @type {string} */ s) => s.startsWith('.claude/rules/')), ['.claude/rules/learned-patterns.md'], 'z rules tylko wyjscie compound')
+  assert.deepEqual(p.split(' ').filter((/** @type {string} */ s) => s.startsWith('.claude/')), [], 'wiedza projektu lezy w docs/, archiwum nie dotyka .claude/')
 })
 
 test('pathspec archiwum bez smoke i bez compound', () => {

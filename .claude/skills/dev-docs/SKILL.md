@@ -59,7 +59,7 @@ Input: `$ARGUMENTS` — ścieżka do planu technicznego (`docs/plans/YYYY-MM-DD-
    - (c) wygląda na ścieżkę w repo, ale plik nie istnieje → tylko ostrzeżenie w handoffie Fazy 5 („`origin` wskazuje nieistniejący plik — popraw frontmatter planu").
 3. **Kontekst designerski:** pola `design_md`, `figma_spec`, `figma_screens` z frontmattera. Jeśli `figma_spec` ≠ null, a plik nie istnieje → STOP: „Plan deklaruje `figma_spec: <ścieżka>`, ale plik nie istnieje. Wróć do `/dev-plan` i zregeneruj kontekst designerski." To samo dla każdego PNG z `figma_screens`.
 4. **`docs/CONCEPTS.md`** (jeśli istnieje) — używaj terminologii słownika w nazwach faz i checkboxów; nie przepisuj pojęć inaczej niż plan.
-5. **`.claude/rules/learned-patterns.md`** (jeśli istnieje) — tylko do sprawdzenia scenariuszy `[E2E]` w Fazie 2 pkt 4.
+5. **`docs/learned-patterns.md`** (indeks wiedzy projektu, jeśli istnieje) — tylko do sprawdzenia scenariuszy `[E2E]` w Fazie 2 pkt 4.
 
 ### Faza 2: Transformacja planu w checklistę
 
@@ -177,6 +177,6 @@ Zanim zaproponujesz uruchomienie, sprawdź trzy rzeczy i **wypisz wynik każdej*
 Jeśli bramka ma czerwone pozycje — `➡️ Następny krok` wskazuje najpierw ich usunięcie (setup środowiska E2E, odhaczenie przygotowania, opt-out `[E2E]` → `[Manual]`), potem **obowiązkowy commit tych zmian** (każda z tych dróg modyfikuje śledzone pliki: operator checklist ze ścieżki `operator_prep`, `docs/active/<nazwa>/`, plan techniczny, `.gitignore` po setupie e2e), np. `git add <dokładne ścieżki> && git commit -m "docs(<nazwa>): przygotowanie operatora"` i `git status --short` puste — bootstrap autopilota zatrzyma run na brudnym drzewie. Dopiero potem autopilot. Gdy użytkownik usuwa czerwone pozycje w tej samej sesji, zrób ten commit sam przed wywołaniem `Workflow`. Gdy użytkownik wybierze uruchomienie autopilota, **uruchom go toolem `Workflow`** w bieżącej sesji — nie opisuj tylko komendy.
 
 ## Referencje kontekstowe
-- `.claude/rules/coding-rules.md` i `.claude/rules/learned-patterns.md` — tylko do bramki E2E (Faza 2 pkt 4); nie dopisuj z nich zadań
+- `.claude/rules/coding-rules.md` i indeks wiedzy `docs/learned-patterns.md` — tylko do bramki E2E (Faza 2 pkt 4); nie dopisuj z nich zadań
 - `docs/CONCEPTS.md` — terminologia
 - Kontrakt parsera: `.claude/workflows/dev-autopilot-wf.js` (bootstrap, sekcja „PLIKU NIE MA"), `dev-docs-execute-wf.js` (planner), `dev-docs-review-wf.js` (scribe) — gdy zmieniasz format, zmień też tam

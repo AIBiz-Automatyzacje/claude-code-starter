@@ -40,9 +40,6 @@ Jeśli prompt zawiera blok "Mandatory designerski kontekst" — przeczytaj **wsz
 ### 1.6. Słownik domenowy (jeśli istnieje)
 Jeśli w repo jest `docs/CONCEPTS.md`, przeczytaj go — glosariusz pojęć o projektowo-specyficznym znaczeniu (statusy, encje, nazwane procesy). Używaj tej terminologii i NIE zmieniaj zachowania wbrew definicjom (np. nie „naprawiaj" statusu, który celowo działa nietypowo).
 
-### 1.7. Wyuczone reguły
-Przeczytaj `.claude/rules/learned-patterns.md` (jeśli istnieje) — reguły wyprodukowane z problemów rozwiązanych w poprzednich zadaniach tego projektu. Stosuj je przy implementacji; mają pierwszeństwo przed ogólnymi wzorcami, bo kodują pułapki specyficzne dla tego repo.
-
 ### 2. Sprawdź wzorce w repo
 PRZED napisaniem kodu uruchom Grep/Glob, żeby znaleźć:
 - Komponenty wzorcowe wymienione w `Wzorce do naśladowania`
