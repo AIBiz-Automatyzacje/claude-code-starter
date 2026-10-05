@@ -16,7 +16,7 @@ import assert from 'node:assert/strict'
 import { MAKS_POLECEN, liczbaPolecen, naruszeniaWarstwy } from '../../scripts/doctor/warstwa-stala.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
-const ROLE_Z_WARSTWA = ['correctness-reviewer']
+const ROLE_Z_WARSTWA = ['correctness-reviewer', 'spec-compliance-reviewer']
 
 /**
  * @param {string} cialo
@@ -49,12 +49,13 @@ test('blok ponad budzet polecen jest zglaszany', () => {
   assert.deepEqual(naruszeniaWarstwy(plik(`Szukasz defektow.\n\n## Polecenia\n\n${lista}\n`)), [`polecen w bloku: ${MAKS_POLECEN + 1}, budzet ${MAKS_POLECEN}`])
 })
 
-test('zdanie nakazowe poza blokiem jest zglaszane, opis poza blokiem nie', () => {
-  const tekst = plik(`Szukasz defektow.\n\n## Wejscie\n\nDossier ma diff fazy. Sprawdz kazda sciezke.\n- Nie zglaszaj stylu.\nMusisz czytac plan.\n\n## Polecenia\n\n- Wypisz drogi.\n`)
+test('zdanie nakazowe poza blokiem jest zglaszane, opis poza blokiem (takze „nalezy do”) nie', () => {
+  const tekst = plik(`Szukasz defektow.\n\n## Wejscie\n\nDossier ma diff fazy. Styl nalezy do innej osi. Sprawdz kazda sciezke.\n- Nie zglaszaj stylu.\nMusisz czytac plan. Nalezy czytac diff.\n\n## Polecenia\n\n- Wypisz drogi.\n`)
   assert.deepEqual(naruszeniaWarstwy(tekst), [
     'zdanie nakazowe poza blokiem: "Sprawdz kazda sciezke."',
     'zdanie nakazowe poza blokiem: "Nie zglaszaj stylu."',
     'zdanie nakazowe poza blokiem: "Musisz czytac plan."',
+    'zdanie nakazowe poza blokiem: "Nalezy czytac diff."',
   ])
 })
 

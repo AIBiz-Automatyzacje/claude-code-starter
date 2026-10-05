@@ -14,7 +14,8 @@ const POZYCJA = /^\s*(?:[-*]|\d+\.)\s+/
 const DATA = /\b20\d\d-\d\d-\d\d\b/g
 const FRAZA_MIGRACYJNA = /\b(?:jak dot[aą]d|ju[zż] nie)\b/gi
 const NUMER_SEKCJI = /§\s*\d+/g
-const MODALNE = /\b(?:musisz|nalezy|nie wolno|pamietaj)\b/
+// „nalezy do” to przynaleznosc („styl nalezy do innej osi”), nie nakaz.
+const MODALNE = /\b(?:musisz|nalezy(?! do\b)|nie wolno|pamietaj)\b/
 const ROZKAZUJACE = new Set([
   'badz', 'cytuj', 'czytaj', 'dodaj', 'dopisz', 'idz', 'klasyfikuj', 'licz', 'miej', 'napisz', 'ocen', 'oceniaj', 'odczytaj',
   'opisz', 'oznacz', 'pisz', 'podaj', 'policz', 'pomijaj', 'pomin', 'popraw', 'porownaj', 'przeczytaj', 'przejdz', 'przejrzyj',

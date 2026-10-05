@@ -68,7 +68,7 @@ wiec nit bez wykonalnej tresci zostaje martwym wpisem. P3 zglaszasz wtedy, gdy T
 Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE niz zero.
 === KONIEC BLOKU LIMITU P3 ===`
 
-// Doklejany do spec-compliance i test-coverage. Powod (run feedback-marcin-poprawki, 2026-08-06,
+// Doklejany do test-coverage (spec-compliance ma te procedure jako liste w pliku roli). Powod (run feedback-marcin-poprawki, 2026-08-06,
 // repo mobile — klasa bledu w pelni przenosna): `price_pln` to koszt CALEGO turnieju, ale trzy miejsca
 // w kodzie czytaly go jako kwote OD GRACZA — rejestr wplat pokazywal "zebrano 640 zl z 1280 zl"
 // zamiast 80 z 160 (8x zawyzenie), a jeden ekran jednoczesnie "5,00 zl za osobe" i "40 zl od gracza".
@@ -366,9 +366,8 @@ const REVIEWERZY = [
   { key: 'code-quality', agentType: 'architecture-strategist', fokus: 'jakosc wewnetrzna kodu, trzy osie naraz: (a) GRANICE I STRUKTURA — SOLID, granice warstw (komponent nie wola bazy), circular deps, organizacja importow, nazewnictwo (5-sekundowa regula); (b) YAGNI I MARTWY KOD — zbedna zlozonosc, abstrakcje bez 2+ uzyc, defensive code na scenariusze, ktore nie moga wystapic, redundancja, uproszczenia bez utraty funkcji (Duplication > Complexity: prosta duplikacja jest OK, zlozona abstrakcja DRY nie); (c) BEZPIECZENSTWO TYPOW — brak any/as/non-null !, discriminated unions zamiast flag boolean, explicit return types funkcji publicznych, walidacja na granicach systemu. Kazda os oceniaj OSOBNO i nie zatrzymuj sie po pierwszej — finding z jednej nie zwalnia z przejscia pozostalych' },
   // Procedura osi (polecenia-listy) siedzi w pliku roli correctness-reviewer.md — fokus nazywa tylko os.
   { key: 'correctness', agentType: 'correctness-reviewer', fokus: 'poprawnosc wykonania zmienionych sciezek wg list z pliku Twojej roli' },
-  // semantyka:true -> dostaje BLOK_SEMANTYKA. Tylko spec-compliance, bo tylko on ma ZRODLO PRAWDY
-  // (spec/IU) jako punkt odniesienia; pozostali dostaja procedure posrednio przez test-coverage.
-  { key: 'spec-compliance', semantyka: true, agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji ze spec/planem IU: (a) wymagania ze spec/IU BRAKUJACE lub czesciowo zaimplementowane (under-implementation), (b) zachowanie w diffie o ktore nikt nie prosil (scope creep / over-implementation), (c) wymagania pozornie zaimplementowane ale BLEDNIE. Cytuj linie spec/IU (ID wymagania lub nazwa IU). Jesli brak spec ani planu — zwroc pusta liste findingow' },
+  // Polecenia-listy osi (wymagania <-> implementacja, teksty, dokument prawny, semantyka pol) siedza w pliku roli.
+  { key: 'spec-compliance', agentType: 'spec-compliance-reviewer', fokus: 'zgodnosc implementacji z zamowieniem fazy wg list z pliku Twojej roli' },
   // test-coverage ma wlasny prompt (testCoveragePrompt); wpis tu daje mu ten sam routing co pozostalym osiom.
   { key: 'test-coverage', agentType: 'test-coverage-reviewer' },
 ]
@@ -451,13 +450,13 @@ Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako fi
 Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.`
 }
 
-function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, semantyka) {
+function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst) {
   return `Jestes reviewerem fazy ${faza} w folderze ${sciezka}.
 ${zrodlaBlok(faza, kontekst)}
 Skup sie na: ${fokus}.
 Sklasyfikuj kazdy finding: P1 (blocking), P2 (important), P3 (nit) oraz typ: KOD / TEST / E2E / OPERATOR.
 Zwroc obiekt {findings:[...]} zgodny ze schematem. Sam nie zapisuj plikow.
-${BLOK_ZAUFANIE}${semantyka ? BLOK_SEMANTYKA : ''}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
 function testCoveragePrompt(sciezka, faza, poprzednie, kontekst) {
@@ -881,8 +880,8 @@ log(kontekst && kontekst.ctxZapisany
 // `review:${r.key}` nie mowi, ktora to os.
 function wywolajOs(r) {
   if (r.key === 'test-coverage') return agent(testCoveragePrompt(sciezka, faza, poprzTest, kontekst), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.testCoverage))
-  if (r.key === 'spec-compliance') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: 'spec-compliance-reviewer', label: 'review:spec-compliance', phase: 'Review' }, tiery.spec))
-  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, !!r.semantyka), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
+  if (r.key === 'spec-compliance') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: 'spec-compliance-reviewer', label: 'review:spec-compliance', phase: 'Review' }, tiery.spec))
+  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 }
 const thunki = aktywni.map((r) => () => wywolajOs(r))
 if (e2eTryb !== 'pominiety') {
