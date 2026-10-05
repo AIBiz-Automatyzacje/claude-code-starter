@@ -40,12 +40,12 @@ REGULY:
 // watku, obejscie MAX_*_LEN) zostala zredukowana do dwoch P3 z uzasadnieniem "skrypt jednorazowy,
 // usuwany w kolejnym IU". Zewnetrzny commit-reviewer nazwal to authentication-bypass/high.
 const BLOK_ZAUFANIE = `
-=== GRANICE ZAUFANIA POZA WARSTWA API (obowiazkowe przy ocenie severity) ===
-Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane
-OMIJAJAC warstwe API, sa granica zaufania: obowiazuje ta sama walidacja tozsamosci, limitow i ksztaltu
-danych co na endpointach. Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
-"Jednorazowy / throwaway / usuwany w kolejnym IU / tylko lokalnie" NIE jest podstawa do obnizenia severity —
-oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danych.
+=== GRANICE ZAUFANIA POZA WARSTWA API (przy ocenie wagi) ===
+Skrypty migracyjne, ETL, importy, seedy, joby wsadowe i narzedzia jednorazowe, ktore zapisuja dane z pominieciem
+warstwy API, sa granica zaufania: obowiazuje je ta sama walidacja tozsamosci, limitow i ksztaltu danych co endpointy.
+Pytanie kontrolne: czy zrodlo danych moglo byc zapisywalne przez kogos z zewnatrz?
+Opis "jednorazowy", "throwaway", "usuwany w kolejnym IU" albo "tylko lokalnie" nie obniza wagi, bo skutek liczy sie
+w chwili, w ktorej skrypt zostanie uruchomiony na realnych danych.
 === KONIEC BLOKU GRANIC ZAUFANIA ===`
 
 // Doklejany do KAZDEGO agenta zglaszajacego findingi (reviewerzy, test-coverage, e2e).
@@ -54,18 +54,17 @@ oceniaj wplyw w momencie, w ktorym skrypt zostanie URUCHOMIONY na realnych danyc
 // w known-issues, skad trafiaja do opisu PR i bota. Limit dotyczy WYLACZNIE P3: przemilczany P1 to katastrofa.
 const BLOK_LIMIT_P3 = `
 === LIMIT I AKCYJNOSC P3 (nity) ===
-LIMIT: zglos MAKSYMALNIE 5 findingow P3. Widzisz wiecej — wybierz 5 najwartosciowszych, reszty NIE zglaszaj.
-Limit dotyczy TYLKO severity P3. P1 i P2 NIE sa limitowane: zglos kazdy, choc bys mial ich dwadziescia.
-Findingi typu OPERATOR (warunek srodowiskowy, nie defekt) sa poza limitem — nie licz ich do piatki.
-AKCYJNOSC: P3 laduje w known-issues zadania i w opisie PR. Czyta go operator albo bot bez kontekstu tego review,
-wiec nit bez wykonalnej tresci zostaje martwym wpisem. P3 zglaszasz wtedy, gdy Twoj opis spelnia oba warunki:
-  (a) DOKLADNIE JEDEN plik z numerem linii w polu \`plik\` (format \`sciezka/plik.ts:123\`, nie "?",
-      nie "kilka miejsc", nie sam katalog). P3 rozlany po wielu plikach to refaktor, nie nit — nie zglaszasz.
-  (b) opis zawiera ZDANIE AKCJI: co zmienic i na co, na tyle konkretnie, ze da sie to zrobic bez pytan
-      (np. "zamien \`as SessionRow\` na guard \`isSessionRow()\` z linii 12" — nie "poprawic typowanie").
-"Warto by kiedys rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza", "rozwazyc refaktor",
-"do przemyslenia w przyszlosci" — to NIE sa findingi. Nit bez akcji w jednym pliku to szum.
-Nie dobijaj do piatki na sile: zero akcyjnych P3 => zero P3 w wyniku. Piec pustych nitow jest GORSZE niz zero.
+Zglaszasz najwyzej 5 findingow P3; gdy widzisz wiecej, wybierz 5 najwartosciowszych. Limit dotyczy wagi P3 — P1 i P2
+zglaszasz wszystkie, bo przemilczany P1 kosztuje wiecej niz kazda liczba nitow. Findingi typu OPERATOR (warunek
+srodowiskowy, nie defekt) nie wliczaja sie do piatki.
+P3 trafia do known-issues zadania i do opisu PR, gdzie czyta go operator albo bot bez kontekstu tego review, wiec
+zglaszasz go wtedy, gdy spelnia oba warunki:
+  (a) pole \`plik\` wskazuje dokladnie jeden plik z numerem linii (\`sciezka/plik.ts:123\`, nie "?", "kilka miejsc"
+      ani sam katalog) — P3 rozlany po wielu plikach to refaktor, nie nit;
+  (b) opis zawiera zdanie akcji: co zmienic i na co, tak konkretnie, ze da sie to zrobic bez pytan
+      (np. "zamien \`as SessionRow\` na guard \`isSessionRow()\` z linii 12", a nie "poprawic typowanie").
+"Warto by rozwazyc", "mozna by dodac wiecej testow", "nazwa moglaby byc lepsza" i "do przemyslenia" nie sa findingami.
+Zero akcyjnych P3 daje zero P3 w wyniku: pusty nit placi dedup i miejsce w opisie PR, a nikt go nie wykona.
 === KONIEC BLOKU LIMITU P3 ===`
 
 // Globalny limit P3 PO dedupie (port z mobile, 2026-08-08). BLOK_LIMIT_P3 dziala per reviewer, wiec agregat i tak
@@ -337,12 +336,11 @@ function rereviewBlok(poprzednie) {
   return `
 
 === TRYB RE-REVIEW (po cyklu fix) ===
-To NIE jest swiezy review. Ponizej findingi z poprzedniego review tej fazy:
+To weryfikacja napraw, nie swiezy review. Ponizej findingi z poprzedniego review tej fazy:
 ${JSON.stringify(poprzednie, null, 2)}
 
-Twoje zadanie:
-1. Dla KAZDEGO powyzszego findingu sprawdz w kodzie czy zostal naprawiony. Jesli NADAL otwarty -> zglos go ponownie (ten sam severity/typ).
-2. Zglaszaj NOWY finding WYLACZNIE jesli to REGRESJA wprowadzona przez commit fix (cos co fix zepsul). NIE rob pelnego re-skanu calej fazy, NIE zglaszaj pre-existing problemow ktorych poprzedni review nie wykryl.
+1. Dla kazdego powyzszego findingu sprawdz w kodzie, czy zostal naprawiony; finding nadal otwarty zglaszasz ponownie z ta sama waga i typem.
+2. Nowy finding zglaszasz wtedy, gdy to regresja wprowadzona przez commit fixa (cos, co fix zepsul). Pelny re-skan fazy i problemy, ktorych poprzedni review nie wykryl, zostaja poza tym trybem, bo powtorka review po fixie daje wiecej falszywych zgloszen niz prawdziwych.
 Cel: zweryfikowac skutecznosc napraw, nie wygenerowac nowa liste.`
 }
 
@@ -356,10 +354,10 @@ function mapaBlok(kontekst) {
     ? `
 === PELNY DIFF FAZY (juz przygotowany) ===
 Plik: ${kontekst.diffPlik}
-ZACZNIJ od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam. NIE odpalaj wlasnego \`git diff\` calej fazy.${kontekst.diffUciety ? `
-UWAGA: ten zrzut jest PRZYCIETY (limit 300 KB, znacznik uciecia na koncu pliku) — NIE jest pelnym obrazem zmian.
+Zacznij od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam, wiec wlasny \`git diff\` calej fazy to podwojny koszt.${kontekst.diffUciety ? `
+Ten zrzut jest przyciety (limit 300 KB, znacznik uciecia na koncu pliku), wiec nie jest pelnym obrazem zmian.
 Pliki z listy powyzej, ktorych w zrzucie nie ma, dobierz osobno (Read pliku albo \`git diff -- <plik>\`).` : ''}
-Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu.`
+Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy: brak artefaktu nie zwalnia Cie z obejrzenia pelnego diffu.`
     : ''
   // Dossier fazy. Ten sam wzorzec fail-open co przy diffie: gdy go nie ma albo Read padnie, blok znika / niesie
   // instrukcje powrotu do pelnych dokumentow — zmieniamy DROGE do faktow, nie ich dostepnosc.
@@ -368,15 +366,14 @@ Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczys
 === DOSSIER FAZY (juz przygotowane) ===
 Plik: ${kontekst.ctxPlik}
 Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip, advisors,
-przezyte mutanty), sekcje planu technicznego TEJ fazy, przywolane wiersze "Sledzenie wymagan",
+przezyte mutanty), sekcje planu technicznego tej fazy, przywolane wiersze "Sledzenie wymagan",
 wycinek wiedzy projektu dla plikow fazy, zadania fazy i kontekst designerski.
-ZACZNIJ od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj WYLACZNIE wtedy,
-gdy jednostka implementacyjna odsyla do czegos, czego w dossier NIE MA (np. decyzja z innej fazy,
-wymaganie spoza przywolanych wierszy). Nie czytaj ich "dla kontekstu" — osiem osob czytajacych te same
-70 KB to jest dokladnie ten koszt, ktory ten plik usuwa.
+Zacznij od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj wtedy, gdy jednostka
+implementacyjna odsyla do czegos, czego w dossier nie ma (np. decyzja z innej fazy, wymaganie spoza przywolanych
+wierszy); lektura "dla kontekstu" to kazda os czytajaca te same 70 KB, czyli koszt, ktory ten plik usuwa.
 Gdy Read sie nie powiedzie albo plik bedzie pusty (np. /tmp wyczyszczone) — przeczytaj pelne dokumenty
 (plan techniczny fazy, requirements doc) i policz wycinek wiedzy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z mapy zmian po przecinku>\`;
-brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
+brak artefaktu nie zwalnia Cie ze znajomosci wymagan fazy.`
     : ''
   // Pre-skan (plan B6): dwa wzorce, ktore JS widzi na pewno, podane reviewerom jako WSKAZOWKA, nie werdykt.
   // Klasyfikacja zostaje przy reviewerze — pusty catch w bloku, ktory za chwile i tak rzuca, bywa poprawny.
@@ -385,9 +382,9 @@ brak artefaktu NIE zwalnia Cie ze znajomosci wymagan fazy.`
     ? `
 === PRE-SKAN MECHANICZNY (grep po dodanych liniach, bez oceny) ===
 ${preSkan.map((t) => `- ${t.wzorzec}: ${t.plik}`).join('\n')}
-To sa MIEJSCA, nie findingi. Obejrzyj kazde i sam zdecyduj, czy to defekt — pusty catch bywa swiadomy,
-a \`.then\` bez \`.catch\` moze miec obsluge pietro wyzej. Brak wpisu na tej liscie NIE znaczy, ze pliku
-nie trzeba sprawdzic: to uzupelnienie Twojego przegladu, nie jego zamiennik.`
+To sa miejsca, nie findingi. Obejrzyj kazde i sam zdecyduj, czy to defekt — pusty catch bywa swiadomy,
+a \`.then\` bez \`.catch\` moze miec obsluge pietro wyzej. Plik bez wpisu na tej liscie sprawdzasz jak kazdy inny:
+lista uzupelnia Twoj przeglad, nie zastepuje go.`
     : ''
   return `
 
@@ -395,7 +392,7 @@ nie trzeba sprawdzic: to uzupelnienie Twojego przegladu, nie jego zamiennik.`
 ${kontekst.diffStat || ''}
 ${lista}
 ${diffBlok}${ctxBlok}${preSkanBlok}
-Uzyj jej jako punktu startu. Read tylko pliki istotne dla Twojego fokusu — pelna wiernosc, NIE polegaj wylacznie na mapie.`
+Uzyj jej jako punktu startu i czytaj pliki istotne dla Twojej osi — mapa wskazuje miejsca, kod ocenia sie w plikach.`
 }
 
 // Zrodla wymagan podawane reviewerowi. Z dossier lektura zaczyna sie i zwykle konczy na nim; bez dossier

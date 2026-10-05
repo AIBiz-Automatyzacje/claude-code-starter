@@ -61,5 +61,6 @@ test('scribe: prompt krotszy niz przed P8 (8297 znakow stalej czesci)', () => {
 test('blok limitu P3: P3 laduja w known-issues i opisie PR, nie w fixie', () => {
   assert.doesNotMatch(BLOK_LIMIT_P3, /DO NAPRAWY|agenta fixa|ture/)
   assert.match(BLOK_LIMIT_P3, /known-issues/)
-  assert.match(BLOK_LIMIT_P3, /DOKLADNIE JEDEN plik z numerem linii/, 'akcyjnosc zostaje: wpis known-issues czyta ktos bez kontekstu review')
+  // Zmiana kontraktu (P11): blok wg zasad pisania bez wersalikow nacisku — warunek akcyjnosci ten sam, brzmienie malymi literami.
+  assert.match(BLOK_LIMIT_P3, /dokladnie jeden plik z numerem linii/, 'akcyjnosc zostaje: wpis known-issues czyta ktos bez kontekstu review')
 })

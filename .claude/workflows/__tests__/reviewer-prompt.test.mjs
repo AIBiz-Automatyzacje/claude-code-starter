@@ -74,3 +74,21 @@ test('fokus: os z blokiem polecen w pliku roli niesie w fokusie sama nazwe osi',
     assert.ok(r.fokus.length <= MAKS_FOKUSU_OSI_Z_PLIKIEM, `${r.key}: fokus ${r.fokus.length} zn.`)
   }
 })
+
+// Bloki doklejane do polecen reviewerow (granice zaufania dla osi i sceptykow, limit P3, mapa zmian, tryb re-review)
+// wg zasad pisania: powod zamiast nacisku. Wersaliki zostaja w liniach-znacznikach `===` i w skrotach oraz nazwach typow.
+const WERSALIKI = /\b[A-Z]{3,}\b/g
+const SKROTY = new Set(['API', 'ETL', 'OPERATOR', 'JSON'])
+const BLOKI = [
+  ['BLOK_ZAUFANIE', 'const BLOK_ZAUFANIE = `', '=== KONIEC BLOKU'],
+  ['BLOK_LIMIT_P3', 'const BLOK_LIMIT_P3 = `', '=== KONIEC BLOKU'],
+  ['rereviewBlok', 'function rereviewBlok(', '\n}'],
+  ['mapaBlok', 'function mapaBlok(', '\n}'],
+]
+
+for (const [nazwa, kotwica, koniec] of BLOKI) {
+  test(`${nazwa}: bez wersalikow nacisku poza liniami-znacznikami`, () => {
+    const tresc = wytnij(kotwica, koniec).split('\n').filter((l) => !/^\s*(?:===|\/\/|const |function )/.test(l)).join('\n')
+    assert.deepEqual([...tresc.matchAll(WERSALIKI)].map((m) => m[0]).filter((w) => !SKROTY.has(w)), [])
+  })
+}

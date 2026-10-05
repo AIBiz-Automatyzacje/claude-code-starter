@@ -169,10 +169,11 @@ test('mapaBlok: dossier i diff ze skryptu z zapasowa sciezka bez archeologii (H5
   assert.match(blok, /Plik: \/tmp\/ctx\.md/)
   assert.match(blok, /Plik: \/tmp\/d\.diff/)
   assert.doesNotMatch(blok, /dokladnie jak dotad/)
-  assert.match(blok, /zrob wlasny `git diff` fazy: brak artefaktu NIE zwalnia Cie z obejrzenia pelnego diffu/)
+  // Zmiana kontraktu (P11): blok wg zasad pisania bez wersalikow nacisku — zapasowa sciezka ta sama, brzmienie malymi literami.
+  assert.match(blok, /zrob wlasny `git diff` fazy: brak artefaktu nie zwalnia Cie z obejrzenia pelnego diffu/)
   assert.match(blok, /przeczytaj pelne dokumenty\n\(plan techniczny fazy, requirements doc\) i policz wycinek wiedzy: `node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki/)
   assert.match(blok, /wycinek wiedzy projektu dla plikow fazy/)
-  assert.match(mapaBlok({ ...DOSSIER, diffUciety: true }), /PRZYCIETY/)
+  assert.match(mapaBlok({ ...DOSSIER, diffUciety: true }), /zrzut jest przyciety/)
   assert.equal(mapaBlok(null), '')
 })
 
