@@ -134,3 +134,27 @@ test('skill dev-pr: raport pokazuje indeks, odmowy i propozycje bramek z compoun
   assert.match(skillPr, /🧱 Propozycje bramek \(do Twojej decyzji, NIE wdrożone/)
   assert.doesNotMatch(skillPr, /learned-patterns: <status>|rule-worthy/)
 })
+
+// ── Skill dev-compound-refresh ────────────────────────────────────────────
+const refresh = readFileSync(resolve(KATALOG, '../../skills/dev-compound-refresh/SKILL.md'), 'utf8')
+
+test('skill dev-compound-refresh: generuje indeks skryptem po akcjach, bramka indeksu porzadkowana w solutions (H30)', () => {
+  assert.match(refresh, /Datę do dokumentów bierz z `date \+%F`\./)
+  assert.match(refresh, /node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz/)
+  assert.match(refresh, /koszyk „zawsze”/)
+  assert.doesNotMatch(refresh, /\.claude\/rules\/learned-patterns|rule-count|limit ~50/)
+})
+
+test('skill dev-compound-refresh: badanie i dokument zastepczy w jednym watku, pomocnicze tylko przy szerokim przegladzie (PA-41)', () => {
+  assert.doesNotMatch(refresh, /## Strategia subagentów|Równoległe subagenty|Każde zastępstwo pisane jest przez subagenta/)
+  assert.match(refresh, /Dokument zastępczy piszesz sam/)
+})
+
+test('skill dev-compound-refresh: tryb konwersji — przygotuj, klasa od tego samego wykonawcy, zastosuj, odrzuty dla operatora', () => {
+  const konwersja = refresh.slice(refresh.indexOf('## Tryb konwersji'))
+  assert.match(konwersja, /wiedza\.mjs konwersja przygotuj/)
+  assert.match(konwersja, /wiedza\.mjs konwersja zastosuj --propozycje/)
+  assert.match(konwersja, /"nr", "klasa", "regula", "paths", "solution", "waga"/)
+  assert.match(konwersja, /docs\/archiwum\/learned-patterns-odrzuty-/)
+  assert.match(konwersja, /CLAUDE\.md projektu nie edytujesz/)
+})
