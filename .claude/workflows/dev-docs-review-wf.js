@@ -746,11 +746,9 @@ const WARUNKI = {
   'test-coverage': (_, plikiKodu) => plikiKodu > 0,
   'spec-compliance': (_, plikiKodu, sciezki) => plikiKodu > 0 || sciezki.some((p) => PLIK_TEKSTOW_UI.test(p) || DOKUMENT_PRAWNY.test(p)),
   performance: (w, plikiKodu) => (w.dane && plikiKodu > 0) || plikiKodu >= 5,
-  // Warunek `code-quality` to ALTERNATYWA trzech dotychczasowych warunkow (architecture OR typescript
-  // OR simplicity). Simplicity byl w rdzeniu (zawsze aktywny), wiec formalnie ta alternatywa jest zawsze
-  // prawdziwa dla fazy z kodem — zapis zostaje jawny, zeby przy warunku odwrotu bylo widac, z czego
-  // powstal, i zeby rozdzielenie z powrotem bylo mechaniczne.
-  'code-quality': (w, plikiKodu) => w.nowyModul || plikiKodu >= 3 || w.typowanie || plikiKodu > 0,
+  // Faza z kodem. Dawna alternatywa (nowyModul || >= 3 || typowanie || kod) budzila code-quality w fazie bez kodu, bo
+  // `typowanie` jest prawdziwe w kazdym projekcie z tsconfig.json; droga odwrotu do trzech reviewerow zniknela z ich plikami.
+  'code-quality': (_, plikiKodu) => plikiKodu > 0,
   // Poprawnosc wymaga kodu do przesledzenia. Faza czysto dokumentacyjna nie ma sciezek wykonania.
   correctness: (_, plikiKodu) => plikiKodu > 0,
 }

@@ -29,7 +29,7 @@ function wytnij(kotwica, koniec) {
 /**
  * @typedef {{ pliki: { plik: string, czegoDotyczy: string }[], warstwy: Record<string, boolean>, e2eCheckboxy: number,
  *   figmaScreens?: boolean, diffPlik?: string, diffZapisany?: boolean, diffUciety?: boolean, ctxPlik?: string, ctxZapisany?: boolean }} Dossier
- * @typedef {{ aktywni: { key: string }[], e2eTryb: string, pominieci: { key: string, powod: string }[], plikiKodu: number }} Routing
+ * @typedef {{ aktywni: { key: string }[], e2eTryb: string, pominieci: { key: string, powod: string }[], plikiKodu: number, warstwy: Record<string, boolean> | null }} Routing
  */
 
 // eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
@@ -142,6 +142,14 @@ test('routing D4: faza bez kodu z tekstami UI albo dokumentem prawnym budzi tylk
   const r = routingReviewerow(bezKodu(['docs/plans/plan.md']), 'gotowe')
   assert.deepEqual(kluczeD4(r), [])
   assert.ok(r.pominieci.some((p) => p.key === 'security' && /kod/.test(p.powod)))
+})
+
+// Decyzja operatora (P11 sesja 2, HANDOFF 6a pkt 62 f): flaga `typowanie` jest prawdziwa w kazdym projekcie z tsconfig.json,
+// wiec alternatywa w warunku code-quality budzila go w fazie bez kodu. Warunek = faza z kodem, jak pozostale osie.
+test('routing: faza bez kodu w projekcie z tsconfig (typowanie) nie budzi zadnego reviewera, takze code-quality', () => {
+  const r = routingReviewerow(bezKodu(['docs/plans/plan.md', 'README.md']), 'gotowe')
+  assert.equal(r.warstwy?.typowanie, true)
+  assert.deepEqual(klucze(r), [])
 })
 
 test('routing D4: faza z jednym plikiem kodu budzi security, spec i test-coverage', () => {
