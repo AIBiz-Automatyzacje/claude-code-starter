@@ -332,15 +332,15 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 | Agent | Rola |
 |-------|------|
-| `security-sentinel` | Auth, RLS, XSS, walidacja Zod, ekspozycja kluczy API, OWASP. |
-| `performance-oracle` | N+1, bundle size, lazy loading, memoizacja, cleanup `useEffect`. |
+| `security-sentinel` | **Bezpieczeństwo** (`security`): każda nowa bramka z gałęzią domyślną i co najmniej 5 wejściami obejścia + test odmowy, nagłówki nowego originu, koperta wejścia (Zod), autoryzacja trasy i zasobu (`getUser`/`getClaims`, nie `getSession`), parametryzacja zapytań, XSS, sekrety i zmienne publiczne (`VITE_`/`NEXT_PUBLIC_`/`EXPO_PUBLIC_`), zapisy omijające API i strażnicy w seedach. RLS, `search_path` i `auth.users` — gdy bramka advisors ma status ok, sprawdza je advisors (security ocenia jego ostrzeżenia z dossier); bez advisors security ma listy RLS. |
+| `performance-oracle` | **Wydajność** (`performance`): kolekcje bez limitu i złożoność, N+1 i niezależne żądania po kolei, kolumny i indeksy zapytań, Realtime, wycieki pamięci, rendery i efekty Reacta (brak memoizacji przy React Compilerze w profilu stacku nie jest findingiem), miejsce importu w paczce klienta, Edge Functions. Bez progów liczbowych niesprawdzalnych w diffie. |
 | `architecture-strategist` | **Jakość wewnętrzna, trzy osie** (`code-quality`): granice warstw i struktura · YAGNI, martwy kod i zbędne abstrakcje · typy; wejście: ostrzeżenia ESLint (warn) i knip z dossier; listy duplikatów stałych i kontraktów, mapowania błędów na statusy, cichego odsiewania i idempotencji. |
 | `correctness-reviewer` | **Poprawność wykonania** (`correctness`): polecenia-listy — drogi do operacji zmieniającej stan i bramka na każdej, `await` w ścieżce zapisu, limit czasu wywołań, wartość przed/po `await`, ograniczenia migracji, wartości graniczne, cache, zapis do dwóch systemów, usunięcia. Każdy finding ze scenariuszem awarii. |
 | `spec-compliance-reviewer` | Zgodność implementacji z zamówieniem — wymagania brakujące, częściowe, błędne i niezamówione, teksty dla użytkownika, dokument prawny, semantyka pól. Każdy finding cytuje ID wymagania lub nazwę IU. |
 | `test-coverage-reviewer` | **Testy fazy** (`test-coverage`): przeżyte mutanty z dossier (mutant → test, który powinien go zabić → powód), pytanie „czy test przeszedłby, gdyby importy zwracały `undefined`”, 5 kształtów testu niefalsyfikowalnego, gałęzie, test odmowy bramki, scenariusze planu. |
 | `feature-tester-e2e` | E2E w przeglądarce (agent-browser) — uruchamia scenariusze checkboxów `[E2E]` (oba prefiksy `Test:`/`Weryfikacja:`), zwraca przebieg PASS/FAIL/SKIP per checkbox z dowodem, visual diff z Figmą. Nie pisze do pliku zadań. |
 
-> Procedura osi (correctness, spec-compliance, test-coverage, code-quality) jest w pliku roli jako jeden blok `## Polecenia`; workflow podaje osi tylko jej nazwę, źródła i schemat wyniku. Cofnięcie osi = przywrócenie pliku jednej roli.
+> Procedura każdej osi jest w pliku roli jako jeden blok `## Polecenia`; workflow podaje osi tylko jej nazwę, źródła i schemat wyniku. Pozycje z warunkiem w nawiasie dotyczą fazy, której diff, profil stacku (z paczkami pakietów workspace'u) albo status bramki go spełnia. Liczbę poleceń pokazuje doctor (wiersz „warstwa stała ról”) i telemetria (`instrukcje_stale`). Cofnięcie osi = przywrócenie pliku jednej roli.
 
 ### Research (wołani przez `dev-plan`, `dev-brainstorm`)
 
