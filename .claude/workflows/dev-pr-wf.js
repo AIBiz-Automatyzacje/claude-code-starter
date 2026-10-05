@@ -238,12 +238,31 @@ const UZGODNIENIE_COMMIT = {
   required: ['pole', 'commit', 'push', 'pushDetal'],
 }
 
+// Pola wiedzy zapisanego solution (PLAN-POPRAWY P10) — kopia z dev-compound-wf.js, nazwy jak we frontmatterze.
+const WPIS_WIEDZY = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    plik: { type: 'string', description: 'docs/solutions/<category>/<plik>.md' },
+    klasa: { type: 'string', description: 'pole klasa z frontmattera' },
+    regula: { type: 'string', description: 'pole regula z frontmattera' },
+    szczebel: { type: 'string', enum: ['regula', 'kod', 'lint'] },
+    szczebelPowod: { type: 'string', description: 'pole szczebel_powod z frontmattera' },
+  },
+  required: ['plik', 'klasa', 'regula', 'szczebel', 'szczebelPowod'],
+}
+
 const COMPOUND_PR = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    pliki: { type: 'array', items: { type: 'string' }, description: 'zapisane docs/solutions/<kategoria>/<plik>.md' },
-    regula: { type: 'string', description: 'status learned-patterns.md' },
+    wpisy: { type: 'array', items: WPIS_WIEDZY, description: 'zapisane solutions z polami wiedzy (po `wiedza.mjs sprawdz` z kodem 0)' },
+    odmowy: { type: 'array', items: { type: 'string' }, description: 'solutions usuniete po odmowie `wiedza.mjs sprawdz`: "<tytul>: <bledy>"' },
+    indeks: {
+      type: 'string',
+      enum: ['zapisany', 'bramka', 'bez zmian'],
+      description: 'wynik `wiedza.mjs indeks --zapisz`: zapisany / bramka (zapisany=false, plik indeksu bez zmian) / bez zmian (zaden wpis ze szczeblem regula)',
+    },
     propozycjeDoReviewerow: {
       type: 'array',
       items: {
@@ -262,7 +281,15 @@ const COMPOUND_PR = {
     plikPropozycji: { type: ['string', 'null'], description: 'docs/reviews/propozycje-do-reviewerow.md, gdy dopisano sekcje' },
     commit: { type: ['string', 'null'] },
   },
-  required: ['pliki', 'regula', 'propozycjeDoReviewerow', 'plikPropozycji'],
+  required: ['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji'],
+}
+
+// Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): do indeksu nie ida, operator decyduje
+// o bramce. Kopia z dev-compound-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
+function propozycjeBramek(wpisy) {
+  return wpisy
+    .filter((w) => w.szczebel === 'kod' || w.szczebel === 'lint')
+    .map((w) => ({ szczebel: w.szczebel, klasa: w.klasa, propozycja: w.regula, powod: w.szczebelPowod, solution: w.plik }))
 }
 
 // ── Decyzje dev-pr (P5) ───────────────────────────────────────────────────
@@ -722,9 +749,14 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    ale z jednym zawezeniem: dokumentujesz KLASY BLEDOW, ktore bot znalazl PO naszym wlasnym review.
    To jest najcenniejszy material, jaki ten pipeline produkuje — dowod, czego nasze review nie widzi.
    Pojedyncza literowka albo uwaga o stylu NIE jest klasa bledu i nie zasluguje na wpis.
-2. Ocen rule-worthy do .claude/rules/learned-patterns.md (limit ~50, dedup jak w skillu).
+   Kazdy solution ma pola wiedzy (sekcja "Pola wiedzy" skilla): klasa = klasaBledu watku, ucieczki co najmniej 1
+   (bot znalazl te klase po naszym review).
+2. Pola kazdego zapisanego solution: \`node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>\`. Kod 1 = popraw pola wg
+   \`bledy\` i sprawdz drugi raz; dalej kod 1 — usun plik i dopisz "<tytul>: <bledy>" do odmowy. Gdy ktorys wpis ma
+   szczebel regula: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` (generuje docs/learned-patterns.md;
+   \`zapisany: false\` = bramka indeksu, plik bez zmian, indeks=bramka). Wpisy kod i lint do indeksu nie ida.
 3. PETLA ZWROTNA DO REVIEWEROW. Sprawdz, czy ktoras klasa uwagi wystepuje w tym pull requescie
-   NIE PIERWSZY RAZ — porownaj z wpisami w docs/solutions/ i z learned-patterns.md. Dla klasy, ktora
+   NIE PIERWSZY RAZ — porownaj z wpisami w docs/solutions/ i z indeksem docs/learned-patterns.md. Dla klasy, ktora
    pojawia sie po raz DRUGI albo kolejny, zaproponuj regule do KONKRETNEGO agenta-reviewera
    (.claude/agents/<nazwa>.md), np. brakujacy naglowek bezpieczenstwa -> security-sentinel,
    brak limitu czasu w kliencie HTTP -> architecture-strategist, rozjazd z wymaganiem -> spec-compliance-reviewer.
@@ -734,17 +766,18 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    \`## <data z \`date +%F\`> ${zadanie}\` z jedna linia na propozycje: \`- <agent> ← <klasa>: <regula> (wystapila w: <podstawa>)\`.
    Gdy pliku nie ma, utworz go z naglowkiem \`# Propozycje do reviewerow\` i zdaniem: "Propozycje z compoundu /dev-pr —
    wdrozenie w plikach agentow jest decyzja operatora." Sciezke zwroc w plikPropozycji (bez propozycji: null).
-5. Zacommituj tylko artefakty bazy wiedzy jawnym pathspec (docs/solutions/, .claude/rules/learned-patterns.md,
+5. Zacommituj artefakty bazy wiedzy jawnym pathspec (docs/solutions/, docs/learned-patterns.md,
    docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
 
 Zwroc obiekt zgodny ze schematem.`,
     { schema: COMPOUND_PR, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:compound:${zadanie}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Compound zwrocil null — baza wiedzy nie zostala zasilona.' }
-  log(`/dev-pr compound: ${wynik.pliki.length} wpisow w docs/solutions/, regula: ${wynik.regula}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)
+  const bramki = propozycjeBramek(wynik.wpisy)
+  log(`/dev-pr compound: ${wynik.wpisy.length} wpisow w docs/solutions/, indeks: ${wynik.indeks}, odmow: ${wynik.odmowy.length}, propozycji bramek: ${bramki.length}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)
   // Propozycje mialy zero artefaktow w repo mimo 19 compoundow (ETAP1B §4) — brak pliku przy niepustej liscie widac w logu.
   if (wynik.propozycjeDoReviewerow.length && !wynik.plikPropozycji) log('/dev-pr compound: UWAGA — propozycje bez zapisu do docs/reviews/propozycje-do-reviewerow.md')
-  return { status: 'OK', etap, ...wynik }
+  return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki }
 }
 
 return { status: 'BLAD', powod: `Nieznany etap "${etap}". Dozwolone: start, zbierz, napraw, merge, claude-md, compound.` }

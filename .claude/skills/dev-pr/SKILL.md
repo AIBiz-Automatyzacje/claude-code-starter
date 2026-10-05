@@ -137,8 +137,12 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js",
           args: {etap: "compound", zadanie, watki: <wszystkie wątki ze wszystkich tur>}})
 ```
 
-Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review,
-ocenia rule-worthy do `learned-patterns.md` i zwraca `propozycjeDoReviewerow[]`.
+Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review, z polami wiedzy
+(klasa, reguła, wzorce plików, szczebel). Wpisy ze szczeblem `regula` trafiają do indeksu `docs/learned-patterns.md`,
+wpisy `kod` i `lint` wracają jako `propozycjeBramek[]`; obok nich `propozycjeDoReviewerow[]`.
+
+**Propozycji bramek nie wdrażasz.** Typ albo reguła lint to zmiana kodu projektu — decyzja operatora; zapis zostaje
+w samym solution (`szczebel`, `szczebel_powod`).
 
 **Propozycji do reviewerów nie wdrażasz.** Zmiana promptu agenta-reviewera dotyka każdej przyszłej fazy
 każdego zadania — to decyzja operatora. Workflow dopisuje je do `docs/reviews/propozycje-do-reviewerow.md` (commit
@@ -168,7 +172,10 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
 
 <tabela każdej tury z pola `tabela` etapu napraw, w kolejności tur>
 
-📚 Baza wiedzy: <N wpisów w docs/solutions/>, learned-patterns: <status>
+📚 Baza wiedzy: <N wpisów w docs/solutions/>, indeks: <indeks>, odmowy: <odmowy albo „brak”>
+
+🧱 Propozycje bramek (do Twojej decyzji, NIE wdrożone; zapis: solution ze szczeblem kod/lint):
+   - [<szczebel>] <klasa>: <propozycja> — <powod> (<solution>)
 
 🔁 Propozycje do reviewerów (do Twojej decyzji, NIE wdrożone; zapis: docs/reviews/propozycje-do-reviewerow.md):
    - <agent> ← <klasa uwagi> (wystąpiła w: <PR-y>)

@@ -1960,6 +1960,9 @@ return {
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   solution: compound && compound.plik,
-  regula: compound && compound.regula,
+  wiedza: compound && compound.wiedza,
+  indeks: compound && compound.indeks,
+  // Szczebel kod/lint z compoundu (P10): propozycje bramek do decyzji operatora — do indeksu nie ida.
+  propozycjeBramek: (compound && compound.propozycjeBramek) || [],
   refresh: refresh ? refresh.slownik : 'pominieto',
 }
