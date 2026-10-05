@@ -159,6 +159,7 @@ Doctor wylicza listę z Twojego projektu — narzędzie warunkowe sprawdza tylko
 | docker | jest `Dockerfile` | UWAGA | `brew install --cask docker` |
 | pluginy projektu (figma, dev-browser) | włączone w `.claude/settings.json` | UWAGA | komendy z kroku 3 |
 | devDependencies bramek, typescript < 6.1 | jest `eslint.config.*` z szablonu | UWAGA | komenda z [Bramki domknięcia](#bramki-domknięcia) |
+| warstwa stała ról (liczba poleceń, zasady pisania) | są pliki `.claude/agents/*.md` z blokiem `## Polecenia` | UWAGA | `/sync-template` przywraca pliki ról z szablonu |
 | telemetria | zawsze | UWAGA | nic — gdy brak zapisu z ostatniej doby, doctor sam nadrabia skanem |
 
 Jedyny wyjątek od „per projekt”: **agent-browser instalujesz globalnie** — skill `agent-browser` i tester E2E wołają go z `PATH`,

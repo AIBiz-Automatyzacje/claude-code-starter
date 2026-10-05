@@ -320,3 +320,32 @@ test('bramki: typescript >= 6.1 w projekcie → UWAGA (typescript-eslint i Stryk
   assert.equal(w[1], 'UWAGA')
   assert.match(w[2], /typescript 7\.0\.2/)
 }))
+
+// Licznik warstwy stalej (PLAN-POPRAWY P11): pliki rol z blokiem `## Polecenia` w instalacji projektu — liczba polecen
+// i naruszenia zasad pisania. Plik po sync-template zgodny = OK; plik zmieniony w projekcie, ktory lamie zasady = UWAGA,
+// bez STOP-u (rola dziala, tylko jej warstwa stala odjechala od szablonu).
+const ROLA_ZGODNA = '---\nname: a\ndescription: "a"\n---\n\nSzukasz defektow.\n\n## Polecenia\n\n- Wypisz drogi.\n- Zglaszaj finding.\n'
+
+test('warstwa stala: brak plikow rol z blokiem polecen → nie dotyczy', () => zSrodowiskiem((s) => {
+  mkdirSync(join(s.projekt, '.claude', 'agents'), { recursive: true })
+  writeFileSync(join(s.projekt, '.claude', 'agents', 'stary.md'), '---\nname: s\n---\n\nYou are an expert.\n')
+  assert.equal(wiersz(doctor(s).stdout, 'warstwa stała ról')[1], 'nie dotyczy')
+}))
+
+test('warstwa stala: zgodne pliki → OK z liczba plikow i polecen; naruszenie → UWAGA z plikiem, exit 0', () => zSrodowiskiem((s) => {
+  const agenci = join(s.projekt, '.claude', 'agents')
+  mkdirSync(agenci, { recursive: true })
+  writeFileSync(join(agenci, 'a.md'), ROLA_ZGODNA)
+  writeFileSync(join(agenci, 'b.md'), ROLA_ZGODNA.replace('- Zglaszaj finding.\n', '- Zglaszaj finding.\n- Licz.\n'))
+  writeFileSync(join(agenci, 'stary.md'), '---\nname: s\n---\n\nYou are an expert.\n')
+  const ok = wiersz(doctor(s).stdout, 'warstwa stała ról')
+  assert.deepEqual(ok.slice(0, 3), ['warstwa stała ról', 'OK', '2 pliki ról, poleceń 5 (najwięcej 3: b.md), budżet 150 na plik'])
+
+  writeFileSync(join(agenci, 'a.md'), ROLA_ZGODNA.replace('Szukasz defektow.', 'Szukasz defektow. Sprawdz plan. Zglaszaj.'))
+  const w = doctor(s)
+  const uwaga = wiersz(w.stdout, 'warstwa stała ról')
+  assert.equal(uwaga[1], 'UWAGA')
+  assert.match(uwaga[2], /^a\.md: mandat: 3 zdania/)
+  assert.match(uwaga[3], /sync-template/)
+  assert.equal(w.status, 0, 'naruszenie warstwy stalej nie blokuje runu')
+}))

@@ -162,6 +162,22 @@ sprawdz_bramki() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Warstwa stała plików ról (P11) — liczba poleceń i zasady pisania, przez node (wiersz TSV z warstwa-rol.mjs).
+# Naruszenie to UWAGA: rola działa, tylko jej plik odjechał od szablonu.
+sprawdz_warstwe() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "warstwa stała ról" UWAGA "nie policzono poleceń plików ról (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/warstwa-rol.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "warstwa stała ról" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź pliki .claude/agents/"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Świeżość telemetrii (decyzja O5 It. 1): hook Stop dopisuje rekordy po każdej sesji; brak zapisu z ostatniej doby
 # = hook mógł nie działać, więc doctor nadrabia pełnym skanem. Nie blokuje — błąd skanu to UWAGA.
 sprawdz_telemetrie() {
@@ -200,6 +216,7 @@ fi
 if ma_dockerfile; then narzedzie docker UWAGA "brew install --cask docker"; else nie_dotyczy docker "brak Dockerfile"; fi
 sprawdz_ustawienia
 sprawdz_bramki
+sprawdz_warstwe
 sprawdz_telemetrie
 echo
 
