@@ -215,15 +215,27 @@ function rundyReview(agenci) {
 }
 
 /**
- * Znaki dossier fazy (P7): z zapasowego agenta, gdy byl (to dossier dostalo review), inaczej z ostatniego domkniecia.
+ * Dossier fazy (P7): z zapasowego agenta, gdy byl (to dossier dostalo review), inaczej z ostatniego domkniecia.
  * @param {AgentFazy[]} agenci
  * @param {Map<string, WynikJournala>} journal
- * @returns {number | null}
+ * @returns {Record<string, unknown>}
  */
-function znakiDossier(agenci, journal) {
+function dossierFazy(agenci, journal) {
   const zrodlo = agenci.filter((a) => a.rola === 'dossier:zapas').at(-1) ?? agenci.filter((a) => a.rola === 'domkniecie').at(-1)
-  const dossier = obiekt(obiekt(zrodlo ? journal.get(zrodlo.id)?.wynik : null).dossier)
-  return liczbaLubNull(dossier.ctxZnaki)
+  return obiekt(obiekt(zrodlo ? journal.get(zrodlo.id)?.wynik : null).dossier)
+}
+
+/**
+ * Wiedza projektu w dossier fazy (P10): rozmiar indeksu i CLAUDE.md, wycinek regul dla plikow fazy. Dossier bez pola = null.
+ * @param {Record<string, unknown>} dossier
+ */
+function wiedzaFazy(dossier) {
+  const w = obiekt(dossier.wiedza)
+  if (!Object.keys(w).length) return null
+  return {
+    indeks_zn: liczbaLubNull(w.indeksZn), claude_md_zn: liczbaLubNull(w.claudeMdZn), wycinek_zn: liczbaLubNull(w.wycinekZn),
+    wycinek_wpisy: liczbaLubNull(w.wycinekWpisy), wycinek_pominiete: liczbaLubNull(w.wycinekPominiete),
+  }
 }
 
 /**
@@ -242,6 +254,7 @@ export function rekordyFaz(we) {
     const agenci = we.agenci.filter((a) => a.faza === numer)
     const przebieg = obiekt(raport.przebieg)
     const domkniecie = bramkiFazy(agenci, we.journal)
+    const dossier = dossierFazy(agenci, we.journal)
     return {
       typ: 'faza',
       faza: numer,
@@ -263,9 +276,8 @@ export function rekordyFaz(we) {
       review_rundy: rundyReview(agenci),
       bramki: domkniecie.bramki,
       sceptyk: sceptykFazy(przebieg),
-      // Producent w pozniejszej paczce: wiedza (P10).
-      wiedza: null,
-      dossier_zn: znakiDossier(agenci, we.journal),
+      wiedza: wiedzaFazy(dossier),
+      dossier_zn: liczbaLubNull(dossier.ctxZnaki),
       testy_usuniete: domkniecie.testyUsuniete,
     }
   })

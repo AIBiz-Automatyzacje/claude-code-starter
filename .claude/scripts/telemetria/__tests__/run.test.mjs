@@ -149,6 +149,17 @@ test('run.pr z etapu zbierz dev-pr: klasy uwag, wagi, liczba plikow PR', () => {
   })
 })
 
+test('run.pr.klasy[].ma_regule (P10): klasa uwagi ma regule w wiedzy projektu; bez odczytu wiedzy = null', () => {
+  const r = rekordRunu({
+    harness: {
+      workflowName: 'dev-pr-wf',
+      result: { status: 'OK', etap: 'zbierz', watki: [{ id: 'A', klasaBledu: 'sciezka-bledu' }, { id: 'B', klasaBledu: 'a11y' }, { id: 'C' }] },
+    },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: null, klasyZRegula: new Set(['sciezka-bledu']),
+  })
+  assert.deepEqual(r.pr?.klasy.map((k) => k.ma_regule), [true, false, null])
+})
+
 test('run.pr.rekomendacja z wyniku etapu zbierz (P5) — wartosc liczona w JS dev-pr-wf, przepisana 1:1', () => {
   const r = rekordRunu({
     harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'zbierz', tura: 1, rekomendacja: 'KOLEJNA TURA — 2 watkow do naprawy (tura 1 z 3)', watki: [] } },

@@ -124,19 +124,21 @@ const liczbaLubNull = (x) => (typeof x === 'number' ? x : null)
  * `run.pr` z wyniku etapu `zbierz` dev-pr (klasa bledu, os i waga ze slownika KLASY_BLEDOW w dev-pr-wf.js; It. 1 krok 8).
  * Jeden run = jedna tura; raport liczy UNIKALNE watki per zadanie (suma po turach zawyza o 43% — przeglad D5 §8 pkt 4).
  * @param {Record<string, unknown>} wynik wynik runu z pliku harnessu
+ * @param {Set<string> | null} klasyZRegula klasy z regula w wiedzy projektu (P10); null = wiedza nieodczytana
  */
-function rekordPr(wynik) {
+function rekordPr(wynik, klasyZRegula) {
   const watki = Array.isArray(wynik.watki) ? wynik.watki.map(obiekt) : []
   /** @param {string} waga */
   const ile = (waga) => watki.filter((w) => w.waga === waga).length
   return {
     numer: liczbaLubNull(wynik.prNumer), tura: liczbaLubNull(wynik.tura), pliki: liczbaLubNull(wynik.plikiPr),
     uwagi_razem: watki.length, p1: ile('P1'), p2: ile('P2'), p3: ile('P3'),
-    // Rekomendacja liczona w JS dev-pr-wf (P5); koszyk A–D (ETAP1B) — producent w It. 2; ma_regule — indeks learned-patterns (It. 8).
+    // Rekomendacja liczona w JS dev-pr-wf (P5); koszyk A–D (ETAP1B) — producent w It. 2.
     koszyk: null, rekomendacja: tekstLubNull(wynik.rekomendacja),
     klasy: watki.map((w) => ({
       id: tekstLubNull(w.id), klasa: tekstLubNull(w.klasaBledu), severity: tekstLubNull(w.waga), plik: tekstLubNull(w.plik),
-      os: tekstLubNull(w.os), decyzja: tekstLubNull(w.klasa), ma_regule: null,
+      os: tekstLubNull(w.os), decyzja: tekstLubNull(w.klasa),
+      ma_regule: klasyZRegula && typeof w.klasaBledu === 'string' ? klasyZRegula.has(w.klasaBledu) : null,
     })),
   }
 }
@@ -156,7 +158,7 @@ function zadanieZArgumentow(args) {
 
 /**
  * @param {{ harness: Record<string, unknown> | null, status: StatusRunu, agenci: KosztAgenta[], bootstrap: unknown,
- *   szablon?: import('./szablon.mjs').WersjaSzablonu | null }} we
+ *   szablon?: import('./szablon.mjs').WersjaSzablonu | null, klasyZRegula?: Set<string> | null }} we
  */
 export function rekordRunu(we) {
   const wynik = obiekt(we.harness?.result)
@@ -183,7 +185,7 @@ export function rekordRunu(we) {
     szablon: we.szablon ?? null,
     // Producenci w pozniejszych iteracjach: MANUAL (It. 3e), profil stacku i smoke (It. 3),
     // ogrod (R1). Klucze sa od razu — raport nie moze zgadywac ksztaltu.
-    pr: nazwaWorkflowu === 'dev-pr-wf' && wynik.etap === 'zbierz' ? rekordPr(wynik) : null,
+    pr: nazwaWorkflowu === 'dev-pr-wf' && wynik.etap === 'zbierz' ? rekordPr(wynik, we.klasyZRegula ?? null) : null,
     manual_razem: null,
     profil_stacku: null,
     smoke: null,

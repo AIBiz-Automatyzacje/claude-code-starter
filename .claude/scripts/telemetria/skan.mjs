@@ -7,6 +7,7 @@ import { rekordyFaz } from './faza.mjs'
 import { zmianyCommitow } from './git.mjs'
 import { rekordRunu, statusBezHarnessu, statusRunu } from './run.mjs'
 import { wersjaSzablonu } from './szablon.mjs'
+import { klasyZRegula } from './wiedza.mjs'
 import { agenciRunu, czytajHarness, czytajJournal, katalogProjektu } from './zrodla.mjs'
 
 /** @typedef {import('./zrodla.mjs').Run} Run */
@@ -17,6 +18,11 @@ import { agenciRunu, czytajHarness, czytajJournal, katalogProjektu } from './zro
  * @property {import('./faza.mjs').RekordFazy[]} fazy
  * @property {import('./agent.mjs').RekordAgenta[]} agenci
  */
+
+/** @param {unknown} x @returns {Record<string, unknown>} */
+function obiektWyniku(x) {
+  return x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x)) : {}
+}
 
 /** @param {Run} run @returns {number} czas ostatniego zapisu do katalogu runu (journal albo transkrypt) */
 function ostatniaAktywnosc(run) {
@@ -46,10 +52,12 @@ export function rekordyRunu(run, kontekst) {
   const journal = czytajJournal(run.katalogRunu)
   const bootstrap = agenci.find((a) => a.rola === 'bootstrap')
   const repo = katalogProjektu(run)
+  const etapZbierz = harness?.workflowName === 'dev-pr-wf' && obiektWyniku(harness.result).etap === 'zbierz'
   return {
     run: rekordRunu({
       harness, status, agenci,
       bootstrap: bootstrap ? journal.get(bootstrap.id)?.wynik : null,
+      klasyZRegula: etapZbierz ? klasyZRegula(repo) : null,
       szablon: wersjaSzablonu({
         workflowName: typeof harness?.workflowName === 'string' ? harness.workflowName : null,
         skrypt: typeof harness?.script === 'string' ? harness.script : null,

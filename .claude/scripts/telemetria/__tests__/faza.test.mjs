@@ -132,6 +132,18 @@ test('dossier_zn = znaki dossier fazy: z zapasowego agenta (to dossier dostalo r
   assert.equal(f[1].dossier_zn, null, 'domkniecie bez wyniku w journalu')
 })
 
+test('wiedza = rozmiary wiedzy projektu z dossier fazy (P10): to samo zrodlo co dossier_zn; dossier bez pola = null', () => {
+  /** @type {Map<string, import('../agent.mjs').WynikJournala>} */
+  const journal = new Map(JOURNAL)
+  const wiedza = { indeksZn: 8200, claudeMdZn: 21000, wycinekZn: 1450, wycinekWpisy: 6, wycinekPominiete: 2 }
+  journal.set('d1', { rozpoczety: true, maWynik: true, wynik: { status: 'completed', dossier: { ctxZnaki: 6100, wiedza } } })
+  journal.set('d2', { rozpoczety: true, maWynik: true, wynik: { status: 'completed', dossier: { ctxZnaki: 6100 } } })
+  const agenci = [...AGENCI.filter((a) => a.id !== 'k1'), agent('d1', 'domkniecie', 1, 50), agent('d2', 'domkniecie', 2, 50)]
+  const f = rekordyFaz({ wynikRunu: WYNIK_RUNU, agenci, journal, zmianyFixa: gitFake })
+  assert.deepEqual(f[0].wiedza, { indeks_zn: 8200, claude_md_zn: 21000, wycinek_zn: 1450, wycinek_wpisy: 6, wycinek_pominiete: 2 })
+  assert.equal(f[1].wiedza, null, 'dossier sprzed P10 nie ma pola wiedza')
+})
+
 test('etapRoli: role mechaniczne review i petla fix', () => {
   assert.equal(etapRoli('scribe'), 'mechanika_review')
   // Zmiana kontraktu (P7): role kontekst:diff i zwin-do-poprawy wyszly z pipeline'u; zapasowy agent dossier to mechanika review.
