@@ -61,8 +61,9 @@ Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po dro
 
 - Każdy rozwiązany problem ląduje w `docs/solutions/` - następnym razem Claude sięga
   po gotowe rozwiązanie zamiast kombinować od zera.
-- Powtarzalne wnioski zamieniają się w reguły (`learned-patterns.md`), które czytają
-  wszyscy agenci w kolejnych zadaniach.
+- Każdy wpis dostaje pola wiedzy (klasa błędu, reguła, wzorce plików, szczebel). Reguły trafiają do indeksu
+  `docs/learned-patterns.md`, a builder i reviewer dostają wycinek reguł dla plików, nad którymi pracują.
+  Lekcje, które da się wymusić typem albo lintem, wracają do Ciebie jako propozycje bramek.
 - Pojęcia z Twojej domeny trafiają do słownika `docs/CONCEPTS.md` - dzięki temu Claude
   nie "naprawia" rzeczy, które celowo działają nietypowo.
 
@@ -189,7 +190,7 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 - **Pipeline `dev-*`** — od ideacji, przez plan, po autonomiczną implementację z review i naprawami (`dev-autopilot-wf`).
 - **Skille techniczne** pod stack — React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry — z aktualnymi wzorcami (React 19, Tailwind v4, Zod v4, OWASP 2025).
 - **15 wyspecjalizowanych agentów** — buildery warstw, reviewerzy, research.
-- **Knowledge compounding** — rozwiązane problemy (`docs/solutions/`), reguły (`learned-patterns.md`) i żywy słownik domenowy (`docs/CONCEPTS.md`).
+- **Knowledge compounding** — rozwiązane problemy z polami wiedzy (`docs/solutions/`), indeks reguł generowany skryptem (`docs/learned-patterns.md`) i żywy słownik domenowy (`docs/CONCEPTS.md`).
 - **Reguły kodowania** i katalog anty-patternów AI (`.claude/rules/coding-rules.md`).
 
 ---
@@ -230,7 +231,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | `dev-docs-review-wf` | Review jednej fazy: **dossier fazy ze skryptu** `.claude/scripts/dossier/` (liczy go domknięcie fazy w execute-wf; po STOP-ie między execute a review — zapasowy agent tym samym skryptem): mapa zmian + **flagi warstw** + **zrzut diffu fazy do pliku**, który reviewerzy czytają jednym `Read` zamiast każdy własnym `git diff`, + wynik bramek domknięcia → **routing domenowy** (rdzeń `security`/`spec-compliance`/`test-coverage` zawsze; `performance`/`code-quality`/`correctness`/`e2e` tylko gdy ich domena jest w fazie obecna; brak flag = pełny skład) → do 7 reviewerów równolegle (**limit 5 P3 na reviewera** + **globalny limit 8 P3 po dedupie z wyborem round-robin po źródle** — żeby ucinanie nie wyciszało systematycznie tych samych reviewerów; P1/P2 bez limitu; tester E2E w trybie `przegladarka` / `bez-przegladarki` / `pominiety` — zależnie od domeny fazy i tego, czy środowisko przeglądarkowe stoi; spec-compliance i test-coverage dostają **blok semantyki jednostek pól** — wykonywalna procedura grep wszystkich użyć + kolejność źródeł prawdy + odczyt realnego wiersza z bazy e2e) → dedup 2-przebiegowy (JS + semantyczny Haiku) → **detekcja blokera środowiska po sygnaturze** (JS, bez LLM — connection refused / DNS, ale **tylko** w findingach testera E2E, **tylko** w trybie `przegladarka` i **tylko** gdy tester ma wpis FAIL albo SKIP w `przebiegi[]`; sama nazwa `getaddrinfo` w opisie defektu kodu blokerem nie jest — regexy pod testem `__tests__/bloker-srodowiska.test.mjs`; orkiestrator robi STOP zamiast ciągnąć fazy na zepsutym środowisku) → adversarial verify P1/P2 (findingi E2E/OPERATOR testera poza verify — dowodem jest przebieg, nie kod) → scribe zapisuje raport + sekcję **`## Przebieg review`** + bookkeeping checkboxów (`[E2E]` odznacza **wyłącznie** z wpisów PASS w `przebiegi[]` testera — brak findingu ≠ PASS) → severity gate. Gdy scribe padnie po udanym zapisie, **wynik jest odzyskiwany z dysku** po sentinelu `## Przebieg review` zamiast powtarzać całe review. |
 | `dev-docs-complete-wf` | Dwie fazy: **smoke operatora** (`docs/operator/<data>-<zadanie>-smoke.md` — co sprawdzić ręcznie po zielonym automacie; `[E2E]` nieuruchomione jako czerwona flaga) → archiwizacja: `docs/active/<zadanie>` → `docs/completed/`, podsumowanie, aktualizacja docs projektu, commit (jawnym pathspecem, także wyjścia compound). |
 | `dev-pr-wf` | Mechanika obsługi pull requesta, wołana etapami przez skill `/dev-pr`: **bramka wejścia** (gałąź inna niż główna, czyste drzewo, zadanie istnieje) i utworzenie PR przez `gh pr create --body-file` (nigdy stdin — przy pustym stdin `gh` kończy się kodem 0 i tworzy PR z pustym opisem) → **zebranie i klasyfikacja** nierozwiązanych wątków przez GraphQL (`napraw` / `napraw-szerzej` / `odrzuć` / `do-operatora`, każdy z polem `wplywNaProjekt` i klastrem wspólnej przyczyny; `odrzuć` bez cytatu ze źródła decyzji JS przeklasyfikowuje na `do-operatora`) → **naprawa** wybranych wątków + odpowiedzi w wątkach + commit jawnym pathspecem i push → **bramka merge'a** (pięć warunków liczonych w JS) → **compound** z pętlą zwrotną do reviewerów. |
-| `dev-compound-wf` | Dokumentuje rozwiązane problemy do `docs/solutions/`, ocenia rule-worthy do `learned-patterns.md`, aktualizuje `docs/CONCEPTS.md` — i **commituje te artefakty** (whitelist ścieżek, bez `git add -A`), żeby nie zostawiać brudnego drzewa blokującego następny run. |
+| `dev-compound-wf` | Dokumentuje rozwiązane problemy do `docs/solutions/` z polami wiedzy (bez poprawnych pól — `wiedza.mjs sprawdz` — nie ma zapisu), regułę ze szczeblem `regula` wpisuje do indeksu `docs/learned-patterns.md` skryptem, szczebel `kod`/`lint` zwraca jako `propozycjeBramek[]`, aktualizuje `docs/CONCEPTS.md` — i **commituje te artefakty** (whitelist ścieżek, bez `git add -A`), żeby nie zostawiać brudnego drzewa blokującego następny run. |
 
 **Jak odpalać:** toolem `Workflow`, np. `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js"}, args)`.
 **RESUME po przerwanym runie:** `Workflow({scriptPath, resumeFromRunId})` + **ZAWSZE przekaż `args` ponownie** (te same, np. ścieżkę zadania — `args` NIE przeżywa między wywołaniami). Stan wznowienia czyta z `.autopilot-state.json` (źródło prawdy); checkboxy w `.md` to tylko widok dla człowieka.
@@ -269,7 +270,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 **`dev-docs-execute-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Dla IU dotykających UI doklejany mandatory kontekst designerski. Na końcu: System-Wide Test Check, checkboxy, incremental commits.
 
-**`dev-docs-review-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — code review fazy. **Dossier fazy ze skryptu** (mapa zmian + flagi warstw + diff + wycinki planu, zadań i learned-patterns + wynik bramek, żeby reviewerzy nie czytali ośmiokrotnie tych samych dokumentów) → **do 7 reviewerów równolegle** (Security, Performance, Code-quality, Correctness, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 niezależnych sceptyków z konsensusem 2/3, P2 = jeden sceptyk na grupę findingów z tego samego pliku**) → scribe zapisuje raport + `## Przebieg review` + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
+**`dev-docs-review-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — code review fazy. **Dossier fazy ze skryptu** (mapa zmian + flagi warstw + diff + wycinki planu, zadań i reguł wiedzy dla plików fazy + wynik bramek, żeby reviewerzy nie czytali ośmiokrotnie tych samych dokumentów) → **do 7 reviewerów równolegle** (Security, Performance, Code-quality, Correctness, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 niezależnych sceptyków z konsensusem 2/3, P2 = jeden sceptyk na grupę findingów z tego samego pliku**) → scribe zapisuje raport + `## Przebieg review` + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
 - **Routing domenowy:** rdzeń (`security`, `spec-compliance`, `test-coverage`) odpala się zawsze; `code-quality` i `correctness` — gdy faza ma choć jeden plik kodu; `performance` — gdy dotyka warstwy danych albo ma ≥5 plików kodu. **W praktyce faza z kodem dostaje pełny skład** — pomijany bywa tylko tester E2E; routing przycina wyłącznie fazy czysto dokumentacyjne (audyt 2026-09-06: w 10 fazach dwóch projektów jedynym pominiętym był `e2e`). Osobne reviewery architektury, prostoty i typów nie istnieją od 2026-09-03 — to trzy osie wewnątrz `code-quality` (konsolidacja B12; `architecture-strategist` i `code-simplicity-reviewer` zostały w repo na wypadek odwrotu). Tester przeglądarki odpala się po **policzonej pracy**, nie po warstwie: potrzebuje niezaznaczonego checkboxa `[E2E]` albo makiet `figma_screens` do visual diffu, więc faza UI bez ani jednego scenariusza go nie budzi. Gdy packager nie zwróci flag → pełny skład (fail-open). Pominięcie E2E blokuje odznaczanie browserowych checkboxów `Weryfikacja:` (idą do Operator checklist).
 - **Myk E2E:** `feature-tester-e2e` testuje w **prawdziwej przeglądarce** (agent-browser) na dev serverze Vite (`localhost:5173`), nie w headless symulacji. Preflight: `curl localhost:5173`. Zwraca **jawny przebieg per checkbox `[E2E]`** (`przebiegi[]` PASS/FAIL/SKIP z dowodem, oba prefiksy `Test:`/`Weryfikacja:`) i **nie pisze do pliku zadań** — odznacza scribe, wyłącznie z wpisu PASS. Przy `figma_screens` robi side-by-side visual diff z mockupami (manualna akceptacja = finding OPERATOR, nie auto-checkbox). Bez `.env.e2e` weryfikacje E2E lądują jako OPERATOR (do ręcznego sprawdzenia).
 
@@ -285,10 +286,10 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 #### Knowledge capture
 
-**`/dev-compound`** — dokumentowanie rozwiązanego problemu. Bez argumentów = wyciąga kontekst z sesji autonomicznie. Compact mode domyślny, `--full` dla pełnego formatu. Jeśli problem jest rule-worthy → dodaje regułę do `learned-patterns.md`. Jeśli pojawił się termin domenowy → dopisuje hasło do `docs/CONCEPTS.md` (Krok 4.5). → `docs/solutions/[category]/`
+**`/dev-compound`** — dokumentowanie rozwiązanego problemu. Bez argumentów = wyciąga kontekst z sesji autonomicznie. Compact mode domyślny, `--full` dla pełnego formatu. Solution dostaje pola wiedzy i szczebel (`kod` → `lint` → `regula`); `wiedza.mjs sprawdz` pilnuje pól, reguły trafiają do indeksu `docs/learned-patterns.md`, `kod`/`lint` to propozycja bramki dla Ciebie. Jeśli pojawił się termin domenowy → dopisuje hasło do `docs/CONCEPTS.md` (Krok 4.5). → `docs/solutions/[category]/`
 - **Kategorie:** build-errors, runtime-errors, supabase-issues, auth-issues, ui-bugs, performance-issues, typescript-errors, deployment-issues, testing-issues.
 
-**`/dev-compound-refresh`** — przegląd aktualności bazy wiedzy. Autonomicznie przegląda `docs/solutions/`: Keep / Update / Replace / Archive. Przegląda `learned-patterns.md` (usuwa po Archive, aktualizuje po Replace, dedup, limit ~50) oraz `docs/CONCEPTS.md` (usuwa martwe hasła, scala duplikaty).
+**`/dev-compound-refresh`** — przegląd aktualności bazy wiedzy. Autonomicznie przegląda `docs/solutions/`: Keep / Update / Replace / Archive. Generuje indeks `docs/learned-patterns.md` od nowa (bramka: koszyk „zawsze” ≤ 5, indeks ≤ 20 000 zn — porządek robi w solutions), `--konwersja` przenosi stary plik reguł do pól wiedzy (patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd)), przegląda też `docs/CONCEPTS.md` (usuwa martwe hasła, scala duplikaty).
 - **Myk:** pełny refresh (bez argumentu) przegląda całą bazę — uruchamiaj okresowo. W autopilocie odpala się **automatycznie, ale scoped** (tylko dotknięta kategoria + CONCEPTS.md, i tylko gdy compound coś zapisał).
 
 ### Skille techniczne (guidelines pod stack)
@@ -365,10 +366,40 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 ---
 
+## Wiedza projektu — `docs/learned-patterns.md`
+
+Trzy poziomy: **solution** w `docs/solutions/` z polami wiedzy we frontmatterze (`klasa`, `regula`, `paths`, `waga`, `szczebel`,
+`szczebel_powod`, `zrodlo`, `ucieczki`) → **indeks** `docs/learned-patterns.md` (jeden wiersz na regułę, generuje go
+`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz`) → **wycinek** do 2000 zn dla plików jednostki albo fazy (planner wkleja
+go builderowi, dossier niesie go reviewerom). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
+
+- **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
+  Do indeksu idzie tylko `regula`; `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja.
+- **Bramka indeksu:** koszyk „zawsze” (`paths: ["**"]`) najwyżej 5 wpisów, indeks do 20 000 zn. Limit dotyczy indeksu,
+  nie wiedzy — porządkuje go `/dev-compound-refresh` (zawężenie `paths`, scalenie, archiwum).
+- **Jedna linia w `CLAUDE.md` projektu** (CLAUDE.md należy do projektu — szablon go nie edytuje), żeby sesja główna wiedziała,
+  gdzie szukać:
+
+  ```markdown
+  Wiedza projektu: reguły z rozwiązanych problemów — indeks `docs/learned-patterns.md` (generuje `/dev-compound`; agenci pipeline'u dostają wycinek dla swoich plików).
+  ```
+
+- **Projekt ze starym plikiem reguł** (`.claude/rules/learned-patterns.md`): po `sync-template`, przed następnym autopilotem,
+  w sesji projektu przy czystym drzewie uruchom `/dev-compound-refresh --konwersja`. Skrypt wylicza kandydatów, skill dopisuje
+  klasę i poprawia regułę/wzorce, skrypt waliduje i zapisuje pola do solutions, generuje indeks i przenosi stary plik do
+  `docs/archiwum/learned-patterns-<data>.md`; reguły, których nie dało się zapisać, są w `docs/archiwum/learned-patterns-odrzuty-<data>.md`
+  (dopisz pola ręcznie i sprawdź `wiedza.mjs sprawdz <plik>` albo pomiń). Bez konwersji stary plik dalej ładuje się eager,
+  a planner i reviewerzy nie widzą z niego żadnej reguły.
+- **Cofnięcie:** revert zmian szablonu + w projekcie `git mv docs/archiwum/learned-patterns-<data>.md .claude/rules/learned-patterns.md`
+  (pola wiedzy w solutions mogą zostać — stary pipeline ich nie czyta).
+
+---
+
 ## Reguły, hooki, szablony
 
 - **`.claude/rules/coding-rules.md`** — 14 sekcji reguł (rozmiar plików, testowanie, error handling, type safety, bezpieczeństwo, performance, async/race, architektura) + **katalog 10 anty-patternów AI**. Ładowane do każdej sesji.
-- **`.claude/rules/learned-patterns.md`** — reguły wyprodukowane przez `/dev-compound` (tworzone per projekt, limit ~50).
+- **`.claude/scripts/wiedza/`** — wiedza projektu: walidacja pól solutions, indeks `docs/learned-patterns.md`, wycinek reguł, konwersja
+  starego pliku reguł (CLI `wiedza.mjs`); patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd).
 - **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi). `error-handling-reminder.sh` wyłącza się
   w projekcie z `eslint.config.*` z szablonu (tam to samo łapie ESLint w bramkach).
 - **`.claude/scripts/bramki/`** + **`.claude/templates/bramki/`** — skrypt bramek domknięcia fazy i konfiguracje dla nowego projektu
@@ -388,6 +419,8 @@ docs/
 │                                przez /dev-plan — PRZED implementacją) i <data>-<zadanie>-smoke.md
 │                                (z /dev-docs-complete, PO autopilocie)
 ├── CONCEPTS.md               ← słownik domenowy (żywy)
+├── learned-patterns.md       ← indeks wiedzy projektu (generowany z pól solutions — nie edytuj ręcznie)
+├── archiwum/                 ← stary plik reguł i odrzuty po konwersji (/dev-compound-refresh --konwersja)
 ├── solutions/                ← rozwiązane problemy z /dev-compound
 │   ├── build-errors/  runtime-errors/  supabase-issues/  auth-issues/
 │   ├── ui-bugs/  performance-issues/  typescript-errors/  deployment-issues/
