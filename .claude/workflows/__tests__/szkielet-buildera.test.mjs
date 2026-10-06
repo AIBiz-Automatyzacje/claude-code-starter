@@ -7,7 +7,7 @@
 // jednostki (D7-1), pytanie „undefined”, wynik tylko w schemacie BUILD_RESULT i zero powtorzen tresci regul kodu (dwie
 // kopie reguly rozjezdzaja sie po cichu). Skill wstrzykiwany builderowi jest jego warstwa stala, wiec nie niesie protokolu
 // audytu ani krzyku wersalikami (PA-24, PA-17). Kazde sprawdzenie ma test na podlozonym zlym tekscie.
-// Builder wchodzi na liste BUILDERY_ZE_SZKIELETEM, gdy jego plik jest przepisany (P12: data w sesji 2, reszta w sesji 3).
+// Wszystkie buildery maja szkielet (P12), wiec planner nie dokleja im juz wlasnego bloku wymagan wykonania.
 
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -18,12 +18,14 @@ import assert from 'node:assert/strict'
 import { AGENCI, agenci } from './agenci-pipeline.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
-const BUILDERY_ZE_SZKIELETEM = ['feature-builder-data']
-// Skille przepisane wg PA-17 (jedna zasada = jedno zdanie z powodem); tailwind-react-guidelines i ux-ui-guidelines — sesja 3.
-const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-guidelines']
+const BUILDERY_ZE_SZKIELETEM = ['feature-builder-data', 'feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma',
+  'feature-builder-fullstack-figma']
+// Skille przepisane wg PA-17 (jedna zasada = jedno zdanie z powodem).
+const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-guidelines', 'tailwind-react-guidelines', 'ux-ui-guidelines']
 
 const REGULY_KODU = '.claude/rules/coding-rules.md'
-const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'tsc --noEmit', 'vitest related --run', 'undefined']
+// `[E2E]`: scenariusze przegladarki i reczne wykonuja tester i operator — builder pisze tylko seed z pola Pliki.
+const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'tsc --noEmit', 'vitest related --run', 'undefined', '[E2E]']
 // Tokeny regul kodu, ktorych builder nie przepisuje — odwoluje sie do sekcji po nazwie.
 const TOKENY_REGUL_KODU = ['auth.uid()', 'auth.jwt()', 'strictObject', 'search_path', 'AbortSignal', 'eslint-disable', 'toBeDefined',
   'user_metadata', '`any`']
@@ -94,6 +96,7 @@ const DOBRY = `Wdrazasz jednostke.
 
 - Przeczytaj ${REGULY_KODU}.
 - Uruchom \`tsc --noEmit\` i \`vitest related --run\`; kazdy test przejdz pytaniem „undefined”.
+- Scenariusze \`[E2E]\` wykonuje tester.
 - Zwracasz \`status\`, \`pliki\` i \`odchylenia\`.
 `
 
@@ -108,6 +111,7 @@ test('brak odczytu regul, samosprawdzenia, pytania i pola wyniku jest zglaszany'
     'brak w poleceniach: tsc --noEmit',
     'brak w poleceniach: vitest related --run',
     'brak w poleceniach: undefined',
+    'brak w poleceniach: [E2E]',
     'pole wyniku bez polecenia: pliki',
     'pole wyniku bez polecenia: odchylenia',
   ])
@@ -134,6 +138,10 @@ const plannerPrompt = new Function(`${zrodloExecute.slice(zrodloExecute.indexOf(
 
 test('planner: jednostki z migracja szeregowo — buildery danych dziela lokalna baze i plik typow', () => {
   assert.match(plannerPrompt('docs/active/x', 2), /Jesli ktorykolwiek IU ma migracje bazy albo generuje typy bazy — strategia serial/)
+})
+
+test('planner nie dokleja bloku wymagan wykonania — te polecenia sa w szkielecie kazdego buildera', () => {
+  assert.doesNotMatch(plannerPrompt('docs/active/x', 2), /Wymagania wykonania/)
 })
 
 test('pola BUILD_RESULT czytane z workflowu', () => {

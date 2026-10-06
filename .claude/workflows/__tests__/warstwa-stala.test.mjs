@@ -17,7 +17,7 @@ import { MAKS_POLECEN, liczbaPolecen, naruszeniaWarstwy } from '../../scripts/do
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const ROLE_Z_WARSTWA = ['correctness-reviewer', 'spec-compliance-reviewer', 'test-coverage-reviewer', 'architecture-strategist', 'security-sentinel', 'performance-oracle',
-  'feature-builder-data']
+  'feature-builder-data', 'feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma', 'feature-builder-fullstack-figma']
 
 /**
  * @param {string} cialo

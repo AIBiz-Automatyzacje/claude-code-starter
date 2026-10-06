@@ -262,21 +262,15 @@ Faza do wykonania: ${faza}
        - DESIGN.md (tokeny calego projektu): <sciezka z design_md albo "brak — bazuj na ux-ui-guidelines">
        - SPEC.md (pomiary tej funkcji z Figmy): <sciezka z figma_spec albo "brak — projektujesz w oparciu o DESIGN.md">
        - Screeny referencyjne (PNG): <nazwa>: <sciezka>, jedna linia na screen
-       Te pliki sa zrodlem prawdy o designie, od najbardziej konkretnego: SPEC.md > DESIGN.md > ux-ui-guidelines.
-       Gdy SPEC.md nie ma potrzebnego pomiaru, pobierz go z Figmy przez mcp__plugin_figma_figma__get_design_context
-       (fileKey i nodeId z naglowka SPEC.md). Wymiarow nie zgadujesz.
-     Sekcji brak albo wszystkie pola puste/null — blok pomin. Dla feature-builder-data blok pomijasz zawsze.
+     Kolejnosc zrodel i brakujace pomiary rozstrzyga builder (jego plik roli). Sekcji brak albo wszystkie pola puste/null — blok pomin. Dla feature-builder-data blok pomijasz zawsze.
    - NIE kopiuj "Skills in play:" — skille sa wstrzykiwane z frontmatter subagenta.
    - agentType = wartosc pola "Delegate to:" z IU. IU bez tego pola (plan starszy niz delegacja) — dobierz
      agentType po plikach jednostki: tylko warstwa danych -> feature-builder-data, tylko UI -> feature-builder-ui,
      obie -> feature-builder-fullstack.
      Gdy sekcja "Designerski kontekst" ma niepuste figma_spec albo figma_screens, builder UI i fullstack bierzesz
      w wariancie z Figma: feature-builder-ui-figma, feature-builder-fullstack-figma (tylko one maja narzedzia Figma MCP).
-   DOPISZ DOSLOWNIE na koncu promptu KAZDEGO IU blok "Wymagania wykonania":
-   "Wymagania wykonania: zaimplementuj kod dla checkboxow implementacyjnych (POMIJAJ: Weryfikacja:,
-   Operator:, [E2E], [Manual] — to dla review/operatora). Testy dla checkboxow Test: pisz RAZEM z kodem.
-   Jesli dodajesz zaleznosc (bun add / npm install) — odnotuj to w odchyleniach."
-   (Regul srodowiska dot. dlugich komend NIE kopiuj — orkiestrator dokleja je automatycznie.)
+   Zakres checkboxow, testy razem z kodem i nowe zaleznosci w odchyleniach ma kazdy builder w pliku roli, a zasady
+   dlugich komend dokleja orkiestrator — tych blokow nie dopisujesz.
 
 Zwroc obiekt zgodny ze schematem IUPlan. Sam nie implementuj kodu.`
 }
