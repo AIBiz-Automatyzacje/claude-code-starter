@@ -13,6 +13,7 @@ import glob, hashlib, json, os, random, re, shutil, subprocess
 import test_review_p11 as P11
 
 TR = os.path.expanduser('~/test-review')
+P12 = os.path.join(TR, 'p12')
 WARIANTY = ('stary', 'nowy')
 WARIANTY_SEDZIEGO = ('stary', 'nowy', 'historyczny')
 ETYKIETY = ('A', 'B', 'C')
@@ -76,12 +77,17 @@ def kopia_bazy(zrodlo, cel, baza, sha_fazy):
         if ref != 'refs/heads/' + GALAZ: _g(cel, 'update-ref', '-d', ref)
     _g(cel, 'reflog', 'expire', '--expire=now', '--all')
     _g(cel, 'gc', '--prune=now', '-q')
-    if subprocess.run(['git', '-C', cel, 'cat-file', '-e', sha_fazy], capture_output=True).returncode == 0:
-        raise RuntimeError('commit fazy %s osiągalny w kopii po czyszczeniu' % sha_fazy[:10])
+    obecne = przyszle_w_kopii(cel, _g(zrodlo, 'rev-list', '%s..%s' % (baza, sha_fazy)).split())
+    if obecne: raise RuntimeError('commity z przyszłości osiągalne w kopii po czyszczeniu: %s' % ' '.join(c[:10] for c in obecne))
     usuniete = czysc_artefakty(cel)
     status = _g(cel, 'status', '--porcelain', '--untracked-files=all')
     if status: raise RuntimeError('kopia brudna po przygotowaniu:\n' + status[:2000])
     return {'head': _g(cel, 'rev-parse', 'HEAD').strip(), 'usuniete': usuniete, 'biblioteki': biblioteki(usuniete)}
+
+
+def przyszle_w_kopii(cel, commity):
+    """Commity zakresu baza..sha fazy (implementacja i wszystko po niej), które istnieją w kopii — powinna być pusta lista."""
+    return [c for c in commity if subprocess.run(['git', '-C', cel, 'cat-file', '-e', c], capture_output=True).returncode == 0]
 
 
 def czysc_artefakty(cel):
@@ -94,9 +100,10 @@ def czysc_artefakty(cel):
             full = os.path.join(cel, p)
             shutil.rmtree(full) if os.path.isdir(full) and not os.path.islink(full) else os.unlink(full)
             usuniete.append(p)
-    for d in ('', '*', '*/*'):
-        for v in glob.glob(os.path.join(cel, d, 'node_modules', '.vite')):
-            shutil.rmtree(v); usuniete.append(os.path.relpath(v, cel))
+    for d in ('', '*', '*/*'):   # cache transformacji: Vite (wyniki testów), jiti (skompilowany vite.config z późniejszego stanu)
+        for c in ('.vite', '.vite-temp', '.cache'):
+            for v in glob.glob(os.path.join(cel, d, 'node_modules', c)):
+                shutil.rmtree(v); usuniete.append(os.path.relpath(v, cel))
     return sorted(usuniete)
 
 
@@ -139,7 +146,10 @@ def ustawienia(et, krok, w, tr=TR):
     """--settings sesji kroku: odczyt (i zapis) tylko w dozwolonych miejscach testu, bez sieci, hooki wyłączone. Build zapisuje w kopii
     (buildery, domknięcie z commitem) — zapis zabroniony w Documents, ~/.claude i reszcie testu; review i sędzia nie zapisują wcale."""
     poza = deny_poza(tr, dozwolone(et, krok, w, tr))
-    deny = ['Read(%s)' % DOCUMENTS, 'Read(~/.claude/projects/**)', 'Read(//tmp/tr-*/**)'] + ['Read(/%s)' % p for p in poza]
+    deny = ['Read(%s)' % DOCUMENTS, 'Read(~/.claude/**)', 'Read(//tmp/tr-*/**)'] + ['Read(/%s)' % p for p in poza]
+    if not krok.startswith('p12-sedzia'):   # scratchpad sesji drugiego wariantu (slug jego kopii)
+        inny = [x for x in WARIANTY if x != w][0]
+        deny += ['Read(/%s/claude-*/*p12-kopie-%s-%s/**)' % (t, et, inny) for t in ('/tmp', '/private/tmp')]
     if krok == 'p12-build':
         deny += ['Read(//tmp/review-*)', 'Read(//private/tmp/review-*)', 'Edit(%s)' % DOCUMENTS, 'Write(%s)' % DOCUMENTS, 'Edit(~/.claude/**)', 'Write(~/.claude/**)']
         deny += ['%s(/%s)' % (n, p) for p in poza for n in ('Edit', 'Write')]
@@ -148,12 +158,37 @@ def ustawienia(et, krok, w, tr=TR):
     return {'disableAllHooks': True, 'permissions': {'deny': deny + SIEC}}
 
 
-def zakazane_re(et, krok, w, tr=TR):
-    """Przeciek w skanie transkryptów: miejsca z listy deny (także przez Bash) + Documents, transkrypty, zrzuty review dla buildu."""
-    wzorce = [r'/Documents/', r'\.claude/projects', r'/tmp/tr-'] + [re.escape(p[:-3] if p.endswith('/**') else p) + r'(?![\w.-])'
-                                                                   for p in deny_poza(tr, dozwolone(et, krok, w, tr))]
-    if krok == 'p12-build': wzorce.append(r'/tmp/review-')
+def zakazane_re(et, krok, w, tr=TR, zadanie=None, faza=None):
+    """Przeciek w skanie transkryptów: miejsca z listy deny ścieżką absolutną (także przez Bash), przez ~ i $HOME, przez ../ do drugiego
+    wariantu i katalogów testu, scratchpad drugiego wariantu, transkrypty i historia plików ~/.claude, Documents, zrzuty review w /tmp
+    (build: poza zrzutami własnej fazy — domknięcie pisze je samo; przed buildem harness przenosi stare). Względne `../..` wewnątrz kopii
+    są zwykłą pracą (importy, cd do pakietu) — drugi wariant i kopię historyczną zamyka na czas buildu chmod (test_review_p12_cli.zamknij)."""
+    wlasne = r'p12-kopie/%s/%s(?:-pliki)?(?![\w.-])' % (re.escape(et), re.escape(w))
+    wzorce = [r'/Documents/', r'\.claude/(projects|file-history)', r'/tmp/tr-', r'(~|\$HOME|\$\{HOME\})/test-review(?!/%s)' % wlasne,
+              r'\.\./(?:\.\./)*(?:kopie|p11|p12|sedzia|wyniki|odrzucone|[fx]-[0-9a-f]{7})(?![\w.-])']
+    wzorce += [re.escape(p[:-3] if p.endswith('/**') else p) + r'(?![\w.-])' for p in deny_poza(tr, dozwolone(et, krok, w, tr))]
+    if not krok.startswith('p12-sedzia'):
+        inny = [x for x in WARIANTY if x != w][0]
+        wzorce += [r'\.\./%s(?:-pliki)?(?![\w.-])' % inny, r'-p12-kopie-%s-%s(?![\w.-])' % (re.escape(et), inny)]
+    if krok == 'p12-build' and zadanie: wzorce.append(r'/tmp/review-(?!(?:diff|ctx)-%s-faza-%s\.)' % (re.escape(zadanie), faza))
+    else: wzorce.append(r'/tmp/review-')
     return re.compile('|'.join(wzorce))
+
+
+def plik_werdyktu(et, krok, w, p12=P12):
+    return os.path.join(p12, et, 'skan-%s-%s.json' % (krok, w))
+
+
+def zapisz_werdykt(et, krok, w, kod, zdarzenia, p12=P12):
+    """Werdykt skanu kroku: wznowienie uznaje krok za zrobiony tylko przy kodzie 0 (STOP i przeciek wymagają decyzji, nie powtórki)."""
+    os.makedirs(os.path.join(p12, et), exist_ok=True)
+    with open(plik_werdyktu(et, krok, w, p12), 'w') as f: json.dump({'kod': kod, 'zdarzenia': zdarzenia}, f, ensure_ascii=False, indent=1)
+
+
+def werdykt_skanu(et, krok, w, p12=P12):
+    p = plik_werdyktu(et, krok, w, p12)
+    if not os.path.exists(p): return None
+    with open(p) as f: return json.load(f)
 
 
 def permutacja(et):
@@ -163,19 +198,37 @@ def permutacja(et):
     return dict(zip(ETYKIETY, w))
 
 
+RE_HASH = re.compile(r'\b[0-9a-f]{7,40}\b')
+RE_LINIA_PLIKU = re.compile(r'(\.[A-Za-z]{1,5}):\d+(?:[-–]\d+)?')
+RE_LINIE = re.compile(r'\(?\b(?:linie|linia|linii|lines?|L)\s*\d+(?:\s*[-–]\s*\d+)?\)?', re.I)
+RE_STATUS = re.compile(r'^.*(Confirmed as addressed|Addressed in commit).*$', re.M | re.I)
+RE_STATUS_FRAZA = re.compile(r'\b(NADAL OTWART\w*)\b\s*(\([^)]*\))?\.?|\(?\bzweryfikowany\b[^)\n]*\)?', re.I)
+RE_NASTEPNY = re.compile(r'\n#{2,4} ')
+
+
+def czysc_tresc(t):
+    """Treść klucza bez śladów implementacji, w której go znaleziono: następny finding w tym samym wpisie, statusy naprawy, hashe commitów,
+    numery linii (te trzy wskazywałyby sędziemu kod historyczny i zawyżały czułość)."""
+    t = RE_NASTEPNY.split(t or '', maxsplit=1)[0]
+    t = RE_STATUS_FRAZA.sub('', RE_STATUS.sub('', t))
+    t = RE_LINIA_PLIKU.sub(r'\1', RE_HASH.sub('', t))
+    t = RE_LINIE.sub('', t)
+    return re.sub(r'\n{3,}', '\n\n', re.sub(r'[ \t]{2,}', ' ', t)).strip()
+
+
 def prompt_sedziego(klucze, kat):
-    """Prompt sędziego obecności defektu: klucz z neutralnymi id (bez źródła, przypadku bota i wycinku kodu historycznego — wycinek zdradzałby,
-    która implementacja jest historyczna), trzy implementacje w podkatalogach A, B, C."""
+    """Prompt sędziego obecności defektu: klucz z neutralnymi id (bez źródła, przypadku bota, wycinku kodu historycznego i numerów linii —
+    zdradzałyby, która implementacja jest historyczna), trzy implementacje w podkatalogach A, B, C."""
     bloki = []
     for k in klucze['klucze']:
-        poz = '%s:%s' % (k.get('plik') or '?', k['linia']) if k.get('linia') else (k.get('plik') or '?')
-        bloki.append('%s | waga %s | miejsce w implementacji, w której go znaleziono: %s\nStreszczenie: %s\nOpis: %s' % (
-            k['id'], k.get('waga') or '?', poz, (k.get('streszczenie') or '').strip(), (k.get('tresc') or '').strip()[:1500] or '(brak — tylko streszczenie)'))
+        bloki.append('%s | waga %s | plik w implementacji, w której go znaleziono: %s\nStreszczenie: %s\nOpis: %s' % (
+            k['id'], k.get('waga') or '?', k.get('plik') or '?', czysc_tresc(k.get('streszczenie')),
+            czysc_tresc(k.get('tresc'))[:1500] or '(brak — tylko streszczenie)'))
     return '''Jesteś sędzią porównania implementacji. W katalogu %(kat)s leżą trzy implementacje tej samej fazy projektu, każda w swoim podkatalogu:
 %(kat)s/A, %(kat)s/B, %(kat)s/C. W każdym: `zmiany.diff` (zmiany kodu fazy względem wspólnego punktu startu, bez docs/ i .claude/) oraz `pliki/`
 (pełna treść plików kodu zmienionych w fazie, po implementacji, ścieżki względem korzenia projektu).
 
-Poniżej lista defektów (K1…K%(n)d) znalezionych w jednej z możliwych implementacji tej fazy. Dla KAŻDEGO defektu i KAŻDEJ z implementacji A, B, C
+Poniżej lista defektów (%(ids)s) znalezionych w jednej z możliwych implementacji tej fazy. Dla KAŻDEGO defektu i KAŻDEJ z implementacji A, B, C
 wystaw jedną ocenę:
 - OBECNY — implementacja ma kod, którego defekt dotyczy, i ten sam mechanizm błędu w nim jest (także pod inną nazwą albo w innym pliku);
 - ZAPOBIEZONY — implementacja ma kod, którego defekt dotyczy, i robi to poprawnie: opisany scenariusz nie daje w niej złego wyniku;
@@ -188,7 +241,7 @@ oceniasz osobno, na podstawie jej kodu, i nie zakładasz, że któraś jest leps
 Zwracasz dokładnie %(m)d ocen: po jednej na parę (defekt, implementacja), pole wariant = A, B albo C.
 
 === DEFEKTY ===
-%(bloki)s''' % {'kat': kat, 'n': len(klucze['klucze']), 'm': 3 * len(klucze['klucze']), 'bloki': '\n\n'.join(bloki)}
+%(bloki)s''' % {'kat': kat, 'ids': ', '.join(k['id'] for k in klucze['klucze']), 'm': 3 * len(klucze['klucze']), 'bloki': '\n\n'.join(bloki)}
 
 
 def wynik_sedziego(sedzia, mapowanie):

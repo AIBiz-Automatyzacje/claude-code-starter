@@ -76,6 +76,7 @@ def repo(tmp):
         os.makedirs(os.path.join(tmp, d))
     zapisz(os.path.join(tmp, 'packages/shared/dist/b.js'), 'przyszlosc')
     zapisz(os.path.join(tmp, 'node_modules/.vite/vitest/results.json'), '{"b.test.ts": 1}')
+    os.makedirs(os.path.join(tmp, 'node_modules/.cache/jiti')); zapisz(os.path.join(tmp, 'node_modules/.cache/jiti/vite.config.mjs'), 'przyszly config')
     zapisz(os.path.join(tmp, 'node_modules/pkg/index.js'), 'x')
     zapisz(os.path.join(tmp, 'tsconfig.tsbuildinfo'), 'x')
     zapisz(os.path.join(tmp, '.env'), 'X=1')
@@ -100,6 +101,7 @@ class KopiaBazy(unittest.TestCase):
             for p in ('node_modules/pkg/index.js', '.env'):
                 self.assertTrue(os.path.exists(os.path.join(cel, p)), p)
             self.assertEqual(w['biblioteki'], ['packages/shared'])
+            self.assertFalse(os.path.exists(os.path.join(cel, 'node_modules/.cache')))
             self.assertTrue(os.path.exists(os.path.join(zr, 'packages/shared/dist/b.js')))   # źródło nietknięte
 
     def test_istniejacy_cel_odmawia(self):
@@ -123,6 +125,14 @@ class NakladkaPoBuildzie(unittest.TestCase):
             P.P11.nakladka(k, z)
             self.assertEqual(g('status', '--porcelain'), przed)
             self.assertEqual(open(os.path.join(k, '.claude/agents/a.md')).read(), 'wariant')
+
+
+class Skan(unittest.TestCase):
+    def test_werdykt_skanu_zapisany_i_krok_zrobiony_tylko_przy_zerze(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertIsNone(P.werdykt_skanu('f-a', 'p12-build', 'nowy', p12=d))
+            P.zapisz_werdykt('f-a', 'p12-build', 'nowy', 4, ['PRZECIEK x'], p12=d)
+            self.assertEqual(P.werdykt_skanu('f-a', 'p12-build', 'nowy', p12=d)['kod'], 4)
 
 
 class Ustawienia(unittest.TestCase):
@@ -157,6 +167,18 @@ class Ustawienia(unittest.TestCase):
                 self.assertTrue(any(x.startswith('Read(/%s/%s' % (d, p)) for x in deny), p)
             self.assertFalse([x for x in deny if '/p12/f-a/sedzia' in x])
             self.assertIn('Write', deny)
+
+    def test_regex_przecieku_sciezki_wzgledne_dom_i_slug_drugiego_wariantu(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.drzewo(d)
+            rp = P.zakazane_re('f-a', 'p12-build', 'nowy', tr=d, zadanie='docs-active-z', faza=2)
+            for zle in ('cat ../stary/apps/x.ts', 'ls ../../f-b26128d', 'ls ../../../kopie', 'ls ~/test-review/kopie', 'cat $HOME/test-review/p11/x',
+                        'cat /private/tmp/claude-501/-Users-x-test-review-p12-kopie-f-a-stary/s/scratchpad/a', 'ls ~/.claude/file-history/',
+                        'cat /tmp/review-diff-docs-active-inne-faza-1.diff'):
+                self.assertTrue(rp.search(zle), zle)
+            for dobre in ('cat /tmp/review-diff-docs-active-z-faza-2.diff', 'cat /tmp/bramki-docs-active-z-faza-2.json', 'cd ../ && ls',
+                          'cat %s/p12-kopie/f-a/nowy/../nowy-pliki/x' % d):
+                self.assertFalse(rp.search(dobre), dobre)
 
     def test_regex_przecieku_z_listy_deny(self):
         with tempfile.TemporaryDirectory() as d:
@@ -201,6 +223,20 @@ class Sedzia(unittest.TestCase):
             self.assertNotIn(zakazane, p)
         for jest in ('K1', 'K2', 'apps/a.ts', '/x/sedzia/A', 'OBECNY', 'ZAPOBIEZONY', 'BRAK_ODPOWIEDNIKA'):
             self.assertIn(jest, p)
+
+    def test_tresc_klucza_bez_sladow_implementacji_historycznej(self):
+        t = ('NADAL OTWARTE (brak commita naprawczego). W `apps/server/static/c.js:36` (linie 49–57) po a2a296a brak komunikatu.\n'
+             '✅ Confirmed as addressed in commit edfbca8\n#### 5. Drugi finding\nnie dla tego klucza')
+        c = P.czysc_tresc(t)
+        for zle in (':36', '49', 'a2a296a', 'edfbca8', 'Confirmed', 'NADAL OTWARTE', 'Drugi finding'):
+            self.assertNotIn(zle, c)
+        self.assertIn('`apps/server/static/c.js`', c)
+        self.assertIn('brak komunikatu', c)
+
+    def test_prompt_bez_linii_klucza(self):
+        p = P.prompt_sedziego(KLUCZE, '/x/sedzia')
+        self.assertNotIn('apps/a.ts:10', p)
+        self.assertIn('K1, K2', p)
 
     def test_wynik_per_wariant_klucz_i_grupa_klas_z_czuloscia_na_historycznym(self):
         mp = {'warianty': {'A': 'nowy', 'B': 'historyczny', 'C': 'stary'},

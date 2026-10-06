@@ -9,8 +9,9 @@
 #                                         w ~/test-review/p12/<et>/zrzut-<w>.txt), nakładka każdego wariantu na jego kopii, blok reguł/D10
 #                                         per IU planu (skrypt wiedzy wariantu), ustawienia deny i bezpiecznik budżetu
 #   test_review_p12.sh faza <et>        — agenci: build obu wariantów (kolejność z hasha fazy), review z main na obu, sędzia p1, wynik
-# Wznowienie = to samo polecenie: krok zrobiony (run completed, sesja bez błędu, zero błędów API) jest pomijany; niedokończony build —
-# próba do ~/test-review/odrzucone/, kopia z powrotem na bazie (reset), build od nowa.
+# Wznowienie = to samo polecenie: krok zrobiony (run completed, sesja bez błędu, zero błędów API) i ze skanem zapisanym z kodem 0 jest
+# pomijany; zrobiony bez skanu — skan teraz; skan ze STOP/przeciekiem — STOP (decyzja, nie powtórka). Niedokończony build: próba
+# i kopia do ~/test-review/odrzucone/, nowa kopia na bazie, build od nowa. Na czas buildu drugi wariant i kopia historyczna mają chmod 000.
 set -uo pipefail
 S=${0:A:h}
 TR=$HOME/test-review
@@ -19,7 +20,12 @@ pyc() { (cd $S && python3 -B -c "$1") }
 
 krok() {   # $1 et, $2 krok, $3 wariant — sesja headless + zbiór + skan; kod 0 = zrobiony, 4 = przeciek, inny = STOP
   local et=$1 k=$2 w=$3
-  if py test_review_sesja.py gotowy $et $k $w; then echo "$et $k $w: zrobiony — pomijam"; return 0; fi
+  if py test_review_sesja.py gotowy $et $k $w; then
+    py test_review_p12_cli.py werdykt $et $k $w; local v=$?
+    (( v == 0 )) && { echo "$et $k $w: zrobiony, skan 0 — pomijam"; return 0 }
+    (( v == 1 )) && { echo "$et $k $w: zrobiony bez skanu — skan teraz"; py test_review_p12_cli.py skan $et $k $w; return $? }
+    echo "STOP: $et $k $w ma skan z kodem ≠ 0 (~/test-review/p12/$et/skan-$k-$w.json) — decyzja operatora"; return 2
+  fi
   py test_review_sesja.py odrzuc $et $k $w
   py test_review_sesja.py start $et $k $w
   py test_review_sesja.py zbierz $et $k $w || return 2
@@ -48,6 +54,8 @@ suchy)
   ;;
 faza)
   et=$2
+  py test_review_p12_cli.py otworz $et
+  trap "py test_review_p12_cli.py otworz $et" EXIT
   for w in $(kolejnosc $et); do
     [[ -f $TR/p12-kopie/$et/$w-pliki/wariant-build.js ]] || { echo "STOP: brak skryptu buildu $w — najpierw przygotuj $et"; exit 2 }
     if ! py test_review_sesja.py gotowy $et p12-build $w; then
@@ -55,8 +63,12 @@ faza)
       py test_review_p12_cli.py reset $et $w || exit 2
       py test_review_p12_cli.py przed-buildem $et || exit 2
       py test_review_p12_cli.py nakladka $et $w $w || exit 2
+      py test_review_p12_cli.py zamknij $et $w || exit 2
       krok $et p12-build $w; k=$?
+      py test_review_p12_cli.py otworz $et
       (( k == 0 )) || { echo "PRZERWANE: $et p12-build $w (kod $k)"; exit $k }
+    else
+      krok $et p12-build $w || { echo "PRZERWANE: $et p12-build $w (skan)"; exit 2 }
     fi
     [[ -f $TR/p12/$et/po-buildzie-$w.json ]] || py test_review_p12_cli.py po-buildzie $et $w || exit 2
   done
@@ -66,7 +78,7 @@ faza)
     krok $et p12-review $w; k=$?
     (( k == 0 )) || { echo "PRZERWANE: $et p12-review $w (kod $k)"; exit $k }
   done
-  [[ -d $TR/p12/$et/sedzia/A ]] || py test_review_p12_cli.py sedzia $et || exit 2
+  [[ -f $TR/p12/$et/sedzia/sedzia-p1.js ]] || py test_review_p12_cli.py sedzia $et || exit 2
   krok $et p12-sedzia-p1 S; k=$?
   (( k == 0 )) || { echo "PRZERWANE: sędzia $et (kod $k)"; exit $k }
   py test_review_p12_cli.py wynik

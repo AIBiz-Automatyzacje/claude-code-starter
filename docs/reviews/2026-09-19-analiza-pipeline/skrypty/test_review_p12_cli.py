@@ -8,8 +8,12 @@ Użycie (z katalogu analizy):
                                                                     zbudowany na bazie, skrypty buildu z kontrolą bajtową (<w>-pliki/wariant-build.js)
   python3 skrypty/test_review_p12_cli.py wycinki <et> <w>           — zero agentów: blok reguł/D10, który planner wariantu wkleiłby każdemu IU planu
   python3 skrypty/test_review_p12_cli.py nakladka <et> <w> <zrodlo> — .claude wariantu <zrodlo> (stary | nowy) na kopii <w> + odcisk (do skanu)
-  python3 skrypty/test_review_p12_cli.py reset <et> <w>             — kopia <w> z powrotem na bazie buildu (przed ponowną próbą buildu)
-  python3 skrypty/test_review_p12_cli.py przed-buildem <et>         — zrzut bramek fazy w /tmp z poprzedniego buildu przeniesiony (domknięcie zapisuje go od nowa)
+  python3 skrypty/test_review_p12_cli.py reset <et> <w>             — przed ponowną próbą buildu: kopia <w> do odrzuconych, nowa kopia na bazie
+                                                                    (reflog, stash i pliki ignorowane nieudanej próby znikają razem z nią)
+  python3 skrypty/test_review_p12_cli.py przed-buildem <et>         — zrzuty fazy w /tmp z poprzedniego buildu (bramki, review-diff/ctx) przeniesione
+  python3 skrypty/test_review_p12_cli.py zamknij <et> <w>           — chmod 000 na drugi wariant (kopia, pliki) i kopię historyczną fazy na czas buildu <w>
+  python3 skrypty/test_review_p12_cli.py otworz <et>                — przywraca uprawnienia po buildzie (także po przerwaniu)
+  python3 skrypty/test_review_p12_cli.py werdykt <et> <krok> <w>    — kod 0 = skan kroku zapisany z kodem 0, 1 = brak skanu, 2 = skan ze STOP/przeciekiem
   python3 skrypty/test_review_p12_cli.py po-buildzie <et> <w>       — bramki z domknięcia → <w>-pliki/bramki.json, dossier z main, skrypt review z main
   python3 skrypty/test_review_p12_cli.py sedzia <et>                — implementacje A/B/C (stary, nowy, historyczny; permutacja z fazy) + skrypt sędziego
   python3 skrypty/test_review_p12_cli.py skan <et> <krok> <w>       — modele, przeciek, N1, stan kopii (kod 2 = STOP, 4 = przeciek)
@@ -123,29 +127,62 @@ def nakladka(et, w, zrodlo):
 
 def reset(et, w):
     f, cel = faza(et), kopia(et, w)
-    _g(cel, 'checkout', '-q', '-f', P.GALAZ)
-    _g(cel, 'reset', '-q', '--hard', f['baza'])
-    _g(cel, 'clean', '-q', '-fd')
-    _buduj_biblioteki(cel, P.biblioteki(P.czysc_artefakty(cel)))
-    print('%s %s: kopia na bazie %s' % (et, w, f['baza'][:10]))
+    if os.path.exists(cel) and _g(cel, 'rev-parse', 'HEAD').strip() == f['baza'] and not _g(cel, 'status', '--porcelain', '--untracked-files=all') \
+            and not _g(cel, 'reflog').count('\n') > 1 and not os.path.exists(os.path.join(P12, et, 'po-buildzie-%s.json' % w)):
+        print('%s %s: kopia nietknięta na bazie %s — zostaje' % (et, w, f['baza'][:10])); return
+    if os.path.exists(cel):
+        dst = os.path.join(TR, 'odrzucone', et, 'p12-kopia-%s-%s' % (w, time.strftime('%Y%m%d-%H%M%S'))); os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.move(cel, dst); print('%s %s: poprzednia kopia przeniesiona do %s' % (et, w, dst))
+    info = P.kopia_bazy(f['kopia_fazy'], cel, f['baza'], f['sha'])
+    _buduj_biblioteki(cel, info['biblioteki'])
+    print('%s %s: nowa kopia na bazie %s (usunięte %d)' % (et, w, f['baza'][:10], len(info['usuniete'])))
+
+
+def _slug_zadania(et):
+    return re.sub(r'^-+|-+$', '', re.sub(r'[^A-Za-z0-9]+', '-', 'docs/active/' + faza(et)['zadanie']))
+
+
+def zamknij(et, w):
+    """Na czas buildu <w>: drugi wariant i kopia historyczna niedostępne dla procesu (Bash omija deny Read, a ../ i cd nie da się
+    wiarygodnie wyłapać regexem). Tryby zapisane, `otworz` je przywraca."""
+    inny = [x for x in P.WARIANTY if x != w][0]
+    cele = [kopia(et, inny), pliki(et, inny), faza(et)['kopia_fazy']]
+    tryby = {c: os.stat(c).st_mode & 0o7777 for c in cele if os.path.exists(c)}
+    _json(os.path.join(P12, et, 'zamkniete.json'), tryby)
+    for c in tryby: os.chmod(c, 0)
+    print('%s: zamknięte na czas buildu %s: %s' % (et, w, ', '.join(os.path.relpath(c, TR) for c in tryby)))
+
+
+def otworz(et):
+    p = os.path.join(P12, et, 'zamkniete.json')
+    if not os.path.exists(p): return
+    for c, m in _json(p).items():
+        if os.path.exists(c): os.chmod(c, m)
+    os.remove(p); print('%s: uprawnienia przywrócone' % et)
 
 
 def plik_bramek(et):
-    f = faza(et)
-    return '/tmp/bramki-%s-faza-%d.json' % (re.sub(r'^-+|-+$', '', re.sub(r'[^A-Za-z0-9]+', '-', 'docs/active/' + f['zadanie'])), f['faza'])
+    return '/tmp/bramki-%s-faza-%d.json' % (_slug_zadania(et), faza(et)['faza'])
+
+
+def zrzuty_review(et):
+    """Zrzuty dossier domknięcia w /tmp (diff i kontekst fazy) — po buildzie jednego wariantu zawierają JEGO kod."""
+    return [p for p in glob.glob('/tmp/review-*-%s-faza-%d.*' % (_slug_zadania(et), faza(et)['faza']))]
 
 
 def przed_buildem(et):
-    p = plik_bramek(et)
-    if os.path.exists(p):
-        cel = os.path.join(P12, et, 'bramki-poprzednie-%s.json' % time.strftime('%Y%m%d-%H%M%S'))
-        shutil.move(p, cel); print('%s: %s przeniesiony do %s' % (et, p, cel))
+    for p in [plik_bramek(et)] + zrzuty_review(et):
+        if os.path.exists(p):
+            d = os.path.join(P12, et, 'tmp-poprzednie-%s' % time.strftime('%Y%m%d-%H%M%S')); os.makedirs(d, exist_ok=True)
+            shutil.move(p, d); print('%s: %s przeniesiony do %s' % (et, p, d))
 
 
 def po_buildzie(et, w):
     f, cel, pl = faza(et), kopia(et, w), pliki(et, w)
     bramki = os.path.join(pl, 'bramki.json')
     if os.path.exists(plik_bramek(et)): shutil.move(plik_bramek(et), bramki)
+    for p in zrzuty_review(et):   # review drugiego wariantu nie może ich czytać
+        os.makedirs(os.path.join(pl, 'tmp-domkniecia'), exist_ok=True); shutil.move(p, os.path.join(pl, 'tmp-domkniecia'))
     args = {'sciezka': 'docs/active/' + f['zadanie'], 'faza': f['faza'], 'srodowiskoE2E': 'pominieto', 'baza': f['baza']}
     cmd = ['node', os.path.join(P12, 'claude-stary', '.claude', 'scripts', 'dossier', 'dossier.mjs'), '--sciezka', args['sciezka'], '--faza',
            str(args['faza']), '--baza', f['baza'], '--projekt', cel, '--wyjscie', os.path.join(pl, 'tmp')] + (['--bramki', bramki] if os.path.exists(bramki) else [])
@@ -177,8 +214,8 @@ def eksport(repo, od, do, cel):
     nazwy = [p for p in nazwy if not POMIN_W_SEDZIM.search(p)]
     for p in nazwy:
         dst = os.path.join(cel, 'pliki', p); os.makedirs(os.path.dirname(dst), exist_ok=True)
-        if do:
-            with open(dst, 'w') as fo: fo.write(_g(repo, 'show', '%s:%s' % (do, p)))
+        if do:   # bajtowo: faza ma pliki binarne (logo .webp)
+            with open(dst, 'wb') as fo: fo.write(subprocess.run(['git', '-C', repo, 'show', '%s:%s' % (do, p)], capture_output=True, check=True).stdout)
         else: shutil.copyfile(os.path.join(repo, p), dst)
     with open(os.path.join(cel, 'zmiany.diff'), 'w') as fo: fo.write(diff)
     return {'pliki': len(nazwy), 'linie_diff': diff.count('\n')}
@@ -187,15 +224,21 @@ def eksport(repo, od, do, cel):
 def sedzia(et):
     f = faza(et)
     kat = P.katalog(et, 'p12-sedzia-p1', 'S')
-    if os.path.exists(os.path.join(kat, 'A')): raise SystemExit('STOP: %s już ma implementacje — sędzia przygotowany' % kat)
+    if os.path.exists(os.path.join(kat, 'sedzia-p1.js')): raise SystemExit('STOP: %s już ma skrypt sędziego — sędzia przygotowany' % kat)
+    if os.path.exists(kat):   # przerwane przygotowanie (np. błąd eksportu) — od nowa
+        cel = os.path.join(TR, 'odrzucone', et, 'p12-sedzia-%s' % time.strftime('%Y%m%d-%H%M%S')); os.makedirs(os.path.dirname(cel), exist_ok=True)
+        shutil.move(kat, cel); print('%s: niedokończone przygotowanie sędziego przeniesione do %s' % (et, cel))
     perm, info = P.permutacja(et), {}
     for e, v in perm.items():
         info[e] = eksport(f['kopia_fazy'], f['baza'], f['sha'], os.path.join(kat, e)) if v == 'historyczny' else eksport(kopia(et, v), f['baza'], None, os.path.join(kat, e))
     d10 = _json(os.path.join(OUT, 'p12-fazy.json'))['d10']
     grupa = lambda k: 'd10' if k in d10['zdania'] else 'pokryte' if k in d10['pokryte'] else 'inne'
     w_zakresie = {k['id']: k for k in f['klucz1'] + f['klucz2'] if k['w_zakresie']}
-    klucze = [k for k in _json(os.path.join(TR, 'sedzia', et + '-klucze.json'))['klucze'] if k['id'] in w_zakresie]
-    mapowanie = {'etykieta': et, 'warianty': perm, 'implementacje': info,
+    # klucz obecny w kodzie historycznym wg sędziego P11 (gdy faza była w P11): NIEPEWNE/NIE nie jest defektem do zapobiegania
+    p11 = os.path.join(TR, 'wyniki', et, 'p11-sedzia-p1.json')
+    obecne = {k['id'] for k in _json(p11)['klucze'] if k['obecny'] == 'TAK'} if os.path.exists(p11) else None
+    klucze = [k for k in _json(os.path.join(TR, 'sedzia', et + '-klucze.json'))['klucze'] if k['id'] in w_zakresie and (obecne is None or k['id'] in obecne)]
+    mapowanie = {'etykieta': et, 'warianty': perm, 'implementacje': info, 'pominiete_p11': sorted(set(w_zakresie) - {k['id'] for k in klucze}),
                  'K': {k['id']: {'zrodlo': k['zrodlo'], 'klasa': w_zakresie[k['id']]['klasa'], 'grupa': grupa(w_zakresie[k['id']]['klasa']), 'waga': k['waga']} for k in klucze}}
     _json(os.path.join(TR, 'sedzia', '%s-p12-p1-mapowanie.json' % et), mapowanie)
     with open(os.path.join(BASE, 'skrypty', 'test_review_p12_sedzia_szablon.js')) as fo: szablon = fo.read()
@@ -216,7 +259,7 @@ def _agenci(et, krok, w):
 def skan(et, krok, w):
     f = faza(et)
     kat = os.path.join(T.PROJ, T.slug(T.katalog_kroku(et, krok, w)))
-    rp, sid = P.zakazane_re(et, krok, w), T.id_sesji(et, krok, w)
+    rp, sid = P.zakazane_re(et, krok, w, zadanie=_slug_zadania(et), faza=f['faza']), T.id_sesji(et, krok, w)
     stop, przeciek, uwagi = [], [], []
     inne = [n for n in SK.narzedzia_sesji(os.path.join(kat, sid + '.jsonl')) if n not in ('Workflow', 'ToolSearch')]
     if inne: stop.append('N1 sesja: %s' % inne)
@@ -228,7 +271,8 @@ def skan(et, krok, w):
             if v: (przeciek if k == 'przeciek' else stop).append('%s %s: %s' % (k.upper(), e, v[:2]))
     if krok in ('p12-build', 'p12-review'):
         cel = kopia(et, w)
-        if subprocess.run(['git', '-C', cel, 'cat-file', '-e', f['sha']], capture_output=True).returncode == 0: stop.append('commit fazy osiągalny w kopii')
+        przyszle = P.przyszle_w_kopii(cel, _g(f['kopia_fazy'], 'rev-list', '%s..%s' % (f['baza'], f['sha'])).split())
+        if przyszle: stop.append('commity z przyszłości osiągalne w kopii: %s' % ' '.join(c[:10] for c in przyszle))
         if subprocess.run(['git', '-C', cel, 'merge-base', '--is-ancestor', f['baza'], 'HEAD']).returncode: stop.append('HEAD kopii nie wyrasta z bazy buildu')
         if SK.odcisk(cel) != _json(os.path.join(P12, et, 'odcisk-%s.json' % w))['odcisk']: stop.append('nakladka .claude/CLAUDE.md zmieniona w trakcie kroku')
         if krok == 'p12-review':
@@ -241,7 +285,14 @@ def skan(et, krok, w):
             if _g(cel, 'rev-parse', 'HEAD').strip() == f['baza']: uwagi.append('build bez commita (HEAD = baza)')
     print('skan %s %s %s: STOP %d, przeciek %d, uwagi %d' % (et, krok, w, len(stop), len(przeciek), len(uwagi)))
     for x in stop + przeciek + uwagi[:12]: print('  ' + x)
-    return 2 if stop else 4 if przeciek else 0
+    kod = 2 if stop else 4 if przeciek else 0
+    P.zapisz_werdykt(et, krok, w, kod, stop + przeciek + uwagi)
+    return kod
+
+
+def werdykt(et, krok, w):
+    v = P.werdykt_skanu(et, krok, w)
+    return 1 if v is None else 0 if v['kod'] == 0 else 2
 
 
 def _structured(jf):
@@ -338,7 +389,8 @@ if __name__ == '__main__':
     a = sys.argv[1:]
     if not a: raise SystemExit(__doc__)
     k = {'claude': lambda: claude(), 'przygotuj': lambda: przygotuj(a[1]), 'wycinki': lambda: wycinki(a[1], a[2]), 'nakladka': lambda: nakladka(a[1], a[2], a[3]),
-         'reset': lambda: reset(a[1], a[2]), 'przed-buildem': lambda: przed_buildem(a[1]), 'po-buildzie': lambda: po_buildzie(a[1], a[2]),
+         'reset': lambda: reset(a[1], a[2]), 'zamknij': lambda: zamknij(a[1], a[2]), 'otworz': lambda: otworz(a[1]),
+         'werdykt': lambda: sys.exit(werdykt(a[1], a[2], a[3])), 'przed-buildem': lambda: przed_buildem(a[1]), 'po-buildzie': lambda: po_buildzie(a[1], a[2]),
          'sedzia': lambda: sedzia(a[1]), 'skan': lambda: sys.exit(skan(a[1], a[2], a[3])), 'wynik': lambda: wynik(a[1:])}
     if a[0] not in k: raise SystemExit(__doc__)
     k[a[0]]()
