@@ -149,12 +149,13 @@ def zlapania(sedzia, mapowanie):
 
 RE_SEGMENT = re.compile(r'\s*(?:&&|\|\||;|\|)\s*')
 RE_GIT_ZAPIS_DRZEWA = re.compile(r'^git\s+(stash|restore|checkout\s+--|checkout\s+\S+\s+--)')
-RE_EDYCJA_W_MIEJSCU = re.compile(r'^(sed|perl)\s+.*-p?i\b')
+RE_EDYCJA_W_MIEJSCU = re.compile(r'^(sed|perl)\s(.*\s)?-p?i(\S*)?(\s|$)')
+RE_PRZEKIEROWANIE_PLIKU = re.compile(r'(?<![\d&])>>?\s*([^\s&|;<>]+)')
 
 
 def zapis_drzewa(cmd):
     """Czy komenda Bash agenta zmienia pliki projektu w drzewie roboczym (ręczny mutant reviewera: edycja w miejscu poza /tmp, przywrócenie
-    kopii z /tmp, git stash/restore/checkout --). W prawdziwym projekcie to zapis w drzewie operatora, które równolegle czytają inni reviewerzy."""
+    kopii z /tmp, przekierowanie do pliku poza /tmp, git stash/restore/checkout --). W prawdziwym projekcie to zapis w drzewie operatora, które równolegle czytają inni reviewerzy."""
     for seg in RE_SEGMENT.split(cmd.strip()):
         slowa = seg.split()
         if not slowa: continue
@@ -162,6 +163,7 @@ def zapis_drzewa(cmd):
         cel = slowa[-1].strip('"\'')
         if RE_EDYCJA_W_MIEJSCU.match(seg) and not cel.startswith('/tmp/'): return True
         if slowa[0] == 'cp' and len(slowa) >= 3 and not cel.startswith('/tmp/'): return True
+        if any(not c.startswith(('/tmp/', '/dev/', '/private/tmp/')) for c in RE_PRZEKIEROWANIE_PLIKU.findall(re.sub(r'"[^"]*"|\'[^\']*\'', '', seg))): return True
     return False
 
 
