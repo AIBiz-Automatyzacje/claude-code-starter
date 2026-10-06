@@ -6,80 +6,92 @@ Wzorce UX dla modali, formularzy, feedbacku i stanów - React 19 + React Hook Fo
 
 ## Modale i Dialogi
 
-### Podstawowy Dialog (Radix)
+### Dialog potwierdzenia (Radix AlertDialog)
+
+`ConfirmDialog` to jedyny w projekcie dialog potwierdzenia akcji; wywołujesz go przez `useConfirm` (sekcja [Confirm Before Action](#confirm-before-action)). Stoi na `AlertDialog` z shadcn/ui, nie na zwykłym `Dialog`: rola `alertdialog` mówi czytnikowi, że dialog wymaga decyzji, a kliknięcie tła go nie zamyka, więc przypadkowe kliknięcie obok nie rozstrzyga pytania. Escape i „Anuluj” zamykają go jak odpowiedź „nie”. Propsy własne mają nazwy z prefiksem `is` (`isOpen`, `isDestructive`); `open` i `onOpenChange` zostają tylko na komponencie Radix, bo to jego API.
 ```typescript
-import { Button } from '@/components/ui/button';
+// src/components/confirm-dialog.tsx
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { buttonVariants } from '@/components/ui/button';
 
 interface ConfirmDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
     onConfirm: () => void;
     title: string;
     description: string;
     confirmText?: string;
-    destructive?: boolean;
+    isDestructive?: boolean;
 }
 
 export function ConfirmDialog({
-    open,
+    isOpen,
     onOpenChange,
     onConfirm,
     title,
     description,
     confirmText = 'Potwierdź',
-    destructive = false,
+    isDestructive = false,
 }: ConfirmDialogProps) {
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
+        <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{title}</AlertDialogTitle>
+                    <AlertDialogDescription>{description}</AlertDialogDescription>
+                </AlertDialogHeader>
 
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Anuluj</Button>
-                    </DialogClose>
-                    <Button 
-                        variant={destructive ? 'destructive' : 'default'}
-                        onClick={() => {
-                            onConfirm();
-                            onOpenChange(false);
-                        }}
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                    {/* AlertDialogAction sam zamyka dialog (onOpenChange(false)) po onClick */}
+                    <AlertDialogAction
+                        className={buttonVariants({ variant: isDestructive ? 'destructive' : 'default' })}
+                        onClick={onConfirm}
                     >
                         {confirmText}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }
 ```
 
+Bezpośredni `AlertDialog` z wyzwalaczem (`AlertDialogTrigger`) w [loading-and-error-states.md](../../tailwind-react-guidelines/resources/loading-and-error-states.md) stosuje ten sam wzorzec; gdy potwierdzenie wywołujesz z kodu (po geście, z menu), używasz `useConfirm`.
+
 ### Blokowanie Zamknięcia Podczas Operacji
 ```typescript
+import { Loader2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { logger } from '@/lib/logger';
 
 interface SaveDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
     onSave: () => Promise<void>;
 }
 
-function SaveDialog({ open, onOpenChange, onSave }: SaveDialogProps) {
+function SaveDialog({ isOpen, onOpenChange, onSave }: SaveDialogProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleSave = () => {
@@ -98,10 +110,10 @@ function SaveDialog({ open, onOpenChange, onSave }: SaveDialogProps) {
 
     return (
         <Dialog 
-            open={open} 
-            onOpenChange={(open) => {
+            open={isOpen} 
+            onOpenChange={(isNextOpen) => {
                 // Blokuj zamknięcie podczas operacji
-                if (!isPending) onOpenChange(open);
+                if (!isPending) onOpenChange(isNextOpen);
             }}
         >
             <DialogContent 
@@ -145,7 +157,7 @@ function SaveDialog({ open, onOpenChange, onSave }: SaveDialogProps) {
 
 Kolejność wyboru:
 
-1. **Dialog z shadcn/ui (Radix)** — pierwszy wybór, projekt go już ma. Wbudowany focus trap, zamknięcie Escape, `aria-modal`, powrót fokusu do elementu, który otworzył dialog. Przykłady wyżej.
+1. **Dialog z shadcn/ui (Radix)** — pierwszy wybór, projekt go już ma. Wbudowany focus trap, zamknięcie Escape, `aria-modal`, powrót fokusu do elementu, który otworzył dialog. Przykłady wyżej (`AlertDialog` ma te same mechanizmy).
 2. **Natywny `<dialog>` z `showModal()`** — gdy modal ma wyglądać albo zachowywać się inaczej niż Dialog z shadcn/ui. Przeglądarka sama robi resztę strony inert (Tab nie wychodzi do treści pod spodem), zamyka dialog Escape, renderuje go w top layer nad wszystkimi `z-index` i oddaje fokus po zamknięciu. Bez nowej zależności.
 3. **react-focus-lock** — nowa zależność, więc najpierw sprawdzasz package.json i zgłaszasz ją operatorowi (w workflowie: w odchyleniach). Sięgasz po nią tylko wtedy, gdy żaden z dwóch powyższych wariantów nie pasuje (np. pułapka fokusu w panelu, który nie jest modalem).
 
@@ -155,23 +167,23 @@ import { useEffect, useId, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface NativeModalProps {
-    open: boolean;
+    isOpen: boolean;
     onClose: () => void;
     title: string;
     children: React.ReactNode;
 }
 
-export function NativeModal({ open, onClose, title, children }: NativeModalProps) {
+export function NativeModal({ isOpen, onClose, title, children }: NativeModalProps) {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const titleId = useId();
 
-    // Synchronizacja propsa open z DOM: showModal() daje focus trap, inert tła i top layer
+    // Synchronizacja propsa isOpen z DOM: showModal() daje focus trap, inert tła i top layer
     useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) return;
-        if (open && !dialog.open) dialog.showModal();
-        if (!open && dialog.open) dialog.close();
-    }, [open]);
+        if (isOpen && !dialog.open) dialog.showModal();
+        if (!isOpen && dialog.open) dialog.close();
+    }, [isOpen]);
 
     return (
         <dialog
@@ -228,8 +240,9 @@ Rozmiar przycisków-ikon według zasady rozmiaru celu z [accessibility.md](acces
 
 ### React Hook Form + Zod
 
-Kanoniczny `ContactForm` — schemat `contactSchema` (`z.strictObject`, `z.email()`), typ `ContactValues`, hook `useSendContact()` z `useMutation` wołający `contactService.send`, `onError` z logiem `CONTACT_SEND_FAILED` i toastem, reset i `onSuccess?.()` po wysłaniu, powiązania `aria-invalid`/`aria-describedby` — jest w [forms.md](../../tailwind-react-guidelines/resources/forms.md) (sekcja Podstawowy Formularz). Ten plik go nie powtarza; poniżej warstwa UX, którą dokładasz do tego samego komponentu:
+Kanoniczny `ContactForm` — schemat `contactSchema` (`z.strictObject`, `z.email()`), typ `ContactValues`, `useForm({ mode: 'onTouched', resolver: zodResolver(contactSchema) })`, hook `useSendContact()` z `useMutation` wołający `contactService.send`, `onError` z logiem `CONTACT_SEND_FAILED` i toastem, reset i `onSuccess?.()` po wysłaniu, powiązania `aria-invalid`/`aria-describedby` — jest w [forms.md](../../tailwind-react-guidelines/resources/forms.md) (sekcja Podstawowy Formularz). Ten plik go nie powtarza; poniżej warstwa UX, którą dokładasz do tego samego komponentu:
 
+- **Walidacja przy polu, nie dopiero po wysłaniu.** `mode: 'onTouched'` sprawdza pole po pierwszym opuszczeniu, a potem przy każdej zmianie, więc użytkownik widzi błąd przy polu, zanim kliknie „Wyślij”, i widzi, że poprawka go usunęła. Domyślny tryb React Hook Form (`onSubmit`) pokazuje błędy dopiero po wysłaniu.
 - **Błąd widoczny nie tylko kolorem.** Pole z błędem dostaje obramowanie `border-destructive`, a pod polem jest tekst komunikatu (`role="alert"`, powiązany przez `aria-describedby`). Sam czerwony kolor nie wystarcza osobom z zaburzeniami widzenia barw.
 - **Wysyłka z widocznym postępem.** Przycisk jest zablokowany na czas wysyłki, pokazuje spinner (ukryty przed czytnikiem) i tekst „Wysyłanie...”, więc użytkownik nie klika drugi raz.
 - **Przycisk na pełną szerokość na mobile** i z celem 44 px na dotyku ([accessibility.md](accessibility.md#rozmiar-celu)).
@@ -423,6 +436,8 @@ export function useSubscribeNewsletter() {
 React po zakończeniu akcji resetuje niekontrolowane pola formularza. Stan błędu niesie więc wpisany adres (`email`), a pole dostaje go jako `defaultValue` — użytkownik poprawia literówkę zamiast wpisywać adres od nowa.
 
 ### useActionState (React 19) — Proste Formularze
+
+To kanoniczny `NewsletterForm` projektu (`@/components/newsletter-form` z hookiem `@/hooks/use-subscribe-newsletter`); [forms.md](../../tailwind-react-guidelines/resources/forms.md) importuje go i linkuje tutaj. Przycisk czytający stan formularza przez `useFormStatus` nazywa się `FormSubmitButton` — inna nazwa niż `AsyncButton`, bo nie wywołuje akcji sam, tylko pokazuje stan wysyłki formularza, w którym stoi.
 ```typescript
 // src/components/newsletter-form.tsx
 import { Loader2 } from 'lucide-react';
@@ -433,7 +448,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSubscribeNewsletter } from '@/hooks/use-subscribe-newsletter';
 
-function SubmitButton() {
+function FormSubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" disabled={pending} className="pointer-coarse:min-h-11">
@@ -468,7 +483,7 @@ export function NewsletterForm() {
             <p role="status" className="text-sm text-success">
                 {state.status === 'success' && 'Zapisano do newslettera'}
             </p>
-            <SubmitButton />
+            <FormSubmitButton />
         </form>
     );
 }
@@ -479,7 +494,7 @@ export function NewsletterForm() {
 | `useActionState` | React Hook Form + Zod |
 |------|------|
 | Proste formularze (1-3 pola) | Złożone formularze (>3 pola) |
-| Walidacja Zod w akcji, po wysłaniu | Walidacja Zod w trakcie wpisywania (resolver) |
+| Walidacja Zod w akcji, po wysłaniu | Walidacja Zod przy polu: po opuszczeniu, potem przy zmianie (resolver + `mode: 'onTouched'`) |
 | Natywny `<form action>` | Kontrolowane komponenty |
 | Progressive enhancement | Wizard, dynamic fields, DevTools |
 
@@ -525,30 +540,37 @@ toast.success('Skopiowano!', { duration: COPY_TOAST_DURATION_MS });
 ```
 
 ### Alert Inline
-```typescript
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
 
-interface AlertProps {
-    variant: 'success' | 'error' | 'info' | 'warning';
+Nazwa `InlineAlert`, nie `Alert`: `@/components/ui/alert` z shadcn/ui eksportuje `Alert` z innym API (`AlertTitle`, `AlertDescription`), a dwa komponenty o tej samej nazwie mylą importy. Wariant ostrzeżenia bierze tekst z tokenu `text-warning-text`, który ma wartość w obu motywach ([design-system.md](design-system.md), sekcja Konfiguracja Kolorów).
+```typescript
+// src/components/inline-alert.tsx
+import { AlertCircle, AlertTriangle, CheckCircle, Info, type LucideIcon } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+
+type AlertVariant = 'success' | 'error' | 'info' | 'warning';
+
+interface InlineAlertProps {
+    variant: AlertVariant;
     children: React.ReactNode;
 }
 
-const alertStyles = {
+const ALERT_VARIANT_CLASSES = {
     success: 'bg-success/10 border-success/20 text-success',
     error: 'bg-destructive/10 border-destructive/20 text-destructive',
     info: 'bg-primary/10 border-primary/20 text-primary',
-    warning: 'bg-warning/10 border-warning/20 text-warning-foreground',
-};
+    warning: 'bg-warning/10 border-warning/20 text-warning-text',
+} satisfies Record<AlertVariant, string>;
 
-const alertIcons = {
+const ALERT_VARIANT_ICONS = {
     success: CheckCircle,
     error: AlertCircle,
     info: Info,
     warning: AlertTriangle,
-};
+} satisfies Record<AlertVariant, LucideIcon>;
 
-export function Alert({ variant, children }: AlertProps) {
-    const Icon = alertIcons[variant];
+export function InlineAlert({ variant, children }: InlineAlertProps) {
+    const Icon = ALERT_VARIANT_ICONS[variant];
     // role="alert" tylko dla pilnych komunikatów (błąd/ostrzeżenie);
     // sukces/info używają role="status" (grzeczne, nieprzerywające).
     const isUrgent = variant === 'error' || variant === 'warning';
@@ -558,7 +580,7 @@ export function Alert({ variant, children }: AlertProps) {
             role={isUrgent ? 'alert' : 'status'}
             className={cn(
                 'p-4 rounded-lg border flex items-start gap-3',
-                alertStyles[variant]
+                ALERT_VARIANT_CLASSES[variant]
             )}
         >
             <Icon className="h-5 w-5 shrink-0 mt-0.5" aria-hidden="true" />
@@ -575,25 +597,31 @@ export function Alert({ variant, children }: AlertProps) {
 ### Button z useTransition
 
 Dla akcji async spoza React Query (np. kopiowanie do schowka, eksport pliku). Odrzucony promise w `startTransition` trafia do najbliższego error boundary i zamienia ekran w stan błędu, dlatego przycisk łapie błąd sam: log ze stałym kodem z propsa `errorCode` i toast dla użytkownika. Mutacji z hooka React Query tu nie przekazujesz — hook już loguje błąd w `onError`, więc używasz wariantu „Button z React Query” niżej (`mutate` + `isPending`).
+
+`AsyncButton` to jedyny taki przycisk w projekcie (`@/components/async-button`); [loading-and-error-states.md](../../tailwind-react-guidelines/resources/loading-and-error-states.md) go importuje. Oprócz obsługi błędu daje cel dotykowy 44 px (`pointer-coarse:min-h-11`, [accessibility.md](accessibility.md#rozmiar-celu)), stan ogłaszany czytnikom ekranu (`aria-busy`, ikona ukryta przed czytnikiem) i widoczny fokus — ten ostatni z klas bazowych `Button` z shadcn/ui (`focus-visible:outline-hidden focus-visible:ring-2`), więc przycisk ich nie nadpisuje.
 ```typescript
+// src/components/async-button.tsx
 import { Loader2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
-interface AsyncButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// onClick z Button (MouseEventHandler) zastępuje akcja async, dlatego Omit
+interface AsyncButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onClick'> {
     onClick: () => Promise<void>;
     errorCode: string;
     errorMessage?: string;
-    children: React.ReactNode;
 }
 
 export function AsyncButton({
     onClick,
     errorCode,
     errorMessage = 'Nie udało się wykonać akcji',
+    disabled,
+    className,
     children,
     ...props
 }: AsyncButtonProps) {
@@ -601,6 +629,7 @@ export function AsyncButton({
 
     const handleClick = () => {
         startTransition(async () => {
+            // Odrzucony promise w startTransition trafiłby do error boundary
             try {
                 await onClick();
             } catch (error) {
@@ -611,7 +640,13 @@ export function AsyncButton({
     };
 
     return (
-        <Button {...props} onClick={handleClick} disabled={props.disabled || isPending}>
+        <Button
+            {...props}
+            onClick={handleClick}
+            disabled={disabled || isPending}
+            aria-busy={isPending}
+            className={cn('pointer-coarse:min-h-11', className)}
+        >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
             {children}
         </Button>
@@ -622,59 +657,6 @@ export function AsyncButton({
 <AsyncButton onClick={exportReport} errorCode="REPORT_EXPORT_FAILED">
     Eksportuj
 </AsyncButton>
-```
-
-Wariant z celem dotykowym 44 px ([accessibility.md](accessibility.md#rozmiar-celu)), widocznym fokusem i stanem ogłaszanym czytnikom ekranu (`aria-busy`, ikona ukryta przed czytnikiem); obsługa błędu jak w `AsyncButton`:
-
-```typescript
-import { Loader2 } from 'lucide-react';
-import { useTransition } from 'react';
-import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
-
-interface ActionButtonProps {
-    onClick: () => Promise<void>;
-    errorCode: string;
-    children: React.ReactNode;
-    disabled?: boolean;
-}
-
-export function ActionButton({ onClick, errorCode, children, disabled }: ActionButtonProps) {
-    const [isPending, startTransition] = useTransition();
-
-    const handleClick = () => {
-        startTransition(async () => {
-            try {
-                await onClick();
-            } catch (error) {
-                logger.error(errorCode, error);
-                toast.error('Nie udało się wykonać akcji');
-            }
-        });
-    };
-
-    return (
-        <Button
-            onClick={handleClick}
-            disabled={disabled || isPending}
-            className={cn(
-                "inline-flex items-center justify-center gap-2",
-                "min-h-11 px-4",  // 44px touch target
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                "transition-colors duration-200"
-            )}
-            aria-busy={isPending}
-        >
-            {isPending && (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            )}
-            {children}
-        </Button>
-    );
-}
 ```
 
 ### Button z React Query
@@ -749,8 +731,9 @@ export function LoadingOverlay() {
 
 ## Empty States
 
-`EmptyState` ma w projekcie jedno API: `{ title, description?, action? }` (patterns.md i loading-and-error-states.md używają tego samego komponentu). Tytuł mówi, co się stało, opis — co użytkownik może zrobić, akcja — następny krok.
+`EmptyState` ma w projekcie jedno API: `{ title, description?, action? }` i jedną definicję — tę poniżej (`@/components/empty-state`). [patterns.md](patterns.md) i [loading-and-error-states.md](../../tailwind-react-guidelines/resources/loading-and-error-states.md) importują ten komponent zamiast go powtarzać. Tytuł mówi, co się stało, opis — co użytkownik może zrobić, akcja — następny krok.
 ```typescript
+// src/components/empty-state.tsx
 interface EmptyStateProps {
     title: string;
     description?: string;
@@ -794,90 +777,7 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
 > ostrzeżenie, a stan optymistyczny nie zostanie poprawnie powiązany z trwającą akcją.
 > Owiń zarówno `setOptimistic*`, jak i `mutateAsync` w jedną `startTransition`.
 
-Mutacja leży w hooku `useToggleFavorite` (ten sam w całym projekcie): `onError` loguje kod błędu i pokazuje toast, a `onSettled` zwraca promise invalidacji. Dzięki temu `mutateAsync` kończy się dopiero po odświeżeniu danych — transition trwa do chwili, gdy prop `isFavorite` ma już nową wartość, i przycisk nie wraca na moment do starego stanu.
-```typescript
-// src/hooks/use-toggle-favorite.ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-
-import { templateKeys } from '@/hooks/use-templates';
-import { logger } from '@/lib/logger';
-import { templateService } from '@/services/template-service';
-
-export function useToggleFavorite(templateId: string) {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: () => templateService.toggleFavorite(templateId),
-        onError: (error) => {
-            logger.error('FAVORITE_TOGGLE_FAILED', error);
-            toast.error('Nie udało się zapisać ulubionych');
-        },
-        // Zwracany promise: mutacja kończy się po odświeżeniu źródła prawdy
-        onSettled: () => queryClient.invalidateQueries({ queryKey: templateKeys.all }),
-    });
-}
-```
-```typescript
-// src/components/favorite-button.tsx
-import { Heart } from 'lucide-react';
-import { useOptimistic, useTransition } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
-
-interface FavoriteButtonProps {
-    templateId: string;
-    isFavorite: boolean;
-}
-
-export function FavoriteButton({ templateId, isFavorite }: FavoriteButtonProps) {
-    const toggleFavorite = useToggleFavorite(templateId);
-    const [isPending, startTransition] = useTransition();
-
-    // Optimistic state — aktualizowany wyłącznie wewnątrz transition/akcji
-    const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
-
-    const handleToggle = () => {
-        // setter useOptimistic + mutacja w jednej transition
-        startTransition(async () => {
-            setOptimisticFavorite(!optimisticFavorite);
-            try {
-                await toggleFavorite.mutateAsync();
-            } catch {
-                // Odrzucenie mutateAsync bez catch trafiłoby do error boundary.
-                // Błąd zalogował już onError hooka (zdarzenie w Sentry, toast); tu zostaje ślad
-                // cofnięcia stanu optymistycznego bez drugiego zdarzenia. Po zakończeniu akcji
-                // useOptimistic wraca do bazowego `isFavorite`.
-                logger.info('FAVORITE_TOGGLE_ROLLED_BACK', { templateId });
-            }
-        });
-    };
-
-    return (
-        <Button
-            variant="ghost"
-            size="icon"
-            className="pointer-coarse:size-11"
-            onClick={handleToggle}
-            disabled={isPending}
-            aria-pressed={optimisticFavorite}
-            aria-label="Ulubiony"
-        >
-            <Heart
-                aria-hidden="true"
-                className={cn(
-                    'h-5 w-5 transition-colors',
-                    optimisticFavorite
-                        ? 'fill-red-500 text-red-500'
-                        : 'text-muted-foreground'
-                )}
-            />
-        </Button>
-    );
-}
-```
+Mutacja leży w hooku `useToggleFavorite` (`@/hooks/use-toggle-favorite`), a komponent `FavoriteButton` (`@/components/favorite-button`) ma jedną definicję — w [loading-and-error-states.md](../../tailwind-react-guidelines/resources/loading-and-error-states.md), sekcja „useOptimistic”. Jest od razu optymistyczny: setter `useOptimistic` i `mutateAsync` w jednej `startTransition`, odrzucenie złapane w transition (inaczej trafia do error boundary), `onError` hooka loguje `FAVORITE_TOGGLE_FAILED` i pokazuje toast, a `onSettled` zwraca promise invalidacji, więc transition trwa do chwili, gdy prop `isFavorite` ma nową wartość, i przycisk nie wraca na moment do starego stanu. Od strony UX: `aria-pressed` i `aria-label` zmieniają się ze stanem, a na urządzeniu dotykowym przycisk ma 44 px (`pointer-coarse:size-11`).
 
 Wariant bez stanu optymistycznego to ten sam hook i `onClick={() => toggleFavorite.mutate()}` z `disabled={toggleFavorite.isPending}`.
 
@@ -961,18 +861,7 @@ Dotyczy to także akcji uruchamianych gestem (swipe w liście, responsive-design
 
 ### useConfirm Hook
 
-Dialog potwierdzenia jest jednym komponentem w providerze, a `useConfirm` tylko zwraca funkcję `confirm`. Komponent zdefiniowany wewnątrz hooka byłby nowym typem przy każdym renderze, więc React odmontowywałby i montował dialog od nowa (utrata fokusu i animacji). Stan dialogu to unia dyskryminowana: zamknięty albo otwarty z opcjami i funkcją `resolve`.
-```typescript
-// src/lib/errors.ts — obok ApiError
-export class ContextMissingError extends Error {
-    readonly code: string;
-    constructor(code: string) {
-        super(code);
-        this.name = 'ContextMissingError';
-        this.code = code;
-    }
-}
-```
+Dialog potwierdzenia jest jednym komponentem w providerze, a `useConfirm` tylko zwraca funkcję `confirm`. Komponent zdefiniowany wewnątrz hooka byłby nowym typem przy każdym renderze, więc React odmontowywałby i montował dialog od nowa (utrata fokusu i animacji). Stan dialogu to unia dyskryminowana: zamknięty albo otwarty z opcjami i funkcją `resolve`. Hook bez providera rzuca `ContextMissingError` z `@/lib/errors` — klasa jest zdefiniowana raz, obok `ApiError`, w [file-organization.md](../../tailwind-react-guidelines/resources/file-organization.md).
 ```typescript
 // src/contexts/confirm-context.ts — kontekst osobno, żeby plik komponentu eksportował tylko komponent (Fast Refresh)
 import { createContext } from 'react';
@@ -981,7 +870,7 @@ export interface ConfirmOptions {
     title: string;
     description: string;
     confirmText?: string;
-    destructive?: boolean;
+    isDestructive?: boolean;
 }
 
 export type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>;
@@ -1008,8 +897,8 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
         });
 
     const close = (isConfirmed: boolean) => {
-        // Drugie wywołanie resolve (onConfirm, potem onOpenChange(false)) nic nie zmienia —
-        // promise jest już rozstrzygnięty
+        // Drugie wywołanie resolve (onConfirm, potem onOpenChange(false) z AlertDialogAction)
+        // nic nie zmienia — promise jest już rozstrzygnięty
         if (state.status === 'open') state.resolve(isConfirmed);
         setState({ status: 'closed' });
     };
@@ -1019,7 +908,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             {children}
             {state.status === 'open' && (
                 <ConfirmDialog
-                    open
+                    isOpen
                     onOpenChange={(isOpen) => {
                         if (!isOpen) close(false);
                     }}
@@ -1027,7 +916,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                     title={state.options.title}
                     description={state.options.description}
                     confirmText={state.options.confirmText}
-                    destructive={state.options.destructive}
+                    isDestructive={state.options.isDestructive}
                 />
             )}
         </ConfirmContext>
@@ -1048,7 +937,7 @@ export function useConfirm(): ConfirmFn {
 }
 ```
 
-`ConfirmDialog` to komponent z sekcji „Podstawowy Dialog (Radix)” na górze pliku. Przy React Compilerze `confirm` nie potrzebuje `useCallback`; w projekcie bez Compilera owijasz go w `useCallback` dopiero wtedy, gdy trafia do zależności efektu albo do dziecka w `memo()`.
+`ConfirmDialog` to komponent z sekcji „Dialog potwierdzenia (Radix AlertDialog)” na górze pliku. Przy React Compilerze `confirm` nie potrzebuje `useCallback`; w projekcie bez Compilera owijasz go w `useCallback` dopiero wtedy, gdy trafia do zależności efektu albo do dziecka w `memo()`.
 
 ```typescript
 // Użycie — ConfirmProvider owija aplikację (np. w src/app.tsx)
@@ -1061,7 +950,7 @@ function DeleteButton({ id }: { id: string }) {
             title: 'Usuń element',
             description: 'Czy na pewno chcesz usunąć? Tej operacji nie można cofnąć.',
             confirmText: 'Usuń',
-            destructive: true,
+            isDestructive: true,
         });
 
         if (isConfirmed) {
@@ -1118,7 +1007,7 @@ export function useArchiveItem() {
 | **Walidacja** | React Hook Form + Zod |
 | **Optimistic updates** | `useOptimistic` + mutacja z hooka (`onSettled` zwraca promise invalidacji) |
 | **Feedback** | Sonner toast |
-| **Akcje destrukcyjne** | `useConfirm` z `ConfirmProvider` (nieodwracalne) albo toast z „Cofnij” (odwracalne) |
+| **Akcje destrukcyjne** | `useConfirm` z `ConfirmProvider` i `ConfirmDialog` na `AlertDialog` (nieodwracalne) albo toast z „Cofnij” (odwracalne) |
 | **Focus trap** | Dialog z shadcn/ui (Radix) albo natywny `<dialog>` z `showModal()`; react-focus-lock tylko jako zgłoszona nowa zależność |
 
 ---

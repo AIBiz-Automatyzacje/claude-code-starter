@@ -16,6 +16,8 @@ Nie używaj `transition: all` (w Tailwind: klasa z sufiksem `-all`) ani gołego 
 
 ### CSS
 
+Przykład animuje `scale` (naciśnięcie) i `background-color` (hover): kolor animujesz przy zmianie stanu elementu, a ruch i wejście — przez `transform` i `opacity` ([animations.md](animations.md), sekcja „Które właściwości animujesz”).
+
 ```css
 /* Good — only transition what changes */
 .button {

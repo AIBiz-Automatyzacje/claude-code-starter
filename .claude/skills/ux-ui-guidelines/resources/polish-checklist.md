@@ -32,7 +32,7 @@ Używaj małego stałego `translateY` zamiast pełnej wysokości. Wyjścia powin
 
 ### 7. Contextual Icon Animations
 
-Animuj ikony z `opacity`, `scale` i `blur` zamiast przełączać visibility. Dokładne wartości: scale od `0.25` do `1`, opacity od `0` do `1`, blur od `4px` do `0px`. Jeśli projekt ma `motion` lub `framer-motion` w `package.json`, użyj `transition: { type: "spring", duration: 0.3, bounce: 0 }` — bounce zawsze `0`. Bez biblioteki motion — keep both icons in the DOM (one absolute-positioned) i cross-fade z CSS transitions używając `cubic-bezier(0.2, 0, 0, 1)` (w Tailwind klasa `ease-[cubic-bezier(0.2,0,0,1)]`). → [animation-polish.md](animation-polish.md)
+Animuj ikony z `opacity`, `scale` i `blur` zamiast przełączać visibility — przełączenie ikony to zmiana stanu, więc rozmycie (`filter`) jest tu dopuszczone; wejścia i wyjścia sekcji zostają przy `transform` i `opacity` ([animations.md](animations.md), sekcja „Które właściwości animujesz”). Dokładne wartości: scale od `0.25` do `1`, opacity od `0` do `1`, blur od `4px` do `0px`. Jeśli projekt ma `motion` lub `framer-motion` w `package.json`, użyj `transition: { type: "spring", duration: 0.3, bounce: 0 }` — bounce zawsze `0`. Bez biblioteki motion — keep both icons in the DOM (one absolute-positioned) i cross-fade z CSS transitions używając `cubic-bezier(0.2, 0, 0, 1)` (w Tailwind klasa `ease-[cubic-bezier(0.2,0,0,1)]`). → [animation-polish.md](animation-polish.md)
 
 ### 8. Font Smoothing
 
@@ -68,7 +68,7 @@ Tylko dla `transform`, `opacity`, `filter` — properties, które GPU może komp
 
 ### 16. Minimum Hit Area
 
-Cel interakcji ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a kontrolka dotykowa 44×44 px (`min-h-11 min-w-11`, Apple HIG / WCAG AAA 2.5.5). Rozszerz pseudo-elementem, jeśli widoczny element jest mniejszy. Nigdy nie pozwól, żeby hit areas dwóch elementów się nakładały. Źródło progów: [accessibility.md](accessibility.md) (sekcja „Target Size”); technika pseudo-elementu → [surfaces.md](surfaces.md)
+Cel interakcji ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a kontrolka dotykowa 44×44 px (`min-h-11 min-w-11`, Apple HIG / WCAG AAA 2.5.5). Jeśli widoczny element jest mniejszy, rozszerz obszar pseudo-elementem do 24 px, a przy wskaźniku dotykowym do 44 px (dla elementu 20 px: `after:-inset-0.5 pointer-coarse:after:-inset-3`). Nigdy nie pozwól, żeby hit areas dwóch elementów się nakładały. Źródło progów: [accessibility.md](accessibility.md#rozmiar-celu) (sekcja „Rozmiar celu”); technika pseudo-elementu → [surfaces.md](surfaces.md)
 
 ---
 
@@ -85,7 +85,7 @@ Cel interakcji ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a
 | Animacja gra przy załadowaniu strony | Dodaj `initial={false}` do `AnimatePresence` |
 | `transition: all` na elementach | Specyfikuj konkretne properties |
 | First-frame stutter animacji | Dodaj `will-change: transform` (oszczędnie) |
-| Tiny hit areas na małych kontrolkach | Rozszerz pseudo-elementem do 44×44 px na dotyku, nie mniej niż 24×24 px ([accessibility.md](accessibility.md)) |
+| Tiny hit areas na małych kontrolkach | Rozszerz pseudo-elementem do 24×24 px, a na dotyku (`pointer-coarse:`) do 44×44 px ([accessibility.md](accessibility.md#rozmiar-celu)) |
 
 ---
 
@@ -100,7 +100,7 @@ W przeglądzie polish na prośbę operatora prezentujesz zmiany jako tabelę mar
 #### Concentric border radius
 | Before | After |
 | --- | --- |
-| `rounded-xl` na karcie + `rounded-xl` na inner button (`p-2`) | `rounded-2xl` na karcie (`12 + 8`), `rounded-lg` na inner button |
+| `rounded-xl` na karcie + `rounded-xl` na inner button (`p-2`) | `rounded-2xl` na karcie (16 px = `8 + 8`), `rounded-lg` (8 px) na inner button |
 | `border-radius: 16px` na obu zagnieżdżonych powierzchniach | Zewnętrzny `24px`, wewnętrzny `16px` z `8px` padding |
 
 #### Tabular numbers

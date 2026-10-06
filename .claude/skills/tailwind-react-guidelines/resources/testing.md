@@ -84,10 +84,12 @@ afterAll(() => server.close());
 ```json
 {
     "compilerOptions": {
-        "types": ["vitest/globals", "@testing-library/jest-dom"]
+        "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
     }
 }
 ```
+
+`types` zastępuje listę typów globalnych, zamiast do niej dopisywać. Bez `"vite/client"` znika typ `import.meta.env` i deklaracje importów CSS, więc `lib/env.ts` i import `index.css` (przy `noUncheckedSideEffectImports` z [typescript-standards.md](./typescript-standards.md)) przestają się kompilować.
 
 ### package.json - skrypty
 ```json
@@ -135,7 +137,7 @@ Inne zmiany w v4:
 
 ### tests/fixtures/items.ts
 
-Dane testowe to małe fixture'y w `tests/fixtures/`, wspólne dla handlerów i asercji. Fixture przechodzi przez ten sam schemat Zod co odpowiedź serwera (`ItemSchema` z typescript-standards.md), więc identyfikatory to UUID, a `created_at` to data ISO.
+Dane testowe to małe fixture'y w `tests/fixtures/`, wspólne dla handlerów i asercji. Fixture przechodzi przez ten sam schemat Zod co odpowiedź serwera (`itemSchema` z `@/schemas/item`, definicja w [file-organization.md](./file-organization.md#katalog-schemas)), więc identyfikatory to UUID, kategoria pochodzi z listy `ITEM_CATEGORIES`, a `created_at` to data ISO.
 ```typescript
 import type { Item } from '@/schemas/item';
 
@@ -162,15 +164,16 @@ export const ITEMS_FIXTURE = [MARKETING_ITEM, SALES_ITEM];
 
 ### src/test/mocks/handlers.ts
 
-Handlery odpowiadają kopertą z reguł kodu `{ data, error: { code, message } }`, tak jak prawdziwe API, więc klient parsuje w teście ten sam kształt co w produkcji. `API_URL` żyje tylko tutaj; testy, które nadpisują handler, importują go stąd.
+Handlery odpowiadają kopertą z reguł kodu `{ data, error: { code, message } }` i tym samym kształtem danych co prawdziwe API (lista: `{ items, totalPages }` jak `itemListSchema` w `itemService`), więc klient parsuje w teście ten sam kształt co w produkcji. Adres API pochodzi z `lib/env.ts` — tego samego modułu, z którego bierze go `request()` — a w testach ustawia go plik `.env.test` (`VITE_API_URL=http://localhost:3000/api`). Drugiej wartości awaryjnej tu nie ma: `lib/env.ts` przy braku zmiennej i tak zatrzymuje start z błędem Zod. Testy, które nadpisują handler, importują `API_URL` stąd.
 ```typescript
 import { http, HttpResponse } from 'msw';
 
+import { env } from '@/lib/env';
 import { createItemSchema } from '@/schemas/item';
 
 import { FIXTURE_CREATED_AT, ITEMS_FIXTURE, NEW_ITEM_ID } from '../../../tests/fixtures/items';
 
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+export const API_URL = env.API_URL;
 
 export const handlers = [
     // GET /items?category=marketing — handler filtruje tak jak serwer
@@ -180,7 +183,7 @@ export const handlers = [
             ? ITEMS_FIXTURE.filter((item) => item.category === category)
             : ITEMS_FIXTURE;
 
-        return HttpResponse.json({ data: items, error: null });
+        return HttpResponse.json({ data: { items, totalPages: 1 }, error: null });
     }),
 
     // GET /items/:id
@@ -214,7 +217,8 @@ export const handlers = [
         );
     }),
 
-    // DELETE /items/:id
+    // DELETE /items/:id — 204 bez ciała; request() zamienia je na data: null,
+    // więc itemService.remove (schemat z.null()) kończy się sukcesem
     http.delete(`${API_URL}/items/:id`, () => {
         return new HttpResponse(null, { status: 204 });
     }),
@@ -426,6 +430,8 @@ Komponent, który czyta parametr ścieżki (`useParams`), potrzebuje drzewa `<Ro
 ## Testowanie React Query
 
 ### Hook useQuery
+
+Test woła hook z tą samą sygnaturą co aplikacja: `useItems(filters: ItemFilters)` z [file-organization.md](./file-organization.md#katalog-hooks), a `data` ma kształt odpowiedzi serwisu `{ items, totalPages }`.
 ```typescript
 // hooks/use-items.test.tsx
 import { createWrapper, renderHook, waitFor } from '@/test/utils';
@@ -436,7 +442,7 @@ import { useItems } from './use-items';
 
 describe('useItems', () => {
     it('pobiera listę elementów', async () => {
-        const { result } = renderHook(() => useItems(), {
+        const { result } = renderHook(() => useItems({}), {
             wrapper: createWrapper(),
         });
 
@@ -449,11 +455,11 @@ describe('useItems', () => {
         });
 
         // Dosłowny wynik: pusta tablica albo undefined nie przejdą
-        expect(result.current.data).toEqual([MARKETING_ITEM, SALES_ITEM]);
+        expect(result.current.data).toEqual({ items: [MARKETING_ITEM, SALES_ITEM], totalPages: 1 });
     });
 
     it('filtruje po kategorii', async () => {
-        const { result } = renderHook(() => useItems('marketing'), {
+        const { result } = renderHook(() => useItems({ category: 'marketing' }), {
             wrapper: createWrapper(),
         });
 
@@ -462,16 +468,18 @@ describe('useItems', () => {
         });
 
         // Handler filtruje po ?category, więc hook, który nie wyśle kategorii, dostanie oba elementy
-        expect(result.current.data).toEqual([MARKETING_ITEM]);
+        expect(result.current.data?.items).toEqual([MARKETING_ITEM]);
     });
 });
 ```
 
-Asercja `data?.every((item) => item.category === 'marketing')` przechodzi dla pustej tablicy, więc nie złapie hooka, który zgubił dane; przy handlerze bez filtrowania nie sprawdza też, czy hook w ogóle wysłał kategorię. Konkretne wejście (`'marketing'`) i dosłowny wynik (`[MARKETING_ITEM]`) łapią oba błędy.
+Asercja `data?.items.every((item) => item.category === 'marketing')` przechodzi dla pustej tablicy, więc nie złapie hooka, który zgubił dane; przy handlerze bez filtrowania nie sprawdza też, czy hook w ogóle wysłał kategorię. Konkretne wejście (`{ category: 'marketing' }`) i dosłowny wynik (`[MARKETING_ITEM]`) łapią oba błędy.
 
 ### Hook useMutation
+
+`useCreateItem` leży w tym samym pliku co `useItems` (`hooks/use-items.ts`), więc test importuje go z `./use-items`.
 ```typescript
-// hooks/use-create-item.test.tsx
+// hooks/use-items.test.tsx (cd.)
 import { http, HttpResponse } from 'msw';
 
 import { API_URL } from '@/test/mocks/handlers';
@@ -480,7 +488,7 @@ import { act, createWrapper, renderHook, waitFor } from '@/test/utils';
 
 import { FIXTURE_CREATED_AT, NEW_ITEM_ID } from '../../tests/fixtures/items';
 
-import { useCreateItem } from './use-create-item';
+import { useCreateItem } from './use-items';
 
 describe('useCreateItem', () => {
     it('tworzy nowy element', async () => {
@@ -559,7 +567,7 @@ act(() => {
 
 ## Testowanie Formularzy
 
-Testy dotyczą `ContactForm` z [forms.md](./forms.md): `ContactForm({ onSuccess }: { onSuccess?: () => void })`, schemat `contactSchema` (imię 2–100 znaków, email, wiadomość 10–2000 znaków), wysyłka przez `useSendContact()` → `contactService.send`, `onError` z `logger.error('CONTACT_SEND_FAILED', error)` i toastem, po sukcesie reset i `onSuccess?.()`. Pole z błędem ma `aria-invalid` i `aria-describedby` wskazujące komunikat z `role="alert"`; bez błędu atrybutu `aria-invalid` nie ma.
+Testy dotyczą `ContactForm` z [forms.md](./forms.md): `ContactForm({ onSuccess }: { onSuccess?: () => void })`, `useForm({ mode: 'onTouched' })` (pole sprawdzane po pierwszym opuszczeniu, potem przy każdej zmianie; wysłanie sprawdza wszystkie pola), schemat `contactSchema` (imię 2–100 znaków, email, wiadomość 10–2000 znaków), wysyłka przez `useSendContact()` → `contactService.send`, `onError` z `logger.error('CONTACT_SEND_FAILED', error)` i toastem, po sukcesie reset i `onSuccess?.()`. Pole z błędem ma `aria-invalid` i `aria-describedby` wskazujące komunikat z `role="alert"`; bez błędu atrybutu `aria-invalid` nie ma.
 
 Schemat nie ustala treści komunikatów, więc testy sprawdzają błąd przez role i atrybuty, a nie przez tekst. jsdom, tak jak przeglądarka, blokuje wysyłkę formularza z niespełnionym `required` albo `type="email"`, zanim zadziała Zod — dlatego niepoprawny email w teście (`jan@example`) przechodzi walidację przeglądarki i odpada dopiero na schemacie.
 ```typescript

@@ -63,7 +63,7 @@ import {
     type RefObject
 } from 'react';
 
-// Kod UI importuje serwis, nie klienta bazy (warstwy: komponent → hook → serwis → klient)
+// Hook importuje serwis, nie klienta bazy; komponent importuje hook (warstwy: komponent → hook → serwis → klient)
 import {
     templateService,
     type TemplateFilters
@@ -84,7 +84,7 @@ interface MyComponentProps {
     /** ID użytkownika */
     userId: string;
     /** Czy wyłączony */
-    disabled?: boolean;
+    isDisabled?: boolean;
     /** Callback */
     onAction?: () => void;
     /** Children */
@@ -93,7 +93,7 @@ interface MyComponentProps {
 
 export const MyComponent = ({
     userId,
-    disabled = false,
+    isDisabled = false,
     onAction,
     children
 }: MyComponentProps) => {
@@ -105,14 +105,19 @@ export const MyComponent = ({
 - JSDoc komentarze dla props
 - Opcjonalne props z `?`
 - Domyślne wartości w destrukturyzacji
+- Boolean własnego komponentu z prefiksem `is` / `has` / `should` / `can` (`isDisabled`, sekcja Nazewnictwo reguł kodu); prop przekazywany wprost do elementu HTML albo komponentu biblioteki (`disabled`, `open`) zostaje przy nazwie z ich API
 
 ---
 
 ## React 19: Ref jako Prop
 
-W React 19 `forwardRef` **nie jest potrzebny** — React zapowiada jego wycofanie, a ref to zwykły prop:
+W React 19 `forwardRef` **nie jest potrzebny** — React zapowiada jego wycofanie, a ref to zwykły prop. Ten sam komponent `Input` pokazuje [component-patterns.md](./component-patterns.md#react-19-ref-jako-prop): `id` wyjmujesz z propsów (`id ?? generatedId`), bo inaczej `{...props}` po `id={inputId}` nadpisze identyfikator i etykieta (`htmlFor`) wskaże nieistniejące pole.
 ```typescript
 // React 19 - ref jako prop
+import { useId, useRef } from 'react';
+
+import { cn } from '@/lib/utils';
+
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
@@ -123,16 +128,19 @@ export const Input = ({
     label,
     error,
     ref,
+    id,
     className,
     ...props
 }: InputProps) => {
-    const inputId = useId();
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
     const errorId = `${inputId}-error`;
 
     return (
         <div className="flex flex-col gap-1">
             {label && <label htmlFor={inputId} className="text-sm font-medium">{label}</label>}
             <input
+                {...props}
                 ref={ref}
                 id={inputId}
                 aria-invalid={error ? true : undefined}
@@ -142,7 +150,6 @@ export const Input = ({
                     error && "border-destructive",
                     className
                 )}
-                {...props}
             />
             {error && <p id={errorId} role="alert" className="text-sm text-destructive">{error}</p>}
         </div>
@@ -195,15 +202,19 @@ const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
 // Explicit dla pustych tablic
 const [items, setItems] = useState<Item[]>([]);
 
-// Explicit return types dla publicznych funkcji (serwisy, utilsy)
-export async function getItems(): Promise<Item[]> {
-    // ...
+// Explicit return types dla publicznych funkcji (utilsy, metody serwisów — itemService
+// w file-organization.md ma je przy każdej metodzie: `list: (...): Promise<ItemList> => ...`)
+export function formatDate(date: Date | string): string {
+    return new Intl.DateTimeFormat('pl-PL').format(new Date(date));
 }
 
 // Bez ręcznego typu zwracanego: komponent React (typ z JSX) i hook, który zwraca wynik
 // hooka biblioteki (useQuery, useForm) — ręczny zapis tylko powtórzyłby wywnioskowany typ
-export function useItems() {
-    return useQuery(itemListOptions());
+export function useItems(filters: ItemFilters) {
+    return useQuery({
+        queryKey: itemKeys.list(filters),
+        queryFn: ({ signal }) => itemService.list(filters, signal),
+    });
 }
 ```
 
@@ -216,19 +227,19 @@ Waliduje typ BEZ poszerzania go:
 // Bez satisfies - typ poszerzony
 const config = {
     theme: 'dark',
-    debug: true,
+    isDebug: true,
 };
 // config.theme: string
 
 // Z satisfies - walidacja + literal types
 interface Config {
     theme: 'light' | 'dark';
-    debug: boolean;
+    isDebug: boolean;
 }
 
 const config = {
     theme: 'dark',
-    debug: true,
+    isDebug: true,
 } satisfies Config;
 // config.theme: "dark" (literal!)
 
@@ -308,19 +319,19 @@ const config = defineConfig({
 
 Blokuje niechcianą inferencję w generykach:
 ```typescript
-// Problem bez NoInfer
-function createState<T>(initial: T, defaultValue: T) {
-    return { initial, defaultValue };
+// Problem bez NoInfer: C wynika z obu argumentów, więc literówka w wartości domyślnej poszerza unię
+function createPalette<C extends string>(colors: C[], defaultColor: C) {
+    return { colors, defaultColor };
 }
-createState('hello', 42); 
-// T = string | number (niechciane poszerzenie!)
+createPalette(['red', 'green'], 'blue');
+// C = 'red' | 'green' | 'blue' — kompiluje się, choć 'blue' nie ma w palecie
 
-// Rozwiązanie z NoInfer
-function createState<T>(initial: T, defaultValue: NoInfer<T>) {
-    return { initial, defaultValue };
+// Rozwiązanie z NoInfer: C wynika tylko z `colors`, a defaultColor jest sprawdzany względem niego
+function createPalette<C extends string>(colors: C[], defaultColor: NoInfer<C>) {
+    return { colors, defaultColor };
 }
-createState('hello', 42); 
-// Error: Argument of type 'number' is not assignable to 'string'
+createPalette(['red', 'green'], 'blue');
+// Error: Argument of type '"blue"' is not assignable to parameter of type '"red" | "green"'
 
 // Praktyczne użycie - default values
 // T wynika ze schematu; defaultValue nie wpływa na inferencję, więc zły typ domyślny to błąd kompilacji.
@@ -350,40 +361,49 @@ function handleClick() {
 
 ## Runtime Validation z Zod
 
-TypeScript sprawdza typy tylko w compile time. Dla danych zewnętrznych użyj Zod:
+TypeScript sprawdza typy tylko w compile time. Dla danych zewnętrznych użyj Zod. Kontrakt `Item` ma jedną definicję — `src/schemas/item.ts` w [file-organization.md](./file-organization.md#katalog-schemas) — i ten plik ją powtarza bez zmian: schemat jest zmienną, więc nazwa `itemSchema` w `camelCase`, a `z.strictObject` odrzuca pola spoza kontraktu.
 ```typescript
 // src/schemas/item.ts
 import { z } from 'zod';
 
+const MAX_ITEM_NAME_LENGTH = 200;
+
+export const ITEM_CATEGORIES = ['marketing', 'sprzedaz', 'hr'] as const;
+
 // Schema
-export const ItemSchema = z.object({
+export const itemSchema = z.strictObject({
     id: z.uuid(),
-    name: z.string().min(1),
-    category: z.enum(['marketing', 'sprzedaz', 'hr']),
+    name: z.string().min(1).max(MAX_ITEM_NAME_LENGTH),
+    category: z.enum(ITEM_CATEGORIES),
     created_at: z.iso.datetime(),
 });
 
-// Dane do utworzenia elementu — id i created_at nadaje serwer
-export const createItemSchema = ItemSchema.omit({ id: true, created_at: true });
-
 // Typ ze schema
-export type Item = z.infer<typeof ItemSchema>;
+export type Item = z.infer<typeof itemSchema>;
+
+// Dane do utworzenia elementu — id i created_at nadaje serwer
+export const createItemSchema = itemSchema.omit({ id: true, created_at: true });
+export type CreateItemInput = z.infer<typeof createItemSchema>;
 ```
 ```typescript
-// src/services/item-service.ts
+// src/services/item-service.ts — fragment; pełny serwis (list, get, create, remove) w file-organization.md
 import { request } from '@/lib/api';
-import { ItemSchema, type Item } from '@/schemas/item';
+import { itemSchema, type Item } from '@/schemas/item';
 
 // Walidacja odpowiedzi: request() z file-organization.md ma limit czasu (AbortSignal.timeout),
 // parsuje kopertę { data, error: { code, message } } przez z.strictObject, dane — podanym schematem,
 // a przy error rzuca ApiError(code, message, status). Schemat jest jedynym miejscem, które zna kształt Item.
-export async function getItem(id: string, signal?: AbortSignal): Promise<Item> {
-    return request(`/items/${encodeURIComponent(id)}`, ItemSchema, { signal });
-}
+export const itemService = {
+    get: (id: string, signal?: AbortSignal): Promise<Item> =>
+        request(`/items/${encodeURIComponent(id)}`, itemSchema, { signal }),
+};
 ```
 ```typescript
 // Safe parse — gdy zła wartość ma inną ścieżkę niż wyjątek (payload: unknown)
-const result = ItemSchema.safeParse(payload);
+import { logger } from '@/lib/logger';
+import { itemSchema } from '@/schemas/item';
+
+const result = itemSchema.safeParse(payload);
 if (result.success) {
     // result.data jest typu Item
 } else {
@@ -549,8 +569,8 @@ if (!user) throw new NotFoundError('USER_NOT_FOUND');
 // NIE
 const data = response as Item[];
 
-// TAK
-const data = ItemArraySchema.parse(response);
+// TAK — itemSchema z @/schemas/item
+const data = z.array(itemSchema).parse(response);
 ```
 
 `as` zostaje tylko przy zawężaniu typów DOM (`event.target as HTMLInputElement` tam, gdzie TypeScript nie zna elementu) i w `as const`. Dla wartości z zewnątrz — odpowiedzi, `JSON.parse`, `localStorage`, parametrów URL — schemat Zod; dla wartości znanych w kodzie — `satisfies` albo type guard.

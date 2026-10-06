@@ -148,7 +148,9 @@ export function MyComponent({
 W React 19 `forwardRef` **nie jest potrzebny** (React zapowiada oznaczenie go jako przestarzałego; czy Twoja wersja ostrzega, sprawdzasz w package.json i changelogu Reacta). Ref to zwykły prop. Etykietę i komunikat błędu wiążesz z polem przez `id` z `useId`, żeby czytnik ekranu odczytał je razem z polem:
 ```typescript
 // React 19 - ref w interfejsie props
-import { useId } from 'react';
+import { useId, useRef } from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
@@ -172,6 +174,7 @@ export function Input({
         <div className="flex flex-col gap-1">
             {label && <label htmlFor={inputId} className="text-sm font-medium">{label}</label>}
             <input
+                {...props}
                 ref={ref}
                 id={inputId}
                 aria-invalid={error ? true : undefined}
@@ -181,9 +184,8 @@ export function Input({
                     error && "border-destructive",
                     className
                 )}
-                {...props}
             />
-            {error && <span id={errorId} role="alert" className="text-sm text-destructive">{error}</span>}
+            {error && <p id={errorId} role="alert" className="text-sm text-destructive">{error}</p>}
         </div>
     );
 }
@@ -192,6 +194,8 @@ export function Input({
 const inputRef = useRef<HTMLInputElement>(null);
 <Input ref={inputRef} label="Email" />
 ```
+
+`id` wyjmujesz z propsów (`id ?? generatedId`), a `{...props}` stoi przed atrybutami ustawianymi przez komponent: inaczej `id` z propsów nadpisałby `inputId` i `htmlFor` etykiety wskazałby nieistniejące pole. Ten sam komponent pokazuje [typescript-standards.md](./typescript-standards.md#react-19-ref-jako-prop).
 
 ### Migracja z forwardRef
 ```typescript
@@ -224,7 +228,7 @@ function Input({ ref, ...props }: Props & { ref?: React.Ref<HTMLInputElement> })
 
 `lazy()` oczekuje modułu z default exportem. Default export ma tylko strona ładowana przez `lazy()`; komponent, który nie jest stroną (modal, ciężki formularz), zostaje przy named exporcie i mapujesz go na `default` w `.then`:
 ```typescript
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 
 // Strona (default export w src/pages/settings-page.tsx)
 const SettingsPage = lazy(() => import('@/pages/settings-page'));
@@ -240,14 +244,14 @@ const TemplateModal = lazy(() =>
 ### Użycie z Suspense
 ```typescript
 function App() {
-    const [showModal, setShowModal] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
         <div>
             <MainContent />
             
             <Suspense fallback={<LoadingOverlay />}>
-                {showModal && <TemplateModal onClose={() => setShowModal(false)} />}
+                {isModalOpen && <TemplateModal onClose={() => setIsModalOpen(false)} />}
             </Suspense>
         </div>
     );
@@ -313,30 +317,41 @@ pnpm add -E react-error-boundary
 
 ### Podstawowe użycie
 
-Boundary łapie błąd renderu, więc tak jak każdy `catch` zostawia ślad dla operatora: `onError` loguje go przez logger z kodem błędu. Użytkownik widzi ogólny komunikat; treść błędu pokazujesz tylko w trybie deweloperskim.
+Boundary łapie błąd renderu, więc tak jak każdy `catch` zostawia ślad dla operatora: każde `<ErrorBoundary>` ma `onError`, który loguje błąd przez logger ze stałym kodem `UI_BOUNDARY`. Użytkownik widzi ogólny komunikat; treść błędu pokazujesz tylko w trybie deweloperskim, bo komunikat techniczny (adres, kod SQL, dane z odpowiedzi) nie jest dla użytkownika. `ErrorFallback` to jeden komponent w projekcie (`src/components/error-fallback.tsx`) — loading-and-error-states.md i performance.md go importują, a granica trasy w file-organization.md (`RouteErrorFallback`) jest jego wariantem z dodatkowym przyciskiem „Wróć”.
 ```typescript
-import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
+// src/components/error-fallback.tsx
+import { AlertCircle } from 'lucide-react';
+import type { FallbackProps } from 'react-error-boundary';
 
-import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
-function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
-        <div className="p-4 text-center" role="alert">
-            <p className="text-destructive mb-4">Coś poszło nie tak</p>
+        <div role="alert" className="p-6 text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-destructive" aria-hidden="true" />
+            <h2 className="mt-4 text-lg font-semibold">Coś poszło nie tak</h2>
             {import.meta.env.DEV && error instanceof Error && (
-                <pre className="text-sm text-muted-foreground mb-4">
+                <pre className="mt-2 text-sm text-muted-foreground">
                     {error.message}
                 </pre>
             )}
-            <Button onClick={resetErrorBoundary}>Spróbuj ponownie</Button>
+            <Button onClick={resetErrorBoundary} className="mt-4">
+                Spróbuj ponownie
+            </Button>
         </div>
     );
 }
-
+```
+```typescript
 // Użycie
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { ErrorFallback } from '@/components/error-fallback';
+import { logger } from '@/lib/logger';
+
 <ErrorBoundary
     FallbackComponent={ErrorFallback}
-    onError={(error) => logger.error('UI_BOUNDARY_CAUGHT', error)}
+    onError={(error) => logger.error('UI_BOUNDARY', error)}
 >
     <MyComponent />
 </ErrorBoundary>
@@ -344,7 +359,17 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 ### Z Suspense
 ```typescript
-<ErrorBoundary FallbackComponent={ErrorFallback}>
+import { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { ErrorFallback } from '@/components/error-fallback';
+import { LoadingOverlay } from '@/components/loading-overlay';
+import { logger } from '@/lib/logger';
+
+<ErrorBoundary
+    FallbackComponent={ErrorFallback}
+    onError={(error) => logger.error('UI_BOUNDARY', error)}
+>
     <Suspense fallback={<LoadingOverlay />}>
         <LazyComponent />
     </Suspense>
@@ -353,19 +378,32 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 **Kolejność:** ErrorBoundary na zewnątrz Suspense — wtedy łapie też błąd rzucony podczas ładowania leniwego komponentu (np. nieudany import chunka).
 
-### Z onReset
+### Z onReset (ponowienie zapytań)
+
+Zapytanie z `useSuspenseQuery` albo `throwOnError`, które rzuciło do granicy, ma po błędzie wyłączone ponowne pobranie przy montowaniu. Sam reset granicy montuje więc komponent z tym samym błędem w cache i „Spróbuj ponownie” nic nie robi. `QueryErrorResetBoundary` z TanStack Query daje funkcję `reset`, która zdejmuje tę blokadę — przekazujesz ją jako `onReset`, więc po kliknięciu zapytania pod granicą pobierają dane od nowa. Czyszczenie całego cache (`queryClient.clear()`) albo unieważnianie wszystkich zapytań odświeżyłoby też dane, które działają.
 ```typescript
-<ErrorBoundary
-    FallbackComponent={ErrorFallback}
-    onReset={() => {
-        // Reset state, refetch data, etc. — promise świadomie pomijany (`void`), bo onReset nic nie zwraca
-        void queryClient.invalidateQueries();
-    }}
-    resetKeys={[userId]} // Reset gdy userId się zmieni
->
-    <UserProfile userId={userId} />
-</ErrorBoundary>
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { ErrorFallback } from '@/components/error-fallback';
+import { UserProfile } from '@/components/user-profile';
+import { logger } from '@/lib/logger';
+
+<QueryErrorResetBoundary>
+    {({ reset }) => (
+        <ErrorBoundary
+            FallbackComponent={ErrorFallback}
+            onError={(error) => logger.error('UI_BOUNDARY', error)}
+            onReset={reset}
+            resetKeys={[userId]} // Reset także wtedy, gdy userId się zmieni
+        >
+            <UserProfile userId={userId} />
+        </ErrorBoundary>
+    )}
+</QueryErrorResetBoundary>
 ```
+
+W komponencie, który sam renderuje granicę, ten sam `reset` daje hook `useQueryErrorResetBoundary()` (`const { reset } = useQueryErrorResetBoundary()`).
 
 ### useErrorBoundary Hook
 
@@ -373,6 +411,7 @@ Programowe zgłaszanie błędów. Operacja idzie przez hook z mutacją (komponen
 ```typescript
 import { useErrorBoundary } from 'react-error-boundary';
 
+import { Button } from '@/components/ui/button';
 import { useRiskyOperation } from '@/hooks/use-risky-operation';
 
 function MyComponent() {
@@ -465,21 +504,15 @@ function Child({ data, onSelect }: ChildProps) {
 
 ### Unikaj Prop Drilling (>3 poziomy)
 
-Hook kontekstu użyty poza providerem rzuca typowany błąd z kodem (klasa z polem `code`), nie `Error` ze stringiem — operator rozpozna przyczynę po kodzie w logu.
+Hook kontekstu użyty poza providerem rzuca typowany błąd z kodem — `ContextMissingError` z `src/lib/errors.ts` (definicja w [file-organization.md](./file-organization.md#errorsts), tam gdzie `ApiError`), nie `Error` ze stringiem i nie własną klasę w pliku kontekstu — operator rozpozna przyczynę po kodzie w logu. W React 19 kontekst renderujesz wprost jako provider (`<MyContext value={...}>`), a odczytujesz przez `use()`.
 ```typescript
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, use, type ReactNode } from 'react';
+
+import { useMyData } from '@/hooks/use-my-data';
+import { ContextMissingError } from '@/lib/errors';
 
 interface MyData {
     title: string;
-}
-
-class ContextMissingError extends Error {
-    readonly code: string;
-    constructor(code: string) {
-        super(`${code}: hook kontekstu użyty poza swoim providerem`);
-        this.name = 'ContextMissingError';
-        this.code = code;
-    }
 }
 
 // Context dla głębokiego zagnieżdżenia
@@ -487,12 +520,12 @@ const MyContext = createContext<MyData | null>(null);
 
 function Provider({ children }: { children: ReactNode }) {
     const data = useMyData();
-    return <MyContext.Provider value={data}>{children}</MyContext.Provider>;
+    return <MyContext value={data}>{children}</MyContext>;
 }
 
 // Custom hook dla bezpiecznego użycia: zawężenie zamiast `!`
 function useMyContext(): MyData {
-    const context = useContext(MyContext);
+    const context = use(MyContext);
     if (!context) {
         throw new ContextMissingError('MY_CONTEXT_MISSING');
     }
@@ -548,7 +581,10 @@ Hook `use` pozwala czytać Promise w komponencie. Poniższy przykład pokazuje s
 ```typescript
 import { use, Suspense } from 'react';
 
-// Mechanika (poza tym stackiem): promise utworzony poza renderem, stabilny między renderami
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Mechanika (poza tym stackiem): promise utworzony poza renderem, stabilny między renderami;
+// fetchData to dowolna funkcja zwracająca promise
 const dataPromise = fetchData();
 
 function DataView() {
@@ -565,6 +601,8 @@ function DataView() {
 **Dla Vite SPA:** dane pobierasz przez React Query (TanStack Query) — oferuje cache, refetch, anulowanie i devtools; hook `use` jest niskopoziomowy. W tym stacku `use` przydaje się do odczytu kontekstu, także warunkowo (czego `useContext` nie pozwala):
 ```typescript
 import { use } from 'react';
+
+import { ThemeContext } from '@/contexts/theme-context';
 
 function ThemeBadge({ isVisible }: { isVisible: boolean }) {
     if (!isVisible) return null;
@@ -617,6 +655,11 @@ export function useSubmitName() {
 ```
 ```typescript
 // src/components/simple-form.tsx
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useSubmitName } from '@/hooks/use-submit-name';
+
 export function SimpleForm() {
     const [state, submitAction, isPending] = useSubmitName();
     const hasError = state.status === 'error';

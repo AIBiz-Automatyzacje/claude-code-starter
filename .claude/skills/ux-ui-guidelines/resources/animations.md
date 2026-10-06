@@ -82,9 +82,16 @@ export function App() {
 ## Staggered Lists
 
 ### Variants Pattern
+`TemplateGrid` przyjmuje gotową listę (`templates`), a dane pobiera komponent nadrzędny przez hook (`useTemplates` z `@/hooks/use-templates`) — to samo API co w [patterns.md](patterns.md).
 ```typescript
+// src/components/template-grid.tsx
+import { motion, type Variants } from 'motion/react';
+
+import { TemplateCard } from '@/components/template-card';
+import type { Template } from '@/services/template-service';
+
 // Pod <MotionConfig reducedMotion="user">: przy reduced motion elementy wchodzą samym fade, bez y
-const containerVariants = {
+const CONTAINER_VARIANTS = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
@@ -92,23 +99,23 @@ const containerVariants = {
             staggerChildren: 0.07,
         },
     },
-};
+} satisfies Variants;
 
-const itemVariants = {
+const ITEM_VARIANTS = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
-};
+} satisfies Variants;
 
-function TemplateGrid({ templates }: { templates: Template[] }) {
+export function TemplateGrid({ templates }: { templates: Template[] }) {
     return (
         <motion.div
-            variants={containerVariants}
+            variants={CONTAINER_VARIANTS}
             initial="hidden"
             animate="show"
             className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
         >
             {templates.map((template) => (
-                <motion.div key={template.id} variants={itemVariants}>
+                <motion.div key={template.id} variants={ITEM_VARIANTS}>
                     <TemplateCard template={template} />
                 </motion.div>
             ))}
@@ -154,13 +161,14 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
 
 ### Mode Prop
 ```typescript
-// mode="wait" - czeka na exit przed enter (domyślne dla modali)
+// mode="wait" - czeka na exit przed enter; w danej chwili renderujesz jedno dziecko
+// (tu warunki wykluczają się, więc zawsze jest jedna zakładka)
 <AnimatePresence mode="wait">
     {currentTab === 'a' && <TabA key="a" />}
     {currentTab === 'b' && <TabB key="b" />}
 </AnimatePresence>
 
-// mode="sync" - exit i enter jednocześnie (crossfade)
+// mode="sync" (domyślny, gdy nie podasz mode) - exit i enter jednocześnie (crossfade)
 <AnimatePresence mode="sync">
     {items.map(item => (
         <motion.div key={item.id} exit={{ opacity: 0 }}>
@@ -223,7 +231,8 @@ export function AnimatedModal({ isOpen, onOpenChange, title, children }: Animate
                                 key="modal"
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                // Wyjście krótsze niż wejście
+                                exit={{ opacity: 0, scale: 0.95, y: 20, transition: { duration: 0.15, ease: 'easeIn' } }}
                                 transition={{ duration: 0.2, ease: 'easeOut' }}
                                 className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-1/2 rounded-xl bg-card p-6 text-card-foreground shadow-xl"
                             >
@@ -250,7 +259,8 @@ więc centrowanie nie gryzie się z `y` i `scale`.
 
 ### Card Hover
 ```typescript
-// Cień ze skali Tailwinda zamiast rgba wpisanego w komponent (kolory tylko przez tokeny → design-system.md)
+// Cień ze skali Tailwinda zamiast rgba wpisanego w komponent (kolory tylko przez tokeny → design-system.md);
+// box-shadow animujesz przy zmianie stanu (tu hover), ruch idzie przez transform (y)
 <motion.div
     whileHover={{ y: -4 }}
     transition={{ duration: 0.2 }}
@@ -265,7 +275,7 @@ więc centrowanie nie gryzie się z `y` i `scale`.
 <motion.button
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.96 }}
-    transition={{ duration: 0.1 }}
+    transition={{ duration: 0.15 }}
     className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
 >
     Kliknij
@@ -401,7 +411,7 @@ Same-document: Baseline Newly Available (~90% pokrycia wg caniuse); cross-docume
 
 ### Motion Hook (Wbudowany)
 ```typescript
-import { useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 
 function AnimatedCard({ children }: { children: React.ReactNode }) {
     const shouldReduceMotion = useReducedMotion();
@@ -495,11 +505,17 @@ filtry), a nie `all`; `all` daje dopiero `transition-all`, którego nie używasz
 
 | Duration | Użycie |
 |----------|--------|
-| `duration-100` | Instant feedback (active states) |
-| `duration-150` | Hover states |
+| `duration-150` | Naciśnięcie (active), hover, wyjście elementu |
 | `duration-200` | Standard transitions |
-| `duration-300` | Larger changes (modals) |
-| `duration-500` | Page transitions |
+| `duration-300` | Większe zmiany (modale, panele, przejście strony) — górna granica |
+
+Przejścia interfejsu mieszczą się w 150–300 ms, a wyjście jest krótsze niż wejście, bo uwaga użytkownika przechodzi już do następnej rzeczy. Dłużej trwają tylko pętle ładowania (spinner, pulsowanie, kropki: cykl 0,6–1 s), bo nie blokują interakcji, a krótszy cykl wygląda jak migotanie.
+
+### Które właściwości animujesz
+
+- **Domyślnie `transform` i `opacity`** (`translate`, `scale`, `rotate`, przezroczystość) — przeglądarka składa je na GPU bez przeliczania układu.
+- **`filter`, `box-shadow` i kolor** — przy zmianie stanu elementu (hover, fokus, naciśnięcie, przełączenie ikony), nie przy wejściu całych sekcji.
+- **Właściwości układu** (`width`, `height`, `top`, `margin`) — nie animujesz, bo każda klatka przelicza layout i przesuwa treść obok. Wyjątek: wysokość przez `interpolate-size` (sekcja [Collapsible / Accordion](#collapsible--accordion)).
 
 ---
 
@@ -635,7 +651,7 @@ dialog[open] {
 | Proste enter/exit | Złożone sekwencje |
 | Natywne dialog/popover | Staggered lists |
 | Zero JS, zero bundle | Gestures, springs |
-| CSS-only | Layout animations |
+| CSS-only | Layout animations (prop `layout` — Motion przelicza je na `transform`) |
 
 ---
 
@@ -700,29 +716,25 @@ function LoadingDots() {
 ---
 
 ## Collapsible / Accordion
+
+Wysokość to właściwość układu: animowana w JS (Motion `height: 'auto'`) przelicza layout w każdej klatce i przesuwa treść pod panelem. Panel w Motion animuje więc samą przezroczystość, a wysokość zmienia się od razu. Płynną zmianę wysokości daje tylko CSS z `interpolate-size` (podsekcja niżej) — jedyny wyjątek od zasady „bez animowania właściwości układu”.
 ```typescript
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 
 interface CollapsibleProps {
     isOpen: boolean;
     children: React.ReactNode;
 }
 
+// Pod <MotionConfig reducedMotion="user"> opacity zostaje (zmiana bez ruchu)
 export function Collapsible({ isOpen, children }: CollapsibleProps) {
-    const shouldReduceMotion = useReducedMotion();
-
     return (
         <AnimatePresence initial={false}>
             {isOpen && (
                 <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{
-                        height: { duration: shouldReduceMotion ? 0 : 0.3 },
-                        opacity: { duration: shouldReduceMotion ? 0 : 0.2 },
-                    }}
-                    style={{ overflow: 'hidden' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, transition: { duration: 0.2, ease: 'easeOut' } }}
+                    exit={{ opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } }}
                 >
                     {children}
                 </motion.div>
@@ -736,10 +748,10 @@ export function Collapsible({ isOpen, children }: CollapsibleProps) {
 
 Od Chrome 129+ animacja `height: auto` jest możliwa czystym CSS, bez mierzenia wysokości
 w JS/Motion — wystarczy włączyć `interpolate-size: allow-keywords` na `:root` (lub przez
-`calc-size()`). Tylko Chromium (Chrome/Edge 129+); brak w Safari i Firefox (caniuse), ~70% pokrycia —
-wymaga fallbacku (np. `grid-template-rows` 0fr→1fr) lub `@supports (interpolate-size: allow-keywords)`.
-Traktuj jako progressive enhancement (przeglądarki bez wsparcia po prostu
-skoczą do końcowej wysokości) i zawsze respektuj `prefers-reduced-motion`.
+`calc-size()`). Tylko Chromium (Chrome/Edge 129+); brak w Safari i Firefox (caniuse), ~70% pokrycia.
+Traktuj jako progressive enhancement: przeglądarka bez wsparcia otwiera panel od razu na końcową wysokość,
+bez animacji (zamiennik z `grid-template-rows` 0fr→1fr też animuje układ, więc go nie stosujesz).
+Przy `prefers-reduced-motion: reduce` wyłączasz przejście (blok niżej).
 
 ```css
 :root {
@@ -832,10 +844,11 @@ transition={{ duration: 0.3 }}  // modals
 
 | Zasada | Standard |
 |--------|----------|
-| Duration | 150-300ms |
+| Duration | 150–300 ms; wyjście krótsze niż wejście, pętle ładowania dłużej |
+| Właściwości | `transform` i `opacity`; `filter`, `box-shadow`, kolor przy zmianie stanu |
 | Easing | `easeOut` dla enter, `easeIn` dla exit |
 | Reduced motion | Zawsze wspierany |
-| Layout animations | Unikaj (CLS) |
+| Właściwości układu (`width`, `height`) | Bez animacji (CLS); wyjątek: `interpolate-size` |
 
 ---
 

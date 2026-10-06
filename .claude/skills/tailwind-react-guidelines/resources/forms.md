@@ -16,72 +16,17 @@ React Hook Form + Zod - walidacja, dostępność, integracja z React Query.
 
 ### Alternatywa: useActionState (React 19)
 
-Dla prostych formularzy bez zaawansowanej walidacji. Akcja leży w hooku: parsuje `FormData` schematem Zod (dane z formularza to wejście z zewnątrz), woła serwis i zwraca stan jako unię dyskryminowaną zamiast pary flag `error`/`success`:
+Dla prostych formularzy bez zaawansowanej walidacji. Akcja leży w hooku: parsuje `FormData` schematem Zod (dane z formularza to wejście z zewnątrz), woła serwis i zwraca stan jako unię dyskryminowaną zamiast pary flag `error`/`success`.
+
+Kanoniczny przykład to `NewsletterForm` (`src/components/newsletter-form.tsx`) z hookiem `useSubscribeNewsletter` (`src/hooks/use-subscribe-newsletter.ts`) w [component-ux.md](../../ux-ui-guidelines/resources/component-ux.md#formularz-bez-react-query--akcja-w-hooku); ten plik go nie powtarza, bo dwie wersje jednego komponentu w tym samym pliku rozjeżdżają się po cichu. Trzy cechy tego wzorca, których nie gubisz w żadnym formularzu z `useActionState`:
+- stan błędu niesie wpisaną wartość (`{ status: 'error'; message; email }`), a pole dostaje ją jako `defaultValue`, bo React 19 po zakończeniu akcji resetuje niekontrolowane pola i użytkownik straciłby wpisany adres;
+- przycisk wysyłki czyta stan z `useFormStatus` (komponent wewnątrz `<form>`), więc formularz nie trzyma własnej flagi oczekiwania;
+- region `role="status"` jest w DOM od pierwszego renderu i zmienia się tylko jego treść, bo czytnik ekranu nie ogłasza regionu dodanego razem z komunikatem.
 ```typescript
-// src/hooks/use-subscribe.ts
-import { useActionState } from 'react';
-import { z } from 'zod';
+// Użycie na stronie
+import { NewsletterForm } from '@/components/newsletter-form';
 
-import { logger } from '@/lib/logger';
-import { newsletterService } from '@/services/newsletter-service';
-
-const subscribeSchema = z.strictObject({
-    email: z.email('Nieprawidłowy adres email'),
-});
-
-export type SubscribeState =
-    | { status: 'idle' }
-    | { status: 'success' }
-    | { status: 'error'; message: string };
-
-const INITIAL_SUBSCRIBE_STATE: SubscribeState = { status: 'idle' };
-
-async function subscribeAction(_previous: SubscribeState, formData: FormData): Promise<SubscribeState> {
-    const parsed = subscribeSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) {
-        return { status: 'error', message: parsed.error.issues[0]?.message ?? 'Nieprawidłowe dane' };
-    }
-    try {
-        await newsletterService.subscribe(parsed.data.email);
-        return { status: 'success' };
-    } catch (error) {
-        logger.error('NEWSLETTER_SUBSCRIBE_FAILED', error);
-        return { status: 'error', message: 'Nie udało się zapisać. Spróbuj ponownie.' };
-    }
-}
-
-export function useSubscribe() {
-    return useActionState(subscribeAction, INITIAL_SUBSCRIBE_STATE);
-}
-```
-```typescript
-// src/components/newsletter-form.tsx
-export function NewsletterForm() {
-    const [state, submitAction, isPending] = useSubscribe();
-    const hasError = state.status === 'error';
-
-    return (
-        <form action={submitAction} className="space-y-2">
-            <Label htmlFor="newsletter-email">Email</Label>
-            <Input
-                id="newsletter-email"
-                name="email"
-                type="email"
-                aria-invalid={hasError ? true : undefined}
-                aria-describedby={hasError ? 'newsletter-error' : undefined}
-            />
-            {state.status === 'error' && (
-                <p id="newsletter-error" role="alert" className="text-sm text-destructive">
-                    {state.message}
-                </p>
-            )}
-            {state.status === 'success' && (
-                <p role="status" className="text-sm text-muted-foreground">Zapisano do newslettera</p>
-            )}
-            <Button type="submit" disabled={isPending}>Zapisz</Button>
-        </form>
-    );
-}
+<NewsletterForm />
 ```
 
 **Kiedy `useActionState`:** 1-3 pola, brak złożonej walidacji, progressive enhancement.
@@ -100,7 +45,7 @@ pnpm add -E react-hook-form zod @hookform/resolvers
 
 ## Podstawowy Formularz
 
-Kanoniczny `ContactForm` (ten sam komponent opisują component-ux.md i testing.md). Schemat i typ leżą w osobnym module, bo korzystają z nich formularz, hook i serwis. Wysyłka idzie przez hook z `useMutation`, który woła serwis — komponent nie woła API wprost.
+Kanoniczny `ContactForm` (ten sam komponent opisują component-ux.md i testing.md). Schemat i typ leżą w osobnym module, bo korzystają z nich formularz, hook i serwis. Wysyłka idzie przez hook z `useMutation`, który woła serwis — komponent nie woła API wprost. `mode: 'onTouched'` sprawdza pole po pierwszym opuszczeniu, a potem przy każdej zmianie, więc błąd pojawia się przy polu, zanim użytkownik wyśle formularz (sekcja Tryby Walidacji).
 ```typescript
 // src/schemas/contact-schema.ts
 import { z } from 'zod';
@@ -159,6 +104,7 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
     const sendContact = useSendContact();
     const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactValues>({
         resolver: zodResolver(contactSchema),
+        mode: 'onTouched',
         defaultValues: { name: '', email: '', message: '' },
     });
 
@@ -235,7 +181,9 @@ z.string().regex(/^\d{9}$/, 'Nieprawidłowy numer telefonu')
 
 // Liczby
 z.number().min(0, 'Minimum 0').max(100, 'Maximum 100')
-z.coerce.number() // Konwertuje string z inputa na number
+// Pole liczbowe formularza: register('age', { valueAsNumber: true }) + z.number().
+// z.coerce.number() ma typ wejścia `unknown`, więc formularz wymaga typów z.input/z.output (niżej)
+z.coerce.number() // Konwertuje string na number — dla FormData i query stringu
 
 // Boolean
 z.boolean()
@@ -255,6 +203,18 @@ z.string().toLowerCase()
 z.string().transform(val => val.toUpperCase())
 ```
 
+### Typ formularza: wejście i wyjście schematu
+
+Schemat z `.default()`, `.transform()`, `.pipe()` albo `z.coerce` ma inny typ na wejściu niż na wyjściu: `isPublic: z.boolean().default(false)` przyjmuje `boolean | undefined`, a zwraca `boolean`. `useForm<z.infer<typeof schema>>` podaje formularzowi typ wyjścia, więc `zodResolver(schema)` się z nim nie zgadza i kompilacja pada (TS2322: `boolean | undefined` nie pasuje do `boolean`). Formularz z takim schematem typujesz trzema parametrami — wartości pól to wejście schematu, a `handleSubmit` dostaje wyjście po walidacji:
+```typescript
+useForm<z.input<typeof schema>, unknown, z.output<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: SCHEMA_DEFAULT_VALUES, // pełne wartości startowe, typu z.input
+});
+```
+
+Bez parametrów typu (`useForm({ resolver: zodResolver(schema), defaultValues })`) TypeScript wywnioskuje oba typy z resolvera — to też działa. Schemat bez `.default()`, transformacji i `coerce` (np. `contactSchema`) ma ten sam typ wejścia i wyjścia, więc `useForm<ContactValues>` wystarcza. Wartości startowe podajesz zawsze jawnie, żeby pola były kontrolowane od pierwszego renderu, a `reset()` wracał do znanego stanu.
+
 ### Złożone Schema
 ```typescript
 // src/schemas/template-schema.ts
@@ -272,7 +232,19 @@ export const templateSchema = z.object({
     }),
 });
 
-export type TemplateValues = z.infer<typeof templateSchema>;
+// Wartości pól formularza (wejście schematu: isPublic może być undefined)
+export type TemplateFormInput = z.input<typeof templateSchema>;
+// Dane po walidacji — przyjmują je hooki useCreateTemplate/useUpdateTemplate i templateService
+export type TemplateValues = z.output<typeof templateSchema>;
+
+export const TEMPLATE_DEFAULT_VALUES: TemplateFormInput = {
+    name: '',
+    description: '',
+    category: 'marketing',
+    isPublic: false,
+    tags: [],
+    settings: { notifications: true, theme: 'system' },
+};
 ```
 
 ### Walidacja Warunkowa
@@ -319,28 +291,15 @@ const schema = z.object({
 
 ### Hooki szablonów (zapytanie, mutacje, klucze)
 
-Definicje `useQuery`/`useMutation` leżą w hooku, który woła serwis; formularz wywołuje tylko hook. Klucze zapytań pochodzą z jednej fabryki, a `onSuccess` zwraca promise invalidacji, więc mutacja kończy się dopiero po odświeżeniu danych. `invalidateQueries({ queryKey: templateKeys.all })` odświeża listę i szczegóły naraz, bo oba klucze zaczynają się od `templateKeys.all`.
+Definicje `useQuery`/`useMutation` leżą w hooku, który woła serwis; formularz wywołuje tylko hook. Wszystkie hooki szablonów stoją w jednym pliku `src/hooks/use-templates.ts`: fabrykę kluczy `templateKeys`, `TEMPLATES_STALE_TIME_MS`, `templateListOptions`, `useTemplates(filters = {})`, `useSuspenseTemplates` i `useTemplate(id)` definiuje [performance.md](./performance.md#react-query-rekomendowane-dla-spa), a mutacje formularza — ten plik. `onSuccess` zwraca promise invalidacji, więc mutacja kończy się dopiero po odświeżeniu danych. `invalidateQueries({ queryKey: templateKeys.all })` odświeża listę i szczegóły naraz, bo oba klucze zaczynają się od `templateKeys.all`.
 ```typescript
-// src/hooks/use-templates.ts
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+// src/hooks/use-templates.ts (cd.) — mutacje formularza; templateKeys stoi wyżej w tym samym pliku
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { logger } from '@/lib/logger';
 import type { TemplateValues } from '@/schemas/template-schema';
-import { templateService, type TemplateFilters } from '@/services/template-service';
-
-export const templateKeys = {
-    all: ['templates'] as const,
-    list: (filters: TemplateFilters) => [...templateKeys.all, 'list', filters] as const,
-    detail: (id: string) => [...templateKeys.all, 'detail', id] as const,
-};
-
-export function useTemplate(templateId: string) {
-    return useQuery({
-        queryKey: templateKeys.detail(templateId),
-        queryFn: ({ signal }) => templateService.get(templateId, signal),
-    });
-}
+import { templateService } from '@/services/template-service';
 
 export function useCreateTemplate() {
     const queryClient = useQueryClient();
@@ -377,12 +336,20 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useCreateTemplate } from '@/hooks/use-templates';
-import { templateSchema, type TemplateValues } from '@/schemas/template-schema';
+import {
+    TEMPLATE_DEFAULT_VALUES,
+    templateSchema,
+    type TemplateFormInput,
+    type TemplateValues,
+} from '@/schemas/template-schema';
 
 export function CreateTemplateForm({ onSuccess }: { onSuccess?: () => void }) {
     const createTemplate = useCreateTemplate();
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<TemplateValues>({
+    // Wejście schematu dla pól, wyjście dla handleSubmit (sekcja „Typ formularza: wejście i wyjście schematu”)
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<TemplateFormInput, unknown, TemplateValues>({
         resolver: zodResolver(templateSchema),
+        mode: 'onTouched',
+        defaultValues: TEMPLATE_DEFAULT_VALUES,
     });
 
     const handleValidSubmit = (values: TemplateValues) => {
@@ -416,12 +383,23 @@ export function CreateTemplateForm({ onSuccess }: { onSuccess?: () => void }) {
 
 ### Edycja z Prefill
 ```typescript
+// src/components/edit-template-form.tsx
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import { FormSkeleton } from '@/components/form-skeleton';
+import { Button } from '@/components/ui/button';
+import { useTemplate, useUpdateTemplate } from '@/hooks/use-templates';
+import { templateSchema, type TemplateFormInput, type TemplateValues } from '@/schemas/template-schema';
+
 export function EditTemplateForm({ templateId }: { templateId: string }) {
     const template = useTemplate(templateId);
     const updateTemplate = useUpdateTemplate(templateId);
 
-    const form = useForm<TemplateValues>({
+    const form = useForm<TemplateFormInput, unknown, TemplateValues>({
         resolver: zodResolver(templateSchema),
+        mode: 'onTouched',
         values: template.data, // Wypełnia formularz, gdy dane się załadują
     });
 
@@ -466,7 +444,7 @@ interface FormFieldProps {
     name: string;
     label: string;
     error?: FieldError;
-    required?: boolean;
+    isRequired?: boolean;
     children: React.ReactNode;
     description?: string;
 }
@@ -475,7 +453,7 @@ export function FormField({
     name,
     label,
     error,
-    required,
+    isRequired,
     children,
     description,
 }: FormFieldProps) {
@@ -484,7 +462,7 @@ export function FormField({
 
     return (
         <div className="space-y-2">
-            <Label htmlFor={name} className={cn(required && "after:content-['*'] after:ml-0.5 after:text-destructive")}>
+            <Label htmlFor={name} className={cn(isRequired && "after:content-['*'] after:ml-0.5 after:text-destructive")}>
                 {label}
             </Label>
             
@@ -506,7 +484,7 @@ export function FormField({
 }
 
 // Użycie
-<FormField name="email" label="Email" error={errors.email} required>
+<FormField name="email" label="Email" error={errors.email} isRequired>
     <Input
         id="email"
         type="email"
@@ -525,9 +503,16 @@ export function FormField({
 
 Komponent jest generyczny po typie wartości formularza: `Control<T>` i `FieldPath<T>` zamiast `Control<any>`, więc literówka w `name` to błąd kompilacji. `field.value` ma typ zależny od `T`, dlatego zawężasz go type guardem do typu, którego oczekuje kontrolka.
 ```typescript
-import { useController, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useController, useForm, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    TEMPLATE_DEFAULT_VALUES,
+    templateSchema,
+    type TemplateFormInput,
+    type TemplateValues,
+} from '@/schemas/template-schema';
 
 interface ControlledSelectProps<T extends FieldValues> {
     name: FieldPath<T>;
@@ -572,9 +557,10 @@ function ControlledSelect<T extends FieldValues>({ name, control, options, place
     );
 }
 
-// Użycie — T wynika z `control`, więc `name` podpowiada tylko pola TemplateValues
-const { control, handleSubmit } = useForm<TemplateValues>({
+// Użycie — T wynika z `control`, więc `name` podpowiada tylko pola formularza szablonu
+const { control, handleSubmit } = useForm<TemplateFormInput, unknown, TemplateValues>({
     resolver: zodResolver(templateSchema),
+    defaultValues: TEMPLATE_DEFAULT_VALUES,
 });
 
 <ControlledSelect
@@ -641,7 +627,7 @@ function CheckboxGroup<T extends FieldValues>({ name, control, options }: Checkb
 
 ## Multi-Step Forms (Wizard)
 
-Pola każdego kroku trzymasz w stałej `STEP_FIELDS` (`as const satisfies`): `trigger` dostaje nazwy pól sprawdzone przez kompilator, bez rzutowania `Object.keys(...) as ...`. Utworzenie konta idzie przez hook `useCreateAccount()` (mutacja z logiem błędu, wzorzec jak `useSendContact`).
+Pola każdego kroku trzymasz w stałej `STEP_FIELDS` (`as const satisfies`): `trigger` dostaje nazwy pól sprawdzone przez kompilator, bez rzutowania `Object.keys(...) as ...`. Utworzenie konta idzie przez hook `useCreateAccount()` (mutacja z logiem błędu, wzorzec jak `useSendContact`). `FormField` to komponent z sekcji „Komponent FormField”, a `StepIndicator` — z sekcji „Step Indicator” niżej; `Step2` i `Step3` są zbudowane jak `Step1`.
 ```typescript
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -649,6 +635,10 @@ import { FormProvider, useForm, useFormContext, type FieldPath } from 'react-hoo
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { FormField } from '@/components/form-field';
+import { StepIndicator } from '@/components/step-indicator';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useCreateAccount } from '@/hooks/use-create-account';
 
 // Schema dla każdego kroku
@@ -702,7 +692,7 @@ export function WizardForm() {
 
     const { handleSubmit, trigger } = methods;
 
-    const goToNextStep = async () => {
+    const handleNextStep = async () => {
         // Waliduj tylko pola z bieżącego kroku
         const isValid = await trigger(STEP_FIELDS[step]);
         if (isValid) {
@@ -710,7 +700,7 @@ export function WizardForm() {
         }
     };
 
-    const goToPreviousStep = () => {
+    const handlePreviousStep = () => {
         setStep((current) => Math.max(current - 1, 0));
     };
 
@@ -735,8 +725,8 @@ export function WizardForm() {
                     isFirstStep={step === 0}
                     isLastStep={step === LAST_STEP}
                     isSubmitting={createAccount.isPending}
-                    onPrevious={goToPreviousStep}
-                    onNext={() => void goToNextStep()}
+                    onPrevious={handlePreviousStep}
+                    onNext={() => void handleNextStep()}
                 />
             </form>
         </FormProvider>
@@ -778,7 +768,7 @@ function Step1() {
 
     return (
         <div className="space-y-4">
-            <FormField name="name" label="Imię" error={errors.name} required>
+            <FormField name="name" label="Imię" error={errors.name} isRequired>
                 <Input
                     id="name"
                     {...register('name')}
@@ -786,7 +776,7 @@ function Step1() {
                     aria-describedby={errors.name ? 'name-error' : undefined}
                 />
             </FormField>
-            <FormField name="email" label="Email" error={errors.email} required>
+            <FormField name="email" label="Email" error={errors.email} isRequired>
                 <Input
                     id="email"
                     type="email"
@@ -802,7 +792,9 @@ function Step1() {
 
 ### Step Indicator
 ```typescript
+// src/components/step-indicator.tsx
 import { Check } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 
 interface StepIndicatorProps {
@@ -881,7 +873,7 @@ export const optionalFileSchema = z
 
 ### Kontrolowany File Input
 
-Podgląd obrazka to adres `blob:` z `URL.createObjectURL`; efekt zwalnia go przy zmianie pliku i przy odmontowaniu, więc podgląd nie zostaje w pamięci. Input pliku ma klasę `sr-only` (nie `hidden`), żeby był osiągalny klawiaturą, a przycisk usuwania ma widoczne 24×24 px i pole trafienia 44×44 px rozszerzone pseudo-elementem (próg rozmiaru celu: [accessibility.md](../../ux-ui-guidelines/resources/accessibility.md)).
+Podgląd obrazka to adres `blob:` z `URL.createObjectURL`; efekt zwalnia go przy zmianie pliku i przy odmontowaniu, więc podgląd nie zostaje w pamięci. Input pliku ma klasę `sr-only` (nie `hidden`), żeby był osiągalny klawiaturą, a przycisk usuwania ma widoczne 24×24 px, a pole trafienia rozszerzone pseudo-elementem według wzorca z [accessibility.md](../../ux-ui-guidelines/resources/accessibility.md) (sekcja Rozmiar celu): `after:-inset-0.5` daje próg WCAG 2.2 AA (24 px) z zapasem, a `pointer-coarse:after:-inset-3` — ponad 44 px na ekranie dotykowym.
 ```typescript
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload, X } from 'lucide-react';
@@ -991,8 +983,8 @@ function FilePreview({ preview, onRemove }: { preview: string | null; onRemove: 
                 className={cn(
                     "absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full",
                     "bg-destructive text-destructive-foreground",
-                    // Pole trafienia 44×44 px przy widocznych 24×24 px
-                    "after:absolute after:-inset-2.5 after:content-['']"
+                    // Pole trafienia: bazowo 24 px+, na dotyku 44 px+ przy widocznych 24×24 px
+                    "after:absolute after:-inset-0.5 after:content-[''] pointer-coarse:after:-inset-3"
                 )}
             >
                 <X className="h-4 w-4" aria-hidden="true" />
@@ -1043,12 +1035,24 @@ function toFormData(file: File): FormData {
     return formData;
 }
 
+async function postFormData(file: File): Promise<Response> {
+    try {
+        return await fetch(UPLOAD_URL, {
+            method: 'POST',
+            body: toFormData(file),
+            signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
+        });
+    } catch (error) {
+        // Ten sam kod co w wariancie XHR niżej i to samo mapowanie co w request() (file-organization.md)
+        if (error instanceof DOMException && error.name === 'TimeoutError') {
+            throw new ApiError('UPLOAD_TIMEOUT', 'Przekroczono limit czasu wysyłki');
+        }
+        throw error; // Błąd sieci idzie dalej bez zmian, do onError mutacji
+    }
+}
+
 export async function uploadFile(file: File): Promise<UploadResult> {
-    const response = await fetch(UPLOAD_URL, {
-        method: 'POST',
-        body: toFormData(file),
-        signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
-    });
+    const response = await postFormData(file);
     if (!response.headers.get('content-type')?.includes('application/json')) {
         throw new ApiError('UPLOAD_INVALID_RESPONSE', 'Odpowiedź serwera nie jest JSON', response.status);
     }
@@ -1174,11 +1178,13 @@ const { register, formState: { errors, dirtyFields } } = useForm({
 
 | Mode | Kiedy waliduje | Użycie |
 |------|---------------|--------|
-| `onSubmit` | Tylko przy submit | Domyślne, większość formularzy |
-| `onChange` | Każda zmiana | Real-time feedback |
+| `onSubmit` | Tylko przy submit | Domyślne w RHF; błąd widać dopiero po wysłaniu |
+| `onChange` | Każda zmiana | Real-time feedback (wizard, siła hasła) |
 | `onBlur` | Opuszczenie pola | Balans UX/performance |
-| `onTouched` | Po pierwszym blur, potem onChange | Najlepszy UX |
+| `onTouched` | Po pierwszym blur, potem onChange | Domyślny wybór w tym projekcie (`ContactForm`, formularze szablonu) |
 | `all` | Wszystko | Rzadko potrzebne |
+
+Skill ux-ui-guidelines wymaga walidacji przy polu, nie tylko po wysłaniu, a domyślny tryb RHF (`onSubmit`) tego nie daje — dlatego formularze w tym pliku podają `mode: 'onTouched'` jawnie. Sam resolver Zod nie zmienia trybu: bez `mode` schemat sprawdza pola dopiero przy wysłaniu.
 ```typescript
 const form = useForm({
     resolver: zodResolver(schema),

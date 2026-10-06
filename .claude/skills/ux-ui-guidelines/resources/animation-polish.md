@@ -54,40 +54,36 @@ Nie animuj jednego dużego kontenera. Podziel zawartość na semantyczne kawałk
 1. **Podziel** na logiczne grupy (tytuł, opis, przyciski)
 2. **Stagger** z ~100ms opóźnieniem między grupami
 3. **Dla tytułów** rozważ podział na pojedyncze słowa z ~80ms staggerem
-4. **Połącz** `opacity`, `blur` i `translateY` dla efektu wejścia
+4. **Połącz** `opacity` i `translateY` dla efektu wejścia
+
+Wejście sekcji animuje `transform` i `opacity`, bez rozmycia: `filter` na kilku elementach naraz obciąża renderowanie każdej klatki, a zasada animacji skilla dopuszcza go przy zmianie stanu (przełączenie ikony niżej), nie przy wejściu treści.
 
 ### Code Example
 
 ```tsx
 // Motion (Framer Motion) — staggered enter
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, type Variants } from "motion/react";
+
+import { Button } from "@/components/ui/button";
 
 const CONTAINER_VARIANTS = {
   visible: { transition: { staggerChildren: 0.1 } },
 } satisfies Variants;
 
+// Pod <MotionConfig reducedMotion="user"> y jest pomijane, zostaje sam fade
 const ITEM_VARIANTS = {
-  hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
-} satisfies Variants;
-
-// Reduced motion: sam fade. MotionConfig pominąłby y, ale blur zostałby — tu wyłączamy oba
-const REDUCED_ITEM_VARIANTS = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
 } satisfies Variants;
 
 function PageHeader() {
-  const shouldReduceMotion = useReducedMotion();
-  const itemVariants = shouldReduceMotion ? REDUCED_ITEM_VARIANTS : ITEM_VARIANTS;
-
   return (
     <motion.div initial="hidden" animate="visible" variants={CONTAINER_VARIANTS}>
-      <motion.h1 variants={itemVariants}>Welcome</motion.h1>
+      <motion.h1 variants={ITEM_VARIANTS}>Welcome</motion.h1>
 
-      <motion.p variants={itemVariants}>A description of the page.</motion.p>
+      <motion.p variants={ITEM_VARIANTS}>A description of the page.</motion.p>
 
-      <motion.div variants={itemVariants}>
+      <motion.div variants={ITEM_VARIANTS}>
         <Button>Get started</Button>
       </motion.div>
     </motion.div>
@@ -101,8 +97,7 @@ function PageHeader() {
 .stagger-item {
   opacity: 0;
   transform: translateY(12px);
-  filter: blur(4px);
-  animation: fadeInUp 400ms ease-out forwards;
+  animation: fadeInUp 300ms ease-out forwards;
 }
 
 .stagger-item:nth-child(1) { animation-delay: 0ms; }
@@ -113,17 +108,15 @@ function PageHeader() {
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
-/* Reduced motion: treść od razu w stanie końcowym, bez przesunięcia i rozmycia */
+/* Reduced motion: treść od razu w stanie końcowym, bez przesunięcia */
 @media (prefers-reduced-motion: reduce) {
   .stagger-item {
     animation: none;
     opacity: 1;
     transform: none;
-    filter: none;
   }
 }
 ```
@@ -137,12 +130,11 @@ Wyjścia powinny być subtelniejsze i mniej przyciągające uwagę niż wejścia
 ### Subtle Exit (Rekomendowane)
 
 ```tsx
-// Small fixed translateY — indicates direction without drama
+// Small fixed translateY — indicates direction without drama (transform i opacity, bez filtra)
 <motion.div
   exit={{
     opacity: 0,
     y: -12,
-    filter: "blur(4px)",
     transition: { duration: 0.15, ease: "easeIn" },
   }}
 >
@@ -199,7 +191,7 @@ Wyjścia powinny być subtelniejsze i mniej przyciągające uwagę niż wejścia
 
 ## Contextual Icon Animations
 
-Gdy ikony pojawiają się lub znikają kontekstowo (na hover, na zmianę stanu), animuj je z `opacity`, `scale` i `blur` zamiast tylko przełączać visibility.
+Gdy ikony pojawiają się lub znikają kontekstowo (na hover, na zmianę stanu), animuj je z `opacity`, `scale` i `blur` zamiast tylko przełączać visibility. To zmiana stanu pojedynczego elementu, więc rozmycie (`filter`) jest tu dopuszczone; przy wejściu i wyjściu sekcji zostajesz przy `transform` i `opacity`.
 
 ### Motion
 
@@ -253,7 +245,8 @@ interface CrossfadeIconButtonProps {
   label: string; // przycisk z samą ikoną potrzebuje nazwy dostępnej
 }
 
-function IconButton({
+// <button> przyjmuje tylko treść frazową, więc kontenery ikon to <span>, nie <div>
+function CrossfadeIconButton({
   isActive,
   activeIcon: ActiveIcon,
   inactiveIcon: InactiveIcon,
@@ -261,8 +254,8 @@ function IconButton({
 }: CrossfadeIconButtonProps) {
   return (
     <button aria-label={label} aria-pressed={isActive}>
-      <div className="relative">
-        <div
+      <span className="relative grid">
+        <span
           className={cn(
             "absolute inset-0 flex items-center justify-center",
             "transition-[opacity,filter,scale] duration-300",
@@ -275,8 +268,8 @@ function IconButton({
           )}
         >
           <ActiveIcon aria-hidden="true" />
-        </div>
-        <div
+        </span>
+        <span
           className={cn(
             "transition-[opacity,filter,scale] duration-300",
             "ease-[cubic-bezier(0.2,0,0,1)]",
@@ -287,8 +280,8 @@ function IconButton({
           )}
         >
           <InactiveIcon aria-hidden="true" />
-        </div>
-      </div>
+        </span>
+      </span>
     </button>
   );
 }

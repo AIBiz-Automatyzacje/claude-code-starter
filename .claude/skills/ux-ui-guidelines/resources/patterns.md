@@ -7,7 +7,10 @@ Nawigacja, wyświetlanie danych, wyszukiwanie i onboarding.
 ## Navigation Patterns
 
 ### Tabs
+
+`TemplateGrid` przyjmuje gotową listę (`templates`), to samo API co w [animations.md](animations.md) (sekcja Staggered Lists). Każdy panel zakładki pobiera swoją listę przez hook (`useTemplates` z `@/hooks/use-templates`) i podaje ją do siatki.
 ```typescript
+import { TemplateTabPanel } from '@/components/template-tab-panel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function TemplateTabs() {
@@ -19,14 +22,15 @@ function TemplateTabs() {
                 <TabsTrigger value="recent">Ostatnie</TabsTrigger>
             </TabsList>
             
+            {/* TemplateTabPanel: useTemplates z filtrem zakładki → <TemplateGrid templates={data ?? []} /> */}
             <TabsContent value="all" className="mt-4">
-                <TemplateGrid filter="all" />
+                <TemplateTabPanel tab="all" />
             </TabsContent>
             <TabsContent value="favorites" className="mt-4">
-                <TemplateGrid filter="favorites" />
+                <TemplateTabPanel tab="favorites" />
             </TabsContent>
             <TabsContent value="recent" className="mt-4">
-                <TemplateGrid filter="recent" />
+                <TemplateTabPanel tab="recent" />
             </TabsContent>
         </Tabs>
     );
@@ -124,6 +128,7 @@ function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
 ### Pagination
 ```typescript
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 
 interface PaginationProps {
@@ -324,6 +329,7 @@ function ResponsiveDataView<T extends { id: string }>({ data, columns }: DataVie
 Komponent `EmptyState` (`{ title, description?, action? }`) jest zdefiniowany w [component-ux.md](component-ux.md#empty-states) — ten sam w całym projekcie, więc tu go nie powtarzasz. W widokach danych rozróżniasz dwa przypadki: pusta kolekcja (opis zachęca do utworzenia pierwszego elementu, akcja tworzy) i brak wyników filtrowania (opis podpowiada zmianę kryteriów, akcja czyści filtry).
 ```typescript
 import { EmptyState } from '@/components/empty-state';
+import { Button } from '@/components/ui/button';
 
 // Brak wyników filtrowania
 <EmptyState
@@ -342,6 +348,7 @@ import { EmptyState } from '@/components/empty-state';
 
 ### Skeleton Loading
 ```typescript
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function TemplateCardSkeleton() {
@@ -376,6 +383,7 @@ function TemplateGridSkeleton({ count = 6 }: { count?: number }) {
 
 Debounce robisz hookiem `useDebounce` z `@/hooks/use-debounce`, który projekt już ma (tailwind-react-guidelines/resources/performance.md, sekcja useDebounce Hook) — bez nowej zależności `use-debounce`. Pole jest kontrolowane i reaguje od razu, a opóźniona jest tylko wartość, która trafia do zapytania: użytkownik widzi każdy znak, a zapytanie idzie dopiero po przerwie w pisaniu.
 ```typescript
+// src/components/search-input.tsx
 import { Search, X } from 'lucide-react';
 import { useRef } from 'react';
 
@@ -388,7 +396,7 @@ interface SearchInputProps {
     label?: string;
 }
 
-function SearchInput({ value, onChange, placeholder = 'Szukaj...', label = 'Szukaj' }: SearchInputProps) {
+export function SearchInput({ value, onChange, placeholder = 'Szukaj...', label = 'Szukaj' }: SearchInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleClear = () => {
@@ -427,9 +435,15 @@ function SearchInput({ value, onChange, placeholder = 'Szukaj...', label = 'Szuk
         </div>
     );
 }
-
+```
+```typescript
 // Użycie: opóźniona jest wartość dla zapytania, nie pole
+import { useState } from 'react';
+
+import { SearchInput } from '@/components/search-input';
+import { TemplateGrid } from '@/components/template-grid';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useTemplates } from '@/hooks/use-templates';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -450,6 +464,7 @@ function TemplateSearch() {
 ### Filter Chips
 ```typescript
 import { X } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 
 interface FilterChipsProps {
@@ -608,6 +623,8 @@ export function useFilters(): [Filters, (updates: Partial<Filters>) => void] {
 ```typescript
 import { Check } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
+
 interface Step {
     id: string;
     title: string;
@@ -648,7 +665,7 @@ function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
                                     status === 'upcoming' && "border-2 border-muted text-muted-foreground"
                                 )}>
                                     {status === 'complete' ? (
-                                        <Check className="h-4 w-4" />
+                                        <Check className="h-4 w-4" aria-hidden="true" />
                                     ) : (
                                         index + 1
                                     )}
@@ -682,12 +699,12 @@ function OnboardingWizard() {
         { id: 'workspace', title: 'Workspace' },
     ];
 
-    const updateData = (stepData: Partial<OnboardingData>) => {
+    const handleStepUpdate = (stepData: Partial<OnboardingData>) => {
         setData(prev => ({ ...prev, ...stepData }));
     };
 
-    const nextStep = () => setCurrentStep(s => Math.min(s + 1, steps.length - 1));
-    const prevStep = () => setCurrentStep(s => Math.max(s - 1, 0));
+    const handleNext = () => setCurrentStep(s => Math.min(s + 1, steps.length - 1));
+    const handleBack = () => setCurrentStep(s => Math.max(s - 1, 0));
 
     return (
         <div className="max-w-2xl mx-auto py-8">
@@ -695,20 +712,20 @@ function OnboardingWizard() {
             
             <div className="mt-8">
                 {currentStep === 0 && (
-                    <ProfileStep data={data} onUpdate={updateData} />
+                    <ProfileStep data={data} onUpdate={handleStepUpdate} />
                 )}
                 {currentStep === 1 && (
-                    <PreferencesStep data={data} onUpdate={updateData} />
+                    <PreferencesStep data={data} onUpdate={handleStepUpdate} />
                 )}
                 {currentStep === 2 && (
-                    <WorkspaceStep data={data} onUpdate={updateData} />
+                    <WorkspaceStep data={data} onUpdate={handleStepUpdate} />
                 )}
             </div>
 
             <div className="mt-8 flex justify-between">
                 <Button
                     variant="outline"
-                    onClick={prevStep}
+                    onClick={handleBack}
                     disabled={currentStep === 0}
                 >
                     Wstecz
@@ -719,7 +736,7 @@ function OnboardingWizard() {
                         Zakończ
                     </Button>
                 ) : (
-                    <Button onClick={nextStep}>
+                    <Button onClick={handleNext}>
                         Dalej
                     </Button>
                 )}
@@ -733,6 +750,8 @@ function OnboardingWizard() {
 ```typescript
 import { X } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 
 type Placement = 'top' | 'bottom' | 'left' | 'right';
 
@@ -787,7 +806,7 @@ function FeatureSpotlight({ id, targetSelector, title, description, placement = 
         });
     }, [id, targetSelector, placement]);
 
-    const dismiss = () => {
+    const handleDismiss = () => {
         localStorage.setItem(`spotlight-${id}`, 'true');
         setSpotlight({ status: 'hidden' });
     };
@@ -797,7 +816,7 @@ function FeatureSpotlight({ id, targetSelector, title, description, placement = 
     return (
         <>
             {/* Backdrop — kliknięcie zamyka; dla klawiatury jest przycisk Zamknij i „Rozumiem” */}
-            <div className="fixed inset-0 bg-black/50 z-40" onClick={dismiss} aria-hidden="true" />
+            <div className="fixed inset-0 bg-black/50 z-40" onClick={handleDismiss} aria-hidden="true" />
             
             {/* Tooltip */}
             <div
@@ -808,7 +827,7 @@ function FeatureSpotlight({ id, targetSelector, title, description, placement = 
             >
                 <button
                     type="button"
-                    onClick={dismiss}
+                    onClick={handleDismiss}
                     className="absolute top-1 right-1 inline-flex size-8 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground pointer-coarse:size-11"
                     aria-label="Zamknij"
                 >
@@ -818,7 +837,7 @@ function FeatureSpotlight({ id, targetSelector, title, description, placement = 
                 <h4 id={titleId} className="font-semibold mb-1">{title}</h4>
                 <p className="text-sm text-muted-foreground">{description}</p>
                 
-                <Button size="sm" className="mt-3" onClick={dismiss}>
+                <Button size="sm" className="mt-3" onClick={handleDismiss}>
                     Rozumiem
                 </Button>
             </div>
@@ -915,30 +934,30 @@ import { ROUTES } from '@/constants/routes';
 import { useTheme } from '@/hooks/use-theme';
 
 function CommandPalette() {
-    const [open, setOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const { setTheme } = useTheme();
 
     // Po wyborze polecenia paleta się zamyka, a fokus wraca do elementu, który ją otworzył (Radix Dialog)
     const runCommand = (command: () => void) => {
-        setOpen(false);
+        setIsOpen(false);
         command();
     };
 
     // Ctrl+K / Cmd+K
     useEffect(() => {
-        const down = (e: KeyboardEvent) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
-                setOpen((open) => !open);
+                setIsOpen((wasOpen) => !wasOpen);
             }
         };
-        document.addEventListener('keydown', down);
-        return () => document.removeEventListener('keydown', down);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     return (
-        <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
             <CommandInput placeholder="Wpisz polecenie..." />
             <CommandList>
                 <CommandEmpty>Brak wyników.</CommandEmpty>
@@ -969,7 +988,7 @@ function CommandPalette() {
 <Button
     variant="outline"
     className="w-64 justify-between text-muted-foreground"
-    onClick={() => setOpen(true)}
+    onClick={() => setIsOpen(true)}
 >
     Szukaj...
     <kbd className="ml-2 pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs">
@@ -1026,23 +1045,33 @@ Safe area (`env(safe-area-inset-bottom)`) działa dopiero z `viewport-fit=cover`
 ```typescript
 // Desktop: Dialog, Mobile: Drawer — każda gałąź z własnym Content, bo DialogContent
 // i DrawerContent to różne komponenty i nie da się ich podać jako wspólnych children
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '@/components/ui/drawer';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 768px)';
 
 interface ResponsiveModalProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
     title: string;
     children: React.ReactNode;
 }
 
-function ResponsiveModal({ open, onOpenChange, title, children }: ResponsiveModalProps) {
+function ResponsiveModal({ isOpen, onOpenChange, title, children }: ResponsiveModalProps) {
     const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
 
     if (isDesktop) {
         return (
-            <Dialog open={open} onOpenChange={onOpenChange}>
+            <Dialog open={isOpen} onOpenChange={onOpenChange}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
@@ -1054,7 +1083,7 @@ function ResponsiveModal({ open, onOpenChange, title, children }: ResponsiveModa
     }
 
     return (
-        <Drawer open={open} onOpenChange={onOpenChange}>
+        <Drawer open={isOpen} onOpenChange={onOpenChange}>
             <DrawerContent>
                 <DrawerHeader>
                     <DrawerTitle>{title}</DrawerTitle>

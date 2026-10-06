@@ -37,8 +37,10 @@ Razem 9 nowych kryteriów; 4.1.1 Parsing zostało usunięte w 2.2.
 | Element | Minimum | Enhanced |
 |---------|---------|----------|
 | Tekst normalny | 4,5:1 | 7:1 |
-| Tekst duży (18px+ lub 14px bold) | 3:1 | 4,5:1 |
+| Tekst duży (≥ 24 px albo ≥ 18,66 px pogrubiony: `text-2xl` / `text-lg font-bold`) | 3:1 | 4,5:1 |
 | UI Components (przyciski, ikony) | 3:1 | - |
+
+Próg dużego tekstu w WCAG to 18 pt (24 px) albo 14 pt pogrubione (18,66 px). `text-lg` (18 px) o zwykłej grubości jest tekstem normalnym i potrzebuje 4,5:1.
 
 ### Sprawdzanie
 ```typescript
@@ -60,12 +62,18 @@ Razem 9 nowych kryteriów; 4.1.1 Parsing zostało usunięte w 2.2.
 ```
 
 ### prefers-contrast
+
+Nadpisujesz zmienne bazowe (`--border`, `--muted-foreground`), nie `--color-*`: przy `@theme inline` ([design-system.md](design-system.md)) klasa `border-border` dostaje wprost `var(--border)`, więc zmiana `--color-border` do niej nie dociera. Tryb ciemny ma osobny blok, bo `.dark` nadpisuje wartości z `:root`.
 ```css
-/* src/index.css */
+/* src/index.css — blok stoi po definicjach tokenów w :root i .dark */
 @media (prefers-contrast: more) {
     :root {
-        --color-border: oklch(0.3 0.02 260);  /* Ciemniejsze borders */
-        --color-muted-foreground: oklch(0.35 0.02 260);  /* Ciemniejszy tekst */
+        --border: oklch(0.3 0.02 264);  /* Ciemniejsze obramowania */
+        --muted-foreground: oklch(0.35 0.02 264);  /* Ciemniejszy tekst drugorzędny */
+    }
+    .dark {
+        --border: oklch(0.75 0.02 264);  /* Jaśniejsze obramowania na ciemnym tle */
+        --muted-foreground: oklch(0.8 0.02 264);  /* Jaśniejszy tekst drugorzędny */
     }
 }
 ```
@@ -125,11 +133,11 @@ Target Size, WCAG 2.2. To jedyne źródło tej zasady w skillu: responsive-desig
 |-----|---------|------|----------------|
 | Każdy cel wskaźnika (mysz i dotyk) | min 24×24 px — próg twardy | WCAG 2.2 AA, 2.5.8 | `min-h-6 min-w-6` albo obszar rozszerzony pseudo-elementem |
 | Kontrolka obsługiwana palcem (widok mobilny, `pointer-coarse`) | 44×44 px | Apple HIG, WCAG AAA 2.5.5 | `min-h-11 min-w-11`, `size-11`, `pointer-coarse:size-11` |
-| Przycisk na desktopie (precyzyjny wskaźnik) | `size="icon"` z shadcn/ui (36–40 px), `h-9`/`h-10` | spełnia AA | bez zmian |
+| Przycisk na desktopie (precyzyjny wskaźnik) | `size="icon"` z shadcn/ui (36 px, `size-9`), przycisk z tekstem `h-9` | spełnia AA | bez zmian |
 
-Próg 24 px obowiązuje zawsze, bo poniżej niego użytkownik z drżeniem ręki albo na dotyku trafia obok. 44 px stosujesz dla kontrolek, które obsługuje się palcem: elementy widoczne tylko na mobile (`md:hidden`), dolna nawigacja, FAB, akcje w wierszach listy na telefonie, a w komponentach wspólnych dla obu wskaźników — wariant `pointer-coarse:`. Na desktopie domyślne rozmiary shadcn/ui (36–40 px) są wystarczające.
+Próg 24 px obowiązuje zawsze, bo poniżej niego użytkownik z drżeniem ręki albo na dotyku trafia obok. 44 px stosujesz dla kontrolek, które obsługuje się palcem: elementy widoczne tylko na mobile (`md:hidden`), dolna nawigacja, FAB, akcje w wierszach listy na telefonie, a w komponentach wspólnych dla obu wskaźników — wariant `pointer-coarse:`. Na desktopie domyślne rozmiary shadcn/ui (36 px) są wystarczające.
 
-Gdy widoczny element ma być mniejszy (ikona w chipie filtra, przycisk czyszczenia w polu wyszukiwania), obszar kliknięcia rozszerzasz pseudo-elementem zamiast powiększać sam element: `relative` na przycisku i `after:absolute after:-inset-N`, tak by wymiar elementu plus dwa razy N dawał 24 px (albo 44 px na dotyku). Rozszerzone obszary sąsiednich celów nie mogą na siebie nachodzić.
+Gdy widoczny element ma być mniejszy (ikona w chipie filtra, przycisk czyszczenia w polu wyszukiwania), obszar kliknięcia rozszerzasz pseudo-elementem zamiast powiększać sam element: `relative` na przycisku i `after:absolute after:-inset-N`, tak by wymiar elementu plus dwa razy N dawał 24 px (albo 44 px na dotyku). Dla elementu 20 px to `after:-inset-0.5 pointer-coarse:after:-inset-3` (24 px bazowo, 44 px na dotyku) — ten wzorzec stosują surfaces.md, polish-checklist.md i design-system.md. Rozszerzone obszary sąsiednich celów nie mogą na siebie nachodzić.
 
 ### Implementacja
 ```typescript
@@ -181,11 +189,13 @@ Próg 24 px nie dotyczy:
 ## Focus States
 
 ### Focus Visible
+
+`outline-hidden`, nie `outline-none`: w Tailwind v4 `outline-none` ustawia `outline-style: none`, a ring to `box-shadow`, który w trybie wymuszonych kolorów (Windows High Contrast) znika — fokus byłby wtedy niewidoczny. `outline-hidden` ukrywa obrys w zwykłym trybie, a w trybie wymuszonych kolorów zostawia go widocznym.
 ```typescript
 // Wzorzec focus-visible (nie zwykły focus)
 <button className={cn(
     "bg-primary text-primary-foreground",
-    "focus-visible:outline-none",
+    "focus-visible:outline-hidden",
     "focus-visible:ring-2",
     "focus-visible:ring-ring",
     "focus-visible:ring-offset-2"
@@ -196,7 +206,7 @@ Próg 24 px nie dotyczy:
 // Link
 <a className={cn(
     "text-primary underline-offset-4 hover:underline",
-    "focus-visible:outline-none",
+    "focus-visible:outline-hidden",
     "focus-visible:ring-2",
     "focus-visible:ring-ring",
     "rounded-sm"  // Dla lepszego ring shape
@@ -235,22 +245,42 @@ Focus nie może być zasłonięty przez sticky/fixed elements.
 ```
 
 ### Focus Management
-```typescript
-// Focus po otwarciu modala
-function Modal({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) {
-    const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-    useEffect(() => {
-        if (isOpen) {
-            closeButtonRef.current?.focus();
-        }
-    }, [isOpen]);
+Dialog z shadcn/ui sam przenosi fokus do pierwszego elementu w środku i oddaje go po zamknięciu. Inny cel fokusu przy otwarciu wskazujesz przez `onOpenAutoFocus` zamiast efektu z `focus()`, który ścigałby się z automatycznym fokusem Radixa. Dialog potrzebuje `onOpenChange` (bez niego Escape, kliknięcie tła i przycisk zamknięcia nic nie robią) i `DialogTitle` (bez niego Radix zgłasza błąd dostępnej nazwy w konsoli). `DialogContent` z shadcn/ui ma własny przycisk X, więc drugiego nie dodajesz.
+```typescript
+import { useRef } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+interface EditModalProps {
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    title: string;
+    children: React.ReactNode;
+}
+
+// Fokus po otwarciu na głównej akcji zamiast na pierwszym elemencie
+function EditModal({ isOpen, onOpenChange, title, children }: EditModalProps) {
+    const saveButtonRef = useRef<HTMLButtonElement>(null);
 
     return (
-        <Dialog open={isOpen}>
-            <DialogContent>
-                <DialogClose ref={closeButtonRef}>×</DialogClose>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent
+                onOpenAutoFocus={(event) => {
+                    event.preventDefault();
+                    saveButtonRef.current?.focus();
+                }}
+            >
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                </DialogHeader>
                 {children}
+                <DialogFooter>
+                    <Button ref={saveButtonRef} type="submit" form="edit-form">
+                        Zapisz
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -390,9 +420,10 @@ Region `role="status"` renderujesz od początku i zmieniasz tylko jego treść; 
 ### Nowe Atrybuty ARIA 1.3
 
 ```typescript
-// aria-description — bezpośredni opis (zamiast aria-describedby dla prostych przypadków)
-<button aria-description="Usuwa element na stałe">
-    <Trash className="h-4 w-4" />
+// aria-description — bezpośredni opis (zamiast aria-describedby dla prostych przypadków);
+// opis nie zastępuje nazwy, więc przycisk z samą ikoną dalej ma aria-label
+<button aria-label="Usuń" aria-description="Usuwa element na stałe">
+    <Trash className="h-4 w-4" aria-hidden="true" />
 </button>
 
 // aria-errormessage — uzupełnienie aria-describedby, nie jego zamiennik
@@ -506,7 +537,7 @@ Każda akcja drag-and-drop musi mieć alternatywę single-pointer. To samo dotyc
 
 ### Przykład: Sortowalna Lista
 ```typescript
-const reorderButtonClass =
+const REORDER_BUTTON_CLASS =
     'inline-flex size-8 items-center justify-center rounded-md hover:bg-muted pointer-coarse:size-11';
 
 function SortableList({ items, onReorder }: SortableListProps) {
@@ -517,7 +548,7 @@ function SortableList({ items, onReorder }: SortableListProps) {
                     {/* Drag handle — cel 32px (44px na dotyku), nie ikona 16px */}
                     <button
                         type="button"
-                        className={cn(reorderButtonClass, 'cursor-grab')}
+                        className={cn(REORDER_BUTTON_CLASS, 'cursor-grab')}
                         aria-label={`Przeciągnij ${item.name}`}
                     >
                         <GripVertical className="h-4 w-4" aria-hidden="true" />
@@ -529,7 +560,7 @@ function SortableList({ items, onReorder }: SortableListProps) {
                     <div className="flex gap-1 ml-auto">
                         <button
                             type="button"
-                            className={reorderButtonClass}
+                            className={REORDER_BUTTON_CLASS}
                             onClick={() => onReorder(index, index - 1)}
                             disabled={index === 0}
                             aria-label={`Przenieś ${item.name} w górę`}
@@ -538,7 +569,7 @@ function SortableList({ items, onReorder }: SortableListProps) {
                         </button>
                         <button
                             type="button"
-                            className={reorderButtonClass}
+                            className={REORDER_BUTTON_CLASS}
                             onClick={() => onReorder(index, index + 1)}
                             disabled={index === items.length - 1}
                             aria-label={`Przenieś ${item.name} w dół`}
@@ -564,20 +595,20 @@ Rozmiar przycisków według sekcji [Rozmiar celu](#rozmiar-celu): sama ikona 16p
 ### Modal z inert
 ```typescript
 function App() {
-    const [modalOpen, setModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
         <>
             {/* Main content - inert gdy modal otwarty */}
-            <div inert={modalOpen}>
+            <div inert={isModalOpen}>
                 <Header />
                 <main>{/* Content */}</main>
                 <Footer />
             </div>
 
             {/* Modal - poza inert */}
-            {modalOpen && (
-                <Dialog open onOpenChange={setModalOpen}>
+            {isModalOpen && (
+                <Dialog open onOpenChange={setIsModalOpen}>
                     <DialogContent>{/* ... */}</DialogContent>
                 </Dialog>
             )}
@@ -588,18 +619,22 @@ function App() {
 
 ### Drawer/Sidebar
 ```typescript
+import { Menu } from 'lucide-react';
+import { useState } from 'react';
+
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 768px)';
 
 function Layout({ children }: { children: React.ReactNode }) {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
 
     // Na md+ sidebar jest stale widoczny, więc ani on, ani main nie są inert.
     // Na mobile zamknięty sidebar (poza ekranem) jest inert, a otwarty blokuje main.
-    const isSidebarInert = !isDesktop && !sidebarOpen;
-    const isMainInert = !isDesktop && sidebarOpen;
+    const isSidebarInert = !isDesktop && !isSidebarOpen;
+    const isMainInert = !isDesktop && isSidebarOpen;
 
     return (
         <>
@@ -607,9 +642,9 @@ function Layout({ children }: { children: React.ReactNode }) {
             <button
                 type="button"
                 className="md:hidden inline-flex size-11 items-center justify-center"
-                onClick={() => setSidebarOpen((isOpen) => !isOpen)}
-                aria-expanded={sidebarOpen}
-                aria-label={sidebarOpen ? 'Zamknij menu' : 'Otwórz menu'}
+                onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
+                aria-expanded={isSidebarOpen}
+                aria-label={isSidebarOpen ? 'Zamknij menu' : 'Otwórz menu'}
             >
                 <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -618,7 +653,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             <aside
                 className={cn(
                     "fixed inset-y-0 left-0 w-64 transition-transform md:translate-x-0",
-                    sidebarOpen ? "translate-x-0" : "-translate-x-full"
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
                 inert={isSidebarInert}
             >
@@ -685,7 +720,7 @@ Popover API (atrybut `popover` jest Baseline we wszystkich głównych przegląda
 | Tooltips, menu, panele | Modalne okna dialogowe |
 | Non-modal (nie blokuje UI) | Wymaga interakcji użytkownika |
 | Light dismiss (klik poza) | Focus trap, overlay |
-| Wbudowany focus return | Wymaga zarządzania focusem |
+| Wbudowany focus return | Wbudowany focus trap i powrót fokusu (Radix, `showModal()`); inny cel fokusu przez `onOpenAutoFocus` |
 
 ---
 

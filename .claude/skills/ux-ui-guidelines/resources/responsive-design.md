@@ -215,29 +215,17 @@ Przydatne przy wsparciu RTL (right-to-left) layouts.
 ```
 
 ### Rozwiązanie: clamp()
-```css
-/* src/index.css — @utility (Tailwind v4), żeby działały warianty (md:text-fluid-3xl) */
-@utility text-fluid-xl {
-    font-size: clamp(1.5rem, 1rem + 2vw, 2.25rem);
-}
 
-@utility text-fluid-2xl {
-    font-size: clamp(1.875rem, 1.25rem + 2.5vw, 3rem);
-}
-
-@utility text-fluid-3xl {
-    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.75rem);
-}
-```
+Rozmiar rośnie płynnie z szerokością ekranu między minimum a maksimum z `clamp()`. Klasy `text-fluid-xl`, `text-fluid-2xl` i `text-fluid-3xl` (`@utility` w `src/index.css`, więc działają z wariantami, np. `md:text-fluid-3xl`) mają jedną definicję: [design-system.md](design-system.md#fluid-typography-headlines), sekcja Fluid Typography. Tu ich nie powtarzasz — dwie kopie z różnymi wartościami dawały ten sam nagłówek w dwóch rozmiarach.
 
 ### Użycie
 ```typescript
-// Fluid hero title
+// Fluid hero title — klasa z design-system.md
 <h1 className="text-fluid-3xl font-bold">
     Płynne skalowanie
 </h1>
 
-// Lub z Tailwind arbitrary values
+// Jednorazowy rozmiar spoza skali — wartość arbitralna z clamp()
 <h1 className="text-[clamp(1.5rem,1rem+2vw,2.25rem)]">
     Fluid Title
 </h1>
@@ -428,8 +416,12 @@ Zasada rozmiaru celu ma jedno źródło: [accessibility.md, sekcja Rozmiar celu]
 ### Navigation
 ```typescript
 // NavLink z React Routera przyjmuje `to`, nie `href`; ścieżki ze stałej ROUTES (src/constants/routes.ts)
+import { Menu } from 'lucide-react';
 import { NavLink } from 'react-router';
 
+import { Logo } from '@/components/logo';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ROUTES } from '@/constants/routes';
 
 <nav className="flex items-center justify-between p-4">
@@ -568,6 +560,7 @@ import { Heart, Home, PlusCircle, Search, User } from 'lucide-react';
 import { NavLink } from 'react-router';
 
 import { ROUTES } from '@/constants/routes';
+import { cn } from '@/lib/utils';
 
 // SEARCH, FAVORITES i PROFILE dopisujesz do tego samego obiektu ROUTES w src/constants/routes.ts
 const BOTTOM_NAV_ITEMS = [
@@ -617,31 +610,25 @@ function BottomNav() {
 `pb-safe` ustawia cały dolny padding, więc w elemencie z `p-4` nadpisuje dolne 16 px. Gdy potrzebujesz obu, łączysz je w jednej wartości: `pb-[calc(1rem+env(safe-area-inset-bottom))]`.
 
 ### Bottom Sheet
+
+`Sheet` z Radix nie obsługuje przeciągania, więc nie dostaje atrapy uchwytu: pasek, który wygląda na przeciągalny i nie reaguje, myli użytkownika. Panel zamykany gestem w dół to `Drawer` (vaul) z [patterns.md](patterns.md) (sekcja Drawer), który sam renderuje uchwyt.
 ```typescript
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-function BottomSheet({ 
-    open, 
-    onOpenChange, 
-    title, 
-    children 
-}: {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+interface BottomSheetProps {
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
     title: string;
     children: React.ReactNode;
-}) {
+}
+
+function BottomSheet({ isOpen, onOpenChange, title, children }: BottomSheetProps) {
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
+        <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent 
                 side="bottom" 
                 className="h-[85dvh] rounded-t-2xl"
             >
-                {/* Drag handle */}
-                <div className="flex justify-center pt-2 pb-4">
-                    <div className="w-10 h-1 bg-muted rounded-full" />
-                </div>
-                
                 <SheetHeader>
                     <SheetTitle>{title}</SheetTitle>
                 </SheetHeader>
@@ -657,7 +644,7 @@ function BottomSheet({
 
 ### Pull to Refresh
 
-Stan gestu to jedna unia (`idle` / `pulling` / `refreshing`) zamiast dwóch flag, które mogłyby być prawdziwe naraz. Kolejne odświeżenie nie startuje, dopóki trwa poprzednie, a powrót do `idle` jest w `finally`, więc wykonuje się po sukcesie i po błędzie. Gest jest skrótem: lista ma też przycisk „Odśwież” (np. w nagłówku), bo przeciągnięcie wymaga ścieżki ruchu, a WCAG 2.5.1 wymaga alternatywy jednym kliknięciem ([accessibility.md](accessibility.md), sekcja Dragging Movements).
+Stan gestu to jedna unia (`idle` / `pulling` / `refreshing`) zamiast dwóch flag, które mogłyby być prawdziwe naraz. Komponent ma własny kontener przewijania z `overscroll-y-contain`: bez tego przeciągnięcie w dół na górze strony uruchomiłoby równolegle natywne odświeżanie przeglądarki (przeładowanie strony w Chrome na Androidzie). Kolejne odświeżenie nie startuje, dopóki trwa poprzednie, a powrót do `idle` jest w `finally`, więc wykonuje się po sukcesie i po błędzie. Gest jest skrótem: lista ma też przycisk „Odśwież” (np. w nagłówku), bo przeciągnięcie wymaga ścieżki ruchu, a WCAG 2.5.1 wymaga alternatywy jednym kliknięciem ([accessibility.md](accessibility.md), sekcja Dragging Movements).
 ```typescript
 import { Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -681,9 +668,9 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
     const startY = useRef<number | null>(null);
     const pullDistance = useRef(0);
 
-    const handleTouchStart = (e: React.TouchEvent) => {
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
         const touch = e.touches[0];
-        if (window.scrollY === 0 && touch) {
+        if (e.currentTarget.scrollTop === 0 && touch) {
             startY.current = touch.clientY;
         }
     };
@@ -719,7 +706,10 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
     };
 
     return (
+        // Własny kontener przewijania: overscroll-y-contain nie przekazuje przeciągnięcia
+        // do strony, więc natywne pull-to-refresh przeglądarki się nie uruchamia
         <div
+            className="h-full overflow-y-auto overscroll-y-contain"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -750,7 +740,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
 Swipe jest skrótem, nie jedyną drogą do akcji (WCAG 2.5.1 i 2.5.7, [accessibility.md](accessibility.md), sekcja Dragging Movements): te same akcje są w wierszu jako przyciski. Gest łatwo wykonać przypadkiem, więc akcja destrukcyjna nie wykonuje się od razu — usunięcie przechodzi przez potwierdzenie (`useConfirm`), a archiwizacja daje „Cofnij” w toaście ([component-ux.md](component-ux.md), sekcja Confirm Before Action). Kolory tła biorą się z tokenów (`bg-success`, `bg-destructive`) przez warstwy z animowaną przezroczystością, zamiast wartości rgb wpisanych w kod.
 ```typescript
 import { Archive, Trash2 } from 'lucide-react';
-import { animate, motion, useMotionValue, useTransform } from 'motion/react';
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 
 import { Button } from '@/components/ui/button';
 
@@ -766,13 +756,19 @@ interface SwipeableItemProps {
 
 export function SwipeableItem({ children, itemLabel, onArchive, onDelete }: SwipeableItemProps) {
     const x = useMotionValue(0);
+    const shouldReduceMotion = useReducedMotion();
     const archiveOpacity = useTransform(x, [0, SWIPE_ACTION_THRESHOLD_PX], [0, 1]);
     const deleteOpacity = useTransform(x, [-SWIPE_ACTION_THRESHOLD_PX, 0], [1, 0]);
 
     const handleDragEnd = () => {
         const offset = x.get();
-        // Wiersz wraca na miejsce; akcję potwierdza dialog albo „Cofnij” w toaście
-        void animate(x, 0);
+        // Wiersz wraca na miejsce; akcję potwierdza dialog albo „Cofnij” w toaście.
+        // Imperatywne animate() nie czyta MotionConfig, więc reduced motion sprawdzasz sam
+        if (shouldReduceMotion) {
+            x.set(0);
+        } else {
+            void animate(x, 0);
+        }
         if (offset < -SWIPE_ACTION_THRESHOLD_PX) onDelete();
         if (offset > SWIPE_ACTION_THRESHOLD_PX) onArchive();
     };
@@ -842,7 +838,7 @@ function TemplateRow({ template }: { template: Template }) {
             title: 'Usuń szablon',
             description: `Szablon „${template.name}” zostanie usunięty na stałe.`,
             confirmText: 'Usuń',
-            destructive: true,
+            isDestructive: true,
         });
         if (isConfirmed) deleteTemplate.mutate(template.id);
     };
@@ -859,12 +855,14 @@ function TemplateRow({ template }: { template: Template }) {
 }
 ```
 
-Animacja powrotu wiersza respektuje `prefers-reduced-motion`, gdy aplikacja jest owinięta w `MotionConfig reducedMotion="user"` ([animations.md](animations.md)).
+Powrót wiersza jest imperatywnym `animate(x, 0)`, a takie wywołanie nie czyta kontekstu `MotionConfig reducedMotion="user"` ([animations.md](animations.md)). Dlatego `SwipeableItem` sam sprawdza `useReducedMotion()` i przy ograniczonym ruchu ustawia `x.set(0)` bez animacji.
 
 ### Floating Action Button (FAB)
 ```typescript
 import { Plus } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 function FAB({ onClick }: { onClick: () => void }) {
     return (
@@ -879,7 +877,7 @@ function FAB({ onClick }: { onClick: () => void }) {
             )}
             aria-label="Utwórz nowy"
         >
-            <Plus className="h-6 w-6" />
+            <Plus className="h-6 w-6" aria-hidden="true" />
         </Button>
     );
 }
@@ -942,6 +940,10 @@ function FAB({ onClick }: { onClick: () => void }) {
 
 ### Scroll Snap (Horizontal Carousel)
 ```typescript
+import { Children } from 'react';
+
+import { cn } from '@/lib/utils';
+
 function HorizontalScroll({ children }: { children: React.ReactNode }) {
     return (
         <div className={cn(
@@ -950,7 +952,7 @@ function HorizontalScroll({ children }: { children: React.ReactNode }) {
             "scrollbar-hide",
             "-mx-4 px-4"  // Full-bleed na mobile
         )}>
-            {React.Children.map(children, child => (
+            {Children.map(children, child => (
                 <div className="snap-start shrink-0 w-[280px]">
                     {child}
                 </div>

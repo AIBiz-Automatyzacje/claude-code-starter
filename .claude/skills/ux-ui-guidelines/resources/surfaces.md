@@ -162,7 +162,7 @@ W Tailwind używasz tokenu przez wartość arbitralną ze zmienną: `shadow-(--s
 
 ### Użycie z Hover Transition
 
-Zastosuj zmienną i dodaj `transition-[box-shadow]` dla płynnego hover:
+Zastosuj zmienną i dodaj `transition-[box-shadow]` dla płynnego hover. `box-shadow` animujesz tylko przy zmianie stanu (hover, fokus) — ruch i wejście elementu idą przez `transform` i `opacity` ([animations.md](animations.md), sekcja „Które właściwości animujesz”):
 
 ```css
 .card {
@@ -247,12 +247,12 @@ Używaj tokenu `outline-outline-image` — nie `outline-slate-*`, `outline-zinc-
 
 ## Minimum Hit Area
 
-Progi rozmiaru celu mają jedno źródło: [accessibility.md](accessibility.md) (sekcja „Target Size”). Progi: cel ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a kontrolka dotykowa 44×44 px (`min-h-11 min-w-11`, Apple HIG / WCAG AAA 2.5.5). Jeśli widoczny element jest mniejszy (np. 20×20 checkbox), rozszerz hit area pseudo-elementem do 44×44 px.
+Progi rozmiaru celu mają jedno źródło: [accessibility.md](accessibility.md#rozmiar-celu) (sekcja „Rozmiar celu”). Progi: cel ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a kontrolka dotykowa 44×44 px (`min-h-11 min-w-11`, Apple HIG / WCAG AAA 2.5.5). Jeśli widoczny element jest mniejszy (np. 20×20 checkbox), rozszerz hit area pseudo-elementem do 24×24 px, a przy wskaźniku dotykowym (`pointer: coarse`) do 44×44 px. Na desktopie obszar 44 px przykrywałby sąsiednie cele bez potrzeby, bo mysz trafia precyzyjnie.
 
 ### CSS
 
 ```css
-/* Small checkbox with expanded hit area */
+/* Small checkbox with expanded hit area: 20px + 2 × 2px = 24px, na dotyku 20px + 2 × 12px = 44px */
 .checkbox {
   position: relative;
   width: 20px;
@@ -262,11 +262,13 @@ Progi rozmiaru celu mają jedno źródło: [accessibility.md](accessibility.md) 
 .checkbox::after {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 44px;
-  height: 44px;
+  inset: -2px;
+}
+
+@media (pointer: coarse) {
+  .checkbox::after {
+    inset: -12px;
+  }
 }
 ```
 
@@ -275,7 +277,7 @@ Progi rozmiaru celu mają jedno źródło: [accessibility.md](accessibility.md) 
 ```tsx
 <button
   aria-label="Zaznacz"
-  className="relative size-5 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
+  className="relative size-5 after:absolute after:-inset-0.5 pointer-coarse:after:-inset-3"
 >
   <CheckIcon aria-hidden="true" />
 </button>
@@ -290,5 +292,5 @@ Jeśli rozszerzony hit area nakłada się na inny interaktywny element, zmniejsz
 ## Zobacz Także
 
 - [design-system.md](design-system.md) — border radius scale, shadows scale, z-index, tokeny kolorów (`:root`/`.dark`)
-- [accessibility.md](accessibility.md) — rozmiar celu (Target Size, WCAG 2.5.8), jedno źródło progów
+- [accessibility.md](accessibility.md#rozmiar-celu) — rozmiar celu (WCAG 2.5.8), jedno źródło progów
 - [polish-checklist.md](polish-checklist.md) — pełna checklista polish

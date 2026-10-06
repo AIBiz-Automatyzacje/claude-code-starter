@@ -8,7 +8,7 @@ Wzorce stylowania z TailwindCSS v4, shadcn/ui i kompozycja klas.
 
 ### Koniec z tailwind.config.js
 
-W Tailwind v4 konfiguracja jest w CSS, nie w JavaScript. Tokeny niezależne od motywu (fonty, animacje) zapisujesz z wartościami wprost w `@theme`. Kolory zależą od motywu, więc ich wartości leżą w `:root` i `.dark`, a `@theme inline` tylko mapuje je na utility — pełny wzorzec kolorów i trybu ciemnego jest w sekcji [Tokeny CSS + dark variant](#tokeny-css--dark-variant) i to jedyne źródło tych wartości.
+W Tailwind v4 konfiguracja jest w CSS, nie w JavaScript. Tokeny niezależne od motywu (fonty, animacje) zapisujesz z wartościami wprost w `@theme`. Kolory zależą od motywu, więc ich wartości leżą w `:root` i `.dark`, a `@theme inline` tylko mapuje je na utility — wzorzec kolorów i trybu ciemnego pokazuje sekcja [Tokeny CSS + dark variant](#tokeny-css--dark-variant). Wartości kolorów obu motywów i ich kontrast trzyma jedno źródło: [design-system.md](../../ux-ui-guidelines/resources/design-system.md) (sekcja Konfiguracja Kolorów); ten plik pokazuje te same liczby.
 ```css
 /* src/index.css */
 @import "tailwindcss";
@@ -90,8 +90,8 @@ OKLCH ma lepszą percepcję jasności - kolory wyglądają spójniej:
         "text-sm font-medium",
         // Kolory
         "bg-primary text-primary-foreground",
-        // Interakcje
-        "hover:bg-primary/90 focus-visible:ring-2",
+        // Interakcje (outline-hidden zamiast outline-none — sekcja Class Variance Authority)
+        "hover:bg-primary/90 focus-visible:outline-hidden focus-visible:ring-2",
         // Przejścia
         "transition-colors duration-200"
     )}
@@ -141,6 +141,8 @@ Standard dla komponentów z wariantami:
 ```typescript
 import { cva, type VariantProps } from 'class-variance-authority';
 
+import { cn } from '@/lib/utils';
+
 const buttonVariants = cva(
     // Base styles
     // outline-hidden (nie outline-none): w v4 zostawia obrys w trybie wymuszonych kolorów (Windows High Contrast)
@@ -159,7 +161,7 @@ const buttonVariants = cva(
                 default: "h-10 px-4 py-2",
                 sm: "h-9 rounded-md px-3",
                 lg: "h-11 rounded-md px-8",
-                icon: "h-10 w-10",
+                icon: "size-9",
             },
         },
         defaultVariants: {
@@ -181,7 +183,7 @@ export const Button = ({ className, variant, size, ...props }: ButtonProps) => (
 <Button variant="destructive" size="lg">Usuń</Button>
 ```
 
-**Rozmiar celu:** `sm` (36 px) i `icon` (40 px) mieszczą się w progu WCAG 2.2 AA (24×24 px) i wystarczają na desktopie. Kontrolki dotykowe mają 44×44 px — np. wariant `pointer-coarse:min-h-11 pointer-coarse:min-w-11`. Jedno źródło progów: [accessibility.md](../../ux-ui-guidelines/resources/accessibility.md).
+**Rozmiar celu:** `sm` (36 px) i `icon` (36 px, `size-9` jak w shadcn/ui) mieszczą się w progu WCAG 2.2 AA (24×24 px) i wystarczają na desktopie. Kontrolki dotykowe mają 44×44 px — np. wariant `pointer-coarse:min-h-11 pointer-coarse:min-w-11` (przycisk ikonowy: `pointer-coarse:size-11`). Mniejszy widoczny element rozszerzasz pseudo-elementem (`after:-inset-0.5 pointer-coarse:after:-inset-3`). Jedno źródło progów: [accessibility.md](../../ux-ui-guidelines/resources/accessibility.md) (sekcja Rozmiar celu).
 
 ---
 
@@ -241,7 +243,7 @@ export default defineConfig({
 ```json
 {
     "$schema": "https://ui.shadcn.com/schema.json",
-    "style": "base-nova",
+    "style": "new-york",
     "rsc": false,
     "tsx": true,
     "tailwind": {
@@ -255,14 +257,13 @@ export default defineConfig({
 }
 ```
 
-> `new-york` to styl legacy (działa, mapuje na `new-york-v4`; `default` jest zdeprecjonowany). Nowe projekty
-> używają stylów `base-*` (Base UI) lub `radix-*` (Radix): Vega, Nova, Maia, Lyra, Mira, Luma, Rhea, Sera.
-> Stylu i `baseColor` nie da się zmienić po inicjalizacji. Wartość `base-nova` pochodzi z
-> https://ui.shadcn.com/docs/installation/manual — przy podbiciu shadcn porównaj z tamtejszym `components.json`.
+Styl wybiera bibliotekę prymitywów, a od niej zależy API komponentów. Przykłady w obu skillach UI używają API Radix (`asChild` w `AlertDialogTrigger`, `DialogTrigger`, `Button`), dlatego `components.json` ma styl Radix: `new-york` (działa, mapuje na `new-york-v4`; `default` jest zdeprecjonowany) albo jeden z nowszych stylów `radix-*`. Stylu i `baseColor` nie da się zmienić po inicjalizacji, a dostępne nazwy stylów porównujesz z https://ui.shadcn.com/docs/installation/manual przy podbiciu shadcn.
+
+**Base UI (style `base-*`, np. `base-nova`):** komponenty z Base UI składają element przez prop `render` zamiast `asChild` (`<AlertDialogTrigger render={<Button variant="destructive" />}>Usuń</AlertDialogTrigger>`). Projekt na stylu `base-*` przepisuje przykłady z `asChild` na `render`; w jednym projekcie nie mieszasz obu bibliotek prymitywów.
 
 ### Tokeny CSS + dark variant
 
-Kanoniczny wzorzec tokenów kolorów i trybu ciemnego dla obu skilli UI (design-system.md używa tego samego układu). Plik to `src/index.css` — ten sam, który wskazuje `components.json`.
+Kanoniczny wzorzec tokenów kolorów i trybu ciemnego dla obu skilli UI (design-system.md używa tego samego układu). Plik to `src/index.css` — ten sam, który wskazuje `components.json`. Liczby są te same co w [design-system.md](../../ux-ui-guidelines/resources/design-system.md), który trzyma wartości i kontrast każdej pary: wartość zmieniasz tam, a ten blok do niej dopasowujesz.
 ```css
 /* src/index.css */
 @import "tailwindcss";
@@ -278,9 +279,14 @@ Kanoniczny wzorzec tokenów kolorów i trybu ciemnego dla obu skilli UI (design-
     --primary: oklch(0.45 0.26 264);
     --primary-foreground: oklch(1 0 0);
     --muted: oklch(0.96 0.005 264);
-    --muted-foreground: oklch(0.556 0.022 264);
-    --destructive: oklch(0.577 0.245 27);
+    /* L = 0.5: ~5,3:1 na bg-muted (L = 0.55 dawało 4,3:1, poniżej AA) */
+    --muted-foreground: oklch(0.5 0.02 264);
+    --destructive: oklch(0.55 0.25 27);
     --destructive-foreground: oklch(1 0 0);
+    /* Warning: jasne wypełnienie z ciemnym tekstem; tekst i ikona ostrzeżenia na tle aplikacji — --warning-text */
+    --warning: oklch(0.75 0.15 85);
+    --warning-foreground: oklch(0.25 0.02 60);
+    --warning-text: oklch(0.5 0.11 70);
     --border: oklch(0.922 0.012 264);
     --ring: oklch(0.45 0.26 264);
 }
@@ -298,9 +304,13 @@ Kanoniczny wzorzec tokenów kolorów i trybu ciemnego dla obu skilli UI (design-
     --ring: oklch(0.7 0.16 264);
     --destructive: oklch(0.7 0.19 22);
     --destructive-foreground: oklch(0.145 0.039 264);
+    /* Bez tych wartości ciemny --warning-foreground z :root zostałby ciemnym tekstem na ciemnym tle */
+    --warning: oklch(0.8 0.15 85);
+    --warning-foreground: oklch(0.145 0.039 264);
+    --warning-text: oklch(0.8 0.15 85);
 }
 
-/* Mapowanie tokenów na utility Tailwind (bg-background, text-foreground, ...) */
+/* Mapowanie tokenów na utility Tailwind (bg-background, text-foreground, text-warning-text, ...) */
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -310,10 +320,26 @@ Kanoniczny wzorzec tokenów kolorów i trybu ciemnego dla obu skilli UI (design-
     --color-muted-foreground: var(--muted-foreground);
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning-text: var(--warning-text);
     --color-border: var(--border);
     --color-ring: var(--ring);
 }
+
+/* Warstwa bazowa: w v4 domyślny kolor obramowania to currentColor, a body nie dostaje kolorów z tokenów.
+   Bez tego bloku każde `border` (karty, FileDropzone, wariant outline) ma ciemne obramowanie koloru tekstu. */
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
 ```
+
+Warstwa bazowa stoi w tym pliku raz, tak jak w `index.css` generowanym przez shadcn/ui: ustawia kolor obramowania i obrysu fokusu dla każdego elementu oraz kolory tła i tekstu strony z tokenów, więc przełączenie `.dark` zmienia też tło `body`. To jedno z miejsc, gdzie `@apply` jest na miejscu (sekcja „Czego Unikać”, `@apply` w komponentach).
 
 Pozostałe tokeny shadcn/ui (`card`, `popover`, `secondary`, `accent`, `input` i ich `-foreground`) dopisujesz w tym samym układzie: wartość w `:root`, nadpisanie w `.dark`, mapowanie `--color-*` w `@theme inline`.
 

@@ -16,13 +16,14 @@ src/
 ├── contexts/               # Konteksty React (np. AuthProvider)
 ├── hooks/                  # Custom hooks (useQuery/useMutation owinięte w hook)
 ├── services/               # Serwisy: wywołania API i Supabase dla hooków
-├── lib/                    # Utilities i klienty (request, supabase, logger, env)
-├── types/                  # TypeScript types i schematy Zod kontraktów
+├── lib/                    # Utilities i klienty (request, supabase, logger, env, errors)
+├── schemas/                # Schematy Zod kontraktów i typy z nich (z.infer)
+├── types/                  # Typy bez schematu (np. wygenerowane typy bazy)
 ├── constants/              # Stałe i konfiguracja
 └── test/                   # Setup, utils, mocks (MSW)
 ```
 
-Warstwy idą według sekcji Architektura reguł kodu: strona → komponent → hook (`hooks/use-items.ts`) → serwis (`services/item-service.ts`) → klient (`lib/api.ts`, `lib/supabase.ts`). Komponent nie woła serwisu, `fetch` ani `supabase` sam — dostaje dane i mutacje z hooka, dzięki czemu cache, obsługa błędu i limit czasu stoją w jednym miejscu. Fixture'y testów jednostkowych leżą w `tests/fixtures/` w korzeniu repo (sekcja Testowanie reguł kodu).
+Warstwy idą według sekcji Architektura reguł kodu: strona → komponent → hook (`hooks/use-items.ts`) → serwis (`services/item-service.ts`) → klient (`lib/api.ts`, `lib/supabase.ts`). Kontrakt danych (schemat Zod i typ z niego) leży w `schemas/` (`schemas/item.ts`), bo korzystają z niego serwis, hook, formularz i fixture'y testów; `types/` trzyma tylko typy, które nie mają schematu. Komponent nie woła serwisu, `fetch` ani `supabase` sam — dostaje dane i mutacje z hooka, dzięki czemu cache, obsługa błędu i limit czasu stoją w jednym miejscu. Fixture'y testów jednostkowych leżą w `tests/fixtures/` w korzeniu repo (sekcja Testowanie reguł kodu).
 
 ---
 
@@ -208,6 +209,7 @@ export function App() {
 ### Protected Route
 ```typescript
 // components/protected-route.tsx
+import type { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 
 import { LoadingOverlay } from '@/components/loading-overlay';
@@ -215,7 +217,7 @@ import { ROUTES } from '@/constants/routes';
 import { useAuth, type AppRole } from '@/hooks/use-auth';
 
 interface ProtectedRouteProps {
-    children?: React.ReactNode;
+    children?: ReactNode;
     requiredRole?: AppRole;
 }
 
@@ -305,8 +307,11 @@ export const ROUTES = {
 } as const satisfies Record<string, string>;
 
 // Użycie
-import { generatePath } from 'react-router';
+import { generatePath, Link, useNavigate } from 'react-router';
+
 import { ROUTES } from '@/constants/routes';
+
+const navigate = useNavigate();
 
 <Link to={ROUTES.ITEMS}>Elementy</Link>
 <Link to={generatePath(ROUTES.ITEM, { id: item.id })}>Zobacz</Link>
@@ -355,6 +360,9 @@ function ItemView({ id }: { id: string }) {
 import { useSearchParams } from 'react-router';
 import { z } from 'zod';
 
+import { Filters } from '@/components/filters';
+import { ItemGrid } from '@/components/item-grid';
+import { Pagination } from '@/components/pagination';
 import { useItems } from '@/hooks/use-items';
 
 const MAX_SEARCH_LENGTH = 200;
@@ -414,9 +422,10 @@ export default function ItemsPage() {
 
 ### useNavigate - Programowa Nawigacja
 ```typescript
-import { useNavigate, useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { z } from 'zod';
 
+import { LoginFields } from '@/components/login-fields';
 import { ROUTES } from '@/constants/routes';
 
 // location.state przychodzi z historii przeglądarki — parsujesz go jak każde dane z zewnątrz.
@@ -452,7 +461,15 @@ void navigate(ROUTES.HOME, { replace: true });
 
 ### Nested Routes (Settings)
 ```typescript
-// app.tsx
+// app.tsx — fragment
+import { Navigate, Route } from 'react-router';
+
+import { ROUTES } from '@/constants/routes';
+import { NotificationSettings } from '@/pages/notification-settings';
+import { ProfileSettings } from '@/pages/profile-settings';
+import { SecuritySettings } from '@/pages/security-settings';
+import { SettingsLayout } from '@/pages/settings-layout';
+
 <Route path={ROUTES.SETTINGS} element={<SettingsLayout />}>
     <Route index element={<Navigate to={ROUTES.SETTINGS_PROFILE} replace />} />
     <Route path={ROUTES.SETTINGS_PROFILE} element={<ProfileSettings />} />
@@ -461,6 +478,7 @@ void navigate(ROUTES.HOME, { replace: true });
 </Route>
 
 // pages/settings-layout.tsx
+import type { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router';
 
 import { ROUTES } from '@/constants/routes';
@@ -481,7 +499,7 @@ export function SettingsLayout() {
     );
 }
 
-function SettingsNavLink({ to, children }: { to: string; children: React.ReactNode }) {
+function SettingsNavLink({ to, children }: { to: string; children: ReactNode }) {
     return (
         <NavLink
             to={to}
@@ -526,7 +544,7 @@ const handleDeleteConfirmed = (id: string) => {
 ```typescript
 // app.tsx lub components/layout.tsx
 import { useEffect } from 'react';
-import { useLocation } from 'react-router';
+import { BrowserRouter, Routes, useLocation } from 'react-router';
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -564,8 +582,11 @@ void navigate(generatePath(ROUTES.ITEM, { id }), { viewTransition: true });
 Opcja `viewTransition` zastępuje własny hook z `document.startViewTransition(() => navigate(...))`: router aktualizuje stan wewnątrz przejścia, więc przeglądarka robi zrzut starego i nowego widoku we właściwych momentach, a ręczne wywołanie `navigate` w callbacku łapie zły stan. Przeglądarka bez View Transitions API przechodzi zwykłą nawigacją. Obsługę opcji w trybie, którego używa projekt (`BrowserRouter` albo `createBrowserRouter`), sprawdzasz w dokumentacji wersji z package.json. Animacje przejść opisuje skill ux-ui-guidelines (`animations.md`).
 
 ### Error Boundary dla Route
+
+Granica trasy działa jak kanoniczny `ErrorFallback` z [component-patterns.md](./component-patterns.md#error-boundaries): `onError` loguje kod `UI_BOUNDARY`, treść błędu widać tylko w trybie deweloperskim, a „Spróbuj ponownie” resetuje zapytania przez `QueryErrorResetBoundary`, więc zapytanie, które rzuciło do granicy, pobiera dane od nowa. Wariant trasy dokłada przycisk „Wróć”.
 ```typescript
-import { Suspense } from 'react';
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { lazy, Suspense } from 'react';
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
 import { Route, useNavigate } from 'react-router';
 
@@ -574,15 +595,22 @@ import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { logger } from '@/lib/logger';
 
+const ItemPage = lazy(() => import('@/pages/item-page'));
+
 <Route path={ROUTES.ITEM} element={
-    <ErrorBoundary
-        FallbackComponent={RouteErrorFallback}
-        onError={(error) => logger.error('ROUTE_RENDER_FAILED', error)}
-    >
-        <Suspense fallback={<LoadingOverlay />}>
-            <ItemPage />
-        </Suspense>
-    </ErrorBoundary>
+    <QueryErrorResetBoundary>
+        {({ reset }) => (
+            <ErrorBoundary
+                FallbackComponent={RouteErrorFallback}
+                onError={(error) => logger.error('UI_BOUNDARY', error)}
+                onReset={reset}
+            >
+                <Suspense fallback={<LoadingOverlay />}>
+                    <ItemPage />
+                </Suspense>
+            </ErrorBoundary>
+        )}
+    </QueryErrorResetBoundary>
 } />
 
 function RouteErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
@@ -591,9 +619,10 @@ function RouteErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
         <div role="alert" className="p-6 text-center">
             <h2>Coś poszło nie tak</h2>
-            <p className="text-muted-foreground">
-                {error instanceof Error ? error.message : 'Nieznany błąd'}
-            </p>
+            {/* Treść błędu tylko w trybie deweloperskim: komunikat techniczny nie trafia do użytkownika */}
+            {import.meta.env.DEV && error instanceof Error && (
+                <pre className="text-sm text-muted-foreground">{error.message}</pre>
+            )}
             <div className="flex gap-2 justify-center mt-4">
                 <Button onClick={resetErrorBoundary}>Spróbuj ponownie</Button>
                 <Button variant="outline" onClick={() => void navigate(-1)}>Wróć</Button>
@@ -639,8 +668,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { logger } from '@/lib/logger';
+import type { CreateItemInput } from '@/schemas/item';
 import { itemService, type ItemFilters } from '@/services/item-service';
-import type { CreateItemInput } from '@/types/item';
 
 const ITEMS_STALE_TIME_MS = 5 * 60 * 1000;
 
@@ -694,7 +723,7 @@ export function useDeleteItem() {
 }
 ```
 
-`queryFn` przekazuje `signal` z TanStack Query do serwisu, więc zmiana klucza albo odmontowanie anuluje żądanie; limit czasu dokłada klient `request()` (sekcja Katalog lib/). Hook zwraca wynik `useQuery`/`useMutation`, więc typ zwracany wynika z tego wywołania (sekcja Type safety reguł kodu).
+`queryFn` przekazuje `signal` z TanStack Query do serwisu, więc zmiana klucza albo odmontowanie anuluje żądanie; limit czasu dokłada klient `request()` (sekcja Katalog lib/). `useItems` dostaje filtry (`useItems({ category: 'marketing' })`, bez filtrów `useItems({})`), a `data` ma kształt odpowiedzi serwisu: `{ items, totalPages }`. Hooki listy, szczegółów i mutacji elementów leżą w jednym pliku `hooks/use-items.ts`, więc test importuje je z `./use-items`. Hook zwraca wynik `useQuery`/`useMutation`, więc typ zwracany wynika z tego wywołania (sekcja Type safety reguł kodu).
 
 ### Hooki utility (te są OK)
 ```typescript
@@ -737,7 +766,7 @@ export function useMediaQuery(query: string): boolean {
 lib/
 ├── api.ts              # Klient HTTP: request() z limitem czasu, kopertą i ApiError
 ├── env.ts              # Zmienne środowiska sparsowane Zod (API_URL)
-├── errors.ts           # Typowane błędy (ApiError, BootstrapError)
+├── errors.ts           # Typowane błędy (ApiError, BootstrapError, ContextMissingError)
 ├── supabase.ts         # Supabase client (createClient z global.fetch z limitem czasu)
 ├── logger.ts           # Logger ze skilla sentry-integration
 ├── utils.ts            # cn(), formatters
@@ -769,7 +798,19 @@ export class BootstrapError extends Error {
         this.code = code;
     }
 }
+
+// Hook kontekstu użyty poza swoim providerem (useAuth, useConfirm, useMyContext)
+export class ContextMissingError extends Error {
+    readonly code: string;
+    constructor(code: string) {
+        super(code);
+        this.name = 'ContextMissingError';
+        this.code = code;
+    }
+}
 ```
+
+Klasy błędów mają jedno miejsce, `lib/errors.ts`; komponenty, hooki i konteksty je importują (`import { ContextMissingError } from '@/lib/errors'`), bo druga definicja tej samej klasy rozjeżdża się po cichu, a `instanceof` z dwóch modułów nie rozpoznaje błędu z drugiego.
 
 ### env.ts
 ```typescript
@@ -798,6 +839,7 @@ import { env } from '@/lib/env';
 import { ApiError } from '@/lib/errors';
 
 const REQUEST_TIMEOUT_MS = 10_000;
+const NO_CONTENT_STATUS = 204;
 
 const apiErrorSchema = z.strictObject({
     code: z.string(),
@@ -805,26 +847,20 @@ const apiErrorSchema = z.strictObject({
 });
 
 // Koperta API { data, error: { code, message } } (sekcja Obsługa błędów reguł kodu):
-// sukces ma error: null, porażka ma data: null
-function envelopeSchema<T extends z.ZodType>(dataSchema: T) {
-    return z.union([
-        z.strictObject({ data: dataSchema, error: z.null() }),
-        z.strictObject({ data: z.null(), error: apiErrorSchema }),
-    ]);
-}
+// sukces ma error: null, porażka ma data: null. Schemat koperty nie jest generyczny —
+// dane parsuje osobno schemat podany przez serwis (sekcja pod blokiem)
+const envelopeSchema = z.union([
+    z.strictObject({ data: z.unknown(), error: z.null() }),
+    z.strictObject({ data: z.null(), error: apiErrorSchema }),
+]);
 
-export async function request<T extends z.ZodType>(
-    endpoint: string,
-    dataSchema: T,
-    init: RequestInit = {},
-): Promise<z.output<T>> {
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
     // Sygnał TanStack Query (anulowanie przy zmianie klucza) łączysz z limitem czasu
     const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
     const signal = init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
 
-    let response: Response;
     try {
-        response = await fetch(`${env.API_URL}${endpoint}`, {
+        return await fetch(url, {
             ...init,
             // headers po ...init, żeby nagłówki z init nie nadpisały scalonych
             headers: { 'Content-Type': 'application/json', ...init.headers },
@@ -836,13 +872,20 @@ export async function request<T extends z.ZodType>(
         }
         throw error; // AbortError (anulowanie) i błąd sieci idą dalej bez zmian
     }
+}
+
+// Zwraca pole `data` koperty albo rzuca ApiError z kodem z koperty
+async function readEnvelopeData(response: Response): Promise<unknown> {
+    // 204 No Content nie ma ciała: traktujesz je jak kopertę { data: null, error: null }
+    if (response.status === NO_CONTENT_STATUS) return null;
 
     const isJson = response.headers.get('Content-Type')?.includes('application/json') ?? false;
     if (!isJson) {
         throw new ApiError('INVALID_RESPONSE', `Odpowiedź ${response.status} bez JSON`, response.status);
     }
 
-    const envelope = envelopeSchema(dataSchema).safeParse(await response.json());
+    const body: unknown = await response.json();
+    const envelope = envelopeSchema.safeParse(body);
     if (!envelope.success) {
         throw new ApiError('INVALID_RESPONSE', 'Odpowiedź API ma nieoczekiwany kształt', response.status);
     }
@@ -850,12 +893,24 @@ export async function request<T extends z.ZodType>(
         const { code, message } = envelope.data.error;
         throw new ApiError(code, message, response.status);
     }
-
     return envelope.data.data;
+}
+
+export async function request<T extends z.ZodType>(
+    endpoint: string,
+    dataSchema: T,
+    init: RequestInit = {},
+): Promise<z.output<T>> {
+    const response = await fetchWithTimeout(`${env.API_URL}${endpoint}`, init);
+    const data = dataSchema.safeParse(await readEnvelopeData(response));
+    if (!data.success) {
+        throw new ApiError('INVALID_RESPONSE', 'Dane odpowiedzi mają nieoczekiwany kształt', response.status);
+    }
+    return data.data;
 }
 ```
 
-`request()` to jedyne miejsce z `fetch` do własnego API: limit czasu (`AbortSignal.timeout` z nazwaną stałą), parsowanie koperty `z.strictObject` i typowany `ApiError` z kodem z koperty stoją tu raz, a serwisy podają tylko ścieżkę i schemat danych. Klient Supabase dostaje limit czasu przez opakowany `fetch` w `createClient({ global: { fetch } })` (sekcja Async i React reguł kodu).
+`request()` to jedyne miejsce z `fetch` do własnego API: limit czasu (`AbortSignal.timeout` z nazwaną stałą), parsowanie koperty `z.strictObject` i typowany `ApiError` z kodem z koperty stoją tu raz, a serwisy podają tylko ścieżkę i schemat danych. Kopertę parsuje schemat niegeneryczny (`data: z.unknown()`), a dane — `dataSchema.safeParse` w drugim kroku: unia z generycznym `dataSchema` w środku daje w zod 4 typ, z którego TypeScript nie odczyta pola `data` (błąd kompilacji TS2339). Odpowiedź 204 bez ciała (np. `DELETE`) daje `data: null`, więc serwis z `z.null()` (`itemService.remove`) przyjmuje i kopertę `{ data: null, error: null }`, i pustą odpowiedź. Klient Supabase dostaje limit czasu przez opakowany `fetch` w `createClient({ global: { fetch } })` (sekcja Async i React reguł kodu).
 
 ### query-client.ts
 ```typescript
@@ -901,7 +956,7 @@ Serwis to warstwa między hookiem a klientem: składa ścieżkę i query, wybier
 import { z } from 'zod';
 
 import { request } from '@/lib/api';
-import { itemSchema, type CreateItemInput, type Item } from '@/types/item';
+import { itemSchema, type CreateItemInput, type Item } from '@/schemas/item';
 
 export interface ItemFilters {
     category?: string;
@@ -937,13 +992,48 @@ export const itemService = {
 };
 ```
 
+Serwis to jeden obiekt z metodami (`itemService.list`, `.get`, `.create`, `.remove`), nie luźne funkcje w tym samym module — hook, test i przykład w [typescript-standards.md](./typescript-standards.md) wołają tę samą postać.
+
+---
+
+## Katalog schemas/
+```
+schemas/
+├── item.ts             # Schemat Zod kontraktu Item i typy z z.infer
+├── contact-schema.ts   # Schemat formularza kontaktowego (forms.md)
+└── template-schema.ts  # Schemat formularza szablonu (forms.md)
+```
+```typescript
+// schemas/item.ts
+import { z } from 'zod';
+
+const MAX_ITEM_NAME_LENGTH = 200;
+
+export const ITEM_CATEGORIES = ['marketing', 'sprzedaz', 'hr'] as const;
+
+// Typ wyprowadzasz ze schematu, żeby kontrakt miał jedno źródło: schemat parsuje
+// odpowiedź w serwisie, a ten sam typ widzą hooki, komponenty i fixture'y testów
+export const itemSchema = z.strictObject({
+    id: z.uuid(),
+    name: z.string().min(1).max(MAX_ITEM_NAME_LENGTH),
+    category: z.enum(ITEM_CATEGORIES),
+    created_at: z.iso.datetime(),
+});
+export type Item = z.infer<typeof itemSchema>;
+
+// Dane do utworzenia elementu — id i created_at nadaje serwer
+export const createItemSchema = itemSchema.omit({ id: true, created_at: true });
+export type CreateItemInput = z.infer<typeof createItemSchema>;
+```
+
+Schemat jest zmienną, więc ma nazwę w `camelCase` (`itemSchema`), a typ z niego — w `PascalCase` (`Item`), według sekcji Nazewnictwo reguł kodu.
+
 ---
 
 ## Katalog types/
 ```
 types/
 ├── database.types.ts   # Typy tabel DB (generowane: supabase gen types typescript)
-├── item.ts             # Schemat Zod kontraktu Item i typy z z.infer
 └── index.ts            # Re-exports
 ```
 ```typescript
@@ -953,24 +1043,9 @@ export interface User {
     email: string;
     created_at: string;
 }
-
-// types/item.ts
-import { z } from 'zod';
-
-const MAX_ITEM_NAME_LENGTH = 200;
-
-// Typ wyprowadzasz ze schematu, żeby kontrakt miał jedno źródło: schemat parsuje
-// odpowiedź w serwisie, a ten sam typ widzą hooki i komponenty
-export const itemSchema = z.strictObject({
-    id: z.uuid(),
-    name: z.string().min(1).max(MAX_ITEM_NAME_LENGTH),
-    category: z.string(),
-});
-export type Item = z.infer<typeof itemSchema>;
-
-export const createItemSchema = itemSchema.omit({ id: true });
-export type CreateItemInput = z.infer<typeof createItemSchema>;
 ```
+
+Typ, który opisuje dane z zewnątrz (odpowiedź API, formularz, `localStorage`), ma schemat w `schemas/`, bo te dane parsujesz przed użyciem (sekcja Bezpieczeństwo reguł kodu). W `types/` zostają typy bez parsowania: wygenerowane typy bazy i typy pomocnicze.
 
 ---
 
@@ -1050,7 +1125,8 @@ Nazwy plików w kebab-case (sekcja Nazewnictwo reguł kodu); identyfikatory w ko
 | Hooki | kebab-case + `use-` | `use-items.ts` | `useItems` |
 | Serwisy | kebab-case + `-service` | `item-service.ts` | `itemService` |
 | Utilities | kebab-case | `format-date.ts` | `formatDate` |
-| Typy | kebab-case | `item.ts`, `database.types.ts` | `Item`, `User` |
+| Schematy | kebab-case | `item.ts`, `contact-schema.ts` | `itemSchema`, `Item` |
+| Typy | kebab-case | `database.types.ts` | `User` |
 | Stałe | kebab-case | `routes.ts` | `ROUTES` |
 | Testy | nazwa pliku + `.test` | `item-card.test.tsx` | — |
 
@@ -1092,6 +1168,7 @@ import { cn } from '@/lib/utils';
 | `@/components` | `src/components` | `import { Button } from '@/components/ui/button'` |
 | `@/hooks` | `src/hooks` | `import { useTemplates } from '@/hooks/use-templates'` |
 | `@/services` | `src/services` | `import { itemService } from '@/services/item-service'` (tylko w hookach) |
+| `@/schemas` | `src/schemas` | `import { itemSchema, type Item } from '@/schemas/item'` |
 | `@/lib` | `src/lib` | `import { cn } from '@/lib/utils'` |
 | `@/test` | `src/test` | `import { render } from '@/test/utils'` |
 

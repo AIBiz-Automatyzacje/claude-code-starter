@@ -6,9 +6,10 @@ Paleta kolorów (OKLCH), typografia, spacing i design tokens - Tailwind v4.
 
 ## Konfiguracja Kolorów (Tailwind v4)
 
-Wzorzec jest ten sam co w `.claude/skills/tailwind-react-guidelines/resources/styling-guide.md` (sekcja „Tokeny CSS + dark variant”):
-tokeny w `:root` i `.dark`, mapowanie na utility przez `@theme inline` i `@custom-variant dark`. Wspólne tokeny
-(`background`, `foreground`, `primary`, `border`) mają w obu plikach te same wartości; ten plik dopisuje pełną paletę.
+Ten plik jest jedynym źródłem wartości kolorów obu motywów i ich kontrastu. Wzorzec jest ten sam co
+w `.claude/skills/tailwind-react-guidelines/resources/styling-guide.md` (sekcja „Tokeny CSS + dark variant”): tokeny
+w `:root` i `.dark`, mapowanie na utility przez `@theme inline` i `@custom-variant dark`. styling-guide.md pokazuje
+wzorzec tymi samymi liczbami i odsyła tutaj; wartość zmieniasz w tym pliku, a kopię w styling-guide.md dopasowujesz.
 
 ### src/index.css
 ```css
@@ -39,18 +40,20 @@ tokeny w `:root` i `.dark`, mapowanie na utility przez `@theme inline` i `@custo
     --success: oklch(0.5 0.15 145);
     --success-foreground: oklch(1 0 0);
 
-    /* Warning - jasne tło z ciemnym tekstem (~7:1). Jako kolor tekstu albo ikony na białym tle
-       ma ~2,3:1, poniżej progu 3:1 dla ikon — tam użyj `text-warning-foreground`. */
+    /* Warning - jasne wypełnienie z ciemnym tekstem (~7:1). Samo `--warning` jako kolor tekstu albo ikony
+       na białym tle ma ~2,3:1, poniżej progu 3:1 dla ikon. Tekst i ikona ostrzeżenia na tle aplikacji
+       (Alert, ikona statusu) biorą `--warning-text` (`text-warning-text`): ~6:1 na białym tle, ~5,7:1 na `bg-warning/10`. */
     --warning: oklch(0.75 0.15 85);
     --warning-foreground: oklch(0.25 0.02 60);
+    --warning-text: oklch(0.5 0.11 70);
 
     /* Neutralne */
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0.039 264);
 
-    --muted: oklch(0.96 0.005 260);
-    /* L = 0.5: ~5,3:1 na `bg-muted` (L = 0.55 dawało 4,3:1) */
-    --muted-foreground: oklch(0.5 0.02 260);
+    --muted: oklch(0.96 0.005 264);
+    /* L = 0.5: ~5,3:1 na `bg-muted` i ~6:1 na białym tle (L = 0.55 dawało 4,3:1) */
+    --muted-foreground: oklch(0.5 0.02 264);
 
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0.039 264);
@@ -88,6 +91,11 @@ tokeny w `:root` i `.dark`, mapowanie na utility przez `@theme inline` i `@custo
     --destructive-foreground: oklch(0.145 0.039 264);
     --success: oklch(0.72 0.17 145);
     --success-foreground: oklch(0.145 0.039 264);
+    /* Warning: bez tych wartości ciemny `--warning-foreground` z :root zostałby ciemnym tekstem
+       na ciemnym tle (~1,4:1). Wypełnienie z ciemnym tekstem ~10,5:1, tekst ostrzeżenia na tle ~10,5:1. */
+    --warning: oklch(0.8 0.15 85);
+    --warning-foreground: oklch(0.145 0.039 264);
+    --warning-text: oklch(0.8 0.15 85);
 
     --outline-image: rgb(255 255 255 / 0.1);
 }
@@ -105,6 +113,7 @@ tokeny w `:root` i `.dark`, mapowanie na utility przez `@theme inline` i `@custo
     --color-success-foreground: var(--success-foreground);
     --color-warning: var(--warning);
     --color-warning-foreground: var(--warning-foreground);
+    --color-warning-text: var(--warning-text);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-muted: var(--muted);
@@ -185,7 +194,7 @@ export function useTheme(): UseThemeResult {
    Wartości kolorów nadal stoją tylko w definicji tokenu; light-dark() wybiera wariant wg color-scheme. */
 :root {
     color-scheme: light dark;
-    --card: light-dark(oklch(1 0 0), oklch(0.18 0.02 260));
+    --card: light-dark(oklch(1 0 0), oklch(0.18 0.02 264));
     --card-foreground: light-dark(oklch(0.145 0.039 264), oklch(0.98 0.005 264));
 }
 
@@ -326,10 +335,11 @@ się z motywem (`bg-black/50` pod tłem modala), może zostać w komponencie.
     Zapisano
 </Badge>
 
-// Warning
+// Warning — wypełnienie z ciemnym tekstem; sam tekst ostrzeżenia na tle aplikacji: text-warning-text
 <Badge className="bg-warning text-warning-foreground">
     Uwaga
 </Badge>
+<p className="text-sm text-warning-text">Sesja wygasa za 5 minut</p>
 
 // Destructive
 <Badge className="bg-destructive text-destructive-foreground">
@@ -344,6 +354,8 @@ się z motywem (`bg-black/50` pod tłem modala), może zostać w komponencie.
 // src/constants/gradients.ts
 // Biały tekst text-xs potrzebuje ≥ 4,5:1 także na jaśniejszym końcu gradientu.
 // Odcienie 500 dają z białym 2,2–4,8:1 (green-500 ~2,2:1), odcienie 700 — co najmniej ~4,9:1.
+const DEFAULT_CATEGORY_GRADIENT = 'from-gray-700 to-gray-800';
+
 export const CATEGORY_GRADIENTS = {
     'Technology': 'from-blue-700 to-blue-800',
     'Business': 'from-green-700 to-green-800',
@@ -352,13 +364,25 @@ export const CATEGORY_GRADIENTS = {
     'Sales': 'from-pink-700 to-pink-800',
     'Education': 'from-indigo-700 to-indigo-800',
     'Other': 'from-red-700 to-red-800',
-} as const;
+} as const satisfies Record<string, string>;
+
+type GradientCategory = keyof typeof CATEGORY_GRADIENTS;
+
+// Strażnik typu zamiast indeksu stringiem: CATEGORY_GRADIENTS[category] przy category: string
+// to w trybie strict błąd TS7053, a kategoria z danych może być spoza listy
+function isGradientCategory(category: string): category is GradientCategory {
+    return Object.hasOwn(CATEGORY_GRADIENTS, category);
+}
+
+export function getCategoryGradient(category: string): string {
+    return isGradientCategory(category) ? CATEGORY_GRADIENTS[category] : DEFAULT_CATEGORY_GRADIENT;
+}
 
 // Użycie (v4: bg-linear-to-r; bg-gradient-to-r to nazwa z v3)
 <span className={cn(
     "px-2 py-1 rounded-full text-xs font-medium text-white",
     "bg-linear-to-r",
-    CATEGORY_GRADIENTS[category] ?? 'from-gray-700 to-gray-800'
+    getCategoryGradient(category)
 )}>
     {category}
 </span>
@@ -401,6 +425,8 @@ font-family: "Inter", system-ui, -apple-system, sans-serif;
 | `text-4xl` | 36px | 40px | Hero headline |
 
 ### Fluid Typography (Headlines)
+
+To jedyna definicja klas `text-fluid-*` w skillu; [responsive-design.md](responsive-design.md) (sekcja Fluid Typography) ich używa i linkuje tutaj. Nowy stopień skali dopisujesz w tym bloku.
 ```css
 /* src/index.css — @utility (v4) zamiast zwykłej klasy, żeby działały warianty (md:text-fluid-3xl) */
 @utility text-fluid-xl {
@@ -601,11 +627,12 @@ Dla kart i przycisków preferuj 3-warstwowy `box-shadow` zamiast solidnego borde
 
 ### Duration
 ```typescript
-duration-150  // Fast (hover states)
+duration-150  // Fast (hover, naciśnięcie, wyjście)
 duration-200  // Default
-duration-300  // Medium (modals)
-duration-500  // Slow (page transitions)
+duration-300  // Górna granica przejść UI (modale, panele, przejście strony)
 ```
+
+Przejścia interfejsu trwają 150–300 ms, a wyjście jest krótsze niż wejście. Dłużej trwają tylko pętle ładowania (`animate-spin`, `animate-pulse`), bo nie blokują interakcji. Zasada animacji: [SKILL.md](../SKILL.md), przykłady w [animations.md](animations.md).
 
 ### Easing
 ```typescript
@@ -619,7 +646,8 @@ ease-in       // Exit animations
 // Hover color change
 <Button className="transition-colors duration-150" />
 
-// Hover with transform — tylko właściwości, które się zmieniają (w v4 translate to osobna właściwość CSS)
+// Hover with transform — tylko właściwości, które się zmieniają (w v4 translate to osobna właściwość CSS);
+// box-shadow animujesz przy zmianie stanu (hover, fokus), przesunięcie idzie przez translate
 <Card className="transition-[box-shadow,translate] duration-200 hover:shadow-md hover:-translate-y-0.5" />
 
 // Focus ring
@@ -665,7 +693,7 @@ import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 
 // Icon only - wymaga aria-label
 <Button size="icon" aria-label="Szukaj">
-    <Search className="h-4 w-4" />
+    <Search className="h-4 w-4" aria-hidden="true" />
 </Button>
 ```
 
@@ -687,7 +715,7 @@ import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 
 // Semantic
 <CheckCircle className="h-4 w-4 text-success" />
-<AlertTriangle className="h-4 w-4 text-warning-foreground" /> // text-warning na białym tle ma ~2,3:1 (próg ikon 3:1)
+<AlertTriangle className="h-4 w-4 text-warning-text" /> // text-warning na białym tle ma ~2,3:1 (próg ikon 3:1); text-warning-text ma wartość dla obu motywów
 <XCircle className="h-4 w-4 text-destructive" />
 ```
 
@@ -722,9 +750,9 @@ import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 <Search className="h-4 w-4" aria-hidden="true" />
 <span>Szukaj</span>
 
-// Standalone - wymaga label; cel 44×44 px, bo sama ikona 16 px jest poniżej progu 24×24 px
-// (rozmiar celu → accessibility.md, sekcja „Target Size”)
-<button aria-label="Zamknij dialog" className="inline-flex size-11 items-center justify-center">
+// Standalone - wymaga label; sama ikona 16 px jest poniżej progu 24×24 px, więc przycisk ma 36 px
+// na desktopie i 44 px przy wskaźniku dotykowym (rozmiar celu → accessibility.md, sekcja „Rozmiar celu”)
+<button aria-label="Zamknij dialog" className="inline-flex size-9 items-center justify-center pointer-coarse:size-11">
     <X className="h-4 w-4" aria-hidden="true" />
 </button>
 

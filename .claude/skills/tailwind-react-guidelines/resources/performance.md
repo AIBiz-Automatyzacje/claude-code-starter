@@ -185,8 +185,10 @@ const Header = memo(() => ...); // Prawdopodobnie niepotrzebne
 ### React Query (Rekomendowane dla SPA)
 
 Warstwy z reguł kodu: komponent → hook → serwis → klient. Komponent woła hook z `src/hooks/`, hook owija `useQuery` / `useMutation` i woła serwis z `src/services/`, a serwis — wspólny klient z limitem czasu i walidacją Zod ([file-organization.md](./file-organization.md)). Klucze zapytań pochodzą z jednej fabryki, żeby invalidacja trafiała w te same klucze, które zapisało pobieranie.
+
+Ten plik jest miejscem definicji zapytań szablonów w module `src/hooks/use-templates.ts`: `templateKeys`, `TEMPLATES_STALE_TIME_MS`, `templateListOptions(filters)`, `useTemplates(filters = {})`, `useSuspenseTemplates(filters = {})` i `useTemplate(id)`. Ten sam moduł dostaje mutacje `useCreateTemplate` i `useUpdateTemplate` z [forms.md](./forms.md#integracja-z-react-query) oraz `useDeleteTemplate` z [loading-and-error-states.md](./loading-and-error-states.md#hook-danych-i-fabryka-kluczy); `useToggleFavorite` ma własny plik `src/hooks/use-toggle-favorite.ts` (loading-and-error-states.md, sekcja Optimistic Updates). Inne pliki importują te hooki, zamiast definiować je od nowa.
 ```typescript
-// src/hooks/use-templates.ts — fabryka kluczy na początku pliku hooków listy
+// src/hooks/use-templates.ts — fabryka kluczy na początku pliku hooków szablonów
 import type { TemplateFilters } from '@/services/template-service';
 
 export const templateKeys = {
@@ -197,17 +199,15 @@ export const templateKeys = {
 ```
 ```typescript
 // src/hooks/use-templates.ts — ciąg dalszy
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 
-import { logger } from '@/lib/logger';
 import { templateService, type TemplateFilters } from '@/services/template-service';
 
 export const TEMPLATES_STALE_TIME_MS = 5 * 60 * 1000; // 5 minut
 
 // Jedna konfiguracja zapytania dla wariantu zwykłego i Suspense (queryOptions — sekcja niżej).
 // signal przerywa żądanie przy odmontowaniu albo zmianie klucza.
-function templateListOptions(filters: TemplateFilters) {
+export function templateListOptions(filters: TemplateFilters) {
     return queryOptions({
         queryKey: templateKeys.list(filters),
         queryFn: ({ signal }) => templateService.list(filters, signal),
@@ -215,28 +215,19 @@ function templateListOptions(filters: TemplateFilters) {
     });
 }
 
-// Pobieranie z automatycznym cache
+// Pobieranie z automatycznym cache; bez argumentu — lista bez filtrów
 export function useTemplates(filters: TemplateFilters = {}) {
     return useQuery(templateListOptions(filters));
 }
-
-// Mutacja z invalidacją — ten sam wzorzec ulubionych co w loading-and-error-states.md
-export function useToggleFavorite(templateId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: () => templateService.toggleFavorite(templateId),
-        onError: (error) => {
-            logger.error('FAVORITE_TOGGLE_FAILED', error);
-            toast.error('Nie udało się zaktualizować ulubionych');
-        },
-        // Zwracany promise: mutateAsync kończy się dopiero po odświeżeniu danych
-        onSettled: () => queryClient.invalidateQueries({ queryKey: templateKeys.all }),
-    });
-}
 ```
+
+Mutację ulubionych z invalidacją (`useToggleFavorite`) definiuje [loading-and-error-states.md](./loading-and-error-states.md#useoptimistic---natywny-hook) w `src/hooks/use-toggle-favorite.ts`: `onError` loguje `FAVORITE_TOGGLE_FAILED` i pokazuje toast, a `onSettled` zwraca promise invalidacji `templateKeys.all`, więc `mutateAsync` kończy się dopiero po odświeżeniu danych.
 ```typescript
 // src/components/template-list.tsx
+import { EmptyState } from '@/components/empty-state';
+import { ErrorMessage } from '@/components/error-message';
+import { Grid } from '@/components/grid';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useTemplates } from '@/hooks/use-templates';
 
 export function TemplateList() {
@@ -273,7 +264,16 @@ export function useSuspenseTemplates(filters: TemplateFilters = {}) {
 ```
 ```typescript
 // src/components/template-list.tsx
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { EmptyState } from '@/components/empty-state';
+import { ErrorFallback } from '@/components/error-fallback';
+import { Grid } from '@/components/grid';
+import { TemplateListSkeleton } from '@/components/template-list-skeleton';
 import { useSuspenseTemplates } from '@/hooks/use-templates';
+import { logger } from '@/lib/logger';
 
 export function TemplateList() {
     // data jest zawsze zdefiniowane (nigdy undefined)
@@ -285,12 +285,21 @@ export function TemplateList() {
     return <Grid templates={data} />;
 }
 
-// Parent musi mieć Suspense + ErrorBoundary
-<ErrorBoundary FallbackComponent={ErrorFallback}>
-    <Suspense fallback={<TemplateListSkeleton />}>
-        <TemplateList />
-    </Suspense>
-</ErrorBoundary>
+// Parent musi mieć Suspense + ErrorBoundary; reset z QueryErrorResetBoundary ponawia zapytanie
+// (układ granic i ErrorFallback: component-patterns.md, sekcja Error Boundaries)
+<QueryErrorResetBoundary>
+    {({ reset }) => (
+        <ErrorBoundary
+            FallbackComponent={ErrorFallback}
+            onError={(error) => logger.error('UI_BOUNDARY', error)}
+            onReset={reset}
+        >
+            <Suspense fallback={<TemplateListSkeleton />}>
+                <TemplateList />
+            </Suspense>
+        </ErrorBoundary>
+    )}
+</QueryErrorResetBoundary>
 ```
 
 **Kiedy `useSuspenseQuery` vs `useQuery`:**
@@ -304,14 +313,13 @@ export function TemplateList() {
 
 ### queryOptions Helper
 
-Konfiguracja zapytania używana w kilku miejscach (wariant zwykły, Suspense, prefetch, zapis do cache) ma jedno źródło z typem danych przypiętym do klucza — kopie klucza, `queryFn` i `staleTime` rozjeżdżają się po cichu. Funkcja z `queryOptions` zostaje w module hooków (jak `templateListOptions` wyżej), a reszta aplikacji korzysta z hooków:
+Konfiguracja zapytania używana w kilku miejscach (wariant zwykły, Suspense, prefetch, zapis do cache) ma jedno źródło z typem danych przypiętym do klucza — kopie klucza, `queryFn` i `staleTime` rozjeżdżają się po cichu. Funkcja z `queryOptions` zostaje w module hooków (jak `templateListOptions` wyżej), a reszta aplikacji korzysta z hooków. Szczegóły szablonu stoją w tym samym pliku co lista (`use-templates.ts`), więc `templateKeys` i `TEMPLATES_STALE_TIME_MS` są w zasięgu bez importu, a komponent importuje `useTemplate` z `@/hooks/use-templates`:
 ```typescript
-// src/hooks/use-template.ts
+// src/hooks/use-templates.ts (cd.) — szczegóły szablonu
 import { queryOptions, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 
-import { templateService, type Template } from '@/services/template-service';
-
-import { TEMPLATES_STALE_TIME_MS, templateKeys } from './use-templates';
+import type { Template } from '@/schemas/template';
+import { templateService } from '@/services/template-service';
 
 function templateDetailOptions(id: string) {
     return queryOptions({
@@ -347,63 +355,17 @@ export function useTemplateCache(): {
 
 ### useOptimistic (React 19)
 
-Natychmiastowa reakcja UI przed odpowiedzią serwera:
-Komponent korzysta z hooka `useToggleFavorite` z sekcji React Query wyżej — log z kodem błędu, toast i invalidacja są w hooku, więc komponent zawiera tylko stan optymistyczny.
+Natychmiastowa reakcja UI przed odpowiedzią serwera. Wzorcem jest `FavoriteButton` (`src/components/favorite-button.tsx`) z hookiem `useToggleFavorite` (`src/hooks/use-toggle-favorite.ts`), zdefiniowany raz w [loading-and-error-states.md](./loading-and-error-states.md#useoptimistic---natywny-hook) — log z kodem błędu, toast i invalidacja są w hooku, więc komponent zawiera tylko stan optymistyczny. Tu go importujesz:
 ```typescript
-import { Heart } from 'lucide-react';
-import { useOptimistic, useTransition } from 'react';
+import { FavoriteButton } from '@/components/favorite-button';
 
-import { Button } from '@/components/ui/button';
-import { useToggleFavorite } from '@/hooks/use-templates';
-import { logger } from '@/lib/logger';
-import { cn } from '@/lib/utils';
-
-interface FavoriteButtonProps {
-    templateId: string;
-    isFavorite: boolean;
-}
-
-export function FavoriteButton({ templateId, isFavorite }: FavoriteButtonProps) {
-    const [isPending, startTransition] = useTransition();
-    const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
-    const toggleFavorite = useToggleFavorite(templateId);
-
-    // useOptimistic wołaj wewnątrz transition/action — poza nimi React loguje warning,
-    // a optymistyczny stan jest natychmiast cofany (mignięcie UI), zamiast utrzymać się do końca akcji
-    const handleToggle = () => {
-        startTransition(async () => {
-            setOptimisticFavorite(!optimisticFavorite); // Natychmiast
-
-            try {
-                // Kończy się po onSettled hooka, czyli po odświeżeniu isFavorite z serwera
-                await toggleFavorite.mutateAsync();
-            } catch (error) {
-                // Przyczynę z kodem FAVORITE_TOGGLE_FAILED zalogował onError hooka i pokazał toast.
-                // Catch zatrzymuje odrzucenie (inaczej trafiłoby do error boundary) i zostawia ślad wycofania.
-                logger.info('FAVORITE_OPTIMISTIC_ROLLBACK', { templateId, error });
-            }
-        });
-    };
-
-    return (
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggle}
-            disabled={isPending}
-            aria-pressed={optimisticFavorite}
-            aria-label={optimisticFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
-        >
-            <Heart className={cn(
-                "h-5 w-5 transition-colors",
-                optimisticFavorite
-                    ? "fill-red-500 text-red-500"
-                    : "text-muted-foreground"
-            )} />
-        </Button>
-    );
-}
+<FavoriteButton templateId={template.id} isFavorite={template.isFavorite} />
 ```
+
+Mechanizm, który czyni ten przycisk wydajnym (fragment komponentu z loading-and-error-states.md):
+- `setOptimisticFavorite(!optimisticFavorite)` stoi wewnątrz `startTransition(async () => { ... })` — poza transition albo akcją React loguje ostrzeżenie, a stan optymistyczny jest natychmiast cofany (mignięcie UI), zamiast utrzymać się do końca akcji;
+- `await toggleFavorite.mutateAsync()` kończy się po `onSettled` hooka, czyli po odświeżeniu `isFavorite` z serwera;
+- `catch` zatrzymuje odrzucenie (inaczej trafiłoby do Error Boundary) i zostawia ślad wycofania `logger.info('FAVORITE_OPTIMISTIC_ROLLBACK', { templateId, error })`; przyczynę z kodem `FAVORITE_TOGGLE_FAILED` zalogował już `onError` hooka.
 
 **Jak działa powrót do źródła prawdy:**
 - `useOptimistic` pokazuje wartość optymistyczną tylko do końca transition; potem komponent wraca do `isFavorite` z propsów. Bez odświeżenia źródła prawdy UI po sukcesie wróciłoby do starej wartości.
