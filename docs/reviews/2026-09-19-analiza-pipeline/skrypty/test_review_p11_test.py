@@ -8,6 +8,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import test_review_p11 as P
 import test_review_p11_wynik as W
+import test_review_sesja as T
 
 SKRYPTY = os.path.dirname(os.path.abspath(__file__))
 SZ = os.path.abspath(os.path.join(SKRYPTY, '..', '..', '..', '..'))
@@ -273,6 +274,14 @@ class Wynik(unittest.TestCase):
     def test_roznica_bez_rozrzutu_miedzy_fazami_ma_ci_w_punkcie_a_bez_kluczy_brak_wyniku(self):
         self.assertEqual(W.roznica([(2, 2, 1), (2, 2, 1)])['ci95'], [-50.0, -50.0])
         self.assertIsNone(W.roznica([(0, 0, 0)]))
+
+
+class Sesja(unittest.TestCase):
+    def test_sesja_headless_czeka_na_workflow_bez_limitu_czasu_i_dziedziczy_srodowisko(self):
+        # claude -p kończy sesję po 600 s zadań w tle i zabija workflow (f-b8374c8: wariant nowy killed po 602 s)
+        env = T.srodowisko()
+        self.assertEqual(env['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'], '0')
+        self.assertEqual(env['HOME'], os.environ['HOME'])
 
 
 class Kolejnosc(unittest.TestCase):
