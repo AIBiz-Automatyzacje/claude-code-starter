@@ -33,17 +33,18 @@ test('tabela: klasy ze slownika wiedzy, rozlaczne z pokrytymi, zdania w limicie 
 })
 
 test('klasa pokryta warstwa stala buildera albo regulami kodu: fraza nadal stoi we wskazanym pliku', () => {
-  for (const [klasa, { plik, fraza }] of Object.entries(POKRYTE)) {
-    assert.ok(readFileSync(resolve(REPO, plik), 'utf8').includes(fraza), `${klasa}: brak „${fraza}” w ${plik} — dopisz zdanie do ZDANIA`)
+  for (const [klasa, { pliki, fraza }] of Object.entries(POKRYTE)) {
+    for (const plik of pliki) {
+      assert.ok(readFileSync(resolve(REPO, plik), 'utf8').includes(fraza), `${klasa}: brak „${fraza}” w ${plik} — dopisz zdanie do ZDANIA`)
+    }
   }
+  assert.match(readFileSync(resolve(REPO, '.claude/skills/ux-ui-guidelines/SKILL.md'), 'utf8'), /^### Dostępność/m, 'checklista, do ktorej odsylaja buildery UI')
 })
 
-test('dobor po plikach: komponent dostaje klasy kodu, migracja — klasy SQL, seed — klasy seedu', () => {
-  const ui = zapobieganie([], ['src/components/oferta/karta.tsx']).klasy
-  assert.ok(ui.includes('dopasowanie-tekstu'))
-  assert.ok(!ui.includes('seed-e2e') && !ui.includes('zaufanie-danym-klienta') && !ui.includes('sciezka-bledu'), ui.join(', '))
+test('dobor po plikach: komponent dostaje tylko klasy kodu UI, migracja — klasy SQL, seed — klasy seedu', () => {
+  assert.deepEqual(zapobieganie([], ['src/components/oferta/karta.tsx']).klasy, ['dopasowanie-tekstu', 'pii-i-sekrety', 'wyscig-i-wspolbieznosc'])
   const sql = zapobieganie([], ['supabase/migrations/20260901_oferty.sql']).klasy
-  assert.ok(sql.includes('wartosc-graniczna') && sql.includes('bramka-na-jednej-drodze'), sql.join(', '))
+  assert.ok(sql.includes('wartosc-graniczna') && sql.includes('bramka-na-jednej-drodze') && sql.includes('migracja-bazy'), sql.join(', '))
   assert.ok(!sql.includes('pii-i-sekrety'))
   assert.ok(zapobieganie([], ['e2e/seeds/oferta-seed.sql']).klasy.includes('seed-e2e'))
   assert.deepEqual(zapobieganie([], ['README.md']), { tresc: '', zn: 0, klasy: [], pominiete: 0 })

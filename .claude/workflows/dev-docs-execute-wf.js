@@ -238,6 +238,8 @@ Faza do wykonania: ${faza}
    rownolegle zimne vitesty po inwalidacji cache duplikuja ~16-min prace i ryzykuja watchdog-kill.
    Jesli ktorykolwiek IU ma migracje bazy albo generuje typy bazy — strategia serial: buildery danych stosuja migracje
    na jednej lokalnej bazie i nadpisuja ten sam plik typow.
+   Jesli IU korzysta z pliku, ktory tworzy inny IU tej fazy (hook, serwis, schemat, typy) — strategia serial i IU tworzacy
+   plik przed IU, ktory go uzywa: przy parallel import jeszcze nie istnieje i typecheck buildera pada.
 5. Dla kazdego IU zbuduj KOMPLETNY prompt builderowi:
    - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Teksty (verbatim), Wzorce, Scenariusze testowe, Weryfikacja)
    - DOMKNIJ ODWOLANIA DO DECYZJI. Builder pracuje w OSOBNYM kontekscie i nie widzi planu: odwolanie
@@ -249,6 +251,9 @@ Faza do wykonania: ${faza}
      Podobnie z tekstami: gdy jednostka odsyla do "tekstow verbatim z sekcji X", wklej te teksty DOSLOWNIE.
      Nie streszczaj i nie parafrazuj — tekst widoczny dla uzytkownika inny niz zatwierdzony to finding P2.
    - sciezka zadania ${sciezka} + numer IU
+   - gdy IU korzysta z plikow tworzonych przez inne IU tej fazy: blok "Pliki innych jednostek tej fazy:" z linia
+     \`<id IU>: <sciezki z jego pola Pliki>\` dla kazdego takiego IU, bo builder nie widzi planu i bez tego bloku nie wie,
+     ze hook albo serwis, ktorego jeszcze nie ma w repo, powstaje w tej fazie.
    - reguly projektu i klasy bledow dla plikow jednostki (z pola Pliki):
      \`node .claude/scripts/wiedza/wiedza.mjs wycinek --zapobieganie --pliki <pliki jednostki po przecinku>\`. Niepuste pole
      \`tresc\` wyniku wklej doslownie jako blok "Reguly projektu i klasy bledow dla plikow jednostki:" (pusta tresc — blok
@@ -259,7 +264,7 @@ Faza do wykonania: ${faza}
    - dla feature-builder-ui|fullstack (takze wariantow -figma): gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
      i ma choc jedna niepusta sciezke, doklej blok (sciezki z tej sekcji):
        ## Mandatory designerski kontekst (przeczytaj przed implementacja)
-       - DESIGN.md (tokeny calego projektu): <sciezka z design_md albo "brak — bazuj na ux-ui-guidelines">
+       - DESIGN.md (tokeny calego projektu): <sciezka z design_md albo "brak">
        - SPEC.md (pomiary tej funkcji z Figmy): <sciezka z figma_spec albo "brak — projektujesz w oparciu o DESIGN.md">
        - Screeny referencyjne (PNG): <nazwa>: <sciezka>, jedna linia na screen
      Kolejnosc zrodel i brakujace pomiary rozstrzyga builder (jego plik roli). Sekcji brak albo wszystkie pola puste/null — blok pomin. Dla feature-builder-data blok pomijasz zawsze.

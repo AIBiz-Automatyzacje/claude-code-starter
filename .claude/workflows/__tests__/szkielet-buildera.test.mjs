@@ -144,6 +144,19 @@ test('planner nie dokleja bloku wymagan wykonania — te polecenia sa w szkielec
   assert.doesNotMatch(plannerPrompt('docs/active/x', 2), /Wymagania wykonania/)
 })
 
+test('planner: pliki innych IU tej fazy w prompcie i serial — builder UI nie widzi planu, a hook powstaje w IU danych', () => {
+  const p = plannerPrompt('docs/active/x', 2)
+  assert.match(p, /blok "Pliki innych jednostek tej fazy:"/)
+  assert.match(p, /Jesli IU korzysta z pliku, ktory tworzy inny IU tej fazy \(hook, serwis, schemat, typy\) — strategia serial/)
+})
+
+test('planner: kontekst designerski dla UI i fullstack, warianty -figma przy makietach', () => {
+  const p = plannerPrompt('docs/active/x', 2)
+  assert.match(p, /## Mandatory designerski kontekst/)
+  assert.match(p, /feature-builder-ui-figma, feature-builder-fullstack-figma/)
+  assert.match(p, /Dla feature-builder-data blok pomijasz zawsze/)
+})
+
 test('pola BUILD_RESULT czytane z workflowu', () => {
   assert.deepEqual(polaWyniku(), ['id', 'status', 'pliki', 'odchylenia', 'nastepneKroki', 'pytanie'])
 })

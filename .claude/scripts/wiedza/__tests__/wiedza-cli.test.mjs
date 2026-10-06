@@ -112,6 +112,11 @@ test('wycinek --zapobieganie: reguly projektu, potem zdania klas bez klasy regul
     assert.equal(w.json.zapobieganie.klasy.length, zdania.length)
     const ciasny = uruchom(repo, ['wycinek', '--zapobieganie', '--limit', '300', '--pliki', 'src/lib/nowy.ts'])
     assert.ok(ciasny.json.tresc.length <= 300 && ciasny.json.zapobieganie.pominiete > 0, ciasny.json.tresc)
+    for (const limit of [400, 500, 650, 900]) {
+      const w2 = uruchom(repo, ['wycinek', '--zapobieganie', '--limit', String(limit), '--pliki', 'src/lib/nowy.ts'])
+      assert.ok(w2.json.tresc.length <= limit, `limit ${limit}: ${w2.json.tresc.length} zn — zdania dostaja limit bez odjecia regul`)
+      assert.match(w2.json.tresc, /^- \[wysoka\] sciezka-bledu: /, 'regula projektu zawsze przed zdaniami')
+    }
   })
 })
 
