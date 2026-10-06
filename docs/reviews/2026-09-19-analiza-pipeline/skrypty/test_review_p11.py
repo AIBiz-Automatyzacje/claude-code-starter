@@ -65,8 +65,11 @@ def _git(k, *a):
 
 def nakladka(kopia, zrodlo):
     """.claude kopii = dokładnie .claude z `zrodlo` (poza ZOSTAJA_Z_EPOKI). Różnice wobec epoki ukryte przed gitem: zmienione i usunięte pliki
-    śledzone — skip-worktree, nowe — .git/info/exclude; `git status` i diff fazy widziane przez reviewerów zostają diffem fazy."""
+    śledzone — skip-worktree, nowe — .git/info/exclude; `git status` i diff fazy widziane przez reviewerów zostają diffem fazy
+    (status po nakładce = status kopii przed nią poza .claude)."""
     if not os.path.isdir(os.path.join(zrodlo, '.claude')): raise FileNotFoundError('brak %s/.claude' % zrodlo)
+    # stan kopii poza .claude: w P11 pusty; w P12 nakładka review idzie na kopię po buildzie (pliki nieskomitowane zostają)
+    przed = _git(kopia, 'status', '--porcelain', '--', '.', ':!.claude')
     sledzone = [p for p in _git(kopia, 'ls-files', '-z', '--', '.claude').split('\0') if p]
     if sledzone: subprocess.run(['git', '-C', kopia, 'update-index', '--no-skip-worktree', '--stdin'], input='\n'.join(sledzone), text=True, check=True)
     subprocess.run(['rsync', '-a', '--checksum', '--delete', *sum((['--exclude', w] for w in ZOSTAJA_Z_EPOKI), []),
@@ -79,7 +82,7 @@ def nakladka(kopia, zrodlo):
         os.makedirs(os.path.dirname(wykluczenia), exist_ok=True)
         with open(wykluczenia, 'a') as f: f.write(''.join('/%s\n' % p for p in nowe))
     status = _git(kopia, 'status', '--porcelain')
-    if status: raise RuntimeError('kopia brudna po nakładce:\n' + status[:2000])
+    if status != przed: raise RuntimeError('nakładka zmieniła stan kopii:\n' + status[:2000])
     agenci = sorted(os.listdir(os.path.join(kopia, '.claude', 'agents'))) if os.path.isdir(os.path.join(kopia, '.claude', 'agents')) else []
     return {'zrodlo': zrodlo, 'ukryte_zmiany': len(set(rozne)), 'nowe': len(nowe), 'agenci': agenci}
 

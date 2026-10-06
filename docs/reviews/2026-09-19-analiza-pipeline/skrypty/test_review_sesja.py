@@ -4,6 +4,7 @@
 Użycie:
   python3 skrypty/test_review_sesja.py start <etykieta> <krok> <wariant>   krok: review | sceptycy | sedzia-p<N> ; wariant: 0 A B C (sędzia: S)
                                                                            ślepy test P11: krok p11 (wariant stary | nowy), p11-sedzia-p<N> (S)
+                                                                           ślepy test P12: p12-build, p12-review (stary | nowy), p12-sedzia-p<N> (S)
   python3 skrypty/test_review_sesja.py zbierz <etykieta> <krok> <wariant>
   python3 skrypty/test_review_sesja.py gotowy <etykieta> <krok> <wariant>   kod 0 = krok zrobiony (run completed, sesja bez błędu, zero błędów API)
   python3 skrypty/test_review_sesja.py odrzuc <etykieta> <krok> <wariant>   niedokończoną próbę przenosi do ~/test-review/odrzucone/ (przed ponownym startem)
@@ -38,12 +39,21 @@ def id_sesji(et, krok, w):
 
 
 def nazwa_wyniku(krok, w):
-    return {'review': 'wariant%s.json' % w, 'sceptycy': 'sceptycy%s.json' % w, 'p11': 'p11-%s.json' % w}.get(krok, '%s.json' % krok)
+    return {'review': 'wariant%s.json' % w, 'sceptycy': 'sceptycy%s.json' % w, 'p11': 'p11-%s.json' % w, 'p12-build': 'p12-build-%s.json' % w,
+            'p12-review': 'p12-review-%s.json' % w}.get(krok, '%s.json' % krok)
+
+
+def katalog_kroku(et, krok, w):
+    """Katalog roboczy sesji: kopia fazy, a w ślepym teście P12 — kopia wariantu (build, review) albo katalog sędziego."""
+    if krok.startswith('p12'):
+        import test_review_p12 as P12
+        return P12.katalog(et, krok, w)
+    return json.load(open(os.path.join(TR, 'meta', et + '.json')))['kopia']
 
 
 def pliki_proby(et, krok, w):
     """Wszystko, co zostawia jedna próba kroku: wynik, logi sesji, transkrypt sesji (z runami Workflow i agentami) i jej scratchpad."""
-    kopia = json.load(open(os.path.join(TR, 'meta', et + '.json')))['kopia']
+    kopia = katalog_kroku(et, krok, w)
     sid, log = id_sesji(et, krok, w), os.path.join(TR, 'sesje', et, '%s-%s' % (krok, w))
     return [os.path.join(TR, 'wyniki', et, nazwa_wyniku(krok, w)), log + '.out.json', log + '.err.txt', log + '.ustawienia.json',
             os.path.join(PROJ, slug(kopia), sid + '.jsonl'), os.path.join(PROJ, slug(kopia), sid),
@@ -88,10 +98,14 @@ def sesje_fazy(et):
     Skan i koszt liczą tylko je — inne sesje w katalogu kopii (np. próba harnessu z kopii f-b26128d) nie należą do fazy."""
     kroki = [(k, w) for k in ('review', 'sceptycy') for w in '0ABC'] + [('sedzia-p%d' % p, 'S') for p in (1, 2)]
     kroki += [('p11', w) for w in ('stary', 'nowy')] + [('p11-sedzia-p%d' % p, 'S') for p in (1, 2)]
+    kroki += [(k, w) for k in ('p12-build', 'p12-review') for w in ('stary', 'nowy')] + [('p12-sedzia-p%d' % p, 'S') for p in (1, 2)]
     return {id_sesji(et, k, w) for k, w in kroki}
 
 
 def skrypt_i_args(et, krok, w):
+    if krok in ('p12-build', 'p12-review'):   # args wklejone (test_review_p12.wariant_build / wariant_review), skrypt w katalogu plików wariantu
+        return os.path.join(katalog_kroku(et, krok, w) + '-pliki', 'wariant-%s.js' % krok[4:]), {}
+    if krok.startswith('p12-sedzia-p'): return os.path.join(katalog_kroku(et, krok, w), 'sedzia-%s.js' % krok[11:]), {}
     meta = json.load(open(os.path.join(TR, 'meta', et + '.json')))
     d = os.path.join(TR, 'skrypty', et)
     fix = et.startswith('x-')
@@ -126,8 +140,12 @@ def skrypt_i_args(et, krok, w):
     raise SystemExit('nieznany krok ' + krok)
 
 
-def ustawienia(et):
-    """deny: wszystko spoza kopii fazy, co może zdradzić przyszłość albo wynik (inne kopie, lustro, dossier innych faz, wyniki, mapowania)."""
+def ustawienia(et, krok=None, w=None):
+    """deny: wszystko spoza kopii fazy, co może zdradzić przyszłość albo wynik (inne kopie, lustro, dossier innych faz, wyniki, mapowania).
+    Ślepy test P12 ma własne (test_review_p12.ustawienia: build zapisuje w kopii wariantu)."""
+    if krok and krok.startswith('p12'):
+        import test_review_p12 as P12
+        return P12.ustawienia(et, krok, w)
     inne = [os.path.basename(p) for p in glob.glob(os.path.join(TR, 'kopie', '*')) if os.path.basename(p) != et]
     tr = '/' + TR
     deny = ['Read(//Users/kacper_trzepiecinski/Documents/**)', 'Read(~/.claude/projects/**)', 'Read(%s/_mirror/**)' % tr,
@@ -154,24 +172,26 @@ def ustawienia(et):
 
 def budzet(et, krok, w):
     """Bezpiecznik --max-budget-usd = 2 × górna granica kosztu kroku [M jedn.] × USD_M. Review fazy: dzis_max wariantu z test-review-plan.json;
-    review fixa: 1 M (4 warianty × 0,33 M środka, §2.6, z zapasem); sędzia: 1,35 M (0,90 × 1,5); sceptycy wariantu: 1 M."""
-    if krok in ('review', 'p11') and et.startswith('f-'):   # P11: oba warianty to dzisiejszy pipeline — górna granica wariantu 0
+    review fixa: 1 M (4 warianty × 0,33 M środka, §2.6, z zapasem); sędzia: 1,35 M (0,90 × 1,5); sceptycy wariantu: 1 M.
+    P12: build 6 M (execute oferty mediana 3,3 M/faza we wrześniu, 6a pkt 67 a), review jak P11, sędzia trzech implementacji 1,5 M."""
+    if krok == 'p12-build': return round(2 * 6.0 * USD_M, 2)
+    if krok.startswith('p12-sedzia'): return round(2 * 1.5 * USD_M, 2)
+    if krok in ('review', 'p11', 'p12-review') and et.startswith('f-'):   # P11: oba warianty to dzisiejszy pipeline — górna granica wariantu 0
         fz = json.load(open(os.path.join(BASE, 'dane', 'test-review-plan.json')))['fazy']
         sha = json.load(open(os.path.join(TR, 'meta', et + '.json')))['sha']
-        gorna = [f for f in fz if sha.startswith(f['faza'])][0]['koszt']['0' if krok == 'p11' else w]['dzis_max']
+        gorna = [f for f in fz if sha.startswith(f['faza'])][0]['koszt'][w if krok == 'review' else '0']['dzis_max']
     else:
         gorna = 1.35 if 'sedzia' in krok else 1.0
     return round(2 * gorna * USD_M, 2)
 
 
 def start(et, krok, w):
-    meta = json.load(open(os.path.join(TR, 'meta', et + '.json')))
     skrypt, args = skrypt_i_args(et, krok, w)
     if not os.path.exists(skrypt): raise SystemExit('brak skryptu ' + skrypt)
     sid = id_sesji(et, krok, w)
     log_d = os.path.join(TR, 'sesje', et); os.makedirs(log_d, exist_ok=True)
     ust = os.path.join(log_d, '%s-%s.ustawienia.json' % (krok, w))
-    json.dump(ustawienia(et), open(ust, 'w'), ensure_ascii=False, indent=1)
+    json.dump(ustawienia(et, krok, w), open(ust, 'w'), ensure_ascii=False, indent=1)
     wiad = ('Uruchom narzędzie Workflow z parametrem scriptPath="%s" i args=%s — to jest moje wyraźne polecenie uruchomienia tego workflow '
             '(test review). Nie wykonuj żadnych innych działań: nie czytaj plików, nie uruchamiaj poleceń, nie oceniaj wyniku. Poczekaj na '
             'zakończenie workflow i odpowiedz jednym wierszem: RUN <identyfikator runu> <status>.\n%s' % (skrypt, json.dumps(args, ensure_ascii=False), N1))
@@ -179,15 +199,15 @@ def start(et, krok, w):
            '--settings', ust, '--session-id', sid, '--output-format', 'json', '--max-budget-usd', str(budzet(et, krok, w))]
     out = os.path.join(log_d, '%s-%s.out.json' % (krok, w))
     with open(out, 'w') as fo, open(out.replace('.out.json', '.err.txt'), 'w') as fe:
-        kod = subprocess.run(cmd, cwd=meta['kopia'], stdin=subprocess.DEVNULL, stdout=fo, stderr=fe, env=srodowisko()).returncode
+        kod = subprocess.run(cmd, cwd=katalog_kroku(et, krok, w), stdin=subprocess.DEVNULL, stdout=fo, stderr=fe, env=srodowisko()).returncode
     print('%s %s %s: sesja %s zakończona kodem %s' % (et, krok, w, sid, kod))
     return kod
 
 
 def zbierz(et, krok, w):
-    meta = json.load(open(os.path.join(TR, 'meta', et + '.json')))
+    kat = katalog_kroku(et, krok, w)
     sid = id_sesji(et, krok, w)
-    runy = sorted(glob.glob(os.path.join(PROJ, slug(meta['kopia']), sid, 'workflows', '*.json')), key=os.path.getmtime)
+    runy = sorted(glob.glob(os.path.join(PROJ, slug(kat), sid, 'workflows', '*.json')), key=os.path.getmtime)
     if not runy: raise SystemExit('%s %s %s: brak pliku runu w sesji %s' % (et, krok, w, sid))
     r = json.load(open(runy[-1]))
     wynik = r.get('result')
@@ -198,7 +218,7 @@ def zbierz(et, krok, w):
     nazwa = nazwa_wyniku(krok, w)
     dane = wynik if isinstance(wynik, dict) else {'wynik_surowy': wynik}
     dane['_run'] = {'runId': r.get('runId'), 'status': r.get('status'), 'model': r.get('defaultModel'), 'ms': r.get('durationMs'),
-                    'agentow': r.get('agentCount'), 'sesja': sid, 'katalog': os.path.join(PROJ, slug(meta['kopia']), sid)}
+                    'agentow': r.get('agentCount'), 'sesja': sid, 'katalog': os.path.join(PROJ, slug(kat), sid)}
     json.dump(dane, open(os.path.join(d, nazwa), 'w'), ensure_ascii=False, indent=1)
     print('%s %s %s: run %s status %s, findingów %s' % (et, krok, w, r.get('runId'), r.get('status'), len(dane.get('findings') or [])))
 

@@ -87,9 +87,19 @@ def ranking(fazy, d10):
     for f in fazy:
         k2 = [x['klasa'] for x in f['klucz2'] if x.get('w_zakresie', True)]
         k1 = [x['klasa'] for x in f['klucz1'] if x.get('w_zakresie', True)]
+        osiag = lambda ks: sum(x['klasa'] in zd and x.get('w_zakresie', True) and x.get('osiagalny', True) for x in ks)
         wynik.append(dict(f, k2_d10=sum(k in zd for k in k2), k2_pokryte=sum(k in pk for k in k2), k1_d10=sum(k in zd for k in k1),
-                          k1_pokryte=sum(k in pk for k in k1)))
-    return sorted(wynik, key=lambda x: (not x['ui'], -x['k2_d10'], -x['k2_pokryte'], x['linie_diff']))
+                          k1_pokryte=sum(k in pk for k in k1), k2_d10_osiagalne=osiag(f['klucz2']), k1_d10_osiagalne=osiag(f['klucz1'])))
+    return sorted(wynik, key=lambda x: (not x['ui'], -x['k2_d10_osiagalne'], -x['k2_d10'], -x['k2_pokryte'], x['linie_diff']))
+
+
+def klasy_zdan_dla_plikow(pliki):
+    """Klasy, których zdanie D10 dostałby builder pliku (moduł gałęzi, bez limitu znaków, bez wpisów projektu): {plik: [klasy]}."""
+    mod = os.path.join(SZ, '.claude', 'scripts', 'wiedza', 'zapobieganie.mjs')
+    out = subprocess.run(['node', '--input-type=module', '-e', "const m = await import(%s); const p = %s; console.log(JSON.stringify(Object.fromEntries("
+                          "p.map((x) => [x, m.zapobieganie([], [x]).klasy]))))" % (json.dumps(mod), json.dumps(sorted(set(pliki))))],
+                         capture_output=True, text=True, check=True).stdout
+    return json.loads(out)
 
 
 def klasy_d10():
@@ -129,22 +139,27 @@ def main():
     klasy2 = {(x['et'], x['id']): x['klasa'] for x in json.load(open(os.path.join(OUT, 'p12-klucz2-klasy.json')))}
     slownik, d10 = _slownik_it1(), klasy_d10()
     ets = sorted(os.path.basename(p) for p in glob.glob(os.path.join(TR, 'kopie', 'f-*')) if not p.endswith('-r2'))
-    r = ranking([dane_fazy(et, klasy2, slownik) for et in ets], d10)
+    fazy = [dane_fazy(et, klasy2, slownik) for et in ets]
+    zdania = klasy_zdan_dla_plikow([re.sub(r':\d+(-\d+)?$', '', k['plik'] or '') for f in fazy for k in f['klucz1'] + f['klucz2']])
+    for f in fazy:
+        for k in f['klucz1'] + f['klucz2']: k['osiagalny'] = k['klasa'] in zdania.get(re.sub(r':\d+(-\d+)?$', '', k['plik'] or ''), [])
+    r = ranking(fazy, d10)
     zd = set(d10['zdania'])
     L = ['test_review_p12_fazy.py — wybór faz ślepego testu P12 (kandydaci: %d kopii f-*); D10 = klasy ze zdaniem (%d), pokryte = warstwa stała i reguły (%d)'
          % (len(r), len(d10['zdania']), len(d10['pokryte'])),
-         'kolejność: IU UI/fullstack → klucz 2 w D10 → klucz 2 w pokrytych → mniejszy diff',
+         'kolejność: IU UI/fullstack → klucz 2 w D10 osiągalny (zdanie klasy trafia do buildera pliku klucza) → klucz 2 w D10 → w pokrytych → mniejszy diff',
          'klucz w zakresie = plik klucza zmieniony między bazą buildu (rodzic commita feat fazy) a sha fazy; diff = linie kodu bez docs/ i .claude/',
-         '%-10s %-34s %2s | %-28s | k2 %2s D10 %2s pokr %2s | k1 %2s D10 %2s | diff %5s' % ('faza', 'zadanie', 'nr', 'IU (typ)', 'n', '', '', 'n', '', 'linii')]
+         '%-10s %-34s %2s | %-28s | k2 %2s D10 %2s osiąg %2s pokr %2s | k1 %2s D10 %2s osiąg %2s | diff %5s' % ('faza', 'zadanie', 'nr', 'IU (typ)', 'n', '', '', '', 'n', '', '', 'linii')]
     skrot = lambda t: t.replace('feature-builder-', '')
     for f in r:
-        L.append('%-10s %-34s %2d | %-28s | k2 %2d D10 %2d pokr %2d | k1 %2d D10 %2d | diff %5d' % (
+        L.append('%-10s %-34s %2d | %-28s | k2 %2d D10 %2d osiąg %2d pokr %2d | k1 %2d D10 %2d osiąg %2d | diff %5d' % (
             f['et'], f['zadanie'][:34], f['faza'], ' '.join('%s:%s' % (x['id'].replace('IU-', ''), skrot(x['agentType'])) for x in f['iu'])[:28],
-            sum(k['w_zakresie'] for k in f['klucz2']), f['k2_d10'], f['k2_pokryte'], sum(k['w_zakresie'] for k in f['klucz1']), f['k1_d10'], f['linie_diff']))
+            sum(k['w_zakresie'] for k in f['klucz2']), f['k2_d10'], f['k2_d10_osiagalne'], f['k2_pokryte'], sum(k['w_zakresie'] for k in f['klucz1']),
+            f['k1_d10'], f['k1_d10_osiagalne'], f['linie_diff']))
         poza = [k['id'] for k in f['klucz1'] + f['klucz2'] if not k['w_zakresie']]
         L.append('           baza buildu %s (commit fazy %s) | klucz2 D10: %s | klucz1 D10: %s%s' % (f['baza'][:7], f['commit_fazy'], ', '.join(
-            '%s %s %s' % (k['id'], k['waga'], k['klasa']) for k in f['klucz2'] if k['klasa'] in zd and k['w_zakresie']) or '—', ', '.join(
-            '%s %s' % (k['id'], k['klasa']) for k in f['klucz1'] if k['klasa'] in zd and k['w_zakresie']) or '—', (' | poza zakresem: ' + ' '.join(poza)) if poza else ''))
+            '%s %s %s%s' % (k['id'], k['waga'], k['klasa'], '' if k['osiagalny'] else ' (nieosiągalny)') for k in f['klucz2'] if k['klasa'] in zd and k['w_zakresie']) or '—', ', '.join(
+            '%s %s%s' % (k['id'], k['klasa'], '' if k['osiagalny'] else ' (nieosiągalny)') for k in f['klucz1'] if k['klasa'] in zd and k['w_zakresie']) or '—', (' | poza zakresem: ' + ' '.join(poza)) if poza else ''))
     with open(os.path.join(OUT, 'p12-fazy.json'), 'w') as fo: json.dump({'d10': d10, 'fazy': r}, fo, ensure_ascii=False, indent=1)
     with open(os.path.join(OUT, 'p12-fazy.txt'), 'w') as fo: fo.write('\n'.join(L) + '\n')
     print('\n'.join(L))

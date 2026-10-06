@@ -103,6 +103,12 @@ class Ranking(unittest.TestCase):
         r = F.ranking([self.faza('a', ['wartosc-graniczna', 'sciezka-bledu'], ui=False), self.faza('b', ['wartosc-graniczna'])], self.D10)
         self.assertEqual([x['et'] for x in r], ['b', 'a'])
 
+    def test_osiagalne_tylko_gdy_zdanie_klasy_trafia_do_pliku_klucza(self):
+        f = self.faza('a', [])
+        f['klucz2'] = [{'klasa': 'wartosc-graniczna', 'osiagalny': False}, {'klasa': 'sciezka-bledu', 'osiagalny': True}]
+        r = F.ranking([f, self.faza('b', ['wartosc-graniczna', 'sciezka-bledu'])], self.D10)
+        self.assertEqual([(x['et'], x['k2_d10'], x['k2_d10_osiagalne']) for x in r], [('b', 2, 2), ('a', 2, 1)])
+
     def test_klucz1_w_d10_liczony_obok(self):
         r = F.ranking([self.faza('a', [], k1=['sciezka-bledu', 'inna'])], self.D10)
         self.assertEqual((r[0]['k1_d10'], r[0]['k2_d10']), (1, 0))

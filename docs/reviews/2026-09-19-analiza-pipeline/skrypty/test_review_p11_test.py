@@ -12,6 +12,7 @@ import test_review_sesja as T
 SKRYPTY = os.path.dirname(os.path.abspath(__file__))
 SZ = os.path.abspath(os.path.join(SKRYPTY, '..', '..', '..', '..'))
 WORKFLOW = '.claude/workflows/dev-docs-review-wf.js'
+STARY_P11 = '7b7cbcd'   # main sprzed merge'u P11 (HANDOFF 6a pkt 65 a) — dziś main ma już nowych reviewerów
 DOSSIER = {'diffStat': '2 plikow, +40 −3', 'pliki': [{'plik': 'apps/server/src/a.ts', 'czegoDotyczy': 'zmieniony (+30 −3)'},
                                                     {'plik': 'apps/server/src/a.test.ts', 'czegoDotyczy': 'dodany (+10)'}],
            'warstwy': {'ui': False, 'dane': True, 'typowanie': True, 'nowyModul': False}, 'e2eCheckboxy': 2, 'figmaScreens': False,
@@ -50,7 +51,7 @@ class Wariant(unittest.TestCase):
         self.assertGreater(findingi, 0)
 
     def test_stary_wariant_z_main_ma_wlasny_sklad_i_efort(self):
-        js, _ = P.wariant(zrodlo('main'), ARGS, 'stary')
+        js, _ = P.wariant(zrodlo(STARY_P11), ARGS, 'stary')
         agenci, _ = suchy_bieg(js)
         self.assertIn('review:test-coverage effort=high', agenci)
         self.assertFalse(any(a.startswith(('dossier:zapas', 'review:e2e')) for a in agenci))
