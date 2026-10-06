@@ -1,0 +1,82 @@
+(1) raport -> zrodla: cytaty OK 5, bledne 33; numery linii OK 60, poza plikiem 20
+(1b) wszystkie odwolania plik:linia w raporcie: OK 58, poza plikiem 17
+  LINIA POZA PLIKIEM: PA-03 .claude/agents/performance-oracle.md:66 (plik ma 40)
+  LINIA POZA PLIKIEM: PA-03 .claude/agents/performance-oracle.md:149 (plik ma 40)
+  CYTAT NIEZNALEZIONY: PA-03 „Check for unnecessary re-renders (missing `useMemo`, `useCallback`, `R”
+  CYTAT NIEZNALEZIONY: PA-03 „Verify React component memoization”
+  CYTAT NIEZNALEZIONY: PA-03 „…lazy loading, memoization, useEffect cleanup”
+  CYTAT NIEZNALEZIONY: PA-09 „to jest dokladnie ten moment, w ktorym poprzednio poszlo zle”
+  CYTAT NIEZNALEZIONY: PA-09 „UWAGA: w opisanym runie WSZYSTKIE trzy miejsca czytaly pole jednakowo ”
+  LINIA POZA PLIKIEM: PA-12 .claude/agents/feature-builder-ui.md:37 (plik ma 34)
+  LINIA POZA PLIKIEM: PA-12 .claude/agents/feature-builder-ui.md:107 (plik ma 34)
+  LINIA POZA PLIKIEM: PA-12 .claude/agents/feature-builder-fullstack.md:123 (plik ma 40)
+  CYTAT NIEZNALEZIONY: PA-12 „Wywołaj `mcp__plugin_figma_figma__get_design_context`”
+  CYTAT NIEZNALEZIONY: PA-13 „Ten plik czytasz w CALOSCI (ok. 11 KB)… buildery nie maja gwarancji do”
+  CYTAT NIEZNALEZIONY: PA-14 „Bez dodatkowego kontekstu — wyciagnij z sesji i git diff.”
+  CYTAT NIEZNALEZIONY: PA-14 „1. Wyciagnij kontekst z sesji + git diff / git diff --cached.”
+  CYTAT NIEZNALEZIONY: PA-16 „Dopisz decyzje architektoniczne do `CLAUDE.md`”
+  CYTAT NIEZNALEZIONY: PA-16 „6. Zaktualizuj dokumentacje projektu jesli istotne (CLAUDE.md / .claud”
+  LINIA POZA PLIKIEM: PA-19 .claude/agents/feature-builder-fullstack.md:81 (plik ma 40)
+  CYTAT NIEZNALEZIONY: PA-19 „5. Manualny smoke test poprzez `dev-docs-execute` jeśli plan tego wyma”
+  LINIA POZA PLIKIEM: PA-20 .claude/agents/spec-compliance-reviewer.md:49 (plik ma 30)
+  CYTAT NIEZNALEZIONY: PA-20 „jakości kodu (to `architecture` i `typescript`)”
+  LINIA POZA PLIKIEM: PA-01 .claude/agents/security-sentinel.md:177 (plik ma 47)
+  LINIA POZA PLIKIEM: PA-01 .claude/agents/security-sentinel.md:181 (plik ma 47)
+  LINIA POZA PLIKIEM: PA-01 .claude/agents/security-sentinel.md:182 (plik ma 47)
+  LINIA POZA PLIKIEM: PA-01 .claude/agents/security-sentinel.md:191 (plik ma 47)
+  LINIA POZA PLIKIEM: PA-01 .claude/agents/architecture-strategist.md:119 (plik ma 37)
+  CYTAT NIEZNALEZIONY: PA-01 „Always assume the worst-case scenario”
+  CYTAT NIEZNALEZIONY: PA-01 „Stay current with latest attack vectors”
+  CYTAT NIEZNALEZIONY: PA-01 „You are the last line of defense. Be thorough, be paranoid, and leave ”
+  CYTAT NIEZNALEZIONY: PA-01 „Be proactive in identifying architectural smells”
+  CYTAT NIEZNALEZIONY: PA-02 „I've just finished implementing the user authentication endpoints”
+  CYTAT NIEZNALEZIONY: PA-02 „You are an elite Application Security Specialist… laser focus”
+  LINIA POZA PLIKIEM: PA-04 .claude/agents/security-sentinel.md:65 (plik ma 47)
+  CYTAT NIEZNALEZIONY: PA-04 „Verify that `supabase.auth.getSession()` is used correctly (not trusti”
+  LINIA POZA PLIKIEM: PA-05 security-sentinel.md:161 (plik ma 47)
+  LINIA POZA PLIKIEM: PA-05 security-sentinel.md:173 (plik ma 47)
+  LINIA POZA PLIKIEM: PA-05 architecture-strategist.md:112 (plik ma 37)
+  LINIA POZA PLIKIEM: PA-05 architecture-strategist.md:117 (plik ma 37)
+  CYTAT NIEZNALEZIONY: PA-05 „Your security reports will include: 1. Executive Summary… 3. Risk Matr”
+  CYTAT NIEZNALEZIONY: PA-05 „Provide your analysis in a structured format…”
+  CYTAT NIEZNALEZIONY: PA-06 „Od 2026-09-03 w `dev-docs-review-wf` jesteś jedynym reviewerem jakości”
+  LINIA POZA PLIKIEM: PA-07 architecture-strategist.md:83 (plik ma 37)
+  LINIA POZA PLIKIEM: PA-07 architecture-strategist.md:91 (plik ma 37)
+  LINIA POZA PLIKIEM: PA-07 architecture-strategist.md:95 (plik ma 37)
+  CYTAT NIEZNALEZIONY: PA-07 „Begin by examining the overall system structure through architecture d”
+  CYTAT NIEZNALEZIONY: PA-07 „Read and analyze architecture documentation and README files”
+  CYTAT NIEZNALEZIONY: PA-08 „AKCYJNOSC (ZAOSTRZONA — P3 IDA TERAZ DO NAPRAWY): P3 nie jest juz nota”
+  CYTAT NIEZNALEZIONY: PA-08 „zrob wlasny \`git diff\` fazy dokladnie jak dotad”
+  CYTAT NIEZNALEZIONY: PA-08 „(dotad 7x ten sam git diff)”
+  CYTAT NIEZNALEZIONY: PA-08 „P3 sa tu od 2026-09-03”
+  CYTAT NIEZNALEZIONY: PA-08 „P3 nie sa juz odcinane”
+  CYTAT OK: PA-08 „Do 2026-09-03 plik kontekstu je kopiował…”
+  CYTAT OK: PA-10 „BRAMKA (Poprawka 10)”
+  CYTAT OK: PA-10 „UWAGA — historyczny bug (regresja etap-12b, mobile)”
+  CYTAT OK: PA-10 „Liczenie tylko jednego prefiksu to udokumentowana regresja (szablon mo”
+  CYTAT OK: PA-11 „**Uwaga: Aktualny rok to 2026.** Używaj tego przy datowaniu…”
+  CYTAT NIEZNALEZIONY: PA-15 „Ustal zakres: `git log --oneline --grep="^fix("` -> pierwszy commit fi”
+  CYTAT NIEZNALEZIONY: PA-18 „grep -q 'Deno\.serve' || continue”
+  CYTAT NIEZNALEZIONY: PA-18 „Brak await flush() — eventy Sentry mogą nie zostać wysłane”
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/performance-oracle.md:66` (plik ma 40)
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/feature-builder-ui.md:37` (plik ma 34)
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/feature-builder-fullstack.md:81` (plik ma 40)
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/spec-compliance-reviewer.md:49` (plik ma 30)
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/security-sentinel.md:177` (plik ma 47)
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/architecture-strategist.md:119` (plik ma 37)
+  ODWOLANIE POZA PLIKIEM: `.claude/agents/security-sentinel.md:65` (plik ma 47)
+  ODWOLANIE POZA PLIKIEM: `supabase-dev-guidelines/SKILL.md:281-306` (plik ma 80)
+  ODWOLANIE POZA PLIKIEM: `supabase-dev-guidelines/SKILL.md:281-306` (plik ma 80)
+  ODWOLANIE POZA PLIKIEM: `security-sentinel.md:161-173` (plik ma 47)
+  ODWOLANIE POZA PLIKIEM: `security-sentinel.md:161-173` (plik ma 47)
+  ODWOLANIE POZA PLIKIEM: `architecture-strategist.md:112-117` (plik ma 37)
+  ODWOLANIE POZA PLIKIEM: `architecture-strategist.md:112-117` (plik ma 37)
+  ODWOLANIE POZA PLIKIEM: `architecture-strategist.md:83-91` (plik ma 37)
+  ODWOLANIE POZA PLIKIEM: `architecture-strategist.md:83-91` (plik ma 37)
+  ODWOLANIE POZA PLIKIEM: `performance-oracle.md:100-105` (plik ma 40)
+  ODWOLANIE POZA PLIKIEM: `performance-oracle.md:100-105` (plik ma 40)
+(2) diff <-> raport: hunkow w diffie 62, w mapie naglowka 62, w polach „Hunki:” raportu 62; ID w diffie 21; rozbieznosci 0
+(3) raport <-> operator: ID w raporcie 44, w diffie 21, flag 8, w wersji operatora 29; diff+flagi bez wzmianki u operatora: brak; ID operatora spoza raportu: brak
+(4) liczby: tabela Razem=43, diff 8+13=21 (w mapie 21), flagi 8 (w raporcie 8), niskie 14 (+PA-44 „add” = 15 wpisow); operator: „44 rzeczy, 21 poprawek, 8 decyzji” -> zgodne
+
+BLEDOW: 70
