@@ -553,6 +553,50 @@ export function AsyncButton({ onClick, children, ...props }: AsyncButtonProps) {
 }
 ```
 
+Wariant z celem dotykowym 44 px, widocznym fokusem i stanem ogłaszanym czytnikom ekranu (`aria-busy`, ikona ukryta przed czytnikiem):
+
+```typescript
+import { useTransition } from 'react';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ActionButtonProps {
+    onClick: () => Promise<void>;
+    children: React.ReactNode;
+    disabled?: boolean;
+}
+
+export function ActionButton({ onClick, children, disabled }: ActionButtonProps) {
+    const [isPending, startTransition] = useTransition();
+
+    const handleClick = () => {
+        startTransition(async () => {
+            await onClick();
+        });
+    };
+
+    return (
+        <Button
+            onClick={handleClick}
+            disabled={disabled || isPending}
+            className={cn(
+                "inline-flex items-center justify-center gap-2",
+                "min-h-11 px-4",  // 44px touch target
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "transition-colors duration-200"
+            )}
+            aria-busy={isPending}
+        >
+            {isPending && (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            )}
+            {children}
+        </Button>
+    );
+}
+```
+
 ### Button z React Query
 ```typescript
 function SaveButton({ data }: { data: FormData }) {

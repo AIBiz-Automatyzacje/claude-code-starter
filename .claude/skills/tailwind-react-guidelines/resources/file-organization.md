@@ -16,7 +16,8 @@ src/
 ├── hooks/                  # Custom hooks
 ├── lib/                    # Utilities i klienty
 ├── types/                  # TypeScript types
-└── constants/              # Stałe i konfiguracja
+├── constants/              # Stałe i konfiguracja
+└── test/                   # Setup, utils, mocks (MSW)
 ```
 
 ---
@@ -809,6 +810,16 @@ import { Button } from '@/components/ui/button';
 import { useItems } from '@/hooks/useItems';
 import { api } from '@/lib/api';
 ```
+
+| Alias | Ścieżka | Przykład |
+|-------|---------|----------|
+| `@/` | `src/` | `import { api } from '@/lib/api'` |
+| `@/components` | `src/components` | `import { Button } from '@/components/ui/button'` |
+| `@/hooks` | `src/hooks` | `import { useTemplates } from '@/hooks/useTemplates'` |
+| `@/lib` | `src/lib` | `import { cn } from '@/lib/utils'` |
+| `@/test` | `src/test` | `import { render } from '@/test/utils'` |
+
+Alias zdefiniowany w `vite.config.ts` i `tsconfig.json` — oba pliki muszą mieć tę samą ścieżkę.
 
 ---
 
