@@ -8,14 +8,15 @@ Wzorce UX dla modali, formularzy, feedbacku i stanów - React 19 + React Hook Fo
 
 ### Podstawowy Dialog (Radix)
 ```typescript
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogClose,
     DialogContent,
-    DialogHeader,
-    DialogTitle,
     DialogDescription,
     DialogFooter,
-    DialogClose
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
 
 interface ConfirmDialogProps {
@@ -68,14 +69,30 @@ export function ConfirmDialog({
 ### Blokowanie Zamknięcia Podczas Operacji
 ```typescript
 import { useTransition } from 'react';
+import { toast } from 'sonner';
 
-function SaveDialog({ open, onOpenChange, onSave }: Props) {
+import { logger } from '@/lib/logger';
+
+interface SaveDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSave: () => Promise<void>;
+}
+
+function SaveDialog({ open, onOpenChange, onSave }: SaveDialogProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleSave = () => {
         startTransition(async () => {
-            await onSave();
-            onOpenChange(false);
+            // Odrzucony promise w startTransition trafia do error boundary,
+            // dlatego błąd łapiesz tutaj: log z kodem, toast i dialog zostaje otwarty
+            try {
+                await onSave();
+                onOpenChange(false);
+            } catch (error) {
+                logger.error('SAVE_DIALOG_FAILED', error);
+                toast.error('Nie udało się zapisać zmian');
+            }
         });
     };
 
@@ -110,7 +127,7 @@ function SaveDialog({ open, onOpenChange, onSave }: Props) {
                     <Button onClick={handleSave} disabled={isPending}>
                         {isPending ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                                 Zapisywanie...
                             </>
                         ) : (
@@ -124,26 +141,56 @@ function SaveDialog({ open, onOpenChange, onSave }: Props) {
 }
 ```
 
-### Focus Trap (react-focus-lock)
+### Focus Trap
 
-Radix Dialog ma wbudowany focus trap. Dla custom modali:
+Kolejność wyboru:
+
+1. **Dialog z shadcn/ui (Radix)** — pierwszy wybór, projekt go już ma. Wbudowany focus trap, zamknięcie Escape, `aria-modal`, powrót fokusu do elementu, który otworzył dialog. Przykłady wyżej.
+2. **Natywny `<dialog>` z `showModal()`** — gdy modal ma wyglądać albo zachowywać się inaczej niż Dialog z shadcn/ui. Przeglądarka sama robi resztę strony inert (Tab nie wychodzi do treści pod spodem), zamyka dialog Escape, renderuje go w top layer nad wszystkimi `z-index` i oddaje fokus po zamknięciu. Bez nowej zależności.
+3. **react-focus-lock** — nowa zależność, więc najpierw sprawdzasz package.json i zgłaszasz ją operatorowi (w workflowie: w odchyleniach). Sięgasz po nią tylko wtedy, gdy żaden z dwóch powyższych wariantów nie pasuje (np. pułapka fokusu w panelu, który nie jest modalem).
+
 ```typescript
-import FocusLock from 'react-focus-lock';
+import { useEffect, useId, useRef } from 'react';
 
-function CustomModal({ open, children }: Props) {
-    if (!open) return null;
+import { Button } from '@/components/ui/button';
+
+interface NativeModalProps {
+    open: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+}
+
+export function NativeModal({ open, onClose, title, children }: NativeModalProps) {
+    const dialogRef = useRef<HTMLDialogElement>(null);
+    const titleId = useId();
+
+    // Synchronizacja propsa open z DOM: showModal() daje focus trap, inert tła i top layer
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+        if (open && !dialog.open) dialog.showModal();
+        if (!open && dialog.open) dialog.close();
+    }, [open]);
 
     return (
-        <div className="fixed inset-0 z-50">
-            <div className="fixed inset-0 bg-black/50" />
-            <FocusLock returnFocus>
-                <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <div className="bg-card rounded-xl shadow-xl max-w-lg w-full">
-                        {children}
-                    </div>
-                </div>
-            </FocusLock>
-        </div>
+        <dialog
+            ref={dialogRef}
+            // Zdarzenie close przychodzi po Escape i po wysłaniu <form method="dialog">
+            onClose={onClose}
+            aria-labelledby={titleId}
+            className="w-full max-w-lg rounded-xl bg-card p-6 shadow-xl backdrop:bg-black/50"
+        >
+            <h2 id={titleId} className="text-lg font-semibold">
+                {title}
+            </h2>
+            <div className="mt-4">{children}</div>
+            <form method="dialog" className="mt-6 flex justify-end">
+                <Button type="submit" variant="outline">
+                    Zamknij
+                </Button>
+            </form>
+        </dialog>
     );
 }
 ```
@@ -154,11 +201,17 @@ function CustomModal({ open, children }: Props) {
 
 Dla non-modal tooltipów i menu — bez JS:
 ```typescript
-// Tooltip
-<Button popovertarget="info-tip">
-    <Info className="h-4 w-4" />
+// Tooltip — React 19 przyjmuje popoverTarget w camelCase; przycisk z samą ikoną ma aria-label
+<Button
+    variant="ghost"
+    size="icon"
+    popoverTarget="info-tip"
+    className="pointer-coarse:size-11"
+    aria-label="Więcej informacji"
+>
+    <Info className="h-4 w-4" aria-hidden="true" />
 </Button>
-<div id="info-tip" popover className="p-3 rounded-lg shadow-lg bg-card border max-w-xs">
+<div id="info-tip" popover="auto" className="p-3 rounded-lg shadow-lg bg-card border max-w-xs">
     Dodatkowe informacje o tej funkcji.
 </div>
 ```
@@ -167,145 +220,117 @@ Dla non-modal tooltipów i menu — bez JS:
 - **Popover:** tooltips, dropdown menu, non-modal panele
 - **Dialog:** potwierdzenia, formularze wymagające uwagi, modalne okna
 
+Rozmiar przycisków-ikon według zasady rozmiaru celu z [accessibility.md](accessibility.md#rozmiar-celu): `size="icon"` z shadcn/ui na desktopie, 44 px przy wskaźniku dotykowym.
+
 ---
 
 ## Formularze
 
-### React Hook Form + Zod (Standard 2026)
+### React Hook Form + Zod
+
+Kanoniczny `ContactForm` — schemat `contactSchema` (`z.strictObject`, `z.email()`), typ `ContactValues`, hook `useSendContact()` z `useMutation` wołający `contactService.send`, `onError` z logiem `CONTACT_SEND_FAILED` i toastem, reset i `onSuccess?.()` po wysłaniu, powiązania `aria-invalid`/`aria-describedby` — jest w [forms.md](../../tailwind-react-guidelines/resources/forms.md) (sekcja Podstawowy Formularz). Ten plik go nie powtarza; poniżej warstwa UX, którą dokładasz do tego samego komponentu:
+
+- **Błąd widoczny nie tylko kolorem.** Pole z błędem dostaje obramowanie `border-destructive`, a pod polem jest tekst komunikatu (`role="alert"`, powiązany przez `aria-describedby`). Sam czerwony kolor nie wystarcza osobom z zaburzeniami widzenia barw.
+- **Wysyłka z widocznym postępem.** Przycisk jest zablokowany na czas wysyłki, pokazuje spinner (ukryty przed czytnikiem) i tekst „Wysyłanie...”, więc użytkownik nie klika drugi raz.
+- **Przycisk na pełną szerokość na mobile** i z celem 44 px na dotyku ([accessibility.md](accessibility.md#rozmiar-celu)).
+- **Wygodne pole wiadomości:** `rows={4}`, żeby od razu było widać, że to pole na dłuższy tekst.
+- **Toast sukcesu i błędu** (Sonner): sukces z handlera formularza, błąd z `onError` hooka — jeden komunikat na zdarzenie.
+
 ```typescript
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
+// Fragment ContactForm z forms.md z warstwą UX: pole e-mail, pole wiadomości i przycisk wysyłki
+// (handler handleValidSubmit, sendContact = useSendContact() i FieldErrorMessage — jak w forms.md)
+<div className="space-y-2">
+    <Label htmlFor="email">Email</Label>
+    <Input
+        id="email"
+        type="email"
+        {...register('email')}
+        aria-invalid={errors.email ? true : undefined}
+        aria-describedby={errors.email ? 'email-error' : undefined}
+        className={cn(errors.email && 'border-destructive')}
+    />
+    <FieldErrorMessage id="email-error" message={errors.email?.message} />
+</div>
 
-// Schema
-const contactSchema = z.object({
-    email: z.string().email('Nieprawidłowy format email'),
-    name: z.string().min(2, 'Minimum 2 znaki'),
-    message: z.string().min(10, 'Minimum 10 znaków'),
-});
+<div className="space-y-2">
+    <Label htmlFor="message">Wiadomość</Label>
+    <Textarea
+        id="message"
+        rows={4}
+        {...register('message')}
+        aria-invalid={errors.message ? true : undefined}
+        aria-describedby={errors.message ? 'message-error' : undefined}
+        className={cn(errors.message && 'border-destructive')}
+    />
+    <FieldErrorMessage id="message-error" message={errors.message?.message} />
+</div>
 
-type ContactForm = z.infer<typeof contactSchema>;
-
-// Component
-export function ContactForm() {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-    } = useForm<ContactForm>({
-        resolver: zodResolver(contactSchema),
-    });
-
-    const mutation = useMutation({
-        mutationFn: api.submitContact,
-        onSuccess: () => {
-            toast.success('Wiadomość wysłana!');
-            reset();
-        },
-        onError: () => {
-            toast.error('Nie udało się wysłać');
-        },
-    });
-
-    const onSubmit = (data: ContactForm) => {
-        mutation.mutate(data);
-    };
-
-    return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email */}
-            <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    {...register('email')}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    aria-invalid={!!errors.email}
-                    className={errors.email ? 'border-destructive' : ''}
-                />
-                {errors.email && (
-                    <p id="email-error" role="alert" className="text-sm text-destructive">
-                        {errors.email.message}
-                    </p>
-                )}
-            </div>
-
-            {/* Name */}
-            <div className="space-y-2">
-                <Label htmlFor="name">Imię</Label>
-                <Input
-                    id="name"
-                    {...register('name')}
-                    aria-invalid={!!errors.name}
-                    className={errors.name ? 'border-destructive' : ''}
-                />
-                {errors.name && (
-                    <p role="alert" className="text-sm text-destructive">
-                        {errors.name.message}
-                    </p>
-                )}
-            </div>
-
-            {/* Message */}
-            <div className="space-y-2">
-                <Label htmlFor="message">Wiadomość</Label>
-                <Textarea
-                    id="message"
-                    {...register('message')}
-                    rows={4}
-                    aria-invalid={!!errors.message}
-                    className={errors.message ? 'border-destructive' : ''}
-                />
-                {errors.message && (
-                    <p role="alert" className="text-sm text-destructive">
-                        {errors.message.message}
-                    </p>
-                )}
-            </div>
-
-            {/* Submit */}
-            <Button 
-                type="submit" 
-                disabled={mutation.isPending}
-                className="w-full"
-            >
-                {mutation.isPending ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Wysyłanie...
-                    </>
-                ) : (
-                    'Wyślij'
-                )}
-            </Button>
-        </form>
-    );
-}
+<Button
+    type="submit"
+    disabled={sendContact.isPending}
+    className="w-full md:w-auto pointer-coarse:min-h-11"
+>
+    {sendContact.isPending ? (
+        <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+            Wysyłanie...
+        </>
+    ) : (
+        'Wyślij'
+    )}
+</Button>
 ```
 
 ### Walidacja Hasła (Real-time)
-```typescript
-const passwordSchema = z.string()
-    .min(8, 'Minimum 8 znaków')
-    .regex(/[A-Z]/, 'Wymaga dużej litery')
-    .regex(/[0-9]/, 'Wymaga cyfry')
-    .regex(/[^A-Za-z0-9]/, 'Wymaga znaku specjalnego');
 
-function PasswordInput() {
+Reguły hasła są kontraktem: ten sam zestaw sprawdza schemat formularza i podpowiada użytkownikowi w UI. Trzymasz je więc w jednej tablicy `PASSWORD_RULES`, z której korzystają oba miejsca — dwie kopie (osobne `.regex()` w schemacie i osobne testy w komponencie) rozjeżdżają się po pierwszej zmianie.
+```typescript
+// src/schemas/password-schema.ts
+import { z } from 'zod';
+
+export const PASSWORD_MIN_LENGTH = 8;
+
+export const PASSWORD_RULES = [
+    {
+        id: 'length',
+        label: `Minimum ${PASSWORD_MIN_LENGTH} znaków`,
+        test: (value: string) => value.length >= PASSWORD_MIN_LENGTH,
+    },
+    { id: 'uppercase', label: 'Duża litera', test: (value: string) => /[A-Z]/.test(value) },
+    { id: 'number', label: 'Cyfra', test: (value: string) => /[0-9]/.test(value) },
+    { id: 'special', label: 'Znak specjalny', test: (value: string) => /[^A-Za-z0-9]/.test(value) },
+] as const;
+
+// Schemat formularza składany z tych samych reguł
+export const passwordSchema = PASSWORD_RULES.reduce<z.ZodString>(
+    (schema, rule) => schema.refine(rule.test, { error: rule.label }),
+    z.string(),
+);
+```
+```typescript
+// src/components/password-input.tsx
+import { Check, X } from 'lucide-react';
+import { useState } from 'react';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { PASSWORD_RULES } from '@/schemas/password-schema';
+
+const WEAK_PASSWORD_MAX_SCORE = 2;
+
+function getStrengthClass(score: number, level: number): string {
+    if (score < level) return 'bg-muted';
+    if (score <= WEAK_PASSWORD_MAX_SCORE) return 'bg-destructive';
+    if (score < PASSWORD_RULES.length) return 'bg-warning';
+    return 'bg-success';
+}
+
+export function PasswordInput() {
     const [password, setPassword] = useState('');
-    
-    const checks = {
-        length: password.length >= 8,
-        uppercase: /[A-Z]/.test(password),
-        number: /[0-9]/.test(password),
-        special: /[^A-Za-z0-9]/.test(password),
-    };
-    
-    const strength = Object.values(checks).filter(Boolean).length;
+
+    const checks = PASSWORD_RULES.map((rule) => ({ ...rule, isValid: rule.test(password) }));
+    const score = checks.filter((check) => check.isValid).length;
 
     return (
         <div className="space-y-2">
@@ -315,40 +340,39 @@ function PasswordInput() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                aria-describedby="password-requirements"
             />
-            
-            {/* Strength indicator */}
-            <div className="flex gap-1">
-                {[1, 2, 3, 4].map((level) => (
+
+            {/* Strength indicator — wizualny, treść niesie lista wymagań */}
+            <div className="flex gap-1" aria-hidden="true">
+                {PASSWORD_RULES.map((rule, index) => (
                     <div
-                        key={level}
+                        key={rule.id}
                         className={cn(
                             'h-1 flex-1 rounded-full transition-colors',
-                            strength >= level 
-                                ? strength <= 2 ? 'bg-destructive' 
-                                : strength === 3 ? 'bg-warning' 
-                                : 'bg-success'
-                                : 'bg-muted'
+                            getStrengthClass(score, index + 1)
                         )}
                     />
                 ))}
             </div>
-            
-            {/* Requirements */}
-            <ul className="text-xs space-y-1">
-                {Object.entries(checks).map(([key, valid]) => (
-                    <li 
-                        key={key}
+
+            {/* Requirements — stan każdej reguły także tekstem, nie tylko kolorem i ikoną */}
+            <ul id="password-requirements" className="text-xs space-y-1">
+                {checks.map((check) => (
+                    <li
+                        key={check.id}
                         className={cn(
                             'flex items-center gap-1',
-                            valid ? 'text-success' : 'text-muted-foreground'
+                            check.isValid ? 'text-success' : 'text-muted-foreground'
                         )}
                     >
-                        {valid ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                        {key === 'length' && 'Minimum 8 znaków'}
-                        {key === 'uppercase' && 'Duża litera'}
-                        {key === 'number' && 'Cyfra'}
-                        {key === 'special' && 'Znak specjalny'}
+                        {check.isValid ? (
+                            <Check className="h-3 w-3" aria-hidden="true" />
+                        ) : (
+                            <X className="h-3 w-3" aria-hidden="true" />
+                        )}
+                        {check.label}
+                        <span className="sr-only">{check.isValid ? ' — spełnione' : ' — niespełnione'}</span>
                     </li>
                 ))}
             </ul>
@@ -357,73 +381,93 @@ function PasswordInput() {
 }
 ```
 
-### Form z useTransition (bez React Query)
+### Formularz bez React Query — akcja w hooku
+
+Formularz bez React Hook Form i bez mutacji React Query nie składa stanu z ręcznych flag (`useTransition` + `useState` na błąd): coding-rules (Async i React) każą opisać go przez `useActionState`, a stan wyniku — unią dyskryminowaną. Akcja leży w hooku, który woła serwis, więc komponent nie zna warstwy danych. Dane z `FormData` przechodzą przez schemat Zod, a każdy `catch` zostawia log z kodem błędu.
 ```typescript
-import { useTransition } from 'react';
+// src/hooks/use-subscribe-newsletter.ts
+import { useActionState } from 'react';
+import { z } from 'zod';
 
-function SimpleForm() {
-    const [isPending, startTransition] = useTransition();
-    const [error, setError] = useState<string | null>(null);
+import { logger } from '@/lib/logger';
+import { newsletterService } from '@/services/newsletter-service';
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        
-        startTransition(async () => {
-            try {
-                await submitForm(formData);
-                toast.success('Zapisano!');
-            } catch (err) {
-                setError('Nie udało się zapisać');
+export type SubscribeState =
+    | { status: 'idle' }
+    | { status: 'success' }
+    | { status: 'error'; message: string; email: string };
+
+const subscribeSchema = z.strictObject({ email: z.email() });
+
+export function useSubscribeNewsletter() {
+    return useActionState<SubscribeState, FormData>(
+        async (_previous, formData) => {
+            const parsed = subscribeSchema.safeParse(Object.fromEntries(formData));
+            const email = z.string().catch('').parse(formData.get('email'));
+            if (!parsed.success) {
+                return { status: 'error', message: 'Podaj poprawny adres e-mail', email };
             }
-        });
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            {/* inputs */}
-            <Button type="submit" disabled={isPending}>
-                {isPending ? 'Zapisywanie...' : 'Zapisz'}
-            </Button>
-        </form>
+            try {
+                await newsletterService.subscribe(parsed.data.email);
+                return { status: 'success' };
+            } catch (error) {
+                logger.error('NEWSLETTER_SUBSCRIBE_FAILED', error);
+                return { status: 'error', message: 'Nie udało się zapisać', email };
+            }
+        },
+        { status: 'idle' }
     );
 }
 ```
 
+React po zakończeniu akcji resetuje niekontrolowane pola formularza. Stan błędu niesie więc wpisany adres (`email`), a pole dostaje go jako `defaultValue` — użytkownik poprawia literówkę zamiast wpisywać adres od nowa.
+
 ### useActionState (React 19) — Proste Formularze
 ```typescript
-import { useActionState } from 'react';
+// src/components/newsletter-form.tsx
+import { Loader2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useSubscribeNewsletter } from '@/hooks/use-subscribe-newsletter';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="pointer-coarse:min-h-11">
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
             {pending ? 'Wysyłanie...' : 'Wyślij'}
         </Button>
     );
 }
 
-function SimpleContactForm() {
-    const [state, submitAction, isPending] = useActionState(
-        async (_prev: { error: string | null }, formData: FormData) => {
-            const email = formData.get('email') as string;
-            try {
-                await api.subscribe(email);
-                return { error: null };
-            } catch {
-                return { error: 'Nie udało się zapisać' };
-            }
-        },
-        { error: null }
-    );
+export function NewsletterForm() {
+    const [state, submitAction] = useSubscribeNewsletter();
+    const hasError = state.status === 'error';
 
     return (
-        <form action={submitAction}>
-            <Input name="email" type="email" required />
-            {state.error && (
-                <p role="alert" className="text-sm text-destructive">{state.error}</p>
+        <form action={submitAction} noValidate className="space-y-2">
+            <Label htmlFor="newsletter-email">Email</Label>
+            <Input
+                id="newsletter-email"
+                name="email"
+                type="email"
+                required
+                defaultValue={hasError ? state.email : ''}
+                aria-invalid={hasError ? true : undefined}
+                aria-describedby={hasError ? 'newsletter-error' : undefined}
+            />
+            {hasError && (
+                <p id="newsletter-error" role="alert" className="text-sm text-destructive">
+                    {state.message}
+                </p>
             )}
+            {/* Region status jest w DOM od początku, zmienia się tylko treść (accessibility.md, aria-live Regions) */}
+            <p role="status" className="text-sm text-success">
+                {state.status === 'success' && 'Zapisano do newslettera'}
+            </p>
             <SubmitButton />
         </form>
     );
@@ -435,7 +479,7 @@ function SimpleContactForm() {
 | `useActionState` | React Hook Form + Zod |
 |------|------|
 | Proste formularze (1-3 pola) | Złożone formularze (>3 pola) |
-| Brak client-side walidacji | Zaawansowana walidacja (Zod) |
+| Walidacja Zod w akcji, po wysłaniu | Walidacja Zod w trakcie wpisywania (resolver) |
 | Natywny `<form action>` | Kontrolowane komponenty |
 | Progressive enhancement | Wizard, dynamic fields, DevTools |
 
@@ -458,23 +502,26 @@ toast.error('Błąd połączenia', {
     description: 'Sprawdź połączenie internetowe',
 });
 
-// Z akcją
+// Z akcją — ponowienie przez mutację z hooka (sendContact = useSendContact())
 toast.error('Nie udało się wysłać', {
     action: {
         label: 'Spróbuj ponownie',
-        onClick: () => retry(),
+        onClick: () => sendContact.mutate(values),
     },
 });
 
-// Promise (najlepszy dla async operations)
-toast.promise(saveData(), {
+// Promise (najlepszy dla async operations) — promise z mutacji hooka, nie wywołanie serwisu w komponencie.
+// Hook użyty z toast.promise nie pokazuje własnego toastu błędu w onError (tylko loguje kod błędu),
+// żeby użytkownik nie dostał dwóch komunikatów o tym samym błędzie.
+toast.promise(saveTemplate.mutateAsync(values), {
     loading: 'Zapisywanie...',
     success: 'Zapisano!',
     error: 'Błąd zapisu',
 });
 
-// Custom duration
-toast.success('Skopiowano!', { duration: 2000 });
+// Custom duration — czas w nazwanej stałej
+const COPY_TOAST_DURATION_MS = 2000;
+toast.success('Skopiowano!', { duration: COPY_TOAST_DURATION_MS });
 ```
 
 ### Alert Inline
@@ -514,7 +561,7 @@ export function Alert({ variant, children }: AlertProps) {
                 alertStyles[variant]
             )}
         >
-            <Icon className="h-5 w-5 shrink-0 mt-0.5" />
+            <Icon className="h-5 w-5 shrink-0 mt-0.5" aria-hidden="true" />
             <div className="text-sm">{children}</div>
         </div>
     );
@@ -526,53 +573,86 @@ export function Alert({ variant, children }: AlertProps) {
 ## Loading States
 
 ### Button z useTransition
+
+Dla akcji async spoza React Query (np. kopiowanie do schowka, eksport pliku). Odrzucony promise w `startTransition` trafia do najbliższego error boundary i zamienia ekran w stan błędu, dlatego przycisk łapie błąd sam: log ze stałym kodem z propsa `errorCode` i toast dla użytkownika. Mutacji z hooka React Query tu nie przekazujesz — hook już loguje błąd w `onError`, więc używasz wariantu „Button z React Query” niżej (`mutate` + `isPending`).
 ```typescript
-import { useTransition } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useTransition } from 'react';
+import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 
 interface AsyncButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     onClick: () => Promise<void>;
+    errorCode: string;
+    errorMessage?: string;
     children: React.ReactNode;
 }
 
-export function AsyncButton({ onClick, children, ...props }: AsyncButtonProps) {
+export function AsyncButton({
+    onClick,
+    errorCode,
+    errorMessage = 'Nie udało się wykonać akcji',
+    children,
+    ...props
+}: AsyncButtonProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleClick = () => {
         startTransition(async () => {
-            await onClick();
+            try {
+                await onClick();
+            } catch (error) {
+                logger.error(errorCode, error);
+                toast.error(errorMessage);
+            }
         });
     };
 
     return (
-        <Button onClick={handleClick} disabled={isPending} {...props}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button {...props} onClick={handleClick} disabled={props.disabled || isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
             {children}
         </Button>
     );
 }
+
+// Użycie
+<AsyncButton onClick={exportReport} errorCode="REPORT_EXPORT_FAILED">
+    Eksportuj
+</AsyncButton>
 ```
 
-Wariant z celem dotykowym 44 px, widocznym fokusem i stanem ogłaszanym czytnikom ekranu (`aria-busy`, ikona ukryta przed czytnikiem):
+Wariant z celem dotykowym 44 px ([accessibility.md](accessibility.md#rozmiar-celu)), widocznym fokusem i stanem ogłaszanym czytnikom ekranu (`aria-busy`, ikona ukryta przed czytnikiem); obsługa błędu jak w `AsyncButton`:
 
 ```typescript
-import { useTransition } from 'react';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useTransition } from 'react';
+import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 interface ActionButtonProps {
     onClick: () => Promise<void>;
+    errorCode: string;
     children: React.ReactNode;
     disabled?: boolean;
 }
 
-export function ActionButton({ onClick, children, disabled }: ActionButtonProps) {
+export function ActionButton({ onClick, errorCode, children, disabled }: ActionButtonProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleClick = () => {
         startTransition(async () => {
-            await onClick();
+            try {
+                await onClick();
+            } catch (error) {
+                logger.error(errorCode, error);
+                toast.error('Nie udało się wykonać akcji');
+            }
         });
     };
 
@@ -599,17 +679,19 @@ export function ActionButton({ onClick, children, disabled }: ActionButtonProps)
 
 ### Button z React Query
 ```typescript
-function SaveButton({ data }: { data: FormData }) {
-    const mutation = useSaveData();
+// useSaveSettings: hook z useMutation → settingsService.save, onError loguje SETTINGS_SAVE_FAILED i pokazuje toast
+// Typ danych nazywasz od domeny (SettingsValues), nie FormData — ta nazwa przesłania globalny typ DOM
+function SaveButton({ values }: { values: SettingsValues }) {
+    const mutation = useSaveSettings();
 
     return (
         <Button 
-            onClick={() => mutation.mutate(data)}
+            onClick={() => mutation.mutate(values)}
             disabled={mutation.isPending}
         >
             {mutation.isPending ? (
                 <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                     Zapisywanie...
                 </>
             ) : (
@@ -647,11 +729,15 @@ function ListSkeleton({ count = 3 }: { count?: number }) {
 
 ### Loading Overlay
 ```typescript
+// LoadingOverlay bez propsów — to samo API w całym projekcie
 export function LoadingOverlay() {
     return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div
+            role="status"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50"
+        >
             <div className="flex flex-col items-center gap-4">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Ładowanie...</p>
             </div>
         </div>
@@ -662,20 +748,18 @@ export function LoadingOverlay() {
 ---
 
 ## Empty States
+
+`EmptyState` ma w projekcie jedno API: `{ title, description?, action? }` (patterns.md i loading-and-error-states.md używają tego samego komponentu). Tytuł mówi, co się stało, opis — co użytkownik może zrobić, akcja — następny krok.
 ```typescript
 interface EmptyStateProps {
-    icon?: React.ReactNode;
     title: string;
     description?: string;
     action?: React.ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ title, description, action }: EmptyStateProps) {
     return (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            {icon && (
-                <div className="mb-4 text-muted-foreground">{icon}</div>
-            )}
             <h3 className="text-lg font-semibold">{title}</h3>
             {description && (
                 <p className="mt-2 text-muted-foreground max-w-md">
@@ -689,7 +773,6 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 
 // Użycie
 <EmptyState
-    icon={<SearchX className="h-12 w-12" />}
     title="Brak wyników"
     description="Nie znaleziono szablonów pasujących do kryteriów."
     action={
@@ -706,39 +789,69 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 
 ### useOptimistic Hook
 
-> **Uwaga:** setter z `useOptimistic` MUSI być wywołany wewnątrz akcji lub `startTransition`.
+> **Uwaga:** setter z `useOptimistic` wywołujesz wewnątrz akcji albo `startTransition`.
 > Wywołanie go z `onMutate` React Query (poza transition) jest anty-patternem — React zgłosi
 > ostrzeżenie, a stan optymistyczny nie zostanie poprawnie powiązany z trwającą akcją.
 > Owiń zarówno `setOptimistic*`, jak i `mutateAsync` w jedną `startTransition`.
 
+Mutacja leży w hooku `useToggleFavorite` (ten sam w całym projekcie): `onError` loguje kod błędu i pokazuje toast, a `onSettled` zwraca promise invalidacji. Dzięki temu `mutateAsync` kończy się dopiero po odświeżeniu danych — transition trwa do chwili, gdy prop `isFavorite` ma już nową wartość, i przycisk nie wraca na moment do starego stanu.
 ```typescript
-import { useOptimistic, useTransition } from 'react';
+// src/hooks/use-toggle-favorite.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-function FavoriteButton({ templateId, isFavorite }: Props) {
+import { templateKeys } from '@/hooks/use-templates';
+import { logger } from '@/lib/logger';
+import { templateService } from '@/services/template-service';
+
+export function useToggleFavorite(templateId: string) {
     const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: () => templateService.toggleFavorite(templateId),
+        onError: (error) => {
+            logger.error('FAVORITE_TOGGLE_FAILED', error);
+            toast.error('Nie udało się zapisać ulubionych');
+        },
+        // Zwracany promise: mutacja kończy się po odświeżeniu źródła prawdy
+        onSettled: () => queryClient.invalidateQueries({ queryKey: templateKeys.all }),
+    });
+}
+```
+```typescript
+// src/components/favorite-button.tsx
+import { Heart } from 'lucide-react';
+import { useOptimistic, useTransition } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
+import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
+
+interface FavoriteButtonProps {
+    templateId: string;
+    isFavorite: boolean;
+}
+
+export function FavoriteButton({ templateId, isFavorite }: FavoriteButtonProps) {
+    const toggleFavorite = useToggleFavorite(templateId);
     const [isPending, startTransition] = useTransition();
 
     // Optimistic state — aktualizowany wyłącznie wewnątrz transition/akcji
     const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
 
-    const mutation = useMutation({
-        mutationFn: () => api.toggleFavorite(templateId),
-        onError: () => {
-            // Gdy akcja się kończy, useOptimistic wraca do bazowego `isFavorite`;
-            // toast informuje użytkownika o niepowodzeniu.
-            toast.error('Nie udało się zapisać');
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
-        },
-    });
-
     const handleToggle = () => {
         // setter useOptimistic + mutacja w jednej transition
         startTransition(async () => {
             setOptimisticFavorite(!optimisticFavorite);
-            await mutation.mutateAsync();
+            try {
+                await toggleFavorite.mutateAsync();
+            } catch {
+                // Odrzucenie mutateAsync bez catch trafiłoby do error boundary.
+                // Błąd zalogował już onError hooka (zdarzenie w Sentry, toast); tu zostaje ślad
+                // cofnięcia stanu optymistycznego bez drugiego zdarzenia. Po zakończeniu akcji
+                // useOptimistic wraca do bazowego `isFavorite`.
+                logger.info('FAVORITE_TOGGLE_ROLLED_BACK', { templateId });
+            }
         });
     };
 
@@ -746,11 +859,14 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
         <Button
             variant="ghost"
             size="icon"
+            className="pointer-coarse:size-11"
             onClick={handleToggle}
             disabled={isPending}
-            aria-label={optimisticFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
+            aria-pressed={optimisticFavorite}
+            aria-label="Ulubiony"
         >
             <Heart
+                aria-hidden="true"
                 className={cn(
                     'h-5 w-5 transition-colors',
                     optimisticFavorite
@@ -763,39 +879,71 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
 }
 ```
 
+Wariant bez stanu optymistycznego to ten sam hook i `onClick={() => toggleFavorite.mutate()}` z `disabled={toggleFavorite.isPending}`.
+
 ### Optimistic List Update
+
+Lista z elementem tymczasowym potrzebuje invalidacji po mutacji: bez niej element tymczasowy znika po zakończeniu akcji, a prawdziwy element z serwera się nie pojawia. Hook zwraca promise invalidacji z `onSettled`, więc transition trwa, dopóki lista z serwera nie zawiera nowego elementu.
 ```typescript
-function TodoList() {
+// src/hooks/use-create-todo.ts
+export const todoKeys = {
+    all: ['todos'] as const,
+};
+
+export function useCreateTodo() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (newTodo: NewTodo) => todoService.create(newTodo),
+        onError: (error) => {
+            logger.error('TODO_CREATE_FAILED', error);
+            toast.error('Nie udało się dodać zadania');
+        },
+        onSettled: () => queryClient.invalidateQueries({ queryKey: todoKeys.all }),
+    });
+}
+```
+```typescript
+// src/components/todo-list.tsx
+const TEMP_ID_PREFIX = 'temp-';
+
+export function TodoList() {
     const { data: todos } = useTodos();
-    const [isPending, startTransition] = useTransition();
+    const createTodo = useCreateTodo();
+    const [, startTransition] = useTransition();
     const [optimisticTodos, addOptimisticTodo] = useOptimistic(
         todos ?? [],
         (state, newTodo: Todo) => [...state, newTodo]
     );
 
-    const mutation = useMutation({ mutationFn: api.createTodo });
-
     const handleCreate = (newTodo: NewTodo) => {
         // setter useOptimistic + mutacja w jednej transition (nie w onMutate)
         startTransition(async () => {
-            addOptimisticTodo({ ...newTodo, id: `temp-${Date.now()}` });
-            await mutation.mutateAsync(newTodo);
+            addOptimisticTodo({ ...newTodo, id: `${TEMP_ID_PREFIX}${crypto.randomUUID()}` });
+            try {
+                await createTodo.mutateAsync(newTodo);
+            } catch {
+                // onError hooka zalogował błąd i pokazał toast; element tymczasowy znika po zakończeniu akcji
+                logger.info('TODO_CREATE_ROLLED_BACK');
+            }
         });
     };
 
     return (
+        <>
+        <NewTodoForm onCreate={handleCreate} />
         <ul>
             {optimisticTodos.map((todo) => (
                 <li 
                     key={todo.id}
                     className={cn(
-                        todo.id.startsWith('temp-') && 'opacity-50'
+                        todo.id.startsWith(TEMP_ID_PREFIX) && 'opacity-50'
                     )}
                 >
                     {todo.title}
                 </li>
             ))}
         </ul>
+        </>
     );
 }
 ```
@@ -804,96 +952,159 @@ function TodoList() {
 
 ## Confirm Before Action
 
-### useConfirm Hook
-```typescript
-import { useState, useCallback } from 'react';
+Akcja destrukcyjna (usunięcie, nadpisanie, wylogowanie innych sesji) ma jedno z dwóch zabezpieczeń:
 
-interface ConfirmOptions {
+- **Potwierdzenie** — dla operacji nieodwracalnych (trwałe usunięcie). Dialog nazywa skutek i ma przycisk z czasownikiem akcji („Usuń”), nie „OK”.
+- **„Cofnij”** — dla operacji odwracalnych (archiwizacja, przeniesienie do kosza). Akcja wykonuje się od razu, a toast przez kilka sekund daje „Cofnij”; mniej tarcia niż dialog przy częstych akcjach.
+
+Dotyczy to także akcji uruchamianych gestem (swipe w liście, responsive-design.md, sekcja Swipe Actions): gest łatwo wykonać przypadkiem, więc usunięcie z gestu przechodzi przez potwierdzenie albo daje „Cofnij”.
+
+### useConfirm Hook
+
+Dialog potwierdzenia jest jednym komponentem w providerze, a `useConfirm` tylko zwraca funkcję `confirm`. Komponent zdefiniowany wewnątrz hooka byłby nowym typem przy każdym renderze, więc React odmontowywałby i montował dialog od nowa (utrata fokusu i animacji). Stan dialogu to unia dyskryminowana: zamknięty albo otwarty z opcjami i funkcją `resolve`.
+```typescript
+// src/lib/errors.ts — obok ApiError
+export class ContextMissingError extends Error {
+    readonly code: string;
+    constructor(code: string) {
+        super(code);
+        this.name = 'ContextMissingError';
+        this.code = code;
+    }
+}
+```
+```typescript
+// src/contexts/confirm-context.ts — kontekst osobno, żeby plik komponentu eksportował tylko komponent (Fast Refresh)
+import { createContext } from 'react';
+
+export interface ConfirmOptions {
     title: string;
     description: string;
     confirmText?: string;
     destructive?: boolean;
 }
 
-export function useConfirm() {
-    const [state, setState] = useState<{
-        open: boolean;
-        options: ConfirmOptions | null;
-        resolve: ((value: boolean) => void) | null;
-    }>({
-        open: false,
-        options: null,
-        resolve: null,
-    });
+export type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>;
 
-    const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
-        return new Promise((resolve) => {
-            setState({ open: true, options, resolve });
+export const ConfirmContext = createContext<ConfirmFn | null>(null);
+```
+```typescript
+// src/components/confirm-provider.tsx
+import { useState } from 'react';
+
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { ConfirmContext, type ConfirmFn, type ConfirmOptions } from '@/contexts/confirm-context';
+
+type ConfirmState =
+    | { status: 'closed' }
+    | { status: 'open'; options: ConfirmOptions; resolve: (isConfirmed: boolean) => void };
+
+export function ConfirmProvider({ children }: { children: React.ReactNode }) {
+    const [state, setState] = useState<ConfirmState>({ status: 'closed' });
+
+    const confirm: ConfirmFn = (options) =>
+        new Promise((resolve) => {
+            setState({ status: 'open', options, resolve });
         });
-    }, []);
 
-    const handleConfirm = () => {
-        state.resolve?.(true);
-        setState({ open: false, options: null, resolve: null });
+    const close = (isConfirmed: boolean) => {
+        // Drugie wywołanie resolve (onConfirm, potem onOpenChange(false)) nic nie zmienia —
+        // promise jest już rozstrzygnięty
+        if (state.status === 'open') state.resolve(isConfirmed);
+        setState({ status: 'closed' });
     };
 
-    const handleCancel = () => {
-        state.resolve?.(false);
-        setState({ open: false, options: null, resolve: null });
-    };
-
-    const ConfirmDialog = () => (
-        <Dialog open={state.open} onOpenChange={(open) => !open && handleCancel()}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{state.options?.title}</DialogTitle>
-                    <DialogDescription>{state.options?.description}</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button variant="outline" onClick={handleCancel}>
-                        Anuluj
-                    </Button>
-                    <Button 
-                        variant={state.options?.destructive ? 'destructive' : 'default'}
-                        onClick={handleConfirm}
-                    >
-                        {state.options?.confirmText ?? 'Potwierdź'}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+    return (
+        <ConfirmContext value={confirm}>
+            {children}
+            {state.status === 'open' && (
+                <ConfirmDialog
+                    open
+                    onOpenChange={(isOpen) => {
+                        if (!isOpen) close(false);
+                    }}
+                    onConfirm={() => close(true)}
+                    title={state.options.title}
+                    description={state.options.description}
+                    confirmText={state.options.confirmText}
+                    destructive={state.options.destructive}
+                />
+            )}
+        </ConfirmContext>
     );
-
-    return { confirm, ConfirmDialog };
 }
+```
+```typescript
+// src/hooks/use-confirm.ts
+import { use } from 'react';
 
-// Użycie
+import { ConfirmContext, type ConfirmFn } from '@/contexts/confirm-context';
+import { ContextMissingError } from '@/lib/errors';
+
+export function useConfirm(): ConfirmFn {
+    const confirm = use(ConfirmContext);
+    if (!confirm) throw new ContextMissingError('CONFIRM_CONTEXT_MISSING');
+    return confirm;
+}
+```
+
+`ConfirmDialog` to komponent z sekcji „Podstawowy Dialog (Radix)” na górze pliku. Przy React Compilerze `confirm` nie potrzebuje `useCallback`; w projekcie bez Compilera owijasz go w `useCallback` dopiero wtedy, gdy trafia do zależności efektu albo do dziecka w `memo()`.
+
+```typescript
+// Użycie — ConfirmProvider owija aplikację (np. w src/app.tsx)
 function DeleteButton({ id }: { id: string }) {
-    const { confirm, ConfirmDialog } = useConfirm();
-    const deleteMutation = useDeleteItem();
+    const confirm = useConfirm();
+    const deleteItem = useDeleteItem(); // hook z useMutation, onError loguje ITEM_DELETE_FAILED
 
     const handleDelete = async () => {
-        const confirmed = await confirm({
+        const isConfirmed = await confirm({
             title: 'Usuń element',
             description: 'Czy na pewno chcesz usunąć? Tej operacji nie można cofnąć.',
             confirmText: 'Usuń',
             destructive: true,
         });
 
-        if (confirmed) {
-            deleteMutation.mutate(id);
+        if (isConfirmed) {
+            deleteItem.mutate(id);
         }
     };
 
     return (
-        <>
-            <Button variant="destructive" onClick={handleDelete}>
-                Usuń
-            </Button>
-            <ConfirmDialog />
-        </>
+        <Button variant="destructive" onClick={() => void handleDelete()}>
+            Usuń
+        </Button>
     );
 }
+```
+
+### Cofnij zamiast potwierdzenia
+
+Dla akcji odwracalnej toast z „Cofnij” pokazujesz w callbacku hooka, nie w callbacku przekazanym do `mutate(...)`: wiersz listy znika po invalidacji, a callbacki z `mutate(...)` nie wykonują się po odmontowaniu komponentu. Callbacki z definicji `useMutation` działają niezależnie od tego.
+```typescript
+// src/hooks/use-archive-item.ts
+export function useArchiveItem() {
+    const queryClient = useQueryClient();
+    const restoreItem = useRestoreItem(); // hook z useMutation → itemService.restore, onError loguje ITEM_RESTORE_FAILED
+
+    return useMutation({
+        mutationFn: (id: string) => itemService.archive(id),
+        onSuccess: (_result, id) => {
+            toast('Przeniesiono do archiwum', {
+                action: { label: 'Cofnij', onClick: () => restoreItem.mutate(id) },
+            });
+        },
+        onError: (error) => {
+            logger.error('ITEM_ARCHIVE_FAILED', error);
+            toast.error('Nie udało się zarchiwizować');
+        },
+        onSettled: () => queryClient.invalidateQueries({ queryKey: itemKeys.all }),
+    });
+}
+
+// Użycie: jedno kliknięcie, bez dialogu
+<Button variant="outline" onClick={() => archiveItem.mutate(item.id)}>
+    Archiwizuj
+</Button>
 ```
 
 ---
@@ -902,17 +1113,19 @@ function DeleteButton({ id }: { id: string }) {
 
 | Wzorzec | Implementacja |
 |---------|---------------|
-| **Loading w formularzu** | React Query `isPending` lub `useTransition` |
+| **Loading w formularzu** | `isPending` mutacji z hooka (React Hook Form) albo `useActionState` + `useFormStatus` (formularz bez React Query) |
+| **Loading poza formularzem** | `isPending` mutacji; akcja spoza React Query — `useTransition` z obsługą błędu (`AsyncButton`) |
 | **Walidacja** | React Hook Form + Zod |
-| **Optimistic updates** | `useOptimistic` + React Query |
+| **Optimistic updates** | `useOptimistic` + mutacja z hooka (`onSettled` zwraca promise invalidacji) |
 | **Feedback** | Sonner toast |
-| **Confirm dialogs** | Custom `useConfirm` hook |
-| **Focus trap** | Radix Dialog lub react-focus-lock |
+| **Akcje destrukcyjne** | `useConfirm` z `ConfirmProvider` (nieodwracalne) albo toast z „Cofnij” (odwracalne) |
+| **Focus trap** | Dialog z shadcn/ui (Radix) albo natywny `<dialog>` z `showModal()`; react-focus-lock tylko jako zgłoszona nowa zależność |
 
 ---
 
 ## Zobacz Także
 
-- [accessibility.md](accessibility.md) - ARIA dla formularzy
+- [accessibility.md](accessibility.md) - ARIA dla formularzy, rozmiar celu
 - [animations.md](animations.md) - Loading animations
-- [loading-and-error-states.md](../loading-and-error-states.md) - Patterns dla stanów
+- [forms.md](../../tailwind-react-guidelines/resources/forms.md) - Kanoniczny `ContactForm`, React Hook Form + Zod
+- [loading-and-error-states.md](../../tailwind-react-guidelines/resources/loading-and-error-states.md) - Patterns dla stanów

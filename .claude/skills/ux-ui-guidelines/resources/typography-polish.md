@@ -78,9 +78,9 @@ html {
 }
 ```
 
-```tsx
-// Tailwind — apply to root layout
-<html className="antialiased">
+```html
+<!-- Tailwind — w Vite SPA element <html> jest w index.html, nie w JSX, więc atrybut to class -->
+<html lang="pl" class="antialiased">
 ```
 
 ### Good vs. Bad

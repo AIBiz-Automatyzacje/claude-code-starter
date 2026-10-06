@@ -6,109 +6,173 @@ Paleta kolorów (OKLCH), typografia, spacing i design tokens - Tailwind v4.
 
 ## Konfiguracja Kolorów (Tailwind v4)
 
-### globals.css
+Wzorzec jest ten sam co w `.claude/skills/tailwind-react-guidelines/resources/styling-guide.md` (sekcja „Tokeny CSS + dark variant”):
+tokeny w `:root` i `.dark`, mapowanie na utility przez `@theme inline` i `@custom-variant dark`. Wspólne tokeny
+(`background`, `foreground`, `primary`, `border`) mają w obu plikach te same wartości; ten plik dopisuje pełną paletę.
+
+### src/index.css
 ```css
 @import "tailwindcss";
 
+/* Dark mode przez klasę .dark ustawianą przez useTheme (v4 nie ma darkMode w configu).
+   Bez tej linii utility dark: reagują na prefers-color-scheme, a nie na klasę. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== KOLORY (OKLCH), tryb jasny ===== */
+:root {
+    /* Primary - niebieski CTA; biały tekst ~8:1 */
+    --primary: oklch(0.45 0.26 264);
+    --primary-foreground: oklch(1 0 0);
+
+    /* Accent - zielony. Jasny odcień (L ≈ 0.65) z białym tekstem daje ~2,8:1, poniżej WCAG AA 4,5:1,
+       więc L = 0.5: biały tekst ~5,3:1. */
+    --accent: oklch(0.5 0.15 160);
+    --accent-foreground: oklch(1 0 0);
+
+    /* Destructive - czerwony; biały tekst ~5:1 */
+    --destructive: oklch(0.55 0.25 27);
+    --destructive-foreground: oklch(1 0 0);
+
+    /* Success - token stoi pod tekstem (`bg-success text-success-foreground`) i jest kolorem tekstu
+       (`text-success`), więc potrzebuje ≥ 4,5:1. L = 0.5 daje z białym ~5,6:1. Jasny odcień (L ≈ 0.65)
+       ma ~3:1 — wystarcza na wypełnienie albo ikonę (próg 3:1), nie na tekst. */
+    --success: oklch(0.5 0.15 145);
+    --success-foreground: oklch(1 0 0);
+
+    /* Warning - jasne tło z ciemnym tekstem (~7:1). Jako kolor tekstu albo ikony na białym tle
+       ma ~2,3:1, poniżej progu 3:1 dla ikon — tam użyj `text-warning-foreground`. */
+    --warning: oklch(0.75 0.15 85);
+    --warning-foreground: oklch(0.25 0.02 60);
+
+    /* Neutralne */
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0.039 264);
+
+    --muted: oklch(0.96 0.005 260);
+    /* L = 0.5: ~5,3:1 na `bg-muted` (L = 0.55 dawało 4,3:1) */
+    --muted-foreground: oklch(0.5 0.02 260);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0.039 264);
+
+    --border: oklch(0.922 0.012 264);
+    --input: oklch(0.922 0.012 264);
+    --ring: oklch(0.45 0.26 264);
+
+    /* Obrys obrazów — neutralna czerń 10%, zob. surfaces.md (Image Outlines) */
+    --outline-image: rgb(0 0 0 / 0.1);
+}
+
+/* ===== KOLORY, tryb ciemny ===== */
+.dark {
+    --background: oklch(0.145 0.039 264);
+    --foreground: oklch(0.98 0.005 264);
+
+    --muted: oklch(0.2 0.02 264);
+    --muted-foreground: oklch(0.65 0.02 264);
+
+    --card: oklch(0.18 0.02 264);
+    --card-foreground: oklch(0.98 0.005 264);
+
+    --border: oklch(0.3 0.02 264);
+    --input: oklch(0.3 0.02 264);
+
+    /* Kolory marki rozjaśnione: L 0.45–0.55 na ciemnym tle daje 2,4–3,9:1 (tekst, link, ring).
+       Jasne wypełnienie dostaje ciemny tekst; każda para ma ≥ 6,8:1. */
+    --primary: oklch(0.7 0.16 264);
+    --primary-foreground: oklch(0.145 0.039 264);
+    --ring: oklch(0.7 0.16 264);
+    --accent: oklch(0.72 0.15 160);
+    --accent-foreground: oklch(0.145 0.039 264);
+    --destructive: oklch(0.7 0.19 22);
+    --destructive-foreground: oklch(0.145 0.039 264);
+    --success: oklch(0.72 0.17 145);
+    --success-foreground: oklch(0.145 0.039 264);
+
+    --outline-image: rgb(255 255 255 / 0.1);
+}
+
+/* Mapowanie tokenów na utility Tailwind (bg-primary, text-success, outline-outline-image, ...).
+   inline: var() rozwiązuje się w miejscu użycia, więc wartości z .dark działają. */
+@theme inline {
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-outline-image: var(--outline-image);
+}
+
+/* Tokeny bez wersji ciemnej zostają w zwykłym @theme */
 @theme {
-    /* ===== COLORS (OKLCH) ===== */
-    
-    /* Primary - Niebieski CTA */
-    --color-primary: oklch(0.55 0.25 264);
-    --color-primary-foreground: oklch(1 0 0);
-    
-    /* Accent - Zielony */
-    /* ⚠️ KONTRAST: accent (L≈0.65) + biały foreground (oklch(1 0 0)) daje ~2.5-3:1,
-       poniżej WCAG AA 4.5:1 dla tekstu. Dla tekstu użyj ciemnego foreground
-       (np. oklch(0.2 0.02 260)) LUB zejdź z tłem do ~L 0.45-0.5. */
-    --color-accent: oklch(0.65 0.2 160);
-    --color-accent-foreground: oklch(1 0 0);
-    
-    /* Destructive - Czerwony */
-    --color-destructive: oklch(0.55 0.25 27);
-    --color-destructive-foreground: oklch(1 0 0);
-    
-    /* Success */
-    /* ⚠️ KONTRAST: success (L≈0.65) + biały foreground (oklch(1 0 0)) daje ~2.5-3:1,
-       poniżej WCAG AA 4.5:1 dla tekstu. Dla tekstu użyj ciemnego foreground
-       (np. oklch(0.2 0.02 260)) LUB zejdź z tłem do ~L 0.45-0.5.
-       Jasny odcień jest OK jako wypełnienie/UI (próg 3:1), ale nie dla tekstu. */
-    --color-success: oklch(0.65 0.2 145);
-    --color-success-foreground: oklch(1 0 0);
-    
-    /* Warning */
-    --color-warning: oklch(0.75 0.15 85);
-    --color-warning-foreground: oklch(0.25 0.02 60);
-    
-    /* ===== NEUTRAL (Light Mode) ===== */
-    
-    --color-background: oklch(1 0 0);
-    --color-foreground: oklch(0.2 0.02 260);
-    
-    --color-muted: oklch(0.96 0.005 260);
-    --color-muted-foreground: oklch(0.55 0.02 260);
-    
-    --color-card: oklch(1 0 0);
-    --color-card-foreground: oklch(0.2 0.02 260);
-    
-    --color-border: oklch(0.9 0.01 260);
-    --color-input: oklch(0.9 0.01 260);
-    --color-ring: oklch(0.55 0.25 264);
-    
     /* ===== TYPOGRAPHY ===== */
-    
     --font-sans: "Inter", system-ui, sans-serif;
-    
-    /* ===== RADIUS ===== */
-    
+
+    /* ===== RADIUS (wartości domyślne v4) ===== */
+    --radius-xs: 0.125rem;
     --radius-sm: 0.25rem;
     --radius-md: 0.375rem;
     --radius-lg: 0.5rem;
     --radius-xl: 0.75rem;
 }
-
-/* ===== DARK MODE (class-based for shadcn) ===== */
-@layer base {
-    .dark {
-        --color-background: oklch(0.15 0.02 260);
-        --color-foreground: oklch(0.95 0.01 260);
-        
-        --color-muted: oklch(0.2 0.02 260);
-        --color-muted-foreground: oklch(0.65 0.02 260);
-        
-        --color-card: oklch(0.18 0.02 260);
-        --color-card-foreground: oklch(0.95 0.01 260);
-        
-        --color-border: oklch(0.3 0.02 260);
-        --color-input: oklch(0.3 0.02 260);
-    }
-}
 ```
+
+Kontrast par podany w komentarzach liczony jest wg WCAG (luminancja względna sRGB). Po zmianie wartości
+sprawdź parę narzędziem z [accessibility.md](accessibility.md) (sekcja „Kontrast Kolorów”).
 
 ### Dark Mode Toggle
 ```typescript
-// hooks/useTheme.ts
+// src/hooks/use-theme.ts
 import { useEffect, useState } from 'react';
+import { z } from 'zod';
 
-type Theme = 'light' | 'dark' | 'system';
+const THEME_STORAGE_KEY = 'theme';
+const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
 
-export function useTheme() {
-    const [theme, setTheme] = useState<Theme>(() => {
-        if (typeof window === 'undefined') return 'system';
-        return (localStorage.getItem('theme') as Theme) || 'system';
-    });
+// localStorage to dane z zewnątrz (ręczna edycja, stara wersja aplikacji):
+// wartość spoza listy albo brak wpisu daje 'system' zamiast rzutowania `as Theme`
+const themeSchema = z.enum(['light', 'dark', 'system']).catch('system');
+type Theme = z.infer<typeof themeSchema>;
+
+interface UseThemeResult {
+    theme: Theme;
+    setTheme: (theme: Theme) => void;
+}
+
+export function useTheme(): UseThemeResult {
+    // Vite SPA renderuje tylko w przeglądarce, więc window i localStorage zawsze istnieją
+    const [theme, setTheme] = useState<Theme>(() =>
+        themeSchema.parse(localStorage.getItem(THEME_STORAGE_KEY)),
+    );
 
     useEffect(() => {
         const root = document.documentElement;
-        
-        if (theme === 'system') {
-            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            root.classList.toggle('dark', systemDark);
-        } else {
-            root.classList.toggle('dark', theme === 'dark');
-        }
-        
-        localStorage.setItem('theme', theme);
+        const media = window.matchMedia(DARK_SCHEME_QUERY);
+        const applyTheme = (): void => {
+            const isDark = theme === 'dark' || (theme === 'system' && media.matches);
+            root.classList.toggle('dark', isDark);
+        };
+
+        applyTheme();
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+        // W trybie 'system' motyw idzie za zmianą ustawień systemu; cleanup odpina nasłuch
+        media.addEventListener('change', applyTheme);
+        return () => media.removeEventListener('change', applyTheme);
     }, [theme]);
 
     return { theme, setTheme };
@@ -117,14 +181,17 @@ export function useTheme() {
 
 ### CSS light-dark() — Dark Mode bez JS
 ```css
-/* Natywna funkcja CSS — bez klas, bez JavaScript */
+/* Natywna funkcja CSS — bez klas, bez JavaScript.
+   Wartości kolorów nadal stoją tylko w definicji tokenu; light-dark() wybiera wariant wg color-scheme. */
 :root {
     color-scheme: light dark;
+    --card: light-dark(oklch(1 0 0), oklch(0.18 0.02 260));
+    --card-foreground: light-dark(oklch(0.145 0.039 264), oklch(0.98 0.005 264));
 }
 
 .card {
-    background: light-dark(oklch(1 0 0), oklch(0.18 0.02 260));
-    color: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
+    background: var(--card);
+    color: var(--card-foreground);
 }
 ```
 
@@ -181,6 +248,18 @@ oklch(L C H)
 
 ## Użycie Kolorów
 
+### Kolory tylko przez tokeny
+
+Wartość koloru (`#hex`, `rgb()`, `rgba()`, `oklch()`, klasa arbitralna `bg-[#1a73e8]`) wpisujesz tylko w definicji
+tokenu w `:root` i `.dark`; komponent, klasa CSS i styl inline używają tokenu (`bg-primary`, `var(--outline-image)`).
+To ta sama zasada co „Hardcoded Colors” w `.claude/skills/tailwind-react-guidelines/resources/styling-guide.md`,
+a powód jest praktyczny: kolor zależny od motywu ma dwie wartości, a zmieniasz je w jednym miejscu.
+
+Wartości z plików polish (obrys obrazów `rgb(0 0 0 / 0.1)` i `rgb(255 255 255 / 0.1)`, cienie
+`--shadow-border` z [surfaces.md](surfaces.md)) też są tokenami: stoją w `:root`/`.dark`, a komponent używa
+`outline-outline-image` albo `var(--shadow-border)`. Klasa palety z przezroczystością, której kolor nie zmienia
+się z motywem (`bg-black/50` pod tłem modala), może zostać w komponencie.
+
 ### Semantyczne Klasy
 ```typescript
 // Background & Text
@@ -230,7 +309,7 @@ oklch(L C H)
 
 ### Relative Color Syntax (Nowe)
 ```css
-/* Manipulacja komponentów koloru — cross-browser w 2026 */
+/* Manipulacja komponentów koloru — Baseline Newly Available (Chrome, Edge, Safari, Firefox) */
 .darker-primary {
     color: oklch(from var(--color-primary) calc(l - 0.1) c h);
 }
@@ -262,22 +341,24 @@ oklch(L C H)
 
 ## Gradienty Kategorii
 ```typescript
-// constants/gradients.ts
+// src/constants/gradients.ts
+// Biały tekst text-xs potrzebuje ≥ 4,5:1 także na jaśniejszym końcu gradientu.
+// Odcienie 500 dają z białym 2,2–4,8:1 (green-500 ~2,2:1), odcienie 700 — co najmniej ~4,9:1.
 export const CATEGORY_GRADIENTS = {
-    'Technology': 'from-blue-500 to-blue-600',
-    'Business': 'from-green-500 to-green-600',
-    'Design': 'from-purple-500 to-purple-600',
-    'Marketing': 'from-orange-500 to-orange-600',
-    'Sales': 'from-pink-500 to-pink-600',
-    'Education': 'from-indigo-500 to-indigo-600',
-    'Other': 'from-red-500 to-red-600',
+    'Technology': 'from-blue-700 to-blue-800',
+    'Business': 'from-green-700 to-green-800',
+    'Design': 'from-purple-700 to-purple-800',
+    'Marketing': 'from-orange-700 to-orange-800',
+    'Sales': 'from-pink-700 to-pink-800',
+    'Education': 'from-indigo-700 to-indigo-800',
+    'Other': 'from-red-700 to-red-800',
 } as const;
 
-// Użycie
+// Użycie (v4: bg-linear-to-r; bg-gradient-to-r to nazwa z v3)
 <span className={cn(
     "px-2 py-1 rounded-full text-xs font-medium text-white",
-    "bg-gradient-to-r",
-    CATEGORY_GRADIENTS[category] ?? 'from-gray-500 to-gray-600'
+    "bg-linear-to-r",
+    CATEGORY_GRADIENTS[category] ?? 'from-gray-700 to-gray-800'
 )}>
     {category}
 </span>
@@ -285,12 +366,14 @@ export const CATEGORY_GRADIENTS = {
 
 ### Custom OKLCH Gradient
 ```css
-/* Dla bardziej precyzyjnych gradientów */
-.gradient-brand {
+/* src/index.css — dla bardziej precyzyjnych gradientów.
+   @utility zamiast zwykłej klasy: działa z wariantami (hover:, md:) i stoi w warstwie utilities.
+   Kolory z tokenu: drugi koniec to primary przyciemniony i przesunięty w odcieniu (relative color syntax). */
+@utility gradient-brand {
     background: linear-gradient(
         135deg,
-        oklch(0.55 0.25 264) 0%,
-        oklch(0.45 0.25 280) 100%
+        var(--color-primary) 0%,
+        oklch(from var(--color-primary) calc(l - 0.1) c calc(h + 16)) 100%
     );
 }
 ```
@@ -319,16 +402,16 @@ font-family: "Inter", system-ui, -apple-system, sans-serif;
 
 ### Fluid Typography (Headlines)
 ```css
-/* globals.css */
-.text-fluid-xl {
+/* src/index.css — @utility (v4) zamiast zwykłej klasy, żeby działały warianty (md:text-fluid-3xl) */
+@utility text-fluid-xl {
     font-size: clamp(1.25rem, 1rem + 1vw, 1.5rem);
 }
 
-.text-fluid-2xl {
+@utility text-fluid-2xl {
     font-size: clamp(1.5rem, 1rem + 2vw, 2.25rem);
 }
 
-.text-fluid-3xl {
+@utility text-fluid-3xl {
     font-size: clamp(1.875rem, 1.25rem + 2.5vw, 3rem);
 }
 ```
@@ -419,10 +502,12 @@ Dla detali renderingu (text-wrap balance/pretty, font-smoothing macOS, tabular-n
 
 ## Border Radius
 
+Nazwy Tailwind v4 (w v3 `rounded-sm` było 2px, a `rounded` 4px — v4 przesunęło skalę o jeden stopień):
+
 | Class | Value | Użycie |
 |-------|-------|--------|
-| `rounded-sm` | 2px | Subtle |
-| `rounded` | 4px | Default |
+| `rounded-xs` | 2px | Subtle |
+| `rounded-sm` | 4px | Default (gołe `rounded` też daje 4px) |
 | `rounded-md` | 6px | Buttons, inputs |
 | `rounded-lg` | 8px | Cards |
 | `rounded-xl` | 12px | Modals |
@@ -433,7 +518,8 @@ Dla detali renderingu (text-wrap balance/pretty, font-smoothing macOS, tabular-n
 <Button className="rounded-md" />
 <Badge className="rounded-full" />
 <Avatar className="rounded-full" />
-<Dialog className="rounded-xl" />
+{/* Dialog z shadcn/Radix nie renderuje elementu — klasy idą na DialogContent */}
+<DialogContent className="rounded-xl" />
 ```
 
 **Concentric radius (zagnieżdżone elementy):** outer = inner + padding. Niedopasowane radii to częsta przyczyna "off feel" → [surfaces.md](surfaces.md).
@@ -443,9 +529,11 @@ Dla detali renderingu (text-wrap balance/pretty, font-smoothing macOS, tabular-n
 ## Shadows
 
 ### Skala
+Nazwy Tailwind v4 (v3 `shadow-sm` to w v4 `shadow-xs`, a v3 `shadow` to w v4 `shadow-sm`):
 ```typescript
-shadow-sm   // Subtle
-shadow      // Default
+shadow-2xs  // Hairline
+shadow-xs   // Subtle
+shadow-sm   // Default (gołe `shadow` daje to samo)
 shadow-md   // Medium
 shadow-lg   // Large
 shadow-xl   // Extra large
@@ -454,10 +542,11 @@ shadow-2xl  // Maximum
 
 ### Użycie
 ```typescript
-<Card className="shadow-sm" />
+<Card className="shadow-xs" />
 <Card className="hover:shadow-md transition-shadow" />
-<Dialog className="shadow-xl" />
-<Dropdown className="shadow-lg" />
+{/* Root Dialog i DropdownMenu nie renderują elementu — klasy idą na *Content */}
+<DialogContent className="shadow-xl" />
+<DropdownMenuContent className="shadow-lg" />
 ```
 
 ### Colored Shadows (CTA)
@@ -474,11 +563,11 @@ shadow-2xl  // Maximum
 
 ### Custom Shadow (OKLCH)
 ```css
-/* globals.css */
-.shadow-primary-glow {
-    box-shadow: 
-        0 4px 14px 0 oklch(0.55 0.25 264 / 0.25),
-        0 1px 3px 0 oklch(0.55 0.25 264 / 0.1);
+/* src/index.css — kolor z tokenu primary, więc cień idzie za motywem i zmianą marki */
+@utility shadow-primary-glow {
+    box-shadow:
+        0 4px 14px 0 oklch(from var(--color-primary) l c h / 0.25),
+        0 1px 3px 0 oklch(from var(--color-primary) l c h / 0.1);
 }
 ```
 
@@ -500,9 +589,9 @@ Dla kart i przycisków preferuj 3-warstwowy `box-shadow` zamiast solidnego borde
 | `z-50` | 50 | Modals, toasts |
 ```typescript
 <Header className="sticky top-0 z-30" />
-<DropdownMenu className="z-20" />
+<DropdownMenuContent className="z-20" />
 <div className="fixed inset-0 bg-black/50 z-40" /> {/* Overlay */}
-<Dialog className="z-50" />
+<DialogContent className="z-50" />
 <Toaster className="z-50" />
 ```
 
@@ -530,23 +619,22 @@ ease-in       // Exit animations
 // Hover color change
 <Button className="transition-colors duration-150" />
 
-// Hover with transform
-<Card className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5" />
+// Hover with transform — tylko właściwości, które się zmieniają (w v4 translate to osobna właściwość CSS)
+<Card className="transition-[box-shadow,translate] duration-200 hover:shadow-md hover:-translate-y-0.5" />
 
 // Focus ring
 <Input className="transition-shadow duration-150 focus:ring-2" />
 ```
 
----
+Bez przejścia na wszystkie właściwości (`transition: all`): animuje każdą zmienioną właściwość, także te, których nie planujesz → [performance.md](performance.md).
 
 ---
 
 ## Icons
 
 ### Biblioteka: Lucide React
-```bash
-npm install lucide-react
-```
+Sprawdź package.json; nową zależność zgłoś (w workflowie: w odchyleniach); instalujesz menedżerem z lockfile
+projektu z dokładną wersją, np. `pnpm add -E lucide-react`.
 ```typescript
 import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 ```
@@ -599,7 +687,7 @@ import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 
 // Semantic
 <CheckCircle className="h-4 w-4 text-success" />
-<AlertTriangle className="h-4 w-4 text-warning" />
+<AlertTriangle className="h-4 w-4 text-warning-foreground" /> // text-warning na białym tle ma ~2,3:1 (próg ikon 3:1)
 <XCircle className="h-4 w-4 text-destructive" />
 ```
 
@@ -634,9 +722,10 @@ import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 <Search className="h-4 w-4" aria-hidden="true" />
 <span>Szukaj</span>
 
-// Standalone - wymaga label
-<button aria-label="Zamknij dialog">
-    <X className="h-4 w-4" />
+// Standalone - wymaga label; cel 44×44 px, bo sama ikona 16 px jest poniżej progu 24×24 px
+// (rozmiar celu → accessibility.md, sekcja „Target Size”)
+<button aria-label="Zamknij dialog" className="inline-flex size-11 items-center justify-center">
+    <X className="h-4 w-4" aria-hidden="true" />
 </button>
 
 // Status icons - dodaj sr-only text
@@ -649,8 +738,9 @@ import { Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
 
 | Token | Standard |
 |-------|----------|
-| **Colors** | OKLCH w `@theme` |
-| **Dark mode** | Class-based w `@layer base` |
+| **Colors** | OKLCH w `:root`/`.dark`, mapowane przez `@theme inline`; w komponentach tylko tokeny |
+| **Dark mode** | Klasa `.dark` + `@custom-variant dark (&:where(.dark, .dark *))` |
+| **Kontrast** | Tekst ≥ 4,5:1, ikony i obramowania ≥ 3:1 (pary w komentarzach tokenów) |
 | **Typography** | Inter, fluid dla headlines |
 | **Spacing** | Wielokrotności 4px |
 | **Radius** | `rounded-md` buttons, `rounded-lg` cards |

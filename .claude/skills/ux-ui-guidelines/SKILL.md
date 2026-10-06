@@ -90,6 +90,6 @@ Przewodnik projektowania interfejsu: design system, dostępność, responsywnoś
 | Właściwości przejść, `will-change` | [performance.md](resources/performance.md) |
 | Pryncypia polish i checklista przeglądu | [polish-checklist.md](resources/polish-checklist.md) |
 
-Przewodnik tematu czytasz, zanim zaczniesz projektować ten element, bo każdy niesie wartości i pułapki, których nie widać w samej klasie Tailwind (kontener z nazwą dla zagnieżdżonych container queries, fokus po zamknięciu dialogu, różnica `svh` / `dvh` / `lvh`).
+Zanim zaczniesz projektować element, czytasz jego sekcję w przewodniku (nagłówki przez `grep -n '^##'`, potem Read z `offset` i `limit`), bo pliki mają do 40k znaków, a każda sekcja niesie wartości i pułapki, których nie widać w samej klasie Tailwind (kontener z nazwą dla zagnieżdżonych container queries, fokus po zamknięciu dialogu, różnica `svh` / `dvh` / `lvh`).
 
 Powiązany skill: **tailwind-react-guidelines** — komponenty React, Tailwind v4, formularze, testy.

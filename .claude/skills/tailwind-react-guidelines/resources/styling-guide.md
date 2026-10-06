@@ -8,23 +8,14 @@ Wzorce stylowania z TailwindCSS v4, shadcn/ui i kompozycja klas.
 
 ### Koniec z tailwind.config.js
 
-W Tailwind v4 konfiguracja jest w CSS, nie w JavaScript:
+W Tailwind v4 konfiguracja jest w CSS, nie w JavaScript. Tokeny niezależne od motywu (fonty, animacje) zapisujesz z wartościami wprost w `@theme`. Kolory zależą od motywu, więc ich wartości leżą w `:root` i `.dark`, a `@theme inline` tylko mapuje je na utility — pełny wzorzec kolorów i trybu ciemnego jest w sekcji [Tokeny CSS + dark variant](#tokeny-css--dark-variant) i to jedyne źródło tych wartości.
 ```css
-/* globals.css */
+/* src/index.css */
 @import "tailwindcss";
 
+/* Kolory: :root/.dark + @theme inline — sekcja „Tokeny CSS + dark variant” */
+
 @theme {
-    /* Kolory */
-    --color-background: oklch(1 0 0);
-    --color-foreground: oklch(0.145 0.039 264);
-    --color-primary: oklch(0.45 0.26 264);
-    --color-primary-foreground: oklch(1 0 0);
-    --color-muted: oklch(0.96 0.005 264);
-    --color-muted-foreground: oklch(0.556 0.022 264);
-    --color-destructive: oklch(0.577 0.245 27);
-    --color-border: oklch(0.922 0.012 264);
-    --color-ring: oklch(0.45 0.26 264);
-    
     /* Fonty */
     --font-sans: "Inter", sans-serif;
     --font-display: "Cal Sans", sans-serif;
@@ -59,13 +50,13 @@ OKLCH ma lepszą percepcję jasności - kolory wyglądają spójniej:
 /* STARE - HSL */
 --primary: 212.3 100% 47.6%;
 
-/* NOWE - OKLCH */
---color-primary: oklch(0.45 0.26 264);
+/* NOWE - OKLCH (wartość w :root, mapowanie w @theme inline) */
+--primary: oklch(0.45 0.26 264);
 ```
 
 ### Użycie w komponentach
 ```typescript
-// Tailwind automatycznie rozpoznaje --color-* zmienne
+// Utility powstają z tokenów --color-* zadeklarowanych w @theme inline
 <div className="bg-background text-foreground" />
 <button className="bg-primary text-primary-foreground" />
 <span className="text-muted-foreground" />
@@ -113,11 +104,11 @@ OKLCH ma lepszą percepcję jasności - kolory wyglądają spójniej:
 
 ## Funkcja cn()
 ```typescript
-// lib/utils.ts
+// src/lib/utils.ts
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]): string {
     return twMerge(clsx(inputs));
 }
 ```
@@ -152,7 +143,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
     // Base styles
-    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50",
+    // outline-hidden (nie outline-none): w v4 zostawia obrys w trybie wymuszonych kolorów (Windows High Contrast)
+    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50",
     {
         variants: {
             variant: {
@@ -189,6 +181,8 @@ export const Button = ({ className, variant, size, ...props }: ButtonProps) => (
 <Button variant="destructive" size="lg">Usuń</Button>
 ```
 
+**Rozmiar celu:** `sm` (36 px) i `icon` (40 px) mieszczą się w progu WCAG 2.2 AA (24×24 px) i wystarczają na desktopie. Kontrolki dotykowe mają 44×44 px — np. wariant `pointer-coarse:min-h-11 pointer-coarse:min-w-11`. Jedno źródło progów: [accessibility.md](../../ux-ui-guidelines/resources/accessibility.md).
+
 ---
 
 ## Dark Mode
@@ -203,25 +197,15 @@ export const Button = ({ className, variant, size, ...props }: ButtonProps) => (
 ```
 
 ### Definicja w CSS
+
+Tryb ciemny sterujesz jedną drogą: klasą `.dark` na `<html>`. `.dark` nadpisuje wartości tokenów z `:root`, a `@custom-variant dark` przełącza na tę klasę także utility `dark:` — bez tej linii `dark:` w v4 reaguje na `prefers-color-scheme`, a tokeny na klasę, i oba mechanizmy się rozjeżdżają. Preferencję systemu („system”) obsługuje hook motywu, który ustawia albo zdejmuje klasę `.dark` według `matchMedia('(prefers-color-scheme: dark)')` ([design-system.md](../../ux-ui-guidelines/resources/design-system.md), sekcja Dark Mode Toggle). Pełny plik: sekcja [Tokeny CSS + dark variant](#tokeny-css--dark-variant).
 ```css
-@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-    --color-background: oklch(1 0 0);
-    --color-foreground: oklch(0.145 0.039 264);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --color-background: oklch(0.145 0.039 264);
-        --color-foreground: oklch(0.98 0.005 264);
-    }
-}
-
-/* Lub z klasą */
+/* Fragment: .dark nadpisuje tylko wartości z :root; mapowanie w @theme inline zostaje bez zmian */
 .dark {
-    --color-background: oklch(0.145 0.039 264);
-    --color-foreground: oklch(0.98 0.005 264);
+    --background: oklch(0.145 0.039 264);
+    --foreground: oklch(0.98 0.005 264);
 }
 ```
 
@@ -274,9 +258,11 @@ export default defineConfig({
 > `new-york` to styl legacy (działa, mapuje na `new-york-v4`; `default` jest zdeprecjonowany). Nowe projekty
 > używają stylów `base-*` (Base UI) lub `radix-*` (Radix): Vega, Nova, Maia, Lyra, Mira, Luma, Rhea, Sera.
 > Stylu i `baseColor` nie da się zmienić po inicjalizacji. Wartość `base-nova` pochodzi z
-> https://ui.shadcn.com/docs/installation/manual (stan 2026-08-23) — przy podbiciu shadcn porównaj z tamtejszym `components.json`.
+> https://ui.shadcn.com/docs/installation/manual — przy podbiciu shadcn porównaj z tamtejszym `components.json`.
 
 ### Tokeny CSS + dark variant
+
+Kanoniczny wzorzec tokenów kolorów i trybu ciemnego dla obu skilli UI (design-system.md używa tego samego układu). Plik to `src/index.css` — ten sam, który wskazuje `components.json`.
 ```css
 /* src/index.css */
 @import "tailwindcss";
@@ -291,13 +277,27 @@ export default defineConfig({
     --foreground: oklch(0.145 0.039 264);
     --primary: oklch(0.45 0.26 264);
     --primary-foreground: oklch(1 0 0);
+    --muted: oklch(0.96 0.005 264);
+    --muted-foreground: oklch(0.556 0.022 264);
+    --destructive: oklch(0.577 0.245 27);
+    --destructive-foreground: oklch(1 0 0);
     --border: oklch(0.922 0.012 264);
+    --ring: oklch(0.45 0.26 264);
 }
 
+/* Kolory marki w .dark rozjaśnione, bo L 0.45 na ciemnym tle daje ~2,4:1; jasne wypełnienie dostaje ciemny tekst.
+   Pełny zestaw tokenów obu motywów (card, input, accent, success, outline-image): ux-ui-guidelines/resources/design-system.md. */
 .dark {
     --background: oklch(0.145 0.039 264);
     --foreground: oklch(0.98 0.005 264);
+    --muted: oklch(0.2 0.02 264);
+    --muted-foreground: oklch(0.65 0.02 264);
     --border: oklch(0.3 0.02 264);
+    --primary: oklch(0.7 0.16 264);
+    --primary-foreground: oklch(0.145 0.039 264);
+    --ring: oklch(0.7 0.16 264);
+    --destructive: oklch(0.7 0.19 22);
+    --destructive-foreground: oklch(0.145 0.039 264);
 }
 
 /* Mapowanie tokenów na utility Tailwind (bg-background, text-foreground, ...) */
@@ -306,9 +306,16 @@ export default defineConfig({
     --color-foreground: var(--foreground);
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
     --color-border: var(--border);
+    --color-ring: var(--ring);
 }
 ```
+
+Pozostałe tokeny shadcn/ui (`card`, `popover`, `secondary`, `accent`, `input` i ich `-foreground`) dopisujesz w tym samym układzie: wartość w `:root`, nadpisanie w `.dark`, mapowanie `--color-*` w `@theme inline`.
 
 **Dlaczego `@theme inline`:** tokeny trzymamy w `:root`/`.dark` (żeby dark mode je nadpisywał), a `@theme inline` tylko generuje z nich utility - `var()` rozwiązuje się w miejscu użycia, więc `dark:` działa poprawnie.
 
@@ -336,7 +343,7 @@ export default defineConfig({
 )}>
 ```
 
-### Container Queries (Standard 2026)
+### Container Queries
 
 Komponent reaguje na szerokość kontenera, nie ekranu - lepsze dla reużywalnych komponentów:
 ```typescript
@@ -453,18 +460,18 @@ Rozwiązuje problemy z `100vh` na mobile (Safari toolbar):
 <button className={cn(
     "bg-primary text-primary-foreground",
     "hover:bg-primary/90",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
     "disabled:opacity-50 disabled:cursor-not-allowed",
     "transition-colors duration-200"
 )}>
     Przycisk
 </button>
 
-// Active/Selected
+// Active/Selected — przejście tylko zmienianych właściwości (obramowanie, tło), nie wszystkich naraz
 <div className={cn(
     "p-4 rounded-lg border cursor-pointer",
     "hover:border-primary/50",
-    "transition-all duration-200",
+    "transition-colors duration-200",
     isActive && "border-primary bg-primary/5"
 )}>
 ```
@@ -480,9 +487,16 @@ Rozwiązuje problemy z `100vh` na mobile (Safari toolbar):
 ```
 
 ### Motion (złożone animacje)
+
+`MotionConfig reducedMotion="user"` przy korzeniu aplikacji wyłącza animacje transformacji i układu, gdy użytkownik ma włączone `prefers-reduced-motion` (zmiana przezroczystości zostaje); w pojedynczym komponencie to samo daje hook `useReducedMotion()`.
 ```typescript
 // Pakiet `motion` (dawniej framer-motion) - import z 'motion/react'
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+
+// Raz, przy korzeniu aplikacji
+<MotionConfig reducedMotion="user">
+    <App />
+</MotionConfig>
 
 <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -505,19 +519,19 @@ import { motion, AnimatePresence } from 'motion/react';
 
 ### View Transitions API (proste przejścia)
 
-Natywne browser API dla prostych animacji przejść:
+Natywne browser API dla prostych animacji przejść w obrębie widoku (tu: zmiana motywu). Nawigację między trasami animujesz przez React Router — `navigate(to, { viewTransition: true })` albo `<Link viewTransition>` — bez ręcznego `startViewTransition`, bo router sam zgrywa przejście z aktualizacją widoku.
 ```typescript
 import { flushSync } from 'react-dom';
 
 const toggleTheme = () => {
     if (!document.startViewTransition) {
-        setIsDark(!isDark);
+        setIsDark((previous) => !previous);
         return;
     }
     
     document.startViewTransition(() => {
         flushSync(() => {
-            setIsDark(!isDark);
+            setIsDark((previous) => !previous);
         });
     });
 };
@@ -528,18 +542,29 @@ const toggleTheme = () => {
 ::view-transition-new(root) {
     animation-duration: 0.3s;
 }
+
+/* Bez animacji przy prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none;
+    }
+}
 ```
 
-**Uwaga:** View Transitions API (same-document) jest wspierane w Chrome 111+, Firefox 144+ i Safari 18+ (caniuse, 2026-08). Cross-document transitions mają ograniczone wsparcie — używaj z feature detection.
+**Uwaga:** View Transitions API (same-document) jest wspierane w Chrome 111+, Firefox 144+ i Safari 18+ (według caniuse). Cross-document transitions mają ograniczone wsparcie — używaj z feature detection.
 
 ---
 
 ## @starting-style (Entry Animations, Tailwind v4.0+)
 ```css
-/* W globals.css - animacja przy pojawieniu się elementu */
+/* W src/index.css - animacja przy pojawieniu się elementu.
+   @starting-style podaje stan początkowy; animuje go dopiero zadeklarowane `transition`. */
 dialog[open] {
     opacity: 1;
     transform: scale(1);
+    transition: opacity 0.3s, transform 0.3s;
 
     @starting-style {
         opacity: 0;
@@ -549,7 +574,8 @@ dialog[open] {
 ```
 ```typescript
 // Tailwind v4.0+: starting variant (wprowadzony w v4.0, nie w v4.1)
-<div className="starting:opacity-0 starting:scale-95 transition-all duration-300">
+// Przejście tylko animowanych właściwości: scale-* w v4 ustawia właściwość CSS `scale`
+<div className="starting:opacity-0 starting:scale-95 transition-[opacity,scale] duration-300">
     Content with entry animation
 </div>
 ```
@@ -566,9 +592,9 @@ dialog[open] {
 
 ### Mask Utilities
 ```typescript
-// Gradient mask (fade out)
-<div className="mask-linear-gradient mask-b-from-50%">
-    <img src="hero.jpg" />
+// Gradient mask (fade out): mask-b-from-50% sam tworzy gradient liniowy od dołu
+<div className="mask-b-from-50%">
+    <img src="hero.jpg" alt="" />
 </div>
 ```
 
@@ -594,23 +620,29 @@ dialog[open] {
 ---
 
 ### Reduced Motion
-```typescript
-// Hook
-const usePrefersReducedMotion = () => {
-    const [prefersReduced, setPrefersReduced] = useState(false);
-    
-    useEffect(() => {
-        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-        setPrefersReduced(mq.matches);
-        
-        const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
-        mq.addEventListener('change', handler);
-        return () => mq.removeEventListener('change', handler);
-    }, []);
-    
-    return prefersReduced;
-};
 
+Preferencja systemu to zewnętrzny stan przeglądarki, więc hook czyta ją przez `useSyncExternalStore` — bez `setState` w efekcie, którego zabrania reguła React Compilera w ESLint (`react-hooks`). Przy animacjach Motion zamiast własnego hooka używasz `useReducedMotion()` z `motion/react` albo `MotionConfig reducedMotion="user"`.
+```typescript
+// src/hooks/use-prefers-reduced-motion.ts
+import { useSyncExternalStore } from 'react';
+
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
+function subscribeToReducedMotion(onChange: () => void): () => void {
+    const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+    mediaQuery.addEventListener('change', onChange);
+    return () => mediaQuery.removeEventListener('change', onChange);
+}
+
+function getReducedMotionSnapshot(): boolean {
+    return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+export function usePrefersReducedMotion() {
+    return useSyncExternalStore(subscribeToReducedMotion, getReducedMotionSnapshot);
+}
+```
+```typescript
 // CSS
 <div className="motion-safe:animate-fade-in motion-reduce:opacity-100">
 ```
@@ -637,6 +669,8 @@ const usePrefersReducedMotion = () => {
 <div className="bg-primary">
 ```
 
+Kolor spoza palety (np. półprzezroczysty obrys obrazka) dodajesz jako token: wartość w `:root`, nadpisanie w `.dark`, mapowanie w `@theme inline` (sekcja „Tokeny CSS + dark variant”). Wtedy tryb ciemny zmienia go w jednym miejscu, a klasa nie zawiera `rgba(...)` ani hexa.
+
 ### tailwind.config.js (w v4)
 ```javascript
 // NIE - w v4 konfiguracja idzie przez CSS (@theme); tailwind.config.js działa tylko legacy
@@ -646,7 +680,7 @@ module.exports = {
     theme: { extend: { colors: { ... } } }
 }
 
-// TAK - @theme w CSS
+// TAK - @theme w CSS (kolor wspólny dla obu motywów; kolor zależny od motywu — :root/.dark + @theme inline)
 @theme {
     --color-brand: oklch(0.6 0.2 250);
 }

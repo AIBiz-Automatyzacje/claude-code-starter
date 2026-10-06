@@ -6,12 +6,12 @@ Specyfika transitions i hinty kompozycji GPU — micro-optymalizacje wydajności
 
 ## Transition Only What Changes
 
-Nigdy nie używaj `transition: all` ani Tailwindowego shorthand `transition` (który mapuje na `transition-property: all`). Zawsze specyfikuj konkretne properties, które się zmieniają.
+Nie używaj `transition: all` (w Tailwind: klasa z sufiksem `-all`) ani gołego Tailwindowego `transition`. W v4 gołe `transition` nie mapuje na `all`, tylko na stałą, szeroką listę właściwości, m.in.: kolory (`color`, `background-color`, `border-color`, `outline-color`, `fill`, `stroke`, stopnie gradientu), `opacity`, `box-shadow`, `transform`, `translate`, `scale`, `rotate`, `filter`, `backdrop-filter` i dyskretne `display`, `content-visibility`, `overlay`. To wciąż więcej, niż zwykle się zmienia, więc specyfikujesz konkretne properties.
 
 ### Dlaczego
 
 - `transition: all` zmusza przeglądarkę do śledzenia każdej property pod kątem zmian
-- Powoduje nieoczekiwane przejścia na properties, których nie zamierzałeś animować (kolory, padding, shadows)
+- Powoduje nieoczekiwane przejścia na properties, których nie zamierzałeś animować (kolory, padding, shadows); gołe `transition` z v4 robi to samo dla kolorów, cieni i filtrów z listy wyżej
 - Blokuje optymalizacje przeglądarki
 
 ### CSS
@@ -36,7 +36,7 @@ Nigdy nie używaj `transition: all` ani Tailwindowego shorthand `transition` (kt
 // Good — explicit properties
 <button className="transition-[scale,background-color] duration-150 ease-out">
 
-// Bad — transition all
+// Bad — gołe transition: w v4 szeroka lista właściwości (kolory, cień, transformacje, filtry), nie tylko te, które się zmieniają
 <button className="transition duration-150 ease-out">
 ```
 

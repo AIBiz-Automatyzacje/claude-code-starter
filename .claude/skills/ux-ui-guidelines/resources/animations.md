@@ -1,6 +1,6 @@
 # Animacje
 
-Motion (dawniej Framer Motion), View Transitions API, CSS animations - standardy 2026.
+Motion (dawniej Framer Motion), View Transitions API, CSS animations.
 
 ---
 
@@ -15,18 +15,40 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 // import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 ```
 
-**Migracja:** Pakiet `framer-motion` został przemianowany na `motion` (aktualnie v13.x — motion@13.1.1 i framer-motion@13.1.1 wg npm, 2026-08; sprawdź upgrade guide motion.dev przy podbiciu majora). Import zmieniony z `framer-motion` na `motion/react`. Stary pakiet nadal działa bez zmian.
-v13 usunęło automatyczne użycie `@emotion/is-prop-valid` — przy styled-components/Emotion trzeba je jawnie wstrzyknąć przez `MotionConfig` (zob. upgrade guide).
-```bash
-# Nowe projekty
-npm install motion
+**Migracja:** Pakiet `framer-motion` został przemianowany na `motion` (wersja wg package.json; przy podbiciu majora sprawdź upgrade guide motion.dev). Import zmieniony z `framer-motion` na `motion/react`. Stary pakiet działa bez zmian.
+Od v13 Motion nie używa automatycznie `@emotion/is-prop-valid` — przy styled-components/Emotion trzeba je jawnie wstrzyknąć przez `MotionConfig` (zob. upgrade guide).
 
-# Istniejące projekty — brak zmian wymaganych
-# motion/react jest re-eksportem framer-motion (motion zależy od framer-motion) — oba pakiety mają tę samą wersję
+Nowe projekty: sprawdź package.json; nową zależność zgłoś (w workflowie: w odchyleniach); instalujesz menedżerem
+z lockfile projektu z dokładną wersją, np. `pnpm add -E motion`. Istniejące projekty z `framer-motion` nie wymagają
+zmian: `motion/react` jest re-eksportem `framer-motion` (motion zależy od framer-motion), oba pakiety mają tę samą wersję.
+
+### Reduced motion w korzeniu aplikacji
+
+Przykłady Motion w tym pliku i w [animation-polish.md](animation-polish.md) zakładają `MotionConfig` w korzeniu
+aplikacji. Z `reducedMotion="user"` Motion przy włączonym w systemie „ogranicz ruch” pomija animacje transformacji
+(`x`, `y`, `scale`, `rotate`) i layoutu, a zostawia `opacity` i kolory — element pojawia się bez przesuwania.
+Komponent, który ma inną treść animacji dla reduced motion (np. pulsowanie zamiast skakania), czyta
+`useReducedMotion()` — przykłady w sekcji [prefers-reduced-motion](#prefers-reduced-motion).
+
+```typescript
+// src/app.tsx
+import { MotionConfig } from 'motion/react';
+import { RouterProvider } from 'react-router/dom';
+
+import { router } from '@/router';
+
+export function App() {
+    return (
+        <MotionConfig reducedMotion="user">
+            <RouterProvider router={router} />
+        </MotionConfig>
+    );
+}
 ```
 
 ### Podstawowe Animacje
 ```typescript
+// Pod <MotionConfig reducedMotion="user">: przy reduced motion y i scale są pomijane, zostaje fade
 // Fade in
 <motion.div
     initial={{ opacity: 0 }}
@@ -61,6 +83,7 @@ npm install motion
 
 ### Variants Pattern
 ```typescript
+// Pod <MotionConfig reducedMotion="user">: przy reduced motion elementy wchodzą samym fade, bez y
 const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -96,6 +119,7 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
 
 ### Prostsza Wersja (delay)
 ```typescript
+// Pod <MotionConfig reducedMotion="user"> — jak wyżej: przy reduced motion sam fade
 {templates.map((template, index) => (
     <motion.div
         key={template.id}
@@ -156,35 +180,69 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
 ```
 
 ### Modal Animation
+
+`DialogContent` z shadcn wymaga kontekstu `<Dialog>` (inaczej Radix rzuca błąd kontekstu) i sam renderuje
+portal z overlayem, więc nie da się go owinąć w `motion.div`. Animację wyjścia z Motion robisz na prymitywach
+Radix: `forceMount` zostawia montowanie `AnimatePresence`, a `asChild` przekazuje zachowanie dialogu (focus trap,
+Escape, `aria-modal`, klik poza) na `motion.div`. Gdy wystarczy animacja wejścia i wyjścia z CSS, zostań przy
+gotowym `DialogContent` z shadcn — ma ją w klasach `data-[state=open]`.
+
 ```typescript
-<AnimatePresence>
-    {isOpen && (
-        <>
-            {/* Backdrop */}
-            <motion.div
-                key="backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-40"
-                onClick={onClose}
-            />
-            
-            {/* Modal */}
-            <motion.div
-                key="modal"
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            >
-                <DialogContent>{children}</DialogContent>
-            </motion.div>
-        </>
-    )}
-</AnimatePresence>
+// src/components/animated-modal.tsx
+// import z '@radix-ui/react-dialog' albo `import { Dialog as DialogPrimitive } from 'radix-ui'` — wg package.json
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { AnimatePresence, motion } from 'motion/react';
+
+interface AnimatedModalProps {
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    title: string;
+    children: React.ReactNode;
+}
+
+export function AnimatedModal({ isOpen, onOpenChange, title, children }: AnimatedModalProps) {
+    return (
+        <DialogPrimitive.Root open={isOpen} onOpenChange={onOpenChange}>
+            <AnimatePresence>
+                {isOpen && (
+                    <DialogPrimitive.Portal forceMount>
+                        {/* Backdrop — klik zamyka dialog przez onOpenChange */}
+                        <DialogPrimitive.Overlay asChild forceMount>
+                            <motion.div
+                                key="backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 z-40"
+                            />
+                        </DialogPrimitive.Overlay>
+
+                        {/* Modal; pod <MotionConfig reducedMotion="user"> scale i y są pomijane */}
+                        <DialogPrimitive.Content asChild forceMount>
+                            <motion.div
+                                key="modal"
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ duration: 0.2, ease: 'easeOut' }}
+                                className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-1/2 rounded-xl bg-card p-6 text-card-foreground shadow-xl"
+                            >
+                                <DialogPrimitive.Title className="text-lg font-semibold">
+                                    {title}
+                                </DialogPrimitive.Title>
+                                {children}
+                            </motion.div>
+                        </DialogPrimitive.Content>
+                    </DialogPrimitive.Portal>
+                )}
+            </AnimatePresence>
+        </DialogPrimitive.Root>
+    );
+}
 ```
+
+`-translate-1/2` w v4 ustawia właściwość CSS `translate`, a Motion animuje `transform` — obie składają się,
+więc centrowanie nie gryzie się z `y` i `scale`.
 
 ---
 
@@ -192,9 +250,11 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
 
 ### Card Hover
 ```typescript
+// Cień ze skali Tailwinda zamiast rgba wpisanego w komponent (kolory tylko przez tokeny → design-system.md)
 <motion.div
-    whileHover={{ y: -4, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.2)' }}
+    whileHover={{ y: -4 }}
     transition={{ duration: 0.2 }}
+    className="rounded-lg transition-shadow duration-200 hover:shadow-lg"
 >
     <Card>Zawartość</Card>
 </motion.div>
@@ -212,21 +272,19 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
 </motion.button>
 ```
 
-**Dlaczego `0.96`, nie `0.98`?** `0.96` to standard polish dla scale-on-press — daje wyczuwalny tactile feedback bez przesady. Wartości poniżej `0.95` wyglądają przesadnie. Pełne pryncypia + warianty (Tailwind, CSS, prop `static`) → [animation-polish.md](animation-polish.md).
+**Dlaczego `0.96`, nie `0.98`?** `0.96` to standard polish dla scale-on-press — daje wyczuwalny tactile feedback bez przesady. Wartości poniżej `0.95` wyglądają przesadnie. Pełne pryncypia + warianty (Tailwind, CSS, prop `isStatic`) → [animation-polish.md](animation-polish.md).
 
 ### Tylko na Desktop (hover: hover)
 ```typescript
-// CSS approach - hover tylko gdy urządzenie obsługuje
-<div className="transition-transform duration-200 hover:[@media(hover:hover)]:-translate-y-1">
+// Tailwind v4 — wariant hover: sam jest objęty @media (hover: hover),
+// więc na dotyku efekt się nie włącza i nie zostaje „przyklejony” po tapnięciu
+<div className="transition-transform duration-200 hover:-translate-y-1">
     Zawartość
 </div>
 
-// Framer Motion approach
-const isTouch = window.matchMedia('(hover: none)').matches;
-
-<motion.div
-    whileHover={isTouch ? undefined : { y: -4 }}
->
+// Motion — whileHover reaguje tylko na prawdziwy wskaźnik (zdarzenia myszy emulowane z dotyku pomija),
+// więc sprawdzanie matchMedia('(hover: none)') w renderze nie jest potrzebne
+<motion.div whileHover={{ y: -4 }}>
     Zawartość
 </motion.div>
 ```
@@ -236,30 +294,29 @@ const isTouch = window.matchMedia('(hover: none)').matches;
 ## View Transitions API (Baseline Newly Available)
 
 ### Nawigacja z Transition
+
+React Router sam owija aktualizację stanu nawigacji w `document.startViewTransition` — wystarczy prop
+`viewTransition` na `<Link>` albo opcja `{ viewTransition: true }` w `navigate`. Ręczne `navigate` wewnątrz
+`startViewTransition` łapie zły stan: callback kończy się przed wyrenderowaniem nowej trasy, więc przeglądarka
+robi zrzut „po” jeszcze ze starą stroną. Przeglądarka bez API nawiguje bez przejścia — router robi ten fallback sam.
+
 ```typescript
-function useViewTransition() {
+import { Link, useNavigate } from 'react-router';
+
+import { ROUTES } from '@/constants/routes';
+
+// Link
+<Link to={ROUTES.ITEMS} viewTransition>
+    Elementy
+</Link>
+
+// Nawigacja z kodu; navigate zwraca promise, więc void (ESLint: każdy promise obsłużony)
+function SettingsButton() {
     const navigate = useNavigate();
 
-    return (to: string) => {
-        // Fallback dla przeglądarek bez wsparcia
-        if (!document.startViewTransition) {
-            navigate(to);
-            return;
-        }
-
-        document.startViewTransition(() => {
-            navigate(to);
-        });
-    };
-}
-
-// Użycie
-function NavLink({ to, children }: Props) {
-    const navigateWithTransition = useViewTransition();
-
     return (
-        <button onClick={() => navigateWithTransition(to)}>
-            {children}
+        <button onClick={() => void navigate(ROUTES.SETTINGS, { viewTransition: true })}>
+            Ustawienia
         </button>
     );
 }
@@ -267,7 +324,7 @@ function NavLink({ to, children }: Props) {
 
 ### Custom Transition Styles
 ```css
-/* globals.css */
+/* src/index.css */
 ::view-transition-old(root) {
     animation: fade-out 0.2s ease-out;
 }
@@ -288,36 +345,47 @@ function NavLink({ to, children }: Props) {
 ```
 
 ### Named Transitions (Shared Element)
+
+`view-transition-name` musi być unikalny na stronie, więc nazwa niesie id. Selektory pseudo-elementów nie
+przyjmują wzorców (`card-*` nie istnieje) — wspólny styl dla wszystkich kart daje `view-transition-class`.
+
 ```typescript
 // Źródło - karta w liście
-<div style={{ viewTransitionName: `card-${template.id}` }}>
+<div
+    className="[view-transition-class:card]"
+    style={{ viewTransitionName: `card-${template.id}` }}
+>
     <img src={template.thumbnail} alt="" />
 </div>
 
 // Cel - strona szczegółów
-<div style={{ viewTransitionName: `card-${templateId}` }}>
+<div
+    className="[view-transition-class:card]"
+    style={{ viewTransitionName: `card-${templateId}` }}
+>
     <img src={template.thumbnail} alt="" />
 </div>
 ```
 ```css
-/* Animacja shared element */
-::view-transition-old(card-*),
-::view-transition-new(card-*) {
+/* Animacja shared element — każda grupa z klasą card */
+::view-transition-group(*.card) {
     animation-duration: 0.3s;
 }
 ```
 
 ### Feature Detection
 ```typescript
+// Potrzebne tylko poza nawigacją (np. własna animacja zmiany stanu) — przy nawigacji fallback robi React Router.
+// Vite SPA renderuje tylko w przeglądarce, więc document zawsze istnieje.
 const supportsViewTransitions = 'startViewTransition' in document;
 
 // Lub hook
-function useSupportsViewTransitions() {
-    return typeof document !== 'undefined' && 'startViewTransition' in document;
+function useSupportsViewTransitions(): boolean {
+    return 'startViewTransition' in document;
 }
 ```
 
-**Wsparcie przeglądarek (2026):**
+**Wsparcie przeglądarek:**
 | Przeglądarka | Same-document | Cross-document |
 |-------------|--------------|----------------|
 | Chrome | 111+ | 126+ |
@@ -325,7 +393,7 @@ function useSupportsViewTransitions() {
 | Firefox | 144+ | Brak |
 | Edge | 111+ | 126+ |
 
-Same-document: Baseline Newly Available od X.2025 (~90% pokrycia wg caniuse, 2026-08); cross-document nadal poza Baseline (brak Firefox).
+Same-document: Baseline Newly Available (~90% pokrycia wg caniuse); cross-document poza Baseline (brak Firefox). `view-transition-class` ma węższe wsparcie niż same View Transitions (sprawdź caniuse); przeglądarka bez niego robi przejście z domyślnym czasem trwania.
 
 ---
 
@@ -335,7 +403,7 @@ Same-document: Baseline Newly Available od X.2025 (~90% pokrycia wg caniuse, 202
 ```typescript
 import { useReducedMotion } from 'motion/react';
 
-function AnimatedCard({ children }: Props) {
+function AnimatedCard({ children }: { children: React.ReactNode }) {
     const shouldReduceMotion = useReducedMotion();
 
     return (
@@ -352,7 +420,7 @@ function AnimatedCard({ children }: Props) {
 
 ### Global CSS Reset
 ```css
-/* globals.css */
+/* src/index.css */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -381,7 +449,7 @@ const fadeInUp = (shouldReduce: boolean) => ({
     },
 });
 
-function Card({ children }: Props) {
+function Card({ children }: { children: React.ReactNode }) {
     const shouldReduceMotion = useReducedMotion();
     const variants = fadeInUp(shouldReduceMotion ?? false);
 
@@ -414,11 +482,14 @@ function Card({ children }: Props) {
     Cień na hover
 </div>
 
-// Multiple (all)
-<div className="hover:scale-105 hover:shadow-lg transition-all duration-200">
-    Wszystko
+// Multiple — wymień właściwości, które się zmieniają (w v4 scale to osobna właściwość CSS)
+<div className="hover:scale-105 hover:shadow-lg transition-[scale,box-shadow] duration-200">
+    Skala i cień
 </div>
 ```
+
+Gołe `transition` w Tailwind v4 to stała lista właściwości (kolory, `opacity`, `box-shadow`, transformacje,
+filtry), a nie `all`; `all` daje dopiero `transition-all`, którego nie używasz → [performance.md](performance.md).
 
 ### Duration Guide
 
@@ -436,7 +507,7 @@ function Card({ children }: Props) {
 
 ### Scroll Progress
 ```css
-/* globals.css */
+/* src/index.css */
 @keyframes reveal {
     from {
         opacity: 0;
@@ -453,6 +524,12 @@ function Card({ children }: Props) {
     animation-timeline: view();
     animation-range: entry 0% entry 50%;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-reveal {
+        animation: none;
+    }
+}
 ```
 ```typescript
 // Użycie
@@ -466,21 +543,29 @@ function Card({ children }: Props) {
 const supportsScrollTimeline = CSS.supports('animation-timeline', 'view()');
 ```
 
-**Wsparcie (2026-08, caniuse):** Chrome 115+, Edge 115+, Safari 26+, Firefox 157+. Globalne pokrycie ~85%. Nadal poza Baseline — stosuj jako progressive enhancement z `@supports (animation-timeline: scroll())`.
+**Wsparcie (caniuse):** Chrome 115+, Edge 115+, Safari 26+, Firefox 157+. Globalne pokrycie ~85%. Poza Baseline — stosuj jako progressive enhancement z `@supports (animation-timeline: scroll())`. Animacja na osi przewijania nie liczy czasu, więc globalny reset `animation-duration` z sekcji wyżej jej nie wyłącza — dlatego `.scroll-reveal` ma własne `animation: none` dla `prefers-reduced-motion: reduce`.
 
 ### Fallback z Intersection Observer
 ```typescript
-function useScrollReveal() {
+const SUPPORTS_SCROLL_TIMELINE = CSS.supports('animation-timeline', 'view()');
+const REVEAL_THRESHOLD = 0.1;
+
+interface ScrollRevealResult {
+    ref: React.RefObject<HTMLDivElement | null>;
+    isVisible: boolean;
+}
+
+function useScrollReveal(): ScrollRevealResult {
     const ref = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
         // Jeśli CSS scroll-driven wspierane, nie używaj JS
-        if (CSS.supports('animation-timeline', 'view()')) return;
+        if (SUPPORTS_SCROLL_TIMELINE) return;
 
         const observer = new IntersectionObserver(
             ([entry]) => setIsVisible(entry.isIntersecting),
-            { threshold: 0.1 }
+            { threshold: REVEAL_THRESHOLD }
         );
 
         if (ref.current) observer.observe(ref.current);
@@ -491,15 +576,21 @@ function useScrollReveal() {
 }
 
 // Użycie
-function RevealSection({ children }: Props) {
+function RevealSection({ children }: { children: React.ReactNode }) {
     const { ref, isVisible } = useScrollReveal();
 
+    // CSS scroll-driven wspierane: animuje klasa .scroll-reveal. Motion nie ustawia tu stanu początkowego,
+    // bo inline opacity: 0 zostałoby na stałe przy reduced motion (wtedy .scroll-reveal ma animation: none)
+    if (SUPPORTS_SCROLL_TIMELINE) {
+        return <div className="scroll-reveal">{children}</div>;
+    }
+
+    // Fallback JS; pod <MotionConfig reducedMotion="user"> przy reduced motion zostaje sam fade
     return (
         <motion.div
             ref={ref}
             initial={{ opacity: 0, y: 20 }}
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
-            className="scroll-reveal" // CSS fallback gdy wspierane
         >
             {children}
         </motion.div>
@@ -515,7 +606,7 @@ Natywne animacje wejścia z `display: none` — bez hacków JS. **Baseline Newly
 
 ### Dialog/Popover Animation
 ```css
-/* globals.css */
+/* src/index.css */
 dialog[open] {
     opacity: 1;
     transform: scale(1);
@@ -532,7 +623,8 @@ dialog[open] {
 
 ### Tailwind v4.0+ (starting variant)
 ```typescript
-<div className="starting:opacity-0 starting:scale-95 transition-all duration-300">
+{/* Tylko właściwości, które się zmieniają; globalny reset reduced motion skraca to przejście */}
+<div className="starting:opacity-0 starting:scale-95 transition-[opacity,scale] duration-300">
     Content with entry animation
 </div>
 ```
@@ -554,7 +646,8 @@ dialog[open] {
 // CSS
 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
 
-// Framer Motion
+// Motion — pod <MotionConfig reducedMotion="user"> obrót przy reduced motion jest pomijany
+// (globalny reset CSS zatrzymuje też animate-spin), więc stan ładowania niesie też tekst albo role="status"
 <motion.div
     animate={{ rotate: 360 }}
     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -576,14 +669,22 @@ dialog[open] {
 
 ### Dots Loading
 ```typescript
+import { motion, useReducedMotion } from 'motion/react';
+
+const DOTS = [0, 1, 2] as const;
+
 function LoadingDots() {
+    // Przy reduced motion kropki pulsują przezroczystością zamiast skakać — wskaźnik ładowania zostaje,
+    // ruch znika (samo MotionConfig zatrzymałoby skok i zostawiło nieruchome kropki)
+    const shouldReduceMotion = useReducedMotion();
+
     return (
-        <div className="flex gap-1">
-            {[0, 1, 2].map((i) => (
+        <div className="flex gap-1" role="status" aria-label="Ładowanie">
+            {DOTS.map((i) => (
                 <motion.div
                     key={i}
                     className="h-2 w-2 bg-primary rounded-full"
-                    animate={{ y: [0, -8, 0] }}
+                    animate={shouldReduceMotion ? { opacity: [0.4, 1, 0.4] } : { y: [0, -8, 0] }}
                     transition={{
                         duration: 0.6,
                         repeat: Infinity,
@@ -635,7 +736,7 @@ export function Collapsible({ isOpen, children }: CollapsibleProps) {
 
 Od Chrome 129+ animacja `height: auto` jest możliwa czystym CSS, bez mierzenia wysokości
 w JS/Motion — wystarczy włączyć `interpolate-size: allow-keywords` na `:root` (lub przez
-`calc-size()`). Tylko Chromium (Chrome/Edge 129+); brak w Safari i Firefox (caniuse, 2026-08), ~70% pokrycia —
+`calc-size()`). Tylko Chromium (Chrome/Edge 129+); brak w Safari i Firefox (caniuse), ~70% pokrycia —
 wymaga fallbacku (np. `grid-template-rows` 0fr→1fr) lub `@supports (interpolate-size: allow-keywords)`.
 Traktuj jako progressive enhancement (przeglądarki bez wsparcia po prostu
 skoczą do końcowej wysokości) i zawsze respektuj `prefers-reduced-motion`.

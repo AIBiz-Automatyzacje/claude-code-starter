@@ -128,9 +128,12 @@ Dla **przycisków, kart i kontenerów** używających border do głębi lub elew
 
 ### Shadow as Border (Light Mode)
 
-Cień składa się z trzech warstw. Pierwsza działa jak 1px border ring, druga dodaje subtelne uniesienie, trzecia zapewnia ambient depth:
+Cień składa się z trzech warstw. Pierwsza działa jak 1px border ring, druga dodaje subtelne uniesienie, trzecia zapewnia ambient depth.
+
+Wartości `rgba` stoją tylko w definicji tokenu (`:root` i `.dark` w `src/index.css`, wzorzec z [design-system.md](design-system.md)); komponent używa `var(--shadow-border)`. To ta sama zasada co zakaz kolorów wpisanych w komponent — sekcja „Kolory tylko przez tokeny” w design-system.md.
 
 ```css
+/* src/index.css */
 :root {
   --shadow-border:
     0px 0px 0px 1px rgba(0, 0, 0, 0.06),
@@ -148,11 +151,14 @@ Cień składa się z trzech warstw. Pierwsza działa jak 1px border ring, druga 
 W dark mode upraszczaj do pojedynczego białego ringu — warstwowe cienie głębi nie są widoczne na ciemnych tłach:
 
 ```css
-/* Dark mode — adapt to whatever setup the project uses
-   (prefers-color-scheme, class, data attribute, etc.) */
---shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.08);
---shadow-border-hover: 0 0 0 1px rgba(255, 255, 255, 0.13);
+/* src/index.css — dark mode przez klasę .dark (useTheme + @custom-variant dark z design-system.md) */
+.dark {
+  --shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-border-hover: 0 0 0 1px rgba(255, 255, 255, 0.13);
+}
 ```
+
+W Tailwind używasz tokenu przez wartość arbitralną ze zmienną: `shadow-(--shadow-border) hover:shadow-(--shadow-border-hover)`.
 
 ### Użycie z Hover Transition
 
@@ -187,42 +193,53 @@ Zastosuj zmienną i dodaj `transition-[box-shadow]` dla płynnego hover:
 
 Dodaj subtelny `1px` outline z niską przezroczystością do obrazów. Tworzy spójną głębię, szczególnie w design systems gdzie inne elementy używają borders lub shadows.
 
-### Reguły kolorów (nienegocjowalne)
+### Reguły kolorów
 
-- **Light mode**: czarny — `rgba(0, 0, 0, 0.1)`. Dokładne wartości: R=0, G=0, B=0.
-- **Dark mode**: biały — `rgba(255, 255, 255, 0.1)`. Dokładne wartości: R=255, G=255, B=255.
+Kolor obrysu to token `--outline-image` zdefiniowany w `:root` i `.dark` ([design-system.md](design-system.md), sekcja „Kolory tylko przez tokeny”). Wartości poniżej wpisujesz tylko w tej definicji; obraz i komponent używają tokenu.
+
+- **Light mode** (`:root`): czarny — `rgb(0 0 0 / 0.1)`. Dokładne wartości: R=0, G=0, B=0, przezroczystość 10%.
+- **Dark mode** (`.dark`): biały — `rgb(255 255 255 / 0.1)`. Dokładne wartości: R=255, G=255, B=255, przezroczystość 10%.
 - Nigdy nie używaj koloru bliskiego czarnemu/białemu z palety projektu (np. slate-900, zinc-900, `#0a0a0a`, `#111827`, `#f5f5f7`). Zabarwione outlines podchwytują kolor otaczającej powierzchni i czytają się jak brud na krawędzi obrazu.
 - Nigdy nie dopasowuj outline do koloru akcentowego lub atramentowego projektu. Outline jest neutralnym separatorem, nie tematycznym elementem.
 
-### Light Mode
+### Light Mode i Dark Mode — token
 
 ```css
-img {
-  outline: 1px solid rgba(0, 0, 0, 0.1);
-  outline-offset: -1px; /* inset so it doesn't add to layout */
+/* src/index.css */
+:root {
+  --outline-image: rgb(0 0 0 / 0.1);
+}
+
+.dark {
+  --outline-image: rgb(255 255 255 / 0.1);
+}
+
+@theme inline {
+  --color-outline-image: var(--outline-image);
 }
 ```
 
-### Dark Mode
+### Użycie w CSS
 
 ```css
 img {
-  outline: 1px solid rgba(255, 255, 255, 0.1);
-  outline-offset: -1px;
+  outline: 1px solid var(--outline-image);
+  outline-offset: -1px; /* inset so it doesn't add to layout */
 }
 ```
 
 ### Tailwind z Dark Mode
 
 ```tsx
+{/* Token sam przełącza się z .dark, więc wariant dark: nie jest potrzebny */}
 <img
-  className="outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+  className="outline -outline-offset-1 outline-outline-image"
   src={src}
   alt={alt}
 />
 ```
 
-Używaj konkretnie `outline-black/10` i `outline-white/10` — nie `outline-slate-*`, `outline-zinc-*`, `outline-neutral-*` ani żadnej zabarwionej skali.
+Używaj tokenu `outline-outline-image` — nie `outline-slate-*`, `outline-zinc-*`, `outline-neutral-*` ani żadnej zabarwionej skali, i nie wpisuj `outline-black/10` / `outline-white/10` w komponent: wartość zmieniasz wtedy w każdym miejscu zamiast w jednej definicji.
 
 **Dlaczego outline zamiast border?** `outline` nie wpływa na layout (brak dodanej szerokości/wysokości), a `outline-offset: -1px` trzyma go inset, więc obrazy zachowują zamierzony rozmiar.
 
@@ -230,7 +247,7 @@ Używaj konkretnie `outline-black/10` i `outline-white/10` — nie `outline-slat
 
 ## Minimum Hit Area
 
-Interaktywne elementy powinny mieć minimalny obszar trafienia 44×44px (WCAG) lub przynajmniej 40×40px. Jeśli widoczny element jest mniejszy (np. 20×20 checkbox), rozszerz hit area pseudo-elementem.
+Progi rozmiaru celu mają jedno źródło: [accessibility.md](accessibility.md) (sekcja „Target Size”). Progi: cel ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a kontrolka dotykowa 44×44 px (`min-h-11 min-w-11`, Apple HIG / WCAG AAA 2.5.5). Jeśli widoczny element jest mniejszy (np. 20×20 checkbox), rozszerz hit area pseudo-elementem do 44×44 px.
 
 ### CSS
 
@@ -248,27 +265,30 @@ Interaktywne elementy powinny mieć minimalny obszar trafienia 44×44px (WCAG) l
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
 }
 ```
 
 ### Tailwind
 
 ```tsx
-<button className="relative size-5 after:absolute after:top-1/2 after:left-1/2 after:size-10 after:-translate-1/2">
-  <CheckIcon />
+<button
+  aria-label="Zaznacz"
+  className="relative size-5 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
+>
+  <CheckIcon aria-hidden="true" />
 </button>
 ```
 
 ### Reguła kolizji
 
-Jeśli rozszerzony hit area nakłada się na inny interaktywny element, zmniejsz pseudo-element — ale zrób go tak dużym, jak to możliwe bez kolizji. Dwa interaktywne elementy nigdy nie powinny mieć nakładających się hit areas.
+Jeśli rozszerzony hit area nakłada się na inny interaktywny element, zmniejsz pseudo-element — ale zrób go tak dużym, jak to możliwe bez kolizji i nie mniejszym niż 24×24 px (próg AA; przy ciasnym układzie zwiększ odstęp między elementami). Dwa interaktywne elementy nigdy nie powinny mieć nakładających się hit areas.
 
 ---
 
 ## Zobacz Także
 
-- [design-system.md](design-system.md) — border radius scale, shadows scale, z-index
-- [accessibility.md](accessibility.md) — touch targets WCAG 2.5.8
+- [design-system.md](design-system.md) — border radius scale, shadows scale, z-index, tokeny kolorów (`:root`/`.dark`)
+- [accessibility.md](accessibility.md) — rozmiar celu (Target Size, WCAG 2.5.8), jedno źródło progów
 - [polish-checklist.md](polish-checklist.md) — pełna checklista polish

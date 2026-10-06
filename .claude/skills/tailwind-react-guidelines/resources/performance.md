@@ -10,7 +10,7 @@ Wzorce optymalizacji dla React 19 + Vite SPA - lazy loading, memoizacja, data fe
 
 React jest szybki domyślnie. Większość aplikacji nie potrzebuje agresywnej memoizacji.
 ```typescript
-// NIE - przedwczesna optymalizacja
+// Nie - przedwczesna optymalizacja
 const value = useMemo(() => a + b, [a, b]);
 
 // TAK - optymalizuj gdy masz problem
@@ -21,17 +21,17 @@ const value = useMemo(() => a + b, [a, b]);
 
 ---
 
-## React Compiler 1.0 (Rekomendowany)
+## React Compiler
 
-React Compiler 1.0 (stabilny od Paź 2025) automatycznie memoizuje komponenty i wartości. W Vite wymaga setup:
+React Compiler automatycznie memoizuje komponenty i wartości. Czy projekt go ma, sprawdzasz w package.json (`babel-plugin-react-compiler`) i w konfiguracji Vite — nie zakładasz, że jest włączony. Dodanie Compilera to nowa zależność: zgłaszasz ją (w workflowie: w odchyleniach) i instalujesz menedżerem z lockfile projektu z dokładną wersją, np.:
 ```bash
-npm install -D babel-plugin-react-compiler @rolldown/plugin-babel
+pnpm add -D -E babel-plugin-react-compiler @rolldown/plugin-babel
 ```
 ```typescript
 // vite.config.ts
-import { defineConfig } from 'vite';
-import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import babel from '@rolldown/plugin-babel';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
     plugins: [
@@ -41,23 +41,22 @@ export default defineConfig({
 });
 ```
 
-**Wymagania:** Vite >= 6 (aktualnie 8.x), `@vitejs/plugin-react` >= 6.0.0 (aktualnie 6.1.0; peer `vite ^8`),
-`babel-plugin-react-compiler` ^1.0.0 (opcjonalny peer plugin-react).
-Opcja `react({ babel: { plugins: [...] } })` istnieje **tylko** w `@vitejs/plugin-react` < 6 — od 6.0.0
-(Vite 8 + Oxc) plugin nie używa Babela i opcja `babel` została usunięta; Compiler włącza się wyłącznie przez
-`@rolldown/plugin-babel` + `reactCompilerPreset`.
-Źródło wersji: CHANGELOG `@vitejs/plugin-react` (6.1.0, 2026-08-19) i https://react.dev/learn/react-compiler/installation
-(stan 2026-08-23). Przy podbiciu sprawdź, czy `reactCompilerPreset` jest nadal eksportowany z `@vitejs/plugin-react`
+**Wymagania:** wersje Vite, `@vitejs/plugin-react` i `babel-plugin-react-compiler` wg package.json
+(`babel-plugin-react-compiler` to opcjonalny peer `@vitejs/plugin-react`).
+Opcja `react({ babel: { plugins: [...] } })` istnieje tylko w `@vitejs/plugin-react` < 6 — od 6.0.0
+(Vite 8 + Oxc) plugin nie używa Babela i opcja `babel` została usunięta; Compiler włącza się wtedy przez
+`@rolldown/plugin-babel` + `reactCompilerPreset`. Przy starszym `@vitejs/plugin-react` konfiguracja jest inna — sprawdzasz
+ją w CHANGELOG `@vitejs/plugin-react` i na https://react.dev/learn/react-compiler/installation.
+Przy podbiciu wersji sprawdzasz, czy `reactCompilerPreset` jest nadal eksportowany z `@vitejs/plugin-react`
 i czy `@rolldown/plugin-babel` nie został wchłonięty do core Vite.
 
-**Z Compiler 1.0 (rekomendowany setup):**
-- `useMemo` / `useCallback` zbędne — Compiler memoizuje automatycznie
-- Pisz zwykły kod, bez manualnej memoizacji
-- `React.memo()` zbędne — Compiler sam decyduje
+**Projekt z React Compilerem (`babel-plugin-react-compiler` w package.json):**
+- Bez ręcznych `useMemo` / `useCallback` — Compiler memoizuje automatycznie
+- Bez `React.memo()` — Compiler sam decyduje, co memoizować
+- Wyjątek: stabilna zależność efektu. Gdy funkcja albo obiekt trafia do tablicy zależności `useEffect` i bez stabilnej referencji efekt uruchamiałby się przy każdym renderze, `useCallback` / `useMemo` zostaje (reguły kodu, sekcja Async i React)
 
-**Bez Compiler (legacy setup):**
-- Ręczna memoizacja nadal przydatna
-- Stosuj zasady z sekcji poniżej
+**Projekt bez React Compilera:**
+- Ręczna memoizacja według zasad z sekcji niżej — po pomiarze, nie na zapas
 
 ---
 
@@ -74,12 +73,17 @@ Szczegóły implementacji w [component-patterns.md](./component-patterns.md).
 | Ciężkie formularze | Małe, lekkie komponenty |
 | Komponenty poniżej fold | Krytyczne UI |
 | Rzadko używane features | |
-```typescript
-// Route-level
-const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+| Komponent większy niż 50 KB (z zależnościami) | |
 
-// Component-level
-const HeavyModal = lazy(() => import('./HeavyModal'));
+Komponent większy niż 50 KB ładujesz dynamicznie (reguły kodu, sekcja Performance); rozmiar sprawdzasz w raporcie builda, nie na oko.
+```typescript
+// Route-level — strona ładowana przez lazy() ma default export
+const SettingsPage = lazy(() => import('@/pages/settings-page'));
+
+// Component-level — komponent ma named export, więc mapujesz go na default
+const HeavyModal = lazy(() =>
+    import('./heavy-modal').then((module) => ({ default: module.HeavyModal }))
+);
 
 // Z Suspense
 <Suspense fallback={<LoadingOverlay />}>
@@ -89,9 +93,9 @@ const HeavyModal = lazy(() => import('./HeavyModal'));
 
 ---
 
-## Memoizacja (bez React Compiler)
+## Memoizacja — projekt bez React Compilera
 
-Jeśli nie masz włączonego React Compiler, stosuj te zasady:
+Przykłady w tej sekcji dotyczą projektu bez React Compilera (brak `babel-plugin-react-compiler` w package.json). Z Compilerem ręcznej memoizacji nie dodajesz, poza stabilną zależnością efektu. Każdą memoizację poprzedza pomiar (React DevTools Profiler).
 
 ### useMemo - Drogie Obliczenia
 ```typescript
@@ -109,19 +113,34 @@ const total = useMemo(() => a + b, [a, b]); // Niepotrzebne
 **Używaj gdy:**
 - Filtrowanie/sortowanie >100 elementów
 - Złożone transformacje danych
-- Obliczenia zajmujące >1ms
+- Obliczenia, którym pomiar dał >1ms
 
 ### useCallback - Event Handlers
 ```typescript
-// TAK - handler przekazywany do memo() child
-const MemoizedList = memo(({ onItemClick }) => ...);
+// TAK - handler przekazywany do memo() child (projekt bez React Compilera)
+interface MemoizedListProps {
+    items: Item[];
+    onItemClick: (id: string) => void;
+}
 
-function Parent() {
+const MemoizedList = memo(function MemoizedList({ items, onItemClick }: MemoizedListProps) {
+    return (
+        <ul>
+            {items.map((item) => (
+                <li key={item.id}>
+                    <button type="button" onClick={() => onItemClick(item.id)}>{item.name}</button>
+                </li>
+            ))}
+        </ul>
+    );
+});
+
+function Parent({ items }: { items: Item[] }) {
     const handleClick = useCallback((id: string) => {
         selectItem(id);
     }, []);
 
-    return <MemoizedList onItemClick={handleClick} />;
+    return <MemoizedList items={items} onItemClick={handleClick} />;
 }
 
 // NIE - handler dla DOM element
@@ -133,17 +152,26 @@ function Component() {
 
 **Używaj gdy:**
 - Handler przekazywany do `React.memo()` component
-- Handler w dependencies `useEffect`/`useMemo`
+- Handler w dependencies `useEffect`/`useMemo` (ten przypadek zostaje także z React Compilerem)
 
-**NIE używaj gdy:**
+**Nie używaj gdy:**
 - Handler dla DOM elements (`<button>`, `<input>`)
 - Komponent child nie jest memoizowany
 
 ### React.memo - Komponenty
 ```typescript
-// TAK - element listy renderowany wiele razy
-const ListItem = memo<ListItemProps>(({ item, onSelect }) => {
-    return <div onClick={() => onSelect(item.id)}>{item.name}</div>;
+// TAK - element listy renderowany wiele razy (projekt bez React Compilera, po pomiarze)
+interface ListItemProps {
+    item: Item;
+    onSelect: (id: string) => void;
+}
+
+const ListItem = memo(function ListItem({ item, onSelect }: ListItemProps) {
+    return (
+        <button type="button" onClick={() => onSelect(item.id)}>
+            {item.name}
+        </button>
+    );
 });
 
 // NIE - komponent renderowany raz lub rzadko
@@ -155,35 +183,75 @@ const Header = memo(() => ...); // Prawdopodobnie niepotrzebne
 ## Data Fetching
 
 ### React Query (Rekomendowane dla SPA)
+
+Warstwy z reguł kodu: komponent → hook → serwis → klient. Komponent woła hook z `src/hooks/`, hook owija `useQuery` / `useMutation` i woła serwis z `src/services/`, a serwis — wspólny klient z limitem czasu i walidacją Zod ([file-organization.md](./file-organization.md)). Klucze zapytań pochodzą z jednej fabryki, żeby invalidacja trafiała w te same klucze, które zapisało pobieranie.
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+// src/hooks/use-templates.ts — fabryka kluczy na początku pliku hooków listy
+import type { TemplateFilters } from '@/services/template-service';
 
-// Fetching z automatycznym cache
-function TemplateList() {
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['templates'],
-        queryFn: fetchTemplates,
-        staleTime: 5 * 60 * 1000, // 5 minut
+export const templateKeys = {
+    all: ['templates'] as const,
+    list: (filters: TemplateFilters) => [...templateKeys.all, 'list', filters] as const,
+    detail: (id: string) => [...templateKeys.all, 'detail', id] as const,
+};
+```
+```typescript
+// src/hooks/use-templates.ts — ciąg dalszy
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import { logger } from '@/lib/logger';
+import { templateService, type TemplateFilters } from '@/services/template-service';
+
+export const TEMPLATES_STALE_TIME_MS = 5 * 60 * 1000; // 5 minut
+
+// Jedna konfiguracja zapytania dla wariantu zwykłego i Suspense (queryOptions — sekcja niżej).
+// signal przerywa żądanie przy odmontowaniu albo zmianie klucza.
+function templateListOptions(filters: TemplateFilters) {
+    return queryOptions({
+        queryKey: templateKeys.list(filters),
+        queryFn: ({ signal }) => templateService.list(filters, signal),
+        staleTime: TEMPLATES_STALE_TIME_MS,
     });
-
-    if (isLoading) return <Skeleton />;
-    if (error) return <ErrorMessage error={error} />;
-    
-    return <Grid templates={data} />;
 }
 
-// Mutacja z invalidacją
-function useAddFavorite() {
+// Pobieranie z automatycznym cache
+export function useTemplates(filters: TemplateFilters = {}) {
+    return useQuery(templateListOptions(filters));
+}
+
+// Mutacja z invalidacją — ten sam wzorzec ulubionych co w loading-and-error-states.md
+export function useToggleFavorite(templateId: string) {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
-        mutationFn: (templateId: string) => addToFavorites(templateId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['favorites'] });
+        mutationFn: () => templateService.toggleFavorite(templateId),
+        onError: (error) => {
+            logger.error('FAVORITE_TOGGLE_FAILED', error);
+            toast.error('Nie udało się zaktualizować ulubionych');
         },
+        // Zwracany promise: mutateAsync kończy się dopiero po odświeżeniu danych
+        onSettled: () => queryClient.invalidateQueries({ queryKey: templateKeys.all }),
     });
 }
 ```
+```typescript
+// src/components/template-list.tsx
+import { useTemplates } from '@/hooks/use-templates';
+
+export function TemplateList() {
+    const { data, isPending, error } = useTemplates();
+
+    // Kolejność gałęzi: ładowanie → błąd → pusto → dane
+    if (isPending) return <Skeleton />;
+    if (error) return <ErrorMessage error={error} />;
+    if (data.length === 0) return <EmptyState title="Brak szablonów" />;
+
+    return <Grid templates={data} />;
+}
+```
+
+`isPending` zamiast `isLoading`: po wykluczeniu `isPending` i `error` TypeScript zawęża `data` do zdefiniowanej tablicy, więc gałąź danych nie potrzebuje `data?.` ani `!`.
 
 **Dlaczego React Query dla SPA:**
 - Automatyczny cache i refetch
@@ -194,19 +262,26 @@ function useAddFavorite() {
 
 ### useSuspenseQuery (Suspense-based)
 
-Alternatywa dla early returns — data jest zawsze zdefiniowane:
+Dane pod granicą Suspense pobierasz przez `useSuspenseQuery` (SKILL.md, zasada 4), a nie przez `useQuery` z ręcznym stanem ładowania — inaczej ładowanie obsługują dwa miejsca. Wybór między wariantami opisuje tabela niżej; data jest zawsze zdefiniowane:
 ```typescript
+// src/hooks/use-templates.ts (cd.) — ta sama konfiguracja co useTemplates
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-function TemplateList() {
-    // data jest ZAWSZE zdefiniowane (nigdy undefined)
-    const { data } = useSuspenseQuery({
-        queryKey: ['templates'],
-        queryFn: fetchTemplates,
-        staleTime: 5 * 60 * 1000,
-    });
+export function useSuspenseTemplates(filters: TemplateFilters = {}) {
+    return useSuspenseQuery(templateListOptions(filters));
+}
+```
+```typescript
+// src/components/template-list.tsx
+import { useSuspenseTemplates } from '@/hooks/use-templates';
 
-    // Nie potrzebujesz: if (isLoading)... if (error)...
+export function TemplateList() {
+    // data jest zawsze zdefiniowane (nigdy undefined)
+    const { data } = useSuspenseTemplates();
+
+    // Nie potrzebujesz: if (isPending)... if (error)... — obsługują je Suspense i ErrorBoundary
+    if (data.length === 0) return <EmptyState title="Brak szablonów" />;
+
     return <Grid templates={data} />;
 }
 
@@ -229,34 +304,69 @@ function TemplateList() {
 
 ### queryOptions Helper
 
-Reużywalne query configs z type-safety:
+Konfiguracja zapytania używana w kilku miejscach (wariant zwykły, Suspense, prefetch, zapis do cache) ma jedno źródło z typem danych przypiętym do klucza — kopie klucza, `queryFn` i `staleTime` rozjeżdżają się po cichu. Funkcja z `queryOptions` zostaje w module hooków (jak `templateListOptions` wyżej), a reszta aplikacji korzysta z hooków:
 ```typescript
-import { queryOptions } from '@tanstack/react-query';
+// src/hooks/use-template.ts
+import { queryOptions, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 
-function templateOptions(id: string) {
+import { templateService, type Template } from '@/services/template-service';
+
+import { TEMPLATES_STALE_TIME_MS, templateKeys } from './use-templates';
+
+function templateDetailOptions(id: string) {
     return queryOptions({
-        queryKey: ['template', id],
-        queryFn: () => api.getTemplate(id),
-        staleTime: 5 * 60 * 1000,
+        queryKey: templateKeys.detail(id),
+        queryFn: ({ signal }) => templateService.get(id, signal),
+        staleTime: TEMPLATES_STALE_TIME_MS,
     });
 }
 
-// Reużywalne wszędzie:
-useQuery(templateOptions(id));
-useSuspenseQuery(templateOptions(id));
-queryClient.prefetchQuery(templateOptions(id));
-queryClient.setQueryData(templateOptions(id).queryKey, newData);
+export function useTemplate(id: string) {
+    return useQuery(templateDetailOptions(id));
+}
+
+export function useSuspenseTemplate(id: string) {
+    return useSuspenseQuery(templateDetailOptions(id));
+}
+
+// Prefetch przy najechaniu na kartę i zapis po edycji — ten sam klucz z typem danych
+export function useTemplateCache(): {
+    prefetch: (id: string) => Promise<void>;
+    write: (template: Template) => void;
+} {
+    const queryClient = useQueryClient();
+
+    return {
+        prefetch: (id) => queryClient.prefetchQuery(templateDetailOptions(id)),
+        write: (template) => {
+            queryClient.setQueryData(templateDetailOptions(template.id).queryKey, template);
+        },
+    };
+}
 ```
 
 ### useOptimistic (React 19)
 
 Natychmiastowa reakcja UI przed odpowiedzią serwera:
+Komponent korzysta z hooka `useToggleFavorite` z sekcji React Query wyżej — log z kodem błędu, toast i invalidacja są w hooku, więc komponent zawiera tylko stan optymistyczny.
 ```typescript
+import { Heart } from 'lucide-react';
 import { useOptimistic, useTransition } from 'react';
 
-function FavoriteButton({ templateId, isFavorite }: Props) {
+import { Button } from '@/components/ui/button';
+import { useToggleFavorite } from '@/hooks/use-templates';
+import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
+
+interface FavoriteButtonProps {
+    templateId: string;
+    isFavorite: boolean;
+}
+
+export function FavoriteButton({ templateId, isFavorite }: FavoriteButtonProps) {
     const [isPending, startTransition] = useTransition();
     const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
+    const toggleFavorite = useToggleFavorite(templateId);
 
     // useOptimistic wołaj wewnątrz transition/action — poza nimi React loguje warning,
     // a optymistyczny stan jest natychmiast cofany (mignięcie UI), zamiast utrzymać się do końca akcji
@@ -265,20 +375,29 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
             setOptimisticFavorite(!optimisticFavorite); // Natychmiast
 
             try {
-                await toggleFavorite(templateId); // API call
-            } catch {
-                // useOptimistic automatycznie przywraca przy błędzie
-                toast.error('Nie udało się zaktualizować');
+                // Kończy się po onSettled hooka, czyli po odświeżeniu isFavorite z serwera
+                await toggleFavorite.mutateAsync();
+            } catch (error) {
+                // Przyczynę z kodem FAVORITE_TOGGLE_FAILED zalogował onError hooka i pokazał toast.
+                // Catch zatrzymuje odrzucenie (inaczej trafiłoby do error boundary) i zostawia ślad wycofania.
+                logger.info('FAVORITE_OPTIMISTIC_ROLLBACK', { templateId, error });
             }
         });
     };
 
     return (
-        <Button variant="ghost" size="icon" onClick={handleToggle} disabled={isPending}>
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggle}
+            disabled={isPending}
+            aria-pressed={optimisticFavorite}
+            aria-label={optimisticFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
+        >
             <Heart className={cn(
                 "h-5 w-5 transition-colors",
-                optimisticFavorite 
-                    ? "fill-red-500 text-red-500" 
+                optimisticFavorite
+                    ? "fill-red-500 text-red-500"
                     : "text-muted-foreground"
             )} />
         </Button>
@@ -286,10 +405,15 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
 }
 ```
 
-**Różnica od manualnego optimistic update:**
-- `useOptimistic` automatycznie rollback przy error
-- Integruje się z Concurrent React
-- Czystszy kod
+**Jak działa powrót do źródła prawdy:**
+- `useOptimistic` pokazuje wartość optymistyczną tylko do końca transition; potem komponent wraca do `isFavorite` z propsów. Bez odświeżenia źródła prawdy UI po sukcesie wróciłoby do starej wartości.
+- Dlatego `onSettled` w hooku zwraca promise invalidacji: `mutateAsync` kończy się dopiero po refetchu, a transition kończy się z nowym `isFavorite`.
+- Przy błędzie refetch przywraca prawdziwą wartość z serwera — to nie automatyczny rollback `useOptimistic`, tylko koniec transition plus świeże dane.
+
+**Różnica od manualnego optimistic update (`onMutate` + `setQueryData` + przywracanie kontekstu w `onError`):**
+- Stan optymistyczny żyje tylko w komponencie, cache zapytania się nie zmienia
+- Integruje się z Concurrent React (`isPending` z transition)
+- Mniej kodu: brak ręcznego zapisu i przywracania cache
 
 ---
 
@@ -297,7 +421,7 @@ function FavoriteButton({ templateId, isFavorite }: Props) {
 
 ### useDebounce Hook
 ```typescript
-// hooks/useDebounce.ts
+// hooks/use-debounce.ts
 export function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
@@ -311,23 +435,44 @@ export function useDebounce<T>(value: T, delay: number): T {
 ```
 
 ### Użycie
-```typescript
-function SearchInput() {
-    const [input, setInput] = useState('');
-    const debouncedSearch = useDebounce(input, 300);
 
-    useEffect(() => {
-        if (debouncedSearch) {
-            performSearch(debouncedSearch);
-        }
-    }, [debouncedSearch]);
+Wyszukiwanie po debounce idzie przez TanStack Query, nie przez `useEffect`: zapytanie z kluczem frazy dostaje `signal`, więc odpowiedź na starą frazę nie nadpisze nowszej, a wynik trafia do cache.
+```typescript
+// src/hooks/use-templates.ts (cd.) — ta sama konfiguracja listy, z frazą w filtrach
+export function useTemplateSearch(search: string) {
+    return useQuery({
+        ...templateListOptions({ search }),
+        enabled: search !== '',
+    });
+}
+```
+```typescript
+// src/components/search-input.tsx
+import { useState } from 'react';
+
+import { Input } from '@/components/ui/input';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useTemplateSearch } from '@/hooks/use-templates';
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+export function SearchInput() {
+    const [input, setInput] = useState('');
+    const debouncedSearch = useDebounce(input, SEARCH_DEBOUNCE_MS);
+    const { data: results } = useTemplateSearch(debouncedSearch);
 
     return (
-        <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Szukaj..."
-        />
+        <div>
+            <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Szukaj..."
+                aria-label="Szukaj szablonów"
+            />
+            <ul>
+                {results?.map((template) => <li key={template.id}>{template.name}</li>)}
+            </ul>
+        </div>
     );
 }
 ```
@@ -338,27 +483,35 @@ function SearchInput() {
 
 ### useTransition - Non-blocking Updates
 ```typescript
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
-function FilterableList() {
+function FilterableList({ items }: { items: Item[] }) {
     const [filter, setFilter] = useState('');
+    const [appliedFilter, setAppliedFilter] = useState('');
     const [isPending, startTransition] = useTransition();
 
     const handleFilterChange = (value: string) => {
         // Natychmiastowa aktualizacja inputa
         setFilter(value);
-        
-        // Ciężka operacja - może być odroczona
+
+        // Ciężki render listy - może być odroczony
         startTransition(() => {
-            setFilteredItems(filterLargeList(items, value));
+            setAppliedFilter(value);
         });
     };
 
+    // Lista liczona z propsów i zastosowanego filtra, bez kopii items w stanie
+    const filteredItems = filterLargeList(items, appliedFilter);
+
     return (
         <div>
-            <Input value={filter} onChange={(e) => handleFilterChange(e.target.value)} />
+            <Input
+                value={filter}
+                onChange={(e) => handleFilterChange(e.target.value)}
+                aria-label="Filtruj listę"
+            />
             <div className={cn(isPending && "opacity-50")}>
-                {filteredItems.map(item => <Item key={item.id} item={item} />)}
+                {filteredItems.map(item => <ItemRow key={item.id} item={item} />)}
             </div>
         </div>
     );
@@ -367,20 +520,20 @@ function FilterableList() {
 
 ### useDeferredValue - Deferred Rendering
 ```typescript
-import { useDeferredValue, useMemo } from 'react';
+import { useDeferredValue } from 'react';
 
-function SearchResults({ query }: { query: string }) {
+function SearchResults({ query, items }: { query: string; items: Item[] }) {
     const deferredQuery = useDeferredValue(query);
     const isStale = query !== deferredQuery;
 
-    const results = useMemo(
-        () => filterLargeList(items, deferredQuery),
-        [deferredQuery]
-    );
+    // Render z nową frazą (pilny) używa starego deferredQuery, więc kosztowne filtrowanie
+    // musi być zapamiętane, żeby się nie powtarzało. Z React Compilerem robi to Compiler.
+    // Projekt bez React Compilera: useMemo(() => filterLargeList(items, deferredQuery), [items, deferredQuery]).
+    const results = filterLargeList(items, deferredQuery);
 
     return (
         <div className={cn(isStale && "opacity-50 transition-opacity")}>
-            {results.map(item => <Item key={item.id} item={item} />)}
+            {results.map(item => <ItemRow key={item.id} item={item} />)}
         </div>
     );
 }
@@ -397,6 +550,9 @@ function SearchResults({ query }: { query: string }) {
 Dla list >100 elementów:
 ```typescript
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef } from 'react';
+
+const ROW_HEIGHT_PX = 50; // szacowana wysokość wiersza listy
 
 function VirtualList({ items }: { items: Item[] }) {
     const parentRef = useRef<HTMLDivElement>(null);
@@ -404,7 +560,7 @@ function VirtualList({ items }: { items: Item[] }) {
     const virtualizer = useVirtualizer({
         count: items.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 50,
+        estimateSize: () => ROW_HEIGHT_PX,
     });
 
     return (
@@ -426,7 +582,7 @@ function VirtualList({ items }: { items: Item[] }) {
                             transform: `translateY(${virtualItem.start}px)`,
                         }}
                     >
-                        <Item item={items[virtualItem.index]} />
+                        <ItemRow item={items[virtualItem.index]} />
                     </div>
                 ))}
             </div>
@@ -441,9 +597,11 @@ function VirtualList({ items }: { items: Item[] }) {
 
 ### Cleanup w useEffect
 ```typescript
+const CLOCK_TICK_MS = 1000;
+
 useEffect(() => {
     const subscription = channel.subscribe();
-    const timer = setInterval(() => {}, 1000);
+    const timer = setInterval(refreshClock, CLOCK_TICK_MS);
 
     return () => {
         subscription.unsubscribe();
@@ -452,25 +610,44 @@ useEffect(() => {
 }, []);
 ```
 
-### AbortController dla Fetch
+### Żądanie Sieciowe bez Wycieku Wyniku
+
+Dane z serwera pobierasz przez TanStack Query — `queryFn` dostaje `signal`, a biblioteka przerywa żądanie i odrzuca wynik, gdy komponent się odmontuje albo zmieni się klucz:
 ```typescript
+// src/hooks/use-dashboard-summary.ts; dashboardKeys — fabryka kluczy jak templateKeys
+export function useDashboardSummary() {
+    return useQuery({
+        queryKey: dashboardKeys.summary,
+        queryFn: ({ signal }) => dashboardService.getSummary(signal),
+    });
+}
+```
+
+Efekt z żądaniem zostaje tylko tam, gdzie projekt nie ma TanStack Query. Wtedy limit czasu daje `AbortSignal.timeout`, a cleanup ustawia flagę `ignore` zamiast przerywać żądanie drugim sygnałem — wynik po odmontowaniu albo zmianie parametrów jest odrzucany. Limit czasu, kopertę `{ data, error }`, parsowanie Zod i `ApiError` ma wspólny `request()` z [file-organization.md](./file-organization.md), więc efekt dokłada tylko flagę.
+```typescript
+type DashboardState =
+    | { status: 'loading' }
+    | { status: 'success'; summary: DashboardSummary }
+    | { status: 'error' };
+
+const [state, setState] = useState<DashboardState>({ status: 'loading' });
+
 useEffect(() => {
-    const controller = new AbortController();
+    let ignore = false;
 
-    async function fetchData() {
-        try {
-            const res = await fetch('/api/data', { signal: controller.signal });
-            const data = await res.json();
-            setData(data);
-        } catch (error) {
-            if (error.name !== 'AbortError') {
-                logger.error('Fetch error', error);
-            }
-        }
-    }
+    // request(): AbortSignal.timeout(REQUEST_TIMEOUT_MS) + walidacja odpowiedzi schematem
+    void request('/dashboard', dashboardSummarySchema)
+        .then((summary) => {
+            if (!ignore) setState({ status: 'success', summary });
+        })
+        .catch((error: unknown) => {
+            logger.error('DASHBOARD_FETCH_FAILED', error);
+            if (!ignore) setState({ status: 'error' });
+        });
 
-    fetchData();
-    return () => controller.abort();
+    return () => {
+        ignore = true;
+    };
 }, []);
 ```
 
@@ -486,11 +663,18 @@ useEffect(() => {
 
 ### Pomiar
 ```typescript
-import { onLCP, onINP, onCLS } from 'web-vitals';
+import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
 
-onLCP(console.log);
-onINP(console.log);
-onCLS(console.log);
+import { logger } from '@/lib/logger';
+
+// Pomiar idzie przez logger (skill sentry-integration) ze stałym kodem, nie do konsoli
+function reportWebVital(metric: Metric): void {
+    logger.info('WEB_VITAL', { name: metric.name, value: metric.value, rating: metric.rating });
+}
+
+onLCP(reportWebVital);
+onINP(reportWebVital);
+onCLS(reportWebVital);
 ```
 
 ### Optymalizacje
@@ -517,7 +701,7 @@ onCLS(console.log);
 
 ### Formaty (priorytet)
 
-1. **AVIF** - najlepsza kompresja, szeroko wspierane (2026)
+1. **AVIF** - najlepsza kompresja, szeroko wspierane
 2. **WebP** - fallback
 3. **JPEG/PNG** - legacy fallback
 
@@ -544,14 +728,15 @@ function OptimizedImage({ src, alt }: { src: string; alt: string }) {
 
 ### Lazy Loading
 ```typescript
-// Native lazy loading
-<img src="image.jpg" loading="lazy" />
+// Native lazy loading — z wymiarami (CLS) i tekstem alternatywnym
+<img src="image.jpg" alt="Podgląd szablonu" width={800} height={600} loading="lazy" />
 
-// Intersection Observer dla więcej kontroli
+// Intersection Observer dla więcej kontroli (react-intersection-observer — sprawdź package.json,
+// nową zależność zgłaszasz; natywny loading="lazy" zwykle wystarcza)
 const { ref, inView } = useInView({ triggerOnce: true });
 
 <div ref={ref}>
-    {inView && <img src="heavy-image.jpg" />}
+    {inView && <img src="heavy-image.jpg" alt="Wykres sprzedaży" width={1200} height={800} />}
 </div>
 ```
 
@@ -559,27 +744,48 @@ const { ref, inView } = useInView({ triggerOnce: true });
 
 ## Third-Party Scripts
 
-Ładuj skrypty analityczne bez blokowania:
+Ładuj skrypty analityczne bez blokowania. Trzy wyzwalacze (kliknięcie, przewinięcie, bezczynność) ładują skrypt raz — pilnuje tego flaga — a cleanup zdejmuje listenery i anuluje oczekujący callback, żeby po odmontowaniu nic nie dołożyło skryptu:
 ```typescript
-// Lazy load po interakcji
+const ANALYTICS_FALLBACK_DELAY_MS = 2000; // gdy przeglądarka nie ma requestIdleCallback
+
+// Lazy load po interakcji albo w bezczynności
 useEffect(() => {
-    const loadAnalytics = () => {
+    let isLoaded = false;
+    let idleCallbackId: number | undefined;
+    let timeoutId: number | undefined;
+
+    const removeInteractionListeners = (): void => {
+        window.removeEventListener('click', loadAnalytics);
+        window.removeEventListener('scroll', loadAnalytics);
+    };
+
+    function loadAnalytics(): void {
+        if (isLoaded) return;
+        isLoaded = true;
+        removeInteractionListeners();
+
         const script = document.createElement('script');
         script.src = 'https://analytics.example.com/script.js';
         script.async = true;
         document.body.appendChild(script);
-    };
+    }
 
     // Ładuj po pierwszej interakcji
     window.addEventListener('click', loadAnalytics, { once: true });
-    window.addEventListener('scroll', loadAnalytics, { once: true });
-    
+    window.addEventListener('scroll', loadAnalytics, { once: true, passive: true });
+
     // Lub po idle
-    if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadAnalytics);
+    if (typeof window.requestIdleCallback === 'function') {
+        idleCallbackId = window.requestIdleCallback(loadAnalytics);
     } else {
-        setTimeout(loadAnalytics, 2000);
+        timeoutId = window.setTimeout(loadAnalytics, ANALYTICS_FALLBACK_DELAY_MS);
     }
+
+    return () => {
+        removeInteractionListeners();
+        if (idleCallbackId !== undefined) window.cancelIdleCallback(idleCallbackId);
+        if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
 }, []);
 ```
 

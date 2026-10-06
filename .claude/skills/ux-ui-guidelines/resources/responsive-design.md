@@ -1,6 +1,6 @@
 # Responsive Design
 
-Mobile-first, container queries, dynamic viewport units - standardy 2026.
+Mobile-first, container queries, dynamic viewport units, wzorce dotykowe.
 
 ---
 
@@ -30,7 +30,7 @@ Styluj najpierw dla mobile, potem dodawaj breakpointy dla większych ekranów.
 
 ---
 
-## Container Queries (2026)
+## Container Queries
 
 ### Problem z Viewport Breakpoints
 
@@ -158,8 +158,8 @@ min-h-lvh
 
 ### Fallback dla Starszych Przeglądarek
 ```css
-/* globals.css */
-.min-h-screen-safe {
+/* src/index.css — @utility (Tailwind v4) zamiast zwykłej klasy, żeby działały warianty (md:min-h-screen-safe) */
+@utility min-h-screen-safe {
     min-height: 100vh;
     min-height: 100dvh;
 }
@@ -216,16 +216,16 @@ Przydatne przy wsparciu RTL (right-to-left) layouts.
 
 ### Rozwiązanie: clamp()
 ```css
-/* globals.css */
-.text-fluid-xl {
+/* src/index.css — @utility (Tailwind v4), żeby działały warianty (md:text-fluid-3xl) */
+@utility text-fluid-xl {
     font-size: clamp(1.5rem, 1rem + 2vw, 2.25rem);
 }
 
-.text-fluid-2xl {
+@utility text-fluid-2xl {
     font-size: clamp(1.875rem, 1.25rem + 2.5vw, 3rem);
 }
 
-.text-fluid-3xl {
+@utility text-fluid-3xl {
     font-size: clamp(2.25rem, 1.5rem + 3vw, 3.75rem);
 }
 ```
@@ -267,9 +267,9 @@ Przydatne przy wsparciu RTL (right-to-left) layouts.
     <img src={thumbnail} alt="" className="w-full h-full object-cover" />
 </div>
 
-// Custom aspect ratio
+// Custom aspect ratio — obraz z treścią ma opis w alt, dekoracyjny alt=""
 <div className="aspect-[4/3] bg-muted">
-    <img src={image} className="w-full h-full object-contain" />
+    <img src={image} alt={imageAlt} className="w-full h-full object-contain" />
 </div>
 ```
 
@@ -340,7 +340,7 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 }
 ```
 
-**Wsparcie:** Chrome 125+, Edge 125+, Firefox 147+, Safari 26+. Baseline Newly Available od I.2026 (~84% pokrycia wg caniuse, 2026-08) — nadal fallback dla starszych Safari/Firefox.
+**Wsparcie:** Chrome 125+, Edge 125+, Firefox 147+, Safari 26+ (Baseline Newly Available); aktualne pokrycie sprawdzasz na caniuse.com. Starsze Safari i Firefox potrzebują fallbacku.
 
 **Rekomendacja:** Stosuj jako progressive enhancement. Dla pełnego wsparcia przeglądarek nadal używaj Radix UI positioning lub floating-ui.
 
@@ -349,15 +349,22 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 ## Touch-Friendly Design
 
 ### Minimum Touch Targets (WCAG 2.2)
+
+Zasada rozmiaru celu ma jedno źródło: [accessibility.md, sekcja Rozmiar celu](accessibility.md#rozmiar-celu) — min 24×24 px dla każdego celu (próg twardy, WCAG 2.2 AA), 44×44 px dla kontrolek obsługiwanych palcem, mniejszy widoczny element z obszarem rozszerzonym pseudo-elementem. Tu jej zastosowanie w widokach mobilnych:
 ```typescript
-// 44px minimum - Tailwind v4
+// Kontrolka dotykowa 44px - Tailwind v4
 <Button className="min-h-11 min-w-11">
     Dotknij
 </Button>
 
-// Icon button
-<Button size="icon" className="h-11 w-11">
-    <Heart className="h-5 w-5" />
+// Icon button widoczny tylko na mobile — od razu 44px
+<Button size="icon" className="size-11 md:hidden" aria-label="Ulubione">
+    <Heart className="h-5 w-5" aria-hidden="true" />
+</Button>
+
+// Icon button wspólny dla desktopu i dotyku — 36px z shadcn/ui, 44px przy wskaźniku dotykowym
+<Button size="icon" className="pointer-coarse:size-11" aria-label="Udostępnij">
+    <Share className="h-5 w-5" aria-hidden="true" />
 </Button>
 
 // Link z odpowiednim paddingiem
@@ -370,9 +377,9 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 ```typescript
 // Minimum 8px gap między przyciskami
 <div className="flex gap-2">
-    <Button size="icon" />
-    <Button size="icon" />
-    <Button size="icon" />
+    <Button size="icon" aria-label="Edytuj" />
+    <Button size="icon" aria-label="Duplikuj" />
+    <Button size="icon" aria-label="Usuń" />
 </div>
 ```
 
@@ -382,10 +389,11 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 
 ### Media Query dla Hover
 ```typescript
-// Hover tylko na urządzeniach z precyzyjnym pointerem
+// Hover tylko na urządzeniach, które go obsługują
 <Card className={cn(
-    "transition-all duration-200",
-    // @media (hover: hover) and (pointer: fine)
+    // Konkretne właściwości zamiast przejścia wszystkich: animujesz tylko cień i przesunięcie
+    "transition-[box-shadow,translate] duration-200",
+    // W Tailwind v4 wariant hover: jest objęty @media (hover: hover), więc na dotyku nie „przykleja się”
     "hover:shadow-md hover:-translate-y-0.5"
 )}>
     {children}
@@ -394,10 +402,10 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 
 ### Touch Feedback
 ```typescript
-// Active state dla touch
+// Active state dla touch — ta sama skala naciśnięcia w całym skillu
 <button className={cn(
     "transition-transform",
-    "active:scale-95"
+    "active:scale-[0.96]"
 )}>
     Przycisk
 </button>
@@ -419,28 +427,33 @@ Pozycjonowanie tooltipów, popovers i dropdown bez Popper.js/floating-ui:
 
 ### Navigation
 ```typescript
+// NavLink z React Routera przyjmuje `to`, nie `href`; ścieżki ze stałej ROUTES (src/constants/routes.ts)
+import { NavLink } from 'react-router';
+
+import { ROUTES } from '@/constants/routes';
+
 <nav className="flex items-center justify-between p-4">
     <Logo className="h-8" />
 
     {/* Desktop nav */}
     <div className="hidden md:flex items-center gap-4">
-        <NavLink href="/">Home</NavLink>
-        <NavLink href="/templates">Szablony</NavLink>
+        <NavLink to={ROUTES.HOME}>Home</NavLink>
+        <NavLink to={ROUTES.ITEMS}>Elementy</NavLink>
         <Button>Zaloguj</Button>
     </div>
 
-    {/* Mobile menu trigger */}
+    {/* Mobile menu trigger — przycisk tylko na mobile, więc cel 44px */}
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="size-11 md:hidden" aria-label="Otwórz menu">
+                <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[280px]">
             <nav className="flex flex-col gap-4 mt-8">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/templates">Szablony</NavLink>
-                <Button className="w-full">Zaloguj</Button>
+                <NavLink to={ROUTES.HOME} className="min-h-11 inline-flex items-center">Home</NavLink>
+                <NavLink to={ROUTES.ITEMS} className="min-h-11 inline-flex items-center">Elementy</NavLink>
+                <Button className="w-full min-h-11">Zaloguj</Button>
             </nav>
         </SheetContent>
     </Sheet>
@@ -541,7 +554,8 @@ Użyj DevTools do resize'owania parent elementu, nie całego viewport.
 | **Dynamic viewport** | Full-height sections |
 | **Fluid typography** | Headlines |
 | **Subgrid** | Wyrównanie grid items |
-| **Touch targets 44px** | Wszystkie interaktywne |
+| **Rozmiar celu** | Min 24×24 px każdy cel; 44×44 px kontrolki dotykowe ([accessibility.md](accessibility.md#rozmiar-celu)) |
+| **Gesty (swipe, pull)** | Skrót do akcji dostępnej też przyciskiem; destrukcyjne z potwierdzeniem albo „Cofnij” |
 
 ---
 ---
@@ -550,20 +564,25 @@ Użyj DevTools do resize'owania parent elementu, nie całego viewport.
 
 ### Bottom Navigation
 ```typescript
-import { Home, Search, PlusCircle, Heart, User } from 'lucide-react';
+import { Heart, Home, PlusCircle, Search, User } from 'lucide-react';
 import { NavLink } from 'react-router';
+
+import { ROUTES } from '@/constants/routes';
+
+// SEARCH, FAVORITES i PROFILE dopisujesz do tego samego obiektu ROUTES w src/constants/routes.ts
+const BOTTOM_NAV_ITEMS = [
+    { to: ROUTES.HOME, icon: Home, label: 'Home' },
+    { to: ROUTES.SEARCH, icon: Search, label: 'Szukaj' },
+    { to: ROUTES.ITEM_NEW, icon: PlusCircle, label: 'Utwórz' },
+    { to: ROUTES.FAVORITES, icon: Heart, label: 'Ulubione' },
+    { to: ROUTES.PROFILE, icon: User, label: 'Profil' },
+] as const;
 
 function BottomNav() {
     return (
         <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-30 pb-safe">
             <ul className="flex justify-around">
-                {[
-                    { to: '/', icon: Home, label: 'Home' },
-                    { to: '/search', icon: Search, label: 'Szukaj' },
-                    { to: '/create', icon: PlusCircle, label: 'Utwórz' },
-                    { to: '/favorites', icon: Heart, label: 'Ulubione' },
-                    { to: '/profile', icon: User, label: 'Profil' },
-                ].map(({ to, icon: Icon, label }) => (
+                {BOTTOM_NAV_ITEMS.map(({ to, icon: Icon, label }) => (
                     <li key={to}>
                         <NavLink
                             to={to}
@@ -572,7 +591,7 @@ function BottomNav() {
                                 isActive ? "text-primary" : "text-muted-foreground"
                             )}
                         >
-                            <Icon className="h-5 w-5" />
+                            <Icon className="h-5 w-5" aria-hidden="true" />
                             <span className="text-xs mt-1">{label}</span>
                         </NavLink>
                     </li>
@@ -584,12 +603,18 @@ function BottomNav() {
 ```
 
 **Safe Area dla notch/gesture bar:**
+
+`env(safe-area-inset-*)` zwraca wartość większą od zera dopiero wtedy, gdy strona rozciąga się pod wycięcie ekranu — meta viewport w `index.html` potrzebuje `viewport-fit=cover`:
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+```
 ```css
-/* globals.css */
-.pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+/* src/index.css — @utility (Tailwind v4): zwykła klasa .pb-safe nie działałaby z wariantami (md:pb-safe) */
+@utility pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 ```
+`pb-safe` ustawia cały dolny padding, więc w elemencie z `p-4` nadpisuje dolne 16 px. Gdy potrzebujesz obu, łączysz je w jednej wartości: `pb-[calc(1rem+env(safe-area-inset-bottom))]`.
 
 ### Bottom Sheet
 ```typescript
@@ -631,46 +656,66 @@ function BottomSheet({
 ```
 
 ### Pull to Refresh
-```typescript
-import { useState, useRef } from 'react';
-import { Loader2 } from 'lucide-react';
 
-function PullToRefresh({ 
-    onRefresh, 
-    children 
-}: { 
-    onRefresh: () => Promise<void>; 
-    children: React.ReactNode 
-}) {
-    const [pulling, setPulling] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
-    const startY = useRef(0);
+Stan gestu to jedna unia (`idle` / `pulling` / `refreshing`) zamiast dwóch flag, które mogłyby być prawdziwe naraz. Kolejne odświeżenie nie startuje, dopóki trwa poprzednie, a powrót do `idle` jest w `finally`, więc wykonuje się po sukcesie i po błędzie. Gest jest skrótem: lista ma też przycisk „Odśwież” (np. w nagłówku), bo przeciągnięcie wymaga ścieżki ruchu, a WCAG 2.5.1 wymaga alternatywy jednym kliknięciem ([accessibility.md](accessibility.md), sekcja Dragging Movements).
+```typescript
+import { Loader2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
+
+import { logger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
+
+const PULL_MAX_DISTANCE_PX = 100;
+const PULL_REFRESH_THRESHOLD_PX = 60;
+
+type PullState = { phase: 'idle' } | { phase: 'pulling' } | { phase: 'refreshing' };
+
+interface PullToRefreshProps {
+    onRefresh: () => Promise<void>;
+    children: React.ReactNode;
+}
+
+export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
+    const [state, setState] = useState<PullState>({ phase: 'idle' });
+    const startY = useRef<number | null>(null);
     const pullDistance = useRef(0);
 
     const handleTouchStart = (e: React.TouchEvent) => {
-        if (window.scrollY === 0) {
-            startY.current = e.touches[0].clientY;
+        const touch = e.touches[0];
+        if (window.scrollY === 0 && touch) {
+            startY.current = touch.clientY;
         }
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
-        if (startY.current === 0) return;
-        
-        pullDistance.current = e.touches[0].clientY - startY.current;
-        if (pullDistance.current > 0 && pullDistance.current < 100) {
-            setPulling(true);
+        const touch = e.touches[0];
+        if (startY.current === null || !touch || state.phase === 'refreshing') return;
+
+        pullDistance.current = touch.clientY - startY.current;
+        if (pullDistance.current > 0 && pullDistance.current < PULL_MAX_DISTANCE_PX) {
+            setState({ phase: 'pulling' });
         }
     };
 
-    const handleTouchEnd = async () => {
-        if (pullDistance.current > 60) {
-            setRefreshing(true);
-            await onRefresh();
-            setRefreshing(false);
-        }
-        setPulling(false);
-        startY.current = 0;
+    const handleTouchEnd = () => {
+        const shouldRefresh =
+            pullDistance.current > PULL_REFRESH_THRESHOLD_PX && state.phase !== 'refreshing';
+        startY.current = null;
         pullDistance.current = 0;
+
+        if (!shouldRefresh) {
+            if (state.phase === 'pulling') setState({ phase: 'idle' });
+            return;
+        }
+
+        setState({ phase: 'refreshing' });
+        void onRefresh()
+            .catch((error: unknown) => {
+                logger.error('PULL_TO_REFRESH_FAILED', error);
+                toast.error('Nie udało się odświeżyć');
+            })
+            .finally(() => setState({ phase: 'idle' }));
     };
 
     return (
@@ -679,14 +724,21 @@ function PullToRefresh({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
-            {(pulling || refreshing) && (
+            {state.phase !== 'idle' && (
                 <div className="flex justify-center py-4">
-                    <Loader2 className={cn(
-                        "h-6 w-6 text-primary",
-                        refreshing && "animate-spin"
-                    )} />
+                    <Loader2
+                        aria-hidden="true"
+                        className={cn(
+                            "h-6 w-6 text-primary",
+                            state.phase === 'refreshing' && "animate-spin"
+                        )}
+                    />
                 </div>
             )}
+            {/* Ogłoszenie dla czytnika — region w DOM od początku, zmienia się treść */}
+            <span role="status" className="sr-only">
+                {state.phase === 'refreshing' ? 'Odświeżanie' : ''}
+            </span>
             {children}
         </div>
     );
@@ -694,57 +746,120 @@ function PullToRefresh({
 ```
 
 ### Swipe Actions
-```typescript
-import { motion, useMotionValue, useTransform } from 'motion/react';
-import { Trash2, Archive } from 'lucide-react';
 
-function SwipeableItem({ 
-    children, 
-    onDelete, 
-    onArchive 
-}: {
+Swipe jest skrótem, nie jedyną drogą do akcji (WCAG 2.5.1 i 2.5.7, [accessibility.md](accessibility.md), sekcja Dragging Movements): te same akcje są w wierszu jako przyciski. Gest łatwo wykonać przypadkiem, więc akcja destrukcyjna nie wykonuje się od razu — usunięcie przechodzi przez potwierdzenie (`useConfirm`), a archiwizacja daje „Cofnij” w toaście ([component-ux.md](component-ux.md), sekcja Confirm Before Action). Kolory tła biorą się z tokenów (`bg-success`, `bg-destructive`) przez warstwy z animowaną przezroczystością, zamiast wartości rgb wpisanych w kod.
+```typescript
+import { Archive, Trash2 } from 'lucide-react';
+import { animate, motion, useMotionValue, useTransform } from 'motion/react';
+
+import { Button } from '@/components/ui/button';
+
+const SWIPE_MAX_OFFSET_PX = 100;
+const SWIPE_ACTION_THRESHOLD_PX = 80;
+
+interface SwipeableItemProps {
     children: React.ReactNode;
-    onDelete: () => void;
-    onArchive: () => void;
-}) {
+    itemLabel: string;
+    onArchive: () => void; // odwracalne: hook pokazuje toast z „Cofnij”
+    onDelete: () => void; // nieodwracalne: przed usunięciem woła confirm()
+}
+
+export function SwipeableItem({ children, itemLabel, onArchive, onDelete }: SwipeableItemProps) {
     const x = useMotionValue(0);
-    const background = useTransform(
-        x,
-        [-100, 0, 100],
-        ['rgb(239 68 68)', 'rgb(255 255 255)', 'rgb(34 197 94)']
-    );
+    const archiveOpacity = useTransform(x, [0, SWIPE_ACTION_THRESHOLD_PX], [0, 1]);
+    const deleteOpacity = useTransform(x, [-SWIPE_ACTION_THRESHOLD_PX, 0], [1, 0]);
 
     const handleDragEnd = () => {
-        const xVal = x.get();
-        if (xVal < -80) onDelete();
-        if (xVal > 80) onArchive();
+        const offset = x.get();
+        // Wiersz wraca na miejsce; akcję potwierdza dialog albo „Cofnij” w toaście
+        void animate(x, 0);
+        if (offset < -SWIPE_ACTION_THRESHOLD_PX) onDelete();
+        if (offset > SWIPE_ACTION_THRESHOLD_PX) onArchive();
     };
 
     return (
         <div className="relative overflow-hidden">
-            {/* Background actions */}
-            <motion.div 
-                className="absolute inset-0 flex items-center justify-between px-4"
-                style={{ background }}
+            {/* Tło gestu — dekoracyjne, akcje są dostępne przyciskami w wierszu */}
+            <motion.div
+                aria-hidden="true"
+                className="absolute inset-0 flex items-center justify-start bg-success px-4 text-success-foreground"
+                style={{ opacity: archiveOpacity }}
             >
-                <Archive className="h-5 w-5 text-white" />
-                <Trash2 className="h-5 w-5 text-white" />
+                <Archive className="h-5 w-5" />
+            </motion.div>
+            <motion.div
+                aria-hidden="true"
+                className="absolute inset-0 flex items-center justify-end bg-destructive px-4 text-destructive-foreground"
+                style={{ opacity: deleteOpacity }}
+            >
+                <Trash2 className="h-5 w-5" />
             </motion.div>
 
             {/* Content */}
             <motion.div
                 drag="x"
-                dragConstraints={{ left: -100, right: 100 }}
+                dragConstraints={{ left: -SWIPE_MAX_OFFSET_PX, right: SWIPE_MAX_OFFSET_PX }}
                 onDragEnd={handleDragEnd}
                 style={{ x }}
-                className="bg-background relative"
+                className="relative flex items-center gap-2 bg-background"
             >
-                {children}
+                <div className="min-w-0 flex-1">{children}</div>
+
+                {/* ✅ Alternatywa dla gestu — cele 44px na dotyku */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="pointer-coarse:size-11"
+                    onClick={onArchive}
+                    aria-label={`Archiwizuj: ${itemLabel}`}
+                >
+                    <Archive className="h-5 w-5" aria-hidden="true" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="pointer-coarse:size-11"
+                    onClick={onDelete}
+                    aria-label={`Usuń: ${itemLabel}`}
+                >
+                    <Trash2 className="h-5 w-5" aria-hidden="true" />
+                </Button>
             </motion.div>
         </div>
     );
 }
 ```
+
+Użycie — gest i przyciski wołają te same funkcje, więc zabezpieczenie działa dla obu dróg:
+```typescript
+function TemplateRow({ template }: { template: Template }) {
+    const confirm = useConfirm();
+    const archiveTemplate = useArchiveTemplate(); // onSuccess hooka pokazuje toast z „Cofnij”
+    const deleteTemplate = useDeleteTemplate(); // onError hooka loguje TEMPLATE_DELETE_FAILED
+
+    const handleDelete = async () => {
+        const isConfirmed = await confirm({
+            title: 'Usuń szablon',
+            description: `Szablon „${template.name}” zostanie usunięty na stałe.`,
+            confirmText: 'Usuń',
+            destructive: true,
+        });
+        if (isConfirmed) deleteTemplate.mutate(template.id);
+    };
+
+    return (
+        <SwipeableItem
+            itemLabel={template.name}
+            onArchive={() => archiveTemplate.mutate(template.id)}
+            onDelete={() => void handleDelete()}
+        >
+            <span className="font-medium">{template.name}</span>
+        </SwipeableItem>
+    );
+}
+```
+
+Animacja powrotu wiersza respektuje `prefers-reduced-motion`, gdy aplikacja jest owinięta w `MotionConfig reducedMotion="user"` ([animations.md](animations.md)).
 
 ### Floating Action Button (FAB)
 ```typescript
@@ -815,13 +930,13 @@ function FAB({ onClick }: { onClick: () => void }) {
     {/* ... */}
 </header>
 
-// Sticky CTA na mobile
+// Sticky CTA na mobile — padding 16px plus safe area w jednej wartości (pb-safe nadpisałby dolne 16px)
 <div className={cn(
     "md:hidden fixed bottom-0 inset-x-0 z-30",
     "bg-background/80 backdrop-blur-sm border-t",
-    "p-4 pb-safe"
+    "p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
 )}>
-    <Button className="w-full">Zapisz</Button>
+    <Button className="w-full min-h-11">Zapisz</Button>
 </div>
 ```
 
@@ -845,18 +960,19 @@ function HorizontalScroll({ children }: { children: React.ReactNode }) {
 }
 ```
 ```css
-/* globals.css */
-.scrollbar-hide {
+/* src/index.css — @utility (Tailwind v4), żeby działały warianty (md:scrollbar-hide) */
+@utility scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 ```
 
 ## Zobacz Także
 
 - [design-system.md](design-system.md) - Spacing scale
-- [component-ux.md](component-ux.md) - Mobile patterns
+- [component-ux.md](component-ux.md) - Mobile patterns, potwierdzenie i „Cofnij” dla akcji destrukcyjnych
+- [accessibility.md](accessibility.md) - Rozmiar celu, alternatywy dla gestów
 - [animations.md](animations.md) - Responsive animations

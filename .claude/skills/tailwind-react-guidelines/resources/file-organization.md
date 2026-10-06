@@ -8,17 +8,21 @@ Struktura katalogów dla Vite + React SPA.
 ```
 src/
 ├── main.tsx                # Punkt wejścia
-├── App.tsx                 # Router + providers
+├── app.tsx                 # Router + providers
 ├── components/             # Komponenty React
 │   ├── ui/                # Prymitywy UI (shadcn/ui)
-│   └── [Feature].tsx      # Komponenty aplikacji
+│   └── [feature-name].tsx # Komponenty aplikacji
 ├── pages/                  # Komponenty stron (route-level)
-├── hooks/                  # Custom hooks
-├── lib/                    # Utilities i klienty
-├── types/                  # TypeScript types
+├── contexts/               # Konteksty React (np. AuthProvider)
+├── hooks/                  # Custom hooks (useQuery/useMutation owinięte w hook)
+├── services/               # Serwisy: wywołania API i Supabase dla hooków
+├── lib/                    # Utilities i klienty (request, supabase, logger, env)
+├── types/                  # TypeScript types i schematy Zod kontraktów
 ├── constants/              # Stałe i konfiguracja
 └── test/                   # Setup, utils, mocks (MSW)
 ```
+
+Warstwy idą według sekcji Architektura reguł kodu: strona → komponent → hook (`hooks/use-items.ts`) → serwis (`services/item-service.ts`) → klient (`lib/api.ts`, `lib/supabase.ts`). Komponent nie woła serwisu, `fetch` ani `supabase` sam — dostaje dane i mutacje z hooka, dzięki czemu cache, obsługa błędu i limit czasu stoją w jednym miejscu. Fixture'y testów jednostkowych leżą w `tests/fixtures/` w korzeniu repo (sekcja Testowanie reguł kodu).
 
 ---
 
@@ -49,6 +53,8 @@ src/
 └── types/
 ```
 
+W FSD warstwę serwisu pełnią `features/*/api` i `shared/api`; hook z `features/*/model` woła je, a `ui/` dostaje dane z hooka.
+
 **Kiedy FSD:**
 - Projekt >50 komponentów
 - Większy zespół (>3 devów)
@@ -75,15 +81,15 @@ components/ui/
 
 **Zasady:**
 - Nie modyfikuj bezpośrednio - używaj `className`
-- Lowercase nazwy (konwencja shadcn)
+- Nazwy w kebab-case jak w całym projekcie (CLI shadcn generuje je tak samo: `dropdown-menu.tsx`)
 
 ### Komponenty Aplikacji
 ```
 components/
-├── Header.tsx
-├── Footer.tsx
-├── Sidebar.tsx
-└── [Feature]Card.tsx
+├── header.tsx
+├── footer.tsx
+├── sidebar.tsx
+└── [feature]-card.tsx
 ```
 
 ---
@@ -93,18 +99,18 @@ components/
 Komponenty na poziomie route - lazy-loaded:
 ```
 pages/
-├── HomePage.tsx
-├── SettingsPage.tsx
-├── ProfilePage.tsx
-└── NotFoundPage.tsx
+├── home-page.tsx
+├── settings-page.tsx
+├── profile-page.tsx
+└── not-found-page.tsx
 ```
 ```typescript
-// App.tsx
-const HomePage = lazy(() => import('@/pages/HomePage'));
-const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+// app.tsx
+const HomePage = lazy(() => import('@/pages/home-page'));
+const SettingsPage = lazy(() => import('@/pages/settings-page'));
 
 <Routes>
-    <Route path="/" element={
+    <Route path={ROUTES.HOME} element={
         <Suspense fallback={<LoadingOverlay />}>
             <HomePage />
         </Suspense>
@@ -112,37 +118,41 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 </Routes>
 ```
 
----
+Strona ładowana przez `lazy()` ma default export (`export default function HomePage()`), bo `lazy` oczekuje modułu z `default`. Strona importowana wprost (np. `NotFoundPage`), komponenty i hooki mają named export.
+
 ---
 
 ## Routing (React Router v8)
 
-v8 (2026-06; aktualnie 8.3.0) podnosi minima do Node 22.22+ i React 19.2.7+ oraz wprowadza breaking changes:
+Wersja wg package.json. v8 podnosi minima do Node 22.22+ i React 19.2.7+ oraz wprowadza breaking changes:
 pakiet `react-router-dom` został całkowicie usunięty — importuj z `react-router`, a komponenty DOM
 (`RouterProvider`, `HydratedRouter`) z `react-router/dom`; middleware zawsze włączone (`context` w loader/action
 = `RouterContextProvider`); pakiet ESM-only; usunięte `hasErrorBoundary`; flagi `future.v8_*` stały się domyślne.
 (Źródło: CHANGELOG `packages/react-router` w repo remix-run/react-router, sekcja 8.0.0 — sprawdź przy podbiciu majora.)
 
-### Konfiguracja w App.tsx
+### Konfiguracja w app.tsx
 ```typescript
-// App.tsx
+// app.tsx
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter, Routes, Route } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
 
-import { queryClient } from '@/lib/queryClient';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { Layout } from '@/components/Layout';
-import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { NotFoundPage } from '@/pages/NotFoundPage';
+import { Layout } from '@/components/layout';
+import { LoadingOverlay } from '@/components/loading-overlay';
+import { ProtectedRoute } from '@/components/protected-route';
+import { ROUTES } from '@/constants/routes';
+import { AuthProvider } from '@/contexts/auth-context';
+import { queryClient } from '@/lib/query-client';
+import { NotFoundPage } from '@/pages/not-found-page';
 
-// Lazy load pages
-const HomePage = lazy(() => import('@/pages/HomePage'));
-const ItemsPage = lazy(() => import('@/pages/ItemsPage'));
-const ItemPage = lazy(() => import('@/pages/ItemPage'));
-const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
-const LoginPage = lazy(() => import('@/pages/LoginPage'));
+// Lazy load pages (każda strona ma default export)
+const HomePage = lazy(() => import('@/pages/home-page'));
+const ItemsPage = lazy(() => import('@/pages/items-page'));
+const ItemPage = lazy(() => import('@/pages/item-page'));
+const SettingsPage = lazy(() => import('@/pages/settings-page'));
+const LoginPage = lazy(() => import('@/pages/login-page'));
 
 export function App() {
     return (
@@ -151,7 +161,7 @@ export function App() {
                 <AuthProvider>
                     <Routes>
                         {/* Public routes */}
-                        <Route path="/login" element={
+                        <Route path={ROUTES.LOGIN} element={
                             <Suspense fallback={<LoadingOverlay />}>
                                 <LoginPage />
                             </Suspense>
@@ -164,17 +174,17 @@ export function App() {
                                     <HomePage />
                                 </Suspense>
                             } />
-                            <Route path="templates" element={
+                            <Route path={ROUTES.ITEMS} element={
                                 <Suspense fallback={<LoadingOverlay />}>
                                     <ItemsPage />
                                 </Suspense>
                             } />
-                            <Route path="templates/:id" element={
+                            <Route path={ROUTES.ITEM} element={
                                 <Suspense fallback={<LoadingOverlay />}>
                                     <ItemPage />
                                 </Suspense>
                             } />
-                            <Route path="settings" element={
+                            <Route path={ROUTES.SETTINGS} element={
                                 <Suspense fallback={<LoadingOverlay />}>
                                     <SettingsPage />
                                 </Suspense>
@@ -187,50 +197,79 @@ export function App() {
                     <Toaster position="bottom-right" richColors />
                 </AuthProvider>
             </BrowserRouter>
+            <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     );
 }
 ```
 
+`QueryClientProvider`, `Toaster` i `ReactQueryDevtools` stoją w drzewie raz, tutaj; `main.tsx` renderuje samo `<App />` (sekcja Setup React Query).
+
 ### Protected Route
 ```typescript
-// components/ProtectedRoute.tsx
+// components/protected-route.tsx
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { useAuth } from '@/hooks/useAuth';
-import { LoadingOverlay } from '@/components/LoadingOverlay';
+
+import { LoadingOverlay } from '@/components/loading-overlay';
+import { ROUTES } from '@/constants/routes';
+import { useAuth, type AppRole } from '@/hooks/use-auth';
 
 interface ProtectedRouteProps {
     children?: React.ReactNode;
-    requiredRole?: 'admin' | 'user';
+    requiredRole?: AppRole;
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-    const { user, isLoading, isAuthenticated } = useAuth();
+    const auth = useAuth();
     const location = useLocation();
 
-    if (isLoading) {
-        return <LoadingOverlay />;
+    switch (auth.status) {
+        case 'loading':
+            return <LoadingOverlay />;
+        case 'anonymous':
+            // Zapisz, dokąd użytkownik chciał wejść (sama ścieżka; LoginForm parsuje ją schematem)
+            return <Navigate to={ROUTES.LOGIN} state={{ from: location.pathname }} replace />;
+        case 'authenticated':
+            if (requiredRole && auth.role !== requiredRole) {
+                return <Navigate to={ROUTES.HOME} replace />;
+            }
+            return children ?? <Outlet />;
     }
-
-    if (!isAuthenticated) {
-        // Zapisz gdzie user chciał iść
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
-
-    if (requiredRole && user?.role !== requiredRole) {
-        return <Navigate to="/" replace />;
-    }
-
-    return children ?? <Outlet />;
 }
 ```
 
+Stan uwierzytelnienia to unia dyskryminowana, nie zestaw flag (`isLoading`, `isAuthenticated`), bo flagi dopuszczają sprzeczne kombinacje (zalogowany i ładujący naraz), a `switch` po `status` daje `role` tylko w gałęzi `authenticated`. Źródło roli opisuje sekcja Bezpieczeństwo reguł kodu: `AuthProvider` czyta ją z claimu dodanego przez Custom Access Token Hook albo z `app_metadata` ustawianego po stronie serwera, nie z `user_metadata` (użytkownik zmienia je przez `updateUser`) ani z top-level claimu `role` (to rola Postgresa, np. `authenticated`):
+
+```typescript
+// contexts/auth-context.tsx — fragment: stan i odczyt roli
+import type { Session, User } from '@supabase/supabase-js';
+import { z } from 'zod';
+
+const appRoleSchema = z.enum(['admin', 'user']);
+export type AppRole = z.infer<typeof appRoleSchema>;
+
+export type AuthState =
+    | { status: 'loading' }
+    | { status: 'anonymous' }
+    | { status: 'authenticated'; user: User; role: AppRole };
+
+// app_metadata zmienia tylko serwer (Admin API albo Custom Access Token Hook);
+// brak albo nieznana wartość daje rolę z najmniejszymi uprawnieniami
+function readRole(session: Session): AppRole {
+    const parsed = appRoleSchema.safeParse(session.user.app_metadata.role);
+    return parsed.success ? parsed.data : 'user';
+}
+```
+
+Hook `useAuth` (`hooks/use-auth.ts`) zwraca `AuthState` z kontekstu i eksportuje typ `AppRole`. `ProtectedRoute` tylko ukrywa ekran przed osobą bez roli — nie zastępuje RLS. Dostęp do danych egzekwują polityki RLS w bazie z tym samym warunkiem roli (skill security, `auth-security-patterns.md`), bo kod klienta użytkownik może zmienić w przeglądarce.
+
 ### Layout z Outlet
 ```typescript
-// components/Layout.tsx
+// components/layout.tsx
 import { Outlet } from 'react-router';
-import { Header } from '@/components/Header';
-import { Sidebar } from '@/components/Sidebar';
+
+import { Header } from '@/components/header';
+import { Sidebar } from '@/components/sidebar';
 
 export function Layout() {
     return (
@@ -248,70 +287,96 @@ export function Layout() {
 ```
 
 ### Stałe Routes
+
+Jedyne miejsce ze ścieżkami aplikacji to `src/constants/routes.ts`; trasy w `app.tsx`, linki i `navigate` biorą je stąd, bo ścieżka wpisana w kilku plikach rozjeżdża się po cichu przy zmianie.
+
 ```typescript
 // constants/routes.ts
 export const ROUTES = {
     HOME: '/',
     LOGIN: '/login',
-    TEMPLATES: '/templates',
-    TEMPLATE: (id: string) => `/templates/${id}`,
+    ITEMS: '/items',
+    ITEM: '/items/:id',
+    ITEM_NEW: '/items/new',
     SETTINGS: '/settings',
     SETTINGS_PROFILE: '/settings/profile',
     SETTINGS_NOTIFICATIONS: '/settings/notifications',
-} as const;
+    SETTINGS_SECURITY: '/settings/security',
+} as const satisfies Record<string, string>;
 
 // Użycie
+import { generatePath } from 'react-router';
 import { ROUTES } from '@/constants/routes';
 
-<Link to={ROUTES.TEMPLATES}>Szablony</Link>
-<Link to={ROUTES.TEMPLATE(template.id)}>Zobacz</Link>
-navigate(ROUTES.SETTINGS);
+<Link to={ROUTES.ITEMS}>Elementy</Link>
+<Link to={generatePath(ROUTES.ITEM, { id: item.id })}>Zobacz</Link>
+void navigate(ROUTES.SETTINGS);
 ```
+
+`as const` zachowuje dosłowne typy ścieżek, a `satisfies Record<string, string>` pilnuje, że każda wartość to ścieżka (sam `satisfies` bez `as const` zostawia typ `string`). Ścieżkę z parametrem składa `generatePath` z React Routera — koduje wartość i sprawdza nazwy parametrów względem wzorca. `navigate` w React Routerze v7+ może zwrócić promise, więc wywołanie poza `return` dostaje `void` (sekcja Pilnuje ESLint reguł kodu).
 
 ### useParams - Parametry URL
 ```typescript
-// pages/ItemPage.tsx
+// pages/item-page.tsx
 import { useParams } from 'react-router';
+import { z } from 'zod';
 
-export function ItemPage() {
-    const { id } = useParams<{ id: string }>();
+import { ErrorMessage } from '@/components/error-message';
+import { ItemDetails } from '@/components/item-details';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useItem } from '@/hooks/use-items';
+import { NotFoundPage } from '@/pages/not-found-page';
 
-    const { data: item, isLoading } = useQuery({
-        queryKey: ['item', id],
-        queryFn: () => {
-            if (!id) throw new Error('Brak parametru id');
-            return api.getItem(id); // id zawężone do string, bez non-null assertion
-        },
-        enabled: Boolean(id),
-    });
+// Parametr ścieżki to dane z zewnątrz — parsujesz go schematem przed użyciem
+const itemParamsSchema = z.strictObject({ id: z.uuid() });
 
-    if (isLoading) return <Skeleton />;
-    if (!item) return <NotFound />;
+export default function ItemPage() {
+    const params = itemParamsSchema.safeParse(useParams());
+
+    if (!params.success) return <NotFoundPage />;
+
+    return <ItemView id={params.data.id} />;
+}
+
+// Osobny komponent, bo hook nie może stać za wczesnym returnem
+function ItemView({ id }: { id: string }) {
+    const { data: item, isPending, isError, error } = useItem(id);
+
+    if (isPending) return <Skeleton className="h-40 w-full" />;
+    if (isError) return <ErrorMessage error={error} />;
 
     return <ItemDetails item={item} />;
 }
-
-export default ItemPage;
 ```
 
 ### useSearchParams - Query String
 ```typescript
-// pages/ItemsPage.tsx
+// pages/items-page.tsx
 import { useSearchParams } from 'react-router';
+import { z } from 'zod';
 
-export function ItemsPage() {
+import { useItems } from '@/hooks/use-items';
+
+const MAX_SEARCH_LENGTH = 200;
+
+// Query string to dane z zewnątrz; każde pole ma .catch, więc zły parametr daje wartość domyślną
+const itemsSearchSchema = z.object({
+    category: z.string().min(1).optional().catch(undefined),
+    q: z.string().max(MAX_SEARCH_LENGTH).catch(''),
+    page: z.coerce.number().int().min(1).catch(1),
+});
+
+export default function ItemsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Odczyt
-    const category = searchParams.get('category');
-    const search = searchParams.get('q') ?? '';
-    const page = Number(searchParams.get('page')) || 1;
+    // Odczyt (parse nie rzuca, bo każde pole ma .catch)
+    const { category, q: search, page } = itemsSearchSchema.parse(Object.fromEntries(searchParams));
 
     // Zapis
-    const handleCategoryChange = (category: string | null) => {
+    const handleCategoryChange = (nextCategory: string | null) => {
         setSearchParams((prev) => {
-            if (category) {
-                prev.set('category', category);
+            if (nextCategory) {
+                prev.set('category', nextCategory);
             } else {
                 prev.delete('category');
             }
@@ -320,11 +385,15 @@ export function ItemsPage() {
         }, { replace: true });
     };
 
-    // React Query z params
-    const { data } = useQuery({
-        queryKey: ['templates', { category, search, page }],
-        queryFn: () => api.getItems({ category, search, page }),
-    });
+    const handlePageChange = (nextPage: number) => {
+        setSearchParams((prev) => {
+            prev.set('page', String(nextPage));
+            return prev;
+        });
+    };
+
+    // React Query z params — przez hook z fabryką kluczy (sekcja Katalog hooks/)
+    const { data } = useItems({ category, search, page });
 
     return (
         <div>
@@ -336,7 +405,7 @@ export function ItemsPage() {
             <Pagination
                 currentPage={page}
                 totalPages={data?.totalPages}
-                onPageChange={(p) => setSearchParams({ ...Object.fromEntries(searchParams), page: String(p) })}
+                onPageChange={handlePageChange}
             />
         </div>
     );
@@ -346,52 +415,64 @@ export function ItemsPage() {
 ### useNavigate - Programowa Nawigacja
 ```typescript
 import { useNavigate, useLocation } from 'react-router';
+import { z } from 'zod';
+
+import { ROUTES } from '@/constants/routes';
+
+// location.state przychodzi z historii przeglądarki — parsujesz go jak każde dane z zewnątrz.
+// Ścieżka względna od jednego "/" (nie "//host"), żeby powrót po logowaniu nie wyprowadził poza aplikację.
+const loginStateSchema = z.object({
+    from: z.string().regex(/^\/(?!\/)/),
+});
 
 function LoginForm() {
     const navigate = useNavigate();
     const location = useLocation();
 
     // Gdzie przekierować po logowaniu
-    const from = (location.state as { from?: Location })?.from?.pathname || '/';
+    const parsedState = loginStateSchema.safeParse(location.state);
+    const from = parsedState.success ? parsedState.data.from : ROUTES.HOME;
 
     const handleSuccess = () => {
-        navigate(from, { replace: true });
+        void navigate(from, { replace: true });
     };
 
-    return <form onSubmit={...}>...</form>;
+    return <LoginFields onSuccess={handleSuccess} />;
 }
 
-// Nawigacja z state
-navigate('/templates/new', { state: { prefill: data } });
+// Nawigacja z state (odbiorca parsuje state schematem, jak wyżej)
+void navigate(ROUTES.ITEM_NEW, { state: { initialValues: draft } });
 
 // Cofnij
-navigate(-1);
+void navigate(-1);
 
 // Replace (bez historii)
-navigate('/dashboard', { replace: true });
+void navigate(ROUTES.HOME, { replace: true });
 ```
 
 ### Nested Routes (Settings)
 ```typescript
-// App.tsx
-<Route path="settings" element={<SettingsLayout />}>
-    <Route index element={<Navigate to="profile" replace />} />
-    <Route path="profile" element={<ProfileSettings />} />
-    <Route path="notifications" element={<NotificationSettings />} />
-    <Route path="security" element={<SecuritySettings />} />
+// app.tsx
+<Route path={ROUTES.SETTINGS} element={<SettingsLayout />}>
+    <Route index element={<Navigate to={ROUTES.SETTINGS_PROFILE} replace />} />
+    <Route path={ROUTES.SETTINGS_PROFILE} element={<ProfileSettings />} />
+    <Route path={ROUTES.SETTINGS_NOTIFICATIONS} element={<NotificationSettings />} />
+    <Route path={ROUTES.SETTINGS_SECURITY} element={<SecuritySettings />} />
 </Route>
 
-// pages/SettingsLayout.tsx
+// pages/settings-layout.tsx
 import { NavLink, Outlet } from 'react-router';
+
+import { ROUTES } from '@/constants/routes';
 import { cn } from '@/lib/utils';
 
 export function SettingsLayout() {
     return (
         <div className="flex gap-6">
             <nav className="w-48 space-y-1">
-                <SettingsNavLink to="profile">Profil</SettingsNavLink>
-                <SettingsNavLink to="notifications">Powiadomienia</SettingsNavLink>
-                <SettingsNavLink to="security">Bezpieczeństwo</SettingsNavLink>
+                <SettingsNavLink to={ROUTES.SETTINGS_PROFILE}>Profil</SettingsNavLink>
+                <SettingsNavLink to={ROUTES.SETTINGS_NOTIFICATIONS}>Powiadomienia</SettingsNavLink>
+                <SettingsNavLink to={ROUTES.SETTINGS_SECURITY}>Bezpieczeństwo</SettingsNavLink>
             </nav>
             <div className="flex-1">
                 <Outlet />
@@ -419,28 +500,31 @@ function SettingsNavLink({ to, children }: { to: string; children: React.ReactNo
 
 ### Redirect po Akcji
 ```typescript
-// Po utworzeniu - przekieruj do nowego zasobu
-const mutation = useMutation({
-    mutationFn: api.createItem,
-    onSuccess: (newItem) => {
-        queryClient.invalidateQueries({ queryKey: ['items'] });
-        navigate(ROUTES.ITEM(newItem.id));
-    },
-});
+// Fragment komponentu strony; mutacje pochodzą z hooków (sekcja Katalog hooks/),
+// które unieważniają cache i logują błąd. Komponent dokłada tylko przekierowanie.
+const navigate = useNavigate();
+const createItem = useCreateItem();
+const deleteItem = useDeleteItem();
 
-// Po usunięciu - przekieruj do listy
-const deleteMutation = useMutation({
-    mutationFn: api.deleteItem,
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['items'] });
-        navigate(ROUTES.TEMPLATES, { replace: true });
-    },
-});
+// Po utworzeniu - przekieruj do nowego zasobu
+const handleCreate = (input: CreateItemInput) => {
+    createItem.mutate(input, {
+        onSuccess: (newItem) => void navigate(generatePath(ROUTES.ITEM, { id: newItem.id })),
+    });
+};
+
+// Po usunięciu - przekieruj do listy. Wołane z akcji potwierdzenia w AlertDialog
+// (wzorzec w loading-and-error-states.md, sekcja IO-bound), bo usunięcia nie da się cofnąć.
+const handleDeleteConfirmed = (id: string) => {
+    deleteItem.mutate(id, {
+        onSuccess: () => void navigate(ROUTES.ITEMS, { replace: true }),
+    });
+};
 ```
 
 ### Scroll Restoration
 ```typescript
-// App.tsx lub Layout.tsx
+// app.tsx lub components/layout.tsx
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 
@@ -463,36 +547,38 @@ function ScrollToTop() {
 
 ### View Transitions (opcjonalne)
 ```typescript
-// hooks/useViewTransitionNavigate.ts
-import { useNavigate } from 'react-router';
-import { useCallback } from 'react';
+import { generatePath, Link, useNavigate } from 'react-router';
 
-export function useViewTransitionNavigate() {
-    const navigate = useNavigate();
+import { ROUTES } from '@/constants/routes';
 
-    return useCallback((to: string, options?: { replace?: boolean }) => {
-        if (!document.startViewTransition) {
-            navigate(to, options);
-            return;
-        }
+// Link: React Router sam opakowuje zmianę trasy w document.startViewTransition
+<Link to={generatePath(ROUTES.ITEM, { id })} viewTransition>
+    Zobacz
+</Link>
 
-        document.startViewTransition(() => {
-            navigate(to, options);
-        });
-    }, [navigate]);
-}
-
-// Użycie
-const navigate = useViewTransitionNavigate();
-navigate(ROUTES.TEMPLATE(id));
+// Nawigacja programowa
+const navigate = useNavigate();
+void navigate(generatePath(ROUTES.ITEM, { id }), { viewTransition: true });
 ```
+
+Opcja `viewTransition` zastępuje własny hook z `document.startViewTransition(() => navigate(...))`: router aktualizuje stan wewnątrz przejścia, więc przeglądarka robi zrzut starego i nowego widoku we właściwych momentach, a ręczne wywołanie `navigate` w callbacku łapie zły stan. Przeglądarka bez View Transitions API przechodzi zwykłą nawigacją. Obsługę opcji w trybie, którego używa projekt (`BrowserRouter` albo `createBrowserRouter`), sprawdzasz w dokumentacji wersji z package.json. Animacje przejść opisuje skill ux-ui-guidelines (`animations.md`).
 
 ### Error Boundary dla Route
 ```typescript
-import { ErrorBoundary } from 'react-error-boundary';
+import { Suspense } from 'react';
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
+import { Route, useNavigate } from 'react-router';
 
-<Route path="templates/:id" element={
-    <ErrorBoundary FallbackComponent={RouteErrorFallback}>
+import { LoadingOverlay } from '@/components/loading-overlay';
+import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
+import { logger } from '@/lib/logger';
+
+<Route path={ROUTES.ITEM} element={
+    <ErrorBoundary
+        FallbackComponent={RouteErrorFallback}
+        onError={(error) => logger.error('ROUTE_RENDER_FAILED', error)}
+    >
         <Suspense fallback={<LoadingOverlay />}>
             <ItemPage />
         </Suspense>
@@ -503,12 +589,14 @@ function RouteErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     const navigate = useNavigate();
 
     return (
-        <div className="p-6 text-center">
+        <div role="alert" className="p-6 text-center">
             <h2>Coś poszło nie tak</h2>
-            <p className="text-muted-foreground">{error.message}</p>
+            <p className="text-muted-foreground">
+                {error instanceof Error ? error.message : 'Nieznany błąd'}
+            </p>
             <div className="flex gap-2 justify-center mt-4">
                 <Button onClick={resetErrorBoundary}>Spróbuj ponownie</Button>
-                <Button variant="outline" onClick={() => navigate(-1)}>Wróć</Button>
+                <Button variant="outline" onClick={() => void navigate(-1)}>Wróć</Button>
             </div>
         </div>
     );
@@ -522,9 +610,9 @@ Custom hooks dla logiki biznesowej.
 
 ### ⚠️ Nie używaj useEffect do data fetching
 
-To jest **anty-wzorzec** w 2026:
+To **anty-wzorzec** (sekcja Async i React reguł kodu: nowy kod pobierający dane idzie przez TanStack Query):
 ```typescript
-// ❌ NIE RÓB TEGO
+// ❌ Anty-wzorzec
 function useMyFeature() {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -542,18 +630,39 @@ function useMyFeature() {
 - Brak cache
 - Waterfall requests
 - Podwójne wywołania w Strict Mode
+- Brak limitu czasu i anulowania żądania
 
 ### ✅ Używaj React Query
 ```typescript
-// hooks/useItems.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+// hooks/use-items.ts
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-export function useItems(category?: string) {
+import { logger } from '@/lib/logger';
+import { itemService, type ItemFilters } from '@/services/item-service';
+import type { CreateItemInput } from '@/types/item';
+
+const ITEMS_STALE_TIME_MS = 5 * 60 * 1000;
+
+// Fabryka kluczy: jedno źródło kluczy dla zapytań i unieważniania
+export const itemKeys = {
+    all: ['items'] as const,
+    list: (filters: ItemFilters) => [...itemKeys.all, 'list', filters] as const,
+    detail: (id: string) => [...itemKeys.all, 'detail', id] as const,
+};
+
+export function useItems(filters: ItemFilters) {
     return useQuery({
-        queryKey: ['items', category],
-        queryFn: () => api.getItems(category),
-        staleTime: 5 * 60 * 1000, // 5 minut
+        queryKey: itemKeys.list(filters),
+        queryFn: ({ signal }) => itemService.list(filters, signal),
+        staleTime: ITEMS_STALE_TIME_MS,
+    });
+}
+
+export function useItem(id: string) {
+    return useQuery({
+        queryKey: itemKeys.detail(id),
+        queryFn: ({ signal }) => itemService.get(id, signal),
     });
 }
 
@@ -561,17 +670,35 @@ export function useCreateItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: api.createItem,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['items'] });
+        mutationFn: (input: CreateItemInput) => itemService.create(input),
+        // Zwracany promise: mutacja kończy się po odświeżeniu listy
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: itemKeys.all }),
+        onError: (error) => {
+            logger.error('ITEM_CREATE_FAILED', error);
+            toast.error('Nie udało się utworzyć elementu');
+        },
+    });
+}
+
+export function useDeleteItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => itemService.remove(id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: itemKeys.all }),
+        onError: (error) => {
+            logger.error('ITEM_DELETE_FAILED', error);
+            toast.error('Nie udało się usunąć elementu');
         },
     });
 }
 ```
 
+`queryFn` przekazuje `signal` z TanStack Query do serwisu, więc zmiana klucza albo odmontowanie anuluje żądanie; limit czasu dokłada klient `request()` (sekcja Katalog lib/). Hook zwraca wynik `useQuery`/`useMutation`, więc typ zwracany wynika z tego wywołania (sekcja Type safety reguł kodu).
+
 ### Hooki utility (te są OK)
 ```typescript
-// hooks/useDebounce.ts
+// hooks/use-debounce.ts
 export function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -583,12 +710,17 @@ export function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-// hooks/useLocalStorage.ts
-export function useLocalStorage<T>(key: string, initialValue: T) {
+// hooks/use-local-storage.ts — odczyt przez schema.safeParse(JSON.parse(...)) w try z logiem,
+// bo localStorage to dane z zewnątrz (użytkownik i inne wersje aplikacji zmieniają je dowolnie)
+export function useLocalStorage<T>(
+    key: string,
+    schema: z.ZodType<T>,
+    initialValue: T,
+): [T, (value: T) => void] {
     // ...
 }
 
-// hooks/useMediaQuery.ts
+// hooks/use-media-query.ts
 export function useMediaQuery(query: string): boolean {
     // ...
 }
@@ -603,54 +735,141 @@ export function useMediaQuery(query: string): boolean {
 ## Katalog lib/
 ```
 lib/
-├── api.ts              # API client (fetch wrapper)
-├── supabase.ts         # Supabase client
-├── logger.ts           # Production-safe logger
+├── api.ts              # Klient HTTP: request() z limitem czasu, kopertą i ApiError
+├── env.ts              # Zmienne środowiska sparsowane Zod (API_URL)
+├── errors.ts           # Typowane błędy (ApiError, BootstrapError)
+├── supabase.ts         # Supabase client (createClient z global.fetch z limitem czasu)
+├── logger.ts           # Logger ze skilla sentry-integration
 ├── utils.ts            # cn(), formatters
-└── queryClient.ts      # React Query config
+└── query-client.ts     # React Query config
+```
+
+Definicję `logger.ts` (API `logger.error(message, error?)`, `logger.warn`, `logger.info(message, data?)`) daje skill sentry-integration: [react-sentry-patterns.md, sekcja Logger Integration](../../sentry-integration/resources/react-sentry-patterns.md#logger-integration). Komunikat to stały kod błędu w `UPPER_SNAKE_CASE` (`logger.error('ITEM_CREATE_FAILED', error)`), nie tekst z danymi.
+
+### errors.ts
+```typescript
+// lib/errors.ts
+// Bez parameter properties (erasableSyntaxOnly) — pola przypisane w konstruktorze
+export class ApiError extends Error {
+    readonly code: string;
+    readonly status: number | undefined;
+    constructor(code: string, message: string, status?: number) {
+        super(message);
+        this.name = 'ApiError';
+        this.code = code;
+        this.status = status;
+    }
+}
+
+export class BootstrapError extends Error {
+    readonly code: string;
+    constructor(code: string) {
+        super(code);
+        this.name = 'BootstrapError';
+        this.code = code;
+    }
+}
+```
+
+### env.ts
+```typescript
+// lib/env.ts
+import { z } from 'zod';
+
+// import.meta.env ma też klucze Vite (MODE, DEV, BASE_URL), więc z.object, nie strictObject
+const envSchema = z.object({
+    VITE_API_URL: z.url(),
+});
+
+// Brak albo zły adres zatrzymuje start aplikacji z czytelnym błędem Zod (fail fast)
+const parsedEnv = envSchema.parse(import.meta.env);
+
+export const env = {
+    API_URL: parsedEnv.VITE_API_URL,
+} as const;
 ```
 
 ### api.ts
 ```typescript
 // lib/api.ts
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { z } from 'zod';
 
-async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            ...options?.headers,
-        },
-        ...options,
-    });
-    
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-    }
-    
-    return response.json();
+import { env } from '@/lib/env';
+import { ApiError } from '@/lib/errors';
+
+const REQUEST_TIMEOUT_MS = 10_000;
+
+const apiErrorSchema = z.strictObject({
+    code: z.string(),
+    message: z.string(),
+});
+
+// Koperta API { data, error: { code, message } } (sekcja Obsługa błędów reguł kodu):
+// sukces ma error: null, porażka ma data: null
+function envelopeSchema<T extends z.ZodType>(dataSchema: T) {
+    return z.union([
+        z.strictObject({ data: dataSchema, error: z.null() }),
+        z.strictObject({ data: z.null(), error: apiErrorSchema }),
+    ]);
 }
 
-export const api = {
-    getItems: (category?: string) =>
-        request<Item[]>(`/items${category ? `?category=${category}` : ''}`),
-    getItem: (id: string) =>
-        request<Item>(`/items/${id}`),
-    createItem: (data: CreateItemInput) =>
-        request<Item>('/items', { method: 'POST', body: JSON.stringify(data) }),
-};
+export async function request<T extends z.ZodType>(
+    endpoint: string,
+    dataSchema: T,
+    init: RequestInit = {},
+): Promise<z.output<T>> {
+    // Sygnał TanStack Query (anulowanie przy zmianie klucza) łączysz z limitem czasu
+    const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+    const signal = init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
+
+    let response: Response;
+    try {
+        response = await fetch(`${env.API_URL}${endpoint}`, {
+            ...init,
+            // headers po ...init, żeby nagłówki z init nie nadpisały scalonych
+            headers: { 'Content-Type': 'application/json', ...init.headers },
+            signal,
+        });
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'TimeoutError') {
+            throw new ApiError('REQUEST_TIMEOUT', `Brak odpowiedzi w ${REQUEST_TIMEOUT_MS} ms`);
+        }
+        throw error; // AbortError (anulowanie) i błąd sieci idą dalej bez zmian
+    }
+
+    const isJson = response.headers.get('Content-Type')?.includes('application/json') ?? false;
+    if (!isJson) {
+        throw new ApiError('INVALID_RESPONSE', `Odpowiedź ${response.status} bez JSON`, response.status);
+    }
+
+    const envelope = envelopeSchema(dataSchema).safeParse(await response.json());
+    if (!envelope.success) {
+        throw new ApiError('INVALID_RESPONSE', 'Odpowiedź API ma nieoczekiwany kształt', response.status);
+    }
+    if (envelope.data.error !== null) {
+        const { code, message } = envelope.data.error;
+        throw new ApiError(code, message, response.status);
+    }
+
+    return envelope.data.data;
+}
 ```
 
-### queryClient.ts
+`request()` to jedyne miejsce z `fetch` do własnego API: limit czasu (`AbortSignal.timeout` z nazwaną stałą), parsowanie koperty `z.strictObject` i typowany `ApiError` z kodem z koperty stoją tu raz, a serwisy podają tylko ścieżkę i schemat danych. Klient Supabase dostaje limit czasu przez opakowany `fetch` w `createClient({ global: { fetch } })` (sekcja Async i React reguł kodu).
+
+### query-client.ts
 ```typescript
-// lib/queryClient.ts
+// lib/query-client.ts
 import { QueryClient } from '@tanstack/react-query';
+
+const DEFAULT_STALE_TIME_MS = 60 * 1000;
+const QUERY_RETRY_COUNT = 1;
 
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 60 * 1000, // 1 minuta
-            retry: 1,
+            staleTime: DEFAULT_STALE_TIME_MS,
+            retry: QUERY_RETRY_COUNT,
         },
     },
 });
@@ -662,7 +881,7 @@ export const queryClient = new QueryClient({
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]): string {
     return twMerge(clsx(inputs));
 }
 
@@ -673,45 +892,95 @@ export function formatDate(date: Date | string): string {
 
 ---
 
+## Katalog services/
+
+Serwis to warstwa między hookiem a klientem: składa ścieżkę i query, wybiera schemat odpowiedzi i woła `request()` albo `supabase`. Nie zna Reacta, więc hook (`use-items.ts`) owija go w `useQuery`/`useMutation`.
+
+```typescript
+// services/item-service.ts
+import { z } from 'zod';
+
+import { request } from '@/lib/api';
+import { itemSchema, type CreateItemInput, type Item } from '@/types/item';
+
+export interface ItemFilters {
+    category?: string;
+    search?: string;
+    page?: number;
+}
+
+const itemListSchema = z.strictObject({
+    items: z.array(itemSchema),
+    totalPages: z.number().int().min(0),
+});
+export type ItemList = z.infer<typeof itemListSchema>;
+
+// URLSearchParams koduje wartości (spacja, &, = w wyszukiwanej frazie)
+function toQueryString(filters: ItemFilters): string {
+    const params = new URLSearchParams();
+    if (filters.category) params.set('category', filters.category);
+    if (filters.search) params.set('q', filters.search);
+    if (filters.page) params.set('page', String(filters.page));
+    const query = params.toString();
+    return query ? `?${query}` : '';
+}
+
+export const itemService = {
+    list: (filters: ItemFilters, signal?: AbortSignal): Promise<ItemList> =>
+        request(`/items${toQueryString(filters)}`, itemListSchema, { signal }),
+    get: (id: string, signal?: AbortSignal): Promise<Item> =>
+        request(`/items/${encodeURIComponent(id)}`, itemSchema, { signal }),
+    create: (input: CreateItemInput): Promise<Item> =>
+        request('/items', itemSchema, { method: 'POST', body: JSON.stringify(input) }),
+    remove: (id: string): Promise<null> =>
+        request(`/items/${encodeURIComponent(id)}`, z.null(), { method: 'DELETE' }),
+};
+```
+
+---
+
 ## Katalog types/
 ```
 types/
-├── database.ts         # Typy tabel DB
-├── api.ts              # Typy request/response
+├── database.types.ts   # Typy tabel DB (generowane: supabase gen types typescript)
+├── item.ts             # Schemat Zod kontraktu Item i typy z z.infer
 └── index.ts            # Re-exports
 ```
 ```typescript
-// types/database.ts
+// types/database.types.ts — fragment
 export interface User {
     id: string;
     email: string;
     created_at: string;
 }
 
-export interface Item {
-    id: string;
-    name: string;
-    category: string;
-}
+// types/item.ts
+import { z } from 'zod';
+
+const MAX_ITEM_NAME_LENGTH = 200;
+
+// Typ wyprowadzasz ze schematu, żeby kontrakt miał jedno źródło: schemat parsuje
+// odpowiedź w serwisie, a ten sam typ widzą hooki i komponenty
+export const itemSchema = z.strictObject({
+    id: z.uuid(),
+    name: z.string().min(1).max(MAX_ITEM_NAME_LENGTH),
+    category: z.string(),
+});
+export type Item = z.infer<typeof itemSchema>;
+
+export const createItemSchema = itemSchema.omit({ id: true });
+export type CreateItemInput = z.infer<typeof createItemSchema>;
 ```
 
 ---
 
 ## Katalog constants/
 ```typescript
-// constants/routes.ts
-export const ROUTES = {
-    HOME: '/',
-    SETTINGS: '/settings',
-    PROFILE: '/profile',
-} as const;
-
 // constants/config.ts
-export const CONFIG = {
-    API_URL: import.meta.env.VITE_API_URL,
-    ITEMS_PER_PAGE: 20,
-} as const;
+export const ITEMS_PER_PAGE = 20;
 ```
+
+`ROUTES` ma jedno miejsce, `constants/routes.ts` (sekcja Routing, Stałe Routes) — tu go nie powtarzasz. Adres API nie jest stałą: czyta go `lib/env.ts` ze zmiennej środowiska, a `request()` bierze go stamtąd, więc w `constants/` nie stoi drugi `API_URL`.
 
 ---
 
@@ -756,30 +1025,36 @@ import { Card } from '@/components/ui/card';
 ### Co-located (Rekomendowane)
 ```
 components/
-├── Header.tsx
-├── Header.test.tsx
-├── Footer.tsx
-└── Footer.test.tsx
+├── header.tsx
+├── header.test.tsx
+├── footer.tsx
+└── footer.test.tsx
 ```
 
 ### Konwencja nazw
 
-- `Component.test.tsx` - unit tests
-- `Component.integration.test.tsx` - integration tests
+- `component-name.test.tsx` - unit tests
+- `component-name.integration.test.tsx` - integration tests
 
 ---
 
 ## Konwencje Nazewnictwa
 
-| Typ | Konwencja | Przykład |
-|-----|-----------|----------|
-| Komponenty | PascalCase | `ItemCard.tsx` |
-| shadcn/ui | lowercase | `button.tsx` |
-| Hooki | camelCase + `use` | `useItems.ts` |
-| Utilities | camelCase | `formatDate.ts` |
-| Typy | camelCase | `database.ts` |
-| Stałe | camelCase | `routes.ts` |
-| Testy | `.test.tsx` | `Header.test.tsx` |
+Nazwy plików w kebab-case (sekcja Nazewnictwo reguł kodu); identyfikatory w kodzie zostają w swojej konwencji (komponent `PascalCase`, hook i funkcja `camelCase`, stała `UPPER_SNAKE_CASE`).
+
+| Typ | Plik | Przykład pliku | Identyfikator w kodzie |
+|-----|------|----------------|------------------------|
+| Komponenty | kebab-case | `item-card.tsx` | `ItemCard` |
+| shadcn/ui | kebab-case (tak generuje CLI) | `button.tsx`, `dropdown-menu.tsx` | `Button`, `DropdownMenu` |
+| Strony | kebab-case + `-page` | `settings-page.tsx` | `SettingsPage` (default export przy `lazy()`) |
+| Hooki | kebab-case + `use-` | `use-items.ts` | `useItems` |
+| Serwisy | kebab-case + `-service` | `item-service.ts` | `itemService` |
+| Utilities | kebab-case | `format-date.ts` | `formatDate` |
+| Typy | kebab-case | `item.ts`, `database.types.ts` | `Item`, `User` |
+| Stałe | kebab-case | `routes.ts` | `ROUTES` |
+| Testy | nazwa pliku + `.test` | `item-card.test.tsx` | — |
+
+Wyjątek: plik, którego nazwę wymusza framework albo narzędzie (`vite.config.ts`, `vitest.config.ts`, `tsconfig.json`, `index.html`).
 
 ---
 
@@ -807,15 +1082,16 @@ export default defineConfig({
 **Użycie:**
 ```typescript
 import { Button } from '@/components/ui/button';
-import { useItems } from '@/hooks/useItems';
-import { api } from '@/lib/api';
+import { useItems } from '@/hooks/use-items';
+import { cn } from '@/lib/utils';
 ```
 
 | Alias | Ścieżka | Przykład |
 |-------|---------|----------|
-| `@/` | `src/` | `import { api } from '@/lib/api'` |
+| `@/` | `src/` | `import { ROUTES } from '@/constants/routes'` |
 | `@/components` | `src/components` | `import { Button } from '@/components/ui/button'` |
-| `@/hooks` | `src/hooks` | `import { useTemplates } from '@/hooks/useTemplates'` |
+| `@/hooks` | `src/hooks` | `import { useTemplates } from '@/hooks/use-templates'` |
+| `@/services` | `src/services` | `import { itemService } from '@/services/item-service'` (tylko w hookach) |
 | `@/lib` | `src/lib` | `import { cn } from '@/lib/utils'` |
 | `@/test` | `src/test` | `import { render } from '@/test/utils'` |
 
@@ -825,13 +1101,16 @@ Alias zdefiniowany w `vite.config.ts` i `tsconfig.json` — oba pliki muszą mie
 
 ## Kiedy Tworzyć Nowy Plik
 
+Próg rozmiaru z sekcji Pilnuje ESLint reguł kodu: plik TS/TSX ponad 360 linii albo funkcja ponad 60 linii (bez pustych linii i komentarzy) dzielisz na moduły i pod-funkcje. Tabele niżej mówią, kiedy wydzielić plik wcześniej.
+
 ### Nowy Komponent
 
 | Nowy plik | Ten sam plik |
 |-----------|--------------|
 | Reużywalny | <50 linii helper |
-| >150 linii | Ściśle powiązany |
+| Plik przekroczyłby próg 360 linii albo funkcja próg 60 linii | Ściśle powiązany |
 | Jasna odpowiedzialność | Nie reużywany |
+| Logika biznesowa (idzie do hooka albo serwisu, nie do pliku komponentu) | Logika samego widoku |
 
 ### Nowy Hook
 
@@ -845,28 +1124,37 @@ Alias zdefiniowany w `vite.config.ts` i `tsconfig.json` — oba pliki muszą mie
 
 | lib/ | W komponencie |
 |------|---------------|
-| Reużywalna | Użyta raz |
+| Używana w trzech miejscach (przy dwóch prosta duplikacja jest lepsza niż abstrakcja) | Użyta w jednym miejscu |
 | Bez React | React-specific |
-| Ogólne zadanie | Komponent-specific |
+| Ogólne zadanie | Formatowanie widoku tego komponentu (logika biznesowa idzie do hooka albo serwisu) |
+
+Wyjątek od progu trzech użyć: stała albo kontrakt (schemat, typ, próg, ścieżka) w dwóch miejscach od razu dostaje jedno źródło (sekcja Organizacja kodu reguł kodu), bo kopie rozjeżdżają się po cichu.
 
 ---
 
 ## Setup React Query
 ```typescript
 // main.tsx
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { queryClient } from '@/lib/queryClient';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-        <QueryClientProvider client={queryClient}>
-            <App />
-            <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-    </React.StrictMode>
+import { App } from '@/app';
+import { BootstrapError } from '@/lib/errors';
+
+// Zawężenie zamiast `!`: brak #root w index.html daje błąd z kodem
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+    throw new BootstrapError('ROOT_MISSING');
+}
+
+createRoot(rootElement).render(
+    <StrictMode>
+        <App />
+    </StrictMode>,
 );
 ```
+
+`QueryClientProvider` z `queryClient` (`lib/query-client.ts`) i `ReactQueryDevtools` stoją w `app.tsx` (sekcja Routing, Konfiguracja w app.tsx). Provider w obu plikach zagnieżdżałby drugi `QueryClientProvider` i rozkładał konfigurację na dwa miejsca, więc `main.tsx` renderuje samo `<App />`.
 
 ---
 
@@ -876,3 +1164,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 - [typescript-standards.md](./typescript-standards.md) - Typy
 - [performance.md](./performance.md) - React Query, caching
 - [loading-and-error-states.md](./loading-and-error-states.md) - Loading, Error Boundaries
+- [react-sentry-patterns.md](../../sentry-integration/resources/react-sentry-patterns.md#logger-integration) - Definicja `lib/logger.ts`

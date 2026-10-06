@@ -96,4 +96,4 @@ Przewodnik dla Vite + React 19 SPA z Tailwind v4 i shadcn/ui. Ten plik to checkl
 | Optymalizować (Compiler, cache, `useTransition`) | [performance.md](resources/performance.md) |
 | Wzorce TypeScript (`satisfies`, importy typów) | [typescript-standards.md](resources/typescript-standards.md) |
 
-Przewodnik tematu czytasz, zanim zaczniesz pisać kod tego tematu, bo każdy ma pułapki, których nie widać w samym API (ref jako prop zamiast `forwardRef`, `@theme` zamiast `tailwind.config.js` w Tailwind v4, `useSuspenseQuery` bez gałęzi ładowania).
+Zanim zaczniesz pisać kod tematu, czytasz jego sekcję w przewodniku (nagłówki przez `grep -n '^##'`, potem Read z `offset` i `limit`), bo pliki mają 15–45k znaków, a każdy temat ma pułapki, których nie widać w samym API (ref jako prop zamiast `forwardRef`, `@theme` zamiast `tailwind.config.js` w Tailwind v4, `useSuspenseQuery` bez gałęzi ładowania).

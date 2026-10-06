@@ -32,7 +32,7 @@ Używaj małego stałego `translateY` zamiast pełnej wysokości. Wyjścia powin
 
 ### 7. Contextual Icon Animations
 
-Animuj ikony z `opacity`, `scale` i `blur` zamiast przełączać visibility. Dokładne wartości: scale od `0.25` do `1`, opacity od `0` do `1`, blur od `4px` do `0px`. Jeśli projekt ma `motion` lub `framer-motion` w `package.json`, użyj `transition: { type: "spring", duration: 0.3, bounce: 0 }` — bounce zawsze `0`. Bez biblioteki motion — keep both icons in the DOM (one absolute-positioned) i cross-fade z CSS transitions używając `cubic-bezier(0.2, 0, 0, 1)`. → [animation-polish.md](animation-polish.md)
+Animuj ikony z `opacity`, `scale` i `blur` zamiast przełączać visibility. Dokładne wartości: scale od `0.25` do `1`, opacity od `0` do `1`, blur od `4px` do `0px`. Jeśli projekt ma `motion` lub `framer-motion` w `package.json`, użyj `transition: { type: "spring", duration: 0.3, bounce: 0 }` — bounce zawsze `0`. Bez biblioteki motion — keep both icons in the DOM (one absolute-positioned) i cross-fade z CSS transitions używając `cubic-bezier(0.2, 0, 0, 1)` (w Tailwind klasa `ease-[cubic-bezier(0.2,0,0,1)]`). → [animation-polish.md](animation-polish.md)
 
 ### 8. Font Smoothing
 
@@ -48,11 +48,11 @@ Używaj `text-wrap: balance` na nagłówkach. Używaj `text-wrap: pretty` dla bo
 
 ### 11. Image Outlines
 
-Dodawaj subtelny `1px` outline z niską przezroczystością do obrazów dla spójnej głębi. Kolor musi być pure black w light mode (`rgba(0, 0, 0, 0.1)`) i pure white w dark mode (`rgba(255, 255, 255, 0.1)`) — nigdy near-black jak slate, zinc czy zabarwiony neutral. Zabarwiony outline podchwytuje kolor powierzchni i czyta się jak brud na krawędzi obrazu. → [surfaces.md](surfaces.md)
+Dodawaj subtelny `1px` outline z niską przezroczystością do obrazów dla spójnej głębi. Kolor bierzesz z tokenu `--outline-image` (klasa `outline-outline-image`): w `:root` czysta czerń 10% (`rgb(0 0 0 / 0.1)`), w `.dark` czysta biel 10% (`rgb(255 255 255 / 0.1)`) — nie near-black jak slate, zinc czy zabarwiony neutral. Zabarwiony outline podchwytuje kolor powierzchni i czyta się jak brud na krawędzi obrazu. Wartość koloru stoi tylko w definicji tokenu, nie w komponencie (zasada „Kolory tylko przez tokeny” w [design-system.md](design-system.md)). → [surfaces.md](surfaces.md)
 
 ### 12. Scale on Press
 
-Subtelne `scale(0.96)` na klik daje przyciskom dotykowy feedback. Zawsze używaj `0.96`. Nigdy wartości mniejszej niż `0.95` — cokolwiek poniżej wygląda przesadnie. Dodaj prop `static`, żeby wyłączyć gdy ruch byłby rozpraszający. → [animation-polish.md](animation-polish.md)
+Subtelne `scale(0.96)` na klik daje przyciskom dotykowy feedback. Zawsze używaj `0.96` (Tailwind: `active:scale-[0.96]`). Nigdy wartości mniejszej niż `0.95` — cokolwiek poniżej wygląda przesadnie. Dodaj prop `isStatic`, żeby wyłączyć gdy ruch byłby rozpraszający. → [animation-polish.md](animation-polish.md)
 
 ### 13. Skip Animation on Page Load
 
@@ -60,7 +60,7 @@ Używaj `initial={false}` na `AnimatePresence`, żeby zapobiec enter animacjom n
 
 ### 14. Never Use `transition: all`
 
-Zawsze specyfikuj konkretne properties: `transition-property: scale, opacity`. Tailwindowe `transition-transform` pokrywa `transform, translate, scale, rotate`. → [performance.md](performance.md)
+Zawsze specyfikuj konkretne properties: `transition-property: scale, opacity` (Tailwind: `transition-[scale,opacity]`). Tailwindowe `transition-transform` pokrywa `transform, translate, scale, rotate`. Gołe `transition` w v4 to stała, szeroka lista właściwości (kolory, cień, transformacje, filtry) — też animuje więcej, niż się zmienia. → [performance.md](performance.md)
 
 ### 15. Use `will-change` Sparingly
 
@@ -68,7 +68,7 @@ Tylko dla `transform`, `opacity`, `filter` — properties, które GPU może komp
 
 ### 16. Minimum Hit Area
 
-Interaktywne elementy potrzebują co najmniej 40×40px hit area. Rozszerz pseudo-elementem, jeśli widoczny element jest mniejszy. Nigdy nie pozwól, żeby hit areas dwóch elementów się nakładały. → [surfaces.md](surfaces.md)
+Cel interakcji ma co najmniej 24×24 px (WCAG 2.2 AA, 2.5.8 — próg twardy), a kontrolka dotykowa 44×44 px (`min-h-11 min-w-11`, Apple HIG / WCAG AAA 2.5.5). Rozszerz pseudo-elementem, jeśli widoczny element jest mniejszy. Nigdy nie pozwól, żeby hit areas dwóch elementów się nakładały. Źródło progów: [accessibility.md](accessibility.md) (sekcja „Target Size”); technika pseudo-elementu → [surfaces.md](surfaces.md)
 
 ---
 
@@ -85,13 +85,15 @@ Interaktywne elementy potrzebują co najmniej 40×40px hit area. Rozszerz pseudo
 | Animacja gra przy załadowaniu strony | Dodaj `initial={false}` do `AnimatePresence` |
 | `transition: all` na elementach | Specyfikuj konkretne properties |
 | First-frame stutter animacji | Dodaj `will-change: transform` (oszczędnie) |
-| Tiny hit areas na małych kontrolkach | Rozszerz pseudo-elementem do 40×40px |
+| Tiny hit areas na małych kontrolkach | Rozszerz pseudo-elementem do 44×44 px na dotyku, nie mniej niż 24×24 px ([accessibility.md](accessibility.md)) |
 
 ---
 
 ## Review Output Format
 
-Zawsze prezentuj zmiany jako tabelę markdown z kolumnami **Before** i **After**. Uwzględnij każdą zmianę, którą zrobiłeś — nie tylko podzbiór. Nigdy nie listuj findings jako osobne linie "Before:" / "After:" poza tabelą. Grupuj zmiany według pryncypium z nagłówkiem nad każdą tabelą i trzymaj każdy wiersz skupiony na pojedynczej zmianie, żeby czytelnik mógł przeskanować całą listę szybko.
+Ten format dotyczy tylko przeglądu polish na prośbę operatora (np. „przejrzyj polish tego ekranu”). Builder w workflowie zwraca wynik w schemacie raportu ze swojej definicji, a nie w tabelach Before/After.
+
+W przeglądzie polish na prośbę operatora prezentujesz zmiany jako tabelę markdown z kolumnami **Before** i **After**. Uwzględnij każdą zmianę, którą zrobiłeś — nie tylko podzbiór — i nie listuj findings jako osobnych linii "Before:" / "After:" poza tabelą, bo rozbita lista utrudnia porównanie. Grupuj zmiany według pryncypium z nagłówkiem nad każdą tabelą i trzymaj każdy wiersz skupiony na pojedynczej zmianie, żeby czytelnik mógł przeskanować całą listę szybko.
 
 ### Przykład
 
@@ -127,17 +129,19 @@ Wiersze powinny cytować konkretny plik i konkretną property, która się zmien
 - [ ] Dynamiczne liczby używają tabular-nums
 - [ ] Font smoothing jest zastosowany na root
 - [ ] Nagłówki używają text-wrap: balance
-- [ ] Obrazy mają subtelne outlines (rgba 0,0,0,0.1 / 255,255,255,0.1)
+- [ ] Obrazy mają subtelne outlines z tokenu `--outline-image` (czerń 10% w `:root`, biel 10% w `.dark`)
 - [ ] Przyciski używają scale(0.96) on press gdzie sensowne
 - [ ] AnimatePresence używa `initial={false}` dla default-state elementów
 - [ ] Brak `transition: all` — tylko konkretne properties
+- [ ] Animacje mają wariant dla `prefers-reduced-motion` (Motion: `MotionConfig reducedMotion="user"` albo `useReducedMotion`) → [animations.md](animations.md)
 - [ ] `will-change` tylko na transform/opacity/filter, nigdy `all`
-- [ ] Interaktywne elementy mają co najmniej 40×40px hit area
+- [ ] Interaktywne elementy mają co najmniej 24×24 px hit area, kontrolki dotykowe 44×44 px ([accessibility.md](accessibility.md))
 
 ---
 
 ## Zobacz Także
 
+- [accessibility.md](accessibility.md) — rozmiar celu (Target Size), kontrast, reduced motion
 - [typography-polish.md](typography-polish.md) — text wrapping, font smoothing, tabular numbers
 - [surfaces.md](surfaces.md) — concentric radius, optical alignment, shadows, image outlines, hit area
 - [animation-polish.md](animation-polish.md) — interruptible, subtle exits, icon crossfade, scale on press

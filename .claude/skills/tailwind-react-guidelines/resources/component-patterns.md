@@ -17,25 +17,25 @@ interface MyComponentProps {
 
 export function MyComponent({ userId, onAction }: MyComponentProps) {
     return (
-        <div className="p-4">
+        <div className="flex items-center gap-2 p-4">
             User: {userId}
+            {onAction && <Button onClick={onAction}>Akcja</Button>}
         </div>
     );
 }
-
-export default MyComponent;
 ```
 
 **Kluczowe punkty:**
 - Props interface z JSDoc comments
 - Bezpośrednie typowanie props (bez `React.FC`)
-- Named export + default export
+- Typ zwracany komponentu wynika z JSX — nie dopisujesz go ręcznie (coding-rules, Type safety)
+- Named export; default export tylko dla strony ładowanej przez `lazy()` (sekcja „Wzorzec Eksportu”)
 
 ### Alternatywa: React.FC
 
 `React.FC` nadal działa, ale jest opcjonalny:
 ```typescript
-// Też poprawne, ale mniej preferowane w 2026
+// Też poprawne, ale mniej preferowane
 export const MyComponent: React.FC<MyComponentProps> = ({ userId }) => {
     return <div>{userId}</div>;
 };
@@ -49,19 +49,37 @@ export const MyComponent: React.FC<MyComponentProps> = ({ userId }) => {
 ---
 
 ## Pełny Szablon Komponentu
+
+Komponent nie woła serwisu ani API wprost: zapis idzie przez hook z `src/hooks/`, który owija `useMutation`, woła serwis z `src/services/` i zostawia ślad błędu w loggerze (`src/lib/logger.ts` ze skilla sentry-integration) z kodem błędu.
 ```typescript
+// src/hooks/use-save-entity.ts
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import { logger } from '@/lib/logger';
+import { entityService } from '@/services/entity-service';
+
+export function useSaveEntity(entityId: string) {
+    return useMutation({
+        mutationFn: () => entityService.save(entityId),
+        onError: (error) => {
+            logger.error('ENTITY_SAVE_FAILED', error);
+            toast.error('Nie udało się zapisać');
+        },
+    });
+}
+```
+```typescript
+// src/components/my-component.tsx
 /**
  * Opis komponentu - co robi, kiedy używać
  */
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
-import { useAuth } from '@/hooks/useAuth';
-import { logger } from '@/lib/logger';
-
-import type { Item } from '@/types/database';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSaveEntity } from '@/hooks/use-save-entity';
 
 // 1. PROPS INTERFACE
 interface MyComponentProps {
@@ -83,21 +101,22 @@ export function MyComponent({
     ref,
 }: MyComponentProps) {
     // 3. HOOKS
-    const { user } = useAuth();
-    const [selectedItem, setSelectedItem] = useState<string | null>(null);
+    const saveEntity = useSaveEntity(entityId);
+    const [isEditing, setIsEditing] = useState(mode === 'edit');
 
     // 4. HANDLERS
-    // Bez React Compiler - useCallback dla handlers przekazywanych do memo children
-    // Z React Compiler 1.0 (rekomendowany od Paź 2025) - zwykłe funkcje, compiler sam optymalizuje
-    const handleSave = async () => {
-        try {
-            await saveData();
-            toast.success('Zapisano pomyślnie');
-            onComplete?.();
-        } catch (error) {
-            logger.error('Błąd podczas zapisu', error);
-            toast.error('Nie udało się zapisać');
-        }
+    // Z React Compilerem (babel-plugin-react-compiler w package.json) — zwykłe funkcje, kompilator memoizuje.
+    // Bez Compilera — useCallback tylko dla handlera przekazywanego do dziecka w memo() albo funkcji,
+    // która jest zależnością efektu.
+    // Handler jest synchroniczny: mutate nie zwraca promise, a błąd obsługuje onError w hooku.
+    const handleSave = () => {
+        saveEntity.mutate(undefined, {
+            onSuccess: () => {
+                setIsEditing(false);
+                toast.success('Zapisano pomyślnie');
+                onComplete?.();
+            },
+        });
     };
 
     // 5. RENDER
@@ -107,23 +126,30 @@ export function MyComponent({
                 <CardTitle>Mój Komponent</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-                <Button onClick={handleSave}>Zapisz</Button>
+                {isEditing ? (
+                    <Button onClick={handleSave} disabled={saveEntity.isPending}>
+                        Zapisz
+                    </Button>
+                ) : (
+                    <Button variant="outline" onClick={() => setIsEditing(true)}>
+                        Edytuj
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );
 }
-
-// 6. DEFAULT EXPORT
-export default MyComponent;
 ```
 
 ---
 
 ## React 19: Ref jako Prop
 
-W React 19 `forwardRef` **nie jest już potrzebny** (zostanie oznaczony jako deprecated w przyszłym wydaniu; w 19.2 brak warningu). Ref to zwykły prop:
+W React 19 `forwardRef` **nie jest potrzebny** (React zapowiada oznaczenie go jako przestarzałego; czy Twoja wersja ostrzega, sprawdzasz w package.json i changelogu Reacta). Ref to zwykły prop. Etykietę i komunikat błędu wiążesz z polem przez `id` z `useId`, żeby czytnik ekranu odczytał je razem z polem:
 ```typescript
 // React 19 - ref w interfejsie props
+import { useId } from 'react';
+
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
@@ -134,14 +160,22 @@ export function Input({
     label, 
     error, 
     ref,
+    id,
     className,
     ...props 
 }: InputProps) {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const errorId = `${inputId}-error`;
+
     return (
         <div className="flex flex-col gap-1">
-            {label && <label className="text-sm font-medium">{label}</label>}
+            {label && <label htmlFor={inputId} className="text-sm font-medium">{label}</label>}
             <input
                 ref={ref}
+                id={inputId}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? errorId : undefined}
                 className={cn(
                     "px-3 py-2 border rounded-md",
                     error && "border-destructive",
@@ -149,7 +183,7 @@ export function Input({
                 )}
                 {...props}
             />
-            {error && <span className="text-sm text-destructive">{error}</span>}
+            {error && <span id={errorId} role="alert" className="text-sm text-destructive">{error}</span>}
         </div>
     );
 }
@@ -187,16 +221,18 @@ function Input({ ref, ...props }: Props & { ref?: React.Ref<HTMLInputElement> })
 | Poniżej fold | Krytyczne UI |
 
 ### Implementacja
+
+`lazy()` oczekuje modułu z default exportem. Default export ma tylko strona ładowana przez `lazy()`; komponent, który nie jest stroną (modal, ciężki formularz), zostaje przy named exporcie i mapujesz go na `default` w `.then`:
 ```typescript
 import { lazy, Suspense } from 'react';
 
-// Default export
-const TemplateModal = lazy(() => import('./TemplateModal'));
+// Strona (default export w src/pages/settings-page.tsx)
+const SettingsPage = lazy(() => import('@/pages/settings-page'));
 
-// Named export
-const MyComponent = lazy(() =>
-    import('./MyComponent').then(module => ({
-        default: module.MyComponent
+// Komponent z named exportem
+const TemplateModal = lazy(() =>
+    import('./template-modal').then((module) => ({
+        default: module.TemplateModal
     }))
 );
 ```
@@ -223,11 +259,21 @@ function App() {
 ## Suspense Boundaries
 
 ### LoadingOverlay
+
+Ten sam komponent (bez propsów) opisuje component-ux.md; `role="status"` ogłasza ładowanie czytnikowi ekranu.
 ```typescript
+import { Loader2 } from 'lucide-react';
+
 export function LoadingOverlay() {
     return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div
+            role="status"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50"
+        >
+            <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+                <p className="text-sm text-muted-foreground">Ładowanie...</p>
+            </div>
         </div>
     );
 }
@@ -260,29 +306,38 @@ Każda sekcja ładuje się niezależnie.
 
 ## Error Boundaries
 
-Używaj `react-error-boundary` zamiast pisania klasy:
+Używaj `react-error-boundary` zamiast pisania klasy. Sprawdź package.json; nową zależność zgłoś (w workflowie: w odchyleniach) i instaluj menedżerem z lockfile projektu z dokładną wersją, np.:
 ```bash
-npm install react-error-boundary
+pnpm add -E react-error-boundary
 ```
 
 ### Podstawowe użycie
+
+Boundary łapie błąd renderu, więc tak jak każdy `catch` zostawia ślad dla operatora: `onError` loguje go przez logger z kodem błędu. Użytkownik widzi ogólny komunikat; treść błędu pokazujesz tylko w trybie deweloperskim.
 ```typescript
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
+
+import { logger } from '@/lib/logger';
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
         <div className="p-4 text-center" role="alert">
             <p className="text-destructive mb-4">Coś poszło nie tak</p>
-            <pre className="text-sm text-muted-foreground mb-4">
-                {error.message}
-            </pre>
+            {import.meta.env.DEV && error instanceof Error && (
+                <pre className="text-sm text-muted-foreground mb-4">
+                    {error.message}
+                </pre>
+            )}
             <Button onClick={resetErrorBoundary}>Spróbuj ponownie</Button>
         </div>
     );
 }
 
 // Użycie
-<ErrorBoundary FallbackComponent={ErrorFallback}>
+<ErrorBoundary
+    FallbackComponent={ErrorFallback}
+    onError={(error) => logger.error('UI_BOUNDARY_CAUGHT', error)}
+>
     <MyComponent />
 </ErrorBoundary>
 ```
@@ -296,15 +351,15 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 </ErrorBoundary>
 ```
 
-**Kolejność:** ErrorBoundary NA ZEWNĄTRZ Suspense.
+**Kolejność:** ErrorBoundary na zewnątrz Suspense — wtedy łapie też błąd rzucony podczas ładowania leniwego komponentu (np. nieudany import chunka).
 
 ### Z onReset
 ```typescript
 <ErrorBoundary
     FallbackComponent={ErrorFallback}
     onReset={() => {
-        // Reset state, refetch data, etc.
-        queryClient.invalidateQueries();
+        // Reset state, refetch data, etc. — promise świadomie pomijany (`void`), bo onReset nic nie zwraca
+        void queryClient.invalidateQueries();
     }}
     resetKeys={[userId]} // Reset gdy userId się zmieni
 >
@@ -314,24 +369,27 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 ### useErrorBoundary Hook
 
-Programowe zgłaszanie błędów:
+Programowe zgłaszanie błędów. Operacja idzie przez hook z mutacją (komponent nie woła serwisu wprost), a błąd przekazujesz do najbliższego ErrorBoundary, którego `onError` zostawia ślad w loggerze:
 ```typescript
 import { useErrorBoundary } from 'react-error-boundary';
 
+import { useRiskyOperation } from '@/hooks/use-risky-operation';
+
 function MyComponent() {
     const { showBoundary } = useErrorBoundary();
+    const riskyOperation = useRiskyOperation();
 
-    const handleClick = async () => {
-        try {
-            await riskyOperation();
-        } catch (error) {
-            showBoundary(error); // Przekaż do ErrorBoundary
-        }
+    const handleClick = () => {
+        riskyOperation.mutate(undefined, {
+            onError: (error) => showBoundary(error), // Przekaż do ErrorBoundary
+        });
     };
 
     return <Button onClick={handleClick}>Risky Action</Button>;
 }
 ```
+
+TanStack Query ma też opcję `throwOnError: true` w `useMutation` — wtedy błąd mutacji trafia do ErrorBoundary bez `showBoundary`.
 
 ---
 
@@ -390,16 +448,40 @@ interface ChildProps {
 }
 
 function Child({ data, onSelect }: ChildProps) {
+    // Akcja na przycisku (nie na div): działa z klawiatury i ma rolę dla czytnika ekranu
     return (
-        <div onClick={() => onSelect(data[0].id)}>
-            {/* Zawartość */}
-        </div>
+        <ul>
+            {data.map((item) => (
+                <li key={item.id}>
+                    <button type="button" onClick={() => onSelect(item.id)}>
+                        {item.name}
+                    </button>
+                </li>
+            ))}
+        </ul>
     );
 }
 ```
 
 ### Unikaj Prop Drilling (>3 poziomy)
+
+Hook kontekstu użyty poza providerem rzuca typowany błąd z kodem (klasa z polem `code`), nie `Error` ze stringiem — operator rozpozna przyczynę po kodzie w logu.
 ```typescript
+import { createContext, useContext, type ReactNode } from 'react';
+
+interface MyData {
+    title: string;
+}
+
+class ContextMissingError extends Error {
+    readonly code: string;
+    constructor(code: string) {
+        super(`${code}: hook kontekstu użyty poza swoim providerem`);
+        this.name = 'ContextMissingError';
+        this.code = code;
+    }
+}
+
 // Context dla głębokiego zagnieżdżenia
 const MyContext = createContext<MyData | null>(null);
 
@@ -408,11 +490,11 @@ function Provider({ children }: { children: ReactNode }) {
     return <MyContext.Provider value={data}>{children}</MyContext.Provider>;
 }
 
-// Custom hook dla bezpiecznego użycia
-function useMyContext() {
+// Custom hook dla bezpiecznego użycia: zawężenie zamiast `!`
+function useMyContext(): MyData {
     const context = useContext(MyContext);
     if (!context) {
-        throw new Error('useMyContext must be used within Provider');
+        throw new ContextMissingError('MY_CONTEXT_MISSING');
     }
     return context;
 }
@@ -420,6 +502,7 @@ function useMyContext() {
 function DeepChild() {
     const data = useMyContext();
     // Używaj data bezpośrednio
+    return <h2>{data.title}</h2>;
 }
 ```
 
@@ -461,11 +544,11 @@ export function List<T>({
 
 ## React 19: use Hook (Data Fetching)
 
-Hook `use` pozwala czytać Promise w komponencie:
+Hook `use` pozwala czytać Promise w komponencie. Poniższy przykład pokazuje samą mechanikę i nie jest wzorcem pobierania danych w tym stacku: nowy kod pobierający dane idzie przez TanStack Query (coding-rules, Async i React), a `fetchData()` wywołane przy imporcie modułu nie ma limitu czasu, ponawiania ani cache.
 ```typescript
 import { use, Suspense } from 'react';
 
-// Promise utworzony poza renderem
+// Mechanika (poza tym stackiem): promise utworzony poza renderem, stabilny między renderami
 const dataPromise = fetchData();
 
 function DataView() {
@@ -479,34 +562,80 @@ function DataView() {
 </Suspense>
 ```
 
-**Dla Vite SPA:** React Query jest nadal lepszym wyborem dla większości przypadków - oferuje cache, refetch, devtools. Hook `use` jest niskopoziomowy.
+**Dla Vite SPA:** dane pobierasz przez React Query (TanStack Query) — oferuje cache, refetch, anulowanie i devtools; hook `use` jest niskopoziomowy. W tym stacku `use` przydaje się do odczytu kontekstu, także warunkowo (czego `useContext` nie pozwala):
+```typescript
+import { use } from 'react';
+
+function ThemeBadge({ isVisible }: { isVisible: boolean }) {
+    if (!isVisible) return null;
+    const theme = use(ThemeContext); // `use` wolno wywołać po warunku
+    return <span className="text-xs text-muted-foreground">{theme}</span>;
+}
+```
 
 ---
 
 ## React 19: useActionState
 
-Hook do zarządzania stanem formularza z wbudowaną obsługą pending:
+Hook do zarządzania stanem formularza z wbudowaną obsługą pending. Akcja leży w hooku: parsuje `FormData` schematem Zod (zamiast `formData.get(...) as string`), woła serwis, w `catch` zostawia ślad w loggerze i zwraca stan jako unię dyskryminowaną zamiast pary `success`/`error`:
 ```typescript
+// src/hooks/use-submit-name.ts
 import { useActionState } from 'react';
+import { z } from 'zod';
 
-function SimpleForm() {
-    const [state, submitAction, isPending] = useActionState(
-        async (previousState: State, formData: FormData) => {
-            const name = formData.get('name') as string;
-            try {
-                await api.submit({ name });
-                return { success: true, error: null };
-            } catch (error) {
-                return { success: false, error: 'Nie udało się wysłać' };
-            }
-        },
-        { success: false, error: null }
-    );
+import { logger } from '@/lib/logger';
+import { nameService } from '@/services/name-service';
+
+const nameSchema = z.strictObject({
+    name: z.string().trim().min(1, 'Podaj imię'),
+});
+
+type SubmitNameState =
+    | { status: 'idle' }
+    | { status: 'success' }
+    | { status: 'error'; message: string };
+
+const INITIAL_SUBMIT_NAME_STATE: SubmitNameState = { status: 'idle' };
+
+async function submitName(_previous: SubmitNameState, formData: FormData): Promise<SubmitNameState> {
+    const parsed = nameSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) {
+        return { status: 'error', message: parsed.error.issues[0]?.message ?? 'Nieprawidłowe dane' };
+    }
+    try {
+        await nameService.submit(parsed.data);
+        return { status: 'success' };
+    } catch (error) {
+        logger.error('NAME_SUBMIT_FAILED', error);
+        return { status: 'error', message: 'Nie udało się wysłać' };
+    }
+}
+
+export function useSubmitName() {
+    return useActionState(submitName, INITIAL_SUBMIT_NAME_STATE);
+}
+```
+```typescript
+// src/components/simple-form.tsx
+export function SimpleForm() {
+    const [state, submitAction, isPending] = useSubmitName();
+    const hasError = state.status === 'error';
 
     return (
-        <form action={submitAction}>
-            <Input name="name" />
-            {state.error && <p className="text-destructive">{state.error}</p>}
+        <form action={submitAction} className="space-y-2">
+            <Label htmlFor="simple-name">Imię</Label>
+            <Input
+                id="simple-name"
+                name="name"
+                aria-invalid={hasError ? true : undefined}
+                aria-describedby={hasError ? 'simple-name-error' : undefined}
+            />
+            {state.status === 'error' && (
+                <p id="simple-name-error" role="alert" className="text-sm text-destructive">
+                    {state.message}
+                </p>
+            )}
+            {state.status === 'success' && <p role="status" className="text-sm">Wysłano</p>}
             <Button type="submit" disabled={isPending}>
                 {isPending ? 'Wysyłanie...' : 'Wyślij'}
             </Button>
@@ -520,7 +649,7 @@ function SimpleForm() {
 | `useActionState` | React Hook Form + Zod |
 |------|------|
 | Proste formularze (1-3 pola) | Złożone formularze (>3 pola) |
-| Brak client-side walidacji | Zaawansowana walidacja |
+| Walidacja schematem w akcji, po wysłaniu | Zaawansowana walidacja na bieżąco |
 | Progressive enhancement | Bogate interakcje (wizard, dynamic fields) |
 | Natywny `<form action>` | Kontrolowane komponenty |
 
@@ -528,17 +657,22 @@ function SimpleForm() {
 
 ## Wzorzec Eksportu
 ```typescript
-// Named + default (rekomendowane)
+// Komponent i hook — tylko named export
 export function MyComponent({ ... }: Props) {
     // ...
 }
 
-export default MyComponent;
+// Strona ładowana przez lazy() — default export
+// src/pages/settings-page.tsx
+export default function SettingsPage() {
+    // ...
+}
 ```
 
-**Dlaczego oba:**
-- Named export dla testowania/refactoringu
-- Default export dla lazy loading
+**Dlaczego tak:**
+- Named export dla testowania/refactoringu — jedna nazwa we wszystkich importach
+- Default export tylko tam, gdzie go ktoś importuje: `lazy(() => import('@/pages/settings-page'))`. Default export komponentu, którego nikt nie importuje domyślnie, to nieużywany eksport (coding-rules, sekcja ESLint)
+- Komponent, który nie jest stroną, ładujesz leniwie przez `.then((module) => ({ default: module.TemplateModal }))` (sekcja „Lazy Loading”)
 
 ---
 
