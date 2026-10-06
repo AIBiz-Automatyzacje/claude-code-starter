@@ -15,7 +15,9 @@ export const NAGLOWEK = 'Klasy błędów, które review znajduje w takich plikac
 const KOD = ['**/*.{ts,tsx,js,jsx,mjs,cjs}']
 const SQL = ['**/*.sql']
 const SERWER = ['supabase/functions/**', '**/server/**', '**/api/**']
-const KLIENT_DANYCH = ['**/lib/**', '**/hooks/**', '**/services/**', '**/model/**']
+// Hook, klient API i serwis w folderze funkcji (features/<x>/use-*.ts) to ta sama warstwa co lib/ i hooks/ — w projektach
+// z podzialem na funkcje defekty tej warstwy lezaly wlasnie tam.
+const KLIENT_DANYCH = ['**/lib/**', '**/hooks/**', '**/services/**', '**/model/**', '**/use-*.ts', '**/*-api.ts', '**/*-service.ts']
 const WIDOKI = ['**/components/**', '**/pages/**', '**/features/**']
 const DANE = ['supabase/**', ...KLIENT_DANYCH, ...SERWER]
 const SEEDY = ['e2e/seeds/**', '**/seed*.sql']

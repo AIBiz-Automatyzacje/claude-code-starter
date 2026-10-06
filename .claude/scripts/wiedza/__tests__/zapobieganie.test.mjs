@@ -50,6 +50,14 @@ test('dobor po plikach: komponent dostaje tylko klasy kodu UI, migracja — klas
   assert.deepEqual(zapobieganie([], ['README.md']), { tresc: '', zn: 0, klasy: [], pominiete: 0 })
 })
 
+test('hook i klient API w folderze funkcji to warstwa danych klienta, komponent obok — nadal tylko klasy UI', () => {
+  for (const plik of ['apps/web/src/features/settings/use-webhook-settings.ts', 'apps/web/src/features/settings/webhook-api.ts', 'src/features/oferty/oferta-service.ts']) {
+    const { klasy } = zapobieganie([], [plik])
+    assert.ok(klasy.includes('sciezka-bledu') && klasy.includes('limit-czasu-i-ponowien'), `${plik}: ${klasy.join(', ')}`)
+  }
+  assert.deepEqual(zapobieganie([], ['apps/web/src/features/settings/webhook-form.tsx']).klasy, ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'])
+})
+
 test('kolejnosc: najpierw klasy z najwieksza liczba solutions w projekcie, remis — wezszy glob przed szerszym', () => {
   const wpisy = [wpis('wartosc-graniczna', 'a.md'), wpis('wartosc-graniczna', 'b.md'), wpis('pii-i-sekrety', 'c.md')]
   const { klasy } = zapobieganie(wpisy, ['supabase/functions/oferta/index.ts', 'supabase/migrations/1.sql'])
