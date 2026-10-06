@@ -581,6 +581,7 @@ ${JSON.stringify(doOdrzucenia, null, 2)}
 REGULY PROJEKTU dla poprawianych plikow, przed naprawa: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i blizniacze miejsca z napraw-szerzej, bez :linia, po przecinku>\`
 (pole tresc; pusta — brak regul dla tych plikow). To reguly z poprzednich zadan tego projektu, ktore builder dostal w prompcie;
 poprawka lamiaca ktorakolwiek z nich wraca jako kolejny komentarz bota albo jako defekt po merge'u.
+Reguly kodu projektu: .claude/rules/coding-rules.md — przeczytaj przed naprawa (bot cytuje je w uwagach).
 
 1. NAPRAWA. Idz po klastrach: watki z tym samym \`klaster\` maja WSPOLNA przyczyne i zamyka je jedna
    zmiana — nie lataj kazdego osobno. Przy klasie \`napraw-szerzej\` napraw takze blizniacze miejsca

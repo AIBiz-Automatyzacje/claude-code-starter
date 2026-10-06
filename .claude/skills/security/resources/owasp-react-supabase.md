@@ -390,7 +390,7 @@ Nowa kategoria: błędna obsługa błędów prowadząca do luk — **fail-open**
 
 **Checklist:**
 - [ ] Autoryzacja **fail-closed** — błąd sprawdzenia = odmowa dostępu, nigdy przyznanie
-- [ ] Zero pustych `catch {}` — loguj albo re-throw (patrz `coding-rules` §4)
+- [ ] Zero pustych `catch {}` — loguj albo re-throw (reguły kodu, sekcja „Obsługa błędów”)
 - [ ] Klient dostaje generyczny komunikat + kod; szczegóły błędu tylko do logu/Sentry
 - [ ] Edge Function zwraca poprawny status (4xx/5xx) przy błędzie, nie `200`
 - [ ] `Promise.allSettled` dla operacji, które mogą niezależnie failować

@@ -1,6 +1,7 @@
 // Testy usuniete w fazie (pole telemetrii testy_usuniete): definicje it(/test( zniknete z plikow testow wzgledem bazy, ktorych
 // nazwy nie ma w zadnym obecnym pliku testow fazy (przeniesienie = nie usuniecie). Zmiana nazwy testu tez trafia na liste.
-// Bramka informacyjna — domkniecie uzasadnia kazda pozycje (coding-rules: test usuwa sie tylko razem z funkcja).
+// Bramka informacyjna — domkniecie uzasadnia kazda pozycje (coding-rules, sekcja Testowanie: test usuwa sie
+// razem z funkcja albo jako zielony test niefalsyfikowalny z wpisem w raporcie fazy).
 
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

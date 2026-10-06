@@ -38,7 +38,7 @@ const zrodloReview = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 
 // UWAGA na wzorzec ponizej: `new Function` z interpolacja to w kodzie produkcyjnym droga do wykonania
 // obcego kodu. Tutaj jest bezpieczny i swiadomy — interpolujemy WYLACZNIE fragmenty wyciete z plikow
 // tego repo (nie z wejscia uzytkownika, nie z sieci), a test biegnie lokalnie. NIE kopiuj tego do
-// kodu produkcyjnego: tam obowiazuje coding-rules §9 (zero dynamicznego wykonywania kodu z inputu).
+// kodu produkcyjnego: tam obowiazuje coding-rules, sekcja Bezpieczeństwo (zero dynamicznego wykonywania kodu z inputu).
 /**
  * @param {string} zrodlo
  * @param {string} kotwica

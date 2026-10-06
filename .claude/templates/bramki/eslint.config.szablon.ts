@@ -61,7 +61,7 @@ export default defineConfig(
       'no-empty': ['error', { allowEmptyCatch: false }],
       'no-console': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
-      // Prog 360/60 = regula coding-rules 300/50 + 20% (ten sam prog ma bot PR, P5).
+      // Prog 360/60 = progi z coding-rules (sekcja „Pilnuje ESLint”, test coding-rules.test.mjs pilnuje zgodnosci); ten sam prog ma bot PR.
       'max-lines': ['error', { max: 360, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true, IIFEs: true }],
       'import-x/order': ['error', { groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'], 'newlines-between': 'always', alphabetize: { order: 'asc' } }],

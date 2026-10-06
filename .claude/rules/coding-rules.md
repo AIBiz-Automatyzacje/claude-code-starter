@@ -1,217 +1,140 @@
-## 1. Rozmiar plików i funkcji
-
-### Reguły
-
-- Plik > 300 linii = refaktoruj. Podziel na mniejsze moduły
-- Funkcja > 50 linii = wyciągnij pod-funkcje. Jedna funkcja = jeden poziom abstrakcji
-- Funkcja > 6 argumentów = stwórz obiekt konfiguracyjny / interfejs
-- Nesting > 2 poziomy = użyj early return
-- Klasa > 1 odpowiedzialność = podziel (Single Responsibility Principle)
+---
+paths:
+  - "**/*.{ts,tsx,js,jsx,mjs,cjs}"
+  - "**/*.sql"
 ---
 
-## 2. Testowanie
+# Reguły kodu
 
-### Reguły
+Reguły pisania, testowania i naprawiania kodu projektu. Do reguły odwołujesz się po nazwie sekcji.
 
-- NIGDY nie modyfikuj istniejących testów żeby "naprawić" failing test — napraw implementację
-- NIGDY nie usuwaj testów, chyba że usuwasz testowaną funkcjonalność
-- NIGDY nie osłabiaj asercji (np. `toBe(429)` na `toBeDefined()`) — to nie jest fix
-- NIGDY nie mockuj tego co testujesz — mockuj TYLKO zewnętrzne serwisy
-- Każdy test MUSI mieć minimum 1 asercję — zero assertion-free testów
-- Każda nowa funkcja = minimum 1 test happy path + 1 test error case
-- Po napisaniu kodu uruchom testy PRZED deklaracją "gotowe"
-- Nie ładuj pełnych datasetów w unit testach — używaj fixtures w `tests/fixtures/`
-- Pattern: Arrange-Act-Assert wewnątrz describe/it bloków
-- Testuj ZACHOWANIE (behavior), nie implementację (internal state)
-- Pisz testy WERTYKALNIE (tracer bullets): jeden test → jego implementacja → następny. NIGDY nie pisz wszystkich testów naraz, a potem całej implementacji (horizontal slicing) — to produkuje testy „kształtu" (struktur i sygnatur), nie zachowania; przechodzą, gdy zachowanie się psuje
-- Nigdy nie refaktoruj, gdy test jest RED — najpierw doprowadź do GREEN
----
+## Pilnuje ESLint i bramki domknięcia
 
-## 3. Organizacja kodu
+W projekcie z konfiguracją ESLint z szablonu te reguły sprawdza maszyna; bez niej obowiązują tak samo. Błąd lintera naprawiasz w kodzie.
 
-### Reguły
+- Próg rozmiaru: 360 linii na plik TS/TSX i 60 na funkcję (bez pustych linii i komentarzy); większe dzielisz na moduły i pod-funkcje.
+- Zamiast `any` — `unknown` z type guardem albo własny typ.
+- Bez pustego bloku `catch` i bez `console.*` w kodzie produkcyjnym.
+- Importy w grupach (wbudowane, zewnętrzne, lokalne), alfabetycznie; bez cykli importów między modułami.
+- Każdy promise ma `await`, `return`, `.catch` albo `void`.
+- Bez nieużywanych importów, zmiennych, funkcji i eksportów.
+- Test ma asercję `expect` poza warunkiem; wywołanie atrapy sprawdzasz z argumentami (`toHaveBeenCalledWith`).
 
-- Jedna odpowiedzialność per moduł/klasa/funkcja
-- Kolokacja: testy obok plików źródłowych, nie w osobnym drzewie
-- Wyciągaj shared logic do dedykowanego modułu zamiast duplikować
-- Nie twórz abstrakcji "na przyszłość" — abstrakcja dopiero gdy jest 2+ użycia
-- Nie twórz konfiguracji dla wartości które nigdy się nie zmienią
-- Importy: grouped (stdlib, third-party, local), sorted alphabetically
-- Jeden eksport per plik dla głównych modułów
----
+## Rozmiar i struktura
 
-## 4. Error handling
+- Funkcja z więcej niż 6 argumentami dostaje obiekt opcji.
+- Przy zagnieżdżeniu głębszym niż 2 poziomy wychodzisz wcześniej (early return).
+- Jedna odpowiedzialność na moduł, klasę i funkcję; funkcja działa na jednym poziomie abstrakcji; plik komponentu nie zawiera logiki biznesowej.
 
-### Reguły
+## Testowanie
 
-- NIGDY nie łap wyjątków i nie ignoruj ich (empty catch block)
-- NIGDY nie używaj pustego `catch {}` — zawsze loguj albo re-throw
-- Rzucaj typed errors, nie string messages (`throw new AppError(...)`, nie `throw "coś poszło nie tak"`)
-- Fail fast — waliduj inputy na początku funkcji
-- Nie over-catchuj — łap KONKRETNE typy błędów, nie generyczne `Error`
-- API routes: ustandaryzowany format odpowiedzi `{ data, error: { code, message } }`
-- Używaj structured logging (JSON format, np. pino), nie `console.log`
-- Nie suppressuj błędów — finding zawsze wymaga naprawy, nie racjonalizacji
----
+- Czerwony test naprawiasz w implementacji. Test zmieniasz tylko wtedy, gdy zmienia się zamówione zachowanie, i nazywasz tę zmianę w raporcie albo commicie.
+- Test usuwasz razem z funkcjonalnością, którą sprawdza. Jedyny inny przypadek: zielony test niefalsyfikowalny, którego asercji nie da się przepisać — usuwasz go z wpisem w raporcie fazy. Czerwonego testu nie usuwasz.
+- Asercji nie osłabiasz (`toBe(429)` → `toBeDefined()`): słabsza asercja przepuszcza błąd, który test miał łapać.
+- Atrapy tylko dla usług zewnętrznych; testowany moduł działa naprawdę, inaczej test sprawdza atrapę.
+- Zanim zostawisz test, pytasz, czy przeszedłby, gdyby każda importowana funkcja zwracała `undefined`. Jeśli tak — dajesz jedno konkretne wejście i dosłowny wynik albo obserwowalny skutek.
+- Każda nowa funkcja publiczna ma test ścieżki poprawnej i test błędu.
+- Unit testy pracują na małych fixture'ach w `tests/fixtures/`, nie na pełnych zbiorach danych.
+- Układ testu: Arrange-Act-Assert w blokach describe/it.
+- Testujesz zachowanie widoczne z zewnątrz (wynik, DOM, zapis w bazie), nie stan wewnętrzny; komponent — przez Testing Library, tak jak używa go użytkownik.
+- Testy piszesz wertykalnie: jeden test → jego implementacja → następny test. Wszystkie testy naraz, a potem cała implementacja, dają testy kształtu (struktur i sygnatur), które przechodzą, gdy zachowanie się psuje.
+- Refaktoryzujesz przy zielonych testach; czerwony najpierw doprowadzasz do zielonego.
 
-## 5. Anty-patterny specyficzne dla AI
+## Organizacja kodu
 
-### Reguły (zapobieganie)
+- Testy leżą obok plików źródłowych.
+- Wspólny moduł wydzielasz przy trzecim użyciu tej samej logiki; przy dwóch prosta duplikacja jest lepsza niż abstrakcja. Wyjątek: stała albo kontrakt (schemat, typ, próg) w dwóch miejscach — od razu jedno źródło, bo kopie rozjeżdżają się po cichu.
+- Nową logikę wydzielasz do nowego modułu zamiast rozbudowywać istniejący, gdy rozbudowa utrudnia jego zrozumienie.
+- Konfiguracja tylko dla wartości, które się zmieniają.
+- Przed napisaniem funkcji szukasz istniejącej (grep).
+- Liczby o znaczeniu domenowym trzymasz w nazwanych stałych.
 
-- Nie zakładaj że biblioteka jest dostępna — sprawdź package.json / cargo.toml / requirements.txt PRZED użyciem
-- Nie dodawaj importów które nie są używane
-- Nie twórz "defensive code" na scenariusze które nie mogą wystąpić
-- Nie rób refaktoryzacji 160 plików na podstawie vague comment — PYTAJ o potwierdzenie
-- Nie modyfikuj swoich własnych reguł / review scripts / hooks
-- Kiedy test failuje — napraw KOD, nie test
-- Kiedy linter failuje — napraw KOD, nie konfigurację lintera
-- Nie obchodź blokad przez zmianę narzędzia (Edit zablokowany, więc sed, python -c)
-- Nie podejmuj autonomous decisions przy niejasnych instrukcjach — PYTAJ
-- Nie dismissuj findings jako "pre-existing" — napraw albo zgłoś
+## Obsługa błędów
 
-### Katalog 10 udokumentowanych anty-patternów AI
+- Każdy `catch` (także `.catch(() => …)`) zostawia ślad dla operatora — log z kodem błędu i przyczyną — albo rzuca błąd dalej.
+- Rzucasz typowany błąd (klasa z kodem), nie string.
+- Łapiesz konkretne typy błędów, nie ogólny `Error`.
+- Wejście walidujesz na początku funkcji (fail fast).
+- Trasy API odpowiadają kopertą `{ data, error: { code, message } }`. W Hono `app.onError` mapuje `HTTPException` (status, message) na kopertę zamiast zwracać `err.getResponse()`; trasy z własnym protokołem (MCP, JSON-RPC) mają własny format.
+- Logujesz strukturalnie (JSON z kodem błędu, np. pino).
 
-| # | Anty-pattern | Częstość | Opis |
-|---|-------------|----------|------|
-| 1 | Over-specification | 80-90% | Implementuje funkcje których nikt nie żądał |
-| 2 | Test weakening | Wysoka | Osłabia asercje żeby testy przeszły |
-| 3 | Silent threshold change | Wysoka | Obniża coverage/quality targets zamiast naprawiać kod |
-| 4 | Governance bypass | Średnia | Znajduje luki we własnych regułach |
-| 5 | Schema regression | Średnia | Robi masowe refaktoryzacje bez potwierdzenia |
-| 6 | Assertion-free tests | Wysoka | Pisze testy bez asercji — coverage rośnie, weryfikacja = 0 |
-| 7 | Finding dismissal | Wysoka | "To jest pre-existing code" zamiast naprawy |
-| 8 | Tool-switching circumvention | Średnia | Edit zablokowany, więc próbuje sed/echo/python -c |
-| 9 | Context blindness | Wysoka w długich sesjach | Duplikuje logikę, niespójne nazewnictwo |
-| 10 | Defensive over-engineering | 80-90% | Dodaje konfiguracje, abstrakcje, error handling dla scenariuszy które nie istnieją |
----
+## Zakres zmian i bramki
 
-## 6. Self-check / Code review
+- Obsługujesz scenariusze, które mogą wystąpić w tym kodzie; dla niemożliwych nie dodajesz gałęzi, konfiguracji ani abstrakcji.
+- Zmianę szerszą niż zadanie (refaktor wielu plików) najpierw uzgadniasz z operatorem; w workflowie zgłaszasz ją jako następny krok.
+- Reguł z tego pliku i konfiguracji bramek (ESLint, tsconfig, progi, hooki) nie luzujesz, żeby zmiana przeszła, i nie wyłączasz ich w linii (`eslint-disable`, `@ts-expect-error`) — błąd naprawiasz w kodzie; regułę zmienia operator. Wiedzę projektu zapisuje compound według swojego skilla.
+- Zablokowane narzędzie albo hook to sygnał do zatrzymania i zgłoszenia, nie do obejścia innym narzędziem (sed, python -c).
+- Przy niejasnej instrukcji pytasz; w workflowie zwracasz status `blocked` z pytaniem.
+- Defekt w kodzie sprzed zmiany nie jest powodem do pominięcia — naprawiasz go albo zgłaszasz z miejscem (plik:linia).
+- Zanim zgłosisz koniec: typecheck, testy i lint dla zmienionych plików; pełny zestaw robi domknięcie fazy.
+- Commit robisz, gdy prosi o to operator albo polecenie workflowu; commit nie zawiera plików `.env` ani nowych TODO/FIXME.
 
-### Reguły
+## Nazewnictwo
 
-- Po zakończeniu zmian ZAWSZE uruchom: typecheck, test, lint (w tej kolejności)
-- Przed commitem sprawdź czy nie dodajesz: secrets, .env, console.log, TODO/FIXME
-- Sprawdź czy każdy nowy plik ma odpowiadający test
-- Sprawdź czy nie duplikujesz istniejącej logiki — grep codebase
-- Sprawdź dead code — usuwaj nieużywane importy, zmienne, funkcje
-- Sprawdź magic numbers — wyciągnij do named constants
-- Sprawdź deep nesting — max 2 poziomy, powyżej = early return
-- Nie committuj zmian chyba że user explicite o to poprosi
+- Boolean: prefiks `is` / `has` / `should` / `can` (`isActive`, `hasPermission`, `shouldRetry`).
+- Obsługa zdarzeń: prefiks `handle` (`handleClick`, `handleSubmit`).
+- Stałe: `UPPER_SNAKE_CASE`.
+- Typy i interfejsy: `PascalCase`, bez prefiksu `I`.
+- Funkcje i zmienne: `camelCase`.
+- Pliki: kebab-case (`user-service.ts`, nie `UserService.ts`), chyba że framework wymusza inną konwencję.
+- Nazwa mówi, co robi, nie jak (`getUserById`, nie `fetchAndParseAndValidateUser`); rozumiesz ją w 5 sekund.
+- Bez akronimów i skrótów poza powszechnie znanymi (`url`, `id` tak; `usrMgr` nie).
 
-### Quality gate (pre-commit checklist)
+## Zależności
 
-1. Wszystkie testy przechodzą
-2. Zero błędów typecheckera
-3. Zero błędów lintera
-4. Brak nowych `any` types
-5. Brak hardcoded secrets/keys
-6. Brak console.log w produkcyjnym kodzie
-7. Każda nowa funkcja publiczna ma test
----
+- Przed użyciem biblioteki sprawdzasz manifest (package.json, requirements.txt, go.mod).
+- Nową zależność zgłaszasz operatorowi (w workflowie: w odchyleniach); pierwszeństwo mają biblioteki, które projekt już ma.
+- Jeden menedżer pakietów — ten z lockfile projektu.
+- W monorepo pakiety importują się przez warstwę wspólną, nie bezpośrednio.
+- Wersje w package.json przypinasz dokładnie.
 
-## 7. Nazewnictwo
+## Bezpieczeństwo
 
-### Reguły
+- Sekrety tylko w zmiennych środowiska poza repo.
+- Sekretów i danych osobowych nie logujesz — także do Sentry: redakcja przed wysłaniem.
+- SQL tylko z parametrami, bez sklejania z danymi użytkownika.
+- Bez dynamicznego wykonania kodu z danych użytkownika.
+- Dane z zewnątrz (ciało, query, parametry ścieżki, nagłówki, cookies, pliki, odpowiedzi usług zewnętrznych) parsujesz schematem Zod przed użyciem; kopertę — `z.strictObject`. W Hono walidator (`validator` albo `zValidator`, jeśli projekt go ma) dostaje hook zwracający kopertę błędu; bez pasującego Content-Type ciało przychodzi jako `{}`, więc test na brak nagłówka.
+- Rola pochodzi z tabeli ról (w polityce przez funkcję albo claim z Custom Access Token Hook) albo z `app_metadata` ustawianego po stronie serwera; nie z `user_metadata` — użytkownik zmienia je przez `updateUser` — ani z top-level claimu `role`.
+- Polityki RLS: `(select auth.uid())` i `(select auth.jwt())` zamiast wywołania wprost (wynik liczony raz na zapytanie), indeks na kolumnie filtra polityki, każda polityka z `TO <rola>`.
+- Funkcja `security definer`: `set search_path = ''`, EXECUTE odebrane od `public` i `anon` i nadane roli, która ją woła, kontrola uprawnień w ciele funkcji.
+- Skrypty migracyjne, ETL, importy i seedy walidują dane źródłowe jak wejście z granicy API — tożsamość (`from_user`/`owner_id` nie przepisujesz z danych źródłowych), limity długości, kształt payloadu, przynależność do zasobu. „Jednorazowy” albo „usuwany później” nie znosi walidacji ani nie obniża wagi findingu.
+- Uprawnienia minimalne — tyle, ile potrzeba.
+- `rm -rf` tylko za wyraźną zgodą operatora.
+- Produkcyjnej bazy nie zmieniasz bezpośrednio.
+- Każdy publiczny endpoint ma limit częstości, limit rozmiaru ciała i limit rozmiaru strony; operacje wrażliwe (logowanie, reset hasła, wysyłka) — osobny, niższy limit.
 
-- Boolean: prefix `is` / `has` / `should` / `can` (`isActive`, `hasPermission`, `shouldRetry`)
-- Event handlers: prefix `handle` (`handleClick`, `handleSubmit`)
-- Stałe: `UPPER_SNAKE_CASE`
-- Typy/Interfejsy: `PascalCase`, bez prefixu `I`
-- Funkcje i zmienne: `camelCase`
-- Pliki: kebab-case (`user-service.ts`, nie `UserService.ts`) — chyba że framework wymusza inną konwencję
-- Nazwy powinny opisywać CO robi, nie JAK (`getUserById`, nie `fetchAndParseAndValidateUser`)
-- Unikaj akronimów i skrótów chyba że powszechnie znane (`url`, `id` OK; `usrMgr` nie)
----
+## Type safety
 
-## 8. Zależności i importy
+- Zamiast `as` — `satisfies` albo type guard; `as` tylko przy zawężaniu DOM i `as const`.
+- Zamiast `!` — zawężenie albo early return.
+- Stan opisujesz unią dyskryminowaną, nie zestawem flag boolean.
+- Funkcje publiczne mają jawny typ zwracany.
+- tsconfig: `strict` i `verbatimModuleSyntax`; w nowym projekcie także `erasableSyntaxOnly` (bez `enum`, `namespace` z kodem i parameter properties).
 
-### Reguły
+## Performance
 
-- NIGDY nie zakładaj że biblioteka jest dostępna — sprawdź package.json / requirements.txt / go.mod
-- NIGDY nie instaluj nowych zależności bez poinformowania usera
-- Preferuj istniejące biblioteki w projekcie > nowa dependency
-- Nie mieszaj package managerów (jeśli projekt używa `bun` — nie używaj `npm`)
-- Importy grouped: stdlib, third-party, local
-- Nie importuj bezpośrednio między packages w monorepo — używaj shared layer
-- Pinuj wersje — deklaruj exact versions w package.json
----
+- Złożoność O(n²) i gorsza ma komentarz, dlaczego nie da się lepiej.
+- Zapytanie do bazy w pętli to N+1 — zamiast tego batch, join albo include.
+- Pobierasz tylko potrzebny podzbiór: paginacja, limit, wybrane kolumny.
+- Nową zależność w kodzie klienta sprawdzasz pod kątem rozmiaru przed dodaniem; budżet paczki pilnuje size-limit w domknięciu.
+- Komponent większy niż 50 KB ładujesz dynamicznie (`React.lazy`, dynamic import).
+- Optymalizujesz po pomiarze, nie na zapas.
 
-## 9. Bezpieczeństwo
+## Async i React
 
-### Reguły
+- Efekt z async w cleanupie unieważnia wynik: flaga `ignore` albo abort i sprawdzenie, czy odpowiedź dotyczy bieżących parametrów. Gdy projekt ma bibliotekę cache (TanStack Query) albo loader routera, nowy kod pobierający dane idzie przez nią.
+- Każde wywołanie sieciowe ma limit czasu (`AbortSignal.timeout`). W efekcie, który przerywa żądanie w cleanupie, limit łączysz z flagą `ignore` zamiast łączyć dwa sygnały; w supabase-js limit daje opakowany `fetch` w `createClient({ global: { fetch } })`.
+- `setTimeout` i `setInterval` w efekcie mają cleanup (`clearTimeout`, `clearInterval`).
+- Stan ładowania z więcej niż jedną flagą opisujesz unią dyskryminowaną; formularz — `useActionState` / `useOptimistic` zamiast ręcznych flag.
+- Równoległe operacje, które mogą zawieść niezależnie — `Promise.allSettled`.
+- Sprzątanie i przejścia stanu w `Promise.finally()`, bez powielania logiki w gałęziach sukcesu i błędu.
+- Pętla `requestAnimationFrame` sprawdza flagę anulowania przed kolejną klatką.
+- Operację wykluczającą się z poprzednią (np. ładowanie podglądu) uruchamiasz dopiero po zakończeniu albo porażce poprzedniej.
+- Przy włączonym React Compilerze (`babel-plugin-react-compiler` w projekcie) nie dodajesz ręcznie `useMemo` ani `useCallback` — kompilator memoizuje; wyjątek: stabilna zależność efektu.
 
-- NIGDY nie committuj secrets, API keys, credentials, tokenów
-- NIGDY nie loguj secrets ani danych osobowych
-- NIGDY nie konkatenuj user input do SQL queries — używaj parametrized queries
-- NIGDY nie używaj dynamicznego wykonywania kodu z user input
-- NIGDY nie deserializuj niezaufanych danych z zewnętrznych źródeł
-- NIGDY nie autoryzuj po `user_metadata` (Supabase) — jest edytowalne przez usera (`supabase.auth.updateUser`), więc RLS na tym polu = privilege escalation. Rolę trzymaj w `app_metadata` (server-side) lub dedykowanej tabeli ról; nie używaj też top-level claimu `role`
-- Waliduj KAŻDY input na granicy API (Zod, Pydantic, etc.)
-- Skrypty migracyjne / ETL / importy / seedy walidują dane źródłowe jak input z granicy API — tożsamość (nigdy nie przepisuj `from_user`/`owner_id` z danych źródłowych), limity długości, kształt payloadu, przynależność do zasobu. „Jednorazowy / throwaway / usuwany później" nie znosi walidacji ani nie obniża severity findingu
-- Minimum privileges — nie dawaj więcej uprawnień niż potrzeba
-- Nie uruchamiaj `rm -rf` bez explicit user confirmation
-- Nie modyfikuj production database bezpośrednio
-- Rate limiting na KAŻDYM public endpoint
----
+## Architektura
 
-## 10. Type safety
-
-### Reguły
-
-- NIGDY nie używaj `any` — użyj `unknown` z type guards albo zdefiniuj interfejs
-- NIGDY nie używaj type assertions (`as`) chyba że konieczne dla DOM narrowing
-- NIGDY nie używaj non-null assertions (`!`) — obsłuż nullability explicite
-- Użyj discriminated unions dla stanu, nie boolean flags
-- Wszystkie publiczne funkcje mają explicit return types
-- Strict mode ON — `"strict": true` w tsconfig
-- Generics > type assertions
-- Zod/io-ts na granicach systemu (API, pliki, user input)
----
-
-## 11. Filozofia review kodu
-
-### Reguły
-
-- Istniejący kod — bądź surowy. Każda dodana złożoność wymaga uzasadnienia
-- Nowy izolowany kod — bądź pragmatyczny. Jeśli działa i jest testowalny, nie blokuj postępu
-- Duplication > Complexity — prosta duplikacja kodu jest LEPSZA niż złożona abstrakcja DRY
-- Dodanie nowego modułu nie jest nigdy problemem. Zrobienie modułu zbyt złożonym — jest
-- Przy modyfikacji istniejącego pliku pytaj: "Czy ta zmiana sprawia, że istniejący kod jest trudniejszy do zrozumienia?"
-- Preferuj ekstrakcję do nowego modułu/komponentu zamiast komplikowania istniejącego
-- 5-sekundowa reguła nazewnictwa — jeśli nie rozumiesz co robi funkcja/komponent w 5 sekund od nazwy, to zła nazwa
----
-
-## 12. Performance
-
-### Reguły
-
-- O(n²) lub gorzej = wymaga uzasadnienia komentarzem dlaczego nie da się lepiej
-- Pętla z fetchem/zapytaniem do bazy = N+1 query. Użyj batch/join/include
-- Nie ładuj pełnych kolekcji gdy potrzebujesz subset — użyj pagination, limit, select konkretnych kolumn
-- Nowa dependency = uzasadnienie rozmiaru bundle (sprawdź bundlephobia)
-- Dynamic import / React.lazy() dla komponentów > 50KB
-- Nie optymalizuj przedwcześnie — ale MIERZ przed deklaracją "to wystarczy"
----
-
-## 13. Async i race conditions
-
-### Reguły
-
-- useEffect z async = ZAWSZE AbortController w cleanup function
-- setTimeout / setInterval = ZAWSZE cleanup w useEffect return (clearTimeout/clearInterval)
-- Więcej niż 1 boolean do stanu ładowania = użyj state machine (discriminated union)
-- Promise.allSettled gdy odpalasz równoległe operacje które mogą niezależnie failować
-- Promise.finally() do cleanup i state transitions — nie duplikuj logiki w resolve i reject
-- requestAnimationFrame w pętli = sprawdź cancel flag przed kolejnym requestAnimationFrame
-- Operacje wzajemnie wykluczające się (np. load preview) = zablokuj następną dopóki poprzednia się nie zakończy lub nie sfailuje
----
-
-## 14. Architektura
-
-### Reguły
-
-- Zero circular dependencies między modułami — jeśli A importuje B, B nie może importować A
-- Respect layer boundaries — komponent UI nie woła bazy bezpośrednio, idzie przez serwis/hook
-- Single Responsibility dotyczy też plików — plik z komponentem nie zawiera logiki biznesowej
-- API contracts (interfejsy, typy propsów) są stabilne — zmiana interfejsu = świadoma decyzja, nie side-effect refaktoru
-- Nowa zależność między modułami = pytanie: "czy to nie tworzy nieodwracalnego couplingu?".
+- Warstwy: strona → komponent → hook → serwis → klient bazy; komponent nie woła bazy bezpośrednio.
+- Kontrakty API (interfejsy, typy propsów) są stabilne — zmiana interfejsu to świadoma decyzja, nie skutek uboczny refaktoru.
+- Nową zależność między modułami sprawdzasz pod kątem nieodwracalnego couplingu.

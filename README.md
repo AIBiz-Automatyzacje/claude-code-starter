@@ -192,7 +192,7 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 - **Skille techniczne** pod stack — React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry — z aktualnymi wzorcami (React 19, Tailwind v4, Zod v4, OWASP 2025).
 - **15 wyspecjalizowanych agentów** — buildery warstw, reviewerzy, research.
 - **Knowledge compounding** — rozwiązane problemy z polami wiedzy (`docs/solutions/`), indeks reguł generowany skryptem (`docs/learned-patterns.md`) i żywy słownik domenowy (`docs/CONCEPTS.md`).
-- **Reguły kodowania** i katalog anty-patternów AI (`.claude/rules/coding-rules.md`).
+- **Reguły kodu** (`.claude/rules/coding-rules.md`) — ładowane przy pracy z plikami kodu i SQL.
 
 ---
 
@@ -402,7 +402,7 @@ go builderowi, dossier niesie go reviewerom, fix autopilota i tura poprawek `/de
 
 ## Reguły, hooki, szablony
 
-- **`.claude/rules/coding-rules.md`** — 14 sekcji reguł (rozmiar plików, testowanie, error handling, type safety, bezpieczeństwo, performance, async/race, architektura) + **katalog 10 anty-patternów AI**. Ładowane do każdej sesji.
+- **`.claude/rules/coding-rules.md`** — reguły kodu w sekcjach po temacie (reguły pilnowane przez ESLint, rozmiar i struktura, testowanie, organizacja, obsługa błędów, zakres zmian i bramki, nazewnictwo, zależności, bezpieczeństwo, type safety, performance, async i React, architektura). Frontmatter `paths:` (kod i SQL): plik wchodzi do kontekstu, gdy sesja albo agent czyta lub edytuje taki plik narzędziem Read/Edit; builder i fix czytają go jawnie przed pracą.
 - **`.claude/scripts/wiedza/`** — wiedza projektu: walidacja pól solutions, indeks `docs/learned-patterns.md`, wycinek reguł, konwersja
   starego pliku reguł (CLI `wiedza.mjs`); patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd).
 - **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi). `error-handling-reminder.sh` wyłącza się
@@ -467,7 +467,7 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 - **E2E to prawdziwa przeglądarka**, nie symulacja — wymaga żywego dev servera (`localhost:5173`). Bez `.env.e2e` weryfikacje E2E → OPERATOR.
 - **Limit cyklu fix = 1** — drugi cykl historycznie naprawiał 0 findingów przy koszcie pełnego re-review. Po fixie commity fixa ogląda **kontrola diffu naprawczego** (P8): jeden agent z listami K-1…K-7 katalogu A (regresja i zmiana kontraktu, bramki bez testu odmowy, listy correctness na diffie fixa, stare nazwy, niezgodne opisy, test P1 czerwony na kodzie sprzed poprawki, zmiany poza zgłoszonym miejscem) i bramkami mechanicznymi P6 na plikach fixa; zakres z hashy commitów fixa, jedna tura poprawek. Pre-skan haiku i targeted verify P1 usunięte.
 - **`compound-refresh` w autopilocie jest scoped** (tylko dotknięta kategoria + CONCEPTS.md) — pełny refresh całej bazy odpalaj osobno, okresowo.
-- **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; używaj `app_metadata` lub tabeli ról (reguła w `coding-rules §9`).
+- **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; rola z tabeli ról albo z `app_metadata` ustawianego po stronie serwera (reguły kodu, sekcja Bezpieczeństwo).
 - **Po każdej zmianie `.claude/workflows/*-wf.js`** odpal smoke-test z `.claude/templates/smoke-autopilot/`.
 - **Skille `dev-*` działają bez argumentów** — argument jest opcjonalnym doprecyzowaniem, nie wymogiem.
 
