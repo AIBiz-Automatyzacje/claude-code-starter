@@ -9,12 +9,14 @@ Użycie (z katalogu analizy):
   python3 skrypty/test_review_p11_cli.py nakladka <et> <wariant>      — .claude wariantu na kopii + odcisk nakładki (do skanu)
   python3 skrypty/test_review_p11_cli.py pula <et> <perm>             — skrypt sędziego ~/test-review/p11/<et>/sedzia-p<perm>.js + mapowanie w ~/test-review/sedzia/
   python3 skrypty/test_review_p11_cli.py skan <et> <krok> <wariant>   — modele, przeciek, N1, kopia bez zmian (kod 2 = STOP, 4 = przeciek)
-  python3 skrypty/test_review_p11_cli.py wynik <et> [<et> …]          — złapania, findingi per oś, koszt → dane/test-review/p11-wynik.{txt,json}"""
+  python3 skrypty/test_review_p11_cli.py wynik [<et> …]              — per faza i po fazach (CI bootstrapem, klucz 2 i szum per oś, koszt);
+                                                                      bez <et> = fazy z wyrokiem sędziego → dane/test-review/p11-wynik.{txt,json}"""
 import glob, json, os, re, subprocess, sys
 
 sys.dont_write_bytecode = True
 import panel_koszt_dane as KD
 import test_review_p11 as P
+import test_review_p11_wynik as W
 import test_review_sesja as T
 import test_review_skan as SK
 
@@ -23,6 +25,8 @@ SZ = os.path.abspath(os.path.join(BASE, '..', '..', '..'))
 TR, P11 = P.TR, P.P11
 OUT = os.path.join(BASE, 'dane', 'test-review')
 REFY = {'stary': 'main', 'nowy': 'popr/P11-reviewerzy'}
+# fazy ślepego testu w kolejności wyniku (6a pkt 62; b26128d = pilot)
+FAZY = ('f-b26128d', 'f-b8374c8', 'f-303ff62', 'f-1de5a4c', 'f-32975a1', 'f-2536643', 'f-46be55a')
 
 
 def _json(p, dane=None):
@@ -142,34 +146,66 @@ def koszt(et, krok, w):
     return {'sesja': (s['koszt'] / 1e6) if s else 0.0, 'agenci': round(sum(role.values()), 3), 'role': {k: round(v, 3) for k, v in sorted(role.items())}}
 
 
+def _ci(r):
+    return '—' if r is None else '%+.1f pkt [%+.1f; %+.1f]' % (r['roznica'], r['ci95'][0], r['ci95'][1])
+
+
+def _po_fazach(dane):
+    fazy = {et: r['zlapania'] for et, r in dane.items()}
+    p = W.podsumowanie(fazy)
+    p['koszt'] = W.koszt(fazy, {et: r['koszt'] for et, r in dane.items()})
+    p['szum_mutantow'] = {w: sum(r['szum_mutantow'][w] for r in dane.values()) for w in P.WARIANTY}
+    L = ['== po fazach (%d): %s; CI 95%% bootstrap po fazach, %d losowan, ziarno %d' % (len(dane), ' '.join(dane), W.N_BOOT, W.ZIARNO_BOOT)]
+    for k in W.KLUCZE:
+        L.append('  %s: %s | nowy − stary szeroko %s, PEŁNE %s' % (k, ' / '.join('%s %d/%d (PEŁNE %d)' % (w, p['sumy'][w][k]['szeroko'], p['sumy'][w][k]['obecne'],
+                 p['sumy'][w][k]['pelne']) for w in P.WARIANTY), _ci(p['roznice'][k]['szeroko']), _ci(p['roznice'][k]['pelne'])))
+    L.append('  klucz2 per os (os wariantu, ktora zlapala): klucze osi | stary | nowy | strata realna | przeniesione na inna os | zysk realny | nowy − stary')
+    for o, t in p['klucz2_osie'].items():
+        L.append('    %-16s %3d | %3d | %3d | %3d | %3d | %3d | %s' % (o, t['klucze'], t['stary'], t['nowy'], t['strata_realna'], t['przeniesione'],
+                 t['zysk_realny'], _ci(t['roznica'])))
+    L.append('  szum poza kluczem (razem/P1+P2) per os:')
+    for w in P.WARIANTY:
+        L.append('    %-5s %s | z mutantow (test-coverage P1/P2) %d' % (w, ', '.join('%s %d/%d' % (o, t['poza_kluczem'], t['p1p2'])
+                 for o, t in p['szum_osie'][w].items()), p['szum_mutantow'][w]))
+    k = p['koszt']
+    for w in P.WARIANTY:
+        L.append('  koszt %-5s znajdowanie %.2f M, na zlapany klucz %s | osie: %s' % (w, k[w]['znajdowanie'], ('%.3f M' % k[w]['na_zlapany_klucz'])
+                 if k[w]['na_zlapany_klucz'] else '—', ', '.join('%s %.2f' % (o, m) for o, m in k[w]['osie'].items())))
+    L.append('  koszt znajdowania nowy vs stary: %+.1f%%' % k['zmiana_procent'])
+    return p, L
+
+
 def wynik(ets):
+    if not ets: ets = [et for et in FAZY if os.path.exists(os.path.join(TR, 'wyniki', et, 'p11-sedzia-p1.json'))]
     dane, L = {}, ['test_review_p11_cli.py wynik — slepy test P11, sedzia p1; szeroko = PEŁNE + CZĘŚCIOWE; koszt zmierzony [M jedn.] bez sesji uruchamiajacej']
     for et in ets:
         sed = _json(os.path.join(TR, 'wyniki', et, 'p11-sedzia-p1.json'))
-        z = P.zlapania(sed, _json(os.path.join(TR, 'sedzia', '%s-p11-p1-mapowanie.json' % et)))
-        r = {'zlapania': z, 'koszt': {w: koszt(et, 'p11', w) for w in P.WARIANTY}, 'koszt_sedziego': koszt(et, 'p11-sedzia-p1', 'S'), 'findingi': {}}
+        mp = _json(os.path.join(TR, 'sedzia', '%s-p11-p1-mapowanie.json' % et))
+        z = P.zlapania(sed, mp)
+        wyniki = {w: _json(os.path.join(TR, 'wyniki', et, 'p11-%s.json' % w)).get('findings') or [] for w in P.WARIANTY}
+        r = {'zlapania': z, 'koszt': {w: koszt(et, 'p11', w) for w in P.WARIANTY}, 'koszt_sedziego': koszt(et, 'p11-sedzia-p1', 'S'), 'findingi': {},
+             'szum_mutantow': W.szum_mutantow(sed, mp, wyniki)}
         L.append('== %s' % et)
         for w in P.WARIANTY:
-            fs = _json(os.path.join(TR, 'wyniki', et, 'p11-%s.json' % w)).get('findings') or []
             per_os = {}
-            for f in fs:
+            for f in wyniki[w]:
                 t = per_os.setdefault(f.get('_zrodlo') or '?', {'razem': 0, 'p1p2': 0})
                 t['razem'] += 1; t['p1p2'] += f.get('severity') in ('P1', 'P2')
             r['findingi'][w] = per_os
             k1, k2, kw = z[w]['klucz1'], z[w]['klucz2'], r['koszt'][w]['agenci']
             zl = k1['szeroko'] + k2['szeroko']
-            L.append('  %-5s klucz1 %d/%d (PEŁNE %d) | klucz2 %d/%d (PEŁNE %d) | szum %d (P1/P2 %d) | koszt %.2f M, na zlapany klucz %s' % (
+            L.append('  %-5s klucz1 %d/%d (PEŁNE %d) | klucz2 %d/%d (PEŁNE %d) | szum %d (P1/P2 %d, z mutantow %d) | koszt %.2f M, na zlapany klucz %s' % (
                 w, k1['szeroko'], k1['obecne'], k1['pelne'], k2['szeroko'], k2['obecne'], k2['pelne'], z[w]['szum']['poza_kluczem'],
-                z[w]['szum']['p1p2'], kw, ('%.2f M' % (kw / zl)) if zl else '—'))
+                z[w]['szum']['p1p2'], r['szum_mutantow'][w], kw, ('%.2f M' % (kw / zl)) if zl else '—'))
             L.append('        findingi per os (razem/P1+P2): %s' % ', '.join('%s %d/%d' % (o, v['razem'], v['p1p2']) for o, v in sorted(per_os.items())))
             L.append('        osie, ktore zlapaly: klucz1 %s | klucz2 %s' % (z[w]['osie_klucz1'], z[w]['osie_klucz2']))
         for k in ('klucz1', 'klucz2'): L.append('  pary %s: %s' % (k, {p: v for p, v in z['pary'][k].items()}))
         L.append('  sedzia %.2f M' % r['koszt_sedziego']['agenci'])
         dane[et] = r
-    _json(os.path.join(OUT, 'p11-wynik.json'), dane)
-    with open(os.path.join(OUT, 'p11-wynik.txt'), 'w') as f: f.write('\n'.join(L) + '\n')
-    print('\n'.join(L))
-
+    p, Lp = _po_fazach(dane)
+    _json(os.path.join(OUT, 'p11-wynik.json'), {'fazy': dane, 'po_fazach': p})
+    with open(os.path.join(OUT, 'p11-wynik.txt'), 'w') as f: f.write('\n'.join(L + Lp) + '\n')
+    print('\n'.join(L + Lp))
 
 if __name__ == '__main__':
     a = sys.argv[1:]

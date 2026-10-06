@@ -114,10 +114,12 @@ def pula_sedziego(klucze, wyniki, et, perm):
 
 def zlapania(sedzia, mapowanie):
     """Złapania per wariant po wyroku sędziego (definicje jak TEST-REVIEW-WYNIK: tylko K obecne = TAK; „szeroko” = PEŁNE + CZĘŚCIOWE, miara główna),
-    osobno klucz 1 (zysk) i klucz 2 (strata); osie wariantu, które złapały klucz; pary do odczytu strat; szum = F bez dopasowania POZA_KLUCZEM."""
+    osobno klucz 1 (zysk) i klucz 2 (strata); osie wariantu, które złapały klucz (sumy i per klucz — do strat per oś po fazach); pary do odczytu
+    strat; szum = F bez dopasowania POZA_KLUCZEM, razem i per oś."""
     z = {w: {'klucz1': {'obecne': 0, 'pelne': 0, 'szeroko': 0}, 'klucz2': {'obecne': 0, 'pelne': 0, 'szeroko': 0},
-             'osie_klucz1': {}, 'osie_klucz2': {}, 'szum': {'poza_kluczem': 0, 'p1p2': 0}} for w in WARIANTY}
+             'osie_klucz1': {}, 'osie_klucz2': {}, 'szum': {'poza_kluczem': 0, 'p1p2': 0}, 'szum_osie': {}} for w in WARIANTY}
     z['pary'] = {k: {'tylko_stary': [], 'tylko_nowy': [], 'oba': []} for k in ('klucz1', 'klucz2')}
+    z['klucze'] = {}
     for k in sedzia['klucze']:
         zr = mapowanie['K'][k['id']]['zrodlo']
         if k['obecny'] != 'TAK': continue
@@ -133,13 +135,15 @@ def zlapania(sedzia, mapowanie):
             if w not in lapie: continue
             t['szeroko'] += 1; t['pelne'] += lapie[w]['pelne']
             for o in lapie[w]['osie']: z[w]['osie_' + zr][o] = z[w]['osie_' + zr].get(o, 0) + 1
+        z['klucze'][k['id']] = dict(zrodlo=zr, **{w: sorted(lapie[w]['osie']) if w in lapie else None for w in WARIANTY})
         para = 'oba' if len(lapie) == 2 else ('tylko_' + next(iter(lapie))) if lapie else None
         if para: z['pary'][zr][para].append(k['id'])
     for b in sedzia.get('bez_dopasowania', []):
         if b['kategoria'] != 'POZA_KLUCZEM': continue
         f = mapowanie['F'][b['f']]
-        z[f['wariant']]['szum']['poza_kluczem'] += 1
-        z[f['wariant']]['szum']['p1p2'] += f.get('waga') in ('P1', 'P2')
+        for t in (z[f['wariant']]['szum'], z[f['wariant']]['szum_osie'].setdefault(f.get('os') or '?', {'poza_kluczem': 0, 'p1p2': 0})):
+            t['poza_kluczem'] += 1
+            t['p1p2'] += f.get('waga') in ('P1', 'P2')
     return z
 
 

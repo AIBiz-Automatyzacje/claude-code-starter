@@ -1,6 +1,324 @@
 {
- "f-b26128d": {
-  "zlapania": {
+ "fazy": {
+  "f-b26128d": {
+   "zlapania": {
+    "stary": {
+     "klucz1": {
+      "obecne": 5,
+      "pelne": 2,
+      "szeroko": 2
+     },
+     "klucz2": {
+      "obecne": 7,
+      "pelne": 5,
+      "szeroko": 6
+     },
+     "osie_klucz1": {
+      "code-quality": 1,
+      "test-coverage": 1
+     },
+     "osie_klucz2": {
+      "correctness": 1,
+      "test-coverage": 2,
+      "spec-compliance": 1,
+      "security": 2
+     },
+     "szum": {
+      "poza_kluczem": 18,
+      "p1p2": 4
+     },
+     "szum_osie": {
+      "security": {
+       "poza_kluczem": 4,
+       "p1p2": 1
+      },
+      "performance": {
+       "poza_kluczem": 3,
+       "p1p2": 0
+      },
+      "code-quality": {
+       "poza_kluczem": 4,
+       "p1p2": 0
+      },
+      "test-coverage": {
+       "poza_kluczem": 5,
+       "p1p2": 2
+      },
+      "correctness": {
+       "poza_kluczem": 1,
+       "p1p2": 0
+      },
+      "spec-compliance": {
+       "poza_kluczem": 1,
+       "p1p2": 1
+      }
+     }
+    },
+    "nowy": {
+     "klucz1": {
+      "obecne": 5,
+      "pelne": 2,
+      "szeroko": 3
+     },
+     "klucz2": {
+      "obecne": 7,
+      "pelne": 6,
+      "szeroko": 6
+     },
+     "osie_klucz1": {
+      "correctness": 1,
+      "test-coverage": 2
+     },
+     "osie_klucz2": {
+      "test-coverage": 3,
+      "performance": 1,
+      "code-quality": 1,
+      "security": 1
+     },
+     "szum": {
+      "poza_kluczem": 21,
+      "p1p2": 10
+     },
+     "szum_osie": {
+      "code-quality": {
+       "poza_kluczem": 7,
+       "p1p2": 2
+      },
+      "test-coverage": {
+       "poza_kluczem": 8,
+       "p1p2": 6
+      },
+      "correctness": {
+       "poza_kluczem": 2,
+       "p1p2": 0
+      },
+      "security": {
+       "poza_kluczem": 2,
+       "p1p2": 1
+      },
+      "performance": {
+       "poza_kluczem": 2,
+       "p1p2": 1
+      }
+     }
+    },
+    "pary": {
+     "klucz1": {
+      "tylko_stary": [],
+      "tylko_nowy": [
+       "K4"
+      ],
+      "oba": [
+       "K3",
+       "K11"
+      ]
+     },
+     "klucz2": {
+      "tylko_stary": [
+       "K2"
+      ],
+      "tylko_nowy": [
+       "K8"
+      ],
+      "oba": [
+       "K6",
+       "K7",
+       "K9",
+       "K10",
+       "K12"
+      ]
+     }
+    },
+    "klucze": {
+     "K2": {
+      "zrodlo": "klucz2",
+      "stary": [
+       "correctness"
+      ],
+      "nowy": null
+     },
+     "K3": {
+      "zrodlo": "klucz1",
+      "stary": [
+       "code-quality"
+      ],
+      "nowy": [
+       "correctness"
+      ]
+     },
+     "K4": {
+      "zrodlo": "klucz1",
+      "stary": null,
+      "nowy": [
+       "test-coverage"
+      ]
+     },
+     "K5": {
+      "zrodlo": "klucz1",
+      "stary": null,
+      "nowy": null
+     },
+     "K6": {
+      "zrodlo": "klucz2",
+      "stary": [
+       "test-coverage"
+      ],
+      "nowy": [
+       "test-coverage"
+      ]
+     },
+     "K7": {
+      "zrodlo": "klucz2",
+      "stary": [
+       "test-coverage"
+      ],
+      "nowy": [
+       "test-coverage"
+      ]
+     },
+     "K8": {
+      "zrodlo": "klucz2",
+      "stary": null,
+      "nowy": [
+       "performance"
+      ]
+     },
+     "K9": {
+      "zrodlo": "klucz2",
+      "stary": [
+       "spec-compliance"
+      ],
+      "nowy": [
+       "code-quality"
+      ]
+     },
+     "K10": {
+      "zrodlo": "klucz2",
+      "stary": [
+       "security"
+      ],
+      "nowy": [
+       "security"
+      ]
+     },
+     "K11": {
+      "zrodlo": "klucz1",
+      "stary": [
+       "test-coverage"
+      ],
+      "nowy": [
+       "test-coverage"
+      ]
+     },
+     "K12": {
+      "zrodlo": "klucz2",
+      "stary": [
+       "security"
+      ],
+      "nowy": [
+       "test-coverage"
+      ]
+     },
+     "K13": {
+      "zrodlo": "klucz1",
+      "stary": null,
+      "nowy": null
+     }
+    }
+   },
+   "koszt": {
+    "stary": {
+     "sesja": 0.0742903,
+     "agenci": 1.844,
+     "role": {
+      "dedup:semantyczny": 0.07,
+      "review:code-quality": 0.19,
+      "review:correctness": 0.35,
+      "review:performance": 0.158,
+      "review:security": 0.39,
+      "review:spec-compliance": 0.287,
+      "review:test-coverage": 0.398
+     }
+    },
+    "nowy": {
+     "sesja": 0.04891565,
+     "agenci": 1.546,
+     "role": {
+      "dedup:semantyczny": 0.115,
+      "review:code-quality": 0.2,
+      "review:correctness": 0.364,
+      "review:performance": 0.163,
+      "review:security": 0.311,
+      "review:spec-compliance": 0.191,
+      "review:test-coverage": 0.2
+     }
+    }
+   },
+   "koszt_sedziego": {
+    "sesja": 0.04850975,
+    "agenci": 0.135,
+    "role": {
+     "sedzia:f-b26128d:p11-p1[medium]": 0.135
+    }
+   },
+   "findingi": {
+    "stary": {
+     "security": {
+      "razem": 6,
+      "p1p2": 3
+     },
+     "performance": {
+      "razem": 4,
+      "p1p2": 0
+     },
+     "code-quality": {
+      "razem": 6,
+      "p1p2": 2
+     },
+     "correctness": {
+      "razem": 2,
+      "p1p2": 1
+     },
+     "spec-compliance": {
+      "razem": 2,
+      "p1p2": 2
+     },
+     "test-coverage": {
+      "razem": 8,
+      "p1p2": 4
+     }
+    },
+    "nowy": {
+     "security": {
+      "razem": 3,
+      "p1p2": 2
+     },
+     "performance": {
+      "razem": 3,
+      "p1p2": 2
+     },
+     "code-quality": {
+      "razem": 10,
+      "p1p2": 5
+     },
+     "correctness": {
+      "razem": 3,
+      "p1p2": 1
+     },
+     "test-coverage": {
+      "razem": 13,
+      "p1p2": 11
+     }
+    }
+   },
+   "szum_mutantow": {
+    "stary": 1,
+    "nowy": 3
+   }
+  }
+ },
+ "po_fazach": {
+  "sumy": {
    "stary": {
     "klucz1": {
      "obecne": 5,
@@ -11,20 +329,6 @@
      "obecne": 7,
      "pelne": 5,
      "szeroko": 6
-    },
-    "osie_klucz1": {
-     "code-quality": 1,
-     "test-coverage": 1
-    },
-    "osie_klucz2": {
-     "correctness": 1,
-     "test-coverage": 2,
-     "spec-compliance": 1,
-     "security": 2
-    },
-    "szum": {
-     "poza_kluczem": 18,
-     "p1p2": 4
     }
    },
    "nowy": {
@@ -37,134 +341,225 @@
      "obecne": 7,
      "pelne": 6,
      "szeroko": 6
+    }
+   }
+  },
+  "roznice": {
+   "klucz1": {
+    "szeroko": {
+     "roznica": 20.0,
+     "ci95": [
+      20.0,
+      20.0
+     ],
+     "fazy": 1
     },
-    "osie_klucz1": {
-     "correctness": 1,
-     "test-coverage": 2
-    },
-    "osie_klucz2": {
-     "test-coverage": 3,
-     "performance": 1,
-     "code-quality": 1,
-     "security": 1
-    },
-    "szum": {
-     "poza_kluczem": 21,
-     "p1p2": 10
+    "pelne": {
+     "roznica": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "fazy": 1
     }
    },
-   "pary": {
-    "klucz1": {
-     "tylko_stary": [],
-     "tylko_nowy": [
-      "K4"
+   "klucz2": {
+    "szeroko": {
+     "roznica": 0.0,
+     "ci95": [
+      0.0,
+      0.0
      ],
-     "oba": [
-      "K3",
-      "K11"
-     ]
+     "fazy": 1
     },
-    "klucz2": {
-     "tylko_stary": [
-      "K2"
+    "pelne": {
+     "roznica": 14.3,
+     "ci95": [
+      14.3,
+      14.3
      ],
-     "tylko_nowy": [
-      "K8"
+     "fazy": 1
+    }
+   }
+  },
+  "klucz2_osie": {
+   "code-quality": {
+    "klucze": 1,
+    "stary": 0,
+    "nowy": 1,
+    "strata_realna": 0,
+    "przeniesione": 0,
+    "zysk_realny": 0,
+    "roznica": {
+     "roznica": 100.0,
+     "ci95": [
+      100.0,
+      100.0
      ],
-     "oba": [
-      "K6",
-      "K7",
-      "K9",
-      "K10",
-      "K12"
-     ]
+     "fazy": 1
+    }
+   },
+   "correctness": {
+    "klucze": 1,
+    "stary": 1,
+    "nowy": 0,
+    "strata_realna": 1,
+    "przeniesione": 0,
+    "zysk_realny": 0,
+    "roznica": {
+     "roznica": -100.0,
+     "ci95": [
+      -100.0,
+      -100.0
+     ],
+     "fazy": 1
+    }
+   },
+   "performance": {
+    "klucze": 1,
+    "stary": 0,
+    "nowy": 1,
+    "strata_realna": 0,
+    "przeniesione": 0,
+    "zysk_realny": 1,
+    "roznica": {
+     "roznica": 100.0,
+     "ci95": [
+      100.0,
+      100.0
+     ],
+     "fazy": 1
+    }
+   },
+   "security": {
+    "klucze": 2,
+    "stary": 2,
+    "nowy": 1,
+    "strata_realna": 0,
+    "przeniesione": 1,
+    "zysk_realny": 0,
+    "roznica": {
+     "roznica": -50.0,
+     "ci95": [
+      -50.0,
+      -50.0
+     ],
+     "fazy": 1
+    }
+   },
+   "spec-compliance": {
+    "klucze": 1,
+    "stary": 1,
+    "nowy": 0,
+    "strata_realna": 0,
+    "przeniesione": 1,
+    "zysk_realny": 0,
+    "roznica": {
+     "roznica": -100.0,
+     "ci95": [
+      -100.0,
+      -100.0
+     ],
+     "fazy": 1
+    }
+   },
+   "test-coverage": {
+    "klucze": 3,
+    "stary": 2,
+    "nowy": 3,
+    "strata_realna": 0,
+    "przeniesione": 0,
+    "zysk_realny": 0,
+    "roznica": {
+     "roznica": 33.3,
+     "ci95": [
+      33.3,
+      33.3
+     ],
+     "fazy": 1
+    }
+   }
+  },
+  "szum_osie": {
+   "stary": {
+    "code-quality": {
+     "poza_kluczem": 4,
+     "p1p2": 0
+    },
+    "correctness": {
+     "poza_kluczem": 1,
+     "p1p2": 0
+    },
+    "performance": {
+     "poza_kluczem": 3,
+     "p1p2": 0
+    },
+    "security": {
+     "poza_kluczem": 4,
+     "p1p2": 1
+    },
+    "spec-compliance": {
+     "poza_kluczem": 1,
+     "p1p2": 1
+    },
+    "test-coverage": {
+     "poza_kluczem": 5,
+     "p1p2": 2
+    }
+   },
+   "nowy": {
+    "code-quality": {
+     "poza_kluczem": 7,
+     "p1p2": 2
+    },
+    "correctness": {
+     "poza_kluczem": 2,
+     "p1p2": 0
+    },
+    "performance": {
+     "poza_kluczem": 2,
+     "p1p2": 1
+    },
+    "security": {
+     "poza_kluczem": 2,
+     "p1p2": 1
+    },
+    "test-coverage": {
+     "poza_kluczem": 8,
+     "p1p2": 6
     }
    }
   },
   "koszt": {
    "stary": {
-    "sesja": 0.0742903,
-    "agenci": 1.844,
-    "role": {
-     "dedup:semantyczny": 0.07,
-     "review:code-quality": 0.19,
-     "review:correctness": 0.35,
-     "review:performance": 0.158,
-     "review:security": 0.39,
-     "review:spec-compliance": 0.287,
-     "review:test-coverage": 0.398
-    }
+    "znajdowanie": 1.844,
+    "osie": {
+     "code-quality": 0.19,
+     "correctness": 0.35,
+     "performance": 0.158,
+     "security": 0.39,
+     "spec-compliance": 0.287,
+     "test-coverage": 0.398
+    },
+    "na_zlapany_klucz": 0.231
    },
    "nowy": {
-    "sesja": 0.04891565,
-    "agenci": 1.546,
-    "role": {
-     "dedup:semantyczny": 0.115,
-     "review:code-quality": 0.2,
-     "review:correctness": 0.364,
-     "review:performance": 0.163,
-     "review:security": 0.311,
-     "review:spec-compliance": 0.191,
-     "review:test-coverage": 0.2
-    }
-   }
-  },
-  "koszt_sedziego": {
-   "sesja": 0.04850975,
-   "agenci": 0.135,
-   "role": {
-    "sedzia:f-b26128d:p11-p1[medium]": 0.135
-   }
-  },
-  "findingi": {
-   "stary": {
-    "security": {
-     "razem": 6,
-     "p1p2": 3
+    "znajdowanie": 1.546,
+    "osie": {
+     "code-quality": 0.2,
+     "correctness": 0.364,
+     "performance": 0.163,
+     "security": 0.311,
+     "spec-compliance": 0.191,
+     "test-coverage": 0.2
     },
-    "performance": {
-     "razem": 4,
-     "p1p2": 0
-    },
-    "code-quality": {
-     "razem": 6,
-     "p1p2": 2
-    },
-    "correctness": {
-     "razem": 2,
-     "p1p2": 1
-    },
-    "spec-compliance": {
-     "razem": 2,
-     "p1p2": 2
-    },
-    "test-coverage": {
-     "razem": 8,
-     "p1p2": 4
-    }
+    "na_zlapany_klucz": 0.172
    },
-   "nowy": {
-    "security": {
-     "razem": 3,
-     "p1p2": 2
-    },
-    "performance": {
-     "razem": 3,
-     "p1p2": 2
-    },
-    "code-quality": {
-     "razem": 10,
-     "p1p2": 5
-    },
-    "correctness": {
-     "razem": 3,
-     "p1p2": 1
-    },
-    "test-coverage": {
-     "razem": 13,
-     "p1p2": 11
-    }
-   }
+   "zmiana_procent": -16.2
+  },
+  "szum_mutantow": {
+   "stary": 1,
+   "nowy": 3
   }
  }
 }

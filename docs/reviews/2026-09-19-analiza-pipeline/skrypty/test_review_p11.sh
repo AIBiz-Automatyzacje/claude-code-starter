@@ -7,7 +7,8 @@
 #   test_review_p11.sh przygotuj <et>   — zero agentów: .claude wariantów (git archive), bramki (adapter), dossier, skrypty wariantów + kontrola bajtowa
 #   test_review_p11.sh suchy <et>       — zero agentów: suchy bieg obu skryptów (atrapa agent()), obie nakładki na kopii (git status czysty),
 #                                         ustawienia deny i bezpiecznik budżetu każdej sesji
-#   test_review_p11.sh faza <et>        — agenci: oba warianty w kolejności z hasha fazy, sędzia p1, wynik (dane/test-review/p11-wynik.*)
+#   test_review_p11.sh faza <et>        — agenci: oba warianty w kolejności z hasha fazy, sędzia p1, wynik wszystkich faz z wyrokiem
+#                                         (dane/test-review/p11-wynik.*)
 # Wznowienie = to samo polecenie: krok zrobiony (run completed, sesja bez błędu, zero błędów API) jest pomijany, niedokończony — przeniesiony
 # do ~/test-review/odrzucone/ i uruchomiony od nowa (test_review_sesja.py gotowy/odrzuc).
 set -uo pipefail
@@ -53,7 +54,7 @@ faza)
   py test_review_p11_cli.py pula $et 1 || exit 2
   krok $et p11-sedzia-p1 S; k=$?
   (( k == 0 )) || { echo "PRZERWANE: sędzia $et (kod $k)"; exit $k }
-  py test_review_p11_cli.py wynik $et
+  py test_review_p11_cli.py wynik
   ;;
 *) sed -n 2,13p $0; exit 1 ;;
 esac

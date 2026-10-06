@@ -1,11 +1,27 @@
 test_review_p11_cli.py wynik — slepy test P11, sedzia p1; szeroko = PEŁNE + CZĘŚCIOWE; koszt zmierzony [M jedn.] bez sesji uruchamiajacej
 == f-b26128d
-  stary klucz1 2/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 5) | szum 18 (P1/P2 4) | koszt 1.84 M, na zlapany klucz 0.23 M
+  stary klucz1 2/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 5) | szum 18 (P1/P2 4, z mutantow 1) | koszt 1.84 M, na zlapany klucz 0.23 M
         findingi per os (razem/P1+P2): code-quality 6/2, correctness 2/1, performance 4/0, security 6/3, spec-compliance 2/2, test-coverage 8/4
         osie, ktore zlapaly: klucz1 {'code-quality': 1, 'test-coverage': 1} | klucz2 {'correctness': 1, 'test-coverage': 2, 'spec-compliance': 1, 'security': 2}
-  nowy  klucz1 3/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 6) | szum 21 (P1/P2 10) | koszt 1.55 M, na zlapany klucz 0.17 M
+  nowy  klucz1 3/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 6) | szum 21 (P1/P2 10, z mutantow 3) | koszt 1.55 M, na zlapany klucz 0.17 M
         findingi per os (razem/P1+P2): code-quality 10/5, correctness 3/1, performance 3/2, security 3/2, test-coverage 13/11
         osie, ktore zlapaly: klucz1 {'correctness': 1, 'test-coverage': 2} | klucz2 {'test-coverage': 3, 'performance': 1, 'code-quality': 1, 'security': 1}
   pary klucz1: {'tylko_stary': [], 'tylko_nowy': ['K4'], 'oba': ['K3', 'K11']}
   pary klucz2: {'tylko_stary': ['K2'], 'tylko_nowy': ['K8'], 'oba': ['K6', 'K7', 'K9', 'K10', 'K12']}
   sedzia 0.14 M
+== po fazach (1): f-b26128d; CI 95% bootstrap po fazach, 10000 losowan, ziarno 20261006
+  klucz1: stary 2/5 (PEŁNE 2) / nowy 3/5 (PEŁNE 2) | nowy − stary szeroko +20.0 pkt [+20.0; +20.0], PEŁNE +0.0 pkt [+0.0; +0.0]
+  klucz2: stary 6/7 (PEŁNE 5) / nowy 6/7 (PEŁNE 6) | nowy − stary szeroko +0.0 pkt [+0.0; +0.0], PEŁNE +14.3 pkt [+14.3; +14.3]
+  klucz2 per os (os wariantu, ktora zlapala): klucze osi | stary | nowy | strata realna | przeniesione na inna os | zysk realny | nowy − stary
+    code-quality       1 |   0 |   1 |   0 |   0 |   0 | +100.0 pkt [+100.0; +100.0]
+    correctness        1 |   1 |   0 |   1 |   0 |   0 | -100.0 pkt [-100.0; -100.0]
+    performance        1 |   0 |   1 |   0 |   0 |   1 | +100.0 pkt [+100.0; +100.0]
+    security           2 |   2 |   1 |   0 |   1 |   0 | -50.0 pkt [-50.0; -50.0]
+    spec-compliance    1 |   1 |   0 |   0 |   1 |   0 | -100.0 pkt [-100.0; -100.0]
+    test-coverage      3 |   2 |   3 |   0 |   0 |   0 | +33.3 pkt [+33.3; +33.3]
+  szum poza kluczem (razem/P1+P2) per os:
+    stary code-quality 4/0, correctness 1/0, performance 3/0, security 4/1, spec-compliance 1/1, test-coverage 5/2 | z mutantow (test-coverage P1/P2) 1
+    nowy  code-quality 7/2, correctness 2/0, performance 2/1, security 2/1, test-coverage 8/6 | z mutantow (test-coverage P1/P2) 3
+  koszt stary znajdowanie 1.84 M, na zlapany klucz 0.231 M | osie: code-quality 0.19, correctness 0.35, performance 0.16, security 0.39, spec-compliance 0.29, test-coverage 0.40
+  koszt nowy  znajdowanie 1.55 M, na zlapany klucz 0.172 M | osie: code-quality 0.20, correctness 0.36, performance 0.16, security 0.31, spec-compliance 0.19, test-coverage 0.20
+  koszt znajdowania nowy vs stary: -16.2%
