@@ -25,7 +25,8 @@ const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-g
 
 const REGULY_KODU = '.claude/rules/coding-rules.md'
 // `[E2E]`: scenariusze przegladarki i reczne wykonuja tester i operator — builder pisze tylko seed z pola Pliki.
-const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'tsc --noEmit', 'vitest related --run', 'undefined', '[E2E]']
+const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'tsc --noEmit', 'vitest related --run', 'pytaniem „undefined”',
+  'Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator']
 // Tokeny regul kodu, ktorych builder nie przepisuje — odwoluje sie do sekcji po nazwie.
 const TOKENY_REGUL_KODU = ['auth.uid()', 'auth.jwt()', 'strictObject', 'search_path', 'AbortSignal', 'eslint-disable', 'toBeDefined',
   'user_metadata', '`any`']
@@ -96,7 +97,7 @@ const DOBRY = `Wdrazasz jednostke.
 
 - Przeczytaj ${REGULY_KODU}.
 - Uruchom \`tsc --noEmit\` i \`vitest related --run\`; kazdy test przejdz pytaniem „undefined”.
-- Scenariusze \`[E2E]\` wykonuje tester.
+- Scenariusze \`[E2E]\` i \`[Manual]\` wykonują tester i operator.
 - Zwracasz \`status\`, \`pliki\` i \`odchylenia\`.
 `
 
@@ -110,8 +111,8 @@ test('brak odczytu regul, samosprawdzenia, pytania i pola wyniku jest zglaszany'
     `brak w poleceniach: ${REGULY_KODU}`,
     'brak w poleceniach: tsc --noEmit',
     'brak w poleceniach: vitest related --run',
-    'brak w poleceniach: undefined',
-    'brak w poleceniach: [E2E]',
+    'brak w poleceniach: pytaniem „undefined”',
+    'brak w poleceniach: Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator',
     'pole wyniku bez polecenia: pliki',
     'pole wyniku bez polecenia: odchylenia',
   ])

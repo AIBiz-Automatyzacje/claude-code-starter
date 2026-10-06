@@ -326,7 +326,7 @@ import { toast } from 'sonner';
 
 import { templateKeys } from '@/hooks/use-templates';
 import { logger } from '@/lib/logger';
-import type { Template } from '@/schemas/template';
+import type { Template } from '@/schemas/template-schema';
 import { templateService } from '@/services/template-service';
 
 export function useToggleFavoriteInCache() {
@@ -378,7 +378,7 @@ import { useState, useTransition } from 'react';
 import { TemplateGrid } from '@/components/template-grid';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import type { Template } from '@/schemas/template';
+import type { Template } from '@/schemas/template-schema';
 
 function filterTemplates(templates: Template[], query: string): Template[] {
     const normalizedQuery = query.toLowerCase();

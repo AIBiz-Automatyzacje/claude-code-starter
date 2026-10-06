@@ -1,7 +1,9 @@
 // Klasy zapobiegalne dla buildera (PLAN-POPRAWY P12, D10; ETAP1B „dossier klas ucieczek”): zdanie „co robic zamiast”
 // dla klas bledow, ktore review znajduje w kodzie builderow, a ktorych nie pokrywa warstwa stala builderow ani reguly kodu.
 // Dobor po plikach jednostki (globy klasy; zdania o warstwie danych nie trafiaja do czystego IU UI). Tresc zdan jest stala,
-// z compoundow projektu pochodzi kolejnosc: liczba solutions klasy; remis rozstrzyga kolejnosc tabeli (czestosc uwag B w ETAP1B). Wykrywalne klasy maja listy reviewerow
+// z compoundow projektu pochodzi kolejnosc: liczba solutions klasy; przy remisie zdanie o wezszym globie (seed, SQL, serwer)
+// idzie przed szerszym (dane, caly kod), bo szerokie zdania pasuja do kazdego pliku i wypieralyby waskie z limitu; dalej
+// kolejnosc tabeli (czestosc uwag B w ETAP1B). Wykrywalne klasy maja listy reviewerow
 // (P11), mechaniczne — ESLint (P6); tu tylko te, ktorym builder moze zapobiec jednym ruchem przy pisaniu.
 
 import { posix } from 'node:path'
@@ -13,7 +15,8 @@ export const NAGLOWEK = 'Klasy błędów, które review znajduje w takich plikac
 const KOD = ['**/*.{ts,tsx,js,jsx,mjs,cjs}']
 const SQL = ['**/*.sql']
 const SERWER = ['supabase/functions/**', '**/server/**', '**/api/**']
-const DANE = ['supabase/**', '**/lib/**', '**/hooks/**', '**/services/**', ...SERWER]
+const KLIENT_DANYCH = ['**/lib/**', '**/hooks/**', '**/services/**', '**/schemas/**', '**/model/**']
+const DANE = ['supabase/**', ...KLIENT_DANYCH, ...SERWER]
 const SEEDY = ['e2e/seeds/**', '**/seed*.sql']
 
 /** @typedef {{ klasa: string, paths: string[], zdanie: string }} Zdanie */
@@ -27,7 +30,7 @@ export const ZDANIA = [
   { klasa: 'wyscig-i-wspolbieznosc', paths: KOD, zdanie: 'Wartość odczytaną przed `await` sprawdzasz po nim (numer generacji żądania, porównanie z bieżącym id), a zapis zależny od odczytu robisz jednym warunkowym zapytaniem, bo dwa kliknięcia albo dwie karty nadpisują nowszy wynik starszym.' },
   { klasa: 'sciezka-bledu', paths: DANE, zdanie: 'Operację w kilku krokach (dwie tabele, baza i Storage, baza i e-mail) zamykasz w transakcji albo funkcji SQL, a krok zewnętrzny wykonujesz po zapisie z obsługą jego porażki, bo przerwanie w połowie zostawia rozjechane dane.' },
   { klasa: 'wartosc-graniczna', paths: [...SQL, ...DANE], zdanie: 'Długość i zakres każdej generowanej wartości (slug, numer, nazwa z sufiksem) liczysz pod ograniczenie kolumny dla najdłuższego wejścia, a test bierze wartość na granicy (0, 1, limit, limit + 1), bo błąd wychodzi dopiero przy rzadkim wejściu.' },
-  { klasa: 'limit-czasu-i-ponowien', paths: DANE, zdanie: 'Ponowienie ma sufit prób i rosnący odstęp, ponawia tylko błędy przejściowe (sieć, 429, 5xx), a zapis nieidempotentny idzie z kluczem idempotencji, bo pętla bez sufitu wiesza użytkownika, a ponowiony zapis dubluje dane.' },
+  { klasa: 'limit-czasu-i-ponowien', paths: [...KLIENT_DANYCH, ...SERWER], zdanie: 'Ponowienie ma sufit prób i rosnący odstęp, ponawia tylko błędy przejściowe (sieć, 429, 5xx), a zapis nieidempotentny idzie z kluczem idempotencji, bo pętla bez sufitu wiesza użytkownika, a ponowiony zapis dubluje dane.' },
   { klasa: 'zaufanie-danym-klienta', paths: SERWER, zdanie: 'Limit i decyzję dostępu liczysz z danych ustalonych przez serwer (rozmiar faktycznie odczytanego ciała, tożsamość z tokenu, adres od zaufanego proxy), bo `content-length`, `x-forwarded-for` i `origin` ustawia klient.' },
   { klasa: 'migracja-bazy', paths: SQL, zdanie: 'Migrację piszesz tak, żeby przeszła drugi raz (`if not exists`, `create or replace`) i w kolejności zależności, a zmianę blokującą dużą tabelę (indeks, zmiana typu, `not null` z uzupełnieniem) dzielisz na osobne migracje, bo blokada zatrzymuje aplikację.' },
   { klasa: 'seed-e2e', paths: SEEDY, zdanie: 'Seed E2E wstawia każdą kolumnę `not null` bez wartości domyślnej i tylko wartości, które produkcja może wytworzyć (status, relacje, właściciel z konta testowego), bo seed z wartością nieosiągalną testuje stan, którego aplikacja nie zna.' },
@@ -47,7 +50,16 @@ export const POKRYTE = {
   'polkniety-blad': { pliki: REGULY, fraza: 'zostawia ślad dla operatora' },
   'cache-i-zapytania': { pliki: REGULY, fraza: 'Zapytanie do bazy w pętli to N+1' },
   'tekst-ui': { pliki: BUILDERY_UI, fraza: 'obiecujesz w nim tylko to, co robi kod jednostki' },
-  'a11y': { pliki: [...BUILDERY_UI, '.claude/skills/ux-ui-guidelines/SKILL.md'], fraza: 'dostępności' },
+  'a11y': { pliki: BUILDERY_UI, fraza: 'checklistą dostępności skilla ux-ui-guidelines' },
+}
+
+// Szerokosc globu zdania: 0 seed/SQL, 1 serwer, 2 warstwa danych, 3 caly kod.
+/** @param {Zdanie} z @returns {number} */
+function szerokosc(z) {
+  if (z.paths.some((g) => KOD.includes(g))) return 3
+  if (z.paths.some((g) => KLIENT_DANYCH.includes(g))) return 2
+  if (z.paths.some((g) => SERWER.includes(g))) return 1
+  return 0
 }
 
 /** @param {Zdanie} z @returns {string} */
@@ -68,7 +80,7 @@ export function zapobieganie(wpisy, pliki, { pominKlasy = [], limitZn = Number.P
   const dobrane = ZDANIA
     .filter((z) => !pominKlasy.includes(z.klasa) && pliki.some((p) => z.paths.some((g) => posix.matchesGlob(p, g))))
     .map((z, i) => ({ z, i }))
-    .sort((a, b) => (liczba.get(b.z.klasa) ?? 0) - (liczba.get(a.z.klasa) ?? 0) || a.i - b.i)
+    .sort((a, b) => (liczba.get(b.z.klasa) ?? 0) - (liczba.get(a.z.klasa) ?? 0) || szerokosc(a.z) - szerokosc(b.z) || a.i - b.i)
     .map(({ z }) => z)
   /** @type {Zdanie[]} */
   const wziete = []

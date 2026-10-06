@@ -139,7 +139,7 @@ Inne zmiany w v4:
 
 Dane testowe to małe fixture'y w `tests/fixtures/`, wspólne dla handlerów i asercji. Fixture przechodzi przez ten sam schemat Zod co odpowiedź serwera (`itemSchema` z `@/schemas/item`, definicja w [file-organization.md](./file-organization.md#katalog-schemas)), więc identyfikatory to UUID, kategoria pochodzi z listy `ITEM_CATEGORIES`, a `created_at` to data ISO.
 ```typescript
-import type { Item } from '@/schemas/item';
+import type { Item } from '@/schemas/item-schema';
 
 export const FIXTURE_CREATED_AT = new Date(Date.UTC(2025, 0, 15, 10)).toISOString();
 export const NEW_ITEM_ID = '3d9e7b20-6c1f-4a8d-b2e4-5f7a9c1d3e60';
@@ -169,7 +169,7 @@ Handlery odpowiadają kopertą z reguł kodu `{ data, error: { code, message } }
 import { http, HttpResponse } from 'msw';
 
 import { env } from '@/lib/env';
-import { createItemSchema } from '@/schemas/item';
+import { createItemSchema } from '@/schemas/item-schema';
 
 import { FIXTURE_CREATED_AT, ITEMS_FIXTURE, NEW_ITEM_ID } from '../../../tests/fixtures/items';
 

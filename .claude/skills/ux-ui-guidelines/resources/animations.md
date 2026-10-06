@@ -88,7 +88,7 @@ export function App() {
 import { motion, type Variants } from 'motion/react';
 
 import { TemplateCard } from '@/components/template-card';
-import type { Template } from '@/services/template-service';
+import type { Template } from '@/schemas/template-schema';
 
 // Pod <MotionConfig reducedMotion="user">: przy reduced motion elementy wchodzą samym fade, bez y
 const CONTAINER_VARIANTS = {

@@ -23,7 +23,7 @@ src/
 └── test/                   # Setup, utils, mocks (MSW)
 ```
 
-Warstwy idą według sekcji Architektura reguł kodu: strona → komponent → hook (`hooks/use-items.ts`) → serwis (`services/item-service.ts`) → klient (`lib/api.ts`, `lib/supabase.ts`). Kontrakt danych (schemat Zod i typ z niego) leży w `schemas/` (`schemas/item.ts`), bo korzystają z niego serwis, hook, formularz i fixture'y testów; `types/` trzyma tylko typy, które nie mają schematu. Komponent nie woła serwisu, `fetch` ani `supabase` sam — dostaje dane i mutacje z hooka, dzięki czemu cache, obsługa błędu i limit czasu stoją w jednym miejscu. Fixture'y testów jednostkowych leżą w `tests/fixtures/` w korzeniu repo (sekcja Testowanie reguł kodu).
+Warstwy idą według sekcji Architektura reguł kodu: strona → komponent → hook (`hooks/use-items.ts`) → serwis (`services/item-service.ts`) → klient (`lib/api.ts`, `lib/supabase.ts`). Kontrakt danych (schemat Zod i typ z niego) leży w `schemas/` (`schemas/item-schema.ts`), bo korzystają z niego serwis, hook, formularz i fixture'y testów; `types/` trzyma tylko typy, które nie mają schematu. Komponent nie woła serwisu, `fetch` ani `supabase` sam — dostaje dane i mutacje z hooka, dzięki czemu cache, obsługa błędu i limit czasu stoją w jednym miejscu. Fixture'y testów jednostkowych leżą w `tests/fixtures/` w korzeniu repo (sekcja Testowanie reguł kodu).
 
 ---
 
@@ -668,7 +668,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { logger } from '@/lib/logger';
-import type { CreateItemInput } from '@/schemas/item';
+import type { CreateItemInput } from '@/schemas/item-schema';
 import { itemService, type ItemFilters } from '@/services/item-service';
 
 const ITEMS_STALE_TIME_MS = 5 * 60 * 1000;
@@ -956,7 +956,7 @@ Serwis to warstwa między hookiem a klientem: składa ścieżkę i query, wybier
 import { z } from 'zod';
 
 import { request } from '@/lib/api';
-import { itemSchema, type CreateItemInput, type Item } from '@/schemas/item';
+import { itemSchema, type CreateItemInput, type Item } from '@/schemas/item-schema';
 
 export interface ItemFilters {
     category?: string;
@@ -999,12 +999,12 @@ Serwis to jeden obiekt z metodami (`itemService.list`, `.get`, `.create`, `.remo
 ## Katalog schemas/
 ```
 schemas/
-├── item.ts             # Schemat Zod kontraktu Item i typy z z.infer
+├── item-schema.ts      # Schemat Zod kontraktu Item i typy z z.infer
 ├── contact-schema.ts   # Schemat formularza kontaktowego (forms.md)
-└── template-schema.ts  # Schemat formularza szablonu (forms.md)
+└── template-schema.ts  # Schemat formularza i kontrakt Template (forms.md)
 ```
 ```typescript
-// schemas/item.ts
+// schemas/item-schema.ts
 import { z } from 'zod';
 
 const MAX_ITEM_NAME_LENGTH = 200;
@@ -1125,7 +1125,7 @@ Nazwy plików w kebab-case (sekcja Nazewnictwo reguł kodu); identyfikatory w ko
 | Hooki | kebab-case + `use-` | `use-items.ts` | `useItems` |
 | Serwisy | kebab-case + `-service` | `item-service.ts` | `itemService` |
 | Utilities | kebab-case | `format-date.ts` | `formatDate` |
-| Schematy | kebab-case | `item.ts`, `contact-schema.ts` | `itemSchema`, `Item` |
+| Schematy | kebab-case z sufiksem `-schema` | `item-schema.ts`, `contact-schema.ts` | `itemSchema`, `Item` |
 | Typy | kebab-case | `database.types.ts` | `User` |
 | Stałe | kebab-case | `routes.ts` | `ROUTES` |
 | Testy | nazwa pliku + `.test` | `item-card.test.tsx` | — |
@@ -1168,7 +1168,7 @@ import { cn } from '@/lib/utils';
 | `@/components` | `src/components` | `import { Button } from '@/components/ui/button'` |
 | `@/hooks` | `src/hooks` | `import { useTemplates } from '@/hooks/use-templates'` |
 | `@/services` | `src/services` | `import { itemService } from '@/services/item-service'` (tylko w hookach) |
-| `@/schemas` | `src/schemas` | `import { itemSchema, type Item } from '@/schemas/item'` |
+| `@/schemas` | `src/schemas` | `import { itemSchema, type Item } from '@/schemas/item-schema'` |
 | `@/lib` | `src/lib` | `import { cn } from '@/lib/utils'` |
 | `@/test` | `src/test` | `import { render } from '@/test/utils'` |
 

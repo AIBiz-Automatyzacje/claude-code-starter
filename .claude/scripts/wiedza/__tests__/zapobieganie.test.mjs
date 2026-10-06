@@ -50,12 +50,18 @@ test('dobor po plikach: komponent dostaje tylko klasy kodu UI, migracja — klas
   assert.deepEqual(zapobieganie([], ['README.md']), { tresc: '', zn: 0, klasy: [], pominiete: 0 })
 })
 
-test('kolejnosc: najpierw klasy z najwieksza liczba solutions w projekcie, remis — kolejnosc tabeli', () => {
+test('kolejnosc: najpierw klasy z najwieksza liczba solutions w projekcie, remis — wezszy glob przed szerszym', () => {
   const wpisy = [wpis('wartosc-graniczna', 'a.md'), wpis('wartosc-graniczna', 'b.md'), wpis('pii-i-sekrety', 'c.md')]
   const { klasy } = zapobieganie(wpisy, ['supabase/functions/oferta/index.ts', 'supabase/migrations/1.sql'])
-  assert.deepEqual(klasy.slice(0, 2), ['wartosc-graniczna', 'pii-i-sekrety'])
-  const reszta = ZDANIA.map((z) => z.klasa).filter((k) => klasy.slice(2).includes(k))
-  assert.deepEqual(klasy.slice(2), reszta)
+  assert.deepEqual(klasy.slice(0, 3), ['wartosc-graniczna', 'pii-i-sekrety', 'migracja-bazy'])
+  assert.ok(klasy.indexOf('zaufanie-danym-klienta') < klasy.indexOf('sciezka-bledu'), klasy.join(', '))
+})
+
+test('limit nie wypiera zdan waskich: Edge Function z migracja dostaje zdania serwera i migracji, schemat — klasy danych', () => {
+  const { klasy } = zapobieganie([], ['supabase/functions/oferta/index.ts', 'supabase/migrations/1.sql', 'src/services/oferta.ts'], { limitZn: 2000 })
+  assert.ok(klasy.includes('zaufanie-danym-klienta') && klasy.includes('migracja-bazy'), klasy.join(', '))
+  assert.ok(zapobieganie([], ['src/schemas/oferta-schema.ts']).klasy.includes('wartosc-graniczna'))
+  assert.ok(!zapobieganie([], ['supabase/migrations/1.sql']).klasy.includes('limit-czasu-i-ponowien'))
 })
 
 test('klasa z regula projektu w wycinku wypada — regula jest konkretniejsza', () => {

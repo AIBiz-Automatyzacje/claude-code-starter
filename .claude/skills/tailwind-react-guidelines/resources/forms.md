@@ -247,6 +247,18 @@ export const TEMPLATE_DEFAULT_VALUES: TemplateFormInput = {
 };
 ```
 
+Ten sam moduł trzyma kontrakt szablonu zwracanego przez API — jedno źródło typu `Template` dla serwisu, hooków i komponentów:
+
+```typescript
+// src/schemas/template-schema.ts — ciąg dalszy
+export const templateEntitySchema = templateSchema.extend({
+    id: z.uuid(),
+    isFavorite: z.boolean(),
+});
+
+export type Template = z.output<typeof templateEntitySchema>;
+```
+
 ### Walidacja Warunkowa
 
 Pola zależne od wyboru opisujesz unią dyskryminowaną, nie zestawem pól opcjonalnych z `refine`: typ wymaga numeru karty tylko przy `method: 'card'`, kod po zawężeniu `method` widzi właściwe pole, a błąd trafia do niego bez ręcznego `path`.

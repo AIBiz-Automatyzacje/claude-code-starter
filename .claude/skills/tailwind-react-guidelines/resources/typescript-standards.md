@@ -361,47 +361,18 @@ function handleClick() {
 
 ## Runtime Validation z Zod
 
-TypeScript sprawdza typy tylko w compile time. Dla danych zewnętrznych użyj Zod. Kontrakt `Item` ma jedną definicję — `src/schemas/item.ts` w [file-organization.md](./file-organization.md#katalog-schemas) — i ten plik ją powtarza bez zmian: schemat jest zmienną, więc nazwa `itemSchema` w `camelCase`, a `z.strictObject` odrzuca pola spoza kontraktu.
+TypeScript sprawdza typy tylko w compile time. Dla danych zewnętrznych użyj Zod. Kontrakt `Item` ma jedną definicję — `src/schemas/item-schema.ts`, a serwis `itemService` (`list`, `get`, `create`, `remove`) — `src/services/item-service.ts`; oba w [file-organization.md](./file-organization.md#katalog-schemas). Tu tylko to, co z nich wynika dla typów: schemat jest zmienną (`itemSchema`, `camelCase`), typ bierzesz z `z.infer`, a `z.strictObject` odrzuca pola spoza kontraktu. Serwis przekazuje schemat do `request()`, który ma limit czasu, parsuje kopertę `{ data, error: { code, message } }` i przy `error` rzuca `ApiError(code, message, status)` — schemat jest jedynym miejscem, które zna kształt `Item`.
 ```typescript
-// src/schemas/item.ts
-import { z } from 'zod';
+import { itemService } from '@/services/item-service';
+import type { Item } from '@/schemas/item-schema';
 
-const MAX_ITEM_NAME_LENGTH = 200;
-
-export const ITEM_CATEGORIES = ['marketing', 'sprzedaz', 'hr'] as const;
-
-// Schema
-export const itemSchema = z.strictObject({
-    id: z.uuid(),
-    name: z.string().min(1).max(MAX_ITEM_NAME_LENGTH),
-    category: z.enum(ITEM_CATEGORIES),
-    created_at: z.iso.datetime(),
-});
-
-// Typ ze schema
-export type Item = z.infer<typeof itemSchema>;
-
-// Dane do utworzenia elementu — id i created_at nadaje serwer
-export const createItemSchema = itemSchema.omit({ id: true, created_at: true });
-export type CreateItemInput = z.infer<typeof createItemSchema>;
-```
-```typescript
-// src/services/item-service.ts — fragment; pełny serwis (list, get, create, remove) w file-organization.md
-import { request } from '@/lib/api';
-import { itemSchema, type Item } from '@/schemas/item';
-
-// Walidacja odpowiedzi: request() z file-organization.md ma limit czasu (AbortSignal.timeout),
-// parsuje kopertę { data, error: { code, message } } przez z.strictObject, dane — podanym schematem,
-// a przy error rzuca ApiError(code, message, status). Schemat jest jedynym miejscem, które zna kształt Item.
-export const itemService = {
-    get: (id: string, signal?: AbortSignal): Promise<Item> =>
-        request(`/items/${encodeURIComponent(id)}`, itemSchema, { signal }),
-};
+// Wynik ma typ Item, bo request() zwraca dane sparsowane itemSchema
+const item: Item = await itemService.get(id, signal);
 ```
 ```typescript
 // Safe parse — gdy zła wartość ma inną ścieżkę niż wyjątek (payload: unknown)
 import { logger } from '@/lib/logger';
-import { itemSchema } from '@/schemas/item';
+import { itemSchema } from '@/schemas/item-schema';
 
 const result = itemSchema.safeParse(payload);
 if (result.success) {

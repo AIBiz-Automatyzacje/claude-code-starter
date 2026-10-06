@@ -187,6 +187,48 @@ const Header = memo(() => ...); // Prawdopodobnie niepotrzebne
 Warstwy z reguł kodu: komponent → hook → serwis → klient. Komponent woła hook z `src/hooks/`, hook owija `useQuery` / `useMutation` i woła serwis z `src/services/`, a serwis — wspólny klient z limitem czasu i walidacją Zod ([file-organization.md](./file-organization.md)). Klucze zapytań pochodzą z jednej fabryki, żeby invalidacja trafiała w te same klucze, które zapisało pobieranie.
 
 Ten plik jest miejscem definicji zapytań szablonów w module `src/hooks/use-templates.ts`: `templateKeys`, `TEMPLATES_STALE_TIME_MS`, `templateListOptions(filters)`, `useTemplates(filters = {})`, `useSuspenseTemplates(filters = {})` i `useTemplate(id)`. Ten sam moduł dostaje mutacje `useCreateTemplate` i `useUpdateTemplate` z [forms.md](./forms.md#integracja-z-react-query) oraz `useDeleteTemplate` z [loading-and-error-states.md](./loading-and-error-states.md#hook-danych-i-fabryka-kluczy); `useToggleFavorite` ma własny plik `src/hooks/use-toggle-favorite.ts` (loading-and-error-states.md, sekcja Optimistic Updates). Inne pliki importują te hooki, zamiast definiować je od nowa.
+Serwis szablonów (wzór jak `itemService` w [file-organization.md](./file-organization.md)); kontrakt `Template` leży w `src/schemas/template-schema.ts` ([forms.md](./forms.md#złożone-schema)):
+```typescript
+// src/services/template-service.ts
+import { z } from 'zod';
+
+import { request } from '@/lib/api';
+import { templateEntitySchema, type Template, type TemplateValues } from '@/schemas/template-schema';
+
+export interface TemplateFilters {
+    category?: Template['category'];
+    search?: string;
+}
+
+const templateListSchema = z.array(templateEntitySchema);
+
+// URLSearchParams koduje wartości (spacja, &, = w wyszukiwanej frazie)
+function toQueryString(filters: TemplateFilters): string {
+    const params = new URLSearchParams();
+    if (filters.category) params.set('category', filters.category);
+    if (filters.search) params.set('q', filters.search);
+    const query = params.toString();
+    return query ? `?${query}` : '';
+}
+
+const templatePath = (id: string): string => `/templates/${encodeURIComponent(id)}`;
+
+export const templateService = {
+    list: (filters: TemplateFilters, signal?: AbortSignal): Promise<Template[]> =>
+        request(`/templates${toQueryString(filters)}`, templateListSchema, { signal }),
+    get: (id: string, signal?: AbortSignal): Promise<Template> =>
+        request(templatePath(id), templateEntitySchema, { signal }),
+    create: (values: TemplateValues): Promise<Template> =>
+        request('/templates', templateEntitySchema, { method: 'POST', body: JSON.stringify(values) }),
+    update: (id: string, values: TemplateValues): Promise<Template> =>
+        request(templatePath(id), templateEntitySchema, { method: 'PUT', body: JSON.stringify(values) }),
+    toggleFavorite: (id: string): Promise<Template> =>
+        request(`${templatePath(id)}/favorite`, templateEntitySchema, { method: 'POST' }),
+    remove: (id: string): Promise<null> =>
+        request(templatePath(id), z.null(), { method: 'DELETE' }),
+};
+```
+Metody `save` i `restore` z [loading-and-error-states.md](./loading-and-error-states.md) mają ten sam kształt co `update` (PUT) i `create` (POST na `/templates/:id/restore`).
 ```typescript
 // src/hooks/use-templates.ts — fabryka kluczy na początku pliku hooków szablonów
 import type { TemplateFilters } from '@/services/template-service';
@@ -318,7 +360,7 @@ Konfiguracja zapytania używana w kilku miejscach (wariant zwykły, Suspense, pr
 // src/hooks/use-templates.ts (cd.) — szczegóły szablonu
 import { queryOptions, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 
-import type { Template } from '@/schemas/template';
+import type { Template } from '@/schemas/template-schema';
 import { templateService } from '@/services/template-service';
 
 function templateDetailOptions(id: string) {
