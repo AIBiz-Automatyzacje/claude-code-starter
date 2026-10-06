@@ -62,7 +62,8 @@ Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po dro
 - Każdy rozwiązany problem ląduje w `docs/solutions/` - następnym razem Claude sięga
   po gotowe rozwiązanie zamiast kombinować od zera.
 - Każdy wpis dostaje pola wiedzy (klasa błędu, reguła, wzorce plików, szczebel). Reguły trafiają do indeksu
-  `docs/learned-patterns.md`, a builder i reviewer dostają wycinek reguł dla plików, nad którymi pracują.
+  `docs/learned-patterns.md`, a builder i reviewer dostają wycinek reguł dla plików, nad którymi pracują. Builder dostaje
+  w tym samym bloku zdania „co robić zamiast” dla klas błędów, które review najczęściej znajduje w takich plikach.
   Lekcje, które da się wymusić typem albo lintem, wracają do Ciebie jako propozycje bramek.
 - Pojęcia z Twojej domeny trafiają do słownika `docs/CONCEPTS.md` - dzięki temu Claude
   nie "naprawia" rzeczy, które celowo działają nietypowo.
@@ -269,7 +270,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 - **Stop conditions:** P1 po cyklu fix (limit fix = 1 — drugi cykl naprawiał 0 findingów przy koszcie pełnego re-review; test naprawy P1 musi padać na kodzie sprzed poprawki — sprawdza to kontrola diffu fixa, lista K-6), błąd buildu/testów, git conflict.
 - **Myk:** walidację brancha robisz **w sesji PRZED** odpaleniem — workflow nie pyta o branch switch.
 
-**`dev-docs-execute-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Dla IU dotykających UI doklejany mandatory kontekst designerski. Na końcu: System-Wide Test Check, checkboxy, incremental commits.
+**`dev-docs-execute-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Planner dokleja każdemu IU reguły projektu i zdania klas zapobiegalnych dla jego plików (`wiedza.mjs wycinek --zapobieganie`), a IU dotykającym UI — kontekst designerski (przy makietach wariant buildera `-figma`). Na końcu: System-Wide Test Check, checkboxy, incremental commits.
 
 **`dev-docs-review-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — code review fazy. **Dossier fazy ze skryptu** (mapa zmian + flagi warstw + diff + wycinki planu, zadań i reguł wiedzy dla plików fazy + wynik bramek, żeby reviewerzy nie czytali ośmiokrotnie tych samych dokumentów) → **do 7 reviewerów równolegle** (Security, Performance, Code-quality, Correctness, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 niezależnych sceptyków z konsensusem 2/3, P2 = jeden sceptyk na grupę findingów z tego samego pliku**) → scribe zapisuje raport + `## Przebieg review` + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
 - **Routing domenowy:** `security`, `test-coverage`, `code-quality` i `correctness` — gdy faza ma choć jeden plik kodu; `spec-compliance` — także w fazie bez kodu, gdy dotyka tekstów UI (katalogi tłumaczeń, HTML) albo dokumentu prawnego; `performance` — gdy dotyka warstwy danych albo ma ≥5 plików kodu. **W praktyce faza z kodem dostaje pełny skład** — pomijany bywa tylko tester E2E; routing przycina wyłącznie fazy czysto dokumentacyjne — te nie dostają żadnego reviewera kodu (audyt 2026-09-06: w 10 fazach dwóch projektów z kodem jedynym pominiętym był `e2e`). Osobne reviewery architektury, prostoty i typów nie istnieją od 2026-09-03 — to trzy osie wewnątrz `code-quality` (konsolidacja B12). Tester przeglądarki odpala się po **policzonej pracy**, nie po warstwie: potrzebuje niezaznaczonego checkboxa `[E2E]` albo makiet `figma_screens` do visual diffu, więc faza UI bez ani jednego scenariusza go nie budzi. Gdy packager nie zwróci flag → pełny skład (fail-open). Pominięcie E2E blokuje odznaczanie browserowych checkboxów `Weryfikacja:` (idą do Operator checklist).
@@ -299,9 +300,9 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 | Skill | Zakres |
 |-------|--------|
-| **`tailwind-react-guidelines`** | React 19 (`use`, Actions, `useActionState`, `useOptimistic`, ref jako prop), TypeScript 5.7+, Tailwind v4 (CSS-first `@theme`), shadcn/ui, React Query, RHF + **Zod v4**, testy (Vitest + RTL + MSW), lazy/Suspense, Sonner. |
+| **`tailwind-react-guidelines`** | React 19 (`use`, Actions, `useActionState`, `useOptimistic`, ref jako prop), TypeScript, Tailwind v4 (CSS-first `@theme`), shadcn/ui, React Query, RHF + **Zod v4**, testy (Vitest + RTL + MSW), lazy/Suspense, Sonner. `SKILL.md` = checklisty i zasady stałe (memoizacja według React Compilera); przykłady w `resources/` zgodne z regułami kodu (warstwy z serwisem, klient API z limitem czasu i kopertą, testy przez MSW). |
 | **`supabase-dev-guidelines`** | Auth (OAuth + email, PKCE przez `onAuthStateChange`), PostgreSQL, RLS (`(SELECT auth.uid())`), SECURITY DEFINER (`search_path=''`, EXECUTE odebrane od `anon`), Edge Functions (Deno, Stripe v22), Realtime, Supavisor pooling. `SKILL.md` = checklisty i zasady stałe; przykłady kodu i przegląd tematów w `resources/klient-i-przeglad.md`. |
-| **`ux-ui-guidelines`** | Design system (OKLCH), dostępność (WCAG 2.2, ARIA, natywny `inert`), responsive (container queries), animacje (Motion, View Transitions, `interpolate-size`), interface polish. |
+| **`ux-ui-guidelines`** | Design system (OKLCH), dostępność (WCAG 2.2, ARIA, natywny `inert`), responsive (container queries), animacje (Motion, View Transitions, `interpolate-size`), interface polish. `SKILL.md` = checklista dostępności (według niej builder UI przechodzi każdy element interaktywny), checklisty komponentu i formularza, zasady z powodem; palety, skale i przykłady w `resources/`. |
 | **`security`** | `SKILL.md` = reguły implementatora (RLS per operacja z `with check`, tożsamość ze zweryfikowanego tokenu, klucz sekretny, fail-closed, webhooki, SSRF, XSS, testy odmowy) — tę warstwę dostają buildery. Protokół audytu (6 obszarów, wagi, raport) w `resources/protokol-audytu.md`; **OWASP Top 10:2025**, CSP dla Vite, `getClaims` + asymetryczne JWT w pozostałych `resources/`. |
 | **`sentry-integration`** | Error tracking + performance dla React + Edge Functions (Deno 2.x): `beforeSend`, source maps (`@sentry/vite-plugin`), release tracking, `await captureError`. |
 
@@ -324,9 +325,11 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 | Agent | Rola |
 |-------|------|
-| `feature-builder-ui` | Warstwa UI: komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność. Czyta kontekst designerski (SPEC/DESIGN/Figma) + `docs/CONCEPTS.md`. |
+| `feature-builder-ui` | Warstwa UI: komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność. Czyta kontekst designerski (SPEC/DESIGN/Figma) + `docs/CONCEPTS.md`; bez makiety unika nazwanych stylów „szablonowych”; dane tylko przez hook albo serwis. |
 | `feature-builder-data` | Warstwa danych: zapytania Supabase, RLS, migracje SQL, walidacja Zod, Edge Functions, autoryzacja. |
-| `feature-builder-fullstack` | Cross-layer (UI + dane naraz): formularze z auth, full-page z fetchem, CRUD end-to-end. |
+| `feature-builder-fullstack` | Cross-layer (UI + dane naraz): formularze z auth, full-page z fetchem, CRUD end-to-end. Reguły danych jak builder danych, reguły UI jak builder UI. |
+
+Buildery mają wspólny szkielet pliku roli (test `szkielet-buildera.test.mjs`): jeden blok poleceń, jawny odczyt `.claude/rules/coding-rules.md`, zakres = pliki, scenariusze `[Unit]` i pole Weryfikacja jednostki (`[E2E]`/`[Manual]` wykonują tester i operator), samosprawdzenie tylko na plikach jednostki (`tsc --noEmit -p`, `vitest related --run`, ESLint), pytanie „undefined” przed zostawieniem testu, wynik wyłącznie w schemacie `BUILD_RESULT` (braki środowiska w `odchylenia`, nie w statusie). Warianty `-figma` mają tę samą treść plus narzędzia Figma MCP.
 
 ### Reviewerzy (wołani przez `dev-docs-review-wf` — do 7 równolegle)
 
@@ -371,7 +374,8 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 Trzy poziomy: **solution** w `docs/solutions/` z polami wiedzy we frontmatterze (`klasa`, `regula`, `paths`, `waga`, `szczebel`,
 `szczebel_powod`, `zrodlo`, `ucieczki`) → **indeks** `docs/learned-patterns.md` (jeden wiersz na regułę, generuje go
 `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz`) → **wycinek** do 2000 zn dla plików jednostki albo fazy (planner wkleja
-go builderowi, dossier niesie go reviewerom, fix autopilota i tura poprawek `/dev-pr` liczą go dla poprawianych plików). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
+go builderowi razem ze zdaniami klas zapobiegalnych — `--zapobieganie`, kolejność według liczby solutions klasy w projekcie —
+dossier niesie go reviewerom, fix autopilota i tura poprawek `/dev-pr` liczą go dla poprawianych plików). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
 
 - **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
   `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja. Do wdrożenia bramki lekcja działa
@@ -403,7 +407,7 @@ go builderowi, dossier niesie go reviewerom, fix autopilota i tura poprawek `/de
 ## Reguły, hooki, szablony
 
 - **`.claude/rules/coding-rules.md`** — reguły kodu w sekcjach po temacie (reguły pilnowane przez ESLint, rozmiar i struktura, testowanie, organizacja, obsługa błędów, zakres zmian i bramki, nazewnictwo, zależności, bezpieczeństwo, type safety, performance, async i React, architektura). Frontmatter `paths:` (kod i SQL): plik wchodzi do kontekstu, gdy sesja albo agent czyta lub edytuje taki plik narzędziem Read/Edit; builder i fix czytają go jawnie przed pracą.
-- **`.claude/scripts/wiedza/`** — wiedza projektu: walidacja pól solutions, indeks `docs/learned-patterns.md`, wycinek reguł, konwersja
+- **`.claude/scripts/wiedza/`** — wiedza projektu: walidacja pól solutions, indeks `docs/learned-patterns.md`, wycinek reguł, zdania klas zapobiegalnych dla buildera (`zapobieganie.mjs`), konwersja
   starego pliku reguł (CLI `wiedza.mjs`); patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd).
 - **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi). `error-handling-reminder.sh` wyłącza się
   w projekcie z `eslint.config.*` z szablonu (tam to samo łapie ESLint w bramkach).
