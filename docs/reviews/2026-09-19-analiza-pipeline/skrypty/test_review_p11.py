@@ -147,5 +147,23 @@ def zlapania(sedzia, mapowanie):
     return z
 
 
+RE_SEGMENT = re.compile(r'\s*(?:&&|\|\||;|\|)\s*')
+RE_GIT_ZAPIS_DRZEWA = re.compile(r'^git\s+(stash|restore|checkout\s+--|checkout\s+\S+\s+--)')
+RE_EDYCJA_W_MIEJSCU = re.compile(r'^(sed|perl)\s+.*-p?i\b')
+
+
+def zapis_drzewa(cmd):
+    """Czy komenda Bash agenta zmienia pliki projektu w drzewie roboczym (ręczny mutant reviewera: edycja w miejscu poza /tmp, przywrócenie
+    kopii z /tmp, git stash/restore/checkout --). W prawdziwym projekcie to zapis w drzewie operatora, które równolegle czytają inni reviewerzy."""
+    for seg in RE_SEGMENT.split(cmd.strip()):
+        slowa = seg.split()
+        if not slowa: continue
+        if RE_GIT_ZAPIS_DRZEWA.match(seg): return True
+        cel = slowa[-1].strip('"\'')
+        if RE_EDYCJA_W_MIEJSCU.match(seg) and not cel.startswith('/tmp/'): return True
+        if slowa[0] == 'cp' and len(slowa) >= 3 and not cel.startswith('/tmp/'): return True
+    return False
+
+
 if __name__ == '__main__':
     raise SystemExit(__doc__)

@@ -146,6 +146,25 @@ def koszt(et, krok, w):
     return {'sesja': (s['koszt'] / 1e6) if s else 0.0, 'agenci': round(sum(role.values()), 3), 'role': {k: round(v, 3) for k, v in sorted(role.items())}}
 
 
+def zapisy_drzewa(et, w):
+    """Agenci kroku p11 wariantu, którzy zmieniali pliki projektu w drzewie roboczym Bashem (ręczne mutanty, 6a pkt 65 d): {etykieta: liczba komend}."""
+    meta = _json(os.path.join(TR, 'meta', et + '.json'))
+    kat, sid = os.path.join(T.PROJ, T.slug(meta['kopia'])), T.id_sesji(et, 'p11', w)
+    wynik = {}
+    for rd in glob.glob(os.path.join(kat, sid, 'subagents', 'workflows', '*')):
+        lab = SK.etykiety(rd)
+        for jf in glob.glob(os.path.join(rd, 'agent-*.jsonl')):
+            n = 0
+            for line in open(jf, errors='ignore'):
+                if '"Bash"' not in line: continue
+                try: m = json.loads(line).get('message') or {}
+                except ValueError: continue
+                n += sum(1 for b in m.get('content') or [] if isinstance(b, dict) and b.get('name') == 'Bash'
+                         and P.zapis_drzewa((b.get('input') or {}).get('command', '')))
+            if n: e = lab.get(os.path.basename(jf)[6:-6], '?'); wynik[e] = wynik.get(e, 0) + n
+    return wynik
+
+
 def _ci(r):
     return '—' if r is None else '%+.1f pkt [%+.1f; %+.1f]' % (r['roznica'], r['ci95'][0], r['ci95'][1])
 
@@ -172,6 +191,9 @@ def _po_fazach(dane):
         L.append('  koszt %-5s znajdowanie %.2f M, na zlapany klucz %s | osie: %s' % (w, k[w]['znajdowanie'], ('%.3f M' % k[w]['na_zlapany_klucz'])
                  if k[w]['na_zlapany_klucz'] else '—', ', '.join('%s %.2f' % (o, m) for o, m in k[w]['osie'].items())))
     L.append('  koszt znajdowania nowy vs stary: %+.1f%%' % k['zmiana_procent'])
+    p['zapisy_drzewa'] = {w: {et: r['zapisy_drzewa'][w] for et, r in dane.items() if r['zapisy_drzewa'][w]} for w in P.WARIANTY}
+    for w in P.WARIANTY:
+        L.append('  zapis w drzewie roboczym Bashem %-5s %s' % (w, p['zapisy_drzewa'][w] or 'brak'))
     return p, L
 
 
@@ -184,7 +206,7 @@ def wynik(ets):
         z = P.zlapania(sed, mp)
         wyniki = {w: _json(os.path.join(TR, 'wyniki', et, 'p11-%s.json' % w)).get('findings') or [] for w in P.WARIANTY}
         r = {'zlapania': z, 'koszt': {w: koszt(et, 'p11', w) for w in P.WARIANTY}, 'koszt_sedziego': koszt(et, 'p11-sedzia-p1', 'S'), 'findingi': {},
-             'szum_mutantow': W.szum_mutantow(sed, mp, wyniki)}
+             'szum_mutantow': W.szum_mutantow(sed, mp, wyniki), 'zapisy_drzewa': {w: zapisy_drzewa(et, w) for w in P.WARIANTY}}
         L.append('== %s' % et)
         for w in P.WARIANTY:
             per_os = {}
@@ -199,6 +221,7 @@ def wynik(ets):
                 z[w]['szum']['p1p2'], r['szum_mutantow'][w], kw, ('%.2f M' % (kw / zl)) if zl else '—'))
             L.append('        findingi per os (razem/P1+P2): %s' % ', '.join('%s %d/%d' % (o, v['razem'], v['p1p2']) for o, v in sorted(per_os.items())))
             L.append('        osie, ktore zlapaly: klucz1 %s | klucz2 %s' % (z[w]['osie_klucz1'], z[w]['osie_klucz2']))
+            L.append('        zapis w drzewie roboczym Bashem (komendy per agent): %s' % (r['zapisy_drzewa'][w] or 'brak'))
         for k in ('klucz1', 'klucz2'): L.append('  pary %s: %s' % (k, {p: v for p, v in z['pary'][k].items()}))
         L.append('  sedzia %.2f M' % r['koszt_sedziego']['agenci'])
         dane[et] = r
