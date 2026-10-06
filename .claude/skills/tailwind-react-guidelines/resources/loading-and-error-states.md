@@ -140,7 +140,7 @@ function TemplateList() {
 - `data` jest zawsze zdefiniowane na poziomie typów
 - Granice Suspense mogą być współdzielone między komponentami
 
-### ⚠️ Nie używaj useEffect do fetchingu
+### Nie używaj useEffect do fetchingu
 ```typescript
 // ❌ Anty-wzorzec
 useEffect(() => {
@@ -561,7 +561,7 @@ export function SimpleContactForm() {
 
 ## Suspense dla Lazy Components
 
-### ⚠️ Nie używaj early returns dla lazy-loaded
+### Nie używaj early returns dla lazy-loaded
 ```typescript
 // ❌ Błąd - zaburza Suspense
 const LazyDashboard = lazy(() => import('@/pages/dashboard-page')); // strona z default exportem

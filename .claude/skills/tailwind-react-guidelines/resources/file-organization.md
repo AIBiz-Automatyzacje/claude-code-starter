@@ -608,7 +608,7 @@ function RouteErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 Custom hooks dla logiki biznesowej.
 
-### ⚠️ Nie używaj useEffect do data fetching
+### Nie używaj useEffect do data fetching
 
 To **anty-wzorzec** (sekcja Async i React reguł kodu: nowy kod pobierający dane idzie przez TanStack Query):
 ```typescript
@@ -986,7 +986,7 @@ export const ITEMS_PER_PAGE = 20;
 
 ## Barrel Exports (index.ts)
 
-### ⚠️ Używaj z rozwagą
+### Używaj z rozwagą
 ```typescript
 // components/ui/index.ts
 export { Button } from './button';
@@ -1010,7 +1010,7 @@ Barrel files mogą **spowalniać**:
 | Rozmiar projektu | Barrel files |
 |------------------|--------------|
 | Mały (<20 komponentów) | ✅ OK |
-| Średni (20-50) | ⚠️ Tylko dla `ui/` |
+| Średni (20-50) | Tylko dla `ui/` |
 | Duży (>50) | ❌ Bezpośrednie importy |
 ```typescript
 // Dla dużych projektów - bezpośrednie importy
