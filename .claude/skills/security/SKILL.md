@@ -11,9 +11,9 @@ Reguły dla kodu, który piszesz w projekcie React 19 + Supabase + Edge Function
 
 - Tabela w schemacie wystawionym przez API (`public`) dostaje `enable row level security` w tej samej migracji, która ją tworzy, bo między migracjami tabela bez RLS jest czytelna dla każdego z kluczem publicznym.
 - Polityki piszesz osobno dla każdej operacji, której jednostka potrzebuje (`select`, `insert`, `update`, `delete`). Operacja bez polityki jest odmową i taka zostaje, gdy plan jej nie zamawia.
-- `insert` i `update` mają `with check` z tym samym warunkiem własności co `using`, bo bez niego użytkownik zapisze wiersz z cudzym właścicielem albo przepisze istniejący na siebie.
+- `insert` ma `with check` z warunkiem własności, a `with check` w `update` nie jest słabszy niż `using` (bez klauzuli Postgres stosuje `using` do nowej wersji wiersza), bo `with check (true)` albo słabszy warunek pozwala założyć wiersz cudzemu właścicielowi albo oddać mu istniejący.
 - `update` potrzebuje też polityki `select` na te same wiersze — bez niej Postgres nie widzi wiersza i aktualizacja zmienia zero wierszy bez błędu.
-- Kolumnę, której użytkownik nie zmienia sam (rola, status płatności, właściciel), chronisz osobno: `revoke update (kolumna)` dla `authenticated`, trigger albo zmiana tylko przez funkcję — RLS filtruje wiersze, nie kolumny.
+- Kolumnę, której użytkownik nie zmienia sam (rola, status płatności, właściciel), chronisz osobno, bo RLS filtruje wiersze, nie kolumny: `revoke update on <tabela> from authenticated` i `grant update (<kolumny dozwolone>) on <tabela> to authenticated`, trigger albo zmiana tylko przez funkcję. Samo `revoke update (kolumna)` nie działa, gdy rola ma UPDATE na całą tabelę, a Supabase nadaje je domyślnie.
 - Widok nad tabelą z RLS tworzysz z `with (security_invoker = true)`, bo widok domyślnie działa z prawami właściciela i omija RLS.
 - Dynamiczny SQL w funkcji PL/pgSQL składasz przez `format()` z `%I` dla identyfikatorów i `execute ... using` (albo `%L`) dla wartości, bo sklejony tekst w funkcji wołanej przez `.rpc()` to SQL injection mimo parametryzowanego klienta.
 - Bucket Storage z plikami użytkowników jest prywatny, dostęp dają polityki na `storage.objects` (pierwszy segment ścieżki = identyfikator właściciela) i podpisane URL-e z krótkim czasem ważności, bo publiczny bucket udostępnia każdy plik pod przewidywalnym adresem.
@@ -23,9 +23,10 @@ Reguły dla kodu, który piszesz w projekcie React 19 + Supabase + Edge Function
 - Tożsamość wołającego bierzesz ze zweryfikowanego tokenu — `withSupabase({ auth: 'user' })` (`ctx.userClaims`) albo `getClaims()` / `getUser()` — a nie z `getSession()` ani z pola w ciele żądania, bo sesję z klienta i identyfikator w ciele podrobi każdy.
 - Klient z kluczem sekretnym (`ctx.supabaseAdmin`, `service_role`) omija RLS, więc funkcja, która go używa, sprawdza w kodzie własność zasobu i rolę wołającego przed zapytaniem. Gdzie wystarcza klient użytkownika (`ctx.supabase`), używasz jego, bo wtedy RLS jest drugą bramką.
 - Klucz sekretny i `service_role` trzymasz w sekretach Edge Functions; zmienna `VITE_*` trafia do paczki przeglądarki, więc klucz w niej jest publiczny.
-- Funkcja w trybie `auth` innym niż `'user'` (`'publishable'`, `'secret'`, `'none'`) ma w kodzie własną kontrolę dostępu zamówioną w planie (podpis, sekret crona, limit), bo `verify_jwt = false` wyłącza jedyną bramkę platformy.
+- Tryb `auth` dobierasz do wołającego i uzupełniasz tym, czego wrapper nie sprawdza: `'secret'` weryfikuje klucz sekretny, więc ciało sprawdza uprawnienie do zasobu; `'publishable'` przepuszcza każdego z publicznym kluczem, więc funkcja ma limit częstości i nie zwraca cudzych danych; `'none'` nie sprawdza niczego, więc kontrola (podpis webhooka, limit) jest w kodzie funkcji.
 - Błąd sprawdzenia uprawnień (wyjątek, przekroczony limit czasu, brak wiersza roli) kończy się odmową, bo gałąź obsługi błędu, która przepuszcza, daje dostęp przy każdej awarii bazy.
 - Webhook weryfikuje podpis na surowym ciele (`await req.text()`, potem `constructEventAsync` dla Stripe) przed parsowaniem i jakimkolwiek zapisem, bo bez podpisu każdy wyśle zdarzenie „zapłacone”.
+- Schemat Zod wejścia ogranicza każde pole: tekst ma `.max()` zgodne z ograniczeniem kolumny, a format (email, URL, UUID, data) ma walidator formatu, bo schemat przepuszczający dowolny string przenosi błąd do bazy albo do odbiorcy.
 - Żądanie serwera pod adres z wejścia użytkownika (podgląd linku, import z URL, webhook wychodzący) idzie tylko do hostów z listy dozwolonych, po parsowaniu `new URL()` i sprawdzeniu protokołu, bo inaczej funkcja czyta adresy wewnętrzne (SSRF).
 
 ## Dane w odpowiedziach i logach

@@ -244,7 +244,7 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.log_audit_event(TEXT, TEXT, UUID, JSONB) FROM PUBLIC, anon, authenticated;
 
 -- Użycie w innych funkcjach
-PERFORM log_audit_event(
+PERFORM public.log_audit_event(
     'PASSWORD_CHANGED',
     'auth.users',
     auth.uid(),

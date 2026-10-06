@@ -104,3 +104,18 @@ test('dossier bez bazy z plannera: bez --baza (HEAD po commicie dalby pusty diff
   const bezBazy = wf.domknieciePrompt('docs/active/x', 2, [], 'HEAD', PLIK_BRAMEK)
   assert.ok(bezBazy.includes(`node .claude/scripts/dossier/dossier.mjs --sciezka docs/active/x --faza 2 --bramki ${PLIK_BRAMEK}`))
 })
+
+test('domkniecie: odchylenia i nastepne kroki builderow w prompcie i w dzienniku zadania (P12: builder nie ma innego kanalu)', () => {
+  const p = wf.domknieciePrompt('docs/active/x', 2, [
+    { id: 'IU-1', status: 'partial', odchylenia: ['polityka bez testu na bazie'], nastepneKroki: 'indeks na posts.user_id' },
+    { id: 'IU-2', status: 'completed', odchylenia: [], nastepneKroki: null },
+  ], SHA, PLIK_BRAMEK)
+  assert.ok(p.includes('- IU-1: partial (odchylenia: polityka bez testu na bazie) (nastepne kroki: indeks na posts.user_id)'))
+  assert.ok(p.includes('- IU-2: completed\n'))
+  assert.match(p, /Odchylenia i nastepne kroki builderow z listy raportow dopisz do `## Dziennik`/)
+})
+
+test('domkniecie: catch bez sladu naprawiany wg rodzaju bledu — Sentry tylko dla nieoczekiwanego (sentry-integration, zasada 1)', () => {
+  assert.match(prompt, /nieoczekiwany blad — Sentry captureError\/captureException albo re-throw; oczekiwana odmowa \(walidacja, 4xx\) — log bez zdarzenia Sentry/)
+  assert.doesNotMatch(prompt, /bloki catch\s+bez raportowania — dodaj Sentry/)
+})

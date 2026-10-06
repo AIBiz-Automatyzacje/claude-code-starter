@@ -36,6 +36,7 @@ i obsługuje CORS. Ten sam handler działa bez zmian na Cloudflare Workers i Bun
 ```typescript
 // supabase/functions/my-function/index.ts
 import { withSupabase } from 'npm:@supabase/server@^1';
+import { captureError } from '../_shared/sentry.ts';  // helper ze skilla sentry-integration
 
 export default {
     fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
@@ -43,12 +44,15 @@ export default {
             // ctx.userClaims: { id, email, role } z JWT (null przy auth innym niż 'user')
             const result = await processRequest(req, ctx.supabase, ctx.userClaims);
 
-            return Response.json(result);
+            return Response.json({ data: result, error: null });
         } catch (error) {
-            console.error('Function error:', error);
+            await captureError(error, { operation: 'my-function', user_id: ctx.userClaims?.id });
 
-            const message = error instanceof Error ? error.message : 'Internal error';
-            return Response.json({ error: message }, { status: 400 });
+            // koperta błędu z reguł kodu; treść błędu (schemat bazy) zostaje w Sentry
+            return Response.json(
+                { data: null, error: { code: 'INTERNAL', message: 'Operacja nie powiodła się' } },
+                { status: 500 },
+            );
         }
     }),
 };
@@ -171,11 +175,11 @@ export default {
         // ctx.userClaims nie jest null — wrapper odrzucił request bez JWT
         const userId = ctx.userClaims?.id;
         if (!userId) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            return Response.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Brak uwierzytelnienia' } }, { status: 401 });
         }
 
         const result = await processForUser(userId, ctx.supabase);
-        return Response.json(result);
+        return Response.json({ data: result, error: null });
     }),
 };
 ```
@@ -197,7 +201,7 @@ Potrzebne tylko przy `auth: 'none'` z własną logiką (np. token w body) lub po
 const token = req.headers.get('Authorization')?.replace('Bearer ', '') ?? '';
 const { data, error } = await ctx.supabase.auth.getClaims(token);
 if (error || !data) {
-    return Response.json({ error: 'Invalid token' }, { status: 401 });
+    return Response.json({ data: null, error: { code: 'INVALID_TOKEN', message: 'Nieprawidłowy token' } }, { status: 401 });
 }
 const userId = data.claims.sub;
 ```
@@ -225,7 +229,7 @@ export default {
         try {
             const user = ctx.userClaims;
             if (!user) {
-                return Response.json({ error: 'Unauthorized' }, { status: 401 });
+                return Response.json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Brak uwierzytelnienia' } }, { status: 401 });
             }
 
             // Pobierz dane z body
@@ -250,12 +254,11 @@ export default {
                 },
             });
 
-            return Response.json({ sessionId: session.id, url: session.url });
+            return Response.json({ data: { sessionId: session.id, url: session.url }, error: null });
         } catch (error) {
-            console.error('Checkout error:', error);
-
-            const message = error instanceof Error ? error.message : 'Internal error';
-            return Response.json({ error: message }, { status: 400 });
+            // captureError z ../_shared/sentry.ts (skill sentry-integration); treść błędu Stripe zostaje w Sentry
+            await captureError(error, { operation: 'checkout', user_id: ctx.userClaims?.id });
+            return Response.json({ data: null, error: { code: 'CHECKOUT_FAILED', message: 'Nie udało się utworzyć płatności' } }, { status: 500 });
         }
     }),
 };
@@ -360,10 +363,9 @@ export default {
 
         return Response.json({ received: true });
     } catch (error) {
-        console.error('Webhook error:', error);
-
-        const message = error instanceof Error ? error.message : 'Internal error';
-        return Response.json({ error: message }, { status: 400 });
+        // captureError z ../_shared/sentry.ts; 400 każe Stripe ponowić dostarczenie
+        await captureError(error, { operation: 'stripe-webhook' });
+        return Response.json({ data: null, error: { code: 'WEBHOOK_FAILED', message: 'Nie udało się obsłużyć zdarzenia' } }, { status: 400 });
     }
     }),
 };
@@ -534,20 +536,19 @@ export default {
             const body = await req.json();
 
             if (!body.priceId) {
-                return Response.json({ error: 'Missing priceId' }, { status: 400 });
+                return Response.json({ data: null, error: { code: 'VALIDATION', message: 'Brak priceId' } }, { status: 400 });
             }
 
             // Logika...
             const result = await process(body, ctx.supabase);
 
-            return Response.json(result);
+            return Response.json({ data: result, error: null });
         } catch (error) {
-            // Loguj pełny błąd (widoczny w Supabase Dashboard > Logs)
-            console.error('Function error:', error);
+            // Pełny błąd do Sentry (captureError z ../_shared/sentry.ts); 401 dla braku JWT zwraca sam wrapper
+            await captureError(error, { operation: 'my-function', user_id: ctx.userClaims?.id });
 
-            // Zwróć bezpieczną wiadomość (401 dla braku JWT zwraca sam wrapper)
-            const message = error instanceof Error ? error.message : 'Internal error';
-            return Response.json({ error: message }, { status: 500 });
+            // Klient dostaje kopertę bez treści błędu (schemat bazy, szczegóły usług)
+            return Response.json({ data: null, error: { code: 'INTERNAL', message: 'Operacja nie powiodła się' } }, { status: 500 });
         }
     }),
 };

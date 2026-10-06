@@ -30,11 +30,9 @@ Przewodnik pracy z Supabase w aplikacjach Vite SPA: autentykacja, baza danych, p
 ### Nowa tabela
 
 - [ ] Tabela w nowej migracji SQL (`supabase migration new <opis>`)
-- [ ] RLS w tej samej migracji: `ALTER TABLE tablename ENABLE ROW LEVEL SECURITY`
-- [ ] Polityki dla operacji, których potrzebuje plan (SELECT, INSERT, UPDATE, DELETE) — według skilla security i reguł kodu
-- [ ] W politykach UUID z `auth.uid()` (w subquery, jak w regułach kodu), nie email
+- [ ] RLS i polityki w tej samej migracji — według skilla security (operacje, `with check`, kolumny chronione) i reguł kodu (subquery `auth.uid()`, `TO <rola>`)
 - [ ] Indeksy dla kolumn filtrów zapytań i polityk
-- [ ] Typy po migracji: `supabase gen types --lang typescript --local > src/types/database.ts`
+- [ ] Typy po migracji: `supabase gen types --lang typescript --local > src/types/database.types.ts` (albo plik typów, którego projekt już używa)
 - [ ] Funkcje API w `lib/supabase.ts` (albo w module zapytań, którego używa projekt)
 
 ### Edge Function
@@ -42,32 +40,28 @@ Przewodnik pracy z Supabase w aplikacjach Vite SPA: autentykacja, baza danych, p
 - [ ] Katalog `supabase/functions/function-name/`
 - [ ] `export default { fetch: withSupabase({ auth }, handler) }` z `npm:@supabase/server@^1` (nie `Deno.serve()`)
 - [ ] Importy: `npm:@supabase/supabase-js@2`, `npm:stripe@22`
-- [ ] Tryb `auth` per funkcja: `'user'` (JWT), `'secret'` (cron/pg_net), `'publishable'` (przed logowaniem), `'none'` (webhook zewnętrzny)
+- [ ] Tryb `auth` per funkcja: `'user'` (JWT), `'secret'` (cron/pg_net), `'publishable'` (przed logowaniem), `'none'` (webhook zewnętrzny); co uzupełnić w kodzie przy każdym trybie — skill security
 - [ ] `verify_jwt = false` w `supabase/config.toml` dla trybów innych niż `'user'`
 - [ ] CORS załatwia wrapper (`cors: 'disabled'` dla webhooków) — bez `_shared/cors.ts`
-- [ ] Błędy przez `captureError` (skill sentry-integration), bez wrażliwych danych
+- [ ] Błędy przez `captureError` (skill sentry-integration), odpowiedź w kopercie błędu z reguł kodu
 - [ ] Test lokalny: `supabase functions serve`
 - [ ] Deploy (`supabase functions deploy function-name`) na prośbę operatora
 
-### Bezpieczeństwo bazy
+### Baza poza politykami
 
-- [ ] RLS włączony na każdej tabeli w schemacie API
-- [ ] UUID (`auth.uid()`) w politykach, nie email
-- [ ] Audit log bez INSERT policy dla authenticated (wpisy tylko przez triggery i funkcje SECURITY DEFINER)
-- [ ] Każda funkcja SECURITY DEFINER: `SET search_path = ''` (pusty), w pełni kwalifikowane nazwy (`public.tabela`), EXECUTE odebrane od `PUBLIC` i `anon` i nadane roli, która ją woła
+- [ ] Funkcja SECURITY DEFINER według reguł kodu (pusty `search_path`, EXECUTE tylko dla roli, która ją woła); przykłady z REVOKE/GRANT w `resources/security.md`
 - [ ] Email enumeration protection włączone w Dashboard
 
 ---
 
 ## Główne zasady
 
-1. **RLS zawsze włączony** — każda tabela w schemacie API ma RLS, bo bez niego klucz publiczny czyta i zmienia całą tabelę (szczegóły w skillu security).
-2. **UUID w politykach, nie email** — użytkownik zmienia email, a UUID z `auth.uid()` jest niezmienny, więc polityka na emailu po zmianie adresu daje dostęp złej osobie.
-3. **Typy generowane po każdej migracji** — `supabase gen types`, bo kod typuje się z wygenerowanego pliku, a stary plik przepuszcza zapytania do nieistniejących kolumn.
-4. **SECURITY DEFINER ostrożnie** — funkcja działa z prawami właściciela i omija RLS, więc dostaje pusty `search_path`, w pełni kwalifikowane nazwy i EXECUTE tylko dla roli, która ją woła (reguły kodu; uzasadnienie w `resources/security.md`).
-5. **Klucz sekretny tylko w Edge Functions** — klucz `service_role` i sekretny omijają RLS, a wszystko po stronie przeglądarki jest publiczne (skill security).
-6. **Audit log izolowany** — wpisy tylko przez triggery i funkcje SECURITY DEFINER, bo użytkownik z polityką INSERT dopisze sobie dowolną historię.
-7. **Błędy przez logger** — `logger.error()` zamiast `console.error()`, bo logger maskuje dane i wysyła zdarzenie do Sentry (skill sentry-integration).
+1. **UUID w politykach, nie email** — użytkownik zmienia email, a UUID z `auth.uid()` jest niezmienny, więc polityka na emailu po zmianie adresu daje dostęp złej osobie.
+2. **Typy generowane po każdej migracji** — `supabase gen types`, bo kod typuje się z wygenerowanego pliku, a stary plik przepuszcza zapytania do nieistniejących kolumn.
+3. **Audit log izolowany** — bez polityki INSERT dla `authenticated`, wpisy tylko przez triggery i funkcje SECURITY DEFINER, bo użytkownik z polityką INSERT dopisze sobie dowolną historię.
+4. **Nieoczekiwany błąd przez logger** — `logger.error()` zamiast `console.error()`, bo logger wysyła zdarzenie do Sentry z kontekstem; oczekiwaną odmowę zapisuje `logger.info()` bez zdarzenia (skill sentry-integration).
+
+RLS, klucze i autoryzacja w Edge Functions — skill security; funkcje SECURITY DEFINER, polityki z subquery i walidacja wejścia — sekcja Bezpieczeństwo reguł kodu.
 
 ---
 

@@ -121,7 +121,7 @@ z handlerem `fetch` i ZAWSZE owijaj go w `withSupabase` z `npm:@supabase/server@
 sam robi to, co wczesniej pisalismy recznie: odrzuca request bez waznego JWT **przed** wejsciem
 do handlera, buduje klienta `ctx.supabase` (RLS w kontekscie usera) i `ctx.supabaseAdmin`
 (secret key, omija RLS) oraz dodaje naglowki CORS (`cors: 'default'`). Zweryfikowana
-tozsamosc masz w `ctx.userClaims` (`sub` = user_id). `Deno.serve` nadal dziala (legacy), ale
+tozsamosc masz w `ctx.userClaims` (`id` = user_id). `Deno.serve` nadal dziala (legacy), ale
 przestal byc dokumentowanym wzorcem.
 
 ```typescript
@@ -133,8 +133,8 @@ export default {
     // Dla trybu innego niz 'user' ustaw verify_jwt = false w supabase/config.toml.
     fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
         try {
-            // ctx.userClaims.sub to zweryfikowany user_id -- NIE czytaj go z body/naglowkow
-            const userId = ctx.userClaims?.sub;
+            // ctx.userClaims.id to zweryfikowany user_id -- NIE czytaj go z body/naglowkow
+            const userId = ctx.userClaims?.id;
 
             // Wrapper NIE robi za Ciebie: walidacji Zod, autoryzacji zasobu, rate limitu.
             // ctx.supabase respektuje RLS -- to pierwsza linia autoryzacji zasobu.

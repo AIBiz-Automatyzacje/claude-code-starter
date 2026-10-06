@@ -8,7 +8,7 @@ Warstwa referencyjna skilla supabase-dev-guidelines: konfiguracja klienta, podst
 ```typescript
 // lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database';
+import type { Database } from '@/types/database.types';
 
 // Publishable key (sb_publishable_...) — bezpieczny do ujawnienia, podlega RLS.
 // Legacy anon/service_role (JWT) będą wycofane do końca 2026 — nowe projekty
@@ -32,10 +32,10 @@ export type UpdateTables<T extends keyof Database['public']['Tables']> =
 ### Generowanie Typów
 ```bash
 # Z lokalnej bazy
-supabase gen types --lang typescript --local > src/types/database.ts
+supabase gen types --lang typescript --local > src/types/database.types.ts
 
 # Z produkcji (pozycyjne `typescript` to stara forma — używaj --lang)
-supabase gen types --lang typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
+supabase gen types --lang typescript --project-id YOUR_PROJECT_ID > src/types/database.types.ts
 ```
 
 ### Podstawowe Operacje

@@ -4,13 +4,12 @@ Protokół systematycznego audytu bezpieczeństwa projektu React 19 + Supabase +
 
 ## Kiedy Uzywac
 
+Audyt to osobna praca, nie krok implementacji — piszacy kod stosuje reguly z `SKILL.md`, a review fazy ma wlasnego reviewera bezpieczenstwa.
+
 - Review bezpieczenstwa przed deployem na produkcje
-- Dodawanie nowych endpointow (API routes, Edge Functions)
-- Zmiany w autentykacji lub autoryzacji (auth/authz)
-- Tworzenie nowych tabel w bazie danych (RLS policies)
-- Praca z danymi uzytkownikow (PII, GDPR)
-- Pre-deploy audit po wiekszych zmianach
+- Pre-deploy audit po wiekszych zmianach (nowe endpointy, zmiany auth/authz, nowe tabele, dane osobowe)
 - Podejrzenie o luke bezpieczenstwa w istniejacym kodzie
+- Audyt na prosbe operatora
 
 ---
 
@@ -43,6 +42,10 @@ Supabase query builder jest domyslnie parametryzowany, ale sa pulapki.
    - Czy policies uzywaja `(SELECT auth.uid())` (nie `auth.email()`)?
 3. **Sprawdz filtry** -- czy zapytania `.from()` maja odpowiednie `.eq()`, `.match()`
 4. **Sprawdz `.rpc()` z raw SQL** -- szukaj konkatenacji stringow wewnatrz funkcji PostgreSQL
+5. **Sprawdz funkcje SECURITY DEFINER** -- `SET search_path = ''`, EXECUTE odebrane od `PUBLIC` i `anon`, kontrola uprawnien w ciele
+6. **Sprawdz `with check`** w politykach INSERT/UPDATE -- czy nie jest slabszy niz `using`
+7. **Sprawdz kolumny chronione** (rola, status platnosci, wlasciciel) -- czy `authenticated` nie ma UPDATE na cala tabele bez triggera lub `grant update (kolumny)`
+8. **Sprawdz widoki** -- czy widok nad tabela z RLS ma `security_invoker = true`
 
 ### XSS Detection
 
@@ -69,7 +72,7 @@ Zmapuj endpointy vs wymagania autoryzacji.
 | DELETE /posts/:id | nie  | nie           | tak   | tak   |
 
 2. **Zweryfikuj RLS policies** -- czy odzwierciedlaja macierz dostepu
-3. **Edge Functions JWT** -- czy kazda chroniona funkcja wywoluje `supabase.auth.getUser()` / `getClaims()`?
+3. **Edge Functions JWT** -- czy kazda chroniona funkcja ma `withSupabase({ auth: 'user' })` albo wywoluje `supabase.auth.getUser()` / `getClaims()`? Funkcje w trybie `'publishable'` i `'none'` -- czy maja wlasna kontrole (podpis webhooka na surowym ciele, limit)?
 4. **Sprawdz `getSession()` vs `getUser()`** -- `getSession()` nie weryfikuje tokena server-side
 5. **Sprawdz role-based access** -- rola z `app_metadata` lub tabeli rol, nie z `user_metadata` (edytowalne przez usera); brak hardcoded email/ID
 6. **Fail-closed** -- blad sprawdzenia dostepu = odmowa, nigdy przyznanie (A10:2025)
@@ -104,6 +107,8 @@ Pelne mapowanie kategorii na stack React + Supabase + Edge Functions:
 ---
 
 ## Klasyfikacja Findings
+
+Wagi odpowiadaja wagom pipeline'u: Krytyczna i Wysoka = P1, Srednia = P2, Niska = P3.
 
 ```
 Krytyczna -- Exploit mozliwy w produkcji, wymaga natychmiastowej naprawy

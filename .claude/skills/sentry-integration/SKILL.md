@@ -28,9 +28,9 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 
 ## Critical Rules
 
-1. **Nieoczekiwany błąd trafia do Sentry** — wyjątek bez obsługi, awaria usługi albo błąd bazy wysyłasz przez `logger.error` (frontend) albo `captureError` (Edge Functions), bo w produkcji tylko Sentry pokazuje go operatorowi. Oczekiwana odmowa (błąd walidacji, 401, 403, 404, przekroczony limit) zostaje odpowiedzią dla użytkownika bez zdarzenia w Sentry, bo taki szum zakrywa prawdziwe awarie.
-2. **W Edge Functions błąd zapisuje `await captureError(...)`** — helper izoluje kontekst zdarzenia (`withScope`) i robi `flush` przed odpowiedzią; sam log funkcji nie wystarcza, bo nikt go nie przegląda, a izolat może zostać zamrożony, zanim zdarzenie wyjdzie.
-3. **Dane osobowe maskujesz w jednym miejscu** — `beforeSend` i `setSentryUser` zamieniają email na `us***@example.com`, bo zdarzenie widzi każdy z dostępem do projektu Sentry, a RODO wymaga minimalizacji danych.
+1. **Nieoczekiwany błąd trafia do Sentry** — wyjątek bez obsługi, awaria usługi albo błąd bazy wysyłasz przez `logger.error` (frontend) albo `captureError` (Edge Functions), bo w produkcji tylko Sentry pokazuje go operatorowi. Oczekiwana odmowa (błąd walidacji, 401, 403, 404, przekroczony limit) zostaje odpowiedzią z kodem błędu i wpisem `logger.info` (we froncie breadcrumb bez zdarzenia), bo zdarzenia z odmów zakrywają prawdziwe awarie.
+2. **W Edge Functions błąd zapisuje `await captureError(...)`** — helper izoluje kontekst zdarzenia (`withScope`) i robi `flush` przed odpowiedzią; sam log funkcji nie wystarcza, bo nikt go nie przegląda, a izolat może zostać zamrożony, zanim zdarzenie wyjdzie. `console.*` w Edge Functions stoi tylko wewnątrz helperów z `_shared/` (`captureError` i `logger` — wzory w `resources/edge-functions-sentry.md`), bo reguły kodu wyłączają go z reszty kodu produkcyjnego.
+3. **Użytkownika identyfikuje `id`** — `setSentryUser`, `setUser` i kontekst przekazują tylko identyfikator, bez emaila i imienia, a `beforeSend` maskuje email, który trafi do zdarzenia mimo to (`us***@example.com`), bo zdarzenie widzi każdy z dostępem do projektu Sentry, a RODO wymaga minimalizacji danych.
 4. **Kontekst zdarzenia to identyfikatory i nazwy operacji** — hasła, tokeny, klucze API, nagłówek `Authorization` i ciała żądań zostają poza `setContext`, tagami i breadcrumbami, bo Sentry to zewnętrzny serwis i sekret wysłany tam trzeba uznać za ujawniony.
 5. **Poziom odpowiada skutkowi** — `fatal` tylko dla awarii całego systemu, `error` dla nieudanej operacji użytkownika, `warning` dla problemu odwracalnego (tabela Error Levels niżej), bo zawyżony poziom uczy operatora ignorować alerty.
 
@@ -136,14 +136,18 @@ const Sentry = initSentry('function-name');
 export default {
   fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
     try {
-      // logika — ctx.supabase (RLS), ctx.userClaims?.sub = user_id
+      // logika — ctx.supabase (RLS), ctx.userClaims?.id = user_id
     } catch (error) {
       // await captureError: withScope + flush wewnętrznie
       await captureError(error, {
         operation: 'checkout',
-        user_id: ctx.userClaims?.sub  // NIE user_email (GDPR)
+        user_id: ctx.userClaims?.id  // identyfikator, bez emaila (zasada 3)
       });
-      return new Response(JSON.stringify({ error: 'Error' }), { status: 500 });
+      // koperta błędu z reguł kodu; szczegóły tylko w Sentry
+      return Response.json(
+        { data: null, error: { code: 'INTERNAL', message: 'Operacja nie powiodła się' } },
+        { status: 500 },
+      );
     }
   }),
 };
@@ -156,9 +160,8 @@ export default {
 **Kontekst błędu (tagi, kontekst operacji, breadcrumbs):**
 
 ```typescript
-// DOBRZE - bogaty kontekst
+// DOBRZE - bogaty kontekst (użytkownika ustawia setSentryUser przy logowaniu)
 Sentry.withScope((scope) => {
-  scope.setUser({ id: userId, email: maskedEmail });
   scope.setTag('service', 'payments');
   scope.setTag('endpoint', '/checkout');
   scope.setContext('operation', {
@@ -182,10 +185,10 @@ Sentry.captureException(error); // Skąd? Co? Dla kogo?
 
 ## GDPR Compliance
 
-**Maskowanie emaili (zasada 3):**
+**Użytkownik przez `id`, maskowanie emaila jako siatka (zasada 3):**
 
 ```typescript
-// W beforeSend
+// W beforeSend — email, który trafił do zdarzenia mimo zasady 3
 beforeSend(event) {
   if (event.user?.email) {
     event.user.email = event.user.email.replace(/^(.{2}).*(@.*)$/, '$1***$2');
@@ -194,12 +197,9 @@ beforeSend(event) {
 }
 
 // W setSentryUser
-export function setSentryUser(user: { id: string; email: string } | null) {
+export function setSentryUser(user: { id: string } | null) {
   if (user) {
-    Sentry.setUser({
-      id: user.id,
-      email: user.email.replace(/^(.{2}).*(@.*)$/, '$1***$2'),
-    });
+    Sentry.setUser({ id: user.id });
   } else {
     Sentry.setUser(null);
   }
@@ -217,7 +217,7 @@ Przed każdym PR sprawdź:
 - [ ] Dodano znaczący kontekst (tagi, breadcrumbs)
 - [ ] Użyto odpowiedniego poziomu błędu
 - [ ] Brak wrażliwych danych w event (hasła, tokeny)
-- [ ] Email użytkownika jest maskowany
+- [ ] Użytkownik w zdarzeniu tylko przez `id`; `beforeSend` maskuje email
 - [ ] Przetestowano ścieżki błędów
 
 ---

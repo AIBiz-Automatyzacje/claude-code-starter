@@ -64,7 +64,7 @@ import {
 } from '@/lib/supabase';
 
 // OK - oddzielne (gdy tylko typy)
-import type { Database } from '@/types/database';
+import type { Database } from '@/types/database.types';
 
 // NIE - stary styl
 import { FC, ReactNode } from 'react'; // Jeśli to tylko typy

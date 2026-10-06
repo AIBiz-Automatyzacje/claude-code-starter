@@ -90,13 +90,13 @@ supabase db lint --fail-on error        # Fail w CI przy błędach
 
 ```bash
 # Z lokalnej bazy (po supabase start)
-supabase gen types typescript --local > src/types/database.ts
+supabase gen types typescript --local > src/types/database.types.ts
 
 # Z remote (po supabase link)
-supabase gen types typescript --linked > src/types/database.ts
+supabase gen types typescript --linked > src/types/database.types.ts
 
 # Konkretne schematy
-supabase gen types typescript --local --schema public,auth > src/types/database.ts
+supabase gen types typescript --local --schema public,auth > src/types/database.types.ts
 ```
 
 **Workflow:** Po każdej migracji → `supabase gen types` → commit typów.
@@ -234,7 +234,7 @@ supabase link --project-ref <prod-ref>
 # Edytuj schemat w Studio (localhost:54323) lub ręcznie
 supabase db diff -f add_new_feature      # Auto-migration z diffa
 supabase db reset                        # Weryfikacja od zera
-supabase gen types typescript --local > src/types/database.ts
+supabase gen types typescript --local > src/types/database.types.ts
 ```
 
 ### 3. Deploy

@@ -127,6 +127,15 @@ test('protokol audytu i wersaliki w skillu sa zglaszane, kod i nazwy w backticka
     ['NIGDY', 'NIE'])
 })
 
+/** @type {(sciezka: string, faza: number) => string} */
+// eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
+const plannerPrompt = new Function(`${zrodloExecute.slice(zrodloExecute.indexOf('function plannerPrompt('),
+  zrodloExecute.indexOf('\n}', zrodloExecute.indexOf('function plannerPrompt(')) + 2)}\nreturn plannerPrompt`)()
+
+test('planner: jednostki z migracja szeregowo — buildery danych dziela lokalna baze i plik typow', () => {
+  assert.match(plannerPrompt('docs/active/x', 2), /Jesli ktorykolwiek IU ma migracje bazy albo generuje typy bazy — strategia serial/)
+})
+
 test('pola BUILD_RESULT czytane z workflowu', () => {
   assert.deepEqual(polaWyniku(), ['id', 'status', 'pliki', 'odchylenia', 'nastepneKroki', 'pytanie'])
 })

@@ -236,6 +236,8 @@ Faza do wykonania: ${faza}
 4. Wybierz strategie: serial (IU zalezne / wspolne pliki) lub parallel (IU niezalezne).
    Jesli ktorykolwiek IU dodaje nowa zaleznosc (biblioteka, config vite/vitest) — preferuj serial:
    rownolegle zimne vitesty po inwalidacji cache duplikuja ~16-min prace i ryzykuja watchdog-kill.
+   Jesli ktorykolwiek IU ma migracje bazy albo generuje typy bazy — strategia serial: buildery danych stosuja migracje
+   na jednej lokalnej bazie i nadpisuja ten sam plik typow.
 5. Dla kazdego IU zbuduj KOMPLETNY prompt builderowi:
    - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Teksty (verbatim), Wzorce, Scenariusze testowe, Weryfikacja)
    - DOMKNIJ ODWOLANIA DO DECYZJI. Builder pracuje w OSOBNYM kontekscie i nie widzi planu: odwolanie
@@ -322,7 +324,7 @@ function plikBramek(sciezka, faza) {
 
 function domknieciePrompt(sciezka, faza, buildResults, baza, plikBramek) {
   const podsumowanieIU = buildResults
-    .map((b) => `- ${b.id}: ${b.status}${b.odchylenia && b.odchylenia.length ? ` (odchylenia: ${b.odchylenia.join('; ')})` : ''}`)
+    .map((b) => `- ${b.id}: ${b.status}${b.odchylenia && b.odchylenia.length ? ` (odchylenia: ${b.odchylenia.join('; ')})` : ''}${b.nastepneKroki ? ` (nastepne kroki: ${b.nastepneKroki})` : ''}`)
     .join('\n')
   return `Jestes domknieciem fazy implementacji. Buildery skonczyly — zwaliduj i utrwal.
 
@@ -359,7 +361,7 @@ ${podsumowanieIU}
 1b. AUDYT ERROR-HANDLINGU (przed commitem — hooki sesyjne nie widza zmian commitowanych przez workflow):
    przejrzyj git diff tej fazy pod katem: (a) console.log/console.error w kodzie PRODUKCYJNYM
    (testy i skrypty narzedziowe sa OK) — zamien na structured logging lub Sentry; (b) bloki catch
-   bez raportowania — dodaj Sentry captureError/captureException lub re-throw (zakaz pustych catch).
+   bez sladu (zakaz pustych catch): nieoczekiwany blad — Sentry captureError/captureException albo re-throw; oczekiwana odmowa (walidacja, 4xx) — log bez zdarzenia Sentry.
    Znaleziska NAPRAW przed commitem, nie odnotowuj "do zrobienia".
 ${BLOK_DLUGIE_KOMENDY}
 2. Aktualizuj ${sciezka}/*-zadania.md: oznacz ukonczone checkboxy [x] (NIE ruszaj "Weryfikacja:" ANI zadnego
@@ -367,7 +369,7 @@ ${BLOK_DLUGIE_KOMENDY}
    napisanie; odznacza go scribe review po PASS w przegladarce. Napisany seed e2e/seeds/*.sql odhaczasz WYLACZNIE
    w checkboxie implementacyjnym "Stwórz (e2e seed):").
 3. Aktualizuj ${sciezka}/*-kontekst.md: zmiany i decyzje tej fazy dopisz do sekcji \`## Dziennik\`
-   (jedna sekcja, chronologicznie) plus "Ostatnia aktualizacja". NIE zakladaj w tym pliku sekcji
+   (jedna sekcja, chronologicznie) plus "Ostatnia aktualizacja". Odchylenia i nastepne kroki builderow z listy raportow dopisz do \`## Dziennik\` (linia na IU), bo to jedyny zapis pracy, ktora builder zostawil poza jednostka. NIE zakladaj w tym pliku sekcji
    "Decyzje techniczne", "Kluczowe pliki", "Odroczone do implementacji" ani "Wzorce do nasladowania" —
    te tresci zyja w planie technicznym, a kopia w pliku kontekstu rozjezdza sie z nim. Decyzja korygujaca plan idzie
    do planu technicznego w docs/plans/ (punkt 4), a w Dzienniku zostaje jedno zdanie i wskaznik.

@@ -179,6 +179,28 @@ export function captureMessage(
 }
 ```
 
+**Plik: `supabase/functions/_shared/logger.ts`** — log strukturalny bez zdarzenia Sentry, dla oczekiwanych odmów
+(walidacja, 401/403/404, limit). `console.*` stoi tylko tu i w `sentry.ts`, reszta funkcji woła helpery.
+
+```typescript
+type Poziom = 'info' | 'warn';
+
+// Jedna linia JSON z kodem — Supabase Dashboard > Logs filtruje po polach; bez danych osobowych i sekretów
+function wpis(poziom: Poziom, kod: string, komunikat: string, kontekst: Record<string, string | number | null> = {}): void {
+  const linia = JSON.stringify({ poziom, kod, komunikat, ...kontekst, czas: new Date().toISOString() });
+  if (poziom === 'warn') console.warn(linia);
+  else console.log(linia);
+}
+
+export const logger = {
+  info: (kod: string, komunikat: string, kontekst?: Record<string, string | number | null>) => wpis('info', kod, komunikat, kontekst),
+  warn: (kod: string, komunikat: string, kontekst?: Record<string, string | number | null>) => wpis('warn', kod, komunikat, kontekst),
+};
+
+// Użycie: odmowa walidacji — log i koperta błędu, bez captureError
+// logger.info('VALIDATION', 'Brak priceId', { operation: 'checkout' });
+```
+
 ---
 
 ## Integracja w Edge Function

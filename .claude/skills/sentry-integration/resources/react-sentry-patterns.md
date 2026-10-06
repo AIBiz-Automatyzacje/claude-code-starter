@@ -140,14 +140,11 @@ export function initSentry() {
  * Ustawia kontekst użytkownika w Sentry
  * Wywołaj przy login/logout
  */
-export function setSentryUser(user: { id: string; email: string } | null) {
+export function setSentryUser(user: { id: string } | null) {
   if (import.meta.env.PROD) {
     if (user) {
-      Sentry.setUser({
-        id: user.id,
-        // GDPR: Maskowanie emaila
-        email: user.email.replace(/^(.{2}).*(@.*)$/, '$1***$2'),
-      });
+      // RODO: tylko identyfikator; email maskuje beforeSend, gdy trafi do zdarzenia innym kanałem
+      Sentry.setUser({ id: user.id });
     } else {
       Sentry.setUser(null);
     }
@@ -425,10 +422,7 @@ import { setSentryUser } from '@/lib/sentry';
 // W useEffect przy zmianie user
 useEffect(() => {
   if (user) {
-    setSentryUser({
-      id: user.id,
-      email: user.email || '',
-    });
+    setSentryUser({ id: user.id });
   } else {
     setSentryUser(null);
   }
