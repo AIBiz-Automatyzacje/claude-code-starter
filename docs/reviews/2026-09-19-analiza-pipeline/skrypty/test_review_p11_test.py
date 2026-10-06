@@ -192,13 +192,15 @@ class ZapisDrzewa(unittest.TestCase):
     def test_komenda_zmieniajaca_pliki_projektu_w_drzewie_roboczym(self):
         zapisuja = ["cp apps/server/src/routes/events.ts /tmp/e.bak && sed -i '' 's/>/>=/' apps/server/src/routes/events.ts && npx vitest run",
                     'cp /tmp/e.bak apps/server/src/routes/events.ts', "perl -pi -e 's/a/b/' src/a.ts", 'git stash', 'git checkout -- src/a.ts',
-                    'git restore src/a.ts', "cat > apps/server/dist/__probe.mjs <<'X'", 'node -e 1 > apps/server/dist/__probe.mjs']
+                    'git restore src/a.ts', "cat > apps/server/dist/__probe.mjs <<'X'", 'node -e 1 > apps/server/dist/__probe.mjs',
+                    "cat > src/a.ts <<'EOF'\nconst a = 1\nEOF\nnpx vitest run"]
         czytaja = ['cp apps/server/src/a.ts /tmp/a.bak', "sed -n '1,20p' src/a.ts", "sed -i '' 's/a/b/' /tmp/kopia.ts",
                    'npx vitest run apps/server', 'git diff c349bd1 -- src/a.ts', 'cd /k; sed -n 195,250p docs/faza-6-cta-i-webhooki.md',
                    'npx vitest run 2>&1 > /tmp/out.txt', 'ls src > /dev/null', 'echo x 2>/dev/null', 'grep -n "total > max" src/a.ts',
                    'grep -n "routes.post\\|offer.expiresAt > now" src/a.ts; grep -rn "x" src | head',
                    'node -e "const s=1; for (const v of [1]) console.log(v > 0)"', 'cp src/a.ts /private/tmp/claude-501/a.bak',
-                   'S=/private/tmp/claude-501/x/scratchpad; echo a > $S/dist/index.html']
+                   'S=/private/tmp/claude-501/x/scratchpad; echo a > $S/dist/index.html',
+                   "D=/private/tmp/x; cat > $D/t.html <<'EOF'\n<div style=\"a\"><p>x</p></div>\nEOF\nchrome --headless $D/t.html > /dev/null"]
         self.assertEqual([P.zapis_drzewa(c) for c in zapisuja], [True] * len(zapisuja))
         self.assertEqual([P.zapis_drzewa(c) for c in czytaja], [False] * len(czytaja))
 

@@ -148,7 +148,7 @@ def zlapania(sedzia, mapowanie):
 
 
 RE_CUDZYSLOW = re.compile(r'"(?:\\.|[^"\\])*"|\'[^\']*\'')
-RE_SEGMENT = re.compile(r'\s*(?:&&|\|\||;|\|)\s*')
+RE_SEGMENT = re.compile(r'\s*(?:&&|\|\||;|\||\n)\s*')
 RE_GIT_ZAPIS_DRZEWA = re.compile(r'^git\s+(stash|restore|checkout\s+--|checkout\s+\S+\s+--)')
 RE_EDYCJA_W_MIEJSCU = re.compile(r'^(sed|perl)\s(.*\s)?-p?i(\S*)?(\s|$)')
 RE_PRZEKIEROWANIE_PLIKU = re.compile(r'(?<![\d&])>>?\s*([^\s&|;<>]+)')
@@ -156,11 +156,27 @@ RE_PRZEKIEROWANIE_PLIKU = re.compile(r'(?<![\d&])>>?\s*([^\s&|;<>]+)')
 POZA_DRZEWEM = ('/tmp/', '/private/tmp/', '/dev/', '$')
 
 
+RE_HEREDOC = re.compile(r'<<-?\s*[\'"]?(\w+)[\'"]?')
+
+
+def bez_heredoc(cmd):
+    """Komenda bez treści heredoców (zostaje linia z <<) — treść to dane zapisywanego pliku, nie polecenia powłoki."""
+    linie, koniec = [], None
+    for l in cmd.split('\n'):
+        if koniec is not None:
+            if l.strip() == koniec: koniec = None
+            continue
+        linie.append(l)
+        m = RE_HEREDOC.search(l)
+        if m: koniec = m.group(1)
+    return '\n'.join(linie)
+
+
 def zapis_drzewa(cmd):
     """Czy komenda Bash agenta zmienia pliki projektu w drzewie roboczym (ręczny mutant reviewera: edycja w miejscu poza /tmp, przywrócenie
     kopii z /tmp, przekierowanie do pliku poza /tmp, git stash/restore/checkout --). W prawdziwym projekcie to zapis w drzewie operatora, które równolegle czytają inni reviewerzy."""
     # treść w cudzysłowach (wzorce grep z \\|, skrypty node -e, wyrażenia sed) nie jest ani separatorem, ani przekierowaniem
-    for seg in RE_SEGMENT.split(RE_CUDZYSLOW.sub("''", cmd.strip())):
+    for seg in RE_SEGMENT.split(RE_CUDZYSLOW.sub("''", bez_heredoc(cmd.strip()))):
         slowa = seg.split()
         if not slowa: continue
         if RE_GIT_ZAPIS_DRZEWA.match(seg): return True
