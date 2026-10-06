@@ -1,0 +1,11 @@
+test_review_p11_cli.py wynik — slepy test P11, sedzia p1; szeroko = PEŁNE + CZĘŚCIOWE; koszt zmierzony [M jedn.] bez sesji uruchamiajacej
+== f-b26128d
+  stary klucz1 2/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 5) | szum 18 (P1/P2 4) | koszt 1.84 M, na zlapany klucz 0.23 M
+        findingi per os (razem/P1+P2): code-quality 6/2, correctness 2/1, performance 4/0, security 6/3, spec-compliance 2/2, test-coverage 8/4
+        osie, ktore zlapaly: klucz1 {'code-quality': 1, 'test-coverage': 1} | klucz2 {'correctness': 1, 'test-coverage': 2, 'spec-compliance': 1, 'security': 2}
+  nowy  klucz1 3/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 6) | szum 21 (P1/P2 10) | koszt 1.55 M, na zlapany klucz 0.17 M
+        findingi per os (razem/P1+P2): code-quality 10/5, correctness 3/1, performance 3/2, security 3/2, test-coverage 13/11
+        osie, ktore zlapaly: klucz1 {'correctness': 1, 'test-coverage': 2} | klucz2 {'test-coverage': 3, 'performance': 1, 'code-quality': 1, 'security': 1}
+  pary klucz1: {'tylko_stary': [], 'tylko_nowy': ['K4'], 'oba': ['K3', 'K11']}
+  pary klucz2: {'tylko_stary': ['K2'], 'tylko_nowy': ['K8'], 'oba': ['K6', 'K7', 'K9', 'K10', 'K12']}
+  sedzia 0.14 M
