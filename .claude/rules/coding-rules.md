@@ -109,7 +109,7 @@ W projekcie z konfiguracją ESLint z szablonu te reguły sprawdza maszyna; bez n
 - Zamiast `as` — `satisfies` albo type guard; `as` tylko przy zawężaniu DOM i `as const`.
 - Zamiast `!` — zawężenie albo early return.
 - Stan opisujesz unią dyskryminowaną, nie zestawem flag boolean.
-- Funkcje publiczne mają jawny typ zwracany.
+- Funkcje publiczne mają jawny typ zwracany; komponent React i hook, który zwraca wynik hooka biblioteki (`useQuery`, `useForm`), mają typ wywnioskowany z JSX albo z tego wywołania, bo ręczny zapis tylko go powtarza.
 - tsconfig: `strict` i `verbatimModuleSyntax`; w nowym projekcie także `erasableSyntaxOnly` (bez `enum`, `namespace` z kodem i parameter properties).
 
 ## Performance
