@@ -19,7 +19,7 @@ OUT = os.path.join(BASE, 'dane', 'test-review')
 UI = ('feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma', 'feature-builder-fullstack-figma')
 RE_IU = re.compile(r'^- \[[ xX]\] \*\*(IU-[\w.]+)\b', re.M)
 RE_DELEGACJA = re.compile(r'^\*\*Delegate to:\*\*\s*`?([\w-]+)`?', re.M)
-RE_SCIEZKA = re.compile(r'`([\w@./-]+\.[A-Za-z]{1,5})`')
+RE_SCIEZKA = re.compile(r'`([\w@./-]+\.[A-Za-z]{1,5}|[\w@./-]+/)`')
 RE_PREZENTACJA = re.compile(r'(^|/)(components|features|pages)/.*\.(tsx|jsx|css)$|\.css$')
 
 
@@ -68,6 +68,16 @@ def w_zakresie(klucz, zmienione):
     return re.sub(r':\d+(-\d+)?$', '', klucz.get('plik') or '') in zmienione
 
 
+def _bez_linii(plik):
+    return re.sub(r':\d+(-\d+)?$', '', plik or '')
+
+
+def iu_klucza(plik, iu):
+    """IU, których pole Pliki obejmuje plik klucza (ten sam plik albo katalog nad nim) — ich blok D10 dostaje builder tego pliku."""
+    p = _bez_linii(plik)
+    return [x['id'] for x in iu if any(p == q or (q.endswith('/') and p.startswith(q)) for q in x['pliki'])]
+
+
 def ma_ui(iu):
     return any(x['agentType'] in UI for x in iu)
 
@@ -93,11 +103,12 @@ def ranking(fazy, d10):
     return sorted(wynik, key=lambda x: (not x['ui'], -x['k2_d10_osiagalne'], -x['k2_d10'], -x['k2_pokryte'], x['linie_diff']))
 
 
-def klasy_zdan_dla_plikow(pliki):
-    """Klasy, których zdanie D10 dostałby builder pliku (moduł gałęzi, bez limitu znaków, bez wpisów projektu): {plik: [klasy]}."""
+def klasy_zdan_iu(iu_lista):
+    """Klasy w bloku D10, który planner wkleiłby jednostce: moduł gałęzi na polu Pliki IU (katalogi jak w planie), limit 2000 zn jak
+    `wiedza.mjs wycinek`, bez reguł projektu (kopie faz ich nie mają). Wejście: [[pliki IU], …] → [[klasy], …]."""
     mod = os.path.join(SZ, '.claude', 'scripts', 'wiedza', 'zapobieganie.mjs')
-    out = subprocess.run(['node', '--input-type=module', '-e', "const m = await import(%s); const p = %s; console.log(JSON.stringify(Object.fromEntries("
-                          "p.map((x) => [x, m.zapobieganie([], [x]).klasy]))))" % (json.dumps(mod), json.dumps(sorted(set(pliki))))],
+    out = subprocess.run(['node', '--input-type=module', '-e', "const m = await import(%s); console.log(JSON.stringify(%s.map((p) => "
+                          "m.zapobieganie([], p, { limitZn: 2000 }).klasy)))" % (json.dumps(mod), json.dumps(iu_lista))],
                          capture_output=True, text=True, check=True).stdout
     return json.loads(out)
 
@@ -140,14 +151,17 @@ def main():
     slownik, d10 = _slownik_it1(), klasy_d10()
     ets = sorted(os.path.basename(p) for p in glob.glob(os.path.join(TR, 'kopie', 'f-*')) if not p.endswith('-r2'))
     fazy = [dane_fazy(et, klasy2, slownik) for et in ets]
-    zdania = klasy_zdan_dla_plikow([re.sub(r':\d+(-\d+)?$', '', k['plik'] or '') for f in fazy for k in f['klucz1'] + f['klucz2']])
     for f in fazy:
-        for k in f['klucz1'] + f['klucz2']: k['osiagalny'] = k['klasa'] in zdania.get(re.sub(r':\d+(-\d+)?$', '', k['plik'] or ''), [])
+        for iu, klasy in zip(f['iu'], klasy_zdan_iu([x['pliki'] for x in f['iu']]) if f['iu'] else []): iu['klasy_d10'] = klasy
+        for k in f['klucz1'] + f['klucz2']:
+            k['iu'] = iu_klucza(k['plik'], f['iu'])
+            k['osiagalny'] = any(k['klasa'] in x['klasy_d10'] for x in f['iu'] if x['id'] in k['iu'])
     r = ranking(fazy, d10)
     zd = set(d10['zdania'])
     L = ['test_review_p12_fazy.py — wybór faz ślepego testu P12 (kandydaci: %d kopii f-*); D10 = klasy ze zdaniem (%d), pokryte = warstwa stała i reguły (%d)'
          % (len(r), len(d10['zdania']), len(d10['pokryte'])),
-         'kolejność: IU UI/fullstack → klucz 2 w D10 osiągalny (zdanie klasy trafia do buildera pliku klucza) → klucz 2 w D10 → w pokrytych → mniejszy diff',
+         'kolejność: IU UI/fullstack → klucz 2 w D10 osiągalny → klucz 2 w D10 → w pokrytych → mniejszy diff',
+         'osiągalny = IU, którego pole Pliki obejmuje plik klucza, dostaje zdanie klasy klucza (blok D10 z pola Pliki, limit 2000 zn); plik spoza planu = nieosiągalny',
          'klucz w zakresie = plik klucza zmieniony między bazą buildu (rodzic commita feat fazy) a sha fazy; diff = linie kodu bez docs/ i .claude/',
          '%-10s %-34s %2s | %-28s | k2 %2s D10 %2s osiąg %2s pokr %2s | k1 %2s D10 %2s osiąg %2s | diff %5s' % ('faza', 'zadanie', 'nr', 'IU (typ)', 'n', '', '', '', 'n', '', '', 'linii')]
     skrot = lambda t: t.replace('feature-builder-', '')

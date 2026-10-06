@@ -59,6 +59,16 @@ class IuFazy(unittest.TestCase):
         self.assertEqual(F.typ_po_plikach(['apps/a/src/lib/x.ts', 'apps/a/src/components/y.tsx']), 'feature-builder-fullstack')
         self.assertEqual(F.typ_po_plikach(['supabase/migrations/1.sql']), 'feature-builder-data')
 
+    def test_katalog_w_polu_pliki_to_tez_plik_jednostki(self):
+        plan = PLAN.replace("- Stwórz: `apps/dashboard/src/components/b.tsx`", "- Stwórz: `apps/dashboard/src/features/settings/` — widok i hook")
+        self.assertEqual(F.iu_fazy(plan, 2)[2]['pliki'], ['apps/dashboard/src/features/settings/'])
+
+    def test_iu_klucza_po_pliku_albo_katalogu(self):
+        iu = [{'id': 'IU-1', 'pliki': ['apps/a/src/lib/x.ts']}, {'id': 'IU-2', 'pliki': ['apps/a/src/features/s/']}]
+        self.assertEqual(F.iu_klucza('apps/a/src/lib/x.ts:12', iu), ['IU-1'])
+        self.assertEqual(F.iu_klucza('apps/a/src/features/s/use-t.ts', iu), ['IU-2'])
+        self.assertEqual(F.iu_klucza('supabase/migrations/1.sql', iu), [])
+
     def test_warstwa_ui_obejmuje_warianty_figma(self):
         self.assertTrue(F.ma_ui([{'agentType': 'feature-builder-fullstack-figma'}]))
         self.assertFalse(F.ma_ui([{'agentType': 'feature-builder-data'}]))
