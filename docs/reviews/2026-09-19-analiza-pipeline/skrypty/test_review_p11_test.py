@@ -195,7 +195,10 @@ class ZapisDrzewa(unittest.TestCase):
                     'git restore src/a.ts', "cat > apps/server/dist/__probe.mjs <<'X'", 'node -e 1 > apps/server/dist/__probe.mjs']
         czytaja = ['cp apps/server/src/a.ts /tmp/a.bak', "sed -n '1,20p' src/a.ts", "sed -i '' 's/a/b/' /tmp/kopia.ts",
                    'npx vitest run apps/server', 'git diff c349bd1 -- src/a.ts', 'cd /k; sed -n 195,250p docs/faza-6-cta-i-webhooki.md',
-                   'npx vitest run 2>&1 > /tmp/out.txt', 'ls src > /dev/null', 'echo x 2>/dev/null', 'grep -n "total > max" src/a.ts']
+                   'npx vitest run 2>&1 > /tmp/out.txt', 'ls src > /dev/null', 'echo x 2>/dev/null', 'grep -n "total > max" src/a.ts',
+                   'grep -n "routes.post\\|offer.expiresAt > now" src/a.ts; grep -rn "x" src | head',
+                   'node -e "const s=1; for (const v of [1]) console.log(v > 0)"', 'cp src/a.ts /private/tmp/claude-501/a.bak',
+                   'S=/private/tmp/claude-501/x/scratchpad; echo a > $S/dist/index.html']
         self.assertEqual([P.zapis_drzewa(c) for c in zapisuja], [True] * len(zapisuja))
         self.assertEqual([P.zapis_drzewa(c) for c in czytaja], [False] * len(czytaja))
 
