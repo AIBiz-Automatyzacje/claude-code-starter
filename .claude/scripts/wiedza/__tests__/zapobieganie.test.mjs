@@ -42,7 +42,7 @@ test('klasa pokryta warstwa stala buildera albo regulami kodu: fraza nadal stoi 
 })
 
 test('dobor po plikach: komponent dostaje tylko klasy kodu UI, migracja — klasy SQL, seed — klasy seedu', () => {
-  assert.deepEqual(zapobieganie([], ['src/components/oferta/karta.tsx']).klasy, ['dopasowanie-tekstu', 'pii-i-sekrety', 'wyscig-i-wspolbieznosc'])
+  assert.deepEqual(zapobieganie([], ['src/components/oferta/karta.tsx']).klasy, ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'])
   const sql = zapobieganie([], ['supabase/migrations/20260901_oferty.sql']).klasy
   assert.ok(sql.includes('wartosc-graniczna') && sql.includes('bramka-na-jednej-drodze') && sql.includes('migracja-bazy'), sql.join(', '))
   assert.ok(!sql.includes('pii-i-sekrety'))
@@ -62,6 +62,9 @@ test('limit nie wypiera zdan waskich: Edge Function z migracja dostaje zdania se
   assert.ok(klasy.includes('zaufanie-danym-klienta') && klasy.includes('migracja-bazy'), klasy.join(', '))
   assert.ok(zapobieganie([], ['src/schemas/oferta-schema.ts']).klasy.includes('wartosc-graniczna'))
   assert.ok(!zapobieganie([], ['supabase/migrations/1.sql']).klasy.includes('limit-czasu-i-ponowien'))
+  assert.deepEqual(zapobieganie([], ['src/schemas/oferta-schema.ts']).klasy, ['wartosc-graniczna', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'])
+  assert.ok(!zapobieganie([], ['e2e/seeds/oferta-seed.sql']).klasy.includes('migracja-bazy'))
+  assert.ok(klasy.includes('pii-i-sekrety'), 'Edge Function: zdanie o logach i Sentry nie wypada z limitu')
 })
 
 test('klasa z regula projektu w wycinku wypada — regula jest konkretniejsza', () => {

@@ -15,7 +15,8 @@ export const NAGLOWEK = 'Klasy błędów, które review znajduje w takich plikac
 const KOD = ['**/*.{ts,tsx,js,jsx,mjs,cjs}']
 const SQL = ['**/*.sql']
 const SERWER = ['supabase/functions/**', '**/server/**', '**/api/**']
-const KLIENT_DANYCH = ['**/lib/**', '**/hooks/**', '**/services/**', '**/schemas/**', '**/model/**']
+const KLIENT_DANYCH = ['**/lib/**', '**/hooks/**', '**/services/**', '**/model/**']
+const WIDOKI = ['**/components/**', '**/pages/**', '**/features/**']
 const DANE = ['supabase/**', ...KLIENT_DANYCH, ...SERWER]
 const SEEDY = ['e2e/seeds/**', '**/seed*.sql']
 
@@ -25,14 +26,14 @@ const SEEDY = ['e2e/seeds/**', '**/seed*.sql']
 export const ZDANIA = [
   { klasa: 'dopasowanie-tekstu', paths: KOD, zdanie: 'Tekst o strukturze (URL, HTML, e-mail, ścieżkę, CSV, nagłówek) rozbierasz parserem (`new URL`, `DOMParser`, biblioteka projektu) i porównujesz po normalizacji wielkości liter i Unicode, bo regex i `includes` przepuszczają warianty zapisu.' },
   { klasa: 'bramka-czarna-lista', paths: [...DANE, ...SQL], zdanie: 'Bramkę dostępu i filtr wejścia (role, statusy, rozszerzenia plików, ścieżki) piszesz listą tego, co przepuszczasz, a gałąź domyślna odmawia, bo lista zakazanych wartości przepuszcza każdy wariant, którego nie przewidziała.' },
-  { klasa: 'pii-i-sekrety', paths: KOD, zdanie: 'Do `new Error(...)` i komunikatu w logu wkładasz kod błędu i identyfikator zasobu zamiast wartości wejścia (e-mail, treść, token, URL z parametrami), bo komunikat błędu trafia do Sentry jako tytuł zdarzenia, poza redakcją kontekstu.' },
+  { klasa: 'pii-i-sekrety', paths: [...KLIENT_DANYCH, ...SERWER, ...WIDOKI], zdanie: 'Do `new Error(...)` i komunikatu w logu wkładasz kod błędu i identyfikator zasobu zamiast wartości wejścia (e-mail, treść, token, URL z parametrami), bo komunikat błędu trafia do Sentry jako tytuł zdarzenia, poza redakcją kontekstu.' },
   { klasa: 'bramka-na-jednej-drodze', paths: [...DANE, ...SQL], zdanie: 'Warunek dostępu stawiasz w miejscu, przez które przechodzi każda droga do operacji (polityka, funkcja serwisu), i wypisujesz te drogi (formularz, API, import, zadanie cykliczne), bo warunek w jednym handlerze omija druga droga.' },
   { klasa: 'wyscig-i-wspolbieznosc', paths: KOD, zdanie: 'Wartość odczytaną przed `await` sprawdzasz po nim (numer generacji żądania, porównanie z bieżącym id), a zapis zależny od odczytu robisz jednym warunkowym zapytaniem, bo dwa kliknięcia albo dwie karty nadpisują nowszy wynik starszym.' },
   { klasa: 'sciezka-bledu', paths: DANE, zdanie: 'Operację w kilku krokach (dwie tabele, baza i Storage, baza i e-mail) zamykasz w transakcji albo funkcji SQL, a krok zewnętrzny wykonujesz po zapisie z obsługą jego porażki, bo przerwanie w połowie zostawia rozjechane dane.' },
-  { klasa: 'wartosc-graniczna', paths: [...SQL, ...DANE], zdanie: 'Długość i zakres każdej generowanej wartości (slug, numer, nazwa z sufiksem) liczysz pod ograniczenie kolumny dla najdłuższego wejścia, a test bierze wartość na granicy (0, 1, limit, limit + 1), bo błąd wychodzi dopiero przy rzadkim wejściu.' },
+  { klasa: 'wartosc-graniczna', paths: [...SQL, ...DANE, '**/schemas/**'], zdanie: 'Długość i zakres każdej generowanej wartości (slug, numer, nazwa z sufiksem) liczysz pod ograniczenie kolumny dla najdłuższego wejścia, a test bierze wartość na granicy (0, 1, limit, limit + 1), bo błąd wychodzi dopiero przy rzadkim wejściu.' },
   { klasa: 'limit-czasu-i-ponowien', paths: [...KLIENT_DANYCH, ...SERWER], zdanie: 'Ponowienie ma sufit prób i rosnący odstęp, ponawia tylko błędy przejściowe (sieć, 429, 5xx), a zapis nieidempotentny idzie z kluczem idempotencji, bo pętla bez sufitu wiesza użytkownika, a ponowiony zapis dubluje dane.' },
   { klasa: 'zaufanie-danym-klienta', paths: SERWER, zdanie: 'Limit i decyzję dostępu liczysz z danych ustalonych przez serwer (rozmiar faktycznie odczytanego ciała, tożsamość z tokenu, adres od zaufanego proxy), bo `content-length`, `x-forwarded-for` i `origin` ustawia klient.' },
-  { klasa: 'migracja-bazy', paths: SQL, zdanie: 'Migrację piszesz tak, żeby przeszła drugi raz (`if not exists`, `create or replace`) i w kolejności zależności, a zmianę blokującą dużą tabelę (indeks, zmiana typu, `not null` z uzupełnieniem) dzielisz na osobne migracje, bo blokada zatrzymuje aplikację.' },
+  { klasa: 'migracja-bazy', paths: ['**/migrations/**'], zdanie: 'Migrację piszesz tak, żeby przeszła drugi raz (`if not exists`, `create or replace`) i w kolejności zależności, a zmianę blokującą dużą tabelę (indeks, zmiana typu, `not null` z uzupełnieniem) dzielisz na osobne migracje, bo blokada zatrzymuje aplikację.' },
   { klasa: 'seed-e2e', paths: SEEDY, zdanie: 'Seed E2E wstawia każdą kolumnę `not null` bez wartości domyślnej i tylko wartości, które produkcja może wytworzyć (status, relacje, właściciel z konta testowego), bo seed z wartością nieosiągalną testuje stan, którego aplikacja nie zna.' },
 ]
 
@@ -53,11 +54,11 @@ export const POKRYTE = {
   'a11y': { pliki: BUILDERY_UI, fraza: 'checklistą dostępności skilla ux-ui-guidelines' },
 }
 
-// Szerokosc globu zdania: 0 seed/SQL, 1 serwer, 2 warstwa danych, 3 caly kod.
+// Szerokosc globu zdania: 0 seed/SQL/migracje, 1 serwer, 2 warstwa danych albo widoki, 3 caly kod.
 /** @param {Zdanie} z @returns {number} */
 function szerokosc(z) {
   if (z.paths.some((g) => KOD.includes(g))) return 3
-  if (z.paths.some((g) => KLIENT_DANYCH.includes(g))) return 2
+  if (z.paths.some((g) => KLIENT_DANYCH.includes(g) || WIDOKI.includes(g))) return 2
   if (z.paths.some((g) => SERWER.includes(g))) return 1
   return 0
 }

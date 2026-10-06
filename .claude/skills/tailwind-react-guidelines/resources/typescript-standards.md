@@ -540,7 +540,7 @@ if (!user) throw new NotFoundError('USER_NOT_FOUND');
 // NIE
 const data = response as Item[];
 
-// TAK — itemSchema z @/schemas/item
+// TAK — itemSchema z @/schemas/item-schema
 const data = z.array(itemSchema).parse(response);
 ```
 

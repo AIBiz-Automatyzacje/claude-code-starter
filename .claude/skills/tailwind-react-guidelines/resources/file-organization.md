@@ -1001,7 +1001,8 @@ Serwis to jeden obiekt z metodami (`itemService.list`, `.get`, `.create`, `.remo
 schemas/
 ├── item-schema.ts      # Schemat Zod kontraktu Item i typy z z.infer
 ├── contact-schema.ts   # Schemat formularza kontaktowego (forms.md)
-└── template-schema.ts  # Schemat formularza i kontrakt Template (forms.md)
+├── template-schema.ts  # Schemat formularza i kontrakt Template (forms.md)
+└── user-schema.ts      # Kontrakt User (profil z API)
 ```
 ```typescript
 // schemas/item-schema.ts

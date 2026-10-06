@@ -151,7 +151,7 @@ React 19 wprowadził `use` do "odpakowywania" Promise w komponencie:
 // src/components/user-profile.tsx
 import { use } from 'react';
 
-import type { User } from '@/schemas/user';
+import type { User } from '@/schemas/user-schema';
 
 export function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
     const user = use(userPromise); // Suspenduje do resolve
@@ -170,7 +170,7 @@ Promise dla `use` powstaje raz, poza renderem komponentu, który go odpakowuje, 
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import type { User } from '@/schemas/user';
+import type { User } from '@/schemas/user-schema';
 import { userService } from '@/services/user-service';
 
 export const userKeys = {

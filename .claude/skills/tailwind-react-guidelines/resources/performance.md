@@ -224,11 +224,15 @@ export const templateService = {
         request(templatePath(id), templateEntitySchema, { method: 'PUT', body: JSON.stringify(values) }),
     toggleFavorite: (id: string): Promise<Template> =>
         request(`${templatePath(id)}/favorite`, templateEntitySchema, { method: 'POST' }),
+    // Zapis szkicu z edytora (ten sam kształt co update) i przywrócenie usuniętego szablonu z kosza
+    save: (id: string, values: TemplateValues): Promise<Template> =>
+        request(`${templatePath(id)}/draft`, templateEntitySchema, { method: 'PUT', body: JSON.stringify(values) }),
+    restore: (id: string): Promise<Template> =>
+        request(`${templatePath(id)}/restore`, templateEntitySchema, { method: 'POST' }),
     remove: (id: string): Promise<null> =>
         request(templatePath(id), z.null(), { method: 'DELETE' }),
 };
 ```
-Metody `save` i `restore` z [loading-and-error-states.md](./loading-and-error-states.md) mają ten sam kształt co `update` (PUT) i `create` (POST na `/templates/:id/restore`).
 ```typescript
 // src/hooks/use-templates.ts — fabryka kluczy na początku pliku hooków szablonów
 import type { TemplateFilters } from '@/services/template-service';
