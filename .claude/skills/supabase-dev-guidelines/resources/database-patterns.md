@@ -524,6 +524,10 @@ BEGIN
     DELETE FROM auth.users WHERE id = current_user_id;
 END;
 $$;
+
+-- Funkcja w schemacie API jest wołalna przez .rpc(): EXECUTE tylko dla roli, która ją woła
+REVOKE EXECUTE ON FUNCTION public.delete_user_account() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated;
 ```
 
 ### Wywołanie z Frontendu
@@ -573,6 +577,10 @@ BEGIN
     );
 END;
 $$;
+
+-- Woła ją tylko Edge Function z kluczem sekretnym
+REVOKE EXECUTE ON FUNCTION public.activate_subscription(UUID, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.activate_subscription(UUID, TEXT) TO service_role;
 ```
 
 ---
@@ -739,6 +747,9 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+
+-- Funkcję woła tylko trigger: żadna rola API nie potrzebuje EXECUTE
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users

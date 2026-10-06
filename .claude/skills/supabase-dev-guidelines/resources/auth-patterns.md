@@ -313,6 +313,9 @@ BEGIN
 END;
 $$;
 
+-- Funkcję woła tylko trigger: żadna rola API nie potrzebuje EXECUTE
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
@@ -361,6 +364,10 @@ BEGIN
         updated_at = NOW();
 END;
 $$;
+
+-- Funkcja w schemacie API jest wołalna przez .rpc(): EXECUTE tylko dla roli, która ją woła
+REVOKE EXECUTE ON FUNCTION public.ensure_user_profile() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ensure_user_profile() TO authenticated;
 ```
 
 ### Wywołanie na Froncie

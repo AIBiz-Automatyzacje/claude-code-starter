@@ -1,193 +1,49 @@
 ---
 name: security
-description: "Systematyczny audyt bezpieczeństwa dla React 19 + Supabase + Edge Functions. Używaj przy review bezpieczeństwa, przed deployem, przy pracy z auth/authz, walidacją inputów, RLS policies, XSS, OWASP Top 10."
+description: "Reguły bezpieczeństwa dla kodu React 19 + Supabase + Edge Functions (RLS, autoryzacja, walidacja wejścia, sekrety, XSS, SSRF) i protokół audytu bezpieczeństwa w resources. Używaj przy pisaniu kodu z auth/authz, RLS policies, walidacją inputów, Edge Functions i danymi osobowymi, a także przy review bezpieczeństwa, audycie przed deployem i OWASP Top 10."
 ---
 
-# Security Audit
+# Bezpieczeństwo implementacji
 
-Skill do przeprowadzania systematycznego audytu bezpieczenstwa w projekcie React 19 + Supabase + Edge Functions.
+Reguły dla kodu, który piszesz w projekcie React 19 + Supabase + Edge Functions. Uzupełniają sekcję Bezpieczeństwo w `.claude/rules/coding-rules.md` (sekrety, SQL z parametrami, walidacja wejścia schematem, źródło roli, polityki RLS, funkcje `security definer`, limity) i jej nie powtarzają. Przy każdej regule stoi powód, żeby przypadek spoza przykładu dało się rozstrzygnąć tym samym rozumowaniem.
 
-## Kiedy Uzywac
+## Baza danych i RLS
 
-- Review bezpieczenstwa przed deployem na produkcje
-- Dodawanie nowych endpointow (API routes, Edge Functions)
-- Zmiany w autentykacji lub autoryzacji (auth/authz)
-- Tworzenie nowych tabel w bazie danych (RLS policies)
-- Praca z danymi uzytkownikow (PII, GDPR)
-- Pre-deploy audit po wiekszych zmianach
-- Podejrzenie o luke bezpieczenstwa w istniejacym kodzie
+- Tabela w schemacie wystawionym przez API (`public`) dostaje `enable row level security` w tej samej migracji, która ją tworzy, bo między migracjami tabela bez RLS jest czytelna dla każdego z kluczem publicznym.
+- Polityki piszesz osobno dla każdej operacji, której jednostka potrzebuje (`select`, `insert`, `update`, `delete`). Operacja bez polityki jest odmową i taka zostaje, gdy plan jej nie zamawia.
+- `insert` i `update` mają `with check` z tym samym warunkiem własności co `using`, bo bez niego użytkownik zapisze wiersz z cudzym właścicielem albo przepisze istniejący na siebie.
+- `update` potrzebuje też polityki `select` na te same wiersze — bez niej Postgres nie widzi wiersza i aktualizacja zmienia zero wierszy bez błędu.
+- Kolumnę, której użytkownik nie zmienia sam (rola, status płatności, właściciel), chronisz osobno: `revoke update (kolumna)` dla `authenticated`, trigger albo zmiana tylko przez funkcję — RLS filtruje wiersze, nie kolumny.
+- Widok nad tabelą z RLS tworzysz z `with (security_invoker = true)`, bo widok domyślnie działa z prawami właściciela i omija RLS.
+- Dynamiczny SQL w funkcji PL/pgSQL składasz przez `format()` z `%I` dla identyfikatorów i `execute ... using` (albo `%L`) dla wartości, bo sklejony tekst w funkcji wołanej przez `.rpc()` to SQL injection mimo parametryzowanego klienta.
+- Bucket Storage z plikami użytkowników jest prywatny, dostęp dają polityki na `storage.objects` (pierwszy segment ścieżki = identyfikator właściciela) i podpisane URL-e z krótkim czasem ważności, bo publiczny bucket udostępnia każdy plik pod przewidywalnym adresem.
 
----
+## Edge Functions i autoryzacja
 
-## Workflow -- 6-skanowy protokol
+- Tożsamość wołającego bierzesz ze zweryfikowanego tokenu — `withSupabase({ auth: 'user' })` (`ctx.userClaims`) albo `getClaims()` / `getUser()` — a nie z `getSession()` ani z pola w ciele żądania, bo sesję z klienta i identyfikator w ciele podrobi każdy.
+- Klient z kluczem sekretnym (`ctx.supabaseAdmin`, `service_role`) omija RLS, więc funkcja, która go używa, sprawdza w kodzie własność zasobu i rolę wołającego przed zapytaniem. Gdzie wystarcza klient użytkownika (`ctx.supabase`), używasz jego, bo wtedy RLS jest drugą bramką.
+- Klucz sekretny i `service_role` trzymasz w sekretach Edge Functions; zmienna `VITE_*` trafia do paczki przeglądarki, więc klucz w niej jest publiczny.
+- Funkcja w trybie `auth` innym niż `'user'` (`'publishable'`, `'secret'`, `'none'`) ma w kodzie własną kontrolę dostępu zamówioną w planie (podpis, sekret crona, limit), bo `verify_jwt = false` wyłącza jedyną bramkę platformy.
+- Błąd sprawdzenia uprawnień (wyjątek, przekroczony limit czasu, brak wiersza roli) kończy się odmową, bo gałąź obsługi błędu, która przepuszcza, daje dostęp przy każdej awarii bazy.
+- Webhook weryfikuje podpis na surowym ciele (`await req.text()`, potem `constructEventAsync` dla Stripe) przed parsowaniem i jakimkolwiek zapisem, bo bez podpisu każdy wyśle zdarzenie „zapłacone”.
+- Żądanie serwera pod adres z wejścia użytkownika (podgląd linku, import z URL, webhook wychodzący) idzie tylko do hostów z listy dozwolonych, po parsowaniu `new URL()` i sprawdzeniu protokołu, bo inaczej funkcja czyta adresy wewnętrzne (SSRF).
 
-### Krok 1: Input Validation
+## Dane w odpowiedziach i logach
 
-Znajdz wszystkie punkty wejscia danych od uzytkownika i zweryfikuj walidacje.
+- Zapytanie wybiera kolumny potrzebne odbiorcy (`.select('id, title')`), bo `select('*')` wysyła klientowi każdą kolumnę, także dodaną później.
+- Klient dostaje kod i komunikat z koperty błędu, a szczegóły błędu bazy (tabela, ograniczenie, treść SQL) idą do logu, bo ujawniają schemat.
+- W logu i w Sentry użytkownika identyfikuje jego identyfikator, nie email ani imię; maskowanie i redakcję zdarzeń opisuje skill sentry-integration.
 
-1. **Zmapuj punkty wejscia:**
-   - Form actions (React Hook Form + Zod)
-   - API routes / Edge Functions (`req.json()`, `req.text()`, query params)
-   - URL parameters (React Router `useParams`, `useSearchParams`)
-   - File uploads
-2. **Sprawdz walidacje Zod** na kazdym punkcie wejscia:
-   - Czy schemat Zod istnieje?
-   - Czy walidacja jest na granicy systemu (nie glebiej)?
-   - Czy typy sa restrykcyjne (`z.string().email()`, nie `z.string()`)?
-   - Czy sa limity dlugosci (`z.string().max(500)`)?
-3. **Szukaj brakujacej walidacji** -- kazdy `req.json()` bez Zod parse to finding.
+## Interfejs
 
-### Krok 2: SQL/Query Safety
+- HTML z danych użytkownika albo CMS renderujesz przez `dangerouslySetInnerHTML` dopiero po sanitizacji (DOMPurify), bo React escapuje tekst, a nie gotowy HTML.
+- URL z danych użytkownika w `href` i `src` przechodzi przez `new URL()` z listą dozwolonych protokołów (`https:`, `http:`, `mailto:`), bo `javascript:` w linku wykonuje kod po kliknięciu.
+- Ukryty przycisk i chroniona trasa to wygoda interfejsu; tę samą regułę egzekwuje RLS albo funkcja serwera, bo klient omija każdy warunek w JS.
 
-Supabase query builder jest domyslnie parametryzowany, ale sa pulapki.
+## Testy
 
-1. **Sprawdz wywolania `.rpc()`** -- czy funkcje PostgreSQL nie konkatenuja stringow w SQL
-2. **Sprawdz RLS** na kazdej tabeli:
-   - `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` -- czy jest?
-   - Czy sa policies dla SELECT, INSERT, UPDATE, DELETE?
-   - Czy policies uzywaja `(SELECT auth.uid())` (nie `auth.email()`)?
-3. **Sprawdz filtry** -- czy zapytania `.from()` maja odpowiednie `.eq()`, `.match()`
-4. **Sprawdz `.rpc()` z raw SQL** -- szukaj konkatenacji stringow wewnatrz funkcji PostgreSQL
+- Każda polityka, trasa i funkcja z kontrolą dostępu ma test odmowy — bez sesji, inny użytkownik, rola bez uprawnienia — bo test tylko na właścicielu przechodzi także przy polityce `using (true)`.
 
-### Krok 3: XSS Detection
+## Audyt
 
-React domyslnie escapuje output, ale istnieja wyjatki.
-
-1. **Szukaj niebezpiecznego renderowania HTML** -- kazde uzycie raw HTML injection to potencjalny XSS
-2. **Sprawdz user-generated URLs:**
-   - `href={userInput}` -- czy jest walidacja protokolu? (`javascript:` protocol attack)
-   - `src={userInput}` -- czy jest whitelist domen?
-3. **Content Security Policy** -- czy istnieje i czy jest restrykcyjna?
-4. **Third-party content** -- czy jest sandboxowany (iframe sandbox)?
-5. **Szukaj renderowania raw HTML** z zewnetrznych zrodel (markdown, CMS)
-
-### Krok 4: Auth/Authz Audit
-
-Zmapuj endpointy vs wymagania autoryzacji.
-
-1. **Stworz macierz dostepu:**
-
-| Endpoint / Akcja | Anon | Authenticated | Owner | Admin |
-|-------------------|------|---------------|-------|-------|
-| GET /posts        | tak  | tak           | tak   | tak   |
-| POST /posts       | nie  | tak           | -     | tak   |
-| DELETE /posts/:id | nie  | nie           | tak   | tak   |
-
-2. **Zweryfikuj RLS policies** -- czy odzwierciedlaja macierz dostepu
-3. **Edge Functions JWT** -- czy kazda chroniona funkcja wywoluje `supabase.auth.getUser()` / `getClaims()`?
-4. **Sprawdz `getSession()` vs `getUser()`** -- `getSession()` nie weryfikuje tokena server-side
-5. **Sprawdz role-based access** -- rola z `app_metadata` lub tabeli rol, NIGDY z `user_metadata` (edytowalne przez usera); brak hardcoded email/ID
-6. **Fail-closed** -- blad sprawdzenia dostepu = odmowa, nigdy przyznanie (A10:2025)
-
-### Krok 5: Sensitive Data Exposure
-
-Szukaj wyciekow danych wrazliwych.
-
-1. **Hardcoded secrets:**
-   - Szukaj: API keys, tokeny, hasla w kodzie zrodlowym
-   - Sprawdz `.env.example` -- czy nie zawiera prawdziwych wartosci
-   - Sprawdz git history -- `git log --diff-filter=A -- "*.env*"`
-2. **Dane w logach:**
-   - `console.log` / `console.error` z obiektami user/session/error
-   - Struktury bledow Supabase wyciekaja info o schemacie DB
-3. **Service role key:**
-   - Czy `SUPABASE_SERVICE_ROLE_KEY` jest TYLKO w Edge Functions?
-   - Czy nie jest w zmiennych `VITE_*`?
-4. **PII w Sentry:**
-   - Czy `captureException` nie wysyla danych osobowych?
-   - Czy `beforeSend` filtruje wrazliwe dane?
-5. **Odpowiedzi API:**
-   - Czy endpointy nie zwracaja wiecej danych niz potrzeba? (`select('*')` vs `select('id, name')`)
-
-### Krok 6: OWASP Top 10 Compliance
-
-Przejdz kazda kategorie **OWASP Top 10:2025** pod katem naszego stacku. Zwroc uwage na zmiany 2025: SSRF wchloniety do A01, nowe A03 (Software Supply Chain -- m.in. klucz `service_role` dla agentow AI/MCP) i A10 (Mishandling of Exceptional Conditions -- fail-open, wyciek bledow).
-
-Pelne mapowanie kategorii na stack React + Supabase + Edge Functions:
-**[Przewodnik: resources/owasp-react-supabase.md](resources/owasp-react-supabase.md)**
-
----
-
-## Klasyfikacja Findings
-
-```
-CRITICAL -- Exploit mozliwy w produkcji, wymaga natychmiastowej naprawy
-   Przyklady: RLS wylaczone na tabeli z PII, service_role key na froncie,
-   SQL injection w .rpc(), brak auth na endpoincie z danymi
-
-HIGH -- Powazna luka, exploit mozliwy przy okreslonych warunkach
-   Przyklady: brak walidacji inputow na Edge Function, XSS przez
-   niebezpieczne renderowanie HTML z user content, getSession() do autoryzacji server-side
-
-MEDIUM -- Potencjalne ryzyko, wymaga analizy kontekstu
-   Przyklady: brak rate limiting, zbyt szerokie CORS, select('*') zamiast
-   konkretnych kolumn, brak CSP headers
-
-LOW -- Hardening, defense-in-depth
-   Przyklady: brak Strict-Transport-Security header, outdated dependencies
-   bez znanych CVE, brak audit logging dla niekrytycznych operacji
-```
-
----
-
-## Format Raportu
-
-```markdown
-## Security Audit Report: [nazwa projektu / scope]
-
-### Executive Summary
-[1-3 zdania: ogolna ocena bezpieczenstwa, liczba findings, najwazniejsze ryzyka]
-
-### Findings
-
-#### CRITICAL
-1. **[plik:linia]** -- [tytul]
-   - Impact: [co moze sie stac]
-   - Remediation: [jak naprawic, z przykladem kodu]
-
-#### HIGH
-[jak wyzej]
-
-#### MEDIUM
-[jak wyzej]
-
-#### LOW
-[jak wyzej]
-
-### Risk Matrix
-
-| Kategoria          | Status | Findings |
-|--------------------|--------|----------|
-| Input Validation   | [OK/WARN/FAIL] | X |
-| SQL/Query Safety   | [OK/WARN/FAIL] | X |
-| XSS                | [OK/WARN/FAIL] | X |
-| Auth/Authz         | [OK/WARN/FAIL] | X |
-| Data Exposure      | [OK/WARN/FAIL] | X |
-| OWASP Compliance   | [OK/WARN/FAIL] | X |
-
-### Remediation Roadmap
-1. [CRITICAL] [opis] -- termin: natychmiast
-2. [HIGH] [opis] -- termin: przed deployem
-3. [MEDIUM] [opis] -- termin: nastepny sprint
-4. [LOW] [opis] -- termin: backlog
-```
-
----
-
-## Zasady
-
-1. **Mysl jak atakujacy** -- zakladaj najgorszy scenariusz, nie optymistyczny
-2. **Worst-case scenario** -- kazdy finding opisuj przez pryzmat "co najgorszego moze sie stac"
-3. **Zawsze podawaj rozwiazanie** -- finding bez remediation jest bezuzyteczny
-4. **Nie dismissuj jako pre-existing** -- istniejace luki sa nadal lukami
-5. **Weryfikuj, nie zakladaj** -- "Supabase domyslnie to robi" nie wystarczy, sprawdz konfiguracje
-6. **Najmniejsze uprawnienia** -- kazdy komponent powinien miec minimum potrzebnych uprawnien
-7. **Defense in depth** -- jedna warstwa ochrony to za malo, waliduj na kazdej granicy
-8. **Dokumentuj scope** -- jasno okresl co zostalo sprawdzone, a co nie
-
----
-
-## Dokumentacja Referencyjna
-
-- **OWASP Top 10 dla naszego stacku** -- `resources/owasp-react-supabase.md`
-- **Wzorce auth i bezpieczenstwa** -- `resources/auth-security-patterns.md`
+Audyt bezpieczeństwa (review przed deployem, podejrzenie luki, audyt na prośbę operatora) prowadzisz według `resources/protokol-audytu.md`. Mapowanie OWASP Top 10:2025 na stack jest w `resources/owasp-react-supabase.md`, wzorce auth i bezpieczeństwa — w `resources/auth-security-patterns.md`.

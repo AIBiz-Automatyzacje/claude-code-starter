@@ -300,9 +300,9 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 | Skill | Zakres |
 |-------|--------|
 | **`tailwind-react-guidelines`** | React 19 (`use`, Actions, `useActionState`, `useOptimistic`, ref jako prop), TypeScript 5.7+, Tailwind v4 (CSS-first `@theme`), shadcn/ui, React Query, RHF + **Zod v4**, testy (Vitest + RTL + MSW), lazy/Suspense, Sonner. |
-| **`supabase-dev-guidelines`** | Auth (OAuth + email, PKCE przez `onAuthStateChange`), PostgreSQL, RLS (`(SELECT auth.uid())`), SECURITY DEFINER (`search_path=''`), Edge Functions (Deno, Stripe v22), Realtime, Supavisor pooling. |
+| **`supabase-dev-guidelines`** | Auth (OAuth + email, PKCE przez `onAuthStateChange`), PostgreSQL, RLS (`(SELECT auth.uid())`), SECURITY DEFINER (`search_path=''`, EXECUTE odebrane od `anon`), Edge Functions (Deno, Stripe v22), Realtime, Supavisor pooling. `SKILL.md` = checklisty i zasady stałe; przykłady kodu i przegląd tematów w `resources/klient-i-przeglad.md`. |
 | **`ux-ui-guidelines`** | Design system (OKLCH), dostępność (WCAG 2.2, ARIA, natywny `inert`), responsive (container queries), animacje (Motion, View Transitions, `interpolate-size`), interface polish. |
-| **`security`** | Audyt bezpieczeństwa: **OWASP Top 10:2025**, RLS, `app_metadata` vs `user_metadata`, SSRF, CSP dla Vite, `getClaims` + asymetryczne JWT. |
+| **`security`** | `SKILL.md` = reguły implementatora (RLS per operacja z `with check`, tożsamość ze zweryfikowanego tokenu, klucz sekretny, fail-closed, webhooki, SSRF, XSS, testy odmowy) — tę warstwę dostają buildery. Protokół audytu (6 obszarów, wagi, raport) w `resources/protokol-audytu.md`; **OWASP Top 10:2025**, CSP dla Vite, `getClaims` + asymetryczne JWT w pozostałych `resources/`. |
 | **`sentry-integration`** | Error tracking + performance dla React + Edge Functions (Deno 2.x): `beforeSend`, source maps (`@sentry/vite-plugin`), release tracking, `await captureError`. |
 
 ### Skille narzędziowe

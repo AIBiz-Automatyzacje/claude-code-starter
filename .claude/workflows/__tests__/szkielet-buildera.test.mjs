@@ -19,6 +19,8 @@ import { AGENCI, agenci } from './agenci-pipeline.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const BUILDERY_ZE_SZKIELETEM = ['feature-builder-data']
+// Skille przepisane wg PA-17 (jedna zasada = jedno zdanie z powodem); tailwind-react-guidelines i ux-ui-guidelines — sesja 3.
+const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-guidelines']
 
 const REGULY_KODU = '.claude/rules/coding-rules.md'
 const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'tsc --noEmit', 'vitest related --run', 'undefined']
@@ -143,3 +145,15 @@ const skilleBuilderow = [...new Set([...agenci(REPO)].filter(([n]) => n.startsWi
 test('buildery maja skille z katalogu szablonu (lista do sprawdzen nizej nie jest pusta)', () => {
   assert.ok(skilleBuilderow.includes('security'), `skille builderow: ${skilleBuilderow.join(', ')}`)
 })
+
+for (const skill of skilleBuilderow) {
+  test(`skill wstrzykiwany builderom bez protokolu audytu: ${skill}`, () => {
+    assert.deepEqual(protokolAudytu(readFileSync(join(REPO, '.claude/skills', skill, 'SKILL.md'), 'utf8')), [])
+  })
+}
+
+for (const skill of SKILLE_BEZ_WERSALIKOW) {
+  test(`skill bez krzyku wersalikami: ${skill}`, () => {
+    assert.deepEqual(wersaliki(readFileSync(join(REPO, '.claude/skills', skill, 'SKILL.md'), 'utf8')), [])
+  })
+}
