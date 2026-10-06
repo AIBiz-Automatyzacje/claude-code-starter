@@ -249,10 +249,10 @@ Faza do wykonania: ${faza}
      Podobnie z tekstami: gdy jednostka odsyla do "tekstow verbatim z sekcji X", wklej te teksty DOSLOWNIE.
      Nie streszczaj i nie parafrazuj — tekst widoczny dla uzytkownika inny niz zatwierdzony to finding P2.
    - sciezka zadania ${sciezka} + numer IU
-   - reguly projektu dla plikow jednostki (z pola Pliki):
-     \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki jednostki po przecinku>\`. Niepuste pole \`tresc\`
-     wyniku wklej jako blok "Wyuczone reguly projektu:" (pusta tresc — blok pomin), bo
-     regula wklejona do promptu delegacji jest przez buildera stosowana, a regula czekajaca w pliku bywa pomijana.
+   - reguly projektu i klasy bledow dla plikow jednostki (z pola Pliki):
+     \`node .claude/scripts/wiedza/wiedza.mjs wycinek --zapobieganie --pliki <pliki jednostki po przecinku>\`. Niepuste pole
+     \`tresc\` wyniku wklej doslownie jako blok "Reguly projektu i klasy bledow dla plikow jednostki:" (pusta tresc — blok
+     pomin), bo regula wklejona do promptu delegacji jest przez buildera stosowana, a regula czekajaca w pliku bywa pomijana.
    - wykluczenia z sekcji \`## Granice\` planu technicznego jako blok "Czego zadanie nie obejmuje:" z dopiskiem:
      "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
      zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.

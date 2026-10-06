@@ -43,10 +43,14 @@ return fixPrompt`)('')
 const planner = plannerPrompt('docs/active/x', 2)
 
 test('planner: wycinek wiedzy po plikach jednostki w prompcie IU, nie caly plik regul (H50, PA-13)', () => {
-  assert.match(planner, /`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki <pliki jednostki po przecinku>`/)
-  assert.match(planner, /"Wyuczone reguly projektu:"/)
+  assert.match(planner, /`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --zapobieganie --pliki <pliki jednostki po przecinku>`/)
+  assert.match(planner, /"Reguly projektu i klasy bledow dla plikow jednostki:"/)
   assert.match(planner, /regula wklejona do promptu delegacji jest przez buildera stosowana, a regula czekajaca w pliku bywa pomijana/)
   assert.doesNotMatch(planner, /learned-patterns|ok\. 11 KB|gwarancji dostepu|w CALOSCI/)
+})
+
+test('zdania klas zapobiegalnych (D10) tylko dla buildera: review, fix i /dev-pr licza wycinek bez --zapobieganie', () => {
+  for (const zrodlo of [zrodloReview, zrodloAutopilot, zrodloPr]) assert.doesNotMatch(zrodlo, /--zapobieganie/)
 })
 
 test('reviewer bez dossier: wycinek tym samym skryptem po plikach fazy, bez starej sciezki regul', () => {

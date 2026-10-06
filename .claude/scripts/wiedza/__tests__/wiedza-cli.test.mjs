@@ -95,6 +95,23 @@ test('wycinek --pliki: reguly dla plikow jednostki, takze nowego pliku w katalog
     assert.equal(w.kod, 0)
     assert.deepEqual(w.json.pliki, ['docs/solutions/a/lib.md'])
     assert.equal(w.json.tresc, '- [wysoka] sciezka-bledu: Blad zapisu pokazuj uzytkownikowi. (docs/solutions/a/lib.md)')
+    assert.equal(w.json.zapobieganie, undefined, 'zdania D10 tylko na zadanie (planner) — reviewerzy i fix bez nich')
+  })
+})
+
+test('wycinek --zapobieganie: reguly projektu, potem zdania klas bez klasy reguly, jeden blok w limicie', () => {
+  wRepo((repo) => {
+    zapisz(repo, { 'docs/solutions/a/lib.md': solution(POLA) })
+    const w = uruchom(repo, ['wycinek', '--zapobieganie', '--pliki', 'src/lib/nowy.ts'])
+    assert.equal(w.kod, 0)
+    const [regula, naglowek, ...zdania] = w.json.tresc.split('\n')
+    assert.equal(regula, '- [wysoka] sciezka-bledu: Blad zapisu pokazuj uzytkownikowi. (docs/solutions/a/lib.md)')
+    assert.match(naglowek ?? '', /co robić zamiast:$/)
+    assert.ok(zdania.length > 0 && !w.json.zapobieganie.klasy.includes('sciezka-bledu'), w.json.zapobieganie.klasy.join(', '))
+    assert.ok(w.json.tresc.length <= 2000 && w.json.zn === w.json.tresc.length, `${w.json.zn}`)
+    assert.equal(w.json.zapobieganie.klasy.length, zdania.length)
+    const ciasny = uruchom(repo, ['wycinek', '--zapobieganie', '--limit', '300', '--pliki', 'src/lib/nowy.ts'])
+    assert.ok(ciasny.json.tresc.length <= 300 && ciasny.json.zapobieganie.pominiete > 0, ciasny.json.tresc)
   })
 })
 

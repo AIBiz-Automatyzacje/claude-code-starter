@@ -4,7 +4,9 @@
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   wiedza.mjs sprawdz <solution.md>...           pola wiedzy we frontmatterze — compound nie zostawia pliku bez nich
 //   wiedza.mjs indeks [--zapisz]                  indeks docs/learned-patterns.md z solutions (bramka koszyka i rozmiaru)
-//   wiedza.mjs wycinek --pliki <a,b,...> [--limit <zn>]   reguly dla plikow jednostki albo fazy
+//   wiedza.mjs wycinek --pliki <a,b,...> [--limit <zn>] [--zapobieganie]
+//                                                 reguly dla plikow jednostki albo fazy; z --zapobieganie (planner → builder)
+//                                                 w tym samym limicie takze zdania klas zapobiegalnych (D10)
 //   wiedza.mjs konwersja przygotuj                kandydaci z .claude/rules/learned-patterns.md (JSON do uzupelnienia klasy)
 //   wiedza.mjs konwersja zastosuj --propozycje <plik.json> [--data RRRR-MM-DD]
 //                                                 zapis pol do solutions, indeks, stary plik i odrzuty do docs/archiwum/
@@ -18,19 +20,20 @@ import { czytajFrontmatter } from './frontmatter.mjs'
 import { PLIK_INDEKSU, generujIndeks } from './indeks.mjs'
 import { PLIK_LEARNED_PATTERNS, archiwizuj, kandydaci, zastosuj } from './konwersja.mjs'
 import { walidujWpis } from './walidacja.mjs'
-import { plikiRepo, wczytajWpisy } from './wpisy.mjs'
+import { pole, plikiRepo, wczytajWpisy } from './wpisy.mjs'
 import { MAKS_WYCINEK_ZN, wycinek } from './wycinek.mjs'
+import { zapobieganie } from './zapobieganie.mjs'
 
 const KOD_DO_POPRAWY = 1
 const KOD_ZLYCH_ARGUMENTOW = 2
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, zapisz: { type: 'boolean' }, pliki: { type: 'string' }, limit: { type: 'string' },
-  propozycje: { type: 'string' }, data: { type: 'string' },
+  propozycje: { type: 'string' }, data: { type: 'string' }, zapobieganie: { type: 'boolean' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`wiedza: ${komunikat}\nUzycie: wiedza.mjs sprawdz <plik>... | indeks [--zapisz] | wycinek --pliki <a,b> [--limit <zn>] | konwersja przygotuj | konwersja zastosuj --propozycje <plik> [--data RRRR-MM-DD] [--projekt <katalog>]\n`)
+  process.stderr.write(`wiedza: ${komunikat}\nUzycie: wiedza.mjs sprawdz <plik>... | indeks [--zapisz] | wycinek --pliki <a,b> [--limit <zn>] [--zapobieganie] | konwersja przygotuj | konwersja zastosuj --propozycje <plik> [--data RRRR-MM-DD] [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -65,13 +68,25 @@ function indeks(projekt, zapisz) {
   return { wynik: { plik: PLIK_INDEKSU, zapisany, ...reszta, niepoprawne, bezPol: bezPol.length }, ok: !reszta.bledy.length && !niepoprawne.length }
 }
 
-/** @param {string} projekt @param {string | undefined} pliki @param {string | undefined} limit */
-function wytnij(projekt, pliki, limit) {
+/**
+ * @param {string} projekt
+ * @param {string | undefined} pliki
+ * @param {string | undefined} limit
+ * @param {boolean} zZapobieganiem zdania D10 w tym samym bloku i limicie; klasa z regula projektu w wycinku wypada
+ */
+function wytnij(projekt, pliki, limit, zZapobieganiem) {
   if (!pliki) zleArgumenty('wycinek wymaga --pliki <a,b,...>')
   if (limit !== undefined && !/^\d+$/.test(limit)) zleArgumenty('--limit musi byc liczba znakow')
   // Globy wpisow sprawdza compound i indeks; wycinek nie odrzuca reguly, ktorej katalog jeszcze nie istnieje.
   const { wpisy } = wczytajWpisy(projekt, null)
-  zakoncz(wycinek(wpisy, pliki.split(',').map((p) => p.trim()).filter(Boolean), limit ? Number(limit) : MAKS_WYCINEK_ZN), true)
+  const lista = pliki.split(',').map((p) => p.trim()).filter(Boolean)
+  const limitZn = limit ? Number(limit) : MAKS_WYCINEK_ZN
+  const w = wycinek(wpisy, lista, limitZn)
+  if (!zZapobieganiem) zakoncz(w, true)
+  const klasyRegul = wpisy.filter((x) => w.pliki.includes(x.plik)).map((x) => pole(x, 'klasa'))
+  const z = zapobieganie(wpisy, lista, { pominKlasy: klasyRegul, limitZn: limitZn - w.zn - (w.tresc ? 1 : 0) })
+  const tresc = [w.tresc, z.tresc].filter(Boolean).join('\n')
+  zakoncz({ ...w, tresc, zn: tresc.length, zapobieganie: { zn: z.zn, klasy: z.klasy, pominiete: z.pominiete } }, true)
 }
 
 /** @param {string} projekt @param {string | undefined} etap @param {string | undefined} plikPropozycji @param {string | undefined} data */
@@ -114,6 +129,6 @@ if (komenda === 'sprawdz') sprawdz(projekt, reszta)
 else if (komenda === 'indeks') {
   const w = indeks(projekt, a.values.zapisz === true)
   zakoncz(w.wynik, w.ok)
-} else if (komenda === 'wycinek') wytnij(projekt, tekstOpcji('pliki'), tekstOpcji('limit'))
+} else if (komenda === 'wycinek') wytnij(projekt, tekstOpcji('pliki'), tekstOpcji('limit'), a.values.zapobieganie === true)
 else if (komenda === 'konwersja') konwersja(projekt, reszta[0], tekstOpcji('propozycje'), tekstOpcji('data'))
 else zleArgumenty(`nieznana komenda "${komenda ?? ''}"`)
