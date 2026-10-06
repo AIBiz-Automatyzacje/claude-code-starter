@@ -1,0 +1,30 @@
+test_review_p12_fazy.py — wybór faz ślepego testu P12 (kandydaci: 13 kopii f-*); D10 = klasy ze zdaniem (11), pokryte = warstwa stała i reguły (8)
+kolejność: IU UI/fullstack → klucz 2 w D10 → klucz 2 w pokrytych → mniejszy diff
+klucz w zakresie = plik klucza zmieniony między bazą buildu (rodzic commita feat fazy) a sha fazy; diff = linie kodu bez docs/ i .claude/
+faza       zadanie                            nr | IU (typ)                     | k2  n D10    pokr    | k1  n D10    | diff linii
+f-32975a1  faza-5-heatmapa                     2 | 3:ui 4:ui 5:data             | k2  6 D10  3 pokr  3 | k1  3 D10  0 | diff  1393
+           baza buildu 6b7a9aa (commit fazy 32975a1) | klucz2 D10: K4 P1 zaufanie-danym-klienta, K5 P2 wartosc-graniczna, K7 P2 sciezka-bledu | klucz1 D10: — | poza zakresem: K6 K9
+f-303ff62  faza-6-cta-i-webhooki               4 | 8:fullstack 9:ui 10:data     | k2  7 D10  2 pokr  3 | k1  6 D10  2 | diff  4052
+           baza buildu f373d38 (commit fazy 303ff62) | klucz2 D10: K11 P1 wartosc-graniczna, K14 P2 migracja-bazy | klucz1 D10: K10 limit-czasu-i-ponowien, K12 sciezka-bledu | poza zakresem: K13
+f-46be55a  faza-3-konto-i-dashboard            2 | 4:fullstack 5:fullstack 6:fu | k2  4 D10  2 pokr  2 | k1  7 D10  4 | diff  3024
+           baza buildu a4225e4 (commit fazy 46be55a) | klucz2 D10: K2 P2 migracja-bazy, K4 P1 migracja-bazy | klucz1 D10: K5 sciezka-bledu, K6 sciezka-bledu, K7 sciezka-bledu, K8 sciezka-bledu | poza zakresem: K3
+f-2536643  faza-9a-domena-mailer-limity        4 | 10:ui 11:data 12:ui 13:fulls | k2  5 D10  1 pokr  2 | k1  6 D10  2 | diff  7208
+           baza buildu 72c07dc (commit fazy 2536643) | klucz2 D10: K10 P2 dopasowanie-tekstu | klucz1 D10: K2 bramka-na-jednej-drodze, K11 wartosc-graniczna
+f-1de5a4c  faza-7-szablony-i-grafiki           6 | 13:data 14:fullstack 15:ui 1 | k2  4 D10  1 pokr  1 | k1  7 D10  2 | diff  1696
+           baza buildu 60f1951 (commit fazy a2a296a) | klucz2 D10: K5 P2 sciezka-bledu | klucz1 D10: K3 pii-i-sekrety, K8 bramka-czarna-lista | poza zakresem: K9
+f-b8374c8  faza-2-publikacja-ofert             2 | 4:fullstack 5:ui             | k2  5 D10  1 pokr  1 | k1  4 D10  1 | diff  1876
+           baza buildu c349bd1 (commit fazy b8374c8) | klucz2 D10: K6 P2 zaufanie-danym-klienta | klucz1 D10: K2 wyscig-i-wspolbieznosc | poza zakresem: K7 K10
+f-5af000f  faza-4-tracking-i-widok-oferty      3 | 5:data 6:ui 7:data           | k2  4 D10  1 pokr  0 | k1  4 D10  2 | diff  1834
+           baza buildu 411a434 (commit fazy 5af000f) | klucz2 D10: K7 P2 wartosc-graniczna | klucz1 D10: K2 wartosc-graniczna, K3 seed-e2e
+f-31491bc  siatka-heatmapy-proporcjonalna      3 | 5:data 6:ui                  | k2  4 D10  0 pokr  1 | k1  3 D10  1 | diff  1235
+           baza buildu 2a149d6 (commit fazy 31491bc) | klucz2 D10: — | klucz1 D10: K4 seed-e2e
+f-b26128d  faza-4-tracking-i-widok-oferty      2 | 3:data 4:data                | k2  7 D10  1 pokr  2 | k1  6 D10  3 | diff  2198
+           baza buildu b57f236 (commit fazy b26128d) | klucz2 D10: K9 P2 sciezka-bledu | klucz1 D10: K3 limit-czasu-i-ponowien, K5 sciezka-bledu, K13 bramka-na-jednej-drodze
+f-9d40529  faza-4-tracking-i-widok-oferty      1 | 1:data 2:data                | k2  2 D10  1 pokr  1 | k1  2 D10  0 | diff   699
+           baza buildu 0b75fcb (commit fazy 9d40529) | klucz2 D10: K3 P2 wartosc-graniczna | klucz1 D10: —
+f-f3ee433  faza-9c-dokumenty-prawne            2 | 3:data 4:data                | k2  3 D10  0 pokr  2 | k1  3 D10  0 | diff  1378
+           baza buildu 7a85ec7 (commit fazy f3ee433) | klucz2 D10: — | klucz1 D10: —
+f-67f5f2c  faza-1-fundament                    3 | 4:data 5:data                | k2  3 D10  0 pokr  1 | k1  2 D10  2 | diff   810
+           baza buildu 6b816c0 (commit fazy 67f5f2c) | klucz2 D10: — | klucz1 D10: K4 limit-czasu-i-ponowien, K5 pii-i-sekrety
+f-2634b67  faza-3-konto-i-dashboard            1 | 1:data 2:data 3:data         | k2  3 D10  0 pokr  0 | k1  4 D10  2 | diff  1453
+           baza buildu af89c2d (commit fazy 2634b67) | klucz2 D10: — | klucz1 D10: K2 limit-czasu-i-ponowien, K6 wyscig-i-wspolbieznosc

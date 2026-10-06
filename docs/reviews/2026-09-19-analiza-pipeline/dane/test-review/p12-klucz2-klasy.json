@@ -1,0 +1,443 @@
+[
+ {
+  "et": "f-1de5a4c",
+  "id": "K1",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Harness testu zawsze buduje bieżący HTML, więc ścieżka zastanego dokumentu oferty bez węzła wygaśnięcia nie ma testu."
+ },
+ {
+  "et": "f-1de5a4c",
+  "id": "K5",
+  "klasa": "sciezka-bledu",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Gałąź 409 oferta_wygasla zakłada istnienie węzła komunikatu i przy jego braku gasi wszystkie komunikaty, zostawiając klienta bez informacji zwrotnej."
+ },
+ {
+  "et": "f-1de5a4c",
+  "id": "K7",
+  "klasa": "inna",
+  "pewnosc": "niska",
+  "uzasadnienie": "Nadmiarowa waga zasobu statycznego (80 kB bitmapy na znak 22 px) — żadna klasa wydajności nie opisuje rozmiaru assetu."
+ },
+ {
+  "et": "f-1de5a4c",
+  "id": "K9",
+  "klasa": "cache-i-zapytania",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Hook pobiera do ~2 MB danych heatmapy także wtedy, gdy karta wychodzi wcześnie i je wyrzuca — zbędne zapytanie."
+ },
+ {
+  "et": "f-1de5a4c",
+  "id": "K12",
+  "klasa": "cache-i-zapytania",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Dynamiczny import dzieli bundle na dwa szeregowo ładowane chunki, dokładając zbędny round trip przed pierwszym renderem."
+ },
+ {
+  "et": "f-2536643",
+  "id": "K1",
+  "klasa": "kontrakt-wspolny",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "CHECK bazy liczy punkty kodowe, a Zod jednostki UTF-16 — dwie bramki tego samego pola już opisują limit 80 inaczej."
+ },
+ {
+  "et": "f-2536643",
+  "id": "K4",
+  "klasa": "inna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Niezamówione zachowanie (scope creep): usunięto całą pigułkę pochodzenia zamiast tylko wariantu WBUDOWANY — rozjazd z planem, bez klasy w słowniku."
+ },
+ {
+  "et": "f-2536643",
+  "id": "K5",
+  "klasa": "test-niefalsyfikowalny",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Strict schema dostaje wiersz już zestrippowany przez nie-strict parser odpowiedzi, więc test przejdzie także przy wycieku nadmiarowych pól."
+ },
+ {
+  "et": "f-2536643",
+  "id": "K7",
+  "klasa": "inna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Kwadratowa złożoność parsera nagłówków przy niezamkniętych tagach blokuje pętlę zdarzeń — brak klasy dla złożoności algorytmicznej."
+ },
+ {
+  "et": "f-2536643",
+  "id": "K10",
+  "klasa": "dopasowanie-tekstu",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Strażnik kliknięcia dopasowuje tylko selektor a, button, więc kliknięcie w pole input z komunikatu awaryjnego bąbelkuje i nawiguje (nie jest to obejście kontroli dostępu)."
+ },
+ {
+  "et": "f-2634b67",
+  "id": "K3",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Sufit MAX_CACHED_SESSIONS i kolejność eksmisji w enforceCacheCeiling nie są dotknięte żadnym testem."
+ },
+ {
+  "et": "f-2634b67",
+  "id": "K4",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Brak testu RLS, że WITH CHECK blokuje przepisanie własnego wiersza tokenu na cudzy owner_id."
+ },
+ {
+  "et": "f-2634b67",
+  "id": "K7",
+  "klasa": "spojnosc-dwoch-systemow",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Projekt rotacji zakłada, że UPSERT PostgREST odświeży created_at, a PostgREST aktualizuje tylko kolumny ładunku i grant INSERT jej nie obejmuje."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K2",
+  "klasa": "polkniety-blad",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Gałąź błędu odczytu profiles ustawia status error bez zgłoszenia przyczyny — operator nie widzi śladu."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K3",
+  "klasa": "test-niefalsyfikowalny",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Test „adres nie trafia do logu” przechodzi także wtedy, gdy zachowanie jest zepsute (wg streszczenia niefalsyfikowalny)."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K4",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Nowy moduł 156 linii z logiką domenową nie ma żadnego pliku testowego."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K6",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Ścieżka „Usuń webhook” nie ma żadnego testu."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K7",
+  "klasa": "tekst-ui",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Gałąź błędu zapisu wyświetla tekst loadError, czyli komunikat niosący złą informację (błąd odczytu zamiast zapisu)."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K11",
+  "klasa": "wartosc-graniczna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Wczesny powrót przy visitCount === 0 ukrywa kartę „Decyzje klienta” — złe zachowanie na granicy zera wizyt."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K13",
+  "klasa": "seed-e2e",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Fixture testów RLS w beforeAll zapisuje profil niezgodny z nowym CHECK z migracji, co wywraca pakiet — dane testowe niezgodne z kontraktem migracji."
+ },
+ {
+  "et": "f-303ff62",
+  "id": "K14",
+  "klasa": "migracja-bazy",
+  "pewnosc": "srednia",
+  "uzasadnienie": "ADD CONSTRAINT pair_check bez NOT VALID/backfillu na istniejącej tabeli profiles — wada wykonania migracji (treść urwana, klasyfikacja po wycinku)."
+ },
+ {
+  "et": "f-31491bc",
+  "id": "K1",
+  "klasa": "duplikacja",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Wzorzec komórki, liczba kolumn i progi gęstości są ręcznie powielone w serwerze i dashboardzie zamiast w packages/shared."
+ },
+ {
+  "et": "f-31491bc",
+  "id": "K5",
+  "klasa": "cache-i-zapytania",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Drogi rachunek kubełków i dekodu punktów bez memoizacji wykonuje się przy każdym renderze i wymusza pełne przerysowanie canvasu."
+ },
+ {
+  "et": "f-31491bc",
+  "id": "K6",
+  "klasa": "inna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Błąd układu CSS: pomiar clientWidth na boxie rozpychanym przez nieskalowaną treść (flex bez min-width: 0) daje poziomy scroll — brak klasy dla layoutu."
+ },
+ {
+  "et": "f-31491bc",
+  "id": "K7",
+  "klasa": "inna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Błąd rachunku agregatu: sumowanie wag z siatek o różnej gęstości bez normalizacji przekłamuje intensywność — brak pasującej klasy."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K3",
+  "klasa": "cache-i-zapytania",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Zwinięcie tylko CSS-em nadal montuje iframe z dokumentem oferty i canvas, czyli zbędne pobranie i rysowanie na telefonie."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K4",
+  "klasa": "zaufanie-danym-klienta",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Rozmiar canvasu i ramki pochodzi wprost z doc_height/viewport_width wysłanych przez odbiorcę oferty, bez górnego ograniczenia."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K5",
+  "klasa": "wartosc-graniczna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Canvas alokowany w pełnej rozdzielczości dokumentu przekracza limit powierzchni canvasu Safari i nakładka wychodzi pusta."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K7",
+  "klasa": "sciezka-bledu",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Niepoprawna wartość ENV rzuca TypeError w trakcie renderu bez error boundary, więc użytkownik dostaje białą stronę."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K9",
+  "klasa": "uprawnienia-naglowki-sql",
+  "pewnosc": "srednia",
+  "uzasadnienie": "CSP originu ofert używa self, które w ramce sandbox bez allow-same-origin nie pasuje do niczego i blokuje kroje oraz obrazy."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K10",
+  "klasa": "tekst-ui",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Podpis mapy obiecuje czas zatrzymania, a waga komórki jest licznikiem próbek ruchu."
+ },
+ {
+  "et": "f-32975a1",
+  "id": "K11",
+  "klasa": "tekst-ui",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Nota mobilna obiecuje otwarcie mapy na pełnym ekranie, a kod rozwija ją w miejscu w skali czyniącej mapę nieczytelną."
+ },
+ {
+  "et": "f-46be55a",
+  "id": "K1",
+  "klasa": "kontrakt-wspolny",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Klient wysyła created_at z zegara przeglądarki, podczas gdy migracja fazy 1 ustala go triggerem serwerowym — dwie warstwy opisują to pole inaczej."
+ },
+ {
+  "et": "f-46be55a",
+  "id": "K2",
+  "klasa": "migracja-bazy",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Znacznik czasu nowej migracji jest wcześniejszy niż migracja już zaaplikowana, więc db push odmówi — zła kolejność."
+ },
+ {
+  "et": "f-46be55a",
+  "id": "K3",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Test RLS pokrywa ładunek bez created_at, a rzeczywista ścieżka zapisu dashboardu (z created_at) nie ma testu."
+ },
+ {
+  "et": "f-46be55a",
+  "id": "K4",
+  "klasa": "migracja-bazy",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Migracja z wcześniejszym numerem wersji dubluje już rozwiązany problem odrzuconą metodą (poszerzenie grantu) i wchodzi w złej kolejności."
+ },
+ {
+  "et": "f-46be55a",
+  "id": "K12",
+  "klasa": "kontrakt-wspolny",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Serwer formatuje expires_at w Europe/Warsaw, a nowy formatter dashboardu w strefie przeglądarki — ta sama data opisana dwiema semantykami."
+ },
+ {
+  "et": "f-5af000f",
+  "id": "K4",
+  "klasa": "spojnosc-dwoch-systemow",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Klikalność wiersza zakłada, że WebKit traktuje table-row z position: relative jako blok zawierający dla nakładki absolutnej."
+ },
+ {
+  "et": "f-5af000f",
+  "id": "K5",
+  "klasa": "spojnosc-dwoch-systemow",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Czas wizyty sumuje sekundy sekcji, zakładając rozłączny pomiar, a tracker nalicza ten sam odcinek do wielu widocznych sekcji naraz."
+ },
+ {
+  "et": "f-5af000f",
+  "id": "K6",
+  "klasa": "duplikacja",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Ręcznie napisany interfejs wiersza zastępuje typ wywnioskowany z Database i stringu kolumn — kopia schematu na razie zgodna, która może się rozjechać."
+ },
+ {
+  "et": "f-5af000f",
+  "id": "K7",
+  "klasa": "wartosc-graniczna",
+  "pewnosc": "niska",
+  "uzasadnienie": "Lista sekcji budowana tylko z obecnych kluczy pomija sekcje z zerowym czasem, więc stan „nieczytana” jest nieosiągalny."
+ },
+ {
+  "et": "f-67f5f2c",
+  "id": "K1",
+  "klasa": "test-niefalsyfikowalny",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Test inicjalizacji Sentry nie asertuje żadnej opcji, więc usunięcie beforeSend lub włączenie sendDefaultPii zostawia go zielonym."
+ },
+ {
+  "et": "f-67f5f2c",
+  "id": "K2",
+  "klasa": "inna",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Błędna konfiguracja buildu/uruchomienia (noEmit, brak skryptu build/start, importy .js bez artefaktów) — proces nie startuje; brak klasy dla konfiguracji builda."
+ },
+ {
+  "et": "f-67f5f2c",
+  "id": "K3",
+  "klasa": "spojnosc-dwoch-systemow",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Host-guard zakłada, że każde żądanie niesie host APP/OFFER_ORIGIN, a health check kontenera Coolify uderza z hostem pętli zwrotnej."
+ },
+ {
+  "et": "f-9d40529",
+  "id": "K1",
+  "klasa": "kontrakt-wspolny",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Typy współdzielone wygenerowano ze stagingu z tabelą spoza migracji, więc kontrakt typów opisuje schemat inaczej niż migracje."
+ },
+ {
+  "et": "f-9d40529",
+  "id": "K3",
+  "klasa": "wartosc-graniczna",
+  "pewnosc": "niska",
+  "uzasadnienie": "Brak sufitu liczby kluczy w skumulowanym scalaniu sections/heat pozwala rozdąć wiersz wizyty bez limitu."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K2",
+  "klasa": "kontrakt-wspolny",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Bramka publikacji dopuszcza dowolny data-section, a bramka zdarzeń wymaga wzorca i odrzuca cały beacon — dwie bramki opisują to pole inaczej."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K6",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Brak testu, że POST /e jest liczony przez wiadro limitera originu ofert."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K7",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Loader oferty trackingu i parsowanie odpowiedzi PostgREST nie mają żadnego testu."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K8",
+  "klasa": "cache-i-zapytania",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Próg wspólnego wiadra limitera przeliczony na odsłonę, a tracker wysyła beacony co 10 s, więc limiter 429-uje dokumenty kolejnych odbiorców."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K9",
+  "klasa": "sciezka-bledu",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Błąd wtórnego update statusu rzuca jak błąd zapisu wizyty, token nie wychodzi i retry tworzy zdublowaną, pustą wizytę."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K10",
+  "klasa": "uprawnienia-naglowki-sql",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Grant select na całej tabeli offers dla authenticated obejmuje ip_salt, co pozwala odtworzyć adresy IP z ip_hash."
+ },
+ {
+  "et": "f-b26128d",
+  "id": "K12",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Sufit MAX_SECTION_KEYS nie ma testu granicznego."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K1",
+  "klasa": "uprawnienia-naglowki-sql",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Origin ofert serwujący HTML z bazy wydaje tylko CSP frame-ancestors, bez dyrektyw ograniczających skrypty, formularze i obce hosty."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K3",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Serwowanie BRANDING_ASSET_PATHS i gałąź ASSET_CACHE_CONTROL nie mają testu."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K4",
+  "klasa": "cache-i-zapytania",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Wspólne wiadro limitera obejmuje też statykę i przy kilkudziesięciu odbiorcach w minucie blokuje ofertę 429 (brak też testu kluczowania)."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K6",
+  "klasa": "zaufanie-danym-klienta",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Klucz limitera pochodzi z X-Forwarded-For kontrolowanego przez klienta, a przy jego braku ze wspólnego klucza."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K7",
+  "klasa": "a11y",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "assertBrandContract nie egzekwuje progu kontrastu białego tekstu na brandColor, więc jasny kolor marki daje nieczytelny hero."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K8",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "expired-page nie ma własnego testu: fallbacki koloru i kroju, escaping i strefa daty są niepokryte."
+ },
+ {
+  "et": "f-b8374c8",
+  "id": "K10",
+  "klasa": "bramka-na-jednej-drodze",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Limit rozmiaru HTML jest planowany tylko w walidacji aplikacyjnej, a zapis przez PostgREST z tokenem MCP go omija (brak CHECK w kolumnie)."
+ },
+ {
+  "et": "f-f3ee433",
+  "id": "K3",
+  "klasa": "tekst-ui",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Zdanie regulaminu ma odwrócony podmiot („wysłał ją odbiorca”) i niesie fakt sprzeczny z działaniem usługi."
+ },
+ {
+  "et": "f-f3ee433",
+  "id": "K4",
+  "klasa": "tekst-ui",
+  "pewnosc": "wysoka",
+  "uzasadnienie": "Regulamin i polityka obiecują usunięcie konta z Ustawień, a dashboard nie ma takiej ścieżki."
+ },
+ {
+  "et": "f-f3ee433",
+  "id": "K5",
+  "klasa": "luka-pokrycia",
+  "pewnosc": "srednia",
+  "uzasadnienie": "Scenariusz planu „ta sama kolejność sekcji” nie ma asercji kolejności — test sprawdza tylko obecność nagłówków."
+ }
+]

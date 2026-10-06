@@ -1,0 +1,1617 @@
+{
+ "d10": {
+  "zdania": [
+   "dopasowanie-tekstu",
+   "bramka-czarna-lista",
+   "pii-i-sekrety",
+   "bramka-na-jednej-drodze",
+   "wyscig-i-wspolbieznosc",
+   "sciezka-bledu",
+   "wartosc-graniczna",
+   "limit-czasu-i-ponowien",
+   "zaufanie-danym-klienta",
+   "migracja-bazy",
+   "seed-e2e"
+  ],
+  "pokryte": [
+   "test-niefalsyfikowalny",
+   "walidacja-granicy-api",
+   "kontrakt-wspolny",
+   "cykl-zycia-ui",
+   "polkniety-blad",
+   "cache-i-zapytania",
+   "tekst-ui",
+   "a11y"
+  ]
+ },
+ "fazy": [
+  {
+   "et": "f-32975a1",
+   "zadanie": "faza-5-heatmapa",
+   "faza": 2,
+   "sha": "32975a10a04c353df2dbf3cfa0719095b5f1a3e3",
+   "baza_review": "a7e8c64",
+   "baza": "6b7a9aab840dd27e2fd4b96a8182aebe269632af",
+   "commit_fazy": "32975a1",
+   "plan": "docs/plans/2026-08-30-001-feat-faza-5-heatmapa-plan.md",
+   "iu": [
+    {
+     "id": "IU-3",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+      "apps/dashboard/src/features/offers/simpleheat.d.ts",
+      "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+      "apps/dashboard/package.json"
+     ]
+    },
+    {
+     "id": "IU-4",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+      "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+      "apps/dashboard/src/features/offers/offer-details-page.tsx",
+      "apps/dashboard/src/features/offers/texts.ts",
+      "apps/dashboard/src/features/offers/offer-details-page.test.tsx"
+     ]
+    },
+    {
+     "id": "IU-5",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "e2e/seeds/faza-5-heatmapa-seed.sql"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 1393,
+   "klucz1": [
+    {
+     "id": "K1",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/texts.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K2",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+     "w_zakresie": false
+    },
+    {
+     "id": "K8",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K3",
+     "klasa": "cache-i-zapytania",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "zaufanie-danym-klienta",
+     "waga": "P1",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "wartosc-graniczna",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "uprawnienia-naglowki-sql",
+     "waga": "P2",
+     "plik": "apps/server/src/app.ts",
+     "w_zakresie": false
+    },
+    {
+     "id": "K10",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/texts.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 3,
+   "k2_pokryte": 3,
+   "k1_d10": 0,
+   "k1_pokryte": 3
+  },
+  {
+   "et": "f-303ff62",
+   "zadanie": "faza-6-cta-i-webhooki",
+   "faza": 4,
+   "sha": "303ff625dbae87af5e1838f76acf1fb170a14ad3",
+   "baza_review": "f373d38",
+   "baza": "f373d38386f25cce2e40d3092303e1655f837163",
+   "commit_fazy": "303ff62",
+   "plan": "docs/plans/2026-09-02-001-feat-faza-6-cta-i-webhooki-plan.md",
+   "iu": [
+    {
+     "id": "IU-8",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/settings/webhook-card.tsx",
+      "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+      "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+      "apps/dashboard/src/features/settings/accept-message-card.tsx",
+      "apps/dashboard/src/features/settings/webhook-placeholder.tsx",
+      "apps/dashboard/src/features/settings/settings-page.tsx",
+      "apps/dashboard/src/features/settings/texts.ts",
+      "apps/dashboard/src/features/settings/settings-page.test.tsx",
+      "apps/server/src/routes/decisions.ts"
+     ]
+    },
+    {
+     "id": "IU-9",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-decisions-card.tsx",
+      "apps/dashboard/src/features/offers/offer-decisions-card.test.tsx",
+      "apps/dashboard/src/features/offers/use-offer-decisions.ts",
+      "apps/dashboard/src/features/offers/offer-details-page.tsx",
+      "apps/dashboard/src/features/offers/texts.ts",
+      "e2e/seeds/faza-6-cta-seed.sql"
+     ]
+    },
+    {
+     "id": "IU-10",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.ts",
+      "apps/server/src/mcp/tools/ustaw-tekst-akceptacji.test.ts",
+      "apps/server/src/mcp/server.ts",
+      "apps/server/src/index.ts"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 4052,
+   "klucz1": [
+    {
+     "id": "K1",
+     "klasa": "walidacja-granicy-api",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/webhook-settings.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K8",
+     "klasa": "walidacja-granicy-api",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/accept-message-card.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K10",
+     "klasa": "limit-czasu-i-ponowien",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/webhook-api.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K12",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K2",
+     "klasa": "polkniety-blad",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/webhook-settings.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/webhook-card.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "wartosc-graniczna",
+     "waga": "P1",
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K13",
+     "klasa": "seed-e2e",
+     "waga": "P1",
+     "plik": "supabase/tests/rls.test.ts",
+     "w_zakresie": false
+    },
+    {
+     "id": "K14",
+     "klasa": "migracja-bazy",
+     "waga": "P2",
+     "plik": "supabase/migrations/20260902190000_profiles_webhook_set_at.sql",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 2,
+   "k2_pokryte": 3,
+   "k1_d10": 2,
+   "k1_pokryte": 4
+  },
+  {
+   "et": "f-46be55a",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "faza": 2,
+   "sha": "46be55afc97a53538b0cd6204317abd2adf7c111",
+   "baza_review": "a4225e4",
+   "baza": "a4225e4baf74565a3dd9b5fad9bd468db5b94f71",
+   "commit_fazy": "46be55a",
+   "plan": "docs/plans/2026-08-27-001-feat-faza-3-konto-i-dashboard-plan.md",
+   "iu": [
+    {
+     "id": "IU-4",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/package.json",
+      "apps/dashboard/vite.config.ts",
+      "apps/dashboard/src/main.tsx",
+      "apps/dashboard/src/App.tsx",
+      "apps/dashboard/src/lib/supabase.ts"
+     ]
+    },
+    {
+     "id": "IU-5",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": []
+    },
+    {
+     "id": "IU-6",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": []
+    }
+   ],
+   "ui": true,
+   "linie_diff": 3024,
+   "klucz1": [
+    {
+     "id": "K5",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/auth/session-context.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K8",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/auth/login-page.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "spojnosc-dwoch-systemow",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K10",
+     "klasa": "duplikacja",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/offers/use-offers.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "duplikacja",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/settings/mcp-token.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "kontrakt-wspolny",
+     "waga": "P1",
+     "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K2",
+     "klasa": "migracja-bazy",
+     "waga": "P2",
+     "plik": "supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "supabase/tests/rls.test.ts",
+     "w_zakresie": false
+    },
+    {
+     "id": "K4",
+     "klasa": "migracja-bazy",
+     "waga": "P1",
+     "plik": "supabase/migrations/20260827194500_mcp_tokens_created_at_insert_grant.sql",
+     "w_zakresie": true
+    },
+    {
+     "id": "K12",
+     "klasa": "kontrakt-wspolny",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 2,
+   "k2_pokryte": 2,
+   "k1_d10": 4,
+   "k1_pokryte": 0
+  },
+  {
+   "et": "f-2536643",
+   "zadanie": "faza-9a-domena-mailer-limity",
+   "faza": 4,
+   "sha": "25366437371890bcd86a1007378d0967f4f884c3",
+   "baza_review": "72c07dc",
+   "baza": "72c07dcb3d85c98682752136a050fb7199fded49",
+   "commit_fazy": "2536643",
+   "plan": "docs/plans/2026-09-12-001-feat-faza-9a-domena-mailer-limity-plan.md",
+   "iu": [
+    {
+     "id": "IU-10",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-address.ts",
+      "offer-heatmap-frame.tsx",
+      "offer-address.test.ts",
+      "apps/dashboard/src/features/offers/offer-address-row.tsx",
+      "template-asset-path.tsx",
+      "offer-address-row.test.tsx",
+      "apps/dashboard/src/features/offers/copy-address-button.tsx",
+      "copy-address-button.test.tsx",
+      "apps/dashboard/src/features/offers/offer-details-page.tsx",
+      "offer-details-page.test.tsx",
+      "apps/dashboard/src/features/offers/offers-list.tsx",
+      "offers-list.test.tsx",
+      "apps/dashboard/src/features/offers/offers-stats.tsx",
+      "offers-stats.test.tsx",
+      "apps/dashboard/src/features/offers/texts.ts"
+     ]
+    },
+    {
+     "id": "IU-11",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "supabase/migrations/20260913160000_offer_templates_heading_texts.sql",
+      "supabase/tests/rls.test.ts",
+      "packages/shared/src/database.types.ts",
+      "database.types.test.ts",
+      "packages/shared/src/template-contract.ts",
+      "template-contract.test.ts",
+      "apps/server/src/offer/template-headings.ts",
+      "template-headings.test.ts",
+      "apps/server/src/offer/template-repository.ts",
+      "template-repository.test.ts",
+      "template-repository.fake.ts",
+      "apps/server/src/routes/templates.ts",
+      "templates.test.ts",
+      "apps/server/src/mcp/tools/lista-szablonow.ts"
+     ]
+    },
+    {
+     "id": "IU-12",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/templates/template-thumbnail.tsx",
+      "template-thumbnail.test.tsx",
+      "apps/dashboard/src/features/templates/template-card.tsx",
+      "template-card.test.tsx",
+      "apps/dashboard/src/features/templates/templates-page.tsx",
+      "templates-page.test.tsx",
+      "apps/dashboard/src/features/templates/template-texts-format.ts",
+      "template-texts-format.test.ts",
+      "apps/dashboard/src/features/templates/template-list-state.ts",
+      "templates-api.ts",
+      "use-templates.ts",
+      "apps/dashboard/src/features/templates/texts.ts",
+      "e2e/seeds/faza-9a-miniatury-seed.sql"
+     ]
+    },
+    {
+     "id": "IU-13",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/rate-limit.ts",
+      "rate-limit.test.ts",
+      "apps/server/src/routes/template-assets.ts",
+      "template-assets.test.ts",
+      "apps/dashboard/src/features/templates/upload-queue-state.ts",
+      "upload-queue-state.test.ts",
+      "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+      "use-template-asset-queue.test.ts",
+      "apps/dashboard/src/features/templates/use-template-asset-mutations.ts",
+      "use-template-asset-mutations.test.ts",
+      "apps/dashboard/src/features/templates/upload-drop-zone.tsx",
+      "dataTransfer.files",
+      "upload-drop-zone.test.tsx",
+      "apps/dashboard/src/features/templates/upload-queue-list.tsx",
+      "upload-queue-list.test.tsx",
+      "apps/dashboard/src/features/templates/template-assets-card.tsx",
+      "template-assets-card.test.tsx",
+      "asset-tiles.tsx",
+      "asset-tiles.test.tsx",
+      "upload-status-row.tsx",
+      "templates/texts.ts",
+      "apps/dashboard/src/features/templates/templates-api.ts",
+      "templates-api.test.ts"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 7208,
+   "klucz1": [
+    {
+     "id": "K2",
+     "klasa": "bramka-na-jednej-drodze",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/templates/asset-tiles.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/templates/template-thumbnail.test.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "kontrakt-wspolny",
+     "waga": "P2",
+     "plik": "supabase/migrations/20260913160000_offer_templates_heading_texts.sql",
+     "w_zakresie": true
+    },
+    {
+     "id": "K8",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/templates/use-abort-registry.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/templates/use-template-asset-queue.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "wartosc-graniczna",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/templates/template-texts-format.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "kontrakt-wspolny",
+     "waga": "P2",
+     "plik": "packages/shared/src/template-contract.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "inna",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/templates/template-card.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/templates.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "inna",
+     "waga": "P1",
+     "plik": "apps/server/src/offer/template-headings.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K10",
+     "klasa": "dopasowanie-tekstu",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 1,
+   "k2_pokryte": 2,
+   "k1_d10": 2,
+   "k1_pokryte": 4
+  },
+  {
+   "et": "f-1de5a4c",
+   "zadanie": "faza-7-szablony-i-grafiki",
+   "faza": 6,
+   "sha": "1de5a4c2607944072aa9f27b58edc18b46e34c4c",
+   "baza_review": "60f1951",
+   "baza": "60f1951eb67356958644ccfa19792262a8634345",
+   "commit_fazy": "a2a296a",
+   "plan": "docs/plans/2026-09-03-001-feat-faza-7-szablony-i-grafiki-plan.md",
+   "iu": [
+    {
+     "id": "IU-13",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/routes/offer.ts",
+      "apps/server/src/routes/offer.test.ts",
+      "apps/server/src/offer/expired-page.ts",
+      "apps/server/src/offer/expired-page.test.ts",
+      "apps/server/src/offer/aa-pages.ts",
+      "apps/server/src/offer/aa-pages.test.ts",
+      "apps/server/static/c.js",
+      "apps/server/src/cta/cta-script.test.ts",
+      "apps/server/src/offer/cta-section.ts"
+     ]
+    },
+    {
+     "id": "IU-14",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/components/layout/app-layout.tsx",
+      "apps/dashboard/src/components/layout/app-layout.test.tsx",
+      "apps/dashboard/src/assets/logo-aa-napis.webp",
+      "apps/server/static/logo-aa-napis.webp",
+      "apps/server/src/offer/pages/aa-design.ts",
+      "apps/server/src/routes/offer-origin-pages.ts",
+      "apps/server/src/routes/offer-origin-pages.test.ts",
+      "scripts/dockerfile-invariants.test.ts"
+     ]
+    },
+    {
+     "id": "IU-15",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+      "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+      "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+      "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+      "apps/dashboard/src/features/offers/heatmap-grid.ts",
+      "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+      "apps/dashboard/src/features/offers/use-offer-heat.ts"
+     ]
+    },
+    {
+     "id": "IU-16",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/webhooks/settings-service.ts",
+      "apps/server/src/webhooks/settings-service.test.ts",
+      "apps/dashboard/src/components/copy-button.tsx",
+      "apps/dashboard/src/components/copy-button.test.tsx",
+      "apps/dashboard/src/App.tsx",
+      "apps/dashboard/src/App.test.tsx",
+      "apps/dashboard/src/features/settings/use-mcp-token.ts",
+      "apps/dashboard/src/main.tsx",
+      "apps/dashboard/src/components/error-boundary.tsx",
+      "apps/dashboard/src/components/error-boundary.test.tsx",
+      "apps/dashboard/src/features/settings/texts.ts",
+      "apps/dashboard/vite.config.ts"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 1696,
+   "klucz1": [
+    {
+     "id": "K2",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/components/copy-button.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "pii-i-sekrety",
+     "waga": "P2",
+     "plik": "apps/server/src/webhooks/settings-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "luka-pokrycia",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "tekst-ui",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/main.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K8",
+     "klasa": "bramka-czarna-lista",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K10",
+     "klasa": "polkniety-blad",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/components/layout/app-layout.test.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/cta/cta-script.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/server/static/c.js",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "inna",
+     "waga": "P2",
+     "plik": "apps/server/static/logo-aa-napis.webp",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "cache-i-zapytania",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+     "w_zakresie": false
+    },
+    {
+     "id": "K12",
+     "klasa": "cache-i-zapytania",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/main.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 1,
+   "k2_pokryte": 1,
+   "k1_d10": 2,
+   "k1_pokryte": 4
+  },
+  {
+   "et": "f-b8374c8",
+   "zadanie": "faza-2-publikacja-ofert",
+   "faza": 2,
+   "sha": "b8374c8091b1f6de0377cb63675e1f294a5210dc",
+   "baza_review": "c349bd1",
+   "baza": "c349bd1836d27d9d298ccd17dcc43b38abaa1e3c",
+   "commit_fazy": "b8374c8",
+   "plan": "docs/plans/2026-08-25-001-feat-faza-2-publikacja-ofert-plan.md",
+   "iu": [
+    {
+     "id": "IU-4",
+     "agentType": "feature-builder-fullstack",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/routes/offer.ts",
+      "apps/server/src/offer/cache.ts",
+      "apps/server/src/offer/expired-page.ts",
+      "apps/server/src/app.ts",
+      "apps/server/src/routes/offer.test.ts",
+      "apps/server/src/offer/cache.test.ts",
+      "e2e/seeds/oferta-serwowanie-seed.sql"
+     ]
+    },
+    {
+     "id": "IU-5",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/routes/offer-origin-pages.ts",
+      "apps/server/src/app.ts",
+      "packages/shared/src/env.ts",
+      "apps/server/src/routes/offer-origin-pages.test.ts"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 1876,
+   "klucz1": [
+    {
+     "id": "K2",
+     "klasa": "wyscig-i-wspolbieznosc",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/offer.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "cache-i-zapytania",
+     "waga": "P3",
+     "plik": "apps/server/src/routes/offer-origin-pages.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "martwy-kod-lub-komentarz",
+     "waga": "P3",
+     "plik": "apps/server/src/offer/repository.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/privacy-page.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "uprawnienia-naglowki-sql",
+     "waga": "P2",
+     "plik": "apps/server/src/app.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "cache-i-zapytania",
+     "waga": "P2",
+     "plik": "apps/server/src/app.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "zaufanie-danym-klienta",
+     "waga": "P2",
+     "plik": "apps/server/src/app.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "a11y",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/brand-contract.ts",
+     "w_zakresie": false
+    },
+    {
+     "id": "K8",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/expired-page.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K10",
+     "klasa": "bramka-na-jednej-drodze",
+     "waga": "P2",
+     "plik": "supabase/migrations/20260825171812_offers_brand_and_contact.sql",
+     "w_zakresie": false
+    }
+   ],
+   "k2_d10": 1,
+   "k2_pokryte": 1,
+   "k1_d10": 1,
+   "k1_pokryte": 2
+  },
+  {
+   "et": "f-5af000f",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "faza": 3,
+   "sha": "5af000f8843bd393fb822112cc355f4ac8cf0cf9",
+   "baza_review": "411a434",
+   "baza": "411a43405a9a48978b51707015ec2a2ca4ff858f",
+   "commit_fazy": "5af000f",
+   "plan": "docs/plans/2026-08-28-001-feat-faza-4-tracking-i-widok-oferty-plan.md",
+   "iu": [
+    {
+     "id": "IU-5",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/use-offer-details.ts",
+      "apps/dashboard/src/features/offers/analytics.ts",
+      "apps/dashboard/src/features/offers/use-offers.ts",
+      "apps/dashboard/src/features/offers/texts.ts",
+      "apps/dashboard/src/features/offers/analytics.test.ts",
+      "use-offer-details.test.ts"
+     ]
+    },
+    {
+     "id": "IU-6",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-details-page.tsx",
+      "apps/dashboard/src/routes.ts",
+      "apps/dashboard/src/App.tsx",
+      "apps/dashboard/src/features/offers/offers-list.tsx",
+      "apps/dashboard/src/features/offers/offers-page.tsx"
+     ]
+    },
+    {
+     "id": "IU-7",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "e2e/seeds/faza-4-wizyty-seed.sql"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 1834,
+   "klucz1": [
+    {
+     "id": "K1",
+     "klasa": "cykl-zycia-ui",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-details-page.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K2",
+     "klasa": "wartosc-graniczna",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/offers/analytics.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "seed-e2e",
+     "waga": "P3",
+     "plik": "e2e/seeds/faza-4-wizyty-seed.sql",
+     "w_zakresie": true
+    },
+    {
+     "id": "K8",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offers-page.test.tsx",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K4",
+     "klasa": "spojnosc-dwoch-systemow",
+     "waga": "P1",
+     "plik": "apps/dashboard/src/features/offers/offers-list.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "spojnosc-dwoch-systemow",
+     "waga": "P1",
+     "plik": "apps/dashboard/src/features/offers/analytics.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "duplikacja",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/use-offer-details.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "wartosc-graniczna",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/analytics.ts",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 1,
+   "k2_pokryte": 0,
+   "k1_d10": 2,
+   "k1_pokryte": 2
+  },
+  {
+   "et": "f-31491bc",
+   "zadanie": "siatka-heatmapy-proporcjonalna",
+   "faza": 3,
+   "sha": "31491bc36fb7e0369eb9e2805e7472d528bbab11",
+   "baza_review": "2a149d6",
+   "baza": "2a149d6b54e5c4a2da2fc6be20f3d231e9b2d074",
+   "commit_fazy": "31491bc",
+   "plan": "docs/plans/2026-08-31-001-fix-siatka-heatmapy-proporcjonalna-plan.md",
+   "iu": [
+    {
+     "id": "IU-5",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/heatmap-grid.ts",
+      "apps/dashboard/src/features/offers/use-offer-heat.ts",
+      "apps/dashboard/src/features/offers/heatmap-grid.test.ts"
+     ]
+    },
+    {
+     "id": "IU-6",
+     "agentType": "feature-builder-ui",
+     "delegacja": true,
+     "pliki": [
+      "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+      "apps/dashboard/src/features/offers/heatmap-grid.ts",
+      "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+      "e2e/seeds/siatka-proporcjonalna-seed.sql"
+     ]
+    }
+   ],
+   "ui": true,
+   "linie_diff": 1235,
+   "klucz1": [
+    {
+     "id": "K2",
+     "klasa": "luka-pokrycia",
+     "waga": "P3",
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "seed-e2e",
+     "waga": "P2",
+     "plik": "e2e/seeds/siatka-proporcjonalna-seed.sql",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "duplikacja",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "cache-i-zapytania",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "inna",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "inna",
+     "waga": "P2",
+     "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 0,
+   "k2_pokryte": 1,
+   "k1_d10": 1,
+   "k1_pokryte": 1
+  },
+  {
+   "et": "f-b26128d",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "faza": 2,
+   "sha": "b26128d294e58550f351432465b140a2059a2a1d",
+   "baza_review": "7f11a87",
+   "baza": "b57f236e111e896b22f8f08827ecd5389b84fe2d",
+   "commit_fazy": "b26128d",
+   "plan": "docs/plans/2026-08-28-001-feat-faza-4-tracking-i-widok-oferty-plan.md",
+   "iu": [
+    {
+     "id": "IU-3",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/static/t.js",
+      "apps/server/src/tracker/tracker.test.ts"
+     ]
+    },
+    {
+     "id": "IU-4",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/routes/events.ts",
+      "apps/server/src/tracking/visit-service.ts",
+      "apps/server/src/routes/events.test.ts",
+      "apps/server/src/tracking/visit-service.test.ts",
+      "apps/server/src/app.ts",
+      "/t.js",
+      "apps/server/src/routes/offer-origin-pages.ts"
+     ]
+    }
+   ],
+   "ui": false,
+   "linie_diff": 2198,
+   "klucz1": [
+    {
+     "id": "K1",
+     "klasa": "polkniety-blad",
+     "waga": "P3",
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "limit-czasu-i-ponowien",
+     "waga": "P2",
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/tracker/tracker.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/server/static/t.js",
+     "w_zakresie": true
+    },
+    {
+     "id": "K11",
+     "klasa": "luka-pokrycia",
+     "waga": "P3",
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K13",
+     "klasa": "bramka-na-jednej-drodze",
+     "waga": "P3",
+     "plik": "apps/server/src/routes/events.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K2",
+     "klasa": "kontrakt-wspolny",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/events.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/events.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/tracking/visit-service.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K8",
+     "klasa": "cache-i-zapytania",
+     "waga": "P2",
+     "plik": "apps/server/src/app.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K9",
+     "klasa": "sciezka-bledu",
+     "waga": "P2",
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K10",
+     "klasa": "uprawnienia-naglowki-sql",
+     "waga": "P2",
+     "plik": "apps/server/src/tracking/visit-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K12",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/events.ts",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 1,
+   "k2_pokryte": 2,
+   "k1_d10": 3,
+   "k1_pokryte": 2
+  },
+  {
+   "et": "f-9d40529",
+   "zadanie": "faza-4-tracking-i-widok-oferty",
+   "faza": 1,
+   "sha": "9d4052959267d0d353330a6ca6ba7f819d0dcc32",
+   "baza_review": "8f3728e",
+   "baza": "0b75fcb48e4474d09cc45b54e0a483a1a4df31d0",
+   "commit_fazy": "9d40529",
+   "plan": "docs/plans/2026-08-28-001-feat-faza-4-tracking-i-widok-oferty-plan.md",
+   "iu": [
+    {
+     "id": "IU-1",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "supabase/tests/rls.test.ts",
+      "packages/shared/src/database.types.ts"
+     ]
+    },
+    {
+     "id": "IU-2",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/offer/pages/privacy-page.ts",
+      "apps/server/src/routes/offer-origin-pages.test.ts"
+     ]
+    }
+   ],
+   "ui": false,
+   "linie_diff": 699,
+   "klucz1": [
+    {
+     "id": "K2",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/privacy-page.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/privacy-page.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "kontrakt-wspolny",
+     "waga": "P2",
+     "plik": "packages/shared/src/database.types.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "wartosc-graniczna",
+     "waga": "P2",
+     "plik": "supabase/migrations/20260828120000_visits_tracking.sql",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 1,
+   "k2_pokryte": 1,
+   "k1_d10": 0,
+   "k1_pokryte": 2
+  },
+  {
+   "et": "f-f3ee433",
+   "zadanie": "faza-9c-dokumenty-prawne",
+   "faza": 2,
+   "sha": "f3ee4338118c609fdc1a05115c718cec0b730fb5",
+   "baza_review": "05dd804",
+   "baza": "7a85ec7a49335d07c51612ee992a132d199392ba",
+   "commit_fazy": "f3ee433",
+   "plan": "docs/plans/2026-09-11-001-feat-faza-9c-dokumenty-prawne-plan.md",
+   "iu": [
+    {
+     "id": "IU-3",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/offer/pages/legal-document.ts",
+      "apps/server/src/offer/pages/legal-document.test.ts",
+      "apps/server/src/offer/pages/terms-page.ts",
+      "apps/server/src/offer/pages/terms-page.test.ts",
+      "apps/server/src/offer/pages/privacy-page.ts",
+      "apps/server/src/routes/app-origin-pages.ts",
+      "apps/server/src/routes/app-origin-pages.test.ts",
+      "apps/server/src/offer/aa-pages.test.ts",
+      "apps/server/src/routes/offer-origin-pages.test.ts"
+     ]
+    },
+    {
+     "id": "IU-4",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/offer/pages/app-privacy-page.ts",
+      "apps/server/src/offer/pages/app-privacy-page.test.ts",
+      "apps/server/src/offer/pages/privacy-page.ts",
+      "apps/server/src/routes/offer-origin-pages.test.ts",
+      "apps/server/src/routes/app-origin-pages.ts",
+      "app-origin-pages.test.ts",
+      "aa-pages.test.ts"
+     ]
+    }
+   ],
+   "ui": false,
+   "linie_diff": 1378,
+   "klucz1": [
+    {
+     "id": "K1",
+     "klasa": "duplikacja",
+     "waga": "P3",
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K2",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/terms-page.test.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K3",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "tekst-ui",
+     "waga": "P2",
+     "plik": "apps/server/src/offer/pages/terms-page.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 0,
+   "k2_pokryte": 2,
+   "k1_d10": 0,
+   "k1_pokryte": 2
+  },
+  {
+   "et": "f-67f5f2c",
+   "zadanie": "faza-1-fundament",
+   "faza": 3,
+   "sha": "67f5f2cdf6446264bc4dcbc730e0de7003582252",
+   "baza_review": "6b816c0",
+   "baza": "6b816c04d3db7ce68200f8967b56b4e3283da567",
+   "commit_fazy": "67f5f2c",
+   "plan": "docs/plans/2026-08-24-001-feat-faza-1-fundament-plan.md",
+   "iu": [
+    {
+     "id": "IU-4",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/index.ts",
+      "apps/server/src/app.ts",
+      "apps/server/src/routes/health.ts",
+      "apps/server/src/app.test.ts",
+      "apps/server/src/routes/health.test.ts"
+     ]
+    },
+    {
+     "id": "IU-5",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/observability/sentry.ts",
+      "apps/server/src/observability/logger.ts",
+      "apps/server/src/app.ts",
+      "apps/server/src/observability/logger.test.ts"
+     ]
+    }
+   ],
+   "ui": false,
+   "linie_diff": 810,
+   "klucz1": [
+    {
+     "id": "K4",
+     "klasa": "limit-czasu-i-ponowien",
+     "waga": "P2",
+     "plik": "apps/server/src/index.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "pii-i-sekrety",
+     "waga": "P2",
+     "plik": "apps/server/src/observability/sentry.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K1",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "apps/server/src/observability/sentry.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K2",
+     "klasa": "inna",
+     "waga": "P2",
+     "plik": "apps/server/tsconfig.json",
+     "w_zakresie": true
+    },
+    {
+     "id": "K3",
+     "klasa": "spojnosc-dwoch-systemow",
+     "waga": "P2",
+     "plik": "apps/server/src/app.ts",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 0,
+   "k2_pokryte": 1,
+   "k1_d10": 2,
+   "k1_pokryte": 0
+  },
+  {
+   "et": "f-2634b67",
+   "zadanie": "faza-3-konto-i-dashboard",
+   "faza": 1,
+   "sha": "2634b6770a6fa4018d67a3c3dbeb19b89d91632c",
+   "baza_review": "b06604d",
+   "baza": "af89c2d88d42701ebe13bc6d79afe5da12627865",
+   "commit_fazy": "2634b67",
+   "plan": "docs/plans/2026-08-27-001-feat-faza-3-konto-i-dashboard-plan.md",
+   "iu": [
+    {
+     "id": "IU-1",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "supabase/tests/rls.test.ts",
+      "packages/shared/src/database.types.ts"
+     ]
+    },
+    {
+     "id": "IU-2",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "packages/shared/src/env.ts",
+      "packages/shared/src/env.test.ts"
+     ]
+    },
+    {
+     "id": "IU-3",
+     "agentType": "feature-builder-data",
+     "delegacja": true,
+     "pliki": [
+      "apps/server/src/mcp/token-service.ts",
+      "apps/server/src/mcp/token-service.test.ts",
+      "apps/server/src/mcp/server.ts",
+      "apps/server/src/mcp/server.test.ts",
+      "apps/server/src/index.ts"
+     ]
+    }
+   ],
+   "ui": false,
+   "linie_diff": 1453,
+   "klucz1": [
+    {
+     "id": "K1",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "scripts/dockerfile-invariants.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K2",
+     "klasa": "limit-czasu-i-ponowien",
+     "waga": "P2",
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K5",
+     "klasa": "test-niefalsyfikowalny",
+     "waga": "P2",
+     "plik": "supabase/tests/rls.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K6",
+     "klasa": "wyscig-i-wspolbieznosc",
+     "waga": "P2",
+     "plik": "apps/server/src/mcp/token-service.ts",
+     "w_zakresie": true
+    }
+   ],
+   "klucz2": [
+    {
+     "id": "K3",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "apps/server/src/mcp/token-service.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K4",
+     "klasa": "luka-pokrycia",
+     "waga": "P2",
+     "plik": "supabase/tests/rls.test.ts",
+     "w_zakresie": true
+    },
+    {
+     "id": "K7",
+     "klasa": "spojnosc-dwoch-systemow",
+     "waga": "P2",
+     "plik": "supabase/migrations/20260827183042_mcp_tokens.sql",
+     "w_zakresie": true
+    }
+   ],
+   "k2_d10": 0,
+   "k2_pokryte": 0,
+   "k1_d10": 2,
+   "k1_pokryte": 2
+  }
+ ]
+}
