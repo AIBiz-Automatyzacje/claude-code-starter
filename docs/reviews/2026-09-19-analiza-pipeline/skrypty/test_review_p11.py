@@ -149,7 +149,7 @@ def zlapania(sedzia, mapowanie):
 
 RE_CUDZYSLOW = re.compile(r'"(?:\\.|[^"\\])*"|\'[^\']*\'')
 RE_SEGMENT = re.compile(r'\s*(?:&&|\|\||;|\||\n)\s*')
-RE_GIT_ZAPIS_DRZEWA = re.compile(r'^git\s+(stash|restore|checkout\s+--|checkout\s+\S+\s+--)')
+RE_GIT_ZAPIS_DRZEWA = re.compile(r'^git\s+(stash(?!\s+(list|show)\b)|restore|checkout\s+--|checkout\s+\S+\s+--)')
 RE_EDYCJA_W_MIEJSCU = re.compile(r'^(sed|perl)\s(.*\s)?-p?i(\S*)?(\s|$)')
 RE_PRZEKIEROWANIE_PLIKU = re.compile(r'(?<![\d&])>>?\s*([^\s&|;<>]+)')
 # cele poza drzewem projektu; cel przez zmienną ($S/…) nieznany — agenci kierują tak zapisy do scratchpadu, więc nie liczy się jako zapis drzewa
@@ -175,15 +175,19 @@ def bez_heredoc(cmd):
 def zapis_drzewa(cmd):
     """Czy komenda Bash agenta zmienia pliki projektu w drzewie roboczym (ręczny mutant reviewera: edycja w miejscu poza /tmp, przywrócenie
     kopii z /tmp, przekierowanie do pliku poza /tmp, git stash/restore/checkout --). W prawdziwym projekcie to zapis w drzewie operatora, które równolegle czytają inni reviewerzy."""
-    # treść w cudzysłowach (wzorce grep z \\|, skrypty node -e, wyrażenia sed) nie jest ani separatorem, ani przekierowaniem
+    # treść w cudzysłowach (wzorce grep z \\|, skrypty node -e, wyrażenia sed) nie jest ani separatorem, ani przekierowaniem;
+    # po `cd` poza drzewo (scratchpad) ścieżki względne też są poza drzewem
+    w_drzewie = True
+    poza = lambda cel: cel.startswith(POZA_DRZEWEM) or (not w_drzewie and not cel.startswith('/'))
     for seg in RE_SEGMENT.split(RE_CUDZYSLOW.sub("''", bez_heredoc(cmd.strip()))):
         slowa = seg.split()
         if not slowa: continue
+        if slowa[0] == 'cd' and len(slowa) > 1: w_drzewie = not slowa[1].startswith(POZA_DRZEWEM); continue
         if RE_GIT_ZAPIS_DRZEWA.match(seg): return True
-        cel = slowa[-1].strip('"\'')
-        if RE_EDYCJA_W_MIEJSCU.match(seg) and not cel.startswith(POZA_DRZEWEM): return True
-        if slowa[0] == 'cp' and len(slowa) >= 3 and not cel.startswith(POZA_DRZEWEM): return True
-        if any(not c.startswith(POZA_DRZEWEM) for c in RE_PRZEKIEROWANIE_PLIKU.findall(seg)): return True
+        cel = slowa[-1]
+        if RE_EDYCJA_W_MIEJSCU.match(seg) and not poza(cel): return True
+        if slowa[0] == 'cp' and len(slowa) >= 3 and not poza(cel): return True
+        if any(not poza(c) for c in RE_PRZEKIEROWANIE_PLIKU.findall(seg)): return True
     return False
 
 

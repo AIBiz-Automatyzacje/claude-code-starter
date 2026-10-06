@@ -200,6 +200,7 @@ class ZapisDrzewa(unittest.TestCase):
                    'grep -n "routes.post\\|offer.expiresAt > now" src/a.ts; grep -rn "x" src | head',
                    'node -e "const s=1; for (const v of [1]) console.log(v > 0)"', 'cp src/a.ts /private/tmp/claude-501/a.bak',
                    'S=/private/tmp/claude-501/x/scratchpad; echo a > $S/dist/index.html',
+                   'git stash list | head -2', "cd /private/tmp/claude-501/x/scratchpad/; sed -i '' 's/a/b/' events.ts",
                    "D=/private/tmp/x; cat > $D/t.html <<'EOF'\n<div style=\"a\"><p>x</p></div>\nEOF\nchrome --headless $D/t.html > /dev/null"]
         self.assertEqual([P.zapis_drzewa(c) for c in zapisuja], [True] * len(zapisuja))
         self.assertEqual([P.zapis_drzewa(c) for c in czytaja], [False] * len(czytaja))
