@@ -3,25 +3,101 @@ test_review_p11_cli.py wynik — slepy test P11, sedzia p1; szeroko = PEŁNE + C
   stary klucz1 2/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 5) | szum 18 (P1/P2 4, z mutantow 1) | koszt 1.84 M, na zlapany klucz 0.23 M
         findingi per os (razem/P1+P2): code-quality 6/2, correctness 2/1, performance 4/0, security 6/3, spec-compliance 2/2, test-coverage 8/4
         osie, ktore zlapaly: klucz1 {'code-quality': 1, 'test-coverage': 1} | klucz2 {'correctness': 1, 'test-coverage': 2, 'spec-compliance': 1, 'security': 2}
+        zapis w drzewie roboczym Bashem (komendy per agent): {'review:security': 1}
   nowy  klucz1 3/5 (PEŁNE 2) | klucz2 6/7 (PEŁNE 6) | szum 21 (P1/P2 10, z mutantow 3) | koszt 1.55 M, na zlapany klucz 0.17 M
         findingi per os (razem/P1+P2): code-quality 10/5, correctness 3/1, performance 3/2, security 3/2, test-coverage 13/11
         osie, ktore zlapaly: klucz1 {'correctness': 1, 'test-coverage': 2} | klucz2 {'test-coverage': 3, 'performance': 1, 'code-quality': 1, 'security': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
   pary klucz1: {'tylko_stary': [], 'tylko_nowy': ['K4'], 'oba': ['K3', 'K11']}
   pary klucz2: {'tylko_stary': ['K2'], 'tylko_nowy': ['K8'], 'oba': ['K6', 'K7', 'K9', 'K10', 'K12']}
   sedzia 0.14 M
-== po fazach (1): f-b26128d; CI 95% bootstrap po fazach, 10000 losowan, ziarno 20261006
-  klucz1: stary 2/5 (PEŁNE 2) / nowy 3/5 (PEŁNE 2) | nowy − stary szeroko +20.0 pkt [+20.0; +20.0], PEŁNE +0.0 pkt [+0.0; +0.0]
-  klucz2: stary 6/7 (PEŁNE 5) / nowy 6/7 (PEŁNE 6) | nowy − stary szeroko +0.0 pkt [+0.0; +0.0], PEŁNE +14.3 pkt [+14.3; +14.3]
+== f-b8374c8
+  stary klucz1 1/3 (PEŁNE 1) | klucz2 5/7 (PEŁNE 4) | szum 24 (P1/P2 8, z mutantow 0) | koszt 1.82 M, na zlapany klucz 0.30 M
+        findingi per os (razem/P1+P2): code-quality 7/2, correctness 3/1, performance 6/2, security 8/4, test-coverage 7/4
+        osie, ktore zlapaly: klucz1 {'code-quality': 1} | klucz2 {'security': 2, 'test-coverage': 2, 'performance': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  nowy  klucz1 2/3 (PEŁNE 2) | klucz2 3/7 (PEŁNE 3) | szum 26 (P1/P2 15, z mutantow 5) | koszt 1.67 M, na zlapany klucz 0.33 M
+        findingi per os (razem/P1+P2): code-quality 8/3, correctness 3/2, performance 2/0, security 6/2, spec-compliance 2/2, test-coverage 12/11
+        osie, ktore zlapaly: klucz1 {'correctness': 1, 'code-quality': 1} | klucz2 {'security': 2, 'test-coverage': 2}
+        zapis w drzewie roboczym Bashem (komendy per agent): {'review:correctness': 1}
+  pary klucz1: {'tylko_stary': [], 'tylko_nowy': ['K2'], 'oba': ['K9']}
+  pary klucz2: {'tylko_stary': ['K6', 'K10'], 'tylko_nowy': [], 'oba': ['K1', 'K3', 'K8']}
+  sedzia 0.13 M
+== f-303ff62
+  stary klucz1 5/6 (PEŁNE 5) | klucz2 7/8 (PEŁNE 7) | szum 22 (P1/P2 10, z mutantow 0) | koszt 3.85 M, na zlapany klucz 0.32 M
+        findingi per os (razem/P1+P2): code-quality 10/7, correctness 2/0, performance 4/3, security 9/5, spec-compliance 5/3, test-coverage 8/5
+        osie, ktore zlapaly: klucz1 {'code-quality': 4, 'security': 1, 'correctness': 1} | klucz2 {'security': 3, 'test-coverage': 2, 'code-quality': 2, 'performance': 1, 'spec-compliance': 2}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  nowy  klucz1 5/6 (PEŁNE 4) | klucz2 8/8 (PEŁNE 8) | szum 26 (P1/P2 17, z mutantow 0) | koszt 2.94 M, na zlapany klucz 0.23 M
+        findingi per os (razem/P1+P2): code-quality 10/7, correctness 7/5, security 1/0, spec-compliance 6/2, test-coverage 17/15
+        osie, ktore zlapaly: klucz1 {'code-quality': 3, 'security': 1, 'correctness': 3} | klucz2 {'correctness': 2, 'test-coverage': 4, 'spec-compliance': 2}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  pary klucz1: {'tylko_stary': [], 'tylko_nowy': [], 'oba': ['K1', 'K8', 'K9', 'K10', 'K12']}
+  pary klucz2: {'tylko_stary': [], 'tylko_nowy': ['K2'], 'oba': ['K3', 'K4', 'K6', 'K7', 'K11', 'K13', 'K14']}
+  sedzia 0.19 M
+== f-1de5a4c
+  stary klucz1 2/6 (PEŁNE 2) | klucz2 5/5 (PEŁNE 5) | szum 19 (P1/P2 6, z mutantow 0) | koszt 3.10 M, na zlapany klucz 0.44 M
+        findingi per os (razem/P1+P2): code-quality 5/1, correctness 2/1, performance 6/3, security 3/2, spec-compliance 1/0, test-coverage 9/4
+        osie, ktore zlapaly: klucz1 {'performance': 1, 'security': 1} | klucz2 {'test-coverage': 1, 'code-quality': 2, 'performance': 3}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  nowy  klucz1 2/6 (PEŁNE 2) | klucz2 5/5 (PEŁNE 4) | szum 21 (P1/P2 10, z mutantow 0) | koszt 2.17 M, na zlapany klucz 0.31 M
+        findingi per os (razem/P1+P2): code-quality 8/3, correctness 2/1, performance 5/2, security 1/0, spec-compliance 4/2, test-coverage 9/6
+        osie, ktore zlapaly: klucz1 {'security': 1, 'code-quality': 1} | klucz2 {'correctness': 2, 'performance': 3}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  pary klucz1: {'tylko_stary': ['K2'], 'tylko_nowy': ['K10'], 'oba': ['K8']}
+  pary klucz2: {'tylko_stary': [], 'tylko_nowy': [], 'oba': ['K1', 'K5', 'K7', 'K9', 'K12']}
+  sedzia 0.18 M
+== f-32975a1
+  stary klucz1 0/3 (PEŁNE 0) | klucz2 6/7 (PEŁNE 4) | szum 22 (P1/P2 13, z mutantow 1) | koszt 1.84 M, na zlapany klucz 0.31 M
+        findingi per os (razem/P1+P2): code-quality 7/3, correctness 6/4, performance 5/3, security 4/4, spec-compliance 3/3, test-coverage 4/2
+        osie, ktore zlapaly: klucz1 {} | klucz2 {'performance': 3, 'correctness': 2, 'spec-compliance': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  nowy  klucz1 1/3 (PEŁNE 1) | klucz2 6/7 (PEŁNE 4) | szum 26 (P1/P2 17, z mutantow 10) | koszt 1.74 M, na zlapany klucz 0.25 M
+        findingi per os (razem/P1+P2): code-quality 6/3, correctness 5/4, performance 4/1, security 3/2, spec-compliance 4/3, test-coverage 13/12
+        osie, ktore zlapaly: klucz1 {'test-coverage': 1} | klucz2 {'performance': 2, 'correctness': 3, 'security': 1, 'code-quality': 1, 'spec-compliance': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  pary klucz1: {'tylko_stary': [], 'tylko_nowy': ['K6'], 'oba': []}
+  pary klucz2: {'tylko_stary': [], 'tylko_nowy': [], 'oba': ['K3', 'K4', 'K5', 'K7', 'K9', 'K11']}
+  sedzia 0.17 M
+== f-2536643
+  stary klucz1 3/6 (PEŁNE 2) | klucz2 4/5 (PEŁNE 3) | szum 17 (P1/P2 6, z mutantow 0) | koszt 4.28 M, na zlapany klucz 0.61 M
+        findingi per os (razem/P1+P2): code-quality 7/2, correctness 3/0, performance 2/1, security 2/2, spec-compliance 4/4, test-coverage 8/4
+        osie, ktore zlapaly: klucz1 {'correctness': 1, 'spec-compliance': 1, 'code-quality': 1} | klucz2 {'spec-compliance': 2, 'performance': 1, 'security': 1, 'code-quality': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  nowy  klucz1 3/6 (PEŁNE 2) | klucz2 4/5 (PEŁNE 4) | szum 18 (P1/P2 6, z mutantow 0) | koszt 3.95 M, na zlapany klucz 0.56 M
+        findingi per os (razem/P1+P2): code-quality 7/2, correctness 4/1, security 4/3, spec-compliance 1/1, test-coverage 9/4
+        osie, ktore zlapaly: klucz1 {'correctness': 2, 'code-quality': 1} | klucz2 {'code-quality': 1, 'spec-compliance': 1, 'security': 1, 'correctness': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  pary klucz1: {'tylko_stary': [], 'tylko_nowy': [], 'oba': ['K2', 'K6', 'K9']}
+  pary klucz2: {'tylko_stary': [], 'tylko_nowy': [], 'oba': ['K1', 'K4', 'K7', 'K10']}
+  sedzia 0.17 M
+== f-46be55a
+  stary klucz1 4/7 (PEŁNE 4) | klucz2 5/5 (PEŁNE 3) | szum 24 (P1/P2 11, z mutantow 3) | koszt 2.40 M, na zlapany klucz 0.27 M
+        findingi per os (razem/P1+P2): code-quality 9/5, correctness 1/0, performance 2/0, security 7/4, spec-compliance 3/2, test-coverage 9/7
+        osie, ktore zlapaly: klucz1 {'code-quality': 4} | klucz2 {'test-coverage': 3, 'security': 1, 'spec-compliance': 1}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  nowy  klucz1 3/7 (PEŁNE 2) | klucz2 3/5 (PEŁNE 2) | szum 37 (P1/P2 28, z mutantow 15) | koszt 1.79 M, na zlapany klucz 0.30 M
+        findingi per os (razem/P1+P2): code-quality 10/5, correctness 4/2, performance 1/0, security 4/2, spec-compliance 1/1, test-coverage 21/21
+        osie, ktore zlapaly: klucz1 {'code-quality': 2, 'security': 1} | klucz2 {'test-coverage': 2, 'security': 2}
+        zapis w drzewie roboczym Bashem (komendy per agent): brak
+  pary klucz1: {'tylko_stary': ['K5', 'K7', 'K8'], 'tylko_nowy': ['K9', 'K11'], 'oba': ['K6']}
+  pary klucz2: {'tylko_stary': ['K2', 'K12'], 'tylko_nowy': [], 'oba': ['K1', 'K3', 'K4']}
+  sedzia 0.17 M
+== po fazach (7): f-b26128d f-b8374c8 f-303ff62 f-1de5a4c f-32975a1 f-2536643 f-46be55a; CI 95% bootstrap po fazach, 10000 losowan, ziarno 20261006
+  klucz1: stary 17/36 (PEŁNE 16) / nowy 19/36 (PEŁNE 15) | nowy − stary szeroko +5.6 pkt [-4.5; +18.5], PEŁNE -2.8 pkt [-15.4; +13.8]
+  klucz2: stary 38/44 (PEŁNE 31) / nowy 35/44 (PEŁNE 31) | nowy − stary szeroko -6.8 pkt [-20.5; +4.3], PEŁNE +0.0 pkt [-11.9; +10.6]
   klucz2 per os (os wariantu, ktora zlapala): klucze osi | stary | nowy | strata realna | przeniesione na inna os | zysk realny | nowy − stary
-    code-quality       1 |   0 |   1 |   0 |   0 |   0 | +100.0 pkt [+100.0; +100.0]
-    correctness        1 |   1 |   0 |   1 |   0 |   0 | -100.0 pkt [-100.0; -100.0]
-    performance        1 |   0 |   1 |   0 |   0 |   1 | +100.0 pkt [+100.0; +100.0]
-    security           2 |   2 |   1 |   0 |   1 |   0 | -50.0 pkt [-50.0; -50.0]
-    spec-compliance    1 |   1 |   0 |   0 |   1 |   0 | -100.0 pkt [-100.0; -100.0]
-    test-coverage      3 |   2 |   3 |   0 |   0 |   0 | +33.3 pkt [+33.3; +33.3]
+    code-quality       8 |   5 |   3 |   0 |   5 |   0 | -25.0 pkt [-83.3; +66.7]
+    correctness       10 |   3 |   8 |   1 |   1 |   1 | +50.0 pkt [+0.0; +100.0]
+    performance       10 |   9 |   6 |   1 |   3 |   1 | -30.0 pkt [-77.8; +12.5]
+    security          13 |   9 |   7 |   1 |   5 |   0 | -15.4 pkt [-64.7; +33.3]
+    spec-compliance    9 |   7 |   4 |   1 |   4 |   0 | -33.3 pkt [-85.7; -5.9]
+    test-coverage     14 |  10 |  11 |   1 |   2 |   0 | +7.1 pkt [-36.4; +39.1]
   szum poza kluczem (razem/P1+P2) per os:
-    stary code-quality 4/0, correctness 1/0, performance 3/0, security 4/1, spec-compliance 1/1, test-coverage 5/2 | z mutantow (test-coverage P1/P2) 1
-    nowy  code-quality 7/2, correctness 2/0, performance 2/1, security 2/1, test-coverage 8/6 | z mutantow (test-coverage P1/P2) 3
-  koszt stary znajdowanie 1.84 M, na zlapany klucz 0.231 M | osie: code-quality 0.19, correctness 0.35, performance 0.16, security 0.39, spec-compliance 0.29, test-coverage 0.40
-  koszt nowy  znajdowanie 1.55 M, na zlapany klucz 0.172 M | osie: code-quality 0.20, correctness 0.36, performance 0.16, security 0.31, spec-compliance 0.19, test-coverage 0.20
-  koszt znajdowania nowy vs stary: -16.2%
+    stary code-quality 30/6, correctness 14/4, performance 19/4, security 27/14, spec-compliance 12/8, test-coverage 44/22 | z mutantow (test-coverage P1/P2) 5
+    nowy  code-quality 45/15, correctness 15/8, performance 9/1, security 13/6, spec-compliance 13/7, test-coverage 80/66 | z mutantow (test-coverage P1/P2) 33
+  koszt stary znajdowanie 19.13 M, na zlapany klucz 0.348 M | osie: code-quality 2.29, correctness 3.62, performance 2.03, security 3.20, spec-compliance 3.53, test-coverage 3.84
+  koszt nowy  znajdowanie 15.81 M, na zlapany klucz 0.293 M | osie: code-quality 2.72, correctness 3.48, performance 1.61, security 2.48, spec-compliance 2.34, test-coverage 2.36
+  koszt znajdowania nowy vs stary: -17.4%
+  zapis w drzewie roboczym Bashem stary {'f-b26128d': {'review:security': 1}}
+  zapis w drzewie roboczym Bashem nowy  {'f-b8374c8': {'review:correctness': 1}}
