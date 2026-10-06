@@ -3,6 +3,7 @@
 
 Użycie:
   python3 skrypty/test_review_sesja.py start <etykieta> <krok> <wariant>   krok: review | sceptycy | sedzia-p<N> ; wariant: 0 A B C (sędzia: S)
+                                                                           ślepy test P11: krok p11 (wariant stary | nowy), p11-sedzia-p<N> (S)
   python3 skrypty/test_review_sesja.py zbierz <etykieta> <krok> <wariant>
   python3 skrypty/test_review_sesja.py gotowy <etykieta> <krok> <wariant>   kod 0 = krok zrobiony (run completed, sesja bez błędu, zero błędów API)
   python3 skrypty/test_review_sesja.py odrzuc <etykieta> <krok> <wariant>   niedokończoną próbę przenosi do ~/test-review/odrzucone/ (przed ponownym startem)
@@ -31,7 +32,7 @@ def id_sesji(et, krok, w):
 
 
 def nazwa_wyniku(krok, w):
-    return {'review': 'wariant%s.json' % w, 'sceptycy': 'sceptycy%s.json' % w}.get(krok, '%s.json' % krok)
+    return {'review': 'wariant%s.json' % w, 'sceptycy': 'sceptycy%s.json' % w, 'p11': 'p11-%s.json' % w}.get(krok, '%s.json' % krok)
 
 
 def pliki_proby(et, krok, w):
@@ -80,6 +81,7 @@ def sesje_fazy(et):
     """Id wszystkich sesji, które test może uruchomić dla fazy (warianty review/sceptyków + sędzia p1, p2 jak w test_review_uruchom.sh).
     Skan i koszt liczą tylko je — inne sesje w katalogu kopii (np. próba harnessu z kopii f-b26128d) nie należą do fazy."""
     kroki = [(k, w) for k in ('review', 'sceptycy') for w in '0ABC'] + [('sedzia-p%d' % p, 'S') for p in (1, 2)]
+    kroki += [('p11', w) for w in ('stary', 'nowy')] + [('p11-sedzia-p%d' % p, 'S') for p in (1, 2)]
     return {id_sesji(et, k, w) for k, w in kroki}
 
 
@@ -87,6 +89,8 @@ def skrypt_i_args(et, krok, w):
     meta = json.load(open(os.path.join(TR, 'meta', et + '.json')))
     d = os.path.join(TR, 'skrypty', et)
     fix = et.startswith('x-')
+    if krok == 'p11': return os.path.join(TR, 'p11', et, 'wariant-%s.js' % w), {}   # args wklejone w skrypt (test_review_p11.wariant)
+    if krok.startswith('p11-sedzia-p'): return os.path.join(TR, 'p11', et, 'sedzia-%s.js' % krok[11:]), {}
     if krok == 'review':
         if w == '0':
             nazwa = 'test-review-wariant0-fix.js' if fix else 'test-review-wariant0.js'
@@ -125,6 +129,8 @@ def ustawienia(et):
             'Read(%s/robocze/**)' % tr, 'Read(//tmp/tr-*/**)']
     deny += ['Read(%s/kopie/%s/**)' % (tr, o) for o in inne] + ['Read(%s/dossier/%s/**)' % (tr, o) for o in inne]
     deny += ['Read(%s/skrypty/%s/**)' % (tr, o) for o in inne]
+    # ślepy test P11: katalogi innych faz i .claude obu wariantów (plik roli drugiego wariantu) — własny katalog fazy ma dossier i diff
+    deny += ['Read(%s/p11/%s/**)' % (tr, os.path.basename(o)) for o in glob.glob(os.path.join(TR, 'p11', '*')) if os.path.basename(o) != et]
     fz = json.load(open(os.path.join(BASE, 'dane', 'test-review-fazy.json')))['fazy']
     numer = lambda mo: [v['numer'] for s, v in fz.items() if mo['sha'].startswith(s)][0]
     wlasna = json.load(open(os.path.join(TR, 'meta', et + '.json')))
@@ -143,12 +149,12 @@ def ustawienia(et):
 def budzet(et, krok, w):
     """Bezpiecznik --max-budget-usd = 2 × górna granica kosztu kroku [M jedn.] × USD_M. Review fazy: dzis_max wariantu z test-review-plan.json;
     review fixa: 1 M (4 warianty × 0,33 M środka, §2.6, z zapasem); sędzia: 1,35 M (0,90 × 1,5); sceptycy wariantu: 1 M."""
-    if krok == 'review' and et.startswith('f-'):
+    if krok in ('review', 'p11') and et.startswith('f-'):   # P11: oba warianty to dzisiejszy pipeline — górna granica wariantu 0
         fz = json.load(open(os.path.join(BASE, 'dane', 'test-review-plan.json')))['fazy']
         sha = json.load(open(os.path.join(TR, 'meta', et + '.json')))['sha']
-        gorna = [f for f in fz if sha.startswith(f['faza'])][0]['koszt'][w]['dzis_max']
+        gorna = [f for f in fz if sha.startswith(f['faza'])][0]['koszt']['0' if krok == 'p11' else w]['dzis_max']
     else:
-        gorna = 1.35 if krok.startswith('sedzia') else 1.0
+        gorna = 1.35 if 'sedzia' in krok else 1.0
     return round(2 * gorna * USD_M, 2)
 
 
