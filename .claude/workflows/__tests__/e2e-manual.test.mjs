@@ -18,6 +18,7 @@ const KATALOG = dirname(fileURLToPath(import.meta.url))
 const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
 const review = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
 const complete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'utf8')
+const tester = readFileSync(resolve(KATALOG, '../../agents/feature-tester-e2e.md'), 'utf8')
 
 /** @param {string} zrodlo @param {string} kotwica @param {string} koniec */
 function wytnij(zrodlo, kotwica, koniec) {
@@ -114,10 +115,11 @@ test('w trakcie: SKIP harness albo limitu z cytowanym bledem sieci zewnetrznej u
 
 test('w trakcie: FAIL z sygnatura = kod fazy polozyl serwer — finding do fixa, srodowisko zostaje gotowe (fix restartuje serwer)', () => {
   assert.equal(R.wykryjBlokerSrodowiska([{ checkbox: 'x', flow: 'x', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'net::ERR_CONNECTION_REFUSED http://localhost:5173/b' }]), null)
-  assert.match(review, /"nasz": true/)
+  // Procedura testera (stan serwera, curl -sS) jest w pliku roli (P14 S2: jedno zrodlo promptu, zmiana kontraktu testu).
+  assert.match(tester, /`"nasz": true`/)
   assert.doesNotMatch(review, /poBlokerzeSrodowiska/)
-  assert.match(review, /node \.claude\/scripts\/e2e\/e2e\.mjs stan/)
-  assert.match(review, /curl -sS <adres>/)
+  assert.match(tester, /node \.claude\/scripts\/e2e\/e2e\.mjs stan/)
+  assert.match(tester, /curl -sS <E2E_URL>/)
 })
 
 test('w trakcie: licznik [Manual] — SKIP z przyczyna reczna bez FAIL w tym samym flow; pad testera = wszystkie scenariusze fazy', () => {
@@ -201,7 +203,6 @@ test('fix przy „serwer padl”: start takze po nieudanej naprawie; start nieud
 
 test('instrukcje bez wykrywania awarii po sygnaturze tekstu; watcher (zywy proces) z bledem kodu w logu = FAIL', () => {
   assert.doesNotMatch(review, /Orkiestrator rozpoznaje awarie srodowiska po SYGNATURZE/)
-  const tester = readFileSync(resolve(KATALOG, '../../agents/feature-tester-e2e.md'), 'utf8')
   assert.doesNotMatch(tester, /rozpoznaje awarię środowiska po sygnaturze tekstowej/)
-  assert.match(review, /"zyje": true \(watcher, np\. nodemon/)
+  assert.match(tester, /`"zyje": true`, gdy watcher \(np\. nodemon\)/)
 })

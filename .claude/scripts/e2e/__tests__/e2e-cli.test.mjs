@@ -62,6 +62,32 @@ test('manual: jeden flow na [Manual]; flow bez linii = kod 1; lista-manual zwrac
   rmSync(k, { recursive: true })
 })
 
+test('scenariusze: niezaznaczone linie [E2E] fazy z obu prefiksow z flow i seedem; kopie Operator i findingi pominiete', () => {
+  const k = projekt([
+    '## Faza 1 — A', '',
+    '- [ ] Test: [E2E] `a` (seed: e2e/seeds/a-seed.sql) — /a → ok',
+    '- [x] Test: [E2E] `b` — /b → ok',
+    '- [ ] Weryfikacja: [E2E] `e2e/f1-run-all.sh` — wszystkie zielone',
+    '- [ ] Weryfikacja: [E2E] stary format bez flow',
+    '- [ ] Operator: [E2E] `a` — kopia', '',
+    '## Do poprawy po review fazy 1', '', '- [ ] [P2] [E2E] `a` — finding', '',
+    '## Faza 2 — B', '', '- [ ] Test: [E2E] `c` — /c → ok', '',
+  ].join('\n'))
+  const w = uruchom(k, ['scenariusze', '--zadanie', 'docs/active/z', '--faza', '1'])
+  assert.equal(w.kod, 0, w.stderr)
+  assert.deepEqual(w.json, {
+    faza: 1,
+    scenariusze: [
+      { tresc: 'Test: [E2E] `a` (seed: e2e/seeds/a-seed.sql) — /a → ok', flow: 'a', seed: 'e2e/seeds/a-seed.sql' },
+      { tresc: 'Weryfikacja: [E2E] `e2e/f1-run-all.sh` — wszystkie zielone', flow: 'e2e/f1-run-all.sh', seed: null },
+      { tresc: 'Weryfikacja: [E2E] stary format bez flow', flow: null, seed: null },
+    ],
+  })
+  assert.deepEqual(uruchom(k, ['scenariusze', '--zadanie', 'docs/active/z', '--faza', '3']).json, { faza: 3, scenariusze: [] })
+  assert.equal(uruchom(k, ['scenariusze', '--zadanie', 'docs/active/z']).kod, 2, 'bez --faza = zle argumenty')
+  rmSync(k, { recursive: true })
+})
+
 test('sprawdz: brak .env.e2e przy scenariuszach = kod 1 i status brak-srodowiska; stop bez PID = kod 0', () => {
   const k = projekt()
   const w = uruchom(k, ['sprawdz', '--zadanie', 'docs/active/z'])

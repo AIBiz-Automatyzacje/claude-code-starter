@@ -19,7 +19,8 @@ const POLA_IU = new Set(['cel', 'wymagania', 'zaleznosci', 'pliki', 'delegate to
 const POLA_LISTY = ['scenariusze testowe', 'weryfikacja', 'operator checklist']
 const POLA_OPISU = ['cel', 'podejscie', 'notatka wykonawcza']
 const SEPARATOR_KOMOREK = /(?<!\\)\|/
-const ZAPIS_SEEDA = /\(seed:\s*(e2e\/seeds\/[^\s)]+)/
+/** Zapis seeda w scenariuszu [E2E] planu i pliku zadan: `(seed: e2e/seeds/<x>-seed.sql)`. */
+export const ZAPIS_SEEDA = /\(seed:\s*(e2e\/seeds\/[^\s)]+)/
 const SEPARATOR = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/
 
 /** @param {string} s @returns {string} */

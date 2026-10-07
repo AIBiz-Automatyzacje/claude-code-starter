@@ -1,4 +1,4 @@
-// Test warstwy stalej plikow rol (PLAN-POPRAWY P11; w P12 rozszerzany o buildery — szkielet buildera: szkielet-buildera.test.mjs).
+// Test warstwy stalej plikow rol (PLAN-POPRAWY P11; w P12 rozszerzany o buildery, w P14 o testera E2E — szkielet buildera: szkielet-buildera.test.mjs).
 //
 // Uruchomienie:  node --test .claude/workflows/__tests__/warstwa-stala.test.mjs
 //
@@ -17,7 +17,8 @@ import { MAKS_POLECEN, liczbaPolecen, naruszeniaWarstwy } from '../../scripts/do
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const ROLE_Z_WARSTWA = ['correctness-reviewer', 'spec-compliance-reviewer', 'test-coverage-reviewer', 'architecture-strategist', 'security-sentinel', 'performance-oracle',
-  'feature-builder-data', 'feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma', 'feature-builder-fullstack-figma']
+  'feature-builder-data', 'feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma', 'feature-builder-fullstack-figma',
+  'feature-tester-e2e']
 
 /**
  * @param {string} cialo

@@ -5,6 +5,8 @@
 // `[P1]/[P2]/[P3]` z „Do poprawy”. Identyfikator flow = pierwszy backtick linii; linia bez backticka (starszy format)
 // dopasowuje sie po znormalizowanej tresci.
 
+import { ZAPIS_SEEDA } from '../plan/pola-iu.mjs'
+
 /** Suffix wyniku dopisany do linii scenariusza przez ksiegowanie albo fix: SKIP, FAIL, MANUAL (zawsze ostatni w linii). */
 const SUFFIX = /\s\((?:SKIP —|FAIL[:)]|MANUAL —)/
 const SUFFIX_MANUAL = /\s\(MANUAL — ([a-z-]+): (.*)\)$/
@@ -85,6 +87,16 @@ export function scenariuszeFazy(tekst, faza) {
   const zakres = zakresFazy(linie, faza)
   if (!zakres) return []
   return linie.slice(zakres.od, zakres.do).flatMap((l, i) => (czyScenariusz(l) ? [opisLinii(l, zakres.od + i, faza)] : []))
+}
+
+/**
+ * Niezaznaczone scenariusze fazy dla testera: tresc linii, flow i seed wskazany zapisem `(seed: …)`.
+ * @param {string} tekst plik zadan
+ * @param {number} faza
+ * @returns {{ tresc: string, flow: string | null, seed: string | null }[]}
+ */
+export function doOdegrania(tekst, faza) {
+  return scenariuszeFazy(tekst, faza).filter((s) => !s.zaznaczona).map(({ tresc, flow }) => ({ tresc, flow, seed: ZAPIS_SEEDA.exec(tresc)?.[1] ?? null }))
 }
 
 /**

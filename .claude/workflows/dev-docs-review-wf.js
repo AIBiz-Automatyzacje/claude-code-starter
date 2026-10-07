@@ -260,7 +260,7 @@ const KONTEKST = {
       required: ['ui', 'dane', 'typowanie', 'nowyModul'],
     },
     e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych przegladarki/agent-browser (0 gdy brak)' },
-    // Druga, niezalezna od checkboxow praca testera: visual diff z makietami (feature-tester-e2e §3.5).
+    // Druga, niezalezna od checkboxow praca testera: visual diff z makietami (sekcja Makiety w feature-tester-e2e.md).
     figmaScreens: { type: 'boolean', description: 'czy plik kontekstu zadania ma niepuste pole figma_screens (mapa ekran -> mockup) — tester robi wtedy visual diff nawet bez checkboxow [E2E]' },
     // Metadane artefaktow — NIGDY tresc diffu (przez wynik agenta zapasowego przeszlaby jako jego tokeny wyjsciowe).
     diffPlik: { type: 'string', description: 'sciezka zrzutu diffu fazy (pusty string gdy zrzut sie nie udal)' },
@@ -419,99 +419,15 @@ Wynik to obiekt {findings:[...]} zgodny ze schematem; pliki projektu zostaja bez
 ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
-// Blok trybu `bez-przegladarki` — doklejany, gdy orkiestrator zglosil, ze srodowiska E2E NIE MA.
-// Obserwacja (run rownolegle-joby, faza 1, 2026-07-30): routing przywolal testera (ui=true + 1 browserowy
-// checkbox), ale srodowiska nie bylo (e2eSrodowisko: "pominieto", brak .env.e2e) — tester i tak poszedl
-// w przegladarke i skonczylo sie na 1 passed / 1 failed / 3 skipped. Nie wycinamy go, bo ten JEDEN fail
-// byl realny i wykryty na poziomie HTTP; odbieramy mu tylko przegladarke, ktorej nie ma.
-const BLOK_BEZ_PRZEGLADARKI = `
-TRYB BEZ PRZEGLADARKI — orkiestrator zglosil, ze srodowisko E2E jest NIEDOSTEPNE. To zakaz, nie sugestia:
-- NIE uruchamiaj skilla agent-browser, NIE nawiguj po URL-ach, NIE rob screenshotow ani snapshotow.
-- Kazdy scenariusz wymagajacy PRZEGLADARKI = wpis SKIP w \`przebiegi\` z przyczyna "srodowisko" i powodem
-  "srodowisko E2E niedostepne w tym runie" — bez findingu (skrypt przeniesie linie na [Manual] do smoke'u operatora).
-  NIE zglaszaj go jako P2 (to nie defekt kodu) i pod zadnym pozorem NIE opisuj go tak, jakby zostal odegrany.
-- Wykonaj TYLKO weryfikacje NIEBROWSEROWE dajace rownowazny dowod: HTTP (curl na route/endpoint + sprawdzenie
-  statusu i tresci odpowiedzi), CLI (skrypty, testy, inspekcja artefaktow builda). Porazka wykryta tak samo
-  jest defektem -> finding P2 typ E2E + wpis FAIL w \`przebiegi\`.
-- Preflight (curl) nadal wykonaj — bez niego nie wiesz, co da sie sprawdzic po HTTP.
-`
+// Polecenie testera E2E: parametry wywolania i tryb. Procedura (scenariusze, seedy vs kontrakt migracji, srodowisko,
+// przyczyny SKIP, makiety) jest w pliku roli `feature-tester-e2e.md` — jedno zrodlo (P14), bo dwie kopie rozjezdzaly sie.
+// Tryb `bez-przegladarki` = orkiestrator zglosil, ze srodowisko E2E nie dziala (sekcja trybu w pliku roli).
+const SKILL_WERYFIKACJI = '.claude/skills/weryfikacja/SKILL.md'
 
 function e2ePrompt(sciezka, faza, poprzednie, tryb, kontekst) {
-  return `Jestes testerem E2E w przegladarce (agent-browser) dla fazy ${faza} w ${sciezka}.
-Zbierz niezaznaczone checkboxy oznaczone \`[E2E]\` tej fazy — NIEZALEZNIE od prefiksu:
-\`Test: [E2E] ...\` ORAZ \`Weryfikacja: [E2E] ...\` (planner pisze scenariusze E2E pod \`Test:\`,
-nie tylko \`Weryfikacja:\` — MUSISZ przeszukac OBA). To scenariusze do odegrania w przegladarce
-(open URL, snapshot -i, click, type/fill, assert visible, screenshot, nawigacja klawiatura,
-responsywnosc/viewport). Pomin tylko CLI (\`test\`/\`typecheck\`/\`grep\`) i \`[Manual]\`.
-
-BRAMKA — jesli checkboxow \`[E2E]\` (oba prefiksy) jest ZERO ->
-zwroc OD RAZU {findings:[], przebiegi:[]}, POMIN preflight (curl) i agent-browser. Nie odpalaj srodowiska gdy nie ma
-czego testowac. Liczenie samego \`Weryfikacja:\` gubi scenariusze pisane pod \`Test: [E2E]\` i cicho degraduje je
-do OPERATOR mimo gotowego srodowiska, dlatego "zero" liczy sie po realnym grepie obu prefiksow w sekcji fazy (\`grep -nE '^- \\[ \\].*\\[E2E\\]' | grep -vE 'Operator:|\\[P[123]\\]'\` —
-kopie w Operator checklist i pozycje findingow w "Do poprawy" nie sa scenariuszami).
-JEDEN FLOW = JEDEN PRZEBIEG: w webie flow NIE ma osobnego pliku — agent-browser gra scenariusz z OPISU linii
-[E2E]. Pole \`flow\` wpisu = kebab-case IDENTYFIKATOR z linii (pierwszy backtick; dla runnera — sciezka
-\`e2e/<etap>-run-all.sh\`); \`""\` TYLKO gdy linia nie ma zadnego backticka (starszy format — dopasowanie po
-znormalizowanej tresci). Linie [E2E] wskazujace TEN SAM flow (ten sam identyfikator LUB identyczna
-znormalizowana tresc) odgrywasz RAZ, ale wpis w \`przebiegi\` dajesz dla KAZDEJ z tych linii
-(checkbox = tresc 1:1). WYNIK JEST WLASNOSCIA PRZEBIEGU, nie linii: wszystkie wpisy tego samego przebiegu
-maja IDENTYCZNY wynik = wynik jednego odegrania scenariusza (PASS dla kazdej linii; FAIL dla kazdej + JEDEN
-finding P2 z lista "checkbox:" wszystkich linii tego przebiegu). Nie interpretuj per linia, ktore kroki "przeszly".
-RUNNER: jesli sekcja fazy ma linie \`Weryfikacja: [E2E] e2e/<etap>-run-all.sh\`, uruchom runner RAZ (env z .env.e2e)
-i z jego outputu wyprowadz wpis PASS/FAIL per scenariusz dla kazdej linii Test: [E2E] tej fazy (dowod = fragment
-outputu runnera) + wpis dla linii runnera; scenariuszy objetych runnerem NIE odgrywaj standalone (runner istnieje,
-bo seedy sa wzajemnie destrukcyjne i re-seeduje per scenariusz).
-Bez runnera, gdy linia ma "(seed: …)" albo istnieje e2e/seeds/<flow>-seed.sql — przed odegraniem scenariusza
-zaaplikuj seed (\`psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <seed>\`; zbiorczy db-sync mogl go nadpisac
-seedem innego flow).
-
-NAJPIERW preflight srodowiska (Bash): czy aplikacja odpowiada — \`curl -sS <adres>\`, adres = E2E_URL z .env.e2e
-(domyslnie http://localhost:5173). Potem proba scenariuszy przez skill agent-browser (open URL, snapshot -i, click, screenshot).
-Aplikacja przestala odpowiadac (na starcie albo w trakcie scenariuszy) -> \`node .claude/scripts/e2e/e2e.mjs stan\`: gdy
-"nasz": true, a ogon logu konczy sie bledem z kodu projektu (stack trace z plikow repo) — przy "zyje": false, a takze przy
-"zyje": true (watcher, np. nodemon, zyje po padzie aplikacji) — kod fazy kladzie serwer: wpis FAIL + finding P2 typ E2E z ogonem
-logu (pierwsza linia opisu "checkbox: <tresc>", dalej "serwer aplikacji padl"). W kazdym innym przypadku (serwer nie nasz, log bez
-bledu kodu) -> wpis SKIP z przyczyna "srodowisko" i doslownym komunikatem bledu.
-
-SRODOWISKO ZARZADZANE (jesli w korzeniu repo istnieje .env.e2e): orkiestrator uruchomil serwer aplikacji wg .env.e2e
-(skrypt .claude/scripts/e2e/e2e.mjs) i zsynchronizowal baze e2e PRZED Twoim startem. Wtedy:
-- konto do logowania w flow = E2E_TEST_EMAIL / E2E_TEST_PASSWORD z .env.e2e (nie loguj wartosci),
-- "migracja/RPC niewdrozona na remote" i "brak seeded sesji" NIE sa automatycznym powodem SKIP —
-  najpierw SPRAWDZ realnie (uruchom flow); SKIP dopiero po twardym dowodzie.
-${tryb === 'bez-przegladarki' ? BLOK_BEZ_PRZEGLADARKI : ''}
-KLASYFIKACJA per scenariusz (to jest krytyczne — nie wszystko jest P2):
-- WYKONANY i FAILED z powodu defektu w kodzie/UI/stylu -> wpis FAIL (przyczyna "nie-dotyczy") + finding P2 typ E2E.
-- WYKONANY i PASSED -> wpis PASS (przyczyna "nie-dotyczy") z dowodem (co zaasertowano + sciezka screenshotu), bez findingu.
-  BEZ wpisu scribe NIE odznaczy checkboxa — brak findingu NIE jest dowodem PASS.
-- NIEWYKONALNY -> wpis SKIP z przyczyna:
-  "srodowisko" — aplikacja, baza albo DNS niedostepne, a nie z winy kodu fazy (connection refused, ERR_NAME_NOT_RESOLVED,
-  serwer nie odpowiada; patrz \`e2e.mjs stan\` wyzej);
-  "limit-zewnetrzny" — limit uslugi zewnetrznej (429, limit wysylki maili);
-  "harness" — powierzchnia poza kontrola headless (popup OAuth zewnetrznego providera, natywne okno przegladarki);
-  przy tych trzech BEZ findingu: skrypt przeniesie linie na [Manual] z Twoim powodem i run pojdzie dalej, wiec
-  w \`dowod\` daj powod zrozumialy dla czlowieka z doslownym komunikatem.
-  "brak-seeda" i "scenariusz-niewykonalny" — patrz akapit o seedach nizej (finding P2 typ E2E idzie do fixa).
-
-PRZEBIEGI (obowiazkowe): KAZDY policzony checkbox [E2E] tej fazy MUSI miec wpis w \`przebiegi\`
-(checkbox = tresc wiersza 1:1 lacznie z suffixami, flow = identyfikator z backtickow — po nim skrypt dopasowuje,
-fallback znormalizowana tresc; wynik PASS/FAIL/SKIP, przyczyna, dowod). FAIL = finding P2 typ E2E (pierwsza linia opisu:
-"checkbox: <tresc>", plik = *-zadania.md z linia) + wpis FAIL. Brak wpisu = SKIP z kopia w Operator checklist (completion-gate).
-
-CYTUJ DOSLOWNE KOMUNIKATY BLEDOW: gdy scenariusz pada na bledzie srodowiska/sieci (connection refused,
-ERR_*, ECONNREFUSED, timeout, DNS), wklej do \`dowod\` (i do opisu findingu, jesli jest) DOSLOWNY komunikat
-z konsoli/outputu, nie parafraze — czlowiek dostaje go w linii [Manual] i w smoke'u. Awarie srodowiska orkiestrator rozpoznaje
-po przyczynie "srodowisko" we wpisie SKIP (nie po tekscie): po niej reszta runu idzie bez przegladarki.
-
-Jesli zadanie ma figma_screens / mockupy w sekcji designerskiej — zrob side-by-side visual
-comparison screenshotu z mockupem (rozbieznosci wizualne = P2 typ E2E).
-
-Zwroc {findings:[...], przebiegi:[...]}. NIE zapisuj zadnych plikow — w szczegolnosci NIE modyfikuj
-*-zadania.md (zadnych ✅, zadnych [x]; odznacza wylacznie scribe na podstawie \`przebiegi\`).
-Brak seeda wskazanego linia (checkbox "Stwórz (e2e seed):" niewykonany albo seed nie pokrywa scenariusza)
-LUB linia [E2E] bez wykonalnego opisu scenariusza = finding P2 typ E2E (pierwsza linia opisu: "checkbox: <tresc>";
-typ E2E, nie KOD — fix pisze seed / doprecyzowuje scenariusz wg IU, re-odgrywa i odznacza zrodlo dopiero po PASS)
-+ wpis SKIP z przyczyna "brak-seeda" albo "scenariusz-niewykonalny" (flow = identyfikator z linii, jesli jest; "" tylko gdy
-linia nie ma backticka).
+  return `Test E2E fazy ${faza} zadania w folderze ${sciezka}. Tryb: ${tryb}.
+Skill weryfikacji projektu: ${SKILL_WERYFIKACJI} (gdy istnieje — sekcje Drive i Evidence oraz mapa-funkcji.md obok).
+Wynik to obiekt {findings:[...], przebiegi:[...]} zgodny ze schematem; *-zadania.md i kod zostaja bez zmian.
 ${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
@@ -749,7 +665,7 @@ const WARUNKI = {
 //   'przegladarka'     = domena obecna + srodowisko gotowe ALBO nieznane (standalone) -> jak dotad,
 //   'bez-przegladarki' = domena obecna, ale srodowisko ZNANE i != 'gotowe' -> tylko HTTP/CLI,
 //   'pominiety'        = brak warstwy UI i zero browserowych checkboxow -> tester nie startuje.
-// Domena: checkboxy [E2E] albo makiety Figmy do visual diffu (feature-tester-e2e §3.5 wisi na `figma_screens`).
+// Domena: checkboxy [E2E] albo makiety Figmy do visual diffu (sekcja Makiety w feature-tester-e2e.md wisi na `figma_screens`).
 // Do 2026-09-02 warunkiem bylo `warstwy.ui` — 10 z 18 uruchomien testera szlo w tryb `przegladarka` przy
 // `e2eCheckboxy: 0`. Gdy liczba jest NIEZNANA (brak dossier), wracamy do `warstwy.ui` — bez faktow nie wycinamy testera.
 function trybTesteraE2e(warstwy, e2eLiczbaZnana, e2eCheckboxy, figmaScreens, srodowiskoE2E) {
@@ -858,7 +774,7 @@ if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
   const powod = wyniki[indeksE2e] ? 'zwrocil wynik BEZ zadnego wpisu przebiegi[]' : 'zwrocil null (watchdog/API)'
   log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — brak dossier'}) — ponawiam raz`)
   wyniki[indeksE2e] = await agent(
-    `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst)}\n\n(PONOWNA PROBA — poprzedni przebieg ${powod}. KAZDY checkbox [E2E] fazy MUSI miec wpis PASS/FAIL/SKIP w przebiegi[] (przy zerze checkboxow zwroc {findings:[], przebiegi:[]}); jesli scenariusz w przegladarce milczy >120s, loguj postep do pliku i czytaj go w tle zgodnie z blokiem dlugich komend.)`,
+    `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst)}\n\n(Ponowna proba — poprzedni przebieg ${powod}. Kazdy scenariusz z listy skryptu dostaje wpis w przebiegi; scenariusz, ktory milczy w przegladarce, prowadzisz w tle z logiem postepu.)`,
     zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }, tiery.reviewer)
   )
 }

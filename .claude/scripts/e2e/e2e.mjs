@@ -8,6 +8,7 @@
 //   e2e.mjs stop                                      zatrzymuje serwer uruchomiony przez start (plik PID)
 //   e2e.mjs stan                                      czy serwer pipeline'u zyje + ogon jego logu (tester, gdy aplikacja milczy)
 //   e2e.mjs suma                                      suma migracji przed wypchnieciem do bazy e2e
+//   e2e.mjs scenariusze --zadanie <dir> --faza N      niezaznaczone scenariusze [E2E] fazy z flow i seedem (tester)
 //   e2e.mjs ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem]
 //                                                     przebiegi testera (JSON z stdin) -> linie [E2E] fazy w pliku zadan
 //   e2e.mjs manual --zadanie <dir> --faza N --flow <id> --przyczyna <przyczyna> --powod <tekst>
@@ -23,7 +24,7 @@ import { parseArgs } from 'node:util'
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { rodzajPrzyczyny, zaksiegujFaze } from './ksiegowanie.mjs'
-import { listaManual } from './scenariusze.mjs'
+import { doOdegrania, listaManual } from './scenariusze.mjs'
 import { stanSerwera, zatrzymajSerwer } from './serwer.mjs'
 import { envE2e, konfiguracja } from './srodowisko.mjs'
 import { startE2e } from './start.mjs'
@@ -38,7 +39,7 @@ const USTAWIENIA = /** @type {const} */ ({
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start --zadanie <dir> | stop | stan | suma | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start --zadanie <dir> | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -93,6 +94,7 @@ async function wykonaj(polecenie, o, projekt) {
   const { plik, tresc } = zadania(projekt, sciezka)
   if (polecenie === 'lista-manual') zakoncz({ pozycje: listaManual(tresc) }, true)
   const faza = numerFazy(o.faza)
+  if (polecenie === 'scenariusze') zakoncz({ faza, scenariusze: doOdegrania(tresc, faza) }, true)
   if (polecenie === 'ksieguj') {
     const wejscie = readFileSync(0, 'utf8')
     // Puste stdin = zgubiony heredoc, nie „zero przebiegow”: bez tego kazda linia dostalaby SKIP „brak wpisu testera”.
