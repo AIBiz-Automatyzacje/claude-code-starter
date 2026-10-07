@@ -13,6 +13,7 @@ wiersz sceptyków w raporcie review i „Zamkniete cyklem fix” w archiwum kopi
 P10 (smoke_wiedza.py): learned_zn, faza.wiedza, blok „Wyuczone reguly projektu:” i wywołania wycinka w promptach plannera,
 builderów i fixa, wynik compoundu (wiedza, indeks, propozycjeBramek, uwagaIndeksu).
 P12 (smoke_p12.py): reguły kodu eager / Read / załącznik z `paths:` per rola, blok D10 w promptach builderów, kryterium 6a pkt 67 (d).
+P13 (smoke_p13.py): epizod dev-plan (koszt do Workflow, wiadomości operatora, artefakty plan.mjs), planner z IU z planu technicznego.
 """
 import collections
 import glob
@@ -22,6 +23,7 @@ import statistics
 import sys
 
 import smoke_p12
+import smoke_p13
 import smoke_sceptycy
 import smoke_wiedza
 
@@ -234,6 +236,7 @@ def main(argumenty):
     smoke_wiedza.sekcja_wiedza_journal(wyniki, katalog)
     smoke_wiedza.sekcja_compound(run)
     smoke_p12.sekcja_p12(run, wyniki, katalog)
+    smoke_p13.sekcja_p13(run, wyniki)
     sekcja_role(ref, run)
     sekcja_model(ref, run)
 
