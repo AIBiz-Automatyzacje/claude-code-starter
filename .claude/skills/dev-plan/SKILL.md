@@ -31,7 +31,7 @@ Jeśli istnieje `docs/CONCEPTS.md`, przeczytaj go na starcie: to słownik poję�
 ## Zasady planu
 
 1. **Wymagania są źródłem prawdy** — plan realizuje dokument źródłowy, nie wymyśla zachowań produktu od nowa.
-2. **Decyzje, nie kod** — zapisujesz podejście, granice, pliki, zależności, ryzyka i scenariusze testowe; bez kodu implementacji i receptur komend.
+2. **Decyzje, nie kod** — zapisujesz podejście, granice, pliki, zależności, ryzyka i scenariusze testowe; bez kodu implementacji i receptur komend. Wyjątek: pole Weryfikacja ma komendę w backtickach (3.4), bo scribe review ją uruchamia.
 3. **Research przed strukturą** — kontekst repo, wiedza projektu i (gdy uzasadnione) dokumentacja zewnętrzna, zanim ułożysz IU.
 4. **Rozmiar planu do pracy** — mała praca dostaje kompaktowy plan, duża więcej struktury; granica planowanie/wykonanie ta sama.
 5. **Rozmiar pliku rozstrzygasz w planie** — tabela plików IU podaje długość pliku dziś i po zmianie; plik, który przekroczy próg, dostaje wydzielenie modułu w planie, a nie uwagę bota w PR.
@@ -103,7 +103,7 @@ Przygotuj podsumowanie kontekstu planowania (akapit lub dwa: problem, wymagania,
   - `learnings-researcher` — prompt: samo podsumowanie kontekstu.
 - **Lekka** — ci sami dwaj agenci tylko przy jednym z warunków:
   - (a) plan wprowadza nową zależność, usługę zewnętrzną, API albo wersję główną biblioteki (porównaj z `package.json` i istniejącymi integracjami);
-  - (b) katalog, który dotkną IU, nie ma wpisu w wiedzy projektu: `node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <katalog>,<katalog>` zwraca pustą `tresc`, a `grep -rl '<katalog>' docs/solutions/` nic nie znajduje.
+  - (b) obszar, który dotkną IU, nie ma wpisu w wiedzy projektu: `node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <plik>,<plik> --bez-zawsze` zwraca pustą `tresc`, a `grep -rl '<katalog>' docs/solutions/` nic nie znajduje. W `--pliki` podajesz ścieżki plików, które IU stworzą lub zmienią (glob reguły `src/x/**/*.ts` nie dopasowuje samego katalogu); `--bez-zawsze` pomija reguły dla wszystkich plików, które pasują do każdego obszaru.
   Bez warunku czytasz wzorce sam (Glob, Grep, Read plików z obszaru) i ogłaszasz decyzję jednym zdaniem z powodem, np. „Lekka, obszar `src/services/` ma 3 reguły w indeksie, bez nowych zależności — planuję bez agentów badawczych.”
 
 Zbierz: wzorce i konwencje do naśladowania, pliki, moduły i testy obszaru, wytyczne z CLAUDE.md wpływające na plan, wiedzę z `docs/solutions/`.
@@ -168,7 +168,7 @@ Format jednostki i całego planu jest w `references/szablon-planu.md` — przecz
 - **Odwołanie do decyzji niesie jej treść.** IU trafia do buildera jako osobny prompt — builder nie widzi reszty planu. Przy każdym odwołaniu dopisz zdanie treści w nawiasie: `strażnik regresji R2 (przy zmianie CTA istniejący tracking zostaje — nowy event, nie modyfikacja)`.
 - **Teksty widoczne dla użytkownika** (etykiety, nagłówki, komunikaty błędów) wklejasz dosłownie w `**Teksty (verbatim):**`, nie przez odwołanie do punktu checklisty — inaczej builder wpisze własną wersję, a review zgłosi rozjazd z zamówieniem.
 - **Scenariusze testowe** — każda pozycja zaczyna się typem: `[Unit]` (test kodu), `[E2E]` (flow w przeglądarce, 3.4b), `[Manual]` (krok człowieka, np. fizyczne urządzenie). Feature-bearing IU ma plik testu w tabeli plików.
-- **Weryfikacja** — tylko kryteria, które scribe review domknie sam: każda pozycja ma komendę w backtickach (`pnpm typecheck`, `pnpm vitest run <ścieżka>`, `grep …`, `bash e2e/<runner>.sh`), opisaną oczekiwanym wynikiem. Krok człowieka idzie do `Operator checklist` albo `[Manual]`.
+- **Weryfikacja** — tylko kryteria, które scribe review domknie sam: każda pozycja ma komendę w backtickach (`pnpm typecheck`, `pnpm vitest run <ścieżka>`, `grep …`), opisaną oczekiwanym wynikiem. Runner z `e2e/` idzie wyłącznie jako `[E2E]` (3.4b) — bez znacznika scribe uruchomiłby go bez środowiska e2e. Krok człowieka idzie do `Operator checklist` albo `[Manual]`.
 - **Operator checklist** — kroki człowieka po implementacji (akceptacja designera, test na urządzeniu, `supabase db push` na dev/prod po merge'u). Trafiają do sekcji operatora fazy i do smoke'u operatora przy archiwizacji.
 - **Znaczniki tylko na początku pozycji.** `[E2E]`, `[Manual]`, `[Unit]`, `Operator:`, `[P1]`–`[P3]` w środku treści dokładają linię do grepów prechecku, testera i completion-gate — w treści pisz to słowami („test w przeglądarce”).
 
@@ -204,7 +204,7 @@ Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Wer
 
 - **Kompletność.** Tabela wymienia każdy plik, który IU stworzy lub zmieni: źródła, testy, migracje, seedy, konfigurację. Planner dobiera do promptu buildera reguły wiedzy projektu po tych ścieżkach — plik spoza tabeli to builder bez reguł dla niego.
 - **Linie dziś.** Policz skryptem: `node .claude/scripts/plan/plan.mjs linie <plik> <plik>` — linie kodu jak ESLint `max-lines` (bez pustych i komentarzy). Nowy plik: `0`. Plik z wcześniejszej IU tego planu: „dziś” = jej „po”.
-- **Linie po** — szacunek po zmianie IU.
+- **Linie po** — szacunek po zmianie IU. Obie kolumny zapisujesz liczbami całkowitymi (`120 → 180`), bez `~` i słów; plik spoza kodu (SQL, markdown) może mieć `— → —`.
 - **Próg 300 linii na plik.** Plik kodu, który po zmianie przekracza 300, dostaje ocenę wymiarów w kolumnie Wymiary: powody zmiany (ile niezależnych powodów, by plik się zmieniał), eksporty między warstwami, importy z wielu domen, test-lustro (czy test da się podzielić tak jak plik), reguła 5 s (czy w 5 sekund wiesz, co plik robi). Wymiar pęknięty → werdykt `wydziel <co>` i wiersz `Stwórz` nowego modułu w tej samej IU, a „po” liczysz po wydzieleniu.
 - **Próg 360 linii na plik** (300 + 20% tolerancji) to próg ESLint i bota PR: plik powyżej 360 po zmianie zawsze dostaje wydzielenie.
 - Werdykt bez przekroczeń: `nowy` albo `zostaje`.
@@ -213,7 +213,7 @@ Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Wer
 
 #### 3.6b Rejestr stałych
 
-Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Źródło | Konsumenci |` dla wartości, których używa więcej niż jedna IU albo warstwa: statusy, limity, nazwy tras, klucze zapytań, kody błędów, nazwy zdarzeń. Każda stała ma jedno źródło — plik w tabeli plików pierwszej IU, która jej używa — a IU-konsumenci importują ją stamtąd i w podejściu wskazują źródło. Bez rejestru dwie IU w osobnych promptach definiują tę samą wartość dwa razy. Plan bez takich wartości: „Brak stałych współdzielonych.”
+Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Źródło | Konsumenci |` dla wartości, których używa więcej niż jedna IU albo warstwa: statusy, limity, nazwy tras, klucze zapytań, kody błędów, nazwy zdarzeń. Każda stała ma jedno źródło — plik w tabeli plików pierwszej IU, która jej używa. IU-źródło zapisuje w Podejściu definicję dosłownie (`MAKS_DLUGOSC_NOTATKI = 500` w `src/services/notatki-limity.ts`), a IU-konsumenci importują stałą stamtąd i powtarzają w Podejściu nazwę z wartością — planner fazy nie dokleja builderowi rejestru. Bez rejestru dwie IU w osobnych promptach definiują tę samą wartość dwa razy. Plan bez takich wartości: „Brak stałych współdzielonych.”
 
 #### 3.7 Wymagania wstępne operatora
 
@@ -235,6 +235,7 @@ Plan nie zawiera kodu implementacji (chyba że kształt kodu jest artefaktem des
 
 - Plan nie wymyśla zachowań produktu należących do `/dev-brainstorm`; każda główna decyzja ma oparcie w źródle albo researchu; odroczone sprawy są jawne.
 - Z dokumentem źródłowym: przeczytaj go ponownie — podejście pasuje do intencji, granice i kryteria są zachowane, blokery rozwiązane albo jawnie założone, każda sekcja źródła ma odpowiedź w planie.
+- Każde ID ze „Śledzenia wymagań” ma IU, która je wymienia w polu Wymagania (`sprawdz` zgłasza brak jako uwagę).
 - Każda IU: konkretna, w kolejności zależności, z `Delegate to:` wg 3.5 i `Skills in play:` zgodnym z builderem, z tabelą plików wg 3.6, z odwołaniami do decyzji niosącymi treść.
 - Frontmatter ma `design_md`, `figma_spec`, `figma_screens`, `operator_prep` — ścieżki albo jawne `null` / `{}`; `figma_spec` i ekrany `figma_screens` istnieją na dysku. Plan z IU ui/fullstack przeszedł kroki B–C z 1.6 (`figma_spec: null` tylko jako świadoma odpowiedź „projektujemy z głowy”).
 - Scenariusze są konkretne, ale nie są kodem testu; Weryfikacja wg 3.4; `[E2E]` wg 3.4b.
@@ -271,10 +272,10 @@ Wynik JSON: `bledy` i `uwagi` z numerami linii i identyfikatorami IU. Każdy bł
 
 #### 6.3 Git i branch
 
-1. `git status --short` i podział pozycji:
+1. `git status --short --untracked-files=all` i podział pozycji:
    - **(a) artefakty planowania** pod `docs/plans/`, `docs/operator/`, `docs/brainstorms/` — stan oczekiwany; zapamiętaj listę ścieżek do commitu inicjalnego (`git checkout -b` przenosi je na nowy branch, więc plan ląduje na `feature/<zadanie>`, nie na `main`);
    - **(b) każda inna pozycja** (kod, `e2e/`, `.env*`, `package.json`, inne docs) → stop i pytanie: zacommitować te pliki na bieżącym branchu, schować je (`git stash push -u -- <ścieżki z (b)>` — gołe `git stash` nie chowa nieśledzonych, a `-u` bez ścieżek schowałby też plan) albo przerwać. Ścieżek z (a) nie stashujesz i nie commitujesz na `main`.
-2. Branch: `git branch --show-current` = `feature/<zadanie>` → zostajesz; `git branch --list feature/<zadanie>` niepuste → `git checkout feature/<zadanie>`; inaczej `git checkout -b feature/<zadanie>` z `main` albo `develop` (z innego brancha — zapytaj).
+2. Branch: `git branch --show-current` = `feature/<zadanie>` → zostajesz; `git branch --list feature/<zadanie>` niepuste → najpierw sprawdź, czy to nie gałąź zakończonego zadania o tym samym slugu (`git merge-base --is-ancestor feature/<zadanie> main` albo istniejące `docs/completed/<zadanie>/`) — wtedy zapytaj o inną nazwę zadania; inaczej `git checkout feature/<zadanie>`; brak gałęzi → `git checkout -b feature/<zadanie>` z `main` albo `develop` (z innego brancha — zapytaj).
 
 #### 6.4 Pliki zadania
 

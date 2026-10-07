@@ -122,3 +122,35 @@ test('SKILL.md: wskazane pliki references/ istnieją', () => {
   assert.deepEqual(pliki.sort(), ['references/kontekst-designerski.md', 'references/przygotowanie-operatora.md', 'references/szablon-planu.md'])
   for (const p of pliki) assert.ok(existsSync(join(SKILL, p)), p)
 })
+
+/** @param {string} z @param {string} na @returns {string} przyklad planu z jedna podmiana (podmiana musi trafic) */
+function mutacja(z, na) {
+  const plan = przykladPlanu()
+  assert.ok(plan.includes(z), `przykład nie zawiera: ${z}`)
+  return plan.replace(z, na)
+}
+
+test('kolumna linii: szacunek z tyldą albo bez strzałki to błąd zapisu, a plik kodu bez liczby „po” omija budżet — błąd', () => {
+  const tylda = sprawdz(mutacja('| 0 → 70 |', '| 0 → ~400 |')).bledy.join('\n')
+  assert.match(tylda, /IU-1: linia \d+: kolumna linii „0 → ~400” — zapis „dziś → po” liczbami całkowitymi/)
+  const slowa = sprawdz(mutacja('| 0 → 70 |', '| 120 do 140 |')).bledy.join('\n')
+  assert.match(slowa, /kolumna linii „120 do 140”/)
+  assert.match(sprawdz(mutacja('| 0 → 70 |', '| 0 → — |')).bledy.join('\n'), /notatki-service\.ts` — brak liczby linii po zmianie/)
+})
+
+test('Weryfikacja z runnerem e2e/*.sh bez znacznika [E2E] jest odrzucona — scribe uruchomiłby go bez środowiska e2e', () => {
+  const w = sprawdz(mutacja('- `pnpm vitest run src/features/klienci` przechodzi', '- `bash e2e/run-all.sh` przechodzi'))
+  assert.match(w.bledy.join('\n'), /IU-2: Weryfikacja „`bash e2e\/run-all\.sh` przechodzi” uruchamia runner E2E bez znacznika \[E2E\]/)
+})
+
+test('wymaganie ze „Śledzenia wymagań” bez IU dostaje uwagę (autopilot pominąłby je po cichu)', () => {
+  const w = sprawdz(mutacja('- R2. Karta klienta pokazuje notatki od najnowszej.', '- R2. Karta klienta pokazuje notatki od najnowszej.\n- R3. Eksport notatek do CSV.'))
+  assert.deepEqual(w.bledy, [])
+  assert.ok(w.uwagi.includes('R3: wymaganie ze „Śledzenia wymagań” bez IU (pole Wymagania żadnej jednostki go nie wymienia)'), w.uwagi.join('\n'))
+})
+
+test('Delegate to: wariant -figma tylko dla ui i fullstack', () => {
+  assert.deepEqual(sprawdz(mutacja('**Delegate to:** feature-builder-fullstack', '**Delegate to:** feature-builder-fullstack-figma')).bledy, [])
+  assert.match(sprawdz(mutacja('**Delegate to:** feature-builder-data', '**Delegate to:** feature-builder-data-figma')).bledy.join('\n'),
+    /IU-1: Delegate to „feature-builder-data-figma”/)
+})

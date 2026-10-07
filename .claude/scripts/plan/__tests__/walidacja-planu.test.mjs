@@ -158,9 +158,11 @@ test('weryfikacja: [Manual], bez komendy CLI, [E2E] bez runnera i runner bedacy 
     ['IU-1: Weryfikacja [Manual] — kroki człowieka idą do Operator checklist albo Scenariusze testowe'])
   assert.deepEqual(sprawdz(zmien(typecheck, '- typecheck przechodzi bez błędów\n\n### Faza 2')).bledy,
     [`IU-1: Weryfikacja „typecheck przechodzi bez błędów” bez komendy w backtickach z listy, którą uruchamia scribe (${KOMENDY_CLI.join(', ')}, grep, rg, ls, test, ./skrypt, *.sh, *.mjs) — krok człowieka idzie do Operator checklist`])
-  for (const komenda of ['`tsc`', '`supabase test db`', '`psql "$SUPABASE_E2E_DB_URL" -c "select 1"`', '`./e2e/sprawdz.sh`', '`node skrypty/x.mjs`']) {
+  for (const komenda of ['`tsc`', '`supabase test db`', '`psql "$SUPABASE_E2E_DB_URL" -c "select 1"`', '`./skrypty/sprawdz.sh`', '`node skrypty/x.mjs`']) {
     assert.deepEqual(sprawdz(zmien(typecheck, `- ${komenda} przechodzi\n\n### Faza 2`)).bledy, [], komenda)
   }
+  // Zmiana kontraktu (P13 S2): runner z e2e/ bez [E2E] scribe uruchomilby bez srodowiska e2e — blad, nie zwykla komenda.
+  assert.equal(sprawdz(zmien(typecheck, '- `./e2e/sprawdz.sh` przechodzi\n\n### Faza 2')).bledy.length, 1)
   assert.equal(sprawdz(zmien(typecheck, '- `test-utils.ts` istnieje\n\n### Faza 2')).bledy.length, 1)
   const runner = '- [E2E] `e2e/run-all.sh` — wszystkie flow zielone'
   assert.deepEqual(sprawdz(zmien(runner, '- [E2E] `publikacja-oferty` — oferta opublikowana')).bledy,

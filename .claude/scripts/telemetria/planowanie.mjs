@@ -2,7 +2,7 @@
 // z epizodu /dev-plan — rozmiary planu i zadan, budzet pliku, odrzucenia planu przez walidacje i ostatnia bramka gotowosci.
 // Zrodlo: wywolania Bash w transkrypcie sesji glownej i JSON z ich wynikow; wynik bez JSON (blad uruchomienia) jest pomijany.
 
-const RE_PLAN = /plan\.mjs\s+(sprawdz|generuj|gotowosc)\b/
+const RE_PLAN = /plan\.mjs(?:\s+--[\w-]+(?:\s+(?!sprawdz\b|generuj\b|gotowosc\b)[^\s-]\S*)?)*\s+(sprawdz|generuj|gotowosc)\b/
 // Bledy budzetu pliku z walidacji (budzet-pliku.mjs): prog ESLint, wymiary ponad prog pytania, rozjazd linii "dzis".
 const RE_BUDZET = /linii > \d+|linii kodu \(bez pustych|tabela podaje dziś|wcześniejsza jednostka planu kończy/
 const POZYCJE_BRAMKI = ['plan', 'e2e', 'przygotowanie', 'git']
@@ -25,14 +25,20 @@ export function poleceniePlanu(blok) {
 export function wynikJson(tresc) {
   const tekst = typeof tresc === 'string' ? tresc
     : Array.isArray(tresc) ? tresc.map((b) => (b && typeof b === 'object' && typeof b.text === 'string' ? b.text : '')).join('\n') : ''
-  const linia = tekst.split('\n').reverse().find((l) => l.trim().startsWith('{'))
-  if (!linia) return null
-  try {
-    const w = JSON.parse(linia)
-    return w && typeof w === 'object' && !Array.isArray(w) ? w : null
-  } catch {
-    return null
+  const linie = tekst.split('\n')
+  // Jedna linia JSON (wyjscie plan.mjs) albo JSON wieloliniowy od linii „{” (np. po `| jq .`).
+  const kandydaci = [linie.slice().reverse().find((l) => l.trim().startsWith('{') && l.trim() !== '{'),
+    linie.slice(linie.findIndex((l) => l.trim() === '{')).join('\n')]
+  for (const k of kandydaci) {
+    if (!k?.trim().startsWith('{')) continue
+    try {
+      const w = JSON.parse(k)
+      if (w && typeof w === 'object' && !Array.isArray(w)) return w
+    } catch {
+      continue
+    }
   }
+  return null
 }
 
 /** @param {unknown} v @returns {Record<string, unknown>} */

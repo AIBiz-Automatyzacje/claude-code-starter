@@ -17,7 +17,8 @@ const PLOT = /^\s*(?:```|~~~)/
  * @typedef {import('./pola-iu.mjs').Plik} Plik
  * @typedef {{ numer: number, oznaczenie: string, poziom: number, nazwa: string, zalezyOd: string, rownolegleZ: string, iu: Jednostka[] }} Faza
  * @typedef {string | null | Record<string, string>} PoleFrontmattera
- * @typedef {{ frontmatter: Record<string, PoleFrontmattera>, przeglad: string, fazy: Faza[], bezFazy: Jednostka[], problemy: string[] }} Plan
+ * @typedef {{ frontmatter: Record<string, PoleFrontmattera>, przeglad: string, wymagania: string[], fazy: Faza[], bezFazy: Jednostka[],
+ *   problemy: string[] }} Plan
  */
 
 /** @param {string | undefined} v @returns {string | null} */
@@ -88,6 +89,12 @@ function przeglad(md) {
   return akapit.join(' ')
 }
 
+/** @param {string} md @returns {string[]} ID wymagan z listy `- R1. …` sekcji `## Śledzenie wymagań` */
+function wymagania(md) {
+  const sekcja = /^##\s+[ŚS]ledzenie wymaga[nń]\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(md)?.[1] ?? ''
+  return [...sekcja.matchAll(/^-\s+\**(R\d+[a-z]?)\**[.:)]/gm)].map((m) => m[1])
+}
+
 /**
  * @param {string} md tresc planu technicznego
  * @returns {Plan}
@@ -140,7 +147,7 @@ export function parsujPlan(md) {
   })
   zamknijIu()
   if (kod) problemy.push('niezamknięty blok kodu ``` — reszta planu nie została przeczytana')
-  return { frontmatter: pola, przeglad: przeglad(md), fazy, bezFazy, problemy }
+  return { frontmatter: pola, przeglad: przeglad(md), wymagania: wymagania(md), fazy, bezFazy, problemy }
 }
 
 /**

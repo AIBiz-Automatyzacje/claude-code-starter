@@ -143,3 +143,13 @@ test('artefakty: wyniki plan.mjs z epizodu dev-plan — rozmiary, budzet, odrzuc
   }, 'wynik bez JSON (b6) nie nadpisuje ostatniej odczytanej bramki')
   assert.equal(rekordSkilla(epizod('dev-compound'), () => 0).artefakty, null, 'epizod bez plan.mjs: artefakty null')
 })
+
+test('artefakty: wynik plan.mjs przepuszczony przez jq (JSON wieloliniowy) i opcja --projekt przed poleceniem', () => {
+  const e = epizodySesji([
+    user('u1', '<command-name>/dev-plan</command-name>'),
+    asystent('m1', 10, [{ type: 'tool_use', id: 'b1', name: 'Bash', input: { command: 'node .claude/scripts/plan/plan.mjs --projekt . sprawdz x.md | jq .' } }]),
+    user('r1', [{ type: 'tool_result', tool_use_id: 'b1', content: `Exit code 1\n${JSON.stringify({ ok: false, bledy: ['a'], uwagi: [] }, null, 2)}` }]),
+  ], 's')
+  const a = rekordSkilla(e[0], () => 0).artefakty
+  assert.deepEqual(a?.walidacja, { n: 1, odrzucone: 1, bledy_pierwszy: 1, bledy_budzetu_pierwszy: 0 })
+})

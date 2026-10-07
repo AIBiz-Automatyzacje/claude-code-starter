@@ -99,6 +99,16 @@ test('wycinek --pliki: reguly dla plikow jednostki, takze nowego pliku w katalog
   })
 })
 
+test('wycinek --bez-zawsze: regula z koszyka „zawsze” nie liczy sie jako wpis dla obszaru plikow', () => {
+  wRepo((repo) => {
+    zapisz(repo, { 'docs/solutions/a/zawsze.md': solution({ ...POLA, paths: ['**'] }) })
+    assert.deepEqual(uruchom(repo, ['wycinek', '--pliki', 'src/nowy/a.ts']).json.pliki, ['docs/solutions/a/zawsze.md'])
+    const w = uruchom(repo, ['wycinek', '--pliki', 'src/nowy/a.ts', '--bez-zawsze'])
+    assert.equal(w.kod, 0)
+    assert.equal(w.json.tresc, '')
+  })
+})
+
 test('wycinek --zapobieganie: reguly projektu, potem zdania klas bez klasy reguly, jeden blok w limicie', () => {
   wRepo((repo) => {
     zapisz(repo, { 'docs/solutions/a/lib.md': solution(POLA) })

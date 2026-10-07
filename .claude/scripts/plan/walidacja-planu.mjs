@@ -18,6 +18,8 @@ export { PROG_ESLINT, PROG_PYTANIA } from './budzet-pliku.mjs'
  */
 
 export const BUILDERZY = ['feature-builder-ui', 'feature-builder-data', 'feature-builder-fullstack']
+// Warianty z Figma MCP wybiera planner fazy; plan pisze bazowe nazwy, ale wariant w planie nie jest bledem.
+const DELEGACI = [...BUILDERZY, 'feature-builder-ui-figma', 'feature-builder-fullstack-figma']
 const POLA_FRONTMATTERA = ['design_md', 'figma_spec', 'figma_screens', 'operator_prep']
 const PLIK_TESTU = /(?:\.(?:test|spec)\.[cm]?[jt]sx?$|__tests__\/)/
 const SEED = /^e2e\/seeds\/[\w.-]+-seed\.sql$/
@@ -133,6 +135,9 @@ function weryfikacja(iu, flowy, w) {
       else if (flowy.has(runner.replace(/^.*\//, '').replace(/\.sh$/, ''))) {
         w.bledy.push(`${iu.id}: Weryfikacja [E2E] \`${runner}\` to scenariusz z linii [E2E] — drugi przebieg tego samego flow`)
       }
+    } else if (/`[^`]*\be2e\/[^`\s]*\.sh\b[^`]*`/.test(v.tresc)) {
+      w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” uruchamia runner E2E bez znacznika [E2E] — scribe uruchomiłby go`
+        + ' bez środowiska e2e; zapis „[E2E] `e2e/<runner>.sh` — <stan>”')
     } else if (!KOMENDA.test(v.tresc)) {
       w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” bez komendy w backtickach z listy, którą uruchamia scribe`
         + ` (${KOMENDY_CLI.join(', ')}, ${KOMENDY_GREP.join(', ')}, ./skrypt, *.sh, *.mjs) — krok człowieka idzie do Operator checklist`)
@@ -156,7 +161,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   /** @type {Map<string, string>} */
   const flowy = new Map()
   for (const iu of jednostki) {
-    if (!BUILDERZY.includes(iu.delegate.replace(/-figma$/, ''))) {
+    if (!DELEGACI.includes(iu.delegate)) {
       w.bledy.push(`${iu.id}: Delegate to „${iu.delegate}” — dozwolone ${BUILDERZY.join(' | ')}`)
     }
     pliki(iu, w)
@@ -164,6 +169,9 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
     scenariusze(iu, projekt, seedyPlanu, flowy, w)
   }
   for (const iu of jednostki) weryfikacja(iu, flowy, w)
+  for (const id of plan.wymagania.filter((r) => !jednostki.some((iu) => new RegExp(`\\b${r}\\b`).test(iu.wymagania)))) {
+    w.uwagi.push(`${id}: wymaganie ze „Śledzenia wymagań” bez IU (pole Wymagania żadnej jednostki go nie wymienia)`)
+  }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
   const e2e = jednostki.some((iu) => iu.scenariusze.some((s) => s.typ === 'E2E'))
   if (e2e && !existsSync(join(projekt, '.env.e2e')) && !poleTekstowe(plan, 'operator_prep')) {

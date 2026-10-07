@@ -44,7 +44,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `**Weryfikacja:**` | `- <komenda w backtickach> <oczekiwany wynik>`; `- [E2E] \`e2e/<runner>.sh\` — <stan>` dla runnera niebędącego scenariuszem | |
 | `**Operator checklist:**` | `- [ ] <krok człowieka po implementacji>` | opcjonalne |
 
-Listy pól zaczynają się od `- ` w kolumnie 0; kontynuacja pozycji jest wcięta. Lista wcięta, numerowana, z `*` albo pole drugi raz w tej samej IU — `sprawdz` zgłasza jako błąd z numerem linii.
+Kolumna „Linie dziś → po” to dwie liczby całkowite ze strzałką (`285 → 260`); plik spoza kodu może mieć `— → —`. Listy pól zaczynają się od `- ` w kolumnie 0; kontynuacja pozycji jest wcięta. Lista wcięta, numerowana, z `*` albo pole drugi raz w tej samej IU — `sprawdz` zgłasza jako błąd z numerem linii.
 
 ## Przykład planu
 
@@ -145,7 +145,7 @@ Brak — autopilot może startować od razu.
 **Skills in play:** supabase-dev-guidelines, security, sentry-integration
 
 **Podejście:**
-- Walidacja zod na granicy serwisu z limitem z rejestru stałych (`MAKS_DLUGOSC_NOTATKI` z `src/services/notatki-limity.ts`).
+- Walidacja zod na granicy serwisu z limitem z rejestru stałych: `MAKS_DLUGOSC_NOTATKI = 500` w `src/services/notatki-limity.ts` (to źródło stałej).
 - Lista sortowana w zapytaniu (decyzja z „Rozwiązane podczas planowania”: po `created_at` malejąco, nie w komponencie).
 
 **Wzorce do naśladowania:**
@@ -186,7 +186,7 @@ Brak — autopilot może startować od razu.
 **Skills in play:** tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration
 
 **Podejście:**
-- Licznik znaków w formularzu bierze limit z `src/services/notatki-limity.ts` (rejestr stałych).
+- Licznik znaków w formularzu importuje `MAKS_DLUGOSC_NOTATKI` (= 500) z `src/services/notatki-limity.ts` (rejestr stałych).
 - Sekcja kontaktu wychodzi z karty klienta przed dodaniem notatek (werdykt tabeli plików), karta po zmianie ma ok. 260 linii (bez wydzielenia 320).
 
 **Teksty (verbatim):**

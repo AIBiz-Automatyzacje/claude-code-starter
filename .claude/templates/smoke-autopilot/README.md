@@ -71,8 +71,9 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
      `smokeOperatora` w wyniku niepuste, `smokeStatus: "plik"`;
    - plik istnieje i `grep -c '^- \[ \]' docs/operator/<data>-smoke-autopilot-smoke.md` >= 1, zero wartosci sekretow w pliku;
    - `git show --stat HEAD` commita archiwizacji zawiera `docs/operator/...-smoke.md` (krok 8 `git add`).
-   Wariant negatywny (drugi run): usun scenariusz `[Manual]` z planu technicznego kopii i wygeneruj zadanie ponownie
-   (`plan.mjs generuj docs/plans/plan-techniczny-smoke-autopilot.md --nazwa smoke-autopilot --zapisz --nadpisz`) → oczekiwane
+   Wariant negatywny (drugi run): usun scenariusz `[Manual]` z planu technicznego kopii, wygeneruj zadanie ponownie
+   (`node .claude/scripts/plan/plan.mjs generuj docs/plans/plan-techniczny-smoke-autopilot.md --nazwa smoke-autopilot --zapisz --nadpisz`)
+   i zacommituj plan z katalogiem zadania (bootstrap zatrzyma run na zmienionym planie technicznym) → oczekiwane
    `Smoke operatora: brak pozycji do recznego sprawdzenia — plik nie powstal`, `smokeStatus: "brak-pozycji"`, brak pliku w `docs/operator/`.
 
 ## Test resume (scenariusz celowy)

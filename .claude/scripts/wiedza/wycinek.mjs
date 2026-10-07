@@ -12,10 +12,11 @@ export const MAKS_WYCINEK_ZN = 2000
 
 /** @typedef {import('./wpisy.mjs').Wpis} Wpis */
 
-/** @param {Wpis} w @param {string[]} pliki @returns {boolean} */
-function pasuje(w, pliki) {
+/** @param {Wpis} w @param {string[]} pliki @param {boolean} bezZawsze @returns {boolean} */
+function pasuje(w, pliki, bezZawsze) {
   const globy = sciezkiWpisu(w)
-  return czyZawsze(globy) || pliki.some((p) => globy.some((g) => posix.matchesGlob(p, g)))
+  if (czyZawsze(globy)) return !bezZawsze
+  return pliki.some((p) => globy.some((g) => posix.matchesGlob(p, g)))
 }
 
 /** @param {Wpis} w @returns {string} */
@@ -27,10 +28,11 @@ function linia(w) {
  * @param {Wpis[]} wpisy zwalidowane wpisy solutions
  * @param {string[]} pliki sciezki plikow jednostki albo fazy (wzgledem repo)
  * @param {number} [limitZn]
+ * @param {{ bezZawsze?: boolean }} [opcje] bezZawsze: bez koszyka „zawsze” — czy obszar plikow ma wlasne wpisy (/dev-plan, research)
  * @returns {{ tresc: string, zn: number, wpisy: number, pominiete: number, pliki: string[] }}
  */
-export function wycinek(wpisy, pliki, limitZn = MAKS_WYCINEK_ZN) {
-  const regulyPlikow = wpisy.filter((w) => czyObowiazuje(w) && pasuje(w, pliki))
+export function wycinek(wpisy, pliki, limitZn = MAKS_WYCINEK_ZN, opcje = {}) {
+  const regulyPlikow = wpisy.filter((w) => czyObowiazuje(w) && pasuje(w, pliki, opcje.bezZawsze === true))
   const dopasowane = bezDuplikatow(regulyPlikow).unikalne.sort(porownajWpisy)
   const stopka = (/** @type {number} */ n) => `+${n} regul poza limitem wycinka — pelna lista: ${PLIK_INDEKSU}`
   /** @type {Wpis[]} */

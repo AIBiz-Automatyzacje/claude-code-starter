@@ -34,6 +34,12 @@ test('wycinek: reguly z globami pasujacymi do plikow (takze nowych, jeszcze niei
   assert.equal(w.zn, w.tresc.length)
 })
 
+test('wycinek --bez-zawsze: tylko reguly dopasowane do plikow — /dev-plan sprawdza, czy obszar ma wpisy w wiedzy projektu', () => {
+  assert.deepEqual(wycinek(WPISY, ['src/zupelnie-nowy/a.ts'], MAKS_WYCINEK_ZN, { bezZawsze: true }).tresc, '')
+  assert.deepEqual(wycinek(WPISY, ['src/zupelnie-nowy/a.ts']).pliki, ['docs/solutions/a/zawsze.md'], 'bez opcji koszyk zawsze dochodzi')
+  assert.deepEqual(wycinek(WPISY, ['src/lib/a.ts'], MAKS_WYCINEK_ZN, { bezZawsze: true }).pliki, ['docs/solutions/a/lib.md', 'docs/solutions/a/kod.md'])
+})
+
 test('wycinek: brak pasujacych regul i brak koszyka = pusty wycinek', () => {
   const w = wycinek(WPISY.filter((x) => x.plik !== 'docs/solutions/a/zawsze.md'), ['README.md'])
   assert.deepEqual({ tresc: w.tresc, wpisy: w.wpisy, pominiete: w.pominiete }, { tresc: '', wpisy: 0, pominiete: 0 })

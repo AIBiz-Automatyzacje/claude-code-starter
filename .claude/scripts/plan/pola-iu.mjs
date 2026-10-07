@@ -9,7 +9,7 @@
  * @typedef {{ tresc: string, e2e: boolean }} Weryfikacja
  * @typedef {{ id: string, numer: number, nazwa: string, faza: number | null, start: number, delegate: string,
  *   tabelaPlikow: boolean, pliki: Plik[], scenariusze: Scenariusz[], weryfikacja: Weryfikacja[], operator: string[],
- *   opis: string, problemy: string[] }} Jednostka
+ *   wymagania: string, opis: string, problemy: string[] }} Jednostka
  */
 
 const POLE_W_GWIAZDKACH = /^\*\*([^*]+?):\*\*\s*(.*)$/
@@ -43,11 +43,15 @@ export function bezPlaceholdera(v) {
   return /^[—–-]?$/.test(t) ? '' : t
 }
 
-/** @param {string} komorka @returns {[number | null, number | null]} */
+/**
+ * @param {string} komorka
+ * @returns {[number | null, number | null] | null} null = zapis nieczytelny (szacunek z tylda, slowa zamiast strzalki)
+ */
 function linieDzisPo(komorka) {
   const m = /(\d+|—|-)\s*(?:→|->)\s*(\d+|—|-)/.exec(komorka)
   const liczba = (/** @type {string | undefined} */ s) => (s && /^\d+$/.test(s) ? Number(s) : null)
-  return m ? [liczba(m[1]), liczba(m[2])] : [null, null]
+  if (!komorka.trim()) return [null, null]
+  return m && !/[~≈]/.test(komorka) ? [liczba(m[1]), liczba(m[2])] : null
 }
 
 /**
@@ -68,7 +72,11 @@ function polePliki(linie, problemy) {
     const pliki = wiersze.slice(1).filter((w) => !w.komorki.every((k) => /^:?-+:?$/.test(k))).map((w) => {
       const sciezki = [...(w.komorki[iPlik] ?? '').matchAll(/`([^`]+)`/g)].map((m) => m[1])
       if (sciezki.length > 1) problemy.push(`linia ${w.nr}: kilka plików w jednej komórce — jeden plik na wiersz tabeli`)
-      const [dzis, po] = linieDzisPo(w.komorki[iLinie] ?? '')
+      const linie = linieDzisPo(w.komorki[iLinie] ?? '')
+      if (!linie) {
+        problemy.push(`linia ${w.nr}: kolumna linii „${w.komorki[iLinie]}” — zapis „dziś → po” liczbami całkowitymi (albo — dla pliku spoza kodu)`)
+      }
+      const [dzis, po] = linie ?? [null, null]
       return { akcja: w.komorki[iAkcja] ?? '', sciezka: sciezki[0] ?? (w.komorki[iPlik] ?? '').trim(), dzis, po,
         wymiary: w.komorki[iWymiary] ?? '', werdykt: w.komorki[iWerdykt] ?? '' }
     })
@@ -163,6 +171,7 @@ export function jednostka(naglowek, linie) {
     scenariusze: scen.map((s) => scenariusz(s, problemy)),
     weryfikacja: wer.map((t) => ({ tresc: t.replace(/^\[E2E\]\s*/, ''), e2e: /^\[E2E\]/.test(t) })),
     operator: oper.map((o) => o.replace(/^Operator:\s*/, '')),
+    wymagania: [pola.get('wymagania')?.wartosc ?? '', ...(pola.get('wymagania')?.linie ?? []).map((l) => l.tekst)].join('\n'),
     opis: POLA_OPISU.map((k) => [pola.get(k)?.wartosc ?? '', ...(pola.get(k)?.linie ?? []).map((l) => l.tekst)].join('\n')).join('\n'),
     problemy,
   }

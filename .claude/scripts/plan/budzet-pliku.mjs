@@ -59,7 +59,10 @@ const rozjazd = (a, b) => Math.abs(a - b) > TOLERANCJA.linie && Math.abs(a - b) 
  * @param {string} id @param {Plik} p @param {Wynik} w
  */
 function progi(id, p, w) {
-  if (p.po === null) return
+  if (p.po === null) {
+    if (!/^usun/.test(akcja(p))) w.bledy.push(`${id}: \`${p.sciezka}\` — brak liczby linii po zmianie (kolumna „Linie dziś → po”)`)
+    return
+  }
   if (p.po > PROG_ESLINT) {
     w.bledy.push(`${id}: \`${p.sciezka}\` po zmianie ${p.po} linii > ${PROG_ESLINT} (próg ESLint max-lines) — zaplanuj wydzielenie `
       + 'modułu: werdykt „wydziel …”, wiersz Stwórz nowego modułu i długość po wydzieleniu')
