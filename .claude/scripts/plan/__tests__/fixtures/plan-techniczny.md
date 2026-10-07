@@ -25,7 +25,7 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 - R1. Oferta ma status `szkic` albo `opublikowana`.
 - R2. Publikacja jest dostępna z listy ofert.
 
-## Granice scope'u
+## Granice zakresu
 
 - Bez wersjonowania opublikowanych ofert.
 

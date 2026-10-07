@@ -50,7 +50,7 @@ function planZadania(projekt, plan, nazwa, data, sciezkaPlanu, prep) {
     ...naglowek('Plan', nazwa, data, sciezkaPlanu),
     ...zrodla(projekt, plan, sciezkaPlanu),
     '## Cel', '', plan.przeglad || `Zob. sekcja „Przegląd” planu technicznego.`, '',
-    '## Zakres', '', `Wymagania i granice: \`${sciezkaPlanu}\`, sekcje „Śledzenie wymagań” i „Granice scope'u”.`, '',
+    '## Zakres', '', `Wymagania i granice: \`${sciezkaPlanu}\`, sekcje „Śledzenie wymagań” i „Granice zakresu”.`, '',
     '## Fazy', '', '| Faza | Nazwa | IU | Zależy od | Delegaci |', '|---|---|---|---|---|', ...fazy, '',
     '## Kryteria akceptacji całości', '',
     'Każda faza: typecheck 0 błędów, testy PASS, review bez otwartych P1; każdy `[E2E]` uruchomiony (nie odhaczony ręcznie).',
