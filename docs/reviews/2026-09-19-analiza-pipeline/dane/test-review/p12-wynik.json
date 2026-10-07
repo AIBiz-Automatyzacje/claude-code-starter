@@ -267,8 +267,8 @@
        "samosprawdzenie": {
         "tsc": 4,
         "vitest_related": 0,
-        "vitest_pliki": 26,
-        "pelny_zestaw": 1,
+        "vitest_pliki": 21,
+        "pelny_zestaw": 2,
         "eslint": 0
        },
        "undefined": 0,
@@ -317,7 +317,7 @@
        "samosprawdzenie": {
         "tsc": 2,
         "vitest_related": 0,
-        "vitest_pliki": 8,
+        "vitest_pliki": 6,
         "pelny_zestaw": 2,
         "eslint": 0
        },
@@ -366,7 +366,7 @@
        "samosprawdzenie": {
         "tsc": 5,
         "vitest_related": 0,
-        "vitest_pliki": 13,
+        "vitest_pliki": 11,
         "pelny_zestaw": 3,
         "eslint": 1
        },
@@ -412,8 +412,8 @@
        "samosprawdzenie": {
         "tsc": 5,
         "vitest_related": 0,
-        "vitest_pliki": 9,
-        "pelny_zestaw": 2,
+        "vitest_pliki": 8,
+        "pelny_zestaw": 3,
         "eslint": 0
        },
        "undefined": 0,
@@ -598,7 +598,7 @@
        "samosprawdzenie": {
         "tsc": 1,
         "vitest_related": 2,
-        "vitest_pliki": 9,
+        "vitest_pliki": 7,
         "pelny_zestaw": 2,
         "eslint": 1
        },
@@ -664,7 +664,7 @@
        "samosprawdzenie": {
         "tsc": 1,
         "vitest_related": 1,
-        "vitest_pliki": 18,
+        "vitest_pliki": 16,
         "pelny_zestaw": 2,
         "eslint": 0
        },
@@ -889,17 +889,20 @@
   "stary": {
    "OBECNY": 4,
    "ZAPOBIEZONY": 6,
-   "BRAK_ODPOWIEDNIKA": 0
+   "BRAK_ODPOWIEDNIKA": 0,
+   "brak_oceny": 0
   },
   "nowy": {
    "OBECNY": 4,
    "ZAPOBIEZONY": 6,
-   "BRAK_ODPOWIEDNIKA": 0
+   "BRAK_ODPOWIEDNIKA": 0,
+   "brak_oceny": 0
   },
   "historyczny": {
    "OBECNY": 10,
    "ZAPOBIEZONY": 0,
-   "BRAK_ODPOWIEDNIKA": 0
+   "BRAK_ODPOWIEDNIKA": 0,
+   "brak_oceny": 0
   }
  }
 }

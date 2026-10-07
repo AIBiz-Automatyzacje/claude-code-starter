@@ -24,6 +24,7 @@ sys.dont_write_bytecode = True
 import panel_koszt_dane as KD
 import test_review_p12 as P
 import test_review_p12_transkrypt as TT
+import test_review_p12_wynik as PW
 import test_review_sesja as T
 import test_review_skan as SK
 
@@ -101,6 +102,8 @@ def przygotuj(et):
         with open(os.path.join(pliki(et, w), 'wariant-build.js'), 'w') as fo: fo.write(js)
         stan['kontrole'][w] = k
     _json(os.path.join(P12, et, 'przygotowanie.json'), stan)
+    if not os.path.exists(os.path.join(P12, et, 'claude.json')):   # claude.json w p12/ przenosi się przy zmianie .claude — faza pamięta swoje drzewa
+        _json(os.path.join(P12, et, 'claude.json'), dict(_json(os.path.join(P12, 'claude.json')), nowy_commit=_g(SZ, 'rev-parse', REFY['nowy']).strip()))
     print('%s: faza %s, baza buildu %s, sha %s | kopie %s | warianty %s' % (et, f['faza'], f['baza'][:10], f['sha'][:10], ', '.join(
         '%s usunięte %d, biblioteki %s' % (w, len(i['usuniete']), i['biblioteki']) for w, i in stan['kopie'].items()) or 'już były',
         ', '.join('%s %s' % (w, k['zrodlo_sha']) for w, k in stan['kontrole'].items())))
@@ -376,11 +379,11 @@ def wynik(ets):
              'review_historyczny_p11': _review(et, 'nowy', os.path.join(TR, 'wyniki', et, 'p11-nowy.json'))}
         L.append('== %s: K %d w zakresie (D10 %d, pokryte %d, inne %d); czułość sędziego na kodzie historycznym %s; sędzia %.2f M' % (
             et, len(mp['K']), *(sum(k['grupa'] == g for k in mp['K'].values()) for g in ('d10', 'pokryte', 'inne')), sed['czulosc_historycznego'], r['koszt_sedziego']))
+        L.append('  ' + PW.drzewa(P12, et))
         for w in P.WARIANTY_SEDZIEGO:
             s = sed[w]
-            L.append('  %-11s razem O/Z/B %d/%d/%d | klucz2 %d/%d/%d | klucz1 %d/%d/%d | D10 %s | pokryte %s' % (w, *(s['razem'][o] for o in P.OCENY),
-                     *(s['klucz2'][o] for o in P.OCENY), *(s['klucz1'][o] for o in P.OCENY),
-                     '/'.join(str(s['grupy'].get('d10', {}).get(o, 0)) for o in P.OCENY), '/'.join(str(s['grupy'].get('pokryte', {}).get(o, 0)) for o in P.OCENY)))
+            L.append('  %-11s razem O/Z/B %d/%d/%d | klucz2 %d/%d/%d | klucz1 %d/%d/%d | %s' % (w, *(s['razem'][o] for o in P.OCENY),
+                     *(s['klucz2'][o] for o in P.OCENY), *(s['klucz1'][o] for o in P.OCENY), PW.linia_grup(s)))
         L.append('  pary (oba warianty mają kod): %s' % {k: v for k, v in sed['pary'].items()})
         for w in P.WARIANTY:
             b = r['build'][w] = _build(et, w)
@@ -401,8 +404,17 @@ def wynik(ets):
             h = r['review_historyczny_p11']
             L.append('  odniesienie: review main na kodzie historycznym (P11 „nowy”): findingi %d, P1/P2 %d (P1 %d)' % (h['razem'], h['p1p2'], h['p1']))
         dane[et] = r
-    razem = {w: {o: sum(d['sedzia'][w]['razem'][o] for d in dane.values()) for o in P.OCENY} for w in P.WARIANTY_SEDZIEGO}
-    L.append('== razem (%d faz): %s' % (len(dane), ' | '.join('%s O/Z/B %d/%d/%d' % (w, *(razem[w][o] for o in P.OCENY)) for w in P.WARIANTY_SEDZIEGO)))
+    suma = PW.suma_faz({et: d['sedzia'] for et, d in dane.items()})
+    razem = {w: suma[w]['razem'] for w in P.WARIANTY_SEDZIEGO}
+    L.append('== razem (%d faz, %d kluczy): %s' % (len(dane), suma['klucze'], ' | '.join('%s O/Z/B %d/%d/%d' % (w, *(razem[w][o] for o in P.OCENY)) for w in P.WARIANTY_SEDZIEGO)))
+    for w in P.WARIANTY_SEDZIEGO:
+        L.append('  %-11s klucz2 %s | klucz1 %s | %s' % (w, '/'.join(str(suma[w]['klucz2'][o]) for o in P.OCENY), '/'.join(str(suma[w]['klucz1'][o]) for o in P.OCENY), PW.linia_grup(suma[w])))
+    L.append('  pary: %s' % suma['pary'])
+    ctx = {w: [x['ctx_start'] for f in dane.values() for x in f['build'][w]['buildery']] for w in P.WARIANTY}
+    L.append('  koszt: build %s | review %s | buildery ctx_start śr. %s' % (
+        ' '.join('%s %.2f M' % (w, sum(f['build'][w]['koszt'] for f in dane.values())) for w in P.WARIANTY),
+        ' '.join('%s %.2f M' % (w, sum(f['koszt_review'][w] for f in dane.values())) for w in P.WARIANTY),
+        ' '.join('%s %s' % (w, round(sum(ctx[w]) / len(ctx[w])) if ctx[w] else '—') for w in P.WARIANTY)))
     _json(os.path.join(OUT, 'p12-wynik.json'), {'fazy': dane, 'razem': razem})
     with open(os.path.join(OUT, 'p12-wynik.txt'), 'w') as fo: fo.write('\n'.join(L) + '\n')
     print('\n'.join(L))
