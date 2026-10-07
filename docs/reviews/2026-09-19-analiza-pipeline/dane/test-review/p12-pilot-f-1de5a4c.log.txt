@@ -1,0 +1,87 @@
+=== f-1de5a4c build nowy (01:02)
+f-1de5a4c nowy: kopia na bazie 60f1951eb6
+f-1de5a4c nowy: nakladka nowy — agenci 23, ukryte zmiany 114, nowe 0
+f-1de5a4c p12-build nowy: sesja abdc4d94-50f0-5927-8a62-e220fdfdee64 zakończona kodem 0
+f-1de5a4c p12-build nowy: run wf_98e50b92-5ac status completed, findingów 0
+skan f-1de5a4c p12-build nowy: STOP 0, przeciek 1, uwagi 0
+  PRZECIEK domkniecie:faza-6: ['StructuredOutput {"fazaNumer": 6, "status": "completed", "iu": [{"id": "IU-13", "nazwa": "Cztery poprawki dokumentu oferty — walidator, rok, favicon, 409", "status": "completed"']
+PRZERWANE: f-1de5a4c p12-build nowy (kod 4)
+KONIEC kod 4
+=== WZNOWIENIE 01:41
+f-1de5a4c p12-build nowy: zrobiony bez skanu — skan teraz
+skan f-1de5a4c p12-build nowy: STOP 0, przeciek 0, uwagi 0
+f-1de5a4c nowy: HEAD 7b0a1355ad, commity 1, status 0 linii, bramki tak, dossier 54 plików
+=== f-1de5a4c build stary (01:41)
+f-1de5a4c stary: kopia nietknięta na bazie 60f1951eb6 — zostaje
+f-1de5a4c stary: nakladka stary — agenci 23, ukryte zmiany 80, nowe 0
+f-1de5a4c: zamknięte na czas buildu stary: p12-kopie/f-1de5a4c/nowy, p12-kopie/f-1de5a4c/nowy-pliki, kopie/f-1de5a4c
+f-1de5a4c p12-build stary: sesja 4b475189-d1a2-527b-ab6e-45b6c450b0fb zakończona kodem 0
+f-1de5a4c p12-build stary: run wf_05bd1408-c4d status completed, findingów 0
+Traceback (most recent call last):
+  File "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/test_review_p12_cli.py", line 396, in <module>
+    k[a[0]]()
+    ~~~~~~~^^
+  File "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/test_review_p12_cli.py", line 394, in <lambda>
+    'sedzia': lambda: sedzia(a[1]), 'skan': lambda: sys.exit(skan(a[1], a[2], a[3])), 'wynik': lambda: wynik(a[1:])}
+                                                             ~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/test_review_p12_cli.py", line 274, in skan
+    przyszle = P.przyszle_w_kopii(cel, _g(f['kopia_fazy'], 'rev-list', '%s..%s' % (f['baza'], f['sha'])).split())
+                                       ~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty/test_review_p12_cli.py", line 47, in _g
+    return subprocess.run(['git', '-C', kopia, *a], capture_output=True, text=True, check=check).stdout
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['git', '-C', '/Users/kacper_trzepiecinski/test-review/kopie/f-1de5a4c', 'rev-list', '60f1951eb67356958644ccfa19792262a8634345..1de5a4c2607944072aa9f27b58edc18b46e34c4c']' returned non-zero exit status 128.
+f-1de5a4c: uprawnienia przywrócone
+PRZERWANE: f-1de5a4c p12-build stary (kod 1)
+KONIEC2 kod 1
+=== WZNOWIENIE-2 02:18
+f-1de5a4c p12-build nowy: zrobiony, skan 0 — pomijam
+f-1de5a4c p12-build stary: zrobiony bez skanu — skan teraz
+skan f-1de5a4c p12-build stary: STOP 0, przeciek 0, uwagi 0
+f-1de5a4c stary: HEAD 7c79ac5034, commity 1, status 0 linii, bramki tak, dossier 52 plików
+=== f-1de5a4c review nowy (02:18)
+f-1de5a4c nowy: nakladka stary — agenci 23, ukryte zmiany 80, nowe 0
+f-1de5a4c p12-review nowy: sesja 8a0ef415-b16c-5a27-ab5f-43c5b49abbf3 zakończona kodem 0
+f-1de5a4c p12-review nowy: run wf_0ab443e6-30d status completed, findingów 15
+skan f-1de5a4c p12-review nowy: STOP 0, przeciek 6, uwagi 0
+  PRZECIEK review:correctness: ['Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md"}', 'Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff"}']
+  PRZECIEK review:performance: ['Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md"}', 'Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff"}']
+  PRZECIEK review:test-coverage: ['Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md"}', 'Bash {"command": "wc -l /Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff", "d']
+  PRZECIEK review:spec-compliance: ['Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md"}', 'Bash {"command": "wc -l /Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff"}']
+  PRZECIEK review:security: ['Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md"}', 'Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff", "offse']
+  PRZECIEK review:code-quality: ['Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md"}', 'Read {"file_path": "/Users/kacper_trzepiecinski/test-review/p12-kopie/f-1de5a4c/nowy-pliki/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff"}']
+PRZERWANE: f-1de5a4c p12-review nowy (kod 4)
+KONIEC3 kod 4
+=== WZNOWIENIE-3 02:22
+f-1de5a4c p12-build nowy: zrobiony, skan 0 — pomijam
+f-1de5a4c p12-build stary: zrobiony, skan 0 — pomijam
+=== f-1de5a4c review nowy (02:22)
+f-1de5a4c p12-review nowy: zrobiony, skan 0 — pomijam
+=== f-1de5a4c review stary (02:22)
+f-1de5a4c stary: nakladka stary — agenci 23, ukryte zmiany 80, nowe 0
+f-1de5a4c p12-review stary: sesja d3be6114-b14c-5930-b03c-fb918098d5d8 zakończona kodem 0
+f-1de5a4c p12-review stary: run wf_4c4e1a73-311 status completed, findingów 16
+skan f-1de5a4c p12-review stary: STOP 0, przeciek 0, uwagi 1
+  dedup:semantyczny: agent haiku wołał narzędzia ['Read']
+f-1de5a4c: K 10 (w zakresie), implementacje A 48 plików/3581 linii, B 50 plików/2999 linii, C 50 plików/3869 linii, prompt 9102 zn
+f-1de5a4c p12-sedzia-p1 S: sesja aa8af744-1769-5ca9-af53-9031c646ef28 zakończona kodem 0
+f-1de5a4c p12-sedzia-p1 S: run wf_4d68f40d-081 status completed, findingów 0
+skan f-1de5a4c p12-sedzia-p1 S: STOP 0, przeciek 0, uwagi 0
+test_review_p12_cli.py wynik — ślepy test P12 (buildery stare = main, nowe = gałąź P12; review z main ucięty przed Verify; sędzia obecności defektu, czułość = OBECNY na kodzie historycznym); koszt [M jedn.] bez sesji uruchamiających
+== f-1de5a4c: K 10 w zakresie (D10 3, pokryte 4, inne 3); czułość sędziego na kodzie historycznym 1.0; sędzia 0.18 M
+  stary       razem O/Z/B 4/6/0 | klucz2 2/2/0 | klucz1 2/4/0 | D10 1/2/0 | pokryte 1/3/0
+  nowy        razem O/Z/B 4/6/0 | klucz2 2/2/0 | klucz1 2/4/0 | D10 0/3/0 | pokryte 2/2/0
+  historyczny razem O/Z/B 10/0/0 | klucz2 4/0/0 | klucz1 6/0/0 | D10 3/0/0 | pokryte 4/0/0
+  pary (oba warianty mają kod): {'tylko_nowy': ['K8'], 'tylko_stary': ['K11'], 'oba_zapobiegly': ['K1', 'K2', 'K3', 'K5', 'K10'], 'oba_obecne': ['K4', 'K7', 'K12'], 'brak_odpowiednika': []}
+  stary build completed (), serial, IU IU-13:data IU-14:fullstack-figma IU-15:ui-figma IU-16:fullstack-figma | koszt 4.71 M {'build': 3.852, 'domkniecie': 0.6, 'planner': 0.259} | buildery: ctx_start śr. 45116, koszt śr. 0.963 M | czas 35.7 min
+        przestrzeganie (builderów z cechą / 4): {'d10_w_prompcie': 0, 'blok_regul': 0, 'pliki_innych_iu': 0, 'wymagania_wykonania': 4, 'coding_rules_read': 0, 'coding_rules_zalacznik': 4, 'coding_rules_odczyt': 4, 'granice': 4, 'tsc': 4, 'vitest_na_plikach': 4, 'pelny_zestaw': 4, 'eslint': 1, 'undefined': 0, 'resources': 0, 'odchylenia': 4} | statusy {'completed': 4} | klasy D10 w promptach {} | resources 0 odczytów, 0 zn | odchylenia: ['Starsze Safari: wybrałem `try/catch` zamiast `build.target`. `build.target` nie dokłada br', '`copy-button.test.tsx` w planie ma status „Modyfikuj”, ale nie istniał. Utworzyłem go.', '`main.tsx`: samo przesunięcie `initMonitoring()` nic nie daje, bo statyczny `import { App ', 'Mapowanie slugów: oprócz `texts.ts` dotknąłem też `use-webhook-settings.ts` (poza listą). ', 'Testy odmowy zapisu webhooka i slugów są w `webhook-card.test.tsx` (poza listą), bo tam bi', '`settings-page.test.tsx` (poza listą): atrapę `upsert` przestawiłem na łańcuch `upsert().s']
+        review z main: findingi 16, P1/P2 6 (P1 0), osie {'security': {'razem': 1, 'p1p2': 0}, 'performance': {'razem': 2, 'p1p2': 0}, 'code-quality': {'razem': 6, 'p1p2': 3}, 'correctness': {'razem': 1, 'p1p2': 0}, 'spec-compliance': {'razem': 2, 'p1p2': 2}, 'test-coverage': {'razem': 4, 'p1p2': 1}} | koszt review 2.40 M
+  nowy  build completed (), serial, IU IU-13:data IU-14:fullstack-figma IU-15:ui-figma IU-16:fullstack-figma | koszt 4.65 M {'build': 3.798, 'domkniecie': 0.594, 'planner': 0.258} | buildery: ctx_start śr. 41779, koszt śr. 0.95 M | czas 37.0 min
+        przestrzeganie (builderów z cechą / 4): {'d10_w_prompcie': 4, 'blok_regul': 4, 'pliki_innych_iu': 1, 'wymagania_wykonania': 0, 'coding_rules_read': 4, 'coding_rules_zalacznik': 0, 'coding_rules_odczyt': 4, 'granice': 4, 'tsc': 4, 'vitest_na_plikach': 4, 'pelny_zestaw': 2, 'eslint': 3, 'undefined': 0, 'resources': 0, 'odchylenia': 4} | statusy {'completed': 4} | klasy D10 w promptach {'zaufanie-danym-klienta': 3, 'bramka-czarna-lista': 4, 'pii-i-sekrety': 4, 'bramka-na-jednej-drodze': 4, 'sciezka-bledu': 4, 'wartosc-graniczna': 4, 'limit-czasu-i-ponowien': 4, 'dopasowanie-tekstu': 1} | resources 0 odczytów, 0 zn | odchylenia: ['Plik `apps/server/src/offer/aa-pages.test.ts` był na liście jako „Modyfikuj”, ale go nie b', 'R11 zmienia publiczny typ trasy `/o/:slug`. Opcja `OfferRoutesOptions.cache` przyjmuje ter', 'ETag to SHA-256 treści w base64url. Jest silny i stabilny także między procesami. `If-None', 'R14: w `cta-section.ts` są dwa węzły z tym samym tekstem: `msg-wygasla` pod przyciskami ak', 'R14 w `/c.js`: `call()` przy błędzie serwera oddaje teraz `payload.error` (`{ code, messag', 'Przy przepięciu na `renderAaDocument` arkusz stron 404/503 stracił reguły, które daje już ']
+        review z main: findingi 15, P1/P2 5 (P1 0), osie {'performance': {'razem': 3, 'p1p2': 0}, 'code-quality': {'razem': 7, 'p1p2': 2}, 'correctness': {'razem': 1, 'p1p2': 1}, 'spec-compliance': {'razem': 2, 'p1p2': 1}, 'test-coverage': {'razem': 2, 'p1p2': 1}} | koszt review 2.43 M
+  odniesienie: review main na kodzie historycznym (P11 „nowy”): findingi 29, P1/P2 14 (P1 0)
+== razem (1 faz): stary O/Z/B 4/6/0 | nowy O/Z/B 4/6/0 | historyczny O/Z/B 10/0/0
+KONIEC4 kod 0
