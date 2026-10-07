@@ -1681,7 +1681,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 71. **P12 SESJA 5/5 — D10 u7 + DRUGA FAZA ŚLEPEGO TESTU + DECYZJE + SMOKE (2026-10-07). PACZKA P12 ZAMKNIĘTA, merge `--ff-only`
     `popr/P12-buildery` do main; grupa III zamknięta → push (D-2) czeka na operatora.** Commity: dfca1e2 (D10 u7, osobny revert), 1fe93b9 (wynik
     po fazach + drzewa `.claude` fazy), f1db8ea / 9d65540 (sekcja P12 odczytu smoke'a), 1fff725 / 8b86bab (skan: curl na pętlę lokalną), 7110880
-    (dane fazy 2 + decyzje), 99fb391 (smoke). pnpm 629/629 (+2), typecheck i lint zielone; harness `python3 -m unittest discover -s skrypty -p
+    (dane fazy 2 + decyzje), d676e8c (smoke), d779ccd (HANDOFF). pnpm 629/629 (+2), typecheck i lint zielone; harness `python3 -m unittest discover -s skrypty -p
     "test_review_p1[12]*_test.py"` + `skrypty/test_review_skan_test.py` + `skrypty/smoke_p12_test.py`.
     (a) **D10 u7 (`dfca1e2`):** zdania `bramka-czarna-lista`, `bramka-na-jednej-drodze`, `sciezka-bledu` tylko dla `ZAPLECZE` (supabase/, serwer,
     `**/services/**`, `*-service.ts`, `*-api.ts`, SQL) — nie dla hooków UI i `lib/`; pliki `*.test.*`, `*.spec.*`, `__tests__/` nie dobierają zdań.
