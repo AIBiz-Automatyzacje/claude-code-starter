@@ -15,6 +15,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { bezOgonkow, parsujPlan } from '../plan-techniczny.mjs'
+import { podsumowanieBudzetu } from '../budzet-pliku.mjs'
 import { BUILDERZY, sprawdzPlan } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
 
@@ -71,6 +72,8 @@ test('przykład planu: generator daje zadanie z dwiema fazami, scenariuszem E2E 
     assert.deepEqual(z.bledyBilansu, [])
     assert.equal(z.nazwa, 'notatki-klienta')
     assert.deepEqual(z.liczniki, { fazy: 2, iu: 2, implementacyjne: 9, testy: 4, weryfikacje: 3, e2e: 1, operator: 1 })
+    const jednostki = parsujPlan(przykladPlanu()).fazy.flatMap((f) => f.iu)
+    assert.deepEqual(podsumowanieBudzetu(jednostki), { iu_z_wymiarami: 1, wydzielenia: 1 })
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }

@@ -82,6 +82,9 @@ test('generuj --zapisz: trzy pliki zadania z licznikami; bez --zapisz nic nie po
   assert.deepEqual(w.json.zapisane, ['plan', 'kontekst', 'zadania'].map((r) => `${ZADANIE}/publikacja-ofert-${r}.md`))
   assert.deepEqual(w.json.liczniki, { fazy: 2, iu: 3, implementacyjne: 10, testy: 6, weryfikacje: 4, e2e: 3, operator: 2 })
   assert.equal(w.json.odmowa, null)
+  // Rozmiary i budzet dla telemetrii (rekord skill, pole artefakty): znaki planu technicznego i pliku zadan na dysku.
+  assert.deepEqual(w.json.rozmiary, { plan_zn: FIXTURE.length, zadania_zn: readFileSync(join(k, ZADANIE, 'publikacja-ofert-zadania.md'), 'utf8').length })
+  assert.deepEqual(w.json.budzet, { iu_z_wymiarami: 0, wydzielenia: 0 })
 }))
 
 test('generuj: plan z bledem nie daje plikow i zwraca bledy z kodem 1', () => wRepo((k) => {

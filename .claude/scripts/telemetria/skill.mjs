@@ -3,6 +3,7 @@
 // albo konca pliku sesji; powiadomienia, przerwania i komendy lokalne (/model, /compact...) go nie koncza.
 
 import { kosztJednostek } from './cennik.mjs'
+import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
 
 /** @typedef {import('./transkrypt.mjs').WpisTranskryptu & { uuid?: string, isMeta?: boolean }} WpisSesji */
 /** @typedef {import('./transkrypt.mjs').Uzycie} Uzycie */
@@ -21,6 +22,7 @@ import { kosztJednostek } from './cennik.mjs'
  * @property {Set<string>} operator uuid wiadomosci operatora (tekst czlowieka)
  * @property {Set<string>} subagenci id wywolan narzedzia Agent
  * @property {{ narzedzia: Set<string>, workflow: number }} wywolania
+ * @property {Map<string, import('./planowanie.mjs').WywolaniePlanu>} plan wywolania plan.mjs (id tool_use → polecenie i wynik)
  */
 
 const RE_KOMENDA = /<command-name>\/?([\w:-]+)<\/command-name>/
@@ -60,7 +62,7 @@ function nowyEpizod(klucz, skill, zrodlo, sesja, czas) {
   return {
     klucz, skill, zrodlo, sesja, start: czas, koniec: czas, zamkniety: false, e0: true, e2: true,
     odpowiedzi: new Map(), pierwszaOdpowiedz: new Map(), operator: new Set(), subagenci: new Set(),
-    wywolania: { narzedzia: new Set(), workflow: 0 },
+    wywolania: { narzedzia: new Set(), workflow: 0 }, plan: new Map(),
   }
 }
 
@@ -92,6 +94,15 @@ export function epizodySesji(wpisy, sesja) {
       }
       continue
     }
+    if (w.type === 'user' && Array.isArray(tresc)) {
+      for (const b of tresc) {
+        if (!b || typeof b !== 'object' || b.type !== 'tool_result') continue
+        for (const e of otwarte) {
+          const p = e.plan.get(String(b.tool_use_id))
+          if (p) p.wynik = wynikJson(b.content)
+        }
+      }
+    }
     if (w.type !== 'assistant') continue
     const narzedzia = blokiNarzedzi(tresc)
     const wywolanieSkilla = otwarte.some((e) => e.e0) ? undefined : narzedzia.find((b) => b.name === 'Skill')
@@ -113,6 +124,8 @@ export function epizodySesji(wpisy, sesja) {
         e.wywolania.narzedzia.add(b.id)
         if (b.name === 'Agent') e.subagenci.add(b.id)
         if (b.name === 'Workflow') e.wywolania.workflow++
+        const polecenie = poleceniePlanu(b)
+        if (polecenie) e.plan.set(b.id, { polecenie, wynik: null })
       }
     }
   }
@@ -131,7 +144,8 @@ export function scalEpizody(epizody) {
     const s = scalone.get(e.klucz)
     if (!s) {
       scalone.set(e.klucz, { ...e, odpowiedzi: new Map(e.odpowiedzi), pierwszaOdpowiedz: new Map(e.pierwszaOdpowiedz),
-        operator: new Set(e.operator), subagenci: new Set(e.subagenci), wywolania: { narzedzia: new Set(e.wywolania.narzedzia), workflow: e.wywolania.workflow } })
+        operator: new Set(e.operator), subagenci: new Set(e.subagenci), wywolania: { narzedzia: new Set(e.wywolania.narzedzia), workflow: e.wywolania.workflow },
+        plan: new Map(e.plan) })
       continue
     }
     for (const [id, u] of e.odpowiedzi) s.odpowiedzi.set(id, u)
@@ -140,6 +154,7 @@ export function scalEpizody(epizody) {
     for (const x of e.subagenci) s.subagenci.add(x)
     for (const x of e.wywolania.narzedzia) s.wywolania.narzedzia.add(x)
     s.wywolania.workflow = Math.max(s.wywolania.workflow, e.wywolania.workflow)
+    for (const [id, p] of e.plan) if (!s.plan.get(id)?.wynik) s.plan.set(id, p)
     if (e.koniec > s.koniec) s.koniec = e.koniec
     s.zamkniety = s.zamkniety || e.zamkniety
   }
@@ -187,8 +202,8 @@ export function rekordSkilla(e, kosztSubagenta) {
     tool_calls: e.wywolania.narzedzia.size,
     agent_calls: e.subagenci.size,
     workflow_calls: e.wywolania.workflow,
-    // Rozmiary artefaktow (plan, zadania, IU z budzetem) — producent przy scaleniu dev-plan + dev-docs (R1 po It. 3).
-    artefakty: null,
+    // Wyniki plan.mjs z epizodu /dev-plan (P13): rozmiary planu i zadan, budzet pliku, walidacja, bramka gotowosci; inne skille null.
+    artefakty: artefaktyPlanu([...e.plan.values()]),
   }
 }
 

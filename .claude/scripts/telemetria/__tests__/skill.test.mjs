@@ -111,3 +111,35 @@ test('skill wywolany w pierwszej odpowiedzi innego skilla nie otwiera epizodu (z
   ], 's')
   assert.deepEqual(zagniezdzony.map((e) => e.skill), ['dev-pr'])
 })
+
+test('artefakty: wyniki plan.mjs z epizodu dev-plan — rozmiary, budzet, odrzucenia walidacji, ostatnia bramka gotowosci', () => {
+  /** @param {string} id @param {string} command */
+  const bash = (id, command) => ({ type: 'tool_use', id, name: 'Bash', input: { command } })
+  /** @param {string} uuid @param {string} id @param {unknown} wynik @param {boolean} [tablica] */
+  const wynik = (uuid, id, wynik, tablica = false) => {
+    const tekstWyniku = `${JSON.stringify(wynik)}\n`
+    return user(uuid, [{ type: 'tool_result', tool_use_id: id, content: tablica ? [{ type: 'text', text: tekstWyniku }] : tekstWyniku }])
+  }
+  const bledy = ['IU-2: `src/a.ts` po zmianie 380 linii > 360 (próg ESLint max-lines) — zaplanuj wydzielenie', 'IU-1: brak plików w polu Pliki']
+  const e = epizodySesji([
+    user('u1', '<command-name>/dev-plan</command-name>'),
+    asystent('m1', 10, [bash('b1', 'node .claude/scripts/plan/plan.mjs sprawdz docs/plans/x-plan.md')]),
+    wynik('r1', 'b1', { ok: false, bledy, uwagi: [] }),
+    asystent('m2', 10, [bash('b2', 'node .claude/scripts/plan/plan.mjs sprawdz docs/plans/x-plan.md')]),
+    wynik('r2', 'b2', { ok: true, bledy: [], uwagi: [] }, true),
+    asystent('m3', 10, [bash('b3', 'node .claude/scripts/plan/plan.mjs generuj docs/plans/x-plan.md --zapisz')]),
+    wynik('r3', 'b3', { ok: true, liczniki: { fazy: 1, iu: 3 }, rozmiary: { plan_zn: 20480, zadania_zn: 3072 },
+      budzet: { iu_z_wymiarami: 1, wydzielenia: 1 }, zapisane: ['a'], odmowa: null }),
+    asystent('m4', 10, [bash('b4', 'node .claude/scripts/plan/plan.mjs gotowosc docs/active/x'), bash('b5', 'git status --short')]),
+    wynik('r4', 'b4', { ok: false, plan: { ok: true }, e2e: { ok: false }, przygotowanie: { ok: true }, git: { ok: false } }),
+    asystent('m5', 10, [bash('b6', 'node .claude/scripts/plan/plan.mjs gotowosc docs/active/x')]),
+    wynik('r5', 'b6', 'plan: brak pliku'),
+  ], 's')
+  const r = rekordSkilla(e[0], () => 0)
+  assert.deepEqual(r.artefakty, {
+    plan_kb: 20, zadania_kb: 3, iu: 3, iu_z_wymiarami: 1, wydzielenia: 1,
+    walidacja: { n: 2, odrzucone: 1, bledy_pierwszy: 2, bledy_budzetu_pierwszy: 1 },
+    gotowosc: { n: 2, ok_ostatnia: false, czerwone_ostatnia: ['e2e', 'git'] },
+  }, 'wynik bez JSON (b6) nie nadpisuje ostatniej odczytanej bramki')
+  assert.equal(rekordSkilla(epizod('dev-compound'), () => 0).artefakty, null, 'epizod bez plan.mjs: artefakty null')
+})

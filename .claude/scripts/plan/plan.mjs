@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { liczLinieKodu } from './budzet-pliku.mjs'
+import { liczLinieKodu, podsumowanieBudzetu } from './budzet-pliku.mjs'
 import { gotowosc } from './gotowosc.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
@@ -101,7 +101,9 @@ function wykonaj(positionals, values) {
   }
   if (polecenie !== 'sprawdz' && polecenie !== 'generuj') zleArgumenty(`nieznane polecenie ${polecenie}`)
   const plan = planWzgledny(projekt, sciezka)
-  const w = sprawdzPlan(parsujPlan(readFileSync(join(projekt, plan), 'utf8')), projekt)
+  const planMd = readFileSync(join(projekt, plan), 'utf8')
+  const sparsowany = parsujPlan(planMd)
+  const w = sprawdzPlan(sparsowany, projekt)
   if (polecenie === 'sprawdz' || w.bledy.length) zakoncz({ ok: !w.bledy.length, ...w }, !w.bledy.length)
 
   const zadanie = zadanieZPlanu(projekt, plan, { nazwa: values.nazwa, data })
@@ -117,7 +119,10 @@ function wykonaj(positionals, values) {
       zapisane.push(s)
     }
   }
-  zakoncz({ ok: !odmowa, nazwa: zadanie.nazwa, katalog: zadanie.katalog, liczniki: zadanie.liczniki, uwagi: w.uwagi, zapisane, odmowa }, !odmowa)
+  const rozmiary = { plan_zn: planMd.length, zadania_zn: zadanie.pliki.zadania.length }
+  const budzet = podsumowanieBudzetu(sparsowany.fazy.flatMap((f) => f.iu))
+  zakoncz({ ok: !odmowa, nazwa: zadanie.nazwa, katalog: zadanie.katalog, liczniki: zadanie.liczniki, rozmiary, budzet, uwagi: w.uwagi,
+    zapisane, odmowa }, !odmowa)
 }
 
 const { values, positionals } = (() => {

@@ -1,5 +1,5 @@
 // Wycinki dokumentow zadania do dossier fazy. Formaty: plan techniczny z dev-plan (`### Faza N — nazwa`, "Sledzenie
-// wymagan" jako lista `- R1.`), plik zadan i kontekstu z dev-docs (`## Faza N`, `## Designerski kontekst`), smoke (`## Faza N:`).
+// wymagan" jako lista `- R1.`), plik zadan i kontekstu z generatora planu (`## Faza N`, `## Designerski kontekst`), smoke (`## Faza N:`).
 
 const NAGLOWEK = /^(#{1,6})\s/
 

@@ -10,7 +10,7 @@ Datę do dokumentów bierz z `date +%F`.
 
 `/dev-prep` odpowiada na jedno pytanie: **co człowiek musi dostarczyć poza kodem, zanim ruszy etap**. Produkuje jeden dokument w `docs/operator/` — i nic więcej. Nazwa domyślna to `<feature-slug>-przygotowanie.md`, ale gdy w katalogu jest już seria checklist, skill dziedziczy jej konwencję (0.3).
 
-To **jedyny** dokument przygotowawczy w pipeline. `/dev-plan` go **czyta i uzupełnia** o to, co wyjdzie dopiero z Implementation Units (numery blokowanych faz, klucze wynikłe z konkretnych plików, środowisko E2E) — nie tworzy drugiej listy. `/dev-docs` sprawdza go w bramce gotowości przed autopilotem.
+To **jedyny** dokument przygotowawczy w pipeline. `/dev-plan` go **czyta i uzupełnia** o to, co wyjdzie dopiero z Implementation Units (numery blokowanych faz, klucze wynikłe z konkretnych plików, środowisko E2E) — nie tworzy drugiej listy — i sprawdza go w bramce gotowości przed autopilotem.
 
 Ten skill **nie planuje**. Nie tworzy Implementation Units, nie dobiera bibliotek, nie proponuje architektury, nie szacuje. Jeśli zaczynasz pisać „jak to zbudować" — jesteś w złym skillu, to należy do `/dev-plan`.
 
@@ -19,8 +19,7 @@ Ten skill **nie planuje**. Nie tworzy Implementation Units, nie dobiera bibliote
 ```
 /dev-brainstorm → CO budować (opcjonalny)
 /dev-prep       → CO CZŁOWIEK MUSI DOSTARCZYĆ   ← ten skill, tworzy <slug>-przygotowanie.md
-/dev-plan       → JAK budować; czyta ten dokument (0.2, 1.6) i UZUPEŁNIA go (3.7/5.2b)
-/dev-docs       → cięcie planu na fazy; sprawdza dokument w bramce gotowości
+/dev-plan       → JAK budować; czyta ten dokument (0.3, 1.6), UZUPEŁNIA go (3.7/5.2b) i sprawdza w bramce gotowości (6.6)
 dev-autopilot-wf → wykonanie
 ```
 
@@ -128,7 +127,7 @@ Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subag
 
 Uruchom `bash .claude/scripts/doctor/doctor.sh`. Skrypt wylicza z projektu, czego wymaga pipeline (git, gh z logowaniem, node, menedżer z lockfile, supabase CLI przy `supabase/`, agent-browser przy checkboxach `[E2E]`, pluginy projektu, Dynamic Workflows), i wypisuje tabelę z komendą instalacji przy każdym braku.
 
-- Każdy wiersz `BRAK` przepisz do sekcji 2 jako pozycję z markerem **[blokuje: faza 1]** — run autopilota zatrzymałby się na tym narzędziu, a `/dev-docs` nie przekaże zadania autopilotowi, dopóki pozycja jest otwarta. „Jak" = komenda z kolumny „Instalacja", „Dowód" = `bash .claude/scripts/doctor/doctor.sh` pokazuje `OK` w tym wierszu.
+- Każdy wiersz `BRAK` przepisz do sekcji 2 jako pozycję z markerem **[blokuje: faza 1]** — run autopilota zatrzymałby się na tym narzędziu, a bramka gotowości `/dev-plan` nie przekaże zadania autopilotowi, dopóki pozycja jest otwarta. „Jak" = komenda z kolumny „Instalacja", „Dowód" = `bash .claude/scripts/doctor/doctor.sh` pokazuje `OK` w tym wierszu.
 - Każdy wiersz `UWAGA` przepisz do sekcji 2 bez markera — nie blokuje runu.
 - Wszystkie wiersze `OK` / `nie dotyczy` → nic nie dopisuj.
 
@@ -242,7 +241,7 @@ Po zaprojektowaniu wklej URL-e — `/dev-plan` weźmie je stąd zamiast pytać.
 Gdy **[blokuje: planowanie]** są odhaczone: `/dev-plan docs/brainstorms/mvp-requirements.md#etap-17`
 ```
 
-Sekcję bez pozycji zostaw z jedną linią „Brak — nic do przygotowania w tej kategorii." Nie usuwaj nagłówka: `/dev-plan` i `/dev-docs` szukają sekcji po numerze i tytule.
+Sekcję bez pozycji zostaw z jedną linią „Brak — nic do przygotowania w tej kategorii." Nie usuwaj nagłówka: `/dev-plan` szuka sekcji po numerze i tytule.
 
 Gdy w `docs/operator/` istnieją dokumenty z wcześniejszych etapów — **trzymaj się ich układu sekcji i nazewnictwa**, nawet jeśli różni się od szablonu powyżej. Spójność serii jest ważniejsza niż zgodność z tym skillem.
 
@@ -261,6 +260,6 @@ Następnie zadaj `AskUserQuestion`: „Co dalej?"
 - `Wszystko już mam — planujmy` — **uruchom `/dev-plan <origin>` w tej sesji** (nie opisuj tylko komendy). Wcześniej sprawdź nieodhaczone pozycje **[blokuje: planowanie]**; jeśli są, wymień je i potwierdź, że użytkownik świadomie idzie dalej.
 - `Popraw dokument` — wróć do Fazy 2 z jego uwagami.
 
-**Commit:** dokument jest artefaktem planowania — `/dev-docs` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego Fazie 0). Nie commituj go sam, chyba że użytkownik poprosi.
+**Commit:** dokument jest artefaktem planowania — `/dev-plan` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego kroku 6.3). Nie commituj go sam, chyba że użytkownik poprosi.
 
 **Tryb pipeline:** przy wywołaniu z automatycznego workflow lub kontekstu `disable-model-invocation` pomiń pytania interaktywne, podejmij potrzebne wybory sam i zapisz dokument.

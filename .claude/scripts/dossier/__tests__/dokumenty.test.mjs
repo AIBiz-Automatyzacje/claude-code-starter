@@ -1,5 +1,5 @@
 // Wycinki dokumentow zadania do dossier: sekcja fazy (plan techniczny i zadania), wiersze "Sledzenie wymagan" fazy,
-// liczba niezaznaczonych [E2E], figma_screens z "Designerski kontekst". Formaty z dev-plan i dev-docs oraz smoke'a.
+// liczba niezaznaczonych [E2E], figma_screens z "Designerski kontekst". Formaty z dev-plan (plan techniczny i generator docs/active/) oraz smoke'a.
 
 import test from 'node:test'
 import assert from 'node:assert/strict'

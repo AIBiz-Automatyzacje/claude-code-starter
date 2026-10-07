@@ -470,6 +470,5 @@ Build -> Test -> Znajdź problem -> Research -> Popraw -> Dokumentuj -> Waliduj 
 ## Powiązane komendy
 
 - `/dev-brainstorm [temat]` - Walidacja pomysłu i brainstorming
-- `/dev-plan [wymagania lub ścieżka requirements doc]` - Planowanie techniczne implementacji (docs/plans/)
-- `/dev-docs [ścieżka planu z docs/plans/]` - Cięcie planu na zadania dla autopilota (docs/active/)
+- `/dev-plan [wymagania lub ścieżka requirements doc]` - Plan techniczny (docs/plans/) i zadanie dla autopilota (docs/active/)
 - `/dev-compound-refresh [scope]` - Odświeżenie istniejącej dokumentacji solutions

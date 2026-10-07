@@ -574,7 +574,7 @@ zadaniach, rozmiar pliku rozstrzygany przed pisaniem.
     i „Głęboka” bez zmian; `Scope:` dla repo-research-analyst (H36). [D8b] [PA-30] [PA-21]
   - Skill `dev-docs` usunięty po scaleniu, odwołania przepięte; treść H31, H32 (rok, fraza migracyjna) i H35, H37 (rok, nazwy Figmy spójne z P3) w scalonym skillu. [B-plan] [PA-11] [PA-08] [PA-12]
   - Handoff na autopilota z gotowym poleceniem i zdaniem N1 (przeniesione z `dev-docs/SKILL.md`, P3); dev-plan czyta indeks wiedzy w całości (P10). [W4-3a-n1] [A-lp]
-  - Kontrakt `docs/active/<zadanie>/` bez zmian dla konsumentów: `*-plan.md` (`## Fazy`, `## Zrodla` — planner `dev-docs-execute-wf.js:121–128`), `*-kontekst.md`
+  - Kontrakt `docs/active/<zadanie>/` bez zmian dla konsumentów: `*-plan.md` (`## Fazy`, linia `Plan techniczny:` — planner `dev-docs-execute-wf.js`, od P13 S1; wcześniej `## Zrodla`, którego grep nie trafiał w `## Źródła` z dev-docs), `*-kontekst.md`
     (`## Designerski kontekst`, `## Dziennik` — planner i domknięcie), `*-zadania.md` (scribe, fix, walidacja), `.autopilot-state.json` (bootstrap parsuje md przy
     pierwszym runie), archiwizacja. [D8a] [B-plan]
 - **Pliki:** `.claude/skills/dev-plan/` (SKILL.md + references), `.claude/skills/dev-docs/` (usunięty), `.claude/scripts/plan/` (nowy: generator zadań, bramka gotowości),

@@ -1,4 +1,4 @@
-// Bramka gotowosci zadania przed autopilotem (PLAN-POPRAWY P13, dawniej Faza 5 dev-docs): plan techniczny bez bledow,
+// Bramka gotowosci zadania przed autopilotem (PLAN-POPRAWY P13, krok 6.6 skilla dev-plan): plan techniczny bez bledow,
 // srodowisko dla scenariuszy [E2E], checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo.
 // Autopilot nie przelacza galezi i zatrzymuje run na brudnym drzewie, wiec te warunki sprawdzamy przed jego startem.
 

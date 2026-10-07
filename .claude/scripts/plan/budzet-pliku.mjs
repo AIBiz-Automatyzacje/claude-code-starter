@@ -102,3 +102,16 @@ export function sprawdzBudzet(jednostki, projekt, w, wzgledemRepo) {
     }
   }
 }
+
+/**
+ * Podsumowanie budzetu planu dla telemetrii (rekord skill, pole artefakty): ile IU ma ocenione wymiary pliku i ile wydzielen.
+ * @param {Jednostka[]} jednostki
+ * @returns {{ iu_z_wymiarami: number, wydzielenia: number }}
+ */
+export function podsumowanieBudzetu(jednostki) {
+  const pliki = jednostki.flatMap((iu) => iu.pliki)
+  return {
+    iu_z_wymiarami: jednostki.filter((iu) => iu.pliki.some((p) => !pusta(p.wymiary))).length,
+    wydzielenia: pliki.filter((p) => /^wydziel/i.test(p.werdykt.trim())).length,
+  }
+}

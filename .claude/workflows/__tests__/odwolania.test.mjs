@@ -114,6 +114,30 @@ function naruszeniaWorkflowow(korzen) {
 }
 
 /**
+ * Komendy `/dev-<x>` w workflowach, agentach, skillach i README → skill `.claude/skills/<x>/SKILL.md` albo workflow z `meta.name`.
+ * Sciezki (`skills/dev-plan/`), wzorce (`/dev-*`) i `## Changelog` README (historia wymienia usuniete skille) pomijane.
+ * @param {string} korzen
+ * @returns {string[]}
+ */
+function naruszeniaKomend(korzen) {
+  const { workflowy, agenci, skille } = zrodla(korzen)
+  const nazwyWorkflowow = new Set(workflowy.flatMap((plik) => trafienia(readFileSync(plik, 'utf8'), /export const meta = \{\s*name:\s*'([^']+)'/g)))
+  const readme = join(korzen, 'README.md')
+  /** @type {string[]} */
+  const wyniki = []
+  for (const plik of [...workflowy, ...agenci, ...skille, ...(existsSync(readme) ? [readme] : [])]) {
+    const tekst = readFileSync(plik, 'utf8').split(/^## Changelog$/m)[0]
+    const komendy = trafienia(tekst, /(?<![\w./-])\/(dev-[a-z0-9-]*[a-z0-9])(?![\w/*-])/g)
+    for (const nazwa of new Set(komendy)) {
+      if (!nazwyWorkflowow.has(nazwa) && !existsSync(join(korzen, '.claude/skills', nazwa, 'SKILL.md'))) {
+        wyniki.push(`${relative(korzen, plik)}: /${nazwa} bez skilla ani workflowu`)
+      }
+    }
+  }
+  return wyniki
+}
+
+/**
  * `skills:` we frontmatterze agentow → katalog .claude/skills/<x>/ albo skill pluginu (prefiks `<plugin>:`).
  * @param {string} korzen
  * @returns {string[]}
@@ -199,6 +223,24 @@ test('workflow(): podlozone wywolanie workflowu bez meta.name jest zglaszane', (
 
 test('workflow(): repo szablonu nie wola nieistniejacych workflowow', () => {
   assert.deepEqual(naruszeniaWorkflowow(REPO), [])
+})
+
+test('komendy /dev-*: podlozona komenda usunietego skilla jest zglaszana, istniejacy skill, workflow, sciezka i wzorzec nie', () => {
+  const wynik = naPodlozonym({
+    '.claude/skills/dev-plan/SKILL.md': 'Po /dev-plan uruchom /dev-docs. Sciezka .claude/skills/dev-plan/SKILL.md, wzorzec /dev-* i docs/dev-x/.\n',
+    '.claude/workflows/dev-autopilot-wf.js': "export const meta = {\n  name: 'dev-autopilot-wf',\n}\n",
+    '.claude/agents/a.md': 'Wynik idzie do /dev-autopilot-wf, potem `/dev-usuniety`.\n',
+    'README.md': '/dev-plan → /dev-docs → /dev-autopilot-wf\n\n## Changelog\n\n| data | /dev-stary przepisany |\n',
+  }, naruszeniaKomend)
+  assert.deepEqual(wynik.sort(), [
+    '.claude/agents/a.md: /dev-usuniety bez skilla ani workflowu',
+    '.claude/skills/dev-plan/SKILL.md: /dev-docs bez skilla ani workflowu',
+    'README.md: /dev-docs bez skilla ani workflowu',
+  ])
+})
+
+test('komendy /dev-*: repo szablonu nie odsyla do nieistniejacych skilli', () => {
+  assert.deepEqual(naruszeniaKomend(REPO), [])
 })
 
 test('skills: agentow: podlozony skill bez katalogu jest zglaszany, skill pluginu nie', () => {

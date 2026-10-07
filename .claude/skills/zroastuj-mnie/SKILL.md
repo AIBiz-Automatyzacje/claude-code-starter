@@ -17,7 +17,7 @@ Zanim zaczniesz roast, **przeskanuj istniejące źródła decyzji** w repo. Nie 
 
 Kolejność i cel:
 
-1. **`docs/active/`** — aktywne projekty z `/dev-docs`. Plany, status, learnings z trwających prac. Sprawdź czy roastowany temat nie jest częścią aktywnego zadania.
+1. **`docs/active/`** — aktywne zadania z `/dev-plan`. Plany, status, learnings z trwających prac. Sprawdź czy roastowany temat nie jest częścią aktywnego zadania.
 2. **`docs/completed/`** — ukończone projekty wdrożeniowe. Decyzje historyczne i ich uzasadnienia. Cennie dla "dlaczego zrobiliśmy to tak".
 3. **`docs/solutions/`** — baza rozwiązanych problemów z `/dev-compound`. Filtruj po YAML frontmatter i nagłówkach. Cenne przy decyzjach technicznych powtarzających się wzorce.
 4. **`docs/brainstorms/*-requirements.md`** — requirements docs z `/dev-brainstorm`. Granice scope'u i kryteria sukcesu, które już zostały rozstrzygnięte.
@@ -53,7 +53,7 @@ Mapowanie:
 
 - **Rozwiązanie konkretnego problemu technicznego** (root cause + fix) → `/dev-compound`
 - **Rozstrzygnięcie scope'u / kryteriów sukcesu / zachowań produktu** → `/dev-brainstorm`
-- **Plan techniczny implementacji większej zmiany** → `/dev-plan` (potem `/dev-docs` tnie plan na zadania dla autopilota)
+- **Plan techniczny implementacji większej zmiany** → `/dev-plan` (plan techniczny i zadanie dla autopilota)
 - **Kanoniczne znaczenie terminu domenowego** (encja, status, nazwany proces o niestandardowym sensie) → `docs/CONCEPTS.md` — jedno hasło jako cienki indeks; utrwal przez `/dev-compound` (ma krok słownika) albo bezpośrednim dopiskiem
 
 Format sugestii: jedna linia na końcu odpowiedzi, np. _"Decyzja o granicy kontekstu Customer/User warta utrwalenia — rozważ `/dev-brainstorm` żeby zapisać to do requirements doc."_

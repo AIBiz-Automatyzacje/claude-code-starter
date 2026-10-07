@@ -32,20 +32,19 @@ Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po dro
 
 1. **Opisujesz pomysł** - `/dev-brainstorm` przepytuje Cię pytanie po pytaniu, aż będzie jasne,
    co dokładnie ma powstać. Efekt: dokument wymagań.
-2. **Claude rozpisuje plan** - `/dev-plan` skanuje repo i dzieli robotę na fazy z konkretnymi
-   krokami. Ty tylko zatwierdzasz.
-3. **`/dev-docs` przygotowuje zadanie** - tworzy branch `feature/[nazwa]` i 3 pliki robocze
-   (plan, kontekst, lista zadań), z których pipeline będzie korzystał przez całą implementację.
-4. **Odpalasz autopilot** - `dev-autopilot-wf` wykonuje fazy jedna po drugiej: implementacja,
+2. **Claude rozpisuje plan i przygotowuje zadanie** - `/dev-plan` skanuje repo, dzieli robotę na fazy
+   z konkretnymi krokami i rozmiarem każdego pliku, a na końcu sam tworzy branch `feature/[nazwa]`
+   i 3 pliki robocze (plan, kontekst, lista zadań) generowane skryptem z planu. Ty tylko zatwierdzasz.
+3. **Odpalasz autopilot** - `dev-autopilot-wf` wykonuje fazy jedna po drugiej: implementacja,
    review, naprawa błędów. Wracasz do gotowej zmiany z raportem, co i dlaczego zostało zrobione.
 
 ### Klucze do tego rozwiązania
 
 - **Spec-Driven + Test-Driven Development** - najpierw powstaje specyfikacja i plan, dopiero
   potem kod. Każda faza kończy się testami i pełnym pokryciem testowym.
-- **Pełna dokumentacja techniczna w dwóch dokumentach** - Dev Plan (plan techniczny
-  z `/dev-plan`) i DevDocs (dokumentacja wykonawcza z `/dev-docs`: plan, kontekst, lista
-  zadań), aktualizowane na bieżąco w trakcie implementacji.
+- **Pełna dokumentacja techniczna w dwóch miejscach** - plan techniczny z `/dev-plan` (`docs/plans/`)
+  i zadanie w `docs/active/` (plan, kontekst, lista zadań — generowane z planu skryptem),
+  aktualizowane na bieżąco w trakcie implementacji.
 - **Review robi do 7 niezależnych agentów naraz** (bezpieczeństwo, wydajność, jakość kodu — jedna
   persona z trzema osiami: granice i struktura, YAGNI, bezpieczeństwo typów — poprawność wykonania,
   zgodność ze specyfikacją, testy, E2E) - **skład zależy od domeny fazy**, więc reviewer bez
@@ -200,10 +199,10 @@ Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spó
 ## Pipeline `dev-*` — przegląd
 
 ```
-/dev-brainstorm → /dev-prep → /dev-plan → /dev-docs → [ dev-autopilot-wf ] → /dev-pr → merge
-  (CO budować)   (CO ma       (JAK)      (struktura)   (cały pipeline auto)   (review bota,
-                  dostarczyć                                                   tury poprawek,
-                  człowiek)                                                    compound)
+/dev-brainstorm → /dev-prep → /dev-plan → [ dev-autopilot-wf ] → /dev-pr → merge
+  (CO budować)   (CO ma       (JAK +       (cały pipeline auto)   (review bota,
+                  dostarczyć   zadanie                               tury poprawek,
+                  człowiek)    w docs/active)                        compound)
 
 dev-autopilot-wf orkiestruje:
   bootstrap → per faza( execute-wf → review-wf + adversarial verify → fix ) → compound-wf → compound-refresh(scoped) → complete-wf
@@ -223,7 +222,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 > pliku z `.claude/workflows/` - `dev-autopilot-wf` nie istnieje dla niego, mimo że leży w projekcie.
 > Tego nie da się dowieźć w szablonie: to ustawienie Twojego konta, nie repozytorium (`.claude/settings.json`
 > projektu może je tylko wyłączyć, nie włączyć). Skopiowanie folderu `.claude/` **nie** włącza tego za Ciebie - sprawdź
-> `/config` albo doctor (`bash .claude/scripts/doctor/doctor.sh`, wiersz „Dynamic Workflows”) przed pierwszym uruchomieniem. Skille `dev-*` (`/dev-brainstorm`, `/dev-plan`, `/dev-docs`) działają
+> `/config` albo doctor (`bash .claude/scripts/doctor/doctor.sh`, wiersz „Dynamic Workflows”) przed pierwszym uruchomieniem. Skille `dev-*` (`/dev-brainstorm`, `/dev-plan`) działają
 > niezależnie od tego przełącznika; blokuje on wyłącznie workflowy `-wf`.
 
 | Workflow | Co robi |
@@ -254,14 +253,12 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 
 **`/dev-prep`** *(opcjonalny — nowy etap)* — **operator checklist etapu** (**CO CZŁOWIEK MUSI DOSTARCZYĆ**, zanim ruszy implementacja). Czyta etap zbiorczego dokumentu wymagań (`docs/brainstorms/mvp-requirements.md#etap-17`), skanuje repo read-only (route'y, `docs/DESIGN.md`, `SPEC.md`, **nazwy** zmiennych z `.env.example`, wcześniejsze checklisty etapów) i zapisuje **jeden** dokument z czterema sekcjami: decyzje (pytania zamknięte z opcjami, `[blokuje: planowanie]`), konta/konsole/sekrety (🔓 publiczne vs 🔒 sekrety, notatka o kolejności zależnych kroków, „Gdzie to ląduje"), assety i treści (`[~]` = świadomy dług), makiety (nazwa ekranu = klucz, stany, breakpointy, puste `URL Figma:`). Nie planuje — zero IU, zero architektury. → `docs/operator/<slug>-przygotowanie.md`
 - **Kiedy:** startujesz etap wymagający kont zewnętrznych, assetów albo makiet i chcesz je zamówić, zanim usiądziesz do planowania. **Kiedy nie:** bugfix, tech-debt, zmiana czysto backendowa — wtedy wprost `/dev-plan`, który utworzy krótką listę sam.
-- **Dziedziczy nazewnictwo zastanej serii:** gdy w `docs/operator/` leżą już checklisty etapów (np. `e1-operator-checklist.md`, `e2-operator-checklist.md`), nowy plik dostaje ten sam wzorzec nazwy z identyfikatorem bieżącego etapu — zamiast wstawiać w środek serii obcy `<slug>-przygotowanie.md`. Dwa konkurencyjne wzorce = pytanie do użytkownika, pusty katalog = nazwa domyślna. Cały pipeline odnajduje ten plik po frontmatterze (`origin:`, `feature_slug:`) i po `operator_prep:` w planie, nigdy po nazwie — więc dowolna konwencja działa bez zmian w `/dev-plan` i `/dev-docs`.
+- **Dziedziczy nazewnictwo zastanej serii:** gdy w `docs/operator/` leżą już checklisty etapów (np. `e1-operator-checklist.md`, `e2-operator-checklist.md`), nowy plik dostaje ten sam wzorzec nazwy z identyfikatorem bieżącego etapu — zamiast wstawiać w środek serii obcy `<slug>-przygotowanie.md`. Dwa konkurencyjne wzorce = pytanie do użytkownika, pusty katalog = nazwa domyślna. Cały pipeline odnajduje ten plik po frontmatterze (`origin:`, `feature_slug:`) i po `operator_prep:` w planie, nigdy po nazwie — więc dowolna konwencja działa bez zmian w `/dev-plan`.
 - **To ten sam plik, który uzupełnia `/dev-plan`** — nie powstaje drugi dokument przygotowawczy. `/dev-prep` zakłada listę bez numerów faz (jeszcze ich nie ma), `/dev-plan` dopisuje do niej numery blokowanych faz i pozycje wynikłe z IU (3.7 → 5.2b, edycja w miejscu, `[x]` nietknięte). Gdy wszystkie ekrany mają wklejone URL-e Figmy, `/dev-plan` **nie pyta o Figmę** — fetchuje wprost z listy (1.6 krok C).
 
-**`/dev-plan`** — planowanie techniczne (**JAK** budować). Źródłem wymagań jest requirements doc z `docs/brainstorms/`, **sekcja zbiorczego dokumentu** (np. `docs/brainstorms/mvp-requirements.md#etap-17`) albo lista wymagań z requestu. Skanuje repo agentami research, tworzy Implementation Units (Goal, Files, Approach, Test scenarios, Verification) **pogrupowane w numerowane fazy** (`### Faza N — …`, obowiązkowe — autopilot wykonuje plan fazami, `/dev-docs` przenosi je 1:1). Klasyfikację UI/pure-data wyprowadza z plików, bez pytania. Czyta `docs/CONCEPTS.md` dla terminologii domenowej. Dla scenariuszy `[E2E]` stosuje konwencję zarządzanego harnessu: scenariusz opisany w nośnej linii `Test: [E2E] \`<flow>\` — <URL, kroki> → <oczekiwany stan>` (agent-browser wykonuje go z opisu; identyfikator flow w backtickach), seed `e2e/seeds/<flow>-seed.sql` jako deliverable **buildera**. → `docs/plans/`
-- **Przygotowanie dla operatora (dokument #1):** sekcja „Wymagania wstępne operatora" w planie + plik `docs/operator/<slug>-przygotowanie.md` — wyłącznie to, czego Claude nie zrobi sam (konsole OAuth, sekrety w `.env`, `.env.e2e` wg `.claude/templates/e2e-env/` gdy plan ma `[E2E]`, assety graficzne, migracje na projekcie głównym, decyzje do podjęcia). Każda pozycja: po co / jak / dowód wykonania + marker blokady z jednej rodziny: `[blokuje: planowanie]` albo `[blokuje: faza N]` (`/dev-prep` pisze pierwszy, `/dev-plan` podmienia go na drugi, gdy zna numer fazy; `/dev-docs` grepuje `^- \[ \].*\[blokuje:` w bramce gotowości i zatrzymuje handoff na pozycjach blokujących planowanie lub fazę 1). Frontmatter `operator_prep:`.
-
-**`/dev-docs`** — **transformacja planu technicznego w zadanie dla autopilota**, bez nowej treści (zero własnych ryzyk/szacunków — to, czego nie ma w planie, nie pojawi się w zadaniu; brak planu → odesłanie do `/dev-plan`). Branch `feature/[nazwa]` (bezpiecznie: istniejący → checkout, brudne drzewo → STOP) + 3 pliki w `docs/active/[nazwa]/`: plan (mapa faz 1:1 z planem), kontekst (pliki, decyzje, wzorce, designerski kontekst SPEC.md/DESIGN.md/Figma), zadania (checkboxy wg kontraktu parserów: impl. / `Test:` / `Weryfikacja:` / `## Operator checklist faza N`, jedna nośna linia `Test: [E2E]` per scenariusz).
-- **Handoff = autopilot:** na końcu bramka gotowości (`[E2E]` vs `.env.e2e`, niezaznaczone blokery z `docs/operator/<slug>-przygotowanie.md`, branch) i gotowe wywołanie `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/[nazwa]"})`.
+**`/dev-plan`** — planowanie techniczne (**JAK** budować) i przygotowanie zadania dla autopilota. Źródłem wymagań jest requirements doc z `docs/brainstorms/`, **sekcja zbiorczego dokumentu** (np. `docs/brainstorms/mvp-requirements.md#etap-17`) albo lista wymagań z requestu. Czyta w całości indeks wiedzy `docs/learned-patterns.md` i `docs/CONCEPTS.md`; agentów badawczych woła zawsze w planie Standardowym i Głębokim, a w Lekkim tylko przy nowej zależności / usłudze / API / wersji głównej albo w katalogu bez wpisu w wiedzy projektu. Tworzy Implementation Units **pogrupowane w numerowane fazy** (`### Faza N — …`, obowiązkowe — autopilot wykonuje plan fazami). Każda IU ma **tabelę plików** z długością pliku dziś (liczoną skryptem jak ESLint) i po zmianie: plik powyżej 300 linii dostaje ocenę wymiarów, powyżej 360 (próg ESLint i bota) — wydzielenie modułu w planie, zanim ktokolwiek napisze kod. Wartości używane przez kilka IU idą do **rejestru stałych** (jedno źródło). Klasyfikację UI/pure-data wyprowadza z plików, bez pytania. Dla scenariuszy `[E2E]` stosuje konwencję zarządzanego harnessu: jedna linia scenariusza `[E2E] \`<flow>\` — <URL, kroki> → <oczekiwany stan>` (agent-browser wykonuje ją z opisu), seed `e2e/seeds/<flow>-seed.sql` jako deliverable **buildera**; przed generowaniem zadania sprawdza każdy scenariusz (natywne okno, zewnętrzny system, dane spoza stanu bazowego). → `docs/plans/`
+- **Przygotowanie dla operatora (dokument #1):** sekcja „Wymagania wstępne operatora" w planie + plik `docs/operator/<slug>-przygotowanie.md` — wyłącznie to, czego Claude nie zrobi sam (konsole OAuth, sekrety w `.env`, `.env.e2e` wg `.claude/templates/e2e-env/` gdy plan ma `[E2E]`, assety graficzne, dane na projekcie głównym). Każda pozycja: po co / jak / dowód wykonania + marker blokady z jednej rodziny: `[blokuje: planowanie]` albo `[blokuje: faza N]` (`/dev-prep` pisze pierwszy, `/dev-plan` podmienia go na drugi, gdy zna numer fazy). Frontmatter `operator_prep:`.
+- **Zadanie dla autopilota (koniec skilla):** `plan.mjs sprawdz` (walidacja planu: fazy, tabela plików i budżet, scenariusze, seedy) → poprawki planu → branch `feature/[nazwa]` (istniejący → checkout, brudne drzewo → pytanie) → `plan.mjs generuj --zapisz` — 3 pliki w `docs/active/[nazwa]/`: plan (mapa faz), kontekst (designerski kontekst, wskaźnik do planu technicznego, dziennik), zadania (checkboxy wg kontraktu parserów: impl. / `Test:` / `Weryfikacja:` / `## Operator checklist faza N`, z odnośnikami do IU zamiast kopii treści) → commit inicjalny → `plan.mjs gotowosc` (plan, `[E2E]` vs `.env.e2e`, blokery z checklisty, branch i czyste drzewo) → gotowe wywołanie `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/[nazwa]"})`. Kontrakt plików `docs/active/` z konsumentami pilnuje test `kontrakt-docs-active.test.mjs`.
 
 #### Implementacja
 
@@ -363,7 +360,7 @@ Buildery mają wspólny szkielet pliku roli (test `szkielet-buildera.test.mjs`):
 Żywy glosariusz pojęć o znaczeniu **specyficznym dla projektu** (encje, nazwane procesy, statusy/enumy o niestandardowym sensie). Forma: **cienki indeks** — `## Termin` + 1-2 zdania + link do szczegółów w `CLAUDE.md`. Tylko słownik, nie spec.
 
 - **Zasilany** przez `/dev-compound` (Krok 4.5) — automatycznie łapie nowe terminy domenowe.
-- **Czytany** przez `dev-plan`, `dev-docs`, buildery i `learnings-researcher` — żeby nie „naprawiać" zachowania wbrew definicjom (klasyczny błąd: „poprawianie" statusu, który celowo działa nietypowo).
+- **Czytany** przez `dev-plan`, buildery i `learnings-researcher` — żeby nie „naprawiać" zachowania wbrew definicjom (klasyczny błąd: „poprawianie" statusu, który celowo działa nietypowo).
 - **Utrzymywany** przez `/dev-compound-refresh` (dedup, usuwanie martwych haseł).
 - **Seed:** przy pierwszym `/dev-compound` w projekcie z bogatą domeną generuje startowy słownik z `CLAUDE.md` + schematu bazy.
 
@@ -435,7 +432,7 @@ docs/
 │   ├── ui-bugs/  performance-issues/  typescript-errors/  deployment-issues/
 │   ├── testing-issues/
 │   └── _archived/
-├── active/                   ← aktywne zadania z /dev-docs
+├── active/                   ← aktywne zadania z /dev-plan (generowane skryptem z planu)
 │   └── [nazwa]/  { plan.md · kontekst.md · zadania.md }   + branch feature/[nazwa]
 └── completed/                ← zarchiwizowane z /dev-docs-complete
     └── [nazwa]/  { plan · kontekst · zadania · podsumowanie }
@@ -449,8 +446,8 @@ docs/
 ```
 /dev-brainstorm lazy loading            ← tylko gdy wymagań jeszcze nie ma („pusta kartka")
 /dev-plan                               ← plan techniczny (IU w fazach) + docs/operator/<slug>-przygotowanie.md
-# odhacz przygotowanie dla operatora (konsole, sekrety, .env.e2e wg templates/e2e-env gdy plan ma [E2E])
-/dev-docs                               ← zadania z planu + branch + bramka gotowości → gotowe wywołanie autopilota
+                                           + branch + docs/active/ ze skryptu + bramka gotowości → gotowe wywołanie autopilota
+# czerwona bramka: odhacz przygotowanie (konsole, sekrety, .env.e2e wg templates/e2e-env gdy plan ma [E2E]) i zacommituj
 dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compound→refresh→complete
 # po runie: docs/operator/<data>-lazy-loading-smoke.md → przejdź ręcznie w przeglądarce
 /dev-pr 3                               ← PR, recenzja bota, do 3 tur poprawek, bramka merge'a, compound
