@@ -1,6 +1,6 @@
 // Klasy zapobiegalne dla buildera (PLAN-POPRAWY P12, D10; ETAP1B „dossier klas ucieczek”): zdanie „co robic zamiast”
 // dla klas bledow, ktore review znajduje w kodzie builderow, a ktorych nie pokrywa warstwa stala builderow ani reguly kodu.
-// Dobor po plikach jednostki (globy klasy; zdania o warstwie danych nie trafiaja do czystego IU UI). Tresc zdan jest stala,
+// Dobor po plikach produkcyjnych jednostki (globy klasy; zdania o warstwie danych nie trafiaja do czystego IU UI). Tresc zdan jest stala,
 // z compoundow projektu pochodzi kolejnosc: liczba solutions klasy; przy remisie zdanie o wezszym globie (seed, SQL, serwer)
 // idzie przed szerszym (dane, caly kod), bo szerokie zdania pasuja do kazdego pliku i wypieralyby waskie z limitu; dalej
 // kolejnosc tabeli (czestosc uwag B w ETAP1B). Wykrywalne klasy maja listy reviewerow
@@ -20,6 +20,12 @@ const SERWER = ['supabase/functions/**', '**/server/**', '**/api/**']
 const KLIENT_DANYCH = ['**/lib/**', '**/hooks/**', '**/services/**', '**/model/**', '**/use-*.ts', '**/*-api.ts', '**/*-service.ts']
 const WIDOKI = ['**/components/**', '**/pages/**', '**/features/**']
 const DANE = ['supabase/**', ...KLIENT_DANYCH, ...SERWER]
+// Warstwa, przez ktora przechodzi kazda droga do operacji (serwer, baza, serwis, klient API): tu stoja bramki i zapisy
+// w kilku krokach. Hook UI tylko wola serwis — zdania o bramkach wypieralyby z limitu zdanie o wyscigu, ktore go dotyczy.
+const ZAPLECZE = ['supabase/**', ...SERWER, '**/services/**', '**/*-service.ts', '**/*-api.ts']
+// Test, spec i __tests__ nie dobieraja zdan: zdanie dotyczy kodu produkcyjnego, a IU z samym testem pliku z innego IU
+// dostalby zdania tamtej warstwy.
+const TEST = /(^|\/)__tests__\/|\.(test|spec)\.[cm]?[jt]sx?$/
 const SEEDY = ['e2e/seeds/**', '**/seed*.sql']
 
 /** @typedef {{ klasa: string, paths: string[], zdanie: string }} Zdanie */
@@ -27,11 +33,11 @@ const SEEDY = ['e2e/seeds/**', '**/seed*.sql']
 /** @type {Zdanie[]} */
 export const ZDANIA = [
   { klasa: 'dopasowanie-tekstu', paths: KOD, zdanie: 'Tekst o strukturze (URL, HTML, e-mail, ścieżkę, CSV, nagłówek) rozbierasz parserem (`new URL`, `DOMParser`, biblioteka projektu) i porównujesz po normalizacji wielkości liter i Unicode, bo regex i `includes` przepuszczają warianty zapisu.' },
-  { klasa: 'bramka-czarna-lista', paths: [...DANE, ...SQL], zdanie: 'Bramkę dostępu i filtr wejścia (role, statusy, rozszerzenia plików, ścieżki) piszesz listą tego, co przepuszczasz, a gałąź domyślna odmawia, bo lista zakazanych wartości przepuszcza każdy wariant, którego nie przewidziała.' },
+  { klasa: 'bramka-czarna-lista', paths: [...ZAPLECZE, ...SQL], zdanie: 'Bramkę dostępu i filtr wejścia (role, statusy, rozszerzenia plików, ścieżki) piszesz listą tego, co przepuszczasz, a gałąź domyślna odmawia, bo lista zakazanych wartości przepuszcza każdy wariant, którego nie przewidziała.' },
   { klasa: 'pii-i-sekrety', paths: [...KLIENT_DANYCH, ...SERWER, ...WIDOKI], zdanie: 'Do `new Error(...)` i komunikatu w logu wkładasz kod błędu i identyfikator zasobu zamiast wartości wejścia (e-mail, treść, token, URL z parametrami), bo komunikat błędu trafia do Sentry jako tytuł zdarzenia, poza redakcją kontekstu.' },
-  { klasa: 'bramka-na-jednej-drodze', paths: [...DANE, ...SQL], zdanie: 'Warunek dostępu stawiasz w miejscu, przez które przechodzi każda droga do operacji (polityka, funkcja serwisu), i wypisujesz te drogi (formularz, API, import, zadanie cykliczne), bo warunek w jednym handlerze omija druga droga.' },
+  { klasa: 'bramka-na-jednej-drodze', paths: [...ZAPLECZE, ...SQL], zdanie: 'Warunek dostępu stawiasz w miejscu, przez które przechodzi każda droga do operacji (polityka, funkcja serwisu), i wypisujesz te drogi (formularz, API, import, zadanie cykliczne), bo warunek w jednym handlerze omija druga droga.' },
   { klasa: 'wyscig-i-wspolbieznosc', paths: KOD, zdanie: 'Wartość odczytaną przed `await` sprawdzasz po nim (numer generacji żądania, porównanie z bieżącym id), a zapis zależny od odczytu robisz jednym warunkowym zapytaniem, bo dwa kliknięcia albo dwie karty nadpisują nowszy wynik starszym.' },
-  { klasa: 'sciezka-bledu', paths: DANE, zdanie: 'Operację w kilku krokach (dwie tabele, baza i Storage, baza i e-mail) zamykasz w transakcji albo funkcji SQL, a krok zewnętrzny wykonujesz po zapisie z obsługą jego porażki, bo przerwanie w połowie zostawia rozjechane dane.' },
+  { klasa: 'sciezka-bledu', paths: ZAPLECZE, zdanie: 'Operację w kilku krokach (dwie tabele, baza i Storage, baza i e-mail) zamykasz w transakcji albo funkcji SQL, a krok zewnętrzny wykonujesz po zapisie z obsługą jego porażki, bo przerwanie w połowie zostawia rozjechane dane.' },
   { klasa: 'wartosc-graniczna', paths: [...SQL, ...DANE, '**/schemas/**'], zdanie: 'Długość i zakres każdej generowanej wartości (slug, numer, nazwa z sufiksem) liczysz pod ograniczenie kolumny dla najdłuższego wejścia, a test bierze wartość na granicy (0, 1, limit, limit + 1), bo błąd wychodzi dopiero przy rzadkim wejściu.' },
   { klasa: 'limit-czasu-i-ponowien', paths: [...KLIENT_DANYCH, ...SERWER], zdanie: 'Ponowienie ma sufit prób i rosnący odstęp, ponawia tylko błędy przejściowe (sieć, 429, 5xx), a zapis nieidempotentny idzie z kluczem idempotencji, bo pętla bez sufitu wiesza użytkownika, a ponowiony zapis dubluje dane.' },
   { klasa: 'zaufanie-danym-klienta', paths: SERWER, zdanie: 'Limit i decyzję dostępu liczysz z danych ustalonych przez serwer (rozmiar faktycznie odczytanego ciała, tożsamość z tokenu, adres od zaufanego proxy), bo `content-length`, `x-forwarded-for` i `origin` ustawia klient.' },
@@ -80,8 +86,9 @@ export function zapobieganie(wpisy, pliki, { pominKlasy = [], limitZn = Number.P
   /** @type {Map<string, number>} */
   const liczba = new Map()
   for (const w of wpisy) liczba.set(pole(w, 'klasa'), (liczba.get(pole(w, 'klasa')) ?? 0) + 1)
+  const produkcyjne = pliki.filter((p) => !TEST.test(p))
   const dobrane = ZDANIA
-    .filter((z) => !pominKlasy.includes(z.klasa) && pliki.some((p) => z.paths.some((g) => posix.matchesGlob(p, g))))
+    .filter((z) => !pominKlasy.includes(z.klasa) && produkcyjne.some((p) => z.paths.some((g) => posix.matchesGlob(p, g))))
     .map((z, i) => ({ z, i }))
     .sort((a, b) => (liczba.get(b.z.klasa) ?? 0) - (liczba.get(a.z.klasa) ?? 0) || szerokosc(a.z) - szerokosc(b.z) || a.i - b.i)
     .map(({ z }) => z)

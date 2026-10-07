@@ -102,7 +102,8 @@ test('wycinek --pliki: reguly dla plikow jednostki, takze nowego pliku w katalog
 test('wycinek --zapobieganie: reguly projektu, potem zdania klas bez klasy reguly, jeden blok w limicie', () => {
   wRepo((repo) => {
     zapisz(repo, { 'docs/solutions/a/lib.md': solution(POLA) })
-    const w = uruchom(repo, ['wycinek', '--zapobieganie', '--pliki', 'src/lib/nowy.ts'])
+    // serwis obok: bez reguly projektu dostalby zdanie sciezka-bledu — regula je wypiera
+    const w = uruchom(repo, ['wycinek', '--zapobieganie', '--pliki', 'src/lib/nowy.ts,src/services/oferta-service.ts'])
     assert.equal(w.kod, 0)
     const [regula, naglowek, ...zdania] = w.json.tresc.split('\n')
     assert.equal(regula, '- [wysoka] sciezka-bledu: Blad zapisu pokazuj uzytkownikowi. (docs/solutions/a/lib.md)')

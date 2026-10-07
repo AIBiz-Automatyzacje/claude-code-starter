@@ -50,12 +50,30 @@ test('dobor po plikach: komponent dostaje tylko klasy kodu UI, migracja — klas
   assert.deepEqual(zapobieganie([], ['README.md']), { tresc: '', zn: 0, klasy: [], pominiete: 0 })
 })
 
-test('hook i klient API w folderze funkcji to warstwa danych klienta, komponent obok — nadal tylko klasy UI', () => {
-  for (const plik of ['apps/web/src/features/settings/use-webhook-settings.ts', 'apps/web/src/features/settings/webhook-api.ts', 'src/features/oferty/oferta-service.ts']) {
+test('hook w folderze funkcji: klasy klienta danych bez bramek i sciezki bledu; serwis i klient API: te same co serwer', () => {
+  const hook = zapobieganie([], ['apps/web/src/features/settings/use-webhook-settings.ts']).klasy
+  assert.ok(hook.includes('limit-czasu-i-ponowien') && hook.includes('wyscig-i-wspolbieznosc'), hook.join(', '))
+  for (const k of ['bramka-czarna-lista', 'bramka-na-jednej-drodze', 'sciezka-bledu']) assert.ok(!hook.includes(k), `hook UI: ${k}`)
+  for (const plik of ['apps/web/src/features/settings/webhook-api.ts', 'src/features/oferty/oferta-service.ts', 'src/services/oferta.ts', 'apps/server/src/routes/a.ts']) {
     const { klasy } = zapobieganie([], [plik])
-    assert.ok(klasy.includes('sciezka-bledu') && klasy.includes('limit-czasu-i-ponowien'), `${plik}: ${klasy.join(', ')}`)
+    for (const k of ['bramka-czarna-lista', 'bramka-na-jednej-drodze', 'sciezka-bledu', 'limit-czasu-i-ponowien']) assert.ok(klasy.includes(k), `${plik}: ${k} — ${klasy.join(', ')}`)
   }
   assert.deepEqual(zapobieganie([], ['apps/web/src/features/settings/webhook-form.tsx']).klasy, ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'])
+})
+
+test('pliki testow nie dobieraja zdan: test serwisu i spec E2E bez zdan, IU z testem — tylko klasy pliku produkcyjnego', () => {
+  for (const plik of ['src/services/oferta-service.test.ts', 'apps/web/src/features/x/karta.test.tsx', 'e2e/oferta.spec.ts', 'src/lib/__tests__/a.ts']) {
+    assert.deepEqual(zapobieganie([], [plik]).klasy, [], plik)
+  }
+  assert.deepEqual(zapobieganie([], ['src/components/karta.tsx', 'apps/server/src/routes/a.test.ts']).klasy, zapobieganie([], ['src/components/karta.tsx']).klasy)
+})
+
+test('IU UI z hookiem i komponentami (pilot f-1de5a4c IU-15) zachowuje wyscig-i-wspolbieznosc w limicie 2000 zn', () => {
+  const pliki = ['apps/dashboard/src/features/offers/offer-heatmap-card.tsx', 'apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx',
+    'apps/dashboard/src/features/offers/heatmap-grid.ts', 'apps/dashboard/src/features/offers/use-offer-heat.ts']
+  const { klasy, pominiete } = zapobieganie([], pliki, { limitZn: 2000 })
+  assert.ok(klasy.includes('wyscig-i-wspolbieznosc') && klasy.includes('dopasowanie-tekstu'), klasy.join(', '))
+  assert.equal(pominiete, 0)
 })
 
 test('kolejnosc: najpierw klasy z najwieksza liczba solutions w projekcie, remis — wezszy glob przed szerszym', () => {
