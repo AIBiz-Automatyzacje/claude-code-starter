@@ -31,6 +31,18 @@ class Reguly(unittest.TestCase):
             self.assertEqual(r['d10'], ['wyscig-i-wspolbieznosc', 'pii-i-sekrety'])
             self.assertIsNone(S.reguly(d, 'brak'))
 
+    def test_wycinki_plannera_i_blok_w_prompcie_buildera(self):
+        with tempfile.TemporaryDirectory() as d:
+            wynik = {'tresc': '- [wysoka] migracja-bazy: Regula.\n' + S.NAGLOWEK_D10 + '\n- wyscig-i-wspolbieznosc: x', 'zapobieganie': {'klasy': ['wyscig-i-wspolbieznosc'], 'pominiete': 1}}
+            w = [{'type': 'user', 'message': {'content': 'planner'}},
+                 {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': 'node .claude/scripts/wiedza/wiedza.mjs wycinek --zapobieganie --pliki a.ts'}}]}},
+                 {'type': 'user', 'message': {'content': [{'type': 'tool_result', 'tool_use_id': 't1', 'content': json.dumps(wynik)}]}}]
+            with open(os.path.join(d, 'agent-p.jsonl'), 'w') as f: f.write('\n'.join(json.dumps(x) for x in w))
+            self.assertEqual(S.wycinki_plannera(d, 'p'), [wynik])
+            self.assertTrue(S.blok_w_prompcie('Zadanie\n  ' + wynik['tresc'].replace('\n', '\n  ') + '\n', [wynik]))
+            self.assertFalse(S.blok_w_prompcie('Zadanie bez bloku', [wynik]))
+            self.assertTrue(S.blok_w_prompcie('cokolwiek', [{'tresc': '', 'zapobieganie': {'klasy': []}}]), 'pusty wycinek = nic do wklejenia')
+
     def test_kryterium_67d(self):
         with tempfile.TemporaryDirectory() as d:
             transkrypt(d, 'b1', S.NAGLOWEK_D10 + '\n- seed-e2e: x', [('Read', {'file_path': REGULY})])
@@ -42,10 +54,11 @@ class Reguly(unittest.TestCase):
                       agent('s', 'scribe', 'orkiestracyjny'), agent('h', 'dedup:semantyczny', 'mechaniczny', rules_zn=500)]
             k = S.kryterium(agenci, d)
             self.assertEqual(k['eager'], ['dedup:semantyczny'])
+            self.assertEqual(k['buildery_bez_bloku'], 0, 'bez wycinkow plannera kontrola bloku nie dziala')
             self.assertEqual(k['bez_kodu_z_regulami'], ['dedup:semantyczny'])
             self.assertEqual(k['kod_bez_regul'], [])
             self.assertEqual(k['podwojny_odczyt'], ['build'])
-            self.assertEqual(k['buildery_bez_d10'], 1)
+            self.assertEqual(k['buildery_z_d10'], 1)
             self.assertFalse(k['zielone'])
             k2 = S.kryterium([a for a in agenci if a['id'] in ('b1', 'f', 's')], d)
             self.assertTrue(k2['zielone'], k2)
