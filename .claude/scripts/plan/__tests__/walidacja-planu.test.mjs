@@ -11,6 +11,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { parsujPlan } from '../plan-techniczny.mjs'
+import { liczLinieKodu } from '../budzet-pliku.mjs'
 import { PROG_ESLINT, sprawdzPlan } from '../walidacja-planu.mjs'
 
 const FIXTURE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/plan-techniczny.md'), 'utf8')
@@ -29,6 +30,7 @@ function projekt(dodatkowe = {}) {
     'src/features/oferty/components/lista-ofert.tsx': linie(8),
     '.env.e2e': 'X=1\n',
     'docs/brainstorms/2026-10-01-publikacja-ofert-requirements.md': '# Wymagania\n',
+    'docs/operator/publikacja-ofert-przygotowanie.md': '# Przygotowanie\n',
     ...dodatkowe,
   }
   for (const [sciezka, tresc] of Object.entries(pliki)) {
@@ -86,12 +88,12 @@ test('scenariusz [Unit] bez pliku testu w tabeli jest odrzucony (blok regul i D1
 
 test('Modyfikuj na plik, ktorego nie ma w repo, jest odrzucony', () => {
   const md = zmien(WIERSZ_SERWISU, '| Modyfikuj | `src/services/brak-service.ts` | 12 → 60 | — | zostaje |')
-  assert.deepEqual(sprawdz(md).bledy, ['IU-1: Modyfikuj `src/services/brak-service.ts` — pliku nie ma w repo'])
+  assert.deepEqual(sprawdz(md).bledy, ['IU-1: Modyfikuj `src/services/brak-service.ts` — pliku nie ma w repo ani we wcześniejszej jednostce planu'])
 })
 
 test('dlugosc "dzis" rozjechana z plikiem o wiecej niz 20% i 10 linii jest odrzucona z faktyczna liczba', () => {
   const wynik = sprawdz(FIXTURE, { 'src/services/oferty-service.ts': linie(40) })
-  assert.deepEqual(wynik.bledy, ['IU-1: `src/services/oferty-service.ts` ma 40 linii, tabela podaje 12'])
+  assert.deepEqual(wynik.bledy, ['IU-1: `src/services/oferty-service.ts` ma 40 linii kodu (bez pustych i komentarzy, jak ESLint), tabela podaje 12'])
 })
 
 test(`plik kodu powyzej ${PROG_ESLINT} linii po zmianie jest odrzucony (prog ESLint max-lines)`, () => {
@@ -114,7 +116,7 @@ test('plik SQL i markdown nie podlega progowi linii kodu', () => {
 test('werdykt "wydziel" bez wiersza Stwórz nowego modulu jest odrzucony', () => {
   const md = zmien(`| Stwórz | \`src/pages/oferta-publiczna.tsx\` | 0 → 90 | — | nowy |
 | Stwórz | \`src/hooks/use-oferta-publiczna.ts\` | 0 → 40 | — | nowy |`,
-  '| Modyfikuj | `src/features/oferty/components/lista-ofert.tsx` | 8 → 30 | powody zmiany: 2 | wydziel `oferta-publiczna` przed dodaniem strony |')
+  '| Modyfikuj | `src/features/oferty/components/lista-ofert.tsx` | 40 → 30 | powody zmiany: 2 | wydziel `oferta-publiczna` przed dodaniem strony |')
   assert.deepEqual(sprawdz(md).bledy, ['IU-3: werdykt „wydziel” bez wiersza Stwórz dla nowego modułu'])
 })
 
@@ -126,7 +128,7 @@ test('fazy: litera zamiast numeru, luka w numeracji, faza bez IU i bez "Zależy 
   assert.deepEqual(sprawdz(zmien('**Zależy od:** Faza 1\n', '')).bledy, ['faza 2: brak linii „Zależy od:”'])
   const pusta = zmien('## Ryzyka i zależności', '### Faza 3 — Pusta\n\n**Zależy od:** Faza 2\n\n## Ryzyka i zależności')
   assert.deepEqual(sprawdz(pusta).bledy, ['faza 3: brak Implementation Units'])
-  const bezFazy = zmien('### Faza 1 — Status i zapis\n\n**Zależy od:** Brak\n\n', '')
+  const bezFazy = zmien('### Faza 1 — Status i zapis\n\n**Zależy od:** Brak\n**Równolegle z:** — *(opcjonalne)*\n\n', '')
   assert.deepEqual(sprawdz(bezFazy).bledy,
     ['faza 2: numeracja faz liczbami od 1 bez luk (1, 2, …)', 'IU-1: jednostka poza nagłówkiem „### Faza N — nazwa”'])
 })
@@ -149,11 +151,18 @@ test('scenariusze: bez typu, [E2E] bez identyfikatora flow, nieznany seed, ten s
     ['IU-3: flow `publikacja-oferty` ma już linię [E2E] w IU-2 — jeden scenariusz = jedna linia'])
 })
 
-test('weryfikacja: [Manual] i [E2E] dla flow scenariusza sa odrzucone, runner .sh przechodzi', () => {
-  assert.deepEqual(sprawdz(zmien('- typecheck przechodzi bez błędów\n\n### Faza 2', '- [Manual] operator klika przycisk\n\n### Faza 2')).bledy,
+test('weryfikacja: [Manual], bez komendy CLI, [E2E] bez runnera i runner bedacy scenariuszem sa odrzucone; runner w tekscie przechodzi', () => {
+  const typecheck = '- `pnpm typecheck` przechodzi bez błędów\n\n### Faza 2'
+  assert.deepEqual(sprawdz(zmien(typecheck, '- [Manual] operator klika przycisk\n\n### Faza 2')).bledy,
     ['IU-1: Weryfikacja [Manual] — kroki człowieka idą do Operator checklist albo Scenariusze testowe'])
-  assert.deepEqual(sprawdz(zmien('- [E2E] `e2e/run-all.sh` — wszystkie flow zielone', '- [E2E] `publikacja-oferty` — oferta opublikowana')).bledy,
-    ['IU-2: Weryfikacja [E2E] `publikacja-oferty` — tylko runner .sh niebędący scenariuszem'])
+  assert.deepEqual(sprawdz(zmien(typecheck, '- typecheck przechodzi bez błędów\n\n### Faza 2')).bledy,
+    ['IU-1: Weryfikacja „typecheck przechodzi bez błędów” bez komendy w backtickach (`pnpm typecheck`, `grep …`) — scribe jej nie uruchomi; krok człowieka idzie do Operator checklist'])
+  const runner = '- [E2E] `e2e/run-all.sh` — wszystkie flow zielone'
+  assert.deepEqual(sprawdz(zmien(runner, '- [E2E] `publikacja-oferty` — oferta opublikowana')).bledy,
+    ['IU-2: Weryfikacja [E2E] „`publikacja-oferty` — oferta opublikowana” — tylko runner .sh w backtickach, niebędący scenariuszem'])
+  assert.deepEqual(sprawdz(zmien(runner, '- [E2E] `e2e/publikacja-oferty.sh` — oferta opublikowana')).bledy,
+    ['IU-2: Weryfikacja [E2E] `e2e/publikacja-oferty.sh` to scenariusz z linii [E2E] — drugi przebieg tego samego flow'])
+  assert.deepEqual(sprawdz(zmien(runner, '- [E2E] runner `e2e/run-all.sh` — wszystkie flow zielone')).bledy, [])
 })
 
 test('seed w tabeli poza e2e/seeds/*-seed.sql jest odrzucony', () => {
@@ -189,4 +198,53 @@ test('origin wskazujacy nieistniejacy plik w repo dostaje uwage; wartosc spoza r
   const brak = zmien('origin: docs/brainstorms/2026-10-01-publikacja-ofert-requirements.md', 'origin: docs/brainstorms/brak-requirements.md#etap-2')
   assert.deepEqual(sprawdz(brak).uwagi, ['frontmatter: origin docs/brainstorms/brak-requirements.md#etap-2 — plik nie istnieje (popraw origin)'])
   assert.deepEqual(sprawdz(zmien('origin: docs/brainstorms/2026-10-01-publikacja-ofert-requirements.md', 'origin: sesja /zroastuj-mnie 2026-10-01')).uwagi, [])
+})
+
+test('znacznik [E2E], [Manual], Operator: albo [P2] w tresci pozycji jest odrzucony — zmienilby liczniki grepow konsumentow', () => {
+  const wer = sprawdz(zmien('- `pnpm typecheck` przechodzi bez błędów\n\n### Faza 2', '- `pnpm typecheck` przechodzi; scenariusze [E2E] uruchamia tester\n\n### Faza 2')).bledy
+  assert.deepEqual(wer, ['IU-1: „`pnpm typecheck` przechodzi; scenariusze [E2E] uruchamia tester” zawiera znacznik [E2E] poza początkiem pozycji — grepy prechecku, testera i completion-gate liczą linie po znaczniku; napisz to słowami'])
+  const e2e = sprawdz(zmien('zrób screenshot → oferta ma status', 'sprawdź komunikat „Operator: brak uprawnień” → oferta ma status')).bledy
+  assert.match(e2e.join('\n'), /IU-2: .* zawiera znacznik Operator:/)
+  const oper = sprawdz(zmien('- [ ] Projektant akceptuje wygląd przycisku na liście', '- [ ] Projektant sprawdza scenariusz [E2E] na produkcji')).bledy
+  assert.match(oper.join('\n'), /IU-2: .* zawiera znacznik \[E2E\]/)
+})
+
+test('problemy parsera (naglowek IU, lista wcieta) i numeracja IU z luka sa bledami walidacji', () => {
+  assert.match(sprawdz(zmien('- [Unit] hook dla szkicu zwraca brak oferty', '  - [Unit] hook dla szkicu zwraca brak oferty')).bledy.join('\n'),
+    /IU-3: linia \d+: pole „scenariusze testowe” — pozycja poza zapisem/)
+  assert.deepEqual(sprawdz(zmien('- [ ] **IU-3: Adres publiczny oferty**', '- [ ] **IU-4: Adres publiczny oferty**')).bledy,
+    ['IU-4: numeracja IU ciągła w całym planie od IU-1, bez powtórzeń (oczekiwane IU-3)'])
+})
+
+test('Modyfikuj pliku tworzonego przez wczesniejsza jednostke planu przechodzi; "dzis" porownane z jej "po"', () => {
+  const dodaj = '| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |'
+  const ok = zmien(dodaj, `${dodaj}\n| Modyfikuj | \`src/services/oferty-statusy.ts\` | 15 → 25 | — | zostaje |`)
+  assert.deepEqual(sprawdz(ok).bledy, [])
+  const zle = zmien(dodaj, `${dodaj}\n| Modyfikuj | \`src/services/oferty-statusy.ts\` | 80 → 90 | — | zostaje |`)
+  assert.deepEqual(sprawdz(zle).bledy, ['IU-3: `src/services/oferty-statusy.ts` — tabela podaje dziś 80, a wcześniejsza jednostka planu kończy na 15'])
+})
+
+test('bez regul wzgledem repo (bramka po fazie 1): plik zmieniony przez faze nie daje bledu "dzis"', () => {
+  const korzen = projekt({ 'src/services/oferty-service.ts': linie(60) })
+  try {
+    assert.equal(sprawdzPlan(parsujPlan(FIXTURE), korzen).bledy.length, 1)
+    assert.deepEqual(sprawdzPlan(parsujPlan(FIXTURE), korzen, { wzgledemRepo: false }).bledy, [])
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})
+
+test('liczLinieKodu: jak ESLint max-lines — bez pustych linii i linii samego komentarza', () => {
+  const kod = '// naglowek\n\nimport x from "y"\n/**\n * opis\n */\nexport const a = 1 // koniec\n/* jedna */ const b = 2\n'
+  assert.equal(liczLinieKodu(kod), 3)
+})
+
+test(`prog ${PROG_ESLINT} = max-lines z szablonu ESLint (jedna liczba w budzecie planu, bramce i bocie)`, () => {
+  const eslint = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../templates/bramki/eslint.config.szablon.ts'), 'utf8')
+  assert.equal(Number(/'max-lines': \['error', \{ max: (\d+)/.exec(eslint)?.[1]), PROG_ESLINT)
+})
+
+test('frontmatter: pole sciezki zapisane jako mapa jest odrzucone', () => {
+  assert.deepEqual(sprawdz(zmien('design_md: ./docs/DESIGN.md', 'design_md:\n  a: ./docs/DESIGN.md')).bledy,
+    ['frontmatter: design_md — oczekiwana ścieżka albo null, jest mapa'])
 })

@@ -64,7 +64,7 @@ test('wierszeWymagan: brak sekcji albo brak ID w fazie = null', () => {
   assert.equal(wierszeWymagan(PLAN, '### Faza 1\nbez wymagan'), null)
 })
 
-test('liczE2e: niezaznaczone [E2E] z prefiksow Test: i Weryfikacja:; bez zaznaczonych, Operator: i pozycji findingow', () => {
+test('liczE2e: niezaznaczone [E2E] z prefiksow Test: i Weryfikacja: w kolumnie 0; bez zaznaczonych, wcietych, Operator: i pozycji findingow', () => {
   const zadania = [
     '## Faza 2 — UI',
     '- [ ] Test: [E2E] logowanie dziala',
@@ -74,6 +74,7 @@ test('liczE2e: niezaznaczone [E2E] z prefiksow Test: i Weryfikacja:; bez zaznacz
     '- [ ] [P2] [E2E] finding z review',
     '- [ ] Test: [Unit] suma',
     '- [ ] Weryfikacja: CLI typecheck',
+    '  - [ ] Test: [E2E] wciety — grep konsumentow go nie widzi',
   ].join('\n')
   assert.equal(liczE2e(zadania), 2)
   assert.equal(liczE2e('## Faza 1\n- [ ] Test: [Unit] x'), 0)

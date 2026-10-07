@@ -18,7 +18,6 @@ import assert from 'node:assert/strict'
 
 import { wycinkiZadania } from '../../scripts/dossier/zadanie.mjs'
 import { sciezkaPlanu } from '../../scripts/dossier/dokumenty.mjs'
-import { parsujPlan } from '../../scripts/plan/plan-techniczny.mjs'
 import { zadanieZPlanu } from '../../scripts/plan/zadanie.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
@@ -57,7 +56,12 @@ for (const [nazwa, tresc] of Object.entries(WYNIK.pliki)) {
   writeFileSync(join(KORZEN, ZADANIE, `publikacja-ofert-${nazwa}.md`), tresc)
 }
 test.after(() => rmSync(KORZEN, { recursive: true, force: true }))
-const PLAN = parsujPlan(PLAN_MD)
+// Oczekiwania z fixture wpisane recznie, nie liczone parserem generatora: blad parsera nie moze sie tu sam potwierdzic.
+const IU = [
+  { faza: 1, naglowek: 'IU-1: Status oferty i serwis publikacji (feature-builder-data)' },
+  { faza: 2, naglowek: 'IU-2: Przycisk publikacji na liście ofert (feature-builder-ui)' },
+  { faza: 2, naglowek: 'IU-3: Adres publiczny oferty (feature-builder-fullstack)' },
+]
 
 /** Literal wyciety ze zrodla workflowu: tekst miedzy kotwica a koncem (bez nich). */
 function literal(/** @type {string} */ zrodlo, /** @type {string} */ kotwica, /** @type {string} */ koniec) {
@@ -106,7 +110,7 @@ test('bootstrap: lista faz z tabeli "## Fazy" = naglowki "## Faza N — nazwa" w
   const zNaglowkow = [...zadania.matchAll(/^## Faza (\d+) — (.+)$/gm)].map((m) => `${m[1]} — ${m[2]}`)
   assert.deepEqual(zTabeli, ['1 — Status i zapis', '2 — Przycisk na liście'])
   assert.deepEqual(zNaglowkow, zTabeli)
-  assert.deepEqual(PLAN.fazy.map((f) => `${f.numer} — ${f.nazwa}`), zTabeli)
+  assert.doesNotMatch(zadania, /Równolegle z/, 'placeholder szablonu „— *(opcjonalne)*” nie trafia do zadan')
 })
 
 test('bootstrap i planner: kazda faza ma niezaznaczony checkbox liczony do execute=done, skip-lista go nie pomija', () => {
@@ -114,35 +118,31 @@ test('bootstrap i planner: kazda faza ma niezaznaczony checkbox liczony do execu
   for (const znacznik of ['"Weryfikacja:"', '"Operator:"', '"[E2E]"/"[Manual]"', '"## Do poprawy po review fazy N"', '"## Operator checklist faza N"']) {
     assert.ok(skipLista.includes(znacznik), `skip-lista plannera bez ${znacznik}`)
   }
-  for (const faza of PLAN.fazy) {
-    const blok = sekcja(zadania, new RegExp(`^## Faza ${faza.numer} `)) ?? ''
+  // faza 1: 5 plikow IU-1 + 2 [Unit]; faza 2: 2 + 1 (IU-2) i 3 + 1 (IU-3)
+  for (const [faza, oczekiwane] of [[1, 7], [2, 7]]) {
+    const blok = sekcja(zadania, new RegExp(`^## Faza ${faza} `)) ?? ''
     const liczone = blok.split('\n').filter((l) => /^- \[ \]/.test(l) && !/Weryfikacja:|Operator:|\[E2E\]|\[Manual\]/.test(l))
-    const oczekiwane = faza.iu.reduce((n, iu) => n + iu.pliki.length + iu.scenariusze.filter((s) => s.typ === 'Unit').length, 0)
-    assert.equal(liczone.length, oczekiwane, `faza ${faza.numer}: pliki IU + [Unit]`)
-    assert.ok(liczone.every((l) => !/^- \[ \] (Test: \[E2E\]|Weryfikacja:)/.test(l)))
+    assert.equal(liczone.length, oczekiwane, `faza ${faza}: pliki IU + [Unit]`)
   }
 })
 
 test('planner: IU w zadaniach jako "### IU-K: nazwa (Delegate to)" pod swoja faza', () => {
-  for (const faza of PLAN.fazy) {
-    const blok = sekcja(zadania, new RegExp(`^## Faza ${faza.numer} `)) ?? ''
-    for (const iu of faza.iu) assert.ok(blok.includes(`### ${iu.id}: ${iu.nazwa} (${iu.delegate})`), `${iu.id} w fazie ${faza.numer}`)
+  for (const { faza, naglowek } of IU) {
+    assert.match(sekcja(zadania, new RegExp(`^## Faza ${faza} `)) ?? '', new RegExp(`^### ${naglowek.replace(/[()]/g, '\\$&')}$`, 'm'))
   }
 })
 
 test('precheck E2E, completion-gate i smoke operatora: jedna linia [E2E] na scenariusz albo runner, kolumna 0', () => {
-  const scenariusze = PLAN.fazy.flatMap((f) => f.iu.flatMap((iu) => iu.scenariusze.filter((s) => s.typ === 'E2E')))
-  const runnery = PLAN.fazy.flatMap((f) => f.iu.flatMap((iu) => iu.weryfikacja.filter((w) => w.e2e)))
-  assert.equal(zadania.split('\n').filter(liniaE2e).length, scenariusze.length + runnery.length)
-  assert.equal(scenariusze.length, 2)
+  // 2 scenariusze [E2E] (IU-2, IU-3) + runner e2e/run-all.sh; [E2E] w kopii Operator: i [Manual] nie licza sie
+  assert.equal(zadania.split('\n').filter(liniaE2e).length, 3)
+  assert.equal(WYNIK.liczniki.e2e, 3)
   assert.doesNotMatch(zadania, /^[ \t]+- \[[ x]\]/m, 'wciety checkbox jest niewidoczny dla grepow ^- \\[ \\]')
 })
 
 test('scribe review-wf: regex bookkeepingu lapie wszystkie Weryfikacja: i Test: [E2E], sekcji "Do poprawy" nie ma', () => {
   const bookkeeping = wzorzecZPromptu(review, 'pasujace do regex ', ' — oba prefiksy')
   const trafione = zadania.split('\n').filter((l) => bookkeeping.test(l))
-  const weryfikacje = PLAN.fazy.flatMap((f) => f.iu.flatMap((iu) => iu.weryfikacja)).length
-  assert.equal(trafione.length, weryfikacje + 2)
+  assert.equal(trafione.length, 4 + 2, '4 Weryfikacja: + 2 Test: [E2E]')
   assert.doesNotMatch(zadania, /^## Do poprawy po review fazy/m)
 })
 
@@ -158,7 +158,7 @@ test('scribe, fix i smoke operatora: "## Operator checklist faza N" po IU fazy, 
   assert.ok(review.includes('"## Operator checklist faza ${faza}"'))
   const operator = sekcja(zadania, /^## Operator checklist faza 2$/) ?? ''
   assert.match(operator, /^- \[ \] \[Manual\] przycisk na fizycznym telefonie ma wygodny cel dotyku \(IU-2\)$/m)
-  assert.match(operator, /^- \[ \] Projektant akceptuje wygląd przycisku na liście \(IU-2\)$/m)
+  assert.match(operator, /^- \[ \] Operator: Projektant akceptuje wygląd przycisku na liście \(IU-2\)$/m)
   assert.equal(sekcja(zadania, /^## Operator checklist faza 1$/), null, 'faza bez pozycji operatora nie ma sekcji')
   assert.ok(zadania.indexOf('## Operator checklist faza 2') > zadania.indexOf('### IU-3'))
 })

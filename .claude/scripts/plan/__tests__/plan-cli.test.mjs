@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { gotowosc, liczScenariuszeE2e } from '../gotowosc.mjs'
+import { liczE2e as liczScenariuszeE2e } from '../../dossier/dokumenty.mjs'
+import { gotowosc } from '../gotowosc.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = resolve(KATALOG, '../plan.mjs')
@@ -34,7 +35,7 @@ function repo(o = {}) {
     'docs/plans/publikacja-ofert-figma/lista-ofert.png': 'png',
     'src/services/oferty-service.ts': 'const x = 1\n'.repeat(12),
     'src/features/oferty/components/lista-ofert.tsx': 'const x = 1\n'.repeat(8),
-    [PREP]: o.prep ?? '# Przygotowanie\n\n- [ ] Klucz mapy — **[blokuje: faza 2]** (IU-2)\n',
+    [PREP]: o.prep ?? '# Przygotowanie\n\n- [ ] Klucz mapy — **[blokuje: faza 2]** (IU-2)\n- [x] Konto — **[blokuje: faza 1]**\n',
     ...(o.env === false ? {} : { '.env.e2e': 'X=1\n' }),
   }
   for (const [s, t] of Object.entries(pliki)) {
@@ -80,6 +81,7 @@ test('generuj --zapisz: trzy pliki zadania z licznikami; bez --zapisz nic nie po
   assert.equal(w.kod, 0)
   assert.deepEqual(w.json.zapisane, ['plan', 'kontekst', 'zadania'].map((r) => `${ZADANIE}/publikacja-ofert-${r}.md`))
   assert.deepEqual(w.json.liczniki, { fazy: 2, iu: 3, implementacyjne: 10, testy: 6, weryfikacje: 4, e2e: 3, operator: 2 })
+  assert.equal(w.json.odmowa, null)
 }))
 
 test('generuj: plan z bledem nie daje plikow i zwraca bledy z kodem 1', () => wRepo((k) => {
@@ -88,6 +90,17 @@ test('generuj: plan z bledem nie daje plikow i zwraca bledy z kodem 1', () => wR
   assert.equal(w.kod, 1)
   assert.match(w.json.bledy.join('\n'), /IU-2: Delegate to/)
   assert.equal(existsSync(join(k, ZADANIE)), false)
+}))
+
+test('generuj --nadpisz: odmowa przy stanie autopilota, raporcie review albo wpisach dziennika', () => wRepo((k) => {
+  for (const [plik, tresc] of [['.autopilot-state.json', '{}'], ['review-faza-1.md', '# R'], ['publikacja-ofert-kontekst.md', '## Dziennik\n\n- faza 1: zrobione\n']]) {
+    assert.equal(cli(k, ['generuj', PLAN, '--zapisz', '--nadpisz']).kod, 0)
+    writeFileSync(join(k, ZADANIE, plik), tresc)
+    const w = cli(k, ['generuj', PLAN, '--zapisz', '--nadpisz'])
+    assert.equal(w.kod, 1, plik)
+    assert.match(w.json.odmowa, /postępu nie nadpisuję/)
+    rmSync(join(k, ZADANIE), { recursive: true })
+  }
 }))
 
 test('generuj: istniejace zadanie bez --nadpisz odmowa; z --nadpisz odmowa, gdy zadania maja postep', () => wRepo((k) => {
@@ -121,8 +134,8 @@ test('gotowosc: STOP na E2E bez .env.e2e, blokerze startu, cudzej galezi i brudn
     zadanieNaGalezi(k)
     const w = gotowosc(k, ZADANIE)
     assert.deepEqual([w.ok, w.przygotowanie.ok], [false, false])
-    assert.deepEqual(w.przygotowanie.blokujace.map((b) => b.linia), [3, 4])
-  }, { prep: '# P\n\n- [ ] Konto Sentry — **[blokuje: planowanie]**\n- [ ] Klucz — **[blokuje:** faza pierwsza]\n- [x] Gotowe — **[blokuje: faza 1]**\n' })
+    assert.deepEqual(w.przygotowanie.blokujace.map((b) => b.linia), [3, 4, 5])
+  }, { prep: '# P\n\n- [ ] Konto Sentry — **[blokuje: planowanie]**\n- [ ] Klucz — **[blokuje:** faza pierwsza]\n- [ ] DSN — **[blokuje: faza 1]**\n- [x] Gotowe — **[blokuje: faza 1]**\n' })
   wRepo((k) => {
     zadanieNaGalezi(k)
     git(k, ['checkout', '-q', 'main'])
@@ -133,6 +146,27 @@ test('gotowosc: STOP na E2E bez .env.e2e, blokerze startu, cudzej galezi i brudn
     assert.deepEqual(gotowosc(k, ZADANIE).git.brudne, ['?? src/nowy.ts'])
   })
 })
+
+test('gotowosc po fazie 1: plik zmieniony przez faze nie zatrzymuje bramki (budzet wobec repo sprawdza generuj)', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  writeFileSync(join(k, 'src/services/oferty-service.ts'), 'const x = 1\n'.repeat(60))
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qam', 'feat: faza 1'])
+  assert.equal(cli(k, ['gotowosc', ZADANIE]).kod, 0)
+  assert.equal(cli(k, ['sprawdz', PLAN]).kod, 1)
+}))
+
+test('linie: liczba linii kodu jak ESLint dla kolumny „dziś”; brak pliku = null', () => wRepo((k) => {
+  writeFileSync(join(k, 'src/x.ts'), '// opis\n\nconst a = 1\n')
+  assert.deepEqual(cli(k, ['linie', 'src/x.ts', 'src/brak.ts']).json.linie, { 'src/x.ts': 1, 'src/brak.ts': null })
+}))
+
+test('wyjatek skryptu: kod 3 z JSON, nie kod 1 jak plan do poprawy; sciezka absolutna planu dziala', () => wRepo((k) => {
+  mkdirSync(join(k, 'docs/plans/katalog.md'))
+  const w = cli(k, ['sprawdz', 'docs/plans/katalog.md'])
+  assert.equal(w.kod, 3)
+  assert.equal(w.json.ok, false)
+  assert.equal(cli(k, ['sprawdz', join(k, PLAN)]).kod, 0)
+}))
 
 test('gotowosc: brak planu technicznego pod wskaznikiem to blad planu, nie wyjatek', () => wRepo((k) => {
   zadanieNaGalezi(k)

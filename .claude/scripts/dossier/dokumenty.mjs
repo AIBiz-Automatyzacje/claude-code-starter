@@ -60,14 +60,15 @@ export function wierszeWymagan(plan, sekcjaFazyPlanu) {
 }
 
 /**
- * Niezaznaczone checkboxy [E2E] (prefiksy Test: i Weryfikacja:) — praca testera przegladarkowego. Kopie `Operator:`
- * i pozycje findingow `[P1]/[P2]/[P3]` nie sa scenariuszami fazy.
- * @param {string} sekcjaZadan sekcja fazy z pliku zadan
+ * Niezaznaczone checkboxy [E2E] (prefiksy Test: i Weryfikacja:) — praca testera przegladarkowego. Ten sam grep co precheck
+ * autopilota i completion-gate (`^- \[ \].*\[E2E\]` bez `Operator:|\[P[123]\]`): wciety checkbox jest dla nich niewidoczny,
+ * kopie `Operator:` i pozycje findingow `[P1]/[P2]/[P3]` nie sa scenariuszami fazy.
+ * @param {string} sekcjaZadan sekcja fazy z pliku zadan (albo caly plik)
  * @returns {number}
  */
 export function liczE2e(sekcjaZadan) {
   return sekcjaZadan.split('\n')
-    .filter((l) => /^\s*- \[ \].*\[E2E\]/.test(l) && !/Operator:/.test(l) && !/\[P[123]\]/.test(l))
+    .filter((l) => /^- \[ \].*\[E2E\]/.test(l) && !/Operator:|\[P[123]\]/.test(l))
     .length
 }
 

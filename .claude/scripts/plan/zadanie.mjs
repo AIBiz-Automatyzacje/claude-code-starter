@@ -5,7 +5,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { nazwaZadania, parsujPlan } from './plan-techniczny.mjs'
+import { liczE2e } from '../dossier/dokumenty.mjs'
+import { ekranyFigmy, nazwaZadania, parsujPlan, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
 import { przygotowanie, sciezkaWzgledna } from './przygotowanie.mjs'
 
 /**
@@ -13,7 +14,8 @@ import { przygotowanie, sciezkaWzgledna } from './przygotowanie.mjs'
  * @typedef {import('./plan-techniczny.mjs').Jednostka} Jednostka
  * @typedef {import('./przygotowanie.mjs').Przygotowanie} Przygotowanie
  * @typedef {{ fazy: number, iu: number, implementacyjne: number, testy: number, weryfikacje: number, e2e: number, operator: number }} Liczniki
- * @typedef {{ nazwa: string, katalog: string, pliki: { plan: string, kontekst: string, zadania: string }, liczniki: Liczniki }} Zadanie
+ * @typedef {{ nazwa: string, katalog: string, pliki: { plan: string, kontekst: string, zadania: string }, liczniki: Liczniki,
+ *   bledyBilansu: string[] }} Zadanie
  */
 
 /** @param {string} tytul @param {string} nazwa @param {string} data @param {string} sciezkaPlanu @returns {string[]} */
@@ -24,31 +26,25 @@ function naglowek(tytul, nazwa, data, sciezkaPlanu) {
 /** @param {string} projekt @param {string | null} origin @returns {string} */
 function requirementsDoc(projekt, origin) {
   if (!origin) return 'brak'
-  const bezKotwicy = origin.replace(/#.*$/, '').replace(/\s*\(sekcja.*$/, '').replace(/^\.\//, '')
-  if (/\.md$/.test(bezKotwicy) && bezKotwicy.includes('/')) {
-    return existsSync(join(projekt, bezKotwicy)) ? `\`${origin}\`` : `\`${origin}\` (plik nie istnieje — popraw \`origin\` w planie)`
+  const sciezka = sciezkaOrigin(origin)
+  if (sciezka) {
+    return existsSync(join(projekt, sciezka)) ? `\`${origin}\`` : `\`${origin}\` (plik nie istnieje — popraw \`origin\` w planie)`
   }
   return `${origin} (poza repo — ID wg „Śledzenie wymagań” planu)`
 }
 
 /** @param {string} projekt @param {Plan} plan @param {string} sciezkaPlanu @returns {string[]} */
 function zrodla(projekt, plan, sciezkaPlanu) {
-  const fm = plan.frontmatter
-  const prep = sciezkaWzgledna(/** @type {string | null} */ (fm.operator_prep ?? null))
+  const prep = sciezkaWzgledna(poleTekstowe(plan, 'operator_prep'))
   return ['## Źródła', '', `- Plan techniczny: \`${sciezkaPlanu}\``,
-    `- Requirements doc: ${requirementsDoc(projekt, /** @type {string | null} */ (fm.origin ?? null))}`,
+    `- Requirements doc: ${requirementsDoc(projekt, poleTekstowe(plan, 'origin'))}`,
     `- Przygotowanie dla operatora: ${prep ? `\`${prep}\`` : 'brak'}`, '']
-}
-
-/** @param {Jednostka} iu @returns {string[]} */
-function delegaci(iu) {
-  return iu.delegate ? [iu.delegate] : []
 }
 
 /** @param {string} projekt @param {Plan} plan @param {string} nazwa @param {string} data @param {string} sciezkaPlanu @param {Przygotowanie | null} prep */
 function planZadania(projekt, plan, nazwa, data, sciezkaPlanu, prep) {
   const fazy = plan.fazy.map((f) => `| ${f.numer} | ${f.nazwa} | ${f.iu.map((iu) => iu.id).join(', ')} | ${f.zalezyOd || 'Brak'} | `
-    + `${[...new Set(f.iu.flatMap(delegaci))].join(', ')} |`)
+    + `${[...new Set(f.iu.map((iu) => iu.delegate))].join(', ')} |`)
   const blokery = (prep?.odroczone ?? []).map((b) => `- [ ] faza ${b.faza} — ${b.tresc} · ${prep?.sciezka}:${b.linia}`)
   return [
     ...naglowek('Plan', nazwa, data, sciezkaPlanu),
@@ -65,12 +61,13 @@ function planZadania(projekt, plan, nazwa, data, sciezkaPlanu, prep) {
 
 /** @param {Plan} plan @returns {string[]} */
 function designerski(plan) {
-  const fm = plan.frontmatter
-  const ekrany = typeof fm.figma_screens === 'object' && fm.figma_screens ? Object.entries(fm.figma_screens) : []
-  if (!fm.design_md && !fm.figma_spec && !ekrany.length) return []
+  const design = poleTekstowe(plan, 'design_md')
+  const spec = poleTekstowe(plan, 'figma_spec')
+  const ekrany = ekranyFigmy(plan)
+  if (!design && !spec && !ekrany.length) return []
   return ['## Designerski kontekst', '',
-    `- **DESIGN.md (projekt-wide):** ${fm.design_md ? `\`${fm.design_md}\`` : 'null'}`,
-    `- **SPEC.md (per-feature, pomiary z Figmy):** ${fm.figma_spec ? `\`${fm.figma_spec}\`` : 'null'}`,
+    `- **DESIGN.md (projekt-wide):** ${design ? `\`${design}\`` : 'null'}`,
+    `- **SPEC.md (per-feature, pomiary z Figmy):** ${spec ? `\`${spec}\`` : 'null'}`,
     `- **Screeny referencyjne:**${ekrany.length ? '' : ' brak'}`,
     ...ekrany.map(([n, s]) => `  - \`${n}\`: \`${s}\``), '']
 }
@@ -78,7 +75,8 @@ function designerski(plan) {
 /** @param {string} projekt @param {Plan} plan @param {string} nazwa @param {string} data @param {string} sciezkaPlanu @param {Przygotowanie | null} prep */
 function kontekstZadania(projekt, plan, nazwa, data, sciezkaPlanu, prep) {
   const wiszace = prep ? [...prep.blokujace, ...prep.odroczone] : []
-  const wymagania = !prep ? ['Brak.'] : [`Checklista: \`${prep.sciezka}\`.`, '',
+  const wymagania = !prep ? ['Brak.'] : !prep.istnieje ? [`Checklista \`${prep.sciezka}\` nie istnieje — popraw \`operator_prep\` w planie.`]
+    : [`Checklista: \`${prep.sciezka}\`.`, '',
     ...(wiszace.length ? wiszace.map((b) => `- [ ] ${b.faza ? `faza ${b.faza}` : 'start'} — ${b.tresc} · ${prep.sciezka}:${b.linia}`)
       : ['Brak nieodhaczonych pozycji blokujących.'])]
   return [
@@ -102,7 +100,7 @@ function checkboxyIu(iu) {
     ...iu.weryfikacja.map((w) => `- [ ] Weryfikacja: ${w.e2e ? '[E2E] ' : ''}${w.tresc}`), '',
   ]
   const operator = [
-    ...iu.operator.map((o) => `- [ ] ${o} (${iu.id})`),
+    ...iu.operator.map((o) => `- [ ] Operator: ${o} (${iu.id})`),
     ...iu.scenariusze.filter((s) => s.typ === 'Manual').map((s) => `- [ ] [Manual] ${s.tresc} (${iu.id})`),
   ]
   return { linie, operator }
@@ -124,19 +122,26 @@ function zadaniaZadania(plan, nazwa, data, sciezkaPlanu) {
   ].join('\n')
 }
 
-/** @param {Plan} plan @returns {Liczniki} */
-function liczniki(plan) {
+/**
+ * Liczniki z modelu planu, E2E z wygenerowanego tekstu tym samym grepem co konsumenci (precheck, completion-gate).
+ * @param {Plan} plan @param {string} zadania
+ * @returns {{ liczniki: Liczniki, bledyBilansu: string[] }}
+ */
+function bilans(plan, zadania) {
   const iu = plan.fazy.flatMap((f) => f.iu)
   const suma = (/** @type {(j: Jednostka) => number} */ f) => iu.reduce((n, j) => n + f(j), 0)
-  return {
+  const oczekiwaneE2e = suma((j) => j.scenariusze.filter((s) => s.typ === 'E2E').length + j.weryfikacja.filter((w) => w.e2e).length)
+  const e2e = liczE2e(zadania)
+  const liczniki = {
     fazy: plan.fazy.length,
     iu: iu.length,
     implementacyjne: suma((j) => j.pliki.length),
     testy: suma((j) => j.scenariusze.filter((s) => s.typ === 'Unit' || s.typ === 'E2E').length),
     weryfikacje: suma((j) => j.weryfikacja.length),
-    e2e: suma((j) => j.scenariusze.filter((s) => s.typ === 'E2E').length + j.weryfikacja.filter((w) => w.e2e).length),
+    e2e,
     operator: suma((j) => j.operator.length + j.scenariusze.filter((s) => s.typ === 'Manual').length),
   }
+  return { liczniki, bledyBilansu: e2e === oczekiwaneE2e ? [] : [`bilans E2E: grep prechecku liczy ${e2e} linii, plan ma ${oczekiwaneE2e} scenariuszy i runnerów`] }
 }
 
 /**
@@ -148,15 +153,16 @@ function liczniki(plan) {
 export function zadanieZPlanu(projekt, sciezkaPlanu, opcje) {
   const plan = parsujPlan(readFileSync(join(projekt, sciezkaPlanu), 'utf8'))
   const nazwa = opcje.nazwa ?? nazwaZadania(sciezkaPlanu)
-  const prep = przygotowanie(projekt, /** @type {string | null} */ (plan.frontmatter.operator_prep ?? null))
+  const prep = przygotowanie(projekt, poleTekstowe(plan, 'operator_prep'))
+  const zadania = zadaniaZadania(plan, nazwa, opcje.data, sciezkaPlanu)
   return {
     nazwa,
     katalog: `docs/active/${nazwa}`,
     pliki: {
       plan: planZadania(projekt, plan, nazwa, opcje.data, sciezkaPlanu, prep),
       kontekst: kontekstZadania(projekt, plan, nazwa, opcje.data, sciezkaPlanu, prep),
-      zadania: zadaniaZadania(plan, nazwa, opcje.data, sciezkaPlanu),
+      zadania,
     },
-    liczniki: liczniki(plan),
+    ...bilans(plan, zadania),
   }
 }

@@ -17,7 +17,7 @@ import { czyFigmaScreens, liczE2e, sciezkaPlanu, sekcjaDesignerska, sekcjaFazy, 
  * @param {string} sufiks
  * @returns {{ nazwa: string, tresc: string } | null}
  */
-function plikZadania(katalog, sufiks) {
+export function plikZadania(katalog, sufiks) {
   const nazwa = existsSync(katalog) ? readdirSync(katalog).filter((p) => p.endsWith(sufiks)).sort()[0] : undefined
   return nazwa ? { nazwa, tresc: readFileSync(join(katalog, nazwa), 'utf8') } : null
 }

@@ -48,6 +48,7 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 ### Faza 1 — Status i zapis
 
 **Zależy od:** Brak
+**Równolegle z:** — *(opcjonalne)*
 
 - [ ] **IU-1: Status oferty i serwis publikacji**
 
@@ -82,7 +83,7 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 - [Unit] publikacja cudzej oferty zwraca błąd uprawnień
 
 **Weryfikacja:**
-- typecheck przechodzi bez błędów
+- `pnpm typecheck` przechodzi bez błędów
 
 ### Faza 2 — Przycisk na liście
 
@@ -119,7 +120,7 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 - [Manual] przycisk na fizycznym telefonie ma wygodny cel dotyku
 
 **Weryfikacja:**
-- testy jednostkowe listy ofert przechodzą
+- `pnpm vitest run src/features/oferty` przechodzi
 - [E2E] `e2e/run-all.sh` — wszystkie flow zielone
 
 **Operator checklist:**
@@ -151,7 +152,7 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 - [E2E] `oferta-publiczna` (seed: e2e/seeds/publikacja-oferty-seed.sql) — otwórz /o/<id opublikowanej>, zrób screenshot → widać tytuł oferty
 
 **Weryfikacja:**
-- typecheck przechodzi bez błędów
+- `pnpm typecheck` przechodzi bez błędów
 
 ## Ryzyka i zależności
 
