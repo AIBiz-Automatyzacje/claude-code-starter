@@ -15,6 +15,7 @@
 //   e2e.mjs manual --zadanie <dir> --faza N --flow <id> --przyczyna <przyczyna> --powod <tekst>
 //                                                     jeden flow na [Manual] (fix przy srodowisku niedostepnym w runie)
 //   e2e.mjs lista-manual --zadanie <dir>              pozycje przeniesione w trakcie runu na [Manual] (smoke operatora)
+//   e2e.mjs mapa --zadanie <dir>                      funkcje ze scenariuszy [E2E] planu zadania -> mapa funkcji skilla weryfikacji
 // Wynik: JSON w jednej linii na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (STOP, porazka sumy, flow bez linii),
 // 2 = zle argumenty, 3 = wyjatek skryptu (JSON z polem wyjatek).
 
@@ -25,6 +26,7 @@ import { parseArgs } from 'node:util'
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { rodzajPrzyczyny, zaksiegujFaze } from './ksiegowanie.mjs'
+import { dopiszZadanie } from './mapa.mjs'
 import { doOdegrania, listaManual } from './scenariusze.mjs'
 import { stanSerwera, zatrzymajSerwer } from './serwer.mjs'
 import { envE2e, konfiguracja } from './srodowisko.mjs'
@@ -40,7 +42,7 @@ const USTAWIENIA = /** @type {const} */ ({
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -95,6 +97,10 @@ async function wykonaj(polecenie, o, projekt) {
     zakoncz(w, w.status !== 'porazka')
   }
   const sciezka = sciezkaZadania(projekt, o.zadanie)
+  if (polecenie === 'mapa') {
+    const w = dopiszZadanie(projekt, sciezka)
+    zakoncz(w, !('blad' in w))
+  }
   const { plik, tresc } = zadania(projekt, sciezka)
   if (polecenie === 'lista-manual') zakoncz({ pozycje: listaManual(tresc) }, true)
   const faza = numerFazy(o.faza)
