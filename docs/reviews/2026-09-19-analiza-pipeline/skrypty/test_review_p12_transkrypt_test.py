@@ -49,6 +49,7 @@ TRANSKRYPT = [
                        uzycie(9, 'Bash', {'command': 'sed -n 1,80p .claude/rules/coding-rules.md; grep -n "^## " .claude/skills/ux-ui-guidelines/resources/forms.md'}),
                        uzycie(10, 'Bash', {'command': 'cd apps/server && npx vitest run --reporter=dot src/a.test.ts src/b 2>&1 | tail -5'}),
                        uzycie(11, 'Bash', {'command': 'npx vitest run 2>&1; ls vitest*; cat vitest.config.ts; grep -n "from \'vitest\'" src/a.test.ts'}),
+                       uzycie(12, 'Bash', {'command': 'cat > notatka.md <<EOF\nuruchom pnpm test po zmianie\nEOF'}),
                        uzycie(4, 'Bash', {'command': 'cd apps/a && pnpm exec tsc --noEmit -p tsconfig.json'}),
                        uzycie(5, 'Bash', {'command': 'pnpm exec vitest related --run src/hooks/use-a.ts'}),
                        uzycie(6, 'Bash', {'command': 'pnpm test 2>&1 | tail -5'}),

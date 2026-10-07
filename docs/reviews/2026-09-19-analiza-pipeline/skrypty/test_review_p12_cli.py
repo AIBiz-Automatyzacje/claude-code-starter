@@ -158,10 +158,11 @@ def zamknij(et, w):
     Do tego lista /tmp przed buildem (po_buildzie przenosi nowe pliki — logi i notatki buildera — z dala od drugiego wariantu)."""
     przyszle(et); faza(et)   # odczyty z katalogów, które się zaraz zamkną
     cele = [os.path.join(TR, n) for n in os.listdir(TR) if n not in ('p12-kopie', 'p12', 'sesje')]
-    cele += [os.path.join(P12K, n) for n in os.listdir(P12K) if n != et]
+    # w p12 i sesje — wszystko poza tą fazą (implementacje sędziego i zrzuty planów innych faz to kod i plany z innej epoki)
+    cele += [os.path.join(d, n) for d in (P12K, P12, os.path.join(TR, 'sesje')) if os.path.isdir(d) for n in os.listdir(d) if n != et]
     cele += [os.path.join(P12K, et, n) for n in os.listdir(os.path.join(P12K, et)) if n not in (w, w + '-pliki')]
     tryby = {c: os.stat(c).st_mode & 0o7777 for c in cele if os.path.isdir(c) and not os.path.islink(c)}
-    _json(os.path.join(P12, et, 'tmp-przed-%s.json' % w), sorted(os.listdir('/tmp')))
+    _json(os.path.join(P12, et, 'tmp-przed-%s.json' % w), {'czas': time.time()})
     _json(os.path.join(P12, et, 'zamkniete.json'), tryby)
     for c in tryby: os.chmod(c, 0)
     print('%s: zamknięte na czas buildu %s: %s' % (et, w, ', '.join(os.path.relpath(c, TR) for c in tryby)))
@@ -198,11 +199,11 @@ def po_buildzie(et, w):
     for p in zrzuty_review(et):   # review drugiego wariantu nie może ich czytać
         os.makedirs(os.path.join(pl, 'tmp-domkniecia'), exist_ok=True); shutil.move(p, os.path.join(pl, 'tmp-domkniecia'))
     przed = os.path.join(P12, et, 'tmp-przed-%s.json' % w)
-    if os.path.exists(przed):   # pliki, które build zostawił w /tmp (logi testów, notatki) — nazwy wybiera agent, więc mogą się pokryć
-        znane = set(_json(przed))
-        for n in sorted(set(os.listdir('/tmp')) - znane):
+    if os.path.exists(przed):   # wpisy, które build utworzył albo nadpisał w /tmp (logi testów, notatki) — nazwy wybiera agent, więc mogą się pokryć
+        od = _json(przed)['czas']
+        for n in sorted(os.listdir('/tmp')):
             p = os.path.join('/tmp', n)
-            if n.startswith('claude-') or os.path.islink(p) or not os.path.isfile(p) or os.stat(p).st_uid != os.getuid(): continue
+            if n.startswith('claude-') or os.path.islink(p) or os.stat(p).st_uid != os.getuid() or os.stat(p).st_mtime < od: continue
             os.makedirs(os.path.join(pl, 'tmp-build'), exist_ok=True); shutil.move(p, os.path.join(pl, 'tmp-build'))
             print('%s %s: /tmp/%s → %s-pliki/tmp-build' % (et, w, n, w))
     args = {'sciezka': 'docs/active/' + f['zadanie'], 'faza': f['faza'], 'srodowiskoE2E': 'pominieto', 'baza': f['baza']}

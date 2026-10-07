@@ -12,7 +12,7 @@ NAGLOWEK_D10 = 'Klasy błędów, które review znajduje w takich plikach — co 
 RE_KLASA = re.compile(r'^\s*- ([a-z0-9-]+): ')
 RE_TSC = re.compile(r'\btsc\b[^|;&]*--noEmit|\btypecheck\b')
 RE_VITEST_RELATED = re.compile(r'\bvitest\s+related\b')
-RE_PNPM_TEST = re.compile(r'\bpnpm\s+(?:-r\s+|--filter\s+\S+\s+)*(?:run\s+)?test\b(?!:)')
+RE_PNPM_TEST = re.compile(r'(?:timeout\s+\d+\s+)?pnpm\s+(?:-r\s+|--filter\s+\S+\s+)*(?:run\s+)?test\b(?!:)')
 RE_ESLINT = re.compile(r'\beslint\b')
 RE_SEGMENTY = re.compile(r'&&|\|\||;|\||\n')
 
@@ -22,7 +22,7 @@ def _vitest(cmd):
     i liczby pomijane). `pnpm test` bez argumentów = pełny zestaw."""
     pliki = pelny = 0
     for seg in RE_SEGMENTY.split(re.sub(r'\d?>>?&?\s*[^\s;&|]+', ' ', cmd)):
-        if RE_PNPM_TEST.search(seg): pelny += 1; continue
+        if RE_PNPM_TEST.match(seg.strip()): pelny += 1; continue
         # vitest jako komenda (nie import w heredocu ani ls/cat/grep po nazwie)
         m = re.match(r'^\s*\(?\s*(?:timeout\s+\d+\s+)?(?:npx\s+|pnpm\s+(?:exec\s+)?)?vitest\b(\s+run)?(.*)$', seg)
         if not m or re.search(r'\bvitest\s+related\b', seg): continue
