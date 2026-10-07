@@ -12,7 +12,8 @@ import assert from 'node:assert/strict'
 
 import { parsujPlan } from '../plan-techniczny.mjs'
 import { liczLinieKodu } from '../budzet-pliku.mjs'
-import { PROG_ESLINT, sprawdzPlan } from '../walidacja-planu.mjs'
+import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan } from '../walidacja-planu.mjs'
+import { zadanieZPlanu } from '../zadanie.mjs'
 
 const FIXTURE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/plan-techniczny.md'), 'utf8')
 
@@ -156,7 +157,11 @@ test('weryfikacja: [Manual], bez komendy CLI, [E2E] bez runnera i runner bedacy 
   assert.deepEqual(sprawdz(zmien(typecheck, '- [Manual] operator klika przycisk\n\n### Faza 2')).bledy,
     ['IU-1: Weryfikacja [Manual] — kroki człowieka idą do Operator checklist albo Scenariusze testowe'])
   assert.deepEqual(sprawdz(zmien(typecheck, '- typecheck przechodzi bez błędów\n\n### Faza 2')).bledy,
-    ['IU-1: Weryfikacja „typecheck przechodzi bez błędów” bez komendy w backtickach (`pnpm typecheck`, `grep …`) — scribe jej nie uruchomi; krok człowieka idzie do Operator checklist'])
+    [`IU-1: Weryfikacja „typecheck przechodzi bez błędów” bez komendy w backtickach z listy, którą uruchamia scribe (${KOMENDY_CLI.join(', ')}, grep, rg, ls, test, ./skrypt, *.sh, *.mjs) — krok człowieka idzie do Operator checklist`])
+  for (const komenda of ['`tsc`', '`supabase test db`', '`psql "$SUPABASE_E2E_DB_URL" -c "select 1"`', '`./e2e/sprawdz.sh`', '`node skrypty/x.mjs`']) {
+    assert.deepEqual(sprawdz(zmien(typecheck, `- ${komenda} przechodzi\n\n### Faza 2`)).bledy, [], komenda)
+  }
+  assert.equal(sprawdz(zmien(typecheck, '- `test-utils.ts` istnieje\n\n### Faza 2')).bledy.length, 1)
   const runner = '- [E2E] `e2e/run-all.sh` — wszystkie flow zielone'
   assert.deepEqual(sprawdz(zmien(runner, '- [E2E] `publikacja-oferty` — oferta opublikowana')).bledy,
     ['IU-2: Weryfikacja [E2E] „`publikacja-oferty` — oferta opublikowana” — tylko runner .sh w backtickach, niebędący scenariuszem'])
@@ -209,11 +214,13 @@ test('znacznik [E2E], [Manual], Operator: albo [P2] w tresci pozycji jest odrzuc
   assert.match(oper.join('\n'), /IU-2: .* zawiera znacznik \[E2E\]/)
 })
 
-test('problemy parsera (naglowek IU, lista wcieta) i numeracja IU z luka sa bledami walidacji', () => {
+test('problemy parsera (lista wcieta bez rodzica) i powtorzony numer IU to bledy; luka w numeracji to uwaga', () => {
   assert.match(sprawdz(zmien('- [Unit] hook dla szkicu zwraca brak oferty', '  - [Unit] hook dla szkicu zwraca brak oferty')).bledy.join('\n'),
     /IU-3: linia \d+: pole „scenariusze testowe” — pozycja poza zapisem/)
-  assert.deepEqual(sprawdz(zmien('- [ ] **IU-3: Adres publiczny oferty**', '- [ ] **IU-4: Adres publiczny oferty**')).bledy,
-    ['IU-4: numeracja IU ciągła w całym planie od IU-1, bez powtórzeń (oczekiwane IU-3)'])
+  assert.deepEqual(sprawdz(zmien('- [ ] **IU-3: Adres publiczny oferty**', '- [ ] **IU-2: Adres publiczny oferty**')).bledy,
+    ['IU-2: numer jednostki powtórzony — każda IU ma własny numer (odnośniki IU-K w zadaniach)'])
+  assert.deepEqual(sprawdz(zmien('- [ ] **IU-3: Adres publiczny oferty**', '- [ ] **IU-4: Adres publiczny oferty**')),
+    { bledy: [], uwagi: ['numeracja IU z luką albo poza kolejnością (IU-1, IU-2, IU-4) — dopuszczalne, odnośniki IU-K zostają'] })
 })
 
 test('Modyfikuj pliku tworzonego przez wczesniejsza jednostke planu przechodzi; "dzis" porownane z jej "po"', () => {
@@ -247,4 +254,28 @@ test(`prog ${PROG_ESLINT} = max-lines z szablonu ESLint (jedna liczba w budzecie
 test('frontmatter: pole sciezki zapisane jako mapa jest odrzucone', () => {
   assert.deepEqual(sprawdz(zmien('design_md: ./docs/DESIGN.md', 'design_md:\n  a: ./docs/DESIGN.md')).bledy,
     ['frontmatter: design_md — oczekiwana ścieżka albo null, jest mapa'])
+})
+
+test('Operator checklist z wiodacym [Manual] albo Operator: przechodzi; generator nie dubluje prefiksu', () => {
+  const md = zmien('- [ ] Projektant akceptuje wygląd przycisku na liście',
+    '- [ ] [Manual] QA sprawdza przycisk na iOS\n- [ ] Operator: projektant akceptuje wygląd przycisku')
+  const korzen = projekt()
+  try {
+    assert.deepEqual(sprawdzPlan(parsujPlan(md), korzen).bledy, [])
+    mkdirSync(join(korzen, 'docs/plans'), { recursive: true })
+    writeFileSync(join(korzen, 'docs/plans/2026-10-07-001-feat-x-plan.md'), md)
+    const { zadania } = zadanieZPlanu(korzen, 'docs/plans/2026-10-07-001-feat-x-plan.md', { data: '2026-10-07' }).pliki
+    assert.match(zadania, /^- \[ \] \[Manual\] QA sprawdza przycisk na iOS \(IU-2\)$/m)
+    assert.match(zadania, /^- \[ \] Operator: projektant akceptuje wygląd przycisku \(IU-2\)$/m)
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})
+
+test('pole drugi raz: zgloszony duplikat i problemy z obu wystapien w jednej walidacji', () => {
+  const md = zmien('- [Unit] hook dla szkicu zwraca brak oferty', '* [Unit] hook dla szkicu zwraca brak oferty')
+    .replace('**Weryfikacja:**\n- `pnpm typecheck` przechodzi bez błędów\n\n## Ryzyka', '**Scenariusze testowe:**\n1. [Unit] drugi\n\n**Weryfikacja:**\n- `pnpm typecheck` przechodzi bez błędów\n\n## Ryzyka')
+  const bledy = sprawdz(md).bledy.join('\n')
+  assert.match(bledy, /IU-3: linia \d+: pole „scenariusze testowe” drugi raz/)
+  assert.equal((bledy.match(/pozycja poza zapisem/g) ?? []).length, 2)
 })

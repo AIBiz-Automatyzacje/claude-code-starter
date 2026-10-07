@@ -104,7 +104,7 @@ ${TABELA}| Stwórz | \`src/b.ts\` | 0 → 10 | — | nowy |
   assert.match(p.fazy[0].iu[0].problemy.join('\n'), /linia 22: pole „pliki” drugi raz/)
 })
 
-test('listy: wcieta, z *, numerowana i kontynuacja bez wciecia sa problemami; wcieta kontynuacja doklejona', () => {
+test('listy: wciety podpunkt doklejony do pozycji; wcieta bez rodzica, *, numerowana i kontynuacja bez wciecia to problemy', () => {
   const p = parsujPlan(plan(`### Faza 1 — A
 
 **Zależy od:** Brak
@@ -112,17 +112,26 @@ test('listy: wcieta, z *, numerowana i kontynuacja bez wciecia sa problemami; wc
 - [ ] **IU-1: Pierwsza**
 
 **Scenariusze testowe:**
-- [E2E] \`flow-a\` — otwórz /a
-  → widać nagłówek
-  - [Unit] wcięty
+  - [Unit] wcięty bez rodzica
+- [Unit] krok powitalny:
+  - pusty stan
+  - błąd sieci
+  → widać komunikat
 * [E2E] \`flow-b\` — gwiazdka
 1. [Unit] numerowany
 ciąg dalszy bez wcięcia
+
+---
+
+**Operator checklist:**
+- [ ] [Manual] QA sprawdza animację
+- [ ] Operator: wgranie plików
 `))
   const iu = p.fazy[0].iu[0]
-  assert.deepEqual(iu.scenariusze.map((s) => s.tresc), ['`flow-a` — otwórz /a → widać nagłówek'])
+  assert.deepEqual(iu.scenariusze.map((s) => s.tresc), ['krok powitalny:; pusty stan; błąd sieci → widać komunikat'])
   assert.equal(iu.problemy.length, 4)
-  assert.ok(iu.problemy.every((x) => /pole „scenariusze testowe” — pozycja poza zapisem/.test(x)))
+  assert.ok(iu.problemy.every((x) => /pole „scenariusze testowe” — pozycja poza zapisem/.test(x)), iu.problemy.join('\n'))
+  assert.deepEqual(iu.operator, ['[Manual] QA sprawdza animację', 'wgranie plików'])
 })
 
 test('tabela plikow: \\| w komorce nie przesuwa kolumn, dwa pliki w komorce to problem', () => {

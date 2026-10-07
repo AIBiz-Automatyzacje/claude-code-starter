@@ -23,8 +23,12 @@ const PLIK_TESTU = /(?:\.(?:test|spec)\.[cm]?[jt]sx?$|__tests__\/)/
 const SEED = /^e2e\/seeds\/[\w.-]+-seed\.sql$/
 // Tokeny, po ktorych grepy konsumentow licza i wykluczaja linie zadan (precheck, tester, scribe, completion-gate, execute=done).
 const ZNACZNIKI = /\[(?:E2E|Manual|Unit)\]|Operator:|\[P[123]\]/
-// Kategorie CLI i Grep scribe'a review-wf (bookkeeping "Weryfikacja:"): pozycja bez nich zostaje "klasyfikacja niejasna".
-const KOMENDA_CLI = /`(?:bun|npm|npx|pnpm|yarn|make|tsc|vitest|cargo|pytest|ruff|eslint|grep|rg|test|ls|node)\b[^`]*`/
+// Kategorie CLI i Grep scribe'a review-wf (bookkeeping "Weryfikacja:", pkt 3): pozycja bez nich zostaje "klasyfikacja niejasna".
+// Lista CLI jest tez w prompcie scribe'a — zgodnosc pilnuje kontrakt-docs-active.test.mjs.
+export const KOMENDY_CLI = ['bun', 'npm', 'npx', 'pnpm', 'yarn', 'make', 'node', 'tsc', 'vitest', 'cargo', 'pytest', 'ruff', 'eslint',
+  'supabase', 'psql', 'deno', 'curl', 'wc', 'git', 'bash', 'sh']
+const KOMENDY_GREP = ['grep', 'rg', 'ls', 'test']
+const KOMENDA = new RegExp(`\`(?:(?:${[...KOMENDY_CLI, ...KOMENDY_GREP].join('|')})(?=[\\s\`])|\\./|[^\`\\s]+\\.(?:sh|mjs)\\b)[^\`]*\``)
 
 /** @param {Plan} plan @param {string} projekt @param {Wynik} w */
 function frontmatter(plan, projekt, w) {
@@ -58,14 +62,17 @@ function struktura(plan, jednostki, w) {
   })
   if (!plan.fazy.length && !plan.bezFazy.length) w.bledy.push('plan bez faz i Implementation Units')
   for (const iu of plan.bezFazy) w.bledy.push(`${iu.id}: jednostka poza nagłówkiem „### Faza N — nazwa”`)
-  jednostki.forEach((iu, i) => {
-    if (iu.numer !== i + 1) w.bledy.push(`${iu.id}: numeracja IU ciągła w całym planie od IU-1, bez powtórzeń (oczekiwane IU-${i + 1})`)
-  })
+  const powtorzone = jednostki.filter((iu, i) => jednostki.findIndex((j) => j.numer === iu.numer) !== i)
+  for (const iu of powtorzone) w.bledy.push(`${iu.id}: numer jednostki powtórzony — każda IU ma własny numer (odnośniki IU-K w zadaniach)`)
+  if (jednostki.some((iu, i) => iu.numer !== i + 1) && !powtorzone.length) {
+    w.uwagi.push(`numeracja IU z luką albo poza kolejnością (${jednostki.map((iu) => iu.id).join(', ')}) — dopuszczalne, odnośniki IU-K zostają`)
+  }
 }
 
 /** @param {Jednostka} iu @param {Wynik} w */
 function znaczniki(iu, w) {
-  const teksty = [...iu.scenariusze.map((s) => s.tresc), ...iu.weryfikacja.filter((v) => !/^\[Manual\]/.test(v.tresc)).map((v) => v.tresc), ...iu.operator,
+  const teksty = [...iu.scenariusze.map((s) => s.tresc), ...iu.weryfikacja.filter((v) => !/^\[Manual\]/.test(v.tresc)).map((v) => v.tresc),
+    ...iu.operator.map((o) => o.replace(/^\[Manual\]\s*/, '')),
     ...iu.pliki.flatMap((p) => [p.sciezka, p.akcja, p.wymiary, p.werdykt]), iu.nazwa]
   for (const t of teksty) {
     const m = ZNACZNIKI.exec(t)
@@ -126,9 +133,9 @@ function weryfikacja(iu, flowy, w) {
       else if (flowy.has(runner.replace(/^.*\//, '').replace(/\.sh$/, ''))) {
         w.bledy.push(`${iu.id}: Weryfikacja [E2E] \`${runner}\` to scenariusz z linii [E2E] — drugi przebieg tego samego flow`)
       }
-    } else if (!KOMENDA_CLI.test(v.tresc)) {
-      w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” bez komendy w backtickach (\`pnpm typecheck\`, \`grep …\`) — scribe jej`
-        + ' nie uruchomi; krok człowieka idzie do Operator checklist')
+    } else if (!KOMENDA.test(v.tresc)) {
+      w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” bez komendy w backtickach z listy, którą uruchamia scribe`
+        + ` (${KOMENDY_CLI.join(', ')}, ${KOMENDY_GREP.join(', ')}, ./skrypt, *.sh, *.mjs) — krok człowieka idzie do Operator checklist`)
     }
   }
 }

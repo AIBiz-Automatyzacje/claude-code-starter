@@ -20,6 +20,7 @@ const POLA_LISTY = ['scenariusze testowe', 'weryfikacja', 'operator checklist']
 const POLA_OPISU = ['cel', 'podejscie', 'notatka wykonawcza']
 const SEPARATOR_KOMOREK = /(?<!\\)\|/
 const ZAPIS_SEEDA = /\(seed:\s*(e2e\/seeds\/[^\s)]+)/
+const SEPARATOR = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/
 
 /** @param {string} s @returns {string} */
 export function bezOgonkow(s) {
@@ -81,7 +82,8 @@ function polePliki(linie, problemy) {
 }
 
 /**
- * Pozycje listy w kolumnie 0 (`- tresc`, `- [ ] tresc`); wcieta linia tekstu = kontynuacja poprzedniej pozycji.
+ * Pozycje listy w kolumnie 0 (`- tresc`, `- [ ] tresc`); wcieta linia tekstu albo wciety podpunkt = kontynuacja poprzedniej pozycji
+ * (konsument dostaje jedna linie checkboxa).
  * @param {Linia[]} linie
  * @param {string} nazwaPola
  * @param {string[]} problemy
@@ -93,10 +95,11 @@ function pozycje(linie, nazwaPola, problemy) {
   for (const l of linie) {
     if (!l.tekst.trim()) continue
     const p = l.kod ? null : /^-\s+(?:\[[ x]\]\s+)?(.*)$/.exec(l.tekst)
+    const podpunkt = /^\s+(?:[-*+]|\d+[.)])\s+(.*)$/.exec(l.tekst)
     if (p) wynik.push(p[1].trim())
-    else if (!l.kod && wynik.length && /^\s+\S/.test(l.tekst) && !/^\s+(?:[-*+]|\d+[.)])\s/.test(l.tekst)) {
-      wynik[wynik.length - 1] += ` ${l.tekst.trim()}`
-    } else {
+    else if (!l.kod && wynik.length && podpunkt) wynik[wynik.length - 1] += `; ${podpunkt[1].trim()}`
+    else if (!l.kod && wynik.length && /^\s+\S/.test(l.tekst)) wynik[wynik.length - 1] += ` ${l.tekst.trim()}`
+    else {
       problemy.push(`linia ${l.nr}: pole „${nazwaPola}” — pozycja poza zapisem \`- \` w kolumnie 0 (lista wcięta, *, numerowana, blok kodu albo kontynuacja bez wcięcia): „${l.tekst.trim().slice(0, 60)}”`)
     }
   }
@@ -113,8 +116,9 @@ function scenariusz(pozycja, problemy) {
 }
 
 /**
- * Pola jednostki: klucz → wartosc z linii pola i linie do nastepnego pola. Nieznane pogrubione pole konczy biezace
- * (adnotacje dopisane przy wykonaniu nie trafiaja do Weryfikacji); znane pole drugi raz to problem, nie nadpisanie.
+ * Pola jednostki: klucz → wartosc z linii pola i linie do nastepnego pola. Nieznane pogrubione pole i separator `---`
+ * koncza biezace (adnotacje dopisane przy wykonaniu nie trafiaja do Weryfikacji); znane pole drugi raz to problem —
+ * jego linie doklejone do pierwszego wystapienia, zeby problemy obu wyszly w jednej walidacji.
  * @param {Linia[]} linie
  * @param {string[]} problemy
  * @returns {Map<string, { wartosc: string, linie: Linia[] }>}
@@ -126,11 +130,14 @@ function polaBloku(linie, problemy) {
   let biezace = null
   for (const l of linie) {
     const p = l.kod ? null : pole(l.tekst)
-    if (p && POLA_IU.has(p.klucz)) {
-      if (pola.has(p.klucz)) problemy.push(`linia ${l.nr}: pole „${p.klucz}” drugi raz w tej jednostce — połącz w jedno`)
+    const poprzednie = p ? pola.get(p.klucz) : undefined
+    if (p && poprzednie) {
+      problemy.push(`linia ${l.nr}: pole „${p.klucz}” drugi raz w tej jednostce — połącz w jedno`)
+      biezace = poprzednie
+    } else if (p && POLA_IU.has(p.klucz)) {
       biezace = { wartosc: p.wartosc, linie: [] }
       pola.set(p.klucz, biezace)
-    } else if (p) biezace = null
+    } else if (p || (!l.kod && SEPARATOR.test(l.tekst))) biezace = null
     else if (biezace) biezace.linie.push(l)
   }
   return pola
@@ -155,7 +162,7 @@ export function jednostka(naglowek, linie) {
     pliki,
     scenariusze: scen.map((s) => scenariusz(s, problemy)),
     weryfikacja: wer.map((t) => ({ tresc: t.replace(/^\[E2E\]\s*/, ''), e2e: /^\[E2E\]/.test(t) })),
-    operator: oper,
+    operator: oper.map((o) => o.replace(/^Operator:\s*/, '')),
     opis: POLA_OPISU.map((k) => [pola.get(k)?.wartosc ?? '', ...(pola.get(k)?.linie ?? []).map((l) => l.tekst)].join('\n')).join('\n'),
     problemy,
   }

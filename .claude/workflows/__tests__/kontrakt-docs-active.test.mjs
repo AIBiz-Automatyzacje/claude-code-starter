@@ -18,6 +18,7 @@ import assert from 'node:assert/strict'
 
 import { wycinkiZadania } from '../../scripts/dossier/zadanie.mjs'
 import { sciezkaPlanu } from '../../scripts/dossier/dokumenty.mjs'
+import { KOMENDY_CLI } from '../../scripts/plan/walidacja-planu.mjs'
 import { zadanieZPlanu } from '../../scripts/plan/zadanie.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
@@ -193,4 +194,9 @@ test('kazdy plik zadania zaczyna sie od naglowka, galezi i daty aktualizacji', (
   for (const tresc of [planZadania, kontekst, zadania]) {
     assert.match(tresc, /^# .+\n\nBranch: `feature\/publikacja-ofert`\nOstatnia aktualizacja: 2026-10-07\n/)
   }
+})
+
+test('scribe uruchamia kazda komende, ktora walidacja planu przyjmuje w Weryfikacji (inaczej "klasyfikacja niejasna")', () => {
+  const lista = literal(review, '   - CLI (', '): uruchom komende')
+  for (const komenda of KOMENDY_CLI) assert.match(lista, new RegExp(`(?:^|[\\s,(])${komenda}(?=[\\s,)]|$)`), `scribe bez ${komenda}`)
 })

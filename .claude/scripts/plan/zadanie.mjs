@@ -100,7 +100,7 @@ function checkboxyIu(iu) {
     ...iu.weryfikacja.map((w) => `- [ ] Weryfikacja: ${w.e2e ? '[E2E] ' : ''}${w.tresc}`), '',
   ]
   const operator = [
-    ...iu.operator.map((o) => `- [ ] Operator: ${o} (${iu.id})`),
+    ...iu.operator.map((o) => `- [ ] ${/^\[Manual\]/.test(o) ? '' : 'Operator: '}${o} (${iu.id})`),
     ...iu.scenariusze.filter((s) => s.typ === 'Manual').map((s) => `- [ ] [Manual] ${s.tresc} (${iu.id})`),
   ]
   return { linie, operator }

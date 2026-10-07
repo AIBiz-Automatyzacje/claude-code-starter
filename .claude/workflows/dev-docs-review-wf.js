@@ -634,13 +634,13 @@ ${JSON.stringify(obalone || [], null, 2)}
    + kopia do "## Operator checklist faza ${faza}" (format "- [ ] Operator: ...", [E2E] -> [Manual]; bez duplikatu).
    BRAK FINDINGU NIE JEST DOWODEM PASS).
    Linie bez markera [E2E] klasyfikujesz po tresci, od gory, pierwsza pasujaca kategoria wygrywa:
-   - CLI (bun run, npm run, pnpm, yarn, make, tsc, vitest, bun test, cargo, pytest, ruff, eslint): uruchom komende
-     przez Bash; exit 0 -> [x]; inny kod -> [ ] z suffixem " (FAIL: <skrot bledu>)" i finding P2.
+   - CLI (bun, npm, npx, pnpm, yarn, make, node, tsc, vitest, cargo, pytest, ruff, eslint, supabase, psql, deno, curl, wc, git,
+     bash, sh, ./x, *.sh, *.mjs): uruchom komende przez Bash; exit 0 -> [x]; inny kod -> [ ] z suffixem " (FAIL: <skrot bledu>)" i finding P2.
    - Grep / istnienie pliku (grep, rg, test -f, ls, "brak referencji do", "plik istnieje", "import nie istnieje"):
      uruchom; PASS -> [x]; FAIL -> [ ] z suffixem " (FAIL)" i finding P2.
    - E2E browser bez markera (URL, agent-browser, "viewport", "kliknij", "screenshot", 🌐): jak [E2E] wyzej.
    - Manual ("recznie", "operator", "symulator", "device", "emulator", "QA", "tester czlowiek"): [ ] z suffixem
-     " — wymaga operatora (checklist)"; to oczekiwana reczna weryfikacja, bez findingu.
+     " — wymaga operatora (checklist)", bez findingu.
    - Niejasne (nic nie pasuje): [ ] z suffixem " — klasyfikacja niejasna, wymaga recznej decyzji" i finding P3
      z notatka dla planisty: "checkbox nieautomatyzowalny — przenies do Operator checklist albo przeformuluj na CLI/E2E".
    Checkboxy spoza fazy ${faza} zostawiasz bez zmian.
