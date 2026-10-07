@@ -1,0 +1,63 @@
+P12 sesja 5 — decyzje po ślepym teście builderów (2 fazy) — wersja po recenzji subagenta (9 uwag, wszystkie przyjęte)
+Źródło liczb: dane/test-review/p12-wynik.txt (+ .json), oceny sędziego ~/test-review/wyniki/<et>/p12-sedzia-p1.json.
+Drzewa .claude: pilot f-1de5a4c na nowym 7bdab43 (D10 z c7598cf, przed u7); f-b8374c8 na e1d0810 (D10 po u7 dfca1e2). u7 zmienia dobór
+tylko dla IU-15 pilota (UI z hookiem: 5 zdań zamiast 7, bez pominiętych) — tam nie było klucza różnicującego; IU-14 dostaje po u7 te same
+7 klas i tak samo traci 2, więc wynik K8/K11 obowiązuje dla formy po u7.
+
+1. Wynik zbiorczy (18 kluczy, czułość sędziego 18/18 na kodzie historycznym)
+   O/Z/B (obecny / zapobieżony / brak odpowiednika): stary 9/8/1, nowy 8/10/0.
+   klucz 2: stary 5/3/1, nowy 5/4/0 | klucz 1: stary 4/5/0, nowy 3/6/0
+   grupy: D10 stary 3/2/0, nowy 2/3/0 | pokryte 3/3/0 = 3/3/0 | inne 3/3/1 → 3/4/0
+   Różnice w parach: tylko nowy 2 — f-1de5a4c K8 (bramka-czarna-lista, `ALLOWED_LINK_PROTOCOLS`; ruch ze zdania D10 — jedyny zysk
+   z widocznym mechanizmem) i f-b8374c8 K5 (cache-i-zapytania, klasa pokryta regułami — bez mechanizmu różnicującego, wariancja);
+   tylko stary 1 — f-1de5a4c K11 (test-niefalsyfikowalny, pokryta — wariancja; merytorycznie dopasowanie-tekstu, zdanie ucięte limitem).
+   f-b8374c8 K3 u starego BRAK_ODPOWIEDNIKA = stary nie zbudował tras favicon/logo — różnica zakresu, nie zapobieżenie.
+   NETTO na kluczu: +1 (K8); reszta na poziomie szumu jednego przebiegu.
+   Review z main (P1/P2): pilot 6 → 5, f-b8374c8 14 (P1 1) → 12 (P1 0); razem 20 → 17 = „nie wyżej” (2 fazy × 1 przebieg review — w wariancji).
+   Koszt buildu 7,89 → 7,62 M (−3%), ctx_start buildera śr. 39,3k → 36,2k (−8%), review 3,86 → 4,05 M (+5%, ten sam review z main —
+   wariancja wyniku buildu). Czas buildu 62,3 / 63,6 min.
+   Przestrzeganie nowego (6 builderów): coding-rules Read 6/6 (bez drugiego odczytu przez załącznik paths:), D10 w prompcie 6/6,
+   granice 6/6, vitest related / na plikach 6/6, statusy completed 6/6, resources 0 odczytów u obu wariantów.
+   Regresja (n = 1): pilot, nowy builder fullstack IU-14 usunął z `offer-origin-pages.test.ts` blok „rozgałęzienie po originie (Z3)”
+   z 2 działającymi testami, choć funkcja istnieje — wbrew regule „test usuwasz razem z funkcjonalnością” (coding-rules, Testowanie);
+   bramka `testyUsuniete` domknięcia blok przywróciła. Stary 0 usunięć w obu fazach, nowy w f-b8374c8 0. Do tego domknięcie nowego
+   w pilocie naprawiało `App.test.tsx` po zmianie z IU-16 (nowy builder biegnie `vitest related`, stary pełny zestaw w 4/4).
+
+2. Przypisanie kluczy różnicujących do plików builderów (IU z polem Pliki obejmującym plik klucza)
+   feature-builder-fullstack: K8 + / K11 − (oba IU-14)
+   feature-builder-ui:        K5 (+, wariancja) i K3 (różnica zakresu) — oba w IU-5, który jest w całości kodem serwera
+                              (strony originu ofert), więc test nie mówi nic o buildzie UI na kodzie UI
+   feature-builder-data:      bez kluczy różnicujących (IU-13 pilota)
+   Wniosek: pliki niezróżnicowane — brak straty w żadnym. Warianty -figma = ta sama treść; w teście szły -figma bez MCP.
+
+3. D10 — co pokazał test
+   Zdanie klasy w prompcie i klucz tej klasy: K8 bramka-czarna-lista (tylko nowy Z), K3 pii (oba Z), K5 sciezka-bledu (oba Z) — pilot;
+   f-b8374c8 K6 zaufanie-danym-klienta (oba O): `readClientKey` z XFF (app.ts) i podpięcie nowych tras publicznych pod stary limiter
+   leżą w `app.ts`, który jest w polu Pliki IU-4 i IU-5; zdanie było w prompcie obu i pasowało do defektu — „zdanie było, defekt jest”
+   (pierwszy punkt danych pod próg P16).
+   Wypieranie przez limit jest cechą stałą, nie przypadkiem: bez wiedzy projektu wszystkie klasy mają liczbę 0, kolejność ustala
+   szerokość globu, IU serwerowy ma 9 kandydatów (≈ 2330 zn), 7 zdań zajmuje ≈ 1815 zn, a dwa z globem KOD — dopasowanie-tekstu (pierwsze
+   w tabeli częstości ETAP1B) i wyscig-i-wspolbieznosc — wypadają zawsze. Oba opisują defekty, które zostały u obu wariantów:
+   f-b8374c8 K2 (`nowMs` sprzed `await`, IU-4) i pilot K11 (`includes` bez normalizacji, IU-14).
+   Reżim testu: kopie bez przekonwertowanej wiedzy (wpisy 0) — blok = same zdania D10. W projekcie po konwersji (kopia _smoke-P11,
+   38 reguł; `node <szablon>/.claude/scripts/wiedza/wiedza.mjs wycinek --zapobieganie --pliki <pole Pliki IU>` w katalogu kopii)
+   reguły projektu dopasowane do IU: 13–18, z czego mieszczą się 4 (1783–1902 zn z 2000) — limit głodzi najpierw reguły projektu (P10),
+   a D10 dostaje 0 zdań we wszystkich 6 IU obu faz. D10 w obecnym kształcie działa więc w projektach młodych (mało reguł);
+   jego skutek da się zmierzyć tylko tam. Fixture smoke'a (packages/smoke-autopilot) — 2 zdania, 593 zn (limitu nie sprawdzi).
+
+4. Decyzje (rekomendacja Claude'a, recenzja: zgoda, żadna uwaga nie zmienia decyzji)
+   (a) Wszystkie pliki builderów zostają (data, ui, fullstack + -figma): brak straty na kluczu w żadnym pliku (netto +1), P1/P2 review
+       nie wyżej (20 → 17), koszt buildu −3%, ctx_start −8%. Kryterium merge'a z 6a pkt 70 (g) spełnione. Odwrót per plik — bez podstaw.
+   (b) coding-rules z paths: zostaje (builder czyta raz). Reguła o usuwaniu testów bez zmian — tekst jest jednoznaczny, a jedyny
+       przypadek złapała bramka; smoke odczytuje `testyUsuniete` domknięcia (smoke_p12.py), P16 — telemetria trafień tej bramki.
+   (c) D10 zostaje w formie po u7 (dfca1e2), bez dalszych zmian w P12. Odrzucone teraz: `continue` zamiast `break` (zostaje 185 zn —
+       mniej niż każde zdanie), skrócenie zdań (zmienia treść jedynego zdania z mechanizmem — K8), inna kolejność (dopasowanie do tej
+       samej próbki — zarzut jak przy u7). Pierwsza opcja do P16: osobny limit D10 (np. 2500 zn obok 2000 na reguły projektu; ≈ 650 tok.
+       na IU, < 2% ctx_start; zmienia zapis planu „≤ 2k razem” i testy zapobieganie/wiedza-cli).
+   (d) Do P16 — metoda pomiaru: dobór zdań D10 liczony WSTECZ z pola Pliki planu i stanu docs/solutions na commicie fazy (bez nowego
+       pola w rekordzie buildera); próg „klasa ze zdaniem nadal ≥ 3 B P1/P2 w oknie 5 PR” tylko na projektach z małą liczbą reguł —
+       w oferty-online zdań nie ma (pkt 3). Limit wspólny 2000 zn (reguły projektu 4 z 13–18 dopasowanych) — sprawa P10/P16; ctx_start
+       buildera −8% zostawia miejsce w progu „+10% → skrócić wycinek”.
+   (e) Poza zasięgiem testu (smoke i P16): fixer (klasa-naprawiacz) z regułami przez paths: — test ucięty przed Verify/fix; sprawdza
+       smoke (kryterium smoke_p12: fix z odczytem reguł); IU danych z migracją, RLS albo seedem — obie fazy bez migracji, klasy
+       migracja-bazy i seed-e2e nietestowane (fixture smoke'a ma tylko edycję migracji jako defekt bramki); -figma z działającym MCP.

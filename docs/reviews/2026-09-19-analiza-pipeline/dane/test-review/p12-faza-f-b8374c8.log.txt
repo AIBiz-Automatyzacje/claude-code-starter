@@ -1,3 +1,48 @@
+=== f-b8374c8 build stary (08:07)
+f-b8374c8 stary: kopia nietknięta na bazie c349bd1836 — zostaje
+f-b8374c8 stary: nakladka stary — agenci 23, ukryte zmiany 74, nowe 0
+f-b8374c8 p12-build stary: sesja 26a0bdd8-932d-5fd3-ace0-056f8172f984 zakończona kodem 0
+f-b8374c8: uprawnienia przywrócone
+f-b8374c8 p12-build stary: run wf_3d686d28-e17 status completed, findingów 0
+skan f-b8374c8 p12-build stary: STOP 0, przeciek 1, uwagi 0
+  PRZECIEK build:IU-4: ['Bash {"command": "S=/private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-p12-kopie-f-b8374c8-stary/26a0bdd8-932d-5fd3-ace0-056f8172f98']
+PRZERWANE: f-b8374c8 p12-build stary (kod 4)
+f-b8374c8 p12-build stary: zrobiony, skan 0 — pomijam
+f-b8374c8 stary: /tmp/cc-socks → stary-pliki/tmp-build
+f-b8374c8 stary: /tmp/f2-build.log → stary-pliki/tmp-build
+f-b8374c8 stary: /tmp/f2-tc.log → stary-pliki/tmp-build
+f-b8374c8 stary: /tmp/f2-test.log → stary-pliki/tmp-build
+f-b8374c8 stary: HEAD f044def45c, commity 1, status 0 linii, bramki tak, dossier 33 plików
+=== f-b8374c8 build nowy (08:36)
+f-b8374c8 nowy: kopia nietknięta na bazie c349bd1836 — zostaje
+f-b8374c8 nowy: nakladka nowy — agenci 23, ukryte zmiany 108, nowe 0
+f-b8374c8 p12-build nowy: sesja 48f641d9-3ab9-59e2-954d-5f605ea0103d zakończona kodem 0
+f-b8374c8: uprawnienia przywrócone
+f-b8374c8 p12-build nowy: run wf_1d646b07-2df status completed, findingów 0
+skan f-b8374c8 p12-build nowy: STOP 0, przeciek 1, uwagi 0
+  PRZECIEK build:IU-5: ['Bash {"command": "pnpm --filter @oferty/server run build 2>&1 | tail -2; SP=/private/tmp/claude-501/-Users-kacper-trzepiecinski-test-review-p12-k']
+PRZERWANE: f-b8374c8 p12-build nowy (kod 4)
+f-b8374c8 p12-build stary: zrobiony, skan 0 — pomijam
+f-b8374c8 p12-build nowy: zrobiony, skan 0 — pomijam
+f-b8374c8 nowy: /tmp/cc-socks → nowy-pliki/tmp-build
+f-b8374c8 nowy: HEAD 7ac04b44c1, commity 1, status 0 linii, bramki tak, dossier 32 plików
+=== f-b8374c8 review stary (09:03)
+f-b8374c8 stary: nakladka stary — agenci 23, ukryte zmiany 74, nowe 0
+f-b8374c8 p12-review stary: sesja 350a719b-f6aa-56cd-b74c-0cee5ece3b54 zakończona kodem 0
+f-b8374c8 p12-review stary: run wf_eb553d85-064 status completed, findingów 21
+skan f-b8374c8 p12-review stary: STOP 0, przeciek 0, uwagi 2
+  dedup:semantyczny: agent haiku wołał narzędzia ['Read']
+  review:correctness: zapis Bashem poza kopią ['cp ']: cd /Users/kacper_trzepiecinski/test-review/p12-kopie/f-b8374c8/stary/apps/server; cat > /private/tmp/claude-501/-Users-k
+=== f-b8374c8 review nowy (09:09)
+f-b8374c8 nowy: nakladka stary — agenci 23, ukryte zmiany 74, nowe 0
+f-b8374c8 p12-review nowy: sesja 0897f5db-b45f-5ac8-a79c-8abfd203ab32 zakończona kodem 0
+f-b8374c8 p12-review nowy: run wf_c150873c-349 status completed, findingów 23
+skan f-b8374c8 p12-review nowy: STOP 0, przeciek 0, uwagi 1
+  dedup:semantyczny: agent haiku wołał narzędzia ['Read']
+f-b8374c8: K 8 (w zakresie), implementacje A 27 plików/4495 linii, B 28 plików/4483 linii, C 22 plików/2182 linii, prompt 7734 zn
+f-b8374c8 p12-sedzia-p1 S: sesja 0c1d85b7-73e9-50fc-b56b-7b14f52bcf36 zakończona kodem 0
+f-b8374c8 p12-sedzia-p1 S: run wf_2dd1ea8c-8d0 status completed, findingów 0
+skan f-b8374c8 p12-sedzia-p1 S: STOP 0, przeciek 0, uwagi 0
 test_review_p12_cli.py wynik — ślepy test P12 (buildery stare = main, nowe = gałąź P12; review z main ucięty przed Verify; sędzia obecności defektu, czułość = OBECNY na kodzie historycznym); koszt [M jedn.] bez sesji uruchamiających
 == f-1de5a4c: K 10 w zakresie (D10 3, pokryte 4, inne 3); czułość sędziego na kodzie historycznym 1.0; sędzia 0.18 M
   drzewa .claude: stary 81b7556, nowy 7bdab43 (gałąź przy 529408b; D10 z c7598cf, przed u7 dfca1e2)
