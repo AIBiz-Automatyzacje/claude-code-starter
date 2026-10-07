@@ -105,6 +105,9 @@ Datę do plików bierz z `date +%F`.
    - Napotkane pułapki/przypadki brzegowe
    - Dodane zależności
 
+4a. **Dopisz funkcje zadania do mapy** skilla weryfikacji projektu (przed przeniesieniem plików — skrypt czyta plan zadania z `docs/active/`):
+   `node .claude/scripts/e2e/e2e.mjs mapa --zadanie docs/active/$ARGUMENTS`. Wynik `pominieto` = projekt nie ma skilla weryfikacji (generator: `/weryfikacja-setup`); `dodane` / `zaktualizowane` = flow dopisane do `.claude/skills/weryfikacja/mapa-funkcji.md` — plik idzie do commita archiwum z pkt 7; kod 1 z `blad` wymień w podsumowaniu.
+
 5. **Utwórz podsumowanie ukończenia** w `docs/completed/$ARGUMENTS/`:
    - Przenieś wszystkie pliki z `docs/active/$ARGUMENTS/` poza `*.bak` (plan, kontekst, zadania, raporty review, known-issues, `.autopilot-state.json` — w tym ostatnim ustaw `"complete": "done"`)
    - Dodaj `[zadanie]-podsumowanie.md` zawierający:
@@ -140,7 +143,7 @@ Datę do plików bierz z `date +%F`.
 
 7. **Posprzątaj**:
    - Usuń pusty katalog `docs/active/$ARGUMENTS/`. Pliki `*.bak` (kopie robocze operatora) nie idą do archiwum: zostają w `docs/active/$ARGUMENTS/` — wymień je w podsumowaniu dla użytkownika
-   - Commit: `docs($ARGUMENTS): archiwum`
+   - Commit: `docs($ARGUMENTS): archiwum` (z mapą funkcji, gdy pkt 4a ją zmienił)
    - Potwierdź ukończenie użytkownikowi
 
 ## Format wyjściowy

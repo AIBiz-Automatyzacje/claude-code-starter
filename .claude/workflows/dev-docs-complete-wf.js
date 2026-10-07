@@ -59,13 +59,18 @@ const DOPISEK_RESULT = {
 // Bot recenzji odmowil PR-a z 222 plikami (ETAP1 §5) — prog z zapasem; przekroczenie to UWAGA, nie STOP.
 const PROG_PLIKOW_PR = 150
 
+// Mapa funkcji skilla weryfikacji projektu (P14): archiwizacja dopisuje do niej funkcje ze scenariuszy [E2E] zadania.
+// Kopia PLIK_MAPY z .claude/scripts/e2e/weryfikacja.mjs (workflowy sa self-contained) — test rownosci w start-koniec.test.mjs.
+const MAPA_FUNKCJI = '.claude/skills/weryfikacja/mapa-funkcji.md'
+
 // Pathspec git add: wylacznie sciezki z tej listy. *.bak to kopie robocze operatora (np. stanu przed reczna edycja) —
-// nie wchodza do archiwum. Wyjscia compound (solution, indeks wiedzy) przychodza z autopilota.
+// nie wchodza do archiwum. Wyjscia compound (solution, indeks wiedzy) przychodza z autopilota. Mapa funkcji jest na liscie
+// zawsze; w projekcie bez skilla weryfikacji agent pomija ja jak kazda nieistniejaca sciezke (krok 8).
 function pathspecArchiwum(nazwaZadania, smokePlik, dodatkowe) {
   return [
     `docs/active/${nazwaZadania}`, `docs/completed/${nazwaZadania}`,
     ...(smokePlik ? [smokePlik, 'docs/operator'] : []),
-    'docs/decisions', ...dodatkowe, "':(exclude,glob)**/*.bak'",
+    'docs/decisions', ...dodatkowe, MAPA_FUNKCJI, "':(exclude,glob)**/*.bak'",
   ].join(' ')
 }
 
@@ -222,6 +227,10 @@ Kroki (zgodnie ze skillem):
 1. Zlokalizuj docs/active/${nazwaZadania}/.
 2. Zweryfikuj ukonczenie (czytaj *-zadania.md wg puli z kroku 2 skilla). Jesli zostaly nieukonczone — i tak archiwizuj (tryb autopilota), ale wypisz je w rezultaty.
 3. Wyciagnij kluczowe wnioski z *-kontekst.md.
+3a. Mapa funkcji (przed krokiem 4 — skrypt czyta plan zadania z docs/active/):
+   \`node .claude/scripts/e2e/e2e.mjs mapa --zadanie docs/active/${nazwaZadania}\`. JSON z \`pominieto\` (projekt bez skilla
+   weryfikacji), z \`dodane\`/\`zaktualizowane\` (flow dopisane do ${MAPA_FUNKCJI}) albo kod 1 z \`blad\` — w kazdym przypadku
+   jedna linia w rezultaty i archiwizacja idzie dalej.
 4. Przenies wszystkie pliki poza *.bak do docs/completed/${nazwaZadania}/ przez zwykle \`mv\` (NIE \`git mv\`, NIE \`git rm\` —
    pathspec w kroku 8 zaklada, ze wpisy docs/active/ sa nadal w indeksie) + dodaj ${nazwaZadania}-podsumowanie.md
    (data ukonczenia, co dostarczono, kluczowe decyzje, glowne pliki, wnioski${podsumowanieSmoke}).

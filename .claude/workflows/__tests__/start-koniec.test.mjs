@@ -13,6 +13,8 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { PLIK_MAPY } from '../../scripts/e2e/weryfikacja.mjs'
+
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 
 /**
@@ -206,11 +208,23 @@ test('pathspec archiwum: katalogi zadania, smoke, decyzje i wyjscia compound; be
   }
   assert.ok(!p.includes('CLAUDE.md'))
   assert.ok(p.includes("':(exclude,glob)**/*.bak'"), 'kopie robocze operatora nie wchodza do archiwum')
-  assert.deepEqual(p.split(' ').filter((/** @type {string} */ s) => s.startsWith('.claude/')), [], 'wiedza projektu lezy w docs/, archiwum nie dotyka .claude/')
+  // Zmiana kontraktu (P14 S2): jedynym plikiem .claude/ w archiwum jest mapa funkcji skilla weryfikacji projektu.
+  assert.deepEqual(p.split(' ').filter((/** @type {string} */ s) => s.startsWith('.claude/')), [PLIK_MAPY], 'wiedza projektu lezy w docs/; z .claude/ tylko mapa funkcji')
 })
 
 test('pathspec archiwum bez smoke i bez compound', () => {
-  assert.equal(C.pathspecArchiwum('zadanie-x', '', []), "docs/active/zadanie-x docs/completed/zadanie-x docs/decisions ':(exclude,glob)**/*.bak'")
+  assert.equal(C.pathspecArchiwum('zadanie-x', '', []), `docs/active/zadanie-x docs/completed/zadanie-x docs/decisions ${PLIK_MAPY} ':(exclude,glob)**/*.bak'`)
+})
+
+test('archiwizacja dopisuje funkcje zadania do mapy przed przeniesieniem folderu; skill dev-docs-complete ma ten sam krok', () => {
+  const kroki = complete.slice(complete.indexOf('Kroki (zgodnie ze skillem):'))
+  const mapa = kroki.indexOf('node .claude/scripts/e2e/e2e.mjs mapa --zadanie docs/active/${nazwaZadania}')
+  assert.ok(mapa > 0, 'brak kroku mapy funkcji w poleceniu archiwizacji')
+  assert.ok(mapa < kroki.indexOf('4. Przenies'), 'mapa czyta plan zadania z docs/active/ — przed przeniesieniem')
+  assert.ok(complete.includes(`const MAPA_FUNKCJI = '${PLIK_MAPY}'`), 'kopia sciezki mapy w complete-wf = PLIK_MAPY')
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.ok(skill.indexOf('e2e.mjs mapa --zadanie docs/active/$ARGUMENTS') > 0)
+  assert.ok(skill.indexOf('e2e.mjs mapa') < skill.indexOf('5. **Utwórz podsumowanie'), 'w skillu mapa przed przeniesieniem plikow')
 })
 
 test('komunikat commita archiwizacji', () => {
