@@ -142,10 +142,18 @@ def _slug_zadania(et):
     return re.sub(r'^-+|-+$', '', re.sub(r'[^A-Za-z0-9]+', '-', 'docs/active/' + faza(et)['zadanie']))
 
 
+def przyszle(et):
+    """Commity baza..sha fazy (do sprawdzenia, że kopia ich nie ma) — z pliku, bo w trakcie buildu kopia historyczna ma chmod 000."""
+    p, f = os.path.join(P12, et, 'przyszle.json'), faza(et)
+    if not os.path.exists(p): _json(p, _g(f['kopia_fazy'], 'rev-list', '%s..%s' % (f['baza'], f['sha'])).split())
+    return _json(p)
+
+
 def zamknij(et, w):
     """Na czas buildu <w>: drugi wariant i kopia historyczna niedostępne dla procesu (Bash omija deny Read, a ../ i cd nie da się
     wiarygodnie wyłapać regexem). Tryby zapisane, `otworz` je przywraca."""
     inny = [x for x in P.WARIANTY if x != w][0]
+    przyszle(et)   # lista zapisana, zanim kopia historyczna się zamknie (skan kroku jej potrzebuje)
     cele = [kopia(et, inny), pliki(et, inny), faza(et)['kopia_fazy']]
     tryby = {c: os.stat(c).st_mode & 0o7777 for c in cele if os.path.exists(c)}
     _json(os.path.join(P12, et, 'zamkniete.json'), tryby)
@@ -271,8 +279,8 @@ def skan(et, krok, w):
             if v: (przeciek if k == 'przeciek' else stop).append('%s %s: %s' % (k.upper(), e, v[:2]))
     if krok in ('p12-build', 'p12-review'):
         cel = kopia(et, w)
-        przyszle = P.przyszle_w_kopii(cel, _g(f['kopia_fazy'], 'rev-list', '%s..%s' % (f['baza'], f['sha'])).split())
-        if przyszle: stop.append('commity z przyszłości osiągalne w kopii: %s' % ' '.join(c[:10] for c in przyszle))
+        obecne = P.przyszle_w_kopii(cel, przyszle(et))
+        if obecne: stop.append('commity z przyszłości osiągalne w kopii: %s' % ' '.join(c[:10] for c in obecne))
         if subprocess.run(['git', '-C', cel, 'merge-base', '--is-ancestor', f['baza'], 'HEAD']).returncode: stop.append('HEAD kopii nie wyrasta z bazy buildu')
         if SK.odcisk(cel) != _json(os.path.join(P12, et, 'odcisk-%s.json' % w))['odcisk']: stop.append('nakladka .claude/CLAUDE.md zmieniona w trakcie kroku')
         if krok == 'p12-review':
