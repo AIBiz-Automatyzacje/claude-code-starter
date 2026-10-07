@@ -7,6 +7,8 @@ description: Automatyzacja przeglądarki przez CLI agent-browser. Nawigacja, for
 
 CLI do automatyzacji Chrome/Chromium przez CDP (bez Playwright/Puppeteer). Instalacja: `npm i -g agent-browser && agent-browser install`.
 
+Aplikację projektu prowadzi się według skilla weryfikacji projektu `.claude/skills/weryfikacja/SKILL.md` (gdy istnieje): uruchomienie, logowanie, trasy, dowody i mapa funkcji. Ten skill opisuje samo narzędzie.
+
 ## Setup Check
 
 ```bash
