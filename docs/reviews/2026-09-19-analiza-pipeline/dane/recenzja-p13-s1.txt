@@ -1,0 +1,269 @@
+# Recenzja P13 sesja 1 — commity 324ffd3, 8d58018 (gałąź popr/P13-planowanie)
+
+Zakres: `.claude/scripts/plan/*`, `kontrakt-docs-active.test.mjs`, zmiana plannera w `dev-docs-execute-wf.js`.
+Metoda: lektura konsumentów, 40/40 testów zielonych, generacja z fixture i z 15 realnych planów `oferty-online`
+(porównanie z historycznymi `docs/completed/*/…-zadania.md` pisanymi przez dev-docs), skan 92 planów z `~/Documents/Kodowanie`,
+plany syntetyczne z przypadkami brzegowymi, 10 mutacji kodu w kopii `.claude/` w katalogu tymczasowym.
+
+Wagi: P1 = run się wywróci albo cicho źle policzy; P2 = istotna wada; P3 = drobna.
+
+---
+
+## P1
+
+### 1. P1 — Marker `[E2E]` (oraz `Operator:`, `[P1-3]`, `[Manual]`) wewnątrz treści przenoszonej 1:1 zmienia liczniki konsumentów; walidacja i liczniki generatora tego nie widzą
+
+- **Gdzie:** `zadanie.mjs:100-107` (linie `Test: [Unit] ${s.tresc}`, `Weryfikacja: ${w.tresc}`, `- [ ] ${o} (IU-K)`), `zadanie.mjs:137` (licznik `e2e` liczony z modelu, nie z tekstu), `walidacja-planu.mjs:130-134` (sprawdza tylko marker na początku pozycji).
+- **Problem:** konsumenci liczą linie grepem `^- \[ \].*\[E2E\]` minus `Operator:|\[P[123]\]` (precheck autopilota, tester review, scribe z „REGUŁĄ ZERO”, completion-gate, smoke). Generator kopiuje treść pozycji planu bez sprawdzenia, czy zawiera te tokeny. Skutki:
+  - `[E2E]` w środku Weryfikacji, scenariusza `[Unit]` albo pozycji Operator checklist daje dodatkową linię E2E. Pozycje operatora generator pisze **bez** prefiksu `Operator:`, więc wykluczenie z grepa ich nie obejmuje.
+  - `Operator:` albo `[P2]` w treści prawdziwego `Test: [E2E]` (np. oczekiwany komunikat „Operator: brak uprawnień”) ukrywa scenariusz przed precheckiem, testerem i completion-gate. E2E cicho nie przebiega.
+  - `[Manual]` w treści `Test: [Unit]` wyrzuca checkbox z liczenia `execute=done`.
+- **Dowód:**
+  - Realny plan `oferty-online/.../2026-09-11-001-feat-faza-9c-dokumenty-prawne-plan.md:412` ma w Weryfikacji pozycję „…scenariusze `[E2E]` do uruchomienia…”. Wygenerowane zadania dają 3 linie z grepa przy 2 scenariuszach; dev-docs napisał 2.
+  - Plan syntetyczny z 0 scenariuszy E2E: Weryfikacja „`bun run typecheck` — 0 błędów; scenariusze `[E2E]` uruchamia tester” plus Operator checklist „Sprawdź scenariusz [E2E] `x` na produkcji”. `plan.mjs sprawdz` zwraca `ok:true`, `liczniki.e2e: 0`, a grep prechecku daje **2**.
+  - Skutek w runie: bez `.env.e2e` autopilot staje przed fazą 1 („zadanie deklaruje 2 scenariuszy [E2E]”). Z `.env.e2e` tester bierze flow z pierwszego backticka (`bun run typecheck`), daje SKIP, scribe robi kopię do Operatora, a completion-gate kończy się FAIL.
+- **Poprawka:**
+  - (a) Walidacja odrzuca `\[(E2E|Manual|Unit)\]` poza pozycją markera w każdej treści, która trafia do zadań (scenariusze, Weryfikacja, Operator checklist, komórki tabeli plików). Odrzuca też `Operator:` i `\[P[123]\]` w treści scenariuszy `[E2E]`.
+  - (b) Generator pisze pozycje sekcji operatora jako `- [ ] Operator: … (IU-K)`. Taki format ma już scribe, więc wykluczenie z grepów obejmie i te pozycje.
+  - (c) `liczniki` liczone z wygenerowanego tekstu tym samym grepem co konsumenci (`liczScenariuszeE2e(zadania)`). Rozjazd z liczbą scenariuszy plus runnerów to błąd generacji. To jest bilans z dev-docs Faza 2, który w skrypcie zginął.
+
+### 2. P1 — Nagłówek IU nierozpoznany (tekst po zamykającym `**`) albo `## ` w bloku kodu: jednostka cicho wsiąka w poprzednią albo przepada, walidacja przechodzi
+
+- **Gdzie:** `plan-techniczny.mjs:5` (`NAGLOWEK_IU` wymaga `**` na końcu linii), `:197-209` (linia, która nie jest nagłówkiem, idzie do bieżącego IU; `## ` zamyka IU i fazę także w środku fence'a), `:133-135` (`pola.set` nadpisuje pole o tym samym kluczu).
+- **Problem:**
+  - `- [ ] **IU-4: Nazwa** — dopisek` albo `… *(opcjonalne)*` nie jest nagłówkiem. Bloki IU-4 doklejają się do IU-3, a jego `Pliki`, `Delegate to`, `Scenariusze` i `Weryfikacja` **nadpisują** pola IU-3, bo `Map.set` zostawia ostatnią wartość.
+  - Gdy taki nagłówek otwiera fazę, jednostka przepada w całości: linie bez bieżącego IU są pomijane.
+  - Linia `## …` w bloku ``` w Podejściu zamyka IU i ustawia `faza = null`. Reszta pól jednostki i kolejne IU giną.
+  - Walidacja nie sprawdza ciągłości ani unikalności numerów IU i nie porównuje ich z liczbą wystąpień `IU-\d+` w nagłówkach.
+- **Dowód:**
+  - Plan syntetyczny z `- [ ] **IU-2: Druga** *(opcjonalna)*`: wynik parsowania to jedna jednostka IU-1 z plikami, scenariuszem i Delegate IU-2. Wiersz `Stwórz src/b.ts` z IU-1 zniknął. Gdyby IU-2 modyfikował inny istniejący plik, `sprawdz` dałby `ok:true`.
+  - Ten sam plan z blokiem ```` ```md\n## Przykład\n``` ```` w Podejściu IU-1: `ok:true`, IU-1 bez scenariuszy i bez Weryfikacji, IU-2 nie istnieje.
+  - Realne plany, w których adnotacje dopisał execute-wf (krok 4 domknięcia, `dev-docs-execute-wf.js:373` „Aktualizuj plan techniczny”): `faza-4-tracking` 5 IU zamiast 7, `siatka-heatmapy` 3 zamiast 6, `instrukcja-dla-zaproszonych` 1 zamiast 7, `faza-5-heatmapa` 0 zamiast 6, `gramywpadla/etap-16` 7 zamiast 14.
+  - Skutek w runie: w zadaniach nie ma `### IU-K`. Planner buduje IU z planu technicznego, ale domknięcie nie ma czego odhaczyć, a jednostka z cudzymi plikami dostaje cudzego buildera.
+- **Poprawka:**
+  - `NAGLOWEK_IU` toleruje dowolny tekst po `**` i separatory `:`/`—`, np. `^(?:- \[[ x]\] )?\*\*IU-(\d+):\s*(.+?)\*\*.*$` oraz `^#{3,4}\s+IU-(\d+)[:\s—–-]+(.+)$`.
+  - Parser pomija linie wewnątrz fence'ów przy wykrywaniu nagłówków i pól.
+  - Walidacja dostaje dwie reguły: numery IU 1..N bez powtórzeń oraz liczba linii pasujących do luźnego `^(?:- \[[ x]\] |#{2,4} )?\**IU-\d+` równa liczbie sparsowanych IU.
+  - Powtórzone pole w jednym IU (`Pliki` dwa razy) to błąd, a nie nadpisanie.
+
+---
+
+## P2
+
+### 3. P2 — Parser nie jest fail-closed: nieznane pola, listy wcięte, `*`/numerowane i kontynuacje bez wcięcia cicho trafiają do złego pola albo giną
+
+- **Gdzie:** `plan-techniczny.mjs:109-118` (`pozycje`: tylko `^- ` w kolumnie 0, wcięta linia bez poprzedniej pozycji przepada, kontynuacja bez wcięcia przepada), `:125-139` (`polaBloku`: nieznane `**Pole:**` dokleja się do bieżącego pola, znane pole bez pogrubienia w zwykłym zdaniu otwiera pole).
+- **Dowód:**
+  - `oferty-online/…faza-8…-plan.md`: generator daje 73 linie `Weryfikacja:`, historyczne zadania mają 33. Plan `9a` daje 70 zamiast 18, plan `9b` 93 zamiast 34. Bloki `**Korekta planu naniesiona przy wykonaniu (IU-4):**` i `**Odstępstwa wykonawcze fazy 4…:**` po Weryfikacji stają się checkboxami `Weryfikacja:`. Scribe ich nie zautomatyzuje: zostają „niejasne” z findingiem P3 w każdym review.
+  - Plan syntetyczny: `**Uwagi:**\n- notatka planisty` daje `- [ ] Weryfikacja: notatka planisty`.
+  - `**Scenariusze testowe** (uzupełnienie):\n- [Unit] e` daje `Weryfikacja: [Unit] e`.
+  - Scenariusze zapisane jako `  - [Unit] a` (realny `miter/…baiker…-plan.md`), `* [E2E] …` albo `1. [Unit] …` dają **0 scenariuszy**, w tym 0 linii `[E2E]`, a walidacja przechodzi. Scenariusz E2E znika bez śladu i completion-gate go nie zna.
+  - `**Pliki (uzupełnienie):** …` (realny `9b`, IU-12 i IU-15) nadpisuje pole Pliki.
+  - Linia kontynuacji bez wcięcia („ciąg dalszy” pod `- [Unit] …`) przepada, np. oczekiwany stan scenariusza.
+- **Poprawka:**
+  - Nieznane pogrubione pole kończy bieżące pole: zapisz je jako „ignorowane”, nie doklejaj.
+  - W polach-listach (Scenariusze, Weryfikacja, Operator checklist) każda niepusta linia, która nie jest `- ` w kolumnie 0 ani wciętą kontynuacją, to błąd walidacji z numerem linii. Plan nie przejdzie, zanim skill go poprawi.
+  - Pola wyłącznie pogrubione, tak jak w szablonie 4.2.
+
+### 4. P2 — Budżet pliku liczy surowe linie, a próg 360 pochodzi z ESLint, który pomija puste linie i komentarze; >360 to twardy błąd bez względu na wymiary
+
+- **Gdzie:** `walidacja-planu.mjs:27-30` (`liczLinie`), `:76-90`. Konfiguracja: `.claude/templates/bramki/eslint.config.szablon.ts:65` `max-lines: { max: 360, skipBlankLines: true, skipComments: true }`.
+- **Dowód:** pliki z `oferty-online` (wc -l / linie bez pustych i komentarzy): `heatmap-grid.ts` 449/208, `offer-details-page.tsx` 391/257, `use-first-steps.ts` 375/209, `use-consent.ts` 372/233. IU, które zmienia `heatmap-grid.ts` o 5 linii, musi wpisać „dziś” ≈449 (inaczej błąd rozjazdu ±20%), a wtedy „po” >360 daje błąd „zaplanuj wydzielenie”. ESLint przepuszcza ten plik z zapasem 150 linii.
+- **Poprawka:** liczyć linie jak ESLint: bez pustych i bez linii komentarzy (`//`, `/* */`, `*`). Kolumnę nazwać tak, żeby planista podawał tę samą miarę. Alternatywa: zostawić surowe linie, ale próg błędu oprzeć na liczbie ESLint z tolerancją. Zgodnie z PLAN-POPRAWY P13 („linie = wyzwalacz, wymiary = werdykt”) powyżej 360 żądać werdyktu albo wymiarów, a nie zawsze odrzucać. Stałą 360 związać testem z szablonem ESLint, tak jak robi to `coding-rules.test.mjs:36`.
+
+### 5. P2 — Walidacja ignoruje pliki tworzone i zmieniane przez wcześniejsze IU tego samego planu: fałszywe odrzucenia
+
+- **Gdzie:** `walidacja-planu.mjs:71-82`.
+- **Dowód (plan syntetyczny):**
+  - IU-1 `Stwórz src/b.ts 0 → 50`, IU-2 `Modyfikuj src/b.ts 50 → 70` daje „IU-2: Modyfikuj `src/b.ts` — pliku nie ma w repo”.
+  - Po utworzeniu pustego `src/b.ts`: „IU-2: `src/b.ts` ma 0 linii, tabela podaje 50”.
+  - Wzorzec „faza 1 tworzy serwis/hook, faza 2 go rozszerza” to typowy układ z dev-plan 3.3b.
+- **Poprawka:** przejść IU w kolejności numerów i trzymać mapę `ścieżka → przewidywane linie`. `Stwórz` rejestruje plik. `Modyfikuj` sprawdza repo **albo** mapę, a „dziś” porównuje z „po” poprzedniego wiersza dla tej ścieżki. Z repo porównywać tylko pierwsze wystąpienie ścieżki w planie.
+
+### 6. P2 — Bramka gotowości ponownie waliduje plan względem bieżącego repo: po fazie 1 (albo po adnotacjach execute-wf w planie) bramka jest czerwona
+
+- **Gdzie:** `gotowosc.mjs:56` (pełny `sprawdzPlan`, w tym „dziś” vs plik), `dev-docs-execute-wf.js:373` (execute aktualizuje plan techniczny).
+- **Dowód:** tymczasowe repo z fixture: `generuj --zapisz`, commit, `gotowosc` daje `ok:true`. Potem `oferty-service.ts` 12 → 60 linii (efekt IU-1), commit i ponowne `gotowosc` daje `ok:false`, „IU-1: `src/services/oferty-service.ts` ma 60 linii, tabela podaje 12”. Wznowienie po STOP-ie, kiedy skill sprawdza bramkę przed świeżym runem, jest zablokowane bez winy planu. Adnotacje execute-wf w nagłówkach IU dokładają do tego uwagę nr 2.
+- **Poprawka:** bramka uruchamia tylko reguły strukturalne (fazy, IU, markery, seedy, frontmatter). Reguły budżetu względem repo (`Modyfikuj` istnieje, „dziś”) działają w `sprawdz`/`generuj`. Druga możliwość: pomijać je, gdy `.autopilot-state.json` istnieje albo zadania mają `[x]`.
+
+### 7. P2 — Pusta wartość w frontmatterze (`figma_spec:`, `operator_prep:`, `design_md:`, `~`) daje obiekt `{}`: CLI pada z kodem 1, a kontekst dostaje `[object Object]`
+
+- **Gdzie:** `plan-techniczny.mjs:56` (pusty klucz bez słowa `null` jest traktowany jak początek mapy), `przygotowanie.mjs:13-15` (`v.replace` na obiekcie), `walidacja-planu.mjs:42-43`, `zadanie.mjs:72`. Rzutowania JSDoc `/** @type {string | null} */ (fm.x ?? null)` ukrywają ten typ.
+- **Dowód:**
+  - `figma_spec:` i `operator_prep:` puste: `plan.mjs sprawdz` kończy się `TypeError: v.replace is not a function`, kodem **1** (ten sam co „do poprawy”) i bez JSON na stdout.
+  - `design_md:` pusty: w kontekście pojawia się `- **DESIGN.md (projekt-wide):** \`[object Object]\``. Planner wkleja tę ścieżkę builderowi UI jako „Mandatory designerski kontekst”.
+- **Poprawka:** mapę rozpoznawać tylko wtedy, gdy kolejna linia jest wcięta. Pusty skalar i `~` traktować jako `null`. Walidacja: `figma_screens` musi być mapą, pozostałe pola stringiem albo null. W `plan.mjs` złapać wyjątek i wyjść osobnym kodem (np. 3) z JSON `{ok:false, wyjatek}`.
+
+---
+
+## P3
+
+### 8. P3 — Nagłówek fazy: parser przyjmuje `## Faza N` i separatory `:`/`-`, planner szuka w planie `### Faza N`
+
+- **Gdzie:** `plan-techniczny.mjs:4`, `walidacja-planu.mjs:64` (komunikat mówi „### Faza N — nazwa”, ale tego nie wymusza), `dev-docs-execute-wf.js:227`.
+- **Problem:** plan z `## Faza 1 — X` przechodzi walidację, a grep plannera `### Faza 1` niczego nie trafia.
+- **Poprawka:** walidacja wymaga dokładnie `^### Faza \d+ — ` (szablon 4.2). Ewentualnie planner grepuje `^#{2,3} Faza N\b`.
+
+### 9. P3 — Komórki tabeli: `\|` w treści przesuwa kolumny; kilka ścieżek w komórce sprowadza się do pierwszej
+
+- **Gdzie:** `plan-techniczny.mjs:80` (`split('|')`), `:71` (`sciezka`: pierwszy backtick).
+- **Dowód:** wiersz `| Stwórz | \`src/a.ts\` | 0 → 10 | a \| b | nowy |` daje `wymiary: "a \\"` i `werdykt: "b"`. Reguły „wydziel” i „puste wymiary” działają wtedy na złej kolumnie. Komórka `\`a.tsx\`, \`b.tsx\`` daje checkbox i kontrolę budżetu tylko dla `a.tsx`. W planach listowych (9b IU-12) to częsty zapis.
+- **Poprawka:** dzielić po `(?<!\\)\|`. Wiele ścieżek w komórce odrzucać komunikatem „jeden plik na wiersz”.
+
+### 10. P3 — Seed z dopiskiem w nawiasie nie jest rozpoznany, więc walidacja nie sprawdza jego istnienia
+
+- **Gdzie:** `plan-techniczny.mjs:104` (`\(seed:\s*([^)\s]+)\)` wymaga `)` zaraz po ścieżce).
+- **Dowód:** realny `9b` IU-12: `(seed: e2e/seeds/faza-9b-zdarzenia-seed.sql — trzy zdarzenia …)` daje `seed: null`.
+- **Poprawka:** `\(seed:\s*(e2e\/seeds\/[^\s)]+)`. Inny tekst w nawiasie zgłaszać jako błąd formatu (kontrakt 3.4b).
+
+### 11. P3 — Weryfikacja `[E2E]`: runner rozpoznawany wyłącznie po pierwszym backticku, a runner `.sh` będący scenariuszem przechodzi
+
+- **Gdzie:** `walidacja-planu.mjs:132-133`.
+- **Problem:**
+  - `- [E2E] runner \`e2e/run-all.sh\` — ok` daje fałszywe odrzucenie: cel to cała treść, która nie kończy się na `.sh`.
+  - `- [E2E] \`e2e/publikacja-oferty.sh\` — …`, gdy istnieje scenariusz `publikacja-oferty`, przechodzi i daje drugi przebieg tego samego flow.
+- **Poprawka:** cel = pierwsza ścieżka w backtickach w całej treści. Odrzucać runner, którego basename bez `.sh` jest identyfikatorem flow scenariusza.
+
+### 12. P3 — Walidacja nie sprawdza automatyzowalności Weryfikacji: pozycje z fixture zostaną „niejasne”
+
+- **Gdzie:** `walidacja-planu.mjs:130-134`; fixture `plan-techniczny.md:85,122,154`.
+- **Problem:** „typecheck przechodzi bez błędów” i „testy jednostkowe listy ofert przechodzą” nie trafiają w żadną kategorię CLI ani Grep scribe'a (`dev-docs-review-wf.js` pkt 3: lista `bun run, npm run, pnpm, …, tsc, vitest`). Dostają suffiks „klasyfikacja niejasna” i finding P3 w każdym review. Fixture uczy formy, której konsument nie obsłuży.
+- **Poprawka:** wymagać w każdej pozycji Weryfikacji komendy w backtickach albo słowa kluczowego z listy scribe'a. Poprawić fixture.
+
+### 13. P3 — Z dev-docs zginęła bramka E2E per scenariusz (natywne okno, zewnętrzny system, seed spoza stanu bazowego); skrypt przepisuje każdy `[E2E]`
+
+- **Dowód:** `samodzielna-rejestracja-czlonkow-aa`: dev-docs przeniósł `rejestracja-czlonek-link` (odebranie maila z magic linkiem) do `[Manual]` (Faza 2 pkt 4b). Generator emituje go jako `Test: [E2E]`: 6 linii zamiast 5.
+- **Poprawka:** to praca skilla, którego tu jeszcze nie ma. Zapisać ją jako jawny krok scalonego dev-plan przed `generuj` i dodać do kontraktu.
+
+### 14. P3 — `--nadpisz` chroni wyłącznie przed `[x]` w zadaniach
+
+- **Gdzie:** `plan.mjs:53-64`.
+- **Problem:** nadpisuje kontekst z wpisami `## Dziennik` (czytają go compound, archiwizacja i decyzje) oraz plan zadania z `## Blokery`. Ignoruje `.autopilot-state.json` i `review-faza-*.md`, więc plik stanu mówi `execute=done`, a zadania są świeże. Do tego katalog z samym `.autopilot-state.json` (bez md) zostanie zapisany bez `--nadpisz`.
+- **Poprawka:** odmowa, gdy istnieje `.autopilot-state.json`, `review-faza-*.md` albo niepusty `## Dziennik`. Dodatkowo „istnieje katalog” zamiast „istnieją pliki md”.
+
+### 15. P3 — Kontekst przy nieistniejącej checkliście przygotowania pisze „Brak nieodhaczonych pozycji blokujących”
+
+- **Gdzie:** `zadanie.mjs:81-83` (`prep.istnieje` nie jest używane).
+- **Poprawka:** przy `!prep.istnieje` pisać „checklista nie istnieje — popraw `operator_prep`”. Walidacja `sprawdz` też powinna to zgłaszać, nie tylko bramka.
+
+### 16. P3 — Placeholder szablonu przechodzi do zadań
+
+- **Gdzie:** `plan-techniczny.mjs:214`, `zadanie.mjs:116`.
+- **Dowód:** szablon 4.2 ma `**Równolegle z:** — *(opcjonalne)*`, a generator emituje `Równolegle z: — (opcjonalne)`.
+- **Poprawka:** pomijać wartości puste, `—` i z kursywą `*(…)*`.
+
+### 17. P3 — Duplikaty logiki
+
+- `gotowosc.mjs:28-30` `liczScenariuszeE2e` (`^- \[ \]`) vs `dossier/dokumenty.mjs:68-72` `liczE2e` (`^\s*- \[ \]`, liczy też wcięte). To dwie wersje „tego samego grepa” o różnej semantyce. Należy zostawić jedną funkcję (wersję zgodną z konsumentami, bez `\s*`) i importować ją w obu miejscach.
+- `gotowosc.mjs:33-36` `plik()` = `dossier/zadanie.mjs:20-23` `plikZadania()`.
+- Normalizacja `origin` (kotwica, „(sekcja…)”, `./`, „wygląda na ścieżkę w repo”) jest zduplikowana w `zadanie.mjs:24-32` i `walidacja-planu.mjs:48-52`.
+- `PROG_ESLINT = 360` (`walidacja-planu.mjs:19`) nie ma testu zgodności z `eslint.config.szablon.ts`.
+
+### 18. P3 — Martwy kod i drobiazgi
+
+- `Plan.sekcje`, `Plan.rejestrStalych` (`plan-techniczny.mjs:220,224`) nie są nigdzie czytane. Rejestr stałych z PLAN-POPRAWY nie ma też reguły w walidacji.
+- `delegaci()` (`zadanie.mjs:44-46`) to jednolinijkowy wrapper.
+- `bezOgonkow` (`plan-techniczny.mjs:24`) ma w źródle surowe znaki łączące w klasie `[̀-ͯ]`. Czytelniej: `̀-ͯ`.
+- Komentarz `liczLinie` „jak `wc -l`” przeczy implementacji, bo ostatnia linia bez `\n` jest liczona (`walidacja-planu.mjs:27`).
+- Heurystyka migracji (`walidacja-planu.mjs:110`) przeszukuje cały tekst IU, łącznie z „Wzorcami” i notatkami.
+- `--data` domyślnie bierze datę UTC (`plan.mjs:84`): między 0:00 a 2:00 w Polsce wychodzi data z dnia poprzedniego.
+- Ścieżka absolutna planu w argumencie jest sklejana z `--projekt` (`plan.mjs:42`) i daje „nie ma pliku”.
+- Nazwa fazy albo IU z `|` psuje tabelę `## Fazy` (`zadanie.mjs:50`), a walidacja tego nie sprawdza.
+
+### 19. P3 — Luki w testach (mutacje przeżywające)
+
+- Mutacja „generator pomija linię `Równolegle z:`” przechodzi 40/40, bo fixture nie ma tego pola.
+- Mutacja `przygotowanie.mjs:32` `>= 2` → `>= 1` (nieodhaczony `[blokuje: faza 1]` trafia do odroczonych, start nie dostaje STOP) przechodzi 40/40. W `plan-cli.test.mjs` pozycja `faza 1` jest tylko jako `[x]`.
+- Test kontraktu liczy oczekiwania tym samym parserem (`kontrakt-docs-active.test.mjs:60` `PLAN = parsujPlan(PLAN_MD)`). Defekty parsera z uwag 2 i 3 są dla niego niewidoczne, a fixture jest idealny pod szablon.
+- **Brakuje testów:** marker `[E2E]`/`Operator:` w treści (uwaga 1), nagłówek IU z dopiskiem i `##` w fence'ie (uwaga 2), nieznane pole po Weryfikacji, lista wcięta, frontmatter z pustą wartością, IU-2 modyfikujące plik z IU-1, bramka po zmianie pliku.
+- Warto dodać fixture „brzydki, ale poprawny” (wariacje formatu) z twardo wpisanymi oczekiwanymi liczbami: IU, linie E2E z grepa, `Weryfikacja:`.
+- Mutacje złapane przez testy (dla porządku): ucięcie wiersza tabeli i ostatniego scenariusza w parserze, zgubienie markera `[E2E]` w Weryfikacji, dublowanie E2E jako Weryfikacja, brak `## Dziennik`, pozycje operatora w bloku fazy, seed bez backticków, brak progu ESLint.
+
+### 20. P3 — Zmiana w plannerze execute-wf: poprawna i wystarczająca
+
+- **Gdzie:** `dev-docs-execute-wf.js:224`.
+- `Plan techniczny:` trafia w obu formatach: nowy (`Plan techniczny: \`…\`` w nagłówku i w `## Źródła`) oraz stary z dev-docs (`- **Plan techniczny:** \`…\``, `oferty-online/docs/completed/*`, `Nawykometr`). Zadania w toku po aktualizacji szablonu się nie wywrócą.
+- **Do poprawienia:**
+  - Opis kontraktu w `PLAN-POPRAWY.md:576` nadal wskazuje „`## Zrodla` — planner `dev-docs-execute-wf.js:121–128`”. Warto zaktualizować przy dokumentowaniu paczki.
+  - Planner nadal grepuje `### Faza N` w planie technicznym — patrz uwaga 8.
+
+---
+
+## Podsumowanie wag
+
+- P1: 2 (uwagi 1–2)
+- P2: 5 (uwagi 3–7)
+- P3: 13 (uwagi 8–20)
+
+---
+
+## Weryfikacja 1 (commit e4b9486)
+
+Metoda: 87/87 testów zielonych. Odtworzyłem dowody z recenzji: plany syntetyczne A–E, 15 planów `oferty-online` porównanych z historycznymi zadaniami oraz skan `sprawdz` na 92 realnych planach. Puściłem 18 mutacji na nowym kodzie i każda wywraca co najmniej 1 test. Dodatkowo plan syntetyczny F sprawdza nowe reguły.
+
+### Status uwag
+
+| Uwaga | Status | Dowód |
+|---|---|---|
+| 1 (P1) znaczniki w treści | domknięta | Plan A (Weryfikacja i Operator checklist z `[E2E]` w treści) dostaje 2 błędy „znacznik [E2E] poza początkiem pozycji”. Pozycje operatora mają prefiks `Operator:`. `liczniki.e2e` liczy grep na tekście, a bilans błędu z planu 9c daje 2 linie przy 2 scenariuszach (było 3). Mutacje „znaczniki wyłączone”, „operator bez prefiksu” i „bilans wyłączony” są łapane. |
+| 2 (P1) IU wsiąka / `##` w fence'ie | domknięta | Plan B (`**IU-2: Druga** *(opcjonalna)*`) daje 2 IU z własnymi polami. Plan C (`## Przykład` w bloku ```) daje IU-1 ze scenariuszem i Weryfikacją. Na 92 realnych planach liczba sparsowanych IU jest równa liczbie nagłówków IU, bez wyjątków. Faza-4 ma 7 IU (było 5), instrukcja 7 (było 1). Mutacje „nagłówek ścisły”, „fence ignorowany” i „numeracja off” są łapane. |
+| 3 (P2) parser nie fail-closed | domknięta | Plan D: kontynuacja bez wcięcia, lista wcięta, `*` i numerowana dają po 1 problemie z numerem linii. `**Uwagi:**` nie trafia już do Weryfikacji, a pole drugi raz daje błąd. Liczba `Weryfikacja:` jest zgodna z historycznymi zadaniami: faza-8 33/33 (było 73), 9a 18/18 (było 70), 9b 34/34 (było 93). |
+| 4 (P2) miara linii vs ESLint | domknięta | `liczLinieKodu` liczy jak ESLint, próg >360 jest teraz liczony w tej samej mierze. Rozstrzygnięcie przyjmuję. Mutacja „surowe linie” jest łapana. |
+| 5 (P2) pliki z wcześniejszego IU | domknięta | Plan B (IU-1 `Stwórz src/b.ts 0→50`, IU-2 `Modyfikuj src/b.ts 50→70`) przechodzi z `ok:true`. |
+| 6 (P2) bramka po fazie 1 | domknięta | Repo z fixture po zmianie `oferty-service.ts` na 60 linii: `gotowosc` daje `ok:true`, a `sprawdz` nadal zgłasza rozjazd (zamierzone). |
+| 7 (P2) pusty frontmatter / crash | domknięta | Plan E (`design_md:`, `figma_spec:`, `operator_prep:` puste) daje `ok:true` i kontekst bez `[object Object]`. Wyjątek (bramka poza repo git) kończy się kodem 3 z JSON `{ok:false, wyjatek}`. |
+| 8–12, 14–19 (P3) | domknięte | Kod i testy obecne, mutacje kontrolne łapane, w tym „bez Równolegle z” i „bloker fazy 1 odroczony”. |
+| 13 (P3) | otwarta | Świadomie przeniesiona do sesji 2. |
+| 20 (P3) | bez zmian | Uwaga informacyjna. |
+
+### Nowe uwagi
+
+**21. P2 — Separator `---` między jednostkami jest odrzucany jako „pozycja poza zapisem `- `”.**
+- **Gdzie:** `pola-iu.mjs:90-104` (`pozycje`).
+- **Dowód:**
+  - Realne plany `oferty-online`: 49 takich błędów w 15 planach. Ostatnie pole każdego IU (Weryfikacja albo Operator checklist) kończy się linią `---`.
+  - Plan F, linia 34: `pole „operator checklist” — … „---”`.
+- **Problem:** to poprawny plan. Planista modelowy często stawia `---` między IU, więc każde IU dostanie błąd do ręcznego usunięcia.
+- **Poprawka:** linia `^\s*(?:-{3,}|\*{3,}|_{3,})\s*$` kończy bieżące pole i jest ignorowana, analogicznie do nieznanego pola.
+
+**22. P2 — `KOMENDA_CLI` jest węższa niż stack szablonu i odrzuca automatyzowalne Weryfikacje z mylącym komunikatem.**
+- **Gdzie:** `walidacja-planu.mjs:27`, `:129-131`.
+- **Dowód:**
+  - Plan F: `` `supabase test db` `` (pgTAP — typowa weryfikacja RLS w projekcie Supabase), `` `psql "$SUPABASE_E2E_DB_URL" -c …` `` i `` `curl -s localhost:5173/healthz` `` są odrzucone komunikatem „bez komendy w backtickach”, choć komenda w backtickach jest.
+  - Realne `oferty-online`: `` `supabase db push --dry-run` ``, `` `wc -c apps/server/static/t.js` ``, `` `psql … -f e2e/seeds/…` `` i `` `select extversion from pg_extension …` ``.
+  - W drugą stronę: `` `test-utils.ts` istnieje `` przechodzi jako komenda, bo `test\b` łapie `test-`.
+  - Walidator akceptuje `node` i `npx`, których nie ma na liście scribe'a, więc reguła nie jest też dokładnym lustrem konsumenta.
+- **Poprawka:**
+  - Dodać do listy: `supabase`, `psql`, `curl`, `wc`, `deno`, `bash`, `sh`, `git`, `docker`, `jq` oraz wywołania `./…` i `….sh`/`….mjs`.
+  - `test` uznawać za komendę tylko z odstępem po nim (`test\s`).
+  - Komunikat: „komenda spoza listy, którą uruchamia scribe”.
+  - W tej samej zmianie poszerzyć listę CLI scribe'a w `dev-docs-review-wf.js` pkt 3. Inaczej walidator i konsument rozjadą się w drugą stronę.
+
+**23. P3 — Wcięte podpunkty pod pozycją scenariusza są teraz odrzucane.** W wersji 1 sklejały się w jedną linię, co dla konsumentów jest poprawne.
+- **Gdzie:** `pola-iu.mjs:97` (`!/^\s+(?:[-*+]|\d+[.)])\s/`).
+- **Dowód:** `oferty-online/…instrukcja-dla-zaproszonych-plan.md` IU-4 i IU-6 (`- [Unit] krok powitalny na atrapach:` z przypadkami `  - …;` pod spodem). Plan F, IU-2: 2 błędy.
+- **Poprawka:** wciętą pozycję listy z rodzicem doklejać jako kontynuację (np. separator `; `). Odrzucać ją tylko wtedy, gdy nie ma pozycji nadrzędnej.
+
+**24. P3 — Reguła znaczników odrzuca pozycje Operator checklist zaczynające się od `[Manual]` albo `Operator:`, a komunikat mówi „poza początkiem pozycji”.**
+- **Gdzie:** `walidacja-planu.mjs:67-76`.
+- **Dowód:** plan F (`- [ ] [Manual] QA sprawdza animację na iOS`). Realne: `symulator-poczekalni` IU-5, IU-7, IU-8; `oferty-online` 9a IU-13 (`Operator: wgranie 12 plików…`).
+- **Problem:** sekcja operatora jest pomijana przez execute i wykluczona z grepów E2E przez prefiks, więc odrzucenie nie chroni żadnego konsumenta.
+- **Poprawka:** przed sprawdzeniem zdjąć z pozycji operatora wiodące `[Manual]` i `Operator:`. Generator nie powinien wtedy dublować `Operator: Operator:`.
+
+**25. P3 — Numeracja IU wymaga ciągłości, choć konsumenci potrzebują tylko unikalności.**
+- **Gdzie:** `walidacja-planu.mjs:61-63`.
+- **Dowód:**
+  - `oferty-online/…cookie-consent…`: IU-4 usunięte w trakcie planowania, przez co 3 błędy kaskadowe.
+  - `Nawykometr/…e6…`: IU-10 dopisane w fazie 4 między IU-6 a IU-7, przez co 4 błędy.
+- **Problem:** renumeracja rozjeżdża odwołania `IU-K` w „Zależności”, „Śledzenie wymagań” i w markerach `(IU-K)` checklisty `operator_prep`, której walidacja nie przepisuje.
+- **Poprawka:** wymagać unikalnych numerów. Luki i kolejność zgłaszać najwyżej jako uwagę, jednym komunikatem zamiast błędu dla każdej kolejnej jednostki.
+
+**26. P3 — Pole drugi raz: zgłoszony jest tylko duplikat, a problemy pierwszego wystąpienia nie są widoczne.**
+- **Gdzie:** `pola-iu.mjs:129-132` (pierwsze wystąpienie nadpisane, nie przechodzi przez `pozycje`).
+- **Dowód:** plan D w pierwotnej postaci zwraca tylko „pole „scenariusze testowe” drugi raz”. Cztery błędy listy pojawiają się dopiero po usunięciu duplikatu, więc poprawka wymaga dwóch rund.
+- **Poprawka:** przy duplikacie przetworzyć oba wystąpienia (np. dokleić linie drugiego do pierwszego) i zgłosić oba rodzaje problemów naraz.
+
+### Podsumowanie Weryfikacji 1
+
+- Uwagi z recenzji: P1 domknięte 2/2, P2 domknięte 5/5. P3 domknięte 11, jedna otwarta zgodnie z planem (13), jedna informacyjna bez zmian (20).
+- Nowe uwagi: P1 0, P2 2 (21–22), P3 4 (23–26).
