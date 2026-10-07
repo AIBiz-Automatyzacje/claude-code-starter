@@ -176,6 +176,10 @@ class Ustawienia(unittest.TestCase):
                         'cat /private/tmp/claude-501/-Users-x-test-review-p12-kopie-f-a-stary/s/scratchpad/a', 'ls ~/.claude/file-history/',
                         'cat /tmp/review-diff-docs-active-inne-faza-1.diff'):
                 self.assertTrue(rp.search(zle), zle)
+            rv = P.zakazane_re('f-a', 'p12-review', 'nowy', tr=d, zadanie='docs-active-z', faza=2)
+            self.assertFalse(rv.search('{"file_path": "%s/p12-kopie/f-a/nowy-pliki/tmp/review-diff-docs-active-z-faza-2.diff"}' % d))
+            self.assertTrue(rv.search('{"file_path": "/private/tmp/review-diff-docs-active-z-faza-2.diff"}'))
+            self.assertTrue(rv.search('cat /tmp/review-ctx-docs-active-z-faza-2.md'))
             for dobre in ('cat /tmp/review-diff-docs-active-z-faza-2.diff', 'cat /tmp/bramki-docs-active-z-faza-2.json', 'cd ../ && ls',
                           'cat %s/p12-kopie/f-a/nowy/../nowy-pliki/x' % d):
                 self.assertFalse(rp.search(dobre), dobre)

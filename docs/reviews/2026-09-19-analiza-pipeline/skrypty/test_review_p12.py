@@ -170,8 +170,9 @@ def zakazane_re(et, krok, w, tr=TR, zadanie=None, faza=None):
     if not krok.startswith('p12-sedzia'):
         inny = [x for x in WARIANTY if x != w][0]
         wzorce += [r'\.\./%s(?:-pliki)?(?![\w.-])' % inny, r'-p12-kopie-%s-%s(?![\w.-])' % (re.escape(et), inny)]
-    if krok == 'p12-build' and zadanie: wzorce.append(r'/tmp/review-(?!(?:diff|ctx)-%s-faza-%s\.)' % (re.escape(zadanie), faza))
-    else: wzorce.append(r'/tmp/review-')
+    tmp = r'(?:^|(?<=[\s"\'=(]))(?:/private)?/tmp/review-'   # /tmp od korzenia — nie katalog tmp/ w plikach wariantu (dossier review)
+    if krok == 'p12-build' and zadanie: wzorce.append(tmp + r'(?!(?:diff|ctx)-%s-faza-%s\.)' % (re.escape(zadanie), faza))
+    else: wzorce.append(tmp)
     return re.compile('|'.join(wzorce))
 
 
