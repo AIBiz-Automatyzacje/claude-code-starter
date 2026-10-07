@@ -1,0 +1,75 @@
+{
+ "etykieta": "f-b8374c8",
+ "warianty": {
+  "A": "nowy",
+  "B": "stary",
+  "C": "historyczny"
+ },
+ "implementacje": {
+  "A": {
+   "pliki": 27,
+   "linie_diff": 4495
+  },
+  "B": {
+   "pliki": 28,
+   "linie_diff": 4483
+  },
+  "C": {
+   "pliki": 22,
+   "linie_diff": 2182
+  }
+ },
+ "pominiete_p11": [
+  "K11"
+ ],
+ "K": {
+  "K1": {
+   "zrodlo": "klucz2",
+   "klasa": "uprawnienia-naglowki-sql",
+   "grupa": "inne",
+   "waga": "P2"
+  },
+  "K2": {
+   "zrodlo": "klucz1",
+   "klasa": "wyscig-i-wspolbieznosc",
+   "grupa": "d10",
+   "waga": "P2"
+  },
+  "K3": {
+   "zrodlo": "klucz2",
+   "klasa": "luka-pokrycia",
+   "grupa": "inne",
+   "waga": "P2"
+  },
+  "K4": {
+   "zrodlo": "klucz2",
+   "klasa": "cache-i-zapytania",
+   "grupa": "pokryte",
+   "waga": "P2"
+  },
+  "K5": {
+   "zrodlo": "klucz1",
+   "klasa": "cache-i-zapytania",
+   "grupa": "pokryte",
+   "waga": "P3"
+  },
+  "K6": {
+   "zrodlo": "klucz2",
+   "klasa": "zaufanie-danym-klienta",
+   "grupa": "d10",
+   "waga": "P2"
+  },
+  "K8": {
+   "zrodlo": "klucz2",
+   "klasa": "luka-pokrycia",
+   "grupa": "inne",
+   "waga": "P2"
+  },
+  "K9": {
+   "zrodlo": "klucz1",
+   "klasa": "martwy-kod-lub-komentarz",
+   "grupa": "inne",
+   "waga": "P3"
+  }
+ }
+}

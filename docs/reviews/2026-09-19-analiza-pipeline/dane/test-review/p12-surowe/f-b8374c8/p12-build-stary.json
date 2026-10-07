@@ -1,0 +1,267 @@
+{
+ "fazaNumer": 2,
+ "status": "completed",
+ "iu": [
+  {
+   "id": "IU-4",
+   "nazwa": "/o/<slug> — serwowanie oferty, cache i plansza wygaśnięcia",
+   "status": "completed",
+   "subagent": "feature-builder-fullstack"
+  },
+  {
+   "id": "IU-5",
+   "nazwa": "Strony Akademii na originie ofert, /aa, /f/* i nagłówki",
+   "status": "completed",
+   "subagent": "feature-builder-ui"
+  }
+ ],
+ "stanZapisany": null,
+ "testy": "PASS — scripts 17/17, shared 28/28, server 175/175, dashboard 4/4 (224 testy); typecheck PASS; build PASS",
+ "problem": null,
+ "commity": [
+  "f044def feat(faza-2-publikacja-ofert): serwowanie ofert /o/<slug> i strony AA na originie ofert"
+ ],
+ "odchylenia": [
+  "IU-4: nowa zależność zod 4.4.3 w apps/server/package.json (lockfile +3) — wymagana przez obraz produkcyjny",
+  "IU-4: dodatkowe moduły offer/offer-source.ts i offer/pages/notice-pages.ts (+testy), montaż tras w apps/server/src/index.ts, eksport escapeHtml z template.ts",
+  "IU-4: test dashboard.test.ts '404 bez fallbacku na originie ofert' przepisany z kontraktu JSON na HTML (zmiana kontraktu z planu IU-4), intencja zachowana",
+  "IU-4: app.onError na originie ofert zwraca HTML 500; plansza wygaśnięcia 410, awaria bazy bez wpisu w cache 503 + Retry-After 60, Cache-Control no-cache",
+  "IU-4: plansza wygaśnięcia pokazuje nazwę firmy jako wordmark zamiast logo; seed E2E bez strażnika e2e_env_marker (współdzielony staging) — warunek istnienia konta E2E i DELETE zawężony do owner_id i slugów",
+  "IU-5: wspólna powłoka aa-document.ts; strażnik originu w module trasy (onOfferOriginOnly) zamiast app.ts; link do AA względny /aa; wordmark skalowany min(...)",
+  "IU-5: wysokość logo AA dobrana bez pomiaru w Figmie (Figma MCP niedostępny) — dopisana pozycja do operator checklist w planie",
+  "Bramki: eslint, knip, sizeLimit, stryker, advisors — status brak (narzędzia/token niedostępne); migracjeSuma brak w pierwszym przebiegu — utworzono supabase/migrations.sum przez --dopisz-sume i zacommitowano",
+  "Audyt error-handlingu: brak console.* w kodzie produkcyjnym; catch-e re-throwują lub raportują do monitoringu; loadOfferOriginPagesRoutes pisze na stderr przy błędzie konfiguracji startowej, analogicznie do istniejącego loadDashboardRoutes"
+ ],
+ "testyUsuniete": [],
+ "bramki": {
+  "typecheck": {
+   "status": "ok",
+   "sekundy": 1.2,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "eslint": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "testyTypow": {
+   "status": "pominieta",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "knip": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "sizeLimit": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "migracje": {
+   "status": "ok",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "migracjeSuma": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "advisors": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "testyUsuniete": {
+   "status": "ok",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  },
+  "stryker": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": null
+  }
+ },
+ "dossier": {
+  "diffStat": "33 plikow, +4152 −42",
+  "pliki": [
+   {
+    "plik": ".env.example",
+    "czegoDotyczy": "zmieniony (+4)"
+   },
+   {
+    "plik": "apps/server/package.json",
+    "czegoDotyczy": "zmieniony (+2 −1)"
+   },
+   {
+    "plik": "apps/server/src/app.ts",
+    "czegoDotyczy": "zmieniony (+66 −3)"
+   },
+   {
+    "plik": "apps/server/src/index.ts",
+    "czegoDotyczy": "zmieniony (+44)"
+   },
+   {
+    "plik": "apps/server/src/offer/cache.test.ts",
+    "czegoDotyczy": "dodany (+98)"
+   },
+   {
+    "plik": "apps/server/src/offer/cache.ts",
+    "czegoDotyczy": "dodany (+109)"
+   },
+   {
+    "plik": "apps/server/src/offer/expired-page.test.ts",
+    "czegoDotyczy": "dodany (+79)"
+   },
+   {
+    "plik": "apps/server/src/offer/expired-page.ts",
+    "czegoDotyczy": "dodany (+183)"
+   },
+   {
+    "plik": "apps/server/src/offer/offer-source.test.ts",
+    "czegoDotyczy": "dodany (+103)"
+   },
+   {
+    "plik": "apps/server/src/offer/offer-source.ts",
+    "czegoDotyczy": "dodany (+179)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/aa-document.test.ts",
+    "czegoDotyczy": "dodany (+36)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/aa-document.ts",
+    "czegoDotyczy": "dodany (+92)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/notice-pages.test.ts",
+    "czegoDotyczy": "dodany (+44)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/notice-pages.ts",
+    "czegoDotyczy": "dodany (+89)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/privacy-page.test.ts",
+    "czegoDotyczy": "dodany (+65)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/privacy-page.ts",
+    "czegoDotyczy": "dodany (+155)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/root-page.test.ts",
+    "czegoDotyczy": "dodany (+51)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/root-page.ts",
+    "czegoDotyczy": "dodany (+85)"
+   },
+   {
+    "plik": "apps/server/src/offer/template.ts",
+    "czegoDotyczy": "zmieniony (+1 −1)"
+   },
+   {
+    "plik": "apps/server/src/routes/dashboard.test.ts",
+    "czegoDotyczy": "zmieniony (+7 −4)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+    "czegoDotyczy": "dodany (+254)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer-origin-pages.ts",
+    "czegoDotyczy": "dodany (+135)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer.test.ts",
+    "czegoDotyczy": "dodany (+248)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer.ts",
+    "czegoDotyczy": "dodany (+149)"
+   },
+   {
+    "plik": "Dockerfile",
+    "czegoDotyczy": "zmieniony (+6)"
+   },
+   {
+    "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-kontekst.md",
+    "czegoDotyczy": "zmieniony (+25 −2)"
+   },
+   {
+    "plik": "docs/active/faza-2-publikacja-ofert/faza-2-publikacja-ofert-zadania.md",
+    "czegoDotyczy": "zmieniony (+29 −29)"
+   },
+   {
+    "plik": "docs/plans/2026-08-25-001-feat-faza-2-publikacja-ofert-plan.md",
+    "czegoDotyczy": "zmieniony (+20 −2)"
+   },
+   {
+    "plik": "e2e/seeds/oferta-serwowanie-seed.sql",
+    "czegoDotyczy": "dodany (+1763)"
+   },
+   {
+    "plik": "packages/shared/src/env.test.ts",
+    "czegoDotyczy": "zmieniony (+19)"
+   },
+   {
+    "plik": "packages/shared/src/env.ts",
+    "czegoDotyczy": "zmieniony (+6)"
+   },
+   {
+    "plik": "pnpm-lock.yaml",
+    "czegoDotyczy": "zmieniony (+3)"
+   },
+   {
+    "plik": "supabase/migrations.sum",
+    "czegoDotyczy": "dodany (+3)"
+   }
+  ],
+  "warstwy": {
+   "ui": false,
+   "dane": true,
+   "typowanie": true,
+   "nowyModul": true
+  },
+  "e2eCheckboxy": 5,
+  "figmaScreens": true,
+  "diffPlik": "/tmp/review-diff-docs-active-faza-2-publikacja-ofert-faza-2.diff",
+  "diffZapisany": true,
+  "diffUciety": false,
+  "ctxPlik": "/tmp/review-ctx-docs-active-faza-2-publikacja-ofert-faza-2.md",
+  "ctxZapisany": true,
+  "ctxZnaki": 20015,
+  "preSkan": [],
+  "wiedza": {
+   "indeksZn": null,
+   "claudeMdZn": 5109,
+   "wycinekZn": 0,
+   "wycinekWpisy": 0,
+   "wycinekPominiete": 0
+  }
+ },
+ "baza": "c349bd1836d27d9d298ccd17dcc43b38abaa1e3c",
+ "_run": {
+  "runId": "wf_3d686d28-e17",
+  "status": "completed",
+  "model": "claude-opus-5-5",
+  "ms": 1598019,
+  "agentow": 4,
+  "sesja": "26a0bdd8-932d-5fd3-ace0-056f8172f984",
+  "katalog": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-test-review-p12-kopie-f-b8374c8-stary/26a0bdd8-932d-5fd3-ace0-056f8172f984"
+ }
+}

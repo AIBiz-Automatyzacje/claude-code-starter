@@ -1,0 +1,181 @@
+{
+ "oceny": [
+  {
+   "id": "K1",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "A/pliki/apps/server/src/app.ts:291, :362; A/pliki/apps/server/src/routes/offer.ts:45",
+   "uzasadnienie": "Na originie ofert jedyne CSP to `frame-ancestors ${APP_ORIGIN}`, a `/o/<slug>` oddaje surowe `offer.html` przez `c.html`. Bez default-src, script-src ani form-action wstrzyknięty skrypt albo formularz działa z naszej domeny."
+  },
+  {
+   "id": "K1",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "B/pliki/apps/server/src/app.ts:227, :295; B/pliki/apps/server/src/routes/offer.ts:119",
+   "uzasadnienie": "Ten sam mechanizm: na originie ofert idzie tylko CSP `frame-ancestors`, a dokument oferty to `record.html` prosto z bazy."
+  },
+  {
+   "id": "K1",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/app.ts:294; C/pliki/apps/server/src/routes/offer.ts:114",
+   "uzasadnienie": "CSP ogranicza się do `frame-ancestors ${config.APP_ORIGIN}`, a `context.html(offer.html)` wydaje treść z bazy bez żadnych ograniczeń skryptów, formularzy ani zasobów."
+  },
+  {
+   "id": "K2",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "A/pliki/apps/server/src/routes/offer.ts:74, :81, :87, :98",
+   "uzasadnienie": "`nowMs = now()` jest pobierane przed `await store.findBySlug`. Ta sama wartość idzie potem do warunku `nowMs >= record.expiresAtMs` i do `cache.set`, więc oferta, która wygaśnie w trakcie odczytu, przejdzie jako treść."
+  },
+  {
+   "id": "K2",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "B/pliki/apps/server/src/routes/offer.ts:131-132, :80, :87, :107",
+   "uzasadnienie": "`nowMs` powstaje przed `await resolveOffer` (w środku jest `await source.findBySlug`), a potem służy do `cache.store` i do porównania z `expiresAtMs`. Czasu nie pobiera się ponownie po odczycie."
+  },
+  {
+   "id": "K2",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/routes/offer.ts:72, :77, :94, :97",
+   "uzasadnienie": "`timestamp` jest liczony przed `await loadOffer(slug)` i używany w `cache.set` oraz w warunku `offer.expiresAt <= timestamp`, czyli dokładnie opisany defekt."
+  },
+  {
+   "id": "K3",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "A/pliki/apps/server/src/routes/offer-origin-pages.test.ts:170-174, :223",
+   "uzasadnienie": "Jest test, że `/favicon.ico` dostaje 200 i `Cache-Control: public, max-age=86400`. Osobny test potwierdza, że m.in. `/favicon.ico` nie odpowiada na APP_ORIGIN, więc gałąź dobowego cache jest pokryta."
+  },
+  {
+   "id": "K3",
+   "wariant": "B",
+   "ocena": "BRAK_ODPOWIEDNIKA",
+   "dowod": "B/pliki/apps/server/src/routes/offer-origin-pages.ts:105, :132",
+   "uzasadnienie": "B nie wystawia tras `/logo-aa.svg` ani favicon i nie ma gałęzi z dobowym cache. Logo jest wczytywane z dysku i osadzane w stronie, a ze statyki serwowane jest wyłącznie `/f/*`."
+  },
+  {
+   "id": "K3",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/routes/offer-origin-pages.ts:195-203; C/pliki/apps/server/src/routes/offer-origin-pages.test.ts:168-175, :191-198",
+   "uzasadnienie": "Testy statyki obejmują tylko krój z `immutable`. Brakuje przypadku dla `BRANDING_ASSET_PATHS` (logo, favicony) z `ASSET_CACHE_CONTROL`, a test Z3 sprawdza tylko `/`, `/prywatnosc` i `/aa`."
+  },
+  {
+   "id": "K4",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "A/pliki/apps/server/src/app.ts:69, :342; A/pliki/apps/server/src/app.test.ts:155-236",
+   "uzasadnienie": "Wspólny limiter 120/min obejmuje cały origin ofert razem z `/f/*` i statyką. Testy limitu sprawdzają tylko 429 i host-guard, a nie kluczowanie po kliencie."
+  },
+  {
+   "id": "K4",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "B/pliki/apps/server/src/app.ts:66, :278",
+   "uzasadnienie": "Limiter 120/min liczy wszystkie żądania na originie ofert, także `/f/*`, a w fazie nie ma testu utrwalającego kluczowanie ani wyłączenia statyki."
+  },
+  {
+   "id": "K4",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/app.ts:67, :273",
+   "uzasadnienie": "Ten sam wspólny licznik 120/min obejmuje `/o/*`, `/f/*` i strony AA. Nie ma testu kluczowania ani wyłączenia statyki spod limitu."
+  },
+  {
+   "id": "K6",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "A/pliki/apps/server/src/app.ts:161-169, :342",
+   "uzasadnienie": "`readClientKey` dalej bierze klucz z `X-Forwarded-For`, a przy jego braku zwraca `SHARED_CLIENT_KEY`. Origin ofert jest już publiczny i siedzi pod tym samym wiadrem."
+  },
+  {
+   "id": "K6",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "B/pliki/apps/server/src/app.ts:158-166, :278",
+   "uzasadnienie": "Bez zmian względem punktu startu: klucz pochodzi z XFF albo jest wspólny (`SHARED_CLIENT_KEY`), a `/o/*` i `/f/*` nie są wyłączone spod licznika."
+  },
+  {
+   "id": "K6",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/app.ts:157-165, :273",
+   "uzasadnienie": "`readClientKey` z XFF i fallbackiem na wspólny klucz obejmuje wystawiony origin ofert, więc R15 nie jest domknięte."
+  },
+  {
+   "id": "K8",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "A/pliki/apps/server/src/offer/expired-page.test.ts:23-25, :63-70; A/pliki/apps/server/src/offer/offer-store.ts:56-58",
+   "uzasadnienie": "Plansza ma własny plik testów: strefa Europe/Warsaw na granicy północy i escaping danych handlowca. Kolor i krój są walidowane schematem zod na granicy repozytorium, co testuje `offer-store.test.ts:116`."
+  },
+  {
+   "id": "K8",
+   "wariant": "B",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "B/pliki/apps/server/src/offer/expired-page.test.ts:23-25, :52-55; B/pliki/apps/server/src/offer/offer-source.ts:85-87",
+   "uzasadnienie": "Istnieje `expired-page.test.ts` z testem daty 23:30 UTC (następny dzień w PL) i escapingu nazwy firmy. Kolor i krój odrzuca schemat wiersza, co testuje `offer-source.test.ts:78`."
+  },
+  {
+   "id": "K8",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/offer/expired-page.ts:55-64, :108-111",
+   "uzasadnienie": "`safeColor`, `safeFontFamily` i `formatExpiryDate` nie mają własnego pliku testowego (w `pliki/` brak `expired-page.test.ts`). Ich fallbacki i strefa czasowa nie są przetestowane."
+  },
+  {
+   "id": "K9",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "A/pliki/apps/server/src/offer/offer-store.ts:53, :125",
+   "uzasadnienie": "Wiersz z bazy jest naprawdę walidowany schematem `z.strictObject` (kolory, krój, e-mail, termin), więc żaden komentarz nie obiecuje walidacji, której kod nie robi."
+  },
+  {
+   "id": "K9",
+   "wariant": "B",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "B/pliki/apps/server/src/offer/offer-source.ts:81, :139",
+   "uzasadnienie": "`offerRowSchema.safeParse(response.data)` sprawdza kształt całego wiersza w czasie wykonania, czyli walidacja na granicy systemu rzeczywiście istnieje."
+  },
+  {
+   "id": "K9",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/offer/repository.ts:63-85",
+   "uzasadnienie": "Komentarz zapowiada sprawdzanie kształtu wiersza w czasie wykonania, a `toPublishedOffer` sprawdza tylko `expires_at`. Pozostałe pola przechodzą bez walidacji."
+  },
+  {
+   "id": "K5",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "A/pliki/apps/server/src/routes/offer-origin-pages.ts:174-176",
+   "uzasadnienie": "`response?.headers.set('Cache-Control', cacheControl)` ustawia nagłówek na każdej odpowiedzi z `serveStatic`, bez warunku `ok`, więc 304 też go dostaje."
+  },
+  {
+   "id": "K5",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "B/pliki/apps/server/src/routes/offer-origin-pages.ts:117-118",
+   "uzasadnienie": "`if (response?.ok === true)` dopuszcza tylko 2xx, więc odpowiedź 304 dla `/f/*` wyjdzie bez `immutable`."
+  },
+  {
+   "id": "K5",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "C/pliki/apps/server/src/routes/offer-origin-pages.ts:183",
+   "uzasadnienie": "`if (!context.res.ok || ...) return;` pomija 304, więc odpowiedź warunkowa traci `Cache-Control`."
+  }
+ ],
+ "_run": {
+  "runId": "wf_2dd1ea8c-8d0",
+  "status": "completed",
+  "model": "claude-opus-5-5",
+  "ms": 81438,
+  "agentow": 1,
+  "sesja": "0c1d85b7-73e9-50fc-b56b-7b14f52bcf36",
+  "katalog": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-test-review-p12-f-b8374c8-sedzia/0c1d85b7-73e9-50fc-b56b-7b14f52bcf36"
+ }
+}

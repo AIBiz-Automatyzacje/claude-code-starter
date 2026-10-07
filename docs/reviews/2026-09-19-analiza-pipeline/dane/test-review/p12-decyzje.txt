@@ -1,5 +1,5 @@
 P12 sesja 5 — decyzje po ślepym teście builderów (2 fazy) — wersja po recenzji subagenta (9 uwag, wszystkie przyjęte)
-Źródło liczb: dane/test-review/p12-wynik.txt (+ .json), oceny sędziego ~/test-review/wyniki/<et>/p12-sedzia-p1.json.
+Źródło liczb: dane/test-review/p12-wynik.txt (+ .json), oceny sędziego dane/test-review/p12-surowe/<et>/ (p12-sedzia-p1.json + mapowanie A/B/C; build, review) — ~/test-review usunięty po P12.
 Drzewa .claude: pilot f-1de5a4c na nowym 7bdab43 (D10 z c7598cf, przed u7); f-b8374c8 na e1d0810 (D10 po u7 dfca1e2). u7 zmienia dobór
 tylko dla IU-15 pilota (UI z hookiem: 5 zdań zamiast 7, bez pominiętych) — tam nie było klucza różnicującego; IU-14 dostaje po u7 te same
 7 klas i tak samo traci 2, więc wynik K8/K11 obowiązuje dla formy po u7.

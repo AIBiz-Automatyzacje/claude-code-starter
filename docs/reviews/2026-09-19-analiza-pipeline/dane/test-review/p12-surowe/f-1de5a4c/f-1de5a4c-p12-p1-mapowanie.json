@@ -1,0 +1,87 @@
+{
+ "etykieta": "f-1de5a4c",
+ "warianty": {
+  "A": "stary",
+  "B": "historyczny",
+  "C": "nowy"
+ },
+ "implementacje": {
+  "A": {
+   "pliki": 48,
+   "linie_diff": 3581
+  },
+  "B": {
+   "pliki": 50,
+   "linie_diff": 2999
+  },
+  "C": {
+   "pliki": 50,
+   "linie_diff": 3869
+  }
+ },
+ "pominiete_p11": [
+  "K6"
+ ],
+ "K": {
+  "K1": {
+   "zrodlo": "klucz2",
+   "klasa": "luka-pokrycia",
+   "grupa": "inne",
+   "waga": "P2"
+  },
+  "K2": {
+   "zrodlo": "klucz1",
+   "klasa": "cykl-zycia-ui",
+   "grupa": "pokryte",
+   "waga": "P3"
+  },
+  "K3": {
+   "zrodlo": "klucz1",
+   "klasa": "pii-i-sekrety",
+   "grupa": "d10",
+   "waga": "P2"
+  },
+  "K4": {
+   "zrodlo": "klucz1",
+   "klasa": "luka-pokrycia",
+   "grupa": "inne",
+   "waga": "P3"
+  },
+  "K5": {
+   "zrodlo": "klucz2",
+   "klasa": "sciezka-bledu",
+   "grupa": "d10",
+   "waga": "P2"
+  },
+  "K7": {
+   "zrodlo": "klucz2",
+   "klasa": "inna",
+   "grupa": "inne",
+   "waga": "P2"
+  },
+  "K8": {
+   "zrodlo": "klucz1",
+   "klasa": "bramka-czarna-lista",
+   "grupa": "d10",
+   "waga": "P2"
+  },
+  "K10": {
+   "zrodlo": "klucz1",
+   "klasa": "polkniety-blad",
+   "grupa": "pokryte",
+   "waga": "P3"
+  },
+  "K11": {
+   "zrodlo": "klucz1",
+   "klasa": "test-niefalsyfikowalny",
+   "grupa": "pokryte",
+   "waga": "P3"
+  },
+  "K12": {
+   "zrodlo": "klucz2",
+   "klasa": "cache-i-zapytania",
+   "grupa": "pokryte",
+   "waga": "P2"
+  }
+ }
+}

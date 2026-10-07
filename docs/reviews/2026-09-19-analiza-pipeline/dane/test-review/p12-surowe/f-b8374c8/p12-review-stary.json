@@ -1,0 +1,181 @@
+{
+ "findings": [
+  {
+   "severity": "P1",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:295",
+   "opis": "Origin ofert wysyła tylko `Content-Security-Policy: frame-ancestors <APP_ORIGIN>`. Nie ma `script-src`, `default-src`, `base-uri` ani `form-action`, a docs/MVP.md:194 wprost wymaga na stronach ofert CSP, w którym „żaden skrypt poza naszym trackerem” nie przejdzie. Ścieżka ataku: rola `authenticated` ma `grant insert` na wszystkie kolumny `offers` (migracja 20260824171406, l.194), a token MCP trafia prosto do PostgREST. Każdy członek wstawia więc wiersz z `html = '<script>…</script>'` albo z formularzem phishingowym, bez szablonu z escapowaniem. Ta faza wydaje tę kolumnę surowo przez `c.html(record.html)` (apps/server/src/routes/offer.ts:119), a jedyna walidacja to `z.string().min(1)` (offer-source.ts:83). Skrypt atakującego działa u odbiorcy oferty na wspólnym originie wszystkich tenantów. Skutek: phishing i drive-by pod domeną platformy, możliwość podrobienia stanu trackera w kolejnych fazach i ryzyko wpisania całego originu na listę Safe Browsing, co odcina oferty wszystkich użytkowników. Naprawa: na odpowiedziach `/o/*` (najprościej na całym originie ofert) ustawić `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors <APP_ORIGIN>`. Szablon ma tylko zewnętrzny `<script src=\"/t.js\">` i inline `<style>`/`style=`, więc działa z tą polityką. Dopisać test, że CSP strony oferty zawiera `script-src 'self'` i nie zawiera `'unsafe-inline'` w `script-src`.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:243",
+   "opis": "Slug jest jedynym poświadczeniem dostępu do oferty, a mimo to trafia do logu i do Sentry. Komentarz w apps/server/src/routes/offer.ts:64 twierdzi, że tak nie jest. (1) Logger żądań zapisuje `path: c.req.path` przy każdym żądaniu, więc każde wejście na `/o/<slug>` zostawia w logu Coolify gotowy link do cudzej oferty; `app.onError` (app.ts:368) robi to samo. (2) `scrubEvent` (observability/sentry.ts:46) usuwa z `request.url` tylko parametry i zostawia ścieżkę `/o/<slug>`. (3) Breadcrumb wychodzącego fetcha w @sentry/node-core (`addFetchRequestBreadcrumb` zapisuje `http.query`) niesie `?slug=eq.<slug>` zapytania PostgREST, a `beforeSend` breadcrumbów nie czyści. Ścieżka ataku: każdy z dostępem do logów, drenu logów albo projektu Sentry odczytuje slug i otwiera ofertę z danymi klienta i wyceną. Naprawa: w loggerze i w `onError` zamieniać ścieżkę na wzorzec (`c.req.routePath`, czyli `/o/:slug`, albo regex `/o/[^/]+` → `/o/:slug`). W `scrubEvent` maskować segment po `/o/` w `request.url` i `transaction`, a z `event.breadcrumbs` usuwać `data['http.query']` i `data.url` z parametrem `slug=`. Dopisać test, że log żądania `/o/<VALID_SLUG>` i zdarzenie Sentry nie zawierają sluga.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/offer-source.ts:83",
+   "opis": "Rozmiar `html` nie ma limitu ani w bazie (brak CHECK na `octet_length(html)`), ani w schemacie wiersza (`z.string().min(1)`). Cache (cache.ts:13-17) zakłada „do 2 MB” i trzyma do 500 wpisów aż do terminu ważności. Ścieżka ataku: członek wstawia przez PostgREST kilka ofert z `html` po kilkadziesiąt MB i `expires_at` za rok, po czym wywołuje ich `/o/<slug>`. Proces parsuje pełny JSON, każdy HTML zostaje w `Map` na zawsze, a limit 500 wpisów nie ogranicza bajtów. Jedyny proces Node (oferty, dashboard, MCP) kończy się OOM, a oferty wszystkich tenantów przestają działać, wbrew zasadzie naczelnej nr 7. Naprawa: `html: z.string().min(1).max(MAX_OFFER_HTML_BYTES)` (2 MB z docs/MVP.md:227) w `offerRowSchema`. W cache.ts budżet bajtów (suma `html.length`) z wyrzucaniem LRU zamiast samej liczby wpisów. Nowa migracja z `check (octet_length(html) <= 2097152)`.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/app.ts:293",
+   "opis": "Nagłówki originu ofert ustawiane od tej fazy publicznie to tylko `X-Robots-Tag`, `Referrer-Policy` i CSP z `frame-ancestors`. Brakuje `X-Content-Type-Options: nosniff` i `Strict-Transport-Security`, a w kodzie nie ma śladu, że ustawia je proxy. Ścieżka ataku: bez HSTS pierwsze wejście na link `http://…/o/<slug>` (z maila, z ręcznie przepisanego adresu) idzie otwartym tekstem, a slug w ścieżce jest poświadczeniem i widzi go każdy w sieci po drodze. Bez `nosniff` przeglądarka może zgadywać typ plików spod `/f/*` (OFL-*.txt, woff2). Naprawa: w bloku `if (originKind === 'offer')` dodać `c.header('X-Content-Type-Options', 'nosniff')` i `c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')`, plus test w offer-origin-pages.test.ts sprawdzający oba nagłówki.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/offer-origin-pages.test.ts:166",
+   "opis": "Bramka `/f/*` (serveStatic z `root = apps/server/static`) ma tylko test, że `/README.md` spoza `/f/` daje 404. Nie ma testu odmowy dla wejść traversalu: `/f/..%2Flogo-aa.svg`, `/f/%2e%2e/README.md`, `/f/..%5C..%5Cpackage.json`, `/f//etc/passwd`, `/f/.%2e/.%2e/apps/server/dist/index.js`. Dziś blokuje je regex wewnątrz @hono/node-server. Jedna zmiana (np. dodanie `rewriteRequestPath` albo podmiana middleware) otworzy odczyt plików spoza katalogu statycznego, w tym kodu i konfiguracji w obrazie, i żaden test tego nie złapie. Naprawa: dopisać `it.each` z tymi pięcioma ścieżkami i asercją `status === 404` oraz braku treści pliku spoza `f/`.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P2",
+   "typ": "OPERATOR",
+   "plik": "apps/server/src/app.ts:278",
+   "opis": "Faza wystawia publicznie origin ofert, a każde wejście na ofertę to co najmniej 3 żądania (`/o/<slug>`, `/f/inter-v1.woff2`, `/t.js`). Wszystkie liczy limiter kluczowany pierwszą wartością `X-Forwarded-For`. Pozycja otwarta w komentarzu app.ts:129-157: jeśli Traefik usuwa nagłówek, wszyscy trafiają do jednego wiadra `nieznany`. Ścieżka ataku: jeden klient wysyłający 120 żądań/min wyczerpuje wspólną pulę, a wszyscy odbiorcy ofert dostają 429 (JSON, bez strony). To DoS całej powierzchni ofert. Do zrobienia przed wystawieniem originu ofert na produkcję: podejrzeć wartość `X-Forwarded-For` widzianą przez proces na Coolify. Przy globalnym wiadrze przejść na adres z połączenia z jawną listą zaufanych proxy albo wyłączyć `/f/*` z limitu.",
+   "_zrodlo": "security"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer.ts:87",
+   "opis": "Wygasłe oferty nigdy nie trafiają do cache'u: `store` odrzuca rekord po terminie (cache.ts:94), a `lookup` go usuwa. Każde wejście w link wygasłej oferty to więc nowe zapytanie do PostgREST. Zapytanie pobiera pełną kolumnę `html` (do 2 MB i więcej) i przepuszcza ją przez Zod, choć plansza wygaśnięcia jej nie używa. Wygasłych ofert przybywa z każdym miesiącem, a ich linki zostają w skrzynkach klientów. Zmiana: w `resolveOffer`, gdy `nowMs >= record.expiresAtMs`, zapisać w cache'u rekord z pustym `html` jako kind `expired`. Taki wpis ma TTL `DEFAULT_OFFER_CACHE_TTL_MS` liczony od teraz, a nie od `expiresAtMs`. `respondWithOffer` dla tego rodzaju wpisu renderuje planszę bez zapytania do bazy.",
+   "_zrodlo": "performance"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer.ts:80",
+   "opis": "Treść oferty jest niemutowalna. Odświeżenie wpisu `stale` (co 10 min na każdą oglądaną ofertę) ma więc tylko sprawdzić, czy oferta dalej istnieje (komentarz w cache.ts:6-8). Mimo to `source.findBySlug` pobiera wtedy ponownie całe `html` (do 2 MB) i całe je waliduje. Przy 500 aktywnych ofertach to do 6 pełnych transferów HTML na godzinę na ofertę, bez żadnego zysku. Zmiana: dodać do `OfferSource` metodę `existsBySlug(slug)`, która wysyła zapytanie `.select('slug').eq('slug', slug).maybeSingle()`. Gdy `cached.kind === 'stale'`, wołać ją zamiast `findBySlug` i po sukcesie wywołać `cache.store(cached.record, nowMs)`.",
+   "_zrodlo": "performance"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/expired-page.ts:57",
+   "opis": "Ścieżka kroju `/f/inter-v1.woff2` jest w kodzie fazy zdefiniowana jeszcze dwa razy: jako literał w CSS planszy wygaśnięcia (expired-page.ts:57) i jako nowa stała `AA_TEXT_FONT_PATH` (aa-document.ts:14). Źródłem prawdy jest już `SELF_HOSTED_FONTS[0].file` w brand-contract.ts:53, a w template.css leży czwarta kopia. Że wartość jest powielona, widać po `new Set(...)` w `REQUIRED_FONT_PATHS` (offer-origin-pages.ts:37), który usuwa duplikaty. Skutek: literał z planszy nie wchodzi do walidacji plików przy starcie. Przy zmianie wersji kroju w brand-contract plansza i strony AA zostaną przy v1 i nic tego nie wykryje. Poprawka: w `EXPIRED_PAGE_STYLESHEET` wstawić `${SELF_HOSTED_FONTS[0].file}` zamiast literału, a w aa-document.ts:14 zamienić literał na odczyt z `SELF_HOSTED_FONTS` (np. `SELF_HOSTED_FONTS.find((font) => font.family === 'Inter')`).",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer-origin-pages.ts:28",
+   "opis": "`IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable'` to dosłowna kopia stałej z apps/server/src/routes/dashboard.ts:23. Obie opisują tę samą politykę „zasób wersjonowany w nazwie, cache na rok”. Pierwsza zmiana tej polityki (np. inny max-age) zostanie wprowadzona w jednym pliku, a drugi tego nie przejmie. Poprawka: przenieść stałą do jednego modułu (np. `apps/server/src/routes/cache-headers.ts`), wyeksportować ją stamtąd i importować w dashboard.ts oraz offer-origin-pages.ts zamiast definiować lokalnie.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/expired-page.ts:133",
+   "opis": "`.replace(/\\n\\s*/g, '\\n').trim()` to ręczna kopia funkcji `compactStylesheet` z aa-document.ts:67, która jest wyeksportowana, a mimo to poza własnym plikiem nikt jej nie używa. Gdy jedna kopia regexu się zmieni, plansza i strony AA zaczną kompresować CSS inaczej. Poprawka: zaimportować `compactStylesheet` z `./pages/aa-document.js` i zapisać `const EXPIRED_PAGE_STYLESHEET = compactStylesheet(`...`);` w miejsce łańcucha `.replace(...).trim()`.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/expired-page.ts:147",
+   "opis": "`renderFooter()` ręcznie powtarza znacznik „Powered by” z literałem 'Akademia Automatyzacji', który faza wyniosła już do `renderPoweredBy()` (aa-document.ts:90) ze stałą `BRAND_NAME`. Znacznik jest haczykiem Z1 obecnym w każdej stronie originu ofert, więc zmiana tekstu albo atrybutów linku nie obejmie planszy wygaśnięcia. Poprawka: w linii 147 zastąpić szablon `<span>Powered by <a ...>Akademia Automatyzacji</a></span>` wywołaniem `renderPoweredBy()` zaimportowanym z `./pages/aa-document.js`.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/offer-source.ts:16",
+   "opis": "`OFFER_SLUG_PATTERN` jest eksportowany, ale nikt spoza offer-source.ts go nie importuje. Wołający i testy korzystają z `offerSlugSchema`. Martwy eksport tworzy drugą publiczną drogę walidacji sluga, z której ktoś może zacząć korzystać obok schematu. Poprawka: usunąć `export` przy `OFFER_SLUG_PATTERN` i zostawić `offerSlugSchema` jako jedyny publiczny kontrakt formatu sluga.",
+   "_zrodlo": "code-quality"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/offer-source.ts:88",
+   "opis": "Serwer sprawdza `contact_email` ostrzej niż baza. Ograniczenie `offers_contact_email_format_check` (migracja 20260825171812, linia 130) dopuszcza każdy adres w kształcie `^[^[:space:]@<>\"]+@[^[:space:]@<>\"]+\\.[^[:space:]@<>\"]+$`, a `z.email()` z Zod 4 odrzuca wiele z tych adresów. Sprawdzone w node: `jan@łódź.pl`, `a&b@firma.pl`, `biuro@firma.xn--p1ai`, `kontakt@sub_domena.pl` i `info@firma.pl.` przechodzą regex bazy, a Zod je odrzuca. Scenariusz: handlowiec publikuje ważną ofertę z `contact_email = 'biuro@łódź.pl'` i baza ją przyjmuje. Każde wejście na `/o/<slug>` kończy się wtedy błędem walidacji `offerRowSchema.safeParse`. Leci `OfferSourceError`, wpis nigdy nie trafia do cache'u, a `routes/offer.ts` zwraca 503 „Strona jest chwilowo niedostępna”. Tak jest przez cały okres ważności, przy każdym żądaniu, z wyjątkiem w Sentry za każdym razem. Klient nigdy nie zobaczy oferty, choć jej `html` jest poprawny, a adres kontaktowy potrzebny jest tylko planszy wygaśnięcia. Poprawka: zamień `contact_email: z.email()` na `z.string().regex(/^[^\\s@<>\"]+@[^\\s@<>\"]+\\.[^\\s@<>\"]+$/).max(254)`, czyli ten sam kontrakt co CHECK w bazie (ucieczkę do `href` i tak robi `escapeHtml`). Dodaj test wiersza z adresem IDN `jan@łódź.pl` w `offer-source.test.ts`.",
+   "_zrodlo": "correctness"
+  },
+  {
+   "severity": "P3",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer.ts:133",
+   "opis": "`nowMs` jest odczytywany przed `await resolveOffer(...)`, a po nim `respondWithOffer` porównuje go z `expiresAtMs`. Zapytanie do bazy może trwać do 5 s (`QUERY_TIMEOUT_MS`). Scenariusz: oferta wygasa o T. Żądanie przychodzi o T−2 s przy wpisie nieświeżym albo bez wpisu w cache'u, a baza odpowiada po 4 s. Odpowiedź wychodzi o T+2 s z pełnym `html` oferty zamiast planszy 410. To łamie regułę planu „wygaśnięcie sprawdzane przy każdym wydaniu” (okno do 5 s). Poprawka: w handlerze `/o/:slug` po `const resolution = await resolveOffer(slug.data, nowMs);` przekaż do `respondWithOffer` świeży odczyt zegara `now()` zamiast `nowMs`, czyli `respondWithOffer(c, resolution.record, now())`.",
+   "_zrodlo": "correctness"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/routes/offer-origin-pages.ts:126",
+   "opis": "Zamówienie: plan, sekcja 'Wymagania wstępne operatora' (docs/plans/2026-08-25-001-feat-faza-2-publikacja-ofert-plan.md:145) mówi: '3.2 Favicon → apps/server/static/favicon.ico + favicon.svg — blokuje Fazę 2 (IU-5)'. Pozycja 3.2 checklisty operatora uzasadnia to tak: origin ofert to jedyne miejsce, gdzie klient widzi naszą infrastrukturę, a domyślna ikona przeglądarki wygląda jak niedokończone narzędzie. Pliki leżą w repo (apps/server/static/favicon.ico, favicon.svg), ale IU-5 ich nie podłącza. W offer-origin-pages.ts:126-132 są tylko trasy '/', '/prywatnosc', '/aa' i '/f/*', bez '/favicon.ico' ani '/favicon.svg'. Ani aa-document.ts, ani expired-page.ts nie mają <link rel=\"icon\">. W efekcie /favicon.ico na originie ofert kończy się stroną 404 'Nie znaleźliśmy tej strony', a każda karta oferty, planszy, roota i /prywatnosc pokazuje domyślną ikonę. IU-5 jest zrealizowane częściowo. Do zrobienia: dodać trasę '/favicon.ico' (i '/favicon.svg') przez onOfferOriginOnly(serveStatic) i sprawdzać obecność obu plików na starcie, tak jak logo w REQUIRED_FONT_PATHS/assertStaticFile. Do head w aa-document.ts i expired-page.ts dodać <link rel=\"icon\" href=\"/favicon.svg\"> ze ścieżką względną.",
+   "_zrodlo": "spec-compliance"
+  },
+  {
+   "severity": "P2",
+   "typ": "KOD",
+   "plik": "apps/server/src/offer/pages/notice-pages.ts:24",
+   "opis": "Zamówienie: IU-5, Podejście: 'Teksty dosłownie z pozycji 3.3 checklisty — są zaakceptowane, nie wymyślaj własnych'. Zasada naczelna nr 1 każe sprawdzać każdy tekst widoczny dla odbiorcy oferty. Pozycja 3.3 (docs/operator/faza-2-publikacja-ofert-przygotowanie.md:250-258) obejmuje tylko trzy strony: planszę wygaśnięcia, 404 i root. Diff dodaje czwartą stronę widoczną dla odbiorcy oferty z własnymi tekstami: UNAVAILABLE_HEADING 'Strona jest chwilowo niedostępna' i UNAVAILABLE_LEAD 'Spróbuj ponownie za kilka minut.' (notice-pages.ts:24-25). Strona idzie do klienta przy 503 z routes/offer.ts:144 i przy każdym 500 z app.onError na originie ofert (app.ts, gałąź originKind==='offer'). Komentarz w kodzie przyznaje 'Teksty NIEZAAKCEPTOWANE … Do akceptacji operatora', ale 'Operator checklist' IU-5 w planie nie ma takiej pozycji, więc tekst może trafić na produkcję bez akceptacji. Do zrobienia: dopisać do 'Operator checklist' IU-5 w planie pozycję '[ ] Zaakceptuj teksty strony niedostępności (notice-pages.ts:24-25)' i dopisać te teksty do pozycji 3.3 checklisty po akceptacji.",
+   "_zrodlo": "spec-compliance"
+  },
+  {
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/offer.test.ts:165",
+   "opis": "Gałąź `record === null` przy nieświeżym wpisie (apps/server/src/routes/offer.ts:82-84, `cache.forget(slug)`) nie ma testu. Po usunięciu linii `cache.forget(slug);` cały zestaw zostaje zielony. Żaden test nie przechodzi przez sekwencję: wpis w cache'u, TTL mija, baza zwraca null (oferta usunięta, RODO art. 17), a potem baza pada. Bez `forget` usunięta oferta dalej wychodzi z pamięci jako nieświeży wpis, mimo że cache.ts:6-8 wprost uzasadnia TTL tym przypadkiem. Poprawka w describe 'GET /o/<slug> — cache': request(`/o/${VALID_SLUG}`) → setNow(START_MS + TTL_MS) → findBySlug.mockResolvedValueOnce(null) → request, oczekiwane 404 z NOT_FOUND_HEADING → findBySlug.mockRejectedValue(new OfferSourceError('down')) → request. Ostatnia odpowiedź ma mieć status 503 i nie zawierać OFFER_CONTENT_MARKER.",
+   "_zrodlo": "test-coverage"
+  },
+  {
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/offer/offer-source.test.ts:78",
+   "opis": "Bramka walidacji wiersza (offerRowSchema, offer-source.ts:81-90) ma test odmowy tylko dla `brand_color` i `contact_email`. Odrzucenie przez `font_family` (refine na ALLOWED_FONT_FAMILIES), `accent_color` (regex), `expires_at` (refine Number.isFinite), `html` (min(1)) i `slug` nie ma testu. Po zamianie np. `font_family: z.string()` albo usunięciu refine z expiresAtSchema zestaw zostaje zielony. Skutek: `font_family` trafia bez ucieczki do atrybutu `style` planszy (expired-page.ts:160-171), więc wartość `Inter\" onmouseover=\"…` wychodzi poza atrybut. Z kolei NaN w `expiresAtMs` sprawia, że `nowMs >= NaN` daje false, a oferta nigdy nie wygasa. Poprawka: it.each z wierszami `{...VALID_ROW, font_family: 'Inter\" x=\"'}`, `{accent_color: 'red'}`, `{expires_at: 'nie-data'}`, `{html: ''}`, `{slug: 'krotki'}`, każdy z `rejects.toThrow(/<nazwa_pola>/)`. Do tego test „nie wpisuje wartości pól” (linia 91) używa `rejects.not.toThrow(/to-nie-jest-mail/)`, który przechodzi przy każdym innym komunikacie. Zamienić go na `rejects.toThrow('Wiersz oferty narusza kontrakt serwowania (pola: contact_email)')`.",
+   "_zrodlo": "test-coverage"
+  },
+  {
+   "severity": "P2",
+   "typ": "TEST",
+   "plik": "apps/server/src/offer/offer-source.ts:163",
+   "opis": "`createSupabaseOfferSource` nie ma żadnego testu, a to jedyne zapytanie fazy na kluczu sekretnym omijającym RLS. Zestaw zostaje zielony, gdy w .select(...) podstawić '*' (do pamięci procesu trafiają `ip_salt` i `owner_id`) albo gdy .eq('slug', slug) usunąć lub dostać zły argument. Test OFFER_SERVING_COLUMNS (offer-source.test.ts:96) sprawdza tylko stałą, a nie to, co faktycznie idzie do PostgREST-a. Poprawka: vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(VALID_ROW), {status: 200, headers: {'content-type': 'application/json'}}))), potem createSupabaseOfferSource({supabaseUrl: 'https://ref.example.invalid', secretKey: 'sb_secret_test'}).findBySlug(SLUG). Asercje: URL wywołania zawiera `/rest/v1/offers`, `slug=eq.AbCdEfGhIjKlMnOpQrStU` i `select=slug,html,expires_at,brand_color,accent_color,font_family,contact_email,company_name`, a wynik równa się zmapowanemu rekordowi.",
+   "_zrodlo": "test-coverage"
+  },
+  {
+   "severity": "P3",
+   "typ": "TEST",
+   "plik": "apps/server/src/routes/offer.test.ts:201",
+   "opis": "Test 503 przy pudle w cache'u nie sprawdza nagłówków `Retry-After: 60` ani `Cache-Control: no-cache`, opisanych w odchyleniach planu (offer.ts:142-143). Usunięcie obu linii zostawia zestaw zielony. Dodać po linii 201 `expect(response.headers.get('retry-after')).toBe('60');` oraz `expect(response.headers.get('cache-control')).toBe('no-cache');`.",
+   "_zrodlo": "test-coverage"
+  }
+ ],
+ "przebieg": {
+  "aktywni": [
+   "security",
+   "performance",
+   "code-quality",
+   "correctness",
+   "spec-compliance",
+   "test-coverage"
+  ],
+  "pominieci": [
+   {
+    "key": "e2e",
+    "powod": "zero checkboxow [E2E] (5) i brak makiet figma_screens"
+   }
+  ],
+  "plikiKodu": 25,
+  "zrodloDossier": "domkniecie",
+  "poDedupJs": 22,
+  "poDedupSem": 21,
+  "nulle": []
+ },
+ "_run": {
+  "runId": "wf_eb553d85-064",
+  "status": "completed",
+  "model": "claude-opus-5-5",
+  "ms": 316664,
+  "agentow": 7,
+  "sesja": "350a719b-f6aa-56cd-b74c-0cee5ece3b54",
+  "katalog": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-test-review-p12-kopie-f-b8374c8-stary/350a719b-f6aa-56cd-b74c-0cee5ece3b54"
+ }
+}

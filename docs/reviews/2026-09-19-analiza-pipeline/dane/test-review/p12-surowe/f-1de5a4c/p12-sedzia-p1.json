@@ -1,0 +1,223 @@
+{
+ "oceny": [
+  {
+   "id": "K1",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/server/src/cta/cta-script.test.ts:58,101,416-427",
+   "uzasadnienie": "HarnessOptions ma withoutExpiredNode, boot() wycina węzeł msg-wygasla z markupu, a test z 409 oferta_wygasla bez węzła asertuje widoczność msg-akceptacja."
+  },
+  {
+   "id": "K1",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/server/src/cta/cta-script.test.ts:92-93,310",
+   "uzasadnienie": "boot() zawsze renderuje bieżący renderCtaSection i nie ma opcji usunięcia węzła msg-wygasla; scenariusz zastanego dokumentu bez węzła nie jest testowany (i kod c.js faktycznie ma tam błąd)."
+  },
+  {
+   "id": "K1",
+   "wariant": "C",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/server/src/cta/cta-script.test.ts:71,179-183,516-524",
+   "uzasadnienie": "Opcja withoutExpiredMessages usuwa węzły msg-wygasla/msg-wygasla-pytanie przed uruchomieniem skryptu, a test asertuje komunikat ogólny po 409."
+  },
+  {
+   "id": "K2",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/dashboard/src/components/copy-button.tsx:50,65,71",
+   "uzasadnienie": "Stan to licznik kopiowań inkrementowany przy każdym sukcesie, więc efekt z zależnością [copyCount] restartuje timer przy każdym kopiowaniu."
+  },
+  {
+   "id": "K2",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/components/copy-button.tsx:49,66,72",
+   "uzasadnienie": "Flaga boolean isCopied; drugie setIsCopied(true) w trakcie potwierdzenia nie zmienia stanu, efekt [isCopied] nie startuje ponownie i stary timer gasi etykietę wcześniej."
+  },
+  {
+   "id": "K2",
+   "wariant": "C",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/dashboard/src/components/copy-button.tsx:47,62,68",
+   "uzasadnienie": "Licznik copyCount zwiększany przy każdym udanym kopiowaniu, efekt zależny od copyCount czyści i restartuje timer."
+  },
+  {
+   "id": "K3",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/server/src/webhooks/settings-service.ts:93",
+   "uzasadnienie": "Błąd zapisu bez trafionego wiersza ma stały komunikat bez ownerId."
+  },
+  {
+   "id": "K3",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/server/src/webhooks/settings-service.ts:101-102",
+   "uzasadnienie": "WebhookSettingsError interpoluje owner_id=${ownerId} do Error.message, który trafia do Sentry."
+  },
+  {
+   "id": "K3",
+   "wariant": "C",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/server/src/webhooks/settings-service.ts:30,93",
+   "uzasadnienie": "Rzucany błąd używa stałej UNMATCHED_WRITE_MESSAGE bez identyfikatora właściciela."
+  },
+  {
+   "id": "K4",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx:55,290-291",
+   "uzasadnienie": "Testy stubują clientWidth w jsdom i sprawdzają tylko nazwę klasy min-w-0 oraz wyliczone style.left; brak testu przeglądarkowego układu."
+  },
+  {
+   "id": "K4",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx:55,231",
+   "uzasadnienie": "Ten sam wzorzec: stub clientWidth i asercja className toContain('min-w-0'); zmiany w e2e to tylko komentarze seedów, bez testu layoutu w przeglądarce."
+  },
+  {
+   "id": "K4",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx:55; apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx:381",
+   "uzasadnienie": "Stub clientWidth w jsdom i sprawdzanie klasy min-w-0 zamiast rzeczywistego overflow; brak testu przeglądarkowego."
+  },
+  {
+   "id": "K5",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/server/static/c.js:79-82,156",
+   "uzasadnienie": "failure() wybiera expiredMsg tylko gdy węzeł istnieje, w przeciwnym razie pokazuje ogólny acceptError."
+  },
+  {
+   "id": "K5",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/server/static/c.js:151-153",
+   "uzasadnienie": "gone nie sprawdza istnienia expiredError; przy braku węzła show(expiredError,true) to no-op, a show(acceptError,!gone) gasi komunikat ogólny — klient nie widzi nic."
+  },
+  {
+   "id": "K5",
+   "wariant": "C",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/server/static/c.js:79-80,153",
+   "uzasadnienie": "fail() pokazuje węzeł wygaśnięcia tylko gdy istnieje (`&& expired`), inaczej spada na komunikat ogólny."
+  },
+  {
+   "id": "K7",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "apps/server/static/logo-aa-napis.webp; apps/server/src/offer/pages/aa-design.ts:50",
+   "uzasadnienie": "Oba pliki logo-aa-napis.webp (server i dashboard) ważą 79 788 B i zastępują logo-aa.svg na stronach renderujących znak w kilkudziesięciu px."
+  },
+  {
+   "id": "K7",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/server/static/logo-aa-napis.webp; apps/server/src/offer/pages/aa-design.ts:56",
+   "uzasadnienie": "Ten sam blob 79 788 B w obu lokalizacjach, LOGO_PATH wskazuje na niego zamiast SVG."
+  },
+  {
+   "id": "K7",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "apps/server/static/logo-aa-napis.webp; apps/server/src/offer/pages/aa-design.ts:49",
+   "uzasadnienie": "Ten sam blob 79 788 B w obu lokalizacjach, LOGO_PATH wskazuje na niego zamiast SVG."
+  },
+  {
+   "id": "K8",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.tsx:43-45,129",
+   "uzasadnienie": "readAcademyLink przyjmuje każdy URL z new URL() bez sprawdzenia protokołu i wstawia go do <a href>."
+  },
+  {
+   "id": "K8",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.tsx:41-44,65",
+   "uzasadnienie": "aaMarketingLink nie filtruje protokołu, data:/mailto: trafiają do klikalnego href."
+  },
+  {
+   "id": "K8",
+   "wariant": "C",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.tsx:21,56-57",
+   "uzasadnienie": "ALLOWED_LINK_PROTOCOLS dopuszcza tylko http:/https:, inne protokoły rzucają i dają null."
+  },
+  {
+   "id": "K10",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.tsx:46-47",
+   "uzasadnienie": "catch wywołuje Sentry.captureException i zwraca null."
+  },
+  {
+   "id": "K10",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.tsx:45-46",
+   "uzasadnienie": "Pusty `catch { return null; }` połyka błąd parsowania VITE_AA_MARKETING_URL bez zgłoszenia do Sentry."
+  },
+  {
+   "id": "K10",
+   "wariant": "C",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.tsx:61-65",
+   "uzasadnienie": "catch raportuje błąd do Sentry z tagiem konfiguracji i zachowuje null jako fallback."
+  },
+  {
+   "id": "K11",
+   "wariant": "A",
+   "ocena": "ZAPOBIEZONY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.test.tsx:219",
+   "uzasadnienie": "Skan źródeł porównuje source.toLowerCase().includes(forbidden), więc wariant z wielkimi literami zostanie wykryty."
+  },
+  {
+   "id": "K11",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.test.tsx:236",
+   "uzasadnienie": "readFileSync(file).includes(needle) bez normalizacji wielkości liter przepuści np. AkademiaAutomatyzacji.com."
+  },
+  {
+   "id": "K11",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/components/layout/app-layout.test.tsx:267",
+   "uzasadnienie": "source.text.includes(domain) bez toLowerCase — inny zapis wielkości liter domeny przejdzie skan."
+  },
+  {
+   "id": "K12",
+   "wariant": "A",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/main.tsx:42",
+   "uzasadnienie": "`await import('./App.js')` rozbija bundle na szeregowo ładowane chunki."
+  },
+  {
+   "id": "K12",
+   "wariant": "B",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/main.tsx:75",
+   "uzasadnienie": "Dynamiczny import App po inicjalizacji Sentry — ten sam podział bundla i dodatkowy round trip."
+  },
+  {
+   "id": "K12",
+   "wariant": "C",
+   "ocena": "OBECNY",
+   "dowod": "apps/dashboard/src/main.tsx:56",
+   "uzasadnienie": "Dynamiczny import App zamiast statycznego — ten sam mechanizm podziału na szeregowe chunki."
+  }
+ ],
+ "_run": {
+  "runId": "wf_4d68f40d-081",
+  "status": "completed",
+  "model": "claude-opus-5-5",
+  "ms": 82687,
+  "agentow": 1,
+  "sesja": "aa8af744-1769-5ca9-af53-9031c646ef28",
+  "katalog": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-test-review-p12-f-1de5a4c-sedzia/aa8af744-1769-5ca9-af53-9031c646ef28"
+ }
+}

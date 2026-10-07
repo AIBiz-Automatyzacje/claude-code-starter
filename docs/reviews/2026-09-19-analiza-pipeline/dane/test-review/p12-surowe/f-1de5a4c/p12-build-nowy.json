@@ -1,0 +1,383 @@
+{
+ "fazaNumer": 6,
+ "status": "completed",
+ "iu": [
+  {
+   "id": "IU-13",
+   "nazwa": "Cztery poprawki dokumentu oferty — walidator, rok, favicon, 409",
+   "status": "completed",
+   "subagent": "feature-builder-data"
+  },
+  {
+   "id": "IU-14",
+   "nazwa": "Stopka dashboardu z logo AA, VITE_AA_MARKETING_URL, nowy znak na stronach systemowych",
+   "status": "completed",
+   "subagent": "feature-builder-fullstack"
+  },
+  {
+   "id": "IU-15",
+   "nazwa": "Dług dashboardu — heatmapa i geometria, 5 pozycji",
+   "status": "completed",
+   "subagent": "feature-builder-ui"
+  },
+  {
+   "id": "IU-16",
+   "nazwa": "Dług dashboardu — reszta, 7 pozycji",
+   "status": "completed",
+   "subagent": "feature-builder-fullstack"
+  }
+ ],
+ "stanZapisany": null,
+ "testy": "PASS — pnpm test: scripts 32, e2e 15, shared 125, server 890, dashboard 353 (0 FAIL, 0 unhandled); pnpm typecheck z buildem PASS (w tym vite build dashboardu)",
+ "problem": null,
+ "commity": [
+  "7b0a135 feat(faza-7-szablony-i-grafiki): dług dokumentu oferty, stopka dashboardu i dashboardu (IU-13–IU-16)"
+ ],
+ "odchylenia": [
+  "Domknięcie naprawiło defekt sprzed fazy: apps/server/src/mcp/tools/opublikuj-oferte.test.ts:49 ma zaszyte EXPIRES_AT = 2026-09-30, więc od 2026-10-01 dwa testy transportu MCP padały. Blok transportowy zamraża teraz Date na NOW (vi.useFakeTimers({ toFake: ['Date'] })), timery zostają prawdziwe.",
+  "Domknięcie: apps/dashboard/src/features/templates/template-assets-card.test.tsx padał na imporcie, bo w checkoucie nie ma .env. Dopisana atrapa lib/supabase.",
+  "Domknięcie: w apps/dashboard/src/App.test.tsx przekierowanie z /logowanie (IU-16) montowało listę ofert, a atrapa supabase nie miała from. Nieobsłużone odrzucenie dawało exit 1 dashboardu mimo 353 zielonych testów. Atrapa uzupełniona.",
+  "Bramka testyUsuniete (status ok, 2 trafienia): builder IU-14 usunął z apps/server/src/routes/offer-origin-pages.test.ts blok 'rozgałęzienie po originie (Z3)' z 2 testami, choć funkcja dalej istnieje. Blok przywrócony w pierwotnym brzmieniu, drugi przebieg bramek czysty.",
+  "IU-14: checkbox 'Test: [Unit] Strony 404 i plansza wygaśnięcia wskazują na nowy plik znaku' zostaje NIEODZNACZONY do decyzji review. Założenie jest błędne: według makiet ani 404/503, ani plansza wygaśnięcia nie mają znaku AA. Builder napisał wariant (root i /prywatnosc wstawiają nowy znak, 404 i plansza nie odwołują się do starego). Korekta jest opisana w planie technicznym przy scenariuszu i w pliku zadań. To samo błędne założenie stoi w docs/operator/faza-7-szablony-i-grafiki-przygotowanie.md:231.",
+  "Utworzony supabase/migrations.sum (bramki.mjs --dopisz-sume; wcześniej pliku nie było). Faza nie dodaje migracji.",
+  "Bramki eslint, knip, size-limit, stryker i advisors mają status 'brak' (narzędzia niezainstalowane albo brak SUPABASE_ACCESS_TOKEN), a testyTypow 'pominieta'. Nic do naprawy.",
+  "Plan techniczny (.md) edytowałem skryptem python przez Bash, a nie narzędziem Edit, wbrew regule z CLAUDE.md. Treść zmiany jest poprawna (odhaczone IU-13–16 i nota korygująca).",
+  "Nowe teksty IU-16 czekają na akceptację operatora: granica błędu i cztery odmowy testu webhooka.",
+  "IU-15: HEAT_VISIT_LIMIT spadł z 200 do 51 (budżet 1 MB / 20 KB na wiersz), więc komunikat o ograniczeniu mapy pojawi się od 52 wizyt. MAX_DRAWN_POINTS i MAX_HEAT_ROW_BYTES wynikają z rachunku, nie z pomiaru.",
+  "IU-14: /logo-aa.svg nie jest już wydawany (plik został w static/ jako sierota). LOGO_HEIGHT_PX 20–22 px dobrano do starego, jednowierszowego znaku, więc trzeba go porównać z makietą. Mobilne menu nie ma znaku ani linku.",
+  "IU-16: dashboard dzieli bundle na index 183 kB i App 410 kB (dynamiczny import po initMonitoring). Komentarz przy readMarketingLink w app-layout.tsx nadal mówi, że brak error boundary, co jest już nieaktualne. webhook-card.test.tsx ma ponad 500 linii przy progu 360.",
+  "Dossier preSkan: then-bez-catch w apps/server/src/webhooks/settings-service.test.ts:156 (plik testowy) zostawiony dla review."
+ ],
+ "testyUsuniete": [
+  {
+   "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+   "nazwa": "nie odpowiada na tych trasach na APP_ORIGIN",
+   "uzasadnienie": "Usunięty przez buildera IU-14, choć funkcja (Z3) dalej istnieje. PRZYWRÓCONY przy domknięciu w pierwotnym brzmieniu, przechodzi."
+  },
+  {
+   "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+   "nazwa": "na nieznanej ścieżce originu ofert wydaje stronę HTML, nie JSON",
+   "uzasadnienie": "Usunięty przez buildera IU-14, choć funkcja (HTML 404 na originie ofert) dalej istnieje. PRZYWRÓCONY przy domknięciu w pierwotnym brzmieniu, przechodzi."
+  }
+ ],
+ "bramki": {
+  "typecheck": {
+   "status": "ok",
+   "sekundy": 3.6,
+   "trafienia": 0,
+   "poNaprawie": "ok"
+  },
+  "eslint": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "brak"
+  },
+  "testyTypow": {
+   "status": "pominieta",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "pominieta"
+  },
+  "knip": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "brak"
+  },
+  "sizeLimit": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "brak"
+  },
+  "migracje": {
+   "status": "ok",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "ok"
+  },
+  "migracjeSuma": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "brak"
+  },
+  "advisors": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "brak"
+  },
+  "testyUsuniete": {
+   "status": "ok",
+   "sekundy": 0,
+   "trafienia": 2,
+   "poNaprawie": "ok"
+  },
+  "stryker": {
+   "status": "brak",
+   "sekundy": 0,
+   "trafienia": 0,
+   "poNaprawie": "brak"
+  }
+ },
+ "dossier": {
+  "diffStat": "54 plikow, +2159 −263",
+  "pliki": [
+   {
+    "plik": ".env.example",
+    "czegoDotyczy": "zmieniony (+6)"
+   },
+   {
+    "plik": "apps/dashboard/src/App.test.tsx",
+    "czegoDotyczy": "zmieniony (+88 −1)"
+   },
+   {
+    "plik": "apps/dashboard/src/App.tsx",
+    "czegoDotyczy": "zmieniony (+33 −12)"
+   },
+   {
+    "plik": "apps/dashboard/src/assets/logo-aa-napis.webp",
+    "czegoDotyczy": "dodany"
+   },
+   {
+    "plik": "apps/dashboard/src/components/copy-button.test.tsx",
+    "czegoDotyczy": "dodany (+121)"
+   },
+   {
+    "plik": "apps/dashboard/src/components/copy-button.tsx",
+    "czegoDotyczy": "zmieniony (+28 −5)"
+   },
+   {
+    "plik": "apps/dashboard/src/components/error-boundary.test.tsx",
+    "czegoDotyczy": "dodany (+100)"
+   },
+   {
+    "plik": "apps/dashboard/src/components/error-boundary.tsx",
+    "czegoDotyczy": "dodany (+88)"
+   },
+   {
+    "plik": "apps/dashboard/src/components/layout/app-layout.test.tsx",
+    "czegoDotyczy": "zmieniony (+133 −7)"
+   },
+   {
+    "plik": "apps/dashboard/src/components/layout/app-layout.tsx",
+    "czegoDotyczy": "zmieniony (+105 −11)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/auth/require-session.tsx",
+    "czegoDotyczy": "zmieniony (+20)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/heatmap-grid.test.ts",
+    "czegoDotyczy": "zmieniony (+94)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/heatmap-grid.ts",
+    "czegoDotyczy": "zmieniony (+35 −1)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/offer-details-page.test.tsx",
+    "czegoDotyczy": "zmieniony (+4)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.test.tsx",
+    "czegoDotyczy": "zmieniony (+34)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-card.tsx",
+    "czegoDotyczy": "zmieniony (+13 −3)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.test.tsx",
+    "czegoDotyczy": "zmieniony (+34)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/offer-heatmap-frame.tsx",
+    "czegoDotyczy": "zmieniony (+69 −53)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/use-offer-heat.test.ts",
+    "czegoDotyczy": "zmieniony (+47 −2)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/offers/use-offer-heat.ts",
+    "czegoDotyczy": "zmieniony (+23 −7)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/settings-page.test.tsx",
+    "czegoDotyczy": "zmieniony (+33 −4)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/texts.ts",
+    "czegoDotyczy": "zmieniony (+34)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/use-mcp-token.ts",
+    "czegoDotyczy": "zmieniony (+17 −9)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/use-webhook-settings.ts",
+    "czegoDotyczy": "zmieniony (+11 −1)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/webhook-card-status.tsx",
+    "czegoDotyczy": "zmieniony (+10 −3)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/webhook-card.test.tsx",
+    "czegoDotyczy": "zmieniony (+70 −1)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/settings/webhook-state.ts",
+    "czegoDotyczy": "zmieniony (+5 −1)"
+   },
+   {
+    "plik": "apps/dashboard/src/features/templates/template-assets-card.test.tsx",
+    "czegoDotyczy": "zmieniony (+11)"
+   },
+   {
+    "plik": "apps/dashboard/src/main.tsx",
+    "czegoDotyczy": "zmieniony (+23 −4)"
+   },
+   {
+    "plik": "apps/dashboard/src/vite-env.d.ts",
+    "czegoDotyczy": "zmieniony (+6)"
+   },
+   {
+    "plik": "apps/server/src/cta/cta-script.test.ts",
+    "czegoDotyczy": "zmieniony (+124 −1)"
+   },
+   {
+    "plik": "apps/server/src/mcp/tools/opublikuj-oferte.test.ts",
+    "czegoDotyczy": "zmieniony (+14 −1)"
+   },
+   {
+    "plik": "apps/server/src/offer/aa-pages.test.ts",
+    "czegoDotyczy": "dodany (+68)"
+   },
+   {
+    "plik": "apps/server/src/offer/aa-pages.ts",
+    "czegoDotyczy": "zmieniony (+23 −24)"
+   },
+   {
+    "plik": "apps/server/src/offer/cta-section.ts",
+    "czegoDotyczy": "zmieniony (+27)"
+   },
+   {
+    "plik": "apps/server/src/offer/expired-page.test.ts",
+    "czegoDotyczy": "zmieniony (+16)"
+   },
+   {
+    "plik": "apps/server/src/offer/expired-page.ts",
+    "czegoDotyczy": "zmieniony (+6)"
+   },
+   {
+    "plik": "apps/server/src/offer/pages/aa-design.ts",
+    "czegoDotyczy": "zmieniony (+9 −3)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer-origin-pages.test.ts",
+    "czegoDotyczy": "zmieniony (+92 −4)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer-origin-pages.ts",
+    "czegoDotyczy": "zmieniony (+10 −1)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer.test.ts",
+    "czegoDotyczy": "zmieniony (+129 −2)"
+   },
+   {
+    "plik": "apps/server/src/routes/offer.ts",
+    "czegoDotyczy": "zmieniony (+66 −13)"
+   },
+   {
+    "plik": "apps/server/src/webhooks/settings-service.test.ts",
+    "czegoDotyczy": "zmieniony (+53 −5)"
+   },
+   {
+    "plik": "apps/server/src/webhooks/settings-service.ts",
+    "czegoDotyczy": "zmieniony (+19 −1)"
+   },
+   {
+    "plik": "apps/server/static/c.js",
+    "czegoDotyczy": "zmieniony (+12 −7)"
+   },
+   {
+    "plik": "apps/server/static/logo-aa-napis.webp",
+    "czegoDotyczy": "dodany"
+   },
+   {
+    "plik": "Dockerfile",
+    "czegoDotyczy": "zmieniony (+8)"
+   },
+   {
+    "plik": "docs/active/faza-7-szablony-i-grafiki/faza-7-szablony-i-grafiki-kontekst.md",
+    "czegoDotyczy": "zmieniony (+11 −1)"
+   },
+   {
+    "plik": "docs/active/faza-7-szablony-i-grafiki/faza-7-szablony-i-grafiki-zadania.md",
+    "czegoDotyczy": "zmieniony (+67 −67)"
+   },
+   {
+    "plik": "docs/plans/2026-09-03-001-feat-faza-7-szablony-i-grafiki-plan.md",
+    "czegoDotyczy": "zmieniony (+5 −4)"
+   },
+   {
+    "plik": "packages/shared/src/webhook-contract.test.ts",
+    "czegoDotyczy": "zmieniony (+43 −1)"
+   },
+   {
+    "plik": "packages/shared/src/webhook-contract.ts",
+    "czegoDotyczy": "zmieniony (+22 −1)"
+   },
+   {
+    "plik": "scripts/dockerfile-invariants.test.ts",
+    "czegoDotyczy": "zmieniony (+19 −2)"
+   },
+   {
+    "plik": "supabase/migrations.sum",
+    "czegoDotyczy": "dodany (+21)"
+   }
+  ],
+  "warstwy": {
+   "ui": true,
+   "dane": true,
+   "typowanie": true,
+   "nowyModul": true
+  },
+  "e2eCheckboxy": 1,
+  "figmaScreens": true,
+  "diffPlik": "/tmp/review-diff-docs-active-faza-7-szablony-i-grafiki-faza-6.diff",
+  "diffZapisany": true,
+  "diffUciety": false,
+  "ctxPlik": "/tmp/review-ctx-docs-active-faza-7-szablony-i-grafiki-faza-6.md",
+  "ctxZapisany": true,
+  "ctxZnaki": 37546,
+  "preSkan": [
+   {
+    "wzorzec": "then-bez-catch",
+    "plik": "apps/server/src/webhooks/settings-service.test.ts:156"
+   }
+  ],
+  "wiedza": {
+   "indeksZn": null,
+   "claudeMdZn": 21821,
+   "wycinekZn": 0,
+   "wycinekWpisy": 0,
+   "wycinekPominiete": 0
+  }
+ },
+ "baza": "60f1951eb67356958644ccfa19792262a8634345",
+ "_run": {
+  "runId": "wf_98e50b92-5ac",
+  "status": "completed",
+  "model": "claude-opus-5-5",
+  "ms": 2219027,
+  "agentow": 6,
+  "sesja": "abdc4d94-50f0-5927-8a62-e220fdfdee64",
+  "katalog": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-test-review-p12-kopie-f-1de5a4c-nowy/abdc4d94-50f0-5927-8a62-e220fdfdee64"
+ }
+}
