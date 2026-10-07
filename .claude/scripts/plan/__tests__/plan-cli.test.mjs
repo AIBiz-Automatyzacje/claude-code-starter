@@ -171,6 +171,20 @@ test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i 
   assert.deepEqual(gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } }).e2e.uwagi, [])
 }))
 
+test('gotowosc: zadanie z samymi makietami figma_screens sprawdza srodowisko jak bootstrap; bez .env.e2e przechodzi (visual diff bez przegladarki)', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const zadania = join(k, ZADANIE, 'publikacja-ofert-zadania.md')
+  writeFileSync(zadania, readFileSync(zadania, 'utf8').replace(/\[E2E\]/g, '[Manual]'))
+  writeFileSync(join(k, ZADANIE, 'publikacja-ofert-kontekst.md'), '# K\n\n## Designerski kontekst\n\n- Screeny referencyjne: docs/plans/publikacja-ofert-figma/lista-ofert.png\n')
+  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  assert.deepEqual([zle.e2e.ok, zle.e2e.scenariusze, zle.e2e.figmaScreens], [false, 0, true])
+  assert.match(zle.e2e.bledy.join('\n'), /\.env\.e2e nie jest w \.gitignore/)
+  assert.deepEqual(zle.e2e.uwagi, [], 'bez scenariuszy [E2E] skill weryfikacji nie jest potrzebny')
+  rmSync(join(k, '.env.e2e'))
+  const bezEnv = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'x' }) } })
+  assert.deepEqual([bezEnv.e2e.ok, bezEnv.e2e.bledy], [true, []])
+}))
+
 test('gotowosc po fazie 1: plik zmieniony przez faze nie zatrzymuje bramki (budzet wobec repo sprawdza generuj)', () => wRepo((k) => {
   zadanieNaGalezi(k)
   writeFileSync(join(k, 'src/services/oferty-service.ts'), 'const x = 1\n'.repeat(60))

@@ -222,6 +222,7 @@ test('archiwizacja dopisuje funkcje zadania do mapy przed przeniesieniem folderu
   assert.ok(mapa > 0, 'brak kroku mapy funkcji w poleceniu archiwizacji')
   assert.ok(mapa < kroki.indexOf('4. Przenies'), 'mapa czyta plan zadania z docs/active/ — przed przeniesieniem')
   assert.ok(complete.includes(`const MAPA_FUNKCJI = '${PLIK_MAPY}'`), 'kopia sciezki mapy w complete-wf = PLIK_MAPY')
+  assert.match(kroki, /git check-ignore -q <sciezka>/, 'sciezka ignorowana przez git (np. .claude/ w .gitignore projektu) daje git add z kodem 1 — pomijana jak nieistniejaca')
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
   assert.ok(skill.indexOf('e2e.mjs mapa --zadanie docs/active/$ARGUMENTS') > 0)
   assert.ok(skill.indexOf('e2e.mjs mapa') < skill.indexOf('5. **Utwórz podsumowanie'), 'w skillu mapa przed przeniesieniem plikow')

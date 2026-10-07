@@ -250,7 +250,8 @@ ${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md
    ${pathspec}
    PRZED git add: dla kazdej sciezki z listy (poza wpisem ':(exclude…)') sprawdz, ze istnieje na dysku (\`test -e\`) LUB jest w indeksie
    (\`git ls-files <sciezka> | grep -q .\`); sciezke, ktora nie spelnia zadnego warunku, POMIN i opisz w rezultaty
-   (nieistniejacy pathspec = fatal i git add nie stage'uje NICZEGO). Jesli docs/active/${nazwaZadania} nie ma juz
+   (nieistniejacy pathspec = fatal i git add nie stage'uje NICZEGO). Pomin tez sciezke ignorowana przez git
+   (\`git check-ignore -q <sciezka>\` = 0, np. .claude/ w .gitignore projektu) — git add konczy sie wtedy kodem 1. Jesli docs/active/${nazwaZadania} nie ma juz
    w indeksie (uzyles git mv wbrew krokowi 4) — pomin te sciezke, rename'y sa juz zestage'owane.
    SIATKA BEZPIECZENSTWA: sprawdz \`git status --porcelain\` i jesli wisza niezacommitowane
    artefakty bazy wiedzy — docs/solutions/, docs/CONCEPTS.md, docs/learned-patterns.md

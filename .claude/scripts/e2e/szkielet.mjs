@@ -20,6 +20,10 @@ const PLIK_TESTU = /\.(?:test|spec)\.|__tests__\//
 const TRASA_W_KODZIE = /\bpath\s*[=:]\s*\{?\s*["'`](\/[^"'`\s]*)["'`]/g
 // Trasa w stalej (`export const OFFERS_PATH = '/oferty'`), gdy router dostaje `path={OFFERS_PATH}`.
 const TRASA_W_STALEJ = /\bconst\s+[A-Z0-9_]*(?:PATH|PATTERN|ROUTE)[A-Z0-9_]*\s*=\s*["'`](\/[^"'`\s]*)["'`]/g
+// Trasy wzgledne zagniezdzonego routera (React Router: `<Route path="clients">`, `{ path: 'clients', element }`).
+const TRASA_WZGLEDNA_JSX = /<Route\b[^>]*?\spath=\{?["'`]([A-Za-z0-9:_*][^"'`\s]*)["'`]/g
+const TRASA_WZGLEDNA_OBIEKT = /\bpath:\s*["'`]([A-Za-z0-9:_][^"'`\s]*)["'`]\s*,\s*(?:element|Component|lazy|children|loader|index)\b/g
+const TRASA_API = /^\/api(?:\/|$)/
 const STRONA_NEXT = /(?:^|\/)app\/(.*?)\/?page\.(?:tsx|jsx|ts|js)$/
 const MAKS_TRAS = 40
 const PLIK_STATYCZNY = /\.[a-z0-9]{2,5}$/i
@@ -33,18 +37,26 @@ function pliki(katalog) {
   })
 }
 
+/** @param {string} projekt @returns {string[]} katalogi kodu: znane z korzenia i `<katalog>/src` pierwszego poziomu (np. frontend/src) */
+function katalogiKodu(projekt) {
+  const podkatalogi = readdirSync(projekt, { withFileTypes: true })
+    .filter((w) => w.isDirectory() && !w.name.startsWith('.') && !POMIJANE.has(w.name) && !KATALOGI_KODU.includes(w.name) && w.name !== 'docs')
+    .map((w) => `${w.name}/src`)
+  return [...KATALOGI_KODU, ...podkatalogi].filter((k) => existsSync(join(projekt, k)))
+}
+
 /** @param {string} projekt @returns {string[]} pliki kodu wzgledem projektu (bez testow i katalogow budowania) */
 function plikiKodu(projekt) {
-  return KATALOGI_KODU.filter((k) => existsSync(join(projekt, k))).flatMap((k) => pliki(join(projekt, k)))
+  return katalogiKodu(projekt).flatMap((k) => pliki(join(projekt, k)))
     .map((p) => relative(projekt, p).split(sep).join('/'))
     .filter((p) => PLIK_KODU.test(p) && !PLIK_TESTU.test(p))
 }
 
 /**
- * Trasy aplikacji z kodu: `path: '/x'` (konfiguracja routera), `<Route path="/x">`, stale `*_PATH`/`*_ROUTE` i katalogi stron
- * app routera Next.js.
+ * Trasy ekranow z kodu: `path: '/x'` (konfiguracja routera), `<Route path="/x">`, trasy wzgledne zagniezdzonego routera, stale
+ * `*_PATH`/`*_ROUTE` i katalogi stron app routera Next.js — bez tras API i plikow statycznych.
  * @param {string} projekt
- * @returns {string[]} posortowane, bez powtorzen
+ * @returns {{ trasy: string[], obcieto: number }} posortowane, bez powtorzen; obcieto = trasy ponad limit listy
  */
 export function trasyAplikacji(projekt) {
   const trasy = new Set()
@@ -52,9 +64,12 @@ export function trasyAplikacji(projekt) {
     const next = STRONA_NEXT.exec(p)
     if (next) trasy.add(`/${next[1].split('/').filter((s) => !/^\(.*\)$/.test(s)).join('/')}`.replace(/\/$/, '') || '/')
     const kod = readFileSync(join(projekt, p), 'utf8')
-    for (const m of [...kod.matchAll(TRASA_W_KODZIE), ...kod.matchAll(TRASA_W_STALEJ)]) trasy.add(m[1])
+    for (const wzorzec of [TRASA_W_KODZIE, TRASA_W_STALEJ, TRASA_WZGLEDNA_JSX, TRASA_WZGLEDNA_OBIEKT]) {
+      for (const m of kod.matchAll(wzorzec)) trasy.add(m[1])
+    }
   }
-  return [...trasy].filter((t) => !PLIK_STATYCZNY.test(t)).sort().slice(0, MAKS_TRAS)
+  const ekrany = [...trasy].filter((t) => t !== '*' && !PLIK_STATYCZNY.test(t) && !TRASA_API.test(t)).sort()
+  return { trasy: ekrany.slice(0, MAKS_TRAS), obcieto: Math.max(0, ekrany.length - MAKS_TRAS) }
 }
 
 /** @param {string} projekt @returns {number} liczba atrybutow data-testid w kodzie */
@@ -91,7 +106,7 @@ export function szkieletSkilla(projekt, { wpisowMapy }) {
   const env = envE2e(projekt)
   const konf = konfiguracja(projekt, env ?? {})
   const nazwa = nazwaProjektu(projekt)
-  const trasy = trasyAplikacji(projekt)
+  const { trasy, obcieto } = trasyAplikacji(projekt)
   const testId = liczTestId(projekt)
   const logowanie = trasy.filter((t) => /login|logowan|signin|sign-in|auth/i.test(t))
   return [
@@ -112,7 +127,8 @@ export function szkieletSkilla(projekt, { wpisowMapy }) {
     '`node .claude/scripts/e2e/e2e.mjs stan` — czy serwer uruchomiony przez Launch żyje i ogon jego logu (aplikacja przestała odpowiadać).', '',
     '## Drive', '',
     'Przeglądarka: skill `agent-browser` — `open <url>` → `snapshot -i` → akcja na refie → `snapshot -i` po każdej zmianie strony.', '',
-    `Trasy z kodu: ${trasy.length ? trasy.map((t) => `\`${t}\``).join(', ') : `${ZNACZNIK} trasy aplikacji (router nie dał się odczytać z kodu) -->`}`, '',
+    `Trasy z kodu (bez API; względne — segmenty zagnieżdżonego routera): ${trasy.length ? trasy.map((t) => `\`${t}\``).join(', ') : `${ZNACZNIK} trasy aplikacji (router nie dał się odczytać z kodu) -->`}`,
+    obcieto ? `${ZNACZNIK} ${obcieto} tras poza listą — dopisz ekrany używane w scenariuszach [E2E] -->` : '', '',
     env?.E2E_TEST_EMAIL
       ? `Logowanie: konto \`E2E_TEST_EMAIL\` / \`E2E_TEST_PASSWORD\` z \`${PLIK_ENV}\` (wartości nie trafiają do logów)${logowanie.length ? ` na ${logowanie.map((t) => `\`${t}\``).join(', ')}` : ''}.`
       : `Logowanie: ${ZNACZNIK} konto testowe i trasa logowania; bez logowania wpisz „nie dotyczy” -->`,
@@ -137,7 +153,7 @@ export function szkieletSkilla(projekt, { wpisowMapy }) {
 /**
  * @param {string} projekt
  * @param {{ zapisz: boolean, nadpisz: boolean }} opcje
- * @returns {{ odmowa: string } | { plik: string, zapisano: boolean, tresc?: string, trasy: string[], uzupelnij: number,
+ * @returns {{ odmowa: string } | { plik: string, zapisano: boolean, tresc?: string, trasy: string[], obcieto: number, uzupelnij: number,
  *   mapa: { plik: string, wpisow: number, dodane: string[], zaktualizowane: string[] } }}
  */
 export function generujSkill(projekt, { zapisz, nadpisz }) {
@@ -150,7 +166,8 @@ export function generujSkill(projekt, { zapisz, nadpisz }) {
   const mapa = scalMape(obecna, wpisyZrobionych(projekt), basename(projekt))
   const wpisow = (mapa.tekst.match(/^## `/gm) ?? []).length
   const tresc = szkieletSkilla(projekt, { wpisowMapy: wpisow })
-  const wynik = { plik: PLIK_SKILLA, trasy: trasyAplikacji(projekt), uzupelnij: tresc.split(ZNACZNIK).length - 1, mapa: { plik: PLIK_MAPY, wpisow, dodane: mapa.dodane, zaktualizowane: mapa.zaktualizowane } }
+  const { trasy, obcieto } = trasyAplikacji(projekt)
+  const wynik = { plik: PLIK_SKILLA, trasy, obcieto, uzupelnij: tresc.split(ZNACZNIK).length - 1, mapa: { plik: PLIK_MAPY, wpisow, dodane: mapa.dodane, zaktualizowane: mapa.zaktualizowane } }
   if (!zapisz) return { ...wynik, zapisano: false, tresc }
   mkdirSync(dirname(sciezkaSkilla), { recursive: true })
   writeFileSync(sciezkaSkilla, tresc)

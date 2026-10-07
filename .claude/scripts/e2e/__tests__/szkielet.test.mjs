@@ -13,7 +13,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { parsujMape } from '../mapa.mjs'
-import { szkieletSkilla, trasyAplikacji } from '../szkielet.mjs'
+import { szkieletSkilla, trasyAplikacji, wpisyZrobionych } from '../szkielet.mjs'
 import { PLIK_MAPY, PLIK_SKILLA } from '../weryfikacja.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
@@ -60,11 +60,36 @@ function uruchom(k, a) {
 
 test('trasyAplikacji: sciezki z routera, <Route> i stalych *_PATH, bez testow i node_modules (takze zagniezdzonych); app router Next z katalogow', () => {
   const k = projekt()
-  assert.deepEqual(trasyAplikacji(k), ['/logowanie', '/o/:slug', '/oferty', '/oferty/szkice'])
+  assert.deepEqual(trasyAplikacji(k).trasy, ['/logowanie', '/o/:slug', '/oferty', '/oferty/szkice'])
   mkdirSync(join(k, 'app/(panel)/ustawienia'), { recursive: true })
   writeFileSync(join(k, 'app/(panel)/ustawienia/page.tsx'), 'export default function P() {}\n')
   writeFileSync(join(k, 'app/page.tsx'), 'export default function P() {}\n')
-  assert.deepEqual(trasyAplikacji(k), ['/', '/logowanie', '/o/:slug', '/oferty', '/oferty/szkice', '/ustawienia'])
+  assert.deepEqual(trasyAplikacji(k).trasy, ['/', '/logowanie', '/o/:slug', '/oferty', '/oferty/szkice', '/ustawienia'])
+})
+
+test('trasyAplikacji: frontend w podkatalogu (frontend/src), trasy wzgledne <Route> i obiektu routera, /api poza lista, przyciecie raportowane', () => {
+  const k = projekt()
+  mkdirSync(join(k, 'frontend/src'), { recursive: true })
+  writeFileSync(join(k, 'frontend/src/App.tsx'), '<Route path="/panel" element={<P />}>\n  <Route\n    path="clients"\n    element={<K />} />\n</Route>\n')
+  writeFileSync(join(k, 'frontend/src/routes.ts'), "export const r = [{ path: 'faktury', element: <F /> }, { path: 'ustawienia/:id', Component: U }]\nconst plik = { path: 'logi/x.txt' }\n")
+  writeFileSync(join(k, 'src/app/api.ts'), "app.route({ path: '/api/oferty' })\n")
+  const w = trasyAplikacji(k)
+  assert.deepEqual(w.trasy, ['/logowanie', '/o/:slug', '/oferty', '/oferty/szkice', '/panel', 'clients', 'faktury', 'ustawienia/:id'])
+  assert.equal(w.obcieto, 0)
+  writeFileSync(join(k, 'src/app/duzo.ts'), Array.from({ length: 45 }, (_, i) => `const T${i}_PATH = '/t${String(i).padStart(2, '0')}'`).join('\n'))
+  const duzo = trasyAplikacji(k)
+  assert.equal(duzo.trasy.length, 40)
+  assert.equal(duzo.obcieto, 13)
+})
+
+test('wpisyZrobionych: plany w kolejnosci daty — przy tym samym flow nowszy plan daje droge', () => {
+  const k = projekt()
+  const starszy = 'docs/plans/2026-09-01-001-feat-stare-plan.md'
+  writeFileSync(join(k, starszy), PLAN.replace('otwórz /oferty, kliknij „Publikuj” przy szkicu, zrób screenshot', 'stara droga'))
+  mkdirSync(join(k, 'docs/completed/zz-stare'), { recursive: true })
+  writeFileSync(join(k, 'docs/completed/zz-stare/zz-stare-plan.md'), `Plan techniczny: \`${starszy}\`\n`)
+  const wpisy = wpisyZrobionych(k).filter((w) => w.flow === 'publikacja-oferty')
+  assert.deepEqual(wpisy.map((w) => [w.zadania[0], w.droga.slice(0, 11)]), [['zz-stare', 'stara droga'], ['publikacja-ofert', 'otwórz /ofe']])
 })
 
 test('szkielet: sekcje Launch / Doctor / Drive / Evidence / Cleanup / Mapa funkcji; Doctor = e2e.mjs sprawdz, Launch = e2e.mjs start', () => {

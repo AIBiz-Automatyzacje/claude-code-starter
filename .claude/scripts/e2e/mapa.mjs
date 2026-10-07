@@ -3,7 +3,7 @@
 // dopisuje funkcje zadania (`e2e.mjs mapa`), generator skilla zasiewa mape z planow zadan zrobionych przed nim.
 //
 // Scalanie po flow: Droga i Dowod bierze z nowszego planu, Pliki i Zadania sumuje, pola dopisane recznie (np. Selektory)
-// i luzne linie wpisu zostawia; wpis bez zmian, tekst nad wpisami i sekcje spoza wpisow zostaja bajt w bajt.
+// z ich podlistami i luzne linie wpisu zostawia; wpis bez zmian, tekst nad wpisami i sekcje spoza wpisow zostaja bajt w bajt.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
@@ -71,11 +71,34 @@ const polaBloku = (linie) => linie.slice(1).flatMap((l) => {
 })
 
 /**
+ * Linie wpisu poza samymi polami: wciete kontynuacje (podlista pola) zostaja przy swoim polu, reszta to luzne linie wpisu.
+ * @param {string[]} linie bloku
+ * @returns {{ kontynuacje: Map<string, string[]>, luzne: string[] }}
+ */
+function resztaBloku(linie) {
+  /** @type {Map<string, string[]>} */
+  const kontynuacje = new Map()
+  /** @type {string[]} */
+  const luzne = []
+  let pole = /** @type {string | null} */ (null)
+  for (const l of linie.slice(1)) {
+    const m = POLE.exec(l)
+    if (m) pole = m[1]
+    else if (pole && /^\s+\S/.test(l)) kontynuacje.set(pole, [...(kontynuacje.get(pole) ?? []), l])
+    else if (l.trim()) {
+      luzne.push(l)
+      pole = null
+    }
+  }
+  return { kontynuacje, luzne }
+}
+
+/**
  * @param {string} md tresc mapy
  * @returns {Mapa}
  */
 export function parsujMape(md) {
-  const linie = md.split('\n')
+  const linie = md.replace(/\r\n/g, '\n').split('\n')
   const start = linie.findIndex((l) => l.startsWith('## '))
   /** @type {Blok[]} */
   const bloki = []
@@ -87,8 +110,10 @@ export function parsujMape(md) {
   return { preambula: start === -1 ? linie : linie.slice(0, start), bloki, wpisy }
 }
 
-/** @param {string} wartosc pola Pliki @returns {string[]} */
-const plikiPola = (wartosc) => [...wartosc.matchAll(/`([^`]+)`/g)].map((m) => m[1])
+/** @param {string} wartosc pola Pliki (z backtickami albo wpisane recznie po przecinku) @returns {string[]} */
+const plikiPola = (wartosc) => (wartosc.includes('`')
+  ? [...wartosc.matchAll(/`([^`]+)`/g)].map((m) => m[1])
+  : wartosc.split(',').map((p) => p.trim()).filter((p) => p && p !== BRAK))
 /** @param {string} wartosc pola Zadania @returns {string[]} */
 const zadaniaPola = (wartosc) => (wartosc === BRAK ? [] : wartosc.split(',').map((z) => z.trim()).filter(Boolean))
 
@@ -111,8 +136,15 @@ function scalPola(stare, w) {
 /** @param {Pola} pola @returns {Pola} pola w kolejnosci, w jakiej zapisuje je scalanie */
 const kanon = (pola) => [...POLA_WPISU.flatMap((k) => pola.filter(([klucz]) => klucz === k)), ...pola.filter(([k]) => !POLA_WPISU.includes(k))]
 
-/** @param {string} flow @param {Pola} pola @param {string[]} luzne @returns {string[]} */
-const linieWpisu = (flow, pola, luzne = []) => [`## \`${flow}\``, ...pola.map(([k, v]) => `- ${k}: ${v}`), ...luzne, '']
+/**
+ * @param {string} flow
+ * @param {Pola} pola
+ * @param {{ kontynuacje: Map<string, string[]>, luzne: string[] }} [reszta] z istniejacego wpisu
+ * @returns {string[]}
+ */
+const linieWpisu = (flow, pola, reszta = { kontynuacje: new Map(), luzne: [] }) => [
+  `## \`${flow}\``, ...pola.flatMap(([k, v]) => [`- ${k}: ${v}`, ...(reszta.kontynuacje.get(k) ?? [])]), ...reszta.luzne, '',
+]
 
 /** @param {string} projekt @returns {string[]} */
 const naglowekMapy = (projekt) => [
@@ -128,6 +160,7 @@ const naglowekMapy = (projekt) => [
  * @returns {{ tekst: string, dodane: string[], zaktualizowane: string[] }}
  */
 export function scalMape(md, wpisy, projekt) {
+  // Mapa z CRLF wraca z LF: inaczej `(.*)$` pola nie przechodzi przez \r i kazde scalenie dublowaloby pola.
   const mapa = md === null ? { preambula: naglowekMapy(projekt), bloki: /** @type {Blok[]} */ ([]) } : parsujMape(md)
   /** @type {string[]} */
   const dodane = []
@@ -145,8 +178,7 @@ export function scalMape(md, wpisy, projekt) {
     const stare = polaBloku(blok.linie)
     const nowe = scalPola(stare, w)
     if (JSON.stringify(nowe) === JSON.stringify(kanon(stare))) continue
-    const luzne = blok.linie.slice(1).filter((l) => l.trim() && !POLE.test(l))
-    blok.linie = linieWpisu(w.flow, nowe, luzne)
+    blok.linie = linieWpisu(w.flow, nowe, resztaBloku(blok.linie))
     zaktualizowane.push(w.flow)
   }
   return { tekst: [...mapa.preambula, ...mapa.bloki.flatMap((b) => b.linie)].join('\n'), dodane, zaktualizowane }

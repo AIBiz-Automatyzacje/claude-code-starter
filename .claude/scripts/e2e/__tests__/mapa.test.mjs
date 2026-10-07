@@ -76,6 +76,33 @@ test('parsujMape: wpis bez backticka w naglowku i linie spoza listy pol nie gubi
   assert.equal(scalMape(md, [], 'x').tekst, md)
 })
 
+test('scalMape przy aktualizacji wpisu: podlisty zostaja pod swoim polem, luzna linia zostaje, Pliki bez backtickow nie przepadaja', () => {
+  const md = [
+    '# Mapa funkcji — x', '', '## `publikacja-oferty`', '- Droga: stara', '- Dowód: stary', '- Pliki: src/stary.ts, src/b.ts', '- Zadania: a',
+    '- Selektory: formularz', '  - email: @e1', '  - haslo: @e2', '- Logowanie: magic link', '  - komenda: e2e/link.sh', 'notatka luzna', '',
+  ].join('\n')
+  const w = scalMape(md, [{ flow: 'publikacja-oferty', droga: 'nowa', dowod: 'nowy', pliki: ['src/a.tsx'], zadania: ['b'] }], 'x')
+  assert.deepEqual(w.zaktualizowane, ['publikacja-oferty'])
+  assert.equal(w.tekst, [
+    '# Mapa funkcji — x', '', '## `publikacja-oferty`', '- Droga: nowa', '- Dowód: nowy', '- Pliki: `src/stary.ts`, `src/b.ts`, `src/a.tsx`', '- Zadania: a, b',
+    '- Selektory: formularz', '  - email: @e1', '  - haslo: @e2', '- Logowanie: magic link', '  - komenda: e2e/link.sh', 'notatka luzna', '',
+  ].join('\n'))
+})
+
+test('scalMape: mapa z CRLF nie dubluje pol', () => {
+  const lf = scalMape(null, wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty').tekst
+  const w = scalMape(lf.replace(/\n/g, '\r\n'), wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty')
+  assert.deepEqual([w.dodane, w.zaktualizowane], [[], []])
+  assert.equal((w.tekst.match(/^- Droga:/gm) ?? []).length, 2)
+})
+
+test('wpisyZPlanu: migracja i seed z pola Pliki jednostki ze scenariuszem nie trafiaja do mapy', () => {
+  const plan = PLAN.replace('| Modyfikuj | `src/features/oferty/components/lista-ofert.tsx` | 8 → 40 | — | zostaje |',
+    '| Modyfikuj | `src/features/oferty/components/lista-ofert.tsx` | 8 → 40 | — | zostaje |\n| Stwórz | `supabase/migrations/20261008_x.sql` | 0 → 5 | — | nowy |')
+  assert.notEqual(plan, PLAN, 'kotwica fixture planu')
+  assert.deepEqual(wpisyZPlanu(plan, 'z')[0].pliki, ['src/features/oferty/components/lista-ofert.tsx'])
+})
+
 // Wniosek z P13: parser sprawdzany na wszystkich planach z dysku, nie tylko na idealnym fixture.
 test('wpisyZPlanu na prawdziwych planach z dysku: bez wyjatku, kazdy wpis ma flow i droge albo dowod', (t) => {
   const korzen = join(homedir(), 'Documents/Kodowanie')

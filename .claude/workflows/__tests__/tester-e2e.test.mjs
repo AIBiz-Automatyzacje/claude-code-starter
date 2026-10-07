@@ -101,3 +101,23 @@ test('plik roli: tester nie odznacza pliku zadan; wynik tylko w przebiegach i fi
   assert.match(tester, /`\{findings, przebiegi\}`/)
   assert.doesNotMatch(tester, /<examples>/, 'przyklad wywolania z sesji to nie warstwa stala roli wolanej przez workflow')
 })
+
+test('plik roli: makiety — visual-diff z findingiem OPERATOR; w trybie bez przegladarki kazdy ekran nadal idzie do czlowieka', () => {
+  const sekcja = tester.slice(tester.indexOf('### Makiety'))
+  assert.ok(tester.includes('### Makiety'))
+  assert.match(sekcja, /figma_screens/)
+  assert.match(sekcja, /visual-diff\/<ekran>-actual\.png/)
+  assert.match(sekcja, /Operator: \[Manual\] <ekran>: visual review — Operator action:/)
+  assert.match(sekcja, /W trybie `bez-przegladarki` zrzutu nie robisz, a każdy ekran z `figma_screens`[^\n]*finding OPERATOR P3/)
+  assert.match(tester, /Przy zerze scenariuszy i bez makiet `figma_screens`/)
+})
+
+test('plik roli: doctor agent-browser tylko w trybie przegladarka (bez przegladarki zostaja sprawdzenia HTTP)', () => {
+  assert.match(tester, /W trybie `przegladarka` zacznij od preflightu: `agent-browser doctor --offline --quick`/)
+  assert.match(tester, /W trybie `bez-przegladarki`[^\n]*`curl -sS`/)
+})
+
+test('plik roli: finding seeda kontra migracja ma linie checkbox: scenariusza, ktory uzywa seeda (fix odznacza po PASS)', () => {
+  const seedy = wytnij(tester, '### Seedy', '\n### ')
+  assert.match(seedy.split('\n').find((l) => l.includes('DEFAULT')) ?? '', /`checkbox: <treść linii scenariusza, który używa seeda>`/)
+})
