@@ -21,8 +21,12 @@ const TRASA_W_KODZIE = /\bpath\s*[=:]\s*\{?\s*["'`](\/[^"'`\s]*)["'`]/g
 // Trasa w stalej (`export const OFFERS_PATH = '/oferty'`), gdy router dostaje `path={OFFERS_PATH}`.
 const TRASA_W_STALEJ = /\bconst\s+[A-Z0-9_]*(?:PATH|PATTERN|ROUTE)[A-Z0-9_]*\s*=\s*["'`](\/[^"'`\s]*)["'`]/g
 // Trasy wzgledne zagniezdzonego routera (React Router: `<Route path="clients">`, `{ path: 'clients', element }`).
-const TRASA_WZGLEDNA_JSX = /<Route\b[^>]*?\spath=\{?["'`]([A-Za-z0-9:_*][^"'`\s]*)["'`]/g
-const TRASA_WZGLEDNA_OBIEKT = /\bpath:\s*["'`]([A-Za-z0-9:_][^"'`\s]*)["'`]\s*,\s*(?:element|Component|lazy|children|loader|index)\b/g
+// Atrybuty przed `path` moga miec JSX w klamrach (`element={<L />}`), wiec `>` w klamrach nie konczy znacznika.
+const TRASA_WZGLEDNA_JSX = /<Route\b(?:[^>{]|\{[^}]*\})*?\spath=\{?["'`]([A-Za-z0-9:_*][^"'`\s]*)["'`]/g
+// Tylko klucze, ktore ma wylacznie obiekt trasy (children, index, loader bywaja w zwyklych obiektach konfiguracji).
+const TRASA_WZGLEDNA_OBIEKT = /\bpath:\s*["'`]([A-Za-z0-9_][^"'`\s:]*(?::[A-Za-z][^"'`\s]*)?)["'`]\s*,\s*(?:element|Component|lazy)\b/g
+// Pakiet z kodem ekranow: katalog <x>/src liczy sie jako kod frontendu tylko przy takiej zaleznosci w <x>/package.json.
+const ZALEZNOSC_FRONTENDU = /^(?:react|react-dom|vue|svelte|solid-js|preact|next|nuxt|@angular\/core|@remix-run\/react|@tanstack\/react-router)$/
 const TRASA_API = /^\/api(?:\/|$)/
 const STRONA_NEXT = /(?:^|\/)app\/(.*?)\/?page\.(?:tsx|jsx|ts|js)$/
 const MAKS_TRAS = 40
@@ -37,12 +41,25 @@ function pliki(katalog) {
   })
 }
 
-/** @param {string} projekt @returns {string[]} katalogi kodu: znane z korzenia i `<katalog>/src` pierwszego poziomu (np. frontend/src) */
+/** @param {string} katalog @returns {boolean} czy package.json katalogu ma zaleznosc frontendu */
+function pakietFrontendu(katalog) {
+  const pkg = join(katalog, 'package.json')
+  if (!existsSync(pkg)) return false
+  const { dependencies = {}, devDependencies = {} } = /** @type {{ dependencies?: object, devDependencies?: object }} */ (JSON.parse(readFileSync(pkg, 'utf8')))
+  return [...Object.keys(dependencies), ...Object.keys(devDependencies)].some((z) => ZALEZNOSC_FRONTENDU.test(z))
+}
+
+/**
+ * @param {string} projekt
+ * @returns {string[]} katalogi kodu: znane z korzenia i `<katalog>/src` pierwszego poziomu z pakietem frontendu (np. frontend/src);
+ *   backend, skrypty i narzedzia z wlasnym src nie daja tras ekranow
+ */
 function katalogiKodu(projekt) {
   const podkatalogi = readdirSync(projekt, { withFileTypes: true })
-    .filter((w) => w.isDirectory() && !w.name.startsWith('.') && !POMIJANE.has(w.name) && !KATALOGI_KODU.includes(w.name) && w.name !== 'docs')
+    .filter((w) => w.isDirectory() && !w.name.startsWith('.') && !POMIJANE.has(w.name) && !KATALOGI_KODU.includes(w.name))
+    .filter((w) => existsSync(join(projekt, w.name, 'src')) && pakietFrontendu(join(projekt, w.name)))
     .map((w) => `${w.name}/src`)
-  return [...KATALOGI_KODU, ...podkatalogi].filter((k) => existsSync(join(projekt, k)))
+  return [...KATALOGI_KODU.filter((k) => existsSync(join(projekt, k))), ...podkatalogi]
 }
 
 /** @param {string} projekt @returns {string[]} pliki kodu wzgledem projektu (bez testow i katalogow budowania) */

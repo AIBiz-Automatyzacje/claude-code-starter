@@ -89,11 +89,23 @@ test('scalMape przy aktualizacji wpisu: podlisty zostaja pod swoim polem, luzna 
   ].join('\n'))
 })
 
-test('scalMape: mapa z CRLF nie dubluje pol', () => {
+test('scalMape: mapa z CRLF nie dubluje pol, bez zmian zostaje bajt w bajt, po zmianie zachowuje CRLF', () => {
   const lf = scalMape(null, wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty').tekst
-  const w = scalMape(lf.replace(/\n/g, '\r\n'), wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty')
+  const crlf = lf.replace(/\n/g, '\r\n')
+  const w = scalMape(crlf, wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty')
   assert.deepEqual([w.dodane, w.zaktualizowane], [[], []])
-  assert.equal((w.tekst.match(/^- Droga:/gm) ?? []).length, 2)
+  assert.equal(w.tekst, crlf)
+  const zmiana = scalMape(crlf, [{ flow: 'nowy', droga: 'd', dowod: 's', pliki: [], zadania: ['z'] }], 'oferty')
+  assert.equal((zmiana.tekst.match(/^- Droga:/gm) ?? []).length, 3)
+  assert.doesNotMatch(zmiana.tekst.replace(/\r\n/g, ''), /\n/, 'wszystkie konce linii CRLF')
+})
+
+test('scalMape: powtorzone pole reczne trzyma swoja podliste; wcieta linia nad pierwszym polem zostaje pod naglowkiem; Pliki mieszane', () => {
+  const md = ['## `a`', '  opis wpisu', '- Droga: d', '- Pliki: `src/s.ts`, src/reczny.ts', '- Uwaga: u1', '  - p1', '- Uwaga: u2', '  - p2', ''].join('\n')
+  let tekst = md
+  for (const droga of ['d2', 'd3', 'd4']) tekst = scalMape(tekst, [{ flow: 'a', droga, dowod: 's', pliki: [], zadania: ['z'] }], 'x').tekst
+  assert.equal(tekst, ['## `a`', '  opis wpisu', '- Droga: d4', '- Dowód: s', '- Pliki: `src/s.ts`, `src/reczny.ts`', '- Zadania: z',
+    '- Uwaga: u1', '  - p1', '- Uwaga: u2', '  - p2', ''].join('\n'))
 })
 
 test('wpisyZPlanu: migracja i seed z pola Pliki jednostki ze scenariuszem nie trafiaja do mapy', () => {

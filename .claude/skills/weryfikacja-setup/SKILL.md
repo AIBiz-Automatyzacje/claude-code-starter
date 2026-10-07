@@ -17,14 +17,17 @@ nie dostarcza, więc sync-template go nie nadpisze.
 1. **Stan.** `test -f .claude/skills/weryfikacja/SKILL.md` — gdy plik istnieje, przejdź do sekcji „Utrzymanie”. Nadpisanie
    szkieletem (`--nadpisz`) kasuje uzupełnione sekcje, więc wykonujesz je wyłącznie na wyraźną prośbę operatora.
 
-2. **Szkielet.** `node .claude/scripts/e2e/e2e.mjs weryfikacja --zapisz` → JSON: `plik`, `trasy` (z kodu), `uzupelnij` (liczba
-   znaczników do wypełnienia), `mapa` (`wpisow`, `dodane` — funkcje ze scenariuszy `[E2E]` planów zadań z `docs/completed/`).
+2. **Szkielet.** `node .claude/scripts/e2e/e2e.mjs weryfikacja --zapisz` → JSON: `plik`, `trasy` (ekrany z kodu, bez tras API),
+   `obcieto` (trasy ponad limit listy), `uzupelnij` (liczba znaczników do wypełnienia), `mapa` (`wpisow`, `dodane` — funkcje
+   ze scenariuszy `[E2E]` planów zadań z `docs/completed/`).
    Kod 1 z polem `odmowa` = skill już istnieje.
 
 3. **Fakty z kodu.** Każdy znacznik `<!-- UZUPEŁNIJ: … -->` w sekcji Drive zastąp faktem odczytanym z repo, z plikiem źródłowym
    w nawiasie: formularz logowania (pola i przycisk — etykieta, rola albo `data-testid` z komponentu), nawigacja do głównych
-   ekranów (menu, linki), trasy, których router nie oddał. Z listy „Trasy z kodu” zostaw ekrany; trasy API przenieś do sekcji
-   Evidence jako źródło dowodu HTTP. Faktu, którego nie ma w repo, nie dopisujesz — zostaw znacznik i wymień go w raporcie.
+   ekranów (menu, linki), trasy, których router nie oddał (przy `obcieto` > 0 — ekrany ze scenariuszy `[E2E]`). Z listy „Trasy
+   z kodu” usuń trasy, które nie są ekranami (`/healthz`, callbacki); endpointy API, którymi da się potwierdzić zapis albo odczyt,
+   dopisz w sekcji Evidence z plikiem serwera jako źródło dowodu HTTP. Faktu, którego nie ma w repo, nie dopisujesz — zostaw
+   znacznik i wymień go w raporcie.
 
 4. **Przejście na żywo** (raz, przed oddaniem):
    - Doctor: `node .claude/scripts/e2e/e2e.mjs sprawdz`. Status inny niż `gotowe` → wynik `blocked` z treścią pola `naprawa`; przejdź do kroku 5.

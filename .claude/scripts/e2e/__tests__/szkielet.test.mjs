@@ -70,16 +70,26 @@ test('trasyAplikacji: sciezki z routera, <Route> i stalych *_PATH, bez testow i 
 test('trasyAplikacji: frontend w podkatalogu (frontend/src), trasy wzgledne <Route> i obiektu routera, /api poza lista, przyciecie raportowane', () => {
   const k = projekt()
   mkdirSync(join(k, 'frontend/src'), { recursive: true })
-  writeFileSync(join(k, 'frontend/src/App.tsx'), '<Route path="/panel" element={<P />}>\n  <Route\n    path="clients"\n    element={<K />} />\n</Route>\n')
-  writeFileSync(join(k, 'frontend/src/routes.ts'), "export const r = [{ path: 'faktury', element: <F /> }, { path: 'ustawienia/:id', Component: U }]\nconst plik = { path: 'logi/x.txt' }\n")
+  writeFileSync(join(k, 'frontend/package.json'), JSON.stringify({ dependencies: { react: '19.0.0' } }))
+  writeFileSync(join(k, 'frontend/src/App.tsx'), '<Route path="/panel" element={<P />}>\n  <Route\n    path="clients"\n    element={<K />} />\n  <Route element={<L />} path="po-elemencie" />\n  <Route path="*" element={<Brak />} />\n</Route>\n')
+  writeFileSync(join(k, 'frontend/src/routes.ts'), "export const r = [{ path: 'faktury', element: <F /> }, { path: 'ustawienia/:id', Component: U }]\nconst plik = { path: 'logi/x.txt' }\nconst z = [{ path: 'src/lib', index: true }, { path: 'assets/logo', children: [] }, { path: 'node:fs', loader: 1 }]\n")
+  // Katalog <x>/src bez frontendu (backend, skrypty) nie jest zrodlem tras ekranow.
+  /** @type {[string, object | null][]} */
+  const bezFrontendu = [['backend', { dependencies: { express: '5.0.0' } }], ['scripts', null]]
+  for (const [katalog, pkg] of bezFrontendu) {
+    mkdirSync(join(k, katalog, 'src'), { recursive: true })
+    if (pkg) writeFileSync(join(k, katalog, 'package.json'), JSON.stringify(pkg))
+    writeFileSync(join(k, katalog, 'src/index.ts'), "const a = { path: '/var/log/app' }\nconst CHROME_PATH = '/Applications/Chromium.app'\n")
+  }
   writeFileSync(join(k, 'src/app/api.ts'), "app.route({ path: '/api/oferty' })\n")
   const w = trasyAplikacji(k)
-  assert.deepEqual(w.trasy, ['/logowanie', '/o/:slug', '/oferty', '/oferty/szkice', '/panel', 'clients', 'faktury', 'ustawienia/:id'])
+  assert.deepEqual(w.trasy, ['/logowanie', '/o/:slug', '/oferty', '/oferty/szkice', '/panel', 'clients', 'faktury', 'po-elemencie', 'ustawienia/:id'])
   assert.equal(w.obcieto, 0)
   writeFileSync(join(k, 'src/app/duzo.ts'), Array.from({ length: 45 }, (_, i) => `const T${i}_PATH = '/t${String(i).padStart(2, '0')}'`).join('\n'))
   const duzo = trasyAplikacji(k)
   assert.equal(duzo.trasy.length, 40)
-  assert.equal(duzo.obcieto, 13)
+  assert.equal(duzo.obcieto, 14)
+  assert.match(szkieletSkilla(k, { wpisowMapy: 0 }), /<!-- UZUPEŁNIJ: 14 tras poza listą/)
 })
 
 test('wpisyZrobionych: plany w kolejnosci daty — przy tym samym flow nowszy plan daje droge', () => {

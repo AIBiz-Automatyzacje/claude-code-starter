@@ -71,26 +71,37 @@ const polaBloku = (linie) => linie.slice(1).flatMap((l) => {
 })
 
 /**
- * Linie wpisu poza samymi polami: wciete kontynuacje (podlista pola) zostaja przy swoim polu, reszta to luzne linie wpisu.
+ * @typedef {{ przed: string[], kontynuacje: Map<string, string[][]>, luzne: string[] }} Reszta
+ *   przed = linie miedzy naglowkiem a pierwszym polem; kontynuacje = wciete linie (podlista) kazdego wystapienia pola,
+ *   po kluczu i numerze wystapienia; luzne = pozostale linie wpisu
+ */
+
+/**
+ * Linie wpisu poza samymi polami — wracaja przy aktualizacji wpisu na swoje miejsce.
  * @param {string[]} linie bloku
- * @returns {{ kontynuacje: Map<string, string[]>, luzne: string[] }}
+ * @returns {Reszta}
  */
 function resztaBloku(linie) {
-  /** @type {Map<string, string[]>} */
-  const kontynuacje = new Map()
-  /** @type {string[]} */
-  const luzne = []
-  let pole = /** @type {string | null} */ (null)
+  /** @type {Reszta} */
+  const reszta = { przed: [], kontynuacje: new Map(), luzne: [] }
+  /** @type {string[] | null} */
+  let podlista = null
+  let byloPole = false
   for (const l of linie.slice(1)) {
     const m = POLE.exec(l)
-    if (m) pole = m[1]
-    else if (pole && /^\s+\S/.test(l)) kontynuacje.set(pole, [...(kontynuacje.get(pole) ?? []), l])
-    else if (l.trim()) {
-      luzne.push(l)
-      pole = null
+    if (m) {
+      podlista = []
+      reszta.kontynuacje.set(m[1], [...(reszta.kontynuacje.get(m[1]) ?? []), podlista])
+      byloPole = true
+    } else if (!l.trim()) continue
+    else if (!byloPole) reszta.przed.push(l)
+    else if (podlista && /^\s+\S/.test(l)) podlista.push(l)
+    else {
+      reszta.luzne.push(l)
+      podlista = null
     }
   }
-  return { kontynuacje, luzne }
+  return reszta
 }
 
 /**
@@ -111,9 +122,7 @@ export function parsujMape(md) {
 }
 
 /** @param {string} wartosc pola Pliki (z backtickami albo wpisane recznie po przecinku) @returns {string[]} */
-const plikiPola = (wartosc) => (wartosc.includes('`')
-  ? [...wartosc.matchAll(/`([^`]+)`/g)].map((m) => m[1])
-  : wartosc.split(',').map((p) => p.trim()).filter((p) => p && p !== BRAK))
+const plikiPola = (wartosc) => wartosc.split(',').map((p) => p.trim().replace(/^`|`$/g, '')).filter((p) => p && p !== BRAK)
 /** @param {string} wartosc pola Zadania @returns {string[]} */
 const zadaniaPola = (wartosc) => (wartosc === BRAK ? [] : wartosc.split(',').map((z) => z.trim()).filter(Boolean))
 
@@ -139,12 +148,19 @@ const kanon = (pola) => [...POLA_WPISU.flatMap((k) => pola.filter(([klucz]) => k
 /**
  * @param {string} flow
  * @param {Pola} pola
- * @param {{ kontynuacje: Map<string, string[]>, luzne: string[] }} [reszta] z istniejacego wpisu
+ * @param {Reszta} [reszta] z istniejacego wpisu
  * @returns {string[]}
  */
-const linieWpisu = (flow, pola, reszta = { kontynuacje: new Map(), luzne: [] }) => [
-  `## \`${flow}\``, ...pola.flatMap(([k, v]) => [`- ${k}: ${v}`, ...(reszta.kontynuacje.get(k) ?? [])]), ...reszta.luzne, '',
-]
+function linieWpisu(flow, pola, reszta = { przed: [], kontynuacje: new Map(), luzne: [] }) {
+  /** @type {Map<string, number>} */
+  const wystapienia = new Map()
+  const liniePol = pola.flatMap(([k, v]) => {
+    const n = wystapienia.get(k) ?? 0
+    wystapienia.set(k, n + 1)
+    return [`- ${k}: ${v}`, ...(reszta.kontynuacje.get(k)?.[n] ?? [])]
+  })
+  return [`## \`${flow}\``, ...reszta.przed, ...liniePol, ...reszta.luzne, '']
+}
 
 /** @param {string} projekt @returns {string[]} */
 const naglowekMapy = (projekt) => [
@@ -160,7 +176,9 @@ const naglowekMapy = (projekt) => [
  * @returns {{ tekst: string, dodane: string[], zaktualizowane: string[] }}
  */
 export function scalMape(md, wpisy, projekt) {
-  // Mapa z CRLF wraca z LF: inaczej `(.*)$` pola nie przechodzi przez \r i kazde scalenie dublowaloby pola.
+  // Parsowanie po LF (inaczej `(.*)$` pola nie przechodzi przez \r i kazde scalenie dublowaloby pola); zapis koncami linii
+  // obecnej mapy, a mapa bez zmian wraca bez zmian.
+  const eol = md?.includes('\r\n') ? '\r\n' : '\n'
   const mapa = md === null ? { preambula: naglowekMapy(projekt), bloki: /** @type {Blok[]} */ ([]) } : parsujMape(md)
   /** @type {string[]} */
   const dodane = []
@@ -181,7 +199,8 @@ export function scalMape(md, wpisy, projekt) {
     blok.linie = linieWpisu(w.flow, nowe, resztaBloku(blok.linie))
     zaktualizowane.push(w.flow)
   }
-  return { tekst: [...mapa.preambula, ...mapa.bloki.flatMap((b) => b.linie)].join('\n'), dodane, zaktualizowane }
+  if (md !== null && !dodane.length && !zaktualizowane.length) return { tekst: md, dodane, zaktualizowane }
+  return { tekst: [...mapa.preambula, ...mapa.bloki.flatMap((b) => b.linie)].join(eol), dodane, zaktualizowane }
 }
 
 /**
