@@ -47,7 +47,7 @@ test('--dry-run na projekcie pnpm workspace: pokazuje kroki z pakietem fixture i
   try {
     const wynik = uruchom([zrodlo, kopia, '--dry-run'])
     assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
-    for (const krok of ['clone', 'remote remove origin', 'test/smoke-autopilot', '.claude/.backups/', 'sync-template.sh',
+    for (const krok of ['clone', 'remote remove origin', 'feature/smoke-autopilot', '.claude/.backups/', 'sync-template.sh',
       'packages/smoke-autopilot', 'pnpm install', 'commit --quiet -m']) {
       assert.ok(wynik.stdout.includes(krok), `brak kroku "${krok}" w:\n${wynik.stdout}`)
     }

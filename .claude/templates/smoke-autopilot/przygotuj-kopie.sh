@@ -2,7 +2,7 @@
 #
 # przygotuj-kopie.sh — kopia projektu do smoke'a pipeline'u dev-autopilot-wf (PLAN-POPRAWY P0, HANDOFF §7).
 # Oryginał zostaje nietknięty: kopia to lokalny klon bez remote (push niemożliwy), bez .env i supabase/.temp,
-# na gałęzi test/smoke-autopilot, z maszynerią zsynchronizowaną z LOKALNEGO szablonu i z fixture smoke'a.
+# na gałęzi feature/smoke-autopilot (= linia Branch: planu zadania z generatora), z maszynerią zsynchronizowaną z LOKALNEGO szablonu i z fixture smoke'a.
 # Po skrypcie git kopii jest czysty (dwa commity: sync szablonu, fixture), a bazowe bramki (`pnpm typecheck`, `pnpm test`)
 # zielone — inaczej skrypt kończy się kodem 7 i runu nie wolno odpalać (smoke P0: domknięcie execute uruchamia CAŁE
 # `pnpm test` projektu, więc zastany czerwony test zatrzymuje run niezależnie od pakietu fixture).
@@ -24,7 +24,7 @@ set -euo pipefail
 
 SZABLON_SMOKE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SZABLON="$(cd "$SZABLON_SMOKE/../../.." && pwd)"
-GALAZ="test/smoke-autopilot"
+GALAZ="feature/smoke-autopilot"
 PAKIET="packages/smoke-autopilot"
 
 DRY_RUN=0
@@ -59,8 +59,8 @@ krok() {
   [[ "$DRY_RUN" -eq 1 ]] || "$@"
 }
 
-# Fixture zadania: docs/active/smoke-autopilot + docs/plans, katalog kodu w miejsce {{KATALOG_KODU}}, migracja defektu
-# w miejsce {{MIGRACJA}} (bez migracji — linie z {{MIGRACJA}} znikają).
+# Fixture zadania: docs/active/smoke-autopilot (pliki z generatora planowania — generuj-fixture.mjs) + docs/plans, katalog kodu
+# w miejsce {{KATALOG_KODU}}, migracja defektu w miejsce {{MIGRACJA}} (bez migracji — linie z {{MIGRACJA}} znikają).
 podstaw() {
   if [[ -n "$MIGRACJA" ]]; then
     sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e "s#{{MIGRACJA}}#$MIGRACJA#g" "$1"

@@ -1,16 +1,21 @@
 # Kontekst: smoke-autopilot
 
-To zadanie-atrapa do smoke-testu pipeline'u dev-autopilot-wf (patrz README w
-.claude/templates/smoke-autopilot/). Kod jest celowo trywialny — testujemy MECHANIKE
-pipeline'u (bootstrap, stan, delegacje, review, gate'y, archiwizacje), nie kod.
+Branch: `feature/smoke-autopilot`
+Ostatnia aktualizacja: 2026-10-07
+Plan techniczny: `docs/plans/plan-techniczny-smoke-autopilot.md`
 
-## Designerski kontekst
+## Źródła
 
-Brak — zadanie nie dotyka UI.
+- Plan techniczny: `docs/plans/plan-techniczny-smoke-autopilot.md`
+- Requirements doc: brak
+- Przygotowanie dla operatora: brak
 
-## Decyzje
+## Plan techniczny
 
-- Czysta funkcja w {{KATALOG_KODU}}/ (lekki setup testow — smoke ma byc szybki, bez ciezkiego transformu komponentow).
-- Zero nowych zaleznosci.
+Kluczowe pliki, decyzje techniczne, odroczone pytania i wzorce do naśladowania: `docs/plans/plan-techniczny-smoke-autopilot.md` (sekcje „Kluczowe decyzje techniczne”, „Otwarte pytania”, tabela plików i „Wzorce do naśladowania” w blokach IU).
 
-Ostatnia aktualizacja: (uzupelnia pipeline)
+## Wymagania wstępne operatora
+
+Brak.
+
+## Dziennik

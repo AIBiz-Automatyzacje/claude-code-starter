@@ -20,7 +20,8 @@ bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-zrodlowy> <ka
 - najpierw `--dry-run` — pokazuje kroki, niczego nie tworzy;
 - `--env <plik>` — atrapy zmiennych (BEZ sekretow) kopiowane jako `.env` kopii, gdy testy projektu bez nich nie startuja
   (oferty-online: `docs/reviews/2026-09-19-analiza-pipeline/dane/smoke-oferty-atrapy.env`); `.env` jest w `.gitignore`, git zostaje czysty;
-- kopia = `git clone` lokalny, `remote remove origin` (push niemozliwy), bez `.env` i `supabase/.temp`, galaz `test/smoke-autopilot`,
+- kopia = `git clone` lokalny, `remote remove origin` (push niemozliwy), bez `.env` i `supabase/.temp`, galaz `feature/smoke-autopilot`
+  (= linia `Branch:` planu zadania z generatora — bootstrap autopilota porownuje z nia biezaca galaz),
   `.claude/.backups/` w `.git/info/exclude`;
 - sync maszynerii z LOKALNEGO szablonu (pliki sledzone przez gita — zacommituj zmiany `.claude/` przed skryptem) → commit;
 - fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` + (projekt pnpm workspace) pakiet `packages/smoke-autopilot`
@@ -43,7 +44,12 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
 - **Celowy defekt: test niefalsyfikowalny.** Plan kaze napisac happy path jako `typeof wynik === 'number'` — przechodzi takze
   dla `a - b`. Oczekiwane: review zglasza P2 test-coverage na ten test, fix zastepuje asercje wartoscia (`toBe(5)`), kontrola
   fixa bez regresji. Brak findingu na tym tescie = regresja review; brak fixa = regresja petli fix.
-- **Pozycja `[Manual]`** w `## Operator checklist faza 1` — dodatnia galaz fazy "Smoke operatora" (complete-wf).
+- **Format zadania z `/dev-plan`.** Plan techniczny `plan-techniczny-smoke-autopilot.md` ma format scalonego `/dev-plan` (fazy, IU
+  z tabela plikow), a pliki `smoke-autopilot-{plan,kontekst,zadania}.md` sa wynikiem generatora planowania
+  (`.claude/scripts/plan/`), nie recznym zapisem. Po zmianie planu albo generatora:
+  `node .claude/templates/smoke-autopilot/generuj-fixture.mjs --zapisz`; test `__tests__/fixture-zadania.test.mjs` pilnuje
+  zgodnosci i walidacji planu po podstawieniu placeholderow.
+- **Pozycja `[Manual]`** (scenariusz planu → `## Operator checklist faza 1` w zadaniach) — dodatnia galaz fazy "Smoke operatora" (complete-wf).
 - **Bramki domkniecia (P6).** Pakiet dostaje konfiguracje z `.claude/templates/bramki` i devDependencies bramek
   (`wstaw-pakiet.mjs`), plus `build` dla size-limit. Celowe defekty mechaniczne z planu: pusty `catch` w `parsujLiczbe` i linia
   komentarza dopisana do pierwszej migracji projektu (`{{MIGRACJA}}`; projekt bez migracji — ten defekt znika z fixture).
@@ -65,7 +71,8 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
      `smokeOperatora` w wyniku niepuste, `smokeStatus: "plik"`;
    - plik istnieje i `grep -c '^- \[ \]' docs/operator/<data>-smoke-autopilot-smoke.md` >= 1, zero wartosci sekretow w pliku;
    - `git show --stat HEAD` commita archiwizacji zawiera `docs/operator/...-smoke.md` (krok 8 `git add`).
-   Wariant negatywny (drugi run): usun sekcje `## Operator checklist faza 1` z fixture → oczekiwane
+   Wariant negatywny (drugi run): usun scenariusz `[Manual]` z planu technicznego kopii i wygeneruj zadanie ponownie
+   (`plan.mjs generuj docs/plans/plan-techniczny-smoke-autopilot.md --nazwa smoke-autopilot --zapisz --nadpisz`) → oczekiwane
    `Smoke operatora: brak pozycji do recznego sprawdzenia — plik nie powstal`, `smokeStatus: "brak-pozycji"`, brak pliku w `docs/operator/`.
 
 ## Test resume (scenariusz celowy)
@@ -83,4 +90,6 @@ Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 - `przygotuj-kopie.sh` + `__tests__/przygotuj-kopie.test.mjs` (skladnia, `--dry-run`);
 - `pakiet/` — `package.json`, `tsconfig.json`, `vitest.config.ts` pakietu fixture (`passWithNoTests`: przed build pakiet nie ma testow);
 - `wstaw-pakiet.mjs` + `__tests__/wstaw-pakiet.test.mjs` — pakiet z konfiguracjami i devDependencies bramek (P6);
-- `smoke-autopilot-{plan,zadania,kontekst}.md`, `plan-techniczny-smoke-autopilot.md` — fixture zadania; `{{KATALOG_KODU}}` wstawia skrypt.
+- `plan-techniczny-smoke-autopilot.md` — plan techniczny fixture'u w formacie `/dev-plan`;
+- `smoke-autopilot-{plan,zadania,kontekst}.md` — pliki zadania z generatora (`generuj-fixture.mjs` + `__tests__/fixture-zadania.test.mjs`);
+  `{{KATALOG_KODU}}` i `{{MIGRACJA}}` wstawia skrypt kopii.

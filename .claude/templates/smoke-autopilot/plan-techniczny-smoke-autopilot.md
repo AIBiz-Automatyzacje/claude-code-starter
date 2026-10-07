@@ -1,21 +1,72 @@
-# Plan techniczny: smoke-autopilot
+---
+title: "test: smoke-autopilot"
+type: feat
+status: active
+date: 2026-10-07
+origin: null
+design_md: null
+figma_spec: null
+figma_screens: {}
+operator_prep: null
+---
 
-origin: docs/active/smoke-autopilot/
+# test: smoke-autopilot
 
-## Faza 1: Funkcja pomocnicza
+## Przegląd
 
-### IU-1: dodajBezpiecznie
+Zadanie-atrapa do smoke-testu pipeline'u dev-autopilot-wf: jedna czysta funkcja pomocnicza z testami i celowymi defektami dla review, fixa i bramek domknięcia. Wartość biznesowa zerowa, diagnostyczna — cała.
 
-Delegate to: feature-builder-data
+## Śledzenie wymagań
 
-**Cel:** Funkcja pomocnicza `dodajBezpiecznie` z walidacja wejscia, wraz z testami.
+- R1. `dodajBezpiecznie(a: number, b: number): number` zwraca sumę argumentów.
+- R2. Dla argumentu NaN albo nieskończonego `dodajBezpiecznie` rzuca `TypeError` z czytelnym komunikatem.
+- R3. `parsujLiczbe(tekst: string): number | null` w tym samym pliku zwraca liczbę albo `null`.
 
-**Wymagania:**
-- `dodajBezpiecznie(a: number, b: number): number` — zwraca a+b.
-- Dla argumentow NaN lub nieskonczonych rzuca `TypeError` z czytelnym komunikatem.
-- Explicit return type, zero `any`.
-- `parsujLiczbe(tekst: string): number | null` w tym samym pliku — DOKLADNIE ten kod (celowy defekt mechaniczny smoke'a:
-  pusty `catch` naprawia domkniecie fazy po bramce ESLint, nie builder):
+## Granice zakresu
+
+- Bez UI, bazy i zależności zewnętrznych.
+
+## Kluczowe decyzje techniczne
+
+- Celowe defekty smoke'a: test happy path niefalsyfikowalny (`typeof`), pusty `catch` w `parsujLiczbe` i linia komentarza w wypchniętej migracji. Naprawia je review z fixem i domknięcie fazy, nie builder.
+
+## Rejestr stałych
+
+Brak stałych współdzielonych.
+
+## Wymagania wstępne operatora
+
+Brak — autopilot może startować od razu.
+
+## Implementation Units
+
+### Faza 1 — Funkcja pomocnicza
+
+**Zależy od:** Brak
+
+- [ ] **IU-1: dodajBezpiecznie**
+
+**Cel:** Funkcja `dodajBezpiecznie` z walidacją wejścia i `parsujLiczbe`, wraz z testami.
+
+**Wymagania:** R1, R2, R3
+
+**Zależności:** Brak
+
+**Pliki:**
+
+| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |
+|---|---|---|---|---|
+| Stwórz | `{{KATALOG_KODU}}/smoke-autopilot.ts` | 0 → 20 | — | nowy |
+| Test (unit) | `{{KATALOG_KODU}}/smoke-autopilot.test.ts` | 0 → 25 | — | nowy |
+| Modyfikuj | `{{MIGRACJA}}` | — → — | — | zostaje |
+
+**Delegate to:** feature-builder-data
+
+**Skills in play:** supabase-dev-guidelines, security, sentry-integration
+
+**Podejście:**
+- Fail fast: walidacja `Number.isFinite` na początku, potem suma; jawny typ zwracany, bez `any`; jeden plik, eksporty nazwane.
+- `parsujLiczbe` dokładnie w tym brzmieniu (celowy defekt mechaniczny: pusty `catch` naprawia domknięcie fazy po bramce ESLint, nie builder):
   ```ts
   export function parsujLiczbe(tekst: string): number | null {
     try {
@@ -24,22 +75,17 @@ Delegate to: feature-builder-data
     return null
   }
   ```
-- Na koncu istniejacej migracji `{{MIGRACJA}}` dopisz linie `-- smoke-autopilot: edycja wypchnietej migracji` (celowy defekt mechaniczny smoke'a: przywraca ja domkniecie fazy po bramce niezmiennosci migracji, nie builder).
+- Na końcu istniejącej migracji `{{MIGRACJA}}` dopisz linię `-- smoke-autopilot: edycja wypchniętej migracji` (celowy defekt mechaniczny: przywraca ją domknięcie fazy po bramce niezmienności migracji, nie builder).
 
-**Pliki:**
-- `{{KATALOG_KODU}}/smoke-autopilot.ts` (nowy)
-- `{{KATALOG_KODU}}/smoke-autopilot.test.ts` (nowy, kolokacja obok zrodla)
-- `{{MIGRACJA}}` (jedna linia komentarza na koncu)
+**Wzorce do naśladowania:**
+- Konwencje repo: kebab-case, eksport nazwany, vitest describe/it z Arrange-Act-Assert, test obok pliku źródłowego.
 
-**Podejscie:** Fail fast — walidacja `Number.isFinite` na poczatku, potem suma. Jeden eksport.
-
-**Wzorce:** Konwencje repo (kebab-case, named export, vitest describe/it + Arrange-Act-Assert).
-
-**Scenariusze testowe (dokladnie te cztery, bez dodatkowych):**
-- happy path: wynik `dodajBezpiecznie(2, 3)` jest liczba — `expect(typeof dodajBezpiecznie(2, 3)).toBe('number')`
-- error case: `dodajBezpiecznie(NaN, 1)` rzuca TypeError
-- error case: `dodajBezpiecznie(Infinity, 1)` rzuca TypeError
-- `parsujLiczbe('7')` zwraca 7
+**Scenariusze testowe (dokładnie te cztery testy jednostkowe, bez dodatkowych):**
+- [Unit] happy path: wynik `dodajBezpiecznie(2, 3)` jest liczbą — `expect(typeof dodajBezpiecznie(2, 3)).toBe('number')`
+- [Unit] `dodajBezpiecznie(NaN, 1)` rzuca TypeError
+- [Unit] `dodajBezpiecznie(Infinity, 1)` rzuca TypeError
+- [Unit] `parsujLiczbe('7')` zwraca 7
+- [Manual] wywołaj `dodajBezpiecznie(NaN, 1)` w REPL albo konsoli i sprawdź, że komunikat TypeError jest czytelny dla człowieka
 
 **Weryfikacja:**
-- [ ] CLI: typecheck przechodzi bez nowych bledow
+- `pnpm typecheck` przechodzi bez nowych błędów

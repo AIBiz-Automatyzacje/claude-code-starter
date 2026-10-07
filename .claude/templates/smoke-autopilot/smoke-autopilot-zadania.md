@@ -1,20 +1,26 @@
 # Zadania: smoke-autopilot
 
-Plan techniczny: docs/plans/plan-techniczny-smoke-autopilot.md
+Branch: `feature/smoke-autopilot`
+Ostatnia aktualizacja: 2026-10-07
+Plan techniczny: `docs/plans/plan-techniczny-smoke-autopilot.md`
+
+Checkboxy odsyłają do jednostek planu technicznego (IU-K): cel, podejście, decyzje i teksty są tylko tam.
 
 ## Faza 1 — Funkcja pomocnicza
 
+Zależy od: Brak
+
 ### IU-1: dodajBezpiecznie (feature-builder-data)
 
-- [ ] Utworz `{{KATALOG_KODU}}/smoke-autopilot.ts` z funkcja `dodajBezpiecznie(a: number, b: number): number`
-      (rzuca TypeError dla NaN/Infinity, inaczej zwraca sume)
-- [ ] Test: [Unit] happy path — `dodajBezpiecznie(2, 3)` zwraca liczbe (`typeof` = `number`)
-- [ ] Test: [Unit] error case — `dodajBezpiecznie(NaN, 1)` rzuca TypeError
-- [ ] Dodaj w tym samym pliku `parsujLiczbe(tekst: string): number | null` dokladnie wg planu technicznego (pusty `catch` — celowy defekt)
+- [ ] Stwórz: `{{KATALOG_KODU}}/smoke-autopilot.ts`
+- [ ] Test (unit): `{{KATALOG_KODU}}/smoke-autopilot.test.ts`
+- [ ] Modyfikuj: `{{MIGRACJA}}`
+- [ ] Test: [Unit] happy path: wynik `dodajBezpiecznie(2, 3)` jest liczbą — `expect(typeof dodajBezpiecznie(2, 3)).toBe('number')`
+- [ ] Test: [Unit] `dodajBezpiecznie(NaN, 1)` rzuca TypeError
+- [ ] Test: [Unit] `dodajBezpiecznie(Infinity, 1)` rzuca TypeError
 - [ ] Test: [Unit] `parsujLiczbe('7')` zwraca 7
-- [ ] Dopisz na koncu `{{MIGRACJA}}` linie komentarza wg planu technicznego (celowy defekt)
-- [ ] Weryfikacja: CLI `typecheck` przechodzi bez nowych bledow
+- [ ] Weryfikacja: `pnpm typecheck` przechodzi bez nowych błędów
 
 ## Operator checklist faza 1
 
-- [ ] [Manual] Wywolaj `dodajBezpiecznie(NaN, 1)` w REPL/konsoli i sprawdz, ze komunikat TypeError jest czytelny dla czlowieka (IU-1)
+- [ ] [Manual] wywołaj `dodajBezpiecznie(NaN, 1)` w REPL albo konsoli i sprawdź, że komunikat TypeError jest czytelny dla człowieka (IU-1)
