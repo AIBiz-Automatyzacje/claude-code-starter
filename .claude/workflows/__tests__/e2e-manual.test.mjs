@@ -98,23 +98,23 @@ test('w trakcie: przyczyny SKIP w review-wf = kopia z ksiegowanie.mjs', () => {
 })
 
 test('w trakcie: awaria srodowiska z pola przyczyny — SKIP srodowisko bez komunikatu (curl -s milczy) wystarcza', () => {
-  const b = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'aplikacja nie odpowiada na http://localhost:5173' }])
+  const b = R.wykryjBlokerSrodowiska([{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'aplikacja nie odpowiada na http://localhost:5173' }])
   assert.ok(b)
   assert.equal(b.klasa, 'srodowisko')
-  const zSygnatura = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'connect ECONNREFUSED 127.0.0.1:5173' }])
+  const zSygnatura = R.wykryjBlokerSrodowiska([{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'connect ECONNREFUSED 127.0.0.1:5173' }])
   assert.equal(zSygnatura.klasa, 'dev-server-nieosiagalny')
 })
 
 test('w trakcie: SKIP harness albo limitu z cytowanym bledem sieci zewnetrznej uslugi to nie awaria srodowiska', () => {
-  assert.equal(R.wykryjBlokerSrodowiska([], [
+  assert.equal(R.wykryjBlokerSrodowiska([
     { checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'harness', dowod: 'popup OAuth: net::ERR_NAME_NOT_RESOLVED accounts.google.com' },
     { checkbox: 'y', flow: 'y', wynik: 'SKIP', przyczyna: 'limit-zewnetrzny', dowod: 'SMTP: connect ECONNREFUSED smtp.example.com:587' },
   ]), null)
 })
 
-test('w trakcie: FAIL z sygnatura zostaje FAIL z findingiem do fixa (serwer mogl polozyc kod fazy), a run przechodzi bez przegladarki', () => {
-  const b = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'net::ERR_CONNECTION_REFUSED http://localhost:5173/b' }])
-  assert.equal(b.klasa, 'dev-server-nieosiagalny')
+test('w trakcie: FAIL z sygnatura = kod fazy polozyl serwer — finding do fixa, srodowisko zostaje gotowe (fix restartuje serwer)', () => {
+  assert.equal(R.wykryjBlokerSrodowiska([{ checkbox: 'x', flow: 'x', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'net::ERR_CONNECTION_REFUSED http://localhost:5173/b' }]), null)
+  assert.match(review, /"nasz": true/)
   assert.doesNotMatch(review, /poBlokerzeSrodowiska/)
   assert.match(review, /node \.claude\/scripts\/e2e\/e2e\.mjs stan/)
   assert.match(review, /curl -sS <adres>/)
@@ -137,9 +137,9 @@ test('w trakcie: scribe ksieguje linie [E2E] skryptem z przebiegami w heredoc; p
   const json = JSON.parse(k.split('\n')[1])
   assert.equal(json[0].dowod.length, 300)
   assert.equal(json[0].przyczyna, 'srodowisko')
-  assert.equal(json[0].checkbox, undefined, 'checkbox tylko przy linii bez identyfikatora flow')
-  const pass = JSON.parse(R.komendaKsiegowania(ZADANIE, 2, [{ checkbox: 'Weryfikacja: [E2E] stary format', flow: '', wynik: 'PASS', przyczyna: 'nie-dotyczy', dowod: 'ok' }], false).split('\n')[1])
-  assert.deepEqual(pass, [{ flow: '', wynik: 'PASS', przyczyna: 'nie-dotyczy', checkbox: 'Weryfikacja: [E2E] stary format' }])
+  assert.equal(json[0].checkbox, 'Test: [E2E] `a` — /a → \'ok\'', 'checkbox zawsze — dopasowanie po tresci, gdy flow testera rozni sie od backticka linii')
+  const pass = JSON.parse(R.komendaKsiegowania(ZADANIE, 2, [{ checkbox: 'Weryfikacja: [E2E] stary format', flow: 'stary', wynik: 'PASS', przyczyna: 'nie-dotyczy', dowod: 'ok' }], false).split('\n')[1])
+  assert.deepEqual(pass, [{ checkbox: 'Weryfikacja: [E2E] stary format', flow: 'stary', wynik: 'PASS', przyczyna: 'nie-dotyczy' }])
   const padl = R.komendaKsiegowania(ZADANIE, 2, [], true)
   assert.match(padl, /--brak-wpisu tester-padl --powod "[^"']+"/)
   assert.match(review, /\$\{komendaKsiegowania\(sciezka, faza, przebieg\.e2ePrzebiegi \|\| \[\], przebieg\.e2eTesterFail\)\}/)
@@ -160,6 +160,8 @@ test('w trakcie: fix przy srodowisku niedostepnym przenosi flow na [Manual] skry
   const gotowe = fixPrompt(ZADANIE, 2, [], 'gotowe')
   assert.match(gotowe, /re-uruchom scenariusz w przegladarce/)
   assert.match(gotowe, /Ponowne odegranie niewykonalne nie z winy kodu/)
+  // Kod fazy polozyl serwer (FAIL z ogonem logu): po naprawie fix uruchamia serwer od nowa, potem odgrywa scenariusz.
+  assert.match(gotowe, /node \.claude\/scripts\/e2e\/e2e\.mjs start --zadanie docs\/active\/zadanie-x/)
   assert.match(gotowe, /--przyczyna <srodowisko\|limit-zewnetrzny\|harness>/)
   assert.doesNotMatch(gotowe, /SRODOWISKO E2E NIEDOSTEPNE/)
 })

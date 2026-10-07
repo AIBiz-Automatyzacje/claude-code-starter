@@ -160,3 +160,11 @@ test('sekcja fazy tez z naglowkiem innego poziomu (# Faza N, ### Faza N), jak w 
     assert.deepEqual(scenariuszeFazy(z, 2).map((l) => l.flow), ['b'], h)
   }
 })
+
+test('kopia SKIP przy naglowkach # Faza N trafia do Operator checklist swojej fazy, nie nastepnej', () => {
+  const z = '# Faza 1\n\n- [ ] Test: [E2E] `a` — /a → ok\n\n## Operator checklist faza 1\n\n- [ ] Operator: x (IU-1)\n\n# Faza 2\n\n- [ ] Test: [E2E] `b` — /b → ok\n\n## Operator checklist faza 2\n\n- [ ] Operator: y (IU-2)\n'
+  const { tekst } = zaksiegujFaze(z, 1, [wpis('SKIP', 'a', 'brak-seeda', 'brak seeda')])
+  const faza1 = tekst.split('# Faza 2')[0]
+  assert.match(faza1, /Operator: Test: \[Manual\] `a`/)
+  assert.doesNotMatch(tekst.split('# Faza 2')[1], /`a`/)
+})

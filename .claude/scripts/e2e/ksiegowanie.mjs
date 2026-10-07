@@ -86,10 +86,12 @@ function czyKopia(linia, wzor) {
 function uzgodnijKopie(linie, faza, operacje) {
   if (!operacje.length) return linie
   const naglowek = new RegExp(`^## Operator checklist faza ${faza}\\b`, 'i')
+  // Koniec sekcji: naglowek poziomu 1-2 (nastepna faza `# Faza N` albo `## Faza N`, kolejna sekcja `## …`).
+  const koniecSekcji = (/** @type {string} */ l) => /^#{1,2}\s/.test(l)
   let wynik = linie
   let od = wynik.findIndex((l) => naglowek.test(l))
   if (od !== -1) {
-    const koniec = wynik.findIndex((l, i) => i > od && /^## /.test(l))
+    const koniec = wynik.findIndex((l, i) => i > od && koniecSekcji(l))
     const doKonca = koniec === -1 ? wynik.length : koniec
     wynik = wynik.filter((l, i) => i <= od || i >= doKonca || !operacje.some((o) => czyKopia(l, o.wzor)))
   }
@@ -103,7 +105,7 @@ function uzgodnijKopie(linie, faza, operacje) {
     const blok = ['', `## Operator checklist faza ${faza}`, '', ...nowe, ...(zakres.do < wynik.length ? [''] : [])]
     return [...wynik.slice(0, wstaw), ...blok, ...wynik.slice(zakres.do)]
   }
-  const koniec = wynik.findIndex((l, i) => i > od && /^## /.test(l))
+  const koniec = wynik.findIndex((l, i) => i > od && koniecSekcji(l))
   let wstaw = koniec === -1 ? wynik.length : koniec
   while (wstaw > od + 1 && wynik[wstaw - 1] === '') wstaw -= 1
   return [...wynik.slice(0, wstaw), ...nowe, ...wynik.slice(wstaw)]

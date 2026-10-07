@@ -1,4 +1,4 @@
-// Test detekcji blokera srodowiska z dev-docs-review-wf.js.
+// Test detekcji awarii srodowiska E2E w trakcie runu z dev-docs-review-wf.js.
 //
 // Uruchomienie:  node --test .claude/workflows/__tests__/bloker-srodowiska.test.mjs
 //   albo caly katalog:  node --test '.claude/workflows/__tests__/*.test.mjs'   (glob w apostrofach)
@@ -8,19 +8,13 @@
 //
 // DLACZEGO EKSTRAKCJA ZE ZRODLA, A NIE IMPORT: workflowy sa self-contained skryptami runtime'u Workflow —
 // maja top-level `await agent(...)`, `phase()`, `log()`, ktorych w Node nie ma, wiec `import()` tego pliku
-// wysypuje sie na ReferenceError. Wyciagniecie z pliku SYGNATUR i funkcji utrzymuje JEDNO zrodlo prawdy:
-// test sprawdza dokladnie te regexy, ktore poleca w runie, a nie ich kopie, ktora rozjedzie sie po tygodniu.
+// wysypuje sie na ReferenceError. Wyciagniecie z pliku SYGNATUR i funkcji utrzymuje JEDNO zrodlo prawdy.
 //
-// Kontekst (audyt pipeline'u 2026-09-02, pozycja A1): detektor lapal findingi o KODZIE. Realny P2
-// z oferty-online ("`dns.lookup`/`getaddrinfo` nie ma wlasnego limitu") zatrzymywal caly run jako
-// "bloker srodowiska". Naprawa ma trzy warstwy i test pokrywa wszystkie trzy:
-//   (1) sygnatura — gole `getaddrinfo` juz nie wystarcza, musi byc zlaczone z kodem bledu,
-//   (2) zrodlo    — liczy sie wylacznie finding TESTERA E2E (`_zrodlo === 'e2e'`),
-//   (3) przebieg  — bloker bez wpisu FAIL/SKIP w `przebiegi[]` testera to nie bloker,
-//   (4) tryb      — detekcja tylko w `e2eTryb === 'przegladarka'`.
-// P14 (zmiana kontraktu skutku, nie detekcji): wykryty bloker nie zatrzymuje juz runu — scenariusze fazy ida na [Manual]
-// z powodem, a reszta runu idzie bez przegladarki (e2e-manual.test.mjs). Falszywy bloker kosztuje teraz reczne scenariusze
-// zamiast STOP-u, wiec filtry nizej dalej pilnuja, zeby defekt kodu nie przebieral sie za awarie srodowiska.
+// P14 (zmiana kontraktu): awaria srodowiska = przebieg testera SKIP z przyczyna `srodowisko` (pole strukturalne). Sygnatura
+// tekstu tylko nazywa klase awarii. Powody: `curl -s` nie wypisuje komunikatu, curl 8 pisze „Couldn't connect to server”
+// (poza sygnaturami), a FAIL z „connection refused” po sprawdzeniu `e2e.mjs stan` znaczy „kod fazy polozyl serwer” — to defekt
+// do fixa (fix restartuje serwer), nie awaria srodowiska. Findingi (takze z sygnatura, audyt A1: `dns.lookup`/`getaddrinfo`
+// w opisie defektu kodu) nie sa juz wejsciem detekcji. Skutek detekcji: scenariusze na [Manual], reszta runu bez przegladarki.
 
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -44,160 +38,77 @@ function wytnijFragment() {
   return zrodlo.slice(start, koniec + 3)
 }
 
-/** @typedef {import('./typy.mjs').Finding} Finding */
 /** @typedef {import('./typy.mjs').PrzebiegE2e} PrzebiegE2e */
 
 // Wyjatek od no-new-func: jedyna droga do niewyeksportowanej jednostki w skrypcie workflowu;
 // wejsciem jest plik z tego repo, nie dane uzytkownika.
-/** @type {{ wykryjBlokerSrodowiska: (findingi: Finding[], przebiegiTestera: PrzebiegE2e[] | null) => { wykryty: boolean, klasa: string, dowod: string } | null }} */
+/** @type {{ wykryjBlokerSrodowiska: (przebiegiTestera: PrzebiegE2e[]) => { wykryty: boolean, klasa: string, dowod: string } | null }} */
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { wykryjBlokerSrodowiska } = new Function(
   `${wytnijFragment()}\nreturn { wykryjBlokerSrodowiska }`
 )()
 
-// Odwzorowanie miejsca wywolania z workflowu (dwa filtry, ktorych nie ma w samej funkcji).
-// Test `wiring` nizej pilnuje, ze wywolanie w workflowie nadal wyglada tak samo.
-/**
- * @param {{ findingi: Finding[], przebiegi: PrzebiegE2e[] | null, e2eTryb: string }} wejscie
- */
-function wykryjJakWorkflow({ findingi, przebiegi, e2eTryb }) {
+// Odwzorowanie miejsca wywolania z workflowu (filtr trybu nie jest w samej funkcji); test `wiring` pilnuje wywolania.
+/** @param {{ przebiegi: PrzebiegE2e[], e2eTryb: string }} wejscie */
+function wykryjJakWorkflow({ przebiegi, e2eTryb }) {
   if (e2eTryb !== 'przegladarka') return null
-  return wykryjBlokerSrodowiska(findingi.filter((f) => f._zrodlo === 'e2e'), przebiegi)
+  return wykryjBlokerSrodowiska(przebiegi)
 }
 
-const FAIL_PRZEBIEG = [{ checkbox: 'Test: [E2E] `logowanie`', flow: 'logowanie', wynik: 'FAIL', dowod: '—' }]
-const PASS_PRZEBIEG = [{ checkbox: 'Test: [E2E] `logowanie`', flow: 'logowanie', wynik: 'PASS', dowod: '—' }]
-/** @type {(opis: string, plik?: string) => Finding} */
-const e2e = (opis, plik = '?') => ({ severity: 'P2', typ: 'E2E', plik, opis, _zrodlo: 'e2e' })
+/** @type {(dowod: string, przyczyna?: string, wynik?: string) => PrzebiegE2e[]} */
+const przebieg = (dowod, przyczyna = 'srodowisko', wynik = 'SKIP') => [{ checkbox: 'Test: [E2E] `logowanie` — /login → panel', flow: 'logowanie', wynik, przyczyna, dowod }]
 
-// ── 6 przypadkow POZYTYWNYCH — realne komunikaty runtime, ktore MAJA przelaczyc run na reczne E2E ──
+// ── POZYTYWNE — SKIP `srodowisko`; realny komunikat runtime nazywa klase ─────
 
 const POZYTYWNE = [
-  {
-    nazwa: 'przegladarka: ERR_CONNECTION_REFUSED na dev serwerze',
-    opis: 'Scenariusz przerwany: net::ERR_CONNECTION_REFUSED przy otwieraniu http://localhost:5173/oferty',
-    klasa: 'dev-server-nieosiagalny',
-  },
-  {
-    nazwa: 'node: ECONNREFUSED z adresem i portem',
-    opis: 'Preflight padl: Error: connect ECONNREFUSED 127.0.0.1:5173',
-    klasa: 'dev-server-nieosiagalny',
-  },
-  {
-    nazwa: 'curl: Connection refused',
-    opis: 'curl: (7) Failed to connect to localhost port 5173 after 3 ms: Connection refused',
-    klasa: 'dev-server-nieosiagalny',
-  },
-  {
-    nazwa: 'przegladarka: ERR_NAME_NOT_RESOLVED na hoscie Supabase',
-    opis: 'net::ERR_NAME_NOT_RESOLVED przy zadaniu do https://abcdefgh.supabase.co/auth/v1/token',
-    klasa: 'host-nierozwiazywalny',
-  },
-  {
-    nazwa: 'node: getaddrinfo ENOTFOUND (kod bledu zlaczony z wywolaniem)',
-    opis: 'Logowanie padlo: getaddrinfo ENOTFOUND abcdefgh.supabase.co',
-    klasa: 'host-nierozwiazywalny',
-  },
-  {
-    nazwa: 'curl: Could not resolve host',
-    opis: 'curl: (6) Could not resolve host: abcdefgh.supabase.co',
-    klasa: 'host-nierozwiazywalny',
-  },
+  { nazwa: 'przegladarka: ERR_CONNECTION_REFUSED na dev serwerze', dowod: 'Scenariusz przerwany: net::ERR_CONNECTION_REFUSED przy otwieraniu http://localhost:5173/oferty', klasa: 'dev-server-nieosiagalny' },
+  { nazwa: 'node: ECONNREFUSED z adresem i portem', dowod: 'Preflight padl: Error: connect ECONNREFUSED 127.0.0.1:5173', klasa: 'dev-server-nieosiagalny' },
+  { nazwa: 'curl -sS: Connection refused', dowod: 'curl: (7) Failed to connect to localhost port 5173 after 3 ms: Connection refused', klasa: 'dev-server-nieosiagalny' },
+  { nazwa: 'przegladarka: ERR_NAME_NOT_RESOLVED na hoscie Supabase', dowod: 'net::ERR_NAME_NOT_RESOLVED przy zadaniu do https://abcdefgh.supabase.co/auth/v1/token', klasa: 'host-nierozwiazywalny' },
+  { nazwa: 'node: getaddrinfo ENOTFOUND (kod bledu zlaczony z wywolaniem)', dowod: 'Logowanie padlo: getaddrinfo ENOTFOUND abcdefgh.supabase.co', klasa: 'host-nierozwiazywalny' },
+  { nazwa: 'curl: Could not resolve host', dowod: 'curl: (6) Could not resolve host: abcdefgh.supabase.co', klasa: 'host-nierozwiazywalny' },
+  { nazwa: 'curl -s milczy — sam powod testera', dowod: 'aplikacja nie odpowiada na http://localhost:5173 (curl -s bez wyjscia, kod 7)', klasa: 'srodowisko' },
 ]
 
-for (const przypadek of POZYTYWNE) {
-  test(`bloker WYKRYTY — ${przypadek.nazwa}`, () => {
-    const wynik = wykryjJakWorkflow({
-      findingi: [e2e(przypadek.opis)],
-      przebiegi: FAIL_PRZEBIEG,
-      e2eTryb: 'przegladarka',
-    })
-    assert.ok(wynik, 'realna awaria srodowiska musi zostac wykryta')
-    assert.equal(wynik.wykryty, true)
-    assert.equal(wynik.klasa, przypadek.klasa)
-    assert.ok(wynik.dowod.length > 0, 'dowod idzie do logu runu i powodu [Manual] — nie moze byc pusty')
+for (const p of POZYTYWNE) {
+  test(`awaria srodowiska WYKRYTA — ${p.nazwa}`, () => {
+    const wynik = wykryjJakWorkflow({ przebiegi: przebieg(p.dowod), e2eTryb: 'przegladarka' })
+    assert.ok(wynik, 'SKIP z przyczyna srodowisko to awaria srodowiska')
+    assert.equal(wynik.klasa, p.klasa)
+    assert.ok(wynik.dowod.length > 0, 'dowod idzie do logu runu — nie moze byc pusty')
   })
 }
 
-// ── 6 przypadkow NEGATYWNYCH — nie wolno ich uznac za bloker ────────────────
+// ── NEGATYWNE ────────────────────────────────────────────────────────────────
 
-// Finding P2 z docs/completed/faza-6-cta-i-webhooki/review-faza-3.md (punkt 2), cytowany DOSLOWNIE.
-// To on wywolal cala pozycje A1: opisuje BRAK LIMITU CZASU w kodzie, a zatrzymywal run jako awarie DNS.
-const FINDING_DELIVER_TS = 'Twardy budżet czasu jednej próby (`WEBHOOK_HTTP_TIMEOUT_MS`, D8) NIE obejmuje rozwiązywania nazwy: '
-  + '`resolveWebhookTarget` (a w nim `dns.lookup`) jest awaitowane PRZED utworzeniem `AbortSignal.timeout(timeoutMs)` '
-  + '(linia 240), a `dns.lookup`/`getaddrinfo` nie ma własnego limitu. Dołożywszy do tego trzy sekwencyjne '
-  + 'zapytania `loadJob` po 5 s każde (`queue-store.ts:74`), realny czas obsługi JEDNEGO wiersza może przekroczyć '
-  + '`WEBHOOK_VISIBILITY_TIMEOUT_SECONDS = 30`.'
-
-test('bloker NIE wykryty — finding o braku limitu na dns.lookup (gole "getaddrinfo" w opisie kodu)', () => {
-  const wynik = wykryjJakWorkflow({
-    findingi: [{ severity: 'P2', typ: 'KOD', plik: 'apps/server/src/webhooks/deliver.ts:214', opis: FINDING_DELIVER_TS, _zrodlo: 'e2e' }],
-    przebiegi: FAIL_PRZEBIEG,
-    e2eTryb: 'przegladarka',
-  })
-  assert.equal(wynik, null, 'nazwa wywolania systemowego w opisie defektu kodu to nie awaria srodowiska')
+test('NIE wykryta — FAIL z ERR_CONNECTION_REFUSED (kod fazy polozyl serwer: finding do fixa, fix restartuje serwer)', () => {
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('net::ERR_CONNECTION_REFUSED http://localhost:5173/', 'nie-dotyczy', 'FAIL'), e2eTryb: 'przegladarka' }), null)
 })
 
-test('bloker NIE wykryty — ECONNREFUSED cytowany w tescie jednostkowym (zrodlo test-coverage, nie tester)', () => {
-  const wynik = wykryjJakWorkflow({
-    findingi: [{
-      severity: 'P2',
-      typ: 'TEST',
-      plik: 'apps/server/src/webhooks/deliver.test.ts:88',
-      opis: 'Brakuje testu sciezki bledu sieciowego: mock powinien rzucac Error("connect ECONNREFUSED 127.0.0.1:8080"), '
-        + 'zeby sprawdzic, czy deliverWebhook zamienia to na status `nieudane` zamiast wywalac worker.',
-      _zrodlo: 'test-coverage',
-    }],
-    przebiegi: FAIL_PRZEBIEG,
-    e2eTryb: 'przegladarka',
-  })
-  assert.equal(wynik, null, 'finding reviewera kodu/testow nigdy nie jest dowodem awarii srodowiska')
+test('NIE wykryta — SKIP harness albo limit z cytowanym bledem sieci uslugi zewnetrznej', () => {
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('popup OAuth: net::ERR_NAME_NOT_RESOLVED accounts.google.com', 'harness'), e2eTryb: 'przegladarka' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('SMTP: connect ECONNREFUSED smtp.example.com:587', 'limit-zewnetrzny'), e2eTryb: 'przegladarka' }), null)
 })
 
-test('bloker NIE wykryty — realna sygnatura, ale tester nie ma ani jednego przebiegu', () => {
-  const wynik = wykryjJakWorkflow({
-    findingi: [e2e('net::ERR_CONNECTION_REFUSED przy otwieraniu http://localhost:5173/')],
-    przebiegi: [],
-    e2eTryb: 'przegladarka',
-  })
-  assert.equal(wynik, null, 'bloker bez przebiegu FAIL/SKIP to nie bloker')
+test('NIE wykryta — SKIP brak-seeda (defekt buildera, idzie do fixa)', () => {
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('brak e2e/seeds/logowanie-seed.sql', 'brak-seeda'), e2eTryb: 'przegladarka' }), null)
 })
 
-test('bloker NIE wykryty — realna sygnatura, ale wszystkie przebiegi PASS', () => {
-  const wynik = wykryjJakWorkflow({
-    findingi: [e2e('W konsoli przegladarki pojawil sie net::ERR_NAME_NOT_RESOLVED dla zewnetrznego skryptu analityki, scenariusz przeszedl')],
-    przebiegi: PASS_PRZEBIEG,
-    e2eTryb: 'przegladarka',
-  })
-  assert.equal(wynik, null, 'komplet PASS oznacza, ze srodowisko dziala — nie ma czego zatrzymywac')
+test('NIE wykryta — tester bez przebiegow albo same PASS', () => {
+  assert.equal(wykryjJakWorkflow({ przebiegi: [], e2eTryb: 'przegladarka' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('ok', 'nie-dotyczy', 'PASS'), e2eTryb: 'przegladarka' }), null)
 })
 
-test('bloker NIE wykryty — tryb bez-przegladarki (odmowa polaczenia jest oczekiwana)', () => {
-  const wynik = wykryjJakWorkflow({
-    findingi: [e2e('curl: (7) Failed to connect to localhost port 5173: Connection refused — srodowiska E2E nie ma')],
-    przebiegi: [{ checkbox: 'Weryfikacja: [E2E] `dashboard`', flow: 'dashboard', wynik: 'SKIP', dowod: 'brak srodowiska E2E' }],
-    e2eTryb: 'bez-przegladarki',
-  })
-  assert.equal(wynik, null, 'w trybie bez przegladarki brak polaczenia jest stanem znanym, nie awaria')
+test('NIE wykryta — tryb bez-przegladarki (SKIP srodowisko jest wtedy oczekiwany)', () => {
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('srodowisko E2E niedostepne w tym runie'), e2eTryb: 'bez-przegladarki' }), null)
 })
 
-test('bloker NIE wykryty — zwykly FAIL scenariusza bez sygnatury infrastrukturalnej', () => {
-  const wynik = wykryjJakWorkflow({
-    findingi: [e2e('Przycisk "Zapisz" nie zamyka modala — po kliknieciu dialog zostaje otwarty, brak toastu potwierdzenia')],
-    przebiegi: FAIL_PRZEBIEG,
-    e2eTryb: 'przegladarka',
-  })
-  assert.equal(wynik, null, 'defekt UI nie moze przebierac sie za awarie srodowiska')
-})
+// ── Kotwica wywolania w workflowie ─────────────────────────────────────────
 
-// ── Kotwice wywolania w workflowie ─────────────────────────────────────────
-// Sama funkcja nie zna ani zrodla findingu, ani trybu E2E — te dwa filtry sa w miejscu wywolania.
-// Gdyby ktos je usunal, wszystkie testy wyzej dalej by przechodzily, a regresja wrocilaby po cichu.
-
-test('wiring — wywolanie w workflowie filtruje po zrodle, trybie i podaje przebiegi testera', () => {
+test('wiring — detekcja tylko w trybie przegladarki, na przebiegach testera', () => {
   assert.match(
     zrodlo,
-    /const blokerSrodowiska = e2eTryb === 'przegladarka'\s*\n\s*\? wykryjBlokerSrodowiska\(wszystkie\.filter\(\(f\) => f\._zrodlo === 'e2e'\), e2ePrzebiegi\)\s*\n\s*: null/,
-    'detekcja musi dostawac wylacznie findingi testera E2E, jego przebiegi i dzialac tylko w trybie przegladarki'
+    /const blokerSrodowiska = e2eTryb === 'przegladarka'\s*\n\s*\? wykryjBlokerSrodowiska\(e2ePrzebiegi\)\s*\n\s*: null/,
+    'detekcja dostaje przebiegi testera i dziala tylko w trybie przegladarki',
   )
 })

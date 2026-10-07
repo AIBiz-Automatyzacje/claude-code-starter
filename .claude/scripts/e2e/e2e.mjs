@@ -24,7 +24,8 @@ import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { rodzajPrzyczyny, zaksiegujFaze } from './ksiegowanie.mjs'
 import { listaManual } from './scenariusze.mjs'
-import { envE2e, konfiguracja, stanSerwera, zatrzymajSerwer } from './srodowisko.mjs'
+import { stanSerwera, zatrzymajSerwer } from './serwer.mjs'
+import { envE2e, konfiguracja } from './srodowisko.mjs'
 import { startE2e } from './start.mjs'
 
 const KOD_DO_POPRAWY = 1

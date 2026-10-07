@@ -18,6 +18,7 @@
  * @property {string} checkbox
  * @property {string} flow
  * @property {string} wynik
+ * @property {string} [przyczyna]
  * @property {string} dowod
  */
 

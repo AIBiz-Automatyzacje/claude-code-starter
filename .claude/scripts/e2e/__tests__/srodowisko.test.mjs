@@ -9,7 +9,8 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { bledySrodowiska, konfiguracja, odpowiada, parsujEnv, stanSerwera, zatrzymajSerwer } from '../srodowisko.mjs'
+import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
+import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
 import { startE2e } from '../start.mjs'
 
 const ZADANIE = 'docs/active/z'
@@ -17,9 +18,25 @@ const BAZA = 'VITE_SUPABASE_URL=https://e2e.supabase.co\nVITE_SUPABASE_ANON_KEY=
 /** @type {import('../srodowisko.mjs').Narzedzia} */
 const SPRAWNE = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) }
 
+// Sprzatanie po kazdym tescie, takze padnietym: serwer pipeline'u z pliku PID (zatrzymajSerwer zabija tylko nasz proces),
+// log i plik PID w /tmp, katalog projektu.
+/** @type {string[]} */
+const PROJEKTY = []
+test.afterEach(() => {
+  for (const p of PROJEKTY.splice(0)) {
+    const env = existsSync(join(p, '.env.e2e')) ? parsujEnv(readFileSync(join(p, '.env.e2e'), 'utf8')) : {}
+    const konf = konfiguracja(p, env)
+    zatrzymajSerwer(konf)
+    rmSync(konf.log, { force: true })
+    rmSync(konf.pid, { force: true })
+    rmSync(p, { recursive: true, force: true })
+  }
+})
+
 /** @param {{ zadania?: string, env?: string | null, pliki?: Record<string, string> }} o */
 function projekt({ zadania = '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a → ok\n', env = null, pliki = {} } = {}) {
   const katalog = mkdtempSync(join(tmpdir(), 'e2e-srodowisko-'))
+  PROJEKTY.push(katalog)
   mkdirSync(join(katalog, ZADANIE), { recursive: true })
   writeFileSync(join(katalog, ZADANIE, 'z-zadania.md'), zadania)
   if (env !== null) writeFileSync(join(katalog, '.env.e2e'), env)
@@ -29,6 +46,9 @@ function projekt({ zadania = '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a �
   }
   return katalog
 }
+
+/** @param {string} p @returns {import('../srodowisko.mjs').Konfiguracja} konfiguracja z .env.e2e projektu (ta sama co w skrypcie) */
+const konfProjektu = (p) => konfiguracja(p, parsujEnv(readFileSync(join(p, '.env.e2e'), 'utf8')))
 
 /** @returns {Promise<number>} wolny port */
 function wolnyPort() {
@@ -124,7 +144,7 @@ test('start: uruchamia serwer z E2E_START, czeka na sonde, stop zabija tylko swo
   const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.equal(w.status, 'gotowe', w.detal)
   assert.equal(w.serwer, 'uruchomione')
-  const konf = konfiguracja(p, parsujEnv(`E2E_URL=http://127.0.0.1:${port}\n`))
+  const konf = konfProjektu(p)
   assert.ok(existsSync(konf.pid))
   // Serwer odpowiada, ale nie ma naszego PID-u (ktos odpalil go recznie) = zastany z ostrzezeniem o bazie dev.
   const pid = readFileSync(konf.pid, 'utf8')
@@ -205,11 +225,59 @@ test('wlasny serwer z poprzedniego runu (zywy PID) = uruchomione, nie zastany; s
   const ponowny = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.equal(ponowny.serwer, 'uruchomione')
   assert.doesNotMatch(ponowny.detal, /zastany/)
-  const konf = konfiguracja(p, parsujEnv(`E2E_URL=http://127.0.0.1:${port}\n`))
+  const konf = konfProjektu(p)
   const stan = stanSerwera(konf)
   assert.equal(stan.zyje, true)
   assert.equal(typeof stan.ogonLogu, 'string')
   zatrzymajSerwer(konf)
   assert.equal(stanSerwera(konf).zyje, false)
+  rmSync(p, { recursive: true })
+})
+
+test('guard tozsamosci: .env ma VITE_SUPABASE_URL, a .env.e2e nie (Vite w trybie e2e doczyta baze dev); porownanie po origin', () => {
+  const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
+  const brak = bledySrodowiska(p, { E2E_URL: 'http://localhost:5173' }, { przegladarka: false, narzedzia: SPRAWNE })
+  assert.equal(brak.length, 1)
+  assert.match(brak[0], /brak VITE_SUPABASE_URL w \.env\.e2e/)
+  const ukosnik = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co/' }, { przegladarka: false, narzedzia: SPRAWNE })
+  assert.match(ukosnik[0] ?? '', /dedykowanego projektu Supabase e2e/)
+  rmSync(p, { recursive: true })
+})
+
+test('E2E_HEALTH bez schematu = blad sprawdzenia (inaczej czekanie przez caly limit startu)', () => {
+  const p = projekt()
+  const bledy = bledySrodowiska(p, { E2E_HEALTH: 'localhost:5173/zdrowie' }, { przegladarka: false, narzedzia: SPRAWNE })
+  assert.equal(bledy.length, 1)
+  assert.match(bledy[0], /E2E_HEALTH/)
+  rmSync(p, { recursive: true })
+})
+
+test('plik PID z cudzym procesem albo PID 1: serwer nie jest nasz, stop nikogo nie zabija', async () => {
+  const port = await wolnyPort()
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\n` })
+  const konf = konfProjektu(p)
+  for (const tresc of ['1', String(process.pid), JSON.stringify({ pid: process.pid, start: 'inna komenda', odcisk: 'x' })]) {
+    writeFileSync(konf.pid, tresc)
+    const stan = stanSerwera(konf)
+    assert.equal(stan.nasz, false, tresc)
+    assert.equal(zatrzymajSerwer(konf).posprzatano, true, tresc)
+    assert.equal(existsSync(konf.pid), false, 'plik PID usuniety, proces zostaje')
+  }
+  rmSync(p, { recursive: true })
+})
+
+test('stan: nasz serwer zabity z zewnatrz = nasz, nie zyje; serwer zastany (bez PID) = nie nasz', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\n` })
+  await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+  const konf = konfProjektu(p)
+  assert.deepEqual({ nasz: stanSerwera(konf).nasz, zyje: stanSerwera(konf).zyje }, { nasz: true, zyje: true })
+  const { pid } = JSON.parse(readFileSync(konf.pid, 'utf8'))
+  process.kill(-pid, 'SIGTERM')
+  await new Promise((r) => setTimeout(r, 300))
+  assert.deepEqual({ nasz: stanSerwera(konf).nasz, zyje: stanSerwera(konf).zyje }, { nasz: true, zyje: false })
+  zatrzymajSerwer(konf)
+  assert.equal(stanSerwera(konf).nasz, false)
   rmSync(p, { recursive: true })
 })

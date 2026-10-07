@@ -640,7 +640,9 @@ KLASYFIKUJ kazdy finding przed naprawa:
   w "Do poprawy". Po fix NIE ma re-review, wiec nikt inny go nie odznaczy, a completion-gate
   (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.
   ${srodowiskoE2E === 'gotowe'
-    ? 'Ponowne odegranie niewykonalne nie z winy kodu (aplikacja nie odpowiada, limit uslugi zewnetrznej, popup OAuth) ->'
+    ? `Finding "serwer aplikacji padl" (kod fazy polozyl serwer): po naprawie uruchom serwer od nowa — \`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
+  (Bash z timeout 600000, jedno wywolanie; status "gotowe" = mozna odgrywac) — i dopiero wtedy odegraj scenariusz.
+  Ponowne odegranie niewykonalne nie z winy kodu (aplikacja nie odpowiada, limit uslugi zewnetrznej, popup OAuth) ->`
     : `SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE (${srodowiskoE2E}): przyczyne napraw (kod, seed), ale scenariusza nie odgrywaj ->`}
   przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna <srodowisko|limit-zewnetrzny|harness> --powod "<co naprawiles i dlaczego recznie>"\`
   (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.

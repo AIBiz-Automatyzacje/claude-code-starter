@@ -12,7 +12,8 @@ import { join } from 'node:path'
 import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { liczE2e } from './scenariusze.mjs'
-import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, odpowiada, PLIK_ENV, uruchomSerwer } from './srodowisko.mjs'
+import { odpowiada, uruchomSerwer } from './serwer.mjs'
+import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
 
 /**
  * @typedef {'pominieto' | 'brak-srodowiska' | 'niepowodzenie' | 'gotowe'} StatusE2e

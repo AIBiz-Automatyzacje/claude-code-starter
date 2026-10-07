@@ -1,5 +1,5 @@
 // Srodowisko E2E projektu (P14): parametry z `.env.e2e`, sprawdzenie przed startem autopilota (sekcja Doctor) oraz start
-// i zatrzymanie serwera aplikacji. Wczesniej ten przepis byl rozsiany po promptach env-up, env-down i testera
+// serwera aplikacji (proces serwera: serwer.mjs). Wczesniej ten przepis byl rozsiany po promptach env-up, env-down i testera
 // (Vite, port 5173, Supabase na sztywno); projekt z innym serwerem albo bez Supabase nie mial jak z niego skorzystac.
 //
 // Parametry `.env.e2e` (wszystkie opcjonalne, domyslne = dev server Vite):
@@ -9,10 +9,10 @@
 //   E2E_START_TIMEOUT  sekundy na start (domyslnie 90)
 // Baza e2e (projekt z katalogiem supabase/ albo z kluczami SUPABASE_E2E_*): wymagane KLUCZE_BAZY i guard tozsamosci.
 
-import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, existsSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
-import { setTimeout as czekaj } from 'node:timers/promises'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 
@@ -23,13 +23,10 @@ const LIMIT_STARTU_SEK = 90
 // Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
 // z serwerem w tle, ale bez wyniku JSON.
 const MAKS_STARTU_SEK = 540
-const LIMIT_SONDY_MS = 3000
-const ODSTEP_SONDY_MS = 500
-const LINIE_OGONA_LOGU = 20
 
 /**
  * @typedef {{ url: string, zdrowie: string, start: string, limitSek: number, log: string, pid: string, bazaE2e: boolean,
- *   blad: string | null }} Konfiguracja
+ *   odcisk: string, blad: string | null }} Konfiguracja
  * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => { ok: boolean, detal: string } }} Narzedzia
  */
 
@@ -60,14 +57,17 @@ export function menedzerPakietow(projekt) {
   return 'npm'
 }
 
-/** @param {string} url @returns {{ port: string, blad: string | null }} port adresu albo blad zapisu (bez wyjatku) */
-function portZUrl(url) {
+/** @param {string} url @returns {URL | null} adres http(s) albo null (zapis bez schematu parsuje sie jako schemat `localhost:`) */
+function adresHttp(url) {
   const u = URL.canParse(url) ? new URL(url) : null
-  if (!u || (u.protocol !== 'http:' && u.protocol !== 'https:')) {
-    return { port: String(DOMYSLNY_PORT), blad: `E2E_URL w ${PLIK_ENV} to „${url}” — podaj pelny adres http(s):// z portem, np. http://localhost:5173` }
-  }
-  return { port: u.port || (u.protocol === 'https:' ? '443' : '80'), blad: null }
+  return u && (u.protocol === 'http:' || u.protocol === 'https:') ? u : null
 }
+
+/** @param {string} klucz @param {string} url @returns {string} */
+const bladAdresu = (klucz, url) => `${klucz} w ${PLIK_ENV} to „${url}” — podaj pelny adres http(s):// z portem, np. http://localhost:5173`
+
+/** @param {string} url @returns {string} adres do porownania baz (origin; ukosnik na koncu bez znaczenia) */
+const originBazy = (url) => adresHttp(url.trim())?.origin ?? url.trim()
 
 /**
  * @param {string} projekt
@@ -76,16 +76,21 @@ function portZUrl(url) {
  */
 export function konfiguracja(projekt, env) {
   const url = env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`
+  const zdrowie = env.E2E_HEALTH || url
   const nazwa = basename(projekt).replace(/[^A-Za-z0-9_-]/g, '_')
-  const { port, blad } = portZUrl(url)
+  const adres = adresHttp(url)
+  const port = adres ? adres.port || (adres.protocol === 'https:' ? '443' : '80') : String(DOMYSLNY_PORT)
+  const blad = !adres ? bladAdresu('E2E_URL', url) : !adresHttp(zdrowie) ? bladAdresu('E2E_HEALTH', zdrowie) : null
   return {
     url,
-    zdrowie: env.E2E_HEALTH || url,
+    zdrowie,
     start: env.E2E_START || `${menedzerPakietow(projekt)} run dev -- --mode e2e --port ${port} --strictPort`,
     limitSek: Math.min(Number(env.E2E_START_TIMEOUT) > 0 ? Number(env.E2E_START_TIMEOUT) : LIMIT_STARTU_SEK, MAKS_STARTU_SEK),
     log: `/tmp/autopilot-e2e-${nazwa}.log`,
     pid: `/tmp/autopilot-e2e-${nazwa}.pid`,
     bazaE2e: existsSync(join(projekt, 'supabase')) || Object.keys(env).some((k) => k.startsWith('SUPABASE_E2E_')),
+    // Odcisk konfiguracji w pliku PID: serwer z poprzedniego runu jest nasz tylko przy tej samej komendzie i tym samym .env.e2e.
+    odcisk: createHash('sha256').update(JSON.stringify(Object.entries(env).sort())).digest('hex').slice(0, 16),
     blad,
   }
 }
@@ -113,9 +118,12 @@ export function bledySrodowiska(projekt, env, { przegladarka, narzedzia = NARZED
   const bledy = []
   if (!narzedzia.czyIgnorowany(projekt, PLIK_ENV)) bledy.push(`${PLIK_ENV} nie jest w .gitignore — dopisz go (plik zawiera sekrety)`)
   if (konf.blad) bledy.push(konf.blad)
-  // Guard tozsamosci niezaleznie od bazy e2e: projekt bez supabase/ tez moze celowac z E2E w baze dev.
-  const dev = [wczytajEnv(projekt, '.env'), wczytajEnv(projekt, '.env.local')].filter((e) => e && e.VITE_SUPABASE_URL)
-  if (env.VITE_SUPABASE_URL && dev.some((e) => e?.VITE_SUPABASE_URL === env.VITE_SUPABASE_URL)) {
+  // Guard tozsamosci niezaleznie od bazy e2e: projekt bez supabase/ tez moze celowac z E2E w baze dev. Brak klucza w .env.e2e
+  // przy kluczu w .env = Vite w trybie e2e doczyta adres z .env, czyli baze dev.
+  const dev = [wczytajEnv(projekt, '.env'), wczytajEnv(projekt, '.env.local')].flatMap((e) => (e?.VITE_SUPABASE_URL ? [originBazy(e.VITE_SUPABASE_URL)] : []))
+  if (dev.length && !env.VITE_SUPABASE_URL) {
+    bledy.push(`brak VITE_SUPABASE_URL w ${PLIK_ENV}, a .env / .env.local go ma — Vite w trybie e2e doczyta baze dev; ustaw adres dedykowanego projektu Supabase e2e`)
+  } else if (env.VITE_SUPABASE_URL && dev.includes(originBazy(env.VITE_SUPABASE_URL))) {
     bledy.push(`VITE_SUPABASE_URL w ${PLIK_ENV} jest taki sam jak w .env / .env.local — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
   }
   if (konf.bazaE2e) {
@@ -129,106 +137,6 @@ export function bledySrodowiska(projekt, env, { przegladarka, narzedzia = NARZED
     if (!ab.ok) bledy.push(`agent-browser nie dziala: ${ab.detal} — instalacja: npm i -g agent-browser && agent-browser install; diagnoza: agent-browser doctor`)
   }
   return bledy
-}
-
-/** @param {string} url @returns {Promise<boolean>} czy adres odpowiada statusem < 500 (odmowa polaczenia i timeout = nie) */
-export async function odpowiada(url) {
-  try {
-    const odpowiedz = await fetch(url, { signal: AbortSignal.timeout(LIMIT_SONDY_MS), redirect: 'manual' })
-    return odpowiedz.status < 500
-  } catch {
-    // Wynik sondy, nie awaria skryptu: odmowa polaczenia, DNS albo timeout znacza „serwer nie dziala”.
-    return false
-  }
-}
-
-/** @param {string} plik @returns {string} ostatnie linie logu serwera */
-function ogonLogu(plik) {
-  return existsSync(plik) ? readFileSync(plik, 'utf8').trimEnd().split('\n').slice(-LINIE_OGONA_LOGU).join('\n') : '(brak logu)'
-}
-
-/** @param {number} pid */
-function zabijGrupe(pid) {
-  for (const cel of [-pid, pid]) {
-    try {
-      process.kill(cel, 'SIGTERM')
-      return
-    } catch (blad) {
-      if (!(blad instanceof Error && 'code' in blad && blad.code === 'ESRCH')) throw blad
-    }
-  }
-}
-
-/** @param {Konfiguracja} konf @returns {number | null} PID z pliku, gdy proces zyje (serwer pipeline'u z tego albo poprzedniego runu) */
-function zywyPid(konf) {
-  if (!existsSync(konf.pid)) return null
-  const pid = Number(readFileSync(konf.pid, 'utf8').trim())
-  if (!Number.isInteger(pid) || pid <= 0) return null
-  try {
-    process.kill(pid, 0)
-    return pid
-  } catch (blad) {
-    if (blad instanceof Error && 'code' in blad && blad.code === 'EPERM') return pid
-    return null
-  }
-}
-
-/**
- * Stan serwera uruchomionego przez pipeline — dla testera, gdy aplikacja nie odpowiada: martwy proces z bledem w logu
- * to defekt kodu fazy (serwer padl), zywy albo zabity z zewnatrz to awaria srodowiska.
- * @param {Konfiguracja} konf
- * @returns {{ pid: number | null, zyje: boolean, log: string, ogonLogu: string }}
- */
-export function stanSerwera(konf) {
-  const pid = existsSync(konf.pid) ? Number(readFileSync(konf.pid, 'utf8').trim()) || null : null
-  return { pid, zyje: zywyPid(konf) !== null, log: konf.log, ogonLogu: ogonLogu(konf.log) }
-}
-
-/**
- * Start serwera aplikacji: zastany (odpowiada przed startem) albo uruchomiony w tle z PID-em w pliku; czeka na sonde zdrowia.
- * Serwer z zywym PID-em z poprzedniego runu (STOP zostawia srodowisko) jest nasz — `uruchomione`, sprzata go env-down.
- * @param {string} projekt
- * @param {Konfiguracja} konf
- * @param {Record<string, string>} env doklejane do srodowiska komendy startu
- * @returns {Promise<{ serwer: 'uruchomione' | 'zastane' | 'brak', blad?: string }>}
- */
-export async function uruchomSerwer(projekt, konf, env) {
-  if (await odpowiada(konf.zdrowie)) return { serwer: zywyPid(konf) !== null ? 'uruchomione' : 'zastane' }
-  const log = openSync(konf.log, 'w')
-  const dziecko = spawn(konf.start, { cwd: projekt, shell: true, detached: true, stdio: ['ignore', log, log], env: { ...process.env, ...env } })
-  closeSync(log)
-  /** @type {number | string | null} */
-  let wyjscie = null
-  dziecko.on('exit', (kod, sygnal) => { wyjscie = kod ?? sygnal ?? 'nieznany' })
-  dziecko.unref()
-  if (dziecko.pid === undefined) return { serwer: 'brak', blad: `komenda startu nie wystartowala: ${konf.start}` }
-  writeFileSync(konf.pid, String(dziecko.pid))
-  const termin = Date.now() + konf.limitSek * 1000
-  while (Date.now() < termin) {
-    if (await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
-    if (wyjscie !== null) {
-      rmSync(konf.pid, { force: true })
-      return { serwer: 'brak', blad: `komenda startu „${konf.start}” zakonczyla sie (${wyjscie}) przed odpowiedzia ${konf.zdrowie}. Log ${konf.log}:\n${ogonLogu(konf.log)}` }
-    }
-    await czekaj(ODSTEP_SONDY_MS)
-  }
-  zabijGrupe(dziecko.pid)
-  rmSync(konf.pid, { force: true })
-  return { serwer: 'brak', blad: `${konf.zdrowie} nie odpowiada po ${konf.limitSek} s od „${konf.start}” (zajety port, zla komenda albo E2E_START_TIMEOUT za krotki). Log ${konf.log}:\n${ogonLogu(konf.log)}` }
-}
-
-/**
- * Zatrzymuje wylacznie serwer uruchomiony przez pipeline (plik PID); zastany zostaje.
- * @param {Konfiguracja} konf
- * @returns {{ posprzatano: boolean, detal: string }}
- */
-export function zatrzymajSerwer(konf) {
-  if (!existsSync(konf.pid)) return { posprzatano: true, detal: 'brak pliku PID — serwer zastany albo nieuruchomiony, nic do zatrzymania' }
-  const pid = Number(readFileSync(konf.pid, 'utf8').trim())
-  if (Number.isInteger(pid) && pid > 0) zabijGrupe(pid)
-  rmSync(konf.pid, { force: true })
-  rmSync(konf.log, { force: true })
-  return { posprzatano: true, detal: `zatrzymany serwer PID ${pid}` }
 }
 
 /** @param {string} projekt @returns {Record<string, string> | null} zawartosc .env.e2e albo null */

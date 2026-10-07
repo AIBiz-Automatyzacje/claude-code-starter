@@ -467,10 +467,10 @@ seedem innego flow).
 
 NAJPIERW preflight srodowiska (Bash): czy aplikacja odpowiada — \`curl -sS <adres>\`, adres = E2E_URL z .env.e2e
 (domyslnie http://localhost:5173). Potem proba scenariuszy przez skill agent-browser (open URL, snapshot -i, click, screenshot).
-Aplikacja przestala odpowiadac (na starcie albo w trakcie scenariuszy) -> \`node .claude/scripts/e2e/e2e.mjs stan\`: serwer
-uruchomiony przez autopilota nie zyje (zyje: false), a ogon logu konczy sie bledem z kodu projektu (stack trace z plikow repo) ->
-kod fazy kladzie serwer: wpis FAIL + finding P2 typ E2E z ogonem logu. W kazdym innym przypadku -> wpis SKIP z przyczyna
-"srodowisko" i doslownym komunikatem bledu.
+Aplikacja przestala odpowiadac (na starcie albo w trakcie scenariuszy) -> \`node .claude/scripts/e2e/e2e.mjs stan\`: gdy
+"nasz": true, "zyje": false, a ogon logu konczy sie bledem z kodu projektu (stack trace z plikow repo), kod fazy kladzie serwer:
+wpis FAIL + finding P2 typ E2E z ogonem logu (pierwsza linia opisu "checkbox: <tresc>", dalej "serwer aplikacji padl"). W kazdym
+innym przypadku (serwer nie nasz, zyje, log bez bledu kodu) -> wpis SKIP z przyczyna "srodowisko" i doslownym komunikatem bledu.
 
 SRODOWISKO ZARZADZANE (jesli w korzeniu repo istnieje .env.e2e): orkiestrator uruchomil serwer aplikacji wg .env.e2e
 (skrypt .claude/scripts/e2e/e2e.mjs) i zsynchronizowal baze e2e PRZED Twoim startem. Wtedy:
@@ -898,49 +898,21 @@ if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZna
 //     progi kalibrowane na JEDNYM polskojezycznym korpusie (opisy findingow nie zawsze beda po
 //     polsku) przy zysku rzedu jednej pary na 75 findingow to zla wymiana wobec ryzyka cichej
 //     utraty findingu — regula §11 "Duplication > Complexity".
-// ── Detekcja blokera srodowiskowego po SYGNATURZE (port z mobile, 2026-08-08) ──
-// Powod (run feedback-marcin-poprawki, mobile): awarie SRODOWISKA objawialy sie dopiero w scenariuszach
-// E2E, tester klasyfikowal je jako P2/OPERATOR i RUN LECIAL DALEJ przez kolejne fazy — kazdy nastepny
-// scenariusz padal z tego samego powodu, a operator dowiadywal sie po godzinach. Klasy z jednoznaczna
-// sygnatura w outputach rozpoznajemy w JS (bez LLM) i pozwalamy orkiestratorowi zatrzymac run od razu.
-// Web-owe klasy: (a) dev server nieosiagalny (padl w trakcie runu / zly port) — kazdy kolejny scenariusz
-// przegladarkowy padnie tak samo; (b) host nierozwiazywalny (zly URL w .env.e2e / projekt Supabase
-// spauzowany) — to samo. SWIADOME OGRANICZENIE: gdy przegladarka/curl zmieni brzmienie komunikatu,
-// detekcja przestanie dzialac po cichu — dlatego to UZUPELNIENIE normalnej klasyfikacji, nie jej
-// zamiennik. Finding nierozpoznany dalej idzie zwykla sciezka P2/OPERATOR (stan sprzed tej zmiany).
-// Tester E2E ma nakaz cytowania DOSLOWNYCH komunikatow (patrz e2ePrompt) — parafraza nie uruchomi detekcji.
-// Gole `getaddrinfo` USUNIETE z drugiego wzorca (audyt 2026-09-02, finding A1). Nazwa wywolania systemowego
-// wystepuje w NORMALNYM opisie defektu kodu — realny P2 z oferty-online brzmial "`resolveWebhookTarget`
-// (a w nim `dns.lookup`) jest awaitowane PRZED utworzeniem AbortSignal.timeout, a `dns.lookup`/`getaddrinfo`
-// nie ma wlasnego limitu" i zatrzymywal run jako "bloker srodowiska", choc opisywal brak timeoutu w kodzie.
-// Zostaje wylacznie `getaddrinfo` ZLACZONE z kodem bledu (tak brzmi realny komunikat runtime).
+// ── Awaria srodowiska E2E w trakcie runu (P14) ──────────────────────────────
+// Awaria srodowiska = przebieg testera SKIP z przyczyna `srodowisko` (pole strukturalne, nie tekst): `curl -s` nie wypisuje
+// komunikatu, a curl 8 pisze „Couldn't connect to server”, czego sygnatury nie znaja. FAIL z „connection refused” nie jest
+// awaria: tester daje FAIL tylko wtedy, gdy `e2e.mjs stan` pokazuje, ze nasz serwer padl z bledem kodu fazy — to defekt do
+// fixa, a fix po naprawie uruchamia serwer od nowa. Findingi nie sa wejsciem (audyt 2026-09-02, A1: `dns.lookup`/`getaddrinfo`
+// w opisie defektu kodu udawal awarie). Sygnatury tylko nazywaja klase awarii w logu runu.
 const SYGNATURY_BLOKERA = [
-  { re: /err_connection_refused|econnrefused|net::err_connection|connection refused|(localhost|127\.0\.0\.1):\d+[^\n]{0,60}\b(refused|unreachable|timed out|nie odpowiada)/i, klasa: 'dev-server-nieosiagalny' },
+  { re: /err_connection_refused|econnrefused|net::err_connection|connection refused|couldn't connect to server|(localhost|127\.0\.0\.1):\d+[^\n]{0,60}\b(refused|unreachable|timed out|nie odpowiada)/i, klasa: 'dev-server-nieosiagalny' },
   { re: /err_name_not_resolved|\benotfound\b|\beai_again\b|getaddrinfo\s+(enotfound|eai_again|eai_fail)|could not resolve host/i, klasa: 'host-nierozwiazywalny' },
 ]
-// `przebiegiTestera` to trzeci filtr obok sygnatury i zrodla (audyt 2026-09-02, finding A1): bloker
-// srodowiska objawia sie PADNIETYM scenariuszem. Gdy tester nie ma ani jednego wpisu FAIL/SKIP, sygnatura
-// w opisie jest cytatem z kodu albo dywagacja, nie awaria — i nie ma powodu zatrzymywac calego runu.
-function wykryjBlokerSrodowiska(findingi, przebiegiTestera) {
-  const maNieudanyPrzebieg = Array.isArray(przebiegiTestera)
-    && przebiegiTestera.some((p) => p && (p.wynik === 'FAIL' || p.wynik === 'SKIP'))
-  if (!maNieudanyPrzebieg) return null
-  for (const f of findingi) {
-    const tekst = `${f.opis || ''} ${f.plik || ''}`
-    for (const s of SYGNATURY_BLOKERA) {
-      if (s.re.test(tekst)) return { wykryty: true, klasa: s.klasa, dowod: (f.opis || '').slice(0, 500) }
-    }
-  }
-  // P14: SKIP z przyczyna `srodowisko` (bez findingu) to awaria srodowiska z pola strukturalnego — curl -s nie wypisuje
-  // komunikatu, wiec sama sygnatura by jej nie zlapala. SKIP-y innych przyczyn (harness, limit) nie sa awaria, nawet gdy
-  // ich dowod cytuje ECONNREFUSED zewnetrznej uslugi; FAIL — tylko z sygnatura w dowodzie.
-  for (const p of przebiegiTestera) {
-    if (!p) continue
-    const sygnatura = SYGNATURY_BLOKERA.find((s) => s.re.test(p.dowod || ''))
-    if (p.wynik === 'SKIP' && p.przyczyna === 'srodowisko') return { wykryty: true, klasa: sygnatura ? sygnatura.klasa : 'srodowisko', dowod: String(p.dowod || '').slice(0, 500) }
-    if (p.wynik === 'FAIL' && sygnatura) return { wykryty: true, klasa: sygnatura.klasa, dowod: String(p.dowod).slice(0, 500) }
-  }
-  return null
+function wykryjBlokerSrodowiska(przebiegiTestera) {
+  const awaria = (przebiegiTestera || []).find((p) => p && p.wynik === 'SKIP' && p.przyczyna === 'srodowisko')
+  if (!awaria) return null
+  const sygnatura = SYGNATURY_BLOKERA.find((s) => s.re.test(awaria.dowod || ''))
+  return { wykryty: true, klasa: sygnatura ? sygnatura.klasa : 'srodowisko', dowod: String(awaria.dowod || '').slice(0, 500) }
 }
 
 // ── E2E po testerze (P14, PANEL-WEJSCIE §2 pkt 6) ──────────────────────────
@@ -975,12 +947,11 @@ function liczManualE2e(przebiegi, testerFail, e2eCheckboxy) {
   return manual
 }
 
-// Polecenie ksiegowania dla scribe'a: przebiegi w heredoc (bez interpolacji powloki). Ladunek minimalny, bo scribe przepisuje
-// go 1:1: checkbox tylko przy linii bez identyfikatora flow, dowod (powod linii [Manual] / SKIP) tylko przy SKIP.
+// Polecenie ksiegowania dla scribe'a: przebiegi w heredoc (bez interpolacji powloki). Checkbox zawsze (dopasowanie po tresci,
+// gdy flow testera rozni sie od pierwszego backticka linii), dowod (powod linii [Manual] / SKIP) tylko przy SKIP.
 function komendaKsiegowania(sciezka, faza, przebiegi, testerFail) {
   const wpisy = przebiegi.map((p) => ({
-    flow: p.flow || '', wynik: p.wynik, przyczyna: p.przyczyna || 'nie-dotyczy',
-    ...(p.flow ? {} : { checkbox: p.checkbox }),
+    checkbox: p.checkbox, flow: p.flow || '', wynik: p.wynik, przyczyna: p.przyczyna || 'nie-dotyczy',
     ...(p.wynik === 'SKIP' ? { dowod: String(p.dowod || '').slice(0, DOWOD_KSIEGOWANIA_ZN) } : {}),
   }))
   const brak = testerFail ? ` --brak-wpisu tester-padl --powod "${POWOD_PADU_TESTERA}"` : ''
@@ -997,7 +968,7 @@ const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _
 // mowi o kodzie, nie o srodowisku. I tylko w trybie `przegladarka` — w `bez-przegladarki` odmowa polaczenia
 // z curla jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria srodowiska w trakcie runu.
 const blokerSrodowiska = e2eTryb === 'przegladarka'
-  ? wykryjBlokerSrodowiska(wszystkie.filter((f) => f._zrodlo === 'e2e'), e2ePrzebiegi)
+  ? wykryjBlokerSrodowiska(e2ePrzebiegi)
   : null
 if (blokerSrodowiska) {
   log(`AWARIA SRODOWISKA E2E (${blokerSrodowiska.klasa}) — SKIP-y srodowiska ida na [Manual]; orkiestrator przelaczy reszte runu na tester bez przegladarki`)
