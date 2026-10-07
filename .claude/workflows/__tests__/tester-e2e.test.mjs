@@ -12,6 +12,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { PRZYCZYNY_SKIP } from '../../scripts/e2e/ksiegowanie.mjs'
+import { PLIK_SKILLA } from '../../scripts/e2e/weryfikacja.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const review = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
@@ -49,9 +50,9 @@ test('e2ePrompt: parametry wywolania i tryb, bez procedury', () => {
   assert.match(e2ePrompt(ZADANIE, 1, [], 'przegladarka', {}), /Tryb: przegladarka/)
 })
 
-test('review-wf: blok trybu bez przegladarki przeniesiony do pliku roli', () => {
+test('review-wf: blok trybu bez przegladarki przeniesiony do pliku roli; sciezka skilla = kopia stalej skryptu', () => {
   assert.doesNotMatch(review, /const BLOK_BEZ_PRZEGLADARKI/)
-  assert.match(review, /const SKILL_WERYFIKACJI = '\.claude\/skills\/weryfikacja\/SKILL\.md'/)
+  assert.ok(review.includes(`const SKILL_WERYFIKACJI = '${PLIK_SKILLA}'`), 'kopia sciezki skilla w review-wf = PLIK_SKILLA z weryfikacja.mjs')
 })
 
 test('plik roli: kazda przyczyna SKIP ze schematu testera i z ksiegowania (poza padem testera, ktory nadaje workflow)', () => {

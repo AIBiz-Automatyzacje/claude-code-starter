@@ -6,6 +6,7 @@
 //          brak-srodowiska — zadanie ma scenariusze, a repo nie ma .env.e2e -> STOP przed faza 1;
 //          niepowodzenie — .env.e2e jest, ale sprawdzenie albo start padly -> STOP przed faza 1;
 //          gotowe        — serwer odpowiada (uruchomiony albo zastany) albo sprawdzenie bez startu przeszlo.
+// Bez zadania (sekcje Doctor i Launch skilla weryfikacji) srodowisko jest potrzebne zawsze: brak .env.e2e = brak-srodowiska.
 
 import { join } from 'node:path'
 
@@ -17,12 +18,12 @@ import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './sr
 
 /**
  * @typedef {'pominieto' | 'brak-srodowiska' | 'niepowodzenie' | 'gotowe'} StatusE2e
- * @typedef {{ status: StatusE2e, scenariusze: number, figmaScreens: boolean, envE2e: boolean, bazaE2e: boolean,
+ * @typedef {{ status: StatusE2e, scenariusze: number | null, figmaScreens: boolean, envE2e: boolean, bazaE2e: boolean,
  *   serwer: 'uruchomione' | 'zastane' | 'brak', url: string | null, log: string | null, bledy: string[], detal: string, naprawa: string }} WynikStartu
  */
 
-/** @param {string} sciezka katalog zadania @returns {string} */
-export const komendaSprawdzenia = (sciezka) => `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}`
+/** @param {string | null} sciezka katalog zadania (null: sprawdzenie bez zadania) @returns {string} */
+export const komendaSprawdzenia = (sciezka) => `node .claude/scripts/e2e/e2e.mjs sprawdz${sciezka ? ` --zadanie ${sciezka}` : ''}`
 
 /**
  * @param {string} projekt
@@ -41,12 +42,12 @@ export function potrzebyZadania(projekt, sciezka) {
 
 /**
  * @param {string} projekt
- * @param {string} sciezka katalog zadania
+ * @param {string | null} sciezka katalog zadania; null = bez zadania (skill weryfikacji)
  * @param {{ uruchom: boolean, narzedzia?: import('./srodowisko.mjs').Narzedzia }} opcje uruchom=false: sprawdzenie bez startu (sekcja Doctor)
  * @returns {Promise<WynikStartu>}
  */
 export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZIA }) {
-  const { scenariusze, figmaScreens } = potrzebyZadania(projekt, sciezka)
+  const { scenariusze, figmaScreens } = sciezka ? potrzebyZadania(projekt, sciezka) : { scenariusze: null, figmaScreens: false }
   const env = envE2e(projekt)
   const konf = env ? konfiguracja(projekt, env) : null
   /** @type {WynikStartu} */
@@ -54,8 +55,11 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     status: 'pominieto', scenariusze, figmaScreens, envE2e: !!env, bazaE2e: !!konf?.bazaE2e, serwer: 'brak',
     url: konf?.url ?? null, log: null, bledy: [], detal: '', naprawa: '',
   }
-  if (!scenariusze && !figmaScreens) {
+  if (scenariusze === 0 && !figmaScreens) {
     return { ...wynik, detal: 'zadanie nie ma niezaznaczonych scenariuszy [E2E] ani makiet figma_screens — przegladarka niepotrzebna' }
+  }
+  if ((!env || !konf) && scenariusze === null) {
+    return { ...wynik, status: 'brak-srodowiska', detal: `repo nie ma ${PLIK_ENV}`, naprawa: `Setup srodowiska wg .claude/templates/e2e-env/README.md (${PLIK_ENV} w korzeniu repo, w .gitignore). Sprawdzenie: ${komendaSprawdzenia(null)}` }
   }
   if (!env || !konf) {
     if (!scenariusze) return { ...wynik, detal: `makiety figma_screens bez ${PLIK_ENV} — visual diff bez przegladarki (tester w trybie bez-przegladarki)` }

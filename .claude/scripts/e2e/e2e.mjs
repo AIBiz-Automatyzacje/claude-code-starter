@@ -3,8 +3,9 @@
 // smoke'u operatora i sekcji Doctor skilla weryfikacji.
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
-//   e2e.mjs sprawdz --zadanie <docs/active/zadanie>   potrzeby zadania + sprawdzenie .env.e2e bez startu serwera (Doctor)
-//   e2e.mjs start --zadanie <docs/active/zadanie>     to samo + start serwera aplikacji (bootstrap autopilota)
+//   e2e.mjs sprawdz [--zadanie <docs/active/zadanie>] potrzeby zadania + sprawdzenie .env.e2e bez startu serwera (Doctor);
+//                                                     bez --zadanie srodowisko jest potrzebne zawsze (skill weryfikacji)
+//   e2e.mjs start [--zadanie <docs/active/zadanie>]   to samo + start serwera aplikacji (bootstrap autopilota, Launch)
 //   e2e.mjs stop                                      zatrzymuje serwer uruchomiony przez start (plik PID)
 //   e2e.mjs stan                                      czy serwer pipeline'u zyje + ogon jego logu (tester, gdy aplikacja milczy)
 //   e2e.mjs suma                                      suma migracji przed wypchnieciem do bazy e2e
@@ -39,7 +40,7 @@ const USTAWIENIA = /** @type {const} */ ({
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start --zadanie <dir> | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -49,10 +50,13 @@ function zakoncz(wynik, ok) {
   process.exit(ok ? 0 : KOD_DO_POPRAWY)
 }
 
+/** @param {string} projekt @param {string} zadanie @returns {string} katalog zadania wzgledem projektu */
+const wzgledem = (projekt, zadanie) => (isAbsolute(zadanie) ? relative(projekt, zadanie) : zadanie)
+
 /** @param {string} projekt @param {string | undefined} zadanie @returns {string} katalog zadania wzgledem projektu */
 function sciezkaZadania(projekt, zadanie) {
   if (!zadanie) zleArgumenty('brak --zadanie <docs/active/zadanie>')
-  return isAbsolute(zadanie) ? relative(projekt, zadanie) : zadanie
+  return wzgledem(projekt, zadanie)
 }
 
 /** @param {string | undefined} faza @returns {number} */
@@ -81,7 +85,7 @@ function zapiszKsiegowanie(projekt, plik, tekst, zmiany) {
 /** @param {string} polecenie @param {ReturnType<typeof parseArgs<{ options: typeof USTAWIENIA, allowPositionals: true }>>['values']} o @param {string} projekt */
 async function wykonaj(polecenie, o, projekt) {
   if (polecenie === 'sprawdz' || polecenie === 'start') {
-    const w = await startE2e(projekt, sciezkaZadania(projekt, o.zadanie), { uruchom: polecenie === 'start' })
+    const w = await startE2e(projekt, o.zadanie ? wzgledem(projekt, o.zadanie) : null, { uruchom: polecenie === 'start' })
     zakoncz(w, w.status === 'pominieto' || w.status === 'gotowe')
   }
   if (polecenie === 'stop') zakoncz(await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)

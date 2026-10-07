@@ -1,5 +1,5 @@
 // Bramka gotowosci zadania przed autopilotem (PLAN-POPRAWY P13, krok 6.6 skilla dev-plan): plan techniczny bez bledow,
-// srodowisko dla scenariuszy [E2E], checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo.
+// srodowisko dla scenariuszy [E2E] (sprawdzenie jak w bootstrapie), checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo.
 // Autopilot nie przelacza galezi i zatrzymuje run na brudnym drzewie, wiec te warunki sprawdzamy przed jego startem.
 
 import { execFileSync } from 'node:child_process'
@@ -8,6 +8,8 @@ import { basename, join } from 'node:path'
 
 import { liczE2e, sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
+import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
+import { KOMENDA_GENERATORA, maSkillWeryfikacji, PLIK_SKILLA } from '../e2e/weryfikacja.mjs'
 import { parsujPlan, poleTekstowe } from './plan-techniczny.mjs'
 import { przygotowanie } from './przygotowanie.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
@@ -16,7 +18,7 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  * @typedef {import('./przygotowanie.mjs').Bloker} Bloker
  * @typedef {{ ok: boolean, zadanie: string, planTechniczny: string | null,
  *   plan: { ok: boolean, bledy: string[], uwagi: string[] },
- *   e2e: { ok: boolean, scenariusze: number, envE2e: boolean },
+ *   e2e: { ok: boolean, scenariusze: number, envE2e: boolean, bledy: string[], uwagi: string[] },
  *   przygotowanie: { ok: boolean, sciezka: string | null, blokujace: Bloker[], odroczone: Bloker[] },
  *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] } }} Gotowosc
  */
@@ -27,11 +29,29 @@ function git(projekt, argumenty) {
 }
 
 /**
+ * Srodowisko E2E zadania: to samo sprawdzenie co bootstrap autopilota (bez startu serwera), zeby blad wyszedl przy planowaniu,
+ * a nie jako STOP przed faza 1. Brak skilla weryfikacji nie blokuje startu — tester gra wtedy scenariusze bez mapy funkcji.
+ * @param {string} projekt
+ * @param {number} scenariusze
+ * @param {import('../e2e/srodowisko.mjs').Narzedzia} narzedzia
+ * @returns {Gotowosc['e2e']}
+ */
+function srodowiskoE2e(projekt, scenariusze, narzedzia) {
+  const env = envE2e(projekt)
+  const bledy = scenariusze && env ? bledySrodowiska(projekt, env, { przegladarka: true, narzedzia }) : []
+  const uwagi = scenariusze && !maSkillWeryfikacji(projekt)
+    ? [`brak skilla weryfikacji projektu (${PLIK_SKILLA}) — tester odegra scenariusze bez mapy funkcji; generator: ${KOMENDA_GENERATORA}`]
+    : []
+  return { ok: scenariusze === 0 || (!!env && !bledy.length), scenariusze, envE2e: !!env, bledy, uwagi }
+}
+
+/**
  * @param {string} projekt katalog projektu
  * @param {string} katalogZadania docs/active/<zadanie> wzgledem projektu
+ * @param {{ narzedzia?: import('../e2e/srodowisko.mjs').Narzedzia }} [opcje] narzedzia: atrapy git check-ignore i agent-browser (testy)
  * @returns {Gotowosc}
  */
-export function gotowosc(projekt, katalogZadania) {
+export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA } = {}) {
   const zadanie = basename(katalogZadania)
   const katalog = join(projekt, katalogZadania)
   const planZadania = plikZadania(katalog, '-plan.md')?.tresc
@@ -44,8 +64,6 @@ export function gotowosc(projekt, katalogZadania) {
     : { bledy: [`brak planu technicznego (wskaźnik w planie zadania: ${wskaznik ?? 'brak linii „Plan techniczny:”'})`], uwagi: [] }
   if (!zadania) walidacja.bledy.push(`brak pliku *-zadania.md w ${katalogZadania}`)
 
-  const scenariusze = liczE2e(zadania)
-  const envE2e = existsSync(join(projekt, '.env.e2e'))
   const prep = plan ? przygotowanie(projekt, poleTekstowe(plan, 'operator_prep')) : null
 
   const wymagana = `feature/${zadanie}`
@@ -54,7 +72,7 @@ export function gotowosc(projekt, katalogZadania) {
 
   const wynik = {
     plan: { ok: !walidacja.bledy.length, bledy: walidacja.bledy, uwagi: walidacja.uwagi },
-    e2e: { ok: scenariusze === 0 || envE2e, scenariusze, envE2e },
+    e2e: srodowiskoE2e(projekt, liczE2e(zadania), narzedzia),
     przygotowanie: { ok: !prep?.blokujace.length, sciezka: prep?.sciezka ?? null, blokujace: prep?.blokujace ?? [], odroczone: prep?.odroczone ?? [] },
     git: { ok: galaz === wymagana && !brudne.length, galaz, wymagana, brudne },
   }

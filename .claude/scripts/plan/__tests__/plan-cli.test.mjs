@@ -49,9 +49,15 @@ function repo(o = {}) {
   return korzen
 }
 
+// Atrapa CLI agent-browser w PATH: bramka gotowosci robi pelne sprawdzenie srodowiska (jak bootstrap), a test nie moze
+// zalezec od przegladarki zainstalowanej na maszynie.
+const ATRAPY = mkdtempSync(join(tmpdir(), 'plan-cli-bin-'))
+writeFileSync(join(ATRAPY, 'agent-browser'), '#!/bin/sh\necho "ok"\n', { mode: 0o755 })
+test.after(() => rmSync(ATRAPY, { recursive: true, force: true }))
+
 /** @param {string} korzen @param {string[]} argumenty @returns {{ kod: number | null, json: any }} */
 function cli(korzen, argumenty) {
-  const w = spawnSync(process.execPath, [CLI, ...argumenty, '--projekt', korzen], { encoding: 'utf8' })
+  const w = spawnSync(process.execPath, [CLI, ...argumenty, '--projekt', korzen], { encoding: 'utf8', env: { ...process.env, PATH: `${ATRAPY}:${process.env.PATH}` } })
   return { kod: w.status, json: w.stdout ? JSON.parse(w.stdout) : null }
 }
 
@@ -149,6 +155,21 @@ test('gotowosc: STOP na E2E bez .env.e2e, blokerze startu, cudzej galezi i brudn
     assert.deepEqual(gotowosc(k, ZADANIE).git.brudne, ['?? src/nowy.ts'])
   })
 })
+
+test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i agent-browser to STOP; brak skilla weryfikacji = uwaga', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'chrome: fail' }) } })
+  assert.deepEqual([zle.ok, zle.e2e.ok, zle.e2e.envE2e], [false, false, true])
+  assert.equal(zle.e2e.bledy.length, 2)
+  assert.match(zle.e2e.bledy[0], /\.env\.e2e nie jest w \.gitignore/)
+  assert.match(zle.e2e.bledy[1], /agent-browser nie dziala: chrome: fail/)
+  assert.deepEqual(zle.e2e.uwagi, ['brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup'])
+  const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  assert.deepEqual([dobre.ok, dobre.e2e.ok, dobre.e2e.bledy], [true, true, []])
+  mkdirSync(join(k, '.claude/skills/weryfikacja'), { recursive: true })
+  writeFileSync(join(k, '.claude/skills/weryfikacja/SKILL.md'), '# W\n')
+  assert.deepEqual(gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } }).e2e.uwagi, [])
+}))
 
 test('gotowosc po fazie 1: plik zmieniony przez faze nie zatrzymuje bramki (budzet wobec repo sprawdza generuj)', () => wRepo((k) => {
   zadanieNaGalezi(k)

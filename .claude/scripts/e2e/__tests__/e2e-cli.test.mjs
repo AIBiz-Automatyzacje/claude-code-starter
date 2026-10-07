@@ -88,11 +88,14 @@ test('scenariusze: niezaznaczone linie [E2E] fazy z obu prefiksow z flow i seede
   rmSync(k, { recursive: true })
 })
 
-test('sprawdz: brak .env.e2e przy scenariuszach = kod 1 i status brak-srodowiska; stop bez PID = kod 0', () => {
+test('sprawdz: brak .env.e2e przy scenariuszach (i bez --zadanie) = kod 1 i status brak-srodowiska; stop bez PID = kod 0', () => {
   const k = projekt()
   const w = uruchom(k, ['sprawdz', '--zadanie', 'docs/active/z'])
   assert.equal(w.kod, 1)
   assert.equal(w.json.status, 'brak-srodowiska')
+  const bezZadania = uruchom(k, ['sprawdz'])
+  assert.equal(bezZadania.kod, 1)
+  assert.equal(bezZadania.json.status, 'brak-srodowiska')
   const stop = uruchom(k, ['stop'])
   assert.equal(stop.kod, 0)
   assert.equal(stop.json.posprzatano, true)
@@ -101,7 +104,8 @@ test('sprawdz: brak .env.e2e przy scenariuszach = kod 1 i status brak-srodowiska
 
 test('zle argumenty: brak --zadanie, zla faza, nieznane polecenie = kod 2', () => {
   const k = projekt()
-  assert.equal(uruchom(k, ['start']).kod, 2)
+  // Zmiana kontraktu (P14 S2): sprawdz i start dzialaja bez --zadanie (Doctor i Launch skilla weryfikacji).
+  assert.equal(uruchom(k, ['ksieguj', '--faza', '1'], '[]').kod, 2)
   assert.equal(uruchom(k, ['ksieguj', '--zadanie', 'docs/active/z', '--faza', 'zero'], '[]').kod, 2)
   assert.equal(uruchom(k, ['cos', '--zadanie', 'docs/active/z', '--faza', '1']).kod, 2)
   assert.equal(uruchom(k, ['ksieguj', '--zadanie', 'docs/active/z', '--faza', '1'], '').kod, 2, 'puste stdin = zgubiony heredoc, nie „zero przebiegow”')

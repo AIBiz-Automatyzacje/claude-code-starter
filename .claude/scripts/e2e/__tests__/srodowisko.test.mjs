@@ -194,6 +194,24 @@ test('sprawdz bez startu (Doctor): gotowe przy poprawnym .env.e2e, serwer brak',
   rmSync(p, { recursive: true })
 })
 
+test('bez zadania (Doctor i Launch skilla weryfikacji): sprawdzenie zawsze; brak .env.e2e = brak-srodowiska z komenda bez --zadanie', async () => {
+  const p = projekt({ zadania: '## Faza 1 — A\n\n- [ ] Stwórz: `a.ts`\n' })
+  const bez = await startE2e(p, null, { uruchom: false, narzedzia: SPRAWNE })
+  assert.equal(bez.status, 'brak-srodowiska')
+  assert.equal(bez.scenariusze, null)
+  assert.match(bez.detal, /repo nie ma \.env\.e2e/)
+  assert.match(bez.naprawa, /\.claude\/templates\/e2e-env\/README\.md/)
+  assert.match(bez.naprawa, /node \.claude\/scripts\/e2e\/e2e\.mjs sprawdz$/)
+  assert.doesNotMatch(bez.naprawa, /--zadanie|\[Manual\]/)
+  const port = await wolnyPort()
+  writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\n`)
+  const ok = await startE2e(p, null, { uruchom: false, narzedzia: SPRAWNE })
+  assert.deepEqual([ok.status, ok.serwer], ['gotowe', 'brak'])
+  const blad = await startE2e(p, null, { uruchom: false, narzedzia: { ...SPRAWNE, agentBrowser: () => ({ ok: false, detal: 'chrome: fail' }) } })
+  assert.equal(blad.status, 'niepowodzenie')
+  assert.match(blad.naprawa, /e2e\.mjs sprawdz$/)
+})
+
 test('E2E_URL bez schematu albo nie-URL = blad sprawdzenia z naprawa, nie wyjatek skryptu', () => {
   const p = projekt()
   for (const url of ['localhost:5173', 'nie-url', '127.0.0.1:3000']) {
