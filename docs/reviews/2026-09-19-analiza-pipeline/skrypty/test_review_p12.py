@@ -52,8 +52,14 @@ def wariant_review(src, args, w):
     return META_REVIEW % (w, w) + js[js.index('\n}\n') + 3:], kontrola
 
 
-def kolejnosc(et):
-    """Kolejność buildów (i review) w fazie z hasha fazy — żaden wariant nie startuje zawsze pierwszy (wspólna maszyna, cache pnpm i Vite)."""
+def kolejnosc(et, p12=P12):
+    """Kolejność buildów (i review) w fazie: z pliku ~/test-review/p12/<et>/kolejnosc.json (jawne zrównoważenie między fazami — hash dał
+    „nowy” pierwszy w 9 z 13 faz), inaczej z hasha fazy (wspólna maszyna, cache pnpm i Vite faworyzują wariant budowany drugi)."""
+    p = os.path.join(p12, et, 'kolejnosc.json')
+    if os.path.exists(p):
+        with open(p) as f: k = json.load(f)
+        if sorted(k) != sorted(WARIANTY): raise ValueError('%s: kolejność musi zawierać %s' % (p, WARIANTY))
+        return k
     return sorted(WARIANTY, key=lambda w: sha('p12:%s:%s' % (et, w)))
 
 
@@ -165,12 +171,12 @@ def zakazane_re(et, krok, w, tr=TR, zadanie=None, faza=None):
     są zwykłą pracą (importy, cd do pakietu) — drugi wariant i kopię historyczną zamyka na czas buildu chmod (test_review_p12_cli.zamknij)."""
     wlasne = r'p12-kopie/%s/%s(?:-pliki)?(?![\w.-])' % (re.escape(et), re.escape(w))
     wzorce = [r'/Documents/', r'\.claude/(projects|file-history)', r'/tmp/tr-', r'(~|\$HOME|\$\{HOME\})/test-review(?!/%s)' % wlasne,
-              r'\.\./(?:\.\./)*(?:kopie|p11|p12|sedzia|wyniki|odrzucone|[fx]-[0-9a-f]{7})(?![\w.-])']
+              r'\.\./(?:\.\./)*(?:%s|[fx]-[0-9a-f]{7})(?![\w.-])' % '|'.join(re.escape(n) for n in sorted(os.listdir(tr)) if n != 'p12-kopie')]
     wzorce += [re.escape(p[:-3] if p.endswith('/**') else p) + r'(?![\w.-])' for p in deny_poza(tr, dozwolone(et, krok, w, tr))]
     if not krok.startswith('p12-sedzia'):
         inny = [x for x in WARIANTY if x != w][0]
         wzorce += [r'\.\./%s(?:-pliki)?(?![\w.-])' % inny, r'-p12-kopie-%s-%s(?![\w.-])' % (re.escape(et), inny)]
-    tmp = r'(?:^|(?<=[\s"\'=(]))(?:/private)?/tmp/review-'   # /tmp od korzenia — nie katalog tmp/ w plikach wariantu (dossier review)
+    tmp = r'(?:^|(?<=[\s"\'=(<>|;:]))(?:/private)?/tmp/review-'   # /tmp od korzenia — nie katalog tmp/ w plikach wariantu (dossier review)
     if krok == 'p12-build' and zadanie: wzorce.append(tmp + r'(?!(?:diff|ctx)-%s-faza-%s\.)' % (re.escape(zadanie), faza))
     else: wzorce.append(tmp)
     return re.compile('|'.join(wzorce))
@@ -205,13 +211,14 @@ RE_LINIE = re.compile(r'\(?\b(?:linie|linia|linii|lines?|L)\s*\d+(?:\s*[-–]\s*
 RE_STATUS = re.compile(r'^.*(Confirmed as addressed|Addressed in commit).*$', re.M | re.I)
 RE_STATUS_FRAZA = re.compile(r'\b(NADAL OTWART\w*)\b\s*(\([^)]*\))?\.?|\(?\bzweryfikowany\b[^)\n]*\)?', re.I)
 RE_NASTEPNY = re.compile(r'\n#{2,4} ')
+RE_META_RAPORTU = re.compile(r'^\s*\d+\.\s*\[P\d/\w+\]\s*|\(?\bfinding\s*#\d+\)?|\[sceptyk[^\]]*\]', re.I | re.M)
 
 
 def czysc_tresc(t):
     """Treść klucza bez śladów implementacji, w której go znaleziono: następny finding w tym samym wpisie, statusy naprawy, hashe commitów,
     numery linii (te trzy wskazywałyby sędziemu kod historyczny i zawyżały czułość)."""
     t = RE_NASTEPNY.split(t or '', maxsplit=1)[0]
-    t = RE_STATUS_FRAZA.sub('', RE_STATUS.sub('', t))
+    t = RE_META_RAPORTU.sub('', RE_STATUS_FRAZA.sub('', RE_STATUS.sub('', t)))
     t = RE_LINIA_PLIKU.sub(r'\1', RE_HASH.sub('', t))
     t = RE_LINIE.sub('', t)
     return re.sub(r'\n{3,}', '\n\n', re.sub(r'[ \t]{2,}', ' ', t)).strip()

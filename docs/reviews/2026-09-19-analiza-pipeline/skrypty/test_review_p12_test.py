@@ -127,6 +127,15 @@ class NakladkaPoBuildzie(unittest.TestCase):
             self.assertEqual(open(os.path.join(k, '.claude/agents/a.md')).read(), 'wariant')
 
 
+class Kolejnosc(unittest.TestCase):
+    def test_kolejnosc_z_pliku_fazy_nadpisuje_hash(self):
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'f-a'))
+            domyslna = P.kolejnosc('f-a', p12=d)
+            zapisz(os.path.join(d, 'f-a', 'kolejnosc.json'), json.dumps(list(reversed(domyslna))))
+            self.assertEqual(P.kolejnosc('f-a', p12=d), list(reversed(domyslna)))
+
+
 class Skan(unittest.TestCase):
     def test_werdykt_skanu_zapisany_i_krok_zrobiony_tylko_przy_zerze(self):
         with tempfile.TemporaryDirectory() as d:
@@ -137,7 +146,7 @@ class Skan(unittest.TestCase):
 
 class Ustawienia(unittest.TestCase):
     def drzewo(self, d):
-        for p in ('kopie/f-a', 'kopie/f-b', 'p11/f-a', 'wyniki', 'sedzia', 'p12/claude-stary', 'p12/f-a/sedzia', 'p12/f-b',
+        for p in ('kopie/f-a', 'kopie/f-b', 'p11/f-a', '_mirror', 'dossier/f-a', 'wyniki', 'sedzia', 'p12/claude-stary', 'p12/f-a/sedzia', 'p12/f-b',
                   'p12-kopie/f-a/stary', 'p12-kopie/f-a/stary-pliki', 'p12-kopie/f-a/nowy', 'p12-kopie/f-a/nowy-pliki', 'p12-kopie/f-b/stary'):
             os.makedirs(os.path.join(d, p))
         zapisz(os.path.join(d, 'p12/f-a/args.json'), '{}')
@@ -180,6 +189,9 @@ class Ustawienia(unittest.TestCase):
             self.assertFalse(rv.search('{"file_path": "%s/p12-kopie/f-a/nowy-pliki/tmp/review-diff-docs-active-z-faza-2.diff"}' % d))
             self.assertTrue(rv.search('{"file_path": "/private/tmp/review-diff-docs-active-z-faza-2.diff"}'))
             self.assertTrue(rv.search('cat /tmp/review-ctx-docs-active-z-faza-2.md'))
+            for zle in ('cd ../../../_mirror && git log', 'cat ../../../dossier/f-b8374c8/diff', 'cat >/tmp/review-diff-docs-active-z-faza-2.diff',
+                        'x=$(</tmp/review-ctx-docs-active-z-faza-2.md)'):
+                self.assertTrue((rp if 'mirror' in zle or 'dossier' in zle else rv).search(zle), zle)
             for dobre in ('cat /tmp/review-diff-docs-active-z-faza-2.diff', 'cat /tmp/bramki-docs-active-z-faza-2.json', 'cd ../ && ls',
                           'cat %s/p12-kopie/f-a/nowy/../nowy-pliki/x' % d):
                 self.assertFalse(rp.search(dobre), dobre)
@@ -235,6 +247,9 @@ class Sedzia(unittest.TestCase):
         for zle in (':36', '49', 'a2a296a', 'edfbca8', 'Confirmed', 'NADAL OTWARTE', 'Drugi finding'):
             self.assertNotIn(zle, c)
         self.assertIn('`apps/server/static/c.js`', c)
+        c2 = P.czysc_tresc('2. [P2/TEST] brak testu (finding #1) [sceptyk sugerował P3]')
+        for zle in ('2. [P2/TEST]', 'finding #1', 'sceptyk'):
+            self.assertNotIn(zle, c2)
         self.assertIn('brak komunikatu', c)
 
     def test_prompt_bez_linii_klucza(self):

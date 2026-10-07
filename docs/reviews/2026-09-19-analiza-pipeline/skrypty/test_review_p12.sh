@@ -63,9 +63,14 @@ faza)
       py test_review_p12_cli.py reset $et $w || exit 2
       py test_review_p12_cli.py przed-buildem $et || exit 2
       py test_review_p12_cli.py nakladka $et $w $w || exit 2
+      # zamknięte tylko na czas sesji: odrzucenie próby, zbiór wyniku i skan piszą/czytają w zamykanych katalogach
+      py test_review_sesja.py odrzuc $et p12-build $w
       py test_review_p12_cli.py zamknij $et $w || exit 2
-      krok $et p12-build $w; k=$?
+      py test_review_sesja.py start $et p12-build $w
       py test_review_p12_cli.py otworz $et
+      py test_review_sesja.py zbierz $et p12-build $w || { echo "PRZERWANE: $et p12-build $w (zbiór)"; exit 2 }
+      py test_review_sesja.py gotowy $et p12-build $w || { echo "STOP: $et p12-build $w niedokończony — wznowienie tym samym poleceniem"; exit 2 }
+      py test_review_p12_cli.py skan $et p12-build $w; k=$?
       (( k == 0 )) || { echo "PRZERWANE: $et p12-build $w (kod $k)"; exit $k }
     else
       krok $et p12-build $w || { echo "PRZERWANE: $et p12-build $w (skan)"; exit 2 }

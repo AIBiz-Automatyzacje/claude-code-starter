@@ -127,8 +127,10 @@ def nakladka(et, w, zrodlo):
 
 def reset(et, w):
     f, cel = faza(et), kopia(et, w)
-    if os.path.exists(cel) and _g(cel, 'rev-parse', 'HEAD').strip() == f['baza'] and not _g(cel, 'status', '--porcelain', '--untracked-files=all') \
-            and not _g(cel, 'reflog').count('\n') > 1 and not os.path.exists(os.path.join(P12, et, 'po-buildzie-%s.json' % w)):
+    # nietknięta = żadna sesja buildu jej nie dotknęła (ignorowane pliki i stash próby nie widać w statusie ani reflogu)
+    proba = [p for p in T.pliki_proby(et, 'p12-build', w) if p.endswith('.jsonl') and os.path.exists(p)]
+    if os.path.exists(cel) and not proba and _g(cel, 'rev-parse', 'HEAD').strip() == f['baza'] \
+            and not _g(cel, 'status', '--porcelain', '--untracked-files=all') and not os.path.exists(os.path.join(P12, et, 'po-buildzie-%s.json' % w)):
         print('%s %s: kopia nietknięta na bazie %s — zostaje' % (et, w, f['baza'][:10])); return
     if os.path.exists(cel):
         dst = os.path.join(TR, 'odrzucone', et, 'p12-kopia-%s-%s' % (w, time.strftime('%Y%m%d-%H%M%S'))); os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -150,12 +152,16 @@ def przyszle(et):
 
 
 def zamknij(et, w):
-    """Na czas buildu <w>: drugi wariant i kopia historyczna niedostępne dla procesu (Bash omija deny Read, a ../ i cd nie da się
-    wiarygodnie wyłapać regexem). Tryby zapisane, `otworz` je przywraca."""
-    inny = [x for x in P.WARIANTY if x != w][0]
-    przyszle(et)   # lista zapisana, zanim kopia historyczna się zamknie (skan kroku jej potrzebuje)
-    cele = [kopia(et, inny), pliki(et, inny), faza(et)['kopia_fazy']]
-    tryby = {c: os.stat(c).st_mode & 0o7777 for c in cele if os.path.exists(c)}
+    """Na czas sesji buildu <w>: wszystko w ~/test-review poza p12-kopie (z niego: tylko własna kopia i jej pliki), p12 (stan harnessu,
+    deny i regex) i sesje (logi sesji pisane w trakcie) niedostępne dla procesu — Bash omija deny Read, a ../ i cd nie da się
+    wiarygodnie wyłapać regexem (_mirror, dossier, wyniki, kopie mają przyszłość fazy). Tryby zapisane, `otworz` je przywraca.
+    Do tego lista /tmp przed buildem (po_buildzie przenosi nowe pliki — logi i notatki buildera — z dala od drugiego wariantu)."""
+    przyszle(et); faza(et)   # odczyty z katalogów, które się zaraz zamkną
+    cele = [os.path.join(TR, n) for n in os.listdir(TR) if n not in ('p12-kopie', 'p12', 'sesje')]
+    cele += [os.path.join(P12K, n) for n in os.listdir(P12K) if n != et]
+    cele += [os.path.join(P12K, et, n) for n in os.listdir(os.path.join(P12K, et)) if n not in (w, w + '-pliki')]
+    tryby = {c: os.stat(c).st_mode & 0o7777 for c in cele if os.path.isdir(c) and not os.path.islink(c)}
+    _json(os.path.join(P12, et, 'tmp-przed-%s.json' % w), sorted(os.listdir('/tmp')))
     _json(os.path.join(P12, et, 'zamkniete.json'), tryby)
     for c in tryby: os.chmod(c, 0)
     print('%s: zamknięte na czas buildu %s: %s' % (et, w, ', '.join(os.path.relpath(c, TR) for c in tryby)))
@@ -191,6 +197,14 @@ def po_buildzie(et, w):
     if os.path.exists(plik_bramek(et)): shutil.move(plik_bramek(et), bramki)
     for p in zrzuty_review(et):   # review drugiego wariantu nie może ich czytać
         os.makedirs(os.path.join(pl, 'tmp-domkniecia'), exist_ok=True); shutil.move(p, os.path.join(pl, 'tmp-domkniecia'))
+    przed = os.path.join(P12, et, 'tmp-przed-%s.json' % w)
+    if os.path.exists(przed):   # pliki, które build zostawił w /tmp (logi testów, notatki) — nazwy wybiera agent, więc mogą się pokryć
+        znane = set(_json(przed))
+        for n in sorted(set(os.listdir('/tmp')) - znane):
+            p = os.path.join('/tmp', n)
+            if n.startswith('claude-') or os.path.islink(p) or not os.path.isfile(p) or os.stat(p).st_uid != os.getuid(): continue
+            os.makedirs(os.path.join(pl, 'tmp-build'), exist_ok=True); shutil.move(p, os.path.join(pl, 'tmp-build'))
+            print('%s %s: /tmp/%s → %s-pliki/tmp-build' % (et, w, n, w))
     args = {'sciezka': 'docs/active/' + f['zadanie'], 'faza': f['faza'], 'srodowiskoE2E': 'pominieto', 'baza': f['baza']}
     cmd = ['node', os.path.join(P12, 'claude-stary', '.claude', 'scripts', 'dossier', 'dossier.mjs'), '--sciezka', args['sciezka'], '--faza',
            str(args['faza']), '--baza', f['baza'], '--projekt', cel, '--wyjscie', os.path.join(pl, 'tmp')] + (['--bramki', bramki] if os.path.exists(bramki) else [])

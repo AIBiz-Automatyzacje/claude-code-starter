@@ -21,9 +21,10 @@ def _vitest(cmd):
     """Uruchomienia vitest run bez `related`: (na plikach, pełny zestaw) — po argumentach pozycyjnych po `run` (flagi, przekierowania
     i liczby pomijane). `pnpm test` bez argumentów = pełny zestaw."""
     pliki = pelny = 0
-    for seg in RE_SEGMENTY.split(re.sub(r'\d?>>?&?\s*\S+', ' ', cmd)):
+    for seg in RE_SEGMENTY.split(re.sub(r'\d?>>?&?\s*[^\s;&|]+', ' ', cmd)):
         if RE_PNPM_TEST.search(seg): pelny += 1; continue
-        m = re.search(r'\bvitest\b(\s+run)?(.*)$', seg)
+        # vitest jako komenda (nie import w heredocu ani ls/cat/grep po nazwie)
+        m = re.match(r'^\s*\(?\s*(?:timeout\s+\d+\s+)?(?:npx\s+|pnpm\s+(?:exec\s+)?)?vitest\b(\s+run)?(.*)$', seg)
         if not m or re.search(r'\bvitest\s+related\b', seg): continue
         poz = [t for t in m.group(2).split() if not t.startswith('-') and not t.isdigit()]
         if poz: pliki += 1
