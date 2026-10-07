@@ -20,12 +20,16 @@ export const PLIK_ENV = '.env.e2e'
 export const KLUCZE_BAZY = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY', 'SUPABASE_E2E_DB_URL', 'SUPABASE_E2E_SERVICE_ROLE_KEY', 'E2E_TEST_EMAIL', 'E2E_TEST_PASSWORD']
 const DOMYSLNY_PORT = 5173
 const LIMIT_STARTU_SEK = 90
+// Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
+// z serwerem w tle, ale bez wyniku JSON.
+const MAKS_STARTU_SEK = 540
 const LIMIT_SONDY_MS = 3000
 const ODSTEP_SONDY_MS = 500
 const LINIE_OGONA_LOGU = 20
 
 /**
- * @typedef {{ url: string, zdrowie: string, start: string, limitSek: number, log: string, pid: string, bazaE2e: boolean }} Konfiguracja
+ * @typedef {{ url: string, zdrowie: string, start: string, limitSek: number, log: string, pid: string, bazaE2e: boolean,
+ *   blad: string | null }} Konfiguracja
  * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => { ok: boolean, detal: string } }} Narzedzia
  */
 
@@ -36,8 +40,8 @@ export function parsujEnv(tresc) {
   for (const linia of tresc.split('\n')) {
     const m = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/.exec(linia)
     if (!m || linia.trimStart().startsWith('#')) continue
-    const surowa = m[2]
-    env[m[1]] = /^(['"]).*\1$/.test(surowa) ? surowa.slice(1, -1) : surowa.replace(/\s+#.*$/, '')
+    const cytat = /^(['"])(.*?)\1(?:\s+#.*)?$/.exec(m[2])
+    env[m[1]] = cytat ? cytat[2] : m[2].replace(/\s+#.*$/, '')
   }
   return env
 }
@@ -56,10 +60,13 @@ export function menedzerPakietow(projekt) {
   return 'npm'
 }
 
-/** @param {string} url @returns {string} */
+/** @param {string} url @returns {{ port: string, blad: string | null }} port adresu albo blad zapisu (bez wyjatku) */
 function portZUrl(url) {
-  const u = new URL(url)
-  return u.port || (u.protocol === 'https:' ? '443' : '80')
+  const u = URL.canParse(url) ? new URL(url) : null
+  if (!u || (u.protocol !== 'http:' && u.protocol !== 'https:')) {
+    return { port: String(DOMYSLNY_PORT), blad: `E2E_URL w ${PLIK_ENV} to „${url}” — podaj pelny adres http(s):// z portem, np. http://localhost:5173` }
+  }
+  return { port: u.port || (u.protocol === 'https:' ? '443' : '80'), blad: null }
 }
 
 /**
@@ -70,14 +77,16 @@ function portZUrl(url) {
 export function konfiguracja(projekt, env) {
   const url = env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`
   const nazwa = basename(projekt).replace(/[^A-Za-z0-9_-]/g, '_')
+  const { port, blad } = portZUrl(url)
   return {
     url,
     zdrowie: env.E2E_HEALTH || url,
-    start: env.E2E_START || `${menedzerPakietow(projekt)} run dev -- --mode e2e --port ${portZUrl(url)} --strictPort`,
-    limitSek: Number(env.E2E_START_TIMEOUT) > 0 ? Number(env.E2E_START_TIMEOUT) : LIMIT_STARTU_SEK,
+    start: env.E2E_START || `${menedzerPakietow(projekt)} run dev -- --mode e2e --port ${port} --strictPort`,
+    limitSek: Math.min(Number(env.E2E_START_TIMEOUT) > 0 ? Number(env.E2E_START_TIMEOUT) : LIMIT_STARTU_SEK, MAKS_STARTU_SEK),
     log: `/tmp/autopilot-e2e-${nazwa}.log`,
     pid: `/tmp/autopilot-e2e-${nazwa}.pid`,
     bazaE2e: existsSync(join(projekt, 'supabase')) || Object.keys(env).some((k) => k.startsWith('SUPABASE_E2E_')),
+    blad,
   }
 }
 
@@ -103,20 +112,17 @@ export function bledySrodowiska(projekt, env, { przegladarka, narzedzia = NARZED
   const konf = konfiguracja(projekt, env)
   const bledy = []
   if (!narzedzia.czyIgnorowany(projekt, PLIK_ENV)) bledy.push(`${PLIK_ENV} nie jest w .gitignore — dopisz go (plik zawiera sekrety)`)
+  if (konf.blad) bledy.push(konf.blad)
+  // Guard tozsamosci niezaleznie od bazy e2e: projekt bez supabase/ tez moze celowac z E2E w baze dev.
+  const dev = [wczytajEnv(projekt, '.env'), wczytajEnv(projekt, '.env.local')].filter((e) => e && e.VITE_SUPABASE_URL)
+  if (env.VITE_SUPABASE_URL && dev.some((e) => e?.VITE_SUPABASE_URL === env.VITE_SUPABASE_URL)) {
+    bledy.push(`VITE_SUPABASE_URL w ${PLIK_ENV} jest taki sam jak w .env / .env.local — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
+  }
   if (konf.bazaE2e) {
     const braki = KLUCZE_BAZY.filter((k) => !env[k])
     if (braki.length) bledy.push(`brak kluczy bazy e2e w ${PLIK_ENV}: ${braki.join(', ')} — szablon: .claude/templates/e2e-env/README.md`)
-    const dev = [wczytajEnv(projekt, '.env'), wczytajEnv(projekt, '.env.local')].filter((e) => e && e.VITE_SUPABASE_URL)
-    if (env.VITE_SUPABASE_URL && dev.some((e) => e?.VITE_SUPABASE_URL === env.VITE_SUPABASE_URL)) {
-      bledy.push(`VITE_SUPABASE_URL w ${PLIK_ENV} jest taki sam jak w .env / .env.local — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
-    }
     const suma = bramkaMigrationsSum(projekt)
     if (suma.status === 'porazka') bledy.push(`migrations.sum: ${suma.trafienia.map((t) => `${t.plik} — ${t.opis}`).join('; ')} — wypchnieta migracja nie moze trafic do bazy e2e`)
-  }
-  try {
-    portZUrl(konf.url)
-  } catch (blad) {
-    bledy.push(`E2E_URL w ${PLIK_ENV} nie jest adresem URL (${konf.url}): ${blad instanceof Error ? blad.message : String(blad)}`)
   }
   if (przegladarka) {
     const ab = narzedzia.agentBrowser()
@@ -153,15 +159,41 @@ function zabijGrupe(pid) {
   }
 }
 
+/** @param {Konfiguracja} konf @returns {number | null} PID z pliku, gdy proces zyje (serwer pipeline'u z tego albo poprzedniego runu) */
+function zywyPid(konf) {
+  if (!existsSync(konf.pid)) return null
+  const pid = Number(readFileSync(konf.pid, 'utf8').trim())
+  if (!Number.isInteger(pid) || pid <= 0) return null
+  try {
+    process.kill(pid, 0)
+    return pid
+  } catch (blad) {
+    if (blad instanceof Error && 'code' in blad && blad.code === 'EPERM') return pid
+    return null
+  }
+}
+
+/**
+ * Stan serwera uruchomionego przez pipeline — dla testera, gdy aplikacja nie odpowiada: martwy proces z bledem w logu
+ * to defekt kodu fazy (serwer padl), zywy albo zabity z zewnatrz to awaria srodowiska.
+ * @param {Konfiguracja} konf
+ * @returns {{ pid: number | null, zyje: boolean, log: string, ogonLogu: string }}
+ */
+export function stanSerwera(konf) {
+  const pid = existsSync(konf.pid) ? Number(readFileSync(konf.pid, 'utf8').trim()) || null : null
+  return { pid, zyje: zywyPid(konf) !== null, log: konf.log, ogonLogu: ogonLogu(konf.log) }
+}
+
 /**
  * Start serwera aplikacji: zastany (odpowiada przed startem) albo uruchomiony w tle z PID-em w pliku; czeka na sonde zdrowia.
+ * Serwer z zywym PID-em z poprzedniego runu (STOP zostawia srodowisko) jest nasz — `uruchomione`, sprzata go env-down.
  * @param {string} projekt
  * @param {Konfiguracja} konf
  * @param {Record<string, string>} env doklejane do srodowiska komendy startu
  * @returns {Promise<{ serwer: 'uruchomione' | 'zastane' | 'brak', blad?: string }>}
  */
 export async function uruchomSerwer(projekt, konf, env) {
-  if (await odpowiada(konf.zdrowie)) return { serwer: 'zastane' }
+  if (await odpowiada(konf.zdrowie)) return { serwer: zywyPid(konf) !== null ? 'uruchomione' : 'zastane' }
   const log = openSync(konf.log, 'w')
   const dziecko = spawn(konf.start, { cwd: projekt, shell: true, detached: true, stdio: ['ignore', log, log], env: { ...process.env, ...env } })
   closeSync(log)

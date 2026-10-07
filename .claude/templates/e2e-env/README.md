@@ -45,7 +45,9 @@ Bootstrap:    e2e:start  — e2e.mjs start: scenariusze [E2E] i makiety zadania,
                            Niesprawne środowisko przy [E2E] = STOP przed fazą 1 z naprawą ze skryptu.
 Per faza:     db-sync    — tylko z bazą e2e: e2e.mjs suma (migrations.sum), supabase db push na bazę e2e
                            (pierwszy realny apply SQL migracji w pipeline), seedy e2e/seeds/*-seed.sql, konto testowe.
-Review:       tester E2E — agent-browser na E2E_URL; wpis per scenariusz z przyczyną SKIP.
+Review:       tester E2E — agent-browser na E2E_URL; wpis per scenariusz z przyczyną SKIP. Gdy aplikacja milczy:
+                           e2e.mjs stan (czy nasz serwer żyje + ogon logu) — padł z błędem kodu = FAIL do fixa,
+                           inaczej SKIP „srodowisko” → [Manual] i reszta runu bez przeglądarki.
               scribe     — e2e.mjs ksieguj: PASS odznacza, SKIP środowiska/limitu/harnessu → [Manual] z powodem.
 Fix:          po awarii środowiska e2e.mjs manual zamiast odgrywania scenariusza.
 Zakończenie:  env-down   — e2e.mjs stop: zatrzymuje tylko serwer z naszego PID-u; STOP zostawia środowisko

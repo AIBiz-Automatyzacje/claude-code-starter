@@ -2,14 +2,14 @@
 //
 // Uruchomienie: node --test .claude/scripts/e2e/__tests__/srodowisko.test.mjs
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { bledySrodowiska, konfiguracja, odpowiada, parsujEnv, zatrzymajSerwer } from '../srodowisko.mjs'
+import { bledySrodowiska, konfiguracja, odpowiada, parsujEnv, stanSerwera, zatrzymajSerwer } from '../srodowisko.mjs'
 import { startE2e } from '../start.mjs'
 
 const ZADANIE = 'docs/active/z'
@@ -43,7 +43,7 @@ function wolnyPort() {
 }
 
 test('parsujEnv: komentarze, export, cudzyslowy, komentarz za wartoscia', () => {
-  assert.deepEqual(parsujEnv('# x\nexport A=1\nB="dwa # nie komentarz"\nC=3 # komentarz\n  D = cztery\n'), { A: '1', B: 'dwa # nie komentarz', C: '3', D: 'cztery' })
+  assert.deepEqual(parsujEnv('# x\nexport A=1\nB="dwa # nie komentarz"\nC=3 # komentarz\n  D = cztery\nE=\'x\' # komentarz\n'), { A: '1', B: 'dwa # nie komentarz', C: '3', D: 'cztery', E: 'x' })
 })
 
 test('konfiguracja: domyslnie dev server Vite na 5173 z menedzerem z lockfile; parametry z .env.e2e wygrywaja', () => {
@@ -69,8 +69,8 @@ test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, 
   })
   assert.equal(bledy.length, 4)
   assert.match(bledy[0], /\.env\.e2e nie jest w \.gitignore — dopisz go/)
-  assert.match(bledy[1], /brak kluczy bazy e2e w \.env\.e2e: VITE_SUPABASE_ANON_KEY, SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD/)
-  assert.match(bledy[2], /dedykowanego projektu Supabase e2e/)
+  assert.match(bledy[1], /dedykowanego projektu Supabase e2e/)
+  assert.match(bledy[2], /brak kluczy bazy e2e w \.env\.e2e: VITE_SUPABASE_ANON_KEY, SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD/)
   assert.match(bledy[3], /agent-browser nie dziala: brak agent-browser — instalacja: npm i -g agent-browser/)
   rmSync(p, { recursive: true })
 })
@@ -126,9 +126,13 @@ test('start: uruchamia serwer z E2E_START, czeka na sonde, stop zabija tylko swo
   assert.equal(w.serwer, 'uruchomione')
   const konf = konfiguracja(p, parsujEnv(`E2E_URL=http://127.0.0.1:${port}\n`))
   assert.ok(existsSync(konf.pid))
+  // Serwer odpowiada, ale nie ma naszego PID-u (ktos odpalil go recznie) = zastany z ostrzezeniem o bazie dev.
+  const pid = readFileSync(konf.pid, 'utf8')
+  rmSync(konf.pid)
   const drugi = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.equal(drugi.serwer, 'zastane')
   assert.match(drugi.detal, /zastany, moze dzialac na bazie dev/)
+  writeFileSync(konf.pid, pid)
   assert.equal(zatrzymajSerwer(konf).posprzatano, true)
   let dziala = true
   for (let i = 0; i < 20 && dziala; i += 1) {
@@ -167,5 +171,45 @@ test('sprawdz bez startu (Doctor): gotowe przy poprawnym .env.e2e, serwer brak',
   assert.equal(w.status, 'gotowe')
   assert.equal(w.serwer, 'brak')
   assert.match(w.detal, /autopilot uruchomi/)
+  rmSync(p, { recursive: true })
+})
+
+test('E2E_URL bez schematu albo nie-URL = blad sprawdzenia z naprawa, nie wyjatek skryptu', () => {
+  const p = projekt()
+  for (const url of ['localhost:5173', 'nie-url', '127.0.0.1:3000']) {
+    const konf = konfiguracja(p, { E2E_URL: url })
+    assert.match(konf.blad ?? '', /E2E_URL .* — podaj pelny adres http\(s\):\/\//, url)
+    const bledy = bledySrodowiska(p, { E2E_URL: url }, { przegladarka: false, narzedzia: SPRAWNE })
+    assert.equal(bledy.length, 1, url)
+  }
+  rmSync(p, { recursive: true })
+})
+
+test('guard tozsamosci dziala takze bez katalogu supabase/ (VITE_SUPABASE_URL w .env.e2e = jak w .env)', () => {
+  const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
+  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co' }, { przegladarka: false, narzedzia: SPRAWNE })
+  assert.equal(bledy.length, 1)
+  assert.match(bledy[0], /dedykowanego projektu Supabase e2e/)
+  rmSync(p, { recursive: true })
+})
+
+test('limit startu przyciety do 540 s (limit Basha agenta 600 s)', () => {
+  assert.equal(konfiguracja('/tmp/x', { E2E_START_TIMEOUT: '9999' }).limitSek, 540)
+})
+
+test('wlasny serwer z poprzedniego runu (zywy PID) = uruchomione, nie zastany; stan serwera z ogonem logu', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\n` })
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).serwer, 'uruchomione')
+  const ponowny = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+  assert.equal(ponowny.serwer, 'uruchomione')
+  assert.doesNotMatch(ponowny.detal, /zastany/)
+  const konf = konfiguracja(p, parsujEnv(`E2E_URL=http://127.0.0.1:${port}\n`))
+  const stan = stanSerwera(konf)
+  assert.equal(stan.zyje, true)
+  assert.equal(typeof stan.ogonLogu, 'string')
+  zatrzymajSerwer(konf)
+  assert.equal(stanSerwera(konf).zyje, false)
   rmSync(p, { recursive: true })
 })

@@ -527,15 +527,19 @@ Poza wyjatkiem z kroku 2 NIE modyfikuj zadnych plikow. Zwroc {status, detal, cza
 function e2eStartPrompt(sciezka) {
   return `Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik:
 \`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
-Skrypt sprawdza, czy zadanie potrzebuje przegladarki, sprawdza .env.e2e i uruchamia serwer aplikacji w tle. Kod wyjscia 1 to wynik
-(STOP liczy orkiestrator), nie blad do naprawy. Ostatnia linia stdout to JSON — zwroc jego pola 1:1. Plikow repo nie zmieniasz
-(poza zapisem stanu, jesli polecenie go zawiera).`
+Narzedzie Bash wywolaj z timeout 600000 (start serwera czeka do 540 s) i uruchom polecenie jeden raz: powtorka postawilaby
+drugi serwer obok pierwszego. Skrypt sprawdza, czy zadanie potrzebuje przegladarki, sprawdza .env.e2e i uruchamia serwer aplikacji
+w tle. Kod wyjscia 0 albo 1 to wynik (STOP liczy orkiestrator): ostatnia linia stdout to JSON — zwroc jego pola 1:1. Kod 3
+(JSON z polem "wyjatek") albo brak JSON-a: status "niepowodzenie", bledy = [tresc wyjatku albo ostatnie linie wyjscia],
+detal = to samo, naprawa = "Uruchom recznie: node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}", scenariusze 0,
+figmaScreens false, envE2e i bazaE2e false, serwer "brak", url i log null. Plikow repo nie zmieniasz (poza zapisem stanu,
+jesli polecenie go zawiera).`
 }
 
 function e2eDbSyncPrompt(sciezka, numerFazy) {
   return `Jestes agentem synchronizacji bazy e2e pipeline'u dev-autopilot (zadanie: ${sciezka}, faza ${numerFazy}).
 Cel: dedykowany projekt Supabase e2e ma miec migracje i seedy tej fazy PRZED testami E2E w przegladarce.
-Ten projekt WOLNO modyfikowac autonomicznie — to nie jest baza dev/prod (guard tozsamosci zrobil env-up).
+Ten projekt wolno modyfikowac autonomicznie — to nie jest baza dev/prod (guard tozsamosci zrobil start srodowiska).
 NIGDY nie loguj wartosci sekretow z .env.e2e.
 ${BLOK_DLUGIE_KOMENDY}
 
@@ -634,10 +638,12 @@ KLASYFIKUJ kazdy finding przed naprawa:
   w "## Operator checklist faza ${numerFazy}". Po PASS odznacz TAKZE zrodlowy checkbox tej fazy
   w ${sciezka}/*-zadania.md — "- [ ] Test: [E2E] ..." lub "- [ ] Weryfikacja: [E2E] ..." — nie tylko pozycje
   w "Do poprawy". Po fix NIE ma re-review, wiec nikt inny go nie odznaczy, a completion-gate
-  (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.${srodowiskoE2E === 'gotowe' ? '' : `
-  SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE (${srodowiskoE2E}): przyczyne napraw (kod, seed), ale scenariusza NIE odgrywaj —
-  przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna srodowisko --powod "<co naprawiles — do odegrania recznie>"\`
-  (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.`}
+  (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.
+  ${srodowiskoE2E === 'gotowe'
+    ? 'Ponowne odegranie niewykonalne nie z winy kodu (aplikacja nie odpowiada, limit uslugi zewnetrznej, popup OAuth) ->'
+    : `SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE (${srodowiskoE2E}): przyczyne napraw (kod, seed), ale scenariusza nie odgrywaj ->`}
+  przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna <srodowisko|limit-zewnetrzny|harness> --powod "<co naprawiles i dlaczego recznie>"\`
+  (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.
 
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
@@ -1139,7 +1145,7 @@ function decyzjaSrodowiskaE2e(wynik, sciezka) {
   if (!wynik) {
     return {
       stop: {
-        powod: 'start: srodowisko E2E — agent startu srodowiska zwrocil null 2x, wynik sprawdzenia nieznany',
+        powod: 'start: agent e2e:start zwrocil null 2x — wynik sprawdzenia srodowiska nieznany',
         naprawa: `Sprawdz recznie: \`node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}\`. Dwa nulle bez wywolan narzedzi to zwykle przeciazenie API (529), nie srodowisko — odczekaj kilkanascie minut. ${swiezy}`,
       },
       aktywne: false, srodowisko: 'brak', bazaE2e: false,

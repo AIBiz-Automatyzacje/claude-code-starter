@@ -8,7 +8,7 @@
 /** Suffix wyniku dopisany do linii scenariusza przez ksiegowanie albo fix: SKIP, FAIL, MANUAL (zawsze ostatni w linii). */
 const SUFFIX = /\s\((?:SKIP —|FAIL[:)]|MANUAL —)/
 const SUFFIX_MANUAL = /\s\(MANUAL — ([a-z-]+): (.*)\)$/
-const NAGLOWEK = /^## /
+const NAGLOWEK = /^(#{1,6})\s/
 
 /**
  * @typedef {{ indeks: number, faza: number | null, zaznaczona: boolean, tresc: string, flow: string | null, klucz: string }} LiniaScenariusza
@@ -44,15 +44,18 @@ export function normalizuj(tresc) {
   return bezSuffixu(tresc.replace(/^- \[[ xX]\]\s*/, '')).replace(/\[(?:E2E|Manual)\]/g, '').replace(/\s+/g, '').toLowerCase()
 }
 
-/** @param {string} linia @returns {number | null} numer fazy z naglowka `## Faza N` */
+/** @param {string} linia @returns {number | null} numer fazy z naglowka `Faza N` dowolnego poziomu (jak dossier) */
 function numerFazy(linia) {
-  const m = /^## Faza (\d+)\b/.exec(linia)
+  const m = /^#{1,6}\s+Faza\s+(\d+)\b/.exec(linia)
   return m ? Number(m[1]) : null
 }
 
+/** @param {string} linia @returns {number} poziom naglowka markdown (Infinity, gdy linia nie jest naglowkiem) */
+const poziom = (linia) => NAGLOWEK.exec(linia)?.[1].length ?? Infinity
+
 /**
- * Zakres linii sekcji fazy: od naglowka `## Faza N` do nastepnego naglowka `## ` (Operator checklist i „Do poprawy”
- * to osobne sekcje).
+ * Zakres linii sekcji fazy: od naglowka `Faza N` do nastepnego naglowka tego samego albo wyzszego poziomu (w formacie
+ * generatora `## Operator checklist faza N` i „## Do poprawy” to osobne sekcje).
  * @param {string[]} linie
  * @param {number} faza
  * @returns {{ od: number, do: number } | null}
@@ -60,7 +63,7 @@ function numerFazy(linia) {
 export function zakresFazy(linie, faza) {
   const od = linie.findIndex((l) => numerFazy(l) === faza)
   if (od === -1) return null
-  const nastepny = linie.findIndex((l, i) => i > od && NAGLOWEK.test(l))
+  const nastepny = linie.findIndex((l, i) => i > od && poziom(l) <= poziom(linie[od]))
   return { od, do: nastepny === -1 ? linie.length : nastepny }
 }
 

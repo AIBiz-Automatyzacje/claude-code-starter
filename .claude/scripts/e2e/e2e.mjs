@@ -6,6 +6,7 @@
 //   e2e.mjs sprawdz --zadanie <docs/active/zadanie>   potrzeby zadania + sprawdzenie .env.e2e bez startu serwera (Doctor)
 //   e2e.mjs start --zadanie <docs/active/zadanie>     to samo + start serwera aplikacji (bootstrap autopilota)
 //   e2e.mjs stop                                      zatrzymuje serwer uruchomiony przez start (plik PID)
+//   e2e.mjs stan                                      czy serwer pipeline'u zyje + ogon jego logu (tester, gdy aplikacja milczy)
 //   e2e.mjs suma                                      suma migracji przed wypchnieciem do bazy e2e
 //   e2e.mjs ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem]
 //                                                     przebiegi testera (JSON z stdin) -> linie [E2E] fazy w pliku zadan
@@ -23,7 +24,7 @@ import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { rodzajPrzyczyny, zaksiegujFaze } from './ksiegowanie.mjs'
 import { listaManual } from './scenariusze.mjs'
-import { envE2e, konfiguracja, zatrzymajSerwer } from './srodowisko.mjs'
+import { envE2e, konfiguracja, stanSerwera, zatrzymajSerwer } from './srodowisko.mjs'
 import { startE2e } from './start.mjs'
 
 const KOD_DO_POPRAWY = 1
@@ -36,7 +37,7 @@ const USTAWIENIA = /** @type {const} */ ({
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start --zadanie <dir> | stop | suma | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start --zadanie <dir> | stop | stan | suma | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -82,6 +83,7 @@ async function wykonaj(polecenie, o, projekt) {
     zakoncz(w, w.status === 'pominieto' || w.status === 'gotowe')
   }
   if (polecenie === 'stop') zakoncz(zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
+  if (polecenie === 'stan') zakoncz(stanSerwera(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
   if (polecenie === 'suma') {
     const w = bramkaMigrationsSum(projekt)
     zakoncz(w, w.status !== 'porazka')
@@ -91,7 +93,10 @@ async function wykonaj(polecenie, o, projekt) {
   if (polecenie === 'lista-manual') zakoncz({ pozycje: listaManual(tresc) }, true)
   const faza = numerFazy(o.faza)
   if (polecenie === 'ksieguj') {
-    const przebiegi = JSON.parse(readFileSync(0, 'utf8') || '[]')
+    const wejscie = readFileSync(0, 'utf8')
+    // Puste stdin = zgubiony heredoc, nie „zero przebiegow”: bez tego kazda linia dostalaby SKIP „brak wpisu testera”.
+    if (!wejscie.trim()) zleArgumenty('ksieguj: puste stdin — przebiegi testera (tablica JSON) ida heredociem')
+    const przebiegi = JSON.parse(wejscie)
     if (!Array.isArray(przebiegi)) zleArgumenty('stdin: oczekiwana tablica przebiegow JSON')
     if (o['brak-wpisu'] && rodzajPrzyczyny(o['brak-wpisu']) !== 'manual') zleArgumenty(`--brak-wpisu ${o['brak-wpisu']} nie jest przyczyna recznego sprawdzenia`)
     const brakWpisu = o['brak-wpisu'] ? { przyczyna: o['brak-wpisu'], powod: o.powod ?? '' } : undefined

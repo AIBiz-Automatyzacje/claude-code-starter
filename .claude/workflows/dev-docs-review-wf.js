@@ -465,8 +465,12 @@ Bez runnera, gdy linia ma "(seed: …)" albo istnieje e2e/seeds/<flow>-seed.sql 
 zaaplikuj seed (\`psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <seed>\`; zbiorczy db-sync mogl go nadpisac
 seedem innego flow).
 
-NAJPIERW preflight srodowiska (Bash): czy aplikacja odpowiada — \`curl -s <adres>\`, adres = E2E_URL z .env.e2e
+NAJPIERW preflight srodowiska (Bash): czy aplikacja odpowiada — \`curl -sS <adres>\`, adres = E2E_URL z .env.e2e
 (domyslnie http://localhost:5173). Potem proba scenariuszy przez skill agent-browser (open URL, snapshot -i, click, screenshot).
+Aplikacja przestala odpowiadac (na starcie albo w trakcie scenariuszy) -> \`node .claude/scripts/e2e/e2e.mjs stan\`: serwer
+uruchomiony przez autopilota nie zyje (zyje: false), a ogon logu konczy sie bledem z kodu projektu (stack trace z plikow repo) ->
+kod fazy kladzie serwer: wpis FAIL + finding P2 typ E2E z ogonem logu. W kazdym innym przypadku -> wpis SKIP z przyczyna
+"srodowisko" i doslownym komunikatem bledu.
 
 SRODOWISKO ZARZADZANE (jesli w korzeniu repo istnieje .env.e2e): orkiestrator uruchomil serwer aplikacji wg .env.e2e
 (skrypt .claude/scripts/e2e/e2e.mjs) i zsynchronizowal baze e2e PRZED Twoim startem. Wtedy:
@@ -479,7 +483,8 @@ KLASYFIKACJA per scenariusz (to jest krytyczne — nie wszystko jest P2):
 - WYKONANY i PASSED -> wpis PASS (przyczyna "nie-dotyczy") z dowodem (co zaasertowano + sciezka screenshotu), bez findingu.
   BEZ wpisu scribe NIE odznaczy checkboxa — brak findingu NIE jest dowodem PASS.
 - NIEWYKONALNY -> wpis SKIP z przyczyna:
-  "srodowisko" — aplikacja, baza albo DNS niedostepne (connection refused, ERR_NAME_NOT_RESOLVED, serwer nie odpowiada);
+  "srodowisko" — aplikacja, baza albo DNS niedostepne, a nie z winy kodu fazy (connection refused, ERR_NAME_NOT_RESOLVED,
+  serwer nie odpowiada; patrz \`e2e.mjs stan\` wyzej);
   "limit-zewnetrzny" — limit uslugi zewnetrznej (429, limit wysylki maili);
   "harness" — powierzchnia poza kontrola headless (popup OAuth zewnetrznego providera, natywne okno przegladarki);
   przy tych trzech BEZ findingu: skrypt przeniesie linie na [Manual] z Twoim powodem i run pojdzie dalej, wiec
@@ -634,7 +639,8 @@ ${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTes
    - Grep / istnienie pliku (grep, rg, test -f, ls, "brak referencji do", "plik istnieje", "import nie istnieje"):
      uruchom; PASS -> [x]; FAIL -> [ ] z suffixem " (FAIL)" i finding P2.
    - Przegladarka albo czlowiek (URL, agent-browser, "viewport", "kliknij", "screenshot", 🌐, "recznie", "operator", "symulator",
-     "device", "emulator", "QA", "tester czlowiek"): [ ] z suffixem " — wymaga operatora (checklist)", bez findingu.
+     "device", "emulator", "QA", "tester czlowiek"): [ ] z suffixem " — wymaga operatora (checklist)" + kopia w "## Operator checklist
+     faza ${faza}" jako "- [ ] Operator: <tresc> — Operator action: <kroki z tresci>" (bez duplikatu), bez findingu.
    - Niejasne (nic nie pasuje): [ ] z suffixem " — klasyfikacja niejasna, wymaga recznej decyzji" i finding P3
      z notatka dla planisty: "checkbox nieautomatyzowalny — przenies do Operator checklist albo przeformuluj na CLI/E2E".
    Checkboxy spoza fazy ${faza} zostawiasz bez zmian.
@@ -856,7 +862,7 @@ if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
   )
 }
 const e2eWynik = e2eAktywny ? wyniki[indeksE2e] : null
-let e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.przebiegi : []
+const e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.przebiegi : []
 // "Wykonany" = dal przebiegi (albo realnie nie bylo czego testowac). Null 2x = NIE wykonany; pusto 2x przy ZNANEJ
 // liczbie checkboxow > 0 = NIE wykonany -> twarda flaga dla orkiestratora (STOP, review pending). Przy liczbie
 // NIEZNANEJ (brak dossier) drugi pusty wynik jest AKCEPTOWANY jako "brak checkboxow" — tester sam grepuje sekcje
@@ -925,12 +931,14 @@ function wykryjBlokerSrodowiska(findingi, przebiegiTestera) {
       if (s.re.test(tekst)) return { wykryty: true, klasa: s.klasa, dowod: (f.opis || '').slice(0, 500) }
     }
   }
-  // P14: SKIP z przyczyna srodowiska nie ma findingu — sygnatura stoi wtedy w dowodzie przebiegu.
+  // P14: SKIP z przyczyna `srodowisko` (bez findingu) to awaria srodowiska z pola strukturalnego — curl -s nie wypisuje
+  // komunikatu, wiec sama sygnatura by jej nie zlapala. SKIP-y innych przyczyn (harness, limit) nie sa awaria, nawet gdy
+  // ich dowod cytuje ECONNREFUSED zewnetrznej uslugi; FAIL — tylko z sygnatura w dowodzie.
   for (const p of przebiegiTestera) {
-    if (!p || (p.wynik !== 'FAIL' && p.wynik !== 'SKIP')) continue
-    for (const s of SYGNATURY_BLOKERA) {
-      if (s.re.test(p.dowod || '')) return { wykryty: true, klasa: s.klasa, dowod: String(p.dowod).slice(0, 500) }
-    }
+    if (!p) continue
+    const sygnatura = SYGNATURY_BLOKERA.find((s) => s.re.test(p.dowod || ''))
+    if (p.wynik === 'SKIP' && p.przyczyna === 'srodowisko') return { wykryty: true, klasa: sygnatura ? sygnatura.klasa : 'srodowisko', dowod: String(p.dowod || '').slice(0, 500) }
+    if (p.wynik === 'FAIL' && sygnatura) return { wykryty: true, klasa: sygnatura.klasa, dowod: String(p.dowod).slice(0, 500) }
   }
   return null
 }
@@ -948,24 +956,9 @@ const PRZYCZYNY_SKIP = {
 const DOWOD_KSIEGOWANIA_ZN = 300
 const POWOD_PADU_TESTERA = 'tester E2E nie dal przebiegu w 2 probach — do odegrania recznie'
 
-const kluczPrzebiegu = (p) => p.flow || (/`([^`]+)`/.exec(p.checkbox || '')?.[1]) || String(p.checkbox || '').replace(/\s+/g, '').toLowerCase()
-
-// Po blokerze srodowiska FAIL-e testera z sygnatura awarii nie sa defektem kodu: przebieg SKIP z przyczyna srodowisko
-// (-> [Manual]), a ich findingi P2 znikaja z listy do fixa (dowod zostaje w przebiegu i w linii [Manual]).
-// Realny FAIL bez sygnatury (np. sprzed padu serwera) zostaje.
-function poBlokerzeSrodowiska(przebiegi, findingiTestera) {
-  const zSygnatura = (tekst) => SYGNATURY_BLOKERA.some((s) => s.re.test(tekst || ''))
-  const flowyBlokera = new Set()
-  const findingi = findingiTestera.filter((f) => {
-    if (f.typ !== 'E2E' || !zSygnatura(`${f.opis || ''} ${f.plik || ''}`)) return true
-    for (const m of (f.opis || '').matchAll(/checkbox:\s*(.+)/g)) flowyBlokera.add(kluczPrzebiegu({ checkbox: m[1] }))
-    return false
-  })
-  const nowe = przebiegi.map((p) => (p.wynik === 'FAIL' && (zSygnatura(p.dowod) || flowyBlokera.has(kluczPrzebiegu(p)))
-    ? { ...p, wynik: 'SKIP', przyczyna: 'srodowisko' }
-    : p))
-  return { przebiegi: nowe, findingi, usuniete: findingiTestera.length - findingi.length }
-}
+// Klucz flow jak w skrypcie: identyfikator z pierwszego backticka, inaczej tresc bez suffixu wyniku, markera i bialych znakow.
+const kluczPrzebiegu = (p) => p.flow || (/`([^`]+)`/.exec(p.checkbox || '')?.[1])
+  || String(p.checkbox || '').replace(/\s\((?:SKIP —|FAIL[:)]|MANUAL —).*$/, '').replace(/\[(?:E2E|Manual)\]/g, '').replace(/\s+/g, '').toLowerCase()
 
 // Ile scenariuszy fazy przeszlo na [Manual] — ta sama regula co skrypt: flow bez FAIL, a rozstrzygajacy SKIP ma przyczyne
 // reczna (SKIP do fixa albo bez kategorii wygrywa). Pad testera = kazdy scenariusz fazy (null, gdy liczba nieznana).
@@ -982,9 +975,14 @@ function liczManualE2e(przebiegi, testerFail, e2eCheckboxy) {
   return manual
 }
 
-// Polecenie ksiegowania dla scribe'a: przebiegi w heredoc (bez interpolacji powloki), dowod przyciety do suffixu linii.
+// Polecenie ksiegowania dla scribe'a: przebiegi w heredoc (bez interpolacji powloki). Ladunek minimalny, bo scribe przepisuje
+// go 1:1: checkbox tylko przy linii bez identyfikatora flow, dowod (powod linii [Manual] / SKIP) tylko przy SKIP.
 function komendaKsiegowania(sciezka, faza, przebiegi, testerFail) {
-  const wpisy = przebiegi.map((p) => ({ checkbox: p.checkbox, flow: p.flow, wynik: p.wynik, przyczyna: p.przyczyna || 'nie-dotyczy', dowod: String(p.dowod || '').slice(0, DOWOD_KSIEGOWANIA_ZN) }))
+  const wpisy = przebiegi.map((p) => ({
+    flow: p.flow || '', wynik: p.wynik, przyczyna: p.przyczyna || 'nie-dotyczy',
+    ...(p.flow ? {} : { checkbox: p.checkbox }),
+    ...(p.wynik === 'SKIP' ? { dowod: String(p.dowod || '').slice(0, DOWOD_KSIEGOWANIA_ZN) } : {}),
+  }))
   const brak = testerFail ? ` --brak-wpisu tester-padl --powod "${POWOD_PADU_TESTERA}"` : ''
   return `node .claude/scripts/e2e/e2e.mjs ksieguj --zadanie ${sciezka} --faza ${faza}${brak} <<'PRZEBIEGI_E2E'\n${JSON.stringify(wpisy)}\nPRZEBIEGI_E2E`
 }
@@ -994,7 +992,7 @@ function komendaKsiegowania(sciezka, faza, przebiegi, testerFail) {
 // potem opcjonalnie e2e). Potrzebna do sprawiedliwego przyciecia P3 (patrz wybierzNity):
 // bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
 const etykietyZrodel = [...aktywni.map((r) => r.key), ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
-let wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
+const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
 // Wejscie zawezone do findingow TESTERA (audyt 2026-09-02, finding A1): sygnatura w opisie reviewera kodu
 // mowi o kodzie, nie o srodowisku. I tylko w trybie `przegladarka` — w `bez-przegladarki` odmowa polaczenia
 // z curla jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria srodowiska w trakcie runu.
@@ -1002,10 +1000,7 @@ const blokerSrodowiska = e2eTryb === 'przegladarka'
   ? wykryjBlokerSrodowiska(wszystkie.filter((f) => f._zrodlo === 'e2e'), e2ePrzebiegi)
   : null
 if (blokerSrodowiska) {
-  const pb = poBlokerzeSrodowiska(e2ePrzebiegi, wszystkie.filter((f) => f._zrodlo === 'e2e'))
-  e2ePrzebiegi = pb.przebiegi
-  wszystkie = [...wszystkie.filter((f) => f._zrodlo !== 'e2e'), ...pb.findingi]
-  log(`BLOKER SRODOWISKA wykryty po sygnaturze (${blokerSrodowiska.klasa}) — scenariusze z awaria na [Manual] (${pb.usuniete} findingow testera poza fixem); orkiestrator przelaczy reszte runu na tester bez przegladarki`)
+  log(`AWARIA SRODOWISKA E2E (${blokerSrodowiska.klasa}) — SKIP-y srodowiska ida na [Manual]; orkiestrator przelaczy reszte runu na tester bez przegladarki`)
 }
 const RANGA = { P1: 0, P2: 1, P3: 2 }
 const poKluczu = new Map()

@@ -33,7 +33,7 @@ const A = new Function(`${wytnij(autopilot, '// ── Bramka wejscia (P4)', '//
   return { decyzjaSrodowiskaE2e, srodowiskoPoReview }`)()
 // eslint-disable-next-line no-new-func -- jw.
 const R = new Function(`${wytnij(review, 'const SYGNATURY_BLOKERA = [', '// ── Koniec E2E po testerze')}
-  return { PRZYCZYNY_SKIP, poBlokerzeSrodowiska, liczManualE2e, komendaKsiegowania, wykryjBlokerSrodowiska }`)()
+  return { PRZYCZYNY_SKIP, liczManualE2e, komendaKsiegowania, wykryjBlokerSrodowiska }`)()
 // eslint-disable-next-line no-new-func -- jw.
 const fixPrompt = new Function('BLOK_DLUGIE_KOMENDY', 'blokZwinieciaDoPoprawy', `${wytnij(autopilot, 'function fixPrompt(', '\n}\n')}
   return fixPrompt`)('', () => '')
@@ -64,6 +64,7 @@ test('start: agent null (2 proby) = STOP z komenda sprawdzenia, bez cichej degra
   assert.ok(d.stop)
   assert.match(d.stop.naprawa, /node \.claude\/scripts\/e2e\/e2e\.mjs sprawdz --zadanie docs\/active\/zadanie-x/)
   assert.match(d.stop.naprawa, /529/)
+  assert.match(d.stop.powod, /^start: agent e2e:start zwrocil null 2x/, 'kategoria STOP-u: start (infrastruktura), nie srodowisko')
 })
 
 test('start: pominieto = run bez E2E; gotowe = E2E aktywne, db-sync tylko z baza e2e', () => {
@@ -96,26 +97,27 @@ test('w trakcie: przyczyny SKIP w review-wf = kopia z ksiegowanie.mjs', () => {
   assert.deepEqual({ ...R.PRZYCZYNY_SKIP }, { ...PRZYCZYNY_SKIP })
 })
 
-test('w trakcie: FAIL z sygnatura awarii srodowiska -> SKIP srodowisko, finding testera znika z listy do fixa', () => {
-  const przebiegi = [
-    { checkbox: 'Test: [E2E] `a` — /a → ok', flow: 'a', wynik: 'PASS', przyczyna: 'nie-dotyczy', dowod: 'ok' },
-    { checkbox: 'Test: [E2E] `b` — /b → ok', flow: 'b', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'net::ERR_CONNECTION_REFUSED http://localhost:5173/b' },
-    { checkbox: 'Test: [E2E] `c` — /c → ok', flow: 'c', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'przycisk nie zamyka modala' },
-  ]
-  const findingi = [
-    { severity: 'P2', typ: 'E2E', plik: 'z-zadania.md:5', opis: 'checkbox: Test: [E2E] `b` — /b → ok\nnet::ERR_CONNECTION_REFUSED', _zrodlo: 'e2e' },
-    { severity: 'P2', typ: 'E2E', plik: 'z-zadania.md:6', opis: 'checkbox: Test: [E2E] `c` — /c → ok\nprzycisk nie zamyka modala', _zrodlo: 'e2e' },
-  ]
-  const w = R.poBlokerzeSrodowiska(przebiegi, findingi)
-  assert.deepEqual(w.przebiegi.map((/** @type {{ flow: string, wynik: string, przyczyna: string }} */ p) => `${p.flow}:${p.wynik}:${p.przyczyna}`), ['a:PASS:nie-dotyczy', 'b:SKIP:srodowisko', 'c:FAIL:nie-dotyczy'])
-  assert.deepEqual(w.findingi.map((/** @type {{ plik: string }} */ f) => f.plik), ['z-zadania.md:6'])
-  assert.equal(w.usuniete, 1)
+test('w trakcie: awaria srodowiska z pola przyczyny — SKIP srodowisko bez komunikatu (curl -s milczy) wystarcza', () => {
+  const b = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'aplikacja nie odpowiada na http://localhost:5173' }])
+  assert.ok(b)
+  assert.equal(b.klasa, 'srodowisko')
+  const zSygnatura = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'connect ECONNREFUSED 127.0.0.1:5173' }])
+  assert.equal(zSygnatura.klasa, 'dev-server-nieosiagalny')
 })
 
-test('w trakcie: bloker wykrywany takze po dowodzie przebiegu SKIP (tester bez findingu dla srodowiska)', () => {
-  const b = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod: 'connect ECONNREFUSED 127.0.0.1:5173' }])
-  assert.ok(b)
+test('w trakcie: SKIP harness albo limitu z cytowanym bledem sieci zewnetrznej uslugi to nie awaria srodowiska', () => {
+  assert.equal(R.wykryjBlokerSrodowiska([], [
+    { checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'harness', dowod: 'popup OAuth: net::ERR_NAME_NOT_RESOLVED accounts.google.com' },
+    { checkbox: 'y', flow: 'y', wynik: 'SKIP', przyczyna: 'limit-zewnetrzny', dowod: 'SMTP: connect ECONNREFUSED smtp.example.com:587' },
+  ]), null)
+})
+
+test('w trakcie: FAIL z sygnatura zostaje FAIL z findingiem do fixa (serwer mogl polozyc kod fazy), a run przechodzi bez przegladarki', () => {
+  const b = R.wykryjBlokerSrodowiska([], [{ checkbox: 'x', flow: 'x', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'net::ERR_CONNECTION_REFUSED http://localhost:5173/b' }])
   assert.equal(b.klasa, 'dev-server-nieosiagalny')
+  assert.doesNotMatch(review, /poBlokerzeSrodowiska/)
+  assert.match(review, /node \.claude\/scripts\/e2e\/e2e\.mjs stan/)
+  assert.match(review, /curl -sS <adres>/)
 })
 
 test('w trakcie: licznik [Manual] — SKIP z przyczyna reczna bez FAIL w tym samym flow; pad testera = wszystkie scenariusze fazy', () => {
@@ -135,6 +137,9 @@ test('w trakcie: scribe ksieguje linie [E2E] skryptem z przebiegami w heredoc; p
   const json = JSON.parse(k.split('\n')[1])
   assert.equal(json[0].dowod.length, 300)
   assert.equal(json[0].przyczyna, 'srodowisko')
+  assert.equal(json[0].checkbox, undefined, 'checkbox tylko przy linii bez identyfikatora flow')
+  const pass = JSON.parse(R.komendaKsiegowania(ZADANIE, 2, [{ checkbox: 'Weryfikacja: [E2E] stary format', flow: '', wynik: 'PASS', przyczyna: 'nie-dotyczy', dowod: 'ok' }], false).split('\n')[1])
+  assert.deepEqual(pass, [{ flow: '', wynik: 'PASS', przyczyna: 'nie-dotyczy', checkbox: 'Weryfikacja: [E2E] stary format' }])
   const padl = R.komendaKsiegowania(ZADANIE, 2, [], true)
   assert.match(padl, /--brak-wpisu tester-padl --powod "[^"']+"/)
   assert.match(review, /\$\{komendaKsiegowania\(sciezka, faza, przebieg\.e2ePrzebiegi \|\| \[\], przebieg\.e2eTesterFail\)\}/)
@@ -149,10 +154,14 @@ test('w trakcie: schemat testera ma kategorie przyczyny SKIP (wymagana)', () => 
 
 test('w trakcie: fix przy srodowisku niedostepnym przenosi flow na [Manual] skryptem zamiast odgrywac', () => {
   const martwe = fixPrompt(ZADANIE, 2, [], 'martwe')
-  assert.match(martwe, /node \.claude\/scripts\/e2e\/e2e\.mjs manual --zadanie docs\/active\/zadanie-x --faza 2 --flow <identyfikator> --przyczyna srodowisko/)
+  assert.match(martwe, /node \.claude\/scripts\/e2e\/e2e\.mjs manual --zadanie docs\/active\/zadanie-x --faza 2 --flow <identyfikator> --przyczyna/)
+  assert.match(martwe, /SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE \(martwe\)/)
+  // Srodowisko gotowe, ale re-run padl na srodowisku albo limicie w trakcie fixa — tez [Manual], nie STOP completion-gate.
   const gotowe = fixPrompt(ZADANIE, 2, [], 'gotowe')
-  assert.doesNotMatch(gotowe, /e2e\.mjs manual/)
   assert.match(gotowe, /re-uruchom scenariusz w przegladarce/)
+  assert.match(gotowe, /Ponowne odegranie niewykonalne nie z winy kodu/)
+  assert.match(gotowe, /--przyczyna <srodowisko\|limit-zewnetrzny\|harness>/)
+  assert.doesNotMatch(gotowe, /SRODOWISKO E2E NIEDOSTEPNE/)
 })
 
 // ── Smoke operatora i telemetria ───────────────────────────────────────────
@@ -167,4 +176,15 @@ test('telemetria: faza.e2e.manual z przebiegu (bylo null)', () => {
   assert.match(faza, /manual: liczbaLubNull\(przebieg\.e2eManual\)/)
   assert.match(autopilot, /e2eManual: p\.e2eManual \?\? null/)
   assert.match(review, /e2eManual: liczManualE2e\(/)
+})
+
+test('start: agent uruchamia skrypt raz z limitem Basha 600 s i obsluguje wyjatek skryptu (kod 3)', () => {
+  const p = wytnij(autopilot, 'function e2eStartPrompt(', '\n}\n')
+  assert.match(p, /timeout 600000/)
+  assert.match(p, /jeden raz/)
+  assert.match(p, /Kod 3/)
+})
+
+test('scribe: przegladarkowa „Weryfikacja:” bez markera dostaje kopie w Operator checklist (inaczej znika ze smoke)', () => {
+  assert.match(review, /" — wymaga operatora \(checklist\)" \+ kopia w "## Operator checklist/)
 })

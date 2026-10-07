@@ -78,5 +78,16 @@ test('zle argumenty: brak --zadanie, zla faza, nieznane polecenie = kod 2', () =
   assert.equal(uruchom(k, ['start']).kod, 2)
   assert.equal(uruchom(k, ['ksieguj', '--zadanie', 'docs/active/z', '--faza', 'zero'], '[]').kod, 2)
   assert.equal(uruchom(k, ['cos', '--zadanie', 'docs/active/z', '--faza', '1']).kod, 2)
+  assert.equal(uruchom(k, ['ksieguj', '--zadanie', 'docs/active/z', '--faza', '1'], '').kod, 2, 'puste stdin = zgubiony heredoc, nie „zero przebiegow”')
+  rmSync(k, { recursive: true })
+})
+
+test('stan: serwer bez pliku PID = zyje false; zly E2E_URL w stop nie wywraca skryptu', () => {
+  const k = projekt()
+  writeFileSync(join(k, '.env.e2e'), 'E2E_URL=nie-url\n')
+  const w = uruchom(k, ['stan'])
+  assert.equal(w.kod, 0, w.stderr)
+  assert.equal(w.json.zyje, false)
+  assert.equal(uruchom(k, ['stop']).kod, 0)
   rmSync(k, { recursive: true })
 })

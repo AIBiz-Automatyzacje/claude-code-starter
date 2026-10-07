@@ -54,7 +54,7 @@ function werdykt(wpisy, brakWpisu) {
 }
 
 /** @param {string} tresc @returns {string} tresc linii jako reczna (marker [Manual], bez suffixu) */
-const jakoReczna = (tresc) => bezSuffixu(tresc).replace('[E2E]', '[Manual]')
+const jakoReczna = (tresc) => bezSuffixu(tresc).replaceAll('[E2E]', '[Manual]')
 
 /**
  * @param {LiniaScenariusza} linia
@@ -69,9 +69,9 @@ function nowaLinia(linia, w) {
   return { tekst: `- [ ] ${bezSuffixu(linia.tresc)} (SKIP — ${w.powod})`, rodzaj: 'skip' }
 }
 
-/** @param {string} linia @param {LiniaScenariusza} wzor @returns {boolean} kopia scenariusza w Operator checklist (dopisana przez ksiegowanie) */
+/** @param {string} linia @param {LiniaScenariusza} wzor @returns {boolean} kopia scenariusza w Operator checklist (format ksiegowania i scribe'a) */
 function czyKopia(linia, wzor) {
-  const m = /^- \[[ xX]\] Operator: (.*\[Manual\].*?)(?: — Operator action:.*)?$/.exec(linia)
+  const m = /^- \[[ xX]\] Operator: (.*\[Manual\].*?) — Operator action:.*$/.exec(linia)
   if (!m) return false
   return wzor.flow !== null ? flowLinii(m[1]) === wzor.flow : normalizuj(m[1]) === normalizuj(wzor.tresc)
 }

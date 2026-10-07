@@ -139,3 +139,24 @@ test('scenariuszeFazy pomija kopie Operator:, pozycje findingow [P1-3] i linie i
   assert.deepEqual(linie.map((l) => l.flow), ['zapis-formularza', 'mail-powitalny', 'zapis-formularza', 'tryb-ciemny'])
   assert.equal(scenariuszeFazy(z, 2).length, 1)
 })
+
+test('jakoReczna zamienia kazdy marker [E2E] w linii (inaczej completion-gate dalej widzi scenariusz)', () => {
+  const z = '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a → ok [E2E]\n'
+  const { tekst } = zaksiegujFaze(z, 1, [wpis('SKIP', 'a', 'srodowisko', 'x')])
+  assert.equal(liczE2e(tekst), 0)
+  assert.doesNotMatch(tekst, /\[E2E\]/)
+})
+
+test('kopia scenariusza = tylko format ksiegowania („— Operator action:”); wpis planera z tym samym flow zostaje', () => {
+  const z = '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a → ok\n\n## Operator checklist faza 1\n\n- [ ] Operator: [Manual] `a`: review wizualny ekranu (IU-1)\n'
+  const { tekst } = zaksiegujFaze(z, 1, [wpis('PASS', 'a')])
+  assert.match(tekst, /Operator: \[Manual\] `a`: review wizualny ekranu \(IU-1\)/)
+})
+
+test('sekcja fazy tez z naglowkiem innego poziomu (# Faza N, ### Faza N), jak w dossier', () => {
+  for (const h of ['#', '###']) {
+    const z = `${h} Faza 1\n\n- [ ] Test: [E2E] \`a\` — /a → ok\n\n${h} Faza 2\n\n- [ ] Test: [E2E] \`b\` — /b → ok\n`
+    assert.deepEqual(scenariuszeFazy(z, 1).map((l) => l.flow), ['a'], h)
+    assert.deepEqual(scenariuszeFazy(z, 2).map((l) => l.flow), ['b'], h)
+  }
+})

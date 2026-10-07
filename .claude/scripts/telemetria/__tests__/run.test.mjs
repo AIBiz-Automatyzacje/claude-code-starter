@@ -59,6 +59,7 @@ test('kategoria STOP-u z powodu — prawdziwe komunikaty autopilota', () => {
   )
   assert.equal(kategoriaStopu('start: doctor — WYNIK: BRAK obowiązkowych: gh'), 'start', 'bramka wejscia autopilota (P4)')
   assert.equal(kategoriaStopu('start: srodowisko E2E — zadanie ma 2 scenariuszy [E2E], a repo nie ma .env.e2e'), 'E2E-srodowisko', 'STOP srodowiska na starcie (P14)')
+  assert.equal(kategoriaStopu('start: agent e2e:start zwrocil null 2x — wynik sprawdzenia srodowiska nieznany'), 'start', 'null agenta = infrastruktura')
   assert.equal(kategoriaStopu('start: testy na starcie galezi czerwone (abc1234): src/a.test.ts'), 'start')
   assert.equal(kategoriaStopu('niezacommitowane zmiany poza katalogiem zadania: src/a.ts'), 'czystosc')
   assert.equal(kategoriaStopu('cos nowego'), 'inne')
