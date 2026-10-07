@@ -120,11 +120,15 @@ export function bledySrodowiska(projekt, env, { przegladarka, narzedzia = NARZED
   if (konf.blad) bledy.push(konf.blad)
   // Guard tozsamosci niezaleznie od bazy e2e: projekt bez supabase/ tez moze celowac z E2E w baze dev. Brak klucza w .env.e2e
   // przy kluczu w .env = Vite w trybie e2e doczyta adres z .env, czyli baze dev.
+  // .env.e2e.local ma w Vite (tryb e2e) najwyzszy priorytet — to jego adres trafia do aplikacji.
   const dev = [wczytajEnv(projekt, '.env'), wczytajEnv(projekt, '.env.local')].flatMap((e) => (e?.VITE_SUPABASE_URL ? [originBazy(e.VITE_SUPABASE_URL)] : []))
-  if (dev.length && !env.VITE_SUPABASE_URL) {
+  const lokalny = wczytajEnv(projekt, '.env.e2e.local')?.VITE_SUPABASE_URL
+  const adresE2e = lokalny || env.VITE_SUPABASE_URL
+  const zrodlo = lokalny ? '.env.e2e.local' : PLIK_ENV
+  if (dev.length && !adresE2e) {
     bledy.push(`brak VITE_SUPABASE_URL w ${PLIK_ENV}, a .env / .env.local go ma — Vite w trybie e2e doczyta baze dev; ustaw adres dedykowanego projektu Supabase e2e`)
-  } else if (env.VITE_SUPABASE_URL && dev.includes(originBazy(env.VITE_SUPABASE_URL))) {
-    bledy.push(`VITE_SUPABASE_URL w ${PLIK_ENV} jest taki sam jak w .env / .env.local — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
+  } else if (adresE2e && dev.includes(originBazy(adresE2e))) {
+    bledy.push(`VITE_SUPABASE_URL w ${zrodlo} jest taki sam jak w .env / .env.local — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
   }
   if (konf.bazaE2e) {
     const braki = KLUCZE_BAZY.filter((k) => !env[k])

@@ -86,8 +86,8 @@ function czyKopia(linia, wzor) {
 function uzgodnijKopie(linie, faza, operacje) {
   if (!operacje.length) return linie
   const naglowek = new RegExp(`^## Operator checklist faza ${faza}\\b`, 'i')
-  // Koniec sekcji: naglowek poziomu 1-2 (nastepna faza `# Faza N` albo `## Faza N`, kolejna sekcja `## …`).
-  const koniecSekcji = (/** @type {string} */ l) => /^#{1,2}\s/.test(l)
+  // Koniec sekcji: naglowek poziomu 1-2 (kolejna sekcja `## …`) albo naglowek nastepnej fazy dowolnego poziomu (`### Faza N`).
+  const koniecSekcji = (/** @type {string} */ l) => /^#{1,2}\s/.test(l) || /^#{1,6}\s+Faza\s+\d/i.test(l)
   let wynik = linie
   let od = wynik.findIndex((l) => naglowek.test(l))
   if (od !== -1) {

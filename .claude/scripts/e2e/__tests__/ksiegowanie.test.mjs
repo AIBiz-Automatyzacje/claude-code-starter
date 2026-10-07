@@ -168,3 +168,9 @@ test('kopia SKIP przy naglowkach # Faza N trafia do Operator checklist swojej fa
   assert.match(faza1, /Operator: Test: \[Manual\] `a`/)
   assert.doesNotMatch(tekst.split('# Faza 2')[1], /`a`/)
 })
+
+test('kopia SKIP przy naglowkach ### Faza N tez trafia do swojej fazy', () => {
+  const z = '### Faza 1\n\n- [ ] Test: [E2E] `a` — /a → ok\n\n### Faza 2\n\n- [ ] Test: [E2E] `b` — /b → ok\n'
+  const { tekst } = zaksiegujFaze(z, 1, [wpis('SKIP', 'a', 'brak-seeda', 'brak seeda')])
+  assert.match(tekst.split('### Faza 2')[0], /Operator: Test: \[Manual\] `a`/)
+})

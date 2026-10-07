@@ -190,3 +190,18 @@ test('start: agent uruchamia skrypt raz z limitem Basha 600 s i obsluguje wyjate
 test('scribe: przegladarkowa „Weryfikacja:” bez markera dostaje kopie w Operator checklist (inaczej znika ze smoke)', () => {
   assert.match(review, /" — wymaga operatora \(checklist\)" \+ kopia w "## Operator checklist/)
 })
+
+test('fix przy „serwer padl”: start takze po nieudanej naprawie; start nieudany -> [Manual] i serwerE2e martwy -> reszta runu bez przegladarki', () => {
+  const gotowe = fixPrompt(ZADANIE, 2, [], 'gotowe')
+  assert.match(gotowe, /takze gdy naprawa sie nie udala/)
+  assert.match(gotowe, /serwerE2e: "martwy"/)
+  assert.match(wytnij(autopilot, 'const FIX_RESULT = {', '\n}\n'), /serwerE2e: \{ type: 'string', enum: \['dziala', 'martwy', 'nie-dotyczy'\]/)
+  assert.match(autopilot, /if \(fix\.serwerE2e === 'martwy'\) \{\n\s*srodowiskoE2E = 'martwe'/)
+})
+
+test('instrukcje bez wykrywania awarii po sygnaturze tekstu; watcher (zywy proces) z bledem kodu w logu = FAIL', () => {
+  assert.doesNotMatch(review, /Orkiestrator rozpoznaje awarie srodowiska po SYGNATURZE/)
+  const tester = readFileSync(resolve(KATALOG, '../../agents/feature-tester-e2e.md'), 'utf8')
+  assert.doesNotMatch(tester, /rozpoznaje awarię środowiska po sygnaturze tekstowej/)
+  assert.match(review, /"zyje": true \(watcher, np\. nodemon/)
+})

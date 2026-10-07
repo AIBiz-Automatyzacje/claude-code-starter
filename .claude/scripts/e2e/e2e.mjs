@@ -83,7 +83,7 @@ async function wykonaj(polecenie, o, projekt) {
     const w = await startE2e(projekt, sciezkaZadania(projekt, o.zadanie), { uruchom: polecenie === 'start' })
     zakoncz(w, w.status === 'pominieto' || w.status === 'gotowe')
   }
-  if (polecenie === 'stop') zakoncz(zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
+  if (polecenie === 'stop') zakoncz(await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
   if (polecenie === 'stan') zakoncz(stanSerwera(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
   if (polecenie === 'suma') {
     const w = bramkaMigrationsSum(projekt)

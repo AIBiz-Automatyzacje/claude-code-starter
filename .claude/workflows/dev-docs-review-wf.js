@@ -468,9 +468,10 @@ seedem innego flow).
 NAJPIERW preflight srodowiska (Bash): czy aplikacja odpowiada — \`curl -sS <adres>\`, adres = E2E_URL z .env.e2e
 (domyslnie http://localhost:5173). Potem proba scenariuszy przez skill agent-browser (open URL, snapshot -i, click, screenshot).
 Aplikacja przestala odpowiadac (na starcie albo w trakcie scenariuszy) -> \`node .claude/scripts/e2e/e2e.mjs stan\`: gdy
-"nasz": true, "zyje": false, a ogon logu konczy sie bledem z kodu projektu (stack trace z plikow repo), kod fazy kladzie serwer:
-wpis FAIL + finding P2 typ E2E z ogonem logu (pierwsza linia opisu "checkbox: <tresc>", dalej "serwer aplikacji padl"). W kazdym
-innym przypadku (serwer nie nasz, zyje, log bez bledu kodu) -> wpis SKIP z przyczyna "srodowisko" i doslownym komunikatem bledu.
+"nasz": true, a ogon logu konczy sie bledem z kodu projektu (stack trace z plikow repo) — przy "zyje": false, a takze przy
+"zyje": true (watcher, np. nodemon, zyje po padzie aplikacji) — kod fazy kladzie serwer: wpis FAIL + finding P2 typ E2E z ogonem
+logu (pierwsza linia opisu "checkbox: <tresc>", dalej "serwer aplikacji padl"). W kazdym innym przypadku (serwer nie nasz, log bez
+bledu kodu) -> wpis SKIP z przyczyna "srodowisko" i doslownym komunikatem bledu.
 
 SRODOWISKO ZARZADZANE (jesli w korzeniu repo istnieje .env.e2e): orkiestrator uruchomil serwer aplikacji wg .env.e2e
 (skrypt .claude/scripts/e2e/e2e.mjs) i zsynchronizowal baze e2e PRZED Twoim startem. Wtedy:
@@ -498,8 +499,8 @@ fallback znormalizowana tresc; wynik PASS/FAIL/SKIP, przyczyna, dowod). FAIL = f
 
 CYTUJ DOSLOWNE KOMUNIKATY BLEDOW: gdy scenariusz pada na bledzie srodowiska/sieci (connection refused,
 ERR_*, ECONNREFUSED, timeout, DNS), wklej do \`dowod\` (i do opisu findingu, jesli jest) DOSLOWNY komunikat
-z konsoli/outputu, nie parafraze. Orkiestrator rozpoznaje awarie srodowiska po SYGNATURZE tekstowej — po niej
-reszta runu idzie bez przegladarki zamiast odbijac sie od niedzialajacego serwera w kazdej fazie.
+z konsoli/outputu, nie parafraze — czlowiek dostaje go w linii [Manual] i w smoke'u. Awarie srodowiska orkiestrator rozpoznaje
+po przyczynie "srodowisko" we wpisie SKIP (nie po tekscie): po niej reszta runu idzie bez przegladarki.
 
 Jesli zadanie ma figma_screens / mockupy w sekcji designerskiej — zrob side-by-side visual
 comparison screenshotu z mockupem (rozbieznosci wizualne = P2 typ E2E).
@@ -964,9 +965,8 @@ function komendaKsiegowania(sciezka, faza, przebiegi, testerFail) {
 // bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
 const etykietyZrodel = [...aktywni.map((r) => r.key), ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
 const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
-// Wejscie zawezone do findingow TESTERA (audyt 2026-09-02, finding A1): sygnatura w opisie reviewera kodu
-// mowi o kodzie, nie o srodowisku. I tylko w trybie `przegladarka` — w `bez-przegladarki` odmowa polaczenia
-// z curla jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria srodowiska w trakcie runu.
+// Wejscie = przebiegi testera (P14: pole przyczyny, nie tekst findingow). Tylko w trybie `przegladarka` — w `bez-przegladarki`
+// SKIP srodowiska jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria w trakcie runu.
 const blokerSrodowiska = e2eTryb === 'przegladarka'
   ? wykryjBlokerSrodowiska(e2ePrzebiegi)
   : null

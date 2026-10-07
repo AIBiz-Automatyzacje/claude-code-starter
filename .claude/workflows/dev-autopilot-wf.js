@@ -343,6 +343,9 @@ const FIX_RESULT = {
     // przestal byc tekstem (git: "Bin 9804 -> 15506 bytes") i KAZDY kolejny agent padal na jego Read
     // (APIError), 6 prob z rzedu, run martwy po 2h47min. W required, bo pusta lista MUSI znaczyc
     // "sprawdzilem i czysto"; pole opcjonalne = agent moze pominac sprawdzenie i cicho wylaczyc guard.
+    // P14: wynik ponownego startu serwera po findingu „serwer aplikacji padl” — „martwy” przelacza reszte runu bez przegladarki
+    // (inaczej kazda kolejna faza dawalaby FAIL na tym samym padzie). Poza required: stany i odpowiedzi sprzed P14.
+    serwerE2e: { type: 'string', enum: ['dziala', 'martwy', 'nie-dotyczy'], description: 'stan serwera E2E po fixie: dziala / martwy (start po padzie nieudany) / nie-dotyczy' },
     plikiBinarne: {
       type: 'array',
       items: { type: 'string' },
@@ -640,8 +643,11 @@ KLASYFIKUJ kazdy finding przed naprawa:
   w "Do poprawy". Po fix NIE ma re-review, wiec nikt inny go nie odznaczy, a completion-gate
   (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.
   ${srodowiskoE2E === 'gotowe'
-    ? `Finding "serwer aplikacji padl" (kod fazy polozyl serwer): po naprawie uruchom serwer od nowa — \`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
-  (Bash z timeout 600000, jedno wywolanie; status "gotowe" = mozna odgrywac) — i dopiero wtedy odegraj scenariusz.
+    ? `Finding "serwer aplikacji padl" (kod fazy polozyl serwer): po probie naprawy — takze gdy naprawa sie nie udala — uruchom
+  serwer od nowa: \`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\` (Bash z timeout 600000, jedno wywolanie).
+  Status "gotowe" -> odegraj scenariusz i zwroc serwerE2e: "dziala". Inny status -> przenies scenariusze tej fazy na reczne
+  poleceniem nizej z przyczyna srodowisko i zwroc serwerE2e: "martwy" (orkiestrator puszcza reszte runu bez przegladarki).
+  Bez findingu "serwer aplikacji padl" zwroc serwerE2e: "nie-dotyczy".
   Ponowne odegranie niewykonalne nie z winy kodu (aplikacja nie odpowiada, limit uslugi zewnetrznej, popup OAuth) ->`
     : `SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE (${srodowiskoE2E}): przyczyne napraw (kod, seed), ale scenariusza nie odgrywaj ->`}
   przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna <srodowisko|limit-zewnetrzny|harness> --powod "<co naprawiles i dlaczego recznie>"\`
@@ -1634,6 +1640,10 @@ for (const numerFazy of kolejka) {
     cykle = 1
     fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2 }
     log(`Fix fazy ${numerFazy}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
+    if (fix.serwerE2e === 'martwy') {
+      srodowiskoE2E = 'martwe'
+      log(`Faza ${numerFazy}: serwer E2E nie wstal po padzie (fix) — scenariusze na [Manual], do konca runu tester bez przegladarki`)
+    }
 
     // Guard plikow binarnych PRZED gate'em walidacji: uszkodzony plik zrodlowy jest PRZYCZYNA,
     // a typecheck/testy failuja wtornie — na "walidacja FAIL" operator szuka defektu logiki zamiast
