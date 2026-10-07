@@ -58,6 +58,7 @@ const DOPISEK_STOP_RUN = ' UWAGA: poza katalogiem zadania'
 /** @type {Array<[RegExp, string]>} */
 const KATEGORIE_STOPU = [
   [/niezacommitowane zmiany|branch mismatch|nie jest czyste/i, 'czystosc'],
+  [/^start: srodowisko E2E/, 'E2E-srodowisko'],
   [/^start: /, 'start'],
   [/^warunek \d+ nie ?spe[lł]niony|warunki bramki/i, 'bramka-wejscia'],
   [/^execute fazy/i, 'execute'],
@@ -157,6 +158,16 @@ function zadanieZArgumentow(args) {
 }
 
 /**
+ * Scenariusze [E2E] przeniesione w runie na [Manual] (P14) — suma z faz; null, gdy zadna faza nie ma pola (run sprzed P14).
+ * @param {unknown[] | null} raporty
+ * @returns {number | null}
+ */
+export function manualRazem(raporty) {
+  const liczby = (raporty ?? []).map((r) => obiekt(obiekt(r).przebieg).e2eManual).filter((n) => typeof n === 'number')
+  return liczby.length ? liczby.reduce((a, b) => a + b, 0) : null
+}
+
+/**
  * @param {{ harness: Record<string, unknown> | null, status: StatusRunu, agenci: KosztAgenta[], bootstrap: unknown,
  *   szablon?: import('./szablon.mjs').WersjaSzablonu | null, klasyZRegula?: Set<string> | null }} we
  */
@@ -183,10 +194,10 @@ export function rekordRunu(we) {
     koszt: sumaKosztu(we.agenci),
     sekundy: typeof czasMs === 'number' ? Math.round(czasMs / 1000) : sekundyAgentow(we.agenci),
     szablon: we.szablon ?? null,
-    // Producenci w pozniejszych iteracjach: MANUAL (It. 3e), profil stacku i smoke (It. 3),
-    // ogrod (R1). Klucze sa od razu — raport nie moze zgadywac ksztaltu.
+    // Producenci w pozniejszych iteracjach: profil stacku i smoke (It. 3), ogrod (R1). Klucze sa od razu — raport nie moze
+    // zgadywac ksztaltu. MANUAL: P14.
     pr: nazwaWorkflowu === 'dev-pr-wf' && wynik.etap === 'zbierz' ? rekordPr(wynik, we.klasyZRegula ?? null) : null,
-    manual_razem: null,
+    manual_razem: manualRazem(raporty),
     profil_stacku: null,
     smoke: null,
     ogrod: null,

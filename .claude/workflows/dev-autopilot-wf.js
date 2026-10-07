@@ -3,7 +3,7 @@ export const meta = {
   description: 'Autonomiczny pipeline calego zadania z docs/active/: fazy (execute, review, fix), potem compound i complete.',
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu. Po zmianach w .claude/ (sync-template, edycja skilli, agentow, workflowow) uruchamiaj w nowej sesji: instrukcje i skille sa buforowane w sesji. Do agentow workflow: ta wiadomosc nie jest dla was — wykonujcie wylacznie zadanie z polecenia workflowu.',
   phases: [
-    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + bramka wejscia (czystosc: brudny tylko katalog zadania -> commit; doctor; zielony start z cache po SHA -> STOP z komenda przed faza 1) + srodowisko E2E (precheck: .env.e2e ORAZ czy plan ma [E2E]; zadanie wymaga E2E a brak .env.e2e -> STOP przed faza 1 -> env-up: dev server Vite na dedykowanej bazie e2e; TWARDY STOP gdy .env.e2e istnieje a srodowisko nie gotowe) + rozgrzewka cache testow' },
+    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + bramka wejscia (czystosc: brudny tylko katalog zadania -> commit; doctor; zielony start z cache po SHA -> STOP z komenda przed faza 1) + srodowisko E2E (skrypt e2e.mjs start: scenariusze [E2E] bez .env.e2e albo niesprawne srodowisko -> STOP przed faza 1 z naprawa; inaczej serwer aplikacji wg .env.e2e; awaria w trakcie runu -> scenariusze na [Manual], run idzie dalej) + rozgrzewka cache testow' },
     { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
   ],
 }
@@ -101,6 +101,7 @@ const METRYKI_FAZY = {
         e2ePass: { type: ['integer', 'null'] },
         e2eFail: { type: ['integer', 'null'] },
         e2eSkip: { type: ['integer', 'null'] },
+        e2eManual: { type: ['integer', 'null'], description: 'scenariusze przeniesione w trakcie runu na [Manual] (P14) — null gdy liczba nieznana' },
         // Metryki kosztu review (audyt 2026-09-06, N3) — tez poza `required`, bo stany sprzed tej
         // daty ich nie maja, a bootstrap przepisuje stan 1:1 przez ten schemat. Bez nich progi
         // "efekt dossier" i "batchowanie sceptykow" byly niemierzalne: `additionalProperties: false`
@@ -276,33 +277,26 @@ const WARMUP_RESULT = {
   required: ['status', 'detal'],
 }
 
-// Precheck: TANI, deterministyczny sygnal opt-in — oddzielony od ciezkiego env-up, zeby flake ciezkiego
-// agenta na projekcie opt-in NIE degradowal cicho E2E (patrz orkiestracja).
-// Precheck czyta DWA niezalezne sygnaly: czy repo MA srodowisko (.env.e2e) i czy zadanie go WYMAGA
-// (checkboxy [E2E] w planie). Sam plik to za malo — brak setupu bylby nieodrozanialny od swiadomej
-// rezygnacji (regresja e3-core-loop, mobile: run przejechal 3 fazy i ~20h zanim ktokolwiek zauwazyl,
-// ze scenariusze [E2E] nie maja gdzie sie wykonac).
-const E2E_PRECHECK = {
+// Srodowisko E2E na starcie (P14): jeden agent uruchamia `e2e.mjs start` i przepisuje jego JSON. Decyzje (STOP albo dalej)
+// liczy JS w `decyzjaSrodowiskaE2e`. Wczesniej dwa agenty: precheck (haiku) i env-up (opus) z przepisem srodowiska w prompcie.
+const E2E_START = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    istnieje: { type: 'boolean', description: 'true = plik .env.e2e istnieje w korzeniu repo (srodowisko E2E skonfigurowane)' },
-    zadanieWymagaE2E: { type: 'boolean', description: 'true = plan zadania ma co najmniej jeden NIEZAZNACZONY checkbox z markerem [E2E] (zadanie deklaruje E2E jako deliverable)' },
-    liczbaScenariuszy: { type: 'integer', description: 'ile niezaznaczonych checkboxow [E2E] znaleziono w planie zadania (0 gdy zadnego)' },
+    status: { type: 'string', enum: ['pominieto', 'brak-srodowiska', 'niepowodzenie', 'gotowe'] },
+    scenariusze: { type: 'integer', description: 'niezaznaczone scenariusze [E2E] zadania' },
+    figmaScreens: { type: 'boolean' },
+    envE2e: { type: 'boolean', description: 'czy repo ma .env.e2e' },
+    bazaE2e: { type: 'boolean', description: 'czy projekt ma baze e2e (Supabase) — wtedy db-sync per faza' },
+    serwer: { type: 'string', enum: ['uruchomione', 'zastane', 'brak'] },
+    url: { type: ['string', 'null'] },
+    log: { type: ['string', 'null'] },
+    bledy: { type: 'array', items: { type: 'string' } },
+    detal: { type: 'string' },
+    naprawa: { type: 'string' },
     stanZapisany: POLE_STANU,
   },
-  required: ['istnieje', 'zadanieWymagaE2E', 'liczbaScenariuszy', 'stanZapisany'],
-}
-
-const E2E_ENV_RESULT = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    status: { type: 'string', enum: ['gotowe', 'pominieto', 'niepowodzenie'] },
-    detal: { type: 'string', description: 'co postawiono / powod pominiecia lub niepowodzenia (BEZ wartosci sekretow)' },
-    devServer: { type: 'string', enum: ['uruchomione', 'zastane', 'brak'], description: 'dev server Vite na dedykowanej bazie e2e' },
-  },
-  required: ['status', 'detal', 'devServer'],
+  required: ['status', 'scenariusze', 'figmaScreens', 'envE2e', 'bazaE2e', 'serwer', 'url', 'log', 'bledy', 'detal', 'naprawa', 'stanZapisany'],
 }
 
 const E2E_DB_SYNC_RESULT = {
@@ -530,54 +524,12 @@ ${BLOK_DLUGIE_KOMENDY}
 Poza wyjatkiem z kroku 2 NIE modyfikuj zadnych plikow. Zwroc {status, detal, czasZimnySek, czasKontrolnySek}.`
 }
 
-function e2ePrecheckPrompt(sciezka) {
-  return `Jestes precheck-agentem E2E pipeline'u dev-autopilot. Zadanie: zebrac DWA niezalezne sygnaly.
-NIE interpretuj ich i NIE wyciagaj wnioskow — decyzje podejmuje orkiestrator.
-
-1. CZY SRODOWISKO ISTNIEJE: \`test -f "$(git rev-parse --show-toplevel)/.env.e2e" && echo TAK || echo NIE\`.
-   TAK -> istnieje:true, NIE -> istnieje:false. NIE czytaj zawartosci pliku (sekrety).
-
-2. CZY ZADANIE WYMAGA E2E: \`grep -hE '^- \\[ \\].*\\[E2E\\]' ${sciezka}/*-zadania.md | grep -vcE 'Operator:|\\[P[123]\\]'\`
-   (brak trafien = 0 — grep konczy sie wtedy kodem 1, to NIE jest blad). Marker [E2E] oznacza scenariusz,
-   ktory ma byc wykonany w przegladarce (agent-browser) na zarzadzanym srodowisku. Liczysz WYLACZNIE
-   niezaznaczone \`- [ ]\`; pozycje juz odhaczone, pozycje z markerem [Manual] (swiadomie recznie przez
-   operatora), kopie z prefiksem "Operator:" w sekcjach "## Operator checklist faza N" oraz pozycje findingow
-   z tokenem [P1]/[P2]/[P3] w sekcjach "## Do poprawy po review fazy N" (linie zrodlowe z planu nigdy go
-   nie maja) sie NIE licza.
-   Wynik -> liczbaScenariuszy; zadanieWymagaE2E = (liczbaScenariuszy > 0).
-
-Zwroc {istnieje, zadanieWymagaE2E, liczbaScenariuszy}. Nic wiecej nie rob.`
-}
-
-function e2eEnvUpPrompt() {
-  return `Jestes agentem srodowiska E2E pipeline'u dev-autopilot. Postaw dev server Vite na DEDYKOWANEJ
-bazie e2e, zeby reviewer E2E (agent-browser) i fix mogly REALNIE wykonac flow w przegladarce zamiast
-klasyfikowac je jako OPERATOR. Baza = DEDYKOWANY projekt Supabase e2e z .env.e2e (nigdy dev/prod).
-${BLOK_DLUGIE_KOMENDY}
-
-0. SELF-SKIP: jesli w korzeniu repo NIE ma pliku .env.e2e -> zwroc
-   {status:"pominieto", detal:"brak .env.e2e — E2E w trybie OPERATOR (setup: .claude/templates/e2e-env/README.md)", devServer:"brak"}
-   i ZAKONCZ.
-
-1. BEZPIECZENSTWO (twarde):
-   a) \`git check-ignore -q .env.e2e\` — exit != 0 (plik NIE jest gitignorowany) -> {status:"niepowodzenie",
-      detal:"dopisz .env.e2e do .gitignore — plik zawiera sekrety"}. NIGDY nie loguj wartosci z tego pliku.
-   b) Wymagane klucze: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, SUPABASE_E2E_DB_URL,
-      SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD. Brak -> niepowodzenie z LISTA NAZW brakow.
-   c) GUARD TOZSAMOSCI: VITE_SUPABASE_URL z .env.e2e musi byc ROZNY od wartosci w .env / .env.local
-      (jesli istnieja). Identyczny = to nie jest dedykowany projekt e2e -> niepowodzenie (ochrona bazy dev/prod).
-
-2. DEV SERVER: \`curl -s localhost:5173\` (lub port z vite.config / skryptu dev).
-   - Odpowiada -> devServer:"zastane"; w detal ostrzezenie: zastany dev server moze byc zbudowany na
-     bazie dev (innym .env) — flow E2E zweryfikuja to posrednio (login kontem e2e).
-   - Nie odpowiada -> uruchom DETACHED (musi przezyc Twoje zakonczenie; pm z lockfile:
-     bun.lockb->bun, pnpm->pnpm, yarn->yarn, npm->npm). Vite laduje .env.e2e przez flage --mode e2e:
-     \`nohup <pm> run dev -- --mode e2e --port 5173 --strictPort > /tmp/autopilot-vite.log 2>&1 & echo $! > /tmp/autopilot-vite.pid\`
-     (gdy skrypt dev nie przepuszcza flag — \`nohup <pm> exec vite --mode e2e --port 5173 --strictPort ...\`).
-     Polluj \`curl -s localhost:5173\` co ~5s (max ~90s). Sukces -> devServer:"uruchomione",
-     timeout -> niepowodzenie (dolacz tail -20 /tmp/autopilot-vite.log do detal).
-
-3. status "gotowe" TYLKO gdy: dev server odpowiada na localhost:5173. Nie modyfikuj plikow repo.`
+function e2eStartPrompt(sciezka) {
+  return `Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik:
+\`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
+Skrypt sprawdza, czy zadanie potrzebuje przegladarki, sprawdza .env.e2e i uruchamia serwer aplikacji w tle. Kod wyjscia 1 to wynik
+(STOP liczy orkiestrator), nie blad do naprawy. Ostatnia linia stdout to JSON — zwroc jego pola 1:1. Plikow repo nie zmieniasz
+(poza zapisem stanu, jesli polecenie go zawiera).`
 }
 
 function e2eDbSyncPrompt(sciezka, numerFazy) {
@@ -588,7 +540,8 @@ NIGDY nie loguj wartosci sekretow z .env.e2e.
 ${BLOK_DLUGIE_KOMENDY}
 
 1. Wczytaj SUPABASE_E2E_DB_URL i SUPABASE_E2E_SERVICE_ROLE_KEY z .env.e2e (do uzycia, nie do logu).
-2. MIGRACJE — realny apply: \`supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all\`
+2. MIGRACJE — najpierw \`node .claude/scripts/e2e/e2e.mjs suma\`: kod 1 = migracja z sumy zmieniona albo usunieta ->
+   status "niepowodzenie" z trafieniami w detal, bez db push (zmieniona wypchnieta migracja nie trafia do bazy e2e). Potem realny apply: \`supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all\`
    (non-interactive: dodaj --yes jesli CLI wspiera, inaczej \`echo Y |\`). To pierwsza PRAWDZIWA
    weryfikacja SQL migracji w pipeline (testy migracji w repo to regex na pliku). Blad SQL ->
    status "niepowodzenie" z pelna trescia bledu w detal — to moze byc DEFEKT KODU migracji, nie infra.
@@ -613,11 +566,8 @@ Zwroc {status, detal}: "zsynchronizowano" (cos zaaplikowano), "aktualna" (nic do
 }
 
 function e2eEnvDownPrompt() {
-  return `Sprzatanie srodowiska E2E dev-autopilot. Zabij WYLACZNIE procesy uruchomione przez pipeline:
-1. Jesli istnieje /tmp/autopilot-vite.pid: \`kill $(cat /tmp/autopilot-vite.pid)\` (ignoruj blad gdy
-   proces juz nie zyje), potem usun /tmp/autopilot-vite.pid i /tmp/autopilot-vite.log.
-   Dev server "zastany" (brak naszego .pid) zostaw w spokoju — nie nalezy do nas.
-Zwroc {posprzatano, detal}.`
+  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop\` (zatrzymuje wylacznie serwer uruchomiony
+przez start — plik PID; serwer zastany zostaje). Zwroc {posprzatano, detal} z JSON-a skryptu.`
 }
 
 // Zwiniecie sekcji "Do poprawy" robi fix, ktory i tak edytuje plik zadan (P7; wczesniej osobny agent po fixie, plan B8).
@@ -631,7 +581,7 @@ do domkniecia zadania i do smoke'u operatora. Pozostale sekcje pliku, w tym "## 
 Plik zadan czytaja kolejne fazy, a pelna tresc findingow jest w raporcie review — w pliku zadan wystarczy slad cyklu fix.`
 }
 
-function fixPrompt(sciezka, numerFazy, otwarteFindingi) {
+function fixPrompt(sciezka, numerFazy, otwarteFindingi, srodowiskoE2E) {
   return `Jestes czescia pipeline'u dev-autopilot. Naprawiasz problemy z review fazy ${numerFazy}.
 WAZNE: to JEDYNY przebieg fix tej fazy — po nim NIE ma ponownego review. Twoj raport jest
 OSTATECZNYM zrodlem prawdy o stanie findingow, wiec klasyfikuj uczciwie czego nie zamknales.
@@ -684,7 +634,10 @@ KLASYFIKUJ kazdy finding przed naprawa:
   w "## Operator checklist faza ${numerFazy}". Po PASS odznacz TAKZE zrodlowy checkbox tej fazy
   w ${sciezka}/*-zadania.md — "- [ ] Test: [E2E] ..." lub "- [ ] Weryfikacja: [E2E] ..." — nie tylko pozycje
   w "Do poprawy". Po fix NIE ma re-review, wiec nikt inny go nie odznaczy, a completion-gate
-  (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.
+  (grep niezaznaczonych [E2E]) zatrzymalby run mimo realnego PASS.${srodowiskoE2E === 'gotowe' ? '' : `
+  SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE (${srodowiskoE2E}): przyczyne napraw (kod, seed), ale scenariusza NIE odgrywaj —
+  przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna srodowisko --powod "<co naprawiles — do odegrania recznie>"\`
+  (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.`}
 
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
@@ -1177,6 +1130,34 @@ function fazyUkonczone(fazy) {
   return fazy.filter((f) => f.execute === 'done' && f.review === 'done' && (f.fix === 'done' || f.fix === 'none')).length
 }
 
+// Srodowisko E2E (P14, PANEL-WEJSCIE §2 pkt 6). Na starcie niesprawne srodowisko = STOP przed faza 1 z naprawa ze skryptu
+// (wtedy jest najtaniej); w trakcie runu awaria srodowiska nie zatrzymuje runu — scenariusze ida na [Manual] z powodem,
+// a reszta runu idzie bez przegladarki (stawianie srodowiska od nowa kosztuje wiecej niz test reczny).
+// `wynik` = JSON `e2e.mjs start` od agenta albo null po dwoch probach.
+function decyzjaSrodowiskaE2e(wynik, sciezka) {
+  const swiezy = `Po naprawie swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`
+  if (!wynik) {
+    return {
+      stop: {
+        powod: 'start: srodowisko E2E — agent startu srodowiska zwrocil null 2x, wynik sprawdzenia nieznany',
+        naprawa: `Sprawdz recznie: \`node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}\`. Dwa nulle bez wywolan narzedzi to zwykle przeciazenie API (529), nie srodowisko — odczekaj kilkanascie minut. ${swiezy}`,
+      },
+      aktywne: false, srodowisko: 'brak', bazaE2e: false,
+    }
+  }
+  if (wynik.status === 'brak-srodowiska' || wynik.status === 'niepowodzenie') {
+    return { stop: { powod: `start: srodowisko E2E — ${wynik.detal}`, naprawa: `${wynik.naprawa} ${swiezy}` }, aktywne: false, srodowisko: wynik.status, bazaE2e: false }
+  }
+  const aktywne = wynik.status === 'gotowe' && wynik.serwer !== 'brak'
+  return { stop: null, aktywne, srodowisko: aktywne ? 'gotowe' : 'pominieto', bazaE2e: aktywne && wynik.bazaE2e }
+}
+
+// Bloker srodowiska wykryty w review (dev server, DNS bazy) przelacza srodowisko na `martwe` do konca runu: kolejne fazy
+// dostaja testera bez przegladarki, fix przenosi scenariusze na [Manual] zamiast je odgrywac, db-sync sie nie uruchamia.
+function srodowiskoPoReview(srodowisko, review) {
+  return review && review.blokerSrodowiska && review.blokerSrodowiska.wykryty ? 'martwe' : srodowisko
+}
+
 // Agent haiku wpisal raz Co-Authored-By w druga linie tematu (commit 2c97286, przeglad runow 19.09) — stopka bez pustej linii.
 function instrukcjaCommita(temat) {
   return `\`git commit -m "${temat}"\` — temat w jednej linii. Stopke (np. Co-Authored-By) dopisujesz wylacznie drugim \`-m\`: git oddziela ja wtedy pusta linia.`
@@ -1202,7 +1183,6 @@ if (!sciezka) {
 const historia = {}
 const raporty = []
 let kolejka
-let e2eEnv = null
 let stan = null
 // Stan fazy do zapisu (P7): tresc czekajaca na nastepnego agenta i tresc doklejona do jego polecenia.
 let stanDoZapisu = null
@@ -1231,6 +1211,7 @@ function skrotPrzebiegu(p) {
     e2ePass: p.e2ePass ?? null,
     e2eFail: p.e2eFail ?? null,
     e2eSkip: p.e2eSkip ?? null,
+    e2eManual: p.e2eManual ?? null,
     // Metryki kosztu review (audyt 2026-09-06, N3). Do tej pory review-wf je liczyl, ale ta funkcja
     // ich NIE przepisywala — a to ona decyduje, co wchodzi do stanu i do wpisu JSONL. Bez nich
     // telemetria pokazywala `dossier: undefined` we wszystkich fazach i progi 2 oraz pozycje A7/B4
@@ -1417,7 +1398,7 @@ if (wejscie.testyStartu) {
   if (d.cache) {
     stan.bazaZielona = d.cache
     log(`Bramka wejscia: zielony start (${testy.komenda}) na ${d.cache.sha}`)
-    // Zapisuje e2e:precheck (nastepny agent); STOP srodowiska E2E commituje katalog zadania, wiec swiezy run wezmie wynik z cache.
+    // Zapisuje e2e:start (nastepny agent); STOP srodowiska E2E commituje katalog zadania, wiec swiezy run wezmie wynik z cache.
     oznaczStan()
   }
 }
@@ -1487,63 +1468,24 @@ async function zapiszZaleglyStan() {
   await zapiszStan(tresc)
 }
 
-// Srodowisko E2E PRZED warmupem: tani gate (precheck + wczesne checki env-up) zatrzymuje run
-// zanim zaplacimy za rozgrzewke cache. Dev server Vite hot-reloaduje working tree, wiec stawiamy raz per run.
-//
-// BRAMKA OPT-IN (2026-06-16, regresja etap-11): status decyduje czy run leci dalej.
-//   'pominieto'     = brak .env.e2e I zadanie nie ma zadnego [E2E] -> projekt faktycznie nie chce E2E ->
-//                     degradacja do OPERATOR. Gdy zadanie MA [E2E], run nie dochodzi tutaj — zatrzymuje
-//                     go bramka setupu wyzej (brak srodowiska != swiadoma rezygnacja).
-//   'niepowodzenie' = .env.e2e ISTNIEJE, ale srodowisko nie gotowe
-//                     -> HARD STOP w bootstrapie, PRZED jakakolwiek faza (E2E nie znika cicho do OPERATOR).
-//   'gotowe'        = dev server Vite na dedykowanej bazie e2e -> E2E aktywne.
-//
-// PRECHECK: tani, deterministyczny sygnal opt-in ODDZIELONY od ciezkiego env-up. Bez niego flake env-up
-// (null) na projekcie opt-in degradowalby cicho E2E — a completion-gate wylapalby to dopiero na KONCU runu
-// (najdrozszy moment). Z precheckiem: opt-in potwierdzony -> null env-up = STOP, nie degradacja.
-const precheck = await agent(zeStanem(e2ePrecheckPrompt(sciezka)), { schema: E2E_PRECHECK, agentType: 'klasa-mechaniczny', label: 'e2e:precheck', phase: 'Bootstrap' })
-await potwierdzStan(precheck)
-const optIn = precheck ? precheck.istnieje : null // null = precheck padl (nie wiemy — env-up ma self-skip)
-
-// BRAMKA SETUPU (port z mobile, regresja e3-core-loop): zadanie DEKLARUJE scenariusze [E2E], a repo nie ma
-// srodowiska. Wczesniej ta kombinacja byla nieodrozanialna od "projekt nie chce E2E" i degradowala sie
-// cicho do OPERATOR — run jechal przez wszystkie fazy, a brak srodowiska wychodzil dopiero na
-// completion-gate, czyli po zaplaceniu za CALA prace. Teraz STOP przed faza 1, gdy jest najtaniej.
-if (optIn === false && precheck.zadanieWymagaE2E) {
-  return await stopRun({
-    powod: `zadanie deklaruje ${precheck.liczbaScenariuszy} scenariuszy [E2E], a repo nie ma .env.e2e — srodowisko E2E nie jest skonfigurowane. Run zatrzymany PRZED faza 1: bez srodowiska te scenariusze i tak nie zostana wykonane, a etap nie domknie sie na completion-gate.`,
-    naprawa: 'One-time setup wg .claude/templates/e2e-env/README.md (dedykowany projekt Supabase e2e, .env.e2e, gitignore, tryb --mode e2e w Vite, konto testowe). Swiadomy opt-out (scenariusz wykonasz recznie): przenies te pozycje do "Operator checklist" i zmien marker [E2E] na [Manual] w pliku zadania. Po setupie odpal SWIEZY run (te same args, BEZ resumeFromRunId).',
-    stan,
-  })
+// Srodowisko E2E PRZED warmupem (P14): jedno polecenie skryptu — czy zadanie potrzebuje przegladarki, sprawdzenie .env.e2e
+// (sekcja Doctor) i start serwera aplikacji. Scenariusze [E2E] przy niesprawnym srodowisku = STOP przed faza 1 z naprawa ze skryptu,
+// nigdy cicha degradacja do recznego. Agent zapisuje tez stan zalegly po bramce wejscia.
+let e2eStart = await agent(zeStanem(e2eStartPrompt(sciezka)), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start', phase: 'Bootstrap' })
+await potwierdzStan(e2eStart)
+if (!e2eStart) {
+  log('E2E start: agent zwrocil null — retry raz')
+  e2eStart = await agent(e2eStartPrompt(sciezka), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start:retry', phase: 'Bootstrap' })
 }
-
-if (optIn !== false) {
-  // Opt-in TAK lub nieznany -> odpal env-up (ma wlasny self-skip gdy .env.e2e faktycznie nie ma).
-  e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'e2e:env-up', phase: 'Bootstrap' })
-  if (!e2eEnv && optIn === true) {
-    // Opt-in POTWIERDZONY przez precheck, a ciezki env-up padl -> jeden retry (infra hiccup bywa przejsciowy).
-    log('E2E env-up: agent zwrocil null przy potwierdzonym .env.e2e — retry raz')
-    e2eEnv = await agent(e2eEnvUpPrompt(), { schema: E2E_ENV_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'e2e:env-up:retry', phase: 'Bootstrap' })
-    if (!e2eEnv) {
-      // Drugi null przy potwierdzonym opt-in -> STOP (nie degraduj cicho, jak przy 'niepowodzenie').
-      return await stopRun({
-        powod: 'E2E env-up zwrocil null 2x przy istniejacym .env.e2e (projekt opt-in E2E) — nie degraduje cicho do OPERATOR. To infra/agent hiccup, nie brak setupu.',
-        naprawa: 'Sprawdz srodowisko (dev server Vite / port 5173 / baza e2e) i odpal SWIEZY run (te same args, BEZ resumeFromRunId). UWAGA: dwa nulle POD RZAD bez zuzytych tokenow i bez wywolan narzedzi to zwykle przeciazenie API (529 Overloaded), a nie problem srodowiska — wtedy natychmiastowe ponawianie tylko doklada ruchu. Odczekaj kilkanascie minut albo odpal run przez `/loop <interwal> /dev-autopilot-wf <sciezka>`.',
-        stan,
-      })
-    }
-  }
+const srodowiskoStartu = decyzjaSrodowiskaE2e(e2eStart, sciezka)
+log(`E2E start: ${e2eStart ? `${e2eStart.status} (serwer: ${e2eStart.serwer}, scenariusze: ${e2eStart.scenariusze}) — ${e2eStart.detal}` : 'agent zwrocil null 2x'}`)
+if (srodowiskoStartu.stop) {
+  return await stopRun({ ...srodowiskoStartu.stop, e2eStart, stan })
 }
-log(`E2E env: ${e2eEnv ? `${e2eEnv.status} (devServer: ${e2eEnv.devServer}) — ${e2eEnv.detal}` : `pomijam E2E (${optIn === false ? 'brak .env.e2e, a zadanie nie deklaruje zadnego scenariusza [E2E] — projekt nie opt-in' : 'precheck padl i env-up null — infra'})`}`)
-if (e2eEnv && e2eEnv.status === 'niepowodzenie') {
-  return await stopRun({
-    powod: `Srodowisko E2E nie gotowe, a .env.e2e istnieje (projekt wymaga E2E): ${e2eEnv.detal}`,
-    naprawa: 'Setup: .claude/templates/e2e-env/README.md. Najczestsze braki = niepoprawne klucze VITE_*/SUPABASE_E2E_* w .env.e2e, brak dedykowanego projektu Supabase e2e (guard tozsamosci: VITE_SUPABASE_URL musi sie ROZNIC od .env), albo zajety port 5173. Opt-out swiadomego runu headless: usun/zmien nazwe .env.e2e I zdejmij markery [E2E] z planu zadania (bramka setupu czyta plan). Po setupie odpal SWIEZY run (te same args, BEZ resumeFromRunId — resume zwrociloby zcache\'owana porazke env-up; stan faz wznowi sie z .autopilot-state.json).',
-    e2eEnv,
-    stan,
-  })
-}
-const e2eAktywne = !!e2eEnv && e2eEnv.status === 'gotowe'
+// Srodowisko w runie: 'gotowe' | 'pominieto' | 'martwe' (awaria w trakcie — srodowiskoPoReview); review-wf daje testerowi
+// przegladarke tylko przy 'gotowe'.
+let srodowiskoE2E = srodowiskoStartu.srodowisko
+const bazaE2e = srodowiskoStartu.bazaE2e
 
 // Filar 1: rozgrzewka cache vitest — PO bramce E2E (tani gate first). Self-skip gdy brak vitest; warm = sekundy.
 // Chroni tez walidacje koncowa przy pustej kolejce (np. resume po ukonczonych fazach na zimnej maszynie).
@@ -1610,7 +1552,7 @@ for (const numerFazy of kolejka) {
     // przyrostowy — brak nowych migracji = no-op). Niepowodzenie nie blokuje review:
     // tester E2E trafi na brak danych i sklasyfikuje OPERATOR, a detal (np. blad SQL
     // migracji = potencjalny defekt kodu!) zostaje w logu i raporcie fazy dla operatora.
-    if (e2eAktywne) {
+    if (srodowiskoE2E === 'gotowe' && bazaE2e) {
       e2eSync = await agent(e2eDbSyncPrompt(sciezka, numerFazy), { schema: E2E_DB_SYNC_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `e2e:db-sync:faza-${numerFazy}` })
       log(`E2E db-sync fazy ${numerFazy}: ${e2eSync ? `${e2eSync.status} — ${e2eSync.detal}` : 'agent zwrocil null'}`)
     }
@@ -1625,7 +1567,7 @@ for (const numerFazy of kolejka) {
       // Status srodowiska przegladarkowego (2026-07-30): routing v2 sam z diffu NIE wie, czy przegladarka
       // stoi, wiec w runie rownolegle-joby (faza 1) przywolal testera przy e2eSrodowisko: "pominieto"
       // — wynik 1 passed / 1 failed / 3 skipped. Z tym sygnalem review-wf da mu tryb bez przegladarki.
-      srodowiskoE2E: e2eAktywne ? 'gotowe' : (e2eEnv ? e2eEnv.status : 'brak'),
+      srodowiskoE2E,
     })
     if (!review) {
       return await stopRun({ powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
@@ -1639,47 +1581,15 @@ for (const numerFazy of kolejka) {
         faza: numerFazy, findings: review.findings, raporty,
       })
     }
-    // BLOKER SRODOWISKA wykryty po SYGNATURZE w opisach findingow (review-wf liczy to w JS, bez LLM).
-    // Bez tego run ciagnal kolejne fazy na trwale zepsutym srodowisku, a kazdy nastepny scenariusz padal
-    // z tego samego powodu — operator dowiadywal sie dopiero na completion-gate, po godzinach pracy
-    // (run feedback-marcin-poprawki, mobile: 5 faz na zepsutej binarce). Review ZOSTAJE zapisane (raport
-    // i sekcja "Do poprawy" sa juz na dysku), ale nie oznaczamy go jako done: findingi E2E powstaly na
-    // zepsutym srodowisku, wiec po naprawie faza wymaga powtorki.
+    // Awaria E2E w trakcie runu (P14, PANEL-WEJSCIE §2 pkt 6) nie zatrzymuje runu. Review-wf przeniosl juz scenariusze fazy
+    // na [Manual] z powodem (skrypt ksiegowania): bloker srodowiska -> przyczyna srodowisko, pad testera -> tester-padl.
+    // Po blokerze reszta runu idzie bez przegladarki: ponowne stawianie srodowiska kosztuje wiecej niz test reczny.
+    srodowiskoE2E = srodowiskoPoReview(srodowiskoE2E, review)
     if (review.blokerSrodowiska && review.blokerSrodowiska.wykryty) {
-      const b = review.blokerSrodowiska
-      // Utrwal to, co review JUZ ustalilo o kodzie (audyt 2026-09-02, pozycja A2). Dotad ta galaz
-      // wychodzila przed zapisem metryk, wiec STOP na blokerze zostawial w stanie i telemetrii `null`
-      // zamiast licznikow — praca 8 reviewerow znikala. `faza.review` CELOWO zostaje `pending`:
-      // findingi E2E powstaly na zepsutym srodowisku i po naprawie wymagaja powtorki.
-      faza.otwarteFindingi = polaczFindingiPoPowtorce(otwartePoReview(review.findings), findingiPrzedPowtorka)
-      faza.metryki = { liczniki: policzFindingi(review.findings), przebieg: skrotPrzebiegu(review.przebieg) }
-      oznaczStan()
-      return await stopRun({
-        powod: `Faza ${numerFazy}: scenariusz E2E padl na BLOKERZE SRODOWISKA (${b.klasa}), nie na defekcie kodu. Dowod z outputu: "${b.dowod}". Kazdy kolejny scenariusz padlby tak samo, wiec zatrzymuje run zamiast ciagnac go na zepsutym srodowisku.`,
-        naprawa: b.klasa === 'dev-server-nieosiagalny'
-          ? 'Dev server Vite jest nieosiagalny — padl w trakcie runu albo port sie nie zgadza. Sprawdz /tmp/autopilot-vite.log (tail -30) i czy port 5173 jest wolny (`lsof -ti:5173`). Potem SWIEZY run (te same args, BEZ resumeFromRunId) — env-up postawi dev server od nowa, a review tej fazy powtorzy sie na sprawnym srodowisku.'
-          : 'Host z .env.e2e nie rozwiazuje sie w DNS — najczesciej projekt Supabase e2e jest SPAUZOWANY (free tier usypia po tygodniu) albo URL w .env.e2e jest bledny. Odpauzuj/zweryfikuj projekt w dashboardzie Supabase, sprawdz VITE_SUPABASE_URL i SUPABASE_E2E_DB_URL, potem SWIEZY run (te same args, BEZ resumeFromRunId).',
-        faza: numerFazy, blokerSrodowiska: b, raporty,
-      })
+      log(`Faza ${numerFazy}: srodowisko E2E padlo w trakcie runu (${review.blokerSrodowiska.klasa}): "${review.blokerSrodowiska.dowod}". Scenariusze fazy na [Manual] z powodem; do konca runu tester bez przegladarki.`)
     }
-    // TESTER E2E PADL 2x przy checkboxach [E2E] (review-wf zwraca e2eTesterFail). Raport i sekcje sa na dysku
-    // (checkboxy [E2E] zostaly [ ] + kopie w Operator checklist), ale review NIE jest done: bez przebiegu
-    // w przegladarce faza z E2E nie ma dowodu, a cicha degradacja do OPERATOR to dokladnie regresja etap-11/12b.
-    // (po blokerze srodowiska: bloker to konkretniejsza diagnoza z instrukcja naprawy; oba zostawiaja review pending)
     if (review.e2eTesterFail) {
-      // Utrwal dorobek reviewerow, tak samo jak galaz blokera srodowiska (audyt 2026-09-06, N2).
-      // Do tej pory ta sciezka robila samo `zapiszStan()`: metryki i findingi zostawaly w pamieci runu
-      // i ginely razem z nim, wiec pad TESTERA kasowal ocene KODU, ktora z przegladarka nie miala nic
-      // wspolnego — ta sama szkoda, ktora plan A2 naprawil, ale tylko dla blokera srodowiska.
-      // `faza.review` zostaje `pending` (bez przebiegu w przegladarce faza z E2E nie ma dowodu).
-      faza.otwarteFindingi = polaczFindingiPoPowtorce(otwartePoReview(review.findings), findingiPrzedPowtorka)
-      faza.metryki = { liczniki: policzFindingi(review.findings), przebieg: skrotPrzebiegu(review.przebieg) }
-      oznaczStan()
-      return await stopRun({
-        powod: `Faza ${numerFazy}: tester E2E (agent-browser) ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} przy ${review.przebieg && review.przebieg.e2eLiczbaZnana ? `${review.przebieg.e2eCheckboxy} checkboxach [E2E]` : 'nieznanej liczbie checkboxow [E2E] (dossier tez nie powstalo — szukaj 529/watchdoga, nie przegladarki)'}. Nie degraduje cicho do OPERATOR: review pozostaje pending.`,
-        naprawa: 'Sprawdz dev server Vite (port 5173, /tmp/autopilot-vite.log), agent-browser (`agent-browser doctor`) albo 529 Overloaded i odpal SWIEZY run (te same args, BEZ resumeFromRunId) — review tej fazy powtorzy sie z testerem. Jesli srodowisko stoi, a tester pada 2x na tym samym flow — flow prawdopodobnie wisi na powierzchni poza kontrola headless (popup OAuth, natywny dialog przegladarki): odegraj scenariusz recznie, zeby zobaczyc gdzie, i rozwaz [E2E] -> [Manual].',
-        faza: numerFazy, findings: review.findings, raporty,
-      })
+      log(`Faza ${numerFazy}: tester E2E ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} — scenariusze fazy na [Manual] (tester-padl), run idzie dalej`)
     }
     // Filar 3: liczniki/gate w JS z findings[]; liczniki scribe'a tylko do porownania w logu.
     const liczniki = policzFindingi(review.findings)
@@ -1708,7 +1618,7 @@ for (const numerFazy of kolejka) {
   // 3) FIX — bez re-review; gate z self-reportu + lista findingow przekazana wprost (md tylko jako widok).
   if (faza.fix === 'pending') {
     // Stan po review (fix pending) zapisuje agent fixa (P7).
-    const fix = await agent(zeStanem(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi)), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}` })
+    const fix = await agent(zeStanem(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi, srodowiskoE2E)), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}` })
     await potwierdzStan(fix)
     if (!fix) {
       return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
@@ -1847,10 +1757,10 @@ if (stan.zakonczenie.walidacja === 'pending') {
   oznaczStan()
 }
 
-// Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP
-// celowo zostawia dev server Vite zywy (operator debuguje na gotowym srodowisku; nasz .pid
-// pozwala nastepnemu runowi przejac lub ubic proces).
-if (e2eAktywne) {
+// Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP celowo zostawia serwer
+// zywy (operator debuguje na gotowym srodowisku; plik PID pozwala nastepnemu runowi przejac lub ubic proces).
+// Serwer uruchomiony przez start sprzatamy takze po awarii w trakcie runu (srodowisko 'martwe').
+if (e2eStart && e2eStart.serwer === 'uruchomione') {
   const down = await agent(zeStanem(e2eEnvDownPrompt()), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
   await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)
@@ -1968,7 +1878,7 @@ return {
   historia,
   raporty,
   walidacja: stan.walidacjaWynik || 'done w poprzednim runie',
-  e2eSrodowisko: e2eEnv ? e2eEnv.status : 'brak',
+  e2eSrodowisko: srodowiskoE2E,
   archiwum: complete && complete.archiwum,
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.

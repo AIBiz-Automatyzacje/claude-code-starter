@@ -28,17 +28,18 @@ function wytnij(kotwica, koniec) {
   return zrodlo.slice(start, stop + koniec.length)
 }
 
-/** @typedef {{ e2eStatus: string, e2ePrzebiegi: unknown[], e2eTesterFail: boolean, e2eWykonany: boolean }} PrzebiegScribe */
+/** @typedef {{ e2eStatus: string, e2eTryb: string, e2ePrzebiegi: unknown[], e2eTesterFail: boolean, e2eWykonany: boolean }} PrzebiegScribe */
 /** @type {{ scribePrompt: (sciezka: string, faza: number, potwierdzone: unknown[], przebieg: PrzebiegScribe, obalone: unknown[]) => string, BLOK_LIMIT_P3: string }} */
+// P14: scribe dostaje polecenie ksiegowania [E2E] z komendaKsiegowania (atrapa — kontrakt w e2e-manual.test.mjs).
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
-const { scribePrompt, BLOK_LIMIT_P3 } = new Function('przebiegBlok',
+const { scribePrompt, BLOK_LIMIT_P3 } = new Function('przebiegBlok', 'komendaKsiegowania',
   `${wytnij('function scribePrompt(', '\n}')}
    ${wytnij('const BLOK_LIMIT_P3 = `', '=== KONIEC BLOKU LIMITU P3 ===`')}
    return { scribePrompt, BLOK_LIMIT_P3 }`,
-)(() => '## Przebieg review')
+)(() => '## Przebieg review', () => 'node .claude/scripts/e2e/e2e.mjs ksieguj')
 
 /** @type {PrzebiegScribe} */
-const PRZEBIEG = { e2eStatus: 'pominiety', e2ePrzebiegi: [], e2eTesterFail: false, e2eWykonany: true }
+const PRZEBIEG = { e2eStatus: 'pominiety', e2eTryb: 'pominiety', e2ePrzebiegi: [], e2eTesterFail: false, e2eWykonany: true }
 const prompt = scribePrompt('docs/active/x', 4, [], PRZEBIEG, [])
 
 test('scribe: P3 typu KOD/TEST ida do known-issues, sekcja "## P3 faza N", dopisanie bez duplikatow', () => {

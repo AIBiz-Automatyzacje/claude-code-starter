@@ -18,6 +18,7 @@ import assert from 'node:assert/strict'
 
 import { wycinkiZadania } from '../../scripts/dossier/zadanie.mjs'
 import { sciezkaPlanu } from '../../scripts/dossier/dokumenty.mjs'
+import { liczE2e, scenariuszeFazy } from '../../scripts/e2e/scenariusze.mjs'
 import { KOMENDY_CLI } from '../../scripts/plan/walidacja-planu.mjs'
 import { zadanieZPlanu } from '../../scripts/plan/zadanie.mjs'
 
@@ -85,13 +86,14 @@ function sekcja(/** @type {string} */ md, /** @type {RegExp} */ naglowek) {
   return linie.slice(start, koniec === -1 ? undefined : koniec).join('\n')
 }
 
-const E2E_GREP = wzorzecZPromptu(autopilot, "CZY ZADANIE WYMAGA E2E: \\`grep -hE '", "'")
-const E2E_WYKLUCZENIA = wzorzecZPromptu(autopilot, "*-zadania.md | grep -vcE '", "'")
+// P14: start autopilota liczy scenariusze skryptem e2e.mjs (liczE2e), completion-gate i smoke operatora grepem z promptu.
+const E2E_GREP = wzorzecZPromptu(autopilot, "Grepnij zadanie: \\`grep -nE '", "'")
+const E2E_WYKLUCZENIA = wzorzecZPromptu(autopilot, "*-zadania.md | grep -vE '", "'")
 
-/** Linie liczone przez precheck, completion-gate i smoke operatora: grep E2E bez kopii Operator: i findingow. */
+/** Linie liczone przez completion-gate i smoke operatora: grep E2E bez kopii Operator: i findingow. */
 const liniaE2e = (/** @type {string} */ l) => E2E_GREP.test(l) && !E2E_WYKLUCZENIA.test(l)
 
-test('grepy E2E konsumentow sa te same w autopilocie (precheck, completion-gate) i w smoke operatora', () => {
+test('grepy E2E konsumentow sa te same w autopilocie (completion-gate) i w smoke operatora', () => {
   assert.equal(E2E_GREP.source, '^- \\[ \\].*\\[E2E\\]')
   assert.equal(E2E_WYKLUCZENIA.source, 'Operator:|\\[P[123]\\]')
   assert.ok(complete.includes(`grep -nE '^- \\\\[ \\\\].*\\\\[E2E\\\\]' docs/active/\${nazwaZadania}/*-zadania.md | grep -vE 'Operator:|\\\\[P[123]\\\\]'`))
@@ -136,14 +138,19 @@ test('planner: IU w zadaniach jako "### IU-K: nazwa (Delegate to)" pod swoja faz
 test('precheck E2E, completion-gate i smoke operatora: jedna linia [E2E] na scenariusz albo runner, kolumna 0', () => {
   // 2 scenariusze [E2E] (IU-2, IU-3) + runner e2e/run-all.sh; [E2E] w kopii Operator: i [Manual] nie licza sie
   assert.equal(zadania.split('\n').filter(liniaE2e).length, 3)
+  assert.equal(liczE2e(zadania), 3, 'start autopilota (e2e.mjs) liczy tak samo jak completion-gate')
   assert.equal(WYNIK.liczniki.e2e, 3)
   assert.doesNotMatch(zadania, /^[ \t]+- \[[ x]\]/m, 'wciety checkbox jest niewidoczny dla grepow ^- \\[ \\]')
 })
 
-test('scribe review-wf: regex bookkeepingu lapie wszystkie Weryfikacja: i Test: [E2E], sekcji "Do poprawy" nie ma', () => {
-  const bookkeeping = wzorzecZPromptu(review, 'pasujace do regex ', ' — oba prefiksy')
-  const trafione = zadania.split('\n').filter((l) => bookkeeping.test(l))
-  assert.equal(trafione.length, 4 + 2, '4 Weryfikacja: + 2 Test: [E2E]')
+// P14: linie [E2E] ksieguje skrypt e2e.mjs (scenariuszeFazy), Weryfikacja: bez markera klasyfikuje scribe — razem wszystkie
+// Weryfikacja: i Test: [E2E] (zmiana kontraktu: wczesniej jeden regex scribe'a).
+test('scribe review-wf: ksiegowanie obejmuje wszystkie Weryfikacja: i Test: [E2E], sekcji "Do poprawy" nie ma', () => {
+  assert.ok(review.includes('Linie z markerem [E2E] (Test: i Weryfikacja:) ksieguje sam skrypt'))
+  assert.ok(review.includes('Niezaznaczone linie "Weryfikacja:" BEZ markera [E2E] klasyfikujesz po tresci'))
+  const zeSkryptu = [1, 2].flatMap((f) => scenariuszeFazy(zadania, f))
+  const scribe = zadania.split('\n').filter((l) => /^- \[ \] Weryfikacja:/.test(l) && !/\[E2E\]/.test(l))
+  assert.equal(zeSkryptu.length + scribe.length, 4 + 2, '4 Weryfikacja: + 2 Test: [E2E]')
   assert.doesNotMatch(zadania, /^## Do poprawy po review fazy/m)
 })
 

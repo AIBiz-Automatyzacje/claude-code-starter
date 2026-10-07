@@ -11,7 +11,7 @@
 //                                                     przebiegi testera (JSON z stdin) -> linie [E2E] fazy w pliku zadan
 //   e2e.mjs manual --zadanie <dir> --faza N --flow <id> --przyczyna <przyczyna> --powod <tekst>
 //                                                     jeden flow na [Manual] (fix przy srodowisku niedostepnym w runie)
-//   e2e.mjs lista-manual --zadanie <dir>              pozycje przeniesione w runie na [Manual] (smoke operatora)
+//   e2e.mjs lista-manual --zadanie <dir>              pozycje przeniesione w trakcie runu na [Manual] (smoke operatora)
 // Wynik: JSON w jednej linii na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (STOP, porazka sumy, flow bez linii),
 // 2 = zle argumenty, 3 = wyjatek skryptu (JSON z polem wyjatek).
 

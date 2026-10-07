@@ -134,6 +134,11 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
    ktore same lub pozniejsza faza oznaczaja jako ZAMKNIETY/naprawione. Z OBU zrodel bierz WYLACZNIE wpisy
    opisujace zachowanie na ekranie/w przegladarce lub flow do recznego przejscia; notatki srodowiskowe, dane
    testowe i pulapki narzedziowe pomin.
+4b. Scenariusze [E2E] przeniesione w trakcie runu na [Manual] (srodowisko padlo, limit zewnetrzny, harness, pad testera — automat
+   ich nie wykonal): \`node .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/${nazwaZadania}\` (JSON: pozycje z faza,
+   tresc, przyczyna, powod). Sekcja "## E2E do odegrania recznie (srodowisko w trakcie runu)" na poczatku dokumentu, po czerwonych
+   flagach z (5): jeden checkbox na pozycje — scenariusz i oczekiwany stan z tresci linii, powod ("<przyczyna>: <powod>").
+   To nie jest czerwona flaga: run swiadomie oddal je czlowiekowi. W sekcjach ekranow ich nie powtarzaj.
 5. CZERWONA FLAGA: niezaznaczone checkboxy [E2E] (\`grep -nE '^- \\[ \\].*\\[E2E\\]' docs/active/${nazwaZadania}/*-zadania.md | grep -vE 'Operator:|\\[P[123]\\]'\`
    — ten sam grep co completion-gate autopilota; kopie "Operator:" w Operator checklist i pozycje findingow [P1]/[P2]/[P3] w "Do poprawy" nie sa scenariuszami;
    brak trafien = exit 1, to NIE blad). Rozdziel: linie z suffixem "(FAIL:" -> sekcja "## ⚠️ E2E przebieglo i padlo (znany defekt)" z odeslaniem

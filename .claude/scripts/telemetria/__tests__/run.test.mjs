@@ -4,7 +4,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { PROG_CISZY_MS, kategoriaStopu, rekordRunu, statusBezHarnessu, statusRunu } from '../run.mjs'
+import { PROG_CISZY_MS, kategoriaStopu, manualRazem, rekordRunu, statusBezHarnessu, statusRunu } from '../run.mjs'
 
 test('status z pliku harnessu: completed + wynik OK/STOP, killed, failed', () => {
   assert.deepEqual(statusRunu({ status: 'completed', result: { status: 'OK' } }), { status: 'OK', powod: null })
@@ -58,6 +58,7 @@ test('kategoria STOP-u z powodu — prawdziwe komunikaty autopilota', () => {
     'execute', 'dopisek stopRun o brudnym drzewie nie jest przyczyna STOP-u',
   )
   assert.equal(kategoriaStopu('start: doctor — WYNIK: BRAK obowiązkowych: gh'), 'start', 'bramka wejscia autopilota (P4)')
+  assert.equal(kategoriaStopu('start: srodowisko E2E — zadanie ma 2 scenariuszy [E2E], a repo nie ma .env.e2e'), 'E2E-srodowisko', 'STOP srodowiska na starcie (P14)')
   assert.equal(kategoriaStopu('start: testy na starcie galezi czerwone (abc1234): src/a.test.ts'), 'start')
   assert.equal(kategoriaStopu('niezacommitowane zmiany poza katalogiem zadania: src/a.ts'), 'czystosc')
   assert.equal(kategoriaStopu('cos nowego'), 'inne')
@@ -171,4 +172,10 @@ test('run.pr.rekomendacja z wyniku etapu zbierz (P5) — wartosc liczona w JS de
 test('run.pr tylko dla etapu zbierz — start, napraw, merge i autopilot maja pr = null', () => {
   const r = rekordRunu({ harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'napraw' } }, status: { status: 'OK', powod: null }, agenci: [], bootstrap: null })
   assert.equal(r.pr, null)
+})
+
+test('manual_razem (P14): suma e2eManual z faz; run sprzed P14 bez pola = null', () => {
+  assert.equal(manualRazem([{ przebieg: { e2eManual: 2 } }, { przebieg: { e2eManual: 0 } }, { przebieg: null }]), 2)
+  assert.equal(manualRazem([{ przebieg: { e2eSkip: 1 } }]), null)
+  assert.equal(manualRazem(null), null)
 })

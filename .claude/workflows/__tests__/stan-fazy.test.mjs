@@ -129,7 +129,7 @@ function liniaAgenta(etykieta) {
 }
 
 const NASTEPCY = [
-  ["'e2e:precheck'", 'E2E_PRECHECK'], ['`fix:faza-${numerFazy}`', 'FIX_RESULT'], ["'walidacja-koncowa'", 'VALIDATION_RESULT'],
+  ["'e2e:start'", 'E2E_START'], ['`fix:faza-${numerFazy}`', 'FIX_RESULT'], ["'walidacja-koncowa'", 'VALIDATION_RESULT'],
   ["'e2e:env-down'", 'E2E_DOWN_RESULT'], ["'compound-refresh'", 'REFRESH_RESULT'], ["'stop:commit-artefaktow'", 'COMMIT_ARTEFAKTOW'],
 ]
 
@@ -157,9 +157,10 @@ test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika
   assert.doesNotMatch(zrodlo, /await zapiszStan\(\)/)
   // 14 miejsc mapy minus execute (zapisuje domkniecie) plus STOP po execute, gdy domkniecie zapisalo juz stan „done”;
   // P8: minus STOP verify-fix (agent usuniety, K-6 kontroli fixa daje pozycje do poprawki zamiast STOP-u) = 13;
-  // P8 sesja 2: plus stan bez P3 po zapisie known-issues (stan sprzed P8, odlozP3ZeStanu) = 14
+  // P8 sesja 2: plus stan bez P3 po zapisie known-issues (stan sprzed P8, odlozP3ZeStanu) = 14;
+  // P14: minus dwa STOP-y E2E w trakcie runu (bloker srodowiska, pad testera) — scenariusze ida na [Manual], run idzie dalej = 12
   const kod = zrodlo.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')
-  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 14)
+  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 12)
   assert.equal(zrodlo.match(/label: 'stan:zapis'/g)?.length, 1)
 })
 

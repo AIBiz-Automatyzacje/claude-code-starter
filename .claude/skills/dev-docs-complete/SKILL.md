@@ -28,6 +28,7 @@ Datę do plików bierz z `date +%F`.
    2. scenariusze `[Manual]` z `*-zadania.md` i z planu technicznego (ścieżka w `Plan techniczny:`),
    3. findingi typu OPERATOR z `review-faza-*.md` (poza fix: natywne okna przeglądarki, fizyczne urządzenie, warunki środowiskowe),
    4. otwarte wpisy z `docs/active/$ARGUMENTS/known-issues.md` (jeśli istnieje) oraz otwarte `[P1]`/`[P2]` z `## Do poprawy po review fazy N`. Sekcje `## P3 faza N` w known-issues pomiń — nity zostają w known-issues (opis PR, bot), smoke ich nie sprawdza. „Otwarte" = poza sekcją `## Zamkniete`; gdy sekcji nie ma, pomiń wpisy, które same lub późniejsza faza oznaczają jako ZAMKNIĘTY/naprawione/zweryfikowane — ale jeśli zamknięto tylko bloker, a sama weryfikacja (np. przebieg E2E w przeglądarce) pozostała, wpisz ją jako checkbox do wykonania, nie jako „znany problem". Z obu źródeł bierz **wyłącznie** wpisy opisujące zachowanie na ekranie/urządzeniu lub flow do ręcznego przejścia; notatki środowiskowe (`.env.local`, projekt Supabase, restart dev servera), dane testowe i pułapki narzędziowe pomiń,
+   4b. scenariusze `[E2E]` przeniesione w trakcie runu na `[Manual]` (środowisko padło, limit zewnętrzny, harness, pad testera — automat ich nie wykonał): `node .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/$ARGUMENTS` (JSON: pozycje z fazą, treścią, przyczyną i powodem) → sekcja `## E2E do odegrania ręcznie (środowisko w trakcie runu)` na początku dokumentu, po czerwonych flagach; jeden checkbox na pozycję z powodem. To nie jest czerwona flaga — run świadomie oddał je człowiekowi; w sekcjach ekranów ich nie powtarzaj.
    5. **czerwona flaga:** niezaznaczone `[E2E]` (`grep -nE '^- \[ \].*\[E2E\]' docs/active/$ARGUMENTS/*-zadania.md | grep -vE 'Operator:|\[P[123]\]'` — ten sam grep co completion-gate autopilota; kopie `Operator:` w Operator checklist i pozycje findingów `[P1]/[P2]/[P3]` w „Do poprawy" nie są scenariuszami; brak trafień = exit 1, to nie błąd). Rozdziel: linie z suffixem `(FAIL:` → sekcja `## ⚠️ E2E przebiegło i padło (znany defekt)` z odesłaniem do known-issues (**nie** radź zmiany na `[Manual]` — ukryłaby znany defekt); pozostałe → `## ⚠️ E2E nieuruchomione`. Obie sekcje na początku dokumentu.
 
    **Hierarchia stanu i dedup** (źródła się nakładają — scribe review kopiuje każdy finding OPERATOR do `## Operator checklist faza N`, a `[Manual]` z IU też tam ląduje):
@@ -66,6 +67,9 @@ Datę do plików bierz z `date +%F`.
 
    ## ⚠️ E2E nieuruchomione   ← tylko gdy źródło (5) ma linie bez suffixu `(FAIL:`
    - [ ] [E2E] <treść checkboxa> — uruchom scenariusz przez testera agent-browser na środowisku `.env.e2e` albo wykonaj ręcznie i oznacz `[Manual]` w zadaniach
+
+   ## E2E do odegrania ręcznie (środowisko w trakcie runu)   ← tylko gdy źródło (4b) ma pozycje
+   - [ ] <scenariusz i oczekiwany stan z linii> — automat nie wykonał: <przyczyna>: <powód>
 
    ## 0. Przygotowanie (5 min)
    > ⚠️ Sprawdź projekt Supabase PRZED startem: `.env`/`.env.local` ma wskazywać projekt <GŁÓWNY/dev> (marker: nazwa projektu / pierwsze znaki ref), NIE środowisko E2E (<ref e2e>) — na e2e backend jest pusty.

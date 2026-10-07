@@ -30,6 +30,7 @@ test('compound-refresh nie skleja sie w compound', () => {
 test('ponowienie (:retry) wraca do swojej roli', () => {
   assert.equal(rola('review:e2e:retry'), 'review:e2e')
   assert.equal(rola('e2e:env-up:retry'), 'e2e:env-up')
+  assert.equal(rola('e2e:start:retry'), 'e2e:start')
   assert.equal(rola('stan:zapis:retry'), 'stan:zapis')
 })
 
@@ -61,6 +62,8 @@ test('stary run bez etykiet: rola z poczatku promptu', () => {
   assert.equal(klasyfikujPoPrompcie('Zapisz plik stanu docs/active/x/.autopilot-state.json'), 'stan:zapis')
   assert.equal(klasyfikujPoPrompcie('Adwersaryjnie OBAL ponizsze findingi'), 'verify-batch')
   assert.equal(klasyfikujPoPrompcie('cos zupelnie innego'), null)
+  assert.equal(klasyfikujPoPrompcie('Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik:\n`node .claude/scripts/e2e/e2e.mjs start --zadanie docs/active/x`'), 'e2e:start')
+  assert.equal(klasaRoli('e2e:start'), 'mechaniczny')
 })
 
 // P7: dossier liczy skrypt; zapasowy agent `dossier:zapas` (klasa mechaniczna) zastapil packagera `kontekst:diff`,

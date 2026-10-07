@@ -101,8 +101,13 @@ test('fix z commitem nieosiagalnym: pliki null i powod, faza nie ginie', () => {
   assert.equal(f.fix?.pliki_blad, 'bad object')
 })
 
-test('e2e z przebiegu, MANUAL jeszcze bez producenta', () => {
+test('e2e z przebiegu; przebieg sprzed P14 bez e2eManual = manual null', () => {
   assert.deepEqual(fazy()[0].e2e, { checkboxy: 4, pass: 3, fail: 0, skip: 1, manual: null })
+})
+
+test('e2e.manual (P14): scenariusze przeniesione w runie na [Manual] z przebiegu fazy', () => {
+  const wynik = { ...WYNIK_RUNU, raporty: WYNIK_RUNU.raporty.map((r, i) => (i === 0 ? { ...r, przebieg: { ...r.przebieg, e2eManual: 1 } } : r)) }
+  assert.equal(rekordyFaz({ wynikRunu: wynik, agenci: AGENCI, journal: new Map(), zmianyFixa: gitFake })[0].e2e.manual, 1)
 })
 
 test('sekundy fazy od pierwszego do ostatniego agenta', () => {

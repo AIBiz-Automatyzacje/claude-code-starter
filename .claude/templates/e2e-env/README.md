@@ -1,41 +1,56 @@
 # Środowisko E2E dla dev-autopilot (one-time setup Operatora)
 
 Po tym setupie autopilot **autonomicznie wykonuje testy E2E w przeglądarce** (agent-browser):
-stawia dev server Vite na dedykowanej bazie e2e, synchronizuje migracje+seedy per faza, a fail
-scenariusza wchodzi w pętlę fix jako finding P2 typ E2E.
+uruchamia serwer aplikacji według `.env.e2e`, synchronizuje migracje i seedy bazy e2e per faza, a fail
+scenariusza wchodzi w pętlę fix jako finding P2 typ E2E. Cały przepis uruchomienia siedzi w skrypcie
+`.claude/scripts/e2e/e2e.mjs` — autopilot, tester, fix i smoke operatora wołają ten sam skrypt.
 
-**Bramka opt-in:**
-- **Brak `.env.e2e`, a plan zadania NIE ma żadnego `[E2E]`** → projekt faktycznie nie chce E2E →
-  flow klasyfikowane jako OPERATOR, run leci dalej (status quo).
-- **Brak `.env.e2e`, ale plan zadania MA niezaznaczone `[E2E]`** → **TWARDY STOP w bootstrapie**,
-  przed fazą 1, z odesłaniem do tego README. Bez tej bramki kombinacja była nieodróżnialna od
-  świadomej rezygnacji i degradowała się cicho — run przejeżdżał cały plan, a brak środowiska
-  wychodził dopiero na completion-gate, czyli po zapłaceniu za całą pracę (regresja e3-core-loop
-  w szablonie mobile: 3 fazy, ~20 h, zanim ktokolwiek zauważył). Świadomy opt-out: przenieś pozycję
-  do `Operator checklist` i zmień marker `[E2E]` → `[Manual]`.
-  Oba sygnały czyta osobny, tani **precheck** (`test -f .env.e2e` + `grep '[E2E]'` w planie zadania),
-  oddzielony od ciężkiego env-up.
-- **`.env.e2e` istnieje, ale środowisko niegotowe** (np. złe klucze, zajęty port 5173) → autopilot
-  **TWARDO zatrzymuje run w bootstrapie** z gotową komendą naprawczą. Powód: gdy projekt opt-in'ował
-  się w E2E, ciche pominięcie = E2E znika z runu bez śladu. Świadomy run headless: usuń/zmień nazwę
-  `.env.e2e` **i** zdejmij markery `[E2E]` z planu — samo usunięcie pliku już nie wystarczy,
-  bo bramka setupu czyta plan zadania.
-- **env-up padł (null) przy potwierdzonym opt-in** → retry raz, drugi null = **STOP** (nie cicha degradacja
-  do OPERATOR — to infra hiccup, nie brak setupu).
+**Dwa przypadki (PANEL-WEJSCIE §2 pkt 6):**
+- **Środowisko niesprawne NA STARCIE** → **STOP w bootstrapie, przed fazą 1**, z komendą naprawy.
+  Dotyczy zadania z niezaznaczonymi `[E2E]`, gdy repo nie ma `.env.e2e` albo sprawdzenie pada (plik poza
+  `.gitignore`, brak kluczy bazy e2e, ta sama baza co dev, zmieniona wypchnięta migracja, niedziałający
+  agent-browser, serwer nie wstaje). Bez cichej degradacji: brak środowiska nie udaje świadomej rezygnacji.
+  Świadomy opt-out: zmień marker `[E2E]` → `[Manual]` w pliku zadań (scenariusz wykonasz w smoke'u operatora).
+- **Test niewykonalny W TRAKCIE runu** (serwer padł, limit usługi zewnętrznej, popup OAuth, tester nie dał
+  przebiegu) → linia `[E2E]` przechodzi na `[Manual]` z powodem `(MANUAL — <przyczyna>: <powód>)`,
+  **run idzie dalej**, pozycja trafia do smoke'u operatora (`docs/operator/…-smoke.md`). Po awarii serwera
+  reszta runu idzie bez przeglądarki — ponowne stawianie środowiska kosztuje więcej niż test ręczny.
+- Zadanie bez `[E2E]` i bez makiet `figma_screens` → środowisko pominięte, serwera nie uruchamiamy.
+
+Sprawdzenie bez startu (to samo, co robi bootstrap, plus stan serwera):
+`node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/<zadanie>`
+
+## Parametry `.env.e2e`
+
+Wszystkie opcjonalne — domyślnie dev server Vite na `http://localhost:5173`:
+
+| Klucz | Domyślnie | Znaczenie |
+|---|---|---|
+| `E2E_URL` | `http://localhost:5173` | adres aplikacji (tester, sonda zdrowia, port domyślnej komendy) |
+| `E2E_START` | `<pm> run dev -- --mode e2e --port <port z E2E_URL> --strictPort` | komenda startu serwera (pm z lockfile); dostaje zmienne z `.env.e2e` w środowisku |
+| `E2E_HEALTH` | `E2E_URL` | adres sondy zdrowia; odpowiedź < 500 = serwer działa |
+| `E2E_START_TIMEOUT` | `90` | sekundy na odpowiedź serwera po starcie |
+
+Baza e2e (projekt z katalogiem `supabase/` albo z kluczami `SUPABASE_E2E_*`) wymaga dodatkowo:
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_E2E_DB_URL`, `SUPABASE_E2E_SERVICE_ROLE_KEY`,
+`E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`. Guard tożsamości: `VITE_SUPABASE_URL` z `.env.e2e` musi się różnić od
+`.env` / `.env.local`. Projekt bez bazy e2e (np. serwis Node na wspólnym stagingu) ustawia tylko `E2E_URL`
+i `E2E_START`; db-sync wtedy się nie uruchamia. Wzór: `.claude/templates/e2e-env/.env.e2e.example`.
 
 ## Architektura
 
 ```
-Bootstrap:    precheck  — test -f .env.e2e? + grep '[E2E]' w planie zadania (tani sygnał opt-in,
-                          oddzielony od env-up). Plan wymaga E2E a pliku brak = STOP przed fazą 1.
-              env-up    — .env.e2e? gitignore? dev server Vite (detached, --mode e2e ładuje .env.e2e).
-                          .env.e2e jest, a env niegotowe = HARD STOP (gate opt-in);
-                          brak .env.e2e i zero [E2E] w planie = pominieto, run leci dalej.
-Per faza:     db-sync   — supabase db push na bazę e2e (PIERWSZY realny apply SQL migracji
-                          w pipeline!) + seedy e2e/seeds/*-seed.sql + konto testowe.
-Review/fix:   tester E2E i fix odpalają agent-browser na localhost:5173 (gotowe środowisko).
-Zakończenie:  env-down  — ubija TYLKO dev server z naszego .pid; STOP zostawia środowisko
-                          do ręcznego debugowania.
+Bootstrap:    e2e:start  — e2e.mjs start: scenariusze [E2E] i makiety zadania, sprawdzenie .env.e2e,
+                           start serwera w tle (PID i log w /tmp/autopilot-e2e-<projekt>.*).
+                           Niesprawne środowisko przy [E2E] = STOP przed fazą 1 z naprawą ze skryptu.
+Per faza:     db-sync    — tylko z bazą e2e: e2e.mjs suma (migrations.sum), supabase db push na bazę e2e
+                           (pierwszy realny apply SQL migracji w pipeline), seedy e2e/seeds/*-seed.sql, konto testowe.
+Review:       tester E2E — agent-browser na E2E_URL; wpis per scenariusz z przyczyną SKIP.
+              scribe     — e2e.mjs ksieguj: PASS odznacza, SKIP środowiska/limitu/harnessu → [Manual] z powodem.
+Fix:          po awarii środowiska e2e.mjs manual zamiast odgrywania scenariusza.
+Zakończenie:  env-down   — e2e.mjs stop: zatrzymuje tylko serwer z naszego PID-u; STOP zostawia środowisko
+                           do ręcznego debugowania.
+Smoke:        e2e.mjs lista-manual → sekcja „E2E do odegrania ręcznie (środowisko w trakcie runu)”.
 ```
 
 ## Szybki start — gotowy prompt dla asystenta
@@ -52,8 +67,9 @@ Zrób one-time setup środowiska E2E wg .claude/templates/e2e-env/README.md:
 3. Utwórz `.env.e2e` w korzeniu repo wg .claude/templates/e2e-env/.env.e2e.example,
    wygeneruj silne hasło dla konta testowego (e2e@<projekt>.test).
 4. Dopisz `.env.e2e` do .gitignore i ZWERYFIKUJ: `git check-ignore .env.e2e`.
-5. Sprawdź, że `<pm> run dev -- --mode e2e --port 5173` startuje i celuje w bazę e2e
-   (otwórz localhost:5173, zaloguj kontem testowym).
+5. Sprawdź `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie <dowolne zadanie z [E2E]>` i że serwer
+   z `E2E_START` (domyślnie `<pm> run dev -- --mode e2e --port 5173`) celuje w bazę e2e (otwórz E2E_URL,
+   zaloguj kontem testowym).
 6. Na koniec smoke: curl do URL projektu e2e + `supabase db push --db-url ...`
    na pustą bazę (zaaplikuje WSZYSTKIE migracje od zera — to też test, czy
    łańcuch migracji jest kompletny!) i pokaż mi raport co działa, a co wymaga
@@ -69,20 +85,20 @@ bojowy tej fazy.
 ## Kroki (raz na maszynę/projekt)
 
 1. **Utwórz dedykowany projekt Supabase** (np. `<projekt>-e2e`). Nigdy nie podawaj tu
-   refów dev/prod — env-up ma guard tożsamości (URL e2e ≠ URL z `.env`), ale nie kuś losu.
+   refów dev/prod — sprawdzenie ma guard tożsamości (URL e2e ≠ URL z `.env`), ale nie kuś losu.
 2. **Skopiuj config**: `cp .claude/templates/e2e-env/.env.e2e.example .env.e2e` i uzupełnij
    (API keys, connection string session pooler, konto testowe email+hasło).
-3. **Gitignore**: dopisz `.env.e2e` do `.gitignore` (env-up odmówi startu bez tego).
-4. **Tryb e2e w Vite**: dev server musi ładować `.env.e2e`. Vite robi to natywnie flagą
-   `--mode e2e` (`<pm> run dev -- --mode e2e --port 5173`). Upewnij się, że skrypt `dev`
-   w package.json przepuszcza dodatkowe flagi (domyślnie `vite` je przepuszcza).
-5. **agent-browser**: testy E2E napędza skill `agent-browser` (CLI) — nic do instalacji poza nim.
-6. Gotowe — następny run autopilota wykryje `.env.e2e` i przejdzie w tryb zarządzany.
+3. **Gitignore**: dopisz `.env.e2e` do `.gitignore` (start odmówi bez tego).
+4. **Serwer aplikacji**: domyślnie Vite ładuje `.env.e2e` flagą `--mode e2e`; skrypt `dev` w package.json
+   musi przepuszczać dodatkowe flagi (domyślnie `vite` je przepuszcza). Inny serwer — `E2E_START` i `E2E_URL`.
+5. **agent-browser**: testy E2E napędza CLI `agent-browser` (`npm i -g agent-browser && agent-browser install`);
+   sprawdzenie startu woła `agent-browser doctor --offline --quick`.
+6. Gotowe — `e2e.mjs sprawdz` zielone, następny run autopilota przejdzie w tryb zarządzany.
 
 ## Konwencje dla planów zadań
 
-- Scenariusz E2E w przeglądarce opisz w checkboxie `Weryfikacja:` zadania (oznaczenie 🌐):
-  URL, kroki (click/type/expect visible), oczekiwany rezultat. agent-browser wykonuje go z opisu.
+- Scenariusz E2E zapisuje plan techniczny `/dev-plan` (`[E2E] \`<flow>\` — <URL i kroki> → <oczekiwany stan>`,
+  szablon w `.claude/skills/dev-plan/references/szablon-planu.md`); agent-browser wykonuje go z opisu.
 - Seedy: `e2e/seeds/<nazwa-flow>-seed.sql` — db-sync wiąże seed z flow po nazwie. Pisz seedy **idempotentnie**.
 - Logowanie w flow wyłącznie kontem `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` (OAuth providera
   jest nietestowalny headless — popup poza kontrolą przeglądarki automatycznej).
@@ -108,9 +124,9 @@ bojowy tej fazy.
 
 ## Pułapki
 
-- **Dev server „zastany"**: jeśli masz już ręcznie odpalone `bun run dev` (env dev!), autopilot go
-  użyje i ostrzeże w logu — flow mogą gadać z bazą dev. Ubij własny dev server przed runem
-  (albo trzymaj go na innym porcie niż 5173).
+- **Serwer „zastany"**: jeśli coś już odpowiada na `E2E_HEALTH` (np. ręcznie odpalone `bun run dev` na env dev),
+  autopilot go użyje i ostrzeże w logu — flow mogą gadać z bazą dev. Ubij własny dev server przed runem
+  (albo trzymaj go na innym porcie niż `E2E_URL`).
 - **Reset danych**: db-sync nie robi `db reset` — czyszczenie zostawione seedom
   (idempotencja). Gdy baza e2e „zgnije", zresetuj ręcznie: `supabase db reset --db-url ...`.
 - **Connection string „direct" jest IPv6-only** — w sieci bez IPv6 psql/db push wiszą na

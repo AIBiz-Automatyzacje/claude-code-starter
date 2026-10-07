@@ -18,6 +18,9 @@
 //   (2) zrodlo    — liczy sie wylacznie finding TESTERA E2E (`_zrodlo === 'e2e'`),
 //   (3) przebieg  — bloker bez wpisu FAIL/SKIP w `przebiegi[]` testera to nie bloker,
 //   (4) tryb      — detekcja tylko w `e2eTryb === 'przegladarka'`.
+// P14 (zmiana kontraktu skutku, nie detekcji): wykryty bloker nie zatrzymuje juz runu — scenariusze fazy ida na [Manual]
+// z powodem, a reszta runu idzie bez przegladarki (e2e-manual.test.mjs). Falszywy bloker kosztuje teraz reczne scenariusze
+// zamiast STOP-u, wiec filtry nizej dalej pilnuja, zeby defekt kodu nie przebieral sie za awarie srodowiska.
 
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -67,7 +70,7 @@ const PASS_PRZEBIEG = [{ checkbox: 'Test: [E2E] `logowanie`', flow: 'logowanie',
 /** @type {(opis: string, plik?: string) => Finding} */
 const e2e = (opis, plik = '?') => ({ severity: 'P2', typ: 'E2E', plik, opis, _zrodlo: 'e2e' })
 
-// ── 6 przypadkow POZYTYWNYCH — realne komunikaty runtime, ktore MAJA zatrzymac run ──
+// ── 6 przypadkow POZYTYWNYCH — realne komunikaty runtime, ktore MAJA przelaczyc run na reczne E2E ──
 
 const POZYTYWNE = [
   {
@@ -109,10 +112,10 @@ for (const przypadek of POZYTYWNE) {
       przebiegi: FAIL_PRZEBIEG,
       e2eTryb: 'przegladarka',
     })
-    assert.ok(wynik, 'realna awaria srodowiska musi zatrzymac run')
+    assert.ok(wynik, 'realna awaria srodowiska musi zostac wykryta')
     assert.equal(wynik.wykryty, true)
     assert.equal(wynik.klasa, przypadek.klasa)
-    assert.ok(wynik.dowod.length > 0, 'dowod idzie do komunikatu STOP-u — nie moze byc pusty')
+    assert.ok(wynik.dowod.length > 0, 'dowod idzie do logu runu i powodu [Manual] — nie moze byc pusty')
   })
 }
 

@@ -114,9 +114,11 @@ const E2E_RESULT = {
           checkbox: { type: 'string', description: 'tresc wiersza checkboxa [E2E] z *-zadania.md skopiowana 1:1 (bez "- [ ] ", lacznie z ewentualnym suffixem "(SKIP — …)"/"(FAIL: …)")' },
           flow: { type: 'string', description: 'kebab-case IDENTYFIKATOR flow z linii [E2E] (pierwszy backtick w linii; dla runnera — sciezka e2e/<etap>-run-all.sh) — KLUCZ dopasowania dla scribe (tresc checkboxa moze sie roznic suffixami); "" TYLKO gdy linia nie ma zadnego backticka (starszy format — wtedy scribe dopasowuje po znormalizowanej tresci). W webie flow nie ma osobnego pliku: agent-browser gra scenariusz z opisu linii' },
           wynik: { type: 'string', enum: ['PASS', 'FAIL', 'SKIP'] },
-          dowod: { type: 'string', description: 'PASS/FAIL: co zaasertowano/gdzie padlo + sciezka screenshotu (lub exit code runnera); SKIP: dokladny powod (bloker srodowiskowy)' },
+          // P14: kategoria przyczyny SKIP decyduje, czy scenariusz idzie do fixa, czy na [Manual] (PRZYCZYNY_SKIP).
+          przyczyna: { type: 'string', enum: ['nie-dotyczy', 'srodowisko', 'limit-zewnetrzny', 'harness', 'brak-seeda', 'scenariusz-niewykonalny'], description: 'PASS/FAIL: nie-dotyczy. SKIP: srodowisko (aplikacja, baza albo DNS niedostepne), limit-zewnetrzny (limit uslugi zewnetrznej, np. 429 mailera), harness (powierzchnia poza kontrola headless: popup OAuth, natywne okno), brak-seeda, scenariusz-niewykonalny (linia bez wykonalnego opisu)' },
+          dowod: { type: 'string', description: 'PASS/FAIL: co zaasertowano/gdzie padlo + sciezka screenshotu (lub exit code runnera); SKIP: dokladny powod z doslownym komunikatem bledu — trafia do linii [Manual] i smoke operatora' },
         },
-        required: ['checkbox', 'flow', 'wynik', 'dowod'],
+        required: ['checkbox', 'flow', 'wynik', 'przyczyna', 'dowod'],
       },
       description: 'KAZDY policzony checkbox [E2E] fazy MUSI miec wpis — brak wpisu scribe traktuje jak SKIP',
     },
@@ -425,9 +427,9 @@ ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(po
 const BLOK_BEZ_PRZEGLADARKI = `
 TRYB BEZ PRZEGLADARKI — orkiestrator zglosil, ze srodowisko E2E jest NIEDOSTEPNE. To zakaz, nie sugestia:
 - NIE uruchamiaj skilla agent-browser, NIE nawiguj po URL-ach, NIE rob screenshotow ani snapshotow.
-- Kazdy scenariusz wymagajacy PRZEGLADARKI = wpis SKIP w \`przebiegi\` z powodem "brak srodowiska E2E"
-  + finding typ OPERATOR (severity P3) z Operator action, zeby trafil do Operator checklist. NIE zglaszaj go
-  jako P2 (to nie defekt kodu) i pod zadnym pozorem NIE opisuj go tak, jakby zostal odegrany.
+- Kazdy scenariusz wymagajacy PRZEGLADARKI = wpis SKIP w \`przebiegi\` z przyczyna "srodowisko" i powodem
+  "srodowisko E2E niedostepne w tym runie" — bez findingu (skrypt przeniesie linie na [Manual] do smoke'u operatora).
+  NIE zglaszaj go jako P2 (to nie defekt kodu) i pod zadnym pozorem NIE opisuj go tak, jakby zostal odegrany.
 - Wykonaj TYLKO weryfikacje NIEBROWSEROWE dajace rownowazny dowod: HTTP (curl na route/endpoint + sprawdzenie
   statusu i tresci odpowiedzi), CLI (skrypty, testy, inspekcja artefaktow builda). Porazka wykryta tak samo
   jest defektem -> finding P2 typ E2E + wpis FAIL w \`przebiegi\`.
@@ -442,11 +444,10 @@ nie tylko \`Weryfikacja:\` — MUSISZ przeszukac OBA). To scenariusze do odegran
 (open URL, snapshot -i, click, type/fill, assert visible, screenshot, nawigacja klawiatura,
 responsywnosc/viewport). Pomin tylko CLI (\`test\`/\`typecheck\`/\`grep\`) i \`[Manual]\`.
 
-BRAMKA (Poprawka 10) — policz checkboxy \`[E2E]\` z OBU prefiksow (Test: + Weryfikacja:). Jesli jest ICH ZERO ->
+BRAMKA — jesli checkboxow \`[E2E]\` (oba prefiksy) jest ZERO ->
 zwroc OD RAZU {findings:[], przebiegi:[]}, POMIN preflight (curl) i agent-browser. Nie odpalaj srodowiska gdy nie ma
-czego testowac. UWAGA — historyczny bug (regresja etap-12b, mobile): liczenie tylko \`Weryfikacja:\` skipowalo E2E
-pisane pod \`Test: [E2E]\` i cicho degradowalo je do OPERATOR mimo gotowego srodowiska. "Zero" liczy sie
-WYLACZNIE po realnym grepie obu prefiksow w sekcji fazy (\`grep -nE '^- \\[ \\].*\\[E2E\\]' | grep -vE 'Operator:|\\[P[123]\\]'\` —
+czego testowac. Liczenie samego \`Weryfikacja:\` gubi scenariusze pisane pod \`Test: [E2E]\` i cicho degraduje je
+do OPERATOR mimo gotowego srodowiska, dlatego "zero" liczy sie po realnym grepie obu prefiksow w sekcji fazy (\`grep -nE '^- \\[ \\].*\\[E2E\\]' | grep -vE 'Operator:|\\[P[123]\\]'\` —
 kopie w Operator checklist i pozycje findingow w "Do poprawy" nie sa scenariuszami).
 JEDEN FLOW = JEDEN PRZEBIEG: w webie flow NIE ma osobnego pliku — agent-browser gra scenariusz z OPISU linii
 [E2E]. Pole \`flow\` wpisu = kebab-case IDENTYFIKATOR z linii (pierwszy backtick; dla runnera — sciezka
@@ -464,36 +465,36 @@ Bez runnera, gdy linia ma "(seed: …)" albo istnieje e2e/seeds/<flow>-seed.sql 
 zaaplikuj seed (\`psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <seed>\`; zbiorczy db-sync mogl go nadpisac
 seedem innego flow).
 
-NAJPIERW preflight srodowiska (Bash): czy dev server Vite UP (curl -s localhost:5173 — lub port z vite.config/.env).
-Potem proba scenariuszy przez skill agent-browser (open URL, snapshot -i, click, screenshot).
+NAJPIERW preflight srodowiska (Bash): czy aplikacja odpowiada — \`curl -s <adres>\`, adres = E2E_URL z .env.e2e
+(domyslnie http://localhost:5173). Potem proba scenariuszy przez skill agent-browser (open URL, snapshot -i, click, screenshot).
 
-SRODOWISKO ZARZADZANE (jesli w korzeniu repo istnieje .env.e2e): orkiestrator postawil dev server Vite
-na dedykowanej bazie e2e i zsynchronizowal migracje+seedy PRZED Twoim startem. Wtedy:
+SRODOWISKO ZARZADZANE (jesli w korzeniu repo istnieje .env.e2e): orkiestrator uruchomil serwer aplikacji wg .env.e2e
+(skrypt .claude/scripts/e2e/e2e.mjs) i zsynchronizowal baze e2e PRZED Twoim startem. Wtedy:
 - konto do logowania w flow = E2E_TEST_EMAIL / E2E_TEST_PASSWORD z .env.e2e (nie loguj wartosci),
-- "migracja/RPC niewdrozona na remote" i "brak seeded sesji" NIE sa automatycznym powodem
-  OPERATOR — najpierw SPRAWDZ realnie (uruchom flow); klasyfikuj OPERATOR dopiero po twardym
-  dowodzie blokera srodowiskowego (np. blad poza kontrola: dev server down, popup OAuth zewnetrznego providera).
+- "migracja/RPC niewdrozona na remote" i "brak seeded sesji" NIE sa automatycznym powodem SKIP —
+  najpierw SPRAWDZ realnie (uruchom flow); SKIP dopiero po twardym dowodzie.
 ${tryb === 'bez-przegladarki' ? BLOK_BEZ_PRZEGLADARKI : ''}
 KLASYFIKACJA per scenariusz (to jest krytyczne — nie wszystko jest P2):
-- Scenariusz WYKONANY i FAILED z powodu defektu w kodzie/UI/stylu -> finding P2 typ E2E.
-- Scenariusz NIEWYKONALNY headless (dev server down, popup OAuth zewnetrznego providera,
-  migracja/RPC niewdrozona na remote, brak seeded sesji) -> finding typ OPERATOR (severity P3).
-  To NIE jest defekt kodu — to brakujacy warunek srodowiskowy. NIE klasyfikuj jako P2.
-  W opisie podaj: tresc checkboxa + dokladny blocker + Operator action (kroki do odblokowania).
-- Scenariusz WYKONANY i PASSED -> NIE zglaszaj findingu, ale WPISZ go do \`przebiegi\` z wynik:"PASS"
-  i dowodem (co zaasertowano + sciezka screenshotu). BEZ wpisu scribe NIE odznaczy
-  checkboxa — brak findingu NIE jest dowodem PASS.
+- WYKONANY i FAILED z powodu defektu w kodzie/UI/stylu -> wpis FAIL (przyczyna "nie-dotyczy") + finding P2 typ E2E.
+- WYKONANY i PASSED -> wpis PASS (przyczyna "nie-dotyczy") z dowodem (co zaasertowano + sciezka screenshotu), bez findingu.
+  BEZ wpisu scribe NIE odznaczy checkboxa — brak findingu NIE jest dowodem PASS.
+- NIEWYKONALNY -> wpis SKIP z przyczyna:
+  "srodowisko" — aplikacja, baza albo DNS niedostepne (connection refused, ERR_NAME_NOT_RESOLVED, serwer nie odpowiada);
+  "limit-zewnetrzny" — limit uslugi zewnetrznej (429, limit wysylki maili);
+  "harness" — powierzchnia poza kontrola headless (popup OAuth zewnetrznego providera, natywne okno przegladarki);
+  przy tych trzech BEZ findingu: skrypt przeniesie linie na [Manual] z Twoim powodem i run pojdzie dalej, wiec
+  w \`dowod\` daj powod zrozumialy dla czlowieka z doslownym komunikatem.
+  "brak-seeda" i "scenariusz-niewykonalny" — patrz akapit o seedach nizej (finding P2 typ E2E idzie do fixa).
 
 PRZEBIEGI (obowiazkowe): KAZDY policzony checkbox [E2E] tej fazy MUSI miec wpis w \`przebiegi\`
-(checkbox = tresc wiersza 1:1 lacznie z suffixami, flow = identyfikator z backtickow — po nim scribe dopasowuje,
-fallback znormalizowana tresc; wynik PASS/FAIL/SKIP, dowod). FAIL = finding P2 typ E2E (pierwsza linia opisu: "checkbox: <tresc>", plik = *-zadania.md z linia)
-+ wpis FAIL; SKIP = finding typ OPERATOR + wpis SKIP z powodem. Brak wpisu = scribe traktuje jak SKIP.
+(checkbox = tresc wiersza 1:1 lacznie z suffixami, flow = identyfikator z backtickow — po nim skrypt dopasowuje,
+fallback znormalizowana tresc; wynik PASS/FAIL/SKIP, przyczyna, dowod). FAIL = finding P2 typ E2E (pierwsza linia opisu:
+"checkbox: <tresc>", plik = *-zadania.md z linia) + wpis FAIL. Brak wpisu = SKIP z kopia w Operator checklist (completion-gate).
 
 CYTUJ DOSLOWNE KOMUNIKATY BLEDOW: gdy scenariusz pada na bledzie srodowiska/sieci (connection refused,
-ERR_*, ECONNREFUSED, timeout, DNS), wklej do opisu findingu DOSLOWNY komunikat z konsoli/outputu
-(skopiowany 1:1), nie parafraze. Orkiestrator rozpoznaje klasy blokera srodowiska po SYGNATURZE
-tekstowej w opisach findingow — parafraza ("serwer nie odpowiadal") tej detekcji NIE uruchomi
-i run pojedzie dalej na zepsutym srodowisku.
+ERR_*, ECONNREFUSED, timeout, DNS), wklej do \`dowod\` (i do opisu findingu, jesli jest) DOSLOWNY komunikat
+z konsoli/outputu, nie parafraze. Orkiestrator rozpoznaje awarie srodowiska po SYGNATURZE tekstowej — po niej
+reszta runu idzie bez przegladarki zamiast odbijac sie od niedzialajacego serwera w kazdej fazie.
 
 Jesli zadanie ma figma_screens / mockupy w sekcji designerskiej — zrob side-by-side visual
 comparison screenshotu z mockupem (rozbieznosci wizualne = P2 typ E2E).
@@ -503,7 +504,8 @@ Zwroc {findings:[...], przebiegi:[...]}. NIE zapisuj zadnych plikow — w szczeg
 Brak seeda wskazanego linia (checkbox "Stwórz (e2e seed):" niewykonany albo seed nie pokrywa scenariusza)
 LUB linia [E2E] bez wykonalnego opisu scenariusza = finding P2 typ E2E (pierwsza linia opisu: "checkbox: <tresc>";
 typ E2E, nie KOD — fix pisze seed / doprecyzowuje scenariusz wg IU, re-odgrywa i odznacza zrodlo dopiero po PASS)
-+ wpis SKIP (flow = identyfikator z linii, jesli jest; "" tylko gdy linia nie ma backticka).
++ wpis SKIP z przyczyna "brak-seeda" albo "scenariusz-niewykonalny" (flow = identyfikator z linii, jesli jest; "" tylko gdy
+linia nie ma backticka).
 ${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
 
@@ -617,37 +619,31 @@ ${JSON.stringify(obalone || [], null, 2)}
    inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. P3 typu E2E i OPERATOR obsluguja punkty 2 i 3.
 2b. W ${sciezka}/*-kontekst.md dopisz do sekcji \`## Dziennik\` jedna pozycje o tym review: gate, liczniki
    P1/P2/P3/OPERATOR, sciezka raportu i najwazniejszy wniosek.
-3. Bookkeeping checkboxow "Weryfikacja:" i "Test: [E2E]": re-parsuj niezaznaczone wiersze fazy ${faza}
-   pasujace do regex ^\\s*-\\s*\\[\\s*\\]\\s*(Weryfikacja:|Test:\\s*\\[E2E\\]) — oba prefiksy; jedynym wlascicielem
-   odznaczenia scenariusza [E2E] jest ten bookkeeping (execute go nie rusza).
-   REGULA ZERO: linia z markerem [E2E] (dowolny prefiks) = ZAWSZE kategoria E2E, niezaleznie od innych slow.
-   Sklasyfikuj (CLI->uruchom przez Bash, exit0->[x]; Grep->uruchom; E2E -> WYLACZNIE wg listy "Przebiegi E2E"
-   wyzej. DOPASOWANIE TOLERANCYJNE: NAJPIERW po identyfikatorze flow zawartym w linii (pierwszy backtick
-   = pole flow wpisu), FALLBACK po tresci po normalizacji (bez "- [ ] ", bez suffixow "(SKIP — …)"/"(FAIL: …)",
-   bez bialych znakow) — dla linii bez identyfikatora (starszy format). Dla kazdego flow
-   wez ZBIOR wpisow o nim: jesli KTORYKOLWIEK jest FAIL lub SKIP -> caly flow = FAIL/SKIP (FAIL przed SKIP, oba
-   przed PASS) i NIE odznaczaj zadnej linii tego flow; [x] dla KAZDEJ niezaznaczonej linii [E2E] tej fazy wskazujacej
-   ten flow WYLACZNIE gdy wszystkie wpisy tego flow sa PASS; przy odznaczaniu USUN stary suffix SKIP/FAIL i odhacz/usun
-   odpowiadajaca kopie "Operator: …" w "## Operator checklist faza ${faza}". FAIL -> [ ]; USUN nieaktualny suffix
-   "(SKIP — …)" (flow przebiegl), istniejacy "(FAIL: …)" zostaw — fix zastapi go po swoim re-runie (P2 juz jest).
-   SKIP lub BRAK wpisu -> [ ] z suffixem "(SKIP — <powod>)" (zastap istniejacy suffix, nie dopisuj drugiego)
-   + kopia do "## Operator checklist faza ${faza}" (format "- [ ] Operator: ...", [E2E] -> [Manual]; bez duplikatu).
-   BRAK FINDINGU NIE JEST DOWODEM PASS).
-   Linie bez markera [E2E] klasyfikujesz po tresci, od gory, pierwsza pasujaca kategoria wygrywa:
+3. Bookkeeping checkboxow fazy ${faza}.
+   a) Linie z markerem [E2E] (Test: i Weryfikacja:) ksieguje sam skrypt — nie edytuj ich recznie i nie kopiuj ich
+      do Operator checklist. ${przebieg.e2eTryb === 'pominiety' ? 'Tester E2E nie byl w tej fazie uruchomiony — linii [E2E] nie ruszasz.' : `Uruchom w korzeniu repo dokladnie:
+${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTesterFail)}
+      Skrypt odznacza flow z samymi PASS, zostawia FAIL, scenariusze niewykonalne przez srodowisko, limit zewnetrzny,
+      harness albo pad testera przenosi na [Manual] z powodem (trafia do smoke'u operatora, run idzie dalej), a pozostale
+      SKIP i linie bez wpisu oznacza "(SKIP — powod)" z kopia w Operator checklist. Wynik to JSON (odznaczone, fail, skip,
+      manual, bezWpisu, manualPozycje) — liczby wpisz do sekcji Bookkeeping. Kod wyjscia rozny od 0 -> tresc bledu do raportu,
+      linie [E2E] zostaja bez zmian.`}
+   b) Niezaznaczone linie "Weryfikacja:" BEZ markera [E2E] klasyfikujesz po tresci, od gory, pierwsza pasujaca kategoria wygrywa:
    - CLI (bun, npm, npx, pnpm, yarn, make, node, tsc, vitest, cargo, pytest, ruff, eslint, supabase, psql, deno, curl, wc, git,
      bash, sh, ./x, *.sh, *.mjs): uruchom komende przez Bash; exit 0 -> [x]; inny kod -> [ ] z suffixem " (FAIL: <skrot bledu>)" i finding P2.
    - Grep / istnienie pliku (grep, rg, test -f, ls, "brak referencji do", "plik istnieje", "import nie istnieje"):
      uruchom; PASS -> [x]; FAIL -> [ ] z suffixem " (FAIL)" i finding P2.
-   - E2E browser bez markera (URL, agent-browser, "viewport", "kliknij", "screenshot", 🌐): jak [E2E] wyzej.
-   - Manual ("recznie", "operator", "symulator", "device", "emulator", "QA", "tester czlowiek"): [ ] z suffixem
-     " — wymaga operatora (checklist)", bez findingu.
+   - Przegladarka albo czlowiek (URL, agent-browser, "viewport", "kliknij", "screenshot", 🌐, "recznie", "operator", "symulator",
+     "device", "emulator", "QA", "tester czlowiek"): [ ] z suffixem " — wymaga operatora (checklist)", bez findingu.
    - Niejasne (nic nie pasuje): [ ] z suffixem " — klasyfikacja niejasna, wymaga recznej decyzji" i finding P3
      z notatka dla planisty: "checkbox nieautomatyzowalny — przenies do Operator checklist albo przeformuluj na CLI/E2E".
    Checkboxy spoza fazy ${faza} zostawiasz bez zmian.
-   Odznacz/anotuj w pliku zadan. Do raportu, przed blokiem "## Przebieg review", dopisz sekcje:
+   Do raportu, przed blokiem "## Przebieg review", dopisz sekcje:
      ## Bookkeeping checkboxow Weryfikacja: / Test: [E2E]
      - Odznaczone automatycznie (CLI/grep): X
-     - Odznaczone na podstawie przebiegow E2E testera: Y
+     - [E2E] odznaczone na podstawie przebiegow testera: Y
+     - [E2E] przeniesione w trakcie runu na [Manual]: M (lista: flow — przyczyna: powod)
+     - [E2E] SKIP do naprawy albo bez wpisu testera: S
      - Pozostawione dla operatora (Manual): Z
      - Niejasne (P3): W
      - Failujace (P2): V
@@ -655,14 +651,7 @@ ${JSON.stringify(obalone || [], null, 2)}
      - [x] CLI: \`<tresc>\` -> PASS (komenda: \`<komenda>\`)
      - [ ] Manual: \`<tresc>\` — wymaga operatora
      - [ ] Niejasne: \`<tresc>\` — wymaga przeformulowania w planie
-     - [ ] FAIL: \`<tresc>\` — \`<skrot bledu>\` (P2)${przebieg.e2eTesterFail ? `
-   UWAGA — TESTER E2E PADL (${przebieg.e2eStatus}). Orkiestrator ZATRZYMA run i review tej fazy POWTORZY sie z testerem.
-   Zadnego checkboxa \`[E2E]\` NIE odznaczaj, NIE dopisuj suffixow i NIE kopiuj ich do Operator checklist —
-   to review zostanie uniewaznione, a kopie zostalyby w smoke'u operatora jako reczne scenariusze.` : przebieg.e2eWykonany ? '' : `
-   UWAGA — TESTER E2E NIE DAL ZADNEGO PRZEBIEGU W TEJ FAZIE (${przebieg.e2eStatus}).
-   Zadnego checkboxa \`[E2E]\` NIE odznaczaj — nie ma przebiegu, ktory by to potwierdzil.
-   Kazdy taki checkbox zostaw \`- [ ]\` i przenies jego kopie do "## Operator checklist faza ${faza}"
-   (format "- [ ] Operator: ...", [E2E] -> [Manual] w kopii), bo weryfikacja nie zostala wykonana.`}
+     - [ ] FAIL: \`<tresc>\` — \`<skrot bledu>\` (P2)
 4. Policz liczniki: p1/p2/p3 (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL; P3 z bookkeepingu: Niejasne.
 5. Ustaw severityGate: BLOKUJE (sa P1) / ZASTRZEZENIA (tylko P2) / CZYSTE (zero P1/P2 — sam P3/OPERATOR nie blokuje gate'u).
 6. Policz e2e {passed, failed, skipped} Z LISTY "Przebiegi E2E" (checkboxy bez wpisu licz jako skipped).
@@ -867,7 +856,7 @@ if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
   )
 }
 const e2eWynik = e2eAktywny ? wyniki[indeksE2e] : null
-const e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.przebiegi : []
+let e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.przebiegi : []
 // "Wykonany" = dal przebiegi (albo realnie nie bylo czego testowac). Null 2x = NIE wykonany; pusto 2x przy ZNANEJ
 // liczbie checkboxow > 0 = NIE wykonany -> twarda flaga dla orkiestratora (STOP, review pending). Przy liczbie
 // NIEZNANEJ (brak dossier) drugi pusty wynik jest AKCEPTOWANY jako "brak checkboxow" — tester sam grepuje sekcje
@@ -881,7 +870,7 @@ const e2eStatus = !e2eAktywny
     : e2eWynik
       ? (e2ePrzebiegi.length === 0 ? `wykonany — brak checkboxow [E2E] w fazie${e2eRetry ? ' (po retry; liczba z dossier nieznana)' : ''}` : `wykonany (tryb ${e2eTryb})${e2eRetry ? ' (po retry)' : ''}`)
       : 'bez checkboxow [E2E] (dossier: 0, tester nic nie zwrocil — OK)'
-if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZnana ? e2eCheckboxy : 'nieznanej liczbie'} checkboxow [E2E] — review zapisze sie BEZ odznaczania [E2E], orkiestrator zatrzyma run (review pending)`)
+if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZnana ? e2eCheckboxy : 'nieznanej liczbie'} checkboxow [E2E] — scenariusze fazy na [Manual] (tester-padl), run idzie dalej`)
 
 // Dedup przebieg 1 — JS (po pliku + poczatku opisu): lapie identyczne sformulowania za darmo.
 // Przy kolizji klucza wygrywa WYZSZE severity (P1<P2<P3), nie kolejnosc reviewerow.
@@ -936,22 +925,87 @@ function wykryjBlokerSrodowiska(findingi, przebiegiTestera) {
       if (s.re.test(tekst)) return { wykryty: true, klasa: s.klasa, dowod: (f.opis || '').slice(0, 500) }
     }
   }
+  // P14: SKIP z przyczyna srodowiska nie ma findingu — sygnatura stoi wtedy w dowodzie przebiegu.
+  for (const p of przebiegiTestera) {
+    if (!p || (p.wynik !== 'FAIL' && p.wynik !== 'SKIP')) continue
+    for (const s of SYGNATURY_BLOKERA) {
+      if (s.re.test(p.dowod || '')) return { wykryty: true, klasa: s.klasa, dowod: String(p.dowod).slice(0, 500) }
+    }
+  }
   return null
 }
+
+// ── E2E po testerze (P14, PANEL-WEJSCIE §2 pkt 6) ──────────────────────────
+// Test niewykonalny w trakcie runu przez srodowisko albo limit zewnetrzny nie zatrzymuje runu: linia [E2E] idzie na [Manual]
+// z powodem i trafia do smoke'u operatora. Linie ksieguje skrypt .claude/scripts/e2e/e2e.mjs (scribe go uruchamia).
+
+// Przyczyny SKIP -> co dalej ze scenariuszem. Kopia PRZYCZYNY_SKIP z .claude/scripts/e2e/ksiegowanie.mjs (test rownosci
+// w e2e-manual.test.mjs) — workflow nie importuje modulow.
+const PRZYCZYNY_SKIP = {
+  srodowisko: 'manual', 'limit-zewnetrzny': 'manual', harness: 'manual', 'tester-padl': 'manual',
+  'brak-seeda': 'fix', 'scenariusz-niewykonalny': 'fix',
+}
+const DOWOD_KSIEGOWANIA_ZN = 300
+const POWOD_PADU_TESTERA = 'tester E2E nie dal przebiegu w 2 probach — do odegrania recznie'
+
+const kluczPrzebiegu = (p) => p.flow || (/`([^`]+)`/.exec(p.checkbox || '')?.[1]) || String(p.checkbox || '').replace(/\s+/g, '').toLowerCase()
+
+// Po blokerze srodowiska FAIL-e testera z sygnatura awarii nie sa defektem kodu: przebieg SKIP z przyczyna srodowisko
+// (-> [Manual]), a ich findingi P2 znikaja z listy do fixa (dowod zostaje w przebiegu i w linii [Manual]).
+// Realny FAIL bez sygnatury (np. sprzed padu serwera) zostaje.
+function poBlokerzeSrodowiska(przebiegi, findingiTestera) {
+  const zSygnatura = (tekst) => SYGNATURY_BLOKERA.some((s) => s.re.test(tekst || ''))
+  const flowyBlokera = new Set()
+  const findingi = findingiTestera.filter((f) => {
+    if (f.typ !== 'E2E' || !zSygnatura(`${f.opis || ''} ${f.plik || ''}`)) return true
+    for (const m of (f.opis || '').matchAll(/checkbox:\s*(.+)/g)) flowyBlokera.add(kluczPrzebiegu({ checkbox: m[1] }))
+    return false
+  })
+  const nowe = przebiegi.map((p) => (p.wynik === 'FAIL' && (zSygnatura(p.dowod) || flowyBlokera.has(kluczPrzebiegu(p)))
+    ? { ...p, wynik: 'SKIP', przyczyna: 'srodowisko' }
+    : p))
+  return { przebiegi: nowe, findingi, usuniete: findingiTestera.length - findingi.length }
+}
+
+// Ile scenariuszy fazy przeszlo na [Manual] — ta sama regula co skrypt: flow bez FAIL, a rozstrzygajacy SKIP ma przyczyne
+// reczna (SKIP do fixa albo bez kategorii wygrywa). Pad testera = kazdy scenariusz fazy (null, gdy liczba nieznana).
+function liczManualE2e(przebiegi, testerFail, e2eCheckboxy) {
+  if (testerFail) return Number.isInteger(e2eCheckboxy) ? e2eCheckboxy : null
+  const grupy = new Map()
+  for (const p of przebiegi) grupy.set(kluczPrzebiegu(p), [...(grupy.get(kluczPrzebiegu(p)) || []), p])
+  let manual = 0
+  for (const wpisy of grupy.values()) {
+    const skipy = wpisy.filter((p) => p.wynik === 'SKIP')
+    if (wpisy.some((p) => p.wynik === 'FAIL') || !skipy.length) continue
+    if (skipy.every((p) => PRZYCZYNY_SKIP[p.przyczyna] === 'manual')) manual += wpisy.length
+  }
+  return manual
+}
+
+// Polecenie ksiegowania dla scribe'a: przebiegi w heredoc (bez interpolacji powloki), dowod przyciety do suffixu linii.
+function komendaKsiegowania(sciezka, faza, przebiegi, testerFail) {
+  const wpisy = przebiegi.map((p) => ({ checkbox: p.checkbox, flow: p.flow, wynik: p.wynik, przyczyna: p.przyczyna || 'nie-dotyczy', dowod: String(p.dowod || '').slice(0, DOWOD_KSIEGOWANIA_ZN) }))
+  const brak = testerFail ? ` --brak-wpisu tester-padl --powod "${POWOD_PADU_TESTERA}"` : ''
+  return `node .claude/scripts/e2e/e2e.mjs ksieguj --zadanie ${sciezka} --faza ${faza}${brak} <<'PRZEBIEGI_E2E'\n${JSON.stringify(wpisy)}\nPRZEBIEGI_E2E`
+}
+// ── Koniec E2E po testerze
 
 // Etykieta zrodla per finding — kolejnosc `wyniki` odpowiada kolejnosci `thunki` (aktywni z test-coverage,
 // potem opcjonalnie e2e). Potrzebna do sprawiedliwego przyciecia P3 (patrz wybierzNity):
 // bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
 const etykietyZrodel = [...aktywni.map((r) => r.key), ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
-const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
+let wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
 // Wejscie zawezone do findingow TESTERA (audyt 2026-09-02, finding A1): sygnatura w opisie reviewera kodu
 // mowi o kodzie, nie o srodowisku. I tylko w trybie `przegladarka` — w `bez-przegladarki` odmowa polaczenia
-// z curla jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria uzasadniajaca STOP runu.
+// z curla jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria srodowiska w trakcie runu.
 const blokerSrodowiska = e2eTryb === 'przegladarka'
   ? wykryjBlokerSrodowiska(wszystkie.filter((f) => f._zrodlo === 'e2e'), e2ePrzebiegi)
   : null
 if (blokerSrodowiska) {
-  log(`BLOKER SRODOWISKA wykryty po sygnaturze (${blokerSrodowiska.klasa}) — orkiestrator zatrzyma run zamiast ciagnac kolejne fazy na zepsutym srodowisku`)
+  const pb = poBlokerzeSrodowiska(e2ePrzebiegi, wszystkie.filter((f) => f._zrodlo === 'e2e'))
+  e2ePrzebiegi = pb.przebiegi
+  wszystkie = [...wszystkie.filter((f) => f._zrodlo !== 'e2e'), ...pb.findingi]
+  log(`BLOKER SRODOWISKA wykryty po sygnaturze (${blokerSrodowiska.klasa}) — scenariusze z awaria na [Manual] (${pb.usuniete} findingow testera poza fixem); orkiestrator przelaczy reszte runu na tester bez przegladarki`)
 }
 const RANGA = { P1: 0, P2: 1, P3: 2 }
 const poKluczu = new Map()
@@ -1259,6 +1313,7 @@ const przebieg = {
   e2ePass: e2ePrzebiegi.filter((x) => x.wynik === 'PASS').length,
   e2eFail: e2ePrzebiegi.filter((x) => x.wynik === 'FAIL').length,
   e2eSkip: e2ePrzebiegi.filter((x) => x.wynik === 'SKIP').length,
+  e2eManual: liczManualE2e(e2ePrzebiegi, e2eTesterFail, e2eLiczbaZnana ? e2eCheckboxy : null),
   niezweryfikowane: potwierdzone.filter((f) => f.opis.startsWith('[NIEZWERYFIKOWANY')).length,
 }
 
@@ -1315,5 +1370,5 @@ if (!wynik) {
   }
 }
 // przebieg, blokerSrodowiska i e2eTesterFail dokladane w JS (nie przez schemat agenta) — orkiestrator zapisuje
-// przebieg w stanie i telemetrii, po blokerze zatrzymuje run, a po e2eTesterFail zostawia review pending.
+// przebieg w stanie i telemetrii, a po blokerze przelacza reszte runu na tester bez przegladarki (P14).
 return { ...wynik, przebieg, blokerSrodowiska, e2eTesterFail }

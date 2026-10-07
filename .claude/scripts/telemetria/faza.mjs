@@ -32,7 +32,7 @@ export function skrotE2eSync(tekst) {
 const ETAPY_ROL = {
   execute: ['build', 'planner', 'domkniecie', 'warmup:vitest'],
   mechanika_review: ['dossier:zapas', 'dedup:semantyczny', 'scribe'],
-  orkiestracja: ['stan:zapis', 'bootstrap', 'telemetria', 'stop', 'e2e:precheck', 'e2e:env-up', 'e2e:env-down', 'e2e:db-sync',
+  orkiestracja: ['stan:zapis', 'bootstrap', 'telemetria', 'stop', 'e2e:precheck', 'e2e:env-up', 'e2e:start', 'e2e:env-down', 'e2e:db-sync',
     'walidacja-koncowa', 'compound', 'compound-refresh', 'complete', 'smoke-operatora'],
 }
 
@@ -266,7 +266,7 @@ export function rekordyFaz(we) {
       findingi_per_os: findingiPerOs(agenci),
       e2e: {
         checkboxy: liczbaLubNull(przebieg.e2eCheckboxy), pass: liczbaLubNull(przebieg.e2ePass),
-        fail: liczbaLubNull(przebieg.e2eFail), skip: liczbaLubNull(przebieg.e2eSkip), manual: null,
+        fail: liczbaLubNull(przebieg.e2eFail), skip: liczbaLubNull(przebieg.e2eSkip), manual: liczbaLubNull(przebieg.e2eManual),
       },
       fix: fixFazy(raport, agenci, we.journal, we.zmianyFixa),
       kontrolaFixa: kontrolaFixaFazy(raport, agenci, we.journal),

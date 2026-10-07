@@ -9,8 +9,9 @@ const ROLE_Z_OGONEM = [
 ]
 
 // P7: kontekst:diff (packager) i zwin-do-poprawy wyszly z pipeline'u — dossier liczy skrypt, zwijanie robi fix.
+// P14: e2e:precheck i e2e:env-up zastapil e2e:start (skrypt e2e.mjs); stare role zostaja dla starych runow.
 const MECHANICZNE = new Set([
-  'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'dossier:zapas', 'e2e:env-down',
+  'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'e2e:start', 'dossier:zapas', 'e2e:env-down',
   'fix:pre-skan', 'stop:commit-artefaktow', 'start:p3-known-issues',
 ])
 // P8: fix:pre-skan i verify-fix wyszly z pipeline'u (listy K kontroli fixa), ale rozpoznanie zostaje dla starych runow —
@@ -65,7 +66,7 @@ const POCZATKI_PROMPTU = [
   [/^Jestes specjalista ds\. zamykania/, 'complete'], [/Utrzymujesz baze wiedzy PO zapisie/, 'compound-refresh'],
   [/Dokumentujesz rozwiazane problemy/, 'compound'], [/To JEDYNA tura poprawek po kontroli/, 'fix:poprawka'],
   [/Naprawiasz problemy z review fazy/, 'fix'], [/^Sprzatanie srodowiska E2E/, 'e2e:env-down'], [/^Pipeline dev-autopilot zatrzymuje sie/, 'stop'],
-  [/^Jestes agentem synchronizacji bazy e2e/, 'e2e:db-sync'], [/^Ponizej ponumerowana lista findingow/, 'dedup:semantyczny'],
+  [/^Jestes agentem synchronizacji bazy e2e/, 'e2e:db-sync'], [/^Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik/, 'e2e:start'], [/^Ponizej ponumerowana lista findingow/, 'dedup:semantyczny'],
   [/^Jestes scribe review/, 'scribe'], [/^Jestes testerem E2E w przegladarce/, 'review:e2e'],
   [/^Jestes testerem scenariuszy\/coverage/, 'review:test-coverage'], [/^Mechaniczny skan commitow fix/, 'fix:pre-skan'],
   [/^Jestes NIEZALEZNYM kontrolerem commitow fix/, 'fix:kontrola'], [/^Uruchom w korzeniu repo \(Bash\): `node \.claude\/scripts\/dossier\/dossier\.mjs/, 'dossier:zapas'],
