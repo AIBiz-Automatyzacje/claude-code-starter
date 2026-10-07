@@ -94,7 +94,7 @@ function naruszeniaSciezek(korzen) {
   for (const plik of [...workflowy, ...agenci, ...skille]) {
     const sciezki = trafienia(readFileSync(plik, 'utf8'), /(\.claude\/(?:agents|hooks|rules|scripts|skills|templates|workflows)\/[\w.*<>{}/-]+)/g)
       .map((s) => s.replace(/\.+$/, ''))
-      .filter((s) => !/[*<>{}]/.test(s) && !ARTEFAKTY_PROJEKTU.some((a) => s.startsWith(a)))
+      .filter((s) => !/[*<>{}]/.test(s) && !ARTEFAKTY_PROJEKTU.some((a) => `${s}/`.startsWith(a)))
     for (const sciezka of new Set(sciezki)) {
       if (!existsSync(join(korzen, sciezka))) wyniki.push(`${relative(korzen, plik)}: ${sciezka} nie istnieje`)
     }
@@ -219,7 +219,7 @@ test('sciezki .claude/: repo szablonu nie ma martwych sciezek', () => {
 
 test('artefakty projektu: szablon ich nie dostarcza (sync-template nie nadpisze skilla weryfikacji projektu)', () => {
   for (const a of ARTEFAKTY_PROJEKTU) assert.equal(existsSync(join(REPO, a)), false, `${a} w repo szablonu`)
-  assert.deepEqual(naPodlozonym({ '.claude/agents/a.md': 'Skill .claude/skills/weryfikacja/SKILL.md i .claude/skills/weryfikacja/mapa-funkcji.md.\n' }, naruszeniaSciezek), [])
+  assert.deepEqual(naPodlozonym({ '.claude/agents/a.md': 'Skill .claude/skills/weryfikacja/SKILL.md, .claude/skills/weryfikacja/mapa-funkcji.md i katalog .claude/skills/weryfikacja.\n' }, naruszeniaSciezek), [])
 })
 
 test('workflow(): podlozone wywolanie workflowu bez meta.name jest zglaszane', () => {

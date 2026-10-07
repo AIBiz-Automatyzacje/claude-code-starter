@@ -16,6 +16,7 @@
 //                                                     jeden flow na [Manual] (fix przy srodowisku niedostepnym w runie)
 //   e2e.mjs lista-manual --zadanie <dir>              pozycje przeniesione w trakcie runu na [Manual] (smoke operatora)
 //   e2e.mjs mapa --zadanie <dir>                      funkcje ze scenariuszy [E2E] planu zadania -> mapa funkcji skilla weryfikacji
+//   e2e.mjs weryfikacja [--zapisz [--nadpisz]]        szkielet skilla weryfikacji projektu + mapa z planow zrobionych zadan
 // Wynik: JSON w jednej linii na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (STOP, porazka sumy, flow bez linii),
 // 2 = zle argumenty, 3 = wyjatek skryptu (JSON z polem wyjatek).
 
@@ -31,6 +32,7 @@ import { doOdegrania, listaManual } from './scenariusze.mjs'
 import { stanSerwera, zatrzymajSerwer } from './serwer.mjs'
 import { envE2e, konfiguracja } from './srodowisko.mjs'
 import { startE2e } from './start.mjs'
+import { generujSkill } from './szkielet.mjs'
 
 const KOD_DO_POPRAWY = 1
 const KOD_ZLYCH_ARGUMENTOW = 2
@@ -38,11 +40,12 @@ const KOD_WYJATKU = 3
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, zadanie: { type: 'string' }, faza: { type: 'string' }, flow: { type: 'string' },
   przyczyna: { type: 'string' }, powod: { type: 'string' }, 'brak-wpisu': { type: 'string' }, 'tylko-z-wpisem': { type: 'boolean' },
+  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> | weryfikacja [--zapisz [--nadpisz]] [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -92,6 +95,10 @@ async function wykonaj(polecenie, o, projekt) {
   }
   if (polecenie === 'stop') zakoncz(await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
   if (polecenie === 'stan') zakoncz(stanSerwera(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
+  if (polecenie === 'weryfikacja') {
+    const w = generujSkill(projekt, { zapisz: !!o.zapisz, nadpisz: !!o.nadpisz })
+    zakoncz(w, !('odmowa' in w))
+  }
   if (polecenie === 'suma') {
     const w = bramkaMigrationsSum(projekt)
     zakoncz(w, w.status !== 'porazka')
