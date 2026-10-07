@@ -36,6 +36,16 @@ RE_PRZEKIEROWANIE = re.compile(r'(?:^|(?<=[\s;&|(){}]))\d?>>?(?![&=>])\s*([^\s;&
 RE_ZMIENNA = re.compile(r'(?:^|(?<=[\s;&(]))([A-Za-z_]\w*)=("[^"]*"|\'[^\']*\'|[^\s;&|]+)')
 RE_CUDZYSLOW = re.compile(r'"[^"]*"|\'[^\']*\'')
 RE_SIEC = re.compile(r'(^|[;&|\s])(gh|curl|wget)\s')
+RE_URL = re.compile(r'https?://(\[[^\]]*\]|[^/:\s\'"()]+)')
+PETLA = re.compile(r'^(127\.\d+\.\d+\.\d+|localhost|[\w.-]+\.localhost|\[::1\])$')
+
+
+def siec(cmd):
+    """Komenda sięga sieci: gh/curl/wget, chyba że wszystkie adresy http(s) to pętla lokalna, a gh brak (builder sprawdza
+    zbudowany serwer curlem na 127.0.0.1 — f-b8374c8, P12 sesja 5)."""
+    if not RE_SIEC.search(cmd): return False
+    hosty = RE_URL.findall(cmd)
+    return not hosty or re.search(r'(^|[;&|\s])gh\s', cmd) is not None or not all(PETLA.match(h) for h in hosty)
 RE_RUN = re.compile(r'^\s*RUN wf_', re.M)
 
 
@@ -126,7 +136,7 @@ def agent(jf, rp, etykieta, sid, kat):
             cmd = inp.get('command', '') if n == 'Bash' else ''
             zle = zapisy_bash(cmd, sid, packager) if cmd else []
             if n == 'Workflow': tw['n1'].append('agent wołał Workflow')
-            if n in ('WebFetch', 'WebSearch') or RE_SIEC.search(cmd): tw['przeciek'].append('%s %s' % (n, wej[:140]))
+            if n in ('WebFetch', 'WebSearch') or siec(cmd): tw['przeciek'].append('%s %s' % (n, wej[:140]))
             elif rp.search(wej): tw['zapis' if zle else 'przeciek'].append('%s %s' % (n, wej[:160]))
             elif zle: uwagi.append('zapis Bashem poza kopią %s: %s' % (zle, cmd[:120].replace('\n', ' ')))
             if n in ZAPIS_NARZ: uwagi.append('%s %s (deny w --settings)' % (n, inp.get('file_path', '')))
