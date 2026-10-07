@@ -59,18 +59,9 @@ export function wierszeWymagan(plan, sekcjaFazyPlanu) {
   return wiersze.some((l) => /\bR\d+\b/.test(l)) ? wiersze.join('\n') : null
 }
 
-/**
- * Niezaznaczone checkboxy [E2E] (prefiksy Test: i Weryfikacja:) — praca testera przegladarkowego. Ten sam grep co precheck
- * autopilota i completion-gate (`^- \[ \].*\[E2E\]` bez `Operator:|\[P[123]\]`): wciety checkbox jest dla nich niewidoczny,
- * kopie `Operator:` i pozycje findingow `[P1]/[P2]/[P3]` nie sa scenariuszami fazy.
- * @param {string} sekcjaZadan sekcja fazy z pliku zadan (albo caly plik)
- * @returns {number}
- */
-export function liczE2e(sekcjaZadan) {
-  return sekcjaZadan.split('\n')
-    .filter((l) => /^- \[ \].*\[E2E\]/.test(l) && !/Operator:|\[P[123]\]/.test(l))
-    .length
-}
+// Niezaznaczone scenariusze [E2E] (prefiksy Test: i Weryfikacja:) — praca testera przegladarkowego. Jedno zrodlo z bootstrapem
+// autopilota, ksiegowaniem i completion-gate: `.claude/scripts/e2e/scenariusze.mjs`.
+export { liczE2e } from '../e2e/scenariusze.mjs'
 
 /**
  * @param {string} kontekstMd plik kontekstu zadania
