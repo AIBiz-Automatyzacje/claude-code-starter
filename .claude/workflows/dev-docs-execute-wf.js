@@ -221,7 +221,7 @@ Faza do wykonania: ${faza}
    zadan rosnie w trakcie jednego zadania z 23 KB do 59 KB (sekcje "Do poprawy po review") i jest czytany
    przy KAZDEJ fazie. Do zbudowania jednostek fazy ${faza} potrzebujesz pieciu wycinkow. Kazdy bierz
    przez \`grep -n\` naglowka, a potem \`Read\` z \`offset\` i \`limit\` — nigdy nie ladujesz calego pliku:
-   - z \`${sciezka}/*-plan.md\`: tabela \`## Fazy\` i sekcja \`## Zrodla\` (stamtad masz sciezke planu technicznego),
+   - z \`${sciezka}/*-plan.md\`: tabela \`## Fazy\` i linia \`Plan techniczny:\` (sciezka planu technicznego),
    - z \`${sciezka}/*-zadania.md\`: blok od \`## Faza ${faza}\` do NASTEPNEGO naglowka tego samego poziomu,
    - z \`${sciezka}/*-kontekst.md\`: sekcja \`## Designerski kontekst\`,
    - z planu technicznego w \`docs/plans/\`: sekcja \`### Faza ${faza}\` (tam sa Implementation Units tej fazy),
