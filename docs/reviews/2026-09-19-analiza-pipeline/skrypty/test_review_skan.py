@@ -35,18 +35,20 @@ RE_BASH_ZAPIS = re.compile(r'(^|[;&|]\s*)git\s+(commit|add|mv|rm|checkout|reset|
 RE_PRZEKIEROWANIE = re.compile(r'(?:^|(?<=[\s;&|(){}]))\d?>>?(?![&=>])\s*([^\s;&|<>()]+)')
 RE_ZMIENNA = re.compile(r'(?:^|(?<=[\s;&(]))([A-Za-z_]\w*)=("[^"]*"|\'[^\']*\'|[^\s;&|]+)')
 RE_CUDZYSLOW = re.compile(r'"[^"]*"|\'[^\']*\'')
-RE_SIEC = re.compile(r'(^|[;&|\s])(gh|curl|wget)\s')
 RE_URL = re.compile(r'https?://(\[[^\]]*\]|[^/:\s\'"()]+)')
+RE_WYWOLANIE = re.compile(r'(?:^|[;&|\s(`"])(curl|wget|gh)\s([^;&|\n)`]*)')
+RE_RUN = re.compile(r'^\s*RUN wf_', re.M)
 PETLA = re.compile(r'^(127\.\d+\.\d+\.\d+|localhost|[\w.-]+\.localhost|\[::1\])$')
 
 
 def siec(cmd):
-    """Komenda sięga sieci: gh/curl/wget, chyba że wszystkie adresy http(s) to pętla lokalna, a gh brak (builder sprawdza
-    zbudowany serwer curlem na 127.0.0.1 — f-b8374c8, P12 sesja 5)."""
-    if not RE_SIEC.search(cmd): return False
-    hosty = RE_URL.findall(cmd)
-    return not hosty or re.search(r'(^|[;&|\s])gh\s', cmd) is not None or not all(PETLA.match(h) for h in hosty)
-RE_RUN = re.compile(r'^\s*RUN wf_', re.M)
+    """Komenda sięga sieci: wywołanie gh albo curl/wget, którego argumenty (do końca segmentu) nie mają adresu http(s) albo mają adres
+    spoza pętli lokalnej. Builder sprawdza zbudowany serwer curlem na 127.0.0.1, a w tej samej komendzie bywa adres w treści heredoca
+    (f-b8374c8, P12 sesja 5) — liczą się tylko argumenty wywołania. Także `$(curl …)` i curl w cudzysłowie."""
+    for m in RE_WYWOLANIE.finditer(cmd):
+        hosty = RE_URL.findall(m.group(2))
+        if m.group(1) == 'gh' or not hosty or not all(PETLA.match(h) for h in hosty): return True
+    return False
 
 
 def slug(p):
