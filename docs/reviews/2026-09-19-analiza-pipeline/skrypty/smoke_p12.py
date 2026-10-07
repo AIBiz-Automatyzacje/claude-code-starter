@@ -72,7 +72,13 @@ def kryterium(agenci, katalog):
     return k
 
 
-def sekcja_p12(run, katalog):
+def testy_usuniete(wyniki):
+    """{etykieta domknięcia: lista testyUsuniete albo None} z wyników journala — bramka cofa test usunięty bez funkcji (pilot P12:
+    builder fullstack usunął 2 działające testy, domknięcie przywróciło)."""
+    return {e: (r.get('testyUsuniete') if isinstance(r, dict) else None) for e, _, r in wyniki if e.startswith('domkniecie:')}
+
+
+def sekcja_p12(run, wyniki, katalog):
     print('\n== 2i. Reguły kodu i D10 (P12; kryterium 6a pkt 67 d)')
     if katalog is None:
         print('  brak katalogu runu'); return
@@ -94,5 +100,6 @@ def sekcja_p12(run, katalog):
         if a.get('rola') == 'build':
             r = reguly(katalog, a['id']) or {}
             print('  build %s: D10 %s' % (a.get('etykieta') or a['id'], ', '.join(r.get('d10') or []) or 'BRAK'))
+    print('  testyUsuniete (domknięcie): %s' % testy_usuniete(wyniki))
     k = kryterium(run['agenci'], katalog)
     print('  kryterium: %s | %s' % ('ZIELONE' if k['zielone'] else 'CZERWONE', {x: v for x, v in k.items() if x != 'zielone'}))

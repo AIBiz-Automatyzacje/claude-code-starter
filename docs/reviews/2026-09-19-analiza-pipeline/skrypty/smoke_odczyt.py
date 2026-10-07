@@ -233,7 +233,7 @@ def main(argumenty):
     smoke_wiedza.sekcja_wiedza(ref, run, wiersz)
     smoke_wiedza.sekcja_wiedza_journal(wyniki, katalog)
     smoke_wiedza.sekcja_compound(run)
-    smoke_p12.sekcja_p12(run, katalog)
+    smoke_p12.sekcja_p12(run, wyniki, katalog)
     sekcja_role(ref, run)
     sekcja_model(ref, run)
 

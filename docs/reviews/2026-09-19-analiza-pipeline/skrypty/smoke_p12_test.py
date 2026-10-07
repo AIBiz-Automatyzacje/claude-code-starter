@@ -56,5 +56,12 @@ class Reguly(unittest.TestCase):
             self.assertEqual(S.kryterium([agent('f', 'fix', 'naprawiacz')], d)['kod_bez_regul'], ['fix'])
 
 
+class TestyUsuniete(unittest.TestCase):
+    def test_z_wyniku_domkniecia_kazdej_fazy(self):
+        wyniki = [('build:IU-1', 'a', {'testyUsuniete': ['nie to']}), ('domkniecie:faza-1', 'b', {'testyUsuniete': ['x.test.ts: blok A'], 'bramki': {}}),
+                  ('domkniecie:faza-2', 'c', {'testyUsuniete': []}), ('domkniecie:faza-3', 'd', None)]
+        self.assertEqual(S.testy_usuniete(wyniki), {'domkniecie:faza-1': ['x.test.ts: blok A'], 'domkniecie:faza-2': [], 'domkniecie:faza-3': None})
+
+
 if __name__ == '__main__':
     unittest.main()
