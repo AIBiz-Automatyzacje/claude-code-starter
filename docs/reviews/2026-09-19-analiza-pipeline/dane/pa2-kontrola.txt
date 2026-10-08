@@ -1,0 +1,44 @@
+# Kontrola PROMPT-AUDIT-2 w obie strony (pa2_kontrola.py) — bledow: 0
+(4) ustalenia: wysoka 6 (PA2-01…PA2-06), srednia 17 (PA2-07…PA2-23)
+    diff: plikow 22, hunkow 41
+
+(1) raport -> zrodla (cytaty na commicie 18ab718)
+  PA2-01: OK  „asercję `!`, eksportowaną funkcję bez jawnego typu zwracanego,”
+  PA2-01: OK  „`UPPER_SNAKE_CASE`, plik poza kebab-case.”
+  PA2-02: OK  „pola `Files:`, `Test scenarios:`, `Patterns to follow:`”
+  PA2-02: OK  „sekcję planu technicznego z `Test scenarios:`”
+  PA2-02: OK  „(Files:, Test scenarios:, Patterns to follow:)”
+  PA2-03: OK  „Grep: pattern="problem_type:.*(architecture_pattern|design_pattern|too”
+  PA2-03: OK  „Dwa tory `problem_type`”
+  PA2-04: OK  „szukaj w polach `module`, `component` lub `tags`”
+  PA2-04: OK  „frontmatter YAML (title, category, date, module, component, tags)”
+  PA2-04: OK  „ponownie uruchomić skill interaktywnie”
+  PA2-05: OK  „→ Użyj Sentry.captureException() / Sentry.captureMessage() zamiast con”
+  PA2-06: OK  „Próg w instrukcji to 360/60 (reguła 300/50 + 20%)”
+  PA2-07: OK  „Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zgl”
+  PA2-08: OK  „z formą zwracania się z `docs/design.md`”
+  PA2-09: OK  „**Tryb pipeline** (wywołanie z workflowu albo z `disable-model-invocat”
+  PA2-10: OK  „(`Explore` nie ma narzędzi sieciowych, a definicja w prompcie gubi `mo”
+  PA2-11: OK  „deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, za”
+  PA2-12: OK  „uruchom /dev-compound --full w świeżej sesji.”
+  PA2-13: bez pola Cytat (odsylacz do innego ustalenia)
+  PA2-14: OK  „(typuj poprawnie, nie używaj any/as)”
+  PA2-15: OK  „KROK OBOWIĄZKOWY,”
+  PA2-15: OK  „ZAWSZE wypisz wszystkie 4 punkty poniżej”
+  PA2-16: OK  „Ten skill domyka odcinek, którego w pipelinie nie było.”
+  PA2-16: OK  „To jest etap, ktorego w szablonie brakowalo najbardziej:”
+  PA2-17: OK  „notorycznie popełniany przez agentów AI.”
+  PA2-18: OK  „AKTUALNY WZORZEC (2026).”
+  PA2-18: OK  „sam robi to, co wczesniej pisalismy recznie”
+  PA2-19: OK  „React 19 (Server Components, use hook, Actions)”
+  PA2-20: OK  „**MANDATORY: Deprecation/Sunset Check**”
+  PA2-20: OK  „**ALWAYS check for API deprecation first**”
+  PA2-21: OK  „POWOD tej walidacji (run feedback-marcin-poprawki, mobile, 2026-08-06)”
+  PA2-22: OK  „POWOD (run team-os-onboarding-instalatory, 2026-07-26): fix zapisal do”
+  PA2-23: OK  „Unikasz przy tym stylów, do których wraca projekt bez kierunku: gradie”
+
+(2) raport -> diff (pliki ustalen bez hunka)
+  (brak)
+
+(3) diff -> raport (pliki diffu bez ustalenia)
+  (brak)
