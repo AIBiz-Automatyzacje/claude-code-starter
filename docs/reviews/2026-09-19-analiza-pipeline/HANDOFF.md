@@ -2055,8 +2055,8 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     bramek domknięcia poza `/tmp` (w trybie auto/ask odczyt pyta operatora). Inne z runu (2): `fix:poprawka` podwójny odczyt reguł, 2 z 3 builderów
     bez bloku D10 (fixture), uwaga „PR 400 plików” w archiwum kopii = artefakt syncu `.claude/` w kopii.
     (g) **Progi P15 do odczytu:** zadania z przyjętą propozycją ogrodnika / zadania z oceną (cel > 0 w kilku zadaniach, inaczej wyłączyć); koszt
-    pomiaru 0,01 M/zadanie; oceny ~25% zadań (symulacja). Kopie `_smoke-P13-oferty-online` i `_smoke-P15-oferty-online` leżą w `~/Documents/Kodowanie`
-    — usunięcie tylko za zgodą operatora. Szablon niewypchnięty (push po grupie IV — P16).
+    pomiaru 0,01 M/zadanie; oceny ~25% zadań (symulacja). Kopie `_smoke-P13-oferty-online` i `_smoke-P15-oferty-online` usunięte za zgodą
+    operatora 2026-10-08 (obie bez remote'u, drzewa czyste). Szablon niewypchnięty (push po grupie IV — P16).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -2788,7 +2788,7 @@ Zakres (pokaż mi na starcie krótką mapę i decyzje z rekomendacją; treść t
 3. KARTA-ODCZYTU.md: progi ze wszystkich paczek w jednym pliku + komenda `raport.mjs --projekt` i horyzont (1 faza / 5 faz / 5 PR).
 4. README — przegląd całości (instalacja, przepływ, bramki, wiedza, E2E i weryfikacja, ogrodnik, telemetria).
 5. Pełne `pnpm typecheck && pnpm test && pnpm lint`; test odwołań i warstwy stałej na całości. Push szablonu po zamknięciu grupy IV (decyzja 2) —
-   po mojej zgodzie. Kopie `_smoke-P13-oferty-online` i `_smoke-P15-oferty-online` w ~/Documents/Kodowanie — usunięcie za moją zgodą.
+   po mojej zgodzie. (Kopie smoke'ów P13 i P15 już usunięte.)
 Gałąź popr/P16-zamkniecie z main; każdy krok: test → kod → pnpm typecheck → pnpm test → pnpm lint → commit; prompt-audit pa_dodane.py main
 na zmienionych plikach z promptem (git add -N przed kontrolą) = 0.
 Po sesji: HANDOFF (§2, 6a, §8 → instrukcja pierwszego nowego projektu z kartą odczytu), pamięć projektu, commit docs/reviews; instrukcję wklej mi w czacie.
