@@ -114,7 +114,8 @@ do sesji projektu i nie zjadają kontekstu. **Działa to tylko w terminalowym `c
 - **konektory** wyłączasz w aplikacji: sesja zakładki Code → menu konektorów → odznacz. Wyłączenie zostaje na kolejne sesje.
 - **pluginy z claude.ai** (Claude Code widzi je jako `<nazwa>@inline`; nazwę zdradza prefiks ich skilli, np. `design:`)
   wyłącza wpis `"<nazwa>@inline": false` w `enabledPlugins` w `~/.claude/settings.json`. To Twoja decyzja: wyłączasz je
-  w Claude Code, na claude.ai zostają.
+  w Claude Code, na claude.ai zostają. W terminalowym `claude` te same pluginy mają sufiks `@synced` — tam wpis `@inline: false`
+  nie zadziała, a wyłącznik `"<nazwa>@synced": false` nie był przez nas sprawdzony.
 
 ### Bramki domknięcia
 

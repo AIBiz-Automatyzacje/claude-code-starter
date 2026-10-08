@@ -108,7 +108,27 @@ node -e 'const P=process.argv[1],o=new Map();for(const l of require("fs").readFi
 | P14 | uwagi bota / Sentry w funkcjach nietkniętych planem | `run.pr` + mapa funkcji skilla weryfikacji | wraca przejście regresyjne (odłożone) |
 | P15 | kilka zadań bez przyjętej propozycji ogrodnika | sekcja „## Ogród” w podsumowaniach zadań | wyłączyć ogrodnika (revert 944aefe) |
 
-## 6. Kolejność odczytów (mapa walidacji)
+## 6. Odczyty z warunkiem — odłożone w paczkach do decyzji na danych projektu
+
+Nie zmieniamy ich bez liczb; każdy ma pole, z którego go czytasz, i warunek zmiany.
+
+| skąd | co | gdzie | warunek → zmiana |
+|---|---|---|---|
+| P11 (6a pkt 62) | budżet warstwy stałej ról — liczba poleceń w bloku `## Polecenia` (cel ≤ 150 na rolę) | doctor (wiersz „warstwa stała ról”), pole `agent.instrukcje_stale` (raport go nie pokazuje — komenda niżej) | rola ponad budżet → przegląd jej pliku |
+| P11 (6a pkt 65 g) | szum P1/P2 osi test-coverage po grupowaniu sceptyków; zapisy reviewerów w drzewie roboczym | raport §4 + `faza.sceptyk`; STOP „niezacommitowane zmiany” po review w raporcie §5 | obalone + zdegradowane P1/P2 osi test > połowy w 5 fazach → lista osi do przeglądu; zapis reviewera w drzewie → zakaz w pliku roli |
+| P12 (6a pkt 70, 71 d–g) | wycinek wiedzy: reguły projektu wypierają zdania D10 (limit 2000 zn; projekt po konwersji: 4 z 13–18 reguł, D10 0 zdań) | `faza.wiedza.wycinek_pominiete`, `smoke_odczyt.py` §2i (D10 w promptach builderów) | `wycinek_pominiete` > 0 w większości faz albo „zdanie było, defekt jest” ≥ 3 razy → pierwsza opcja: osobny limit D10 (~2500 zn obok 2000) |
+| P12 (6a pkt 70 g) | zdania D10 `sciezka-bledu` i `wartosc-graniczna` sformułowane pod dane, a klasy siedzą też w `.tsx` | `run.pr` (klasy uwag bota) per typ pliku | ≥ 3 B P1/P2 tych klas w `.tsx` w oknie 5 PR → osobne zdania UI |
+| P6 / P12 (6a pkt 67) | ESLint szablonu: globy `PREZENTACJA` bez `apps/*/src/features/<x>/*.tsx`, `no-non-null-assertion` tylko `warn`, `.catch(() => {})` przechodzi `no-empty` | uwagi bota tych klas, propozycje ogrodnika (rzutowania, puste `catch`) | klasa wraca w 5 PR albo ogrodnik ją proponuje → reguła w `templates/bramki/eslint.config.szablon.ts` razem z posprzątaniem |
+| P6 (6a pkt 71 g) | trafienia bramki `testyUsuniete` | `faza.testy_usuniete` | usunięcia bez usuniętej funkcji → przegląd domknięcia |
+| P16 | klasy haiku (Haiku 5.5) bez jawnego efortu = `medium` | raport §3, §1 (koszt ról haiku) | koszt ról haiku > 3% runu albo puste/urwane wyniki → `effort: 'low'` dla klas mechanicznych |
+
+Budżet warstwy stałej per rola (maksimum z rekordów projektu):
+
+```bash
+node -e 'const P=process.argv[1],m={};for(const l of require("fs").readFileSync(require("os").homedir()+"/.claude/telemetry/pipeline.jsonl","utf8").split("\n")){if(!l)continue;const r=JSON.parse(l);if(r.typ==="agent"&&r.projekt===P&&typeof r.instrukcje_stale==="number")m[r.rola]=Math.max(m[r.rola]||0,r.instrukcje_stale)}console.log(m)' <nazwa katalogu projektu>
+```
+
+## 7. Kolejność odczytów (mapa walidacji)
 
 Ustawienia i koszt czytasz równolegle; rozłączne osie równolegle; zmiany przekrojowe (pętla fix, sceptycy, wiedza) mają okno 5 PR dla
 siebie — gdy dwie przekrojowe przekroczą próg w tym samym oknie, cofasz jedną i czytasz następne okno. Każda decyzja z odczytu idzie
