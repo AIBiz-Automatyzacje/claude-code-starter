@@ -32,7 +32,7 @@ Wszystkie opcjonalne — domyślnie dev server Vite na `http://localhost:5173`:
 | `E2E_START_TIMEOUT` | `90` | sekundy na odpowiedź serwera po starcie |
 
 Baza e2e (projekt z katalogiem `supabase/` albo z kluczami `SUPABASE_E2E_*`) wymaga dodatkowo:
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_E2E_DB_URL`, `SUPABASE_E2E_SERVICE_ROLE_KEY`,
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (albo legacy `VITE_SUPABASE_ANON_KEY`), `SUPABASE_E2E_DB_URL`, `SUPABASE_E2E_SERVICE_ROLE_KEY`,
 `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`. Guard tożsamości: `VITE_SUPABASE_URL` z `.env.e2e` musi się różnić od
 `.env` / `.env.local`. Projekt bez bazy e2e (np. serwis Node na wspólnym stagingu) ustawia tylko `E2E_URL`
 i `E2E_START`; db-sync wtedy się nie uruchamia. Wzór: `.claude/templates/e2e-env/.env.e2e.example`.
@@ -65,7 +65,7 @@ Zrób one-time setup środowiska E2E wg .claude/templates/e2e-env/README.md:
 1. Utwórz dedykowany projekt Supabase "<projekt>-e2e" (przez Supabase MCP
    jeśli dostępny, inaczej daj mi link i poprowadź przez dashboard — free tier).
    To MUSI być NOWY projekt — nigdy ref istniejącej bazy dev/prod.
-2. Zbierz: URL, anon key, service_role key, connection string (session pooler, IPv4).
+2. Zbierz: URL, publishable key (`sb_publishable_…`), service_role key, connection string (session pooler, IPv4).
 3. Utwórz `.env.e2e` w korzeniu repo wg .claude/templates/e2e-env/.env.e2e.example,
    wygeneruj silne hasło dla konta testowego (e2e@<projekt>.test).
 4. Dopisz `.env.e2e` do .gitignore i ZWERYFIKUJ: `git check-ignore .env.e2e`.

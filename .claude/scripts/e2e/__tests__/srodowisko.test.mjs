@@ -90,7 +90,7 @@ test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, 
   assert.equal(bledy.length, 4)
   assert.match(bledy[0], /\.env\.e2e nie jest w \.gitignore — dopisz go/)
   assert.match(bledy[1], /dedykowanego projektu Supabase e2e/)
-  assert.match(bledy[2], /brak kluczy bazy e2e w \.env\.e2e: VITE_SUPABASE_ANON_KEY, SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD/)
+  assert.match(bledy[2], /brak kluczy bazy e2e w \.env\.e2e: VITE_SUPABASE_PUBLISHABLE_KEY \(albo legacy VITE_SUPABASE_ANON_KEY\), SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD/)
   assert.match(bledy[3], /agent-browser nie dziala: brak agent-browser — instalacja: npm i -g agent-browser/)
   rmSync(p, { recursive: true })
 })
@@ -102,6 +102,16 @@ test('sprawdzenie: projekt bez Supabase nie wymaga kluczy bazy; komplet kluczy i
   assert.deepEqual(bledySrodowiska(z, parsujEnv(BAZA), { przegladarka: true, narzedzia: SPRAWNE }), [])
   rmSync(bez, { recursive: true })
   rmSync(z, { recursive: true })
+})
+
+test('sprawdzenie: klucz klienta bazy e2e = publishable albo legacy anon (Supabase wycofuje anon do konca 2026)', () => {
+  const p = projekt({ pliki: { 'supabase/config.toml': '' } })
+  const publishable = BAZA.replace('VITE_SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY')
+  assert.deepEqual(bledySrodowiska(p, parsujEnv(publishable), { przegladarka: false, narzedzia: SPRAWNE }), [])
+  assert.deepEqual(bledySrodowiska(p, parsujEnv(BAZA), { przegladarka: false, narzedzia: SPRAWNE }), [])
+  const bez = bledySrodowiska(p, parsujEnv(BAZA.replace('VITE_SUPABASE_ANON_KEY=a\n', '')), { przegladarka: false, narzedzia: SPRAWNE })
+  assert.deepEqual(bez, ['brak kluczy bazy e2e w .env.e2e: VITE_SUPABASE_PUBLISHABLE_KEY (albo legacy VITE_SUPABASE_ANON_KEY) — szablon: .claude/templates/e2e-env/README.md'])
+  rmSync(p, { recursive: true })
 })
 
 test('sprawdzenie: zmieniona wypchnieta migracja (migrations.sum) blokuje baze e2e', () => {
