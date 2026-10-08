@@ -78,7 +78,7 @@ for file in $FRONTEND_FILES; do
             WARNINGS="${WARNINGS}\n     Linia ${LINE_NUM}: ${CONTENT}"
             WARNING_COUNT=$((WARNING_COUNT + 1))
         done <<< "$CONSOLE_HITS"
-        WARNINGS="${WARNINGS}\n     → Nieoczekiwany błąd: logger.error() (frontend) albo await captureError() (Edge Functions) — zdarzenie Sentry; oczekiwana odmowa (walidacja, 401/403/404): logger.info() bez zdarzenia — skill sentry-integration"
+        WARNINGS="${WARNINGS}\n     → Nieoczekiwany błąd: logger.error() — zdarzenie Sentry; oczekiwana odmowa (walidacja, 401/403/404): logger.info() bez zdarzenia — skill sentry-integration"
         WARNINGS="${WARNINGS}\n"
     fi
 done

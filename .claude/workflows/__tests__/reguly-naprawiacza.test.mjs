@@ -19,7 +19,8 @@ import { AGENCI, WORKFLOWY, naPodlozonym, tresc } from './agenci-pipeline.mjs'
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const REGULY_KODU = '.claude/rules/coding-rules.md'
 const ODCZYT = `przeczytaj narzędziem Read cały plik \`${REGULY_KODU}\``
-// Role zmieniajace kod: buildery (P12) i klasa naprawiacza (fix, poprawka fixa, naprawy PR).
+// Role, ktorych praca to pisanie kodu: buildery (P12) i klasa naprawiacza (fix, poprawka fixa, naprawy PR). Domkniecie fazy
+// i walidacja koncowa poprawiaja kod po bramkach mechanicznych i swiadomie zostaja przy `paths:`.
 const ROLE_Z_KODEM = ['feature-builder-data', 'feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma',
   'feature-builder-fullstack-figma', 'klasa-naprawiacz']
 
@@ -63,7 +64,7 @@ test('podlozona klasa naprawiacza bez odczytu i brak pliku buildera sa zglaszane
   ])
 })
 
-test('repo szablonu: kazda rola zmieniajaca kod czyta reguly narzedziem Read', () => {
+test('repo szablonu: buildery i klasa naprawiacza czytaja reguly narzedziem Read', () => {
   assert.deepEqual(roleBezOdczytu(REPO), [])
 })
 

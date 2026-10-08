@@ -92,6 +92,7 @@ Zawęź wyszukiwanie do odkrytych podkatalogów pasujących do wskazówki Domain
 Grep: pattern="^(title|regula):.*(realtime|dispatch|orchestration)" path=docs/solutions/ output_mode=files_with_matches -i=true
 Grep: pattern="^klasa:.*(wyscig|zaufanie|dopasowanie-tekstu)" path=docs/solutions/ output_mode=files_with_matches -i=true
 Grep: pattern="^\s+- .*(realtime|websocket|subscription)" path=docs/solutions/ output_mode=files_with_matches -i=true   # pozycje list tags i paths
+Grep: pattern="^(tags|paths):\s*\[.*(realtime|websocket|subscription)" path=docs/solutions/ output_mode=files_with_matches -i=true   # listy w jednej linii
 ```
 
 **Wskazówki do budowy wzorców:**
