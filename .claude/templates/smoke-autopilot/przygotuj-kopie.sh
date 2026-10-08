@@ -52,6 +52,10 @@ git -C "$ZRODLO" rev-parse --git-dir >/dev/null 2>&1 || { echo "BŁĄD: $ZRODLO 
 if [[ -f "$ZRODLO/pnpm-workspace.yaml" ]]; then KATALOG_KODU="$PAKIET/src"; else KATALOG_KODU="src/lib"; fi
 # Pierwsza migracja śledzona w gicie źródła = ta sama w klonie.
 MIGRACJA="$(git -C "$ZRODLO" ls-files 'supabase/migrations/*.sql' | sort | head -1)"
+# Strona scenariuszy [E2E] fixture'u (P14): katalog plików statycznych aplikacji Vite (najpłytszy vite.config.* śledzony
+# w gicie) — serwer dev podaje ją pod /smoke-autopilot.html; bez Vite public/ w korzeniu (Vite, Next i CRA serwują go tak samo).
+VITE_CONFIG="$(git -C "$ZRODLO" ls-files '*vite.config.*' | awk -F/ '{ print NF "\t" $0 }' | sort -n | head -1 | cut -f2)"
+if [[ -n "$VITE_CONFIG" && "$VITE_CONFIG" == */* ]]; then KATALOG_STRONY="${VITE_CONFIG%/*}/public"; else KATALOG_STRONY="public"; fi
 
 # Każdy krok przez `krok`: w --dry-run tylko wypisany, inaczej wypisany i wykonany.
 krok() {
@@ -60,12 +64,12 @@ krok() {
 }
 
 # Fixture zadania: docs/active/smoke-autopilot (pliki z generatora planowania — generuj-fixture.mjs) + docs/plans, katalog kodu
-# w miejsce {{KATALOG_KODU}}, migracja defektu w miejsce {{MIGRACJA}} (bez migracji — linie z {{MIGRACJA}} znikają).
+# w miejsce {{KATALOG_KODU}}, katalog strony E2E w miejsce {{KATALOG_STRONY}}, migracja defektu w miejsce {{MIGRACJA}} (bez migracji — linie z {{MIGRACJA}} znikają).
 podstaw() {
   if [[ -n "$MIGRACJA" ]]; then
-    sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e "s#{{MIGRACJA}}#$MIGRACJA#g" "$1"
+    sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e "s#{{KATALOG_STRONY}}#$KATALOG_STRONY#g" -e "s#{{MIGRACJA}}#$MIGRACJA#g" "$1"
   else
-    sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e '/{{MIGRACJA}}/d' "$1"
+    sed -e "s#{{KATALOG_KODU}}#$KATALOG_KODU#g" -e "s#{{KATALOG_STRONY}}#$KATALOG_STRONY#g" -e '/{{MIGRACJA}}/d' "$1"
   fi
 }
 
@@ -80,6 +84,7 @@ wstaw_fixture_zadania() {
 echo "Źródło: $ZRODLO"
 echo "Kopia:  $KOPIA"
 echo "Kod zadania: $KATALOG_KODU"
+echo "Strona E2E: $KATALOG_STRONY"
 echo "Migracja defektu: ${MIGRACJA:-brak (projekt bez supabase/migrations — defekt migracji pominięty)}"
 krok git clone --quiet "$ZRODLO" "$KOPIA"
 krok git -C "$KOPIA" remote remove origin

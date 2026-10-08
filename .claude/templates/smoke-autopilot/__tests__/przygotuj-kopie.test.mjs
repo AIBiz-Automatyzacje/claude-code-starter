@@ -12,10 +12,10 @@ import assert from 'node:assert/strict'
 const SKRYPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'przygotuj-kopie.sh')
 
 /**
- * @param {{ workspace: boolean, migracje?: string[] }} opcje
+ * @param {{ workspace: boolean, migracje?: string[], vite?: string }} opcje vite: katalog z vite.config.ts aplikacji
  * @returns {string}
  */
-function projektZrodlowy({ workspace, migracje = [] }) {
+function projektZrodlowy({ workspace, migracje = [], vite }) {
   const katalog = mkdtempSync(join(tmpdir(), 'smoke-zrodlo-'))
   const git = (/** @type {string[]} */ argumenty) => execFileSync('git', ['-C', katalog, ...argumenty])
   git(['init', '-q'])
@@ -25,6 +25,10 @@ function projektZrodlowy({ workspace, migracje = [] }) {
   if (workspace) writeFileSync(join(katalog, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n")
   if (migracje.length) mkdirSync(join(katalog, 'supabase', 'migrations'), { recursive: true })
   for (const m of migracje) writeFileSync(join(katalog, 'supabase', 'migrations', m), 'select 1;\n')
+  if (vite) {
+    mkdirSync(join(katalog, vite), { recursive: true })
+    writeFileSync(join(katalog, vite, 'vite.config.ts'), 'export default {}\n')
+  }
   git(['add', '.'])
   git(['commit', '-q', '-m', 'start'])
   return katalog
@@ -66,6 +70,22 @@ test('--dry-run bez pnpm-workspace.yaml: kod zadania w src/lib, bez pakietu fixt
     assert.doesNotMatch(wynik.stdout, /packages\/smoke-autopilot/)
   } finally {
     rmSync(zrodlo, { recursive: true, force: true })
+  }
+})
+
+test('--dry-run: strona scenariuszy [E2E] w katalogu public aplikacji Vite, bez Vite — public w korzeniu', () => {
+  const zVite = projektZrodlowy({ workspace: true, vite: 'apps/dashboard' })
+  const bezVite = projektZrodlowy({ workspace: false })
+  try {
+    const w1 = uruchom([zVite, join(tmpdir(), `smoke-kopia-${process.pid}-c`), '--dry-run'])
+    assert.equal(w1.status, 0, w1.stdout + w1.stderr)
+    assert.match(w1.stdout, /^Strona E2E: apps\/dashboard\/public$/m)
+    const w2 = uruchom([bezVite, join(tmpdir(), `smoke-kopia-${process.pid}-d`), '--dry-run'])
+    assert.equal(w2.status, 0, w2.stdout + w2.stderr)
+    assert.match(w2.stdout, /^Strona E2E: public$/m)
+  } finally {
+    rmSync(zVite, { recursive: true, force: true })
+    rmSync(bezVite, { recursive: true, force: true })
   }
 })
 

@@ -50,6 +50,11 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
   `node .claude/templates/smoke-autopilot/generuj-fixture.mjs --zapisz`; test `__tests__/fixture-zadania.test.mjs` pilnuje
   zgodnosci i walidacji planu po podstawieniu placeholderow.
 - **Pozycja `[Manual]`** (scenariusz planu → `## Operator checklist faza 1` w zadaniach) — dodatnia galaz fazy "Smoke operatora" (complete-wf).
+- **E2E w dwoch fazach (P14).** IU-2 tworzy statyczna strone `{{KATALOG_STRONY}}/smoke-autopilot.html` (katalog `public`
+  aplikacji Vite z najplytszego `vite.config.*`, bez Vite — `public/` w korzeniu), IU-3 w fazie 2 dopisuje jej linie. Scenariusz
+  `smoke-strona` (faza 1) tester odgrywa przy dzialajacym serwerze → PASS z dowodem; przed review fazy 2 operator zatrzymuje
+  serwer → scenariusz `smoke-strona-faza-2` dostaje SKIP `srodowisko` → `[Manual]` z powodem, reszta runu bez przegladarki.
+  Kopia bez `.env.e2e` zatrzymuje run w bootstrapie (STOP `start: srodowisko E2E`) — przebieg (1) ponizej.
 - **Bramki domkniecia (P6).** Pakiet dostaje konfiguracje z `.claude/templates/bramki` i devDependencies bramek
   (`wstaw-pakiet.mjs`), plus `build` dla size-limit. Celowe defekty mechaniczne z planu: pusty `catch` w `parsujLiczbe` i linia
   komentarza dopisana do pierwszej migracji projektu (`{{MIGRACJA}}`; projekt bez migracji — ten defekt znika z fixture).
@@ -57,7 +62,7 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
 
 ## Oczekiwany wynik i asercje
 
-1. Status OK, 1 faza, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane.
+1. Status OK, 2 fazy, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane, `mapa-funkcji.md` skilla weryfikacji z wpisami `smoke-strona` i `smoke-strona-faza-2`.
 2. Review: >= 1 potwierdzony P2 na tescie happy path; fix go naprawia.
 2a. Bramki (wynik agenta `domkniecie:faza-1` w `journal.jsonl`, pole `bramki`): `eslint` porazka z `no-empty`,
    `migracje` porazka; `poNaprawie` obu = `ok`; `stryker` z trafieniami (pole `mutanty` niepuste — test `typeof` przepuszcza
@@ -65,8 +70,9 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
    nowy `supabase/migrations.sum`. Rekord telemetrii fazy: `bramki.eslint.status = "porazka"`.
 3. Asercje fazy "Smoke operatora" (complete-wf):
    - log complete-wf: `Smoke operatora: docs/operator/<data>-smoke-autopilot-smoke.md (N pozycji)` BEZ fragmentu
-     `UWAGA: ... [E2E] nieuruchomionych` (e2eNieuruchomione musi byc 0; fixture celowo nie ma `[E2E]`, bo bramka setupu
-     zatrzymalaby run bez `.env.e2e`);
+     `UWAGA: ... [E2E] nieuruchomionych` (e2eNieuruchomione musi byc 0: `smoke-strona` odznaczony po PASS,
+     `smoke-strona-faza-2` przeniesiony na `[Manual]`); plik ma sekcje „E2E do odegrania recznie (srodowisko w trakcie runu)”
+     z `smoke-strona-faza-2` i powodem;
    - log autopilota: `Smoke operatora do przejscia recznie: docs/operator/<data>-smoke-autopilot-smoke.md`; pole
      `smokeOperatora` w wyniku niepuste, `smokeStatus: "plik"`;
    - plik istnieje i `grep -c '^- \[ \]' docs/operator/<data>-smoke-autopilot-smoke.md` >= 1, zero wartosci sekretow w pliku;
@@ -75,6 +81,21 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
    (`node .claude/scripts/plan/plan.mjs generuj docs/plans/plan-techniczny-smoke-autopilot.md --nazwa smoke-autopilot --zapisz --nadpisz`)
    i zacommituj plan z katalogiem zadania (bootstrap zatrzyma run na zmienionym planie technicznym) → oczekiwane
    `Smoke operatora: brak pozycji do recznego sprawdzenia — plik nie powstal`, `smokeStatus: "brak-pozycji"`, brak pliku w `docs/operator/`.
+
+## Srodowisko E2E kopii i dwa przebiegi (P14)
+
+1. **Przebieg (1) — bez srodowiska:** kopia prosto ze skryptu (bez `.env.e2e`) → `/dev-autopilot-wf docs/active/smoke-autopilot`
+   → oczekiwany STOP `start: srodowisko E2E — …` przed faza 1, z naprawa ze skryptu i poleceniem swiezego runu.
+2. **Srodowisko:** `.env.e2e` w korzeniu kopii (w `.gitignore` projektu) z kluczami dedykowanej bazy e2e (`.claude/templates/e2e-env/README.md`)
+   i komenda startu samej aplikacji z Vite — w monorepo `pnpm run dev` korzenia uruchamia wszystkie pakiety i przekazuje im flagi
+   Vite. oferty-online: `E2E_START=pnpm --filter @oferty/dashboard exec vite --mode e2e --port 5173 --strictPort`.
+   Pusta baza e2e: `supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all` raz przed runem (db-sync fazy jest wtedy
+   przyrostowy). Sprawdzenie: `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/smoke-autopilot` = `gotowe`.
+3. **Skill weryfikacji:** `/weryfikacja-setup` w kopii (szkielet, fakty z kodu, przejscie na zywo, commit) — tester czyta
+   `.claude/skills/weryfikacja/`, a archiwizacja dopisuje flow zadania do `mapa-funkcji.md`.
+4. **Przebieg (2):** swiezy run; po domknieciu fazy 1 (log `Faza 2` / execute fazy 2 w toku) z drugiego terminala w kopii
+   `node .claude/scripts/e2e/e2e.mjs stop`. Oczekiwane: `smoke-strona` PASS z dowodem, `smoke-strona-faza-2` → `[Manual]`
+   z powodem, 0 STOP-ow w trakcie, run OK; telemetria `faza.e2e.manual` = 1 w fazie 2, `run.manual_razem` = 1.
 
 ## Test resume (scenariusz celowy)
 
@@ -93,4 +114,4 @@ Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 - `wstaw-pakiet.mjs` + `__tests__/wstaw-pakiet.test.mjs` — pakiet z konfiguracjami i devDependencies bramek (P6);
 - `plan-techniczny-smoke-autopilot.md` — plan techniczny fixture'u w formacie `/dev-plan`;
 - `smoke-autopilot-{plan,zadania,kontekst}.md` — pliki zadania z generatora (`generuj-fixture.mjs` + `__tests__/fixture-zadania.test.mjs`);
-  `{{KATALOG_KODU}}` i `{{MIGRACJA}}` wstawia skrypt kopii.
+  `{{KATALOG_KODU}}`, `{{KATALOG_STRONY}}` i `{{MIGRACJA}}` wstawia skrypt kopii.

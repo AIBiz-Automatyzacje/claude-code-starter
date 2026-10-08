@@ -12,7 +12,7 @@ Plan techniczny: `docs/plans/plan-techniczny-smoke-autopilot.md`
 
 ## Cel
 
-Zadanie-atrapa do smoke-testu pipeline'u dev-autopilot-wf: jedna czysta funkcja pomocnicza z testami i celowymi defektami dla review, fixa i bramek domknięcia. Wartość biznesowa zerowa, diagnostyczna — cała.
+Zadanie-atrapa do smoke-testu pipeline'u dev-autopilot-wf: jedna czysta funkcja pomocnicza z testami i celowymi defektami dla review, fixa i bramek domknięcia oraz statyczna strona diagnostyczna dla testera E2E w dwóch fazach. Wartość biznesowa zerowa, diagnostyczna — cała.
 
 ## Zakres
 
@@ -22,7 +22,8 @@ Wymagania i granice: `docs/plans/plan-techniczny-smoke-autopilot.md`, sekcje „
 
 | Faza | Nazwa | IU | Zależy od | Delegaci |
 |---|---|---|---|---|
-| 1 | Funkcja pomocnicza | IU-1 | Brak | feature-builder-data |
+| 1 | Funkcja pomocnicza | IU-1, IU-2 | Brak | feature-builder-data, feature-builder-ui |
+| 2 | Druga linia strony | IU-3 | Faza 1 | feature-builder-ui |
 
 ## Kryteria akceptacji całości
 
