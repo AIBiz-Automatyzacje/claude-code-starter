@@ -926,6 +926,7 @@ if (dedup.length > 1) {
 Znajdz grupy wpisow opisujacych TEN SAM problem inna parafraza (ten sam plik/mechanizm i ta sama przyczyna).
 NIE lacz roznych problemow w tym samym pliku ani problemow o wspolnym objawie, ale innej przyczynie.
 W razie watpliwosci NIE laczyc. Zwroc wylacznie grupy 2+ indeksow; brak duplikatow => {duplikaty: []}.
+Plikow nie otwierasz: oceniasz tresc listy ponizej, a otwarty plik kodu doklada do kontekstu reguly kodu, ktorych ta ocena nie potrzebuje.
 
 ${lista}`,
     { schema: DEDUP_GRUPY, agentType: 'klasa-mechaniczny-odczyt', label: 'dedup:semantyczny', phase: 'Review' }

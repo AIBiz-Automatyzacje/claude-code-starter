@@ -77,3 +77,13 @@ test('podlozony workflow z poleceniem odczytu regul jest zglaszany, komentarz ni
 test('repo szablonu: workflowy nie powtarzaja polecenia odczytu regul z pliku roli', () => {
   assert.deepEqual(workflowyZRegulami(REPO), [])
 })
+
+// Dedup semantyczny (haiku) laczy findingi po tresci listy. W R-P12 sam otwieral pliki kodu, a Read dokleil mu reguly kodu
+// przez `paths:` (0,03 → 0,11 M, ok. 4% runu) — polecenie zabrania otwierania plikow.
+test('dedup semantyczny ocenia po tresci listy, bez otwierania plikow', () => {
+  const zrodlo = readFileSync(join(REPO, WORKFLOWY, 'dev-docs-review-wf.js'), 'utf8')
+  const start = zrodlo.indexOf('const lista = dedup.map(')
+  const koniec = zrodlo.indexOf("label: 'dedup:semantyczny'", start)
+  assert.ok(start > -1 && koniec > start, 'kotwica polecenia dedupu wymaga aktualizacji')
+  assert.match(zrodlo.slice(start, koniec), /Plikow nie otwierasz/)
+})
