@@ -1,0 +1,344 @@
+RECENZJA P15 „ogrodnik” — workspace-template, gałąź popr/P15-ogrodnik (a0138eb, 944aefe, 5e637e7, c8ed99c)
+Data: 2026-10-08. Zakres: .claude/scripts/ogrod/*, blok ogrodnika w dev-autopilot-wf.js, krokOgrodu w dev-docs-complete-wf.js,
+rekordOgrodu w telemetria/run.mjs, role.mjs, klasa-mechaniczny-pomiar.md, testy.
+
+Jak sprawdzone:
+- pomiar uruchomiony (tylko odczyt, GIT_OPTIONAL_LOCKS=0, --telemetria /nonexistent) na 12 projektach z ~/Documents/Kodowanie,
+  próbki trafień każdej kategorii przejrzane ręcznie, plus skan wszystkich repo git z ~/Documents/Kodowanie pod kątem pominięć
+  (non-null, deno-lint-ignore, inline config ESLint, JSX + komentarz, linie kodu wygaszone przez lekser);
+- 30 sond lekseru/wzorców na syntetycznych liniach (JSX, regex, szablony zagnieżdżone, `any` jako nazwa, `.catch`, dyrektywy w blokach);
+- funkcja progu wywołana bezpośrednio dla scenariuszy kontraktu;
+- 80 mutacji w worktree (detached na c8ed99c, node_modules jako symlink), 10 plików testów; worktree usunięty.
+Wyniki bazowe: wszystkie testy zielone (kategorie 5, prog 7, cli 5, realne 2, ogrod.test 11, start-koniec 27, run 18, role 11,
+klasy-rol 10, wywolania-agentow 4).
+Uwaga poboczna: w głównym checkoutcie są zmiany, których nie robiłem (M docs/reviews/.../skrypty/smoke_odczyt.py,
+?? .../skrypty/smoke_p15.py) — niczego tam nie ruszałem.
+
+Liczby (wynik pomiaru, cały projekt): oferty-online 628 plików {wyc 2, any 0, rzut 3, kom 3, catch 4}; gramywpadla 861 {19,0,11,8,1};
+freelance-platform 285 {8,0,53,1,5}; asystent-aa 123 {1,0,12,1,6}; Nawykometr 183 {1,0,8,3,0}; claude-cron — kom. 23+ (patrz P1-1).
+Wyciszenia: lekser = prosty wzorzec linii na wszystkich projektach (test realne-projekty) — kategoria solidna. Rzutowania: próbka
+36 trafień, 0 fałszywych. Puste catch: wszystkie trafienia to `catch {}` albo catch z samym komentarzem — zgodne z coding-rules
+(„każdy catch zostawia ślad”). `any` = 0 we wszystkich projektach (sprawdzone grepem — projekty naprawdę go nie mają).
+
+=====================================================================================================================
+P1 — zły wynik w realnym użyciu
+=====================================================================================================================
+
+P1-1. Kategoria „komentarze-obejścia” liczy głównie słownictwo dziedzinowe („plik tymczasowy”), a nie obejścia
+  Miejsce: .claude/scripts/ogrod/kategorie.mjs:29 (SLOWO_OBEJSCIA: `\b(?:workaround|work-around|tymczasow|temporar)`), :28 (ZNACZNIK `XXX`).
+  Dowód (wszystkie repo git z ~/Documents/Kodowanie poza kopiami szablonu): 47 trafień „komentarze”, z tego 34 z rdzenia
+  „tymczasow/temporar”, a z nich ~31 to dziedzina: „zapisz do pliku tymczasowego, potem rename” (live-licznik/src/state.js:61),
+  „osobny plik w katalogu tymczasowym” (Nawykometr/jest-setup.ts:15), „zgoda tymczasowa/prowizoryczna” (Nawykometr/lib/notifications.ts:116),
+  23 trafienia w claude-cron (inbox-blobs.js, inbox-client.mjs — „sprzątanie pliku tymczasowego”), „Create a temporary image”
+  (cud_chatka). Do tego `XXX` łapie format telefonu: gramywpadla/app/(onboarding)/phone.tsx:21 „+48 XXX XXX XXX”. Trafnych
+  w całym korpusie: 6 znaczników TODO/HACK + kilka „workaround/obejście”. W Nawykometrze 3/3 i w live-licznik 1/1 trafień to fałsz.
+  Komentarz w kodzie zawęża „obejście” do orzeczenia, ale ten sam problem dla „tymczasow” zostawia bez ochrony; ponadto
+  alternatywa `na\s+obej[sś]ci` łapie właśnie sens „bypass” („podatny na obejście limitu”), który komentarz deklaruje jako wykluczony.
+  Scenariusz porażki: zadanie dodaje w claude-cron obsługę plików tymczasowych z 5 komentarzami o „pliku tymczasowym” → przyrost
+  komentarzy 5 → suma ≥ PROG_PRZYROSTU → agent oceny (koszt) i sekcja „komentarze-obejścia: 28 (+5)” wprowadzająca operatora
+  w błąd; liczba w telemetrii staje się szumem, a próg „kilka zadań bez przyjętej propozycji → wyłączyć” zadziała z powodu szumu.
+  Poprawka: „tymczasow/temporar” tylko w orzeczeniu o kodzie (`tymczasow\w*\s+(?:obej|rozwiąz|rozwiaz|hack|łat|lat|wyłącz|wylacz|pomij|zakomentow)`,
+  `\btemporar\w*\s+(?:fix|workaround|hack|hotfix)`, `\btymczasowo\s+(?:wyłącz|wylacz|pomij|wyciszon)`); `XXX` tylko jako znacznik
+  (`(?:^|\s)XXX(?=[:(\s]|$)` na początku komentarza, nie w środku zdania), `na\s+obejści` usunąć. Do fixture dopisać linie z korpusu
+  (plik tymczasowy, +48 XXX XXX XXX, „podatny na obejście”) jako pułapki z liczbą 0.
+
+=====================================================================================================================
+P2 — istotna luka
+=====================================================================================================================
+
+P2-1. Nowe wyciszenie z zadania nie włącza oceny, gdy liczba projektu się nie zmieniła (przyrost tylko z telemetrii)
+  Miejsce: .claude/scripts/ogrod/prog.mjs:76-79 (`we.poprzedni ? we.liczby[k] - we.poprzedni.liczby[k] : we.noweLiczby[k]`).
+  Dowód: decyzjaOceny({ liczby: {wyciszenia: 3}, noweLiczby: {wyciszenia: 1}, poprzedni: {liczby: {wyciszenia: 3}} }) →
+  ocena=false, „bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania”.
+  Scenariusz: zadanie usuwa `// eslint-disable-next-line no-console` w pliku A i dodaje `// @ts-expect-error` w pliku B (albo poprzedni
+  rekord pochodzi z gałęzi, która nie została zmergowana / PR-fix zmienił kod po pomiarze) → delta 0 → brak oceny, a ta sama sekcja
+  wypisuje „Nowe w tym zadaniu (1): `B:12` (wyciszenia lint/TS)” obok „Bez oceny”. Coding-rules zakazują każdego nowego wyciszenia —
+  diff wie o nim dokładnie, a decyzja tę wiedzę wyrzuca. Per-kategorię netto (Math.max po kategorii) to samo maskuje `any`/rzutowania.
+  Poprawka: przyrost[k] = max(delta z telemetrii, noweLiczby[k]) (diff jako podłoga), co najmniej dla wyciszeń; test na ten przypadek.
+
+P2-2. Świeży run tego samego zadania (po nieudanej archiwizacji) porównuje się z własnym poprzednim runem
+  Miejsce: .claude/scripts/ogrod/prog.mjs:44-58 (poprzedniPomiar bez filtra zadania), dev-autopilot-wf.js:2031-2046.
+  Scenariusz: run 1 dochodzi do ogrodnika (ocena + propozycje), complete-wf zwraca null/niedomkniętą archiwizację → run kończy się
+  statusem OK z `ogrod` w wyniku → telemetria ma rekord. Operator robi świeży run (stan complete=pending) → ogrodnik mierzy znowu,
+  poprzedni = run 1 tego samego zadania → przyrost 0 (sprawdzone: ocena=false, „bez oceny… wzgledem poprzedniego zadania”), licznik
+  bez_oceny +1. Propozycje z runu 1 nigdzie nie trafiły (podsumowanie nie powstało), a przyrost zadania znika na zawsze.
+  Poprawka: przekazać nazwę zadania (`ogrod.mjs pomiar --zadanie <nazwaZadania>`) i w poprzedniPomiar pomijać rekordy z
+  `r.zadanie === zadanie` (rekord run ma pole `zadanie`); test z dwoma rekordami tego samego projektu, ostatni = to samo zadanie.
+
+P2-3. Rekord run.ogrod może zostać nadpisany przez null przez kolektor telemetrii z projektu na starszym szablonie
+  Miejsce: .claude/scripts/ogrod/prog.mjs:66 (`odczytajRekordy(...).ostatnie` — ostatnia wersja rekordu po kluczu),
+  .claude/scripts/telemetria/run.mjs:231, zapis.mjs:44-51 (run nie jest typem jednorazowym), settings.json hook Stop
+  (`$CLAUDE_PROJECT_DIR/.claude/scripts/telemetria/zbierz.mjs` — wersja skryptu z projektu, plik ~/.claude/telemetry/pipeline.jsonl wspólny).
+  Scenariusz: operator ma otwarte sesje w oferty-online (po sync P15) i w claude-cron (szablon sprzed P15 — dziś żaden projekt nie ma
+  .claude/scripts/ogrod). Hook Stop w claude-cron skanuje wszystkie runy z ~/.claude/projects zmienione w oknie znacznika, liczy rekord
+  run bez pola ogrod (`ogrod: null`), treść różni się od wersji z P15 → doZapisu dopisuje → `ostatnie` zwraca wersję z null →
+  następny pomiar w oferty-online bierze starszy rekord (przyrost z dwóch zadań, licznik bez_oceny cofa się). Kolejność zapisu jest
+  przypadkowa (ostatni wygrywa); bump WERSJA_REKORDU nie pomaga (doZapisu dopisuje też przy różnej wersji).
+  Poprawka: w poprzedniZPliku czytać wszystkie wpisy (czytajJsonl) i dla każdego klucza runu brać ostatnią wersję z kompletnym
+  ogrod.liczby (rekord pomiaru jest niezmienny po zakończeniu runu), test z dwiema wersjami tego samego klucza (pomiar, potem null).
+
+P2-4. Nie-null `x!` liczony tylko przed `.`, `[` i `)` — połowa realnych asercji poza pomiarem
+  Miejsce: .claude/scripts/ogrod/kategorie.mjs:34 (`(?<=[\w$)\]])!(?=[.[)])`).
+  Dowód (skan z lekserem, pliki TS): freelance-platform 12 pominiętych (`name: name!,` app/api/auth/register/route.ts:51,
+  `src={message.attachmentUrl!}` components/dashboard/message-bubble.tsx:68), asystent-aa 6 (`url: process.env.DATABASE_URL!,`
+  drizzle.config.ts:8, `const profileData = validation.data!;` src/app/api/profile/route.ts:222), akademia-automatyzacji-dashboard 4
+  przy 5 policzonych (`.closest("tr")!;`). Najczęstszy wzorzec agentów (`process.env.X!`, `x!;`, `f(a!, b)`, `x! ?? y`) nie jest liczony.
+  Do tego `as never` nie ma ani jednego wiersza w fixture (mutant K7 przeżył), choć jest w realnym kodzie (asystent-aa, 2 trafienia).
+  Poprawka: `(?<=[\w$)\]])!(?!=)(?=\s*(?:[.[),;:}\]]|\?\?|&&|\|\||$))` z flagą m; do fixture `process.env.X!`, `f(a!, b)`, `x!;`,
+  `x as never`, a jako pułapki `a != b`, `a !== b`, `<p>Hej!</p>`.
+
+P2-5. Lekser: pięć zachowań bez testu (mutanty przeżyły)
+  Miejsce: .claude/scripts/ogrod/leksyka.mjs:85 (wygaszanie tekstu szablonu, L2), :115-117 (licznik klamer w `${}`, L6),
+  :8 i :23 (słowa kluczowe przed regexem, L8), :7 (`)` nie otwiera regexu, L9), :104 (escape w stringu, L10).
+  Scenariusze porażki, których testy nie złapią: (a) tekst szablonu z wzorcem kodu — `` const src = `const a: any = 1` `` (typowe
+  w testach i generatorach) liczony jako `any`, gdy wygaszanie zniknie; (b) `${items.map((i) => { return i })}` — bez licznika klamer
+  `}` ciała strzałki zamyka wyrażenie, a reszta pliku odwraca stan kod/szablon (workflow-animator ma setki linii takich szablonów);
+  (c) `return /'/.test(x) // TODO` bez słów kluczowych → `'` otwiera string i komentarz znika; (d) `(a + b) / 2 // TODO` z `)` w zbiorze
+  → regex zjada komentarz; (e) `'it\'s' // TODO` bez obsługi escape. Fixture kategorie.test.mjs nie ma żadnej z tych linii; test
+  realne-projekty sprawdza tylko wyciszenia, więc regresja lekseru w kategoriach kodu przechodzi.
+  Poprawka: pięć linii fixture z dosłownym oczekiwaniem (wystąpienia i komentarze) — po jednej na zachowanie.
+
+P2-6. Polecenie agenta pomiaru nie jest pilnowane testem (mutant A10 przeżył)
+  Miejsce: .claude/workflows/dev-autopilot-wf.js:1909-1914 (ogrodPomiarPrompt), ogrod.test.mjs (ogrodnik() z atrapą agenta nie patrzy
+  na prompt).
+  Scenariusz: zmiana polecenia na `node .claude/scripts/ogrod/ogrod.mjs pomiar --telemetria /dev/null` (albo literówka w ścieżce, albo
+  `--projekt docs`) przechodzi wszystkie testy, a w produkcji każdy pomiar staje się „pierwszym” (przyrost tylko z diffu), licznik
+  przeglądu okresowego nigdy nie rośnie powyżej 1 i ocena okresowa nie odpali się nigdy.
+  Poprawka: test, że prompt zawiera dokładnie linię `node .claude/scripts/ogrod/ogrod.mjs pomiar` (bez dodatkowych argumentów)
+  i że ta sama komenda wykonana w repo-fixture daje JSON, który przechodzi pomiarZWyniku (spiąć z istniejącym testem
+  „stdout prawdziwego skryptu”, biorąc komendę z promptu zamiast wpisanej ręcznie).
+
+=====================================================================================================================
+P3 — drobne
+=====================================================================================================================
+
+P3-1. JSX: `</tag>` i `} />` otwierają regex — połykają kod i komentarze do następnego `/` w linii
+  leksyka.mjs:7, :22 (`<` i `}` w PRZED_REGEXEM). Sondy: `<div><span>x</span>{(v as any).y}</div>` → any=0;
+  `return <Foo a={b} /> // eslint-disable-line x` → wyciszenia=0; `<b>a</b> // TODO` → 0. W korpusie 0 takich linii (skan),
+  stąd P3. Poprawka: `/` z następnym znakiem `>` albo poprzedzony bezpośrednio `<` nie otwiera regexu; dwie linie w fixture.
+
+P3-2. `any`: fałszywe trafienia dla nazwy i tekstu JSX, pominięcia w pozycji typu
+  kategorie.mjs:32. Sondy: `const [any, setAny]`, `f(any)`, `{ a, any }`, `arr.some(any => any > 1)` → 6 trafień; tekst JSX
+  „such as any other (any)” → 2; pominięte `keyof any`, `readonly any[]`, `T extends any`. W korpusie `any` = 0, więc dziś bez
+  skutków. Poprawka: lookahead pozycji typu `(?=\s*(?:[\]>)|,;=&{}]|\[\]|$))`, lookbehind z `keyof|readonly|extends`.
+
+P3-3. Wyciszenia: pominięte `// deno-lint-ignore` (Edge Functions Supabase to Deno) i `/* eslint no-console: off */`; fałszywe
+  ` * eslint-disable …` w środku bloku JSDoc (ESLint go nie traktuje jako dyrektywy). kategorie.mjs:24. W korpusie 0 wystąpień.
+  Poprawka: dopisać `deno-lint-ignore(?:-file)?\b` i `eslint\s+[\w@/-]+\s*:\s*(?:0|"?off"?)\b`.
+
+P3-4. Pusty catch: pominięty `.catch(async () => {})`; `.catch(function () {})` łapie się przypadkiem przez pierwszą alternatywę
+  (`catch(` + `[^)]*`). kategorie.mjs:35. Poprawka: `(?:async\s*)?` przed parametrami, jawna alternatywa `function`.
+
+P3-5. Baza diffu tylko z lokalnych gałęzi main/master — niespójne z dossier
+  pomiar.mjs:18 vs .claude/scripts/dossier/zmiany.mjs:15 (`['origin/main','main','origin/master','master']`). Nieaktualny lokalny
+  main (PR zmergowany na GitHubie, bez pull) albo przepływ przez `develop` (dev-plan na to pozwala) → „Nowe w tym zadaniu” zawiera
+  kod wcześniejszych zadań, a pierwszy pomiar włącza ocenę z cudzego przyrostu. Poprawka: jedna lista gałęzi (stała wspólna z dossier).
+
+P3-6. `--no-renames`: przeniesiony plik liczy wszystkie swoje wystąpienia jako nowe (pomiar.mjs:85; mutant P12 przeżył — brak testu).
+  Refaktor przenoszący plik z 3 wyciszeniami → pierwszy pomiar: ocena; sekcja listuje stare miejsca jako „nowe w tym zadaniu”.
+  Poprawka: `-M` (parsujDiffU0 bierze ścieżkę z `+++ b/`) i test z `git mv`.
+
+P3-7. Ścieżki cytowane przez gita (znaki spoza ASCII) wypadają z „nowe”: `+++ "b/src/\304\205.ts"` nie zaczyna się od `+++ b/`
+  (bramki/diff.mjs:37, wołane z pomiar.mjs:86). Poprawka: `git -c core.quotePath=false diff …` w linieDodane.
+
+P3-8. pomiarZWyniku sprawdza tylko liczby i przyrost; sekcjaOgrodu i rekordOgrodu czytają `nowe`, `noweRazem`, `plikow`,
+  `decyzja.powod/zrodlo/bez_oceny` bez sprawdzenia (dev-autopilot-wf.js:1929, :1972). JSON z liczbami, ale bez tablicy `nowe`
+  (haiku skróci przepisywany wynik) i z noweRazem > 0 → TypeError w `pomiar.nowe.slice` → ogrodnik() rzuca → autopilot pada
+  przed complete-wf (archiwizacja nie startuje), a resume odtworzy z journala ten sam wynik agenta i padnie znowu.
+  Poprawka: walidacja pól w `kompletny` (Array.isArray(nowe), Number.isInteger(noweRazem)) albo try/catch wokół ogrodnik()
+  zwracający rekord `{status:'blad'}` i sekcję „Pomiar nie powstał” (zasada „archiwizacja idzie dalej” z logu).
+
+P3-9. Haiku przepisuje dosłownie cały JSON (do ~4,4 KB: gramywpadla z bazą od początku historii — 4357 B, 20 pozycji `nowe`
+  z polskimi znakami i cudzysłowami) do pola string w schemacie — każde przeoczone ucieczki `\"` = „Pomiar nie powstał”.
+  Pole `tekst` nie jest używane w sekcji, a agent oceny i tak czyta kod sam. Poprawka: tryb `--zwiezle` bez `tekst`
+  (albo `tekst` przycięty do 80 znaków) w poleceniu agenta pomiaru.
+
+P3-10. Testy krawędzi walidacji (mutanty przeżyły): A3 (kod≠0 przy poprawnym JSON bez `blad` — dziś redundantne z JSON.parse/
+  dane.blad), A5 (przyrost bez części kluczy), G14 (liczbyZRekordu przyjmuje dowolne wartości ≠ undefined), R5 (telemetria
+  przyjmuje dowolne `zrodlo`). Poprawka: po jednej asercji na przypadek.
+
+P3-11. Stałe i krawędzie bez testu (mutanty przeżyły): LIMIT_NOWYCH (P8 — 21 wystąpień → 20 w `nowe`, noweRazem 21), PROG_BAJTOW
+  (P5), diff z drzewem roboczym (P6 — niezacommitowana zmiana w śledzonym pliku), kolejność main/master (P11), wykluczenie
+  wyciszeń z sumy (G4 — przypadek „wyciszenia +5, reszta 0” powinien dać tylko powód wyciszeń), liniaOffsetu dla dopasowania
+  w kolumnie 0 (K10 — w praktyce prawie równoważny). Mutant K8 (non-null przed spacją) przeżył, ale to poszerzenie zgodne z P2-4.
+
+P3-12. Klasa ocen ogrodnika: klasa-sceptyk.md ma treść „Sprawdzasz w kodzie, czy zgłoszony problem naprawdę zachodzi…”, niezgodną
+  z rolą ogrod:ocena, i Bash — zakaz zmian trzyma tylko prompt. Akceptowalne (test pilnuje braku Edit/Write); rozważyć zdanie w opisie
+  klasy obejmujące propozycje ogrodnika.
+
+P3-13. Tożsamość projektu = basename katalogu (ogrod.mjs:31, zgodnie z zbieranie.mjs:36): projekty o tej samej nazwie w różnych
+  katalogach mieszają rekordy; sesja w worktree o nazwie zadania zmienia nazwę projektu przy każdym zadaniu → zawsze „pierwszy
+  pomiar”, przegląd okresowy nigdy. Kopie smoke mają unikalne nazwy (_smoke-Pnn-…), więc dziś bez skutków. Zapisać ograniczenie
+  w komentarzu albo kluczować po `git rev-parse --git-common-dir`.
+
+P3-14. Coding-rules i plan: (a) jednoliterowe nazwy (`z`, `l`, `o`, `d`, `p`, `w`, `k`, `m`) w leksyka.mjs, kategorie.mjs, prog.mjs —
+  reguła „bez akronimów i skrótów”; (b) liczby bez nazwanych stałych: 160 (kategorie.mjs:68), `i - 7` (leksyka.mjs:23 — długość
+  najdłuższego słowa kluczowego), `64 * 1024 * 1024` (pomiar.mjs:56); (c) cykl katalogów telemetria/run.mjs → ogrod/prog.mjs →
+  telemetria/zapis.mjs (nie cykl modułów, ale sprzężenie w obie strony — liczbyZRekordu i KATEGORIE mogłyby żyć w ogrod/kategorie.mjs
+  bez zależności od telemetrii); (d) plan wskazuje zbieranie.mjs, rekord powstał w run.mjs (lepsze miejsce — tylko odnotować);
+  (e) plan: „kilka zadań bez przyjętej propozycji → wyłączyć” — brak przełącznika wyłączenia poza revertem. Rozmiary modułów OK
+  (największy pomiar.mjs 131 linii), puste catch w nowym kodzie — brak.
+
+Co jest dobrze: wyciszenia 1:1 z niezależnym wzorcem na wszystkich projektach; lekser odporny na realny korpus (9 plików z długimi
+szablonami HTML/C# — wszystkie poprawnie rozpoznane jako szablony); kontrakt workflow → telemetria → prog spięty testem; zerowanie
+bez_oceny tylko po odbytej ocenie (agent null nie zeruje) — przetestowane mutacjami A1/A2; filtry projektu/workflow/kompletu liczb
+i sortowanie po start — wszystkie mutacje złapane; krok 4b znika w trybie standalone; krok przed zapiszZaleglyStan i complete-wf.
+
+=====================================================================================================================
+TABELA MUTACJI (80; przeżyło 19)
+=====================================================================================================================
+Kolejność testów: kategorie, prog, ogrod-cli, workflows/ogrod, start-koniec, telemetria/run, role, klasy-rol, wywolania-agentow,
+realne-projekty — w tabeli pierwszy plik, który padł.
+
+leksyka.mjs
+L1  wygaszanie stringów wyłączone                         → kategorie.test (fixture TS; lekser: kod tej samej długości)
+L2  wygaszanie tekstu szablonu wyłączone                  → PRZEŻYŁA
+L3  rozpoznanie regexu wyłączone                          → kategorie.test (dzielenie nie otwiera regexu…)
+L4  string nie kończy się na końcu linii                  → kategorie.test (niezamknięty string w JSX)
+L5  `${` nie otwiera kodu                                 → kategorie.test (fixture TS)
+L6  bez licznika klamer w `${}`                           → PRZEŻYŁA
+L7  komentarz blokowy nie przesuwa licznika linii         → kategorie.test (lekser)
+L8  słowa kluczowe przed regexem ignorowane               → PRZEŻYŁA
+L9  `)` przed `/` otwiera regex                           → PRZEŻYŁA
+L10 escape w stringu ignorowany                           → PRZEŻYŁA
+kategorie.mjs
+K1  dyrektywa bez kotwicy `^`                             → kategorie.test (fixture TS)
+K2  znaczniki bez względu na wielkość liter               → kategorie.test (fixture TS)
+K3  „obejście” bez orzeczenia                             → kategorie.test (fixture TS)
+K4  kategorie typów także w JS                            → kategorie.test (plik JS)
+K5  `any` bez `as`                                        → kategorie.test (fixture TS)
+K6  `any` po kropce (z.any())                             → kategorie.test (fixture TS)
+K7  rzutowania bez `as never`                             → PRZEŻYŁA
+K8  non-null także przed spacją                           → PRZEŻYŁA (poszerzenie, zob. P2-4)
+K9  pusty catch bez `.catch()`                            → kategorie.test (fixture TS)
+K10 liniaOffsetu `<` zamiast `<=`                         → PRZEŻYŁA
+K11 wyciszenia liczone też jako komentarze                → kategorie.test (fixture TS)
+pomiar.mjs
+P1  `.claude/` nie pomijany                               → ogrod-cli.test (pomiar z poprzednim rekordem)
+P2  `.d.ts` nie pomijany                                  → ogrod-cli.test
+P3  `dist/` nie pomijany                                  → ogrod-cli.test
+P4  nieśledzone nie liczone jako dodane                   → ogrod-cli.test
+P5  bez progu bajtów                                      → PRZEŻYŁA
+P6  diff tylko do HEAD (bez drzewa roboczego)             → PRZEŻYŁA
+P7  hotspoty rosnąco                                      → ogrod-cli.test
+P8  bez limitu `nowe`                                     → PRZEŻYŁA
+P9  bez nieśledzonych w liście plików                     → ogrod-cli.test
+P10 baza zawsze null                                      → ogrod-cli.test
+P11 master przed main                                     → PRZEŻYŁA
+P12 bez `--no-renames`                                    → PRZEŻYŁA
+prog.mjs
+G1  próg wyciszeń `>`                                     → prog.test (pierwszy pomiar / jedno nowe wyciszenie)
+G2  próg przyrostu `>`                                    → prog.test (4 = bez oceny, 5 = ocena)
+G3  spadek kompensuje (bez Math.max)                      → prog.test
+G4  wyciszenia wliczone do sumy                           → PRZEŻYŁA
+G5  licznik bez +1                                        → prog.test
+G6  przegląd okresowy `>`                                 → prog.test
+G7  bez filtra projektu                                   → prog.test (poprzedni pomiar)
+G8  bez filtra workflow                                   → prog.test
+G9  najstarszy zamiast najnowszego                        → prog.test
+G10 pierwszy rekord bez sortowania po start               → prog.test
+G11 bez_oceny z rekordu ignorowane                        → ogrod-cli.test
+G12 rekord bez liczb przyjęty                             → prog.test
+G13 przyrost zawsze z diffu                               → prog.test
+G14 liczbyZRekordu bez kontroli typu                      → PRZEŻYŁA
+ogrod.mjs
+O1  nazwa projektu = pełna ścieżka                        → ogrod-cli.test
+O2  noweRazem z liczb projektu                            → ogrod-cli.test
+O3  błąd z kodem 0                                        → ogrod-cli.test (złe argumenty / bez gita)
+O4  poprzedni bez liczb w wyniku                          → ogrod-cli.test
+dev-autopilot-wf.js (blok ogrodnika)
+A1  licznik nie zerowany po ocenie                        → workflows/ogrod.test (rekord)
+A2  licznik zerowany przy null agenta oceny               → workflows/ogrod.test (rekord)
+A3  pomiarZWyniku ignoruje kod wyjścia                    → PRZEŻYŁA
+A4  agent oceny zawsze                                    → workflows/ogrod.test (ogrodnik())
+A5  komplet bez kontroli kluczy przyrostu                 → PRZEŻYŁA
+A6  ocena=true bez wyniku agenta                          → workflows/ogrod.test (rekord)
+A7  propozycje = 0                                        → workflows/ogrod.test (rekord)
+A8  sekcja bez listy nowych                               → workflows/ogrod.test (sekcja)
+A9  źródło odwrócone w sekcji                             → workflows/ogrod.test (sekcja)
+A10 polecenie pomiaru z `--telemetria /dev/null`          → PRZEŻYŁA
+A11 wynik runu: ogrod zawsze null                         → workflows/ogrod.test (kolejność zakończenia)
+A12 ocena przez klasę orkiestracyjną (z Edit)             → workflows/ogrod.test (ogrodnik())
+A13 prompt oceny bez zakazu zmian                         → workflows/ogrod.test (prompt oceny)
+A14 kontrakt: `nowe` → `noweRazem` w rekordzie            → workflows/ogrod.test (rekord)
+A15 kontrakt: klucze szczebli z myślnikiem                → workflows/ogrod.test (rekord)
+A16 kontrakt: status rekordu ≠ 'ok'                       → workflows/ogrod.test (rekord)
+A17 limit nowych w sekcji ignorowany                      → workflows/ogrod.test (sekcja: limit nowych)
+A18 log błędu bez „UWAGA”                                 → workflows/ogrod.test (ogrodnik())
+dev-docs-complete-wf.js (krokOgrodu)
+C1  krok 4b także bez sekcji                              → start-koniec.test (sekcja Ogród P15)
+C2  sekcja bez znaczników                                 → start-koniec.test
+C3  sekcja nie przekazana do promptu                      → start-koniec.test
+telemetria/run.mjs, role.mjs
+R1  rekord błędu = null                                   → telemetria/run.test (ogrod P15)
+R2  ocena truthy                                          → telemetria/run.test
+R3  liczby bez walidacji                                  → telemetria/run.test
+R4  bez_oceny gubione                                     → telemetria/run.test
+R5  dowolne `zrodlo`                                      → PRZEŻYŁA
+R6  run.ogrod zawsze null                                 → telemetria/run.test
+R7  status inny niż ok przyjęty                           → telemetria/run.test
+RO1 ogrod:pomiar poza rolami mechanicznymi                → role.test (P15)
+
+Przeżyłe ważne (P2): L2, L6, L8, L9, L10 (P2-5), K7 (P2-4), A10 (P2-6). Pozostałe przeżyłe — P3-6, P3-10, P3-11.
+
+PODSUMOWANIE: P1 = 1, P2 = 6, P3 = 14; mutanty przeżyte 19 / 80.
+
+=====================================================================================================================
+WERYFIKACJA 26c857c (fix(ogrod): poprawki po recenzji P15)
+=====================================================================================================================
+Jak: worktree wt-p15b (detached 26c857c, node_modules symlinkiem) — testy bazowe zielone (kategorie 8, cli 7, prog 11, realne 2,
+ogrod.test 11, start-koniec 27, run 18, role 11, klasy-rol 10, wywolania 4, dossier 28); 19 dawnych mutantów przeniesionych na nowy
+kod + 14 nowych na zachowania z poprawek; worktree usunięty. Sondy i korpus ~/Documents/Kodowanie — tylko odczyt, skrypty z głównego
+checkoutu (HEAD 26c857c, .claude/ czyste).
+
+1) 19 mutantów, które przeżyły w pierwszej rundzie — teraz przeżywają 3:
+   L6  (bez licznika klamer w `${}`)      PRZEŻYŁA — nowa linia fixture 41 `${items.map((i) => { return i })}` nie rozróżnia:
+       bez licznika `}` ciała zamyka wyrażenie, `)}` wpada w tekst szablonu, backtick i tak zamyka szablon → ten sam wynik.
+       Rozróżnia dopiero wzorzec kodu PO wewnętrznym bloku w tym samym `${}`: `` `${run(() => { return 1 }, x as any)}` `` (any=1;
+       mutant: 0). P3.
+   K8  (nie-null bez lookahead, tylko `(?!=)`) PRZEŻYŁA — brak pułapki `x! + 1`/`x! as T`; prawie równoważny. P3.
+   K10 (liniaOffsetu `<`)                  PRZEŻYŁA — dopasowanie w kolumnie 0; prawie równoważny. P3.
+   Złapane: L2, L8, L9, L10, K7 (kategorie.test, fixture), P5, P6, P8, P11, P12 (ogrod-cli „krawędzie pomiaru”), G4 (prog.test),
+   G14 (kategorie.test „liczby z rekordu”), A3, A5 (ogrod.test pomiarZWyniku), A10 (ogrod.test „polecenie z promptu … w repo-fixture”),
+   R5 (run.test).
+   Nowe mutanty (14): złapane N1 podłoga z diffu, N2 filtr --zadanie, N3 wersja bez pomiaru kasuje klucz, N4 dyrektywa w środku bloku,
+   N5 `</tag>`/`/>` jako regex, N6 XXX bez kotwicy, N7 „tymczasow” bez orzeczenia, N8 TSX z końcem linii, N9 komplet bez
+   Array.isArray(nowe), N10 `nowe` z treścią linii, N13 deno-lint-ignore, N14 `.catch(async)`. PRZEŻYŁY: N11 (bez
+   core.quotePath=false — brak testu ze ścieżką spoza ASCII), N12 (ANY bez nowego lookahead pozycji typu — zob. niżej).
+   Razem w tej rundzie: 33 mutanty, przeżyło 5 (L6, K8, K10, N11, N12).
+
+2) Czy poprawki zamykają scenariusze:
+   P1-1 zamknięte: korpus po poprawce — komentarze: claude-cron 23→0, Nawykometr 3→0, live-licznik 1→0, oferty-online 3→2,
+        gramywpadla 8→4 („+48 XXX XXX XXX” i „Tymczasowy ekran” znikają). Sondy: „tymczasowo wyłączone…”, „tymczasowe rozwiązanie”,
+        „XXX: hack” nadal liczone.
+   P2-1 zamknięte: decyzja = max(netto, linie dodane, 0); scenariusz „usunięte w A, nowe w B” włącza ocenę (N1 złapany).
+   P2-2 zamknięte: `--zadanie ${stan.nazwaZadania}` + pomijanie `r.zadanie === zadanie`; w telemetrii 309/309 runów autopilota
+        ma `zadanie` jako slug (ten sam co nazwaZadania) — filtr trafia.
+   P2-3 zamknięte: czytanie wszystkich wpisów, per klucz ostatnia wersja Z POMIAREM; późniejsza wersja `ogrod: null` nie kasuje (N3).
+   P2-4 zamknięte: rzutowania freelance-platform 53→62, asystent-aa 12→16, akademia 5→9, cud_chatka 112; próbka nowych trafień
+        (process.env.X!, `name: name!,`, `.closest("tr")!;`, `validation.data!;`) — 0 fałszywych. Świadoma luka: `x!` na końcu linii
+        w .tsx nie jest liczony (`process.env.URL!` w pliku .tsx). `let x!: number` / `name!: string` (definite assignment) liczone —
+        do przyjęcia. ANY na korpusie: cud_chatka 149 — próbka 13 trafień, wszystkie prawdziwe; reszta projektów 0.
+   P2-5 częściowo: L2, L8, L9, L10 złapane; L6 nadal przeżywa (test nie rozróżnia — wyżej).
+   P2-6 zamknięte: polecenie z promptu wykonywane w repo-fixture (A10 złapany).
+
+   Nowe uwagi (wszystkie P3, bez nowych P1/P2):
+   P3-N1 Regresja dyrektyw w bloku z pustą pierwszą linią: `/*\n  eslint-disable no-console\n*/` → wyciszenia 0 (przed poprawką 1);
+         ESLint taki komentarz honoruje (wartość po trim zaczyna się od dyrektywy). kategorie.mjs:84 + leksyka.mjs:83 (`poczatek: numer === 0`).
+         Poprawka: `poczatek` = pierwsza niepusta linia komentarza.
+   P3-N2 ANY: nowy lookahead (kategorie.mjs:43) gubi `y as any as Foo` (podwójne rzutowanie przez any — po `any` jest `as`) i nie usuwa
+         fałszywych trafień, dla których powstał: `[any, setAny]`, `f(any)`, `{ a, any }`, `arr.some(any => any > 1)` nadal = 6. Test go nie
+         pilnuje (N12 przeżył). Poprawka: dopuścić `\bas\b` w lookahead, pułapki na nazwę z testem; albo cofnąć lookahead.
+   P3-N3 Podłoga z diffu liczy też linie ZMIENIONE (diff -U0 traktuje edycję jak dodanie): zadanie zmieniające 5 linii z istniejącym
+         `process.env.X!` (np. rename zmiennej) ma netto 0, a dostaje ocenę (suma 5). To świadomy koszt P2-1 — warto zapisać w komentarzu
+         prog.mjs:83 albo liczyć podłogę tylko dla wyciszeń (P2-1 dotyczyło wyciszeń; dla pozostałych kategorii netto wystarczało).
+   P3-N4 Opis powodu: prog.mjs:90-91 pisze „+N względem poprzedniego zadania” także wtedy, gdy N pochodzi z linii dodanych (podłoga),
+         a sekcja pokazuje obok przyrost netto, np. „wyciszenia lint/TS: 3 (0)” i „Ocena: nowe wyciszenia lint/TS: +1 względem poprzedniego
+         zadania”. Poprawka: przy podłodze z diffu dopisać „(w liniach dodanych przez zadanie)”.
+   P3-N5 Baza origin/main przed main: gdy lokalny main wyprzedza origin/main (niewypchnięte merge — Nawykometr: 1 commit), linie dodane
+         obejmują wcześniejsze zadania, a od 26c857c wchodzą do decyzji (podłoga). Dziś 1 z 6 projektów z remote; do odnotowania.
+   P3-N6 `--zadanie ${nazwaZadania}` bez cudzysłowu w poleceniu powłoki (dev-autopilot-wf.js, ogrodPomiarPolecenie) — slug jest bezpieczny,
+         ale cytowanie nic nie kosztuje.
+
+WERYFIKACJA — PODSUMOWANIE: z 19 przeżyłych przeżywają 3 (L6, K8, K10); nowe mutanty 14, przeżyły 2 (N11, N12); razem 5/33.
+P1-1, P2-1…P2-4 i P2-6 zamknięte, P2-5 częściowo (L6). Nowe: 0 × P1, 0 × P2, 6 × P3.

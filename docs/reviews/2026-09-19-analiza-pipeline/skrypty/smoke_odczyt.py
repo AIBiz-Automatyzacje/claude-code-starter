@@ -15,6 +15,7 @@ builderów i fixa, wynik compoundu (wiedza, indeks, propozycjeBramek, uwagaIndek
 P12 (smoke_p12.py): reguły kodu eager / Read / załącznik z `paths:` per rola, blok D10 w promptach builderów, kryterium 6a pkt 67 (d).
 P13 (smoke_p13.py): epizod dev-plan (koszt do Workflow, wiadomości operatora, artefakty plan.mjs), planner z IU z planu technicznego.
 P14 (smoke_p14.py): tester E2E (scenariusze ze skryptu, skill weryfikacji, przebiegi), faza.e2e, run.manual_razem, archiwum kopii.
+P15 (smoke_p15.py): agenci ogrodnika (kolejność, narzędzia bez zapisu, wynik pomiaru i oceny), run.ogrod, sekcja „## Ogród” w archiwum kopii.
 """
 import collections
 import glob
@@ -26,6 +27,7 @@ import sys
 import smoke_p12
 import smoke_p13
 import smoke_p14
+import smoke_p15
 import smoke_sceptycy
 import smoke_wiedza
 
@@ -240,6 +242,7 @@ def main(argumenty):
     smoke_p12.sekcja_p12(run, wyniki, katalog)
     smoke_p13.sekcja_p13(run, wyniki)
     smoke_p14.sekcja_p14(run, wyniki, katalog)
+    smoke_p15.sekcja_p15(run, wyniki, katalog)
     sekcja_role(ref, run)
     sekcja_model(ref, run)
 
