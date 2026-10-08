@@ -82,6 +82,12 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
    i zacommituj plan z katalogiem zadania (bootstrap zatrzyma run na zmienionym planie technicznym) → oczekiwane
    `Smoke operatora: brak pozycji do recznego sprawdzenia — plik nie powstal`, `smokeStatus: "brak-pozycji"`, brak pliku w `docs/operator/`.
 
+4. Ogrodnik (P15): w journalu jeden agent `ogrod:pomiar` (klasa `klasa-mechaniczny-pomiar`) po `compound-refresh`, przed
+   `smoke-operatora`; `ogrod:ocena` tylko gdy log `Ogrod: …` podaje powod oceny (w swiezej kopii pierwszy pomiar: przyrost
+   z linii dodanych przez zadanie). Podsumowanie `docs/completed/smoke-autopilot/smoke-autopilot-podsumowanie.md` konczy sie
+   sekcja `## Ogród` (liczby z przyrostem, zdanie o braku zmian w kodzie). Agenci ogrodnika bez commitow i bez Edit/Write
+   w transkrypcie; wynik runu i rekord telemetrii `run.ogrod` ze `status: "ok"`.
+
 ## Srodowisko E2E kopii i dwa przebiegi (P14)
 
 1. **Przebieg (1) — bez srodowiska:** kopia prosto ze skryptu (bez `.env.e2e`) → `/dev-autopilot-wf docs/active/smoke-autopilot`
