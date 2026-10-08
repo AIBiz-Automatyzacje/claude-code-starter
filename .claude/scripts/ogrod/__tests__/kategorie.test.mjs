@@ -60,17 +60,23 @@ const FIXTURE_TS = [
   'p.catch(async () => {})', // 50 pusty catch
   'p.catch(function () {})', // 51 pusty catch
   'const czas: keyof any = "x"', // 52 any
+  'const k = `${run(() => { return 1 }, x as any)}`', // 53 any po bloku w ${} (licznik klamer)
+  'const n = any + 1', // 54 wyrazenie, nie typ
+  'const y = x as any as Foo', // 55 any
+  '/*', // 56
+  '  eslint-disable no-console', // 57 wyciszenie (pierwsza niepusta linia bloku)
+  '*/', // 58
 ].join('\n')
 
 test('fixture TS: znane liczby i linie per kategoria', () => {
   const lista = wystapienia(FIXTURE_TS, 'src/fixture.ts')
   const linie = (/** @type {string} */ k) => lista.filter((w) => w.kategoria === k).map((w) => w.linia)
-  assert.deepEqual(linie('wyciszenia'), [2, 4, 6, 48, 49])
-  assert.deepEqual(linie('any'), [7, 8, 9, 12, 27, 52])
+  assert.deepEqual(linie('wyciszenia'), [2, 4, 6, 48, 49, 57])
+  assert.deepEqual(linie('any'), [7, 8, 9, 12, 27, 52, 53, 55])
   assert.deepEqual(linie('rzutowania'), [13, 14, 35, 36, 37, 38])
   assert.deepEqual(linie('pusty_catch'), [16, 17, 18, 19, 50, 51])
   assert.deepEqual(linie('komentarze'), [21, 22, 23, 29, 34, 41, 42, 43, 44])
-  assert.deepEqual(policz(lista), { wyciszenia: 5, any: 6, rzutowania: 6, komentarze: 9, pusty_catch: 6 })
+  assert.deepEqual(policz(lista), { wyciszenia: 6, any: 8, rzutowania: 6, komentarze: 9, pusty_catch: 6 })
   assert.equal(lista.find((w) => w.linia === 21)?.tekst, '// TODO: dopisac walidacje')
 })
 

@@ -39,8 +39,8 @@ const SLOWO_OBEJSCIA = new RegExp([
 ].join('|'), 'i')
 
 // Typ `any` w pozycji typu: po `:`, `<`, `>` (`=> any`), `[`, `,`, `|`, `&`, `(`, `=` (alias typu), `as`, `keyof`, `readonly`,
-// `extends`; za nim koniec typu. `z.any()` i `.any` nie lapia (kropka), zmienna `any =` tez nie.
-const ANY = /(?<=(?:[:<>[,|&(=]|\b(?:as|keyof|readonly|extends))\s*)any(?![\w$])(?=\s*(?:[\]>)|,;=&{}?]|\[\]|$))/gm
+// `extends`; za nim koniec typu albo `as` (`x as any as Foo`). `z.any()` i `.any` nie lapia (kropka), wyrazenie `= any + 1` tez nie.
+const ANY = /(?<=(?:[:<>[,|&(=]|\b(?:as|keyof|readonly|extends))\s*)any(?![\w$])(?=\s*(?:[\]>)|,;=&{}?]|\[\]|\bas\b|$))/gm
 // Podwojne rzutowanie, `as never` i nie-null `x!` (coding-rules „Type safety”: zamiast `as` i `!` — zawezenie): przed kropka,
 // nawiasem, przecinkiem, srednikiem, dwukropkiem, `??`, `&&`, `||` albo koncem linii. `!=` / `!==` to porownanie.
 const RZUTOWANIE_TS = /\bas\s+unknown\s+as\b|\bas\s+never\b|(?<=[\w$)\]])!(?!=)(?=\s*(?:[.[),;:}\]]|\?\?|&&|\|\||$))/gm

@@ -70,8 +70,9 @@ export function poprzedniZPliku(plikTelemetrii, filtr) {
 
 /**
  * Funkcja progu. `przyrost` = zmiana netto wzgledem poprzedniego rekordu (bez niego: wystapienia w liniach dodanych przez
- * zadanie). Decyzja bierze z kazdej kategorii wieksza z liczb: netto albo linie dodane — zadanie, ktore usuwa wyciszenie
- * w jednym pliku i dodaje w drugim, ma bilans 0, a nowe wyciszenie i tak jest.
+ * zadanie). Dla wyciszen decyzja bierze wieksza z liczb: netto albo linie dodane — zadanie, ktore usuwa wyciszenie w jednym
+ * pliku i dodaje w drugim, ma bilans 0, a nowe wyciszenie i tak jest. Pozostale kategorie tylko netto: diff -U0 liczy linie
+ * ZMIENIONE jak dodane, wiec edycja linii z zastanym `x!` dawalaby przyrost bez nowego wzorca.
  * @param {{ liczby: Record<Kategoria, number>, noweLiczby: Record<Kategoria, number>, poprzedni: Poprzedni | null }} we
  * @returns {Decyzja}
  */
@@ -80,14 +81,16 @@ export function decyzjaOceny(we) {
   const zrodlo = poprzedni ? 'telemetria' : 'diff'
   const przyrost = /** @type {Record<Kategoria, number>} */ (Object.fromEntries(KATEGORIE.map((k) =>
     [k, poprzedni ? we.liczby[k] - poprzedni.liczby[k] : we.noweLiczby[k]])))
-  // Do decyzji przyrost nie schodzi ponizej linii dodanych przez zadanie (bilans netto 0 nie ukrywa nowego wyciszenia).
-  const doDecyzji = (/** @type {Kategoria} */ k) => Math.max(przyrost[k], we.noweLiczby[k], 0)
+  const wyciszenia = Math.max(przyrost.wyciszenia, we.noweLiczby.wyciszenia, 0)
+  const wyciszeniaZDiffu = poprzedni !== null && wyciszenia > przyrost.wyciszenia
   const bezOceny = (poprzedni?.bez_oceny ?? 0) + 1
-  const suma = KATEGORIE.filter((k) => k !== 'wyciszenia').reduce((s, k) => s + doDecyzji(k), 0)
+  const suma = KATEGORIE.filter((k) => k !== 'wyciszenia').reduce((s, k) => s + Math.max(0, przyrost[k]), 0)
   const opisZrodla = zrodlo === 'telemetria' ? 'wzgledem poprzedniego zadania' : 'w liniach dodanych przez zadanie (pierwszy pomiar)'
   /** @type {string[]} */
   const powody = []
-  if (doDecyzji('wyciszenia') >= PROG_WYCISZEN) powody.push(`nowe wyciszenia lint/TS: +${doDecyzji('wyciszenia')} ${opisZrodla}`)
+  if (wyciszenia >= PROG_WYCISZEN) {
+    powody.push(`nowe wyciszenia lint/TS: +${wyciszenia} ${wyciszeniaZDiffu ? 'w liniach dodanych przez zadanie (bilans netto wzgledem poprzedniego zadania: ' + przyrost.wyciszenia + ')' : opisZrodla}`)
+  }
   if (suma >= PROG_PRZYROSTU) powody.push(`przyrost pozostalych kategorii: +${suma} ${opisZrodla} (prog ${PROG_PRZYROSTU})`)
   if (bezOceny >= CO_ILE_POMIAROW) powody.push(`przeglad okresowy: ${bezOceny} pomiarow bez oceny (co ${CO_ILE_POMIAROW})`)
   const powod = powody.length

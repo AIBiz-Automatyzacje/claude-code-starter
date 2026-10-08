@@ -149,22 +149,27 @@ test('krawedzie pomiaru: limit nowych, plik ponad prog bajtow, zmiana w drzewie 
       'src/b.ts': '// eslint-disable-next-line no-console\nexport const b = (x: any): any => x\nexport const z: any = 2\n',
       'src/wiele.ts': Array.from({ length: 21 }, (_, i) => `export const w${i}: any = ${i}`).join('\n') + '\n',
       'src/bundel.js': `${'// TODO\n'.repeat(10)}${'x'.repeat(1024 * 1024)}\n`,
+      'src/zażółć.ts': 'export const p: any = 1\n',
     })
+    git(repo, ['add', 'src/zażółć.ts'])
+    commit(repo, 'plik ze sciezka spoza ASCII')
+    zapisz(repo, { 'src/zażółć.ts': 'export const p: any = 1\nexport const q: any = 2\n' })
     const { kod, wynik } = cli(['pomiar', '--projekt', repo, '--telemetria', join(repo, 'brak.jsonl')])
     assert.equal(kod, 0)
     const nowe = (/** @type {{ nowe: Array<{ plik: string, linia: number }> }} */ w) => w.nowe.map((x) => `${x.plik}:${x.linia}`)
     assert.ok(!nowe(wynik).includes('src/przeniesiony.ts:1') && !nowe(wynik).includes('src/przeniesiony.ts:2'), 'stare wystapienia przeniesionego pliku nie sa nowe')
     assert.ok(nowe(wynik).includes('src/przeniesiony.ts:3'), 'linia dodana w zadaniu przed przeniesieniem zostaje nowa')
     assert.ok(nowe(wynik).includes('src/b.ts:3'), 'niezacommitowana zmiana w sledzonym pliku')
+    assert.ok(wynik.noweRazem >= 1 + 4 + 1 + 21 + 2, 'sciezka spoza ASCII w diffie (core.quotePath=false)')
     assert.equal(wynik.nowe.length, 20, 'LIMIT_NOWYCH')
-    assert.equal(wynik.noweRazem, 1 + 4 + 1 + 21, 'przeniesiony :3, b.ts 4, niesledzony c.ts 1, wiele.ts 21; bundel ponad prog pominiety')
+    assert.equal(wynik.noweRazem, 1 + 4 + 1 + 21 + 2, 'przeniesiony :3, b.ts 4, niesledzony c.ts 1, wiele.ts 21, zażółć.ts 2; bundel ponad prog pominiety')
     assert.deepEqual(Object.keys(wynik.nowe[0]), ['kategoria', 'plik', 'linia'], 'bez tresci linii — wynik przepisuje agent')
 
     // origin/main przed main: lokalny main przesuniety na commit zadania, origin/main zostaje na stanie zastanym.
     git(repo, ['update-ref', 'refs/remotes/origin/main', 'main'])
     git(repo, ['update-ref', 'refs/heads/main', 'HEAD'])
     const zOrigin = cli(['pomiar', '--projekt', repo, '--telemetria', join(repo, 'brak.jsonl')])
-    assert.equal(zOrigin.wynik.noweRazem, 1 + 4 + 1 + 21, 'baza z origin/main, nie z przesunietego main')
+    assert.equal(zOrigin.wynik.noweRazem, 1 + 4 + 1 + 21 + 2, 'baza z origin/main, nie z przesunietego main')
   } finally {
     rmSync(repo, { recursive: true, force: true })
     rmSync(telemetria, { force: true })

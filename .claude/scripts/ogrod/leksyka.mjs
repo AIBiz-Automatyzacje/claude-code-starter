@@ -9,7 +9,7 @@ const SLOWA_PRZED_REGEXEM = /(?:^|[^\w$])(?:return|typeof|case|do|else|in|of|voi
 // Najdluzsze slowo z SLOWA_PRZED_REGEXEM (`typeof`, `return`) plus znak przed nim.
 const OKNO_SLOWA = 7
 
-/** @typedef {{ linia: number, tekst: string, poczatek: boolean }} LiniaKomentarza poczatek = pierwsza linia komentarza */
+/** @typedef {{ linia: number, tekst: string, poczatek: boolean }} LiniaKomentarza poczatek = pierwsza niepusta linia komentarza */
 /** @typedef {{ kod: string, komentarze: LiniaKomentarza[] }} Rozbior */
 
 /**
@@ -80,7 +80,11 @@ export function rozbierz(tekst) {
     for (let k = od; k < doIndeksu; k++) if (kod[k] !== '\n') kod[k] = ' '
   }
   const dodajKomentarz = (/** @type {number} */ od, /** @type {number} */ doIndeksu) => {
-    tekst.slice(od, doIndeksu).split('\n').forEach((tresc, numer) => komentarze.push({ linia: linia + numer, tekst: tresc, poczatek: numer === 0 }))
+    // Dyrektywa ESLint w bloku liczy sie od pierwszej niepustej linii (`/*\n  eslint-disable x\n*/` dziala).
+    const linieKomentarza = tekst.slice(od, doIndeksu).split('\n')
+    // `/**` JSDoc ma w pierwszej linii `*` — ta linia jest poczatkiem, a dyrektywa w srodku JSDoc nie dziala (jak w ESLint).
+    const pierwszaNiepusta = linieKomentarza.findIndex((tresc) => tresc.trim() !== '')
+    linieKomentarza.forEach((tresc, numer) => komentarze.push({ linia: linia + numer, tekst: tresc, poczatek: numer === pierwszaNiepusta }))
   }
   let i = 0
   while (i < tekst.length) {

@@ -55,9 +55,10 @@ test('bilans zero (usuniete wyciszenie w A, nowe w B): diff zadania jako podloga
   assert.equal(d.ocena, true)
   assert.equal(d.przyrost.wyciszenia, 0, 'przyrost netto zostaje w rekordzie')
   assert.match(d.powod, /^nowe wyciszenia lint\/TS: \+1 /)
+  assert.match(d.powod, /w liniach dodanych przez zadanie \(bilans netto wzgledem poprzedniego zadania: 0\)/)
+  // Pozostale kategorie tylko netto: diff -U0 liczy zmienione linie jak dodane (edycja linii z zastanym `x!`).
   const reszta = decyzjaOceny({ liczby: liczby({ any: 10 }), noweLiczby: liczby({ any: 5 }), poprzedni: poprzedni({ any: 10 }) })
-  assert.deepEqual([reszta.ocena, reszta.przyrost.any], [true, 0])
-  assert.match(reszta.powod, /przyrost pozostalych kategorii: \+5/)
+  assert.deepEqual([reszta.ocena, reszta.przyrost.any], [false, 0])
 })
 
 test('wyciszenia nie wchodza do sumy pozostalych kategorii', () => {

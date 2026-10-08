@@ -1908,7 +1908,7 @@ const OGROD_OCENA = {
 
 // --zadanie: poprzedni pomiar to rekord innego zadania (swiezy run po nieudanej archiwizacji nie porownuje sie z soba).
 function ogrodPomiarPolecenie(nazwaZadania) {
-  return `node .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie ${nazwaZadania}`
+  return `node .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie '${nazwaZadania}'`
 }
 
 function ogrodPomiarPrompt(nazwaZadania) {

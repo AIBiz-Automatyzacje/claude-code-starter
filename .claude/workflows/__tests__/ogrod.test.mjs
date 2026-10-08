@@ -190,8 +190,8 @@ test('polecenie z promptu agenta pomiaru, wykonane w repo-fixture, daje wynik, k
   const { pomiarZWyniku, sekcjaOgrodu, ogrodPomiarPrompt } = zaladuj()
   const prompt = ogrodPomiarPrompt('zadanie-x')
   const polecenia = prompt.split('\n').filter((/** @type {string} */ linia) => linia.startsWith('node '))
-  assert.deepEqual(polecenia, ['node .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie zadanie-x'], 'dokladnie jedno polecenie, bez innych argumentow')
-  const [, skrypt, ...argumenty] = polecenia[0].split(' ')
+  assert.deepEqual(polecenia, ["node .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie 'zadanie-x'"], 'dokladnie jedno polecenie, bez innych argumentow')
+  const [, skrypt, ...argumenty] = polecenia[0].replaceAll("'", '').split(' ')
   const repo = noweRepo()
   try {
     git(repo, ['branch', '-M', 'main'])
