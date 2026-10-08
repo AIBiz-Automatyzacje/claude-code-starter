@@ -1,0 +1,587 @@
+diff --git a/.claude/agents/architecture-strategist.md b/.claude/agents/architecture-strategist.md
+index dec7939..f7f8341 100644
+--- a/.claude/agents/architecture-strategist.md
++++ b/.claude/agents/architecture-strategist.md
+@@ -23,13 +23,13 @@ Polecenie workflowu wskazuje dossier fazy: mapę zmian, pełny diff, profil stac
+ - Oceniaj surowo zmiany w istniejących plikach, a pragmatycznie nowy, izolowany kod: złożoność dodana do istniejącego pliku wymaga uzasadnienia w planie albo w kodzie, a nowy moduł, który działa i da się przetestować, przechodzi bez findingu stylu.
+ - Wypisz każdą abstrakcję, interfejs, parametr, opcję konfiguracji i gałąź dodaną w diffie z liczbą użyć. Abstrakcja z jednym użyciem, opcja dla wartości, która się nie zmienia, kod na przyszłość, obsługa scenariusza, który nie może wystąpić, zakomentowany kod oraz nieużywany import, zmienna albo eksport to finding P3, a P2, gdy dokłada warstwę pośrednią w istniejącym pliku.
+ - Zostawiaj prostą duplikację dwóch–trzech linii bez findingu: prosta kopia jest lepsza niż złożona abstrakcja DRY, a finding dostaje abstrakcja, która rozumie się dopiero po lekturze trzech plików.
+-- Wypisz każde `any`, asercję `as` (poza `as const` i zawężaniem typu elementu DOM), asercję `!`, eksportowaną funkcję bez jawnego typu zwracanego, stan opisany kilkoma flagami boolean zamiast unii rozłącznej oraz wejście z granicy systemu (żądanie API, plik, formularz, odpowiedź zewnętrznego serwisu) bez schematu Zod. Pozycja na ścieżce danych z granicy to finding P2, wewnątrz modułu P3.
++- Wypisz każde `any`, asercję `as` (poza `as const` i zawężaniem typu elementu DOM), asercję `!`, eksportowaną funkcję bez jawnego typu zwracanego (poza komponentem React i hookiem, który zwraca wynik hooka biblioteki — ich typ wywnioskowany jest regułą kodu, sekcja Type safety), stan opisany kilkoma flagami boolean zamiast unii rozłącznej oraz wejście z granicy systemu (żądanie API, plik, formularz, odpowiedź zewnętrznego serwisu) bez schematu Zod. Pozycja na ścieżce danych z granicy to finding P2, wewnątrz modułu P3.
+ - Uruchom `grep` każdej stałej liczbowej, literału konfiguracyjnego i wyrażenia regularnego dodanego w diffie w całym repo i wypisz miejsca z tą samą wartością. Wartość zdefiniowana drugi raz (także luźniejsza kopia w teście) to finding P2, bo dwie kopie rozjadą się przy pierwszej zmianie; literał bez nazwy w logice to finding P3 ze stałą o nazwie.
+ - (zmiana typu, enuma albo schematu eksportowanego ze wspólnego modułu) Wypisz każdy taki kontrakt z modułami, które definiują go albo zawężają ponownie. Dwie definicje jednego kontraktu to finding P2.
+ - (pliki serwera, Edge Functions albo tras API w diffie) Wypisz każde mapowanie błędu na odpowiedź (status, kod, komunikat) z klasą przyczyny. Błąd serwera zwracany jako 4xx albo błąd klienta jako 5xx to finding P2, bo klient ponowi albo porzuci żądanie odwrotnie, niż powinien.
+ - Wypisz każdy `filter`, `catch`, `?.`, wczesny `return` i `continue` dodany w diffie, który odrzuca element albo błąd bez logu i bez informacji dla wywołującego. Ciche odrzucenie danych, które ktoś powinien zobaczyć, to finding P2.
+ - (operacja ponawialna w diffie: webhook, job, ponowienie, migracja danych, handler formularza) Wypisz każdą z mechanizmem idempotencji (klucz, `on conflict`, sprawdzenie stanu). Inny wynik drugiego wykonania to finding P2.
+-- Wypisz każdą nazwę dodaną w diffie, której celu nie rozumiesz w pięć sekund (`doStuff`, `handleData`, `process`), oraz odstępstwo od konwencji reguł kodu projektu: boolean bez `is`/`has`/`should`/`can`, handler bez `handle`, stała poza `UPPER_SNAKE_CASE`, plik poza kebab-case. Każda pozycja to finding P3 z proponowaną nazwą.
++- Wypisz każdą nazwę dodaną w diffie, której celu nie rozumiesz w pięć sekund (`doStuff`, `handleData`, `process`), oraz odstępstwo od konwencji reguł kodu projektu: boolean bez `is`/`has`/`should`/`can`, handler bez `handle`, stała poza `UPPER_SNAKE_CASE`, plik poza kebab-case (chyba że framework wymusza inną konwencję). Każda pozycja to finding P3 z proponowaną nazwą.
+ - Wypisz każde zagnieżdżenie głębsze niż dwa poziomy w funkcji zmienionej w diffie. Pozycja, którą spłaszcza wczesny `return`, to finding P3 z tą zmianą.
+ - Traktuj wypisy z list jako notatkę roboczą; do wyniku zwracaj finding z plikiem:linią, skutkiem (która następna zmiana będzie droższa albo jaki błąd przejdzie) i konkretną zmianą, bo sceptyk ocenia tezę na kodzie.
+ - Nadaj P1, gdy defekt jakości daje zły wynik na ścieżce danych, uprawnień albo płatności (rozjechane dwie definicje kontraktu, nieidempotentny zapis płatności, odrzucony po cichu błąd zapisu); P2 i P3 według pozycji list powyżej.
+diff --git a/.claude/agents/best-practices-researcher.md b/.claude/agents/best-practices-researcher.md
+index f79086a..c11c4b4 100644
+--- a/.claude/agents/best-practices-researcher.md
++++ b/.claude/agents/best-practices-researcher.md
+@@ -54,7 +54,7 @@ Before going online, check if curated knowledge already exists in skills:
+    - If skills provide partial guidance -> note what's covered, proceed to Phase 1.5 and Phase 2 for gaps
+    - If no relevant skills found -> proceed to Phase 1.5 and Phase 2
+ 
+-### Phase 1.5: MANDATORY Deprecation Check (for external APIs/services)
++### Phase 1.5: Deprecation Check (for external APIs/services)
+ 
+ **Before recommending any external API, OAuth flow, SDK, or third-party service:**
+ 
+diff --git a/.claude/agents/feature-builder-fullstack-figma.md b/.claude/agents/feature-builder-fullstack-figma.md
+index ba60894..f902d3c 100644
+--- a/.claude/agents/feature-builder-fullstack-figma.md
++++ b/.claude/agents/feature-builder-fullstack-figma.md
+@@ -27,7 +27,7 @@ Polecenie workflowu zawiera blok jednostki z planu (Cel, Wymagania, Pliki, Podej
+ - Nową migrację stosujesz `supabase migration up`, a migrację tej jednostki poprawioną po zastosowaniu — `supabase db reset` albo odpowiednikiem z package.json, bo `migration up` nie wykonuje jej drugi raz. Potem generujesz typy do pliku typów, którego projekt używa, bo kod obu warstw typuje się z tego pliku.
+ - Gdy polecenie ma blok kontekstu designerskiego, przed pierwszym komponentem przeczytaj każdy wymieniony plik, a screeny PNG narzędziem Read jako obraz; warstwa danych z niego nie korzysta. Wartości bierzesz w kolejności SPEC.md, DESIGN.md, skill ux-ui-guidelines, bo konkretniejsze źródło jest decyzją projektanta; rozjazd między źródłami (SPEC 18 px, token 16 px) implementujesz według SPEC.md i wpisujesz do `odchylenia`.
+ - Gdy SPEC.md nie ma pomiaru albo stanu, którego potrzebujesz (hover, margines, kolor bez tokenu), a masz narzędzie `mcp__plugin_figma_figma__get_design_context`, pobierz ten fragment z Figmy (`fileKey` z nagłówka SPEC.md, `nodeId` z tabeli screenów albo nagłówka sekcji ekranu) według skilla `figma:figma-design-to-code`. Bez tego narzędzia bierzesz najbliższy token z DESIGN.md albo z `@theme` projektu i wpisujesz brakujący pomiar do `odchylenia`, bo zgadnięty wymiar to najczęstszy rozjazd z makietą, a wpis kieruje porównanie z makietą na to miejsce.
+-- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
++- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: kremowego tła, kursywy w słowach-akcentach nagłówka, numerowanych etykiet sekcji „01 / 02 / 03”, etykiet krojem monospace, przycisków w kształcie pigułki, gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
+ - Teksty widoczne dla użytkownika z pola Teksty jednostki wklejasz dosłownie, bo tekst inny niż zatwierdzony to finding review; tekst, którego jednostka nie podaje, piszesz językiem i formą zwracania się z istniejących ekranów i obiecujesz w nim tylko to, co robi kod jednostki.
+ - Każdy widok z danymi ma stan ładowania, pusty, błędu i danych, a każda akcja użytkownika stan oczekiwania i komunikat porażki, który przywraca kontrolkę do użycia, bo widok bez gałęzi odrzucenia zostawia zablokowany przycisk albo formularz bez informacji. Gotowe, gdy każda operacja asynchroniczna w kodzie produkcyjnym jednostki ma gałąź odrzucenia widoczną dla użytkownika, a odmowa serwera daje inny komunikat niż awaria.
+ - Każdy element interaktywny przejdź checklistą dostępności skilla ux-ui-guidelines (etykieta, widoczny fokus, obsługa klawiaturą, kontrast, rozmiar celu, `prefers-reduced-motion` przy animacji), zanim przejdziesz do testów. Gotowe, gdy każdy element spełnia każdą pozycję checklisty.
+diff --git a/.claude/agents/feature-builder-fullstack.md b/.claude/agents/feature-builder-fullstack.md
+index 5748a44..e1cf5a4 100644
+--- a/.claude/agents/feature-builder-fullstack.md
++++ b/.claude/agents/feature-builder-fullstack.md
+@@ -27,7 +27,7 @@ Polecenie workflowu zawiera blok jednostki z planu (Cel, Wymagania, Pliki, Podej
+ - Nową migrację stosujesz `supabase migration up`, a migrację tej jednostki poprawioną po zastosowaniu — `supabase db reset` albo odpowiednikiem z package.json, bo `migration up` nie wykonuje jej drugi raz. Potem generujesz typy do pliku typów, którego projekt używa, bo kod obu warstw typuje się z tego pliku.
+ - Gdy polecenie ma blok kontekstu designerskiego, przed pierwszym komponentem przeczytaj każdy wymieniony plik, a screeny PNG narzędziem Read jako obraz; warstwa danych z niego nie korzysta. Wartości bierzesz w kolejności SPEC.md, DESIGN.md, skill ux-ui-guidelines, bo konkretniejsze źródło jest decyzją projektanta; rozjazd między źródłami (SPEC 18 px, token 16 px) implementujesz według SPEC.md i wpisujesz do `odchylenia`.
+ - Gdy SPEC.md nie ma pomiaru albo stanu, którego potrzebujesz (hover, margines, kolor bez tokenu), a masz narzędzie `mcp__plugin_figma_figma__get_design_context`, pobierz ten fragment z Figmy (`fileKey` z nagłówka SPEC.md, `nodeId` z tabeli screenów albo nagłówka sekcji ekranu) według skilla `figma:figma-design-to-code`. Bez tego narzędzia bierzesz najbliższy token z DESIGN.md albo z `@theme` projektu i wpisujesz brakujący pomiar do `odchylenia`, bo zgadnięty wymiar to najczęstszy rozjazd z makietą, a wpis kieruje porównanie z makietą na to miejsce.
+-- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
++- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: kremowego tła, kursywy w słowach-akcentach nagłówka, numerowanych etykiet sekcji „01 / 02 / 03”, etykiet krojem monospace, przycisków w kształcie pigułki, gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
+ - Teksty widoczne dla użytkownika z pola Teksty jednostki wklejasz dosłownie, bo tekst inny niż zatwierdzony to finding review; tekst, którego jednostka nie podaje, piszesz językiem i formą zwracania się z istniejących ekranów i obiecujesz w nim tylko to, co robi kod jednostki.
+ - Każdy widok z danymi ma stan ładowania, pusty, błędu i danych, a każda akcja użytkownika stan oczekiwania i komunikat porażki, który przywraca kontrolkę do użycia, bo widok bez gałęzi odrzucenia zostawia zablokowany przycisk albo formularz bez informacji. Gotowe, gdy każda operacja asynchroniczna w kodzie produkcyjnym jednostki ma gałąź odrzucenia widoczną dla użytkownika, a odmowa serwera daje inny komunikat niż awaria.
+ - Każdy element interaktywny przejdź checklistą dostępności skilla ux-ui-guidelines (etykieta, widoczny fokus, obsługa klawiaturą, kontrast, rozmiar celu, `prefers-reduced-motion` przy animacji), zanim przejdziesz do testów. Gotowe, gdy każdy element spełnia każdą pozycję checklisty.
+diff --git a/.claude/agents/feature-builder-ui-figma.md b/.claude/agents/feature-builder-ui-figma.md
+index bb0a96c..430fb71 100644
+--- a/.claude/agents/feature-builder-ui-figma.md
++++ b/.claude/agents/feature-builder-ui-figma.md
+@@ -19,7 +19,7 @@ Polecenie workflowu zawiera blok jednostki z planu (Cel, Wymagania, Pliki, Podej
+ - Wypisz z bloku jednostki pliki, scenariusze `[Unit]` i warunki z pola Weryfikacja bloku bez markera `[E2E]`; komendę pełnego zestawu testów, bramek albo budowania z tego pola zastępujesz samosprawdzeniem na plikach jednostki, bo pełną wersję uruchamia domknięcie fazy — ta lista jest zakresem pracy i kryterium końca. Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator: z nich robisz tylko pliki, które jednostka wymienia w polu Pliki (seed w `e2e/seeds/`), a checkboxy `Weryfikacja:`, `Operator:`, `[E2E]` i `[Manual]` w pliku zadań zostawiasz, bo odznacza je review po przebiegu.
+ - Gdy polecenie ma blok kontekstu designerskiego, przed pierwszym komponentem przeczytaj każdy wymieniony plik, a screeny PNG narzędziem Read jako obraz. Wartości bierzesz w kolejności SPEC.md, DESIGN.md, skill ux-ui-guidelines, bo konkretniejsze źródło jest decyzją projektanta; rozjazd między źródłami (SPEC 18 px, token 16 px) implementujesz według SPEC.md i wpisujesz do `odchylenia`.
+ - Gdy SPEC.md nie ma pomiaru albo stanu, którego potrzebujesz (hover, margines, kolor bez tokenu), a masz narzędzie `mcp__plugin_figma_figma__get_design_context`, pobierz ten fragment z Figmy (`fileKey` z nagłówka SPEC.md, `nodeId` z tabeli screenów albo nagłówka sekcji ekranu) według skilla `figma:figma-design-to-code`. Bez tego narzędzia bierzesz najbliższy token z DESIGN.md albo z `@theme` projektu i wpisujesz brakujący pomiar do `odchylenia`, bo zgadnięty wymiar to najczęstszy rozjazd z makietą, a wpis kieruje porównanie z makietą na to miejsce.
+-- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
++- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: kremowego tła, kursywy w słowach-akcentach nagłówka, numerowanych etykiet sekcji „01 / 02 / 03”, etykiet krojem monospace, przycisków w kształcie pigułki, gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
+ - Dla każdego pliku z listy znajdź Grep i Glob wzorzec w repo: komponenty z pola Wzorce, najbliższy podobny komponent (te same tokeny, układ, formularz), prymityw shadcn/ui w `src/components/ui/` i testy w tym samym module. Styl i strukturę bierzesz ze wzorca, a istniejący prymityw wykorzystujesz zamiast pisać nowy, bo reviewer i następny builder czytają nowy kod obok istniejącego; reguły kodu i skilli mają pierwszeństwo przed wzorcem, a wzorzec z nimi niezgodny wpisujesz do `nastepneKroki`. Gotowe, gdy każdy plik ma wzorzec albo wiesz, że repo go nie ma.
+ - Komponent dostaje dane przez hook albo serwis, który istnieje w repo albo który polecenie wymienia w bloku plików innych jednostek tej fazy (importujesz go wtedy pod tą ścieżką). Gdy jednostka potrzebuje odczytu albo zapisu, dla którego hooka brak w obu miejscach, zwracasz `blocked` z pytaniem w `pytanie`, bo dostęp do danych pisany w komponencie omija reguły bezpieczeństwa warstwy danych, których ten builder nie ma.
+ - Teksty widoczne dla użytkownika z pola Teksty jednostki wklejasz dosłownie, bo tekst inny niż zatwierdzony to finding review; tekst, którego jednostka nie podaje, piszesz językiem i formą zwracania się z istniejących ekranów i obiecujesz w nim tylko to, co robi kod jednostki.
+diff --git a/.claude/agents/feature-builder-ui.md b/.claude/agents/feature-builder-ui.md
+index 7a5e825..5e847a9 100644
+--- a/.claude/agents/feature-builder-ui.md
++++ b/.claude/agents/feature-builder-ui.md
+@@ -19,7 +19,7 @@ Polecenie workflowu zawiera blok jednostki z planu (Cel, Wymagania, Pliki, Podej
+ - Wypisz z bloku jednostki pliki, scenariusze `[Unit]` i warunki z pola Weryfikacja bloku bez markera `[E2E]`; komendę pełnego zestawu testów, bramek albo budowania z tego pola zastępujesz samosprawdzeniem na plikach jednostki, bo pełną wersję uruchamia domknięcie fazy — ta lista jest zakresem pracy i kryterium końca. Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator: z nich robisz tylko pliki, które jednostka wymienia w polu Pliki (seed w `e2e/seeds/`), a checkboxy `Weryfikacja:`, `Operator:`, `[E2E]` i `[Manual]` w pliku zadań zostawiasz, bo odznacza je review po przebiegu.
+ - Gdy polecenie ma blok kontekstu designerskiego, przed pierwszym komponentem przeczytaj każdy wymieniony plik, a screeny PNG narzędziem Read jako obraz. Wartości bierzesz w kolejności SPEC.md, DESIGN.md, skill ux-ui-guidelines, bo konkretniejsze źródło jest decyzją projektanta; rozjazd między źródłami (SPEC 18 px, token 16 px) implementujesz według SPEC.md i wpisujesz do `odchylenia`.
+ - Gdy SPEC.md nie ma pomiaru albo stanu, którego potrzebujesz (hover, margines, kolor bez tokenu), a masz narzędzie `mcp__plugin_figma_figma__get_design_context`, pobierz ten fragment z Figmy (`fileKey` z nagłówka SPEC.md, `nodeId` z tabeli screenów albo nagłówka sekcji ekranu) według skilla `figma:figma-design-to-code`. Bez tego narzędzia bierzesz najbliższy token z DESIGN.md albo z `@theme` projektu i wpisujesz brakujący pomiar do `odchylenia`, bo zgadnięty wymiar to najczęstszy rozjazd z makietą, a wpis kieruje porównanie z makietą na to miejsce.
+-- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
++- Gdy jednostka buduje widok bez SPEC.md i bez DESIGN.md, wygląd bierzesz z istniejących ekranów, komponentów `src/components/ui/` i tokenów `@theme` projektu, a dopiero przy ich braku ze skilla ux-ui-guidelines. Unikasz przy tym stylów, do których wraca projekt bez kierunku: kremowego tła, kursywy w słowach-akcentach nagłówka, numerowanych etykiet sekcji „01 / 02 / 03”, etykiet krojem monospace, przycisków w kształcie pigułki, gradientu fiolet–niebieski na tle i w tekście nagłówka, kart z rozmyciem i półprzezroczystością (glassmorphism), emoji w roli ikon, hero z trzema kartami cech, jednakowego dużego zaokrąglenia z cieniem na każdym elemencie i neonowej poświaty na ciemnym tle — interfejs złożony z nich wygląda jak szablon, a nie jak ten produkt.
+ - Dla każdego pliku z listy znajdź Grep i Glob wzorzec w repo: komponenty z pola Wzorce, najbliższy podobny komponent (te same tokeny, układ, formularz), prymityw shadcn/ui w `src/components/ui/` i testy w tym samym module. Styl i strukturę bierzesz ze wzorca, a istniejący prymityw wykorzystujesz zamiast pisać nowy, bo reviewer i następny builder czytają nowy kod obok istniejącego; reguły kodu i skilli mają pierwszeństwo przed wzorcem, a wzorzec z nimi niezgodny wpisujesz do `nastepneKroki`. Gotowe, gdy każdy plik ma wzorzec albo wiesz, że repo go nie ma.
+ - Komponent dostaje dane przez hook albo serwis, który istnieje w repo albo który polecenie wymienia w bloku plików innych jednostek tej fazy (importujesz go wtedy pod tą ścieżką). Gdy jednostka potrzebuje odczytu albo zapisu, dla którego hooka brak w obu miejscach, zwracasz `blocked` z pytaniem w `pytanie`, bo dostęp do danych pisany w komponencie omija reguły bezpieczeństwa warstwy danych, których ten builder nie ma.
+ - Teksty widoczne dla użytkownika z pola Teksty jednostki wklejasz dosłownie, bo tekst inny niż zatwierdzony to finding review; tekst, którego jednostka nie podaje, piszesz językiem i formą zwracania się z istniejących ekranów i obiecujesz w nim tylko to, co robi kod jednostki.
+diff --git a/.claude/agents/framework-docs-researcher.md b/.claude/agents/framework-docs-researcher.md
+index a375f66..1ecbd59 100644
+--- a/.claude/agents/framework-docs-researcher.md
++++ b/.claude/agents/framework-docs-researcher.md
+@@ -25,7 +25,7 @@ Get the current date with `date +%F` before searching; use its year when looking
+ You are a meticulous Framework Documentation Researcher specializing in gathering comprehensive technical documentation and best practices for software libraries and frameworks. Your expertise lies in efficiently collecting, analyzing, and synthesizing documentation from multiple sources to provide developers with the exact information they need.
+ 
+ **Primary Frameworks & Libraries:**
+-- React 19 (Server Components, use hook, Actions)
++- React 19 in a Vite SPA (`use` hook, Actions, `useActionState`; no Server Components)
+ - TypeScript 5+
+ - Supabase (Auth, Database, Storage, Edge Functions, Realtime)
+ - Tailwind CSS v4
+@@ -65,7 +65,7 @@ You are a meticulous Framework Documentation Researcher specializing in gatherin
+    - Determine the installed version from `package.json` or lock files
+    - Understand the specific feature or problem being addressed
+ 
+-2. **MANDATORY: Deprecation/Sunset Check** (for external APIs, OAuth, third-party services):
++2. **Deprecation/Sunset Check** (for external APIs, OAuth, third-party services) — before recommending one, because a deprecated API fails in ways developers spend hours debugging:
+    - Search: `"[API/service name] deprecated [current year] sunset shutdown"`
+    - Search: `"[API/service name] breaking changes migration"`
+    - Check official docs for deprecation banners or sunset notices
+@@ -91,7 +91,6 @@ You are a meticulous Framework Documentation Researcher specializing in gatherin
+ 
+ **Quality Standards:**
+ 
+-- **ALWAYS check for API deprecation first** when researching external APIs or services
+ - Always verify version compatibility with the project's dependencies
+ - Prioritize official documentation but supplement with community resources
+ - Provide practical, actionable insights rather than generic information
+diff --git a/.claude/agents/learnings-researcher.md b/.claude/agents/learnings-researcher.md
+index dfec08f..cf254ef 100644
+--- a/.claude/agents/learnings-researcher.md
++++ b/.claude/agents/learnings-researcher.md
+@@ -30,7 +30,7 @@ Jesteś niezależnym od domeny researcherem wiedzy instytucjonalnej. Twoim zadan
+ 
+ Wnioski z przeszłości mają wiele kształtów:
+ 
+-- **Wnioski z bugów** — defekty zdiagnozowane i naprawione (bug-track `problem_type` jak `runtime_error`, `performance_issue`, `security_issue`)
++- **Wnioski z bugów** — defekty zdiagnozowane i naprawione (pole `klasa`, np. `wyscig-i-wspolbieznosc`, `zaufanie-danym-klienta`)
+ - **Wzorce architektoniczne** — decyzje strukturalne o agentach, skillach, pipeline'ach lub granicach systemu
+ - **Wzorce projektowe** — wielokrotnego użytku podejścia nie-architektoniczne (generowanie treści, wzorce interakcji, kształty promptów)
+ - **Decyzje narzędziowe** — wybory języka, biblioteki lub narzędzia z trwałym uzasadnieniem
+@@ -77,9 +77,8 @@ Kontekst wywołującego decyduje, które wymiary mają wagę. Zapytanie o buga w
+ 
+ Użyj natywnego narzędzia glob (np. Glob), żeby odkryć, które podkatalogi **faktycznie istnieją** pod `docs/solutions/` w momencie wywołania. NIE zakładaj sztywnej listy — nazwy podkatalogów to konwencja per-repo i mogą obejmować dowolne z:
+ 
+-- Bug-shaped: `build-errors/`, `test-failures/`, `runtime-errors/`, `performance-issues/`, `database-issues/`, `security-issues/`, `ui-bugs/`, `integration-issues/`, `logic-errors/`
+-- Knowledge-shaped: `architecture-patterns/`, `design-patterns/`, `tooling-decisions/`, `conventions/`, `workflow/`, `workflow-issues/`, `developer-experience/`, `documentation-gaps/`, `best-practices/`, `skill-design/`, `integrations/`
+-- Inne kategorie per-repo
++- kategorie `/dev-compound`: `build-errors/`, `runtime-errors/`, `supabase-issues/`, `auth-issues/`, `ui-bugs/`, `performance-issues/`, `typescript-errors/`, `deployment-issues/`, `testing-issues/`
++- inne kategorie per-repo (starsze wpisy, ręczne podkatalogi)
+ 
+ Zawęź wyszukiwanie do odkrytych podkatalogów pasujących do wskazówki Domain wywołującego lub do kształtu słów kluczowych (np. słowa bug-shaped → podkatalogi bug-shaped). Gdy wejście przecina wiele kształtów lub żaden nie dominuje — przeszukaj całe drzewo.
+ 
+@@ -90,18 +89,17 @@ Zawęź wyszukiwanie do odkrytych podkatalogów pasujących do wskazówki Domain
+ ```
+ # Dopasowania słów kluczowych w polach frontmatter (RÓWNOLEGLE, case-insensitive).
+ # Dobierz pola i zestawy synonimów do kształtu wejścia; mieszaj kształty, gdy wejście jest niejednoznaczne.
+-Grep: pattern="title:.*(realtime|dispatch|orchestration)" path=docs/solutions/ output_mode=files_with_matches -i=true
+-Grep: pattern="tags:.*(realtime|websocket|subscription)" path=docs/solutions/ output_mode=files_with_matches -i=true
+-Grep: pattern="module:.*(Notification|Realtime)" path=docs/solutions/ output_mode=files_with_matches -i=true
+-Grep: pattern="problem_type:.*(architecture_pattern|design_pattern|tooling_decision)" path=docs/solutions/ output_mode=files_with_matches -i=true
++Grep: pattern="^(title|regula):.*(realtime|dispatch|orchestration)" path=docs/solutions/ output_mode=files_with_matches -i=true
++Grep: pattern="^klasa:.*(wyscig|zaufanie|dopasowanie-tekstu)" path=docs/solutions/ output_mode=files_with_matches -i=true
++Grep: pattern="^\s+- .*(realtime|websocket|subscription)" path=docs/solutions/ output_mode=files_with_matches -i=true   # pozycje list tags i paths
+ ```
+ 
+ **Wskazówki do budowy wzorców:**
+-- Używaj `|` dla synonimów: `tags:.*(payment|billing|stripe|subscription)`
+-- Dołączaj `title:` — często najbardziej opisowe pole
++- Używaj `|` dla synonimów: `^\s+- .*(payment|billing|stripe|subscription)` (`tags` i `paths` to listy YAML — wartości stoją w osobnych liniach `- …`)
++- Dołączaj `title:` i `regula:` — najbardziej opisowe pola
+ - Używaj `-i=true` dla case-insensitive
+ - Dołączaj pokrewne terminy, których użytkownik mógł nie wymienić
+-- Dopasuj pola do kształtu wejścia: zapytania bug-shaped przeszukują `symptoms:` i `root_cause:`; zapytania o decyzje i wzorce przeszukują `tags:`, `title:` i `problem_type:`
++- Dopasuj pola do kształtu wejścia: zapytania o defekt przeszukują `klasa:` i treść sekcji `## Symptomy` / `## Root Cause`; zapytania o obszar kodu — listę `paths` (globy plików reguły); zapytania o decyzje i wzorce — `title:`, `regula:` i `tags`
+ 
+ **Dlaczego to działa:** Grep skanuje treść plików bez wczytywania jej do kontekstu. Zwracane są tylko pasujące nazwy plików, drastycznie redukując zbiór do zbadania.
+ 
+@@ -128,35 +126,34 @@ Read: [file_path] z limit:30
+ ```
+ 
+ Wyłuskaj te pola z YAML:
+-- **module** — którego modułu/systemu/domeny dotyczy wniosek
+-- **problem_type** — kategoria (wartości knowledge-track i bug-track stosują się równorzędnie; patrz schema niżej)
+-- **component** — komponent/obszar techniczny, którego dotyczy (gdy ma zastosowanie)
++- **title**, **category** — temat i podkatalog wpisu
++- **klasa** — klasa defektu ze słownika `.claude/scripts/wiedza/klasy.mjs`
++- **regula** — reguła „rób X, nie Y” wyniesiona z problemu
++- **paths** — globy plików, których reguła dotyczy (dopasuj do plików pracy wywołującego)
+ - **tags** — przeszukiwalne słowa kluczowe
+-- **symptoms** — obserwowalne zachowania lub tarcia (na wpisach bug-track, czasem na knowledge-track)
+-- **root_cause** — przyczyna źródłowa (na wpisach bug-track; opcjonalna na knowledge-track)
+-- **severity** — critical, high, medium, low
++- **severity** / **waga**, **ucieczki** — jak poważny był problem i ile razy wrócił po review
++- **status** — `stale` oznacza wpis do odświeżenia
+ 
+-Niektóre wpisy nie-bugowe mogą mieć luźniejszy kształt frontmatter (nie wymagają `symptoms` ani `root_cause`). **NIE odrzucaj tych wpisów za brak pól bug-shaped** — używaj do dopasowania tych pól, które są obecne.
++Symptomy i przyczynę bierzesz z sekcji `## Symptomy` i `## Root Cause` w treści. Starsze wpisy bez pól wiedzy dopasowujesz po `title`, `tags` i treści — **nie odrzucaj ich za brak pól**.
+ 
+ ### Krok 5: Oceń i uszereguj trafność
+ 
+ Dopasuj pola frontmatter do słów kluczowych z Kroku 1:
+ 
+ **Mocne dopasowania (priorytet):**
+-- `module` lub domena pasuje do obszaru pracy wywołującego
++- `paths` obejmują pliki, nad którymi pracuje wywołujący
+ - `tags` zawierają słowa z pól Concepts, Decisions lub Approaches
+-- `title` zawiera słowa z Activity lub Concepts wywołującego
+-- `component` pasuje do dotykanego obszaru technicznego
+-- `symptoms` opisują podobne obserwowalne zachowania (gdy dotyczy)
++- `title` albo `regula` zawiera słowa z Activity lub Concepts wywołującego
++- sekcja `## Symptomy` opisuje podobne obserwowalne zachowania (gdy dotyczy)
+ 
+ **Umiarkowane dopasowania (uwzględnij):**
+-- `problem_type` jest istotny (np. `architecture_pattern` przy decyzjach architektonicznych, `performance_issue` przy optymalizacji)
+-- `root_cause` sugeruje wzorzec, który może się odnosić
+-- Wymienione pokrewne moduły, komponenty lub domeny
++- `klasa` jest istotna dla pracy (np. `wyscig-i-wspolbieznosc` przy kodzie asynchronicznym)
++- `## Root Cause` sugeruje wzorzec, który może się odnosić
++- `category` albo `paths` wskazują pokrewny obszar
+ 
+ **Słabe dopasowania (pomiń):**
+-- Brak wspólnych tagów, symptomów, konceptów lub modułów
+-- Niepowiązany `problem_type` bez przekrojowej stosowalności
++- Brak wspólnych tagów, ścieżek, konceptów i symptomów
++- Niepowiązana `klasa` bez przekrojowej stosowalności
+ 
+ ### Krok 6: Pełne czytanie trafnych plików
+ 
+@@ -174,16 +171,11 @@ Renderuj wyniki według struktury z **## Format wyjściowy** poniżej. Pole `Fea
+ 
+ Zwróć do 5 wyników, uszeregowanych po trafności. Jeśli istnieje więcej mocnych dopasowań — wybierz najbardziej bezpośrednio aplikowalne i krótko zaznacz na końcu, że są dodatkowe. Dołączenie 1-2 sąsiednich/stycznych wpisów z wyraźnym zastrzeżeniem trafności jest OK, gdy dają użyteczny kontekst; zwracanie każdego marginalnego dopasowania — nie.
+ 
+-Wypełnij `**Problem Type**` surową wartością `problem_type` z frontmatter (np. `architecture_pattern`, `design_pattern`, `tooling_decision`, `runtime_error`), by wywołujący widział, czy wpis jest bug-track czy knowledge-track. Gdy frontmatter nie ma `problem_type` (starsze wpisy czasem używają `category` albo nie mają YAML) — wywnioskuj opisową etykietę i oznacz ją `inferred`.
++Wypełnij `**Klasa**` surową wartością `klasa` z frontmattera, a `**Reguła**` wartością `regula`. Gdy wpis nie ma pól wiedzy (starszy wpis), wywnioskuj opisową etykietę klasy i oznacz ją `inferred`.
+ 
+ ## Referencja schematu frontmatter
+ 
+-Dwa tory `problem_type`:
+-
+-- **Knowledge-track:** `architecture_pattern`, `design_pattern`, `tooling_decision`, `convention`, `workflow_issue`, `developer_experience`, `documentation_gap`, `best_practice` (fallback).
+-- **Bug-track:** `build_error`, `test_failure`, `runtime_error`, `performance_issue`, `database_issue`, `security_issue`, `ui_bug`, `integration_issue`, `logic_error`.
+-
+-Pozostałe pola (`component`, `root_cause` itd.) są per-repo i ewoluują. Nie zakładaj sztywnego enuma — czytaj wartość z każdego pliku as-is, a podsumowując wniosek z nierozpoznaną wartością, przepuść ją dosłownie zamiast normalizować.
++Pola frontmattera definiuje sekcja „Pola wiedzy” skilla `.claude/skills/dev-compound/SKILL.md` (walidacja: `wiedza.mjs sprawdz`). Wartości czytasz z każdego pliku dosłownie; nierozpoznaną wartość przepuszczasz bez normalizacji.
+ 
+ Sonduj żywy katalog `docs/solutions/` (Krok 2) pod kątem tego, co faktycznie istnieje; nie hardcoduj nazw podkatalogów.
+ 
+@@ -207,8 +199,9 @@ Strukturyzuj wyniki tak:
+ 
+ #### 1. [Tytuł z dokumentu]
+ - **Plik**: [ścieżka repo-relatywna]
+-- **Moduł**: [moduł/domena z frontmatter lub obszar repo, którego dotyczy wniosek]
+-- **Problem Type**: [surowa wartość `problem_type`, np. `architecture_pattern`, `tooling_decision`, `runtime_error`. Oznacz "inferred", gdy wpis nie ma `problem_type`.]
++- **Obszar**: [`paths` z frontmattera albo obszar repo, którego dotyczy wniosek]
++- **Klasa**: [surowa wartość `klasa`; „inferred”, gdy wpis nie ma pól wiedzy]
++- **Reguła**: [wartość `regula`, gdy jest]
+ - **Trafność**: [dlaczego to ma znaczenie dla pracy wywołującego]
+ - **Kluczowy wniosek**: [decyzja, wzorzec lub pułapka do przeniesienia dalej]
+ - **Severity**: [poziom, gdy obecny we frontmatter; pomiń linię w przeciwnym razie]
+@@ -247,7 +240,7 @@ Gdy nie znaleziono trafnych wniosków — powiedz to wprost, dołącz kontekst w
+ - Nie używaj tylko dokładnych dopasowań (dołącz synonimy); nie pomijaj `title:`; nie procceduj z >25 kandydatami bez zawężenia
+ - Nie zwracaj surowej treści dokumentów zamiast destylacji
+ - Nie dołączaj każdego stycznego dopasowania — 1-2 sąsiednie z zastrzeżeniem OK; długi ogon słabych = szum
+-- **Nie odrzucaj kandydata za brak pól bug-shaped (`symptoms`/`root_cause`)** — wpisy nie-bugowe legalnie je pomijają
++- **Nie odrzucaj kandydata za brak pól wiedzy** — starsze wpisy ich nie mają; dopasuj je po `title`, `tags` i treści
+ - Nie zakładaj, że `docs/solutions/patterns/critical-patterns.md` istnieje — czytaj tylko gdy obecny
+ 
+ ## Punkty integracji
+diff --git a/.claude/agents/spec-compliance-reviewer.md b/.claude/agents/spec-compliance-reviewer.md
+index 915c70b..d7fb02d 100644
+--- a/.claude/agents/spec-compliance-reviewer.md
++++ b/.claude/agents/spec-compliance-reviewer.md
+@@ -13,12 +13,12 @@ Polecenie workflowu wskazuje dossier fazy: sekcję planu technicznego tej fazy,
+ 
+ ## Polecenia
+ 
+-- Zbierz zamówienie z sekcji planu i wierszy wymagań w dossier: ID wymagań, pola `Files:`, `Test scenarios:`, `Patterns to follow:` i teksty podane dosłownie. Plan techniczny w `docs/plans/` otwieraj, gdy dossier go nie ma albo jednostka odsyła do innej fazy.
++- Zbierz zamówienie z sekcji planu i wierszy wymagań w dossier: ID wymagań, pola `Pliki:`, `Scenariusze testowe:`, `Wzorce do naśladowania:` i teksty z pola `Teksty (verbatim):`. Plan techniczny w `docs/plans/` otwieraj, gdy dossier go nie ma albo jednostka odsyła do innej fazy.
+ - Zwróć pustą listę findingów, gdy faza nie ma ani planu, ani specyfikacji — kod będący jedynym źródłem wymagań jest z nimi zgodny z definicji, więc każdy finding byłby zgadywaniem.
+ - Dla każdego ID wymagania i każdego checkboxa `Test:` fazy wypisz plik:linię implementacji w diffie albo „brak”. Idź od wymagania do kodu, bo przejście od kodu do wymagań pomija to, czego szukasz: rzeczy, których nie ma. Gotowe, gdy każde wymaganie ma linię albo „brak”.
+ - Przejdź diff drugi raz w drugą stronę i wypisz każdą zmianę nieprzypisaną do wymagania; zmiana bez wymagania to zachowanie niezamówione.
+ - (literał tekstowy dla użytkownika w diffie) Wypisz każdy dodany lub zmieniony tekst widoczny dla użytkownika z plikiem:linią kodu, który wykonuje obiecaną czynność. Tekst obiecujący czynność bez takiej linii to finding P2, a tekst inny niż podany dosłownie w jednostce — także P2.
+-- (teksty dla użytkownika w diffie i `docs/design.md` w repo) Uruchom `grep -nwE 'Ty|Twój|Twoja|Twoje|Twojego|Tobie'` na plikach tekstów z diffu i zestaw każde trafienie z formą zwracania się z `docs/design.md`; niezgodność to finding P2.
++- (teksty dla użytkownika w diffie) Uruchom `grep -nwE 'Ty|Twój|Twoja|Twoje|Twojego|Tobie'` na plikach tekstów z diffu i zestaw każde trafienie z formą zwracania się z `docs/DESIGN.md`, a gdy jej tam nie ma — z istniejących ekranów; niezgodność to finding P2.
+ - (dokument prawny w diffie) Dla każdego dokumentu prawnego wypisz opisane w nim dane z kolumną migracji, która je przechowuje, oraz datę obowiązywania. Rozbieżność zakresu danych albo brak daty to finding P2, bo dokument obiecuje użytkownikowi coś, czego baza nie odzwierciedla.
+ - (pola liczbowe lub czasowe w diffie) Dla każdego takiego pola uruchom `grep -rn '<pole>'` w repo i wypisz każde użycie ze znaczeniem: jednostka (grosze czy złote, sekundy czy milisekundy), całość czy na osobę, UTC czy czas lokalny, indeks od 0 czy od 1, ułamek czy procent. Kod wewnętrznie spójny bywa jednolicie błędny, a fixture powtarzający to samo założenie zostawia testy zielone.
+ - Znaczenie pola ustalaj u źródła w kolejności: komentarz albo `check` w migracji, spec albo jednostka w planie, dokument wymagań. Dwa użycia o różnym znaczeniu to finding P1 także przy zielonych testach; pole bez znaczenia w żadnym źródle, którego użycia się rozjeżdżają, to finding P2.
+diff --git a/.claude/agents/test-coverage-reviewer.md b/.claude/agents/test-coverage-reviewer.md
+index bd81b0f..57e7103 100644
+--- a/.claude/agents/test-coverage-reviewer.md
++++ b/.claude/agents/test-coverage-reviewer.md
+@@ -9,7 +9,7 @@ Sprawdzasz, czy testy fazy wykryją zepsute zachowanie zmienionego kodu — czy
+ 
+ ## Wejście
+ 
+-Polecenie workflowu wskazuje dossier fazy: pełny diff, sekcję planu technicznego z `Test scenarios:`, zadania fazy z checkboxami `Test:`, profil stacku i wynik bramek domknięcia z blokiem przeżytych mutantów Strykera na liniach fazy. Mutant ma w bloku id (`M1`, `M2`…), plik:linię, mutator, zamiennik i status: Survived — test wykonuje linię i nie wykrywa zmiany, NoCoverage — żaden test linii nie wykonuje. Pozycja z warunkiem w nawiasie dotyczy fazy, której diff ten warunek spełnia; pozycja bez warunku dotyczy każdej fazy z kodem.
++Polecenie workflowu wskazuje dossier fazy: pełny diff, sekcję planu technicznego z polem `Scenariusze testowe:`, zadania fazy z checkboxami `Test:`, profil stacku i wynik bramek domknięcia z blokiem przeżytych mutantów Strykera na liniach fazy. Mutant ma w bloku id (`M1`, `M2`…), plik:linię, mutator, zamiennik i status: Survived — test wykonuje linię i nie wykrywa zmiany, NoCoverage — żaden test linii nie wykonuje. Pozycja z warunkiem w nawiasie dotyczy fazy, której diff ten warunek spełnia; pozycja bez warunku dotyczy każdej fazy z kodem.
+ 
+ ## Polecenia
+ 
+@@ -23,7 +23,7 @@ Polecenie workflowu wskazuje dossier fazy: pełny diff, sekcję planu techniczne
+ - (schemat Zod w diffie) Wypisz każdy schemat Zod z testów ładunku i z granicy API z typem kontraktu, który opisuje, i testem `expectTypeOf`. Schemat luźniejszy od kontraktu (`z.object` przy zamkniętym kontrakcie, pole opcjonalne wymagane w typie) albo schemat bez testu typu to finding P2 TEST.
+ - Wypisz każdą gałąź i ścieżkę błędu dodaną w diffie (`else`, `catch`, wczesny `return`, status 4xx i 5xx) z testem, który ją wywołuje. Gałąź bez testu to finding P2 TEST.
+ - (bramka w diffie: walidacja, autoryzacja, limit) Dla każdej bramki wypisz test odmowy, który podaje złe wejście i sprawdza odrzucenie. Brak testu odmowy to finding P2 TEST, bo bramka usunięta przez pomyłkę zostawia wtedy zielony zestaw.
+-- Dla każdej pozycji `Test scenarios:` z sekcji planu i każdego checkboxa `Test:` fazy bez znacznika `[E2E]` wypisz test, który ją realizuje, albo „brak”. Scenariusz bez testu to finding P2 TEST z cytatem scenariusza.
++- Dla każdej pozycji `Scenariusze testowe:` z sekcji planu i każdego checkboxa `Test:` fazy bez znacznika `[E2E]` wypisz test, który ją realizuje, albo „brak”. Scenariusz bez testu to finding P2 TEST z cytatem scenariusza.
+ - (pole liczbowe lub czasowe w fixture'ach albo asercjach diffu) Ustal znaczenie pola u źródła w kolejności: komentarz albo `check` w migracji, jednostka w planie, dokument wymagań — i zestaw je z wartością w fixture (jednostka, całość czy na osobę, UTC czy czas lokalny, indeks od 0 czy od 1). Fixture powielający znaczenie inne niż źródło to finding P1 KOD z oboma miejscami, bo test i implementacja mylą się tak samo i zestaw zostaje zielony.
+ - Uruchamiaj pojedynczy plik testu komendą testów z profilu stacku, gdy odpowiedź na pytanie „undefined” albo powód przeżycia mutanta nie wynika z lektury kodu; cały zestaw przebiegł już w domknięciu fazy.
+ - Traktuj wypisy z list jako notatkę roboczą; do wyniku zwracaj finding z plikiem:linią i zmianą implementacji, którą test przepuszcza, bo sceptyk sprawdza tezę na kodzie testu.
+diff --git a/.claude/hooks/error-handling-reminder.sh b/.claude/hooks/error-handling-reminder.sh
+index 709d221..45f15bb 100755
+--- a/.claude/hooks/error-handling-reminder.sh
++++ b/.claude/hooks/error-handling-reminder.sh
+@@ -78,7 +78,7 @@ for file in $FRONTEND_FILES; do
+             WARNINGS="${WARNINGS}\n     Linia ${LINE_NUM}: ${CONTENT}"
+             WARNING_COUNT=$((WARNING_COUNT + 1))
+         done <<< "$CONSOLE_HITS"
+-        WARNINGS="${WARNINGS}\n     → Użyj Sentry.captureException() / Sentry.captureMessage() zamiast console.*"
++        WARNINGS="${WARNINGS}\n     → Nieoczekiwany błąd: logger.error() (frontend) albo await captureError() (Edge Functions) — zdarzenie Sentry; oczekiwana odmowa (walidacja, 401/403/404): logger.info() bez zdarzenia — skill sentry-integration"
+         WARNINGS="${WARNINGS}\n"
+     fi
+ done
+diff --git a/.claude/hooks/stop-build-check-enhanced.sh b/.claude/hooks/stop-build-check-enhanced.sh
+index 6fc3421..6f1f7bd 100755
+--- a/.claude/hooks/stop-build-check-enhanced.sh
++++ b/.claude/hooks/stop-build-check-enhanced.sh
+@@ -66,7 +66,7 @@ elif [ "$ERROR_COUNT" -le "$ERROR_THRESHOLD" ]; then
+         echo ""
+         echo "$TSC_OUTPUT" | grep "error TS" | head -10
+         echo ""
+-        echo "Napraw błędy TypeScript przed zakończeniem (typuj poprawnie, nie używaj any/as)."
++        echo "Napraw błędy TypeScript przed zakończeniem: typ zamiast any, as tylko przy as const i zawężaniu DOM (reguły kodu, sekcja Type safety)."
+         echo ""
+     } >&2
+     exit 2
+diff --git a/.claude/skills/coderabbit-setup/SKILL.md b/.claude/skills/coderabbit-setup/SKILL.md
+index 1c20d25..facb262 100644
+--- a/.claude/skills/coderabbit-setup/SKILL.md
++++ b/.claude/skills/coderabbit-setup/SKILL.md
+@@ -25,14 +25,14 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
+ ## Wykonanie
+ 
+ 1. **Sprawdź istniejący config.** Jeśli `.coderabbit.yaml` już istnieje w korzeniu
+-   repo — pokaż userowi diff względem tego, co byś wygenerował, i ZAPYTAJ czy
++   repo — pokaż userowi diff względem tego, co byś wygenerował, i zapytaj, czy
+    nadpisać. Nie nadpisuj bez potwierdzenia.
+ 
+ 2. **Wykryj stack.** Przeczytaj `package.json` (dependencies + devDependencies)
+    i strukturę katalogów. Sygnały detekcji są opisane przy każdym bloku w
+    `reference/stack-blocks.md`. Jeśli user podał stack w argumencie — użyj go
+    zamiast detekcji. Jeśli detekcja jest niejednoznaczna (np. brak package.json) —
+-   ZAPYTAJ usera o stack, nie zgaduj.
++   zapytaj usera o stack, nie zgaduj.
+ 
+ 3. **Sklej config.** Weź `templates/coderabbit-base.yaml` w całości i:
+    - dołóż do `path_filters` i `path_instructions` bloki wykrytego stacku
+@@ -63,9 +63,9 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
+    Template skilla jest sprawdzany schematem w teście
+    `__tests__/generator.test.mjs`; dokładaj więc tylko klucze, które w nim są.
+ 
+-6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit — KROK OBOWIĄZKOWY,
+-   nie pomijaj go nigdy.** Bez zainstalowanej aplikacji config jest martwym
+-   plikiem. Instalacji nie da się wykonać z CLI, ale da się ją WYKRYĆ:
++6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit** — zawsze, bo bez
++   zainstalowanej aplikacji config jest martwym plikiem, a z repo tego nie widać.
++   Instalacji nie da się wykonać z CLI, ale da się ją wykryć:
+    ```bash
+    gh api user/installations --jq '.installations[] | select(.app_slug == "coderabbitai") | .account.login'
+    ```
+@@ -79,8 +79,7 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
+      ```
+      Zero komentarzy bota na istniejących PR-ach = na pewno brak instalacji.
+ 
+-7. **Raport dla usera — ZAWSZE wypisz wszystkie 4 punkty poniżej.** Nie skracaj
+-   i nie pomijaj żadnego, nawet gdy wszystko jest OK:
++7. **Raport dla usera** — wszystkie 4 punkty poniżej, także gdy wszystko jest OK:
+    1. Wykryty stack + które bloki weszły do configu.
+    2. Pliki wpisane do `code_guidelines.filePatterns`.
+    3. **Instalacja aplikacji GitHub CodeRabbit: ✅ albo ❌** (wynik kroku 6).
+@@ -101,8 +100,8 @@ z kodu). Zanim dopiszesz albo zmienisz instrukcję, sprawdź ją wobec tej listy
+    w węższym globie nie zdejmuje reguły z głównego. Wyjątki od reguły
+    z bloku głównego wpisuj w bloku głównym.
+ 2. **Progi liczbowe z tolerancją.** Bot zgłasza przekroczenie o 5 linii tak
+-   samo jak o 500. Próg w instrukcji to 360/60 (reguła 300/50 + 20%); twardy
+-   próg egzekwuje lint, nie bot.
++   samo jak o 500. Próg w instrukcji to 360/60 — ten sam co w regułach kodu
++   i ESLint (`max-lines`, `max-lines-per-function`); twardy próg egzekwuje lint, nie bot.
+ 3. **Nazwij, czego reguła nie obejmuje.** „Zero `as`” bot czyta dosłownie:
+    bez zdania o `as const`, `satisfies` i rzutowaniach w atrapach testowych
+    zgłasza każde z nich.
+diff --git a/.claude/skills/dev-compound-refresh/SKILL.md b/.claude/skills/dev-compound-refresh/SKILL.md
+index 8b4026e..7db9944 100644
+--- a/.claude/skills/dev-compound-refresh/SKILL.md
++++ b/.claude/skills/dev-compound-refresh/SKILL.md
+@@ -87,7 +87,7 @@ Znajdź wszystkie pliki `.md` pod `docs/solutions/`, wykluczając pliki `README.
+ Jeśli `$ARGUMENTS` podano, użyj go do zawężenia zakresu. Próbuj te strategie dopasowania w kolejności, zatrzymując się na pierwszej która daje wyniki:
+ 
+ 1. **Dopasowanie katalogu** — sprawdź czy argument pasuje do nazwy podkatalogu pod `docs/solutions/` (np. `performance-issues`, `database-issues`)
+-2. **Dopasowanie frontmatter** — szukaj w polach `module`, `component` lub `tags` we frontmatter
++2. **Dopasowanie frontmatter** — szukaj w polach `tags`, `klasa`, `paths` i `category` we frontmatterze
+ 3. **Dopasowanie nazwy pliku** — dopasuj do nazw plików (częściowe dopasowania OK)
+ 4. **Szukanie w treści** — szukaj argumentu jako słowa kluczowego w treści pliku
+ 
+@@ -120,7 +120,7 @@ Przed klasyfikacją czegokolwiek:
+ 
+ Gdy zakres jest szeroki (9+ dokumentów kandydujących), zrób lekki triaż przed głębokim badaniem:
+ 
+-1. **Inwentarz** — przeczytaj frontmatter wszystkich dokumentów kandydujących, grupuj według modułu/komponentu/kategorii
++1. **Inwentarz** — przeczytaj frontmatter wszystkich dokumentów kandydujących, grupuj według kategorii, `klasa` i `paths`
+ 2. **Klasteryzacja wpływu** — zidentyfikuj obszary z najgęstszymi klastrami dokumentów + wzorców. Klaster 5 rozwiązań i 2 wzorców pokrywających ten sam moduł ma wyższy wpływ niż 5 izolowanych obszarów.
+ 3. **Kontrola dryfu** — dla każdego klastra sprawdź czy główne referencjowane pliki nadal istnieją. Brakujące referencje w klastrze o wysokim wpływie = najsilniejszy sygnał od czego zacząć.
+ 4. **Przetwarzaj klastry według wpływu** — zacznij od klastra o najwyższym wpływie, kontynuuj do następnego.
+@@ -143,7 +143,7 @@ Dopasuj głębokość badania do specyficzności dokumentu — dokument referenc
+ Kluczowe rozróżnienie to czy dryf jest **kosmetyczny** (referencje się przeniosły ale rozwiązanie jest to samo) czy **merytoryczny** (samo rozwiązanie się zmieniło):
+ 
+ - **Terytorium Update** — ścieżki się przeniosły, klasy przemianowane, linki nieaktualne, metadane rozjechane, ale główne rekomendowane podejście nadal odpowiada temu jak kod działa. Napraw bezpośrednio.
+-- **Terytorium Replace** — rekomendowane rozwiązanie jest sprzeczne z aktualnym kodem, podejście architektoniczne się zmieniło, lub wzorzec nie jest już preferowanym sposobem. Trzeba napisać nowy dokument. Dokument zastępczy używa formatu `/dev-compound`: frontmatter YAML (title, category, date, module, component, tags), opis problemu, root cause, aktualne rozwiązanie z przykładami kodu i zapobieganie.
++- **Terytorium Replace** — rekomendowane rozwiązanie jest sprzeczne z aktualnym kodem, podejście architektoniczne się zmieniło, lub wzorzec nie jest już preferowanym sposobem. Trzeba napisać nowy dokument. Dokument zastępczy piszesz w formacie `/dev-compound`: frontmatter z polami wiedzy (sekcja „Pola wiedzy” skilla `dev-compound`, sprawdza je `wiedza.mjs sprawdz`), opis problemu, root cause, aktualne rozwiązanie z przykładami kodu i zapobieganie.
+ 
+ **Granica:** jeśli przepisujesz sekcję rozwiązania lub zmieniasz to co dokument rekomenduje, zatrzymaj się — to Replace, nie Update.
+ 
+@@ -365,7 +365,7 @@ Podziel akcje na dwie sekcje:
+ 
+ **Rekomendowane** (akcje których nie udało się zapisać):
+ - Te same szczegóły co powyżej, ale sformułowane jako rekomendacje dla człowieka do zastosowania
+-- Dołącz wystarczająco kontekstu żeby użytkownik mógł zastosować zmianę ręcznie lub ponownie uruchomić skill interaktywnie
++- Dołącz wystarczająco kontekstu żeby użytkownik mógł zastosować zmianę ręcznie albo uruchomić skill ponownie po usunięciu przeszkody
+ 
+ Jeśli wszystkie zapisy się powiodą, sekcja Rekomendowane jest pusta. Jeśli żaden zapis się nie powiedzie, wszystkie akcje trafiają pod Rekomendowane — raport staje się planem utrzymania.
+ 
+diff --git a/.claude/skills/dev-compound/SKILL.md b/.claude/skills/dev-compound/SKILL.md
+index dca5d31..81fab9c 100644
+--- a/.claude/skills/dev-compound/SKILL.md
++++ b/.claude/skills/dev-compound/SKILL.md
+@@ -231,7 +231,7 @@ Dokumentacja zapisana (tryb compact)
+ Plik: docs/solutions/[category]/[filename].md
+ 
+ Aby uzyskać bogatszą dokumentację (cross-referencje, diagnostyka, strategia zapobiegania),
+-uruchom /dev-compound --full w świeżej sesji.
++uruchom /dev-compound --full w tej samej sesji, póki rozmowa o problemie jest w kontekście.
+ 
+ Wiedza: szczebel [regula|kod|lint] — [indeks zapisany / bramka indeksu: błędy]
+ Propozycja bramki (kod, lint): [kod|lint] [klasa] — [reguła] ([szczebel_powod])
+diff --git a/.claude/skills/dev-plan/SKILL.md b/.claude/skills/dev-plan/SKILL.md
+index 53ca58d..beef58f 100644
+--- a/.claude/skills/dev-plan/SKILL.md
++++ b/.claude/skills/dev-plan/SKILL.md
+@@ -18,8 +18,6 @@ Plan techniczny jest jedynym źródłem treści zadania: builder dostaje jednost
+ 
+ Pytania zadawaj narzędziem `AskUserQuestion`, jedno naraz, z opcjami single-select, gdy istnieją naturalne odpowiedzi. Bez tego narzędzia — numerowane opcje w czacie i czekanie na odpowiedź.
+ 
+-**Tryb pipeline** (wywołanie z workflowu albo z `disable-model-invocation`): pytania pomijasz, wybory podejmujesz sam i doprowadzasz plan do zapisu; Fazy 6 nie wykonujesz.
+-
+ ## Opis feature'a
+ 
+ <feature_description> #$ARGUMENTS </feature_description>
+@@ -96,7 +94,7 @@ Niejasna głębokość → jedno celowane pytanie.
+ 
+ Przeczytaj w całości indeks wiedzy projektu `docs/learned-patterns.md` (jeśli istnieje): reguły z klasą, wzorcami plików i linkiem do `docs/solutions/`. Reguły pasujące do obszaru planu zasilają „Wiedza instytucjonalna” w planie i podejście IU.
+ 
+-Przygotuj podsumowanie kontekstu planowania (akapit lub dwa: problem, wymagania, kluczowe decyzje ze źródła albo opis feature'a). Agentów badawczych wołasz narzędziem `Agent` z typem agenta z `.claude/agents/` — nie typem `Explore` z doklejoną definicją agenta w prompcie (`Explore` nie ma narzędzi sieciowych, a definicja w prompcie gubi `model:` i `tools:` z frontmattera).
++Przygotuj podsumowanie kontekstu planowania (akapit lub dwa: problem, wymagania, kluczowe decyzje ze źródła albo opis feature'a). Agentów badawczych wołasz narzędziem `Agent` z typem agenta z `.claude/agents/` — nie typem `Explore` z doklejoną definicją agenta w prompcie (definicja doklejona do promptu gubi `model:`, `tools:` i `skills:` z frontmattera).
+ 
+ - **Standardowa i Głęboka** — zawsze, równolegle:
+   - `repo-research-analyst` — prompt: linia `Scope: technology, architecture, patterns, conventions`, pod nią samo podsumowanie kontekstu (bez linii `Scope:` agent przegląda też konwencje issues i szablony PR, które planu nie zasilają);
+diff --git a/.claude/skills/dev-pr/SKILL.md b/.claude/skills/dev-pr/SKILL.md
+index ce42a10..373884c 100644
+--- a/.claude/skills/dev-pr/SKILL.md
++++ b/.claude/skills/dev-pr/SKILL.md
+@@ -6,10 +6,9 @@ argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge]
+ 
+ # `/dev-pr` — od pull requesta do merge'a
+ 
+-Ten skill domyka odcinek, którego w pipelinie nie było. Do tej pory zadanie kończyło się na
+-`/dev-docs-complete`, a wszystko dalej — wysłanie PR, 127 komentarzy bota w 6 pull requestach,
+-14 commitów ręcznych tur — działo się poza szablonem i **nie zasilało bazy wiedzy**. Te same klasy
+-błędów wracały w kolejnym pull requeście.
++Skill prowadzi zadanie od `/dev-docs-complete` do merge'a: wysłanie PR, tury poprawek po uwagach bota
++i compound, który zamienia te uwagi we wpisy bazy wiedzy — bez niego te same klasy błędów wracają
++w kolejnym pull requeście.
+ 
+ **Podział ról:** mechanika żyje w `.claude/workflows/dev-pr-wf.js` (bramki liczone w JS, `gh`, naprawy,
+ odpowiedzi w wątkach). Ty prowadzisz rozmowę, trzymasz licznik tur i pytasz operatora. Nie wykonuj
+diff --git a/.claude/skills/dev-prep/SKILL.md b/.claude/skills/dev-prep/SKILL.md
+index 64d2874..8bc1e88 100644
+--- a/.claude/skills/dev-prep/SKILL.md
++++ b/.claude/skills/dev-prep/SKILL.md
+@@ -121,7 +121,7 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
+ 
+ **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
+ 
+-Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, zamiast czytać plik po pliku.
++Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, z pierwszą linią promptu `Scope: technology, architecture` i pytaniem o trasy, assety i nazwy zmiennych środowiskowych pod nią, zamiast czytać plik po pliku.
+ 
+ #### 1.3 Narzędzia maszyny (doctor)
+ 
+@@ -261,5 +261,3 @@ Następnie zadaj `AskUserQuestion`: „Co dalej?"
+ - `Popraw dokument` — wróć do Fazy 2 z jego uwagami.
+ 
+ **Commit:** dokument jest artefaktem planowania — `/dev-plan` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego kroku 6.3). Nie commituj go sam, chyba że użytkownik poprosi.
+-
+-**Tryb pipeline:** przy wywołaniu z automatycznego workflow lub kontekstu `disable-model-invocation` pomiń pytania interaktywne, podejmij potrzebne wybory sam i zapisz dokument.
+diff --git a/.claude/skills/security/resources/auth-security-patterns.md b/.claude/skills/security/resources/auth-security-patterns.md
+index 647b4f8..2abe57f 100644
+--- a/.claude/skills/security/resources/auth-security-patterns.md
++++ b/.claude/skills/security/resources/auth-security-patterns.md
+@@ -57,8 +57,7 @@ WITH CHECK ((SELECT auth.uid()) = user_id);
+ 
+ ### Dostęp administracyjny (role)
+ 
+-> ⚠️ **KRYTYCZNE — najczęstszy błąd autoryzacji w Supabase, notorycznie popełniany przez agentów AI.**
+-> NIGDY nie trzymaj roli w `user_metadata`. Pole `raw_user_meta_data` (czyli claim `user_metadata` w JWT) jest **edytowalne przez samego użytkownika** — wystarczy `supabase.auth.updateUser({ data: { role: 'admin' } })` z konsoli/DevTools i atakujący podnosi sobie rolę, po czym RLS przepuszcza go do cudzych danych (privilege escalation).
++> **Rola nie pochodzi z `user_metadata`.** Pole `raw_user_meta_data` (czyli claim `user_metadata` w JWT) jest **edytowalne przez samego użytkownika** — wystarczy `supabase.auth.updateUser({ data: { role: 'admin' } })` z konsoli/DevTools i atakujący podnosi sobie rolę, po czym RLS przepuszcza go do cudzych danych (privilege escalation).
+ > Do autoryzacji używaj **`app_metadata`** (ustawiane wyłącznie server-side, użytkownik go nie zmieni) albo **dedykowanej tabeli ról**.
+ > Nie używaj też top-levelowego claimu `role` w policy — to zarezerwowany claim Postgres/PostgREST (`authenticated` / `anon` / `service_role`), nie rola aplikacyjna.
+ 
+@@ -115,14 +114,12 @@ await supabaseAdmin.auth.admin.updateUserById(userId, {
+ 
+ Kazda chroniona Edge Function musi weryfikowac JWT.
+ 
+-**withSupabase({ auth: 'user' }) -- AKTUALNY WZORZEC (2026).** Oficjalne wytyczne Supabase
+-(AI-prompt `edge-functions.md`, pkt 7-8): nie uzywaj `Deno.serve` -- eksportuj domyslny obiekt
+-z handlerem `fetch` i ZAWSZE owijaj go w `withSupabase` z `npm:@supabase/server@^1`. Wrapper
+-sam robi to, co wczesniej pisalismy recznie: odrzuca request bez waznego JWT **przed** wejsciem
+-do handlera, buduje klienta `ctx.supabase` (RLS w kontekscie usera) i `ctx.supabaseAdmin`
+-(secret key, omija RLS) oraz dodaje naglowki CORS (`cors: 'default'`). Zweryfikowana
+-tozsamosc masz w `ctx.userClaims` (`id` = user_id). `Deno.serve` nadal dziala (legacy), ale
+-przestal byc dokumentowanym wzorcem.
++**Edge Function z withSupabase({ auth: 'user' }).** Wedlug wytycznych Supabase (AI-prompt
++`edge-functions.md`, pkt 7-8) eksportujesz domyslny obiekt z handlerem `fetch` owinietym
++w `withSupabase` z `npm:@supabase/server@^1`; `Deno.serve` to wzorzec legacy. Wrapper odrzuca
++request bez waznego JWT **przed** wejsciem do handlera, buduje klienta `ctx.supabase` (RLS
++w kontekscie usera) i `ctx.supabaseAdmin` (secret key, omija RLS) oraz dodaje naglowki CORS
++(`cors: 'default'`). Zweryfikowana tozsamosc masz w `ctx.userClaims` (`id` = user_id).
+ 
+ ```typescript
+ import { withSupabase } from 'npm:@supabase/server@^1';
+diff --git a/.claude/workflows/dev-autopilot-wf.js b/.claude/workflows/dev-autopilot-wf.js
+index b31e419..98a239e 100644
+--- a/.claude/workflows/dev-autopilot-wf.js
++++ b/.claude/workflows/dev-autopilot-wf.js
+@@ -460,8 +460,8 @@ ${trescJson}
+    (brak node -> \`python3 -c "import json;json.load(open('${sciezka}/.autopilot-state.json'));print('JSON-OK')"\`).
+    Wynik "JSON-OK" -> zwroc {zapisano:true, poprawnyJson:true}.
+    Blad parsowania -> ZAPISZ PONOWNIE (raz) i zwaliduj jeszcze raz. Nadal blad -> {zapisano:false, poprawnyJson:false}.
+-3. POWOD tej walidacji (run feedback-marcin-poprawki, mobile, 2026-08-06): przy przepisywaniu tresci przez
+-   agenta w opisie findingu wszedl NIEZAESCAPOWANY cudzyslow — plik przestal byc JSON-em. To jest plik,
++3. POWOD tej walidacji: przepisujac tresc, agent potrafi wstawic do opisu findingu niezaescapowany cudzyslow
++   i plik przestaje byc JSON-em. To jest plik,
+    z ktorego pipeline odtwarza stan po awarii: uszkodzony albo wywroci nastepny bootstrap, albo cicho skasuje
+    dowod, ze cala faza zostala wykonana, i pipeline powtorzy kilka godzin pracy. Zapis bez odczytu = brak dowodu.
+ 
+@@ -672,10 +672,9 @@ Plik, ktory git widzi jako binarny, ma w numstat "-" zamiast liczb dodanych/usun
+ Do plikiBinarne[] wpisz KAZDY taki plik POZA legalnymi binariami (.png .jpg .jpeg .gif .webp .avif
+ .ico .bmp, .woff .woff2 .ttf .otf, .pdf .zip .gz .mp4 .mp3, bun.lockb) — plik zrodlowy lub tekstowy
+ na tej liscie to AWARIA pipeline'u, nie znalezisko.
+-POWOD (run team-os-onboarding-instalatory, 2026-07-26): fix zapisal do scripts/inbox/invite.mjs regex
+-z SUROWYMI bajtami sterujacymi (literalne U+0000, U+001F, U+007F) zamiast sekwencji ucieczki
+-\\x00-\\x1f\\x7f-\\x9f. Plik przestal byc tekstem, a kazdy kolejny agent rozlaczal sie przy jego Read
+-(APIError) — 6 prob z rzedu i caly run byl martwy. Zapisujac regexy/stringi z bajtami sterujacymi
++POWOD: regex albo string z SUROWYMI bajtami sterujacymi (literalne U+0000, U+001F, U+007F) zamiast sekwencji
++ucieczki \\x00-\\x1f\\x7f-\\x9f robi z pliku zrodlowego plik binarny, a kazdy kolejny agent rozlacza sie
++przy jego Read (APIError) — run staje. Zapisujac regexy/stringi z bajtami sterujacymi
+ uzywaj WYLACZNIE sekwencji ucieczki.
+ NIE probuj naprawiac takiego pliku w tym przebiegu — jego Read zabije rowniez CIEBIE. Zwroc go na liscie.
+ Gdy nic nie znalazles, zwroc pusta liste (pole jest obowiazkowe: brak listy = orkiestrator nie wie, czy sprawdziles).
+diff --git a/.claude/workflows/dev-docs-review-wf.js b/.claude/workflows/dev-docs-review-wf.js
+index e93719d..468b966 100644
+--- a/.claude/workflows/dev-docs-review-wf.js
++++ b/.claude/workflows/dev-docs-review-wf.js
+@@ -403,9 +403,9 @@ function zrodlaBlok(faza, kontekst) {
+   return (kontekst && kontekst.ctxZapisany && kontekst.ctxPlik)
+     ? `Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
+ Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
+-Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.`
+-    : `Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Files:, Test scenarios:, Patterns to follow:).
+-Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.`
++Naruszenie reguly z sekcji "Reguly projektu" dossier, ktora dotyczy Twojej osi, zglos jako finding.`
++    : `Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Pliki:, Scenariusze testowe:, Wzorce do nasladowania:).
++Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie reguly, ktora dotyczy Twojej osi, zglos jako finding.`
+ }
+ 
+ // Polecenie reviewera osi (wszystkie osie). Mandat, procedura, wagi i kryterium konca sa w pliku roli (agentType);
+diff --git a/.claude/workflows/dev-pr-wf.js b/.claude/workflows/dev-pr-wf.js
+index 9101ede..c3c28e5 100644
+--- a/.claude/workflows/dev-pr-wf.js
++++ b/.claude/workflows/dev-pr-wf.js
+@@ -745,9 +745,8 @@ Zwroc obiekt zgodny ze schematem.`,
+ 
+ if (etap === 'compound') {
+   const wynik = await agent(
+-    `Jestes czescia pipeline'u /dev-pr. To jest etap, ktorego w szablonie brakowalo najbardziej:
+-w projekcie zrodlowym 127 komentarzy bota w 6 pull requestach dalo ZERO wpisow w bazie wiedzy,
+-wiec te same klasy bledow wracaly w kolejnym PR.
++    `Jestes czescia pipeline'u /dev-pr. Ten etap zamienia uwagi bota z tego pull requesta we wpisy bazy wiedzy,
++bo bez nich te same klasy bledow wracaja w kolejnym PR.
+ 
+ Zadanie: "${zadanie}". Material: diff wszystkich tur poprawek tego pull requesta
+ (\`git log --oneline --grep="^fix(pr)"\` -> \`git diff <pierwszy>^..HEAD\`) oraz lista watkow bota:

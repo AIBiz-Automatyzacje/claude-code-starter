@@ -1,0 +1,13 @@
+Ponowny prompt-audit P16 (2026-10-08) — ustalenia ROBOCZE (raport PROMPT-AUDIT-2.md jeszcze nie napisany).
+Diff: dane/pa2-proponowany.diff (22 pliki, 41 hunkow) — NANIESIONY na drzewo robocze galezi popr/P16-zamkniecie, NIEZACOMMITOWANY;
+pnpm typecheck/test (873/873)/lint zielone; pa_dodane.py HEAD = 0. Test wycinek-wiedzy.test.mjs:56 zmieniony (zmiana kontraktu A7).
+Cel: Opus 5.5; klasy haiku = Haiku 5.5 (od R-P14). PA-01..PA-44: wszystkie zamkniete albo swiadomie zostawione (dane/pa2-status.txt);
+62 hunki pierwszego audytu: stara tresc zniknela 62/62. Sygnaly: 576 -> 331 (dane/pa2-sygnaly.txt vs pa2baza-). Komendy skryptow: 52/0 bledow (pa2-komendy.txt).
+WYSOKA: A1 architecture-strategist:26,:32 vs coding-rules (typ zwracany komponentu/hooka, kebab-case); A2 nazwy pol planu Files/Test scenarios/
+Patterns -> Pliki/Scenariusze testowe/Wzorce (spec-compliance:16, test-coverage:12,:26, review-wf:407); A3 learnings-researcher schemat
+module/problem_type -> pola wiedzy dev-compound; A4 dev-compound-refresh :90 :123 :146 :368; A5 hook error-handling :81 vs sentry; A6 coderabbit 300/50.
+SREDNIA: A7 review-wf :406/:408 „kazda regula” vs „pomijaj spoza osi” w plikach rol; A8 spec-compliance docs/design.md -> DESIGN.md; A9 „Tryb pipeline”
+dev-plan:21, dev-prep:265 (martwe); A10 dev-plan:99 Explore; A11 dev-prep:124 Scope:; A12 dev-compound --full w swiezej sesji; A14 coderabbit wersaliki;
+A15 hook stop-build „nie uzywaj as”; A16 dev-pr SKILL:9 + dev-pr-wf:748 archeologia; A17/A18 auth-security-patterns :60 :117; A19/A20 framework-docs
+(Server Components, MANDATORY), best-practices:57; M1/M2 autopilot POWOD (run, data) :463 :675; M3 lista stylow builderow UI + domyslne Opus 5.5 (x4 pliki).
+NISKIE i FLAGI: tresc odpowiedzi subagenta w transkrypcie sesji P16; flaga: role haiku bez jawnego efortu (Haiku 5.5 domyslnie medium), koszt ~1% runu — bez zmiany.

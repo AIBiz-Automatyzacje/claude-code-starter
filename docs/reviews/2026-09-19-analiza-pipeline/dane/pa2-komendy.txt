@@ -1,0 +1,61 @@
+# Ponowny prompt-audit (P16): komendy skryptow szablonu w promptach (pa2_komendy.py)
+repo: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template
+
+wywolan: 52, skryptow: 6, bledow: 0
+
+## bledy
+(brak)
+
+## wywolania (plik:linia skrypt argumenty)
+.claude/workflows/dev-autopilot-wf.js:532 .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\
+.claude/workflows/dev-autopilot-wf.js:537 .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}", scenariusze 0,
+.claude/workflows/dev-autopilot-wf.js:550 .claude/scripts/e2e/e2e.mjs suma\
+.claude/workflows/dev-autopilot-wf.js:576 .claude/scripts/e2e/e2e.mjs stop\
+.claude/workflows/dev-autopilot-wf.js:622 .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z pola plik findingow, bez :linia, po przecinku
+.claude/workflows/dev-autopilot-wf.js:647 .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\
+.claude/workflows/dev-autopilot-wf.js:653 .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator
+.claude/workflows/dev-autopilot-wf.js:847 .claude/scripts/bramki/bramki.mjs --baza <najstarszy
+.claude/workflows/dev-autopilot-wf.js:1156 .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}\
+.claude/workflows/dev-autopilot-wf.js:1824 .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\
+.claude/workflows/dev-autopilot-wf.js:1910 .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie '${nazwaZadania}'
+.claude/workflows/dev-autopilot-wf.js:1972 .claude/scripts/ogrod/ogrod.mjs pomiar\
+.claude/workflows/dev-compound-wf.js:81 .claude/scripts/wiedza/wiedza.mjs sprawdz <plik
+.claude/workflows/dev-compound-wf.js:84 .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\
+.claude/workflows/dev-docs-complete-wf.js:157 .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/${nazwaZadania}\
+.claude/workflows/dev-docs-complete-wf.js:245 .claude/scripts/e2e/e2e.mjs mapa --zadanie docs/active/${nazwaZadania}\
+.claude/workflows/dev-docs-execute-wf.js:258 .claude/scripts/wiedza/wiedza.mjs wycinek --zapobieganie --pliki <pliki jednostki po przecinku
+.claude/workflows/dev-docs-execute-wf.js:343 .claude/scripts/bramki/bramki.mjs --baza ${baza}
+.claude/workflows/dev-docs-execute-wf.js:358 .claude/scripts/bramki/bramki.mjs --dopisz-sume\
+.claude/workflows/dev-docs-execute-wf.js:378 .claude/scripts/dossier/dossier.mjs --sciezka ${sciezka} --faza ${faza}${baza === 'HEAD' ? '' :
+.claude/workflows/dev-docs-review-wf.js:377 .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z mapy zmian po przecinku
+.claude/workflows/dev-docs-review-wf.js:408 .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku
+.claude/workflows/dev-docs-review-wf.js:635 .claude/scripts/dossier/dossier.mjs --sciezka ${sciezka} --faza ${faza}${zBaza}\
+.claude/workflows/dev-docs-review-wf.js:875 .claude/scripts/e2e/e2e.mjs ksieguj --zadanie ${sciezka} --faza ${faza}${brak} <<'PRZEBIEGI_E2E'\n${JSON.stringify(wpisy
+.claude/workflows/dev-pr-wf.js:581 .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i blizniacze miejsca z napraw-szerzej, bez :linia, po przecinku
+.claude/workflows/dev-pr-wf.js:762 .claude/scripts/wiedza/wiedza.mjs sprawdz <plik
+.claude/workflows/dev-pr-wf.js:764 .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\
+.claude/agents/feature-tester-e2e.md:23 .claude/scripts/e2e/e2e.mjs scenariusze --zadanie <folder
+.claude/agents/feature-tester-e2e.md:43 .claude/scripts/e2e/e2e.mjs stan
+.claude/templates/e2e-env/README.md:21 .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/<zadanie
+.claude/templates/e2e-env/README.md:72 .claude/scripts/e2e/e2e.mjs sprawdz --zadanie <dowolne zadanie z [E2E]
+.claude/templates/smoke-autopilot/README.md:81 .claude/scripts/plan/plan.mjs generuj docs/plans/plan-techniczny-smoke-autopilot.md --nazwa smoke-autopilot --zapisz --nadpisz
+.claude/templates/smoke-autopilot/README.md:99 .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/smoke-autopilot
+.claude/templates/smoke-autopilot/README.md:103 .claude/scripts/e2e/e2e.mjs stop
+.claude/skills/dev-compound/SKILL.md:215 .claude/scripts/wiedza/wiedza.mjs sprawdz <plik
+.claude/skills/dev-compound/SKILL.md:217 .claude/scripts/wiedza/wiedza.mjs indeks --zapisz
+.claude/skills/weryfikacja-setup/SKILL.md:20 .claude/scripts/e2e/e2e.mjs weryfikacja --zapisz
+.claude/skills/weryfikacja-setup/SKILL.md:33 .claude/scripts/e2e/e2e.mjs sprawdz
+.claude/skills/weryfikacja-setup/SKILL.md:34 .claude/scripts/e2e/e2e.mjs start
+.claude/skills/weryfikacja-setup/SKILL.md:38 .claude/scripts/e2e/e2e.mjs stop
+.claude/skills/weryfikacja-setup/SKILL.md:51 .claude/scripts/e2e/e2e.mjs weryfikacja
+.claude/skills/dev-docs-complete/SKILL.md:31 .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/$ARGUMENTS
+.claude/skills/dev-docs-complete/SKILL.md:109 .claude/scripts/e2e/e2e.mjs mapa --zadanie docs/active/$ARGUMENTS
+.claude/skills/dev-compound-refresh/SKILL.md:171 .claude/scripts/wiedza/wiedza.mjs indeks --zapisz
+.claude/skills/dev-compound-refresh/SKILL.md:301 .claude/scripts/wiedza/wiedza.mjs sprawdz <nowy plik
+.claude/skills/dev-compound-refresh/SKILL.md:386 .claude/scripts/wiedza/wiedza.mjs konwersja przygotuj
+.claude/skills/dev-compound-refresh/SKILL.md:396 .claude/scripts/wiedza/wiedza.mjs konwersja zastosuj --propozycje /tmp/wiedza-propozycje.json
+.claude/skills/dev-plan/SKILL.md:106 .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <plik
+.claude/skills/dev-plan/SKILL.md:206 .claude/scripts/plan/plan.mjs linie <plik
+.claude/skills/dev-plan/SKILL.md:268 .claude/scripts/plan/plan.mjs sprawdz <docs/plans/plik-planu.md
+.claude/skills/dev-plan/SKILL.md:283 .claude/scripts/plan/plan.mjs generuj <docs/plans/plik-planu.md
+.claude/skills/dev-plan/SKILL.md:295 .claude/scripts/plan/plan.mjs gotowosc docs/active/<zadanie

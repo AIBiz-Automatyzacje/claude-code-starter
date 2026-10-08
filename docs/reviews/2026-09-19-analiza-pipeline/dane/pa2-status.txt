@@ -1,0 +1,105 @@
+# Ponowny prompt-audit (P16): stan pozycji PA z PROMPT-AUDIT.md na biezacym repo (pa2_status.py)
+repo: /Users/kacper_trzepiecinski/Documents/Kodowanie/workspace-template
+
+## (1) pozycje PA — cytaty
+format: PA | status | cytaty nadal obecne / wszystkie | gdzie (pierwszy plik z trafieniem)
+
+PA-03 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/3 |  | memoizacja: reviewer performance każe szukać tego, czego builder ma ni
+PA-09 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | odwołanie do opisu, którego w prompcie nie ma (BLOK_SEMANTYKA)
+PA-12 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | nazwy narzędzi Figma MCP wpisane na sztywno
+PA-13 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | planner: nieaktualny rozmiar i fałszywe uzasadnienie
+PA-14 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | compound w autopilocie: „kontekst z sesji”, której agent nie ma
+PA-16 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | archiwizacja dopisuje do CLAUDE.md wbrew decyzji operatora
+PA-19 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | builder fullstack: krok, którego nie da się wykonać
+PA-20 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | spec-compliance odsyła do osi, których nie ma
+PA-01 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/4 |  | wzmacniacze w plikach reviewerów
+PA-02 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | dialogi-przykłady czatu i tożsamość „elite” w plikach reviewerów
+PA-04 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | `getSession()` po stronie serwera: reviewer łagodniejszy niż skille
+PA-05 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/3 |  | format raportu w pliku reviewera kontra schemat workflowu
+PA-06 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | architecture: opis zmiany zamiast zasady
+PA-07 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | architecture: „najpierw zmapuj cały system”
+PA-08 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/7 |  | frazy migracyjne w promptach review / fix / execute / dev-docs
+PA-10 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/3 |  | archeologia incydentu E2E i niezgodna definicja liczenia
+PA-11 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | rok wpisany na sztywno
+PA-15 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | zakres diffu fixa dla ról mechanicznych
+PA-17 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | sentry-integration: „NIGDY NIE ŁAMIESZ TYCH ZASAD / ALL ERRORS MUST”
+PA-18 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | hook error-handling: sprawdza wzorzec sprzed migracji i żąda czegoś sp
+PA-21 | OTWARTE (wszystkie cytaty nadal sa) | 1/1 | .claude/agents/repo-research-analyst.md | dev-plan woła repo-research-analyst bez `Scope:`
+PA-22 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | efort ról po przejściu na Opus 5.5.** `dev-docs-review-wf.js:819` `TIE
+PA-24 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | skill `security` wstrzykiwany builderom to protokół audytu.** `agents/
+PA-25 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | `figma-design-to-code` to nieaktualna kopia skilla vendora.** Lokalna 
+PA-26 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/3 |  | `coding-rules.md` (TYLKO RAPORT, reguły operatora).** (a) `:72-85` „Ka
+PA-27 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | learned-patterns dociera do buildera trzema kanałami.** Eager z `.clau
+PA-29 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/1 |  | weryfikacja w pięciu warstwach.** Builder (tsc/test/lint/build, `featu
+PA-30 | ZAMKNIETE (zaden cytat nie wystepuje) | 0/2 |  | dev-plan zawsze uruchamia agentów researchu.** `skills/dev-plan/SKILL.
+PA-39 | CZESCIOWO | 1/12 | .claude/skills/dev-plan/SKILL.md | security-sentinel: trzy zachodzące checklisty i pozycje niewykonalne w
+
+razem: CZESCIOWO 1, OTWARTE 1, ZAMKNIETE 27 (pozycji 29)
+
+## (2) hunki pa-proponowany.diff — stara tresc vs nowa
+format: H<nn> | plik | usuwane linie nadal w pliku / wszystkie | dodane w pliku / wszystkie
+
+H01 | .claude/agents/architecture-strategist.md | 0/8 | 0/0
+H02 | .claude/agents/architecture-strategist.md | 0/4 | 0/3
+H03 | .claude/agents/architecture-strategist.md | 0/5 | 0/1
+H04 | .claude/agents/architecture-strategist.md | 0/1 | 0/0
+H05 | .claude/agents/architecture-strategist.md | 0/1 | 0/1
+H06 | .claude/agents/architecture-strategist.md | 0/1 | 0/1
+H07 | .claude/agents/best-practices-researcher.md | 0/1 | 1/1
+H08 | .claude/agents/feature-builder-fullstack.md | 0/1 | 0/1
+H09 | .claude/agents/feature-builder-fullstack.md | 0/1 | 0/0
+H10 | .claude/agents/feature-builder-fullstack.md | 0/1 | 0/1
+H11 | .claude/agents/feature-builder-ui.md | 0/1 | 0/1
+H12 | .claude/agents/feature-builder-ui.md | 0/1 | 0/1
+H13 | .claude/agents/feature-tester-e2e.md | 0/1 | 0/1
+H14 | .claude/agents/framework-docs-researcher.md | 0/1 | 1/1
+H15 | .claude/agents/performance-oracle.md | 0/12 | 0/0
+H16 | .claude/agents/performance-oracle.md | 0/1 | 0/1
+H17 | .claude/agents/performance-oracle.md | 0/1 | 0/1
+H18 | .claude/agents/repo-research-analyst.md | 0/1 | 1/1
+H19 | .claude/agents/security-sentinel.md | 0/14 | 0/1
+H20 | .claude/agents/security-sentinel.md | 0/1 | 0/1
+H21 | .claude/agents/security-sentinel.md | 0/1 | 0/1
+H22 | .claude/agents/security-sentinel.md | 0/4 | 0/1
+H23 | .claude/agents/security-sentinel.md | 0/1 | 0/0
+H24 | .claude/agents/spec-compliance-reviewer.md | 0/1 | 0/1
+H25 | .claude/agents/web-research-specialist.md | 0/1 | 1/1
+H26 | .claude/hooks/error-handling-reminder.sh | 0/2 | 2/2
+H27 | .claude/hooks/error-handling-reminder.sh | 0/2 | 3/3
+H28 | .claude/skills/dev-brainstorm/SKILL.md | 0/1 | 1/1
+H29 | .claude/skills/dev-compound/SKILL.md | 0/1 | 1/1
+H30 | .claude/skills/dev-compound-refresh/SKILL.md | 0/1 | 1/1
+H31 | .claude/skills/dev-docs/SKILL.md | 0/1 | 0/1
+H32 | .claude/skills/dev-docs/SKILL.md | 0/5 | 0/3
+H33 | .claude/skills/dev-docs-complete/SKILL.md | 0/1 | 1/1
+H34 | .claude/skills/dev-docs-complete/SKILL.md | 0/3 | 0/1
+H35 | .claude/skills/dev-plan/SKILL.md | 0/1 | 1/1
+H36 | .claude/skills/dev-plan/SKILL.md | 0/1 | 0/1
+H37 | .claude/skills/dev-plan/SKILL.md | 0/4 | 0/4
+H38 | .claude/skills/dev-prep/SKILL.md | 0/1 | 1/1
+H39 | .claude/skills/sentry-integration/SKILL.md | 0/6 | 0/5
+H40 | .claude/workflows/dev-autopilot-wf.js | 0/1 | 0/1
+H41 | .claude/workflows/dev-autopilot-wf.js | 0/3 | 6/13
+H42 | .claude/workflows/dev-autopilot-wf.js | 0/1 | 0/1
+H43 | .claude/workflows/dev-autopilot-wf.js | 0/2 | 1/1
+H44 | .claude/workflows/dev-autopilot-wf.js | 0/1 | 0/1
+H45 | .claude/workflows/dev-autopilot-wf.js | 0/1 | 0/1
+H46 | .claude/workflows/dev-compound-wf.js | 0/2 | 4/6
+H47 | .claude/workflows/dev-compound-wf.js | 0/1 | 0/1
+H48 | .claude/workflows/dev-docs-complete-wf.js | 0/1 | 1/2
+H49 | .claude/workflows/dev-docs-complete-wf.js | 0/1 | 0/0
+H50 | .claude/workflows/dev-docs-execute-wf.js | 0/3 | 1/3
+H51 | .claude/workflows/dev-docs-execute-wf.js | 0/1 | 1/1
+H52 | .claude/workflows/dev-docs-review-wf.js | 0/2 | 0/2
+H53 | .claude/workflows/dev-docs-review-wf.js | 0/1 | 0/1
+H54 | .claude/workflows/dev-docs-review-wf.js | 0/1 | 0/1
+H55 | .claude/workflows/dev-docs-review-wf.js | 0/3 | 0/2
+H56 | .claude/workflows/dev-docs-review-wf.js | 0/1 | 0/1
+H57 | .claude/workflows/dev-docs-review-wf.js | 0/1 | 1/1
+H58 | .claude/workflows/dev-docs-review-wf.js | 0/2 | 1/2
+H59 | .claude/workflows/dev-docs-review-wf.js | 0/1 | 0/1
+H60 | .claude/workflows/dev-docs-review-wf.js | 0/2 | 0/2
+H61 | .claude/workflows/dev-docs-review-wf.js | 0/4 | 0/3
+H62 | .claude/workflows/dev-docs-review-wf.js | 0/1 | 0/1
+
+hunkow: 62; stara-zostala 0, stara-zniknela 62, bez-usuwanych 0

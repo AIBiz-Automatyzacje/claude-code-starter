@@ -2,13 +2,15 @@
 """Prompt-audit (HANDOFF 6a pkt 24), krok 1 i 4: inwentarz powierzchni promptow szablonu + grep sygnalow
 z przewodnika claude-api shared/prompt-audit.md (grupy 1a-1f, 2, 3, 4 + kandydaci re-testu Opus 5 -> 5.5).
 Nie ocenia - wypisuje trafienia z plik:linia do czytania w sesji glownej.
-Uzycie: pa_inwentarz.py <repo workspace-template> -> dane/pa-inwentarz.txt, dane/pa-sygnaly.txt, dane/pa-sygnaly.json"""
+Uzycie: pa_inwentarz.py <repo workspace-template> [<prefiks plikow wyniku, domyslnie pa->]
+  -> dane/<prefiks>inwentarz.txt, dane/<prefiks>sygnaly.txt, dane/<prefiks>sygnaly.json (ponowny audyt P16: prefiks pa2-)"""
 import json, os, re, sys
 from collections import Counter, defaultdict
 
 REPO = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else '.')
 C = os.path.join(REPO, '.claude')
 OUT = os.path.dirname(os.path.abspath(__file__)) + '/../dane/'
+PREFIKS = sys.argv[2] if len(sys.argv) > 2 else 'pa-'
 
 # 6a pkt 20: poza zakresem (do usuniecia). dev-docs-execute/review = tryb reczny; ich SKILL.md czyta agent w runie -> osobny znacznik.
 POMINIETE_SKILLE = {'code-review', 'code-quality', 'gemini', 'dev-docs-update', 'bugfix', 'dev-ideate', 'freshness-audit',
@@ -172,7 +174,7 @@ def main():
         for i, l in enumerate(czytaj(os.path.join(REPO, rel)).splitlines(), 1):
             if re.search(r'CLAUDE\.md', l) and re.search(r'(dopisz|zaktualizuj|aktualizuj|edytuj|zapisz|update|append)', l, re.I):
                 o.append(f'  {rel}:{i}: {l.strip()[:160]}')
-    open(OUT + 'pa-inwentarz.txt', 'w').write('\n'.join(o) + '\n')
+    open(OUT + PREFIKS + 'inwentarz.txt', 'w').write('\n'.join(o) + '\n')
     # --- sygnaly
     o = ['# Prompt-audit: sygnaly z przewodnika (pa_inwentarz.py) - trafienia do czytania, nie werdykty', '']
     o.append('## liczby per sygnal (w zakresie / pominiete)')
@@ -196,8 +198,8 @@ def main():
                 continue
             o.append(f'  {rel}:{i}: {s}')
         o.append('')
-    open(OUT + 'pa-sygnaly.txt', 'w').write('\n'.join(o) + '\n')
-    json.dump({'per_plik': {k: dict(v) for k, v in per_plik.items()}, 'rozmiar': rozmiar}, open(OUT + 'pa-sygnaly.json', 'w'), ensure_ascii=False, indent=1)
+    open(OUT + PREFIKS + 'sygnaly.txt', 'w').write('\n'.join(o) + '\n')
+    json.dump({'per_plik': {k: dict(v) for k, v in per_plik.items()}, 'rozmiar': rozmiar}, open(OUT + PREFIKS + 'sygnaly.json', 'w'), ensure_ascii=False, indent=1)
     print('pliki:', len(pliki), '| trafienia w zakresie:', sum(1 for k in hity for h in hity[k] if not h[3].startswith('POMINIETY')))
 
 
