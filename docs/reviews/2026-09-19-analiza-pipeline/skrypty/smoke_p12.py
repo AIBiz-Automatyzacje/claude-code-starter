@@ -3,7 +3,8 @@
 coding-rules ma od P12 `paths:` (kod i SQL), więc nie wchodzi do kontekstu startowego: telemetryczne agent.kontekst.rules_zn liczy tylko
 załącznik startowy `instructions` (eager) i po P12 ma być 0 u wszystkich. Odczyt reguł widać w transkrypcie: Read albo Bash pliku reguł
 (builder czyta go jawnie) i załącznik `nested_memory` z `path` reguł (Claude Code dokleja regułę z `paths:` po Read/Edit pliku kodu).
-Kryterium: eager 0 u wszystkich; rola bez kodu (agent, który nie czytał ani nie zmieniał pliku kodu) bez odczytu reguł; builder i fix
+Kryterium: eager 0 u wszystkich; rola, która kodu nie zmienia, bez jawnego odczytu reguł (załącznik `paths:` po czytaniu kodu — lista
+czyta_kod_z_regulami, informacja o koszcie, P16); builder i fix
 z odczytem; nikt z dwoma źródłami naraz (Read + załącznik = podwójny rozmiar); prompt każdego buildera zawiera blok, który planner
 policzył `wiedza.mjs wycinek --zapobieganie` (reguły projektu najpierw, zdania D10 w reszcie limitu — w projekcie z wiedzą reguły mogą
 zająć cały limit i D10 jest wtedy puste; smoke P12: IU z migracją, 4 reguły SQL 1864 zn, D10 0).
@@ -82,7 +83,7 @@ def blok_w_prompcie(prompt, wycinki):
 
 
 def kryterium(agenci, katalog):
-    k = {'eager': [], 'bez_kodu_z_regulami': [], 'kod_bez_regul': [], 'podwojny_odczyt': [], 'orkiestracja_z_kodem': [],
+    k = {'eager': [], 'bez_kodu_z_regulami': [], 'kod_bez_regul': [], 'podwojny_odczyt': [], 'czyta_kod_z_regulami': [],
          'buildery': 0, 'buildery_bez_bloku': 0, 'buildery_z_d10': 0, 'bez_transkryptu': 0}
     wycinki = [x for a in agenci if a.get('rola') == 'planner' and katalog for x in wycinki_plannera(katalog, a['id'])]
     dodaj = lambda lista, x: x in lista or lista.append(x)
@@ -93,11 +94,12 @@ def kryterium(agenci, katalog):
         if r is None: k['bez_transkryptu'] += 1; continue
         jawnie, odczyt = r['read'] + r['bash'], r['read'] + r['bash'] + r['paths']
         if jawnie and r['paths']: dodaj(k['podwojny_odczyt'], rola)
+        # Rola, ktora kodu nie zmienia: jawny odczyt regul (Read/Bash) = polecenie w zlym miejscu (czerwone); zalacznik `paths:`
+        # po czytaniu kodu (reviewer, sceptyk, kontrola fixa) = koszt do telemetrii, nie defekt (P16).
         if _z_kodem(rola):
             if not odczyt: dodaj(k['kod_bez_regul'], rola)
-        elif r['kod']:
-            if odczyt: dodaj(k['orkiestracja_z_kodem'], rola)
-        elif odczyt: dodaj(k['bez_kodu_z_regulami'], rola)
+        elif jawnie: dodaj(k['bez_kodu_z_regulami'], rola)
+        elif r['paths']: dodaj(k['czyta_kod_z_regulami'], rola)
         if rola == 'build':
             k['buildery'] += 1
             k['buildery_z_d10'] += bool(r['d10'])

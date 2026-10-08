@@ -63,6 +63,18 @@ class Reguly(unittest.TestCase):
             k2 = S.kryterium([a for a in agenci if a['id'] in ('b1', 'f', 's')], d)
             self.assertTrue(k2['zielone'], k2)
 
+    def test_rola_bez_zmian_kodu_z_regulami_przez_paths_to_informacja(self):
+        # P16 (HANDOFF 6a pkt 73 g, 77 f): reviewer, sceptyk i kontrola fixa czytaja kod, wiec `paths:` dokleja im reguly — koszt,
+        # nie defekt konfiguracji. Czerwony jest jawny odczyt regul przez role, ktora kodu nie zmienia.
+        with tempfile.TemporaryDirectory() as d:
+            transkrypt(d, 'b', S.NAGLOWEK_D10, [('Read', {'file_path': REGULY})])
+            transkrypt(d, 'k', 'kontrola', [('Read', {'file_path': '/k/src/a.ts'})], [{'type': 'nested_memory', 'path': REGULY}])
+            transkrypt(d, 'r', 'review', [('Grep', {'pattern': 'x'})], [{'type': 'nested_memory', 'path': REGULY}])
+            k = S.kryterium([agent('b', 'build', 'builder'), agent('k', 'fix:kontrola', 'sceptyk'), agent('r', 'review:correctness', 'reviewer')], d)
+            self.assertEqual(k['czyta_kod_z_regulami'], ['fix:kontrola', 'review:correctness'])
+            self.assertEqual(k['bez_kodu_z_regulami'], [])
+            self.assertTrue(k['zielone'], k)
+
     def test_rola_z_kodem_bez_odczytu_regul_to_czerwone(self):
         with tempfile.TemporaryDirectory() as d:
             transkrypt(d, 'f', 'fix', [])
