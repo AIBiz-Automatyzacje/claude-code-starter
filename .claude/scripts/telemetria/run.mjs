@@ -1,6 +1,8 @@
 // Rekord `run` telemetrii (d5-telemetria-rekord.txt §2, §7, §8 pkt 1 i 3–4, §11). Czyste funkcje.
 // Status: plik harnessu (przeglad D5); run bez pliku: w toku albo przerwany razem z sesja (mini-run (f), decyzja O6).
 
+import { liczbyZRekordu } from '../ogrod/prog.mjs'
+
 /** @typedef {'OK' | 'STOP' | 'KILLED' | 'FAILED'} Status */
 /** @typedef {{ status: Status, powod: string | null }} StatusRunu */
 
@@ -168,6 +170,32 @@ export function manualRazem(raporty) {
 }
 
 /**
+ * Pomiar ogrodnika (P15) z wyniku autopilota — pola znane, typy sprawdzone; null, gdy wynik pola nie ma (run sprzed P15
+ * albo archiwizacja w poprzednim runie). Skrypt ogrodnika czyta z tego rekordu liczby i licznik `bez_oceny` nastepnego pomiaru.
+ * @param {unknown} ogrod
+ */
+export function rekordOgrodu(ogrod) {
+  const o = obiekt(ogrod)
+  if (o.status === 'blad') return { status: 'blad', powod: tekstLubNull(o.powod) }
+  if (o.status !== 'ok') return null
+  const szczeble = obiekt(o.szczeble)
+  return {
+    status: 'ok',
+    commit: tekstLubNull(o.commit),
+    plikow: liczbaLubNull(o.plikow),
+    liczby: liczbyZRekordu(o.liczby),
+    przyrost: liczbyZRekordu(o.przyrost),
+    zrodlo: o.zrodlo === 'telemetria' || o.zrodlo === 'diff' ? o.zrodlo : null,
+    powod: tekstLubNull(o.powod),
+    nowe: liczbaLubNull(o.nowe),
+    ocena: o.ocena === true,
+    bez_oceny: liczbaLubNull(o.bez_oceny),
+    propozycje: liczbaLubNull(o.propozycje),
+    szczeble: Object.fromEntries(['regula_lint', 'zadanie_sprzatajace', 'zostawic'].map((k) => [k, liczbaLubNull(szczeble[k]) ?? 0])),
+  }
+}
+
+/**
  * @param {{ harness: Record<string, unknown> | null, status: StatusRunu, agenci: KosztAgenta[], bootstrap: unknown,
  *   szablon?: import('./szablon.mjs').WersjaSzablonu | null, klasyZRegula?: Set<string> | null }} we
  */
@@ -194,13 +222,13 @@ export function rekordRunu(we) {
     koszt: sumaKosztu(we.agenci),
     sekundy: typeof czasMs === 'number' ? Math.round(czasMs / 1000) : sekundyAgentow(we.agenci),
     szablon: we.szablon ?? null,
-    // Producenci w pozniejszych iteracjach: profil stacku i smoke (It. 3), ogrod (R1). Klucze sa od razu — raport nie moze
-    // zgadywac ksztaltu. MANUAL: P14.
+    // Producenci w pozniejszych iteracjach: profil stacku i smoke (It. 3). Klucze sa od razu — raport nie moze
+    // zgadywac ksztaltu. MANUAL: P14. Ogrod: P15 (nowe pole z nowych runow — WERSJA_REKORDU bez zmian).
     pr: nazwaWorkflowu === 'dev-pr-wf' && wynik.etap === 'zbierz' ? rekordPr(wynik, we.klasyZRegula ?? null) : null,
     manual_razem: manualRazem(raporty),
     profil_stacku: null,
     smoke: null,
-    ogrod: null,
+    ogrod: rekordOgrodu(wynik.ogrod),
   }
 }
 

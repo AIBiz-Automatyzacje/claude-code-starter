@@ -4,7 +4,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { PROG_CISZY_MS, kategoriaStopu, manualRazem, rekordRunu, statusBezHarnessu, statusRunu } from '../run.mjs'
+import { PROG_CISZY_MS, kategoriaStopu, manualRazem, rekordOgrodu, rekordRunu, statusBezHarnessu, statusRunu } from '../run.mjs'
 
 test('status z pliku harnessu: completed + wynik OK/STOP, killed, failed', () => {
   assert.deepEqual(statusRunu({ status: 'completed', result: { status: 'OK' } }), { status: 'OK', powod: null })
@@ -179,4 +179,21 @@ test('manual_razem (P14): suma e2eManual z faz; run sprzed P14 bez pola = null',
   assert.equal(manualRazem([{ przebieg: { e2eManual: 2 } }, { przebieg: { e2eManual: 0 } }, { przebieg: null }]), 2)
   assert.equal(manualRazem([{ przebieg: { e2eSkip: 1 } }]), null)
   assert.equal(manualRazem(null), null)
+})
+
+test('ogrod (P15): rekord z wyniku autopilota — pola znane z typami; blad pomiaru; run sprzed P15 = null', () => {
+  const liczby = { wyciszenia: 2, any: 4, rzutowania: 0, komentarze: 1, pusty_catch: 0 }
+  const ogrod = {
+    status: 'ok', commit: 'abc1234', plikow: 120, liczby, przyrost: { ...liczby, any: -1 }, zrodlo: 'telemetria', powod: 'bez oceny', nowe: 1,
+    ocena: false, bez_oceny: 3, propozycje: 0, szczeble: { regula_lint: 0, zadanie_sprzatajace: 0, zostawic: 0 }, smiec: 'x',
+  }
+  const { smiec, ...oczekiwane } = ogrod
+  assert.equal(smiec, 'x')
+  assert.deepEqual(rekordOgrodu(ogrod), oczekiwane, 'pola spoza kontraktu nie wchodza do telemetrii')
+  assert.equal(rekordOgrodu({ ...ogrod, liczby: { any: 1 } })?.liczby, null, 'niekomplet liczb = null (skrypt nie wezmie go za punkt odniesienia)')
+  assert.equal(rekordOgrodu({ ...ogrod, ocena: 'tak' })?.ocena, false)
+  assert.deepEqual(rekordOgrodu({ status: 'blad', powod: 'agent pomiaru zwrocil null' }), { status: 'blad', powod: 'agent pomiaru zwrocil null' })
+  assert.equal(rekordOgrodu(undefined), null)
+  const run = rekordRunu({ harness: { status: 'completed', workflowName: 'dev-autopilot-wf', result: { status: 'OK', ogrod } }, status: { status: 'OK', powod: null }, agenci: [], bootstrap: null })
+  assert.equal(run.ogrod?.bez_oceny, 3)
 })

@@ -57,6 +57,11 @@ test('klasa roli wg mapy D3 z poprawka panelu', () => {
   assert.equal(klasaRoli(null), null)
 })
 
+test('P15: pomiar ogrodnika to rola mechaniczna, ocena — sceptyk; etykiety bez sklejania', () => {
+  assert.deepEqual([rola('ogrod:pomiar'), klasaRoli(rola('ogrod:pomiar'))], ['ogrod:pomiar', 'mechaniczny'])
+  assert.deepEqual([rola('ogrod:ocena'), klasaRoli(rola('ogrod:ocena'))], ['ogrod:ocena', 'sceptyk'])
+})
+
 test('stary run bez etykiet: rola z poczatku promptu', () => {
   assert.equal(klasyfikujPoPrompcie('Jestes reviewerem fazy 1. Skup sie na: auth, RLS, walidacja'), 'review:security')
   assert.equal(klasyfikujPoPrompcie('Zapisz plik stanu docs/active/x/.autopilot-state.json'), 'stan:zapis')

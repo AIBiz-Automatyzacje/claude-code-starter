@@ -12,11 +12,12 @@ const ROLE_Z_OGONEM = [
 // P14: e2e:precheck i e2e:env-up zastapil e2e:start (skrypt e2e.mjs); stare role zostaja dla starych runow.
 const MECHANICZNE = new Set([
   'stan:zapis', 'telemetria', 'dedup:semantyczny', 'e2e:precheck', 'e2e:start', 'dossier:zapas', 'e2e:env-down',
-  'fix:pre-skan', 'stop:commit-artefaktow', 'start:p3-known-issues',
+  'fix:pre-skan', 'stop:commit-artefaktow', 'start:p3-known-issues', 'ogrod:pomiar',
 ])
 // P8: fix:pre-skan i verify-fix wyszly z pipeline'u (listy K kontroli fixa), ale rozpoznanie zostaje dla starych runow —
 // bez fix:pre-skan w ROLE_Z_OGONEM etykieta sklejalaby sie w `fix`, a fixFazy czytalaby wynik pre-skanu jako commity fixa.
-const SCEPTYCY = new Set(['verify', 'verify-batch', 'verify-fix'])
+// P15: ocena ogrodnika (klasa-sceptyk, bez edycji) — czyta kod w miejscach z pomiaru i zwraca propozycje.
+const SCEPTYCY = new Set(['verify', 'verify-batch', 'verify-fix', 'ogrod:ocena'])
 const NAPRAWIACZE = new Set(['fix', 'fix:poprawka'])
 
 /** @typedef {'mechaniczny' | 'orkiestracyjny' | 'reviewer' | 'sceptyk' | 'builder' | 'naprawiacz' | 'tester-e2e'} KlasaRoli */
