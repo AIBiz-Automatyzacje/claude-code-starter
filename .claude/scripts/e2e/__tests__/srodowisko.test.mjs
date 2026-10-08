@@ -78,6 +78,8 @@ test('konfiguracja: domyslnie dev server Vite na 5173 z menedzerem z lockfile; p
   assert.equal(wlasne.zdrowie, 'http://127.0.0.1:4100/zdrowie')
   assert.equal(wlasne.limitSek, 15)
   assert.equal(konfiguracja(p, { E2E_START: 'node serwer.js' }).start, 'node serwer.js')
+  // Wartosc ze spacjami w cudzyslowie: `. .env.e2e` w shellu (db-sync) bez cudzyslowu wykonalby `--filter` jako komende.
+  assert.equal(konfiguracja(p, parsujEnv('E2E_START="pnpm --filter @x/web exec vite --mode e2e"\n')).start, 'pnpm --filter @x/web exec vite --mode e2e')
   assert.equal(konfiguracja(p, { SUPABASE_E2E_DB_URL: 'x' }).bazaE2e, true)
   rmSync(p, { recursive: true })
 })

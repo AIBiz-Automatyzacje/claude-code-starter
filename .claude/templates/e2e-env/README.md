@@ -27,7 +27,7 @@ Wszystkie opcjonalne — domyślnie dev server Vite na `http://localhost:5173`:
 | Klucz | Domyślnie | Znaczenie |
 |---|---|---|
 | `E2E_URL` | `http://localhost:5173` | adres aplikacji (tester, sonda zdrowia, port domyślnej komendy) |
-| `E2E_START` | `<pm> run dev -- --mode e2e --port <port z E2E_URL> --strictPort` | komenda startu serwera (pm z lockfile); dostaje zmienne z `.env.e2e` w środowisku |
+| `E2E_START` | `<pm> run dev -- --mode e2e --port <port z E2E_URL> --strictPort` | komenda startu serwera (pm z lockfile); dostaje zmienne z `.env.e2e` w środowisku; wartość ze spacjami w cudzysłowie (`E2E_START="…"`), bo db-sync wczytuje plik shellem |
 | `E2E_HEALTH` | `E2E_URL` | adres sondy zdrowia; odpowiedź < 500 = serwer działa |
 | `E2E_START_TIMEOUT` | `90` | sekundy na odpowiedź serwera po starcie |
 

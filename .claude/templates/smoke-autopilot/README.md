@@ -88,7 +88,7 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
    → oczekiwany STOP `start: srodowisko E2E — …` przed faza 1, z naprawa ze skryptu i poleceniem swiezego runu.
 2. **Srodowisko:** `.env.e2e` w korzeniu kopii (w `.gitignore` projektu) z kluczami dedykowanej bazy e2e (`.claude/templates/e2e-env/README.md`)
    i komenda startu samej aplikacji z Vite — w monorepo `pnpm run dev` korzenia uruchamia wszystkie pakiety i przekazuje im flagi
-   Vite. oferty-online: `E2E_START=pnpm --filter @oferty/dashboard exec vite --mode e2e --port 5173 --strictPort`.
+   Vite. Przyklad monorepo z pakietem `@oferty/dashboard`: `E2E_START="pnpm --filter @oferty/dashboard exec vite --mode e2e --port 5173 --strictPort"`.
    Pusta baza e2e: `supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all` raz przed runem (db-sync fazy jest wtedy
    przyrostowy). Sprawdzenie: `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/smoke-autopilot` = `gotowe`.
 3. **Skill weryfikacji:** `/weryfikacja-setup` w kopii (szkielet, fakty z kodu, przejscie na zywo, commit) — tester czyta
