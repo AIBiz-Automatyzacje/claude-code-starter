@@ -874,8 +874,7 @@ Zasady wg pola zrodlo:
 - K-7: cofnij zmiane w pliku, ktorego nie wskazuje zaden finding (\`git diff <najstarszy commit fixa>^ -- <plik>\`).
 - bramki: napraw trafienie w kodzie wg reguly; edycja wypchnietej migracji = przywroc plik z rodzica najstarszego
   commita fixa, a zmiane schematu zapisz nowa migracja. Reguly nie wylaczasz (eslint-disable, zmiana konfiguracji).
-Reguly kodu projektu: .claude/rules/coding-rules.md — przeczytaj przed naprawa. Testow sprzed fixa nie oslabiasz
-i nie zmieniasz, zeby przeszly (sekcja Testowanie).
+Testow sprzed fixa nie oslabiasz i nie zmieniasz, zeby przeszly (reguly kodu, sekcja Testowanie).
 
 Po poprawkach: pelna walidacja (typecheck, test, build — komendy z package.json), commit
 \`fix([nazwa]): kontrola diffu naprawczego fazy ${numerFazy}\` z jawnym pathspec zmienionych plikow
