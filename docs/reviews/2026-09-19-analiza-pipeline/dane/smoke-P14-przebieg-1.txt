@@ -1,0 +1,7 @@
+Przebieg (1) wf_745c7f98-e26 (projekt _smoke-P14-oferty-online): status STOP, kategoria E2E-srodowisko
+  powód: start: srodowisko E2E — zadanie ma 2 scenariuszy [E2E], a repo nie ma .env.e2e
+  koszt 0.13 M, agentów 4, 74 s, fazy ukończone 0/2
+  bootstrap                    0.05 M
+  start:testy                  0.05 M
+  e2e:start                    0.02 M
+  stop:commit-artefaktow       0.01 M

@@ -67,8 +67,10 @@ def wycinki_plannera(katalog, agent_id):
     for w in wpisy:
         for b in (w.get('message') or {}).get('content') or [] if w.get('type') == 'user' else []:
             if isinstance(b, dict) and b.get('type') == 'tool_result' and b.get('tool_use_id') in ids:
-                try: wyniki.append(json.JSONDecoder().raw_decode(_tekst_wyniku(b.get('content')).lstrip())[0])
+                try: wynik = json.JSONDecoder().raw_decode(_tekst_wyniku(b.get('content')).lstrip())[0]
                 except ValueError: continue
+                # Wynik zaczynajacy sie liczba (np. `wc -l` sklejone z wycinkiem) to nie JSON wycinka.
+                if isinstance(wynik, dict): wyniki.append(wynik)
     return wyniki
 
 
