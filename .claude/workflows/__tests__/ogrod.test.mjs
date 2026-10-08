@@ -16,7 +16,6 @@ import { commit, git, noweRepo, zapisz } from '../../scripts/bramki/__tests__/re
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const zrodlo = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
-const CLI = resolve(KATALOG, '../../scripts/ogrod/ogrod.mjs')
 const START = '// ── Ogrodnik (P15)'
 const KONIEC = '// ── Koniec ogrodnika'
 
@@ -36,7 +35,7 @@ function zaladuj(agent = () => null) {
   /** @type {string[]} */
   const logi = []
   // eslint-disable-next-line no-new-func -- ekstrakcja bloku z pliku workflowu tego repo, nie z inputu
-  const f = new Function('agent', 'log', `${blok()}\nreturn { OGROD_KATEGORIE, OGROD_OPISY, OGROD_POMIAR, pomiarZWyniku, sekcjaOgrodu, rekordOgrodu, ogrodOcenaPrompt, ogrodnik }`)
+  const f = new Function('agent', 'log', `${blok()}\nreturn { OGROD_KATEGORIE, OGROD_OPISY, OGROD_POMIAR, pomiarZWyniku, sekcjaOgrodu, rekordOgrodu, ogrodOcenaPrompt, ogrodPomiarPrompt, ogrodnik }`)
   return { ...f(agent, (/** @type {string} */ t) => logi.push(t)), logi }
 }
 
@@ -65,8 +64,13 @@ test('pomiarZWyniku: null, zly JSON, blad skryptu i niekomplet = blad z przyczyn
   assert.match(pomiarZWyniku({ kod: 0, stdout: '{"liczby":', stderr: '' }).blad, /nie jest JSON/)
   assert.equal(pomiarZWyniku(wynikAgenta({ blad: 'brak repo' }, 1)).blad, 'brak repo')
   assert.equal(pomiarZWyniku({ kod: 2, stdout: '', stderr: 'Uzycie: ...' }).pomiar, null)
-  assert.equal(pomiarZWyniku(wynikAgenta({ ...pomiar(), liczby: { any: 1 } })).blad, 'wynik skryptu bez kompletu liczb')
-  assert.equal(pomiarZWyniku(wynikAgenta({ ...pomiar(), decyzja: { ocena: false } })).blad, 'wynik skryptu bez kompletu liczb')
+  const niekomplet = [
+    { ...pomiar(), liczby: { any: 1 } }, { ...pomiar(), decyzja: { ocena: false } }, { ...pomiar(), nowe: undefined },
+    { ...pomiar(), noweRazem: '1' }, { ...pomiar(), hotspoty: null }, { ...pomiar(), plikow: undefined }, { ...pomiar(), commit: 1 },
+    pomiar({ przyrost: { any: 1 } }), pomiar({ zrodlo: 'inne' }), pomiar({ bez_oceny: 'x' }), pomiar({ ocena: 'tak' }), pomiar({ powod: null }),
+  ]
+  for (const dane of niekomplet) assert.equal(pomiarZWyniku(wynikAgenta(dane)).blad, 'wynik skryptu bez kompletu pol', JSON.stringify(dane))
+  assert.equal(pomiarZWyniku(wynikAgenta(pomiar(), 1)).blad, 'kod 1', 'kod wyjscia != 0 bez pola blad')
   const ok = pomiarZWyniku(wynikAgenta(pomiar()))
   assert.deepEqual([ok.blad, ok.pomiar.liczby.any], ['', 4])
 })
@@ -130,8 +134,8 @@ test('kontrakt z prog.mjs: rekord z wyniku runu to poprzedni pomiar nastepnego z
   const { rekordOgrodu } = zaladuj()
   const run = { typ: 'run', workflow: 'dev-autopilot', projekt: 'oferty', run: 'wf_x', start: '2026-10-08T10:00:00Z' }
   const rekord = rekordOgrodu(pomiar({ bez_oceny: 3 }), '', null)
-  assert.deepEqual(poprzedniPomiar([{ ...run, ogrod: rekord }], 'oferty'), { run: 'wf_x', start: '2026-10-08T10:00:00Z', liczby: rekord.liczby, bez_oceny: 3 })
-  assert.equal(poprzedniPomiar([{ ...run, ogrod: rekordOgrodu(null, 'x', null) }], 'oferty'), null, 'rekord bledu nie jest punktem odniesienia')
+  assert.deepEqual(poprzedniPomiar([{ ...run, ogrod: rekord }], { projekt: 'oferty' }), { run: 'wf_x', start: '2026-10-08T10:00:00Z', liczby: rekord.liczby, bez_oceny: 3 })
+  assert.equal(poprzedniPomiar([{ ...run, ogrod: rekordOgrodu(null, 'x', null) }], { projekt: 'oferty' }), null, 'rekord bledu nie jest punktem odniesienia')
 })
 
 test('ogrodnik(): bez przyrostu jeden agent pomiaru (klasa bez edycji); przy progu agent oceny sceptyka z efortem medium', async () => {
@@ -141,7 +145,7 @@ test('ogrodnik(): bez przyrostu jeden agent pomiaru (klasa bez edycji); przy pro
     wywolania.push(opcje)
     return wynikAgenta(pomiar())
   })
-  const w1 = await bezOceny.ogrodnik()
+  const w1 = await bezOceny.ogrodnik('zadanie-x')
   assert.deepEqual(wywolania.map((o) => [o.label, o.agentType]), [['ogrod:pomiar', 'klasa-mechaniczny-pomiar']])
   assert.match(w1.sekcja, /^## Ogród/)
   assert.equal(w1.rekord.ocena, false)
@@ -152,14 +156,14 @@ test('ogrodnik(): bez przyrostu jeden agent pomiaru (klasa bez edycji); przy pro
     wywolania.push(opcje)
     return opcje.label === 'ogrod:pomiar' ? wynikAgenta(pomiar({ ocena: true })) : { propozycje: [] }
   })
-  const w2 = await zOcena.ogrodnik()
+  const w2 = await zOcena.ogrodnik('zadanie-x')
   assert.deepEqual(wywolania.map((o) => [o.label, o.agentType, o.effort]), [
     ['ogrod:pomiar', 'klasa-mechaniczny-pomiar', undefined], ['ogrod:ocena', 'klasa-sceptyk', 'medium'],
   ])
   assert.deepEqual([w2.rekord.ocena, w2.rekord.bez_oceny], [true, 0])
 
   const padniety = zaladuj(() => null)
-  const w3 = await padniety.ogrodnik()
+  const w3 = await padniety.ogrodnik('zadanie-x')
   assert.equal(w3.rekord.status, 'blad')
   assert.match(padniety.logi[0], /^UWAGA: ogrod — pomiar nie powstal \(agent pomiaru zwrocil null\)/)
 })
@@ -174,15 +178,20 @@ test('prompt oceny: zakaz zmian w plikach, wejscie z pomiaru, limit propozycji',
 
 test('kolejnosc zakonczenia: compound-refresh -> ogrodnik -> complete-wf z sekcja; wynik runu niesie rekord ogrod', () => {
   const refresh = zrodlo.indexOf("label: 'compound-refresh'")
-  const ogrodnik = zrodlo.indexOf('ogrod = await ogrodnik()')
+  const ogrodnik = zrodlo.indexOf('ogrod = await ogrodnik(stan.nazwaZadania)')
   const complete = zrodlo.indexOf("workflow('dev-docs-complete-wf'")
   assert.ok(refresh !== -1 && ogrodnik > refresh && complete > ogrodnik, `refresh ${refresh}, ogrodnik ${ogrodnik}, complete ${complete}`)
   assert.match(zrodlo.slice(complete, complete + 200), /sekcjaOgrodu: ogrod\.sekcja/)
   assert.match(zrodlo, /^ {2}ogrod: ogrod \? ogrod\.rekord : null,$/m)
+  assert.match(zrodlo, /ogrod = await ogrodnik\(stan\.nazwaZadania\)/)
 })
 
-test('stdout prawdziwego skryptu przechodzi przez pomiarZWyniku i daje sekcje', () => {
-  const { pomiarZWyniku, sekcjaOgrodu } = zaladuj()
+test('polecenie z promptu agenta pomiaru, wykonane w repo-fixture, daje wynik, ktory przechodzi pomiarZWyniku i sekcje', () => {
+  const { pomiarZWyniku, sekcjaOgrodu, ogrodPomiarPrompt } = zaladuj()
+  const prompt = ogrodPomiarPrompt('zadanie-x')
+  const polecenia = prompt.split('\n').filter((/** @type {string} */ linia) => linia.startsWith('node '))
+  assert.deepEqual(polecenia, ['node .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie zadanie-x'], 'dokladnie jedno polecenie, bez innych argumentow')
+  const [, skrypt, ...argumenty] = polecenia[0].split(' ')
   const repo = noweRepo()
   try {
     git(repo, ['branch', '-M', 'main'])
@@ -191,7 +200,8 @@ test('stdout prawdziwego skryptu przechodzi przez pomiarZWyniku i daje sekcje', 
     git(repo, ['checkout', '-q', '-b', 'feature/x'])
     zapisz(repo, { 'src/a.ts': 'export const a = 1\n// eslint-disable-next-line\nexport const b: any = 2\n' })
     commit(repo, 'zadanie')
-    const p = spawnSync(process.execPath, [CLI, 'pomiar', '--projekt', repo, '--telemetria', resolve(repo, 'brak.jsonl')], { encoding: 'utf8' })
+    // Polecenie z promptu uruchamiane w korzeniu repo (jak agent); telemetria na pusty plik, zeby test nie czytal danych maszyny.
+    const p = spawnSync(process.execPath, [resolve(KATALOG, '../../..', skrypt), ...argumenty, '--telemetria', resolve(repo, 'brak.jsonl')], { encoding: 'utf8', cwd: repo })
     const { pomiar: wynik, blad } = pomiarZWyniku({ kod: p.status, stdout: p.stdout.trim(), stderr: p.stderr })
     assert.equal(blad, '')
     assert.equal(wynik.decyzja.ocena, true)

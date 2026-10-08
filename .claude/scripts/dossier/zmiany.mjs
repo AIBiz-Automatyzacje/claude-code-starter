@@ -11,8 +11,8 @@ import { git } from '../bramki/diff.mjs'
 // ~75k tokenow: gorna granica, przy ktorej reviewer ma jeszcze miejsce na dossier i wlasne Read.
 export const LIMIT_DIFFU_B = 300 * 1024
 export const ZNACZNIK_UCIECIA = '=== DIFF PRZYCIETY (limit 300 KB) — dalsza czesc zmian fazy NIE jest w tym pliku ==='
-// Galezie glowne w kolejnosci proby — baza zastepcza, gdy wolajacy nie zna bazy fazy.
-const GALEZIE_GLOWNE = ['origin/main', 'main', 'origin/master', 'master']
+// Galezie glowne w kolejnosci proby — baza zastepcza, gdy wolajacy nie zna bazy fazy (tez baza zadania ogrodnika).
+export const GALEZIE_GLOWNE = ['origin/main', 'main', 'origin/master', 'master']
 // Stan autopilota (docs/active/<zadanie>/.autopilot-state.json) to artefakt pipeline'u, nie zmiana fazy — poza lista i diffem.
 const BEZ_STANU = ':(exclude,glob)**/.autopilot-state.json'
 

@@ -6,6 +6,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { git, parsujDiffU0 } from '../bramki/diff.mjs'
+import { GALEZIE_GLOWNE } from '../dossier/zmiany.mjs'
 import { policz, wystapienia } from './kategorie.mjs'
 
 const ROZSZERZENIA = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/
@@ -15,7 +16,8 @@ const POMIJANE = /(^|\/)(node_modules|dist|build|coverage|\.next|\.turbo|\.verce
 const PROG_BAJTOW = 1024 * 1024
 export const LIMIT_NOWYCH = 20
 export const LIMIT_HOTSPOTOW = 5
-const GALEZIE_GLOWNE = ['main', 'master']
+// Wynik gita (diff calego zadania, lista plikow monorepo) nie moze wywrocic pomiaru limitem bufora.
+const BUFOR_GITA = 64 * 1024 * 1024
 
 /** @typedef {import('./kategorie.mjs').Kategoria} Kategoria */
 /** @typedef {import('./kategorie.mjs').Wystapienie} Wystapienie */
@@ -53,21 +55,20 @@ export function plikiProjektu(projekt) {
  * @returns {string | null}
  */
 function gitLubNull(repo, argumenty) {
-  const p = spawnSync('git', ['-C', repo, ...argumenty], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-  return p.status === 0 ? p.stdout.trim() : null
+  const wynik = spawnSync('git', ['-C', repo, ...argumenty], { encoding: 'utf8', maxBuffer: BUFOR_GITA })
+  return wynik.status === 0 ? wynik.stdout.trim() : null
 }
 
 /**
- * Merge-base HEAD z galezia glowna (main, potem master); null, gdy zadnej nie ma albo HEAD nie ma wspolnego przodka.
+ * Merge-base HEAD z pierwsza istniejaca galezia glowna (origin/main, main, origin/master, master — jak baza zastepcza dossier);
+ * null, gdy zadnej nie ma albo HEAD nie ma z nia wspolnego przodka.
  * @param {string} projekt
  * @returns {string | null}
  */
 export function bazaZadania(projekt) {
   for (const galaz of GALEZIE_GLOWNE) {
-    // for-each-ref zwraca pusty wynik zamiast bledu, gdy galezi nie ma.
-    if (git(projekt, ['for-each-ref', '--format=%(refname)', `refs/heads/${galaz}`]).trim()) {
-      return gitLubNull(projekt, ['merge-base', 'HEAD', galaz])
-    }
+    if (gitLubNull(projekt, ['rev-parse', '--verify', '--quiet', `${galaz}^{commit}`]) === null) continue
+    return gitLubNull(projekt, ['merge-base', 'HEAD', galaz])
   }
   return null
 }
@@ -82,7 +83,8 @@ export function bazaZadania(projekt) {
  * @returns {Map<string, Set<number>>}
  */
 function linieDodane(projekt, baza, pliki) {
-  const diff = git(projekt, ['diff', '-U0', '--no-color', '--no-renames', '--no-ext-diff', '--relative', baza, '--'])
+  // -M: przeniesiony plik nie liczy swoich starych wystapien jako nowe; quotePath=false: sciezka spoza ASCII bez cytowania gita.
+  const diff = git(projekt, ['-c', 'core.quotePath=false', 'diff', '-U0', '--no-color', '-M', '--no-ext-diff', '--relative', baza, '--'])
   const wynik = new Map(Object.entries(parsujDiffU0(diff)).map(([plik, linie]) => [plik, new Set(linie)]))
   const niesledzone = new Set(git(projekt, ['ls-files', '-z', '--others', '--exclude-standard']).split('\0'))
   for (const plik of pliki.filter((p) => niesledzone.has(p))) {

@@ -140,6 +140,53 @@ test('realne przypadki brzegowe: niesledzone dowiazanie do katalogu, galaz bez w
   }
 })
 
+test('krawedzie pomiaru: limit nowych, plik ponad prog bajtow, zmiana w drzewie roboczym, rename, origin/main przed main', () => {
+  const { repo, telemetria } = projekt()
+  try {
+    git(repo, ['mv', 'src/a.ts', 'src/przeniesiony.ts'])
+    commit(repo, 'rename pliku z galezi glownej')
+    zapisz(repo, {
+      'src/b.ts': '// eslint-disable-next-line no-console\nexport const b = (x: any): any => x\nexport const z: any = 2\n',
+      'src/wiele.ts': Array.from({ length: 21 }, (_, i) => `export const w${i}: any = ${i}`).join('\n') + '\n',
+      'src/bundel.js': `${'// TODO\n'.repeat(10)}${'x'.repeat(1024 * 1024)}\n`,
+    })
+    const { kod, wynik } = cli(['pomiar', '--projekt', repo, '--telemetria', join(repo, 'brak.jsonl')])
+    assert.equal(kod, 0)
+    const nowe = (/** @type {{ nowe: Array<{ plik: string, linia: number }> }} */ w) => w.nowe.map((x) => `${x.plik}:${x.linia}`)
+    assert.ok(!nowe(wynik).includes('src/przeniesiony.ts:1') && !nowe(wynik).includes('src/przeniesiony.ts:2'), 'stare wystapienia przeniesionego pliku nie sa nowe')
+    assert.ok(nowe(wynik).includes('src/przeniesiony.ts:3'), 'linia dodana w zadaniu przed przeniesieniem zostaje nowa')
+    assert.ok(nowe(wynik).includes('src/b.ts:3'), 'niezacommitowana zmiana w sledzonym pliku')
+    assert.equal(wynik.nowe.length, 20, 'LIMIT_NOWYCH')
+    assert.equal(wynik.noweRazem, 1 + 4 + 1 + 21, 'przeniesiony :3, b.ts 4, niesledzony c.ts 1, wiele.ts 21; bundel ponad prog pominiety')
+    assert.deepEqual(Object.keys(wynik.nowe[0]), ['kategoria', 'plik', 'linia'], 'bez tresci linii — wynik przepisuje agent')
+
+    // origin/main przed main: lokalny main przesuniety na commit zadania, origin/main zostaje na stanie zastanym.
+    git(repo, ['update-ref', 'refs/remotes/origin/main', 'main'])
+    git(repo, ['update-ref', 'refs/heads/main', 'HEAD'])
+    const zOrigin = cli(['pomiar', '--projekt', repo, '--telemetria', join(repo, 'brak.jsonl')])
+    assert.equal(zOrigin.wynik.noweRazem, 1 + 4 + 1 + 21, 'baza z origin/main, nie z przesunietego main')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+    rmSync(telemetria, { force: true })
+  }
+})
+
+test('--zadanie: rekordy runow tego zadania nie sa poprzednim pomiarem', () => {
+  const { repo, telemetria } = projekt()
+  try {
+    const run = { typ: 'run', workflow: 'dev-autopilot', projekt: basename(repo), start: '2026-10-05T10:00:00.000Z', zadanie: 'biezace' }
+    const swiezy = { ...run, klucz: 'wf_b|run|wf_b', run: 'wf_b', ogrod: { liczby: { wyciszenia: 1, any: 3, rzutowania: 0, komentarze: 2, pusty_catch: 1 }, bez_oceny: 0 } }
+    writeFileSync(telemetria, `${readFileSync(telemetria, 'utf8')}${JSON.stringify(swiezy)}\n`)
+    assert.equal(cli(['pomiar', '--projekt', repo, '--telemetria', telemetria]).wynik.poprzedni.run, 'wf_b')
+    const { wynik } = cli(['pomiar', '--projekt', repo, '--telemetria', telemetria, '--zadanie', 'biezace'])
+    assert.equal(wynik.poprzedni.run, 'wf_poprzedni')
+    assert.equal(wynik.decyzja.ocena, true)
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+    rmSync(telemetria, { force: true })
+  }
+})
+
 test('zle argumenty = kod 2; katalog bez gita = kod 1 z polem blad', () => {
   assert.equal(cli([]).kod, 2)
   assert.equal(cli(['ocena']).kod, 2)

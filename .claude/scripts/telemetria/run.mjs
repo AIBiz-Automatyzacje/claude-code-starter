@@ -1,7 +1,7 @@
 // Rekord `run` telemetrii (d5-telemetria-rekord.txt §2, §7, §8 pkt 1 i 3–4, §11). Czyste funkcje.
 // Status: plik harnessu (przeglad D5); run bez pliku: w toku albo przerwany razem z sesja (mini-run (f), decyzja O6).
 
-import { liczbyZRekordu } from '../ogrod/prog.mjs'
+import { liczbyZRekordu } from '../ogrod/kategorie.mjs'
 
 /** @typedef {'OK' | 'STOP' | 'KILLED' | 'FAILED'} Status */
 /** @typedef {{ status: Status, powod: string | null }} StatusRunu */

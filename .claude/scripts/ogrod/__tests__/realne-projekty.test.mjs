@@ -13,7 +13,7 @@ import { wystapienia } from '../kategorie.mjs'
 import { plikiProjektu, zmierzProjekt } from '../pomiar.mjs'
 
 const KATALOG = join(homedir(), 'Documents', 'Kodowanie')
-const DYREKTYWA_W_LINII = /(?:\/\/|\/\*+|^\s*\*)\s*(?:eslint-disable(?:-next-line|-line)?\b|@ts-(?:ignore|expect-error|nocheck)\b|biome-ignore\b|oxlint-disable\b)/
+const DYREKTYWA_W_LINII = /(?:\/\/|\/\*+)\s*(?:eslint-disable(?:-next-line|-line)?\b|@ts-(?:ignore|expect-error|nocheck)\b|biome-ignore\b|oxlint-disable\b|deno-lint-ignore(?:-file)?\b|eslint\s+[\w@/-]+\s*:\s*["']?(?:0|off)\b)/
 
 /** @returns {string[]} */
 function projekty() {

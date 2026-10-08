@@ -1906,11 +1906,25 @@ const OGROD_OCENA = {
   required: ['propozycje'],
 }
 
-function ogrodPomiarPrompt() {
+// --zadanie: poprzedni pomiar to rekord innego zadania (swiezy run po nieudanej archiwizacji nie porownuje sie z soba).
+function ogrodPomiarPolecenie(nazwaZadania) {
+  return `node .claude/scripts/ogrod/ogrod.mjs pomiar --zadanie ${nazwaZadania}`
+}
+
+function ogrodPomiarPrompt(nazwaZadania) {
   return `Uruchom w korzeniu repo (Bash), dokladnie jedno polecenie:
-node .claude/scripts/ogrod/ogrod.mjs pomiar
+${ogrodPomiarPolecenie(nazwaZadania)}
 Zwroc kod wyjscia, stdout doslownie (jedna linia JSON, bez skracania i formatowania) i stderr.
 Innych polecen nie uruchamiasz.`
+}
+
+// Kazde pole, ktore czytaja sekcja i rekord: agent przepisujacy stdout moze go skrocic, a wyjatek tutaj zatrzymalby archiwizacje.
+function pomiarKompletny(dane) {
+  const d = dane.decyzja
+  const liczby = (x) => Boolean(x) && OGROD_KATEGORIE.every((k) => Number.isInteger(x[k]))
+  return liczby(dane.liczby) && Boolean(d) && liczby(d.przyrost) && typeof d.ocena === 'boolean' && typeof d.powod === 'string'
+    && ['telemetria', 'diff'].includes(d.zrodlo) && Number.isInteger(d.bez_oceny) && Number.isInteger(dane.plikow)
+    && Number.isInteger(dane.noweRazem) && Array.isArray(dane.nowe) && Array.isArray(dane.hotspoty) && typeof dane.commit === 'string'
 }
 
 /**
@@ -1919,15 +1933,14 @@ Innych polecen nie uruchamiasz.`
  */
 function pomiarZWyniku(wynik) {
   if (!wynik) return { pomiar: null, blad: 'agent pomiaru zwrocil null' }
-  let dane = null
+  let dane
   try {
     dane = JSON.parse(wynik.stdout)
   } catch (e) {
     return { pomiar: null, blad: `stdout skryptu nie jest JSON (kod ${wynik.kod}): ${e.message}` }
   }
   if (wynik.kod !== 0 || !dane || dane.blad) return { pomiar: null, blad: (dane && dane.blad) || wynik.stderr || `kod ${wynik.kod}` }
-  const kompletny = dane.liczby && dane.decyzja && dane.decyzja.przyrost && OGROD_KATEGORIE.every((k) => Number.isInteger(dane.liczby[k]) && Number.isInteger(dane.decyzja.przyrost[k]))
-  return kompletny ? { pomiar: dane, blad: '' } : { pomiar: null, blad: 'wynik skryptu bez kompletu liczb' }
+  return pomiarKompletny(dane) ? { pomiar: dane, blad: '' } : { pomiar: null, blad: 'wynik skryptu bez kompletu pol' }
 }
 
 function ogrodOcenaPrompt(pomiar) {
@@ -2012,8 +2025,8 @@ function rekordOgrodu(pomiar, blad, ocena) {
   }
 }
 
-async function ogrodnik() {
-  const wynik = await agent(ogrodPomiarPrompt(), { schema: OGROD_POMIAR, agentType: 'klasa-mechaniczny-pomiar', label: 'ogrod:pomiar' })
+async function ogrodnik(nazwaZadania) {
+  const wynik = await agent(ogrodPomiarPrompt(nazwaZadania), { schema: OGROD_POMIAR, agentType: 'klasa-mechaniczny-pomiar', label: 'ogrod:pomiar' })
   const { pomiar, blad } = pomiarZWyniku(wynik)
   const ocena = pomiar && pomiar.decyzja.ocena
     ? await agent(ogrodOcenaPrompt(pomiar), { schema: OGROD_OCENA, agentType: 'klasa-sceptyk', effort: 'medium', label: 'ogrod:ocena' })
@@ -2040,7 +2053,7 @@ if (stan.zakonczenie.complete === 'pending') {
     ? ['docs/solutions', 'docs/CONCEPTS.md', 'docs/learned-patterns.md']
     : []
   // Ogrodnik po compound-refresh, przed archiwizacja: sekcja „Ogrod” idzie do podsumowania zadania (complete-wf, krok 4).
-  ogrod = await ogrodnik()
+  ogrod = await ogrodnik(stan.nazwaZadania)
   await zapiszZaleglyStan()
   complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec, sekcjaOgrodu: ogrod.sekcja })
   if (complete && (!complete.archiwum || !complete.commit)) {

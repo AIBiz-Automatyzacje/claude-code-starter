@@ -3,43 +3,63 @@
 // Przyblizenie swiadome: tekst JSX nie jest stringiem, a literal regex rozpoznajemy po poprzedzajacym znaku. String
 // w apostrofach albo cudzyslowie konczy sie najpozniej na koncu linii, wiec pomylka lekseru psuje najwyzej jedna linie.
 
-// Znaki, po ktorych `/` otwiera literal regex, a nie dzielenie.
+// Znaki, po ktorych `/` otwiera literal regex, a nie dzielenie (`)` i `]` koncza wyrazenie — po nich jest dzielenie).
 const PRZED_REGEXEM = new Set(['', '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '+', '-', '*', '%', '<', '>', '~', '^'])
 const SLOWA_PRZED_REGEXEM = /(?:^|[^\w$])(?:return|typeof|case|do|else|in|of|void|yield|await)$/
+// Najdluzsze slowo z SLOWA_PRZED_REGEXEM (`typeof`, `return`) plus znak przed nim.
+const OKNO_SLOWA = 7
 
-/** @typedef {{ linia: number, tekst: string }} LiniaKomentarza */
+/** @typedef {{ linia: number, tekst: string, poczatek: boolean }} LiniaKomentarza poczatek = pierwsza linia komentarza */
 /** @typedef {{ kod: string, komentarze: LiniaKomentarza[] }} Rozbior */
 
 /**
  * @param {string} tekst
- * @param {number} poz
+ * @param {number} pozycja indeks znaku `/`
  * @returns {boolean}
  */
-function regexMozliwy(tekst, poz) {
-  let i = poz - 1
-  while (i >= 0 && /\s/.test(tekst[i])) i--
-  if (i < 0) return true
-  if (PRZED_REGEXEM.has(tekst[i])) return true
-  return SLOWA_PRZED_REGEXEM.test(tekst.slice(Math.max(0, i - 7), i + 1))
+function regexMozliwy(tekst, pozycja) {
+  // JSX: `</tag>` i `<Foo />` to znaczniki, nie regex.
+  if (tekst[pozycja - 1] === '<' || tekst[pozycja + 1] === '>') return false
+  let indeks = pozycja - 1
+  while (indeks >= 0 && /\s/.test(tekst[indeks])) indeks--
+  if (indeks < 0) return true
+  if (PRZED_REGEXEM.has(tekst[indeks])) return true
+  return SLOWA_PRZED_REGEXEM.test(tekst.slice(Math.max(0, indeks - OKNO_SLOWA), indeks + 1))
 }
 
 /**
  * Koniec literalu regex od pozycji otwierajacego `/` (indeks za zamykajacym `/`) albo -1, gdy linia sie konczy wczesniej.
  * @param {string} tekst
- * @param {number} poz
+ * @param {number} pozycja
  * @returns {number}
  */
-function koniecRegexu(tekst, poz) {
+function koniecRegexu(tekst, pozycja) {
   let wKlasie = false
-  for (let i = poz + 1; i < tekst.length; i++) {
-    const z = tekst[i]
-    if (z === '\n') return -1
-    if (z === '\\') i++
-    else if (z === '[') wKlasie = true
-    else if (z === ']') wKlasie = false
-    else if (z === '/' && !wKlasie) return i + 1
+  for (let indeks = pozycja + 1; indeks < tekst.length; indeks++) {
+    const znak = tekst[indeks]
+    if (znak === '\n') return -1
+    if (znak === '\\') indeks++
+    else if (znak === '[') wKlasie = true
+    else if (znak === ']') wKlasie = false
+    else if (znak === '/' && !wKlasie) return indeks + 1
   }
   return -1
+}
+
+/**
+ * Koniec stringu w apostrofach albo cudzyslowie od pozycji cudzyslowu otwierajacego: indeks cudzyslowu zamykajacego
+ * albo konca linii (string niezamkniety w tej linii).
+ * @param {string} tekst
+ * @param {number} pozycja
+ * @returns {number}
+ */
+function koniecStringu(tekst, pozycja) {
+  const cudzyslow = tekst[pozycja]
+  let indeks = pozycja + 1
+  while (indeks < tekst.length && tekst[indeks] !== cudzyslow && tekst[indeks] !== '\n') {
+    indeks += tekst[indeks] === '\\' && tekst[indeks + 1] !== '\n' ? 2 : 1
+  }
+  return Math.min(indeks, tekst.length)
 }
 
 /**
@@ -60,25 +80,25 @@ export function rozbierz(tekst) {
     for (let k = od; k < doIndeksu; k++) if (kod[k] !== '\n') kod[k] = ' '
   }
   const dodajKomentarz = (/** @type {number} */ od, /** @type {number} */ doIndeksu) => {
-    tekst.slice(od, doIndeksu).split('\n').forEach((t, n) => komentarze.push({ linia: linia + n, tekst: t }))
+    tekst.slice(od, doIndeksu).split('\n').forEach((tresc, numer) => komentarze.push({ linia: linia + numer, tekst: tresc, poczatek: numer === 0 }))
   }
   let i = 0
   while (i < tekst.length) {
-    const z = tekst[i]
+    const znak = tekst[i]
     const kontekst = stos[stos.length - 1]
-    if (z === '\n') {
+    if (znak === '\n') {
       linia++
       i++
       continue
     }
     if (kontekst.typ === 'szablon') {
-      if (z === '\\') {
+      if (znak === '\\') {
         wygas(i, i + 2)
         i += 2
-      } else if (z === '`') {
+      } else if (znak === '`') {
         stos.pop()
         i++
-      } else if (z === '$' && tekst[i + 1] === '{') {
+      } else if (znak === '$' && tekst[i + 1] === '{') {
         stos.push({ typ: 'kod', klamry: 0 })
         i += 2
       } else {
@@ -87,34 +107,33 @@ export function rozbierz(tekst) {
       }
       continue
     }
-    if (z === '/' && tekst[i + 1] === '/') {
+    if (znak === '/' && tekst[i + 1] === '/') {
       const koniec = tekst.indexOf('\n', i) === -1 ? tekst.length : tekst.indexOf('\n', i)
       dodajKomentarz(i + 2, koniec)
       wygas(i, koniec)
       i = koniec
-    } else if (z === '/' && tekst[i + 1] === '*') {
+    } else if (znak === '/' && tekst[i + 1] === '*') {
       const zamkniecie = tekst.indexOf('*/', i + 2)
       const koniec = zamkniecie === -1 ? tekst.length : zamkniecie + 2
       dodajKomentarz(i + 2, zamkniecie === -1 ? tekst.length : zamkniecie)
       wygas(i, koniec)
       linia += tekst.slice(i, koniec).split('\n').length - 1
       i = koniec
-    } else if (z === '\'' || z === '"') {
-      let j = i + 1
-      while (j < tekst.length && tekst[j] !== z && tekst[j] !== '\n') j += tekst[j] === '\\' && tekst[j + 1] !== '\n' ? 2 : 1
-      wygas(i + 1, Math.min(j, tekst.length))
-      i = tekst[j] === z ? j + 1 : j
-    } else if (z === '`') {
+    } else if (znak === '\'' || znak === '"') {
+      const koniec = koniecStringu(tekst, i)
+      wygas(i + 1, koniec)
+      i = tekst[koniec] === znak ? koniec + 1 : koniec
+    } else if (znak === '`') {
       stos.push({ typ: 'szablon' })
       i++
-    } else if (z === '/' && regexMozliwy(tekst, i) && koniecRegexu(tekst, i) !== -1) {
+    } else if (znak === '/' && regexMozliwy(tekst, i) && koniecRegexu(tekst, i) !== -1) {
       const koniec = koniecRegexu(tekst, i)
       wygas(i + 1, koniec - 1)
       i = koniec
     } else {
-      if (z === '{') kontekst.klamry++
-      if (z === '}' && kontekst.klamry === 0 && stos.length > 1) stos.pop()
-      else if (z === '}') kontekst.klamry--
+      if (znak === '{') kontekst.klamry++
+      if (znak === '}' && kontekst.klamry === 0 && stos.length > 1) stos.pop()
+      else if (znak === '}') kontekst.klamry--
       i++
     }
   }

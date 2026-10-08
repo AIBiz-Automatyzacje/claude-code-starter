@@ -192,6 +192,7 @@ test('ogrod (P15): rekord z wyniku autopilota — pola znane z typami; blad pomi
   assert.deepEqual(rekordOgrodu(ogrod), oczekiwane, 'pola spoza kontraktu nie wchodza do telemetrii')
   assert.equal(rekordOgrodu({ ...ogrod, liczby: { any: 1 } })?.liczby, null, 'niekomplet liczb = null (skrypt nie wezmie go za punkt odniesienia)')
   assert.equal(rekordOgrodu({ ...ogrod, ocena: 'tak' })?.ocena, false)
+  assert.equal(rekordOgrodu({ ...ogrod, zrodlo: 'inne' })?.zrodlo, null)
   assert.deepEqual(rekordOgrodu({ status: 'blad', powod: 'agent pomiaru zwrocil null' }), { status: 'blad', powod: 'agent pomiaru zwrocil null' })
   assert.equal(rekordOgrodu(undefined), null)
   const run = rekordRunu({ harness: { status: 'completed', workflowName: 'dev-autopilot-wf', result: { status: 'OK', ogrod } }, status: { status: 'OK', powod: null }, agenci: [], bootstrap: null })

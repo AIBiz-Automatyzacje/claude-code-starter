@@ -8,6 +8,8 @@ import { CO_ILE_POMIAROW, PROG_PRZYROSTU, decyzjaOceny, poprzedniPomiar } from '
 const ZERO = { wyciszenia: 0, any: 0, rzutowania: 0, komentarze: 0, pusty_catch: 0 }
 /** @param {Partial<typeof ZERO>} z */
 const liczby = (z = {}) => ({ ...ZERO, ...z })
+/** @param {Record<string, unknown>} r */
+const rekord = (r) => ({ typ: 'run', workflow: 'dev-autopilot', projekt: 'oferty', ...r })
 /** @param {Partial<typeof ZERO>} z @param {number} [bez] */
 const poprzedni = (z = {}, bez = 1) => ({ run: 'wf_a', start: '2026-10-01T10:00:00.000Z', liczby: liczby(z), bez_oceny: bez })
 
@@ -42,10 +44,25 @@ test('prog sumy pozostalych kategorii: 4 = bez oceny, 5 = ocena; spadek nie komp
   assert.match(prog.powod, /przyrost pozostalych kategorii: \+5/)
 })
 
-test('spadek wyciszen nie wlacza oceny', () => {
+test('spadek wyciszen bez nowych w diffie nie wlacza oceny; przyrost netto ujemny zostaje', () => {
   const d = decyzjaOceny({ liczby: liczby({ wyciszenia: 1 }), noweLiczby: liczby(), poprzedni: poprzedni({ wyciszenia: 3 }) })
   assert.equal(d.ocena, false)
   assert.equal(d.przyrost.wyciszenia, -2)
+})
+
+test('bilans zero (usuniete wyciszenie w A, nowe w B): diff zadania jako podloga wlacza ocene', () => {
+  const d = decyzjaOceny({ liczby: liczby({ wyciszenia: 3 }), noweLiczby: liczby({ wyciszenia: 1 }), poprzedni: poprzedni({ wyciszenia: 3 }) })
+  assert.equal(d.ocena, true)
+  assert.equal(d.przyrost.wyciszenia, 0, 'przyrost netto zostaje w rekordzie')
+  assert.match(d.powod, /^nowe wyciszenia lint\/TS: \+1 /)
+  const reszta = decyzjaOceny({ liczby: liczby({ any: 10 }), noweLiczby: liczby({ any: 5 }), poprzedni: poprzedni({ any: 10 }) })
+  assert.deepEqual([reszta.ocena, reszta.przyrost.any], [true, 0])
+  assert.match(reszta.powod, /przyrost pozostalych kategorii: \+5/)
+})
+
+test('wyciszenia nie wchodza do sumy pozostalych kategorii', () => {
+  const d = decyzjaOceny({ liczby: liczby({ wyciszenia: 5 }), noweLiczby: liczby(), poprzedni: poprzedni() })
+  assert.equal(d.powod, 'nowe wyciszenia lint/TS: +5 wzgledem poprzedniego zadania')
 })
 
 test('przeglad okresowy: co N pomiarow bez oceny', () => {
@@ -58,7 +75,6 @@ test('przeglad okresowy: co N pomiarow bez oceny', () => {
 })
 
 test('poprzedni pomiar: ten projekt, run autopilota z kompletem liczb, najnowszy po starcie', () => {
-  const rekord = (/** @type {Record<string, unknown>} */ r) => ({ typ: 'run', workflow: 'dev-autopilot', projekt: 'oferty', ...r })
   const rekordy = [
     rekord({ run: 'stary', start: '2026-10-01T00:00:00Z', ogrod: { liczby: liczby({ any: 1 }), bez_oceny: 2 } }),
     rekord({ run: 'nowy', start: '2026-10-03T00:00:00Z', ogrod: { liczby: liczby({ any: 3 }), bez_oceny: 0 } }),
@@ -69,7 +85,26 @@ test('poprzedni pomiar: ten projekt, run autopilota z kompletem liczb, najnowszy
     rekord({ run: 'inny-workflow', workflow: 'dev-pr', start: '2026-10-07T00:00:00Z', ogrod: { liczby: liczby() } }),
     { typ: 'faza', projekt: 'oferty', start: '2026-10-08T00:00:00Z', ogrod: { liczby: liczby() } },
   ]
-  const p = poprzedniPomiar(rekordy, 'oferty')
+  const p = poprzedniPomiar(rekordy, { projekt: 'oferty' })
   assert.deepEqual(p, { run: 'nowy', start: '2026-10-03T00:00:00Z', liczby: liczby({ any: 3 }), bez_oceny: 0 })
-  assert.equal(poprzedniPomiar(rekordy, 'brak'), null)
+  assert.equal(poprzedniPomiar(rekordy, { projekt: 'brak' }), null)
+})
+
+test('poprzedni pomiar: runy tego samego zadania pomijane (swiezy run po nieudanej archiwizacji)', () => {
+  const rekordy = [
+    rekord({ run: 'zadanie-a', zadanie: 'a', start: '2026-10-01T00:00:00Z', ogrod: { liczby: liczby({ any: 1 }), bez_oceny: 2 } }),
+    rekord({ run: 'zadanie-b-run-1', zadanie: 'b', start: '2026-10-02T00:00:00Z', ogrod: { liczby: liczby({ any: 5 }), bez_oceny: 0 } }),
+  ]
+  assert.equal(poprzedniPomiar(rekordy, { projekt: 'oferty', zadanie: 'b' })?.run, 'zadanie-a')
+  assert.equal(poprzedniPomiar(rekordy, { projekt: 'oferty' })?.run, 'zadanie-b-run-1')
+})
+
+test('poprzedni pomiar: pozniejsza wersja rekordu runu bez pomiaru (kolektor starszego szablonu) nie kasuje pomiaru', () => {
+  const pomiar = rekord({ klucz: 'wf_x|run|wf_x', run: 'wf_x', start: '2026-10-03T00:00:00Z', ogrod: { liczby: liczby({ any: 4 }), bez_oceny: 3 } })
+  const wpisy = [
+    rekord({ klucz: 'wf_s|run|wf_s', run: 'wf_s', start: '2026-10-01T00:00:00Z', ogrod: { liczby: liczby(), bez_oceny: 1 } }),
+    pomiar,
+    { ...pomiar, ogrod: null },
+  ]
+  assert.deepEqual(poprzedniPomiar(wpisy, { projekt: 'oferty' }), { run: 'wf_x', start: '2026-10-03T00:00:00Z', liczby: liczby({ any: 4 }), bez_oceny: 3 })
 })
