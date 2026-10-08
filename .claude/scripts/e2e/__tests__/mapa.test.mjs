@@ -100,6 +100,12 @@ test('scalMape: mapa z CRLF nie dubluje pol, bez zmian zostaje bajt w bajt, po z
   assert.doesNotMatch(zmiana.tekst.replace(/\r\n/g, ''), /\n/, 'wszystkie konce linii CRLF')
 })
 
+test('scalMape: mapa z mieszanymi koncami linii bez zmian zostaje bajt w bajt', () => {
+  const lf = scalMape(null, wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty').tekst
+  const mieszana = lf.replace('\n', '\r\n')
+  assert.equal(scalMape(mieszana, wpisyZPlanu(PLAN, 'publikacja-ofert'), 'oferty').tekst, mieszana)
+})
+
 test('scalMape: powtorzone pole reczne trzyma swoja podliste; wcieta linia nad pierwszym polem zostaje pod naglowkiem; Pliki mieszane', () => {
   const md = ['## `a`', '  opis wpisu', '- Droga: d', '- Pliki: `src/s.ts`, src/reczny.ts', '- Uwaga: u1', '  - p1', '- Uwaga: u2', '  - p2', ''].join('\n')
   let tekst = md

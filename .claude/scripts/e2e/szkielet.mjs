@@ -23,8 +23,9 @@ const TRASA_W_STALEJ = /\bconst\s+[A-Z0-9_]*(?:PATH|PATTERN|ROUTE)[A-Z0-9_]*\s*=
 // Trasy wzgledne zagniezdzonego routera (React Router: `<Route path="clients">`, `{ path: 'clients', element }`).
 // Atrybuty przed `path` moga miec JSX w klamrach (`element={<L />}`), wiec `>` w klamrach nie konczy znacznika.
 const TRASA_WZGLEDNA_JSX = /<Route\b(?:[^>{]|\{[^}]*\})*?\spath=\{?["'`]([A-Za-z0-9:_*][^"'`\s]*)["'`]/g
-// Tylko klucze, ktore ma wylacznie obiekt trasy (children, index, loader bywaja w zwyklych obiektach konfiguracji).
-const TRASA_WZGLEDNA_OBIEKT = /\bpath:\s*["'`]([A-Za-z0-9_][^"'`\s:]*(?::[A-Za-z][^"'`\s]*)?)["'`]\s*,\s*(?:element|Component|lazy)\b/g
+// Tylko klucze, ktore ma wylacznie obiekt trasy (children, index, loader bywaja w zwyklych obiektach konfiguracji);
+// sciezka moze zaczynac sie od parametru (`:offerId`).
+const TRASA_WZGLEDNA_OBIEKT = /\bpath:\s*["'`](:?[A-Za-z0-9_][^"'`\s:]*(?::[A-Za-z][^"'`\s]*)?)["'`]\s*,\s*(?:element|Component|lazy)\b/g
 // Pakiet z kodem ekranow: katalog <x>/src liczy sie jako kod frontendu tylko przy takiej zaleznosci w <x>/package.json.
 const ZALEZNOSC_FRONTENDU = /^(?:react|react-dom|vue|svelte|solid-js|preact|next|nuxt|@angular\/core|@remix-run\/react|@tanstack\/react-router)$/
 const TRASA_API = /^\/api(?:\/|$)/
@@ -45,7 +46,16 @@ function pliki(katalog) {
 function pakietFrontendu(katalog) {
   const pkg = join(katalog, 'package.json')
   if (!existsSync(pkg)) return false
-  const { dependencies = {}, devDependencies = {} } = /** @type {{ dependencies?: object, devDependencies?: object }} */ (JSON.parse(readFileSync(pkg, 'utf8')))
+  /** @type {{ dependencies?: object, devDependencies?: object }} */
+  let manifest
+  try {
+    manifest = JSON.parse(readFileSync(pkg, 'utf8'))
+  } catch (e) {
+    // Szablon albo uszkodzony manifest w podkatalogu nie moze wywrocic generatora — katalog pominiety ze sladem na stderr.
+    process.stderr.write(`weryfikacja: pomijam ${pkg} — ${e instanceof Error ? e.message : String(e)}\n`)
+    return false
+  }
+  const { dependencies = {}, devDependencies = {} } = manifest
   return [...Object.keys(dependencies), ...Object.keys(devDependencies)].some((z) => ZALEZNOSC_FRONTENDU.test(z))
 }
 

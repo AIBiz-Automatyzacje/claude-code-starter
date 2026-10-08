@@ -92,6 +92,22 @@ test('trasyAplikacji: frontend w podkatalogu (frontend/src), trasy wzgledne <Rou
   assert.match(szkieletSkilla(k, { wpisowMapy: 0 }), /<!-- UZUPEŁNIJ: 14 tras poza listą/)
 })
 
+test('trasyAplikacji: pakiet frontendu takze z devDependencies (nazwa dokladna), zly package.json pominiety, trasa wzgledna od parametru', () => {
+  const k = projekt()
+  /** @type {[string, string][]} */
+  const pakiety = [
+    ['web', JSON.stringify({ devDependencies: { vue: '3.5.0' } })],
+    ['typy', JSON.stringify({ devDependencies: { '@types/react': '19.0.0', 'react-query': '3.0.0' } })],
+    ['szablon', '{ "name": "{{name}}", }'],
+  ]
+  for (const [katalog, pkg] of pakiety) {
+    mkdirSync(join(k, katalog, 'src'), { recursive: true })
+    writeFileSync(join(k, katalog, 'package.json'), pkg)
+    writeFileSync(join(k, katalog, 'src/routes.ts'), `export const r = [{ path: '/${katalog}', element: <A /> }, { path: ':${katalog}Id', element: <B /> }]\n`)
+  }
+  assert.deepEqual(trasyAplikacji(k).trasy, ['/logowanie', '/o/:slug', '/oferty', '/oferty/szkice', '/web', ':webId'])
+})
+
 test('wpisyZrobionych: plany w kolejnosci daty — przy tym samym flow nowszy plan daje droge', () => {
   const k = projekt()
   const starszy = 'docs/plans/2026-09-01-001-feat-stare-plan.md'
