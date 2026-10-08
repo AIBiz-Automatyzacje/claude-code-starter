@@ -25,14 +25,14 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
 ## Wykonanie
 
 1. **Sprawdź istniejący config.** Jeśli `.coderabbit.yaml` już istnieje w korzeniu
-   repo — pokaż userowi diff względem tego, co byś wygenerował, i ZAPYTAJ czy
+   repo — pokaż userowi diff względem tego, co byś wygenerował, i zapytaj, czy
    nadpisać. Nie nadpisuj bez potwierdzenia.
 
 2. **Wykryj stack.** Przeczytaj `package.json` (dependencies + devDependencies)
    i strukturę katalogów. Sygnały detekcji są opisane przy każdym bloku w
    `reference/stack-blocks.md`. Jeśli user podał stack w argumencie — użyj go
    zamiast detekcji. Jeśli detekcja jest niejednoznaczna (np. brak package.json) —
-   ZAPYTAJ usera o stack, nie zgaduj.
+   zapytaj usera o stack, nie zgaduj.
 
 3. **Sklej config.** Weź `templates/coderabbit-base.yaml` w całości i:
    - dołóż do `path_filters` i `path_instructions` bloki wykrytego stacku
@@ -63,9 +63,9 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
    Template skilla jest sprawdzany schematem w teście
    `__tests__/generator.test.mjs`; dokładaj więc tylko klucze, które w nim są.
 
-6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit — KROK OBOWIĄZKOWY,
-   nie pomijaj go nigdy.** Bez zainstalowanej aplikacji config jest martwym
-   plikiem. Instalacji nie da się wykonać z CLI, ale da się ją WYKRYĆ:
+6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit** — zawsze, bo bez
+   zainstalowanej aplikacji config jest martwym plikiem, a z repo tego nie widać.
+   Instalacji nie da się wykonać z CLI, ale da się ją wykryć:
    ```bash
    gh api user/installations --jq '.installations[] | select(.app_slug == "coderabbitai") | .account.login'
    ```
@@ -79,8 +79,7 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
      ```
      Zero komentarzy bota na istniejących PR-ach = na pewno brak instalacji.
 
-7. **Raport dla usera — ZAWSZE wypisz wszystkie 4 punkty poniżej.** Nie skracaj
-   i nie pomijaj żadnego, nawet gdy wszystko jest OK:
+7. **Raport dla usera** — wszystkie 4 punkty poniżej, także gdy wszystko jest OK:
    1. Wykryty stack + które bloki weszły do configu.
    2. Pliki wpisane do `code_guidelines.filePatterns`.
    3. **Instalacja aplikacji GitHub CodeRabbit: ✅ albo ❌** (wynik kroku 6).
@@ -101,8 +100,8 @@ z kodu). Zanim dopiszesz albo zmienisz instrukcję, sprawdź ją wobec tej listy
    w węższym globie nie zdejmuje reguły z głównego. Wyjątki od reguły
    z bloku głównego wpisuj w bloku głównym.
 2. **Progi liczbowe z tolerancją.** Bot zgłasza przekroczenie o 5 linii tak
-   samo jak o 500. Próg w instrukcji to 360/60 (reguła 300/50 + 20%); twardy
-   próg egzekwuje lint, nie bot.
+   samo jak o 500. Próg w instrukcji to 360/60 — ten sam co w regułach kodu
+   i ESLint (`max-lines`, `max-lines-per-function`); twardy próg egzekwuje lint, nie bot.
 3. **Nazwij, czego reguła nie obejmuje.** „Zero `as`” bot czyta dosłownie:
    bez zdania o `as const`, `satisfies` i rzutowaniach w atrapach testowych
    zgłasza każde z nich.

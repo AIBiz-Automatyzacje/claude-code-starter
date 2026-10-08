@@ -6,10 +6,9 @@ argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] 
 
 # `/dev-pr` — od pull requesta do merge'a
 
-Ten skill domyka odcinek, którego w pipelinie nie było. Do tej pory zadanie kończyło się na
-`/dev-docs-complete`, a wszystko dalej — wysłanie PR, 127 komentarzy bota w 6 pull requestach,
-14 commitów ręcznych tur — działo się poza szablonem i **nie zasilało bazy wiedzy**. Te same klasy
-błędów wracały w kolejnym pull requeście.
+Skill prowadzi zadanie od `/dev-docs-complete` do merge'a: wysłanie PR, tury poprawek po uwagach bota
+i compound, który zamienia te uwagi we wpisy bazy wiedzy — bez niego te same klasy błędów wracają
+w kolejnym pull requeście.
 
 **Podział ról:** mechanika żyje w `.claude/workflows/dev-pr-wf.js` (bramki liczone w JS, `gh`, naprawy,
 odpowiedzi w wątkach). Ty prowadzisz rozmowę, trzymasz licznik tur i pytasz operatora. Nie wykonuj

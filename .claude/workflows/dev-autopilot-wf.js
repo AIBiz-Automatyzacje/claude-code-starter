@@ -460,8 +460,8 @@ ${trescJson}
    (brak node -> \`python3 -c "import json;json.load(open('${sciezka}/.autopilot-state.json'));print('JSON-OK')"\`).
    Wynik "JSON-OK" -> zwroc {zapisano:true, poprawnyJson:true}.
    Blad parsowania -> ZAPISZ PONOWNIE (raz) i zwaliduj jeszcze raz. Nadal blad -> {zapisano:false, poprawnyJson:false}.
-3. POWOD tej walidacji (run feedback-marcin-poprawki, mobile, 2026-08-06): przy przepisywaniu tresci przez
-   agenta w opisie findingu wszedl NIEZAESCAPOWANY cudzyslow — plik przestal byc JSON-em. To jest plik,
+3. POWOD tej walidacji: przepisujac tresc, agent potrafi wstawic do opisu findingu niezaescapowany cudzyslow
+   i plik przestaje byc JSON-em. To jest plik,
    z ktorego pipeline odtwarza stan po awarii: uszkodzony albo wywroci nastepny bootstrap, albo cicho skasuje
    dowod, ze cala faza zostala wykonana, i pipeline powtorzy kilka godzin pracy. Zapis bez odczytu = brak dowodu.
 
@@ -672,10 +672,9 @@ Plik, ktory git widzi jako binarny, ma w numstat "-" zamiast liczb dodanych/usun
 Do plikiBinarne[] wpisz KAZDY taki plik POZA legalnymi binariami (.png .jpg .jpeg .gif .webp .avif
 .ico .bmp, .woff .woff2 .ttf .otf, .pdf .zip .gz .mp4 .mp3, bun.lockb) — plik zrodlowy lub tekstowy
 na tej liscie to AWARIA pipeline'u, nie znalezisko.
-POWOD (run team-os-onboarding-instalatory, 2026-07-26): fix zapisal do scripts/inbox/invite.mjs regex
-z SUROWYMI bajtami sterujacymi (literalne U+0000, U+001F, U+007F) zamiast sekwencji ucieczki
-\\x00-\\x1f\\x7f-\\x9f. Plik przestal byc tekstem, a kazdy kolejny agent rozlaczal sie przy jego Read
-(APIError) — 6 prob z rzedu i caly run byl martwy. Zapisujac regexy/stringi z bajtami sterujacymi
+POWOD: regex albo string z SUROWYMI bajtami sterujacymi (literalne U+0000, U+001F, U+007F) zamiast sekwencji
+ucieczki \\x00-\\x1f\\x7f-\\x9f robi z pliku zrodlowego plik binarny, a kazdy kolejny agent rozlacza sie
+przy jego Read (APIError) — run staje. Zapisujac regexy/stringi z bajtami sterujacymi
 uzywaj WYLACZNIE sekwencji ucieczki.
 NIE probuj naprawiac takiego pliku w tym przebiegu — jego Read zabije rowniez CIEBIE. Zwroc go na liscie.
 Gdy nic nie znalazles, zwroc pusta liste (pole jest obowiazkowe: brak listy = orkiestrator nie wie, czy sprawdziles).

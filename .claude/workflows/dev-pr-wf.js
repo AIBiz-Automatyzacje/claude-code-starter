@@ -745,9 +745,8 @@ Zwroc obiekt zgodny ze schematem.`,
 
 if (etap === 'compound') {
   const wynik = await agent(
-    `Jestes czescia pipeline'u /dev-pr. To jest etap, ktorego w szablonie brakowalo najbardziej:
-w projekcie zrodlowym 127 komentarzy bota w 6 pull requestach dalo ZERO wpisow w bazie wiedzy,
-wiec te same klasy bledow wracaly w kolejnym PR.
+    `Jestes czescia pipeline'u /dev-pr. Ten etap zamienia uwagi bota z tego pull requesta we wpisy bazy wiedzy,
+bo bez nich te same klasy bledow wracaja w kolejnym PR.
 
 Zadanie: "${zadanie}". Material: diff wszystkich tur poprawek tego pull requesta
 (\`git log --oneline --grep="^fix(pr)"\` -> \`git diff <pierwszy>^..HEAD\`) oraz lista watkow bota:

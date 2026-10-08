@@ -54,7 +54,7 @@ Before going online, check if curated knowledge already exists in skills:
    - If skills provide partial guidance -> note what's covered, proceed to Phase 1.5 and Phase 2 for gaps
    - If no relevant skills found -> proceed to Phase 1.5 and Phase 2
 
-### Phase 1.5: MANDATORY Deprecation Check (for external APIs/services)
+### Phase 1.5: Deprecation Check (for external APIs/services)
 
 **Before recommending any external API, OAuth flow, SDK, or third-party service:**
 

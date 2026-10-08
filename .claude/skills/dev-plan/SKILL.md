@@ -18,8 +18,6 @@ Plan techniczny jest jedynym źródłem treści zadania: builder dostaje jednost
 
 Pytania zadawaj narzędziem `AskUserQuestion`, jedno naraz, z opcjami single-select, gdy istnieją naturalne odpowiedzi. Bez tego narzędzia — numerowane opcje w czacie i czekanie na odpowiedź.
 
-**Tryb pipeline** (wywołanie z workflowu albo z `disable-model-invocation`): pytania pomijasz, wybory podejmujesz sam i doprowadzasz plan do zapisu; Fazy 6 nie wykonujesz.
-
 ## Opis feature'a
 
 <feature_description> #$ARGUMENTS </feature_description>
@@ -96,7 +94,7 @@ Niejasna głębokość → jedno celowane pytanie.
 
 Przeczytaj w całości indeks wiedzy projektu `docs/learned-patterns.md` (jeśli istnieje): reguły z klasą, wzorcami plików i linkiem do `docs/solutions/`. Reguły pasujące do obszaru planu zasilają „Wiedza instytucjonalna” w planie i podejście IU.
 
-Przygotuj podsumowanie kontekstu planowania (akapit lub dwa: problem, wymagania, kluczowe decyzje ze źródła albo opis feature'a). Agentów badawczych wołasz narzędziem `Agent` z typem agenta z `.claude/agents/` — nie typem `Explore` z doklejoną definicją agenta w prompcie (`Explore` nie ma narzędzi sieciowych, a definicja w prompcie gubi `model:` i `tools:` z frontmattera).
+Przygotuj podsumowanie kontekstu planowania (akapit lub dwa: problem, wymagania, kluczowe decyzje ze źródła albo opis feature'a). Agentów badawczych wołasz narzędziem `Agent` z typem agenta z `.claude/agents/` — nie typem `Explore` z doklejoną definicją agenta w prompcie (definicja doklejona do promptu gubi `model:`, `tools:` i `skills:` z frontmattera).
 
 - **Standardowa i Głęboka** — zawsze, równolegle:
   - `repo-research-analyst` — prompt: linia `Scope: technology, architecture, patterns, conventions`, pod nią samo podsumowanie kontekstu (bez linii `Scope:` agent przegląda też konwencje issues i szablony PR, które planu nie zasilają);

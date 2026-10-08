@@ -121,7 +121,7 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 
 **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
 
-Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, zamiast czytać plik po pliku.
+Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subagent_type: "repo-research-analyst"`, z pierwszą linią promptu `Scope: technology, architecture` i pytaniem o trasy, assety i nazwy zmiennych środowiskowych pod nią, zamiast czytać plik po pliku.
 
 #### 1.3 Narzędzia maszyny (doctor)
 
@@ -261,5 +261,3 @@ Następnie zadaj `AskUserQuestion`: „Co dalej?"
 - `Popraw dokument` — wróć do Fazy 2 z jego uwagami.
 
 **Commit:** dokument jest artefaktem planowania — `/dev-plan` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego kroku 6.3). Nie commituj go sam, chyba że użytkownik poprosi.
-
-**Tryb pipeline:** przy wywołaniu z automatycznego workflow lub kontekstu `disable-model-invocation` pomiń pytania interaktywne, podejmij potrzebne wybory sam i zapisz dokument.

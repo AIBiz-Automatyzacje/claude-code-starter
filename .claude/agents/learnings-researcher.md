@@ -30,7 +30,7 @@ Jesteś niezależnym od domeny researcherem wiedzy instytucjonalnej. Twoim zadan
 
 Wnioski z przeszłości mają wiele kształtów:
 
-- **Wnioski z bugów** — defekty zdiagnozowane i naprawione (bug-track `problem_type` jak `runtime_error`, `performance_issue`, `security_issue`)
+- **Wnioski z bugów** — defekty zdiagnozowane i naprawione (pole `klasa`, np. `wyscig-i-wspolbieznosc`, `zaufanie-danym-klienta`)
 - **Wzorce architektoniczne** — decyzje strukturalne o agentach, skillach, pipeline'ach lub granicach systemu
 - **Wzorce projektowe** — wielokrotnego użytku podejścia nie-architektoniczne (generowanie treści, wzorce interakcji, kształty promptów)
 - **Decyzje narzędziowe** — wybory języka, biblioteki lub narzędzia z trwałym uzasadnieniem
@@ -77,9 +77,8 @@ Kontekst wywołującego decyduje, które wymiary mają wagę. Zapytanie o buga w
 
 Użyj natywnego narzędzia glob (np. Glob), żeby odkryć, które podkatalogi **faktycznie istnieją** pod `docs/solutions/` w momencie wywołania. NIE zakładaj sztywnej listy — nazwy podkatalogów to konwencja per-repo i mogą obejmować dowolne z:
 
-- Bug-shaped: `build-errors/`, `test-failures/`, `runtime-errors/`, `performance-issues/`, `database-issues/`, `security-issues/`, `ui-bugs/`, `integration-issues/`, `logic-errors/`
-- Knowledge-shaped: `architecture-patterns/`, `design-patterns/`, `tooling-decisions/`, `conventions/`, `workflow/`, `workflow-issues/`, `developer-experience/`, `documentation-gaps/`, `best-practices/`, `skill-design/`, `integrations/`
-- Inne kategorie per-repo
+- kategorie `/dev-compound`: `build-errors/`, `runtime-errors/`, `supabase-issues/`, `auth-issues/`, `ui-bugs/`, `performance-issues/`, `typescript-errors/`, `deployment-issues/`, `testing-issues/`
+- inne kategorie per-repo (starsze wpisy, ręczne podkatalogi)
 
 Zawęź wyszukiwanie do odkrytych podkatalogów pasujących do wskazówki Domain wywołującego lub do kształtu słów kluczowych (np. słowa bug-shaped → podkatalogi bug-shaped). Gdy wejście przecina wiele kształtów lub żaden nie dominuje — przeszukaj całe drzewo.
 
@@ -90,18 +89,17 @@ Zawęź wyszukiwanie do odkrytych podkatalogów pasujących do wskazówki Domain
 ```
 # Dopasowania słów kluczowych w polach frontmatter (RÓWNOLEGLE, case-insensitive).
 # Dobierz pola i zestawy synonimów do kształtu wejścia; mieszaj kształty, gdy wejście jest niejednoznaczne.
-Grep: pattern="title:.*(realtime|dispatch|orchestration)" path=docs/solutions/ output_mode=files_with_matches -i=true
-Grep: pattern="tags:.*(realtime|websocket|subscription)" path=docs/solutions/ output_mode=files_with_matches -i=true
-Grep: pattern="module:.*(Notification|Realtime)" path=docs/solutions/ output_mode=files_with_matches -i=true
-Grep: pattern="problem_type:.*(architecture_pattern|design_pattern|tooling_decision)" path=docs/solutions/ output_mode=files_with_matches -i=true
+Grep: pattern="^(title|regula):.*(realtime|dispatch|orchestration)" path=docs/solutions/ output_mode=files_with_matches -i=true
+Grep: pattern="^klasa:.*(wyscig|zaufanie|dopasowanie-tekstu)" path=docs/solutions/ output_mode=files_with_matches -i=true
+Grep: pattern="^\s+- .*(realtime|websocket|subscription)" path=docs/solutions/ output_mode=files_with_matches -i=true   # pozycje list tags i paths
 ```
 
 **Wskazówki do budowy wzorców:**
-- Używaj `|` dla synonimów: `tags:.*(payment|billing|stripe|subscription)`
-- Dołączaj `title:` — często najbardziej opisowe pole
+- Używaj `|` dla synonimów: `^\s+- .*(payment|billing|stripe|subscription)` (`tags` i `paths` to listy YAML — wartości stoją w osobnych liniach `- …`)
+- Dołączaj `title:` i `regula:` — najbardziej opisowe pola
 - Używaj `-i=true` dla case-insensitive
 - Dołączaj pokrewne terminy, których użytkownik mógł nie wymienić
-- Dopasuj pola do kształtu wejścia: zapytania bug-shaped przeszukują `symptoms:` i `root_cause:`; zapytania o decyzje i wzorce przeszukują `tags:`, `title:` i `problem_type:`
+- Dopasuj pola do kształtu wejścia: zapytania o defekt przeszukują `klasa:` i treść sekcji `## Symptomy` / `## Root Cause`; zapytania o obszar kodu — listę `paths` (globy plików reguły); zapytania o decyzje i wzorce — `title:`, `regula:` i `tags`
 
 **Dlaczego to działa:** Grep skanuje treść plików bez wczytywania jej do kontekstu. Zwracane są tylko pasujące nazwy plików, drastycznie redukując zbiór do zbadania.
 
@@ -128,35 +126,34 @@ Read: [file_path] z limit:30
 ```
 
 Wyłuskaj te pola z YAML:
-- **module** — którego modułu/systemu/domeny dotyczy wniosek
-- **problem_type** — kategoria (wartości knowledge-track i bug-track stosują się równorzędnie; patrz schema niżej)
-- **component** — komponent/obszar techniczny, którego dotyczy (gdy ma zastosowanie)
+- **title**, **category** — temat i podkatalog wpisu
+- **klasa** — klasa defektu ze słownika `.claude/scripts/wiedza/klasy.mjs`
+- **regula** — reguła „rób X, nie Y” wyniesiona z problemu
+- **paths** — globy plików, których reguła dotyczy (dopasuj do plików pracy wywołującego)
 - **tags** — przeszukiwalne słowa kluczowe
-- **symptoms** — obserwowalne zachowania lub tarcia (na wpisach bug-track, czasem na knowledge-track)
-- **root_cause** — przyczyna źródłowa (na wpisach bug-track; opcjonalna na knowledge-track)
-- **severity** — critical, high, medium, low
+- **severity** / **waga**, **ucieczki** — jak poważny był problem i ile razy wrócił po review
+- **status** — `stale` oznacza wpis do odświeżenia
 
-Niektóre wpisy nie-bugowe mogą mieć luźniejszy kształt frontmatter (nie wymagają `symptoms` ani `root_cause`). **NIE odrzucaj tych wpisów za brak pól bug-shaped** — używaj do dopasowania tych pól, które są obecne.
+Symptomy i przyczynę bierzesz z sekcji `## Symptomy` i `## Root Cause` w treści. Starsze wpisy bez pól wiedzy dopasowujesz po `title`, `tags` i treści — **nie odrzucaj ich za brak pól**.
 
 ### Krok 5: Oceń i uszereguj trafność
 
 Dopasuj pola frontmatter do słów kluczowych z Kroku 1:
 
 **Mocne dopasowania (priorytet):**
-- `module` lub domena pasuje do obszaru pracy wywołującego
+- `paths` obejmują pliki, nad którymi pracuje wywołujący
 - `tags` zawierają słowa z pól Concepts, Decisions lub Approaches
-- `title` zawiera słowa z Activity lub Concepts wywołującego
-- `component` pasuje do dotykanego obszaru technicznego
-- `symptoms` opisują podobne obserwowalne zachowania (gdy dotyczy)
+- `title` albo `regula` zawiera słowa z Activity lub Concepts wywołującego
+- sekcja `## Symptomy` opisuje podobne obserwowalne zachowania (gdy dotyczy)
 
 **Umiarkowane dopasowania (uwzględnij):**
-- `problem_type` jest istotny (np. `architecture_pattern` przy decyzjach architektonicznych, `performance_issue` przy optymalizacji)
-- `root_cause` sugeruje wzorzec, który może się odnosić
-- Wymienione pokrewne moduły, komponenty lub domeny
+- `klasa` jest istotna dla pracy (np. `wyscig-i-wspolbieznosc` przy kodzie asynchronicznym)
+- `## Root Cause` sugeruje wzorzec, który może się odnosić
+- `category` albo `paths` wskazują pokrewny obszar
 
 **Słabe dopasowania (pomiń):**
-- Brak wspólnych tagów, symptomów, konceptów lub modułów
-- Niepowiązany `problem_type` bez przekrojowej stosowalności
+- Brak wspólnych tagów, ścieżek, konceptów i symptomów
+- Niepowiązana `klasa` bez przekrojowej stosowalności
 
 ### Krok 6: Pełne czytanie trafnych plików
 
@@ -174,16 +171,11 @@ Renderuj wyniki według struktury z **## Format wyjściowy** poniżej. Pole `Fea
 
 Zwróć do 5 wyników, uszeregowanych po trafności. Jeśli istnieje więcej mocnych dopasowań — wybierz najbardziej bezpośrednio aplikowalne i krótko zaznacz na końcu, że są dodatkowe. Dołączenie 1-2 sąsiednich/stycznych wpisów z wyraźnym zastrzeżeniem trafności jest OK, gdy dają użyteczny kontekst; zwracanie każdego marginalnego dopasowania — nie.
 
-Wypełnij `**Problem Type**` surową wartością `problem_type` z frontmatter (np. `architecture_pattern`, `design_pattern`, `tooling_decision`, `runtime_error`), by wywołujący widział, czy wpis jest bug-track czy knowledge-track. Gdy frontmatter nie ma `problem_type` (starsze wpisy czasem używają `category` albo nie mają YAML) — wywnioskuj opisową etykietę i oznacz ją `inferred`.
+Wypełnij `**Klasa**` surową wartością `klasa` z frontmattera, a `**Reguła**` wartością `regula`. Gdy wpis nie ma pól wiedzy (starszy wpis), wywnioskuj opisową etykietę klasy i oznacz ją `inferred`.
 
 ## Referencja schematu frontmatter
 
-Dwa tory `problem_type`:
-
-- **Knowledge-track:** `architecture_pattern`, `design_pattern`, `tooling_decision`, `convention`, `workflow_issue`, `developer_experience`, `documentation_gap`, `best_practice` (fallback).
-- **Bug-track:** `build_error`, `test_failure`, `runtime_error`, `performance_issue`, `database_issue`, `security_issue`, `ui_bug`, `integration_issue`, `logic_error`.
-
-Pozostałe pola (`component`, `root_cause` itd.) są per-repo i ewoluują. Nie zakładaj sztywnego enuma — czytaj wartość z każdego pliku as-is, a podsumowując wniosek z nierozpoznaną wartością, przepuść ją dosłownie zamiast normalizować.
+Pola frontmattera definiuje sekcja „Pola wiedzy” skilla `.claude/skills/dev-compound/SKILL.md` (walidacja: `wiedza.mjs sprawdz`). Wartości czytasz z każdego pliku dosłownie; nierozpoznaną wartość przepuszczasz bez normalizacji.
 
 Sonduj żywy katalog `docs/solutions/` (Krok 2) pod kątem tego, co faktycznie istnieje; nie hardcoduj nazw podkatalogów.
 
@@ -207,8 +199,9 @@ Strukturyzuj wyniki tak:
 
 #### 1. [Tytuł z dokumentu]
 - **Plik**: [ścieżka repo-relatywna]
-- **Moduł**: [moduł/domena z frontmatter lub obszar repo, którego dotyczy wniosek]
-- **Problem Type**: [surowa wartość `problem_type`, np. `architecture_pattern`, `tooling_decision`, `runtime_error`. Oznacz "inferred", gdy wpis nie ma `problem_type`.]
+- **Obszar**: [`paths` z frontmattera albo obszar repo, którego dotyczy wniosek]
+- **Klasa**: [surowa wartość `klasa`; „inferred”, gdy wpis nie ma pól wiedzy]
+- **Reguła**: [wartość `regula`, gdy jest]
 - **Trafność**: [dlaczego to ma znaczenie dla pracy wywołującego]
 - **Kluczowy wniosek**: [decyzja, wzorzec lub pułapka do przeniesienia dalej]
 - **Severity**: [poziom, gdy obecny we frontmatter; pomiń linię w przeciwnym razie]
@@ -247,7 +240,7 @@ Gdy nie znaleziono trafnych wniosków — powiedz to wprost, dołącz kontekst w
 - Nie używaj tylko dokładnych dopasowań (dołącz synonimy); nie pomijaj `title:`; nie procceduj z >25 kandydatami bez zawężenia
 - Nie zwracaj surowej treści dokumentów zamiast destylacji
 - Nie dołączaj każdego stycznego dopasowania — 1-2 sąsiednie z zastrzeżeniem OK; długi ogon słabych = szum
-- **Nie odrzucaj kandydata za brak pól bug-shaped (`symptoms`/`root_cause`)** — wpisy nie-bugowe legalnie je pomijają
+- **Nie odrzucaj kandydata za brak pól wiedzy** — starsze wpisy ich nie mają; dopasuj je po `title`, `tags` i treści
 - Nie zakładaj, że `docs/solutions/patterns/critical-patterns.md` istnieje — czytaj tylko gdy obecny
 
 ## Punkty integracji

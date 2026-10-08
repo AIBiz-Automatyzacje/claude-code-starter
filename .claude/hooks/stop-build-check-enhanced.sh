@@ -66,7 +66,7 @@ elif [ "$ERROR_COUNT" -le "$ERROR_THRESHOLD" ]; then
         echo ""
         echo "$TSC_OUTPUT" | grep "error TS" | head -10
         echo ""
-        echo "Napraw błędy TypeScript przed zakończeniem (typuj poprawnie, nie używaj any/as)."
+        echo "Napraw błędy TypeScript przed zakończeniem: typ zamiast any, as tylko przy as const i zawężaniu DOM (reguły kodu, sekcja Type safety)."
         echo ""
     } >&2
     exit 2

@@ -403,9 +403,9 @@ function zrodlaBlok(faza, kontekst) {
   return (kontekst && kontekst.ctxZapisany && kontekst.ctxPlik)
     ? `Wymagania, reguly projektu i zadania tej fazy masz w DOSSIER FAZY (sciezka nizej) — zacznij od niego.
 Pelny plan techniczny i requirements doc otwieraj tylko wtedy, gdy jednostka odsyla do czegos, czego w dossier nie ma.
-Naruszenie ktorejkolwiek reguly z sekcji "Reguly projektu" dossier zglos jako finding.`
-    : `Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Files:, Test scenarios:, Patterns to follow:).
-Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie ktorejkolwiek z nich zglos jako finding.`
+Naruszenie reguly z sekcji "Reguly projektu" dossier, ktora dotyczy Twojej osi, zglos jako finding.`
+    : `Przeczytaj zmiany git tej fazy (diff) + requirements doc (docs/brainstorms/*-requirements.md jesli istnieje) + plan techniczny / Implementation Unit fazy ${faza} w docs/plans/ (Pliki:, Scenariusze testowe:, Wzorce do nasladowania:).
+Reguly projektu dla plikow fazy: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>\` (pole tresc) — reguly z poprzednich zadan tego projektu; naruszenie reguly, ktora dotyczy Twojej osi, zglos jako finding.`
 }
 
 // Polecenie reviewera osi (wszystkie osie). Mandat, procedura, wagi i kryterium konca sa w pliku roli (agentType);

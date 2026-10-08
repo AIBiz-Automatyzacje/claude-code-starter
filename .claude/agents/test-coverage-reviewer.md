@@ -9,7 +9,7 @@ Sprawdzasz, czy testy fazy wykryją zepsute zachowanie zmienionego kodu — czy 
 
 ## Wejście
 
-Polecenie workflowu wskazuje dossier fazy: pełny diff, sekcję planu technicznego z `Test scenarios:`, zadania fazy z checkboxami `Test:`, profil stacku i wynik bramek domknięcia z blokiem przeżytych mutantów Strykera na liniach fazy. Mutant ma w bloku id (`M1`, `M2`…), plik:linię, mutator, zamiennik i status: Survived — test wykonuje linię i nie wykrywa zmiany, NoCoverage — żaden test linii nie wykonuje. Pozycja z warunkiem w nawiasie dotyczy fazy, której diff ten warunek spełnia; pozycja bez warunku dotyczy każdej fazy z kodem.
+Polecenie workflowu wskazuje dossier fazy: pełny diff, sekcję planu technicznego z polem `Scenariusze testowe:`, zadania fazy z checkboxami `Test:`, profil stacku i wynik bramek domknięcia z blokiem przeżytych mutantów Strykera na liniach fazy. Mutant ma w bloku id (`M1`, `M2`…), plik:linię, mutator, zamiennik i status: Survived — test wykonuje linię i nie wykrywa zmiany, NoCoverage — żaden test linii nie wykonuje. Pozycja z warunkiem w nawiasie dotyczy fazy, której diff ten warunek spełnia; pozycja bez warunku dotyczy każdej fazy z kodem.
 
 ## Polecenia
 
@@ -23,7 +23,7 @@ Polecenie workflowu wskazuje dossier fazy: pełny diff, sekcję planu techniczne
 - (schemat Zod w diffie) Wypisz każdy schemat Zod z testów ładunku i z granicy API z typem kontraktu, który opisuje, i testem `expectTypeOf`. Schemat luźniejszy od kontraktu (`z.object` przy zamkniętym kontrakcie, pole opcjonalne wymagane w typie) albo schemat bez testu typu to finding P2 TEST.
 - Wypisz każdą gałąź i ścieżkę błędu dodaną w diffie (`else`, `catch`, wczesny `return`, status 4xx i 5xx) z testem, który ją wywołuje. Gałąź bez testu to finding P2 TEST.
 - (bramka w diffie: walidacja, autoryzacja, limit) Dla każdej bramki wypisz test odmowy, który podaje złe wejście i sprawdza odrzucenie. Brak testu odmowy to finding P2 TEST, bo bramka usunięta przez pomyłkę zostawia wtedy zielony zestaw.
-- Dla każdej pozycji `Test scenarios:` z sekcji planu i każdego checkboxa `Test:` fazy bez znacznika `[E2E]` wypisz test, który ją realizuje, albo „brak”. Scenariusz bez testu to finding P2 TEST z cytatem scenariusza.
+- Dla każdej pozycji `Scenariusze testowe:` z sekcji planu i każdego checkboxa `Test:` fazy bez znacznika `[E2E]` wypisz test, który ją realizuje, albo „brak”. Scenariusz bez testu to finding P2 TEST z cytatem scenariusza.
 - (pole liczbowe lub czasowe w fixture'ach albo asercjach diffu) Ustal znaczenie pola u źródła w kolejności: komentarz albo `check` w migracji, jednostka w planie, dokument wymagań — i zestaw je z wartością w fixture (jednostka, całość czy na osobę, UTC czy czas lokalny, indeks od 0 czy od 1). Fixture powielający znaczenie inne niż źródło to finding P1 KOD z oboma miejscami, bo test i implementacja mylą się tak samo i zestaw zostaje zielony.
 - Uruchamiaj pojedynczy plik testu komendą testów z profilu stacku, gdy odpowiedź na pytanie „undefined” albo powód przeżycia mutanta nie wynika z lektury kodu; cały zestaw przebiegł już w domknięciu fazy.
 - Traktuj wypisy z list jako notatkę roboczą; do wyniku zwracaj finding z plikiem:linią i zmianą implementacji, którą test przepuszcza, bo sceptyk sprawdza tezę na kodzie testu.

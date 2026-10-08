@@ -57,8 +57,7 @@ WITH CHECK ((SELECT auth.uid()) = user_id);
 
 ### Dostęp administracyjny (role)
 
-> ⚠️ **KRYTYCZNE — najczęstszy błąd autoryzacji w Supabase, notorycznie popełniany przez agentów AI.**
-> NIGDY nie trzymaj roli w `user_metadata`. Pole `raw_user_meta_data` (czyli claim `user_metadata` w JWT) jest **edytowalne przez samego użytkownika** — wystarczy `supabase.auth.updateUser({ data: { role: 'admin' } })` z konsoli/DevTools i atakujący podnosi sobie rolę, po czym RLS przepuszcza go do cudzych danych (privilege escalation).
+> **Rola nie pochodzi z `user_metadata`.** Pole `raw_user_meta_data` (czyli claim `user_metadata` w JWT) jest **edytowalne przez samego użytkownika** — wystarczy `supabase.auth.updateUser({ data: { role: 'admin' } })` z konsoli/DevTools i atakujący podnosi sobie rolę, po czym RLS przepuszcza go do cudzych danych (privilege escalation).
 > Do autoryzacji używaj **`app_metadata`** (ustawiane wyłącznie server-side, użytkownik go nie zmieni) albo **dedykowanej tabeli ról**.
 > Nie używaj też top-levelowego claimu `role` w policy — to zarezerwowany claim Postgres/PostgREST (`authenticated` / `anon` / `service_role`), nie rola aplikacyjna.
 
@@ -115,14 +114,12 @@ await supabaseAdmin.auth.admin.updateUserById(userId, {
 
 Kazda chroniona Edge Function musi weryfikowac JWT.
 
-**withSupabase({ auth: 'user' }) -- AKTUALNY WZORZEC (2026).** Oficjalne wytyczne Supabase
-(AI-prompt `edge-functions.md`, pkt 7-8): nie uzywaj `Deno.serve` -- eksportuj domyslny obiekt
-z handlerem `fetch` i ZAWSZE owijaj go w `withSupabase` z `npm:@supabase/server@^1`. Wrapper
-sam robi to, co wczesniej pisalismy recznie: odrzuca request bez waznego JWT **przed** wejsciem
-do handlera, buduje klienta `ctx.supabase` (RLS w kontekscie usera) i `ctx.supabaseAdmin`
-(secret key, omija RLS) oraz dodaje naglowki CORS (`cors: 'default'`). Zweryfikowana
-tozsamosc masz w `ctx.userClaims` (`id` = user_id). `Deno.serve` nadal dziala (legacy), ale
-przestal byc dokumentowanym wzorcem.
+**Edge Function z withSupabase({ auth: 'user' }).** Wedlug wytycznych Supabase (AI-prompt
+`edge-functions.md`, pkt 7-8) eksportujesz domyslny obiekt z handlerem `fetch` owinietym
+w `withSupabase` z `npm:@supabase/server@^1`; `Deno.serve` to wzorzec legacy. Wrapper odrzuca
+request bez waznego JWT **przed** wejsciem do handlera, buduje klienta `ctx.supabase` (RLS
+w kontekscie usera) i `ctx.supabaseAdmin` (secret key, omija RLS) oraz dodaje naglowki CORS
+(`cors: 'default'`). Zweryfikowana tozsamosc masz w `ctx.userClaims` (`id` = user_id).
 
 ```typescript
 import { withSupabase } from 'npm:@supabase/server@^1';

@@ -56,8 +56,9 @@ test('zdania klas zapobiegalnych (D10) tylko dla buildera: review, fix i /dev-pr
 test('reviewer bez dossier: wycinek tym samym skryptem po plikach fazy, bez starej sciezki regul', () => {
   const bez = zrodlaBlok(3, null)
   assert.match(bez, /`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki <pliki zmienione w fazie po przecinku>`/)
-  assert.match(bez, /naruszenie ktorejkolwiek z nich zglos jako finding/)
-  assert.match(zrodlaBlok(3, { ctxZapisany: true, ctxPlik: '/tmp/c.md' }), /sekcji "Reguly projektu" dossier/)
+  // Zmiana kontraktu (P16, prompt-audit): regule projektu zglasza os, ktorej dotyczy — pliki rol kaza pomijac reszte.
+  assert.match(bez, /naruszenie reguly, ktora dotyczy Twojej osi, zglos jako finding/)
+  assert.match(zrodlaBlok(3, { ctxZapisany: true, ctxPlik: '/tmp/c.md' }), /sekcji "Reguly projektu" dossier, ktora dotyczy Twojej osi/)
   assert.doesNotMatch(zrodloReview, /\.claude\/rules\/learned-patterns/)
 })
 

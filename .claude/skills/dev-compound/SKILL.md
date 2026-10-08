@@ -231,7 +231,7 @@ Dokumentacja zapisana (tryb compact)
 Plik: docs/solutions/[category]/[filename].md
 
 Aby uzyskać bogatszą dokumentację (cross-referencje, diagnostyka, strategia zapobiegania),
-uruchom /dev-compound --full w świeżej sesji.
+uruchom /dev-compound --full w tej samej sesji, póki rozmowa o problemie jest w kontekście.
 
 Wiedza: szczebel [regula|kod|lint] — [indeks zapisany / bramka indeksu: błędy]
 Propozycja bramki (kod, lint): [kod|lint] [klasa] — [reguła] ([szczebel_powod])

@@ -87,7 +87,7 @@ Znajdź wszystkie pliki `.md` pod `docs/solutions/`, wykluczając pliki `README.
 Jeśli `$ARGUMENTS` podano, użyj go do zawężenia zakresu. Próbuj te strategie dopasowania w kolejności, zatrzymując się na pierwszej która daje wyniki:
 
 1. **Dopasowanie katalogu** — sprawdź czy argument pasuje do nazwy podkatalogu pod `docs/solutions/` (np. `performance-issues`, `database-issues`)
-2. **Dopasowanie frontmatter** — szukaj w polach `module`, `component` lub `tags` we frontmatter
+2. **Dopasowanie frontmatter** — szukaj w polach `tags`, `klasa`, `paths` i `category` we frontmatterze
 3. **Dopasowanie nazwy pliku** — dopasuj do nazw plików (częściowe dopasowania OK)
 4. **Szukanie w treści** — szukaj argumentu jako słowa kluczowego w treści pliku
 
@@ -120,7 +120,7 @@ Przed klasyfikacją czegokolwiek:
 
 Gdy zakres jest szeroki (9+ dokumentów kandydujących), zrób lekki triaż przed głębokim badaniem:
 
-1. **Inwentarz** — przeczytaj frontmatter wszystkich dokumentów kandydujących, grupuj według modułu/komponentu/kategorii
+1. **Inwentarz** — przeczytaj frontmatter wszystkich dokumentów kandydujących, grupuj według kategorii, `klasa` i `paths`
 2. **Klasteryzacja wpływu** — zidentyfikuj obszary z najgęstszymi klastrami dokumentów + wzorców. Klaster 5 rozwiązań i 2 wzorców pokrywających ten sam moduł ma wyższy wpływ niż 5 izolowanych obszarów.
 3. **Kontrola dryfu** — dla każdego klastra sprawdź czy główne referencjowane pliki nadal istnieją. Brakujące referencje w klastrze o wysokim wpływie = najsilniejszy sygnał od czego zacząć.
 4. **Przetwarzaj klastry według wpływu** — zacznij od klastra o najwyższym wpływie, kontynuuj do następnego.
@@ -143,7 +143,7 @@ Dopasuj głębokość badania do specyficzności dokumentu — dokument referenc
 Kluczowe rozróżnienie to czy dryf jest **kosmetyczny** (referencje się przeniosły ale rozwiązanie jest to samo) czy **merytoryczny** (samo rozwiązanie się zmieniło):
 
 - **Terytorium Update** — ścieżki się przeniosły, klasy przemianowane, linki nieaktualne, metadane rozjechane, ale główne rekomendowane podejście nadal odpowiada temu jak kod działa. Napraw bezpośrednio.
-- **Terytorium Replace** — rekomendowane rozwiązanie jest sprzeczne z aktualnym kodem, podejście architektoniczne się zmieniło, lub wzorzec nie jest już preferowanym sposobem. Trzeba napisać nowy dokument. Dokument zastępczy używa formatu `/dev-compound`: frontmatter YAML (title, category, date, module, component, tags), opis problemu, root cause, aktualne rozwiązanie z przykładami kodu i zapobieganie.
+- **Terytorium Replace** — rekomendowane rozwiązanie jest sprzeczne z aktualnym kodem, podejście architektoniczne się zmieniło, lub wzorzec nie jest już preferowanym sposobem. Trzeba napisać nowy dokument. Dokument zastępczy piszesz w formacie `/dev-compound`: frontmatter z polami wiedzy (sekcja „Pola wiedzy” skilla `dev-compound`, sprawdza je `wiedza.mjs sprawdz`), opis problemu, root cause, aktualne rozwiązanie z przykładami kodu i zapobieganie.
 
 **Granica:** jeśli przepisujesz sekcję rozwiązania lub zmieniasz to co dokument rekomenduje, zatrzymaj się — to Replace, nie Update.
 
@@ -365,7 +365,7 @@ Podziel akcje na dwie sekcje:
 
 **Rekomendowane** (akcje których nie udało się zapisać):
 - Te same szczegóły co powyżej, ale sformułowane jako rekomendacje dla człowieka do zastosowania
-- Dołącz wystarczająco kontekstu żeby użytkownik mógł zastosować zmianę ręcznie lub ponownie uruchomić skill interaktywnie
+- Dołącz wystarczająco kontekstu żeby użytkownik mógł zastosować zmianę ręcznie albo uruchomić skill ponownie po usunięciu przeszkody
 
 Jeśli wszystkie zapisy się powiodą, sekcja Rekomendowane jest pusta. Jeśli żaden zapis się nie powiedzie, wszystkie akcje trafiają pod Rekomendowane — raport staje się planem utrzymania.
 
