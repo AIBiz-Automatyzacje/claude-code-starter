@@ -19,7 +19,10 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
 // Klasy mechaniczne (haiku, bez CLAUDE.md). Wariant `-odczyt` dla rol, ktore tylko czytaja (dedup, inspekcja) — N1:
 // haiku wykonuje przekazana wiadomosc operatora, wiec rola bez potrzeby zapisu nie dostaje Bash/Edit/Write.
-const KLASY_MECHANICZNE = ['klasa-mechaniczny', 'klasa-mechaniczny-odczyt']
+// Wariant `-pomiar` (P15, ogrodnik) uruchamia skrypt pomiaru: Bash tak, narzedzia edycji nie.
+const KLASY_MECHANICZNE = ['klasa-mechaniczny', 'klasa-mechaniczny-odczyt', 'klasa-mechaniczny-pomiar']
+// Klasy, ktore z zalozenia nie zmieniaja plikow (ogrodnik: pomiar i ocena, „zero zmian w kodzie bez decyzji operatora”).
+const KLASY_BEZ_EDYCJI = ['klasa-mechaniczny-odczyt', 'klasa-mechaniczny-pomiar', 'klasa-sceptyk']
 // Badacze (wolani ze skilli planowania): jedna allowlista w szesciu plikach, bez narzedzi zapisu.
 const BADACZE = ['best-practices-researcher', 'framework-docs-researcher', 'learnings-researcher', 'repo-research-analyst',
   'spec-flow-analyzer', 'web-research-specialist']
@@ -135,6 +138,7 @@ test('mechaniczni: podlozony brak omitClaudeMd, model opus i omitClaudeMd u revi
   const wynik = naPodlozonym({
     [`${AGENCI}/klasa-mechaniczny.md`]: '---\nname: klasa-mechaniczny\nmodel: opus\n---\n',
     [`${AGENCI}/klasa-mechaniczny-odczyt.md`]: '---\nname: klasa-mechaniczny-odczyt\nmodel: haiku\nomitClaudeMd: true\n---\n',
+    [`${AGENCI}/klasa-mechaniczny-pomiar.md`]: '---\nname: klasa-mechaniczny-pomiar\nmodel: haiku\nomitClaudeMd: true\n---\n',
     [`${AGENCI}/reviewer.md`]: '---\nname: reviewer\nomitClaudeMd: true\n---\n',
   }, naruszeniaMechanicznych)
   assert.deepEqual(wynik, [
@@ -146,6 +150,32 @@ test('mechaniczni: podlozony brak omitClaudeMd, model opus i omitClaudeMd u revi
 
 test('mechaniczni: repo szablonu ma obie klasy mechaniczne na haiku bez CLAUDE.md', () => {
   assert.deepEqual(naruszeniaMechanicznych(REPO), [])
+})
+
+/**
+ * Klasy bez edycji istnieja i nie maja Edit/Write w `tools:`.
+ * @param {string} korzen
+ * @returns {string[]}
+ */
+function naruszeniaBezEdycji(korzen) {
+  const wszyscy = agenci(korzen)
+  return KLASY_BEZ_EDYCJI.flatMap((nazwa) => {
+    const fm = wszyscy.get(nazwa)
+    if (!fm) return [`${nazwa}: brak pliku klasy`]
+    return narzedzia(fm).filter((n) => NARZEDZIA_ZAPISU.includes(n)).map((n) => `${nazwa}: narzedzie zapisu ${n}`)
+  })
+}
+
+test('klasy bez edycji: podlozony Edit u klasy pomiaru i brak pliku sceptyka sa zglaszane', () => {
+  const wynik = naPodlozonym({
+    [`${AGENCI}/klasa-mechaniczny-odczyt.md`]: '---\nname: klasa-mechaniczny-odczyt\ntools: Read, Grep\n---\n',
+    [`${AGENCI}/klasa-mechaniczny-pomiar.md`]: '---\nname: klasa-mechaniczny-pomiar\ntools: Read, Bash, Edit\n---\n',
+  }, naruszeniaBezEdycji)
+  assert.deepEqual(wynik, ['klasa-mechaniczny-pomiar: narzedzie zapisu Edit', 'klasa-sceptyk: brak pliku klasy'])
+})
+
+test('klasy bez edycji: pomiar i ocena ogrodnika w repo szablonu nie maja Edit/Write', () => {
+  assert.deepEqual(naruszeniaBezEdycji(REPO), [])
 })
 
 test('badacze: podlozony brak tools:, inna lista i Write sa zglaszane', () => {

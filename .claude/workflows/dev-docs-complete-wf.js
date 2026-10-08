@@ -74,6 +74,18 @@ function pathspecArchiwum(nazwaZadania, smokePlik, dodatkowe) {
   ].join(' ')
 }
 
+// Sekcja „Ogrod” (P15) liczy autopilot z pomiaru ogrodnika; agent archiwizacji wkleja ja doslownie na koniec podsumowania.
+// Standalone (bez autopilota) sekcji nie ma — krok znika z polecenia.
+function krokOgrodu(nazwaZadania, sekcja) {
+  if (!sekcja) return ''
+  return `4b. Na koniec docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md dopisz sekcje ogrodnika DOSLOWNIE — tekst miedzy
+   znacznikami, bez znacznikow, bez zmian i bez wlasnych dopiskow (propozycje w niej czekaja na decyzje operatora):
+<<<OGROD
+${sekcja.trim()}
+OGROD>>>
+`
+}
+
 // Komunikat liczony tutaj: agent dal raz commitowi archiwizacji temat commita feature (IT1-ODCZYT §6).
 function komunikatArchiwum(nazwaZadania) {
   return `docs(${nazwaZadania}): archiwum`
@@ -114,6 +126,8 @@ const nazwaZadania = typeof args === 'string' ? args : args && args.nazwaZadania
 // Dodatkowe sciezki do commita archiwizacji (autopilot przekazuje wyjscia compound/refresh: solution,
 // docs/CONCEPTS.md, docs/learned-patterns.md) — nikt inny ich nie commituje.
 const dodatkowePathspec = (args && Array.isArray(args.dodatkowePathspec)) ? args.dodatkowePathspec.filter((x) => typeof x === 'string' && x) : []
+// Sekcja „Ogrod” z pomiaru ogrodnika (autopilot, P15) — do podsumowania zadania doslownie.
+const sekcjaOgrodu = (args && typeof args.sekcjaOgrodu === 'string') ? args.sekcjaOgrodu : ''
 if (!nazwaZadania) {
   return { archiwum: '', pliki: [], rezultaty: ['BLAD: brak args {nazwaZadania}'], commit: '', uwagi: [], smokeOperatora: '', smokeStatus: 'nie-uruchomiono' }
 }
@@ -235,7 +249,7 @@ Kroki (zgodnie ze skillem):
    pathspec w kroku 8 zaklada, ze wpisy docs/active/ sa nadal w indeksie) + dodaj ${nazwaZadania}-podsumowanie.md
    (data ukonczenia, co dostarczono, kluczowe decyzje, glowne pliki, wnioski${podsumowanieSmoke}).
    Pliki *.bak to kopie robocze operatora: zostaja w docs/active/${nazwaZadania}/, wypisz je w rezultaty.
-5. Jesli wsrod przenoszonych plikow jest .autopilot-state.json: ustaw w nim "complete": "done"
+${krokOgrodu(nazwaZadania, sekcjaOgrodu)}5. Jesli wsrod przenoszonych plikow jest .autopilot-state.json: ustaw w nim "complete": "done"
    (stempel archiwizacji — orkiestrator celowo nie zapisuje stanu po przeniesieniu folderu,
    wiec bez stempla archiwum klamaloby ze complete jest pending).
 6. Nie edytuj CLAUDE.md ani .claude/rules/ — CLAUDE.md uzgadnia sie z kodem po merge'u pull requesta, a reguly

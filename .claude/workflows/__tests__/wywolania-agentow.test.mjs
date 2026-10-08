@@ -23,7 +23,8 @@ const SUFIKS_FIGMA = '-figma'
 const MAPA_KLAS = /** @type {const} */ ([
   [/^(stop:commit-artefaktow|start:commit-zadania|start:p3-known-issues|complete:uwaga-pr:\*|pr:claude-md-commit:\*|stan:zapis|e2e:start|e2e:start:retry|e2e:env-down|dossier:zapas)$/, 'klasa-mechaniczny'],
   [/^(dedup:semantyczny|scribe:faza-\*:inspekcja)$/, 'klasa-mechaniczny-odczyt'],
-  [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*)$/, 'klasa-sceptyk'],
+  [/^ogrod:pomiar$/, 'klasa-mechaniczny-pomiar'],
+  [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*|ogrod:ocena)$/, 'klasa-sceptyk'],
   [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
   [/^review:test-coverage$/, 'test-coverage-reviewer'],
   [/^review:spec-compliance$/, 'spec-compliance-reviewer'],
@@ -102,6 +103,7 @@ test('agent(): kazde wywolanie w workflowach szablonu ma agentType klasy albo ro
 // Haiku (klasy mechaniczne) bez efortu. Role z plikow (reviewerzy, tester E2E, buildery) — high.
 const EFORT_KLASY = /** @type {Record<string, string | null>} */ ({
   'klasa-orkiestracyjny': 'medium', 'klasa-naprawiacz': 'high', 'klasa-sceptyk': 'high', 'klasa-mechaniczny': null, 'klasa-mechaniczny-odczyt': null,
+  'klasa-mechaniczny-pomiar': null,
 })
 const EFORT_ROLI = 'high'
 // Wyjatki w klasie: scribe przepisuje (low), sceptyk P2 jeden plik (medium), kontrola diffu fixa — medium od P8
@@ -109,7 +111,7 @@ const EFORT_ROLI = 'high'
 // Reviewerzy spec i test-coverage — medium od P11 (katalog A: polecenia-listy z wejsciem z dossier zamiast przegladu
 // wlasnym osadem; PANEL K1, K2).
 const EFORT_WYJATKI = /** @type {const} */ ([
-  [/^scribe:faza-\*(:retry)?$/, 'low'], [/^verify-batch:/, 'medium'], [/^fix:kontrola:/, 'medium'],
+  [/^scribe:faza-\*(:retry)?$/, 'low'], [/^verify-batch:/, 'medium'], [/^fix:kontrola:/, 'medium'], [/^ogrod:ocena$/, 'medium'],
   [/^review:(spec-compliance|test-coverage)$/, 'medium'],
 ])
 

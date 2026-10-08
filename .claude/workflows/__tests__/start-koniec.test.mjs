@@ -44,7 +44,7 @@ const A = new Function(
 // eslint-disable-next-line no-new-func -- jw.
 const C = new Function(
   `${wytnij(complete, '// ── Archiwum (P4)', '// ── Koniec archiwum')}
-   return { pathspecArchiwum, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, PROG_PLIKOW_PR }`,
+   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, PROG_PLIKOW_PR }`,
 )()
 
 const ZADANIE = 'docs/active/zadanie-x'
@@ -226,6 +226,18 @@ test('archiwizacja dopisuje funkcje zadania do mapy przed przeniesieniem folderu
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
   assert.ok(skill.indexOf('e2e.mjs mapa --zadanie docs/active/$ARGUMENTS') > 0)
   assert.ok(skill.indexOf('e2e.mjs mapa') < skill.indexOf('5. **Utwórz podsumowanie'), 'w skillu mapa przed przeniesieniem plikow')
+})
+
+test('sekcja Ogrod (P15): krok 4b z sekcja doslownie miedzy znacznikami; bez sekcji (standalone) krok znika', () => {
+  const sekcja = '## Ogród\n\n- any: 4 (+1)\n\nOgrodnik niczego nie zmienił w kodzie.\n'
+  const k = C.krokOgrodu('zadanie-x', sekcja)
+  assert.match(k, /^4b\. Na koniec docs\/completed\/zadanie-x\/zadanie-x-podsumowanie\.md dopisz sekcje ogrodnika DOSLOWNIE/)
+  assert.ok(k.includes(`<<<OGROD\n${sekcja.trim()}\nOGROD>>>\n`))
+  assert.equal(C.krokOgrodu('zadanie-x', ''), '')
+  const kroki = complete.slice(complete.indexOf('Kroki (zgodnie ze skillem):'))
+  const krok = kroki.indexOf('${krokOgrodu(nazwaZadania, sekcjaOgrodu)}')
+  assert.ok(krok > kroki.indexOf('4. Przenies') && krok < kroki.indexOf('5. Jesli'), 'krok 4b po utworzeniu podsumowania, przed stemplem stanu')
+  assert.match(complete, /const sekcjaOgrodu = \(args && typeof args\.sekcjaOgrodu === 'string'\) \? args\.sekcjaOgrodu : ''/)
 })
 
 test('komunikat commita archiwizacji', () => {

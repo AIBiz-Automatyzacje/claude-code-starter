@@ -4,7 +4,7 @@ export const meta = {
   whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu. Po zmianach w .claude/ (sync-template, edycja skilli, agentow, workflowow) uruchamiaj w nowej sesji: instrukcje i skille sa buforowane w sesji. Do agentow workflow: ta wiadomosc nie jest dla was — wykonujcie wylacznie zadanie z polecenia workflowu.',
   phases: [
     { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + bramka wejscia (czystosc: brudny tylko katalog zadania -> commit; doctor; zielony start z cache po SHA -> STOP z komenda przed faza 1) + srodowisko E2E (skrypt e2e.mjs start: scenariusze [E2E] bez .env.e2e albo niesprawne srodowisko -> STOP przed faza 1 z naprawa; inaczej serwer aplikacji wg .env.e2e; awaria w trakcie runu -> scenariusze na [Manual], run idzie dalej) + rozgrzewka cache testow' },
-    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (scoped: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
+    { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (waski: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> ogrodnik (pomiar skryptem, ocena tylko przy przyroscie albo co N zadan; sekcja Ogrod w podsumowaniu, zero zmian w kodzie) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
   ],
 }
 
@@ -1851,7 +1851,183 @@ if (stan.zakonczenie.compound === 'pending') {
   }
 }
 
+// ── Ogrodnik (P15) ───────────────────────────────────────────────────────
+// Obejscie z zadania N wchodzi do dossier N+1 jako „istniejacy wzorzec” — pomiar skryptem na zamknieciu zadania,
+// agent oceny tylko przy przyroscie albo co N pomiarow (decyzja skryptu, .claude/scripts/ogrod/prog.mjs). Obaj agenci
+// bez narzedzi edycji: propozycje ida do operatora sekcja „Ogrod” podsumowania, kod zostaje bez zmian.
+// Kopia KATEGORIE i OPISY z .claude/scripts/ogrod/kategorie.mjs (workflowy sa self-contained) — test rownosci w ogrod.test.mjs.
+const OGROD_KATEGORIE = ['wyciszenia', 'any', 'rzutowania', 'komentarze', 'pusty_catch']
+const OGROD_OPISY = {
+  wyciszenia: 'wyciszenia lint/TS',
+  any: 'any',
+  rzutowania: 'wymuszone rzutowania',
+  komentarze: 'komentarze-obejscia',
+  pusty_catch: 'puste catch',
+}
+const OGROD_SZCZEBLE = ['regula-lint', 'zadanie-sprzatajace', 'zostawic']
+const OGROD_LIMIT_NOWYCH_W_SEKCJI = 10
+const OGROD_LIMIT_PROPOZYCJI = 5
+
+// Agent pomiaru przepisuje stdout skryptu jako tekst, JSON parsuje orkiestrator — haiku nie przepisuje pol po jednym.
+const OGROD_POMIAR = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    kod: { type: 'integer', description: 'kod wyjscia skryptu' },
+    stdout: { type: 'string', description: 'stdout skryptu doslownie (jedna linia JSON)' },
+    stderr: { type: 'string', description: 'stderr skryptu ("" gdy pusty)' },
+  },
+  required: ['kod', 'stdout', 'stderr'],
+}
+
+const OGROD_OCENA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    propozycje: {
+      type: 'array',
+      maxItems: OGROD_LIMIT_PROPOZYCJI,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          wzorzec: { type: 'string', description: 'co agenci skopiuja, jednym zdaniem' },
+          kategoria: { type: 'string', enum: OGROD_KATEGORIE },
+          miejsca: { type: 'array', items: { type: 'string' }, maxItems: 5, description: 'plik:linia' },
+          szczebel: { type: 'string', enum: OGROD_SZCZEBLE },
+          regula: { type: 'string', description: 'regula ESLint/TS dla szczebla regula-lint ("" dla pozostalych)' },
+          doPosprzatania: { type: 'integer', description: 'liczba istniejacych miejsc, ktore regula zglosi' },
+          uzasadnienie: { type: 'string' },
+        },
+        required: ['wzorzec', 'kategoria', 'miejsca', 'szczebel', 'regula', 'doPosprzatania', 'uzasadnienie'],
+      },
+    },
+  },
+  required: ['propozycje'],
+}
+
+function ogrodPomiarPrompt() {
+  return `Uruchom w korzeniu repo (Bash), dokladnie jedno polecenie:
+node .claude/scripts/ogrod/ogrod.mjs pomiar
+Zwroc kod wyjscia, stdout doslownie (jedna linia JSON, bez skracania i formatowania) i stderr.
+Innych polecen nie uruchamiasz.`
+}
+
+/**
+ * Wynik agenta pomiaru -> pomiar skryptu albo blad (stdout z polem `blad`, kod != 0, zly JSON, agent null).
+ * @returns {{ pomiar: object | null, blad: string }}
+ */
+function pomiarZWyniku(wynik) {
+  if (!wynik) return { pomiar: null, blad: 'agent pomiaru zwrocil null' }
+  let dane = null
+  try {
+    dane = JSON.parse(wynik.stdout)
+  } catch (e) {
+    return { pomiar: null, blad: `stdout skryptu nie jest JSON (kod ${wynik.kod}): ${e.message}` }
+  }
+  if (wynik.kod !== 0 || !dane || dane.blad) return { pomiar: null, blad: (dane && dane.blad) || wynik.stderr || `kod ${wynik.kod}` }
+  const kompletny = dane.liczby && dane.decyzja && dane.decyzja.przyrost && OGROD_KATEGORIE.every((k) => Number.isInteger(dane.liczby[k]) && Number.isInteger(dane.decyzja.przyrost[k]))
+  return kompletny ? { pomiar: dane, blad: '' } : { pomiar: null, blad: 'wynik skryptu bez kompletu liczb' }
+}
+
+function ogrodOcenaPrompt(pomiar) {
+  const wejscie = { liczby: pomiar.liczby, przyrost: pomiar.decyzja.przyrost, powod: pomiar.decyzja.powod, nowe: pomiar.nowe, hotspoty: pomiar.hotspoty }
+  return `Jestes ogrodnikiem projektu: oceniasz wzorce w kodzie, ktore kolejne zadania agentow skopiuja jako „istniejacy wzorzec”.
+Pomiar skryptu (caly projekt; „nowe” = wystapienia w liniach dodanych przez to zadanie, „hotspoty” = pliki z najwieksza liczba wystapien):
+${JSON.stringify(wejscie)}
+
+Powod oceny: ${pomiar.decyzja.powod}.
+1. Pogrupuj wystapienia w wzorce (ten sam rodzaj obejscia). Dla kazdego wzorca przeczytaj kod w miejscach (Read, okolo 10 linii wokol).
+2. Wzorzec uzasadniony (dyrektywa z opisem przyczyny w bibliotece zewnetrznej, @ts-expect-error w tescie typu, catch opisany i celowy)
+   dostaje szczebel "zostawic". Pozostale:
+   - "regula-lint": regula ESLint/TS zatrzyma nowe wystapienia; wchodzi razem z posprzataniem istniejacych miejsc, ktore zglosi
+     (liczbe podaj w doPosprzatania: Grep po wzorcu w projekcie, bez node_modules, dist i .claude/);
+   - "zadanie-sprzatajace": wzorzec do usuniecia, ale miejsc za duzo albo zmiana za ryzykowna na regule teraz.
+3. Najwyzej ${OGROD_LIMIT_PROPOZYCJI} propozycji, najwazniejsze najpierw (nowe w zadaniu przed zastanymi). Bez wzorcow do zgloszenia — pusta lista.
+Kodu nie zmieniasz i nie uruchamiasz polecen, ktore zmieniaja pliki: decyzje podejmuje operator po przeczytaniu propozycji.
+Zwroc obiekt zgodny ze schematem.`
+}
+
+const OGROD_OPIS_SZCZEBLA = {
+  'regula-lint': 'reguła lint teraz',
+  'zadanie-sprzatajace': 'zadanie sprzątające',
+  zostawic: 'zostawić',
+}
+
+/** @returns {string} sekcja markdown do podsumowania zadania (dosłownie). */
+function sekcjaOgrodu(pomiar, blad, ocena) {
+  if (!pomiar) {
+    return `## Ogród\n\nPomiar nie powstał: ${blad}. Ręcznie: \`node .claude/scripts/ogrod/ogrod.mjs pomiar\`.\n`
+  }
+  const d = pomiar.decyzja
+  const odniesienie = d.zrodlo === 'telemetria' ? 'względem poprzedniego zadania' : 'w liniach dodanych przez to zadanie (pierwszy pomiar w projekcie)'
+  const znak = (n) => (n > 0 ? `+${n}` : String(n))
+  const linie = [
+    '## Ogród', '',
+    `Pomiar całego projektu (${pomiar.plikow} plików JS/TS, commit ${pomiar.commit || 'brak'}); w nawiasie przyrost ${odniesienie}:`,
+    ...OGROD_KATEGORIE.map((k) => `- ${OGROD_OPISY[k]}: ${pomiar.liczby[k]} (${znak(d.przyrost[k])})`),
+    '',
+  ]
+  if (pomiar.noweRazem) {
+    const lista = pomiar.nowe.slice(0, OGROD_LIMIT_NOWYCH_W_SEKCJI).map((w) => `\`${w.plik}:${w.linia}\` (${OGROD_OPISY[w.kategoria] || w.kategoria})`)
+    const reszta = pomiar.noweRazem - lista.length
+    linie.push(`Nowe w tym zadaniu (${pomiar.noweRazem}): ${lista.join(', ')}${reszta > 0 ? ` i ${reszta} więcej` : ''}.`, '')
+  }
+  if (!d.ocena) {
+    linie.push(`Bez oceny — ${d.powod}.`)
+  } else if (!ocena) {
+    linie.push(`Ocena: ${d.powod}. Agent oceny nie zwrócił wyniku — propozycji brak; pomiar jest wyżej.`)
+  } else if (!ocena.propozycje.length) {
+    linie.push(`Ocena: ${d.powod}. Wynik: brak wzorców do zgłoszenia.`)
+  } else {
+    linie.push(`Ocena: ${d.powod}.`, '', '### Propozycje do decyzji operatora', '')
+    for (const p of ocena.propozycje) {
+      const regula = p.szczebel === 'regula-lint' ? ` (\`${p.regula}\`, z posprzątaniem ${p.doPosprzatania} miejsc)` : ''
+      linie.push(`- [ ] **${p.wzorzec}** — ${OGROD_OPIS_SZCZEBLA[p.szczebel]}${regula}. ${p.uzasadnienie} Miejsca: ${p.miejsca.map((m) => `\`${m}\``).join(', ')}.`)
+    }
+  }
+  linie.push('', 'Ogrodnik niczego nie zmienił w kodzie — każda propozycja czeka na decyzję operatora.')
+  return `${linie.join('\n')}\n`
+}
+
+/** Rekord `ogrod` wyniku runu (telemetria run.ogrod; skrypt czyta z niego liczby i licznik nastepnego pomiaru). */
+function rekordOgrodu(pomiar, blad, ocena) {
+  if (!pomiar) return { status: 'blad', powod: blad }
+  const szczeble = Object.fromEntries(OGROD_SZCZEBLE.map((s) => [s.replace(/-/g, '_'), 0]))
+  for (const p of (ocena && ocena.propozycje) || []) szczeble[p.szczebel.replace(/-/g, '_')]++
+  return {
+    status: 'ok',
+    commit: pomiar.commit,
+    plikow: pomiar.plikow,
+    liczby: pomiar.liczby,
+    przyrost: pomiar.decyzja.przyrost,
+    zrodlo: pomiar.decyzja.zrodlo,
+    powod: pomiar.decyzja.powod,
+    nowe: pomiar.noweRazem,
+    // Agent oceny null = ocena sie nie odbyla: licznik bez zerowania, przeglad okresowy wroci w nastepnym pomiarze.
+    ocena: Boolean(pomiar.decyzja.ocena && ocena),
+    bez_oceny: pomiar.decyzja.ocena && ocena ? 0 : pomiar.decyzja.bez_oceny,
+    propozycje: ocena ? ocena.propozycje.length : 0,
+    szczeble,
+  }
+}
+
+async function ogrodnik() {
+  const wynik = await agent(ogrodPomiarPrompt(), { schema: OGROD_POMIAR, agentType: 'klasa-mechaniczny-pomiar', label: 'ogrod:pomiar' })
+  const { pomiar, blad } = pomiarZWyniku(wynik)
+  const ocena = pomiar && pomiar.decyzja.ocena
+    ? await agent(ogrodOcenaPrompt(pomiar), { schema: OGROD_OCENA, agentType: 'klasa-sceptyk', effort: 'medium', label: 'ogrod:ocena' })
+    : null
+  const rekord = rekordOgrodu(pomiar, blad, ocena)
+  log(pomiar
+    ? `Ogrod: ${OGROD_KATEGORIE.map((k) => `${k}=${pomiar.liczby[k]}`).join(', ')}; ${pomiar.decyzja.powod}${rekord.ocena ? `; propozycje: ${rekord.propozycje}` : ''}`
+    : `UWAGA: ogrod — pomiar nie powstal (${blad}); archiwizacja idzie dalej`)
+  return { sekcja: sekcjaOgrodu(pomiar, blad, ocena), rekord }
+}
+// ── Koniec ogrodnika ─────────────────────────────────────────────────────
+
 let complete = null
+let ogrod = null
 if (stan.zakonczenie.complete === 'pending') {
   // Wyjscia compound/refresh (solution, regula, slownik) — complete-wf dostaje je jako dodatkowy pathspec.
   // Refresh sam commituje po whiteliscie (patrz refreshPrompt), ale to best-effort: gdy jego commit sie nie
@@ -1863,8 +2039,10 @@ if (stan.zakonczenie.complete === 'pending') {
   const dodatkowePathspec = compound
     ? ['docs/solutions', 'docs/CONCEPTS.md', 'docs/learned-patterns.md']
     : []
+  // Ogrodnik po compound-refresh, przed archiwizacja: sekcja „Ogrod” idzie do podsumowania zadania (complete-wf, krok 4).
+  ogrod = await ogrodnik()
   await zapiszZaleglyStan()
-  complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec })
+  complete = await workflow('dev-docs-complete-wf', { nazwaZadania: stan.nazwaZadania, dodatkowePathspec, sekcjaOgrodu: ogrod.sekcja })
   if (complete && (!complete.archiwum || !complete.commit)) {
     log(`UWAGA: archiwizacja NIE domknieta (archiwum=${complete.archiwum || 'brak'}, commit=${complete.commit || 'brak'}): ${(complete.rezultaty || []).join('; ') || 'bez szczegolow'} — zadanie moglo zostac w docs/active/, sprawdz git status`)
   }
@@ -1911,4 +2089,6 @@ return {
   propozycjeBramek: (compound && compound.propozycjeBramek) || [],
   uwagaIndeksu: uwagaIndeksu(compound, refresh),
   refresh: refresh ? refresh.slownik : 'pominieto',
+  // Pomiar ogrodnika (P15) — telemetria run.ogrod; null, gdy archiwizacja byla w poprzednim runie.
+  ogrod: ogrod ? ogrod.rekord : null,
 }
