@@ -53,8 +53,8 @@ node -e 'const P=process.argv[1],o=new Map();for(const l of require("fs").readFi
   sam tekst ~30% więcej, a efort domyślny to `medium`. Cele `ctx_start` w nagłówku sekcji 2 raportu (mechaniczny ~9–10k) liczono na
   Haiku 4.5 — dla klas haiku porównuj z R-P15, nie z celem. Raport §3 opisuje brak efortu jako „model bez efortu, np. haiku” — na
   Haiku 5.5 brak = efort domyślny `medium`.
-- **Tło jakości** (epoka wrześniowa oferty-online, PR 13–19): 3,5 B P1/P2 bota na 100 plików PR; sierpień 9,3; pliki fixa 14,0 vs reszta
-  4,7 na 100 plików (≈3×). Progi „względem B0” liczysz względem pierwszych 5 PR nowego projektu, wrzesień jest tłem (PLAN §1).
+- **Tło jakości** (oferty-online): epoka wrześniowa (PR 13–19) 3,5 B P1/P2 bota na 100 plików PR; PR 1–7 9,3; pliki fixa vs reszta
+  na 100 plików — 17 PR 14,0 vs 4,7, epoka wrześniowa 7,2 vs 2,2 (≈3× w obu). Progi „względem B0” liczysz względem pierwszych 5 PR nowego projektu, wrzesień jest tłem (PLAN §1).
 - **Próg odwrotu per oś** (mapa v2): w oknie 5 PR liczba B P1/P2 osi ≥ max(3, 2 × oczekiwana), oczekiwana = stopa bazowa na 100 plików ×
   pliki w oknie / 100. Przy ~570 plikach w oknie (wrzesień): correctness 14, test 12, security 10, spec 4, perf 3, grupa obsługi błędów 3.
   Klasa pojedynczego defektu to diagnoza, nie cofnięcie.
@@ -80,7 +80,7 @@ node -e 'const P=process.argv[1],o=new Map();for(const l of require("fs").readFi
 | P6 | bramka > 300 s albo fałszywe STOP-y | pola faz (`bramki.*` status/sekundy) | reguła do `warn` |
 | P6 | p50 Strykera > 300 s w 5 fazach | pola faz (`bramki.stryker`) | Stryker raz na zadanie przed dev-pr (D5) |
 | P7 | findingi per oś −30% w tym samym typie kodu | raport §4 | wraca agent packager |
-| P7 | Bash reviewerów p50 > 23 bez spadku findingów | CSV ról / rekordy agentów (`narzedzia`) | dodać mandat (D3) |
+| P7 | Bash reviewerów p50 > 23 bez spadku findingów | rekordy agentów (`narzedzia.bash`) | dodać mandat (D3) |
 | P8 | koszt kontroli fixa > 0,46 M na commit | raport §1 (etap fix), `smoke_odczyt` §2b | skrócić listy K |
 | P9 | obalenia < 5% albo degradacje > 35% (tło: 8,8 sceptyka/fazę, obalenia 10,9%, degradacje 23%) | pola faz (`sceptyk`) | P2 wraca do grupy po pliku |
 | P10, P12 | `ctx_start` buildera +10% bez spadku P1/P2 na fazę | raport §2, §4 | skrócić wycinek wiedzy |
