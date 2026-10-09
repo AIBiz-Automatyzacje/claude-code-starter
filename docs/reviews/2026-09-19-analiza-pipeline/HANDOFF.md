@@ -2104,6 +2104,26 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Push grupy IV wykonany 2026-10-09 za zgodą operatora** (`1926db6..5f309e1`, 21 commitów P15–P16); kopia `_smoke-P16-oferty-online` usunięta
     za zgodą operatora 2026-10-09 (bez remote'u, drzewo czyste, serwer zatrzymany).
 
+79. **PIERWSZY NOWY PROJEKT PO POPRAWIE — VIBERSI (2026-10-09). Etap 1 zaplanowany, autopilot startuje.** Repo
+    `~/Documents/Kodowanie/vibersi` (prywatne `AIBiz-Automatyzacje/vibersi`): `git init` + migawka stanu (`1a84770`), stary `.claude/` z sierpnia
+    zastąpiony szablonem `ba3653e` (`6637579`), `settings.local.json` poza repo. Sesja projektu: instalacja (pluginy figma i dev-browser w zakresie
+    projektu, doctor OK, CLAUDE.md z linią wiedzy), `/dev-brainstorm` → `docs/brainstorms/mvp-requirements.md` (6 etapów, R1–R29), `/dev-prep`
+    etapu 1, `/dev-plan` → plan `docs/plans/2026-10-09-001-feat-etap-1-fundament-plan.md` (4 fazy, 11 IU: szkielet Vite z bramkami i designem →
+    serwer Hono + Dockerfile → schemat całego MVP z RLS → pasek, stopka, trasy „Wkrótce”), SPEC + DESIGN.md z Figmy, gałąź
+    `feature/etap-1-fundament` (`6ee6c5d`), bramka gotowości zielona.
+    (a) **Korekta stacku (decyzja operatora):** sesja projektu przyjęła Next.js 16 z KONTEKST (decyzja sprzed szablonu) i Supabase self-hosted
+    (błędnie zapisana odpowiedź). Operator: stack szablonu (React 19 + Vite SPA), Supabase w chmurze (dev + e2e, Frankfurt), aplikacja na jego
+    Coolify (VPS). Podgląd linków FB/SEO w SPA rozwiązuje R29: serwer Hono w kontenerze aplikacji (statyka, fallback SPA, meta tagi `/p/<slug>`
+    z Supabase, sitemap, robots, `/healthz`) — commit projektu `fc3103b`. Gałąź szablonu `fix/e2e-nextjs` (E2E dla Next, 882/882, przejrzana)
+    usunięta na prośbę operatora (lokalna, `7a20bf4` do odtworzenia). Zgłoszony przy niej „błąd pnpm gubi flagi po `--`” NIE potwierdzony
+    (pnpm 10.28 przekazuje `--mode e2e --port --strictPort` poprawnie) — poprawki szablonu nie ma.
+    (b) **Wnioski dla szablonu (do odczytu, bez zmian teraz):** szablon jest strojony wyłącznie pod Vite SPA (skille, buildery, ESLint, size-limit,
+    researcher po PA2-19: „Vite SPA, no Server Components”) — projekt na Next wymagałby osobnej paczki; plugin Figmy działa dopiero w sesji
+    startującej po instalacji i wymaga `/mcp`; agent planu pisze publiczne teksty stron (komunikat „Heads up” — operator przegląda „Teksty
+    (verbatim)” przed startem); `/weryfikacja-setup` „po fazie 1” nie da się zrobić w trakcie runu (tester działa bez skilla) — po etapie 1.
+    (c) **Do odczytu (karta):** etap 1 = 4 fazy naraz → odczyt A po pierwszej fazie i B po całym etapie; referencja R-P16 `wf_1a28a396-1e1`;
+    projekt telemetrii `vibersi`; Supabase Free usypia projekt e2e po tygodniu bez ruchu. Operator ma uwagę do planu — poda w następnej sesji.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -2823,7 +2843,10 @@ prawdziwym testem; następny krok = PLAN prawdziwego testu review (instrukcja �
   README, dedup bez plików, stop E2E a locale, zapis stanu a Haiku 5.5; smoke `wf_1a28a396-1e1` OK 2,84 M, kryterium P12 zielone = **R-P16**;
   merge `--ff-only` do main `8fb6812`. **Następny krok: „PIERWSZY NOWY PROJEKT PO POPRAWIE” niżej** (nowa sesja w nowym projekcie).
 
-**PIERWSZY NOWY PROJEKT PO POPRAWIE (AKTUALNA — sesja w katalogu nowego projektu; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
+**ODCZYT PIERWSZEGO PROJEKTU — VIBERSI (AKTUALNA, 6a pkt 79):** instrukcja wklejona operatorowi w czacie 2026-10-09 (sesja w repo szablonu:
+uwaga operatora do planu etapu 1, potem odczyt A runu autopilota wg KARTA-ODCZYTU.md).
+
+**PIERWSZY NOWY PROJEKT PO POPRAWIE (WYKONANA 2026-10-09 — 6a pkt 79; sesja w katalogu nowego projektu; operator wkleja jako pierwszą wiadomość; zdanie „Do agentów…” zostaw — N1):**
 
 ```
 Zaczynamy pierwszy nowy projekt na szablonie workspace-template po serii poprawek P0–P16 (sesja główna Opus 5.5, tryb bypass permissions).
