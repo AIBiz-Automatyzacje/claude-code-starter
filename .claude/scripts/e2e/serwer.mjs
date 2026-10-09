@@ -1,7 +1,8 @@
 // Proces serwera aplikacji dla E2E (P14): start w tle z plikiem PID, sonda zdrowia, stan i zatrzymanie.
 //
 // Plik PID niesie { pid, start, odcisk, uruchomiony }. Tozsamosc procesu = PID + czas startu procesu z `ps -o lstart=`
-// (PID ponownie uzyty przez system ma inny czas startu — stop nie zabije obcego procesu). Konfiguracja (komenda startu,
+// (PID ponownie uzyty przez system ma inny czas startu — stop nie zabije obcego procesu). Czas startu czytamy w locale C:
+// `lstart` formatuje date wg locale, a start i stop biegna w roznych sesjach (smoke P16: LANG=pl_PL przy starcie, C przy stopie). Konfiguracja (komenda startu,
 // odcisk .env.e2e) decyduje tylko, czy nasz serwer jest aktualny: nasz serwer ze stara konfiguracja albo zawieszony
 // zatrzymujemy i uruchamiamy od nowa (poprawka operatora w .env.e2e musi zadzialac w swiezym runie).
 
@@ -35,9 +36,13 @@ function ogonLogu(plik) {
   return existsSync(plik) ? readFileSync(plik, 'utf8').trimEnd().split('\n').slice(-LINIE_OGONA_LOGU).join('\n') : '(brak logu)'
 }
 
-/** @param {number} pid @returns {string | null} czas startu procesu albo null, gdy procesu nie ma */
-function czasStartu(pid) {
-  const w = spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8' })
+/**
+ * @param {number} pid
+ * @param {NodeJS.ProcessEnv} [env] srodowisko `ps`; domyslnie locale C (format niezalezny od sesji)
+ * @returns {string | null} czas startu procesu albo null, gdy procesu nie ma
+ */
+function czasStartu(pid, env = { ...process.env, LC_ALL: 'C' }) {
+  const w = spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8', env })
   return w.status === 0 && w.stdout.trim() ? w.stdout.trim() : null
 }
 
@@ -53,8 +58,13 @@ function zapisPid(konf) {
   }
 }
 
-/** @param {ZapisPid | null} z @returns {boolean} proces z pliku zyje i to ten sam proces (czas startu) */
-const zyjeNasz = (z) => z !== null && czasStartu(z.pid) === z.uruchomiony
+/**
+ * Proces z pliku zyje i to ten sam proces (czas startu). Plik zapisany przed odczytem w locale C ma date w locale sesji
+ * startu — porownanie takze z odczytem w biezacym locale.
+ * @param {ZapisPid | null} z
+ * @returns {boolean}
+ */
+const zyjeNasz = (z) => z !== null && (czasStartu(z.pid) === z.uruchomiony || czasStartu(z.pid, process.env) === z.uruchomiony)
 
 /** @param {number} pid @param {NodeJS.Signals} sygnal */
 function sygnalGrupie(pid, sygnal) {

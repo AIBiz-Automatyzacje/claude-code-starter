@@ -357,3 +357,25 @@ test('guard tozsamosci uwzglednia .env.e2e.local (Vite daje mu najwyzszy prioryt
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /\.env\.e2e\.local/)
 })
+
+// Smoke P16 (wf_1a28a396-1e1): autopilot startowal serwer w sesji z LANG=pl_PL.UTF-8, stop szedl z powloki z innym locale.
+// `ps -o lstart=` formatuje date wg locale („pt.  9 paź” vs „Fri Oct  9”), wiec czas startu z pliku PID nie zgadzal sie z odczytem
+// i stop uznal wlasny serwer za obcy. Czas startu jest zawsze czytany w locale C.
+test('stop z innym locale niz start zatrzymuje wlasny serwer (czas startu w locale C)', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n` })
+  const lcAll = process.env.LC_ALL
+  try {
+    process.env.LC_ALL = 'pl_PL.UTF-8'
+    const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+    assert.equal(w.serwer, 'uruchomione', w.detal)
+    process.env.LC_ALL = 'C'
+    const konf = konfProjektu(p)
+    assert.equal(stanSerwera(konf).zyje, true, 'wlasny serwer uznany za obcy przy innym locale')
+    assert.match((await zatrzymajSerwer(konf)).detal, /zatrzymany serwer PID/)
+  } finally {
+    if (lcAll === undefined) delete process.env.LC_ALL
+    else process.env.LC_ALL = lcAll
+  }
+})
