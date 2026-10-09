@@ -245,7 +245,8 @@ function blokZapisuStanu(sciezka, tresc) {
   const plik = `${sciezka}/.autopilot-state.json`
   return `Zapis stanu pipeline'u:
 a) Narzedziem Write zapisz plik ${plik} (pelne nadpisanie) z trescia miedzy znacznikami, bez znacznikow
-   i bez zmian w tresci.
+   i bez zmian w tresci. Plik zwykle juz istnieje: Write wymaga wczesniejszego Read, wiec przeczytaj go i nadpisz. Inna tresc na dysku to poprzedni stan,
+   ktory wlasnie zastepujesz — nie sprawdzasz jej i nie porownujesz z historia gita.
 b) Odczytaj plik z dysku: \`node -e "JSON.parse(require('fs').readFileSync('${plik}','utf8'));console.log('JSON-OK')"\`.
    Bez wyniku JSON-OK zapisz plik jeszcze raz i powtorz odczyt.
 c) Pole stanZapisany w wyniku: true po odczycie z wynikiem JSON-OK, w kazdym innym przypadku false.
@@ -455,6 +456,8 @@ ${trescJson}
 --- KONIEC TRESCI ---
 
 1. ZAPIS: uzyj narzedzia Write z dokladnie ta trescia (bez linii "--- POCZATEK/KONIEC TRESCI ---").
+   Plik zwykle juz istnieje: Write wymaga wczesniejszego Read, wiec przeczytaj go i nadpisz. Inna tresc na dysku to poprzedni stan,
+   ktory wlasnie zastepujesz — nie sprawdzasz jej i nie porownujesz z historia gita.
 2. WALIDACJA (obowiazkowa, nie pomijaj): odczytaj plik Z DYSKU i sprawdz, ze parsuje sie jako JSON:
    \`node -e "JSON.parse(require('fs').readFileSync('${sciezka}/.autopilot-state.json','utf8'));console.log('JSON-OK')"\`
    (brak node -> \`python3 -c "import json;json.load(open('${sciezka}/.autopilot-state.json'));print('JSON-OK')"\`).

@@ -245,3 +245,12 @@ test('wiring: zwiniecie w poleceniu fixa przed commitem; agent zwin-do-poprawy z
   assert.notEqual(fix.indexOf('${blokZwinieciaDoPoprawy(sciezka, numerFazy)}'), -1)
   assert.doesNotMatch(zrodlo, /zwin-do-poprawy|Zwin ZAMKNIETE pozycje/)
 })
+
+// Smoke P16 (wf_1a28a396-1e1): stan:zapis na Haiku 5.5 przeczytal istniejacy plik stanu (Write tego wymaga), zobaczyl inna tresc,
+// zaczal ja sprawdzac w gicie i oddal zapisano:false — zapis zapasowy poszedl na opusie. Polecenie mowi, ze roznica to poprzedni stan.
+test('zapis stanu: istniejacy plik czytasz i nadpisujesz — inna tresc na dysku to poprzedni stan, nie powod do sprawdzania', () => {
+  const zdanie = /Inna tresc na dysku to poprzedni stan,\s+ktory wlasnie zastepujesz/
+  assert.match(wytnij('function zapiszStanPrompt(', 'Nie modyfikuj ZADNYCH innych plikow.'), zdanie)
+  assert.match(wytnij('function blokZapisuStanu(', '--- KONIEC STANU ---'), zdanie)
+  assert.match(wytnij('function blokZapisuStanu(', '--- KONIEC STANU ---', zrodloExecute), zdanie)
+})
