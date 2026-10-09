@@ -1,0 +1,319 @@
+Smoke: wf_1a28a396-1e1 (projekt _smoke-P16-oferty-online) vs referencja wf_3be2589b-ce3 (projekt _smoke-P15-oferty-online)
+  metryka                            referencja             run                    Δ
+== 1. Run
+  status                             OK                     OK                     
+  powód STOP                         —                      —                      
+  fazy ukończone / zadania           2/2                    2/2                    
+  walidacja końcowa                  PASS                   PASS                   
+  szablon zgodny                     True                   True                   
+  smokeStatus (harness)              plik                   plik                   
+  koszt [jedn.]                      2.43 M                 2.84 M                 +17%
+  agentów                            38                     39                     +3%
+  tur                                230                    232                    +1%
+  czas [min]                         99                     22                     -78%
+
+== 2. Fazy: gate, review, fix
+ faza 1
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    3                      2                      -33%
+  potwierdzone p3                    4                      3                      -25%
+  review znalezione                  8                      5                      -38%
+  review poDedupSem                  7                      5                      -29%
+  review weryfikowane                3                      2                      -33%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     3                      2                      -33%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['packages/smoke-autopilot/src/smoke-autopilot.test.ts']
+  koszt fazy                         1.34 M                 1.56 M                 +17%
+    etap execute                     0.47 M                 0.51 M                 +8%
+    etap fix                         0.25 M                 0.39 M                 +58%
+    etap mechanika_review            0.08 M                 0.09 M                 +24%
+    etap orkiestracja                0.04 M                 0.05 M                 +9%
+    etap review                      0.47 M                 0.49 M                 +4%
+    etap sceptycy                    0.03 M                 0.04 M                 +12%
+ faza 2
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          0                      0                      
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    0                      0                      
+  potwierdzone p3                    0                      0                      
+  review znalezione                  0                      0                      
+  review poDedupSem                  0                      0                      
+  review weryfikowane                0                      0                      
+  review obalone                     0                      0                      
+  pominięci reviewerzy               ['security', 'performance', 'code-quality', 'correctness', 'test-coverage'] ['security', 'performance', 'code-quality', 'correctness', 'test-coverage'] 
+  fix naprawione                     —                      —                      
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               —                      —                      
+  fix: P1 z testem (K-6)             —                      —                      
+  fix dotknął testów (run)           NIE
+  koszt fazy                         0.44 M                 0.52 M                 +19%
+    etap execute                     0.23 M                 0.23 M                 +2%
+    etap fix                         0.00 M                 0.00 M                 
+    etap mechanika_review            0.04 M                 0.07 M                 +61%
+    etap orkiestracja                0.05 M                 0.10 M                 +104%
+    etap review                      0.12 M                 0.12 M                 +1%
+    etap sceptycy                    0.00 M                 0.00 M                 
+
+== 2b. Kontrola fixa i P3 (journal runu wf_1a28a396-1e1)
+  agenci fix:pre-skan                0
+  agenci verify-fix                  0
+  scribe:faza-1: P3 KOD/TEST         3
+  fix:faza-1: P3 na liście           0
+  fix:kontrola:faza-1 K-1            0   git log --no-walk --format=%h 613233e (najstarszy = 613233e), git diff 613233e^..HEAD. smoke-autopilot.ts:15-2
+  fix:kontrola:faza-1 K-2            0   Bramka: ZAPIS_LICZBY_CALKOWITEJ /^-?\d+$/ (smoke-autopilot.ts:17, uzycie :20). Wejscia obejscia probowane (nod
+  fix:kontrola:faza-1 K-3            0   L-COR-1: diff fixa nie ma operacji zmieniajacych stan (czysta funkcja parsujLiczbe, testy) — brak drog do spra
+  fix:kontrola:faza-1 K-4            0   Fix nie zmienil ani nie usunal zadnej nazwy eksportowanej (dodajBezpiecznie, parsujLiczbe bez zmian); dodal ty
+  fix:kontrola:faza-1 K-5            2   Komentarz smoke-autopilot.ts:15-16 zgodny z kodem (regex przed BigInt, '' / bialy znak / 0x/0b/0o odrzucane). 
+  fix:kontrola:faza-1 K-6            0   Lista findingow naprawianych przez fix zawiera tylko P2 (TEST :8, KOD :17); P1 brak — worktree nie byl tworzon
+  fix:kontrola:faza-1 K-7            0   git show --stat 613233e: docs/active/smoke-autopilot/smoke-autopilot-zadania.md (pominiety — ksiegowosc), pack
+  fix:kontrola:faza-1 bramki         0   node .claude/scripts/bramki/bramki.mjs --baza 613233e^ > /tmp/bramki-fix-docs-active-smoke-autopilot-faza-1.js
+  fix:kontrola:faza-1 K-7 docs/active/ 0 
+  scribe:faza-2: P3 KOD/TEST         0
+
+== 2c. Sceptycy (P9): etykiety, porcje P2, werdykty agentów
+ faza 1
+  faza.sceptyk                       {'agree': 3, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 2, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 3, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 2, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          3                      2                      -33%
+  verify-batch vs ⌈P2/4⌉             1 batch (przebieg 1) ≤ ⌈3/4⌉=1 OK 1 batch (przebieg 1) ≤ ⌈2/4⌉=1 OK ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 2
+  faza.sceptyk                       {'agree': 0, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 0, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} 
+  agent.werdykty (suma)              —                      —                      
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          0                      0                      
+  verify-batch vs ⌈P2/4⌉             0 batch (przebieg 0) ≤ ⌈0/4⌉=0 OK 0 batch (przebieg 0) ≤ ⌈0/4⌉=0 OK 
+  agenci verify (P1 ×3)              0                      0                      
+
+== 2d. Sceptycy w journalu runu: etykiety w wyniku, błędy schematu
+  verify-batch:0:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  sceptycy failed (journal)          0
+
+== 2e. Kopia: raport review i archiwum zadań
+  kopia                              /Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P16-oferty-online
+  docs/completed/smoke-autopilot/review-faza-1.md 2 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/smoke-autopilot/review-faza-2.md 0 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  archiwum: „Zamkniete cyklem fix”   ['Zamkniete cyklem fix: 2 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-1.md`.']
+
+== 2f. Wiedza projektu (P10): learned_zn, faza.wiedza
+  learned_zn = 0 / z kontekstem      32/32, max 0           33/33, max 0           ≠
+ faza 1
+    faza.wiedza.indeks_zn            21877                  20070                  -8%
+    faza.wiedza.claude_md_zn         22186                  22186                  +0%
+    faza.wiedza.wycinek_zn           1523                   1451                   -5%
+    faza.wiedza.wycinek_wpisy        3                      3                      +0%
+    faza.wiedza.wycinek_pominiete    2                      0                      -100%
+ faza 2
+    faza.wiedza.indeks_zn            21877                  20070                  -8%
+    faza.wiedza.claude_md_zn         22186                  22186                  +0%
+    faza.wiedza.wycinek_zn           1523                   0                      -100%
+    faza.wiedza.wycinek_wpisy        3                      0                      -100%
+    faza.wiedza.wycinek_pominiete    2                      0                      -100%
+
+== 2g. Wycinek w promptach i wywołaniach agentów (journal runu)
+  planner:faza-1                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-2                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-1                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-1                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-1                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-2                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-3                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+
+== 2h. Compound w wyniku runu (harness): wiedza, indeks, propozycje bramek
+  solution                           docs/solutions/runtime-errors/2026-10-09-bigint-z-tekstu-przyjmuje-pusty-napis-i-literaly-hex.md
+  wiedza: klasa / szczebel           dopasowanie-tekstu / regula
+  wiedza: regula [zn]                216
+  indeks                             zapisany
+  propozycjeBramek                   0
+  uwagaIndeksu                       
+
+== 2i. Reguły kodu i D10 (P12; kryterium 6a pkt 67 d)
+  rola                         n  eager Read/sh  paths  kod  D10
+  bootstrap                    1      0       0      0    0    0
+  build                        3      0       3      0    1    0
+  complete                     2      0       0      0    0    0
+  compound                     1      0       0      0    0    0
+  compound-refresh             1      0       0      0    0    0
+  dedup:semantyczny            1      0       0      0    0    0
+  domkniecie                   2      0       0      1    1    0
+  e2e:db-sync                  2      0       0      0    0    0
+  e2e:env-down                 1      0       0      0    0    0
+  e2e:start                    1      0       0      0    0    0
+  fix                          1      0       1      0    1    0
+  fix:kontrola                 1      0       0      0    0    0
+  fix:poprawka                 1      0       1      0    0    0
+  ogrod:pomiar                 1      0       0      0    0    0
+  planner                      2      0       0      0    0    0
+  review:code-quality          1      0       0      0    0    0
+  review:correctness           1      0       0      0    0    0
+  review:e2e                   2      0       0      0    0    0
+  review:performance           1      0       0      0    0    0
+  review:security              1      0       0      0    0    0
+  review:spec-compliance       2      0       0      0    0    0
+  review:test-coverage         1      0       0      0    0    0
+  scribe                       2      0       0      0    0    0
+  smoke-operatora              1      0       0      1    0    0
+  stan:zapis                   2      0       0      0    0    0
+  start:testy                  1      0       0      0    0    0
+  verify-batch                 1      0       0      0    0    0
+  walidacja-koncowa            1      0       0      0    0    0
+  warmup:vitest                1      0       0      0    0    0
+  build build:IU-2: D10 BRAK
+  build build:IU-3: D10 BRAK
+  build build:IU-1: D10 BRAK
+  testyUsuniete (domknięcie): {'domkniecie:faza-1': [], 'domkniecie:faza-2': []}
+  kryterium: ZIELONE | {'eager': [], 'bez_kodu_z_regulami': [], 'kod_bez_regul': [], 'podwojny_odczyt': [], 'czyta_kod_z_regulami': ['smoke-operatora', 'domkniecie'], 'buildery': 3, 'buildery_bez_bloku': 0, 'buildery_z_d10': 0, 'bez_transkryptu': 0, 'wycinki_plannera': []}
+
+== 2j. Planowanie (P13: scalony /dev-plan)
+  brak rekordu skill dev-plan dla projektu _smoke-P16-oferty-online
+  planner:faza-1: IU 2 — IU-1 feature-builder-data tabela, IU-2 feature-builder-ui tabela
+  planner:faza-2: IU 1 — IU-3 feature-builder-ui tabela
+
+== 2k. E2E i skill weryfikacji (P14)
+  run: status OK, powód None, e2eSrodowisko martwe, manual_razem 1
+  faza 1: e2e {"checkboxy": 1, "pass": 1, "fail": 0, "skip": 0, "manual": 0}, e2eSync aktualna: Nic nie trzeba było aplikować. Suma kontrolna migracji (e2e.mjs suma) jest w porządku, żadna wypchnięta migracja nie została zmieniona ani usunięta. supabase db push --db-url $SUPABASE_E2E_D… [uciete: 699 znakow, pelna tresc w logu runu]
+  faza 2: e2e {"checkboxy": 1, "pass": 0, "fail": 0, "skip": 1, "manual": 1}, e2eSync aktualna: Faza 2: nic do zrobienia, wszystko już było na miejscu. Sprawdzenie sum migracji (e2e.mjs suma) przeszło z kodem 0, bez trafień. `supabase db push --include-all` (z odpowiedzią Y) zwrócił „R… [uciete: 942 znakow, pelna tresc w logu runu]
+  e2e:start (faza None): koszt 0.02 M, 7 s
+  e2e:db-sync:faza-1 (faza 1): koszt 0.05 M, 24 s
+  review:e2e (faza 1): tryb przegladarka, koszt 0.10 M, tury 7, 25 s, ctx_start 32983
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 3 | curl: 1
+    przebieg smoke-strona           PASS nie-dotyczy    Preflight: doctor 6 pass / 0 fail, curl http://localhost:5173 -> 200. Viewport 1920x1080, open http://localhost:5173/smoke-autopilot.html + wait netwo
+  e2e:db-sync:faza-2 (faza 2): koszt 0.04 M, 18 s
+  review:e2e (faza 2): tryb przegladarka, koszt 0.07 M, tury 4, 17 s, ctx_start 33017
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 1 | curl: 2
+    przebieg smoke-strona-faza-2    SKIP srodowisko     Aplikacja pod E2E_URL nie odpowiada, więc scenariusza nie odegrano. Preflight: `agent-browser doctor --offline --quick` zwrócił „Summary: 6 pass, 0 wa
+  e2e:env-down (faza None): koszt 0.03 M, 12 s
+  e2e:start: gotowe, serwer uruchomione, scenariusze 2, baza True
+  kopia: /Users/kacper_trzepiecinski/Documents/Kodowanie/_smoke-P16-oferty-online
+  mapa-funkcji.md: smoke-strona jest, smoke-strona-faza-2 jest
+  skill: Przejście na żywo: changed (2026-10-08)
+  zadania: - [x] Test: [E2E] `smoke-strona` — otwórz `/smoke-autopilot.html`, zrób screenshot → widoczny nagłówek „Smoke autopilot” i tekst „dodajBezpiecznie(2, 3) = 5”
+  zadania: - [ ] Test: [Manual] `smoke-strona-faza-2` — otwórz `/smoke-autopilot.html`, zrób screenshot → widoczny tekst „Faza 2: gotowe” pod wynikiem przykładu (MANUAL — srodowisko: Aplikacja pod E2E_URL nie od
+  smoke operatora 2026-10-09-smoke-autopilot-smoke.md: sekcja E2E jest
+     ręcznie (środowisko w trakcie runu)
+    
+    - [ ] `smoke-strona-faza-2`: otwórz `/smoke-autopilot.html` i zrób screenshot → pod wynikiem przykładu
+          „dodajBezpiecznie(2, 3) = 5” widać tekst „Faza 2: gotowe”, a nagłówek „Smoke autopilot” nadal stoi
+          na górze (IU-3). Automat tego nie wykonał: srodowisko: aplikacja pod E2E_URL nie odpowiadała, więc
+          scenariusza nie odegrano (preflight `agent-
+
+== 2l. Ogrodnik (P15)
+  agenci ogrodnika: 1 (ogrod:pomiar)
+  kolejność: compound-refresh 34 < ogrod:pomiar 35 < smoke-operatora 36 → OK
+  ogrod:pomiar: koszt 0.011 M, ctx_start 4704, model claude-haiku-5-5, 5 s; narzędzia {'Bash': 1, 'StructuredOutput': 1}; zapis brak; Bash poza odczytem 0
+  wynik pomiaru: kod 0, JSON OK
+    liczby {"wyciszenia": 2, "any": 0, "rzutowania": 3, "komentarze": 2, "pusty_catch": 4}; decyzja: ocena False, źródło diff, bez oceny: przyrost ponizej progu w liniach dodanych przez zadanie (pierwszy pomiar), 1/5 pomiarow do przegladu okresowego
+    nowe 0: 
+  telemetria run.ogrod: {"status": "ok", "commit": "1054c54", "plikow": 632, "liczby": {"wyciszenia": 2, "any": 0, "rzutowania": 3, "komentarze": 2, "pusty_catch": 4}, "przyrost": {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 0}, "zrodlo": "diff", "powod": "bez oceny: przyrost ponizej progu w liniach dodanych przez zadanie (pierwszy pomiar), 1/5 pomiarow do przegladu okresowego", "nowe": 0, "ocena": false, "bez_oceny": 1, "propozycje": 0, "szczeble": {"regula_lint": 0, "zadanie_sprzatajace": 0, "zostawic": 0}}
+  sekcja „## Ogród” w podsumowaniu: jest
+    ## Ogród
+    
+    Pomiar całego projektu (632 plików JS/TS, commit 1054c54); w nawiasie przyrost w liniach dodanych przez to zadanie (pierwszy pomiar w projekcie):
+    - wyciszenia lint/TS: 2 (0)
+    - any: 0 (0)
+    - wymuszone rzutowania: 3 (0)
+    - komentarze-obejscia: 2 (0)
+    - puste catch: 4 (0)
+    
+    Bez oceny — bez oceny: przyrost ponizej progu w liniach dodanych przez zadanie (pierwszy pomiar), 1/5 pomiarow do przegladu okresowego.
+    
+    Ogrodnik niczego nie zmienił w kodzie — każda propozycja czeka na decyzję operatora.
+    
+    ## Rozmiar PR — uwaga
+    
+    UWAGA: PR ma 401 plików (próg 150) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (.claude/scripts: 154, .claude/skills: 79, .claude/workflows: 41, docs/solutions: 39, .claude/agents: 26, .claude/templates: 22, docs/completed: 9, packages/smoke-autopilot: 9, .claude: 4, .claude/hooks: 4, (korzen): 2, apps/server: 2, docs/archiwum: 2, docs/decisions: 2, .claude/rules: 1, apps/dashboard: 1, docs: 1, docs/operator: 1, docs/plans: 1, supabase: 1).
+  drzewo kopii po runie: czyste
+
+== 3. Agenci per rola: liczba, koszt
+  bootstrap                          1 × 0.04 M             1 × 0.05 M             ≠
+    Δ koszt                          +12%
+  build                              3 × 0.22 M             3 × 0.25 M             ≠
+    Δ koszt                          +14%
+  complete                           2 × 0.19 M             2 × 0.22 M             ≠
+    Δ koszt                          +15%
+  compound                           1 × 0.09 M             1 × 0.10 M             ≠
+    Δ koszt                          +12%
+  compound-refresh                   1 × 0.07 M             1 × 0.07 M             
+    Δ koszt                          +2%
+  dedup:semantyczny                  1 × 0.02 M             1 × 0.01 M             ≠
+    Δ koszt                          -33%
+  domkniecie                         2 × 0.35 M             2 × 0.36 M             ≠
+    Δ koszt                          +5%
+  e2e:db-sync                        2 × 0.08 M             2 × 0.09 M             ≠
+    Δ koszt                          +11%
+  e2e:env-down                       1 × 0.02 M             1 × 0.03 M             ≠
+    Δ koszt                          +37%
+  e2e:start                          1 × 0.01 M             1 × 0.02 M             ≠
+    Δ koszt                          +26%
+  fix                                1 × 0.10 M             1 × 0.20 M             ≠
+    Δ koszt                          +93%
+  fix:kontrola                       1 × 0.07 M             1 × 0.08 M             ≠
+    Δ koszt                          +10%
+  fix:poprawka                       1 × 0.08 M             1 × 0.12 M             ≠
+    Δ koszt                          +55%
+  ogrod:pomiar                       1 × 0.01 M             1 × 0.01 M             
+    Δ koszt                          +8%
+  planner                            2 × 0.13 M             2 × 0.12 M             ≠
+    Δ koszt                          -6%
+  review:code-quality                1 × 0.06 M             1 × 0.06 M             
+    Δ koszt                          -6%
+  review:correctness                 1 × 0.06 M             1 × 0.07 M             ≠
+    Δ koszt                          +13%
+  review:e2e                         2 × 0.16 M             2 × 0.17 M             ≠
+    Δ koszt                          +8%
+  review:performance                 1 × 0.05 M             1 × 0.06 M             ≠
+    Δ koszt                          +22%
+  review:security                    1 × 0.09 M             1 × 0.08 M             ≠
+    Δ koszt                          -10%
+  review:spec-compliance             2 × 0.10 M             2 × 0.11 M             ≠
+    Δ koszt                          +6%
+  review:test-coverage               1 × 0.06 M             1 × 0.06 M             
+    Δ koszt                          -7%
+  scribe                             2 × 0.10 M             2 × 0.15 M             ≠
+    Δ koszt                          +50%
+  smoke-operatora                    1 × 0.07 M             1 × 0.11 M             ≠
+    Δ koszt                          +58%
+  stan:zapis                         1 × 0.01 M             2 × 0.06 M             ≠
+    Δ koszt                          +385%
+  start:testy                        1 × 0.04 M             1 × 0.04 M             
+    Δ koszt                          +14%
+  verify-batch                       1 × 0.03 M             1 × 0.04 M             ≠
+    Δ koszt                          +12%
+  walidacja-koncowa                  1 × 0.08 M             1 × 0.07 M             ≠
+    Δ koszt                          -9%
+  warmup:vitest                      1 × 0.04 M             1 × 0.04 M             
+    Δ koszt                          +13%
+
+== 4. Model / efort (transkrypt)
+  haiku-5-5/medium                   6                      6                      +0%
+  opus-5-5/high                      11                     11                     +0%
+  opus-5-5/low                       2                      2                      +0%
+  opus-5-5/medium                    19                     20                     +5%
+
+== 5. ctx_start per klasa/model: n, p50 [k], max [k]
+  builder/opus-5-5                   (3, 24, 31)            (3, 23, 31)            ≠
+    Δ p50                            -4%
+  mechaniczny/haiku-5-5              (5, 7, 9)              (5, 7, 8)              ≠
+    Δ p50                            +0%
+  mechaniczny/opus-5-5               —                      (1, 18, 18)            ≠
+  naprawiacz/opus-5-5                (2, 30, 33)            (2, 30, 33)            
+    Δ p50                            +0%
+  orkiestracyjny/haiku-5-5           (1, 5, 5)              (1, 5, 5)              
+    Δ p50                            +0%
+  orkiestracyjny/opus-5-5            (17, 20, 27)           (17, 20, 27)           
+    Δ p50                            +0%
+  reviewer/opus-5-5                  (7, 22, 24)            (7, 22, 24)            
+    Δ p50                            +0%
+  sceptyk/opus-5-5                   (1, 20, 20)            (1, 20, 20)            
+    Δ p50                            +0%
+  tester-e2e/opus-5-5                (2, 33, 33)            (2, 33, 33)            
+    Δ p50                            +0%
