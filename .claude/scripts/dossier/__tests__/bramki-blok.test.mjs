@@ -1,5 +1,5 @@
-// Bloki z wyniku bramek domkniecia w dossier: ostrzezenia ESLint (code-quality), knip (martwy kod), ostrzezenia advisors (security), przezyte mutanty
-// (test-coverage). Zrodlo = plik z OSTATNIEGO przebiegu bramek (domkniecie nadpisuje go po naprawie — HANDOFF 6a pkt 52 e).
+// Bloki z wyniku bramek domkniecia w dossier: ostrzezenia ESLint (code-quality), knip (martwy kod), przezyte mutanty (test-coverage).
+// Advisors nie jest bramka domkniecia od P17 — wynik z bazy e2e dostaje security w poleceniu review. Zrodlo = plik z OSTATNIEGO przebiegu bramek (domkniecie nadpisuje go po naprawie — HANDOFF 6a pkt 52 e).
 
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -22,7 +22,6 @@ const WYNIK = {
       { plik: 'src/a.ts', linia: 9, regula: 'stryker/BlockStatement', opis: 'NoCoverage: {}' },
     ],
   },
-  advisors: { status: 'brak', sekundy: 0, trafienia: [], powod: 'brak SUPABASE_ACCESS_TOKEN' },
 }
 
 /** @param {unknown} tresc @returns {{ plik: string, sprzataj: () => void }} */
@@ -37,7 +36,7 @@ test('blokBramek: statusy wszystkich bramek, ostrzezenia ESLint, knip z liczba z
   const { plik, sprzataj } = plikWyniku(WYNIK)
   try {
     const blok = blokBramek(plik)
-    assert.match(blok, /typecheck ok, eslint ok, knip ok, stryker ok, advisors brak/)
+    assert.match(blok, /typecheck ok, eslint ok, knip ok, stryker ok$/m)
     assert.match(blok, /### Ostrzezenia ESLint[^\n]*\n- src\/a\.ts:4 complexity — Function has a complexity of 12/)
     assert.match(blok, /### knip[^\n]*zastane poza faza: 3[^\n]*\n- brak/)
   } finally {
@@ -74,23 +73,5 @@ test('blokBramek: brak pliku albo zly JSON = jedna linia z powodem, bez blokow',
     assert.match(blokBramek(plik), /^Brak wyniku bramek: plik .* nie jest JSON-em/)
   } finally {
     sprzataj()
-  }
-})
-
-// Advisors (lint bazy Supabase) jako wejscie security (PLAN-POPRAWY P11): ERROR zatrzymuje domkniecie, WARN przechodzi —
-// bez tej listy security, ktore przy statusie ok pomija RLS i search_path, nie zobaczyloby ostrzezen wcale.
-test('blokBramek: ostrzezenia advisors (WARN) jako wejscie security; bez ostrzezen = "brak"', () => {
-  const warn = { plik: null, linia: null, regula: 'advisors/function_search_path_mutable', opis: 'Function Search Path Mutable: public.licz' }
-  const { plik, sprzataj } = plikWyniku({ ...WYNIK, advisors: { status: 'ok', sekundy: 1.4, trafienia: [], ostrzezenia: [warn] } })
-  try {
-    assert.match(blokBramek(plik), /### Ostrzezenia advisors[^\n]*wejscie security\n- \? advisors\/function_search_path_mutable — Function Search Path Mutable: public\.licz/)
-  } finally {
-    sprzataj()
-  }
-  const bez = plikWyniku(WYNIK)
-  try {
-    assert.match(blokBramek(bez.plik), /### Ostrzezenia advisors[^\n]*\n- brak\n/)
-  } finally {
-    bez.sprzataj()
   }
 })

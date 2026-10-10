@@ -179,7 +179,7 @@ test('faza.sceptyk z przebiegu review: liczniki etykiet i degradacje; przebieg s
 // ── Bramki domkniecia (P6): producent z wyniku agenta domkniecie (EXECUTE_RESULT) ──
 
 // Zmiana kontraktu (P6 sesja 2): klucze = 10 bramek skryptu .claude/scripts/bramki (doszly migracjeSuma i testyUsuniete).
-const BRAMKI = ['advisors', 'eslint', 'knip', 'migracje', 'migracjeSuma', 'sizeLimit', 'stryker', 'testyTypow', 'testyUsuniete', 'typecheck']
+const BRAMKI = ['eslint', 'knip', 'migracje', 'migracjeSuma', 'sizeLimit', 'stryker', 'testyTypow', 'testyUsuniete', 'typecheck']
 
 test('faza bez domkniecia: bramki z null na kazdej bramce, testy_usuniete null', () => {
   const f = fazy()[0]
@@ -260,4 +260,15 @@ test('kontrola fixa P8: pozycje per lista K i bramki; p1_z_testem z K-6; stary f
   const [stary] = fazy()
   assert.equal(stary.kontrolaFixa?.listy, null)
   assert.equal(stary.fix?.p1_z_testem, null)
+})
+
+// P17 (6a pkt 80 j): autopilot zapisywal cykle fazy z P2 zostawionym przez fix jako tekst „1 (graceful P2)” — telemetria
+// dawala null. Od P17 cykle sa liczba; starsze raporty — liczba z poczatku tekstu. Advisors bazy e2e z raportu fazy 1:1.
+test('cykle: liczba albo tekst „1 (graceful P2)” ze starszych runow = 1; smiec = null; advisors z raportu fazy', () => {
+  const zRaportem = (/** @type {Record<string, unknown>} */ raport) => rekordyFaz({ wynikRunu: { ...WYNIK_RUNU, raporty: [{ ...WYNIK_RUNU.raporty[0], ...raport }] }, agenci: AGENCI, journal: JOURNAL, zmianyFixa: gitFake })[0]
+  assert.equal(zRaportem({ cykle: '1 (graceful P2)' }).cykle, 1)
+  assert.equal(zRaportem({ cykle: 'brak' }).cykle, null)
+  assert.equal(zRaportem({ cykle: 0 }).cykle, 0)
+  assert.deepEqual(zRaportem({ advisors: { status: 'porazka', bledy: 1, ostrzezenia: 2 } }).advisors, { status: 'porazka', bledy: 1, ostrzezenia: 2 })
+  assert.equal(zRaportem({}).advisors, null)
 })

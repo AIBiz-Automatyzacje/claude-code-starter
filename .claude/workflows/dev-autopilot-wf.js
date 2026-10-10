@@ -284,7 +284,7 @@ const E2E_START = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    status: { type: 'string', enum: ['pominieto', 'brak-srodowiska', 'niepowodzenie', 'gotowe'] },
+    status: { type: 'string', enum: ['pominieto', 'brak-srodowiska', 'niepowodzenie', 'gotowe', 'odroczone'] },
     scenariusze: { type: 'integer', description: 'niezaznaczone scenariusze [E2E] zadania' },
     figmaScreens: { type: 'boolean' },
     envE2e: { type: 'boolean', description: 'czy repo ma .env.e2e' },
@@ -306,8 +306,20 @@ const E2E_DB_SYNC_RESULT = {
   properties: {
     status: { type: 'string', enum: ['zsynchronizowano', 'aktualna', 'niepowodzenie'] },
     detal: { type: 'string', description: 'co zaaplikowano (migracje/seedy/konto) lub tresc bledu — blad SQL migracji to potencjalny DEFEKT KODU' },
+    advisors: { type: 'string', description: 'ostatnia linia stdout `e2e.mjs advisors` 1:1 (JSON w jednej linii); pusty string, gdy polecenie nie oddalo wyniku' },
   },
-  required: ['status', 'detal'],
+  required: ['status', 'detal', 'advisors'],
+}
+
+// Restart serwera E2E przed testerem fazy (P17): agent przepisuje ostatnia linie stdout skryptu jako string — JSON parsuje
+// i waliduje orkiestrator (`srodowiskoPoRestarcie`), bo agent przepisujacy pola potrafi je zgubic albo zmienic (P15).
+const E2E_RESTART = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    stdout: { type: 'string', description: 'ostatnia linia stdout `e2e.mjs restart` 1:1 (JSON w jednej linii)' },
+  },
+  required: ['stdout'],
 }
 
 const E2E_DOWN_RESULT = {
@@ -530,9 +542,10 @@ ${BLOK_DLUGIE_KOMENDY}
 Poza wyjatkiem z kroku 2 NIE modyfikuj zadnych plikow. Zwroc {status, detal, czasZimnySek, czasKontrolnySek}.`
 }
 
-function e2eStartPrompt(sciezka) {
+// przedPierwszaFaza (P17): zadna faza nie ma execute — projekt bez aplikacji dostaje status odroczone zamiast STOP-u.
+function e2eStartPrompt(sciezka, przedPierwszaFaza) {
   return `Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik:
-\`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
+\`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}${przedPierwszaFaza ? ' --przed-pierwsza-faza' : ''}\`
 Narzedzie Bash wywolaj z timeout 600000 (start serwera czeka do 540 s) i uruchom polecenie jeden raz: powtorka postawilaby
 drugi serwer obok pierwszego. Skrypt sprawdza, czy zadanie potrzebuje przegladarki, sprawdza .env.e2e i uruchamia serwer aplikacji
 w tle. Kod wyjscia 0 albo 1 to wynik (STOP liczy orkiestrator): ostatnia linia stdout to JSON — zwroc jego pola 1:1. Kod 3
@@ -542,7 +555,15 @@ figmaScreens false, envE2e i bazaE2e false, serwer "brak", url i log null. Pliko
 jesli polecenie go zawiera).`
 }
 
-function e2eDbSyncPrompt(sciezka, numerFazy) {
+function e2eRestartPrompt(sciezka, numerFazy) {
+  return `Uruchom w korzeniu repo dokladnie jedno polecenie (Bash z timeout 600000 — start serwera czeka do 540 s; jedno wywolanie):
+\`node .claude/scripts/e2e/e2e.mjs restart --zadanie ${sciezka} --faza ${numerFazy}\`
+Skrypt zatrzymuje serwer aplikacji uruchomiony przez pipeline i uruchamia go od nowa; faza bez scenariuszy [E2E] i makiet — nic nie robi.
+Zwroc {stdout}: ostatnia linie stdout 1:1 (JSON w jednej linii), bez zmian. Brak JSON-a: stdout = ostatnie linie wyjscia.
+Plikow repo nie zmieniasz.`
+}
+
+function e2eDbSyncPrompt(sciezka, numerFazy, baza) {
   return `Jestes agentem synchronizacji bazy e2e pipeline'u dev-autopilot (zadanie: ${sciezka}, faza ${numerFazy}).
 Cel: dedykowany projekt Supabase e2e ma miec migracje i seedy tej fazy PRZED testami E2E w przegladarce.
 Ten projekt wolno modyfikowac autonomicznie — to nie jest baza dev/prod (guard tozsamosci zrobil start srodowiska).
@@ -571,7 +592,11 @@ ${BLOK_DLUGIE_KOMENDY}
 4. KONTO TESTOWE: sprawdz czy user E2E_TEST_EMAIL istnieje (GET /auth/v1/admin/users przez
    service_role). Brak -> utworz (POST /auth/v1/admin/users, email_confirm:true, haslo E2E_TEST_PASSWORD).
 
-Zwroc {status, detal}: "zsynchronizowano" (cos zaaplikowano), "aktualna" (nic do zrobienia),
+5. ADVISORS — lint bazy e2e po migracjach fazy: \`node .claude/scripts/e2e/e2e.mjs advisors${baza ? ` --baza ${baza}` : ''}\`.
+   Ostatnia linie stdout (JSON w jednej linii) zwroc 1:1 w polu advisors. Kod 1 (bledy ERROR albo blad API) to wynik lintu,
+   nie niepowodzenie synchronizacji — status ustalasz z krokow 2–4. Tokenu nie wypisujesz.
+
+Zwroc {status, detal, advisors}: "zsynchronizowano" (cos zaaplikowano), "aktualna" (nic do zrobienia),
 "niepowodzenie" (+ co dokladnie padlo).`
 }
 
@@ -1163,12 +1188,50 @@ function decyzjaSrodowiskaE2e(wynik, sciezka) {
   if (wynik.status === 'brak-srodowiska' || wynik.status === 'niepowodzenie') {
     return { stop: { powod: `start: srodowisko E2E — ${wynik.detal}`, naprawa: `${wynik.naprawa} ${swiezy}` }, aktywne: false, srodowisko: wynik.status, bazaE2e: false }
   }
+  // Projekt od zera (P17): przed faza 1 nie ma aplikacji — srodowisko sprawdzone, serwer wystartuje restart fazy.
+  if (wynik.status === 'odroczone') return { stop: null, aktywne: true, srodowisko: 'odroczone', bazaE2e: wynik.bazaE2e }
   const aktywne = wynik.status === 'gotowe' && wynik.serwer !== 'brak'
   return { stop: null, aktywne, srodowisko: aktywne ? 'gotowe' : 'pominieto', bazaE2e: aktywne && wynik.bazaE2e }
 }
 
-// Bloker srodowiska wykryty w review (dev server, DNS bazy) przelacza srodowisko na `martwe` do konca runu: kolejne fazy
-// dostaja testera bez przegladarki, fix przenosi scenariusze na [Manual] zamiast je odgrywac, db-sync sie nie uruchamia.
+/** @param {unknown} tekst ostatnia linia stdout skryptu od agenta @returns {Record<string, unknown> | null} */
+function jsonZeStdout(tekst) {
+  const linia = String(tekst || '').trim().split('\n').pop() || ''
+  try {
+    const w = JSON.parse(linia)
+    return w && typeof w === 'object' && !Array.isArray(w) ? w : null
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+    return null
+  }
+}
+
+// Restart serwera przed testerem fazy (P17), wynik `e2e.mjs restart`: gotowe -> przegladarka w tej fazie; pominieto -> faza
+// bez scenariuszy i makiet; niepowodzenie -> 'martwe' do konca runu (serwer, ktory nie wstaje po fazie, nie wstanie w nastepnej,
+// a kazda proba to do 540 s czekania). Nieczytelny wynik = srodowisko bez zmian (pad agenta to nie awaria srodowiska).
+function srodowiskoPoRestarcie(stdout) {
+  const w = jsonZeStdout(stdout)
+  const detal = w ? String(w.detal || '') : `wynik restartu nieczytelny: ${String(stdout || '').slice(0, 200)}`
+  const nasz = Boolean(w) && w.serwer === 'uruchomione'
+  if (w && w.status === 'gotowe') return { srodowisko: 'gotowe', trwale: false, nasz, detal }
+  if (w && w.status === 'pominieto') return { srodowisko: 'pominieto', trwale: false, nasz, detal }
+  if (w && w.status === 'niepowodzenie') return { srodowisko: 'martwe', trwale: true, nasz, detal }
+  return { srodowisko: null, trwale: false, nasz, detal }
+}
+
+// Advisors bazy e2e po db-sync (P17): JSON `e2e.mjs advisors` od agenta -> wejscie security w review. Pola walidowane, bo
+// przepisuje je agent; brak albo nieczytelny wynik = null (security sprawdza migracje recznie, jak przy statusie brak).
+const STATUSY_ADVISORS = ['ok', 'porazka', 'blad', 'brak', 'pominieta']
+function advisorsZWyniku(tekst) {
+  const w = jsonZeStdout(tekst)
+  if (!w || !STATUSY_ADVISORS.includes(String(w.status))) return null
+  const lista = (x) => (Array.isArray(x) ? x.filter((t) => t && typeof t.regula === 'string').map((t) => ({ regula: t.regula, opis: String(t.opis || '') })) : [])
+  return { status: String(w.status), ref: typeof w.ref === 'string' ? w.ref : null, bledy: lista(w.bledy), ostrzezenia: lista(w.ostrzezenia), detal: String(w.detal || ''), naprawa: String(w.naprawa || '') }
+}
+
+// Bloker srodowiska wykryty w review (dev server, DNS bazy) przelacza srodowisko na `martwe` do konca fazy: fix przenosi
+// scenariusze na [Manual] zamiast je odgrywac. Nastepna faza zaczyna od restartu serwera (P17) — serwer starszy niz kod
+// (vibersi: brak vite.config.ts przy starcie) to najczestsza przyczyna blokera i restart ja usuwa.
 function srodowiskoPoReview(srodowisko, review) {
   return review && review.blokerSrodowiska && review.blokerSrodowiska.wykryty ? 'martwe' : srodowisko
 }
@@ -1486,21 +1549,28 @@ async function zapiszZaleglyStan() {
 // Srodowisko E2E PRZED warmupem (P14): jedno polecenie skryptu — czy zadanie potrzebuje przegladarki, sprawdzenie .env.e2e
 // (sekcja Doctor) i start serwera aplikacji. Scenariusze [E2E] przy niesprawnym srodowisku = STOP przed faza 1 z naprawa ze skryptu,
 // nigdy cicha degradacja do recznego. Agent zapisuje tez stan zalegly po bramce wejscia.
-let e2eStart = await agent(zeStanem(e2eStartPrompt(sciezka)), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start', phase: 'Bootstrap' })
+// Projekt od zera (P17, vibersi): gdy zadna faza nie ma execute, start bez aplikacji jest odroczony zamiast STOP-u.
+const przedPierwszaFaza = stan.fazy.every((f) => f.execute === 'pending')
+let e2eStart = await agent(zeStanem(e2eStartPrompt(sciezka, przedPierwszaFaza)), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start', phase: 'Bootstrap' })
 await potwierdzStan(e2eStart)
 if (!e2eStart) {
   log('E2E start: agent zwrocil null — retry raz')
-  e2eStart = await agent(e2eStartPrompt(sciezka), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start:retry', phase: 'Bootstrap' })
+  e2eStart = await agent(e2eStartPrompt(sciezka, przedPierwszaFaza), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start:retry', phase: 'Bootstrap' })
 }
 const srodowiskoStartu = decyzjaSrodowiskaE2e(e2eStart, sciezka)
 log(`E2E start: ${e2eStart ? `${e2eStart.status} (serwer: ${e2eStart.serwer}, scenariusze: ${e2eStart.scenariusze}) — ${e2eStart.detal}` : 'agent zwrocil null 2x'}`)
 if (srodowiskoStartu.stop) {
   return await stopRun({ ...srodowiskoStartu.stop, e2eStart, stan })
 }
-// Srodowisko w runie: 'gotowe' | 'pominieto' | 'martwe' (awaria w trakcie — srodowiskoPoReview); review-wf daje testerowi
-// przegladarke tylko przy 'gotowe'.
+// Srodowisko w runie: 'gotowe' | 'pominieto' | 'odroczone' (projekt od zera) | 'martwe' (awaria — srodowiskoPoReview, restart);
+// review-wf daje testerowi przegladarke tylko przy 'gotowe'. Przy srodowisku w runie kazda faza zaczyna review od restartu
+// serwera (P17): serwer z bootstrapu nie widzial plikow konfiguracji powstalych w fazach (vibersi: 500 w fazie 4). Awaria
+// z review albo fixa trwa do nastepnej fazy (restart ja zdejmuje); serwer, ktory nie wstal po restarcie — do konca runu.
 let srodowiskoE2E = srodowiskoStartu.srodowisko
 const bazaE2e = srodowiskoStartu.bazaE2e
+const e2eWRunie = srodowiskoStartu.aktywne
+let e2eTrwaleMartwe = false
+let serwerNasz = Boolean(e2eStart) && e2eStart.serwer === 'uruchomione'
 
 // Filar 1: rozgrzewka cache vitest — PO bramce E2E (tani gate first). Self-skip gdy brak vitest; warm = sekundy.
 // Chroni tez walidacje koncowa przy pustej kolejce (np. resume po ukonczonych fazach na zimnej maszynie).
@@ -1525,6 +1595,7 @@ for (const numerFazy of kolejka) {
   let gateFazy = 'CZYSTE'
   let cykle = 0
   let e2eSync = null
+  let advisorsFazy = null
   // Metryki fazy: przy resume review moze byc juz 'done' i review-wf sie NIE odpali — wtedy liczniki
   // i przebieg czytamy z faza.metryki utrwalonych w stanie (bez tego telemetria dostawala null).
   const metrykiZeStanu = faza.metryki || {}
@@ -1567,9 +1638,20 @@ for (const numerFazy of kolejka) {
     // przyrostowy — brak nowych migracji = no-op). Niepowodzenie nie blokuje review:
     // tester E2E trafi na brak danych i sklasyfikuje OPERATOR, a detal (np. blad SQL
     // migracji = potencjalny defekt kodu!) zostaje w logu i raporcie fazy dla operatora.
-    if (srodowiskoE2E === 'gotowe' && bazaE2e) {
-      e2eSync = await agent(e2eDbSyncPrompt(sciezka, numerFazy), { schema: E2E_DB_SYNC_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `e2e:db-sync:faza-${numerFazy}` })
+    if (e2eWRunie && !e2eTrwaleMartwe) {
+      const restart = await agent(e2eRestartPrompt(sciezka, numerFazy), { schema: E2E_RESTART, agentType: 'klasa-mechaniczny', label: `e2e:restart:faza-${numerFazy}` })
+      const po = srodowiskoPoRestarcie(restart && restart.stdout)
+      if (po.srodowisko) srodowiskoE2E = po.srodowisko
+      if (po.trwale) e2eTrwaleMartwe = true
+      if (po.nasz) serwerNasz = true
+      log(`E2E restart fazy ${numerFazy}: ${po.srodowisko || 'bez zmian'} — ${po.detal}${po.trwale ? ' (serwer nie wstal — do konca runu tester bez przegladarki)' : ''}`)
+    }
+    // db-sync zalezy od bazy e2e, nie od serwera: migracje i advisors biegna takze w fazie bez scenariuszy i po awarii serwera.
+    if (bazaE2e && e2eWRunie) {
+      e2eSync = await agent(e2eDbSyncPrompt(sciezka, numerFazy, faza.baza || null), { schema: E2E_DB_SYNC_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `e2e:db-sync:faza-${numerFazy}` })
       log(`E2E db-sync fazy ${numerFazy}: ${e2eSync ? `${e2eSync.status} — ${e2eSync.detal}` : 'agent zwrocil null'}`)
+      advisorsFazy = advisorsZWyniku(e2eSync && e2eSync.advisors)
+      log(`Advisors bazy e2e fazy ${numerFazy}: ${advisorsFazy ? `${advisorsFazy.status} — ${advisorsFazy.detal}` : 'brak wyniku'}`)
     }
     await zapiszZaleglyStan()
     const review = await workflow('dev-docs-review-wf', {
@@ -1583,6 +1665,8 @@ for (const numerFazy of kolejka) {
       // stoi, wiec w runie rownolegle-joby (faza 1) przywolal testera przy e2eSrodowisko: "pominieto"
       // — wynik 1 passed / 1 failed / 3 skipped. Z tym sygnalem review-wf da mu tryb bez przegladarki.
       srodowiskoE2E,
+      // Lint bazy e2e po migracjach fazy (P17) — wejscie security; null = advisors nie biegl (security sprawdza recznie).
+      advisors: advisorsFazy,
     })
     if (!review) {
       return await stopRun({ powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
@@ -1598,10 +1682,10 @@ for (const numerFazy of kolejka) {
     }
     // Awaria E2E w trakcie runu (P14, PANEL-WEJSCIE §2 pkt 6) nie zatrzymuje runu. Review-wf przeniosl juz scenariusze fazy
     // na [Manual] z powodem (skrypt ksiegowania): bloker srodowiska -> przyczyna srodowisko, pad testera -> tester-padl.
-    // Po blokerze reszta runu idzie bez przegladarki: ponowne stawianie srodowiska kosztuje wiecej niz test reczny.
+    // Po blokerze faza idzie bez przegladarki do fixa; nastepna faza zaczyna od restartu serwera (P17).
     srodowiskoE2E = srodowiskoPoReview(srodowiskoE2E, review)
     if (review.blokerSrodowiska && review.blokerSrodowiska.wykryty) {
-      log(`Faza ${numerFazy}: srodowisko E2E padlo w trakcie runu (${review.blokerSrodowiska.klasa}): "${review.blokerSrodowiska.dowod}". Scenariusze fazy na [Manual] z powodem; do konca runu tester bez przegladarki.`)
+      log(`Faza ${numerFazy}: srodowisko E2E padlo w trakcie runu (${review.blokerSrodowiska.klasa}): "${review.blokerSrodowiska.dowod}". Scenariusze fazy na [Manual] z powodem; do nastepnej fazy (restart) tester bez przegladarki.`)
     }
     if (review.e2eTesterFail) {
       log(`Faza ${numerFazy}: tester E2E ${(review.przebieg && review.przebieg.e2eStatus) || 'padl 2x'} — scenariusze fazy na [Manual] (tester-padl), run idzie dalej`)
@@ -1643,7 +1727,7 @@ for (const numerFazy of kolejka) {
     log(`Fix fazy ${numerFazy}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
     if (fix.serwerE2e === 'martwy') {
       srodowiskoE2E = 'martwe'
-      log(`Faza ${numerFazy}: serwer E2E nie wstal po padzie (fix) — scenariusze na [Manual], do konca runu tester bez przegladarki`)
+      log(`Faza ${numerFazy}: serwer E2E nie wstal po padzie (fix) — scenariusze na [Manual], do nastepnej fazy (restart) tester bez przegladarki`)
     }
 
     // Guard plikow binarnych PRZED gate'em walidacji: uszkodzony plik zrodlowy jest PRZYCZYNA,
@@ -1709,7 +1793,6 @@ for (const numerFazy of kolejka) {
 
     gateFazy = fix.nierozwiazaneP2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
     if (fix.nierozwiazaneP2 > 0) {
-      cykle = '1 (graceful P2)'
       log(`Faza ${numerFazy}: GRACEFUL — ${fix.nierozwiazaneP2}x P2 do known-issues, kontynuuje`)
     }
     faza.fix = 'done'
@@ -1723,7 +1806,11 @@ for (const numerFazy of kolejka) {
   log(`Faza ${numerFazy}: koniec — gate ${gateFazy}, cykle ${cykle}`)
   // przebieg = metryki routingu/dedupu/verify (z review-wf albo ze stanu po resume) — dane do
   // strojenia progow: kogo routing pomija, ile dedup sklei, ile verify obala.
-  raporty.push({ faza: numerFazy, gate: gateFazy, cykle, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy) })
+  // cykle zawsze liczba (telemetria faza.cykle); P2 zostawione przez fix sa w fix.nierozwiazaneP2 (wczesniej tekst „1 (graceful P2)” = null w telemetrii).
+  raporty.push({
+    faza: numerFazy, gate: gateFazy, cykle, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy),
+    advisors: advisorsFazy ? { status: advisorsFazy.status, bledy: advisorsFazy.bledy.length, ostrzezenia: advisorsFazy.ostrzezenia.length } : null,
+  })
 }
 
 // ── Zakonczenie ──────────────────────────────────────────────────────────
@@ -1778,8 +1865,8 @@ if (stan.zakonczenie.walidacja === 'pending') {
 
 // Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP celowo zostawia serwer
 // zywy (operator debuguje na gotowym srodowisku; plik PID pozwala nastepnemu runowi przejac lub ubic proces).
-// Serwer uruchomiony przez start sprzatamy takze po awarii w trakcie runu (srodowisko 'martwe').
-if (e2eStart && e2eStart.serwer === 'uruchomione') {
+// Serwer uruchomiony przez start albo restart fazy sprzatamy takze po awarii w trakcie runu (srodowisko 'martwe').
+if (serwerNasz) {
   const down = await agent(zeStanem(e2eEnvDownPrompt()), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
   await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)

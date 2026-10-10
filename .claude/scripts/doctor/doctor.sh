@@ -162,6 +162,22 @@ sprawdz_bramki() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Advisors Supabase (P17) — lint bazy e2e po migracjach fazy: ref z .env.e2e i token Management API, przez node
+# (wiersz TSV z advisors.mjs). Brak to UWAGA: run idzie dalej, security sprawdza migracje ręcznie.
+sprawdz_advisors() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "advisors (baza e2e)" UWAGA "nie sprawdzono tokenu Supabase (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/advisors.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "advisors (baza e2e)" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź .env.e2e"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Warstwa stała plików ról (P11) — liczba poleceń i zasady pisania, przez node (wiersz TSV z warstwa-rol.mjs).
 # Naruszenie to UWAGA: rola działa, tylko jej plik odjechał od szablonu.
 sprawdz_warstwe() {
@@ -216,6 +232,7 @@ fi
 if ma_dockerfile; then narzedzie docker UWAGA "brew install --cask docker"; else nie_dotyczy docker "brak Dockerfile"; fi
 sprawdz_ustawienia
 sprawdz_bramki
+sprawdz_advisors
 sprawdz_warstwe
 sprawdz_telemetrie
 echo

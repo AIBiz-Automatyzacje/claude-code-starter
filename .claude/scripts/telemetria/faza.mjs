@@ -59,6 +59,12 @@ function obiekt(x) {
 }
 /** @param {unknown} x @returns {number | null} */
 const liczbaLubNull = (x) => (typeof x === 'number' ? x : null)
+// Starsze runy zapisywaly „1 (graceful P2)” (fix zostawil P2) — liczba z poczatku tekstu, inaczej null (6a pkt 80 j).
+/** @param {unknown} x @returns {number | null} */
+const cykleFixa = (x) => {
+  const n = typeof x === 'string' ? Number.parseInt(x, 10) : x
+  return typeof n === 'number' && Number.isFinite(n) ? n : null
+}
 
 /** @param {AgentFazy[]} agenci */
 function kosztFazy(agenci) {
@@ -186,7 +192,7 @@ function sceptykFazy(przebieg) {
 }
 
 // Bramki domkniecia (P6): nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs i w EXECUTE_RESULT dev-docs-execute-wf.
-const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'advisors', 'testyUsuniete', 'stryker']
+const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'testyUsuniete', 'stryker']
 
 /**
  * Bramki i testy usuniete z wyniku ostatniego domkniecia fazy (EXECUTE_RESULT): per bramka {status, sekundy, trafienia,
@@ -260,7 +266,8 @@ export function rekordyFaz(we) {
       faza: numer,
       status: numer === fazaStopu ? 'STOP' : raporty.includes(raport) ? 'OK' : null,
       gate: raport.gate ?? null,
-      cykle: liczbaLubNull(raport.cykle),
+      cykle: cykleFixa(raport.cykle),
+      advisors: raport.advisors ?? null,
       liczniki: raport.liczniki ?? null,
       przebieg: raport.przebieg ?? null,
       findingi_per_os: findingiPerOs(agenci),

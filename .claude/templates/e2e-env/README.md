@@ -13,8 +13,11 @@ scenariusza wchodzi w pętlę fix jako finding P2 typ E2E. Cały przepis uruchom
   Świadomy opt-out: zmień marker `[E2E]` → `[Manual]` w pliku zadań (scenariusz wykonasz w smoke'u operatora).
 - **Test niewykonalny W TRAKCIE runu** (serwer padł, limit usługi zewnętrznej, popup OAuth, tester nie dał
   przebiegu) → linia `[E2E]` przechodzi na `[Manual]` z powodem `(MANUAL — <przyczyna>: <powód>)`,
-  **run idzie dalej**, pozycja trafia do smoke'u operatora (`docs/operator/…-smoke.md`). Po awarii serwera
-  reszta runu idzie bez przeglądarki — ponowne stawianie środowiska kosztuje więcej niż test ręczny.
+  **run idzie dalej**, pozycja trafia do smoke'u operatora (`docs/operator/…-smoke.md`). Każda faza ze scenariuszami
+  albo makietami zaczyna review od restartu serwera (`e2e.mjs restart`) — serwer z bootstrapu nie widzi plików konfiguracji
+  powstałych w fazach. Serwer, który po restarcie nie wstaje, wyłącza przeglądarkę do końca runu.
+- **Projekt od zera** (żadna faza nie ma execute, komenda startu nie ma czego uruchomić — brak Vite, skryptu `dev`
+  albo `package.json`) → start **odroczony**, nie STOP: serwer wstaje restartem przed testerem pierwszej fazy, która go potrzebuje.
 - Zadanie bez `[E2E]` i bez makiet `figma_screens` → środowisko pominięte, serwera nie uruchamiamy.
 
 Sprawdzenie bez startu (to samo, co robi bootstrap, plus stan serwera):
@@ -33,7 +36,10 @@ Wszystkie opcjonalne — domyślnie dev server Vite na `http://localhost:5173`:
 
 Baza e2e (projekt z katalogiem `supabase/` albo z kluczami `SUPABASE_E2E_*`) wymaga dodatkowo:
 `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (albo legacy `VITE_SUPABASE_ANON_KEY`), `SUPABASE_E2E_DB_URL`, `SUPABASE_E2E_SERVICE_ROLE_KEY`,
-`E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`. Guard tożsamości: `VITE_SUPABASE_URL` z `.env.e2e` musi się różnić od
+`E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`. Opcjonalnie `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens):
+lint advisors (RLS, `search_path`, indeksy) bazy e2e po wgraniu migracji każdej fazy — wynik dostaje reviewer security; bez tokenu
+security sprawdza migracje ręcznie. Token daje dostęp do całego konta Supabase i nie trafia do procesu aplikacji. Ref projektu
+advisors bierze z `VITE_SUPABASE_URL` (`https://<ref>.supabase.co`) albo z `SUPABASE_E2E_PROJECT_REF`. Guard tożsamości: `VITE_SUPABASE_URL` z `.env.e2e` musi się różnić od
 `.env` / `.env.local`. Projekt bez bazy e2e (np. serwis Node na wspólnym stagingu) ustawia tylko `E2E_URL`
 i `E2E_START`; db-sync wtedy się nie uruchamia. Wzór: `.claude/templates/e2e-env/.env.e2e.example`.
 

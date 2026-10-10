@@ -349,3 +349,18 @@ test('warstwa stala: zgodne pliki → OK z liczba plikow i polecen; naruszenie �
   assert.match(uwaga[3], /sync-template/)
   assert.equal(w.status, 0, 'naruszenie warstwy stalej nie blokuje runu')
 }))
+
+// P17: advisors biegnie na bazie e2e po migracjach fazy; w vibersi bez tokenu milczal przez dwie fazy z migracjami. Doctor
+// mowi o tym przed runem — UWAGA (nie blokuje), z miejscem, gdzie wygenerowac token i gdzie go wpisac.
+test('advisors: bez Supabase nie dotyczy; baza e2e bez tokenu → UWAGA z naprawa; token w .env.e2e → OK z ref', () => zSrodowiskiem((s) => {
+  assert.equal(wiersz(doctor(s).stdout, 'advisors (baza e2e)')[1], 'nie dotyczy')
+  writeFileSync(join(s.projekt, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\n')
+  const bezTokenu = wiersz(doctor(s).stdout, 'advisors (baza e2e)')
+  assert.equal(bezTokenu[1], 'UWAGA')
+  assert.match(bezTokenu[2], /brak SUPABASE_ACCESS_TOKEN/)
+  assert.match(bezTokenu[3], /Access Tokens.*SUPABASE_ACCESS_TOKEN=<token> w \.env\.e2e/)
+  writeFileSync(join(s.projekt, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\nSUPABASE_ACCESS_TOKEN=tajny\n')
+  const ok = doctor(s)
+  assert.deepEqual(wiersz(ok.stdout, 'advisors (baza e2e)').slice(1, 3), ['OK', 'token i projekt e2e abcdefghijklmnopqrst'])
+  assert.doesNotMatch(ok.stdout, /tajny/)
+}))

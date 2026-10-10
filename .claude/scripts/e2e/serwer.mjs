@@ -104,15 +104,19 @@ export function stanSerwera(konf) {
 /**
  * Start serwera aplikacji. Nasz zywy serwer z aktualna konfiguracja i odpowiedzia = `uruchomione`; nasz ze stara konfiguracja
  * albo zawieszony — zatrzymany i uruchomiony od nowa; obcy odpowiadajacy serwer = `zastane` (ostrzezenie o bazie dev).
+ * `odNowa` (restart przed testerem fazy, P17): nasz serwer zatrzymany i uruchomiony od nowa zawsze — serwer sprzed zmian fazy
+ * nie wczytuje pliku konfiguracji, ktorego nie bylo przy jego starcie (vibersi: vite.config.ts z IU-1, 500 w fazie 4).
+ * Porazka niesie kod wyjscia komendy i ogon logu: start przed faza 1 rozpoznaje po nich projekt bez aplikacji.
  * @param {string} projekt
  * @param {Konfiguracja} konf
  * @param {Record<string, string>} env doklejane do srodowiska komendy startu
- * @returns {Promise<{ serwer: 'uruchomione' | 'zastane' | 'brak', blad?: string }>}
+ * @param {{ odNowa?: boolean }} [opcje]
+ * @returns {Promise<{ serwer: 'uruchomione' | 'zastane' | 'brak', blad?: string, wyjscie?: number | string, ogon?: string }>}
  */
-export async function uruchomSerwer(projekt, konf, env) {
+export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {}) {
   const z = zapisPid(konf)
   if (zyjeNasz(z) && z) {
-    const aktualny = z.start === konf.start && z.odcisk === konf.odcisk
+    const aktualny = !odNowa && z.start === konf.start && z.odcisk === konf.odcisk
     if (aktualny && await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
     await zatrzymajProces(z)
   }
@@ -135,7 +139,8 @@ export async function uruchomSerwer(projekt, konf, env) {
     if (await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
     if (wyjscie !== null) {
       rmSync(konf.pid, { force: true })
-      return { serwer: 'brak', blad: `komenda startu „${konf.start}” zakonczyla sie (${wyjscie}) przed odpowiedzia ${konf.zdrowie}. Log ${konf.log}:\n${ogonLogu(konf.log)}` }
+      const ogon = ogonLogu(konf.log)
+      return { serwer: 'brak', blad: `komenda startu „${konf.start}” zakonczyla sie (${wyjscie}) przed odpowiedzia ${konf.zdrowie}. Log ${konf.log}:\n${ogon}`, wyjscie, ogon }
     }
     await czekaj(ODSTEP_SONDY_MS)
   }

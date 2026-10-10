@@ -92,3 +92,22 @@ for (const [nazwa, kotwica, koniec] of BLOKI) {
     assert.deepEqual([...tresc.matchAll(WERSALIKI)].map((m) => m[0]).filter((w) => !SKROTY.has(w)), [])
   })
 }
+
+// P17: advisors biegnie na bazie e2e po wgraniu migracji fazy (db-sync autopilota), nie w domknieciu — wynik dostaje tylko
+// security, jako dodatek osi. Bez wyniku blok mowi to wprost: security sprawdza RLS recznie (pozycja warunkowa roli).
+// eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
+const blokAdvisors = new Function(`${wytnij('function blokAdvisors(', '\n}')}
+  return blokAdvisors`)()
+
+test('blokAdvisors: status, bledy ERROR i ostrzezenia WARN z bazy e2e; bez wyniku = jawne „brak wyniku”; dodatek tylko dla security', () => {
+  const blok = blokAdvisors({ status: 'porazka', detal: '1 bledow (ERROR), 1 ostrzezen (WARN)', bledy: [{ regula: 'advisors/rls_disabled_in_public', opis: 'RLS Disabled in Public: public.projects' }], ostrzezenia: [{ regula: 'advisors/auth_rls_initplan', opis: 'Auth RLS Initialization Plan' }] })
+  assert.match(blok, /=== ADVISORS BAZY E2E \(lint Supabase po wgraniu migracji fazy\) ===\nStatus: porazka — 1 bledow/)
+  assert.match(blok, /Bledy \(ERROR\):\n- advisors\/rls_disabled_in_public — RLS Disabled in Public: public\.projects\n/)
+  assert.match(blok, /Ostrzezenia \(WARN\):\n- advisors\/auth_rls_initplan — Auth RLS Initialization Plan\n/)
+  assert.match(blokAdvisors({ status: 'ok', detal: '', bledy: [], ostrzezenia: [] }), /Bledy \(ERROR\):\n- brak\nOstrzezenia \(WARN\):\n- brak/)
+  assert.match(blokAdvisors(null), /Status: brak wyniku/)
+  assert.match(zrodlo, /reviewerPrompt\(sciezka, faza, r\.fokus, poprzKod, kontekst, r\.key === 'security' \? blokAdvisors\(advisorsE2e\) : ''\)/)
+  const rola = readFileSync(join(AGENCI, 'security-sentinel.md'), 'utf8')
+  assert.match(rola, /\(blok „Advisors bazy e2e” ze statusem ok albo porazka\)/)
+  assert.match(rola, /błąd \(ERROR\) wprowadzony w tej fazie to finding P1, ostrzeżenie \(WARN\) — P2/)
+})

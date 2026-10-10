@@ -55,10 +55,6 @@ export function blokBramek(plik) {
     `### knip — martwy kod w plikach fazy (zastane poza faza: ${wynik.knip?.zastane ?? 0})`,
     lista(wynik.knip?.trafienia),
     '',
-    // ERROR advisors zatrzymuje domkniecie, WARN przechodzi — a security przy statusie ok pomija RLS i search_path.
-    '### Ostrzezenia advisors (lint bazy Supabase, caly projekt) — wejscie security',
-    lista(wynik.advisors?.ostrzezenia),
-    '',
     '### Przezyte mutanty (Stryker, linie fazy) — wejscie test-coverage',
     mutanty(wynik.stryker?.trafienia),
   ].join('\n')

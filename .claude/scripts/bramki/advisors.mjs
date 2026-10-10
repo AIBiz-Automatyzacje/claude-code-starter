@@ -1,9 +1,7 @@
-// Bramka advisors: lint bazy Supabase (bezpieczenstwo i wydajnosc) przez Management API na projekcie chmurowym — bez Dockera.
-// Token z SUPABASE_ACCESS_TOKEN, ref z SUPABASE_PROJECT_REF albo supabase/.temp/project-ref (`supabase link`); brak = status brak.
-// ERROR = porazka, WARN = ostrzezenie, INFO pominiety. Token idzie tylko w naglowku, nigdy do wyniku.
-
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+// Advisors Supabase: lint bazy (bezpieczenstwo i wydajnosc) przez Management API na projekcie chmurowym — bez Dockera.
+// ERROR = porazka (trafienia), WARN = ostrzezenie, INFO pominiety. Token idzie tylko w naglowku, nigdy do wyniku.
+// Wola go `e2e.mjs advisors` po wgraniu migracji fazy na baze e2e (P17): przy domknieciu fazy migracje nie sa jeszcze
+// w zadnej bazie, a baza podlinkowana (dev) dostaje je dopiero od operatora — lint pokazywal stary stan (vibersi, 6a pkt 80).
 
 export const API_SUPABASE = 'https://api.supabase.com'
 const RODZAJE = ['security', 'performance']
@@ -12,28 +10,16 @@ const SUFIT_MS = 30_000
 /** @typedef {import('./uruchom.mjs').WynikBramki} WynikBramki */
 /** @typedef {{ name: string, title: string, level: 'ERROR' | 'WARN' | 'INFO', detail?: string }} Lint */
 
-/** @param {string} projekt @param {Record<string, string | undefined>} env @returns {string} */
-function refProjektu(projekt, env) {
-  if (env.SUPABASE_PROJECT_REF) return env.SUPABASE_PROJECT_REF
-  const plik = join(projekt, 'supabase', '.temp', 'project-ref')
-  return existsSync(plik) ? readFileSync(plik, 'utf8').trim() : ''
-}
-
 /** @param {Lint} l */
 const trafienie = (l) => ({ plik: null, linia: null, regula: `advisors/${l.name}`, opis: `${l.title}: ${l.detail ?? ''}` })
 
 /**
- * @param {string} projekt
- * @param {Record<string, string | undefined>} env zmienne srodowiska (process.env)
+ * @param {string} ref ref projektu Supabase
+ * @param {string} token token Management API (SUPABASE_ACCESS_TOKEN)
  * @param {string} bazaApi adres Management API
  * @returns {Promise<WynikBramki>}
  */
-export async function bramkaAdvisors(projekt, env, bazaApi) {
-  if (!existsSync(join(projekt, 'supabase'))) return { status: 'pominieta', sekundy: null, trafienia: [], powod: 'projekt bez katalogu supabase/' }
-  const token = env.SUPABASE_ACCESS_TOKEN
-  if (!token) return { status: 'brak', sekundy: null, trafienia: [], powod: 'brak SUPABASE_ACCESS_TOKEN (token Management API)' }
-  const ref = refProjektu(projekt, env)
-  if (!ref) return { status: 'brak', sekundy: null, trafienia: [], powod: 'brak ref projektu (SUPABASE_PROJECT_REF albo supabase link)' }
+export async function advisorsProjektu(ref, token, bazaApi) {
   const start = performance.now()
   /** @type {Lint[]} */
   const linty = []

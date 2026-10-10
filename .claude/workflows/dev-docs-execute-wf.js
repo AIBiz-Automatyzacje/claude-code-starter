@@ -81,7 +81,7 @@ const BUILD_RESULT = {
 }
 
 // Bramki domkniecia (PLAN-POPRAWY P6): kolejnosc i nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs.
-const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'advisors', 'testyUsuniete', 'stryker']
+const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'testyUsuniete', 'stryker']
 const STATUS_BRAMKI = { type: 'string', enum: ['ok', 'porazka', 'brak', 'blad', 'pominieta'] }
 const WYNIK_BRAMKI = {
   type: 'object',

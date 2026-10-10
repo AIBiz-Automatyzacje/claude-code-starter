@@ -163,12 +163,20 @@ test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i 
   assert.equal(zle.e2e.bledy.length, 2)
   assert.match(zle.e2e.bledy[0], /\.env\.e2e nie jest w \.gitignore/)
   assert.match(zle.e2e.bledy[1], /agent-browser nie dziala: chrome: fail/)
-  assert.deepEqual(zle.e2e.uwagi, ['brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup'])
+  // Plan ma migracje, a .env.e2e (X=1) nie ma bazy e2e z ref — advisors nie pobiegnie (P17): uwaga, nie bloker.
+  assert.deepEqual(zle.e2e.uwagi, [
+    'brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup',
+    'advisors nie pobiegnie: VITE_SUPABASE_URL w .env.e2e bez postaci https://<ref>.supabase.co — dopisz SUPABASE_E2E_PROJECT_REF',
+  ])
   const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([dobre.ok, dobre.e2e.ok, dobre.e2e.bledy], [true, true, []])
   mkdirSync(join(k, '.claude/skills/weryfikacja'), { recursive: true })
   writeFileSync(join(k, '.claude/skills/weryfikacja/SKILL.md'), '# W\n')
-  assert.deepEqual(gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } }).e2e.uwagi, [])
+  writeFileSync(join(k, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\n')
+  const sprawne = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) }
+  assert.deepEqual(gotowosc(k, ZADANIE, { narzedzia: sprawne, srodowisko: {} }).e2e.uwagi, ['advisors nie pobiegnie: brak SUPABASE_ACCESS_TOKEN — Supabase → Account → Access Tokens, wpis SUPABASE_ACCESS_TOKEN=<token> w .env.e2e'])
+  const zTokenem = gotowosc(k, ZADANIE, { narzedzia: sprawne, srodowisko: { SUPABASE_ACCESS_TOKEN: 't' } })
+  assert.deepEqual([zTokenem.e2e.ok, zTokenem.e2e.uwagi], [true, []], 'advisors to uwaga, nie bloker; z tokenem i ref znika')
 }))
 
 test('gotowosc: zadanie z samymi makietami figma_screens sprawdza srodowisko jak bootstrap; bez .env.e2e przechodzi (visual diff bez przegladarki)', () => wRepo((k) => {
@@ -179,7 +187,7 @@ test('gotowosc: zadanie z samymi makietami figma_screens sprawdza srodowisko jak
   const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([zle.e2e.ok, zle.e2e.scenariusze, zle.e2e.figmaScreens], [false, 0, true])
   assert.match(zle.e2e.bledy.join('\n'), /\.env\.e2e nie jest w \.gitignore/)
-  assert.deepEqual(zle.e2e.uwagi, [], 'bez scenariuszy [E2E] skill weryfikacji nie jest potrzebny')
+  assert.ok(!zle.e2e.uwagi.some((u) => /skilla weryfikacji/.test(u)), 'bez scenariuszy [E2E] skill weryfikacji nie jest potrzebny')
   rmSync(join(k, '.env.e2e'))
   const bezEnv = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'x' }) } })
   assert.deepEqual([bezEnv.e2e.ok, bezEnv.e2e.bledy], [true, []])

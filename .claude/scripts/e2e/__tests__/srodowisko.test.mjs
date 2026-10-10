@@ -11,7 +11,7 @@ import assert from 'node:assert/strict'
 
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
 import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
-import { startE2e } from '../start.mjs'
+import { restartFazy, startE2e } from '../start.mjs'
 
 const ZADANIE = 'docs/active/z'
 const BAZA = 'VITE_SUPABASE_URL=https://e2e.supabase.co\nVITE_SUPABASE_ANON_KEY=a\nSUPABASE_E2E_DB_URL=postgres://x\nSUPABASE_E2E_SERVICE_ROLE_KEY=s\nE2E_TEST_EMAIL=t@x.pl\nE2E_TEST_PASSWORD=p\n'
@@ -313,18 +313,18 @@ test('stan: nasz serwer zabity z zewnatrz = nasz, nie zyje; serwer zastany (bez 
 })
 
 /** @param {string} url @returns {Promise<string>} */
-const tresc = async (url) => (await fetch(url)).text()
+const odpowiedz = async (url) => (await fetch(url)).text()
 
 test('zmiana .env.e2e: nasz serwer ze stara konfiguracja zatrzymany i uruchomiony od nowa (poprawka operatora dziala)', async () => {
   const port = await wolnyPort()
   const start = `node -e "require('http').createServer((q,s)=>s.end(process.env.MARK)).listen(${port})"`
   const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nMARK=a\n` })
   assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).serwer, 'uruchomione')
-  assert.equal(await tresc(`http://127.0.0.1:${port}`), 'a')
+  assert.equal(await odpowiedz(`http://127.0.0.1:${port}`), 'a')
   writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nMARK=b\n`)
   const ponowny = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.equal(ponowny.serwer, 'uruchomione', ponowny.detal)
-  assert.equal(await tresc(`http://127.0.0.1:${port}`), 'b')
+  assert.equal(await odpowiedz(`http://127.0.0.1:${port}`), 'b')
 })
 
 test('nasz serwer zywy, ale zawieszony (nie odpowiada): start zatrzymuje go i uruchamia od nowa', async () => {
@@ -377,5 +377,71 @@ test('stop z innym locale niz start zatrzymuje wlasny serwer (czas startu w loca
   } finally {
     if (lcAll === undefined) delete process.env.LC_ALL
     else process.env.LC_ALL = lcAll
+  }
+})
+
+// P17 (vibersi etap 1): projekt od zera — przed faza 1 komenda startu nie ma czego uruchomic. To nie awaria srodowiska:
+// serwer wystartuje restart przed testerem pierwszej fazy, ktora go potrzebuje. Po fazie (bez flagi) ten sam blad = STOP.
+test('start przed faza 1: komenda bez aplikacji (pnpm bez binarki, kod 127) = odroczone; inny blad i start po fazie = niepowodzenie', async () => {
+  const port = await wolnyPort()
+  const pnpm = `E2E_URL=http://127.0.0.1:${port}\nE2E_START=echo ' ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command "vite" not found' && exit 254\n`
+  const p = projekt({ env: pnpm })
+  const odroczone = await startE2e(p, ZADANIE, { uruchom: true, przedPierwszaFaza: true, narzedzia: SPRAWNE })
+  assert.equal(odroczone.status, 'odroczone', odroczone.detal)
+  assert.match(odroczone.detal, /aplikacji jeszcze nie ma .*Command "vite" not found/)
+  assert.equal(odroczone.serwer, 'brak')
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+  writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\nE2E_START=program-ktorego-nie-ma-e2e\n`)
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, przedPierwszaFaza: true, narzedzia: SPRAWNE })).status, 'odroczone')
+  writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\nE2E_START=echo port zajety && exit 3\n`)
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, przedPierwszaFaza: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+})
+
+// P17: serwer z bootstrapu nie wczytuje pliku konfiguracji, ktorego nie bylo przy jego starcie (vibersi: vite.config.ts z IU-1
+// -> 500 w fazie 4). Restart przed testerem fazy: nasz serwer od nowa; faza bez scenariuszy i makiet — bez restartu.
+test('restart fazy: serwer od nowa widzi plik powstaly po starcie; faza bez scenariuszy = pominieto; token advisors nie idzie do serwera', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "const fs=require('fs');const t=fs.existsSync('konfig.txt')?fs.readFileSync('konfig.txt','utf8'):'brak';require('http').createServer((q,s)=>s.end(t+'|'+(process.env.SUPABASE_ACCESS_TOKEN||'-'))).listen(${port})"`
+  const zadania = '## Faza 1 — A\n\n- [ ] Stwórz: `a.ts`\n\n## Faza 2 — B\n\n- [ ] Test: [E2E] `b` — /b → ok\n'
+  const p = projekt({ zadania, env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\nSUPABASE_ACCESS_TOKEN=tajny\n` })
+  const url = `http://127.0.0.1:${port}`
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'gotowe')
+  assert.equal(await odpowiedz(url), 'brak|-')
+  writeFileSync(join(p, 'konfig.txt'), 'nowa')
+  const bezScenariuszy = await restartFazy(p, ZADANIE, 1)
+  assert.equal(bezScenariuszy.status, 'pominieto')
+  assert.equal(await odpowiedz(url), 'brak|-')
+  const pidPrzed = JSON.parse(readFileSync(konfProjektu(p).pid, 'utf8')).pid
+  const w = await restartFazy(p, ZADANIE, 2)
+  assert.equal(w.status, 'gotowe', w.detal)
+  assert.equal(w.serwer, 'uruchomione')
+  assert.equal(w.scenariusze, 1)
+  assert.notEqual(JSON.parse(readFileSync(konfProjektu(p).pid, 'utf8')).pid, pidPrzed)
+  assert.equal(await odpowiedz(url), 'nowa|-')
+})
+
+test('restart fazy: serwer nie nasz (bez pliku PID) zostaje — gotowe z zastanym; komenda, ktora pada = niepowodzenie z logiem', async () => {
+  const port = await wolnyPort()
+  const obcy = createServer().listen(port)
+  try {
+    const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=exit 1\n` })
+    // Serwer TCP bez HTTP nie odpowiada na sonde — najpierw start komendy, ktora pada.
+    const pada = await restartFazy(p, ZADANIE, 1)
+    assert.equal(pada.status, 'niepowodzenie')
+    assert.match(pada.detal, /zakonczyla sie \(1\)|nie odpowiada/)
+  } finally {
+    obcy.close()
+  }
+  const port2 = await wolnyPort()
+  const http = await import('node:http')
+  const zastany = http.createServer((_zapytanie, s) => s.end('obcy')).listen(port2)
+  try {
+    const p2 = projekt({ env: `E2E_URL=http://127.0.0.1:${port2}\nE2E_START=exit 1\n` })
+    const w = await restartFazy(p2, ZADANIE, 1)
+    assert.equal(w.status, 'gotowe', w.detal)
+    assert.equal(w.serwer, 'zastane')
+    assert.equal(await odpowiedz(`http://127.0.0.1:${port2}`), 'obcy')
+  } finally {
+    zastany.close()
   }
 })

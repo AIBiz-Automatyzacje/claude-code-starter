@@ -21,7 +21,7 @@ const SUFIKS_FIGMA = '-figma'
 // klasy. Mapa rola → klasa z HANDOFF 6a pkt 46 (g); etykiety z `${...}` zamienionym na `*`. Rola spoza mapy =
 // klasa-orkiestracyjny. Wywolania z typem z pola (reviewerzy, buildery) sprawdza sie po liscie mozliwych typow.
 const MAPA_KLAS = /** @type {const} */ ([
-  [/^(stop:commit-artefaktow|start:commit-zadania|start:p3-known-issues|complete:uwaga-pr:\*|pr:claude-md-commit:\*|stan:zapis|e2e:start|e2e:start:retry|e2e:env-down|dossier:zapas)$/, 'klasa-mechaniczny'],
+  [/^(stop:commit-artefaktow|start:commit-zadania|start:p3-known-issues|complete:uwaga-pr:\*|pr:claude-md-commit:\*|stan:zapis|e2e:start|e2e:start:retry|e2e:restart:faza-\*|e2e:env-down|dossier:zapas)$/, 'klasa-mechaniczny'],
   [/^(dedup:semantyczny|scribe:faza-\*:inspekcja)$/, 'klasa-mechaniczny-odczyt'],
   [/^ogrod:pomiar$/, 'klasa-mechaniczny-pomiar'],
   [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*|ogrod:ocena)$/, 'klasa-sceptyk'],

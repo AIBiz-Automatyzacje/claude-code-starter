@@ -11,11 +11,12 @@
 // Kod wyjscia: 0 = bez porazki, 1 = co najmniej jedna porazka, 2 = zle argumenty.
 // Stan = drzewo robocze (bramki biegna przed commitem domkniecia); baza = commit sprzed fazy.
 // Monorepo: z korzenia bramki biegna tez w pakietach zmienionych w fazie, ktore maja wlasne narzedzia; sciezki od korzenia.
+// Advisors Supabase nie jest bramka domkniecia (P17): migracji fazy nie ma jeszcze w zadnej bazie — biegnie po db-sync na bazie e2e
+// (`e2e.mjs advisors`).
 
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { API_SUPABASE, bramkaAdvisors } from './advisors.mjs'
 import { zmianyFazy } from './diff.mjs'
 import { bramkaEslint } from './eslint.mjs'
 import { bramkaKnip } from './knip.mjs'
@@ -51,18 +52,17 @@ function zNarzedziem(n, bramka) {
  * any), Stryker ostatni (najdluzszy). Czas kazdej bramki mierzony tutaj, takze dla bramek bez narzedzia.
  * @param {string} projekt
  * @param {string} baza
- * @param {NodeJS.ProcessEnv} env
  * @returns {Promise<Record<string, WynikBramki>>}
  */
-async function uruchomBramki(projekt, baza, env) {
+async function uruchomBramki(projekt, baza) {
   const zmiany = zmianyFazy(projekt, baza)
   const pakiety = pakietyFazy(projekt, zmiany.pliki)
-  if (!pakiety.length) return bramkiKatalogu(projekt, baza, env, zmiany)
+  if (!pakiety.length) return bramkiKatalogu(projekt, baza, zmiany)
   /** @type {[string, Record<string, WynikBramki>][]} */
-  const przebiegi = [['.', await bramkiKatalogu(projekt, baza, env, zmiany)]]
+  const przebiegi = [['.', await bramkiKatalogu(projekt, baza, zmiany)]]
   for (const k of pakiety) {
     const katalog = join(projekt, k)
-    przebiegi.push([k, await bramkiKatalogu(katalog, baza, env, zmianyFazy(katalog, baza))])
+    przebiegi.push([k, await bramkiKatalogu(katalog, baza, zmianyFazy(katalog, baza))])
   }
   return scalWyniki(przebiegi)
 }
@@ -71,11 +71,10 @@ async function uruchomBramki(projekt, baza, env) {
  * Bramki jednego katalogu (projekt albo pakiet monorepo) po kolei.
  * @param {string} projekt
  * @param {string} baza
- * @param {NodeJS.ProcessEnv} env
  * @param {import('./diff.mjs').ZmianyFazy} zmiany
  * @returns {Promise<Record<string, WynikBramki>>}
  */
-async function bramkiKatalogu(projekt, baza, env, zmiany) {
+async function bramkiKatalogu(projekt, baza, zmiany) {
   const n = wykryjNarzedzia(projekt)
   /** @type {[string, () => WynikBramki | Promise<WynikBramki>][]} */
   const kolejka = [
@@ -86,7 +85,6 @@ async function bramkiKatalogu(projekt, baza, env, zmiany) {
     ['sizeLimit', () => zNarzedziem(n.sizeLimit, (t) => bramkaSizeLimit(projekt, t))],
     ['migracje', () => bramkaNiezmiennoscMigracji(projekt, baza)],
     ['migracjeSuma', () => bramkaMigrationsSum(projekt)],
-    ['advisors', () => bramkaAdvisors(projekt, env, API_SUPABASE)],
     ['testyUsuniete', () => bramkaTestyUsuniete(projekt, zmiany)],
     ['stryker', () => zNarzedziem(n.stryker, (t) => bramkaStryker(projekt, t, zmiany))],
   ]
@@ -125,7 +123,7 @@ if (a.dopiszSume) {
   /** @type {Record<string, WynikBramki>} */
   let wyniki
   try {
-    wyniki = await uruchomBramki(a.projekt, a.baza, process.env)
+    wyniki = await uruchomBramki(a.projekt, a.baza)
   } catch (e) {
     if (!(e instanceof Error && /baza fazy/.test(e.message))) throw e
     zleArgumenty(e.message)

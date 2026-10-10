@@ -8,6 +8,7 @@ import { basename, join } from 'node:path'
 
 import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
+import { gotowoscAdvisors } from '../e2e/advisors.mjs'
 import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
 import { potrzebyZadania } from '../e2e/start.mjs'
 import { KOMENDA_GENERATORA, maSkillWeryfikacji, PLIK_SKILLA } from '../e2e/weryfikacja.mjs'
@@ -53,10 +54,11 @@ function srodowiskoE2e(projekt, katalogZadania, narzedzia) {
 /**
  * @param {string} projekt katalog projektu
  * @param {string} katalogZadania docs/active/<zadanie> wzgledem projektu
- * @param {{ narzedzia?: import('../e2e/srodowisko.mjs').Narzedzia }} [opcje] narzedzia: atrapy git check-ignore i agent-browser (testy)
+ * @param {{ narzedzia?: import('../e2e/srodowisko.mjs').Narzedzia, srodowisko?: Record<string, string | undefined> }} [opcje] narzedzia:
+ *   atrapy git check-ignore i agent-browser (testy); srodowisko: zmienne procesu dla tokenu advisors
  * @returns {Gotowosc}
  */
-export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA } = {}) {
+export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodowisko = process.env } = {}) {
   const zadanie = basename(katalogZadania)
   const katalog = join(projekt, katalogZadania)
   const planZadania = plikZadania(katalog, '-plan.md')?.tresc
@@ -75,9 +77,13 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA } = {}
   const galaz = git(projekt, ['branch', '--show-current'])
   const brudne = git(projekt, ['status', '--porcelain']).split('\n').filter(Boolean)
 
+  const e2e = srodowiskoE2e(projekt, katalogZadania, narzedzia)
+  // Zadanie z migracjami (P17): advisors bez tokenu albo bazy e2e nie pobiegnie — uwaga, nie bloker (security sprawdzi recznie).
+  const advisors = zadania.includes('supabase/migrations/') ? gotowoscAdvisors(projekt, srodowisko) : null
+  if (advisors && !advisors.gotowe) e2e.uwagi.push(advisors.uwaga)
   const wynik = {
     plan: { ok: !walidacja.bledy.length, bledy: walidacja.bledy, uwagi: walidacja.uwagi },
-    e2e: srodowiskoE2e(projekt, katalogZadania, narzedzia),
+    e2e,
     przygotowanie: { ok: !prep?.blokujace.length, sciezka: prep?.sciezka ?? null, blokujace: prep?.blokujace ?? [], odroczone: prep?.odroczone ?? [] },
     git: { ok: galaz === wymagana && !brudne.length, galaz, wymagana, brudne },
   }

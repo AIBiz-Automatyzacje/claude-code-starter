@@ -120,7 +120,7 @@ do sesji projektu i nie zjadają kontekstu. **Działa to tylko w terminalowym `c
 ### Bramki domknięcia
 
 Domknięcie każdej fazy uruchamia skrypt `.claude/scripts/bramki/bramki.mjs` zamiast agenta, który „gra lintera”: tsc, ESLint,
-`vitest --typecheck`, knip, size-limit, niezmienność migracji i `supabase/migrations.sum`, advisors Supabase, testy usunięte
+`vitest --typecheck`, knip, size-limit, niezmienność migracji i `supabase/migrations.sum`, testy usunięte
 w fazie i Stryker na liniach zmienionych w fazie. Porażki domknięcie naprawia przed commitem. Ostrzeżenia ESLint i przeżyte
 mutanty idą do review fazy. Bramka bez narzędzia w projekcie daje status `brak` i nie blokuje, więc działa tylko to,
 co zainstalujesz. W nowym projekcie, od pierwszego commita:
@@ -136,8 +136,14 @@ echo '.stryker-tmp/' >> .gitignore
   Lista instaluje 5.9.3.
 - **size-limit** mierzy `dist/assets/*.js` (wyjście Vite). Bramka sama odpala `npm run build` przed pomiarem. Limit 250 kB
   w `.size-limit.json` dopasuj do projektu.
-- **advisors** (Supabase Management API) wymagają `SUPABASE_ACCESS_TOKEN` w środowisku i projektu podlinkowanego
-  (`supabase link`) albo `SUPABASE_PROJECT_REF`. Bez tokenu bramka ma status `brak`.
+- **advisors** (lint bazy Supabase przez Management API: RLS, `search_path`, indeksy) nie jest bramką domknięcia: przy
+  domknięciu migracji fazy nie ma jeszcze w żadnej bazie. Biegnie w kroku db-sync, po wgraniu migracji fazy na bazę e2e
+  (`e2e.mjs advisors`), a wynik dostaje reviewer security — błąd (ERROR) wprowadzony w fazie to P1, ostrzeżenie (WARN) P2.
+  Wymaga `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens) w `.env.e2e` albo w środowisku; ref projektu e2e
+  bierze z `VITE_SUPABASE_URL` w `.env.e2e` (albo `SUPABASE_E2E_PROJECT_REF`). Token daje dostęp do całego konta Supabase.
+  Brak tokenu zgłaszają doctor (wiersz „advisors (baza e2e)”) i bramka gotowości `/dev-plan` przy zadaniu z migracjami.
+- **Stryker** z szablonu wyłącza sprawdzanie typów tylko w plikach TS (`disableTypeChecks`): bez tego Stryker dopisuje
+  `// @ts-nocheck` do każdego pliku JS w sandboksie, a test czytający fixture `.js` pada w pierwszym przebiegu.
 - **Istniejący projekt:** ESLint wprowadzasz osobnym zadaniem sprzątającym (każda reguła razem z poprawą starych miejsc).
   Dopóki projekt nie ma `eslint.config.*` z szablonu, działa hook `error-handling-reminder.sh`.
 - Doctor sprawdza, czy paczki z listy są zainstalowane (wiersz „bramki domknięcia”).
@@ -430,10 +436,13 @@ Opcjonalne: zadanie bez scenariuszy `[E2E]` i bez makiet nie uruchamia przegląd
 2. **Skill weryfikacji projektu** — `/weryfikacja-setup` tworzy `.claude/skills/weryfikacja/` (jak uruchomić aplikację, jak się
    zalogować, gdzie są funkcje, co jest dowodem działania) i mapę funkcji zasianą z planów zrobionych zadań. Tester E2E czyta go przy
    każdym scenariuszu, archiwizacja każdego zadania dopisuje do mapy nowe funkcje. To artefakt projektu — `/sync-template` go nie rusza.
-3. **W runie** — bootstrap stawia serwer i sprawdza środowisko (niesprawne na starcie = STOP przed fazą 1), per faza synchronizuje
-   migracje i seedy bazy e2e, tester odgrywa scenariusze i zwraca przebieg PASS/FAIL/SKIP, skrypt księguje linie `[E2E]`. Scenariusz
-   niewykonalny w trakcie runu (serwer padł, limit usługi zewnętrznej, popup OAuth) przechodzi na `[Manual]` z powodem i trafia do
-   smoke'u operatora — run idzie dalej.
+3. **W runie** — bootstrap stawia serwer i sprawdza środowisko (niesprawne na starcie = STOP przed fazą 1). Każda faza ze
+   scenariuszami albo makietami zaczyna review od restartu serwera (`e2e.mjs restart`): serwer z bootstrapu nie widzi plików
+   konfiguracji powstałych w fazach. Potem synchronizacja migracji i seedów bazy e2e z lintem advisors, tester odgrywa scenariusze
+   i zwraca przebieg PASS/FAIL/SKIP, skrypt księguje linie `[E2E]`. Scenariusz niewykonalny w trakcie runu (serwer padł, limit
+   usługi zewnętrznej, popup OAuth) przechodzi na `[Manual]` z powodem i trafia do smoke'u operatora — run idzie dalej.
+   **Projekt od zera:** gdy żadna faza nie ma jeszcze execute, a komenda startu nie ma czego uruchomić (brak Vite, skryptu
+   albo `package.json`), start jest odroczony zamiast STOP-u — serwer wstaje restartem przed testerem pierwszej fazy, która go potrzebuje.
 
 ## Ogrodnik
 
@@ -530,7 +539,7 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 
 - **Autopilot: waliduj branch PRZED odpaleniem** — workflow nie pyta o branch switch.
 - **RESUME tylko po awarii runu** (zawsze z tymi samymi `args` — nie przeżywają między wywołaniami). Po **STOP bramki** (środowisko E2E, fix FAIL), gdy coś naprawiłeś — **świeży run bez `resumeFromRunId`**: resume zwróciłby porażkę bramki z cache; stan faz i tak wznowi się z `.autopilot-state.json` (źródło prawdy), checkboxy `.md` to tylko widok. Ręczne edycje `.autopilot-state.json` też wymagają świeżego runu.
-- **E2E to prawdziwa przeglądarka**, nie symulacja — autopilot sam stawia serwer aplikacji z `.env.e2e`. Bez `.env.e2e` zadanie z `[E2E]` zatrzymuje się przed fazą 1 (STOP z komendą naprawy); środowisko, które padnie w trakcie runu, przenosi scenariusze na `[Manual]` do smoke'u operatora.
+- **E2E to prawdziwa przeglądarka**, nie symulacja — autopilot sam stawia serwer aplikacji z `.env.e2e`. Bez `.env.e2e` zadanie z `[E2E]` zatrzymuje się przed fazą 1 (STOP z komendą naprawy); środowisko, które padnie w trakcie runu, przenosi scenariusze na `[Manual]` do smoke'u operatora. Przed testerem każdej fazy serwer startuje od nowa, a projekt bez aplikacji nie dostaje STOP-u na starcie (P17).
 - **Limit cyklu fix = 1** — drugi cykl historycznie naprawiał 0 findingów przy koszcie pełnego re-review. Po fixie commity fixa ogląda **kontrola diffu naprawczego** (P8): jeden agent z listami K-1…K-7 katalogu A (regresja i zmiana kontraktu, bramki bez testu odmowy, listy correctness na diffie fixa, stare nazwy, niezgodne opisy, test P1 czerwony na kodzie sprzed poprawki, zmiany poza zgłoszonym miejscem) i bramkami mechanicznymi P6 na plikach fixa; zakres z hashy commitów fixa, jedna tura poprawek. Pre-skan haiku i targeted verify P1 usunięte.
 - **`compound-refresh` w autopilocie jest scoped** (tylko dotknięta kategoria + CONCEPTS.md) — pełny refresh całej bazy odpalaj osobno, okresowo.
 - **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; rola z tabeli ról albo z `app_metadata` ustawianego po stronie serwera (reguły kodu, sekcja Bezpieczeństwo).

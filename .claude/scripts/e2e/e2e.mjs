@@ -5,7 +5,11 @@
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   e2e.mjs sprawdz [--zadanie <docs/active/zadanie>] potrzeby zadania + sprawdzenie .env.e2e bez startu serwera (Doctor);
 //                                                     bez --zadanie srodowisko jest potrzebne zawsze (skill weryfikacji)
-//   e2e.mjs start [--zadanie <docs/active/zadanie>]   to samo + start serwera aplikacji (bootstrap autopilota, Launch)
+//   e2e.mjs start [--zadanie <docs/active/zadanie>] [--przed-pierwsza-faza]
+//                                                     to samo + start serwera aplikacji (bootstrap autopilota, Launch);
+//                                                     --przed-pierwsza-faza: projekt bez aplikacji = odroczone, nie STOP (P17)
+//   e2e.mjs restart --zadanie <dir> --faza N          serwer od nowa przed testerem fazy ze scenariuszami albo makietami (P17)
+//   e2e.mjs advisors [--baza <sha>]                   lint bazy e2e (Supabase advisors) po wgraniu migracji fazy (db-sync, P17)
 //   e2e.mjs stop                                      zatrzymuje serwer uruchomiony przez start (plik PID)
 //   e2e.mjs stan                                      czy serwer pipeline'u zyje + ogon jego logu (tester, gdy aplikacja milczy)
 //   e2e.mjs suma                                      suma migracji przed wypchnieciem do bazy e2e
@@ -25,13 +29,14 @@ import { isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
+import { advisorsE2e } from './advisors.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { rodzajPrzyczyny, zaksiegujFaze } from './ksiegowanie.mjs'
 import { dopiszZadanie } from './mapa.mjs'
 import { doOdegrania, listaManual } from './scenariusze.mjs'
 import { stanSerwera, zatrzymajSerwer } from './serwer.mjs'
 import { envE2e, konfiguracja } from './srodowisko.mjs'
-import { startE2e } from './start.mjs'
+import { restartFazy, startE2e } from './start.mjs'
 import { generujSkill } from './szkielet.mjs'
 
 const KOD_DO_POPRAWY = 1
@@ -40,12 +45,12 @@ const KOD_WYJATKU = 3
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, zadanie: { type: 'string' }, faza: { type: 'string' }, flow: { type: 'string' },
   przyczyna: { type: 'string' }, powod: { type: 'string' }, 'brak-wpisu': { type: 'string' }, 'tylko-z-wpisem': { type: 'boolean' },
-  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' },
+  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, baza: { type: 'string' }, 'przed-pierwsza-faza': { type: 'boolean' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> | weryfikacja [--zapisz [--nadpisz]] [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] [--przed-pierwsza-faza] | restart --zadanie <dir> --faza N | advisors [--baza <sha>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> | weryfikacja [--zapisz [--nadpisz]] [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -90,8 +95,12 @@ function zapiszKsiegowanie(projekt, plik, tekst, zmiany) {
 /** @param {string} polecenie @param {ReturnType<typeof parseArgs<{ options: typeof USTAWIENIA, allowPositionals: true }>>['values']} o @param {string} projekt */
 async function wykonaj(polecenie, o, projekt) {
   if (polecenie === 'sprawdz' || polecenie === 'start') {
-    const w = await startE2e(projekt, o.zadanie ? wzgledem(projekt, o.zadanie) : null, { uruchom: polecenie === 'start' })
-    zakoncz(w, w.status === 'pominieto' || w.status === 'gotowe')
+    const w = await startE2e(projekt, o.zadanie ? wzgledem(projekt, o.zadanie) : null, { uruchom: polecenie === 'start', przedPierwszaFaza: !!o['przed-pierwsza-faza'] })
+    zakoncz(w, w.status === 'pominieto' || w.status === 'gotowe' || w.status === 'odroczone')
+  }
+  if (polecenie === 'advisors') {
+    const w = await advisorsE2e(projekt, { baza: o.baza })
+    zakoncz(w, w.status !== 'porazka' && w.status !== 'blad')
   }
   if (polecenie === 'stop') zakoncz(await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
   if (polecenie === 'stan') zakoncz(stanSerwera(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
@@ -111,6 +120,10 @@ async function wykonaj(polecenie, o, projekt) {
   const { plik, tresc } = zadania(projekt, sciezka)
   if (polecenie === 'lista-manual') zakoncz({ pozycje: listaManual(tresc) }, true)
   const faza = numerFazy(o.faza)
+  if (polecenie === 'restart') {
+    const w = await restartFazy(projekt, sciezka, faza)
+    zakoncz(w, w.status !== 'niepowodzenie')
+  }
   if (polecenie === 'scenariusze') zakoncz({ faza, scenariusze: doOdegrania(tresc, faza) }, true)
   if (polecenie === 'ksieguj') {
     const wejscie = readFileSync(0, 'utf8')

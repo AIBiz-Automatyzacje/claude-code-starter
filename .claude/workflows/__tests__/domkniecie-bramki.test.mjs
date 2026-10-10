@@ -71,7 +71,9 @@ test('krok Dziennika bez archeologii dat (H51)', () => {
 // Zmiana kontraktu (P7): ostrzezeniaEslint i mutanty wychodza z EXECUTE_RESULT — do review ida przez dossier, z ostatniego
 // przebiegu bramek (HANDOFF 6a pkt 52 e: domkniecie wpisywalo do mutanty drugi przebieg, choc prompt mowil o pierwszym).
 test('EXECUTE_RESULT: bramki z kazda bramka skryptu i testy usuniete z uzasadnieniem; bez ostrzezen i mutantow', () => {
-  assert.equal(NAZWY_BRAMEK.length, 10)
+  // Advisors wyszedl z bramek domkniecia w P17 (biegnie po db-sync na bazie e2e) — 9 bramek.
+  assert.equal(NAZWY_BRAMEK.length, 9)
+  assert.ok(!NAZWY_BRAMEK.includes('advisors'))
   const p = wf.EXECUTE_RESULT.properties
   assert.deepEqual(Object.keys(p.bramki.properties), NAZWY_BRAMEK)
   assert.deepEqual(p.bramki.properties.eslint.required, ['status', 'sekundy', 'trafienia'])

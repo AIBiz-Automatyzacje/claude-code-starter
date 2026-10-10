@@ -318,7 +318,7 @@ const ZAPAS_DOSSIER = {
 // i code-simplicity usuniete w P11 po przeniesieniu tresci (async i usuniecia -> correctness, sygnaly wydzielenia
 // i YAGNI -> code-quality). Cofniecie osi = przywrocenie pliku roli z main sprzed P11 (PLAN-POPRAWY P11).
 const REVIEWERZY = [
-  // Polecenia-listy osi (bramki i proby obejscia, walidacja, auth, RLS warunkowo po advisors, sekrety, seedy) siedza w pliku roli.
+  // Polecenia-listy osi (bramki i proby obejscia, walidacja, auth, RLS warunkowo po advisors bazy e2e, sekrety, seedy) siedza w pliku roli.
   { key: 'security', agentType: 'security-sentinel', fokus: 'bezpieczenstwo zmienionego kodu wg list z pliku Twojej roli' },
   // Polecenia-listy osi (zlozonosc, N+1 i indeksy, pamiec, rendery z warunkiem React Compilera, paczka, Edge Functions) siedza w pliku roli.
   { key: 'performance', agentType: 'performance-oracle', fokus: 'wydajnosc zmienionego kodu wg list z pliku Twojej roli' },
@@ -367,7 +367,7 @@ Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczys
     ? `
 === DOSSIER FAZY (juz przygotowane) ===
 Plik: ${kontekst.ctxPlik}
-Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip, advisors,
+Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip,
 przezyte mutanty), sekcje planu technicznego tej fazy, przywolane wiersze "Sledzenie wymagan",
 wycinek wiedzy projektu dla plikow fazy, zadania fazy i kontekst designerski.
 Zacznij od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj wtedy, gdy jednostka
@@ -412,7 +412,22 @@ zglasza os code-quality.`
 
 // Polecenie reviewera osi (wszystkie osie). Mandat, procedura, wagi i kryterium konca sa w pliku roli (agentType);
 // polecenie podaje zrodla faktow, schemat wyniku i bloki wspolne. `dodatki` = blok tylko tej osi (test-coverage
-// uruchamia testy, wiec dostaje blok dlugich komend).
+// uruchamia testy, wiec dostaje blok dlugich komend; security — wynik advisors bazy e2e).
+// Advisors bazy e2e po wgraniu migracji fazy (P17, db-sync autopilota) — wejscie security. Bez wyniku (run standalone, projekt
+// bez bazy e2e, advisors nie biegl) security sprawdza RLS i search_path recznie (pozycja warunkowa w pliku roli).
+function blokAdvisors(advisors) {
+  if (!advisors) return '\n=== ADVISORS BAZY E2E ===\nStatus: brak wyniku (advisors nie biegl w tej fazie).\n'
+  const lista = (t) => (t && t.length ? t.map((x) => `- ${x.regula} — ${x.opis}`).join('\n') : '- brak')
+  return `
+=== ADVISORS BAZY E2E (lint Supabase po wgraniu migracji fazy) ===
+Status: ${advisors.status}${advisors.detal ? ` — ${advisors.detal}` : ''}
+Bledy (ERROR):
+${lista(advisors.bledy)}
+Ostrzezenia (WARN):
+${lista(advisors.ostrzezenia)}
+`
+}
+
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = '') {
   return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
@@ -709,6 +724,8 @@ const poprzednie = (args && args.poprzednieFindingi) || []
 // undefined = run standalone (Workflow z args {sciezka, faza}, bez autopilota) — wtedy NIE wiemy nic o srodowisku i nie wolno nam
 // niczego ograniczac: FAIL-OPEN, zachowanie dokladnie jak przed ta zmiana.
 const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
+// Advisors bazy e2e z db-sync autopilota (P17): { status, bledy, ostrzezenia, detal } albo null — wejscie security.
+const advisorsE2e = (args && args.advisors) || null
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
 // Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
@@ -750,7 +767,7 @@ log(kontekst && kontekst.ctxZapisany
 function wywolajOs(r) {
   if (r.key === 'test-coverage') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzTest, kontekst, BLOK_DLUGIE_KOMENDY), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.testCoverage))
   if (r.key === 'spec-compliance') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: 'spec-compliance-reviewer', label: 'review:spec-compliance', phase: 'Review' }, tiery.spec))
-  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
+  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, r.key === 'security' ? blokAdvisors(advisorsE2e) : ''), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 }
 const thunki = aktywni.map((r) => () => wywolajOs(r))
 if (e2eTryb !== 'pominiety') {
