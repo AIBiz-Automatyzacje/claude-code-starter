@@ -22,6 +22,11 @@ def _z_kodem(rola):
     return rola in ('build', 'fix') or rola.startswith('fix:poprawka')
 
 
+# Reviewer code-quality ma w roli konwencje reguł kodu (architecture-strategist.md: „odstępstwo od konwencji reguł kodu projektu”),
+# więc jawny odczyt reguł to jego praca, nie polecenie w złym miejscu — lista informacyjna, nie czerwone (6a pkt 80, vibersi 2/4).
+CZYTA_REGULY_Z_ROLI = ('review:code-quality',)
+
+
 def reguly(katalog, agent_id):
     """{'read', 'bash', 'paths', 'kod', 'd10': [klasy], 'prompt'} z agent-<id>.jsonl; None, gdy brak pliku. kod = Read/Edit/Write
     pliku kodu; prompt = polecenie od workflowu (wiadomość harnessu)."""
@@ -68,24 +73,34 @@ def wycinki_plannera(katalog, agent_id):
     for w in wpisy:
         for b in (w.get('message') or {}).get('content') or [] if w.get('type') == 'user' else []:
             if isinstance(b, dict) and b.get('type') == 'tool_result' and b.get('tool_use_id') in ids:
-                try: wynik = json.JSONDecoder().raw_decode(_tekst_wyniku(b.get('content')).lstrip())[0]
-                except ValueError: continue
-                # Wynik zaczynajacy sie liczba (np. `wc -l` sklejone z wycinkiem) to nie JSON wycinka.
-                if isinstance(wynik, dict): wyniki.append(wynik)
+                # Wynik bywa poprzedzony „Exit code N” (inna komenda w tym samym Bashu) albo niesie kilka wycinków
+                # (pętla po IU, `echo =====` między wywołaniami) — każdy JSON wycinka zaczyna się od `{"tresc"` (vibersi, 6a pkt 80).
+                tekst = _tekst_wyniku(b.get('content'))
+                for m in re.finditer(r'\{"tresc"', tekst):
+                    try: wynik = json.JSONDecoder().raw_decode(tekst, m.start())[0]
+                    except ValueError: continue
+                    if isinstance(wynik, dict): wyniki.append(wynik)
     return wyniki
 
 
 def blok_w_prompcie(prompt, wycinki):
-    """Prompt zawiera każdą linię któregoś niepustego wycinka (harness wcina linie); bez niepustych wycinków nie ma czego szukać."""
+    """Prompt zawiera każdą linię któregoś niepustego wycinka (harness wcina linie); bez niepustych wycinków nie ma czego szukać.
+    Wycinki to wyniki plannera fazy buildera — planner liczy je per IU, więc pusty wycinek w fazie i prompt bez bloku
+    to IU, dla której wiedza nie ma nic (vibersi IU-4: package.json, Dockerfile), a nie zgubiony blok (6a pkt 80)."""
     linie = {l.strip() for l in prompt.split('\n')}
     pelne = [w for w in wycinki if (w.get('tresc') or '').strip()]
-    return not pelne or any(all(l.strip() in linie for l in w['tresc'].split('\n') if l.strip()) for w in pelne)
+    if not pelne or any(all(l.strip() in linie for l in w['tresc'].split('\n') if l.strip()) for w in pelne): return True
+    pusty_w_fazie = any(not (w.get('tresc') or '').strip() for w in wycinki)
+    return pusty_w_fazie and not any(l.strip() in linie for w in pelne for l in w['tresc'].split('\n')[:1] if l.strip())
 
 
 def kryterium(agenci, katalog):
     k = {'eager': [], 'bez_kodu_z_regulami': [], 'kod_bez_regul': [], 'podwojny_odczyt': [], 'czyta_kod_z_regulami': [],
-         'buildery': 0, 'buildery_bez_bloku': 0, 'buildery_z_d10': 0, 'bez_transkryptu': 0}
-    wycinki = [x for a in agenci if a.get('rola') == 'planner' and katalog for x in wycinki_plannera(katalog, a['id'])]
+         'czyta_reguly_z_roli': [], 'buildery': 0, 'buildery_bez_bloku': 0, 'buildery_z_d10': 0, 'bez_transkryptu': 0}
+    wycinki_faz = collections.defaultdict(list)
+    for a in agenci:
+        if a.get('rola') == 'planner' and katalog: wycinki_faz[a.get('faza')] += wycinki_plannera(katalog, a['id'])
+    wycinki = [x for w in wycinki_faz.values() for x in w]
     dodaj = lambda lista, x: x in lista or lista.append(x)
     for a in agenci:
         rola = a.get('rola') or '?'
@@ -98,12 +113,12 @@ def kryterium(agenci, katalog):
         # po czytaniu kodu (reviewer, sceptyk, kontrola fixa) = koszt do telemetrii, nie defekt (P16).
         if _z_kodem(rola):
             if not odczyt: dodaj(k['kod_bez_regul'], rola)
-        elif jawnie: dodaj(k['bez_kodu_z_regulami'], rola)
+        elif jawnie: dodaj(k['czyta_reguly_z_roli' if rola in CZYTA_REGULY_Z_ROLI else 'bez_kodu_z_regulami'], rola)
         elif r['paths']: dodaj(k['czyta_kod_z_regulami'], rola)
         if rola == 'build':
             k['buildery'] += 1
             k['buildery_z_d10'] += bool(r['d10'])
-            k['buildery_bez_bloku'] += not blok_w_prompcie(r['prompt'], wycinki)
+            k['buildery_bez_bloku'] += not blok_w_prompcie(r['prompt'], wycinki_faz.get(a.get('faza'), []))
     k['wycinki_plannera'] = [{'zn': w.get('zn'), 'reguly': w.get('wpisy'), 'd10': (w.get('zapobieganie') or {}).get('klasy'),
                               'd10_pominiete': (w.get('zapobieganie') or {}).get('pominiete')} for w in wycinki]
     k['zielone'] = bool(k['buildery']) and not (k['eager'] or k['bez_kodu_z_regulami'] or k['kod_bez_regul'] or k['podwojny_odczyt']

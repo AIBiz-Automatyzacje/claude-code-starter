@@ -2124,6 +2124,65 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (c) **Do odczytu (karta):** etap 1 = 4 fazy naraz → odczyt A po pierwszej fazie i B po całym etapie; referencja R-P16 `wf_1a28a396-1e1`;
     projekt telemetrii `vibersi`; Supabase Free usypia projekt e2e po tygodniu bez ruchu. Operator ma uwagę do planu — poda w następnej sesji.
 
+80. **VIBERSI ETAP 1 — ODCZYT A + B (4 fazy, 2026-10-10). Maszyneria działa; dwie luki szablonu przy projekcie od zera.** Runy:
+    `wf_c0348419-01f` STOP `start: srodowisko E2E` (0,09 M, 1 min: `vite` not found — aplikacji jeszcze nie ma) → sesja projektu dodała
+    minimalny Vite + `index.html` (`a984382`) → `wf_b60193c7-987` OK, 4/4 fazy, walidacja PASS (108/108), 16,31 M, 105 agentów, 137 min,
+    archiwum `ca49df2`. Odczyty: `~/Documents/Kodowanie/telemetria-odczyty/` (`vibersi-etap1-*.txt`, `raport-2026-10-09_2026-10-10-vibersi*`).
+    (a) **Koszt:** 4,1 M na fazę wobec 25–36 M we wrześniu (dane-digest §2; inny projekt, CLAUDE.md 386 zn — kierunek, nie liczba);
+    execute 41%, review 24%, fix 21%, sceptycy 3,6%; faza 3 (5 IU SQL + 4 P1) 7,44 M = 46% runu; role haiku ~1,5% runu (< 3%, efort
+    `medium` bez zmian). dev-plan 1,37 M do Workflow (< 2,95 M), bramka gotowości 1/1.
+    (b) **Karta §3 (A):** P2 STOP „brak narzędzia” 0; P3 `ctx_start` p50 builder 23k (= R-P16), naprawiacz 22k, reviewer 11k, sceptyk 8k,
+    mechaniczny haiku 7k (niżej niż R-P16 przez mały CLAUDE.md); P4 `claude_md_zn` 386 stałe we wszystkich fazach, STOP środowiska w trakcie 0;
+    P12+P16 fix i poprawka 8/8 Read reguł, `paths:` 0, podwójny odczyt 0, buildery 11/11 z blokiem wycinka, D10 u 10/11 (IU-4 bez klas dla
+    `package.json`/Dockerfile — poprawnie); P15 ogrodnik ok 0,012 M, sekcja „Ogród” jest; pkt 78 (i): `stan:zapis:retry` 0 (3 zapisy),
+    `e2e.mjs stop` zatrzymał serwer (PID 7434). **Kryterium P12 wychodzi CZERWONE tylko przez `review:code-quality` (2/4 czyta reguły
+    jawnie) — rola każe mu sprawdzać konwencje reguł kodu (`architecture-strategist.md:32`), więc to informacja, nie defekt; do decyzji
+    operatora: przenieść code-quality do listy informacyjnej skryptu.**
+    (c) **Karta §4 (B, 4 z 5 faz):** P6 bramki max 17,5 s (próg 300 s); P7 Bash reviewerów p50 2,5–9,5 (próg 23); P8 kontrola fixa 0,14 M
+    na commit (próg 0,46 M); P11 findingi z mutantami w fazach 2–4 (Stryker działa); **P9 obalenia sceptyków 0/37 (0%), degradacje 0 —
+    poniżej progu 5% → karta: „P2 wraca do grupy po pliku”; formalnie decyzja po 5. fazie (następne zadanie)**; 12 agentów verify (4 P1 × 3)
+    = 0,31 M, verify-batch 0,27 M.
+    (d) **Luka 1 — E2E przed fazą 1 w projekcie od zera:** `e2e:start` uruchamia serwer przed fazą 1, gdy zadanie ma jakiekolwiek [E2E]
+    (tu 6, pierwsze w fazie 2) → STOP, bo aplikacji nie ma. Obejście sesji (minimalny Vite) uruchomiło run, ale spowodowało lukę 2.
+    (e) **Luka 2 — serwer E2E sprzed `vite.config.ts`:** serwer wystartował 23:16, `vite.config.ts` (alias `@` przez `tsconfigPaths`)
+    powstał w IU-1 23:17–23:22; Vite nie wczytuje pliku konfiguracji, którego nie było przy starcie → faza 4: 500 na `src/main.tsx`
+    („Failed to resolve import "@/index.css"”), 4 scenariusze UI SKIP → [Manual] (P14 zadziałał: 0 STOP w trakcie). **Odtworzone bez
+    Strykera** (klon w scratchpadzie: start na `a984382`, przejście na `ca49df2` → 500; świeży start na `ca49df2` → 200). Diagnoza
+    w projekcie („sandbox Strykera”) jest błędna — jest w `review-faza-4.md` (OPERATOR), Dzienniku i „Wnioskach” podsumowania; proponowana
+    tam poprawka (`tempDirName`, `server.watch.ignored`) nie usuwa przyczyny. Fazy 2–3 serwera Vite nie używały (skrypty), faza 1 bez [E2E] —
+    nikt nie zauważył wcześniej.
+    (f) **Uwagi builderów do szablonu (Dziennik IU-1, review fazy 2), sprawdzone:** `templates/bramki/eslint.config.szablon.ts` — wtyczka
+    react-hooks z `configs` nie przechodzi `tsc` (TS2322, ESLint 10 + react-hooks 7.1.1), projekt użył `{ meta, rules }`, a
+    `konfiguracje.test.mjs` nie sprawdza tsc; `templates/bramki/stryker.config.json` bez `disableTypeChecks` → faza 2 bramka `stryker`
+    `blad` (Stryker dopisał `// @ts-nocheck` do fixture'a `.js`), projekt dodał `"{src,server}/**/*.{ts,tsx}"`; bramka `advisors` `brak`
+    w fazach 3–4 (brak `SUPABASE_ACCESS_TOKEN`/`supabase link`) — doctor ani bramka gotowości tego nie zgłosiły, security sprawdził RLS ręcznie.
+    Uwaga „README: `node --test scripts/`” nie dotyczy szablonu (README tego nie ma — to stary skrypt projektu).
+    (g) **Pliki `docs/active/<zadanie>/` (pytanie operatora):** wszystkie trzy używane. `-zadania.md` (18,6 KB): checkboxy faz — planner,
+    domknięcie (odhacza), scribe (Do poprawy), start E2E i dossier liczą niezaznaczone [E2E]. `-kontekst.md` (17 KB, z czego Dziennik 15,6 KB):
+    sekcja „Designerski kontekst” (planner, dossier, tester, start E2E — `figma_screens`) + Dziennik pisany po każdej fazie (domknięcie:
+    odchylenia i następne kroki builderów — jedyny ich zapis; scribe: wynik review), czytany przez compound i archiwizację (decyzje).
+    `-plan.md` (1,9 KB): tabela „Fazy” (bootstrap autopilota buduje z niej listę faz, planner) i linia „Plan techniczny:”; reszta to
+    wskaźniki. Koszt odczytu znikomy (planner czyta wycinkami); scalenie `-plan.md` do `-kontekst.md` oszczędza ~2 KB — niewarte zmiany kontraktu.
+    (h) **Skrypt analizy `smoke_p12.py` (bez `.claude/`):** parser wycinków nie czytał wyniku z prefiksem „Exit code 1” ani kilku wycinków
+    w jednym Bashu (planner liczy per IU) i porównywał buildera z wycinkami wszystkich faz → vibersi „8 builderów bez bloku” (artefakt),
+    a „0” w R-P16 wynikało z braku wycinków do sprawdzenia. Po poprawce (dopasowanie po fazie): vibersi 0/11, R-P16 0/3 — zielone R-P16
+    potwierdzone na prawdziwym sprawdzeniu; R-P15 bez zmiany werdyktu (czerwone przez fix).
+    (i) **Do decyzji operatora:** (1) paczka szablonu (`.claude/`) na luki 1–2 — rekomendacja: restart serwera E2E przed testerem każdej fazy
+    z [E2E]/makietami (sekundy; usuwa całą klasę „serwer starszy niż kod”) i start bez STOP-u, gdy pierwsza faza bez [E2E] a aplikacji jeszcze
+    nie ma; (2) w tej samej paczce poprawki z (f); (3) sprostowanie przyczyny w dokumentach vibersi przed `/dev-pr`; (4) P9 po 5. fazie;
+    (5) code-quality w skrypcie kryterium; (6) `/weryfikacja-setup` w vibersi przed etapem 2 (tester działał bez skilla i mapy).
+    (j) **Telemetria (pytanie operatora):** rekordy agentów kompletne — 109 = 105 + 4 (STOP), 0 bez transkryptu; 2 rekordy run (STOP
+    z kategorią `E2E-srodowisko`; OK z walidacją, `manual_razem` 4, ogród, solution), 4 rekordy faz z bramkami, sceptykiem, wiedzą, E2E,
+    `dossier_zn`. Luki: (1) `faza.cykle` = null w fazach 1 i 3 — autopilot zapisuje tekst „1 (graceful P2)” (fix zostawił P2), `faza.mjs`
+    przyjmuje tylko liczbę; (2) raport §6 pokazuje dev-plan 0,13 M, a epizod był w dwóch sesjach: 81e81c7f 1,06 M (27 tur, `otwarty` — sesja
+    zamknięta przez restart pod wtyczkę Figmy; raport pomija otwarte) + 6a039663 0,13 M (6 tur — wywołanie `figma:figma-design-to-code`
+    w trakcie planu otworzyło nowy epizod 1,25 M, do którego trafiły artefakty `plan.mjs`) → realnie ~2,44 M (< 2,95 M, w progu P13, ale
+    raport tego nie pokazuje); to samo dotyczy `dev-brainstorm` 2,22 M (otwarty); (3) `narzedzia p50 —`: harness zmienił załącznik
+    `deferred_tools_delta` → `deferred_tools_record` (pusta lista — agenci nie mają odroczonych narzędzi), puste od R-P15, kosmetyka.
+    `run.pr` brak — PR jeszcze nie ma. Usterki z (f) potwierdzone: `tsc` na `eslint.config.szablon.ts` z `node_modules` szablonu → TS2322;
+    doctor sprawdza tylko CLI `supabase` (gdy jest `supabase/`), tokenu i refu advisors nie; błędna przyczyna E2E stoi w 5 plikach vibersi
+    (`review-faza-4.md`, `-kontekst.md`, `-podsumowanie.md`, `-zadania.md` — checkbox operatora z `tempDirName`, smoke operatora).
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -2447,6 +2506,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   Kopie smoke'ów odtwarzaj z artefaktów, nie od nowa: plik propozycji konwersji w scratchpadzie sesji P10, patch środowiska i linia CLAUDE.md
   w transkryptach sesji szablonu (`Bash`/`Edit` z ścieżką kopii). Stop serwera w trakcie runu może zrobić sesja główna czujką w tle
   (`meta.json` agenta `planner:faza-2` w katalogu runu) — operator nie musi patrzeć w terminal.
+- Vibersi etap 1 (2026-10-10): kryterium, które przy braku danych zwraca „zielone” (`blok_w_prompcie` bez wycinków), zgłaszaj jako
+  „nie zmierzono” — zielone R-P16 stało na pustej liście wycinków. Diagnozę awarii środowiska odtwarzaj przed wpisaniem jej do HANDOFF
+  (klon projektu w scratchpadzie, `git checkout` commitu z chwili startu serwera): agenci przypisali 500 Vite sandboxowi Strykera, bo log
+  pokazywał zmianę `tsconfig.json` w `.stryker-tmp`, a przyczyną był serwer uruchomiony przed powstaniem `vite.config.ts`. Oś czasu runu
+  bierz z `timestamp` w `agent-*.jsonl` (UTC), etykietę z pola `description` w `*.meta.json`.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
