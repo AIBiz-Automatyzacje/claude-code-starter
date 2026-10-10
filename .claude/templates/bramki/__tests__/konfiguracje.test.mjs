@@ -135,10 +135,29 @@ describe('slabe', () => {
   }
 })
 
+// Projekt sprawdza typy plikow konfiguracji (`include` z `*.config.ts`, vibersi) — szablon ESLint musi przejsc tsc.
+// Typy Node z korzenia szablonu: pakiet bramek ich nie instaluje, a projekt Vite ma je zawsze.
+test('eslint.config.ts z szablonu przechodzi tsc (projekt z *.config.ts w include)', () => {
+  const repo = projekt()
+  try {
+    const typy = resolve(BRAMKI, '..', '..', '..', 'node_modules', '@types')
+    zapisz(repo, {
+      'tsconfig.konfiguracja.json': JSON.stringify({
+        compilerOptions: { target: 'ES2023', module: 'ESNext', moduleResolution: 'bundler', strict: true, skipLibCheck: true, noEmit: true, types: ['node'], typeRoots: [typy] },
+        include: ['eslint.config.ts'],
+      }),
+    })
+    const p = spawnSync(join(repo, 'node_modules', '.bin', 'tsc'), ['-p', 'tsconfig.konfiguracja.json'], { cwd: repo, encoding: 'utf8' })
+    assert.equal(p.status, 0, p.stdout + p.stderr)
+  } finally {
+    usun(repo)
+  }
+})
+
 /** @param {string} repo @param {string} baza @returns {{ kod: number | null, wynik: WynikBramek, sekundy: number }} */
 function bramki(repo, baza) {
   const start = performance.now()
-  const p = spawnSync(process.execPath, [SKRYPT, '--baza', baza], { cwd: repo, encoding: 'utf8', env: { ...process.env, SUPABASE_ACCESS_TOKEN: '' } })
+  const p = spawnSync(process.execPath, [SKRYPT, '--baza', baza], { cwd: repo, encoding: 'utf8' })
   return { kod: p.status, wynik: JSON.parse(p.stdout), sekundy: (performance.now() - start) / 1000 }
 }
 
@@ -202,6 +221,28 @@ test('bramki.mjs na konfiguracjach szablonu: czysto -> defekty (kazda bramka z r
     assert.equal(git(repo, ['status', '--porcelain', '--ignored', '--', '.', ':!node_modules', ':!dist']).split('\n').filter((l) => l.startsWith('!!')).length, 0)
     assert.equal(existsSync(join(repo, '.stryker-tmp')), false)
     assert.ok(defekty.sekundy < BUDZET_SEKUND, `bramki ${defekty.sekundy} s`)
+  } finally {
+    usun(repo)
+  }
+})
+
+// Stryker bez `disableTypeChecks` dopisuje `// @ts-nocheck` do kazdego pliku JS w sandboksie (wzorzec `**/*`), a runner vitest
+// uruchamia testy powiazane z mutowanym plikiem. Test, ktory czyta fixture .js (vibersi: atrapa zbudowanej aplikacji
+// w testach serwera), dostaje zmieniona tresc i pierwszy przebieg pada — bramka `blad` w fazie 2 (6a pkt 80).
+test('stryker.config.json: fixture .js czytany przez test mutowanego pliku zostaje nietkniety, bramka stryker bez bledu', () => {
+  const repo = projekt()
+  const odczytFixture = "\n  it('czyta fixture bez zmian', () => {\n    expect(readFileSync(new URL('./fixtures/strona.js', import.meta.url), 'utf8')).toBe(\"export const tresc = 'strona'\\n\")\n  })\n"
+  const testZFixture = (/** @type {string} */ tresc) => `import { readFileSync } from 'node:fs'\n\n${tresc.replace('})\n})\n', `})${odczytFixture}})\n`)}`
+  try {
+    zapisz(repo, { 'src/fixtures/strona.js': "export const tresc = 'strona'\n", 'src/suma.test.ts': testZFixture(TEST_SUMY) })
+    execFileSync(process.execPath, [SKRYPT, '--dopisz-sume'], { cwd: repo })
+    const baza = commit(repo, 'fixture .js')
+    zapisz(repo, {
+      'src/suma.ts': SUMA.replace('  return a + b', '  if (a < 0) return 0\n  return a + b'),
+      'src/suma.test.ts': testZFixture(TEST_SUMY.replace('expect(suma(2, 3)).toBe(5)', 'expect(suma(2, 3)).toBe(5)\n    expect(suma(-1, 3)).toBe(0)')),
+    })
+    const { wynik } = bramki(repo, baza)
+    assert.equal(wynik.stryker.status, 'ok', JSON.stringify(wynik.stryker))
   } finally {
     usun(repo)
   }

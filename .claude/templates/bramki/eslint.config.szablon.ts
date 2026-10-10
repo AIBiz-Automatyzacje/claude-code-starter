@@ -48,7 +48,9 @@ export default defineConfig(
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
       globals: { ...globals.browser, ...globals.node },
     },
-    plugins: { '@typescript-eslint': tseslint.plugin, 'import-x': importX, 'react-hooks': reactHooks },
+    // react-hooks bez pola `configs`: jego `configs.flat` nie pasuje do typu Plugin z ESLint 10 (TS2322), a projekt, ktory
+    // sprawdza typy plikow konfiguracji (`include` z `*.config.ts`), dostalby blad tsc w pierwszej fazie (vibersi, 6a pkt 80).
+    plugins: { '@typescript-eslint': tseslint.plugin, 'import-x': importX, 'react-hooks': { meta: reactHooks.meta, rules: reactHooks.rules } },
     // Ustawienia typescript z import-x (parsery, rozszerzenia) — bez nich no-cycle nie widzi cyklu miedzy plikami .ts.
     settings: { ...importX.flatConfigs.typescript.settings, 'import-x/resolver-next': [createTypeScriptImportResolver()] },
     rules: {

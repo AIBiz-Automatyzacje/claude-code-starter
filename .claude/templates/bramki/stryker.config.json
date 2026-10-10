@@ -3,6 +3,7 @@
   "testRunner": "vitest",
   "plugins": ["@stryker-mutator/vitest-runner"],
   "coverageAnalysis": "perTest",
+  "disableTypeChecks": "**/*.{ts,tsx,mts,cts}",
   "reporters": ["json"],
   "jsonReporter": { "fileName": "node_modules/.cache/stryker/mutation.json" },
   "cleanTempDir": "always",
