@@ -153,3 +153,24 @@ test('artefakty: wynik plan.mjs przepuszczony przez jq (JSON wieloliniowy) i opc
   const a = rekordSkilla(e[0], () => 0).artefakty
   assert.deepEqual(a?.walidacja, { n: 1, odrzucone: 1, bledy_pierwszy: 1, bledy_budzetu_pierwszy: 0 })
 })
+
+// P17 (vibersi, 6a pkt 80 j): /dev-plan czekal na logowanie do Figmy, operator napisal „gotowe”, plan wywolal narzedziem Skill
+// figma:figma-design-to-code (krok 1.6). To krok planu, nie nowy epizod — wczesniej plan urywal sie po 6 turach.
+test('skill pomocniczy wywolany narzedziem w epizodzie operatora = krok tego epizodu (zagniezdzone); dev-* narzedziem = nowy epizod', () => {
+  const sesja = [
+    user('p1', '<command-name>/dev-plan</command-name>'),
+    asystent('n1', 100),
+    user('p2', 'gotowe'),
+    asystent('n2', 10, [{ type: 'tool_use', id: 's-figma', name: 'Skill', input: { skill: 'figma:figma-design-to-code' } }]),
+    asystent('n3', 500, [{ type: 'tool_use', id: 'mcp-1', name: 'mcp__plugin_figma_figma__get_design_context' }]),
+    asystent('n4', 200, [{ type: 'tool_use', id: 's-dev', name: 'Skill', input: { skill: 'dev-compound' } }]),
+    asystent('n5', 20),
+  ]
+  const [plan, compound, ...reszta] = epizodySesji(sesja, 'sesja-v')
+  assert.equal(reszta.length, 0)
+  assert.equal(plan.skill, 'dev-plan')
+  assert.deepEqual([...plan.odpowiedzi.keys()], ['n1', 'n2', 'n3'])
+  assert.deepEqual([...plan.zagniezdzone], ['figma:figma-design-to-code'])
+  assert.equal(compound.skill, 'dev-compound')
+  assert.deepEqual(rekordSkilla(plan, () => 0).zagniezdzone, ['figma:figma-design-to-code'])
+})

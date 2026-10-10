@@ -1,6 +1,9 @@
 // Epizody skilli w sesji glownej — rekord `skill` (d5-telemetria-rekord.txt §7 + §9; port koszt_skilli.py z granica z przegladu D6,
 // d6r_rewizja_audytu.py wariant E2 + subagenci). Epizod: od `<command-name>` skilla albo narzedzia Skill do NASTEPNEGO skilla
 // albo konca pliku sesji; powiadomienia, przerwania i komendy lokalne (/model, /compact...) go nie koncza.
+// Skill pomocniczy wywolany narzedziem Skill w epizodzie otwartym komenda operatora to krok tego skilla (P17, vibersi: /dev-plan
+// wolal figma:figma-design-to-code w kroku 1.6 i epizod planu urywal sie po 6 turach, a 1,25 M szlo na „epizod Figmy”).
+// Skill pipeline'u (dev-*) wywolany narzedziem zaczyna wlasny epizod — to zwykle nowa prosba operatora.
 
 import { kosztJednostek } from './cennik.mjs'
 import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
@@ -23,6 +26,7 @@ import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
  * @property {Set<string>} subagenci id wywolan narzedzia Agent
  * @property {{ narzedzia: Set<string>, workflow: number }} wywolania
  * @property {Map<string, import('./planowanie.mjs').WywolaniePlanu>} plan wywolania plan.mjs (id tool_use → polecenie i wynik)
+ * @property {Set<string>} zagniezdzone skille pomocnicze wywolane narzedziem Skill jako krok tego epizodu
  */
 
 const RE_KOMENDA = /<command-name>\/?([\w:-]+)<\/command-name>/
@@ -33,6 +37,8 @@ export const KOMENDY_LOKALNE = new Set(['model', 'clear', 'compact', 'context', 
   'rename', 'login', 'permissions', 'hooks', 'memory', 'agents', 'ide', 'doctor', 'help', 'add-dir', 'export', 'release-notes', 'usage',
   'plugin', 'reload-plugins', 'skills', 'statusline', 'output-style', 'terminal-setup', 'vim', 'init', 'exit', 'quit', 'rewind', 'logout',
   'upgrade', 'feedback', 'bug', 'todos', 'bashes', 'tasks', 'privacy-settings', 'theme', 'sandbox', 'copy'])
+/** @param {string} nazwa @param {Array<{ zrodlo: string }>} otwarte @returns {boolean} krok skilla operatora, nie nowy epizod */
+const czyKrokSkilla = (nazwa, otwarte) => !nazwa.startsWith('dev-') && otwarte.some((e) => e.zrodlo === 'slash')
 const RE_LOKALNA = new RegExp(`^\\s*<command-name>\\/?(${[...KOMENDY_LOKALNE].join('|')})<\\/command-name>`)
 
 /** @param {unknown} c @returns {string} */
@@ -62,7 +68,7 @@ function nowyEpizod(klucz, skill, zrodlo, sesja, czas) {
   return {
     klucz, skill, zrodlo, sesja, start: czas, koniec: czas, zamkniety: false, e0: true, e2: true,
     odpowiedzi: new Map(), pierwszaOdpowiedz: new Map(), operator: new Set(), subagenci: new Set(),
-    wywolania: { narzedzia: new Set(), workflow: 0 }, plan: new Map(),
+    wywolania: { narzedzia: new Set(), workflow: 0 }, plan: new Map(), zagniezdzone: new Set(),
   }
 }
 
@@ -107,12 +113,16 @@ export function epizodySesji(wpisy, sesja) {
     const narzedzia = blokiNarzedzi(tresc)
     const wywolanieSkilla = otwarte.some((e) => e.e0) ? undefined : narzedzia.find((b) => b.name === 'Skill')
     if (wywolanieSkilla && typeof wywolanieSkilla.id === 'string') {
-      for (const e of otwarte) { e.e2 = false; e.zamkniety = true }
       const wejscie = wywolanieSkilla.input
       const nazwa = wejscie && typeof wejscie === 'object' && 'skill' in wejscie ? String(wejscie.skill) : '?'
-      const e = nowyEpizod(wywolanieSkilla.id, nazwa, 'Skill-tool', sesja, czas)
-      wszystkie.push(e)
-      otwarte = [e]
+      if (czyKrokSkilla(nazwa, otwarte)) {
+        for (const e of otwarte) e.zagniezdzone.add(nazwa)
+      } else {
+        for (const e of otwarte) { e.e2 = false; e.zamkniety = true }
+        const e = nowyEpizod(wywolanieSkilla.id, nazwa, 'Skill-tool', sesja, czas)
+        wszystkie.push(e)
+        otwarte = [e]
+      }
     }
     const u = w.message?.usage
     const id = w.message?.id
@@ -145,7 +155,7 @@ export function scalEpizody(epizody) {
     if (!s) {
       scalone.set(e.klucz, { ...e, odpowiedzi: new Map(e.odpowiedzi), pierwszaOdpowiedz: new Map(e.pierwszaOdpowiedz),
         operator: new Set(e.operator), subagenci: new Set(e.subagenci), wywolania: { narzedzia: new Set(e.wywolania.narzedzia), workflow: e.wywolania.workflow },
-        plan: new Map(e.plan) })
+        plan: new Map(e.plan), zagniezdzone: new Set(e.zagniezdzone) })
       continue
     }
     for (const [id, u] of e.odpowiedzi) s.odpowiedzi.set(id, u)
@@ -155,6 +165,7 @@ export function scalEpizody(epizody) {
     for (const x of e.wywolania.narzedzia) s.wywolania.narzedzia.add(x)
     s.wywolania.workflow = Math.max(s.wywolania.workflow, e.wywolania.workflow)
     for (const [id, p] of e.plan) if (!s.plan.get(id)?.wynik) s.plan.set(id, p)
+    for (const x of e.zagniezdzone) s.zagniezdzone.add(x)
     if (e.koniec > s.koniec) s.koniec = e.koniec
     s.zamkniety = s.zamkniety || e.zamkniety
   }
@@ -202,6 +213,7 @@ export function rekordSkilla(e, kosztSubagenta) {
     tool_calls: e.wywolania.narzedzia.size,
     agent_calls: e.subagenci.size,
     workflow_calls: e.wywolania.workflow,
+    zagniezdzone: [...e.zagniezdzone],
     // Wyniki plan.mjs z epizodu /dev-plan (P13): rozmiary planu i zadan, budzet pliku, walidacja, bramka gotowosci; inne skille null.
     artefakty: artefaktyPlanu([...e.plan.values()]),
   }

@@ -140,3 +140,13 @@ test('transkrypt bez zadnej odpowiedzi API: zero tur i koszt 0, ctx_start null',
   assert.equal(t.koszt_jedn, 0)
   assert.equal(t.ctx_start, null)
 })
+
+// P17 (6a pkt 80 j): Claude Code zapisuje liste odroczonych narzedzi jako `deferred_tools_record` z `entries` — agenci workflow
+// maja ja pusta. Wczesniej pole zostawalo null i raport pokazywal „—” zamiast 0.
+test('narzedzia_n z deferred_tools_record (entries); stary deferred_tools_delta ma pierwszenstwo', () => {
+  const nowy = [TRANSKRYPT[0], zalacznik({ type: 'deferred_tools_record', entries: [], toolInputCopies: [] }), ...TRANSKRYPT.slice(2)]
+  assert.equal(analizujTranskrypt(nowy).kontekst.narzedzia_n, 0)
+  const zDwoma = [TRANSKRYPT[0], zalacznik({ type: 'deferred_tools_record', entries: [{ name: 'A' }, { name: 'B' }] }), ...TRANSKRYPT.slice(2)]
+  assert.equal(analizujTranskrypt(zDwoma).kontekst.narzedzia_n, 2)
+  assert.equal(analizujTranskrypt(TRANSKRYPT).kontekst.narzedzia_n, 3)
+})

@@ -102,3 +102,19 @@ test('findingi per os: suma z rekordow faz, faza bez findingow nie psuje sumy', 
     { typ: 'faza', findingi_per_os: null },
   ]), { security: { p1: 1, p2: 3, p3: 4 }, spec: { p1: 0, p2: 0, p3: 1 } })
 })
+
+// P17 (6a pkt 80 j, vibersi): /dev-plan w sesji zamknietej restartem (wtyczka Figmy) zostawal „otwarty” na zawsze, a w nowej
+// sesji ten sam skill liczyl sie jako osobny epizod — raport pokazywal 0,13 M zamiast ~2,4 M.
+test('skille: epizod otwarty bez ruchu od 2 h liczony; ten sam skill w nowej sesji do 30 min = kontynuacja (jeden epizod)', () => {
+  const teraz = Date.parse('2026-10-10T12:00:00.000Z')
+  const s = skillePerNazwa([
+    { typ: 'skill', projekt: 'v', skill: 'dev-plan', sesja: 'a', start: '2026-10-09T19:53:00.000Z', koniec: '2026-10-09T20:38:00.000Z', koszt_jedn: 1_060_000, subagenci_jedn: 900_000, wiadomosci_operatora: 3, otwarty: true },
+    { typ: 'skill', projekt: 'v', skill: 'dev-plan', sesja: 'b', start: '2026-10-09T20:41:00.000Z', koniec: '2026-10-09T21:07:00.000Z', koszt_jedn: 1_380_000, subagenci_jedn: 0, wiadomosci_operatora: 2, otwarty: false },
+    { typ: 'skill', projekt: 'v', skill: 'dev-brainstorm', sesja: 'c', start: '2026-10-09T07:19:00.000Z', koniec: '2026-10-09T11:59:00.000Z', koszt_jedn: 2_220_000, subagenci_jedn: 0, wiadomosci_operatora: 2, otwarty: true },
+    { typ: 'skill', projekt: 'v', skill: 'dev-pr', sesja: 'd', start: '2026-10-10T11:30:00.000Z', koniec: '2026-10-10T11:50:00.000Z', koszt_jedn: 100, subagenci_jedn: 0, wiadomosci_operatora: 1, otwarty: true },
+  ], teraz)
+  assert.deepEqual(s, [
+    { skill: 'dev-plan', n: 1, pelny_p50: 3_340_000, wiadomosci_p50: 5 },
+    { skill: 'dev-brainstorm', n: 1, pelny_p50: 2_220_000, wiadomosci_p50: 2 },
+  ], 'dev-pr w toku (ruch < 2 h) pominiety')
+})

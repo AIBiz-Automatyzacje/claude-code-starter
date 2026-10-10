@@ -142,6 +142,10 @@ function dopiszZalacznik(zal, k) {
   else if (zal.type === 'deferred_tools_delta') {
     k.narzedzia_n = lista(zal.addedNames).length
     k.odroczone_zn = lista(zal.addedLines).map(tekst).join('\n').length
+  } else if (zal.type === 'deferred_tools_record' && k.narzedzia_n === null) {
+    // Claude Code (od ~R-P15) zapisuje liste odroczonych narzedzi jako `deferred_tools_record` z `entries`; agenci
+    // workflow maja ja pusta — wczesniej pole zostawalo null i raport pokazywal „—” zamiast 0 (6a pkt 80 j).
+    k.narzedzia_n = lista(zal.entries).length
   } else if (zal.type === 'skill_listing') {
     k.skille_n = liczba(zal.skillCount)
     k.skille_zn = tekst(zal.content).length
