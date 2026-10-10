@@ -164,9 +164,17 @@ function polaczKontynuacje(lista) {
   return wynik
 }
 
+/**
+ * Rekord skilla pomocniczego zapisany przed P17 jako osobny epizod, a dzis krok innego epizodu (`zagniezdzone` rodzica z tej
+ * samej sesji obejmuje jego start) — w raporcie liczylby sie dwa razy (vibersi: „epizod Figmy” 1,25 M obok /dev-plan).
+ * @param {Rekord} r @param {Rekord[]} wszystkie
+ */
+const krokInnegoEpizodu = (r, wszystkie) => wszystkie.some((p) => p !== r && p.sesja === r.sesja && Array.isArray(p.zagniezdzone)
+  && p.zagniezdzone.includes(r.skill) && String(p.start) <= String(r.start) && String(r.start) <= String(p.koniec))
+
 /** @param {Rekord[]} skille @param {number} [terazMs] chwila raportu — epizod otwarty bez ruchu od CISZA_MS liczy sie jako zakonczony */
 export function skillePerNazwa(skille, terazMs = Date.now()) {
-  const skillePipeline = skille.filter((s) => !KOMENDY_LOKALNE.has(String(s.skill)))
+  const skillePipeline = skille.filter((s, _i, wszystkie) => !KOMENDY_LOKALNE.has(String(s.skill)) && !krokInnegoEpizodu(s, wszystkie))
   const zamkniete = polaczKontynuacje(skillePipeline).filter((s) => s.otwarty !== true || ms(s.koniec) < terazMs - CISZA_MS)
   return [...Map.groupBy(zamkniete, (s) => String(s.skill))].map(([skill, lista]) => ({
     skill, n: lista.length,

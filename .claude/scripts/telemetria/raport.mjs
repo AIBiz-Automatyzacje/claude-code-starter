@@ -66,7 +66,7 @@ out.push('   per projekt: ' +[...perProjekt].map(([p, l]) => `${p} ${m(l.reduce(
 
 out.push('', `2. Kontekst startowy per klasa roli i model (${ODNIESIENIE_CTX}; ${CELE_CTX})`)
 for (const w of kontekstPerKlasa(agenci)) {
-  out.push(`   ${w.klasa.padEnd(15)} ${w.model.padEnd(26)} n=${w.n}  ctx_start p50 ${k(w.ctx_start_p50)} p90 ${k(w.ctx_start_p90)}  narzedzia p50 ${w.narzedzia_n_p50 ?? '—'}  CLAUDE.md p50 ${w.claude_md_zn_p50 ?? '—'} zn`)
+  out.push(`   ${w.klasa.padEnd(15)} ${w.model.padEnd(26)} n=${w.n}  ctx_start p50 ${k(w.ctx_start_p50)} p90 ${k(w.ctx_start_p90)}  narzedzia p50 ${w.narzedzia_n_p50 ?? 'brak listy'}  CLAUDE.md p50 ${w.claude_md_zn_p50 ?? '—'} zn`)
 }
 
 out.push('', '3. Efort per klasa roli (brak = efort sesji albo model bez efortu, np. haiku)')

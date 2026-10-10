@@ -118,3 +118,14 @@ test('skille: epizod otwarty bez ruchu od 2 h liczony; ten sam skill w nowej ses
     { skill: 'dev-brainstorm', n: 1, pelny_p50: 2_220_000, wiadomosci_p50: 2 },
   ], 'dev-pr w toku (ruch < 2 h) pominiety')
 })
+
+// P17 (smoke): rekord „epizodu Figmy” zapisany przed poprawka zostaje w danych, a jego koszt jest juz w /dev-plan
+// (zagniezdzone) — raport go pomija, zamiast liczyc dwa razy.
+test('skille: stary rekord skilla pomocniczego objety zagniezdzone rodzica z tej sesji nie liczy sie osobno', () => {
+  const s = skillePerNazwa([
+    { typ: 'skill', projekt: 'v', skill: 'dev-plan', sesja: 'b', start: '2026-10-09T20:41:00.000Z', koniec: '2026-10-09T21:07:00.000Z', koszt_jedn: 1_380_000, subagenci_jedn: 0, wiadomosci_operatora: 2, otwarty: false, zagniezdzone: ['figma:figma-design-to-code'] },
+    { typ: 'skill', projekt: 'v', skill: 'figma:figma-design-to-code', sesja: 'b', start: '2026-10-09T20:42:23.000Z', koniec: '2026-10-09T21:07:00.000Z', koszt_jedn: 1_250_000, subagenci_jedn: 0, wiadomosci_operatora: 2, otwarty: false },
+    { typ: 'skill', projekt: 'v', skill: 'figma:figma-design-to-code', sesja: 'c', start: '2026-10-09T22:00:00.000Z', koniec: '2026-10-09T22:10:00.000Z', koszt_jedn: 100, subagenci_jedn: 0, wiadomosci_operatora: 1, otwarty: false },
+  ])
+  assert.deepEqual(s.map((x) => [x.skill, x.n]), [['dev-plan', 1], ['figma:figma-design-to-code', 1]], 'figma z innej sesji zostaje')
+})
