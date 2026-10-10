@@ -166,7 +166,7 @@ test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i 
   // Plan ma migracje, a .env.e2e (X=1) nie ma bazy e2e z ref — advisors nie pobiegnie (P17): uwaga, nie bloker.
   assert.deepEqual(zle.e2e.uwagi, [
     'brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup',
-    'advisors nie pobiegnie: VITE_SUPABASE_URL w .env.e2e bez postaci https://<ref>.supabase.co — dopisz SUPABASE_E2E_PROJECT_REF',
+    'advisors nie pobiegnie: brak ref projektu e2e: ani SUPABASE_E2E_DB_URL, ani VITE_SUPABASE_URL w .env.e2e nie wskazuje projektu Supabase — dopisz SUPABASE_E2E_PROJECT_REF',
   ])
   const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([dobre.ok, dobre.e2e.ok, dobre.e2e.bledy], [true, true, []])

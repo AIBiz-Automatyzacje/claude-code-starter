@@ -31,16 +31,23 @@ async function serwerApi(lints) {
   return { baza: `http://127.0.0.1:${adres.port}`, zapytania, zamknij: () => serwer.close() }
 }
 
-test('refE2e: SUPABASE_E2E_PROJECT_REF wygrywa, inaczej host VITE_SUPABASE_URL; adres spoza supabase.co = null', () => {
-  assert.equal(refE2e({ VITE_SUPABASE_URL: `https://${REF}.supabase.co` }), REF)
-  assert.equal(refE2e({ VITE_SUPABASE_URL: `https://${REF}.supabase.co`, SUPABASE_E2E_PROJECT_REF: 'wlasny' }), 'wlasny')
-  assert.equal(refE2e({ VITE_SUPABASE_URL: 'http://127.0.0.1:54321' }), null)
-  assert.equal(refE2e({}), null)
+test('refE2e: SUPABASE_E2E_PROJECT_REF wygrywa; inaczej projekt bazy z migracjami (pooler albo direct), potem VITE_SUPABASE_URL; rozne projekty = blad', () => {
+  const INNY = 'zyxwvutsrqponmlkjihg'
+  assert.deepEqual(refE2e({ VITE_SUPABASE_URL: `https://${REF}.supabase.co` }), { ref: REF, blad: null })
+  assert.deepEqual(refE2e({ VITE_SUPABASE_URL: `https://${REF}.supabase.co`, SUPABASE_E2E_PROJECT_REF: 'wlasny' }), { ref: 'wlasny', blad: null })
+  assert.equal(refE2e({ SUPABASE_E2E_DB_URL: `postgresql://postgres.${REF}:haslo@aws-0-eu-central-1.pooler.supabase.com:5432/postgres` }).ref, REF)
+  assert.equal(refE2e({ SUPABASE_E2E_DB_URL: `postgresql://postgres:haslo@db.${REF}.supabase.co:5432/postgres` }).ref, REF)
+  const rozne = refE2e({ VITE_SUPABASE_URL: `https://${INNY}.supabase.co`, SUPABASE_E2E_DB_URL: `postgresql://postgres.${REF}:h@x.pooler.supabase.com:5432/postgres` })
+  assert.equal(rozne.ref, null)
+  assert.match(rozne.blad ?? '', /wskazuja rozne projekty.*SUPABASE_E2E_PROJECT_REF/)
+  assert.doesNotMatch(rozne.blad ?? '', /haslo|:h@/)
+  assert.equal(refE2e({ VITE_SUPABASE_URL: 'http://127.0.0.1:54321' }).ref, null)
+  assert.match(refE2e({}).blad ?? '', /SUPABASE_E2E_PROJECT_REF/)
 })
 
-test('tokenAdvisors: srodowisko procesu wygrywa z .env.e2e; brak w obu = null', () => {
-  assert.equal(tokenAdvisors({ SUPABASE_ACCESS_TOKEN: 'z-pliku' }, { SUPABASE_ACCESS_TOKEN: 'z-env' }), 'z-env')
-  assert.equal(tokenAdvisors({ SUPABASE_ACCESS_TOKEN: 'z-pliku' }, {}), 'z-pliku')
+test('tokenAdvisors: token projektu z .env.e2e wygrywa z ogolnym ze srodowiska; brak w obu = null', () => {
+  assert.equal(tokenAdvisors({ SUPABASE_ACCESS_TOKEN: 'z-pliku' }, { SUPABASE_ACCESS_TOKEN: 'z-env' }), 'z-pliku')
+  assert.equal(tokenAdvisors({}, { SUPABASE_ACCESS_TOKEN: 'z-env' }), 'z-env')
   assert.equal(tokenAdvisors({}, {}), null)
 })
 
@@ -99,6 +106,7 @@ test('brak tokenu = brak z naprawa (gdzie wygenerowac, gdzie wpisac); brak .env.
     const bezRef = await advisorsE2e(repo, { srodowisko: { SUPABASE_ACCESS_TOKEN: 't' } })
     assert.equal(bezRef.status, 'brak')
     assert.match(bezRef.naprawa, /SUPABASE_E2E_PROJECT_REF/)
+    assert.match(bezRef.detal, /brak ref projektu e2e/)
   } finally {
     usun(repo)
   }

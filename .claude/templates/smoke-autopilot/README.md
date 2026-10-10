@@ -52,8 +52,9 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
 - **Pozycja `[Manual]`** (scenariusz planu → `## Operator checklist faza 1` w zadaniach) — dodatnia galaz fazy "Smoke operatora" (complete-wf).
 - **E2E w dwoch fazach (P14).** IU-2 tworzy statyczna strone `{{KATALOG_STRONY}}/smoke-autopilot.html` (katalog `public`
   aplikacji Vite z najplytszego `vite.config.*`, bez Vite — `public/` w korzeniu), IU-3 w fazie 2 dopisuje jej linie. Scenariusz
-  `smoke-strona` (faza 1) tester odgrywa przy dzialajacym serwerze → PASS z dowodem; przed review fazy 2 operator zatrzymuje
-  serwer → scenariusz `smoke-strona-faza-2` dostaje SKIP `srodowisko` → `[Manual]` z powodem, reszta runu bez przegladarki.
+  `smoke-strona` (faza 1) tester odgrywa przy dzialajacym serwerze → PASS z dowodem; po restarcie serwera przed review fazy 2
+  (agent `e2e:restart:faza-2`, P17) operator zatrzymuje serwer (`e2e.mjs stop`) → scenariusz `smoke-strona-faza-2` dostaje SKIP
+  `srodowisko` → `[Manual]` z powodem; kolejna faza zaczelaby od restartu.
   Kopia bez `.env.e2e` zatrzymuje run w bootstrapie (STOP `start: srodowisko E2E`) — przebieg (1) ponizej.
 - **Bramki domkniecia (P6).** Pakiet dostaje konfiguracje z `.claude/templates/bramki` i devDependencies bramek
   (`wstaw-pakiet.mjs`), plus `build` dla size-limit. Celowe defekty mechaniczne z planu: pusty `catch` w `parsujLiczbe` i linia

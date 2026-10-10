@@ -14,6 +14,8 @@ const LIMIT_SONDY_MS = 3000
 const ODSTEP_SONDY_MS = 500
 const LINIE_OGONA_LOGU = 20
 const LIMIT_ZATRZYMANIA_MS = 5000
+// Token Management API (advisors) — dostep do calego konta Supabase; procesowi aplikacji niepotrzebny, takze z powloki operatora.
+const KLUCZE_POZA_SERWEREM = ['SUPABASE_ACCESS_TOKEN']
 
 /**
  * @typedef {import('./srodowisko.mjs').Konfiguracja} Konfiguracja
@@ -87,9 +89,16 @@ async function zatrzymajProces(z) {
   if (zyjeNasz(z)) sygnalGrupie(z.pid, 'SIGKILL')
 }
 
+/** @param {string} url @returns {Promise<void>} czeka, az zatrzymany serwer przestanie odpowiadac (dzieci procesu zwalniaja port pozniej) */
+async function czekajNaZwolnienie(url) {
+  const termin = Date.now() + LIMIT_ZATRZYMANIA_MS
+  while (Date.now() < termin && await odpowiada(url)) await czekaj(ODSTEP_SONDY_MS / 5)
+}
+
 /**
  * Stan serwera pipeline'u — dla testera, gdy aplikacja milczy: nasz serwer martwy (albo watcher zywy) z bledem kodu na koncu
- * logu = kod fazy go polozyl; serwer nie nasz albo bez bledu w logu = awaria srodowiska.
+ * logu = kod fazy go polozyl; serwer nie nasz albo bez bledu w logu = awaria srodowiska. Start, ktory padl przed odpowiedzia,
+ * zostawia plik PID martwego procesu (P17) — `stan` pokazuje wtedy nasz martwy serwer z ogonem logu, nie „nie nasz”.
  * @param {Konfiguracja} konf
  * @returns {{ nasz: boolean, pid: number | null, zyje: boolean, uruchomiony: string | null, log: string, ogonLogu: string }}
  */
@@ -119,11 +128,15 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
     const aktualny = !odNowa && z.start === konf.start && z.odcisk === konf.odcisk
     if (aktualny && await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
     await zatrzymajProces(z)
+    // Bez tego sonda nizej trafia na port, ktory dziecko starego serwera jeszcze trzyma — nieaktualny serwer jako „zastany”.
+    await czekajNaZwolnienie(konf.zdrowie)
   }
   rmSync(konf.pid, { force: true })
   if (await odpowiada(konf.zdrowie)) return { serwer: 'zastane' }
   const log = openSync(konf.log, 'w')
-  const dziecko = spawn(konf.start, { cwd: projekt, shell: true, detached: true, stdio: ['ignore', log, log], env: { ...process.env, ...env } })
+  const srodowisko = { ...process.env, ...env }
+  for (const k of KLUCZE_POZA_SERWEREM) delete srodowisko[k]
+  const dziecko = spawn(konf.start, { cwd: projekt, shell: true, detached: true, stdio: ['ignore', log, log], env: srodowisko })
   closeSync(log)
   /** @type {number | string | null} */
   let wyjscie = null
@@ -138,7 +151,7 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
   while (Date.now() < termin) {
     if (await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
     if (wyjscie !== null) {
-      rmSync(konf.pid, { force: true })
+      // Plik PID martwego procesu zostaje: `stan` pokaze nasz serwer z ogonem logu (kod fazy go polozyl), nastepny start go nadpisze.
       const ogon = ogonLogu(konf.log)
       return { serwer: 'brak', blad: `komenda startu „${konf.start}” zakonczyla sie (${wyjscie}) przed odpowiedzia ${konf.zdrowie}. Log ${konf.log}:\n${ogon}`, wyjscie, ogon }
     }

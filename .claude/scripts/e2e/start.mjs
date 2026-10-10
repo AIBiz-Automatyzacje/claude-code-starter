@@ -6,11 +6,14 @@
 //          brak-srodowiska — zadanie ma scenariusze, a repo nie ma .env.e2e -> STOP przed faza 1;
 //          niepowodzenie — .env.e2e jest, ale sprawdzenie albo start padly -> STOP przed faza 1;
 //          gotowe        — serwer odpowiada (uruchomiony albo zastany) albo sprawdzenie bez startu przeszlo;
-//          odroczone     — przed faza 1 komenda startu nie ma czego uruchomic (projekt od zera, P17): .env.e2e sprawne,
-//                          serwer wystartuje restart przed testerem pierwszej fazy, ktora go potrzebuje.
+//          odroczone     — projekt od zera (P17): repo nie ma jeszcze aplikacji (brak package.json albo package.json bez
+//                          zaleznosci), a komenda startu nie ma czego uruchomic; .env.e2e sprawne, serwer wystartuje restart
+//                          przed testerem pierwszej fazy, ktora go potrzebuje. Swiezy klon bez node_modules albo literowka
+//                          w E2E_START w projekcie z aplikacja to nadal STOP z naprawa (bez cichej degradacji do recznego).
 // Bez zadania (sekcje Doctor i Launch skilla weryfikacji) srodowisko jest potrzebne zawsze: brak .env.e2e = brak-srodowiska.
 // Restart fazy (`restartFazy`, P17): przed testerem kazdej fazy ze scenariuszami albo makietami nasz serwer startuje od nowa.
 
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
@@ -29,11 +32,27 @@ import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './sr
 const BRAK_APLIKACJI = /Command "[^"]+" not found|command not found|ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND|ERR_PNPM_NO_SCRIPT|Missing script|ENOENT[^\n]*package\.json/i
 const KOD_BRAKU_PROGRAMU = 127
 
-/** @param {{ wyjscie?: number | string, ogon?: string }} serwer porazka startu @returns {boolean} */
-const brakAplikacji = (serwer) => serwer.wyjscie === KOD_BRAKU_PROGRAMU || BRAK_APLIKACJI.test(serwer.ogon ?? '')
+/**
+ * Repo bez aplikacji (projekt od zera, vibersi: package.json ze skryptami scrapera, bez zaleznosci): rozpoznanie po strukturze,
+ * nie po stanie faz — wznowienie po STOP-ie w fazie 1, ktora aplikacji nie zbudowala, tez jest projektem od zera.
+ * @param {string} projekt
+ * @returns {boolean}
+ */
+export function projektBezAplikacji(projekt) {
+  const plik = join(projekt, 'package.json')
+  if (!existsSync(plik)) return true
+  try {
+    const pakiet = JSON.parse(readFileSync(plik, 'utf8'))
+    const ile = (/** @type {unknown} */ x) => (x && typeof x === 'object' ? Object.keys(x).length : 0)
+    return ile(pakiet.dependencies) + ile(pakiet.devDependencies) === 0
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+    return false
+  }
+}
 
-/** Token Management API (advisors) nie idzie do procesu aplikacji — serwer go nie potrzebuje. @param {Record<string, string>} env */
-const envSerwera = (env) => Object.fromEntries(Object.entries(env).filter(([k]) => k !== 'SUPABASE_ACCESS_TOKEN'))
+/** @param {string} projekt @param {{ wyjscie?: number | string, ogon?: string }} serwer porazka startu @returns {boolean} */
+const brakAplikacji = (projekt, serwer) => projektBezAplikacji(projekt) && (serwer.wyjscie === KOD_BRAKU_PROGRAMU || BRAK_APLIKACJI.test(serwer.ogon ?? ''))
 
 /** @param {string | null} sciezka katalog zadania (null: sprawdzenie bez zadania) @returns {string} */
 export const komendaSprawdzenia = (sciezka) => `node .claude/scripts/e2e/e2e.mjs sprawdz${sciezka ? ` --zadanie ${sciezka}` : ''}`
@@ -56,11 +75,10 @@ export function potrzebyZadania(projekt, sciezka) {
 /**
  * @param {string} projekt
  * @param {string | null} sciezka katalog zadania; null = bez zadania (skill weryfikacji)
- * @param {{ uruchom: boolean, przedPierwszaFaza?: boolean, narzedzia?: import('./srodowisko.mjs').Narzedzia }} opcje uruchom=false:
- *   sprawdzenie bez startu (sekcja Doctor); przedPierwszaFaza: zadna faza zadania nie ma execute — projekt bez aplikacji = odroczone
+ * @param {{ uruchom: boolean, narzedzia?: import('./srodowisko.mjs').Narzedzia }} opcje uruchom=false: sprawdzenie bez startu (sekcja Doctor)
  * @returns {Promise<WynikStartu>}
  */
-export async function startE2e(projekt, sciezka, { uruchom, przedPierwszaFaza = false, narzedzia = NARZEDZIA }) {
+export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZIA }) {
   const { scenariusze, figmaScreens } = sciezka ? potrzebyZadania(projekt, sciezka) : { scenariusze: null, figmaScreens: false }
   const env = envE2e(projekt)
   const konf = env ? konfiguracja(projekt, env) : null
@@ -70,7 +88,12 @@ export async function startE2e(projekt, sciezka, { uruchom, przedPierwszaFaza = 
     url: konf?.url ?? null, log: null, bledy: [], detal: '', naprawa: '',
   }
   if (scenariusze === 0 && !figmaScreens) {
-    return { ...wynik, detal: 'zadanie nie ma niezaznaczonych scenariuszy [E2E] ani makiet figma_screens — przegladarka niepotrzebna' }
+    const detal = 'zadanie nie ma niezaznaczonych scenariuszy [E2E] ani makiet figma_screens — przegladarka niepotrzebna'
+    if (!env || !konf?.bazaE2e) return { ...wynik, bazaE2e: false, detal }
+    // Baza e2e bez scenariuszy (P17): db-sync i advisors biegna takze w zadaniu bez przegladarki (zadanie backendowe z migracjami),
+    // ale po guardzie tozsamosci, bo db-sync wgrywa migracje. Blad wylacza baze bez STOP-u — przegladarki zadanie nie potrzebuje.
+    const bledy = bledySrodowiska(projekt, env, { przegladarka: false, narzedzia })
+    return { ...wynik, bazaE2e: !bledy.length, bledy, detal: bledy.length ? `${detal}; baza e2e wylaczona (db-sync i advisors nie pobiegna): ${bledy.join('; ')}` : `${detal}; baza e2e sprawna — db-sync i advisors po migracjach faz` }
   }
   if ((!env || !konf) && scenariusze === null) {
     return { ...wynik, status: 'brak-srodowiska', detal: `repo nie ma ${PLIK_ENV}`, naprawa: `Setup srodowiska wg .claude/templates/e2e-env/README.md (${PLIK_ENV} w korzeniu repo, w .gitignore). Sprawdzenie: ${komendaSprawdzenia(null)}` }
@@ -92,8 +115,8 @@ export async function startE2e(projekt, sciezka, { uruchom, przedPierwszaFaza = 
     const dziala = await odpowiada(konf.zdrowie)
     return { ...wynik, status: 'gotowe', serwer: dziala ? 'zastane' : 'brak', detal: `sprawdzenie ${PLIK_ENV} ok; serwer ${dziala ? `odpowiada na ${konf.zdrowie}` : `nie dziala — autopilot uruchomi: ${konf.start}`}` }
   }
-  const serwer = await uruchomSerwer(projekt, konf, envSerwera(env))
-  if (serwer.blad && przedPierwszaFaza && brakAplikacji(serwer)) {
+  const serwer = await uruchomSerwer(projekt, konf, env)
+  if (serwer.blad && brakAplikacji(projekt, serwer)) {
     const przyczyna = (serwer.ogon ?? '').split('\n').find((l) => BRAK_APLIKACJI.test(l))?.trim() ?? `kod ${serwer.wyjscie}`
     return { ...wynik, status: 'odroczone', log: konf.log, detal: `aplikacji jeszcze nie ma („${konf.start}”: ${przyczyna}) — serwer wystartuje przed testerem pierwszej fazy, ktora go potrzebuje` }
   }
@@ -134,7 +157,7 @@ export async function restartFazy(projekt, sciezka, faza) {
   const wynik = { status: 'pominieto', faza, scenariusze, figmaScreens, serwer: 'brak', url: konf?.url ?? null, log: null, detal: '' }
   if (!scenariusze && !figmaScreens) return { ...wynik, detal: `faza ${faza} bez scenariuszy [E2E] i makiet — serwer niepotrzebny` }
   if (!env || !konf || konf.blad) return { ...wynik, status: 'niepowodzenie', detal: konf?.blad ?? `brak ${PLIK_ENV}` }
-  const serwer = await uruchomSerwer(projekt, konf, envSerwera(env), { odNowa: true })
+  const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true })
   if (serwer.blad) return { ...wynik, status: 'niepowodzenie', log: konf.log, detal: serwer.blad }
   const zastany = serwer.serwer === 'zastane'
   return {

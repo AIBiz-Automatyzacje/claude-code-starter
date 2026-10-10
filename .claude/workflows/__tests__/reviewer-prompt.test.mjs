@@ -106,8 +106,23 @@ test('blokAdvisors: status, bledy ERROR i ostrzezenia WARN z bazy e2e; bez wynik
   assert.match(blok, /Ostrzezenia \(WARN\):\n- advisors\/auth_rls_initplan — Auth RLS Initialization Plan\n/)
   assert.match(blokAdvisors({ status: 'ok', detal: '', bledy: [], ostrzezenia: [] }), /Bledy \(ERROR\):\n- brak\nOstrzezenia \(WARN\):\n- brak/)
   assert.match(blokAdvisors(null), /Status: brak wyniku/)
-  assert.match(zrodlo, /reviewerPrompt\(sciezka, faza, r\.fokus, poprzKod, kontekst, r\.key === 'security' \? blokAdvisors\(advisorsE2e\) : ''\)/)
+  assert.match(zrodlo, /const dodatek = r\.key === 'security' \? blokAdvisors\(advisorsE2e\) : r\.key === 'correctness' \? blokRestartu\(restartE2e\) : ''/)
   const rola = readFileSync(join(AGENCI, 'security-sentinel.md'), 'utf8')
   assert.match(rola, /\(blok „Advisors bazy e2e” ze statusem ok albo porazka\)/)
   assert.match(rola, /błąd \(ERROR\) wprowadzony w tej fazie to finding P1, ostrzeżenie \(WARN\) — P2/)
+})
+
+// P17 (recenzja): serwer, ktory nie wstal po restarcie przed testerem, to czesto defekt fazy (import, wtyczka, konfiguracja).
+// Tester gra wtedy bez przegladarki, wiec ogon logu dostaje correctness — inaczej defekt ginal jako „awaria srodowiska”.
+// eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
+const blokRestartu = new Function(`${wytnij('function blokRestartu(', '\n}')}
+  return blokRestartu`)()
+
+test('blokRestartu: ogon logu nieudanego restartu z instrukcja P1 KOD dla correctness; restart udany = pusty dodatek', () => {
+  const blok = blokRestartu('komenda startu zakonczyla sie (1). Log /tmp/x.log:\nError: Cannot find module vite-plugin-x')
+  assert.match(blok, /=== SERWER APLIKACJI NIE WSTAL PO ZMIANACH FAZY ===/)
+  assert.match(blok, /Cannot find module vite-plugin-x/)
+  assert.match(blok, /finding P1 typ KOD/)
+  assert.equal(blokRestartu(null), '')
+  assert.match(zrodlo, /const restartE2e = \(args && args\.restartE2e\) \|\| null/)
 })

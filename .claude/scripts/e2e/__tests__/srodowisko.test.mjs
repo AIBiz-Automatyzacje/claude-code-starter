@@ -380,21 +380,57 @@ test('stop z innym locale niz start zatrzymuje wlasny serwer (czas startu w loca
   }
 })
 
-// P17 (vibersi etap 1): projekt od zera — przed faza 1 komenda startu nie ma czego uruchomic. To nie awaria srodowiska:
-// serwer wystartuje restart przed testerem pierwszej fazy, ktora go potrzebuje. Po fazie (bez flagi) ten sam blad = STOP.
-test('start przed faza 1: komenda bez aplikacji (pnpm bez binarki, kod 127) = odroczone; inny blad i start po fazie = niepowodzenie', async () => {
+// P17 (vibersi etap 1): projekt od zera — repo bez aplikacji (brak package.json albo package.json bez zaleznosci), a komenda
+// startu nie ma czego uruchomic. To nie awaria srodowiska: serwer wystartuje restart przed testerem pierwszej fazy, ktora go
+// potrzebuje. Rozpoznanie po strukturze repo, nie po stanie faz — projekt z aplikacja (swiezy klon bez node_modules, literowka
+// w E2E_START) dostaje dalej STOP z naprawa.
+test('start: repo bez aplikacji + komenda bez programu = odroczone; projekt z aplikacja albo inny blad = niepowodzenie', async () => {
   const port = await wolnyPort()
   const pnpm = `E2E_URL=http://127.0.0.1:${port}\nE2E_START=echo ' ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command "vite" not found' && exit 254\n`
   const p = projekt({ env: pnpm })
-  const odroczone = await startE2e(p, ZADANIE, { uruchom: true, przedPierwszaFaza: true, narzedzia: SPRAWNE })
+  const odroczone = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.equal(odroczone.status, 'odroczone', odroczone.detal)
   assert.match(odroczone.detal, /aplikacji jeszcze nie ma .*Command "vite" not found/)
   assert.equal(odroczone.serwer, 'brak')
-  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+  // vibersi przed etapem 1: package.json ze skryptami scrapera, bez zaleznosci — nadal projekt od zera.
+  writeFileSync(join(p, 'package.json'), JSON.stringify({ name: 'v', scripts: { scrape: 'node s.mjs' } }))
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'odroczone')
   writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\nE2E_START=program-ktorego-nie-ma-e2e\n`)
-  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, przedPierwszaFaza: true, narzedzia: SPRAWNE })).status, 'odroczone')
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'odroczone')
+  // Aplikacja jest (vite w devDependencies), tylko bez node_modules albo z literowka w E2E_START — STOP z naprawa.
+  writeFileSync(join(p, 'package.json'), JSON.stringify({ name: 'v', devDependencies: { vite: '8.3.4' } }))
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+  writeFileSync(join(p, '.env.e2e'), pnpm)
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+  rmSync(join(p, 'package.json'))
   writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\nE2E_START=echo port zajety && exit 3\n`)
-  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, przedPierwszaFaza: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'niepowodzenie', 'blad bez sygnalu braku programu')
+})
+
+// P17: start, ktory padl przed odpowiedzia, zostawia plik PID martwego procesu — `stan` pokazuje nasz martwy serwer z ogonem
+// logu (kod fazy go polozyl), zamiast „nie nasz” (tester bralby to za awarie srodowiska).
+test('start padniety przed odpowiedzia: stan = nasz, nie zyje, ogon logu z bledem; nastepny start nadpisuje plik PID', async () => {
+  const port = await wolnyPort()
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=echo "Error: Cannot find module vite-plugin-x" && exit 1\n`, pliki: { 'package.json': JSON.stringify({ devDependencies: { vite: '8' } }) } })
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'niepowodzenie')
+  const stan = stanSerwera(konfProjektu(p))
+  assert.deepEqual([stan.nasz, stan.zyje], [true, false])
+  assert.match(stan.ogonLogu, /Cannot find module vite-plugin-x/)
+})
+
+// P17: baza e2e w zadaniu bez scenariuszy i makiet — db-sync i advisors biegna, ale po guardzie tozsamosci (db-sync wgrywa migracje).
+test('start bez scenariuszy z baza e2e: guard tozsamosci przechodzi = pominieto z baza; baza jak dev = pominieto bez bazy z powodem', async () => {
+  const bezScen = '## Faza 1 — A\n\n- [ ] Stwórz: `supabase/migrations/1_a.sql`\n'
+  const p = projekt({ zadania: bezScen, env: BAZA })
+  const ok = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+  assert.deepEqual([ok.status, ok.bazaE2e, ok.serwer], ['pominieto', true, 'brak'])
+  assert.match(ok.detal, /baza e2e sprawna — db-sync i advisors/)
+  writeFileSync(join(p, '.env'), 'VITE_SUPABASE_URL=https://e2e.supabase.co\n')
+  const dev = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+  assert.deepEqual([dev.status, dev.bazaE2e], ['pominieto', false])
+  assert.match(dev.detal, /baza e2e wylaczona.*taki sam jak w \.env/)
+  const bezEnv = await startE2e(projekt({ zadania: bezScen }), ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+  assert.equal(bezEnv.bazaE2e, false)
 })
 
 // P17: serwer z bootstrapu nie wczytuje pliku konfiguracji, ktorego nie bylo przy jego starcie (vibersi: vite.config.ts z IU-1
@@ -404,20 +440,28 @@ test('restart fazy: serwer od nowa widzi plik powstaly po starcie; faza bez scen
   const start = `node -e "const fs=require('fs');const t=fs.existsSync('konfig.txt')?fs.readFileSync('konfig.txt','utf8'):'brak';require('http').createServer((q,s)=>s.end(t+'|'+(process.env.SUPABASE_ACCESS_TOKEN||'-'))).listen(${port})"`
   const zadania = '## Faza 1 — A\n\n- [ ] Stwórz: `a.ts`\n\n## Faza 2 — B\n\n- [ ] Test: [E2E] `b` — /b → ok\n'
   const p = projekt({ zadania, env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\nSUPABASE_ACCESS_TOKEN=tajny\n` })
-  const url = `http://127.0.0.1:${port}`
-  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'gotowe')
-  assert.equal(await odpowiedz(url), 'brak|-')
-  writeFileSync(join(p, 'konfig.txt'), 'nowa')
-  const bezScenariuszy = await restartFazy(p, ZADANIE, 1)
-  assert.equal(bezScenariuszy.status, 'pominieto')
-  assert.equal(await odpowiedz(url), 'brak|-')
-  const pidPrzed = JSON.parse(readFileSync(konfProjektu(p).pid, 'utf8')).pid
-  const w = await restartFazy(p, ZADANIE, 2)
-  assert.equal(w.status, 'gotowe', w.detal)
-  assert.equal(w.serwer, 'uruchomione')
-  assert.equal(w.scenariusze, 1)
-  assert.notEqual(JSON.parse(readFileSync(konfProjektu(p).pid, 'utf8')).pid, pidPrzed)
-  assert.equal(await odpowiedz(url), 'nowa|-')
+  // Token z powloki operatora tez nie idzie do serwera (nie tylko kopia z .env.e2e).
+  const zPowloki = process.env.SUPABASE_ACCESS_TOKEN
+  process.env.SUPABASE_ACCESS_TOKEN = 'z-powloki'
+  try {
+    const url = `http://127.0.0.1:${port}`
+    assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).status, 'gotowe')
+    assert.equal(await odpowiedz(url), 'brak|-')
+    writeFileSync(join(p, 'konfig.txt'), 'nowa')
+    const bezScenariuszy = await restartFazy(p, ZADANIE, 1)
+    assert.equal(bezScenariuszy.status, 'pominieto')
+    assert.equal(await odpowiedz(url), 'brak|-')
+    const pidPrzed = JSON.parse(readFileSync(konfProjektu(p).pid, 'utf8')).pid
+    const w = await restartFazy(p, ZADANIE, 2)
+    assert.equal(w.status, 'gotowe', w.detal)
+    assert.equal(w.serwer, 'uruchomione')
+    assert.equal(w.scenariusze, 1)
+    assert.notEqual(JSON.parse(readFileSync(konfProjektu(p).pid, 'utf8')).pid, pidPrzed)
+    assert.equal(await odpowiedz(url), 'nowa|-')
+  } finally {
+    if (zPowloki === undefined) delete process.env.SUPABASE_ACCESS_TOKEN
+    else process.env.SUPABASE_ACCESS_TOKEN = zPowloki
+  }
 })
 
 test('restart fazy: serwer nie nasz (bez pliku PID) zostaje — gotowe z zastanym; komenda, ktora pada = niepowodzenie z logiem', async () => {

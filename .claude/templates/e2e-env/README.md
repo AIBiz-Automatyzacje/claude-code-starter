@@ -15,9 +15,11 @@ scenariusza wchodzi w pętlę fix jako finding P2 typ E2E. Cały przepis uruchom
   przebiegu) → linia `[E2E]` przechodzi na `[Manual]` z powodem `(MANUAL — <przyczyna>: <powód>)`,
   **run idzie dalej**, pozycja trafia do smoke'u operatora (`docs/operator/…-smoke.md`). Każda faza ze scenariuszami
   albo makietami zaczyna review od restartu serwera (`e2e.mjs restart`) — serwer z bootstrapu nie widzi plików konfiguracji
-  powstałych w fazach. Serwer, który po restarcie nie wstaje, wyłącza przeglądarkę do końca runu.
-- **Projekt od zera** (żadna faza nie ma execute, komenda startu nie ma czego uruchomić — brak Vite, skryptu `dev`
-  albo `package.json`) → start **odroczony**, nie STOP: serwer wstaje restartem przed testerem pierwszej fazy, która go potrzebuje.
+  powstałych w fazach. Serwer, który po restarcie pada od razu, daje fazie tester bez przeglądarki, a ogon logu idzie
+  do reviewera correctness (kod fazy go położył); do końca runu przeglądarka znika, gdy serwer nie odpowiada w limicie startu.
+- **Projekt od zera** (repo bez `package.json` albo z `package.json` bez zależności, komenda startu nie ma czego uruchomić)
+  → start **odroczony**, nie STOP: serwer wstaje restartem przed testerem pierwszej fazy, która go potrzebuje. Projekt
+  z aplikacją (świeży klon bez `node_modules`, literówka w `E2E_START`) dostaje nadal STOP z naprawą.
 - Zadanie bez `[E2E]` i bez makiet `figma_screens` → środowisko pominięte, serwera nie uruchamiamy.
 
 Sprawdzenie bez startu (to samo, co robi bootstrap, plus stan serwera):
@@ -53,7 +55,7 @@ Per faza:     db-sync    — tylko z bazą e2e: e2e.mjs suma (migrations.sum), s
                            (pierwszy realny apply SQL migracji w pipeline), seedy e2e/seeds/*-seed.sql, konto testowe.
 Review:       tester E2E — agent-browser na E2E_URL; wpis per scenariusz z przyczyną SKIP. Gdy aplikacja milczy:
                            e2e.mjs stan (czy nasz serwer żyje + ogon logu) — padł z błędem kodu = FAIL do fixa,
-                           inaczej SKIP „srodowisko” → [Manual] i reszta runu bez przeglądarki.
+                           inaczej SKIP „srodowisko” → [Manual]; następna faza zaczyna od restartu serwera.
               scribe     — e2e.mjs ksieguj: PASS odznacza, SKIP środowiska/limitu/harnessu → [Manual] z powodem.
 Fix:          po awarii środowiska e2e.mjs manual zamiast odgrywania scenariusza.
 Zakończenie:  env-down   — e2e.mjs stop: zatrzymuje tylko serwer z naszego PID-u; STOP zostawia środowisko

@@ -142,6 +142,10 @@ echo '.stryker-tmp/' >> .gitignore
   Wymaga `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens) w `.env.e2e` albo w środowisku; ref projektu e2e
   bierze z `VITE_SUPABASE_URL` w `.env.e2e` (albo `SUPABASE_E2E_PROJECT_REF`). Token daje dostęp do całego konta Supabase.
   Brak tokenu zgłaszają doctor (wiersz „advisors (baza e2e)”) i bramka gotowości `/dev-plan` przy zadaniu z migracjami.
+  Token w `~/.zshrc` nie wystarcza: czyta go tylko powłoka interaktywna, a agenci workflowu jej nie mają (vibersi, etap 1).
+  Advisors biegnie tylko po udanym `db push` (baza bez migracji fazy dałaby fałszywe „ok”) i także w zadaniu bez scenariuszy
+  `[E2E]`, gdy `.env.e2e` przechodzi guard tożsamości bazy. Ograniczenia: migracje dodane przez fix ostatniej fazy nie trafiają
+  do bazy e2e ani do lintu; Stryker wyłącza typy we wszystkich plikach TS, więc fixture `.ts` czytany przez test jako tekst dostanie `// @ts-nocheck`.
 - **Stryker** z szablonu wyłącza sprawdzanie typów tylko w plikach TS (`disableTypeChecks`): bez tego Stryker dopisuje
   `// @ts-nocheck` do każdego pliku JS w sandboksie, a test czytający fixture `.js` pada w pierwszym przebiegu.
 - **Istniejący projekt:** ESLint wprowadzasz osobnym zadaniem sprzątającym (każda reguła razem z poprawą starych miejsc).
@@ -342,7 +346,7 @@ Buildery mają wspólny szkielet pliku roli (test `szkielet-buildera.test.mjs`):
 
 | Agent | Rola |
 |-------|------|
-| `security-sentinel` | **Bezpieczeństwo** (`security`): każda nowa bramka z gałęzią domyślną i co najmniej 5 wejściami obejścia + test odmowy, nagłówki nowego originu, koperta wejścia (Zod), autoryzacja trasy i zasobu (`getUser`/`getClaims`, nie `getSession`), parametryzacja zapytań, XSS, sekrety i zmienne publiczne (`VITE_`/`NEXT_PUBLIC_`/`EXPO_PUBLIC_`), zapisy omijające API i strażnicy w seedach. RLS, `search_path` i `auth.users` — gdy bramka advisors ma status ok, sprawdza je advisors (security ocenia jego ostrzeżenia z dossier); bez advisors security ma listy RLS. |
+| `security-sentinel` | **Bezpieczeństwo** (`security`): każda nowa bramka z gałęzią domyślną i co najmniej 5 wejściami obejścia + test odmowy, nagłówki nowego originu, koperta wejścia (Zod), autoryzacja trasy i zasobu (`getUser`/`getClaims`, nie `getSession`), parametryzacja zapytań, XSS, sekrety i zmienne publiczne (`VITE_`/`NEXT_PUBLIC_`/`EXPO_PUBLIC_`), zapisy omijające API i strażnicy w seedach. RLS, `search_path` i `auth.users` — gdy advisors bazy e2e (po db-sync fazy) ma status ok albo porazka, sprawdza je advisors, a security przypisuje jego błędy (P1) i ostrzeżenia (P2) migracjom fazy; bez wyniku advisors security ma listy RLS. |
 | `performance-oracle` | **Wydajność** (`performance`): kolekcje bez limitu i złożoność, N+1 i niezależne żądania po kolei, kolumny i indeksy zapytań, Realtime, wycieki pamięci, rendery i efekty Reacta (brak memoizacji przy React Compilerze w profilu stacku nie jest findingiem), miejsce importu w paczce klienta, Edge Functions. Bez progów liczbowych niesprawdzalnych w diffie. |
 | `architecture-strategist` | **Jakość wewnętrzna, trzy osie** (`code-quality`): granice warstw i struktura · YAGNI, martwy kod i zbędne abstrakcje · typy; wejście: ostrzeżenia ESLint (warn) i knip z dossier; listy duplikatów stałych i kontraktów, mapowania błędów na statusy, cichego odsiewania i idempotencji. |
 | `correctness-reviewer` | **Poprawność wykonania** (`correctness`): polecenia-listy — drogi do operacji zmieniającej stan i bramka na każdej, `await` w ścieżce zapisu, limit czasu wywołań, wartość przed/po `await`, ograniczenia migracji, wartości graniczne, cache, zapis do dwóch systemów, usunięcia. Każdy finding ze scenariuszem awarii. |
@@ -441,8 +445,11 @@ Opcjonalne: zadanie bez scenariuszy `[E2E]` i bez makiet nie uruchamia przegląd
    konfiguracji powstałych w fazach. Potem synchronizacja migracji i seedów bazy e2e z lintem advisors, tester odgrywa scenariusze
    i zwraca przebieg PASS/FAIL/SKIP, skrypt księguje linie `[E2E]`. Scenariusz niewykonalny w trakcie runu (serwer padł, limit
    usługi zewnętrznej, popup OAuth) przechodzi na `[Manual]` z powodem i trafia do smoke'u operatora — run idzie dalej.
-   **Projekt od zera:** gdy żadna faza nie ma jeszcze execute, a komenda startu nie ma czego uruchomić (brak Vite, skryptu
-   albo `package.json`), start jest odroczony zamiast STOP-u — serwer wstaje restartem przed testerem pierwszej fazy, która go potrzebuje.
+   **Projekt od zera:** gdy repo nie ma jeszcze aplikacji (brak `package.json` albo `package.json` bez zależności), a komenda
+   startu nie ma czego uruchomić, start jest odroczony zamiast STOP-u — serwer wstaje restartem przed testerem pierwszej fazy,
+   która go potrzebuje. Projekt z aplikacją (świeży klon bez `node_modules`, literówka w `E2E_START`) dostaje nadal STOP z naprawą.
+   Serwer, który po restarcie pada od razu, daje fazie tester bez przeglądarki, a ogon logu trafia do reviewera correctness
+   (kod fazy położył serwer = defekt); do końca runu przeglądarka znika tylko, gdy serwer nie odpowiada w limicie startu.
 
 ## Ogrodnik
 
@@ -539,7 +546,7 @@ dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compoun
 
 - **Autopilot: waliduj branch PRZED odpaleniem** — workflow nie pyta o branch switch.
 - **RESUME tylko po awarii runu** (zawsze z tymi samymi `args` — nie przeżywają między wywołaniami). Po **STOP bramki** (środowisko E2E, fix FAIL), gdy coś naprawiłeś — **świeży run bez `resumeFromRunId`**: resume zwróciłby porażkę bramki z cache; stan faz i tak wznowi się z `.autopilot-state.json` (źródło prawdy), checkboxy `.md` to tylko widok. Ręczne edycje `.autopilot-state.json` też wymagają świeżego runu.
-- **E2E to prawdziwa przeglądarka**, nie symulacja — autopilot sam stawia serwer aplikacji z `.env.e2e`. Bez `.env.e2e` zadanie z `[E2E]` zatrzymuje się przed fazą 1 (STOP z komendą naprawy); środowisko, które padnie w trakcie runu, przenosi scenariusze na `[Manual]` do smoke'u operatora. Przed testerem każdej fazy serwer startuje od nowa, a projekt bez aplikacji nie dostaje STOP-u na starcie (P17).
+- **E2E to prawdziwa przeglądarka**, nie symulacja — autopilot sam stawia serwer aplikacji z `.env.e2e`. Bez `.env.e2e` zadanie z `[E2E]` zatrzymuje się przed fazą 1 (STOP z komendą naprawy); środowisko, które padnie w trakcie runu, przenosi scenariusze na `[Manual]` do smoke'u operatora. Przed testerem każdej fazy serwer startuje od nowa, a repo bez aplikacji (projekt od zera) nie dostaje STOP-u na starcie (P17).
 - **Limit cyklu fix = 1** — drugi cykl historycznie naprawiał 0 findingów przy koszcie pełnego re-review. Po fixie commity fixa ogląda **kontrola diffu naprawczego** (P8): jeden agent z listami K-1…K-7 katalogu A (regresja i zmiana kontraktu, bramki bez testu odmowy, listy correctness na diffie fixa, stare nazwy, niezgodne opisy, test P1 czerwony na kodzie sprzed poprawki, zmiany poza zgłoszonym miejscem) i bramkami mechanicznymi P6 na plikach fixa; zakres z hashy commitów fixa, jedna tura poprawek. Pre-skan haiku i targeted verify P1 usunięte.
 - **`compound-refresh` w autopilocie jest scoped** (tylko dotknięta kategoria + CONCEPTS.md) — pełny refresh całej bazy odpalaj osobno, okresowo.
 - **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; rola z tabeli ról albo z `app_metadata` ustawianego po stronie serwera (reguły kodu, sekcja Bezpieczeństwo).

@@ -121,3 +121,28 @@ test('stan: serwer bez pliku PID = zyje false; zly E2E_URL w stop nie wywraca sk
   assert.equal(uruchom(k, ['stop']).kod, 0)
   rmSync(k, { recursive: true })
 })
+
+// P17: polecenia, ktore wolaja agenci restartu i db-sync — kod wyjscia, JSON i argumenty (literowka w opcji = kod 2,
+// a w autopilocie STOP w kazdym projekcie, wiec kontrakt opcji przypiety testem).
+test('restart i advisors: kontrakt CLI — wymagane --zadanie i --faza, JSON z kodem; stara opcja --przed-pierwsza-faza = kod 2', () => {
+  const k = projekt()
+  try {
+    assert.equal(uruchom(k, ['restart', '--faza', '1']).kod, 2)
+    assert.equal(uruchom(k, ['restart', '--zadanie', 'docs/active/z']).kod, 2)
+    writeFileSync(join(k, '.env.e2e'), 'E2E_URL=http://127.0.0.1:9\nE2E_START=echo nie wstaje && exit 1\n')
+    const pad = uruchom(k, ['restart', '--zadanie', 'docs/active/z', '--faza', '1'])
+    assert.equal(pad.kod, 1)
+    assert.equal(pad.json.status, 'niepowodzenie')
+    assert.match(pad.json.detal, /nie wstaje/)
+    const bezScen = uruchom(k, ['restart', '--zadanie', 'docs/active/z', '--faza', '2'])
+    assert.deepEqual([bezScen.kod, bezScen.json.status], [0, 'pominieto'])
+    const adv = uruchom(k, ['advisors', '--baza', 'HEAD'])
+    assert.equal(adv.kod, 0, adv.stderr)
+    assert.equal(adv.json.status, 'brak', 'baza bez ref projektu Supabase')
+    assert.equal(uruchom(k, ['start', '--przed-pierwsza-faza']).kod, 2)
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+    rmSync(`/tmp/autopilot-e2e-${k.split('/').pop()}.pid`, { force: true })
+    rmSync(`/tmp/autopilot-e2e-${k.split('/').pop()}.log`, { force: true })
+  }
+})

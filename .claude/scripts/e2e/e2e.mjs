@@ -5,9 +5,8 @@
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   e2e.mjs sprawdz [--zadanie <docs/active/zadanie>] potrzeby zadania + sprawdzenie .env.e2e bez startu serwera (Doctor);
 //                                                     bez --zadanie srodowisko jest potrzebne zawsze (skill weryfikacji)
-//   e2e.mjs start [--zadanie <docs/active/zadanie>] [--przed-pierwsza-faza]
-//                                                     to samo + start serwera aplikacji (bootstrap autopilota, Launch);
-//                                                     --przed-pierwsza-faza: projekt bez aplikacji = odroczone, nie STOP (P17)
+//   e2e.mjs start [--zadanie <docs/active/zadanie>]   to samo + start serwera aplikacji (bootstrap autopilota, Launch);
+//                                                     repo bez aplikacji (projekt od zera) = odroczone, nie STOP (P17)
 //   e2e.mjs restart --zadanie <dir> --faza N          serwer od nowa przed testerem fazy ze scenariuszami albo makietami (P17)
 //   e2e.mjs advisors [--baza <sha>]                   lint bazy e2e (Supabase advisors) po wgraniu migracji fazy (db-sync, P17)
 //   e2e.mjs stop                                      zatrzymuje serwer uruchomiony przez start (plik PID)
@@ -45,12 +44,12 @@ const KOD_WYJATKU = 3
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, zadanie: { type: 'string' }, faza: { type: 'string' }, flow: { type: 'string' },
   przyczyna: { type: 'string' }, powod: { type: 'string' }, 'brak-wpisu': { type: 'string' }, 'tylko-z-wpisem': { type: 'boolean' },
-  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, baza: { type: 'string' }, 'przed-pierwsza-faza': { type: 'boolean' },
+  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, baza: { type: 'string' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] [--przed-pierwsza-faza] | restart --zadanie <dir> --faza N | advisors [--baza <sha>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> | weryfikacja [--zapisz [--nadpisz]] [--projekt <katalog>]\n`)
+  process.stderr.write(`e2e: ${komunikat}\nUzycie: e2e.mjs sprawdz|start [--zadanie <dir>] | restart --zadanie <dir> --faza N | advisors [--baza <sha>] | stop | stan | suma | scenariusze --zadanie <dir> --faza N | ksieguj --zadanie <dir> --faza N [--brak-wpisu <przyczyna> --powod <tekst>] [--tylko-z-wpisem] | manual --zadanie <dir> --faza N --flow <id> --przyczyna <p> --powod <tekst> | lista-manual --zadanie <dir> | mapa --zadanie <dir> | weryfikacja [--zapisz [--nadpisz]] [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -95,7 +94,7 @@ function zapiszKsiegowanie(projekt, plik, tekst, zmiany) {
 /** @param {string} polecenie @param {ReturnType<typeof parseArgs<{ options: typeof USTAWIENIA, allowPositionals: true }>>['values']} o @param {string} projekt */
 async function wykonaj(polecenie, o, projekt) {
   if (polecenie === 'sprawdz' || polecenie === 'start') {
-    const w = await startE2e(projekt, o.zadanie ? wzgledem(projekt, o.zadanie) : null, { uruchom: polecenie === 'start', przedPierwszaFaza: !!o['przed-pierwsza-faza'] })
+    const w = await startE2e(projekt, o.zadanie ? wzgledem(projekt, o.zadanie) : null, { uruchom: polecenie === 'start' })
     zakoncz(w, w.status === 'pominieto' || w.status === 'gotowe' || w.status === 'odroczone')
   }
   if (polecenie === 'advisors') {

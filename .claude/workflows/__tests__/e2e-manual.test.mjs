@@ -80,29 +80,28 @@ test('start: pominieto = run bez E2E; gotowe = E2E aktywne, db-sync tylko z baza
   assert.equal(ok.bazaE2e, false)
 })
 
-// P17 (vibersi etap 1): projekt od zera — start przed faza 1 nie ma czego uruchomic; srodowisko zostaje w runie, serwer
-// wystartuje restart przed testerem pierwszej fazy, ktora go potrzebuje. Flaga idzie do skryptu tylko, gdy zadna faza nie ma execute.
-test('start: odroczone (projekt od zera) = bez STOP-u, srodowisko w runie z baza e2e; flaga --przed-pierwsza-faza tylko przed faza 1', () => {
+// P17 (vibersi etap 1): projekt od zera — repo bez aplikacji; skrypt rozpoznaje to po strukturze i zwraca odroczone.
+// Baza e2e dziala niezaleznie od przegladarki: zadanie bez scenariuszy tez dostaje db-sync i advisors (recenzja P17, pkt 5).
+test('start: odroczone = bez STOP-u, srodowisko w runie z baza e2e; pominieto z baza po guardzie = db-sync bez przegladarki', () => {
   const d = A.decyzjaSrodowiskaE2e(start({ status: 'odroczone', serwer: 'brak', detal: 'aplikacji jeszcze nie ma' }), ZADANIE)
-  assert.equal(d.stop, null)
-  assert.equal(d.aktywne, true)
-  assert.equal(d.srodowisko, 'odroczone')
-  assert.equal(d.bazaE2e, true)
-  const prompt = wytnij(autopilot, 'function e2eStartPrompt(', '\n}\n')
-  assert.match(prompt, /\$\{przedPierwszaFaza \? ' --przed-pierwsza-faza' : ''\}/)
-  assert.match(autopilot, /const przedPierwszaFaza = stan\.fazy\.every\(\(f\) => f\.execute === 'pending'\)/)
+  assert.deepEqual([d.stop, d.aktywne, d.srodowisko, d.bazaE2e], [null, true, 'odroczone', true])
+  const bezScen = A.decyzjaSrodowiskaE2e(start({ status: 'pominieto', scenariusze: 0, serwer: 'brak', bazaE2e: true }), ZADANIE)
+  assert.deepEqual([bezScen.stop, bezScen.aktywne, bezScen.srodowisko, bezScen.bazaE2e], [null, false, 'pominieto', true])
+  assert.match(wytnij(autopilot, 'function e2eStartPrompt(', '\n}\n'), /e2e\.mjs start --zadanie \$\{sciezka\}\\`\n/)
+  assert.doesNotMatch(autopilot, /przed-pierwsza-faza|przedPierwszaFaza/)
   assert.match(wytnij(autopilot, 'const E2E_START = {', '\n}\n'), /'gotowe', 'odroczone'\]/)
 })
 
 // P17: serwer z bootstrapu nie widzial vite.config.ts z IU-1 (500 w fazie 4) — kazda faza zaczyna review od restartu serwera.
-test('restart fazy: gotowe/pominieto ustawia srodowisko fazy; niepowodzenie = martwe do konca runu; nieczytelny wynik = bez zmian', () => {
+test('restart fazy: gotowe/pominieto ustawia srodowisko fazy; szybki pad = martwe w fazie, brak odpowiedzi w limicie = do konca runu; nieczytelny = bez zmian', () => {
   const linia = (/** @type {Record<string, unknown>} */ o) => `cos wczesniej\n${JSON.stringify(o)}`
   assert.deepEqual(A.srodowiskoPoRestarcie(linia({ status: 'gotowe', serwer: 'uruchomione', detal: 'od nowa' })), { srodowisko: 'gotowe', trwale: false, nasz: true, detal: 'od nowa' })
   assert.equal(A.srodowiskoPoRestarcie(linia({ status: 'gotowe', serwer: 'zastane', detal: '' })).nasz, false)
   assert.equal(A.srodowiskoPoRestarcie(linia({ status: 'pominieto', detal: 'faza bez scenariuszy' })).srodowisko, 'pominieto')
   const pad = A.srodowiskoPoRestarcie(linia({ status: 'niepowodzenie', detal: 'komenda startu zakonczyla sie (1)' }))
-  assert.equal(pad.srodowisko, 'martwe')
-  assert.equal(pad.trwale, true)
+  assert.deepEqual([pad.srodowisko, pad.trwale], ['martwe', false], 'kod fazy polozyl serwer — fix moze go naprawic, nastepna faza restartuje')
+  const limit = A.srodowiskoPoRestarcie(linia({ status: 'niepowodzenie', detal: 'http://localhost:5173 nie odpowiada po 90 s od „pnpm dev”' }))
+  assert.deepEqual([limit.srodowisko, limit.trwale], ['martwe', true])
   const smiec = A.srodowiskoPoRestarcie('to nie JSON')
   assert.equal(smiec.srodowisko, null)
   assert.match(smiec.detal, /nieczytelny/)
@@ -112,10 +111,14 @@ test('restart fazy: gotowe/pominieto ustawia srodowisko fazy; niepowodzenie = ma
 test('faza: restart przed db-sync i review; db-sync zalezy od bazy e2e, nie od serwera; env-down sprzata serwer uruchomiony takze przez restart', () => {
   const petla = wytnij(autopilot, "  if (faza.review === 'pending') {", "    const review = await workflow('dev-docs-review-wf'")
   const iRestart = petla.indexOf('e2eRestartPrompt(sciezka, numerFazy)')
-  const iSync = petla.indexOf('e2eDbSyncPrompt(sciezka, numerFazy, faza.baza || null)')
+  const iSync = petla.indexOf('e2eDbSyncPrompt(sciezka, numerFazy, (poprzednia && poprzednia.baza) || faza.baza || null)')
   assert.ok(iRestart > 0 && iSync > iRestart, 'restart przed db-sync')
   assert.match(petla, /if \(e2eWRunie && !e2eTrwaleMartwe\) \{/)
-  assert.match(petla, /if \(bazaE2e && e2eWRunie\) \{/)
+  assert.match(petla, /if \(!restart\) \{[\s\S]{0,200}restart = await agent\(e2eRestartPrompt/, 'restart z jednym ponowieniem jak e2e:start')
+  assert.match(petla, /if \(po\.srodowisko === 'martwe'\) restartBlad = po\.detal/)
+  assert.match(petla, /\n {4}if \(bazaE2e\) \{/, 'db-sync zalezy od bazy e2e, nie od serwera')
+  assert.match(petla, /advisorsFazy = e2eSync && e2eSync\.status !== 'niepowodzenie' \? advisorsZWyniku\(e2eSync\.advisors\) : null/, 'advisors po nieudanym db push = brak wyniku, nie falszywe ok')
+  assert.match(autopilot, /restartE2e: restartBlad,/)
   assert.match(autopilot, /advisors: advisorsFazy,/)
   assert.match(autopilot, /\nif \(serwerNasz\) \{\n {2}const down = await agent\(zeStanem\(e2eEnvDownPrompt\(\)\)/)
   assert.match(wytnij(autopilot, 'function e2eRestartPrompt(', '\n}\n'), /e2e\.mjs restart --zadanie \$\{sciezka\} --faza \$\{numerFazy\}/)
@@ -129,6 +132,7 @@ test('advisors z db-sync: JSON skryptu -> bledy i ostrzezenia dla security; zly 
   assert.equal(A.advisorsZWyniku(''), null)
   const sync = wytnij(autopilot, 'function e2eDbSyncPrompt(', '\n}\n')
   assert.match(sync, /e2e\.mjs advisors\$\{baza \? ` --baza \$\{baza\}` : ''\}/)
+  assert.match(sync, /tylko gdy krok 2 przeszedl/)
   assert.match(wytnij(autopilot, 'const E2E_DB_SYNC_RESULT = {', '\n}\n'), /required: \['status', 'detal', 'advisors'\]/)
 })
 

@@ -428,6 +428,19 @@ ${lista(advisors.ostrzezenia)}
 `
 }
 
+// Serwer aplikacji nie wstal po restarcie przed testerem fazy (P17) — ogon logu dla correctness. Tester gra wtedy bez
+// przegladarki (SKIP srodowisko), wiec bez tego bloku defekt, ktory polozyl serwer (import, wtyczka, konfiguracja), znikal.
+function blokRestartu(detal) {
+  if (!detal) return ''
+  return `
+=== SERWER APLIKACJI NIE WSTAL PO ZMIANACH FAZY ===
+Restart serwera E2E przed testerem tej fazy padl. Komunikat i ogon logu:
+${detal}
+Gdy przyczyna lezy w kodzie albo konfiguracji z diffu fazy (import, brakujaca paczka, wtyczka, plik konfiguracji), zglos
+finding P1 typ KOD na plik:linia z diffu i doslownym bledem z logu. Przyczyna poza diffem (port, siec, srodowisko) — bez findingu.
+`
+}
+
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = '') {
   return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
@@ -726,6 +739,8 @@ const poprzednie = (args && args.poprzednieFindingi) || []
 const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 // Advisors bazy e2e z db-sync autopilota (P17): { status, bledy, ostrzezenia, detal } albo null — wejscie security.
 const advisorsE2e = (args && args.advisors) || null
+// Ogon logu restartu serwera E2E, po ktorym serwer nie wstal (P17) — wejscie correctness; null = restart udany albo nie biegl.
+const restartE2e = (args && args.restartE2e) || null
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
 // Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
@@ -767,7 +782,8 @@ log(kontekst && kontekst.ctxZapisany
 function wywolajOs(r) {
   if (r.key === 'test-coverage') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzTest, kontekst, BLOK_DLUGIE_KOMENDY), zEffortem({ schema: FINDINGS, agentType: 'test-coverage-reviewer', label: 'review:test-coverage', phase: 'Review' }, tiery.testCoverage))
   if (r.key === 'spec-compliance') return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst), zEffortem({ schema: FINDINGS, agentType: 'spec-compliance-reviewer', label: 'review:spec-compliance', phase: 'Review' }, tiery.spec))
-  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, r.key === 'security' ? blokAdvisors(advisorsE2e) : ''), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
+  const dodatek = r.key === 'security' ? blokAdvisors(advisorsE2e) : r.key === 'correctness' ? blokRestartu(restartE2e) : ''
+  return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, dodatek), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 }
 const thunki = aktywni.map((r) => () => wywolajOs(r))
 if (e2eTryb !== 'pominiety') {
@@ -906,7 +922,7 @@ const blokerSrodowiska = e2eTryb === 'przegladarka'
   ? wykryjBlokerSrodowiska(e2ePrzebiegi)
   : null
 if (blokerSrodowiska) {
-  log(`AWARIA SRODOWISKA E2E (${blokerSrodowiska.klasa}) — SKIP-y srodowiska ida na [Manual]; orkiestrator przelaczy reszte runu na tester bez przegladarki`)
+  log(`AWARIA SRODOWISKA E2E (${blokerSrodowiska.klasa}) — SKIP-y srodowiska ida na [Manual]; orkiestrator puszcza faze bez przegladarki, nastepna zaczyna od restartu serwera`)
 }
 const RANGA = { P1: 0, P2: 1, P3: 2 }
 const poKluczu = new Map()
@@ -1272,5 +1288,5 @@ if (!wynik) {
   }
 }
 // przebieg, blokerSrodowiska i e2eTesterFail dokladane w JS (nie przez schemat agenta) — orkiestrator zapisuje
-// przebieg w stanie i telemetrii, a po blokerze przelacza reszte runu na tester bez przegladarki (P14).
+// przebieg w stanie i telemetrii, a po blokerze puszcza faze bez przegladarki; nastepna zaczyna od restartu serwera (P17).
 return { ...wynik, przebieg, blokerSrodowiska, e2eTesterFail }
