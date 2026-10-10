@@ -2209,6 +2209,8 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (f) **Token w `~/.zshrc` nie dociera do pipeline'u:** `zsh -ic` widzi `SUPABASE_ACCESS_TOKEN`, `zsh -c` nie — Claude Code (aplikacja)
     i agenci workflowu mają powłokę nieinteraktywną, więc w etapie 1 vibersi advisors miał `brak` mimo „tokenu zrobionego” w checkliście
     przygotowania. Stąd `.env.e2e` jako miejsce domyślne (decyzja operatora).
+    Za zgodą operatora token przeniesiony do `vibersi/.env.e2e` (skrót sha256 zgodny z `~/.zshrc`, wartość niewypisana); doctor P17 = OK,
+    `e2e.mjs advisors` bez tokenu w powłoce = ok; wpis w `docs/operator/etap-1-fundament-przygotowanie.md` vibersi poprawiony (niezacommitowany).
     (g) **Audyt advisors etapu 1 vibersi (ręcznie, baza e2e `vbnhxyowencehsqivhuh`, token z `zsh -ic`):** 0 ERROR, 1 WARN
     `auth_leaked_password_protection` (ustawienie Auth, nie migracja) — do włączenia w dev/prod (może wymagać planu Pro).
     (h) **Sprostowanie vibersi (decyzja 2):** sesja projektu, commit `29e1c6d` — przyczyna 500 poprawiona w 5 plikach, zalecenie `tempDirName`
