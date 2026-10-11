@@ -1,0 +1,49 @@
+{
+ "zrodlo": "vibersi PR #1 (dane/vibersi-pr1: statusy-historia.json, pr.json) — tresc podsumowania przycieta do znacznika i stalej frazy „Reviewing files…”",
+ "pr": {
+  "number": 1,
+  "state": "OPEN"
+ },
+ "commity": {
+  "b1addf5f71787812fcee6d404163701cbeceb2a3": "2026-10-11T12:35:14Z",
+  "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d": "2026-10-11T12:49:54Z"
+ },
+ "statusy": [
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-11T12:35:59Z",
+   "description": "Review in progress",
+   "sha": "b1addf5f71787812fcee6d404163701cbeceb2a3",
+   "state": "pending"
+  },
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-11T12:45:12Z",
+   "description": "Review completed",
+   "sha": "b1addf5f71787812fcee6d404163701cbeceb2a3",
+   "state": "success"
+  },
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-11T12:50:04Z",
+   "description": "Review in progress",
+   "sha": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "state": "pending"
+  },
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-11T12:53:33Z",
+   "description": "Review completed",
+   "sha": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "state": "success"
+  }
+ ],
+ "komentarze": [
+  {
+   "login": "coderabbitai[bot]",
+   "created_at": "2026-10-11T12:36:06Z",
+   "updated_at": "2026-10-11T12:36:06Z",
+   "body": "<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\nReviewing files that changed from the base of the PR and between b1addf5f71787812fcee6d404163701cbeceb2a3 and 4d2bbb8688686cb0b8c0f034b15e43d1de62f74d.\n<!-- end of auto-generated comment: summarize by coderabbit.ai -->"
+  }
+ ]
+}

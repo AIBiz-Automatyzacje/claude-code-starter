@@ -1,0 +1,29 @@
+{
+ "zrodlo": "archiwum oferty-online (dane/coderabbit/pr-{1,10,11}-issue-comments.json) — podsumowanie bota przyciete do bloku znacznika i frazy „Reviewing files…”",
+ "komentarze": [
+  {
+   "pr": 10,
+   "znacznik": "review paused",
+   "login": "coderabbitai[bot]",
+   "created_at": "2026-09-08T15:07:55Z",
+   "updated_at": "2026-09-08T20:40:15Z",
+   "body": "<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\n<!-- This is an auto-generated comment: review paused by coderabbit.ai -->\n\n> [!NOTE]\n> ## Reviews paused\n> \n> It looks like this branch is under active development. To avoid overwhelming you with review comments due to an influx of new commits, CodeRabbit has automatically paused this review. You can configure this behavior by changing the `reviews.auto_review.auto_pause_after_reviewed_commits` setting.\n> \n> Use the following commands to manage reviews:\n> - `@coderabbitai resume` to resume automatic reviews.\n> - `@coderabbitai review` to trigger a single review.\n> \n> Use the checkboxes below for quick actions:\n> - [ ] <!-- {\"checkboxId\":\"7f6cc2e2-2e4e-497a-8c31-c9e4573e93d1\"} --> ▶️ Resume reviews\n> - [ ] <!-- {\"checkboxId\":\"e9bb8d72-00e8-4f67-9cb2-caf3b22574fe\"} --> 🔍 Trigger review\n\n<!-- end of auto-generated comment: review paused by coderabbit.ai -->\n<!-- recent_review_start -->\nReviewing files that changed from the base of the PR and between a and b.\n<!-- recent_review_end -->"
+  },
+  {
+   "pr": 11,
+   "znacznik": "skip review",
+   "login": "coderabbitai[bot]",
+   "created_at": "2026-09-08T20:55:59Z",
+   "updated_at": "2026-09-08T22:32:51Z",
+   "body": "<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\n<!-- This is an auto-generated comment: skip review by coderabbit.ai -->\n\n> [!IMPORTANT]\n> ## Review skipped\n> \n> Review was skipped due to path filters\n> \n> <details>\n> <summary>:no_entry: Files ignored due to path filters (4)</summary>\n> \n> * `.claude/rules/learned-patterns.md` is excluded by `!.claude/**`\n> * `docs/solutions/deployment-issues/2026-09-09-polecenie-diagnostyczne-w-zrodle-prawdy-wypisujace-komplet-sekretow.md` is excluded by `!docs/**`\n> * `docs/solutions/ui-bugs/2026-09-09-jeden-wybor-dwa-stany-efekt-bez-zrodla-zmiany-i-fokus-w-wezel-ukryty.md` is excluded by `!docs/**`\n> * `docs/solutions/ui-bugs/2026-09-09-tekst-obiecujacy-czynnosc-ktorej-nie-ma-i-regresja-tekstowa-z-tury-poprawek.md` is excluded by `!docs/**`\n> \n> </details>\n> \n> CodeRabbit blocks several paths by default. You can override this behavior by explicitly including those paths in the path filters. For example, including `**/dist/**` will override the default block on the `dist` directory, by removing the pattern from both the lists.\n> \n> <details>\n> <summary>⚙️ Run configuration</summary>\n> \n> **Configuration used**: Path: .coderabbit.yaml\n> \n> **Review profile**: ASSERTIVE\n> \n> **Plan**: Essentials\n> \n> **Run ID**: `d2f3eb9b-826f-407e-8169-685ce357536e`\n> \n> </details>\n> \n> You can disable this status message by setting the `reviews.review_status` to `false` in the CodeRabbit configuration file.\n> \n> Use the checkbox below for a quick retry:\n> - [ ] <!-- {\"checkboxId\":\"e9bb8d72-00e8-4f67-9cb2-caf3b22574fe\"} --> 🔍 Trigger review\n\n<!-- end of auto-generated comment: skip review by coderabbit.ai -->\n<!-- recent_review_start -->\nReviewing files that changed from the base of the PR and between cca78811dca185893be37f06f364fdb993a00c7e and fdd9bf08476ef676c692e52bb4f9ad88e430ded1.\n<!-- recent_review_end -->"
+  },
+  {
+   "pr": 1,
+   "znacznik": "failure",
+   "login": "coderabbitai[bot]",
+   "created_at": "2026-08-25T07:35:01Z",
+   "updated_at": "2026-08-25T08:47:38Z",
+   "body": "<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\n<!-- This is an auto-generated comment: failure by coderabbit.ai -->\n\n> [!CAUTION]\n> ## Review failed\n> \n> The pull request is closed.\n\n<!-- end of auto-generated comment: failure by coderabbit.ai -->\n<!-- recent_review_start -->\nReviewing files that changed from the base of the PR and between 00b303a5dbf3405264ea2531f7e13a8b7622824e and f2362a3acb0a509054a615d7712d5dcc0a5632cd.\n<!-- recent_review_end -->"
+  }
+ ]
+}

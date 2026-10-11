@@ -60,12 +60,26 @@ przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
 ### 2. Czekanie na recenzję bota
 
-Użyj `Monitor` z pętlą until na `gh pr view --json reviews,comments`, aż pojawi się recenzja bota dla
-bieżącego `headRefOid` i zniknie znacznik „reviewing". **Limit czasu: 20 minut** (domyślnie; operator
-może podać inny).
+Czekanie prowadzi skrypt; pętli nie piszesz sam. Uruchom go przez `Monitor`:
 
-Limit minął bez recenzji → raport „bot nie odpowiedział w ciągu N minut", stan PR, **koniec bez zmian
-w kodzie**. Nie zgaduj, co bot by powiedział.
+```
+Monitor({command: "node .claude/scripts/pr/czekaj-na-bota.mjs --sha $(git rev-parse HEAD) --limit-min 20",
+         description: "recenzja CodeRabbit PR #<numer>", timeout_ms: <limit + 2 min w ms>})
+```
+
+`--sha` = lokalny `HEAD` po starcie albo po pushu tury napraw. **Limit czasu: 20 minut** (domyślnie; operator może podać
+inny). `Monitor` żyje najwyżej 30 minut, więc przy dłuższym limicie wołasz skrypt kolejny raz z pozostałymi minutami.
+
+Skrypt czyta status commita `CodeRabbit` na tym czubku. Tekst komentarzy bota nie mówi, czy recenzja trwa: fraza
+„Reviewing files that changed…” zostaje w podsumowaniu także po zakończonej recenzji. Skrypt wypisuje jedną linię JSON
+`{stan, powod, sha, minuty, pr}`:
+
+- `gotowa` → krok 3.
+- `limit` → raport „bot nie odpowiedział w ciągu N minut” z `powod` i stanem PR, **koniec bez zmian w kodzie**.
+  Nie zgaduj, co bot by powiedział.
+- `pauza`, `pominieta`, `blad`, `pr-zamkniety`, `blad-gh`, `blad-argumentow` → raport „bot nie zrecenzował czubka: <stan> — <powod>”,
+  **koniec bez zmian w kodzie**. Przy `pauza` dopisz, że operator może wznowić bota komentarzem `@coderabbitai review`.
+  Nie pisz tego komentarza sam.
 
 ### 3. Zebranie i klasyfikacja
 
