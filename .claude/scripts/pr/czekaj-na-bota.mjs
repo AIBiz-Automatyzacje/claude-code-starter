@@ -3,7 +3,7 @@
 // Tylko odczyt GitHuba przez `gh`; niczego nie pisze w PR.
 //
 // Uzycie:
-//   node .claude/scripts/pr/czekaj-na-bota.mjs [--pr <numer>] [--sha <oid>] [--limit-min 20] [--co-s 30]
+//   node .claude/scripts/pr/czekaj-na-bota.mjs [--pr <numer>] [--sha <oid>] [--limit-min 20, najwyzej 25] [--co-s 30]
 //   bez --pr: PR biezacej galezi; bez --sha: headRefOid PR z pierwszego odpytania.
 //
 // Wynik: DOKLADNIE jedna linia JSON na stdout, potem koniec procesu (jedno zdarzenie Monitora):
@@ -19,15 +19,25 @@ import { czekajNaBota } from './bot.mjs'
 
 const KOD_ZLYCH_ARGUMENTOW = 2
 const LIMIT_MIN_DOMYSLNY = 20
+// Monitor zyje najwyzej 30 min: limit + ostatnie odpytanie (do 4 wywolan gh po 30 s) musza sie zmiescic.
+const LIMIT_MIN_NAJWYZEJ = 25
 const CO_S_DOMYSLNIE = 30
-const LIMIT_WYWOLANIA_GH_MS = 60_000
+const LIMIT_WYWOLANIA_GH_MS = 30_000
+
+const SHA = /^[0-9a-f]{40}$/
 
 const wykonaj = promisify(execFile)
 
 /** @param {string[]} argumenty */
 async function gh(argumenty) {
-  const { stdout } = await wykonaj('gh', argumenty, { timeout: LIMIT_WYWOLANIA_GH_MS, maxBuffer: 32 * 1024 * 1024 })
-  return stdout
+  try {
+    const { stdout } = await wykonaj('gh', argumenty, { timeout: LIMIT_WYWOLANIA_GH_MS, maxBuffer: 32 * 1024 * 1024 })
+    return stdout
+  } catch (e) {
+    // Przyczyna siedzi w stderr gh (autoryzacja, brak PR, 404) — komunikat execFile podaje tylko polecenie.
+    const stderr = String(/** @type {{ stderr?: unknown }} */ (e).stderr ?? '').trim().split('\n')[0]
+    throw new Error(`gh ${argumenty.slice(0, 2).join(' ')}: ${stderr || (e instanceof Error ? e.message : String(e))}`, { cause: e })
+  }
 }
 
 /**
@@ -38,6 +48,9 @@ function zrodloGh(numer) {
   return {
     async pr() {
       const wynik = JSON.parse(await gh(['pr', 'view', ...(numer ? [numer] : []), '--json', 'number,state,headRefOid']))
+      if (!Number.isInteger(wynik?.number) || typeof wynik.state !== 'string' || !SHA.test(wynik.headRefOid)) {
+        throw new Error(`gh pr view: nieoczekiwany ksztalt odpowiedzi ${JSON.stringify(wynik).slice(0, 200)}`)
+      }
       return { number: wynik.number, state: wynik.state, headRefOid: wynik.headRefOid }
     },
     /** @param {string} sha */
@@ -46,13 +59,16 @@ function zrodloGh(numer) {
     },
     /** @param {string} sha */
     async statusy(sha) {
-      return JSON.parse(await gh(['api', `repos/{owner}/{repo}/commits/${sha}/statuses?per_page=100`]))
+      // Stan laczny: najnowszy wpis na kontekst — bez stronicowania historii wszystkich kontekstow.
+      const statusy = JSON.parse(await gh(['api', `repos/{owner}/{repo}/commits/${sha}/status`, '--jq', '.statuses']))
+      if (!Array.isArray(statusy)) throw new Error('gh api status: brak tablicy statuses')
+      return statusy
     },
     /** @param {number} nr */
     async komentarze(nr) {
-      // --paginate z --jq daje jeden obiekt na linie — bez sklejania tablic stron.
+      // --paginate z --jq daje jeden obiekt na linie (wyjscie nie jest terminalem) — bez sklejania tablic stron.
       const linie = await gh(['api', '--paginate', `repos/{owner}/{repo}/issues/${nr}/comments?per_page=100`,
-        '--jq', '.[] | {login: .user.login, updated_at, body}', '--compact-output'])
+        '--jq', '.[] | {login: .user.login, updated_at, body}'])
       return linie.split('\n').filter(Boolean).map((l) => JSON.parse(l))
     },
   }
@@ -87,6 +103,10 @@ async function glowna() {
       },
     })
     if (values.pr !== undefined && !/^\d+$/.test(values.pr)) throw new Error(`--pr: oczekiwany numer, jest „${values.pr}”`)
+    if (values.sha !== undefined && !SHA.test(values.sha)) throw new Error(`--sha: oczekiwany pelny SHA (40 znakow hex), jest „${values.sha}”`)
+    if (Number(values['limit-min'] ?? 0) > LIMIT_MIN_NAJWYZEJ) {
+      throw new Error(`--limit-min: najwyzej ${LIMIT_MIN_NAJWYZEJ} na wywolanie (Monitor zyje 30 min), jest ${values['limit-min']}`)
+    }
     op = {
       pr: values.pr,
       sha: values.sha,

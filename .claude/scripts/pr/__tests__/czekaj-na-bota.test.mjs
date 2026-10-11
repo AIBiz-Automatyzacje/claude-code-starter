@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import test, { describe } from 'node:test'
 
-import { czekajNaBota, rozstrzygnij, znacznikSpecjalny } from '../bot.mjs'
+import { czekajNaBota, KARENCJA_ODPYTAN, rozstrzygnij, znacznikSpecjalny } from '../bot.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = join(KATALOG, '..', 'czekaj-na-bota.mjs')
@@ -44,7 +44,7 @@ function odtworzenie({ start, pr = PR_OTWARTY, statusy = [], komentarze = [], co
       },
       dataCommita: async (/** @type {string} */ sha) => commity[sha],
       statusy: async (/** @type {string} */ sha) => widoczne(statusy, 'created_at').filter((s) => s.sha === sha),
-      komentarze: async () => { odpytania.komentarze += 1; return widoczne(komentarze, 'created_at') },
+      komentarze: async () => { odpytania.komentarze += 1; return widoczne(komentarze, 'updated_at') },
     },
   }
 }
@@ -79,8 +79,8 @@ describe('vibersi PR #1 — status commita zamiast tekstu', () => {
     assert.equal(wynik.powod, 'po 20 min status CodeRabbit nadal pending „Review in progress”')
     assert.equal(wynik.minuty, 20)
     assert.equal(os.odpytania.pr, 41)
-    // Komentarze tylko w odpytaniach przed pierwszym statusem (12:50:00, 12:50:30 → status od 12:50:04).
-    assert.equal(os.odpytania.komentarze, 1)
+    // Status pending od 12:50:04, przed koncem karencji — komentarzy nie odpytujemy wcale.
+    assert.equal(os.odpytania.komentarze, 0)
   })
 
   test('brak statusu i znacznika → limit z powodem „brak statusu”', async () => {
@@ -108,21 +108,44 @@ describe('stany specjalne ze znacznikow (archiwum oferty)', () => {
 
   for (const k of OFERTY.komentarze) {
     const [stan, opis] = OCZEKIWANE[k.znacznik]
-    test(`PR ${k.pr} „${k.znacznik}” edytowany po commicie → ${stan}; starszy od commita → ignorowany`, async () => {
+    test(`PR ${k.pr} „${k.znacznik}” edytowany po commicie → ${stan} po karencji; starszy od commita → limit`, async () => {
       const commit = przesun(k.updated_at, -1)
       const os = odtworzenie({ start: k.updated_at, komentarze: [k], commity: { [CZUBEK_2]: commit } })
       const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
       assert.equal(wynik.stan, stan)
-      assert.equal(wynik.minuty, 0)
+      assert.equal(wynik.minuty, KARENCJA_ODPYTAN * 0.5)
       assert.match(wynik.powod, opis)
       assert.ok(wynik.powod.startsWith(`znacznik „${k.znacznik}” w komentarzu bota (${k.updated_at})`))
-      assert.equal(znacznikSpecjalny([k], przesun(k.updated_at, 1)), null)
+      const stary = odtworzenie({ start: k.updated_at, komentarze: [k], commity: { [CZUBEK_2]: przesun(k.updated_at, 1) } })
+      const poLimicie = await czekajNaBota({ ...stary, limitMin: 5, coS: 30 })
+      assert.equal(poLimicie.stan, 'limit')
     })
   }
 
+  test('podsumowanie wskazuje czubek („between … and <czubek>”) → znacznik wazny mimo zegara commitera z przyszlosci', () => {
+    const pominiecie = OFERTY.komentarze.find((/** @type {any} */ k) => k.znacznik === 'skip review')
+    const czubek = [...pominiecie.body.matchAll(/between [0-9a-f]{40} and ([0-9a-f]{40})/g)].at(-1)[1]
+    const dataCommita = przesun(pominiecie.updated_at, 5)
+    assert.equal(znacznikSpecjalny([pominiecie], { dataCommita, czubek })?.stan, 'pominieta')
+    assert.equal(znacznikSpecjalny([pominiecie], { dataCommita, czubek: CZUBEK_2 }), null)
+  })
+
+  test('karencja: znacznik poprzedniego czubka nie wygrywa z pending ustawionym po pushu', async () => {
+    const pominiecie = OFERTY.komentarze.find((/** @type {any} */ k) => k.znacznik === 'skip review')
+    const start = pominiecie.updated_at
+    const statusy = [
+      { context: 'CodeRabbit', state: 'pending', description: 'Review in progress', created_at: przesun(start, 0.2), sha: CZUBEK_2 },
+      { context: 'CodeRabbit', state: 'success', description: 'Review completed', created_at: przesun(start, 3), sha: CZUBEK_2 },
+    ]
+    const os = odtworzenie({ start, statusy, komentarze: [pominiecie], commity: { [CZUBEK_2]: przesun(start, -1) } })
+    const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
+    assert.equal(wynik.stan, 'gotowa')
+    assert.equal(os.odpytania.komentarze, 0)
+  })
+
   test('status ma pierwszenstwo przed znacznikiem: success → gotowa, pending → czekamy', () => {
     const pauza = OFERTY.komentarze.find((/** @type {any} */ k) => k.znacznik === 'review paused')
-    const odczyt = { pr: PR_OTWARTY, komentarze: [pauza], dataCommita: null }
+    const odczyt = { pr: PR_OTWARTY, komentarze: [pauza], dataCommita: null, czubek: null }
     const sukces = [{ context: 'CodeRabbit', state: 'success', description: 'Review completed', created_at: '2026-09-08T21:00:00Z' }]
     assert.equal(rozstrzygnij({ ...odczyt, statusy: sukces })?.stan, 'gotowa')
     assert.equal(rozstrzygnij({ ...odczyt, statusy: [{ ...sukces[0], state: 'pending' }] }), null)
@@ -131,7 +154,7 @@ describe('stany specjalne ze znacznikow (archiwum oferty)', () => {
 
   test('znacznik w komentarzu czlowieka (cytat) nie jest stanem bota', () => {
     const pauza = OFERTY.komentarze.find((/** @type {any} */ k) => k.znacznik === 'review paused')
-    assert.equal(znacznikSpecjalny([{ ...pauza, login: 'AIBiz-Automatyzacje' }], null), null)
+    assert.equal(znacznikSpecjalny([{ ...pauza, login: 'AIBiz-Automatyzacje' }], { dataCommita: null, czubek: null }), null)
   })
 })
 
@@ -142,10 +165,17 @@ describe('pozostale stany koncowe', () => {
       { context: 'CodeRabbit', state: 'failure', description: 'Review failed', created_at: '2026-10-11T12:52:00Z' },
       { context: 'ci/build', state: 'success', description: 'ok', created_at: '2026-10-11T12:59:00Z' },
     ]
-    assert.deepEqual(rozstrzygnij({ pr: PR_OTWARTY, statusy, komentarze: [], dataCommita: null }), {
+    assert.deepEqual(rozstrzygnij({ pr: PR_OTWARTY, statusy, komentarze: [], dataCommita: null, czubek: null }), {
       stan: 'blad',
       powod: 'status CodeRabbit failure „Review failed” (2026-10-11T12:52:00Z)',
     })
+  })
+
+  test('kolejnosc wpisow z API bez znaczenia: najnowszy po dacie, nie po pozycji', () => {
+    const historia = VIBERSI.statusy.filter((/** @type {any} */ s) => s.sha === CZUBEK_2)
+    for (const statusy of [historia, [...historia].reverse()]) {
+      assert.equal(rozstrzygnij({ pr: PR_OTWARTY, statusy, komentarze: [], dataCommita: null, czubek: null })?.stan, 'gotowa')
+    }
   })
 
   test('PR zmergowany → pr-zamkniety bez czekania', async () => {
@@ -170,42 +200,76 @@ describe('pozostale stany koncowe', () => {
   })
 })
 
+/**
+ * Atrapa `gh` w PATH: odpowiedzi jak prawdziwe gh po `--jq` (statusy = tablica, komentarze = jeden obiekt na linie).
+ * Nieznana flaga konczy sie bledem jak w gh 2.83 (`--compact-output` nie istnieje w `gh api`).
+ * @param {{ statusy: object[], komentarze: object[], dataCommita: string }} odpowiedzi
+ * @param {string[]} argumentyCli
+ */
+function uruchomZAtrapa({ statusy, komentarze, dataCommita }, argumentyCli) {
+  const katalog = mkdtempSync(join(tmpdir(), 'czekaj-na-bota-'))
+  try {
+    const ndjson = komentarze.map((k) => JSON.stringify(k)).join('\n') + '\n'
+    const atrapa = [
+      `#!${process.execPath}`,
+      'const a = process.argv.slice(2).join(" ")',
+      'const w = (t) => process.stdout.write(t)',
+      'if (a.includes("--compact-output")) { process.stderr.write("unknown flag: --compact-output"); process.exit(1) }',
+      `if (a.startsWith("pr view 1 --json")) w(${JSON.stringify(JSON.stringify(PR_OTWARTY))})`,
+      `else if (a.includes("/commits/${CZUBEK_2}/status --jq .statuses")) w(${JSON.stringify(JSON.stringify(statusy))})`,
+      `else if (a.includes("/commits/${CZUBEK_2} --jq")) w(${JSON.stringify(dataCommita + '\n')})`,
+      `else if (a.includes("/issues/1/comments")) w(${JSON.stringify(ndjson)})`,
+      'else { process.stderr.write("nieznane: " + a); process.exit(1) }',
+    ].join('\n')
+    writeFileSync(join(katalog, 'gh'), atrapa)
+    chmodSync(join(katalog, 'gh'), 0o755)
+    return spawnSync(process.execPath, [CLI, ...argumentyCli], {
+      encoding: 'utf8',
+      env: { ...process.env, PATH: `${katalog}:${process.env.PATH}` },
+    })
+  } finally {
+    rmSync(katalog, { recursive: true, force: true })
+  }
+}
+
+/** @param {ReturnType<typeof spawnSync>} wynik */
+function jednoZdarzenie(wynik) {
+  const linie = String(wynik.stdout).split('\n').filter(Boolean)
+  assert.equal(linie.length, 1, String(wynik.stderr))
+  return JSON.parse(linie[0])
+}
+
 describe('CLI', () => {
   test('zle argumenty → jedna linia JSON blad-argumentow, kod 2', () => {
-    const wynik = spawnSync(process.execPath, [CLI, '--limit-min', 'zero'], { encoding: 'utf8' })
-    assert.equal(wynik.status, 2)
-    assert.deepEqual(JSON.parse(wynik.stdout), { stan: 'blad-argumentow', powod: 'oczekiwana liczba dodatnia, jest „zero”' })
-    assert.equal(wynik.stdout.split('\n').filter(Boolean).length, 1)
+    const liczba = spawnSync(process.execPath, [CLI, '--limit-min', 'zero'], { encoding: 'utf8' })
+    assert.equal(liczba.status, 2)
+    assert.deepEqual(jednoZdarzenie(liczba), { stan: 'blad-argumentow', powod: 'oczekiwana liczba dodatnia, jest „zero”' })
+    const krotkiSha = spawnSync(process.execPath, [CLI, '--sha', '4d2bbb8'], { encoding: 'utf8' })
+    assert.equal(krotkiSha.status, 2)
+    assert.equal(jednoZdarzenie(krotkiSha).powod, '--sha: oczekiwany pelny SHA (40 znakow hex), jest „4d2bbb8”')
+    const dlugo = spawnSync(process.execPath, [CLI, '--limit-min', '40'], { encoding: 'utf8' })
+    assert.equal(dlugo.status, 2)
+    assert.equal(jednoZdarzenie(dlugo).powod, '--limit-min: najwyzej 25 na wywolanie (Monitor zyje 30 min), jest 40')
   })
 
-  test('z atrapa gh (nagrane odpowiedzi vibersi) → dokladnie jedna linia zdarzenia „gotowa”', () => {
-    const katalog = mkdtempSync(join(tmpdir(), 'czekaj-na-bota-'))
-    try {
-      const statusy = JSON.stringify(VIBERSI.statusy.filter((/** @type {any} */ s) => s.sha === CZUBEK_2))
-      const atrapa = [
-        `#!${process.execPath}`,
-        'const a = process.argv.slice(2).join(" ")',
-        'const w = (t) => process.stdout.write(t)',
-        `if (a.startsWith("pr view 1 --json")) w(${JSON.stringify(JSON.stringify(PR_OTWARTY))})`,
-        `else if (a.includes("/commits/${CZUBEK_2}/statuses")) w(${JSON.stringify(statusy)})`,
-        `else if (a.includes("/commits/${CZUBEK_2}")) w("2026-10-11T12:49:54Z\\n")`,
-        'else { process.stderr.write("nieznane: " + a); process.exit(1) }',
-      ].join('\n')
-      writeFileSync(join(katalog, 'gh'), atrapa)
-      chmodSync(join(katalog, 'gh'), 0o755)
-      const wynik = spawnSync(process.execPath, [CLI, '--pr', '1', '--co-s', '0.01'], {
-        encoding: 'utf8',
-        env: { ...process.env, PATH: `${katalog}:${process.env.PATH}` },
-      })
-      assert.equal(wynik.status, 0, wynik.stderr)
-      const linie = wynik.stdout.split('\n').filter(Boolean)
-      assert.equal(linie.length, 1)
-      const zdarzenie = JSON.parse(linie[0])
-      assert.equal(zdarzenie.stan, 'gotowa')
-      assert.equal(zdarzenie.sha, CZUBEK_2)
-      assert.equal(zdarzenie.pr, 1)
-    } finally {
-      rmSync(katalog, { recursive: true, force: true })
-    }
+  test('nagrane odpowiedzi vibersi (status success) → dokladnie jedna linia „gotowa”', () => {
+    const statusy = VIBERSI.statusy.filter((/** @type {any} */ s) => s.sha === CZUBEK_2 && s.state === 'success')
+    const wynik = uruchomZAtrapa({ statusy, komentarze: [], dataCommita: VIBERSI.commity[CZUBEK_2] }, ['--pr', '1', '--co-s', '0.01'])
+    assert.equal(wynik.status, 0, String(wynik.stderr))
+    const zdarzenie = jednoZdarzenie(wynik)
+    assert.equal(zdarzenie.stan, 'gotowa')
+    assert.equal(zdarzenie.sha, CZUBEK_2)
+    assert.equal(zdarzenie.pr, 1)
+  })
+
+  test('brak statusu i znacznik „skip review” w podsumowaniu → jedna linia „pominieta” (sciezka komentarzy przez gh)', () => {
+    const pominiecie = OFERTY.komentarze.find((/** @type {any} */ k) => k.znacznik === 'skip review')
+    const komentarze = [{ login: pominiecie.login, updated_at: pominiecie.updated_at, body: pominiecie.body }]
+    const wynik = uruchomZAtrapa({ statusy: [], komentarze, dataCommita: przesun(pominiecie.updated_at, -1) },
+      ['--pr', '1', '--sha', CZUBEK_2, '--co-s', '0.01'])
+    assert.equal(wynik.status, 0, String(wynik.stderr))
+    const zdarzenie = jednoZdarzenie(wynik)
+    assert.equal(zdarzenie.stan, 'pominieta')
+    assert.equal(String(wynik.stderr), '')
   })
 })

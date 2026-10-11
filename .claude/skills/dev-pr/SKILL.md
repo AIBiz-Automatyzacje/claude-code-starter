@@ -63,12 +63,16 @@ przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 Czekanie prowadzi skrypt; pętli nie piszesz sam. Uruchom go przez `Monitor`:
 
 ```
-Monitor({command: "node .claude/scripts/pr/czekaj-na-bota.mjs --sha $(git rev-parse HEAD) --limit-min 20",
-         description: "recenzja CodeRabbit PR #<numer>", timeout_ms: <limit + 2 min w ms>})
+Monitor({command: "node .claude/scripts/pr/czekaj-na-bota.mjs --pr <numer> --sha $(git rev-parse HEAD) --limit-min 20",
+         description: "recenzja CodeRabbit PR #<numer>", timeout_ms: <(limit-min + 5) × 60000>})
 ```
 
-`--sha` = lokalny `HEAD` po starcie albo po pushu tury napraw. **Limit czasu: 20 minut** (domyślnie; operator może podać
-inny). `Monitor` żyje najwyżej 30 minut, więc przy dłuższym limicie wołasz skrypt kolejny raz z pozostałymi minutami.
+`<numer>` = numer PR z kroku 1, `--sha` = lokalny `HEAD` po starcie albo po pushu tury napraw. **Limit czasu: 20 minut**
+(domyślnie; operator może podać inny). Jedno wywołanie ma `--limit-min` najwyżej 25, bo `Monitor` żyje najwyżej 30 minut;
+przy dłuższym limicie po `limit` wołasz skrypt kolejny raz z pozostałymi minutami.
+
+Po turze napraw z `push: false` nie uruchamiaj skryptu: commit nie dotarł na GitHub, więc bot go nie zrecenzuje. Raport
+„tura <N> niewypchnięta” z commitem tury, **koniec bez zmian w kodzie**.
 
 Skrypt czyta status commita `CodeRabbit` na tym czubku. Tekst komentarzy bota nie mówi, czy recenzja trwa: fraza
 „Reviewing files that changed…” zostaje w podsumowaniu także po zakończonej recenzji. Skrypt wypisuje jedną linię JSON
@@ -92,7 +96,9 @@ Wołasz go w **każdej** turze, także drugiej i trzeciej. Workflow zwraca `reko
 o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
 
 `recenzjaAktualna: false` → recenzja nie dotyczy czubka gałęzi. Wróć do kroku 2 i poczekaj na recenzję
-przyrostową, zamiast naprawiać na podstawie nieaktualnych uwag.
+przyrostową, zamiast naprawiać na podstawie nieaktualnych uwag. Na ten sam czubek wracasz najwyżej raz: gdy skrypt
+znów odda `gotowa` dla tego samego `sha`, a `zbierz` znów `recenzjaAktualna: false`, kończysz raportem „status bota
+i recenzja się nie zgadzają” (sha, `powod` skryptu), **bez zmian w kodzie**.
 
 Zero wątków albo `rekomendacja` inna niż KOLEJNA TURA → przejdź do kroku 6 (domknięcie).
 

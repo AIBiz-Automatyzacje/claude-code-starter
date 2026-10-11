@@ -6,6 +6,8 @@
 export const KONTEKST_STATUSU = 'CodeRabbit'
 export const LOGIN_BOTA = /coderabbit/i
 export const PROG_BLEDOW_GH = 3
+/** Znaczniki czytamy od tego odpytania (4 × 30 s = 2 min po starcie). */
+export const KARENCJA_ODPYTAN = 4
 
 /** Znacznik w podsumowaniu bota → stan wyniku. */
 const ZNACZNIKI = /** @type {const} */ ([
@@ -46,25 +48,36 @@ function opisZnacznika(blok) {
 }
 
 /**
- * Znacznik stanu specjalnego w komentarzach bota edytowanych po dacie commita czubka.
- * Bot edytuje jedno podsumowanie w miejscu, wiec starszy komentarz nosi stan poprzedniego czubka.
+ * SHA ostatniej recenzji z informacji bota („between <od> and <do>”) albo null.
+ * @param {string} body
+ */
+function zrecenzowanyCommit(body) {
+  const trafienia = [...body.matchAll(/between ([0-9a-f]{40}) and ([0-9a-f]{40})/g)]
+  return trafienia.length ? trafienia[trafienia.length - 1][2] : null
+}
+
+/**
+ * Znacznik stanu specjalnego w komentarzach bota dotyczacych czubka: podsumowanie wskazuje czubek („between … and <czubek>”)
+ * albo bylo edytowane po dacie commita czubka. Bot edytuje jedno podsumowanie w miejscu, wiec starszy komentarz nosi stan
+ * poprzedniego czubka; SHA chroni przed zegarem commitera, ktory sie spieszy.
  * @param {Komentarz[]} komentarze
- * @param {string | null} dataCommita ISO; null = bez filtra daty
+ * @param {{ dataCommita: string | null, czubek: string | null }} czubka dataCommita null = bez filtra daty
  * @returns {Rozstrzygniecie | null}
  */
-export function znacznikSpecjalny(komentarze, dataCommita) {
+export function znacznikSpecjalny(komentarze, { dataCommita, czubek }) {
   const od = dataCommita ? Date.parse(dataCommita) : -Infinity
-  const swieze = komentarze
-    .filter((k) => LOGIN_BOTA.test(k.login) && Date.parse(k.updated_at) >= od)
+  const dotyczaCzubka = komentarze
+    .filter((k) => LOGIN_BOTA.test(k.login))
+    .filter((k) => Date.parse(k.updated_at) >= od || (czubek !== null && zrecenzowanyCommit(k.body) === czubek))
     .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
-  for (const k of swieze) {
+  for (const k of dotyczaCzubka) {
     for (const [nazwa, stan] of ZNACZNIKI) {
       const start = `<!-- This is an auto-generated comment: ${nazwa} by coderabbit.ai -->`
       const i = k.body.indexOf(start)
       if (i < 0) continue
       const koniec = k.body.indexOf(`<!-- end of auto-generated comment: ${nazwa} by coderabbit.ai -->`, i)
-      const blok = k.body.slice(i + start.length, koniec < 0 ? undefined : koniec)
-      return { stan, powod: `znacznik „${nazwa}” w komentarzu bota (${k.updated_at})${opisZnacznika(blok) ? ` — ${opisZnacznika(blok)}` : ''}` }
+      const opis = opisZnacznika(k.body.slice(i + start.length, koniec < 0 ? undefined : koniec))
+      return { stan, powod: `znacznik „${nazwa}” w komentarzu bota (${k.updated_at})${opis ? ` — ${opis}` : ''}` }
     }
   }
   return null
@@ -72,10 +85,10 @@ export function znacznikSpecjalny(komentarze, dataCommita) {
 
 /**
  * Jedno odpytanie → stan koncowy albo null (czekamy dalej). Kolejnosc: PR zamkniety, status commita, znaczniki.
- * @param {{ pr: StanPr, statusy: Status[], komentarze: Komentarz[], dataCommita: string | null }} odczyt
+ * @param {{ pr: StanPr, statusy: Status[], komentarze: Komentarz[], dataCommita: string | null, czubek: string | null }} odczyt
  * @returns {Rozstrzygniecie | null}
  */
-export function rozstrzygnij({ pr, statusy, komentarze, dataCommita }) {
+export function rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek }) {
   if (pr.state !== 'OPEN') return { stan: 'pr-zamkniety', powod: `PR #${pr.number} ma stan ${pr.state}` }
   const status = najnowszyStatus(statusy)
   if (status) {
@@ -84,7 +97,7 @@ export function rozstrzygnij({ pr, statusy, komentarze, dataCommita }) {
     if (status.state === 'failure' || status.state === 'error') return { stan: 'blad', powod: opis }
     return null
   }
-  return znacznikSpecjalny(komentarze, dataCommita)
+  return znacznikSpecjalny(komentarze, { dataCommita, czubek })
 }
 
 /**
@@ -125,10 +138,12 @@ export async function czekajNaBota({ zrodlo, zegar, sha = null, limitMin, coS, o
       if (!dataCommita) dataCommita = await zrodlo.dataCommita(czubek)
       const statusy = await zrodlo.statusy(czubek)
       ostatni = najnowszyStatus(statusy) || ostatni
-      // Komentarze tylko przy otwartym PR bez statusu bota — tam jedynie sa potrzebne.
-      const komentarze = pr.state === 'OPEN' && !najnowszyStatus(statusy) ? await zrodlo.komentarze(pr.number) : []
+      // Komentarze tylko przy otwartym PR bez statusu bota i po karencji: bot, ktory recenzuje, ustawia pending w sekundy
+      // po pushu, a do tego czasu podsumowanie moze jeszcze nosic znacznik poprzedniego czubka.
+      const poKarencji = zegar.teraz() - start >= KARENCJA_ODPYTAN * coS * 1000
+      const komentarze = pr.state === 'OPEN' && !najnowszyStatus(statusy) && poKarencji ? await zrodlo.komentarze(pr.number) : []
       bledyZRzedu = 0
-      const wynik = rozstrzygnij({ pr, statusy, komentarze, dataCommita })
+      const wynik = rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek })
       if (wynik) return { ...wynik, sha: czubek, minuty: minuty() }
     } catch (e) {
       bledyZRzedu += 1
