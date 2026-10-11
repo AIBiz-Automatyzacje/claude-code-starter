@@ -38,6 +38,20 @@ cd ~/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipe
 Sekcje: 1 run, 2 fazy (gate, review, fix, koszt etapów), 2b kontrola fixa, 2c sceptycy, 2f wiedza, 2i reguły kodu (kryterium P12),
 4 model/efort, 5 `ctx_start` per klasa. Sekcje 2e/2i czytają kopię smoke'a — dla prawdziwego projektu część wierszy będzie pusta.
 
+**Odczyt jednego PR po `/dev-pr`** (odczyt C; 6a pkt 82): najpierw zrzut GitHuba do `dane/<projekt>-pr<N>/` (`pr.json` z `gh pr view
+--json …,reviews,comments,commits`, `watki.json` z GraphQL `reviewThreads` z `originalCommit`, `statusy.json` statusów czubków recenzji
+— przepis w nagłówku skryptu i w `dane/vibersi-pr1/`), potem:
+
+```bash
+cd ~/Documents/Kodowanie/workspace-template/docs/reviews/2026-09-19-analiza-pipeline/skrypty && python3 odczyt_pr.py --gh ../dane/<projekt>-pr<N> --repo ~/Documents/Kodowanie/<projekt> --zadanie <zadanie> --sesja <transkrypt sesji /dev-pr .jsonl>
+```
+
+Sekcje: 1 wątki per oś i waga + P1/P2 na 100 plików, 2 klasyfikacja i decyzje, 3 **pochodzenie linii uwagi** (blame na commicie recenzji:
+execute / fix / poza pipeline'em) i czy plik był w review fazy, 4 koszt runów `dev-pr-wf` i epizodu, 5 czas PR → merge i czekanie na bota
+wobec statusu `CodeRabbit`. Ograniczenie telemetrii: epizod `dev-pr` wywołany narzędziem Skill (nie slashem) kończy się na pierwszym
+skillu pomocniczym (P17 zagnieżdża tylko w epizodach ze slasha) — raport §6 może pokazać dev-pr bez końcówki; koszt sesji bierz
+z sekcji 4 skryptu, runy `dev-pr-wf` liczą się osobno i poprawnie. `wiadomosci_operatora` nie liczy odpowiedzi w AskUserQuestion.
+
 **Pola faz i runów spoza raportu** (bramki, sceptyk, wiedza, E2E, ogrodnik — ostatnia wersja każdego rekordu):
 
 ```bash
@@ -90,6 +104,12 @@ node -e 'const P=process.argv[1],o=new Map();for(const l of require("fs").readFi
 | P15 | oceny ogrodnika ~25% zadań (symulacja); koszt pomiaru 0,01 M | pola runu (`ogrod`) | — (odczyt) |
 
 ## 5. Odczyt C — po 5 PR
+
+**Pochodzenie linii przed progami (6a pkt 82):** każdą uwagę bota przypisz do commitu, który wprowadził linię (`odczyt_pr.py` §3).
+Progi osi, P8 (pliki fixa) i P12 liczysz tylko na uwagach w kodzie z pipeline'u — `execute` (review fazy go widział) i `fix` (widziała
+go kontrola fixa). Uwagi w kodzie „poza pipeline'em” (poprawki po smoke'u, ręczne commity przed `/dev-pr`) to osobny wiersz: żaden
+reviewer fazy ich nie widział, bot jest ich jedyną recenzją. Okno: PR #1 vibersi (2026-10-11) — execute P3 1, fix P3 1, poza pipeline'em
+P2 1 (0,96 B P1/P2 na 100 plików, w kodzie z pipeline'u 0).
 
 | paczka | próg (okno 5 PR) | gdzie | przekroczone → |
 |---|---|---|---|

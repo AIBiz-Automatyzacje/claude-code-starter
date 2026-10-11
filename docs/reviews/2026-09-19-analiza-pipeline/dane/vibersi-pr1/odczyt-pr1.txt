@@ -1,0 +1,45 @@
+# Odczyt PR #1 feat: etap-1-fundament — projekt vibersi, zadanie etap-1-fundament
+
+pliki PR 104, +14929 −21, commitów 35
+
+## 1. Wątki bota (rekordy run.pr etapu zbierz)
+  tura 1: uwag 3 (P1 0 / P2 1 / P3 2), rekomendacja: KOLEJNA TURA — 3 watkow do naprawy (tura 1 z 3)
+  tura 2: uwag 0 (P1 0 / P2 0 / P3 0), rekomendacja: MERGUJ
+  oś correctness  P2: 1
+  oś e2e          P3: 1
+  oś test         P3: 1
+  B P1/P2 unikalne: 1 na 104 plików = 0.96 na 100 plików (tło wrzesień 3,5; oferty PR 1–7 9,3)
+  wątki na GitHubie: 3, rozwiązane 3
+
+## 2. Klasyfikacja i decyzje
+  klasy: {'napraw': 3}; tury napraw: 1; naprawione 3, odrzucone 0, nieruszone 0
+  tura 1: commit 4d2bbb8, walidacja PASS, odpowiedzi 3, push True
+
+## 3. Pochodzenie linii uwagi (blame na commicie recenzji) i review fazy
+  P3 test/test-kruchy e2e/etap-1-rls-asercje.sql:583 ← f31f4f1 [execute] feat(etap-1-fundament): schemat bazy z RLS i SQL-smoke na bazie e2e — plik w review fazy
+  P3 e2e/seed-e2e e2e/seeds/etap-1-rls-seed.sql:176 ← 40a1fa1 [fix] fix(etap-1-fundament): poprawki po review fazy 3 — plik w review fazy
+  P2 correctness/cykl-zycia-ui src/components/layout/menu-telefonu.tsx:95 ← 2a223c1 [poza pipeline'em] feat(layout): menu telefonu jako karta z przyciemnieniem i stopka z du — plik w review fazy
+  razem: execute P3: 1, fix P3: 1, poza pipeline'em P2: 1
+
+## 4. Koszt (jednostki względne)
+  wf_3930243d-b6a start     STOP agentów 1 0.018 M 11 s
+  wf_3ce2f662-339 start     OK   agentów 1 0.041 M 41 s
+  wf_ab142c9e-9cf zbierz    OK   agentów 1 0.078 M 53 s
+  wf_d32d6a2c-15d napraw    OK   agentów 1 0.215 M 183 s
+  wf_2b164c6f-ce2 zbierz    OK   agentów 1 0.041 M 26 s
+  wf_ea4513da-503 merge     OK   agentów 1 0.017 M 14 s
+  wf_0726df59-dc1 merge     OK   agentów 2 0.026 M 50 s
+  wf_4192c17f-be3 compound  OK   agentów 1 0.091 M 68 s
+  wf_49d6dc4b-fa6 claude-md OK   agentów 2 0.045 M 33 s
+  runy dev-pr-wf razem: 9, 0.57 M
+  epizod dev-pr           12:33:44–13:14:19 0.42 M, workflow 8, otwarty False, zagnieżdżone [], wiadomości operatora 0
+  epizod coolify-manager  13:14:19–13:17:29 0.40 M, workflow 1, otwarty True, zagnieżdżone [], wiadomości operatora 0
+  sesja od wywołania dev-pr do końca transkryptu: 0.78 M (przed: 0.03 M)
+
+## 5. Czasy
+  PR utworzony 12:35:49 → merge 13:13:16 = 37.5 min
+  status CodeRabbit success na 4d2bbb8: 2026-10-11T12:53:33Z
+  status CodeRabbit success na b1addf5: 2026-10-11T12:45:12Z
+  Monitor „recenzja CodeRabbit PR #1 (czubek b1addf5)”: 9.4 min, zdarzenie: RECENZJA GOTOWA (reviews=1); recenzja gotowa 0.4 min przed końcem czekania
+  Monitor „recenzja przyrostowa CodeRabbit PR #1 (czubek 4d2bbb8)”: 20.2 min, zdarzenie: TIMEOUT 20 min — brak recenzji na HEAD; ostatni stan bota: No actionable comments; recenzja gotowa 17.3 min przed końcem czekania
+  czekanie ponad gotową recenzję (minus 1 min odpytywania): 16.3 min
