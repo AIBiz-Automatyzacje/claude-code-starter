@@ -2574,6 +2574,42 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
+**AKTUALNA (2026-10-11) — ANALIZA `/dev-pr` ETAPU 1 VIBERSI.** Stan: P17 zmergowana i wypchnięta (6a pkt 81, main `a6fd565`); vibersi PR #1
+`etap-1-fundament` ZMERGOWANY 2026-10-11 (squash `1a1558d`), po nim compound uwag bota (`1d0ebc9`), CLAUDE.md uzgodniony (`c6329af`), smoke
+operatora zamknięty (`ad1d3fe`: staging z main, auto-deploy, migracje na dev, Auth). Sesja `/dev-pr` w vibersi: `a6ec81a9-1099-4cac-9633-c5c02b98120f`,
+9 runów `dev-pr-wf` (pierwszy `wf_3930243d-b6a` STOP, rekordy `run.pr` z turą 1 i 2). `/sync-template` w vibersi jeszcze NIE zrobiony.
+
+```
+Kontynuujemy po paczce P17 szablonu workspace-template (zmergowana i wypchnięta). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Gdzie jesteśmy: projekt Vibersi (~/Documents/Kodowanie/vibersi, repo AIBiz-Automatyzacje/vibersi) — etap 1 przeszedł autopilota, PR #1
+przeszedł /dev-pr i jest zmergowany do main (squash 1a1558d), potem compound uwag bota, uzgodnienie CLAUDE.md i mój smoke operatora.
+Sesja /dev-pr w vibersi: a6ec81a9-1099-4cac-9633-c5c02b98120f (~/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/).
+
+Przeczytaj (repo szablonu, docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md §2 (wiersz „Popr.”), 6a pkt 80–81, §7 (ostatnie wpisy);
+KARTA-ODCZYTU.md §1 (komendy) i §5 (odczyt C — po 5 PR; ten PR otwiera okno). Potwierdź w 3–5 zdaniach, gdzie jesteśmy, i ruszaj z zadaniem.
+
+Zadanie: analiza przebiegu /dev-pr na PR #1 vibersi — czy maszyneria PR (dev-pr + dev-pr-wf: bramka startu, czekanie na bota, klasyfikacja
+uwag, tury napraw, bramka merge'a, compound z pętlą do reviewerów) zadziałała tak, jak ma działać, i ile kosztowała.
+1. Źródła: transkrypt sesji a6ec81a9 (rozmowa, decyzje, czas czekania na bota), pliki harnessu i journale 9 runów dev-pr-wf (pierwszy wf_3930243d-b6a
+   to STOP — ustal przyczynę), rekordy telemetrii run.pr i skill (komenda pól faz/runów z karty §1, projekt vibersi), raport:
+   node .claude/scripts/telemetria/raport.mjs --od 2026-10-09 --do <dziś> --projekt vibersi --wyj ~/Documents/Kodowanie/telemetria-odczyty,
+   wątki bota na GitHubie (gh pr view 1 -R AIBiz-Automatyzacje/vibersi --comments + wątki review przez gh api), docs/reviews/propozycje-do-reviewerow.md
+   i commit compoundu 1d0ebc9 w vibersi.
+2. Liczby skryptem: wątki bota per oś i waga (P1/P2/P3 na 100 plików PR — tło jakości z karty §2), klasyfikacja (napraw / napraw-szerzej /
+   do-operatora / odrzuć) i co z nią zrobiono, liczba tur, koszt epizodu /dev-pr i runów dev-pr-wf, czas od utworzenia PR do merge'a.
+   Uwagi bota zestaw z findingami review faz autopilota (docs/completed/etap-1-fundament/review-faza-*.md): co bot znalazł, a review fazy przepuściło
+   (luki osi) — to wejście odczytu C.
+3. Sprawdź wpływ P17: dev-pr szedł jeszcze na starej maszynerii vibersi (ba3653e) — oddziel ustalenia, które P17 już adresuje, od nowych.
+4. Wynik: problem → przyczyna → co robimy → co mi to da; propozycje zmian szablonu tylko z liczbą, która je uzasadnia. Ustalenia i moje decyzje
+   jako HANDOFF 6a pkt 82 (z liczbami); pamięć projektu po sesji.
+Potem (osobno, po mojej decyzji): vibersi na main — /sync-template (nowa sesja w vibersi), /weryfikacja-setup, /dev-plan etapu 2.
+
+Zasady: nic w .claude/ szablonu ani w vibersi bez mojej zgody; liczby skryptem; pliki .md tylko Write/Edit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
 Stan po 2026-09-23: etapy 0–3, 4 pomiary, domknięcia D1–D6 i D5b gotowe; **przegląd domknięć na Opus 5.5 ZAKOŃCZONY** (`PROPOZYCJA-POPRAWEK-DOMKNIEC.md`):
 D1–D6 PRZYJĘTE i wprowadzone (6a pkt 19). Najważniejsza zmiana z D4: dźwignia kontekstu ≈ 40–50% kosztu fazy (nie 25–35%), dźwignie nie sumują się, nowe
 cele ctx_start. **Decyzje z D6 PODJĘTE 2026-09-23 (6a pkt 20):** koszyk D, dev-ideate, freshness-audit(+wf) i tryb ręczny execute/review WYPADAJĄ
