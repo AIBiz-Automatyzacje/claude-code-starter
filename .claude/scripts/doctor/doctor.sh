@@ -178,6 +178,21 @@ sprawdz_advisors() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Port serwera E2E (P19): 5173 = port zwykłego dev servera Vite, uruchomiony obok zatrzymuje start E2E — UWAGA z naprawą.
+sprawdz_port_e2e() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "port E2E" UWAGA "nie sprawdzono portu z .env.e2e (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/port-e2e.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "port E2E" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź .env.e2e"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Warstwa stała plików ról (P11) — liczba poleceń i zasady pisania, przez node (wiersz TSV z warstwa-rol.mjs).
 # Naruszenie to UWAGA: rola działa, tylko jej plik odjechał od szablonu.
 sprawdz_warstwe() {
@@ -233,6 +248,7 @@ if ma_dockerfile; then narzedzie docker UWAGA "brew install --cask docker"; else
 sprawdz_ustawienia
 sprawdz_bramki
 sprawdz_advisors
+sprawdz_port_e2e
 sprawdz_warstwe
 sprawdz_telemetrie
 echo

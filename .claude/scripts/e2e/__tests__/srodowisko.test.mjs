@@ -66,11 +66,13 @@ test('parsujEnv: komentarze, export, cudzyslowy, komentarz za wartoscia', () => 
   assert.deepEqual(parsujEnv('# x\nexport A=1\nB="dwa # nie komentarz"\nC=3 # komentarz\n  D = cztery\nE=\'x\' # komentarz\n'), { A: '1', B: 'dwa # nie komentarz', C: '3', D: 'cztery', E: 'x' })
 })
 
-test('konfiguracja: domyslnie dev server Vite na 5173 z menedzerem z lockfile; parametry z .env.e2e wygrywaja', () => {
+test('konfiguracja: domyslnie dev server Vite w trybie e2e na 5174 (5173 = zwykly pnpm dev, P19) z menedzerem z lockfile; parametry z .env.e2e wygrywaja', () => {
   const p = projekt({ pliki: { 'pnpm-lock.yaml': '' } })
   const dom = konfiguracja(p, {})
-  assert.equal(dom.url, 'http://localhost:5173')
-  assert.equal(dom.start, 'pnpm run dev -- --mode e2e --port 5173 --strictPort')
+  assert.equal(dom.url, 'http://localhost:5174')
+  assert.equal(dom.start, 'pnpm run dev -- --mode e2e --port 5174 --strictPort')
+  assert.deepEqual([dom.port, dom.lokalny], [5174, true])
+  assert.equal(konfiguracja(p, { E2E_URL: 'https://app.example.com' }).lokalny, false)
   assert.equal(dom.limitSek, 90)
   assert.equal(dom.bazaE2e, false)
   const wlasne = konfiguracja(p, { E2E_URL: 'http://127.0.0.1:4100', E2E_HEALTH: 'http://127.0.0.1:4100/zdrowie', E2E_START_TIMEOUT: '15' })
@@ -149,7 +151,7 @@ test('decyzja startowa: .env.e2e z bledem = niepowodzenie z lista bledow (STOP p
   rmSync(p, { recursive: true })
 })
 
-test('start: uruchamia serwer z E2E_START, czeka na sonde, stop zabija tylko swoj proces; drugi start zastaje dzialajacy', async () => {
+test('start: uruchamia serwer z E2E_START, czeka na sonde, stop zabija tylko swoj proces; nasz serwer bez pliku PID = obcy', async () => {
   const port = await wolnyPort()
   const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
   const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n` })
@@ -158,12 +160,12 @@ test('start: uruchamia serwer z E2E_START, czeka na sonde, stop zabija tylko swo
   assert.equal(w.serwer, 'uruchomione')
   const konf = konfProjektu(p)
   assert.ok(existsSync(konf.pid))
-  // Serwer odpowiada, ale nie ma naszego PID-u (ktos odpalil go recznie) = zastany z ostrzezeniem o bazie dev.
+  // Serwer odpowiada, ale nie ma naszego pliku PID = obcy (P19): STOP startu, proces zostaje.
   const pid = readFileSync(konf.pid, 'utf8')
   rmSync(konf.pid)
   const drugi = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
-  assert.equal(drugi.serwer, 'zastane')
-  assert.match(drugi.detal, /zastany, moze dzialac na bazie dev/)
+  assert.deepEqual([drugi.status, drugi.serwer], ['niepowodzenie', 'obcy'])
+  assert.equal(await odpowiada(`http://127.0.0.1:${port}`), true)
   writeFileSync(konf.pid, pid)
   assert.equal((await zatrzymajSerwer(konf)).posprzatano, true)
   let dziala = true
@@ -464,28 +466,58 @@ test('restart fazy: serwer od nowa widzi plik powstaly po starcie; faza bez scen
   }
 })
 
-test('restart fazy: serwer nie nasz (bez pliku PID) zostaje — gotowe z zastanym; komenda, ktora pada = niepowodzenie z logiem', async () => {
+test('restart fazy: komenda, ktora pada = niepowodzenie z logiem, bez pola obcy', async () => {
   const port = await wolnyPort()
-  const obcy = createServer().listen(port)
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=exit 1\n` })
+  const pada = await restartFazy(p, ZADANIE, 1)
+  assert.equal(pada.status, 'niepowodzenie')
+  assert.match(pada.detal, /zakonczyla sie \(1\)/)
+  assert.equal(pada.obcy, null)
+  assert.equal(pada.log, konfProjektu(p).log)
+})
+
+// P19 (vibersi etap 2): `/weryfikacja-setup` uruchomil zwykly `vite --port 5173` na bazie dev, start E2E przyjal go jako
+// „zastany” i fazy 4–5 daly 9 scenariuszy SKIP. Obcy serwer = prawdziwy proces HTTP spoza pipeline'u na porcie E2E.
+/** @param {number} port @returns {Promise<import('node:child_process').ChildProcess>} proces HTTP spoza pipeline'u, gotowy na porcie */
+async function obcySerwerHttp(port) {
+  const { spawn } = await import('node:child_process')
+  const dziecko = spawn(process.execPath, ['-e', `require('http').createServer((q,s)=>s.end('obcy')).listen(${port})`], { stdio: 'ignore' })
+  for (let i = 0; i < 50 && !(await odpowiada(`http://127.0.0.1:${port}`)); i += 1) await new Promise((r) => setTimeout(r, 100))
+  return dziecko
+}
+
+test('obcy serwer HTTP na porcie E2E: start i sprawdzenie = STOP z PID-em, komenda i naprawa; serwer zostaje nietkniety', async () => {
+  const port = await wolnyPort()
+  const obcy = await obcySerwerHttp(port)
   try {
-    const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=exit 1\n` })
-    // Serwer TCP bez HTTP nie odpowiada na sonde — najpierw start komendy, ktora pada.
-    const pada = await restartFazy(p, ZADANIE, 1)
-    assert.equal(pada.status, 'niepowodzenie')
-    assert.match(pada.detal, /zakonczyla sie \(1\)|nie odpowiada/)
+    const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=node -e "setInterval(()=>{},1000)"\n` })
+    for (const uruchom of [true, false]) {
+      const w = await startE2e(p, ZADANIE, { uruchom, narzedzia: SPRAWNE })
+      assert.deepEqual([w.status, w.serwer], ['niepowodzenie', 'obcy'], `uruchom=${uruchom}: ${w.detal}`)
+      assert.match(w.detal, new RegExp(`na porcie ${port} dziala serwer spoza pipeline'u — PID ${obcy.pid}: \\S*node -e require\\('http'\\)`))
+      assert.match(w.naprawa, new RegExp(`^Zatrzymaj go: \`kill ${obcy.pid}\`.*E2E_URL=http://localhost:<port>.*lsof -nP -iTCP:${port} -sTCP:LISTEN`))
+      assert.match(w.naprawa, /Sprawdzenie: node \.claude\/scripts\/e2e\/e2e\.mjs sprawdz --zadanie docs\/active\/z$/)
+    }
+    assert.equal(existsSync(konfProjektu(p).pid), false, 'pipeline nie uruchomil wlasnego serwera')
+    assert.equal(await odpowiedz(`http://127.0.0.1:${port}`), 'obcy')
   } finally {
-    obcy.close()
+    obcy.kill()
   }
-  const port2 = await wolnyPort()
-  const http = await import('node:http')
-  const zastany = http.createServer((_zapytanie, s) => s.end('obcy')).listen(port2)
+})
+
+test('obcy serwer HTTP zajal port w trakcie runu: restart fazy = niepowodzenie z polem obcy (PID), bez logu; serwer zostaje', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('nasz')).listen(${port})"`
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n` })
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).serwer, 'uruchomione')
+  await zatrzymajSerwer(konfProjektu(p))
+  const obcy = await obcySerwerHttp(port)
   try {
-    const p2 = projekt({ env: `E2E_URL=http://127.0.0.1:${port2}\nE2E_START=exit 1\n` })
-    const w = await restartFazy(p2, ZADANIE, 1)
-    assert.equal(w.status, 'gotowe', w.detal)
-    assert.equal(w.serwer, 'zastane')
-    assert.equal(await odpowiedz(`http://127.0.0.1:${port2}`), 'obcy')
+    const w = await restartFazy(p, ZADANIE, 1)
+    assert.deepEqual([w.status, w.serwer, w.obcy?.pid, w.log], ['niepowodzenie', 'obcy', obcy.pid, null], w.detal)
+    assert.match(w.detal, new RegExp(`PID ${obcy.pid}.*Zatrzymaj go: \`kill ${obcy.pid}\``))
+    assert.equal(await odpowiedz(`http://127.0.0.1:${port}`), 'obcy')
   } finally {
-    zastany.close()
+    obcy.kill()
   }
 })

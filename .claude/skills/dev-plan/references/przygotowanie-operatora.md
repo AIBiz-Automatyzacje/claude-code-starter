@@ -62,7 +62,7 @@ która bez niej nie ruszy; `[blokuje: faza 1]` = gotowe przed startem autopilota
 - [ ] **Postaw środowisko E2E wg `.claude/templates/e2e-env/README.md` (~30 min, jednorazowo)** — **[blokuje: faza 1]** (bramka setupu autopilota)
   - Po co: plan ma N scenariuszy `[E2E]`; bez `.env.e2e` autopilot zatrzyma przebieg przed fazą 1.
   - Jak: README prowadzi przez dedykowany projekt Supabase e2e (nie ref dev/prod), `.env.e2e` z `.env.e2e.example`, wpis do `.gitignore`, konto testowe, tryb `--mode e2e` Vite. Opt-out: `[E2E]` → `[Manual]` w planie.
-  - Dowód: `test -f .env.e2e && git check-ignore -q .env.e2e && echo OK` → OK; `<pm> run dev -- --mode e2e --port 5173` startuje, a localhost:5173 loguje się kontem `E2E_TEST_EMAIL`
+  - Dowód: `test -f .env.e2e && git check-ignore -q .env.e2e && echo OK` → OK; `<pm> run dev -- --mode e2e --port 5174` startuje, a localhost:5174 loguje się kontem `E2E_TEST_EMAIL`
 
 ---
 Po odhaczeniu wszystkiego: `plan.mjs gotowosc docs/active/<zadanie>` → autopilot.

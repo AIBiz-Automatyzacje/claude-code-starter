@@ -364,3 +364,20 @@ test('advisors: bez Supabase nie dotyczy; baza e2e bez tokenu → UWAGA z napraw
   assert.deepEqual(wiersz(ok.stdout, 'advisors (baza e2e)').slice(1, 3), ['OK', 'token i projekt e2e abcdefghijklmnopqrst'])
   assert.doesNotMatch(ok.stdout, /tajny/)
 }))
+
+// P19: w vibersi zwykly dev server Vite na 5173 zajal port E2E (domyslny do P19) i start przyjal go jako serwer aplikacji.
+// Doctor mowi o porcie 5173 przed runem — UWAGA z naprawa (nie blokuje); domyslny port E2E (5174) i inny port = OK.
+test('port E2E: bez .env.e2e nie dotyczy; 5173 → UWAGA z naprawa na 5174; domyslny i wlasny port → OK', () => zSrodowiskiem((s) => {
+  assert.equal(wiersz(doctor(s).stdout, 'port E2E')[1], 'nie dotyczy')
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_URL=http://localhost:5173\n')
+  const w = doctor(s)
+  const uwaga = wiersz(w.stdout, 'port E2E')
+  assert.deepEqual(uwaga.slice(1, 2), ['UWAGA'])
+  assert.match(uwaga[2], /^http:\/\/localhost:5173 — 5173 to port zwyklego dev servera Vite/)
+  assert.match(uwaga[3], /^E2E_URL=http:\/\/localhost:5174 w \.env\.e2e/)
+  assert.equal(w.status, 0, 'port 5173 nie blokuje runu')
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_TEST_EMAIL=e2e@x.pl\n')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://localhost:5174'])
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_URL=http://127.0.0.1:3000\n')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://127.0.0.1:3000'])
+}))

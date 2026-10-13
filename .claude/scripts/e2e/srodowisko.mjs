@@ -3,7 +3,7 @@
 // (Vite, port 5173, Supabase na sztywno); projekt z innym serwerem albo bez Supabase nie mial jak z niego skorzystac.
 //
 // Parametry `.env.e2e` (wszystkie opcjonalne, domyslne = dev server Vite):
-//   E2E_URL            adres aplikacji (domyslnie http://localhost:5173)
+//   E2E_URL            adres aplikacji (domyslnie http://localhost:5174 — obok domyslnego 5173 dev servera Vite, P19)
 //   E2E_START          komenda startu (domyslnie `<pm> run dev -- --mode e2e --port <port> --strictPort`)
 //   E2E_HEALTH         adres sondy zdrowia (domyslnie E2E_URL; odpowiedz < 500 = dziala)
 //   E2E_START_TIMEOUT  sekundy na start (domyslnie 90)
@@ -21,15 +21,18 @@ export const PLIK_ENV = '.env.e2e'
 // wycofuje do konca 2026 — projekt z nowymi kluczami dostawal STOP na starcie mimo kompletnego .env.e2e.
 export const KLUCZE_BAZY = [['VITE_SUPABASE_URL'], ['VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_ANON_KEY'], ['SUPABASE_E2E_DB_URL'],
   ['SUPABASE_E2E_SERVICE_ROLE_KEY'], ['E2E_TEST_EMAIL'], ['E2E_TEST_PASSWORD']]
-const DOMYSLNY_PORT = 5173
+// 5174, nie 5173: zwykly `pnpm dev` zajmuje 5173 i start E2E zastawal go jako serwer aplikacji (vibersi etap 2, P19).
+export const DOMYSLNY_PORT = 5174
+export const PORT_DEV_VITE = 5173
+const HOSTY_LOKALNE = ['localhost', '127.0.0.1', '[::1]', '0.0.0.0']
 const LIMIT_STARTU_SEK = 90
 // Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
 // z serwerem w tle, ale bez wyniku JSON.
 const MAKS_STARTU_SEK = 540
 
 /**
- * @typedef {{ url: string, zdrowie: string, start: string, limitSek: number, log: string, pid: string, bazaE2e: boolean,
- *   odcisk: string, blad: string | null }} Konfiguracja
+ * @typedef {{ url: string, zdrowie: string, port: number, lokalny: boolean, start: string, limitSek: number, log: string, pid: string,
+ *   bazaE2e: boolean, odcisk: string, blad: string | null }} Konfiguracja
  * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => { ok: boolean, detal: string } }} Narzedzia
  */
 
@@ -67,7 +70,7 @@ function adresHttp(url) {
 }
 
 /** @param {string} klucz @param {string} url @returns {string} */
-const bladAdresu = (klucz, url) => `${klucz} w ${PLIK_ENV} to „${url}” — podaj pelny adres http(s):// z portem, np. http://localhost:5173`
+const bladAdresu = (klucz, url) => `${klucz} w ${PLIK_ENV} to „${url}” — podaj pelny adres http(s):// z portem, np. http://localhost:${DOMYSLNY_PORT}`
 
 /** @param {string} url @returns {string} adres do porownania baz (origin; ukosnik na koncu bez znaczenia) */
 const originBazy = (url) => adresHttp(url.trim())?.origin ?? url.trim()
@@ -87,6 +90,8 @@ export function konfiguracja(projekt, env) {
   return {
     url,
     zdrowie,
+    port: Number(port),
+    lokalny: !adres || HOSTY_LOKALNE.includes(adres.hostname),
     start: env.E2E_START || `${menedzerPakietow(projekt)} run dev -- --mode e2e --port ${port} --strictPort`,
     limitSek: Math.min(Number(env.E2E_START_TIMEOUT) > 0 ? Number(env.E2E_START_TIMEOUT) : LIMIT_STARTU_SEK, MAKS_STARTU_SEK),
     log: `/tmp/autopilot-e2e-${nazwa}.log`,

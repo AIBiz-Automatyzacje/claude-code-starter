@@ -4,14 +4,16 @@
 //
 // Statusy: pominieto     — zadanie nie ma scenariuszy [E2E] ani makiet figma_screens (niczego nie testujemy w przegladarce);
 //          brak-srodowiska — zadanie ma scenariusze, a repo nie ma .env.e2e -> STOP przed faza 1;
-//          niepowodzenie — .env.e2e jest, ale sprawdzenie albo start padly -> STOP przed faza 1;
-//          gotowe        — serwer odpowiada (uruchomiony albo zastany) albo sprawdzenie bez startu przeszlo;
+//          niepowodzenie — .env.e2e jest, ale sprawdzenie albo start padly albo na porcie E2E dziala obcy serwer (P19:
+//                          PID i komenda w naprawie) -> STOP przed faza 1;
+//          gotowe        — nasz serwer odpowiada albo sprawdzenie bez startu przeszlo;
 //          odroczone     — projekt od zera (P17): repo nie ma jeszcze aplikacji (brak package.json albo package.json bez
 //                          zaleznosci), a komenda startu nie ma czego uruchomic; .env.e2e sprawne, serwer wystartuje restart
 //                          przed testerem pierwszej fazy, ktora go potrzebuje. Swiezy klon bez node_modules albo literowka
 //                          w E2E_START w projekcie z aplikacja to nadal STOP z naprawa (bez cichej degradacji do recznego).
 // Bez zadania (sekcje Doctor i Launch skilla weryfikacji) srodowisko jest potrzebne zawsze: brak .env.e2e = brak-srodowiska.
-// Restart fazy (`restartFazy`, P17): przed testerem kazdej fazy ze scenariuszami albo makietami nasz serwer startuje od nowa.
+// Restart fazy (`restartFazy`, P17): przed testerem kazdej fazy ze scenariuszami albo makietami nasz serwer startuje od nowa;
+// obcy serwer, ktory zajal port w trakcie runu, daje niepowodzenie z polem `obcy` (faza bez przegladarki z nazwana przyczyna).
 
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -19,13 +21,13 @@ import { join } from 'node:path'
 import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { doOdegrania, liczE2e } from './scenariusze.mjs'
-import { odpowiada, uruchomSerwer } from './serwer.mjs'
+import { naprawaObcego, opisObcego, stanPortu, uruchomSerwer } from './serwer.mjs'
 import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
 
 /**
  * @typedef {'pominieto' | 'brak-srodowiska' | 'niepowodzenie' | 'gotowe' | 'odroczone'} StatusE2e
  * @typedef {{ status: StatusE2e, scenariusze: number | null, figmaScreens: boolean, envE2e: boolean, bazaE2e: boolean,
- *   serwer: 'uruchomione' | 'zastane' | 'brak', url: string | null, log: string | null, bledy: string[], detal: string, naprawa: string }} WynikStartu
+ *   serwer: 'uruchomione' | 'obcy' | 'brak', url: string | null, log: string | null, bledy: string[], detal: string, naprawa: string }} WynikStartu
  */
 
 // Komenda startu bez aplikacji: pnpm/npm bez binarki, skryptu albo package.json, powloka bez programu (kod 127).
@@ -112,10 +114,14 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     return { ...wynik, status: 'niepowodzenie', bledy, detal: bledy.join('; '), naprawa: `Popraw: ${bledy.join('; ')}. Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
   }
   if (!uruchom) {
-    const dziala = await odpowiada(konf.zdrowie)
-    return { ...wynik, status: 'gotowe', serwer: dziala ? 'zastane' : 'brak', detal: `sprawdzenie ${PLIK_ENV} ok; serwer ${dziala ? `odpowiada na ${konf.zdrowie}` : `nie dziala — autopilot uruchomi: ${konf.start}`}` }
+    const port = await stanPortu(konf)
+    if (port.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', detal: opisObcego(konf, port.obcy), naprawa: `${naprawaObcego(konf, port.obcy)} Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
+    return { ...wynik, status: 'gotowe', serwer: port.serwer, detal: `sprawdzenie ${PLIK_ENV} ok; serwer ${port.serwer === 'uruchomione' ? `pipeline'u dziala na ${konf.zdrowie}` : `nie dziala — autopilot uruchomi: ${konf.start}`}` }
   }
   const serwer = await uruchomSerwer(projekt, konf, env)
+  if (serwer.obcy) {
+    return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', detal: serwer.blad ?? '', naprawa: `${naprawaObcego(konf, serwer.obcy)} Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
+  }
   if (serwer.blad && brakAplikacji(projekt, serwer)) {
     const przyczyna = (serwer.ogon ?? '').split('\n').find((l) => BRAK_APLIKACJI.test(l))?.trim() ?? `kod ${serwer.wyjscie}`
     return { ...wynik, status: 'odroczone', log: konf.log, detal: `aplikacji jeszcze nie ma („${konf.start}”: ${przyczyna}) — serwer wystartuje przed testerem pierwszej fazy, ktora go potrzebuje` }
@@ -123,19 +129,13 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
   if (serwer.blad) {
     return { ...wynik, status: 'niepowodzenie', log: konf.log, bledy: [serwer.blad], detal: serwer.blad, naprawa: `Uruchom recznie „${konf.start}” i sprawdz ${konf.zdrowie}; parametry E2E_START, E2E_URL, E2E_HEALTH, E2E_START_TIMEOUT w ${PLIK_ENV}. Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
   }
-  const zastany = serwer.serwer === 'zastane'
-  return {
-    ...wynik,
-    status: 'gotowe',
-    serwer: serwer.serwer,
-    log: zastany ? null : konf.log,
-    detal: zastany ? `serwer juz odpowiadal na ${konf.zdrowie} — zastany, moze dzialac na bazie dev (flow zweryfikuja to logowaniem kontem e2e)` : `serwer uruchomiony („${konf.start}”), odpowiada na ${konf.zdrowie}`,
-  }
+  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony („${konf.start}”), odpowiada na ${konf.zdrowie}` }
 }
 
 /**
  * @typedef {{ status: 'pominieto' | 'gotowe' | 'niepowodzenie', faza: number, scenariusze: number, figmaScreens: boolean,
- *   serwer: 'uruchomione' | 'zastane' | 'brak', url: string | null, log: string | null, detal: string }} WynikRestartu
+ *   serwer: 'uruchomione' | 'obcy' | 'brak', url: string | null, log: string | null, detal: string,
+ *   obcy: import('./serwer.mjs').ObcySerwer | null }} WynikRestartu
  */
 
 /**
@@ -154,14 +154,12 @@ export async function restartFazy(projekt, sciezka, faza) {
   const env = envE2e(projekt)
   const konf = env ? konfiguracja(projekt, env) : null
   /** @type {WynikRestartu} */
-  const wynik = { status: 'pominieto', faza, scenariusze, figmaScreens, serwer: 'brak', url: konf?.url ?? null, log: null, detal: '' }
+  const wynik = { status: 'pominieto', faza, scenariusze, figmaScreens, serwer: 'brak', url: konf?.url ?? null, log: null, detal: '', obcy: null }
   if (!scenariusze && !figmaScreens) return { ...wynik, detal: `faza ${faza} bez scenariuszy [E2E] i makiet — serwer niepotrzebny` }
   if (!env || !konf || konf.blad) return { ...wynik, status: 'niepowodzenie', detal: konf?.blad ?? `brak ${PLIK_ENV}` }
   const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true })
+  // Obcy serwer zajal port w trakcie runu: przyczyna poza kodem fazy — bez logu dla correctness, z naprawa dla operatora.
+  if (serwer.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', obcy: serwer.obcy, detal: `${serwer.blad}. ${naprawaObcego(konf, serwer.obcy)}` }
   if (serwer.blad) return { ...wynik, status: 'niepowodzenie', log: konf.log, detal: serwer.blad }
-  const zastany = serwer.serwer === 'zastane'
-  return {
-    ...wynik, status: 'gotowe', serwer: serwer.serwer, log: zastany ? null : konf.log,
-    detal: zastany ? `serwer nie nasz (zastany) — zostaje bez restartu na ${konf.zdrowie}` : `serwer uruchomiony od nowa („${konf.start}”), odpowiada na ${konf.zdrowie}`,
-  }
+  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony od nowa („${konf.start}”), odpowiada na ${konf.zdrowie}` }
 }

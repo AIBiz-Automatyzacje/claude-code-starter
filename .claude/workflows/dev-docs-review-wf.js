@@ -454,9 +454,10 @@ ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(po
 // Tryb `bez-przegladarki` = orkiestrator zglosil, ze srodowisko E2E nie dziala (sekcja trybu w pliku roli).
 const SKILL_WERYFIKACJI = '.claude/skills/weryfikacja/SKILL.md'
 
-function e2ePrompt(sciezka, faza, poprzednie, tryb, kontekst) {
+function e2ePrompt(sciezka, faza, poprzednie, tryb, kontekst, przyczyna) {
+  const powod = tryb === 'bez-przegladarki' && przyczyna ? `Przyczyna trybu bez-przegladarki (powod wpisow SKIP zamiast ogolnego): ${przyczyna}\n` : ''
   return `Test E2E fazy ${faza} zadania w folderze ${sciezka}. Tryb: ${tryb}.
-Skill weryfikacji projektu: ${SKILL_WERYFIKACJI} (gdy istnieje — sekcje Drive i Evidence oraz mapa-funkcji.md obok).
+${powod}Skill weryfikacji projektu: ${SKILL_WERYFIKACJI} (gdy istnieje — sekcje Drive i Evidence oraz mapa-funkcji.md obok).
 Wynik to obiekt {findings:[...], przebiegi:[...]} zgodny ze schematem; *-zadania.md i kod zostaja bez zmian.
 ${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
@@ -741,6 +742,8 @@ const srodowiskoE2E = args ? args.srodowiskoE2E : undefined
 const advisorsE2e = (args && args.advisors) || null
 // Ogon logu restartu serwera E2E, po ktorym serwer nie wstal (P17) — wejscie correctness; null = restart udany albo nie biegl.
 const restartE2e = (args && args.restartE2e) || null
+// Obcy serwer na porcie E2E po restarcie (P19) — nazwana przyczyna trybu bez przegladarki dla testera; null = brak.
+const przyczynaBezPrzegladarki = (args && args.przyczynaBezPrzegladarki) || null
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
 // Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
@@ -788,7 +791,7 @@ function wywolajOs(r) {
 const thunki = aktywni.map((r) => () => wywolajOs(r))
 if (e2eTryb !== 'pominiety') {
   log(`Tester E2E: tryb ${e2eTryb} (srodowisko: ${srodowiskoE2E === undefined ? 'nieznane — run standalone' : srodowiskoE2E})`)
-  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst), zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }, tiery.reviewer)))
+  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki), zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }, tiery.reviewer)))
 }
 
 const wyniki = await parallel(thunki)
@@ -809,7 +812,7 @@ if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
   const powod = wyniki[indeksE2e] ? 'zwrocil wynik BEZ zadnego wpisu przebiegi[]' : 'zwrocil null (watchdog/API)'
   log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — brak dossier'}) — ponawiam raz`)
   wyniki[indeksE2e] = await agent(
-    `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst)}\n\n(Ponowna proba — poprzedni przebieg ${powod}. Kazdy scenariusz z listy skryptu dostaje wpis w przebiegi; scenariusz, ktory milczy w przegladarce, prowadzisz w tle z logiem postepu.)`,
+    `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki)}\n\n(Ponowna proba — poprzedni przebieg ${powod}. Kazdy scenariusz z listy skryptu dostaje wpis w przebiegi; scenariusz, ktory milczy w przegladarce, prowadzisz w tle z logiem postepu.)`,
     zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }, tiery.reviewer)
   )
 }

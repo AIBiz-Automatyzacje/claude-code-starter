@@ -27,11 +27,13 @@ Sprawdzenie bez startu (to samo, co robi bootstrap, plus stan serwera):
 
 ## Parametry `.env.e2e`
 
-Wszystkie opcjonalne — domyślnie dev server Vite na `http://localhost:5173`:
+Wszystkie opcjonalne — domyślnie dev server Vite w trybie e2e na `http://localhost:5174`. Port 5174, nie 5173: 5173 zajmuje
+zwykły `pnpm dev`, a serwer spoza pipeline'u na porcie E2E zatrzymuje start (STOP z PID-em i komendą procesu w naprawie) —
+pipeline nie testuje na serwerze, którego konfiguracji nie zna (zwykły dev server celuje w bazę dev). `doctor.sh` ostrzega o 5173.
 
 | Klucz | Domyślnie | Znaczenie |
 |---|---|---|
-| `E2E_URL` | `http://localhost:5173` | adres aplikacji (tester, sonda zdrowia, port domyślnej komendy) |
+| `E2E_URL` | `http://localhost:5174` | adres aplikacji (tester, sonda zdrowia, port domyślnej komendy) |
 | `E2E_START` | `<pm> run dev -- --mode e2e --port <port z E2E_URL> --strictPort` | komenda startu serwera (pm z lockfile); dostaje zmienne z `.env.e2e` w środowisku; wartość ze spacjami w cudzysłowie (`E2E_START="…"`), bo db-sync wczytuje plik shellem |
 | `E2E_HEALTH` | `E2E_URL` | adres sondy zdrowia; odpowiedź < 500 = serwer działa |
 | `E2E_START_TIMEOUT` | `90` | sekundy na odpowiedź serwera po starcie |
@@ -78,7 +80,7 @@ Zrób one-time setup środowiska E2E wg .claude/templates/e2e-env/README.md:
    wygeneruj silne hasło dla konta testowego (e2e@<projekt>.test).
 4. Dopisz `.env.e2e` do .gitignore i ZWERYFIKUJ: `git check-ignore .env.e2e`.
 5. Sprawdź `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie <dowolne zadanie z [E2E]>` i że serwer
-   z `E2E_START` (domyślnie `<pm> run dev -- --mode e2e --port 5173`) celuje w bazę e2e (otwórz E2E_URL,
+   z `E2E_START` (domyślnie `<pm> run dev -- --mode e2e --port 5174`) celuje w bazę e2e (otwórz E2E_URL,
    zaloguj kontem testowym).
 6. Na koniec smoke: curl do URL projektu e2e + `supabase db push --db-url ...`
    na pustą bazę (zaaplikuje WSZYSTKIE migracje od zera — to też test, czy

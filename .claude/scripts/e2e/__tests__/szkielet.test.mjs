@@ -142,11 +142,13 @@ test('szkielet: sekcje Launch / Doctor / Drive / Evidence / Cleanup / Mapa funkc
   assert.match(s, /<!-- UZUPEŁNIJ:/)
 })
 
-test('szkielet bez .env.e2e: domyslny adres Vite i wskazanie setupu; bez tras — znacznik do uzupelnienia', () => {
+test('szkielet bez .env.e2e: domyslny adres E2E (5174, P19) i wskazanie setupu; obcy serwer na porcie = STOP; bez tras — znacznik do uzupelnienia', () => {
   const k = projekt({ env: null })
   rmSync(join(k, 'src/app'), { recursive: true })
   const s = szkieletSkilla(k, { wpisowMapy: 0 })
-  assert.match(s, /http:\/\/localhost:5173/)
+  assert.match(s, /Adres aplikacji: http:\/\/localhost:5174\./)
+  assert.match(s, /Port zajęty przez serwer spoza pipeline’u\n\(np\. zwykły dev server\) zatrzymuje Launch z PID-em i komendą procesu/)
+  assert.doesNotMatch(s, /zastany/)
   assert.match(s, /\.claude\/templates\/e2e-env\/README\.md/)
   assert.match(s, /<!-- UZUPEŁNIJ: trasy/)
   assert.doesNotMatch(s, /E2E_TEST_EMAIL/)

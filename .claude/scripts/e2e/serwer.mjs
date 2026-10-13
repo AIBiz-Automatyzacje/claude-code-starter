@@ -5,6 +5,8 @@
 // `lstart` formatuje date wg locale, a start i stop biegna w roznych sesjach (smoke P16: LANG=pl_PL przy starcie, C przy stopie). Konfiguracja (komenda startu,
 // odcisk .env.e2e) decyduje tylko, czy nasz serwer jest aktualny: nasz serwer ze stara konfiguracja albo zawieszony
 // zatrzymujemy i uruchamiamy od nowa (poprawka operatora w .env.e2e musi zadzialac w swiezym runie).
+// Obcy serwer na porcie E2E (P19, vibersi etap 2: zwykly `vite --port 5173` na bazie dev przyjety jako „zastany”, 9 scenariuszy
+// SKIP) to porazka startu z PID-em i komenda procesu: pipeline nie testuje na serwerze, ktorego konfiguracji nie zna.
 
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -20,6 +22,7 @@ const KLUCZE_POZA_SERWEREM = ['SUPABASE_ACCESS_TOKEN']
 /**
  * @typedef {import('./srodowisko.mjs').Konfiguracja} Konfiguracja
  * @typedef {{ pid: number, start: string, odcisk: string, uruchomiony: string }} ZapisPid
+ * @typedef {{ pid: number | null, komenda: string | null }} ObcySerwer
  */
 
 /** @param {string} url @returns {Promise<boolean>} czy adres odpowiada statusem < 500 (odmowa polaczenia i timeout = nie) */
@@ -31,6 +34,43 @@ export async function odpowiada(url) {
     // Wynik sondy, nie awaria skryptu: odmowa polaczenia, DNS albo timeout znacza „serwer nie dziala”.
     return false
   }
+}
+
+/**
+ * Proces nasluchujacy na porcie TCP (lsof). Brak lsof albo nasluchu = null; wtedy o obcym serwerze decyduje sama sonda.
+ * @param {number} port
+ * @returns {{ pid: number, komenda: string } | null}
+ */
+export function procesNaPorcie(port) {
+  const w = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], { encoding: 'utf8' })
+  const pid = Number((w.stdout ?? '').trim().split('\n')[0])
+  if (!Number.isInteger(pid) || pid <= 1) return null
+  const ps = spawnSync('ps', ['-o', 'command=', '-p', String(pid)], { encoding: 'utf8' })
+  return { pid, komenda: (ps.stdout ?? '').trim() || '(komenda nieznana)' }
+}
+
+/**
+ * Serwer spoza pipeline'u na porcie E2E: nasluch na porcie (adres lokalny) albo odpowiedz sondy zdrowia. Wolane, gdy naszego
+ * zywego serwera nie ma — kazdy nasluch jest wtedy obcy.
+ * @param {Konfiguracja} konf
+ * @returns {Promise<ObcySerwer | null>}
+ */
+async function obcySerwer(konf) {
+  const proces = konf.lokalny ? procesNaPorcie(konf.port) : null
+  if (proces) return proces
+  return await odpowiada(konf.zdrowie) ? { pid: null, komenda: null } : null
+}
+
+/** @param {Konfiguracja} konf @param {ObcySerwer} obcy @returns {string} */
+export function opisObcego(konf, obcy) {
+  const kto = obcy.pid ? ` — PID ${obcy.pid}: ${obcy.komenda}` : ` — ${konf.zdrowie} odpowiada`
+  return `na porcie ${konf.port} dziala serwer spoza pipeline'u${kto}. Pipeline nie testuje na nim: nie zna jego konfiguracji (zwykly dev server celuje w baze dev)`
+}
+
+/** @param {Konfiguracja} konf @param {ObcySerwer} obcy @returns {string} */
+export function naprawaObcego(konf, obcy) {
+  const stop = obcy.pid ? `Zatrzymaj go: \`kill ${obcy.pid}\` (sprawdz wczesniej, czy to nie Twoj dev server w uzyciu)` : `Zatrzymaj serwer odpowiadajacy na ${konf.zdrowie}`
+  return `${stop} albo ustaw w .env.e2e wolny port: E2E_URL=http://localhost:<port>. Kto trzyma port: \`lsof -nP -iTCP:${konf.port} -sTCP:LISTEN\`.`
 }
 
 /** @param {string} plik @returns {string} ostatnie linie logu serwera */
@@ -112,7 +152,7 @@ export function stanSerwera(konf) {
 
 /**
  * Start serwera aplikacji. Nasz zywy serwer z aktualna konfiguracja i odpowiedzia = `uruchomione`; nasz ze stara konfiguracja
- * albo zawieszony — zatrzymany i uruchomiony od nowa; obcy odpowiadajacy serwer = `zastane` (ostrzezenie o bazie dev).
+ * albo zawieszony — zatrzymany i uruchomiony od nowa; obcy serwer na porcie = `obcy` z bledem, PID-em i komenda (P19).
  * `odNowa` (restart przed testerem fazy, P17): nasz serwer zatrzymany i uruchomiony od nowa zawsze — serwer sprzed zmian fazy
  * nie wczytuje pliku konfiguracji, ktorego nie bylo przy jego starcie (vibersi: vite.config.ts z IU-1, 500 w fazie 4).
  * Porazka niesie kod wyjscia komendy i ogon logu: start przed faza 1 rozpoznaje po nich projekt bez aplikacji.
@@ -120,7 +160,7 @@ export function stanSerwera(konf) {
  * @param {Konfiguracja} konf
  * @param {Record<string, string>} env doklejane do srodowiska komendy startu
  * @param {{ odNowa?: boolean }} [opcje]
- * @returns {Promise<{ serwer: 'uruchomione' | 'zastane' | 'brak', blad?: string, wyjscie?: number | string, ogon?: string }>}
+ * @returns {Promise<{ serwer: 'uruchomione' | 'obcy' | 'brak', blad?: string, obcy?: ObcySerwer, wyjscie?: number | string, ogon?: string }>}
  */
 export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {}) {
   const z = zapisPid(konf)
@@ -128,11 +168,12 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
     const aktualny = !odNowa && z.start === konf.start && z.odcisk === konf.odcisk
     if (aktualny && await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
     await zatrzymajProces(z)
-    // Bez tego sonda nizej trafia na port, ktory dziecko starego serwera jeszcze trzyma — nieaktualny serwer jako „zastany”.
+    // Bez tego sonda nizej trafia na port, ktory dziecko starego serwera jeszcze trzyma — nasz stary serwer jako obcy.
     await czekajNaZwolnienie(konf.zdrowie)
   }
   rmSync(konf.pid, { force: true })
-  if (await odpowiada(konf.zdrowie)) return { serwer: 'zastane' }
+  const obcy = await obcySerwer(konf)
+  if (obcy) return { serwer: 'obcy', blad: opisObcego(konf, obcy), obcy }
   const log = openSync(konf.log, 'w')
   const srodowisko = { ...process.env, ...env }
   for (const k of KLUCZE_POZA_SERWEREM) delete srodowisko[k]
@@ -163,12 +204,23 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
 }
 
 /**
- * Zatrzymuje wylacznie serwer pipeline'u (ten sam proces co w pliku PID); zastany i obcy proces zostaja.
+ * Stan portu dla sprawdzenia bez startu (sekcja Doctor): nasz zywy serwer, obcy serwer albo wolny port.
+ * @param {Konfiguracja} konf
+ * @returns {Promise<{ serwer: 'uruchomione' | 'obcy' | 'brak', obcy?: ObcySerwer }>}
+ */
+export async function stanPortu(konf) {
+  if (zyjeNasz(zapisPid(konf))) return { serwer: 'uruchomione' }
+  const obcy = await obcySerwer(konf)
+  return obcy ? { serwer: 'obcy', obcy } : { serwer: 'brak' }
+}
+
+/**
+ * Zatrzymuje wylacznie serwer pipeline'u (ten sam proces co w pliku PID); obcy proces zostaje.
  * @param {Konfiguracja} konf
  * @returns {Promise<{ posprzatano: boolean, detal: string }>}
  */
 export async function zatrzymajSerwer(konf) {
-  if (!existsSync(konf.pid)) return { posprzatano: true, detal: 'brak pliku PID — serwer zastany albo nieuruchomiony, nic do zatrzymania' }
+  if (!existsSync(konf.pid)) return { posprzatano: true, detal: 'brak pliku PID — serwer nieuruchomiony przez pipeline, nic do zatrzymania' }
   const z = zapisPid(konf)
   const dzialal = zyjeNasz(z)
   if (z && dzialal) await zatrzymajProces(z)

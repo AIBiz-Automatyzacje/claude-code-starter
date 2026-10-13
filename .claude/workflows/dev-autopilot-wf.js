@@ -289,7 +289,7 @@ const E2E_START = {
     figmaScreens: { type: 'boolean' },
     envE2e: { type: 'boolean', description: 'czy repo ma .env.e2e' },
     bazaE2e: { type: 'boolean', description: 'czy projekt ma baze e2e (Supabase) — wtedy db-sync per faza' },
-    serwer: { type: 'string', enum: ['uruchomione', 'zastane', 'brak'] },
+    serwer: { type: 'string', enum: ['uruchomione', 'obcy', 'brak'] },
     url: { type: ['string', 'null'] },
     log: { type: ['string', 'null'] },
     bledy: { type: 'array', items: { type: 'string' } },
@@ -1212,14 +1212,17 @@ function jsonZeStdout(tekst) {
 // bez scenariuszy i makiet; niepowodzenie -> 'martwe' w tej fazie, a ogon logu idzie do review (serwer polozony kodem fazy to
 // defekt do fixa, nie awaria srodowiska). Do konca runu tylko brak odpowiedzi w limicie startu: kazda nastepna proba to znowu
 // do 540 s czekania. Nieczytelny wynik = srodowisko bez zmian (pad agenta to nie awaria srodowiska).
+// Obcy serwer na porcie (P19, pole `obcy`): faza bez przegladarki z przyczyna dla testera, bez logu dla correctness (przyczyna
+// poza kodem); nastepna faza sprawdza port od nowa.
 function srodowiskoPoRestarcie(stdout) {
   const w = jsonZeStdout(stdout)
   const detal = w ? String(w.detal || '') : `wynik restartu nieczytelny: ${String(stdout || '').slice(0, 200)}`
   const nasz = Boolean(w) && w.serwer === 'uruchomione'
-  if (w && w.status === 'gotowe') return { srodowisko: 'gotowe', trwale: false, nasz, detal }
-  if (w && w.status === 'pominieto') return { srodowisko: 'pominieto', trwale: false, nasz, detal }
-  if (w && w.status === 'niepowodzenie') return { srodowisko: 'martwe', trwale: /nie odpowiada po \d+ s/.test(detal), nasz, detal }
-  return { srodowisko: null, trwale: false, nasz, detal }
+  const obcy = Boolean(w) && w.serwer === 'obcy'
+  if (w && w.status === 'gotowe') return { srodowisko: 'gotowe', trwale: false, nasz, obcy, detal }
+  if (w && w.status === 'pominieto') return { srodowisko: 'pominieto', trwale: false, nasz, obcy, detal }
+  if (w && w.status === 'niepowodzenie') return { srodowisko: 'martwe', trwale: !obcy && /nie odpowiada po \d+ s/.test(detal), nasz, obcy, detal }
+  return { srodowisko: null, trwale: false, nasz, obcy, detal }
 }
 
 // Advisors bazy e2e po db-sync (P17): JSON `e2e.mjs advisors` od agenta -> wejscie security w review. Pola walidowane, bo
@@ -1602,6 +1605,8 @@ for (const numerFazy of kolejka) {
   let advisorsFazy = null
   // Ogon logu restartu, po ktorym serwer nie wstal (P17) — wejscie correctness: serwer polozony kodem fazy to defekt.
   let restartBlad = null
+  // Obcy serwer na porcie E2E po restarcie (P19) — przyczyna trybu bez przegladarki dla testera (powod linii [Manual]).
+  let przyczynaBezPrzegladarki = null
   // Metryki fazy: przy resume review moze byc juz 'done' i review-wf sie NIE odpali — wtedy liczniki
   // i przebieg czytamy z faza.metryki utrwalonych w stanie (bez tego telemetria dostawala null).
   const metrykiZeStanu = faza.metryki || {}
@@ -1653,7 +1658,8 @@ for (const numerFazy of kolejka) {
       const po = srodowiskoPoRestarcie(restart && restart.stdout)
       if (po.srodowisko) srodowiskoE2E = po.srodowisko
       if (po.srodowisko === 'gotowe') e2eBylaPrzegladarka = true
-      if (po.srodowisko === 'martwe') restartBlad = po.detal
+      if (po.srodowisko === 'martwe' && po.obcy) przyczynaBezPrzegladarki = po.detal
+      else if (po.srodowisko === 'martwe') restartBlad = po.detal
       if (po.trwale) e2eTrwaleMartwe = true
       if (po.nasz) serwerNasz = true
       log(`E2E restart fazy ${numerFazy}: ${po.srodowisko || 'bez zmian'} — ${po.detal}${po.trwale ? ' (serwer nie odpowiada w limicie startu — do konca runu tester bez przegladarki)' : ''}`)
@@ -1684,6 +1690,8 @@ for (const numerFazy of kolejka) {
       advisors: advisorsFazy,
       // Serwer nie wstal po restarcie przed testerem (P17) — ogon logu dla correctness; null = restart udany albo nie biegl.
       restartE2e: restartBlad,
+      // Obcy serwer na porcie E2E (P19) — tester wpisuje te przyczyne w powod SKIP-ow; null = brak obcego serwera.
+      przyczynaBezPrzegladarki,
     })
     if (!review) {
       return await stopRun({ powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
