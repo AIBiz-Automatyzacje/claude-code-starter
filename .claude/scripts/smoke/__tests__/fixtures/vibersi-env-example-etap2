@@ -1,0 +1,22 @@
+APIFY_TOKEN=
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+# Seed katalogu na bazie dev (scripts/seed-katalog/seeduj.sh dev) — tylko w .env.local, nigdy z prefiksem VITE_
+# (zmienna VITE_* trafia do paczki przeglądarki): session pooler dev i klucz service_role dev.
+SUPABASE_DEV_DB_URL=
+SUPABASE_DEV_SERVICE_ROLE_KEY=
+# Serwer Hono (server/konfiguracja.ts) — w Coolify zmienne RUNTIME, nie build; serwer bez wymaganych nie wystartuje.
+# Wymagane: adres projektu Supabase (https, http tylko dla localhost/127.0.0.1), klucz publishable (odczyty)
+# i adres publiczny strony bez końcowego / (og:url, canonical, sitemap.xml).
+# SUPABASE_URL musi mieć ten sam origin co VITE_SUPABASE_URL wkompilowany w build: CSP serwera (connect-src, img-src)
+# wpuszcza tylko origin z SUPABASE_URL, a SPA łączy się z VITE_SUPABASE_URL — rozjazd blokuje zapytania katalogu i obrazy.
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SITE_URL=
+# Klucz sekretny tylko dla serwera (liczniki kliknięć zarejestruj_klik*), nigdy z prefiksem VITE_.
+SUPABASE_SECRET_KEY=
+# Basic Auth tylko na stagingu: obie zmienne albo żadna (jedna bez drugiej = błąd startu).
+BASIC_AUTH_USER=
+BASIC_AUTH_PASSWORD=
+# Opcjonalnie: App ID aplikacji Meta (same cyfry) do fb:app_id.
+FB_APP_ID=

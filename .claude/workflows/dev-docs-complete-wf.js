@@ -18,8 +18,9 @@ const SMOKE_RESULT = {
     pozycje: { type: 'integer', description: 'liczba checkboxow do recznego sprawdzenia' },
     e2eNieuruchomione: { type: 'integer', description: 'ile [E2E] z zadania pozostalo NIEZAZNACZONYCH (powinno byc 0 po completion-gate)' },
     zrodla: { type: 'array', items: { type: 'string' }, description: 'skad zebrano pozycje (sekcje/pliki)' },
+    zmienne: { type: 'string', description: 'ostatnia linia stdout ostatniego `zmienne.mjs` 1:1 (JSON w jednej linii)' },
   },
-  required: ['plik', 'pozycje', 'e2eNieuruchomione'],
+  required: ['plik', 'pozycje', 'e2eNieuruchomione', 'zmienne'],
 }
 
 const COMPLETE_RESULT = {
@@ -116,6 +117,24 @@ function rozmiarZWyniku(tekst) {
   }
 }
 
+// Zmienne srodowiska galezi vs smoke (P19, vibersi etap 2: SUPABASE_SECRET_KEY spoza planu nie trafila do smoke'u). Kontrola
+// biegnie w agencie smoke'u; JS sprawdza jej ostatni wynik: braki albo nowe zmienne bez pliku smoke'u = UWAGA dla operatora.
+function uwagaZmiennych(smoke) {
+  if (!smoke) return null
+  const linia = String(smoke.zmienne || '').trim().split('\n').pop() || ''
+  let w = null
+  try {
+    w = JSON.parse(linia)
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+  }
+  if (!w || !Array.isArray(w.zmienne)) return 'UWAGA: kontrola zmiennych srodowiska w smoke\'u bez wyniku — sprawdz: `node .claude/scripts/smoke/zmienne.mjs --smoke <plik smoke\'u>`'
+  const nazwy = w.zmienne.map((z) => z && z.nazwa).filter(Boolean)
+  const braki = !smoke.plik ? nazwy : Array.isArray(w.braki) ? w.braki : null
+  if (braki === null) return 'UWAGA: kontrola zmiennych srodowiska bez --smoke — wynik nie mowi, czy smoke je wymienia'
+  return braki.length ? `UWAGA: zmienne srodowiska dodane w galezi bez pozycji w smoke'u: ${braki.join(', ')} — ustaw je przed deployem (zrodla: zmienne.mjs)` : null
+}
+
 // Katalog do propozycji podzialu: dwa pierwsze segmenty (apps/web, src/lib), plik w korzeniu osobno.
 function bramkaRozmiaruPr(rozmiar) {
   if (!rozmiar) return 'UWAGA: rozmiar PR niezmierzony (wynik rozmiar.mjs nieczytelny) — sprawdz: `node .claude/scripts/pr/rozmiar.mjs`'
@@ -179,11 +198,15 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
    brak trafien = exit 1, to NIE blad). Rozdziel: linie z suffixem "(FAIL:" -> sekcja "## ⚠️ E2E przebieglo i padlo (znany defekt)" z odeslaniem
    do known-issues (NIE radz zmiany na [Manual]); pozostale -> sekcja "## ⚠️ E2E nieuruchomione". Obie na poczatku
    dokumentu; obie licz w e2eNieuruchomione. NIE odhaczaj ich.
+6. ZMIENNE SRODOWISKA dodane w galezi: \`node .claude/scripts/smoke/zmienne.mjs\` (JSON: zmienne[] z nazwa i zrodla plik:linia —
+   z .env*.example i uzyc w kodzie, takze dodane odchyleniem w fazach, ktorych plan nie wymienia). Kazda zmienna to checkbox
+   w sekcji "0. Przygotowanie": nazwa, gdzie ja ustawic (lokalnie albo w zmiennych runtime deployu) i zrodlo — wartosci nigdy.
 
 DEDUP: kazdy temat raz — Test [Manual] z IU, jego kopia w Operator checklist i wzmianka w findingu OPERATOR
 to JEDEN checkbox w sekcji ekranu; kroki scal, nie powielaj.
 
-Jesli po zastosowaniu hierarchii (1)-(5) nie ma ANI JEDNEJ pozycji — nie tworz pliku, zwroc plik:"" i pozycje:0.
+Jesli po zastosowaniu hierarchii (1)-(6) nie ma ANI JEDNEJ pozycji — nie tworz pliku, zwroc plik:"" i pozycje:0, a w zmienne
+ostatnia linie stdout \`zmienne.mjs\` z kroku 6.
 
 DANE DO NAGLOWKA I SEKCJI 0 — NIE uruchamiaj testow ani scenariuszy E2E (wynik juz jest w artefaktach):
 - <N> testow: docs/active/${nazwaZadania}/.autopilot-state.json -> walidacjaWynik.testy ("PASS X/Y"); brak -> "testy zielone wg walidacji koncowej" bez liczby.
@@ -204,7 +227,11 @@ Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;
 zastap nazwa zmiennej lub fraza "<haslo w .env.e2e>". E-mail konta testowego moze zostac.
 
-Nie wymyslaj pozycji spoza zrodel (1)-(5). Nie modyfikuj *-zadania.md ani raportow review.
+KONTROLA ZMIENNYCH po zapisie pliku: \`node .claude/scripts/smoke/zmienne.mjs --smoke <plik>\`. Kod 1 = pole braki: zmienne,
+ktorych nazwy nie ma w pliku — dopisz je wedlug kroku 6 i uruchom kontrole ponownie. Nie konczysz, dopoki kod nie jest 0;
+ostatnia linie stdout ostatniej kontroli zwracasz w polu zmienne.
+
+Nie wymyslaj pozycji spoza zrodel (1)-(6). Nie modyfikuj *-zadania.md ani raportow review.
 Zwroc obiekt zgodny ze schematem.`
 
 phase('Smoke operatora')
@@ -304,7 +331,7 @@ if (!wynik) {
 
 // Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a PR ponad progiem omija bot.
 const uwagaPr = bramkaRozmiaruPr(rozmiarZWyniku(wynik.rozmiarPr))
-const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), uwagaPr].filter(Boolean)
+const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), uwagaPr, uwagaZmiennych(smoke)].filter(Boolean)
 for (const u of uwagi) log(u)
 if (uwagaPr && wynik.commit) {
   const dopisek = await agent(

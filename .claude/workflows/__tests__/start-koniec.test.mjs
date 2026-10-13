@@ -44,7 +44,7 @@ const A = new Function(
 // eslint-disable-next-line no-new-func -- jw.
 const C = new Function(
   `${wytnij(complete, '// ── Archiwum (P4)', '// ── Koniec archiwum')}
-   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, rozmiarZWyniku, PROG_PLIKOW_PR }`,
+   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, rozmiarZWyniku, uwagaZmiennych, PROG_PLIKOW_PR }`,
 )()
 
 const ZADANIE = 'docs/active/zadanie-x'
@@ -282,4 +282,27 @@ test('smoke operatora: z "Do poprawy" i known-issues otwarte P1/P2; sekcje "## P
   assert.match(p, /otwarte \[P1\]\/\[P2\] z\s+"## Do poprawy po review fazy N"/)
   assert.match(p, /sekcje "## P3 faza N" pomin/)
   assert.doesNotMatch(p, /otwarte P3/)
+})
+
+// P19: vibersi etap 2 — SUPABASE_SECRET_KEY (odchylenie faz 1–2, jest w .env.example) nie trafila do smoke'u, bo agent przepisal
+// zmienne z planu. Agent smoke'u liczy zmienne skryptem i nie konczy przy brakach; JS sprawdza ostatni wynik kontroli.
+test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; JS: braki albo zmienne bez pliku = UWAGA, czysto = brak uwagi', () => {
+  /** @type {(nazwaZadania: string) => string} */
+  // eslint-disable-next-line no-new-func -- jw.
+  const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
+  const p = smokePrompt('zadanie-x')
+  assert.match(p, /6\. ZMIENNE SRODOWISKA dodane w galezi: `node \.claude\/scripts\/smoke\/zmienne\.mjs`/)
+  assert.match(p, /KONTROLA ZMIENNYCH po zapisie pliku: `node \.claude\/scripts\/smoke\/zmienne\.mjs --smoke <plik>`\. Kod 1 = pole braki[\s\S]*Nie konczysz, dopoki kod nie jest 0/)
+  assert.match(p, /spoza zrodel \(1\)-\(6\)/)
+  assert.match(wytnij(complete, 'const SMOKE_RESULT = {', '\n}\n'), /required: \['plik', 'pozycje', 'e2eNieuruchomione', 'zmienne'\]/)
+  const z = (/** @type {object} */ o) => `cos\n${JSON.stringify(o)}`
+  const sekretny = { nazwa: 'SUPABASE_SECRET_KEY', zrodla: ['.env.example:17'] }
+  assert.equal(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: z({ baza: 'a', zmienne: [sekretny], braki: [] }) }), null)
+  assert.equal(C.uwagaZmiennych({ plik: '', zmienne: z({ baza: 'a', zmienne: [] }) }), null)
+  assert.equal(C.uwagaZmiennych(null), null, 'agent smoke padl — osobny status, bez uwagi o zmiennych')
+  assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: z({ baza: 'a', zmienne: [sekretny], braki: ['SUPABASE_SECRET_KEY'] }) }), /^UWAGA: zmienne srodowiska dodane w galezi bez pozycji w smoke'u: SUPABASE_SECRET_KEY/)
+  assert.match(C.uwagaZmiennych({ plik: '', zmienne: z({ baza: 'a', zmienne: [sekretny] }) }), /bez pozycji w smoke'u: SUPABASE_SECRET_KEY/)
+  assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: z({ baza: 'a', zmienne: [sekretny] }) }), /bez --smoke/)
+  assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: 'Error: cos' }), /^UWAGA: kontrola zmiennych srodowiska w smoke'u bez wyniku/)
+  assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), uwagaPr, uwagaZmiennych\(smoke\)\]/)
 })
