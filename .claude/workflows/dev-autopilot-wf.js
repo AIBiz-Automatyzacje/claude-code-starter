@@ -113,7 +113,7 @@ const METRYKI_FAZY = {
           additionalProperties: false,
           properties: {
             p1: { type: ['integer', 'null'], description: 'liczba agentow-sceptykow P1 (3 na finding)' },
-            p2Grupy: { type: ['integer', 'null'], description: 'liczba agentow-sceptykow P2 (porcje po 4)' },
+            p2Grupy: { type: ['integer', 'null'], description: 'liczba agentow-sceptykow P2 (grupy po pliku, najwyzej 4 zarzuty)' },
             p2Findingi: { type: ['integer', 'null'], description: 'liczba findingow P2 poddanych verify' },
           },
         },

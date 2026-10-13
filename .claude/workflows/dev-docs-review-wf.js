@@ -145,7 +145,7 @@ const VERDICT = {
   required: ['etykieta', 'dowod', 'uzasadnienie'],
 }
 
-// Werdykty porcji P2: jeden sceptyk ocenia do MAKS_W_GRUPIE_P2 zarzutow, KAZDY osobno. `indeks` wiaze werdykt
+// Werdykty grupy P2: jeden sceptyk ocenia do MAKS_W_GRUPIE_P2 zarzutow, KAZDY osobno. `indeks` wiaze werdykt
 // z pozycja listy w prompcie; brak wpisu dla indeksu jest DOZWOLONY i znaczy "nie rozstrzygniete" — obslugujemy
 // go jak zero glosow, nigdy jak obalenie.
 const VERDICTS_BATCH = {
@@ -1066,7 +1066,8 @@ if (p3Odrzucone) {
 }
 
 // P1 (blocking) -> 3 niezaleznych sceptykow, kasacja przy 2/3 — niezaleznosc glosow jest cala wartoscia mechanizmu.
-// P2 -> jeden sceptyk na porcje do MAKS_W_GRUPIE_P2 zarzutow (P9, D2); P2 nie blokuje merge'a.
+// P2 -> jeden sceptyk na grupe findingow z jednego pliku, najwyzej MAKS_W_GRUPIE_P2 zarzutow (P19: powrot z porcji P9);
+// P2 nie blokuje merge'a.
 const MAKS_W_GRUPIE_P2 = 4
 // Sceptyk asymetryczny (P9): glos to etykieta. Liczniki: etykiety = glosy (po regule dowodu), degradacje = findingi.
 // Ida do przebiegu -> stan -> telemetria `faza.sceptyk` (progi P9: obalenia < 5%, degradacje > 35%).
@@ -1079,7 +1080,7 @@ function etykietaGlosu(v) {
   return v.etykieta
 }
 
-// Domkniecie werdyktow -> finding. JEDNO miejsce dla P1 (3 glosy) i porcji P2 (1 glos).
+// Domkniecie werdyktow -> finding. JEDNO miejsce dla P1 (3 glosy) i grupy P2 (1 glos).
 // Wiekszosc = wiecej niz polowa glosujacych: 1 z 1, 2 z 2, 2 z 3. Wiekszosc DISAGREE_EVIDENCE kasuje; wiekszosc
 // sprzeciwu bez wiekszosci dowodow obniza wage o jeden stopien (P1 -> P2, P2 -> P3 do known-issues), nie kasuje.
 // Pojedynczy glos nie rusza P1 (ominalby twardy STOP).
@@ -1104,19 +1105,26 @@ function domknijWerdykty(f, glosy) {
   return { ...f, potwierdzony: true, severity: nizsza, _uzasadnienie, opis }
 }
 
-// Porcje P2 po `maks` niezaleznie od pliku (P9, D2): grupa po pliku dawala 80% grup jednoelementowych, wiec ~1 agent
-// na finding. Sortowanie po pliku (stabilne) zostawia findingi z jednego pliku obok siebie — sceptyk otwiera go raz.
-// Porcja jest ograniczona, bo dlugie listy rozmywaja skepse.
-function porcjujP2(lista, maks) {
-  const poPliku = [...lista].sort((a, b) => kluczPliku(a.plik).localeCompare(kluczPliku(b.plik)))
-  const porcje = []
-  for (let i = 0; i < poPliku.length; i += maks) porcje.push(poPliku.slice(i, i + maks))
-  return porcje
+// Grupy P2 po SCIEZCE pliku (bez numeru linii), w kazdej najwyzej `maks` zarzutow — dlugie listy rozmywaja skepse.
+// P19, karta odczytu §4 (P9): porcje po 4 niezaleznie od pliku (P9, D2) daly po 10 fazach 0 obalen z 58 i 1 obnizenie
+// (1,7%, prog 5%) — warunek odwrotu karty, decyzja operatora 2026-10-13. Drozej: grupa po pliku to ~1 agent na finding.
+function grupujPoPliku(lista, maks) {
+  const poPliku = new Map()
+  for (const f of lista) {
+    const k = kluczPliku(f.plik)
+    if (!poPliku.has(k)) poPliku.set(k, [])
+    poPliku.get(k).push(f)
+  }
+  const grupy = []
+  for (const wPliku of poPliku.values()) {
+    for (let i = 0; i < wPliku.length; i += maks) grupy.push(wPliku.slice(i, i + maks))
+  }
+  return grupy
 }
 
 const p1DoVerify = doWeryfikacji.filter((f) => f.severity === 'P1')
 const p2DoVerify = doWeryfikacji.filter((f) => f.severity !== 'P1')
-const grupyP2 = porcjujP2(p2DoVerify, MAKS_W_GRUPIE_P2)
+const grupyP2 = grupujPoPliku(p2DoVerify, MAKS_W_GRUPIE_P2)
 
 // Sceptyk dostaje sam zarzut: waga, plik:linia i teza. Autor (_zrodlo), os i typ zostaja w JS — literatura
 // (ETAP2 §1): sceptyk bez uzasadnienia autora obala ~4x skuteczniej; test review: B (asymetryczny) 0 zabitych prawdziwych.
@@ -1176,7 +1184,7 @@ const p2Zweryfikowane = p2Wyniki.flatMap((wynikGrupy, i) =>
   Array.isArray(wynikGrupy) ? wynikGrupy : grupyP2[i].map((f) => domknijWerdykty(f, []))
 )
 if (grupyP2.length) {
-  log(`Verify P2: ${p2DoVerify.length} findingow w ${grupyP2.length} porcjach (maks ${MAKS_W_GRUPIE_P2}), tier ${tiery.sceptykP2 || 'sesji'}`)
+  log(`Verify P2: ${p2DoVerify.length} findingow w ${grupyP2.length} grupach po pliku (maks ${MAKS_W_GRUPIE_P2}), tier ${tiery.sceptykP2 || 'sesji'}`)
 }
 const zweryfikowane = [...p1Zweryfikowane, ...p2Zweryfikowane]
 
@@ -1222,7 +1230,7 @@ const przebieg = {
   weryfikowane: doWeryfikacji.length,
   obalone: doWeryfikacji.length - potwierdzoneKod.length,
   sceptyk: { ...sceptykLiczniki },
-  // Ile agentow kosztowal verify: P1 x3 + jeden na porcje P2 (P9: po 4 niezaleznie od pliku).
+  // Ile agentow kosztowal verify: P1 x3 + jeden na grupe P2 (P19: grupa po pliku, najwyzej 4 zarzuty).
   sceptycy: { p1: p1DoVerify.length * 3, p2Grupy: grupyP2.length, p2Findingi: p2DoVerify.length },
   tiery,
   e2eWykonany,
