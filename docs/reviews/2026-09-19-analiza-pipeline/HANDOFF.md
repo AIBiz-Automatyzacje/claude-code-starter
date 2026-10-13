@@ -2789,7 +2789,7 @@ w smoke'u, czekanie na recenzję bota po statusie, tura „tylko odpowiedzi” w
 
 Zadanie:
 1. /sync-template; potem bash .claude/scripts/doctor/doctor.sh — wiersz „port E2E” ma być OK na 5174 (.env.e2e zostaje bez zmian).
-2. /dev-plan etapu 3 (MVP-PLAN.md), potem autopilot — żywy test P19. Po runie: odczyt wg KARTA-ODCZYTU.md i 6a pkt 85 (STOP-y startu
+2. /dev-plan etapu 3 (docs/brainstorms/mvp-requirements.md), potem autopilot — żywy test P19. Po runie: odczyt wg KARTA-ODCZYTU.md i 6a pkt 85 (STOP-y startu
    E2E, `restartE2e`/przyczyna obcego serwera, rozmiar PR z rozmiar.mjs, zmienne w smoke'u, „gotowa” z polem recenzja, P2 grupy po pliku).
 
 Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z .env*.
