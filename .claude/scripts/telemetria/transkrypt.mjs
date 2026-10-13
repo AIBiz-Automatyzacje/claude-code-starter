@@ -98,6 +98,27 @@ function tekstWiadomosci(wiadomosc) {
   return blok ? tekst(blok.text) : null
 }
 
+// Agent workflowu od CC 2.1.296 dostaje dwie wiadomosci: przekazana prosbe operatora i zadanie skryptu z naglowkiem harnessu
+// i wcieciem 2 spacji (vibersi etap 2: prompt_zn = 377 u 144 agentow — naglowek + „Uruchom”). Prompt agenta = zadanie skryptu.
+const NAGLOWEK_PROSBY = '[Workflow harness — user request]'
+const NAGLOWEK_ZADANIA = '[Workflow harness — computed task]'
+const KONIEC_NAGLOWKA_ZADANIA = 'The computed task text follows:\n'
+const WCIECIE_HARNESSU = '  '
+
+/**
+ * Prompt agenta z wiadomosci uzytkownika: przekazana prosba operatora = null (prompt jest w nastepnej wiadomosci), zadanie
+ * skryptu = tekst bez naglowka i wciecia harnessu, inna wiadomosc = bez zmian.
+ * @param {string} tresc
+ * @returns {string | null}
+ */
+export function promptAgenta(tresc) {
+  if (tresc.startsWith(NAGLOWEK_PROSBY)) return null
+  if (!tresc.startsWith(NAGLOWEK_ZADANIA)) return tresc
+  const start = tresc.indexOf(KONIEC_NAGLOWKA_ZADANIA)
+  if (start === -1) return tresc
+  return tresc.slice(start + KONIEC_NAGLOWKA_ZADANIA.length).split('\n').map((l) => (l.startsWith(WCIECIE_HARNESSU) ? l.slice(WCIECIE_HARNESSU.length) : l)).join('\n')
+}
+
 /** @param {unknown[]} tresc @param {Narzedzia} n */
 function policzNarzedzia(tresc, n) {
   for (const blok of tresc.map(obiekt)) {
@@ -182,7 +203,7 @@ export function analizujTranskrypt(wpisy) {
   let poPierwszejOdpowiedzi = false
   for (const w of wpisy) {
     if (w.timestamp) { start ??= w.timestamp; koniec = w.timestamp }
-    if (w.type === 'user' && prompt === null) prompt = tekstWiadomosci(w.message) ?? ''
+    if (w.type === 'user' && prompt === null) prompt = promptAgenta(tekstWiadomosci(w.message) ?? '')
     if (w.type === 'attachment' && !poPierwszejOdpowiedzi) dopiszZalacznik(obiekt(w.attachment), kontekst)
     if (w.type !== 'assistant') continue
     poPierwszejOdpowiedzi = true

@@ -1,7 +1,7 @@
 // Stryker diff-scoped: zakresy --mutate z linii dodanych w plikach produkcyjnych, ktorych test (x.test.ts obok x.ts) faza dotknela
 // (funkcja czysta), oraz bramka na atrapie z nagranym raportem Strykera 10 (fixtures/stryker-*.json): przezyte mutanty = lista.
 
-import { chmodSync, existsSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -76,6 +76,26 @@ test('faza bez pary test <-> kod = pominieta; Stryker bez raportu = blad', () =>
     const w = bramka(repo, baza)
     assert.equal(w.status, 'blad')
     assert.match(w.powod ?? '', /initial test run/)
+  } finally {
+    usun(repo)
+  }
+})
+
+// P19 (vibersi etap 2, faza 1): testy fazy w `node --test` (pliki .mjs), Stryker na vitest — „No tests were executed” to brak
+// testow w runnerze Strykera, nie awaria narzedzia. Nagrane wyjscie Strykera 10 z runu wf_97e2f216-487.
+test('Stryker „No tests were executed” (nagrane wyjscie) = pominieta z powodem, nie blad', () => {
+  const { repo, baza } = projekt()
+  try {
+    zapisz(repo, { 'src/suma.ts': SUMA, 'src/suma.test.ts': "it('x', () => {})\n" })
+    const bin = join(repo, 'node_modules', '.bin', 'stryker')
+    writeFileSync(`${bin}.wyjscie`, readFileSync(join(import.meta.dirname, 'fixtures', 'stryker-brak-testow.txt'), 'utf8'))
+    writeFileSync(bin, `#!/bin/sh\ncat "${bin}.wyjscie" >&2\nexit 1\n`)
+    chmodSync(bin, 0o755)
+    const w = bramka(repo, baza)
+    assert.equal(w.status, 'pominieta', w.powod)
+    assert.match(w.powod ?? '', /^runner Strykera nie wykonal testow fazy \(No tests were executed\)/)
+    assert.deepEqual(w.trafienia, [])
+    assert.equal(typeof w.sekundy, 'number')
   } finally {
     usun(repo)
   }

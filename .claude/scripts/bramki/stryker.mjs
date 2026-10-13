@@ -12,6 +12,9 @@ const SUFIT_SEKUND = 900
 const PARA_TESTU = /^(.+)\.(?:test|spec)\.([cm]?[jt]sx?)$/
 const RAPORT_DOMYSLNY = 'reports/mutation/mutation.json'
 const STATUSY_PRZEZYTE = new Set(['Survived', 'NoCoverage'])
+// Runner Strykera nie wykonal zadnego testu: testy fazy biegna innym runnerem (vibersi faza 1: `node --test` dla .mjs, Stryker
+// na vitest). Nic do mutowania nie jest awaria narzedzia — bramka nie dotyczy fazy (P19).
+const BRAK_TESTOW = /No tests were executed/
 
 /** @typedef {import('./uruchom.mjs').WynikBramki} WynikBramki */
 /** @typedef {{ mutatorName: string, replacement?: string, status: string, location: { start: { line: number } } }} Mutant */
@@ -51,6 +54,9 @@ export function bramkaStryker(projekt, narzedzie, zmiany) {
   const raport = join(projekt, sciezkaRaportu(projekt, narzedzie.konfiguracja))
   rmSync(raport, { force: true })
   const p = uruchom(narzedzie.bin, ['run', '--mutate', mutate.join(','), '--reporters', 'json'], { cwd: projekt, sufitSekund: SUFIT_SEKUND })
+  if (p.kod !== 0 && BRAK_TESTOW.test(`${p.stdout}\n${p.stderr}`)) {
+    return { status: 'pominieta', sekundy: p.sekundy, trafienia: [], powod: 'runner Strykera nie wykonal testow fazy (No tests were executed) — testy fazy biegna innym runnerem niz ten z konfiguracji Strykera' }
+  }
   if (p.kod !== 0 || !existsSync(raport)) return bladNarzedzia(p, 'Stryker')
   /** @type {RaportStrykera} */
   const dane = JSON.parse(readFileSync(raport, 'utf8'))

@@ -1,0 +1,13 @@
+INFO ProjectReader Found 2 of 214 file(s) to be mutated.
+INFO Instrumenter Instrumented 2 source file(s) with 31 mutant(s)
+INFO ConcurrencyTokenProvider Creating 7 test runner process(es).
+INFO DryRunExecutor Starting initial test run (vitest test runner with "perTest" coverage analysis). This may take a while.
+/Users/x/vibersi/node_modules/.pnpm/@stryker-mutator+core@10.0.0_@types+node@22.20.5/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:47
+            throw new ConfigError('No tests were executed. Stryker will exit prematurely. Please check your configuration.');
+                  ^
+ConfigError: No tests were executed. Stryker will exit prematurely. Please check your configuration.
+    at DryRunExecutor.validateResultCompleted (file:///Users/x/vibersi/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:47:19)
+    at DryRunExecutor.execute (file:///Users/x/vibersi/node_modules/@stryker-mutator/core/dist/src/process/3-dry-run-executor.js:31:14) {
+  innerError: undefined
+}
+Node.js v22.22.3

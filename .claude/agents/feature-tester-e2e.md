@@ -47,6 +47,7 @@ Skrypt `.claude/scripts/e2e/e2e.mjs` podaje scenariusze fazy i stan serwera apli
 - Ustaw viewport, gdy scenariusz go wymaga (desktop `agent-browser set viewport 1920 1080`, mobile `agent-browser set viewport 375 812`), otwórz adres (`agent-browser open <url>`) i poczekaj na `agent-browser wait --load networkidle`.
 - Prowadź scenariusz pętlą `agent-browser snapshot -i` → akcja z opisu linii (klik, wpisanie, nawigacja klawiaturą, zmiana rozmiaru, przewinięcie) → ponowny `snapshot -i` po każdej zmianie strony, bo refy sprzed nawigacji przestają działać.
 - Oczekiwany stan sprawdź w snapshotcie albo `agent-browser get text`, a dowód zapisz jako asercję (co sprawdzono) ze ścieżką zrzutu `agent-browser screenshot`. Scenariusz z efektem ubocznym (zapis, wysyłka) potwierdzasz też stanem po akcji — odpowiedzią HTTP albo wierszem bazy e2e — bo komunikat sukcesu bez zapisu to defekt.
+- Każdy zrzut robisz z limitem 30 s: `perl -e 'alarm 30; exec @ARGV' agent-browser screenshot <plik>`. Zrzut przerwany limitem daje scenariuszowi wpis SKIP z przyczyną `harness` i dowodem „zrzut agent-browser > 30 s”, a pozostałe scenariusze fazy dostają ten sam wpis bez kolejnych prób. Zrzutu nie obchodzisz innym narzędziem (Playwright, własny skrypt), bo scenariusz z takim wpisem trafia na `[Manual]` do smoke'u operatora, a obejście w runie etapu 2 vibersi kosztowało 971 s.
 - Scenariusz, który milczy dłużej niż dwie minuty, prowadź w tle z logiem postępu według bloku długich komend z polecenia, bo agent bez wyjścia przez trzy minuty zostaje przerwany.
 
 ### Klasyfikacja i wynik

@@ -16,7 +16,7 @@ import { restartFazy, startE2e } from '../start.mjs'
 const ZADANIE = 'docs/active/z'
 const BAZA = 'VITE_SUPABASE_URL=https://e2e.supabase.co\nVITE_SUPABASE_ANON_KEY=a\nSUPABASE_E2E_DB_URL=postgres://x\nSUPABASE_E2E_SERVICE_ROLE_KEY=s\nE2E_TEST_EMAIL=t@x.pl\nE2E_TEST_PASSWORD=p\n'
 /** @type {import('../srodowisko.mjs').Narzedzia} */
-const SPRAWNE = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) }
+const SPRAWNE = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }), zrzut: () => ({ ok: true, detal: '' }) }
 
 // Sprzatanie po kazdym tescie, takze padnietym: serwer pipeline'u z pliku PID (zatrzymajSerwer zabija tylko nasz proces),
 // log i plik PID w /tmp, katalog projektu.
@@ -520,4 +520,20 @@ test('obcy serwer HTTP zajal port w trakcie runu: restart fazy = niepowodzenie z
   } finally {
     obcy.kill()
   }
+})
+
+// P19 (vibersi etap 2, faza 6): `agent-browser screenshot` wisial nawet na about:blank — probny zrzut na starcie (limit 30 s)
+// zatrzymuje start z naprawa, zanim tester zaplaci za obejscie. Sprawdzenie bez startu (Doctor, gotowosc planu) zrzutu nie robi.
+test('probny zrzut na starcie: porazka = niepowodzenie przed startem serwera z naprawa; sprawdz bez startu zrzutu nie robi', async () => {
+  const port = await wolnyPort()
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"\n` })
+  let proby = 0
+  const wiszacy = { ...SPRAWNE, zrzut: () => { proby += 1; return { ok: false, detal: 'nie skonczyl sie w 30 s' } } }
+  const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: wiszacy })
+  assert.equal(w.status, 'niepowodzenie')
+  assert.equal(w.detal, 'probny zrzut agent-browser (about:blank, limit 30 s): nie skonczyl sie w 30 s')
+  assert.match(w.naprawa, /^Zamknij sesje przegladarki \(`agent-browser close --all`\).*e2e\.mjs start --zadanie docs\/active\/z$/)
+  assert.equal(await odpowiada(`http://127.0.0.1:${port}`), false, 'serwer nie wystartowal')
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: false, narzedzia: wiszacy })).status, 'gotowe')
+  assert.equal(proby, 1)
 })

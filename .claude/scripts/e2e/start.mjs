@@ -22,7 +22,7 @@ import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { doOdegrania, liczE2e } from './scenariusze.mjs'
 import { naprawaObcego, opisObcego, stanPortu, uruchomSerwer } from './serwer.mjs'
-import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
+import { bledySrodowiska, envE2e, konfiguracja, LIMIT_ZRZUTU_SEK, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
 
 /**
  * @typedef {'pominieto' | 'brak-srodowiska' | 'niepowodzenie' | 'gotowe' | 'odroczone'} StatusE2e
@@ -117,6 +117,12 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     const port = await stanPortu(konf)
     if (port.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', detal: opisObcego(konf, port.obcy), naprawa: `${naprawaObcego(konf, port.obcy)} Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
     return { ...wynik, status: 'gotowe', serwer: port.serwer, detal: `sprawdzenie ${PLIK_ENV} ok; serwer ${port.serwer === 'uruchomione' ? `pipeline'u dziala na ${konf.zdrowie}` : `nie dziala — autopilot uruchomi: ${konf.start}`}` }
+  }
+  // Probny zrzut przed startem serwera (P19): zawieszony zrzut w trakcie runu kosztowal faze 971 s obejscia.
+  const zrzut = (narzedzia.zrzut ?? NARZEDZIA.zrzut)?.()
+  if (zrzut && !zrzut.ok) {
+    const blad = `probny zrzut agent-browser (about:blank, limit ${LIMIT_ZRZUTU_SEK} s): ${zrzut.detal}`
+    return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `Zamknij sesje przegladarki (\`agent-browser close --all\`), sprawdz \`agent-browser doctor\` i zrzut recznie: \`agent-browser open about:blank && agent-browser screenshot /tmp/proba.png\`. Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
   }
   const serwer = await uruchomSerwer(projekt, konf, env)
   if (serwer.obcy) {

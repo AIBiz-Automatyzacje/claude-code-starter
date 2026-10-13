@@ -121,3 +121,12 @@ test('plik roli: finding seeda kontra migracja ma linie checkbox: scenariusza, k
   const seedy = wytnij(tester, '### Seedy', '\n### ')
   assert.match(seedy.split('\n').find((l) => l.includes('DEFAULT')) ?? '', /`checkbox: <treść linii scenariusza, który używa seeda>`/)
 })
+
+// P19 (vibersi etap 2, faza 6): zrzut wisial, tester obszedl go Playwrightem (971 s, 0,64 M). Regula: limit 30 s, potem SKIP
+// harness (skrypt ksiegowania przenosi go na [Manual]), bez obchodzenia.
+test('tester: zrzut z limitem 30 s; przerwany = SKIP harness dla scenariusza i reszty fazy, bez obchodzenia innym narzedziem', () => {
+  assert.match(tester, /Każdy zrzut robisz z limitem 30 s: `perl -e 'alarm 30; exec @ARGV' agent-browser screenshot <plik>`/)
+  assert.match(tester, /SKIP z przyczyną `harness` i dowodem „zrzut agent-browser > 30 s”, a pozostałe scenariusze fazy dostają ten sam wpis/)
+  assert.match(tester, /Zrzutu nie obchodzisz innym narzędziem \(Playwright, własny skrypt\)/)
+  assert.equal(PRZYCZYNY_SKIP.harness, 'manual')
+})

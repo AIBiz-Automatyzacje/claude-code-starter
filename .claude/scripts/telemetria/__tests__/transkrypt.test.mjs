@@ -150,3 +150,23 @@ test('narzedzia_n z deferred_tools_record (entries); stary deferred_tools_delta 
   assert.equal(analizujTranskrypt(zDwoma).kontekst.narzedzia_n, 2)
   assert.equal(analizujTranskrypt(TRANSKRYPT).kontekst.narzedzia_n, 3)
 })
+
+// P19 (vibersi etap 2): od CC 2.1.296 agent workflowu dostaje najpierw przekazana prosbe operatora („Uruchom”), potem zadanie
+// skryptu z naglowkiem harnessu i wcieciem — parser bral pierwsza wiadomosc: prompt_zn = 377 u wszystkich 144 agentow.
+test('transkrypt CC 2.1.296: prompt = zadanie skryptu bez naglowka i wciecia harnessu, nie przekazana prosba operatora', async () => {
+  const { readFileSync } = await import('node:fs')
+  const tresc = readFileSync(new URL('./fixtures/transkrypt-harness-2.1.296.jsonl', import.meta.url), 'utf8')
+  const a = analizujTranskrypt(tresc.trim().split('\n').map((l) => JSON.parse(l)))
+  const zadanie = 'Zadanie: docs/active/etap-2-katalog-publiczny — Faza 1 (Dane katalogu), jednostka IU-1.\nPlik zadań (checkboxy tej jednostki): docs/active/etap-2-katalog-publiczny/etap-2-katalog-publiczny-zadania.md, sekcja `### IU-1`.\n\n## IU-1: Funkcje katalogu, liczniki i bucket mediów\n  - wciecie wlasne zadania zostaje'
+  assert.equal(a.prompt, zadanie)
+  assert.equal(a.prompt_zn, zadanie.length)
+  assert.equal(a.start, '2026-10-11T14:00:00.000Z', 'czas startu od pierwszej wiadomosci, takze przekazanej prosby')
+})
+
+test('promptAgenta: zwykla wiadomosc bez zmian; sama przekazana prosba = null; naglowek zadania bez znacznika konca = bez zmian', async () => {
+  const { promptAgenta } = await import('../transkrypt.mjs')
+  assert.equal(promptAgenta('Review fazy 2'), 'Review fazy 2')
+  assert.equal(promptAgenta('[Workflow harness — user request] ...:\n  Uruchom'), null)
+  assert.equal(promptAgenta('[Workflow harness — computed task] inny format'), '[Workflow harness — computed task] inny format')
+  assert.equal(analizujTranskrypt([{ type: 'user', message: { content: '[Workflow harness — user request] x:\n  Uruchom' } }]).prompt, null)
+})

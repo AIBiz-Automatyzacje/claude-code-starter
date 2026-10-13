@@ -11,7 +11,8 @@
 
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
@@ -29,11 +30,17 @@ const LIMIT_STARTU_SEK = 90
 // Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
 // z serwerem w tle, ale bez wyniku JSON.
 const MAKS_STARTU_SEK = 540
+// Probny zrzut na starcie (P19): vibersi etap 2, faza 6 — `agent-browser screenshot` wisial nawet na about:blank, tester obszedl
+// go Playwrightem (971 s). Limit jak w regule testera: zrzut dluzszy niz 30 s = harness niesprawny.
+export const LIMIT_ZRZUTU_SEK = 30
+const LIMIT_ZAMKNIECIA_MS = 10_000
+const SESJA_PROBY = ['--session', 'e2e-proba']
 
 /**
  * @typedef {{ url: string, zdrowie: string, port: number, lokalny: boolean, start: string, limitSek: number, log: string, pid: string,
  *   bazaE2e: boolean, odcisk: string, blad: string | null }} Konfiguracja
- * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => { ok: boolean, detal: string } }} Narzedzia
+ * @typedef {{ ok: boolean, detal: string }} WynikNarzedzia
+ * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => WynikNarzedzia, zrzut?: () => WynikNarzedzia }} Narzedzia
  */
 
 /** @param {string} tresc @returns {Record<string, string>} */
@@ -110,6 +117,18 @@ export const NARZEDZIA = {
     const w = spawnSync('agent-browser', ['doctor', '--offline', '--quick'], { encoding: 'utf8' })
     if (w.error) return { ok: false, detal: `brak agent-browser (${w.error.message})` }
     return { ok: w.status === 0, detal: (w.stdout || '').split('\n').filter((l) => /\bfail\b/.test(l)).join('; ') || `kod ${w.status}` }
+  },
+  // Probny zrzut about:blank w osobnej sesji agent-browser (sesji testera nie dotyka), z limitem na open + screenshot.
+  zrzut: () => {
+    const plik = join(tmpdir(), `autopilot-e2e-proba-${process.pid}.png`)
+    const termin = Date.now() + LIMIT_ZRZUTU_SEK * 1000
+    const krok = (/** @type {string[]} */ a) => spawnSync('agent-browser', [...SESJA_PROBY, ...a], { encoding: 'utf8', timeout: Math.max(termin - Date.now(), 1), killSignal: 'SIGKILL' })
+    const otwarcie = krok(['open', 'about:blank'])
+    const zrzut = otwarcie.status === 0 && !otwarcie.error ? krok(['screenshot', plik]) : otwarcie
+    spawnSync('agent-browser', [...SESJA_PROBY, 'close'], { timeout: LIMIT_ZAMKNIECIA_MS, killSignal: 'SIGKILL' })
+    rmSync(plik, { force: true })
+    if (zrzut.error) return { ok: false, detal: zrzut.error.message.includes('ETIMEDOUT') ? `nie skonczyl sie w ${LIMIT_ZRZUTU_SEK} s` : zrzut.error.message }
+    return zrzut.status === 0 ? { ok: true, detal: '' } : { ok: false, detal: `kod ${zrzut.status}: ${(zrzut.stderr || zrzut.stdout || '').trim().split('\n').pop()}` }
   },
 }
 
