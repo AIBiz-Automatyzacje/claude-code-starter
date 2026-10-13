@@ -546,7 +546,7 @@ Poza wyjatkiem z kroku 2 NIE modyfikuj zadnych plikow. Zwroc {status, detal, cza
 function e2eStartPrompt(sciezka) {
   return `Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik:
 \`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
-Narzedzie Bash wywolaj z timeout 600000 (start serwera czeka do 540 s) i uruchom polecenie jeden raz: powtorka postawilaby
+Narzedzie Bash wywolaj z timeout 600000 (start serwera czeka do 500 s) i uruchom polecenie jeden raz: powtorka postawilaby
 drugi serwer obok pierwszego. Skrypt sprawdza, czy zadanie potrzebuje przegladarki, sprawdza .env.e2e i uruchamia serwer aplikacji
 w tle. Kod wyjscia 0 albo 1 to wynik (STOP liczy orkiestrator): ostatnia linia stdout to JSON — zwroc jego pola 1:1. Kod 3
 (JSON z polem "wyjatek") albo brak JSON-a: status "niepowodzenie", bledy = [tresc wyjatku albo ostatnie linie wyjscia],
@@ -556,7 +556,7 @@ jesli polecenie go zawiera).`
 }
 
 function e2eRestartPrompt(sciezka, numerFazy) {
-  return `Uruchom w korzeniu repo dokladnie jedno polecenie (Bash z timeout 600000 — start serwera czeka do 540 s; jedno wywolanie):
+  return `Uruchom w korzeniu repo dokladnie jedno polecenie (Bash z timeout 600000 — start serwera czeka do 500 s; jedno wywolanie):
 \`node .claude/scripts/e2e/e2e.mjs restart --zadanie ${sciezka} --faza ${numerFazy}\`
 Skrypt zatrzymuje serwer aplikacji uruchomiony przez pipeline i uruchamia go od nowa; faza bez scenariuszy [E2E] i makiet — nic nie robi.
 Zwroc {stdout}: ostatnia linie stdout 1:1 (JSON w jednej linii), bez zmian. Brak JSON-a: stdout = ostatnie linie wyjscia.
@@ -1222,7 +1222,7 @@ function jsonZeStdout(tekst) {
 // Restart serwera przed testerem fazy (P17), wynik `e2e.mjs restart`: gotowe -> przegladarka w tej fazie; pominieto -> faza
 // bez scenariuszy i makiet; niepowodzenie -> 'martwe' w tej fazie, a ogon logu idzie do review (serwer polozony kodem fazy to
 // defekt do fixa, nie awaria srodowiska). Do konca runu tylko brak odpowiedzi w limicie startu: kazda nastepna proba to znowu
-// do 540 s czekania. Nieczytelny wynik = srodowisko bez zmian (pad agenta to nie awaria srodowiska).
+// do 500 s czekania. Nieczytelny wynik = srodowisko bez zmian (pad agenta to nie awaria srodowiska).
 // Obcy serwer na porcie (P19, pole `obcy`): faza bez przegladarki z przyczyna dla testera, bez logu dla correctness (przyczyna
 // poza kodem); nastepna faza sprawdza port od nowa.
 function srodowiskoPoRestarcie(stdout) {
@@ -1232,7 +1232,7 @@ function srodowiskoPoRestarcie(stdout) {
   const obcy = Boolean(w) && w.serwer === 'obcy'
   if (w && w.status === 'gotowe') return { srodowisko: 'gotowe', trwale: false, nasz, obcy, detal }
   if (w && w.status === 'pominieto') return { srodowisko: 'pominieto', trwale: false, nasz, obcy, detal }
-  if (w && w.status === 'niepowodzenie') return { srodowisko: 'martwe', trwale: !obcy && /nie odpowiada po \d+ s/.test(detal), nasz, obcy, detal }
+  if (w && w.status === 'niepowodzenie') return { srodowisko: 'martwe', trwale: !obcy && /nie odpowiada po \d+ s/.test(detal), nasz, obcy, detal: obcy && w.naprawa ? `${detal}. ${w.naprawa}` : detal, przyczyna: obcy ? detal : null }
   return { srodowisko: null, trwale: false, nasz, obcy, detal }
 }
 
@@ -1669,7 +1669,7 @@ for (const numerFazy of kolejka) {
       const po = srodowiskoPoRestarcie(restart && restart.stdout)
       if (po.srodowisko) srodowiskoE2E = po.srodowisko
       if (po.srodowisko === 'gotowe') e2eBylaPrzegladarka = true
-      if (po.srodowisko === 'martwe' && po.obcy) przyczynaBezPrzegladarki = po.detal
+      if (po.srodowisko === 'martwe' && po.obcy) przyczynaBezPrzegladarki = po.przyczyna
       else if (po.srodowisko === 'martwe') restartBlad = po.detal
       if (po.trwale) e2eTrwaleMartwe = true
       if (po.nasz) serwerNasz = true

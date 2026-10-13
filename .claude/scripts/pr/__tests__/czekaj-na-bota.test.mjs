@@ -191,6 +191,14 @@ describe('vibersi PR #2 — status przed recenzja', () => {
     assert.deepEqual([wynik.stan, wynik.recenzja, wynik.minuty], ['gotowa', 'brak', 2.5])
   })
 
+  test('blad odczytu recenzji po success = brak recenzji ze sladem na stderr, nie blad-gh', async () => {
+    const slady = /** @type {string[]} */ ([])
+    const os = odtworzenie({ ...pr2([]), start: '2026-10-13T07:52:00Z' })
+    const wynik = await czekajNaBota({ ...os, zrodlo: { ...os.zrodlo, recenzje: async () => { throw new Error('HTTP 403: Resource not accessible\nszczegoly') } }, limitMin: 20, coS: 30, ostrzez: (t) => slady.push(t) })
+    assert.deepEqual([wynik.stan, wynik.recenzja, wynik.minuty], ['gotowa', 'brak', 2])
+    assert.equal(slady[0], 'odczyt recenzji PR nieudany (traktuje jak brak recenzji czubka): HTTP 403: Resource not accessible')
+  })
+
   test('recenzja poprzedniego czubka nie jest recenzja czubka; login bota z REST i z gh pr view', () => {
     assert.equal(recenzjaCzubka(VIBERSI_PR2.recenzje.filter((/** @type {any} */ r) => r.submitted_at < '2026-10-13T07:45:00Z'), CZUBEK), null)
     assert.equal(recenzjaCzubka([{ login: 'coderabbitai', commit_id: CZUBEK, submitted_at: 'x' }], CZUBEK)?.login, 'coderabbitai')

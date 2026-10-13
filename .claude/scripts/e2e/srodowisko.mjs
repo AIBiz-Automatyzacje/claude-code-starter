@@ -29,7 +29,8 @@ const HOSTY_LOKALNE = ['localhost', '127.0.0.1', '[::1]', '0.0.0.0']
 const LIMIT_STARTU_SEK = 90
 // Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
 // z serwerem w tle, ale bez wyniku JSON.
-const MAKS_STARTU_SEK = 540
+// Przed startem serwera biegnie probny zrzut (do 30 s) i zamkniecie jego sesji (do 10 s) — zapas 60 s do limitu Basha.
+const MAKS_STARTU_SEK = 500
 // Probny zrzut na starcie (P19): vibersi etap 2, faza 6 — `agent-browser screenshot` wisial nawet na about:blank, tester obszedl
 // go Playwrightem (971 s). Limit jak w regule testera: zrzut dluzszy niz 30 s = harness niesprawny.
 export const LIMIT_ZRZUTU_SEK = 30
@@ -79,6 +80,19 @@ function adresHttp(url) {
 /** @param {string} klucz @param {string} url @returns {string} */
 const bladAdresu = (klucz, url) => `${klucz} w ${PLIK_ENV} to „${url}” — podaj pelny adres http(s):// z portem, np. http://localhost:${DOMYSLNY_PORT}`
 
+/**
+ * Port z `--port N` w komendzie startu rozny od portu E2E_URL (P19): stary `.env.e2e` z samym `E2E_START ... --port 5173`
+ * po zmianie domyslnego E2E_URL na 5174 — serwer wstaje na 5173, sonda pyta 5174 i po limicie startu STOP z bledna przyczyna.
+ * @param {string | undefined} start
+ * @param {string} port
+ * @returns {string | null}
+ */
+function bladPortuStartu(start, port) {
+  const zStartu = start ? /--port[= ](\d+)/.exec(start)?.[1] : undefined
+  if (!zStartu || zStartu === port) return null
+  return `E2E_START uruchamia serwer na porcie ${zStartu}, a E2E_URL wskazuje port ${port} — ustaw w ${PLIK_ENV} E2E_URL=http://localhost:${zStartu} albo zmien --port w E2E_START na ${port}`
+}
+
 /** @param {string} url @returns {string} adres do porownania baz (origin; ukosnik na koncu bez znaczenia) */
 const originBazy = (url) => adresHttp(url.trim())?.origin ?? url.trim()
 
@@ -93,7 +107,7 @@ export function konfiguracja(projekt, env) {
   const nazwa = basename(projekt).replace(/[^A-Za-z0-9_-]/g, '_')
   const adres = adresHttp(url)
   const port = adres ? adres.port || (adres.protocol === 'https:' ? '443' : '80') : String(DOMYSLNY_PORT)
-  const blad = !adres ? bladAdresu('E2E_URL', url) : !adresHttp(zdrowie) ? bladAdresu('E2E_HEALTH', zdrowie) : null
+  const blad = !adres ? bladAdresu('E2E_URL', url) : !adresHttp(zdrowie) ? bladAdresu('E2E_HEALTH', zdrowie) : bladPortuStartu(env.E2E_START, port)
   return {
     url,
     zdrowie,

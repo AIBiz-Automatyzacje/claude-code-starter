@@ -569,7 +569,8 @@ if (etap === 'napraw') {
   const doNaprawy = wybor
     ? zTury.watki.filter((w) => wybor.includes(w.id))
     : zTury.watki.filter((w) => w.klasa === 'napraw' || w.klasa === 'napraw-szerzej')
-  const doOdrzucenia = zTury.watki.filter((w) => w.klasa === 'odrzuc' && !doNaprawy.includes(w))
+  // Watek z nasza odpowiedzia juz jej nie dostaje drugi raz (P19: tura „tylko odpowiedzi” odpisywalaby we wszystkich `odrzuc`).
+  const doOdrzucenia = zTury.watki.filter((w) => w.klasa === 'odrzuc' && w.naszaOdpowiedz !== true && !doNaprawy.includes(w))
   const doOperatora = zTury.watki.filter((w) => w.klasa === 'do-operatora')
 
   if (!doNaprawy.length && !doOdrzucenia.length) {

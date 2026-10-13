@@ -245,8 +245,8 @@ test('guard tozsamosci dziala takze bez katalogu supabase/ (VITE_SUPABASE_URL w 
   rmSync(p, { recursive: true })
 })
 
-test('limit startu przyciety do 540 s (limit Basha agenta 600 s)', () => {
-  assert.equal(konfiguracja('/tmp/x', { E2E_START_TIMEOUT: '9999' }).limitSek, 540)
+test('limit startu przyciety do 500 s (limit Basha agenta 600 s minus probny zrzut przed startem)', () => {
+  assert.equal(konfiguracja('/tmp/x', { E2E_START_TIMEOUT: '9999' }).limitSek, 500)
 })
 
 test('wlasny serwer z poprzedniego runu (zywy PID) = uruchomione, nie zastany; stan serwera z ogonem logu', async () => {
@@ -515,7 +515,9 @@ test('obcy serwer HTTP zajal port w trakcie runu: restart fazy = niepowodzenie z
   try {
     const w = await restartFazy(p, ZADANIE, 1)
     assert.deepEqual([w.status, w.serwer, w.obcy?.pid, w.log], ['niepowodzenie', 'obcy', obcy.pid, null], w.detal)
-    assert.match(w.detal, new RegExp(`PID ${obcy.pid}.*Zatrzymaj go: \`kill ${obcy.pid}\``))
+    assert.match(w.detal, new RegExp(`PID ${obcy.pid}: `))
+    assert.doesNotMatch(w.detal, /kill/, 'detal idzie do testera jako przyczyna — bez polecenia kill')
+    assert.match(w.naprawa ?? '', new RegExp(`^Zatrzymaj go: \`kill ${obcy.pid}\``))
     assert.equal(await odpowiedz(`http://127.0.0.1:${port}`), 'obcy')
   } finally {
     obcy.kill()
@@ -536,4 +538,40 @@ test('probny zrzut na starcie: porazka = niepowodzenie przed startem serwera z n
   assert.equal(await odpowiada(`http://127.0.0.1:${port}`), false, 'serwer nie wystartowal')
   assert.equal((await startE2e(p, ZADANIE, { uruchom: false, narzedzia: wiszacy })).status, 'gotowe')
   assert.equal(proby, 1)
+})
+
+// Recenzja P19: stary `.env.e2e` z samym `E2E_START ... --port 5173` (szablon smoke-autopilot sprzed P19) po zmianie domyslnego
+// E2E_URL na 5174 — serwer na 5173, sonda na 5174, STOP po limicie z bledna przyczyna. Teraz blad konfiguracji z naprawa.
+test('E2E_START z --port innym niz port E2E_URL = blad konfiguracji z naprawa; ten sam port albo brak --port = bez bledu', () => {
+  const stary = konfiguracja('/tmp/x', { E2E_START: 'pnpm --filter web exec vite --mode e2e --port 5173 --strictPort' })
+  assert.equal(stary.blad, 'E2E_START uruchamia serwer na porcie 5173, a E2E_URL wskazuje port 5174 — ustaw w .env.e2e E2E_URL=http://localhost:5173 albo zmien --port w E2E_START na 5174')
+  assert.equal(konfiguracja('/tmp/x', { E2E_URL: 'http://localhost:5173', E2E_START: 'vite --port=5173' }).blad, null)
+  assert.equal(konfiguracja('/tmp/x', { E2E_START: 'node serwer.js' }).blad, null)
+})
+
+// Recenzja P19: E2E_HEALTH na innej, stale dzialajacej usludze nie jest obcym serwerem na porcie E2E (lsof sprawdza port E2E_URL).
+test('E2E_HEALTH wskazuje inna dzialajaca usluge, port E2E wolny = start, nie obcy', async () => {
+  const port = await wolnyPort()
+  const portInnej = await wolnyPort()
+  const inna = await obcySerwerHttp(portInnej)
+  try {
+    const zdrowie = `http://127.0.0.1:${portInnej}`
+    const start = `node -e "require('http').createServer((q,s)=>s.end('nasz')).listen(${port})"`
+    const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_HEALTH=${zdrowie}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n` })
+    const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+    assert.deepEqual([w.status, w.serwer], ['gotowe', 'uruchomione'], w.detal)
+  } finally {
+    inna.kill()
+  }
+})
+
+// Recenzja P19: potomek naszego serwera, ktory przezyl SIGTERM po smierci rodzica, trzymal port — restart widzial go jako obcy
+// i kazal operatorowi zabic wlasny proces pipeline'u. Zatrzymanie dobija cala grupe procesu.
+test('restart: potomek naszego serwera ignorujacy SIGTERM ginie z grupa — restart uruchamia serwer, nie zglasza obcego', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "process.on('SIGTERM',()=>{});require('http').createServer((q,s)=>s.end('nasz')).listen(${port})" & wait`
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n` })
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).serwer, 'uruchomione')
+  const w = await restartFazy(p, ZADANIE, 1)
+  assert.deepEqual([w.status, w.serwer, w.obcy], ['gotowe', 'uruchomione', null], w.detal)
 })

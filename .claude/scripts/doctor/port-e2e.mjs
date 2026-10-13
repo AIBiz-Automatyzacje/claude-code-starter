@@ -13,7 +13,8 @@ const ELEMENT = 'port E2E'
 function wierszPortu(projekt) {
   const env = envE2e(projekt)
   if (!env) return [ELEMENT, 'nie dotyczy', `brak ${PLIK_ENV}`, '—']
-  const { port, url } = konfiguracja(projekt, env)
+  const { port, url, blad } = konfiguracja(projekt, env)
+  if (blad) return [ELEMENT, 'UWAGA', blad.split(' — ')[0], blad.split(' — ')[1] ?? '—']
   if (port === PORT_DEV_VITE) {
     return [ELEMENT, 'UWAGA', `${url} — ${PORT_DEV_VITE} to port zwyklego dev servera Vite; uruchomiony obok zatrzyma start E2E`, `E2E_URL=http://localhost:${DOMYSLNY_PORT} w ${PLIK_ENV} (i ten port w E2E_START, jesli jest ustawiony)`]
   }

@@ -110,11 +110,14 @@ test('restart fazy: gotowe/pominieto ustawia srodowisko fazy; szybki pad = martw
 // P19: obcy serwer zajal port E2E w trakcie runu — faza bez przegladarki z nazwana przyczyna, bez logu dla correctness
 // (przyczyna poza kodem fazy) i bez „do konca runu” (nastepna faza sprawdza port od nowa).
 test('restart fazy: obcy serwer na porcie = martwe w tej fazie z przyczyna dla testera, nie restartE2e; tester dostaje przyczyne tylko bez przegladarki', () => {
-  const detal = "na porcie 5174 dziala serwer spoza pipeline'u — PID 3814: node vite --port 5174. Zatrzymaj go: `kill 3814`"
-  const po = A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', serwer: 'obcy', obcy: { pid: 3814, komenda: 'node vite' }, detal: `${detal} nie odpowiada po 90 s` }))
+  const detal = "na porcie 5174 dziala serwer spoza pipeline'u — PID 3814: node vite --port 5174 nie odpowiada po 90 s"
+  const po = A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', serwer: 'obcy', obcy: { pid: 3814, komenda: 'node vite' }, detal, naprawa: 'Zatrzymaj go: `kill 3814`' }))
   assert.deepEqual([po.srodowisko, po.trwale, po.obcy, po.nasz], ['martwe', false, true, false])
+  assert.equal(po.przyczyna, detal, 'tester dostaje opis bez polecenia kill')
+  assert.equal(po.detal, `${detal}. Zatrzymaj go: \`kill 3814\``, 'log operatora z naprawa')
+  assert.equal(A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', detal: 'kod 1' })).przyczyna, null)
   const petla = wytnij(autopilot, '      const po = srodowiskoPoRestarcie(', "    const review = await workflow('dev-docs-review-wf'")
-  assert.match(petla, /if \(po\.srodowisko === 'martwe' && po\.obcy\) przyczynaBezPrzegladarki = po\.detal\n\s+else if \(po\.srodowisko === 'martwe'\) restartBlad = po\.detal/)
+  assert.match(petla, /if \(po\.srodowisko === 'martwe' && po\.obcy\) przyczynaBezPrzegladarki = po\.przyczyna\n\s+else if \(po\.srodowisko === 'martwe'\) restartBlad = po\.detal/)
   assert.match(wytnij(autopilot, "    const review = await workflow('dev-docs-review-wf'", '    })'), /\n\s+przyczynaBezPrzegladarki,\n/)
   // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
   const e2ePrompt = new Function('SKILL_WERYFIKACJI', 'BLOK_DLUGIE_KOMENDY', 'BLOK_LIMIT_P3', 'mapaBlok', 'rereviewBlok', `${wytnij(review, 'function e2ePrompt(', '\n}\n')}
@@ -124,6 +127,7 @@ test('restart fazy: obcy serwer na porcie = martwe w tej fazie z przyczyna dla t
   assert.doesNotMatch(e2ePrompt('z', 4, [], 'bez-przegladarki', null, null), /Przyczyna trybu/)
   assert.match(review, /e2ePrompt\(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki\), zEffortem/)
   assert.match(tester, /albo przyczyną trybu podaną w poleceniu, bez findingu[^\n]*obcy serwer na porcie E2E, sprawdzeń HTTP nie robisz/)
+  assert.match(tester, /przy obcym serwerze na porcie E2E preflightu nie robisz/)
 })
 
 test('faza: restart przed db-sync i review; db-sync zalezy od bazy e2e, nie od serwera; env-down sprzata serwer uruchomiony takze przez restart', () => {

@@ -380,4 +380,7 @@ test('port E2E: bez .env.e2e nie dotyczy; 5173 → UWAGA z naprawa na 5174; domy
   assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://localhost:5174'])
   writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_URL=http://127.0.0.1:3000\n')
   assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://127.0.0.1:3000'])
+  // Stary .env.e2e z samym E2E_START --port 5173 (domyslny E2E_URL to teraz 5174) — UWAGA z naprawa zamiast „OK”.
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_START="vite --mode e2e --port 5173 --strictPort"\n')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 4), ['UWAGA', 'E2E_START uruchamia serwer na porcie 5173, a E2E_URL wskazuje port 5174', 'ustaw w .env.e2e E2E_URL=http://localhost:5173 albo zmien --port w E2E_START na 5174'])
 }))

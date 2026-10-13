@@ -72,7 +72,8 @@ Monitor({command: "node .claude/scripts/pr/czekaj-na-bota.mjs --pr <numer> --sha
 przy dłuższym limicie po `limit` wołasz skrypt kolejny raz z pozostałymi minutami.
 
 Po turze napraw z `push: false` nie uruchamiaj skryptu: commit nie dotarł na GitHub, więc bot go nie zrecenzuje. Raport
-„tura <N> niewypchnięta” z commitem tury, **koniec bez zmian w kodzie**.
+„tura <N> niewypchnięta” z commitem tury, **koniec bez zmian w kodzie**. Wyjątek: tura bez commita (sama odpowiedź w wątkach
+`odrzuć`, np. `KOLEJNA TURA (tylko odpowiedzi)`) nie ma czego recenzować — przechodzisz od razu do kroku 3.
 
 Skrypt czyta status commita `CodeRabbit` na tym czubku. Tekst komentarzy bota nie mówi, czy recenzja trwa: fraza
 „Reviewing files that changed…” zostaje w podsumowaniu także po zakończonej recenzji. Bot ustawia status success przed

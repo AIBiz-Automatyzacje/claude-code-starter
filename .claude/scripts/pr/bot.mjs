@@ -117,6 +117,23 @@ export function recenzjaCzubka(recenzje, czubek) {
   return recenzje.find((r) => LOGIN_BOTA.test(r.login) && r.commit_id === czubek) ?? null
 }
 
+/**
+ * Recenzje PR; blad odczytu = brak recenzji ze sladem na stderr — status success juz rozstrzygnal gotowosc, a 3 bledy /reviews
+ * nie moga zamienic jej w blad-gh.
+ * @param {{ recenzje: (numer: number) => Promise<Recenzja[]> }} zrodlo
+ * @param {number} numer
+ * @param {(tresc: string) => void} ostrzez
+ * @returns {Promise<Recenzja[]>}
+ */
+async function recenzjeBezBledu(zrodlo, numer, ostrzez) {
+  try {
+    return await zrodlo.recenzje(numer)
+  } catch (e) {
+    ostrzez(`odczyt recenzji PR nieudany (traktuje jak brak recenzji czubka): ${(e instanceof Error ? e.message : String(e)).split('\n')[0]}`)
+    return []
+  }
+}
+
 /** @param {Rozstrzygniecie} wynik @returns {Rozstrzygniecie} gotowa bez recenzji czubka — adnotacja dla skilla */
 const bezRecenzji = (wynik) => ({
   ...wynik, recenzja: 'brak',
@@ -168,7 +185,7 @@ export async function czekajNaBota({ zrodlo, zegar, sha = null, limitMin, coS, o
       const komentarze = pr.state === 'OPEN' && !najnowszyStatus(statusy) && poKarencji ? await zrodlo.komentarze(pr.number) : []
       const wynik = rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek })
       // Status success: gotowa dopiero z recenzja czubka albo po LIMIT_RECENZJI_MS od statusu (P19).
-      const recenzja = wynik?.stan === 'gotowa' ? recenzjaCzubka(await zrodlo.recenzje(pr.number), czubek) : null
+      const recenzja = wynik?.stan === 'gotowa' ? recenzjaCzubka(await recenzjeBezBledu(zrodlo, pr.number, ostrzez), czubek) : null
       bledyZRzedu = 0
       if (wynik?.stan === 'gotowa' && !recenzja) {
         if (zegar.teraz() - Date.parse(ostatni?.created_at ?? '') >= LIMIT_RECENZJI_MS) return { ...bezRecenzji(wynik), sha: czubek, minuty: minuty() }

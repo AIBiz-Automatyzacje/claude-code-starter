@@ -141,7 +141,7 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
 /**
  * @typedef {{ status: 'pominieto' | 'gotowe' | 'niepowodzenie', faza: number, scenariusze: number, figmaScreens: boolean,
  *   serwer: 'uruchomione' | 'obcy' | 'brak', url: string | null, log: string | null, detal: string,
- *   obcy: import('./serwer.mjs').ObcySerwer | null }} WynikRestartu
+ *   obcy: import('./serwer.mjs').ObcySerwer | null, naprawa?: string }} WynikRestartu
  */
 
 /**
@@ -164,8 +164,9 @@ export async function restartFazy(projekt, sciezka, faza) {
   if (!scenariusze && !figmaScreens) return { ...wynik, detal: `faza ${faza} bez scenariuszy [E2E] i makiet — serwer niepotrzebny` }
   if (!env || !konf || konf.blad) return { ...wynik, status: 'niepowodzenie', detal: konf?.blad ?? `brak ${PLIK_ENV}` }
   const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true })
-  // Obcy serwer zajal port w trakcie runu: przyczyna poza kodem fazy — bez logu dla correctness, z naprawa dla operatora.
-  if (serwer.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', obcy: serwer.obcy, detal: `${serwer.blad}. ${naprawaObcego(konf, serwer.obcy)}` }
+  // Obcy serwer zajal port w trakcie runu: przyczyna poza kodem fazy — bez logu dla correctness; naprawa osobno (operator, log),
+  // bo `detal` idzie do testera jako przyczyna trybu bez przegladarki.
+  if (serwer.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', obcy: serwer.obcy, detal: serwer.blad ?? '', naprawa: naprawaObcego(konf, serwer.obcy) }
   if (serwer.blad) return { ...wynik, status: 'niepowodzenie', log: konf.log, detal: serwer.blad }
   return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony od nowa („${konf.start}”), odpowiada na ${konf.zdrowie}` }
 }

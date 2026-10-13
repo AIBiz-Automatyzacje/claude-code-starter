@@ -37,12 +37,13 @@ export async function odpowiada(url) {
 }
 
 /**
- * Proces nasluchujacy na porcie TCP (lsof). Brak lsof albo nasluchu = null; wtedy o obcym serwerze decyduje sama sonda.
+ * Proces nasluchujacy na porcie TCP (lsof): proces, null (brak nasluchu) albo undefined (lsof niedostepny — wtedy decyduje sonda).
  * @param {number} port
- * @returns {{ pid: number, komenda: string } | null}
+ * @returns {{ pid: number, komenda: string } | null | undefined}
  */
 export function procesNaPorcie(port) {
   const w = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], { encoding: 'utf8' })
+  if (w.error) return undefined
   const pid = Number((w.stdout ?? '').trim().split('\n')[0])
   if (!Number.isInteger(pid) || pid <= 1) return null
   const ps = spawnSync('ps', ['-o', 'command=', '-p', String(pid)], { encoding: 'utf8' })
@@ -50,26 +51,27 @@ export function procesNaPorcie(port) {
 }
 
 /**
- * Serwer spoza pipeline'u na porcie E2E: nasluch na porcie (adres lokalny) albo odpowiedz sondy zdrowia. Wolane, gdy naszego
- * zywego serwera nie ma — kazdy nasluch jest wtedy obcy.
+ * Serwer spoza pipeline'u na porcie E2E. Wolane, gdy naszego zywego serwera nie ma — kazdy nasluch jest wtedy obcy. Adres
+ * lokalny z dzialajacym lsof: tylko nasluch na porcie; bez lsof albo dla hosta nielokalnego: odpowiedz E2E_URL (nie
+ * E2E_HEALTH — sonda moze wskazywac inna, stale dzialajaca usluge).
  * @param {Konfiguracja} konf
  * @returns {Promise<ObcySerwer | null>}
  */
 async function obcySerwer(konf) {
-  const proces = konf.lokalny ? procesNaPorcie(konf.port) : null
-  if (proces) return proces
-  return await odpowiada(konf.zdrowie) ? { pid: null, komenda: null } : null
+  const proces = konf.lokalny ? procesNaPorcie(konf.port) : undefined
+  if (proces !== undefined) return proces
+  return await odpowiada(konf.url) ? { pid: null, komenda: null } : null
 }
 
 /** @param {Konfiguracja} konf @param {ObcySerwer} obcy @returns {string} */
 export function opisObcego(konf, obcy) {
-  const kto = obcy.pid ? ` — PID ${obcy.pid}: ${obcy.komenda}` : ` — ${konf.zdrowie} odpowiada`
+  const kto = obcy.pid ? ` — PID ${obcy.pid}: ${obcy.komenda}` : ` — ${konf.url} odpowiada`
   return `na porcie ${konf.port} dziala serwer spoza pipeline'u${kto}. Pipeline nie testuje na nim: nie zna jego konfiguracji (zwykly dev server celuje w baze dev)`
 }
 
 /** @param {Konfiguracja} konf @param {ObcySerwer} obcy @returns {string} */
 export function naprawaObcego(konf, obcy) {
-  const stop = obcy.pid ? `Zatrzymaj go: \`kill ${obcy.pid}\` (sprawdz wczesniej, czy to nie Twoj dev server w uzyciu)` : `Zatrzymaj serwer odpowiadajacy na ${konf.zdrowie}`
+  const stop = obcy.pid ? `Zatrzymaj go: \`kill ${obcy.pid}\` (sprawdz wczesniej, czy to nie Twoj dev server w uzyciu)` : `Zatrzymaj serwer odpowiadajacy na ${konf.url}`
   return `${stop} albo ustaw w .env.e2e wolny port: E2E_URL=http://localhost:<port>. Kto trzyma port: \`lsof -nP -iTCP:${konf.port} -sTCP:LISTEN\`.`
 }
 
@@ -127,6 +129,13 @@ async function zatrzymajProces(z) {
   const termin = Date.now() + LIMIT_ZATRZYMANIA_MS
   while (Date.now() < termin && zyjeNasz(z)) await czekaj(ODSTEP_SONDY_MS / 5)
   if (zyjeNasz(z)) sygnalGrupie(z.pid, 'SIGKILL')
+  // Potomek, ktory przezyl SIGTERM po smierci rodzica, zostaje w grupie procesu i trzyma port — bez tego restart widzialby go
+  // jako obcy serwer. Tylko grupa (-pid): sam PID mogl juz trafic do innego procesu.
+  try {
+    process.kill(-z.pid, 'SIGKILL')
+  } catch (blad) {
+    if (!(blad instanceof Error && 'code' in blad && blad.code === 'ESRCH')) throw blad
+  }
 }
 
 /** @param {string} url @returns {Promise<void>} czeka, az zatrzymany serwer przestanie odpowiadac (dzieci procesu zwalniaja port pozniej) */
