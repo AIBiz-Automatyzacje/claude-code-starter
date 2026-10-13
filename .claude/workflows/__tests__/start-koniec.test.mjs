@@ -44,7 +44,7 @@ const A = new Function(
 // eslint-disable-next-line no-new-func -- jw.
 const C = new Function(
   `${wytnij(complete, '// ── Archiwum (P4)', '// ── Koniec archiwum')}
-   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, PROG_PLIKOW_PR }`,
+   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, rozmiarZWyniku, PROG_PLIKOW_PR }`,
 )()
 
 const ZADANIE = 'docs/active/zadanie-x'
@@ -256,15 +256,21 @@ test('plik decyzji: poprawna sciezka i pole = bez uwagi; brak pliku, zla sciezka
   }
 })
 
-test('bramka rozmiaru PR: do progu bez uwagi, powyzej UWAGA z liczba i propozycja podzialu po katalogach', () => {
+// P19: prog liczony na plikach do recenzji bota (rozmiar.mjs), nie na calym diffie — vibersi etap 2: 250 w diffie, 124 do recenzji.
+test('bramka rozmiaru PR: do progu bez uwagi (takze przy 250 w diffie), powyzej UWAGA z liczba i propozycja podzialu; wynik nieczytelny = UWAGA o braku pomiaru', () => {
   /** @param {number} n @param {string} katalog @returns {string[]} */
   const pliki = (n, katalog) => Array.from({ length: n }, (_, i) => `${katalog}/p${i}.ts`)
+  /** @param {string[]} p @param {number} wszystkie */
+  const wynik = (p, wszystkie) => `log\n${JSON.stringify({ baza: 'abc', wszystkie, binarne: 0, odfiltrowane: 0, doRecenzji: p.length, pliki: p, filtry: 10 })}`
   assert.equal(C.PROG_PLIKOW_PR, 150)
-  assert.equal(C.bramkaRozmiaruPr(pliki(150, 'src/lib')), null)
-  const u = C.bramkaRozmiaruPr([...pliki(120, 'apps/web/src'), ...pliki(31, 'packages/core/src'), 'README.md'])
-  assert.match(u, /^UWAGA: PR ma 152 plików \(próg 150\)/)
+  assert.equal(C.bramkaRozmiaruPr(C.rozmiarZWyniku(wynik(pliki(124, 'src/lib'), 250))), null)
+  assert.equal(C.bramkaRozmiaruPr(C.rozmiarZWyniku(wynik(pliki(150, 'src/lib'), 150))), null)
+  const u = C.bramkaRozmiaruPr(C.rozmiarZWyniku(wynik([...pliki(120, 'apps/web/src'), ...pliki(31, 'packages/core/src'), 'README.md'], 300)))
+  assert.match(u, /^UWAGA: PR ma 152 plików do recenzji bota \(próg 150; po filtrach \.coderabbit\.yaml i bez binariów — w diffie 300\)/)
   assert.match(u, /apps\/web: 120/)
   assert.match(u, /packages\/core: 31/)
+  for (const zly of ['', 'nie JSON', '{"wszystkie":3}']) assert.match(C.bramkaRozmiaruPr(C.rozmiarZWyniku(zly)), /^UWAGA: rozmiar PR niezmierzony/)
+  assert.match(complete, /9\. Rozmiar PR-a: \\`node \.claude\/scripts\/pr\/rozmiar\.mjs\\`/)
 })
 
 // P8: fix naprawia tylko P1/P2, P3 zostaja w known-issues (sekcje "## P3 faza N") — smoke operatora ich nie bierze.

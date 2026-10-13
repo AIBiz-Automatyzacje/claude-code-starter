@@ -39,9 +39,9 @@ const COMPLETE_RESULT = {
       },
       required: ['plik', 'claudeMd'],
     },
-    plikiPr: { type: 'array', items: { type: 'string' }, description: 'git diff --name-only <merge-base z main> HEAD po commicie' },
+    rozmiarPr: { type: 'string', description: 'ostatnia linia stdout `rozmiar.mjs` po commicie 1:1 (JSON w jednej linii)' },
   },
-  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'plikiPr'],
+  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'rozmiarPr'],
 }
 
 const DOPISEK_RESULT = {
@@ -56,7 +56,9 @@ const DOPISEK_RESULT = {
 // kazdy builder i reviewer. Decyzje zadania ida do docs/decisions/<data>-<zadanie>.md z polem claude_md — CLAUDE.md
 // uzgadnia sie z kodem po merge'u PR. Funkcje czyste: __tests__/start-koniec.test.mjs.
 
-// Bot recenzji odmowil PR-a z 222 plikami (ETAP1 §5) — prog z zapasem; przekroczenie to UWAGA, nie STOP.
+// Bot recenzji odmowil PR-a z 222 plikami (ETAP1 §5) — prog z zapasem; przekroczenie to UWAGA, nie STOP. Liczymy pliki,
+// ktore bot recenzuje (P19, skrypt rozmiar.mjs: filtry .coderabbit.yaml, bez binariow) — vibersi etap 2 mial 250 plikow
+// diffu i 124 do recenzji, a rada „podziel PR” byla falszywa.
 const PROG_PLIKOW_PR = 150
 
 // Mapa funkcji skilla weryfikacji projektu (P14): archiwizacja dopisuje do niej funkcje ze scenariuszy [E2E] zadania.
@@ -102,8 +104,22 @@ function sprawdzDecyzje(decyzje, nazwaZadania) {
   return null
 }
 
+// Wynik `rozmiar.mjs` od agenta (string) -> obiekt; nieczytelny = null (uwaga o braku pomiaru zamiast cichego „ok”).
+function rozmiarZWyniku(tekst) {
+  const linia = String(tekst || '').trim().split('\n').pop() || ''
+  try {
+    const w = JSON.parse(linia)
+    return w && Number.isInteger(w.doRecenzji) && Number.isInteger(w.wszystkie) && Array.isArray(w.pliki) ? w : null
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+    return null
+  }
+}
+
 // Katalog do propozycji podzialu: dwa pierwsze segmenty (apps/web, src/lib), plik w korzeniu osobno.
-function bramkaRozmiaruPr(pliki) {
+function bramkaRozmiaruPr(rozmiar) {
+  if (!rozmiar) return 'UWAGA: rozmiar PR niezmierzony (wynik rozmiar.mjs nieczytelny) — sprawdz: `node .claude/scripts/pr/rozmiar.mjs`'
+  const pliki = rozmiar.pliki
   if (pliki.length <= PROG_PLIKOW_PR) return null
   const grupy = {}
   for (const p of pliki) {
@@ -112,7 +128,7 @@ function bramkaRozmiaruPr(pliki) {
     grupy[k] = (grupy[k] || 0) + 1
   }
   const lista = Object.entries(grupy).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(', ')
-  return `UWAGA: PR ma ${pliki.length} plików (próg ${PROG_PLIKOW_PR}) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (${lista}).`
+  return `UWAGA: PR ma ${pliki.length} plików do recenzji bota (próg ${PROG_PLIKOW_PR}; po filtrach .coderabbit.yaml i bez binariów — w diffie ${rozmiar.wszystkie}) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (${lista}).`
 }
 // ── Koniec archiwum ───────────────────────────────────────────────────────
 
@@ -276,7 +292,7 @@ ${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md
    Commit: \`git commit -m "${komunikat}"\` — temat dokladnie taki, w jednej linii; stopke (np. Co-Authored-By) dopisujesz
    wylacznie drugim \`-m\` (git oddzieli ja pusta linia). Sprawdz \`git log -1 --format=%s\` = "${komunikat}".
    Jesli git commit nie powiedzie sie lub nie ma zmian — zwroc commit: "" i opisz powod w rezultaty (nie przerywaj archiwizacji).
-9. Pliki PR-a: \`git diff --name-only "$(git merge-base HEAD main)" HEAD\` (brak galezi main -> master; brak obu -> []) -> plikiPr[].
+9. Rozmiar PR-a: \`node .claude/scripts/pr/rozmiar.mjs\` -> rozmiarPr = ostatnia linia stdout 1:1 (JSON w jednej linii), bez zmian.
 
 NIE uruchamiaj /dev-compound (zrobi to orkiestrator). Dzialaj autonomicznie.
 Zwroc obiekt zgodny ze schematem CompleteResult (commit = hash z kroku 8 lub "").`,
@@ -287,7 +303,7 @@ if (!wynik) {
 }
 
 // Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a PR ponad progiem omija bot.
-const uwagaPr = bramkaRozmiaruPr(wynik.plikiPr || [])
+const uwagaPr = bramkaRozmiaruPr(rozmiarZWyniku(wynik.rozmiarPr))
 const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), uwagaPr].filter(Boolean)
 for (const u of uwagi) log(u)
 if (uwagaPr && wynik.commit) {
