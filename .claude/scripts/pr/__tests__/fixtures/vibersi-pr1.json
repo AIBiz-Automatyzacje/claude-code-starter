@@ -1,5 +1,5 @@
 {
- "zrodlo": "vibersi PR #1 (dane/vibersi-pr1: statusy-historia.json, pr.json) — tresc podsumowania przycieta do znacznika i stalej frazy „Reviewing files…”",
+ "zrodlo": "vibersi PR #1 (dane/vibersi-pr1: statusy-historia.json, pr.json: recenzje jako z REST pulls/1/reviews) — tresc podsumowania przycieta do znacznika i stalej frazy „Reviewing files…”",
  "pr": {
   "number": 1,
   "state": "OPEN"
@@ -44,6 +44,43 @@
    "created_at": "2026-10-11T12:36:06Z",
    "updated_at": "2026-10-11T12:36:06Z",
    "body": "<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\nReviewing files that changed from the base of the PR and between b1addf5f71787812fcee6d404163701cbeceb2a3 and 4d2bbb8688686cb0b8c0f034b15e43d1de62f74d.\n<!-- end of auto-generated comment: summarize by coderabbit.ai -->"
+  }
+ ],
+ "recenzje": [
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "b1addf5f71787812fcee6d404163701cbeceb2a3",
+   "submitted_at": "2026-10-11T12:45:05Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "submitted_at": "2026-10-11T12:50:16Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "submitted_at": "2026-10-11T12:50:18Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "submitted_at": "2026-10-11T12:50:19Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "submitted_at": "2026-10-11T12:55:02Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "submitted_at": "2026-10-11T12:57:14Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "4d2bbb8688686cb0b8c0f034b15e43d1de62f74d",
+   "submitted_at": "2026-10-11T12:57:44Z"
   }
  ]
 }

@@ -11,12 +11,13 @@ import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import test, { describe } from 'node:test'
 
-import { czekajNaBota, KARENCJA_ODPYTAN, rozstrzygnij, znacznikSpecjalny } from '../bot.mjs'
+import { czekajNaBota, KARENCJA_ODPYTAN, recenzjaCzubka, rozstrzygnij, znacznikSpecjalny } from '../bot.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = join(KATALOG, '..', 'czekaj-na-bota.mjs')
 const VIBERSI = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'vibersi-pr1.json'), 'utf8'))
 const OFERTY = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'oferty-znaczniki.json'), 'utf8'))
+const VIBERSI_PR2 = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'vibersi-pr2.json'), 'utf8'))
 const CZUBEK_1 = 'b1addf5f71787812fcee6d404163701cbeceb2a3'
 const CZUBEK_2 = '4d2bbb8688686cb0b8c0f034b15e43d1de62f74d'
 const PR_OTWARTY = { number: 1, state: 'OPEN', headRefOid: CZUBEK_2 }
@@ -26,9 +27,9 @@ const przesun = (iso, minuty) => new Date(Date.parse(iso) + minuty * 60_000).toI
 
 /**
  * Odtworzenie osi czasu: odpytanie w chwili t widzi statusy i komentarze utworzone do t.
- * @param {{ start: string, pr?: import("../bot.mjs").StanPr, statusy?: any[], komentarze?: any[], commity?: Record<string, string>, bledy?: number }} os
+ * @param {{ start: string, pr?: import("../bot.mjs").StanPr, statusy?: any[], komentarze?: any[], recenzje?: any[], commity?: Record<string, string>, bledy?: number }} os
  */
-function odtworzenie({ start, pr = PR_OTWARTY, statusy = [], komentarze = [], commity = VIBERSI.commity, bledy = 0 }) {
+function odtworzenie({ start, pr = PR_OTWARTY, statusy = [], komentarze = [], recenzje = VIBERSI.recenzje, commity = VIBERSI.commity, bledy = 0 }) {
   let teraz = Date.parse(start)
   let doBledu = bledy
   const odpytania = { pr: 0, komentarze: 0 }
@@ -45,20 +46,22 @@ function odtworzenie({ start, pr = PR_OTWARTY, statusy = [], komentarze = [], co
       dataCommita: async (/** @type {string} */ sha) => commity[sha],
       statusy: async (/** @type {string} */ sha) => widoczne(statusy, 'created_at').filter((s) => s.sha === sha),
       komentarze: async () => { odpytania.komentarze += 1; return widoczne(komentarze, 'updated_at') },
+      recenzje: async () => widoczne(recenzje, 'submitted_at'),
     },
   }
 }
 
 describe('vibersi PR #1 — status commita zamiast tekstu', () => {
-  test('czubek 2: gotowa w pierwszym odpytaniu po success (12:53:33), mimo frazy „Reviewing files…”', async () => {
+  test('czubek 2: gotowa w pierwszym odpytaniu po recenzji czubka (success 12:53:33, recenzja 12:55:02), mimo frazy „Reviewing files…”', async () => {
     assert.match(VIBERSI.komentarze[0].body, /Reviewing files that changed/)
     const os = odtworzenie({ start: '2026-10-11T12:50:00Z', statusy: VIBERSI.statusy, komentarze: VIBERSI.komentarze })
     const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
     assert.deepEqual(wynik, {
       stan: 'gotowa',
       powod: 'status CodeRabbit success „Review completed” (2026-10-11T12:53:33Z)',
+      recenzja: 'jest',
       sha: CZUBEK_2,
-      minuty: 4,
+      minuty: 5.5,
     })
   })
 
@@ -158,6 +161,42 @@ describe('stany specjalne ze znacznikow (archiwum oferty)', () => {
   })
 })
 
+// P19: CodeRabbit ustawia success ~42 s przed publikacja recenzji (vibersi PR #2: 07:51:39 vs 07:52:21); `zbierz` zaraz po
+// „gotowa” dal recenzjaAktualna: false i skill wrocil do kroku 2. Teraz gotowa = recenzja z commit_id = czubek albo 2 min po
+// statusie (bot bez uwag recenzji nie publikuje) z adnotacja.
+describe('vibersi PR #2 — status przed recenzja', () => {
+  const CZUBEK = '5335e7094ea374f4e5c27c208559f82f05c672d6'
+  const pr2 = (/** @type {any[]} */ recenzje) => ({ start: '2026-10-13T07:46:00Z', pr: { ...VIBERSI_PR2.pr, headRefOid: CZUBEK }, statusy: VIBERSI_PR2.statusy, recenzje, commity: VIBERSI_PR2.commity })
+
+  test('success 07:51:39, recenzja bota 07:52:21 → gotowa 07:52:30 (nie 07:52:00), recenzja: jest', async () => {
+    const os = odtworzenie(pr2(VIBERSI_PR2.recenzje))
+    const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
+    assert.deepEqual(wynik, { stan: 'gotowa', powod: 'status CodeRabbit success „Review completed” (2026-10-13T07:51:39Z)', recenzja: 'jest', sha: CZUBEK, minuty: 6.5 })
+  })
+
+  test('bez recenzji bota (tylko odpowiedzi czlowieka z commit_id = czubek) → gotowa 2 min po statusie z adnotacja, recenzja: brak', async () => {
+    const ludzi = VIBERSI_PR2.recenzje.filter((/** @type {any} */ r) => !/coderabbit/.test(r.login))
+    assert.ok(ludzi.some((/** @type {any} */ r) => r.commit_id === CZUBEK))
+    const os = odtworzenie(pr2(ludzi))
+    const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
+    assert.equal(wynik.stan, 'gotowa')
+    assert.equal(wynik.recenzja, 'brak')
+    assert.equal(wynik.minuty, 8, 'pierwsze odpytanie >= 07:53:39 to 07:54:00')
+    assert.equal(wynik.powod, 'status CodeRabbit success „Review completed” (2026-10-13T07:51:39Z); recenzji bota z commit_id = czubek brak 2 min po statusie — bot mogl nie miec uwag do czubka, zbierz moze dac recenzjaAktualna: false')
+  })
+
+  test('limit w trakcie czekania na recenzje po success → gotowa z adnotacja zamiast limit', async () => {
+    const os = odtworzenie({ ...pr2([]), start: '2026-10-13T07:50:00Z' })
+    const wynik = await czekajNaBota({ ...os, limitMin: 2.5, coS: 30 })
+    assert.deepEqual([wynik.stan, wynik.recenzja, wynik.minuty], ['gotowa', 'brak', 2.5])
+  })
+
+  test('recenzja poprzedniego czubka nie jest recenzja czubka; login bota z REST i z gh pr view', () => {
+    assert.equal(recenzjaCzubka(VIBERSI_PR2.recenzje.filter((/** @type {any} */ r) => r.submitted_at < '2026-10-13T07:45:00Z'), CZUBEK), null)
+    assert.equal(recenzjaCzubka([{ login: 'coderabbitai', commit_id: CZUBEK, submitted_at: 'x' }], CZUBEK)?.login, 'coderabbitai')
+  })
+})
+
 describe('pozostale stany koncowe', () => {
   test('status failure → blad z opisem statusu', () => {
     const statusy = [
@@ -196,20 +235,21 @@ describe('pozostale stany koncowe', () => {
     const os = odtworzenie({ start: '2026-10-11T12:53:00Z', statusy: VIBERSI.statusy, bledy: 2 })
     const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
     assert.equal(wynik.stan, 'gotowa')
-    assert.equal(wynik.minuty, 1)
+    assert.equal(wynik.minuty, 2.5, 'recenzja czubka 12:55:02 — pierwsze odpytanie po niej 12:55:30')
   })
 })
 
 /**
- * Atrapa `gh` w PATH: odpowiedzi jak prawdziwe gh po `--jq` (statusy = tablica, komentarze = jeden obiekt na linie).
+ * Atrapa `gh` w PATH: odpowiedzi jak prawdziwe gh po `--jq` (statusy = tablica, komentarze i recenzje = jeden obiekt na linie).
  * Nieznana flaga konczy sie bledem jak w gh 2.83 (`--compact-output` nie istnieje w `gh api`).
- * @param {{ statusy: object[], komentarze: object[], dataCommita: string }} odpowiedzi
+ * @param {{ statusy: object[], komentarze: object[], dataCommita: string, recenzje?: object[] }} odpowiedzi
  * @param {string[]} argumentyCli
  */
-function uruchomZAtrapa({ statusy, komentarze, dataCommita }, argumentyCli) {
+function uruchomZAtrapa({ statusy, komentarze, dataCommita, recenzje = [] }, argumentyCli) {
   const katalog = mkdtempSync(join(tmpdir(), 'czekaj-na-bota-'))
   try {
     const ndjson = komentarze.map((k) => JSON.stringify(k)).join('\n') + '\n'
+    const recenzjeNdjson = recenzje.map((k) => JSON.stringify(k)).join('\n') + '\n'
     const atrapa = [
       `#!${process.execPath}`,
       'const a = process.argv.slice(2).join(" ")',
@@ -219,6 +259,7 @@ function uruchomZAtrapa({ statusy, komentarze, dataCommita }, argumentyCli) {
       `else if (a.includes("/commits/${CZUBEK_2}/status --jq .statuses")) w(${JSON.stringify(JSON.stringify(statusy))})`,
       `else if (a.includes("/commits/${CZUBEK_2} --jq")) w(${JSON.stringify(dataCommita + '\n')})`,
       `else if (a.includes("/issues/1/comments")) w(${JSON.stringify(ndjson)})`,
+      `else if (a.includes("/pulls/1/reviews?per_page=100 --jq .[] | {login: .user.login, commit_id, submitted_at}")) w(${JSON.stringify(recenzjeNdjson)})`,
       'else { process.stderr.write("nieznane: " + a); process.exit(1) }',
     ].join('\n')
     writeFileSync(join(katalog, 'gh'), atrapa)
@@ -254,10 +295,11 @@ describe('CLI', () => {
 
   test('nagrane odpowiedzi vibersi (status success) → dokladnie jedna linia „gotowa”', () => {
     const statusy = VIBERSI.statusy.filter((/** @type {any} */ s) => s.sha === CZUBEK_2 && s.state === 'success')
-    const wynik = uruchomZAtrapa({ statusy, komentarze: [], dataCommita: VIBERSI.commity[CZUBEK_2] }, ['--pr', '1', '--co-s', '0.01'])
+    const wynik = uruchomZAtrapa({ statusy, komentarze: [], dataCommita: VIBERSI.commity[CZUBEK_2], recenzje: VIBERSI.recenzje }, ['--pr', '1', '--co-s', '0.01'])
     assert.equal(wynik.status, 0, String(wynik.stderr))
     const zdarzenie = jednoZdarzenie(wynik)
     assert.equal(zdarzenie.stan, 'gotowa')
+    assert.equal(zdarzenie.recenzja, 'jest')
     assert.equal(zdarzenie.sha, CZUBEK_2)
     assert.equal(zdarzenie.pr, 1)
   })
@@ -272,4 +314,11 @@ describe('CLI', () => {
     assert.equal(zdarzenie.stan, 'pominieta')
     assert.equal(String(wynik.stderr), '')
   })
+})
+
+test('skill /dev-pr: gotowa z recenzja: brak nie odsyla do kroku 2 przy recenzjaAktualna: false', () => {
+  const skill = readFileSync(join(KATALOG, '..', '..', '..', 'skills', 'dev-pr', 'SKILL.md'), 'utf8')
+  assert.match(skill, /`\{stan, powod, sha, minuty, pr, recenzja\}`/)
+  assert.match(skill, /`recenzja: brak` znaczy, że 2 min po statusie recenzji czubka nie było[\s\S]*`recenzjaAktualna: false` z kroku 3 nie odsyła wtedy do kroku 2/)
+  assert.match(skill, /`recenzjaAktualna: false` przy `recenzja: jest` → recenzja nie dotyczy czubka gałęzi\. Wróć do kroku 2/)
 })

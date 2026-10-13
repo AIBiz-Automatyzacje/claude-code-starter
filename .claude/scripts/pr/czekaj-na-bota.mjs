@@ -7,8 +7,9 @@
 //   bez --pr: PR biezacej galezi; bez --sha: headRefOid PR z pierwszego odpytania.
 //
 // Wynik: DOKLADNIE jedna linia JSON na stdout, potem koniec procesu (jedno zdarzenie Monitora):
-//   { stan, powod, sha, minuty, pr }
+//   { stan, powod, sha, minuty, pr, recenzja? }
 //   stan: gotowa | blad | pauza | pominieta | pr-zamkniety | limit | blad-gh | blad-argumentow
+//   recenzja (tylko przy gotowa): jest — recenzja bota z commit_id = czubek; brak — 2 min po statusie success jej nie ma (P19)
 // Bledy pojedynczych odpytan ida na stderr (nie sa zdarzeniami). Kod wyjscia: 0 = stan ustalony, 2 = zle argumenty.
 
 import { execFile } from 'node:child_process'
@@ -69,6 +70,12 @@ function zrodloGh(numer) {
       // --paginate z --jq daje jeden obiekt na linie (wyjscie nie jest terminalem) — bez sklejania tablic stron.
       const linie = await gh(['api', '--paginate', `repos/{owner}/{repo}/issues/${nr}/comments?per_page=100`,
         '--jq', '.[] | {login: .user.login, updated_at, body}'])
+      return linie.split('\n').filter(Boolean).map((l) => JSON.parse(l))
+    },
+    /** @param {number} nr */
+    async recenzje(nr) {
+      const linie = await gh(['api', '--paginate', `repos/{owner}/{repo}/pulls/${nr}/reviews?per_page=100`,
+        '--jq', '.[] | {login: .user.login, commit_id, submitted_at}'])
       return linie.split('\n').filter(Boolean).map((l) => JSON.parse(l))
     },
   }

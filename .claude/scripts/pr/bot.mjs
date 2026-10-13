@@ -8,6 +8,12 @@ export const LOGIN_BOTA = /coderabbit/i
 export const PROG_BLEDOW_GH = 3
 /** Znaczniki czytamy od tego odpytania (4 × 30 s = 2 min po starcie). */
 export const KARENCJA_ODPYTAN = 4
+/**
+ * Po statusie success czekamy na recenzje bota z commit_id = czubek najwyzej tyle od czasu statusu (P19): CodeRabbit ustawia
+ * success przed publikacja recenzji (vibersi PR #2: 07:51:39 vs 07:52:21, PR #1: 12:53:33 vs 12:55:02), a `zbierz` zaraz po
+ * „gotowa” dawal recenzjaAktualna: false. Bot bez uwag do czubka recenzji nie publikuje — wtedy gotowa z adnotacja.
+ */
+export const LIMIT_RECENZJI_MS = 2 * 60_000
 
 /** Znacznik w podsumowaniu bota → stan wyniku. */
 const ZNACZNIKI = /** @type {const} */ ([
@@ -19,9 +25,10 @@ const ZNACZNIKI = /** @type {const} */ ([
 /**
  * @typedef {{ context: string, state: string, description?: string | null, created_at: string }} Status
  * @typedef {{ login: string, updated_at: string, body: string }} Komentarz
+ * @typedef {{ login: string, commit_id: string, submitted_at: string }} Recenzja
  * @typedef {{ number: number, state: string, headRefOid: string }} StanPr
  * @typedef {'gotowa' | 'blad' | 'pauza' | 'pominieta' | 'pr-zamkniety' | 'limit' | 'blad-gh'} StanBota
- * @typedef {{ stan: StanBota, powod: string }} Rozstrzygniecie
+ * @typedef {{ stan: StanBota, powod: string, recenzja?: 'jest' | 'brak' }} Rozstrzygniecie
  */
 
 /**
@@ -101,6 +108,22 @@ export function rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek }) {
 }
 
 /**
+ * Recenzja bota opublikowana dla czubka (pole commit_id recenzji PR) albo null.
+ * @param {Recenzja[]} recenzje
+ * @param {string | null} czubek
+ * @returns {Recenzja | null}
+ */
+export function recenzjaCzubka(recenzje, czubek) {
+  return recenzje.find((r) => LOGIN_BOTA.test(r.login) && r.commit_id === czubek) ?? null
+}
+
+/** @param {Rozstrzygniecie} wynik @returns {Rozstrzygniecie} gotowa bez recenzji czubka — adnotacja dla skilla */
+const bezRecenzji = (wynik) => ({
+  ...wynik, recenzja: 'brak',
+  powod: `${wynik.powod}; recenzji bota z commit_id = czubek brak ${LIMIT_RECENZJI_MS / 60_000} min po statusie — bot mogl nie miec uwag do czubka, zbierz moze dac recenzjaAktualna: false`,
+})
+
+/**
  * Petla czekania. Zrodlo i zegar wstrzykiwane — test odtwarza nagrane odpowiedzi bez sieci.
  * @param {{
  *   zrodlo: {
@@ -108,6 +131,7 @@ export function rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek }) {
  *     dataCommita: (sha: string) => Promise<string>,
  *     statusy: (sha: string) => Promise<Status[]>,
  *     komentarze: (numer: number) => Promise<Komentarz[]>,
+ *     recenzje: (numer: number) => Promise<Recenzja[]>,
  *   },
  *   zegar: { teraz: () => number, spij: (ms: number) => Promise<void> },
  *   sha?: string | null,
@@ -142,9 +166,13 @@ export async function czekajNaBota({ zrodlo, zegar, sha = null, limitMin, coS, o
       // po pushu, a do tego czasu podsumowanie moze jeszcze nosic znacznik poprzedniego czubka.
       const poKarencji = zegar.teraz() - start >= KARENCJA_ODPYTAN * coS * 1000
       const komentarze = pr.state === 'OPEN' && !najnowszyStatus(statusy) && poKarencji ? await zrodlo.komentarze(pr.number) : []
-      bledyZRzedu = 0
       const wynik = rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek })
-      if (wynik) return { ...wynik, sha: czubek, minuty: minuty() }
+      // Status success: gotowa dopiero z recenzja czubka albo po LIMIT_RECENZJI_MS od statusu (P19).
+      const recenzja = wynik?.stan === 'gotowa' ? recenzjaCzubka(await zrodlo.recenzje(pr.number), czubek) : null
+      bledyZRzedu = 0
+      if (wynik?.stan === 'gotowa' && !recenzja) {
+        if (zegar.teraz() - Date.parse(ostatni?.created_at ?? '') >= LIMIT_RECENZJI_MS) return { ...bezRecenzji(wynik), sha: czubek, minuty: minuty() }
+      } else if (wynik) return { ...wynik, ...(recenzja ? { recenzja: 'jest' } : {}), sha: czubek, minuty: minuty() }
     } catch (e) {
       bledyZRzedu += 1
       const tresc = (e instanceof Error ? e.message : String(e)).split('\n')[0]
@@ -154,6 +182,10 @@ export async function czekajNaBota({ zrodlo, zegar, sha = null, limitMin, coS, o
       }
     }
     if (zegar.teraz() - start + coS * 1000 > limitMs) {
+      // Limit w trakcie czekania na recenzje po success: status mowi „gotowa”, brakuje tylko recenzji czubka.
+      if (ostatni?.state === 'success') {
+        return { ...bezRecenzji({ stan: 'gotowa', powod: `status ${KONTEKST_STATUSU} success „${ostatni.description || ''}” (${ostatni.created_at})` }), sha: czubek, minuty: minuty() }
+      }
       const powod = ostatni
         ? `po ${limitMin} min status ${KONTEKST_STATUSU} nadal ${ostatni.state} „${ostatni.description || ''}”`
         : `po ${limitMin} min brak statusu ${KONTEKST_STATUSU} na czubku i brak znacznika stanu bota`

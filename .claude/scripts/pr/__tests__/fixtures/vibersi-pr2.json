@@ -1,0 +1,148 @@
+{
+ "zrodlo": "vibersi PR #2 (dane/vibersi-pr2: statusy-historia.json, pr.json — recenzje jako z REST pulls/2/reviews): status success 07:51:39, recenzja bota 07:52:21",
+ "pr": {
+  "number": 2,
+  "state": "OPEN"
+ },
+ "commity": {
+  "78ba6756a063b1813b5cae3c258ad89eb91f5f2c": "2026-10-13T07:40:25Z",
+  "5335e7094ea374f4e5c27c208559f82f05c672d6": "2026-10-13T07:45:30Z"
+ },
+ "statusy": [
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-13T07:51:39Z",
+   "description": "Review completed",
+   "state": "success",
+   "sha": "5335e7094ea374f4e5c27c208559f82f05c672d6"
+  },
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-13T07:45:42Z",
+   "description": "Review in progress",
+   "state": "pending",
+   "sha": "5335e7094ea374f4e5c27c208559f82f05c672d6"
+  },
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-13T07:32:56Z",
+   "description": "Review completed",
+   "state": "success",
+   "sha": "7b38ce2d8abae467349cf017bd42c34d94c573bd"
+  },
+  {
+   "context": "CodeRabbit",
+   "created_at": "2026-10-13T07:18:56Z",
+   "description": "Review in progress",
+   "state": "pending",
+   "sha": "7b38ce2d8abae467349cf017bd42c34d94c573bd"
+  }
+ ],
+ "recenzje": [
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "7b38ce2d8abae467349cf017bd42c34d94c573bd",
+   "submitted_at": "2026-10-13T07:32:44Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:06Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:09Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:11Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:13Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:15Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:16Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:18Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:20Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:46:45Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:52:21Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:53:04Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:53:26Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:53:38Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:53:50Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:53:51Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:54:59Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:55:19Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T07:55:27Z"
+  },
+  {
+   "login": "AIBiz-Automatyzacje",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T08:15:18Z"
+  },
+  {
+   "login": "coderabbitai[bot]",
+   "commit_id": "5335e7094ea374f4e5c27c208559f82f05c672d6",
+   "submitted_at": "2026-10-13T08:15:55Z"
+  }
+ ]
+}

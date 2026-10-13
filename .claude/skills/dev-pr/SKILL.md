@@ -75,10 +75,12 @@ Po turze napraw z `push: false` nie uruchamiaj skryptu: commit nie dotarł na Gi
 „tura <N> niewypchnięta” z commitem tury, **koniec bez zmian w kodzie**.
 
 Skrypt czyta status commita `CodeRabbit` na tym czubku. Tekst komentarzy bota nie mówi, czy recenzja trwa: fraza
-„Reviewing files that changed…” zostaje w podsumowaniu także po zakończonej recenzji. Skrypt wypisuje jedną linię JSON
-`{stan, powod, sha, minuty, pr}`:
+„Reviewing files that changed…” zostaje w podsumowaniu także po zakończonej recenzji. Bot ustawia status success przed
+publikacją recenzji, więc po success skrypt czeka jeszcze na recenzję bota z `commit_id` = czubek, najwyżej 2 min od statusu.
+Skrypt wypisuje jedną linię JSON `{stan, powod, sha, minuty, pr, recenzja}` (`recenzja` tylko przy `gotowa`):
 
-- `gotowa` → krok 3.
+- `gotowa` → krok 3. `recenzja: brak` znaczy, że 2 min po statusie recenzji czubka nie było (bot bez uwag do czubka jej
+  nie publikuje) — `powod` niesie adnotację, a `recenzjaAktualna: false` z kroku 3 nie odsyła wtedy do kroku 2.
 - `limit` → raport „bot nie odpowiedział w ciągu N minut” z `powod` i stanem PR, **koniec bez zmian w kodzie**.
   Nie zgaduj, co bot by powiedział.
 - `pauza`, `pominieta`, `blad`, `pr-zamkniety`, `blad-gh`, `blad-argumentow` → raport „bot nie zrecenzował czubka: <stan> — <powod>”,
@@ -95,7 +97,7 @@ Wołasz go w **każdej** turze, także drugiej i trzeciej. Workflow zwraca `reko
 `uzasadnienie`, `wplywNaProjekt`, `klaster`, `token`), `licznik` i `recenzjaAktualna`. **Pierwszy wiersz** Twojej wiadomości
 o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
 
-`recenzjaAktualna: false` → recenzja nie dotyczy czubka gałęzi. Wróć do kroku 2 i poczekaj na recenzję
+`recenzjaAktualna: false` przy `recenzja: jest` → recenzja nie dotyczy czubka gałęzi. Wróć do kroku 2 i poczekaj na recenzję
 przyrostową, zamiast naprawiać na podstawie nieaktualnych uwag. Na ten sam czubek wracasz najwyżej raz: gdy skrypt
 znów odda `gotowa` dla tego samego `sha`, a `zbierz` znów `recenzjaAktualna: false`, kończysz raportem „status bota
 i recenzja się nie zgadzają” (sha, `powod` skryptu), **bez zmian w kodzie**.
