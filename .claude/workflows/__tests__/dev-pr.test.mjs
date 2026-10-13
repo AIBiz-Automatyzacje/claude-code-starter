@@ -160,7 +160,7 @@ test('zbierz: watkiOdrzucBezOdpowiedzi z pola naszaOdpowiedz watkow odrzuc (po p
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), 'utf8')
   assert.match(skill, /Wyjątek: tura bez commita \(sama odpowiedź w wątkach\s+`odrzuć`, np\. `KOLEJNA TURA \(tylko odpowiedzi\)`\) nie ma czego recenzować — przechodzisz od razu do kroku 3\./)
   assert.match(wytnij("if (etap === 'napraw') {", '\n}\n'), /const doOdrzucenia = zTury\.watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true && !doNaprawy\.includes\(w\)\)/)
-  assert.match(skill, /`KOLEJNA TURA \(tylko odpowiedzi\)` → wątki `odrzuć` czekają na naszą odpowiedź[\s\S]*krok 5 z `wybor: \[\]`/)
+  assert.match(skill, /`KOLEJNA TURA \(tylko odpowiedzi\)` → wątki `odrzuć` czekają na naszą odpowiedź[\s\S]*do kroku 5 z `wybor: \[\]`: tura wysyła odpowiedzi/)
 })
 
 // ── Raport tury ───────────────────────────────────────────────────────────
