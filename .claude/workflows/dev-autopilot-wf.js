@@ -378,7 +378,7 @@ const VALIDATION_RESULT = {
     lint: { type: 'string', enum: ['PASS', 'FAIL', 'SKIPPED'] },
     testy: { type: 'string', description: 'PASS/FAIL z liczbami X/Y (+ adnotacje flake-infra)' },
     build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'vite build (lub build z package.json)' },
-    testyZmodyfikowane: { type: 'array', items: { type: 'string' }, description: 'pliki *.test.* ze ZMIENIONYMI istniejacymi asercjami w commitach fix(...) — sygnal test-weakeningu' },
+    testyZmodyfikowane: { type: 'array', items: { type: 'string' }, description: 'pliki *.test.* ze ZMIENIONYMI istniejacymi asercjami w commitach fixa (poprawki po review / kontrola diffu naprawczego) — sygnal test-weakeningu' },
     e2eNieuruchomione: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] wciaz NIEZAZNACZONYCH w planie zadania, ktore NIGDY nie przebiegly (bez suffixu "(FAIL:") — wymusza wynik=FAIL (completion-gate). Nie zalezy od istnienia .env.e2e: zrodlem prawdy o wymaganiu E2E jest plan, nie repo' },
     e2eFail: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] z suffixem "(FAIL:" — flow przebiegl i padl na znanym defekcie (known-issues); wymusza wynik=FAIL, ale z inna instrukcja dla operatora (napraw kod, NIE zmieniaj na [Manual])' },
     e2eFazy: { type: 'array', items: { type: 'integer' }, description: 'numery faz (z naglowka "## Faza N"), w ktorych lezy co najmniej jeden niezaznaczony [E2E] z e2eNieuruchomione/e2eFail — orkiestrator cofa im review do pending' },
@@ -689,7 +689,7 @@ walidacja koncowa audytuje git diff testow w commitach fix i zglosi kazda taka z
 ${blokZwinieciaDoPoprawy(sciezka, numerFazy)}
 
 Kolejnosc: KOD -> TEST -> E2E. Po naprawach: pelna walidacja (typecheck, test, build —
-komendy z package.json), commit \`fix([nazwa]): poprawki po review fazy ${numerFazy}\`,
+komendy z package.json), commit \`fix(${sciezka.split('/').pop()}): poprawki po review fazy ${numerFazy}\` (temat dokladnie taki — walidacja koncowa po nim rozpoznaje commity fixa),
 staguj tylko zmienione pliki.
 ${BLOK_DLUGIE_KOMENDY}
 
@@ -905,7 +905,7 @@ Zasady wg pola zrodlo:
 Testow sprzed fixa nie oslabiasz i nie zmieniasz, zeby przeszly (reguly kodu, sekcja Testowanie).
 
 Po poprawkach: pelna walidacja (typecheck, test, build — komendy z package.json), commit
-\`fix([nazwa]): kontrola diffu naprawczego fazy ${numerFazy}\` z jawnym pathspec zmienionych plikow
+\`fix(${sciezka.split('/').pop()}): kontrola diffu naprawczego fazy ${numerFazy}\` (temat dokladnie taki) z jawnym pathspec zmienionych plikow
 (ZAKAZ \`git add -A\` i \`git add .\`). Gdy ktorejs pozycji NIE da sie zamknac bez ruszania kodu spoza tej
 fazy — zostaw ja i opisz w nienaprawione[]; to nie jest bramka blokujaca faze.
 BILANS MUSI SIE ZGADZAC: naprawione + liczba wpisow w nienaprawione[] == liczba pozycji z listy. Kazda
@@ -916,6 +916,15 @@ zastepuje uzasadnienia.
 ${BLOK_DLUGIE_KOMENDY}
 
 Zwroc {naprawione, pozostaje, walidacja, nierozwiazaneP1: 0, nierozwiazaneP2: 0, plikiBinarne, nienaprawione}.`
+}
+
+// Commity fixa zadania po tresci tematu (P19), nie po prefiksie `fix(`: builder nadaje `fix(` takze implementacji (vibersi
+// etap-2-poprawki: execute 3184223 „fix(...): licznik wyswietlen…”) i walidacja zglaszala jego zmiany testow jako test-weakening
+// fixa. Tematy z polecen fixa (`fixPrompt`) i kontroli diffu naprawczego z nazwa zadania w zakresie (galaz bywa wspolna dla
+// zadania i jego poprawek); zakres = galaz od main.
+function komendaCommitowFixa(sciezka) {
+  const zadanie = sciezka.split('/').pop()
+  return `git log --format=%h --fixed-strings --grep="fix(${zadanie}): poprawki po review fazy " --grep="fix(${zadanie}): kontrola diffu naprawczego fazy " "$(git merge-base HEAD main 2>/dev/null || git merge-base HEAD master)"..HEAD`
 }
 
 function finalValidationPrompt(sciezka) {
@@ -931,10 +940,12 @@ KROK 2 — uruchom w kolejnosci: typecheck -> lint (jesli jest) -> test (pelny s
 DLUGICH KOMEND: tlo + polling; flake infra obsluz wg procedury z bloku i DOKONCZ lancuch) -> build.
 Zatrzymaj sie dopiero na REALNYM FAIL (flake infra PASS-w-izolacji nie jest FAIL).
 
-KROK 3 — AUDYT TESTOW PO FIXACH: \`git log --oneline --grep="^fix(" \` dla commitow fix tego zadania,
-potem \`git diff <zakres>\` zawezony do plikow *.test.* — szukaj ZMIAN W ISTNIEJACYCH asercjach/testach
-(usuniecie testu, oslabienie expect, zmiana oczekiwanej wartosci). Nowe testy sa OK. Kazda modyfikacje
-istniejacego testu wpisz do testyZmodyfikowane[] (to sygnal test-weakeningu do raportu, nie auto-FAIL).
+KROK 3 — AUDYT TESTOW PO FIXACH: commity fixa tego zadania wylacznie z \`${komendaCommitowFixa(sciezka)}\`
+(tematy fixa i kontroli diffu naprawczego; prefiks \`fix(\` maja tez commity implementacji — te nie sa fixem). Dla KAZDEGO
+z nich osobno \`git show --format= <sha> -- '*.test.*' '*.spec.*'\` (nie diff zakresu: miedzy commitami fixa leza commity
+implementacji) — szukaj ZMIAN W ISTNIEJACYCH asercjach/testach (usuniecie testu, oslabienie expect, zmiana oczekiwanej
+wartosci). Nowe testy sa OK. Pusta lista commitow = testyZmodyfikowane: []. Kazda modyfikacje istniejacego testu wpisz
+do testyZmodyfikowane[] (to sygnal test-weakeningu do raportu, nie auto-FAIL).
 
 KROK 4 — jesli REALNY FAIL i potrafisz naprawic prosty problem (import, typ) — napraw, commituj,
 uruchom ponownie. Jak nie potrafisz — zapisz liste bledow z lokalizacjami i ustaw wynik=FAIL,
