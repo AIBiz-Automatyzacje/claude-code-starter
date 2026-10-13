@@ -1,0 +1,58 @@
+# Odczyt PR #2 Etap 2: katalog publiczny — projekt vibersi, zadanie etap-2-katalog-publiczny
+
+pliki PR 290, +21093 −220, commitów 66
+
+## 1. Wątki bota (rekordy run.pr etapu zbierz)
+  tura 1: uwag 10 (P1 0 / P2 0 / P3 6), rekomendacja: DECYZJA OPERATORA — 1 watkow wymaga decyzji produktowej
+  tura 2: uwag 3 (P1 0 / P2 0 / P3 1), rekomendacja: KOLEJNA TURA — 1 watkow do naprawy (tura 2 z 3)
+  tura 2: uwag 2 (P1 0 / P2 0 / P3 0), rekomendacja: MERGUJ
+  oś brak         0: 4
+  oś code-quality P3: 1
+  oś correctness  P3: 1
+  oś security     P3: 2
+  oś test         P3: 2
+  B P1/P2 unikalne: 0 na 290 plików = 0.00 na 100 plików (tło wrzesień 3,5; oferty PR 1–7 9,3)
+  wątki na GitHubie: 10, rozwiązane 10
+
+## 2. Klasyfikacja i decyzje
+  klasy: {'napraw': 6, 'odrzuc': 2, 'napraw-szerzej': 2}; tury napraw: 2; naprawione 8, odrzucone 2, nieruszone 0
+  tura 1: commit 5335e70, walidacja PASS, odpowiedzi 9, push True
+  tura 2: commit None, walidacja PASS, odpowiedzi 1, push False
+
+## 3. Pochodzenie linii uwagi (blame na commicie recenzji) i review fazy
+  0 brak/preferencja-bota e2e/etap-2-katalog-asercje.sql:822 ← 333e33c [fix] fix(katalog): poprawki po review fazy 1 — plik w review fazy
+  P3 correctness/dopasowanie-tekstu e2e/lib/srodowisko-e2e.sh:89 ← 333e33c [fix] fix(katalog): poprawki po review fazy 1 — plik w review fazy
+  P3 security/pii-i-sekrety e2e/seeds/katalog-seed.sql:226 ← de5c28b [poza pipeline'em] fix(katalog): opisy seeda w akapitach, bez markdownu — plik w review fazy
+  P3 test/limit-czasu-i-ponowien e2e/serwer-katalog-smoke.sh:157 ← d39178c [execute] feat(katalog): serwer — meta /p/:slug, sitemap.xml i przekierowania z  — plik w review fazy
+  0 brak/teza-obalona index.html:19 ← d39178c [execute] feat(katalog): serwer — meta /p/:slug, sitemap.xml i przekierowania z  — pliku brak w review fazy
+  P3 security/bramka-na-jednej-drodze scripts/seed-katalog/seeduj.sh:50 ← 96b8c34 [poza pipeline'em] fix(seed-katalog): ustawienie seeda na dev przez SET w sesji psql — plik w review fazy
+  P3 code-quality/polkniety-blad src/components/projekt/udostepnij.tsx:58 ← c90bd36 [execute] feat(katalog): strona projektu z galerią, udostępnianiem i sekcjami — plik w review fazy
+  0 brak/teza-obalona src/hooks/katalog/use-katalog.ts:71 ← 5507569 [execute] feat(katalog): klient bazy, TanStack Query i hooki katalogu w aplikacj — plik w review fazy
+  0 brak/konwencja-kodu src/test/atrapa-zapytan-mediow.ts:19 ← c90bd36 [execute] feat(katalog): strona projektu z galerią, udostępnianiem i sekcjami — plik w review fazy
+  P3 test/spojnosc-dwoch-systemow src/test/atrapa-zapytan-mediow.ts:33 ← c90bd36 [execute] feat(katalog): strona projektu z galerią, udostępnianiem i sekcjami — plik w review fazy
+  razem: execute 0: 3, execute P3: 3, fix 0: 1, fix P3: 1, poza pipeline'em P3: 2
+
+## 4. Koszt (jednostki względne)
+  wf_6146478f-0f4 start     OK   agentów 1 0.058 M 37 s
+  wf_623f37e7-53b zbierz    OK   agentów 1 0.193 M 158 s
+  wf_aa5e5612-ef9 napraw    OK   agentów 1 0.486 M 378 s
+  wf_591a165e-707 zbierz    OK   agentów 1 0.069 M 51 s
+  wf_c8a020d3-43c zbierz    OK   agentów 1 0.047 M 42 s
+  wf_81a590d1-56c merge     OK   agentów 1 0.020 M 12 s
+  wf_41e98ccb-056 napraw    OK   agentów 1 0.066 M 52 s
+  wf_034a8192-e3b merge     OK   agentów 1 0.021 M 21 s
+  wf_39c18cad-ed9 merge     OK   agentów 2 0.025 M 65 s
+  wf_057baafd-b5f compound  OK   agentów 1 0.165 M 387 s
+  wf_468cc3b9-82c claude-md OK   agentów 2 0.056 M 36 s
+  wf_ea24f28c-a46 claude-md OK   agentów 2 0.040 M 85 s
+  runy dev-pr-wf razem: 12, 1.25 M
+  sesja od wywołania dev-pr do końca transkryptu: 0.92 M (przed: 0.03 M)
+
+## 5. Czasy
+  PR utworzony 07:18:46 → merge 08:17:10 = 58.4 min
+  status CodeRabbit success na 5335e70: 2026-10-13T07:51:39Z
+  status CodeRabbit success na 7b38ce2: 2026-10-13T07:32:56Z
+  Monitor „recenzja CodeRabbit PR #2”: 14.2 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-13T07:32:56Z)","sha":"7b38ce2d8abae467349cf017bd42c34d94c573; recenzja gotowa 0.2 min przed końcem czekania
+  Monitor „recenzja CodeRabbit PR #2 po turze 1”: 4.3 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-13T07:51:39Z)","sha":"5335e7094ea374f4e5c27c208559f82f05c672; recenzja gotowa 0.3 min przed końcem czekania
+  Monitor „recenzja CodeRabbit PR #2 po turze 1 (ponowne sprawdzenie)”: 0.1 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-13T07:51:39Z)","sha":"5335e7094ea374f4e5c27c208559f82f05c672; recenzja gotowa 1.6 min przed końcem czekania
+  czekanie ponad gotową recenzję (minus 1 min odpytywania): 0.6 min

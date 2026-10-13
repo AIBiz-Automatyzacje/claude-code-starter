@@ -2334,6 +2334,48 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     zdarzenia ≤ 1 odpytanie, `run.pr`, brak timeoutu w turze 2).
     (f) **Zmergowana `--ff-only` do main i wypchnięta 2026-10-11 za zgodą operatora (`d3f5e9f..eee04b4`); gałąź
     `popr/P18-czekanie-na-bota` usunięta.**
+84. **VIBERSI ETAP 2 — AUDYT AUTOPILOTA, DOMKNIĘCIE W PROJEKCIE I ODCZYT PR #2 (2026-10-12/13). Pipeline działa; P18 działa;
+    7 błędów szablonu → paczka P19 (plan do akceptacji).** Źródła: run `wf_97e2f216-487` (6 faz), raport
+    `telemetria-odczyty/raport-2026-10-11_2026-10-12-vibersi.txt`, `dane/vibersi-etap2-smoke-odczyt.txt` (`smoke_odczyt.py` vs etap 1
+    `wf_b60193c7-987`), run poprawek `wf_bcda6407-f25`, zrzut PR #2 `dane/vibersi-pr2/` + `odczyt-pr2.txt`.
+    (a) **Run etapu 2:** OK, 6/6 faz, walidacja PASS, 0 STOP, 0 P1; 38,63 M, 144 agentów, 298 min = 6,4 M/fazę (etap 1: 4,1 M) przy
+    potwierdzonych P2 62 vs 29 (10,3 vs 7,3 na fazę; test-coverage 31/62). Działają: ESLint i Stryker z P17 (Stryker ok w fazach 2–6),
+    advisors na bazie e2e (fazy 1–2: 0 ERROR, 7 i 3 WARN), `faza.cykle` liczby, skill weryfikacji i mapa funkcji (+60 linii), P12+P16
+    kryterium ZIELONE, kontrola fixa 0,18 M/commit, Bash reviewerów p50 7,5, haiku 1,4% runu, ogrodnik ok. `ctx_start` buildera p50
+    44k = skład (6/12 wariant Figma ~45k jak w etapie 1; data 25,5k vs 22,4k, +14%).
+    (b) **Błąd 1 (krytyczny) — obcy serwer na porcie E2E:** `/weryfikacja-setup` (11.10 16:22) na prośbę operatora uruchomił zwykły
+    `vite --host --port 5173` (PID 3814, baza DEV); `e2e:start` przyjął go jako „zastane” (`serwer.mjs:135`), restart P17 omija
+    serwery nie nasze → fazy 4–5 (strona główna, strona projektu): 9 scenariuszy SKIP → [Manual], porównania z makietami brak.
+    Domyślny port E2E (5173) = domyślny port dev servera Vite. Obejście w projekcie: `.env.e2e` na 5174 — run poprawek: start
+    „uruchomione” na 5174, restart, env-down, tester 2/2 PASS.
+    (c) **Błąd 2 — rozmiar PR:** liczy wszystkie pliki diffu (250, potem 281, PR #2 290) — po filtrach `.coderabbit.yaml` i bez binariów
+    124–129; rada „podziel PR” myląca (PR #2 przeszedł recenzję w całości).
+    (d) **Błąd 3 — smoke bez `SUPABASE_SECRET_KEY`:** agent smoke'u przepisał zmienne z planu; zmienna weszła odchyleniem (fazy 1–2,
+    `server/konfiguracja.ts:73`, jest w `.env.example`); sesja dopisała ją ręcznie (`a8df841`).
+    (e) **Błąd 4 — drobne:** Stryker `blad` przy „No tests were executed” (faza 1: testy `node --test`, nie vitest) zamiast `pominieta`;
+    telemetria `prompt_zn` = 377 u 144 agentów (CC 2.1.296 wkleja agentom najpierw wiadomość operatora „Uruchom”, parser bierze pierwszą
+    wiadomość — `transkrypt.mjs:185`); `agent-browser screenshot` wisiał w fazie 6 nawet na `about:blank` (tester obszedł Playwrightem,
+    971 s, 0,64 M), nie odtworzone — dziś działa.
+    (f) **Błąd 5 — fałszywe „UWAGA test-weakening”:** walidacja końcowa bierze commity fixa po `^fix(` (`dev-autopilot-wf.js:934`);
+    w zadaniu-poprawce builder nadał prefiks `fix(` implementacji (`3184223`) → ostrzeżenie o 6 plikach testów, fix tylko dodał test.
+    (g) **Domknięcie w projekcie (ścieżka B, instrukcje od tej sesji):** port E2E 5174, PID 3814 zatrzymany, hasło konta e2e zmienione
+    przez Admin API (hasło bazy e2e — operator; wyciekło w tej sesji przy `grep` `.env.e2e`); powtórka 9 scenariuszy na serwerze e2e:
+    9/9 PASS + 4 różnice wobec makiet (decyzje operatora: telefon 6 / komputer 9 `57231ce`, seed bez markdownu `de5c28b`, widok Lista
+    zostaje, pasek/stopka/baner → zadanie `etap-2-zgodnosc-z-makietami` po merge'u — kod zgodny z DESIGN.md/MOCKUPY.md, makiety etapu 2
+    nieaktualne), miniatury `resize=contain` (`f0cd561`); zadanie `etap-2-poprawki-bezpieczenstwa` (`/dev-plan` Lekki + autopilot,
+    1 faza, OK): licznik wyświetleń przez endpoint Hono z limiterem, migracja odbiera EXECUTE anonowi, `/prywatnosc#%`, „Udostępnij”
+    w WebView, `Sec-Fetch-Dest`; smoke 31/31 + 4/4.
+    (h) **PR #2 (odczyt C okno 2/5):** 290 plików, 58,4 min, 2 tury (druga bez commita), 10 wątków: P3 6, nie-defekt 4, **B P1/P2 0**
+    (w kodzie z pipeline'u 0; pochodzenie: execute 3+3 nie-defekt, fix 1+1, poza pipeline'em P3 2); naprawione 8, odrzucone z dokumentem 2;
+    koszt runów 1,25 M + sesja 0,92 M. **P18 żywy test: zdarzenie „gotowa” 11 s i 19 s po statusie success** (czekanie 14,2 i 4,3 min).
+    `odczyt_pr.py` poprawiony: pochodzenie po oknie czasu runu autopilota (etap 2 ma zakres `katalog`, nie nazwę zadania), Monitor po SHA.
+    (i) **Błąd 6 — wyścig P18:** CodeRabbit ustawia status success ~42 s przed publikacją recenzji (07:51:39 vs 07:52:21); `zbierz`
+    zaraz po „gotowa” dał `recenzjaAktualna: false`, skill wrócił raz do kroku 2 (bezpiecznik zadziałał). **Błąd 7 — merge vs zbierz:**
+    bramka merge'a klasyfikuje wątki sama (`dev-pr-wf.js:644`) — wątek „odrzuć” bez naszej odpowiedzi liczyła jako „napraw”, choć
+    `zbierz` dał MERGUJ; odblokowała dopiero tura z samą odpowiedzią.
+    (j) **Karta:** P9 po 10 fazach 0 obaleń / 58 + 1 obniżenie (1,7% < 5%) → „P2 wraca do grupy po pliku” — decyzja operatora;
+    P13 dev-plan 4,31 M (2/2 > 2,95 M, decyzja przy 5 planach). **Dalej:** plan P19 (błędy 1–7) do akceptacji; vibersi na main po merge'u
+    `75077c0` — `/sync-template` po P19, potem etap 3.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 

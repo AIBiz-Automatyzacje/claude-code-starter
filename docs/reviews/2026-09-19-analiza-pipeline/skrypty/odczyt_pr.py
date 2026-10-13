@@ -51,21 +51,36 @@ def rekordy(projekt, sesja):
     return list(ost.values())
 
 
-def pochodzenie(repo, commit, plik, linia, zadanie):
-    """Commit, który wprowadził linię uwagi (blame na commicie recenzji), i jego kategoria."""
+def okna_autopilota(projekt):
+    """Okna czasu runów autopilota projektu (start, koniec) z rekordów run telemetrii — commit z takiego okna jest z pipeline'u."""
+    ost = {}
+    for l in open(TELEMETRIA):
+        if not l.strip():
+            continue
+        r = json.loads(l)
+        if r.get('projekt') == projekt and r.get('typ') == 'run' and r.get('workflow') == 'dev-autopilot' and r.get('start'):
+            ost[r['klucz']] = r
+    return [(czas(r['start']), czas(r['start']) + dt.timedelta(seconds=r.get('sekundy') or 0)) for r in ost.values()]
+
+
+def pochodzenie(repo, commit, plik, linia, okna):
+    """Commit, który wprowadził linię uwagi (blame na commicie recenzji), i jego kategoria.
+    Pipeline = commit z okna runu autopilota (nazwa zakresu w temacie commita bywa inna niż nazwa zadania — etap 2: `feat(katalog)`);
+    w oknie: kontrola diffu → fix:kontrola, „poprawki po review fazy” → fix, reszta → execute."""
     b = git(repo, 'blame', '-s', '-L', f'{linia},{linia}', commit, '--', plik).split()
     if not b:
         return None, 'brak blame', ''
     h = b[0].lstrip('^')
-    temat = git(repo, 'log', '-1', '--format=%s', h).strip()
-    if temat.startswith(f'feat({zadanie})'):
-        kat = 'execute'
-    elif temat.startswith(f'fix({zadanie}): kontrola'):
+    temat, data = git(repo, 'log', '-1', '--format=%s%x00%cI', h).strip().split('\x00')
+    t = czas(data)
+    if not any(od <= t <= do for od, do in okna):
+        kat = 'poza pipeline\'em'
+    elif 'kontrola diffu naprawczego' in temat:
         kat = 'fix:kontrola'
-    elif temat.startswith(f'fix({zadanie})'):
+    elif 'poprawki po review fazy' in temat:
         kat = 'fix'
     else:
-        kat = 'poza pipeline\'em'
+        kat = 'execute'
     return h[:7], kat, temat
 
 
@@ -80,7 +95,7 @@ def okna_sesji(sciezka):
             m = w['message']
             for b in m.get('content', []):
                 if b.get('type') == 'tool_use' and b['name'] == 'Monitor':
-                    monitory[b['id']] = {'start': ts, 'opis': b['input'].get('description', '')}
+                    monitory[b['id']] = {'start': ts, 'opis': b['input'].get('description', ''), 'komenda': b['input'].get('command', '')}
                 if b.get('type') == 'tool_use' and b['name'] == 'Skill' and b['input'].get('skill') == 'dev-pr' and not start_skilla:
                     start_skilla = ts
             u, mid = m.get('usage'), m.get('id')
@@ -116,6 +131,7 @@ def main():
     watki = json.load(open(os.path.join(a.gh, 'watki.json')))['data']['repository']['pullRequest']['reviewThreads']['nodes']
     statusy = json.load(open(os.path.join(a.gh, 'statusy.json')))
     rek = rekordy(projekt, sesja_id)
+    okna = okna_autopilota(projekt)
     runy = sorted([r for r in rek if r['typ'] == 'run' and r.get('workflow') == 'dev-pr'], key=lambda r: r['start'])
     wf_dir = os.path.join(os.path.dirname(a.sesja), sesja_id, 'workflows')
     wyniki = {os.path.basename(f)[:-5]: json.load(open(f)) for f in glob.glob(os.path.join(wf_dir, 'wf_*.json'))}
@@ -158,7 +174,7 @@ def main():
     for t in watki:
         c0 = t['comments']['nodes'][0]
         k = klasy.get(t['id'], {})
-        h, kat, temat = pochodzenie(repo, c0['originalCommit']['oid'], t['path'], t['originalLine'], a.zadanie)
+        h, kat, temat = pochodzenie(repo, c0['originalCommit']['oid'], t['path'], t['originalLine'], okna)
         kat_licz[(kat, k.get('severity'))] += 1
         w_review = 'plik w review fazy' if t['path'] in reviews else 'pliku brak w review fazy'
         print(f'  {k.get("severity")} {k.get("os")}/{k.get("klasa")} {t["path"]}:{t["originalLine"]} ← {h} [{kat}] {temat[:70]} — {w_review}')
@@ -190,12 +206,13 @@ def main():
         print(f'  status CodeRabbit success na {h[:7]}: {g}')
     stracone = 0
     for m in monitory:
-        h = next((x for x in gotowe if x[:7] in m['opis']), None)
+        h = next((x for x in gotowe if x[:7] in m['opis'] or x in m.get('komenda', '') or x[:7] in (m.get('zdarzenie') or '')), None)
         g = gotowe.get(h)
         dl = (czas(m['koniec']) - czas(m['start'])).total_seconds() / 60 if m.get('koniec') else None
         po = (czas(m['koniec']) - czas(g)).total_seconds() / 60 if g and m.get('koniec') else None
         stracone += max(0, (po or 0) - 1)  # minuta na interwał odpytywania
-        print(f'  Monitor „{m["opis"]}”: {dl:.1f} min, zdarzenie: {m.get("zdarzenie")}; recenzja gotowa {po:.1f} min przed końcem czekania')
+        f = lambda x: '—' if x is None else f'{x:.1f}'
+        print(f'  Monitor „{m["opis"]}”: {f(dl)} min, zdarzenie: {(m.get("zdarzenie") or "")[:140]}; recenzja gotowa {f(po)} min przed końcem czekania')
     print(f'  czekanie ponad gotową recenzję (minus 1 min odpytywania): {stracone:.1f} min')
 
 

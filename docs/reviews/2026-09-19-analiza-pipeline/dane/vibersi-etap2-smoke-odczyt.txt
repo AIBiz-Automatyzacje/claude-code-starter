@@ -1,0 +1,629 @@
+Smoke: wf_97e2f216-487 (projekt vibersi) vs referencja wf_b60193c7-987 (projekt vibersi)
+  metryka                            referencja             run                    Δ
+== 1. Run
+  status                             OK                     OK                     
+  powód STOP                         —                      —                      
+  fazy ukończone / zadania           4/4                    6/6                    ≠
+  walidacja końcowa                  PASS                   PASS                   
+  szablon zgodny                     False                  True                   ≠
+  smokeStatus (harness)              plik                   plik                   
+  koszt [jedn.]                      16.31 M                38.63 M                +137%
+  agentów                            105                    144                    +37%
+  tur                                1025                   1963                   +92%
+  czas [min]                         137                    298                    +118%
+
+== 2. Fazy: gate, review, fix
+ faza 1
+  status / gate                      OK / ZASTRZEZENIA      OK / CZYSTE            ≠
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    2                      10                     +400%
+  potwierdzone p3                    3                      14                     +367%
+  review znalezione                  5                      27                     +440%
+  review poDedupSem                  5                      26                     +420%
+  review weryfikowane                2                      10                     +400%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     1                      10                     +900%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 0, 'K-2': 1, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['scripts/seed-katalog/przygotuj.test.mjs', 'scripts/seed-katalog/wgraj-media.test.mjs']
+  koszt fazy                         2.11 M                 7.70 M                 +265%
+    etap execute                     1.22 M                 2.97 M                 +144%
+    etap fix                         0.28 M                 2.21 M                 +684%
+    etap mechanika_review            0.08 M                 0.18 M                 +126%
+    etap orkiestracja                0.03 M                 0.05 M                 +112%
+    etap review                      0.48 M                 2.15 M                 +346%
+    etap sceptycy                    0.02 M                 0.14 M                 +462%
+ faza 2
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    9                      11                     +22%
+  potwierdzone p3                    3                      13                     +333%
+  review znalezione                  13                     28                     +115%
+  review poDedupSem                  13                     26                     +100%
+  review weryfikowane                9                      10                     +11%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     9                      11                     +22%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 1, 'K-2': 1, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['scripts/seed-katalog/przygotuj.test.mjs', 'server/konfiguracja.test.ts', 'server/limit-czestosci.test.ts', 'server/meta-projektu.test.ts', 'server/przekierowania.test.ts', 'server/zrodlo-danych.test.ts']
+  koszt fazy                         2.92 M                 6.36 M                 +117%
+    etap execute                     1.03 M                 2.94 M                 +185%
+    etap fix                         0.59 M                 1.27 M                 +117%
+    etap mechanika_review            0.12 M                 0.15 M                 +21%
+    etap orkiestracja                0.05 M                 0.07 M                 +21%
+    etap review                      1.02 M                 1.74 M                 +70%
+    etap sceptycy                    0.11 M                 0.18 M                 +67%
+ faza 3
+  status / gate                      OK / ZASTRZEZENIA      OK / ZASTRZEZENIA      
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    4                      0                      -100%
+  potwierdzone p2                    11                     16                     +45%
+  potwierdzone p3                    12                     6                      -50%
+  review znalezione                  30                     25                     -17%
+  review poDedupSem                  29                     24                     -17%
+  review weryfikowane                15                     17                     +13%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     14                     15                     +7%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 1, 'K-2': 1, 'K-3': 0, 'K-4': 2, 'K-5': 1, 'K-6': 4, 'K-7': 0, 'bramki': 0} {'K-1': 1, 'K-2': 2, 'K-3': 0, 'K-4': 1, 'K-5': 0, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['server/app.test.ts', 'src/hooks/katalog/use-katalog.test.tsx', 'src/hooks/katalog/use-projekt.test.tsx', 'src/lib/baza.test.ts', 'src/lib/env.test.ts', 'src/lib/katalog/mapowanie.test.ts']
+  koszt fazy                         7.44 M                 5.64 M                 -24%
+    etap execute                     2.92 M                 1.82 M                 -38%
+    etap fix                         2.19 M                 1.90 M                 -13%
+    etap mechanika_review            0.23 M                 0.19 M                 -16%
+    etap orkiestracja                0.06 M                 0.07 M                 +7%
+    etap review                      1.62 M                 1.45 M                 -11%
+    etap sceptycy                    0.43 M                 0.20 M                 -52%
+ faza 4
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    3                      10                     +233%
+  potwierdzone p3                    1                      9                      +800%
+  review znalezione                  9                      20                     +122%
+  review poDedupSem                  9                      20                     +122%
+  review weryfikowane                3                      10                     +233%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     3                      10                     +233%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 1, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['src/components/layout/uklad-strony.test.tsx', 'src/components/projekty/elementy-projektu.test.tsx', 'src/components/strona-glowna/parametry-listy.test.ts', 'src/components/strona-glowna/wszystkie-projekty-stany.test.tsx', 'src/lib/odmiana.test.ts']
+  koszt fazy                         3.06 M                 8.45 M                 +176%
+    etap execute                     1.54 M                 4.11 M                 +167%
+    etap fix                         0.42 M                 1.58 M                 +273%
+    etap mechanika_review            0.13 M                 0.25 M                 +86%
+    etap orkiestracja                0.07 M                 0.08 M                 +16%
+    etap review                      0.88 M                 2.28 M                 +161%
+    etap sceptycy                    0.03 M                 0.14 M                 +411%
+ faza 5
+  status / gate                      None / None            OK / CZYSTE            ≠
+  cykle fix                          —                      1                      
+  potwierdzone p1                    —                      0                      
+  potwierdzone p2                    —                      9                      
+  potwierdzone p3                    —                      6                      
+  review znalezione                  —                      22                     
+  review poDedupSem                  —                      22                     
+  review weryfikowane                —                      9                      
+  review obalone                     —                      0                      
+  pominięci reviewerzy               —                      []                     ≠
+  fix naprawione                     —                      9                      
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               —                      {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 3, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             —                      0                      
+  fix dotknął testów (run)           ['src/components/projekt/galeria-projektu.test.tsx', 'src/components/projekt/naglowek-projektu.test.tsx', 'src/components/projekt/sekcje-projektu.test.tsx', 'src/components/projekt/stany-projektu.test.tsx', 'src/components/projekt/udostepnij.test.tsx', 'src/pages/projekt.test.tsx', 'src/router.test.tsx']
+  koszt fazy                         —                      6.08 M                 
+    etap execute                     —                      3.29 M                 
+    etap fix                         —                      1.03 M                 
+    etap mechanika_review            —                      0.19 M                 
+    etap orkiestracja                —                      0.08 M                 
+    etap review                      —                      1.36 M                 
+    etap sceptycy                    —                      0.13 M                 
+ faza 6
+  status / gate                      None / None            OK / CZYSTE            ≠
+  cykle fix                          —                      1                      
+  potwierdzone p1                    —                      0                      
+  potwierdzone p2                    —                      6                      
+  potwierdzone p3                    —                      2                      
+  review znalezione                  —                      11                     
+  review poDedupSem                  —                      10                     
+  review weryfikowane                —                      6                      
+  review obalone                     —                      0                      
+  pominięci reviewerzy               —                      []                     ≠
+  fix naprawione                     —                      6                      
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               —                      {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 3, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             —                      0                      
+  fix dotknął testów (run)           ['src/components/prawne/dokument-prawny.test.tsx']
+  koszt fazy                         —                      3.26 M                 
+    etap execute                     —                      0.89 M                 
+    etap fix                         —                      0.83 M                 
+    etap mechanika_review            —                      0.12 M                 
+    etap orkiestracja                —                      0.08 M                 
+    etap review                      —                      1.25 M                 
+    etap sceptycy                    —                      0.09 M                 
+
+== 2b. Kontrola fixa i P3 (journal runu wf_97e2f216-487)
+  agenci fix:pre-skan                0
+  agenci verify-fix                  0
+  scribe:faza-1: P3 KOD/TEST         14
+  fix:faza-1: P3 na liście           0
+  fix:kontrola:faza-1 K-1            0   Przeczytałem cały diff fixa: `git diff 333e33c^..HEAD` (14 plików; jedyny commit fixa to 333e33c, on też jest 
+  fix:kontrola:faza-1 K-2            1   Bramki w diffie fixa i ich testy odmowy. (a) Allowlista DOZWOLONE_PARAMETRY_BAZY w sprawdzCel (scripts/seed-ka
+  fix:kontrola:faza-1 K-3            0   L-COR-1. Operacje zmieniające stan w diffie i drogi do nich. (1) zarejestruj_klik i zarejestruj_klik_akademii 
+  fix:kontrola:faza-1 K-4            0   Usunięte lub zmienione nazwy sprawdziłem `git grep -nP` w całym repo, w tym docs/ i CLAUDE.md. WZOR_KLUCZA_OBI
+  fix:kontrola:faza-1 K-5            2   Komentarze i dokumentację zmienionych bloków porównałem z kodem. Header i komentarze migracji 20261011130000 o
+  fix:kontrola:faza-1 K-6            0   Fix nie naprawiał żadnego P1: lista findingów orkiestratora ma 10 pozycji, wszystkie P2, a review-faza-1.md po
+  fix:kontrola:faza-1 K-7            0   `git diff 333e33c^..HEAD --stat`: 14 plików. Pominąłem 2 pliki z docs/active/etap-2-katalog-publiczny/. Pozost
+  fix:kontrola:faza-1 bramki         0   `node .claude/scripts/bramki/bramki.mjs --baza 333e33c^ > /tmp/bramki-fix-docs-active-etap-2-katalog-publiczny
+  fix:kontrola:faza-1 K-7 docs/active/ 0 
+  scribe:faza-2: P3 KOD/TEST         13
+  fix:faza-2: P3 na liście           0
+  fix:kontrola:faza-2 K-1            1   Przeczytałem cały `git diff ef4489d^..HEAD` w e2e/, server/, src/ i scripts/ (ef4489d to jedyny i zarazem najs
+  fix:kontrola:faza-2 K-2            1   Diff fixa dodaje bramki w server/limit-czestosci.ts: allowlisty SIECI_PROXY (:29) i SIECI_CLOUDFLARE (:32), pa
+  fix:kontrola:faza-2 K-3            0   L-COR-1: operacje zmieniające stan to zarejestrujKlik (zrodlo-danych) i zarejestrujKlikAkademii. Drogi do nich
+  fix:kontrola:faza-2 K-4            0   Usunięte nazwy: DLUGOSC_SLUGA (zrodlo-danych.ts) oraz w przekierowania.ts import adresKlienta zastąpiony klucz
+  fix:kontrola:faza-2 K-5            2   Sprawdziłem JSDoc zmienionych bloków: adresKlienta, adresIp, ostatniPrzekazany, grupyIpv6, kluczKlienta, SIECI
+  fix:kontrola:faza-2 K-6            0   Lista orkiestratora nie zawiera żadnego findingu P1 (same P2), więc nie zakładałem worktree i nie uruchamiałem
+  fix:kontrola:faza-2 K-7            0   Pliki z `git diff ef4489d^..HEAD --stat` (pominąłem docs/active/etap-2-katalog-publiczny/) przypisałem do find
+  fix:kontrola:faza-2 bramki         0   Uruchomiłem `node .claude/scripts/bramki/bramki.mjs --baza ef4489d^ > /tmp/bramki-fix-docs-active-etap-2-katal
+  fix:kontrola:faza-2 K-7 docs/active/ 0 
+  scribe:faza-3: P3 KOD/TEST         6
+  fix:faza-3: P3 na liście           0
+  fix:kontrola:faza-3 K-1            1   Przejrzałem pełny diff commita fixa (`git diff 0ca7324^..HEAD`, 18 plików) i dla każdej zmiany zestawiłem zach
+  fix:kontrola:faza-3 K-2            2   Wyszukałem w diffie zmienione bramki: CSP (allowlista originów), schematy zod przepisane na zod/mini w src/lib
+  fix:kontrola:faza-3 K-3            0   Przeszedłem diff fixa listami L-COR-1/2/3. L-COR-1: fix nie dodaje ani nie zmienia operacji zmieniających stan
+  fix:kontrola:faza-3 K-4            1   Usunięte albo przeniesione nazwy: NAGLOWKI_OCHRONNE, HOSTY_LOKALNE, jestAdresemSerwisu, przyczynaBledu, Odpowi
+  fix:kontrola:faza-3 K-5            0   Porównałem z kodem po fixie komentarze i JSDoc zmienionych bloków. server/app.ts: JSDoc naglowkiOchronne (l.30
+  fix:kontrola:faza-3 K-6            0   Lista findingów orkiestratora zawiera wyłącznie P2 (16 pozycji), więc fix nie naprawiał żadnego P1. Worktree /
+  fix:kontrola:faza-3 K-7            0   Pliki commita 0ca7324 według `git diff 0ca7324^..HEAD --stat`, z pominięciem docs/active/etap-2-katalog-public
+  fix:kontrola:faza-3 bramki         0   `node .claude/scripts/bramki/bramki.mjs --baza 0ca7324^ > /tmp/bramki-fix-docs-active-etap-2-katalog-publiczny
+  fix:kontrola:faza-3 K-7 docs/active/ 0 
+  scribe:faza-4: P3 KOD/TEST         9
+  fix:faza-4: P3 na liście           0
+  fix:kontrola:faza-4 K-1            0   Przejrzałem diff fixa linia po linii (`git diff d830b61^..HEAD`; d830b61 to jedyny i zarazem najstarszy commit
+  fix:kontrola:faza-4 K-2            0   Fix nie dodaje nowej bramki walidacyjnej. Allowlista zListy dla widok i sort ma te same wartości (['siatka','l
+  fix:kontrola:faza-4 K-3            0   L-COR-1: w diffie fixa nie ma operacji zmieniających stan, czyli zapisu do bazy, wysyłki ani mutacji. Jedyny e
+  fix:kontrola:faza-4 K-4            1   Sprawdziłem `git grep -nP` dla starych nazw: ZAPYTANIE_UKLADU_DESKTOP, kluczPrzewiniecia, nowychProjektow, now
+  fix:kontrola:faza-4 K-5            1   Porównałem komentarze i JSDoc zmienionych bloków z kodem po fixie. Zgodne są: komentarz JSX ScrollRestoration 
+  fix:kontrola:faza-4 K-6            0   Wśród findingów naprawianych przez fix nie ma P1, wszystkie są P2. Worktree nie był potrzebny, więc go nie two
+  fix:kontrola:faza-4 K-7            0   Pliki fixa wziąłem z `git diff d830b61^..HEAD --name-only`. Każdy wskazuje finding albo test: uklad-strony.tsx
+  fix:kontrola:faza-4 bramki         0   Uruchomiłem `node .claude/scripts/bramki/bramki.mjs --baza d830b61^ > /tmp/bramki-fix-docs-active-etap-2-katal
+  fix:kontrola:faza-4 K-7 docs/active/ 0 
+  scribe:faza-5: P3 KOD/TEST         6
+  fix:faza-5: P3 na liście           0
+  fix:kontrola:faza-5 K-1            0   git diff f9aab5c^..HEAD (1 commit f9aab5c, 10 plików). Zmiany kodu produkcyjnego: (1) galeria-projektu.tsx:104
+  fix:kontrola:faza-5 K-2            0   Przejrzałem diff fixa pod kątem regexów, allowlist, limitów, originu, ról i parsowania wejścia. Fix nie dodaje
+  fix:kontrola:faza-5 K-3            0   L-COR-1: diff fixa nie ma operacji zmieniającej stan. Zapisu, mutacji ani wysyłki nie ma. Prefetch useWiecejZK
+  fix:kontrola:faza-5 K-4            0   Fix nie zmienia ani nie usuwa nazw. Dodaje SZEROKOSC_DUZEGO_WIDOKU, SZEROKOSC_SLAJDU i zestawMiniatur (lokalne
+  fix:kontrola:faza-5 K-5            3   Porównałem z kodem po fixie: JSDoc nowych stałych i zestawMiniatur (galeria-projektu.tsx:86-94, zgodne), komen
+  fix:kontrola:faza-5 K-6            0   Lista findingów zawiera wyłącznie P2, P1 nie ma. Worktree K-6 nie był tworzony.
+  fix:kontrola:faza-5 K-7            0   Pliki fixa (git diff --stat f9aab5c^..HEAD) zestawiłem z findingami. galeria-projektu.tsx i .test.tsx: finding
+  fix:kontrola:faza-5 bramki         0   node .claude/scripts/bramki/bramki.mjs --baza f9aab5c^ > /tmp/bramki-fix-docs-active-etap-2-katalog-publiczny-
+  fix:kontrola:faza-5 K-7 docs/active/ 0 
+  scribe:faza-6: P3 KOD/TEST         2
+  fix:faza-6: P3 na liście           0
+  fix:kontrola:faza-6 K-1            0   git log --no-walk --format=%h 3b46794 (najstarszy = 3b46794), git diff 3b46794^..HEAD bez docs/active. Zmiany 
+  fix:kontrola:faza-6 K-2            0   Przejrzałem diff fixa pod kątem wyrażeń regularnych, allowlist, limitów, originu, ról i parsowania wejścia. Fi
+  fix:kontrola:faza-6 K-3            0   L-COR-1: w diffie fixa nie ma zapisu do bazy, wysyłki ani wywołania sieciowego. Efekty są lokalne: setAktywna,
+  fix:kontrola:faza-6 K-4            0   Stare nazwy to stała ADMINISTRATOR (polityka-prywatnosci.tsx) i element zwrotu hooka setAktywna. git grep -n '
+  fix:kontrola:faza-6 K-5            3   Porównałem JSDoc i komentarze w dokument-prawny.tsx (PASMO_AKTYWNEJ_SEKCJI, LINIA_AKTYWNOSCI_PX, ZDARZENIA_ZWA
+  fix:kontrola:faza-6 K-6            0   Fix nie naprawiał żadnego P1, wszystkie 6 findingów to P2. Zwracam testy: []. Worktree /tmp/kontrola-fixa-faza
+  fix:kontrola:faza-6 K-7            0   git diff 3b46794^..HEAD --stat obejmuje 6 plików. Pominąłem docs/active/etap-2-katalog-publiczny/etap-2-katalo
+  fix:kontrola:faza-6 bramki         0   node .claude/scripts/bramki/bramki.mjs --baza 3b46794^ > /tmp/bramki-fix-docs-active-etap-2-katalog-publiczny-
+  fix:kontrola:faza-6 K-7 docs/active/ 0 
+
+== 2c. Sceptycy (P9): etykiety, porcje P2, werdykty agentów
+ faza 1
+  faza.sceptyk                       {'agree': 2, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 2, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          2                      10                     +400%
+  verify-batch vs ⌈P2/4⌉             1 batch (przebieg 1) ≤ ⌈2/4⌉=1 OK 3 batch (przebieg 3) ≤ ⌈10/4⌉=3 OK ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 2
+  faza.sceptyk                       {'agree': 9, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 9, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          9                      10                     +11%
+  verify-batch vs ⌈P2/4⌉             3 batch (przebieg 3) ≤ ⌈9/4⌉=3 OK 3 batch (przebieg 3) ≤ ⌈10/4⌉=3 OK ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 3
+  faza.sceptyk                       {'agree': 23, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 16, 'disagree_evidence': 0, 'disagree_concern': 1, 'degradacje': 1} ≠
+  agent.werdykty (suma)              {'agree': 23, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 16, 'disagree_evidence': 0, 'disagree_concern': 1} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          23                     17                     -26%
+  verify-batch vs ⌈P2/4⌉             3 batch (przebieg 3) ≤ ⌈11/4⌉=3 OK 5 batch (przebieg 5) ≤ ⌈17/4⌉=5 OK ≠
+  agenci verify (P1 ×3)              12                     0                      -100%
+ faza 4
+  faza.sceptyk                       {'agree': 3, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 3, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          3                      10                     +233%
+  verify-batch vs ⌈P2/4⌉             1 batch (przebieg 1) ≤ ⌈3/4⌉=1 OK 3 batch (przebieg 3) ≤ ⌈10/4⌉=3 OK ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 5
+  faza.sceptyk                       —                      {'agree': 9, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              —                      {'agree': 9, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          0                      9                      
+  verify-batch vs ⌈P2/4⌉             —                      3 batch (przebieg 3) ≤ ⌈9/4⌉=3 OK ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 6
+  faza.sceptyk                       —                      {'agree': 6, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              —                      {'agree': 6, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          0                      6                      
+  verify-batch vs ⌈P2/4⌉             —                      2 batch (przebieg 2) ≤ ⌈6/4⌉=2 OK ≠
+  agenci verify (P1 ×3)              0                      0                      
+
+== 2d. Sceptycy w journalu runu: etykiety w wyniku, błędy schematu
+  verify-batch:2:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:4:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:3:4                                             AGREE=3 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=1 · błędy schematu 0
+  verify-batch:2:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:4                                             AGREE=4 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  sceptycy failed (journal)          0
+
+== 2e. Kopia: raport review i archiwum zadań
+  kopia                              /Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi
+  docs/completed/etap-2-katalog-publiczny/review-faza-1.md 10 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-2-katalog-publiczny/review-faza-2.md 10 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-2-katalog-publiczny/review-faza-3.md 16 / 0 / 1 / 1
+    adnotacje *(sceptyk:             1
+  docs/completed/etap-2-katalog-publiczny/review-faza-4.md 10 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-2-katalog-publiczny/review-faza-5.md 9 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-2-katalog-publiczny/review-faza-6.md 6 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  archiwum: „Zamkniete cyklem fix”   ['Zamkniete cyklem fix: 10 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-1.md`.', 'Zamkniete cyklem fix: 11 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-2.md`.', 'Zamkniete cyklem fix: 15 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-3.md`.', 'Zamkniete cyklem fix: 10 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-4.md`.', 'Zamkniete cyklem fix: 9 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-5.md`.', 'Zamkniete cyklem fix: 6 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-6.md`.']
+
+== 2f. Wiedza projektu (P10): learned_zn, faza.wiedza
+  learned_zn = 0 / z kontekstem      95/95, max 0           123/123, max 0         ≠
+ faza 1
+    faza.wiedza.indeks_zn            —                      1859                   
+    faza.wiedza.claude_md_zn         386                    1053                   +173%
+    faza.wiedza.wycinek_zn           0                      1014                   
+    faza.wiedza.wycinek_wpisy        0                      3                      
+    faza.wiedza.wycinek_pominiete    0                      0                      
+ faza 2
+    faza.wiedza.indeks_zn            —                      1859                   
+    faza.wiedza.claude_md_zn         386                    1053                   +173%
+    faza.wiedza.wycinek_zn           0                      697                    
+    faza.wiedza.wycinek_wpisy        0                      2                      
+    faza.wiedza.wycinek_pominiete    0                      0                      
+ faza 3
+    faza.wiedza.indeks_zn            —                      1859                   
+    faza.wiedza.claude_md_zn         386                    1053                   +173%
+    faza.wiedza.wycinek_zn           0                      0                      
+    faza.wiedza.wycinek_wpisy        0                      0                      
+    faza.wiedza.wycinek_pominiete    0                      0                      
+ faza 4
+    faza.wiedza.indeks_zn            —                      1859                   
+    faza.wiedza.claude_md_zn         386                    1053                   +173%
+    faza.wiedza.wycinek_zn           0                      388                    
+    faza.wiedza.wycinek_wpisy        0                      1                      
+    faza.wiedza.wycinek_pominiete    0                      0                      
+ faza 5
+    faza.wiedza.indeks_zn            —                      1859                   
+    faza.wiedza.claude_md_zn         —                      1053                   
+    faza.wiedza.wycinek_zn           —                      388                    
+    faza.wiedza.wycinek_wpisy        —                      1                      
+    faza.wiedza.wycinek_pominiete    —                      0                      
+ faza 6
+    faza.wiedza.indeks_zn            —                      1859                   
+    faza.wiedza.claude_md_zn         —                      1053                   
+    faza.wiedza.wycinek_zn           —                      388                    
+    faza.wiedza.wycinek_wpisy        —                      1                      
+    faza.wiedza.wycinek_pominiete    —                      0                      
+
+== 2g. Wycinek w promptach i wywołaniach agentów (journal runu)
+  planner:faza-1                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-1                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-2                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-1                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-1                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-2                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-3                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-4                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-5                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-2                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-2                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-3                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-6                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-3                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-3                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-4                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-7                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-8                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-9                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-4                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-4                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-5                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-10                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-11                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-5                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-5                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-6                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-12                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-6                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-6                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+
+== 2h. Compound w wyniku runu (harness): wiedza, indeks, propozycje bramek
+  solution                           docs/solutions/ui-bugs/2026-10-12-scrollrestoration-odtwarza-pozycje-przy-wejsciu-linkiem.md
+  wiedza: klasa / szczebel           spojnosc-dwoch-systemow / kod
+  wiedza: regula [zn]                299
+  indeks                             zapisany
+  propozycjeBramek                   1
+  uwagaIndeksu                       
+
+== 2i. Reguły kodu i D10 (P12; kryterium 6a pkt 67 d)
+  rola                         n  eager Read/sh  paths  kod  D10
+  bootstrap                    1      0       0      0    0    0
+  build                       12      0      12      0   12   12
+  complete                     2      0       0      0    0    0
+  compound                     1      0       0      0    0    0
+  compound-refresh             1      0       0      1    0    0
+  dedup:semantyczny            6      0       0      0    0    0
+  domkniecie                   6      0       0      1    0    0
+  e2e:db-sync                  6      0       0      0    0    0
+  e2e:restart                  6      0       0      0    0    0
+  e2e:start                    1      0       0      0    0    0
+  fix                          6      0       6      0    6    0
+  fix:kontrola                 6      0       0      2    0    0
+  fix:poprawka                 6      0       6      0    3    0
+  ogrod:pomiar                 1      0       0      0    0    0
+  planner                      6      0       0      0    0    0
+  review:code-quality          6      0       0      2    1    0
+  review:correctness           6      0       0      4    2    0
+  review:e2e                   6      0       0      2    0    0
+  review:performance           6      0       0      4    2    0
+  review:security              6      0       0      2    1    0
+  review:spec-compliance       6      0       0      0    0    0
+  review:test-coverage         6      0       0      4    2    0
+  scribe                       6      0       0      0    0    0
+  smoke-operatora              1      0       0      0    0    0
+  stan:zapis                   6      0       0      0    0    0
+  start:testy                  1      0       0      0    0    0
+  verify-batch                19      0       0      0    0    0
+  walidacja-koncowa            1      0       0      0    0    0
+  warmup:vitest                1      0       0      0    0    0
+  build build:IU-1: D10 migracja-bazy, bramka-czarna-lista, bramka-na-jednej-drodze, sciezka-bledu
+  build build:IU-3: D10 zaufanie-danym-klienta, bramka-czarna-lista, pii-i-sekrety, bramka-na-jednej-drodze, sciezka-bledu, wartosc-graniczna, limit-czasu-i-ponowien
+  build build:IU-10: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-8: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-5: D10 zaufanie-danym-klienta, bramka-czarna-lista, pii-i-sekrety, bramka-na-jednej-drodze
+  build build:IU-7: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-4: D10 zaufanie-danym-klienta, bramka-czarna-lista, pii-i-sekrety, bramka-na-jednej-drodze
+  build build:IU-11: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-2: D10 bramka-czarna-lista, bramka-na-jednej-drodze, wartosc-graniczna
+  build build:IU-9: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-6: D10 pii-i-sekrety, wartosc-graniczna, limit-czasu-i-ponowien, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-12: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  testyUsuniete (domknięcie): {'domkniecie:faza-1': [], 'domkniecie:faza-2': [{'plik': 'server/app.test.ts', 'nazwa': 'przy indeksowaniu otwiera całą witrynę', 'uzasadnienie': "Nowa nazwa testu: 'przy indeksowaniu otwiera witrynę bez przekierowań z licznikiem i wskazuje sitemap.xml z SITE_URL'. Zamówiona zmiana treści robots.txt (IU-4)."}, {'plik': 'server/konfiguracja.test.ts', 'nazwa': 'bez zmiennych daje port 3000, katalog dist i wyłączone indeksowanie', 'uzasadnienie': "Nowa nazwa testu: 'z samymi wymaganymi zmiennymi daje port 3000, katalog dist, bez indeksowania, Basic Auth i FB_APP_ID'. Od IU-3 SUPABASE_* i SITE_URL są wymagane, a przypadek bez zmiennych pokrywa 'bez żadnej zmiennej wymienia wszystkie wymagane'."}], 'domkniecie:faza-3': [], 'domkniecie:faza-4': [{'plik': 'src/components/layout/menu-telefonu.test.tsx', 'nazwa': 'link „Zbuduj projekt” w menu otwiera Akademię w nowej karcie z rel="noopener"', 'uzasadnienie': 'Zmieniona nazwa: „link „Zbuduj projekt” w menu otwiera licznik /do-akademii/pasek w nowej karcie z rel="noopener"” — link idzie teraz przez licznik serwera (IU-8)'}, {'plik': 'src/components/layout/pasek-nawigacji.test.tsx', 'nazwa': '„Zbuduj projekt” otwiera Akademię w nowej karcie z rel="noopener" (bez noreferrer)', 'uzasadnienie': 'Zmieniona nazwa: „„Zbuduj projekt” otwiera licznik /do-akademii/pasek w nowej karcie z rel="noopener" (bez noreferrer)” — link przez /do-akademii/pasek (IU-8)'}, {'plik': 'src/router.test.tsx', 'nazwa': '/ pokazuje tymczasową stronę główną bez linku powrotu', 'uzasadnienie': 'Zmieniona nazwa: „/ pokazuje stronę główną z hero i sekcją listy, bez linku powrotu” — tymczasowa strona główna zastąpiona prawdziwą (IU-8/IU-9)'}], 'domkniecie:faza-5': [], 'domkniecie:faza-6': [{'plik': 'src/router.test.tsx', 'nazwa': 'kliknięcie „Wróć na stronę główną” na /regulamin przenosi na /', 'uzasadnienie': 'Nowa nazwa testu: „kliknięcie »Wróć na stronę główną« na /zaloguj przenosi na /” — /regulamin nie jest już zaślepką z tym linkiem, test przeniesiony na /zaloguj'}]}
+  kryterium: ZIELONE | {'eager': [], 'bez_kodu_z_regulami': [], 'kod_bez_regul': [], 'podwojny_odczyt': [], 'czyta_kod_z_regulami': ['fix:kontrola', 'review:test-coverage', 'review:correctness', 'review:code-quality', 'review:e2e', 'review:security', 'review:performance', 'compound-refresh', 'domkniecie'], 'czyta_reguly_z_roli': [], 'buildery': 12, 'buildery_bez_bloku': 0, 'buildery_z_d10': 12, 'bez_transkryptu': 0, 'wycinki_plannera': [{'zn': 1232, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1232, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1784, 'reguly': 2, 'd10': ['migracja-bazy', 'bramka-czarna-lista', 'bramka-na-jednej-drodze', 'sciezka-bledu'], 'd10_pominiete': 1}, {'zn': 1851, 'reguly': 3, 'd10': ['bramka-czarna-lista', 'bramka-na-jednej-drodze', 'wartosc-graniczna'], 'd10_pominiete': 2}, {'zn': 1815, 'reguly': 0, 'd10': ['zaufanie-danym-klienta', 'bramka-czarna-lista', 'pii-i-sekrety', 'bramka-na-jednej-drodze', 'sciezka-bledu', 'wartosc-graniczna', 'limit-czasu-i-ponowien'], 'd10_pominiete': 2}, {'zn': 1764, 'reguly': 2, 'd10': ['zaufanie-danym-klienta', 'bramka-czarna-lista', 'pii-i-sekrety', 'bramka-na-jednej-drodze'], 'd10_pominiete': 5}, {'zn': 1764, 'reguly': 2, 'd10': ['zaufanie-danym-klienta', 'bramka-czarna-lista', 'pii-i-sekrety', 'bramka-na-jednej-drodze'], 'd10_pominiete': 5}, {'zn': 1232, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1232, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1232, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1232, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1351, 'reguly': 0, 'd10': ['pii-i-sekrety', 'wartosc-graniczna', 'limit-czasu-i-ponowien', 'dopasowanie-tekstu', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}]}
+
+== 2j. Planowanie (P13: scalony /dev-plan)
+  epizod dev-plan (rekord): koszt 2.06 M + subagenci 2.86 M (n=5), tury 50, wiadomości operatora 1, otwarty True
+  artefakty: {"plan_kb": 86, "zadania_kb": 22, "iu": 12, "iu_z_wymiarami": 0, "wydzielenia": 0, "walidacja": {"n": 4, "odrzucone": 2, "bledy_pierwszy": 4, "bledy_budzetu_pierwszy": 0}, "gotowosc": {"n": 1, "ok_ostatnia": true, "czerwone_ostatnia": []}}
+  do wywołania Workflow: koszt sesji 1.44 M (+ subagenci = 4.31 M; próg mediany 2.95 M → PONAD), tury 40, wiadomości operatora 1
+  Workflow: {"scriptPath": ".claude/workflows/dev-autopilot-wf.js", "args": "docs/active/etap-2-katalog-publiczny"}
+  planner:faza-1: IU 2 — IU-1 feature-builder-data tabela, IU-2 feature-builder-data tabela
+  planner:faza-2: IU 3 — IU-3 feature-builder-data tabela, IU-4 feature-builder-data tabela, IU-5 feature-builder-data tabela
+  planner:faza-3: IU 1 — IU-6 feature-builder-data tabela
+  planner:faza-4: IU 3 — IU-7 feature-builder-ui-figma tabela, IU-8 feature-builder-ui-figma tabela, IU-9 feature-builder-ui-figma tabela
+  planner:faza-5: IU 2 — IU-10 feature-builder-ui-figma tabela, IU-11 feature-builder-ui-figma tabela
+  planner:faza-6: IU 1 — IU-12 feature-builder-ui-figma tabela
+
+== 2k. E2E i skill weryfikacji (P14)
+  run: status OK, powód None, e2eSrodowisko gotowe, manual_razem 9
+  faza 1: e2e {"checkboxy": 2, "pass": 2, "fail": 0, "skip": 0, "manual": 0}, e2eSync zsynchronizowano: Suma migracji ok (e2e.mjs suma: 0 trafien). db push --include-all --yes zaaplikowal migracje 20261011120000_katalog_publiczny.sql bez bledu. Seed e2e/seeds/katalog-seed.sql (jedyny s… [uciete: 781 znakow, pelna tresc w logu runu]
+  faza 2: e2e {"checkboxy": 2, "pass": 1, "fail": 1, "skip": 0, "manual": 0}, e2eSync zsynchronizowano: suma: ok (0 trafien). supabase db push --include-all: "Remote database is up to date" (migracje juz na bazie e2e vbnhxyowencehsqivhuh). Seed e2e/seeds/katalog-seed.sql (jawny seed fl… [uciete: 569 znakow, pelna tresc w logu runu]
+  faza 3: e2e {"checkboxy": 0, "pass": 0, "fail": 0, "skip": 0, "manual": 0}, e2eSync aktualna: Nic do zrobienia. e2e.mjs suma: ok, zadnych trafien. supabase db push --include-all --yes: "Remote database is up to date", kod 0, brak nowych migracji. Seedy: faza 3 nie ma linii [E2E] ani… [uciete: 359 znakow, pelna tresc w logu runu]
+  faza 4: e2e {"checkboxy": 6, "pass": 0, "fail": 0, "skip": 6, "manual": 6}, e2eSync zsynchronizowano: suma migracji: ok (bez trafien). supabase db push --include-all: "Remote database is up to date" (brak nowych migracji). Seed fazy 4 (jawny dla flow strona-glowna-hero, lista-filtr-k… [uciete: 597 znakow, pelna tresc w logu runu]
+  faza 5: e2e {"checkboxy": 3, "pass": 0, "fail": 0, "skip": 3, "manual": 3}, e2eSync zsynchronizowano: suma: ok (0 trafien). supabase db push --include-all: 'Remote database is up to date' (brak nowych migracji, exit 0). Seed fazy 5 (jawny w liniach strona-projektu/projekt-udostepnij)… [uciete: 420 znakow, pelna tresc w logu runu]
+  faza 6: e2e {"checkboxy": 1, "pass": 1, "fail": 0, "skip": 0, "manual": 0}, e2eSync aktualna: suma migracji ok (bez zmian/usuniec). supabase db push --include-all --yes: "Remote database is up to date" — brak nowych migracji (faza 6 nie zmienila supabase/migrations/). Seedy: faza 6 m… [uciete: 527 znakow, pelna tresc w logu runu]
+  e2e:start (faza None): koszt 0.03 M, 10 s
+  e2e:restart:faza-1 (faza 1): koszt 0.01 M, 3 s
+  e2e:db-sync:faza-1 (faza 1): koszt 0.05 M, 40 s
+  review:e2e (faza 1): tryb przegladarka, koszt 0.27 M, tury 19, 99 s, ctx_start 24265
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 1 | curl: 1
+    przebieg e2e/etap-2-katalog-smoke.sh PASS nie-dotyczy    Runner uruchomiony na bazie e2e (`bash e2e/etap-2-katalog-smoke.sh`, log /tmp/e2e-katalog-smoke.log), kod wyjścia 0, ostatnia linia „Wszystkie sprawdz
+    przebieg e2e/katalog-seed.sh    PASS nie-dotyczy    Runner uruchomiony na bazie e2e (`bash e2e/katalog-seed.sh`, log /tmp/e2e-katalog-seed.log), kod wyjścia 0, ostatnia linia „Wszystkie sprawdzenia PASS
+    finding P3 OPERATOR Makiety z „Designerski kontekst” (14 ekranów, m.in. strona-glowna-komputer, strona-projektu-komputer, strony-prawne) nie
+  e2e:restart:faza-2 (faza 2): koszt 0.01 M, 2 s
+  e2e:db-sync:faza-2 (faza 2): koszt 0.04 M, 26 s
+  review:e2e (faza 2): tryb przegladarka, koszt 0.20 M, tury 14, 91 s, ctx_start 23008
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 0 | curl: 2
+    przebieg e2e/serwer-smoke.sh    PASS nie-dotyczy    Runner uruchomiony raz, EXIT=0, log /tmp/e2e-f2-serwer-smoke.log. Kończy się linią „Wszystkie sprawdzenia PASS”. Przeszły m.in. /p/cokolwiek 200 HTML 
+    przebieg e2e/serwer-katalog-smoke.sh FAIL nie-dotyczy    Dwa przebiegi runnera, oba EXIT=1 (logi /tmp/e2e-f2-katalog-smoke.log i /tmp/e2e-f2-katalog-smoke-2.log). Przechodzą guard bazy e2e, migracja licznikó
+    finding P2 E2E checkbox: Weryfikacja: [E2E] `e2e/serwer-katalog-smoke.sh` — wszystkie sprawdzenia PASS na zbudowanym serwerze z bazą e2
+    finding P3 OPERATOR Operator: [Manual] og-obraz-domyslny: visual review — Operator action: otwórz visual-diff/og-obraz-domyslny-figma.png ob
+    finding P3 OPERATOR Makiety z figma_screens: strona-glowna-komputer, strona-glowna-wiersze, strona-glowna-telefon, lista-pusta, lista-ladowa
+  e2e:restart:faza-3 (faza 3): koszt 0.01 M, 3 s
+  e2e:db-sync:faza-3 (faza 3): koszt 0.04 M, 22 s
+  review:e2e (faza 3): tryb przegladarka, koszt 0.06 M, tury 5, 19 s, ctx_start 22679
+    e2e.mjs scenariusze: tak | skill weryfikacji: NIE | mapa-funkcji.md: NIE | e2e.mjs stan: nie | agent-browser: 0 | curl: 0
+    finding P3 OPERATOR Makiety z figma_screens (strona-glowna-*, lista-*, strona-projektu-*, komentarze-pusty-stan, projekt-*, strony-prawne) n
+  e2e:restart:faza-4 (faza 4): koszt 0.01 M, 3 s
+  e2e:db-sync:faza-4 (faza 4): koszt 0.04 M, 24 s
+  review:e2e (faza 4): tryb przegladarka, koszt 0.12 M, tury 12, 83 s, ctx_start 23406
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 3 | curl: 1
+    przebieg strona-glowna-hero     SKIP srodowisko     Nie odegrano scenariusza, bo aplikacja na E2E_URL celuje w bazę dev. Preflight: doctor zwrócił '6 pass, 0 warn, 0 fail', a curl http://localhost:5173 
+    przebieg lista-filtr-kategorii  SKIP srodowisko     Nie odegrano scenariusza, bo zastany Vite na :5173 (PID 3814, bez `--mode e2e`) kieruje RPC katalogu na bazę dev https://gyyftggzkpokmgajeoxw.supabase
+    przebieg lista-pusta-kategoria  SKIP srodowisko     Nie odegrano scenariusza, bo zastany Vite na :5173 (PID 3814, bez `--mode e2e`) kieruje RPC katalogu na bazę dev https://gyyftggzkpokmgajeoxw.supabase
+    przebieg lista-pokaz-kolejne    SKIP srodowisko     Nie odegrano scenariusza, bo zastany Vite na :5173 (PID 3814, bez `--mode e2e`) kieruje rpc/katalog_lista na bazę dev https://gyyftggzkpokmgajeoxw.sup
+    przebieg lista-siatka-top       SKIP srodowisko     Nie odegrano scenariusza, bo zastany Vite na :5173 (PID 3814, bez `--mode e2e`) kieruje RPC katalogu na bazę dev https://gyyftggzkpokmgajeoxw.supabase
+    przebieg lista-powrot-z-projektu SKIP srodowisko     Nie odegrano scenariusza, bo zastany Vite na :5173 (PID 3814, bez `--mode e2e`) kieruje RPC katalogu na bazę dev https://gyyftggzkpokmgajeoxw.supabase
+    finding P2 OPERATOR Operator: [Manual] port 5173 zajmuje zastany serwer Vite (PID 3814, uruchomiony 16:22 poleceniem `pnpm exec vite --host 
+  e2e:restart:faza-5 (faza 5): koszt 0.01 M, 3 s
+  e2e:db-sync:faza-5 (faza 5): koszt 0.04 M, 19 s
+  review:e2e (faza 5): tryb przegladarka, koszt 0.13 M, tury 14, 79 s, ctx_start 22966
+    e2e.mjs scenariusze: tak | skill weryfikacji: NIE | mapa-funkcji.md: NIE | e2e.mjs stan: tak | agent-browser: 1 | curl: 2
+    przebieg strona-projektu        SKIP srodowisko     Środowisko E2E niedostępne: pod E2E_URL nie działa serwer e2e. `node .claude/scripts/e2e/e2e.mjs stan` zwraca {"nasz":false,"zyje":false,"ogonLogu":"(
+    przebieg projekt-nieistniejacy  SKIP srodowisko     Środowisko E2E niedostępne: `e2e.mjs stan` zwraca {"nasz":false,"zyje":false,"ogonLogu":"(serwer nie jest uruchomiony przez pipeline)"}. Serwer pod ht
+    przebieg projekt-udostepnij     SKIP srodowisko     Środowisko E2E niedostępne: `e2e.mjs stan` zwraca {"nasz":false,"zyje":false,"ogonLogu":"(serwer nie jest uruchomiony przez pipeline)"}. Serwer pod ht
+    finding P3 OPERATOR Operator: [Manual] strona-projektu-komputer: visual review — Operator action: otwórz /p/<slug z seeda> w aplikacji obok 
+    finding P3 OPERATOR Operator: [Manual] strona-projektu-telefon: visual review — Operator action: otwórz /p/<slug z seeda> w aplikacji obok v
+    finding P3 OPERATOR Operator: [Manual] komentarze-pusty-stan: visual review — Operator action: otwórz /p/<slug z seeda> (sekcja komentarzy) 
+    finding P3 OPERATOR Operator: [Manual] projekt-skopiowano-link: visual review — Operator action: otwórz /p/<slug z seeda> i kliknij „Udostęp
+    finding P3 OPERATOR Operator: [Manual] projekt-ladowanie: visual review — Operator action: otwórz /p/<slug z seeda> (stan ładowania, np. z d
+    finding P3 OPERATOR Operator: [Manual] projekt-blad: visual review — Operator action: otwórz /p/<slug z seeda> (stan błędu, np. z zablokowan
+    finding P3 OPERATOR Serwer pod E2E_URL (http://localhost:5173) nie pochodzi z pipeline'u i celuje w bazę DEV. `e2e.mjs stan` zwraca {"nasz":
+  e2e:restart:faza-6 (faza 6): koszt 0.01 M, 3 s
+  e2e:db-sync:faza-6 (faza 6): koszt 0.03 M, 20 s
+  review:e2e (faza 6): tryb przegladarka, koszt 0.64 M, tury 57, 971 s, ctx_start 22942
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 32 | curl: 1
+    przebieg strony-prawne          PASS nie-dotyczy    Preflight: agent-browser doctor 6 pass / 0 fail, curl http://localhost:5173/prywatnosc → 200. agent-browser nie robił zrzutów i nie renderował klatek 
+    finding P2 KOD Spis treści podświetla nie tę pozycję, którą kliknięto. Po kliknięciu sekcji N aktywna staje się sekcja N+1, gdy sekcja 
+    finding P3 OPERATOR Operator: [Manual] strony-prawne: visual review — Operator action: otwórz visual-diff/strony-prawne-figma.png obok visua
+    finding P3 OPERATOR Operator: [Manual] agent-browser 0.31.1 na tej maszynie nie renderuje klatek. `agent-browser screenshot` wisi bez wyniku
+  e2e:start: gotowe, serwer zastane, scenariusze 14, baza True
+  kopia: /Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi
+  mapa-funkcji.md: smoke-strona BRAK, smoke-strona-faza-2 BRAK
+  skill: Przejście na żywo: changed (2026-10-11)
+  smoke operatora 2026-10-12-etap-2-katalog-publiczny-smoke.md: sekcja E2E jest
+     ręcznie (środowisko w trakcie runu)
+    
+    Scenariusze robisz na dev serverze z sekcji 0 (projekt główny `gyyftg…` z seedem z sekcji 0), nie na środowisku e2e. Liczby z seeda
+    (np. pusta kategoria „Jedzenie i zdrowie”) dotyczą danych nałożonych przez `seeduj.sh dev`. Jeśli na dev kategoria nie jest pusta,
+    pusty stan sprawdź na kategorii, która ma 0 w chipie.
+    
+    - [ ] `strona-glowna-hero` — otwórz `/` na 1
+
+== 2l. Ogrodnik (P15)
+  agenci ogrodnika: 1 (ogrod:pomiar)
+  kolejność: compound-refresh 139 < ogrod:pomiar 140 < smoke-operatora 141 → OK
+  ogrod:pomiar: koszt 0.013 M, ctx_start 4813, model claude-haiku-5-5, 4 s; narzędzia {'Bash': 1, 'StructuredOutput': 1}; zapis brak; Bash poza odczytem 0
+  wynik pomiaru: kod 0, JSON OK
+    liczby {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 1}; decyzja: ocena False, źródło telemetria, bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania, 2/5 pomiarow do przegladu okresowego
+    nowe 0: 
+  telemetria run.ogrod: {"status": "ok", "commit": "22dd953", "plikow": 127, "liczby": {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 1}, "przyrost": {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 0}, "zrodlo": "telemetria", "powod": "bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania, 2/5 pomiarow do przegladu okresowego", "nowe": 0, "ocena": false, "bez_oceny": 2, "propozycje": 0, "szczeble": {"regula_lint": 0, "zadanie_sprzatajace": 0, "zostawic": 0}}
+  sekcja „## Ogród” w podsumowaniu: jest
+    ## Ogród
+    
+    Pomiar całego projektu (127 plików JS/TS, commit 22dd953); w nawiasie przyrost względem poprzedniego zadania:
+    - wyciszenia lint/TS: 0 (0)
+    - any: 0 (0)
+    - wymuszone rzutowania: 0 (0)
+    - komentarze-obejscia: 0 (0)
+    - puste catch: 1 (0)
+    
+    Bez oceny — bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania, 2/5 pomiarow do przegladu okresowego.
+    
+    Ogrodnik niczego nie zmienił w kodzie — każda propozycja czeka na decyzję operatora.
+    
+    ## Rozmiar PR — uwaga
+    
+    UWAGA: PR ma 250 plików (próg 150) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (e2e/seeds: 49, src/components: 47, docs/plans: 34, docs/completed: 28, server: 20, src/lib: 9, src/config: 8, scripts/seed-katalog: 7, e2e: 6, src: 6, (korzen): 5, src/hooks: 5, src/pages: 5, src/assets: 4, docs: 2, docs/decisions: 2, docs/operator: 2, docs/solutions: 2, supabase/migrations: 2, .claude/skills: 1, docs/makiety: 1, e2e/lib: 1, public: 1, server/test: 1, src/test: 1, supabase: 1).
+  drzewo kopii po runie: czyste
+
+== 3. Agenci per rola: liczba, koszt
+  bootstrap                          1 × 0.02 M             1 × 0.05 M             ≠
+    Δ koszt                          +96%
+  build                              11 × 5.34 M            12 × 13.68 M           ≠
+    Δ koszt                          +156%
+  complete                           1 × 0.14 M             2 × 0.24 M             ≠
+    Δ koszt                          +64%
+  compound                           1 × 0.10 M             1 × 0.18 M             ≠
+    Δ koszt                          +84%
+  compound-refresh                   1 × 0.13 M             1 × 0.11 M             ≠
+    Δ koszt                          -17%
+  dedup:semantyczny                  4 × 0.07 M             6 × 0.18 M             ≠
+    Δ koszt                          +151%
+  domkniecie                         4 × 0.87 M             6 × 1.56 M             ≠
+    Δ koszt                          +80%
+  e2e:db-sync                        4 × 0.11 M             6 × 0.24 M             ≠
+    Δ koszt                          +108%
+  e2e:env-down                       1 × 0.04 M             —                      ≠
+  e2e:restart                        —                      6 × 0.07 M             ≠
+  e2e:start                          1 × 0.02 M             1 × 0.03 M             ≠
+    Δ koszt                          +42%
+  fix                                4 × 2.20 M             6 × 6.71 M             ≠
+    Δ koszt                          +205%
+  fix:kontrola                       4 × 0.54 M             6 × 1.05 M             ≠
+    Δ koszt                          +93%
+  fix:poprawka                       4 × 0.73 M             6 × 1.04 M             ≠
+    Δ koszt                          +42%
+  ogrod:pomiar                       1 × 0.01 M             1 × 0.01 M             
+    Δ koszt                          +7%
+  planner                            4 × 0.50 M             6 × 0.79 M             ≠
+    Δ koszt                          +56%
+  review:code-quality                4 × 0.66 M             6 × 1.47 M             ≠
+    Δ koszt                          +123%
+  review:correctness                 4 × 0.63 M             6 × 1.95 M             ≠
+    Δ koszt                          +207%
+  review:e2e                         4 × 0.46 M             6 × 1.43 M             ≠
+    Δ koszt                          +210%
+  review:performance                 4 × 0.37 M             6 × 1.10 M             ≠
+    Δ koszt                          +198%
+  review:security                    4 × 0.66 M             6 × 1.49 M             ≠
+    Δ koszt                          +124%
+  review:spec-compliance             4 × 0.51 M             6 × 0.98 M             ≠
+    Δ koszt                          +94%
+  review:test-coverage               4 × 0.70 M             6 × 1.80 M             ≠
+    Δ koszt                          +156%
+  scribe                             4 × 0.49 M             6 × 0.89 M             ≠
+    Δ koszt                          +81%
+  smoke-operatora                    1 × 0.13 M             1 × 0.22 M             ≠
+    Δ koszt                          +70%
+  stan:zapis                         3 × 0.10 M             6 × 0.24 M             ≠
+    Δ koszt                          +150%
+  start:testy                        1 × 0.01 M             1 × 0.02 M             ≠
+    Δ koszt                          +69%
+  verify                             12 × 0.31 M            —                      ≠
+  verify-batch                       8 × 0.27 M             19 × 0.88 M            ≠
+    Δ koszt                          +224%
+  walidacja-koncowa                  1 × 0.15 M             1 × 0.21 M             ≠
+    Δ koszt                          +42%
+  warmup:vitest                      1 × 0.01 M             1 × 0.03 M             ≠
+    Δ koszt                          +82%
+
+== 4. Model / efort (transkrypt)
+  haiku-5-5/medium                   10                     21                     +110%
+  opus-5-5/high                      51                     54                     +6%
+  opus-5-5/low                       4                      6                      +50%
+  opus-5-5/medium                    40                     63                     +57%
+
+== 5. ctx_start per klasa/model: n, p50 [k], max [k]
+  builder/opus-5-5                   (11, 23, 44)           (12, 35, 47)           ≠
+    Δ p50                            +52%
+  mechaniczny/haiku-5-5              (10, 7, 17)            (14, 9, 18)            ≠
+    Δ p50                            +29%
+  naprawiacz/opus-5-5                (8, 22, 28)            (12, 23, 29)           ≠
+    Δ p50                            +5%
+  orkiestracyjny/haiku-5-5           —                      (7, 5, 5)              ≠
+  orkiestracyjny/opus-5-5            (28, 10, 25)           (38, 12, 26)           ≠
+    Δ p50                            +20%
+  reviewer/opus-5-5                  (24, 11, 13)           (36, 12, 17)           ≠
+    Δ p50                            +9%
+  sceptyk/opus-5-5                   (20, 8, 10)            (19, 11, 12)           ≠
+    Δ p50                            +38%
+  tester-e2e/opus-5-5                (4, 22, 22)            (6, 23, 24)            ≠
+    Δ p50                            +5%
