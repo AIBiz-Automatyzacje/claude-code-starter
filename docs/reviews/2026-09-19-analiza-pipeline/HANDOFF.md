@@ -2427,6 +2427,15 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     „Krok 4” w dev-pr), 1 zostaje — `KROK 3 —` w `finalValidationPrompt` to istniejąca numeracja kroków walidacji (zmieniona treść).
     **Dalej:** zgoda operatora → `git merge --ff-only popr/P19-po-etapie-2` na main, push, usunięcie gałęzi; vibersi na main
     w NOWEJ sesji: `/sync-template`, `.env.e2e` zostaje na 5174 (doctor: OK), potem `/dev-plan` etapu 3 = żywy test P19.
+    (b) **2026-10-13 wieczór — merge i push za zgodą operatora:** `git merge --ff-only`, push `4c0d8c2..c61b17d`, gałąź usunięta;
+    poprawka `a276854` (przypadkowo zacommitowany `skrypty/__pycache__/*.pyc` usunięty; `__pycache__` NIE jest w `.gitignore` —
+    do decyzji operatora). **vibersi:** `/sync-template` 4c0d8c2 → a276854 (15 nowych, 32 zmienione, kopia `.claude/.backups/20261013-222612`),
+    doctor WYNIK OK, „port E2E” OK na 5174; zmiany sync NIEZACOMMITOWANE w chwili zapisu (operator miał zlecić commit tylko `.claude/`
+    bez `.backups/`). Decyzja operatora: przed etapem 3 **smoke P19 na vibersi** (checklista `docs/operator/<data>-smoke-p19.md`,
+    skrypty bez autopilota: e2e.mjs sprawdz/start/stop przy obcym dev serverze na 5174 i wolnym porcie, rozmiar.mjs, zmienne.mjs na
+    historii etapu 2 — refy `bdd35ce`/`1457e5d` są na `origin/feature/etap-2-katalog-publiczny`, na main etap 2 to squash `75077c0`;
+    reszta = „sprawdzi etap 3”), dopiero potem w nowej sesji `/dev-plan` etapu 3 i autopilot. Operator wraca do sesji szablonu po
+    etapie 3 → odczyt runu i PR wg KARTA-ODCZYTU.md i listy z §8 (pkt 1–8 P19).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -2776,6 +2785,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   Wyścig status ↔ recenzja bota był też w PR #1 (89 s) — przy nowym zdarzeniu sprawdzaj wszystkie nagrane PR, nie tylko ten z incydentu.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
+
+**STAN 2026-10-13 wieczór (6a pkt 85 b):** P19 na main i wypchnięta; w vibersi sync + doctor zrobione, dalej smoke P19 (sesja
+vibersi), potem etap 3. **NASTĘPNA SESJA SZABLONU = po etapie 3 vibersi:** odczyt runu autopilota i PR etapu 3 wg KARTA-ODCZYTU.md
+oraz żywy test P19 (STOP startu E2E przy obcym serwerze, przyczyna obcego w restarcie, rozmiar PR z `rozmiar.mjs`, zmienne w smoke'u,
+Stryker `pominieta`, `prompt_zn` z zadania skryptu, walidacja końcowa bez fałszywego test-weakeningu, „gotowa” z polem `recenzja`,
+„KOLEJNA TURA (tylko odpowiedzi)”, log „grupach po pliku”). Instrukcja niżej — dla sesji vibersi, wykonana w części sync/doctor.
 
 **AKTUALNA (2026-10-13) — VIBERSI PO P19: `/sync-template` i etap 3 (6a pkt 85).** Warunek: P19 zmergowana do main szablonu
 i wypchnięta (zgoda operatora w sesji P19). Nowa sesja w katalogu vibersi, na main.
