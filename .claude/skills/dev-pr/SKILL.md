@@ -104,6 +104,9 @@ i recenzja się nie zgadzają” (sha, `powod` skryptu), **bez zmian w kodzie**.
 
 Zero wątków albo `rekomendacja` inna niż KOLEJNA TURA → przejdź do kroku 6 (domknięcie).
 
+`KOLEJNA TURA (tylko odpowiedzi)` → wątki `odrzuć` czekają na naszą odpowiedź, a bramka merge'a liczy je jako `napraw`.
+Krok 4 pomijasz: krok 5 z `wybor: []` wysyła odpowiedzi z dokumentem decyzji i kodu nie zmienia.
+
 ### 4. Decyzja — co naprawiamy w tej turze
 
 **Interaktywnie:** `AskUserQuestion` z `multiSelect: true`, pozycje pogrupowane po klasie, w kolejności

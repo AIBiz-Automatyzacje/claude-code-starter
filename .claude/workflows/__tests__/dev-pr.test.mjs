@@ -138,6 +138,29 @@ test('rekomendacja: zero watkow, ale CI czerwone, konflikt albo galaz w tyle = N
   for (const s of ['CONFLICTING', 'DIRTY', 'test: FAILURE']) assert.ok(r.includes(s), `brak ${s} w: ${r}`)
 })
 
+// P19 (vibersi PR #2): `zbierz` dal MERGUJ przy watku `odrzuc` bez naszej odpowiedzi, a bramka merge'a policzyla go jako
+// `napraw` — merge odblokowala dopiero tura z sama odpowiedzia. Teraz zbierz rekomenduje te ture wprost.
+test('rekomendacja: odrzuc bez naszej odpowiedzi = KOLEJNA TURA (tylko odpowiedzi), nie MERGUJ; po sufitcie DECYZJA OPERATORA; napraw i do-operatora wygrywaja', () => {
+  const r = P.rekomendacja({ ...CZYSTY, watkiOdrzucBezOdpowiedzi: 1 }, 1)
+  assert.equal(r, "KOLEJNA TURA (tylko odpowiedzi) — 1 watkow odrzuc bez naszej odpowiedzi; bramka merge'a liczy je jako napraw (tura 2 z 3)")
+  assert.ok(r.startsWith('KOLEJNA TURA'), 'skill idzie do tury, nie do domkniecia')
+  assert.match(P.rekomendacja({ ...CZYSTY, watkiOdrzucBezOdpowiedzi: 2 }, 3), /^DECYZJA OPERATORA — sufit 3 tur wyczerpany, 2 watkow odrzuc bez naszej odpowiedzi/)
+  assert.match(P.rekomendacja({ ...CZYSTY, watkiNapraw: 1, watkiOdrzucBezOdpowiedzi: 1 }, 1), /^KOLEJNA TURA — 1 watkow do naprawy/)
+  assert.match(P.rekomendacja({ ...CZYSTY, watkiDoOperatora: 1, watkiOdrzucBezOdpowiedzi: 1 }, 1), /^DECYZJA OPERATORA — 1 /)
+  assert.equal(P.rekomendacja({ ...CZYSTY, watkiOdrzucBezOdpowiedzi: 0 }, 1), 'MERGUJ')
+  assert.equal(P.rekomendacja(CZYSTY, 1), 'MERGUJ', 'etap merge nie liczy pola — bez zmian')
+})
+
+test('zbierz: watkiOdrzucBezOdpowiedzi z pola naszaOdpowiedz watkow odrzuc (po przeklasyfikowaniu bez cytatu); pole wymagane w schemacie', () => {
+  const zbierz = wytnij("if (etap === 'zbierz') {", '\n}\n')
+  assert.match(zbierz, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true\)\.length/)
+  assert.ok(zbierz.indexOf('odrzuconeBezCytatu.length') < zbierz.indexOf('watkiOdrzucBezOdpowiedzi'))
+  assert.match(zbierz, /\\`naszaOdpowiedz\\` = true, gdy w watku po pierwszym komentarzu bota jest komentarz autora innego niz bot/)
+  assert.match(zrodlo, /required: \['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'\]/)
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), 'utf8')
+  assert.match(skill, /`KOLEJNA TURA \(tylko odpowiedzi\)` → wątki `odrzuć` czekają na naszą odpowiedź[\s\S]*krok 5 z `wybor: \[\]`/)
+})
+
 // ── Raport tury ───────────────────────────────────────────────────────────
 
 test('tabela tury: wiersz na watek z decyzja z wyniku naprawy zlaczona po id, nie po kolejnosci', () => {

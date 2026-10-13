@@ -151,8 +151,9 @@ const ZEBRANE = {
           klasaBledu: { type: 'string', enum: Object.keys(KLASY_BLEDOW), description: 'klasa BLEDU ze slownika (niezalezna od decyzji w polu klasa)' },
           os: { type: 'string', enum: OSIE_UWAG, description: 'ktory reviewer pipeline\'u powinien byl to zlapac; domyslnie os klasy ze slownika' },
           waga: { type: 'string', enum: WAGI_UWAG, description: 'skutek, gdy defekt zostaje (nie koszt naprawy): P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny bez skutku dla uzytkownika i danych, 0 nie-defekt' },
+          naszaOdpowiedz: { type: 'boolean', description: 'czy w watku jest komentarz autora innego niz bot (nasza odpowiedz) po pierwszym komentarzu bota' },
         },
-        required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga'],
+        required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'],
       },
     },
     prNumer: { type: ['integer', 'null'], description: 'numer pull requesta z gh pr view' },
@@ -343,12 +344,20 @@ function warunkiMerge(stan) {
 
 // Bramka zwracala liste faktow bez werdyktu i zaden epizod nie doszedl do merge'a (ETAP1B §4). Werdykt rozroznia warunek
 // naprawialny kolejna tura (watki napraw) od wymagajacego czlowieka (watki do-operatora, sufit tur, CI, konflikt).
+// Watek `odrzuc` bez naszej odpowiedzi (P19, vibersi PR #2): bramka merge'a widzi go jako nierozwiazany defekt (napraw), wiec
+// `zbierz` nie moze dac MERGUJ — tura z samymi odpowiedziami odblokowuje merge. `watkiOdrzucBezOdpowiedzi` liczy tylko zbierz.
 function rekomendacja(stan, turyWykonane) {
   if (stan.watkiDoOperatora > 0) return `DECYZJA OPERATORA — ${stan.watkiDoOperatora} watkow wymaga decyzji produktowej`
   if (stan.watkiNapraw > 0) {
     return turyWykonane < SUFIT_TUR
       ? `KOLEJNA TURA — ${stan.watkiNapraw} watkow do naprawy (tura ${turyWykonane + 1} z ${SUFIT_TUR})`
       : `DECYZJA OPERATORA — sufit ${SUFIT_TUR} tur wyczerpany, ${stan.watkiNapraw} watkow do naprawy zostalo`
+  }
+  const bezOdpowiedzi = stan.watkiOdrzucBezOdpowiedzi || 0
+  if (bezOdpowiedzi > 0) {
+    return turyWykonane < SUFIT_TUR
+      ? `KOLEJNA TURA (tylko odpowiedzi) — ${bezOdpowiedzi} watkow odrzuc bez naszej odpowiedzi; bramka merge'a liczy je jako napraw (tura ${turyWykonane + 1} z ${SUFIT_TUR})`
+      : `DECYZJA OPERATORA — sufit ${SUFIT_TUR} tur wyczerpany, ${bezOdpowiedzi} watkow odrzuc bez naszej odpowiedzi — odpowiedz w nich recznie z dokumentem decyzji`
   }
   const blokady = warunkiMerge(stan).filter((w) => !w.ok && !w.watki)
   if (blokady.length) return `NIE MERGUJ — ${blokady.map((w) => `${w.nazwa} (jest: ${w.jest})`).join('; ')}`
@@ -488,6 +497,7 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
 | \`do-operatora\` | wymaga decyzji produktowej albo ryzyka nie da sie ograniczyc w tej turze |
 
    Przeczytaj ostatni komentarz bota w watku: gdy po naszej odpowiedzi podtrzymuje zarzut, nie klasyfikuj watku jako \`odrzuc\`.
+   \`naszaOdpowiedz\` = true, gdy w watku po pierwszym komentarzu bota jest komentarz autora innego niz bot.
 4. Dla kazdego watku wypelnij \`wplywNaProjekt\` — to jest pole, ktore operator czyta przy wyborze.
    Odpowiedz w nim na trzy pytania, konkretnie, nie ogolnikami:
    - czy to KLASA bledu, ktora sie powtorzy (czy zobaczymy to samo w kolejnym pull requescie)?
@@ -534,6 +544,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   const rek = rekomendacja({
     mergeable: wynik.mergeable, mergeStateStatus: wynik.mergeStateStatus, ciZielone: wynik.ciZielone, ciDetal: wynik.ciDetal,
     watkiNapraw: licznik['napraw'] + licznik['napraw-szerzej'], watkiDoOperatora: licznik['do-operatora'],
+    watkiOdrzucBezOdpowiedzi: watki.filter((w) => w.klasa === 'odrzuc' && w.naszaOdpowiedz !== true).length,
   }, tura - 1)
   log(`/dev-pr tura ${tura}: rekomendacja ${rek}`)
   log(`/dev-pr tura ${tura}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
