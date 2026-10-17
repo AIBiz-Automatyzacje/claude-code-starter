@@ -166,6 +166,8 @@ Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł 
 (klasa, reguła, wzorce plików, szczebel). Wpisy trafiają do indeksu `docs/learned-patterns.md`; wpisy `kod` i `lint`
 wracają też jako `propozycjeBramek[]`; obok nich `propozycjeDoReviewerow[]`. Commit compoundu workflow pushuje na bieżącą
 gałąź (po merge'u to gałąź główna); `push: false` przy niepustym `commit` → wypchnij go przed kolejnym PR i krokiem CLAUDE.md.
+Bez merge'u bieżąca gałąź to gałąź PR: commit compoundu trafia do PR i bot robi recenzję przyrostową samych plików wiedzy.
+Chroniona gałąź główna odrzuca push — wtedy `pushDetal` ma błąd, a commit wypychasz przez PR albo ręcznie.
 
 **Propozycji bramek nie wdrażasz.** Typ albo reguła lint to zmiana kodu projektu — decyzja operatora; zapis zostaje
 w samym solution (`szczebel`, `szczebel_powod`). Do wdrożenia bramki lekcja działa jak reguła (indeks, wycinek); po wdrożeniu
