@@ -2685,6 +2685,52 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     workflowu niesprawdzony. **DECYZJA OPERATORA 2026-10-17:** P21 PRZED synchronizacją vibersi (jeden sync po P21 zamiast dwóch —
     etap 4 i tak czeka na P21, pilot P21 nie wymaga P20 w vibersi); smoke P20 (agenci workflowu: hook `.env*`, A1 tester, A5 sceptyk,
     A9 fix:poprawka) dołączony do pilota P21 — workflowy tylko na kopii vibersi, nie w projekcie. Gałąź `popr/P20-po-etapie-3` lokalnie.
+89. **P21 SESJA 1 ZROBIONA NA GAŁĘZI `popr/P21-koszt` (2026-10-17), NIEZMERGOWANA; pilot przygotowany (suchy bieg), nie uruchomiony.**
+    8 commitów nad main (`93454cb`…`c62ec7c`): 4 punkty + prompt-audit + harness pilota + 2 × poprawki po recenzji; testy 1004 → 1040/1040,
+    typecheck i lint czyste; prompt-audit dodanych linii (`pa_dodane.py`, 17 plików jawnie) 9 trafień → 0, kontrola na podłożonej
+    linii (Edit, cofnięta Edit) = 2 trafienia. Każdy punkt sprawdzony podmianą linii na jeden bieg: moje 39 mutacji padają; recenzent
+    59 mutacji, 30 przeżyło → po dopisanych testach 32/32 (30 + 2 łapane wcześniej tylko testem parzystości `-figma`) padają.
+    (B1) `dev-autopilot-wf.js`: `porcjujFix` — grupa = plik (bez `:linia`, też `:12-14`), P1 w grupie pierwsze, grupy z P1 w osobnych
+    porcjach przed P2, do `MAKS_W_PORCJI_FIXA = 6` (first-fit, większa grupa dzielona równo); porcje sekwencyjnie, każda `zeStanem`,
+    etykieta `fix:faza-N:porcja-K` (telemetria: rola `fix`, klasa naprawiacz), commit każdej porcji „poprawki po review fazy N”
+    (walidacja końcowa i `czesci.mjs` bez zmian — test na repo z 3 porcjami + kontrolą); `zlozWynikiFixa` = jeden FixResult (kontrola
+    fixa i tura poprawek dostają commity wszystkich porcji); porcja z FAIL / P1 / plikiem binarnym kończy fix (STOP); serwer martwy
+    przełącza kolejne porcje bez przeglądarki; ostatnia porcja zwija „Do poprawy” i pisze known-issues także z `[P2]` poprzednich;
+    pełna walidacja z buildem w każdej porcji; `nienaprawione` w `required` FixResult, rozjazd `[P2]` vs `nierozwiazaneP2` w logu.
+    `fixPostep` w stanie (schemat, bootstrap przepisuje 1:1): świeży run po STOP-ie wznawia od porcji, na której stanął; po wszystkich
+    porcjach (STOP w turze poprawek) idzie prosto do kontroli; wznowiony fix = kontrola i poprawka czytają fix per commit (`git show`),
+    bo między porcjami leżą commity operatora. Etap 3 faza 4 (16 × P2, 14 plików) = 3 porcje. (B2) krok E kontekstu designerskiego:
+    agenci po 8 ekranów (do 3 części), `get_screenshot` → `curl` do pliku bez Read, `get_design_context` z `excludeScreenshot: true`
+    (w etapie 3 to on niósł 14 zrzutów i 524k zn), `ekrany/<nazwa>.md` per ekran, SPEC.md = indeks (screeny z kolumną SPEC, tokeny,
+    rozjazdy z wierszy agentów); pole IU `**Makiety:**` (parser: backticki, lista, wieloliniowe, „—” = zero, puste = brak),
+    `plan/makiety.mjs`: `sprawdz` — obcy ekran = błąd, UI bez pola = uwaga, SPEC podzielony bez pliku ekranu = błąd; `plan.mjs designerski
+    <plan> --iu` liczy blok buildera (SPEC indeks + SPEC i PNG tylko ekranów IU; bez pola / SPEC sprzed P21 = cały SPEC); planner
+    execute-wf wkleja wynik skryptu. (B3) `/dev-prep` kończy się linią „Następny krok: /clear, potem /dev-plan <origin>” i nie uruchamia
+    `/dev-plan` w sesji; dev-plan krok 0.0 — inna praca w sesji = `AskUserQuestion` z rekomendacją `/clear`. (B4) polecenie odczytu
+    zakresami w 5 builderach i klasie naprawiacza (`wc -l`/`grep -n`/`sed -n`/Read z offset, plik < 200 linii w całości, jeden plik
+    na komendę, `tool-results` zakresami, diff per plik); fix czyta z `review-faza-N.md` tylko swoje wpisy.
+    **Recenzja subagenta (odczyt, 59 mutacji w worktree): 0 P1 / 6 P2 / 5 P3 — wdrożone:** P2 — wznowienie: zakres kontroli obejmował
+    commity operatora; P1 w dużej grupie trafiał do późniejszej porcji („plików innych porcji nie otwierasz” przeczyło wspólnemu plikowi);
+    `nierozwiązaneP2` liczone podwójnie; `[P2]` tylko przez regex z kotwicą i pole opcjonalne; puste `**Makiety:**` = zero ekranów bez
+    uwagi; SPEC podzielony bez pliku ekranu = builder bez pomiarów. P3 — powtórka całego fixa po STOP-ie w turze poprawek; build tylko
+    w ostatniej porcji; rozjazdy z jednego zdania; IU bez `Delegate to` bez bloku. **Niezweryfikowane:** parametr `maxDimension`
+    `get_screenshot` (Figma MCP niezalogowany u recenzenta; agent etapu 3 używał go 25× bez błędu).
+    **Pilot przygotowany (wykonanie: S2):** `skrypty/p21_pilot.py` + `p21_pilot_generuj.mjs` + `p21_sedzia_szablon.js` + test (10).
+    Baza = klon vibersi (bez `.env*`, refy/reflog/obiekty przyszłości usunięte — kontrola `793be1a`, `7c9c87c`, `419ad75`, `fd27b4f`,
+    `08e5584` nieosiągalne) na `71b409e` + stan po review fazy 4 odtworzony 3 komendami Bash scribe'a z transkryptu (raport = archiwum
+    1:1, „Do poprawy” 16 × P2, P3 faz 1–4), `pnpm install --offline`; walidacja bazy: typecheck OK, vitest 1125/1125. Warianty: stary =
+    `.claude` z main, nowy = z gałęzi (nakładka `rsync` + commit = baza diffu). Skrypt Workflow wariantu = stałe i funkcje fixa wycięte
+    z jego `dev-autopilot-wf.js` + blok „3) FIX” 1:1 z atrapą stanu; findingi = lista z polecenia `fix:faza-4` runu `wf_f17e9b2e-8d4`
+    (16 × P2: 9 KOD, 7 TEST), `srodowiskoE2E: pominieto` w obu. Suchy bieg: stary 3 agentów, nowy 5 (3 porcje), smoke 6 (hook, 4 ×
+    verify-batch po 4, tester A1), sędzia 6 (4 porcje ocen NAPRAWIONY / CZĘŚCIOWO / NIENAPRAWIONY na ślepo A/B + 2 × regresje). Smoke
+    A1: zadanie `docs/active/smoke-a1` (1 scenariusz, `e2e.mjs scenariusze` = 1), strona `python -m http.server`, `.env.e2e` bez
+    sekretów, atrapa `agent-browser` (pierwszy zrzut strony wisi 90 s → `alarm 30` = 142, about:blank i ponowienie przechodzą); A10:
+    `.env.smoke-p20` z fikcyjną wartością (hook na kopii: kod 2). Sesje `claude -p` w katalogu kopii, deny Documents / projekty /
+    drugi wariant / pliki harnessu, hooki włączone, bezpiecznik 40 / 10 / 15 USD; `skan` liczy odczyty spoza kopii i wartość z `.env`.
+    **Koszt planu pilota (skrypt `koszt-planu`, `dane/p21-pilot-plan-kosztu.json`):** stary 3,48 M (fix fazy 4 etapu 3: 2,94 + kontrola
+    0,19 + poprawka 0,35), nowy oczekiwany 2,09 (−40%), sędzia 1,44, smoke 0,63, zapas 0,5 → **8,1 M oczekiwane, 9,5 M górna granica**.
+    **Dalej:** S2 (§8) — pilot + smoke P20 → decyzja o merge'u (spadek jakości = B1 odpada, reszta P21 zostaje) → merge, push → jeden
+    sync w vibersi → etap 4.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3056,10 +3102,45 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   a przy nieaktualnej ścieżce zdalnej odrzuca push „stale info” — `fetch --prune` + `--force-if-includes`. W teście pomiaru
   „z przesuniętego main” sprawdź, że `git switch` się udał (zmiana w drzewie blokuje przełączenie i test przechodzi na złej gałęzi).
   Koniec fazy bierz ze stanu (baza następnej fazy), nie z tematu commita — ręczna naprawa operatora po STOP-ie nie ma tematu pipeline'u.
+- P21 S1 (2026-10-17): pętli orkiestratora nie testuj regexem na źródle — recenzent przeżył 9 mutacji pętli porcji; test wycina blok
+  „3) FIX” z atrapą `agent()`/stanu i wykonuje go (FAIL w porcji, wznowienie, serwer martwy). Zrzutów w kontekście agenta Figmy nie
+  robił `get_screenshot` (zwraca `image_url`), tylko `get_design_context` (obraz w odpowiedzi; `excludeScreenshot: true`) — liczyć
+  typy bloków `tool_result`, zanim się wskaże źródło. Stanu „przed fixem” nie ma w gicie (raport review i „Do poprawy” niecommitowane) —
+  odtwarzaj go komendami scribe'a z transkryptu i porównuj z archiwum. Mutacje plików `.md` skryptem (podmiana na jeden bieg, potem
+  przywrócenie) — jedyny zapis `.md` poza Write/Edit; `git status` po serii. W polu długiej listy mutacji nie używaj heredoca w zsh
+  (backticki i `(…)` w treści) — lista w pliku `.py` przez Write.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-17) — P21 SESJA 1 (6a pkt 86 e, pkt 88).** P20 zmergowana i wypchnięta (`93454cb`); decyzja operatora:
+**AKTUALNA (2026-10-17) — P21 SESJA 2: PILOT + SMOKE P20 + DECYZJA O MERGE'U (6a pkt 89).** S1 na gałęzi `popr/P21-koszt`
+(niezmergowana). Nowa sesja w katalogu szablonu, na tej gałęzi. Pilot uruchamia agentów (≈ 8,1 M, granica 9,5 M) — zgoda w tej instrukcji.
+
+```
+Kontynuujemy P21 „koszt” — sesja 2 (HANDOFF 6a pkt 89). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 89, pkt 86 (e) część P21, §7 ostatni wpis;
+skrypty/p21_pilot.py (docstring). Gałąź popr/P21-koszt (S1 zrobiona). Zgoda na pilot ≈ 8,1 M (granica 9,5 M).
+
+Zadanie:
+1. Katalog pilota w scratchpadzie tej sesji (K). python3 skrypty/p21_pilot.py przygotuj K; potem suchy K (oczekiwane: stary 3
+   agentów, nowy 5 — 3 porcje, smoke 6; scenariusz A1 = 1; plan kosztu jak w pkt 89). Workflowy WYŁĄCZNIE na kopiach w K.
+2. Pilot: start K fix-stary i start K fix-nowy (kolejno; po każdym zbierz K <krok>, skan K <krok> = 0 przecieków, walidacja K
+   <wariant>); sedzia-przygotuj K → start K sedzia → zbierz K sedzia. Przerwij, gdy koszt przekroczy 9,5 M.
+3. Smoke P20: start K smoke → zbierz, skan. Oczekiwane: hook zablokował cat .env.smoke-p20 i wartość nie trafiła do transkryptu (A10);
+   log „16 findingow w 4 porcjach po 4 (sortowane po pliku)” i 4 × verify-batch (A5); tester A1: zawieszony zrzut → close + próbny
+   about:blank + PASS/FAIL z asercji albo ponowienie, nie SKIP harness całej fazy; A9: polecenie fix:poprawka obu wariantów ma
+   `git diff <x>^ -- '<plik>'` plików pozycji K (gdy kontrola dała pozycje) — sprawdź w transkrypcie.
+4. wynik K → tabela: koszt etapu fix (fix / kontrola / poprawka, ctx max), naprawione wg sędziego, pozycje K i regresje sędziego,
+   walidacja. Kryterium: nowy nie gorszy w naprawionych i regresjach przy niższym koszcie → merge P21; spadek jakości = B1 odpada
+   (revert commitów B1 + poprawek B1), reszta P21 zostaje. Dane: dane/p21-pilot-wynik.{json,txt}.
+5. Wpis HANDOFF 6a pkt 90 + §8 (merge za moją zgodą, potem jeden /sync-template w vibersi i etap 4 z /clear przed /dev-plan).
+
+Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*; bez merge'a bez mojej zgody.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**Historia: (2026-10-17) — P21 SESJA 1 (6a pkt 86 e, pkt 88) — WYKONANA (6a pkt 89).** P20 zmergowana i wypchnięta (`93454cb`); decyzja operatora:
 P21 przed synchronizacją vibersi, smoke P20 dołączony do pilota P21. Nowa sesja w katalogu szablonu, na main.
 
 ```
@@ -3111,6 +3192,9 @@ Zadanie:
 Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z .env*.
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
+
+**STAN 2026-10-17 (6a pkt 89):** P21 S1 na gałęzi `popr/P21-koszt` (B1–B4 + recenzja, 1040/1040, niezmergowana), pilot przygotowany
+(suchy bieg, plan 8,1 M / granica 9,5 M). Dalej: P21 S2 (instrukcja AKTUALNA wyżej) → merge → sync w vibersi → etap 4.
 
 **STAN 2026-10-17 (6a pkt 88):** P20 (S1 + S2) zmergowana do main i wypchnięta (`93454cb`), testy 1004/1004, smoke S2 zgodny
 (909f669, 93/121), hook `.env*` blokuje na żywo w sesji i u subagenta. vibersi bez synchronizacji. Dalej: P21 S1 (instrukcja wyżej)
