@@ -656,7 +656,7 @@ WAZNE: to JEDYNY przebieg fix tej fazy — po nim NIE ma ponownego review. Twoj 
 OSTATECZNYM zrodlem prawdy o stanie findingow, wiec klasyfikuj uczciwie czego nie zamknales.
 ${p.z > 1 ? `
 PORCJA ${p.numer} z ${p.z}: lista nizej to findingi tej porcji (kilka plikow). Findingi innych porcji naprawiaja kolejni agenci,
-kazdy swoim commitem — ich plikow nie otwierasz i nie poprawiasz. Defekt, ktorego w pliku juz nie ma (poprawiony wczesniej albo
+kazdy swoim commitem — ich plikow nie otwierasz i nie poprawiasz. Defekt nieobecny w pliku (poprawiony wczesniej albo
 recznie po STOP-ie), liczysz jako zamkniety bez zmiany kodu i piszesz o tym jedno zdanie w raporcie.
 ` : ''}
 Folder zadania: ${sciezka}
@@ -752,7 +752,7 @@ ${p2Poprzednich.map((n) => `- ${n}`).join('\n')}
 (a zero nierozwiazanych P1), zapisz je do ${sciezka}/known-issues.md. Dedup: jesli sekcja
 "## Faza ${numerFazy}" juz istnieje — ZASTAP jej cala tresc (od naglowka do nastepnego "## " lub konca pliku),
 NIE dopisuj duplikatu. Format: "## Faza ${numerFazy}\\nPozostaje N problemow P2 po fixie. Review: review-faza-${numerFazy}.md\\n- 🟠 [P2] plik — opis".
-Po zapisie upewnij sie ze jest DOKLADNIE jeden naglowek "## Faza ${numerFazy}".` : `KNOWN-ISSUES zapisuje ostatnia porcja fixa tej fazy z wpisow [P2] w nienaprawione[] — ${sciezka}/known-issues.md nie ruszasz.`}
+Po zapisie plik ma DOKLADNIE jeden naglowek "## Faza ${numerFazy}".` : `KNOWN-ISSUES zapisuje ostatnia porcja fixa tej fazy z wpisow [P2] w nienaprawione[] — ${sciezka}/known-issues.md nie ruszasz.`}
 Jesli nierozwiazany P2 jest typu E2E: w KAZDEJ zrodlowej linii "- [ ] Test: [E2E] ..." / "- [ ] Weryfikacja: [E2E] ..."
 tej fazy wskazujacej ten flow ZASTAP istniejacy suffix "(SKIP — …)"/"(FAIL: …)" (jesli jest) JEDNYM nowym
 " (FAIL: <skrot bledu z przebiegu> — known-issues faza ${numerFazy})" — na linii ma byc dokladnie jeden suffix; NIE odznaczaj jej.
