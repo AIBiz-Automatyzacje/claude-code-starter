@@ -85,6 +85,20 @@ def pochodzenie(repo, commit, plik, linia, okna):
     return h[:7], kat, temat
 
 
+def runy_pr(runy, wyniki, numer):
+    """Runy dev-pr-wf jednego PR (P20 S2: kilka PR jednego zadania w jednej sesji — części PR wieloczęściowego).
+
+    zbierz = rekordy run.pr z numerem tego PR (rekord bez numeru nie należy do żadnego PR — liczony osobno);
+    czesc = numer części z tych rekordów (None = zadanie jednym PR); koszt = runy z args.czesc tej części,
+    a bez części wszystkie runy sesji (jak przed P20).
+    """
+    zbierz = [r for r in runy if r.get('pr') and r['pr'].get('numer') == numer]
+    bez_numeru = [r for r in runy if r.get('pr') and r['pr'].get('numer') is None]
+    czesc = next((r['pr'].get('czesc') for r in zbierz if r['pr'].get('czesc') is not None), None)
+    koszt = runy if czesc is None else [r for r in runy if wyniki.get(r['run'], {}).get('args', {}).get('czesc') == czesc]
+    return zbierz, bez_numeru, czesc, koszt
+
+
 def okna_sesji(sciezka):
     """Wywołania Monitor (start, koniec, zdarzenie) i koszt sesji od wywołania skilla dev-pr do końca transkryptu."""
     wiersze = [json.loads(l) for l in open(sciezka) if l.strip()]
@@ -137,14 +151,17 @@ def main():
     wf_dir = os.path.join(os.path.dirname(a.sesja), sesja_id, 'workflows')
     wyniki = {os.path.basename(f)[:-5]: json.load(open(f)) for f in glob.glob(os.path.join(wf_dir, 'wf_*.json'))}
 
-    print(f'# Odczyt PR #{pr["number"]} {pr["title"]} — projekt {projekt}, zadanie {a.zadanie}\n')
+    zbierz, bez_numeru, czesc, runy_kosztu = runy_pr(runy, wyniki, pr['number'])
+    print(f'# Odczyt PR #{pr["number"]} {pr["title"]} — projekt {projekt}, zadanie {a.zadanie}'
+          + (f', część {czesc}' if czesc is not None else '') + '\n')
     pliki = pr['changedFiles']
     print(f'pliki PR {pliki}, +{pr["additions"]} −{pr["deletions"]}, commitów {len(pr["commits"])}')
 
     # 1. wątki per oś i waga (ostatni zbierz każdej tury)
     print('\n## 1. Wątki bota (rekordy run.pr etapu zbierz)')
-    # Dwa PR jednego zadania w jednej sesji (etap 3: PR #3 i #4) — tylko rekordy tego PR.
-    zbierz = [r for r in runy if r.get('pr') and r['pr'].get('numer') in (None, pr['number'])]
+    # Dwa PR jednego zadania w jednej sesji (etap 3: PR #3 i #4) — tylko rekordy z numerem tego PR (runy_pr).
+    if bez_numeru:
+        print(f'  UWAGA: {len(bez_numeru)} rekordów zbierz bez numeru PR — pominięte (nie wiadomo, którego PR dotyczą)')
     klasy = {}
     for r in zbierz:
         print(f'  tura {r["pr"]["tura"]}: uwag {r["pr"]["uwagi_razem"]} (P1 {r["pr"]["p1"]} / P2 {r["pr"]["p2"]} / P3 {r["pr"]["p3"]}), '
@@ -187,11 +204,12 @@ def main():
     # 5. koszt
     print('\n## 4. Koszt (jednostki względne)')
     suma = 0
-    for r in runy:
+    for r in runy_kosztu:
         etap = wyniki.get(r['run'], {}).get('args', {}).get('etap', '?')
         suma += r['koszt']['jedn']
         print(f'  {r["run"]} {etap:9} {r["status"]:4} agentów {r["koszt"]["agentow"]} {r["koszt"]["jedn"] / 1e6:.3f} M {r["sekundy"]} s')
-    print(f'  runy dev-pr-wf razem: {len(runy)}, {suma / 1e6:.2f} M')
+    print(f'  runy dev-pr-wf razem: {len(runy_kosztu)}' + (f' (część {czesc}; sesja {len(runy)})' if czesc is not None else '')
+          + f', {suma / 1e6:.2f} M')
     epizody = [r for r in rek if r['typ'] == 'skill']
     for e in epizody:
         print(f'  epizod {e["skill"]:16} {e["start"][11:19]}–{e["koniec"][11:19]} {e["koszt_jedn"] / 1e6:.2f} M, workflow {e["workflow_calls"]}, '

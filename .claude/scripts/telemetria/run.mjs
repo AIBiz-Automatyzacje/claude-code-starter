@@ -135,6 +135,8 @@ function rekordPr(wynik, klasyZRegula) {
   const ile = (waga) => watki.filter((w) => w.waga === waga).length
   return {
     numer: liczbaLubNull(wynik.prNumer), tura: liczbaLubNull(wynik.tura), pliki: liczbaLubNull(wynik.plikiPr),
+    // PR wieloczesciowy (P20 S2): numer czesci z etapu zbierz; null = zadanie jednym PR albo run sprzed P20.
+    czesc: liczbaLubNull(wynik.czesc),
     uwagi_razem: watki.length, p1: ile('P1'), p2: ile('P2'), p3: ile('P3'),
     // Rekomendacja liczona w JS dev-pr-wf (P5); koszyk A–D (ETAP1B) — producent w It. 2.
     koszyk: null, rekomendacja: tekstLubNull(wynik.rekomendacja),

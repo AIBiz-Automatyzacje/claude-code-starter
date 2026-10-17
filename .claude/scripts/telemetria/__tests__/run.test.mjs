@@ -142,13 +142,24 @@ test('run.pr z etapu zbierz dev-pr: klasy uwag, wagi, liczba plikow PR', () => {
     status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
   })
   assert.deepEqual(r.pr, {
-    numer: 17, tura: 2, pliki: 40, uwagi_razem: 3, p1: 1, p2: 1, p3: 0, koszyk: null, rekomendacja: null,
+    numer: 17, tura: 2, pliki: 40, czesc: null, uwagi_razem: 3, p1: 1, p2: 1, p3: 0, koszyk: null, rekomendacja: null,
     klasy: [
       { id: 'PRRT_1', klasa: 'sciezka-bledu', severity: 'P2', plik: 'a.ts:1', os: 'correctness', decyzja: 'napraw', ma_regule: null },
       { id: 'PRRT_2', klasa: 'preferencja-bota', severity: '0', plik: 'b.ts:2', os: 'brak', decyzja: 'odrzuc', ma_regule: null },
       { id: 'PRRT_3', klasa: 'bramka-czarna-lista', severity: 'P1', plik: 'c.ts:3', os: 'security', decyzja: 'napraw', ma_regule: null },
     ],
   })
+})
+
+// P20 S2: dwa PR jednego zadania (vibersi etap 3: PR #3 cz. 1, PR #4 cz. 2) — rekord niesie numer czesci z etapu zbierz.
+test('run.pr.czesc z wyniku etapu zbierz (PR wieloczesciowy); bez pola = null', () => {
+  const zbierz = (/** @type {Record<string, unknown>} */ wynik) => rekordRunu({
+    harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'zbierz', tura: 1, prNumer: 4, watki: [], ...wynik } },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
+  }).pr
+  assert.equal(zbierz({ czesc: 2 })?.czesc, 2)
+  assert.equal(zbierz({ czesc: null })?.czesc, null)
+  assert.equal(zbierz({})?.czesc, null)
 })
 
 test('run.pr.klasy[].ma_regule (P10): klasa uwagi ma regule w wiedzy projektu; bez odczytu wiedzy = null', () => {
