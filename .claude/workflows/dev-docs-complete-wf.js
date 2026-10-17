@@ -147,7 +147,7 @@ function czesciPr(czesci, nazwaZadania) {
   // Jeden PR do progu wlacznie (P19), czesc PR wieloczesciowego ponizej progu (czesci.mjs).
   const zaDuza = lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
   const uwaga = zaDuza || czesci.uwaga
-    ? `UWAGA: ${czesci.uwaga || `część powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota`} — ${opis}`
+    ? `UWAGA: ${czesci.uwaga || (lista.length === 1 ? `PR powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota` : `część z ${PROG_PLIKOW_PR} lub więcej plikami do recenzji bota (część ma mieć mniej)`)} — ${opis}`
     : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, wysyłka \`/dev-pr --czesc 1\`` : null
   if (lista.length === 1) return { uwaga, sekcja: null }
   const skrot = (sha) => String(sha).slice(0, 12)

@@ -147,7 +147,7 @@ Datę do plików bierz z `date +%F`.
    - Commit: `docs($ARGUMENTS): archiwum` (z mapą funkcji, gdy pkt 4a ją zmienił)
    - Potwierdź ukończenie użytkownikowi
 
-7a. **Części PR** (po commicie archiwum): `node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/$ARGUMENTS`. Skrypt mierzy pliki do recenzji bota (po filtrach `.coderabbit.yaml`, próg 150) na commitach końca faz ze stanu autopilota; cięcie bierze z sekcji „Części PR” planu, a gdy jej nie ma albo część z planu ma ≥ 150 — liczy je sam na granicy faz. Więcej niż jedna część → na końcu podsumowania sekcja `## Części PR` z tabelą `| Część | Fazy | Od | Do | Plików do recenzji |` (commity cięcia, 12 znaków; ostatnia część „czubek gałęzi”) i commit `docs($ARGUMENTS): części PR w podsumowaniu` — z tej tabeli `/dev-pr --czesc N` bierze commity cięcia. `ok: false` (faza sama powyżej progu) albo `uwaga` przepisz użytkownikowi.
+7a. **Części PR** (po commicie archiwum): `node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/$ARGUMENTS`. Skrypt mierzy pliki do recenzji bota (po filtrach `.coderabbit.yaml`, próg 150) na commitach końca faz ze stanu autopilota; cięcie bierze z sekcji „Części PR” planu, a gdy jej nie ma albo część z planu ma ≥ 150 — liczy je sam na granicy faz (koniec fazy = stan przed execute następnej, z ręcznymi naprawami); całość do 150 to jeden PR także przy sekcji w planie. Więcej niż jedna część → na końcu podsumowania sekcja `## Części PR` z tabelą `| Część | Fazy | Od | Do | Plików do recenzji |` (commity cięcia, 12 znaków; ostatnia część „czubek gałęzi”) i commit `docs($ARGUMENTS): części PR w podsumowaniu` — z tej tabeli `/dev-pr --czesc N` bierze commity cięcia. `ok: false` (faza sama powyżej progu) albo `uwaga` przepisz użytkownikowi.
 
 ## Format wyjściowy
 ```

@@ -276,7 +276,7 @@ test('czesci PR: dwie czesci = tabela z commitami ciecia do podsumowania i infor
   assert.doesNotMatch(`${dwie.uwaga}${dwie.sekcja}`, /per obszar|per katalog/)
   const jedna = (/** @type {number} */ n) => C.czesciPr(C.czesciZWyniku(wynikCzesci([{ czesc: 1, fazy: '1–2', od: SHA_A, do: SHA_C, doRecenzji: n }])), 'z')
   assert.deepEqual(jedna(150), { uwaga: null, sekcja: null })
-  assert.match(jedna(151).uwaga ?? '', /^UWAGA: część powyżej progu 150 plików do recenzji bota — część 1: fazy 1–2 \(151\)$/)
+  assert.match(jedna(151).uwaga ?? '', /^UWAGA: PR powyżej progu 150 plików do recenzji bota — część 1: fazy 1–2 \(151\)$/)
   assert.equal(jedna(151).sekcja, null)
 })
 
@@ -286,6 +286,10 @@ test('czesci PR: czesc >= 150 albo uwaga skryptu = UWAGA (tabela zostaje); wynik
   ], { ok: false, uwaga: 'bez cięcia na granicy faz poniżej 150: część 1 (fazy 1) 160 — faza powyżej limitu bota, dziel zadanie w planowaniu' })), 'z')
   assert.match(zaDuza.uwaga ?? '', /^UWAGA: bez cięcia na granicy faz poniżej 150: .* dziel zadanie w planowaniu — część 1: fazy 1 \(160\), część 2: fazy 2 \(10\)$/)
   assert.ok(zaDuza.sekcja?.includes('| 1 | 1 | 6ada855e2f76 | 909f669f0efc | 160 |'))
+  const rowna = C.czesciPr(C.czesciZWyniku(wynikCzesci([
+    { czesc: 1, fazy: '1', od: SHA_A, do: SHA_B, doRecenzji: 150 }, { czesc: 2, fazy: '2', od: SHA_B, do: SHA_C, doRecenzji: 10 },
+  ])), 'z')
+  assert.match(rowna.uwaga ?? '', /^UWAGA: część z 150 lub więcej plikami do recenzji bota \(część ma mieć mniej\) — część 1: fazy 1 \(150\)/, 'czesc rowna progowi = UWAGA')
   for (const zly of ['', 'nie JSON', '{"wyjatek":"brak stanu"}', wynikCzesci([{ czesc: 1, fazy: '1', od: 'HEAD; rm -rf /', do: SHA_C, doRecenzji: 3 }])]) {
     assert.deepEqual(C.czesciPr(C.czesciZWyniku(zly), 'z'), {
       uwaga: 'UWAGA: części PR niezmierzone (wynik czesci.mjs nieczytelny) — sprawdz: `node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/z`', sekcja: null,

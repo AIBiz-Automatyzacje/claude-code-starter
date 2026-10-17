@@ -2,8 +2,8 @@
 // Czesci PR zadania (P20 S2, PR wieloczesciowy): rozmiar kazdej czesci na commitach konca faz, bez worktree.
 // vibersi etap 3: archiwizacja zmierzyla 172 pliki do recenzji (> 150, limit bota) i radzila podzial „per katalog”, nierealny
 // dla jednej galezi; operator podzielil PR recznie po fazie 3 (cięcie 909f669 = kontrola diffu naprawczego fazy 3: PR #3
-// 93 pliki, PR #4 121). Koniec fazy N = ostatni commit fazy w zakresie (baza fazy N, baza fazy N+1] ze stanu autopilota:
-// kontrola diffu naprawczego, poprawki po review albo commit execute.
+// 93 pliki, PR #4 121). Koniec fazy N = baza fazy N+1 ze stanu autopilota (HEAD przed jej execute), a bez niej ostatni commit
+// fazy po temacie: kontrola diffu naprawczego, poprawki po review albo commit execute.
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   czesci.mjs --zadanie <docs/completed/<zadanie> | docs/active/<zadanie>> [--baza <ref>]
@@ -62,23 +62,43 @@ export function koniecFazy(commity, zadanie, faza) {
   return null
 }
 
+/** @param {string} projekt @param {string} przodek @param {string} potomek @returns {boolean} */
+function jestPrzodkiem(projekt, przodek, potomek) {
+  return spawnSync('git', ['merge-base', '--is-ancestor', przodek, potomek], { cwd: projekt }).status === 0
+}
+
 /**
- * Konce faz z bazy kazdej fazy w stanie autopilota (`fazy[].baza` = HEAD przed execute fazy).
+ * Konce faz ze stanu autopilota. Faza nieostatnia konczy sie na bazie nastepnej (`fazy[N+1].baza` = HEAD przed execute fazy
+ * N+1): to stan po review, fixie i recznej naprawie operatora po STOP-ie, wiec takze po commitach spoza tematow pipeline'u.
+ * Bez bazy nastepnej (stan sprzed P13, null po bledzie zapisu) i dla ostatniej fazy — ostatni commit fazy po temacie
+ * (`koniecFazy`) w zakresie od jej bazy (albo konca poprzedniej) do czubka. Faza bez commita (0 IU) konczy sie tam, gdzie
+ * poprzednia — z uwaga, bez wyjatku.
  * @param {string} projekt
- * @param {{ numer: number, baza?: string }[]} fazy
- * @param {string} zadanie
- * @returns {KoniecFazy[]}
+ * @param {{ numer: number, baza?: string | null }[]} fazy
+ * @param {{ zadanie: string, baza: string, czubek: string }} we
+ * @returns {{ konce: KoniecFazy[], uwagi: string[] }}
  */
-function konceFaz(projekt, fazy, zadanie) {
-  return fazy.map((f, i) => {
-    if (!f.baza) throw new Error(`stan autopilota: faza ${f.numer} bez pola baza`)
-    const granica = fazy[i + 1]?.baza ?? 'HEAD'
-    const commity = git(projekt, ['log', '--reverse', '--format=%H%x09%s', `${f.baza}..${granica}`]).split('\n').filter(Boolean)
+function konceFaz(projekt, fazy, { zadanie, baza, czubek }) {
+  /** @type {KoniecFazy[]} */
+  const konce = []
+  /** @type {string[]} */
+  const uwagi = []
+  fazy.forEach((f, i) => {
+    const poprzedni = konce.at(-1)?.koniec ?? baza
+    const nastepna = fazy[i + 1]?.baza
+    if (nastepna && jestPrzodkiem(projekt, nastepna, czubek)) {
+      konce.push({ faza: f.numer, koniec: git(projekt, ['rev-parse', nastepna]).trim() })
+      return
+    }
+    const od = f.baza && jestPrzodkiem(projekt, f.baza, czubek) ? f.baza : poprzedni
+    const commity = git(projekt, ['log', '--reverse', '--format=%H%x09%s', `${od}..${czubek}`]).split('\n').filter(Boolean)
       .map((l) => ({ sha: l.slice(0, l.indexOf('\t')), temat: l.slice(l.indexOf('\t') + 1) }))
     const koniec = koniecFazy(commity, zadanie, f.numer)
-    if (!koniec) throw new Error(`faza ${f.numer}: brak commita fazy w ${f.baza.slice(0, 7)}..${granica.slice(0, 7)}`)
-    return { faza: f.numer, koniec }
+    if (!koniec) uwagi.push(`faza ${f.numer}: bez commita fazy — koniec jak poprzedniej (${poprzedni.slice(0, 12)})`)
+    else if (i < fazy.length - 1) uwagi.push(`faza ${f.numer}: koniec z tematu commita (brak bazy fazy ${fazy[i + 1].numer} w historii)`)
+    konce.push({ faza: f.numer, koniec: koniec ?? poprzedni })
   })
+  return { konce, uwagi }
 }
 
 /**
@@ -94,6 +114,7 @@ function cieciaPlanu(projekt, katalog, zadanie) {
   const sciezka = /^Plan techniczny: `([^`]+)`/m.exec(readFileSync(plikZadania, 'utf8'))?.[1]
   if (!sciezka || !existsSync(join(projekt, sciezka))) return null
   const sekcja = sekcjaCzesci(readFileSync(join(projekt, sciezka), 'utf8'))
+  // Sekcja z bledami zapisu (sprawdz ja odrzucil) nie wyznacza ciecia — pomiar.
   if (!sekcja || sekcja.problemy.length || !sekcja.czesci.length) return null
   return sekcja.czesci.slice(0, -1).map((c) => c.do)
 }
@@ -151,19 +172,23 @@ export function czesciZadania(projekt, katalog, bazaArg) {
   if (!fazy.length) throw new Error('stan autopilota bez faz')
   const czubek = git(projekt, ['rev-parse', 'HEAD']).trim()
   const baza = bazaArg ?? rozmiarPr(projekt, undefined, czubek).baza
-  const konce = konceFaz(projekt, fazy, zadanie)
+  const { konce, uwagi } = konceFaz(projekt, fazy, { zadanie, baza, czubek })
   const plan = cieciaPlanu(projekt, katalog, zadanie)
   const wszystkie = zmierz({ projekt, baza, czubek, konce, ciecia: [] })
   /** @type {{ zrodlo: string, ciecia: number[] }} */
   let wybor = { zrodlo: 'jedna', ciecia: [] }
   /** @type {string | null} */
-  let uwaga = null
-  if (plan && plan.length) {
+  let uwaga = uwagi.length ? uwagi.join('; ') : null
+  const dopisz = (/** @type {string} */ u) => { uwaga = uwaga ? `${uwaga}; ${u}` : u }
+  if (plan && plan.length && wszystkie[0].doRecenzji <= PROG_PLIKOW_PR) {
+    // Plan przewidzial czesci, a caly diff miesci sie w jednym PR — dzielenie tylko dokladaloby tur bota.
+    dopisz(`plan przewidywał części, a całość ma ${wszystkie[0].doRecenzji} plików do recenzji — jeden PR`)
+  } else if (plan && plan.length) {
     const zPlanu = zmierz({ projekt, baza, czubek, konce, ciecia: plan })
     if (zPlanu.every((c) => c.doRecenzji < PROG_PLIKOW_PR)) wybor = { zrodlo: 'plan', ciecia: plan }
     else {
       const za = zPlanu.filter((c) => c.doRecenzji >= PROG_PLIKOW_PR).map((c) => `część ${c.czesc} (fazy ${c.fazy}) ${c.doRecenzji}`)
-      uwaga = `cięcie z planu daje część >= ${PROG_PLIKOW_PR}: ${za.join(', ')} — inny punkt cięcia`
+      dopisz(`cięcie z planu daje część >= ${PROG_PLIKOW_PR}: ${za.join(', ')} — inny punkt cięcia`)
       wybor = { zrodlo: 'pomiar', ciecia: cieciaPomiaru(projekt, baza, czubek, konce) }
     }
   } else if (wszystkie[0].doRecenzji > PROG_PLIKOW_PR) {
@@ -174,7 +199,7 @@ export function czesciZadania(projekt, katalog, bazaArg) {
   const ok = !zaDuze.length
   if (!ok) {
     const za = zaDuze.map((c) => `część ${c.czesc} (fazy ${c.fazy}) ${c.doRecenzji}`)
-    uwaga = `${uwaga ? `${uwaga}; ` : ''}bez cięcia na granicy faz poniżej ${PROG_PLIKOW_PR}: ${za.join(', ')} — faza powyżej limitu bota, dziel zadanie w planowaniu`
+    dopisz(`bez cięcia na granicy faz poniżej ${PROG_PLIKOW_PR}: ${za.join(', ')} — faza powyżej limitu bota, dziel zadanie w planowaniu`)
   }
   return {
     ok, zrodlo: wybor.zrodlo, baza, czubek, fazy: konce, czesci, ciecia: czesci.slice(0, -1).map((c) => c.do), plan, uwaga,
