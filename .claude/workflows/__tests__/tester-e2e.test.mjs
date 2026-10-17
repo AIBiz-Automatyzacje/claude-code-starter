@@ -122,11 +122,21 @@ test('plik roli: finding seeda kontra migracja ma linie checkbox: scenariusza, k
   assert.match(seedy.split('\n').find((l) => l.includes('DEFAULT')) ?? '', /`checkbox: <treść linii scenariusza, który używa seeda>`/)
 })
 
-// P19 (vibersi etap 2, faza 6): zrzut wisial, tester obszedl go Playwrightem (971 s, 0,64 M). Regula: limit 30 s, potem SKIP
-// harness (skrypt ksiegowania przenosi go na [Manual]), bez obchodzenia.
-test('tester: zrzut z limitem 30 s; przerwany = SKIP harness dla scenariusza i reszty fazy, bez obchodzenia innym narzedziem', () => {
-  assert.match(tester, /Każdy zrzut robisz z limitem 30 s: `perl -e 'alarm 30; exec @ARGV' agent-browser screenshot <plik>`/)
-  assert.match(tester, /SKIP z przyczyną `harness` i dowodem „zrzut agent-browser > 30 s”, a pozostałe scenariusze fazy dostają ten sam wpis/)
-  assert.match(tester, /Zrzutu nie obchodzisz innym narzędziem \(Playwright, własny skrypt\)/)
+// P19 (vibersi etap 2, faza 6): zrzut wisial, tester obszedl go Playwrightem (971 s, 0,64 M). Regula: limit 30 s, bez obchodzenia.
+// P20 A1 (vibersi etap 3, faza 4): jedno zawieszone `screenshot` dawalo SKIP harness calej fazie (6/6 [Manual]), a powtorka
+// w sesji przeszla 14/14 — zawieszenie przejsciowe. Teraz: close + probny zrzut about:blank; wynik z asercji, nie ze zrzutu;
+// jedno ponowienie scenariusza; drugie zawieszenie = SKIP tylko tego scenariusza; SKIP reszty fazy tylko przy padzie probnego.
+test('tester: zrzut z limitem 30 s; przerwany = close + probny zrzut about:blank, jedno ponowienie, SKIP tylko scenariusza', () => {
+  const regula = tester.slice(tester.indexOf('- Każdy zrzut robisz z limitem 30 s'), tester.indexOf('- Scenariusz, który milczy'))
+  assert.match(regula, /Każdy zrzut robisz z limitem 30 s: `perl -e 'alarm 30; exec @ARGV' agent-browser screenshot <plik>`/)
+  assert.match(regula, /PASS i FAIL dowodzą asercje ze snapshotu, `get text` i skryptów/)
+  assert.match(regula, /`agent-browser close`[^\n]*próbny zrzut[^\n]*`agent-browser open about:blank`/)
+  assert.match(regula, /Próbny zrzut przerwany: ten scenariusz i pozostałe scenariusze fazy dostają wpis SKIP z przyczyną `harness`/)
+  assert.match(regula, /asercje scenariusza rozstrzygnięte przed zawieszeniem: wpis PASS albo FAIL z tych asercji/)
+  assert.match(regula, /odegraj ten scenariusz jeszcze raz od początku w nowej sesji, jeden raz/)
+  assert.match(regula, /„zrzut agent-browser > 30 s \(2×\)” tylko dla tego scenariusza; kolejne scenariusze fazy odgrywasz normalnie/)
+  assert.match(regula, /Porównanie z makietą bez zrzutu ekranu idzie do człowieka/)
+  assert.doesNotMatch(regula, /pozostałe scenariusze fazy dostają ten sam wpis bez kolejnych prób/, 'pierwsze zawieszenie nie moze konczyc E2E calej fazy')
+  assert.match(regula, /Zrzutu nie obchodzisz innym narzędziem \(Playwright, własny skrypt\)/)
   assert.equal(PRZYCZYNY_SKIP.harness, 'manual')
 })
