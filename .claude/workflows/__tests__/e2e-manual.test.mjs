@@ -276,7 +276,8 @@ test('fix przy „serwer padl”: start takze po nieudanej naprawie; start nieud
   assert.match(gotowe, /takze gdy naprawa sie nie udala/)
   assert.match(gotowe, /serwerE2e: "martwy"/)
   assert.match(wytnij(autopilot, 'const FIX_RESULT = {', '\n}\n'), /serwerE2e: \{ type: 'string', enum: \['dziala', 'martwy', 'nie-dotyczy'\]/)
-  assert.match(autopilot, /if \(fix\.serwerE2e === 'martwy'\) \{\n\s*srodowiskoE2E = 'martwe'/)
+  // P21 B1: serwer martwy po porcji fixa przelacza kolejne porcje i reszte fazy bez przegladarki
+  assert.match(autopilot, /if \(wynik\.serwerE2e === 'martwy'\) \{\n\s*srodowiskoE2E = 'martwe'/)
 })
 
 test('instrukcje bez wykrywania awarii po sygnaturze tekstu; watcher (zywy proces) z bledem kodu w logu = FAIL', () => {

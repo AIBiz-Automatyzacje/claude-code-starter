@@ -25,7 +25,7 @@ const MAPA_KLAS = /** @type {const} */ ([
   [/^(dedup:semantyczny|scribe:faza-\*:inspekcja)$/, 'klasa-mechaniczny-odczyt'],
   [/^ogrod:pomiar$/, 'klasa-mechaniczny-pomiar'],
   [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*|ogrod:ocena)$/, 'klasa-sceptyk'],
-  [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
+  [/^(fix:faza-\*:porcja-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
   [/^review:test-coverage$/, 'test-coverage-reviewer'],
   [/^review:spec-compliance$/, 'spec-compliance-reviewer'],
   [/^review:e2e(:retry)?$/, 'feature-tester-e2e'],
