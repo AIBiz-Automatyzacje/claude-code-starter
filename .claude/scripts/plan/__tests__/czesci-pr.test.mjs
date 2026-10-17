@@ -4,9 +4,11 @@
 //
 // Uruchomienie:  node --test .claude/scripts/plan/__tests__/czesci-pr.test.mjs
 
+import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -125,5 +127,47 @@ test('sprawdzPlan: blad czesci w wyniku walidacji planu (plan.mjs sprawdz, bramk
   wProjekcie({}, (k) => {
     const w = sprawdzPlan(parsujPlan(plan([pliki('a', 80), pliki('b', 80)])), k)
     assert.ok(w.bledy.some((b) => b.startsWith('plan ma ~160 plików do recenzji bota')), w.bledy.join('\n'))
+  })
+})
+
+// Recenzja P20 S2: luki szacunku i walidacji sekcji.
+test('szacunek: test w __tests__ obok pliku liczony jako istniejacy, plik Usun bez doliczonego testu; sekcja w bloku ``` ignorowana', () => {
+  const md = plan([['src/lib/a.ts', 'src/lib/__tests__/a.test.ts', 'src/lib/b.ts']]).replace('| Stwórz | `src/lib/b.ts`', '| Usuń | `src/lib/b.ts`')
+  wProjekcie({}, (k) => assert.equal(rozmiarPlanu(parsujPlan(md), k).szacunek, 3))
+  assert.equal(sekcjaCzesci('# P\n\n```markdown\n## Części PR\n\n| 1 | 1 |\n```\n\n## Implementation Units\n'), null)
+})
+
+test('faza sama powyzej 150 = blad „podziel faze” zamiast niewykonalnej sekcji; faza = 150 w planie do 150 przechodzi', () => {
+  wProjekcie({}, (k) => {
+    const w = sprawdzCzesci(parsujPlan(plan([pliki('a', 160), pliki('b', 10)])), k)
+    assert.deepEqual(w.bledy, ['faza 1 (~160) sama ma >= 150 plików do recenzji bota (tabele plików IU + test obok pliku kodu, po filtrach .coderabbit.yaml) — podziel fazę na mniejsze'])
+    assert.deepEqual(sprawdzCzesci(parsujPlan(plan([pliki('a', 150)])), k).bledy, [])
+    assert.match(sprawdzCzesci(parsujPlan(plan([pliki('a', 150), pliki('b', 1)])), k).bledy[0] ?? '', /^faza 1 \(~150\) sama ma/)
+  })
+})
+
+test('sekcja przy szacunku do 150 = uwaga (archiwizacja i tak zrobi jeden PR); uwagi czesci w wyniku sprawdzPlan', () => {
+  wProjekcie({}, (k) => {
+    const md = plan([pliki('a', 40), pliki('b', 40)], '| Część | Fazy |\n|---|---|\n| 1 | 1 |\n| 2 | 2 |')
+    const uwaga = 'sekcja „## Części PR” przy ~80 plikach do recenzji — archiwizacja wyśle jeden PR, gdy diff zmieści się w 150'
+    assert.deepEqual(sprawdzCzesci(parsujPlan(md), k), { bledy: [], uwagi: [uwaga] })
+    assert.ok(sprawdzPlan(parsujPlan(md), k).uwagi.includes(uwaga))
+  })
+})
+
+test('podzial faz: jedyne ciecie przed ostatnia faza; ostatnia czesc rowna 150 odrzucona', () => {
+  assert.deepEqual(podzialFaz(3, (od, doFazy) => (doFazy === 2 && od < 2 ? 160 : 70)), [1])
+  assert.deepEqual(podzialFaz(2, (od, doFazy) => (od === 1 ? 150 : doFazy === 0 ? 10 : 160)), null)
+})
+
+test('plan.mjs sprawdz: pole rozmiarPr z szacunkiem per faza i propozycja czesci', () => {
+  const CLI = join(dirname(fileURLToPath(import.meta.url)), '..', 'plan.mjs')
+  wProjekcie({ 'docs/plans/p.md': plan([pliki('a', 90), pliki('b', 90)]) }, (k) => {
+    const w = spawnSync(process.execPath, [CLI, 'sprawdz', 'docs/plans/p.md', '--projekt', k], { encoding: 'utf8' })
+    assert.equal(w.status, 1)
+    assert.deepEqual(JSON.parse(w.stdout).rozmiarPr, {
+      szacunek: 180, prog: 150, fazy: { 1: 90, 2: 90 }, czesci: null,
+      propozycja: [{ czesc: 1, fazy: '1', pliki: 90 }, { czesc: 2, fazy: '2', pliki: 90 }],
+    })
   })
 })

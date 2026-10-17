@@ -216,7 +216,7 @@ Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Źródło 
 
 #### 3.6c Części PR
 
-Bot recenzji PR obejmuje do 150 plików. `plan.mjs sprawdz` (6.2) liczy szacunek plików do recenzji: ścieżki z tabel plików IU po filtrach `.coderabbit.yaml` plus test obok każdego pliku kodu bez testu w planie — pole `rozmiarPr` (per faza, per część i `propozycja`). Szacunek powyżej 150 wymaga sekcji `## Części PR` z tabelą `| Część | Fazy |` (np. `| 1 | 1–3 |`, `| 2 | 4–6 |`): cięcie tylko na granicy faz, części pokrywają fazy po kolei, każda poniżej 150 — punkt wyjścia to `propozycja` ze `sprawdz`. Archiwizacja zmierzy części na commitach końca faz, a `/dev-pr --czesc N` wyśle je kolejno.
+Bot recenzji PR obejmuje do 150 plików. `plan.mjs sprawdz` (6.2) liczy szacunek plików do recenzji: ścieżki z tabel plików IU po filtrach `.coderabbit.yaml` plus test obok każdego pliku kodu bez testu w planie — pole `rozmiarPr` (per faza, per część i `propozycja`). Szacunek powyżej 150 wymaga sekcji `## Części PR` z tabelą `| Część | Fazy |` (np. `| 1 | 1–3 |`, `| 2 | 4–6 |`): cięcie tylko na granicy faz, części pokrywają fazy po kolei, każda poniżej 150 — punkt wyjścia to `propozycja` ze `sprawdz`. Faza, która sama ma ponad 150, to błąd — dzielisz fazę, bo cięcie przechodzi tylko między fazami. Archiwizacja zmierzy części na commitach końca faz, a `/dev-pr --czesc N` wyśle je kolejno.
 
 #### 3.7 Wymagania wstępne operatora
 

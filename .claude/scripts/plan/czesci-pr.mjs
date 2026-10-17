@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { doRecenzji, filtrySciezek, PROG_PLIKOW_PR } from '../pr/rozmiar.mjs'
+import { bezOgonkow } from './pola-iu.mjs'
 
 /**
  * @typedef {import('./plan-techniczny.mjs').Plan} Plan
@@ -35,7 +36,8 @@ const bezZnacznikow = (komorka) => komorka.replace(/[`*]/g, '').trim()
  * @returns {SekcjaCzesci}
  */
 export function sekcjaCzesci(md) {
-  const m = SEKCJA.exec(md)
+  // Nagłówek w bloku ``` (przyklad w planie) nie jest sekcja.
+  const m = SEKCJA.exec(md.replace(/^\s*(```|~~~)[\s\S]*?^\s*\1.*$/gm, ''))
   if (!m) return null
   /** @type {CzescPlanu[]} */
   const czesci = []
@@ -65,13 +67,20 @@ export function sekcjaCzesci(md) {
  * @returns {number}
  */
 function plikiFaz(fazy, filtry) {
-  const pliki = new Set(fazy.flatMap((f) => f.iu.flatMap((iu) => iu.pliki.map((p) => p.sciezka))).filter((s) => doRecenzji(s, filtry)))
+  const wiersze = fazy.flatMap((f) => f.iu.flatMap((iu) => iu.pliki)).filter((p) => doRecenzji(p.sciezka, filtry))
+  const pliki = new Set(wiersze.map((p) => p.sciezka))
   const lista = [...pliki]
+  // Usuwany plik nie dostaje nowego testu.
+  const usuwane = new Set(wiersze.filter((p) => /^usu/i.test(bezOgonkow(p.akcja).trim())).map((p) => p.sciezka))
   let testy = 0
   for (const s of lista) {
-    if (!PLIK_KODU.test(s) || PLIK_TESTU.test(s)) continue
+    if (!PLIK_KODU.test(s) || PLIK_TESTU.test(s) || usuwane.has(s)) continue
     const rdzen = s.replace(PLIK_KODU, '')
-    if (!lista.some((p) => p.startsWith(`${rdzen}.test.`) || p.startsWith(`${rdzen}.spec.`))) testy += 1
+    const katalog = rdzen.slice(0, rdzen.lastIndexOf('/') + 1)
+    const nazwa = rdzen.slice(katalog.length)
+    const zTestem = (/** @type {string} */ p) => p.startsWith(`${rdzen}.test.`) || p.startsWith(`${rdzen}.spec.`)
+      || p.startsWith(`${katalog}__tests__/${nazwa}.`)
+    if (!lista.some(zTestem)) testy += 1
   }
   return pliki.size + testy
 }
@@ -168,6 +177,13 @@ export function sprawdzCzesci(plan, projekt) {
   /** @type {{ bledy: string[], uwagi: string[] }} */
   const w = { bledy: [], uwagi: [] }
   const zrodlo = 'tabele plików IU + test obok pliku kodu, po filtrach .coderabbit.yaml'
+  // Faza > progu zawsze; faza = prog tylko, gdy plan i tak trzeba ciac (jeden PR do progu wlacznie).
+  const fazaZaDuza = Object.entries(r.fazy).filter(([, n]) => n > PROG_PLIKOW_PR || (n === PROG_PLIKOW_PR && r.szacunek > PROG_PLIKOW_PR)).map(([f, n]) => `faza ${f} (~${n})`)
+  if (fazaZaDuza.length) {
+    // Ciecie jest tylko na granicy faz — sekcja nie pomoze, trzeba podzielic faze (albo zadanie).
+    w.bledy.push(`${fazaZaDuza.join(', ')} sama ma >= ${PROG_PLIKOW_PR} plików do recenzji bota (${zrodlo}) — podziel fazę na mniejsze`)
+    return w
+  }
   if (!plan.czesci) {
     if (r.szacunek > PROG_PLIKOW_PR) {
       w.bledy.push(`plan ma ~${r.szacunek} plików do recenzji bota (${zrodlo}) > ${PROG_PLIKOW_PR} — sekcja „## Części PR” z cięciem na granicy faz`
@@ -179,6 +195,9 @@ export function sprawdzCzesci(plan, projekt) {
     return w
   }
   w.bledy.push(...plan.czesci.problemy)
+  if (r.szacunek <= PROG_PLIKOW_PR) {
+    w.uwagi.push(`sekcja „## Części PR” przy ~${r.szacunek} plikach do recenzji — archiwizacja wyśle jeden PR, gdy diff zmieści się w ${PROG_PLIKOW_PR}`)
+  }
   const { czesci } = plan.czesci
   const ostatnia = plan.fazy.at(-1)?.numer ?? 0
   const poKolei = czesci.every((c, i) => c.czesc === i + 1 && c.od <= c.do && c.od === (i ? czesci[i - 1].do + 1 : 1))
