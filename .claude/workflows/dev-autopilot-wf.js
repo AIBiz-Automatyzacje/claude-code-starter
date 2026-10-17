@@ -797,15 +797,28 @@ const KONTROLA_FIXA = {
 // Zakres diffu fixa podany wprost z FixResult.commity — bez tego agent szukal "pierwszego commita fixa tej fazy"
 // grepem po calej historii zadania (pre-skan: mediana 20 wywolan narzedzi na jeden diff). Gdy fix nie podal hashy,
 // zostaje grep po komunikacie commita fixa tej fazy.
-function zakresFixa(numerFazy, commity) {
+// `pliki` (tura poprawkowa, P20 A9): diff tylko plikow z pozycji kontroli zamiast pelnego diffu fixa — w etapie 3 vibersi
+// pelny `git diff` to 51% wejscia agenta fix:poprawka (50k zn).
+function zakresFixa(numerFazy, commity, pliki = []) {
   const hashe = (Array.isArray(commity) ? commity : [])
     .map((c) => String(c).trim().split(/\s+/)[0])
     .filter((h) => /^[0-9a-f]{7,40}$/i.test(h))
+  const odKogo = hashe.length ? '<najstarszy>' : '<pierwszy-commit-fixa>'
+  const diff = pliki.length
+    ? `Diff do poprawek (tylko pliki z pozycji): \`git diff ${odKogo}^ -- ${pliki.join(' ')}\`. Pelnego diffu fixa nie czytasz; plik spoza tej listy czytasz zakresami, gdy pozycja tego wymaga.`
+    : `Diff fixa: \`git diff ${odKogo}^..HEAD\`.`
   return hashe.length
     ? `Zakres: commity fixa tej fazy (z raportu agenta fixa): ${hashe.join(' ')}.
-Najstarszy: ostatni wiersz \`git log --no-walk --format=%h ${hashe.join(' ')}\`. Diff fixa: \`git diff <najstarszy>^..HEAD\`.`
-    : `Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa fazy ${numerFazy} (komunikat konczy sie "fazy ${numerFazy}").
-Diff fixa: \`git diff <pierwszy-commit-fixa>^..HEAD\`; ten commit jest najstarszym commitem fixa.`
+Najstarszy: ostatni wiersz \`git log --no-walk --format=%h ${hashe.join(' ')}\`. ${diff}`
+    : `Zakres: \`git log --oneline --grep="^fix("\` -> pierwszy commit fixa fazy ${numerFazy} (komunikat konczy sie "fazy ${numerFazy}"); ten commit jest najstarszym commitem fixa.
+${diff}`
+}
+
+// Sciezki plikow z pozycji kontroli fixa ("plik:linia" -> plik), bez duplikatow; wpis spoza zapisu sciezki ("?", spacje,
+// znaki powloki) pomijany — trafia do polecenia git.
+function plikiPozycji(pozycje) {
+  const sciezki = (Array.isArray(pozycje) ? pozycje : []).map((p) => String((p && p.plik) || '').replace(/:\d.*$/, '').trim())
+  return [...new Set(sciezki.filter((s) => /^[\w.@+-][\w./@+-]*$/.test(s) && s.includes('.')))]
 }
 
 // Pozycje do tury poprawkowej z wyniku fix:kontrola: pozycje list K-1…K-7 i bramek ze zrodlem. K-6 liczy JS z testow P1:
@@ -887,7 +900,7 @@ Kontrola diffu naprawczego znalazla ponizsze pozycje — to rzeczy, ktore wprowa
 sam fix, nie nowe findingi z review.
 
 Folder zadania: ${sciezka}
-${zakresFixa(numerFazy, commity)}
+${zakresFixa(numerFazy, commity, plikiPozycji(pozycje))}
 
 DO POPRAWY (lista autorytatywna):
 ${JSON.stringify(pozycje, null, 2)}

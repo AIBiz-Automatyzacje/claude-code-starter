@@ -35,8 +35,10 @@ const finalValidationPrompt = new Function('BLOK_DLUGIE_KOMENDY', 'komendaCommit
 const fixPrompt = new Function('BLOK_DLUGIE_KOMENDY', 'blokZwinieciaDoPoprawy', `${wytnij(autopilot, 'function fixPrompt(', '\n}\n')}
   return fixPrompt`)('', () => '')
 // eslint-disable-next-line no-new-func -- jw.
-const fixPoprawkaPrompt = new Function('BLOK_DLUGIE_KOMENDY', 'zakresFixa', `${wytnij(autopilot, 'function fixPoprawkaPrompt(', '\n}\n')}
-  return fixPoprawkaPrompt`)('', () => '')
+const fixPoprawkaPrompt = new Function('BLOK_DLUGIE_KOMENDY', `${wytnij(autopilot, 'function zakresFixa(', '\n}\n')}
+  ${wytnij(autopilot, 'function plikiPozycji(', '\n}\n')}
+  ${wytnij(autopilot, 'function fixPoprawkaPrompt(', '\n}\n')}
+  return fixPoprawkaPrompt`)('')
 
 const ZADANIE = 'etap-2-poprawki-bezpieczenstwa'
 const TEST_STARY = "it('limit', () => expect(status).toBe(429))\n"
@@ -94,4 +96,24 @@ test('polecenia fixa i kontroli diffu podaja temat commita z nazwa zadania doslo
   assert.match(fixPrompt(`docs/active/${ZADANIE}`, 2, [], 'gotowe'), new RegExp(`commit \`fix\\(${ZADANIE}\\): poprawki po review fazy 2\` \\(temat dokladnie taki`))
   assert.match(fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 2, [], []), new RegExp(`\`fix\\(${ZADANIE}\\): kontrola diffu naprawczego fazy 2\` \\(temat dokladnie taki\\)`))
   assert.doesNotMatch(wytnij(autopilot, 'function finalValidationPrompt(', '\n}\n'), /\^fix\(/)
+})
+
+// P20 A9 (vibersi etap 3, fix:poprawka fazy 4): pelny `git diff` fixa to 51% wejscia agenta (50k zn), a pozycje kontroli
+// wskazuja konkretne pliki. Tura poprawkowa dostaje diff tylko tych plikow; kontrola fixa nadal widzi caly diff.
+test('fix:poprawka: diff tylko plikow z pozycji K (bez duplikatow, bez "?" i znakow powloki), bez pelnego diffu fixa', () => {
+  const pozycje = [
+    { zrodlo: 'K-1', plik: 'src/lib/konto/akcje-auth.ts:124', opis: 'a' },
+    { zrodlo: 'K-5', plik: 'src/lib/konto/akcje-auth.ts:30', opis: 'b' },
+    { zrodlo: 'bramki', plik: 'supabase/migrations/20261016_konto.sql', opis: 'c' },
+    { zrodlo: 'K-3', plik: '?', opis: 'd' },
+    { zrodlo: 'K-7', plik: 'src/x.ts; rm -rf ~:1', opis: 'e' },
+  ]
+  const p = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, pozycje, ['abc1234 fix', 'def5678'])
+  assert.match(p, /`git diff <najstarszy>\^ -- src\/lib\/konto\/akcje-auth\.ts supabase\/migrations\/20261016_konto\.sql`/)
+  assert.doesNotMatch(p, /\.\.HEAD/, 'pelny diff fixa poza tura poprawkowa')
+  assert.doesNotMatch(String(p).split('\n').find((l) => l.includes('Diff do poprawek')) ?? '', /rm -rf|\?/, 'sciezka spoza zapisu nie trafia do polecenia git')
+  const bezHashy = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, pozycje, [])
+  assert.match(bezHashy, /`git diff <pierwszy-commit-fixa>\^ -- src\/lib\/konto\/akcje-auth\.ts supabase/)
+  const bezPlikow = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, [{ zrodlo: 'K-3', plik: '?', opis: 'd' }], ['abc1234'])
+  assert.match(bezPlikow, /Diff fixa: `git diff <najstarszy>\^\.\.HEAD`/, 'pozycje bez sciezki = pelny diff jak dotad')
 })
