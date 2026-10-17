@@ -805,7 +805,7 @@ function zakresFixa(numerFazy, commity, pliki = []) {
     .filter((h) => /^[0-9a-f]{7,40}$/i.test(h))
   const odKogo = hashe.length ? '<najstarszy>' : '<pierwszy-commit-fixa>'
   const diff = pliki.length
-    ? `Diff do poprawek (tylko pliki z pozycji): \`git diff ${odKogo}^ -- ${pliki.join(' ')}\`. Pelnego diffu fixa nie czytasz; plik spoza tej listy czytasz zakresami, gdy pozycja tego wymaga.`
+    ? `Diff do poprawek (tylko pliki z pozycji): \`git diff ${odKogo}^ -- ${pliki.map((p) => `'${p}'`).join(' ')}\`. Pelnego diffu fixa nie czytasz; plik spoza tej listy czytasz zakresami, gdy pozycja tego wymaga.`
     : `Diff fixa: \`git diff ${odKogo}^..HEAD\`.`
   return hashe.length
     ? `Zakres: commity fixa tej fazy (z raportu agenta fixa): ${hashe.join(' ')}.
@@ -814,11 +814,12 @@ Najstarszy: ostatni wiersz \`git log --no-walk --format=%h ${hashe.join(' ')}\`.
 ${diff}`
 }
 
-// Sciezki plikow z pozycji kontroli fixa ("plik:linia" -> plik), bez duplikatow; wpis spoza zapisu sciezki ("?", spacje,
-// znaki powloki) pomijany — trafia do polecenia git.
+// Sciezki plikow z pozycji kontroli fixa ("plik:linia" -> plik), bez duplikatow. Polecenie git dostaje je w apostrofach,
+// wiec `[id]`, `(grupa)` i `$id` z tras Next/TanStack przechodza; wpis z odstepem, apostrofem albo znakiem sterujacym
+// i "?" pomijany.
 function plikiPozycji(pozycje) {
   const sciezki = (Array.isArray(pozycje) ? pozycje : []).map((p) => String((p && p.plik) || '').replace(/:\d.*$/, '').trim())
-  return [...new Set(sciezki.filter((s) => /^[\w.@+-][\w./@+-]*$/.test(s) && s.includes('.')))]
+  return [...new Set(sciezki.filter((s) => /^[^\s'"`\\?]+$/.test(s) && !/[\p{Cc}]/u.test(s) && !s.startsWith('-')))]
 }
 
 // Pozycje do tury poprawkowej z wyniku fix:kontrola: pozycje list K-1…K-7 i bramek ze zrodlem. K-6 liczy JS z testow P1:

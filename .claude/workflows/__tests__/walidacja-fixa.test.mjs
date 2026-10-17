@@ -107,13 +107,16 @@ test('fix:poprawka: diff tylko plikow z pozycji K (bez duplikatow, bez "?" i zna
     { zrodlo: 'bramki', plik: 'supabase/migrations/20261016_konto.sql', opis: 'c' },
     { zrodlo: 'K-3', plik: '?', opis: 'd' },
     { zrodlo: 'K-7', plik: 'src/x.ts; rm -rf ~:1', opis: 'e' },
+    { zrodlo: 'K-1', plik: "src/routes/$id/(grupa)/[slug]/page.tsx:3", opis: 'f' },
+    { zrodlo: 'K-4', plik: 'Dockerfile:2', opis: 'g' },
+    { zrodlo: 'K-4', plik: "src/a'b.ts:2", opis: 'h' },
   ]
   const p = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, pozycje, ['abc1234 fix', 'def5678'])
-  assert.match(p, /`git diff <najstarszy>\^ -- src\/lib\/konto\/akcje-auth\.ts supabase\/migrations\/20261016_konto\.sql`/)
+  assert.ok(p.includes("`git diff <najstarszy>^ -- 'src/lib/konto/akcje-auth.ts' 'supabase/migrations/20261016_konto.sql' 'src/routes/$id/(grupa)/[slug]/page.tsx' 'Dockerfile'`"), 'pliki w apostrofach, bez duplikatow i sciezek spoza zapisu')
   assert.doesNotMatch(p, /\.\.HEAD/, 'pelny diff fixa poza tura poprawkowa')
-  assert.doesNotMatch(String(p).split('\n').find((l) => l.includes('Diff do poprawek')) ?? '', /rm -rf|\?/, 'sciezka spoza zapisu nie trafia do polecenia git')
+  assert.doesNotMatch(String(p).split('\n').find((l) => l.includes('Diff do poprawek')) ?? '', /rm -rf|\?|a'b/, 'sciezka spoza zapisu nie trafia do polecenia git')
   const bezHashy = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, pozycje, [])
-  assert.match(bezHashy, /`git diff <pierwszy-commit-fixa>\^ -- src\/lib\/konto\/akcje-auth\.ts supabase/)
+  assert.ok(bezHashy.includes("`git diff <pierwszy-commit-fixa>^ -- 'src/lib/konto/akcje-auth.ts' 'supabase"))
   const bezPlikow = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, [{ zrodlo: 'K-3', plik: '?', opis: 'd' }], ['abc1234'])
   assert.match(bezPlikow, /Diff fixa: `git diff <najstarszy>\^\.\.HEAD`/, 'pozycje bez sciezki = pelny diff jak dotad')
 })
