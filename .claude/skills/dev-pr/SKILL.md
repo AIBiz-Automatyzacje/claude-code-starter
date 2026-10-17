@@ -164,7 +164,8 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js",
 
 Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review, z polami wiedzy
 (klasa, reguła, wzorce plików, szczebel). Wpisy trafiają do indeksu `docs/learned-patterns.md`; wpisy `kod` i `lint`
-wracają też jako `propozycjeBramek[]`; obok nich `propozycjeDoReviewerow[]`.
+wracają też jako `propozycjeBramek[]`; obok nich `propozycjeDoReviewerow[]`. Commit compoundu workflow pushuje na bieżącą
+gałąź (po merge'u to gałąź główna); `push: false` przy niepustym `commit` → wypchnij go przed kolejnym PR i krokiem CLAUDE.md.
 
 **Propozycji bramek nie wdrażasz.** Typ albo reguła lint to zmiana kodu projektu — decyzja operatora; zapis zostaje
 w samym solution (`szczebel`, `szczebel_powod`). Do wdrożenia bramki lekcja działa jak reguła (indeks, wycinek); po wdrożeniu
@@ -198,7 +199,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
 
 <tabela każdej tury z pola `tabela` etapu napraw, w kolejności tur>
 
-📚 Baza wiedzy: <N wpisów w docs/solutions/>, indeks: <indeks>, odmowy: <odmowy albo „brak”>
+📚 Baza wiedzy: <N wpisów w docs/solutions/>, indeks: <indeks>, odmowy: <odmowy albo „brak”>, commit: <commit albo „brak”> (push: <pushDetal>)
    <uwagaIndeksu z etapu compound, gdy niepusta: „Indeks wiedzy pełny — uruchom `/dev-compound-refresh` (pełny przegląd)”>
 
 🧱 Propozycje bramek (do Twojej decyzji, NIE wdrożone; zapis: solution ze szczeblem kod/lint):

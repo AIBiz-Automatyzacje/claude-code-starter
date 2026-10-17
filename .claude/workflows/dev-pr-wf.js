@@ -281,9 +281,17 @@ const COMPOUND_PR = {
     },
     plikPropozycji: { type: ['string', 'null'], description: 'docs/reviews/propozycje-do-reviewerow.md, gdy dopisano sekcje' },
     commit: { type: ['string', 'null'] },
+    push: { type: 'boolean' },
+    pushDetal: { type: 'string' },
   },
-  required: ['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji'],
+  required: ['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji', 'commit', 'push', 'pushDetal'],
 }
+
+// Push commita artefaktow po etapach claude-md i compound — jedno brzmienie. P20 A4 (vibersi PR #3 i #4): compound
+// commitowal na lokalnym main po \`gh pr merge --delete-branch\` i nie pushowal; nastepny PR wiozl ten commit, a po squashu
+// lokalny main rozjezdzal sie z origin i \`git pull --ff-only\` kroku claude-md dawal STOP.
+const KROK_PUSH = `PUSH: \`git remote\` pusty = push false, pushDetal "brak remote". Inaczej \`git push\`; blad = push false i tresc bledu
+   w pushDetal — bez --force i bez innej galezi. Udany push = pushDetal "OK".`
 
 // Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): operator decyduje o bramce, a do jej
 // wdrozenia (pole `bramka`) lekcja idzie do indeksu i wycinka jak regula. Kopia z dev-compound-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
@@ -740,8 +748,7 @@ Zwroc obiekt zgodny ze schematem.`,
    \`git commit -m "docs(${zadanie}): CLAUDE.md uzgodniony po merge'u"\` — temat w jednej linii, stopka wylacznie drugim \`-m\`.
    commit = krotki hash.
 3. pole = sama wartosc (bez "claude_md: ") z \`git show HEAD:${u.plikDecyzji} | grep -m1 '^claude_md:'\`.
-4. PUSH: \`git remote\` pusty = push false, pushDetal "brak remote". Inaczej \`git push\`; blad = push false i tresc bledu
-   w pushDetal — bez --force i bez innej galezi. Udany push = pushDetal "OK".
+4. ${KROK_PUSH}
 Zwroc obiekt zgodny ze schematem.`,
     { schema: UZGODNIENIE_COMMIT, agentType: 'klasa-mechaniczny', label: `pr:claude-md-commit:${zadanie}` }
   )
@@ -787,6 +794,10 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    wdrozenie w plikach agentow jest decyzja operatora." Sciezke zwroc w plikPropozycji (bez propozycji: null).
 5. Zacommituj artefakty bazy wiedzy jawnym pathspec (docs/solutions/, docs/learned-patterns.md,
    docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
+   commit = krotki hash; bez zmian do zacommitowania commit null, push false, pushDetal "brak commita" i pomin pkt 6.
+6. ${KROK_PUSH}
+   Po merge'u z \`--delete-branch\` biezaca galaz to glowna, wiec push wysyla commit compoundu na glowna — bez niego
+   nastepny pull request wiozlby ten commit, a krok CLAUDE.md zatrzymalby sie na rozjechanej galezi glownej.
 
 Zwroc obiekt zgodny ze schematem.`,
     { schema: COMPOUND_PR, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:compound:${zadanie}` }
@@ -797,6 +808,7 @@ Zwroc obiekt zgodny ze schematem.`,
   // Propozycje mialy zero artefaktow w repo mimo 19 compoundow (ETAP1B §4) — brak pliku przy niepustej liscie widac w logu.
   if (wynik.propozycjeDoReviewerow.length && !wynik.plikPropozycji) log('/dev-pr compound: UWAGA — propozycje bez zapisu do docs/reviews/propozycje-do-reviewerow.md')
   if (wynik.indeks === 'bramka') log(`/dev-pr compound: ${INDEKS_PELNY}`)
+  if (wynik.commit && !wynik.push) log(`/dev-pr compound: UWAGA — commit ${wynik.commit} bez pusha (${wynik.pushDetal}); wypchnij go przed kolejnym PR i krokiem CLAUDE.md`)
   return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
 }
 

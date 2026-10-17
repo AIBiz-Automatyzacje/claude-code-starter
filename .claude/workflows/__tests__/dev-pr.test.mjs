@@ -252,3 +252,20 @@ test('pole claude_md: sciezka spoza docs/decisions albo ze znakami powloki = bra
     assert.equal(P.komendaUzgodnienia(p), null, p)
   }
 })
+
+// ── Push commita compoundu (P20 A4) ───────────────────────────────────────
+// vibersi PR #3 i #4: compound po `gh pr merge --delete-branch` commitowal na lokalnym main bez pusha (b207793, 6d46eb9) —
+// PR2 wiozl commit compoundu PR1, a krok claude-md (`git pull --ff-only`) dawal STOP na rozjechanym main.
+
+test('compound: krok push w prompcie (to samo brzmienie co claude-md), pola push w schemacie, UWAGA w logu bez pusha', () => {
+  const compound = wytnij("if (etap === 'compound') {", "\n}\n")
+  const claudeMd = wytnij("if (etap === 'claude-md') {", "\n}\n")
+  assert.match(compound, /\n6\. \$\{KROK_PUSH\}/, 'compound pushuje swoj commit')
+  assert.match(claudeMd, /\n4\. \$\{KROK_PUSH\}/, 'claude-md uzywa tego samego kroku push')
+  assert.match(wytnij('const KROK_PUSH = `', '"OK".`'), /bez --force i bez innej galezi/)
+  assert.match(compound, /commit null, push false, pushDetal "brak commita"/)
+  assert.match(compound, /if \(wynik\.commit && !wynik\.push\) log\(`\/dev-pr compound: UWAGA — commit \$\{wynik\.commit\} bez pusha/)
+  // eslint-disable-next-line no-new-func -- ekstrakcja schematu z pliku workflowu tego repo, nie z inputu
+  const schemat = new Function('WPIS_WIEDZY', `${wytnij('const COMPOUND_PR = {', '\n}\n')} return COMPOUND_PR`)({})
+  for (const pole of ['commit', 'push', 'pushDetal']) assert.ok(schemat.required.includes(pole), `COMPOUND_PR.required: ${pole}`)
+})

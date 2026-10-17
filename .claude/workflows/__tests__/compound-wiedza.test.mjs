@@ -93,7 +93,7 @@ test('dev-pr compound: pola wiedzy przez sprawdz, indeks skryptem, propozycje br
   assert.match(etapPr, /node \.claude\/scripts\/wiedza\/wiedza\.mjs sprawdz/)
   assert.match(etapPr, /node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz/)
   assert.match(etapPr, /propozycjeBramek\(wynik\.wpisy\)/)
-  assert.match(zrodloPr, /required: \['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji'\]/)
+  assert.match(zrodloPr, /required: \['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji', 'commit', 'push', 'pushDetal'\]/)
   assert.match(etapPr, /docs\/learned-patterns\.md/)
   assert.match(etapPr, /Po zapisie wpisow: \\`node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz\\` \(wpisy regula oraz kod\/lint bez pola bramka/)
   assert.doesNotMatch(etapPr, /Wpisy kod i lint do indeksu nie ida/)
