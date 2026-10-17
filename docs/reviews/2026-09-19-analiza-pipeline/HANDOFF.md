@@ -2680,6 +2680,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     Kontrola prompt-auditu: linia podłożona `echo >>` do SKILL dev-pr i przywrócona `cp` (jedyny zapis .md spoza Write/Edit).
     **Dalej:** merge `--ff-only` + push za zgodą operatora (main lokalnie `6811259`, 2 niewypchnięte commity dokumentów pkt 85–86 +
     27 commitów gałęzi) → `/sync-template` + doctor w vibersi (§8) → P21. Żywy test S2 = PR etapu 4 vibersi, jeśli przekroczy 150.
+    **WYKONANE 2026-10-17:** merge `--ff-only` i push za zgodą operatora (`a276854..93454cb`), main = origin/main. Hook `.env*` na żywo:
+    blokuje w sesji głównej w trybie bypass i u subagenta (Agent, haiku) — plik z fikcyjną wartością w scratchpadzie; u agentów
+    workflowu niesprawdzony. **DECYZJA OPERATORA 2026-10-17:** P21 PRZED synchronizacją vibersi (jeden sync po P21 zamiast dwóch —
+    etap 4 i tak czeka na P21, pilot P21 nie wymaga P20 w vibersi); smoke P20 (agenci workflowu: hook `.env*`, A1 tester, A5 sceptyk,
+    A9 fix:poprawka) dołączony do pilota P21 — workflowy tylko na kopii vibersi, nie w projekcie. Gałąź `popr/P20-po-etapie-3` lokalnie.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3054,8 +3059,40 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-17) — MERGE P20 + SYNC W VIBERSI (6a pkt 88).** Warunek: zgoda operatora na merge w sesji P20 S2 i wykonany
-`git switch main && git merge --ff-only popr/P20-po-etapie-3 && git push` w szablonie. Nowa sesja w katalogu vibersi, na main.
+**AKTUALNA (2026-10-17) — P21 SESJA 1 (6a pkt 86 e, pkt 88).** P20 zmergowana i wypchnięta (`93454cb`); decyzja operatora:
+P21 przed synchronizacją vibersi, smoke P20 dołączony do pilota P21. Nowa sesja w katalogu szablonu, na main.
+
+```
+Kontynuujemy P21 „koszt” (HANDOFF 6a pkt 86 e — część P21, pkt 86 h, pkt 88). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 86 (e) część P21, pkt 86 (h), pkt 88 (zwłaszcza
+„WYKONANE” i „DECYZJA OPERATORA”), §7 ostatnie dwa wpisy; dane/vibersi-etap3-analiza-kosztu.md. Plan P21 jest ZAAKCEPTOWANY —
+bez zmian zakresu. P20 jest na main (93454cb); vibersi NIE jest zsynchronizowany (jeden sync dopiero po P21).
+
+Zadanie: P21 SESJA 1 na gałęzi popr/P21-koszt (utwórz od main):
+- B1 fix porcjami (po pliku / 4–6 findingów, sekwencyjnie, świeży kontekst, commit na porcję z tematem „poprawki po review fazy N”;
+  kontrola fixa i walidacja końcowa biorą wszystkie commity porcji; koniec fazy dla części PR = baza następnej fazy — bez zmian);
+- B2 agent SPEC Figmy w /dev-plan w 2–3 częściach, zrzuty do plików bez oglądania, SPEC per ekran, builder czyta tylko ekrany
+  swojej IU (planner/dossier podaje ścieżki);
+- B3 /dev-prep kończy się „/clear, potem /dev-plan”, skill dev-plan to przypomina;
+- B4 builder i fix czytają zakresami (bez cat wielu plików, bez wczytywania przetrwałych wyników w całości).
+- Każdy punkt z testem, który pada bez poprawki (podmiana linii na czas jednego biegu); pełne testy, typecheck, lint;
+  prompt-audit dodanych linii (skrypty/pa_dodane.py, pliki jawnie, kontrola na podłożonej linii); recenzja subagenta (odczyt)
+  z mutacjami w worktree i wdrożenie jej uwag; commity per punkt.
+- Przygotuj pilot (wykonanie w sesji 2): ślepy test (harness P11/P12) stary vs nowy fix (B1 + B4) na stanie fazy 4 etapu 3 vibersi,
+  te same findingi; miary: koszt, naprawione, regresje K; ok. 8–10 M. Do pilota dołącz smoke P20 u agentów workflowu (hook .env*
+  blokuje u agenta workflowu — plik z fikcyjną wartością; A1 tester: zawieszony zrzut; A5 porcje sceptyka po 4; A9 diff
+  plików pozycji K w fix:poprawka) — workflowy TYLKO na kopii vibersi w scratchpadzie (klon lokalny, bez .env*), nie w projekcie.
+  Policz i zapisz koszt planu pilota przed startem.
+- Wpis HANDOFF 6a pkt 89 + §8 (instrukcja P21 sesja 2: pilot + smoke P20 + decyzja o merge'u). Bez merge'a do main.
+
+Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**PLANOWANA PO P21 (6a pkt 88) — SYNC W VIBERSI.** Warunek: P21 zmergowana i wypchnięta. Nowa sesja w katalogu vibersi, na main
+(tekst niżej do aktualizacji o P21 przy wpisie pkt P21).
 
 ```
 Kontynuujemy vibersi po P20 (HANDOFF szablonu 6a pkt 86 e, 87, 88). Sesja główna Opus 5.5, tryb bypass permissions.
@@ -3075,9 +3112,9 @@ Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; plik
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
 
-**STAN 2026-10-17 (6a pkt 88):** P20 S1 + S2 na gałęzi `popr/P20-po-etapie-3`, 27 commitów nad main, testy 1004/1004, typecheck
-i lint czyste, smoke S2 zgodny (909f669, 93/121). Main lokalnie `6811259` (+2 niewypchnięte commity dokumentów). Dalej: merge za
-zgodą operatora → instrukcja wyżej → P21.
+**STAN 2026-10-17 (6a pkt 88):** P20 (S1 + S2) zmergowana do main i wypchnięta (`93454cb`), testy 1004/1004, smoke S2 zgodny
+(909f669, 93/121), hook `.env*` blokuje na żywo w sesji i u subagenta. vibersi bez synchronizacji. Dalej: P21 S1 (instrukcja wyżej)
+→ P21 S2 (pilot + smoke P20 na kopii) → merge P21 → sync + doctor w vibersi → etap 4.
 
 **Historia: (2026-10-17) — P20 SESJA 2 (6a pkt 86 e, pkt 87) — WYKONANA (6a pkt 88).** S1 zrobiona na gałęzi `popr/P20-po-etapie-3` (niezmergowana).
 Nowa sesja w katalogu szablonu, na tej gałęzi.
