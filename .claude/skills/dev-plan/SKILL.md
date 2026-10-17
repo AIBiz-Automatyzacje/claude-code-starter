@@ -41,6 +41,15 @@ Plan jest gotowy, gdy implementator zaczyna pewnie bez dopisywania planu za cieb
 
 ### Faza 0: Wejście, źródło i głębokość
 
+#### 0.0 Świeża sesja
+
+`/dev-plan` zaczynasz w świeżej sesji. Gdy przed wywołaniem w tej sesji była inna praca (`/dev-prep`, makiety, research, analiza, poprzednie zadanie), zanim cokolwiek przeczytasz, zadaj `AskUserQuestion`: „Ta sesja ma już kontekst z wcześniejszej pracy — planowanie (ok. 50 tur) ciągnęłoby go w każdej turze. Co robimy?”
+
+- `Zrobię /clear i wrócę` (rekomendowane) — zakończ jedną linią: `/clear, potem /dev-plan <to samo wejście>`. Checklista `/dev-prep` i dokument źródłowy są na dysku, więc nic nie ginie.
+- `Planuj w tej sesji` — idziesz dalej (0.1).
+
+Koszt: w etapie 3 vibersi `/dev-plan` ruszył po `/dev-prep` z 215k kontekstu, co dało ok. 1,0 M z 6,9 M planu; raport telemetrii flaguje takie epizody (`ctx_start` > 120k). Pierwsza wiadomość sesji to `/dev-plan` → pytania nie zadajesz.
+
 #### 0.1 Wznowienie
 
 - Użytkownik wskazuje istniejący plan albo w `docs/plans/` jest świeży plan na ten temat → przeczytaj go i zapytaj, czy aktualizować w miejscu, czy pisać nowy. Przy aktualizacji zachowaj odhaczone checkboxy.

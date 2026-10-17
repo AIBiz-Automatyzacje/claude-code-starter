@@ -19,6 +19,7 @@ Ten skill **nie planuje**. Nie tworzy Implementation Units, nie dobiera bibliote
 ```
 /dev-brainstorm → CO budować (opcjonalny)
 /dev-prep       → CO CZŁOWIEK MUSI DOSTARCZYĆ   ← ten skill, tworzy <slug>-przygotowanie.md
+/clear          → świeża sesja przed planowaniem
 /dev-plan       → JAK budować; czyta ten dokument (0.3, 1.6), UZUPEŁNIA go (3.7/5.2b) i sprawdza w bramce gotowości (6.6)
 dev-autopilot-wf → wykonanie
 ```
@@ -257,7 +258,15 @@ Decyzje: N (M z markerem `[blokuje: planowanie]`) · Konta/sekrety: N · Assety:
 Następnie zadaj `AskUserQuestion`: „Co dalej?"
 
 - `Idę dostarczyć pozycje i wracam` — zakończ. Przypomnij jedną linią: po zaprojektowaniu makiet wklej URL-e do sekcji 4, wtedy `/dev-plan` nie zapyta o Figmę.
-- `Wszystko już mam — planujmy` — **uruchom `/dev-plan <origin>` w tej sesji** (nie opisuj tylko komendy). Wcześniej sprawdź nieodhaczone pozycje **[blokuje: planowanie]**; jeśli są, wymień je i potwierdź, że użytkownik świadomie idzie dalej.
+- `Wszystko już mam — planujmy` — sprawdź nieodhaczone pozycje **[blokuje: planowanie]**; jeśli są, wymień je i potwierdź, że użytkownik świadomie idzie dalej. `/dev-plan` w tej sesji nie uruchamiasz.
 - `Popraw dokument` — wróć do Fazy 2 z jego uwagami.
+
+Skill kończysz zawsze tą samą linią następnego kroku (przy każdej odpowiedzi poza `Popraw dokument`):
+
+```text
+Następny krok: /clear, potem /dev-plan <origin>
+```
+
+`/dev-plan` idzie w świeżej sesji, bo planowanie to ok. 50 tur, a każda tura ciągnie cały kontekst sesji: po `/dev-prep` i makietach to ponad 200k tokenów (etap 3 vibersi: 215k, ok. 1,0 M dodatkowego kosztu planu). Checklista na dysku przenosi wszystko, czego `/dev-plan` potrzebuje.
 
 **Commit:** dokument jest artefaktem planowania — `/dev-plan` dociąga takie ścieżki do commitu inicjalnego na branchu feature'a (klasa (a) w jego kroku 6.3). Nie commituj go sam, chyba że użytkownik poprosi.
