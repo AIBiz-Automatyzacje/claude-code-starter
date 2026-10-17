@@ -2,6 +2,7 @@
 // przepisuje do docs/active/, a walidacja sprawdza. Linie w blokach ``` nie sa naglowkami ani polami.
 
 import { bezPlaceholdera, jednostka, pole } from './pola-iu.mjs'
+import { sekcjaCzesci } from './czesci-pr.mjs'
 import { rejestrStalych } from './rejestr-stalych.mjs'
 
 export { bezOgonkow } from './pola-iu.mjs'
@@ -19,7 +20,7 @@ const PLOT = /^\s*(?:```|~~~)/
  * @typedef {{ numer: number, oznaczenie: string, poziom: number, nazwa: string, zalezyOd: string, rownolegleZ: string, iu: Jednostka[] }} Faza
  * @typedef {string | null | Record<string, string>} PoleFrontmattera
  * @typedef {{ frontmatter: Record<string, PoleFrontmattera>, przeglad: string, wymagania: string[], fazy: Faza[], bezFazy: Jednostka[],
- *   rejestr: import('./rejestr-stalych.mjs').StalaRejestru[], problemy: string[] }} Plan
+ *   rejestr: import('./rejestr-stalych.mjs').StalaRejestru[], czesci: import('./czesci-pr.mjs').SekcjaCzesci, problemy: string[] }} Plan
  */
 
 /** @param {string | undefined} v @returns {string | null} */
@@ -148,7 +149,8 @@ export function parsujPlan(md) {
   })
   zamknijIu()
   if (kod) problemy.push('niezamknięty blok kodu ``` — reszta planu nie została przeczytana')
-  return { frontmatter: pola, przeglad: przeglad(md), wymagania: wymagania(md), fazy, bezFazy, rejestr: rejestrStalych(md), problemy }
+  return { frontmatter: pola, przeglad: przeglad(md), wymagania: wymagania(md), fazy, bezFazy, rejestr: rejestrStalych(md),
+    czesci: sekcjaCzesci(md), problemy }
 }
 
 /**

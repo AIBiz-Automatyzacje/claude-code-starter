@@ -4,7 +4,8 @@
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   plan.mjs linie <plik>...                       linie kodu jak ESLint max-lines (bez pustych i komentarzy) — kolumna „dziś”
-//   plan.mjs sprawdz <plan.md>                     walidacja planu (fazy, IU, tabela plikow z budzetem, scenariusze, seedy, rejestr stalych)
+//   plan.mjs sprawdz <plan.md>                     walidacja planu (fazy, IU, tabela plikow z budzetem, scenariusze, seedy, rejestr stalych,
+//                                                  czesci PR); rozmiarPr = szacunek plikow do recenzji bota per faza i czesc
 //   plan.mjs generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz]
 //                                                  pliki zadania z planu; bez --zapisz tylko liczniki; plan z bledami — nic
 //   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo
@@ -16,6 +17,7 @@ import { isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { liczLinieKodu, podsumowanieBudzetu } from './budzet-pliku.mjs'
+import { rozmiarPlanu } from './czesci-pr.mjs'
 import { gotowosc } from './gotowosc.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
@@ -104,7 +106,8 @@ function wykonaj(positionals, values) {
   const planMd = readFileSync(join(projekt, plan), 'utf8')
   const sparsowany = parsujPlan(planMd)
   const w = sprawdzPlan(sparsowany, projekt)
-  if (polecenie === 'sprawdz' || w.bledy.length) zakoncz({ ok: !w.bledy.length, ...w }, !w.bledy.length)
+  const rozmiarPr = rozmiarPlanu(sparsowany, projekt)
+  if (polecenie === 'sprawdz' || w.bledy.length) zakoncz({ ok: !w.bledy.length, ...w, rozmiarPr }, !w.bledy.length)
 
   const zadanie = zadanieZPlanu(projekt, plan, { nazwa: values.nazwa, data })
   if (zadanie.bledyBilansu.length) zakoncz({ ok: false, bledy: zadanie.bledyBilansu, uwagi: w.uwagi }, false)
@@ -121,7 +124,7 @@ function wykonaj(positionals, values) {
   }
   const rozmiary = { plan_zn: planMd.length, zadania_zn: zadanie.pliki.zadania.length }
   const budzet = podsumowanieBudzetu(sparsowany.fazy.flatMap((f) => f.iu))
-  zakoncz({ ok: !odmowa, nazwa: zadanie.nazwa, katalog: zadanie.katalog, liczniki: zadanie.liczniki, rozmiary, budzet, uwagi: w.uwagi,
+  zakoncz({ ok: !odmowa, nazwa: zadanie.nazwa, katalog: zadanie.katalog, liczniki: zadanie.liczniki, rozmiary, budzet, rozmiarPr, uwagi: w.uwagi,
     zapisane, odmowa }, !odmowa)
 }
 

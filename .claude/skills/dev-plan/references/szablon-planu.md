@@ -14,6 +14,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `## Kontekst i research` | `### Relevantny kod i wzorce`, `### Wiedza instytucjonalna`, `### Referencje zewnętrzne` | zawsze (puste podsekcje pomiń) |
 | `## Kluczowe decyzje techniczne` | `- <decyzja>: <uzasadnienie>` | zawsze |
 | `## Rejestr stałych` | tabela stałych współdzielonych albo „Brak stałych współdzielonych.”; źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie | zawsze |
+| `## Części PR` | tabela `\| Część \| Fazy \|` (`\| 1 \| 1–3 \|`): cięcie na granicy faz, części po kolei, każda < 150 plików do recenzji (`rozmiarPr` ze `sprawdz`) | gdy `sprawdz` liczy > 150 plików |
 | `## Otwarte pytania` | `### Rozwiązane podczas planowania`, `### Odroczone do implementacji` | zawsze |
 | `## Wymagania wstępne operatora` | „Brak — autopilot może startować od razu.” albo zdanie z linkiem do checklisty i lista `- [ ] … — **[blokuje: faza N]** (IU-K)` | zawsze |
 | `## Implementation Units` | fazy i IU (przykład niżej) | zawsze |
