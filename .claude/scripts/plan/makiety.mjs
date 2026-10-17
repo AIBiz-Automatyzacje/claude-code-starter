@@ -19,6 +19,12 @@ export const KATALOG_EKRANOW = 'ekrany'
 /** @param {string} s @returns {string} sciezka bez wiodacego `./` */
 const bezKropki = (s) => s.replace(/^\.\//, '')
 
+/** @param {Plan} plan @returns {string | null} katalog SPEC ekranow (obok figma_spec), wzgledem projektu */
+function katalogSpecEkranow(plan) {
+  const spec = poleTekstowe(plan, 'figma_spec')
+  return spec ? posix.join(posix.dirname(bezKropki(spec)), KATALOG_EKRANOW) : null
+}
+
 /** @param {Jednostka} iu @returns {boolean} */
 function budujeUi(iu) {
   return BUILDERZY_UI.includes(iu.delegate.replace(/-figma$/, ''))
@@ -29,12 +35,19 @@ function budujeUi(iu) {
  * Makiety w planie z makietami = uwaga (dostanie wszystkie ekrany), pole Makiety w planie bez makiet = blad.
  * @param {Plan} plan
  * @param {Jednostka[]} jednostki
+ * @param {string} projekt katalog projektu (pliki SPEC ekranow)
  * @returns {{ bledy: string[], uwagi: string[] }}
  */
-export function sprawdzMakiety(plan, jednostki) {
+export function sprawdzMakiety(plan, jednostki, projekt) {
   const ekrany = new Set(ekranyFigmy(plan).map(([nazwa]) => nazwa))
   /** @type {{ bledy: string[], uwagi: string[] }} */
   const w = { bledy: [], uwagi: [] }
+  // SPEC podzielony na ekrany (katalog `ekrany/`) to sam indeks bez pomiarow — ekran bez pliku zostawilby builder bez pomiarow.
+  const katalog = katalogSpecEkranow(plan)
+  if (katalog && existsSync(join(projekt, katalog))) {
+    const brak = [...ekrany].filter((n) => !existsSync(join(projekt, katalog, `${n}.md`)))
+    if (brak.length) w.bledy.push(`figma_spec: SPEC podzielony na ekrany, brak ${brak.map((n) => `${katalog}/${n}.md`).join(', ')} — pobierz ekran ponownie (kontekst designerski, krok E)`)
+  }
   for (const iu of jednostki) {
     if (iu.makiety === null) {
       if (ekrany.size && budujeUi(iu)) {
@@ -64,7 +77,7 @@ export function blokDesignerski(plan, iu, projekt) {
   if (!budujeUi(iu) || (!design && !spec && !wszystkie.length)) return { tresc: '', ekrany: [], specEkranow: [] }
   const makiety = iu.makiety
   const wybrane = makiety ? wszystkie.filter(([nazwa]) => makiety.includes(nazwa)) : wszystkie
-  const katalogSpec = spec ? posix.join(posix.dirname(bezKropki(spec)), KATALOG_EKRANOW) : null
+  const katalogSpec = katalogSpecEkranow(plan)
   const specEkranow = katalogSpec ? wybrane.map(([nazwa]) => posix.join(katalogSpec, `${nazwa}.md`)) : []
   // Tryb ekranow: jednostka z polem Makiety, SPEC podzielony na ekrany (katalog `ekrany/`) i plik SPEC kazdego wybranego ekranu.
   // Inaczej — caly SPEC.md jak przed P21 (plan bez pola, SPEC sprzed podzialu, brakujacy plik ekranu).

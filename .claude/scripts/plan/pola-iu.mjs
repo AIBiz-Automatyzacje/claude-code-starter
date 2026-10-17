@@ -155,13 +155,17 @@ function polaBloku(linie, problemy) {
 /**
  * Pole "Makiety" (P21 B2): nazwy ekranow z `figma_screens` budowanych przez jednostke, po przecinku, w backtickach albo bez.
  * @param {{ wartosc: string, linie: Linia[] } | undefined} p
- * @returns {string[] | null} null = brak pola; [] = „—” (jednostka nie buduje zadnego ekranu)
+ * @returns {string[] | null} null = brak pola albo pole puste; [] = „—” (jednostka nie buduje zadnego ekranu)
  */
 function nazwyMakiet(p) {
   if (!p) return null
+  const surowy = [p.wartosc, ...p.linie.map((l) => l.tekst)].join(' ').trim()
+  // Jawne „zero ekranow” to tylko kreska; puste pole albo placeholder szablonu traktujemy jak brak pola (uwaga walidacji).
+  if (/^[—–-]$/.test(surowy)) return []
   const tekst = bezPlaceholdera([p?.wartosc ?? '', ...(p?.linie ?? []).map((l) => l.tekst)].join(' '))
   const wBacktickach = [...tekst.matchAll(/`([^`]+)`/g)].map((m) => m[1].trim())
-  return (wBacktickach.length ? wBacktickach : tekst.split(/[,\s]+/)).map((n) => n.replace(/^-\s*/, '').trim()).filter(Boolean)
+  const nazwy = (wBacktickach.length ? wBacktickach : tekst.split(/[,\s]+/)).map((n) => n.replace(/^-\s*/, '').trim()).filter(Boolean)
+  return nazwy.length ? nazwy : null
 }
 
 /**

@@ -123,9 +123,34 @@ test('wiring: porcje sekwencyjnie, kazda zeStanem; porcja z FAIL, P1 albo plikie
   assert.ok(blok.indexOf(') break') < blok.indexOf('faza.fixPostep = {'), 'postep zapisany dopiero po porcji bez STOP-u')
   assert.match(blok, /faza\.fixPostep\.porcje === porcje\.length/)
   // Kontrola fixa i tura poprawek biora commity wszystkich porcji (suma), nie ostatniej.
-  assert.match(zrodlo, /kontrolaFixaPrompt\(sciezka, numerFazy, fix\.commity, faza\.otwarteFindingi\)/)
-  assert.match(zrodlo, /fixPoprawkaPrompt\(sciezka, numerFazy, doPoprawki, fix\.commity\)/)
+  assert.match(zrodlo, /kontrolaFixaPrompt\(sciezka, numerFazy, fix\.commity, faza\.otwarteFindingi\) \+ uwagaWznowienia/)
+  assert.match(zrodlo, /fixPoprawkaPrompt\(sciezka, numerFazy, doPoprawki, fix\.commity\) \+ uwagaWznowienia/)
   assert.match(zrodlo, /faza\.otwarteFindingi = \[\]\n\s*delete faza\.fixPostep/)
+})
+
+test('porcjujFix: P1 w duzej grupie pliku idzie do pierwszego kawalka, a porcja z nim przed porcjami samych P2', () => {
+  const lista = [...Array.from({ length: 6 }, (_, i) => f('P2', `src/a.ts:${i + 1}`)), f('P1', 'src/a.ts:50'), f('P2', 'src/b.ts:1')]
+  const porcje = wf.porcjujFix(lista, 6)
+  assert.equal(porcje[0][0].plik, 'src/a.ts:50')
+  assert.ok(porcje[0].some((/** @type {Finding} */ x) => x.severity === 'P1'))
+  assert.ok(porcje.slice(1).every((/** @type {Finding[]} */ p) => p.every((x) => x.severity === 'P2')))
+})
+
+test('fixPrompt porcji: pliki innych porcji otwiera, gdy wymaga tego poprawka; P2 liczy tylko swoje; [P2] poprzednich bez kotwicy', () => {
+  const p = wf.fixPrompt('docs/active/x', 4, [f('P2', 'src/a.ts:1')], 'gotowe', { numer: 2, z: 2, poprzednie: ['🟠 [P2] src/c.ts:3 — opis'] })
+  assert.match(p, /ich findingow nie naprawiasz; ich pliki otwierasz, gdy wymaga tego twoja poprawka/)
+  assert.doesNotMatch(p, /ich plikow nie otwierasz/)
+  assert.match(p, /nierozwiazaneP2 i nienaprawione\[\] dotycza tylko findingow tej porcji/)
+  assert.match(p, /nierozwiazaneP2 \(P2 tej porcji, ktorych nie zamknales\)/)
+  assert.match(p, /- 🟠 \[P2\] src\/c\.ts:3 — opis/)
+})
+
+test('wiring: nienaprawione wymagane w FixResult; rozjazd [P2] z nierozwiazaneP2 w logu; wznowienie = kontrola per commit', () => {
+  assert.match(wytnij('const FIX_RESULT = {', '\n}'), /required: \[[^\]]*'nienaprawione'/)
+  assert.match(zrodlo, /const wpisyP2 = fix\.nienaprawione\.filter\(\(n\) => \/\\\[P2\\\]\/\.test\(String\(n\)\)\)\.length/)
+  assert.match(zrodlo, /if \(wpisyP2 !== fix\.nierozwiazaneP2\)/)
+  assert.match(zrodlo, /const uwagaWznowienia = wynikiPorcji\.length && postep && postep\.gotowe > 0/)
+  assert.match(zrodlo, /Diff fixa czytasz per commit z listy \(\\`git show --format= <hash>\\` dla kazdego\), nie zakresem/)
 })
 
 /** @param {string} cwd @param {...string} args */

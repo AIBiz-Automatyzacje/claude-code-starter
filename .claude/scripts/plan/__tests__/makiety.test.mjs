@@ -46,9 +46,12 @@ function projekt(pliki) {
   return korzen
 }
 
-test('pole Makiety: backticki, lista bez backtickow, „—” = zero ekranow, brak pola = null', () => {
+test('pole Makiety: backticki, lista bez backtickow, „—” = zero ekranow, brak pola, puste pole i placeholder = null', () => {
   const p = plan([iu('IU-1', 'feature-builder-ui', '`logowanie`, `rejestracja`'), iu('IU-2', 'feature-builder-ui', 'logowanie, rejestracja'),
-    iu('IU-3', 'feature-builder-ui', '—'), iu('IU-4', 'feature-builder-ui', null)].join('\n'))
+    iu('IU-3', 'feature-builder-ui', '—'), iu('IU-4', 'feature-builder-ui', null), iu('IU-5', 'feature-builder-ui', ''),
+    iu('IU-6', 'feature-builder-ui', '*(brak)*')].join('\n'))
+  assert.equal(jednostka(p, 'IU-5').makiety, null, 'puste pole nie jest jawnym „zero ekranow”')
+  assert.equal(jednostka(p, 'IU-6').makiety, null)
   assert.deepEqual(jednostka(p, 'IU-1').makiety, ['logowanie', 'rejestracja'])
   assert.deepEqual(jednostka(p, 'IU-2').makiety, ['logowanie', 'rejestracja'])
   assert.deepEqual(jednostka(p, 'IU-3').makiety, [])
@@ -58,11 +61,11 @@ test('pole Makiety: backticki, lista bez backtickow, „—” = zero ekranow, b
 test('sprawdzMakiety: ekran spoza figma_screens = blad; UI bez pola = uwaga; data bez pola i UI z „—” = nic; pole bez makiet = blad', () => {
   const p = plan([iu('IU-1', 'feature-builder-ui-figma', '`logowanie`, `reset`'), iu('IU-2', 'feature-builder-fullstack', null),
     iu('IU-3', 'feature-builder-data', null), iu('IU-4', 'feature-builder-ui', '—')].join('\n'))
-  const w = sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu))
+  const w = sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu), tmpdir())
   assert.deepEqual(w.bledy, ['IU-1: Makiety reset — brak w figma_screens (dozwolone: logowanie, rejestracja)'])
   assert.deepEqual(w.uwagi.map((u) => u.split(':')[0]), ['IU-2'])
   const bez = plan(iu('IU-1', 'feature-builder-ui', '`logowanie`'), 'design_md: null\nfigma_spec: null\nfigma_screens: {}\noperator_prep: null')
-  assert.match(sprawdzMakiety(bez, bez.fazy.flatMap((f) => f.iu)).bledy[0] ?? '', /IU-1: pole Makiety, a frontmatter nie ma figma_screens/)
+  assert.match(sprawdzMakiety(bez, bez.fazy.flatMap((f) => f.iu), tmpdir()).bledy[0] ?? '', /IU-1: pole Makiety, a frontmatter nie ma figma_screens/)
 })
 
 test('blokDesignerski: SPEC per ekran — builder dostaje naglowek SPEC, SPEC i PNG tylko swoich ekranow', (t) => {
@@ -94,6 +97,16 @@ test('blokDesignerski: bez pola Makiety albo SPEC sprzed podzialu — caly SPEC;
   assert.equal(blokDesignerski(p, jednostka(p, 'IU-3'), korzen).tresc, '')
   const zero = plan(iu('IU-4', 'feature-builder-ui', '—'))
   assert.match(blokDesignerski(zero, jednostka(zero, 'IU-4'), korzen).tresc, /pomiary tej funkcji z Figmy/, '„—” przy SPEC bez katalogu ekrany/ = caly SPEC')
+})
+
+test('SPEC podzielony na ekrany: ekran z figma_screens bez pliku ekrany/<nazwa>.md = blad sprawdz (builder zostalby bez pomiarow)', (t) => {
+  const korzen = projekt({ [`${FOLDER}/SPEC.md`]: '#', [`${FOLDER}/ekrany/logowanie.md`]: '#' })
+  t.after(() => rmSync(korzen, { recursive: true, force: true }))
+  const p = plan(iu('IU-1', 'feature-builder-ui', '`logowanie`'))
+  assert.deepEqual(sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu), korzen).bledy, [`figma_spec: SPEC podzielony na ekrany, brak ${FOLDER}/ekrany/rejestracja.md — pobierz ekran ponownie (kontekst designerski, krok E)`])
+  const bezKatalogu = projekt({ [`${FOLDER}/SPEC.md`]: '#' })
+  t.after(() => rmSync(bezKatalogu, { recursive: true, force: true }))
+  assert.deepEqual(sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu), bezKatalogu).bledy, [], 'SPEC sprzed podzialu — bez bledu')
 })
 
 test('sprawdzPlan zglasza bledy i uwagi pola Makiety (walidacja planu przed autopilotem)', () => {

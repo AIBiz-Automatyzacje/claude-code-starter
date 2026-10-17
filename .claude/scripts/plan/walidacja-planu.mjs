@@ -177,7 +177,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
   w.uwagi.push(...uwagiRejestru(plan, jednostki))
-  const makiety = sprawdzMakiety(plan, jednostki)
+  const makiety = sprawdzMakiety(plan, jednostki, projekt)
   w.bledy.push(...makiety.bledy)
   w.uwagi.push(...makiety.uwagi)
   const czesci = sprawdzCzesci(plan, projekt)
