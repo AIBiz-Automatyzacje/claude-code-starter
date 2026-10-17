@@ -22,7 +22,7 @@ const ROLE_Z_KODEM = ['feature-builder-data', 'feature-builder-ui', 'feature-bui
 // Zdanie otwierajace polecenie („Pliki czytasz zakresami” / „Pliki kodu czytasz zakresami”) — sama fraza „czytasz zakresami” wystepuje
 // tez przy wynikach narzedzi, wiec nie wystarcza.
 const OTWARCIE = /(?:^|\n)-? ?Pliki (?:kodu )?czytasz zakresami:/
-const WYMAGANE = ["`sed -n 'od,dop'`", '`offset` i `limit`', 'bez `cat a b c`', '`tool-results`', '`grep -n`']
+const WYMAGANE = ['krótszy niż 200 linii', 'ten sam fragment czytasz ponownie dopiero po jego zmianie', "`sed -n 'od,dop'`", '`offset` i `limit`', 'bez `cat a b c`', '`tool-results`', '`grep -n`']
 
 /**
  * @param {string} korzen
@@ -37,7 +37,7 @@ function roleBezZakresow(korzen) {
 }
 
 test('podlozona rola z „cat” calych plikow i bez przetrwalych wynikow jest zglaszana', () => {
-  const dobry = `- Pliki czytasz zakresami: \`grep -n\`, \`sed -n 'od,dop'\` albo Read z \`offset\` i \`limit\`; bez \`cat a b c\`; wynik w \`tool-results\` zakresami.`
+  const dobry = `- Pliki czytasz zakresami: \`grep -n\`, \`sed -n 'od,dop'\` albo Read z \`offset\` i \`limit\`; w całości plik krótszy niż 200 linii; bez \`cat a b c\`; ten sam fragment czytasz ponownie dopiero po jego zmianie; wynik w \`tool-results\` zakresami.`
   const drzewo = Object.fromEntries(ROLE_Z_KODEM.map((n) => [`${AGENCI}/${n}.md`, `---\nname: ${n}\n---\n${dobry}\n`]))
   drzewo[`${AGENCI}/klasa-naprawiacz.md`] = '---\nname: klasa-naprawiacz\n---\nPrzed naprawa przeczytaj pliki z findingow (`cat`).\n'
   drzewo[`${AGENCI}/feature-builder-ui.md`] = `---\nname: feature-builder-ui\n---\n${dobry.replace('`tool-results`', 'wyniki')}\n`
@@ -49,6 +49,8 @@ test('podlozona rola z „cat” calych plikow i bez przetrwalych wynikow jest z
 
 test('buildery i klasa naprawiacza czytaja pliki zakresami (tresc pliku roli, warstwa stala)', () => {
   assert.deepEqual(roleBezZakresow(REPO), [])
+  // Klasa naprawiacza czyta tez diff fixa i kontroli: per plik, nie calosc (fix:poprawka — pelny diff 51% wejscia).
+  assert.match(tresc(readFileSync(join(REPO, AGENCI, 'klasa-naprawiacz.md'), 'utf8')), /diff czytasz per plik \(`git diff <zakres> -- <plik>`/)
 })
 
 test('fix czyta z raportu review tylko wpisy swoich findingow, nie caly raport', () => {
@@ -56,5 +58,5 @@ test('fix czyta z raportu review tylko wpisy swoich findingow, nie caly raport',
   const start = autopilot.indexOf('function fixPrompt(')
   const fix = autopilot.slice(start, autopilot.indexOf('\n}', start))
   assert.match(fix, /review-faza-\$\{numerFazy\}\.md — czytasz tylko wpisy swoich findingow/)
-  assert.match(fix, /nie caly raport/)
+  assert.match(fix, /potem zakres \\`sed -n\\`\), nie caly raport/)
 })

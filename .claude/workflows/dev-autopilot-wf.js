@@ -727,7 +727,8 @@ walidacja koncowa audytuje git diff testow w commitach fix i zglosi kazda taka z
 
 ${ostatnia ? blokZwinieciaDoPoprawy(sciezka, numerFazy) : `Sekcji "## Do poprawy po review fazy ${numerFazy}" nie zwijasz — zwija ja ostatnia porcja fixa tej fazy.`}
 
-Kolejnosc: KOD -> TEST -> E2E. Po naprawach: ${ostatnia ? 'pelna walidacja (typecheck, test, build —\nkomendy z package.json)' : 'walidacja (typecheck i pelny zestaw testow — komendy z package.json; build uruchamia ostatnia porcja)'}, commit \`fix(${sciezka.split('/').pop()}): poprawki po review fazy ${numerFazy}\` (temat dokladnie taki — walidacja koncowa po nim rozpoznaje commity fixa),
+Kolejnosc: KOD -> TEST -> E2E. Po naprawach: pelna walidacja (typecheck, test, build —
+komendy z package.json), commit \`fix(${sciezka.split('/').pop()}): poprawki po review fazy ${numerFazy}\` (temat dokladnie taki — walidacja koncowa po nim rozpoznaje commity fixa),
 staguj tylko zmienione pliki.
 ${BLOK_DLUGIE_KOMENDY}
 
@@ -1864,8 +1865,9 @@ for (const numerFazy of kolejka) {
     // Stan po review (fix pending) zapisuje agent fixa (P7) — pierwszej porcji, a postep po kazdej porcji kolejna (P21 B1).
     // Pusta lista przy fix: pending (stan sprzed P8 po odlozeniu P3) — jedna porcja jak dawniej, bez sztucznego FAIL-a sumy.
     const porcje = faza.otwarteFindingi.length ? porcjujFix(faza.otwarteFindingi) : [[]]
-    // Postep ze stanu tylko przy tym samym podziale: lista fixa nie zmienia sie, dopoki fix nie jest done.
-    const postep = faza.fixPostep && faza.fixPostep.porcje === porcje.length && faza.fixPostep.gotowe < porcje.length ? faza.fixPostep : null
+    // Postep ze stanu tylko przy tym samym podziale: lista fixa nie zmienia sie, dopoki fix nie jest done. Wszystkie porcje zrobione
+    // (STOP dopiero w turze poprawkowej) = swiezy run idzie od razu do kontroli fixa na commitach porcji, bez powtorki fixa.
+    const postep = faza.fixPostep && faza.fixPostep.porcje === porcje.length && faza.fixPostep.gotowe <= porcje.length ? faza.fixPostep : null
     const wynikiPorcji = postep && postep.gotowe > 0 ? [{ ...postep.suma, walidacja: 'PASS', nierozwiazaneP1: 0, plikiBinarne: [] }] : []
     if (wynikiPorcji.length) {
       log(`Faza ${numerFazy}: fix wznowiony od porcji ${postep.gotowe + 1}/${porcje.length} (ze stanu: ${postep.gotowe} porcji zrobionych, commity ${postep.suma.commity.join(' ') || 'brak'})`)

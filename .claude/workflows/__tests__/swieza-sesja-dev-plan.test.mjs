@@ -31,6 +31,7 @@ test('/dev-prep konczy sie linia „/clear, potem /dev-plan” i nie uruchamia /
   assert.match(handoff, /Następny krok: \/clear, potem \/dev-plan <origin>/)
   assert.doesNotMatch(handoff, /uruchom `\/dev-plan <origin>` w tej sesji/)
   assert.match(handoff, /`\/dev-plan` w tej sesji nie uruchamiasz/)
+  assert.match(handoff, /Skill kończysz zawsze tą samą linią następnego kroku \(przy każdej odpowiedzi poza `Popraw dokument`\)/)
   assert.match(prep, /\/clear {10}→ świeża sesja przed planowaniem/)
 })
 
@@ -40,5 +41,6 @@ test('/dev-plan zaczyna od kroku 0.0: inna praca w sesji = pytanie o /clear prze
   assert.match(krok, /zanim cokolwiek przeczytasz, zadaj `AskUserQuestion`/)
   assert.match(krok, /`Zrobię \/clear i wrócę` \(rekomendowane\)/)
   assert.match(krok, /`\/clear, potem \/dev-plan <to samo wejście>`/)
+  assert.match(krok, /- `Planuj w tej sesji` — idziesz dalej \(0\.1\)/, 'operator moze swiadomie zostac w sesji')
   assert.match(krok, /Pierwsza wiadomość sesji to `\/dev-plan` → pytania nie zadajesz/)
 })

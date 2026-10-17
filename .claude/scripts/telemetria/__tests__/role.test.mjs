@@ -88,3 +88,10 @@ test('P8: zapis P3 ze stanu sprzed P8 do known-issues to rola mechaniczna', () =
   assert.equal(rola('start:p3-known-issues'), 'start:p3-known-issues')
   assert.equal(klasaRoli(rola('start:p3-known-issues')), 'mechaniczny')
 })
+
+// P21 B1: fix porcjami — etykiety `fix:faza-N:porcja-K` to dalej rola `fix` (koszt etapu fix, commity w fixFazy).
+test('porcja fixa (fix:faza-4:porcja-2) = rola fix, klasa naprawiacz; fix:kontrola i fix:poprawka bez zmian', () => {
+  assert.equal(rola('fix:faza-4:porcja-2'), 'fix')
+  assert.equal(klasaRoli(rola('fix:faza-4:porcja-2')), 'naprawiacz')
+  assert.equal(rola('fix:kontrola:faza-4'), 'fix:kontrola')
+})

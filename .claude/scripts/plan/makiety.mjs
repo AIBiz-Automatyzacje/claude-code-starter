@@ -27,7 +27,8 @@ function katalogSpecEkranow(plan) {
 
 /** @param {Jednostka} iu @returns {boolean} */
 function budujeUi(iu) {
-  return BUILDERZY_UI.includes(iu.delegate.replace(/-figma$/, ''))
+  // Plan bez pola Delegate to (starszy): buildera dobiera planner po plikach, wiec blok liczymy jak dla UI.
+  return !iu.delegate || BUILDERZY_UI.includes(iu.delegate.replace(/-figma$/, ''))
 }
 
 /**

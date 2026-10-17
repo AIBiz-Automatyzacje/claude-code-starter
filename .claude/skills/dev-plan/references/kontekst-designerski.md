@@ -57,8 +57,9 @@ Dla każdego ekranu z listy, po kolei:
    dopiero po zapisie pliku — z odpowiedzi narzędzia korzystasz tylko przy jego ekranie.
 Agent pierwszej części: get_variable_defs jednego reprezentatywnego ekranu → <folder>/tokeny.md (tabela
 `figma_variable | hex | token w projekcie`; brakujące w DESIGN.md oznacz „do dodania w DESIGN.md”).
-Wynik: wiersz na ekran `<name> | <W>×<H> | <nodeId> | rozjazd vs DESIGN.md jednym zdaniem albo „brak”`, bez pomiarów —
-wynik wraca do kontekstu sesji planowania, a pomiary są w plikach ekranów.
+Wynik: wiersz na ekran `<name> | <W>×<H> | <nodeId>` i wiersze rozjazdów z DESIGN.md gotowe do tabeli
+`element | DESIGN.md | Figma | decyzja` (albo „brak rozjazdów”), bez pomiarów — wynik wraca do kontekstu sesji planowania,
+a pomiary są w plikach ekranów.
 ```
 
 Z wyników agentów piszesz `docs/plans/<feature-slug>-figma/SPEC.md` — indeks bez pomiarów ekranów (builder czyta go razem z SPEC swoich ekranów):
