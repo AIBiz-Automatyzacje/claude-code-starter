@@ -180,6 +180,7 @@ Autonomiczne E2E działa na dedykowanym projekcie testowym z `.env.e2e`, nigdy n
 - Seed jest idempotentny (DELETE albo upsert) i wskazuje konto przez `(select id from auth.users where email='<E2E_TEST_EMAIL>')`, bez stałych ID; flow loguje się e-mailem i hasłem konta testowego, nigdy przez OAuth.
 - Smoke RLS (odmowa nie-uczestnikowi) wykonujesz SQL-em na bazie e2e (`psql "$SUPABASE_E2E_DB_URL"`), bez Supabase MCP.
 - Realtime: jeden klient (render, wysłanie, optimistic + echo) jest `[E2E]`; dwóch klientów na żywo → `[Manual]`.
+- Wysyłka maili albo SMS w scenariuszach fazy (rejestracja, reset hasła, ponowna wysyłka, link logowania): policz wysyłki wszystkich scenariuszy `[E2E]` fazy i porównaj z limitem usługi na projekcie e2e, odczytanym z jego konfiguracji, nie z dokumentacji ani z researchu (Supabase Auth: `rate_limit_email_sent` z Management API; bez własnego SMTP domyślnie 2 na godzinę, a Send Email hook go nie omija). Limit mniejszy od liczby wysyłek fazy → pozycja w checkliście przygotowania (3.7) z podniesieniem limitu na projekcie e2e i markerem `[blokuje: faza N]`, bo kolejna wysyłka w godzinie kończy scenariusz błędem limitu zamiast wynikiem.
 - Projekt bez `.env.e2e`: scenariusz zostaje `[E2E]` tylko z pozycją setupu środowiska w checkliście (3.7); świadomy opt-out to `[Manual]`.
 
 #### 3.5 Builder IU

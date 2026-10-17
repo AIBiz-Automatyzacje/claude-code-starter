@@ -163,3 +163,15 @@ test('SKILL.md i szablon: źródło stałej w IU pierwszego konsumenta w kodzie;
   assert.match(rejestr, /`plan\.mjs sprawdz` daje uwagę, gdy źródło jest w fazie wcześniejszej niż wszyscy konsumenci/)
   assert.match(SZABLON, /\| `## Rejestr stałych` \|[^\n]*źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie/)
 })
+
+// P20 A7 (vibersi etap 3): research zalozyl „Send Email hook = bez limitu 2 maili/h”; projekt e2e mial rate_limit_email_sent 2,
+// a faza 4 potrzebowala 5 wysylek — w autopilocie padlaby na limicie nawet bez zawieszonego zrzutu.
+test('SKILL.md 3.4b: wysyłki maili/SMS fazy kontra limit usługi na projekcie e2e z konfiguracji; za mały limit = pozycja operatora', () => {
+  const e2e = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b Scenariusze E2E i seedy'), SKILL_MD.indexOf('#### 3.5'))
+  const regula = e2e.split('\n').find((l) => l.startsWith('- Wysyłka maili albo SMS')) ?? ''
+  assert.match(regula, /policz wysyłki wszystkich scenariuszy `\[E2E\]` fazy/)
+  assert.match(regula, /odczytanym z jego konfiguracji, nie z dokumentacji ani z researchu/)
+  assert.match(regula, /`rate_limit_email_sent`/)
+  assert.match(regula, /Send Email hook go nie omija/)
+  assert.match(regula, /pozycja w checkliście przygotowania \(3\.7\)[^.]*`\[blokuje: faza N\]`/)
+})
