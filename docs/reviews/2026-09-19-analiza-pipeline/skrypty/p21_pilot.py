@@ -16,6 +16,7 @@ Użycie (katalog = scratchpad sesji pilota, np. $CLAUDE_JOB_DIR/tmp/p21):
   p21_pilot.py sedzia-przygotuj <katalog>                                   katalog sędziego: A/B (kolejność z hasha), diffy, pliki przed/po
   p21_pilot.py skan <katalog> <krok>                                        przeciek: odczyty spoza kopii (Documents, inne kopie, projekty)
   p21_pilot.py wynik <katalog>                                              tabela: koszt, naprawione, regresje K, walidacja, smoke P20
+  p21_pilot.py zapisz <katalog> <plik.json>                                 wynik pilota do pliku (werdykty per finding, A9, skan, koszt)
 
 Miary pilota (6a pkt 86 e): koszt etapu fix (fix + kontrola + poprawka), naprawione (sędzia: NAPRAWIONY / CZĘŚCIOWO / NIENAPRAWIONY
 per finding), regresje K (pozycje kontroli diffu naprawczego + regresje wg sędziego). Kryterium: spadek jakości = B1 odpada, reszta P21 zostaje.
@@ -392,7 +393,8 @@ def skan(k, krok):
             if o.get('type') != 'assistant': continue
             for c in o['message'].get('content', []):
                 if c.get('type') != 'tool_use': continue
-                t = json.dumps(c.get('input'), ensure_ascii=False)
+                # własny katalog transkryptów sesji kroku (przetrwałe wyniki narzędzi `tool-results`) to nie przeciek
+                t = json.dumps(c.get('input'), ensure_ascii=False).replace(os.path.join(PROJ, slug(wlasny)) + '/', '')
                 trafienia += ['%s: %s' % (a['etykieta'], x) for x in obce if x in t and not (x == wlasny)]
         if SEKRET_SMOKE in open(a['plik'], errors='ignore').read(): trafienia.append('%s: WARTOŚĆ .env.smoke-p20 w transkrypcie' % a['etykieta'])
     os.makedirs(kat(k, 'wyniki'), exist_ok=True)
@@ -439,6 +441,54 @@ def wynik(k):
         print('smoke P20:', json.dumps({x: (s.get('wynik') or {}).get(x) for x in ('hook', 'verify')}, ensure_ascii=False))
         e2e = (s.get('wynik') or {}).get('e2e') or {}
         print('A1 przebiegi:', json.dumps(e2e.get('przebiegi'), ensure_ascii=False)[:600])
+
+
+def a9(k, krok):
+    """P20 A9: polecenie fix:poprawka ma `git diff <x>^ -- '<plik>' …` (diff tylko plików pozycji K). Szuka w całym transkrypcie
+    wiadomości użytkownika, bo polecenie bywa pierwszą wiadomością (bez osobnego wstępu)."""
+    _, agenci = agenci_runu(k, krok)
+    for a in agenci:
+        if not a['etykieta'].startswith('fix:poprawka'): continue
+        for l in open(a['plik'], errors='ignore'):
+            o = json.loads(l)
+            c = (o.get('message') or {}).get('content') if o.get('type') == 'user' else None
+            t = c if isinstance(c, str) else (c[0].get('text', '') if isinstance(c, list) and c and c[0].get('type') == 'text' else '')
+            m = re.search(r"git diff <najstarszy>\^ -- ((?:'[^']+' ?)+)", t)
+            if m: return re.findall(r"'([^']+)'", m.group(1))
+    return None
+
+
+def zapisz(k, cel):
+    """dane/p21-pilot-wynik.json: koszt per rola i krok, werdykty sędziego per finding (odkodowane A/B), regresje, walidacja, smoke, A9."""
+    mapa = json.load(open(kat(k, 'sedzia-pliki', 'mapa.json')))['mapa']
+    s = json.load(open(kat(k, 'wyniki', 'sedzia.json')))
+    out = {'katalog': os.path.abspath(k), 'mapa_ab': mapa, 'warianty': {}, 'koszt_krokow': {}}
+    for krok in ('fix-stary', 'fix-nowy', 'sedzia', 'smoke'):
+        d = json.load(open(kat(k, 'wyniki', krok + '.json')))
+        out['koszt_krokow'][krok] = {'run': d['run']['runId'], 'status': d['run']['status'], 'ms': d['run']['ms'], 'jedn': d['koszt_jedn'], 'agenci': d['agenci']}
+    out['koszt_razem'] = round(sum(v['jedn'] for v in out['koszt_krokow'].values()), 2)
+    for w in WARIANTY:
+        d = json.load(open(kat(k, 'wyniki', 'fix-%s.json' % w)))
+        lit = [l for l, v in mapa.items() if v == w][0]
+        oc = {o['id']: o[lit] for o in s['wynik']['oceny']}
+        e = etap_fixa(d['agenci'])
+        out['warianty'][w] = {'etap_fix': e, 'etap_fix_jedn': round(sum(v['jedn'] for v in e.values()), 3), 'wynik_runu': d['wynik'],
+                              'logi': d['run']['logi'], 'walidacja': json.load(open(kat(k, 'wyniki', 'walidacja-%s.json' % w))),
+                              'sedzia': {'oceny': oc, 'licznik': {v: list(oc.values()).count(v) for v in ('NAPRAWIONY', 'CZESCIOWO', 'NIENAPRAWIONY')},
+                                         'regresje': s['wynik']['regresje'].get(lit) or []},
+                              'a9_pliki_diffu_poprawki': a9(k, 'fix-' + w)}
+    out['sedzia_uzasadnienia'] = {o['id']: o['uzasadnienie'] for o in s['wynik']['oceny']}
+    out['roznice_sedziego'] = [i for i in out['sedzia_uzasadnienia'] if out['warianty']['stary']['sedzia']['oceny'][i] != out['warianty']['nowy']['sedzia']['oceny'][i]]
+    sm = json.load(open(kat(k, 'wyniki', 'smoke.json')))
+    out['smoke'] = {'wynik': sm['wynik'], 'logi': sm['run']['logi']}
+    out['skan'] = {x: len(json.load(open(kat(k, 'wyniki', 'skan-%s.json' % x)))) for x in ('fix-stary', 'fix-nowy', 'sedzia', 'smoke')}
+    json.dump(out, open(cel, 'w'), ensure_ascii=False, indent=1)
+    st, nw = out['warianty']['stary'], out['warianty']['nowy']
+    print('koszt pilota %.2f M; etap fix stary %.2f / nowy %.2f (%+.0f%%); naprawione %d / %d; różnice sędziego %s; regresje %d / %d; A9 %d / %d plików; skan %s'
+          % (out['koszt_razem'], st['etap_fix_jedn'], nw['etap_fix_jedn'], 100 * (nw['etap_fix_jedn'] / st['etap_fix_jedn'] - 1),
+             st['sedzia']['licznik']['NAPRAWIONY'], nw['sedzia']['licznik']['NAPRAWIONY'], out['roznice_sedziego'],
+             len(st['sedzia']['regresje']), len(nw['sedzia']['regresje']), len(st['a9_pliki_diffu_poprawki'] or []),
+             len(nw['a9_pliki_diffu_poprawki'] or []), out['skan']))
 
 
 # ── Plan kosztu i suchy bieg ───────────────────────────────────────────────
@@ -497,4 +547,5 @@ if __name__ == '__main__':
     elif tryb == 'sedzia-przygotuj': sedzia_przygotuj(k)
     elif tryb == 'skan': sys.exit(skan(k, a[2]))
     elif tryb == 'wynik': wynik(k)
+    elif tryb == 'zapisz': zapisz(k, a[2])
     else: sys.exit(__doc__)

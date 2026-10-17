@@ -2732,6 +2732,33 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** S2 (§8) — pilot + smoke P20 → decyzja o merge'u (spadek jakości = B1 odpada, reszta P21 zostaje) → merge, push → jeden
     sync w vibersi → etap 4.
 
+90. **P21 SESJA 2 (2026-10-17): PILOT ZROBIONY — B1 ODPADA (wg kryterium), reszta P21 zostaje; smoke P20 zgodny. Gałąź
+    `popr/P21-koszt` gotowa do merge'a (B2, B3, B4), NIEZMERGOWANA — merge za zgodą operatora.**
+    Pilot na kopiach vibersi w scratchpadzie (`p21_pilot.py przygotuj` → `suchy` zgodny z pkt 89: stary 3 agentów, nowy 5 / 3 porcje,
+    smoke 6, A1 = 1 scenariusz, plan 8,14 / 9,53 M). **Koszt pilota 6,25 M** (fix-stary 2,79, fix-nowy 2,33, sędzia 0,84, smoke 0,28),
+    skan 0 przecieków w 4 krokach. Dane: `dane/p21-pilot-wynik.{json,txt}` (skrypt `p21_pilot.py zapisz`).
+
+    | wariant | etap fix [M] | fix (agentów, ctx max) | kontrola | poprawka | pozycje K | walidacja | sędzia N / CZ / NIE | regresje |
+    |---|---|---|---|---|---|---|---|---|
+    | stary (main) | 2,79 | 2,09 (1, 274k) | 0,28 | 0,43 | 6 (6 naprawione) | tc OK, 1181/1181 | 14 / 1 / 1 | 0 |
+    | nowy (B1 + B4) | 2,33 (−17%) | 1,76 (3: 0,96 / 0,51 / 0,29; 165k) | 0,32 | 0,25 | 8 (8 naprawione) | tc OK, 1190/1190 | 13 / 2 / 1 | 0 |
+
+    Różnice sędziego (ślepo A/B, mapa A = stary): F8 (wydzielenie pola e-mail) i F11 (test strażnika `isZajete`) stary NAPRAWIONY,
+    nowy CZĘŚCIOWO; F13 (test podwójnego kliku) odwrotnie. F1 (CAPTCHA, konfiguracja Supabase) NIENAPRAWIONY w obu — jak w runie etapu 3.
+    **Wniosek wg kryterium (nowy nie gorszy w naprawionych): nowy gorszy o 1 → B1 odpada** — commit `d4986a1` (revert 3932798 + części
+    B1 z 63ad767, 91bff93, 545fe3c; B4 w `fixPrompt` zostaje), testy 1018/1018 (1040 − 22 testy B1), typecheck, lint czyste.
+    Zastrzeżenie: różnica to 1 finding z 16 w jednym przebiegu; ten sam stary wariant kosztował w etapie 3 2,94 M, w pilocie 2,09 M —
+    rozrzut między przebiegami jest większy niż zysk B1 (−0,46 M). Cofnięcie rewertu = `git revert d4986a1`, gdyby operator uznał to za szum.
+    **Smoke P20 (agenci workflowu, kopia z `.claude` gałęzi):** A10 — hook zablokował `cat .env.smoke-p20` (agent dostał odmowę,
+    wartość nie trafiła do transkryptu, skan 0; tester dostał też blokadę `grep -E '^E2E_URL' .env.e2e` i przeszedł na `grep -oE` kluczy);
+    A5 — log „Verify P2: 16 findingow w 4 porcjach po 4 (sortowane po pliku)”, 4 × verify-batch, werdykty 4/4/4/4; A1 — zawieszony
+    zrzut (`alarm 30` = 142) → `agent-browser close` + próbny zrzut about:blank → PASS z asercji snapshotu i `get text` (nie SKIP
+    harness); próbny zrzut też wisiał, bo w tym środowisku (sesja w tle) zawisa każdy `agent-browser screenshot`, także z sesji głównej
+    na about:blank — gałęzi „ponowienie przechodzi” pilot nie sprawdził. A9 — polecenie fix:poprawka obu wariantów ma
+    `git diff <najstarszy>^ -- '<plik>' …` z 6 plikami pozycji K.
+    **Dalej:** merge `popr/P21-koszt` (bez B1) do main + push za zgodą operatora → jeden `/sync-template` + doctor w vibersi → etap 4
+    (`/clear` przed `/dev-plan`) — §8.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -3109,10 +3136,40 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   odtwarzaj go komendami scribe'a z transkryptu i porównuj z archiwum. Mutacje plików `.md` skryptem (podmiana na jeden bieg, potem
   przywrócenie) — jedyny zapis `.md` poza Write/Edit; `git status` po serii. W polu długiej listy mutacji nie używaj heredoca w zsh
   (backticki i `(…)` w treści) — lista w pliku `.py` przez Write.
+- P21 S2 (2026-10-17): skan przecieku liczy też odczyty własnego `tool-results` sesji kroku (`~/.claude/projects/<slug kopii>/…`) —
+  to nie przeciek; skan wyłącza katalog transkryptów własnej sesji. Polecenie agenta workflowu bywa pierwszą wiadomością użytkownika
+  (bez osobnego wstępu) — szukaj go we wszystkich wiadomościach `user`, nie w „drugiej”. Ten sam wariant fixa na tym samym stanie
+  kosztował 2,94 M (etap 3) i 2,09 M (pilot): różnicę kosztu wariantów z jednego przebiegu porównuj z tym rozrzutem. W sesji
+  w tle `agent-browser screenshot` wisi zawsze (także about:blank) — atrapa zawieszonego zrzutu sprawdza tam tylko gałąź „nie SKIP
+  harness”, gałąź „ponowienie przechodzi” wymaga sesji interaktywnej.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-17) — P21 SESJA 2: PILOT + SMOKE P20 + DECYZJA O MERGE'U (6a pkt 89).** S1 na gałęzi `popr/P21-koszt`
+**AKTUALNA (2026-10-17) — SYNC W VIBERSI PO P21 (6a pkt 90).** Warunek: operator zgodził się na merge, `popr/P21-koszt` (bez B1,
+`d4986a1`) zmergowana do main i wypchnięta (merge: `git switch main && git merge --no-ff popr/P21-koszt && npm test && git push`).
+Nowa sesja w katalogu vibersi, na main.
+
+```
+Kontynuujemy vibersi po P20 i P21 (HANDOFF szablonu 6a pkt 86 e, 88, 89, 90). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Gdzie jesteśmy: szablon ma P20 (tester: zawieszony zrzut = close + ponowienie; compound /dev-pr pushuje; sceptyk P2 porcjami po 4;
+rejestr stałych vs knip; limity maili E2E w /dev-plan; hook blokujący wypisanie .env*; PR wieloczęściowy) i P21 bez B1 (agent SPEC
+Figmy w 2–3 częściach, zrzuty do plików, SPEC per ekran i pole IU **Makiety:**; /dev-prep kończy się „/clear, potem /dev-plan”;
+buildery i fix czytają pliki zakresami). Fix fazy zostaje jednym agentem (pilot P21: porcje 13 vs 14 naprawionych). vibersi na main
+po etapie 3, bez synchronizacji.
+
+Zadanie:
+1. /sync-template; potem bash .claude/scripts/doctor/doctor.sh — wynik OK; sprawdź, że hook .env* jest w .claude/settings.json.
+2. Krótki test hooka: komenda `grep -c '^E2E_' .env.e2e` przechodzi, `grep E2E_ .env.e2e` jest blokowana (nie uruchamiaj innych
+   wariantów z wartościami).
+3. Commit synchronizacji. Etap 4: w NOWEJ sesji (/clear) /dev-prep, potem /clear i /dev-plan — nie w tej sesji.
+
+Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z .env*.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**Historia: (2026-10-17) — P21 SESJA 2 (6a pkt 89) — WYKONANA (6a pkt 90).** S1 na gałęzi `popr/P21-koszt`
 (niezmergowana). Nowa sesja w katalogu szablonu, na tej gałęzi. Pilot uruchamia agentów (≈ 8,1 M, granica 9,5 M) — zgoda w tej instrukcji.
 
 ```
@@ -3172,7 +3229,7 @@ Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z pli
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
 
-**PLANOWANA PO P21 (6a pkt 88) — SYNC W VIBERSI.** Warunek: P21 zmergowana i wypchnięta. Nowa sesja w katalogu vibersi, na main
+**ZASTĄPIONA przez AKTUALNĄ wyżej (6a pkt 90) — PLANOWANA PO P21 (6a pkt 88) — SYNC W VIBERSI.** Warunek: P21 zmergowana i wypchnięta. Nowa sesja w katalogu vibersi, na main
 (tekst niżej do aktualizacji o P21 przy wpisie pkt P21).
 
 ```
@@ -3192,6 +3249,10 @@ Zadanie:
 Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z .env*.
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
+
+**STAN 2026-10-17 (6a pkt 90):** P21 S2 — pilot 6,25 M: B1 odpada (13 vs 14 naprawionych, −17% kosztu), rewert `d4986a1`,
+1018/1018; smoke P20 zgodny (A10, A5, A1 bez SKIP harness, A9). `popr/P21-koszt` (B2–B4) czeka na zgodę operatora na merge.
+Dalej: merge + push → sync w vibersi (instrukcja AKTUALNA) → etap 4.
 
 **STAN 2026-10-17 (6a pkt 89):** P21 S1 na gałęzi `popr/P21-koszt` (B1–B4 + recenzja, 1040/1040, niezmergowana), pilot przygotowany
 (suchy bieg, plan 8,1 M / granica 9,5 M). Dalej: P21 S2 (instrukcja AKTUALNA wyżej) → merge → sync w vibersi → etap 4.

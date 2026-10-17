@@ -1,0 +1,8 @@
+| wariant | koszt etapu fix [M] | fix (agentów, ctx max) | kontrola | poprawka | pozycje K | walidacja | naprawione / częściowo / nie | regresje sędziego |
+|---|---|---|---|---|---|---|---|---|
+| stary | 2.79 | 2.09 (1, 274k) | 0.28 | 0.43 | 6 | tc True, testy 0/1181 | 14 / 1 / 1 | 0 |
+| nowy | 2.33 | 1.76 (3, 165k) | 0.32 | 0.25 | 8 | tc True, testy 0/1190 | 13 / 2 / 1 | 0 |
+smoke P20: {"hook": {"zablokowane": true, "komunikat": "Hook Bash (env-wartosci) odmowil wykonania `cat .env.smoke-p20`, bo wypisalby wartosci sekretow z pliku do transkryptu."}, "verify": {"findingi": 16, "porcje": 4, "rozmiary": [4, 4, 4, 4], "werdykty": [4, 4, 4, 4]}}
+A1 przebiegi: [{"checkbox": "Test: [E2E] `strona-smoke-a1` — otwórz /smoke-a1.html, sprawdź nagłówek „Smoke A1” i tekst „gotowe” w #stan, zrób screenshot → nagłówek i tekst widoczne", "flow": "strona-smoke-a1", "wynik": "PASS", "przyczyna": "nie-dotyczy", "dowod": "Preflight: agent-browser doctor --offline --quick 'Summary: 6 pass, 0 warn, 0 fail', curl E2E_URL -> 200. agent-browser open <E2E_URL>/smoke-a1.html (http://127.0.0.1:5199/smoke-a1.html) + wait networkidle; snapshot: heading \"Smoke A1\" [level=1] oraz paragraph \"gotowe\"; get text h1 = 'Smoke A1', get text #stan = 'gotowe'. Zrzut niedostępny (>
+
+koszt pilota 6.25 M; etap fix stary 2.79 / nowy 2.33 (-17%); naprawione 14 / 13; różnice sędziego ['F8', 'F11', 'F13']; regresje 0 / 0; A9 6 / 6 plików; skan {'fix-stary': 0, 'fix-nowy': 0, 'sedzia': 0, 'smoke': 0}
