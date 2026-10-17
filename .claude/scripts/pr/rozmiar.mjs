@@ -4,17 +4,21 @@
 // lockfile i obrazy odpadaja filtrami) i radzila podzial PR-a, ktory przeszedl recenzje w calosci.
 // Filtry czytamy bez pakietu yaml (projekt nie musi go miec): lista `path_filters:` w bloku `reviews:`, wzorce glob z `!` = wyklucz.
 //
+// --czubek (P20 S2, PR wieloczesciowy): rozmiar czesci PR bez worktree — diff baza..czubek, filtry z .coderabbit.yaml w czubku
+// (`git show`), bo czesc PR-a recenzuje bot z konfiguracja z jej galezi, nie z drzewa roboczego.
+//
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
-//   rozmiar.mjs [--baza <ref>]   domyslnie merge-base HEAD z main (brak main -> master)
-// Wynik: JSON w jednej linii { baza, wszystkie, binarne, odfiltrowane, doRecenzji, pliki, filtry }.
+//   rozmiar.mjs [--baza <ref>] [--czubek <ref>]   baza domyslnie merge-base czubka z main (brak main -> master), czubek HEAD
+// Wynik: JSON w jednej linii { baza, czubek, wszystkie, binarne, odfiltrowane, doRecenzji, pliki, filtry }.
 // Kod wyjscia: 0 = ok, 2 = zle argumenty, 3 = wyjatek (JSON z polem wyjatek).
 
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 const PLIK_KONFIGURACJI = '.coderabbit.yaml'
+// Limit plikow PR w recenzji bota (CodeRabbit Pro: 150; ETAP1 §5 — odmowa przy 222). Czesc PR ma byc ponizej, plan powyzej
+// wymaga sekcji „Części PR” (plan/czesci-pr.mjs); kopia w dev-docs-complete-wf.js (workflowy sa self-contained).
+export const PROG_PLIKOW_PR = 150
 const KOD_ZLYCH_ARGUMENTOW = 2
 const KOD_WYJATKU = 3
 
@@ -120,46 +124,57 @@ function git(projekt, argumenty) {
   return { ok: w.status === 0, stdout: w.stdout ?? '', stderr: w.stderr ?? '' }
 }
 
-/** @param {string} projekt @returns {string} merge-base HEAD z main albo master */
-function bazaDomyslna(projekt) {
+/** @param {string} projekt @param {string} czubek @returns {string} merge-base czubka z main albo master */
+function bazaDomyslna(projekt, czubek) {
   for (const glowna of ['main', 'master']) {
-    const w = git(projekt, ['merge-base', 'HEAD', glowna])
+    const w = git(projekt, ['merge-base', czubek, glowna])
     if (w.ok) return w.stdout.trim()
   }
   throw new Error('brak galezi main i master — podaj --baza <ref>')
 }
 
 /**
+ * Filtry z .coderabbit.yaml w czubku (`git show`); brak pliku w czubku = brak filtrow.
+ * @param {string} projekt @param {string} czubek @returns {string[]}
+ */
+function filtryCzubka(projekt, czubek) {
+  const w = git(projekt, ['show', `${czubek}:${PLIK_KONFIGURACJI}`])
+  return w.ok ? filtrySciezek(w.stdout) : []
+}
+
+/**
  * @param {string} projekt
  * @param {string} [baza]
- * @returns {{ baza: string, wszystkie: number, binarne: number, odfiltrowane: number, doRecenzji: number, pliki: string[], filtry: number }}
+ * @param {string} [czubek] domyslnie HEAD
+ * @returns {{ baza: string, czubek: string, wszystkie: number, binarne: number, odfiltrowane: number, doRecenzji: number, pliki: string[], filtry: number }}
  */
-export function rozmiarPr(projekt, baza) {
-  const od = baza ?? bazaDomyslna(projekt)
-  const diff = git(projekt, ['diff', '--numstat', '-z', '-M', od, 'HEAD'])
-  if (!diff.ok) throw new Error(`git diff ${od} HEAD: ${diff.stderr.trim()}`)
-  const konfiguracja = join(projekt, PLIK_KONFIGURACJI)
-  const filtry = existsSync(konfiguracja) ? filtrySciezek(readFileSync(konfiguracja, 'utf8')) : []
+export function rozmiarPr(projekt, baza, czubek = 'HEAD') {
+  const sha = git(projekt, ['rev-parse', '--verify', '--quiet', `${czubek}^{commit}`])
+  if (!sha.ok) throw new Error(`nie ma commita ${czubek}`)
+  const od = baza ?? bazaDomyslna(projekt, czubek)
+  const diff = git(projekt, ['diff', '--numstat', '-z', '-M', od, czubek])
+  if (!diff.ok) throw new Error(`git diff ${od} ${czubek}: ${diff.stderr.trim()}`)
+  const filtry = filtryCzubka(projekt, czubek)
   const wszystkie = plikiNumstat(diff.stdout)
   const tekstowe = wszystkie.filter((p) => !p.binarny)
   const pliki = tekstowe.map((p) => p.plik).filter((p) => doRecenzji(p, filtry))
   return {
-    baza: od, wszystkie: wszystkie.length, binarne: wszystkie.length - tekstowe.length, odfiltrowane: tekstowe.length - pliki.length,
+    baza: od, czubek: sha.stdout.trim(), wszystkie: wszystkie.length, binarne: wszystkie.length - tekstowe.length, odfiltrowane: tekstowe.length - pliki.length,
     doRecenzji: pliki.length, pliki, filtry: filtry.length,
   }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  /** @type {{ projekt?: string, baza?: string }} */
+  /** @type {{ projekt?: string, baza?: string, czubek?: string }} */
   let o = {}
   try {
-    o = parseArgs({ options: { projekt: { type: 'string' }, baza: { type: 'string' } } }).values
+    o = parseArgs({ options: { projekt: { type: 'string' }, baza: { type: 'string' }, czubek: { type: 'string' } } }).values
   } catch (blad) {
-    process.stderr.write(`rozmiar: ${blad instanceof Error ? blad.message : String(blad)}\nUzycie: rozmiar.mjs [--baza <ref>] [--projekt <katalog>]\n`)
+    process.stderr.write(`rozmiar: ${blad instanceof Error ? blad.message : String(blad)}\nUzycie: rozmiar.mjs [--baza <ref>] [--czubek <ref>] [--projekt <katalog>]\n`)
     process.exit(KOD_ZLYCH_ARGUMENTOW)
   }
   try {
-    process.stdout.write(`${JSON.stringify(rozmiarPr(o.projekt ?? process.cwd(), o.baza))}\n`)
+    process.stdout.write(`${JSON.stringify(rozmiarPr(o.projekt ?? process.cwd(), o.baza, o.czubek))}\n`)
   } catch (blad) {
     process.stdout.write(`${JSON.stringify({ wyjatek: blad instanceof Error ? blad.message : String(blad) })}\n`)
     process.exit(KOD_WYJATKU)
