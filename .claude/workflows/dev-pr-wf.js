@@ -84,6 +84,36 @@ const START = {
   required: ['bramka', 'branch', 'prUtworzony'],
 }
 
+// Przygotowanie galezi czesci PR (P20 S2): czesc nieostatnia = galaz <feature>-czN na commicie ciecia, ostatnia = rebase
+// galezi zadania na glowna. Konflikt rebase'u zostaje w drzewie — decyzje podejmuje operator w skillu.
+const PRZYGOTOWANIE = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    status: { type: 'string', enum: ['OK', 'KONFLIKT', 'STOP'], description: 'KONFLIKT = rebase zatrzymal sie na konflikcie; STOP = warunek niespelniony albo walidacja FAIL' },
+    powod: { type: ['string', 'null'], description: 'przy STOP i KONFLIKT: co dokladnie sie stalo' },
+    galaz: { type: 'string', description: 'git branch --show-current po przygotowaniu' },
+    konflikty: { type: 'array', items: { type: 'string' }, description: 'pliki z konfliktem (git diff --name-only --diff-filter=U)' },
+    rebase: { type: 'string', enum: ['wykonany', 'juz-wykonany', 'nie-dotyczy'] },
+    walidacja: { type: 'string', enum: ['PASS', 'FAIL', 'BRAK-KOMEND', 'nie-dotyczy'] },
+    walidacjaDetal: { type: 'string' },
+    push: { type: 'boolean' },
+    pushDetal: { type: 'string' },
+  },
+  required: ['status', 'galaz', 'konflikty', 'rebase', 'walidacja', 'push', 'pushDetal'],
+}
+
+// Tabela „## Części PR” z podsumowania zadania, ktora agent przepisuje 1:1 (stdout awk) — parsuje ja JS.
+const CZESCI_TABELA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    tabela: { type: 'string', description: 'stdout komendy 1:1, bez zmian (pusty, gdy sekcji nie ma)' },
+    galazZadania: { type: 'boolean', description: 'czy galaz feature/<zadanie> istnieje lokalnie (git rev-parse --verify --quiet)' },
+  },
+  required: ['tabela', 'galazZadania'],
+}
+
 const KLASY = ['napraw', 'napraw-szerzej', 'odrzuc', 'do-operatora']
 
 // Zamkniety slownik klas BLEDU (It. 1, L12): miara jakosci „P1/P2 bota na 100 plikow per klasa i os” wymaga jednej nazwy na
@@ -419,6 +449,46 @@ function wagaWatku(w) {
   return KLASY_NIE_DEFEKT.includes(w.klasaBledu) ? '0' : w.waga
 }
 
+// PR wieloczesciowy (P20 S2). vibersi etap 3: 172 pliki do recenzji (> 150, limit bota) — podzial reczny po fazie 3:
+// PR #3 z galezi od 909f669 (93), PR #4 po rebase --onto origin/main 909f669 (121). Tabela czesci powstaje w archiwizacji
+// (czesci.mjs, sekcja „## Części PR” podsumowania); z niej JS liczy galaz, commity ciecia i rebase — agent je tylko wykonuje.
+const SHA = /^[0-9a-f]{7,40}$/
+const CZUBEK = 'czubek gałęzi'
+
+function czesciZTabeli(tekst) {
+  const wiersze = []
+  for (const linia of String(tekst || '').split('\n')) {
+    const k = linia.trim().replace(/^\||\|$/g, '').split('|').map((x) => x.trim())
+    if (k.length < 5 || !/^\d+$/.test(k[0])) continue
+    wiersze.push({ czesc: Number(k[0]), fazy: k[1], od: k[2], do: k[3] === CZUBEK ? null : k[3], pliki: Number(k[4]) })
+  }
+  const zgodne = wiersze.length > 1 && wiersze.every((w, i) => w.czesc === i + 1 && SHA.test(w.od)
+    && (i === wiersze.length - 1 ? w.do === null : SHA.test(w.do || '')) && (!i || w.od === wiersze[i - 1].do))
+  return zgodne ? wiersze : null
+}
+
+// Galaz i rebase czesci N z M. Czesc nieostatnia: galaz <feature>-czN na jej commicie konca; od czesci 2 — rebase jej commitow
+// (od..do) na glowna. Ostatnia: rebase galezi zadania od ostatniego ciecia na glowna (po squashu poprzednich czesci).
+function planCzesci(czesci, czesc, zadanie) {
+  if (!czesci) return { blad: 'brak tabeli „## Części PR” w podsumowaniu zadania na gałęzi feature/' + zadanie + ' (czesci.mjs w archiwizacji) — zadanie idzie jednym PR: /dev-pr bez --czesc' }
+  const c = czesci.find((x) => x.czesc === czesc)
+  if (!c) return { blad: `część ${czesc} spoza tabeli (części 1–${czesci.length})` }
+  const ostatnia = czesc === czesci.length
+  return {
+    blad: null, czesc, czesci: czesci.length, fazy: c.fazy, pliki: c.pliki, ostatnia,
+    galaz: ostatnia ? `feature/${zadanie}` : `feature/${zadanie}-cz${czesc}`,
+    doSha: c.do, rebaseOd: czesc > 1 ? c.od : null, poprzednia: czesc > 1 ? `feature/${zadanie}-cz${czesc - 1}` : null,
+  }
+}
+
+// Krok CLAUDE.md po czesci nieostatniej nie startuje: plik decyzji zadania jedzie w ostatniej czesci (vibersi PR #3: STOP
+// „brak pliku decyzji”).
+function claudeMdCzesci(czesc, czesci) {
+  return Number.isInteger(czesc) && Number.isInteger(czesci) && czesc < czesci
+    ? `część ${czesc} z ${czesci} — CLAUDE.md uzgadnia się po merge'u ostatniej części (plik decyzji jest w niej)`
+    : null
+}
+
 // ── Koniec decyzji dev-pr ─────────────────────────────────────────────────
 
 // ── Wejscie ───────────────────────────────────────────────────────────────
@@ -434,6 +504,9 @@ const watkiWejsciowe = (args && Array.isArray(args.watki)) ? args.watki : []
 const tokenWejsciowy = (args && typeof args.token === 'string') ? args.token : null
 // Etap merge: ile tur napraw juz wykonano (licznik skilla) — rekomendacja odroznia KOLEJNA TURE od sufitu.
 const turyWykonane = (args && Number.isInteger(args.turyWykonane)) ? args.turyWykonane : 0
+// PR wieloczesciowy: numer czesci i liczba czesci (z wyniku etapu start) — zbierz oddaje czesc do telemetrii (run.pr.czesc).
+const czesc = (args && Number.isInteger(args.czesc) && args.czesc >= 1) ? args.czesc : null
+const czesci = (args && Number.isInteger(args.czesci)) ? args.czesci : null
 
 if (!zadanie) {
   return { status: 'BLAD', powod: 'Brak args.zadanie — workflow nie wie, ktorego zadania dotyczy pull request. Wolaj go przez skill /dev-pr.' }
@@ -444,10 +517,76 @@ phase('PR')
 // ── Etap: start (Faza 0 — bramka wejscia + utworzenie PR) ─────────────────
 
 if (etap === 'start') {
+  /** Czesc PR (args.czesc): galaz i rebase liczy JS z tabeli czesci; null = zadanie jednym PR. */
+  let cz = null
+  if (czesc) {
+    const t = await agent(
+      `Odczytaj tabele czesci PR zadania "${zadanie}". Niczego nie zmieniaj.
+1. galazZadania = czy \`git rev-parse --verify --quiet refs/heads/feature/${zadanie}\` zwraca SHA.
+2. tabela = stdout 1:1 komendy (pusty stdout = pusty string):
+   \`git show 'feature/${zadanie}:docs/completed/${zadanie}/${zadanie}-podsumowanie.md' | awk '/^## Części PR/{f=1;next} f&&/^## /{exit} f'\`
+Zwroc obiekt zgodny ze schematem.`,
+      { schema: CZESCI_TABELA, agentType: 'klasa-mechaniczny', label: `pr:czesci:${zadanie}` }
+    )
+    if (!t) return { status: 'BLAD', etap, powod: 'Odczyt tabeli czesci PR zwrocil null (agent padl).' }
+    cz = planCzesci(t.galazZadania ? czesciZTabeli(t.tabela) : null, czesc, zadanie)
+    if (cz.blad) return { status: 'STOP', etap, czesc, powod: cz.blad }
+    const kroki = cz.ostatnia
+      ? `1. \`git switch ${cz.galaz}\`, \`git fetch --prune origin\` (sciezki zdalne aktualne — lease pushu i rebase na origin/main).
+2. Czesc ${cz.czesc - 1} zmergowana: \`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
+   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”.
+3. REBASE: gdy \`git merge-base --is-ancestor origin/main HEAD\` (kod 0) — rebase juz wykonany, rebase=juz-wykonany. Inaczej
+   \`git rebase --onto origin/main ${cz.rebaseOd}\`, rebase=wykonany.`
+      : cz.rebaseOd
+        ? `1. \`git fetch --prune origin\`. Czesc ${cz.czesc - 1} zmergowana: \`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0,
+   inaczej STOP „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”.
+2. Galaz ${cz.galaz}: istnieje lokalnie — \`git switch ${cz.galaz}\`; nie istnieje — \`git switch -c ${cz.galaz} ${cz.doSha}\`.
+3. REBASE: gdy \`git merge-base --is-ancestor origin/main HEAD\` (kod 0) — rebase=juz-wykonany. Inaczej
+   \`git rebase --onto origin/main ${cz.rebaseOd}\`, rebase=wykonany.`
+        : `1. \`git fetch --prune origin\` (bez niego lease pushu odrzuca galaz po skasowanej zdalnej: stale info). Galaz ${cz.galaz}: istnieje lokalnie — \`git switch ${cz.galaz}\`; nie istnieje — \`git switch -c ${cz.galaz} ${cz.doSha}\`
+   (commit konca czesci; galaz zadania feature/${zadanie} zostaje bez zmian). Sprawdz \`git merge-base --is-ancestor ${cz.doSha} HEAD\`
+   (kod 0), inaczej STOP „galaz ${cz.galaz} nie zawiera ${cz.doSha}”. rebase=nie-dotyczy.`
+    const przyg = await agent(
+      `Przygotowujesz galaz czesci ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy}) pull requesta zadania "${zadanie}". Nie naprawiasz kodu
+i nie rozwiazujesz konfliktow.
+
+0. Drzewo czyste (\`git status --porcelain\` puste) i brak rebase'u w toku (\`test -d "$(git rev-parse --git-path rebase-merge)"\`
+   i \`test -d "$(git rev-parse --git-path rebase-apply)"\` — oba kod 1). Rebase w toku z konfliktami (\`git diff --name-only --diff-filter=U\`
+   niepusty) = status KONFLIKT z ta lista; rebase w toku bez konfliktow albo brudne drzewo = STOP z powodem.
+${kroki}
+4. KONFLIKT rebase'u: NIE rozwiazuj go i NIE rob \`git rebase --abort\` — status KONFLIKT, konflikty = \`git diff --name-only --diff-filter=U\`,
+   powod = komunikat gita (bez tresci plikow). Decyzje podejmuje operator.
+5. WALIDACJA (tylko gdy rebase=wykonany albo juz-wykonany): typecheck i testy projektu. FAIL = status STOP, powod z detalem, bez pushu.
+   Gdy rebase=nie-dotyczy: walidacja=nie-dotyczy (koniec fazy przeszedl walidacje w autopilocie).
+6. PUSH: \`git push --force-with-lease -u origin ${cz.galaz}\` (lease chroni cudze commity na zdalnej galezi). Blad = push false,
+   tresc bledu w pushDetal i status STOP. Udany = pushDetal "OK". Bez \`--force\` bez lease.
+galaz = \`git branch --show-current\` na koniec. Zwroc obiekt zgodny ze schematem.${BLOK_KOMEND_PROJEKTU}`,
+      { schema: PRZYGOTOWANIE, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:czesc-${cz.czesc}:${zadanie}` }
+    )
+    if (!przyg) return { status: 'BLAD', etap, czesc, powod: 'Przygotowanie galezi czesci zwrocilo null — sprawdz `git status` i `git log -1`.' }
+    if (przyg.status === 'KONFLIKT') {
+      log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}`)
+      return {
+        status: 'KONFLIKT', etap, czesc: cz.czesc, czesci: cz.czesci, konflikty: przyg.konflikty, powod: przyg.powod,
+        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\`, potem /dev-pr --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
+      }
+    }
+    if (przyg.status !== 'OK' || przyg.galaz !== cz.galaz || !przyg.push) {
+      const powod = przyg.status !== 'OK' ? przyg.powod : przyg.galaz !== cz.galaz ? `biezaca galaz ${przyg.galaz}, oczekiwana ${cz.galaz}` : `push: ${przyg.pushDetal}`
+      log(`/dev-pr czesc ${cz.czesc}: STOP — ${powod}`)
+      return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod, przygotowanie: przyg }
+    }
+    log(`/dev-pr czesc ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy}, ${cz.pliki} plikow do recenzji): galaz ${cz.galaz}, rebase ${przyg.rebase}, walidacja ${przyg.walidacja}, push ${przyg.pushDetal}`)
+  }
+  const opisCzesci = cz
+    ? `\nCZESC ${cz.czesc} Z ${cz.czesci} (fazy ${cz.fazy}): tytul PR "<tytul zadania> — cz. ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy})". Podsumowanie do opisu bierz
+z galezi zadania: \`git show 'feature/${zadanie}:docs/completed/${zadanie}/${zadanie}-podsumowanie.md'\`; pierwsza linia opisu:
+"Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}." Sekcja "Swiadomie nienaprawione" — z tego samego zrodla.\n`
+    : ''
   const wynik = await agent(
     `Jestes bramka wejscia skilla /dev-pr dla zadania "${zadanie}". Sprawdzasz warunki i — gdy trzeba —
 tworzysz pull requesta. NIE naprawiasz kodu i NIE odpowiadasz na zadne komentarze.
-
+${opisCzesci}
 BRAMKA (wszystkie trzy warunki musza byc spelnione; ktorykolwiek niespelniony => bramka=STOP z powodem):
 1. Jestesmy na galezi INNEJ niz glowna. \`git branch --show-current\` i porownaj z domyslna galezia repo
    (\`gh repo view --json defaultBranchRef\`). Praca na galezi glownej = STOP.
@@ -479,7 +618,7 @@ Nie pushuj, nie mergeuj, nie zmieniaj kodu. Zwroc obiekt zgodny ze schematem.${B
     return { status: 'STOP', etap, ...wynik }
   }
   log(`/dev-pr: PR #${wynik.prNumer} ${wynik.prUtworzony ? 'UTWORZONY' : 'istnieje'} (${wynik.prUrl || 'brak url'}), head ${String(wynik.headRefOid || '').slice(0, 8)}`)
-  return { status: 'OK', etap, ...wynik }
+  return { status: 'OK', etap, ...wynik, ...(cz ? { czesc: cz.czesc, czesci: cz.czesci, fazy: cz.fazy } : {}) }
 }
 
 // ── Etap: zbierz (Faza 2 — zebranie i klasyfikacja watkow) ────────────────
@@ -557,7 +696,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   log(`/dev-pr tura ${tura}: rekomendacja ${rek}`)
   log(`/dev-pr tura ${tura}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
   // plikiPr i prNumer ida do wyniku runu — z niego telemetria buduje run.pr (miara: P1/P2 bota na 100 plikow PR).
-  return { status: 'OK', etap, tura, rekomendacja: rek, token, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, uwagi: wynik.uwagi || null }
+  return { status: 'OK', etap, tura, rekomendacja: rek, token, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null }
 }
 
 // ── Etap: napraw (Faza 4 — naprawa, odpowiedzi, commit, push) ─────────────
@@ -699,6 +838,11 @@ ani \`--admin\`: zwroc zmergowany=false z trescia bledu. Zwroc obiekt zgodny ze 
 // Potwierdzeniem merge'u jest plik decyzji zadania na glownej: trafia tam tylko z commitem archiwizacji zmergowanego PR.
 // Bootstrap autopilota zatrzymuje kolejne zadanie, dopoki pole claude_md nie jest `uzgodniono`.
 if (etap === 'claude-md') {
+  const pominiecie = claudeMdCzesci(czesc, czesci)
+  if (pominiecie) {
+    log(`/dev-pr: krok CLAUDE.md pominiety — ${pominiecie}`)
+    return { status: 'OK', etap, pominiety: true, powod: pominiecie }
+  }
   const u = await agent(
     `Uzgadniasz CLAUDE.md z kodem po merge'u pull requesta zadania "${zadanie}". NIE commitujesz — commit robi
 nastepny krok, po bramce rozmiaru liczonej w orkiestratorze.

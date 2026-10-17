@@ -1,7 +1,7 @@
 ---
 name: dev-pr
 description: "Obsługa pull requesta od wysłania do merge'a: tworzy PR, czeka na recenzję bota, klasyfikuje uwagi wg wpływu na projekt, prowadzi tury poprawek i domyka je compoundem do bazy wiedzy. Używaj po `/dev-docs-complete`, gdy zadanie jest gotowe do wysłania, oraz gdy bot zostawił komentarze do obsłużenia."
-argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] | --claude-md <zadanie>"
+argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] [--czesc N] | --claude-md <zadanie>"
 ---
 
 # `/dev-pr` — od pull requesta do merge'a
@@ -36,6 +36,7 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | `/dev-pr` | **Interaktywny.** Po każdej klasyfikacji operator wybiera przez `AskUserQuestion` (multiSelect), co naprawiamy w tej turze. Merge zawsze zostaje jego decyzją. |
 | `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. |
 | `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. |
+| `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
 
 **Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Wyczerpany limit = domknięcie,
@@ -44,17 +45,29 @@ nawet gdy zostały otwarte wątki. Nie proponuj „jeszcze jednej tury" — zara
 ## Przebieg
 
 Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argumentu, z nazwy gałęzi
-`feature/<nazwa>` albo zapytaj), `tury` (liczba z argumentu, najwyżej 3, brak = tryb interaktywny) i `bezMerge`.
+`feature/<nazwa>` albo `feature/<nazwa>-czN`, albo zapytaj), `tury` (liczba z argumentu, najwyżej 3, brak = tryb interaktywny),
+`bezMerge` i `czesc` (liczba z `--czesc`; brak = zadanie jednym PR).
 `--claude-md <zadanie>` → od razu krok „Uzgodnienie CLAUDE.md” z punktu 6, bez kroków 1–5.
 
 ### 1. Start — bramka wejścia i pull request
 
 ```
-Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie}})
+Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie, czesc}})
 ```
+
+`czesc` przekazujesz tylko z `--czesc`. Workflow czyta tabelę „Części PR” z podsumowania na gałęzi `feature/<zadanie>`
+i przygotowuje gałąź części: część nieostatnia = gałąź `feature/<zadanie>-czN` od commitu cięcia (od części 2 jej commity
+idą rebase'em na `origin/main`), część ostatnia = `git rebase --onto origin/main <cięcie>` gałęzi zadania, typecheck i testy,
+`git push --force-with-lease`. Część N > 1 startuje dopiero po merge'u części N−1. Wynik `OK` niesie `czesc` i `czesci` —
+przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `compound`, `claude-md`).
 
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
+
+`status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Zapytaj operatora przez
+`AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
+`git add <pliki>` i `git rebase --continue`, potem znów krok 1 z tym samym `czesc`), „Rozwiążę sam” (koniec; operator wraca
+`/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu nie rozwiązujesz bez tej decyzji.
 
 `status: "OK"` → powiedz jednym zdaniem, czy PR został utworzony, czy już istniał, i podaj URL.
 
@@ -188,11 +201,15 @@ merge'u). Workflow wprowadza fakty do CLAUDE.md, liczy przyrost w JS (próg 2000
 `claude_md: uzgodniono`, commituje na gałęzi głównej i pushuje. Bootstrap autopilota zatrzymuje kolejne zadanie, dopóki
 któryś plik decyzji na gałęzi głównej ma `do-uzgodnienia`. `STOP` → wypisz `powod` i `naprawa`; nie przycinaj CLAUDE.md sam.
 
+**Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem
+z następnym krokiem `/dev-pr --czesc <N+1>`. Krok CLAUDE.md workflow pomija (`pominiety: true`) — plik decyzji jedzie
+w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
+
 ## Raport końcowy
 
 ```text
 Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
-🔀 PR #<numer> — <url>
+🔀 PR #<numer> — <url> [część N z M, fazy a–b — dalej: /dev-pr --czesc N+1]
    Tury: <N wykonanych> / <limit albo "interaktywnie"> (sufit 3)
    Wątki: naprawione <a> · odrzucone z dokumentem decyzji <b> · do operatora <c> · nieruszone <d>
    Walidacja ostatniej tury: PASS/FAIL/BRAK-KOMEND
