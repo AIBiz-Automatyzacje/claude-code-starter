@@ -106,6 +106,8 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 
 **Delegate to:** feature-builder-ui
 
+**Makiety:** `lista-ofert`
+
 **Skills in play:** tailwind-react-guidelines, ux-ui-guidelines
 
 **Podejście:**
@@ -143,6 +145,8 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 | Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |
 
 **Delegate to:** feature-builder-fullstack
+
+**Makiety:** —
 
 **Podejście:**
 - Strona czyta ofertę przez hook, szkic zwraca 404.
