@@ -10,7 +10,8 @@ import { liczbyZRekordu } from '../ogrod/kategorie.mjs'
 export const PROG_CISZY_MS = 3 * 60 * 60 * 1000
 
 // Statusy wyniku workflowu, ktore oznaczaja zatrzymanie na bramce (reszta, np. GOTOWY-DO-MERGE w dev-pr, to sukces etapu).
-const STATUSY_STOP = new Set(['STOP', 'BLAD'])
+// KONFLIKT (P20 S2): rebase czesci PR stoi na konflikcie i czeka na operatora — zatrzymanie, nie sukces etapu.
+const STATUSY_STOP = new Set(['STOP', 'BLAD', 'KONFLIKT'])
 
 /** @param {unknown} x @returns {Record<string, unknown>} */
 function obiekt(x) {

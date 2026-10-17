@@ -20,6 +20,11 @@ test('dev-pr: GOTOWY-DO-DECYZJI to udany run, BLAD to STOP', () => {
   assert.equal(statusRunu({ status: 'completed', result: { status: 'BLAD', powod: 'Nieznany etap' } }).status, 'STOP')
 })
 
+test('dev-pr: KONFLIKT rebase\'u czesci PR to STOP z powodem (czeka na operatora)', () => {
+  assert.deepEqual(statusRunu({ status: 'completed', result: { status: 'KONFLIKT', powod: 'CONFLICT (content): docs/learned-patterns.md' } }),
+    { status: 'STOP', powod: 'CONFLICT (content): docs/learned-patterns.md' })
+})
+
 test('brak pliku harnessu: run prowadzony przez zywa sesje = w toku (pomijamy)', () => {
   assert.equal(statusBezHarnessu({ wTokuWSesji: true, ostatniaAktywnoscMs: 0, terazMs: PROG_CISZY_MS * 10 }), null)
 })
