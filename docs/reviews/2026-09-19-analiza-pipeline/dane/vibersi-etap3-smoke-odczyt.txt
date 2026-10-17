@@ -1,0 +1,691 @@
+Smoke: wf_f17e9b2e-8d4 (projekt vibersi) vs referencja wf_97e2f216-487 (projekt vibersi)
+  metryka                            referencja             run                    Δ
+== 1. Run
+  status                             OK                     OK                     
+  powód STOP                         —                      —                      
+  fazy ukończone / zadania           6/6                    6/6                    
+  walidacja końcowa                  PASS                   PASS                   
+  szablon zgodny                     True                   True                   
+  smokeStatus (harness)              plik                   plik                   
+  koszt [jedn.]                      38.63 M                57.38 M                +49%
+  agentów                            144                    190                    +32%
+  tur                                1963                   2640                   +34%
+  czas [min]                         298                    382                    +28%
+
+== 2. Fazy: gate, review, fix
+ faza 1
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    10                     5                      -50%
+  potwierdzone p3                    14                     7                      -50%
+  review znalezione                  27                     14                     -48%
+  review poDedupSem                  26                     13                     -50%
+  review weryfikowane                10                     5                      -50%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     10                     5                      -50%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 1, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 1, 'K-2': 0, 'K-3': 1, 'K-4': 0, 'K-5': 3, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['server/app.test.ts', 'src/config/trasy.test.ts']
+  koszt fazy                         7.70 M                 6.61 M                 -14%
+    etap execute                     2.97 M                 3.21 M                 +8%
+    etap fix                         2.21 M                 1.51 M                 -32%
+    etap mechanika_review            0.18 M                 0.12 M                 -31%
+    etap orkiestracja                0.05 M                 0.04 M                 -20%
+    etap review                      2.15 M                 1.60 M                 -26%
+    etap sceptycy                    0.14 M                 0.12 M                 -13%
+ faza 2
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      1                      
+  potwierdzone p2                    11                     19                     +73%
+  potwierdzone p3                    13                     9                      -31%
+  review znalezione                  28                     30                     +7%
+  review poDedupSem                  26                     29                     +12%
+  review weryfikowane                10                     20                     +100%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     11                     20                     +82%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 1, 'K-2': 1, 'K-3': 0, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 1, 'K-2': 0, 'K-3': 1, 'K-4': 0, 'K-5': 3, 'K-6': 1, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['server/awatar-dostawcy.test.ts', 'server/konto-dane.test.ts', 'src/config/konto.test.ts', 'src/lib/baza.test.ts', 'src/lib/konto/akcje-auth.test.ts', 'src/lib/konto/awatar.test.ts', 'src/lib/konto/bledy-auth.test.ts', 'src/lib/konto/linki-sociali.test.ts', 'src/lib/konto/profil.test.ts', 'src/lib/konto/sciezka-powrotu.test.ts', 'src/test/atrapa-auth.test.ts', 'src/test/atrapa-obrazow.test.ts']
+  koszt fazy                         6.36 M                 11.05 M                +74%
+    etap execute                     2.94 M                 4.95 M                 +68%
+    etap fix                         1.27 M                 2.90 M                 +128%
+    etap mechanika_review            0.15 M                 0.21 M                 +46%
+    etap orkiestracja                0.07 M                 0.07 M                 +10%
+    etap review                      1.74 M                 2.20 M                 +27%
+    etap sceptycy                    0.18 M                 0.70 M                 +295%
+ faza 3
+  status / gate                      OK / ZASTRZEZENIA      OK / CZYSTE            ≠
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    16                     12                     -25%
+  potwierdzone p3                    6                      8                      +33%
+  review znalezione                  25                     28                     +12%
+  review poDedupSem                  24                     26                     +8%
+  review weryfikowane                17                     12                     -29%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     15                     12                     -20%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 1, 'K-2': 2, 'K-3': 0, 'K-4': 1, 'K-5': 0, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 3, 'K-2': 0, 'K-3': 4, 'K-4': 0, 'K-5': 2, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['src/components/konto/kontekst-okna-auth.test.tsx', 'src/components/konto/krok-logowania-sciezki.test.tsx', 'src/components/konto/krok-logowania.test.tsx', 'src/components/konto/menu-konta.test.tsx', 'src/components/konto/okno-auth.test.tsx', 'src/components/layout/menu-telefonu.test.tsx', 'src/components/layout/pasek-nawigacji.test.tsx', 'src/pages/zaloguj.test.tsx']
+  koszt fazy                         5.64 M                 11.97 M                +112%
+    etap execute                     1.82 M                 5.81 M                 +219%
+    etap fix                         1.90 M                 3.34 M                 +76%
+    etap mechanika_review            0.19 M                 0.22 M                 +14%
+    etap orkiestracja                0.07 M                 0.08 M                 +16%
+    etap review                      1.45 M                 2.16 M                 +50%
+    etap sceptycy                    0.20 M                 0.35 M                 +69%
+ faza 4
+  status / gate                      OK / CZYSTE            OK / ZASTRZEZENIA      ≠
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    10                     16                     +60%
+  potwierdzone p3                    9                      8                      -11%
+  review znalezione                  20                     41                     +105%
+  review poDedupSem                  20                     36                     +80%
+  review weryfikowane                10                     16                     +60%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     10                     15                     +50%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 1, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 0, 'K-2': 1, 'K-3': 1, 'K-4': 1, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['scripts/szablony-maili/wgraj.test.mjs', 'src/components/konto/komunikat-dolny.test.tsx', 'src/components/konto/krok-rejestracji-stany.test.tsx', 'src/components/konto/krok-resetu-stany.test.tsx', 'src/lib/konto/akcje-auth-wysylka.test.ts', 'src/lib/konto/email.test.ts', 'src/lib/konto/haslo.test.ts', 'src/lib/konto/wczytaj-akcje-auth.test.ts', 'src/pages/nowe-haslo-stany.test.tsx', 'src/pages/potwierdz-stany.test.tsx']
+  koszt fazy                         8.45 M                 12.66 M                +50%
+    etap execute                     4.11 M                 5.52 M                 +34%
+    etap fix                         1.58 M                 4.25 M                 +169%
+    etap mechanika_review            0.25 M                 0.27 M                 +7%
+    etap orkiestracja                0.08 M                 0.09 M                 +10%
+    etap review                      2.28 M                 2.10 M                 -8%
+    etap sceptycy                    0.14 M                 0.44 M                 +203%
+ faza 5
+  status / gate                      OK / CZYSTE            OK / ZASTRZEZENIA      ≠
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    9                      12                     +33%
+  potwierdzone p3                    6                      7                      +17%
+  review znalezione                  22                     24                     +9%
+  review poDedupSem                  22                     23                     +5%
+  review weryfikowane                9                      14                     +56%
+  review obalone                     0                      0                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     9                      10                     +11%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 3, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 0, 'K-2': 0, 'K-3': 1, 'K-4': 0, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['src/components/konto/okno-auth-powrot.test.tsx', 'src/components/konto/okno-powitania.test.tsx', 'src/components/konto/wybor-awatara-bez-modulu.test.tsx', 'src/components/konto/wybor-awatara-stany.test.tsx', 'src/config/konto.test.ts', 'src/pages/ustawienia-profilu-stany.test.tsx']
+  koszt fazy                         6.08 M                 8.58 M                 +41%
+    etap execute                     3.29 M                 3.36 M                 +2%
+    etap fix                         1.03 M                 2.78 M                 +171%
+    etap mechanika_review            0.19 M                 0.20 M                 +9%
+    etap orkiestracja                0.08 M                 0.10 M                 +17%
+    etap review                      1.36 M                 1.77 M                 +30%
+    etap sceptycy                    0.13 M                 0.36 M                 +179%
+ faza 6
+  status / gate                      OK / CZYSTE            OK / CZYSTE            
+  cykle fix                          1                      1                      +0%
+  potwierdzone p1                    0                      0                      
+  potwierdzone p2                    6                      4                      -33%
+  potwierdzone p3                    2                      6                      +200%
+  review znalezione                  11                     14                     +27%
+  review poDedupSem                  10                     13                     +30%
+  review weryfikowane                6                      5                      -17%
+  review obalone                     0                      1                      
+  pominięci reviewerzy               []                     []                     
+  fix naprawione                     6                      4                      -33%
+  kontrola fixa: regresje            —                      —                      
+  kontrola fixa: listy               {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 3, 'K-6': 0, 'K-7': 0, 'bramki': 0} {'K-1': 0, 'K-2': 0, 'K-3': 0, 'K-4': 0, 'K-5': 1, 'K-6': 0, 'K-7': 0, 'bramki': 0} ≠
+  fix: P1 z testem (K-6)             0                      0                      
+  fix dotknął testów (run)           ['server/aplikacja-trybu.test.ts', 'src/components/prawne/dokument-prawny.test.tsx', 'src/pages/wkrotce-produkcja.test.tsx']
+  koszt fazy                         3.26 M                 5.27 M                 +62%
+    etap execute                     0.89 M                 2.89 M                 +225%
+    etap fix                         0.83 M                 0.78 M                 -6%
+    etap mechanika_review            0.12 M                 0.13 M                 +8%
+    etap orkiestracja                0.08 M                 0.09 M                 +13%
+    etap review                      1.25 M                 1.22 M                 -2%
+    etap sceptycy                    0.09 M                 0.15 M                 +73%
+
+== 2b. Kontrola fixa i P3 (journal runu wf_f17e9b2e-8d4)
+  agenci fix:pre-skan                0
+  agenci verify-fix                  0
+  scribe:faza-1: P3 KOD/TEST         6
+  fix:faza-1: P3 na liście           0
+  fix:kontrola:faza-1 K-1            1   git diff d07d9f7^..HEAD (jeden commit fixa: d07d9f7), przegląd każdej zmienionej linii poza docs/active. Migra
+  fix:kontrola:faza-1 K-2            0   Bramka dodana przez fix to regex nazwy w with check polityk awatary_insert_own i awatary_update_own (supabase/
+  fix:kontrola:faza-1 K-3            1   L-COR-1: operacje zmieniające stan w diffie fixa to insert/upsert/update storage.objects w buckecie awatary. W
+  fix:kontrola:faza-1 K-4            0   Usunięte lub zmienione nazwy: DOMYSLNY_E2E_URL, TRASY_SPA, PRZEDROSTKI_SERWERA, PLIKI_SERWERA (z trasy.test.ts
+  fix:kontrola:faza-1 K-5            3   Porównano komentarze i dokumentację z kodem po fixie. Nagłówek nowej migracji jest zgodny z politykami. Koment
+  fix:kontrola:faza-1 K-6            0   Wśród findingów naprawianych przez fix nie ma P1 (wszystkie 5 to P2), więc testy: []. Worktree K-6 nie był two
+  fix:kontrola:faza-1 K-7            0   Pliki fixa z git diff --stat d07d9f7^..HEAD, bez docs/active: e2e/etap-3-konto-asercje.sql (findingi 1 i 5), e
+  fix:kontrola:faza-1 bramki         0   node .claude/scripts/bramki/bramki.mjs --baza d07d9f7^ > /tmp/bramki-fix-docs-active-etap-3-konto-i-auth-faza-
+  fix:kontrola:faza-1 K-7 docs/active/ 0 
+  scribe:faza-2: P3 KOD/TEST         9
+  fix:faza-2: P3 na liście           0
+  fix:kontrola:faza-2 K-1            1   git diff 60e9f10^..HEAD (jeden commit fixa 60e9f10, 22 pliki), linia po linii. baza.ts: przed — każde żądanie 
+  fix:kontrola:faza-2 K-2            0   Bramki w diffie fixa. (1) POCZATEK_OBCEGO_HOSTA /^\/[/\\]/ w sciezka-powrotu.ts:10, stosowany do tekstu i do a
+  fix:kontrola:faza-2 K-3            1   L-COR-1: operacje ze stanem w diffie to pliki.remove([sciezka]) w awatar.ts:128 (jedyna droga: wgrajAwatar), U
+  fix:kontrola:faza-2 K-4            0   Zmienione i usunięte nazwy: kluczSesji (klient-auth.ts, zastąpiona kluczSesjiAuth w config/konto.ts), literał 
+  fix:kontrola:faza-2 K-5            3   Porównałem JSDoc i komentarze zmienionych bloków z kodem. Zgodne: baza.ts (czyZapisanaSesja, przerwanieSygnalu
+  fix:kontrola:faza-2 K-6            1   Najstarszy (jedyny) commit fixa to 60e9f10. git worktree add --detach /tmp/kontrola-fixa-faza-2 60e9f10^, pote
+  fix:kontrola:faza-2 K-7            0   git diff 60e9f10^..HEAD --stat (22 pliki), dopasowanie każdego pliku do findingów. server/konto-dane.ts i src/
+  fix:kontrola:faza-2 bramki         0   node .claude/scripts/bramki/bramki.mjs --baza 60e9f10^ > /tmp/bramki-fix-docs-active-etap-3-konto-i-auth-faza-
+  fix:kontrola:faza-2 K-7 docs/active/ 0 
+  scribe:faza-3: P3 KOD/TEST         8
+  fix:faza-3: P3 na liście           0
+  fix:kontrola:faza-3 K-1            3   Przejrzałem diff `git diff fa6c345^..HEAD` (jeden commit fixa, fa6c345) dla każdego pliku spoza testów i porów
+  fix:kontrola:faza-3 K-2            0   Przejrzałem diff fixa pod kątem bramek walidacyjnych: wyrażeń regularnych, allowlist, limitów rozmiaru, porówn
+  fix:kontrola:faza-3 K-3            4   Przeszedłem diff fixa listami L-COR-1/2/3. L-COR-1: operacje ze skutkiem to wyloguj, zalogujHaslem, wyslijPono
+  fix:kontrola:faza-3 K-4            0   Fix przeniósł z src/components/konto/menu-konta.tsx eksporty useWylogowanie, KOMUNIKAT_BLEDU_WYLOGOWANIA, Kont
+  fix:kontrola:faza-3 K-5            2   Zestawiłem z kodem po fixie komentarze i JSDoc zmienionych bloków. Sprawdziłem: LIMIT_PRZEKIEROWANIA_MS, akcje
+  fix:kontrola:faza-3 K-6            0   Lista findingów orkiestratora zawiera same P2 (KOD i TEST), bez żadnego P1. Nie było więc testów do uruchomien
+  fix:kontrola:faza-3 K-7            0   Sprawdziłem `git diff --name-only fa6c345^..HEAD` (22 pliki) i pominąłem docs/active/etap-3-konto-i-auth/. Każ
+  fix:kontrola:faza-3 bramki         0   `node .claude/scripts/bramki/bramki.mjs --baza fa6c345^ > /tmp/bramki-fix-docs-active-etap-3-konto-i-auth-faza
+  fix:kontrola:faza-3 K-7 docs/active/ 0 
+  scribe:faza-4: P3 KOD/TEST         8
+  fix:faza-4: P3 na liście           0
+  fix:kontrola:faza-4 K-1            0   Przeczytałem cały diff `git diff 793be1a^..HEAD` (najstarszy = 793be1a, jedyny commit fixa) w src/, supabase/ 
+  fix:kontrola:faza-4 K-2            1   Diff dodaje jedną bramkę: `sciezkaPowrotu` / `adresBezwzgledny` w src/pages/potwierdz.tsx:28-52. Parsuje wejśc
+  fix:kontrola:faza-4 K-3            1   Na diffie fixa sprawdziłem listy L-COR-1/2/3. L-COR-1: operacje z efektem to wysyłki maili resend/recover (akc
+  fix:kontrola:faza-4 K-4            1   Dla każdej starej nazwy uruchomiłem `git grep -n '<nazwa>'` w całym repo (z docs/ i CLAUDE.md, z pominięciem r
+  fix:kontrola:faza-4 K-5            1   Przeczytałem komentarze nagłówkowe i JSDoc wszystkich bloków zmienionych przez fix: elementy-krokow, formularz
+  fix:kontrola:faza-4 K-6            0   Na liście orkiestratora nie ma findingów P1, wszystkie 16 to P2. Fix nie naprawiał P1, więc testy: [] i worktr
+  fix:kontrola:faza-4 K-7            0   Wylistowałem pliki commita 793be1a przez `git diff 793be1a^..HEAD --stat` (33 pliki) i każdemu przypisałem fin
+  fix:kontrola:faza-4 bramki         0   Uruchomiłem `node .claude/scripts/bramki/bramki.mjs --baza 793be1a^ > /tmp/bramki-fix-docs-active-etap-3-konto
+  fix:kontrola:faza-4 K-7 docs/active/ 0 
+  scribe:faza-5: P3 KOD/TEST         6
+  fix:faza-5: P3 na liście           0
+  fix:kontrola:faza-5 K-1            0   Przejrzałem `git diff 85955b0^..HEAD` linia po linii (fix to jeden commit 85955b0). Zmiany przypisane do findi
+  fix:kontrola:faza-5 K-2            0   Diff fixa nie dodaje ani nie zmienia bramki walidacyjnej w kodzie produkcyjnym. Jedyne nowe wyrażenie regularn
+  fix:kontrola:faza-5 K-3            1   L-COR-1: operacje ze skutkiem dodane w fixie to navigate(sciezkaPowrotu) po logowaniu hasłem (krok-logowania.t
+  fix:kontrola:faza-5 K-4            0   Usunięte lub przeniesione nazwy to NAZWY_DOSTAWCOW (eksport z ./przyciski-dostawcow), NAZWA_DOMYSLNA, ROZSZERZ
+  fix:kontrola:faza-5 K-5            1   Sprawdziłem JSDoc i komentarze bloków zmienionych przez fix: OpcjeOknaAuth (kroki-okna-auth.tsx:17-22), przejs
+  fix:kontrola:faza-5 K-6            0   Fix nie naprawiał żadnego P1 (wszystkie 12 findingów to P2), więc wynik to testy: []. Worktree /tmp/kontrola-f
+  fix:kontrola:faza-5 K-7            0   Listę plików wziąłem z `git diff 85955b0^..HEAD --stat`, docs/active pominąłem. Każdy plik ma przypisany findi
+  fix:kontrola:faza-5 bramki         0   Uruchomiłem `node .claude/scripts/bramki/bramki.mjs --baza 85955b0^ > /tmp/bramki-fix-docs-active-etap-3-konto
+  fix:kontrola:faza-5 K-7 docs/active/ 0 
+  scribe:faza-6: P3 KOD/TEST         6
+  fix:faza-6: P3 na liście           0
+  fix:kontrola:faza-6 K-1            0   git diff 1487358^..HEAD (jedyny commit fixa 1487358), linia po linii. src/app.tsx:11: przed: utworzTrasy(trybS
+  fix:kontrola:faza-6 K-2            0   Przejrzałem diff fixa pod kątem regexów, allowlist, limitów, originu, ról i parsowania. Fix nie dodaje ani nie
+  fix:kontrola:faza-6 K-3            0   L-COR-1: diff fixa nie ma operacji zmieniającej stan (zapisu do bazy, wysyłki). utworzAplikacjeTrybu tylko two
+  fix:kontrola:faza-6 K-4            0   Fix przeniósł nazwy trasaDokumentu, trasyTrybuPrawnego (z router.tsx do router-prawne.tsx), utworzAplikacjeTry
+  fix:kontrola:faza-6 K-5            1   Porównałem komentarze z kodem po fixie. app.tsx:8-10 jest zgodny (literal, 'jak trybStronyBuildu', martwa gałą
+  fix:kontrola:faza-6 K-6            0   Lista findingów orkiestratora ma tylko P2 (2× KOD, 2× TEST) i żadnego P1. Nie było czego uruchamiać na rodzicu
+  fix:kontrola:faza-6 K-7            0   git diff 1487358^..HEAD --stat, bez docs/active/etap-3-konto-i-auth/. Każdy plik przypisany do findingu: serve
+  fix:kontrola:faza-6 bramki         0   Uruchomione: node .claude/scripts/bramki/bramki.mjs --baza 1487358^ > /tmp/bramki-fix-docs-active-etap-3-konto
+  fix:kontrola:faza-6 K-7 docs/active/ 0 
+
+== 2c. Sceptycy (P9): etykiety, porcje P2, werdykty agentów
+ faza 1
+  faza.sceptyk                       {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 5, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 5, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          10                     5                      -50%
+  verify-batch vs ⌈P2/4⌉             3 batch (przebieg 3) ≤ ⌈10/4⌉=3 OK 5 batch (przebieg 5) ≤ ⌈5/4⌉=2 PRZEKROCZONE ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 2
+  faza.sceptyk                       {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 22, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 22, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          10                     22                     +120%
+  verify-batch vs ⌈P2/4⌉             3 batch (przebieg 3) ≤ ⌈10/4⌉=3 OK 16 batch (przebieg 16) ≤ ⌈19/4⌉=5 PRZEKROCZONE ≠
+  agenci verify (P1 ×3)              0                      3                      
+ faza 3
+  faza.sceptyk                       {'agree': 16, 'disagree_evidence': 0, 'disagree_concern': 1, 'degradacje': 1} {'agree': 12, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 16, 'disagree_evidence': 0, 'disagree_concern': 1} {'agree': 12, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          17                     12                     -29%
+  verify-batch vs ⌈P2/4⌉             5 batch (przebieg 5) ≤ ⌈17/4⌉=5 OK 12 batch (przebieg 12) ≤ ⌈12/4⌉=3 PRZEKROCZONE ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 4
+  faza.sceptyk                       {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 16, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 10, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 16, 'disagree_evidence': 0, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          10                     16                     +60%
+  verify-batch vs ⌈P2/4⌉             3 batch (przebieg 3) ≤ ⌈10/4⌉=3 OK 14 batch (przebieg 14) ≤ ⌈16/4⌉=4 PRZEKROCZONE ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 5
+  faza.sceptyk                       {'agree': 9, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 12, 'disagree_evidence': 0, 'disagree_concern': 2, 'degradacje': 2} ≠
+  agent.werdykty (suma)              {'agree': 9, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 12, 'disagree_evidence': 0, 'disagree_concern': 2} ≠
+  agent.obalone (suma)               0                      0                      
+  agent.weryfikowane (suma)          9                      14                     +56%
+  verify-batch vs ⌈P2/4⌉             3 batch (przebieg 3) ≤ ⌈9/4⌉=3 OK 9 batch (przebieg 9) ≤ ⌈14/4⌉=4 PRZEKROCZONE ≠
+  agenci verify (P1 ×3)              0                      0                      
+ faza 6
+  faza.sceptyk                       {'agree': 6, 'disagree_evidence': 0, 'disagree_concern': 0, 'degradacje': 0} {'agree': 4, 'disagree_evidence': 1, 'disagree_concern': 0, 'degradacje': 0} ≠
+  agent.werdykty (suma)              {'agree': 6, 'disagree_evidence': 0, 'disagree_concern': 0} {'agree': 4, 'disagree_evidence': 1, 'disagree_concern': 0} ≠
+  agent.obalone (suma)               0                      1                      
+  agent.weryfikowane (suma)          6                      5                      -17%
+  verify-batch vs ⌈P2/4⌉             2 batch (przebieg 2) ≤ ⌈6/4⌉=2 OK 5 batch (przebieg 5) ≤ ⌈5/4⌉=2 PRZEKROCZONE ≠
+  agenci verify (P1 ×3)              0                      0                      
+
+== 2d. Sceptycy w journalu runu: etykiety w wyniku, błędy schematu
+  verify-batch:4:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:3:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify:server/awatar-dostawcy.test.ts:159:2                  AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify:server/awatar-dostawcy.test.ts:159:1                  AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify:server/awatar-dostawcy.test.ts:159:0                  AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:7:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:8:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:6:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:9:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:3:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:5:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:4:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:10:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:15:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:12:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:14:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:11:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:13:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:9:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:7:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:5:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:4:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:8:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:3:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:6:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:11:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:10:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:5:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:8:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:6:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:9:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:7:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:3:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:4:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:10:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:12:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:13:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:11:1                                            AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:8:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:6:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:3                                             AGREE=3 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:4:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:3:2                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:7:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:5:1                                             AGREE=0 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=1 · błędy schematu 0
+  verify-batch:2:3                                             AGREE=2 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=1 · błędy schematu 0
+  verify-batch:3:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:2:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:0:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:1:1                                             AGREE=0 DISAGREE_EVIDENCE=1 DISAGREE_CONCERN=0 · błędy schematu 0
+  verify-batch:4:1                                             AGREE=1 DISAGREE_EVIDENCE=0 DISAGREE_CONCERN=0 · błędy schematu 0
+  sceptycy failed (journal)          0
+
+== 2e. Kopia: raport review i archiwum zadań
+  kopia                              /Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi
+  docs/completed/etap-3-konto-i-auth/review-faza-1.md 5 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-3-konto-i-auth/review-faza-2.md 22 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-3-konto-i-auth/review-faza-3.md 12 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-3-konto-i-auth/review-faza-4.md 16 / 0 / 0 / 0
+    adnotacje *(sceptyk:             0
+  docs/completed/etap-3-konto-i-auth/review-faza-5.md 12 / 0 / 2 / 2
+    adnotacje *(sceptyk:             2
+  docs/completed/etap-3-konto-i-auth/review-faza-6.md 4 / 1 / 0 / 0
+    adnotacje *(sceptyk:             0
+  archiwum: „Zamkniete cyklem fix”   ['Zamkniete cyklem fix: 5 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-1.md`.', 'Zamkniete cyklem fix: 20 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-2.md`.', 'Zamkniete cyklem fix: 12 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-3.md`.', 'Zamkniete cyklem fix: 15 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-4.md`.', 'Zamkniete cyklem fix: 10 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-5.md`.', 'Zamkniete cyklem fix: 4 pozycji — pelna tresc findingow i uzasadnienia w `review-faza-6.md`.']
+
+== 2f. Wiedza projektu (P10): learned_zn, faza.wiedza
+  learned_zn = 0 / z kontekstem      123/123, max 0         169/169, max 0         ≠
+ faza 1
+    faza.wiedza.indeks_zn            1859                   4446                   +139%
+    faza.wiedza.claude_md_zn         1053                   1882                   +79%
+    faza.wiedza.wycinek_zn           1014                   1970                   +94%
+    faza.wiedza.wycinek_wpisy        3                      5                      +67%
+    faza.wiedza.wycinek_pominiete    0                      3                      
+ faza 2
+    faza.wiedza.indeks_zn            1859                   4446                   +139%
+    faza.wiedza.claude_md_zn         1053                   1882                   +79%
+    faza.wiedza.wycinek_zn           697                    801                    +15%
+    faza.wiedza.wycinek_wpisy        2                      2                      +0%
+    faza.wiedza.wycinek_pominiete    0                      0                      
+ faza 3
+    faza.wiedza.indeks_zn            1859                   4446                   +139%
+    faza.wiedza.claude_md_zn         1053                   1882                   +79%
+    faza.wiedza.wycinek_zn           0                      1206                   
+    faza.wiedza.wycinek_wpisy        0                      3                      
+    faza.wiedza.wycinek_pominiete    0                      0                      
+ faza 4
+    faza.wiedza.indeks_zn            1859                   4446                   +139%
+    faza.wiedza.claude_md_zn         1053                   1882                   +79%
+    faza.wiedza.wycinek_zn           388                    1673                   +331%
+    faza.wiedza.wycinek_wpisy        1                      4                      +300%
+    faza.wiedza.wycinek_pominiete    0                      5                      
+ faza 5
+    faza.wiedza.indeks_zn            1859                   4446                   +139%
+    faza.wiedza.claude_md_zn         1053                   1882                   +79%
+    faza.wiedza.wycinek_zn           388                    1673                   +331%
+    faza.wiedza.wycinek_wpisy        1                      4                      +300%
+    faza.wiedza.wycinek_pominiete    0                      5                      
+ faza 6
+    faza.wiedza.indeks_zn            1859                   4446                   +139%
+    faza.wiedza.claude_md_zn         1053                   1882                   +79%
+    faza.wiedza.wycinek_zn           388                    1622                   +318%
+    faza.wiedza.wycinek_wpisy        1                      4                      +300%
+    faza.wiedza.wycinek_pominiete    0                      0                      
+
+== 2g. Wycinek w promptach i wywołaniach agentów (journal runu)
+  planner:faza-1                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-1                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-2                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-1                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-1                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-2                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-3                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-4                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-5                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-2                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-2                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-3                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-6                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-7                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-3                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-3                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-4                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-8                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-9                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-4                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-4                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-5                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 1
+  build:IU-10                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-11                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-5                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-5                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  planner:faza-6                     blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 2
+  build:IU-13                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  build:IU-12                        blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+  fix:faza-6                         blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” tak · wywołania wycinka 1
+  fix:poprawka:faza-6                blok „Wyuczone reguly projektu:” nie · „REGULY PROJEKTU dla poprawianych plikow” nie · wywołania wycinka 0
+
+== 2h. Compound w wyniku runu (harness): wiedza, indeks, propozycje bramek
+  solution                           docs/solutions/performance-issues/2026-10-15-statyczny-import-auth-js-wciaga-klienta-do-paczki-startowej.md
+  wiedza: klasa / szczebel           cache-i-zapytania / lint
+  wiedza: regula [zn]                272
+  indeks                             zapisany
+  propozycjeBramek                   1
+  uwagaIndeksu                       
+
+== 2i. Reguły kodu i D10 (P12; kryterium 6a pkt 67 d)
+  rola                         n  eager Read/sh  paths  kod  D10
+  bootstrap                    1      0       0      0    0    0
+  build                       13      0      13      0   13   10
+  complete                     2      0       0      0    0    0
+  compound                     1      0       0      0    0    0
+  compound-refresh             1      0       0      0    0    0
+  dedup:semantyczny            6      0       0      0    0    0
+  domkniecie                   6      0       0      3    0    0
+  e2e:db-sync                  6      0       0      0    0    0
+  e2e:env-down                 1      0       0      0    0    0
+  e2e:restart                  6      0       0      0    0    0
+  e2e:start                    1      0       0      0    0    0
+  fix                          6      0       6      0    6    0
+  fix:kontrola                 6      0       0      3    1    0
+  fix:poprawka                 6      0       6      0    5    0
+  ogrod:pomiar                 1      0       0      0    0    0
+  planner                      6      0       0      1    0    0
+  review:code-quality          6      0       1      1    0    0
+  review:correctness           6      0       0      2    0    0
+  review:e2e                   6      0       0      0    0    0
+  review:performance           6      0       0      1    0    0
+  review:security              6      0       0      1    1    0
+  review:spec-compliance       6      0       0      1    0    0
+  review:test-coverage         6      0       0      4    0    0
+  scribe                       6      0       0      0    0    0
+  smoke-operatora              1      0       0      0    0    0
+  stan:zapis                   5      0       0      0    0    0
+  start:testy                  1      0       0      0    0    0
+  verify                       3      0       0      3    0    0
+  verify-batch                61      0       0     10    2    0
+  walidacja-koncowa            1      0       0      0    0    0
+  warmup:vitest                1      0       0      0    0    0
+  build build:IU-7: D10 pii-i-sekrety, dopasowanie-tekstu
+  build build:IU-1: D10 BRAK
+  build build:IU-6: D10 pii-i-sekrety, dopasowanie-tekstu
+  build build:IU-13: D10 pii-i-sekrety, dopasowanie-tekstu, wyscig-i-wspolbieznosc
+  build build:IU-2: D10 BRAK
+  build build:IU-9: D10 BRAK
+  build build:IU-11: D10 pii-i-sekrety, dopasowanie-tekstu
+  build build:IU-3: D10 pii-i-sekrety, dopasowanie-tekstu, wartosc-graniczna, limit-czasu-i-ponowien, wyscig-i-wspolbieznosc
+  build build:IU-8: D10 seed-e2e
+  build build:IU-4: D10 pii-i-sekrety, dopasowanie-tekstu, wartosc-graniczna, limit-czasu-i-ponowien, wyscig-i-wspolbieznosc
+  build build:IU-10: D10 seed-e2e
+  build build:IU-12: D10 pii-i-sekrety
+  build build:IU-5: D10 pii-i-sekrety, bramka-na-jednej-drodze, dopasowanie-tekstu, zaufanie-danym-klienta, bramka-czarna-lista, sciezka-bledu
+  testyUsuniete (domknięcie): {'domkniecie:faza-1': [], 'domkniecie:faza-2': [], 'domkniecie:faza-3': [{'plik': 'src/components/layout/menu-telefonu.test.tsx', 'nazwa': 'Tab krąży w karcie: z ostatniego linku wraca na przycisk, Shift+Tab z przycisku idzie na ostatni link', 'uzasadnienie': 'Przemianowany na „Tab krąży w karcie: z ostatniej pozycji wraca na przycisk, Shift+Tab z przycisku idzie na ostatnią pozycję”, bo „Zaloguj się” nie jest już linkiem.'}, {'plik': 'src/components/layout/menu-telefonu.test.tsx', 'nazwa': 'kliknięcie „Zaloguj się” w menu zamyka menu i przenosi na /zaloguj', 'uzasadnienie': 'Zachowanie zmienione w IU-7: „Zaloguj się” otwiera okno logowania. Zastąpiony testem „„Zaloguj się” w menu zamyka menu i otwiera okno logowania bez zmiany adresu; zamknięcie okna oddaje fokus przyciskowi menu”.'}, {'plik': 'src/components/layout/pasek-nawigacji.test.tsx', 'nazwa': '„Zaloguj się” prowadzi na /zaloguj, a „Dodaj projekt” i „Dodaj” na /dodaj w tej samej karcie', 'uzasadnienie': 'Podzielony: „„Dodaj projekt” i „Dodaj” prowadzą na /dodaj w tej samej karcie” oraz „gość: „Zaloguj się” to przycisk, który otwiera okno logowania bez zmiany adresu”, bo link do /zaloguj zastąpił przycisk (IU-7).'}, {'plik': 'src/router.test.tsx', 'nazwa': 'kliknięcie „Wróć na stronę główną” na /zaloguj przenosi na /', 'uzasadnienie': '/zaloguj nie pokazuje już strony „Wkrótce” (IU-6). Test przeniesiony na /dodaj, a do tego doszedł test: gość na /zaloguj trafia na / z otwartym oknem logowania.'}], 'domkniecie:faza-4': [{'plik': 'src/components/konto/okno-auth.test.tsx', 'nazwa': '„Załóż konto” w otwartym oknie zmienia krok bez ponownego showModal i daje fokus nagłówkowi', 'uzasadnienie': 'Nowa nazwa testu: „…daje fokus nagłówkowi rejestracji” (linia 230). Krok rejestracji ma teraz własny nagłówek „Załóż konto w kilka sekund” zamiast logowania (IU-8).'}], 'domkniecie:faza-5': [], 'domkniecie:faza-6': [{'plik': 'server/konfiguracja.test.ts', 'nazwa': 'z samymi wymaganymi zmiennymi daje port 3000, katalog dist, bez indeksowania, Basic Auth i FB_APP_ID', 'uzasadnienie': 'Przemianowany: nowa nazwa „z samymi wymaganymi zmiennymi daje tryb pelny, port 3000, katalog dist, bez indeksowania, Basic Auth i FB_APP_ID” (dodane pole tryb w kontrakcie Konfiguracja)'}, {'plik': 'src/components/prawne/dokument-prawny.test.tsx', 'nazwa': 'sekcja 3 polityki podaje cel marketingowy na podstawie zgody', 'uzasadnienie': 'Zamówione zachowanie zmienione w IU-13: stary punkt marketingowy zastąpiony nowym tekstem; warunek sprawdza mocniej src/pages/polityka-prywatnosci.test.tsx (dosłowny punkt i dokładnie jeden punkt o wiadomościach)'}]}
+  kryterium: ZIELONE | {'eager': [], 'bez_kodu_z_regulami': [], 'kod_bez_regul': [], 'podwojny_odczyt': [], 'czyta_kod_z_regulami': ['domkniecie', 'verify-batch', 'review:performance', 'fix:kontrola', 'review:test-coverage', 'review:spec-compliance', 'review:correctness', 'verify', 'planner', 'review:security', 'review:code-quality'], 'czyta_reguly_z_roli': ['review:code-quality'], 'buildery': 13, 'buildery_bez_bloku': 0, 'buildery_z_d10': 10, 'bez_transkryptu': 0, 'wycinki_plannera': [{'zn': 1995, 'reguly': 4, 'd10': ['seed-e2e'], 'd10_pominiete': 5}, {'zn': 1790, 'reguly': 3, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu'], 'd10_pominiete': 1}, {'zn': 1737, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wartosc-graniczna', 'limit-czasu-i-ponowien', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1737, 'reguly': 1, 'd10': ['pii-i-sekrety', 'dopasowanie-tekstu', 'wartosc-graniczna', 'limit-czasu-i-ponowien', 'wyscig-i-wspolbieznosc'], 'd10_pominiete': 0}, {'zn': 1984, 'reguly': 1, 'd10': ['pii-i-sekrety', 'bramka-na-jednej-drodze', 'dopasowanie-tekstu', 'zaufanie-danym-klienta', 'bramka-czarna-lista', 'sciezka-bledu'], 'd10_pominiete': 3}]}
+
+== 2j. Planowanie (P13: scalony /dev-plan)
+  epizod dev-plan (rekord): koszt 3.02 M + subagenci 3.88 M (n=6), tury 48, wiadomości operatora 0, otwarty True
+  artefakty: {"plan_kb": 95, "zadania_kb": 25, "iu": 13, "iu_z_wymiarami": 1, "wydzielenia": 0, "walidacja": {"n": 2, "odrzucone": 1, "bledy_pierwszy": 4, "bledy_budzetu_pierwszy": 2}, "gotowosc": {"n": 1, "ok_ostatnia": true, "czerwone_ostatnia": []}}
+  do wywołania Workflow: koszt sesji 3.02 M (+ subagenci = 6.89 M; próg mediany 2.95 M → PONAD), tury 48, wiadomości operatora 0
+  Workflow: null
+  planner:faza-1: IU 2 — IU-1 feature-builder-data tabela, IU-2 feature-builder-data tabela
+  planner:faza-2: IU 3 — IU-3 feature-builder-data tabela, IU-4 feature-builder-data tabela, IU-5 feature-builder-data tabela
+  planner:faza-3: IU 2 — IU-6 feature-builder-ui-figma tabela, IU-7 feature-builder-ui-figma tabela
+  planner:faza-4: IU 2 — IU-8 feature-builder-ui-figma tabela, IU-9 feature-builder-fullstack-figma tabela
+  planner:faza-5: IU 2 — IU-10 feature-builder-ui-figma tabela, IU-11 feature-builder-ui-figma tabela
+  planner:faza-6: IU 2 — IU-12 feature-builder-fullstack-figma tabela, IU-13 feature-builder-ui-figma tabela
+
+== 2k. E2E i skill weryfikacji (P14)
+  run: status OK, powód None, e2eSrodowisko gotowe, manual_razem 6
+  faza 1: e2e {"checkboxy": 2, "pass": 2, "fail": 0, "skip": 0, "manual": 0}, e2eSync zsynchronizowano: Suma migracji ok (kod 0). Wykonano db push na e2e (vbnhxyowencehsqivhuh): zaaplikowano 20261014120000_konto_auth.sql bez bledow (tylko NOTICE z 'drop ... if exists'). Seedy fazy 1 za… [uciete: 618 znakow, pelna tresc w logu runu]
+  faza 2: e2e {"checkboxy": 0, "pass": 0, "fail": 0, "skip": 0, "manual": 0}, e2eSync aktualna: Suma migracji OK (e2e.mjs suma: kod 0, brak trafien). supabase db push --include-all --yes: "Remote database is up to date." (migracje 20261014120000_konto_auth i 20261015120000_konto_auth_p… [uciete: 536 znakow, pelna tresc w logu runu]
+  faza 3: e2e {"checkboxy": 5, "pass": 5, "fail": 0, "skip": 0, "manual": 0}, e2eSync aktualna: Wynik e2e.mjs suma: ok, bez trafien. supabase db push --include-all --yes: "Remote database is up to date.", w fazie 3 nie bylo nowych migracji. Seedy: flow fazy 3 (logowanie-email, logowani… [uciete: 604 znakow, pelna tresc w logu runu]
+  faza 4: e2e {"checkboxy": 6, "pass": 0, "fail": 0, "skip": 6, "manual": 6}, e2eSync zsynchronizowano: Sprawdzenie sumy migracji dało wynik ok (bez trafień). supabase db push --include-all --yes: baza zdalna była już aktualna, żadnej nowej migracji nie zaaplikowano. Seed fazy 4 e2e/se… [uciete: 633 znakow, pelna tresc w logu runu]
+  faza 5: e2e {"checkboxy": 3, "pass": 3, "fail": 0, "skip": 0, "manual": 0}, e2eSync zsynchronizowano: Kontrola sumy migracji (e2e.mjs suma) przeszła: status ok, kod 0, brak trafień. Polecenie supabase db push --include-all --yes nie miało czego wypychać ("Remote database is up to dat… [uciete: 871 znakow, pelna tresc w logu runu]
+  faza 6: e2e {"checkboxy": 1, "pass": 1, "fail": 0, "skip": 0, "manual": 0}, e2eSync aktualna: Suma migracji: ok (bez zmienionych ani usunietych). supabase db push --include-all: "Remote database is up to date", nic nie zaaplikowano. Seedy: faza 6 ma jeden flow [E2E] `polityka-cel-mar… [uciete: 454 znakow, pelna tresc w logu runu]
+  e2e:start (faza None): koszt 0.02 M, 11 s
+  e2e:restart:faza-1 (faza 1): koszt 0.01 M, 4 s
+  e2e:db-sync:faza-1 (faza 1): koszt 0.04 M, 29 s
+  review:e2e (faza 1): tryb przegladarka, koszt 0.21 M, tury 11, 79 s, ctx_start 23180
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 1 | curl: 1
+    przebieg e2e/etap-3-konto-smoke.sh PASS nie-dotyczy    Runner uruchomiony na bazie e2e: `bash e2e/etap-3-konto-smoke.sh` zakończył się kodem 0 (log /tmp/e2e-etap3-konto-smoke.log). Przeszły: guard środowis
+    przebieg e2e/poczta-e2e.sh      PASS nie-dotyczy    `bash e2e/poczta-e2e.sh` uruchomiony bez argumentów zakończył się kodem 0 (log /tmp/e2e-poczta.log). Kolejno: seed poczta-e2e-seed.sql (tabela e2e_poc
+  e2e:restart:faza-2 (faza 2): koszt 0.01 M, 4 s
+  e2e:db-sync:faza-2 (faza 2): koszt 0.04 M, 28 s
+  review:e2e (faza 2): tryb przegladarka, koszt 0.07 M, tury 7, 22 s, ctx_start 24554
+    e2e.mjs scenariusze: tak | skill weryfikacji: NIE | mapa-funkcji.md: NIE | e2e.mjs stan: nie | agent-browser: 0 | curl: 0
+  e2e:restart:faza-3 (faza 3): koszt 0.01 M, 4 s
+  e2e:db-sync:faza-3 (faza 3): koszt 0.04 M, 27 s
+  review:e2e (faza 3): tryb przegladarka, koszt 0.31 M, tury 30, 161 s, ctx_start 23791
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 18 | curl: 1
+    przebieg logowanie-email        PASS nie-dotyczy    Na 1440×933 przycisk „Zaloguj się” w pasku otworzył dialog „Zaloguj się” z przyciskami Facebook, Google i GitHub, separatorem „albo e-mailem”, polami 
+    przebieg logowanie-zle-haslo    PASS nie-dotyczy    Po wysłaniu e-maila konta testowego z hasłem „zle-haslo-123” sprawdzenie w eval dało {open:[true], alert:["Nieprawidłowy e-mail lub hasło."]}: dialog 
+    przebieg logowanie-telefon-arkusz PASS nie-dotyczy    Na 390×844 kliknąłem „Otwórz menu”, a potem „Zaloguj się” w menu. Otwarty dialog jest dosunięty do dołu (bottom=844 przy innerHeight=844, top=226.75, 
+    przebieg menu-konta-wyloguj     PASS nie-dotyczy    Po zalogowaniu przez okno na 1440 kliknąłem pigułkę „Menu konta”: dostała expanded=true i pokazała menu z blokiem użytkownika (inicjał U, „Użytkownik”
+    przebieg menu-konta-telefon     PASS nie-dotyczy    Na 390×844 zalogowałem się przez arkusz. Arkusz się zamknął (brak otwartego dialog, overflow body=visible), a pasek pokazuje „Dodaj”, kółko awatara z 
+    finding P3 OPERATOR Operator: [Manual] logowanie-komputer-publikuj: visual review — Operator action: otwórz visual-diff/logowanie-komputer-p
+    finding P3 OPERATOR Operator: [Manual] logowanie-telefon-arkusz: visual review — Operator action: otwórz visual-diff/logowanie-telefon-arkus
+    finding P3 OPERATOR Operator: [Manual] logowanie-telefon-przegladarka-fb: visual review — Operator action: otwórz visual-diff/logowanie-tele
+    finding P3 OPERATOR Operator: [Manual] menu-konta-komputer: visual review — Operator action: otwórz visual-diff/menu-konta-komputer-figma.pn
+    finding P3 OPERATOR Operator: [Manual] menu-konta-telefon-pasek: visual review — Operator action: otwórz visual-diff/menu-konta-telefon-pase
+    finding P3 OPERATOR Operator: [Manual] menu-konta-telefon-m1: visual review — Operator action: otwórz visual-diff/menu-konta-telefon-m1-figm
+  e2e:restart:faza-4 (faza 4): koszt 0.01 M, 4 s
+  e2e:db-sync:faza-4 (faza 4): koszt 0.04 M, 25 s
+  review:e2e (faza 4): tryb przegladarka, koszt 0.24 M, tury 16, 151 s, ctx_start 25646
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 6 | curl: 1
+    przebieg rejestracja-email      SKIP harness        zrzut agent-browser > 30 s. Preflight OK (doctor: 6 pass, 0 fail; GET http://localhost:5174 → 200; hook poczty e2e: wlaczony). Do momentu zrzutu scena
+    przebieg rejestracja-adres-zajety SKIP harness        zrzut agent-browser > 30 s. W scenariuszu rejestracja-email `agent-browser screenshot` przerwał limit 30 s (exit 142, plik nie powstał), więc według r
+    przebieg reset-hasla-krok-1     SKIP harness        zrzut agent-browser > 30 s. W scenariuszu rejestracja-email `agent-browser screenshot` przerwał limit 30 s (exit 142, plik nie powstał), więc według r
+    przebieg potwierdzenie-maila    SKIP harness        zrzut agent-browser > 30 s. W scenariuszu rejestracja-email `agent-browser screenshot` przerwał limit 30 s (exit 142, plik nie powstał), więc według r
+    przebieg potwierdzenie-link-wygasl SKIP harness        zrzut agent-browser > 30 s. W scenariuszu rejestracja-email `agent-browser screenshot` przerwał limit 30 s (exit 142, plik nie powstał), więc według r
+    przebieg reset-hasla            SKIP harness        zrzut agent-browser > 30 s. W scenariuszu rejestracja-email `agent-browser screenshot` przerwał limit 30 s (exit 142, plik nie powstał), więc według r
+    finding P3 OPERATOR Operator: [Manual] rejestracja-komputer: visual review — Operator action: otwórz / w aplikacji („Zaloguj się” → „Załóż k
+    finding P3 OPERATOR Operator: [Manual] rejestracja-telefon-arkusz: visual review — Operator action: otwórz / w aplikacji („Otwórz menu” → „Z
+    finding P3 OPERATOR Operator: [Manual] rejestracja-telefon-email-zajety: visual review — Operator action: otwórz / w aplikacji (krok „Załóż 
+    finding P3 OPERATOR Operator: [Manual] potwierdzenie-komputer-link-wygasl: visual review — Operator action: otwórz /auth/potwierdz?token_has
+    finding P3 OPERATOR Operator: [Manual] potwierdzenie-komputer-sukces: visual review — Operator action: otwórz /auth/potwierdz?token_hash=…&t
+    finding P3 OPERATOR Operator: [Manual] potwierdzenie-telefon-link-wygasl: visual review — Operator action: otwórz /auth/potwierdz?token_hash
+    finding P3 OPERATOR Operator: [Manual] potwierdzenie-telefon-sukces: visual review — Operator action: otwórz /auth/potwierdz?token_hash=…&ty
+    finding P3 OPERATOR Operator: [Manual] reset-komputer-krok-2: visual review — Operator action: otwórz /auth/nowe-haslo (wejście linkiem z `e
+    finding P3 OPERATOR Operator: [Manual] reset-komputer-link-wygasl: visual review — Operator action: otwórz /auth/potwierdz?token_hash=nieist
+    finding P3 OPERATOR Operator: [Manual] reset-komputer-wyslano: visual review — Operator action: otwórz / w aplikacji („Zaloguj się” → „Nie p
+    finding P3 OPERATOR Operator: [Manual] reset-telefon-krok-1: visual review — Operator action: otwórz / w aplikacji (arkusz logowania → „Nie 
+    finding P3 OPERATOR Operator: [Manual] reset-telefon-krok-2: visual review — Operator action: otwórz /auth/nowe-haslo (wejście linkiem recov
+  e2e:restart:faza-5 (faza 5): koszt 0.01 M, 4 s
+  e2e:db-sync:faza-5 (faza 5): koszt 0.04 M, 21 s
+  review:e2e (faza 5): tryb przegladarka, koszt 0.42 M, tury 37, 179 s, ctx_start 25540
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 21 | curl: 1
+    przebieg okno-powitania         PASS nie-dotyczy    Seed zaaplikowany psql (NOTICE: konto z oknem powitania gotowe). Viewport 1440x900, logowanie przez „Zaloguj się” w pasku, potem e-mail i hasło. Okno 
+    przebieg ustawienia-profilu     PASS nie-dotyczy    Mapa funkcji nie ma wpisu dla tego flow, więc scenariusz odegrałem według opisu linii. Logowanie kontem E2E_TEST_EMAIL, potem „Menu konta” → menuitem 
+    przebieg ustawienia-profilu-gosc PASS nie-dotyczy    Nowa sesja bez logowania, open http://localhost:5174/konto/profil, get url = http://localhost:5174/. h1 = „Zobacz co budują Vibersi z AI”, a dialog „Z
+    finding P3 OPERATOR Operator: [Manual] ustawienia-profilu-komputer: visual review — Operator action: otwórz visual-diff/ustawienia-profilu-k
+    finding P3 OPERATOR Operator: [Manual] ustawienia-profilu-telefon: visual review — Operator action: otwórz visual-diff/ustawienia-profilu-te
+    finding P3 OPERATOR Operator: [Manual] ustawienia-profilu-telefon-bledy: visual review — Operator action: otwórz visual-diff/ustawienia-prof
+  e2e:restart:faza-6 (faza 6): koszt 0.01 M, 4 s
+  e2e:db-sync:faza-6 (faza 6): koszt 0.04 M, 26 s
+  review:e2e (faza 6): tryb przegladarka, koszt 0.13 M, tury 9, 51 s, ctx_start 26940
+    e2e.mjs scenariusze: tak | skill weryfikacji: tak | mapa-funkcji.md: tak | e2e.mjs stan: tak | agent-browser: 6 | curl: 1
+    przebieg polityka-cel-marketingowy PASS nie-dotyczy    Preflight: doctor 6 pass / 0 fail, GET /prywatnosc zwrócił 200. Strona otwarta na http://localhost:5174/prywatnosc przy viewporcie 1440×900 i przewini
+    finding P3 OPERATOR Operator: [Manual] wkrotce-produkcja-komputer: visual review — Operator action: otwórz / w aplikacji zbudowanej z VITE_T
+    finding P3 OPERATOR Operator: [Manual] wkrotce-produkcja-telefon: visual review — Operator action: otwórz / w aplikacji zbudowanej z VITE_TR
+  e2e:env-down (faza None): koszt 0.05 M, 19 s
+  e2e:start: gotowe, serwer uruchomione, scenariusze 17, baza True
+  kopia: /Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi
+  mapa-funkcji.md: smoke-strona BRAK, smoke-strona-faza-2 BRAK
+  skill: Przejście na żywo: changed (2026-10-11)
+  smoke operatora 2026-10-15-etap-3-konto-i-auth-smoke.md: sekcja E2E jest
+     ręcznie (środowisko w trakcie runu)
+    
+    Scenariusze robisz na dev serverze z sekcji 0 (projekt główny `gyyftg…`), nie na środowisku e2e. Na dev maile idą przez Resend,
+    a nie do tabeli `e2e_poczta`, więc zamiast `e2e/poczta-e2e.sh link …` bierzesz link z prawdziwej skrzynki, a zamiast adresów
+    `@vibersi.test` i kont z seedów e2e używasz własnej skrzynki (np. aliasy `twojadres+rej1@…`). Link w mailu pr
+
+== 2l. Ogrodnik (P15)
+  agenci ogrodnika: 1 (ogrod:pomiar)
+  kolejność: compound-refresh 185 < ogrod:pomiar 186 < smoke-operatora 187 → OK
+  ogrod:pomiar: koszt 0.011 M, ctx_start 5341, model claude-haiku-5-5, 5 s; narzędzia {'Bash': 1, 'StructuredOutput': 1}; zapis brak; Bash poza odczytem 0
+  wynik pomiaru: kod 0, JSON OK
+    liczby {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 2}; decyzja: ocena False, źródło telemetria, bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania, 4/5 pomiarow do przegladu okresowego
+    nowe 1: pusty_catch server/konto-dane.ts:108
+  telemetria run.ogrod: {"status": "ok", "commit": "0805ac2", "plikow": 253, "liczby": {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 2}, "przyrost": {"wyciszenia": 0, "any": 0, "rzutowania": 0, "komentarze": 0, "pusty_catch": 1}, "zrodlo": "telemetria", "powod": "bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania, 4/5 pomiarow do przegladu okresowego", "nowe": 1, "ocena": false, "bez_oceny": 4, "propozycje": 0, "szczeble": {"regula_lint": 0, "zadanie_sprzatajace": 0, "zostawic": 0}}
+  sekcja „## Ogród” w podsumowaniu: jest
+    ## Ogród
+    
+    Pomiar całego projektu (253 plików JS/TS, commit 0805ac2); w nawiasie przyrost względem poprzedniego zadania:
+    - wyciszenia lint/TS: 0 (0)
+    - any: 0 (0)
+    - wymuszone rzutowania: 0 (0)
+    - komentarze-obejscia: 0 (0)
+    - puste catch: 2 (+1)
+    
+    Nowe w tym zadaniu (1): `server/konto-dane.ts:108` (puste catch).
+    
+    Bez oceny — bez oceny: przyrost ponizej progu wzgledem poprzedniego zadania, 4/5 pomiarow do przegladu okresowego.
+    
+    Ogrodnik niczego nie zmienił w kodzie — każda propozycja czeka na decyzję operatora.
+    
+    ## Rozmiar PR — uwaga
+    
+    UWAGA: PR ma 172 plików do recenzji bota (próg 150; po filtrach .coderabbit.yaml i bez binariów — w diffie 271) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (src/components: 50, src/lib: 31, server: 22, src/pages: 15, src/hooks: 10, src/test: 9, src: 7, src/config: 7, e2e/seeds: 4, (korzen): 3, e2e: 3, supabase/szablony-maili: 3, scripts/szablony-maili: 2, server/test: 2, supabase: 2, supabase/migrations: 2).
+  drzewo kopii po runie: czyste
+
+== 3. Agenci per rola: liczba, koszt
+  bootstrap                          1 × 0.05 M             1 × 0.05 M             
+    Δ koszt                          +0%
+  build                              12 × 13.68 M           13 × 22.90 M           ≠
+    Δ koszt                          +67%
+  complete                           2 × 0.24 M             2 × 0.23 M             ≠
+    Δ koszt                          -5%
+  compound                           1 × 0.18 M             1 × 0.17 M             ≠
+    Δ koszt                          -5%
+  compound-refresh                   1 × 0.11 M             1 × 0.09 M             ≠
+    Δ koszt                          -18%
+  dedup:semantyczny                  6 × 0.18 M             6 × 0.20 M             ≠
+    Δ koszt                          +13%
+  domkniecie                         6 × 1.56 M             6 × 1.92 M             ≠
+    Δ koszt                          +23%
+  e2e:db-sync                        6 × 0.24 M             6 × 0.25 M             ≠
+    Δ koszt                          +4%
+  e2e:env-down                       —                      1 × 0.05 M             ≠
+  e2e:restart                        6 × 0.07 M             6 × 0.07 M             
+    Δ koszt                          +6%
+  e2e:start                          1 × 0.03 M             1 × 0.02 M             ≠
+    Δ koszt                          -10%
+  fix                                6 × 6.71 M             6 × 12.03 M            ≠
+    Δ koszt                          +79%
+  fix:kontrola                       6 × 1.05 M             6 × 1.39 M             ≠
+    Δ koszt                          +33%
+  fix:poprawka                       6 × 1.04 M             6 × 2.13 M             ≠
+    Δ koszt                          +105%
+  ogrod:pomiar                       1 × 0.01 M             1 × 0.01 M             
+    Δ koszt                          -16%
+  planner                            6 × 0.79 M             6 × 0.92 M             ≠
+    Δ koszt                          +18%
+  review:code-quality                6 × 1.47 M             6 × 1.73 M             ≠
+    Δ koszt                          +18%
+  review:correctness                 6 × 1.95 M             6 × 2.05 M             ≠
+    Δ koszt                          +5%
+  review:e2e                         6 × 1.43 M             6 × 1.37 M             ≠
+    Δ koszt                          -4%
+  review:performance                 6 × 1.10 M             6 × 1.13 M             ≠
+    Δ koszt                          +2%
+  review:security                    6 × 1.49 M             6 × 1.41 M             ≠
+    Δ koszt                          -5%
+  review:spec-compliance             6 × 0.98 M             6 × 1.18 M             ≠
+    Δ koszt                          +20%
+  review:test-coverage               6 × 1.80 M             6 × 2.17 M             ≠
+    Δ koszt                          +21%
+  scribe                             6 × 0.89 M             6 × 0.95 M             ≠
+    Δ koszt                          +7%
+  smoke-operatora                    1 × 0.22 M             1 × 0.26 M             ≠
+    Δ koszt                          +20%
+  stan:zapis                         6 × 0.24 M             5 × 0.22 M             ≠
+    Δ koszt                          -9%
+  start:testy                        1 × 0.02 M             1 × 0.02 M             
+    Δ koszt                          -7%
+  verify                             —                      3 × 0.18 M             ≠
+  verify-batch                       19 × 0.88 M            61 × 1.93 M            ≠
+    Δ koszt                          +120%
+  walidacja-koncowa                  1 × 0.21 M             1 × 0.31 M             ≠
+    Δ koszt                          +50%
+  warmup:vitest                      1 × 0.03 M             1 × 0.03 M             
+    Δ koszt                          +4%
+
+== 4. Model / efort (transkrypt)
+  haiku-5-5/medium                   21                     21                     +0%
+  opus-5-5/high                      54                     58                     +7%
+  opus-5-5/low                       6                      6                      +0%
+  opus-5-5/medium                    63                     105                    +67%
+
+== 5. ctx_start per klasa/model: n, p50 [k], max [k]
+  builder/opus-5-5                   (12, 35, 47)           (13, 46, 60)           ≠
+    Δ p50                            +31%
+  mechaniczny/haiku-5-5              (14, 9, 18)            (14, 10, 22)           ≠
+    Δ p50                            +11%
+  naprawiacz/opus-5-5                (12, 23, 29)           (12, 24, 32)           ≠
+    Δ p50                            +4%
+  orkiestracyjny/haiku-5-5           (7, 5, 5)              (7, 5, 6)              ≠
+    Δ p50                            +0%
+  orkiestracyjny/opus-5-5            (38, 12, 26)           (38, 12, 32)           ≠
+    Δ p50                            +0%
+  reviewer/opus-5-5                  (36, 12, 17)           (36, 14, 18)           ≠
+    Δ p50                            +17%
+  sceptyk/opus-5-5                   (19, 11, 12)           (64, 11, 13)           ≠
+    Δ p50                            +0%
+  tester-e2e/opus-5-5                (6, 23, 24)            (6, 25, 27)            ≠
+    Δ p50                            +9%

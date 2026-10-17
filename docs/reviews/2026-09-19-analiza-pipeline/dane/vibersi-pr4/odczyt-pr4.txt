@@ -1,0 +1,51 @@
+# Odczyt PR #4 etap-3-konto-i-auth — cz. 2 (fazy 4–6) — projekt vibersi, zadanie etap-3-konto-i-auth
+
+pliki PR 194, +11405 −512, commitów 22
+
+## 1. Wątki bota (rekordy run.pr etapu zbierz)
+  tura 1: uwag 2 (P1 0 / P2 2 / P3 0), rekomendacja: KOLEJNA TURA — 2 watkow do naprawy (tura 1 z 3)
+  tura 2: uwag 0 (P1 0 / P2 0 / P3 0), rekomendacja: MERGUJ
+  oś correctness  P2: 1
+  oś spec         P2: 1
+  B P1/P2 unikalne: 2 na 194 plików = 1.03 na 100 plików (tło wrzesień 3,5; oferty PR 1–7 9,3)
+  wątki na GitHubie: 2, rozwiązane 2
+
+## 2. Klasyfikacja i decyzje
+  klasy: {'napraw': 2}; tury napraw: 1; naprawione 2, odrzucone 0, nieruszone 0
+  tura 1: commit 75cfae6, walidacja PASS, odpowiedzi 2, push True
+
+## 3. Pochodzenie linii uwagi (blame na commicie recenzji) i review fazy
+  P2 correctness/inna src/components/konto/okno-powitania.tsx:35 ← 8c1daa4 [execute] feat(etap-3-konto-i-auth): okno powitania i strona ustawień profilu (f — plik w review fazy
+  P2 spec/tekst-ui src/pages/potwierdz.tsx:127 ← 826701b [execute] feat(etap-3-konto-i-auth): rejestracja, potwierdzenie linku i reset ha — plik w review fazy
+  razem: execute P2: 2
+
+## 4. Koszt (jednostki względne)
+  wf_f181ad29-d0f start     OK   agentów 1 0.037 M 28 s
+  wf_4c6532da-1e7 zbierz    OK   agentów 1 0.052 M 28 s
+  wf_db58b8fb-0e3 napraw    OK   agentów 1 0.122 M 99 s
+  wf_a3925781-f74 zbierz    OK   agentów 1 0.034 M 21 s
+  wf_fbe90de4-efa merge     OK   agentów 1 0.016 M 10 s
+  wf_30ed56b0-594 merge     OK   agentów 2 0.023 M 27 s
+  wf_6dae1cbb-821 compound  OK   agentów 1 0.076 M 37 s
+  wf_2abb8a46-384 claude-md STOP agentów 1 0.016 M 10 s
+  wf_7a5fdee4-fef start     OK   agentów 1 0.075 M 54 s
+  wf_b14dc963-19c zbierz    OK   agentów 1 0.068 M 40 s
+  wf_4681b76c-842 napraw    OK   agentów 1 0.256 M 159 s
+  wf_8a20bbde-775 zbierz    OK   agentów 1 0.034 M 22 s
+  wf_6e3c84f5-a49 merge     OK   agentów 1 0.019 M 11 s
+  wf_afe43071-573 merge     OK   agentów 2 0.047 M 25 s
+  wf_f26b8573-18a compound  OK   agentów 1 0.098 M 60 s
+  wf_9782ea0c-77c claude-md OK   agentów 2 0.054 M 38 s
+  runy dev-pr-wf razem: 16, 1.03 M
+  epizod dev-pr           17:27:02–18:26:25 0.82 M, workflow 13, otwarty True, zagnieżdżone [], wiadomości operatora 2
+  sesja od wywołania dev-pr do końca transkryptu: 1.13 M (przed: 0.04 M)
+
+## 5. Czasy
+  PR utworzony 18:00:40 → merge 20:38:10 = 157.5 min
+  status CodeRabbit success na 2cef10b: 2026-10-16T18:14:52Z
+  status CodeRabbit success na 75cfae6: 2026-10-16T18:24:19Z
+  Monitor „recenzja CodeRabbit PR #3”: 12.5 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-16T17:39:59Z)","recenzja":"jest","sha":"909f669f0efce8a340f5; recenzja gotowa — min przed końcem czekania
+  Monitor „recenzja CodeRabbit PR #3 (tura 1)”: 4.2 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-16T17:45:32Z)","recenzja":"jest","sha":"94e038dbd4b9c57d827b; recenzja gotowa — min przed końcem czekania
+  Monitor „recenzja CodeRabbit PR #4”: 14.1 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-16T18:14:52Z)","recenzja":"jest","sha":"2cef10b599d1bef7335a; recenzja gotowa 0.2 min przed końcem czekania
+  Monitor „recenzja CodeRabbit PR #4 (tura 1)”: 6.5 min, zdarzenie: {"stan":"gotowa","powod":"status CodeRabbit success „Review completed” (2026-10-16T18:24:19Z)","recenzja":"jest","sha":"75cfae6a694f9b9ef2ac; recenzja gotowa 1.4 min przed końcem czekania
+  czekanie ponad gotową recenzję (minus 1 min odpytywania): 0.4 min

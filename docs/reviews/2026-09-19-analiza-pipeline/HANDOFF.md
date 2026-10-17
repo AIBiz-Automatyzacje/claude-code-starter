@@ -2437,6 +2437,154 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     reszta = „sprawdzi etap 3”), dopiero potem w nowej sesji `/dev-plan` etapu 3 i autopilot. Operator wraca do sesji szablonu po
     etapie 3 → odczyt runu i PR wg KARTA-ODCZYTU.md i listy z §8 (pkt 1–8 P19).
 
+86. **VIBERSI ETAP 3 — ODCZYT RUNU AUTOPILOTA (krok A, 2026-10-15). Run OK; P19 zadziałała we wszystkich punktach, które wystąpiły;
+    3 nowe błędy szablonu (plan poprawek do akceptacji, nic w `.claude/` nie zmienione).** Źródła: run `wf_f17e9b2e-8d4` (sesja vibersi
+    `b2ce4549`, 6 faz, 13 IU), `dane/vibersi-etap3-smoke-odczyt.txt` (`smoke_odczyt.py` vs etap 2 `wf_97e2f216-487`), log i wynik runu
+    (`workflows/wf_f17e9b2e-8d4.json`), transkrypty `e2e:start`, `review:e2e` fazy 4 i `smoke-operatora`, pola faz z telemetrii,
+    `smoke/zmienne.mjs --smoke` uruchomiony ponownie w tej sesji (kod 0). Smoke operatora (40 pozycji) jeszcze nieprzejęty — operator go robi.
+    (a) **Run:** OK, 6/6, walidacja PASS (1323/1323, typecheck, lint, build), 0 STOP, gate 4× CZYSTE + 2× ZASTRZEZENIA; **57,38 M (+49% vs
+    etap 2), 190 agentów, 382 min = 9,6 M/fazę** (etap 2 6,4). Potwierdzone P1 1 + P2 68 = 11,5/fazę (etap 2 10,3), obalone 1. Przyrost
+    +18,8 M: build +9,2 M (13 × 22,9 M; tury buildera śr. 60 vs 43, prompt IU 10–20k zn), fix +5,3 M (12,0 vs 6,7 M; 0,18 vs 0,11 M na
+    finding; fix dotyka 22–33 plików), fix:poprawka +1,1 M, sceptycy +1,2 M (pkt c), reviewerzy +0,8 M. `ctx_start` buildera p50 +31%
+    (46k vs 35k) = skład, nie wycinek: per typ jak w etapie 2 (data 24–28k, ui-figma 45–50k), nowe 2 × fullstack-figma 58–60k; wycinek
+    1,6–2,0k zn. Kryterium P12+P16 ZIELONE (13/13 builderów z blokiem, 10 z D10). Bramki: Stryker 6/6 ok, p50 ≈ 109 s (max 198 s);
+    knip porażka w fazie 1 (pkt e). Ogrodnik ok (1 nowy pusty catch `server/konto-dane.ts:108`, bez oceny). Compound: 1 solution
+    (`lint`, propozycja bramki 1). Wiedza: indeks 4446 zn, `wycinek_pominiete` 3–5 w fazach 1, 4, 5 (karta §6 — obserwacja).
+    `/dev-plan` 3,02 M + subagenci 3,88 M = 6,89 M (karta P13: 3/3 planów > 2,95 M, decyzja przy 5).
+    (b) **P19 punkt po punkcie:** (1) start E2E i restart — start „uruchomione” 11 s, restart 6 × 4 s, env-down zatrzymał tylko nasz
+    PID; **obcy serwer: nie wystąpił** (dev server operatora na 5173, PID 25078, nie przeszkadzał; 5174 wolny). (2) rozmiar PR —
+    **zadziałał**: 271 w diffie → 172 do recenzji (UWAGA w podsumowaniu i wyniku; próg 150 przekroczony → decyzja przed /dev-pr, pkt d).
+    (3) zmienne w smoke'u — **zadziałał**: nowe `TRYB_STRONY`, `VITE_TRYB_STRONY` w smoke'u (linie 38–39), pole `zmienne` z `braki: []`.
+    (4a) Stryker `pominieta` — **nie wystąpił** (wszystkie fazy z testami vitest, 6/6 ok). (4b) `prompt_zn` — **zadziałał**: 190 agentów,
+    171 różnych wartości, p50 8,5k zn, 0 × 377. (4c) próbny zrzut na starcie — **zadziałał** (status `gotowe` = zrzut OK,
+    `start.mjs:121`); reguła 30 s testera — **zadziałała, ale z ceną** (błąd 1). (5) walidacja końcowa — **zadziałała**: lista = 5
+    commitów fixa (`d07d9f7`, `8ef115f`, `60e9f10`, `909f669`, `1487358`), wszystkie o temacie „poprawki po review / kontrola diffu
+    naprawczego”, żaden `feat(`; ostrzeżenie test-weakening PRAWDZIWE (6 plików, m.in. zawężony test `linki-sociali`, odwrócona asercja
+    `zaloguj.test.tsx`), nie fałszywe. (8) sceptyk P2 — **zadziałał**: log 6 × „N findingow w M grupach po pliku (maks 4)”.
+    (c) **Błąd 1 (ważny) — jedno zawieszone `agent-browser screenshot` = cała faza bez E2E:** faza 4 (rejestracja, potwierdzenie,
+    reset — rdzeń etapu), 10:30:07 `fill`/`check` w formularzu rejestracji → `perl alarm 30 … screenshot` exit 142, plik nie powstał
+    → wg reguły P19 SKIP `harness` dla scenariusza i reszty fazy: **6/6 [Manual]**, bez ponownej próby i bez zamknięcia sesji. Próbny
+    zrzut na starcie (06:16) przeszedł — zawieszenie zależy od stanu strony/sesji, nie od harnessu (drugi raz: etap 2 faza 6). W fazach
+    3, 5, 6 zrzuty działały (18–21 wywołań). Propozycja: po przekroczeniu limitu `agent-browser close` + próbny zrzut `about:blank`;
+    próbny OK → scenariusz raz od nowa w świeżej sesji, drugie zawieszenie = SKIP tylko tego scenariusza, reszta fazy biegnie; próbny
+    nie przechodzi → SKIP reszty fazy jak dziś. Część funkcjonalna scenariusza (snapshot, `get text`, `poczta-e2e.sh link`) daje
+    PASS/FAIL bez zrzutu, na [Manual] idzie tylko porównanie z makietą. Da: 6 funkcjonalnych scenariuszy auth zamiast ręcznej roboty.
+    (d) **Błąd 2 — rozmiar PR dopiero po runie:** `rozmiar.mjs` działa, ale ostrzeżenie przychodzi po 6,4 h i 57 M; plan miał tabele
+    plików 13 IU (133 ścieżki w kodzie), więc rozmiar dało się policzyć w `/dev-plan`. Limit bota: CodeRabbit Pro 150 plików, Pro+ 300
+    (nota wydania 2026-07-15; plan konta operatora nieznany) — 172 > 150. Propozycja: `plan.mjs sprawdz` sumuje pliki z tabel IU
+    (+ testy) i przy > 150 daje uwagę z propozycją podziału na zadania przed startem autopilota; propozycja podziału „per katalog”
+    w archiwizacji jest nierealna dla jednej gałęzi — zamiast niej: „zadanie powyżej limitu bota — dziel w planowaniu”.
+    **Decyzja operatora przed /dev-pr etapu 3:** (A) PR jak jest — przy Pro bot może pominąć recenzję albo część plików; (B) dwa PR
+    z tej gałęzi (np. fazy 1–3 i 4–6 kolejno, druga gałąź od pierwszej) — więcej pracy, pełna recenzja; (C) review on demand / Pro+.
+    (e) **Błąd 3 (drobny) — rejestr stałych vs knip:** plan dał wszystkie stałe `src/config/konto.ts` do IU-1, knip w fazie 1 = porażka
+    (8 eksportów bez konsumenta), builder usunął je, a IU-3–IU-8 dopisały ponownie. Propozycja: szablon planu — stała powstaje w IU
+    pierwszego konsumenta (rejestr zostaje źródłem wartości).
+    (f) **Obserwacja (nie błąd) — koszt grupowania P2 po pliku:** 61 verify-batch na 71 P2 (śr. 1,16 findingu na grupę; etap 2 19 porcji
+    po 4), etap sceptycy 2,11 M vs 0,88 M (+1,2 M, ~2% runu); obalenia 1/72 (1,4%), degradacje 2/72 (2,8%) — bez zmiany wobec porcji
+    po 4 (karta P9: 1,7%). Do decyzji: porcje po 4 posortowane po pliku (ta sama lokalność, ⌈P2/4⌉ agentów) zamiast grup jednego pliku.
+    `smoke_odczyt.py` §2c nadal sprawdza ⌈P2/4⌉ (stąd „PRZEKROCZONE”) — skrypt analizy do aktualizacji, nie szablon.
+    (h) **Analiza kosztu `/dev-plan` i wzrostu runu** (`dane/vibersi-etap3-analiza-kosztu.md`, skrypty `skrypty/vibersi-etap3/`):
+    dev-plan 3,40 → 4,30 → 6,89 M (etap 2-poprawki 0,78 M, nie 2,91 — telemetria nie zamyka epizodu na Workflow); w etapie 3 narzut
+    to sesja z `/dev-prep` 215k kontekstu ciągnięta przez 48 tur (≈ 1,0 M) i agent SPEC Figmy 2,26 M (25 zrzutów, kontekst 414k);
+    reszta = rozmiar etapu. Run +18,8 M ≈ pół skalowanie, pół narzut: builder 1,76 M/IU (1,14), 35–48% wejścia to całe pliki
+    przez `cat`, pełny SPEC.md (47 KB), przetrwałe wyniki > 30k zn czytane w całości (8 vs 3); fix 0,18 M/finding (0,11) — jeden agent
+    na 12–20 findingów, kontekst do 264–345k, 17,8 biegu vitest/agenta; fix:poprawka 51% wejścia = pełny `git diff`. Wyniki testów
+    i Strykera 4–7% wejścia, `ctx_start` poza builderem stabilny. Kandydaci do P20 (szacunek przy skali etapu 3): `/dev-plan` po
+    `/clear` (−1,0 M), agent Figmy bez zrzutów w kontekście i w 2–3 częściach (−1,0–1,4 M), fix porcjami w świeżym kontekście
+    (−4–5 M, pilot), wycinek SPEC per IU (−0,6 M), odczyt zakresami, budżet IU w `sprawdz`, diff K dla fix:poprawka (−0,5 M), porcje
+    sceptyka po 4 (−1,2 M), koniec epizodu dev-plan na Workflow (pomiar). Uboczne: sesja dev-plan wypisała wartość `E2E_TEST_EMAIL`
+    (adres konta testowego, bez hasła).
+    (i) **E2E fazy 4 powtórzone w sesji vibersi (2026-10-15): 6/6 PASS**, 14 zrzutów z `alarm 30`, każdy 0,03–0,11 s — zawieszenie
+    się nie powtórzyło (dialog, strony `/auth/*`, przeładowanie) → przejściowe, nie zależne od stanu strony; wzmacnia propozycję
+    błędu 1 (zamknij sesję + ponów, zamiast SKIP reszty fazy). **Nowe (projekt i plan):** projekt `vibersi-e2e` ma
+    `rate_limit_email_sent: 2`/h bez własnego SMTP — Send Email hook NIE omija limitu (plan zakładał „bez limitu 2 maili/h”);
+    trzecia wysyłka w godzinie = „Za dużo prób”, więc faza 4 w autopilocie padłaby na limicie nawet bez zawieszenia (rejestracja ×2
+    + reset ×2 + ponowna wysyłka). `potwierdzenie-maila` zaliczony na linku z `rejestracja-email` zamiast świeżego adresu. Do decyzji
+    operatora: podnieść limit na e2e (Management API). Do P20: założenie researchu nieprzetestowane przed planem — wymóg sprawdzenia
+    limitów zewnętrznej usługi, gdy scenariusze [E2E] fazy przekraczają limit. 5 różnic wizualnych do oceny operatora (kolor
+    przycisku, checkbox, akapit Regulaminu, sierota „.” na 390, pigułka konta na stronie nowego hasła). Zrzuty `*-actual.png` poza
+    gitem; dwa z adresem konta testowego.
+    (b) **KROK B — PR #3 (cz. 1, fazy 1–3, 2026-10-16) — odczyt C okno 3/5.** Zrzut `dane/vibersi-pr3/` + `odczyt-pr3.txt`
+    (`odczyt_pr.py`, sesja vibersi `1d443ce2`). Smoke etapu 3 przed PR: sekcje 0–6 zrobione (5.4 Android otwarte, 7 po merge'u);
+    poprawki ze smoke'a (`40ec2e2`, `35e429a`, `cb0c9f3` + 2 migracje 20261016*) idą w PR2. Podział po fazach zamiast propozycji
+    sesji vibersi po katalogach (PR1 bez `docs/**` = STOP bramki `/dev-pr`; niesprawdzona kombinacja nowego `src/config` ze starym
+    `src/**`; sztuczny commit psuje pochodzenie linii). **Wynik:** 177 plików na GitHubie (93 do recenzji bota — bot zrecenzował,
+    bez pominięcia), 21 min utworzenie → merge, 1 tura + tura sprawdzająca, 1 wątek: **P2 correctness `sciezka-bledu`**
+    `src/lib/konto/akcje-auth.ts:124` (memo obietnicy zapamiętywał błąd sieci) ← `0aad3f4` [execute fazy 2], plik był w review fazy
+    — przeoczenie reviewerów; naprawiony `94e038d`, bot rozwiązał. **B P1/P2 0,56 na 100 plików** (tło 3,5; PR #1 0,96, PR #2 0).
+    Koszt runów 0,38 M (8 runów) + sesja 0,44 M. Compound: 1 solution `runtime-errors/…memo-obietnicy…` (reguła). CLAUDE.md: STOP
+    „brak pliku decyzji” — oczekiwany (plik w PR2). **P19 w PR:** (6) „gotowa” z polem `recenzja: jest` — **zadziałał** 2×, czekanie
+    12,5 i 4,2 min, ponad gotową recenzję 0,6 min (PR #2: 14,2/4,3 min z wyścigiem); (7) „KOLEJNA TURA (tylko odpowiedzi)” — **nie
+    wystąpił** (0 wątków `odrzuc`). **Nowy błąd szablonu (4) — compound /dev-pr commituje na lokalnym `main` bez pushu:** etap
+    `compound` po merge'u (`gh pr merge --delete-branch` przełącza na main) zrobił `b207793` na lokalnym main; sesja vibersi oparła
+    rebase PR2 na lokalnym main, więc compound PR1 jedzie w PR2. Skutek bez korekty: po squashu PR2 lokalny main rozjedzie się
+    z origin i krok `claude-md` (`git pull --ff-only`) da STOP. Etap 2 miał to samo (`cd2cc9f` na main), tylko push zrobiono ręcznie.
+    Propozycja P20: compound commituje na gałęzi PR przed merge'em albo pushuje main po commicie (jak `claude-md`). Rebase: 1 konflikt
+    `docs/learned-patterns.md` (dwa wiersze indeksu, oba zostawione; `wiedza.mjs indeks` — 12 wpisów, 5376 zn = plik, 0 błędów);
+    typecheck i 1338 testów PASS; PR2 = 121 plików do recenzji.
+    (c) **KROK B — PR #4 (cz. 2, fazy 4–6 + poprawki ze smoke'a, 2026-10-16) — odczyt C okno 4/5.** Zrzut `dane/vibersi-pr4/`
+    + `odczyt-pr4.txt`. 194 pliki na GitHubie (121 do recenzji bota), 22 commity (21 + tura bota; compound PR1 wypchnięty na main
+    przed rebase — wg instrukcji), 1 tura + sprawdzająca, 157,5 min utworzenie → merge (bramka MERGUJ ok. 18:27, reszta = czekanie
+    na decyzję operatora). 2 wątki P2, oba `napraw`, naprawione `75cfae6`: correctness `okno-powitania.tsx:35` (okno powitania
+    zasłaniało `/regulamin` i `/prywatnosc`) ← `8c1daa4` [execute fazy 5]; spec/`tekst-ui` `potwierdz.tsx:127` (karta sukcesu
+    obiecywała gościowi zalogowanie) ← `826701b` [execute fazy 4]; oba pliki były w review fazy. **B P1/P2 1,03 na 100 plików.**
+    Koszt runów PR #4 0,65 M, sesja `/dev-pr` obu PR 1,13 M. Compound: 2 solution (reguły `kontrakt-wspolny`, `tekst-ui`), 1 propozycja
+    bramki `kod` (wspólna funkcja wyjątków tras w `src/config/trasy.ts`) — decyzja operatora. Compound znów tylko na lokalnym main
+    (`6d46eb9`) — push ręczny przed `claude-md` (błąd 4 potwierdzony 2/2). CLAUDE.md uzgodniony (1882 → 2494 zn, `f8a7790`); main =
+    origin/main. **P19 w PR:** „gotowa” + `recenzja: jest` 2/2 (14,1 i 6,5 min, ponad gotową 0,4 min); „tylko odpowiedzi” nie
+    wystąpił. **Odczyt C po 4 PR vibersi:** B P1/P2 na 100 plików 0,96 / 0 / 0,56 / 1,03; w kodzie z pipeline'u etap 3: 3 × P2
+    execute (correctness 2, spec 1), wszystkie w plikach widzianych przez review fazy — poniżej progów odwrotu (§2 karty).
+    `odczyt_pr.py` poprawiony: data autora zamiast commitera (rebase PR piętrowego dawał „poza pipeline'em”), rekordy `zbierz`
+    i tury napraw filtrowane po numerze i commitach PR (dwa PR jednego zadania w jednej sesji). Otwarte w projekcie: smoke 5.4
+    (Android), sekcja 7 (produkcja `vibersi.pl`) — decyzja operatora.
+    (d) **Lista do planu P20 (do akceptacji operatora, wdrożenie w nowej sesji):** grupa A — mechanika, każda z testem:
+    (A1) tester: zrzut > 30 s → `agent-browser close` + próbny zrzut + jedno ponowienie scenariusza, SKIP tylko scenariusza przy
+    drugim zawieszeniu, część funkcjonalna bez zrzutu; (A2) rozmiar PR w `plan.mjs sprawdz` (suma tabel plików IU) + w archiwizacji
+    propozycja podziału po fazach z policzonym commitem cięcia (`rozmiar.mjs` na prefiksach faz) zamiast „per katalog”; (A3) `/dev-pr`
+    dla PR piętrowych: część 1 bez kroku `claude-md` (nie STOP), rebase po squashu w instrukcji skilla; (A4) compound `/dev-pr`
+    pushuje main po commicie (albo commit na gałęzi PR przed merge'em); (A5) sceptyk P2: porcje po 4 posortowane po pliku;
+    (A6) szablon planu: stała w IU pierwszego konsumenta (knip); (A7) `/dev-plan`: limity usług zewnętrznych przy scenariuszach
+    [E2E] (mail 2/h); (A8) telemetria: koniec epizodu dev-plan na Workflow; (A9) fix:poprawka dostaje diff plików z pozycji K.
+    Grupa B — koszt, z pilotem przed merge'em: (B1) fix porcjami w świeżym kontekście (−4–5 M), (B2) agent SPEC Figmy bez zrzutów
+    w kontekście, w 2–3 częściach, i wycinek SPEC per IU dla buildera (−1,6–2,0 M), (B3) `/dev-plan` po `/clear` (skill + flaga
+    w raporcie, −1,0 M), (B4) odczyt plików zakresami u buildera i fixa. Poza tym: sesje wypisują wartości `.env*` (etap 2 hasła,
+    etap 3 adres konta testowego) — rozważyć hook blokujący `cat`/`grep` z wartościami `.env*`.
+    (g) **Dalej:** decyzja operatora 2026-10-15: konto Pro → **wariant B, dwa PR**: PR1 = fazy 1–3 (gałąź `feature/etap-3-cz1` od
+    `909f669`, 93 pliki do recenzji), PR2 = reszta po rebase `--onto origin/main 909f669` (≈ 101 pliki); `/dev-pr etap-3-konto-i-auth`
+    z nazwą zadania jawnie; krok CLAUDE.md dopiero po PR2 (plik decyzji jest w archiwum PR2). Kolejność: E2E fazy 4 na e2e w sesji
+    vibersi (6 scenariuszy z [Manual], diagnoza zawieszenia zrzutu) → smoke operatora → PR1 → krok B (86 b) → PR2 → 86 c → plan P20. Plan poprawek P20 (błędy 1–3 +
+    decyzja f) do akceptacji operatora; wdrożenie w nowej sesji.
+    (e) **DECYZJE OPERATORA 2026-10-17 — PLAN P20 i P21 ZAAKCEPTOWANY w całości (z A10).** Kolejność: P20 → merge, push szablonu,
+    `/sync-template` + doctor w vibersi → P21 (pilot przed merge'em) → drugi sync → etap 4 vibersi (`/clear` przed `/dev-plan`).
+    **P20 „po etapie 3”, gałąź `popr/P20-po-etapie-3`, 2 sesje.** S1 (każdy punkt z testem padającym bez poprawki):
+    A1 tester — zrzut > 30 s → `agent-browser close` + próbny zrzut `about:blank` + jedno ponowienie scenariusza; drugie zawieszenie
+    = SKIP `harness` tylko tego scenariusza, reszta fazy biegnie; część funkcjonalna (snapshot, `get text`, skrypty) daje PASS/FAIL
+    bez zrzutu, na [Manual] tylko porównanie z makietą (`feature-tester-e2e.md` l. 50, `e2ePrompt` w review-wf); A4 compound
+    `/dev-pr` pushuje main po swoim commicie (`dev-pr-wf.js` etap compound, krok 5; wzór pushu z `claude-md`); A5 sceptyk P2 —
+    porcje po 4 posortowane po pliku zamiast `grupujPoPliku` (`dev-docs-review-wf.js:1111`; aktualizacja `smoke_odczyt.py` §2c);
+    A6 `plan.mjs sprawdz` — uwaga, gdy stała z rejestru ma źródło w IU wcześniejszej fazy niż wszyscy jej konsumenci (knip)
+    + zdanie w szablonie planu; A7 `/dev-plan` 3.4b — scenariusze [E2E] z wysyłką maili/SMS: limit usługi na projekcie e2e
+    (`rate_limit_email_sent`) ≥ liczba wysyłek fazy, inaczej pozycja operatora; A8 telemetria — koniec epizodu dev-plan na wywołaniu
+    Workflow (`scripts/telemetria/skill.mjs`), raport §6 flaguje `pierwsza_odpowiedz_jedn` > 0,2 M; A9 `fixPoprawkaPrompt` —
+    diff tylko plików z pozycji K (`git diff <najstarszy>^ -- <pliki>`), bez pełnego diffu fixa; A10 hook PreToolUse (Bash)
+    blokujący wypisanie wartości `.env*` (`cat`/`grep`/`sed`/`head` na `.env*` bez ograniczenia do nazw kluczy; dozwolone
+    `grep -oE '^[A-Z0-9_]+='`, `source`/`--env-file` bez wypisania), test na komendach z etapów 2 i 3. S2 — **PR wieloczęściowy**
+    (zastępuje „rozmiar PR w planowaniu” i „PR piętrowe”): `rozmiar.mjs --czubek <ref>` (diff baza..ref, `.coderabbit.yaml`
+    z ref, bez worktree); `plan.mjs sprawdz` sumuje pliki z tabel IU (+ testy), > 150 → sekcja planu „Części PR” (cięcie tylko na
+    granicy faz, każda część < 150); archiwizacja mierzy części na commitach końca faz (ostatni commit fazy = kontrola diffu
+    naprawczego albo poprawki albo feat), zapisuje commity cięcia w podsumowaniu, za duża część → inny punkt cięcia; uwaga „per
+    katalog” znika; `/dev-pr --czesc N`: część 1 = gałąź `<feature>-cz1` od commitu cięcia, PR, merge, compound z pushem, bez
+    `claude-md`; część ostatnia = rebase `--onto origin/main <cięcie>` (konflikt → pytanie do operatora), typecheck + testy,
+    `push --force-with-lease`, PR, merge, `claude-md`; telemetria `run.pr.czesc`, `odczyt_pr.py` po numerze PR. Smoke S2: kopia
+    vibersi z historią etapu 3 → cięcie `909f669`, części 93 / 121 (zgodność z ręcznym podziałem 6a pkt 86 b–c).
+    **P21 „koszt”, gałąź `popr/P21-koszt`, 2 sesje, merge po pilocie.** B1 fix porcjami (po pliku / 4–6 findingów, sekwencyjnie,
+    świeży kontekst, commit na porcję z tematem „poprawki po review fazy N” — kontrola fixa i walidacja końcowa biorą wszystkie);
+    B2 agent SPEC Figmy w `/dev-plan` w 2–3 częściach, zrzuty do plików bez oglądania, SPEC per ekran, builder czyta tylko ekrany
+    swojej IU (planner/dossier podaje ścieżki); B3 `/dev-prep` kończy się „`/clear`, potem `/dev-plan`”, skill dev-plan to
+    przypomina; B4 builder i fix czytają zakresami (bez `cat` wielu plików, bez wczytywania przetrwałych wyników w całości).
+    Pilot: ślepy test (harness P11/P12) stary vs nowy fix (B1 + B4) na stanie fazy 4 etapu 3 vibersi, te same findingi; miary:
+    koszt, naprawione, regresje K; ok. 8–10 M; spadek jakości = B1 odpada, reszta P21 zostaje.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -2783,8 +2931,46 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   Test procesu, który ma przeżyć SIGTERM (potomek po śmierci rodzica), sprawdzaj też bez poprawki (podmiana linii na czas jednego
   biegu) — inaczej nie wiadomo, czy test łapie defekt; po takim biegu sprzątaj procesy `pgrep -fl` (sierota zostaje na porcie).
   Wyścig status ↔ recenzja bota był też w PR #1 (89 s) — przy nowym zdarzeniu sprawdzaj wszystkie nagrane PR, nie tylko ten z incydentu.
+- Vibersi etap 3 (2026-10-15/16): awarię narzędzia z runu (zawieszony zrzut) powtórz w sesji, zanim wpiszesz przyczynę — powtórka 14/14
+  zrzutów OK obaliła „zależy od stanu strony”. Rozmiar części PR liczysz bez worktree dopiero po P20 (`--czubek`); do tego czasu
+  `git worktree add --detach <scratchpad> <sha>` + `rozmiar.mjs --projekt`, potem `git worktree remove`. Po rebase'ie (PR piętrowy)
+  data commitera to chwila rebase'u — pochodzenie linii licz po dacie autora (`%aI`). Dwa PR jednego zadania w jednej sesji mieszają
+  rekordy `run.pr` — filtruj po `pr.numer`. Propozycję podziału PR z sesji projektu sprawdź z bramką `/dev-pr` (katalog zadania
+  w gałęzi) i testowalnością stanu: podział po katalogach dawał PR1 bez `docs/**` (STOP) i niesprawdzoną kombinację plików.
+  Analizę w forku w tle przerywa błąd sieci API — wznawiaj ją przez SendMessage na zebranych już danych, nie od nowa.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
+
+**AKTUALNA (2026-10-17) — P20 SESJA 1 (6a pkt 86 e).** Plan P20 i P21 zaakceptowany. Nowa sesja w katalogu szablonu, na main.
+
+```
+Kontynuujemy poprawki szablonu po etapie 3 vibersi (HANDOFF 6a pkt 86 e). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 86 (całość, zwłaszcza c, i, b–e), §7 ostatnie dwa wpisy;
+dane/vibersi-etap3-analiza-kosztu.md. Plan P20 i P21 jest ZAAKCEPTOWANY (pkt 86 e) — bez zmian zakresu.
+
+Zadanie: P20 SESJA 1 na gałęzi popr/P20-po-etapie-3 (utwórz od main): punkty A1, A4, A5, A6, A7, A8, A9, A10 z pkt 86 (e).
+- Każdy punkt z testem, który pada bez poprawki (sprawdź to podmianą linii na czas jednego biegu, §7 P19).
+- Po wdrożeniu: pełne testy szablonu, typecheck, lint; prompt-audit dodanych linii (skrypty/pa_dodane.py, pliki podawaj jawnie — §7 P19);
+  recenzja subagenta (odczyt) i wdrożenie jej uwag; commity per punkt.
+- Wpis HANDOFF 6a pkt 87 + §8 (instrukcja P20 sesja 2). Bez merge'a do main (po sesji 2 i smoke'u, za moją zgodą).
+
+Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**STAN 2026-10-17 (6a pkt 86 e):** plan P20 (S1: A1, A4–A10; S2: PR wieloczęściowy) i P21 (B1–B4 + pilot) zaakceptowany; dokumenty
+etapu 3 zacommitowane na main szablonu (bez pushu). Vibersi: sekcja 7 (produkcja `vibersi.pl`) w toku po stronie operatora.
+
+**STAN 2026-10-16 (6a pkt 86 b–d):** etap 3 vibersi ZMERGOWANY dwoma PR (#3 fazy 1–3 `aa7c0ba`, #4 fazy 4–6 `cc51201`), CLAUDE.md
+uzgodniony (`f8a7790`), main = origin/main. Odczyt C 4/5 PR, poniżej progów. Lista P20 (grupa A mechanika 9 punktów, grupa B koszt
+4 punkty z pilotem) w pkt 86 (d) — czeka na akceptację operatora; wdrożenie w NOWEJ sesji szablonu przed etapem 4 vibersi.
+
+**STAN 2026-10-15 (6a pkt 86):** etap 3 vibersi — autopilot `wf_f17e9b2e-8d4` OK (57,4 M, 6/6), krok A zrobiony: P19 zadziałała
+w punktach, które wystąpiły (obcy serwer i Stryker „No tests” nie wystąpiły); 3 nowe błędy (zawieszony zrzut = cała faza 4 bez E2E,
+rozmiar PR 172 > 150 dopiero po runie, rejestr stałych vs knip) + obserwacja kosztu grup P2 po pliku → plan P20 do akceptacji.
+Operator: smoke etapu 3, decyzja A/B/C o PR (pkt 86 d), potem `/dev-pr` i krok B (pkt 86 b) w tej samej sesji szablonu.
 
 **STAN 2026-10-13 wieczór (6a pkt 85 b):** P19 na main i wypchnięta; w vibersi sync + doctor zrobione, dalej smoke P19 (sesja
 vibersi), potem etap 3. **NASTĘPNA SESJA SZABLONU = po etapie 3 vibersi:** odczyt runu autopilota i PR etapu 3 wg KARTA-ODCZYTU.md

@@ -4,3 +4,4 @@ ZRODLA-SZABLONU.md
 .claude/.backups/
 node_modules/
 .claude/tsc-cache/
+__pycache__/

@@ -71,7 +71,8 @@ def pochodzenie(repo, commit, plik, linia, okna):
     if not b:
         return None, 'brak blame', ''
     h = b[0].lstrip('^')
-    temat, data = git(repo, 'log', '-1', '--format=%s%x00%cI', h).strip().split('\x00')
+    # Data autora: rebase (PR piętrowe, etap 3) zmienia datę commitera, a commit dalej pochodzi z runu autopilota.
+    temat, data = git(repo, 'log', '-1', '--format=%s%x00%aI', h).strip().split('\x00')
     t = czas(data)
     if not any(od <= t <= do for od, do in okna):
         kat = 'poza pipeline\'em'
@@ -142,7 +143,8 @@ def main():
 
     # 1. wątki per oś i waga (ostatni zbierz każdej tury)
     print('\n## 1. Wątki bota (rekordy run.pr etapu zbierz)')
-    zbierz = [r for r in runy if r.get('pr')]
+    # Dwa PR jednego zadania w jednej sesji (etap 3: PR #3 i #4) — tylko rekordy tego PR.
+    zbierz = [r for r in runy if r.get('pr') and r['pr'].get('numer') in (None, pr['number'])]
     klasy = {}
     for r in zbierz:
         print(f'  tura {r["pr"]["tura"]}: uwag {r["pr"]["uwagi_razem"]} (P1 {r["pr"]["p1"]} / P2 {r["pr"]["p2"]} / P3 {r["pr"]["p3"]}), '
@@ -158,7 +160,9 @@ def main():
 
     # 2. klasyfikacja i co zrobiono
     print('\n## 2. Klasyfikacja i decyzje')
-    napraw = [w['result'] for w in wyniki.values() if w['args'].get('etap') == 'napraw']
+    commity_pr = {c['oid'][:7] for c in pr['commits']}
+    napraw = [w['result'] for w in wyniki.values() if w['args'].get('etap') == 'napraw'
+              and str(w['result'].get('commit') or '')[:7] in commity_pr | {''}]
     naprawione = {i for r in napraw for i in r.get('naprawione', [])}
     odrzucone = {i for r in napraw for i in r.get('odrzucone', [])}
     licz = collections.Counter(k['decyzja'] for k in klasy.values())
