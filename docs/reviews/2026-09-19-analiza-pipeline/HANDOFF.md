@@ -2759,6 +2759,20 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** merge `popr/P21-koszt` (bez B1) do main + push za zgodą operatora → jeden `/sync-template` + doctor w vibersi → etap 4
     (`/clear` przed `/dev-plan`) — §8.
 
+91. **VIBERSI ETAP 4 — PLANOWANIE OK (2026-10-17), autopilot uruchomiony przez operatora; lista poprawek szablonu zbierana do końca
+    etapu.** Merge P21 bez B1 wypchnięty (`b8a28ba`), sync w vibersi `e5e8b30` (doctor OK, hook `.env*` blokuje na żywo).
+    `/dev-plan` etapu 4 (sesja `e69c110d`): start z 72k kontekstu (po `/clear`; `/dev-prep` osobną sesją 2,09 M), koszt 2,67 M
+    (główna 1,28 + agenci 1,39; etap 3: 6,9 M), agent Figmy w 3 częściach — 0 obrazów w kontekście, 30 × `get_design_context`
+    z `excludeScreenshot`, 24 ekrany (`ekrany/*.md` + PNG), pole **Makiety:** w 8 IU; `sprawdz` 0 błędów, `gotowosc` zielona.
+    **Do poprawy w szablonie (po etapie 4):**
+    (1) **Rejestr stałych bez zgadywania IU-źródła — decyzja operatora: wariant z kolumną.** Fałszywa uwaga `sprawdz` w etapie 4:
+    „IU-2 (faza 2) definiuje stałe … DLUGI_BOK_ZRZUTU_PX, NAZWA_BAZY_SZKICU …”, choć dopisują je IU-5 i IU-10 (ich pierwsi konsumenci).
+    Przyczyna: kolumna „Źródło” to plik, a `rejestr-stalych.mjs` zgaduje IU-źródło jako pierwszą IU z plikiem, której opis zawiera
+    nazwę stałej; IU-2 tworzy plik i zapowiada „… dopisuje IU-5”. Reguła powstała na etapie 3 (jedna IU definiuje wszystkie stałe
+    pliku) i nie była sprawdzona na planie, w którym kilka IU dopisuje stałe do jednego pliku. Zmiana: tabela
+    `| Stała | Wartość | Plik | IU-źródło | Konsumenci |` (szablon planu, dev-plan 3.6b, parser i uwaga z jawnej IU, plan bez kolumny =
+    stara heurystyka), test na przypadku etapu 4 i etapu 3.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
