@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 
 const KOD_BLOKADY = 2
 // Plik .env* z wartosciami (takze glob `.env*`); wzorce bez wartosci przechodza.
-const PLIK_ENV = /(?:^|\/)\.env[\w.*?-]*$/
+const PLIK_ENV = /(?:^|\/)\.env[\w.*?~-]*$/
 const WZORZEC = /\.(?:example|sample|template|dist)$/i
 // Komendy, ktore wypisuja tresc czytanego pliku (calosc albo wybrane linie).
 const CZYTAJACE = new Set(['cat', 'bat', 'less', 'more', 'head', 'tail', 'tac', 'nl', 'grep', 'egrep', 'fgrep', 'rg', 'ag', 'sed',
@@ -26,6 +26,17 @@ const GREP = new Set(['grep', 'egrep', 'fgrep', 'rg', 'ag'])
 const OPERATORY = new Set(['|', '||', '&&', ';', '&', '\n', '(', ')'])
 
 /** @typedef {{ blokada: false } | { blokada: true, plik: string, komenda: string }} Ocena */
+/** @typedef {{ nazwa: string, argumenty: string[], plikiWe: string[], doPliku: boolean, tee: boolean }} Komenda */
+
+// Cel przekierowania, ktory trafia do transkryptu jak stdout (stderr, deskryptory, process substitution).
+const TERMINAL = /^(?:\/dev\/(?:stdout|stderr|tty|fd\/\d+)|\/proc\/self\/fd\/\d+|\()$/
+// Slowa powloki i opakowania przed wlasciwa komenda; `null` = bez opcji, inaczej opcje z argumentem.
+const OPAKOWANIA = new Map([['then', ''], ['do', ''], ['else', ''], ['elif', ''], ['if', ''], ['while', ''], ['until', ''], ['{', ''],
+  ['!', ''], ['command', ''], ['nohup', ''], ['time', ''], ['exec', ''], ['nice', 'n'], ['sudo', 'ugCDhprT'], ['env', 'uCS'],
+  ['xargs', 'IEdLnPs'], ['timeout', 'sk'], ['stdbuf', '']])
+// Opcje z argumentem per komenda (`grep -A 2 KLUCZ .env`, `sed -f skrypt`, `awk -F =`).
+const OPCJE_Z_ARGUMENTEM = { grep: 'efmABCdD', egrep: 'efmABCdD', fgrep: 'efmABCdD', rg: 'efmABCtgM', ag: 'fmABCG', sed: 'efl',
+  awk: 'Ffv', gawk: 'Ffv', cut: 'dfcb', head: 'nc', tail: 'nc' }
 
 /** @param {string} t @returns {boolean} */
 const czyPlikEnv = (t) => PLIK_ENV.test(t) && !WZORZEC.test(t)
@@ -36,7 +47,7 @@ function bezHeredoc(komenda) {
 }
 
 /**
- * Wycina `$(…)` i `…` (poza apostrofami) i zamienia je na znacznik `__PODSTAWIENIE_n__`.
+ * Wycina `$(…)` i `…` (poza apostrofami; apostrof w cudzyslowie to zwykly znak) i zamienia je na znacznik `__PODSTAWIENIE_n__`.
  * @param {string} s
  * @returns {{ zewnetrzna: string, podstawienia: string[] }}
  */
@@ -45,9 +56,12 @@ function wytnijPodstawienia(s) {
   const podstawienia = []
   let wynik = ''
   let apostrof = false
+  let cudzyslow = false
   for (let i = 0; i < s.length; i++) {
     const c = s[i]
-    if (c === "'" && s[i - 1] !== '\\') apostrof = !apostrof
+    if (c === '\\' && !apostrof) { wynik += c + (s[i + 1] ?? ''); i++; continue }
+    if (c === "'" && !cudzyslow) apostrof = !apostrof
+    if (c === '"' && !apostrof) cudzyslow = !cudzyslow
     const start = !apostrof && ((c === '$' && s[i + 1] === '(' && s[i + 2] !== '(') || c === '`')
     if (!start) { wynik += c; continue }
     let glebokosc = 1
@@ -64,23 +78,27 @@ function wytnijPodstawienia(s) {
   return { zewnetrzna: wynik, podstawienia }
 }
 
+const OPERATOR = /^(?:\d*>&\d+|\d*>[>|]?|&>>?|<|\|\||&&|[|;&()\n])$/
+
 /**
- * Tokeny powloki: slowa (cudzyslowy zdjete), operatory i przekierowania (`>`, `>>`, `<`, `2>`, `2>&1`).
+ * Tokeny powloki: slowa (cudzyslowy zdjete), operatory i przekierowania (`>`, `>>`, `>|`, `<`, `2>`, `2>&1`).
  * @param {string} s
- * @returns {string[]}
+ * @returns {{ tokeny: string[], reszta: string }} reszta = tekst, ktorego tokenizer nie przeczytal (niedomkniety cudzyslow)
  */
 function tokeny(s) {
   /** @type {string[]} */
   const wynik = []
-  // Odstep bez nowej linii: nowa linia rozdziela komendy jak `;`.
-  const re = /[ \t\r]*(\d*>&\d+|\d*>>?|&>>?|<|\|\||&&|[|;&()\n]|(?:[^\s|;&()<>'"\\]|\\.|'[^']*'|"(?:[^"\\]|\\.)*")+)/gy
+  // Odstep bez nowej linii: nowa linia rozdziela komendy jak `;`; `\` + nowa linia to kontynuacja.
+  const tekst = s.replace(/\\\r?\n/g, ' ')
+  const re = /[ \t\r]*(\d*>&\d+|\d*>[>|]?|&>>?|<|\|\||&&|[|;&()\n]|(?:[^\s|;&()<>'"\\]|\\.|'[^']*'|"(?:[^"\\]|\\.)*")+)/gy
   let m
-  while (re.lastIndex < s.length && (m = re.exec(s))) {
+  let koniec = 0
+  while (re.lastIndex < tekst.length && (m = re.exec(tekst))) {
+    koniec = re.lastIndex
     const t = m[1] ?? ''
-    const slowo = !/^(?:\d*>&\d+|\d*>>?|&>>?|<|\|\||&&|[|;&()\n])$/.test(t)
-    wynik.push(slowo ? t.replace(/'([^']*)'|"((?:[^"\\]|\\.)*)"|\\(.)/g, (_, a, b, c) => a ?? b ?? c) : t)
+    wynik.push(OPERATOR.test(t) ? t : t.replace(/'([^']*)'|"((?:[^"\\]|\\.)*)"|\\(.)/g, (_, a, b, c) => a ?? (b === undefined ? c : b.replace(/\\([$`"\\])/g, '$1'))))
   }
-  return wynik.filter((t) => t !== '')
+  return { tokeny: wynik.filter((t) => t !== ''), reszta: tekst.slice(koniec).trim() }
 }
 
 /** @param {string[]} t @returns {string[][][]} komendy (lista potokow, potok = lista komend) */
@@ -96,7 +114,22 @@ function potoki(t) {
   return wynik.map((p) => p.filter((k) => k.length)).filter((p) => p.length)
 }
 
-/** @param {string[]} k @returns {{ nazwa: string, argumenty: string[], plikiWe: string[], doPliku: boolean }} */
+/** @param {string[]} argumenty @returns {string[]} argumenty bez przypisan, slow powloki i opakowan (`sudo -u x`, `env -i`) */
+function bezOpakowan(argumenty) {
+  const a = [...argumenty]
+  for (;;) {
+    if (a.length && /^[A-Za-z_]\w*=/.test(a[0])) { a.shift(); continue }
+    const zArgumentem = OPAKOWANIA.get(a[0] ?? '')
+    if (zArgumentem === undefined) return a
+    a.shift()
+    while (a.length && /^-/.test(a[0])) {
+      const flaga = a.shift() ?? ''
+      if (/^-[A-Za-z]$/.test(flaga) && zArgumentem.includes(flaga[1])) a.shift()
+    }
+  }
+}
+
+/** @param {string[]} k @returns {Komenda} */
 function rozbierz(k) {
   /** @type {string[]} */
   const argumenty = []
@@ -106,81 +139,104 @@ function rozbierz(k) {
   for (let i = 0; i < k.length; i++) {
     const t = k[i]
     if (t === '<') { if (k[i + 1]) plikiWe.push(k[++i]); continue }
-    if (/^(?:\d*|&)>>?$/.test(t)) {
+    if (/^(?:\d*|&)>[>|]?$/.test(t)) {
       const cel = k[++i] ?? ''
-      if (!/^\d/.test(t) || t.startsWith('1')) doPliku = doPliku || !/^\/dev\/(?:stdout|tty)$/.test(cel)
+      if (!/^\d/.test(t) || t.startsWith('1')) doPliku = doPliku || !TERMINAL.test(cel)
       continue
     }
     if (/^\d*>&\d+$/.test(t)) continue
     argumenty.push(t)
   }
-  while (argumenty.length && (/^[A-Za-z_]\w*=/.test(argumenty[0]) || ['sudo', 'command', 'nohup', 'time', 'env'].includes(argumenty[0]))) argumenty.shift()
-  const nazwa = (argumenty.shift() ?? '').replace(/^.*\//, '')
-  return { nazwa, argumenty, plikiWe, doPliku }
+  const wlasciwe = bezOpakowan(argumenty)
+  const nazwa = (wlasciwe.shift() ?? '').replace(/^.*\//, '')
+  return { nazwa, argumenty: wlasciwe, plikiWe, doPliku, tee: nazwa === 'tee' && wlasciwe.some((a) => TERMINAL.test(a)) }
 }
 
-/** @param {string[]} a @returns {{ flagi: Set<string>, pozycyjne: string[], wzorce: string[] }} */
-function opcje(a) {
-  const flagi = new Set()
+/**
+ * @param {string} nazwa komenda (opcje z argumentem z OPCJE_Z_ARGUMENTEM)
+ * @param {string[]} a
+ * @returns {{ flagi: Map<string, string>, pozycyjne: string[], wzorce: string[] }} wzorce = `-e`; flaga `-f` = skrypt z pliku
+ */
+function opcje(nazwa, a) {
+  const zArgumentem = OPCJE_Z_ARGUMENTEM[/** @type {keyof typeof OPCJE_Z_ARGUMENTEM} */ (nazwa)] ?? ''
+  /** @type {Map<string, string>} */
+  const flagi = new Map()
   /** @type {string[]} */
   const pozycyjne = []
   /** @type {string[]} */
   const wzorce = []
   for (let i = 0; i < a.length; i++) {
     const t = a[i]
-    if (t === '-e' || t === '--regexp' || t === '--expression') { wzorce.push(a[++i] ?? ''); continue }
+    if (/^--(?:regexp|expression)$/.test(t)) { wzorce.push(a[++i] ?? ''); continue }
     if (/^--(?:regexp|expression)=/.test(t)) { wzorce.push(t.slice(t.indexOf('=') + 1)); continue }
-    if (/^--/.test(t)) { flagi.add(t.replace(/=.*$/, '')); continue }
-    if (/^-[A-Za-z]/.test(t)) {
-      const m = /^-([A-Za-z]+)(.*)$/.exec(t) ?? []
-      for (const f of m[1] ?? '') flagi.add(`-${f}`)
-      if (m[2]) flagi.add(`-${(m[1] ?? '').slice(-1)}=${m[2]}`)
-      continue
+    if (/^--/.test(t)) { flagi.set(t.replace(/=.*$/, ''), t.includes('=') ? t.slice(t.indexOf('=') + 1) : ''); continue }
+    if (!/^-[A-Za-z]/.test(t)) { pozycyjne.push(t); continue }
+    for (let j = 1; j < t.length; j++) {
+      const f = t[j]
+      if (!zArgumentem.includes(f)) { flagi.set(`-${f}`, ''); continue }
+      const wartosc = t.slice(j + 1) || (a[++i] ?? '')
+      if (f === 'e') wzorce.push(wartosc)
+      else flagi.set(`-${f}`, wartosc)
+      break
     }
-    pozycyjne.push(t)
   }
   return { flagi, pozycyjne, wzorce }
 }
 
-/** @param {string} p @returns {boolean} wzorzec grep -o, ktory nie obejmie calej wartosci po `=` */
+/** @param {string} p @returns {boolean} wzorzec grep -o, ktory nie obejmie wartosci po `=` (najwyzej kilka znakow, np. host) */
 function wzorzecBezWartosci(p) {
   const i = p.indexOf('=')
-  if (i === -1) return !/(?:^|[^\\])\.|\[\^|\\[SW]/.test(p)
-  return !/(?:^|[^\\])[*+]|\{\d*,\}/.test(p.slice(i + 1))
+  if (i === -1) return !/(?:^|[^\\])\.|\[\^|\[\[:(?:graph|print|alnum|punct):\]\]|\\[SWw]/.test(p)
+  return !/(?:^|[^\\])[*+]|\{\d*,\d*\}|\{\d{2,}\}/.test(p.slice(i + 1))
 }
 
-// Skrypt sed usuwajacy wartosci: podstawienie `=.*` na tekst bez `&` (np. na pusty albo `=<…>`) i usuwanie linii `/^#/d`.
-/** @param {string} skrypt @returns {boolean} */
+// Podstawienie usuwajace wartosc kazdej linii: lewa strona to `=.*` z prefiksem pustym, `^` albo klasa nazwy klucza, prawa bez `&`.
+const PREFIKS_KLUCZA = String.raw`\^?(?:\\?\(?\[[A-Za-z0-9_-]+\][*+]\\?\)?)?`
+const PODSTAWIENIE = new RegExp(String.raw`^s(.)(${PREFIKS_KLUCZA})=\.\*\1([^]*?)\1[gp]*$`)
+
+/** @param {string} skrypt @returns {boolean} skrypt sed z podstawieniem usuwajacym wartosci; usuwanie linii (`/^#/d`) tylko obok niego */
 function sedBezWartosci(skrypt) {
-  return skrypt.split(/[;\n]/).map((s) => s.trim()).filter(Boolean).every((s) => {
-    const m = /^s(.)(.*?)=\.\*\1(.*?)\1g?$/.exec(s)
-    return (m && !(m[3] ?? '').includes('&')) || /^\/.*\/d$/.test(s) || /^\d+d$/.test(s)
-  })
+  const polecenia = skrypt.split(/[;\n]/).map((s) => s.trim()).filter(Boolean)
+  const podstawienie = (/** @type {string} */ s) => {
+    const m = PODSTAWIENIE.exec(s)
+    return Boolean(m && !(m[3] ?? '').includes('&') && !(m[3] ?? '').includes(m[1] ?? '/'))
+  }
+  return polecenia.some(podstawienie) && polecenia.every((s) => podstawienie(s) || /^\/[^/]*\/d$/.test(s) || /^\d+d$/.test(s))
 }
 
 /**
  * Komenda z potoku nie wypisuje wartosci: liczy, sprawdza obecnosc, zostawia nazwy kluczy albo ucina wartosc.
- * @param {{ nazwa: string, argumenty: string[] }} k
+ * @param {Komenda} k
  * @param {boolean} zPliku true = komenda sama czyta plik .env (inaczej filtr na wyjsciu poprzedniej komendy)
  * @returns {boolean}
  */
 function bezWartosci(k, zPliku) {
-  const { flagi, pozycyjne, wzorce } = opcje(k.argumenty)
+  const { flagi, pozycyjne, wzorce } = opcje(k.nazwa, k.argumenty)
   if (GREP.has(k.nazwa)) {
     if (['-c', '-l', '-L', '-q', '--count', '--files-with-matches', '--files-without-match', '--quiet'].some((f) => flagi.has(f))) return true
+    if (flagi.has('-f')) return false
     const wzorzec = wzorce[0] ?? pozycyjne[0] ?? ''
     return (flagi.has('-o') || flagi.has('--only-matching')) && wzorzecBezWartosci(wzorzec)
   }
   if (k.nazwa === 'sed') {
     if (flagi.has('-i') && zPliku) return true
+    if (flagi.has('-f')) return false
     const skrypty = wzorce.length ? wzorce : pozycyjne.slice(0, 1)
     return skrypty.length > 0 && skrypty.every(sedBezWartosci)
   }
-  const separatorRowna = [...flagi].some((f) => /^-[dF]==$/.test(f)) || /(?:^|\s)-[dF]\s*=(?:\s|$)/.test(k.argumenty.join(' '))
-    || k.argumenty.some((a, i) => /^-[dF]$/.test(a) && k.argumenty[i + 1] === '=')
-  if (k.nazwa === 'cut') return separatorRowna && k.argumenty.some((a, i) => a === '-f1' || (a === '-f' && k.argumenty[i + 1] === '1'))
-  if (k.nazwa === 'awk' || k.nazwa === 'gawk') return separatorRowna && k.argumenty.some((a) => /^\{?\s*print \$1;?\s*\}?$/.test(a))
+  const separator = flagi.get('-d') ?? flagi.get('-F')
+  if (k.nazwa === 'cut') return separator === '=' && flagi.get('-f') === '1'
+  if (k.nazwa === 'awk' || k.nazwa === 'gawk') {
+    return separator === '=' && !flagi.has('-f') && /^(?:!?\/[^/]*\/)?\s*\{\s*print \$1;?\s*\}$/.test(pozycyjne[0] ?? '')
+  }
   return ['wc', 'true', 'test', '['].includes(k.nazwa) && !zPliku
+}
+
+/** @param {Komenda} k @returns {string[]} pliki czytane przez komende (argumenty pozycyjne poza wzorcem i skryptem, wejscie `<`) */
+function plikiKomendy(k) {
+  const { flagi, pozycyjne, wzorce } = opcje(k.nazwa, k.argumenty)
+  const pierwszyToWzorzec = (GREP.has(k.nazwa) || ['sed', 'awk', 'gawk', 'jq'].includes(k.nazwa)) && !wzorce.length && !flagi.has('-f')
+  return [...(pierwszyToWzorzec ? pozycyjne.slice(1) : pozycyjne), ...k.plikiWe]
 }
 
 /**
@@ -190,20 +246,30 @@ function bezWartosci(k, zPliku) {
  */
 export function ocenKomende(komenda, wypisuje = true) {
   const { zewnetrzna, podstawienia } = wytnijPodstawienia(bezHeredoc(komenda))
-  for (const potok of potoki(tokeny(zewnetrzna))) {
+  const { tokeny: t, reszta } = tokeny(zewnetrzna)
+  // Tekst, ktorego tokenizer nie przeczytal (niedomkniety cudzyslow), z odwolaniem do .env = blokada zamiast cichego konca.
+  const nieprzeczytany = /(?:^|[\s/'"])\.env/.exec(reszta)
+  if (wypisuje && nieprzeczytany) return { blokada: true, plik: '.env*', komenda: reszta.slice(0, 80) }
+  for (const potok of potoki(t)) {
     const komendy = potok.map(rozbierz)
     for (const [i, k] of komendy.entries()) {
       for (const n of k.argumenty.flatMap((a) => [...a.matchAll(/__PODSTAWIENIE_(\d+)__/g)].map((m) => Number(m[1])))) {
         const wnetrze = ocenKomende(podstawienia[n] ?? '', WYPISUJACE.has(k.nazwa))
         if (wnetrze.blokada) return wnetrze
       }
+      if (['bash', 'sh', 'zsh', 'eval'].includes(k.nazwa)) {
+        const kod = k.nazwa === 'eval' ? k.argumenty.join(' ') : (k.argumenty[k.argumenty.indexOf('-c') + 1] ?? '')
+        const wnetrze = k.nazwa === 'eval' || k.argumenty.includes('-c') ? ocenKomende(kod, wypisuje) : null
+        if (wnetrze?.blokada) return wnetrze
+      }
       if (!wypisuje || !CZYTAJACE.has(k.nazwa)) continue
-      const { pozycyjne } = opcje(k.argumenty)
-      const pliki = [...(GREP.has(k.nazwa) || ['sed', 'awk', 'gawk', 'jq'].includes(k.nazwa) ? pozycyjne.slice(1) : pozycyjne), ...k.plikiWe]
-      const plik = pliki.find(czyPlikEnv)
+      const plik = plikiKomendy(k).find(czyPlikEnv)
       if (!plik || bezWartosci(k, true)) continue
       const dalej = komendy.slice(i + 1)
-      if (dalej.some((d) => bezWartosci(d, false)) || [k, ...dalej].some((d) => d.doPliku)) continue
+      const maska = dalej.findIndex((d) => bezWartosci(d, false))
+      const przedMaska = maska === -1 ? dalej : dalej.slice(0, maska)
+      if (przedMaska.some((d) => d.tee)) return { blokada: true, plik, komenda: [k.nazwa, ...k.argumenty].join(' ') }
+      if (maska !== -1 || [k, ...dalej].some((d) => d.doPliku)) continue
       return { blokada: true, plik, komenda: [k.nazwa, ...k.argumenty].join(' ') }
     }
   }
