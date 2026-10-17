@@ -25,7 +25,7 @@ export function rejestrStalych(md) {
   const wiersze = []
   for (const linia of sekcja.split('\n')) {
     if (!/^\s*\|/.test(linia) || /^\s*\|\s*:?-{3,}/.test(linia)) continue
-    const komorki = linia.trim().replace(/^\||\|$/g, '').split('|')
+    const komorki = linia.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/)
     if (komorki.length < 4 || /^\s*Sta[lł]a\s*$/i.test(komorki[0])) continue
     const konsumenci = [...komorki[3].replace(/\([^)]*\)/g, '').matchAll(/\bIU-(\d+)\b/g)].map((m) => Number(m[1]))
     wiersze.push({ stala: bezBacktickow(komorki[0]), zrodlo: bezBacktickow(komorki[2]), konsumenci })
@@ -34,8 +34,8 @@ export function rejestrStalych(md) {
 }
 
 /**
- * Stala, ktorej IU-zrodlo jest w fazie wczesniejszej niz wszyscy konsumenci (IU-zrodlo na liscie konsumentow = uzywa jej
- * w swojej fazie). IU-zrodlo = pierwsza IU z plikiem zrodla w tabeli plikow, ktorej opis (Cel, Podejscie) wymienia stala;
+ * Stala, ktorej IU-zrodlo jest w fazie wczesniejszej niz wszyscy konsumenci (IU-zrodlo na liscie konsumentow = konsument
+ * w jej fazie, wiec bez uwagi). IU-zrodlo = pierwsza IU z plikiem zrodla w tabeli plikow, ktorej opis (Cel, Podejscie) wymienia stala;
  * bez takiej — pierwsza IU z tym plikiem. Jedna uwaga na IU-zrodlo, z lista stalych i najwczesniejszym konsumentem.
  * @param {Plan} plan
  * @param {Jednostka[]} jednostki IU planu w kolejnosci pliku
@@ -51,7 +51,7 @@ export function uwagiRejestru(plan, jednostki) {
     const zPlikiem = jednostki.filter((iu) => iu.pliki.some((p) => p.sciezka === zrodlo))
     const iuZrodlo = zPlikiem.find((iu) => iu.opis.includes(stala)) ?? zPlikiem[0]
     const fazyKonsumentow = konsumenci.map((n) => faza.get(n)).filter((f) => typeof f === 'number')
-    if (!iuZrodlo || iuZrodlo.faza === null || konsumenci.includes(iuZrodlo.numer) || !fazyKonsumentow.length) continue
+    if (!iuZrodlo || iuZrodlo.faza === null || !fazyKonsumentow.length) continue
     const pierwsza = Math.min(...fazyKonsumentow)
     if (pierwsza <= iuZrodlo.faza) continue
     const wpis = zaWczesnie.get(iuZrodlo) ?? { stale: [], pierwszy: pierwsza }

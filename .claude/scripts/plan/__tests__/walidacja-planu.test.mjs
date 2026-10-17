@@ -310,3 +310,41 @@ test('rejestr stalych: parser czyta tabele sekcji (naglowek i separator pominiet
     { stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [1, 2] },
   ])
 })
+
+test('rejestr stalych: faza konsumentow liczona od najwczesniejszego; konsument innej IU w fazie zrodla = bez uwagi', () => {
+  // IU-3 jest w fazie 2 razem z IU-2, IU-1 w fazie 1: konsumenci z faz 1 i 2 przy zrodle w fazie 1 spoza listy — bez uwagi.
+  assert.deepEqual(sprawdz(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-3, IU-1'))).uwagi, [])
+  const plik = '| Stwórz | `src/services/oferty-statusy.ts` | 0 → 15 | — | nowy |'
+  const zrodloWFazie2 = zmien(plik, '| Stwórz | `src/services/oferty-limity.ts` | 0 → 15 | — | nowy |',
+    zmien('| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |',
+      '| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |\n| Stwórz | `src/services/oferty-statusy.ts` | 0 → 15 | — | nowy |'))
+  assert.deepEqual(sprawdz(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-2'), zrodloWFazie2)).uwagi.filter((u) => /stałe z rejestru/.test(u)), [],
+    'zrodlo w IU-3 (faza 2) i konsument IU-2 w tej samej fazie')
+})
+
+test('rejestr stalych: IU-zrodlo = IU z plikiem, ktorej opis wymienia stala; dwie stale jednej IU w jednej uwadze', () => {
+  // Plik zrodla w IU-1 (faza 1) i IU-3 (faza 2); definicje w Podejsciu IU-3 — zrodlem jest IU-3, konsument IU-2 w fazie 2.
+  const dopisz = (/** @type {string} */ md) => zmien('| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |',
+    '| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |\n| Modyfikuj | `src/services/oferty-statusy.ts` | 15 → 20 | — | zostaje |', md)
+  const wiersze = `${WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-2')}\n| \`LIMIT_OFERT\` | \`20\` | \`src/services/oferty-statusy.ts\` | IU-3 |`
+  const zOpisem = zmien('**Cel:** Strona publiczna opublikowanej oferty.', '**Cel:** Strona publiczna opublikowanej oferty; STATUSY_OFERTY i LIMIT_OFERT.',
+    dopisz(zmien(WIERSZ_STALEJ, wiersze)))
+  const uwagi = sprawdz(zOpisem).uwagi.filter((u) => /stałe z rejestru/.test(u))
+  assert.deepEqual(uwagi, [], 'zrodlo z opisu (IU-3) jest w fazie konsumentow')
+  const bezOpisu = sprawdz(dopisz(zmien(WIERSZ_STALEJ, `${wiersze}\n| \`MAKS_ZDJEC\` | \`5\` | \`src/services/oferty-statusy.ts\` | IU-2 |`))).uwagi
+  assert.deepEqual(bezOpisu.filter((u) => /stałe z rejestru/.test(u)).map((u) => u.slice(0, u.indexOf(', a ich'))),
+    ['IU-1 (faza 1) definiuje stałe z rejestru STATUSY_OFERTY, LIMIT_OFERT, MAKS_ZDJEC'])
+})
+
+test('rejestr stalych: kreska w backtickach (unia typow, \\|) nie przesuwa kolumn', () => {
+  const md = zmien(WIERSZ_STALEJ, "| `STATUSY_OFERTY` | `'szkic' \\| 'opublikowana'` | `src/services/oferty-statusy.ts` | IU-2 |")
+  assert.deepEqual(parsujPlan(md).rejestr, [{ stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [2] }])
+})
+
+test('rejestr stalych: uwaga scalona na IU-zrodlo podaje najwczesniejsza faze konsumentow wszystkich jej stalych', () => {
+  const trzyFazy = zmien('- [ ] **IU-3: Adres publiczny oferty**', '### Faza 3 — Adres publiczny\n\n**Zależy od:** Faza 2\n\n- [ ] **IU-3: Adres publiczny oferty**')
+  const wiersze = `${WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-3')}\n| \`LIMIT_OFERT\` | \`20\` | \`src/services/oferty-statusy.ts\` | IU-2 |`
+  const uwagi = sprawdz(zmien(WIERSZ_STALEJ, wiersze, trzyFazy)).uwagi.filter((u) => /stałe z rejestru/.test(u))
+  assert.equal(uwagi.length, 1)
+  assert.match(uwagi[0], /^IU-1 \(faza 1\) definiuje stałe z rejestru STATUSY_OFERTY, LIMIT_OFERT, a ich konsumenci zaczynają się w fazie 2 /)
+})
