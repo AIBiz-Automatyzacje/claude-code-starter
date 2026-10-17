@@ -74,7 +74,7 @@ Datę do plików bierz z `date +%F`.
 
    ## 0. Przygotowanie (5 min)
    > ⚠️ Sprawdź projekt Supabase PRZED startem: `.env`/`.env.local` ma wskazywać projekt <GŁÓWNY/dev> (marker: nazwa projektu / pierwsze znaki ref), NIE środowisko E2E (<ref e2e>) — na e2e backend jest pusty.
-   - [ ] `grep SUPABASE_URL .env .env.local` → wskazuje <marker>
+   - [ ] `grep -oE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local` → wskazuje <marker>
    - [ ] Dev server uruchomiony (`<pm> run dev`), aplikacja otwiera się na localhost:5173
    - [ ] Zaloguj się kontem testowym (<nazwa zmiennej z hasłem — NIGDY wartość>)
    **Co będzie potrzebne w trakcie:** <dane/stany: konto z danymi, drugie konto, rekordy testowe…>

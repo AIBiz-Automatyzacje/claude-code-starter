@@ -482,7 +482,9 @@ projektu zostawiłby niezacommitowane pliki, a te zatrzymują start następnego 
 - **`.claude/scripts/wiedza/`** — wiedza projektu: walidacja pól solutions, indeks `docs/learned-patterns.md`, wycinek reguł, zdania klas zapobiegalnych dla buildera (`zapobieganie.mjs`), konwersja
   starego pliku reguł (CLI `wiedza.mjs`); patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd).
 - **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi). `error-handling-reminder.sh` wyłącza się
-  w projekcie z `eslint.config.*` z szablonu (tam to samo łapie ESLint w bramkach).
+  w projekcie z `eslint.config.*` z szablonu (tam to samo łapie ESLint w bramkach). `env-wartosci.mjs` (PreToolUse, Bash)
+  blokuje komendę, która wypisałaby wartości z `.env*` (`cat`, `grep`, `sed`, `head`… bez ograniczenia do nazw kluczy); nazwy
+  kluczy, `grep -c`/`-q`, wczytanie do zmiennej (`set -a; . .env.e2e`, `T=$(… | cut -d= -f2-)`) i pliki `.env*.example` przechodzą.
 - **`.claude/scripts/bramki/`** + **`.claude/templates/bramki/`** — skrypt bramek domknięcia fazy i konfiguracje dla nowego projektu
   (ESLint, knip, size-limit, Stryker, lista devDependencies); patrz [Bramki domknięcia](#bramki-domknięcia).
 - **`.claude/templates/e2e-env/`** — opcjonalne środowisko E2E (agent-browser na dedykowanej bazie Supabase e2e). Opt-in przez `.env.e2e`.

@@ -55,7 +55,7 @@ która bez niej nie ruszy; `[blokuje: faza 1]` = gotowe przed startem autopilota
 - [ ] **<Co zrobić>** — **[blokuje: faza N]** (IU-K)
   - Po co: <co się stanie bez tego>
   - Jak: <gdzie wejść, co kliknąć, jaką wartość skopiować, do jakiej zmiennej>
-  - Dowód: <komenda lub obserwacja, np. `grep GOOGLE_CLIENT_ID .env.local` zwraca wartość>
+  - Dowód: <komenda lub obserwacja, np. `grep -c '^GOOGLE_CLIENT_ID=.' .env.local` zwraca 1>
 
 ## 2. Środowisko E2E
 

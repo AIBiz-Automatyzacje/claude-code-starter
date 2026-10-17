@@ -215,7 +215,7 @@ Kolejność: <notatka, gdy pozycje zależą od siebie>
 - [ ] 🔒 **<Co zrobić>**
   - Po co: <co się stanie bez tego>
   - Jak: <gdzie wejść, co skopiować, do jakiej zmiennej>
-  - Dowód: `grep <NAZWA_ZMIENNEJ> .env.local` zwraca wartość
+  - Dowód: `grep -c '^<NAZWA_ZMIENNEJ>=.' .env.local` zwraca 1
 
 ## 3. Assety i treści
 
