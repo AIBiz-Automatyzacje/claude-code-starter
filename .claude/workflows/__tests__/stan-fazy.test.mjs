@@ -129,7 +129,7 @@ function liniaAgenta(etykieta) {
 }
 
 const NASTEPCY = [
-  ["'e2e:start'", 'E2E_START'], ['`fix:faza-${numerFazy}:porcja-${i + 1}`', 'FIX_RESULT'], ["'walidacja-koncowa'", 'VALIDATION_RESULT'],
+  ["'e2e:start'", 'E2E_START'], ['`fix:faza-${numerFazy}`', 'FIX_RESULT'], ["'walidacja-koncowa'", 'VALIDATION_RESULT'],
   ["'e2e:env-down'", 'E2E_DOWN_RESULT'], ["'compound-refresh'", 'REFRESH_RESULT'], ["'stop:commit-artefaktow'", 'COMMIT_ARTEFAKTOW'],
 ]
 
@@ -158,10 +158,9 @@ test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika
   // 14 miejsc mapy minus execute (zapisuje domkniecie) plus STOP po execute, gdy domkniecie zapisalo juz stan „done”;
   // P8: minus STOP verify-fix (agent usuniety, K-6 kontroli fixa daje pozycje do poprawki zamiast STOP-u) = 13;
   // P8 sesja 2: plus stan bez P3 po zapisie known-issues (stan sprzed P8, odlozP3ZeStanu) = 14;
-  // P14: minus dwa STOP-y E2E w trakcie runu (bloker srodowiska, pad testera) — scenariusze ida na [Manual], run idzie dalej = 12;
-  // P21 B1: plus postep fixa po kazdej porcji (fixPostep) = 13
+  // P14: minus dwa STOP-y E2E w trakcie runu (bloker srodowiska, pad testera) — scenariusze ida na [Manual], run idzie dalej = 12
   const kod = zrodlo.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')
-  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 13)
+  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 12)
   assert.equal(zrodlo.match(/label: 'stan:zapis'/g)?.length, 1)
 })
 
@@ -181,7 +180,6 @@ test('wiring: zalegly stan idzie do stan:zapis przed kazdym pod-workflowem (miej
 // eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
 const PLAN_STATE = new Function(
   `${wytnij('const FINDING_OTWARTY = {', '\n}')}
-   ${wytnij('const FIX_POSTEP = {', '\n}')}
    ${wytnij('const METRYKI_FAZY = {', '\n}')}
    ${wytnij('const PLAN_STATE = {', '\n}')}
    return PLAN_STATE`,
@@ -195,15 +193,6 @@ test('PLAN_STATE: baza fazy przechodzi przez bootstrap (string albo null), stan 
   assert.equal(faza(bezBazy), true)
   assert.equal(baza, 'abc1234')
   assert.match(wytnij('function bootstrapPrompt(', '\n}'), /Pole "baza" fazy \(jesli obecne\) przepisz 1:1/)
-})
-
-test('PLAN_STATE: postep fixa porcjami (P21 B1) przechodzi przez bootstrap; stan bez pola i z null — poprawny', () => {
-  const faza = new Ajv({ strict: false }).compile(PLAN_STATE.properties.fazy.items)
-  const suma = { naprawione: 5, pozostaje: 1, nierozwiazaneP2: 1, commity: ['abc1234'], nienaprawione: ['[P2] src/a.ts:3 — opis'] }
-  assert.equal(faza({ ...STAN.fazy[0], fixPostep: { porcje: 3, gotowe: 1, suma } }), true, JSON.stringify(faza.errors))
-  assert.equal(faza({ ...STAN.fazy[0], fixPostep: null }), true)
-  assert.equal(faza({ ...STAN.fazy[0], fixPostep: { porcje: 3, gotowe: 1 } }), false, 'bez sumy wznowienie nie zna commitow wczesniejszych porcji')
-  assert.match(wytnij('function bootstrapPrompt(', '\n}'), /Pole "fixPostep" fazy \(jesli obecne\) przepisz 1:1/)
 })
 
 const zrodloReview = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
@@ -252,9 +241,8 @@ test('blokZwinieciaDoPoprawy: sekcja i raport fazy z JS; zaznaczone wiersze zwij
 
 test('wiring: zwiniecie w poleceniu fixa przed commitem; agent zwin-do-poprawy znika', () => {
   const fix = wytnij('function fixPrompt(', '\n}')
-  // P21 B1: zwija ostatnia porcja fixa (`${ostatnia ? blokZwinieciaDoPoprawy(...) : ...}`)
-  assert.ok(fix.indexOf('blokZwinieciaDoPoprawy(sciezka, numerFazy)') < fix.indexOf('Kolejnosc: KOD -> TEST -> E2E. Po naprawach'))
-  assert.notEqual(fix.indexOf('blokZwinieciaDoPoprawy(sciezka, numerFazy)'), -1)
+  assert.ok(fix.indexOf('${blokZwinieciaDoPoprawy(sciezka, numerFazy)}') < fix.indexOf('Kolejnosc: KOD -> TEST -> E2E. Po naprawach'))
+  assert.notEqual(fix.indexOf('${blokZwinieciaDoPoprawy(sciezka, numerFazy)}'), -1)
   assert.doesNotMatch(zrodlo, /zwin-do-poprawy|Zwin ZAMKNIETE pozycje/)
 })
 

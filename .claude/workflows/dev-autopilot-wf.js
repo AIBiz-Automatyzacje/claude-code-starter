@@ -63,30 +63,6 @@ const FINDING_OTWARTY = {
   required: ['severity', 'typ', 'plik', 'opis'],
 }
 
-// Postep fixa porcjami (P21 B1): swiezy run po STOP-ie w trakcie fixa zaczyna od pierwszej porcji, ktorej wynik nie trafil
-// do stanu; `suma` = zlozony wynik zrobionych porcji (commity do kontroli fixa, nienaprawione do known-issues ostatniej porcji).
-const FIX_POSTEP = {
-  type: ['object', 'null'],
-  additionalProperties: false,
-  properties: {
-    porcje: { type: 'integer', description: 'liczba porcji fixa fazy' },
-    gotowe: { type: 'integer', description: 'ile porcji (od pierwszej) zakonczylo sie wynikiem bez STOP-u' },
-    suma: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        naprawione: { type: 'integer' },
-        pozostaje: { type: 'integer' },
-        nierozwiazaneP2: { type: 'integer' },
-        commity: { type: 'array', items: { type: 'string' } },
-        nienaprawione: { type: 'array', items: { type: 'string' } },
-      },
-      required: ['naprawione', 'pozostaje', 'nierozwiazaneP2', 'commity', 'nienaprawione'],
-    },
-  },
-  required: ['porcje', 'gotowe', 'suma'],
-}
-
 // Metryki fazy utrwalane w .autopilot-state.json (2026-07-26). Powod: telemetria ma dawac dane do
 // strojenia progow (routing, dedup, sceptycy), a przy resume review sie NIE powtarza — bez utrwalenia
 // wpis telemetrii mial null. Schemat MUSI istniec tu, bo stan przechodzi przez bootstrap-agenta
@@ -221,8 +197,6 @@ const PLAN_STATE = {
           metryki: METRYKI_FAZY,
           // Baza fazy z execute-wf (P7) — poza `required`, bo stany sprzed P7 jej nie maja.
           baza: { type: ['string', 'null'], description: 'SHA HEAD przed builderami fazy; null = nieznana' },
-          // Postep fixa porcjami (P21 B1) — poza `required`, bo stany sprzed P21 go nie maja.
-          fixPostep: FIX_POSTEP,
         },
         required: ['numer', 'nazwa', 'execute', 'review', 'fix', 'otwarteFindingi'],
       },
@@ -392,7 +366,7 @@ const FIX_RESULT = {
     },
     stanZapisany: POLE_STANU,
   },
-  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'nienaprawione', 'plikiBinarne', 'stanZapisany'],
+  required: ['naprawione', 'pozostaje', 'walidacja', 'nierozwiazaneP1', 'nierozwiazaneP2', 'plikiBinarne', 'stanZapisany'],
 }
 
 const VALIDATION_RESULT = {
@@ -451,7 +425,6 @@ Folder zadania: ${sciezka}
       Pole "metryki" fazy (jesli obecne) PRZEPISZ 1:1 — nie licz go sam, nie uzupelniaj, nie zeruj;
       to zapis telemetrii z runu, w ktorym review sie odbylo. Gdy pola nie ma, pomin je (null).
       Pole "baza" fazy (jesli obecne) przepisz 1:1 — od niej review liczy diff fazy po wznowieniu. Gdy pola nie ma, pomin je.
-      Pole "fixPostep" fazy (jesli obecne) przepisz 1:1 — od niego fix porcjami wznawia sie po STOP-ie. Gdy pola nie ma, pomin je.
       Pole "bazaZielona" (jesli obecne i nie null) przepisz 1:1 i ustaw wejscie.kodJakPrzyTescie:
       \`git diff --quiet <bazaZielona.sha> HEAD -- . ':(exclude)docs' && echo TAK || echo NIE\` -> TAK = true, NIE = false.
       zrodloStanu = "state-json". Dodatkowo porownaj informacyjnie z plikami (np. istnieje
@@ -644,22 +617,11 @@ do domkniecia zadania i do smoke'u operatora. Pozostale sekcje pliku, w tym "## 
 Plik zadan czytaja kolejne fazy, a pelna tresc findingow jest w raporcie review — w pliku zadan wystarczy slad cyklu fix.`
 }
 
-// P21 B1: fix porcjami w swiezym kontekscie. Jeden agent na 12–20 findingow fazy rosl do 264–345k kontekstu (vibersi etap 3,
-// 0,18 M na finding); porcja = findingi kilku plikow (do MAKS_W_PORCJI_FIXA), kazda swoim agentem i commitem o tym samym temacie.
-// `porcja` = {numer, z, poprzednie}: poprzednie = nienaprawione[] wczesniejszych porcji (do known-issues w ostatniej); null = jedna porcja.
-function fixPrompt(sciezka, numerFazy, otwarteFindingi, srodowiskoE2E, porcja = null) {
-  const p = porcja || { numer: 1, z: 1, poprzednie: [] }
-  const ostatnia = p.numer === p.z
-  const p2Poprzednich = (p.poprzednie || []).filter((n) => /\[P2\]/.test(String(n)))
+function fixPrompt(sciezka, numerFazy, otwarteFindingi, srodowiskoE2E) {
   return `Jestes czescia pipeline'u dev-autopilot. Naprawiasz problemy z review fazy ${numerFazy}.
 WAZNE: to JEDYNY przebieg fix tej fazy — po nim NIE ma ponownego review. Twoj raport jest
 OSTATECZNYM zrodlem prawdy o stanie findingow, wiec klasyfikuj uczciwie czego nie zamknales.
-${p.z > 1 ? `
-PORCJA ${p.numer} z ${p.z}: lista nizej to findingi tej porcji (kilka plikow). Findingi innych porcji naprawiaja kolejni agenci,
-kazdy swoim commitem — ich findingow nie naprawiasz; ich pliki otwierasz, gdy wymaga tego twoja poprawka (wspolny plik, test).
-nierozwiazaneP2 i nienaprawione[] dotycza tylko findingow tej porcji. Defekt nieobecny w pliku (poprawiony wczesniej albo
-recznie po STOP-ie), liczysz jako zamkniety bez zmiany kodu i piszesz o tym jedno zdanie w raporcie.
-` : ''}
+
 Folder zadania: ${sciezka}
 Numer fazy: ${numerFazy}
 
@@ -725,7 +687,7 @@ ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji ze
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
 walidacja koncowa audytuje git diff testow w commitach fix i zglosi kazda taka zmiane.
 
-${ostatnia ? blokZwinieciaDoPoprawy(sciezka, numerFazy) : `Sekcji "## Do poprawy po review fazy ${numerFazy}" nie zwijasz — zwija ja ostatnia porcja fixa tej fazy.`}
+${blokZwinieciaDoPoprawy(sciezka, numerFazy)}
 
 Kolejnosc: KOD -> TEST -> E2E. Po naprawach: pelna walidacja (typecheck, test, build —
 komendy z package.json), commit \`fix(${sciezka.split('/').pop()}): poprawki po review fazy ${numerFazy}\` (temat dokladnie taki — walidacja koncowa po nim rozpoznaje commity fixa),
@@ -733,8 +695,9 @@ staguj tylko zmienione pliki.
 ${BLOK_DLUGIE_KOMENDY}
 
 GUARD PLIKOW BINARNYCH (po naprawach i commicie, ZANIM zwrocisz wynik — obowiazkowy):
-zakres = commity, ktore wlasnie utworzyles (te same, ktore raportujesz w commity[]) —
-uruchom \`git diff --numstat <najstarszy z nich>^..HEAD\`; gdy nic nie zacommitowales: \`git diff --numstat HEAD\`.
+zakres = commity fix tej fazy, ktore wlasnie utworzyles (te same, ktore raportujesz w commity[];
+znajdziesz je tak jak walidacja koncowa: \`git log --oneline --grep="^fix("\`) —
+uruchom \`git diff --numstat <pierwszy-commit-fixa>^..HEAD\`; gdy nic nie zacommitowales: \`git diff --numstat HEAD\`.
 Plik, ktory git widzi jako binarny, ma w numstat "-" zamiast liczb dodanych/usunietych linii.
 Do plikiBinarne[] wpisz KAZDY taki plik POZA legalnymi binariami (.png .jpg .jpeg .gif .webp .avif
 .ico .bmp, .woff .woff2 .ttf .otf, .pdf .zip .gz .mp4 .mp3, bun.lockb) — plik zrodlowy lub tekstowy
@@ -746,15 +709,11 @@ uzywaj WYLACZNIE sekwencji ucieczki.
 NIE probuj naprawiac takiego pliku w tym przebiegu — jego Read zabije rowniez CIEBIE. Zwroc go na liscie.
 Gdy nic nie znalazles, zwroc pusta liste (pole jest obowiazkowe: brak listy = orkiestrator nie wie, czy sprawdziles).
 
-NIENAPRAWIONE: kazdy finding, ktorego nie zamknales, ma wpis w nienaprawione[] w formacie "[P1] <plik:linia> — <opis>"
-albo "[P2] <plik:linia> — <opis>" (opis: defekt i jedno zdanie, co stoi na przeszkodzie).
-${ostatnia ? `${p2Poprzednich.length ? `Nierozwiazane P2 poprzednich porcji tej fazy (z ich raportow) — tez ida do known-issues:
-${p2Poprzednich.map((n) => `- ${n}`).join('\n')}
-` : ''}KNOWN-ISSUES (graceful — bez osobnego agenta): jesli ZOSTAJA P2 ktorych NIE udalo sie naprawic
+KNOWN-ISSUES (graceful — bez osobnego agenta): jesli ZOSTAJA P2 ktorych NIE udalo sie naprawic
 (a zero nierozwiazanych P1), zapisz je do ${sciezka}/known-issues.md. Dedup: jesli sekcja
 "## Faza ${numerFazy}" juz istnieje — ZASTAP jej cala tresc (od naglowka do nastepnego "## " lub konca pliku),
 NIE dopisuj duplikatu. Format: "## Faza ${numerFazy}\\nPozostaje N problemow P2 po fixie. Review: review-faza-${numerFazy}.md\\n- 🟠 [P2] plik — opis".
-Po zapisie plik ma DOKLADNIE jeden naglowek "## Faza ${numerFazy}".` : `KNOWN-ISSUES zapisuje ostatnia porcja fixa tej fazy z wpisow [P2] w nienaprawione[] — ${sciezka}/known-issues.md nie ruszasz.`}
+Po zapisie upewnij sie ze jest DOKLADNIE jeden naglowek "## Faza ${numerFazy}".
 Jesli nierozwiazany P2 jest typu E2E: w KAZDEJ zrodlowej linii "- [ ] Test: [E2E] ..." / "- [ ] Weryfikacja: [E2E] ..."
 tej fazy wskazujacej ten flow ZASTAP istniejacy suffix "(SKIP — …)"/"(FAIL: …)" (jesli jest) JEDNYM nowym
 " (FAIL: <skrot bledu z przebiegu> — known-issues faza ${numerFazy})" — na linii ma byc dokladnie jeden suffix; NIE odznaczaj jej.
@@ -763,62 +722,8 @@ niego operator dostalby falszywa instrukcje "odpal lub zmien na [Manual]" dla zn
 
 Dzialaj autonomicznie, nie pytaj usera. Zwroc obiekt FixResult — KRYTYCZNE pola (orkiestrator gate'uje
 z nich, bez re-review): nierozwiazaneP1 (P1 ktorych NIE zamknales -> orkiestrator zrobi STOP),
-nierozwiazaneP2 (P2 ${p.z > 1 ? 'tej porcji, ktorych nie zamknales' : 'przeniesione do known-issues'}), walidacja (PASS/FAIL pelnej walidacji),
+nierozwiazaneP2 (P2 przeniesione do known-issues), walidacja (PASS/FAIL pelnej walidacji),
 plikiBinarne (pliki zrodlowe, ktore przestaly byc tekstem -> orkiestrator zrobi STOP).`
-}
-
-// P21 B1: porcje fixa. Grupa = findingi jednego pliku (bez :linia); grupy z P1 ida pierwsze (kolejnosc P1 -> P2 z polecenia fixa),
-// dalej po pliku. Grupy ukladane po kolei do pierwszej porcji, w ktorej jest miejsce (do `maks`); grupa wieksza niz `maks` dzielona
-// na rowne kawalki. Porcje sa liczone z otwarteFindingi stanu, wiec swiezy run po STOP-ie dostaje te same porcje.
-const MAKS_W_PORCJI_FIXA = 6
-function plikBezLinii(plik) {
-  return String(plik || '').replace(/:\d.*$/, '').trim()
-}
-function porcjujFix(findingi, maks = MAKS_W_PORCJI_FIXA) {
-  const grupy = new Map()
-  for (const f of findingi) {
-    const klucz = plikBezLinii(f.plik)
-    if (!grupy.has(klucz)) grupy.set(klucz, [])
-    grupy.get(klucz).push(f)
-  }
-  const maP1 = (g) => g.some((f) => f.severity === 'P1')
-  const kawalki = [...grupy.entries()]
-    .sort(([a, ga], [b, gb]) => Number(maP1(gb)) - Number(maP1(ga)) || a.localeCompare(b))
-    .flatMap(([, grupa]) => {
-      // P1 grupy w pierwszym kawalku: porcja z P1 idzie przed porcjami samych P2 (P1 nierozwiazany = STOP jak najwczesniej).
-      const g = [...grupa.filter((f) => f.severity === 'P1'), ...grupa.filter((f) => f.severity !== 'P1')]
-      const ile = Math.ceil(g.length / maks)
-      const rozmiar = Math.ceil(g.length / ile)
-      return Array.from({ length: ile }, (_, i) => g.slice(i * rozmiar, (i + 1) * rozmiar))
-    })
-  const porcje = []
-  for (const k of kawalki) {
-    const cel = porcje.find((p) => p.length + k.length <= maks && maP1(p) === maP1(k))
-    if (cel) cel.push(...k)
-    else porcje.push([...k])
-  }
-  return porcje
-}
-
-// Suma wynikow porcji fixa w ksztalcie FixResult (gate, kontrola fixa i telemetria czytaja jeden wynik). Walidacja FAIL albo
-// P1 w ktorejkolwiek porcji = FAIL / suma P1; serwer E2E martwy w ktorejkolwiek = martwy.
-function zlozWynikiFixa(wyniki) {
-  const suma = (pole) => wyniki.reduce((s, w) => s + (Number(w[pole]) || 0), 0)
-  const lista = (pole) => wyniki.flatMap((w) => (Array.isArray(w[pole]) ? w[pole] : []))
-  const serwery = wyniki.map((w) => w.serwerE2e).filter(Boolean)
-  return {
-    naprawione: suma('naprawione'),
-    pozostaje: suma('pozostaje'),
-    typy: { kod: wyniki.reduce((s, w) => s + ((w.typy && w.typy.kod) || 0), 0), test: wyniki.reduce((s, w) => s + ((w.typy && w.typy.test) || 0), 0), e2e: wyniki.reduce((s, w) => s + ((w.typy && w.typy.e2e) || 0), 0) },
-    e2eReweryfikacja: wyniki.map((w) => w.e2eReweryfikacja).filter((x) => x && x !== 'n/a').join(', ') || 'n/a',
-    walidacja: wyniki.length && wyniki.every((w) => w.walidacja === 'PASS') ? 'PASS' : 'FAIL',
-    commity: lista('commity'),
-    nienaprawione: lista('nienaprawione'),
-    nierozwiazaneP1: suma('nierozwiazaneP1'),
-    nierozwiazaneP2: suma('nierozwiazaneP2'),
-    serwerE2e: serwery.includes('martwy') ? 'martwy' : serwery.includes('dziala') ? 'dziala' : 'nie-dotyczy',
-    plikiBinarne: lista('plikiBinarne'),
-  }
 }
 
 // ── Kontrola diffu naprawczego (P8: listy K-1…K-7 katalogu A) ─────────────
@@ -1862,51 +1767,19 @@ for (const numerFazy of kolejka) {
 
   // 3) FIX — bez re-review; gate z self-reportu + lista findingow przekazana wprost (md tylko jako widok).
   if (faza.fix === 'pending') {
-    // Stan po review (fix pending) zapisuje agent fixa (P7) — pierwszej porcji, a postep po kazdej porcji kolejna (P21 B1).
-    // Pusta lista przy fix: pending (stan sprzed P8 po odlozeniu P3) — jedna porcja jak dawniej, bez sztucznego FAIL-a sumy.
-    const porcje = faza.otwarteFindingi.length ? porcjujFix(faza.otwarteFindingi) : [[]]
-    // Postep ze stanu tylko przy tym samym podziale: lista fixa nie zmienia sie, dopoki fix nie jest done. Wszystkie porcje zrobione
-    // (STOP dopiero w turze poprawkowej) = swiezy run idzie od razu do kontroli fixa na commitach porcji, bez powtorki fixa.
-    const postep = faza.fixPostep && faza.fixPostep.porcje === porcje.length && faza.fixPostep.gotowe <= porcje.length ? faza.fixPostep : null
-    const wynikiPorcji = postep && postep.gotowe > 0 ? [{ ...postep.suma, walidacja: 'PASS', nierozwiazaneP1: 0, plikiBinarne: [] }] : []
-    if (wynikiPorcji.length) {
-      log(`Faza ${numerFazy}: fix wznowiony od porcji ${postep.gotowe + 1}/${porcje.length} (ze stanu: ${postep.gotowe} porcji zrobionych, commity ${postep.suma.commity.join(' ') || 'brak'})`)
+    // Stan po review (fix pending) zapisuje agent fixa (P7).
+    const fix = await agent(zeStanem(fixPrompt(sciezka, numerFazy, faza.otwarteFindingi, srodowiskoE2E)), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}` })
+    await potwierdzStan(fix)
+    if (!fix) {
+      return await stopRun({ powod: `fix fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
     }
-    for (let i = postep ? postep.gotowe : 0; i < porcje.length; i++) {
-      const porcja = { numer: i + 1, z: porcje.length, poprzednie: zlozWynikiFixa(wynikiPorcji).nienaprawione }
-      const wynik = await agent(zeStanem(fixPrompt(sciezka, numerFazy, porcje[i], srodowiskoE2E, porcja)), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:faza-${numerFazy}:porcja-${i + 1}` })
-      await potwierdzStan(wynik)
-      if (!wynik) {
-        return await stopRun({ powod: `fix fazy ${numerFazy}${porcje.length > 1 ? ` (porcja ${i + 1}/${porcje.length})` : ''} zwrocil null`, faza: numerFazy, raporty })
-      }
-      wynikiPorcji.push(wynik)
-      if (porcje.length > 1) {
-        log(`Fix fazy ${numerFazy}, porcja ${i + 1}/${porcje.length} (${porcje[i].length} findingow: ${[...new Set(porcje[i].map((f) => plikBezLinii(f.plik)))].join(', ')}): naprawiono ${wynik.naprawione}, nierozwiazane P1=${wynik.nierozwiazaneP1} P2=${wynik.nierozwiazaneP2}, walidacja ${wynik.walidacja}`)
-      }
-      if (wynik.serwerE2e === 'martwy') {
-        srodowiskoE2E = 'martwe'
-        log(`Faza ${numerFazy}: serwer E2E nie wstal po padzie (fix) — scenariusze na [Manual], do nastepnej fazy (restart) tester bez przegladarki`)
-      }
-      // Porcja z plikiem binarnym, walidacja FAIL albo nierozwiazanym P1 konczy fix: nastepna porcja budowalaby na zepsutym stanie
-      // (albo rozlaczyla sie na Read pliku binarnego), a STOP i tak nastapi. Postep w stanie zostaje na poprzedniej porcji.
-      if ((wynik.plikiBinarne || []).length || wynik.walidacja === 'FAIL' || wynik.nierozwiazaneP1 > 0) break
-      const s = zlozWynikiFixa(wynikiPorcji)
-      faza.fixPostep = { porcje: porcje.length, gotowe: i + 1, suma: { naprawione: s.naprawione, pozostaje: s.pozostaje, nierozwiazaneP2: s.nierozwiazaneP2, commity: s.commity, nienaprawione: s.nienaprawione } }
-      oznaczStan()
-    }
-    const fix = zlozWynikiFixa(wynikiPorcji)
-    const wpisyP2 = fix.nienaprawione.filter((n) => /\[P2\]/.test(String(n))).length
-    if (wpisyP2 !== fix.nierozwiazaneP2) {
-      log(`Faza ${numerFazy}: UWAGA — porcje fixa zglosily ${fix.nierozwiazaneP2} nierozwiazanych P2, a nienaprawione[] ma ${wpisyP2} wpisow [P2]; known-issues ostatniej porcji dostal tylko wpisy [P2] — sprawdz known-issues.md`)
-    }
-    // Fix wznowiony po STOP-ie: miedzy commitami porcji leza commity spoza fixa (reczna naprawa operatora, zapis stanu, artefakty STOP-u),
-    // wiec zakres <najstarszy>^..HEAD zawieralby je — kontrola i tura poprawek czytaja wtedy fix per commit z listy.
-    const uwagaWznowienia = wynikiPorcji.length && postep && postep.gotowe > 0
-      ? `\n\nFIX WZNOWIONY PO STOP-IE: miedzy commitami z listy leza commity spoza fixa (reczna naprawa operatora, zapis stanu). Diff fixa czytasz per commit z listy (\`git show --format= <hash>\` dla kazdego), nie zakresem; zmiany wprowadzone tylko przez inne commity nie sa pozycjami list K ani bramek (bramki: trafienie w pliku spoza commitow z listy wpisz w sprawdzono).`
-      : ''
     cykle = 1
-    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2, porcje: porcje.length }
-    log(`Fix fazy ${numerFazy}${porcje.length > 1 ? ` (${porcje.length} porcji)` : ''}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
+    fixInfo = { naprawione: fix.naprawione, nierozwiazaneP2: fix.nierozwiazaneP2 }
+    log(`Fix fazy ${numerFazy}: naprawiono ${fix.naprawione}, nierozwiazane P1=${fix.nierozwiazaneP1} P2=${fix.nierozwiazaneP2}, walidacja ${fix.walidacja}`)
+    if (fix.serwerE2e === 'martwy') {
+      srodowiskoE2E = 'martwe'
+      log(`Faza ${numerFazy}: serwer E2E nie wstal po padzie (fix) — scenariusze na [Manual], do nastepnej fazy (restart) tester bez przegladarki`)
+    }
 
     // Guard plikow binarnych PRZED gate'em walidacji: uszkodzony plik zrodlowy jest PRZYCZYNA,
     // a typecheck/testy failuja wtornie — na "walidacja FAIL" operator szuka defektu logiki zamiast
@@ -1930,7 +1803,7 @@ for (const numerFazy of kolejka) {
         powod: fix.nierozwiazaneP1 > 0
           ? `Faza ${numerFazy}: ${fix.nierozwiazaneP1}x P1 nierozwiazane po fixie — wymagana reczna interwencja`
           : `Faza ${numerFazy}: walidacja fixa FAIL — wymagana reczna interwencja`,
-        naprawa: 'Po recznej naprawie odpal SWIEZY run (te same args, BEZ resumeFromRunId) — stan wroci wprost do tej fazy z .autopilot-state.json (fix porcjami: od porcji, na ktorej stanal); resume odtworzyloby zcache\'owany FAIL fixa.',
+        naprawa: 'Po recznej naprawie odpal SWIEZY run (te same args, BEZ resumeFromRunId) — stan wroci wprost do tej fazy z .autopilot-state.json; resume odtworzyloby zcache\'owany FAIL fixa.',
         faza: numerFazy, fix, raporty,
       })
     }
@@ -1938,14 +1811,14 @@ for (const numerFazy of kolejka) {
     // KONTROLA DIFFU NAPRAWCZEGO (P8): jeden agent z listami K-1…K-7 katalogu A i bramkami P6 na plikach fixa,
     // zakres z hashy FixResult.commity. Pozycje liczy JS (K-6 z wynikow testow P1 — zastepuje dawny verify-fix).
     // Agent padl = faza idzie dalej bez kontroli (best-effort, jak dotad).
-    const kontrola = await agent(kontrolaFixaPrompt(sciezka, numerFazy, fix.commity, faza.otwarteFindingi) + uwagaWznowienia, { schema: KONTROLA_FIXA, agentType: 'klasa-sceptyk', effort: 'medium', label: `fix:kontrola:faza-${numerFazy}` })
+    const kontrola = await agent(kontrolaFixaPrompt(sciezka, numerFazy, fix.commity, faza.otwarteFindingi), { schema: KONTROLA_FIXA, agentType: 'klasa-sceptyk', effort: 'medium', label: `fix:kontrola:faza-${numerFazy}` })
     if (!kontrola) log(`Faza ${numerFazy}: kontrola diffu fixa zwrocila null — faza idzie dalej bez kontroli (best-effort)`)
     const doPoprawki = pozycjeKontroliFixa(kontrola)
     // JEDEN cykl poprawkowy, twardo. To kontrola wlasnej roboty pipeline'u, nie kolejna runda review —
     // druga tura zaczelaby scigac wlasny ogon i nie da sie jej ograniczyc niczym poza licznikiem.
     if (doPoprawki.length) {
       log(`Faza ${numerFazy}: kontrola diffu naprawczego zwraca ${doPoprawki.length} pozycji do fixa (jeden cykl):\n  ${doPoprawki.map((p) => `[${p.zrodlo}] ${p.plik} — ${p.opis}`).join('\n  ')}`)
-      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki, fix.commity) + uwagaWznowienia, { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:poprawka:faza-${numerFazy}` })
+      const poprawka = await agent(fixPoprawkaPrompt(sciezka, numerFazy, doPoprawki, fix.commity), { schema: FIX_RESULT, agentType: 'klasa-naprawiacz', effort: 'high', label: `fix:poprawka:faza-${numerFazy}` })
       if (!poprawka) {
         log(`Faza ${numerFazy}: tura poprawkowa zwrocila null — pozycje zostaja otwarte, faza idzie dalej (P3-klasa, nie bramka)`)
       } else {
@@ -1975,7 +1848,6 @@ for (const numerFazy of kolejka) {
     }
     faza.fix = 'done'
     faza.otwarteFindingi = []
-    delete faza.fixPostep
     oznaczStan()
   } else if (faza.fix === 'none') {
     gateFazy = 'CZYSTE'

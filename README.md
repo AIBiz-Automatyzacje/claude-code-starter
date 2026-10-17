@@ -368,7 +368,7 @@ dziedziczy wszystkich narzędzi sesji razem z serwerami MCP.
 | `klasa-mechaniczny-odczyt` | Haiku, tylko odczyt: dedup findingów, inspekcja raportu na dysku. |
 | `klasa-mechaniczny-pomiar` | Haiku, Read + Bash bez edycji: uruchomienie skryptu pomiaru (ogrodnik) i przepisanie wyniku. |
 | `klasa-orkiestracyjny` | Kroki organizacyjne: bootstrap, planner, domknięcie fazy, scribe, walidacja, compound, archiwizacja, etapy PR. |
-| `klasa-naprawiacz` | Fix fazy (porcjami: findingi kilku plików, do 6 na agenta w świeżym kontekście, każda porcja swoim commitem „poprawki po review fazy N”; kontrola fixa bierze commity wszystkich porcji), poprawka po kontroli fixa, tura napraw PR; przed pierwszą zmianą czyta reguły kodu narzędziem Read. |
+| `klasa-naprawiacz` | Fix fazy, poprawka po kontroli fixa, tura napraw PR; przed pierwszą zmianą czyta reguły kodu narzędziem Read. |
 | `klasa-sceptyk` | Bez edycji: verify findingów P1/P2, kontrola diffu fixa, ocena wzorców ogrodnika. |
 
 ### Research (wołani przez `dev-plan`, `dev-brainstorm`)
