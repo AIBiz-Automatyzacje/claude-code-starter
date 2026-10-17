@@ -169,9 +169,10 @@ test('SKILL.md i szablon: źródło stałej w IU pierwszego konsumenta w kodzie;
 test('SKILL.md 3.4b: wysyłki maili/SMS fazy kontra limit usługi na projekcie e2e z konfiguracji; za mały limit = pozycja operatora', () => {
   const e2e = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b Scenariusze E2E i seedy'), SKILL_MD.indexOf('#### 3.5'))
   const regula = e2e.split('\n').find((l) => l.startsWith('- Wysyłka maili albo SMS')) ?? ''
-  assert.match(regula, /policz wysyłki wszystkich scenariuszy `\[E2E\]` fazy/)
+  assert.match(regula, /policz wysyłki wszystkich scenariuszy `\[E2E\]` fazy razy dwa, bo re-review po fixie i ponowienie scenariusza/)
   assert.match(regula, /odczytanym z jego konfiguracji, nie z dokumentacji ani z researchu/)
-  assert.match(regula, /`rate_limit_email_sent`/)
-  assert.match(regula, /Send Email hook go nie omija/)
+  assert.match(regula, /\| jq '\{rate_limit_email_sent, rate_limit_sms_sent\}'`/, 'odczyt tylko pol limitu — pelna odpowiedz ma sekrety')
+  assert.match(regula, /Całej odpowiedzi nie wypisujesz, bo zawiera sekrety/)
+  assert.match(regula, /Send Email hook tego limitu nie omija/)
   assert.match(regula, /pozycja w checkliście przygotowania \(3\.7\)[^.]*`\[blokuje: faza N\]`/)
 })
