@@ -12,6 +12,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
+
+import { PROG_PLIKOW_PR } from '../../scripts/pr/rozmiar.mjs'
 import assert from 'node:assert/strict'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
@@ -331,11 +333,13 @@ test('czesci: krok CLAUDE.md pominiety po czesci nieostatniej (JS przed agentem)
 
 test('czesci: przygotowanie galezi — rebase --onto origin/main od ciecia, konflikt bez abort, walidacja przed pushem, push z lease; zbierz oddaje czesc', () => {
   const start = zrodlo.slice(zrodlo.indexOf("if (etap === 'start') {"), zrodlo.indexOf("// ── Etap: zbierz"))
-  assert.equal(start.split('git rebase --onto origin/main ${cz.rebaseOd}').length - 1, 2, 'rebase od ciecia w czesci ostatniej i srodkowej')
+  assert.match(start, /is-ancestor origin\/main HEAD\\` kod 0 — rebase=juz-wykonany/)
+  assert.match(start, /is-ancestor \$\{cz\.rebaseOd\} HEAD\\` kod 0 — \\`git rebase --onto origin\/main \$\{cz\.rebaseOd\}\\`/)
+  assert.equal(start.split('3. ${rebase}').length - 1, 2, 'ten sam krok rebase w czesci ostatniej i srodkowej')
   assert.match(start, /git switch -c \$\{cz\.galaz\} \$\{cz\.doSha\}/)
   assert.match(start, /NIE rozwiazuj go i NIE rob \\`git rebase --abort\\`/)
   assert.ok(start.indexOf('5. WALIDACJA') < start.indexOf('6. PUSH'))
-  assert.match(start, /git push --force-with-lease -u origin \$\{cz\.galaz\}/)
+  assert.match(start, /git push --force-with-lease --force-if-includes -u origin \$\{cz\.galaz\}/)
   assert.match(start, /status: 'KONFLIKT', etap, czesc: cz\.czesc/)
   assert.match(start, /gh pr list --state merged --head \$\{cz\.poprzednia\}/)
   assert.match(start, /\.\.\.\(cz \? \{ czesc: cz\.czesc, czesci: cz\.czesci, fazy: cz\.fazy \} : \{\}\)/)
@@ -369,9 +373,12 @@ test('start --czesc 2 z 2: odczyt tabeli, rebase galezi zadania od 909f669 na or
   assert.match(prompty[0], /git show 'feature\/etap-3:docs\/completed\/etap-3\/etap-3-podsumowanie\.md' \| awk/)
   assert.match(prompty[1], /git switch feature\/etap-3`, `git fetch --prune origin`/)
   assert.match(prompty[1], /--head feature\/etap-3-cz1 --json number/)
-  assert.match(prompty[1], /git rebase --onto origin\/main 909f669f0efc`/)
-  assert.match(prompty[1], /git push --force-with-lease -u origin feature\/etap-3`/)
+  assert.match(prompty[1], /is-ancestor 909f669f0efc HEAD` kod 0 — `git rebase --onto origin\/main 909f669f0efc`/)
+  assert.match(prompty[1], /\(c\) inaczej .* `git rebase origin\/main`, rebase=wykonany/)
+  assert.match(prompty[1], /git push --force-with-lease --force-if-includes -u origin feature\/etap-3`/)
+  assert.match(prompty[1], /5\. WALIDACJA \(tylko gdy rebase=wykonany albo juz-wykonany\): typecheck i testy/)
   assert.match(prompty[2], /tytul PR "<tytul zadania> — cz\. 2 z 2 \(fazy 4–6\)"/)
+  assert.match(prompty[2], /git show 'feature\/etap-3:docs\/completed\/etap-3\/known-issues\.md'/)
   assert.deepEqual([wynik.status, wynik.czesc, wynik.czesci, wynik.fazy, wynik.prNumer], ['OK', 2, 2, '4–6', 4])
 })
 
@@ -385,7 +392,7 @@ test('start --czesc 1: galaz -cz1 od commitu ciecia bez rebase; konflikt i zla g
     { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['docs/learned-patterns.md'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
   assert.equal(konflikt.prompty.length, 2, 'bez agenta tworzacego PR')
   assert.deepEqual([konflikt.wynik.status, konflikt.wynik.konflikty], ['KONFLIKT', ['docs/learned-patterns.md']])
-  assert.match(konflikt.wynik.naprawa, /git rebase --continue`, potem \/dev-pr --czesc 2; albo `git rebase --abort`/)
+  assert.match(konflikt.wynik.naprawa, /git rebase --continue` \(do konca rebase.u\), potem \/dev-pr --czesc 2; albo `git rebase --abort`/)
   const zlaGalaz = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, { ...PRZYG_OK, galaz: 'main' }])
   assert.deepEqual([zlaGalaz.wynik.status, zlaGalaz.wynik.powod, zlaGalaz.prompty.length], ['STOP', 'biezaca galaz main, oczekiwana feature/etap-3', 2])
   const bezTabeli = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: '', galazZadania: true }])
@@ -399,4 +406,39 @@ test('claude-md czesci 1 z 2 bez agenta; zbierz oddaje czesc do telemetrii', asy
     watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'brak CI', recenzjaAktualna: true, plikiPr: 194,
   }])
   assert.deepEqual([zb.wynik.czesc, zb.wynik.prNumer, zb.wynik.rekomendacja], [2, 4, 'MERGUJ'])
+})
+
+test('start bez --czesc przy tabeli czesci = STOP z /dev-pr --czesc 1; bez tabeli — zwykly PR', async () => {
+  const z = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }])
+  assert.deepEqual([z.wynik.status, z.prompty.length], ['STOP', 1])
+  assert.match(z.wynik.powod, /zadanie ma 2 części PR .* \/dev-pr --czesc 1/)
+  const jeden = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: '', galazZadania: true }, START_OK])
+  assert.deepEqual([jeden.wynik.status, jeden.prompty.length, jeden.wynik.czesc], ['OK', 2, undefined])
+  assert.doesNotMatch(jeden.prompty[1], /CZESC \d/)
+})
+
+test('start --czesc: brak galezi zadania, walidacja FAIL po rebase, push false = STOP; null agentow = BLAD; zla nazwa zadania = BLAD bez agentow', async () => {
+  const bezGalezi = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: '', galazZadania: false }])
+  assert.equal(bezGalezi.wynik.powod, 'brak lokalnej gałęzi feature/etap-3 — tabela części i commity cięcia są na niej (git fetch, git switch feature/etap-3)')
+  const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
+  const fail = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...PRZYG_OK, walidacja: 'FAIL', walidacjaDetal: 'vitest 3 failed' }])
+  assert.deepEqual([fail.wynik.status, fail.wynik.powod, fail.prompty.length], ['STOP', "walidacja po rebase'ie FAIL: vitest 3 failed", 2])
+  const push = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...PRZYG_OK, push: false, pushDetal: 'rejected (stale info)' }])
+  assert.equal(push.wynik.powod, 'push: rejected (stale info)')
+  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [null])).wynik.status, 'BLAD')
+  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, null])).wynik.status, 'BLAD')
+  const zla = await uruchom({ etap: 'start', zadanie: "x'; rm -rf ~", czesc: 1 }, [])
+  assert.deepEqual([zla.wynik.status, zla.prompty.length], ['BLAD', 0])
+})
+
+test('tabela czesci: fazy i pliki tylko liczbami (trafiaja do tytulu PR), SHA w backtickach z recznej tabeli czytelne', () => {
+  const dobra = tabela([['1–3', A, B, 93], ['4–6', B, E, 101]])
+  assert.equal(P.czesciZTabeli(dobra.replace('| 1–3 |', '| 1–3" && curl x |')), null)
+  assert.equal(P.czesciZTabeli(dobra.replace('| 93 |', '| dużo |')), null)
+  const reczna = dobra.replace(`| ${A.slice(0, 12)} |`, `| \`${A.slice(0, 12)}\` |`).replace('| 1–3 |', '| **1–3** |')
+  assert.deepEqual(P.czesciZTabeli(reczna)?.[0], { czesc: 1, fazy: '1–3', od: A.slice(0, 12), do: B.slice(0, 12), pliki: 93 })
+})
+
+test('prog czesci w dev-pr-wf = PROG_PLIKOW_PR z rozmiar.mjs (workflow self-contained)', () => {
+  assert.ok(zrodlo.includes(`const PROG_CZESCI = ${PROG_PLIKOW_PR}`))
 })

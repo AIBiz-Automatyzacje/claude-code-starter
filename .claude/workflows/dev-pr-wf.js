@@ -458,13 +458,26 @@ const CZUBEK = 'czubek gałęzi'
 function czesciZTabeli(tekst) {
   const wiersze = []
   for (const linia of String(tekst || '').split('\n')) {
-    const k = linia.trim().replace(/^\||\|$/g, '').split('|').map((x) => x.trim())
+    const k = linia.trim().replace(/^\||\|$/g, '').split('|').map((x) => x.replace(/[`*]/g, '').trim())
     if (k.length < 5 || !/^\d+$/.test(k[0])) continue
-    wiersze.push({ czesc: Number(k[0]), fazy: k[1], od: k[2], do: k[3] === CZUBEK ? null : k[3], pliki: Number(k[4]) })
+    wiersze.push({ czesc: Number(k[0]), fazy: k[1], od: k[2], do: k[3] === CZUBEK ? null : k[3], pliki: k[4] })
   }
-  const zgodne = wiersze.length > 1 && wiersze.every((w, i) => w.czesc === i + 1 && SHA.test(w.od)
+  // fazy i pliki ida do tytulu PR i logu — tylko liczby (tabele mozna tez zapisac recznie, SKILL dev-docs-complete 7a).
+  const zgodne = wiersze.length > 1 && wiersze.every((w, i) => w.czesc === i + 1 && SHA.test(w.od) && /^\d+(?:[–-]\d+)?$/.test(w.fazy) && /^\d+$/.test(w.pliki)
     && (i === wiersze.length - 1 ? w.do === null : SHA.test(w.do || '')) && (!i || w.od === wiersze[i - 1].do))
-  return zgodne ? wiersze : null
+  return zgodne ? wiersze.map((w) => ({ ...w, pliki: Number(w.pliki) })) : null
+}
+
+// Bot recenzuje czesc ponizej limitu planu Pro (kopia PROG_PLIKOW_PR z .claude/scripts/pr/rozmiar.mjs).
+const PROG_CZESCI = 150
+
+// Wynik agenta przygotowania sprawdzany w JS: status, galaz, walidacja po rebase'ie i push — kazdy osobno w powodzie.
+function bladPrzygotowania(przyg, galaz) {
+  if (przyg.status !== 'OK') return przyg.powod || `status ${przyg.status} bez powodu`
+  if (przyg.galaz !== galaz) return `biezaca galaz ${przyg.galaz}, oczekiwana ${galaz}`
+  if (przyg.rebase !== 'nie-dotyczy' && przyg.walidacja === 'FAIL') return `walidacja po rebase'ie FAIL: ${przyg.walidacjaDetal || 'bez detalu'}`
+  if (!przyg.push) return `push: ${przyg.pushDetal}`
+  return null
 }
 
 // Galaz i rebase czesci N z M. Czesc nieostatnia: galaz <feature>-czN na jej commicie konca; od czesci 2 — rebase jej commitow
@@ -508,6 +521,9 @@ const turyWykonane = (args && Number.isInteger(args.turyWykonane)) ? args.turyWy
 const czesc = (args && Number.isInteger(args.czesc) && args.czesc >= 1) ? args.czesc : null
 const czesci = (args && Number.isInteger(args.czesci)) ? args.czesci : null
 
+if (zadanie && !/^[\w.-]+$/.test(zadanie)) {
+  return { status: 'BLAD', powod: `args.zadanie "${zadanie}" — nazwa katalogu zadania (litery, cyfry, . _ -); trafia do komend git w poleceniach agentow` }
+}
 if (!zadanie) {
   return { status: 'BLAD', powod: 'Brak args.zadanie — workflow nie wie, ktorego zadania dotyczy pull request. Wolaj go przez skill /dev-pr.' }
 }
@@ -519,31 +535,43 @@ phase('PR')
 if (etap === 'start') {
   /** Czesc PR (args.czesc): galaz i rebase liczy JS z tabeli czesci; null = zadanie jednym PR. */
   let cz = null
-  if (czesc) {
-    const t = await agent(
-      `Odczytaj tabele czesci PR zadania "${zadanie}". Niczego nie zmieniaj.
+  // Tabele czytamy takze bez --czesc: zadanie z czesciami wyslane jednym PR to PR ponad limitem bota (vibersi etap 3: 172).
+  const t = await agent(
+    `Odczytaj tabele czesci PR zadania "${zadanie}". Niczego nie zmieniaj.
 1. galazZadania = czy \`git rev-parse --verify --quiet refs/heads/feature/${zadanie}\` zwraca SHA.
-2. tabela = stdout 1:1 komendy (pusty stdout = pusty string):
+2. tabela = stdout 1:1 komendy (pusty stdout albo blad = pusty string):
    \`git show 'feature/${zadanie}:docs/completed/${zadanie}/${zadanie}-podsumowanie.md' | awk '/^## Części PR/{f=1;next} f&&/^## /{exit} f'\`
 Zwroc obiekt zgodny ze schematem.`,
-      { schema: CZESCI_TABELA, agentType: 'klasa-mechaniczny', label: `pr:czesci:${zadanie}` }
-    )
-    if (!t) return { status: 'BLAD', etap, powod: 'Odczyt tabeli czesci PR zwrocil null (agent padl).' }
-    cz = planCzesci(t.galazZadania ? czesciZTabeli(t.tabela) : null, czesc, zadanie)
+    { schema: CZESCI_TABELA, agentType: 'klasa-mechaniczny', label: `pr:czesci:${zadanie}` }
+  )
+  if (!t) return { status: 'BLAD', etap, powod: 'Odczyt tabeli czesci PR zwrocil null (agent padl).' }
+  const tabelaCzesci = czesciZTabeli(t.tabela)
+  if (!czesc && tabelaCzesci) {
+    const powod = `zadanie ma ${tabelaCzesci.length} części PR (tabela „Części PR” w podsumowaniu) — wysyłka /dev-pr --czesc 1, potem kolejne`
+    log(`/dev-pr: STOP — ${powod}`)
+    return { status: 'STOP', etap, powod }
+  }
+  if (czesc) {
+    if (!t.galazZadania) return { status: 'STOP', etap, czesc, powod: `brak lokalnej gałęzi feature/${zadanie} — tabela części i commity cięcia są na niej (git fetch, git switch feature/${zadanie})` }
+    cz = planCzesci(tabelaCzesci, czesc, zadanie)
     if (cz.blad) return { status: 'STOP', etap, czesc, powod: cz.blad }
+    if (cz.pliki >= PROG_CZESCI) log(`/dev-pr czesc ${cz.czesc}: UWAGA — ${cz.pliki} plikow do recenzji (limit bota ${PROG_CZESCI}); bot moze pominac recenzje czesci`)
+    const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
+   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”`
+    // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po
+    // rebase na starszy main (operator rozwiazal konflikt i wrocil pozniej) — zwykly rebase na nowy main.
+    const rebase = `REBASE: (a) \`git merge-base --is-ancestor origin/main HEAD\` kod 0 — rebase=juz-wykonany, bez rebase'u;
+   (b) inaczej, gdy \`git merge-base --is-ancestor ${cz.rebaseOd} HEAD\` kod 0 — \`git rebase --onto origin/main ${cz.rebaseOd}\`, rebase=wykonany;
+   (c) inaczej (galaz juz bez commitow poprzedniej czesci, na starszym main) — \`git rebase origin/main\`, rebase=wykonany.`
     const kroki = cz.ostatnia
-      ? `1. \`git switch ${cz.galaz}\`, \`git fetch --prune origin\` (sciezki zdalne aktualne — lease pushu i rebase na origin/main).
-2. Czesc ${cz.czesc - 1} zmergowana: \`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
-   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”.
-3. REBASE: gdy \`git merge-base --is-ancestor origin/main HEAD\` (kod 0) — rebase juz wykonany, rebase=juz-wykonany. Inaczej
-   \`git rebase --onto origin/main ${cz.rebaseOd}\`, rebase=wykonany.`
+      ? `1. \`git switch ${cz.galaz}\`, \`git fetch --prune origin\` (zdalne sciezki aktualne dla rebase'u na origin/main).
+2. Czesc ${cz.czesc - 1} zmergowana: ${scalona}.
+3. ${rebase}`
       : cz.rebaseOd
-        ? `1. \`git fetch --prune origin\`. Czesc ${cz.czesc - 1} zmergowana: \`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0,
-   inaczej STOP „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”.
+        ? `1. \`git fetch --prune origin\`. Czesc ${cz.czesc - 1} zmergowana: ${scalona}.
 2. Galaz ${cz.galaz}: istnieje lokalnie — \`git switch ${cz.galaz}\`; nie istnieje — \`git switch -c ${cz.galaz} ${cz.doSha}\`.
-3. REBASE: gdy \`git merge-base --is-ancestor origin/main HEAD\` (kod 0) — rebase=juz-wykonany. Inaczej
-   \`git rebase --onto origin/main ${cz.rebaseOd}\`, rebase=wykonany.`
-        : `1. \`git fetch --prune origin\` (bez niego lease pushu odrzuca galaz po skasowanej zdalnej: stale info). Galaz ${cz.galaz}: istnieje lokalnie — \`git switch ${cz.galaz}\`; nie istnieje — \`git switch -c ${cz.galaz} ${cz.doSha}\`
+3. ${rebase}`
+        : `1. \`git fetch --prune origin\` (bez niego push odrzuca galaz po skasowanej zdalnej: stale info). Galaz ${cz.galaz}: istnieje lokalnie — \`git switch ${cz.galaz}\`; nie istnieje — \`git switch -c ${cz.galaz} ${cz.doSha}\`
    (commit konca czesci; galaz zadania feature/${zadanie} zostaje bez zmian). Sprawdz \`git merge-base --is-ancestor ${cz.doSha} HEAD\`
    (kod 0), inaczej STOP „galaz ${cz.galaz} nie zawiera ${cz.doSha}”. rebase=nie-dotyczy.`
     const przyg = await agent(
@@ -558,8 +586,9 @@ ${kroki}
    powod = komunikat gita (bez tresci plikow). Decyzje podejmuje operator.
 5. WALIDACJA (tylko gdy rebase=wykonany albo juz-wykonany): typecheck i testy projektu. FAIL = status STOP, powod z detalem, bez pushu.
    Gdy rebase=nie-dotyczy: walidacja=nie-dotyczy (koniec fazy przeszedl walidacje w autopilocie).
-6. PUSH: \`git push --force-with-lease -u origin ${cz.galaz}\` (lease chroni cudze commity na zdalnej galezi). Blad = push false,
-   tresc bledu w pushDetal i status STOP. Udany = pushDetal "OK". Bez \`--force\` bez lease.
+6. PUSH: \`git push --force-with-lease --force-if-includes -u origin ${cz.galaz}\` — nadpisuje zdalna galaz tylko wtedy, gdy jej czubek
+   jest w lokalnej historii (commit dopisany zdalnie przez kogos innego = odmowa). Blad = push false, tresc bledu w pushDetal
+   i status STOP. Udany = pushDetal "OK". Bez \`--force\` bez lease.
 galaz = \`git branch --show-current\` na koniec. Zwroc obiekt zgodny ze schematem.${BLOK_KOMEND_PROJEKTU}`,
       { schema: PRZYGOTOWANIE, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:czesc-${cz.czesc}:${zadanie}` }
     )
@@ -568,20 +597,24 @@ galaz = \`git branch --show-current\` na koniec. Zwroc obiekt zgodny ze schemate
       log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}`)
       return {
         status: 'KONFLIKT', etap, czesc: cz.czesc, czesci: cz.czesci, konflikty: przyg.konflikty, powod: przyg.powod,
-        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\`, potem /dev-pr --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
+        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\` (do konca rebase'u), potem /dev-pr --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
       }
     }
-    if (przyg.status !== 'OK' || przyg.galaz !== cz.galaz || !przyg.push) {
-      const powod = przyg.status !== 'OK' ? przyg.powod : przyg.galaz !== cz.galaz ? `biezaca galaz ${przyg.galaz}, oczekiwana ${cz.galaz}` : `push: ${przyg.pushDetal}`
-      log(`/dev-pr czesc ${cz.czesc}: STOP — ${powod}`)
-      return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod, przygotowanie: przyg }
+    const blad = bladPrzygotowania(przyg, cz.galaz)
+    if (blad) {
+      log(`/dev-pr czesc ${cz.czesc}: STOP — ${blad}`)
+      return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: blad, przygotowanie: przyg }
     }
+    if (przyg.walidacja === 'BRAK-KOMEND') log(`/dev-pr czesc ${cz.czesc}: UWAGA — rebase bez walidacji (package.json bez skryptow typecheck/test)`)
     log(`/dev-pr czesc ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy}, ${cz.pliki} plikow do recenzji): galaz ${cz.galaz}, rebase ${przyg.rebase}, walidacja ${przyg.walidacja}, push ${przyg.pushDetal}`)
   }
+  const zrodloOpisu = `git show 'feature/${zadanie}:docs/completed/${zadanie}`
   const opisCzesci = cz
-    ? `\nCZESC ${cz.czesc} Z ${cz.czesci} (fazy ${cz.fazy}): tytul PR "<tytul zadania> — cz. ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy})". Podsumowanie do opisu bierz
-z galezi zadania: \`git show 'feature/${zadanie}:docs/completed/${zadanie}/${zadanie}-podsumowanie.md'\`; pierwsza linia opisu:
-"Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}." Sekcja "Swiadomie nienaprawione" — z tego samego zrodla.\n`
+    ? `\nCZESC ${cz.czesc} Z ${cz.czesci} (fazy ${cz.fazy}) — zrodla opisu zastepuja punkt a) nizej (katalog zadania na tej galezi
+moze nie miec podsumowania): tytul PR "<tytul zadania> — cz. ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy})"; podsumowanie z
+\`${zrodloOpisu}/${zadanie}-podsumowanie.md'\`, otwarte P3 z \`${zrodloOpisu}/${zadanie}-zadania.md'\` (sekcje "Do poprawy po review
+fazy N" dla faz ${cz.fazy}), otwarte wpisy z \`${zrodloOpisu}/known-issues.md'\` (brak pliku = brak wpisow). Pierwsza linia opisu:
+"Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}."\n`
     : ''
   const wynik = await agent(
     `Jestes bramka wejscia skilla /dev-pr dla zadania "${zadanie}". Sprawdzasz warunki i — gdy trzeba —

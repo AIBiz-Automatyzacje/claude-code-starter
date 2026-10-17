@@ -66,8 +66,12 @@ przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
 `status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Zapytaj operatora przez
 `AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
-`git add <pliki>` i `git rebase --continue`, potem znów krok 1 z tym samym `czesc`), „Rozwiążę sam” (koniec; operator wraca
-`/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu nie rozwiązujesz bez tej decyzji.
+`git add <pliki>` i `git rebase --continue`; kolejny konflikt — to samo, aż rebase się skończy; potem znów krok 1 z tym samym
+`czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
+nie rozwiązujesz bez tej decyzji. `docs/learned-patterns.md` to plik generowany (compound części 1 na głównej i compound
+zadania): zostaw jedną z wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu.
+
+Zadanie z tabelą „Części PR” wywołane bez `--czesc` → `STOP` z poleceniem `/dev-pr --czesc 1`: jeden PR byłby ponad limitem bota.
 
 `status: "OK"` → powiedz jednym zdaniem, czy PR został utworzony, czy już istniał, i podaj URL.
 
