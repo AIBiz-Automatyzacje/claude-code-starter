@@ -153,7 +153,10 @@ test('planner: pliki innych IU tej fazy w prompcie i serial — builder UI nie w
 
 test('planner: kontekst designerski dla UI i fullstack, warianty -figma przy makietach', () => {
   const p = plannerPrompt('docs/active/x', 2)
-  assert.match(p, /## Mandatory designerski kontekst/)
+  // P21 B2: blok liczy skrypt z pola Makiety jednostki (naglowek „Mandatory designerski kontekst” sprawdza makiety.test.mjs)
+  assert.match(p, /node \.claude\/scripts\/plan\/plan\.mjs designerski <sciezka z linii "Plan techniczny:"> --iu <id IU>/)
+  assert.match(p, /SPEC i PNG tylko ekranow\s+z pola Makiety jednostki/)
+  assert.doesNotMatch(p, /Screeny referencyjne \(PNG\): <nazwa>: <sciezka>, jedna linia na screen/)
   assert.match(p, /feature-builder-ui-figma, feature-builder-fullstack-figma/)
   assert.match(p, /Dla feature-builder-data blok pomijasz zawsze/)
 })

@@ -262,12 +262,10 @@ Faza do wykonania: ${faza}
      "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
      zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.
    - dla feature-builder-ui|fullstack (takze wariantow -figma): gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
-     i ma choc jedna niepusta sciezke, doklej blok (sciezki z tej sekcji):
-       ## Mandatory designerski kontekst (przeczytaj przed implementacja)
-       - DESIGN.md (tokeny calego projektu): <sciezka z design_md albo "brak">
-       - SPEC.md (pomiary tej funkcji z Figmy): <sciezka z figma_spec albo "brak — projektujesz w oparciu o DESIGN.md">
-       - Screeny referencyjne (PNG): <nazwa>: <sciezka>, jedna linia na screen
-     Kolejnosc zrodel i brakujace pomiary rozstrzyga builder (jego plik roli). Sekcji brak albo wszystkie pola puste/null — blok pomin. Dla feature-builder-data blok pomijasz zawsze.
+     i ma choc jedna niepusta sciezke, uruchom \`node .claude/scripts/plan/plan.mjs designerski <sciezka z linii "Plan techniczny:"> --iu <id IU>\`
+     i niepuste pole \`tresc\` wyniku wklej doslownie (pusta — blok pomin). Skrypt daje DESIGN.md, SPEC.md oraz SPEC i PNG tylko ekranow
+     z pola Makiety jednostki (bez pola — wszystkie ekrany i caly SPEC), bo builder czytajacy caly SPEC i wszystkie zrzuty niesie je
+     w kontekscie przez kazda ture. Kolejnosc zrodel i brakujace pomiary rozstrzyga builder (jego plik roli). Dla feature-builder-data blok pomijasz zawsze.
    - NIE kopiuj "Skills in play:" — skille sa wstrzykiwane z frontmatter subagenta.
    - agentType = wartosc pola "Delegate to:" z IU. IU bez tego pola (plan starszy niz delegacja) — dobierz
      agentType po plikach jednostki: tylko warstwa danych -> feature-builder-data, tylko UI -> feature-builder-ui,

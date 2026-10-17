@@ -9,13 +9,13 @@
  * @typedef {{ tresc: string, e2e: boolean }} Weryfikacja
  * @typedef {{ id: string, numer: number, nazwa: string, faza: number | null, start: number, delegate: string,
  *   tabelaPlikow: boolean, pliki: Plik[], scenariusze: Scenariusz[], weryfikacja: Weryfikacja[], operator: string[],
- *   wymagania: string, opis: string, problemy: string[] }} Jednostka
+ *   wymagania: string, opis: string, makiety: string[] | null, problemy: string[] }} Jednostka
  */
 
 const POLE_W_GWIAZDKACH = /^\*\*([^*]+?):\*\*\s*(.*)$/
 const POLE_ZA_GWIAZDKAMI = /^\*\*([^*]+?)\*\*\s*(?:\([^)]*\))?\s*:\s*(.*)$/
 const POLA_IU = new Set(['cel', 'wymagania', 'zaleznosci', 'pliki', 'delegate to', 'skills in play', 'podejscie', 'notatka wykonawcza',
-  'teksty', 'wzorce do nasladowania', 'scenariusze testowe', 'weryfikacja', 'operator checklist'])
+  'teksty', 'wzorce do nasladowania', 'scenariusze testowe', 'weryfikacja', 'operator checklist', 'makiety'])
 const POLA_LISTY = ['scenariusze testowe', 'weryfikacja', 'operator checklist']
 const POLA_OPISU = ['cel', 'podejscie', 'notatka wykonawcza']
 const SEPARATOR_KOMOREK = /(?<!\\)\|/
@@ -153,6 +153,22 @@ function polaBloku(linie, problemy) {
 }
 
 /**
+ * Pole "Makiety" (P21 B2): nazwy ekranow z `figma_screens` budowanych przez jednostke, po przecinku, w backtickach albo bez.
+ * @param {{ wartosc: string, linie: Linia[] } | undefined} p
+ * @returns {string[] | null} null = brak pola albo pole puste; [] = „—” (jednostka nie buduje zadnego ekranu)
+ */
+function nazwyMakiet(p) {
+  if (!p) return null
+  const surowy = [p.wartosc, ...p.linie.map((l) => l.tekst)].join(' ').trim()
+  // Jawne „zero ekranow” to tylko kreska; puste pole albo placeholder szablonu traktujemy jak brak pola (uwaga walidacji).
+  if (/^[—–-]$/.test(surowy)) return []
+  const tekst = bezPlaceholdera([p?.wartosc ?? '', ...(p?.linie ?? []).map((l) => l.tekst)].join(' '))
+  const wBacktickach = [...tekst.matchAll(/`([^`]+)`/g)].map((m) => m[1].trim())
+  const nazwy = (wBacktickach.length ? wBacktickach : tekst.split(/[,\s]+/)).map((n) => n.replace(/^-\s*/, '').trim()).filter(Boolean)
+  return nazwy.length ? nazwy : null
+}
+
+/**
  * @param {{ id: string, numer: number, nazwa: string, faza: number | null, start: number }} naglowek
  * @param {Linia[]} linie blok jednostki bez naglowka
  * @returns {Jednostka}
@@ -174,6 +190,7 @@ export function jednostka(naglowek, linie) {
     operator: oper.map((o) => o.replace(/^Operator:\s*/, '')),
     wymagania: [pola.get('wymagania')?.wartosc ?? '', ...(pola.get('wymagania')?.linie ?? []).map((l) => l.tekst)].join('\n'),
     opis: POLA_OPISU.map((k) => [pola.get(k)?.wartosc ?? '', ...(pola.get(k)?.linie ?? []).map((l) => l.tekst)].join('\n')).join('\n'),
+    makiety: nazwyMakiet(pola.get('makiety')),
     problemy,
   }
 }

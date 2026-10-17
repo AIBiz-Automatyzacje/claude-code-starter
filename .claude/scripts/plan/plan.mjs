@@ -9,6 +9,8 @@
 //   plan.mjs generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz]
 //                                                  pliki zadania z planu; bez --zapisz tylko liczniki; plan z bledami — nic
 //   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo
+//   plan.mjs designerski <plan.md> --iu <IU-N>      blok kontekstu designerskiego buildera jednostki (DESIGN.md, SPEC.md, SPEC
+//                                                  i PNG ekranow z pola Makiety); tresc pusta = blok pominiety
 // Wynik: JSON na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (bledy planu, STOP bramki, katalog zadania zajety),
 // 2 = zle argumenty, 3 = wyjatek skryptu (JSON z polem wyjatek).
 
@@ -19,6 +21,7 @@ import { parseArgs } from 'node:util'
 import { liczLinieKodu, podsumowanieBudzetu } from './budzet-pliku.mjs'
 import { rozmiarPlanu } from './czesci-pr.mjs'
 import { gotowosc } from './gotowosc.mjs'
+import { blokDesignerski } from './makiety.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
 import { zadanieZPlanu } from './zadanie.mjs'
@@ -28,7 +31,7 @@ const KOD_ZLYCH_ARGUMENTOW = 2
 const KOD_WYJATKU = 3
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, nazwa: { type: 'string' }, data: { type: 'string' },
-  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' },
+  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, iu: { type: 'string' },
 })
 
 /** @param {string} komunikat @returns {never} */
@@ -81,7 +84,7 @@ function planWzgledny(projekt, sciezka) {
 
 /**
  * @param {string[]} positionals
- * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean }} values
+ * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string }} values
  */
 function wykonaj(positionals, values) {
   const [polecenie, sciezka, ...reszta] = positionals
@@ -100,6 +103,13 @@ function wykonaj(positionals, values) {
   if (polecenie === 'gotowosc') {
     const wynik = gotowosc(projekt, sciezka.replace(/\/$/, ''))
     zakoncz(wynik, wynik.ok)
+  }
+  if (polecenie === 'designerski') {
+    if (!values.iu) zleArgumenty('designerski wymaga --iu <IU-N>')
+    const plan = parsujPlan(readFileSync(join(projekt, planWzgledny(projekt, sciezka)), 'utf8'))
+    const iu = [...plan.bezFazy, ...plan.fazy.flatMap((f) => f.iu)].find((j) => j.id === values.iu)
+    if (!iu) zakoncz({ ok: false, bledy: [`brak jednostki ${values.iu} w planie`] }, false)
+    zakoncz({ ok: true, ...blokDesignerski(plan, iu, projekt) }, true)
   }
   if (polecenie !== 'sprawdz' && polecenie !== 'generuj') zleArgumenty(`nieznane polecenie ${polecenie}`)
   const plan = planWzgledny(projekt, sciezka)

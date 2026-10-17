@@ -8,6 +8,7 @@ import { join } from 'node:path'
 import { akcja, sprawdzBudzet } from './budzet-pliku.mjs'
 import { sprawdzCzesci } from './czesci-pr.mjs'
 import { ekranyFigmy, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
+import { sprawdzMakiety } from './makiety.mjs'
 import { sciezkaWzgledna } from './przygotowanie.mjs'
 import { uwagiRejestru } from './rejestr-stalych.mjs'
 
@@ -176,6 +177,9 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
   w.uwagi.push(...uwagiRejestru(plan, jednostki))
+  const makiety = sprawdzMakiety(plan, jednostki, projekt)
+  w.bledy.push(...makiety.bledy)
+  w.uwagi.push(...makiety.uwagi)
   const czesci = sprawdzCzesci(plan, projekt)
   w.bledy.push(...czesci.bledy)
   w.uwagi.push(...czesci.uwagi)

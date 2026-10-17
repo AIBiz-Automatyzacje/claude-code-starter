@@ -1,0 +1,418 @@
+{
+ "katalog": "/Users/kacper_trzepiecinski/.claude/jobs/123cfb99/tmp/p21",
+ "mapa_ab": {
+  "A": "stary",
+  "B": "nowy"
+ },
+ "warianty": {
+  "stary": {
+   "etap_fix": {
+    "kontrola": {
+     "agentow": 1,
+     "jedn": 0.278,
+     "ctx_max": 110710,
+     "tury": 21
+    },
+    "fix": {
+     "agentow": 1,
+     "jedn": 2.086,
+     "ctx_max": 274858,
+     "tury": 87
+    },
+    "poprawka": {
+     "agentow": 1,
+     "jedn": 0.43,
+     "ctx_max": 118457,
+     "tury": 33
+    }
+   },
+   "etap_fix_jedn": 2.794,
+   "wynik_runu": {
+    "status": "OK",
+    "wariant": "stary",
+    "fixInfo": {
+     "naprawione": 15,
+     "nierozwiazaneP2": 1
+    },
+    "kontrolaFixa": {
+     "pozycje": 6,
+     "naprawione": 6,
+     "walidacja": "PASS",
+     "pominiete": [],
+     "bezSladu": 0
+    },
+    "gateFazy": "ZASTRZEZENIA",
+    "cykle": 1
+   },
+   "logi": [
+    "Fix fazy 4: naprawiono 15, nierozwiazane P1=0 P2=1, walidacja PASS",
+    "Faza 4: kontrola diffu naprawczego zwraca 6 pozycji do fixa (jeden cykl):\n  [K-3] src/components/konto/link-wygasl.tsx:102 — Nowa karta `LinkZmianyAdresuWygasl` mówi „Zaloguj się i zmień adres jeszcze raz w ustawieniach profilu — wyślemy nowy link.” (JSDoc l.92 tak samo), ale aplikacja nie ma zmiany adresu e-mail w UI. Plan, Granice zakresu (docs/plans/2026-10-14-001-feat-etap-3-konto-i-auth-plan.md:61): „Bez zmiany adresu e-mail w UI”; `git grep` nie znajduje `updateUser({ email` w src. Fix zamienił jedną nieprawdziwą obietnicę (resend signup) na drugą: kieruje do funkcji, której nie ma. Poprawka: tekst karty bez obietnicy zmiany w ustawieniach, np. „Poproś o zmianę adresu jeszcze raz tam, skąd ją zlecono”, albo kontakt i zalogowanie. JSDoc i test potwierdz.test.tsx:374 dostosować do nowego tekstu.\n  [K-3] src/lib/konto/akcje-auth.ts:76 — Fix finding potwierdzenie.html:14 tylko częściowo: szablon przekazuje `powrot={{ .RedirectTo }}`, ale ponowna wysyłka maila potwierdzającego (`wyslijPonownie` → `resend({ type: 'signup', email })` bez `options.emailRedirectTo`; wołana przez wyslijMailPonownie w sprawdz-skrzynke.tsx, link-wygasl.tsx i przez krok-logowania.tsx:80) daje RedirectTo = Site URL. Po „Wyślij ponownie” `powrot` wskazuje `/`, a nie stronę źródłową. Finding wprost wymagał „obsługi resend bez emailRedirectTo”. Poprawka: `wyslijPonownie(email, sciezkaPowrotu)` z `options: { emailRedirectTo: adresWAplikacji(bezpiecznaSciezka(...)) }` (ścieżka przekazana z kroku rejestracji do „Sprawdź skrzynkę”), test żądania /auth/v1/resend z `redirect_to` (albo `email_redirect_to`), albo świadomy wpis w known-issues.\n  [K-3] supabase/szablony-maili/potwierdzenie.html:16 — `{{ .RedirectTo }}` trafia do query bez kodowania. W widocznym tekście linku do skopiowania (kontekst tekstowy szablonu, bez URL-escape) RedirectTo z zapytaniem, np. `https://staging.vibersi.pl/p/hubal?zrodlo=pasek&x=1`, gubi wszystko po pierwszym `&` (staje się osobnym parametrem), a `#` ucina resztę. Test potwierdz.test.tsx:278 podaje `powrot` zakodowany `encodeURIComponent`, więc nie sprawdza surowej postaci, jaką wstawia GoTrue. Poprawka: test `/auth/potwierdz?...&powrot=${origin}/p/hubal?zrodlo=pasek` (surowo) z oczekiwaną ścieżką, a w szablonie link tekstowy z kodowaniem albo emailRedirectTo jako sama ścieżka bez zapytania. Zachowanie href zależy od escapowania html/template w GoTrue i wymaga sprawdzenia mailem na e2e.\n  [K-4] docs/active/etap-3-konto-i-auth/etap-3-konto-i-auth-kontekst.md:82 — Wpis IU-8 opisuje `komunikaty-okna.tsx` jako moduł z `bladEmaila` i leniwym `akcjeAuth`, a w „Następne kroki” wymienia kopie w krok-logowania i use-wylogowanie. Po fixie `bladEmaila` jest w src/lib/konto/email.ts, a `akcjeAuth` w src/lib/konto/wczytaj-akcje-auth.ts. Podobnie l.83 (IU-9): „wygasły email_change ponawia jako signup”, „szablony nie przekazują powrot”. Historii nie przepisywać; dopisać wpis fixa fazy 4 z nowymi lokalizacjami (`email.ts`, `wczytaj-akcje-auth.ts`, `haslo.ts`, `ponowna-wysylka.ts`, `kroki-okna-auth.tsx`, `formularz-emaila.tsx`) i oznaczeniem, że te następne kroki są zamknięte.\n  [K-5] src/pages/potwierdz.tsx:17 — Komentarz: „`powrot` to `{{ .RedirectTo }}` z szablonu maila: adres strony, z której założono konto”. Po ponownej wysyłce (resend bez emailRedirectTo) RedirectTo to Site URL, nie strona źródłowa. Poprawić komentarz („…albo Site URL dla maila z ponownej wysyłki”) albo naprawić resend (K-3).\n  [K-5] docs/plans/2026-10-14-001-feat-etap-3-konto-i-auth-plan.md:704 — Plan IU-9 opisuje stan sprzed fixa: „ścieżka z `powrot` w URL po `bezpiecznaSciezka`” (teraz `sciezkaZAdresuPowrotu` z pełnym adresem RedirectTo) i jedną kartę `link_wygasl` z „Wyślij nowy link” (`resend` typ `signup`) także dla `email_change` (teraz osobna karta `LinkZmianyAdresuWygasl`). Linia 707 podaje adres szablonu potwierdzenia bez `&powrot={{ .RedirectTo }}`. Zaktualizować oba akapity do kodu po fixie.",
+    "Faza 4: tura poprawkowa — naprawiono 6/6, walidacja PASS",
+    "Faza 4: GRACEFUL — 1x P2 do known-issues, kontynuuje"
+   ],
+   "walidacja": {
+    "typecheck": true,
+    "testy_kod": 0,
+    "testy_padly": 0,
+    "testy_przeszly": 1181,
+    "commity": [
+     "cf6a3a5 fix(etap-3-konto-i-auth): kontrola diffu naprawczego fazy 4",
+     "2e05133 fix(etap-3-konto-i-auth): poprawki po review fazy 4"
+    ]
+   },
+   "sedzia": {
+    "oceny": {
+     "F1": "NIENAPRAWIONY",
+     "F2": "NAPRAWIONY",
+     "F3": "NAPRAWIONY",
+     "F4": "NAPRAWIONY",
+     "F5": "NAPRAWIONY",
+     "F6": "NAPRAWIONY",
+     "F7": "NAPRAWIONY",
+     "F8": "NAPRAWIONY",
+     "F9": "NAPRAWIONY",
+     "F10": "NAPRAWIONY",
+     "F11": "NAPRAWIONY",
+     "F12": "NAPRAWIONY",
+     "F13": "CZESCIOWO",
+     "F14": "NAPRAWIONY",
+     "F15": "NAPRAWIONY",
+     "F16": "NAPRAWIONY"
+    },
+    "licznik": {
+     "NAPRAWIONY": 14,
+     "CZESCIOWO": 1,
+     "NIENAPRAWIONY": 1
+    },
+    "regresje": []
+   },
+   "a9_pliki_diffu_poprawki": [
+    "src/components/konto/link-wygasl.tsx",
+    "src/lib/konto/akcje-auth.ts",
+    "supabase/szablony-maili/potwierdzenie.html",
+    "docs/active/etap-3-konto-i-auth/etap-3-konto-i-auth-kontekst.md",
+    "src/pages/potwierdz.tsx",
+    "docs/plans/2026-10-14-001-feat-etap-3-konto-i-auth-plan.md"
+   ]
+  },
+  "nowy": {
+   "etap_fix": {
+    "kontrola": {
+     "agentow": 1,
+     "jedn": 0.323,
+     "ctx_max": 96789,
+     "tury": 27
+    },
+    "fix": {
+     "agentow": 3,
+     "jedn": 1.756,
+     "ctx_max": 165585,
+     "tury": 136
+    },
+    "poprawka": {
+     "agentow": 1,
+     "jedn": 0.246,
+     "ctx_max": 80942,
+     "tury": 25
+    }
+   },
+   "etap_fix_jedn": 2.325,
+   "wynik_runu": {
+    "status": "OK",
+    "wariant": "nowy",
+    "fixInfo": {
+     "naprawione": 15,
+     "nierozwiazaneP2": 1,
+     "porcje": 3
+    },
+    "kontrolaFixa": {
+     "pozycje": 8,
+     "naprawione": 8,
+     "walidacja": "PASS",
+     "pominiete": [],
+     "bezSladu": 0
+    },
+    "gateFazy": "ZASTRZEZENIA",
+    "cykle": 1
+   },
+   "logi": [
+    "Fix fazy 4, porcja 1/3 (6 findingow: scripts/szablony-maili/wgraj.sh, src/components/konto/komunikat-dolny.test.tsx, src/components/konto/krok-logowania.tsx, src/components/konto/krok-rejestracji.test.tsx, src/components/konto/krok-resetu.test.tsx, src/components/konto/krok-resetu.tsx): naprawiono 6, nierozwiazane P1=0 P2=0, walidacja PASS",
+    "Fix fazy 4, porcja 2/3 (6 findingow: src/components/konto/link-wygasl.tsx, src/components/konto/okno-auth.tsx, src/components/konto/sprawdz-skrzynke.tsx, src/pages/nowe-haslo.test.tsx, src/pages/nowe-haslo.tsx): naprawiono 5, nierozwiazane P1=0 P2=1, walidacja PASS",
+    "Fix fazy 4, porcja 3/3 (4 findingow: src/pages/potwierdz.test.tsx, src/pages/potwierdz.tsx, supabase/szablony-maili/potwierdzenie.html): naprawiono 4, nierozwiazane P1=0 P2=0, walidacja PASS",
+    "Fix fazy 4 (3 porcji): naprawiono 15, nierozwiazane P1=0 P2=1, walidacja PASS",
+    "Faza 4: kontrola diffu naprawczego zwraca 8 pozycji do fixa (jeden cykl):\n  [K-2] src/pages/potwierdz.tsx:41 — celPowrotu, gałąź tego samego originu: bezpiecznaSciezka(`${pathname}${search}${hash}`) nie ma testu odmowy. Usunięcie tego wywołania (zwrot surowej ścieżki) przechodzi zestaw testów i otwiera przekierowanie na obcy host. Wejścia obejścia (zakodowane w powrot): `${origin}//evil.example/x` (pathname //evil.example/x), `${origin}/\\evil.example` (parser zamienia \\ na /, pathname //evil.example), `${origin}/.//evil.example` (po normalizacji //evil.example). Do tego `javascript:alert(1)`: URL.canParse daje true, a origin 'null' trafia w gałąź obcego originu, też bez testu. Dodać it.each w potwierdz.test.tsx z tymi czterema wejściami i oczekiwanym href '/'.\n  [K-3] supabase/szablony-maili/potwierdzenie.html:14 — Fix wstawia powrot={{ .RedirectTo }} bez kodowania, a RedirectTo to pełny adres z emailRedirectTo (origin + bezpiecznaSciezka(sciezkaPowrotu), akcje-auth.ts:68), który może mieć własne ?a=1&b=2 albo #. Jeśli GoTrue renderuje szablon bez kodowania URL w kontekście atrybutu (text/template), parametry strony źródłowej po pierwszym & przepadają albo wchodzą do linku jako osobne parametry, a # ucina powrot. Testy w potwierdz.test.tsx:169-180 podają powrot przez encodeURIComponent, więc nie odwzorowują linku z maila. Trzeba to sprawdzić na e2e (mail z rejestracji ze strony z query). Jeśli się potwierdzi: albo przekazywać w emailRedirectTo samą ścieżkę bez query, albo test i celPowrotu muszą obsłużyć surowy adres; do tego dodać test z niezakodowanym powrot zawierającym &.\n  [K-4] docs/active/etap-3-konto-i-auth/etap-3-konto-i-auth-kontekst.md:82 — Wpis IU-8 opisuje `OpcjeOknaAuth` w `okno-auth.tsx` oraz `komunikaty-okna.tsx` z `bladEmaila` i leniwym `akcjeAuth`, a w 'Następnych krokach' wymienia kopie w krok-logowania i use-wylogowanie. Po fixie unia jest w kroki-okna-auth.tsx, bladEmaila w src/lib/konto/walidacja-emaila.ts, akcjeAuth w src/lib/konto/wczytaj-akcje-auth.ts, a kopie są usunięte. Dopisać notę o stanie po fixie fazy 4 albo zaktualizować wpis.\n  [K-5] src/components/konto/link-wygasl.tsx:54 — JSDoc LinkWygasl mówi 'potwierdzenie adresu (także zmiana e-maila)'. Po 1d80051 email_change trafia do LinkZmianyAdresuWygasl w potwierdz.tsx, nie do LinkWygasl. Usunąć '(także zmiana e-maila)'.\n  [K-5] src/lib/konto/ponowna-wysylka.ts:6 — JSDoc RodzajMaila mówi 'potwierdzenie adresu (po rejestracji, także zmiana e-maila)'. 'potwierdzenie' woła resend typu signup, który dla zmiany e-maila nie wychodzi (to był powód findingu potwierdz:129). Usunąć 'także zmiana e-maila'.\n  [K-5] src/pages/potwierdz.tsx:16 — Komentarz nagłówkowy mówi 'wygasły link → karta z ponowną wysyłką'. Po fixie wygasły link email_change daje kartę bez wysyłki, z 'Zaloguj się'. Dopisać ten wariant.\n  [K-5] docs/plans/2026-10-14-001-feat-etap-3-konto-i-auth-plan.md:704 — Plan IU-9 opisuje 'ścieżka z `powrot` w URL po `bezpiecznaSciezka`' i `link_wygasl` z 'Wyślij nowy link' (resend signup) dla wszystkich typów poza recovery. Po fixie powrot to pełny adres RedirectTo sprawdzany przez celPowrotu (origin, potem bezpiecznaSciezka), a email_change ma kartę z logowaniem. Zaktualizować akapit.\n  [K-5] docs/plans/2026-10-14-001-feat-etap-3-konto-i-auth-plan.md:707 — Plan podaje adres przycisku szablonu potwierdzenia jako `{{ .SiteURL }}/auth/potwierdz?token_hash={{ .TokenHash }}&type=email`. Po fixie szablon ma dodatkowo `&powrot={{ .RedirectTo }}`. To samo w docs/operator/etap-3-teksty-auth-szkic.md:13. Zaktualizować oba opisy.",
+    "Faza 4: tura poprawkowa — naprawiono 8/8, walidacja PASS",
+    "Faza 4: GRACEFUL — 1x P2 do known-issues, kontynuuje"
+   ],
+   "walidacja": {
+    "typecheck": true,
+    "testy_kod": 0,
+    "testy_padly": 0,
+    "testy_przeszly": 1190,
+    "commity": [
+     "4bb2c55 fix(etap-3-konto-i-auth): kontrola diffu naprawczego fazy 4",
+     "1d80051 fix(etap-3-konto-i-auth): poprawki po review fazy 4",
+     "cfe4aab fix(etap-3-konto-i-auth): poprawki po review fazy 4",
+     "099033e fix(etap-3-konto-i-auth): poprawki po review fazy 4"
+    ]
+   },
+   "sedzia": {
+    "oceny": {
+     "F1": "NIENAPRAWIONY",
+     "F2": "NAPRAWIONY",
+     "F3": "NAPRAWIONY",
+     "F4": "NAPRAWIONY",
+     "F5": "NAPRAWIONY",
+     "F6": "NAPRAWIONY",
+     "F7": "NAPRAWIONY",
+     "F8": "CZESCIOWO",
+     "F9": "NAPRAWIONY",
+     "F10": "NAPRAWIONY",
+     "F11": "CZESCIOWO",
+     "F12": "NAPRAWIONY",
+     "F13": "NAPRAWIONY",
+     "F14": "NAPRAWIONY",
+     "F15": "NAPRAWIONY",
+     "F16": "NAPRAWIONY"
+    },
+    "licznik": {
+     "NAPRAWIONY": 13,
+     "CZESCIOWO": 2,
+     "NIENAPRAWIONY": 1
+    },
+    "regresje": []
+   },
+   "a9_pliki_diffu_poprawki": [
+    "src/pages/potwierdz.tsx",
+    "supabase/szablony-maili/potwierdzenie.html",
+    "docs/active/etap-3-konto-i-auth/etap-3-konto-i-auth-kontekst.md",
+    "src/components/konto/link-wygasl.tsx",
+    "src/lib/konto/ponowna-wysylka.ts",
+    "docs/plans/2026-10-14-001-feat-etap-3-konto-i-auth-plan.md"
+   ]
+  }
+ },
+ "koszt_krokow": {
+  "fix-stary": {
+   "run": "wf_0b5bfbd0-d1a",
+   "status": "completed",
+   "ms": 1807056,
+   "jedn": 2.794,
+   "agenci": [
+    {
+     "etykieta": "fix:kontrola:faza-4",
+     "jedn": 0.278,
+     "tury": 21,
+     "ctx_max": 110710
+    },
+    {
+     "etykieta": "fix:faza-4",
+     "jedn": 2.086,
+     "tury": 87,
+     "ctx_max": 274858
+    },
+    {
+     "etykieta": "fix:poprawka:faza-4",
+     "jedn": 0.43,
+     "tury": 33,
+     "ctx_max": 118457
+    }
+   ]
+  },
+  "fix-nowy": {
+   "run": "wf_65f3ba9f-153",
+   "status": "completed",
+   "ms": 1713880,
+   "jedn": 2.325,
+   "agenci": [
+    {
+     "etykieta": "fix:kontrola:faza-4",
+     "jedn": 0.323,
+     "tury": 27,
+     "ctx_max": 96789
+    },
+    {
+     "etykieta": "fix:faza-4:porcja-3",
+     "jedn": 0.293,
+     "tury": 28,
+     "ctx_max": 88588
+    },
+    {
+     "etykieta": "fix:poprawka:faza-4",
+     "jedn": 0.246,
+     "tury": 25,
+     "ctx_max": 80942
+    },
+    {
+     "etykieta": "fix:faza-4:porcja-1",
+     "jedn": 0.958,
+     "tury": 65,
+     "ctx_max": 165585
+    },
+    {
+     "etykieta": "fix:faza-4:porcja-2",
+     "jedn": 0.505,
+     "tury": 43,
+     "ctx_max": 118036
+    }
+   ]
+  },
+  "sedzia": {
+   "run": "wf_be540561-c19",
+   "status": "completed",
+   "ms": 240760,
+   "jedn": 0.842,
+   "agenci": [
+    {
+     "etykieta": "sedzia:oceny:2",
+     "jedn": 0.149,
+     "tury": 20,
+     "ctx_max": 62242
+    },
+    {
+     "etykieta": "sedzia:regresje:A",
+     "jedn": 0.171,
+     "tury": 15,
+     "ctx_max": 80489
+    },
+    {
+     "etykieta": "sedzia:oceny:3",
+     "jedn": 0.145,
+     "tury": 15,
+     "ctx_max": 64033
+    },
+    {
+     "etykieta": "sedzia:oceny:1",
+     "jedn": 0.07,
+     "tury": 12,
+     "ctx_max": 36445
+    },
+    {
+     "etykieta": "sedzia:regresje:B",
+     "jedn": 0.226,
+     "tury": 18,
+     "ctx_max": 102392
+    },
+    {
+     "etykieta": "sedzia:oceny:0",
+     "jedn": 0.081,
+     "tury": 11,
+     "ctx_max": 42973
+    }
+   ]
+  },
+  "smoke": {
+   "run": "wf_573177b5-403",
+   "status": "completed",
+   "ms": 155584,
+   "jedn": 0.284,
+   "agenci": [
+    {
+     "etykieta": "smoke:hook-env",
+     "jedn": 0.008,
+     "tury": 2,
+     "ctx_max": 5756
+    },
+    {
+     "etykieta": "smoke:e2e-a1",
+     "jedn": 0.07,
+     "tury": 11,
+     "ctx_max": 29422
+    },
+    {
+     "etykieta": "verify-batch:0:4",
+     "jedn": 0.069,
+     "tury": 10,
+     "ctx_max": 35063
+    },
+    {
+     "etykieta": "verify-batch:3:4",
+     "jedn": 0.051,
+     "tury": 4,
+     "ctx_max": 38990
+    },
+    {
+     "etykieta": "verify-batch:2:4",
+     "jedn": 0.042,
+     "tury": 7,
+     "ctx_max": 27603
+    },
+    {
+     "etykieta": "verify-batch:1:4",
+     "jedn": 0.044,
+     "tury": 7,
+     "ctx_max": 27767
+    }
+   ]
+  }
+ },
+ "koszt_razem": 6.25,
+ "sedzia_uzasadnienia": {
+  "F1": "A: w A/po nie ma nigdzie captcha, Turnstile ani max_frequency (grep zwraca pusto), a A/po/src/lib/konto/ponowna-wysylka.ts:15 i akcje-auth.ts:79,99 wysyłają resend/recover bez captchaToken; limit 60 s nadal istnieje tylko w UI (sprawdz-skrzynke.tsx). B: tak samo, B/po/src/lib/konto/ponowna-wysylka.ts:15 i akcje-auth.ts:76,92 wywołują wysyłkę bez captchaToken, a w B/po nie ma żadnej konfiguracji CAPTCHA.",
+  "F2": "A: krok-logowania.tsx:8-12 importuje bladEmaila z lib/konto/email, akcjeAuth z lib/konto/wczytaj-akcje-auth, dostawcaWToku i Separator z elementy-krokow oraz AlertOkna i komunikatBleduOkna; limit i sieć idą przez komunikatBleduOkna (:51), a use-wylogowanie.ts:3 korzysta ze wspólnego loadera. B: krok-logowania.tsx:6-12 robi to samo (bladEmaila przez useWalidacjaEmaila z lib/konto/walidacja-emaila, akcjeAuth z wczytaj-akcje-auth, elementy-krokow, AlertOkna), KOMUNIKATY_LOGOWANIA (:40-44) nie zawierają już tekstów limitu i sieci, a use-wylogowanie.ts:3 używa wspólnego akcjeAuth.",
+  "F3": "A: A/po/src/lib/konto/haslo.ts:6-14 definiuje KOMUNIKAT_ZA_KROTKIEGO_HASLA, PODPOWIEDZ_HASLA i czyHasloDosycDlugie, a korzystają z nich nowe-haslo.tsx:13, formularz-rejestracji.tsx:6 i akcje-auth.ts:7,62,131; lokalnych kopii reguły już nie ma. B: B/po/src/lib/konto/haslo.ts:6-14 zawiera ten sam zestaw, używany w nowe-haslo.tsx:13, formularz-rejestracji.tsx:6 i akcje-auth.ts:7,62,124, bez lokalnych definicji.",
+  "F4": "A: A/po/src/lib/konto/ponowna-wysylka.ts:5,12-16 to jedna unia RodzajMaila i jeden dyspozytor wyslijMailPonownie, używany w sprawdz-skrzynke.tsx:26 i link-wygasl.tsx:37; tekst anty-enumeracji występuje tylko raz, w komunikaty-okna.tsx:23-24 (tekstWyslaniaResetu), i korzystają z niego kroki-okna-auth.tsx:61 oraz link-wygasl.tsx:43. B: B/po/src/lib/konto/ponowna-wysylka.ts:7,12-21 zawiera RodzajMaila, wyslijMailPonownie i tekstWyslaniaResetu, używane w sprawdz-skrzynke.tsx:23, link-wygasl.tsx:35,41 i kroki-okna-auth.tsx:48; PowodWysylki i RodzajLinku zostały usunięte.",
+  "F5": "A: test w A/po/src/pages/potwierdz.test.tsx:388-401 wpisuje 'kasia@' na karcie wygaslego linku i sprawdza komunikat bledu pola, fokus oraz ze /auth/v1/resend nie zostal wywolany. B: test w B/po/src/pages/potwierdz.test.tsx:267-286 sprawdza komunikat bledu i fokus, a potem wysyla poprawny adres i oczekuje dokladnie jednego /auth/v1/resend, wiec padlby, gdyby 'kasia@' poszedl do serwera; dodatkowo B/po/src/components/konto/formularz-emaila.test.tsx:23-33 sprawdza, ze onWyslij nie zostal wywolany.",
+  "F6": "A: A/po/src/config/trasy.ts:26-28 definiuje TYPY_POTWIERDZENIA as const i wyprowadza z niego TypPotwierdzenia, a A/po/src/pages/potwierdz.tsx:31 korzysta z tej stalej zamiast recznego TYPY_LINKU. B: identycznie, B/po/src/config/trasy.ts:26-28 oraz B/po/src/pages/potwierdz.tsx:33.",
+  "F7": "A: A/po/src/pages/potwierdz.tsx:131 kieruje email_change do osobnej karty LinkZmianyAdresuWygasl (A/po/src/components/konto/link-wygasl.tsx:106-120), ktora nie ma formularza resend i odsyla do logowania oraz kontaktu, bo w aplikacji nie ma zmiany adresu w UI; test w A/po/src/pages/potwierdz.test.tsx:403-420 potwierdza, ze nie idzie zadne zadanie poza verify. B: B/po/src/pages/potwierdz.tsx:173-175 kieruje email_change do LinkZmianyAdresuWygasl (linie 152-171), ktora prowadzi do logowania i ponownej zmiany adresu w ustawieniach bez resend typu signup; pokrywa to test w B/po/src/pages/potwierdz.test.tsx:353-358.",
+  "F8": "A: wydzielono hook useWalidacjaEmaila (A/po/src/hooks/konto/use-walidacja-emaila.ts:9) oraz FormularzEmaila i PoleEmaila (A/po/src/components/konto/formularz-emaila.tsx:21,49); krok-resetu.tsx:68 i link-wygasl.tsx:74 uzywaja FormularzEmaila, a formularz-rejestracji.tsx:150,176 uzywa hooka i PoleEmaila, wiec zadna kopia nie zostaje. B: hook (B/po/src/hooks/konto/use-walidacja-emaila.ts:21) i FormularzEmaila (B/po/src/components/konto/formularz-emaila.tsx:20) usuwaja kopie w resecie i w linku, ale formularz-rejestracji.tsx:174-188 nadal ma recznie skopiowany JSX pola e-mail (type/autoComplete/inputMode/spellCheck), taki sam jak formularz-emaila.tsx:33-47, wiec kopia pola w rejestracji zostaje czesciowo.",
+  "F9": "A: OpcjeOknaAuth, TrescKroku i teksty nagłówka (jako naglowekKroku) przeniesione do A/po/src/components/konto/kroki-okna-auth.tsx:15/41/79, a okno-auth.tsx importuje je w :7 i ma teraz 163 linie zamiast 276. B: OpcjeOknaAuth, tekstyKroku/ukladKroku i TrescKroku przeniesione do B/po/src/components/konto/kroki-okna-auth.tsx:14/34/54/68, okno-auth.tsx importuje je w :17 i ma 176 linii; obie wersje nadal przekraczają plan 150 linii, ale wykonały dokładnie te przenosiny, których żądał finding.",
+  "F10": "A: szablon A/po/supabase/szablony-maili/potwierdzenie.html:14 i :16 dokleja do linku `&powrot={{ .RedirectTo | urlquery }}`, a A/po/src/pages/potwierdz.tsx:49 zamienia ten pełny adres na ścieżkę strony źródłowej przez sciezkaZAdresuPowrotu (A/po/src/lib/konto/sciezka-powrotu.ts:36-40). B: szablon B/po/supabase/szablony-maili/potwierdzenie.html:14 i :16 dokleja `&powrot={{ .RedirectTo }}` bez kodowania, a B/po/src/pages/potwierdz.tsx:30-56 (SUROWY_POWROT, powrotZAdresu, celPowrotu) odczytuje surowy adres i sprowadza go do ścieżki na tym samym originie.",
+  "F11": "A: nowy plik A/po/src/components/konto/krok-rejestracji-stany.test.tsx testuje dostawcę i pageshow (:107-137), strażnika isZajete kliknięciem w Google w trakcie rejestracji e-mailem z asercją jednego fetch i braku wpisu w sessionStorage (:139-153), podwójny klik (:157), pusty alert (:170-191), nieznany błąd 500 (:193) i niewczytany moduł (:218). Nie dało się sprawdzić, czy przyciski-dostawcow.tsx ma własną blokadę kliknięć, bo pliku nie ma w katalogu. B: B/po/src/components/konto/krok-rejestracji.test.tsx pokrywa dostawcę, pageshow, pusty alert, nieznany błąd i niewczytany moduł, ale strażnika isZajete sprawdza tylko podwójnym klikiem „Zakładanie konta…”; ten klik blokuje już osobny strażnik w B/po/src/components/konto/formularz-rejestracji.tsx:163, a kliknięcia dostawcy w trakcie akcji nie testuje nic, więc mutant `if (isZajete) return` w krok-rejestracji.tsx:77 przeżywa.",
+  "F12": "A: A/po/src/components/konto/krok-resetu.test.tsx testuje pusty submit, walidację na żywo i przy opuszczeniu pola (w tym brak błędu w trakcie pisania i przy pustym polu), podwójny klik razem z zablokowanym „Zamknij”, pusty alert w trakcie ponownej wysyłki oraz niewczytany moduł (dodane bloki describe od „KrokResetu — walidacja pola e-mail” w diffie). B: B/po/src/components/konto/krok-resetu.test.tsx dodaje testy pustego submitu, walidacji na żywo i przy opuszczeniu pola, podwójnego kliku z zablokowanym „Zamknij”, alertu w trakcie wysyłki i niewczytanego modułu; brak walidacji przed pierwszym błędem pokrywa nowy test haka use-walidacja-emaila.test.ts (sprawdza use-walidacja-emaila.ts:34).",
+  "F13": "A: A/po/src/pages/nowe-haslo.test.tsx ma testy na granicę 8 znaków (:200), pusty alert, błąd 500, fokus przy braku sieci, walidację na żywo i niewczytany moduł (:284, doMock po resetModules w renderujStrone działa). Test podwójnego kliku (:249-267) liczy jednak PUT, gdy pierwszy zapis wciąż wisi; useActionState kolejkuje akcje, więc bez strażnika `if (isWToku) return` druga akcja i tak nie ruszy przed asercją PUT==1 i test przechodzi mimo defektu. B: A/B mają te same przypadki (B/po/src/pages/nowe-haslo.test.tsx:206, :274), a test podwójnego kliku (:240-259) rozwiązuje pierwsze żądanie i dopiero wtedy sprawdza toHaveBeenCalledTimes(1) i alert; bez strażnika druga akcja z kolejki wyśle drugie żądanie albo zablokuje alert, więc test padnie.",
+  "F14": "A: A/po/src/pages/potwierdz.test.tsx:329-337 sprawdza ścieżkę /auth/potwierdz bez parametrów i REPLACE po wygasłym resecie, :347 REPLACE dla nieznanego typu, :350 sukces bez sesji, :366 błąd 500 z pozostawionym linkiem w adresie, :376 niewczytany moduł bez /verify. B: B/po/src/pages/potwierdz.test.tsx:340 sprawdza ścieżkę i pusty search po wygasłym resecie, :336 REPLACE dla type=cos, :223 sukces bez sesji, :385 błąd 500, :396 niewczytany moduł bez żądania.",
+  "F15": "A: A/po/src/components/konto/komunikat-dolny.test.tsx:27-35 bez komunikatu przesuwa zegar o CZAS_KOMUNIKATU_MS i ponownie sprawdza pusty region, tak jak każe finding; liczba timerów sprawdzana jest jednak dopiero po przesunięciu (:34), więc to słabsza kontrola niż w B. B: B/po/src/components/konto/komunikat-dolny.test.tsx:29 zapisuje liczbę timerów zaraz po renderze, potem advanceTimersByTime i ponowna asercja pustego regionu, więc wykrywa także chowanie zaplanowane bez komunikatu.",
+  "F16": "A: A/po/scripts/szablony-maili/wgraj.test.mjs (node:test, atrapa curl w PATH) sprawdza exit 1 bez wywołania curl dla złego refu, http:// i obcego hosta oraz exit 2 dla prod (:79-82). B: B/po/scripts/szablony-maili/wgraj.test.mjs sprawdza te same odmowy (zły ref, http, host spoza *.supabase.co → exit 1, prod → exit 2 na :83-86) z pustą listą wywołań curl, a do tego ścieżkę pozytywną."
+ },
+ "roznice_sedziego": [
+  "F8",
+  "F11",
+  "F13"
+ ],
+ "smoke": {
+  "wynik": {
+   "hook": {
+    "zablokowane": true,
+    "komunikat": "Hook Bash (env-wartosci) odmowil wykonania `cat .env.smoke-p20`, bo wypisalby wartosci sekretow z pliku do transkryptu."
+   },
+   "verify": {
+    "findingi": 16,
+    "porcje": 4,
+    "rozmiary": [
+     4,
+     4,
+     4,
+     4
+    ],
+    "werdykty": [
+     4,
+     4,
+     4,
+     4
+    ]
+   },
+   "e2e": {
+    "findings": [],
+    "przebiegi": [
+     {
+      "checkbox": "Test: [E2E] `strona-smoke-a1` — otwórz /smoke-a1.html, sprawdź nagłówek „Smoke A1” i tekst „gotowe” w #stan, zrób screenshot → nagłówek i tekst widoczne",
+      "flow": "strona-smoke-a1",
+      "wynik": "PASS",
+      "przyczyna": "nie-dotyczy",
+      "dowod": "Preflight: agent-browser doctor --offline --quick 'Summary: 6 pass, 0 warn, 0 fail', curl E2E_URL -> 200. agent-browser open <E2E_URL>/smoke-a1.html (http://127.0.0.1:5199/smoke-a1.html) + wait networkidle; snapshot: heading \"Smoke A1\" [level=1] oraz paragraph \"gotowe\"; get text h1 = 'Smoke A1', get text #stan = 'gotowe'. Zrzut niedostępny (> 30 s, exit 142; próbny zrzut about:blank też przerwany po 30 s) — wynik z asercji snapshotu i get text. Uwaga: mapa-funkcji.md nie ma wpisu dla flow strona-smoke-a1, scenariusz odegrany z opisu linii; plik public/smoke-a1.html nie istnieje w tym worktree, ale serwer e2e podaje stronę z oczekiwaną treścią."
+     }
+    ]
+   }
+  },
+  "logi": [
+   "Verify P2: 16 findingow w 4 porcjach po 4 (sortowane po pliku), tier sesji"
+  ]
+ },
+ "skan": {
+  "fix-stary": 0,
+  "fix-nowy": 0,
+  "sedzia": 0,
+  "smoke": 0
+ }
+}

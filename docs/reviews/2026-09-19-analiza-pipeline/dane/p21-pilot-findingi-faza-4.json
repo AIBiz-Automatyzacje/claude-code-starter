@@ -1,0 +1,98 @@
+[
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/components/konto/sprawdz-skrzynke.tsx:27",
+  "opis": "Publiczne ścieżki wysyłki maili (resend, recover, signUp) bez CAPTCHA; limit 60 s tylko w UI, wspólny limit 30/h projektu można wyczerpać atakiem. Włączyć Turnstile w Supabase Auth i przekazywać captchaToken w akcje-auth.ts; max_frequency >= 60 s."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/components/konto/krok-logowania.tsx:42",
+  "opis": "krok-logowania.tsx trzyma własne kopie akcjeAuth, tekstów limit/siec, bladEmaila i alertu; trzecia kopia loadera w use-wylogowanie.ts; Separator i dostawcaWToku skopiowane. Przenieść akcjeAuth i bladEmaila do src/lib/konto/ i przepiąć."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/pages/nowe-haslo.tsx:41",
+  "opis": "Reguła długości hasła zdefiniowana 3 razy (nowe-haslo, formularz-rejestracji, akcje-auth). Utworzyć src/lib/konto/haslo.ts z czyHasloDosycDlugie, KOMUNIKAT_ZA_KROTKIEGO_HASLA, PODPOWIEDZ_HASLA."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/components/konto/link-wygasl.tsx:16",
+  "opis": "Dwie unie (PowodWysylki/RodzajLinku) i dwa dyspozytory ponownej wysyłki; tekst anty-enumeracji powtórzony. Jedna unia RodzajMaila, wyslijMailPonownie i tekstWyslaniaResetu."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "src/components/konto/link-wygasl.tsx:63",
+  "opis": "Brak testu odmowy walidacji e-maila w FormularzNowegoLinku; dodać test 'kasia@' → błąd pola, fokus, brak /auth/v1/resend."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/pages/potwierdz.tsx:16",
+  "opis": "TYPY_LINKU ręcznie dubluje unię TypPotwierdzenia; zdefiniować TYPY_POTWIERDZENIA as const w config/trasy.ts i wyprowadzić typ."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/pages/potwierdz.tsx:129",
+  "opis": "Wygasły link email_change ponawia resend typu signup — mail nie wychodzi, UI kłamie. Osobny wariant karty kierujący do ponownej zmiany adresu w ustawieniach."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/components/konto/krok-resetu.tsx:47",
+  "opis": "FormularzResetu i FormularzNowegoLinku prawie identyczne, pole e-mail rejestracji trzecią kopią. Wydzielić FormularzEmaila i hook useWalidacjaEmaila."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "src/components/konto/okno-auth.tsx:164",
+  "opis": "okno-auth.tsx urósł do 276 linii (plan 150): routing kroków i teksty nagłówka. Przenieść OpcjeOknaAuth, tekstyNaglowka, TrescKroku do kroki-okna-auth.tsx."
+ },
+ {
+  "severity": "P2",
+  "typ": "KOD",
+  "plik": "supabase/szablony-maili/potwierdzenie.html:14",
+  "opis": "Szablon nie używa RedirectTo ani powrot, więc po potwierdzeniu użytkownik ląduje na / zamiast strony źródłowej; emailRedirectTo martwe. Zbudować link z RedirectTo albo usunąć powrot z planu."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "src/components/konto/krok-rejestracji.test.tsx:92",
+  "opis": "Mutanty Survived w krok-rejestracji.tsx (M16-M38): brak testów dostawcy, pageshow, strażnika isZajete, pustego alertu, nieznanego błędu i niewczytanego modułu akcji."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "src/components/konto/krok-resetu.test.tsx:90",
+  "opis": "Mutanty Survived w krok-resetu.tsx (M45-M67): pusty submit, walidacja na żywo/onBlur, podwójny klik, zajętość Zamknij, alert w trakcie, niewczytany moduł."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "src/pages/nowe-haslo.test.tsx:91",
+  "opis": "Mutanty Survived w nowe-haslo.tsx (M104-M118): granica 8 znaków, pusty alert, błąd 500, fokus przy braku sieci, podwójny klik, walidacja na żywo, niewczytany moduł."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "src/pages/potwierdz.test.tsx:107",
+  "opis": "Mutanty Survived w potwierdz.tsx (M124-M138): asercja ścieżki po wygasłym resecie, REPLACE, błąd 500, sukces bez sesji, niewczytany moduł."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "src/components/konto/komunikat-dolny.test.tsx:21",
+  "opis": "Mutant M146: test bez komunikatu nie przesuwa zegara; dodać advanceTimersByTime(CZAS_KOMUNIKATU_MS) i ponowną asercję."
+ },
+ {
+  "severity": "P2",
+  "typ": "TEST",
+  "plik": "scripts/szablony-maili/wgraj.sh:89",
+  "opis": "Guard celu w wgraj.sh bez testu odmowy; dodać wgraj.test.mjs (node --test) z atrapą curl: zły ref/http → exit 1, prod → exit 2."
+ }
+]

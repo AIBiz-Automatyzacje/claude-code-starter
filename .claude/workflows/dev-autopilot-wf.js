@@ -636,7 +636,8 @@ defekt nadal tam jest. Jesli JEST — napraw normalnie, wg klasyfikacji nizej. J
 juz poprawiony, plik usuniety, opis nieaktualny) — NIE wymuszaj zmiany: policz go jako zamkniety
 i napisz w raporcie jednym zdaniem, ze defekt nie wystepuje. Nigdy nie zgaduj — sprawdz w pliku.
 
-Pelny kontekst kazdego findingu: ${sciezka}/review-faza-${numerFazy}.md
+Pelny kontekst kazdego findingu: ${sciezka}/review-faza-${numerFazy}.md — czytasz tylko wpisy swoich findingow
+(\`grep -n '<plik findingu>' ${sciezka}/review-faza-${numerFazy}.md\`, potem zakres \`sed -n\`), nie caly raport
 (uwaga: findingi przeniesione opisano w raporcie z POPRZEDNIEGO podejscia, wiec ich pelnej tresci
 moze tam nie byc — wtedy zrodlem jest opis z listy powyzej).
 Checkboxy w sekcji "Do poprawy po review fazy ${numerFazy}" w ${sciezka}/*-zadania.md odznaczaj

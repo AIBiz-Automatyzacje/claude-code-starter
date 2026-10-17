@@ -36,6 +36,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `**Zależności:**` | `Brak`, `IU-K` albo zewnętrzny warunek | |
 | `**Pliki:**` | tabela `\| Akcja \| Plik \| Linie dziś → po \| Wymiary \| Werdykt \|` | jeden plik na wiersz; akcje `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e seed)` |
 | `**Delegate to:**` | `feature-builder-ui` \| `feature-builder-data` \| `feature-builder-fullstack` | bazowe nazwy |
+| `**Makiety:**` | nazwy z `figma_screens` w backtickach, po przecinku; `—` = jednostka nie buduje żadnego ekranu | IU ui/fullstack w planie z makietami; builder dostaje SPEC i PNG tylko tych ekranów |
 | `**Skills in play:**` | `skills:` buildera | dokumentacyjne |
 | `**Podejście:**` | lista decyzji; odwołanie do decyzji z jej treścią w nawiasie | |
 | `**Notatka wykonawcza:**` | jedno zdanie (test-first, characterization-first) | opcjonalne |

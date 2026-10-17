@@ -35,17 +35,34 @@ bottom-nav: https://figma.com/design/abc123/...?node-id=27-119
 
 Sparsuj na `{name, fileKey, nodeId}` (`figma.com/design/<fileKey>/...?node-id=<nodeId>`, w `nodeId` zamień `-` na `:`).
 
-## Krok E — pobranie i SPEC.md
+## Krok E — pobranie: agenci w częściach, SPEC per ekran
 
 Przed zapisem sprawdź `docs/plans/<feature-slug>-figma/`: folder istnieje, a w kroku F nie padło `Pobierz ponownie i nadpisz` → krok F.
 
-Dla każdego ekranu, po kolei (limit zapytań serwera Figma MCP), wywołaj narzędzia serwera Figma MCP — pełne nazwy zależą od podłączenia Figmy (plugin albo konektor claude.ai):
+Pobranie robią subagenci (`general-purpose`), nie sesja planowania, w częściach po kolei (limit zapytań serwera Figma MCP): do 8 ekranów — jeden agent, 9–16 — dwa, więcej — trzy; ekrany dzielisz równo w kolejności listy. Jeden agent na wszystkie ekrany etapu (23 ekrany, 81 tur) doszedł do 414k kontekstu i 2,26 M, bo każda odpowiedź `get_design_context` (do 94k znaków i zrzut ekranu) zostawała w kontekście do końca pracy.
 
-1. `get_design_context` z `fileKey` + `nodeId` — hierarchia, pomiary, paddingi, typografia, autoLayout; `width` i `height` frame'a to viewport designu ekranu;
-2. `get_variable_defs` z `fileKey` + `nodeId` — tokeny (kolory, spacing, fonty) użyte w frame;
-3. `get_screenshot` z `fileKey` + `nodeId` — PNG zapisany jako `docs/plans/<feature-slug>-figma/<name>.png`.
+Każdy agent dostaje: `fileKey`, swoją listę `{name, nodeId}`, folder `docs/plans/<feature-slug>-figma/`, ścieżkę `docs/DESIGN.md` i pliku z tokenami `@theme` projektu oraz polecenie (pełne nazwy narzędzi zależą od podłączenia Figmy — plugin albo konektor claude.ai; agent ładuje je przez ToolSearch i przed pierwszym `get_design_context` ładuje skill `figma:figma-design-to-code`):
 
-Potem jeden plik `docs/plans/<feature-slug>-figma/SPEC.md`:
+```text
+Dla każdego ekranu z listy, po kolei:
+1. get_screenshot (fileKey, nodeId, maxDimension 1600 dla ekranu szerszego niż 600 px, 1200 dla telefonu) → zapis PNG:
+   curl -sSL -o <folder>/<name>.png "<image_url>"; sprawdź `file <folder>/<name>.png` = PNG. PNG nie otwierasz narzędziem Read:
+   obraz zostaje w kontekście na resztę pracy, a SPEC opisujesz z danych get_design_context.
+2. get_design_context (fileKey, nodeId, clientFrameworks: react, clientLanguages: typescript, excludeScreenshot: true) — zrzut
+   jest już w pliku z kroku 1, więc odpowiedź bez obrazu. Odpowiedź oznaczona jako sparse → get_design_context widocznych dzieci
+   (też excludeScreenshot: true).
+3. Zapisz <folder>/ekrany/<name>.md: nagłówek `# <name> (`<nodeId>`) — <W>×<H>px`, hierarchia frame'a, pomiary (szerokości,
+   paddingi, odstępy, promienie, autoLayout), typografia (font, rozmiar, waga, interlinia), kolory jako nazwy zmiennych Figmy,
+   wszystkie teksty dosłownie (etykiety, nagłówki, placeholdery, komunikaty błędów, przyciski). Następny ekran zaczynasz
+   dopiero po zapisie pliku — z odpowiedzi narzędzia korzystasz tylko przy jego ekranie.
+Agent pierwszej części: get_variable_defs jednego reprezentatywnego ekranu → <folder>/tokeny.md (tabela
+`figma_variable | hex | token w projekcie`; brakujące w DESIGN.md oznacz „do dodania w DESIGN.md”).
+Wynik: wiersz na ekran `<name> | <W>×<H> | <nodeId>` i wiersze rozjazdów z DESIGN.md gotowe do tabeli
+`element | DESIGN.md | Figma | decyzja` (albo „brak rozjazdów”), bez pomiarów — wynik wraca do kontekstu sesji planowania,
+a pomiary są w plikach ekranów.
+```
+
+Z wyników agentów piszesz `docs/plans/<feature-slug>-figma/SPEC.md` — indeks bez pomiarów ekranów (builder czyta go razem z SPEC swoich ekranów):
 
 ```markdown
 # <Feature> — Specyfikacja Figma
@@ -55,24 +72,20 @@ Potem jeden plik `docs/plans/<feature-slug>-figma/SPEC.md`:
 
 ## Screeny referencyjne
 
-| Nazwa | Plik | Wymiary | Frame |
-|---|---|---|---|
-| <name> | `./<name>.png` | <W>×<H>px | `<nodeId>` |
+| Nazwa | Plik | SPEC ekranu | Wymiary | Frame |
+|---|---|---|---|---|
+| <name> | `./<name>.png` | `./ekrany/<name>.md` | <W>×<H>px | `<nodeId>` |
 
 ## Tokeny (Figma variables → `docs/DESIGN.md` lub `@theme {}` w global.css)
 
-[Tabela `figma_variable | hex | token w projekcie`; brakujące w DESIGN.md oznacz „do dodania w DESIGN.md”.]
-
-## <NAZWA EKRANU> (`<nodeId>`) — pełny ekran
-
-[Sekcja per komponent: paddingi, fonty, kolory, autoLayout — struktura frame'a 1:1.]
+[Treść `tokeny.md` przeniesiona tutaj; plik `tokeny.md` usuwasz.]
 
 ## Rozjazdy vs DESIGN.md — Figma jest źródłem prawdy
 
-[Tabela `element | DESIGN.md | Figma | decyzja`; bez rozjazdów: „Brak rozjazdów w chwili pobrania.”]
+[Tabela `element | DESIGN.md | Figma | decyzja` z wyników agentów; bez rozjazdów: „Brak rozjazdów w chwili pobrania.”]
 ```
 
-Datę w nagłówku SPEC bierzesz z `date +%F`. Do frontmattera planu:
+Datę w nagłówku SPEC bierzesz z `date +%F`. Każda IU ui/fullstack dostaje pole `**Makiety:**` z nazwami ekranów, które buduje (`—`, gdy żadnego) — planner wkleja builderowi SPEC i PNG tylko tych ekranów (`plan.mjs designerski`). Do frontmattera planu:
 
 ```yaml
 figma_spec: ./docs/plans/<feature-slug>-figma/SPEC.md

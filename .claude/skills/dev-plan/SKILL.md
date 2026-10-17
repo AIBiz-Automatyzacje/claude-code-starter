@@ -41,6 +41,15 @@ Plan jest gotowy, gdy implementator zaczyna pewnie bez dopisywania planu za cieb
 
 ### Faza 0: Wejście, źródło i głębokość
 
+#### 0.0 Świeża sesja
+
+`/dev-plan` zaczynasz w świeżej sesji. Gdy przed wywołaniem w tej sesji była inna praca (`/dev-prep`, makiety, research, analiza, poprzednie zadanie), zanim cokolwiek przeczytasz, zadaj `AskUserQuestion`: „Ta sesja ma już kontekst z wcześniejszej pracy — planowanie (ok. 50 tur) ciągnęłoby go w każdej turze. Co robimy?”
+
+- `Zrobię /clear i wrócę` (rekomendowane) — zakończ jedną linią: `/clear, potem /dev-plan <to samo wejście>`. Checklista `/dev-prep` i dokument źródłowy są na dysku, więc nic nie ginie.
+- `Planuj w tej sesji` — idziesz dalej (0.1).
+
+Koszt: w etapie 3 vibersi `/dev-plan` ruszył po `/dev-prep` z 215k kontekstu, co dało ok. 1,0 M z 6,9 M planu; raport telemetrii flaguje takie epizody (`ctx_start` > 120k). Pierwsza wiadomość sesji to `/dev-plan` → pytania nie zadajesz.
+
 #### 0.1 Wznowienie
 
 - Użytkownik wskazuje istniejący plan albo w `docs/plans/` jest świeży plan na ten temat → przeczytaj go i zapytaj, czy aktualizować w miejscu, czy pisać nowy. Przy aktualizacji zachowaj odhaczone checkboxy.
@@ -161,8 +170,9 @@ Numeracja IU jest ciągła przez cały plan (IU-1, IU-2, …).
 
 #### 3.4 Pola IU
 
-Format jednostki i całego planu jest w `references/szablon-planu.md` — przeczytaj go przed pisaniem (Faza 4). Pola: Cel, Wymagania, Zależności, Pliki (tabela, 3.6), Delegate to (3.5), Skills in play, Podejście, Notatka wykonawcza (opcjonalna), Teksty (verbatim) (obowiązkowe, gdy IU renderuje zatwierdzone treści), Wzorce do naśladowania, Scenariusze testowe, Weryfikacja, Operator checklist (opcjonalna).
+Format jednostki i całego planu jest w `references/szablon-planu.md` — przeczytaj go przed pisaniem (Faza 4). Pola: Cel, Wymagania, Zależności, Pliki (tabela, 3.6), Delegate to (3.5), Makiety (IU ui/fullstack w planie z `figma_screens`), Skills in play, Podejście, Notatka wykonawcza (opcjonalna), Teksty (verbatim) (obowiązkowe, gdy IU renderuje zatwierdzone treści), Wzorce do naśladowania, Scenariusze testowe, Weryfikacja, Operator checklist (opcjonalna).
 
+- **Makiety** — w planie z `figma_screens` każda IU ui/fullstack wymienia ekrany, które buduje (`**Makiety:** \`logowanie-komputer\`, \`logowanie-telefon\``), albo `—`. Planner wkleja builderowi SPEC i PNG tylko tych ekranów (`plan.mjs designerski`); IU bez pola dostaje wszystkie ekrany i cały SPEC, a `sprawdz` daje uwagę, bo pełny SPEC czytany przez każdego buildera w każdej turze to ok. 0,6 M na etap z 8 builderami UI.
 - **Odwołanie do decyzji niesie jej treść.** IU trafia do buildera jako osobny prompt — builder nie widzi reszty planu. Przy każdym odwołaniu dopisz zdanie treści w nawiasie: `strażnik regresji R2 (przy zmianie CTA istniejący tracking zostaje — nowy event, nie modyfikacja)`.
 - **Teksty widoczne dla użytkownika** (etykiety, nagłówki, komunikaty błędów) wklejasz dosłownie w `**Teksty (verbatim):**`, nie przez odwołanie do punktu checklisty — inaczej builder wpisze własną wersję, a review zgłosi rozjazd z zamówieniem.
 - **Scenariusze testowe** — każda pozycja zaczyna się typem: `[Unit]` (test kodu), `[E2E]` (flow w przeglądarce, 3.4b), `[Manual]` (krok człowieka, np. fizyczne urządzenie). Feature-bearing IU ma plik testu w tabeli plików.

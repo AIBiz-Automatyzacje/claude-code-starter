@@ -1,0 +1,37 @@
+{
+ "zrodlo": "run wf_f17e9b2e-8d4, agenci fazy 4 (koszt z transkryptów, jednostki telemetrii)",
+ "e3_faza4": {
+  "fix:faza-4": {
+   "jedn": 2.938,
+   "tury": 106,
+   "ctx_max": 345484
+  },
+  "fix:kontrola:faza-4": {
+   "jedn": 0.19,
+   "tury": 14,
+   "ctx_max": 84543
+  },
+  "fix:poprawka:faza-4": {
+   "jedn": 0.351,
+   "tury": 30,
+   "ctx_max": 95530
+  },
+  "review:e2e (średnia z 6 faz)": {
+   "jedn": 0.197
+  }
+ },
+ "fix_stary": 3.48,
+ "fix_nowy_oczekiwany": 2.09,
+ "fix_nowy_granica": 3.48,
+ "sedzia": 1.44,
+ "smoke": 0.63,
+ "sesje_i_zapas": 0.5,
+ "razem_oczekiwany": 8.14,
+ "razem_granica": 9.53,
+ "bezpieczniki_usd": {
+  "fix-stary": 40.0,
+  "fix-nowy": 40.0,
+  "smoke": 10.0,
+  "sedzia": 15.0
+ }
+}
