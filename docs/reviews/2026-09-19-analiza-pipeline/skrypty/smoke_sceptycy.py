@@ -30,14 +30,17 @@ def suma_werdyktow(sceptycy):
 
 
 def opis_porcji(przebieg, sceptycy):
-    """„<verify-batch> ≤ ⌈<P2>/4⌉=<sufit> OK|PRZEKROCZONE” z przebiegu review i rekordów agentów."""
+    """„<verify-batch> vs ⌈<P2>/4⌉=<sufit> OK|PRZEKROCZONE|PONIŻEJ” z przebiegu review i rekordów agentów.
+
+    P20 A5: porcje po 4 posortowane po pliku — oczekiwane dokładnie ⌈P2/4⌉ (P19 grupy po pliku dawały więcej = PRZEKROCZONE).
+    """
     s = (przebieg or {}).get('sceptycy')
     if not s:
         return None
     batch = sum(1 for a in sceptycy if a['rola'] == 'verify-batch')
     sufit = math.ceil(s['p2Findingi'] / MAKS_W_PORCJI_P2)
-    return '%d batch (przebieg %d) ≤ ⌈%d/4⌉=%d %s' % (
-        batch, s['p2Grupy'], s['p2Findingi'], sufit, 'OK' if batch <= sufit else 'PRZEKROCZONE')
+    werdykt = 'OK' if batch == sufit else ('PRZEKROCZONE' if batch > sufit else 'PONIŻEJ')
+    return '%d batch (przebieg %d) vs ⌈%d/4⌉=%d %s' % (batch, s['p2Grupy'], s['p2Findingi'], sufit, werdykt)
 
 
 def sekcja_sceptycy(ref, run, wiersz):

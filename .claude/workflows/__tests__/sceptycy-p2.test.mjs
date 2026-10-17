@@ -32,14 +32,15 @@ function wytnij(odMarkera, doMarkera) {
   return zrodlo.slice(start, koniec + doMarkera.length)
 }
 
-// kluczPliku jest zalezoscia grupujPoPliku; domknijWerdykty liczy etykiety w obiekcie z zewnatrz.
+// kluczPliku i liniaFindingu sa zaleznosciami porcjujPoPliku; domknijWerdykty liczy etykiety w obiekcie z zewnatrz.
 const fragment = [
   wytnij('const sceptykLiczniki', '}'),
   wytnij('const NIZSZA_WAGA', '}'),
   wytnij('function kluczPliku(', '\n}'),
   wytnij('function etykietaGlosu(', '\n}'),
   wytnij('function domknijWerdykty(', '\n}'),
-  wytnij('function grupujPoPliku(', '\n}'),
+  wytnij('function liniaFindingu(', '\n}'),
+  wytnij('function porcjujPoPliku(', '\n}'),
 ].join('\n')
 
 /** @typedef {import('./typy.mjs').Finding} Finding */
@@ -47,10 +48,10 @@ const fragment = [
 
 // Wyjatek od no-new-func: jedyna droga do niewyeksportowanych jednostek w skrypcie workflowu;
 // wejsciem jest plik z tego repo, nie dane uzytkownika.
-/** @type {{ domknijWerdykty: (f: Finding, glosy: Glos[]) => Finding & { potwierdzony: boolean, _uzasadnienie?: string }, grupujPoPliku: (lista: Finding[], maks: number) => Finding[][], liczniki: () => { agree: number, disagree_evidence: number, disagree_concern: number, degradacje: number } }} */
+/** @type {{ domknijWerdykty: (f: Finding, glosy: Glos[]) => Finding & { potwierdzony: boolean, _uzasadnienie?: string }, porcjujPoPliku: (lista: Finding[], maks: number) => Finding[][], liczniki: () => { agree: number, disagree_evidence: number, disagree_concern: number, degradacje: number } }} */
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
-const { domknijWerdykty, grupujPoPliku, liczniki } = new Function(
-  `${fragment}\nreturn { domknijWerdykty, grupujPoPliku, liczniki: () => ({ ...sceptykLiczniki }) }`
+const { domknijWerdykty, porcjujPoPliku, liczniki } = new Function(
+  `${fragment}\nreturn { domknijWerdykty, porcjujPoPliku, liczniki: () => ({ ...sceptykLiczniki }) }`
 )()
 
 /** @type {(severity: string, plik: string, typ?: string) => Finding} */
@@ -61,41 +62,43 @@ const AGREE = 'AGREE'
 const EVIDENCE = 'DISAGREE_EVIDENCE'
 const CONCERN = 'DISAGREE_CONCERN'
 
-// ── Grupy P2 po pliku (P19, karta §4 P9) ───────────────────────────────────
-// Zmiana kontraktu (P19): porcje po 4 niezaleznie od pliku (P9, D2) daly po 10 fazach 1,7% obalen (prog karty 5%) —
-// warunek odwrotu: P2 wraca do grupy po pliku, w grupie najwyzej `maks` zarzutow.
+// ── Porcje P2 posortowane po pliku (P20 A5) ───────────────────────────────
+// Zmiana kontraktu (P20 A5): grupy jednego pliku (P19) daly w etapie 3 vibersi 61 sceptykow na 71 P2 (+1,2 M) przy obaleniach
+// 1,4% — tyle co porcje po 4 (karta P9: 1,7%). Porcje po `maks` z listy posortowanej po pliku: ceil(P2/maks) agentow,
+// zarzuty jednego pliku obok siebie.
 
-test('13 findingow P2 z roznych plikow = 13 grup (sceptyk na plik), nie 4 porcje', () => {
-  const grupy = grupujPoPliku(Array.from({ length: 13 }, (_, i) => finding('P2', `src/plik${i}.ts:1`)), 4)
-  assert.equal(grupy.length, 13)
-  assert.ok(grupy.every((g) => g.length === 1))
+test('13 findingow P2 z roznych plikow = ceil(13/4) = 4 porcje, nie 13 grup', () => {
+  const porcje = porcjujPoPliku(Array.from({ length: 13 }, (_, i) => finding('P2', `src/plik${String(i).padStart(2, '0')}.ts:1`)), 4)
+  assert.deepEqual(porcje.map((p) => p.length), [4, 4, 4, 1])
 })
 
-test('grupa = jeden plik niezaleznie od numeru linii i kolejnosci wejscia; nadmiar ponad maks w kolejnej grupie tego pliku', () => {
-  const grupy = grupujPoPliku([
+test('porcje z listy posortowanej po pliku (bez wielkosci liter), w pliku po numerze linii; porcja moze laczyc pliki', () => {
+  const porcje = porcjujPoPliku([
     finding('P2', 'src/worker.ts:132'),
     finding('P2', 'src/deliver.ts:214'),
-    finding('P2', 'src/deliver.ts:31'),
-    finding('P2', 'src/deliver.ts:40'),
+    finding('P2', 'src/Deliver.ts:31'),
     finding('P2', 'src/zeta.ts:1'),
+    finding('P2', 'src/deliver.ts:40'),
   ], 2)
-  assert.deepEqual(grupy.map((g) => g.map((f) => f.plik)), [
-    ['src/worker.ts:132'], ['src/deliver.ts:214', 'src/deliver.ts:31'], ['src/deliver.ts:40'], ['src/zeta.ts:1'],
+  assert.deepEqual(porcje.map((g) => g.map((f) => f.plik)), [
+    ['src/Deliver.ts:31', 'src/deliver.ts:40'], ['src/deliver.ts:214', 'src/worker.ts:132'], ['src/zeta.ts:1'],
   ])
 })
 
-test('kazdy finding trafia do dokladnie jednej grupy — nic nie ginie i nic sie nie dubluje', () => {
+test('kazdy finding trafia do dokladnie jednej porcji — nic nie ginie i nic sie nie dubluje; wejscie nietkniete', () => {
   const lista = [
     finding('P2', 'src/a.ts:1'), finding('P2', 'src/b.ts:2'), finding('P2', 'src/a.ts:3'),
     finding('P2', '?'), finding('P2', 'src/c.ts:5'),
   ]
-  const wSumie = grupujPoPliku(lista, 2).flat()
+  const kopia = [...lista]
+  const wSumie = porcjujPoPliku(lista, 2).flat()
   assert.equal(wSumie.length, lista.length)
   assert.deepEqual(new Set(wSumie), new Set(lista))
+  assert.deepEqual(lista, kopia, 'sortowanie na kopii — p2DoVerify zostaje w kolejnosci z review')
 })
 
-test('pusta lista P2 nie tworzy pustej grupy (inaczej odpalilby sie sceptyk bez findingow)', () => {
-  assert.deepEqual(grupujPoPliku([], 4), [])
+test('pusta lista P2 nie tworzy pustej porcji (inaczej odpalilby sie sceptyk bez findingow)', () => {
+  assert.deepEqual(porcjujPoPliku([], 4), [])
 })
 
 // ── domknijWerdykty: brak glosu ────────────────────────────────────────────
@@ -185,10 +188,10 @@ test('liczniki etykiet licza glosy, nie findingi', () => {
 
 // ── Kotwice wywolania w workflowie ─────────────────────────────────────────
 
-test('wiring — P1 nadal dostaje trzech niezaleznych sceptykow, P2 ida grupami', () => {
+test('wiring — P1 nadal dostaje trzech niezaleznych sceptykow, P2 ida porcjami', () => {
   assert.match(zrodlo, /Array\.from\(\{ length: 3 \}, \(_, i\) =>/, 'P1 musi zostac przy trzech osobnych glosach')
-  assert.match(zrodlo, /const grupyP2 = grupujPoPliku\(p2DoVerify, MAKS_W_GRUPIE_P2\)/)
-  assert.doesNotMatch(zrodlo, /porcjujP2/)
+  assert.match(zrodlo, /const grupyP2 = porcjujPoPliku\(p2DoVerify, MAKS_W_GRUPIE_P2\)/)
+  assert.doesNotMatch(zrodlo, /porcjujP2|grupujPoPliku/)
   assert.match(zrodlo, /const MAKS_W_GRUPIE_P2 = 4/)
 })
 
