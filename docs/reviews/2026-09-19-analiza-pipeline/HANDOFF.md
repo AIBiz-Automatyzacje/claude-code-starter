@@ -3147,26 +3147,20 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 **AKTUALNA (2026-10-17) — SYNC W VIBERSI PO P21 (6a pkt 90).** Warunek: operator zgodził się na merge, `popr/P21-koszt` (bez B1,
 `d4986a1`) zmergowana do main i wypchnięta (merge: `git switch main && git merge --no-ff popr/P21-koszt && npm test && git push`).
-Nowa sesja w katalogu vibersi, na main.
+Nowa sesja w katalogu vibersi, na main. Sesja projektu nie zna historii szablonu (P20, P21, HANDOFF) — instrukcja ma samo zadanie.
 
 ```
-Kontynuujemy vibersi po P20 i P21 (HANDOFF szablonu 6a pkt 86 e, 88, 89, 90). Sesja główna Opus 5.5, tryb bypass permissions.
-Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+Zaktualizuj maszynerię projektu z szablonu i sprawdź, że działa.
 
-Gdzie jesteśmy: szablon ma P20 (tester: zawieszony zrzut = close + ponowienie; compound /dev-pr pushuje; sceptyk P2 porcjami po 4;
-rejestr stałych vs knip; limity maili E2E w /dev-plan; hook blokujący wypisanie .env*; PR wieloczęściowy) i P21 bez B1 (agent SPEC
-Figmy w 2–3 częściach, zrzuty do plików, SPEC per ekran i pole IU **Makiety:**; /dev-prep kończy się „/clear, potem /dev-plan”;
-buildery i fix czytają pliki zakresami). Fix fazy zostaje jednym agentem (pilot P21: porcje 13 vs 14 naprawionych). vibersi na main
-po etapie 3, bez synchronizacji.
+1. /sync-template.
+2. bash .claude/scripts/doctor/doctor.sh — wynik ma być OK; sprawdź, że w .claude/settings.json jest hook blokujący wypisanie
+   wartości z plików .env*.
+3. Test hooka: komenda `grep -c '^E2E_' .env.e2e` ma przejść, `grep E2E_ .env.e2e` ma zostać zablokowana. Innych wariantów
+   z wartościami nie uruchamiaj.
+4. Commit synchronizacji. Nie zaczynaj w tej sesji kolejnego etapu (/dev-prep, /dev-plan).
 
-Zadanie:
-1. /sync-template; potem bash .claude/scripts/doctor/doctor.sh — wynik OK; sprawdź, że hook .env* jest w .claude/settings.json.
-2. Krótki test hooka: komenda `grep -c '^E2E_' .env.e2e` przechodzi, `grep E2E_ .env.e2e` jest blokowana (nie uruchamiaj innych
-   wariantów z wartościami).
-3. Commit synchronizacji. Etap 4: w NOWEJ sesji (/clear) /dev-prep, potem /clear i /dev-plan — nie w tej sesji.
-
-Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z .env*.
-Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Zasady: w .claude/ nic poza tym, co wnosi /sync-template; nie wypisuj wartości z plików .env*.
+Na koniec krótko: co się zmieniło, wynik doctora i testu hooka, hash commita.
 ```
 
 **Historia: (2026-10-17) — P21 SESJA 2 (6a pkt 89) — WYKONANA (6a pkt 90).** S1 na gałęzi `popr/P21-koszt`
