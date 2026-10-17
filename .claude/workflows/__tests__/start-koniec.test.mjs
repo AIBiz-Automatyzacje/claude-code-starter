@@ -14,6 +14,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { PLIK_MAPY } from '../../scripts/e2e/weryfikacja.mjs'
+import { PROG_PLIKOW_PR } from '../../scripts/pr/rozmiar.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 
@@ -44,7 +45,7 @@ const A = new Function(
 // eslint-disable-next-line no-new-func -- jw.
 const C = new Function(
   `${wytnij(complete, '// ── Archiwum (P4)', '// ── Koniec archiwum')}
-   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, bramkaRozmiaruPr, rozmiarZWyniku, uwagaZmiennych, PROG_PLIKOW_PR }`,
+   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, czesciPr, czesciZWyniku, uwagaZmiennych, PROG_PLIKOW_PR }`,
 )()
 
 const ZADANIE = 'docs/active/zadanie-x'
@@ -256,21 +257,43 @@ test('plik decyzji: poprawna sciezka i pole = bez uwagi; brak pliku, zla sciezka
   }
 })
 
-// P19: prog liczony na plikach do recenzji bota (rozmiar.mjs), nie na calym diffie — vibersi etap 2: 250 w diffie, 124 do recenzji.
-test('bramka rozmiaru PR: do progu bez uwagi (takze przy 250 w diffie), powyzej UWAGA z liczba i propozycja podzialu; wynik nieczytelny = UWAGA o braku pomiaru', () => {
-  /** @param {number} n @param {string} katalog @returns {string[]} */
-  const pliki = (n, katalog) => Array.from({ length: n }, (_, i) => `${katalog}/p${i}.ts`)
-  /** @param {string[]} p @param {number} wszystkie */
-  const wynik = (p, wszystkie) => `log\n${JSON.stringify({ baza: 'abc', wszystkie, binarne: 0, odfiltrowane: 0, doRecenzji: p.length, pliki: p, filtry: 10 })}`
-  assert.equal(C.PROG_PLIKOW_PR, 150)
-  assert.equal(C.bramkaRozmiaruPr(C.rozmiarZWyniku(wynik(pliki(124, 'src/lib'), 250))), null)
-  assert.equal(C.bramkaRozmiaruPr(C.rozmiarZWyniku(wynik(pliki(150, 'src/lib'), 150))), null)
-  const u = C.bramkaRozmiaruPr(C.rozmiarZWyniku(wynik([...pliki(120, 'apps/web/src'), ...pliki(31, 'packages/core/src'), 'README.md'], 300)))
-  assert.match(u, /^UWAGA: PR ma 152 plików do recenzji bota \(próg 150; po filtrach \.coderabbit\.yaml i bez binariów — w diffie 300\)/)
-  assert.match(u, /apps\/web: 120/)
-  assert.match(u, /packages\/core: 31/)
-  for (const zly of ['', 'nie JSON', '{"wszystkie":3}']) assert.match(C.bramkaRozmiaruPr(C.rozmiarZWyniku(zly)), /^UWAGA: rozmiar PR niezmierzony/)
-  assert.match(complete, /9\. Rozmiar PR-a: \\`node \.claude\/scripts\/pr\/rozmiar\.mjs\\`/)
+// P20 S2: czesci PR na commitach konca faz (czesci.mjs) zamiast rady „per katalog” — vibersi etap 3: 172 pliki do recenzji,
+// ciecie po fazie 3 (909f669): 93 / 101 w archiwum (121 z poprawkami ze smoke'a).
+const SHA_A = '6ada855e2f76cd1fcc61bba55e21ccf548962145'
+const SHA_B = '909f669f0efce8a340f5e541573fa3ea43259f11'
+const SHA_C = '08e5584634418dfb79b302d6284666327bff3bdd'
+/** @param {Record<string, unknown>[]} czesci @param {Record<string, unknown>} [reszta] */
+const wynikCzesci = (czesci, reszta = {}) => `log\n${JSON.stringify({ ok: true, zrodlo: 'pomiar', uwaga: null, czesci, ...reszta })}`
+
+test('czesci PR: dwie czesci = tabela z commitami ciecia do podsumowania i informacja (nie UWAGA); jedna do 150 = nic', () => {
+  assert.equal(C.PROG_PLIKOW_PR, PROG_PLIKOW_PR, 'kopia progu w complete-wf = rozmiar.mjs')
+  const dwie = C.czesciPr(C.czesciZWyniku(wynikCzesci([
+    { czesc: 1, fazy: '1–3', od: SHA_A, do: SHA_B, doRecenzji: 93 }, { czesc: 2, fazy: '4–6', od: SHA_B, do: SHA_C, doRecenzji: 101 },
+  ])), 'etap-3')
+  assert.equal(dwie.uwaga, 'PR w 2 częściach: część 1: fazy 1–3 (93), część 2: fazy 4–6 (101) — commity cięcia w podsumowaniu, wysyłka `/dev-pr --czesc 1`')
+  assert.ok(dwie.sekcja?.includes('| Część | Fazy | Od | Do | Plików do recenzji |\n|---|---|---|---|---|\n| 1 | 1–3 | 6ada855e2f76 | 909f669f0efc | 93 |\n| 2 | 4–6 | 909f669f0efc | czubek gałęzi | 101 |'), dwie.sekcja ?? '')
+  assert.match(dwie.sekcja ?? '', /^PR w 2 częściach \(cięcie: pomiar na końcach faz;/)
+  assert.doesNotMatch(`${dwie.uwaga}${dwie.sekcja}`, /per obszar|per katalog/)
+  const jedna = (/** @type {number} */ n) => C.czesciPr(C.czesciZWyniku(wynikCzesci([{ czesc: 1, fazy: '1–2', od: SHA_A, do: SHA_C, doRecenzji: n }])), 'z')
+  assert.deepEqual(jedna(150), { uwaga: null, sekcja: null })
+  assert.match(jedna(151).uwaga ?? '', /^UWAGA: część powyżej progu 150 plików do recenzji bota — część 1: fazy 1–2 \(151\)$/)
+  assert.equal(jedna(151).sekcja, null)
+})
+
+test('czesci PR: czesc >= 150 albo uwaga skryptu = UWAGA (tabela zostaje); wynik nieczytelny, wyjatek albo zly SHA = UWAGA o braku pomiaru', () => {
+  const zaDuza = C.czesciPr(C.czesciZWyniku(wynikCzesci([
+    { czesc: 1, fazy: '1', od: SHA_A, do: SHA_B, doRecenzji: 160 }, { czesc: 2, fazy: '2', od: SHA_B, do: SHA_C, doRecenzji: 10 },
+  ], { ok: false, uwaga: 'bez cięcia na granicy faz poniżej 150: część 1 (fazy 1) 160 — faza powyżej limitu bota, dziel zadanie w planowaniu' })), 'z')
+  assert.match(zaDuza.uwaga ?? '', /^UWAGA: bez cięcia na granicy faz poniżej 150: .* dziel zadanie w planowaniu — część 1: fazy 1 \(160\), część 2: fazy 2 \(10\)$/)
+  assert.ok(zaDuza.sekcja?.includes('| 1 | 1 | 6ada855e2f76 | 909f669f0efc | 160 |'))
+  for (const zly of ['', 'nie JSON', '{"wyjatek":"brak stanu"}', wynikCzesci([{ czesc: 1, fazy: '1', od: 'HEAD; rm -rf /', do: SHA_C, doRecenzji: 3 }])]) {
+    assert.deepEqual(C.czesciPr(C.czesciZWyniku(zly), 'z'), {
+      uwaga: 'UWAGA: części PR niezmierzone (wynik czesci.mjs nieczytelny) — sprawdz: `node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/z`', sekcja: null,
+    }, zly)
+  }
+  assert.match(complete, /9\. Czesci PR-a: \\`node \.claude\/scripts\/pr\/czesci\.mjs --zadanie docs\/completed\/\$\{nazwaZadania\}\\`/)
+  assert.match(complete, /if \(pr\.sekcja && wynik\.commit\)/)
+  assert.match(complete, /## Części PR\n\n\$\{pr\.sekcja\}/)
 })
 
 // P8: fix naprawia tylko P1/P2, P3 zostaja w known-issues (sekcje "## P3 faza N") — smoke operatora ich nie bierze.
@@ -304,5 +327,5 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
   assert.match(C.uwagaZmiennych({ plik: '', zmienne: z({ baza: 'a', zmienne: [sekretny] }) }), /bez pozycji w smoke'u: SUPABASE_SECRET_KEY/)
   assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: z({ baza: 'a', zmienne: [sekretny] }) }), /bez --smoke/)
   assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: 'Error: cos' }), /^UWAGA: kontrola zmiennych srodowiska w smoke'u bez wyniku/)
-  assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), uwagaPr, uwagaZmiennych\(smoke\)\]/)
+  assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), pr\.uwaga, uwagaZmiennych\(smoke\)\]/)
 })

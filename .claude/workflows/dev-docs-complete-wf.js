@@ -40,7 +40,7 @@ const COMPLETE_RESULT = {
       },
       required: ['plik', 'claudeMd'],
     },
-    rozmiarPr: { type: 'string', description: 'ostatnia linia stdout `rozmiar.mjs` po commicie 1:1 (JSON w jednej linii)' },
+    rozmiarPr: { type: 'string', description: 'ostatnia linia stdout `czesci.mjs` po commicie 1:1 (JSON w jednej linii)' },
   },
   required: ['archiwum', 'pliki', 'commit', 'decyzje', 'rozmiarPr'],
 }
@@ -57,9 +57,8 @@ const DOPISEK_RESULT = {
 // kazdy builder i reviewer. Decyzje zadania ida do docs/decisions/<data>-<zadanie>.md z polem claude_md — CLAUDE.md
 // uzgadnia sie z kodem po merge'u PR. Funkcje czyste: __tests__/start-koniec.test.mjs.
 
-// Bot recenzji odmowil PR-a z 222 plikami (ETAP1 §5) — prog z zapasem; przekroczenie to UWAGA, nie STOP. Liczymy pliki,
-// ktore bot recenzuje (P19, skrypt rozmiar.mjs: filtry .coderabbit.yaml, bez binariow) — vibersi etap 2 mial 250 plikow
-// diffu i 124 do recenzji, a rada „podziel PR” byla falszywa.
+// Bot recenzji odmowil PR-a z 222 plikami (ETAP1 §5); limit CodeRabbit Pro 150. Liczymy pliki, ktore bot recenzuje (P19,
+// rozmiar.mjs: filtry .coderabbit.yaml, bez binariow). Kopia PROG_PLIKOW_PR z .claude/scripts/pr/rozmiar.mjs — test rownosci.
 const PROG_PLIKOW_PR = 150
 
 // Mapa funkcji skilla weryfikacji projektu (P14): archiwizacja dopisuje do niej funkcje ze scenariuszy [E2E] zadania.
@@ -105,12 +104,14 @@ function sprawdzDecyzje(decyzje, nazwaZadania) {
   return null
 }
 
-// Wynik `rozmiar.mjs` od agenta (string) -> obiekt; nieczytelny = null (uwaga o braku pomiaru zamiast cichego „ok”).
-function rozmiarZWyniku(tekst) {
+// Wynik `czesci.mjs` od agenta (string) -> obiekt; nieczytelny albo wyjatek skryptu = null (uwaga o braku pomiaru zamiast cichego „ok”).
+function czesciZWyniku(tekst) {
   const linia = String(tekst || '').trim().split('\n').pop() || ''
   try {
     const w = JSON.parse(linia)
-    return w && Number.isInteger(w.doRecenzji) && Number.isInteger(w.wszystkie) && Array.isArray(w.pliki) ? w : null
+    const czesci = w && Array.isArray(w.czesci) ? w.czesci : null
+    const poprawne = czesci && czesci.length && czesci.every((c) => c && Number.isInteger(c.doRecenzji) && /^[0-9a-f]{7,40}$/.test(String(c.od)) && /^[0-9a-f]{7,40}$/.test(String(c.do)))
+    return poprawne && typeof w.ok === 'boolean' ? w : null
   } catch (e) {
     if (!(e instanceof SyntaxError)) throw e
     return null
@@ -135,19 +136,32 @@ function uwagaZmiennych(smoke) {
   return braki.length ? `UWAGA: zmienne srodowiska dodane w galezi bez pozycji w smoke'u: ${braki.join(', ')} — ustaw je przed deployem (zrodla: zmienne.mjs)` : null
 }
 
-// Katalog do propozycji podzialu: dwa pierwsze segmenty (apps/web, src/lib), plik w korzeniu osobno.
-function bramkaRozmiaruPr(rozmiar) {
-  if (!rozmiar) return 'UWAGA: rozmiar PR niezmierzony (wynik rozmiar.mjs nieczytelny) — sprawdz: `node .claude/scripts/pr/rozmiar.mjs`'
-  const pliki = rozmiar.pliki
-  if (pliki.length <= PROG_PLIKOW_PR) return null
-  const grupy = {}
-  for (const p of pliki) {
-    const s = p.split('/')
-    const k = s.length > 2 ? `${s[0]}/${s[1]}` : s.length === 2 ? s[0] : '(korzen)'
-    grupy[k] = (grupy[k] || 0) + 1
-  }
-  const lista = Object.entries(grupy).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(', ')
-  return `UWAGA: PR ma ${pliki.length} plików do recenzji bota (próg ${PROG_PLIKOW_PR}; po filtrach .coderabbit.yaml i bez binariów — w diffie ${rozmiar.wszystkie}) — bot recenzji takiego PR-a nie obejmie. Propozycja podziału: osobne PR-y per obszar (${lista}).`
+// PR wieloczesciowy (P20 S2, vibersi etap 3: 172 pliki do recenzji, podzial reczny po fazie 3 = 93 / 121). Czesci mierzy
+// czesci.mjs na commitach konca faz; tabela trafia do podsumowania, z niej `/dev-pr --czesc N` bierze commity ciecia.
+// Wynik: { uwaga } (UWAGA dla operatora albo informacja o czesciach) i { sekcja } (tabela do podsumowania; null = jeden PR).
+function czesciPr(czesci, nazwaZadania) {
+  const komenda = `node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/${nazwaZadania}`
+  if (!czesci) return { uwaga: `UWAGA: części PR niezmierzone (wynik czesci.mjs nieczytelny) — sprawdz: \`${komenda}\``, sekcja: null }
+  const lista = czesci.czesci
+  const opis = lista.map((c) => `część ${c.czesc}: fazy ${c.fazy} (${c.doRecenzji})`).join(', ')
+  // Jeden PR do progu wlacznie (P19), czesc PR wieloczesciowego ponizej progu (czesci.mjs).
+  const zaDuza = lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
+  const uwaga = zaDuza || czesci.uwaga
+    ? `UWAGA: ${czesci.uwaga || `część powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota`} — ${opis}`
+    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, wysyłka \`/dev-pr --czesc 1\`` : null
+  if (lista.length === 1) return { uwaga, sekcja: null }
+  const skrot = (sha) => String(sha).slice(0, 12)
+  const zrodlo = czesci.zrodlo === 'plan' ? 'sekcja „Części PR” planu' : 'pomiar na końcach faz'
+  const sekcja = [
+    `PR w ${lista.length} częściach (cięcie: ${zrodlo}; pliki do recenzji bota po filtrach .coderabbit.yaml, próg ${PROG_PLIKOW_PR}).`,
+    '',
+    '| Część | Fazy | Od | Do | Plików do recenzji |',
+    '|---|---|---|---|---|',
+    ...lista.map((c, i) => `| ${c.czesc} | ${c.fazy} | ${skrot(c.od)} | ${i === lista.length - 1 ? 'czubek gałęzi' : skrot(c.do)} | ${c.doRecenzji} |`),
+    '',
+    `Wysyłka: \`/dev-pr --czesc 1\`, po merge'u każdej części następna, do \`/dev-pr --czesc ${lista.length}\` (rebase na główną gałąź).`,
+  ].join('\n')
+  return { uwaga, sekcja }
 }
 // ── Koniec archiwum ───────────────────────────────────────────────────────
 
@@ -319,7 +333,8 @@ ${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md
    Commit: \`git commit -m "${komunikat}"\` — temat dokladnie taki, w jednej linii; stopke (np. Co-Authored-By) dopisujesz
    wylacznie drugim \`-m\` (git oddzieli ja pusta linia). Sprawdz \`git log -1 --format=%s\` = "${komunikat}".
    Jesli git commit nie powiedzie sie lub nie ma zmian — zwroc commit: "" i opisz powod w rezultaty (nie przerywaj archiwizacji).
-9. Rozmiar PR-a: \`node .claude/scripts/pr/rozmiar.mjs\` -> rozmiarPr = ostatnia linia stdout 1:1 (JSON w jednej linii), bez zmian.
+9. Czesci PR-a: \`node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/${nazwaZadania}\` -> rozmiarPr = ostatnia linia stdout 1:1
+   (JSON w jednej linii), bez zmian — takze przy kodzie 1 (czesc za duza) i 3 (wyjatek).
 
 NIE uruchamiaj /dev-compound (zrobi to orkiestrator). Dzialaj autonomicznie.
 Zwroc obiekt zgodny ze schematem CompleteResult (commit = hash z kroku 8 lub "").`,
@@ -329,22 +344,22 @@ if (!wynik) {
   return { archiwum: '', pliki: [], rezultaty: ['BLAD: agent archiwizacji zwrocil null'], commit: '', uwagi: [], smokeOperatora: smokePlik, smokeStatus }
 }
 
-// Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a PR ponad progiem omija bot.
-const uwagaPr = bramkaRozmiaruPr(rozmiarZWyniku(wynik.rozmiarPr))
-const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), uwagaPr, uwagaZmiennych(smoke)].filter(Boolean)
+// Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a czesc PR ponad progiem omija bot.
+const pr = czesciPr(czesciZWyniku(wynik.rozmiarPr), nazwaZadania)
+const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), pr.uwaga, uwagaZmiennych(smoke)].filter(Boolean)
 for (const u of uwagi) log(u)
-if (uwagaPr && wynik.commit) {
+if (pr.sekcja && wynik.commit) {
   const dopisek = await agent(
     `Dopisz na koncu pliku docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md sekcje (tresc 1:1):
 
-## Rozmiar PR — uwaga
+## Części PR
 
-${uwagaPr}
+${pr.sekcja}
 
-Potem \`git add docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md\` i \`git commit -m "docs(${nazwaZadania}): rozmiar PR w podsumowaniu"\`
+Potem \`git add docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md\` i \`git commit -m "docs(${nazwaZadania}): części PR w podsumowaniu"\`
 (stopka tylko drugim \`-m\`). Nic poza tym nie zmieniaj. Zwroc {zapisano, commit} (commit = krotki hash albo "").`,
-    { schema: DOPISEK_RESULT, agentType: 'klasa-mechaniczny', label: `complete:uwaga-pr:${nazwaZadania}` }
+    { schema: DOPISEK_RESULT, agentType: 'klasa-mechaniczny', label: `complete:czesci-pr:${nazwaZadania}` }
   )
-  if (!dopisek || !dopisek.zapisano) log('UWAGA: sekcja o rozmiarze PR nie trafila do podsumowania — jest w wyniku runu')
+  if (!dopisek || !dopisek.zapisano) log('UWAGA: sekcja „Części PR” nie trafila do podsumowania — jest w wyniku runu (czesciPr); /dev-pr --czesc jej potrzebuje')
 }
-return { ...wynik, uwagi, smokeOperatora: smokePlik, smokeStatus }
+return { ...wynik, uwagi, czesciPr: pr.sekcja, smokeOperatora: smokePlik, smokeStatus }
