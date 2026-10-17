@@ -3,7 +3,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { anomalie, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa } from '../raport-sekcje.mjs'
+import { PROG_CTX_START_SKILLA, anomalie, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem } from '../raport-sekcje.mjs'
 
 /** @param {string} rola @param {string} klasa @param {number} koszt @param {Record<string, unknown>} [inne] */
 const agent = (rola, klasa, koszt, inne = {}) => ({
@@ -128,4 +128,17 @@ test('skille: stary rekord skilla pomocniczego objety zagniezdzone rodzica z tej
     { typ: 'skill', projekt: 'v', skill: 'figma:figma-design-to-code', sesja: 'c', start: '2026-10-09T22:00:00.000Z', koniec: '2026-10-09T22:10:00.000Z', koszt_jedn: 100, subagenci_jedn: 0, wiadomosci_operatora: 1, otwarty: false },
   ])
   assert.deepEqual(s.map((x) => [x.skill, x.n]), [['dev-plan', 1], ['figma:figma-design-to-code', 1]], 'figma z innej sesji zostaje')
+})
+
+// P20 A8: flaga kontekstu odziedziczonego — swieze sesje vibersi 65–71k, /dev-plan po /dev-prep bez /clear 164–237k.
+test('skille z odziedziczonym kontekstem: ctx_start powyzej progu, bez komend lokalnych i rekordow bez pola', () => {
+  const s = skilleZOdziedziczonymKontekstem([
+    { typ: 'skill', skill: 'dev-plan', start: '2026-10-14T20:17', ctx_start: 233_380 },
+    { typ: 'skill', skill: 'dev-plan', start: '2026-10-11T17:34', ctx_start: 67_825 },
+    { typ: 'skill', skill: 'dev-prep', start: '2026-10-09T19:53', ctx_start: 236_731 },
+    { typ: 'skill', skill: 'exit', start: '2026-10-09T20:00', ctx_start: 500_000 },
+    { typ: 'skill', skill: 'dev-pr', start: '2026-10-10T10:00' },
+  ])
+  assert.deepEqual(s.map((x) => `${x.skill} ${x.ctx_start}`), ['dev-prep 236731', 'dev-plan 233380'])
+  assert.equal(PROG_CTX_START_SKILLA, 120_000)
 })

@@ -4,6 +4,8 @@
 // Skill pomocniczy wywolany narzedziem Skill w epizodzie otwartym komenda operatora to krok tego skilla (P17, vibersi: /dev-plan
 // wolal figma:figma-design-to-code w kroku 1.6 i epizod planu urywal sie po 6 turach, a 1,25 M szlo na „epizod Figmy”).
 // Skill pipeline'u (dev-*) wywolany narzedziem zaczyna wlasny epizod — to zwykle nowa prosba operatora.
+// /dev-plan konczy sie na wywolaniu Workflow (P20 A8): plan oddaje zadanie autopilotowi, a praca sesji po runie (odczyt, poprawki)
+// nie jest planowaniem — vibersi etap-2-poprawki: telemetria 2,91 M, do Workflow 0,78 M.
 
 import { kosztJednostek } from './cennik.mjs'
 import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
@@ -19,7 +21,8 @@ import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
  * @property {string} sesja
  * @property {string} start
  * @property {string} koniec
- * @property {boolean} zamkniety true = zamknal go nastepny skill; false = trwal do konca pliku
+ * @property {boolean} zamkniety true = zamknal go nastepny skill albo (dev-plan) wywolanie Workflow; false = trwal do konca pliku
+ * @property {number | null} ctxStart kontekst pierwszej odpowiedzi API epizodu (in + cache_w + cache_r); ~65–70k = swieza sesja
  * @property {Map<string, Uzycie>} odpowiedzi odpowiedzi API w epizodzie (ostatni wpis per id)
  * @property {Map<string, Uzycie>} pierwszaOdpowiedz odpowiedzi do pierwszej wiadomosci typu user
  * @property {Set<string>} operator uuid wiadomosci operatora (tekst czlowieka)
@@ -39,6 +42,8 @@ export const KOMENDY_LOKALNE = new Set(['model', 'clear', 'compact', 'context', 
   'upgrade', 'feedback', 'bug', 'todos', 'bashes', 'tasks', 'privacy-settings', 'theme', 'sandbox', 'copy'])
 /** @param {string} nazwa @param {Array<{ zrodlo: string }>} otwarte @returns {boolean} krok skilla operatora, nie nowy epizod */
 const czyKrokSkilla = (nazwa, otwarte) => !nazwa.startsWith('dev-') && otwarte.some((e) => e.zrodlo === 'slash')
+// Skille, ktorych epizod konczy wywolanie Workflow (oddanie pracy autopilotowi). /dev-pr woła dev-pr-wf w kazdym etapie — nie tu.
+const KONIEC_NA_WORKFLOW = new Set(['dev-plan'])
 const RE_LOKALNA = new RegExp(`^\\s*<command-name>\\/?(${[...KOMENDY_LOKALNE].join('|')})<\\/command-name>`)
 
 /** @param {unknown} c @returns {string} */
@@ -66,7 +71,7 @@ function blokiNarzedzi(c) {
  */
 function nowyEpizod(klucz, skill, zrodlo, sesja, czas) {
   return {
-    klucz, skill, zrodlo, sesja, start: czas, koniec: czas, zamkniety: false, e0: true, e2: true,
+    klucz, skill, zrodlo, sesja, start: czas, koniec: czas, zamkniety: false, ctxStart: null, e0: true, e2: true,
     odpowiedzi: new Map(), pierwszaOdpowiedz: new Map(), operator: new Set(), subagenci: new Set(),
     wywolania: { narzedzia: new Set(), workflow: 0 }, plan: new Map(), zagniezdzone: new Set(),
   }
@@ -127,17 +132,23 @@ export function epizodySesji(wpisy, sesja) {
     const u = w.message?.usage
     const id = w.message?.id
     for (const e of otwarte) {
-      if (u && id) { e.odpowiedzi.set(id, u); if (e.e0) e.pierwszaOdpowiedz.set(id, u) }
+      if (u && id) {
+        if (e.ctxStart === null) e.ctxStart = kontekstTury(u)
+        e.odpowiedzi.set(id, u)
+        if (e.e0) e.pierwszaOdpowiedz.set(id, u)
+      }
       if (czas > e.koniec) e.koniec = czas
       for (const b of narzedzia) {
         if (typeof b.id !== 'string') continue
         e.wywolania.narzedzia.add(b.id)
         if (b.name === 'Agent') e.subagenci.add(b.id)
         if (b.name === 'Workflow') e.wywolania.workflow++
+        if (b.name === 'Workflow' && KONIEC_NA_WORKFLOW.has(e.skill)) { e.e2 = false; e.zamkniety = true }
         const polecenie = poleceniePlanu(b)
         if (polecenie) e.plan.set(b.id, { polecenie, wynik: null })
       }
     }
+    otwarte = otwarte.filter((e) => e.e2)
   }
   return wszystkie.map(({ e0: _e0, e2: _e2, ...e }) => e)
 }
@@ -164,12 +175,18 @@ export function scalEpizody(epizody) {
     for (const x of e.subagenci) s.subagenci.add(x)
     for (const x of e.wywolania.narzedzia) s.wywolania.narzedzia.add(x)
     s.wywolania.workflow = Math.max(s.wywolania.workflow, e.wywolania.workflow)
+    s.ctxStart ??= e.ctxStart
     for (const [id, p] of e.plan) if (!s.plan.get(id)?.wynik) s.plan.set(id, p)
     for (const x of e.zagniezdzone) s.zagniezdzone.add(x)
     if (e.koniec > s.koniec) s.koniec = e.koniec
     s.zamkniety = s.zamkniety || e.zamkniety
   }
   return [...scalone.values()]
+}
+
+/** @param {Uzycie} u @returns {number} kontekst wejscia jednej odpowiedzi */
+function kontekstTury(u) {
+  return (u.input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0)
 }
 
 /** @param {Iterable<Uzycie>} uzycia */
@@ -206,6 +223,8 @@ export function rekordSkilla(e, kosztSubagenta) {
     ...s,
     koszt_jedn: kosztJednostek(s),
     pierwsza_odpowiedz_jedn: kosztJednostek(suma(e.pierwszaOdpowiedz.values())),
+    // Kontekst odziedziczony po poprzedniej pracy sesji (P20 A8): /dev-plan po /dev-prep bez /clear startowal z 215–237k.
+    ctx_start: e.ctxStart,
     subagenci_n: e.subagenci.size,
     subagenci_jedn: koszty.some((k) => k === null) ? null : koszty.reduce((a, b) => (a ?? 0) + (b ?? 0), 0),
     wiadomosci_operatora: e.operator.size,

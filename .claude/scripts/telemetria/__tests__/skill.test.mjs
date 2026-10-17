@@ -174,3 +174,37 @@ test('skill pomocniczy wywolany narzedziem w epizodzie operatora = krok tego epi
   assert.equal(compound.skill, 'dev-compound')
   assert.deepEqual(rekordSkilla(plan, () => 0).zagniezdzone, ['figma:figma-design-to-code'])
 })
+
+// P20 A8: epizod /dev-plan konczy sie na wywolaniu Workflow — vibersi etap-2-poprawki: 2,91 M w telemetrii, do Workflow 0,78 M
+// (sesja czekala na run i robila odczyt). /dev-pr woła dev-pr-wf w kazdym etapie, wiec jego epizod trwa dalej.
+test('dev-plan: wywolanie Workflow zamyka epizod (odpowiedz z wywolaniem w epizodzie, dalsze poza); dev-pr trwa przez Workflow', () => {
+  const sesja = [
+    user('u1', '<command-name>/dev-plan</command-name>'),
+    asystent('m1', 100),
+    asystent('m2', 200, [{ type: 'tool_use', id: 'wf-1', name: 'Workflow' }]),
+    user('u2', '<task-notification>workflow skonczyl</task-notification>'),
+    asystent('m3', 5000),
+    user('u3', '<command-name>/dev-pr</command-name>'),
+    asystent('m4', 10, [{ type: 'tool_use', id: 'wf-2', name: 'Workflow' }]),
+    asystent('m5', 20, [{ type: 'tool_use', id: 'wf-3', name: 'Workflow' }]),
+  ]
+  const [plan, pr] = epizodySesji(sesja, 's')
+  assert.deepEqual([...plan.odpowiedzi.keys()], ['m1', 'm2'])
+  assert.equal(plan.zamkniety, true)
+  assert.equal(plan.wywolania.workflow, 1)
+  assert.equal(pr.skill, 'dev-pr')
+  assert.deepEqual([...pr.odpowiedzi.keys()], ['m4', 'm5'])
+  assert.equal(pr.wywolania.workflow, 2)
+})
+
+test('ctx_start: kontekst pierwszej odpowiedzi epizodu (in + cache_w + cache_r), nie maksimum', () => {
+  const sesja = [
+    user('u1', 'praca przed skillem'),
+    asystent('m0', 9000),
+    user('u2', '<command-name>/dev-plan</command-name>'),
+    { ...asystent('m1', 0), message: { id: 'm1', content: [], usage: { input_tokens: 3, cache_creation_input_tokens: 2000, cache_read_input_tokens: 215_000, output_tokens: 9 } } },
+    asystent('m2', 300_000),
+  ]
+  const [plan] = epizodySesji(sesja, 's')
+  assert.equal(rekordSkilla(plan, () => 0).ctx_start, 217_003)
+})

@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { anomalie, czyPipeline, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa } from './raport-sekcje.mjs'
+import { PROG_CTX_START_SKILLA, anomalie, czyPipeline, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem } from './raport-sekcje.mjs'
 import { zbierzWszystko } from './zbieranie.mjs'
 import { PLIK_BLEDOW, PLIK_DANYCH, odczytajRekordy } from './zapis.mjs'
 import { KATALOG_PROJEKTOW } from './zrodla.mjs'
@@ -88,6 +88,9 @@ out.push('   STOP per kategoria: ' + (Object.entries(nz.stopy).sort((a, b) => b[
 
 out.push('', '6. Skille w sesji glownej (pelny koszt = wlasny + subagenci; epizody zamkniete)')
 for (const s of skillePerNazwa(skille).slice(0, 15)) out.push(`   ${s.skill.padEnd(24)} n=${s.n}  pelny p50 ${k(s.pelny_p50)}  wiadomosci operatora p50 ${s.wiadomosci_p50 ?? '—'}`)
+for (const s of skilleZOdziedziczonymKontekstem(skille)) {
+  out.push(`   UWAGA: ${s.skill} ${String(s.start).slice(0, 16)} sesja ${String(s.sesja).slice(0, 8)} — kontekst na starcie ${k(Number(s.ctx_start))} > ${k(PROG_CTX_START_SKILLA)}: skill w sesji z poprzednia praca, /clear przed nim`)
+}
 
 out.push('', '7. Anomalie (agent > 2× mediany swojej roli), top 10')
 for (const a of anomalie(agenci).slice(0, 10)) out.push(`   ${String(a.rola).padEnd(24)} ${m(Number(a.koszt_jedn))}  ${a.run} ${a.id}`)

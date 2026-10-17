@@ -12,8 +12,8 @@ import { czytajJsonl, katalogProjektu, znajdzRuny } from './zrodla.mjs'
 
 // Podbijana przy kazdej zmianie logiki wyliczania rekordu — skan dopisze wtedy nowe wersje wszystkich rekordow.
 // 2: rola bez sufiksu :retry, /exit i inne komendy sesji nie sa skillami, run.start. 3: run.pr z etapu zbierz dev-pr.
-// 4: run.walidacja z obiektu walidacji koncowej (odczyt It. 1).
-export const WERSJA_REKORDU = 4
+// 4: run.walidacja z obiektu walidacji koncowej (odczyt It. 1). 5: epizod dev-plan konczy sie na Workflow, skill.ctx_start (P20 A8).
+export const WERSJA_REKORDU = 5
 // Zapas tylu minut przed znacznikiem ostatniego skanu: transkrypt bywa dopisywany chwile po hooku Stop.
 const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 

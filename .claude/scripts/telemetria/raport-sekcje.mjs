@@ -183,6 +183,17 @@ export function skillePerNazwa(skille, terazMs = Date.now()) {
   })).sort((a, b) => (b.pelny_p50 ?? 0) - (a.pelny_p50 ?? 0))
 }
 
+// Kontekst na starcie epizodu skilla (P20 A8): swieza sesja vibersi 65–71k, /dev-plan po /dev-prep bez /clear 164–237k
+// (sesje 6a039663, d4ba5a5a vs 81e81c7f, 8b09672c, oferty-online c2483a9a). Pierwsza odpowiedz w jednostkach nie rozroznia tych
+// przypadkow (swiezy d4ba5a5a 0,33 M, bo pierwsza tura skilla to wiele wywolan narzedzi), wiec flaga patrzy na kontekst.
+export const PROG_CTX_START_SKILLA = 120_000
+
+/** @param {Rekord[]} skille @returns {Rekord[]} epizody skilli z kontekstem odziedziczonym po poprzedniej pracy sesji */
+export function skilleZOdziedziczonymKontekstem(skille) {
+  return skille.filter((s) => !KOMENDY_LOKALNE.has(String(s.skill)) && (liczba(s.ctx_start) ?? 0) > PROG_CTX_START_SKILLA)
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)))
+}
+
 /** @param {Rekord[]} fazy @returns {Record<string, { p1: number, p2: number, p3: number }>} */
 export function findingiPerOs(fazy) {
   /** @type {Record<string, { p1: number, p2: number, p3: number }>} */
