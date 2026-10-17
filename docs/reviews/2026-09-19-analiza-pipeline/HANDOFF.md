@@ -2632,6 +2632,54 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     wyjątku w hooku. Hook PreToolUse z kodem 2 blokuje też w trybie bypass i u agentów workflowu — wg modelu hooków, na żywo
     sprawdzi to S2/smoke. **Dalej:** S2 (PR wieloczęściowy, §8) na tej samej gałęzi → smoke S2 → merge `--ff-only` i push za zgodą
     operatora (main ma też 2 niewypchnięte commity dokumentów pkt 85–86) → `/sync-template` + doctor w vibersi → P21.
+88. **P20 SESJA 2 ZROBIONA NA GAŁĘZI `popr/P20-po-etapie-3` (2026-10-17), NIEZMERGOWANA — PR wieloczęściowy.** 10 commitów nad S1
+    (5 punktów + 5 poprawek po recenzji), 22 pliki (+1497 −90); testy 970 → 1004/1004, typecheck i lint czyste, `odczyt_pr_test.py` OK;
+    prompt-audit dodanych linii (`pa_dodane.py`, 12 plików jawnie, kontrola na podłożonej linii = 3 trafienia) — 3 trafienia `spawnSync`
+    w skrypcie `czesci.mjs` (fałszywe, to nie prompt). Każdy punkt sprawdzony podmianą linii na jeden bieg: 43 mutacje, 43 padają.
+    **Smoke S2 na kopii vibersi z historią etapu 3** (klon w scratchpadzie zadania, `main` = 6ada855, pre-rebase czubek `fd27b4f`
+    z reflogu): `czesci.mjs` → cięcie **909f669**, części **93 / 121** (diff 177 / 194 = liczniki PR #3 i #4 na GitHubie); na commicie
+    archiwum `08e5584` 93 / 101 (= 6a pkt 86 g). Próba mechaniki git `--czesc` na zdalnym repo bare: gałąź `-cz1` od 909f669, tura
+    bota (`94e038d`), squash na main + compound (`b207793`), `rebase --onto origin/main 909f669` → **konflikt
+    `docs/learned-patterns.md`** (jak w sesji vibersi), po rozwiązaniu część 2 = 121 do recenzji. `plan.mjs sprawdz` na planie etapu 3:
+    szacunek **140** (diff 172).
+    (1) `pr/rozmiar.mjs --czubek <ref>`: diff baza..czubek, filtry z `git show <czubek>:.coderabbit.yaml`, baza domyślna = merge-base
+    czubka z main, `czubek` w wyniku jako SHA; eksport `PROG_PLIKOW_PR = 150`. (2) `plan/czesci-pr.mjs` (nowy) + `sprawdz`: szacunek =
+    ścieżki z tabel IU po filtrach + test obok pliku kodu bez testu w planie (`__tests__/` liczony, „Usuń” bez testu); pole
+    `rozmiarPr` (per faza, per część, `propozycja`); > 150 bez sekcji `## Części PR` = błąd z propozycją; sekcja: części po kolei na
+    granicy faz, każda < 150; faza sama > 150 = błąd „podziel fazę”; sekcja przy szacunku ≤ 150 = uwaga. `podzialFaz` = najmniej części,
+    z nich najmniejsza największa (etap 3: 93/101 zamiast 146/30 przy cięciu jak najpóźniej). SKILL dev-plan 3.6c + wiersz szablonu.
+    **Odstępstwo (miara, nie zakres):** szacunek z planu vs diff na planach vibersi 135/124, 25/26, 141/172 (iloraz 0,92–1,22) — próg
+    150 nie złapałby etapu 3, więc dodatkowo **uwaga przy 121–150** (`PROG_UWAGI_PR = 120`); błąd zostaje > 150 wg planu. Etap 3
+    i tak przechodzi przez archiwizację (pkt 3). (3) `pr/czesci.mjs` (nowy): koniec fazy N = `fazy[N+1].baza` ze stanu autopilota
+    (HEAD przed execute następnej — także po ręcznej naprawie operatora po STOP-ie), bez niej / ostatnia faza — ostatni commit po
+    temacie (kontrola diffu naprawczego > poprawki po review > execute); faza bez commitów = koniec poprzedniej z uwagą; cięcie z sekcji
+    planu, gdy każda część < 150, inaczej z pomiaru (`podzialFaz` na diffach między końcami faz); ostatnia część do czubka (z poprawkami
+    ze smoke'a); całość ≤ 150 = jeden PR także przy sekcji w planie. `dev-docs-complete-wf` krok 9 → `czesci.mjs`, `czesciPr`: tabela
+    `| Część | Fazy | Od | Do | Plików do recenzji |` (SHA 12 zn., ostatnia „czubek gałęzi”) w podsumowaniu (commit „części PR
+    w podsumowaniu”), informacja „PR w N częściach … /dev-pr --czesc 1” albo UWAGA; rada „per katalog” usunięta. SKILL dev-docs-complete 7a.
+    (4) `dev-pr-wf` `args.czesc`: start czyta tabelę z podsumowania na `feature/<zadanie>` (także bez `--czesc` — tabela = STOP
+    „/dev-pr --czesc 1”), `czesciZTabeli` (SHA, fazy, pliki tylko liczbami), `planCzesci`; agent przygotowania: część nieostatnia =
+    `feature/<z>-czN` od commitu cięcia (od części 2 rebase), ostatnia = rebase gałęzi zadania (już na origin/main → bez rebase'u;
+    cięcie w historii → `--onto origin/main <cięcie>`; inaczej zwykły `rebase origin/main`), część N > 1 tylko po merge'u N−1 (`gh pr
+    list --state merged`), konflikt = status `KONFLIKT` bez abort, typecheck + testy, `push --force-with-lease --force-if-includes`;
+    JS sprawdza status, gałąź, walidację po rebase'ie i push; `claude-md` pominięty dla części nieostatniej; nazwa zadania
+    walidowana. SKILL dev-pr: tryb `--czesc N`, pytanie do operatora przy konflikcie (rozwiąż w sesji / sam / przerwij),
+    `learned-patterns.md` przez `wiedza.mjs indeks --zapisz`. (5) `run.pr.czesc` (z etapu zbierz), `KONFLIKT` = STOP w telemetrii;
+    `odczyt_pr.py` `runy_pr`: rekordy zbierz tylko z numerem PR (bez numeru — liczone osobno), koszt po `args.czesc` (stare runy bez
+    części — cała sesja, wynik PR #4 bez zmian).
+    **Z próby (poprawione przed recenzją):** `push --force-with-lease` gałęzi `-cz1` odrzucony „stale info” przy nieaktualnej ścieżce
+    zdalnej → `git fetch --prune origin` w kroku 1 każdej części. **Recenzja subagenta (odczyt, 66 mutacji w worktree, 24 przeżyły):
+    0 P1 / 4 P2 / P3 — wdrożone:** P2 koniec fazy po temacie (ręczna naprawa po STOP trafiała do części 2) → baza następnej fazy;
+    faza bez commitów / `baza: null` = wyjątek → uwaga; sekcja planu cięła zadanie ≤ 150 → jeden PR; `/dev-pr` bez `--czesc` przy
+    tabeli → STOP. P3: idempotentny rebase, `--force-if-includes` (sam lease po fetchu nie chroni), walidacja i push w JS, walidacja
+    tabeli i nazwy zadania, komunikat o braku gałęzi, UWAGA dla części ≥ 150, faza > 150, sekcja w bloku kodu, `__tests__`, „Usuń”,
+    KONFLIKT w telemetrii, pętla konfliktów i `learned-patterns` w SKILL, jawne źródła opisu PR części; luki testów (commity po archiwum,
+    granice 150, jedyne cięcie przed ostatnią fazą, strażnicy JS, `rozmiarPr` w CLI, baza przy przesuniętym main). **Niewdrożone:**
+    tabela generowana w dwóch miejscach (JS `czesciPr` i ręcznie wg SKILL 7a — format pilnuje parser i test round-trip); próg
+    jednego PR ≤ 150 vs część < 150 zostaje jak w planie; kontrola `doSha` dla istniejącej `-czN` od części 2 (po rebase'ie SHA inne).
+    Kontrola prompt-auditu: linia podłożona `echo >>` do SKILL dev-pr i przywrócona `cp` (jedyny zapis .md spoza Write/Edit).
+    **Dalej:** merge `--ff-only` + push za zgodą operatora (main lokalnie `6811259`, 2 niewypchnięte commity dokumentów pkt 85–86 +
+    27 commitów gałęzi) → `/sync-template` + doctor w vibersi (§8) → P21. Żywy test S2 = PR etapu 4 vibersi, jeśli przekroczy 150.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -2996,10 +3044,42 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   z mutacjami. Testy `templates/bramki/konfiguracje.test.mjs` padają w worktree z dowiązanym `node_modules` (5/5) — w worktree
   to nie regresja; licz pełny zestaw w katalogu repo. Commit dopiero po pełnym `npm test` (A4 zacommitowany z czerwonym testem
   sąsiedniego pliku, poprawiony `--amend`).
+- P20 S2 (2026-10-17): historia sprzed rebase'u/squasha żyje w reflogu projektu — `git log -g --format='%H %gs' HEAD | grep -B1
+  "rebase (start)"` daje czubek gałęzi przed rebase'em (vibersi `fd27b4f`); klon lokalny (`git clone --no-checkout`) przenosi też
+  obiekty wiszące, więc kopia do smoke'u ma całą historię bez `.env*`. Próg z planu kalibruj na diffach zrobionych zadań przed
+  wdrożeniem (szacunek z tabel IU 0,92–1,22 diffu). `git push --force-with-lease` po `git fetch` nie chroni (lease = świeży ref),
+  a przy nieaktualnej ścieżce zdalnej odrzuca push „stale info” — `fetch --prune` + `--force-if-includes`. W teście pomiaru
+  „z przesuniętego main” sprawdź, że `git switch` się udał (zmiana w drzewie blokuje przełączenie i test przechodzi na złej gałęzi).
+  Koniec fazy bierz ze stanu (baza następnej fazy), nie z tematu commita — ręczna naprawa operatora po STOP-ie nie ma tematu pipeline'u.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-17) — P20 SESJA 2 (6a pkt 86 e, pkt 87).** S1 zrobiona na gałęzi `popr/P20-po-etapie-3` (niezmergowana).
+**AKTUALNA (2026-10-17) — MERGE P20 + SYNC W VIBERSI (6a pkt 88).** Warunek: zgoda operatora na merge w sesji P20 S2 i wykonany
+`git switch main && git merge --ff-only popr/P20-po-etapie-3 && git push` w szablonie. Nowa sesja w katalogu vibersi, na main.
+
+```
+Kontynuujemy vibersi po P20 (HANDOFF szablonu 6a pkt 86 e, 87, 88). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Gdzie jesteśmy: szablon ma P20 (tester: zawieszony zrzut = close + ponowienie; compound /dev-pr pushuje; sceptyk P2 porcjami po 4;
+rejestr stałych vs knip; limity maili E2E w /dev-plan; hook blokujący wypisanie .env*; PR wieloczęściowy: plan.mjs sprawdz
+z sekcją „Części PR”, archiwizacja mierzy części na końcach faz, /dev-pr --czesc N). vibersi na main po etapie 3.
+
+Zadanie:
+1. /sync-template; potem bash .claude/scripts/doctor/doctor.sh — wynik OK; sprawdź, że hook .env* jest w .claude/settings.json.
+2. Krótki test hooka: komenda `grep -c '^E2E_' .env.e2e` przechodzi, `grep E2E_ .env.e2e` jest blokowana (nie uruchamiaj innych
+   wariantów z wartościami).
+3. Bez /dev-plan etapu 4 w tej sesji — najpierw P21 w szablonie (6a pkt 86 e).
+
+Zasady: nic w .claude/ bez mojej zgody poza sync-template; liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z .env*.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**STAN 2026-10-17 (6a pkt 88):** P20 S1 + S2 na gałęzi `popr/P20-po-etapie-3`, 27 commitów nad main, testy 1004/1004, typecheck
+i lint czyste, smoke S2 zgodny (909f669, 93/121). Main lokalnie `6811259` (+2 niewypchnięte commity dokumentów). Dalej: merge za
+zgodą operatora → instrukcja wyżej → P21.
+
+**Historia: (2026-10-17) — P20 SESJA 2 (6a pkt 86 e, pkt 87) — WYKONANA (6a pkt 88).** S1 zrobiona na gałęzi `popr/P20-po-etapie-3` (niezmergowana).
 Nowa sesja w katalogu szablonu, na tej gałęzi.
 
 ```
