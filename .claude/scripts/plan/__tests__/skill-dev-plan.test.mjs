@@ -154,3 +154,12 @@ test('Delegate to: wariant -figma tylko dla ui i fullstack', () => {
   assert.match(sprawdz(mutacja('**Delegate to:** feature-builder-data', '**Delegate to:** feature-builder-data-figma')).bledy.join('\n'),
     /IU-1: Delegate to „feature-builder-data-figma”/)
 })
+
+// P20 A6: stala w IU pierwszego konsumenta w kodzie — migracja SQL z ta sama wartoscia nie czyni IU zrodlem (knip).
+test('SKILL.md i szablon: źródło stałej w IU pierwszego konsumenta w kodzie; uwaga sprawdz przy źródle we wcześniejszej fazie', () => {
+  const rejestr = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.6b Rejestr stałych'), SKILL_MD.indexOf('#### 3.7'))
+  assert.match(rejestr, /Używa = importuje w kodzie: wartość przepisana do migracji SQL nie czyni IU źródłem/)
+  assert.match(rejestr, /knip w domknięciu fazy/)
+  assert.match(rejestr, /`plan\.mjs sprawdz` daje uwagę, gdy źródło jest w fazie wcześniejszej niż wszyscy konsumenci/)
+  assert.match(SZABLON, /\| `## Rejestr stałych` \|[^\n]*źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie/)
+})

@@ -281,3 +281,32 @@ test('pole drugi raz: zgloszony duplikat i problemy z obu wystapien w jednej wal
   assert.match(bledy, /IU-3: linia \d+: pole „scenariusze testowe” drugi raz/)
   assert.equal((bledy.match(/pozycja poza zapisem/g) ?? []).length, 2)
 })
+
+// P20 A6 (vibersi etap 3): plan dal stale `src/config/konto.ts` do IU-1 (faza 1), konsumenci byli w fazach 2–5 — knip
+// w domknieciu fazy 1 zglosil 8 eksportow bez konsumenta, builder je usunal, a IU-3–IU-8 dopisaly je ponownie.
+const WIERSZ_STALEJ = '| `STATUSY_OFERTY` | `szkic`, `opublikowana` | `src/services/oferty-statusy.ts` | IU-1, IU-2 |'
+
+test('rejestr stalych: zrodlo w IU fazy wczesniejszej niz wszyscy konsumenci = uwaga z IU, stala i faza; plan nie odrzucony', () => {
+  for (const konsumenci of ['IU-2', 'IU-2, IU-3', 'IU-2 (licznik jak w IU-1)']) {
+    const w = sprawdz(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', konsumenci)))
+    assert.deepEqual(w.bledy, [], konsumenci)
+    assert.equal(w.uwagi.length, 1, konsumenci)
+    assert.match(w.uwagi[0], /^IU-1 \(faza 1\) definiuje stałe z rejestru STATUSY_OFERTY, a ich konsumenci zaczynają się w fazie 2 — knip/)
+    assert.match(w.uwagi[0], /stała powstaje w IU pierwszego konsumenta/)
+  }
+})
+
+test('rejestr stalych: IU-zrodlo wsrod konsumentow, pole obiektu albo zrodlo spoza tabel plikow = bez uwagi', () => {
+  const wiersze = [
+    WIERSZ_STALEJ,
+    '| `TRASY.publiczna` | `/o/:id` | `src/services/oferty-statusy.ts` | IU-3 |',
+    '| `LIMIT_LISTY` | `20` | `src/config/listy.ts` | IU-3 |',
+  ].join('\n')
+  assert.deepEqual(sprawdz(zmien(WIERSZ_STALEJ, wiersze)).uwagi, [])
+})
+
+test('rejestr stalych: parser czyta tabele sekcji (naglowek i separator pominiete, numery IU poza nawiasami)', () => {
+  assert.deepEqual(parsujPlan(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-1 (migracja IU-9), IU-2, szablony maili'))).rejestr, [
+    { stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [1, 2] },
+  ])
+})

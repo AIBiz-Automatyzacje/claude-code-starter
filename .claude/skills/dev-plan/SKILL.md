@@ -211,7 +211,7 @@ Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Wer
 
 #### 3.6b Rejestr stałych
 
-Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Źródło | Konsumenci |` dla wartości, których używa więcej niż jedna IU albo warstwa: statusy, limity, nazwy tras, klucze zapytań, kody błędów, nazwy zdarzeń. Każda stała ma jedno źródło — plik w tabeli plików pierwszej IU, która jej używa. IU-źródło zapisuje w Podejściu definicję dosłownie (`MAKS_DLUGOSC_NOTATKI = 500` w `src/services/notatki-limity.ts`), a IU-konsumenci importują stałą stamtąd i powtarzają w Podejściu nazwę z wartością — planner fazy nie dokleja builderowi rejestru. Bez rejestru dwie IU w osobnych promptach definiują tę samą wartość dwa razy. Plan bez takich wartości: „Brak stałych współdzielonych.”
+Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Źródło | Konsumenci |` dla wartości, których używa więcej niż jedna IU albo warstwa: statusy, limity, nazwy tras, klucze zapytań, kody błędów, nazwy zdarzeń. Każda stała ma jedno źródło — plik w tabeli plików pierwszej IU, która jej używa. Używa = importuje w kodzie: wartość przepisana do migracji SQL nie czyni IU źródłem, bo eksport bez konsumenta w kodzie zgłasza knip w domknięciu fazy, a `plan.mjs sprawdz` daje uwagę, gdy źródło jest w fazie wcześniejszej niż wszyscy konsumenci. IU-źródło zapisuje w Podejściu definicję dosłownie (`MAKS_DLUGOSC_NOTATKI = 500` w `src/services/notatki-limity.ts`), a IU-konsumenci importują stałą stamtąd i powtarzają w Podejściu nazwę z wartością — planner fazy nie dokleja builderowi rejestru. Bez rejestru dwie IU w osobnych promptach definiują tę samą wartość dwa razy. Plan bez takich wartości: „Brak stałych współdzielonych.”
 
 #### 3.7 Wymagania wstępne operatora
 

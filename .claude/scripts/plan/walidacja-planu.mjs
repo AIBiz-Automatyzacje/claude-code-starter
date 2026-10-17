@@ -8,6 +8,7 @@ import { join } from 'node:path'
 import { akcja, sprawdzBudzet } from './budzet-pliku.mjs'
 import { ekranyFigmy, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
 import { sciezkaWzgledna } from './przygotowanie.mjs'
+import { uwagiRejestru } from './rejestr-stalych.mjs'
 
 export { PROG_ESLINT, PROG_PYTANIA } from './budzet-pliku.mjs'
 
@@ -173,6 +174,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
     w.uwagi.push(`${id}: wymaganie ze „Śledzenia wymagań” bez IU (pole Wymagania żadnej jednostki go nie wymienia)`)
   }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
+  w.uwagi.push(...uwagiRejestru(plan, jednostki))
   const e2e = jednostki.some((iu) => iu.scenariusze.some((s) => s.typ === 'E2E'))
   if (e2e && !existsSync(join(projekt, '.env.e2e')) && !poleTekstowe(plan, 'operator_prep')) {
     w.bledy.push('plan ma scenariusze [E2E], a projekt nie ma .env.e2e — pozycja setupu w checkliście przygotowania (operator_prep) albo [E2E] → [Manual]')

@@ -4,7 +4,7 @@
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   plan.mjs linie <plik>...                       linie kodu jak ESLint max-lines (bez pustych i komentarzy) — kolumna „dziś”
-//   plan.mjs sprawdz <plan.md>                     walidacja planu (fazy, IU, tabela plikow z budzetem, scenariusze, seedy)
+//   plan.mjs sprawdz <plan.md>                     walidacja planu (fazy, IU, tabela plikow z budzetem, scenariusze, seedy, rejestr stalych)
 //   plan.mjs generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz]
 //                                                  pliki zadania z planu; bez --zapisz tylko liczniki; plan z bledami — nic
 //   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo

@@ -13,7 +13,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `## Granice zakresu` | jawne non-goals i wykluczenia | zawsze |
 | `## Kontekst i research` | `### Relevantny kod i wzorce`, `### Wiedza instytucjonalna`, `### Referencje zewnętrzne` | zawsze (puste podsekcje pomiń) |
 | `## Kluczowe decyzje techniczne` | `- <decyzja>: <uzasadnienie>` | zawsze |
-| `## Rejestr stałych` | tabela stałych współdzielonych albo „Brak stałych współdzielonych.” | zawsze |
+| `## Rejestr stałych` | tabela stałych współdzielonych albo „Brak stałych współdzielonych.”; źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie | zawsze |
 | `## Otwarte pytania` | `### Rozwiązane podczas planowania`, `### Odroczone do implementacji` | zawsze |
 | `## Wymagania wstępne operatora` | „Brak — autopilot może startować od razu.” albo zdanie z linkiem do checklisty i lista `- [ ] … — **[blokuje: faza N]** (IU-K)` | zawsze |
 | `## Implementation Units` | fazy i IU (przykład niżej) | zawsze |
