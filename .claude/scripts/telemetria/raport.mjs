@@ -88,7 +88,7 @@ out.push('   STOP per kategoria: ' + (Object.entries(nz.stopy).sort((a, b) => b[
 
 out.push('', '6. Skille w sesji glownej (pelny koszt = wlasny + subagenci; epizody zamkniete)')
 for (const s of skillePerNazwa(skille).slice(0, 15)) out.push(`   ${s.skill.padEnd(24)} n=${s.n}  pelny p50 ${k(s.pelny_p50)}  wiadomosci operatora p50 ${s.wiadomosci_p50 ?? '—'}`)
-for (const s of skilleZOdziedziczonymKontekstem(skille)) {
+for (const s of skilleZOdziedziczonymKontekstem(skille).slice(-10)) {
   out.push(`   UWAGA: ${s.skill} ${String(s.start).slice(0, 16)} sesja ${String(s.sesja).slice(0, 8)} — kontekst na starcie ${k(Number(s.ctx_start))} > ${k(PROG_CTX_START_SKILLA)}: skill w sesji z poprzednia praca, /clear przed nim`)
 }
 

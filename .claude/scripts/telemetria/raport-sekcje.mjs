@@ -188,10 +188,14 @@ export function skillePerNazwa(skille, terazMs = Date.now()) {
 // przypadkow (swiezy d4ba5a5a 0,33 M, bo pierwsza tura skilla to wiele wywolan narzedzi), wiec flaga patrzy na kontekst.
 export const PROG_CTX_START_SKILLA = 120_000
 
-/** @param {Rekord[]} skille @returns {Rekord[]} epizody skilli z kontekstem odziedziczonym po poprzedniej pracy sesji */
+/**
+ * Epizody skilli wywolanych komenda operatora (`/skill`) z kontekstem odziedziczonym po poprzedniej pracy sesji. Skill wolany
+ * narzedziem Skill jest krokiem pracy w toku — rada „/clear przed nim” go nie dotyczy.
+ * @param {Rekord[]} skille @returns {Rekord[]}
+ */
 export function skilleZOdziedziczonymKontekstem(skille) {
-  return skille.filter((s) => !KOMENDY_LOKALNE.has(String(s.skill)) && (liczba(s.ctx_start) ?? 0) > PROG_CTX_START_SKILLA)
-    .sort((a, b) => String(a.start).localeCompare(String(b.start)))
+  return skille.filter((s, _i, wszystkie) => s.zrodlo === 'slash' && !KOMENDY_LOKALNE.has(String(s.skill)) && !krokInnegoEpizodu(s, wszystkie)
+    && (liczba(s.ctx_start) ?? 0) > PROG_CTX_START_SKILLA).sort((a, b) => String(a.start).localeCompare(String(b.start)))
 }
 
 /** @param {Rekord[]} fazy @returns {Record<string, { p1: number, p2: number, p3: number }>} */

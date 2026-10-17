@@ -182,6 +182,8 @@ test('dev-plan: wywolanie Workflow zamyka epizod (odpowiedz z wywolaniem w epizo
     user('u1', '<command-name>/dev-plan</command-name>'),
     asystent('m1', 100),
     asystent('m2', 200, [{ type: 'tool_use', id: 'wf-1', name: 'Workflow' }]),
+    user('u-wf', [{ type: 'tool_result', tool_use_id: 'wf-1', content: 'uruchomiony' }]),
+    asystent('m2b', 700),
     user('u2', '<task-notification>workflow skonczyl</task-notification>'),
     asystent('m3', 5000),
     user('u3', '<command-name>/dev-pr</command-name>'),
@@ -207,4 +209,12 @@ test('ctx_start: kontekst pierwszej odpowiedzi epizodu (in + cache_w + cache_r),
   ]
   const [plan] = epizodySesji(sesja, 's')
   assert.equal(rekordSkilla(plan, () => 0).ctx_start, 217_003)
+})
+
+test('ctx_start po scaleniu kopii wznowionej sesji: z kopii, w ktorej epizod zaczal sie najwczesniej', () => {
+  const otwarcie = [user('u1', '<command-name>/dev-plan</command-name>', { timestamp: '2026-09-20T10:00:00.000Z' })]
+  const pierwsza = epizodySesji([...otwarcie, asystent('m1', 70_000)], 'sesja-1')
+  const kopia = epizodySesji([...otwarcie, asystent('m9', 300_000)], 'sesja-2').map((e) => ({ ...e, start: '2026-09-20T11:00:00.000Z' }))
+  const [scalony] = scalEpizody([...kopia, ...pierwsza])
+  assert.equal(scalony.ctxStart, 70_000)
 })

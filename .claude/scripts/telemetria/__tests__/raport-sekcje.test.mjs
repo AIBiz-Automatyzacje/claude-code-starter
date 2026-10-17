@@ -131,13 +131,16 @@ test('skille: stary rekord skilla pomocniczego objety zagniezdzone rodzica z tej
 })
 
 // P20 A8: flaga kontekstu odziedziczonego — swieze sesje vibersi 65–71k, /dev-plan po /dev-prep bez /clear 164–237k.
-test('skille z odziedziczonym kontekstem: ctx_start powyzej progu, bez komend lokalnych i rekordow bez pola', () => {
+test('skille z odziedziczonym kontekstem: ctx_start powyzej progu, tylko komenda operatora, bez komend lokalnych, krokow innego epizodu i rekordow bez pola', () => {
   const s = skilleZOdziedziczonymKontekstem([
-    { typ: 'skill', skill: 'dev-plan', start: '2026-10-14T20:17', ctx_start: 233_380 },
-    { typ: 'skill', skill: 'dev-plan', start: '2026-10-11T17:34', ctx_start: 67_825 },
-    { typ: 'skill', skill: 'dev-prep', start: '2026-10-09T19:53', ctx_start: 236_731 },
-    { typ: 'skill', skill: 'exit', start: '2026-10-09T20:00', ctx_start: 500_000 },
-    { typ: 'skill', skill: 'dev-pr', start: '2026-10-10T10:00' },
+    { typ: 'skill', skill: 'dev-plan', zrodlo: 'slash', start: '2026-10-14T20:17', ctx_start: 233_380 },
+    { typ: 'skill', skill: 'dev-plan', zrodlo: 'slash', start: '2026-10-11T17:34', ctx_start: 67_825 },
+    { typ: 'skill', skill: 'dev-prep', zrodlo: 'slash', start: '2026-10-09T19:53', ctx_start: 236_731 },
+    { typ: 'skill', skill: 'exit', zrodlo: 'slash', start: '2026-10-09T20:00', ctx_start: 500_000 },
+    { typ: 'skill', skill: 'dev-pr', zrodlo: 'slash', start: '2026-10-10T10:00' },
+    { typ: 'skill', skill: 'dev-compound', zrodlo: 'Skill-tool', start: '2026-10-10T11:00', ctx_start: 300_000 },
+    { typ: 'skill', skill: 'figma:figma-use', zrodlo: 'slash', sesja: 's', start: '2026-10-14T20:30', ctx_start: 300_000 },
+    { typ: 'skill', skill: 'dev-plan', zrodlo: 'slash', sesja: 's', start: '2026-10-14T20:20', koniec: '2026-10-14T21:00', zagniezdzone: ['figma:figma-use'], ctx_start: 50_000 },
   ])
   assert.deepEqual(s.map((x) => `${x.skill} ${x.ctx_start}`), ['dev-prep 236731', 'dev-plan 233380'])
   assert.equal(PROG_CTX_START_SKILLA, 120_000)
