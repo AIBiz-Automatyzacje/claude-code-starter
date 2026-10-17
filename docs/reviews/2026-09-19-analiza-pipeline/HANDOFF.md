@@ -2584,6 +2584,54 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     przypomina; B4 builder i fix czytają zakresami (bez `cat` wielu plików, bez wczytywania przetrwałych wyników w całości).
     Pilot: ślepy test (harness P11/P12) stary vs nowy fix (B1 + B4) na stanie fazy 4 etapu 3 vibersi, te same findingi; miary:
     koszt, naprawione, regresje K; ok. 8–10 M; spadek jakości = B1 odpada, reszta P21 zostaje.
+87. **P20 SESJA 1 ZROBIONA NA GAŁĘZI `popr/P20-po-etapie-3` (2026-10-17), NIEZMERGOWANA.** 15 commitów nad main (8 punktów + 7 poprawek
+    po recenzji), 32 pliki; testy 950 → 970/970, typecheck i lint czyste; prompt-audit dodanych linii (`pa_dodane.py`, 12 plików
+    jawnie, kontrola wykrywania na podłożonej linii) 0 trafień. Każdy test sprawdzony podmianą linii na jeden bieg — pada bez poprawki.
+    (A1) `feature-tester-e2e.md`: zrzut > 30 s nie przesądza wyniku (PASS/FAIL z asercji snapshot/`get text`/skryptów) →
+    `agent-browser close` + próbny zrzut `about:blank`; asercje rozstrzygnięte = PASS/FAIL z „zrzut niedostępny”; nierozstrzygnięte
+    = jedno ponowienie od początku w nowej sesji (z seedem; błąd limitu wysyłki = SKIP `limit-zewnetrzny`), drugie zawieszenie =
+    SKIP `harness` tylko tego scenariusza i `close`; próbny zrzut też wisi = reszta fazy bez zrzutów na asercjach, SKIP tylko
+    scenariuszy nierozstrzygalnych; porównanie z makietą bez zrzutu do człowieka. `e2ePrompt` bez zmian (procedura w pliku roli).
+    (A4) `dev-pr-wf.js`: wspólny `KROK_PUSH` (etap claude-md i compound), compound krok 6 = push bieżącej gałęzi, schemat COMPOUND_PR
+    z `commit`/`push`/`pushDetal` (wymagane), log UWAGA przy commicie bez pushu; SKILL: push po merge'u = main, bez merge'u = gałąź PR
+    (recenzja przyrostowa plików wiedzy), chroniony main = `pushDetal` z błędem. (A5) `porcjujPoPliku`: porcje po 4 z listy
+    posortowanej po pliku (bez wielkości liter) i linii = ⌈P2/4⌉ sceptyków; log „N findingow w M porcjach po 4 (sortowane po
+    pliku)”; `smoke_sceptycy.py` (§2c `smoke_odczyt.py`): oczekiwane dokładnie ⌈P2/4⌉, werdykt OK / PRZEKROCZONE / PONIŻEJ.
+    (A6) `plan/rejestr-stalych.mjs` (nowy): parser `## Rejestr stałych` (`plan.rejestr`), uwaga `sprawdz` (nie błąd), gdy IU-źródło
+    (pierwsza IU z plikiem źródła, której opis wymienia stałą) jest w fazie wcześniejszej niż najwcześniejszy konsument; pola obiektu
+    (`TRASY.x`) pominięte (knip ich nie zgłasza); jedna uwaga na IU. **Na planie etapu 3 vibersi: 8 stałych `src/config/konto.ts`
+    w IU-1 = dokładnie 8 eksportów knip z fazy 1**; plany etapów 1, 2, 2-poprawki — 0 uwag. SKILL 3.6b + szablon: „używa = importuje
+    w kodzie, wartość w migracji SQL nie czyni IU źródłem”. (A7) SKILL dev-plan 3.4b: wysyłki maili/SMS scenariuszy [E2E] fazy × 2
+    (re-review, ponowienie) vs limit godzinowy z konfiguracji projektu e2e, odczyt dosłowną komendą `curl … /config/auth | jq
+    '{rate_limit_email_sent, rate_limit_sms_sent}'` (całej odpowiedzi nie wypisywać — sekrety SMTP i dostawców); za mały = pozycja
+    checklisty `[blokuje: faza N]`. (A8) `telemetria/skill.mjs`: epizod `dev-plan` zamyka wywołanie Workflow (odpowiedź z wywołaniem
+    w epizodzie); nowe pole `ctx_start` (kontekst pierwszej odpowiedzi); `WERSJA_REKORDU` 4 → 5. Na transkryptach vibersi: e2p 0,78 M
+    (było 2,91), e2 1,44 M (było 2,06) — zgodnie z analizą pkt 86 h. **Odstępstwo od planu (miara, nie zakres):** raport §6 flaguje
+    `ctx_start` > 120k zamiast `pierwsza_odpowiedz_jedn` > 0,2 M — ta druga przekracza 0,2 M w 22/25 epizodów dev-plan w telemetrii, także w świeżej
+    sesji d4ba5a5a (0,33 M), a `ctx_start` rozdziela: świeże 65–71k (6a039663, d4ba5a5a, smoke P13), po `/dev-prep` 159–237k
+    (81e81c7f, ece73440, 8b09672c, oferty-online c2483a9a, 3719f752). Flaga tylko dla `/skill` operatora, bez kroków innego epizodu,
+    najwyżej 10 linii. Recenzent: zmiana uzasadniona; ryzyko — projekt z cięższym kontekstem bazowym (do obserwacji). (A9)
+    `fixPoprawkaPrompt`: `zakresFixa(…, plikiPozycji(pozycje))` → `git diff <najstarszy>^ -- '<plik>' …` tylko plików z pozycji K
+    (w apostrofach; trasy `[id]`, `(grupa)`, `$id` i pliki bez kropki przechodzą), bez pełnego diffu; pozycje bez ścieżki = pełny
+    diff jak dotąd; kontrola fixa nadal czyta cały diff. (A10) `hooks/env-wartosci.mjs` + `settings.json` PreToolUse Bash: tokenizer
+    powłoki (cudzysłowy, heredoc, `$(…)`, kontynuacja `\`, przekierowania, słowa `if/then/do`, opakowania `sudo -u`/`env -i`/`nice`/
+    `xargs`, `bash -c`/`eval` rekurencyjnie); czytający `.env*` (poza `.example`/`.sample`/`.template`) bez maski = kod 2 z podpowiedzią
+    (nazwy kluczy, `grep -c`, `set -a; . plik`); maska: `grep -o` bez wartości, `grep -c/-q/-l`, `sed s/…=.*/…/` (z prefiksem klucza),
+    `cut -d= -f1`, `awk -F= '{print $1}'`, `wc`, zapis do pliku; `> /dev/stderr` i `tee` na terminal = wypisanie; niedomknięty
+    cudzysłów z `.env` = blokada. **Korpus 530 komend Bash z `.env` z transkryptów vibersi (sesje + subagenci): 20 blokad, 18 wypisuje
+    wartości** (m.in. etap 2 `grep E2E_START .env.e2e`, etap 3 `grep '^E2E_TEST_EMAIL=' .env.e2e | cut -d= -f2`), 2 fałszywe (awk
+    liczący długości wartości — z podpowiedzią). Komendy na `.env*` w `.claude/` (smoke dev-docs-complete, przygotowanie) przechodzą;
+    trzy dowody „`grep X .env.local` zwraca wartość” → `grep -c '^X=.' .env.local` zwraca 1. README: opis hooka.
+    **Recenzja subagenta (odczyt, 49 mutacji w worktree): 0 P1 / 11 P2 / P3 — P2 wszystkie wdrożone:** hook — 6 obejść (kontynuacja
+    linii, `-e`, `sed /…/d` i `s/^KLUCZ=.*//`, słowa powłoki i opakowania, stderr/`tee`, apostrof w cudzysłowie) i 7 luk testów;
+    A1 — pad próbnego zrzutu kończył E2E fazy (sprzeczne z celem); A7 — brak dosłownej komendy (pełna odpowiedź API ma sekrety);
+    A6 — 4 przeżyte mutacje (testy dopisane, `\|` w komórce); A8 — test filtra `otwarte` po `tool_result`. P3 wdrożone: `ctxStart`
+    przy scaleniu (test), flaga tylko `slash`, ścieżki A9, `.env*~`, `sed -n …p`, `awk "{print \$1}"`, opis PASS/`harness` w roli,
+    SKILL dev-pr. **Poza zakresem (do decyzji operatora):** narzędzia Read/Grep na `.env*` wypisują wartości bez Basha
+    (`permissions.deny` w settings.json), interpretery (`python -c`, `node -e`) i `find -exec cat` hook przepuszcza; fail-open przy
+    wyjątku w hooku. Hook PreToolUse z kodem 2 blokuje też w trybie bypass i u agentów workflowu — wg modelu hooków, na żywo
+    sprawdzi to S2/smoke. **Dalej:** S2 (PR wieloczęściowy, §8) na tej samej gałęzi → smoke S2 → merge `--ff-only` i push za zgodą
+    operatora (main ma też 2 niewypchnięte commity dokumentów pkt 85–86) → `/sync-template` + doctor w vibersi → P21.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -2938,10 +2986,54 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   rekordy `run.pr` — filtruj po `pr.numer`. Propozycję podziału PR z sesji projektu sprawdź z bramką `/dev-pr` (katalog zadania
   w gałęzi) i testowalnością stanu: podział po katalogach dawał PR1 bez `docs/**` (STOP) i niesprawdzoną kombinację plików.
   Analizę w forku w tle przerywa błąd sieci API — wznawiaj ją przez SendMessage na zebranych już danych, nie od nowa.
+- P20 S1 (2026-10-17): próg z planu sprawdzaj na danych przed wdrożeniem — „`pierwsza_odpowiedz_jedn` > 0,2 M” flagował świeżą
+  sesję (d4ba5a5a 0,33 M), a `ctx_start` rozdziela czysto (świeże 65–71k, po `/dev-prep` 159–237k). Hook na komendach Bash
+  kalibruj na korpusie komend z transkryptów (`tool_use` Bash z `.env` we wszystkich `*.jsonl` projektu, także subagentów) —
+  korpus zapisuj jako JSON lines, bez przycinania: ucięte do 400 zn komendy dały 100 fałszywych blokad (niedomknięte cudzysłowy).
+  Regex sticky (`/y`) po nieudanym `exec` zeruje `lastIndex` — pozycję końca czytaj z ostatniego udanego dopasowania. W JSDoc nie
+  wpisuj `s/=.*//` — `*/` zamyka komentarz i moduł się nie parsuje. Parser powłoki dostał od recenzenta z mutacjami 21 przeżytych
+  na 49 i 6 obejść (kontynuacja `\`, `-e`, `sed /…/d`, `if/then`, `sudo -u`, `> /dev/stderr`) — przy parserach zawsze recenzja
+  z mutacjami. Testy `templates/bramki/konfiguracje.test.mjs` padają w worktree z dowiązanym `node_modules` (5/5) — w worktree
+  to nie regresja; licz pełny zestaw w katalogu repo. Commit dopiero po pełnym `npm test` (A4 zacommitowany z czerwonym testem
+  sąsiedniego pliku, poprawiony `--amend`).
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-17) — P20 SESJA 1 (6a pkt 86 e).** Plan P20 i P21 zaakceptowany. Nowa sesja w katalogu szablonu, na main.
+**AKTUALNA (2026-10-17) — P20 SESJA 2 (6a pkt 86 e, pkt 87).** S1 zrobiona na gałęzi `popr/P20-po-etapie-3` (niezmergowana).
+Nowa sesja w katalogu szablonu, na tej gałęzi.
+
+```
+Kontynuujemy P20 po etapie 3 vibersi (HANDOFF 6a pkt 86 e, pkt 87). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 86 (e) — część S2, pkt 86 (b)–(c) (ręczny podział
+PR etapu 3: cięcie 909f669, PR #3 93 pliki do recenzji, PR #4 121), pkt 87, §7 ostatnie dwa wpisy. Plan jest ZAAKCEPTOWANY — bez zmian zakresu.
+
+Zadanie: P20 SESJA 2 na gałęzi popr/P20-po-etapie-3 (git switch; S1 już tam jest) — PR wieloczęściowy:
+1. pr/rozmiar.mjs --czubek <ref>: diff baza..ref, .coderabbit.yaml z ref (git show), bez worktree.
+2. plan.mjs sprawdz: suma plików z tabel IU (+ testy); > 150 → wymagana sekcja planu „Części PR” (cięcie tylko na granicy faz,
+   każda część < 150); zdanie w SKILL dev-plan i szablonie planu.
+3. Archiwizacja (dev-docs-complete-wf): części mierzone na commitach końca faz (ostatni commit fazy = kontrola diffu naprawczego,
+   poprawki albo feat), commity cięcia w podsumowaniu, za duża część → inny punkt cięcia; uwaga „per katalog” znika.
+4. /dev-pr --czesc N (skill + dev-pr-wf): część 1 = gałąź <feature>-cz1 od commitu cięcia, PR, merge, compound z pushem (P20 A4),
+   bez claude-md; część ostatnia = rebase --onto origin/main <cięcie> (konflikt → pytanie do operatora), typecheck + testy,
+   push --force-with-lease, PR, merge, claude-md.
+5. Telemetria run.pr.czesc; odczyt_pr.py po numerze PR.
+- Każdy punkt z testem, który pada bez poprawki (podmiana linii na czas jednego biegu, §7 P19).
+- Smoke S2: kopia vibersi z historią etapu 3 → cięcie 909f669, części 93 / 121 (zgodność z pkt 86 b–c).
+- Po wdrożeniu: pełne testy, typecheck, lint; prompt-audit dodanych linii (skrypty/pa_dodane.py, pliki jawnie); recenzja
+  subagenta (odczyt) z poleceniem mutacji w worktree i wdrożenie jej uwag; commity per punkt.
+- Wpis HANDOFF 6a pkt 88 + §8. Bez merge'a do main — merge --ff-only i push za moją zgodą; potem /sync-template + doctor w vibersi.
+
+Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**STAN 2026-10-17 (6a pkt 87):** P20 S1 (A1, A4–A10) na gałęzi `popr/P20-po-etapie-3`, 15 commitów nad main (8 punktów +
+7 poprawek po recenzji), testy 950 → 970/970, typecheck i lint czyste, prompt-audit 0 trafień. Main bez zmian (lokalnie
+`6811259`, bez pushu dokumentów pkt 86). Dalej: S2 → smoke → merge za zgodą operatora.
+
+**Historia: (2026-10-17) — P20 SESJA 1 (6a pkt 86 e) — WYKONANA (6a pkt 87).** Plan P20 i P21 zaakceptowany. Nowa sesja w katalogu szablonu, na main.
 
 ```
 Kontynuujemy poprawki szablonu po etapie 3 vibersi (HANDOFF 6a pkt 86 e). Sesja główna Opus 5.5, tryb bypass permissions.
