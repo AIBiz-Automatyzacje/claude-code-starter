@@ -2786,6 +2786,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     kieruje do SPEC ekranu zamiast do PNG.
     (4) **`raport.mjs --projekt vibersi` daje 0 runów** — pole projektu w rekordach runu to nazwa zadania (`etap-4-…`), nie projekt;
     filtr albo zapis do poprawy.
+    (6) **`.claude/tsc-cache/` brudzi drzewo w nowym projekcie** (zgłoszenie operatora z instalacji w innym projekcie). Hook Stop
+    `stop-build-check-enhanced.sh` pisze `$PROJECT_DIR/.claude/tsc-cache/<sesja>/`; szablon ma wpis w swoim `.gitignore`, vibersi
+    też (dopisany ręcznie), ale instalacja i `/sync-template` go nie dodają (skill sugeruje tylko `.claude/.backups/`). Autopilot
+    i `gotowosc` liczą drzewo z `--untracked-files=all` → STOP „brudne drzewo”. Poprawka: cache poza repo (katalog tymczasowy
+    per projekt i sesja) + doctor sprawdza, że hooki nie piszą w drzewie projektu.
     (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
