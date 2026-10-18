@@ -2791,6 +2791,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     też (dopisany ręcznie), ale instalacja i `/sync-template` go nie dodają (skill sugeruje tylko `.claude/.backups/`). Autopilot
     i `gotowosc` liczą drzewo z `--untracked-files=all` → STOP „brudne drzewo”. Poprawka: cache poza repo (katalog tymczasowy
     per projekt i sesja) + doctor sprawdza, że hooki nie piszą w drzewie projektu.
+    (7) **NOWE NARZĘDZIE (decyzja operatora 2026-10-18): podgląd „makieta obok aplikacji” w smoke'u operatora** — osobne zadanie
+    w szablonie po PR etapu 4, start od `/dev-brainstorm`. Pomysł z sesji smoke'u vibersi: lokalna strona z ramkami aplikacji
+    w szerokościach z checklisty (390 / 820 / 1440), obok wycinek Figmy z suwakiem przezroczystości; dane już są (pole **Makiety:**
+    i `ekrany/*.md` planu, `visual-diff/*-figma.png` testera, wymiary w checkliście smoke'u). Do rozstrzygnięcia w brainstormie:
+    zapis decyzji o rozjazdach z narzędzia do checklisty, ramka a nagłówki bezpieczeństwa (tylko tryb dev), logowanie w ramkach
+    (ten sam origin), zrzuty i różnica pikseli jako etap 2.
     (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
