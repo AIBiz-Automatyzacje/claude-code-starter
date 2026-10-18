@@ -2779,8 +2779,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (2) **Odczyt zakresami (B4) słabo przestrzegany:** buildery i fix dalej robią `cat` kilku plików naraz (build:IU-11 16 × `cat`,
     8 z kilkoma plikami; fix:faza-2 11 / 4) i Read bez `offset` (build:IU-10 36 z 47) — do sprawdzenia, ile z nich to pliki < 200
     linii (dozwolone), zanim poprawka polecenia.
-    (3) **Fix nadal największy etap (31,5%)** — B1 odpadł w pilocie; przy następnej iteracji kosztu szukać innego sposobu (np. fix
-    faza 5: 12 findingów, 126 tur).
+    (3) **Fix największy etap (31,5%), ale bez dużego marnotrawstwa** — decyzja operatora: zasadne findingi naprawiane = koszt
+    uzasadniony. Wyniki narzędzi fixa to głównie odczyt kodu (Read + sed/grep ~85–90% znaków), testy ~5–10%; koszt rośnie z liczbą
+    tur × kontekst (faza 5: 126 tur, ctx do 283k). Jedno konkretne marnotrawstwo: fix fazy 6 wczytał Readem 2 PNG makiet
+    (`visual-diff/admin-*-figma*.png`, 378k + 93k zn jako obrazy) — do sprawdzenia, czy polecenie fixa dla findingu wizualnego
+    kieruje do SPEC ekranu zamiast do PNG.
     (4) **`raport.mjs --projekt vibersi` daje 0 runów** — pole projektu w rekordach runu to nazwa zadania (`etap-4-…`), nie projekt;
     filtr albo zapis do poprawy.
     (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
