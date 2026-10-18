@@ -2772,6 +2772,18 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     pliku) i nie była sprawdzona na planie, w którym kilka IU dopisuje stałe do jednego pliku. Zmiana: tabela
     `| Stała | Wartość | Plik | IU-źródło | Konsumenci |` (szablon planu, dev-plan 3.6b, parser i uwaga z jawnej IU, plan bez kolumny =
     stara heurystyka), test na przypadku etapu 4 i etapu 3.
+    **Run autopilota `wf_d398d371-5b3` (sesja `8f3402db`): OK, 6 faz, 0 STOP, archiwum `1b755aa`.** Telemetria (`raport.mjs --od
+    2026-10-17 --do 2026-10-19`): 52,9 M (etap 3: 58,4 M, −9%); execute 19,8 M (25,8, −23%), fix 16,7 M (15,5, +8%), review 11,6
+    (11,0), sceptycy 1,8, orkiestracja 1,6. Fix fazy (6 agentów) 10,1 M, faza 5: 2,65 M / 126 tur / ctx 283k; kontrola 0,1–0,25 M,
+    poprawka 0,07–0,66 M. Findingi P2 91 (etap 3: 81), P1 5 (test-coverage). ctx_start: builder p50 27k, naprawiacz 30k, reviewer 14k.
+    (2) **Odczyt zakresami (B4) słabo przestrzegany:** buildery i fix dalej robią `cat` kilku plików naraz (build:IU-11 16 × `cat`,
+    8 z kilkoma plikami; fix:faza-2 11 / 4) i Read bez `offset` (build:IU-10 36 z 47) — do sprawdzenia, ile z nich to pliki < 200
+    linii (dozwolone), zanim poprawka polecenia.
+    (3) **Fix nadal największy etap (31,5%)** — B1 odpadł w pilocie; przy następnej iteracji kosztu szukać innego sposobu (np. fix
+    faza 5: 12 findingów, 126 tur).
+    (4) **`raport.mjs --projekt vibersi` daje 0 runów** — pole projektu w rekordach runu to nazwa zadania (`etap-4-…`), nie projekt;
+    filtr albo zapis do poprawy.
+    (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
