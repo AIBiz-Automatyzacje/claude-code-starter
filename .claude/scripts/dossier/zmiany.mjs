@@ -13,8 +13,10 @@ export const LIMIT_DIFFU_B = 300 * 1024
 export const ZNACZNIK_UCIECIA = '=== DIFF PRZYCIETY (limit 300 KB) — dalsza czesc zmian fazy NIE jest w tym pliku ==='
 // Galezie glowne w kolejnosci proby — baza zastepcza, gdy wolajacy nie zna bazy fazy (tez baza zadania ogrodnika).
 export const GALEZIE_GLOWNE = ['origin/main', 'main', 'origin/master', 'master']
-// Stan autopilota (docs/active/<zadanie>/.autopilot-state.json) to artefakt pipeline'u, nie zmiana fazy — poza lista i diffem.
-const BEZ_STANU = ':(exclude,glob)**/.autopilot-state.json'
+// Artefakty pipeline'u, nie zmiany fazy — poza lista i diffem: stan autopilota oraz caly docs/active/<zadanie>/ (raporty
+// review poprzednich faz sa niesledzone do konca zadania, wiec bez wykluczenia wchodzily w calosci do diffu kazdej kolejnej
+// fazy; zadania fazy reviewer ma w dossier).
+const BEZ_ARTEFAKTOW = [':(exclude,glob)**/.autopilot-state.json', ':(exclude,glob)docs/active/**']
 
 /** @typedef {{ plik: string, status: 'A' | 'M' | 'D', dodane: number, usuniete: number }} PlikFazy */
 
@@ -42,23 +44,23 @@ export function zmianyDossier(projekt, baza) {
   const opcje = ['--no-color', '--no-renames', '--no-ext-diff', '--relative']
   /** @type {Map<string, PlikFazy>} */
   const pliki = new Map()
-  for (const wiersz of linie(git(projekt, ['diff', '--name-status', ...opcje, baza, '--', BEZ_STANU]))) {
+  for (const wiersz of linie(git(projekt, ['diff', '--name-status', ...opcje, baza, '--', ...BEZ_ARTEFAKTOW]))) {
     const [status, plik] = wiersz.split('\t')
     const s = status === 'A' || status === 'D' ? status : 'M'
     pliki.set(plik, { plik, status: s, dodane: 0, usuniete: 0 })
   }
-  for (const wiersz of linie(git(projekt, ['diff', '--numstat', ...opcje, baza, '--', BEZ_STANU]))) {
+  for (const wiersz of linie(git(projekt, ['diff', '--numstat', ...opcje, baza, '--', ...BEZ_ARTEFAKTOW]))) {
     const [dodane, usuniete, plik] = wiersz.split('\t')
     const wpis = pliki.get(plik)
     // Plik binarny: numstat podaje "-" zamiast liczb.
     if (wpis) Object.assign(wpis, { dodane: Number(dodane) || 0, usuniete: Number(usuniete) || 0 })
   }
-  const niesledzone = linie(git(projekt, ['ls-files', '--others', '--exclude-standard', '--', BEZ_STANU]))
+  const niesledzone = linie(git(projekt, ['ls-files', '--others', '--exclude-standard', '--', ...BEZ_ARTEFAKTOW]))
   for (const plik of niesledzone) {
     const dodane = linie(readFileSync(join(projekt, plik), 'utf8')).length
     pliki.set(plik, { plik, status: 'A', dodane, usuniete: 0 })
   }
-  const diff = git(projekt, ['diff', ...opcje, baza, '--', BEZ_STANU]) + niesledzone.map((p) => diffNiesledzonego(projekt, p)).join('')
+  const diff = git(projekt, ['diff', ...opcje, baza, '--', ...BEZ_ARTEFAKTOW]) + niesledzone.map((p) => diffNiesledzonego(projekt, p)).join('')
   return { pliki: [...pliki.values()].sort((a, b) => a.plik.localeCompare(b.plik)), diff }
 }
 

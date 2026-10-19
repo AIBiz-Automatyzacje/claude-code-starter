@@ -55,6 +55,26 @@ test('zmianyDossier: pomija .autopilot-state.json zadania (sledzony i niesledzon
   }
 })
 
+// vibersi etapy 3–4: raporty review-faza-*.md sa niesledzone do konca zadania, wiec trafialy w calosci do diffu kazdej
+// kolejnej fazy (33% znakow 12 zrzutow, faza 6: 63%) — kazdy z 6 reviewerow czytal raporty poprzednich faz.
+test('zmianyDossier: pomija artefakty zadania z docs/active/ (sledzone i niesledzone) na liscie plikow i w diffie', () => {
+  const repo = noweRepo()
+  try {
+    zapisz(repo, { 'src/a.ts': 'export const a = 1\n', 'docs/active/x/x-zadania.md': '- [ ] T1\n', 'docs/plans/x-plan.md': 'plan\n' })
+    const baza = commit(repo, 'baza')
+    zapisz(repo, { 'src/a.ts': 'export const a = 2\n', 'docs/active/x/x-zadania.md': '- [x] T1\n', 'docs/plans/x-plan.md': 'plan 2\n' })
+    commit(repo, 'faza')
+    zapisz(repo, { 'docs/active/x/review-faza-1.md': '# Review fazy 1\n', 'docs/active/x/e2e/zrzut.txt': 'x\n', 'src/b.ts': 'export const b = 1\n' })
+
+    const { pliki, diff } = zmianyDossier(repo, baza)
+    assert.deepEqual(pliki.map((p) => p.plik), ['docs/plans/x-plan.md', 'src/a.ts', 'src/b.ts'])
+    assert.doesNotMatch(diff, /docs\/active|Review fazy 1|\[x\] T1/)
+    assert.match(diff, /\+export const b = 1/)
+  } finally {
+    usun(repo)
+  }
+})
+
 test('zapiszDiff: ponizej limitu caly; powyzej przyciety ze znacznikiem; pusty diff = niezapisany', () => {
   const katalog = mkdtempSync(join(tmpdir(), 'diff-'))
   try {
