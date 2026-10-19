@@ -2907,9 +2907,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     stanu z reflogu: indeks przeliczony (zapisany=true), potem konflikt w `supabase/migrations.sum` → KONFLIKT (zgodnie z planem;
     migrations.sum też generowany — kandydat poza P22). B4 — kopia z gałęzią sprzed rebase'u: 35 commitów po archiwum, 14 z kodem,
     88 plików; część 1 bez pytania. A1 — kopia live-10-demo: BRAK 113 plików → po poprawce OK, `vitest run` 30 plików/470 testów.
-    **Otwarte (poza P22, do decyzji):** `disable-model-invocation` w `/dev-pr` (blokada B1 strukturalnie, ale wtedy „wyślij PR”
-    słowem nie zadziała); regeneracja `supabase/migrations.sum` w B3; Read całego diffu przez reviewerów (55,7% znaków ich wyników);
-    narzędzie „makieta obok aplikacji” (poz. 7) — `/dev-brainstorm`.
+    **Otwarte (poza P22, do decyzji):** regeneracja `supabase/migrations.sum` w B3; Read całego diffu przez reviewerów (55,7% znaków
+    ich wyników); narzędzie „makieta obok aplikacji” (poz. 7) — `/dev-brainstorm`, operator: po zamknięciu pozostałych.
+    Operator 2026-10-19: `disable-model-invocation` w `/dev-pr` — zdjęte z listy (bez wdrożenia).
+    Pomiar diffu (12 zrzutów `/tmp/review-diff-*` etapów 3 i 4 vibersi, 2,35 mln zn): 33% to `docs/active/<zadanie>/`, w tym 21%
+    raporty `review-faza-*.md` poprzednich faz — nieśledzone do końca zadania, więc `zmiany.mjs` dokleja je w całości do diffu
+    każdej kolejnej fazy (faza 6: 63% zrzutu). Testy 11–67%, kod 1–41%.
     **Dalej:** §8 — merge `popr/P22-po-etapie-4` za zgodą operatora, push, `/sync-template` + doctor w vibersi i live-10-demo.
     **Merge (2026-10-19):** `dbe8a4a` (--no-ff do main, push) — na main testy 1079/1079, typecheck i lint zielone.
 
