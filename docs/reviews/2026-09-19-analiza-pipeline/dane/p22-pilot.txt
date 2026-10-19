@@ -1,0 +1,25 @@
+P22 pilot (2026-10-19) — kopie w katalogu zadania sesji (klon lokalny vibersi bez .env*, kopia live-10-demo bez vitest.config.ts);
+bez agentow pipeline'u, kroki polecen wykonane skryptem.
+
+A2 przelaczenie galezi w trakcie tsc (skrypty/p22_pilot_a2.sh, kopia vibersi na main, prawdziwy tsc 5.9, checkout 76f3c62 —
+koniec czesci 1, bez plikow faz 4–6 — po 0,4 / 0,7 / 0,9 s):
+  0,4 s: stary hook ❌ TSC CHECK FAILED 67 bledow (15 x TS6053), kod 2; nowy ✅ PASSED, kod 0
+  0,7 i 0,9 s: oba PASSED (checkout po odczycie plikow przez tsc)
+  cache nowego: $TMPDIR/claude-tsc-cache/vibersi-<cksum>/pilot/{last-errors,tsc-commands}.txt; drzewo kopii czyste
+  (wyscig na sztucznym projekcie 3000 plikow: nowy hook PASSED, „Pominięte TS6053 plików spoza bieżącego drzewa: 111”)
+
+B3 konflikt indeksu w rebase'ie czesci 2 (skrypty/p22_pilot_b3.sh; stan sprzed rebase'u z reflogu vibersi: czubek 3e1b2d9,
+origin/main a726c04, ciecie 76f3c62; procedura regeneracji z polecenia dev-pr-wf krok po kroku):
+  regeneracja 1: commit 3e7b7fb, konflikt tylko w docs/learned-patterns.md, wiedza.mjs indeks --zapisz → zapisany=true, continue
+  dalej: konflikt w supabase/migrations.sum (commit 40a365b) → KONFLIKT dla operatora (inny plik) — zgodnie z B3
+  uwaga: migrations.sum tez jest generowany (suma migracji) — kandydat na te sama regeneracje (poza P22)
+
+B4 commity po archiwum (scripts/pr/po-archiwum.mjs na kopii, feature/etap-4-dodawanie-i-moderacja = 3e1b2d9):
+  archiwum 1b755aa3, czesci 2; --czesc 1: wTejCzesci false (bez pytania o review); --czesc 2: true,
+  35 commitow po archiwum, 14 z kodem, 88 plikow kodu → pytanie o krotkie review przed PR
+  (na repo vibersi po merge'u, galaz zdalna z tura bota: 38 commitow, 15 z kodem, 91 plikow; tura bota odfiltrowana)
+
+A1 runner testow na kopii live-10-demo bez vitest.config.ts:
+  doctor: „runner testów | BRAK | vitest zbiera 113 plików testów maszynerii z .claude/** (z 143)” + gotowy vitest.config.ts,
+  WYNIK: BRAK; plan.mjs gotowosc: ok false, testy.ok false z ta sama poprawka
+  po wpisaniu poprawki: doctor OK („vitest: 30 plików testów, 0 z .claude/**”), `npx vitest run`: 30 plikow, 470 testow zielonych
