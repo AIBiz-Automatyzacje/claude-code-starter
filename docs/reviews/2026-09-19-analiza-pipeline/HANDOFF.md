@@ -2825,6 +2825,39 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     miała 93 pliki `src`; sprawdził je tylko bot PR. Do decyzji: smoke ze zmianą funkcji → mini-review przed PR.
     (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
 
+92. **PLAN PACZKI P22 „po etapie 4” (2026-10-19) — ZAAKCEPTOWANY do wdrożenia; gałąź `popr/P22-po-etapie-4`, merge po pilocie
+    w kopii (bez agentów pipeline'u, chyba że punkt tego wymaga).** Pozycje z pkt 91, uporządkowane wg wpływu (blokuje run / koszt /
+    jakość) i kosztu wdrożenia. Każdy punkt: test, który pada bez poprawki; pełne testy, typecheck, lint; prompt-audit dodanych linii;
+    recenzja subagenta z mutacjami; commit per punkt.
+    **A. Start i czyste drzewo (blokują run, mało pracy):**
+    A1 (poz. 8) runner testów projektu nie zbiera `.claude/**`: doctor i `plan.mjs gotowosc` sprawdzają vitest/jest projektu (config
+    z `exclude`/`include` albo brak configu = błąd z gotową poprawką), instalacja i `/sync-template` podpowiadają `exclude`;
+    przypadki: live-10-demo (`vitest run` bez configu, 113 failed) i vibersi (config z `include`) — test na obu.
+    A2 (poz. 6 + 11) hook Stop `stop-build-check-enhanced.sh`: cache poza repo (katalog tymczasowy per projekt i sesja), lista plików
+    liczona z bieżącego drzewa (po `git checkout` gałęzi części PR bez fałszywych TS6053); doctor: hooki nie piszą w drzewie projektu.
+    A3 (poz. 5) tester E2E zapisuje zrzuty tylko w katalogu zadania; sprzątanie środowiska usuwa nieśledzone PNG spoza niego.
+    **B. Zgoda operatora i sesje (koszt sesji głównej, zachowanie):**
+    B1 (poz. 10) `/dev-pr`: przed etapem `start` (push + PR) zawsze `AskUserQuestion`, chyba że bieżąca wiadomość operatora wprost
+    każe wysłać PR; tekst wklejony z wcześniejszej instrukcji nie jest zgodą.
+    B2 (poz. 13) smoke operatora kończy się linią „/clear, potem /dev-pr --czesc 1”; `/dev-pr` po merge'u części N kończy się
+    „/clear, potem /dev-pr --czesc N+1” (wzór B3 z P21).
+    B3 (poz. 12) `dev-pr-wf` `start`: konflikt rebase'u tylko w `docs/learned-patterns.md` (indeks generowany) → regeneracja indeksu
+    i kontynuacja; inny konflikt = STOP jak dziś.
+    B4 (poz. 14) commity po archiwizacji zadania (zmiany ze smoke'u): `/dev-pr start` je wylicza (`git log <commit archiwum>..`
+    bez tematów pipeline'u); są zmiany w kodzie → pytanie: krótkie review (correctness + security na diffie tych commitów) albo PR bez niego.
+    **C. Plan (fałszywe uwagi):** C1 (poz. 1) rejestr stałych z kolumną IU-źródło (szablon planu, dev-plan 3.6b, parser, uwaga
+    z jawnej IU; plan bez kolumny = stara heurystyka); test na planie etapu 4 i 3.
+    **D. Koszt odczytu (najpierw pomiar):** D1 (poz. 2) skrypt na transkryptach etapu 4: ile `cat`/Read bez zakresu dotyczy plików
+    ≥ 200 linii; poprawka polecenia B4 z P21 tylko przy udziale > 20% znaków wyników. D2 (poz. 3) polecenie fixa dla findingu
+    wizualnego: SPEC ekranu (`ekrany/<nazwa>.md`), PNG makiety tylko przez ścieżkę, bez Read obrazu.
+    **E. Sekrety:** E1 (poz. 9) hook `env-wartosci` blokuje też `--show-sensitive` poza `VAR=$(…)`, `printenv`, gołe `env`, `set -x`;
+    kalibracja na korpusie komend Bash z transkryptów wszystkich projektów (jak P20), recenzja z mutacjami.
+    **F. Telemetria:** F1 (poz. 4) rekord runu ma pole projektu (katalog repo), `raport.mjs --projekt` filtruje po nim; stare rekordy
+    — projekt z ścieżki transkryptu.
+    **Poza paczką:** narzędzie „makieta obok aplikacji” (poz. 7) — osobne zadanie, `/dev-brainstorm` po P22.
+    **Sesje:** S1 = A + B + C + F (mechanika, testy jednostkowe); S2 = D + E (pomiar i korpus) + pilot na kopii vibersi (A2 przełączenie
+    gałęzi, B3 konflikt indeksu, B4 commity po archiwum) → merge za zgodą → `/sync-template` w vibersi i live-10-demo.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -3211,7 +3244,31 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-17) — SYNC W VIBERSI PO P21 (6a pkt 90).** Warunek: operator zgodził się na merge, `popr/P21-koszt` (bez B1,
+**AKTUALNA (2026-10-19) — P22 SESJA 1 (6a pkt 92).** Nowa sesja w katalogu szablonu, na main.
+
+```
+Kontynuujemy P22 „po etapie 4” — sesja 1 (HANDOFF 6a pkt 92). Sesja główna Opus 5.5, tryb bypass permissions.
+Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
+
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 91 (pozycje 1–14 z przyczynami) i pkt 92 (plan paczki),
+§7 ostatnie dwa wpisy. Plan P22 jest ZAAKCEPTOWANY — bez zmian zakresu.
+
+Zadanie: P22 SESJA 1 na gałęzi popr/P22-po-etapie-4 (utwórz od main) — grupy A, B, C, F z pkt 92:
+- A1 runner testów projektu vs .claude/** (doctor, gotowosc, instalacja; przypadki live-10-demo i vibersi), A2 hook Stop (cache
+  poza repo, lista plików z bieżącego drzewa), A3 zrzuty testera tylko w katalogu zadania;
+- B1 /dev-pr pyta przed start, B2 linie „/clear, potem …” po smoke'u i po części PR, B3 konflikt tylko w indeksie wiedzy =
+  regeneracja, B4 commity po archiwizacji → pytanie o krótkie review;
+- C1 kolumna IU-źródło w rejestrze stałych; F1 pole projektu w rekordzie runu i filtr --projekt.
+- Każdy punkt z testem, który pada bez poprawki (podmiana linii na jeden bieg); pełne testy, typecheck, lint; prompt-audit dodanych
+  linii (skrypty/pa_dodane.py, pliki jawnie, kontrola na podłożonej linii); recenzja subagenta (odczyt) z mutacjami w worktree
+  i wdrożenie jej uwag; commity per punkt.
+- Wpis HANDOFF 6a pkt 93 + §8 (instrukcja P22 sesja 2: D + E + pilot na kopii vibersi). Bez merge'a do main.
+
+Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+```
+
+**Historia: (2026-10-17) — SYNC W VIBERSI PO P21 (6a pkt 90) — WYKONANA (6a pkt 91).** Warunek: operator zgodził się na merge, `popr/P21-koszt` (bez B1,
 `d4986a1`) zmergowana do main i wypchnięta (merge: `git switch main && git merge --no-ff popr/P21-koszt && npm test && git push`).
 Nowa sesja w katalogu vibersi, na main. Sesja projektu nie zna historii szablonu (P20, P21, HANDOFF) — instrukcja ma samo zadanie.
 
