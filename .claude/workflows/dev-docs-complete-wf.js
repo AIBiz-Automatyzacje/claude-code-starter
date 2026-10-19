@@ -235,7 +235,9 @@ formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruc
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
 kazdy z konkretnym oczekiwanym wynikiem. Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
 zamiast mobilnego viewportu) oznacz **[fizyczne urzadzenie]**.
-Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc.
+Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. Ramka konczy sie zdaniami:
+"Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
+„Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej.
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji.
 
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;

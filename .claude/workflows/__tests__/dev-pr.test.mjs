@@ -476,3 +476,11 @@ test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracj
   assert.equal(P.tylkoIndeksWiedzy([]), false)
 })
 
+// P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji (4,49 M wobec 1,42 M runow PR). Czesc nieostatnia konczy sie /clear.
+const skillPr = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), 'utf8')
+
+test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>” bez startu kolejnej', () => {
+  assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\. Kolejnej części nie uruchamiasz w tej sesji/)
+  assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\./)
+  assert.doesNotMatch(skillPr, /dalej: \/dev-pr --czesc N\+1\]/)
+})

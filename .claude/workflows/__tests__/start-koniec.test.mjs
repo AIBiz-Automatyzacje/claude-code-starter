@@ -333,3 +333,17 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
   assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: 'Error: cos' }), /^UWAGA: kontrola zmiennych srodowiska w smoke'u bez wyniku/)
   assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), pr\.uwaga, uwagaZmiennych\(smoke\)\]/)
 })
+
+// P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji: sesja glowna 4,49 M wobec 1,42 M wszystkich runow PR. Ramka smoke'u
+// konczy sie linia z /clear i /dev-pr; sama sesja smoke'u PR nie wysyla. Ta sama tresc w workflowie i w skillu.
+test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /clear, potem /dev-pr --czesc 1” bez /dev-pr w sesji', () => {
+  /** @type {(nazwaZadania: string) => string} */
+  // eslint-disable-next-line no-new-func -- jw.
+  const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
+  const linia = 'Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania'
+  assert.ok(smokePrompt('zadanie-x').includes(linia))
+  assert.match(smokePrompt('zadanie-x'), /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.ok(skill.includes(linia))
+  assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+})

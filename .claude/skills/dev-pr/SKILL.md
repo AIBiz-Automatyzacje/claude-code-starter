@@ -208,15 +208,16 @@ merge'u). Workflow wprowadza fakty do CLAUDE.md, liczy przyrost w JS (próg 2000
 `claude_md: uzgodniono`, commituje na gałęzi głównej i pushuje. Bootstrap autopilota zatrzymuje kolejne zadanie, dopóki
 któryś plik decyzji na gałęzi głównej ma `do-uzgodnienia`. `STOP` → wypisz `powod` i `naprawa`; nie przycinaj CLAUDE.md sam.
 
-**Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem
-z następnym krokiem `/dev-pr --czesc <N+1>`. Krok CLAUDE.md workflow pomija
+**Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem,
+którego ostatnia linia to „Następny krok: /clear, potem /dev-pr --czesc <N+1>”. Kolejnej części nie uruchamiasz w tej sesji:
+świeża sesja nie niesie kontekstu poprzedniej części, a operator wpisuje komendę sam. Krok CLAUDE.md workflow pomija
 (`pominiety: true`) — plik decyzji jedzie w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
 
 ## Raport końcowy
 
 ```text
 Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
-🔀 PR #<numer> — <url> [część N z M, fazy a–b — dalej: /dev-pr --czesc N+1]
+🔀 PR #<numer> — <url> [część N z M, fazy a–b]
    Tury: <N wykonanych> / <limit albo "interaktywnie"> (sufit 3)
    Wątki: naprawione <a> · odrzucone z dokumentem decyzji <b> · do operatora <c> · nieruszone <d>
    Walidacja ostatniej tury: PASS/FAIL/BRAK-KOMEND
@@ -237,6 +238,8 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
 
 ⚠️ Do Twojej decyzji: <wątki do-operatora, jeden wiersz na wątek z wplywNaProjekt>
 ```
+
+Przy części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>”.
 
 Gdy któraś sekcja jest pusta — napisz to jednym słowem zamiast pomijać nagłówek. „Brak propozycji do
 reviewerów" to informacja; brak sekcji to luka, której operator nie zauważy.
