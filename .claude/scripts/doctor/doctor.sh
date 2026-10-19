@@ -289,7 +289,7 @@ sprawdz_telemetrie
 echo
 
 if [[ -n "$BRAKI" ]]; then
-  echo "WYNIK: BRAK obowiązkowych: $BRAKI — zainstaluj (kolumna Instalacja) i uruchom doctor ponownie."
+  echo "WYNIK: BRAK obowiązkowych: $BRAKI — usuń braki wg kolumny Instalacja (narzędzie albo wpis do configu) i uruchom doctor ponownie."
   exit 1
 fi
 echo "WYNIK: OK — wszystkie obowiązkowe są (uwagi: $UWAGI)."
