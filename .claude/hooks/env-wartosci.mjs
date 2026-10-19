@@ -32,7 +32,7 @@ const OPERATORY = new Set(['|', '||', '&&', ';', '&', '\n', '(', ')'])
 
 /** @typedef {'env-plik' | 'show-sensitive' | 'zmienne' | 'xtrace'} Rodzaj */
 /** @typedef {{ blokada: false } | { blokada: true, plik: string, komenda: string, rodzaj: Rodzaj }} Ocena */
-/** @typedef {{ nazwa: string, argumenty: string[], surowe: string[], plikiWe: string[], doPliku: boolean, tee: boolean }} Komenda */
+/** @typedef {{ nazwa: string, argumenty: string[], surowe: string[], plikiWe: string[], doPliku: boolean, stderrDoPliku: boolean, tee: boolean }} Komenda */
 
 // Cel przekierowania, ktory trafia do transkryptu jak stdout (stderr, deskryptory, process substitution).
 const TERMINAL = /^(?:\/dev\/(?:stdout|stderr|tty|fd\/\d+)|\/proc\/self\/fd\/\d+|\()$/
@@ -125,13 +125,18 @@ function bezOpakowan(argumenty) {
   const a = [...argumenty]
   for (;;) {
     if (a.length && /^[A-Za-z_]\w*=/.test(a[0])) { a.shift(); continue }
-    const zArgumentem = OPAKOWANIA.get(a[0] ?? '')
+    const opakowanie = (a[0] ?? '').replace(/^.*\//, '')
+    const zArgumentem = OPAKOWANIA.get(opakowanie)
     if (zArgumentem === undefined) return a
     a.shift()
     while (a.length && /^-/.test(a[0])) {
       const flaga = a.shift() ?? ''
+      // `env -S 'node x.mjs'`: argument -S to komenda z argumentami, nie opcja.
+      if (opakowanie === 'env' && flaga === '-S') { a.unshift(...(a.shift() ?? '').split(/\s+/).filter(Boolean)); break }
       if (/^-[A-Za-z]$/.test(flaga) && zArgumentem.includes(flaga[1])) a.shift()
     }
+    // `timeout 5 cmd`: pierwszy argument pozycyjny to czas.
+    if (opakowanie === 'timeout' && /^\d/.test(a[0] ?? '')) a.shift()
   }
 }
 
@@ -142,12 +147,14 @@ function rozbierz(k) {
   /** @type {string[]} */
   const plikiWe = []
   let doPliku = false
+  let stderrDoPliku = false
   for (let i = 0; i < k.length; i++) {
     const t = k[i]
     if (t === '<') { if (k[i + 1]) plikiWe.push(k[++i]); continue }
     if (/^(?:\d*|&)>[>|]?$/.test(t)) {
       const cel = k[++i] ?? ''
       if (!/^\d/.test(t) || t.startsWith('1')) doPliku = doPliku || !TERMINAL.test(cel)
+      if (t.startsWith('2') || t.startsWith('&')) stderrDoPliku = stderrDoPliku || !TERMINAL.test(cel)
       continue
     }
     if (/^\d*>&\d+$/.test(t)) continue
@@ -157,7 +164,7 @@ function rozbierz(k) {
   // Gole `env` (bez komendy po przypisaniach i opcjach) wypisuje cale srodowisko — to komenda, nie opakowanie.
   const goleEnv = !wlasciwe.length && argumenty.some((a) => a.replace(/^.*\//, '') === 'env')
   const nazwa = goleEnv ? 'env' : (wlasciwe.shift() ?? '').replace(/^.*\//, '')
-  return { nazwa, argumenty: wlasciwe, surowe: argumenty, plikiWe, doPliku, tee: nazwa === 'tee' && wlasciwe.some((a) => TERMINAL.test(a)) }
+  return { nazwa, argumenty: wlasciwe, surowe: argumenty, plikiWe, doPliku, stderrDoPliku, tee: nazwa === 'tee' && wlasciwe.some((a) => TERMINAL.test(a)) }
 }
 
 /**
@@ -194,7 +201,9 @@ function opcje(nazwa, a) {
 /** @param {string} p @returns {boolean} wzorzec grep -o, ktory nie obejmie wartosci po `=` (najwyzej kilka znakow, np. host) */
 function wzorzecBezWartosci(p) {
   const i = p.indexOf('=')
-  if (i === -1) return !/(?:^|[^\\])\.|\[\^|\[\[:(?:graph|print|alnum|punct):\]\]|\\[SWw]/.test(p)
+  // Bez `=`: tez powtarzana klasa ze znakami adresu z haslem albo base64 (`[a-zA-Z0-9:@_-]*`, `[A-Za-z0-9+/=]+`) obejmuje wartosc;
+  // nazwy kluczy (`^[A-Z0-9_]+`) i host (`https://[a-z]*\.supabase\.co`) przechodza.
+  if (i === -1) return !/(?:^|[^\\])\.|\[\^|\[\[:(?:graph|print|alnum|punct):\]\]|\\[SWw]|\[[^\]]*[:@/%+=][^\]]*\][*+]/.test(p)
   return !/(?:^|[^\\])[*+]|\{\d*,\d*\}|\{\d{2,}\}/.test(p.slice(i + 1))
 }
 
@@ -237,9 +246,29 @@ function bezWartosci(k, zPliku) {
   if (k.nazwa === 'awk' || k.nazwa === 'gawk') {
     return separator === '=' && !flagi.has('-f') && /^(?:!?\/[^/]*\/)?\s*\{\s*print \$1;?\s*\}$/.test(pozycyjne[0] ?? '')
   }
-  // jq z sama lista kluczy albo licznikiem (wynik `--show-sensitive --format json` bez wartosci).
-  if (k.nazwa === 'jq') return !zPliku && pozycyjne.length === 1 && /^\s*\.?(?:\[\]\s*\|\s*)?(?:keys(?:_unsorted)?(?:\[\])?|length|type)\s*$/.test(pozycyjne[0] ?? '')
-  return ['wc', 'true', 'test', '['].includes(k.nazwa) && !zPliku
+  // jq z sama lista kluczy albo licznikiem (wynik `--show-sensitive --format json` bez wartosci): `keys[]`, `.[].key`, `map(.key)`.
+  if (k.nazwa === 'jq') return !zPliku && pozycyjne.length === 1 && FILTR_JQ_BEZ_WARTOSCI.test(pozycyjne[0] ?? '')
+  // Skrot (shasum, md5) zamiast wartosci — porownanie bez wypisania.
+  return ['wc', 'true', 'test', '[', 'shasum', 'sha1sum', 'sha256sum', 'md5', 'md5sum'].includes(k.nazwa) && !zPliku
+}
+
+const FILTR_JQ_BEZ_WARTOSCI = /^\s*(?:\.(?:\[\d*\])?\s*\|\s*)?(?:keys(?:_unsorted)?(?:\[\])?|length|type|\.\[\]\.key|map\(\.key\))\s*$/
+
+/**
+ * Filtr, ktory nie wypisze wartosci z tabeli albo JSON-a `--show-sensitive`: licznik, obecnosc, klucze jq. Filtry linii
+ * KLUCZ=WARTOSC (`cut -d=`, sed z podstawieniem `=` do konca linii, `awk -F=`) przepuszczaja linie tabeli bez `=` w calosci.
+ * @param {Komenda} k @returns {boolean}
+ */
+function maskaTabeli(k) {
+  const { flagi } = opcje(k.nazwa, k.argumenty)
+  if (GREP.has(k.nazwa)) {
+    // grep -o z wzorcem nazwy klucza: zakonczonym `=` (`^[A-Z_]+=`) albo z samych wielkich liter (`\bVITE_[A-Z_]+`).
+    const { wzorce, pozycyjne } = opcje(k.nazwa, k.argumenty)
+    const wzorzec = wzorce[0] ?? pozycyjne[0] ?? ''
+    const nazwa = /=\$?$/.test(wzorzec) || !/a-z|0-9|\\[wdSW]/.test(wzorzec)
+    return ['-c', '-l', '-L', '-q', '--count', '--quiet'].some((f) => flagi.has(f)) || (flagi.has('-o') && nazwa && bezWartosci(k, false))
+  }
+  return k.nazwa === 'wc' || (k.nazwa === 'jq' && bezWartosci(k, false))
 }
 
 // Nazwy zmiennych srodowiska bez sekretow (sciezki, jezyk, terminal) — `printenv PATH` przechodzi.
@@ -248,24 +277,58 @@ const ZMIENNE_JAWNE = new Set(['PATH', 'HOME', 'USER', 'LOGNAME', 'SHELL', 'PWD'
 
 /** @param {Komenda} k @returns {Rodzaj | null} komenda sama wypisuje sekrety (bez pliku .env*) */
 function zrodloSekretow(k) {
-  // Flaga CLI (Coolify), nie tekst: w wzorcu grep, liscie petli for albo argumencie echo nic nie wypisuje.
-  const tekstowe = CZYTAJACE.has(k.nazwa) || WYPISUJACE.has(k.nazwa) || ['for', 'case', 'test', '['].includes(k.nazwa)
-  if (!tekstowe && k.argumenty.some((a) => a === '--show-sensitive' || a.startsWith('--show-sensitive='))) return 'show-sensitive'
+  // Flaga CLI (Coolify, krotko `-s`), nie tekst: w wzorcu grep, liscie petli for albo argumencie echo nic nie wypisuje.
+  const tekstowe = CZYTAJACE.has(k.nazwa) || WYPISUJACE.has(k.nazwa) || ['for', 'case', 'test', '[', 'git'].includes(k.nazwa)
+  const flaga = (/** @type {string} */ a) => a === '--show-sensitive' || a.startsWith('--show-sensitive=') || (k.nazwa === 'coolify' && a === '-s')
+  if (!tekstowe && k.argumenty.some(flaga)) return 'show-sensitive'
   if (k.nazwa === 'env') return 'zmienne'
-  if (k.nazwa === 'printenv') {
-    const nazwy = k.argumenty.filter((a) => !a.startsWith('-'))
-    return nazwy.length && nazwy.every((n) => ZMIENNE_JAWNE.has(n)) ? null : 'zmienne'
+  const nazwy = k.argumenty.filter((a) => !a.startsWith('-'))
+  if (k.nazwa === 'printenv') return nazwy.length && nazwy.every((n) => ZMIENNE_JAWNE.has(n)) ? null : 'zmienne'
+  // `export`, `export -p`, `declare -x`, `declare -p KLUCZ`, `typeset -x`, gole `set` — wypisuja zmienne z wartosciami.
+  if (k.nazwa === 'export') return nazwy.length ? null : 'zmienne'
+  if (k.nazwa === 'declare' || k.nazwa === 'typeset') {
+    return nazwy.some((n) => n.includes('=')) || k.argumenty.some((a) => /^-[a-z]*f/.test(a)) ? null : 'zmienne'
   }
+  if (k.nazwa === 'set') return k.argumenty.length ? null : 'zmienne'
+  // `docker inspect … .Config.Env` — zmienne kontenera.
+  if (k.nazwa === 'docker' && k.argumenty[0] === 'inspect' && k.argumenty.some((a) => a.includes('.Config.Env'))) return 'zmienne'
+  return null
+}
+
+/**
+ * Komenda uruchamiana gdzie indziej, ktorej wynik wraca na stdout: `ssh host <komenda>`, `docker|podman exec <kontener>
+ * <komenda>`, `docker compose exec <usluga> <komenda>`, `kubectl exec … -- <komenda>`.
+ * @param {Komenda} k @returns {string | null}
+ */
+function komendaZdalna(k) {
+  const a = k.argumenty
+  /** @param {number} od @param {string} zArgumentem @returns {string | null} reszta po pierwszym argumencie pozycyjnym (cel) */
+  const poCelu = (od, zArgumentem) => {
+    for (let i = od; i < a.length; i++) {
+      const t = a[i] ?? ''
+      if (['--env', '--user', '--workdir', '--env-file', '--index'].includes(t)) { i++; continue }
+      if (t.startsWith('-')) { if (/^-[A-Za-z]$/.test(t) && zArgumentem.includes(t[1] ?? '')) i++; continue }
+      return a.slice(i + 1).join(' ') || null
+    }
+    return null
+  }
+  if (k.nazwa === 'ssh') return poCelu(0, 'bcDEeFIiJLlmOopQRSWw')
+  if ((k.nazwa === 'docker' || k.nazwa === 'podman') && a[0] === 'exec') return poCelu(1, 'euw')
+  if (k.nazwa === 'docker' && a[0] === 'compose' && a[1] === 'exec') return poCelu(2, 'euw')
+  if (k.nazwa === 'docker-compose' && a[0] === 'exec') return poCelu(1, 'euw')
+  if (k.nazwa === 'kubectl' && a[0] === 'exec' && a.includes('--')) return a.slice(a.indexOf('--') + 1).join(' ') || null
   return null
 }
 
 /** @param {Komenda} k @returns {boolean} komenda wlacza xtrace (`set -x`, `set -eux`, `set -o xtrace`, `bash -x skrypt`) */
 function wlaczaXtrace(k) {
   const krotkie = (/** @type {string} */ a) => /^-[A-Za-z]*x[A-Za-z]*$/.test(a)
-  if (k.nazwa === 'set') return k.argumenty.some((a, i) => krotkie(a) || (a === '-o' && k.argumenty[i + 1] === 'xtrace'))
-  if (['bash', 'sh', 'zsh'].includes(k.nazwa)) {
-    const doSkryptu = k.argumenty.slice(0, Math.max(0, k.argumenty.findIndex((a) => !a.startsWith('-') && !a.startsWith('+'))))
-    return (doSkryptu.length ? doSkryptu : k.argumenty.filter((a) => a.startsWith('-'))).some((a) => krotkie(a) && a !== '-c')
+  const xtrace = (/** @type {string[]} */ flagi) => flagi.some((a, i) => krotkie(a) || (/^-[A-Za-z]*o$/.test(a) && flagi[i + 1] === 'xtrace'))
+  if (k.nazwa === 'set') return xtrace(k.argumenty)
+  if (['bash', 'sh', 'zsh', 'dash', 'ksh'].includes(k.nazwa)) {
+    // Opcje powloki tylko przed skryptem (`bash skrypt.sh -x` to argument skryptu); xtrace ze stderr w pliku nie trafia do transkryptu.
+    const skrypt = k.argumenty.findIndex((a, i) => !a.startsWith('-') && !a.startsWith('+') && !/^-[A-Za-z]*o$/.test(k.argumenty[i - 1] ?? ''))
+    return !k.stderrDoPliku && xtrace(skrypt === -1 ? k.argumenty : k.argumenty.slice(0, skrypt))
   }
   return false
 }
@@ -273,11 +336,12 @@ function wlaczaXtrace(k) {
 /**
  * Wynik komendy `i` z potoku trafia do transkryptu: bez filtra bez wartosci dalej w potoku i bez przekierowania do pliku;
  * `tee` na terminal przed filtrem tez wypisuje.
- * @param {Komenda[]} komendy @param {number} i @returns {boolean}
+ * @param {Komenda[]} komendy @param {number} i @param {boolean} [tabela] wynik to tabela albo JSON (`--show-sensitive`)
+ * @returns {boolean}
  */
-function wypiszeWynik(komendy, i) {
+function wypiszeWynik(komendy, i, tabela = false) {
   const dalej = komendy.slice(i + 1)
-  const maska = dalej.findIndex((d) => bezWartosci(d, false))
+  const maska = dalej.findIndex((d) => (tabela ? maskaTabeli(d) : bezWartosci(d, false)))
   const przedMaska = maska === -1 ? dalej : dalej.slice(0, maska)
   if (przedMaska.some((d) => d.tee)) return true
   return maska === -1 && ![komendy[i], ...dalej].some((d) => d?.doPliku)
@@ -291,6 +355,25 @@ function plikiKomendy(k) {
 }
 
 /**
+ * Zmienne przypisane z podstawienia, ktore czyta sekret bez pliku (`U=$(… --show-sensitive …)`, `U=$(printenv KLUCZ)`):
+ * podstawienie wypisane wprost zostaloby zablokowane.
+ * @param {Komenda} k @param {string[]} podstawienia @returns {Array<[string, Ocena & { blokada: true }]>}
+ */
+function zmienneZSekretem(k, podstawienia) {
+  /** @type {Array<[string, Ocena & { blokada: true }]>} */
+  const wynik = []
+  for (const [i, a] of k.surowe.entries()) {
+    const nazwa = /^([A-Za-z_]\w*)=$/.exec(a)?.[1]
+    const znacznik = /^__PODSTAWIENIE_(\d+)__$/.exec(k.surowe[i + 1] ?? '')
+    if (!nazwa || !znacznik) continue
+    const ocena = ocenKomende(podstawienia[Number(znacznik[1])] ?? '', true)
+    // Tylko sekrety bez pliku: wartosc z .env* w zmiennej (`T=$(grep … .env | cut -d= -f2-)`) to dozwolony wzorzec od P20.
+    if (ocena.blokada && ocena.rodzaj !== 'env-plik') wynik.push([nazwa, ocena])
+  }
+  return wynik
+}
+
+/**
  * @param {string} komenda tresc wywolania narzedzia Bash
  * @param {boolean} [wypisuje] komenda jest argumentem komendy wypisujacej (`echo $(…)`)
  * @returns {Ocena}
@@ -301,27 +384,34 @@ export function ocenKomende(komenda, wypisuje = true) {
   // Tekst, ktorego tokenizer nie przeczytal (niedomkniety cudzyslow), z odwolaniem do .env = blokada zamiast cichego konca.
   const nieprzeczytany = /(?:^|[\s/'"])\.env/.exec(reszta)
   if (wypisuje && nieprzeczytany) return { blokada: true, plik: '.env*', komenda: reszta.slice(0, 80), rodzaj: 'env-plik' }
+  /** @type {Map<string, Ocena & { blokada: true }>} zmienne z sekretem przypisane wczesniej w tej komendzie */
+  const skazone = new Map()
   for (const potok of potoki(t)) {
     const komendy = potok.map(rozbierz)
     for (const [i, k] of komendy.entries()) {
+      // `U=$(… sekret …); echo "$U"` — wartosc wraca do transkryptu w drugim kroku (pelna wartosc: $U, ${U}; ${#U} to dlugosc).
+      const wypisanaZmienna = WYPISUJACE.has(k.nazwa) && [...skazone.keys()].find((n) => k.argumenty.some((a) => new RegExp(`\\$(?:${n}\\b|\\{${n}\\})`).test(a)))
+      if (wypisuje && wypisanaZmienna && wypiszeWynik(komendy, i)) return skazone.get(wypisanaZmienna) ?? { blokada: false }
+      for (const [nazwa, ocena] of zmienneZSekretem(k, podstawienia)) skazone.set(nazwa, ocena)
       // Podstawienie w przypisaniu (`T=$(…)`) nie wypisuje wyniku, ale jego xtrace idzie na stderr — oceniane bez wypisania.
       for (const a of k.surowe) {
-        const wypisujeWynik = WYPISUJACE.has(k.nazwa) && k.argumenty.includes(a)
+        const wypisujeWynik = wypisuje && WYPISUJACE.has(k.nazwa) && k.argumenty.includes(a)
         for (const m of a.matchAll(/__PODSTAWIENIE_(\d+)__/g)) {
           const wnetrze = ocenKomende(podstawienia[Number(m[1])] ?? '', wypisujeWynik)
           if (wnetrze.blokada) return wnetrze
         }
       }
-      if (['bash', 'sh', 'zsh', 'eval'].includes(k.nazwa)) {
-        const kod = k.nazwa === 'eval' ? k.argumenty.join(' ') : (k.argumenty[k.argumenty.indexOf('-c') + 1] ?? '')
-        const wnetrze = k.nazwa === 'eval' || k.argumenty.includes('-c') ? ocenKomende(kod, wypisuje) : null
-        if (wnetrze?.blokada) return wnetrze
-      }
+      // `bash -c`, `bash -lc`, `sh -ec`, `eval`, `ssh host …`, `docker exec …` — kod oceniany jak komenda lokalna.
+      const zC = k.argumenty.findIndex((a) => /^-[A-Za-z]*c[A-Za-z]*$/.test(a))
+      const kod = k.nazwa === 'eval' ? k.argumenty.join(' ')
+        : ['bash', 'sh', 'zsh', 'dash', 'ksh'].includes(k.nazwa) && zC !== -1 ? (k.argumenty[zC + 1] ?? '') : komendaZdalna(k)
+      const wnetrze = kod ? ocenKomende(kod, wypisuje) : null
+      if (wnetrze?.blokada) return wnetrze
       const tekst = [k.nazwa, ...k.argumenty].join(' ')
       if (wlaczaXtrace(k)) return { blokada: true, plik: k.nazwa, komenda: tekst, rodzaj: 'xtrace' }
       if (!wypisuje) continue
       const zrodlo = zrodloSekretow(k)
-      if (zrodlo && wypiszeWynik(komendy, i)) return { blokada: true, plik: zrodlo === 'show-sensitive' ? '--show-sensitive' : k.nazwa, komenda: tekst, rodzaj: zrodlo }
+      if (zrodlo && wypiszeWynik(komendy, i, zrodlo === 'show-sensitive')) return { blokada: true, plik: zrodlo === 'show-sensitive' ? '--show-sensitive' : k.nazwa, komenda: tekst, rodzaj: zrodlo }
       if (!CZYTAJACE.has(k.nazwa)) continue
       const plik = plikiKomendy(k).find(czyPlikEnv)
       if (!plik || bezWartosci(k, true)) continue
@@ -335,11 +425,12 @@ export function ocenKomende(komenda, wypisuje = true) {
 export function powodOceny(ocena) {
   if (ocena.rodzaj === 'show-sensitive') {
     return 'Hook env-wartosci: --show-sensitive wypisałoby sekrety do transkryptu (zostają w nim na zawsze).\n'
-      + "Wartość do komendy bez wypisania: U=$(<komenda> --format json --show-sensitive | jq -r '.pole'). Nazwy pól: | jq -r 'keys[]'. Bez --show-sensitive CLI maskuje wartości."
+      + 'Wartość do komendy bez wypisania: U=$(coolify app env list <uuid> --format json --show-sensitive | jq -r \'.[] | select(.key=="KLUCZ") | .value\'). '
+      + "Nazwy: coolify app env list <uuid> --format json | jq -r '.[].key' (bez --show-sensitive CLI maskuje wartości)."
   }
   if (ocena.rodzaj === 'zmienne') {
     return `Hook env-wartosci: ${ocena.plik} wypisałoby wartości zmiennych środowiska (także sekrety) do transkryptu.\n`
-      + 'Nazwy: env | cut -d= -f1. Obecność: [ -n "$KLUCZ" ] && echo ustawiona. Wartość do komendy: używaj "$KLUCZ" bez wypisania.'
+      + "Nazwy: env | grep -oE '^[A-Za-z_][A-Za-z0-9_]*='. Obecność: [ -n \"$KLUCZ\" ] && echo ustawiona. Wartość do komendy: używaj \"$KLUCZ\" bez wypisania."
   }
   if (ocena.rodzaj === 'xtrace') {
     return 'Hook env-wartosci: xtrace (set -x, bash -x) wypisuje rozwinięte komendy z wartościami zmiennych, także wczytanych z .env*.\n'

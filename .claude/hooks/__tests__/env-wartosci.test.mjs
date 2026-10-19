@@ -214,12 +214,99 @@ test('E1 CLI: powod blokady wedlug rodzaju z bezpieczna alternatywa', () => {
   const pokaz = uruchom({ tool_name: 'Bash', tool_input: { command: 'coolify app env list x --show-sensitive | grep DB' } })
   assert.equal(pokaz.status, 2)
   assert.match(pokaz.stderr, /--show-sensitive wypisałoby sekrety do transkryptu/)
-  assert.match(pokaz.stderr, /U=\$\(<komenda> --format json --show-sensitive \| jq -r '\.pole'\)/)
+  assert.match(pokaz.stderr, /U=\$\(coolify app env list <uuid> --format json --show-sensitive \| jq -r '\.\[\] \| select\(\.key=="KLUCZ"\) \| \.value'\)/)
+  assert.match(pokaz.stderr, /Nazwy: coolify app env list <uuid> --format json \| jq -r '\.\[\]\.key' \(bez --show-sensitive CLI maskuje wartości\)/)
   const zmienne = uruchom({ tool_name: 'Bash', tool_input: { command: 'printenv' } })
   assert.match(zmienne.stderr, /printenv wypisałoby wartości zmiennych środowiska/)
-  assert.match(zmienne.stderr, /env \| cut -d= -f1/)
+  assert.match(zmienne.stderr, /Nazwy: env \| grep -oE '\^\[A-Za-z_\]\[A-Za-z0-9_\]\*='\. Obecność: \[ -n "\$KLUCZ" \] && echo ustawiona/)
   const xtrace = uruchom({ tool_name: 'Bash', tool_input: { command: 'set -x' } })
   assert.match(xtrace.stderr, /xtrace \(set -x, bash -x\) wypisuje rozwinięte komendy z wartościami zmiennych/)
   const plik = uruchom({ tool_name: 'Bash', tool_input: { command: 'cat .env' } })
   assert.match(plik.stderr, /wypisałaby wartości z \.env/)
+})
+
+// P22 E1 po recenzji: obejscia (krotka flaga Coolify -s, komenda zdalna przez ssh/docker exec/kubectl exec, bash -lc,
+// filtry KLUCZ=WARTOSC na tabeli Coolify, export/declare/set), falszywe blokady (/usr/bin/env node, env -S, bash skrypt.sh -x,
+// xtrace ze stderr do pliku, git grep) i mutacje, ktore przezyly pierwsza wersje testow.
+const OBEJSCIA = [
+  ['coolify app env list x -s | grep DB', 'show-sensitive'],
+  ['coolify database get x -s --format json', 'show-sensitive'],
+  ["ssh vps 'docker exec abc printenv POSTGRES_PASSWORD'", 'zmienne'],
+  ['docker exec -e A=1 ctr env', 'zmienne'],
+  ["docker exec ctr sh -c 'env | grep -i pass'", 'zmienne'],
+  ['docker compose exec app env', 'zmienne'],
+  ['docker exec --user root ctr printenv', 'zmienne'],
+  ['kubectl exec pod -- env', 'zmienne'],
+  ["docker inspect ctr --format '{{range .Config.Env}}{{println .}}{{end}}'", 'zmienne'],
+  ["bash -lc 'printenv'", 'zmienne'],
+  ["bash -lc 'cat .env'", 'env-plik'],
+  ['coolify app env list x --show-sensitive | cut -d= -f1', 'show-sensitive'],
+  ["coolify app env list x --show-sensitive | sed 's/=.*//'", 'show-sensitive'],
+  ["coolify app env list x --show-sensitive | grep -oE 'postgres://[a-zA-Z0-9:@_-]*'", 'show-sensitive'],
+  ["grep -oE 'postgres://[a-zA-Z0-9:@_-]*' .env", 'env-plik'],
+  ['export -p', 'zmienne'],
+  ['export', 'zmienne'],
+  ['declare -x', 'zmienne'],
+  ['declare -p DB_URL', 'zmienne'],
+  ['set | grep TOKEN', 'zmienne'],
+  ['set -eo xtrace', 'xtrace'],
+  ['bash -o xtrace skrypt.sh', 'xtrace'],
+  ['bash -x', 'xtrace'],
+  ["U=$(coolify database get x --format json --show-sensitive | jq -r '.internal_db_url'); echo \"$U\"", 'show-sensitive'],
+  ['U=$(printenv DB_URL); printf "%s\\n" "${U}"', 'zmienne'],
+  ["coolify app env list x --show-sensitive | grep -oE '[a-z]{20}\\.supabase\\.co'", 'show-sensitive'],
+  ["grep -oE '[A-Za-z0-9+/=]+' .env", 'env-plik'],
+  ['timeout 5 printenv', 'zmienne'],
+  ['timeout 5 cat .env', 'env-plik'],
+  ['env | tee /dev/stderr | grep -c X', 'zmienne'],
+  ["coolify app env list x --show-sensitive --format json | jq -r 'keys[], .[]'", 'show-sensitive'],
+]
+const BEZ_BLOKADY_PO_RECENZJI = [
+  '/usr/bin/env node x.mjs',
+  '/usr/bin/env bash skrypt.sh',
+  "env -S 'node x.mjs'",
+  'bash skrypt.sh -x',
+  'bash -e skrypt.sh -x',
+  'bash +e skrypt.sh -x',
+  'bash -x s.sh 2>/dev/null',
+  'bash -x s.sh 2>/tmp/log',
+  'U=$(echo "$(printenv TOKEN)")',
+  'git grep -n -- --show-sensitive',
+  'git grep -e --show-sensitive',
+  "coolify app env list x --show-sensitive --format json | jq -r '.[].key'",
+  "coolify app env list x --show-sensitive --format json | jq 'map(.key)'",
+  "coolify app env list x --show-sensitive --format json | jq -r '.[0] | keys'",
+  "coolify app env list x --show-sensitive --format json | jq -r '.[] | keys[]'",
+  'coolify app env list x --show-sensitive --format json | jq type',
+  'printenv -0 PATH',
+  'set -o pipefail',
+  'printenv | true',
+  'T=$(printenv TOKEN) echo ok',
+  'export NODE_ENV=production',
+  'declare -f moja_funkcja',
+  "ssh vps 'docker ps --format {{.Names}}'",
+  'docker exec ctr ls /app',
+  'set -e',
+  'env | grep -c X | tee /dev/stderr',
+  "coolify app env list x --show-sensitive 2>&1 | grep -oE '\\bVITE_[A-Z_]+' | sort -u",
+  "grep -oE '^[A-Z0-9_]+' .env.local",
+  'grep -o "https://[a-z]*\\.supabase\\.co" .env',
+  "U=$(coolify database get x --format json --show-sensitive | jq -r '.url'); echo \"długość ${#U}\"; psql \"$U\" -c 'select 1'",
+  'U=$(printenv DB_URL); echo "$U" | wc -c',
+  'U=$(printenv PATH); echo "$U"',
+  "T=$(grep '^KLUCZ=' .env | cut -d= -f2-); echo $T",
+  'printenv DB_URL | shasum -a 256',
+]
+
+test('E1 po recenzji: obejscia zablokowane z rodzajem', () => {
+  for (const [komenda, rodzaj] of OBEJSCIA) {
+    const ocena = ocenKomende(komenda)
+    assert.equal(ocena.blokada && ocena.rodzaj, rodzaj, komenda)
+  }
+  const pokaz = ocenKomende('coolify app env list x --show-sensitive | grep DB')
+  assert.equal(pokaz.blokada && pokaz.plik, '--show-sensitive')
+})
+
+test('E1 po recenzji: opakowania, argumenty skryptu, stderr do pliku, git grep, filtry jq nazw — bez blokady', () => {
+  for (const komenda of BEZ_BLOKADY_PO_RECENZJI) assert.deepEqual(ocenKomende(komenda), { blokada: false }, komenda)
 })
