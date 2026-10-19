@@ -166,3 +166,23 @@ test('pierwszy sync projektu, ktory ma juz identyczne .claude/ (skopiowane reczn
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+// P22 A1: kazdy sync (nie tylko pierwszy) podpowiada wykluczenie .claude/** w configu runnera testow, gdy go brak —
+// linia z gotowa poprawka; projekt z configiem z include tests/ — bez linii.
+test('sync: vitest bez configu → linia RUNNER TESTÓW z poprawka; z configiem — bez linii', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    mkdirSync(join(zrodlo, '.claude', 'scripts', 'doctor'), { recursive: true })
+    execFileSync('cp', [resolve(dirname(SKRYPT), '..', '..', '..', 'scripts', 'doctor', 'runner-testow.mjs'), join(zrodlo, '.claude', 'scripts', 'doctor')])
+    git(zrodlo, ['add', '.'])
+    git(zrodlo, ['commit', '-q', '-m', 'runner'])
+    writeFileSync(join(projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3' } }))
+    assert.match(sync(zrodlo, projekt), /RUNNER TESTÓW: vitest bez configu .* — poprawka: vitest\.config\.ts: .*'\.claude\/\*\*'/)
+    writeFileSync(join(projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
+    assert.doesNotMatch(sync(zrodlo, projekt, ['--force']), /RUNNER TESTÓW/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})

@@ -61,6 +61,9 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
 - `NOWA SESJA: …` → przekaż userowi dosłownie jako ostatnie zdanie raportu: instrukcje i skille
   są buforowane w sesji, więc `/dev-autopilot-wf` uruchomiony w tej sesji działałby na starej
   maszynerii.
+- `RUNNER TESTÓW: <szczegół> — poprawka: <config>` → vitest albo jest projektu zbiera testy maszynerii
+  z `.claude/**` i autopilot zatrzyma się na `npm test` na starcie. Przekaż userowi linię z poprawką
+  (wpis `exclude` w configu) i zaproponuj, że ją wpiszesz i zacommitujesz. Sync i tak się udał.
 - `--- DOCTOR (pierwsza instalacja) ---` + tabela + `DOCTOR_KOD: <n>` → pierwsza instalacja
   szablonu w projekcie. Pokaż userowi tabelę. `DOCTOR_KOD: 0` = wszystkie obowiązkowe narzędzia są;
   inny kod = wypisz wiersze `BRAK` z komendami z kolumny „Instalacja" i powiedz, że bez nich run

@@ -103,6 +103,9 @@ nie płacą za nie kontekstem.
    ```
    `WYNIK: OK` = można startować. `BRAK` = zainstaluj z kolumny „Instalacja” i uruchom doctor ponownie. Doctor uruchamia się
    też sam przy pierwszym `/sync-template` i w `/dev-prep`.
+   Projekt z vitest albo jest: runner nie może zbierać testów maszynerii z `.claude/**` (113 plików `node:test`) — wiersz
+   „runner testów” podaje gotowy wpis, np. w `vitest.config.ts`:
+   `test: { exclude: [...configDefaults.exclude, '.claude/**'] }` (`configDefaults` z `vitest/config`).
 7. Otwórz **nową** sesję Claude Code (skille i ustawienia wczytują się na starcie sesji) i wpisz `/dev-brainstorm` - opisz,
    co chcesz zbudować. Resztą pokieruje pipeline.
 

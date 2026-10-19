@@ -1,5 +1,6 @@
 // Bramka gotowosci zadania przed autopilotem (PLAN-POPRAWY P13, krok 6.6 skilla dev-plan): plan techniczny bez bledow,
-// srodowisko dla scenariuszy [E2E] (sprawdzenie jak w bootstrapie), checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo.
+// srodowisko dla scenariuszy [E2E] (sprawdzenie jak w bootstrapie), checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo,
+// runner testow projektu bez testow maszynerii z .claude/** (P22 A1: inaczej `npm test` w runie pada na starcie).
 // Autopilot nie przelacza galezi i zatrzymuje run na brudnym drzewie, wiec te warunki sprawdzamy przed jego startem.
 
 import { execFileSync } from 'node:child_process'
@@ -8,6 +9,7 @@ import { basename, join } from 'node:path'
 
 import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
+import { sprawdzRunnerTestow } from '../doctor/runner-testow.mjs'
 import { gotowoscAdvisors } from '../e2e/advisors.mjs'
 import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
 import { potrzebyZadania } from '../e2e/start.mjs'
@@ -22,7 +24,8 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   plan: { ok: boolean, bledy: string[], uwagi: string[] },
  *   e2e: { ok: boolean, scenariusze: number, figmaScreens: boolean, envE2e: boolean, bledy: string[], uwagi: string[] },
  *   przygotowanie: { ok: boolean, sciezka: string | null, blokujace: Bloker[], odroczone: Bloker[] },
- *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] } }} Gotowosc
+ *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] },
+ *   testy: { ok: boolean, runner: string | null, szczegol: string, poprawka: string } }} Gotowosc
  */
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string} */
@@ -49,6 +52,12 @@ function srodowiskoE2e(projekt, katalogZadania, narzedzia) {
     ? [`brak skilla weryfikacji projektu (${PLIK_SKILLA}) — tester odegra scenariusze bez mapy funkcji; generator: ${KOMENDA_GENERATORA}`]
     : []
   return { ok: !potrzebne || (env ? !bledy.length : scenariusze === 0), scenariusze, figmaScreens, envE2e: !!env, bledy, uwagi }
+}
+
+/** @param {string} projekt @returns {Gotowosc['testy']} */
+function testyProjektu(projekt) {
+  const { stan, runner, szczegol, poprawka } = sprawdzRunnerTestow(projekt)
+  return { ok: stan !== 'BRAK', runner, szczegol, poprawka }
 }
 
 /**
@@ -86,9 +95,10 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     e2e,
     przygotowanie: { ok: !prep?.blokujace.length, sciezka: prep?.sciezka ?? null, blokujace: prep?.blokujace ?? [], odroczone: prep?.odroczone ?? [] },
     git: { ok: galaz === wymagana && !brudne.length, galaz, wymagana, brudne },
+    testy: testyProjektu(projekt),
   }
   return {
-    ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok,
+    ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok,
     zadanie,
     planTechniczny: wskaznik,
     ...wynik,

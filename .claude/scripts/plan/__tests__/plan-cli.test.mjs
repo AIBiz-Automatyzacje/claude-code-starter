@@ -156,6 +156,20 @@ test('gotowosc: STOP na E2E bez .env.e2e, blokerze startu, cudzej galezi i brudn
   })
 })
 
+// P22 A1: runner testow projektu zbierajacy .claude/** (live-10-demo: vitest run bez configu) wychodzi w bramce, nie w bootstrapie.
+test('gotowosc: vitest bez configu → testy.ok false z poprawka i STOP; config z include tests/ → ok', () => wRepo((k) => {
+  writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
+  zadanieNaGalezi(k)
+  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  assert.deepEqual([zle.ok, zle.testy.ok, zle.testy.runner, zle.git.ok], [false, false, 'vitest', true])
+  assert.match(zle.testy.poprawka, /exclude: \[\.\.\.configDefaults\.exclude, '\.claude\/\*\*'\]/)
+  writeFileSync(join(k, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'add', '-A'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'test: config'])
+  const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  assert.deepEqual([dobre.ok, dobre.testy.ok], [true, true])
+}))
+
 test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i agent-browser to STOP; brak skilla weryfikacji = uwaga', () => wRepo((k) => {
   zadanieNaGalezi(k)
   const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'chrome: fail' }) } })

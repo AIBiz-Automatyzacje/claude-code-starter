@@ -384,3 +384,20 @@ test('port E2E: bez .env.e2e nie dotyczy; 5173 → UWAGA z naprawa na 5174; domy
   writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_START="vite --mode e2e --port 5173 --strictPort"\n')
   assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 4), ['UWAGA', 'E2E_START uruchamia serwer na porcie 5173, a E2E_URL wskazuje port 5174', 'ustaw w .env.e2e E2E_URL=http://localhost:5173 albo zmien --port w E2E_START na 5174'])
 }))
+
+// P22 A1: live-10-demo — `vitest run` bez configu zebral 113 testow maszynerii z .claude/** i autopilot stanal na starcie.
+// Doctor mowi o tym przed runem: BRAK z gotowym configiem (exit 1); config z include tests/ → OK; projekt bez vitest — nie dotyczy.
+test('runner testow: vitest bez configu → BRAK z gotowym vitest.config.ts i exit 1; config z include tests/ → OK', () => zSrodowiskiem((s) => {
+  assert.equal(wiersz(doctor(s).stdout, 'runner testów')[1], 'nie dotyczy')
+  writeFileSync(join(s.projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
+  const brak = doctor(s)
+  const w = wiersz(brak.stdout, 'runner testów')
+  assert.equal(w[1], 'BRAK')
+  assert.match(w[3], /^vitest\.config\.ts: .*'\.claude\/\*\*'/)
+  assert.equal(brak.status, 1)
+  assert.match(brak.stdout, /WYNIK: BRAK obowiązkowych: runner testów/)
+  writeFileSync(join(s.projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
+  const ok = doctor(s)
+  assert.equal(wiersz(ok.stdout, 'runner testów')[1], 'OK')
+  assert.equal(ok.status, 0)
+}))
