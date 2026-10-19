@@ -8,8 +8,9 @@
 /**
  * @typedef {import('./plan-techniczny.mjs').Plan} Plan
  * @typedef {import('./plan-techniczny.mjs').Jednostka} Jednostka
- * @typedef {{ stala: string, zrodlo: string, konsumenci: number[], iuZrodlo: number | null, kolumnaIu: boolean }} StalaRejestru
- *   iuZrodlo null przy kolumnaIu = stala juz jest w repo (w kolumnie „—”), zadna IU jej nie tworzy
+ * @typedef {{ stala: string, zrodlo: string, konsumenci: number[], iuZrodlo: number | null, kolumnaIu: boolean, problem: string | null }} StalaRejestru
+ *   iuZrodlo null przy kolumnaIu = stala juz jest w repo (w kolumnie „—”), zadna IU jej nie tworzy; problem = komorka
+ *   IU-zrodla nieczytelna (pusta, kilka IU) albo wiersz bez naglowka tabeli
  */
 
 const SEKCJA = /^##\s+Rejestr sta[lł]ych\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m
@@ -17,23 +18,42 @@ const SEKCJA = /^##\s+Rejestr sta[lł]ych\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m
 /** @param {string} komorka @returns {string} tresc komorki bez backtickow */
 const bezBacktickow = (komorka) => komorka.replace(/`/g, '').trim()
 
-/** @param {string} komorka @returns {string} nazwa kolumny bez diakrytykow, malymi literami */
-const nazwaKolumny = (komorka) => bezBacktickow(komorka).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l')
+/** @param {string} komorka @returns {string} nazwa kolumny bez diakrytykow, wyroznien i odmian kresek, malymi literami */
+const nazwaKolumny = (komorka) => bezBacktickow(komorka).replace(/[*_]/g, '').replace(/[–—]/g, '-').toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l').trim()
+
+/** Plan sprzed P22: `| Stała | Wartość | Źródło | Konsumenci |` bez naglowka — pozycje domyslne. */
+const KOLUMNY_DOMYSLNE = { plik: 2, iuZrodlo: -1, konsumenci: 3, zNaglowka: false }
 
 /**
- * Kolumny z naglowka tabeli. Plan sprzed P22: `| Stała | Wartość | Źródło | Konsumenci |` (bez IU-zrodla).
- * @param {string[]} naglowek @returns {{ plik: number, iuZrodlo: number, konsumenci: number }}
+ * Kolumny z naglowka tabeli (kolejnosc dowolna; `IU-źródło`, `IU źródło`, `**IU-źródło**`, `Źródło (IU)`).
+ * @param {string[]} naglowek @returns {{ plik: number, iuZrodlo: number, konsumenci: number, zNaglowka: boolean }}
  */
 function kolumny(naglowek) {
   const nazwy = naglowek.map(nazwaKolumny)
-  const iuZrodlo = nazwy.findIndex((n) => /^iu[-\s]?zrodlo$/.test(n))
-  const plik = nazwy.findIndex((n) => n === 'plik' || n === 'zrodlo')
-  const konsumenci = nazwy.findIndex((n) => n === 'konsumenci')
-  return { plik: plik === -1 ? 2 : plik, iuZrodlo, konsumenci: konsumenci === -1 ? 3 : konsumenci }
+  const iuZrodlo = nazwy.findIndex((n) => /^iu\W*zrodl|^zrodlo\W*\(?iu/.test(n))
+  const plik = nazwy.findIndex((n, i) => i !== iuZrodlo && (n === 'plik' || n.startsWith('zrodlo')))
+  const konsumenci = nazwy.findIndex((n) => n.startsWith('konsumenci'))
+  return { plik: plik === -1 ? KOLUMNY_DOMYSLNE.plik : plik, iuZrodlo, konsumenci: konsumenci === -1 ? KOLUMNY_DOMYSLNE.konsumenci : konsumenci, zNaglowka: true }
 }
 
 /** @param {string} komorka @returns {number[]} numery IU spoza nawiasow (dopiski i wpisy spoza planu pomijane) */
 const numeryIu = (komorka) => [...komorka.replace(/\([^)]*\)/g, '').matchAll(/\bIU-(\d+)\b/g)].map((m) => Number(m[1]))
+
+/** @param {string} komorka @returns {string} pierwsza sciezka w backtickach, bez backtickow — pierwsze slowo komorki; bez `./` */
+const sciezkaPliku = (komorka) => (/`([^`]+)`/.exec(komorka)?.[1] ?? bezBacktickow(komorka).split(/\s+/)[0] ?? '').trim().replace(/^\.\//, '')
+
+/**
+ * IU-zrodlo z komorki: jedna IU, „—” (stala juz w repo) albo problem do uwagi planu.
+ * @param {string} komorka @returns {{ iu: number | null, problem: string | null }}
+ */
+function komorkaIu(komorka) {
+  const numery = numeryIu(komorka)
+  if (numery.length > 1) return { iu: numery[0] ?? null, problem: `kilka IU w kolumnie IU-źródło (${numery.map((n) => `IU-${n}`).join(', ')}) — jedna IU-źródło na wiersz, rozbij wiersz` }
+  if (numery.length === 1) return { iu: numery[0] ?? null, problem: null }
+  if (/^[—–-]$/.test(bezBacktickow(komorka))) return { iu: null, problem: null }
+  return { iu: null, problem: `kolumna IU-źródło pusta albo nieczytelna („${bezBacktickow(komorka)}”) — wpisz IU-N albo „—” (stała już w repo)` }
+}
 
 /**
  * Wiersze tabeli `| Stała | Wartość | Plik | IU-źródło | Konsumenci |` (kolumny po naglowku; plan sprzed P22 — `| Stała |
@@ -46,19 +66,20 @@ export function rejestrStalych(md) {
   const sekcja = SEKCJA.exec(md)?.[1] ?? ''
   /** @type {StalaRejestru[]} */
   const wiersze = []
-  let k = kolumny([])
+  let k = KOLUMNY_DOMYSLNE
   for (const linia of sekcja.split('\n')) {
     if (!/^\s*\|/.test(linia) || /^\s*\|\s*:?-{3,}/.test(linia)) continue
     const komorki = linia.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/)
-    if (/^\s*Sta[lł]a\s*$/i.test(komorki[0] ?? '')) {
+    if (nazwaKolumny(komorki[0] ?? '').startsWith('stala')) {
       k = kolumny(komorki)
       continue
     }
     if (komorki.length < 4) continue
-    const iu = k.iuZrodlo === -1 ? [] : numeryIu(komorki[k.iuZrodlo] ?? '')
+    const iu = k.iuZrodlo === -1 ? { iu: null, problem: null } : komorkaIu(komorki[k.iuZrodlo] ?? '')
+    const bezNaglowka = !k.zNaglowka && komorki.length > 4 ? 'tabela rejestru bez wiersza nagłówka — kolumny nieznane, dodaj nagłówek `| Stała | Wartość | Plik | IU-źródło | Konsumenci |`' : null
     wiersze.push({
-      stala: bezBacktickow(komorki[0] ?? ''), zrodlo: bezBacktickow(komorki[k.plik] ?? ''), konsumenci: numeryIu(komorki[k.konsumenci] ?? ''),
-      iuZrodlo: iu[0] ?? null, kolumnaIu: k.iuZrodlo !== -1,
+      stala: bezBacktickow(komorki[0] ?? ''), zrodlo: sciezkaPliku(komorki[k.plik] ?? ''), konsumenci: numeryIu(komorki[k.konsumenci] ?? ''),
+      iuZrodlo: iu.iu, kolumnaIu: k.iuZrodlo !== -1, problem: bezNaglowka ?? iu.problem,
     })
   }
   return wiersze
@@ -87,27 +108,33 @@ export function uwagiRejestru(plan, jednostki) {
   const faza = new Map(jednostki.map((iu) => [iu.numer, iu.faza]))
   /** @type {string[]} */
   const jawne = []
-  /** @type {Map<Jednostka, { stale: string[], pierwszy: number }>} */
+  /** @type {Map<Jednostka, { stale: string[], pierwszy: number, kolumna: boolean }>} */
   const zaWczesnie = new Map()
   for (const wiersz of plan.rejestr) {
-    const { stala, zrodlo, konsumenci, iuZrodlo } = wiersz
+    const { stala, zrodlo, konsumenci, iuZrodlo, kolumnaIu, problem } = wiersz
+    if (problem) jawne.push(`rejestr stałych: ${stala} — ${problem}`)
     const iu = iuZrodla(wiersz, jednostki)
-    if (iuZrodlo !== null && !iu) jawne.push(`rejestr stałych: ${stala} — IU-źródło IU-${iuZrodlo} nie ma w planie`)
-    if (iuZrodlo !== null && iu && !iu.pliki.some((p) => p.sciezka === zrodlo)) {
+    const fazyKonsumentow = konsumenci.map((n) => faza.get(n)).filter((f) => typeof f === 'number')
+    if (kolumnaIu && iuZrodlo !== null && !iu) jawne.push(`rejestr stałych: ${stala} — IU-źródło IU-${iuZrodlo} nie ma w planie`)
+    if (kolumnaIu && iu && !iu.pliki.some((p) => p.sciezka === zrodlo)) {
       jawne.push(`rejestr stałych: ${stala} — ${iu.id} (IU-źródło) nie ma ${zrodlo} w tabeli plików`)
+    }
+    // Jawna IU-zrodlo po pierwszym konsumencie: konsument importuje stala, ktorej jeszcze nie ma (takze pole obiektu).
+    if (kolumnaIu && iu && iu.faza !== null && fazyKonsumentow.length && Math.min(...fazyKonsumentow) < iu.faza) {
+      jawne.push(`rejestr stałych: ${stala} — ${iu.id} (IU-źródło, faza ${iu.faza}) jest po pierwszym konsumencie (faza ${Math.min(...fazyKonsumentow)}) — źródło w IU pierwszego konsumenta`)
     }
     // `TRASY.potwierdz` to pole obiektu, nie eksport — knip nie zglasza nieuzywanych pol, a sam obiekt ma juz konsumentow.
     if (stala.includes('.')) continue
-    const fazyKonsumentow = konsumenci.map((n) => faza.get(n)).filter((f) => typeof f === 'number')
     if (!iu || iu.faza === null || !fazyKonsumentow.length) continue
     const pierwsza = Math.min(...fazyKonsumentow)
     if (pierwsza <= iu.faza) continue
-    const wpis = zaWczesnie.get(iu) ?? { stale: [], pierwszy: pierwsza }
+    const wpis = zaWczesnie.get(iu) ?? { stale: [], pierwszy: pierwsza, kolumna: kolumnaIu }
     wpis.stale.push(stala)
     wpis.pierwszy = Math.min(wpis.pierwszy, pierwsza)
     zaWczesnie.set(iu, wpis)
   }
-  return [...jawne, ...[...zaWczesnie].map(([iu, { stale, pierwszy }]) => `${iu.id} (faza ${iu.faza}) definiuje stałe z rejestru ${stale.join(', ')},`
+  return [...jawne, ...[...zaWczesnie].map(([iu, { stale, pierwszy, kolumna }]) => `${iu.id} (faza ${iu.faza}) definiuje stałe z rejestru ${stale.join(', ')},`
     + ` a ich konsumenci zaczynają się w fazie ${pierwszy} — knip w domknięciu fazy ${iu.faza} zgłosi eksporty bez konsumenta;`
-    + ' stała powstaje w IU pierwszego konsumenta (kolumna IU-źródło i wiersz pliku w jej tabeli plików)')]
+    + (kolumna ? ' stała powstaje w IU pierwszego konsumenta (kolumna IU-źródło i wiersz pliku w jej tabeli plików)'
+      : ' stała powstaje w IU pierwszego konsumenta (wiersz pliku źródła w jej tabeli plików; IU-źródło wskaż kolumną IU-źródło w rejestrze)'))]
 }
