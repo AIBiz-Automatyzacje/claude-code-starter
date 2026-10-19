@@ -631,9 +631,9 @@ albo ${SUMA_MIGRACJI} (sumy migracji dopisywane przez obie strony).
 Powtarzaj, dopoki rebase trwa (\`test -d "$(git rev-parse --git-path rebase-merge)"\` albo \`test -d "$(git rev-parse --git-path rebase-apply)"\` kod 0):
 1. konflikty = \`git diff --name-only --diff-filter=U\`. Plik inny niz ${INDEKS_WIEDZY} i ${SUMA_MIGRACJI} na liscie = koniec: status KONFLIKT
    z ta lista, bez \`git rebase --abort\` i bez rozwiazywania tego pliku.
-2. ${SUMA_MIGRACJI} na liscie: \`node .claude/scripts/bramki/bramki.mjs --scal-sume\` (wpisy obu stron; o wyniku mowi pole \`scalony\`
-   JSON-a, nie kod wyjscia), potem \`git add ${SUMA_MIGRACJI}\`. \`scalony: false\` = koniec: status KONFLIKT z lista z kroku 1,
-   powod = pole \`powod\` JSON-a, bez \`git add\` i bez \`git rebase --abort\`.
+2. ${SUMA_MIGRACJI} na liscie: \`node .claude/scripts/bramki/bramki.mjs --scal-sume\` (wpisy obu stron) i odczytaj pole \`scalony\`
+   JSON-a (nie kod wyjscia). \`scalony: false\` = koniec: status KONFLIKT z lista z kroku 1, powod = pole \`powod\` JSON-a,
+   bez \`git add\` i bez \`git rebase --abort\`. Dopiero \`scalony: true\` = \`git add ${SUMA_MIGRACJI}\`.
 3. ${INDEKS_WIEDZY} na liscie: \`git checkout --theirs -- ${INDEKS_WIEDZY}\`, \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\`
    (indeks z drzewa tego commitu; o zapisie mowi pole \`zapisany\` JSON-a, nie kod wyjscia), \`git add ${INDEKS_WIEDZY}\`.
    \`zapisany: false\` (bramka rozmiaru indeksu) = zostaje wersja z \`--theirs\`, rebase idzie dalej, bramkaIndeksu = true.

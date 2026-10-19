@@ -103,6 +103,15 @@ test('scalWpisy: nasze w kolejnosci, potem nowe z ich strony; wspolny wpis raz; 
   assert.deepEqual(scalWpisy(nasza, `${wpis('a', A)}\n${wpis('c', C)}\n`), { tresc: `${wpis('a', A)}\n${wpis('b', B)}\n${wpis('c', C)}\n`, dopisane: [C] })
   assert.deepEqual(scalWpisy(nasza, nasza), { tresc: nasza, dopisane: [] })
   assert.deepEqual(scalWpisy(nasza, `${wpis('a', A)}\n${wpis('d', B)}\n`), { sprzeczne: [B] })
+  assert.deepEqual(scalWpisy(nasza, `${wpis('a', A)}\n${wpis('a', A)}\n${wpis('c', C)}\n${wpis('c', C)}\n`), { tresc: `${nasza}${wpis('c', C)}\n`, dopisane: [C] }, 'duplikat po ich stronie raz')
+})
+
+// Recenzja P23: linie CRLF nie pasowaly do formatu, wiec scalenie dawalo pusty plik, a bramka na pustej sumie — ok.
+test('scalWpisy: niepusta linia spoza formatu po ktorejkolwiek stronie (CRLF, wielkie litery, komentarz) = nieparsowalne', () => {
+  const crlf = `${wpis('a', A)}\r\n${wpis('b', B)}\r\n`
+  assert.deepEqual(scalWpisy(crlf, `${wpis('a', A)}\n`), { nieparsowalne: [`${wpis('a', A)}\r`, `${wpis('b', B)}\r`] })
+  assert.deepEqual(scalWpisy(`${wpis('a', A)}\n`, `${wpis('A', C)}\n# komentarz\n`), { nieparsowalne: [wpis('A', C), '# komentarz'] })
+  assert.deepEqual(scalWpisy(wpis('a', A), `${wpis('a', A)}\n\n`), { tresc: `${wpis('a', A)}\n`, dopisane: [] }, 'bez koncowego newline i pusta linia — ok')
 })
 
 /**
@@ -148,9 +157,12 @@ test('scalSume: suma po scaleniu niezgodna z drzewem = scalony false z plikiem; 
   try {
     rebaseZKonfliktemSumy(repo)
     writeFileSync(join(repo, 'supabase', 'migrations', A), 'zmieniona\n')
+    const zKonfliktem = readFileSync(join(repo, SUMA), 'utf8')
     const zla = scalSume(repo)
     assert.equal(zla.scalony, false)
     assert.match(zla.powod, new RegExp(`supabase/migrations/${A} — migracja zmieniona`))
+    assert.equal(readFileSync(join(repo, SUMA), 'utf8'), zKonfliktem, 'plik wraca do stanu z markerami konfliktu')
+    assert.match(zKonfliktem, /^<<<<<<< /m)
   } finally {
     usun(repo)
   }
@@ -158,8 +170,59 @@ test('scalSume: suma po scaleniu niezgodna z drzewem = scalony false z plikiem; 
   try {
     const w = scalSume(bez)
     assert.equal(w.scalony, false)
-    assert.match(w.powod, /brak obu wersji supabase\/migrations\.sum w konflikcie/)
+    assert.match(w.powod, /brak wersji supabase\/migrations\.sum po stronie galezi docelowej \(:2\)/)
   } finally {
     usun(bez)
+  }
+})
+
+test('scalSume: czesc usunela sume, main ja zmienil (delete/modify) = scalony false bez przywracania pliku', () => {
+  const repo = noweRepo()
+  try {
+    git(repo, ['branch', '-M', 'main'])
+    zapisz(repo, { [`supabase/migrations/${A}`]: 'create table oferty (id int);\n' })
+    dopiszSume(repo)
+    commit(repo, 'A')
+    git(repo, ['switch', '-q', '-c', 'czesc'])
+    rmSync(join(repo, SUMA))
+    commit(repo, 'bez sumy')
+    git(repo, ['switch', '-q', 'main'])
+    zapisz(repo, { [`supabase/migrations/${B}`]: 'alter table oferty add cena int;\n' })
+    dopiszSume(repo)
+    commit(repo, 'B')
+    git(repo, ['switch', '-q', 'czesc'])
+    assert.notEqual(spawnSync('git', ['-C', repo, 'rebase', 'main'], { encoding: 'utf8' }).status, 0)
+    const w = scalSume(repo)
+    assert.equal(w.scalony, false)
+    assert.match(w.powod, /po stronie commitu czesci \(:3\)/)
+  } finally {
+    usun(repo)
+  }
+})
+
+test('bramki.mjs --scal-sume: projekt w podkatalogu repo (--projekt) — JSON z polem scalony, suma scalona', () => {
+  const repo = noweRepo()
+  try {
+    git(repo, ['branch', '-M', 'main'])
+    const app = join(repo, 'app')
+    zapisz(repo, { [`app/supabase/migrations/${A}`]: 'create table oferty (id int);\n' })
+    dopiszSume(app)
+    commit(repo, 'A')
+    git(repo, ['switch', '-q', '-c', 'czesc'])
+    zapisz(repo, { [`app/supabase/migrations/${C}`]: 'c\n' })
+    dopiszSume(app)
+    commit(repo, 'C')
+    git(repo, ['switch', '-q', 'main'])
+    zapisz(repo, { [`app/supabase/migrations/${B}`]: 'b\n' })
+    dopiszSume(app)
+    commit(repo, 'B')
+    git(repo, ['switch', '-q', 'czesc'])
+    assert.notEqual(spawnSync('git', ['-C', repo, 'rebase', 'main'], { encoding: 'utf8' }).status, 0)
+    const cli = spawnSync(process.execPath, [join(import.meta.dirname, '..', 'bramki.mjs'), '--scal-sume', '--projekt', app], { encoding: 'utf8' })
+    assert.equal(cli.status, 0)
+    assert.deepEqual(JSON.parse(cli.stdout), { scalony: true, dopisane: [C] })
+    assert.equal(bramkaMigrationsSum(app).status, 'ok')
+  } finally {
+    usun(repo)
   }
 })

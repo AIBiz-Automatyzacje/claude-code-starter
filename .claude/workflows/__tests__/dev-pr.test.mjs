@@ -496,7 +496,7 @@ test('start --czesc 2: konflikt w sumie migracji (sam albo z indeksem) → bramk
       tab, { ...KONFLIKT_SUMY, konflikty }, { status: 'OK', konflikty: [], regeneracje: 1, bramkaIndeksu: false, powod: null }, PRZYG_OK, START_OK])
     assert.equal(prompty.length, 5)
     assert.match(prompty[2], /^2\. supabase\/migrations\.sum na liscie: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume`/m)
-    assert.match(prompty[2], /o wyniku mowi pole `scalony`\n {3}JSON-a, nie kod wyjscia\), potem `git add supabase\/migrations\.sum`\. `scalony: false` = koniec: status KONFLIKT/)
+    assert.match(prompty[2], /odczytaj pole `scalony`\n {3}JSON-a \(nie kod wyjscia\)\. `scalony: false` = koniec: status KONFLIKT[\s\S]*?bez `git add`[\s\S]*?Dopiero `scalony: true` = `git add supabase\/migrations\.sum`\./)
     assert.deepEqual([wynik.status, wynik.prNumer], ['OK', 4])
   }
 })
