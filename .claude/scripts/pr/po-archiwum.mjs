@@ -13,6 +13,8 @@
 // 2 = zle argumenty, 3 = wyjatek (JSON z polem wyjatek).
 
 import { spawnSync } from 'node:child_process'
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const KOD_ZLYCH_ARGUMENTOW = 2
@@ -45,7 +47,8 @@ export function plikKodu(plik) {
 function liczbaCzesci(projekt, galaz, zadanie) {
   const w = spawnSync('git', ['show', `${galaz}:docs/completed/${zadanie}/${zadanie}-podsumowanie.md`], { cwd: projekt, encoding: 'utf8' })
   if (w.status !== 0) return null
-  const sekcja = /^## Części PR\n([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(w.stdout ?? '')?.[1] ?? ''
+  // Ten sam poczatek sekcji co awk w dev-pr-wf.js (`/^## Części PR/`): naglowek z dopiskiem albo CRLF tez sie liczy.
+  const sekcja = /^## Części PR[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m.exec((w.stdout ?? '').replace(/\r\n/g, '\n'))?.[1] ?? ''
   const wiersze = sekcja.split('\n').filter((l) => /^\|\s*\**\d+\**\s*\|/.test(l))
   return wiersze.length > 1 ? wiersze.length : null
 }
@@ -71,7 +74,8 @@ export function poArchiwum(projekt, { zadanie, galaz = `feature/${zadanie}`, cze
   return { ok: true, archiwum, galaz, zakres: `${archiwum.slice(0, 12)}..${galaz}`, czesci, wTejCzesci, commity, plikiKodu }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// realpath i fileURLToPath: sciezka ze spacja albo polskimi znakami jest w URL-u zakodowana (%20), /var → /private/var.
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   /** @type {{ projekt?: string, zadanie?: string, galaz?: string, czesc?: string }} */
   let o = {}
   try {

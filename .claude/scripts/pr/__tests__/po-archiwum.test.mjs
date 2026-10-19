@@ -3,7 +3,7 @@
 // odznaki, poprawki serwera) — tylko bot PR je widzial.
 
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,7 +14,7 @@ import { plikKodu, poArchiwum } from '../po-archiwum.mjs'
 
 const CLI = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'po-archiwum.mjs')
 const Z = 'etap-4'
-const PODSUMOWANIE = `# Podsumowanie\n\n## Części PR\n\n| Część | Fazy | Od | Do | Plików do recenzji |\n|---|---|---|---|---|\n| 1 | 1–3 | aaa | bbb | 93 |\n| 2 | 4–6 | bbb | czubek gałęzi | 121 |\n`
+const PODSUMOWANIE = `# Podsumowanie\n\n## Części PR (2)\r\n\n| Część | Fazy | Od | Do | Plików do recenzji |\n|---|---|---|---|---|\n| 1 | 1–3 | aaa | bbb | 93 |\n| 2 | 4–6 | bbb | czubek gałęzi | 121 |\n`
 
 /** @param {string} k @param {string[]} a */
 const git = (k, a) => {
@@ -90,6 +90,7 @@ test('archiwum innego zadania o wspolnym prefiksie nazwy sie nie liczy; plikKodu
   try {
     commit(k, `docs(${Z}-bis): archiwum`, { 'x.md': 'x\n' })
     commit(k, `Revert "docs(${Z}): archiwum"`, { 'y.md': 'y\n' })
+    commit(k, `docs(${Z}): archiwum (ponowne)`, { 'z.md': 'z\n' })
     assert.equal(poArchiwum(k, { zadanie: Z }).archiwum, null)
   } finally {
     rmSync(k, { recursive: true, force: true })
@@ -107,5 +108,19 @@ test('CLI: JSON w jednej linii; zla nazwa zadania i --czesc = kod 2', () => {
     assert.equal(spawnSync(process.execPath, [CLI, '--zadanie', Z, '--czesc', '0', '--projekt', k]).status, 2)
   } finally {
     rmSync(k, { recursive: true, force: true })
+  }
+})
+
+test('CLI z katalogu ze spacja w sciezce (URL modulu zakodowany) — wynik zamiast pustego stdout', () => {
+  const { k } = repo()
+  const zSpacja = mkdtempSync(join(tmpdir(), 'po archiwum '))
+  try {
+    const kopia = join(zSpacja, 'po-archiwum.mjs')
+    writeFileSync(kopia, readFileSync(CLI, 'utf8'))
+    const w = spawnSync(process.execPath, [kopia, '--zadanie', Z, '--projekt', k], { encoding: 'utf8' })
+    assert.equal(JSON.parse(w.stdout).plikiKodu.length, 3)
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+    rmSync(zSpacja, { recursive: true, force: true })
   }
 })

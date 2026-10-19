@@ -270,7 +270,7 @@ test('czesci PR: dwie czesci = tabela z commitami ciecia do podsumowania i infor
   const dwie = C.czesciPr(C.czesciZWyniku(wynikCzesci([
     { czesc: 1, fazy: '1–3', od: SHA_A, do: SHA_B, doRecenzji: 93 }, { czesc: 2, fazy: '4–6', od: SHA_B, do: SHA_C, doRecenzji: 101 },
   ])), 'etap-3')
-  assert.equal(dwie.uwaga, 'PR w 2 częściach: część 1: fazy 1–3 (93), część 2: fazy 4–6 (101) — commity cięcia w podsumowaniu, wysyłka `/dev-pr --czesc 1`')
+  assert.equal(dwie.uwaga, 'PR w 2 częściach: część 1: fazy 1–3 (93), część 2: fazy 4–6 (101) — commity cięcia w podsumowaniu, wysyłka: `/clear`, potem `/dev-pr --czesc 1`')
   assert.ok(dwie.sekcja?.includes('| Część | Fazy | Od | Do | Plików do recenzji |\n|---|---|---|---|---|\n| 1 | 1–3 | 6ada855e2f76 | 909f669f0efc | 93 |\n| 2 | 4–6 | 909f669f0efc | czubek gałęzi | 101 |'), dwie.sekcja ?? '')
   assert.match(dwie.sekcja ?? '', /^PR w 2 częściach \(cięcie: pomiar na końcach faz;/)
   assert.doesNotMatch(`${dwie.uwaga}${dwie.sekcja}`, /per obszar|per katalog/)

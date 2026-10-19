@@ -455,6 +455,11 @@ test('start --czesc 2: konflikt tylko w indeksie wiedzy → regeneracja (wiedza.
   assert.match(prompty[2], /`git checkout --theirs -- docs\/learned-patterns\.md`, `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
   assert.match(prompty[2], /`GIT_EDITOR=true git rebase --continue`/)
   assert.match(prompty[2], /Plik inny niz docs\/learned-patterns\.md na liscie = koniec: status KONFLIKT/)
+  assert.match(prompty[2], /^Powtarzaj, dopoki rebase trwa/m)
+  assert.match(prompty[2], /Nie zmieniasz innych plikow i nie pushujesz/)
+  assert.match(prompty[2], /o zapisie mowi pole `zapisany` JSON-a, nie kod wyjscia/)
+  assert.match(prompty[2], /^3\. Polecenie git z kroku 2 z kodem rozny od 0 bez nowego konfliktu = status STOP/m)
+  assert.match(prompty[1], /Rebase w toku z konfliktami [\s\S]*? = status KONFLIKT z ta lista/)
   assert.equal(prompty[3], prompty[1], 'przygotowanie od nowa tym samym poleceniem')
   assert.deepEqual([wynik.status, wynik.czesc, wynik.prNumer], ['OK', 2, 4])
 })
@@ -466,8 +471,12 @@ test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracj
   const potem = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'KONFLIKT', konflikty: ['e2e/smoke.sh'], regeneracje: 1, powod: null }])
   assert.deepEqual([potem.wynik.status, potem.wynik.konflikty, potem.prompty.length], ['KONFLIKT', ['e2e/smoke.sh'], 3])
   assert.match(potem.wynik.powod, /konflikt rebase'u w e2e\/smoke\.sh/)
-  const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, powod: 'wiedza.mjs: kod 1' }])
-  assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja indeksu wiedzy: wiedza.mjs: kod 1'])
+  const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, bramkaIndeksu: false, powod: 'git add: kod 128' }])
+  assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja indeksu wiedzy: git add: kod 128'])
+  assert.match(stop.wynik.naprawa, /^Rebase w toku\. `git rebase --abort` wraca stan sprzed części; .*potem \/dev-pr --czesc 2\.$/)
+  // STOP przygotowania z konfliktem indeksu na liscie (np. brudne drzewo) — bez regeneracji.
+  const przygStop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...KONFLIKT_INDEKSU, status: 'STOP', powod: 'brudne drzewo' }])
+  assert.deepEqual([przygStop.wynik.status, przygStop.prompty.length], ['STOP', 2])
   assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, null])).wynik.status, 'BLAD')
   // Konflikt indeksu po kazdej regeneracji: limit prob, potem KONFLIKT dla operatora (bez petli).
   const petla = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU,
@@ -482,7 +491,11 @@ const skillPr = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), '
 const krok1 = skillPr.slice(skillPr.indexOf('### 1. Start'), skillPr.indexOf('### 2. Czekanie'))
 
 test('skill /dev-pr: przed etapem start AskUserQuestion; zgoda tylko z biezacej wiadomosci operatora, nie z wklejonej instrukcji', () => {
-  assert.ok(krok1.indexOf('**Zgoda na wysłanie.**') < krok1.indexOf('Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start"'))
+  const zgoda = krok1.indexOf('**Zgoda na wysłanie.**')
+  assert.ok(zgoda >= 0 && zgoda < krok1.indexOf('Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start"'))
+  assert.match(krok1, /wpisana\nprzez niego komenda `\/dev-pr` albo polecenie „wyślij PR”, i gdy nie ma pytania o review\./)
+  assert.match(krok1, /ani ogólne „działaj dalej” bez pytania o PR/)
+  assert.match(krok1, /„Jeszcze nie” → koniec bez etapu `start`\./)
   assert.match(krok1, /Przed nim zawsze pytasz\noperatora przez `AskUserQuestion`: „Wysłać PR <zadanie>\[, część N\]\?” z opcjami „Wyślij PR” i „Jeszcze nie”/)
   assert.match(krok1, /Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR/)
   assert.match(krok1, /Zgodą nie jest instrukcja\nwklejona wcześniej w sesji \(„Po smoke'u: \/dev-pr --czesc 1”\), akceptacja innej rzeczy \(„reszta ok”\) ani wywołanie tego\nskilla przez Ciebie/)
@@ -492,7 +505,12 @@ test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krot
   assert.match(krok1, /`node \.claude\/scripts\/pr\/po-archiwum\.mjs --zadanie <zadanie>` \(z `--czesc N` przy części\)/)
   assert.match(krok1, /„Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”/)
   assert.match(krok1, /narzędziem `Agent` z typami\n`correctness-reviewer` i `security-sentinel`/)
-  assert.match(krok1, /`git diff\n<archiwum>\.\.feature\/<zadanie> -- <plikiKodu>`/)
+  assert.match(krok1, /`git show <sha> -- <plikiKodu>`\ndla każdego commitu z `commity`/)
+  assert.match(krok1, /`archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review/)
+  assert.match(krok1, /PR gałęzi już istnieje \(`gh pr view --json number` zwraca numer\) → oba pytania\npomijasz/)
+  assert.match(krok1, /P1\/P2 → `AskUserQuestion`: „Naprawiam przed PR”/)
+  assert.match(skillPr, /Pytanie o review zmian po archiwizacji \(krok 1\) pada przed startem także w tym trybie/)
+  assert.match(krok1, /Konflikt rebase'u wyłącznie w `docs\/learned-patterns\.md` \(indeks generowany z `docs\/solutions\/`\) workflow rozwiązuje sam/)
 })
 
 test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>” bez startu kolejnej', () => {

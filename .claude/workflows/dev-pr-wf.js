@@ -112,9 +112,10 @@ const REGENERACJA_INDEKSU = {
     status: { type: 'string', enum: ['OK', 'KONFLIKT', 'STOP'], description: 'OK = rebase dokonczony; KONFLIKT = konflikt w innym pliku; STOP = polecenie padlo' },
     konflikty: { type: 'array', items: { type: 'string' }, description: 'przy KONFLIKT: git diff --name-only --diff-filter=U' },
     regeneracje: { type: 'integer', description: 'ile razy indeks zostal przeliczony (commity z konfliktem tylko w indeksie)' },
+    bramkaIndeksu: { type: 'boolean', description: 'indeks --zapisz zwrocil zapisany: false (bramka rozmiaru) — zostala wersja --theirs' },
     powod: { type: ['string', 'null'] },
   },
-  required: ['status', 'konflikty', 'regeneracje', 'powod'],
+  required: ['status', 'konflikty', 'regeneracje', 'bramkaIndeksu', 'powod'],
 }
 
 // Tabela „## Części PR” z podsumowania zadania, ktora agent przepisuje 1:1 (stdout awk) — parsuje ja JS.
@@ -626,14 +627,22 @@ Powtarzaj, dopoki rebase trwa (\`test -d "$(git rev-parse --git-path rebase-merg
 1. konflikty = \`git diff --name-only --diff-filter=U\`. Plik inny niz ${INDEKS_WIEDZY} na liscie = koniec: status KONFLIKT z ta lista,
    bez \`git rebase --abort\` i bez rozwiazywania tego pliku.
 2. Konflikt tylko w indeksie: \`git checkout --theirs -- ${INDEKS_WIEDZY}\`, \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\`
-   (indeks z drzewa tego commitu), \`git add ${INDEKS_WIEDZY}\`, \`GIT_EDITOR=true git rebase --continue\`; regeneracje + 1.
-3. Kod rozny od 0 w kroku 2 bez nowego konfliktu = status STOP, powod = komunikat polecenia.
+   (indeks z drzewa tego commitu; o zapisie mowi pole \`zapisany\` JSON-a, nie kod wyjscia), \`git add ${INDEKS_WIEDZY}\`,
+   \`GIT_EDITOR=true git rebase --continue\`; regeneracje + 1. \`zapisany: false\` (bramka rozmiaru indeksu) = zostaje wersja
+   z \`--theirs\`, rebase idzie dalej, bramkaIndeksu = true.
+3. Polecenie git z kroku 2 z kodem rozny od 0 bez nowego konfliktu = status STOP, powod = komunikat polecenia.
 Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwroc obiekt zgodny ze schematem.`,
         { schema: REGENERACJA_INDEKSU, agentType: 'klasa-mechaniczny', label: `pr:indeks-wiedzy:czesc-${cz.czesc}:${zadanie}` }
       )
       if (!r) return { status: 'BLAD', etap, czesc, powod: `Regeneracja indeksu wiedzy w trakcie rebase'u zwrocila null — rebase moze byc w toku (\`git status\`).` }
       log(`/dev-pr czesc ${cz.czesc}: konflikt rebase'u tylko w ${INDEKS_WIEDZY} — indeks przeliczony ${r.regeneracje}×, wynik ${r.status}`)
-      if (r.status === 'STOP') return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: `regeneracja indeksu wiedzy: ${r.powod || 'bez powodu'}` }
+      if (r.bramkaIndeksu) log(`/dev-pr czesc ${cz.czesc}: UWAGA — indeks wiedzy pełny (bramka rozmiaru): została wersja z gałęzi; po merge'u /dev-compound-refresh`)
+      if (r.status === 'STOP') {
+        return {
+          status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: `regeneracja indeksu wiedzy: ${r.powod || 'bez powodu'}`,
+          naprawa: `Rebase w toku. \`git rebase --abort\` wraca stan sprzed części; albo rozwiąż ręcznie (\`git status\`), \`git rebase --continue\` do końca, potem /dev-pr --czesc ${cz.czesc}.`,
+        }
+      }
       przyg = r.status === 'KONFLIKT'
         ? { ...przyg, status: 'KONFLIKT', konflikty: r.konflikty, powod: r.powod || `konflikt rebase'u w ${r.konflikty.join(', ')}` }
         : await przygotuj()

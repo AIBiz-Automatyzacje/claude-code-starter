@@ -34,7 +34,7 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | Wywołanie | Zachowanie |
 |---|---|
 | `/dev-pr` | **Interaktywny.** Po każdej klasyfikacji operator wybiera przez `AskUserQuestion` (multiSelect), co naprawiamy w tej turze. Merge zawsze zostaje jego decyzją. |
-| `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. |
+| `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. Pytanie o review zmian po archiwizacji (krok 1) pada przed startem także w tym trybie. |
 | `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. |
 | `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
@@ -55,7 +55,9 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
 żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → pytanie
 o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
-(commity po archiwum jadą w ostatniej części).
+(commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
+pomijasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd i pytaj
+jak przy plikach kodu.
 
 **Zgoda na wysłanie.** Etap `start` wypycha gałąź i tworzy PR, czyli publikuje zmiany na zewnątrz. Przed nim zawsze pytasz
 operatora przez `AskUserQuestion`: „Wysłać PR <zadanie>[, część N]?” z opcjami „Wyślij PR” i „Jeszcze nie”. Przy plikach
@@ -63,11 +65,12 @@ kodu po archiwum opcje to „Krótkie review, potem PR”, „PR bez review” i
 commitów i plików kodu. Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR: wpisana
 przez niego komenda `/dev-pr` albo polecenie „wyślij PR”, i gdy nie ma pytania o review. Zgodą nie jest instrukcja
 wklejona wcześniej w sesji („Po smoke'u: /dev-pr --czesc 1”), akceptacja innej rzeczy („reszta ok”) ani wywołanie tego
-skilla przez Ciebie. „Jeszcze nie” → koniec bez etapu `start`.
+skilla przez Ciebie, ani ogólne „działaj dalej” bez pytania o PR. Zgoda z tego wywołania skilla obejmuje powrót do kroku 1
+po konflikcie rebase'u. „Jeszcze nie” → koniec bez etapu `start`.
 
 **Krótkie review** (wybór operatora): dwa wywołania naraz narzędziem `Agent` z typami
-`correctness-reviewer` i `security-sentinel`, każde z poleceniem: „Review diffu commitów po archiwizacji zadania <zadanie>: `git diff
-<archiwum>..feature/<zadanie> -- <plikiKodu>` (commity: <sha i tematy>). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
+`correctness-reviewer` i `security-sentinel`, każde z poleceniem: „Review commitów po archiwizacji zadania <zadanie>: `git show <sha> -- <plikiKodu>`
+dla każdego commitu z `commity` (sha i tematy). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
 błędu i poprawką; bez zmian w plikach.” Pokaż findingi. P1/P2 → `AskUserQuestion`: „Naprawiam przed PR” (poprawka z testem,
 commit jawnymi ścieżkami, potem krok zgody od nowa) albo „PR z findingami w opisie” (wpisz je operatorowi do raportu). Bez
 P1/P2 → etap `start`.

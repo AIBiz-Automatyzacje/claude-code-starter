@@ -163,7 +163,7 @@ Datę do plików bierz z `date +%F`.
 
 📝 Decyzje: docs/decisions/YYYY-MM-DD-$ARGUMENTS.md (claude_md: do-uzgodnienia — CLAUDE.md uzgadnia się po merge'u PR)
 
-🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — wysyłka /dev-pr --czesc 1
+🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — wysyłka: /clear, potem /dev-pr --czesc 1
 
 💡 Rozwiązane problemy warte udokumentowania? → /dev-compound (w autopilocie compound już się odbył)
 ```
