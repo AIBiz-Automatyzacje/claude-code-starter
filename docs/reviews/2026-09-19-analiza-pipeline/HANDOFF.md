@@ -2911,6 +2911,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     słowem nie zadziała); regeneracja `supabase/migrations.sum` w B3; Read całego diffu przez reviewerów (55,7% znaków ich wyników);
     narzędzie „makieta obok aplikacji” (poz. 7) — `/dev-brainstorm`.
     **Dalej:** §8 — merge `popr/P22-po-etapie-4` za zgodą operatora, push, `/sync-template` + doctor w vibersi i live-10-demo.
+    **Merge (2026-10-19):** `dbe8a4a` (--no-ff do main, push) — na main testy 1079/1079, typecheck i lint zielone.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
