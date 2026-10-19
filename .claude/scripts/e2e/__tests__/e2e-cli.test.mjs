@@ -3,7 +3,7 @@
 // Uruchomienie: node --test .claude/scripts/e2e/__tests__/e2e-cli.test.mjs
 
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -145,4 +145,34 @@ test('restart i advisors: kontrakt CLI — wymagane --zadanie i --faza, JSON z k
     rmSync(`/tmp/autopilot-e2e-${k.split('/').pop()}.pid`, { force: true })
     rmSync(`/tmp/autopilot-e2e-${k.split('/').pop()}.log`, { force: true })
   }
+})
+
+// P22 A3: zrzut testera ze sciezka wzgledna ladowal w korzeniu repo (demon agent-browser liczy ja od swojego katalogu).
+// stop --zadanie usuwa nieśledzone PNG spoza katalogu zadania; zrzuty zadania, sledzone PNG i ignorowane zostaja.
+test('stop --zadanie: usuwa niesledzone PNG spoza katalogu zadania; zrzuty zadania, sledzone i ignorowane zostaja', () => {
+  const k = projekt()
+  const git = (/** @type {string[]} */ a) => spawnSync('git', ['-C', k, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { encoding: 'utf8' })
+  git(['init', '-q'])
+  mkdirSync(join(k, 'public'), { recursive: true })
+  mkdirSync(join(k, 'docs/active/z/visual-diff'), { recursive: true })
+  writeFileSync(join(k, 'public/logo.png'), 'png')
+  writeFileSync(join(k, '.gitignore'), 'coverage/\n')
+  git(['add', '-A'])
+  git(['commit', '-qm', 'start'])
+  const pliki = ['dodaj-projekt-walidacja.png', 'src/a/b.PNG', 'docs/active/z/flow.png', 'docs/active/z/visual-diff/e-actual.png', 'coverage/raport.png', 'docs/active/zz/obcy.png']
+  for (const p of pliki) {
+    mkdirSync(dirname(join(k, p)), { recursive: true })
+    writeFileSync(join(k, p), 'png')
+  }
+  const w = uruchom(k, ['stop', '--zadanie', 'docs/active/z/'])
+  assert.equal(w.kod, 0, w.stderr)
+  assert.deepEqual(w.json.zrzutyUsuniete.sort(), ['docs/active/zz/obcy.png', 'dodaj-projekt-walidacja.png', 'src/a/b.PNG'])
+  assert.match(w.json.detal, /^brak pliku PID .*; usuniete zrzuty spoza katalogu zadania: /)
+  assert.deepEqual(pliki.map((p) => existsSync(join(k, p))), [false, false, true, true, true, false])
+  assert.equal(existsSync(join(k, 'public/logo.png')), true)
+  // Bez --zadanie stop nie dotyka plikow.
+  writeFileSync(join(k, 'x.png'), 'png')
+  assert.equal(uruchom(k, ['stop']).json.zrzutyUsuniete, undefined)
+  assert.equal(existsSync(join(k, 'x.png')), true)
+  rmSync(k, { recursive: true })
 })

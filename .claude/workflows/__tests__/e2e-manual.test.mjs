@@ -142,7 +142,9 @@ test('faza: restart przed db-sync i review; db-sync zalezy od bazy e2e, nie od s
   assert.match(petla, /advisorsFazy = e2eSync && e2eSync\.status !== 'niepowodzenie' \? advisorsZWyniku\(e2eSync\.advisors\) : null/, 'advisors po nieudanym db push = brak wyniku, nie falszywe ok')
   assert.match(autopilot, /restartE2e: restartBlad,/)
   assert.match(autopilot, /advisors: advisorsFazy,/)
-  assert.match(autopilot, /\nif \(serwerNasz\) \{\n {2}const down = await agent\(zeStanem\(e2eEnvDownPrompt\(\)\)/)
+  assert.match(autopilot, /\nif \(serwerNasz \|\| e2eBylaPrzegladarka\) \{\n {2}const down = await agent\(zeStanem\(e2eEnvDownPrompt\(sciezka\)\)/)
+  // P22 A3: sprzatanie dostaje katalog zadania — skrypt usuwa niesledzone zrzuty PNG spoza niego.
+  assert.match(autopilot, /function e2eEnvDownPrompt\(sciezka\) \{\n {2}return `Sprzatanie srodowiska E2E dev-autopilot: \\`node \.claude\/scripts\/e2e\/e2e\.mjs stop --zadanie \$\{sciezka\}\\`/)
   assert.match(wytnij(autopilot, 'function e2eRestartPrompt(', '\n}\n'), /e2e\.mjs restart --zadanie \$\{sciezka\} --faza \$\{numerFazy\}/)
 })
 

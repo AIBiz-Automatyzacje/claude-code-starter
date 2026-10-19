@@ -601,9 +601,10 @@ Zwroc {status, detal, advisors}: "zsynchronizowano" (cos zaaplikowano), "aktualn
 "niepowodzenie" (+ co dokladnie padlo).`
 }
 
-function e2eEnvDownPrompt() {
-  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop\` (zatrzymuje wylacznie serwer uruchomiony
-przez start — plik PID; serwer zastany zostaje). Zwroc {posprzatano, detal} z JSON-a skryptu.`
+function e2eEnvDownPrompt(sciezka) {
+  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop --zadanie ${sciezka}\` (zatrzymuje wylacznie
+serwer uruchomiony przez start — plik PID; serwer zastany zostaje; usuwa niesledzone zrzuty PNG spoza katalogu zadania).
+Zwroc {posprzatano, detal} z JSON-a skryptu.`
 }
 
 // Zwiniecie sekcji "Do poprawy" robi fix, ktory i tak edytuje plik zadan (P7; wczesniej osobny agent po fixie, plan B8).
@@ -1917,8 +1918,10 @@ if (stan.zakonczenie.walidacja === 'pending') {
 // Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP celowo zostawia serwer
 // zywy (operator debuguje na gotowym srodowisku; plik PID pozwala nastepnemu runowi przejac lub ubic proces).
 // Serwer uruchomiony przez start albo restart fazy sprzatamy takze po awarii w trakcie runu (srodowisko 'martwe').
-if (serwerNasz) {
-  const down = await agent(zeStanem(e2eEnvDownPrompt()), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
+// Po fazie z przegladarka sprzatanie biegnie takze przy serwerze zastanym: zrzut testera ze sciezka wzgledna laduje
+// poza katalogiem zadania (P22 A3).
+if (serwerNasz || e2eBylaPrzegladarka) {
+  const down = await agent(zeStanem(e2eEnvDownPrompt(sciezka)), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
   await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)
 }

@@ -146,3 +146,10 @@ test('tester: zrzut z limitem 30 s; przerwany = close + probny zrzut about:blank
   assert.match(tester, /`harness` \([^)]*zawieszony zrzut bez rozstrzygniętych asercji\)/)
   assert.equal(PRZYCZYNY_SKIP.harness, 'manual')
 })
+
+// P22 A3: `cd <zadanie> && agent-browser screenshot x.png` zapisal x.png w korzeniu repo — demon agent-browser liczy sciezke
+// wzgledna od swojego katalogu. Plik roli kaze zapisywac zrzut pod sciezka bezwzgledna w katalogu zadania.
+test('plik roli: zrzut pod sciezka bezwzgledna w katalogu zadania (git rev-parse --show-toplevel), z powodem', () => {
+  assert.match(tester, /^- Zrzut zapisujesz w katalogu zadania pod ścieżką bezwzględną: scenariusz — `"\$\(git rev-parse --show-toplevel\)\/<folder>\/<flow>\.png"`/m)
+  assert.match(tester, /Demon agent-browser rozwiązuje ścieżkę względną od swojego katalogu startowego/)
+})
