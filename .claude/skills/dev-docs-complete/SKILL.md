@@ -95,6 +95,8 @@ Datę do plików bierz z `date +%F`.
    Kontynuujemy smoke operatora zadania "<zadanie>" (branch feature/<zadanie>).
    Checklista: docs/operator/YYYY-MM-DD-<zadanie>-smoke.md — prowadź mnie punkt po punkcie,
    odhaczaj za mnie w pliku, a usterki naprawiaj od razu (z testem) zamiast odkładać.
+   Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania
+   bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj.
    ```
    ```
 
@@ -161,7 +163,7 @@ Datę do plików bierz z `date +%F`.
 
 📝 Decyzje: docs/decisions/YYYY-MM-DD-$ARGUMENTS.md (claude_md: do-uzgodnienia — CLAUDE.md uzgadnia się po merge'u PR)
 
-🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — wysyłka /dev-pr --czesc 1
+🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — wysyłka: /clear, potem /dev-pr --czesc 1
 
 💡 Rozwiązane problemy warte udokumentowania? → /dev-compound (w autopilocie compound już się odbył)
 ```

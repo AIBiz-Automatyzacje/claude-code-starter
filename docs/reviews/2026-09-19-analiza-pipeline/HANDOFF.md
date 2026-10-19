@@ -2858,6 +2858,60 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Sesje (decyzja operatora 2026-10-19: całość w jednej sesji, §8):** A → B → C → F → D → E + pilot na kopii vibersi (A2 przełączenie
     gałęzi, B3 konflikt indeksu, B4 commity po archiwum) → merge za zgodą → `/sync-template` w vibersi i live-10-demo.
 
+93. **P22 „po etapie 4” (2026-10-19, jedna sesja): CAŁY PLAN ZROBIONY (A1–A3, B1–B4, C1, F1, D1, D2, E1) + pilot na kopiach.
+    Gałąź `popr/P22-po-etapie-4` (22 commity od `ec88ddd`, 54 pliki, +3039/−116), NIEZMERGOWANA — merge za zgodą operatora.**
+    Testy 1079/1079 (main 1030), typecheck i lint czyste, prompt-audit dodanych linii 0 trafień (kontrola na podłożonej linii: 2).
+    Każdy punkt: test padający bez poprawki (podmiana linii), recenzja subagenta z mutacjami w worktree, uwagi wdrożone osobnym
+    commitem „po recenzji”. Recenzje: A1 30 mutacji/12 przeżyło (7 fałszywych OK i 6 fałszywych BRAK na prawdziwym vitest 5.0.5 →
+    zmiana metody), A2 31/10, A3 21/6, B 47/16, C1 24/10, F1 18/12, D 21/17, E1 52/21 (2 × P1 obejścia).
+    (A1) `doctor/runner-testow.mjs`: werdykt z listy samego runnera (`vitest list --filesOnly --json`, `jest --listTests --json`
+    z argumentami skryptu `test`) — pliki z `.claude/**` albo `node_modules` = BRAK z gotowym wpisem do istniejącego configu
+    (vite.config bez nowego pliku); bez zainstalowanego runnera tylko brak configu = BRAK, reszta UWAGA. Wiersz w doctorze (exit 1),
+    pozycja `testy` w `plan.mjs gotowosc` (dev-plan 6.6 ma 5 pozycji), linia `RUNNER TESTÓW` przy każdym `/sync-template` (też
+    UP_TO_DATE), README instalacji. Regexowy odczyt configu odrzucony po recenzji (mergeConfig, projects, optimizeDeps.include).
+    (A2) hook Stop: cache w `$TMPDIR/claude-tsc-cache/<projekt>-<cksum>/<session_id>`; wersja drzewa (HEAD, gałąź, długość
+    reflogu) przed/po tsc → drugi bieg, dalsza zmiana = pominięcie; TS6053 pomijany tylko bez położenia, z „Matched by include
+    pattern” i dla pliku spoza bieżącego drzewa (format sprawdzony na prawdziwym wyścigu tsc 5.9); `--pretty false`; awk zamiast
+    pętli (8000 linii było 62 s). Doctor: `zapis-hookow.mjs` (zapis w drzewie z `.claude/hooks/*`, taint zmiennych, zapis względny,
+    pozostałość `.claude/tsc-cache/`) — korpus hooków 26 projektów: trafienia tylko w cache tsc, 0 fałszywych.
+    (A3) przyczyna z transkryptu: `cd <zadanie> && agent-browser screenshot x.png` zapisał w korzeniu — demon liczy ścieżkę od
+    swojego katalogu. Plik roli testera: `$Z` bezwzględnie we wszystkich przykładach, dowód względny; `e2e.mjs zrzuty|stop
+    --zadanie` PRZENOSI (nie usuwa) nieśledzone obrazy z korzenia repo do katalogu zadania (walidacja realpath, docs/active/);
+    commit artefaktów przy STOP też przenosi.
+    (B1) `/dev-pr` krok 1: `AskUserQuestion` przed `start`; bez pytania tylko przy bieżącej wiadomości operatora z `/dev-pr` albo
+    „wyślij PR”; PR już istnieje → bez pytań. (B2) ramka smoke'u (skill + workflow archiwizacji) i część nieostatnia `/dev-pr`
+    kończą się „Następny krok: /clear, potem /dev-pr --czesc N”. (B3) `dev-pr-wf` start: konflikt tylko w
+    `docs/learned-patterns.md` → agent mechaniczny regeneruje indeks z drzewa commitu (decyzja po `zapisany`, bramka rozmiaru =
+    wersja z gałęzi) i `rebase --continue`, potem przygotowanie od nowa; limit 2; inny plik = KONFLIKT. (B4)
+    `pr/po-archiwum.mjs`: commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, pliki kodu poza docs/ i .claude/ →
+    pytanie „Krótkie review (correctness + security per commit) / PR bez review / Jeszcze nie”; tylko w części z tymi commitami.
+    (C1) rejestr `| Stała | Wartość | Plik | IU-źródło | Konsumenci |`: kolumny po nagłówku (warianty pisowni), uwagi z jawnej IU
+    (spoza planu, bez pliku, po pierwszym konsumencie, kilka IU / pusta komórka), „—” = stała w repo; plan bez kolumny = stara
+    heurystyka. Plany vibersi przepisane na nową tabelę: etap 4 bez fałszywej uwagi IU-2, etap 3 z prawdziwą uwagą IU-1.
+    (F1) projekt rekordu = korzeń repo (`katalogRepo`; worktree → repo główne; scratchpad sesji → projekt sesji), pole `repo`,
+    `katalogProjektu` = korzeń (instrukcje_stale w runie etapu 4: 56/164 zamiast 0), WERSJA_REKORDU 6. Na kopii danych
+    `raport.mjs --projekt vibersi` 2026-10-17…19: 17 runów, 54,6 M (było 16 runów, 1,7 M — bez autopilota).
+    (D1) `skrypty/p22_d1_odczyt.py` na `wf_d398d371-5b3`: role B4 (buildery + klasa-naprawiacz wg agentType) 444 tys. z 3,97 mln zn
+    wyników = **11,2% < 20% → polecenie odczytu zakresami bez zmiany** (`dane/p22-d1-odczyt.{json,txt}`). Obserwacja poza D1:
+    reviewerzy 55,7% (Read całego pliku diffu fazy), kontrola fixa 24,4% (Read całych `tool-results`).
+    (D2) fixPrompt „FINDING WIZUALNY”: opis ekranu z katalogu makiet planu zadania (`ekrany/<ekran>.md`, bez pliku — sekcja SPEC.md),
+    PNG tylko ścieżką, sprawdzenie bez zrzutu (`snapshot`, `get box/styles`); tester: finding P2 z nazwą ekranu („z makiety <ekran>”).
+    Koszt PNG fixa fazy 6 wg recenzji: ok. 2,5 tys. tokenów na turę (378k + 93k to znaki base64, nie tokeny).
+    (E1) `env-wartosci.mjs`: blokada `--show-sensitive`/`coolify -s`, `printenv` (poza jawnymi PATH, HOME…), gołe `env`,
+    `export -p`, `declare -x|-p`, gołe `set`, `docker inspect .Config.Env`, xtrace (`set -x|-eux|-o xtrace`, `bash -x`), także
+    w `ssh host '…'`, `docker exec`, `kubectl exec --`, `bash -lc`; `U=$(sekret); echo "$U"`. Przechodzi: do zmiennej, klucze jq
+    (`.[].key`), licznik, plik, skrót (shasum/md5). Korpus 5872 komend (`skrypty/p22_e1_korpus.py`, `p22_e1_kalibracja.mjs`,
+    `dane/p22-e1-kalibracja.txt`): 106 nowych blokad (82 show-sensitive, 18 zmienne, 5 xtrace, 1 .env), ok. 6 fałszywych.
+    **Pilot (`dane/p22-pilot.txt`, skrypty `p22_pilot_a2.sh`, `p22_pilot_b3.sh`):** A2 — kopia vibersi, prawdziwy tsc, checkout
+    76f3c62 po 0,4 s: stary hook 67 błędów (15 × TS6053) i blokada, nowy PASSED, cache poza drzewem. B3 — rebase części 2 ze
+    stanu z reflogu: indeks przeliczony (zapisany=true), potem konflikt w `supabase/migrations.sum` → KONFLIKT (zgodnie z planem;
+    migrations.sum też generowany — kandydat poza P22). B4 — kopia z gałęzią sprzed rebase'u: 35 commitów po archiwum, 14 z kodem,
+    88 plików; część 1 bez pytania. A1 — kopia live-10-demo: BRAK 113 plików → po poprawce OK, `vitest run` 30 plików/470 testów.
+    **Otwarte (poza P22, do decyzji):** `disable-model-invocation` w `/dev-pr` (blokada B1 strukturalnie, ale wtedy „wyślij PR”
+    słowem nie zadziała); regeneracja `supabase/migrations.sum` w B3; Read całego diffu przez reviewerów (55,7% znaków ich wyników);
+    narzędzie „makieta obok aplikacji” (poz. 7) — `/dev-brainstorm`.
+    **Dalej:** §8 — merge `popr/P22-po-etapie-4` za zgodą operatora, push, `/sync-template` + doctor w vibersi i live-10-demo.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -3241,10 +3295,38 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   kosztował 2,94 M (etap 3) i 2,09 M (pilot): różnicę kosztu wariantów z jednego przebiegu porównuj z tym rozrzutem. W sesji
   w tle `agent-browser screenshot` wisi zawsze (także about:blank) — atrapa zawieszonego zrzutu sprawdza tam tylko gałąź „nie SKIP
   harness”, gałąź „ponowienie przechodzi” wymaga sesji interaktywnej.
+- P22 (2026-10-19): sprawdzian, który runner/narzędzie liczy samo, rób jego własną komendą listy (`vitest list --filesOnly --json`),
+  nie regexem na configu — recenzja znalazła 13 fałszywych werdyktów regexu na prawdziwym vitest. Hook sprawdzany na żywo
+  w sesji szablonu: zmiany w `.claude/hooks/*` działają od razu na komendach sesji (env-wartosci czyta wersję z drzewa).
+  Przyczynę zdarzenia z runu czytaj z transkryptu agenta przed poprawką: zrzut w korzeniu repo dał `cd <zadanie> && agent-browser
+  screenshot x.png` (demon liczy ścieżkę od swojego katalogu), a TS6053 — wyścig checkoutu z tsc, odtworzony na kopii (opóźnienie
+  0,4 s tak, 0,7 s nie). Rozmiar obrazu w transkrypcie to znaki base64, nie tokeny — koszt licz z `usage` następnej tury.
+  Zmienna z tainta w hooku: wartość z `.env*` w zmiennej to dozwolony wzorzec P20 — rozszerzenie na `echo $T` dało 77 fałszywych
+  blokad (np. `.env-sync-hash` łapany wzorcem pliku), więc taint tylko dla sekretów bez pliku. Mutacje plików `.md` i hooków
+  skryptem na jeden bieg (`podmiana.py`) z `${=T}` w zsh przy komendzie testu w zmiennej. JSDoc z `sed 's/=.*//'` znów zamknął
+  komentarz (`*/`) — w komentarzach opisuj podstawienie słowami.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-19) — P22 CAŁOŚĆ W JEDNEJ SESJI (6a pkt 92; decyzja operatora: wszystkie grupy A–F + pilot).** Nowa sesja
+**AKTUALNA (2026-10-19) — MERGE P22 I SYNC W PROJEKTACH (6a pkt 93).** Warunek: operator zgodził się na merge.
+Merge w sesji P22 albo ręcznie: `git switch main && git merge --no-ff popr/P22-po-etapie-4 && npm test && git push`. Potem po jednej
+nowej sesji w katalogu każdego projektu (vibersi, live-10-demo), na main. Sesja projektu nie zna historii szablonu.
+
+```
+Zaktualizuj maszynerię projektu z szablonu i sprawdź, że działa.
+
+1. /sync-template. Gdy wypisze linię „RUNNER TESTÓW: …” — pokaż mi ją z poprawką configu i zapytaj, czy ją wpisać.
+2. bash .claude/scripts/doctor/doctor.sh — wynik ma być OK; wiersze „runner testów” i „zapis hooków” przepisz mi dosłownie.
+   Gdy „zapis hooków” zgłasza pozostałość .claude/tsc-cache/ — zapytaj, czy usunąć katalog.
+3. Test hooka: komenda `grep -c '^E2E_' .env.e2e` ma przejść (w projekcie bez .env.e2e: `grep -c . .env.example`),
+   `printenv | head -1` ma zostać zablokowana. Innych wariantów z wartościami nie uruchamiaj.
+4. Commit synchronizacji. Nie zaczynaj w tej sesji kolejnego etapu.
+
+Zasady: w .claude/ nic poza tym, co wnosi /sync-template; nie wypisuj wartości z plików .env* ani zmiennych środowiska.
+Na koniec krótko: co się zmieniło, wynik doctora i testu hooka, hash commita.
+```
+
+**Historia: (2026-10-19) — P22 CAŁOŚĆ W JEDNEJ SESJI (6a pkt 92) — WYKONANA (6a pkt 93).** Nowa sesja
 w katalogu szablonu, na main.
 
 ```

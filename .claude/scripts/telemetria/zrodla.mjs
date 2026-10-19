@@ -2,9 +2,9 @@
 //   <projekty>/<slug-projektu>/<sesja>/subagents/workflows/wf_<run>/{journal.jsonl, agent-<id>.jsonl, agent-<id>.meta.json}
 //   <projekty>/<slug-projektu>/<sesja>/workflows/wf_<run>.json   — plik harnessu, powstaje dopiero po zakonczeniu runu
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 import { liczbaPolecen } from '../doctor/warstwa-stala.mjs'
 import { rekordAgenta } from './agent.mjs'
@@ -98,14 +98,42 @@ export function czytajHarness(run) {
 }
 
 /**
- * Katalog projektu, w ktorym pracowal run (`cwd` wpisow transkryptu agenta) — potrzebny do `git show` commitow fixa.
+ * Korzen repo (katalog z .git) zawierajacy sciezke. Sciezka bywa nieistniejaca (katalog zadania po archiwizacji, scratchpad),
+ * wiec sprawdzamy kolejne katalogi nadrzedne tekstowo. vibersi etap 4: cwd pierwszego agenta runu = docs/active/<zadanie>
+ * i rekordy dostaly projekt „etap-4-…”, a `raport.mjs --projekt vibersi` dawal 0 runow (P22 F1).
+ * @param {string | null | undefined} sciezka
+ * @returns {string | null}
+ */
+export function katalogRepo(sciezka) {
+  if (typeof sciezka !== 'string' || !sciezka) return null
+  for (let k = resolve(sciezka); ; k = dirname(k)) {
+    const git = join(k, '.git')
+    if (existsSync(git)) return statSync(git).isFile() ? (glownyWorktree(git) ?? k) : k
+    if (dirname(k) === k) return null
+  }
+}
+
+/**
+ * Worktree (`.git` jako plik z `gitdir: <repo>/.git/worktrees/<nazwa>`) nalezy do repo glownego — projekt to repo, nie nazwa
+ * worktree (`.claude/worktrees/<nazwa>`). Submodul (`.git/modules/…`) zostaje osobnym repo.
+ * @param {string} plikGit @returns {string | null}
+ */
+function glownyWorktree(plikGit) {
+  const gitdir = /^gitdir:\s*(.+)$/m.exec(readFileSync(plikGit, 'utf8'))?.[1]?.trim()
+  const i = gitdir ? gitdir.indexOf('/.git/worktrees/') : -1
+  return gitdir && i > 0 ? resolve(dirname(plikGit), gitdir.slice(0, i)) : null
+}
+
+/**
+ * Katalog projektu, w ktorym pracowal run: korzen repo nad `cwd` wpisow transkryptu agenta (agent bywa w podkatalogu,
+ * np. docs/active/<zadanie>), bez repo — sam cwd. Potrzebny do `git show` commitow fixa, plikow rol i wiedzy projektu.
  * @param {Run} run
  * @returns {string | null} null = run bez transkryptow
  */
 export function katalogProjektu(run) {
   for (const plik of readdirSync(run.katalogRunu).filter((n) => n.startsWith('agent-') && n.endsWith('.jsonl'))) {
     const cwd = czytajJsonl(join(run.katalogRunu, plik)).wpisy.find((w) => typeof w.cwd === 'string')?.cwd
-    if (typeof cwd === 'string') return cwd
+    if (typeof cwd === 'string') return katalogRepo(cwd) ?? cwd
   }
   return null
 }

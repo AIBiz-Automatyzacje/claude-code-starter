@@ -307,7 +307,7 @@ test('rejestr stalych: IU-zrodlo wsrod konsumentow, pole obiektu albo zrodlo spo
 
 test('rejestr stalych: parser czyta tabele sekcji (naglowek i separator pominiete, numery IU poza nawiasami)', () => {
   assert.deepEqual(parsujPlan(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-1 (migracja IU-9), IU-2, szablony maili'))).rejestr, [
-    { stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [1, 2] },
+    { stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [1, 2], iuZrodlo: null, kolumnaIu: false, problem: null },
   ])
 })
 
@@ -338,7 +338,7 @@ test('rejestr stalych: IU-zrodlo = IU z plikiem, ktorej opis wymienia stala; dwi
 
 test('rejestr stalych: kreska w backtickach (unia typow, \\|) nie przesuwa kolumn', () => {
   const md = zmien(WIERSZ_STALEJ, "| `STATUSY_OFERTY` | `'szkic' \\| 'opublikowana'` | `src/services/oferty-statusy.ts` | IU-2 |")
-  assert.deepEqual(parsujPlan(md).rejestr, [{ stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [2] }])
+  assert.deepEqual(parsujPlan(md).rejestr, [{ stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [2], iuZrodlo: null, kolumnaIu: false, problem: null }])
 })
 
 test('rejestr stalych: uwaga scalona na IU-zrodlo podaje najwczesniejsza faze konsumentow wszystkich jej stalych', () => {
@@ -347,4 +347,102 @@ test('rejestr stalych: uwaga scalona na IU-zrodlo podaje najwczesniejsza faze ko
   const uwagi = sprawdz(zmien(WIERSZ_STALEJ, wiersze, trzyFazy)).uwagi.filter((u) => /stałe z rejestru/.test(u))
   assert.equal(uwagi.length, 1)
   assert.match(uwagi[0], /^IU-1 \(faza 1\) definiuje stałe z rejestru STATUSY_OFERTY, LIMIT_OFERT, a ich konsumenci zaczynają się w fazie 2 /)
+})
+
+// P22 C1: kolumna IU-źródło. vibersi etap 4 — IU-2 (faza 2) tworzy src/config/projekt-formularz.ts i zapowiada „DLUGI_BOK_ZRZUTU_PX,
+// … NAZWA_BAZY_SZKICU dopisuje IU-5”; heurystyka (pierwsza IU z plikiem, ktorej opis wymienia stala) wskazala IU-2 i dala falszywa
+// uwage. Tu ten sam uklad: IU-1 (faza 1) tworzy plik i zapowiada stala, IU-3 (faza 2) ja dopisuje, konsument IU-2 (faza 2).
+const NAGLOWEK_STARY = '| Stała | Wartość | Źródło | Konsumenci |\n|---|---|---|---|'
+const NAGLOWEK_NOWY = '| Stała | Wartość | Plik | IU-źródło | Konsumenci |\n|---|---|---|---|---|'
+/** @param {string} tabela @returns {string} plan z ukladem etapu 4: zapowiedz w IU-1, dopisanie w IU-3 */
+function ukladEtapu4(tabela) {
+  const zDopisaniem = zmien('| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |',
+    '| Test (unit) | `src/hooks/use-oferta-publiczna.test.ts` | 0 → 60 | — | nowy |\n| Modyfikuj | `src/services/oferty-statusy.ts` | 15 → 20 | — | zostaje |')
+  const zZapowiedzia = zmien('**Cel:** Kolumna statusu i funkcja publikacji w serwisie.',
+    '**Cel:** Kolumna statusu i funkcja publikacji w serwisie; `LIMIT_OFERT` w `src/services/oferty-statusy.ts` dopisuje IU-3.', zDopisaniem)
+  return zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, tabela, zZapowiedzia)
+}
+
+test('rejestr stalych (etap 4 vibersi): bez kolumny IU-źródło falszywa uwaga na IU-1; z kolumna (IU-3) — bez uwagi', () => {
+  const stary = ukladEtapu4(`${NAGLOWEK_STARY}\n| \`LIMIT_OFERT\` | \`20\` | \`src/services/oferty-statusy.ts\` | IU-2 |`)
+  assert.match(sprawdz(stary).uwagi.join('\n'), /IU-1 \(faza 1\) definiuje stałe z rejestru LIMIT_OFERT/, 'stara heurystyka zostaje dla planu bez kolumny')
+  const nowy = ukladEtapu4(`${NAGLOWEK_NOWY}\n| \`LIMIT_OFERT\` | \`20\` | \`src/services/oferty-statusy.ts\` | IU-3 | IU-2 |`)
+  assert.deepEqual(parsujPlan(nowy).rejestr, [{ stala: 'LIMIT_OFERT', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [2], iuZrodlo: 3, kolumnaIu: true, problem: null }])
+  assert.deepEqual(sprawdz(nowy).uwagi.filter((u) => /rejestr/.test(u)), [])
+})
+
+test('rejestr stalych (etap 3 vibersi): jawne IU-źródło w fazie przed wszystkimi konsumentami — uwaga zostaje', () => {
+  const md = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, `${NAGLOWEK_NOWY}\n| \`MIN_DLUGOSC_HASLA\` | \`8\` | \`src/services/oferty-statusy.ts\` | IU-1 | IU-2, IU-3 |`)
+  const uwagi = sprawdz(md).uwagi.filter((u) => /rejestr/.test(u))
+  assert.equal(uwagi.length, 1)
+  assert.match(uwagi[0] ?? '', /^IU-1 \(faza 1\) definiuje stałe z rejestru MIN_DLUGOSC_HASLA, a ich konsumenci zaczynają się w fazie 2 .*kolumna IU-źródło/)
+})
+
+test('rejestr stalych: jawne IU-źródło spoza planu albo bez pliku stalej w tabeli plikow = uwaga; kolumny po naglowku w dowolnej kolejnosci', () => {
+  const md = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, [NAGLOWEK_NOWY,
+    '| `A` | `1` | `src/services/oferty-statusy.ts` | IU-9 | IU-1 |',
+    '| `B` | `2` | `src/services/oferty-statusy.ts` | IU-2 | IU-2 |',
+    '| `D` | `4` | `src/services/oferty-statusy.ts` | — | IU-2 |'].join('\n'))
+  assert.deepEqual(sprawdz(md).uwagi.filter((u) => /rejestr/.test(u)), [
+    'rejestr stałych: A — IU-źródło IU-9 nie ma w planie',
+    'rejestr stałych: B — IU-2 (IU-źródło) nie ma src/services/oferty-statusy.ts w tabeli plików',
+  ], 'D z „—” (stala juz w repo) — bez uwagi, bez zgadywania IU-1')
+  const przestawione = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, '| Stała | IU-zrodlo | Konsumenci | Wartość | Plik |\n|---|---|---|---|---|\n| `C` | IU-1 | IU-1, IU-2 | `3` | `src/services/oferty-statusy.ts` |')
+  assert.deepEqual(parsujPlan(przestawione).rejestr, [{ stala: 'C', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [1, 2], iuZrodlo: 1, kolumnaIu: true, problem: null }])
+})
+
+// P22 C1 po recenzji: komorka IU-zrodla bez cichego wyniku (kilka IU, pusta, nieczytelna), naglowek w wariantach pisowni,
+// tabela bez naglowka, IU-zrodlo po pierwszym konsumencie (vibersi etap 4: TRASY.kolejka importuje IU-13 w fazie 5,
+// a „dopisuje” IU-14 w fazie 6), sciezka pliku z dopiskiem.
+/** @param {string[]} wiersze @param {string} [naglowek] */
+const zTabela = (wiersze, naglowek = NAGLOWEK_NOWY) => zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, [naglowek, ...wiersze].join('\n'))
+const PLIK = '`src/services/oferty-statusy.ts`'
+
+test('rejestr stalych: kilka IU w komorce, pusta albo nieczytelna komorka = uwaga; „—”, „-” i „–” = stala w repo bez uwagi', () => {
+  const uwagi = sprawdz(zTabela([
+    `| \`A\` / \`B\` | \`1\` | ${PLIK} | IU-1, IU-3 | IU-1 |`,
+    `| \`C\` | \`2\` | ${PLIK} |  | IU-2 |`,
+    `| \`D\` | \`3\` | ${PLIK} | brak | IU-2 |`,
+    `| \`E\` | \`4\` | ${PLIK} | (IU-2) | IU-2 |`,
+    `| \`F\` | \`5\` | ${PLIK} | - | IU-2 |`,
+    `| \`G\` | \`6\` | ${PLIK} | – | IU-2 |`,
+  ])).uwagi.filter((u) => /rejestr/.test(u))
+  assert.deepEqual(uwagi, [
+    'rejestr stałych: A / B — kilka IU w kolumnie IU-źródło (IU-1, IU-3) — jedna IU-źródło na wiersz, rozbij wiersz',
+    'rejestr stałych: C — kolumna IU-źródło pusta albo nieczytelna („”) — wpisz IU-N albo „—” (stała już w repo)',
+    'rejestr stałych: D — kolumna IU-źródło pusta albo nieczytelna („brak”) — wpisz IU-N albo „—” (stała już w repo)',
+    'rejestr stałych: E — kolumna IU-źródło pusta albo nieczytelna („(IU-2)”) — wpisz IU-N albo „—” (stała już w repo)',
+  ])
+})
+
+test('rejestr stalych: naglowek pogrubiony, z kreska en, „Źródło (IU)”, STAŁA, „Konsumenci (IU)” — kolumny rozpoznane', () => {
+  for (const naglowek of [
+    '| **Stała** | **Wartość** | **Plik** | **IU-źródło** | **Konsumenci** |',
+    '| STAŁA | Wartość | Plik | IU–źródło | Konsumenci (IU) |',
+    '| Stała | Wartość | Plik | Źródło (IU) | Konsumenci |',
+    '| Stała | Wartość | Plik | IU źródło | Konsumenci |',
+  ]) {
+    const md = zTabela([`| \`LIMIT_OFERT\` | \`20\` | ${PLIK} | IU-3 | IU-2 |`], `${naglowek}\n|---|---|---|---|---|`)
+    assert.deepEqual(parsujPlan(md).rejestr, [{ stala: 'LIMIT_OFERT', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [2], iuZrodlo: 3, kolumnaIu: true, problem: null }], naglowek)
+  }
+  const stary = zTabela([`| \`X\` | \`1\` | ${PLIK} | IU-2 |`], '| Stała | Źródło | Wartość | Konsumenci |\n|---|---|---|---|')
+  assert.deepEqual(parsujPlan(stary).rejestr[0], { stala: 'X', zrodlo: '1', konsumenci: [2], iuZrodlo: null, kolumnaIu: false, problem: null }, 'Źródło w kolumnie 2 wg naglowka')
+})
+
+test('rejestr stalych: tabela bez naglowka — 4 kolumny po staremu, 5 kolumn = uwaga o naglowku', () => {
+  const bez4 = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, `|---|---|---|---|\n${WIERSZ_STALEJ}`)
+  assert.deepEqual(parsujPlan(bez4).rejestr, [{ stala: 'STATUSY_OFERTY', zrodlo: 'src/services/oferty-statusy.ts', konsumenci: [1, 2], iuZrodlo: null, kolumnaIu: false, problem: null }])
+  const bez5 = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, `| \`X\` | \`1\` | ${PLIK} | IU-1 | IU-2 |`)
+  assert.match(sprawdz(bez5).uwagi.join('\n'), /rejestr stałych: X — tabela rejestru bez wiersza nagłówka/)
+})
+
+test('rejestr stalych: jawne IU-źródło w fazie po pierwszym konsumencie = uwaga, takze dla pola obiektu; sciezka z dopiskiem i ./', () => {
+  const uwagi = sprawdz(ukladEtapu4(`${NAGLOWEK_NOWY}\n| \`TRASY.kolejka\` | \`'/k'\` | ./src/services/oferty-statusy.ts (dopisanie) | IU-3 | IU-1, IU-3 |`)).uwagi.filter((u) => /rejestr/.test(u))
+  assert.deepEqual(uwagi, ['rejestr stałych: TRASY.kolejka — IU-3 (IU-źródło, faza 2) jest po pierwszym konsumencie (faza 1) — źródło w IU pierwszego konsumenta'])
+  const zDopiskiem = parsujPlan(zTabela([`| \`Y\` | \`1\` | ${PLIK} (dopisanie) | IU-1 | IU-1 |`])).rejestr[0]
+  assert.equal(zDopiskiem?.zrodlo, 'src/services/oferty-statusy.ts')
+})
+
+test('rejestr stalych: tekst uwagi planu bez kolumny wskazuje kolumne IU-źródło do dodania', () => {
+  assert.match(sprawdz(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-2'))).uwagi[0] ?? '', /IU-źródło wskaż kolumną IU-źródło w rejestrze\)$/)
 })

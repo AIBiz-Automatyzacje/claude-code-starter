@@ -222,7 +222,7 @@ Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Wer
 
 #### 3.6b Rejestr stałych
 
-Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Źródło | Konsumenci |` dla wartości, których używa więcej niż jedna IU albo warstwa: statusy, limity, nazwy tras, klucze zapytań, kody błędów, nazwy zdarzeń. Każda stała ma jedno źródło — plik w tabeli plików pierwszej IU, która jej używa. Używa = importuje w kodzie: wartość przepisana do migracji SQL nie czyni IU źródłem, bo eksport bez konsumenta w kodzie zgłasza knip w domknięciu fazy, a `plan.mjs sprawdz` daje uwagę, gdy źródło jest w fazie wcześniejszej niż wszyscy konsumenci. IU-źródło zapisuje w Podejściu definicję dosłownie (`MAKS_DLUGOSC_NOTATKI = 500` w `src/services/notatki-limity.ts`), a IU-konsumenci importują stałą stamtąd i powtarzają w Podejściu nazwę z wartością — planner fazy nie dokleja builderowi rejestru. Bez rejestru dwie IU w osobnych promptach definiują tę samą wartość dwa razy. Plan bez takich wartości: „Brak stałych współdzielonych.”
+Sekcja planu `## Rejestr stałych` — tabela `| Stała | Wartość | Plik | IU-źródło | Konsumenci |` dla wartości, których używa więcej niż jedna IU albo warstwa: statusy, limity, nazwy tras, klucze zapytań, kody błędów, nazwy zdarzeń. Każda stała ma jedno źródło — plik w tabeli plików pierwszej IU, która jej używa; tę IU wpisujesz w kolumnie IU-źródło (`IU-5`), także gdy plik tworzy wcześniejsza IU, a stała dochodzi później. Jeden wiersz = jedna IU-źródło (`A` / `B` w jednym wierszu tylko przy tej samej IU), komórka nigdy pusta; stała, która już jest w repo: `—`, a w kolumnie Plik plik, w którym już jest. Używa = importuje w kodzie: wartość przepisana do migracji SQL nie czyni IU źródłem, bo eksport bez konsumenta w kodzie zgłasza knip w domknięciu fazy, a `plan.mjs sprawdz` daje uwagę, gdy źródło jest w fazie wcześniejszej niż wszyscy konsumenci. IU-źródło zapisuje w Podejściu definicję dosłownie (`MAKS_DLUGOSC_NOTATKI = 500` w `src/services/notatki-limity.ts`), a IU-konsumenci importują stałą stamtąd i powtarzają w Podejściu nazwę z wartością — planner fazy nie dokleja builderowi rejestru. Bez rejestru dwie IU w osobnych promptach definiują tę samą wartość dwa razy. Plan bez takich wartości: „Brak stałych współdzielonych.”
 
 #### 3.6c Części PR
 
@@ -308,12 +308,13 @@ Skrypt zapisuje `docs/active/<zadanie>/<zadanie>-plan.md`, `-kontekst.md` i `-za
 node .claude/scripts/plan/plan.mjs gotowosc docs/active/<zadanie>
 ```
 
-Wynik ma cztery pozycje, każdą wypisujesz w handoffie:
+Wynik ma pięć pozycji, każdą wypisujesz w handoffie:
 
 - `plan` — błędy strukturalne planu technicznego (po 6.2 zwykle puste);
 - `e2e` — scenariusze `[E2E]` i makiety `figma_screens` vs środowisko: to samo sprawdzenie co bootstrap autopilota (`.env.e2e` w `.gitignore`, klucze bazy e2e, baza inna niż dev, `migrations.sum`, `agent-browser doctor`), bez startu serwera. Brak `.env.e2e` przy scenariuszach albo pozycja w `bledy` zatrzyma autopilota przed fazą 1 → setup albo poprawka wg `.claude/templates/e2e-env/README.md` (jednorazowo, ~30 min); przy scenariuszach druga droga to opt-out `[E2E]` → `[Manual]` w planie i ponowne `generuj --nadpisz`. Zadanie z samymi makietami bez `.env.e2e` przechodzi (porównanie z makietą idzie bez przeglądarki do operatora), a przy błędnym `.env.e2e` naprawiasz plik. `uwagi` (brak skilla weryfikacji projektu) nie blokują startu — wypisz je z komendą `/weryfikacja-setup`;
 - `przygotowanie` — `blokujace` (`[blokuje: planowanie]`, `[blokuje: faza 1]`, marker bez numeru) zatrzymują start: wypisz je z liniami i podaj drogi (odhaczyć albo świadomie usunąć marker); `odroczone` (fazy ≥ 2) generator wpisał do `## Blokery operatora per faza` w planie zadania;
-- `git` — branch `feature/<zadanie>` i czyste drzewo; autopilot nie przełącza brancha i zatrzymuje się na brudnym drzewie.
+- `git` — branch `feature/<zadanie>` i czyste drzewo; autopilot nie przełącza brancha i zatrzymuje się na brudnym drzewie;
+- `testy` — runner testów projektu (vitest, jest) nie zbiera testów maszynerii z `.claude/**`; `ok: false` = autopilot zatrzyma się na `npm test` na starcie → wpisz do configu `poprawka` i zacommituj.
 
 Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignore` po setupie e2e) zmienia śledzone pliki: zacommituj je jawnymi ścieżkami (`git add <ścieżki> && git commit -m "docs(<zadanie>): przygotowanie operatora"`) i uruchom `gotowosc` ponownie. Autopilota nie uruchamiasz przy czerwonej bramce.
 
@@ -339,6 +340,7 @@ Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera 
    - E2E: <E scenariuszy; środowisko OK / BRAK albo błędy → setup albo opt-out; uwaga: skill weryfikacji>
    - Przygotowanie: <brak / ścieżka: blokujące start B → STOP albo OK; odroczone do faz ≥ 2: K (w planie zadania)>
    - Git: <OK / brudne pozycje>
+   - Testy: <OK / nie dotyczy / szczegół + poprawka configu>
 
 ➡️ Następny krok: autopilot w tej sesji:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<zadanie>" })

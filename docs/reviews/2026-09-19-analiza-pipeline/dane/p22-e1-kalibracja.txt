@@ -1,0 +1,12 @@
+komend w korpusie: 5872
+blokad przed: 388, po: 493
+nowe blokady: 106 {"zmienne":18,"xtrace":5,"show-sensitive":82,"env-plik":1}; znikniete: 1
+wersja po recenzji (krotka flaga coolify -s, komenda zdalna ssh/docker exec/kubectl exec, bash -lc, maska tabeli
+--show-sensitive bez filtrow KLUCZ=WARTOSC, export/declare/set, U=$(sekret); echo "$U", skrot shasum/md5 jako maska):
+przeglad nowych blokad wzgledem main (odczyt kazdej komendy w sesji P22):
+  show-sensitive: wypisuja wartosci (cale albo czesciowo zredagowane sed/cut/awk, -s z python3 drukujacym wartosci);
+    falszywe ok. 6: 3 x awk -F'|' z sama kolumna nazw, 3 x tylko dlugosc / sha256 / TAK-NIE w awk lub python3
+  zmienne: env | grep X i printenv — takze przez ssh vps 'docker exec … printenv …' — wypisuja wartosci zmiennych
+  xtrace: set -x / bash -x przy diagnostyce skryptow (koszt akceptowany: alternatywa w komunikacie)
+  env-plik: 1 — zdalny grep .env vaultu z pierwszymi 10 znakami klucza API
+  znikniete: 1 — grep KLUCZ= .env.local | md5 (skrot zamiast wartosci, teraz maska)

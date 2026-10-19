@@ -601,9 +601,10 @@ Zwroc {status, detal, advisors}: "zsynchronizowano" (cos zaaplikowano), "aktualn
 "niepowodzenie" (+ co dokladnie padlo).`
 }
 
-function e2eEnvDownPrompt() {
-  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop\` (zatrzymuje wylacznie serwer uruchomiony
-przez start — plik PID; serwer zastany zostaje). Zwroc {posprzatano, detal} z JSON-a skryptu.`
+function e2eEnvDownPrompt(sciezka) {
+  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop --zadanie "${sciezka}"\` (zatrzymuje wylacznie
+serwer uruchomiony przez start — plik PID; serwer zastany zostaje; niesledzone zrzuty z korzenia repo przenosi do katalogu zadania).
+Zwroc {posprzatano, detal} z JSON-a skryptu.`
 }
 
 // Zwiniecie sekcji "Do poprawy" robi fix, ktory i tak edytuje plik zadan (P7; wczesniej osobny agent po fixie, plan B8).
@@ -682,6 +683,14 @@ KLASYFIKUJ kazdy finding przed naprawa:
     : `SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE (${srodowiskoE2E}): przyczyne napraw (kod, seed), ale scenariusza nie odgrywaj ->`}
   przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna <srodowisko|limit-zewnetrzny|harness> --powod "<co naprawiles i dlaczego recznie>"\`
   (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.
+
+FINDING WIZUALNY (rozjazd z makieta: opis wskazuje ekran makiety, np. „z makiety <ekran>” albo visual-diff/<ekran>-figma.png):
+wyglad docelowy bierzesz z opisu ekranu w planie tego zadania. Katalog makiet = katalog pliku z linii SPEC.md planu zadania
+(\`grep -m1 'SPEC.md' ${sciezka}/*-plan.md\`); opis ekranu = \`<katalog>/ekrany/<ekran>.md\` (wymiary, odstepy, kolory, tokeny,
+teksty), a bez tego pliku — sekcja ekranu w \`<katalog>/SPEC.md\` (\`grep -n '<ekran>'\`, potem \`sed -n\`). PNG makiety i zrzutu
+podajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read: obraz zostaje w kontekscie kazdej kolejnej tury
+(rzad 1–3 tys. tokenow na obraz), a opis ekranu ma te same wymiary i teksty. Poprawke sprawdzasz w aplikacji bez zrzutu:
+\`agent-browser snapshot -i\` (elementy i teksty) i \`agent-browser get box <ref>\` / \`get styles <ref>\` (wymiary, kolory).
 
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
@@ -1138,7 +1147,7 @@ function decyzjaWejscia(sciezka, wejscie, fazy, cache) {
     return {
       stop: {
         powod: `start: doctor — ${wejscie.doctorWynik || 'brak obowiazkowego narzedzia'}`,
-        naprawa: `Zainstaluj braki z kolumny Instalacja (\`bash .claude/scripts/doctor/doctor.sh\` pokazuje tabele), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+        naprawa: `Usun braki wg kolumny Instalacja (\`bash .claude/scripts/doctor/doctor.sh\` pokazuje tabele; runner testow: wpis do configu), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
       },
       commitZadania: false, testyStartu: false, uwagi,
     }
@@ -1413,10 +1422,16 @@ async function zacommitujArtefaktyStop(faza) {
 // Commit WYLACZNIE katalogu zadania: przy STOP-ie (artefakty pipeline'u) i na starcie (zmiany operatora w katalogu
 // zadania, rek. 4 przegladu runow — wczesniej falszywy STOP "niezacommitowane zmiany" po edycji zadan).
 async function zacommitujKatalogZadania(temat, etykieta) {
+  // Przy STOP-ie zrzuty testera z korzenia repo (sciezka wzgledna liczona od katalogu demona agent-browser) idzie
+  // najpierw do katalogu zadania — inaczej zostaja poza commitem i bramka czystosci nastepnego runu na nich staje (P22 A3).
+  const zrzuty = etykieta === 'stop:commit-artefaktow'
+    ? `0. \`node .claude/scripts/e2e/e2e.mjs zrzuty --zadanie "${sciezka}"\` — skrypt przenosi niesledzone zrzuty z korzenia repo
+   do katalogu zadania; to jedyna zmiana plikow w tym kroku.\n`
+    : ''
   const polecenie = `Zacommituj tylko zmiany w katalogu zadania \`${sciezka}/\` — to pliki zadania i artefakty pipeline'u,
 a brudne drzewo zatrzymuje bootstrap kolejnego runu na bramce czystosci.
 
-1. \`git status --short\` — zapamietaj pelna liste.
+${zrzuty}1. \`git status --short\` — zapamietaj pelna liste.
 2. Z tej listy wyodrebnij sciezki SPOZA \`${sciezka}/\`. Nie dotykaj ich w zaden sposob: nie dodawaj,
    nie stashuj, nie cofaj. Zwroc je w brudnePozaZadaniem[] — ida do komunikatu dla operatora.
 3. Jesli w \`${sciezka}/\` sa jakiekolwiek zmiany (zmodyfikowane, nowe lub usuniete):
@@ -1917,8 +1932,9 @@ if (stan.zakonczenie.walidacja === 'pending') {
 // Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP celowo zostawia serwer
 // zywy (operator debuguje na gotowym srodowisku; plik PID pozwala nastepnemu runowi przejac lub ubic proces).
 // Serwer uruchomiony przez start albo restart fazy sprzatamy takze po awarii w trakcie runu (srodowisko 'martwe').
+// Przegladarka biegnie tylko przy serwerze pipeline'u (P19), wiec tu sprzatamy tez zrzuty z korzenia repo (P22 A3).
 if (serwerNasz) {
-  const down = await agent(zeStanem(e2eEnvDownPrompt()), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
+  const down = await agent(zeStanem(e2eEnvDownPrompt(sciezka)), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
   await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)
 }

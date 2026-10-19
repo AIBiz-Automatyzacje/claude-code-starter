@@ -162,6 +162,39 @@ sprawdz_bramki() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Runner testów projektu (P22 A1): vitest/jest nie może zbierać testów maszynerii z .claude/** — bez configu z wykluczeniem
+# `npm test` autopilota pada na 113 plikach node:test (live-10-demo). Wiersz TSV z runner-testow.mjs; problem = BRAK.
+sprawdz_runner() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "runner testów" UWAGA "nie sprawdzono configu vitest/jest (brak node)" "brew install node"
+    return
+  fi
+  # Ostrzeżenia node na stderr nie mogą rozbić wiersza TSV — wiersz to linia zaczynająca się od nazwy elementu.
+  if ! wynik="$(node "$KATALOG_DOCTORA/runner-testow.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "runner testów" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź package.json i config vitest/jest"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$(printf '%s\n' "$wynik" | grep -m1 "^runner testów"$'\t')"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
+# Zapis hooków (P22 A2): hook piszący w drzewie projektu zostawia nieśledzone pliki, a bramka gotowości i autopilot
+# zatrzymują się na brudnym drzewie. Wiersz TSV z zapis-hookow.mjs; problem = UWAGA z naprawą.
+sprawdz_zapis_hookow() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "zapis hooków" UWAGA "nie sprawdzono plików .claude/hooks/ (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/zapis-hookow.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "zapis hooków" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź pliki .claude/hooks/"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Advisors Supabase (P17) — lint bazy e2e po migracjach fazy: ref z .env.e2e i token Management API, przez node
 # (wiersz TSV z advisors.mjs). Brak to UWAGA: run idzie dalej, security sprawdza migracje ręcznie.
 sprawdz_advisors() {
@@ -247,6 +280,8 @@ fi
 if ma_dockerfile; then narzedzie docker UWAGA "brew install --cask docker"; else nie_dotyczy docker "brak Dockerfile"; fi
 sprawdz_ustawienia
 sprawdz_bramki
+sprawdz_runner
+sprawdz_zapis_hookow
 sprawdz_advisors
 sprawdz_port_e2e
 sprawdz_warstwe
@@ -254,7 +289,7 @@ sprawdz_telemetrie
 echo
 
 if [[ -n "$BRAKI" ]]; then
-  echo "WYNIK: BRAK obowiązkowych: $BRAKI — zainstaluj (kolumna Instalacja) i uruchom doctor ponownie."
+  echo "WYNIK: BRAK obowiązkowych: $BRAKI — usuń braki wg kolumny Instalacja (narzędzie albo wpis do configu) i uruchom doctor ponownie."
   exit 1
 fi
 echo "WYNIK: OK — wszystkie obowiązkowe są (uwagi: $UWAGI)."

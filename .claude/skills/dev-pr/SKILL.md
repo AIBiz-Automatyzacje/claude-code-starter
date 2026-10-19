@@ -34,7 +34,7 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | Wywołanie | Zachowanie |
 |---|---|
 | `/dev-pr` | **Interaktywny.** Po każdej klasyfikacji operator wybiera przez `AskUserQuestion` (multiSelect), co naprawiamy w tej turze. Merge zawsze zostaje jego decyzją. |
-| `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. |
+| `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. Pytanie o review zmian po archiwizacji (krok 1) pada przed startem także w tym trybie. |
 | `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. |
 | `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
@@ -51,6 +51,30 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 
 ### 1. Start — bramka wejścia i pull request
 
+**Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
+Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
+żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → pytanie
+o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
+(commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
+pomijasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd i pytaj
+jak przy plikach kodu.
+
+**Zgoda na wysłanie.** Etap `start` wypycha gałąź i tworzy PR, czyli publikuje zmiany na zewnątrz. Przed nim zawsze pytasz
+operatora przez `AskUserQuestion`: „Wysłać PR <zadanie>[, część N]?” z opcjami „Wyślij PR” i „Jeszcze nie”. Przy plikach
+kodu po archiwum opcje to „Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”, a w pytaniu podajesz liczbę
+commitów i plików kodu. Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR: wpisana
+przez niego komenda `/dev-pr` albo polecenie „wyślij PR”, i gdy nie ma pytania o review. Zgodą nie jest instrukcja
+wklejona wcześniej w sesji („Po smoke'u: /dev-pr --czesc 1”), akceptacja innej rzeczy („reszta ok”) ani wywołanie tego
+skilla przez Ciebie, ani ogólne „działaj dalej” bez pytania o PR. Zgoda z tego wywołania skilla obejmuje powrót do kroku 1
+po konflikcie rebase'u. „Jeszcze nie” → koniec bez etapu `start`.
+
+**Krótkie review** (wybór operatora): dwa wywołania naraz narzędziem `Agent` z typami
+`correctness-reviewer` i `security-sentinel`, każde z poleceniem: „Review commitów po archiwizacji zadania <zadanie>: `git show <sha> -- <plikiKodu>`
+dla każdego commitu z `commity` (sha i tematy). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
+błędu i poprawką; bez zmian w plikach.” Pokaż findingi. P1/P2 → `AskUserQuestion`: „Naprawiam przed PR” (poprawka z testem,
+commit jawnymi ścieżkami, potem krok zgody od nowa) albo „PR z findingami w opisie” (wpisz je operatorowi do raportu). Bez
+P1/P2 → etap `start`.
+
 ```
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie, czesc}})
 ```
@@ -64,12 +88,15 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
+Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
+przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „indeks przeliczony”).
+
 `status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Zapytaj operatora przez
 `AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
 `git add <pliki>` i `git rebase --continue`; kolejny konflikt — to samo, aż rebase się skończy; potem znów krok 1 z tym samym
 `czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
-nie rozwiązujesz bez tej decyzji. `docs/learned-patterns.md` to plik generowany (compound części 1 na głównej i compound
-zadania): zostaw jedną z wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu.
+nie rozwiązujesz bez tej decyzji. Gdy wśród konfliktów jest też `docs/learned-patterns.md` (plik generowany): zostaw jedną
+z jego wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu.
 
 Zadanie z tabelą „Części PR” wywołane bez `--czesc` → `STOP` z poleceniem `/dev-pr --czesc 1`: jeden PR byłby ponad limitem bota.
 
@@ -205,15 +232,16 @@ merge'u). Workflow wprowadza fakty do CLAUDE.md, liczy przyrost w JS (próg 2000
 `claude_md: uzgodniono`, commituje na gałęzi głównej i pushuje. Bootstrap autopilota zatrzymuje kolejne zadanie, dopóki
 któryś plik decyzji na gałęzi głównej ma `do-uzgodnienia`. `STOP` → wypisz `powod` i `naprawa`; nie przycinaj CLAUDE.md sam.
 
-**Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem
-z następnym krokiem `/dev-pr --czesc <N+1>`. Krok CLAUDE.md workflow pomija (`pominiety: true`) — plik decyzji jedzie
-w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
+**Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem,
+którego ostatnia linia to „Następny krok: /clear, potem /dev-pr --czesc <N+1>”. Kolejnej części nie uruchamiasz w tej sesji:
+świeża sesja nie niesie kontekstu poprzedniej części, a operator wpisuje komendę sam. Krok CLAUDE.md workflow pomija
+(`pominiety: true`) — plik decyzji jedzie w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
 
 ## Raport końcowy
 
 ```text
 Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
-🔀 PR #<numer> — <url> [część N z M, fazy a–b — dalej: /dev-pr --czesc N+1]
+🔀 PR #<numer> — <url> [część N z M, fazy a–b]
    Tury: <N wykonanych> / <limit albo "interaktywnie"> (sufit 3)
    Wątki: naprawione <a> · odrzucone z dokumentem decyzji <b> · do operatora <c> · nieruszone <d>
    Walidacja ostatniej tury: PASS/FAIL/BRAK-KOMEND
@@ -234,6 +262,8 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
 
 ⚠️ Do Twojej decyzji: <wątki do-operatora, jeden wiersz na wątek z wplywNaProjekt>
 ```
+
+Przy części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>”.
 
 Gdy któraś sekcja jest pusta — napisz to jednym słowem zamiast pomijać nagłówek. „Brak propozycji do
 reviewerów" to informacja; brak sekcji to luka, której operator nie zauważy.

@@ -148,7 +148,7 @@ function czesciPr(czesci, nazwaZadania) {
   const zaDuza = lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
   const uwaga = zaDuza || czesci.uwaga
     ? `UWAGA: ${czesci.uwaga || (lista.length === 1 ? `PR powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota` : `część z ${PROG_PLIKOW_PR} lub więcej plikami do recenzji bota (część ma mieć mniej)`)} — ${opis}`
-    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, wysyłka \`/dev-pr --czesc 1\`` : null
+    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, wysyłka: \`/clear\`, potem \`/dev-pr --czesc 1\`` : null
   if (lista.length === 1) return { uwaga, sekcja: null }
   const skrot = (sha) => String(sha).slice(0, 12)
   const zrodlo = czesci.zrodlo === 'plan' ? 'sekcja „Części PR” planu' : 'pomiar na końcach faz'
@@ -159,7 +159,7 @@ function czesciPr(czesci, nazwaZadania) {
     '|---|---|---|---|---|',
     ...lista.map((c, i) => `| ${c.czesc} | ${c.fazy} | ${skrot(c.od)} | ${i === lista.length - 1 ? 'czubek gałęzi' : skrot(c.do)} | ${c.doRecenzji} |`),
     '',
-    `Wysyłka: \`/dev-pr --czesc 1\`, po merge'u każdej części następna, do \`/dev-pr --czesc ${lista.length}\` (rebase na główną gałąź).`,
+    `Wysyłka: \`/clear\`, potem \`/dev-pr --czesc 1\`; po merge'u każdej części \`/clear\` i następna, do \`/dev-pr --czesc ${lista.length}\` (rebase na główną gałąź).`,
   ].join('\n')
   return { uwaga, sekcja }
 }
@@ -235,7 +235,9 @@ formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruc
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
 kazdy z konkretnym oczekiwanym wynikiem. Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
 zamiast mobilnego viewportu) oznacz **[fizyczne urzadzenie]**.
-Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc.
+Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. Ramka konczy sie zdaniami:
+"Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
+„Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej.
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji.
 
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;

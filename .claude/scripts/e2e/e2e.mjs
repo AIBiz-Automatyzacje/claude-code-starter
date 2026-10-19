@@ -9,7 +9,8 @@
 //                                                     repo bez aplikacji (projekt od zera) = odroczone, nie STOP (P17)
 //   e2e.mjs restart --zadanie <dir> --faza N          serwer od nowa przed testerem fazy ze scenariuszami albo makietami (P17)
 //   e2e.mjs advisors [--baza <sha>]                   lint bazy e2e (Supabase advisors) po wgraniu migracji fazy (db-sync, P17)
-//   e2e.mjs stop                                      zatrzymuje serwer uruchomiony przez start (plik PID)
+//   e2e.mjs stop [--zadanie <docs/active/zadanie>]    zatrzymuje serwer uruchomiony przez start (plik PID); z --zadanie jak zrzuty
+//   e2e.mjs zrzuty --zadanie <docs/active/zadanie>    nieśledzone obrazy z korzenia repo -> katalog zadania (P22 A3)
 //   e2e.mjs stan                                      czy serwer pipeline'u zyje + ogon jego logu (tester, gdy aplikacja milczy)
 //   e2e.mjs suma                                      suma migracji przed wypchnieciem do bazy e2e
 //   e2e.mjs scenariusze --zadanie <dir> --faza N      niezaznaczone scenariusze [E2E] fazy z flow i seedem (tester)
@@ -35,6 +36,7 @@ import { dopiszZadanie } from './mapa.mjs'
 import { doOdegrania, listaManual } from './scenariusze.mjs'
 import { stanSerwera, zatrzymajSerwer } from './serwer.mjs'
 import { envE2e, konfiguracja } from './srodowisko.mjs'
+import { przeniesZrzutyZKorzenia } from './zrzuty.mjs'
 import { restartFazy, startE2e } from './start.mjs'
 import { generujSkill } from './szkielet.mjs'
 
@@ -61,6 +63,9 @@ function zakoncz(wynik, ok) {
 
 /** @param {string} projekt @param {string} zadanie @returns {string} katalog zadania wzgledem projektu */
 const wzgledem = (projekt, zadanie) => (isAbsolute(zadanie) ? relative(projekt, zadanie) : zadanie)
+
+/** @param {{ przeniesione: string[], blad: string | null }} z @returns {string} */
+const opisZrzutow = (z) => z.blad ?? (z.przeniesione.length ? `zrzuty z korzenia repo przeniesione do katalogu zadania: ${z.przeniesione.join(', ')}` : '')
 
 /** @param {string} projekt @param {string | undefined} zadanie @returns {string} katalog zadania wzgledem projektu */
 function sciezkaZadania(projekt, zadanie) {
@@ -101,7 +106,16 @@ async function wykonaj(polecenie, o, projekt) {
     const w = await advisorsE2e(projekt, { baza: o.baza })
     zakoncz(w, w.status !== 'porazka' && w.status !== 'blad')
   }
-  if (polecenie === 'stop') zakoncz(await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
+  if (polecenie === 'stop') {
+    const w = await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {}))
+    if (!o.zadanie) zakoncz(w, true)
+    const z = przeniesZrzutyZKorzenia(projekt, o.zadanie)
+    zakoncz({ ...w, zrzutyPrzeniesione: z.przeniesione, detal: [w.detal, opisZrzutow(z)].filter(Boolean).join('; ') }, true)
+  }
+  if (polecenie === 'zrzuty') {
+    const z = przeniesZrzutyZKorzenia(projekt, sciezkaZadania(projekt, o.zadanie))
+    zakoncz({ zrzutyPrzeniesione: z.przeniesione, blad: z.blad, detal: opisZrzutow(z) }, !z.blad)
+  }
   if (polecenie === 'stan') zakoncz(stanSerwera(konfiguracja(projekt, envE2e(projekt) ?? {})), true)
   if (polecenie === 'weryfikacja') {
     const w = generujSkill(projekt, { zapisz: !!o.zapisz, nadpisz: !!o.nadpisz })

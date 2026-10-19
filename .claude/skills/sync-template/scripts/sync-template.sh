@@ -75,6 +75,17 @@ doctor_pierwszej_instalacji() {
   echo "DOCTOR_KOD: $kod"
 }
 
+# Runner testów projektu (P22 A1) — przy każdym syncu, nie tylko pierwszym: vitest/jest bez wykluczenia .claude/**
+# zbiera testy maszynerii (node:test) i autopilot zatrzymuje się na `npm test` na starcie. Linia tylko przy problemie, z gotową poprawką.
+runner_testow() {
+  local skrypt="$PROJECT_DIR/$MANAGED_ROOT/scripts/doctor/runner-testow.mjs" wynik element stan szczegol poprawka
+  [[ -f "$skrypt" ]] && command -v node >/dev/null 2>&1 || return 0
+  wynik="$(node "$skrypt" "$PROJECT_DIR" 2>/dev/null)" || return 0
+  IFS=$'\t' read -r element stan szczegol poprawka <<< "$wynik"
+  [[ "$stan" == BRAK ]] || return 0
+  echo "RUNNER TESTÓW: $szczegol — poprawka: $poprawka"
+}
+
 
 # --- Przygotuj źródło (klon albo lokalna ścieżka) ---
 TMP_CLONE=""
@@ -113,6 +124,7 @@ if [[ "$FORCE" -eq 0 && -n "$LOCAL_SHA" && "$LOCAL_SHA" == "$UPSTREAM_SHA" ]]; t
   echo "STATUS: UP_TO_DATE"
   echo "SHA: $UPSTREAM_SHA"
   echo "Szablon jest aktualny — brak zmian w workflow do zaciągnięcia."
+  runner_testow
   exit 0
 fi
 
@@ -190,6 +202,7 @@ if [[ "${#ADD[@]}" -eq 0 && "${#UPDATE[@]}" -eq 0 && "${#REMOVE[@]}" -eq 0 ]]; t
   printf '%s\n' "${MANAGED[@]}" > "$MANIFEST_FILE"
   zapisz_hashe
   echo "APPLIED: brak różnic w plikach — zaktualizowano tylko marker wersji."
+  runner_testow
   doctor_pierwszej_instalacji
   exit 0
 fi
@@ -272,4 +285,5 @@ if [[ "${#UPDATE[@]}" -gt 0 || "${#REMOVE[@]}" -gt 0 ]]; then
 fi
 # N2: instrukcje i skille są buforowane w sesji — autopilot w sesji sprzed syncu działałby na starej maszynerii.
 echo "NOWA SESJA: .claude/ się zmieniło — otwórz nową sesję Claude Code przed /dev-autopilot-wf (bieżąca sesja ma w pamięci starą maszynerię)."
+runner_testow
 doctor_pierwszej_instalacji

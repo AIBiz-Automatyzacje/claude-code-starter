@@ -142,7 +142,12 @@ test('faza: restart przed db-sync i review; db-sync zalezy od bazy e2e, nie od s
   assert.match(petla, /advisorsFazy = e2eSync && e2eSync\.status !== 'niepowodzenie' \? advisorsZWyniku\(e2eSync\.advisors\) : null/, 'advisors po nieudanym db push = brak wyniku, nie falszywe ok')
   assert.match(autopilot, /restartE2e: restartBlad,/)
   assert.match(autopilot, /advisors: advisorsFazy,/)
-  assert.match(autopilot, /\nif \(serwerNasz\) \{\n {2}const down = await agent\(zeStanem\(e2eEnvDownPrompt\(\)\)/)
+  assert.match(autopilot, /\nif \(serwerNasz\) \{\n {2}const down = await agent\(zeStanem\(e2eEnvDownPrompt\(sciezka\)\)/)
+  // P22 A3: sprzatanie dostaje katalog zadania — skrypt usuwa niesledzone zrzuty PNG spoza niego.
+  assert.match(autopilot, /function e2eEnvDownPrompt\(sciezka\) \{\n {2}return `Sprzatanie srodowiska E2E dev-autopilot: \\`node \.claude\/scripts\/e2e\/e2e\.mjs stop --zadanie "\$\{sciezka\}"\\`/)
+  // STOP: commit artefaktow najpierw przenosi zrzuty z korzenia repo do katalogu zadania (inaczej bramka czystosci nastepnego runu).
+  assert.match(autopilot, /0\. \\`node \.claude\/scripts\/e2e\/e2e\.mjs zrzuty --zadanie "\$\{sciezka\}"\\`/)
+  assert.match(autopilot, /const zrzuty = etykieta === 'stop:commit-artefaktow'/)
   assert.match(wytnij(autopilot, 'function e2eRestartPrompt(', '\n}\n'), /e2e\.mjs restart --zadanie \$\{sciezka\} --faza \$\{numerFazy\}/)
 })
 
@@ -283,4 +288,22 @@ test('instrukcje bez wykrywania awarii po sygnaturze tekstu; watcher (zywy proce
   assert.doesNotMatch(review, /Orkiestrator rozpoznaje awarie srodowiska po SYGNATURZE/)
   assert.doesNotMatch(tester, /rozpoznaje awarię środowiska po sygnaturze tekstowej/)
   assert.match(tester, /`"zyje": true`, gdy watcher \(np\. nodemon\)/)
+})
+
+// P22 D2: vibersi etap 4 — fix fazy 6 wczytal Readem 2 PNG makiet (visual-diff/admin-*-figma*.png; 378k + 93k zn base64, ok. 2,5 tys.
+// tokenow w kazdej kolejnej turze). Polecenie fixa kieruje finding wizualny do opisu ekranu w planie zadania, PNG tylko jako sciezka.
+test('fix: finding wizualny — opis ekranu z katalogu makiet planu zadania (ekrany/<ekran>.md, SPEC.md), PNG tylko sciezka, bez Read obrazu', () => {
+  const blok = (/** @type {string} */ srodowisko) => {
+    const p = fixPrompt(ZADANIE, 6, [], srodowisko)
+    return p.slice(p.indexOf('FINDING WIZUALNY'), p.indexOf('ZAKAZ TEST-WEAKENINGU'))
+  }
+  const p = blok('gotowe')
+  assert.equal(blok('martwe'), p, 'blok niezalezny od srodowiska E2E')
+  assert.match(p, /^FINDING WIZUALNY \(rozjazd z makieta: opis wskazuje ekran makiety, np\. „z makiety <ekran>” albo visual-diff\/<ekran>-figma\.png\):/)
+  assert.match(p, /`grep -m1 'SPEC\.md' docs\/active\/zadanie-x\/\*-plan\.md`\); opis ekranu = `<katalog>\/ekrany\/<ekran>\.md` \(wymiary, odstepy, kolory, tokeny,\nteksty\)/)
+  assert.match(p, /bez tego pliku — sekcja ekranu w `<katalog>\/SPEC\.md` \(`grep -n '<ekran>'`, potem `sed -n`\)/)
+  assert.match(p, /PNG makiety i zrzutu\npodajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read/)
+  assert.match(p, /\(rzad 1–3 tys\. tokenow na obraz\)/)
+  assert.match(p, /`agent-browser snapshot -i` \(elementy i teksty\) i `agent-browser get box <ref>` \/ `get styles <ref>`/)
+  assert.doesNotMatch(p, /docs\/plans\/\*-figma|otworz PNG|z PNG makiety/)
 })

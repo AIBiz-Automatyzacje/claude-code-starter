@@ -1,0 +1,44 @@
+P22 D1 — run wf_d398d371-5b3 (/Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi); próg pliku 200 linii, próg decyzji 20%
+
+rola         agentów   wyniki [zn]   Read bez zakr. ≥200    cat ≥200   udział
+review            42     5,662,594             2,798,462     352,789    55.7%
+build*            14     2,236,599               280,298       8,277    12.9%
+fix*              12     1,734,560               124,990      30,444     9.0%
+verify-batch      21       611,656                13,529      16,267     4.9%
+fix                6       510,227               124,552           0    24.4%
+verify            15       397,676                38,238           0     9.6%
+domkniecie         6       296,626                     0           0     0.0%
+planner            6       292,101                     0           0     0.0%
+complete           2        88,784                     0           0     0.0%
+walidacja-koncowa       1        84,199                     0           0     0.0%
+smoke-operatora       1        80,529                     0           0     0.0%
+compound           1        75,080                     0           0     0.0%
+scribe             6        68,148                     0           0     0.0%
+e2e               14        53,154                 9,650           0    18.2%
+stan               5        49,872                48,522           0    97.3%
+compound-refresh       1        43,137                     0           0     0.0%
+bootstrap          1        26,365                     0           0     0.0%
+ogrod              2         4,305                     0           0     0.0%
+warmup             1         3,016                     0           0     0.0%
+start              1         1,518                     0           0     0.0%
+dedup              6           234                     0           0     0.0%
+
+role B4 (* — buildery i klasa-naprawiacz): 444,009 z 3,971,159 zn = 11.2% → bez zmiany polecenia (udział ≤ 20%)
+wszystkie role: 31.2%
+
+Największe odczyty bez zakresu (≥ 200 linii):
+   130,088 zn  review:security        Read   2291 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff
+   130,088 zn  review:correctness     Read   2291 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff
+   130,088 zn  review:code-quality    Read   2291 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff
+    54,341 zn  fix:kontrola:faza-2    Read    873 l.  /Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/8f3402db-6af8-42de-9472-d9725f665e76/tool-results/bwlnwdv6b.txt
+    51,988 zn  review:test-coverage   Read    836 l.  /Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi/e2e/etap-4-moderacja-asercje.sql
+    48,714 zn  review:code-quality    Read    921 l.  /Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/8f3402db-6af8-42de-9472-d9725f665e76/tool-results/bh2kuji2k.txt
+    48,101 zn  review:test-coverage   Read    648 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff
+    48,101 zn  review:security        Read    648 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff
+    48,101 zn  review:performance     Read    648 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff
+    48,101 zn  review:correctness     Read    648 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff
+    48,101 zn  review:code-quality    Read    648 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff
+    48,029 zn  review:security        Read    466 l.  /Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/8f3402db-6af8-42de-9472-d9725f665e76/tool-results/bqrp0n3ik.txt
+    47,814 zn  review:security        Read    683 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-3.diff
+    47,814 zn  review:performance     Read    683 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-3.diff
+    47,814 zn  review:correctness     Read    683 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-3.diff

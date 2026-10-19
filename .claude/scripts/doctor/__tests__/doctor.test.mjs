@@ -384,3 +384,35 @@ test('port E2E: bez .env.e2e nie dotyczy; 5173 → UWAGA z naprawa na 5174; domy
   writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_START="vite --mode e2e --port 5173 --strictPort"\n')
   assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 4), ['UWAGA', 'E2E_START uruchamia serwer na porcie 5173, a E2E_URL wskazuje port 5174', 'ustaw w .env.e2e E2E_URL=http://localhost:5173 albo zmien --port w E2E_START na 5174'])
 }))
+
+// P22 A1: live-10-demo — `vitest run` bez configu zebral 113 testow maszynerii z .claude/** i autopilot stanal na starcie.
+// Doctor mowi o tym przed runem: BRAK z gotowym configiem (exit 1); config z include tests/ → OK; projekt bez vitest — nie dotyczy.
+test('runner testow: vitest bez configu → BRAK z gotowym vitest.config.ts i exit 1; config z include tests/ → OK', () => zSrodowiskiem((s) => {
+  assert.equal(wiersz(doctor(s).stdout, 'runner testów')[1], 'nie dotyczy')
+  writeFileSync(join(s.projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
+  const brak = doctor(s)
+  const w = wiersz(brak.stdout, 'runner testów')
+  assert.equal(w[1], 'BRAK')
+  assert.match(w[3], /^vitest\.config\.ts: .*'\.claude\/\*\*'/)
+  assert.equal(brak.status, 1)
+  assert.match(brak.stdout, /WYNIK: BRAK obowiązkowych: runner testów/)
+  // vitest zainstalowany: werdykt z `vitest list` (atrapa) — lista bez .claude → OK; ostrzezenie na stderr nie psuje wiersza.
+  writeFileSync(join(s.projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
+  mkdirSync(join(s.projekt, 'node_modules', '.bin'), { recursive: true })
+  atrapa(join(s.projekt, 'node_modules', '.bin'), 'vitest', `echo "(!) ostrzezenie vite" >&2; echo '[{"file":"${s.projekt}/tests/a.test.ts"}]'`)
+  const ok = doctor(s)
+  assert.deepEqual(wiersz(ok.stdout, 'runner testów').slice(1, 3), ['OK', 'vitest: 1 plików testów, 0 z .claude/**'])
+  assert.equal(ok.status, 0)
+}))
+
+// P22 A2: hook piszacy w drzewie projektu (stary cache tsc w .claude/tsc-cache/) brudzi drzewo — doctor zglasza UWAGA
+// z plikiem i linia, bez blokady runu; hooki bez zapisu w drzewie → OK.
+test('zapis hookow: hook pisze do $CLAUDE_PROJECT_DIR → UWAGA z plikiem:linia, exit 0; bez zapisu → OK', () => zSrodowiskiem((s) => {
+  mkdirSync(join(s.projekt, '.claude', 'hooks'), { recursive: true })
+  writeFileSync(join(s.projekt, '.claude', 'hooks', 'stop.sh'), 'C="$CLAUDE_PROJECT_DIR/.claude/tsc-cache"\nmkdir -p "$C"\n')
+  const w = doctor(s)
+  assert.deepEqual(wiersz(w.stdout, 'zapis hooków').slice(1, 3), ['UWAGA', '.claude/hooks/stop.sh:2 pisze do "$C" — plik spoza .gitignore brudzi drzewo i zatrzyma bramkę gotowości i autopilota'])
+  assert.equal(w.status, 0)
+  writeFileSync(join(s.projekt, '.claude', 'hooks', 'stop.sh'), 'mkdir -p "${TMPDIR:-/tmp}/cache"\n')
+  assert.equal(wiersz(doctor(s).stdout, 'zapis hooków')[1], 'OK')
+}))

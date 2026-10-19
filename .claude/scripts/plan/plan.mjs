@@ -8,7 +8,8 @@
 //                                                  czesci PR); rozmiarPr = szacunek plikow do recenzji bota per faza i czesc
 //   plan.mjs generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz]
 //                                                  pliki zadania z planu; bez --zapisz tylko liczniki; plan z bledami — nic
-//   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo
+//   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo,
+//                                                  runner testow bez .claude/**
 //   plan.mjs designerski <plan.md> --iu <IU-N>      blok kontekstu designerskiego buildera jednostki (DESIGN.md, SPEC.md, SPEC
 //                                                  i PNG ekranow z pola Makiety); tresc pusta = blok pominiety
 // Wynik: JSON na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (bledy planu, STOP bramki, katalog zadania zajety),

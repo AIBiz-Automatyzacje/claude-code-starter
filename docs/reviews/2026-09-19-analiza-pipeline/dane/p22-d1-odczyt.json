@@ -1,0 +1,342 @@
+{
+ "run": "wf_d398d371-5b3",
+ "projekt": "/Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi",
+ "prog_linii": 200,
+ "prog_decyzji": 0.2,
+ "uwaga": "linie plikow cat z projektu dzis (wc -l), nie z chwili runu; Read: linie wyniku",
+ "role_b4": {
+  "wyniki_zn": 3971159,
+  "bez_zakresu_200_zn": 444009,
+  "udzial": 0.1118,
+  "read_bez_zakresu_zn": 1437293,
+  "cat_zn": 148757,
+  "cat_bez_pliku_zn": 0
+ },
+ "wszystkie_role": {
+  "wyniki_zn": 12320380,
+  "bez_zakresu_200_zn": 3846018,
+  "udzial": 0.3122,
+  "read_bez_zakresu_zn": 4690297,
+  "cat_zn": 910944,
+  "cat_bez_pliku_zn": 82748
+ },
+ "per_rola": {
+  "bootstrap": {
+   "agentow": 1,
+   "wyniki_zn": 26365,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "build*": {
+   "agentow": 14,
+   "wyniki_zn": 2236599,
+   "read_bez_zakresu_zn": 1010977,
+   "read_bez_zakresu_200_zn": 280298,
+   "cat_zn": 52023,
+   "cat_200_zn": 8277,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 22
+  },
+  "complete": {
+   "agentow": 2,
+   "wyniki_zn": 88784,
+   "read_bez_zakresu_zn": 56532,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "compound": {
+   "agentow": 1,
+   "wyniki_zn": 75080,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 2071,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "compound-refresh": {
+   "agentow": 1,
+   "wyniki_zn": 43137,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 2461,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "dedup": {
+   "agentow": 6,
+   "wyniki_zn": 234,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "domkniecie": {
+   "agentow": 6,
+   "wyniki_zn": 296626,
+   "read_bez_zakresu_zn": 4338,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "e2e": {
+   "agentow": 14,
+   "wyniki_zn": 53154,
+   "read_bez_zakresu_zn": 9767,
+   "read_bez_zakresu_200_zn": 9650,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 1
+  },
+  "fix": {
+   "agentow": 6,
+   "wyniki_zn": 510227,
+   "read_bez_zakresu_zn": 124552,
+   "read_bez_zakresu_200_zn": 124552,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 3
+  },
+  "fix*": {
+   "agentow": 12,
+   "wyniki_zn": 1734560,
+   "read_bez_zakresu_zn": 426316,
+   "read_bez_zakresu_200_zn": 124990,
+   "cat_zn": 96734,
+   "cat_200_zn": 30444,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 13
+  },
+  "ogrod": {
+   "agentow": 2,
+   "wyniki_zn": 4305,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "planner": {
+   "agentow": 6,
+   "wyniki_zn": 292101,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "review": {
+   "agentow": 42,
+   "wyniki_zn": 5662594,
+   "read_bez_zakresu_zn": 2926892,
+   "read_bez_zakresu_200_zn": 2798462,
+   "cat_zn": 689264,
+   "cat_200_zn": 352789,
+   "cat_bez_pliku_zn": 61838,
+   "odczytow_200": 96
+  },
+  "scribe": {
+   "agentow": 6,
+   "wyniki_zn": 68148,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "smoke-operatora": {
+   "agentow": 1,
+   "wyniki_zn": 80529,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "stan": {
+   "agentow": 5,
+   "wyniki_zn": 49872,
+   "read_bez_zakresu_zn": 48522,
+   "read_bez_zakresu_200_zn": 48522,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 5
+  },
+  "start": {
+   "agentow": 1,
+   "wyniki_zn": 1518,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "verify": {
+   "agentow": 15,
+   "wyniki_zn": 397676,
+   "read_bez_zakresu_zn": 68872,
+   "read_bez_zakresu_200_zn": 38238,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 3
+  },
+  "verify-batch": {
+   "agentow": 21,
+   "wyniki_zn": 611656,
+   "read_bez_zakresu_zn": 13529,
+   "read_bez_zakresu_200_zn": 13529,
+   "cat_zn": 46836,
+   "cat_200_zn": 16267,
+   "cat_bez_pliku_zn": 20910,
+   "odczytow_200": 2
+  },
+  "walidacja-koncowa": {
+   "agentow": 1,
+   "wyniki_zn": 84199,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 21555,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  },
+  "warmup": {
+   "agentow": 1,
+   "wyniki_zn": 3016,
+   "read_bez_zakresu_zn": 0,
+   "read_bez_zakresu_200_zn": 0,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 0
+  }
+ },
+ "najwieksze": [
+  {
+   "zn": 130088,
+   "agent": "review:security",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff",
+   "linie": 2291
+  },
+  {
+   "zn": 130088,
+   "agent": "review:correctness",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff",
+   "linie": 2291
+  },
+  {
+   "zn": 130088,
+   "agent": "review:code-quality",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff",
+   "linie": 2291
+  },
+  {
+   "zn": 54341,
+   "agent": "fix:kontrola:faza-2",
+   "narzedzie": "Read",
+   "plik": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/8f3402db-6af8-42de-9472-d9725f665e76/tool-results/bwlnwdv6b.txt",
+   "linie": 873
+  },
+  {
+   "zn": 51988,
+   "agent": "review:test-coverage",
+   "narzedzie": "Read",
+   "plik": "/Users/kacper_trzepiecinski/Documents/Kodowanie/vibersi/e2e/etap-4-moderacja-asercje.sql",
+   "linie": 836
+  },
+  {
+   "zn": 48714,
+   "agent": "review:code-quality",
+   "narzedzie": "Read",
+   "plik": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/8f3402db-6af8-42de-9472-d9725f665e76/tool-results/bh2kuji2k.txt",
+   "linie": 921
+  },
+  {
+   "zn": 48101,
+   "agent": "review:test-coverage",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff",
+   "linie": 648
+  },
+  {
+   "zn": 48101,
+   "agent": "review:security",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff",
+   "linie": 648
+  },
+  {
+   "zn": 48101,
+   "agent": "review:performance",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff",
+   "linie": 648
+  },
+  {
+   "zn": 48101,
+   "agent": "review:correctness",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff",
+   "linie": 648
+  },
+  {
+   "zn": 48101,
+   "agent": "review:code-quality",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-2.diff",
+   "linie": 648
+  },
+  {
+   "zn": 48029,
+   "agent": "review:security",
+   "narzedzie": "Read",
+   "plik": "/Users/kacper_trzepiecinski/.claude/projects/-Users-kacper-trzepiecinski-Documents-Kodowanie-vibersi/8f3402db-6af8-42de-9472-d9725f665e76/tool-results/bqrp0n3ik.txt",
+   "linie": 466
+  },
+  {
+   "zn": 47814,
+   "agent": "review:security",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-3.diff",
+   "linie": 683
+  },
+  {
+   "zn": 47814,
+   "agent": "review:performance",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-3.diff",
+   "linie": 683
+  },
+  {
+   "zn": 47814,
+   "agent": "review:correctness",
+   "narzedzie": "Read",
+   "plik": "/tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-3.diff",
+   "linie": 683
+  }
+ ]
+}
