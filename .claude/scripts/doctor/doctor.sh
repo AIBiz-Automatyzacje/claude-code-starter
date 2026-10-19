@@ -178,6 +178,22 @@ sprawdz_runner() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Zapis hooków (P22 A2): hook piszący w drzewie projektu zostawia nieśledzone pliki, a bramka gotowości i autopilot
+# zatrzymują się na brudnym drzewie. Wiersz TSV z zapis-hookow.mjs; problem = UWAGA z naprawą.
+sprawdz_zapis_hookow() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "zapis hooków" UWAGA "nie sprawdzono plików .claude/hooks/ (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/zapis-hookow.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "zapis hooków" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź pliki .claude/hooks/"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Advisors Supabase (P17) — lint bazy e2e po migracjach fazy: ref z .env.e2e i token Management API, przez node
 # (wiersz TSV z advisors.mjs). Brak to UWAGA: run idzie dalej, security sprawdza migracje ręcznie.
 sprawdz_advisors() {
@@ -264,6 +280,7 @@ if ma_dockerfile; then narzedzie docker UWAGA "brew install --cask docker"; else
 sprawdz_ustawienia
 sprawdz_bramki
 sprawdz_runner
+sprawdz_zapis_hookow
 sprawdz_advisors
 sprawdz_port_e2e
 sprawdz_warstwe

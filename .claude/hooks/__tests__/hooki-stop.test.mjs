@@ -4,7 +4,7 @@
 // blokada w tej samej turze to petla (dokumentacja hookow Claude Code).
 
 import { execFileSync, spawnSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -81,4 +81,80 @@ test('stop-build-check: stop_hook_active = koniec przed tsc; bez niego tsc biegn
   } finally {
     rmSync(npx.bin, { recursive: true, force: true })
   }
+})
+
+// P22 A2: cache hooka poza repo (katalog tymczasowy per projekt i sesja) — zapis w .claude/tsc-cache/ brudzil drzewo nowego
+// projektu i zatrzymywal autopilota. Zmiana drzewa w trakcie tsc (workflow `/dev-pr start` przelaczyl galaz czesci PR)
+// dawala 56 × TS6053 dla plikow, ktorych na nowej galezi nie ma — hook liczy wynik z biezacego drzewa.
+
+/**
+ * Projekt TS z repo git i atrapa npx (skrypt sh w PATH, uruchamiany w katalogu projektu); cialo dostaje projekt i wynik.
+ * @param {string} skryptNpx tresc atrapy npx
+ * @param {(w: { status: number | null, stderr: string, projekt: string, tmp: string, licznik: () => number }) => void} cialo
+ */
+function zAtrapaTsc(skryptNpx, cialo) {
+  const katalog = mkdtempSync(join(tmpdir(), 'hook-tsc-'))
+  const projekt = join(katalog, 'projekt')
+  const bin = join(katalog, 'bin')
+  const tmp = join(katalog, 'tmp')
+  try {
+    for (const k of [projekt, bin, tmp]) mkdirSync(k)
+    for (const [sciezka, tresc] of Object.entries({ ...PROJEKT_TS, 'src/a.ts': 'export const a = 1\n' })) {
+      mkdirSync(dirname(join(projekt, sciezka)), { recursive: true })
+      writeFileSync(join(projekt, sciezka), tresc)
+    }
+    const g = (/** @type {string[]} */ a) => execFileSync('git', ['-C', projekt, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a])
+    g(['init', '-q', '-b', 'main'])
+    g(['add', '-A'])
+    g(['commit', '-qm', 'start'])
+    g(['branch', 'czesc-1'])
+    writeFileSync(join(bin, 'npx'), `#!/bin/sh\necho x >> "${join(katalog, 'wywolania')}"\n${skryptNpx}\n`)
+    chmodSync(join(bin, 'npx'), 0o755)
+    const wynik = spawnSync('bash', [join(HOOKI, 'stop-build-check-enhanced.sh')], {
+      encoding: 'utf8', input: JSON.stringify({ session_id: 'sesja-1', hook_event_name: 'Stop', stop_hook_active: false }),
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CLAUDE_PROJECT_DIR: projekt, TMPDIR: tmp },
+    })
+    const licznik = () => (existsSync(join(katalog, 'wywolania')) ? readFileSync(join(katalog, 'wywolania'), 'utf8').split('\n').filter(Boolean).length : 0)
+    cialo({ status: wynik.status, stderr: wynik.stderr, projekt, tmp, licznik })
+  } finally {
+    rmSync(katalog, { recursive: true, force: true })
+  }
+}
+
+test('stop-build-check: cache w TMPDIR per projekt i sesja, drzewo projektu czyste', () => zAtrapaTsc("echo \"src/a.ts(1,1): error TS2322: x\"", (w) => {
+  assert.equal(w.status, 2, w.stderr)
+  assert.equal(existsSync(join(w.projekt, '.claude')), false)
+  assert.equal(execFileSync('git', ['-C', w.projekt, 'status', '--porcelain', '--untracked-files=all'], { encoding: 'utf8' }), '')
+  const sesje = readdirSync(join(w.tmp, 'claude-tsc-cache'))
+  assert.equal(sesje.length, 1)
+  assert.match(sesje[0] ?? '', /^projekt-\d+$/)
+  assert.match(readFileSync(join(w.tmp, 'claude-tsc-cache', sesje[0] ?? '', 'sesja-1', 'last-errors.txt'), 'utf8'), /error TS2322/)
+}))
+
+test('stop-build-check: TS6053 plikow, ktorych nie ma w biezacym drzewie, nie sa bledami; TS6053 istniejacego pliku — sa', () => {
+  const brak = (/** @type {number} */ i) => `echo "error TS6053: File '$PWD/src/usuniety-${i}.ts' not found."`
+  zAtrapaTsc([1, 2, 3, 4, 5].map(brak).join('\n'), (w) => {
+    assert.equal(w.status, 0, w.stderr)
+    assert.match(w.stderr, /Pominięte TS6053 plików spoza bieżącego drzewa: 5/)
+  })
+  zAtrapaTsc([...[1, 2, 3].map(brak), `echo "error TS6053: File '$PWD/src/a.ts' not found."`, 'echo "src/a.ts(1,1): error TS2322: x"'].join('\n'), (w) => {
+    assert.equal(w.status, 2, w.stderr)
+    assert.match(w.stderr, /TSC CHECK: 2 błąd/)
+    assert.doesNotMatch(w.stderr, /usuniety/)
+  })
+})
+
+test('stop-build-check: zmiana galezi w trakcie tsc → drugi bieg na biezacym drzewie; drzewo zmienia sie dalej → pominiety', () => {
+  // Pierwszy bieg: workflow przelacza galaz w trakcie, tsc zglasza bledy plikow starej galezi (istniejacy plik — bez filtra TS6053).
+  const raz = `if [ ! -f "${'$'}PWD/.git/przelaczone" ]; then touch .git/przelaczone; git checkout -q czesc-1; for i in 1 2 3 4; do echo "src/a.ts(1,1): error TS2307: stary-$i"; done; fi`
+  zAtrapaTsc(raz, (w) => {
+    assert.equal(w.status, 0, w.stderr)
+    assert.equal(w.licznik(), 2)
+  })
+  const zawsze = 'git checkout -q "$(git branch --format="%(refname:short)" | grep -vx "$(git branch --show-current)" | head -1)"; echo "src/a.ts(1,1): error TS2307: x"'
+  zAtrapaTsc(zawsze, (w) => {
+    assert.equal(w.status, 0, w.stderr)
+    assert.equal(w.licznik(), 2)
+    assert.match(w.stderr, /TSC CHECK POMINIĘTY - drzewo zmieniało się w trakcie sprawdzenia/)
+  })
 })

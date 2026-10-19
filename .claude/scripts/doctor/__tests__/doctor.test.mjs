@@ -401,3 +401,15 @@ test('runner testow: vitest bez configu → BRAK z gotowym vitest.config.ts i ex
   assert.equal(wiersz(ok.stdout, 'runner testów')[1], 'OK')
   assert.equal(ok.status, 0)
 }))
+
+// P22 A2: hook piszacy w drzewie projektu (stary cache tsc w .claude/tsc-cache/) brudzi drzewo — doctor zglasza UWAGA
+// z plikiem i linia, bez blokady runu; hooki bez zapisu w drzewie → OK.
+test('zapis hookow: hook pisze do $CLAUDE_PROJECT_DIR → UWAGA z plikiem:linia, exit 0; bez zapisu → OK', () => zSrodowiskiem((s) => {
+  mkdirSync(join(s.projekt, '.claude', 'hooks'), { recursive: true })
+  writeFileSync(join(s.projekt, '.claude', 'hooks', 'stop.sh'), 'C="$CLAUDE_PROJECT_DIR/.claude/tsc-cache"\nmkdir -p "$C"\n')
+  const w = doctor(s)
+  assert.deepEqual(wiersz(w.stdout, 'zapis hooków').slice(1, 3), ['UWAGA', '.claude/hooks/stop.sh:2 pisze do "$C" — brudne drzewo zatrzyma bramkę gotowości i autopilota'])
+  assert.equal(w.status, 0)
+  writeFileSync(join(s.projekt, '.claude', 'hooks', 'stop.sh'), 'mkdir -p "${TMPDIR:-/tmp}/cache"\n')
+  assert.equal(wiersz(doctor(s).stdout, 'zapis hooków')[1], 'OK')
+}))
