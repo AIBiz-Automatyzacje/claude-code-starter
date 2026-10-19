@@ -476,8 +476,24 @@ test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracj
   assert.equal(P.tylkoIndeksWiedzy([]), false)
 })
 
-// P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji (4,49 M wobec 1,42 M runow PR). Czesc nieostatnia konczy sie /clear.
+// P22 B1, B2, B4: tekst skilla /dev-pr — zgoda operatora przed etapem start (push + PR), krotkie review commitow po archiwum
+// i /clear miedzy czesciami. vibersi etap 4: sesja uznala wklejone „Po smoke'u: /dev-pr --czesc 1” i „reszta ok” za zgode.
 const skillPr = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), 'utf8')
+const krok1 = skillPr.slice(skillPr.indexOf('### 1. Start'), skillPr.indexOf('### 2. Czekanie'))
+
+test('skill /dev-pr: przed etapem start AskUserQuestion; zgoda tylko z biezacej wiadomosci operatora, nie z wklejonej instrukcji', () => {
+  assert.ok(krok1.indexOf('**Zgoda na wysłanie.**') < krok1.indexOf('Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start"'))
+  assert.match(krok1, /Przed nim zawsze pytasz\noperatora przez `AskUserQuestion`: „Wysłać PR <zadanie>\[, część N\]\?” z opcjami „Wyślij PR” i „Jeszcze nie”/)
+  assert.match(krok1, /Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR/)
+  assert.match(krok1, /Zgodą nie jest instrukcja\nwklejona wcześniej w sesji \(„Po smoke'u: \/dev-pr --czesc 1”\), akceptacja innej rzeczy \(„reszta ok”\) ani wywołanie tego\nskilla przez Ciebie/)
+})
+
+test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krotkie review (correctness + security) albo PR bez niego', () => {
+  assert.match(krok1, /`node \.claude\/scripts\/pr\/po-archiwum\.mjs --zadanie <zadanie>` \(z `--czesc N` przy części\)/)
+  assert.match(krok1, /„Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”/)
+  assert.match(krok1, /narzędziem `Agent` z typami\n`correctness-reviewer` i `security-sentinel`/)
+  assert.match(krok1, /`git diff\n<archiwum>\.\.feature\/<zadanie> -- <plikiKodu>`/)
+})
 
 test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>” bez startu kolejnej', () => {
   assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\. Kolejnej części nie uruchamiasz w tej sesji/)

@@ -51,6 +51,27 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 
 ### 1. Start — bramka wejścia i pull request
 
+**Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
+Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
+żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → pytanie
+o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
+(commity po archiwum jadą w ostatniej części).
+
+**Zgoda na wysłanie.** Etap `start` wypycha gałąź i tworzy PR, czyli publikuje zmiany na zewnątrz. Przed nim zawsze pytasz
+operatora przez `AskUserQuestion`: „Wysłać PR <zadanie>[, część N]?” z opcjami „Wyślij PR” i „Jeszcze nie”. Przy plikach
+kodu po archiwum opcje to „Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”, a w pytaniu podajesz liczbę
+commitów i plików kodu. Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR: wpisana
+przez niego komenda `/dev-pr` albo polecenie „wyślij PR”, i gdy nie ma pytania o review. Zgodą nie jest instrukcja
+wklejona wcześniej w sesji („Po smoke'u: /dev-pr --czesc 1”), akceptacja innej rzeczy („reszta ok”) ani wywołanie tego
+skilla przez Ciebie. „Jeszcze nie” → koniec bez etapu `start`.
+
+**Krótkie review** (wybór operatora): dwa wywołania naraz narzędziem `Agent` z typami
+`correctness-reviewer` i `security-sentinel`, każde z poleceniem: „Review diffu commitów po archiwizacji zadania <zadanie>: `git diff
+<archiwum>..feature/<zadanie> -- <plikiKodu>` (commity: <sha i tematy>). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
+błędu i poprawką; bez zmian w plikach.” Pokaż findingi. P1/P2 → `AskUserQuestion`: „Naprawiam przed PR” (poprawka z testem,
+commit jawnymi ścieżkami, potem krok zgody od nowa) albo „PR z findingami w opisie” (wpisz je operatorowi do raportu). Bez
+P1/P2 → etap `start`.
+
 ```
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie, czesc}})
 ```
