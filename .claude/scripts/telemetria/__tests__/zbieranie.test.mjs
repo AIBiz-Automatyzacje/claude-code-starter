@@ -1,14 +1,14 @@
 // Test skanu maszyny (It. 1, krok 4): runy + epizody skilli → rekordy ze wspolnymi polami → jeden plik JSONL.
 
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { WERSJA_REKORDU, zbierzWszystko } from '../zbieranie.mjs'
+import { WERSJA_REKORDU, katalogRepo, zbierzWszystko } from '../zbieranie.mjs'
 import { odczytajRekordy } from '../zapis.mjs'
-import { zbudujFixture } from './fixture-projekty.mjs'
+import { CWD_PROJEKTU, zbudujFixture } from './fixture-projekty.mjs'
 
 /** @param {(k: { projekty: string, plik: string, bledy: string }) => void} cialo */
 function zFixture(cialo) {
@@ -69,4 +69,43 @@ test('tryb szybki: znacznik po ostatniej zmianie plikow = nic do czytania', () =
     assert.equal(wynik?.runow, 1, 'tylko run bez rekordu i bez harnessu jest sprawdzany zawsze (moze byc juz KILLED)')
     assert.equal(wynik?.sesji, 0)
   })
+})
+
+// P22 F1: vibersi etap 4 — cwd pierwszego agenta runu autopilota = docs/active/<zadanie> (agent zrobil cd), rekordy dostaly
+// projekt „etap-4-dodawanie-i-moderacja”, a `raport.mjs --projekt vibersi` dawal 0 runow. Projekt = katalog repo (z .git).
+test('projekt = katalog repo nad cwd agenta (podkatalog zadania, takze juz usuniety); pole repo; bez repo — cwd sesji', () => {
+  zFixture(({ projekty, plik, bledy }) => {
+    const repo = join(mkdtempSync(join(tmpdir(), 'telemetria-repo-')), 'vibersi')
+    mkdirSync(join(repo, '.git'), { recursive: true })
+    try {
+      const sesja = join(projekty, '-Users-u-Kodowanie-projekt', 'sesja-1', 'subagents', 'workflows', 'wf_aaa-111')
+      for (const n of readdirSync(sesja).filter((x) => x.startsWith('agent-') && x.endsWith('.jsonl'))) {
+        writeFileSync(join(sesja, n), readFileSync(join(sesja, n), 'utf8').replaceAll(CWD_PROJEKTU, join(repo, 'docs/active/zadanie-x')))
+      }
+      zbierzWszystko({ projekty, plik, bledy, terazMs: TERAZ, szybko: false, sesjeWToku: new Set(), pominSesje: new Set() })
+      const r = odczytajRekordy(plik).ostatnie
+      for (const klucz of ['wf_aaa-111|run|wf_aaa-111', 'wf_aaa-111|agent|a1', 'wf_aaa-111|faza|1']) {
+        assert.deepEqual([r.get(klucz)?.projekt, r.get(klucz)?.repo], ['vibersi', repo], klucz)
+      }
+      assert.deepEqual([r.get('skill|u1')?.projekt, r.get('skill|u1')?.repo], ['projekt', null], 'cwd sesji poza repo — nazwa katalogu cwd')
+    } finally {
+      rmSync(join(repo, '..'), { recursive: true, force: true })
+    }
+  })
+})
+
+test('katalogRepo: korzen z .git (katalog albo plik worktree) nad sciezka, takze nieistniejaca; poza repo i brak = null', () => {
+  const k = mkdtempSync(join(tmpdir(), 'telemetria-repo-'))
+  try {
+    mkdirSync(join(k, 'repo', '.git'), { recursive: true })
+    mkdirSync(join(k, 'wt'), { recursive: true })
+    writeFileSync(join(k, 'wt', '.git'), 'gitdir: /x\n')
+    assert.equal(katalogRepo(join(k, 'repo', 'docs', 'active', 'z')), join(k, 'repo'))
+    assert.equal(katalogRepo(join(k, 'wt', 'src')), join(k, 'wt'))
+    assert.equal(katalogRepo(join(k, 'repo')), join(k, 'repo'))
+    assert.equal(katalogRepo(null), null)
+    assert.equal(katalogRepo('/nie/ma/takiego/katalogu-p22'), null)
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
 })

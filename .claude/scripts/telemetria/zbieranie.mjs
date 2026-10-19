@@ -2,7 +2,7 @@
 // Wywolanie: zbierz.mjs (CLI, hook Stop) i raport.mjs (siatka przed raportem). Zero agentow, zero tokenow.
 
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 
 import { rekordyRunu } from './skan.mjs'
 import { epizodySesji, rekordSkilla, scalEpizody } from './skill.mjs'
@@ -13,7 +13,8 @@ import { czytajJsonl, katalogProjektu, znajdzRuny } from './zrodla.mjs'
 // Podbijana przy kazdej zmianie logiki wyliczania rekordu — skan dopisze wtedy nowe wersje wszystkich rekordow.
 // 2: rola bez sufiksu :retry, /exit i inne komendy sesji nie sa skillami, run.start. 3: run.pr z etapu zbierz dev-pr.
 // 4: run.walidacja z obiektu walidacji koncowej (odczyt It. 1). 5: epizod dev-plan konczy sie na Workflow, skill.ctx_start (P20 A8).
-export const WERSJA_REKORDU = 5
+// 6: projekt = katalog repo (korzen z .git) zamiast katalogu cwd agenta, pole repo (P22 F1).
+export const WERSJA_REKORDU = 6
 // Zapas tylu minut przed znacznikiem ostatniego skanu: transkrypt bywa dopisywany chwile po hooku Stop.
 const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 
@@ -32,8 +33,37 @@ const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 /** @param {string} sciezka */
 const mtime = (sciezka) => (existsSync(sciezka) ? statSync(sciezka).mtimeMs : 0)
 
-/** @param {string} slug @param {string | null} repo */
-const nazwaProjektu = (slug, repo) => (repo ? basename(repo) : slug.replace(/^-Users-[^-]+-/, ''))
+/**
+ * Korzen repo (katalog z .git) zawierajacy sciezke. Sciezka moze juz nie istniec (katalog zadania po archiwizacji, scratchpad),
+ * wiec sprawdzamy kolejne katalogi nadrzedne tekstowo. vibersi etap 4: cwd pierwszego agenta runu = docs/active/<zadanie>
+ * i rekordy dostaly projekt „etap-4-…”, a `raport.mjs --projekt vibersi` dawal 0 runow (P22 F1).
+ * @param {string | null | undefined} sciezka
+ * @returns {string | null}
+ */
+export function katalogRepo(sciezka) {
+  if (typeof sciezka !== 'string' || !sciezka) return null
+  for (let k = resolve(sciezka); ; k = dirname(k)) {
+    if (existsSync(join(k, '.git'))) return k
+    if (dirname(k) === k) return null
+  }
+}
+
+/**
+ * cwd sesji glownej z jej transkryptu (sesja startuje w katalogu projektu) — zapas, gdy cwd agenta jest poza repo.
+ * @param {string} projekty @param {string} slug @param {string} sesja @returns {string | null}
+ */
+function cwdSesji(projekty, slug, sesja) {
+  const plik = join(projekty, slug, `${sesja}.jsonl`)
+  if (!existsSync(plik)) return null
+  const cwd = czytajJsonl(plik).wpisy.find((w) => typeof w.cwd === 'string')?.cwd
+  return typeof cwd === 'string' ? cwd : null
+}
+
+/**
+ * Projekt rekordu: nazwa katalogu repo, bez repo — katalogu sesji (cwd), a bez cwd — ze sciezki transkryptu (slug).
+ * @param {string} slug @param {string | null} katalog @returns {string}
+ */
+const nazwaProjektu = (slug, katalog) => (katalog ? basename(katalog) : slug.replace(/^-Users-[^-]+-/, ''))
 
 /**
  * @param {import('./zrodla.mjs').Run} run
@@ -55,8 +85,11 @@ function czyCzytacRun(run, op, ostatnie) {
 function rekordyZRunu(run, op) {
   const r = rekordyRunu(run, { terazMs: op.terazMs, sesjeWToku: op.sesjeWToku })
   if (!r) return []
+  const cwdAgenta = katalogProjektu(run)
+  const sesji = cwdSesji(op.projekty, run.projektSlug, run.sesja)
+  const repo = katalogRepo(cwdAgenta) ?? katalogRepo(sesji)
   const wspolne = {
-    v: WERSJA_REKORDU, ts: new Date(op.terazMs).toISOString(), projekt: nazwaProjektu(run.projektSlug, katalogProjektu(run)),
+    v: WERSJA_REKORDU, ts: new Date(op.terazMs).toISOString(), projekt: nazwaProjektu(run.projektSlug, repo ?? sesji ?? cwdAgenta), repo,
     run: run.run, sesja: run.sesja, zadanie: r.run.zadanie, workflow: r.run.workflow,
   }
   return [
@@ -105,6 +138,7 @@ function rekordySkilli(op) {
   for (const [slug, lista] of Map.groupBy(sesje, (s) => s.slug)) {
     const wpisy = lista.map((s) => ({ s, wpisy: czytajJsonl(s.plik).wpisy }))
     const cwd = wpisy.flatMap((x) => x.wpisy).find((w) => typeof w.cwd === 'string')?.cwd
+    const repo = katalogRepo(typeof cwd === 'string' ? cwd : null)
     const epizody = scalEpizody(wpisy.flatMap(({ s, wpisy: w }) => epizodySesji(w, s.sesja)))
     /** @type {Map<string, Map<string, number>>} */
     const kosztyPerSesja = new Map()
@@ -114,7 +148,7 @@ function rekordySkilli(op) {
       const koszty = kosztyPerSesja.get(e.sesja) ?? new Map()
       const r = rekordSkilla(e, (id) => koszty.get(id) ?? null)
       rekordy.push({
-        v: WERSJA_REKORDU, ts: new Date(op.terazMs).toISOString(), projekt: nazwaProjektu(slug, typeof cwd === 'string' ? cwd : null),
+        v: WERSJA_REKORDU, ts: new Date(op.terazMs).toISOString(), projekt: nazwaProjektu(slug, repo ?? (typeof cwd === 'string' ? cwd : null)), repo,
         run: null, zadanie: null, workflow: null, ...r, otwarty: !e.zamkniety, klucz: `skill|${e.klucz}`,
       })
     }
