@@ -411,7 +411,7 @@ test('zapis hookow: hook pisze do $CLAUDE_PROJECT_DIR → UWAGA z plikiem:linia,
   mkdirSync(join(s.projekt, '.claude', 'hooks'), { recursive: true })
   writeFileSync(join(s.projekt, '.claude', 'hooks', 'stop.sh'), 'C="$CLAUDE_PROJECT_DIR/.claude/tsc-cache"\nmkdir -p "$C"\n')
   const w = doctor(s)
-  assert.deepEqual(wiersz(w.stdout, 'zapis hooków').slice(1, 3), ['UWAGA', '.claude/hooks/stop.sh:2 pisze do "$C" — brudne drzewo zatrzyma bramkę gotowości i autopilota'])
+  assert.deepEqual(wiersz(w.stdout, 'zapis hooków').slice(1, 3), ['UWAGA', '.claude/hooks/stop.sh:2 pisze do "$C" — plik spoza .gitignore brudzi drzewo i zatrzyma bramkę gotowości i autopilota'])
   assert.equal(w.status, 0)
   writeFileSync(join(s.projekt, '.claude', 'hooks', 'stop.sh'), 'mkdir -p "${TMPDIR:-/tmp}/cache"\n')
   assert.equal(wiersz(doctor(s).stdout, 'zapis hooków')[1], 'OK')

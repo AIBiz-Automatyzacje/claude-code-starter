@@ -91,8 +91,9 @@ test('stop-build-check: stop_hook_active = koniec przed tsc; bez niego tsc biegn
  * Projekt TS z repo git i atrapa npx (skrypt sh w PATH, uruchamiany w katalogu projektu); cialo dostaje projekt i wynik.
  * @param {string} skryptNpx tresc atrapy npx
  * @param {(w: { status: number | null, stderr: string, projekt: string, tmp: string, licznik: () => number }) => void} cialo
+ * @param {Record<string, string>} [env] nadpisania zmiennych hooka
  */
-function zAtrapaTsc(skryptNpx, cialo) {
+function zAtrapaTsc(skryptNpx, cialo, env = {}) {
   const katalog = mkdtempSync(join(tmpdir(), 'hook-tsc-'))
   const projekt = join(katalog, 'projekt')
   const bin = join(katalog, 'bin')
@@ -112,7 +113,7 @@ function zAtrapaTsc(skryptNpx, cialo) {
     chmodSync(join(bin, 'npx'), 0o755)
     const wynik = spawnSync('bash', [join(HOOKI, 'stop-build-check-enhanced.sh')], {
       encoding: 'utf8', input: JSON.stringify({ session_id: 'sesja-1', hook_event_name: 'Stop', stop_hook_active: false }),
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CLAUDE_PROJECT_DIR: projekt, TMPDIR: tmp },
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CLAUDE_PROJECT_DIR: projekt, TMPDIR: tmp, ...env },
     })
     const licznik = () => (existsSync(join(katalog, 'wywolania')) ? readFileSync(join(katalog, 'wywolania'), 'utf8').split('\n').filter(Boolean).length : 0)
     cialo({ status: wynik.status, stderr: wynik.stderr, projekt, tmp, licznik })
@@ -131,17 +132,36 @@ test('stop-build-check: cache w TMPDIR per projekt i sesja, drzewo projektu czys
   assert.match(readFileSync(join(w.tmp, 'claude-tsc-cache', sesje[0] ?? '', 'sesja-1', 'last-errors.txt'), 'utf8'), /error TS2322/)
 }))
 
-test('stop-build-check: TS6053 plikow, ktorych nie ma w biezacym drzewie, nie sa bledami; TS6053 istniejacego pliku — sa', () => {
-  const brak = (/** @type {number} */ i) => `echo "error TS6053: File '$PWD/src/usuniety-${i}.ts' not found."`
-  zAtrapaTsc([1, 2, 3, 4, 5].map(brak).join('\n'), (w) => {
+// Format tsc 5.9 (--pretty false) dla pliku dobranego wzorcem include, usunietego w trakcie biegu (wyscig odtworzony w sesji P22).
+const TS6053_INCLUDE = (/** @type {string} */ plik) => `echo "error TS6053: File '$PWD/${plik}' not found."; echo "  The file is in the program because:"; echo "    Matched by include pattern 'src' in '$PWD/tsconfig.json'"`
+
+test('stop-build-check: TS6053 z include pattern dla pliku spoza biezacego drzewa nie jest bledem; plik istniejacy i lista files — sa', () => {
+  zAtrapaTsc([1, 2, 3, 4, 5].map((i) => TS6053_INCLUDE(`src/usuniety-${i}.ts`)).join('\n'), (w) => {
     assert.equal(w.status, 0, w.stderr)
     assert.match(w.stderr, /Pominięte TS6053 plików spoza bieżącego drzewa: 5/)
   })
-  zAtrapaTsc([...[1, 2, 3].map(brak), `echo "error TS6053: File '$PWD/src/a.ts' not found."`, 'echo "src/a.ts(1,1): error TS2322: x"'].join('\n'), (w) => {
+  const prawdziwe = [
+    ...[1, 2, 3].map((i) => TS6053_INCLUDE(`src/usuniety-${i}.ts`)),
+    TS6053_INCLUDE('src/a.ts'),
+    `echo "error TS6053: File '$PWD/src/brak-z-files.ts' not found."; echo "  The file is in the program because:"; echo "    Part of 'files' list in tsconfig.json"`,
+    'echo "src/a.ts(1,1): error TS2322: x"',
+  ]
+  zAtrapaTsc(prawdziwe.join('\n'), (w) => {
     assert.equal(w.status, 2, w.stderr)
-    assert.match(w.stderr, /TSC CHECK: 2 błąd/)
+    assert.match(w.stderr, /TSC CHECK: 3 błąd/)
+    assert.match(w.stderr, /brak-z-files\.ts/)
     assert.doesNotMatch(w.stderr, /usuniety/)
   })
+})
+
+test('stop-build-check: tsc z --pretty false (kolory ANSI psulyby wzorzec "error TS"); niezapisywalny TMPDIR nie wylacza sprawdzenia', () => {
+  zAtrapaTsc('echo "$@" > "$PWD/../argumenty"; echo "src/a.ts(1,1): error TS2322: x"', (w) => {
+    assert.equal(readFileSync(join(w.projekt, '..', 'argumenty'), 'utf8').trim(), 'tsc --noEmit --pretty false')
+  })
+  zAtrapaTsc('echo "src/a.ts(1,1): error TS2322: x"', (w) => {
+    assert.equal(w.status, 2, w.stderr)
+    assert.doesNotMatch(w.stderr, /Cache błędów/)
+  }, { TMPDIR: '/dev/null/nie-ma' })
 })
 
 test('stop-build-check: zmiana galezi w trakcie tsc → drugi bieg na biezacym drzewie; drzewo zmienia sie dalej → pominiety', () => {
@@ -149,6 +169,23 @@ test('stop-build-check: zmiana galezi w trakcie tsc → drugi bieg na biezacym d
   const raz = `if [ ! -f "${'$'}PWD/.git/przelaczone" ]; then touch .git/przelaczone; git checkout -q czesc-1; for i in 1 2 3 4; do echo "src/a.ts(1,1): error TS2307: stary-$i"; done; fi`
   zAtrapaTsc(raz, (w) => {
     assert.equal(w.status, 0, w.stderr)
+    assert.equal(w.licznik(), 2)
+  })
+  // Checkout tam i z powrotem (HEAD i galaz bez zmian) oraz commit na tej samej galezi — wykrywa dlugosc reflogu i SHA.
+  const tamIZPowrotem = `if [ ! -f "${'$'}PWD/.git/przelaczone" ]; then touch .git/przelaczone; git checkout -q czesc-1; git checkout -q main; echo "src/a.ts(1,1): error TS2307: stary"; fi`
+  zAtrapaTsc(tamIZPowrotem, (w) => {
+    assert.equal(w.status, 0, w.stderr)
+    assert.equal(w.licznik(), 2)
+  })
+  const commit = `if [ ! -f "${'$'}PWD/.git/przelaczone" ]; then touch .git/przelaczone; git -c user.name=t -c user.email=t@t commit -q --allow-empty -m x; echo "src/a.ts(1,1): error TS2307: stary"; fi`
+  zAtrapaTsc(commit, (w) => {
+    assert.equal(w.status, 0, w.stderr)
+    assert.equal(w.licznik(), 2)
+  })
+  // Drugi bieg na stabilnym drzewie zglasza prawdziwe bledy — blokada.
+  const drugiZBledami = `if [ ! -f "${'$'}PWD/.git/przelaczone" ]; then touch .git/przelaczone; git checkout -q czesc-1; else for i in 1 2 3 4; do echo "src/a.ts(1,1): error TS2322: b-$i"; done; fi`
+  zAtrapaTsc(drugiZBledami, (w) => {
+    assert.equal(w.status, 2, w.stderr)
     assert.equal(w.licznik(), 2)
   })
   const zawsze = 'git checkout -q "$(git branch --format="%(refname:short)" | grep -vx "$(git branch --show-current)" | head -1)"; echo "src/a.ts(1,1): error TS2307: x"'
