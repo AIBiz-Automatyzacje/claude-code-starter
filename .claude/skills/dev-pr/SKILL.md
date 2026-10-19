@@ -89,14 +89,18 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
 Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
-przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „indeks przeliczony”).
+przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „pliki generowane rozwiązane”).
+Tak samo `supabase/migrations.sum`: workflow scala wpisy obu stron (`bramki.mjs --scal-sume`); ta sama migracja z inną sumą
+po obu stronach albo suma niezgodna z migracjami to `KONFLIKT` z powodem.
 
 `status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Zapytaj operatora przez
 `AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
 `git add <pliki>` i `git rebase --continue`; kolejny konflikt — to samo, aż rebase się skończy; potem znów krok 1 z tym samym
 `czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
 nie rozwiązujesz bez tej decyzji. Gdy wśród konfliktów jest też `docs/learned-patterns.md` (plik generowany): zostaw jedną
-z jego wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu.
+z jego wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu. Gdy jest wśród
+nich `supabase/migrations.sum`: `node .claude/scripts/bramki/bramki.mjs --scal-sume` przed `git add` (przy `scalony: false`
+pokaż operatorowi `powod`).
 
 Zadanie z tabelą „Części PR” wywołane bez `--czesc` → `STOP` z poleceniem `/dev-pr --czesc 1`: jeden PR byłby ponad limitem bota.
 
