@@ -162,6 +162,11 @@ test('SKILL.md i szablon: źródło stałej w IU pierwszego konsumenta w kodzie;
   assert.match(rejestr, /knip w domknięciu fazy/)
   assert.match(rejestr, /`plan\.mjs sprawdz` daje uwagę, gdy źródło jest w fazie wcześniejszej niż wszyscy konsumenci/)
   assert.match(SZABLON, /\| `## Rejestr stałych` \|[^\n]*źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie/)
+  // P22 C1: kolumna IU-źródło — uwaga planu bez zgadywania IU (vibersi etap 4: falszywa uwaga IU-2).
+  assert.match(rejestr, /tabela `\| Stała \| Wartość \| Plik \| IU-źródło \| Konsumenci \|`/)
+  assert.match(rejestr, /tę IU wpisujesz w kolumnie IU-źródło \(`IU-5`\), także gdy plik tworzy wcześniejsza IU, a stała dochodzi później/)
+  assert.match(SZABLON, /\| Stała \| Wartość \| Plik \| IU-źródło \| Konsumenci \|\n\|---\|---\|---\|---\|---\|\n\| `MAKS_DLUGOSC_NOTATKI` \| `500` \| `src\/services\/notatki-limity\.ts` \| IU-1 \| IU-1, IU-2 \|/)
+  assert.match(SZABLON, /ta IU w kolumnie IU-źródło \(`—` = stała już w repo\)/)
 })
 
 // P20 A7 (vibersi etap 3): research zalozyl „Send Email hook = bez limitu 2 maili/h”; projekt e2e mial rate_limit_email_sent 2,

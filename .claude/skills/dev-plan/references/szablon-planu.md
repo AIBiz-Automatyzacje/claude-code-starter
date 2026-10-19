@@ -13,7 +13,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `## Granice zakresu` | jawne non-goals i wykluczenia | zawsze |
 | `## Kontekst i research` | `### Relevantny kod i wzorce`, `### Wiedza instytucjonalna`, `### Referencje zewnętrzne` | zawsze (puste podsekcje pomiń) |
 | `## Kluczowe decyzje techniczne` | `- <decyzja>: <uzasadnienie>` | zawsze |
-| `## Rejestr stałych` | tabela stałych współdzielonych albo „Brak stałych współdzielonych.”; źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie | zawsze |
+| `## Rejestr stałych` | tabela stałych współdzielonych albo „Brak stałych współdzielonych.”; źródło stałej w tabeli plików IU jej pierwszego konsumenta w kodzie, ta IU w kolumnie IU-źródło (`—` = stała już w repo) | zawsze |
 | `## Części PR` | tabela `\| Część \| Fazy \|` (`\| 1 \| 1–3 \|`): cięcie na granicy faz, części po kolei, każda < 150 plików do recenzji (`rozmiarPr` ze `sprawdz`) | gdy `sprawdz` liczy > 150 plików |
 | `## Otwarte pytania` | `### Rozwiązane podczas planowania`, `### Odroczone do implementacji` | zawsze |
 | `## Wymagania wstępne operatora` | „Brak — autopilot może startować od razu.” albo zdanie z linkiem do checklisty i lista `- [ ] … — **[blokuje: faza N]** (IU-K)` | zawsze |
@@ -101,9 +101,9 @@ Ustalenia z rozmów z klientem giną w mailach (zob. źródło: docs/brainstorms
 
 ## Rejestr stałych
 
-| Stała | Wartość | Źródło | Konsumenci |
-|---|---|---|---|
-| `MAKS_DLUGOSC_NOTATKI` | `500` | `src/services/notatki-limity.ts` | IU-1, IU-2 |
+| Stała | Wartość | Plik | IU-źródło | Konsumenci |
+|---|---|---|---|---|
+| `MAKS_DLUGOSC_NOTATKI` | `500` | `src/services/notatki-limity.ts` | IU-1 | IU-1, IU-2 |
 
 ## Otwarte pytania
 
