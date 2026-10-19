@@ -2915,6 +2915,19 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     każdej kolejnej fazy (faza 6: 63% zrzutu). Testy 11–67%, kod 1–41%.
     **Dalej:** §8 — merge `popr/P22-po-etapie-4` za zgodą operatora, push, `/sync-template` + doctor w vibersi i live-10-demo.
     **Merge (2026-10-19):** `dbe8a4a` (--no-ff do main, push) — na main testy 1079/1079, typecheck i lint zielone.
+94. **Reguły recenzentów i P23 (2026-10-19, ta sama sesja co pkt 93).** (a) `54d9fbd`: 5 reguł z compoundu `/dev-pr` vibersi
+    (`docs/reviews/propozycje-do-reviewerow.md`, PR #2–#6) w sekcji „Polecenia” — correctness ×2 (kody `error.code` pod jednym
+    statusem; komunikat błędu w każdej gałęzi widoku), spec-compliance (kolumny spoza walidatora kasowane przy edycji, P1),
+    security (wszystkie źródła celu połączenia), test-coverage (atrapy API przeglądarki, P3 TEST). (b) Gałąź
+    `popr/P23-diff-i-migrations-sum`, merge `bcedb56`: `zmiany.mjs` wyklucza `docs/active/**` z listy i diffu fazy (pomiar wyżej);
+    `bramki.mjs --scal-sume` (`scalSume`/`scalWpisy`) — konflikt rebase'u w `supabase/migrations.sum` = wpisy obu stron bez
+    przeliczania, `/dev-pr` rozwiązuje go jak indeks wiedzy; ta sama migracja z inną sumą, linia spoza formatu (CRLF), suma
+    usunięta po jednej stronie albo niezgodna z drzewem = KONFLIKT do operatora po jednej próbie (plik wraca do markerów).
+    Recenzja: 25 mutacji, 7 przeżyło (P2 CRLF → poprawione, luki testów dopisane). Monorepo: konflikt w `app/supabase/…` nadal
+    do operatora (jak indeks). Testy na main 1088/1088, typecheck i lint zielone.
+    Operator: `disable-model-invocation` zdjęte; „makieta obok aplikacji” — po zamknięciu pozostałych.
+    **Dalej:** `/sync-template` + doctor w vibersi i live-10-demo (polecenie §8) — zaciąga P22, reguły i P23 naraz; potem pomiar
+    diffu reviewerów na następnym etapie (oczekiwane −1/3 znaków, faza 6 ponad −50%).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
