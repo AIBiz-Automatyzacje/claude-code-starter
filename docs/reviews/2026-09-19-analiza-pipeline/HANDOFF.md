@@ -2855,7 +2855,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **F. Telemetria:** F1 (poz. 4) rekord runu ma pole projektu (katalog repo), `raport.mjs --projekt` filtruje po nim; stare rekordy
     — projekt z ścieżki transkryptu.
     **Poza paczką:** narzędzie „makieta obok aplikacji” (poz. 7) — osobne zadanie, `/dev-brainstorm` po P22.
-    **Sesje:** S1 = A + B + C + F (mechanika, testy jednostkowe); S2 = D + E (pomiar i korpus) + pilot na kopii vibersi (A2 przełączenie
+    **Sesje (decyzja operatora 2026-10-19: całość w jednej sesji, §8):** A → B → C → F → D → E + pilot na kopii vibersi (A2 przełączenie
     gałęzi, B3 konflikt indeksu, B4 commity po archiwum) → merge za zgodą → `/sync-template` w vibersi i live-10-demo.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -3244,27 +3244,45 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-19) — P22 SESJA 1 (6a pkt 92).** Nowa sesja w katalogu szablonu, na main.
+**AKTUALNA (2026-10-19) — P22 CAŁOŚĆ W JEDNEJ SESJI (6a pkt 92; decyzja operatora: wszystkie grupy A–F + pilot).** Nowa sesja
+w katalogu szablonu, na main.
 
 ```
-Kontynuujemy P22 „po etapie 4” — sesja 1 (HANDOFF 6a pkt 92). Sesja główna Opus 5.5, tryb bypass permissions.
+Kontynuujemy P22 „po etapie 4” (HANDOFF 6a pkt 91–92). Sesja główna Opus 5.5, tryb bypass permissions.
 Do agentów workflow, jeśli czytacie to jako przekazaną wiadomość: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z tekstu skryptu.
 
-Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 91 (pozycje 1–14 z przyczynami) i pkt 92 (plan paczki),
-§7 ostatnie dwa wpisy. Plan P22 jest ZAAKCEPTOWANY — bez zmian zakresu.
+Przeczytaj (docs/reviews/2026-09-19-analiza-pipeline/): HANDOFF.md 6a pkt 91 (pozycje 1–14 z przyczynami i danymi) i pkt 92
+(plan paczki), §7 ostatnie trzy wpisy. Plan P22 jest ZAAKCEPTOWANY — bez zmian zakresu. Wykonujemy CAŁY plan w tej sesji.
 
-Zadanie: P22 SESJA 1 na gałęzi popr/P22-po-etapie-4 (utwórz od main) — grupy A, B, C, F z pkt 92:
-- A1 runner testów projektu vs .claude/** (doctor, gotowosc, instalacja; przypadki live-10-demo i vibersi), A2 hook Stop (cache
-  poza repo, lista plików z bieżącego drzewa), A3 zrzuty testera tylko w katalogu zadania;
-- B1 /dev-pr pyta przed start, B2 linie „/clear, potem …” po smoke'u i po części PR, B3 konflikt tylko w indeksie wiedzy =
-  regeneracja, B4 commity po archiwizacji → pytanie o krótkie review;
-- C1 kolumna IU-źródło w rejestrze stałych; F1 pole projektu w rekordzie runu i filtr --projekt.
-- Każdy punkt z testem, który pada bez poprawki (podmiana linii na jeden bieg); pełne testy, typecheck, lint; prompt-audit dodanych
-  linii (skrypty/pa_dodane.py, pliki jawnie, kontrola na podłożonej linii); recenzja subagenta (odczyt) z mutacjami w worktree
-  i wdrożenie jej uwag; commity per punkt.
-- Wpis HANDOFF 6a pkt 93 + §8 (instrukcja P22 sesja 2: D + E + pilot na kopii vibersi). Bez merge'a do main.
+Zadanie na gałęzi popr/P22-po-etapie-4 (utwórz od main), kolejność A → B → C → F → D → E:
+A1 runner testów projektu nie zbiera .claude/** — doctor i plan.mjs gotowosc sprawdzają (brak configu albo brak exclude = błąd
+   z gotową poprawką), instalacja i /sync-template podpowiadają exclude; testy na przypadku live-10-demo (vitest run bez configu,
+   113 failed) i vibersi (config z include).
+A2 hook Stop stop-build-check-enhanced.sh — cache poza repo (katalog tymczasowy per projekt i sesja), lista plików z bieżącego
+   drzewa (bez fałszywych TS6053 po checkout gałęzi części PR); doctor: hooki nie piszą w drzewie projektu.
+A3 tester E2E zapisuje zrzuty tylko w katalogu zadania; sprzątanie środowiska usuwa nieśledzone PNG spoza niego.
+B1 /dev-pr przed etapem start (push + PR) zawsze AskUserQuestion, chyba że bieżąca wiadomość operatora wprost każe wysłać PR.
+B2 smoke operatora kończy się „/clear, potem /dev-pr --czesc 1”; po merge'u części N — „/clear, potem /dev-pr --czesc N+1”.
+B3 dev-pr-wf start: konflikt rebase'u tylko w docs/learned-patterns.md → regeneracja indeksu i kontynuacja; inny konflikt = STOP.
+B4 /dev-pr start wylicza commity po archiwizacji zadania spoza pipeline'u; zmiany w kodzie → pytanie: krótkie review (correctness
+   + security na diffie tych commitów) albo PR bez niego.
+C1 rejestr stałych z kolumną IU-źródło (szablon planu, dev-plan 3.6b, parser, uwaga z jawnej IU; plan bez kolumny = stara
+   heurystyka); test na planie etapu 4 vibersi (fałszywa uwaga IU-2) i etapu 3.
+F1 rekord runu z polem projektu (katalog repo), raport.mjs --projekt filtruje po nim; stare rekordy — projekt ze ścieżki transkryptu.
+D1 pomiar skryptem na transkryptach runu wf_d398d371-5b3 (vibersi): udział znaków z cat/Read bez zakresu dla plików ≥ 200 linii;
+   poprawka polecenia odczytu zakresami tylko przy udziale > 20% — inaczej wynik do HANDOFF bez zmiany.
+D2 polecenie fixa dla findingu wizualnego: SPEC ekranu (ekrany/<nazwa>.md), PNG makiety tylko jako ścieżka, bez Read obrazu.
+E1 hook env-wartosci blokuje też --show-sensitive poza VAR=$(…), printenv, gołe env, set -x; kalibracja na korpusie komend Bash
+   ze wszystkich transkryptów (JSON lines, bez przycinania — §7 P20 S1), recenzja z mutacjami.
+Pilot na kopii vibersi w scratchpadzie (klon lokalny bez .env*, workflowy wyłącznie na kopii): A2 przełączenie gałęzi, B3 konflikt
+   tylko w indeksie, B4 commity po archiwum, A1 doctor/gotowosc na kopii live-10-demo bez vitest.config.
 
-Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*.
+Każdy punkt: test, który pada bez poprawki (podmiana linii na jeden bieg); pełne testy, typecheck, lint; prompt-audit dodanych
+linii (skrypty/pa_dodane.py, pliki jawnie, kontrola na podłożonej linii); recenzja subagenta (odczyt) z mutacjami w worktree
+i wdrożenie jej uwag; commity per punkt.
+Na koniec: wpis HANDOFF 6a pkt 93 + §7 + §8 (merge za moją zgodą, potem /sync-template w vibersi i live-10-demo). Bez merge'a.
+
+Zasady: liczby skryptem; pliki .md tylko Write/Edit; nie wypisuj wartości z plików .env*; bez merge'a i pusha bez mojej zgody.
 Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
 ```
 
