@@ -684,6 +684,11 @@ KLASYFIKUJ kazdy finding przed naprawa:
   przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna <srodowisko|limit-zewnetrzny|harness> --powod "<co naprawiles i dlaczego recznie>"\`
   (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.
 
+FINDING WIZUALNY (rozjazd z makieta; w opisie visual-diff/<ekran>-actual.png albo <ekran>-figma.png): wyglad docelowy bierzesz
+z opisu ekranu w planie — \`ls docs/plans/*-figma/ekrany/<ekran>.md\` (wymiary, odstepy, kolory, tokeny, teksty); bez pliku ekranu —
+sekcja ekranu w \`docs/plans/*-figma/SPEC.md\` (\`grep -n '<ekran>'\`, potem \`sed -n\`). PNG makiety i zrzutu podajesz w raporcie
+tylko jako sciezke i nie otwierasz ich narzedziem Read: obraz zostaje w kontekscie i kosztuje dziesiatki tysiecy tokenow w kazdej turze.
+
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
 walidacja koncowa audytuje git diff testow w commitach fix i zglosi kazda taka zmiane.

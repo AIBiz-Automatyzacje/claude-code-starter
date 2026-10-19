@@ -289,3 +289,14 @@ test('instrukcje bez wykrywania awarii po sygnaturze tekstu; watcher (zywy proce
   assert.doesNotMatch(tester, /rozpoznaje awarię środowiska po sygnaturze tekstowej/)
   assert.match(tester, /`"zyje": true`, gdy watcher \(np\. nodemon\)/)
 })
+
+// P22 D2: vibersi etap 4 — fix fazy 6 wczytal Readem 2 PNG makiet (visual-diff/admin-*-figma*.png, 378k + 93k zn jako obrazy).
+// Polecenie fixa kieruje finding wizualny do opisu ekranu w planie (ekrany/<ekran>.md, SPEC.md), PNG tylko jako sciezka.
+test('fix: finding wizualny — wyglad z ekrany/<ekran>.md (bez pliku: sekcja SPEC.md), PNG tylko sciezka, bez Read obrazu', () => {
+  const p = fixPrompt(ZADANIE, 6, [], 'gotowe')
+  assert.match(p, /FINDING WIZUALNY \(rozjazd z makieta; w opisie visual-diff\/<ekran>-actual\.png albo <ekran>-figma\.png\)/)
+  assert.match(p, /`ls docs\/plans\/\*-figma\/ekrany\/<ekran>\.md`/)
+  assert.match(p, /bez pliku ekranu —\nsekcja ekranu w `docs\/plans\/\*-figma\/SPEC\.md`/)
+  assert.match(p, /PNG makiety i zrzutu podajesz w raporcie\ntylko jako sciezke i nie otwierasz ich narzedziem Read/)
+  assert.ok(p.indexOf('FINDING WIZUALNY') < p.indexOf('ZAKAZ TEST-WEAKENINGU'))
+})
