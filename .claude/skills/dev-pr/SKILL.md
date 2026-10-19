@@ -64,12 +64,15 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
+Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
+przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „indeks przeliczony”).
+
 `status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Zapytaj operatora przez
 `AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
 `git add <pliki>` i `git rebase --continue`; kolejny konflikt — to samo, aż rebase się skończy; potem znów krok 1 z tym samym
 `czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
-nie rozwiązujesz bez tej decyzji. `docs/learned-patterns.md` to plik generowany (compound części 1 na głównej i compound
-zadania): zostaw jedną z wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu.
+nie rozwiązujesz bez tej decyzji. Gdy wśród konfliktów jest też `docs/learned-patterns.md` (plik generowany): zostaw jedną
+z jego wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu.
 
 Zadanie z tabelą „Części PR” wywołane bez `--czesc` → `STOP` z poleceniem `/dev-pr --czesc 1`: jeden PR byłby ponad limitem bota.
 
@@ -206,8 +209,8 @@ merge'u). Workflow wprowadza fakty do CLAUDE.md, liczy przyrost w JS (próg 2000
 któryś plik decyzji na gałęzi głównej ma `do-uzgodnienia`. `STOP` → wypisz `powod` i `naprawa`; nie przycinaj CLAUDE.md sam.
 
 **Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem
-z następnym krokiem `/dev-pr --czesc <N+1>`. Krok CLAUDE.md workflow pomija (`pominiety: true`) — plik decyzji jedzie
-w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
+z następnym krokiem `/dev-pr --czesc <N+1>`. Krok CLAUDE.md workflow pomija
+(`pominiety: true`) — plik decyzji jedzie w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
 
 ## Raport końcowy
 

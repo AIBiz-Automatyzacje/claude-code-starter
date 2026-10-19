@@ -36,7 +36,7 @@ function wytnij(kotwica, koniec) {
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const P = new Function(
   `${wytnij('// ── Decyzje dev-pr (P5)', '// ── Koniec decyzji dev-pr')}
-   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci }`,
+   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoIndeksWiedzy }`,
 )()
 
 // ── Guard uzasadnien odrzucenia ───────────────────────────────────────────
@@ -389,9 +389,9 @@ test('start --czesc 1: galaz -cz1 od commitu ciecia bez rebase; konflikt i zla g
   assert.match(cz1.prompty[2], /kolejne części po merge'u tej/)
   assert.equal(cz1.wynik.czesc, 1)
   const konflikt = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true },
-    { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['docs/learned-patterns.md'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
+    { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['e2e/etap-4-moderacja-smoke.sh'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
   assert.equal(konflikt.prompty.length, 2, 'bez agenta tworzacego PR')
-  assert.deepEqual([konflikt.wynik.status, konflikt.wynik.konflikty], ['KONFLIKT', ['docs/learned-patterns.md']])
+  assert.deepEqual([konflikt.wynik.status, konflikt.wynik.konflikty], ['KONFLIKT', ['e2e/etap-4-moderacja-smoke.sh']])
   assert.match(konflikt.wynik.naprawa, /git rebase --continue` \(do konca rebase.u\), potem \/dev-pr --czesc 2; albo `git rebase --abort`/)
   const zlaGalaz = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, { ...PRZYG_OK, galaz: 'main' }])
   assert.deepEqual([zlaGalaz.wynik.status, zlaGalaz.wynik.powod, zlaGalaz.prompty.length], ['STOP', 'biezaca galaz main, oczekiwana feature/etap-3', 2])
@@ -442,3 +442,37 @@ test('tabela czesci: fazy i pliki tylko liczbami (trafiaja do tytulu PR), SHA w 
 test('prog czesci w dev-pr-wf = PROG_PLIKOW_PR z rozmiar.mjs (workflow self-contained)', () => {
   assert.ok(zrodlo.includes(`const PROG_CZESCI = ${PROG_PLIKOW_PR}`))
 })
+
+// P22 B3: vibersi etap 4 — rebase czesci 2 stanal na konflikcie tylko w docs/learned-patterns.md (compound czesci 1 na glownej
+// i compound zadania), drugi start po recznej regeneracji indeksu przeszedl. Indeks jest generowany — workflow sam go przelicza.
+const KONFLIKT_INDEKSU = { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['docs/learned-patterns.md'], powod: 'CONFLICT (content): Merge conflict in docs/learned-patterns.md', push: false, pushDetal: '' }
+
+test('start --czesc 2: konflikt tylko w indeksie wiedzy → regeneracja (wiedza.mjs indeks, rebase --continue), przygotowanie od nowa, PR', async () => {
+  const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
+    { tabela: TABELA_ETAPU_3, galazZadania: true }, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 2, powod: null }, PRZYG_OK, START_OK])
+  assert.equal(prompty.length, 5)
+  assert.match(prompty[2], /wylacznie w docs\/learned-patterns\.md/)
+  assert.match(prompty[2], /`git checkout --theirs -- docs\/learned-patterns\.md`, `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
+  assert.match(prompty[2], /`GIT_EDITOR=true git rebase --continue`/)
+  assert.match(prompty[2], /Plik inny niz docs\/learned-patterns\.md na liscie = koniec: status KONFLIKT/)
+  assert.equal(prompty[3], prompty[1], 'przygotowanie od nowa tym samym poleceniem')
+  assert.deepEqual([wynik.status, wynik.czesc, wynik.prNumer], ['OK', 2, 4])
+})
+
+test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracja trafia na inny plik = KONFLIKT z ta lista; STOP i null', async () => {
+  const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
+  const oba = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...KONFLIKT_INDEKSU, konflikty: ['docs/learned-patterns.md', 'e2e/smoke.sh'] }])
+  assert.deepEqual([oba.wynik.status, oba.prompty.length], ['KONFLIKT', 2])
+  const potem = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'KONFLIKT', konflikty: ['e2e/smoke.sh'], regeneracje: 1, powod: null }])
+  assert.deepEqual([potem.wynik.status, potem.wynik.konflikty, potem.prompty.length], ['KONFLIKT', ['e2e/smoke.sh'], 3])
+  assert.match(potem.wynik.powod, /konflikt rebase'u w e2e\/smoke\.sh/)
+  const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, powod: 'wiedza.mjs: kod 1' }])
+  assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja indeksu wiedzy: wiedza.mjs: kod 1'])
+  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, null])).wynik.status, 'BLAD')
+  // Konflikt indeksu po kazdej regeneracji: limit prob, potem KONFLIKT dla operatora (bez petli).
+  const petla = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU,
+    { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU])
+  assert.deepEqual([petla.wynik.status, petla.prompty.length], ['KONFLIKT', 6])
+  assert.equal(P.tylkoIndeksWiedzy([]), false)
+})
+

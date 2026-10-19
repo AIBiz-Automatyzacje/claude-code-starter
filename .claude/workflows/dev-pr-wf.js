@@ -103,6 +103,20 @@ const PRZYGOTOWANIE = {
   required: ['status', 'galaz', 'konflikty', 'rebase', 'walidacja', 'push', 'pushDetal'],
 }
 
+// Regeneracja indeksu wiedzy w trakcie rebase'u czesci (P22 B3): docs/learned-patterns.md jest generowany z docs/solutions/,
+// wiec konflikt tylko w nim nie wymaga decyzji — indeks liczony z drzewa commitu, ktory rebase wlasnie odtwarza.
+const REGENERACJA_INDEKSU = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    status: { type: 'string', enum: ['OK', 'KONFLIKT', 'STOP'], description: 'OK = rebase dokonczony; KONFLIKT = konflikt w innym pliku; STOP = polecenie padlo' },
+    konflikty: { type: 'array', items: { type: 'string' }, description: 'przy KONFLIKT: git diff --name-only --diff-filter=U' },
+    regeneracje: { type: 'integer', description: 'ile razy indeks zostal przeliczony (commity z konfliktem tylko w indeksie)' },
+    powod: { type: ['string', 'null'] },
+  },
+  required: ['status', 'konflikty', 'regeneracje', 'powod'],
+}
+
 // Tabela „## Części PR” z podsumowania zadania, ktora agent przepisuje 1:1 (stdout awk) — parsuje ja JS.
 const CZESCI_TABELA = {
   type: 'object',
@@ -472,6 +486,16 @@ function czesciZTabeli(tekst) {
 const PROG_CZESCI = 150
 
 // Wynik agenta przygotowania sprawdzany w JS: status, galaz, walidacja po rebase'ie i push — kazdy osobno w powodzie.
+const INDEKS_WIEDZY = 'docs/learned-patterns.md'
+// Rebase'ow z regeneracja indeksu na jedno przygotowanie: kazda regeneracja dokancza caly rebase albo staje na innym pliku,
+// wiec druga proba to juz nowy konflikt w indeksie po STOP-ie operatora — trzecia oznacza petle.
+const MAKS_REGENERACJI_INDEKSU = 2
+
+/** @param {string[]} konflikty @returns {boolean} konflikt rebase'u wylacznie w generowanym indeksie wiedzy */
+function tylkoIndeksWiedzy(konflikty) {
+  return Array.isArray(konflikty) && konflikty.length > 0 && konflikty.every((k) => k === INDEKS_WIEDZY)
+}
+
 function bladPrzygotowania(przyg, galaz) {
   if (przyg.status !== 'OK') return przyg.powod || `status ${przyg.status} bez powodu`
   if (przyg.galaz !== galaz) return `biezaca galaz ${przyg.galaz}, oczekiwana ${galaz}`
@@ -574,7 +598,7 @@ Zwroc obiekt zgodny ze schematem.`,
         : `1. \`git fetch --prune origin\` (bez niego push odrzuca galaz po skasowanej zdalnej: stale info). Galaz ${cz.galaz}: istnieje lokalnie — \`git switch ${cz.galaz}\`; nie istnieje — \`git switch -c ${cz.galaz} ${cz.doSha}\`
    (commit konca czesci; galaz zadania feature/${zadanie} zostaje bez zmian). Sprawdz \`git merge-base --is-ancestor ${cz.doSha} HEAD\`
    (kod 0), inaczej STOP „galaz ${cz.galaz} nie zawiera ${cz.doSha}”. rebase=nie-dotyczy.`
-    const przyg = await agent(
+    const przygotuj = () => agent(
       `Przygotowujesz galaz czesci ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy}) pull requesta zadania "${zadanie}". Nie naprawiasz kodu
 i nie rozwiazujesz konfliktow.
 
@@ -592,6 +616,28 @@ ${kroki}
 galaz = \`git branch --show-current\` na koniec. Zwroc obiekt zgodny ze schematem.${BLOK_KOMEND_PROJEKTU}`,
       { schema: PRZYGOTOWANIE, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:czesc-${cz.czesc}:${zadanie}` }
     )
+    let przyg = await przygotuj()
+    // Konflikt tylko w generowanym indeksie wiedzy (compound czesci N-1 na glownej i compound zadania): indeks z drzewa commitu,
+    // `rebase --continue`, a po dokonczonym rebase'ie przygotowanie od nowa (walidacja i push). Inny plik = KONFLIKT jak dotad.
+    for (let proba = 0; przyg && przyg.status === 'KONFLIKT' && tylkoIndeksWiedzy(przyg.konflikty) && proba < MAKS_REGENERACJI_INDEKSU; proba++) {
+      const r = await agent(
+        `Rebase galezi ${cz.galaz} stoi na konflikcie wylacznie w ${INDEKS_WIEDZY} — to indeks generowany z docs/solutions/.
+Powtarzaj, dopoki rebase trwa (\`test -d "$(git rev-parse --git-path rebase-merge)"\` albo \`test -d "$(git rev-parse --git-path rebase-apply)"\` kod 0):
+1. konflikty = \`git diff --name-only --diff-filter=U\`. Plik inny niz ${INDEKS_WIEDZY} na liscie = koniec: status KONFLIKT z ta lista,
+   bez \`git rebase --abort\` i bez rozwiazywania tego pliku.
+2. Konflikt tylko w indeksie: \`git checkout --theirs -- ${INDEKS_WIEDZY}\`, \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\`
+   (indeks z drzewa tego commitu), \`git add ${INDEKS_WIEDZY}\`, \`GIT_EDITOR=true git rebase --continue\`; regeneracje + 1.
+3. Kod rozny od 0 w kroku 2 bez nowego konfliktu = status STOP, powod = komunikat polecenia.
+Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwroc obiekt zgodny ze schematem.`,
+        { schema: REGENERACJA_INDEKSU, agentType: 'klasa-mechaniczny', label: `pr:indeks-wiedzy:czesc-${cz.czesc}:${zadanie}` }
+      )
+      if (!r) return { status: 'BLAD', etap, czesc, powod: `Regeneracja indeksu wiedzy w trakcie rebase'u zwrocila null — rebase moze byc w toku (\`git status\`).` }
+      log(`/dev-pr czesc ${cz.czesc}: konflikt rebase'u tylko w ${INDEKS_WIEDZY} — indeks przeliczony ${r.regeneracje}×, wynik ${r.status}`)
+      if (r.status === 'STOP') return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: `regeneracja indeksu wiedzy: ${r.powod || 'bez powodu'}` }
+      przyg = r.status === 'KONFLIKT'
+        ? { ...przyg, status: 'KONFLIKT', konflikty: r.konflikty, powod: r.powod || `konflikt rebase'u w ${r.konflikty.join(', ')}` }
+        : await przygotuj()
+    }
     if (!przyg) return { status: 'BLAD', etap, czesc, powod: 'Przygotowanie galezi czesci zwrocilo null — sprawdz `git status` i `git log -1`.' }
     if (przyg.status === 'KONFLIKT') {
       log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}`)
