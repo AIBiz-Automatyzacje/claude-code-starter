@@ -6,7 +6,8 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { WERSJA_REKORDU, katalogRepo, zbierzWszystko } from '../zbieranie.mjs'
+import { WERSJA_REKORDU, zbierzWszystko } from '../zbieranie.mjs'
+import { katalogProjektu, katalogRepo, znajdzRuny } from '../zrodla.mjs'
 import { odczytajRekordy } from '../zapis.mjs'
 import { CWD_PROJEKTU, zbudujFixture } from './fixture-projekty.mjs'
 
@@ -88,6 +89,8 @@ test('projekt = katalog repo nad cwd agenta (podkatalog zadania, takze juz usuni
         assert.deepEqual([r.get(klucz)?.projekt, r.get(klucz)?.repo], ['vibersi', repo], klucz)
       }
       assert.deepEqual([r.get('skill|u1')?.projekt, r.get('skill|u1')?.repo], ['projekt', null], 'cwd sesji poza repo — nazwa katalogu cwd')
+      // Ten sam korzen dostaja pliki rol, wiedza i wersja szablonu runu (instrukcje_stale, klasyZRegula, szablon).
+      assert.equal(katalogProjektu(znajdzRuny(projekty).find((x) => x.run === 'wf_aaa-111') ?? (() => { throw new Error('brak runu') })()), repo)
     } finally {
       rmSync(join(repo, '..'), { recursive: true, force: true })
     }
@@ -100,6 +103,14 @@ test('katalogRepo: korzen z .git (katalog albo plik worktree) nad sciezka, takze
     mkdirSync(join(k, 'repo', '.git'), { recursive: true })
     mkdirSync(join(k, 'wt'), { recursive: true })
     writeFileSync(join(k, 'wt', '.git'), 'gitdir: /x\n')
+    // Worktree repo glownego (.claude/worktrees/<nazwa>) — projekt to repo; submodul zostaje osobnym repo.
+    mkdirSync(join(k, 'repo', '.claude', 'worktrees', 'tura-1'), { recursive: true })
+    writeFileSync(join(k, 'repo', '.claude', 'worktrees', 'tura-1', '.git'), `gitdir: ${join(k, 'repo', '.git', 'worktrees', 'tura-1')}\n`)
+    mkdirSync(join(k, 'repo', 'lib', 'sub'), { recursive: true })
+    writeFileSync(join(k, 'repo', 'lib', 'sub', '.git'), 'gitdir: ../../.git/modules/sub\n')
+    assert.equal(katalogRepo(join(k, 'repo', '.claude', 'worktrees', 'tura-1', 'src')), join(k, 'repo'))
+    assert.equal(katalogRepo(join(k, 'repo', 'lib', 'sub', 'a')), join(k, 'repo', 'lib', 'sub'))
+    assert.equal(katalogRepo(''), null)
     assert.equal(katalogRepo(join(k, 'repo', 'docs', 'active', 'z')), join(k, 'repo'))
     assert.equal(katalogRepo(join(k, 'wt', 'src')), join(k, 'wt'))
     assert.equal(katalogRepo(join(k, 'repo')), join(k, 'repo'))
@@ -108,4 +119,31 @@ test('katalogRepo: korzen z .git (katalog albo plik worktree) nad sciezka, takze
   } finally {
     rmSync(k, { recursive: true, force: true })
   }
+})
+
+test('projekt runu: agent w repo A i sesja w repo B → A; agent w scratchpadzie sesji → projekt sesji; bez repo — nazwa cwd sesji', () => {
+  zFixture(({ projekty, plik, bledy }) => {
+    const baza = mkdtempSync(join(tmpdir(), 'telemetria-repo-'))
+    try {
+      for (const r of ['repo-a', 'repo-b']) mkdirSync(join(baza, r, '.git'), { recursive: true })
+      const katalogSesji = join(projekty, '-Users-u-Kodowanie-projekt')
+      const run = join(katalogSesji, 'sesja-1', 'subagents', 'workflows', 'wf_aaa-111')
+      const agenci = readdirSync(run).filter((x) => x.startsWith('agent-') && x.endsWith('.jsonl'))
+      const ustaw = (/** @type {string} */ cwdAgenta, /** @type {string} */ cwdSesjiGlownej) => {
+        for (const n of agenci) writeFileSync(join(run, n), readFileSync(join(run, n), 'utf8').replace(/"cwd":"[^"]*"/g, `"cwd":${JSON.stringify(cwdAgenta)}`))
+        const s = join(katalogSesji, 'sesja-1.jsonl')
+        writeFileSync(s, readFileSync(s, 'utf8').replace(/"cwd":"[^"]*"/g, `"cwd":${JSON.stringify(cwdSesjiGlownej)}`))
+        rmSync(plik, { force: true })
+        zbierzWszystko({ projekty, plik, bledy, terazMs: TERAZ, szybko: false, sesjeWToku: new Set(), pominSesje: new Set() })
+        return odczytajRekordy(plik).ostatnie.get('wf_aaa-111|run|wf_aaa-111')?.projekt
+      }
+      assert.equal(ustaw(join(baza, 'repo-a', 'docs', 'active', 'z'), join(baza, 'repo-b')), 'repo-a')
+      const scratchpad = join(baza, 'tmp', 'claude-501', 'slug', 'sesja', 'scratchpad', 'kopia')
+      mkdirSync(join(scratchpad, '.git'), { recursive: true })
+      assert.equal(ustaw(scratchpad, join(baza, 'repo-b', 'src')), 'repo-b', 'kopia w scratchpadzie znika — projekt sesji od razu')
+      assert.equal(ustaw('/nie/ma/x', '/nie/ma/sesja-projekt'), 'sesja-projekt')
+    } finally {
+      rmSync(baza, { recursive: true, force: true })
+    }
+  })
 })

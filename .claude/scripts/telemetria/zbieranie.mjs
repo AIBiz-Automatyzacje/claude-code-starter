@@ -1,14 +1,14 @@
 // Skan maszyny: runy workflowow i epizody skilli sesji glownych → rekordy telemetrii → jeden plik JSONL (dopisywany).
 // Wywolanie: zbierz.mjs (CLI, hook Stop) i raport.mjs (siatka przed raportem). Zero agentow, zero tokenow.
 
-import { existsSync, readdirSync, statSync } from 'node:fs'
-import { basename, dirname, join, resolve } from 'node:path'
+import { closeSync, existsSync, openSync, readSync, readdirSync, statSync } from 'node:fs'
+import { basename, join } from 'node:path'
 
 import { rekordyRunu } from './skan.mjs'
 import { epizodySesji, rekordSkilla, scalEpizody } from './skill.mjs'
 import { analizujTranskrypt } from './transkrypt.mjs'
 import { dopisz, doZapisu, odczytajRekordy, zapiszBlad, zZamkiem } from './zapis.mjs'
-import { czytajJsonl, katalogProjektu, znajdzRuny } from './zrodla.mjs'
+import { czytajJsonl, katalogProjektu, katalogRepo, znajdzRuny } from './zrodla.mjs'
 
 // Podbijana przy kazdej zmianie logiki wyliczania rekordu — skan dopisze wtedy nowe wersje wszystkich rekordow.
 // 2: rola bez sufiksu :retry, /exit i inne komendy sesji nie sa skillami, run.start. 3: run.pr z etapu zbierz dev-pr.
@@ -17,6 +17,7 @@ import { czytajJsonl, katalogProjektu, znajdzRuny } from './zrodla.mjs'
 export const WERSJA_REKORDU = 6
 // Zapas tylu minut przed znacznikiem ostatniego skanu: transkrypt bywa dopisywany chwile po hooku Stop.
 const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
+const SCRATCHPAD = /\/tmp\/claude-[^/]+\/.*\/scratchpad(?:\/|$)/
 
 /**
  * @typedef {object} OpcjeZbierania
@@ -33,30 +34,25 @@ const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 /** @param {string} sciezka */
 const mtime = (sciezka) => (existsSync(sciezka) ? statSync(sciezka).mtimeMs : 0)
 
-/**
- * Korzen repo (katalog z .git) zawierajacy sciezke. Sciezka bywa nieistniejaca (katalog zadania po archiwizacji, scratchpad),
- * wiec sprawdzamy kolejne katalogi nadrzedne tekstowo. vibersi etap 4: cwd pierwszego agenta runu = docs/active/<zadanie>
- * i rekordy dostaly projekt „etap-4-…”, a `raport.mjs --projekt vibersi` dawal 0 runow (P22 F1).
- * @param {string | null | undefined} sciezka
- * @returns {string | null}
- */
-export function katalogRepo(sciezka) {
-  if (typeof sciezka !== 'string' || !sciezka) return null
-  for (let k = resolve(sciezka); ; k = dirname(k)) {
-    if (existsSync(join(k, '.git'))) return k
-    if (dirname(k) === k) return null
-  }
-}
+// Poczatek transkryptu sesji, w ktorym szukamy cwd — pierwszy wpis z cwd lezy w kilku pierwszych liniach, a plik ma dziesiatki MB.
+const POCZATEK_TRANSKRYPTU_B = 64 * 1024
 
 /**
- * cwd sesji glownej z jej transkryptu (sesja startuje w katalogu projektu) — zapas, gdy cwd agenta jest poza repo.
+ * cwd sesji glownej z poczatku jej transkryptu (sesja startuje w katalogu projektu) — zapas, gdy cwd agenta jest poza repo.
  * @param {string} projekty @param {string} slug @param {string} sesja @returns {string | null}
  */
 function cwdSesji(projekty, slug, sesja) {
   const plik = join(projekty, slug, `${sesja}.jsonl`)
   if (!existsSync(plik)) return null
-  const cwd = czytajJsonl(plik).wpisy.find((w) => typeof w.cwd === 'string')?.cwd
-  return typeof cwd === 'string' ? cwd : null
+  const bufor = Buffer.alloc(POCZATEK_TRANSKRYPTU_B)
+  const fd = openSync(plik, 'r')
+  const n = readSync(fd, bufor, 0, bufor.length, 0)
+  closeSync(fd)
+  for (const linia of bufor.subarray(0, n).toString('utf8').split('\n')) {
+    const cwd = /"cwd":"((?:[^"\\]|\\.)*)"/.exec(linia)?.[1]
+    if (cwd) return JSON.parse(`"${cwd}"`)
+  }
+  return null
 }
 
 /**
@@ -85,9 +81,13 @@ function czyCzytacRun(run, op, ostatnie) {
 function rekordyZRunu(run, op) {
   const r = rekordyRunu(run, { terazMs: op.terazMs, sesjeWToku: op.sesjeWToku })
   if (!r) return []
+  // Kopia projektu w scratchpadzie sesji (pilot, smoke) znika po sesji: hook zaraz po runie widzialby repo kopii, a pozniejszy
+  // pelny skan juz nie, wiec agenci zapisani raz rozjechaliby sie z runem — scratchpad liczymy od razu do projektu sesji.
   const cwdAgenta = katalogProjektu(run)
-  const sesji = cwdSesji(op.projekty, run.projektSlug, run.sesja)
-  const repo = katalogRepo(cwdAgenta) ?? katalogRepo(sesji)
+  const wScratchpadzie = typeof cwdAgenta === 'string' && SCRATCHPAD.test(cwdAgenta)
+  const repoAgenta = wScratchpadzie ? null : katalogRepo(cwdAgenta)
+  const sesji = repoAgenta ? null : cwdSesji(op.projekty, run.projektSlug, run.sesja)
+  const repo = repoAgenta ?? katalogRepo(sesji)
   const wspolne = {
     v: WERSJA_REKORDU, ts: new Date(op.terazMs).toISOString(), projekt: nazwaProjektu(run.projektSlug, repo ?? sesji ?? cwdAgenta), repo,
     run: run.run, sesja: run.sesja, zadanie: r.run.zadanie, workflow: r.run.workflow,
