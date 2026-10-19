@@ -170,11 +170,12 @@ sprawdz_runner() {
     wiersz "runner testów" UWAGA "nie sprawdzono configu vitest/jest (brak node)" "brew install node"
     return
   fi
+  # Ostrzeżenia node na stderr nie mogą rozbić wiersza TSV — wiersz to linia zaczynająca się od nazwy elementu.
   if ! wynik="$(node "$KATALOG_DOCTORA/runner-testow.mjs" "$PROJEKT" 2>&1)"; then
-    wiersz "runner testów" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "popraw JSON w package.json"
+    wiersz "runner testów" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź package.json i config vitest/jest"
     return
   fi
-  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$(printf '%s\n' "$wynik" | grep -m1 "^runner testów"$'\t')"
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 

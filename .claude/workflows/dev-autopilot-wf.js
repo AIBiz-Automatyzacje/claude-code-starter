@@ -1138,7 +1138,7 @@ function decyzjaWejscia(sciezka, wejscie, fazy, cache) {
     return {
       stop: {
         powod: `start: doctor — ${wejscie.doctorWynik || 'brak obowiazkowego narzedzia'}`,
-        naprawa: `Zainstaluj braki z kolumny Instalacja (\`bash .claude/scripts/doctor/doctor.sh\` pokazuje tabele), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+        naprawa: `Usun braki wg kolumny Instalacja (\`bash .claude/scripts/doctor/doctor.sh\` pokazuje tabele; runner testow: wpis do configu), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
       },
       commitZadania: false, testyStartu: false, uwagi,
     }

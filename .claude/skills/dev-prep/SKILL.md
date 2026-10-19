@@ -128,7 +128,7 @@ Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subag
 
 Uruchom `bash .claude/scripts/doctor/doctor.sh`. Skrypt wylicza z projektu, czego wymaga pipeline (git, gh z logowaniem, node, menedżer z lockfile, supabase CLI przy `supabase/`, agent-browser przy checkboxach `[E2E]`, pluginy projektu, Dynamic Workflows), i wypisuje tabelę z komendą instalacji przy każdym braku.
 
-- Każdy wiersz `BRAK` przepisz do sekcji 2 jako pozycję z markerem **[blokuje: faza 1]** — run autopilota zatrzymałby się na tym narzędziu, a bramka gotowości `/dev-plan` nie przekaże zadania autopilotowi, dopóki pozycja jest otwarta. „Jak" = komenda z kolumny „Instalacja", „Dowód" = `bash .claude/scripts/doctor/doctor.sh` pokazuje `OK` w tym wierszu.
+- Każdy wiersz `BRAK` przepisz do sekcji 2 jako pozycję z markerem **[blokuje: faza 1]** — run autopilota zatrzymałby się na tym narzędziu, a bramka gotowości `/dev-plan` nie przekaże zadania autopilotowi, dopóki pozycja jest otwarta. „Jak" = komenda z kolumny „Instalacja" (przy runnerze testów: wpis do configu), „Dowód" = `bash .claude/scripts/doctor/doctor.sh` pokazuje `OK` w tym wierszu.
 - Każdy wiersz `UWAGA` przepisz do sekcji 2 bez markera — nie blokuje runu.
 - Wszystkie wiersze `OK` / `nie dotyczy` → nic nie dopisuj.
 

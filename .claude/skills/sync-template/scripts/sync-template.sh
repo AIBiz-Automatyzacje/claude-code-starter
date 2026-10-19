@@ -124,6 +124,7 @@ if [[ "$FORCE" -eq 0 && -n "$LOCAL_SHA" && "$LOCAL_SHA" == "$UPSTREAM_SHA" ]]; t
   echo "STATUS: UP_TO_DATE"
   echo "SHA: $UPSTREAM_SHA"
   echo "Szablon jest aktualny — brak zmian w workflow do zaciągnięcia."
+  runner_testow
   exit 0
 fi
 

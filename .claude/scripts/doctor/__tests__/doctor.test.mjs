@@ -396,9 +396,12 @@ test('runner testow: vitest bez configu → BRAK z gotowym vitest.config.ts i ex
   assert.match(w[3], /^vitest\.config\.ts: .*'\.claude\/\*\*'/)
   assert.equal(brak.status, 1)
   assert.match(brak.stdout, /WYNIK: BRAK obowiązkowych: runner testów/)
+  // vitest zainstalowany: werdykt z `vitest list` (atrapa) — lista bez .claude → OK; ostrzezenie na stderr nie psuje wiersza.
   writeFileSync(join(s.projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
+  mkdirSync(join(s.projekt, 'node_modules', '.bin'), { recursive: true })
+  atrapa(join(s.projekt, 'node_modules', '.bin'), 'vitest', `echo "(!) ostrzezenie vite" >&2; echo '[{"file":"${s.projekt}/tests/a.test.ts"}]'`)
   const ok = doctor(s)
-  assert.equal(wiersz(ok.stdout, 'runner testów')[1], 'OK')
+  assert.deepEqual(wiersz(ok.stdout, 'runner testów').slice(1, 3), ['OK', 'vitest: 1 plików testów, 0 z .claude/**'])
   assert.equal(ok.status, 0)
 }))
 

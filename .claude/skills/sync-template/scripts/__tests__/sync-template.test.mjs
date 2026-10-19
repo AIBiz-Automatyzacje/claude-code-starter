@@ -179,7 +179,13 @@ test('sync: vitest bez configu → linia RUNNER TESTÓW z poprawka; z configiem 
     git(zrodlo, ['commit', '-q', '-m', 'runner'])
     writeFileSync(join(projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3' } }))
     assert.match(sync(zrodlo, projekt), /RUNNER TESTÓW: vitest bez configu .* — poprawka: vitest\.config\.ts: .*'\.claude\/\*\*'/)
+    // Szablon bez zmian (UP_TO_DATE) — linia nadal wychodzi, dopoki config jej nie usunie.
+    assert.match(sync(zrodlo, projekt), /STATUS: UP_TO_DATE[\s\S]*RUNNER TESTÓW: vitest bez configu/)
     writeFileSync(join(projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
+    assert.doesNotMatch(sync(zrodlo, projekt, ['--force']), /RUNNER TESTÓW/)
+    // Projekt bez vitest i jest — bez linii.
+    writeFileSync(join(projekt, 'package.json'), JSON.stringify({ scripts: { test: 'node --test' } }))
+    rmSync(join(projekt, 'vitest.config.ts'))
     assert.doesNotMatch(sync(zrodlo, projekt, ['--force']), /RUNNER TESTÓW/)
   } finally {
     rmSync(zrodlo, { recursive: true, force: true })

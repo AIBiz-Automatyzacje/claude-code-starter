@@ -1,127 +1,122 @@
 // Runner testow projektu a testy maszynerii z .claude/** (P22 A1). Przypadki z projektow: live-10-demo (`vitest run`
 // bez configu — 113 plikow node:test zebranych, STOP autopilota na starcie; potem config z include tests/, commit 1bf65f8)
-// i vibersi (config z dwoma projektami i include src/, server/). Gotowa poprawka z wyniku ma sama przejsc sprawdzenie.
+// i vibersi (config z dwoma projektami i include src/, server/). Werdykt daje lista runnera (`vitest list --filesOnly
+// --json`, `jest --listTests --json`) — tu atrapa w node_modules/.bin, ktora zapisuje argumenty i wypisuje liste z fixture'a.
+// Bez runnera zostaje odczyt statyczny: brak configu = BRAK, reszta = UWAGA.
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { sprawdzRunnerTestow } from '../runner-testow.mjs'
+import { argumentySkryptu, sprawdzRunnerTestow } from '../runner-testow.mjs'
 
-const PAKIET_VITEST = JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } })
+const PAKIET_VITEST = JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '5.0.5' } })
+const TESTY_MASZYNERII = Array.from({ length: 113 }, (_, i) => `.claude/scripts/x/__tests__/t${i}.test.mjs`)
 
-// vitest.config.ts live-10-demo po 1bf65f8 (dosłownie).
-const CONFIG_LIVE_10 = `import { defineConfig } from "vitest/config";
-
-// Tylko testy aplikacji; .claude/** ma własne testy pod node:test.
-export default defineConfig({
-  test: {
-    include: ["tests/**/*.test.ts"],
-  },
-});
-`
-
-// vitest.config.ts vibersi (skrót bez komentarzy, układ projektów dosłownie).
-const CONFIG_VIBERSI = `import { defineConfig, mergeConfig } from 'vitest/config'
-import viteConfig from './vite.config'
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-    test: {
-      passWithNoTests: true,
-      projects: [
-        { extends: true, test: { name: 'klient', environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'], setupFiles: ['src/test/setup.ts'] } },
-        { extends: true, test: { name: 'serwer', environment: 'node', include: ['server/**/*.test.ts'] } },
-      ],
-    },
-  }),
-)
-`
-
-/** @param {Record<string, string>} pliki @param {(projekt: string) => void} cialo */
-function wProjekcie(pliki, cialo) {
+/**
+ * @param {Record<string, string>} pliki
+ * @param {{ runner?: 'vitest' | 'jest', lista?: string[] | null, kod?: number }} [atrapa] lista = sciezki wzgledne
+ *   (atrapa wypisuje je bezwzglednie, jak runner); null = brak atrapy (runner niezainstalowany)
+ * @returns {{ wynik: import('../runner-testow.mjs').WynikRunnera, argumenty: string[] }}
+ */
+function sprawdz(pliki, { runner = 'vitest', lista = null, kod = 0 } = {}) {
   const projekt = mkdtempSync(join(tmpdir(), 'runner-'))
   try {
     for (const [sciezka, tresc] of Object.entries(pliki)) {
       mkdirSync(dirname(join(projekt, sciezka)), { recursive: true })
       writeFileSync(join(projekt, sciezka), tresc)
     }
-    cialo(projekt)
+    if (lista) {
+      const json = JSON.stringify(lista.map((p) => (runner === 'vitest' ? { file: join(projekt, p) } : join(projekt, p))))
+      const bin = join(projekt, 'node_modules', '.bin', runner)
+      mkdirSync(dirname(bin), { recursive: true })
+      writeFileSync(join(projekt, 'lista.json'), json)
+      writeFileSync(bin, `#!/bin/sh\nprintf '%s\\n' "$@" > "${join(projekt, 'argumenty')}"\necho "ostrzezenie vite" >&2\n${kod ? `echo "Error: config" >&2; exit ${kod}` : `cat "${join(projekt, 'lista.json')}"`}\n`)
+      chmodSync(bin, 0o755)
+    }
+    const wynik = sprawdzRunnerTestow(projekt)
+    const argumenty = lista ? readFileSync(join(projekt, 'argumenty'), 'utf8').split('\n').filter(Boolean) : []
+    return { wynik, argumenty }
   } finally {
     rmSync(projekt, { recursive: true, force: true })
   }
 }
 
-/** @param {Record<string, string>} pliki */
-const sprawdz = (pliki) => {
-  /** @type {import('../runner-testow.mjs').WynikRunnera | undefined} */
-  let wynik
-  wProjekcie(pliki, (p) => { wynik = sprawdzRunnerTestow(p) })
-  return /** @type {import('../runner-testow.mjs').WynikRunnera} */ (wynik)
-}
-
-test('live-10-demo przed 1bf65f8: vitest run bez configu → BRAK z gotowym vitest.config.ts', () => {
-  const w = sprawdz({ 'package.json': PAKIET_VITEST })
-  assert.equal(w.stan, 'BRAK')
-  assert.equal(w.runner, 'vitest')
-  assert.match(w.szczegol, /bez configu zbiera testy maszynerii z \.claude\/\*\*/)
-  assert.match(w.poprawka, /^vitest\.config\.ts: .*exclude: \[\.\.\.configDefaults\.exclude, '\.claude\/\*\*'\]/)
+test('live-10-demo przed 1bf65f8: vitest list zbiera 113 testow .claude → BRAK z gotowym vitest.config.ts', () => {
+  const { wynik, argumenty } = sprawdz({ 'package.json': PAKIET_VITEST }, { lista: ['tests/a.test.ts', ...TESTY_MASZYNERII] })
+  assert.deepEqual(argumenty, ['list', '--filesOnly', '--json'])
+  assert.equal(wynik.stan, 'BRAK')
+  assert.equal(wynik.szczegol, 'vitest zbiera 113 plików testów maszynerii z .claude/** (z 114) — run stanie na starcie')
+  assert.match(wynik.poprawka, /^vitest\.config\.ts: .*exclude: \[\.\.\.configDefaults\.exclude, '\.claude\/\*\*'\]/)
 })
 
-test('live-10-demo po 1bf65f8 (include tests/) i vibersi (projekty z include src/, server/) → OK', () => {
-  assert.deepEqual(sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': CONFIG_LIVE_10 }),
-    { stan: 'OK', runner: 'vitest', szczegol: 'vitest.config.ts nie zbiera .claude/**', poprawka: '—' })
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': CONFIG_VIBERSI }).stan, 'OK')
+test('live-10-demo po 1bf65f8 i vibersi: lista bez .claude → OK z liczba plikow', () => {
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': 'x' }, { lista: ['tests/a.test.ts', 'src/b.test.tsx'] })
+  assert.deepEqual(wynik, { stan: 'OK', runner: 'vitest', szczegol: 'vitest: 2 plików testów, 0 z .claude/**', poprawka: '—' })
 })
 
-test('gotowa poprawka z wyniku wpisana jako config przechodzi sprawdzenie', () => {
-  const { poprawka } = sprawdz({ 'package.json': PAKIET_VITEST })
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': poprawka.replace(/^vitest\.config\.ts: /, '') }).stan, 'OK')
+test('exclude bez wartosci domyslnych: lista z node_modules → BRAK; poprawka wskazuje istniejacy config (vite.config bez nowego pliku)', () => {
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default {}' }, { lista: ['src/a.test.ts', 'node_modules/zod/x.test.js', 'pkg/node_modules/y/z.test.mjs'] })
+  assert.equal(wynik.stan, 'BRAK')
+  assert.match(wynik.szczegol, /^vitest zbiera 2 plików testów z node_modules/)
+  assert.equal(wynik.poprawka, "w vite.config.ts, w bloku test (dopisz blok, gdy go nie ma): exclude: [...configDefaults.exclude, '.claude/**'] (configDefaults z 'vitest/config')")
 })
 
-test('config bez exclude .claude z include od korzenia albo bez include → BRAK z poprawka exclude', () => {
-  for (const config of [
-    "export default defineConfig({ test: { include: ['**/*.test.ts'] } })",
-    "export default defineConfig({ test: { include: ['src/**/*.test.ts', '*.test.ts'] } })",
-    "export default defineConfig({ test: { environment: 'node' } })",
-    "export default defineConfig({ test: { coverage: { include: ['src/**'] } } })",
-    "export default defineConfig({ test: { include: ['./**/*.test.ts'] } })",
-    "export default defineConfig({ test: { include: ['.claude/**/*.test.mjs'] } })",
-  ]) {
-    const w = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.mts': config })
-    assert.equal(w.stan, 'BRAK', config)
-    assert.match(w.poprawka, /^w bloku test configu: exclude/, config)
-  }
+test('argumenty skryptu test ida do listy: -c, --dir, filtr; bez trybu run/watch i bez reszty po &&', () => {
+  const pakiet = JSON.stringify({ scripts: { test: 'vitest run -c vitest.ci.config.ts --dir src && node x.js' }, devDependencies: { vitest: '5' } })
+  assert.deepEqual(sprawdz({ 'package.json': pakiet }, { lista: [] }).argumenty, ['list', '--filesOnly', '--json', '-c', 'vitest.ci.config.ts', '--dir', 'src'])
+  assert.deepEqual(argumentySkryptu("cross-env X=1 npx vitest --run 'src/'", 'vitest'), ['src/'])
+  assert.deepEqual(argumentySkryptu('node_modules/.bin/jest --watchAll; echo', 'jest'), [])
+  assert.deepEqual(argumentySkryptu('tsc && echo', 'vitest'), [])
 })
 
-test('exclude z .claude chroni takze przy include od korzenia', () => {
-  const config = "export default defineConfig({ test: { include: ['**/*.test.ts'], exclude: [...configDefaults.exclude, '.claude/**'] } })"
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': config }).stan, 'OK')
+test('runner niezainstalowany: bez configu → BRAK (pewne); z configiem → UWAGA z poprawka; vite.config bez test = brak configu', () => {
+  const bez = sprawdz({ 'package.json': PAKIET_VITEST }).wynik
+  assert.equal(bez.stan, 'BRAK')
+  assert.match(bez.szczegol, /^vitest bez configu testów zbiera testy maszynerii z \.claude\/\*\* .*; brak node_modules\/\.bin\/vitest$/)
+  const z = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.mts': 'export default {}' }).wynik
+  assert.equal(z.stan, 'UWAGA')
+  assert.match(z.szczegol, /^nie sprawdzono listy testów \(brak node_modules\/\.bin\/vitest\); vitest\.config\.mts/)
+  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default { plugins: [] }' }).wynik.stan, 'BRAK')
+  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default { test: { include: ["src/**"] } }' }).wynik.stan, 'UWAGA')
 })
 
-test('vite.config bez bloku test = brak configu testow; z blokiem test i include src/ → OK', () => {
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default defineConfig({ plugins: [] })' }).stan, 'BRAK')
-  const zTestem = "export default defineConfig({ plugins: [], test: { include: ['src/**/*.test.tsx'] } })"
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': zTestem }).stan, 'OK')
+test('lista runnera pada (stara wersja, blad configu) → odczyt statyczny z bledem w szczegole', () => {
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST }, { lista: [], kod: 1 })
+  assert.equal(wynik.stan, 'BRAK')
+  assert.match(wynik.szczegol, /; vitest list: ostrzezenie vite$/)
 })
 
-test('vitest tylko w zaleznosciach (bez skryptu test) tez sprawdzany', () => {
-  assert.equal(sprawdz({ 'package.json': JSON.stringify({ devDependencies: { vitest: '3' } }) }).stan, 'BRAK')
+test('kolejnosc configu jak w vitest: vitest.config.ts przed .mts i przed vite.config', () => {
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.mts': 'x', 'vitest.config.ts': 'x', 'vite.config.ts': 'x' }, { lista: ['.claude/a.test.mjs'] })
+  assert.match(wynik.poprawka, /^w vitest\.config\.ts,/)
 })
 
-test('jest: bez configu → BRAK z testPathIgnorePatterns; ignore .claude albo roots <rootDir>/src → OK; roots <rootDir> → BRAK', () => {
-  const pakiet = (/** @type {object} */ jest) => JSON.stringify({ scripts: { test: 'jest' }, devDependencies: { jest: '30' }, ...jest })
-  const bez = sprawdz({ 'package.json': pakiet({}) })
-  assert.deepEqual([bez.stan, bez.runner], ['BRAK', 'jest'])
-  assert.match(bez.poprawka, /testPathIgnorePatterns: \['\/node_modules\/', '<rootDir>\/\.claude\/'\]/)
-  assert.equal(sprawdz({ 'package.json': pakiet({ jest: { testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/'] } }) }).stan, 'OK')
-  assert.equal(sprawdz({ 'package.json': pakiet({}), 'jest.config.js': "module.exports = { roots: ['<rootDir>/src'] }" }).stan, 'OK')
-  assert.equal(sprawdz({ 'package.json': pakiet({}), 'jest.config.js': "module.exports = { roots: ['<rootDir>'] }" }).stan, 'BRAK')
+test('jest: --listTests z .claude → BRAK z testPathIgnorePatterns; czysta lista → OK; bez runnera i configu → BRAK', () => {
+  const pakiet = JSON.stringify({ scripts: { test: 'jest --ci' }, devDependencies: { jest: '30' } })
+  const zly = sprawdz({ 'package.json': pakiet }, { runner: 'jest', lista: ['src/a.test.js', '.claude/b.test.mjs'] })
+  assert.deepEqual(zly.argumenty, ['--listTests', '--json', '--ci'])
+  assert.equal(zly.wynik.stan, 'BRAK')
+  assert.match(zly.wynik.poprawka, /testPathIgnorePatterns: \['\/node_modules\/', '<rootDir>\/\.claude\/'\]/)
+  assert.equal(sprawdz({ 'package.json': pakiet }, { runner: 'jest', lista: ['src/a.test.js'] }).wynik.stan, 'OK')
+  assert.equal(sprawdz({ 'package.json': pakiet }).wynik.stan, 'BRAK')
+  assert.equal(sprawdz({ 'package.json': pakiet, 'jest.config.js': 'module.exports = {}' }).wynik.stan, 'UWAGA')
 })
 
-test('projekt bez vitest i jest (np. node --test) → nie dotyczy; brak package.json → nie dotyczy', () => {
-  assert.equal(sprawdz({ 'package.json': JSON.stringify({ scripts: { test: "node --test '.claude/**/*.test.mjs'" } }) }).stan, 'nie dotyczy')
-  assert.equal(sprawdz({}).stan, 'nie dotyczy')
+test('wykrycie runnera: skrypt przed zaleznosciami; sama zaleznosc tez; brak obu → nie dotyczy', () => {
+  const runner = (/** @type {object} */ p) => sprawdz({ 'package.json': JSON.stringify(p) }).wynik.runner
+  assert.equal(runner({ scripts: { test: 'jest' }, devDependencies: { vitest: '5' } }), 'jest')
+  assert.equal(runner({ scripts: { test: 'vitest run' } }), 'vitest')
+  assert.equal(runner({ scripts: { test: 'npm run unit' }, devDependencies: { jest: '30' } }), 'jest')
+  assert.equal(runner({ devDependencies: { vitest: '5' } }), 'vitest')
+  assert.equal(sprawdz({ 'package.json': JSON.stringify({ scripts: { test: "node --test '.claude/**/*.test.mjs'" } }) }).wynik.stan, 'nie dotyczy')
+  assert.equal(sprawdz({}).wynik.stan, 'nie dotyczy')
+})
+
+test('package.json, ktory sie nie parsuje → UWAGA z przyczyna, bez wyjatku', () => {
+  const { wynik } = sprawdz({ 'package.json': '{ "scripts": ' })
+  assert.equal(wynik.stan, 'UWAGA')
+  assert.match(wynik.szczegol, /^package\.json nie parsuje się: /)
 })
