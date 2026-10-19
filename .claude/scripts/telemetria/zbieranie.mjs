@@ -34,7 +34,7 @@ const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 const mtime = (sciezka) => (existsSync(sciezka) ? statSync(sciezka).mtimeMs : 0)
 
 /**
- * Korzen repo (katalog z .git) zawierajacy sciezke. Sciezka moze juz nie istniec (katalog zadania po archiwizacji, scratchpad),
+ * Korzen repo (katalog z .git) zawierajacy sciezke. Sciezka bywa nieistniejaca (katalog zadania po archiwizacji, scratchpad),
  * wiec sprawdzamy kolejne katalogi nadrzedne tekstowo. vibersi etap 4: cwd pierwszego agenta runu = docs/active/<zadanie>
  * i rekordy dostaly projekt „etap-4-…”, a `raport.mjs --projekt vibersi` dawal 0 runow (P22 F1).
  * @param {string | null | undefined} sciezka
