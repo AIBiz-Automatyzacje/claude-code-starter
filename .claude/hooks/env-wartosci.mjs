@@ -7,6 +7,11 @@
 // Dozwolone: nazwy kluczy (`grep -oE '^[A-Z0-9_]+='`, `sed 's/=.*//'`, `cut -d= -f1`), liczniki i obecnosc (`grep -c`,
 // `grep -q`, `grep -l`), wynik przepuszczony przez taki filtr w potoku, wartosc wczytana do zmiennej bez wypisania
 // (`set -a; . .env.e2e`, `T=$(grep … | cut -d= -f2-)`, `--env-file`), pliki wzorcowe (.env.example, .env.e2e.example).
+// P22 E1: te same zasady dla komend, ktore wypisuja sekrety bez pliku .env*: `--show-sensitive` (CLI Coolify — runbook
+// live-10-demo kazal `--show-sensitive | grep`, haslo bazy trafilo na stdout agenta), `printenv` i gole `env` (wartosci
+// zmiennych srodowiska) oraz xtrace (`set -x`, `bash -x`: powloka wypisuje rozwiniete komendy z wartosciami zmiennych).
+// Dozwolone jak przy plikach: wynik do zmiennej (`U=$(coolify … --show-sensitive | jq -r .url)`), filtr bez wartosci
+// w potoku (`| jq -r 'keys[]'`, `| cut -d= -f1`), przekierowanie do pliku.
 // Kod wyjscia 2 = blokada z powodem na stderr (Claude Code przekazuje go modelowi); nieczytelne wejscie = przepuszczenie.
 
 import { readFileSync } from 'node:fs'
@@ -25,8 +30,9 @@ const WYPISUJACE = new Set(['echo', 'printf', 'print', 'cat', 'tee', 'logger'])
 const GREP = new Set(['grep', 'egrep', 'fgrep', 'rg', 'ag'])
 const OPERATORY = new Set(['|', '||', '&&', ';', '&', '\n', '(', ')'])
 
-/** @typedef {{ blokada: false } | { blokada: true, plik: string, komenda: string }} Ocena */
-/** @typedef {{ nazwa: string, argumenty: string[], plikiWe: string[], doPliku: boolean, tee: boolean }} Komenda */
+/** @typedef {'env-plik' | 'show-sensitive' | 'zmienne' | 'xtrace'} Rodzaj */
+/** @typedef {{ blokada: false } | { blokada: true, plik: string, komenda: string, rodzaj: Rodzaj }} Ocena */
+/** @typedef {{ nazwa: string, argumenty: string[], surowe: string[], plikiWe: string[], doPliku: boolean, tee: boolean }} Komenda */
 
 // Cel przekierowania, ktory trafia do transkryptu jak stdout (stderr, deskryptory, process substitution).
 const TERMINAL = /^(?:\/dev\/(?:stdout|stderr|tty|fd\/\d+)|\/proc\/self\/fd\/\d+|\()$/
@@ -148,8 +154,10 @@ function rozbierz(k) {
     argumenty.push(t)
   }
   const wlasciwe = bezOpakowan(argumenty)
-  const nazwa = (wlasciwe.shift() ?? '').replace(/^.*\//, '')
-  return { nazwa, argumenty: wlasciwe, plikiWe, doPliku, tee: nazwa === 'tee' && wlasciwe.some((a) => TERMINAL.test(a)) }
+  // Gole `env` (bez komendy po przypisaniach i opcjach) wypisuje cale srodowisko — to komenda, nie opakowanie.
+  const goleEnv = !wlasciwe.length && argumenty.some((a) => a.replace(/^.*\//, '') === 'env')
+  const nazwa = goleEnv ? 'env' : (wlasciwe.shift() ?? '').replace(/^.*\//, '')
+  return { nazwa, argumenty: wlasciwe, surowe: argumenty, plikiWe, doPliku, tee: nazwa === 'tee' && wlasciwe.some((a) => TERMINAL.test(a)) }
 }
 
 /**
@@ -229,7 +237,50 @@ function bezWartosci(k, zPliku) {
   if (k.nazwa === 'awk' || k.nazwa === 'gawk') {
     return separator === '=' && !flagi.has('-f') && /^(?:!?\/[^/]*\/)?\s*\{\s*print \$1;?\s*\}$/.test(pozycyjne[0] ?? '')
   }
+  // jq z sama lista kluczy albo licznikiem (wynik `--show-sensitive --format json` bez wartosci).
+  if (k.nazwa === 'jq') return !zPliku && pozycyjne.length === 1 && /^\s*\.?(?:\[\]\s*\|\s*)?(?:keys(?:_unsorted)?(?:\[\])?|length|type)\s*$/.test(pozycyjne[0] ?? '')
   return ['wc', 'true', 'test', '['].includes(k.nazwa) && !zPliku
+}
+
+// Nazwy zmiennych srodowiska bez sekretow (sciezki, jezyk, terminal) — `printenv PATH` przechodzi.
+const ZMIENNE_JAWNE = new Set(['PATH', 'HOME', 'USER', 'LOGNAME', 'SHELL', 'PWD', 'OLDPWD', 'TMPDIR', 'LANG', 'LC_ALL', 'LC_CTYPE',
+  'TERM', 'HOSTNAME', 'NODE_ENV', 'CLAUDE_PROJECT_DIR', 'CLAUDE_JOB_DIR', 'EDITOR', 'PAGER'])
+
+/** @param {Komenda} k @returns {Rodzaj | null} komenda sama wypisuje sekrety (bez pliku .env*) */
+function zrodloSekretow(k) {
+  // Flaga CLI (Coolify), nie tekst: w wzorcu grep, liscie petli for albo argumencie echo nic nie wypisuje.
+  const tekstowe = CZYTAJACE.has(k.nazwa) || WYPISUJACE.has(k.nazwa) || ['for', 'case', 'test', '['].includes(k.nazwa)
+  if (!tekstowe && k.argumenty.some((a) => a === '--show-sensitive' || a.startsWith('--show-sensitive='))) return 'show-sensitive'
+  if (k.nazwa === 'env') return 'zmienne'
+  if (k.nazwa === 'printenv') {
+    const nazwy = k.argumenty.filter((a) => !a.startsWith('-'))
+    return nazwy.length && nazwy.every((n) => ZMIENNE_JAWNE.has(n)) ? null : 'zmienne'
+  }
+  return null
+}
+
+/** @param {Komenda} k @returns {boolean} komenda wlacza xtrace (`set -x`, `set -eux`, `set -o xtrace`, `bash -x skrypt`) */
+function wlaczaXtrace(k) {
+  const krotkie = (/** @type {string} */ a) => /^-[A-Za-z]*x[A-Za-z]*$/.test(a)
+  if (k.nazwa === 'set') return k.argumenty.some((a, i) => krotkie(a) || (a === '-o' && k.argumenty[i + 1] === 'xtrace'))
+  if (['bash', 'sh', 'zsh'].includes(k.nazwa)) {
+    const doSkryptu = k.argumenty.slice(0, Math.max(0, k.argumenty.findIndex((a) => !a.startsWith('-') && !a.startsWith('+'))))
+    return (doSkryptu.length ? doSkryptu : k.argumenty.filter((a) => a.startsWith('-'))).some((a) => krotkie(a) && a !== '-c')
+  }
+  return false
+}
+
+/**
+ * Wynik komendy `i` z potoku trafia do transkryptu: bez filtra bez wartosci dalej w potoku i bez przekierowania do pliku;
+ * `tee` na terminal przed filtrem tez wypisuje.
+ * @param {Komenda[]} komendy @param {number} i @returns {boolean}
+ */
+function wypiszeWynik(komendy, i) {
+  const dalej = komendy.slice(i + 1)
+  const maska = dalej.findIndex((d) => bezWartosci(d, false))
+  const przedMaska = maska === -1 ? dalej : dalej.slice(0, maska)
+  if (przedMaska.some((d) => d.tee)) return true
+  return maska === -1 && ![komendy[i], ...dalej].some((d) => d?.doPliku)
 }
 
 /** @param {Komenda} k @returns {string[]} pliki czytane przez komende (argumenty pozycyjne poza wzorcem i skryptem, wejscie `<`) */
@@ -249,31 +300,52 @@ export function ocenKomende(komenda, wypisuje = true) {
   const { tokeny: t, reszta } = tokeny(zewnetrzna)
   // Tekst, ktorego tokenizer nie przeczytal (niedomkniety cudzyslow), z odwolaniem do .env = blokada zamiast cichego konca.
   const nieprzeczytany = /(?:^|[\s/'"])\.env/.exec(reszta)
-  if (wypisuje && nieprzeczytany) return { blokada: true, plik: '.env*', komenda: reszta.slice(0, 80) }
+  if (wypisuje && nieprzeczytany) return { blokada: true, plik: '.env*', komenda: reszta.slice(0, 80), rodzaj: 'env-plik' }
   for (const potok of potoki(t)) {
     const komendy = potok.map(rozbierz)
     for (const [i, k] of komendy.entries()) {
-      for (const n of k.argumenty.flatMap((a) => [...a.matchAll(/__PODSTAWIENIE_(\d+)__/g)].map((m) => Number(m[1])))) {
-        const wnetrze = ocenKomende(podstawienia[n] ?? '', WYPISUJACE.has(k.nazwa))
-        if (wnetrze.blokada) return wnetrze
+      // Podstawienie w przypisaniu (`T=$(…)`) nie wypisuje wyniku, ale jego xtrace idzie na stderr — oceniane bez wypisania.
+      for (const a of k.surowe) {
+        const wypisujeWynik = WYPISUJACE.has(k.nazwa) && k.argumenty.includes(a)
+        for (const m of a.matchAll(/__PODSTAWIENIE_(\d+)__/g)) {
+          const wnetrze = ocenKomende(podstawienia[Number(m[1])] ?? '', wypisujeWynik)
+          if (wnetrze.blokada) return wnetrze
+        }
       }
       if (['bash', 'sh', 'zsh', 'eval'].includes(k.nazwa)) {
         const kod = k.nazwa === 'eval' ? k.argumenty.join(' ') : (k.argumenty[k.argumenty.indexOf('-c') + 1] ?? '')
         const wnetrze = k.nazwa === 'eval' || k.argumenty.includes('-c') ? ocenKomende(kod, wypisuje) : null
         if (wnetrze?.blokada) return wnetrze
       }
-      if (!wypisuje || !CZYTAJACE.has(k.nazwa)) continue
+      const tekst = [k.nazwa, ...k.argumenty].join(' ')
+      if (wlaczaXtrace(k)) return { blokada: true, plik: k.nazwa, komenda: tekst, rodzaj: 'xtrace' }
+      if (!wypisuje) continue
+      const zrodlo = zrodloSekretow(k)
+      if (zrodlo && wypiszeWynik(komendy, i)) return { blokada: true, plik: zrodlo === 'show-sensitive' ? '--show-sensitive' : k.nazwa, komenda: tekst, rodzaj: zrodlo }
+      if (!CZYTAJACE.has(k.nazwa)) continue
       const plik = plikiKomendy(k).find(czyPlikEnv)
       if (!plik || bezWartosci(k, true)) continue
-      const dalej = komendy.slice(i + 1)
-      const maska = dalej.findIndex((d) => bezWartosci(d, false))
-      const przedMaska = maska === -1 ? dalej : dalej.slice(0, maska)
-      if (przedMaska.some((d) => d.tee)) return { blokada: true, plik, komenda: [k.nazwa, ...k.argumenty].join(' ') }
-      if (maska !== -1 || [k, ...dalej].some((d) => d.doPliku)) continue
-      return { blokada: true, plik, komenda: [k.nazwa, ...k.argumenty].join(' ') }
+      if (wypiszeWynik(komendy, i)) return { blokada: true, plik, komenda: tekst, rodzaj: 'env-plik' }
     }
   }
   return { blokada: false }
+}
+
+/** @param {Ocena & { blokada: true }} ocena @returns {string} powod blokady z bezpieczna alternatywa */
+export function powodOceny(ocena) {
+  if (ocena.rodzaj === 'show-sensitive') {
+    return 'Hook env-wartosci: --show-sensitive wypisałoby sekrety do transkryptu (zostają w nim na zawsze).\n'
+      + "Wartość do komendy bez wypisania: U=$(<komenda> --format json --show-sensitive | jq -r '.pole'). Nazwy pól: | jq -r 'keys[]'. Bez --show-sensitive CLI maskuje wartości."
+  }
+  if (ocena.rodzaj === 'zmienne') {
+    return `Hook env-wartosci: ${ocena.plik} wypisałoby wartości zmiennych środowiska (także sekrety) do transkryptu.\n`
+      + 'Nazwy: env | cut -d= -f1. Obecność: [ -n "$KLUCZ" ] && echo ustawiona. Wartość do komendy: używaj "$KLUCZ" bez wypisania.'
+  }
+  if (ocena.rodzaj === 'xtrace') {
+    return 'Hook env-wartosci: xtrace (set -x, bash -x) wypisuje rozwinięte komendy z wartościami zmiennych, także wczytanych z .env*.\n'
+      + 'Diagnostyka bez xtrace: echo z nazwą kroku i kodem wyjścia ($?), wartości zmiennych tylko jako obecność ([ -n "$KLUCZ" ]).'
+  }
+  return powodBlokady(ocena.plik)
 }
 
 /** @param {string} plik @returns {string} */
@@ -294,7 +366,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const ocena = ocenKomende(komenda)
   if (ocena.blokada) {
-    process.stderr.write(`${powodBlokady(ocena.plik)}\n`)
+    process.stderr.write(`${powodOceny(ocena)}\n`)
     process.exit(KOD_BLOKADY)
   }
 }

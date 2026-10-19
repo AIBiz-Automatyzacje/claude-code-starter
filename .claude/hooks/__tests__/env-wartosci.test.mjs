@@ -148,3 +148,78 @@ test('settings.json: hook PreToolUse dla Bash wskazuje env-wartosci.mjs', () => 
   const wpisy = ustawienia.hooks.PreToolUse.filter((/** @type {{ matcher: string }} */ w) => w.matcher === 'Bash')
   assert.ok(wpisy.some((/** @type {{ hooks: Array<{ command: string }> }} */ w) => w.hooks.some((h) => h.command === 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/env-wartosci.mjs"')))
 })
+
+// P22 E1: sekrety bez pliku .env*. live-10-demo etap a–d: runbook Coolify kazal `--show-sensitive | grep`, haslo bazy trafilo
+// na stdout agenta (P1 review fazy 6). Te same zasady co dla .env*: do zmiennej, filtr bez wartosci, plik — przechodza.
+const SEKRETY_BEZ_PLIKU = [
+  ["coolify database get tlid --format json --show-sensitive --context prod | grep -i password", 'show-sensitive'],
+  ['coolify app env list dquk --show-sensitive', 'show-sensitive'],
+  ["coolify app env list dquk --show-sensitive 2>&1 | grep -i 'SUPABASE_URL' | head -2", 'show-sensitive'],
+  ['coolify app env list dquk --show-sensitive=true | tee /dev/stderr | wc -l', 'show-sensitive'],
+  ['echo "$(coolify app env list dquk --show-sensitive)"', 'show-sensitive'],
+  ['printenv', 'zmienne'],
+  ['printenv SUPABASE_SECRET_KEY', 'zmienne'],
+  ['printenv PATH SUPABASE_SECRET_KEY', 'zmienne'],
+  ['env', 'zmienne'],
+  ['env -0', 'zmienne'],
+  ['FOO=1 env', 'zmienne'],
+  ['/usr/bin/env | grep -i token', 'zmienne'],
+  ['env | grep -i EXPO_TOKEN | cut -c1-20', 'zmienne'],
+  ['echo "$(printenv TOKEN)"', 'zmienne'],
+  ['set -x; psql "$SUPABASE_E2E_DB_URL" -c "select 1"', 'xtrace'],
+  ['set -euxo pipefail', 'xtrace'],
+  ['set -o xtrace', 'xtrace'],
+  ['bash -x skrypt.sh', 'xtrace'],
+  ["sh -xc 'echo $X'", 'xtrace'],
+  ['T=$(set -x; echo a)', 'xtrace'],
+]
+const SEKRETY_BEZ_WYPISANIA = [
+  "U=$(coolify database get tlid --format json --show-sensitive --context prod | jq -r '.internal_db_url')",
+  "coolify database get tlid --format json --show-sensitive --context prod | jq -r 'keys[]' | tr '\\n' ' '",
+  'coolify app env list dquk --show-sensitive --format json | jq length',
+  "coolify app env list dquk --show-sensitive 2>&1 | grep -c 'AA_MEMBERSHIP'",
+  "coolify app env list dquk --show-sensitive 2>&1 | grep -oE '^[A-Z_]+=' | sort",
+  'coolify app env list dquk --show-sensitive > /tmp/cf.txt 2>/dev/null',
+  'coolify app env list dquk --format json',
+  'printenv PATH',
+  'printenv HOME TMPDIR',
+  'env | cut -d= -f1',
+  'env | grep -c SUPABASE',
+  'env FOO=1 node skrypt.mjs',
+  "env -i HOME=$HOME bash -c 'echo ok'",
+  'set +x',
+  'set -e',
+  'set -euo pipefail',
+  'bash -e skrypt.sh',
+  "bash -c 'echo x'",
+  'grep -n -- --show-sensitive docs/deploy/coolify.md',
+  'for s in a --show-sensitive; do echo "$s"; done',
+  'echo "--show-sensitive"',
+  'git log -x',
+  'FOO=$(cat .env) echo hi',
+]
+
+test('E1: --show-sensitive, printenv, gole env i xtrace wypisujace sekrety sa zablokowane z rodzajem', () => {
+  for (const [komenda, rodzaj] of SEKRETY_BEZ_PLIKU) {
+    const ocena = ocenKomende(komenda)
+    assert.equal(ocena.blokada && ocena.rodzaj, rodzaj, komenda)
+  }
+})
+
+test('E1: wartosc do zmiennej, klucze jq, licznik, plik, jawne zmienne, env jako opakowanie, set bez x — przechodza', () => {
+  for (const komenda of SEKRETY_BEZ_WYPISANIA) assert.deepEqual(ocenKomende(komenda), { blokada: false }, komenda)
+})
+
+test('E1 CLI: powod blokady wedlug rodzaju z bezpieczna alternatywa', () => {
+  const pokaz = uruchom({ tool_name: 'Bash', tool_input: { command: 'coolify app env list x --show-sensitive | grep DB' } })
+  assert.equal(pokaz.status, 2)
+  assert.match(pokaz.stderr, /--show-sensitive wypisałoby sekrety do transkryptu/)
+  assert.match(pokaz.stderr, /U=\$\(<komenda> --format json --show-sensitive \| jq -r '\.pole'\)/)
+  const zmienne = uruchom({ tool_name: 'Bash', tool_input: { command: 'printenv' } })
+  assert.match(zmienne.stderr, /printenv wypisałoby wartości zmiennych środowiska/)
+  assert.match(zmienne.stderr, /env \| cut -d= -f1/)
+  const xtrace = uruchom({ tool_name: 'Bash', tool_input: { command: 'set -x' } })
+  assert.match(xtrace.stderr, /xtrace \(set -x, bash -x\) wypisuje rozwinięte komendy z wartościami zmiennych/)
+  const plik = uruchom({ tool_name: 'Bash', tool_input: { command: 'cat .env' } })
+  assert.match(plik.stderr, /wypisałaby wartości z \.env/)
+})
