@@ -2797,6 +2797,16 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     i `ekrany/*.md` planu, `visual-diff/*-figma.png` testera, wymiary w checkliście smoke'u). Do rozstrzygnięcia w brainstormie:
     zapis decyzji o rozjazdach z narzędzia do checklisty, ramka a nagłówki bezpieczeństwa (tylko tryb dev), logowanie w ramkach
     (ten sam origin), zrzuty i różnica pikseli jako etap 2.
+    **live-10-demo (2026-10-18/19, zadanie `rozbudowa-etapy-a-d`, sesja `ed495d03`):** run 1 `wf_2ec06905-1c8` STOP na starcie
+    (0,1 M), run 2 `wf_58ffd56f-b06` OK — 7 faz, 0 STOP, 23,5 M (build 6,8, fix 4,9 + kontrola 0,9 + poprawka 1,0, review ~5,7),
+    bez E2E (projekt CLI/API). `/dev-plan` w osobnej sesji (start 93k, 0,74 M).
+    (8) **Testy szablonu łapane przez vitest projektu → STOP na starcie.** `npm test` = `vitest run` bez configu zbiera 113 plików
+    `node:test` z `.claude/**` („No test suite found”), 113 failed. Operator dodał `vitest.config.ts` z `include: tests/` (`1bf65f8`).
+    vibersi nie trafił, bo miał config. Poprawka: doctor / `plan.mjs gotowosc` sprawdzają, że runner testów projektu nie zbiera
+    `.claude/**` (wynik przed autopilotem, nie w jego bootstrapie), instalacja podpowiada `exclude`.
+    (9) **Sekret z wyjścia CLI w runbooku** — review fazy 6 dał P1: runbook Coolify kazał `--show-sensitive | grep`, hasło bazy na
+    stdout agenta; compound zapisał regułę projektu. Hook `env-wartosci` pilnuje tylko plików `.env*` — rozważyć rozszerzenie o
+    polecenia wypisujące sekrety (`--show-sensitive`, `printenv`, `env` bez filtra) poza przypisaniem do zmiennej.
     (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
