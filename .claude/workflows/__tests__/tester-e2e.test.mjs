@@ -149,7 +149,13 @@ test('tester: zrzut z limitem 30 s; przerwany = close + probny zrzut about:blank
 
 // P22 A3: `cd <zadanie> && agent-browser screenshot x.png` zapisal x.png w korzeniu repo — demon agent-browser liczy sciezke
 // wzgledna od swojego katalogu. Plik roli kaze zapisywac zrzut pod sciezka bezwzgledna w katalogu zadania.
-test('plik roli: zrzut pod sciezka bezwzgledna w katalogu zadania (git rev-parse --show-toplevel), z powodem', () => {
-  assert.match(tester, /^- Zrzut zapisujesz w katalogu zadania pod ścieżką bezwzględną: scenariusz — `"\$\(git rev-parse --show-toplevel\)\/<folder>\/<flow>\.png"`/m)
+test('plik roli: zrzut pod sciezka bezwzgledna w katalogu zadania ($Z od git rev-parse --show-toplevel), z powodem; dowod wzgledny', () => {
+  assert.match(tester, /^- Zrzut zapisujesz w katalogu zadania pod ścieżką bezwzględną `\$Z` = `"\$\(git rev-parse --show-toplevel\)\/<folder>"`: scenariusz — `"\$Z\/<flow>\.png"`/m)
   assert.match(tester, /Demon agent-browser rozwiązuje ścieżkę względną od swojego katalogu startowego/)
+  assert.match(tester, /W `dowod` wpisujesz ścieżkę względną od korzenia repo/)
+  // Kazdy przyklad zrzutu w pliku roli idzie przez $Z — model kopiuje dosłowny przyklad.
+  assert.doesNotMatch(tester, /screenshot <folder>\//)
+  assert.doesNotMatch(tester, /zrzut jako `<folder>\//)
+  assert.match(tester, /screenshot "\$Z\/visual-diff\/probny\.png"/)
+  assert.match(tester, /zapisz zrzut jako `"\$Z\/visual-diff\/<ekran>-actual\.png"` \(`mkdir -p "\$Z\/visual-diff"`\)/)
 })

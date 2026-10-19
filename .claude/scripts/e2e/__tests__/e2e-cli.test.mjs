@@ -148,31 +148,70 @@ test('restart i advisors: kontrakt CLI — wymagane --zadanie i --faza, JSON z k
 })
 
 // P22 A3: zrzut testera ze sciezka wzgledna ladowal w korzeniu repo (demon agent-browser liczy ja od swojego katalogu).
-// stop --zadanie usuwa nieśledzone PNG spoza katalogu zadania; zrzuty zadania, sledzone PNG i ignorowane zostaja.
-test('stop --zadanie: usuwa niesledzone PNG spoza katalogu zadania; zrzuty zadania, sledzone i ignorowane zostaja', () => {
+// stop --zadanie i zrzuty --zadanie przenosza nieśledzone obrazy z korzenia repo do katalogu zadania; glebiej (asset
+// buildera w src/), sledzone, ignorowane i zrzuty zadania zostaja. Kolizja nazwy — sufiks, nic nie ginie.
+/** @param {string} k @param {string[]} a */
+const gitT = (k, a) => spawnSync('git', ['-C', k, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { encoding: 'utf8' })
+
+/** @returns {string} projekt w repo git z commitem startowym (logo.png sledzone, coverage/ ignorowane) */
+function projektGit() {
   const k = projekt()
-  const git = (/** @type {string[]} */ a) => spawnSync('git', ['-C', k, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { encoding: 'utf8' })
-  git(['init', '-q'])
+  gitT(k, ['init', '-q'])
   mkdirSync(join(k, 'public'), { recursive: true })
-  mkdirSync(join(k, 'docs/active/z/visual-diff'), { recursive: true })
   writeFileSync(join(k, 'public/logo.png'), 'png')
-  writeFileSync(join(k, '.gitignore'), 'coverage/\n')
-  git(['add', '-A'])
-  git(['commit', '-qm', 'start'])
-  const pliki = ['dodaj-projekt-walidacja.png', 'src/a/b.PNG', 'docs/active/z/flow.png', 'docs/active/z/visual-diff/e-actual.png', 'coverage/raport.png', 'docs/active/zz/obcy.png']
-  for (const p of pliki) {
+  writeFileSync(join(k, '.gitignore'), 'coverage/\nignorowany.png\n')
+  gitT(k, ['add', '-A'])
+  gitT(k, ['commit', '-qm', 'start'])
+  return k
+}
+
+test('stop --zadanie: obrazy z korzenia repo → katalog zadania (kolizja z sufiksem); src/, sledzone, ignorowane i zrzuty zadania zostaja', () => {
+  const k = projektGit()
+  const pliki = { 'dodaj-projekt-walidacja.png': 'korzen', 'Zrzut.PNG': 'x', 'b.jpeg': 'x', 'src/a/asset.png': 'x', 'docs/active/z/flow.png': 'zadanie', 'coverage/raport.png': 'x', 'ignorowany.png': 'x', 'docs/active/z/dodaj-projekt-walidacja.png': 'stary' }
+  for (const [p, t] of Object.entries(pliki)) {
     mkdirSync(dirname(join(k, p)), { recursive: true })
-    writeFileSync(join(k, p), 'png')
+    writeFileSync(join(k, p), t)
   }
   const w = uruchom(k, ['stop', '--zadanie', 'docs/active/z/'])
   assert.equal(w.kod, 0, w.stderr)
-  assert.deepEqual(w.json.zrzutyUsuniete.sort(), ['docs/active/zz/obcy.png', 'dodaj-projekt-walidacja.png', 'src/a/b.PNG'])
-  assert.match(w.json.detal, /^brak pliku PID .*; usuniete zrzuty spoza katalogu zadania: /)
-  assert.deepEqual(pliki.map((p) => existsSync(join(k, p))), [false, false, true, true, true, false])
-  assert.equal(existsSync(join(k, 'public/logo.png')), true)
+  assert.deepEqual(w.json.zrzutyPrzeniesione.sort(), [
+    'Zrzut.PNG -> docs/active/z/Zrzut.PNG', 'b.jpeg -> docs/active/z/b.jpeg', 'dodaj-projekt-walidacja.png -> docs/active/z/dodaj-projekt-walidacja-z-korzenia.png'])
+  assert.match(w.json.detal, /^brak pliku PID .*; zrzuty z korzenia repo przeniesione do katalogu zadania: /)
+  assert.equal(readFileSync(join(k, 'docs/active/z/dodaj-projekt-walidacja-z-korzenia.png'), 'utf8'), 'korzen')
+  assert.equal(readFileSync(join(k, 'docs/active/z/dodaj-projekt-walidacja.png'), 'utf8'), 'stary')
+  assert.deepEqual(['src/a/asset.png', 'coverage/raport.png', 'ignorowany.png', 'public/logo.png', 'docs/active/z/flow.png', 'dodaj-projekt-walidacja.png'].map((p) => existsSync(join(k, p))), [true, true, true, true, true, false])
   // Bez --zadanie stop nie dotyka plikow.
   writeFileSync(join(k, 'x.png'), 'png')
-  assert.equal(uruchom(k, ['stop']).json.zrzutyUsuniete, undefined)
+  assert.equal(uruchom(k, ['stop']).json.zrzutyPrzeniesione, undefined)
   assert.equal(existsSync(join(k, 'x.png')), true)
+  rmSync(k, { recursive: true })
+})
+
+test('zrzuty --zadanie: sciezka bezwzgledna i ./ dzialaja; katalog spoza docs/active, nieistniejacy albo . — blad, nic nie ruszone', () => {
+  const k = projektGit()
+  writeFileSync(join(k, 'a.png'), 'x')
+  for (const zle of ['.', 'docs/active/nie-ma', 'public', '../']) {
+    const w = uruchom(k, ['zrzuty', '--zadanie', zle])
+    assert.equal(w.kod, 1, zle)
+    assert.match(w.json.blad, /nie jest istniejącym katalogiem docs\/active\/<zadanie> w repo/)
+    assert.equal(existsSync(join(k, 'a.png')), true, zle)
+  }
+  const bezwzgledna = uruchom(k, ['zrzuty', '--zadanie', join(k, 'docs/active/z')])
+  assert.equal(bezwzgledna.kod, 0, bezwzgledna.stderr)
+  assert.deepEqual(bezwzgledna.json.zrzutyPrzeniesione, ['a.png -> docs/active/z/a.png'])
+  writeFileSync(join(k, 'c.png'), 'x')
+  assert.deepEqual(uruchom(k, ['zrzuty', '--zadanie', './docs/active/z']).json.zrzutyPrzeniesione, ['c.png -> docs/active/z/c.png'])
+  assert.equal(uruchom(k, ['zrzuty']).kod, 2)
+  rmSync(k, { recursive: true })
+})
+
+test('zrzuty: projekt poza repo git — blad bez wyjatku; stop z --zadanie i tak zatrzymuje serwer (kod 0)', () => {
+  const k = projekt()
+  writeFileSync(join(k, 'a.png'), 'x')
+  const w = uruchom(k, ['zrzuty', '--zadanie', 'docs/active/z'])
+  assert.deepEqual([w.kod, w.json.blad], [1, 'projekt poza repo git — zrzutów nie sprzątano'])
+  const stop = uruchom(k, ['stop', '--zadanie', 'docs/active/z'])
+  assert.equal(stop.kod, 0)
+  assert.match(stop.json.detal, /; projekt poza repo git — zrzutów nie sprzątano$/)
   rmSync(k, { recursive: true })
 })

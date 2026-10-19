@@ -135,7 +135,10 @@ test('szkielet: sekcje Launch / Doctor / Drive / Evidence / Cleanup / Mapa funkc
   assert.match(sekcja('Drive'), /`\/logowanie`/)
   assert.match(sekcja('Drive'), /E2E_TEST_EMAIL/)
   assert.match(sekcja('Drive'), /data-testid/)
-  assert.match(sekcja('Cleanup'), /`node \.claude\/scripts\/e2e\/e2e\.mjs stop`/)
+  assert.match(sekcja('Cleanup'), /`node \.claude\/scripts\/e2e\/e2e\.mjs stop --zadanie <folder zadania>`/)
+  // P22 A3: zrzut pod sciezka bezwzgledna — demon agent-browser liczy wzgledna od swojego katalogu (zrzut w korzeniu repo).
+  assert.match(sekcja('Evidence'), /`agent-browser screenshot "\$\(git rev-parse --show-toplevel\)\/<folder zadania>\/<flow>\.png"`/)
+  assert.match(sekcja('Evidence'), /demon agent-browser/)
   assert.match(sekcja('Mapa funkcji'), /mapa-funkcji\.md/)
   assert.match(sekcja('Mapa funkcji'), /2 wpis/)
   assert.match(s, /^Przejście na żywo: niewykonane$/m)

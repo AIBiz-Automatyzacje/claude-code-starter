@@ -602,8 +602,8 @@ Zwroc {status, detal, advisors}: "zsynchronizowano" (cos zaaplikowano), "aktualn
 }
 
 function e2eEnvDownPrompt(sciezka) {
-  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop --zadanie ${sciezka}\` (zatrzymuje wylacznie
-serwer uruchomiony przez start — plik PID; serwer zastany zostaje; usuwa niesledzone zrzuty PNG spoza katalogu zadania).
+  return `Sprzatanie srodowiska E2E dev-autopilot: \`node .claude/scripts/e2e/e2e.mjs stop --zadanie "${sciezka}"\` (zatrzymuje wylacznie
+serwer uruchomiony przez start — plik PID; serwer zastany zostaje; niesledzone zrzuty z korzenia repo przenosi do katalogu zadania).
 Zwroc {posprzatano, detal} z JSON-a skryptu.`
 }
 
@@ -1414,10 +1414,16 @@ async function zacommitujArtefaktyStop(faza) {
 // Commit WYLACZNIE katalogu zadania: przy STOP-ie (artefakty pipeline'u) i na starcie (zmiany operatora w katalogu
 // zadania, rek. 4 przegladu runow — wczesniej falszywy STOP "niezacommitowane zmiany" po edycji zadan).
 async function zacommitujKatalogZadania(temat, etykieta) {
+  // Przy STOP-ie zrzuty testera z korzenia repo (sciezka wzgledna liczona od katalogu demona agent-browser) idzie
+  // najpierw do katalogu zadania — inaczej zostaja poza commitem i bramka czystosci nastepnego runu na nich staje (P22 A3).
+  const zrzuty = etykieta === 'stop:commit-artefaktow'
+    ? `0. \`node .claude/scripts/e2e/e2e.mjs zrzuty --zadanie "${sciezka}"\` — skrypt przenosi niesledzone zrzuty z korzenia repo
+   do katalogu zadania; to jedyna zmiana plikow w tym kroku.\n`
+    : ''
   const polecenie = `Zacommituj tylko zmiany w katalogu zadania \`${sciezka}/\` — to pliki zadania i artefakty pipeline'u,
 a brudne drzewo zatrzymuje bootstrap kolejnego runu na bramce czystosci.
 
-1. \`git status --short\` — zapamietaj pelna liste.
+${zrzuty}1. \`git status --short\` — zapamietaj pelna liste.
 2. Z tej listy wyodrebnij sciezki SPOZA \`${sciezka}/\`. Nie dotykaj ich w zaden sposob: nie dodawaj,
    nie stashuj, nie cofaj. Zwroc je w brudnePozaZadaniem[] — ida do komunikatu dla operatora.
 3. Jesli w \`${sciezka}/\` sa jakiekolwiek zmiany (zmodyfikowane, nowe lub usuniete):
@@ -1918,9 +1924,8 @@ if (stan.zakonczenie.walidacja === 'pending') {
 // Teardown E2E dopiero PO walidacji i tylko na sciezce sukcesu — kazdy wczesniejszy STOP celowo zostawia serwer
 // zywy (operator debuguje na gotowym srodowisku; plik PID pozwala nastepnemu runowi przejac lub ubic proces).
 // Serwer uruchomiony przez start albo restart fazy sprzatamy takze po awarii w trakcie runu (srodowisko 'martwe').
-// Po fazie z przegladarka sprzatanie biegnie takze przy serwerze zastanym: zrzut testera ze sciezka wzgledna laduje
-// poza katalogiem zadania (P22 A3).
-if (serwerNasz || e2eBylaPrzegladarka) {
+// Przegladarka biegnie tylko przy serwerze pipeline'u (P19), wiec tu sprzatamy tez zrzuty z korzenia repo (P22 A3).
+if (serwerNasz) {
   const down = await agent(zeStanem(e2eEnvDownPrompt(sciezka)), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
   await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)
