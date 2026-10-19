@@ -4,6 +4,7 @@
 // Uzycie:
 //   node .claude/scripts/bramki/bramki.mjs --baza <commit sprzed fazy> [--projekt <katalog>]
 //   node .claude/scripts/bramki/bramki.mjs --dopisz-sume [--projekt <katalog>]   (nowe migracje do supabase/migrations.sum)
+//   node .claude/scripts/bramki/bramki.mjs --scal-sume [--projekt <katalog>]     (konflikt rebase'u w supabase/migrations.sum)
 //
 // Wynik (stdout, JSON): { <bramka>: { status, sekundy, trafienia: [{ plik, linia, regula, opis }], powod?, ostrzezenia?, zastane? } }
 //   status: ok | porazka (naprawa w domknieciu) | brak (narzedzie albo dane nieobecne) | blad (narzedzie padlo) | pominieta (nie dotyczy fazy)
@@ -21,7 +22,7 @@ import { zmianyFazy } from './diff.mjs'
 import { bramkaEslint } from './eslint.mjs'
 import { bramkaKnip } from './knip.mjs'
 import { bramkaNiezmiennoscMigracji } from './migracje.mjs'
-import { bramkaMigrationsSum, dopiszSume } from './migrations-sum.mjs'
+import { bramkaMigrationsSum, dopiszSume, scalSume } from './migrations-sum.mjs'
 import { wykryjNarzedzia } from './narzedzia.mjs'
 import { pakietyFazy, scalWyniki } from './pakiety.mjs'
 import { bramkaSizeLimit } from './size-limit.mjs'
@@ -100,15 +101,15 @@ async function bramkiKatalogu(projekt, baza, zmiany) {
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`bramki: ${komunikat}\nUzycie: bramki.mjs --baza <commit> [--projekt <katalog>] | --dopisz-sume [--projekt <katalog>]\n`)
+  process.stderr.write(`bramki: ${komunikat}\nUzycie: bramki.mjs --baza <commit> [--projekt <katalog>] | --dopisz-sume | --scal-sume [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
-/** @returns {{ baza: string | undefined, projekt: string, dopiszSume: boolean }} */
+/** @returns {{ baza: string | undefined, projekt: string, dopiszSume: boolean, scalSume: boolean }} */
 function argumenty() {
   try {
-    const { values } = parseArgs({ options: { baza: { type: 'string' }, projekt: { type: 'string' }, 'dopisz-sume': { type: 'boolean' } } })
-    return { baza: values.baza, projekt: values.projekt ?? process.cwd(), dopiszSume: values['dopisz-sume'] ?? false }
+    const { values } = parseArgs({ options: { baza: { type: 'string' }, projekt: { type: 'string' }, 'dopisz-sume': { type: 'boolean' }, 'scal-sume': { type: 'boolean' } } })
+    return { baza: values.baza, projekt: values.projekt ?? process.cwd(), dopiszSume: values['dopisz-sume'] ?? false, scalSume: values['scal-sume'] ?? false }
   } catch (e) {
     if (!(e instanceof TypeError)) throw e
     return zleArgumenty(e.message)
@@ -118,6 +119,8 @@ function argumenty() {
 const a = argumenty()
 if (a.dopiszSume) {
   process.stdout.write(`${JSON.stringify({ dopisane: dopiszSume(a.projekt) })}\n`)
+} else if (a.scalSume) {
+  process.stdout.write(`${JSON.stringify(scalSume(a.projekt))}\n`)
 } else {
   if (!a.baza) zleArgumenty('brak --baza (commit sprzed fazy)')
   /** @type {Record<string, WynikBramki>} */

@@ -36,7 +36,7 @@ function wytnij(kotwica, koniec) {
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const P = new Function(
   `${wytnij('// ── Decyzje dev-pr (P5)', '// ── Koniec decyzji dev-pr')}
-   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoIndeksWiedzy }`,
+   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
 )()
 
 // ── Guard uzasadnien odrzucenia ───────────────────────────────────────────
@@ -451,14 +451,14 @@ test('start --czesc 2: konflikt tylko w indeksie wiedzy → regeneracja (wiedza.
   const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
     { tabela: TABELA_ETAPU_3, galazZadania: true }, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 2, powod: null }, PRZYG_OK, START_OK])
   assert.equal(prompty.length, 5)
-  assert.match(prompty[2], /wylacznie w docs\/learned-patterns\.md/)
+  assert.match(prompty[2], /wylacznie w plikach generowanych: docs\/learned-patterns\.md \(indeks z docs\/solutions\/\)\nalbo supabase\/migrations\.sum/)
   assert.match(prompty[2], /`git checkout --theirs -- docs\/learned-patterns\.md`, `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
-  assert.match(prompty[2], /`GIT_EDITOR=true git rebase --continue`/)
-  assert.match(prompty[2], /Plik inny niz docs\/learned-patterns\.md na liscie = koniec: status KONFLIKT/)
+  assert.match(prompty[2], /^4\. `GIT_EDITOR=true git rebase --continue`; regeneracje \+ 1\./m)
+  assert.match(prompty[2], /Plik inny niz docs\/learned-patterns\.md i supabase\/migrations\.sum na liscie = koniec: status KONFLIKT/)
   assert.match(prompty[2], /^Powtarzaj, dopoki rebase trwa/m)
   assert.match(prompty[2], /Nie zmieniasz innych plikow i nie pushujesz/)
   assert.match(prompty[2], /o zapisie mowi pole `zapisany` JSON-a, nie kod wyjscia/)
-  assert.match(prompty[2], /^3\. Polecenie git z kroku 2 z kodem rozny od 0 bez nowego konfliktu = status STOP/m)
+  assert.match(prompty[2], /^5\. Polecenie git z krokow 2–4 z kodem rozny od 0 bez nowego konfliktu = status STOP/m)
   assert.match(prompty[1], /Rebase w toku z konfliktami [\s\S]*? = status KONFLIKT z ta lista/)
   assert.equal(prompty[3], prompty[1], 'przygotowanie od nowa tym samym poleceniem')
   assert.deepEqual([wynik.status, wynik.czesc, wynik.prNumer], ['OK', 2, 4])
@@ -472,7 +472,7 @@ test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracj
   assert.deepEqual([potem.wynik.status, potem.wynik.konflikty, potem.prompty.length], ['KONFLIKT', ['e2e/smoke.sh'], 3])
   assert.match(potem.wynik.powod, /konflikt rebase'u w e2e\/smoke\.sh/)
   const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, bramkaIndeksu: false, powod: 'git add: kod 128' }])
-  assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja indeksu wiedzy: git add: kod 128'])
+  assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja plikow generowanych: git add: kod 128'])
   assert.match(stop.wynik.naprawa, /^Rebase w toku\. `git rebase --abort` wraca stan sprzed części; .*potem \/dev-pr --czesc 2\.$/)
   // STOP przygotowania z konfliktem indeksu na liscie (np. brudne drzewo) — bez regeneracji.
   const przygStop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...KONFLIKT_INDEKSU, status: 'STOP', powod: 'brudne drzewo' }])
@@ -482,7 +482,32 @@ test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracj
   const petla = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU,
     { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU])
   assert.deepEqual([petla.wynik.status, petla.prompty.length], ['KONFLIKT', 6])
-  assert.equal(P.tylkoIndeksWiedzy([]), false)
+  assert.equal(P.tylkoPlikiGenerowane([]), false)
+})
+
+// P23 (pilot P22 B3): po przeliczeniu indeksu rebase czesci 2 vibersi stanal na konflikcie w supabase/migrations.sum — obie
+// strony dopisaly sumy nowych migracji. Suma jest scalana skryptem (wpisy obu stron), wynik `scalony: false` idzie do operatora.
+const KONFLIKT_SUMY = { ...KONFLIKT_INDEKSU, konflikty: ['supabase/migrations.sum'], powod: 'CONFLICT (content): Merge conflict in supabase/migrations.sum' }
+
+test('start --czesc 2: konflikt w sumie migracji (sam albo z indeksem) → bramki.mjs --scal-sume, rebase --continue, przygotowanie od nowa', async () => {
+  const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
+  for (const konflikty of [['supabase/migrations.sum'], ['docs/learned-patterns.md', 'supabase/migrations.sum']]) {
+    const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
+      tab, { ...KONFLIKT_SUMY, konflikty }, { status: 'OK', konflikty: [], regeneracje: 1, bramkaIndeksu: false, powod: null }, PRZYG_OK, START_OK])
+    assert.equal(prompty.length, 5)
+    assert.match(prompty[2], /^2\. supabase\/migrations\.sum na liscie: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume`/m)
+    assert.match(prompty[2], /odczytaj pole `scalony`\n {3}JSON-a \(nie kod wyjscia\)\. `scalony: false` = koniec: status KONFLIKT[\s\S]*?bez `git add`[\s\S]*?Dopiero `scalony: true` = `git add supabase\/migrations\.sum`\./)
+    assert.deepEqual([wynik.status, wynik.prNumer], ['OK', 4])
+  }
+})
+
+test('start --czesc 2: suma nie do scalenia = KONFLIKT do operatora po jednej probie (bez petli na tym samym pliku)', async () => {
+  const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
+  const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
+    tab, KONFLIKT_SUMY, { status: 'KONFLIKT', konflikty: ['supabase/migrations.sum'], regeneracje: 0, bramkaIndeksu: false, powod: 'ta sama migracja z inna suma po obu stronach: x.sql' }])
+  assert.deepEqual([wynik.status, wynik.konflikty, prompty.length], ['KONFLIKT', ['supabase/migrations.sum'], 3])
+  assert.equal(wynik.powod, 'ta sama migracja z inna suma po obu stronach: x.sql')
+  assert.deepEqual([P.tylkoPlikiGenerowane(['supabase/migrations.sum', 'e2e/smoke.sh']), P.tylkoPlikiGenerowane(['supabase/migrations.sum'])], [false, true])
 })
 
 // P22 B1, B2, B4: tekst skilla /dev-pr — zgoda operatora przed etapem start (push + PR), krotkie review commitow po archiwum
@@ -511,6 +536,8 @@ test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krot
   assert.match(krok1, /P1\/P2 → `AskUserQuestion`: „Naprawiam przed PR”/)
   assert.match(skillPr, /Pytanie o review zmian po archiwizacji \(krok 1\) pada przed startem także w tym trybie/)
   assert.match(krok1, /Konflikt rebase'u wyłącznie w `docs\/learned-patterns\.md` \(indeks generowany z `docs\/solutions\/`\) workflow rozwiązuje sam/)
+  assert.match(krok1, /Tak samo `supabase\/migrations\.sum`: workflow scala wpisy obu stron \(`bramki\.mjs --scal-sume`\)/)
+  assert.match(krok1, /Gdy jest wśród\nnich `supabase\/migrations\.sum`: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume` przed `git add`/)
 })
 
 test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>” bez startu kolejnej', () => {
