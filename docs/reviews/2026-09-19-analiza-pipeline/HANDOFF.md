@@ -2807,6 +2807,22 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (9) **Sekret z wyjścia CLI w runbooku** — review fazy 6 dał P1: runbook Coolify kazał `--show-sensitive | grep`, hasło bazy na
     stdout agenta; compound zapisał regułę projektu. Hook `env-wartosci` pilnuje tylko plików `.env*` — rozważyć rozszerzenie o
     polecenia wypisujące sekrety (`--show-sensitive`, `printenv`, `env` bez filtra) poza przypisaniem do zmiennej.
+    **vibersi etap 4 — PR (2026-10-19, sesja `62215988`, smoke + `/dev-pr` w jednej sesji): oba PR zmergowane.** PR #5 (fazy 1–3,
+    141 plików) i #6 (fazy 4–6, 197 plików, bot przetworzył 127, 68 odfiltrowanych) — po 1 turze napraw, bot 3 P1/P2 z 6 wątków
+    (1,5 na 100 plików, jak etap 3); compound po każdej części, `claude-md` na końcu. Runy `dev-pr-wf` 1,42 M (16 runów), sesja główna
+    4,49 M (185 tur, ctx do 312k). Poprawki known-issues + P3 + reguła `private` zrobione przed PR (migracje `20261018120000`…`170000`).
+    (10) **`/dev-pr` wystartował bez pytania** — sesja uznała „Po smoke'u: /dev-pr --czesc 1” z wklejonej instrukcji i „reszta ok”
+    za zgodę na push i utworzenie PR; operator pytał „Czemu uruchomiłeś pull request?”. Poprawka: skill `/dev-pr` przed etapem
+    `start` (push + PR) zawsze `AskUserQuestion`, chyba że operator w bieżącej wiadomości wprost każe wysłać PR.
+    (11) **Hook Stop po przełączeniu gałęzi przez `/dev-pr start`** — 56 × TS6053 („File … not found”) dla plików z gałęzi zadania,
+    których nie ma na gałęzi części 1; fałszywy alarm z listy plików sprzed checkoutu (łączy się z poz. 6: cache hooka).
+    (12) **Konflikt rebase'u części 2 na `docs/learned-patterns.md`** — compound części 1 zmienił indeks wiedzy na main, część 2 też;
+    `start` dał KONFLIKT (11/49 commitów), drugi start po regeneracji indeksu (`83e00d4`) OK. Poprawka: indeks jest generowany —
+    `start` przy konflikcie tylko w nim regeneruje go zamiast zatrzymywać się.
+    (13) **Smoke i PR w jednej sesji** — sesja główna 3× droższa niż wszystkie runy PR (4,49 vs 1,42 M). Do rozważenia: koniec smoke'u
+    = linia „/clear, potem /dev-pr --czesc 1” (jak B3 dla /dev-plan) i `/clear` między częściami PR.
+    (14) **Zmiany ze smoke'u omijają review pipeline'u** — w sesji smoke'u powstała nowa naklejka odznaki (`71a1652` i in.), część 2
+    miała 93 pliki `src`; sprawdził je tylko bot PR. Do decyzji: smoke ze zmianą funkcji → mini-review przed PR.
     (5) Tester E2E zostawił zrzut `dodaj-projekt-walidacja.png` w katalogu głównym repo (nieśledzony; kopia w archiwum).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
