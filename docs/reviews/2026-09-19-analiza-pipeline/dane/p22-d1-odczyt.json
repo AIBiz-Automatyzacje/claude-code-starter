@@ -5,20 +5,20 @@
  "prog_decyzji": 0.2,
  "uwaga": "linie plikow cat z projektu dzis (wc -l), nie z chwili runu; Read: linie wyniku",
  "role_b4": {
-  "wyniki_zn": 4481386,
-  "bez_zakresu_200_zn": 573138,
-  "udzial": 0.1279,
-  "read_bez_zakresu_zn": 1544252,
+  "wyniki_zn": 3971159,
+  "bez_zakresu_200_zn": 444009,
+  "udzial": 0.1118,
+  "read_bez_zakresu_zn": 1437293,
   "cat_zn": 148757,
   "cat_bez_pliku_zn": 0
  },
  "wszystkie_role": {
   "wyniki_zn": 12320380,
-  "bez_zakresu_200_zn": 3834328,
-  "udzial": 0.3112,
-  "read_bez_zakresu_zn": 4672704,
+  "bez_zakresu_200_zn": 3846018,
+  "udzial": 0.3122,
+  "read_bez_zakresu_zn": 4690297,
   "cat_zn": 910944,
-  "cat_bez_pliku_zn": 130229
+  "cat_bez_pliku_zn": 82748
  },
  "per_rola": {
   "bootstrap": {
@@ -31,7 +31,7 @@
    "cat_bez_pliku_zn": 0,
    "odczytow_200": 0
   },
-  "build": {
+  "build*": {
    "agentow": 14,
    "wyniki_zn": 2236599,
    "read_bez_zakresu_zn": 1010977,
@@ -102,14 +102,24 @@
    "odczytow_200": 1
   },
   "fix": {
-   "agentow": 18,
-   "wyniki_zn": 2244787,
-   "read_bez_zakresu_zn": 533275,
-   "read_bez_zakresu_200_zn": 231949,
-   "cat_zn": 96734,
-   "cat_200_zn": 52614,
+   "agentow": 6,
+   "wyniki_zn": 510227,
+   "read_bez_zakresu_zn": 124552,
+   "read_bez_zakresu_200_zn": 124552,
+   "cat_zn": 0,
+   "cat_200_zn": 0,
    "cat_bez_pliku_zn": 0,
-   "odczytow_200": 17
+   "odczytow_200": 3
+  },
+  "fix*": {
+   "agentow": 12,
+   "wyniki_zn": 1734560,
+   "read_bez_zakresu_zn": 426316,
+   "read_bez_zakresu_200_zn": 124990,
+   "cat_zn": 96734,
+   "cat_200_zn": 30444,
+   "cat_bez_pliku_zn": 0,
+   "odczytow_200": 13
   },
   "ogrod": {
    "agentow": 2,
@@ -197,9 +207,9 @@
    "read_bez_zakresu_zn": 13529,
    "read_bez_zakresu_200_zn": 13529,
    "cat_zn": 46836,
-   "cat_200_zn": 0,
-   "cat_bez_pliku_zn": 46836,
-   "odczytow_200": 1
+   "cat_200_zn": 16267,
+   "cat_bez_pliku_zn": 20910,
+   "odczytow_200": 2
   },
   "walidacja-koncowa": {
    "agentow": 1,
@@ -208,7 +218,7 @@
    "read_bez_zakresu_200_zn": 0,
    "cat_zn": 21555,
    "cat_200_zn": 0,
-   "cat_bez_pliku_zn": 21555,
+   "cat_bez_pliku_zn": 0,
    "odczytow_200": 0
   },
   "warmup": {

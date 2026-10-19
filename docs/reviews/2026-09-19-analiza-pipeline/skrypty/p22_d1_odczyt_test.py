@@ -33,15 +33,15 @@ class Pomiar(unittest.TestCase):
             ]
             with open(os.path.join(run, 'agent-a.jsonl'), 'w') as f:
                 f.write(wpis(uzycia) + wpis(wyniki) + wpis(wyniki[:1]))  # powtorzony wpis tool_result liczony raz
-            json.dump({'description': 'build:IU-1'}, open(os.path.join(run, 'agent-a.meta.json'), 'w'))
+            json.dump({'description': 'build:IU-1', 'agentType': 'feature-builder-ui'}, open(os.path.join(run, 'agent-a.meta.json'), 'w'))
             wyj = os.path.join(k, 'wynik')
             subprocess.run([sys.executable, os.path.join(TU, 'p22_d1_odczyt.py'), run, projekt, '--wyj', wyj], check=True, capture_output=True)
             w = json.load(open(wyj + '.json'))
-            rola = w['per_rola']['build']
+            rola = w['per_rola']['build*']
             r1, r2, r3 = (len(numerowane(n)) for n in (300, 50, 100))
             self.assertEqual(rola['wyniki_zn'], r1 + r2 + r3 + 400 + 100)
             self.assertEqual(rola['read_bez_zakresu_200_zn'], r1)
-            self.assertEqual(rola['cat_200_zn'], 300)  # 400 zn * 300 / (300 + 100) linii
+            self.assertEqual(rola['cat_200_zn'], 300)  # 400 zn * 300 / (300 + 100) linii (cat kilku plikow — linie z projektu)
             self.assertEqual(w['role_b4']['bez_zakresu_200_zn'], r1 + 300)
 
 

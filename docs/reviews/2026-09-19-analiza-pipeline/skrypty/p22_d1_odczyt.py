@@ -13,11 +13,14 @@ Klasyfikacja wyniku narzędzia (tool_result połączony z tool_use po id):
   pliku z projektu (`wc -l` dziś — pliki mogły się zmienić od runu; przybliżenie opisane w wyniku), znaki wyniku dzielone między
   pliki proporcjonalnie do ich linii;
 - reszta (Read z zakresem, sed -n, grep, testy, git) — „inne”.
-Rola = pierwszy człon etykiety agenta z `agent-*.meta.json` (description), np. build, fix, review.
+Rola = pierwszy człon etykiety agenta z `agent-*.meta.json` (description), np. build, fix, review. Role B4 wg klasy
+(agentType): buildery (`feature-builder-*`) i `klasa-naprawiacz` (fix, fix:poprawka) — kontrola fixa (klasa-sceptyk) poza B4.
+Cat jednego pliku: linie z wyniku (stan z chwili runu); cat kilku plików: linie z projektu dziś (przybliżenie).
+Read z samym `limit` >= 200 linii wyniku liczony jak bez zakresu (zakres nie ogranicza odczytu).
 """
 import glob, json, os, re, shlex, sys
 
-ROLE_B4 = {'build', 'fix'}
+KLASY_B4 = ('feature-builder-', 'klasa-naprawiacz')
 PROG_LINII = 200
 
 
@@ -70,12 +73,17 @@ def main():
     wyj = sys.argv[sys.argv.index('--wyj') + 1] if '--wyj' in sys.argv else None
     pamiec = {}
     role = {}
+    role_b4 = set()
     najwieksze = []
     for meta in sorted(glob.glob(os.path.join(run, 'agent-*.meta.json'))):
-        etykieta = json.load(open(meta)).get('description', '?')
+        dane_meta = json.load(open(meta))
+        etykieta = dane_meta.get('description', '?')
         rola = etykieta.split(':')[0]
+        if str(dane_meta.get('agentType', '')).startswith(KLASY_B4):
+            role_b4.add(rola)
+            rola = f'{rola}*'
         uzycia = {}
-        # Transkrypt agenta powtarza wpisy (ten sam tool_result w kilku wierszach) — kazdy wynik liczony raz (§7: message.id).
+        # Transkrypt agenta powtarza wpisy (ten sam tool_result w kilku wierszach) — kazdy wynik liczony raz po tool_use_id.
         policzone = set()
         r = role.setdefault(rola, {'agentow': 0, 'wyniki_zn': 0, 'read_bez_zakresu_zn': 0, 'read_bez_zakresu_200_zn': 0,
                                    'cat_zn': 0, 'cat_200_zn': 0, 'cat_bez_pliku_zn': 0, 'odczytow_200': 0})
@@ -99,9 +107,10 @@ def main():
                 zn = len(tekst(b))
                 r['wyniki_zn'] += zn
                 nazwa, wej = uzycia.get(b.get('tool_use_id'), (None, {}))
-                if nazwa == 'Read' and wej.get('offset') is None and wej.get('limit') is None:
+                n_wyniku = len(re.findall(r'^\s*\d+\t', tekst(b), re.M))
+                if nazwa == 'Read' and wej.get('offset') is None and (wej.get('limit') is None or n_wyniku >= PROG_LINII):
                     r['read_bez_zakresu_zn'] += zn
-                    n = len(re.findall(r'^\s*\d+\t', tekst(b), re.M))
+                    n = n_wyniku
                     if n >= PROG_LINII:
                         r['read_bez_zakresu_200_zn'] += zn
                         r['odczytow_200'] += 1
@@ -109,7 +118,7 @@ def main():
                 elif nazwa == 'Bash' and (pliki := pliki_cat(wej.get('command', ''))):
                     r['cat_zn'] += zn
                     baza = cwd_z_komendy(wej.get('command', ''), projekt)
-                    linie = [linie_pliku(baza, p, pamiec) for p in pliki]
+                    linie = [tekst(b).count('\n') + 1] if len(pliki) == 1 else [linie_pliku(baza, p, pamiec) for p in pliki]
                     if any(l is None for l in linie):
                         r['cat_bez_pliku_zn'] += zn
                         continue
@@ -130,7 +139,7 @@ def main():
     wynik = {
         'run': os.path.basename(run.rstrip('/')), 'projekt': projekt, 'prog_linii': PROG_LINII, 'prog_decyzji': 0.2,
         'uwaga': 'linie plikow cat z projektu dzis (wc -l), nie z chwili runu; Read: linie wyniku',
-        'role_b4': udzial(ROLE_B4), 'wszystkie_role': udzial(None),
+        'role_b4': udzial({f'{r}*' for r in role_b4}), 'wszystkie_role': udzial(None),
         'per_rola': {k: {**v, 'cat_200_zn': round(v['cat_200_zn'])} for k, v in sorted(role.items())},
         'najwieksze': [dict(zip(['zn', 'agent', 'narzedzie', 'plik', 'linie'], x)) for x in sorted(najwieksze, reverse=True)[:15]],
     }
@@ -141,7 +150,7 @@ def main():
         duze = v['read_bez_zakresu_200_zn'] + v['cat_200_zn']
         wiersze.append(f"{k:<12}{v['agentow']:>8}{v['wyniki_zn']:>14,}{v['read_bez_zakresu_200_zn']:>22,}{round(v['cat_200_zn']):>12,}"
                        f"{(duze / v['wyniki_zn'] if v['wyniki_zn'] else 0):>9.1%}")
-    wiersze += ['', f"role B4 (build, fix): {b4['bez_zakresu_200_zn']:,} z {b4['wyniki_zn']:,} zn = {b4['udzial']:.1%}"
+    wiersze += ['', f"role B4 (* — buildery i klasa-naprawiacz): {b4['bez_zakresu_200_zn']:,} z {b4['wyniki_zn']:,} zn = {b4['udzial']:.1%}"
                 f" → {'POPRAWKA polecenia (udział > 20%)' if b4['udzial'] > 0.2 else 'bez zmiany polecenia (udział ≤ 20%)'}",
                 f"wszystkie role: {wynik['wszystkie_role']['udzial']:.1%}", '', 'Największe odczyty bez zakresu (≥ 200 linii):']
     wiersze += [f"  {x['zn']:>8,} zn  {x['agent']:<22} {x['narzedzie']:<5} {x['linie']:>5} l.  {x['plik']}" for x in wynik['najwieksze']]

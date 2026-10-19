@@ -2,9 +2,10 @@ P22 D1 — run wf_d398d371-5b3 (/Users/kacper_trzepiecinski/Documents/Kodowanie/
 
 rola         agentów   wyniki [zn]   Read bez zakr. ≥200    cat ≥200   udział
 review            42     5,662,594             2,798,462     352,789    55.7%
-fix               18     2,244,787               231,949      52,614    12.7%
-build             14     2,236,599               280,298       8,277    12.9%
-verify-batch      21       611,656                13,529           0     2.2%
+build*            14     2,236,599               280,298       8,277    12.9%
+fix*              12     1,734,560               124,990      30,444     9.0%
+verify-batch      21       611,656                13,529      16,267     4.9%
+fix                6       510,227               124,552           0    24.4%
 verify            15       397,676                38,238           0     9.6%
 domkniecie         6       296,626                     0           0     0.0%
 planner            6       292,101                     0           0     0.0%
@@ -22,8 +23,8 @@ warmup             1         3,016                     0           0     0.0%
 start              1         1,518                     0           0     0.0%
 dedup              6           234                     0           0     0.0%
 
-role B4 (build, fix): 573,138 z 4,481,386 zn = 12.8% → bez zmiany polecenia (udział ≤ 20%)
-wszystkie role: 31.1%
+role B4 (* — buildery i klasa-naprawiacz): 444,009 z 3,971,159 zn = 11.2% → bez zmiany polecenia (udział ≤ 20%)
+wszystkie role: 31.2%
 
 Największe odczyty bez zakresu (≥ 200 linii):
    130,088 zn  review:security        Read   2291 l.  /tmp/review-diff-docs-active-etap-4-dodawanie-i-moderacja-faza-1.diff

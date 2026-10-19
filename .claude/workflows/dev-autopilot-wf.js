@@ -684,10 +684,13 @@ KLASYFIKUJ kazdy finding przed naprawa:
   przenies flow do recznego sprawdzenia: \`node .claude/scripts/e2e/e2e.mjs manual --zadanie ${sciezka} --faza ${numerFazy} --flow <identyfikator> --przyczyna <srodowisko|limit-zewnetrzny|harness> --powod "<co naprawiles i dlaczego recznie>"\`
   (identyfikator = pierwszy backtick linii "checkbox:" findingu). Odznacz pozycje w "Do poprawy"; nie licz jej w nierozwiazaneP2.
 
-FINDING WIZUALNY (rozjazd z makieta; w opisie visual-diff/<ekran>-actual.png albo <ekran>-figma.png): wyglad docelowy bierzesz
-z opisu ekranu w planie — \`ls docs/plans/*-figma/ekrany/<ekran>.md\` (wymiary, odstepy, kolory, tokeny, teksty); bez pliku ekranu —
-sekcja ekranu w \`docs/plans/*-figma/SPEC.md\` (\`grep -n '<ekran>'\`, potem \`sed -n\`). PNG makiety i zrzutu podajesz w raporcie
-tylko jako sciezke i nie otwierasz ich narzedziem Read: obraz zostaje w kontekscie i kosztuje dziesiatki tysiecy tokenow w kazdej turze.
+FINDING WIZUALNY (rozjazd z makieta: opis wskazuje ekran makiety, np. „z makiety <ekran>” albo visual-diff/<ekran>-figma.png):
+wyglad docelowy bierzesz z opisu ekranu w planie tego zadania. Katalog makiet = katalog pliku z linii SPEC.md planu zadania
+(\`grep -m1 'SPEC.md' ${sciezka}/*-plan.md\`); opis ekranu = \`<katalog>/ekrany/<ekran>.md\` (wymiary, odstepy, kolory, tokeny,
+teksty), a bez tego pliku — sekcja ekranu w \`<katalog>/SPEC.md\` (\`grep -n '<ekran>'\`, potem \`sed -n\`). PNG makiety i zrzutu
+podajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read: obraz zostaje w kontekscie kazdej kolejnej tury
+(rzad 1–3 tys. tokenow na obraz), a opis ekranu ma te same wymiary i teksty. Poprawke sprawdzasz w aplikacji bez zrzutu:
+\`agent-browser snapshot -i\` (elementy i teksty) i \`agent-browser get box <ref>\` / \`get styles <ref>\` (wymiary, kolory).
 
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;

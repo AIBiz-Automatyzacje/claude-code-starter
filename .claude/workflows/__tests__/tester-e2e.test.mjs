@@ -159,3 +159,8 @@ test('plik roli: zrzut pod sciezka bezwzgledna w katalogu zadania ($Z od git rev
   assert.match(tester, /screenshot "\$Z\/visual-diff\/probny\.png"/)
   assert.match(tester, /zapisz zrzut jako `"\$Z\/visual-diff\/<ekran>-actual\.png"` \(`mkdir -p "\$Z\/visual-diff"`\)/)
 })
+
+// P22 D2: finding P2 E2E o rozjezdzie z makieta niesie nazwe ekranu — fix szuka po niej opisu ekranu w planie zamiast PNG.
+test('plik roli: finding P2 E2E rozjazdu z makieta ma nazwe ekranu w pierwszym zdaniu („z makiety <ekran>”)', () => {
+  assert.match(tester, /finding P2 typ E2E z nazwą ekranu w pierwszym zdaniu opisu \(„z makiety <ekran>”\), bo fix szuka po niej opisu ekranu w planie/)
+})

@@ -290,13 +290,20 @@ test('instrukcje bez wykrywania awarii po sygnaturze tekstu; watcher (zywy proce
   assert.match(tester, /`"zyje": true`, gdy watcher \(np\. nodemon\)/)
 })
 
-// P22 D2: vibersi etap 4 — fix fazy 6 wczytal Readem 2 PNG makiet (visual-diff/admin-*-figma*.png, 378k + 93k zn jako obrazy).
-// Polecenie fixa kieruje finding wizualny do opisu ekranu w planie (ekrany/<ekran>.md, SPEC.md), PNG tylko jako sciezka.
-test('fix: finding wizualny — wyglad z ekrany/<ekran>.md (bez pliku: sekcja SPEC.md), PNG tylko sciezka, bez Read obrazu', () => {
-  const p = fixPrompt(ZADANIE, 6, [], 'gotowe')
-  assert.match(p, /FINDING WIZUALNY \(rozjazd z makieta; w opisie visual-diff\/<ekran>-actual\.png albo <ekran>-figma\.png\)/)
-  assert.match(p, /`ls docs\/plans\/\*-figma\/ekrany\/<ekran>\.md`/)
-  assert.match(p, /bez pliku ekranu —\nsekcja ekranu w `docs\/plans\/\*-figma\/SPEC\.md`/)
-  assert.match(p, /PNG makiety i zrzutu podajesz w raporcie\ntylko jako sciezke i nie otwierasz ich narzedziem Read/)
-  assert.ok(p.indexOf('FINDING WIZUALNY') < p.indexOf('ZAKAZ TEST-WEAKENINGU'))
+// P22 D2: vibersi etap 4 — fix fazy 6 wczytal Readem 2 PNG makiet (visual-diff/admin-*-figma*.png; 378k + 93k zn base64, ok. 2,5 tys.
+// tokenow w kazdej kolejnej turze). Polecenie fixa kieruje finding wizualny do opisu ekranu w planie zadania, PNG tylko jako sciezka.
+test('fix: finding wizualny — opis ekranu z katalogu makiet planu zadania (ekrany/<ekran>.md, SPEC.md), PNG tylko sciezka, bez Read obrazu', () => {
+  const blok = (/** @type {string} */ srodowisko) => {
+    const p = fixPrompt(ZADANIE, 6, [], srodowisko)
+    return p.slice(p.indexOf('FINDING WIZUALNY'), p.indexOf('ZAKAZ TEST-WEAKENINGU'))
+  }
+  const p = blok('gotowe')
+  assert.equal(blok('martwe'), p, 'blok niezalezny od srodowiska E2E')
+  assert.match(p, /^FINDING WIZUALNY \(rozjazd z makieta: opis wskazuje ekran makiety, np\. „z makiety <ekran>” albo visual-diff\/<ekran>-figma\.png\):/)
+  assert.match(p, /`grep -m1 'SPEC\.md' docs\/active\/zadanie-x\/\*-plan\.md`\); opis ekranu = `<katalog>\/ekrany\/<ekran>\.md` \(wymiary, odstepy, kolory, tokeny,\nteksty\)/)
+  assert.match(p, /bez tego pliku — sekcja ekranu w `<katalog>\/SPEC\.md` \(`grep -n '<ekran>'`, potem `sed -n`\)/)
+  assert.match(p, /PNG makiety i zrzutu\npodajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read/)
+  assert.match(p, /\(rzad 1–3 tys\. tokenow na obraz\)/)
+  assert.match(p, /`agent-browser snapshot -i` \(elementy i teksty\) i `agent-browser get box <ref>` \/ `get styles <ref>`/)
+  assert.doesNotMatch(p, /docs\/plans\/\*-figma|otworz PNG|z PNG makiety/)
 })
