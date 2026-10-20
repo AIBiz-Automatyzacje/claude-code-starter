@@ -235,7 +235,10 @@ formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruc
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
 kazdy z konkretnym oczekiwanym wynikiem. Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
 zamiast mobilnego viewportu) oznacz **[fizyczne urzadzenie]**.
-Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. Ramka konczy sie zdaniami:
+PUNKTY WIZUALNE (porownanie z makieta \`visual-diff/<ekran>-figma.png\` z katalogu zadania): Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport <W>×<H>) → <oczekiwany wynik>”: trasa w backtickach (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka.
+Przed pierwszym punktem wizualnym smoke'u stoi zdanie: "Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta."
+Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi
+ramka ma zdanie "Przy punktach wizualnych uruchom /makieta, a przed /clear je zatrzymaj." przed zdaniami koncowymi. Ramka konczy sie zdaniami:
 "Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
 „Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej.
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji.
@@ -246,6 +249,7 @@ zastap nazwa zmiennej lub fraza "<haslo w .env.e2e>". E-mail konta testowego moz
 KONTROLA ZMIENNYCH po zapisie pliku: \`node .claude/scripts/smoke/zmienne.mjs --smoke <plik>\`. Kod 1 = pole braki: zmienne,
 ktorych nazwy nie ma w pliku — dopisz je wedlug kroku 6 i uruchom kontrole ponownie. Nie konczysz, dopoki kod nie jest 0;
 ostatnia linie stdout ostatniej kontroli zwracasz w polu zmienne.
+Kontrola makiet po zapisie pliku: \`node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>\`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.
 
 Nie wymyslaj pozycji spoza zrodel (1)-(6). Nie modyfikuj *-zadania.md ani raportow review.
 Zwroc obiekt zgodny ze schematem.`

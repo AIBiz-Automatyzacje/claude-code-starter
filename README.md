@@ -325,6 +325,7 @@ Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claud
 |-------|----------|
 | **`agent-browser`** | Automatyzacja przeglądarki przez CLI (nawigacja, formularze, screenshoty, scraping, testowanie UI) z ref-based selection (`@e1`, `@e2`). Silnik E2E dla `feature-tester-e2e`. |
 | **`figma:figma-design-to-code`** | Implementacja designu Figma jako kod (kierunek design→code). Skill pluginu `figma` (instalacja w kroku 3), bez kopii w `.claude/skills/`. Preładowany do wariantów builderów z Figmą (`feature-builder-ui-figma`, `feature-builder-fullstack-figma`). |
+| **`makieta`** | Narzędzie „makieta obok aplikacji” w smoke'u operatora (`.claude/scripts/makieta/`): aplikacja w ramkach kilku urządzeń obok makiety `visual-diff/<ekran>-figma.png` 1:1, decyzje „Zgodne” / „Odstępstwo OK” / „Zgłoś błąd” zapisywane do linii checklisty, zgłoszenia do sesji smoke'u przez `Monitor` (`makieta.mjs czekaj`), po poprawce `makieta.mjs poprawione` przeładowuje ramki. Serwer w tle na `http://127.0.0.1:5180` jest proxy do aplikacji (osadzanie tylko z tego originu); OAuth wymaga `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev. |
 | **`zroastuj-mnie`** | Bezlitosny wywiad stress-testujący plan/projekt. Research docs przed sesją, wykrywanie sprzeczności, scenariusze. Na końcu sugeruje utrwalenie (m.in. terminu do `docs/CONCEPTS.md`). |
 | **`coolify-manager`** | Zarządzanie i troubleshooting deploymentów Coolify (CLI + API): serwery, WordPress, kontenery, SSL, bazy, env, backupy. |
 | **`coderabbit-setup`** | Tworzy `.coderabbit.yaml` dopasowany do stacku projektu (detekcja z `package.json` i struktury katalogów: Expo/RN, Next.js, React+Vite, Node, Supabase — bloki można łączyć). Standard między projektami: review po polsku, profil assertive, eslint/actionlint/gitleaks/trufflehog/semgrep/osvScanner, guidelines z `coding-rules.md`. Do `filePatterns` trafiają tylko pliki istniejące w repo; YAML walidowany przed oddaniem. Przypomina o jednorazowej instalacji aplikacji GitHub CodeRabbit na repo. |
@@ -495,7 +496,7 @@ projektu zostawiłby niezacommitowane pliki, a te zatrzymują start następnego 
 - **`.claude/scripts/`** — logika deterministyczna, którą wołają agenci i workflowy (moduły z testami node): `doctor/` (wymagania projektu),
   `bramki/` (bramki domknięcia), `dossier/` (dossier fazy dla review), `plan/` (walidacja planu, generator `docs/active/`, bramka gotowości),
   `wiedza/` (wiedza projektu), `e2e/` (środowisko, scenariusze i księgowanie `[E2E]`, mapa funkcji), `ogrod/` (pomiar ogrodnika),
-  `telemetria/` (zbieranie i raport).
+  `telemetria/` (zbieranie i raport), `makieta/` (narzędzie makiet w smoke'u operatora: proxy, strona, zapis decyzji do checklisty).
 
 ---
 

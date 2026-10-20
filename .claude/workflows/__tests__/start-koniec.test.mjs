@@ -347,3 +347,28 @@ test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /
   assert.ok(skill.includes(linia))
   assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
 })
+
+// P24 IU-8: punkty wizualne smoke'u w formacie czytanym przez narzedzie makiet (.claude/scripts/makieta/), odeslanie do /makieta
+// przed pierwszym punktem wizualnym i w ramce „Jak kontynuowac”, kontrola formatu skryptem. Te same zdania w workflowie i w skillu.
+test('smoke: format punktu wizualnego, zdanie o /makieta przed punktami i w ramce, kontrola makieta.mjs sprawdz — w workflowie i w skillu', () => {
+  /** @type {(nazwaZadania: string) => string} */
+  // eslint-disable-next-line no-new-func -- jw.
+  const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
+  const p = smokePrompt('zadanie-x')
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  const zdania = [
+    'Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → <oczekiwany wynik>”: trasa w backtickach (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka.',
+    'Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke\'u wpisz /makieta.',
+    'Przy punktach wizualnych uruchom /makieta, a przed /clear je zatrzymaj.',
+    'Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.',
+  ]
+  for (const z of zdania) {
+    assert.ok(p.includes(z), `workflow: ${z}`)
+    assert.ok(skill.replace(/\n\s+/g, ' ').includes(z), `skill: ${z}`)
+  }
+  // Ramka nadal konczy sie zdaniami o „Następny krok” (P22 B2) — zdanie o /makieta stoi przed nimi.
+  const ramka = skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'))
+  assert.ok(ramka.indexOf(zdania[2]) !== -1 && ramka.indexOf(zdania[2]) < ramka.indexOf('Po ostatnim punkcie zakończ linią'))
+  assert.match(ramka, /\/dev-pr w tej sesji nie uruchamiaj\.\n {3}```/)
+  assert.ok(p.indexOf(zdania[2]) < p.indexOf('Po ostatnim punkcie zakończ linią'))
+})
