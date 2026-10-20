@@ -1,0 +1,240 @@
+// Serwer narzedzia makiet (P24 IU-5) na prawdziwym node:http: punkty fixture'u etapu 4 w katalogu tymczasowym, decyzje z tokenem
+// i bez, konflikt 409, zgloszenie do kolejki, SSE `punkty` i `przeladuj`, statyka bez wyjscia poza katalog, proxy poza prefiksem.
+
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createServer, request } from 'node:http'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import assert from 'node:assert/strict'
+import test from 'node:test'
+
+import { czekaj } from '../kolejka.mjs'
+import { celLokalny } from '../proxy.mjs'
+import { punktyWizualne } from '../punkty.mjs'
+import { NAGLOWEK_TOKENU, utworzSerwer } from '../serwer.mjs'
+import { skrotSha1 } from '../zapis-linii.mjs'
+
+const KATALOG = dirname(fileURLToPath(import.meta.url))
+const ZADANIE = 'etap-4-dodawanie-i-moderacja'
+const SMOKE = `docs/operator/2026-10-18-${ZADANIE}-smoke.md`
+const PLAN = 'docs/plans/2026-10-17-001-feat-etap-4-plan.md'
+const TOKEN = 'a'.repeat(32)
+const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3])
+
+/** @typedef {{ port: number, projekt: string, stan: string, plik: string, cel: string[], przeladuj: () => void }} Kontekst */
+
+/** @param {import('node:http').Server} s @returns {Promise<number>} */
+const nasluch = (s) => new Promise((ok) => s.listen(0, '127.0.0.1', () => ok(/** @type {import('node:net').AddressInfo} */ (s.address()).port)))
+
+/** @param {(k: Kontekst) => Promise<void>} cialo */
+async function zSerwerem(cialo) {
+  const projekt = mkdtempSync(join(tmpdir(), 'makieta-serwer-'))
+  const strona = join(projekt, 'strona-narzedzia')
+  const pliki = {
+    [`docs/completed/${ZADANIE}/${ZADANIE}-plan.md`]: `Plan techniczny: \`${PLAN}\`\n`,
+    [PLAN]: '---\nfigma_screens:\n  wyslano-telefon: ./docs/plans/f/wyslano-telefon.png\n  publikuj-telefon-wysylanie: ./docs/plans/f/p.png\n---\n',
+    'docs/plans/f/wyslano-telefon.png': 'png-figma',
+    'strona-narzedzia/index.html': '<!doctype html><title>Makieta</title>',
+    'strona-narzedzia/styl.css': 'body{}',
+    'tajne.txt': 'sekret',
+  }
+  for (const [p, t] of Object.entries(pliki)) {
+    mkdirSync(join(projekt, p, '..'), { recursive: true })
+    writeFileSync(join(projekt, p), t)
+  }
+  mkdirSync(join(projekt, 'docs/operator'), { recursive: true })
+  copyFileSync(join(KATALOG, 'fixtures', 'vibersi-etap-4-smoke.md'), join(projekt, SMOKE))
+  mkdirSync(join(projekt, `docs/completed/${ZADANIE}/visual-diff`), { recursive: true })
+  writeFileSync(join(projekt, `docs/completed/${ZADANIE}/visual-diff/moje-projekty-telefon-figma.png`), PNG)
+  /** @type {string[]} */
+  const cel = []
+  const aplikacja = createServer((req, res) => { cel.push(`${req.method} ${req.url}`); res.end('aplikacja') })
+  const portAplikacji = await nasluch(aplikacja)
+  const stan = join(projekt, 'stan')
+  const s = utworzSerwer({ projekt, smoke: SMOKE, aplikacja: celLokalny(`http://localhost:${portAplikacji}`), token: TOKEN, katalogStanu: stan, katalogStrony: strona })
+  const port = await nasluch(s.serwer)
+  try {
+    await cialo({ port, projekt, stan, plik: join(projekt, SMOKE), cel, przeladuj: s.przeladuj })
+  } finally {
+    await s.zamknij()
+    aplikacja.closeAllConnections()
+    await new Promise((ok) => aplikacja.close(ok))
+    rmSync(projekt, { recursive: true, force: true })
+  }
+}
+
+/** @param {string} tekst @returns {any} cialo odpowiedzi API (koperta { data, error }) albo null dla tresci spoza JSON */
+function jakoJson(tekst) {
+  try {
+    return JSON.parse(tekst)
+  } catch {
+    // Strona HTML, PNG albo zerwane polaczenie — test sprawdza wtedy status i tekst.
+    return null
+  }
+}
+
+/**
+ * @param {number} port
+ * @param {{ method?: string, path?: string, headers?: Record<string, string>, body?: unknown }} [o]
+ * @returns {Promise<{ status: number, headers: import('node:http').IncomingHttpHeaders, tekst: string, json: any }>}
+ */
+function zapytaj(port, { method = 'GET', path = '/__makieta/', headers = {}, body } = {}) {
+  return new Promise((ok, nie) => {
+    const r = request({ host: '127.0.0.1', port, method, path, headers: { ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...headers } }, (odp) => {
+      /** @type {Buffer[]} */
+      const czesci = []
+      odp.on('data', (c) => czesci.push(c))
+      odp.on('end', () => {
+        const tekst = Buffer.concat(czesci).toString()
+        ok({ status: odp.statusCode ?? 0, headers: odp.headers, tekst, json: jakoJson(tekst) })
+      })
+    })
+    r.on('error', nie)
+    r.end(body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body))
+  })
+}
+
+const zTokenem = { [NAGLOWEK_TOKENU]: TOKEN }
+
+/** @param {string} plik @param {number} nr linia 1-based */
+const punktLinii = (plik, nr) => {
+  const p = punktyWizualne(readFileSync(plik, 'utf8'), skrotSha1).find((x) => x.linia === nr)
+  assert.ok(p)
+  return p
+}
+
+/**
+ * Odbiera zdarzenia SSE do pierwszego o nazwie `nazwa`.
+ * @param {number} port @param {string} nazwa @param {() => void} poPolaczeniu
+ * @returns {Promise<string>}
+ */
+function czekajNaZdarzenie(port, nazwa, poPolaczeniu) {
+  return new Promise((ok, nie) => {
+    const r = request({ host: '127.0.0.1', port, path: `/__makieta/api/zdarzenia?t=${TOKEN}` }, (odp) => {
+      let bufor = ''
+      odp.on('data', (c) => {
+        bufor += c.toString()
+        if (bufor.includes(': start')) { bufor = bufor.replace(': start\n\n', ''); poPolaczeniu() }
+        if (bufor.includes(`event: ${nazwa}\n`)) { r.destroy(); ok(nazwa) }
+      })
+    })
+    r.on('error', (b) => (b.message.includes('socket hang up') ? undefined : nie(b)))
+    r.end()
+  })
+}
+
+test('GET api/punkty na fixture etapu 4: punkty ze statusami, ekrany z URL makiety, ekrany SPEC bez punktu; bez tokenu 403', () => zSerwerem(async ({ port }) => {
+  const bez = await zapytaj(port, { path: '/__makieta/api/punkty' })
+  assert.equal(bez.status, 403)
+  assert.equal(bez.json.error.code, 'token')
+  const w = await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })
+  assert.equal(w.status, 200)
+  assert.equal(w.json.error, null)
+  assert.equal(w.json.data.punkty.length, 24)
+  assert.deepEqual(new Set(w.json.data.punkty.map((/** @type {{ status: string }} */ p) => p.status)), new Set(['zgodny', 'odstepstwo']))
+  assert.deepEqual(w.json.data.pominiete, ['publikuj-telefon-wysylanie'])
+  const moje = w.json.data.ekrany.find((/** @type {{ ekran: string }} */ e) => e.ekran === 'moje-projekty-telefon')
+  assert.equal(moje.url, '/__makieta/makieta/moje-projekty-telefon.png')
+  assert.equal(w.json.data.ekrany.find((/** @type {{ ekran: string }} */ e) => e.ekran === 'admin-stany').url, null)
+  assert.equal(w.headers['referrer-policy'], 'no-referrer')
+}))
+
+test('decyzja „zgodne” z tokenem zmienia linię; bez tokenu, z obcym Origin albo „poprawione” ze strony — 4xx i plik bez zmian', () => zSerwerem(async ({ port, plik }) => {
+  const przed = readFileSync(plik, 'utf8')
+  const p = punktLinii(plik, 51)
+  const cialo = { punkt: p.id, linia: p.tekst, decyzja: 'zgodne' }
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: cialo })).status, 403)
+  assert.equal((await zapytaj(port, { method: 'POST', path: `/__makieta/api/decyzja?t=${TOKEN}`, body: cialo })).status, 403, 'token w query tylko dla SSE')
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: cialo, headers: { ...zTokenem, origin: 'http://evil.example' } })).status, 403)
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: { ...cialo, decyzja: 'poprawione' }, headers: zTokenem })).status, 400)
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: { ...cialo, nadmiar: 1 }, headers: zTokenem })).status, 400)
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: '{nie json', headers: zTokenem })).status, 400)
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: { ...cialo, notatka: 'x'.repeat(20_000) }, headers: zTokenem })).status, 413)
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: { ...cialo, decyzja: 'odstepstwo' }, headers: zTokenem })).status, 400, 'odstępstwo bez notatki')
+  assert.equal(readFileSync(plik, 'utf8'), przed)
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: cialo, headers: { ...zTokenem, origin: `http://127.0.0.1:${port}` } })
+  assert.equal(w.status, 200, w.tekst)
+  assert.match(w.json.data.linia, /^- \[x\] \*\(\d{4}-\d{2}-\d{2}: zgodne\)\* \*\(2026-10-18, druga sesja/)
+  assert.equal(readFileSync(plik, 'utf8'), przed.replace(p.tekst, w.json.data.linia))
+}))
+
+test('decyzja na linii zmienionej w pliku po odczycie = 409 z bieżącą linią', () => zSerwerem(async ({ port, plik }) => {
+  const p = punktLinii(plik, 51)
+  const zmieniona = p.tekst.replace('- [x] ', '- [x] *(2026-10-20: sesja)* ')
+  writeFileSync(plik, readFileSync(plik, 'utf8').replace(p.tekst, zmieniona))
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', body: { punkt: p.id, linia: p.tekst, decyzja: 'zgodne' }, headers: zTokenem })
+  assert.equal(w.status, 409)
+  assert.deepEqual(w.json, { data: { powod: 'linia-zmieniona', linia: zmieniona }, error: { code: 'konflikt', message: 'Sesja zmieniła ten punkt w międzyczasie.' } })
+}))
+
+test('„błąd” zapisuje linię i wpis kolejki ze SPEC i PNG; czekaj oddaje go raz, ponowny start już nie', () => zSerwerem(async ({ port, plik, stan }) => {
+  const p = punktLinii(plik, 51)
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem,
+    body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'liczniki\nw jednej linii', urzadzenie: 'iphone-15', szerokosc: 393, ekran: 'moje-projekty-telefon' } })
+  assert.equal(w.status, 200, w.tekst)
+  assert.equal(punktLinii(plik, 51).status, 'blad')
+  const zdarzenia = []
+  for await (const z of czekaj({ katalogStanu: stan, limitMs: 100, odstepMs: 20 })) zdarzenia.push(z)
+  assert.equal(zdarzenia.length, 2)
+  assert.deepEqual({ ...zdarzenia[0], id: undefined, czas: undefined }, {
+    zdarzenie: 'zgloszenie', id: undefined, czas: undefined, punkt: p.id, ekran: 'moje-projekty-telefon', trasa: '/konto/projekty',
+    viewport: { szerokosc: 390, wysokosc: 782 }, urzadzenie: 'iphone-15', szerokosc: 393, opis: 'liczniki w jednej linii', spec: null,
+    makieta: `docs/completed/${ZADANIE}/visual-diff/moje-projekty-telefon-figma.png`,
+  })
+  const ponownie = []
+  for await (const z of czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 })) ponownie.push(z)
+  assert.deepEqual(ponownie, [{ zdarzenie: 'limit' }])
+}))
+
+test('zmiana pliku smoke\'u wysyła SSE punkty; POST api/przeladuj z tokenem wysyła przeladuj; SSE bez tokenu = 403', () => zSerwerem(async ({ port, plik }) => {
+  assert.equal((await zapytaj(port, { path: '/__makieta/api/zdarzenia' })).status, 403)
+  await czekajNaZdarzenie(port, 'punkty', () => writeFileSync(plik, `${readFileSync(plik, 'utf8')}\n- [ ] dopisane przez sesję\n`))
+  await czekajNaZdarzenie(port, 'przeladuj', () => void zapytaj(port, { method: 'POST', path: '/__makieta/api/przeladuj', headers: zTokenem }))
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/przeladuj' })).status, 403)
+}))
+
+test('statyka: strona i styl z katalogu strony; ../ i PNG spoza listy ekranów = 404; PNG z listy = bajty', () => zSerwerem(async ({ port, cel }) => {
+  const strona = await zapytaj(port)
+  assert.equal(strona.status, 200)
+  assert.match(String(strona.headers['content-type']), /text\/html/)
+  assert.match(String(strona.headers['content-security-policy']), /frame-ancestors 'none'/)
+  assert.equal((await zapytaj(port, { path: '/__makieta/strona/styl.css' })).tekst, 'body{}')
+  for (const zla of ['/__makieta/strona/../../serwer.mjs', '/__makieta/strona/..%2f..%2ftajne.txt', '/__makieta/strona/../tajne.txt', '/__makieta/wspolne/serwer.mjs', '/__makieta/strona/styl.css/x', '/__makieta/makieta/admin-stany.png', '/__makieta/makieta/..%2f..%2ftajne.png']) {
+    const w = await zapytaj(port, { path: zla })
+    assert.equal(w.status, 404, zla)
+    assert.ok(!w.tekst.includes('sekret'))
+  }
+  const png = await new Promise((ok) => request({ host: '127.0.0.1', port, path: '/__makieta/makieta/moje-projekty-telefon.png' }, (odp) => {
+    /** @type {Buffer[]} */
+    const c = []
+    odp.on('data', (x) => c.push(x))
+    odp.on('end', () => ok([odp.headers['content-type'], Buffer.concat(c)]))
+  }).end())
+  assert.deepEqual(png, ['image/png', PNG])
+  assert.deepEqual(cel, [])
+}))
+
+test('ścieżka spoza prefiksu trafia do proxy; Host inny niż 127.0.0.1:<port> = 421 i nic nie idzie do aplikacji', () => zSerwerem(async ({ port, cel }) => {
+  const w = await zapytaj(port, { path: '/konto/projekty?x=1' })
+  assert.equal(w.tekst, 'aplikacja')
+  assert.deepEqual(cel, ['GET /konto/projekty?x=1'])
+  const obcy = await zapytaj(port, { path: '/konto', headers: { host: `localhost:${port}` } })
+  assert.equal(obcy.status, 421)
+  assert.equal((await zapytaj(port, { path: '/__makieta/api/punkty', headers: { ...zTokenem, host: `evil.example:${port}` } })).status, 421)
+  assert.deepEqual(cel, ['GET /konto/projekty?x=1'])
+}))
+
+test('upgrade z obcym Host albo pod prefiksem narzędzia = gniazdo zamknięte, aplikacja nic nie dostaje', () => zSerwerem(async ({ port, cel }) => {
+  for (const [host, sciezka] of [[`evil.example:${port}`, '/@vite/hmr'], [`127.0.0.1:${port}`, '/__makieta/api/zdarzenia']]) {
+    const wynik = await new Promise((ok) => {
+      const r = request({ host: '127.0.0.1', port, path: sciezka, headers: { host, connection: 'Upgrade', upgrade: 'websocket', 'sec-websocket-key': 'a2V5', 'sec-websocket-version': '13' } })
+      r.on('upgrade', () => ok('upgrade'))
+      r.on('response', (o) => ok(`odpowiedź ${o.statusCode}`))
+      r.on('error', (b) => ok(b.message))
+      r.end()
+    })
+    assert.equal(wynik, 'socket hang up', `${host} ${sciezka}`)
+  }
+  assert.deepEqual(cel, [])
+}))
