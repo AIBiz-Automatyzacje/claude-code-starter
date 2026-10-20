@@ -239,7 +239,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 
 **Zależy od:** Brak
 
-- [ ] **IU-1: Parser punktów wizualnych i status punktu**
+- [x] **IU-1: Parser punktów wizualnych i status punktu**
 
 **Cel:** Moduł czysty, który z treści smoke'u wyciąga punkty wizualne z ekranami, trasą, viewportem, statusem i identyfikatorem.
 
@@ -298,7 +298,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 - `pnpm typecheck` przechodzi bez błędów
 - `pnpm lint` przechodzi bez błędów
 
-- [ ] **IU-2: Źródła makiet — katalog zadania, plan, PNG i wymiary**
+- [x] **IU-2: Źródła makiet — katalog zadania, plan, PNG i wymiary**
 
 **Cel:** Dla pliku smoke'u znaleźć katalog zadania, plan techniczny, PNG każdego ekranu i jego wymiary oraz ekrany SPEC bez punktu.
 
@@ -344,7 +344,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 - `node --test .claude/scripts/makieta/__tests__/zrodla.test.mjs` przechodzi
 - `pnpm typecheck` przechodzi bez błędów
 
-- [ ] **IU-3: Zapis decyzji do jednej linii checklisty**
+- [x] **IU-3: Zapis decyzji do jednej linii checklisty**
 
 **Cel:** Podmiana jednej linii punktu z adnotacją decyzji, z odrzuceniem przy zmianie linii i atomowym zapisem pliku.
 
@@ -399,7 +399,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 
 **Zależy od:** Faza 1
 
-- [ ] **IU-4: Proxy do aplikacji bez zakazu osadzania**
+- [x] **IU-4: Proxy do aplikacji bez zakazu osadzania**
 
 **Cel:** Reverse proxy `node:http` do lokalnej aplikacji, które zdejmuje zakaz osadzania w ramce i obsługuje przekierowania, ciasteczka i WebSocket.
 
@@ -459,7 +459,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 - `node --test .claude/scripts/makieta/__tests__/proxy.test.mjs` przechodzi
 - `pnpm typecheck` przechodzi bez błędów
 
-- [ ] **IU-5: Serwer narzędzia — strona, makiety, API decyzji i zdarzenia**
+- [x] **IU-5: Serwer narzędzia — strona, makiety, API decyzji i zdarzenia**
 
 **Cel:** Serwer HTTP łączący proxy z trasami `/__makieta/`: statyka strony, PNG makiet, lista punktów, zapis decyzji, kolejka zgłoszeń i zdarzenia SSE.
 
@@ -515,7 +515,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 - `pnpm typecheck` przechodzi bez błędów
 - `pnpm lint` przechodzi bez błędów
 
-- [ ] **IU-6: CLI makieta.mjs i proces w tle**
+- [x] **IU-6: CLI makieta.mjs i proces w tle**
 
 **Cel:** Polecenia `start`, `stop`, `stan`, `czekaj`, `zgloszenia`, `poprawione` i `sprawdz` z procesem serwera w tle i stanem poza repo.
 
@@ -577,7 +577,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 
 **Zależy od:** Faza 2
 
-- [ ] **IU-7: Strona narzędzia — ramki urządzeń, makieta i decyzje**
+- [x] **IU-7: Strona narzędzia — ramki urządzeń, makieta i decyzje**
 
 **Cel:** Strona `/__makieta/` z ramkami aplikacji w presetach urządzeń po lewej, makietą 1:1 po prawej i przyciskami decyzji.
 
@@ -643,7 +643,7 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 - `pnpm typecheck` przechodzi bez błędów
 - `pnpm lint` przechodzi bez błędów
 
-- [ ] **IU-8: Skill /makieta, smoke z dev-docs-complete i pilot**
+- [x] **IU-8: Skill /makieta, smoke z dev-docs-complete i pilot**
 
 **Cel:** Procedura sesji w skillu `/makieta`, format punktów wizualnych i odesłanie do narzędzia w generowanym smoke'u oraz pilot na kopii vibersi.
 
@@ -705,6 +705,15 @@ wpisu `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev (pozycja w Operato
 **Operator checklist:**
 - [ ] Wpis `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev vibersi przed pilotem logowania OAuth
 - [ ] Zgoda na merge `popr/P24-makieta-obok-aplikacji`, potem `/sync-template` w vibersi przed smoke'iem etapu 5
+
+## Odchylenia przy wykonaniu (2026-10-20, HANDOFF 6a pkt 95)
+
+- Trasa punktu: fragment w backtickach przed pierwszą makietą, nie przed pierwszym „obok” („obok” w opisie stanu gubiło trasę).
+- Osadzanie: proxy nie zdejmuje zakazu, tylko zamienia go na `X-Frame-Options: SAMEORIGIN` i `frame-ancestors 'self'`
+  (ramki są same-origin; obca strona nie osadzi aplikacji z sesją operatora). Proxy odrzuca też Host spoza originu narzędzia.
+- Presety: makieta niższa niż połowa najniższego presetu pasującego szerokością to komponent — wtedy „bez trafienia”
+  (358×234 mieści się w ±24 od iphone-se 375, a decyzja wymieniała ją jako komponent bez trafienia).
+- Moduł wspólny ze stroną leży pod `/__makieta/urzadzenia.mjs`; `punkty.mjs` nie jest podawany stronie (statusy z API).
 
 ## Wpływ systemowy
 
