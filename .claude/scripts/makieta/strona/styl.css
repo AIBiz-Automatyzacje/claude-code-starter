@@ -23,6 +23,8 @@ button {
 button:hover { border-color: var(--wyciszony); }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--akcent); outline-offset: 1px; }
 button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color: var(--tusz); }
+/* Atrybut hidden wygrywa z display: grid/flex klas (formularze decyzji, komunikaty). */
+[hidden] { display: none !important; }
 .ukryty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .wyciszony { color: var(--wyciszony); }
 
