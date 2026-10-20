@@ -77,3 +77,16 @@ test('otwarte zgłoszenia liczone z checklisty (status błąd zgłoszony), nie z
   const otwarte = otwarteZgloszenia(punktyWizualne(md, skrotSha1))
   assert.deepEqual(otwarte.map((p) => [p.linia, p.ekrany, p.adnotacje[0]]), [[1, ['a'], '2026-10-20: błąd zgłoszony — iphone-15 393 px: ucięty']])
 })
+
+test('po recenzji: konsument przerwany po pierwszym zdarzeniu dostaje je ponownie przy następnym starcie; wpis bez pól zgłoszenia pominięty', () => zeStanem(async (stan) => {
+  const w = dopiszZgloszenie(stan, WPIS)
+  for await (const z of czekaj({ katalogStanu: stan, limitMs: 1000, odstepMs: 20 })) {
+    assert.equal(z.zdarzenie, 'zgloszenie')
+    break
+  }
+  const ponownie = await wszystkie(czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 }))
+  assert.deepEqual(ponownie.map((z) => z.id ?? z.zdarzenie), [w.id, 'limit'])
+  const { appendFileSync } = await import('node:fs')
+  appendFileSync(join(stan, 'kolejka.jsonl'), `${JSON.stringify({ id: 'samo-id' })}\n${JSON.stringify({ id: 'bez-opisu', punkt: 'p-1', ekran: 'a', urzadzenie: 'u', czas: 'x' })}\n`)
+  assert.deepEqual(niedostarczone(stan), [])
+}))

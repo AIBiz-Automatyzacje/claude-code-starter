@@ -26,6 +26,7 @@ const NAZWA_PLIKU = /^[A-Za-z0-9][\w-]*\.(?:html|css|mjs|svg|png)$/
 const TYPY = /** @type {const} */ ({ '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png' })
 const LIMIT_CIALA = 16 * 1024
 const LIMIT_ODRZUCENIA = 1024 * 1024
+const MIN_DLUGOSC_TOKENU = 16
 const ODSTEP_OBSERWACJI_MS = 1000
 const ODSTEP_PULSU_MS = 25_000
 const NAGLOWKI_NARZEDZIA = {
@@ -90,6 +91,16 @@ function czytajJson(req) {
   })
 }
 
+/** @param {string} t @returns {string | null} decodeURIComponent bez wyjatku (zle kodowanie = null) */
+function zdekodowana(t) {
+  try {
+    return decodeURIComponent(t)
+  } catch {
+    // Zle kodowanie procentowe (`%E0%A4%A`) to nieistniejacy plik, nie awaria serwera.
+    return null
+  }
+}
+
 /** @param {unknown} v @param {number} limit @returns {v is string | undefined} */
 const tekstOpcjonalny = (v, limit) => v === undefined || (typeof v === 'string' && v.length <= limit)
 
@@ -117,10 +128,15 @@ function cialoDecyzji(c) {
  * @returns {{ serwer: import('node:http').Server, przeladuj: () => void, zamknij: () => Promise<void> }}
  */
 export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, katalogStrony = join(KATALOG, 'strona'), log = () => {} }) {
+  // Pusty albo krotki token otwieralby API kazdej stronie, ktora zgadnie port.
+  if (token.length < MIN_DLUGOSC_TOKENU) throw new Error(`token narzędzia krótszy niż ${MIN_DLUGOSC_TOKENU} znaków`)
   const plikSmoke = isAbsolute(smoke) ? smoke : join(projekt, smoke)
   const proxy = utworzProxy({ cel: aplikacja, log })
   /** @type {Set<Odpowiedz>} */
   const sluchacze = new Set()
+  // Gniazd po upgrade (HMR) nie zamyka `closeAllConnections` — bez wlasnej listy `close` czekalby na nie bez konca.
+  /** @type {Set<import('node:stream').Duplex>} */
+  const gniazdaUpgrade = new Set()
 
   const stan = () => {
     const punkty = punktyWizualne(readFileSync(plikSmoke, 'utf8'), skrotSha1)
@@ -128,11 +144,11 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
   }
   /** @param {'punkty' | 'przeladuj'} zdarzenie */
   const rozeslij = (zdarzenie) => {
-    for (const res of sluchacze) res.write(`event: ${zdarzenie}\ndata: {}\n\n`)
+    for (const res of sluchacze) if (!res.writableEnded) res.write(`event: ${zdarzenie}\ndata: {}\n\n`)
   }
   const naZmiane = () => rozeslij('punkty')
   watchFile(plikSmoke, { interval: ODSTEP_OBSERWACJI_MS }, naZmiane)
-  const puls = setInterval(() => { for (const res of sluchacze) res.write(': puls\n\n') }, ODSTEP_PULSU_MS)
+  const puls = setInterval(() => { for (const res of sluchacze) if (!res.writableEnded) res.write(': puls\n\n') }, ODSTEP_PULSU_MS)
   puls.unref()
 
   /** @param {Zadanie} req @returns {boolean} Host = origin narzedzia (127.0.0.1 i port nasluchu) */
@@ -154,18 +170,27 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     if (!c) return blad(res, 400, 'zle-cialo', 'oczekiwane { punkt, linia, decyzja: zgodne|odstepstwo|blad, notatka?, urzadzenie?, szerokosc?, ekran? }')
     const { punkty: lista, zrodla } = stan()
     const { ekran, ...zapis } = c
+    const p = lista.find((x) => x.id === c.punkt)
+    if (p && ekran !== undefined && !p.ekrany.includes(ekran)) return blad(res, 400, 'zle-cialo', `ekran ${ekran} nie należy do punktu (${p.ekrany.join(', ')})`)
     const w = await zapiszDecyzje({ plik: plikSmoke, katalogStanu, ...zapis })
     if (w.wynik === 'konflikt') return json(res, 409, { data: { powod: w.powod, linia: w.linia }, error: { code: 'konflikt', message: 'Sesja zmieniła ten punkt w międzyczasie.' } })
-    if (c.decyzja === 'blad') {
-      const p = lista.find((x) => x.id === c.punkt)
-      const e = zrodla.ekrany.find((x) => x.punkt === c.punkt && (!ekran || x.ekran === ekran)) ?? null
-      dopiszZgloszenie(katalogStanu, {
-        punkt: c.punkt, ekran: e?.ekran ?? p?.ekrany[0] ?? '', trasa: p?.trasa ?? null, viewport: e?.wymiary ?? p?.viewport ?? null,
-        urzadzenie: oczyscNotatke(c.urzadzenie ?? ''), szerokosc: c.szerokosc ?? 0, opis: oczyscNotatke(c.notatka ?? ''), spec: e?.spec ?? null, makieta: e?.makieta ?? null,
-      })
+    /** @type {string | undefined} */
+    let ostrzezenie
+    if (c.decyzja === 'blad' && p) {
+      const e = zrodla.ekrany.find((x) => x.punkt === c.punkt && x.ekran === (ekran ?? p.ekrany[0])) ?? null
+      try {
+        dopiszZgloszenie(katalogStanu, {
+          punkt: c.punkt, ekran: e?.ekran ?? p.ekrany[0], trasa: p.trasa, viewport: e?.wymiary ?? p.viewport,
+          urzadzenie: oczyscNotatke(c.urzadzenie ?? ''), szerokosc: c.szerokosc ?? 0, opis: oczyscNotatke(c.notatka ?? ''), spec: e?.spec ?? null, makieta: e?.makieta ?? null,
+        })
+      } catch (b) {
+        // Linia checklisty juz zapisana (stan punktu) — zgloszenie dojdzie do sesji droga awaryjna `makieta.mjs zgloszenia`.
+        log(`kolejka: ${b instanceof Error ? b.message : String(b)}`)
+        ostrzezenie = 'Zgłoszenie zapisane w checkliście, ale nie w kolejce sesji — napisz w sesji „zgłoszenia”.'
+      }
     }
     rozeslij('punkty')
-    json(res, 200, { data: { linia: w.linia } })
+    json(res, 200, { data: { linia: w.linia, ...(ostrzezenie ? { ostrzezenie } : {}) } })
   }
 
   /** @param {Odpowiedz} res */
@@ -201,8 +226,8 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     if (katalog === 'strona' && NAZWA_PLIKU.test(nazwa)) return plik(res, join(katalogStrony, nazwa), TYPY[/** @type {keyof typeof TYPY} */ (extname(nazwa))])
     if (katalog === 'wspolne' && WSPOLNE.has(nazwa)) return plik(res, join(KATALOG, nazwa), TYPY['.mjs'])
     if (katalog === 'makieta' && nazwa.endsWith('.png')) {
-      const ekran = decodeURIComponent(nazwa.slice(0, -'.png'.length))
-      const e = stan().zrodla.ekrany.find((x) => x.ekran === ekran && x.makieta)
+      const ekran = zdekodowana(nazwa.slice(0, -'.png'.length))
+      const e = ekran === null ? undefined : stan().zrodla.ekrany.find((x) => x.ekran === ekran && x.makieta)
       if (e?.makieta) return plik(res, join(projekt, e.makieta), TYPY['.png'])
     }
     blad(res, 404, 'brak', 'nie ma takiego pliku narzędzia')
@@ -223,13 +248,17 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     obsluz(req, res).catch((b) => {
       const status = b && typeof b === 'object' && 'status' in b && typeof b.status === 'number' ? b.status : b instanceof BladZapisu ? (b.kod === 'odmowa' ? 400 : 503) : 500
       log(`${req.method} ${(req.url ?? '/').split('?')[0]} ${status}: ${b instanceof Error ? b.message : String(b)}`)
-      if (res.headersSent) res.destroy()
-      else blad(res, status, b instanceof BladZapisu ? b.kod : 'serwer', b instanceof Error ? b.message : String(b))
+      if (res.headersSent) return res.destroy()
+      // Szczegol bledu (sciezki plikow) tylko w logu serwera; strona dostaje kod i ogolny komunikat.
+      const komunikat = status === 500 ? 'błąd serwera narzędzia — szczegół w serwer.log' : b instanceof Error ? b.message : String(b)
+      blad(res, status, b instanceof BladZapisu ? b.kod : 'serwer', komunikat)
     })
   })
   serwer.on('upgrade', (req, gniazdo, glowa) => {
-    if (!hostZgodny(req) || (req.url ?? '/').startsWith(PREFIKS_NARZEDZIA)) gniazdo.destroy()
-    else proxy.obsluzUpgrade(req, gniazdo, glowa)
+    if (!hostZgodny(req) || (req.url ?? '/').startsWith(PREFIKS_NARZEDZIA)) return gniazdo.destroy()
+    gniazdaUpgrade.add(gniazdo)
+    gniazdo.on('close', () => gniazdaUpgrade.delete(gniazdo))
+    proxy.obsluzUpgrade(req, gniazdo, glowa)
   })
 
   return {
@@ -238,7 +267,10 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     zamknij: () => new Promise((ok) => {
       unwatchFile(plikSmoke, naZmiane)
       clearInterval(puls)
-      for (const res of sluchacze) res.end()
+      const otwarte = [...sluchacze]
+      sluchacze.clear()
+      for (const res of otwarte) res.end()
+      for (const g of gniazdaUpgrade) g.destroy()
       serwer.closeAllConnections()
       serwer.close(() => ok())
     }),

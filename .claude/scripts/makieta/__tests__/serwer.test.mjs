@@ -238,3 +238,72 @@ test('upgrade z obcym Host albo pod prefiksem narzędzia = gniazdo zamknięte, a
   }
   assert.deepEqual(cel, [])
 }))
+
+test('po recenzji: „błąd” z drugiego ekranu punktu niesie jego ekran i PNG; ekran spoza punktu = 400; urządzenie w jednej linii', () => zSerwerem(async ({ port, plik, projekt, stan }) => {
+  writeFileSync(join(projekt, `docs/completed/${ZADANIE}/visual-diff/admin-kolejka-telefon-figma.png`), PNG)
+  const p = punktLinii(plik, 95)
+  assert.deepEqual(p.ekrany, ['admin-skrzynka-komputer', 'admin-kolejka-telefon'])
+  const obcy = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'u', szerokosc: 390, ekran: 'admin-stany' } })
+  assert.deepEqual([obcy.status, obcy.json.error.code], [400, 'zle-cialo'])
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'karta', urzadzenie: 'iphone\n15', szerokosc: 393, ekran: 'admin-kolejka-telefon' } })
+  assert.equal(w.status, 200, w.tekst)
+  const wpisy = readFileSync(join(stan, 'kolejka.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l))
+  assert.deepEqual(wpisy.map((x) => [x.ekran, x.makieta, x.urzadzenie]), [['admin-kolejka-telefon', `docs/completed/${ZADANIE}/visual-diff/admin-kolejka-telefon-figma.png`, 'iphone 15']])
+}))
+
+test('po recenzji: kolejka niezapisywalna — linia zapisana, odpowiedź 200 z ostrzeżeniem; „poprawione” ze strony = zle-cialo', () => zSerwerem(async ({ port, plik, stan }) => {
+  mkdirSync(join(stan, 'kolejka.jsonl'), { recursive: true })
+  const p = punktLinii(plik, 51)
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'u', szerokosc: 390 } })
+  assert.equal(w.status, 200, w.tekst)
+  assert.match(w.json.data.ostrzezenie, /zgłoszenia/)
+  assert.equal(punktLinii(plik, 51).status, 'blad')
+  const q = punktLinii(plik, 52)
+  const popr = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: q.id, linia: q.tekst, decyzja: 'poprawione' } })
+  assert.deepEqual([popr.status, popr.json.error.code], [400, 'zle-cialo'])
+}))
+
+test('po recenzji: SSE punkty zaraz po decyzji; api/punkty bez surowych adnotacji; POST na statykę 405; plik spoza białej listy i złe kodowanie = 404', () => zSerwerem(async ({ port, plik, projekt }) => {
+  const p = punktLinii(plik, 51)
+  const start = Date.now()
+  await czekajNaZdarzenie(port, 'punkty', () => void zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'zgodne' } }))
+  assert.ok(Date.now() - start < 2000)
+  const punkty = await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })
+  assert.equal('adnotacje' in punkty.json.data.punkty[0], false)
+  assert.equal('checkbox' in punkty.json.data.punkty[0], false)
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/strona/styl.css' })).status, 405)
+  writeFileSync(join(projekt, 'strona-narzedzia/.env'), 'SEKRET=1')
+  assert.equal((await zapytaj(port, { path: '/__makieta/strona/.env' })).status, 404)
+  const zle = await zapytaj(port, { path: '/__makieta/makieta/%E0%A4%A.png' })
+  assert.equal(zle.status, 404)
+}))
+
+test('po recenzji: zamknij() kończy się mimo otwartego WebSocketu przez proxy; token krótszy niż 16 znaków = błąd', async () => {
+  const aplikacja = createServer()
+  aplikacja.on('upgrade', (_req, socket) => {
+    socket.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n')
+    socket.on('end', () => socket.destroy())
+  })
+  const portAplikacji = await nasluch(aplikacja)
+  const projekt = mkdtempSync(join(tmpdir(), 'makieta-serwer-ws-'))
+  writeFileSync(join(projekt, 'smoke.md'), '# pusty\n')
+  const opcje = { projekt, smoke: 'smoke.md', aplikacja: celLokalny(`http://127.0.0.1:${portAplikacji}`), katalogStanu: join(projekt, 'stan') }
+  assert.throws(() => utworzSerwer({ ...opcje, token: '' }), /token/)
+  const s = utworzSerwer({ ...opcje, token: TOKEN })
+  const port = await nasluch(s.serwer)
+  try {
+    await new Promise((ok, nie) => {
+      const r = request({ host: '127.0.0.1', port, path: '/@vite/hmr', headers: { connection: 'Upgrade', upgrade: 'websocket' } })
+      r.on('upgrade', () => ok(undefined))
+      r.on('error', nie)
+      r.end()
+    })
+    const start = Date.now()
+    await s.zamknij()
+    assert.ok(Date.now() - start < 1000, `zamknij trwało ${Date.now() - start} ms`)
+  } finally {
+    aplikacja.closeAllConnections()
+    await new Promise((ok) => aplikacja.close(ok))
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
