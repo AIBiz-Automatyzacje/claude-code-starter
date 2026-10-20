@@ -13,5 +13,5 @@
     "skipLibCheck": true
   },
   "include": [".claude/**/*.mjs"],
-  "exclude": ["node_modules", ".claude/.backups"]
+  "exclude": ["node_modules", ".claude/.backups", ".claude/worktrees"]
 }
