@@ -137,7 +137,7 @@ test('punkt fizycznego urządzenia nie jest punktem narzędzia; CRLF nie trafia 
 })
 
 test('sprawdzFormat: punkt z dwiema makietami, stary zapis „obok -actual.png” i brak viewportu z numerem linii; format R11 = brak uwag', () => {
-  const problemy = sprawdzFormat(ETAP_4, skrot)
+  const problemy = sprawdzFormat(ETAP_4)
   assert.ok(problemy.some((p) => p.linia === 95 && /dwie makiety|kilka makiet/.test(p.powod)), JSON.stringify(problemy.filter((p) => p.linia === 95)))
   assert.ok(problemy.some((p) => p.linia === 38 && /obok/.test(p.powod)), 'makieta obok zrzutu, nie aplikacji')
   const r11 = [
@@ -145,11 +145,49 @@ test('sprawdzFormat: punkt z dwiema makietami, stary zapis „obok -actual.png�
     '- [ ] Komputer, okno odznaki: przy opublikowanym obok `visual-diff/odznaka-okno-figma.png` (viewport 520×518) → okno zgodne z makietą',
     '- [ ] Zwykły punkt bez makiety',
   ].join('\n')
-  assert.deepEqual(sprawdzFormat(r11, skrot), [])
-  const bez = sprawdzFormat('- [ ] Telefon: `/` obok `visual-diff/a-figma.png` → ok\n- [ ] T: `/` obok `visual-diff/b-figma.png` (viewport: 390×844) → ok\n- [ ] T: `/` obok `visual-diff/c-figma.png` (viewport 390×844)', skrot)
+  assert.deepEqual(sprawdzFormat(r11), [])
+  const bez = sprawdzFormat('- [ ] Telefon: `/` obok `visual-diff/a-figma.png` → ok\n- [ ] T: `/` obok `visual-diff/b-figma.png` (viewport: 390×844) → ok\n- [ ] T: `/` obok `visual-diff/c-figma.png` (viewport 390×844)')
   assert.deepEqual(bez.map((p) => p.linia), [1, 2, 3])
-  const dubel = sprawdzFormat('- [ ] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → ok\n- [x] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → ok', skrot)
+  const dubel = sprawdzFormat('- [ ] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → ok\n- [x] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → ok')
   assert.deepEqual(dubel.map((p) => [p.linia, /kilka razy/.test(p.powod)]), [[1, true], [2, true]])
-  const bezEkranu = sprawdzFormat('- [ ] Telefon: `/` obok `makieta-figma.png` (viewport 390×844) → ok', skrot)
+  assert.deepEqual(sprawdzFormat('- [ ] *(2026-10-20: porównaj z `visual-diff/a-figma.png`)* Zwykły punkt'), [], 'makieta tylko w adnotacji')
+  const nieobok = sprawdzFormat('- [ ] T: `/` nieobok `visual-diff/a-figma.png` (viewport 390×844) → ok')
+  assert.deepEqual(nieobok.map((p) => p.linia), [1], '„obok” jako osobne słowo')
+  assert.deepEqual(sprawdzFormat('```\n- [ ] T: `/` obok `visual-diff/a-figma.png` → ok\n```\n'), [], 'blok kodu')
+  const bezEkranu = sprawdzFormat('- [ ] Telefon: `/` obok `makieta-figma.png` (viewport 390×844) → ok')
   assert.deepEqual(bezEkranu.map((p) => p.linia), [1])
+})
+
+test('po recenzji: „obok” w opisie stanu nie zabiera trasy; viewport R11 przed luźnym; hash przy placeholderze', () => {
+  const [p] = punktyWizualne('- [ ] Komputer, lista obok podglądu: `/admin/kolejka` obok `visual-diff/a-figma.png` (viewport 1440×900) → ok', skrot)
+  assert.equal(p.trasa, '/admin/kolejka')
+  const [v] = punktyWizualne('- [ ] T: wariant (viewport: 800×600) i `/` obok `visual-diff/a-figma.png` (viewport 390×844) → ok', skrot)
+  assert.deepEqual(v.viewport, { szerokosc: 390, wysokosc: 844 })
+  const [w] = punktyWizualne('- [ ] T: `/` obok `visual-diff/a-figma.png` (Viewport 390×844) → ok', skrot)
+  assert.deepEqual(w.viewport, { szerokosc: 390, wysokosc: 844 }, 'wielkość liter słowa viewport')
+  assert.equal(punktyWizualne('- [ ] T: `/a#<x>` obok `visual-diff/a-figma.png` → ok', skrot)[0].trasaStartowa, '/a')
+})
+
+test('po recenzji: trasy spoza aplikacji, ten sam ekran dwa razy, makieta bez visual-diff/, blok kodu', () => {
+  const trasa = (/** @type {string} */ t) => punktyWizualne(`- [ ] T: ${t} obok \`visual-diff/a-figma.png\` → ok`, skrot)[0].trasa
+  assert.equal(trasa('`//cdn.x/a`'), null)
+  assert.equal(trasa('zablokuj `/odznaka/*.svg`'), null)
+  assert.equal(trasa('`rpc/moje_projekty` i `/konto`'), '/konto')
+  const [p] = punktyWizualne('- [ ] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → jak `visual-diff/a-figma.png`', skrot)
+  assert.deepEqual(p.ekrany, ['a'])
+  assert.deepEqual(sprawdzFormat('- [ ] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → jak `visual-diff/a-figma.png`'), [])
+  assert.deepEqual(punktyWizualne('- [ ] T: `/` obok `makieta-figma.png` → ok', skrot), [])
+  assert.deepEqual(punktyWizualne('```\n- [ ] T: `/` obok `visual-diff/a-figma.png` → ok\n```\n- [ ] U obok `visual-diff/b-figma.png`', skrot).map((x) => x.linia), [4])
+})
+
+test('po recenzji: rozbiór — [X], CRLF, dwie spacje po checkboxie, niezamknięta adnotacja; statusy tylko z początku adnotacji', () => {
+  assert.equal(rozbierzLinie('- [X] A')?.checkbox, 'x')
+  assert.equal(rozbierzLinie('- [ ] *(2026-10-20: zgodne)* T\r')?.tresc, 'T')
+  assert.deepEqual(rozbierzLinie('- [x]  *(2026-10-20: zgodne)* T'), { checkbox: 'x', adnotacje: ['2026-10-20: zgodne'], tresc: 'T' })
+  assert.equal(rozbierzLinie('- [ ] *(niezamknięta T')?.tresc, '*(niezamknięta T')
+  const status = (/** @type {string} */ s) => statusLinii(/** @type {NonNullable<ReturnType<typeof rozbierzLinie>>} */ (rozbierzLinie(s)))
+  assert.equal(status(`- [ ] *(2026-10-20, druga sesja: ${ZNACZNIK_BLEDU} — x)* T`), 'blad')
+  assert.equal(status(`- [ ] *(2026-10-20: zgodne, wcześniej ${ZNACZNIK_BLEDU})* T`), 'otwarty')
+  assert.equal(status(`- [ ] *(2026-10-20: zgodne, ${ZNACZNIK_POPRAWKI} w abc)* T`), 'otwarty')
+  assert.equal(status(`- [ ] *(2026-10-20: ${ZNACZNIK_BLEDU} — nie ${ZNACZNIK_POPRAWKI} w x)* T`), 'blad')
 })
