@@ -14,17 +14,24 @@ Serwer narzędzia działa w tle na `http://127.0.0.1:5180` i jest zarazem proxy 
 ## Start
 
 1. Plik smoke'u: argument polecenia, a bez niego checklista bieżącej sesji smoke'u (`docs/operator/<data>-<zadanie>-smoke.md`).
-2. Adres aplikacji: z sekcji „0. Przygotowanie” smoke'u (domyślnie `http://localhost:5173`). Aplikacja ma działać przed startem.
+2. Adres aplikacji z sekcji „0. Przygotowanie” smoke'u, ze schematem `http://` (domyślnie `http://localhost:5173`).
+   Aplikacja ma działać przed startem.
 3. Uruchom:
    ```
    node .claude/scripts/makieta/makieta.mjs start --smoke <plik> --aplikacja <adres>
    ```
    Wynik to JSON. Operatorowi podaj `link` (jedyne miejsce z tokenem narzędzia), liczbę punktów i ekranów, `bezMakiety`,
-   `pominiete` (ekrany SPEC bez punktu w checkliście) i `aplikacjaOdpowiada`. Kod 1 z polem `blad` (port zajęty przez inny
-   proces, brak katalogu zadania) — przekaż operatorowi treść błędu; kod 2 — złe argumenty (adres aplikacji spoza localhost).
+   `pominiete` (ekrany SPEC bez punktu w checkliście) i `ostrzezenia`. `aplikacjaOdpowiada: false` — poproś operatora
+   o uruchomienie aplikacji; ramki pokażą stronę „Aplikacja nie odpowiada”, dopóki nie wstanie.
+   - Kod 1 z polem `blad`: port zajęty przez inny proces, brak katalogu zadania, nazwa pliku spoza
+     `<data>-<zadanie>-smoke.md` albo smoke poza projektem — przekaż operatorowi treść błędu.
+   - Kod 2: złe argumenty (komunikat na stderr), np. adres aplikacji spoza localhost.
+   - Kod 3: serwer nie wystartował albo wyjątek — przekaż operatorowi `blad` / `wyjatek` ze ścieżką logu serwera.
 4. Logowanie: hasłem w dowolnej ramce — jedna sesja obejmuje wszystkie ramki (wspólny origin). Dostawca OAuth: przycisk
    „Otwórz w karcie”, logowanie w karcie, potem „Przeładuj ramki”. OAuth wymaga wpisu `http://127.0.0.1:5180/**`
    w Redirect URLs projektu Supabase dev; bez wpisu działa logowanie hasłem. Po zmianie konta: „Przeładuj ramki”.
+5. Zaraz po starcie uruchom `Monitor` z sekcji „Zgłoszenia z narzędzia” (narzędzie odroczone — najpierw ToolSearch
+   `select:Monitor`). Powiedz operatorowi: „Gdy zgłoszenie nie dostanie odpowiedzi w minutę, napisz: zgłoszenia”.
 
 ## Zgłoszenia z narzędzia
 
@@ -41,31 +48,39 @@ z tą samą komendą. `serwer-zatrzymany` = narzędzie nie działa; zapytaj oper
 Zdarzenie `zgloszenie` ma pola `punkt`, `ekran`, `trasa`, `viewport`, `urzadzenie`, `szerokosc`, `opis`, `spec`, `makieta`.
 Obsługa jednego zgłoszenia:
 
-1. Przeczytaj SPEC ekranu z pola `spec` (`ekrany/<ekran>.md`). PNG makiety z pola `makieta` podajesz tylko ścieżką i nie
-   otwierasz obrazu — jeden zrzut w kontekście to ok. 2,5 tys. tokenów w każdej kolejnej turze.
-2. Odtwórz usterkę w aplikacji na trasie punktu przy szerokości `szerokosc` (pomiar bez zrzutu: `snapshot`, `get box`,
-   `get styles`), napraw ją z testem i commitem, jak mówi ramka „Jak kontynuować” smoke'u. Przy zbudowanym serwerze
-   (nie Vite dev) przebuduj aplikację i uruchom serwer od nowa.
+1. Przeczytaj SPEC z pola `spec` (zwykle `ekrany/<ekran>.md`, bez niego cały SPEC.md; `null` — opis wyłącznie z treści
+   punktu). PNG makiety z pola `makieta` podajesz tylko ścieżką i nie otwierasz obrazu — jeden zrzut w kontekście to
+   ok. 2,5 tys. tokenów w każdej kolejnej turze.
+2. Odtwórz usterkę w aplikacji na trasie punktu przy szerokości `szerokosc` (pomiar agent-browserem bez zrzutu: `snapshot`,
+   `get box`, `get styles`), napraw ją z testem i commitem, jak mówi ramka „Jak kontynuować” smoke'u. Przy zbudowanym
+   serwerze (nie Vite dev) przebuduj aplikację i uruchom serwer od nowa.
 3. Daj znać narzędziu:
    ```
    node .claude/scripts/makieta/makieta.mjs poprawione --punkt <punkt> --commit <sha>
    ```
    Linia punktu dostaje adnotację „poprawione w <sha>, do sprawdzenia”, narzędzie czeka do 60 s na odpowiedź aplikacji
-   i przeładowuje ramki. Punkt zostaje `[ ]` — ocenia go znów operator. Kod 1 z `konflikt` = sesja albo operator zmienili
-   linię w międzyczasie: przeczytaj ją i uruchom polecenie jeszcze raz.
+   i przeładowuje ramki. Punkt zostaje `[ ]` — ocenia go znów operator. Wynik:
+   - kod 1, `konflikt: linia-zmieniona` — linia zmieniła się w międzyczasie, uruchom polecenie jeszcze raz;
+   - kod 1, `konflikt: brak-punktu` albo `blad` „brak punktu” — treść punktu się zmieniła, weź nowy `punkt`
+     z `makieta.mjs zgloszenia`;
+   - kod 1, `konflikt: niejednoznaczny` — ta sama treść stoi w checkliście dwa razy, popraw jedną z linii narzędziem Edit;
+   - kod 1, `konflikt: status` — punkt nie ma otwartego zgłoszenia (już poprawiony albo oceniony), nie ponawiaj;
+   - kod 0 z `przeladowano: false` — linia zapisana, poproś operatora o „Przeładuj ramki”.
 
-Linię punktu zmieniają decyzje w narzędziu. Sesja zmienia plik smoke'u narzędziem Edit (odmawia zapisu, gdy plik zmienił
-się od odczytu), punkt po punkcie, bez przepisywania całego pliku.
+Linii punktów wizualnych sesja nie odhacza i nie zmienia ich treści — zmieniają je decyzje w narzędziu i `poprawione`
+(identyfikator punktu to skrót treści linii). Pozostałe punkty smoke'u sesja odhacza narzędziem Edit, punkt po punkcie.
 
 ## Droga awaryjna
 
-Gdy operator pisze „zgłoszenia” albo zdarzenie nie przyszło (sesja czekała na wiadomość, `/clear`, wygasły `Monitor`):
+Gdy operator pisze „zgłoszenia” albo zdarzenie nie przyszło (sesja czekała na wiadomość, wygasły `Monitor`):
 
 ```
-node .claude/scripts/makieta/makieta.mjs zgloszenia
+node .claude/scripts/makieta/makieta.mjs zgloszenia --smoke <plik>
 ```
 
-Wynik to otwarte zgłoszenia z checklisty (status „błąd zgłoszony”) z ekranami, SPEC i PNG — obsłuż je jak wyżej.
+Wynik to otwarte zgłoszenia z checklisty (status „błąd zgłoszony”): `punkt`, `linia`, `zgloszenie` (adnotacja z urządzeniem,
+szerokością i opisem), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary` — obsłuż je jak wyżej.
+Po `/clear` narzędzie nie działa: `start` od nowa (nowy link), `Monitor`, potem `zgloszenia`.
 
 ## Stan i zatrzymanie
 
@@ -75,7 +90,7 @@ Wynik to otwarte zgłoszenia z checklisty (status „błąd zgłoszony”) z ekr
 node .claude/scripts/makieta/makieta.mjs stop
 ```
 
-Decyzje żyją wyłącznie w checkliście, więc start w nowej sesji wraca tam, gdzie operator skończył (z nowym linkiem).
+Decyzje żyją wyłącznie w checkliście, więc start w nowej sesji wraca tam, gdzie operator skończył.
 
 ## Status punktu w checkliście
 
@@ -83,11 +98,10 @@ Narzędzie liczy status z checkboxa i pierwszej adnotacji `*(…)*` zaraz po nim
 
 | Linia | Status na stronie |
 |---|---|
-| `- [x] *(RRRR-MM-DD: zgodne)* …` | zgodny |
+| `- [x] *(RRRR-MM-DD: zgodne)* …` albo `- [x] …` bez adnotacji | zgodny |
 | `- [x] *(RRRR-MM-DD: <notatka> — zatwierdzone)* …` | odstępstwo |
 | `- [ ] *(RRRR-MM-DD: błąd zgłoszony — <urządzenie> <szerokość> px: <opis>)* …` | błąd zgłoszony |
 | `- [ ] *(RRRR-MM-DD: poprawione w <sha>, do sprawdzenia)* …` | poprawione, do sprawdzenia |
 | `- [ ] …` (bez takiej adnotacji) | otwarty |
 
-Format punktu wizualnego, który narzędzie czyta: ``- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → <oczekiwany wynik>``. Kontrola formatu:
-`node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>`.
+Format punktu wizualnego i jego kontrolę opisuje `dev-docs-complete`, krok 3 („Punkty wizualne”).

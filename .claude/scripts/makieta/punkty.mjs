@@ -18,7 +18,8 @@ const VIEWPORT = /viewport:?\s*(\d+)\s*[×x]\s*(\d+)\s*(?:px)?/i
 const VIEWPORT_R11 = /\(viewport (\d+)×(\d+)\)/
 const PLOT = /^\s*(?:```|~~~)/
 const DATA_ADNOTACJI = /^\d{4}-\d{2}-\d{2}[^:]*:\s*/
-const FIZYCZNE = '**[fizyczne urządzenie]**'
+// Bez polskich znakow tez — agent smoke'u pisal znacznik z prompta workflowu w ASCII.
+const FIZYCZNE = /\*\*\[fizyczne urz[aą]dzenie\]\*\*/
 const DLUGOSC_ID = 8
 
 /**
@@ -110,7 +111,7 @@ function linieZMakieta(md) {
     const tekst = surowa.replace(/\r$/, '')
     if (PLOT.test(tekst)) kod = !kod
     const rozbior = kod ? null : rozbierzLinie(tekst)
-    return rozbior && /-figma\.png/.test(rozbior.tresc) && !rozbior.tresc.includes(FIZYCZNE) ? [{ nr: i + 1, tekst, rozbior }] : []
+    return rozbior && /-figma\.png/.test(rozbior.tresc) && !FIZYCZNE.test(rozbior.tresc) ? [{ nr: i + 1, tekst, rozbior }] : []
   })
 }
 

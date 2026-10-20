@@ -38,7 +38,7 @@ Datę do plików bierz z `date +%F`.
    - Warunki środowiskowe z findingów OPERATOR nie są pozycjami smoke'u: konieczność restartu dev servera po zmianie `.env` ląduje wyłącznie jako check w „0. Przygotowanie"; kroki stricte pod przebieg E2E (seedy na projekt e2e, dev server w trybie `--mode e2e`) **nigdy** nie wchodzą do smoke'u — kolidują z sekcją 0 (smoke leci na projekcie głównym).
    - **W całym pliku żadnych wartości haseł/tokenów/kluczy** — także gdy cytujesz known-issues lub review; zastąp nazwą zmiennej (`E2E_TEST_PASSWORD`) lub frazą `<hasło w .env.e2e>`. E-mail konta testowego może zostać.
 
-   **Punkty wizualne** (porównanie z makietą `visual-diff/<ekran>-figma.png` z katalogu zadania) czyta narzędzie makiet (`/makieta`). Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → <oczekiwany wynik>”: trasa w backtickach (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka. Przed pierwszym punktem wizualnym smoke'u stoi zdanie „Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.”. Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.
+   **Punkty wizualne** czyta narzędzie makiet (`/makieta`). Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → <oczekiwany wynik>”: trasa w backtickach (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka. Przed pierwszym punktem wizualnym smoke'u stoi zdanie „Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.”. Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.
 
    Jeśli po zastosowaniu hierarchii źródła (1)–(6) są puste — nie twórz pliku, powiedz „brak pozycji do ręcznego sprawdzenia".
 
@@ -85,7 +85,7 @@ Datę do plików bierz z `date +%F`.
    Wejście: <jak tam dojść w aplikacji>.
    - [ ] <Czynność> → <oczekiwany wynik, konkretny>
    - [ ] **[fizyczne urządzenie]** <dotyk / push / safe-area / responsywność>
-   Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.
+   Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.   ← tylko w smoke'u z punktami wizualnymi, przed pierwszym z nich
    - [ ] Telefon: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport 390×844) → <układ zgodny z makietą, oczekiwany wynik>
 
    ## 2. …
@@ -99,7 +99,7 @@ Datę do plików bierz z `date +%F`.
    Kontynuujemy smoke operatora zadania "<zadanie>" (branch feature/<zadanie>).
    Checklista: docs/operator/YYYY-MM-DD-<zadanie>-smoke.md — prowadź mnie punkt po punkcie,
    odhaczaj za mnie w pliku, a usterki naprawiaj od razu (z testem) zamiast odkładać.
-   Przy punktach wizualnych uruchom /makieta, a przed /clear je zatrzymaj.
+   Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).
    Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania
    bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj.
    ```
