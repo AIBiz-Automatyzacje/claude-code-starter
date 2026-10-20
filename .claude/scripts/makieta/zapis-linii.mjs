@@ -8,7 +8,7 @@
 // znaczniki scenariuszy i priorytetow w nawiasach kwadratowych oraz „Operator” z dwukropkiem zneutralizowane.
 
 import { createHash, randomUUID } from 'node:crypto'
-import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeSync } from 'node:fs'
+import { closeSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { setTimeout as czekaj } from 'node:timers/promises'
 
@@ -41,26 +41,33 @@ export class BladZapisu extends Error {
 /** @param {string} tekst @returns {string} skrot SHA-1 hex — identyfikator punktu w punkty.mjs */
 export const skrotSha1 = (tekst) => createHash('sha1').update(tekst).digest('hex')
 
+/** @param {string} t @returns {string} jedno przejscie neutralizacji; `**(x)**` po jednym przejsciu daje `*(x)*`, wiec wolajacy powtarza */
+const neutralizuj = (t) => t
+  .replace(/\s+/g, ' ')
+  .replace(/\*+\(/g, '(')
+  .replace(/\)\*+/g, ')')
+  .replace(/\[+\s*(E2E|Manual|Unit|P[1-3])\s*\]+/gi, '$1')
+  .replace(/(Operator)\s*:+/gi, '$1')
+
 /**
- * Notatka operatora jako fragment jednej linii checkboxa.
- * @param {string} tekst
+ * Notatka operatora jako fragment jednej linii checkboxa: neutralizacja do punktu stalego (resztki nie skladaja sie w nowe
+ * zamkniecie adnotacji ani token grepa), limit w znakach Unicode (bez przecinania par zastepczych).
+ * @param {unknown} tekst
  * @param {number} [limit]
- * @returns {string}
+ * @returns {string} pusty tekst dla wartosci innej niz string
  */
 export function oczyscNotatke(tekst, limit = DLUGOSC_NOTATKI) {
-  return String(tekst)
-    .replace(/\s+/g, ' ')
-    .replaceAll('*(', '(')
-    .replaceAll(')*', ')')
-    .replace(/\[(E2E|Manual|Unit|P[1-3])\]/gi, '$1')
-    .replace(/\bOperator:/gi, 'Operator')
-    .trim()
-    .slice(0, limit)
-    .trim()
+  if (typeof tekst !== 'string') return ''
+  let t = tekst
+  for (let poprzedni = ''; poprzedni !== t;) {
+    poprzedni = t
+    t = neutralizuj(t)
+  }
+  return Array.from(t.trim()).slice(0, limit).join('').trim()
 }
 
 /** @param {Date} d @returns {string} data lokalna RRRR-MM-DD (nie UTC: po polnocy w Polsce UTC ma jeszcze wczorajsza) */
-function dataLokalna(d) {
+export function dataLokalna(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
@@ -88,29 +95,32 @@ function adnotacjaDecyzji(decyzja, dane) {
     return { checkbox: ' ', tresc: `${ZNACZNIK_BLEDU} — ${urzadzenie} ${szerokosc} px: ${opis}` }
   }
   if (decyzja === 'poprawione') {
-    if (!SHA.test(dane.commit ?? '')) throw new BladZapisu('odmowa', '„poprawione” wymaga skrótu commita (4–40 znaków hex)')
+    if (typeof dane.commit !== 'string' || !SHA.test(dane.commit)) throw new BladZapisu('odmowa', '„poprawione” wymaga skrótu commita (4–40 znaków hex)')
     return { checkbox: ' ', tresc: `${ZNACZNIK_POPRAWKI} w ${dane.commit}, do sprawdzenia` }
   }
   throw new BladZapisu('odmowa', `nieznana decyzja „${String(decyzja)}” (zgodne, odstepstwo, blad, poprawione)`)
 }
 
 /**
- * Plik zapisany atomowo: tymczasowy obok celu (`open 'wx'`, `fsync`), potem `rename`; przy bledzie tymczasowy usuniety.
+ * Plik zapisany atomowo: tymczasowy obok celu (`open 'wx'`, tryb celu bez umask, `fsync`), potem `rename`; przy bledzie
+ * tymczasowy usuniety. Dowiazanie symboliczne: zapis do celu dowiazania (rename na dowiazaniu zastapilby je zwyklym plikiem).
  * @param {string} plik
  * @param {string} tresc
  * @param {{ rename?: (z: string, na: string) => void }} [opcje] rename podmieniany w tescie przerwanego zapisu
  */
 export function zapiszAtomowo(plik, tresc, { rename = renameSync } = {}) {
-  const tymczasowy = join(dirname(plik), `.${basename(plik)}.${process.pid}.${randomUUID()}.tmp`)
+  const cel = realpathSync(plik)
+  const tymczasowy = join(dirname(cel), `.${basename(cel)}.${process.pid}.${randomUUID()}.tmp`)
   try {
-    const fd = openSync(tymczasowy, 'wx', statSync(plik).mode)
+    const fd = openSync(tymczasowy, 'wx')
     try {
+      fchmodSync(fd, statSync(cel).mode & 0o7777)
       writeSync(fd, tresc)
       fsyncSync(fd)
     } finally {
       closeSync(fd)
     }
-    rename(tymczasowy, plik)
+    rename(tymczasowy, cel)
   } catch (blad) {
     rmSync(tymczasowy, { force: true })
     throw blad
@@ -120,32 +130,68 @@ export function zapiszAtomowo(plik, tresc, { rename = renameSync } = {}) {
 /** @param {unknown} blad @param {string} kod @returns {boolean} */
 const zKodem = (blad, kod) => blad instanceof Error && 'code' in blad && blad.code === kod
 
+/** @param {string} plik @returns {string | null} tresc blokady (token wlasciciela) albo null, gdy jej nie ma */
+function tokenBlokady(plik) {
+  try {
+    return readFileSync(plik, 'utf8')
+  } catch (blad) {
+    if (zKodem(blad, 'ENOENT')) return null
+    throw blad
+  }
+}
+
 /**
- * Blokada zapisow narzedzia: plik `zapis.lock` z PID-em; przeterminowana (> 10 s) usuwana, swieza — czekanie do limitu.
+ * Przeterminowana blokada przejmowana przez rename na nazwe unikalna: z dwoch procesow, ktore zobaczyly ja jednoczesnie, tylko
+ * jeden ja przeniesie — drugi nie usunie swiezej blokady pierwszego.
+ * @param {string} plik
+ */
+function przejmijPrzeterminowana(plik) {
+  const przeniesiona = `${plik}.${randomUUID()}.stara`
+  try {
+    renameSync(plik, przeniesiona)
+  } catch (blad) {
+    if (zKodem(blad, 'ENOENT')) return
+    throw blad
+  }
+  // Miedzy stat a rename ktos mogl przejac stara i zalozyc swieza — swieza wraca na miejsce.
+  if (Date.now() - statSync(przeniesiona).mtimeMs <= WIEK_PRZETERMINOWANEJ_MS) renameSync(przeniesiona, plik)
+  else rmSync(przeniesiona, { force: true })
+}
+
+/**
+ * Blokada zapisow narzedzia: plik `zapis.lock` z tokenem wlasciciela; przeterminowana (> 10 s) przejmowana, swieza — czekanie
+ * do limitu. Zdjecie usuwa plik tylko z wlasnym tokenem.
  * @param {string} katalogStanu
- * @param {number} limitMs
+ * @param {number} [limitMs]
  * @returns {Promise<() => void>} zdjecie blokady
  */
-async function zalozBlokade(katalogStanu, limitMs) {
-  mkdirSync(katalogStanu, { recursive: true })
+export async function zalozBlokade(katalogStanu, limitMs = LIMIT_BLOKADY_MS) {
   const plik = join(katalogStanu, PLIK_BLOKADY)
+  const token = `${process.pid}.${randomUUID()}`
   const termin = Date.now() + limitMs
   for (;;) {
+    mkdirSync(katalogStanu, { recursive: true })
     try {
-      closeSync(openSync(plik, 'wx'))
-      return () => rmSync(plik, { force: true })
+      const fd = openSync(plik, 'wx')
+      writeSync(fd, token)
+      closeSync(fd)
+      return () => {
+        if (tokenBlokady(plik) === token) rmSync(plik, { force: true })
+      }
     } catch (blad) {
       if (!zKodem(blad, 'EEXIST')) throw blad
     }
-    let wiek = 0
+    /** @type {number | null} */
+    let wiek = null
     try {
       wiek = Date.now() - statSync(plik).mtimeMs
     } catch (blad) {
       // Blokade zdjal inny zapis miedzy open a stat — nastepna proba ja zalozy.
       if (!zKodem(blad, 'ENOENT')) throw blad
     }
-    if (wiek > WIEK_PRZETERMINOWANEJ_MS) rmSync(plik, { force: true })
-    else if (Date.now() > termin) throw new BladZapisu('blokada', `inny zapis narzędzia trzyma blokadę ${plik} — spróbuj za chwilę`)
+    if (wiek === null) continue
+    if (wiek > WIEK_PRZETERMINOWANEJ_MS) przejmijPrzeterminowana(plik)
+    else if (Date.now() > termin) throw new BladZapisu('blokada', `inny zapis narzędzia trzyma blokadę ${plik} — ponów za chwilę`)
     else await czekaj(ODSTEP_BLOKADY_MS)
   }
 }
@@ -163,7 +209,7 @@ export async function zapiszDecyzje({ plik, katalogStanu, punkt, linia, decyzja,
     const md = readFileSync(plik, 'utf8')
     const trafienia = punktyWizualne(md, skrotSha1).filter((p) => p.id === punkt)
     if (!trafienia.length) return { wynik: 'konflikt', powod: 'brak-punktu', linia: null }
-    if (trafienia.length > 1 || trafienia[0].niejednoznaczny) return { wynik: 'konflikt', powod: 'niejednoznaczny', linia: null }
+    if (trafienia[0].niejednoznaczny) return { wynik: 'konflikt', powod: 'niejednoznaczny', linia: null }
     const p = trafienia[0]
     if (p.tekst !== linia) return { wynik: 'konflikt', powod: 'linia-zmieniona', linia: p.tekst }
     const reszta = p.tekst.slice('- [ ] '.length)

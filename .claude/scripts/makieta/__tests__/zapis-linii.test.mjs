@@ -1,14 +1,15 @@
 // Zapis decyzji do jednej linii checklisty (P24 IU-3): adnotacja zaraz po checkboxie, reszta pliku bajt w bajt, konflikt przy
 // zmianie linii przez sesje, zapis atomowy i blokada narzedzia w katalogu stanu.
 
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { punktyWizualne } from '../punkty.mjs'
-import { BladZapisu, oczyscNotatke, skrotSha1, zapiszAtomowo, zapiszDecyzje } from '../zapis-linii.mjs'
+import { BladZapisu, oczyscNotatke, skrotSha1, zalozBlokade, zapiszAtomowo, zapiszDecyzje } from '../zapis-linii.mjs'
 
 const TERAZ = new Date(2026, 9, 20, 23, 30)
 const P1 = 'Telefon: `/konto/projekty` obok `visual-diff/moje-projekty-telefon-figma.png` (viewport 390×782) → układ zgodny'
@@ -128,4 +129,78 @@ test('przerwany zapis nie zostawia pliku tymczasowego; przeterminowana blokada n
   const r = punkt(plik, 1)
   await assert.rejects(zapiszDecyzje({ plik, katalogStanu: stan, punkt: r.id, linia: r.tekst, decyzja: 'odstepstwo', notatka: 'x', teraz: TERAZ, limitBlokadyMs: 200 }),
     (b) => b instanceof BladZapisu && b.kod === 'blokada')
+}))
+
+test('po recenzji: pogrubienie i podwojone nawiasy w notatce nie składają zamknięcia adnotacji ani tokenu grepa; status i id zostają', () => zSmoke(async ({ plik, stan }) => {
+  assert.equal(oczyscNotatke('**(ważne)** i ))** oraz ***(x'), '(ważne) i )) oraz (x')
+  assert.equal(oczyscNotatke('[[E2E]] [[P1]] [ Manual ] Operator:: xOperator: _operator :'), 'E2E P1 Manual Operator xOperator _operator')
+  assert.equal(oczyscNotatke({ a: 1 }), '')
+  assert.equal(oczyscNotatke(`${'a'.repeat(299)}😀😀`), `${'a'.repeat(299)}😀`, 'limit w znakach Unicode')
+  const p = punkt(plik, 0)
+  const w = zapisana(await zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'odstepstwo', notatka: '**(ważne)** przesunięty', teraz: TERAZ }))
+  assert.equal(punkt(plik, 0).status, 'odstepstwo')
+  assert.equal(punkt(plik, 0).id, p.id)
+  await zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: w, decyzja: 'blad', notatka: 'x', urzadzenie: 'telefon ))**', szerokosc: 390, teraz: TERAZ })
+  assert.equal(punkt(plik, 0).id, p.id)
+  assert.equal(punkt(plik, 0).status, 'blad')
+}))
+
+test('po recenzji: commit tylko jako hex 4–40 znaków; urządzenie puste = odmowa, dłuższe niż 40 znaków ucięte; spacje na końcu linii zostają', () => zSmoke(async ({ plik, stan }) => {
+  const p = punkt(plik, 0)
+  for (const commit of ['abc1234; rm', 'abc1234\n- [x] x', 'abc', 1234, ['abc1']]) {
+    await assert.rejects(zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'poprawione', commit: /** @type {string} */ (/** @type {unknown} */ (commit)), teraz: TERAZ }),
+      (b) => b instanceof BladZapisu && b.kod === 'odmowa', String(commit))
+  }
+  await assert.rejects(zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: '  ', szerokosc: 390, teraz: TERAZ }),
+    (b) => b instanceof BladZapisu && b.kod === 'odmowa')
+  const w = zapisana(await zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'u'.repeat(100), szerokosc: 390, teraz: TERAZ }))
+  assert.ok(w.includes(`— ${'u'.repeat(40)} 390 px: x`))
+  writeFileSync(plik, `- [ ] ${P1}  \n`)
+  const q = punkt(plik, 0)
+  assert.ok(zapisana(await zapiszDecyzje({ plik, katalogStanu: stan, punkt: q.id, linia: q.tekst, decyzja: 'zgodne', teraz: TERAZ })).endsWith(`${P1}  `))
+}))
+
+test('po recenzji: data lokalna, nie UTC (00:30 w Warszawie to jeszcze poprzedni dzień w UTC)', () => {
+  const kod = `import { dataLokalna } from ${JSON.stringify(new URL('../zapis-linii.mjs', import.meta.url).href)}; process.stdout.write(dataLokalna(new Date(2026, 9, 20, 0, 30)))`
+  const w = spawnSync(process.execPath, ['--input-type=module', '-e', kod], { encoding: 'utf8', env: { ...process.env, TZ: 'Europe/Warsaw' } })
+  assert.equal(w.stdout, '2026-10-20', w.stderr)
+})
+
+test('po recenzji: tryb pliku zachowany mimo umask; smoke jako dowiązanie zostaje dowiązaniem; brak uprawnień do katalogu stanu = błąd systemu, nie czekanie', () => zSmoke(async ({ katalog, plik, stan }) => {
+  chmodSync(plik, 0o664)
+  const p = punkt(plik, 0)
+  await zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'zgodne', teraz: TERAZ })
+  assert.equal(statSync(plik).mode & 0o777, 0o664)
+  const dowiazanie = join(katalog, '2026-10-20-y-smoke.md')
+  symlinkSync(plik, dowiazanie)
+  const q = punkt(dowiazanie, 1)
+  await zapiszDecyzje({ plik: dowiazanie, katalogStanu: stan, punkt: q.id, linia: q.tekst, decyzja: 'zgodne', teraz: TERAZ })
+  assert.ok(lstatSync(dowiazanie).isSymbolicLink())
+  assert.equal(punkt(plik, 1).status, 'zgodny')
+  const zamkniety = join(katalog, 'zamkniety')
+  mkdirSync(zamkniety, { mode: 0o500 })
+  try {
+    await assert.rejects(zapiszDecyzje({ plik, katalogStanu: zamkniety, punkt: q.id, linia: punkt(plik, 1).tekst, decyzja: 'zgodne', teraz: TERAZ, limitBlokadyMs: 5000 }),
+      (b) => b instanceof Error && 'code' in b && b.code === 'EACCES')
+  } finally {
+    chmodSync(zamkniety, 0o700)
+  }
+}))
+
+test('po recenzji: zdjęcie blokady nie usuwa cudzej, która ją zastąpiła', () => zSmoke(async ({ plik, stan }) => {
+  const p = punkt(plik, 0)
+  const blokada = join(stan, 'zapis.lock')
+  const zapis = zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'zgodne', teraz: TERAZ })
+  await zapis
+  writeFileSync(blokada, 'cudza')
+  const stara = new Date(Date.now() - 60_000)
+  utimesSync(blokada, stara, stara)
+  const q = punkt(plik, 1)
+  await zapiszDecyzje({ plik, katalogStanu: stan, punkt: q.id, linia: q.tekst, decyzja: 'zgodne', teraz: TERAZ })
+  assert.equal(existsSync(blokada), false, 'przeterminowana przejęta i zdjęta')
+  assert.deepEqual(readdirSync(stan), [], 'bez resztek .stara')
+  const zdejmij = await zalozBlokade(stan)
+  writeFileSync(blokada, 'cudza')
+  zdejmij()
+  assert.equal(readFileSync(blokada, 'utf8'), 'cudza', 'blokada przejęta przez inny proces zostaje')
 }))
