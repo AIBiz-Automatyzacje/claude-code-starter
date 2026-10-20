@@ -5,6 +5,8 @@
 
 const KLUCZ_WYBORU = 'makieta.urzadzenia'
 const ODSTEP_RAMEK_PX = 16
+const OBRAMOWANIE_PX = 1
+const MARGINES_PASKA_PX = 20
 
 /** @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie */
 
@@ -23,10 +25,11 @@ export function zapisanyWybor() {
   }
 }
 
-/** @param {Urzadzenie[] | null} wybor null = powrot do wyboru domyslnego */
+/** @param {Urzadzenie[] | null} wybor null = powrot do wyboru domyslnego; ramka „wymiar makiety” nalezy do ekranu, nie zostaje */
 export function zapiszWybor(wybor) {
   try {
-    if (wybor) localStorage.setItem(KLUCZ_WYBORU, JSON.stringify(wybor))
+    const trwale = wybor?.filter((u) => !u.id.startsWith('makieta-')) ?? []
+    if (trwale.length) localStorage.setItem(KLUCZ_WYBORU, JSON.stringify(trwale))
     else localStorage.removeItem(KLUCZ_WYBORU)
   } catch {
     // Bez localStorage wybor dziala do przeladowania strony — tylko wygoda operatora.
@@ -40,8 +43,33 @@ export function zapiszWybor(wybor) {
  * @returns {number}
  */
 export function skalaRamek(urzadzenia, szerokoscKolumny) {
-  const razem = urzadzenia.reduce((s, u) => s + u.szerokosc, 0) + ODSTEP_RAMEK_PX * Math.max(0, urzadzenia.length - 1)
-  return razem > 0 ? Math.min(1, szerokoscKolumny / razem) : 1
+  // Obramowanie okna i margines na pionowy pasek przewijania (pojawia sie po wstawieniu ramek) — inaczej ostatnia ramka spada nizej.
+  const razem = urzadzenia.reduce((s, u) => s + u.szerokosc + 2 * OBRAMOWANIE_PX, 0) + ODSTEP_RAMEK_PX * Math.max(0, urzadzenia.length - 1)
+  return razem > 0 ? Math.min(1, (szerokoscKolumny - MARGINES_PASKA_PX) / razem) : 1
+}
+
+/** @param {HTMLElement} okno @param {HTMLIFrameElement} iframe @param {HTMLElement} podpis @param {Urzadzenie} u @param {number} skala */
+function wymiaruj(okno, iframe, podpis, u, skala) {
+  podpis.textContent = `${u.nazwa} · ${u.szerokosc}×${u.wysokosc}${skala < 1 ? ` · ${Math.round(skala * 100)}%` : ''}`
+  okno.style.width = `${Math.floor(u.szerokosc * skala)}px`
+  okno.style.height = `${Math.floor(u.wysokosc * skala)}px`
+  iframe.style.transform = `scale(${skala})`
+}
+
+/**
+ * Nowa skala istniejacych ramek (zmiana okna, 1:1) bez tworzenia ich od nowa — aplikacja w ramkach zachowuje stan.
+ * @param {HTMLElement} kontener
+ * @param {Urzadzenie[]} urzadzenia te same, dla ktorych powstaly ramki
+ * @param {{ jedenDoJednego: boolean }} opcje
+ */
+export function skalujRamki(kontener, urzadzenia, { jedenDoJednego }) {
+  const skala = jedenDoJednego ? 1 : skalaRamek(urzadzenia, kontener.clientWidth)
+  kontener.querySelectorAll('figure').forEach((ramka, i) => {
+    const okno = ramka.querySelector('.ramka__okno')
+    const iframe = ramka.querySelector('iframe')
+    const podpis = ramka.querySelector('figcaption')
+    if (okno instanceof HTMLElement && iframe && podpis && urzadzenia[i]) wymiaruj(okno, iframe, podpis, urzadzenia[i], skala)
+  })
 }
 
 /**
@@ -58,17 +86,14 @@ export function ustawRamki(kontener, urzadzenia, trasa, { jedenDoJednego }) {
     ramka.className = 'ramka'
     ramka.style.margin = '0'
     const podpis = document.createElement('figcaption')
-    podpis.textContent = `${u.nazwa} · ${u.szerokosc}×${u.wysokosc}${skala < 1 ? ` · ${Math.round(skala * 100)}%` : ''}`
     const okno = document.createElement('div')
     okno.className = 'ramka__okno'
-    okno.style.width = `${Math.round(u.szerokosc * skala)}px`
-    okno.style.height = `${Math.round(u.wysokosc * skala)}px`
     const iframe = document.createElement('iframe')
     iframe.title = `Aplikacja — ${u.nazwa}`
     iframe.width = String(u.szerokosc)
     iframe.height = String(u.wysokosc)
-    iframe.style.transform = `scale(${skala})`
     iframe.dataset.urzadzenie = u.id
+    wymiaruj(okno, iframe, podpis, u, skala)
     iframe.src = trasa
     okno.append(iframe)
     ramka.append(podpis, okno)

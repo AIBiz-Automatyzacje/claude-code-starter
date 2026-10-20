@@ -4,13 +4,14 @@
 // Zmiany sesji (SSE `punkty`) odswiezaja liste z zachowaniem biezacego ekranu; `przeladuj` (po poprawce) przeladowuje ramki.
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
-import { przeladujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
 
 const API = '/__makieta/api/'
 const KLUCZ_TOKENU = 'makieta.token'
 const KLUCZ_EKRANU = 'makieta.ekran'
 const STATUSY = { otwarty: 'otwarty', zgodny: 'zgodny', odstepstwo: 'odstępstwo', blad: 'błąd zgłoszony', poprawione: 'poprawione, do sprawdzenia' }
 const KONFLIKT = 'Sesja zmieniła ten punkt w międzyczasie — odświeżyłem go, oceń jeszcze raz.'
+const BRAK_SERWERA = 'Serwer narzędzia nie odpowiada — w sesji sprawdź „makieta.mjs stan” i otwórz nowy link po starcie.'
 
 /**
  * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
@@ -59,8 +60,13 @@ const komunikat = (tekst) => { el('komunikat', HTMLParagraphElement).textContent
 
 /** @param {string} sciezka @param {RequestInit} [opcje] @returns {Promise<{ status: number, json: any }>} */
 async function api(sciezka, opcje = {}) {
-  const odp = await fetch(`${API}${sciezka}`, { ...opcje, headers: { 'x-makieta-token': token, 'content-type': 'application/json', ...opcje.headers }, signal: AbortSignal.timeout(10_000) })
-  return { status: odp.status, json: await odp.json().catch(() => null) }
+  try {
+    const odp = await fetch(`${API}${sciezka}`, { ...opcje, headers: { 'x-makieta-token': token, 'content-type': 'application/json', ...opcje.headers }, signal: AbortSignal.timeout(10_000) })
+    return { status: odp.status, json: await odp.json().catch(() => null) }
+  } catch {
+    // Siec albo limit czasu: serwer narzedzia zatrzymany — status 0 i komunikat dla operatora zamiast cichego wyjatku.
+    return { status: 0, json: { error: { message: BRAK_SERWERA } } }
+  }
 }
 
 /** @returns {{ ekran: Ekran, punkt: Punkt } | null} */
@@ -72,6 +78,8 @@ function biezacy() {
 
 /** @param {{ ekran: Ekran, punkt: Punkt }} b @returns {Urzadzenie[]} */
 const urzadzeniaEkranu = (b) => zapisanyWybor() ?? domyslneUrzadzenia(b.ekran.wymiary, b.punkt.tresc)
+
+const skaluj = () => skalujRamki(el('ramki', HTMLDivElement), stan.urzadzenia, { jedenDoJednego: stan.jedenDoJednego })
 
 function rysujRamki() {
   ustawRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.trasa, { jedenDoJednego: stan.jedenDoJednego })
@@ -101,6 +109,8 @@ function rysujEkran({ zmienTrase = true } = {}) {
   const dane = stan.dane
   const b = biezacy()
   el('licznik', HTMLSpanElement).textContent = dane ? `ekran ${dane.ekrany.length ? stan.indeks + 1 : 0}/${dane.ekrany.length}` : ''
+  el('decyzje', HTMLDivElement).hidden = !b
+  if (dane && !dane.ekrany.length) komunikat('Smoke nie ma punktów wizualnych z makietą visual-diff/<ekran>-figma.png.')
   if (!dane || !b) return
   bezpiecznie(() => { sessionStorage.setItem(KLUCZ_EKRANU, String(stan.indeks)); return null })
   const { ekran, punkt } = b
@@ -161,20 +171,36 @@ function ukryjFormularze() {
   el('form-blad', HTMLFormElement).hidden = true
 }
 
-/** @param {'zgodne' | 'odstepstwo' | 'blad'} decyzja @param {{ notatka?: string, urzadzenie?: Urzadzenie }} [dane] */
+/**
+ * @param {'zgodne' | 'odstepstwo' | 'blad'} decyzja
+ * @param {{ notatka?: string, urzadzenie?: Urzadzenie }} [dane]
+ * @returns {Promise<boolean>} czy zapisano (formularz czysci pole tylko po zapisie)
+ */
 async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
   const b = biezacy()
-  if (!b) return
-  const cialo = { punkt: b.punkt.id, linia: b.punkt.tekst, decyzja, notatka, ekran: b.ekran.ekran, urzadzenie: urzadzenie?.nazwa, szerokosc: urzadzenie?.szerokosc }
-  const { status, json } = await api('decyzja', { method: 'POST', body: JSON.stringify(cialo) })
-  if (status === 409) {
+  if (!b) return false
+  const przyciski = document.querySelectorAll('#decyzje button, .formularz button[type="submit"]')
+  // Drugie klikniecie w trakcie zapisu dostaloby 409 i komunikat konfliktu po udanym zapisie.
+  for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = true
+  try {
+    const cialo = { punkt: b.punkt.id, linia: b.punkt.tekst, decyzja, notatka, ekran: b.ekran.ekran, urzadzenie: urzadzenie?.nazwa, szerokosc: urzadzenie?.szerokosc }
+    const { status, json } = await api('decyzja', { method: 'POST', body: JSON.stringify(cialo) })
+    if (status === 409) {
+      await wczytaj({ zmienTrase: false })
+      komunikat(KONFLIKT)
+      return false
+    }
+    if (status !== 200) {
+      komunikat(json?.error?.message ?? `Zapis nie powiódł się (${status}).`)
+      return false
+    }
+    ukryjFormularze()
     await wczytaj({ zmienTrase: false })
-    return komunikat(KONFLIKT)
+    komunikat(json?.data?.ostrzezenie ?? (decyzja === 'blad' ? 'Zgłoszenie zapisane w checkliście i wysłane do sesji smoke\'u.' : 'Zapisane w checkliście.'))
+    return true
+  } finally {
+    for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = false
   }
-  if (status !== 200) return komunikat(json?.error?.message ?? `Zapis nie powiódł się (${status}).`)
-  ukryjFormularze()
-  await wczytaj({ zmienTrase: false })
-  komunikat(decyzja === 'blad' ? 'Zgłoszenie zapisane w checkliście i wysłane do sesji smoke\'u.' : 'Zapisane w checkliście.')
 }
 
 function podepnij() {
@@ -192,18 +218,22 @@ function podepnij() {
   el('form-odstepstwo', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const notatka = el('notatka-odstepstwa', HTMLTextAreaElement).value.trim()
-    if (notatka) void zapisz('odstepstwo', { notatka }).then(() => { el('notatka-odstepstwa', HTMLTextAreaElement).value = '' })
+    if (!notatka) return komunikat('Wpisz, co się różni i dlaczego to OK.')
+    void zapisz('odstepstwo', { notatka }).then((ok) => { if (ok) el('notatka-odstepstwa', HTMLTextAreaElement).value = '' })
   })
   el('form-blad', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const notatka = el('opis-bledu', HTMLTextAreaElement).value.trim()
     const urzadzenie = stan.urzadzenia.find((u) => u.id === el('urzadzenie-bledu', HTMLSelectElement).value) ?? stan.urzadzenia[0]
-    if (notatka && urzadzenie) void zapisz('blad', { notatka, urzadzenie }).then(() => { el('opis-bledu', HTMLTextAreaElement).value = '' })
+    if (!notatka || !urzadzenie) return komunikat('Wpisz, co jest nie tak.')
+    void zapisz('blad', { notatka, urzadzenie }).then((ok) => { if (ok) el('opis-bledu', HTMLTextAreaElement).value = '' })
   })
   el('form-adres', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const trasa = el('adres', HTMLInputElement).value.trim()
-    stan.trasa = trasa.startsWith('/') && !trasa.startsWith('//') && !trasa.startsWith('/__makieta/') ? trasa : '/'
+    // Tylko trasa tego originu: `//host` i `/\\host` przegladarka czyta jako adres obcy — ramka ucieklaby z proxy.
+    const naszOrigin = (() => { try { return new URL(trasa, location.origin).origin === location.origin } catch { return false } })()
+    stan.trasa = trasa.startsWith('/') && naszOrigin && !trasa.includes('\\') && !trasa.startsWith('/__makieta/') ? trasa : '/'
     rysujRamki()
   })
   el('przeladuj', HTMLButtonElement).addEventListener('click', () => przeladujRamki(el('ramki', HTMLDivElement), stan.trasa))
@@ -211,7 +241,7 @@ function podepnij() {
   el('skala', HTMLButtonElement).addEventListener('click', (z) => {
     stan.jedenDoJednego = !stan.jedenDoJednego
     if (z.currentTarget instanceof HTMLButtonElement) z.currentTarget.setAttribute('aria-pressed', String(stan.jedenDoJednego))
-    rysujRamki()
+    skaluj()
   })
   el('dopasuj', HTMLButtonElement).addEventListener('click', (z) => {
     const wlaczone = document.querySelector('.makieta')?.classList.toggle('makieta--dopasuj') ?? false
@@ -231,8 +261,13 @@ function podepnij() {
     rysujRamki()
   })
   let doRysowania = 0
-  window.addEventListener('resize', () => { clearTimeout(doRysowania); doRysowania = window.setTimeout(rysujRamki, 150) })
+  // Zmiana okna (takze otwarcie DevTools) tylko skaluje ramki — aplikacja w nich zachowuje stan.
+  window.addEventListener('resize', () => { clearTimeout(doRysowania); doRysowania = window.setTimeout(skaluj, 150) })
   const zdarzenia = new EventSource(`${API}zdarzenia?t=${encodeURIComponent(token)}`)
+  // EventSource po 403 (restart narzedzia z nowym tokenem) zamyka sie na stale — operator musi otworzyc nowy link.
+  zdarzenia.addEventListener('error', () => {
+    if (zdarzenia.readyState === EventSource.CLOSED) komunikat(BRAK_SERWERA)
+  })
   zdarzenia.addEventListener('punkty', () => void wczytaj({ zmienTrase: false }))
   // Po poprawce sesji ramki wracaja na trase punktu (HMR Vite i tak odswiezy moduly).
   zdarzenia.addEventListener('przeladuj', () => {

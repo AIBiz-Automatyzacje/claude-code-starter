@@ -68,7 +68,7 @@ function ekranyTresci(tresc) {
 }
 
 /** @param {string} fragment @returns {boolean} trasa aplikacji, nie wzorzec blokady, RPC, adres API ani adres bez schematu (`//host`) */
-const czyTrasa = (fragment) => fragment.startsWith('/') && !fragment.startsWith('//') && !fragment.includes('*') && !/(^|\/)(?:rpc|api)\//.test(fragment)
+const czyTrasa = (fragment) => fragment.startsWith('/') && !fragment.startsWith('//') && !fragment.includes('\\') && !fragment.includes('*') && !/(^|\/)(?:rpc|api)\//.test(fragment)
 
 /**
  * Trasa: pierwszy fragment w backtickach zaczynajacy sie od `/` przed pierwsza makieta. Granica „przed pierwszym obok” gubila

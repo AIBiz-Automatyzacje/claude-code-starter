@@ -1,8 +1,9 @@
 // Presety urzadzen narzedzia makiet (P24 IU-7) — modul czysty, wspolny dla testow i strony (serwer podaje go pod
-// `/__makieta/wspolne/urzadzenia.mjs`). Domyslnie ramki urzadzen o szerokosci w granicach ±24 px od makiety; zadne nie pasuje
+// `/__makieta/urzadzenia.mjs`). Domyslnie ramki urzadzen o szerokosci w granicach ±24 px od makiety; zadne nie pasuje
 // (komponent 358, 480, 520, 1104) — ramka „wymiar makiety W×H” plus desktop-1440 (makieta >= 600 px albo punkt „Komputer”)
-// albo iphone-15. Makieta nizsza niz polowa ekranu presetu to komponent (arkusz 358×234 obok iphone-se 375×667), nie ekran —
-// sama szerokosc w tolerancji jej nie dopasowuje (plan wymienia 358 jako „bez trafienia”, choc 375 − 358 < 24).
+// albo iphone-15. Makieta nizsza niz polowa najnizszego z presetow pasujacych szerokoscia to komponent (arkusz 358×234 obok
+// iphone-se 375×667), nie ekran — wtedy zaden preset nie pasuje (plan wymienia 358 jako „bez trafienia”, choc 375 − 358 < 24);
+// decyzja zapada dla calej makiety, nie per preset.
 
 export const PRESETY = Object.freeze([
   { id: 'iphone-se', nazwa: 'iPhone SE', szerokosc: 375, wysokosc: 667 },
@@ -31,10 +32,11 @@ const preset = (id) => /** @type {Urzadzenie} */ (PRESETY.find((p) => p.id === i
  * @returns {Urzadzenie[]}
  */
 export function domyslneUrzadzenia(makieta, etykieta) {
-  if (!makieta) return [preset('iphone-15'), preset('desktop-1440')]
-  const pasujace = PRESETY.filter((p) => Math.abs(p.szerokosc - makieta.szerokosc) <= TOLERANCJA_PX && makieta.wysokosc * 2 >= p.wysokosc)
-  if (pasujace.length) return pasujace
-  const { szerokosc: w, wysokosc: h } = makieta
+  const { szerokosc: w, wysokosc: h } = makieta ?? { szerokosc: 0, wysokosc: 0 }
+  if (!makieta || !(w >= 1 && h >= 1 && w <= MAKS_WYMIAR && h <= MAKS_WYMIAR)) return [preset('iphone-15'), preset('desktop-1440')]
+  const poSzerokosci = PRESETY.filter((p) => Math.abs(p.szerokosc - w) <= TOLERANCJA_PX)
+  const komponent = poSzerokosci.length > 0 && h * 2 < Math.min(...poSzerokosci.map((p) => p.wysokosc))
+  if (poSzerokosci.length && !komponent) return poSzerokosci
   const komputer = w >= PROG_KOMPUTERA_PX || /^komputer/i.test(etykieta.trim())
   return [{ id: `makieta-${w}x${h}`, nazwa: `wymiar makiety ${w}×${h}`, szerokosc: w, wysokosc: h }, preset(komputer ? 'desktop-1440' : 'iphone-15')]
 }

@@ -171,6 +171,7 @@ test('po recenzji: „obok” w opisie stanu nie zabiera trasy; viewport R11 prz
 test('po recenzji: trasy spoza aplikacji, ten sam ekran dwa razy, makieta bez visual-diff/, blok kodu', () => {
   const trasa = (/** @type {string} */ t) => punktyWizualne(`- [ ] T: ${t} obok \`visual-diff/a-figma.png\` → ok`, skrot)[0].trasa
   assert.equal(trasa('`//cdn.x/a`'), null)
+  assert.equal(trasa('`/\\example.com`'), null, 'ukośnik wsteczny = adres obcy w przeglądarce')
   assert.equal(trasa('zablokuj `/odznaka/*.svg`'), null)
   assert.equal(trasa('`rpc/moje_projekty` i `/konto`'), '/konto')
   const [p] = punktyWizualne('- [ ] T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → jak `visual-diff/a-figma.png`', skrot)
