@@ -8,7 +8,7 @@
 // dev. Port zajety przez obcy proces = blad z PID-em i komenda (bez szukania wolnego).
 
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
@@ -24,10 +24,20 @@ const PLIK_SERWERA = 'serwer.json'
 
 /** @typedef {{ pid: number, uruchomiony: string, port: number, token: string, smoke: string, aplikacja: string, start: string }} ZapisSerwera */
 
-/** @param {string} projekt @returns {string} `$TMPDIR/claude-makieta/<nazwa katalogu projektu>-<skrot sciezki>/` */
+/**
+ * Katalog stanu instancji projektu. Istniejacy katalog musi nalezec do biezacego uzytkownika i nie byc dowiazaniem — na Linuksie
+ * bez TMPDIR `/tmp` jest wspolny, a przez `kolejka.jsonl` obcy tekst trafilby do Monitora sesji.
+ * @param {string} projekt
+ * @returns {string} `$TMPDIR/claude-makieta/<nazwa katalogu projektu>-<skrot sciezki>/`
+ */
 export function katalogStanu(projekt) {
   const sciezka = realpathSync(projekt)
-  return join(tmpdir(), 'claude-makieta', `${basename(sciezka)}-${createHash('sha1').update(sciezka).digest('hex').slice(0, 8)}`)
+  const katalog = join(tmpdir(), 'claude-makieta', `${basename(sciezka)}-${createHash('sha1').update(sciezka).digest('hex').slice(0, 8)}`)
+  if (existsSync(katalog)) {
+    const s = lstatSync(katalog)
+    if (s.isSymbolicLink() || !s.isDirectory() || (process.getuid && s.uid !== process.getuid())) throw new Error(`katalog stanu ${katalog} nie jest katalogiem bieżącego użytkownika — usuń go`)
+  }
+  return katalog
 }
 
 /**
@@ -91,10 +101,16 @@ export async function zatrzymaj(stan) {
     rmSync(plik, { force: true })
     return { zatrzymany: false, detal: `serwer PID ${z.pid} już nie działał (albo PID należy do innego procesu) — nic nie zatrzymano` }
   }
+  sygnalGrupie(z.pid, 'SIGCONT')
   sygnalGrupie(z.pid, 'SIGTERM')
   const termin = Date.now() + LIMIT_ZATRZYMANIA_MS
   while (Date.now() < termin && zyjeNasz(z)) await czekaj(ODSTEP_MS)
-  if (zyjeNasz(z)) sygnalGrupie(z.pid, 'SIGKILL')
+  if (zyjeNasz(z)) {
+    sygnalGrupie(z.pid, 'SIGKILL')
+    // Port zwalnia sie dopiero po koncu procesu — bez czekania nastepny start widzialby go jako obcy.
+    const koniec = Date.now() + LIMIT_ZATRZYMANIA_MS
+    while (Date.now() < koniec && zyjeNasz(z)) await czekaj(ODSTEP_MS)
+  }
   rmSync(plik, { force: true })
   return { zatrzymany: true, detal: `zatrzymany serwer PID ${z.pid}` }
 }

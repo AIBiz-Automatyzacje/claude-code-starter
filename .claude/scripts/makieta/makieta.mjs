@@ -16,7 +16,7 @@
 
 import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -65,8 +65,8 @@ function wymagane(v, nazwa) {
 
 /** @param {string | undefined} v @returns {number} */
 function port(v) {
-  const n = Number(v ?? DOMYSLNY_PORT)
-  if (!Number.isInteger(n) || n < 1024 || n > 65535) throw new BladArgumentow(`--port ${v}: liczba 1024–65535`)
+  const n = v === undefined ? DOMYSLNY_PORT : /^\d+$/.test(v) ? Number(v) : NaN
+  if (!Number.isInteger(n) || n < 1024 || n > 65535) throw new BladArgumentow(`--port ${v}: liczba dziesiętna 1024–65535`)
   return n
 }
 
@@ -76,9 +76,16 @@ function smokeInstancji(projekt, o) {
   return wymagane(o.smoke ?? z?.smoke, 'smoke (narzędzie nie działa — podaj plik smoke\'u)')
 }
 
+/** @param {string} projekt @param {string} smoke @returns {string} tresc smoke'u; brak pliku = problem (kod 1), nie wyjatek */
+function czytajSmoke(projekt, smoke) {
+  const plik = sciezkaSmoke(projekt, smoke)
+  if (!existsSync(plik)) throw new BladZrodel('brak-zadania', `brak pliku smoke'u ${smoke}`)
+  return readFileSync(plik, 'utf8')
+}
+
 /** @param {string} projekt @param {string} smoke */
 function stanSmoke(projekt, smoke) {
-  const punkty = punktyWizualne(readFileSync(sciezkaSmoke(projekt, smoke), 'utf8'), skrotSha1)
+  const punkty = punktyWizualne(czytajSmoke(projekt, smoke), skrotSha1)
   return { punkty, zrodla: zrodlaMakiet(projekt, smoke, punkty) }
 }
 
@@ -94,23 +101,32 @@ async function start(projekt, o) {
   if (zyjeNasz(zapisSerwera(stan))) await zatrzymaj(stan)
   const obcy = procesNaPorcie(p)
   if (obcy || (obcy === undefined && await odpowiada(`http://127.0.0.1:${p}/`))) {
-    const kto = obcy ? `PID ${obcy.pid}: ${obcy.komenda}` : 'proces nieznany (brak lsof)'
+    // Sam program i poczatek komendy: argumenty obcego procesu (np. --authtoken) trafilyby przez Monitor do transkryptu.
+    const kto = obcy ? `PID ${obcy.pid}: ${obcy.komenda.split(/\s+/)[0].split('/').pop()}` : 'proces nieznany (brak lsof)'
     return wynik({ blad: `port ${p} zajęty — ${kto}. Zatrzymaj go albo podaj --port; adres http://127.0.0.1:${p}/** musi być w Redirect URLs Supabase dla OAuth` }, KOD_PROBLEMU)
   }
   const token = randomBytes(16).toString('hex')
   mkdirSync(stan, { recursive: true, mode: 0o700 })
+  // Zgloszenia poprzedniej instancji (moze innego smoke'u) nie trafiaja do nowej sesji — stan punktu jest w checkliście,
+  // a otwarte zgloszenia zwraca `zgloszenia`.
+  for (const f of ['kolejka.jsonl', 'dostarczone.jsonl']) rmSync(join(stan, f), { force: true })
   const log = openSync(join(stan, 'serwer.log'), 'w')
   const dziecko = spawn(process.execPath, [fileURLToPath(import.meta.url), 'serwer', '--projekt', projekt, '--smoke', smoke, '--aplikacja', aplikacja.origin, '--port', String(p)], {
     detached: true, stdio: ['ignore', log, log], env: { ...process.env, MAKIETA_TOKEN: token },
   })
   closeSync(log)
+  /** @type {number | string | null} */
+  let wyjscie = null
+  dziecko.on('exit', (kod, sygnal) => { wyjscie = kod ?? sygnal ?? 'nieznany' })
   dziecko.unref()
   const uruchomiony = dziecko.pid === undefined ? null : czasStartu(dziecko.pid)
   if (!dziecko.pid || !uruchomiony) return wynik({ blad: `serwer narzędzia nie wystartował — log ${join(stan, 'serwer.log')}` }, KOD_WYJATKU)
   zapiszSerwer(stan, { pid: dziecko.pid, uruchomiony, port: p, token, smoke: zrodla.smoke, aplikacja: aplikacja.origin, start: new Date().toISOString() })
-  if (!await czekajNaOdpowiedz(`http://127.0.0.1:${p}${PREFIKS_NARZEDZIA}`, LIMIT_STARTU_MS, odpowiada)) {
+  // Sonda z tokenem tej instancji: odpowiedz innego serwera na porcie (rownolegly start) nie jest sukcesem.
+  const naszSerwer = async (/** @type {string} */ url) => wyjscie === null && (await fetch(url, { headers: { [NAGLOWEK_TOKENU]: token }, signal: AbortSignal.timeout(2000) }).catch(() => null))?.status === 200
+  if (!await czekajNaOdpowiedz(`http://127.0.0.1:${p}${PREFIKS_NARZEDZIA}api/punkty`, LIMIT_STARTU_MS, async (url) => wyjscie !== null || await naszSerwer(url)) || wyjscie !== null) {
     await zatrzymaj(stan)
-    return wynik({ blad: `serwer narzędzia nie odpowiada po ${LIMIT_STARTU_MS / 1000} s — log ${join(stan, 'serwer.log')}` }, KOD_WYJATKU)
+    return wynik({ blad: `serwer narzędzia nie wystartował${wyjscie !== null ? ` (zakończył się: ${wyjscie})` : ` po ${LIMIT_STARTU_MS / 1000} s`} — log ${join(stan, 'serwer.log')}` }, KOD_WYJATKU)
   }
   return wynik({
     link: `http://127.0.0.1:${p}${PREFIKS_NARZEDZIA}?t=${token}`, punkty: punkty.length, ekrany: zrodla.ekrany.length,
@@ -124,6 +140,9 @@ async function serwer(projekt, o) {
   const token = wymagane(process.env.MAKIETA_TOKEN, 'MAKIETA_TOKEN w środowisku')
   const s = utworzSerwer({ projekt, smoke: wymagane(o.smoke, 'smoke'), aplikacja: celLokalny(wymagane(o.aplikacja, 'aplikacja')), token,
     katalogStanu: katalogStanu(projekt), log: (l) => process.stdout.write(`${new Date().toISOString()} ${l}\n`) })
+  s.serwer.on('error', (b) => {
+    process.stdout.write(`${new Date().toISOString()} serwer: ${b.message}\n`, () => process.exit(1))
+  })
   s.serwer.listen(port(o.port), '127.0.0.1')
   const koniec = () => void s.zamknij().then(() => process.exit(0))
   process.on('SIGTERM', koniec)
@@ -139,14 +158,14 @@ async function stan(projekt) {
 
 /** @param {string} projekt @param {Opcje} o */
 async function czekajNaZgloszenia(projekt, o) {
-  const limit = Number(o['limit-min'] ?? LIMIT_CZEKANIA_MIN)
+  const limit = o['limit-min'] === undefined ? LIMIT_CZEKANIA_MIN : /^\d+(\.\d+)?$/.test(o['limit-min']) ? Number(o['limit-min']) : NaN
   if (!(limit > 0 && limit <= LIMIT_CZEKANIA_MIN)) throw new BladArgumentow(`--limit-min ${o['limit-min']}: liczba > 0 i ≤ ${LIMIT_CZEKANIA_MIN} (Monitor żyje najwyżej 30 min)`)
   const stanProjektu = katalogStanu(projekt)
   const czyZyje = async () => zyjeNasz(zapisSerwera(stanProjektu))
   if (!await czyZyje()) return wynik({ zdarzenie: 'serwer-zatrzymany' })
   for await (const z of czekaj({ katalogStanu: stanProjektu, limitMs: limit * 60_000, czyZyje })) {
     // Zgloszenie oznaczane jako dostarczone dopiero po zapisie linii do potoku Monitora.
-    await new Promise((ok) => process.stdout.write(`${JSON.stringify(z)}\n`, ok))
+    await new Promise((ok, nie) => process.stdout.write(`${JSON.stringify(z)}\n`, (b) => (b ? nie(b) : ok(undefined))))
   }
   process.exit(0)
 }
@@ -165,27 +184,41 @@ async function poprawione(projekt, o) {
   const punkt = wymagane(o.punkt, 'punkt')
   const smoke = smokeInstancji(projekt, o)
   const plik = sciezkaSmoke(projekt, smoke)
-  const p = punktyWizualne(readFileSync(plik, 'utf8'), skrotSha1).find((x) => x.id === punkt)
+  const p = punktyWizualne(czytajSmoke(projekt, smoke), skrotSha1).find((x) => x.id === punkt)
   if (!p) return wynik({ blad: `brak punktu ${punkt} w ${smoke}` }, KOD_PROBLEMU)
+  // Pomylka identyfikatora nie moze odznaczyc punktu zatwierdzonego przez operatora ani dopisac drugiej adnotacji poprawki.
+  if (p.status !== 'blad') return wynik({ konflikt: 'status', status: p.status, linia: p.tekst }, KOD_PROBLEMU)
   const stanProjektu = katalogStanu(projekt)
   const w = await zapiszDecyzje({ plik, katalogStanu: stanProjektu, punkt, linia: p.tekst, decyzja: 'poprawione', commit: wymagane(o.commit, 'commit') })
   if (w.wynik === 'konflikt') return wynik({ konflikt: w.powod, linia: w.linia }, KOD_PROBLEMU)
   const z = zapisSerwera(stanProjektu)
   if (!zyjeNasz(z) || !z) return wynik({ linia: w.linia, przeladowano: false, detal: 'narzędzie nie działa — ramek nie ma czego przeładować' })
   const aplikacjaOdpowiada = await czekajNaOdpowiedz(`${z.aplikacja}/`, LIMIT_APLIKACJI_MS, odpowiada)
-  const odp = await fetch(`http://127.0.0.1:${z.port}${PREFIKS_NARZEDZIA}api/przeladuj`, { method: 'POST', headers: { [NAGLOWEK_TOKENU]: z.token }, signal: AbortSignal.timeout(5000) })
-  return wynik({ linia: w.linia, aplikacjaOdpowiada, przeladowano: odp.ok })
+  try {
+    const odp = await fetch(`http://127.0.0.1:${z.port}${PREFIKS_NARZEDZIA}api/przeladuj`, { method: 'POST', headers: { [NAGLOWEK_TOKENU]: z.token }, signal: AbortSignal.timeout(5000) })
+    return wynik({ linia: w.linia, aplikacjaOdpowiada, przeladowano: odp.ok })
+  } catch (b) {
+    // Linia juz zapisana — ponowienie dopisaloby druga adnotacje; operator przeladuje ramki przyciskiem.
+    return wynik({ linia: w.linia, aplikacjaOdpowiada, przeladowano: false, detal: `serwer narzędzia nie odpowiedział: ${b instanceof Error ? b.message : String(b)}` })
+  }
 }
 
 /** @param {string} projekt @param {Opcje} o */
 function sprawdz(projekt, o) {
   const smoke = wymagane(o.smoke, 'smoke')
-  const md = readFileSync(sciezkaSmoke(projekt, smoke), 'utf8')
+  const md = czytajSmoke(projekt, smoke)
   const problemy = sprawdzFormat(md)
   const punkty = punktyWizualne(md, skrotSha1)
   if (punkty.length) {
-    const zrodla = zrodlaMakiet(projekt, smoke, punkty)
-    for (const e of zrodla.ekrany.filter((x) => !x.makieta)) {
+    /** @type {import('./zrodla.mjs').Zrodla | null} */
+    let zrodla = null
+    try {
+      zrodla = zrodlaMakiet(projekt, smoke, punkty)
+    } catch (b) {
+      if (!(b instanceof BladZrodel)) throw b
+      problemy.push({ linia: 0, powod: b.message })
+    }
+    for (const e of zrodla?.ekrany.filter((x) => !x.makieta) ?? []) {
       const p = punkty.find((x) => x.id === e.punkt)
       problemy.push({ linia: p?.linia ?? 0, powod: `brak PNG makiety ekranu ${e.ekran} (ani visual-diff/, ani figma_screens)` })
     }
@@ -195,7 +228,8 @@ function sprawdz(projekt, o) {
 
 const POLECENIA = { start, serwer, stop: async (/** @type {string} */ p) => await wynik(await zatrzymaj(katalogStanu(p))), stan, czekaj: czekajNaZgloszenia, zgloszenia, poprawione, sprawdz }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// realpath: sciezka ze spacja albo polskimi znakami (import.meta.url jest zakodowany procentowo) i wywolanie przez dowiazanie.
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [polecenie, ...reszta] = process.argv.slice(2)
   try {
     if (!polecenie || !Object.hasOwn(POLECENIA, polecenie)) throw new BladArgumentow(`nieznane polecenie „${polecenie ?? ''}”`)

@@ -3,7 +3,7 @@
 // Katalog stanu izolowany przez TMPDIR dziecka; po kazdym tescie bez sierot (pgrep).
 
 import { spawn, spawnSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer, request } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -188,6 +188,12 @@ test('czekaj z krótkim limitem wypisuje zgłoszenie złożone przez API, potem 
 test('poprawione zmienia status punktu i wysyła przeladuj do strony (SSE); konflikt i brak punktu = kod 1', () => zProjektem(async (k) => {
   const token = new URL((await uruchom(k)).link).searchParams.get('t') ?? ''
   const plik = join(k.projekt, SMOKE)
+  const zgodny = punktyWizualne(readFileSync(plik, 'utf8'), skrotSha1).find((x) => x.linia === 51)
+  assert.ok(zgodny)
+  const zgodnyPoprawione = await k.cli(['poprawione', '--punkt', zgodny.id, '--commit', 'abc1234'])
+  assert.deepEqual([zgodnyPoprawione.status, zgodnyPoprawione.json.konflikt, zgodnyPoprawione.json.status], [1, 'status', 'zgodny'], 'punkt bez zgłoszenia')
+  const z = await api(k.port, 'api/decyzja', { method: 'POST', token, body: { punkt: zgodny.id, linia: zgodny.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'u', szerokosc: 390 } })
+  assert.equal(z.status, 200)
   const p = punktyWizualne(readFileSync(plik, 'utf8'), skrotSha1).find((x) => x.linia === 51)
   assert.ok(p)
   const sse = new Promise((ok, nie) => {
@@ -208,6 +214,7 @@ test('poprawione zmienia status punktu i wysyła przeladuj do strony (SSE); konf
   assert.equal(punktyWizualne(readFileSync(plik, 'utf8'), skrotSha1).find((x) => x.id === p.id)?.status, 'poprawione')
   assert.equal((await k.cli(['poprawione', '--punkt', 'p-00000000', '--commit', 'abc1234'])).status, 1)
   assert.equal((await k.cli(['poprawione', '--punkt', p.id, '--commit', 'nie-sha'])).status, 1)
+  assert.equal((await k.cli(['poprawione', '--punkt', p.id, '--commit', 'abc1234'])).json.konflikt, 'status', 'druga adnotacja poprawki = konflikt')
 }))
 
 test('sprawdz: fixture etapu 4 wskazuje punkt z dwiema makietami; smoke w formacie R11 = kod 0; cel spoza localhost = kod 2', () => zProjektem(async (k) => {
@@ -223,4 +230,43 @@ test('sprawdz: fixture etapu 4 wskazuje punkt z dwiema makietami; smoke w formac
   assert.equal((await k.cli(['czekaj', '--limit-min', '26'])).status, 2)
   assert.equal((await k.cli(['start', '--smoke', SMOKE, '--aplikacja', `http://localhost:${k.port}`, '--port', String(k.port)])).status, 2, 'proxy do samego siebie')
   assert.equal((await k.cli(['nieznane'])).status, 2)
+}))
+
+test('po recenzji: CLI przez ścieżkę ze spacją i polskimi znakami (dowiązanie) działa; start czyści kolejkę poprzedniej instancji; martwa aplikacja i martwy serwer', () => zProjektem(async (k) => {
+  const katalog = join(k.tmp, 'kat z zażółć')
+  mkdirSync(katalog)
+  symlinkSync(CLI, join(katalog, 'makieta.mjs'))
+  const przez = await new Promise((ok) => {
+    const d = spawn(process.execPath, [join(katalog, 'makieta.mjs'), 'stan', '--projekt', k.projekt], { env: { ...process.env, TMPDIR: k.tmp } })
+    let out = ''
+    d.stdout.on('data', (c) => { out += c })
+    d.on('close', (status) => ok([status, out.trim()]))
+  })
+  assert.deepEqual(przez, [0, '{"dziala":false}'])
+  const stan = stanDziecka(k.projekt, k.tmp)
+  mkdirSync(stan, { recursive: true })
+  writeFileSync(join(stan, 'kolejka.jsonl'), `${JSON.stringify({ id: 'stare', punkt: 'p-1', ekran: 'a', opis: 'stare', urzadzenie: 'u', czas: 'x' })}\n`)
+  const martwa = await wolnyPort()
+  const w = await k.cli(['start', '--smoke', SMOKE, '--aplikacja', `http://127.0.0.1:${martwa}`, '--port', String(k.port)])
+  assert.equal(w.json.aplikacjaOdpowiada, false)
+  assert.equal(statSync(join(stan, 'serwer.json')).mode & 0o777, 0o600)
+  const czekanie = (await k.cli(['czekaj', '--limit-min', '0.01'])).stdout.trim().split('\n').map((l) => JSON.parse(l).zdarzenie)
+  assert.deepEqual(czekanie, ['limit'], 'stare zgłoszenie nie trafia do nowej sesji')
+  process.kill(w.json.pid, 'SIGKILL')
+  await new Promise((ok) => setTimeout(ok, 200))
+  const plik = join(k.projekt, SMOKE)
+  writeFileSync(plik, readFileSync(plik, 'utf8').replace('- [x] *(2026-10-18, druga sesja: 390 px', '- [ ] *(2026-10-20: błąd zgłoszony — u 390 px: x)* *(2026-10-18, druga sesja: 390 px'))
+  const p = punktyWizualne(readFileSync(plik, 'utf8'), skrotSha1).find((x) => x.linia === 51)
+  assert.equal(p?.status, 'blad')
+  const popr = await k.cli(['poprawione', '--punkt', p?.id ?? '', '--commit', 'abc1234'])
+  assert.deepEqual([popr.status, popr.json.przeladowano], [0, false], 'serwer martwy — linia zapisana, bez przeładowania')
+  await k.cli(['stop'])
+  assert.equal(existsSync(join(stan, 'serwer.json')), false)
+  writeFileSync(join(stan, 'serwer.json'), '{uszkodzony')
+  assert.equal((await k.cli(['stop'])).json.zatrzymany, false)
+  assert.equal(existsSync(join(stan, 'serwer.json')), false, 'uszkodzony serwer.json usunięty')
+  for (const zle of [['start', '--smoke', SMOKE, '--port', '80'], ['start', '--smoke', SMOKE, '--port', '0x1450'], ['czekaj', '--limit-min', '0'], ['czekaj', '--limit-min', '0x1'], ['czekaj', '--foo'], ['czekaj', 'x']]) {
+    assert.equal((await k.cli(zle)).status, 2, zle.join(' '))
+  }
+  assert.equal((await k.cli(['sprawdz', '--smoke', 'docs/operator/2026-10-20-brak-smoke.md'])).status, 1, 'brak pliku smoke\'u = problem')
 }))
