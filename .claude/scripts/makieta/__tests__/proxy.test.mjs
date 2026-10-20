@@ -3,6 +3,7 @@
 
 import { createHash } from 'node:crypto'
 import { createServer, request } from 'node:http'
+import { connect } from 'node:net'
 import { gzipSync } from 'node:zlib'
 import assert from 'node:assert/strict'
 import test from 'node:test'
@@ -72,8 +73,8 @@ test('POST z ciałem dochodzi do celu z Host proxy; nagłówki ochronne zdjęte;
   const w = await zapytaj(proxy.port, { method: 'POST', path: '/api/projekty?token=tajne', headers: { 'content-type': 'application/json' }, body: '{"a":1}' })
   assert.equal(w.status, 201)
   assert.deepEqual(JSON.parse(w.body.toString()), { host: `127.0.0.1:${proxy.port}`, fwd: `127.0.0.1:${proxy.port}`, cialo: '{"a":1}' })
-  assert.equal(w.headers['x-frame-options'], undefined)
-  assert.equal(w.headers['content-security-policy'], "default-src 'self'")
+  assert.equal(w.headers['x-frame-options'], 'SAMEORIGIN')
+  assert.equal(w.headers['content-security-policy'], "default-src 'self'; frame-ancestors 'self'")
   assert.equal(w.headers.location, `http://127.0.0.1:${proxy.port}/po`)
   assert.deepEqual(cel.wywolania, ['POST /api/projekty?token=tajne'])
   assert.deepEqual(proxy.logi, ['POST /api/projekty 201'])
@@ -179,3 +180,108 @@ test('żądanie pod prefiksem narzędzia nie dociera do celu', () => zSerwerami(
   assert.equal(w.status, 404)
   assert.deepEqual(cel.wywolania, [])
 }))
+
+/** @param {number} port @param {string} surowe @returns {Promise<string>} surowa odpowiedz na surowe zadanie HTTP */
+function surowo(port, surowe) {
+  return new Promise((ok, nie) => {
+    // write, nie end: pol-zamkniete polaczenie serwer http konczy bez odpowiedzi
+    const g = connect(port, '127.0.0.1', () => g.write(surowe))
+    let odp = ''
+    g.on('data', (c) => { odp += c })
+    g.on('end', () => ok(odp))
+    g.on('error', nie)
+  })
+}
+
+test('Host inny niż origin proxy = 421, adres w formie absolutnej = 400; cel nic nie dostaje', () => zSerwerami((_req, res) => res.end('cel'), async (cel, proxy) => {
+  const w = await zapytaj(proxy.port, { path: '/src/main.tsx', headers: { host: `evil.example:${proxy.port}` } })
+  assert.equal(w.status, 421)
+  const absolutny = await surowo(proxy.port, `GET http://evil.example/x HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nConnection: close\r\n\r\n`)
+  assert.match(absolutny, /^HTTP\/1\.1 400/)
+  assert.deepEqual(cel.wywolania, [])
+}))
+
+test('przemyt: GET z ciałem chunked i Connection: content-length dochodzą do celu jako jedno żądanie z ciałem', () => zSerwerami((req, res) => {
+  /** @type {Buffer[]} */
+  const c = []
+  req.on('data', (x) => c.push(x))
+  req.on('end', () => res.end(`cialo:${Buffer.concat(c)}`))
+}, async (cel, proxy) => {
+  const przemyt = 'GET /przemycone HTTP/1.1\r\nHost: x\r\n\r\n'
+  const hex = Buffer.byteLength(przemyt).toString(16)
+  const a = await surowo(proxy.port, `GET /a HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n${hex}\r\n${przemyt}\r\n0\r\n\r\n`)
+  assert.match(a, /cialo:GET \/przemycone/)
+  const b = await surowo(proxy.port, `DELETE /b HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nConnection: content-length, close\r\nContent-Length: 3\r\n\r\nabc`)
+  assert.match(b, /cialo:abc/)
+  await new Promise((ok) => setTimeout(ok, 100))
+  assert.deepEqual(cel.wywolania, ['GET /a', 'DELETE /b'])
+}))
+
+test('odpowiedź z samymi nagłówkami (SSE bez danych) dochodzi od razu; zerwanie celu w trakcie = błąd u klienta; zamknięcie klienta kończy żądanie do celu', async () => {
+  /** @type {(czy: boolean) => void} */
+  let zamknietoUCelu = () => {}
+  /** @type {Promise<boolean>} */
+  const zamkniete = new Promise((ok) => { zamknietoUCelu = ok })
+  await zSerwerami((req, res) => {
+    if (req.url === '/sse') {
+      res.writeHead(200, { 'content-type': 'text/event-stream' })
+      res.flushHeaders()
+      res.on('close', () => zamknietoUCelu(true))
+    } else {
+      res.writeHead(200, { 'content-type': 'text/plain', 'content-length': '100' })
+      res.write('pół')
+      setTimeout(() => res.socket?.destroy(), 20)
+    }
+  }, async (_cel, proxy) => {
+    await new Promise((ok, nie) => {
+      const r = request({ host: '127.0.0.1', port: proxy.port, path: '/sse' }, (odp) => {
+        assert.equal(odp.statusCode, 200)
+        r.destroy()
+        ok(undefined)
+      })
+      r.on('error', (b) => (b.message.includes('socket hang up') ? undefined : nie(b)))
+      r.end()
+    })
+    const limit = setTimeout(() => zamknietoUCelu(false), 3000)
+    assert.equal(await zamkniete, true, 'cel nie zobaczył zamknięcia SSE po zamknięciu klienta')
+    clearTimeout(limit)
+    const blad = await new Promise((ok) => {
+      const r = request({ host: '127.0.0.1', port: proxy.port, path: '/zerwane' }, (odp) => {
+        odp.on('data', () => {})
+        odp.on('aborted', () => ok('przerwane'))
+        odp.on('error', (b) => ok(b.message))
+        odp.on('end', () => ok('koniec'))
+      })
+      r.on('error', (b) => ok(b.message))
+      r.end()
+    })
+    assert.notEqual(blad, 'koniec', 'klient nie może dostać „pełnej” odpowiedzi po zerwaniu celu')
+  })
+})
+
+test('upgrade: dane klienta wysłane razem z uzgodnieniem dochodzą; odmowa celu wraca statusem; cel wyłączony = 502', async () => {
+  await zSerwerami((_req, res) => { res.writeHead(403); res.end() }, async (_cel, proxy) => {
+    const odmowa = await surowo(proxy.port, `GET /ws HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\n`)
+    assert.match(odmowa, /^HTTP\/1\.1 403/)
+  })
+  await zSerwerami(() => {}, async (_cel, proxy) => {
+    const brak = await surowo(proxy.port, `GET /ws HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\n`)
+    assert.match(brak, /^HTTP\/1\.1 502/)
+  }, { bezCelu: true })
+  await zSerwerami(() => {}, (_cel, proxy) => new Promise((ok, nie) => {
+    const g = connect(proxy.port, '127.0.0.1', () => g.write(`GET /ws HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\nwczesne`))
+    let odp = ''
+    g.on('data', (c) => {
+      odp += c
+      if (odp.includes('echo:wczesne')) { g.destroy(); ok(undefined) }
+    })
+    g.on('error', nie)
+  }), {
+    upgradeCelu: (_req, socket, glowa) => {
+      socket.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n')
+      if (glowa.length) socket.write(`echo:${glowa}`)
+      socket.on('data', (d) => socket.write(`echo:${d}`))
+      socket.on('end', () => socket.destroy())
+    },
+  })
+})

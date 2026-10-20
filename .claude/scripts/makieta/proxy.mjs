@@ -1,7 +1,8 @@
 // Reverse proxy narzedzia makiet do lokalnej aplikacji (P24 IU-4). Strona narzedzia i ramki maja jeden origin (proxy), wiec
 // ramki dziela localStorage i sesje logowania; proxy zdejmuje zakaz osadzania (naglowki.mjs), a cialo i `content-encoding`
 // przekazuje bez zmian, strumieniem. SSE bez buforowania (`flushHeaders`), WebSocket (HMR Vite) przez `upgrade` z buforem `head`.
-// Cel tylko lokalny: proxy zdejmuje ochrone przed clickjackingiem, wiec nie moze wskazywac uslugi spoza maszyny operatora.
+// Cel tylko lokalny, a naglowek Host musi byc originem proxy: proxy podmienia Host na swoj, wiec bez tej kontroli strona po
+// DNS rebinding (Host obcej domeny) przeszlaby przez kontrole `allowedHosts` Vite i czytala zrodla oraz token HMR.
 //
 // Log: metoda, sciezka bez query i status — bez ciasteczek, `Authorization`, query z tokenami i cial `/auth/v1/*`
 // (wyjscie narzedzia trafia do transkryptu sesji).
@@ -77,8 +78,20 @@ export function utworzProxy({ cel, log = () => {} }) {
     headers: naglowkiZadania(req.headers, { cel: cel.origin, proxy: originProxy(req) }, { upgrade }),
   })
 
+  /** @param {Zadanie} req @returns {string | null} powod odmowy: Host spoza originu proxy albo adres w formie absolutnej */
+  const odmowa = (req) => {
+    if (req.headers.host !== `127.0.0.1:${req.socket.localPort}`) return `Host ${req.headers.host ?? '(brak)'} — tylko ${originProxy(req)}`
+    return (req.url ?? '').startsWith('/') && !(req.url ?? '').startsWith('//') ? null : 'adres żądania musi być ścieżką'
+  }
+
   /** @param {Zadanie} req @param {Odpowiedz} res */
   function obsluzZadanie(req, res) {
+    const powod = odmowa(req)
+    if (powod) {
+      res.writeHead(powod.startsWith('Host') ? 421 : 400, { 'content-type': 'text/plain; charset=utf-8' })
+      res.end(powod)
+      return
+    }
     if ((req.url ?? '/').startsWith(PREFIKS_NARZEDZIA)) {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' })
       res.end('nie ma takiej strony narzędzia')
@@ -92,6 +105,8 @@ export function utworzProxy({ cel, log = () => {} }) {
       odp.pipe(res)
     })
     doCelu.on('error', (blad) => {
+      // Klient sam przerwal (zamknieta ramka, przerwany upload) — to nie awaria aplikacji.
+      if (res.destroyed) return log(`${req.method} ${bezQuery(req.url)} 499 (klient przerwał)`)
       log(`${req.method} ${bezQuery(req.url)} 502 (${blad instanceof Error && 'code' in blad ? blad.code : 'blad'})`)
       if (res.headersSent) res.destroy()
       else stronaBrakuAplikacji(res, cel)
@@ -106,6 +121,10 @@ export function utworzProxy({ cel, log = () => {} }) {
 
   /** @param {Zadanie} req @param {Gniazdo} gniazdo @param {Buffer} glowa */
   function obsluzUpgrade(req, gniazdo, glowa) {
+    if (odmowa(req)) {
+      gniazdo.destroy()
+      return
+    }
     const doCelu = request(opcjeZadania(req, true))
     gniazdo.on('error', () => doCelu.destroy())
     doCelu.on('upgrade', (odp, gniazdoCelu, glowaCelu) => {
@@ -126,6 +145,7 @@ export function utworzProxy({ cel, log = () => {} }) {
     })
     doCelu.on('response', (odp) => {
       // Cel odmowil uzgodnienia (zwykla odpowiedz) — oddajemy status i zamykamy gniazdo.
+      log(`UPGRADE ${bezQuery(req.url)} ${odp.statusCode} (odmowa celu)`)
       gniazdo.end(`HTTP/1.1 ${odp.statusCode} ${odp.statusMessage}\r\nconnection: close\r\ncontent-length: 0\r\n\r\n`)
       odp.resume()
     })
