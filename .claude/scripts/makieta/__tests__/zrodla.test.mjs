@@ -2,9 +2,9 @@
 // albo z figma_screens, wymiary z punktu albo z SPEC, ekrany SPEC bez punktu. Uklad katalogow jak w vibersi (etap 4).
 
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
@@ -139,4 +139,85 @@ test('ścieżka PNG wychodząca poza projekt (../ albo dowiązanie) jest odrzuco
   } finally {
     rmSync(obcy, { recursive: true, force: true })
   }
+}))
+
+test('po recenzji: tabela SPEC jak w etapie 3 (opis w pierwszej kolumnie, plik w drugiej), bez kresek na brzegach, „x” i wartość z dopiskiem', () => zProjektem((projekt) => {
+  zapisz(projekt, { [`${FIGMA}/SPEC.md`]: [
+    '| Nazwa | Plik | Wymiary | Frame |', '|---|---|---|---|',
+    '| Wysłano · telefon | `wyslano-telefon.png` | 390x896 | `345:576` |',
+    'admin-skrzynka-komputer | `./admin-skrzynka-komputer.png` | **1440×1150px**',
+    '| moje-projekty-telefon | `x.png` | 390×782 (UI 390×700) |',
+  ].join('\n') })
+  rmSync(join(projekt, FIGMA, 'ekrany'), { recursive: true })
+  const [moje, wyslano, admin] = wynik(projekt).ekrany
+  assert.deepEqual(wyslano.wymiary, { szerokosc: 390, wysokosc: 896 })
+  assert.deepEqual(admin.wymiary, { szerokosc: 1440, wysokosc: 1150 })
+  assert.deepEqual(moje.wymiary, { szerokosc: 390, wysokosc: 800 }, 'viewport punktu')
+  const bezViewportu = zrodlaMakiet(projekt, SMOKE, punktyWizualne(PUNKTY.replace(' (viewport 390×800)', ''), skrotSha1))
+  assert.equal(bezViewportu.ekrany[0].wymiary, null, 'komórka z dopiskiem to nie wymiary')
+}))
+
+test('po recenzji: oba katalogi zadania = completed; oba PNG = visual-diff; nagłówek ekranu z „x” i bez px, wymiary tylko z nagłówka', () => zProjektem((projekt) => {
+  zapisz(projekt, { [`docs/active/${ZADANIE}/${ZADANIE}-plan.md`]: '# aktywne\n', [`${FIGMA}/moje-projekty-telefon.png`]: 'figma' })
+  const w = wynik(projekt)
+  assert.equal(w.katalogZadania, `docs/completed/${ZADANIE}`)
+  assert.equal(w.ekrany[0].makieta, `docs/completed/${ZADANIE}/visual-diff/moje-projekty-telefon-figma.png`)
+  zapisz(projekt, { [`${FIGMA}/SPEC.md`]: '# SPEC\n', [`${FIGMA}/ekrany/wyslano-telefon.md`]: '# wyslano-telefon — 390x896\n' })
+  assert.deepEqual(wynik(projekt).ekrany[1].wymiary, { szerokosc: 390, wysokosc: 896 })
+  zapisz(projekt, { [`${FIGMA}/ekrany/wyslano-telefon.md`]: '# wyslano-telefon\n\nkarta 358×200px\n' })
+  assert.equal(wynik(projekt).ekrany[1].wymiary, null, 'wymiary z treści, nie z nagłówka')
+}))
+
+test('po recenzji: linia planu jako punkt listy; plan wskazany, a brak pliku = ostrzeżenie; figma_spec poza projektem = bez SPEC', () => zProjektem((projekt) => {
+  zapisz(projekt, { [`docs/completed/${ZADANIE}/${ZADANIE}-plan.md`]: `# Zadanie\n\n- Plan techniczny: \`${PLAN}\`\n` })
+  assert.equal(wynik(projekt).plan, PLAN)
+  assert.deepEqual(wynik(projekt).ostrzezenia, [])
+  zapisz(projekt, { [`docs/completed/${ZADANIE}/${ZADANIE}-plan.md`]: 'Plan techniczny: `docs/plans/brak.md`\n' })
+  const w = wynik(projekt)
+  assert.equal(w.plan, null)
+  assert.match(w.ostrzezenia[0], /docs\/plans\/brak\.md/)
+  zapisz(projekt, { [`docs/completed/${ZADANIE}/${ZADANIE}-plan.md`]: `Plan techniczny: \`${PLAN}\`\n`, [PLAN]: PLAN_MD.replace(`./${FIGMA}/SPEC.md`, '../SPEC.md') })
+  assert.equal(wynik(projekt).ekrany[2].spec, null)
+}))
+
+test('po recenzji: smoke poza projektem albo zadanie „..” = błąd; smoke bezwzględny przez /private na macOS = ścieżka w projekcie', () => zProjektem((projekt) => {
+  assert.throws(() => zrodlaMakiet(projekt, '/etc/2026-01-01-zad-smoke.md', []), (b) => b instanceof BladZrodel && b.kod === 'smoke-poza-projektem')
+  assert.throws(() => zrodlaMakiet(projekt, '../2026-01-01-zad-smoke.md', []), (b) => b instanceof BladZrodel && b.kod === 'smoke-poza-projektem')
+  assert.throws(() => zrodlaMakiet(projekt, 'docs/2026-01-01-..-smoke.md', []), (b) => b instanceof BladZrodel && b.kod === 'nazwa-smoke')
+  assert.equal(zrodlaMakiet(projekt, join(realpathSync(projekt), SMOKE), []).smoke, SMOKE)
+  assert.equal(zrodlaMakiet(projekt, join(projekt, SMOKE), []).smoke, SMOKE)
+}))
+
+test('po recenzji: katalog obok o tym samym przedrostku i katalog zadania jako dowiązanie na zewnątrz są odrzucone', () => zProjektem((projekt) => {
+  const sasiad = `${projekt}-obcy`
+  mkdirSync(sasiad)
+  try {
+    writeFileSync(join(sasiad, 'sekret.png'), 'obcy')
+    zapisz(projekt, { [PLAN]: PLAN_MD.replace(`./${FIGMA}/wyslano-telefon.png`, `../${basename(sasiad)}/sekret.png`) })
+    rmSync(join(projekt, FIGMA, 'wyslano-telefon.png'))
+    assert.equal(wynik(projekt).ekrany[1].makieta, null)
+    rmSync(join(projekt, 'docs/completed'), { recursive: true })
+    mkdirSync(join(sasiad, ZADANIE))
+    mkdirSync(join(projekt, 'docs/completed'))
+    symlinkSync(join(sasiad, ZADANIE), join(projekt, 'docs/completed', ZADANIE))
+    assert.throws(() => wynik(projekt), (b) => b instanceof BladZrodel && b.kod === 'brak-zadania')
+  } finally {
+    rmSync(sasiad, { recursive: true, force: true })
+  }
+}))
+
+test('po recenzji: punkt z dwiema makietami — wymiary ze SPEC przed viewportem, drugi ekran nie jest pominięty; wzmianka fizyczna też', () => zProjektem((projekt) => {
+  const dwa = '- [ ] Komputer i telefon: `/` obok `visual-diff/admin-skrzynka-komputer-figma.png` i `visual-diff/publikuj-telefon-wysylanie-figma.png` (viewport 390×844) → ok'
+  zapisz(projekt, { [SMOKE]: `${dwa}\n- [ ] **[fizyczne urządzenie]** porównaj z \`visual-diff/wyslano-telefon-figma.png\`\n` })
+  const w = zrodlaMakiet(projekt, SMOKE, punktyWizualne(dwa, skrotSha1))
+  assert.deepEqual(w.ekrany.map((e) => e.wymiary), [{ szerokosc: 1440, wysokosc: 1150 }, { szerokosc: 390, wysokosc: 844 }])
+  assert.deepEqual(w.pominiete, ['moje-projekty-telefon'])
+}))
+
+test('po recenzji: katalog w miejscu PNG i plik w miejscu katalogu zadania nie są przyjmowane', () => zProjektem((projekt) => {
+  mkdirSync(join(projekt, `docs/completed/${ZADANIE}/visual-diff/wyslano-telefon-figma.png`))
+  assert.equal(wynik(projekt).ekrany[1].makieta, `${FIGMA}/wyslano-telefon.png`, 'katalog o nazwie PNG pominięty')
+  rmSync(join(projekt, 'docs/completed'), { recursive: true })
+  zapisz(projekt, { [`docs/completed/${ZADANIE}`]: 'plik', [`docs/active/${ZADANIE}/${ZADANIE}-plan.md`]: '# aktywne\n' })
+  assert.equal(wynik(projekt).katalogZadania, `docs/active/${ZADANIE}`)
 }))
