@@ -1,0 +1,18 @@
+{
+  "_pochodzenie": "Naglowki odpowiedzi GET / aplikacji vibersi: secureHeaders z hono 4.13.13 (node_modules vibersi) z konfiguracja naglowkiOchronne z server/app.ts (2026-10-20); adres Supabase podmieniony.",
+  "naglowki": {
+    "content-security-policy": "frame-ancestors 'none'; default-src 'self'; script-src 'self'; connect-src 'self' https://abcdefghijklmnop.supabase.co; img-src 'self' data: blob: https://abcdefghijklmnop.supabase.co https://img.youtube.com; frame-src https://www.youtube-nocookie.com https://www.loom.com; object-src 'none'; base-uri 'self'",
+    "content-type": "text/html; charset=UTF-8",
+    "cross-origin-opener-policy": "same-origin",
+    "cross-origin-resource-policy": "same-origin",
+    "origin-agent-cluster": "?1",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "strict-transport-security": "max-age=15552000; includeSubDomains",
+    "x-content-type-options": "nosniff",
+    "x-dns-prefetch-control": "off",
+    "x-download-options": "noopen",
+    "x-frame-options": "DENY",
+    "x-permitted-cross-domain-policies": "none",
+    "x-xss-protection": "0"
+  }
+}
