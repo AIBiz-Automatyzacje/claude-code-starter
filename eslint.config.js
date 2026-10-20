@@ -58,6 +58,11 @@ export default [
     languageOptions: { ecmaVersion: 2024, sourceType: 'module', globals: globals.node },
   },
   {
+    // Strona narzedzia makiet (P24 IU-7) dziala w przegladarce, nie w Node.
+    files: ['.claude/scripts/makieta/strona/*.mjs'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['.claude/workflows/*.js'],
     processor: procesorWorkflowow,
     languageOptions: { ecmaVersion: 2024, sourceType: 'script', globals: GLOBALNE_WORKFLOWU },

@@ -221,10 +221,11 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
   function statyka(req, res, sciezka) {
     if (req.method !== 'GET') return blad(res, 405, 'metoda', 'tylko GET')
     if (sciezka === '') return plik(res, join(katalogStrony, 'index.html'), TYPY['.html'])
+    // Modul wspolny ze strona (urzadzenia.mjs) lezy obok serwera — strona importuje go jako `../urzadzenia.mjs`.
+    if (WSPOLNE.has(sciezka)) return plik(res, join(KATALOG, sciezka), TYPY['.mjs'])
     const [katalog, nazwa, ...reszta] = sciezka.split('/')
     if (reszta.length || !nazwa) return blad(res, 404, 'brak', 'nie ma takiego pliku narzędzia')
     if (katalog === 'strona' && NAZWA_PLIKU.test(nazwa)) return plik(res, join(katalogStrony, nazwa), TYPY[/** @type {keyof typeof TYPY} */ (extname(nazwa))])
-    if (katalog === 'wspolne' && WSPOLNE.has(nazwa)) return plik(res, join(KATALOG, nazwa), TYPY['.mjs'])
     if (katalog === 'makieta' && nazwa.endsWith('.png')) {
       const ekran = zdekodowana(nazwa.slice(0, -'.png'.length))
       const e = ekran === null ? undefined : stan().zrodla.ekrany.find((x) => x.ekran === ekran && x.makieta)

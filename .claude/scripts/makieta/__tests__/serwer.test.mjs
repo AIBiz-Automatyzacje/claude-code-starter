@@ -212,6 +212,10 @@ test('statyka: strona i styl z katalogu strony; ../ i PNG spoza listy ekranów =
     odp.on('end', () => ok([odp.headers['content-type'], Buffer.concat(c)]))
   }).end())
   assert.deepEqual(png, ['image/png', PNG])
+  const wspolny = await zapytaj(port, { path: '/__makieta/urzadzenia.mjs' })
+  assert.deepEqual([wspolny.status, wspolny.headers['content-type']], [200, 'text/javascript; charset=utf-8'], 'moduł wspólny ze stroną')
+  assert.match(wspolny.tekst, /export const PRESETY/)
+  for (const zly of ['/__makieta/serwer.mjs', '/__makieta/punkty.mjs', '/__makieta/strona/urzadzenia.mjs']) assert.equal((await zapytaj(port, { path: zly })).status, 404, zly)
   assert.deepEqual(cel, [])
 }))
 
