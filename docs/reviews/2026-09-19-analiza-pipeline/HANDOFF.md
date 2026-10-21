@@ -3034,8 +3034,19 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     z kluczem testowym (Turnstile, reCAPTCHA, Stripe test mode, Resend test) ma wariant odpowiedzi tego klucza wg dokumentacji
     dostawcy (brakujące pola, stałe wartości), a kod rozpoznający klucz testowy ma test na tej odpowiedzi; to samo jako punkt
     `test-coverage-reviewer` (atrapa usługi bez wariantu klucza testowego używanego w e2e → P2 TEST).
-    (4) **Wniosek z FAIL-a po poprawce Turnstile** — do uzupełnienia po analizie (treść FAIL-a z sesji vibersi nie dotarła;
-    z 4 ponawianych scenariuszy 3 PASS w `66f5b04`, `glos-przeniesienie` dalej nieodhaczony).
+    (4) **FAIL `glos-przeniesienie` po poprawce Turnstile — defekt kodu vibersi, nie szablonu ani środowiska; dwa wnioski dla
+    szablonu.** `POST /api/glosy/przenies` → 200, SQL zgodny (konto 4 głosy, gość 0), ale przycisk czwartego projektu zostaje
+    „Zagłosuj” do przeładowania. Mechanizm sprawdzony w kodzie: po zalogowaniu klucz `mojeGlosy(idKonta)` to nowe zapytanie
+    bez danych (`src/hooks/interakcje/use-glos.ts:48-52`), jego pierwsze pobranie rusza równolegle z przeniesieniem
+    (`use-przeniesienie-glosow.ts:66-69`), a `invalidateQueries` w `odswiezPoPrzeniesieniu` (`:36-39`) przy pobraniu w toku
+    bez danych nie anuluje go, tylko zwraca jego obietnicę (`@tanstack/query-core@5.104.1` `src/query.ts:595-608`:
+    `cancelRefetch` działa tylko przy `data !== undefined`) — w pamięci zostaje wynik sprzed przeniesienia. Rekomendacja:
+    poprawka przed PR (`cancelQueries` prefiksu „moich głosów” przed unieważnieniem, test z odroczonym pierwszym pobraniem).
+    Dla szablonu: (a) `tailwind-react-guidelines` (React Query) — zapis po stronie serwera, który zmienia dane zapytania
+    mogącego być w pierwszym pobraniu (klucz zależny od sesji tuż po logowaniu), wymaga `cancelQueries` przed
+    `invalidateQueries`/`refetchQueries`, bo unieważnienie dołącza się do pobrania w toku; test z odroczonym `queryFn`;
+    (b) `feature-tester-e2e` — komunikat znikający (toast 4 s) sprawdzasz od razu po akcji (`agent-browser wait --text`),
+    nie po zrzucie: tester czytał stronę po ~5 s i komunikatu „Głos na … policzony” nie potwierdził ani nie obalił.
     **Dalej:** po PR etapu 5 — plan paczki z (1)–(4) do akceptacji operatora, razem z zostałymi P3 z pkt 96.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
