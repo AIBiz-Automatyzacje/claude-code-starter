@@ -6,6 +6,8 @@
 //   E2E_URL            adres aplikacji (domyslnie http://localhost:5174 — obok domyslnego 5173 dev servera Vite, P19)
 //   E2E_START          komenda startu (domyslnie `<pm> run dev -- --mode e2e --port <port> --strictPort`)
 //   E2E_HEALTH         adres sondy zdrowia (domyslnie E2E_URL; odpowiedz < 500 = dziala)
+//   E2E_HEALTH_TRESC   tekst, ktory musi byc w odpowiedzi sondy (P25 A2: aplikacja z serwerem API — trasa zdrowia serwera
+//                      zamiast strony, bo fallback SPA odpowiada 200 na kazdej sciezce)
 //   E2E_START_TIMEOUT  sekundy na start (domyslnie 90)
 // Baza e2e (projekt z katalogiem supabase/ albo z kluczami SUPABASE_E2E_*): wymagane KLUCZE_BAZY i guard tozsamosci.
 
@@ -38,7 +40,7 @@ const LIMIT_ZAMKNIECIA_MS = 10_000
 const SESJA_PROBY = ['--session', 'e2e-proba']
 
 /**
- * @typedef {{ url: string, zdrowie: string, port: number, lokalny: boolean, start: string, limitSek: number, log: string, pid: string,
+ * @typedef {{ url: string, zdrowie: string, zdrowieTresc: string | null, port: number, lokalny: boolean, start: string, limitSek: number, log: string, pid: string,
  *   bazaE2e: boolean, odcisk: string, blad: string | null }} Konfiguracja
  * @typedef {{ ok: boolean, detal: string }} WynikNarzedzia
  * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => WynikNarzedzia, zrzut?: () => WynikNarzedzia }} Narzedzia
@@ -69,6 +71,34 @@ export function menedzerPakietow(projekt) {
   if (existsSync(join(projekt, 'pnpm-lock.yaml'))) return 'pnpm'
   if (existsSync(join(projekt, 'yarn.lock'))) return 'yarn'
   return 'npm'
+}
+
+/** @param {string} projekt @returns {boolean} katalog `server/` albo skrypt package.json z czlonem `server` (`build:server`, `dev:server`) */
+function maSerwerApi(projekt) {
+  if (existsSync(join(projekt, 'server'))) return true
+  const pakiet = join(projekt, 'package.json')
+  if (!existsSync(pakiet)) return false
+  /** @type {unknown} */
+  let manifest
+  try {
+    manifest = JSON.parse(readFileSync(pakiet, 'utf8'))
+  } catch (e) {
+    // Zly package.json zglasza runner testow (gotowosc.testy); tu tylko brak sygnalu o serwerze, bramka nie pada.
+    if (e instanceof SyntaxError) return false
+    throw e
+  }
+  const scripts = manifest && typeof manifest === 'object' && 'scripts' in manifest ? manifest.scripts : null
+  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => /(?:^|:)server(?::|$)/.test(nazwa))
+}
+
+/**
+ * Uwaga przy planowaniu (P25 A2): aplikacja z serwerem API, a sonda E2E bez E2E_HEALTH_TRESC — sam Vite przechodzi sonde
+ * fallbackiem SPA, a zapisy przez /api dostaja w E2E 404 (vibersi etapy 4–5).
+ * @param {string} projekt @param {Record<string, string>} env @returns {string | null}
+ */
+export function uwagaSerweraApi(projekt, env) {
+  if (env.E2E_HEALTH_TRESC || !maSerwerApi(projekt)) return null
+  return `projekt ma serwer API (server/ albo skrypt *:server), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
 }
 
 /** @param {string} url @returns {URL | null} adres http(s) albo null (zapis bez schematu parsuje sie jako schemat `localhost:`) */
@@ -111,6 +141,7 @@ export function konfiguracja(projekt, env) {
   return {
     url,
     zdrowie,
+    zdrowieTresc: env.E2E_HEALTH_TRESC || null,
     port: Number(port),
     lokalny: !adres || HOSTY_LOKALNE.includes(adres.hostname),
     start: env.E2E_START || `${menedzerPakietow(projekt)} run dev -- --mode e2e --port ${port} --strictPort`,

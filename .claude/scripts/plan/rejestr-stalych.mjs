@@ -96,6 +96,23 @@ function iuZrodla({ stala, zrodlo, iuZrodlo, kolumnaIu }, jednostki) {
   return zPlikiem.find((iu) => iu.opis.includes(stala)) ?? zPlikiem[0]
 }
 
+// P25 C1 (vibersi etap 5): etykiety powodow zgloszen w pliku komponentow, a szablony maili serwera mialy je stamtad brac.
+const WARSTWA_UI = /^src\/(?:components|pages|hooks)\/|^src\/features\/[^/]+\/(?:components|pages|hooks)\//
+const PLIK_SERWERA = /^server\/|^supabase\/functions\//
+
+/**
+ * Stala z plikiem w warstwie UI, a konsument z plikami serwera — serwer nie importuje komponentow, stron ani hookow.
+ * @param {StalaRejestru} wiersz @param {Jednostka[]} jednostki @returns {string[]}
+ */
+function uwagiWarstwy({ stala, zrodlo, konsumenci }, jednostki) {
+  if (!WARSTWA_UI.test(zrodlo)) return []
+  return jednostki.filter((iu) => konsumenci.includes(iu.numer)).flatMap((iu) => {
+    const serwer = iu.pliki.map((p) => p.sciezka).filter((s) => PLIK_SERWERA.test(s))
+    return serwer.length ? [`rejestr stałych: ${stala} — plik ${zrodlo} jest w warstwie UI, a ${iu.id} ma pliki serwera (${serwer.join(', ')});`
+      + ' wartość czytaną przez serwer i klienta trzymaj w module bez Reacta (src/config/…, src/lib/…)'] : []
+  })
+}
+
 /**
  * Uwagi rejestru: stala, ktorej IU-zrodlo jest w fazie wczesniejszej niz wszyscy konsumenci (IU-zrodlo na liscie konsumentow =
  * konsument w jej fazie, wiec bez uwagi) — jedna uwaga na IU-zrodlo, z lista stalych i najwczesniejszym konsumentem; jawna
@@ -113,6 +130,7 @@ export function uwagiRejestru(plan, jednostki) {
   for (const wiersz of plan.rejestr) {
     const { stala, zrodlo, konsumenci, iuZrodlo, kolumnaIu, problem } = wiersz
     if (problem) jawne.push(`rejestr stałych: ${stala} — ${problem}`)
+    jawne.push(...uwagiWarstwy(wiersz, jednostki))
     const iu = iuZrodla(wiersz, jednostki)
     const fazyKonsumentow = konsumenci.map((n) => faza.get(n)).filter((f) => typeof f === 'number')
     if (kolumnaIu && iuZrodlo !== null && !iu) jawne.push(`rejestr stałych: ${stala} — IU-źródło IU-${iuZrodlo} nie ma w planie`)

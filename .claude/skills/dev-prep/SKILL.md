@@ -148,7 +148,9 @@ Każdą zapisz jako **pytanie zamknięte z wypisanymi opcjami**, nie jako temat 
 
 Konta i konsole zewnętrzne (dostawca auth, płatności, monitoring, mapy, store'y), tokeny, klucze, zmienne środowiskowe — te, które wynikają z opisu etapu i których nie widać jako już ustawionych.
 
-Dla każdej pozycji: **co**, **po co / co blokuje**, **jak** (gdzie wejść, co kliknąć, do jakiej zmiennej wpisać), **dowód wykonania** (komenda lub obserwacja).
+Dla każdej pozycji: **co**, **po co / co blokuje**, **jak** (gdzie wejść, co kliknąć, do jakiej zmiennej wpisać), **dowód wykonania** (komenda lub obserwacja). Zmienna w pliku env, który już istnieje: sprawdź nazwy kluczy (`grep -oE '^[A-Z0-9_]+=' <plik>`, bez wartości) i napisz „podmień” albo „dopisz”.
+
+**Środowisko E2E aplikacji z osobnym serwerem API.** Gdy etap dodaje albo używa tras serwera aplikacji (`/api/…`, katalog `server/`) i ma scenariusze w przeglądarce, sprawdź `.env.e2e` (nazwy kluczy): `E2E_START` musi uruchamiać serwer i Vite z proxy, a `E2E_HEALTH` z `E2E_HEALTH_TRESC` — sprawdzać trasę serwera. Brak → pozycja wg `.claude/templates/e2e-env/README.md`, sekcja „Aplikacja z osobnym serwerem API”; gdy skrypt startu powstanie dopiero w etapie, numer fazy dopisze `/dev-plan`.
 
 Oznacz każdą wartość jako 🔓 publiczną (może iść do repo) albo 🔒 sekret (nigdy do gita) i zamknij dokument sekcją **„Gdzie to ląduje"** — która wartość idzie do `.env`, która do sekretów builda, która do konfiguracji. Sekrety opisuj **nazwą zmiennej**, nigdy wartością.
 

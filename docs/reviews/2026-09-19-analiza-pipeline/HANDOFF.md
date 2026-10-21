@@ -2929,6 +2929,84 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** `/sync-template` + doctor w vibersi i live-10-demo (polecenie §8) — zaciąga P22, reguły i P23 naraz; potem pomiar
     diffu reviewerów na następnym etapie (oczekiwane −1/3 znaków, faza 6 ponad −50%).
 
+95. **VIBERSI ETAP 5 — PLANOWANIE (2026-10-20); lista poprawek szablonu na nową paczkę — DO WDROŻENIA DOPIERO PO AUTOPILOCIE
+    I DOMKNIĘCIU ETAPU 5 (decyzja operatora).** Sync P22/P23 w vibersi `015b61c`, plan `docs/plans/2026-10-20-001-feat-etap-5-
+    interakcje-i-profil-plan.md` (24 IU, 5 faz, części PR 1–2 / 3–5), commit inicjalny `0c94f2a`. Analiza planu w osobnej sesji
+    (sprawdzenie twierdzeń w kodzie): plan zgodny z repo (linie wg ESLint, zależności npm istnieją, captcha e2e obejmuje wszystkie
+    3 skrypty z endpointami auth), 3 poprawki + 4 drobne uwagi; operator wkleił instrukcję poprawek do sesji vibersi (plan →
+    `sprawdz` → `generuj --nadpisz` → `gotowosc`). Pomiar efektów tej paczki: na planowaniu etapu 6.
+    **Do poprawy w szablonie (po etapie 5):**
+    (1) **Środowisko E2E zakłada jeden serwer (Vite) — projekt SPA + osobny serwer API nie ma ścieżki.** Etap 4: scenariusze
+    `[E2E]` z zapisem przez Hono dostały `POST /api/projekty` → 404 (w E2E chodził sam Vite), wyszło dopiero w testach. Etap 5:
+    plan sam dodaje IU-5 (`pnpm e2e:start`: serwer Hono + Vite z proxy `/api`), a operator musi podmienić `E2E_START` w `.env.e2e`
+    w środku runu (bloker fazy 2) — start odroczony (`.claude/scripts/e2e/start.mjs:10-13`) działa tylko dla projektu bez
+    aplikacji, więc wartość nie może wejść przed IU-5. Źródło: `.claude/templates/e2e-env/README.md` (jedna komenda startu, „inny
+    serwer — E2E_START i E2E_URL”), `dev-plan/references/przygotowanie-operatora.md:11` („z `.env.e2e` nic nie wpisujesz”),
+    bramka 6.1 `dev-plan` (nie sprawdza, czy endpointy wołane przez flow są serwowane pod `E2E_URL`), `gotowosc e2e` (bez startu
+    serwera). Poprawka: (a) README `e2e-env` + `/weryfikacja-setup` — wariant „SPA + serwer API” (skrypt startu obu procesów
+    z proxy, wzór z vibersi `scripts/e2e/start-e2e.mjs` po etapie 5); (b) `/dev-prep` i `dev-plan` 6.1 — projekt z serwerem
+    (`server/`, `build:server`, `fetch('/api…')` w kliencie) bez serwera w `E2E_START` → pozycja checklisty `[blokuje: faza 1]`
+    już przy pierwszym planie z takim zapisem; (c) do rozważenia: sonda `E2E_HEALTH` na trasie API, nie tylko na stronie.
+    (2) **Rejestr stałych pomija etykiety i warstwę konsumenta.** Plan etapu 5 trzymał etykiety powodów zgłoszeń w
+    `src/components/zgloszenia/teksty-zgloszen.ts` (IU-16, UI), a szablony maili serwera (IU-17) miały je stamtąd brać — serwer
+    importowałby z warstwy komponentów. Przyczyna w `dev-plan/SKILL.md:225`: lista rodzajów (statusy, limity, trasy, klucze, kody
+    błędów, zdarzenia) nie obejmuje etykiet/tekstów, a źródło = plik pierwszej IU-konsumenta (tu UI). Poprawka: etykiety i teksty
+    używane przez więcej niż jedną IU albo warstwę wchodzą do rejestru; wartość czytana przez serwer i klienta → moduł bez Reacta
+    (`src/config/…`, wzorzec `POWODY_ODRZUCENIA` w vibersi `src/config/moderacja.ts`); `rejestr-stalych.mjs` — uwaga, gdy
+    konsument z `server/` importuje plik spod `src/components/`, `src/pages/` albo `src/hooks/`.
+    (3) **Atrybuty decydujące o widoczności zapisywane niejawnie.** Plan: `vibersi_gosc` z `Path=/api`, a cookie-znacznik czytany
+    przez klienta tylko „bez HttpOnly, ta sama ważność” — skopiowanie `Path=/api` ukryłoby go przed `document.cookie` na `/p/…`
+    (przeniesienie głosów po zalogowaniu by nie ruszyło), a czyszczenie z inną ścieżką nie usuwa cookie. Błąd modelu, ale klasa
+    powtarzalna: do listy kontrolnej planu (dev-plan 3.4/6.x) — przy cookies, CORS, CSP i nagłówkach każdy element ma atrybuty
+    wypisane osobno i test na odczyt w warstwie, która go czyta.
+    (4) **Twierdzenia planu o paczce bez sprawdzenia routera.** Ryzyko „widoki strony projektu są w pliku startowym”, a strona
+    projektu ładuje się leniwie (`src/router.tsx:14`). Poprawka: przy budżecie paczki `dev-plan` każe ustalić z routera, które
+    trasy są leniwe, i wypisać, co faktycznie trafia do pliku startowego.
+    (5) **Migracja z cichym kasowaniem danych.** IU-3: „przed dodaniem CHECK usuń wiersze, które go łamią” na wspólnej bazie dev
+    (staging + lokalnie). Poprawka (reguła migracji w `dev-plan` albo `supabase-dev-guidelines`): kasowanie danych w migracji
+    z `get diagnostics` + `raise notice` z liczbą wierszy albo `not valid` + `validate constraint`, i asercja na seedach e2e.
+    (6) **Rozmiar fazy nieograniczony poza limitem plików PR.** Faza 1 etapu 5: 6 IU (3 migracje, w tym 4. przepisanie
+    `admin_zdecyduj` i drop/create RPC katalogu, fundament serwera, E2E, Sentry). „Typowy układ: fundament danych → …”
+    (`SKILL.md:166`) zachęca do jednej fazy fundamentu. Do rozważenia: górny próg IU/plików na fazę albo osobna faza dla migracji
+    przepisujących istniejące funkcje; wynik decyzji operatora o podziale fazy 1 w vibersi (punkt 5 instrukcji) = dane do progu.
+    (7) **Pozycja checklisty o zmiennej, która już istnieje.** Checklista kazała „dopisać” `E2E_START`, choć klucz jest w
+    `.env.e2e` (komenda Vite) — duplikat klucza. Poprawka w `przygotowanie-operatora.md`: przed pozycją o zmiennej sprawdź nazwy
+    kluczy (`grep -oE '^[A-Z0-9_]+=' <plik>`, bez wartości — hook `env-wartosci`) i pisz „podmień” albo „dopisz”.
+    **Dalej:** po autopilocie i domknięciu etapu 5 (PR, merge, smoke) — plan paczki z (1)–(7) do akceptacji operatora; w (1)
+    wzór skryptu startu bierzemy z gotowego `scripts/e2e/start-e2e.mjs` vibersi.
+
+96. **P25 „po etapie 5” (2026-10-21, jedna sesja): ZROBIONE na gałęzi `popr/P25-po-etapie-5` (od `origin/main` + pkt 95 i
+    `17be051`), NIEZMERGOWANE — merge za zgodą operatora.** Wejście: pkt 95 (1)–(7) + dwa wnioski z runu autopilota etapu 5 vibersi
+    (6 faz, status OK, ale fazy 3, 4 i 6 testowały E2E na samym Vite: 7 scenariuszy na `[Manual]`, Turnstile `110200`, `/api` → 404):
+    (8) **sekcja „Blokery operatora per faza” była tylko widokiem** — workflow jej nie czytał, choć checklista i dev-plan obiecywały
+    „autopilot zatrzyma się przed fazą 3” (powtórzyłem to operatorowi bez sprawdzenia w kodzie); (9) **sonda zdrowia „< 500”**
+    przepuszcza fallback SPA, więc stary `E2E_START` dał status „gotowe”, a decyzja operatora PANEL-WEJSCIE §2 pkt 6 (awaria
+    w trakcie runu → `[Manual]`, run dalej) zakłada środowisko sprawdzone na starcie — poprawka idzie w sprawdzenie startu, nie w STOP
+    w trakcie runu. Commity:
+    - **A1 `2bd88bc` (8):** `plan.mjs blokery <zadanie>` (nieodhaczone pozycje checklisty z fazą; start/planowanie/bez numeru = faza 1),
+      bootstrap krok 1c → `wejscie.blokery` (schemat wymagany; brak skryptu = pusta lista), `decyzjaBlokeraFazy` (pozycje fazy ≤ N)
+      → STOP z linią checklisty, commitem odhaczenia i świeżym runem; po recenzji (`0b704f8`) pierwsza faza sprawdzana przed testami
+      startu, `e2e:start` i rozgrzewką, pozostałe na początku pętli.
+    - **A2/B `6c9495d` (9, 95.1):** `E2E_HEALTH_TRESC` — sonda wymaga tekstu w odpowiedzi (wartość w apostrofach: `parsujEnv` i powłoka
+      db-sync czytają ją tak samo); `plan.mjs gotowosc` — uwaga, gdy projekt ma `server/` albo skrypt `*:server`, a sonda bez treści;
+      README `e2e-env` — sekcja „Aplikacja z osobnym serwerem API” (skrypt startu obu procesów, `E2E_START`, sondy, bloker fazy N =
+      faza pierwszego scenariusza przez serwer, sonda bez przekierowań), `.env.e2e.example`.
+    - **C1/C5 `010d81f` (95.2, 95.6):** uwaga `sprawdz` — stała z plikiem w `src/{components,pages,hooks}/` (też w `src/features/*/`),
+      a konsument z plikami `server/` albo `supabase/functions/`; uwaga przy fazie powyżej 5 IU.
+    - **Teksty `8a0d83f` (95.1–95.7):** dev-plan 3.3 (faza ≤ 5 IU, migracje przepisujące funkcje osobno), 3.4 (atrybuty widoczności
+      per element z testem odczytu; migracja usuwająca dane z `raise notice` albo `not valid` + `validate`), 3.4b i 6.1 (E2E przez
+      serwer aplikacji), 3.6b (etykiety w rejestrze, moduł bez Reacta), 5.1 (twierdzenia o paczce z routera); przygotowanie-operatora
+      (podmień/dopisz po nazwach kluczy, bloker N ≥ 2 zatrzymuje autopilota); dev-prep 2.2 (to samo + E2E aplikacji z serwerem API).
+    **Recenzja subagenta z mutacjami:** 0 P1, 5 P2 (zły `package.json` wywracał `gotowosc`; STOP fazy 1 dopiero po testach startu;
+    wpięcie w pętlę bez testu; tekst rejestru szerszy niż kod; luki testów warstw), 22 mutanty / 13 przeżyło → wszystkie P2 poprawione
+    w `0b704f8` z testami (M3, M6, M16–M19 zabite). Zostały P3: granica `>= 500` i ścieżka „serwer aktualny” z treścią bez testu
+    (M9, M10), regex skryptów bez testu kotwic (M14), warunek `scenariusze` (M15), `sprawdzPlan` → `uwagiRozmiaruFaz` testowane
+    funkcją, nie przez plan (M22); fałszywe negatywy wykrycia serwera (`api/`, `apps/api/`, `dev:api`); osobna uwaga warstwy na
+    każdą stałą. Testy 1098/1098, typecheck i lint zielone.
+    **Dalej:** merge `popr/P25-po-etapie-5` za zgodą → `/sync-template` + doctor w vibersi → w vibersi: `E2E_START="pnpm e2e:start"`,
+    `E2E_HEALTH=http://localhost:5174/healthz`, `E2E_HEALTH_TRESC='"status":"ok"'` w `.env.e2e`, ponowne odegranie 7 scenariuszy
+    `[Manual]` etapu 5 przed smoke'iem, potem `/dev-pr --czesc 1`.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.

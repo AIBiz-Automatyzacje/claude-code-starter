@@ -236,6 +236,44 @@ test('gotowosc: brak planu technicznego pod wskaznikiem to blad planu, nie wyjat
   assert.match(w.plan.bledy[0], /brak planu technicznego \(wskaźnik w planie zadania: docs\/plans\//)
 }))
 
+// P25 A2: aplikacja z serwerem API (katalog server/ albo skrypt *:server) i sonda E2E bez tresci — sam Vite przechodzi sonde
+// fallbackiem SPA, a zapisy przez /api dostaja 404 (vibersi etapy 4–5). Uwaga przy planowaniu, nie STOP.
+test('gotowosc: serwer API bez E2E_HEALTH_TRESC = uwaga E2E z sekcja README; z trescia albo bez serwera — bez uwagi', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const uwagaApi = (/** @type {string[]} */ u) => u.filter((t) => /serwer API/.test(t))
+  assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [])
+  mkdirSync(join(k, 'server'))
+  writeFileSync(join(k, 'server/app.ts'), 'export {}\n')
+  const [uwaga] = uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi)
+  assert.match(uwaga ?? '', /E2E_HEALTH_TRESC/)
+  assert.match(uwaga ?? '', /Aplikacja z osobnym serwerem API/)
+  writeFileSync(join(k, '.env.e2e'), "X=1\nE2E_HEALTH=http://localhost:5174/healthz\nE2E_HEALTH_TRESC='\"status\":\"ok\"'\n")
+  assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [])
+  rmSync(join(k, 'server'), { recursive: true })
+  writeFileSync(join(k, '.env.e2e'), 'X=1\n')
+  writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { 'build:server': 'esbuild server/index.ts' } }))
+  assert.equal(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi).length, 1, 'skrypt build:server tez oznacza serwer API')
+  for (const zly of ['{ zly', '{"scripts":null}']) {
+    writeFileSync(join(k, 'package.json'), zly)
+    assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [], `${zly}: bez uwagi i bez wyjatku bramki`)
+  }
+}))
+
+// P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:
+// pozycja „[blokuje: faza 3]” byla tylko w planie zadania i run przeszedl fazy 3–6 bez serwera Hono w E2E.
+test('blokery: nieodhaczone pozycje checklisty z numerem fazy (start = faza 1), odhaczone pominiete; bez checklisty pusto', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const w = cli(k, ['blokery', ZADANIE])
+  assert.equal(w.kod, 0, JSON.stringify(w.json))
+  assert.deepEqual(w.json, { ok: true, checklista: PREP, blokery: [{ faza: 2, linia: 3, tresc: 'Klucz mapy — **[blokuje: faza 2]** (IU-2)' }] })
+  writeFileSync(join(k, PREP), '# P\n\n- [ ] Konto — **[blokuje: planowanie]**\n- [ ] Dostęp — **[blokuje: faza 1]**\n- [x] Klucz — **[blokuje: faza 2]**\n')
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.blokery.map((/** @type {{ faza: number }} */ b) => b.faza), [1, 1])
+  writeFileSync(join(k, PREP), '# P\n\n- [ ] Klucz — **[blokuje: faza 2]**\n- [ ] Konto — **[blokuje: faza 1]**\n')
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.blokery.map((/** @type {{ linia: number }} */ b) => b.linia), [3, 4], 'kolejnosc linii checklisty')
+  rmSync(join(k, PREP))
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json, { ok: true, checklista: PREP, blokery: [] })
+}))
+
 test('liczScenariuszeE2e: grep precheck/completion-gate — kopie Operator: i findingi [P1-3] nie sa scenariuszami', () => {
   const md = ['- [ ] Test: [E2E] `a` — x → y', '- [x] Test: [E2E] `b` — x → y', '- [ ] Operator: [E2E] `a`', '- [ ] 🟠 [P2] [E2E] plik',
     '  - [ ] Test: [E2E] `c` — wciety', '- [ ] Weryfikacja: [E2E] `e2e/run-all.sh` — ok'].join('\n')

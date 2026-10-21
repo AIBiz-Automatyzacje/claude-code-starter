@@ -8,7 +8,7 @@ Lista rzeczy, których autopilot nie zrobi sam, a bez których przebieg utknie: 
 |---|---|---|
 | Konta i konsole zewnętrzne | OAuth (Google Cloud), Sentry DSN, Stripe, klucze map, konta w zewnętrznych API | IU z `supabase/functions/`, auth, integracje; `sentry-integration` w Skills in play |
 | Sekrety i zmienne środowiskowe | nowe klucze w `.env.local` / `.env.e2e` / `supabase secrets`, `VITE_*` | tabela plików z `.env.example`, Edge Functions czytające `Deno.env` |
-| Środowisko E2E | plan z ≥ 1 `[E2E]`, a `ls .env.e2e` nic nie zwraca → pozycja „setup wg `.claude/templates/e2e-env/README.md` (~30 min)” albo świadomy opt-out `[E2E]` → `[Manual]`; z `.env.e2e` nic nie wpisujesz (dev server, migracje i seedy na projekt e2e robi autopilot) | 3.4b, stan repo |
+| Środowisko E2E | plan z ≥ 1 `[E2E]`, a `ls .env.e2e` nic nie zwraca → pozycja „setup wg `.claude/templates/e2e-env/README.md` (~30 min)” albo świadomy opt-out `[E2E]` → `[Manual]`; z `.env.e2e` nic nie wpisujesz (dev server, migracje i seedy na projekt e2e robi autopilot) — poza aplikacją z osobnym serwerem API bez skryptu startu obu procesów: pozycja „podmień `E2E_START`, ustaw `E2E_HEALTH` i `E2E_HEALTH_TRESC`” z fazą pierwszego scenariusza przez serwer (3.4b) | 3.4b, stan repo, uwaga `gotowosc` o serwerze API |
 | Assety i treści | favicon, ikony, ilustracje stanów pustych, wideo, teksty prawne, tłumaczenia od klienta | IU w `public/`, `src/assets/`, treści prawne |
 | Dane na projekcie głównym | dane wejściowe lub backfill potrzebne buildera do implementacji (np. istniejące rekordy do migracji danych) | IU z migracjami danych |
 | Dostępy do implementacji | dashboard Supabase lub Sentry, konto w zewnętrznym API | IU integracyjne |
@@ -21,7 +21,9 @@ Nie wpisujesz:
 - decyzji produktowych czekających na wybór — to bloker planowania z 0.5, nie przygotowanie;
 - tego, co autopilot robi sam: typecheck, testy, dev server, migracje i seedy na projekt e2e, `git`.
 
-Każda pozycja jest wykonalna przed fazą, którą blokuje, i ma marker z jednej rodziny: `**[blokuje: planowanie]**` (bez tego dev-plan nie napisze IU) albo `**[blokuje: faza N]**` (bez tego nie ruszy faza N). Bramka gotowości grepuje `^- \[ \].*\[blokuje:` — pozycja zapisana inaczej jest dla niej niewidoczna. `[blokuje: faza 1]` = gotowe przed startem autopilota.
+Pozycja o zmiennej w istniejącym pliku env: najpierw nazwy kluczy (`grep -oE '^[A-Z0-9_]+=' <plik>` — same nazwy, hook `env-wartosci` blokuje wypisanie wartości), potem „podmień istniejącą wartość `KLUCZ`” albo „dopisz `KLUCZ`”; Dowód sprawdza jeden klucz (`grep -c '^KLUCZ=' <plik>` zwraca 1) i wartość tylko dla publicznych (`grep -c '^KLUCZ=wartosc$' <plik>`). Dopisanie klucza, który już jest, daje dwa klucze i niejednoznaczny odczyt (vibersi etap 5: „dopisz `E2E_START`”, a klucz był w pliku z komendą samego Vite).
+
+Każda pozycja jest wykonalna przed fazą, którą blokuje, i ma marker z jednej rodziny: `**[blokuje: planowanie]**` (bez tego dev-plan nie napisze IU) albo `**[blokuje: faza N]**` (bez tego nie ruszy faza N). Bramka gotowości grepuje `^- \[ \].*\[blokuje:` — pozycja zapisana inaczej jest dla niej niewidoczna. `[blokuje: faza 1]` = gotowe przed startem autopilota. Pozycja `[blokuje: faza N]` dla N ≥ 2 zatrzymuje autopilota przed fazą N, dopóki jest nieodhaczona: operator robi ją po fazie, która ją umożliwia, odhacza, commituje checklistę i odpala świeży run — w „Jak” piszesz, po której fazie.
 
 ## Delta wobec checklisty z `/dev-prep`
 

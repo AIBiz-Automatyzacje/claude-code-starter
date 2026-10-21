@@ -11,7 +11,7 @@ import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { sprawdzRunnerTestow } from '../doctor/runner-testow.mjs'
 import { gotowoscAdvisors } from '../e2e/advisors.mjs'
-import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
+import { bledySrodowiska, envE2e, NARZEDZIA, uwagaSerweraApi } from '../e2e/srodowisko.mjs'
 import { potrzebyZadania } from '../e2e/start.mjs'
 import { KOMENDA_GENERATORA, maSkillWeryfikacji, PLIK_SKILLA } from '../e2e/weryfikacja.mjs'
 import { parsujPlan, poleTekstowe } from './plan-techniczny.mjs'
@@ -51,7 +51,37 @@ function srodowiskoE2e(projekt, katalogZadania, narzedzia) {
   const uwagi = scenariusze && !maSkillWeryfikacji(projekt)
     ? [`brak skilla weryfikacji projektu (${PLIK_SKILLA}) — tester odegra scenariusze bez mapy funkcji; generator: ${KOMENDA_GENERATORA}`]
     : []
+  const api = scenariusze && env ? uwagaSerweraApi(projekt, env) : null
+  if (api) uwagi.push(api)
   return { ok: !potrzebne || (env ? !bledy.length : scenariusze === 0), scenariusze, figmaScreens, envE2e: !!env, bledy, uwagi }
+}
+
+/**
+ * Plan techniczny zadania przez wskaznik „Plan techniczny:” w planie zadania.
+ * @param {string} projekt @param {string} katalogZadania docs/active/<zadanie> wzgledem projektu
+ * @returns {{ wskaznik: string | null, plan: import('./plan-techniczny.mjs').Plan | null }}
+ */
+function planTechnicznyZadania(projekt, katalogZadania) {
+  const planZadania = plikZadania(join(projekt, katalogZadania), '-plan.md')?.tresc
+  const wskaznik = planZadania ? sciezkaPlanu(planZadania) : null
+  const planMd = wskaznik && existsSync(join(projekt, wskaznik)) ? readFileSync(join(projekt, wskaznik), 'utf8') : null
+  return { wskaznik, plan: planMd ? parsujPlan(planMd) : null }
+}
+
+/**
+ * Nieodhaczone blokery checklisty zadania z faza, ktora wstrzymuja (P25 A1): bootstrap autopilota przepisuje je 1:1, a STOP
+ * przed faza liczy orkiestrator. Pozycje startu (`planowanie`, `faza 1`, marker bez numeru) wstrzymuja faze 1.
+ * @param {string} projekt @param {string} katalogZadania
+ * @returns {{ checklista: string | null, blokery: { faza: number, linia: number, tresc: string }[] }}
+ */
+export function blokeryZadania(projekt, katalogZadania) {
+  const { plan } = planTechnicznyZadania(projekt, katalogZadania)
+  const prep = plan ? przygotowanie(projekt, poleTekstowe(plan, 'operator_prep')) : null
+  if (!prep) return { checklista: null, blokery: [] }
+  const blokery = [...prep.blokujace, ...prep.odroczone]
+    .map(({ faza, linia, tresc }) => ({ faza: faza ?? 1, linia, tresc }))
+    .sort((a, b) => a.linia - b.linia)
+  return { checklista: prep.sciezka, blokery }
 }
 
 /** @param {string} projekt @returns {Gotowosc['testy']} */
@@ -69,12 +99,8 @@ function testyProjektu(projekt) {
  */
 export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodowisko = process.env } = {}) {
   const zadanie = basename(katalogZadania)
-  const katalog = join(projekt, katalogZadania)
-  const planZadania = plikZadania(katalog, '-plan.md')?.tresc
-  const zadania = plikZadania(katalog, '-zadania.md')?.tresc ?? ''
-  const wskaznik = planZadania ? sciezkaPlanu(planZadania) : null
-  const planMd = wskaznik && existsSync(join(projekt, wskaznik)) ? readFileSync(join(projekt, wskaznik), 'utf8') : null
-  const plan = planMd ? parsujPlan(planMd) : null
+  const zadania = plikZadania(join(projekt, katalogZadania), '-zadania.md')?.tresc ?? ''
+  const { wskaznik, plan } = planTechnicznyZadania(projekt, katalogZadania)
   // Bramka dziala tez po fazie 1 (wznowienie): budzet wobec repo sprawdzil `generuj`, tu tylko reguly strukturalne.
   const walidacja = plan ? sprawdzPlan(plan, projekt, { wzgledemRepo: false })
     : { bledy: [`brak planu technicznego (wskaźnik w planie zadania: ${wskaznik ?? 'brak linii „Plan techniczny:”'})`], uwagi: [] }

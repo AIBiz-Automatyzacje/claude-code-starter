@@ -36,6 +36,7 @@ pipeline nie testuje na serwerze, którego konfiguracji nie zna (zwykły dev ser
 | `E2E_URL` | `http://localhost:5174` | adres aplikacji (tester, sonda zdrowia, port domyślnej komendy) |
 | `E2E_START` | `<pm> run dev -- --mode e2e --port <port z E2E_URL> --strictPort` | komenda startu serwera (pm z lockfile); dostaje zmienne z `.env.e2e` w środowisku; wartość ze spacjami w cudzysłowie (`E2E_START="…"`), bo db-sync wczytuje plik shellem |
 | `E2E_HEALTH` | `E2E_URL` | adres sondy zdrowia; odpowiedź < 500 = serwer działa |
+| `E2E_HEALTH_TRESC` | — | tekst, który musi być w odpowiedzi sondy (np. `'"status":"ok"'` — w apostrofach, bo cudzysłów jest częścią wartości); bez niego wystarcza status. Aplikacja z serwerem API ustawia go zawsze (sekcja niżej) |
 | `E2E_START_TIMEOUT` | `90` | sekundy na odpowiedź serwera po starcie |
 
 Baza e2e (projekt z katalogiem `supabase/` albo z kluczami `SUPABASE_E2E_*`) wymaga dodatkowo:
@@ -46,6 +47,28 @@ security sprawdza migracje ręcznie. Token daje dostęp do całego konta Supabas
 advisors bierze z `VITE_SUPABASE_URL` (`https://<ref>.supabase.co`) albo z `SUPABASE_E2E_PROJECT_REF`. Guard tożsamości: `VITE_SUPABASE_URL` z `.env.e2e` musi się różnić od
 `.env` / `.env.local`. Projekt bez bazy e2e (np. serwis Node na wspólnym stagingu) ustawia tylko `E2E_URL`
 i `E2E_START`; db-sync wtedy się nie uruchamia. Wzór: `.claude/templates/e2e-env/.env.e2e.example`.
+
+## Aplikacja z osobnym serwerem API (SPA + backend)
+
+Domyślny start to jeden proces Vite. Gdy klient woła własny serwer (`fetch('/api/…')`, katalog `server/`, skrypt
+`build:server` albo `dev:server`), sam Vite w E2E odpowiada na `/api/*` stroną `index.html` albo 404, a scenariusze
+z zapisem przez serwer kończą się SKIP „środowisko” → `[Manual]` (vibersi etap 4: `POST /api/projekty` → 404; etap 5:
+stary `E2E_START` w trzech fazach). Taki projekt potrzebuje:
+
+1. **Skryptu startu obu procesów** w repo (np. `scripts/e2e/start-e2e.mjs` + `pnpm e2e:start`): buduje i uruchamia serwer
+   na osobnym porcie z mapą zmiennych z `.env.e2e` (adres i klucz bazy e2e, `SITE_URL=<E2E_URL>`, testowe klucze usług
+   zewnętrznych, wysyłki w trybie dziennika), potem Vite `--mode e2e --port <port E2E_URL> --strictPort` z proxy `/api`
+   na serwer; sygnał zakończenia i padnięcie jednego procesu kończą oba. Wzór: vibersi `scripts/e2e/start-e2e.mjs`.
+2. **`E2E_START` na ten skrypt** (`E2E_START="pnpm e2e:start"`) — jeden klucz w pliku; zmiana istniejącej wartości to
+   podmiana linii, nie dopisanie drugiej.
+3. **Sondy na trasie serwera z treścią**: `E2E_HEALTH=<E2E_URL>/healthz` (trasa zdrowia serwera przez proxy) i
+   `E2E_HEALTH_TRESC='"status":"ok"'` (tekst z odpowiedzi tej trasy). Fallback SPA odpowiada 200 na każdej ścieżce, więc
+   bez treści stary start „samego Vite” przechodzi sondę; z treścią daje STOP przed fazą 1 albo serwer martwy po restarcie.
+   Sonda nie podąża za przekierowaniem: `E2E_HEALTH` wskazuje adres, który odpowiada wprost (np. `/healthz`, nie `/healthz/` z 301).
+
+Gdy skrypt startu powstaje dopiero w zadaniu, plan ma pozycję checklisty `[blokuje: faza N]` (N = faza pierwszego scenariusza
+zapisującego albo czytającego przez serwer): operator podmienia `E2E_START` i ustawia sondy po fazie z IU skryptu, a autopilot
+zatrzymuje się przed fazą N, dopóki pozycja jest nieodhaczona.
 
 ## Architektura
 
@@ -102,7 +125,8 @@ bojowy tej fazy.
    (API keys, connection string session pooler, konto testowe email+hasło).
 3. **Gitignore**: dopisz `.env.e2e` do `.gitignore` (start odmówi bez tego).
 4. **Serwer aplikacji**: domyślnie Vite ładuje `.env.e2e` flagą `--mode e2e`; skrypt `dev` w package.json
-   musi przepuszczać dodatkowe flagi (domyślnie `vite` je przepuszcza). Inny serwer — `E2E_START` i `E2E_URL`.
+   musi przepuszczać dodatkowe flagi (domyślnie `vite` je przepuszcza). Inny serwer — `E2E_START` i `E2E_URL`; aplikacja
+   z osobnym serwerem API — sekcja „Aplikacja z osobnym serwerem API”.
 5. **agent-browser**: testy E2E napędza CLI `agent-browser` (`npm i -g agent-browser && agent-browser install`);
    sprawdzenie startu woła `agent-browser doctor --offline --quick`.
 6. Gotowe — `e2e.mjs sprawdz` zielone, następny run autopilota przejdzie w tryb zarządzany.
