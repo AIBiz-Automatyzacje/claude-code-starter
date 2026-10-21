@@ -2975,6 +2975,38 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** po autopilocie i domknięciu etapu 5 (PR, merge, smoke) — plan paczki z (1)–(7) do akceptacji operatora; w (1)
     wzór skryptu startu bierzemy z gotowego `scripts/e2e/start-e2e.mjs` vibersi.
 
+96. **P25 „po etapie 5” (2026-10-21, jedna sesja): ZROBIONE na gałęzi `popr/P25-po-etapie-5` (od `origin/main` + pkt 95 i
+    `17be051`), NIEZMERGOWANE — merge za zgodą operatora.** Wejście: pkt 95 (1)–(7) + dwa wnioski z runu autopilota etapu 5 vibersi
+    (6 faz, status OK, ale fazy 3, 4 i 6 testowały E2E na samym Vite: 7 scenariuszy na `[Manual]`, Turnstile `110200`, `/api` → 404):
+    (8) **sekcja „Blokery operatora per faza” była tylko widokiem** — workflow jej nie czytał, choć checklista i dev-plan obiecywały
+    „autopilot zatrzyma się przed fazą 3” (powtórzyłem to operatorowi bez sprawdzenia w kodzie); (9) **sonda zdrowia „< 500”**
+    przepuszcza fallback SPA, więc stary `E2E_START` dał status „gotowe”, a decyzja operatora PANEL-WEJSCIE §2 pkt 6 (awaria
+    w trakcie runu → `[Manual]`, run dalej) zakłada środowisko sprawdzone na starcie — poprawka idzie w sprawdzenie startu, nie w STOP
+    w trakcie runu. Commity:
+    - **A1 `2bd88bc` (8):** `plan.mjs blokery <zadanie>` (nieodhaczone pozycje checklisty z fazą; start/planowanie/bez numeru = faza 1),
+      bootstrap krok 1c → `wejscie.blokery` (schemat wymagany; brak skryptu = pusta lista), `decyzjaBlokeraFazy` (pozycje fazy ≤ N)
+      → STOP z linią checklisty, commitem odhaczenia i świeżym runem; po recenzji (`0b704f8`) pierwsza faza sprawdzana przed testami
+      startu, `e2e:start` i rozgrzewką, pozostałe na początku pętli.
+    - **A2/B `6c9495d` (9, 95.1):** `E2E_HEALTH_TRESC` — sonda wymaga tekstu w odpowiedzi (wartość w apostrofach: `parsujEnv` i powłoka
+      db-sync czytają ją tak samo); `plan.mjs gotowosc` — uwaga, gdy projekt ma `server/` albo skrypt `*:server`, a sonda bez treści;
+      README `e2e-env` — sekcja „Aplikacja z osobnym serwerem API” (skrypt startu obu procesów, `E2E_START`, sondy, bloker fazy N =
+      faza pierwszego scenariusza przez serwer, sonda bez przekierowań), `.env.e2e.example`.
+    - **C1/C5 `010d81f` (95.2, 95.6):** uwaga `sprawdz` — stała z plikiem w `src/{components,pages,hooks}/` (też w `src/features/*/`),
+      a konsument z plikami `server/` albo `supabase/functions/`; uwaga przy fazie powyżej 5 IU.
+    - **Teksty `8a0d83f` (95.1–95.7):** dev-plan 3.3 (faza ≤ 5 IU, migracje przepisujące funkcje osobno), 3.4 (atrybuty widoczności
+      per element z testem odczytu; migracja usuwająca dane z `raise notice` albo `not valid` + `validate`), 3.4b i 6.1 (E2E przez
+      serwer aplikacji), 3.6b (etykiety w rejestrze, moduł bez Reacta), 5.1 (twierdzenia o paczce z routera); przygotowanie-operatora
+      (podmień/dopisz po nazwach kluczy, bloker N ≥ 2 zatrzymuje autopilota); dev-prep 2.2 (to samo + E2E aplikacji z serwerem API).
+    **Recenzja subagenta z mutacjami:** 0 P1, 5 P2 (zły `package.json` wywracał `gotowosc`; STOP fazy 1 dopiero po testach startu;
+    wpięcie w pętlę bez testu; tekst rejestru szerszy niż kod; luki testów warstw), 22 mutanty / 13 przeżyło → wszystkie P2 poprawione
+    w `0b704f8` z testami (M3, M6, M16–M19 zabite). Zostały P3: granica `>= 500` i ścieżka „serwer aktualny” z treścią bez testu
+    (M9, M10), regex skryptów bez testu kotwic (M14), warunek `scenariusze` (M15), `sprawdzPlan` → `uwagiRozmiaruFaz` testowane
+    funkcją, nie przez plan (M22); fałszywe negatywy wykrycia serwera (`api/`, `apps/api/`, `dev:api`); osobna uwaga warstwy na
+    każdą stałą. Testy 1098/1098, typecheck i lint zielone.
+    **Dalej:** merge `popr/P25-po-etapie-5` za zgodą → `/sync-template` + doctor w vibersi → w vibersi: `E2E_START="pnpm e2e:start"`,
+    `E2E_HEALTH=http://localhost:5174/healthz`, `E2E_HEALTH_TRESC='"status":"ok"'` w `.env.e2e`, ponowne odegranie 7 scenariuszy
+    `[Manual]` etapu 5 przed smoke'iem, potem `/dev-pr --czesc 1`.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
