@@ -11,7 +11,7 @@ import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { sprawdzRunnerTestow } from '../doctor/runner-testow.mjs'
 import { gotowoscAdvisors } from '../e2e/advisors.mjs'
-import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
+import { bledySrodowiska, envE2e, NARZEDZIA, uwagaSerweraApi } from '../e2e/srodowisko.mjs'
 import { potrzebyZadania } from '../e2e/start.mjs'
 import { KOMENDA_GENERATORA, maSkillWeryfikacji, PLIK_SKILLA } from '../e2e/weryfikacja.mjs'
 import { parsujPlan, poleTekstowe } from './plan-techniczny.mjs'
@@ -51,6 +51,8 @@ function srodowiskoE2e(projekt, katalogZadania, narzedzia) {
   const uwagi = scenariusze && !maSkillWeryfikacji(projekt)
     ? [`brak skilla weryfikacji projektu (${PLIK_SKILLA}) — tester odegra scenariusze bez mapy funkcji; generator: ${KOMENDA_GENERATORA}`]
     : []
+  const api = scenariusze && env ? uwagaSerweraApi(projekt, env) : null
+  if (api) uwagi.push(api)
   return { ok: !potrzebne || (env ? !bledy.length : scenariusze === 0), scenariusze, figmaScreens, envE2e: !!env, bledy, uwagi }
 }
 

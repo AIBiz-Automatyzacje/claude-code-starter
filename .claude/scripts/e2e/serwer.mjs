@@ -25,11 +25,16 @@ const KLUCZE_POZA_SERWEREM = ['SUPABASE_ACCESS_TOKEN']
  * @typedef {{ pid: number | null, komenda: string | null }} ObcySerwer
  */
 
-/** @param {string} url @returns {Promise<boolean>} czy adres odpowiada statusem < 500 (odmowa polaczenia i timeout = nie) */
-export async function odpowiada(url) {
+/**
+ * Czy adres odpowiada statusem < 500 (odmowa polaczenia i timeout = nie). Z `tresc` (E2E_HEALTH_TRESC, P25 A2) odpowiedz musi ja
+ * zawierac: fallback SPA (index.html z 200 na kazdej sciezce) nie udaje wtedy dzialajacego serwera API.
+ * @param {string} url @param {string | null} [tresc] @returns {Promise<boolean>}
+ */
+export async function odpowiada(url, tresc = null) {
   try {
     const odpowiedz = await fetch(url, { signal: AbortSignal.timeout(LIMIT_SONDY_MS), redirect: 'manual' })
-    return odpowiedz.status < 500
+    if (odpowiedz.status >= 500) return false
+    return !tresc || (await odpowiedz.text()).includes(tresc)
   } catch {
     // Wynik sondy, nie awaria skryptu: odmowa polaczenia, DNS albo timeout znacza „serwer nie dziala”.
     return false
@@ -175,7 +180,7 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
   const z = zapisPid(konf)
   if (zyjeNasz(z) && z) {
     const aktualny = !odNowa && z.start === konf.start && z.odcisk === konf.odcisk
-    if (aktualny && await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
+    if (aktualny && await odpowiada(konf.zdrowie, konf.zdrowieTresc)) return { serwer: 'uruchomione' }
     await zatrzymajProces(z)
     // Bez tego sonda nizej trafia na port, ktory dziecko starego serwera jeszcze trzyma — nasz stary serwer jako obcy.
     await czekajNaZwolnienie(konf.zdrowie)
@@ -199,7 +204,7 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
   writeFileSync(konf.pid, JSON.stringify(zapis))
   const termin = Date.now() + konf.limitSek * 1000
   while (Date.now() < termin) {
-    if (await odpowiada(konf.zdrowie)) return { serwer: 'uruchomione' }
+    if (await odpowiada(konf.zdrowie, konf.zdrowieTresc)) return { serwer: 'uruchomione' }
     if (wyjscie !== null) {
       // Plik PID martwego procesu zostaje: `stan` pokaze nasz serwer z ogonem logu (kod fazy go polozyl), nastepny start go nadpisze.
       const ogon = ogonLogu(konf.log)
@@ -209,7 +214,8 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
   }
   await zatrzymajProces(zapis)
   rmSync(konf.pid, { force: true })
-  return { serwer: 'brak', blad: `${konf.zdrowie} nie odpowiada po ${konf.limitSek} s od „${konf.start}” (zajety port, zla komenda albo E2E_START_TIMEOUT za krotki). Log ${konf.log}:\n${ogonLogu(konf.log)}` }
+  const oczekiwana = konf.zdrowieTresc ? ` (oczekiwana treść „${konf.zdrowieTresc}” — E2E_HEALTH_TRESC)` : ''
+  return { serwer: 'brak', blad: `${konf.zdrowie}${oczekiwana} nie odpowiada po ${konf.limitSek} s od „${konf.start}” (zajety port, zla komenda albo E2E_START_TIMEOUT za krotki). Log ${konf.log}:\n${ogonLogu(konf.log)}` }
 }
 
 /**

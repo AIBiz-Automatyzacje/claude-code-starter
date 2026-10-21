@@ -236,6 +236,25 @@ test('gotowosc: brak planu technicznego pod wskaznikiem to blad planu, nie wyjat
   assert.match(w.plan.bledy[0], /brak planu technicznego \(wskaźnik w planie zadania: docs\/plans\//)
 }))
 
+// P25 A2: aplikacja z serwerem API (katalog server/ albo skrypt *:server) i sonda E2E bez tresci — sam Vite przechodzi sonde
+// fallbackiem SPA, a zapisy przez /api dostaja 404 (vibersi etapy 4–5). Uwaga przy planowaniu, nie STOP.
+test('gotowosc: serwer API bez E2E_HEALTH_TRESC = uwaga E2E z sekcja README; z trescia albo bez serwera — bez uwagi', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const uwagaApi = (/** @type {string[]} */ u) => u.filter((t) => /serwer API/.test(t))
+  assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [])
+  mkdirSync(join(k, 'server'))
+  writeFileSync(join(k, 'server/app.ts'), 'export {}\n')
+  const [uwaga] = uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi)
+  assert.match(uwaga ?? '', /E2E_HEALTH_TRESC/)
+  assert.match(uwaga ?? '', /Aplikacja z osobnym serwerem API/)
+  writeFileSync(join(k, '.env.e2e'), "X=1\nE2E_HEALTH=http://localhost:5174/healthz\nE2E_HEALTH_TRESC='\"status\":\"ok\"'\n")
+  assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [])
+  rmSync(join(k, 'server'), { recursive: true })
+  writeFileSync(join(k, '.env.e2e'), 'X=1\n')
+  writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { 'build:server': 'esbuild server/index.ts' } }))
+  assert.equal(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi).length, 1, 'skrypt build:server tez oznacza serwer API')
+}))
+
 // P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:
 // pozycja „[blokuje: faza 3]” byla tylko w planie zadania i run przeszedl fazy 3–6 bez serwera Hono w E2E.
 test('blokery: nieodhaczone pozycje checklisty z numerem fazy (start = faza 1), odhaczone pominiete; bez checklisty pusto', () => wRepo((k) => {

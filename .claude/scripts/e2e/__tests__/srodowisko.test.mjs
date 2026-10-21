@@ -298,6 +298,42 @@ test('plik PID z cudzym procesem albo PID 1: serwer nie jest nasz, stop nikogo n
   rmSync(p, { recursive: true })
 })
 
+// P25 A2 (vibersi etap 5): stary E2E_START uruchamial sam Vite, ktory na /healthz zwraca index.html (200) — sonda „< 500”
+// uznala srodowisko za gotowe, a zapisy przez /api dostawaly 404 w trzech fazach. E2E_HEALTH_TRESC wymaga tresci odpowiedzi.
+test('start: E2E_HEALTH_TRESC — odpowiedz bez oczekiwanej tresci (fallback SPA) = niepowodzenie z trescia w detalu; z trescia = gotowe', async () => {
+  const port = await wolnyPort()
+  const spa = `node -e "require('http').createServer((q,s)=>s.end('<!doctype html><div id=root>')).listen(${port})"`
+  const env = (/** @type {string} */ start) => `E2E_URL=http://127.0.0.1:${port}\nE2E_HEALTH=http://127.0.0.1:${port}/healthz\nE2E_HEALTH_TRESC='"status":"ok"'\nE2E_START=${start}\nE2E_START_TIMEOUT=1\n`
+  const p = projekt({ env: env(spa) })
+  try {
+    const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+    assert.equal(w.status, 'niepowodzenie')
+    assert.match(w.detal, /nie odpowiada po 1 s/)
+    assert.match(w.detal, /oczekiwana treść „"status":"ok"”/)
+    const api = `node -e "require('http').createServer((q,s)=>s.end(JSON.stringify({data:{status:'ok'}}))).listen(${port})"`
+    writeFileSync(join(p, '.env.e2e'), env(api))
+    const ok = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+    assert.equal(ok.status, 'gotowe', ok.detal)
+  } finally {
+    await zatrzymajSerwer(konfProjektu(p))
+    rmSync(p, { recursive: true })
+  }
+})
+
+test('odpowiada: bez oczekiwanej tresci wystarcza status < 500; z trescia — tylko odpowiedz, ktora ja zawiera', async () => {
+  const port = await wolnyPort()
+  const serwer = (await import('node:http')).createServer((_q, s) => s.end('<html>')).listen(port)
+  try {
+    await new Promise((r) => serwer.once('listening', r))
+    assert.equal(await odpowiada(`http://127.0.0.1:${port}`), true)
+    assert.equal(await odpowiada(`http://127.0.0.1:${port}`, '"status":"ok"'), false)
+    assert.equal(await odpowiada(`http://127.0.0.1:${port}`, '<html>'), true)
+  } finally {
+    serwer.closeAllConnections()
+    await new Promise((r) => serwer.close(r))
+  }
+})
+
 test('stan: nasz serwer zabity z zewnatrz = nasz, nie zyje; serwer zastany (bez PID) = nie nasz', async () => {
   const port = await wolnyPort()
   const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
