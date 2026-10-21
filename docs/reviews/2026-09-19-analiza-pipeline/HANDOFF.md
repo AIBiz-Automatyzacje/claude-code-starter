@@ -3007,6 +3007,37 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `E2E_HEALTH=http://localhost:5174/healthz`, `E2E_HEALTH_TRESC='"status":"ok"'` w `.env.e2e`, ponowne odegranie 7 scenariuszy
     `[Manual]` etapu 5 przed smoke'iem, potem `/dev-pr --czesc 1`.
 
+97. **VIBERSI ETAP 5 — SMOKE OPERATORA (2026-10-21); poprawki szablonu po odegraniu scenariuszy E2E — DO WDROŻENIA PO PR
+    ETAPU 5 (decyzja operatora).** Po merge'u P25 (`ba195e3`) i syncu w vibersi (`109e239`) ponowne odegranie 7 scenariuszy
+    `[Manual]` etapu 5 ujawniło trzy klasy luk szablonu (naprawione w vibersi: `c1fcd81` proxy `/healthz`, `4760b5b` Turnstile
+    z testowym sekretem; zapis przebiegów `0ef3129`, `66f5b04`). Analiza z zewnątrz, kodu vibersi nie zmieniałem.
+    **Do poprawy w szablonie (po PR etapu 5):**
+    (1) **Trasa zdrowia poza proxy Vite.** README `e2e-env` każe ustawić `E2E_HEALTH=<E2E_URL>/healthz` „przez proxy”
+    (`.claude/templates/e2e-env/README.md:64`), a skrypt startu opisuje tylko „proxy `/api`” (`:60`). vibersi miał w
+    `vite.config.ts` `TRASY_SERWERA = ['/api/', '/idz/', '/do-akademii/']` — `/healthz` padał na fallback SPA (`index.html`),
+    sonda z `E2E_HEALTH_TRESC` słusznie dawała STOP startu; poprawka `c1fcd81` dopisała `'/healthz'`. Poprawka: README pkt 1
+    i 3 — trasa z `E2E_HEALTH` jest na liście przekierowań proxy Vite (obok `/api`); do rozważenia uwaga `plan.mjs gotowosc`,
+    gdy ścieżki `E2E_HEALTH` nie ma w konfiguracji proxy (`vite.config.*`).
+    (2) **Scenariusz o statusie albo meta trasy renderowanej przez serwer odpytuje Vite.** `profil-404` (IU-21/22) w planie:
+    `curl … localhost:5174/tworca/nie-ma-takiego-tworcy-e2e` → 404 (vibersi `docs/completed/etap-5-…/…-zadania.md:519`); Vite
+    na 5174 zwraca na `/tworca/*` i `/p/*` zawsze 200 (fallback SPA), status i meta daje dopiero serwer (5175) — część
+    w przeglądarce PASS, część `curl` na `[Manual]`. Źródło: `dev-plan/SKILL.md` 3.4b (`:198`) mówi o zapisie i odczycie przez
+    `/api/…`, nie o trasach renderowanych przez serwer. Poprawka 3.4b: w projekcie z serwerem API scenariusz sprawdzający status
+    HTTP albo meta (`<title>`, `og:*`) trasy renderowanej przez serwer odpytuje port serwera albo trasę z listy proxy, nigdy port
+    Vite; ta sama uwaga w README `e2e-env` (sekcja „Aplikacja z osobnym serwerem API”).
+    (3) **Atrapa usługi zewnętrznej zna tylko odpowiedź produkcyjną.** `server/turnstile.ts:113` odrzucał każdy token przy
+    testowym sekrecie Cloudflare (siteverify klucza testowego nie zwraca `action`, host `example.com`) — na e2e każdy głos
+    gościa, komentarz i zgłoszenie dostawał 403 `turnstile_nieudany`. Testy przeszły, bo atrapa zawsze odsyła `action`
+    (`server/test/atrapa-uslug-interakcji.ts:91`, domyślnie `'glos'`, host `vibersi.pl`). Źródło: `rules/coding-rules.md:34`
+    („atrapy tylko dla usług zewnętrznych”) i `agents/test-coverage-reviewer.md:22,29` (argumenty atrapy, kontrakt API
+    przeglądarki) — brak wymogu wariantu odpowiedzi klucza testowego. Poprawka: reguła w `coding-rules.md` — atrapa usługi
+    z kluczem testowym (Turnstile, reCAPTCHA, Stripe test mode, Resend test) ma wariant odpowiedzi tego klucza wg dokumentacji
+    dostawcy (brakujące pola, stałe wartości), a kod rozpoznający klucz testowy ma test na tej odpowiedzi; to samo jako punkt
+    `test-coverage-reviewer` (atrapa usługi bez wariantu klucza testowego używanego w e2e → P2 TEST).
+    (4) **Wniosek z FAIL-a po poprawce Turnstile** — do uzupełnienia po analizie (treść FAIL-a z sesji vibersi nie dotarła;
+    z 4 ponawianych scenariuszy 3 PASS w `66f5b04`, `glos-przeniesienie` dalej nieodhaczony).
+    **Dalej:** po PR etapu 5 — plan paczki z (1)–(4) do akceptacji operatora, razem z zostałymi P3 z pkt 96.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
