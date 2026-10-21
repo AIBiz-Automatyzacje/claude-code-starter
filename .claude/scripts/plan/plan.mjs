@@ -10,6 +10,8 @@
 //                                                  pliki zadania z planu; bez --zapisz tylko liczniki; plan z bledami — nic
 //   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo,
 //                                                  runner testow bez .claude/**
+//   plan.mjs blokery <docs/active/zadanie>         nieodhaczone blokery checklisty z faza, ktora wstrzymuja (bootstrap autopilota;
+//                                                  pozycje startu = faza 1)
 //   plan.mjs designerski <plan.md> --iu <IU-N>      blok kontekstu designerskiego buildera jednostki (DESIGN.md, SPEC.md, SPEC
 //                                                  i PNG ekranow z pola Makiety); tresc pusta = blok pominiety
 // Wynik: JSON na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (bledy planu, STOP bramki, katalog zadania zajety),
@@ -21,7 +23,7 @@ import { parseArgs } from 'node:util'
 
 import { liczLinieKodu, podsumowanieBudzetu } from './budzet-pliku.mjs'
 import { rozmiarPlanu } from './czesci-pr.mjs'
-import { gotowosc } from './gotowosc.mjs'
+import { blokeryZadania, gotowosc } from './gotowosc.mjs'
 import { blokDesignerski } from './makiety.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
@@ -37,7 +39,7 @@ const USTAWIENIA = /** @type {const} */ ({
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | gotowosc <docs/active/zadanie> [--projekt <katalog>]\n`)
+  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -105,6 +107,7 @@ function wykonaj(positionals, values) {
     const wynik = gotowosc(projekt, sciezka.replace(/\/$/, ''))
     zakoncz(wynik, wynik.ok)
   }
+  if (polecenie === 'blokery') zakoncz({ ok: true, ...blokeryZadania(projekt, sciezka.replace(/\/$/, '')) }, true)
   if (polecenie === 'designerski') {
     if (!values.iu) zleArgumenty('designerski wymaga --iu <IU-N>')
     const plan = parsujPlan(readFileSync(join(projekt, planWzgledny(projekt, sciezka)), 'utf8'))

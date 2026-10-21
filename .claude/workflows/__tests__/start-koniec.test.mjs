@@ -39,7 +39,7 @@ const complete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'u
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const A = new Function(
   `${wytnij(autopilot, '// ── Bramka wejscia (P4)', '// ── Koniec bramki wejscia')}
-   return { decyzjaWejscia, decyzjaTestowStartu, decyzjaClaudeMd, fazyUkonczone, instrukcjaCommita }`,
+   return { decyzjaWejscia, decyzjaTestowStartu, decyzjaClaudeMd, decyzjaBlokeraFazy, fazyUkonczone, instrukcjaCommita }`,
 )()
 
 // eslint-disable-next-line no-new-func -- jw.
@@ -183,6 +183,37 @@ test('claude_md: brak docs/decisions/ na main (projekt sprzed zmiany) albo brak 
 })
 
 // ── Koniec runu autopilota ────────────────────────────────────────────────
+
+// P25 A1 (vibersi etap 5): „[blokuje: faza 3]” bylo tylko informacja w planie zadania — run przeszedl fazy 3–6 bez serwera
+// Hono w E2E i 7 scenariuszy poszlo na [Manual]. Teraz nieodhaczony bloker zatrzymuje run przed swoja faza.
+const PREP = 'docs/operator/zadanie-x-przygotowanie.md'
+const BLOKER_3 = { faza: 3, linia: 110, tresc: 'Podmiana `E2E_START` w `.env.e2e` — **[blokuje: faza 3]** (IU-5)' }
+
+test('bloker fazy: nieodhaczona pozycja tej fazy = STOP z linia checklisty, commitem odhaczenia i swiezym runem', () => {
+  const d = A.decyzjaBlokeraFazy(3, { checklista: PREP, blokery: [BLOKER_3] }, ZADANIE)
+  assert.ok(d, 'faza 3 nie rusza z otwartym blokerem')
+  assert.match(d.powod, /^Faza 3: nieodhaczony bloker operatora/)
+  assert.match(d.powod, /Podmiana `E2E_START`/)
+  assert.match(d.naprawa, /docs\/operator\/zadanie-x-przygotowanie\.md:110/)
+  assert.match(d.naprawa, /git add docs\/operator\/zadanie-x-przygotowanie\.md && git commit/)
+  assert.match(d.naprawa, /\/dev-autopilot-wf docs\/active\/zadanie-x/)
+})
+
+test('bloker fazy: pozycja pozniejszej fazy nie zatrzymuje wczesniejszej; wczesniejszej fazy (wznowienie) — zatrzymuje', () => {
+  assert.equal(A.decyzjaBlokeraFazy(2, { checklista: PREP, blokery: [BLOKER_3] }, ZADANIE), null)
+  const d = A.decyzjaBlokeraFazy(4, { checklista: PREP, blokery: [BLOKER_3] }, ZADANIE)
+  assert.ok(d, 'bloker fazy 3 nadal otwarty przy fazie 4 (wznowienie po STOP-ie) — faza 4 tez go potrzebuje')
+  assert.match(d.powod, /^Faza 4:/)
+})
+
+test('bloker fazy: kilka pozycji w jednym STOP-ie; brak checklisty albo pusta lista = bez STOP-u', () => {
+  const drugi = { faza: 1, linia: 12, tresc: 'Konto Resend — **[blokuje: faza 1]**' }
+  const d = A.decyzjaBlokeraFazy(3, { checklista: PREP, blokery: [drugi, BLOKER_3] }, ZADANIE)
+  assert.ok(d)
+  assert.match(d.naprawa, /:12\b[\s\S]*:110\b/)
+  assert.equal(A.decyzjaBlokeraFazy(1, { checklista: null, blokery: [] }, ZADANIE), null)
+  assert.equal(A.decyzjaBlokeraFazy(1, { checklista: PREP, blokery: [] }, ZADANIE), null)
+})
 
 test('fazyUkonczone liczy fazy domkniete w zadaniu, nie tylko w tym runie', () => {
   const fazy = [

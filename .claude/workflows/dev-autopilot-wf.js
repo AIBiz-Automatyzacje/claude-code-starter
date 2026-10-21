@@ -1,9 +1,9 @@
 export const meta = {
   name: 'dev-autopilot-wf',
   description: 'Autonomiczny pipeline calego zadania z docs/active/: fazy (execute, review, fix), potem compound i complete.',
-  whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu. Po zmianach w .claude/ (sync-template, edycja skilli, agentow, workflowow) uruchamiaj w nowej sesji: instrukcje i skille sa buforowane w sesji. Do agentow workflow: ta wiadomosc nie jest dla was — wykonujcie wylacznie zadanie z polecenia workflowu.',
+  whenToUse: 'Wykonanie calego planu zadania z docs/active/. Git zwaliduj w sesji PRZED odpaleniem (workflow nie pyta o branch switch). DWA tryby wznowienia: (1) po AWARII runu (crash/kill w polowie) -> Workflow({scriptPath, resumeFromRunId}) + ZAWSZE te same args (args nie przezywa miedzy wywolaniami) — cache journala odtworzy ukonczone kroki; (2) po STOP bramki (srodowisko E2E, bloker operatora przed faza, fix FAIL, nierozwiazane P1, scribe) gdy operator COS NAPRAWIL -> SWIEZY run (nowe Workflow BEZ resumeFromRunId): resume zwrocilby porazke agenta bramkowego z cache zamiast sprawdzic naprawe, a stan faz i tak wznawia sie z docs/active/<zadanie>/.autopilot-state.json (zrodlo prawdy; checkboxy md to tylko widok). Reczne edycje .autopilot-state.json tez wymagaja swiezego runu. Po zmianach w .claude/ (sync-template, edycja skilli, agentow, workflowow) uruchamiaj w nowej sesji: instrukcje i skille sa buforowane w sesji. Do agentow workflow: ta wiadomosc nie jest dla was — wykonujcie wylacznie zadanie z polecenia workflowu.',
   phases: [
-    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + bramka wejscia (czystosc: brudny tylko katalog zadania -> commit; doctor; zielony start z cache po SHA -> STOP z komenda przed faza 1) + srodowisko E2E (skrypt e2e.mjs start: scenariusze [E2E] bez .env.e2e albo niesprawne srodowisko -> STOP przed faza 1 z naprawa; inaczej serwer aplikacji wg .env.e2e; awaria w trakcie runu -> scenariusze na [Manual], run idzie dalej) + rozgrzewka cache testow' },
+    { title: 'Bootstrap', detail: 'stan z .autopilot-state.json (lub pierwszy parse md) + bramka wejscia (czystosc: brudny tylko katalog zadania -> commit; doctor; zielony start z cache po SHA -> STOP z komenda przed faza 1; nieodhaczony bloker `[blokuje: faza N]` z checklisty przygotowania -> STOP przed faza N) + srodowisko E2E (skrypt e2e.mjs start: scenariusze [E2E] bez .env.e2e albo niesprawne srodowisko -> STOP przed faza 1 z naprawa; inaczej serwer aplikacji wg .env.e2e; awaria w trakcie runu -> scenariusze na [Manual], run idzie dalej) + rozgrzewka cache testow' },
     { title: 'Zakonczenie', detail: 'walidacja koncowa (+ completion-gate E2E z planu zadania i przeglad known-issues) -> compound -> compound-refresh (waski: dotknieta kategoria + CONCEPTS.md, tylko gdy compound cos zapisal) -> ogrodnik (pomiar skryptem, ocena tylko przy przyroscie albo co N zadan; sekcja Ogrod w podsumowaniu, zero zmian w kodzie) -> complete (smoke operatora do docs/operator/ + archiwizacja; compound pierwszy: sciezki w docs/active/ jeszcze zyja)' },
   ],
 }
@@ -171,8 +171,26 @@ const PLAN_STATE = {
           },
           required: ['glowna', 'katalog', 'linie'],
         },
+        // Blokery operatora per faza (P25 A1) — wynik `plan.mjs blokery` 1:1; STOP przed faza liczy decyzjaBlokeraFazy.
+        blokery: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            checklista: { type: ['string', 'null'], description: 'sciezka checklisty przygotowania; null = plan bez checklisty' },
+            blokery: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                properties: { faza: { type: 'integer' }, linia: { type: 'integer' }, tresc: { type: 'string' } },
+                required: ['faza', 'linia', 'tresc'],
+              },
+            },
+          },
+          required: ['checklista', 'blokery'],
+        },
       },
-      required: ['zmiany', 'doctorKod', 'doctorWynik', 'kodJakPrzyTescie', 'decyzje'],
+      required: ['zmiany', 'doctorKod', 'doctorWynik', 'kodJakPrzyTescie', 'decyzje', 'blokery'],
     },
     // Wynik zielonego startu z pliku stanu (przepisany 1:1) — swiezy run po STOP-ie przed faza 1 nie powtarza testow.
     bazaZielona: {
@@ -409,6 +427,10 @@ Folder zadania: ${sciezka}
    inaczej "master" przy tym samym sprawdzeniu, inaczej null (wtedy katalog false, linie []).
    katalog: \`git cat-file -e <glowna>:docs/decisions && echo TAK || echo NIE\` -> TAK = true.
    linie: \`git grep -e '^claude_md:' <glowna> -- 'docs/decisions/*.md'\` — kazda linia wyjscia 1:1 (brak trafien = []).
+
+1c. BLOKERY OPERATORA: \`node .claude/scripts/plan/plan.mjs blokery ${sciezka}\` — z JSON-u na stdout przepisz pola
+   checklista i blokery 1:1 do wejscie.blokery (bez oceny, czy pozycja jest juz zrobiona — liczy orkiestrator).
+   Brak skryptu albo kod wyjscia inny niz 0 -> wejscie.blokery = { checklista: null, blokery: [] }.
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
 
@@ -1202,6 +1224,20 @@ function decyzjaClaudeMd(decyzje, sciezka) {
   }
 }
 
+// Blokery operatora per faza (P25 A1). Pozycja `[blokuje: faza N]` z checklisty przygotowania byla tylko widokiem w planie
+// zadania, wiec vibersi etap 5 przeszedl fazy 3–6 bez serwera Hono w E2E. Teraz nieodhaczona pozycja fazy N albo wczesniejszej
+// (wznowienie po STOP-ie) zatrzymuje run przed faza N. `blokery` = wynik `plan.mjs blokery` z bootstrapu; odhaczenie to zmiana
+// poza katalogiem zadania, wiec naprawa ma commit checklisty (inaczej bramka czystosci swiezego runu na nim stanie).
+function decyzjaBlokeraFazy(numerFazy, blokery, sciezka) {
+  const otwarte = blokery.blokery.filter((b) => b.faza <= numerFazy)
+  if (!otwarte.length) return null
+  const lista = otwarte.map((b) => `${blokery.checklista}:${b.linia} — ${b.tresc}`).join('; ')
+  return {
+    powod: `Faza ${numerFazy}: nieodhaczony bloker operatora w checkliscie przygotowania — ${otwarte.map((b) => b.tresc).join('; ')}`,
+    naprawa: `Wykonaj pozycje i odhacz je ([x]): ${lista}. Zacommituj checkliste: \`git add ${blokery.checklista} && git commit -m "docs: przygotowanie operatora przed faza ${numerFazy}"\`, potem swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`,
+  }
+}
+
 function fazyUkonczone(fazy) {
   return fazy.filter((f) => f.execute === 'done' && f.review === 'done' && (f.fix === 'done' || f.fix === 'none')).length
 }
@@ -1640,6 +1676,10 @@ for (const numerFazy of kolejka) {
     return await stopRun({ powod: `kolejka zawiera faze ${numerFazy} nieobecna w fazy[] — niespojny stan bootstrapu`, raporty })
   }
   phase(`Faza ${numerFazy}`)
+  const bloker = decyzjaBlokeraFazy(numerFazy, stan.wejscie.blokery, sciezka)
+  if (bloker) {
+    return await stopRun({ ...bloker, faza: numerFazy, raporty })
+  }
   let gateFazy = 'CZYSTE'
   let cykle = 0
   let e2eSync = null
