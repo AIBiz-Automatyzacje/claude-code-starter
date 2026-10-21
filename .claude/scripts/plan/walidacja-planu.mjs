@@ -148,6 +148,19 @@ function weryfikacja(iu, flowy, w) {
   }
 }
 
+// P25 C5 (vibersi etap 5): faza 1 z 6 IU (3 migracje, serwer, E2E, Sentry) — po podziale dwa mniejsze review.
+const PROG_IU_FAZY = 5
+
+/**
+ * @param {{ numer: number, iu: unknown[] }[]} fazy
+ * @returns {string[]} uwaga na kazda faze powyzej PROG_IU_FAZY jednostek
+ */
+export function uwagiRozmiaruFaz(fazy) {
+  return fazy.filter((f) => f.iu.length > PROG_IU_FAZY).map((f) => `faza ${f.numer}: ${f.iu.length} IU (próg ${PROG_IU_FAZY}) — review`
+    + ' takiej fazy czyta wszystkie zmiany naraz; podziel ją na granicy warstw, a migracje przepisujące istniejące funkcje bazy'
+    + ' postaw w fazie bez fundamentu serwera i klienta (dev-plan 3.3)')
+}
+
 /**
  * @param {Plan} plan sparsowany plan techniczny
  * @param {string} projekt katalog projektu (sciezki planu sa wzgledne wobec niego)
@@ -176,6 +189,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
     w.uwagi.push(`${id}: wymaganie ze „Śledzenia wymagań” bez IU (pole Wymagania żadnej jednostki go nie wymienia)`)
   }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
+  w.uwagi.push(...uwagiRozmiaruFaz(plan.fazy))
   w.uwagi.push(...uwagiRejestru(plan, jednostki))
   const makiety = sprawdzMakiety(plan, jednostki, projekt)
   w.bledy.push(...makiety.bledy)

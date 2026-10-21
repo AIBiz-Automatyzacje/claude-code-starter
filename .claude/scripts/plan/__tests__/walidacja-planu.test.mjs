@@ -12,7 +12,7 @@ import assert from 'node:assert/strict'
 
 import { parsujPlan } from '../plan-techniczny.mjs'
 import { liczLinieKodu } from '../budzet-pliku.mjs'
-import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan } from '../walidacja-planu.mjs'
+import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan, uwagiRozmiaruFaz } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
 
 const FIXTURE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/plan-techniczny.md'), 'utf8')
@@ -445,4 +445,34 @@ test('rejestr stalych: jawne IU-źródło w fazie po pierwszym konsumencie = uwa
 
 test('rejestr stalych: tekst uwagi planu bez kolumny wskazuje kolumne IU-źródło do dodania', () => {
   assert.match(sprawdz(zmien(WIERSZ_STALEJ, WIERSZ_STALEJ.replace('IU-1, IU-2', 'IU-2'))).uwagi[0] ?? '', /IU-źródło wskaż kolumną IU-źródło w rejestrze\)$/)
+})
+
+// P25 C1 (vibersi etap 5): etykiety powodow zgloszen w src/components/zgloszenia/teksty-zgloszen.ts (IU-16, UI), a szablony
+// maili serwera (IU-17) mialy je stamtad brac — serwer importowalby warstwe komponentow. Uwaga, gdy konsument ma pliki serwera.
+test('rejestr stalych: zrodlo w warstwie UI, a konsument z plikami server/ = uwaga z modulem bez Reacta; zrodlo w src/config — bez uwagi', () => {
+  const zSerwerem = zmien('| Test (unit) | `src/features/oferty/components/lista-ofert.test.tsx` | 0 → 50 | — | nowy |',
+    '| Test (unit) | `src/features/oferty/components/lista-ofert.test.tsx` | 0 → 50 | — | nowy |\n| Stwórz | `server/poczta.ts` | 0 → 30 | — | nowy |')
+  const tabela = (/** @type {string} */ plik) => `${NAGLOWEK_NOWY}\n| \`ETYKIETY_POWODOW\` | lista etykiet | \`${plik}\` | IU-3 | IU-3, IU-2 |`
+  const zUi = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, tabela('src/pages/oferta-publiczna.tsx'), zSerwerem)
+  const uwagi = sprawdz(zUi).uwagi.filter((u) => /warstwie UI/.test(u))
+  assert.equal(uwagi.length, 1)
+  assert.match(uwagi[0] ?? '', /^rejestr stałych: ETYKIETY_POWODOW — plik src\/pages\/oferta-publiczna\.tsx jest w warstwie UI, a IU-2 ma pliki serwera \(server\/poczta\.ts\)/)
+  assert.match(uwagi[0] ?? '', /src\/config\//)
+  const bezSerwera = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, tabela('src/pages/oferta-publiczna.tsx'))
+  assert.deepEqual(sprawdz(bezSerwera).uwagi.filter((u) => /warstwie UI/.test(u)), [], 'konsument tylko w kliencie')
+  const wConfig = zmien('| Stwórz | `src/pages/oferta-publiczna.tsx` | 0 → 90 | — | nowy |',
+    '| Stwórz | `src/pages/oferta-publiczna.tsx` | 0 → 90 | — | nowy |\n| Stwórz | `src/config/powody.ts` | 0 → 10 | — | nowy |',
+    zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, tabela('src/config/powody.ts'), zSerwerem))
+  assert.deepEqual(sprawdz(wConfig).uwagi.filter((u) => /warstwie UI/.test(u)), [])
+})
+
+// P25 C5 (vibersi etap 5): faza 1 z 6 IU (3 migracje, w tym 4. przepisanie admin_zdecyduj, serwer, E2E, Sentry) — po podziale
+// dwa mniejsze review. Uwaga przy fazie powyzej 5 IU, nie blad.
+test('rozmiar fazy: powyzej 5 IU = uwaga z numerem fazy i liczba IU; 5 IU — bez uwagi', () => {
+  const faza = (/** @type {number} */ numer, /** @type {number} */ ile) => ({ numer, iu: Array.from({ length: ile }, (_, i) => ({ id: `IU-${i + 1}` })) })
+  assert.deepEqual(uwagiRozmiaruFaz([faza(1, 5), faza(2, 3)]), [])
+  const [uwaga, ...reszta] = uwagiRozmiaruFaz([faza(1, 6), faza(2, 5)])
+  assert.equal(reszta.length, 0)
+  assert.match(uwaga ?? '', /^faza 1: 6 IU \(próg 5\)/)
+  assert.match(uwaga ?? '', /migracje przepisujące istniejące funkcje/)
 })
