@@ -253,6 +253,10 @@ test('gotowosc: serwer API bez E2E_HEALTH_TRESC = uwaga E2E z sekcja README; z t
   writeFileSync(join(k, '.env.e2e'), 'X=1\n')
   writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { 'build:server': 'esbuild server/index.ts' } }))
   assert.equal(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi).length, 1, 'skrypt build:server tez oznacza serwer API')
+  for (const zly of ['{ zly', '{"scripts":null}']) {
+    writeFileSync(join(k, 'package.json'), zly)
+    assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [], `${zly}: bez uwagi i bez wyjatku bramki`)
+  }
 }))
 
 // P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:
@@ -264,6 +268,8 @@ test('blokery: nieodhaczone pozycje checklisty z numerem fazy (start = faza 1), 
   assert.deepEqual(w.json, { ok: true, checklista: PREP, blokery: [{ faza: 2, linia: 3, tresc: 'Klucz mapy — **[blokuje: faza 2]** (IU-2)' }] })
   writeFileSync(join(k, PREP), '# P\n\n- [ ] Konto — **[blokuje: planowanie]**\n- [ ] Dostęp — **[blokuje: faza 1]**\n- [x] Klucz — **[blokuje: faza 2]**\n')
   assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.blokery.map((/** @type {{ faza: number }} */ b) => b.faza), [1, 1])
+  writeFileSync(join(k, PREP), '# P\n\n- [ ] Klucz — **[blokuje: faza 2]**\n- [ ] Konto — **[blokuje: faza 1]**\n')
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.blokery.map((/** @type {{ linia: number }} */ b) => b.linia), [3, 4], 'kolejnosc linii checklisty')
   rmSync(join(k, PREP))
   assert.deepEqual(cli(k, ['blokery', ZADANIE]).json, { ok: true, checklista: PREP, blokery: [] })
 }))

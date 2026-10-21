@@ -78,9 +78,17 @@ function maSerwerApi(projekt) {
   if (existsSync(join(projekt, 'server'))) return true
   const pakiet = join(projekt, 'package.json')
   if (!existsSync(pakiet)) return false
-  /** @type {{ scripts?: Record<string, string> }} */
-  const { scripts = {} } = JSON.parse(readFileSync(pakiet, 'utf8'))
-  return Object.keys(scripts).some((nazwa) => /(?:^|:)server(?::|$)/.test(nazwa))
+  /** @type {unknown} */
+  let manifest
+  try {
+    manifest = JSON.parse(readFileSync(pakiet, 'utf8'))
+  } catch (e) {
+    // Zly package.json zglasza runner testow (gotowosc.testy); tu tylko brak sygnalu o serwerze, bramka nie pada.
+    if (e instanceof SyntaxError) return false
+    throw e
+  }
+  const scripts = manifest && typeof manifest === 'object' && 'scripts' in manifest ? manifest.scripts : null
+  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => /(?:^|:)server(?::|$)/.test(nazwa))
 }
 
 /**

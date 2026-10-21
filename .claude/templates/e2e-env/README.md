@@ -64,10 +64,11 @@ stary `E2E_START` w trzech fazach). Taki projekt potrzebuje:
 3. **Sondy na trasie serwera z treścią**: `E2E_HEALTH=<E2E_URL>/healthz` (trasa zdrowia serwera przez proxy) i
    `E2E_HEALTH_TRESC='"status":"ok"'` (tekst z odpowiedzi tej trasy). Fallback SPA odpowiada 200 na każdej ścieżce, więc
    bez treści stary start „samego Vite” przechodzi sondę; z treścią daje STOP przed fazą 1 albo serwer martwy po restarcie.
+   Sonda nie podąża za przekierowaniem: `E2E_HEALTH` wskazuje adres, który odpowiada wprost (np. `/healthz`, nie `/healthz/` z 301).
 
-Gdy skrypt startu powstaje dopiero w zadaniu, plan ma pozycję checklisty `[blokuje: faza N]` (N = pierwsza faza po tej
-z IU skryptu): operator podmienia `E2E_START` i ustawia sondy po fazie z IU, a autopilot zatrzymuje się przed fazą N,
-dopóki pozycja jest nieodhaczona.
+Gdy skrypt startu powstaje dopiero w zadaniu, plan ma pozycję checklisty `[blokuje: faza N]` (N = faza pierwszego scenariusza
+zapisującego albo czytającego przez serwer): operator podmienia `E2E_START` i ustawia sondy po fazie z IU skryptu, a autopilot
+zatrzymuje się przed fazą N, dopóki pozycja jest nieodhaczona.
 
 ## Architektura
 

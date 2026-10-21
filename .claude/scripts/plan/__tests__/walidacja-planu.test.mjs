@@ -464,6 +464,13 @@ test('rejestr stalych: zrodlo w warstwie UI, a konsument z plikami server/ = uwa
     '| Stwórz | `src/pages/oferta-publiczna.tsx` | 0 → 90 | — | nowy |\n| Stwórz | `src/config/powody.ts` | 0 → 10 | — | nowy |',
     zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, tabela('src/config/powody.ts'), zSerwerem))
   assert.deepEqual(sprawdz(wConfig).uwagi.filter((u) => /warstwie UI/.test(u)), [])
+  // Hook feature'a jako zrodlo i konsument z Edge Function; IU z plikiem serwera spoza listy konsumentow — bez uwagi.
+  const zFunkcja = zmien('| Stwórz | `server/poczta.ts` | 0 → 30 | — | nowy |', '| Stwórz | `supabase/functions/poczta/index.ts` | 0 → 30 | — | nowy |', zSerwerem)
+  const hook = zmien('| Stwórz | `src/hooks/use-oferta-publiczna.ts` | 0 → 40 | — | nowy |', '| Stwórz | `src/features/oferty/hooks/use-powody.ts` | 0 → 40 | — | nowy |',
+    zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, tabela('src/features/oferty/hooks/use-powody.ts'), zFunkcja))
+  assert.match(sprawdz(hook).uwagi.filter((u) => /warstwie UI/.test(u)).join('\n'), /use-powody\.ts jest w warstwie UI, a IU-2 ma pliki serwera \(supabase\/functions\/poczta\/index\.ts\)/)
+  const bezKonsumenta = zmien(`${NAGLOWEK_STARY}\n${WIERSZ_STALEJ}`, `${NAGLOWEK_NOWY}\n| \`ETYKIETY_POWODOW\` | lista etykiet | \`src/pages/oferta-publiczna.tsx\` | IU-3 | IU-3 |`, zSerwerem)
+  assert.deepEqual(sprawdz(bezKonsumenta).uwagi.filter((u) => /warstwie UI/.test(u)), [], 'IU-2 z serwerem nie jest konsumentem')
 })
 
 // P25 C5 (vibersi etap 5): faza 1 z 6 IU (3 migracje, w tym 4. przepisanie admin_zdecyduj, serwer, E2E, Sentry) — po podziale

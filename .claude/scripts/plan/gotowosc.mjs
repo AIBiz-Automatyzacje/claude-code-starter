@@ -78,7 +78,7 @@ export function blokeryZadania(projekt, katalogZadania) {
   const { plan } = planTechnicznyZadania(projekt, katalogZadania)
   const prep = plan ? przygotowanie(projekt, poleTekstowe(plan, 'operator_prep')) : null
   if (!prep) return { checklista: null, blokery: [] }
-  const blokery = [...prep.blokujace.map((b) => ({ ...b, faza: 1 })), ...prep.odroczone]
+  const blokery = [...prep.blokujace, ...prep.odroczone]
     .map(({ faza, linia, tresc }) => ({ faza: faza ?? 1, linia, tresc }))
     .sort((a, b) => a.linia - b.linia)
   return { checklista: prep.sciezka, blokery }

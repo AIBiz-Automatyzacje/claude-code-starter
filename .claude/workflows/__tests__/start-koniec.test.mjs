@@ -215,6 +215,13 @@ test('bloker fazy: kilka pozycji w jednym STOP-ie; brak checklisty albo pusta li
   assert.equal(A.decyzjaBlokeraFazy(1, { checklista: PREP, blokery: [] }, ZADANIE), null)
 })
 
+test('bloker fazy: autopilot sprawdza pierwsza faze przed testami startu, a kazda faze petli przed execute (STOP z jej numerem)', () => {
+  const start = autopilot.indexOf('const blokerStartu = pierwszaFaza ? decyzjaBlokeraFazy(pierwszaFaza.numer, stan.wejscie.blokery, sciezka)')
+  assert.ok(start > 0 && start < autopilot.indexOf('if (wejscie.testyStartu) {'), 'bloker pierwszej fazy przed testami startu')
+  const petla = wytnij(autopilot, 'for (const numerFazy of kolejka) {', "if (faza.execute === 'pending') {")
+  assert.match(petla, /const bloker = decyzjaBlokeraFazy\(numerFazy, stan\.wejscie\.blokery, sciezka\)\s*\n\s*if \(bloker\) \{\s*\n\s*return await stopRun\(\{ \.\.\.bloker, faza: numerFazy/)
+})
+
 test('fazyUkonczone liczy fazy domkniete w zadaniu, nie tylko w tym runie', () => {
   const fazy = [
     { numer: 1, execute: 'done', review: 'done', fix: 'none' },

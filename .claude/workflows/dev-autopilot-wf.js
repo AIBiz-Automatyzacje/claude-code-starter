@@ -1551,6 +1551,13 @@ if (wejscie.commitZadania) {
   }
   log(`Bramka wejscia: zmiany w katalogu zadania zacommitowane (${commitZadania.commit || 'brak hasha'})`)
 }
+// Bloker pierwszej fazy kolejki (P25 A1) przed testami startu, srodowiskiem E2E i rozgrzewka — STOP tani i z dokladnym
+// powodem; fazy dalsze sprawdza petla przed kazda faza.
+const pierwszaFaza = stan.fazy.find((f) => f.execute === 'pending' || f.review === 'pending' || f.fix === 'pending')
+const blokerStartu = pierwszaFaza ? decyzjaBlokeraFazy(pierwszaFaza.numer, stan.wejscie.blokery, sciezka) : null
+if (blokerStartu) {
+  return await stopRun({ ...blokerStartu, faza: pierwszaFaza.numer, stan })
+}
 if (wejscie.testyStartu) {
   const testy = await agent(testyStartuPrompt(), { schema: TESTY_STARTU, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'start:testy' })
   const d = decyzjaTestowStartu(testy, sciezka)
