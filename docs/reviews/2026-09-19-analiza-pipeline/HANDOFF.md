@@ -2928,7 +2928,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     Operator: `disable-model-invocation` zdjęte; „makieta obok aplikacji” — po zamknięciu pozostałych.
     **Dalej:** `/sync-template` + doctor w vibersi i live-10-demo (polecenie §8) — zaciąga P22, reguły i P23 naraz; potem pomiar
     diffu reviewerów na następnym etapie (oczekiwane −1/3 znaków, faza 6 ponad −50%).
-95. **P24 „makieta obok aplikacji” (2026-10-20, jedna sesja): CAŁY PLAN ZROBIONY (IU-1–IU-8) + pilot na kopii vibersi.
+95a. **P24 „makieta obok aplikacji” (2026-10-20, osobna sesja równoległa do pkt 95–96; numer 95a nadany przy merge'u): CAŁY PLAN ZROBIONY (IU-1–IU-8) + pilot na kopii vibersi.
     Gałąź `popr/P24-makieta-obok-aplikacji` (16 commitów od `62bdd4a`, 32 pliki, +4335/−3), NIEZMERGOWANA — merge za zgodą operatora.**
     Plan `docs/plans/2026-10-20-001-feat-makieta-obok-aplikacji-plan.md`, wykonanie ręczne (bez autopilota). Testy 1176/1176
     (main 1088), typecheck i lint czyste, prompt-audit dodanych linii skilli i promptu 0 (kontrola na podłożonej linii: 3).
@@ -3450,26 +3450,29 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-20) — MERGE P24 I SYNC W VIBERSI PRZED SMOKE'IEM ETAPU 5 (6a pkt 95).** Warunek: operator zgodził się na merge.
-Merge w sesji szablonu: `git switch main && git merge --no-ff popr/P24-makieta-obok-aplikacji && pnpm test && git push`.
-Przed smoke'iem: w panelu Supabase dev vibersi (Authentication → URL Configuration → Redirect URLs) dopisz `http://127.0.0.1:5180/**`.
-Potem nowa sesja w vibersi na main, gdy autopilot etapu 5 skończy fazy (przed archiwizacją `dev-docs-complete`):
+**AKTUALNA (2026-10-23) — P24 ZMERGOWANA DO MAIN (6a pkt 95a); `/sync-template` w vibersi przed smoke'iem etapu 6.**
+Merge `popr/P24-makieta-obok-aplikacji` do main zrobiony 2026-10-23 (po P25).
+Przed smoke'iem następnego etapu: Redirect URLs Supabase dev vibersi + `http://127.0.0.1:5180/**`, potem nowa sesja w vibersi
+na main z poleceniem niżej. Gałąź `popr/P26-po-smoke-etapu-5` (sesja równoległa) dotyka tylko HANDOFF — merge/rebase na nowy main
+bez konfliktów kodu (pkt 97 dopisany po pkt 96).
 
 ```
 Zaktualizuj maszynerię projektu z szablonu i sprawdź, że działa.
 
 1. /sync-template. Gdy wypisze linię „RUNNER TESTÓW: …” — pokaż mi ją z poprawką configu i zapytaj, czy ją wpisać.
 2. bash .claude/scripts/doctor/doctor.sh — wynik ma być OK; wiersze „runner testów” i „zapis hooków” przepisz mi dosłownie.
-3. node .claude/scripts/makieta/makieta.mjs sprawdz --smoke docs/operator/2026-10-18-etap-4-dodawanie-i-moderacja-smoke.md
-   — pokaż liczbę punktów i problemów (stary format smoke'u etapu 4: problemy są oczekiwane, plik zostaje bez zmian).
+3. node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <najnowszy docs/operator/*-smoke.md>
+   — pokaż liczbę punktów i problemów (stary format smoke'u: problemy są oczekiwane, plik zostaje bez zmian).
 4. Commit synchronizacji. Nie zaczynaj w tej sesji kolejnego etapu.
 
 Zasady: w .claude/ nic poza tym, co wnosi /sync-template; nie wypisuj wartości z plików .env* ani zmiennych środowiska.
 Na koniec krótko: co się zmieniło, wynik doctora i kontroli makiet, hash commita.
 ```
 
-Smoke etapu 5: w sesji smoke'u `/makieta` (link z wyniku `start`); sprawdź logowanie hasłem i OAuth w ramkach, zmianę konta
+Smoke następnego etapu: w sesji smoke'u `/makieta` (link z wyniku `start`); sprawdź logowanie hasłem i OAuth w ramkach, zmianę konta
 po „Przeładuj ramki” i czy zgłoszenie budzi sesję, gdy czeka na Twoją wiadomość — wynik do HANDOFF.
+
+**Historia: (2026-10-20) — MERGE P24 I SYNC PRZED SMOKE'IEM ETAPU 5 (6a pkt 95a) — merge wykonany 2026-10-23.**
 
 **Historia: (2026-10-19) — MERGE P22 I SYNC W PROJEKTACH (6a pkt 93) — merge WYKONANY (`dbe8a4a`).**
 Warunek był: operator zgodził się na merge.
