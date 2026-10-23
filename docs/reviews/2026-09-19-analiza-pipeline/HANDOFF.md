@@ -3047,7 +3047,34 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `invalidateQueries`/`refetchQueries`, bo unieważnienie dołącza się do pobrania w toku; test z odroczonym `queryFn`;
     (b) `feature-tester-e2e` — komunikat znikający (toast 4 s) sprawdzasz od razu po akcji (`agent-browser wait --text`),
     nie po zrzucie: tester czytał stronę po ~5 s i komunikatu „Głos na … policzony” nie potwierdził ani nie obalił.
-    **Dalej:** po PR etapu 5 — plan paczki z (1)–(4) do akceptacji operatora, razem z zostałymi P3 z pkt 96.
+    **Wynik w vibersi (2026-10-21/22):** poprawka zgodna z rekomendacją — `06af207` (`cancelQueries` prefiksu
+    `wszystkieMojeGlosy()` przed unieważnieniem, komentarz z przyczyną) + `7d0120c` (scenariusz). Test
+    `src/hooks/interakcje/use-przeniesienie-glosow-wyscig.test.tsx` (podmienione `mojeGlosyKonta` z odroczoną obietnicą
+    i `przeniesGlosy`) pada przed poprawką (`expected [] to include …`), przechodzi po niej; 2940/2940. `glos-przeniesienie`
+    PASS na komputerze i 390 px → **7/7 scenariuszy „E2E do odegrania ręcznie” odhaczonych**; w smoke'u zostaje 39 pozycji
+    (przygotowanie 13, punkty wizualne 21 z 2 decyzjami operatora, staging 5). Potwierdzenie (4a): sesja vibersi najpierw
+    próbowała odtworzyć wyścig na poziomie `fetch` — kolejność odpowiedzi niepowtarzalna, test padał także z poprawką; działa
+    dopiero odroczona obietnica funkcji pobierającej (to wpisać do reguły jako wzór testu).
+    (4c) **Rozszerzenie (4b) — liczba albo stan pochodny po zapisie.** Tester `komentarz-dodaj` zgłosił licznik
+    „Komentarze N” o jeden w tyle; kod jest poprawny (`uniewaznijProjekt` w vibersi `src/hooks/interakcje/use-komentarze.ts:117`,
+    wołane w obu mutacjach, test `use-komentarze.test.tsx:150`), a odświeżenie celowo nie blokuje potwierdzenia w UI — zrzut
+    był zbyt wczesny, sesja straciła turę na sprawdzanie fałszywego alarmu. Poprawka w `feature-tester-e2e` razem z (4b):
+    przed asercją albo zrzutem liczby czy stanu zależnego od odświeżenia po zapisie tester czeka na oczekiwaną wartość
+    (`agent-browser wait --text "<wartość>"`) albo na koniec ruchu sieci (`agent-browser wait --load networkidle`); dopiero
+    rozjazd po czekaniu jest FAIL.
+    (5) **Obserwacja, nie reguła:** `src/components/konto/menu-konta.test.tsx` („porażka wylogowania…”) w vibersi padł raz
+    w pełnym przebiegu pod obciążeniem, osobno 4/4 i kolejny pełny przebieg zielony. Jeden przypadek — jeśli wróci w `/dev-pr`
+    albo w etapie 6, do rozważenia reguła o testach niestabilnych (timeouty `findBy*`/`waitFor` pod pełnym zestawem).
+    **Gdzie wdrożyć (dla nowej sesji):** (1) `.claude/templates/e2e-env/README.md:60,64` + ewentualnie uwaga w
+    `.claude/scripts/plan/plan.mjs` `gotowosc` (ścieżka `E2E_HEALTH` w `vite.config.*`); (2) `.claude/skills/dev-plan/SKILL.md`
+    3.4b (`:198`) + README `e2e-env` sekcja „Aplikacja z osobnym serwerem API”; (3) `.claude/rules/coding-rules.md:34`
+    + `.claude/agents/test-coverage-reviewer.md` (obok `:22`); (4a) `.claude/skills/tailwind-react-guidelines/resources/
+    performance.md` sekcja „React Query” (`:185`) + punkt w `test-coverage-reviewer`; (4b)+(4c)
+    `.claude/agents/feature-tester-e2e.md` przy regule asercji i zrzutu (`:49`). Każda zmiana z testem tekstu, jeśli testy
+    szablonu sprawdzają te pliki (`grep -rn "<fraza>" .claude/scripts/**/*.test.mjs`).
+    **Dalej:** po PR etapu 5 — plan paczki z (1)–(4c) do akceptacji operatora, razem z zostałymi P3 z pkt 96. W vibersi:
+    punkty wizualne smoke'u (`/makieta`), potem `/clear` i `/dev-pr --czesc 1` w nowej sesji (sync zmienił `.claude/`).
+    §8 bez zmian z tego punktu (stan P24/P26 prowadzi blok „AKTUALNA” sesji „Szablon workflow”).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
