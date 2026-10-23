@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Makieta obok aplikacji</title>
+  <link rel="stylesheet" href="/__makieta/strona/styl.css">
+  <script type="module" src="/__makieta/strona/strona.mjs"></script>
+</head>
+<body>
+  <header class="naglowek">
+    <div class="naglowek__wiersz">
+      <h1 class="tytul">Makieta obok aplikacji</h1>
+      <span id="licznik" class="licznik"></span>
+      <button type="button" id="poprzedni">Poprzedni</button>
+      <button type="button" id="nastepny">Następny</button>
+      <span id="smoke" class="wyciszony"></span>
+    </div>
+    <p id="uwagi" class="uwagi" hidden></p>
+  </header>
+
+  <section class="punkt" aria-labelledby="tresc">
+    <div class="punkt__wiersz">
+      <span id="status" class="status"></span>
+      <span id="ekran" class="ekran"></span>
+      <code id="trasa" class="trasa"></code>
+    </div>
+    <p id="tresc" class="tresc"></p>
+    <div id="decyzje" class="decyzje">
+      <button type="button" id="zgodne" class="decyzja decyzja--zgodne">Zgodne</button>
+      <button type="button" id="odstepstwo" class="decyzja">Odstępstwo OK</button>
+      <button type="button" id="blad" class="decyzja decyzja--blad">Zgłoś błąd</button>
+    </div>
+    <form id="form-odstepstwo" class="formularz" hidden>
+      <label for="notatka-odstepstwa">Co się różni i dlaczego to OK</label>
+      <textarea id="notatka-odstepstwa" rows="2" maxlength="300" required></textarea>
+      <button type="submit">Zapisz odstępstwo</button>
+      <button type="button" class="anuluj">Anuluj</button>
+    </form>
+    <form id="form-blad" class="formularz" hidden>
+      <label for="opis-bledu">Co jest nie tak</label>
+      <textarea id="opis-bledu" rows="2" maxlength="300" required></textarea>
+      <label for="urzadzenie-bledu">Urządzenie</label>
+      <select id="urzadzenie-bledu"></select>
+      <button type="submit">Wyślij do sesji</button>
+      <button type="button" class="anuluj">Anuluj</button>
+    </form>
+    <p id="niejednoznaczny" class="komunikat" hidden>Ta sama treść punktu występuje w checkliście kilka razy — decyzję zapisz w sesji.</p>
+    <p id="komunikat" class="komunikat" role="status" aria-live="polite"></p>
+  </section>
+
+  <main class="uklad">
+    <section class="aplikacja" aria-label="Aplikacja w ramkach urządzeń">
+      <div class="pasek">
+        <form id="form-adres" class="adres">
+          <label for="adres" class="ukryty">Trasa w ramkach</label>
+          <input id="adres" type="text" spellcheck="false" autocomplete="off">
+          <button type="submit">Przejdź</button>
+        </form>
+        <button type="button" id="przeladuj">Przeładuj ramki</button>
+        <button type="button" id="w-karcie">Otwórz w karcie</button>
+        <button type="button" id="skala" aria-pressed="false">1:1</button>
+      </div>
+      <details class="urzadzenia">
+        <summary>Urządzenia</summary>
+        <div id="lista-urzadzen" class="lista-urzadzen"></div>
+        <form id="form-wymiar" class="wymiar">
+          <label for="wymiar">Własny wymiar</label>
+          <input id="wymiar" type="text" placeholder="390×844" autocomplete="off">
+          <button type="submit">Dodaj</button>
+        </form>
+        <button type="button" id="domyslne">Domyślne</button>
+      </details>
+      <p id="podpowiedz-trasy" class="wyciszony" hidden></p>
+      <div id="ramki" class="ramki"></div>
+    </section>
+    <section class="makieta" aria-label="Makieta">
+      <div class="pasek">
+        <button type="button" id="dopasuj" aria-pressed="false">Dopasuj do wysokości</button>
+        <span id="wymiary-makiety" class="wyciszony"></span>
+      </div>
+      <p id="brak-makiety" class="komunikat" hidden>Brak PNG makiety dla tego ekranu.</p>
+      <img id="obraz-makiety" alt="Makieta ekranu" hidden>
+    </section>
+  </main>
+</body>
+</html>

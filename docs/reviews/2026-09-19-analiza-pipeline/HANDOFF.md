@@ -2928,6 +2928,45 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     Operator: `disable-model-invocation` zdjęte; „makieta obok aplikacji” — po zamknięciu pozostałych.
     **Dalej:** `/sync-template` + doctor w vibersi i live-10-demo (polecenie §8) — zaciąga P22, reguły i P23 naraz; potem pomiar
     diffu reviewerów na następnym etapie (oczekiwane −1/3 znaków, faza 6 ponad −50%).
+95. **P24 „makieta obok aplikacji” (2026-10-20, jedna sesja): CAŁY PLAN ZROBIONY (IU-1–IU-8) + pilot na kopii vibersi.
+    Gałąź `popr/P24-makieta-obok-aplikacji` (16 commitów od `62bdd4a`, 32 pliki, +4335/−3), NIEZMERGOWANA — merge za zgodą operatora.**
+    Plan `docs/plans/2026-10-20-001-feat-makieta-obok-aplikacji-plan.md`, wykonanie ręczne (bez autopilota). Testy 1176/1176
+    (main 1088), typecheck i lint czyste, prompt-audit dodanych linii skilli i promptu 0 (kontrola na podłożonej linii: 3).
+    Każda IU: test padający bez poprawki (podmiana linii, `tmp/mutuj.py` z limitem 60 s), recenzja subagenta z mutacjami
+    w worktree, commit IU + commit „po recenzji”. Recenzje (mutacje/przeżyło): IU-1 44/18, IU-2 28/13, IU-3 42/14 (1 × P1),
+    IU-4 46/20, IU-5 51/16, IU-6 33/18, IU-7 30/12 (na żywo w agent-browser), IU-8 15/8.
+    (IU-1) `punkty.mjs`: punkty z `visual-diff/<ekran>-figma.png`, trasa z backticków PRZED PIERWSZĄ MAKIETĄ (nie „przed obok” jak
+    w planie — „lista obok podglądu: `/admin` obok …” gubiło trasę; na smoke'ach etapów 1–4 wynik ten sam), status z checkboxa
+    i pierwszej adnotacji, id `p-<sha1 treści>[0:8]`, bloki ``` i `[fizyczne urządzenie]` (także ASCII) pominięte, `sprawdzFormat(md)`.
+    (IU-2) `zrodla.mjs`: tabela SPEC.md po nazwie ekranu ALBO pliku `<ekran>.png` (SPEC etapu 3 ma opis w pierwszej kolumnie —
+    6 ekranów bez wymiarów); vibersi etapy 1–4: 56 ekranów, PNG 56/56, wymiary 55/56. (IU-3) `zapis-linii.mjs`: P1 z recenzji —
+    `**(x)**` w notatce po jednym przejściu składało `*(x)*` i rozcinało adnotację → neutralizacja do punktu stałego; blokada
+    z tokenem, przejęcie przeterminowanej przez rename. (IU-4) **ZMIANA DECYZJI PLANU (recenzja security, P2):** proxy nie zdejmuje
+    zakazu osadzania, tylko daje `X-Frame-Options: SAMEORIGIN` i `frame-ancestors 'self'` — ramki narzędzia są same-origin,
+    a obca strona nie osadzi aplikacji z sesją operatora; proxy sam odrzuca Host spoza `127.0.0.1:<port>` (podmiana Host znosiła
+    `allowedHosts` Vite przy DNS rebinding) i przemyt ciała GET/DELETE. (IU-5) `serwer.mjs` + `kolejka.mjs`: token, Host, Origin,
+    409, SSE; `zamknij()` niszczy gniazda upgrade (bez tego `stop` przy HMR = 5 s i SIGKILL). (IU-6) `makieta.mjs`/`proces.mjs`:
+    główny moduł przez `realpath(argv[1])` — wzór `import.meta.url === file://${argv[1]}` NIE DZIAŁA w ścieżce ze spacją, polskimi
+    znakami i przez dowiązanie (kod 0 bez wyjścia); ten sam wzór mają `smoke/zmienne.mjs`, `pr/rozmiar.mjs`, `pr/czesci.mjs` (poza
+    P24, do poprawki). Sonda startu z tokenem tej instancji, start czyści kolejkę, `poprawione` tylko na statusie „błąd zgłoszony”.
+    (IU-7) `urzadzenia.mjs`: sprzeczność planu — 358 ma być „bez trafienia”, a mieści się w ±24 od iphone-se 375 → reguła
+    komponentu (makieta niższa niż pół najniższego pasującego presetu = wymiar makiety), do dopisania w planie; strona: resize
+    i 1:1 tylko skalują ramki (stan aplikacji zostaje), notatka zostaje po 409. (IU-8) skill `/makieta`, krok 3 `dev-docs-complete`
+    i `smokePrompt` (format R11, źródło W×H, zdanie o /makieta, kontrola `makieta.mjs sprawdz --smoke`); workflow pisał
+    `[fizyczne urzadzenie]` bez polskich znaków.
+    **Pilot (kopia vibersi `tmp/pilot/vibersi`, klon bez `.env*`, smoke etapu 4 z cofniętymi checkboxami, agent-browser bez
+    `screenshot`):** Vite dev na 5175 — ramki 3 telefonów na `/konto/projekty` (`innerWidth` = szerokość urządzenia), **HMR przez
+    proxy działa bez `server.hmr.clientPort`** („[vite] connected.” w każdej ramce); zbudowany serwer (`TRYB_STRONY=prawne`) z
+    `X-Frame-Options: DENY` i `frame-ancestors 'none'` na 5176 — ramki się ładują, przez proxy `SAMEORIGIN` i `'self'`.
+    „Zgodne” i „Odstępstwo OK” = zmiana jednej linii każda (`git diff`), linia zmieniona „przez sesję” → komunikat konfliktu,
+    notatka zostaje; „Zgłoś błąd” → zdarzenie Monitora w ~1 s (sesja aktywna), `poprawione` → status „poprawione, do sprawdzenia”
+    i przeładowanie ramek bez przeładowania strony; `stop` przy otwartym HMR 0,16 s. **Nie sprawdzone (do pierwszego smoke'u
+    z narzędziem):** logowanie hasłem/OAuth i zmiana konta we wszystkich ramkach (kopia bez Supabase), czy zdarzenie Monitora
+    budzi sesję CZEKAJĄCĄ na operatora (sesja w tle nie czeka) — skill każe operatorowi napisać „zgłoszenia” po minucie ciszy;
+    czy serwer przeżywa `/clear` (skill każe `stop` przed `/clear`); Navigator Locks auth-js przy wielu ramkach.
+    **Dalej:** §8 — merge za zgodą, push, potem `/sync-template` w vibersi PRZED smoke'iem etapu 5 (etap 5 jest w toku na
+    autopilocie — sync dopiero po jego zakończeniu, przed `dev-docs-complete`), wpis `http://127.0.0.1:5180/**` w Redirect URLs
+    Supabase dev vibersi; pierwszy smoke etapu 5 = żywy test logowania i budzenia sesji.
 
 95. **VIBERSI ETAP 5 — PLANOWANIE (2026-10-20); lista poprawek szablonu na nową paczkę — DO WDROŻENIA DOPIERO PO AUTOPILOCIE
     I DOMKNIĘCIU ETAPU 5 (decyzja operatora).** Sync P22/P23 w vibersi `015b61c`, plan `docs/plans/2026-10-20-001-feat-etap-5-
@@ -3400,10 +3439,40 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   blokad (np. `.env-sync-hash` łapany wzorcem pliku), więc taint tylko dla sekretów bez pliku. Mutacje plików `.md` i hooków
   skryptem na jeden bieg (`podmiana.py`) z `${=T}` w zsh przy komendzie testu w zmiennej. JSDoc z `sed 's/=.*//'` znów zamknął
   komentarz (`*/`) — w komentarzach opisuj podstawienie słowami.
+- P24 (2026-10-20): recenzent-subagent z `pkill -f "node --test"` ubijał równoległe biegi sesji głównej (wyniki „PADA” fałszywe,
+  a zsh sesji ma ten tekst w linii komend) — w poleceniu recenzji zakaz szerokich wzorców `pkill`, sprzątanie po własnych PID-ach
+  albo ścieżce worktree. `python` ubity SIGTERM nie wykonuje `finally` — skrypt mutacji przywracający plik w `finally` musi mieć
+  handler SIGTERM i limit czasu biegu (mutacja potrafi zapętlić test). `spawnSync` CLI w teście zatrzymuje pętlę zdarzeń
+  procesu testu — serwery testowe w tym samym procesie przestają odpowiadać (CLI w testach przez `spawn`). Gniazda `upgrade`
+  serwera http są pół-otwarte i poza `closeAllConnections` — serwer z proxy WebSocket musi je śledzić sam. Klient testu
+  przez `net.connect` pisze `write`, nie `end` (pół-zamknięte połączenie serwer kończy bez odpowiedzi). Przed planem
+  z regułą liczbową sprawdź przykłady planu tą regułą (358 vs ±24).
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-19) — MERGE P22 I SYNC W PROJEKTACH (6a pkt 93).** Warunek: operator zgodził się na merge.
+**AKTUALNA (2026-10-20) — MERGE P24 I SYNC W VIBERSI PRZED SMOKE'IEM ETAPU 5 (6a pkt 95).** Warunek: operator zgodził się na merge.
+Merge w sesji szablonu: `git switch main && git merge --no-ff popr/P24-makieta-obok-aplikacji && pnpm test && git push`.
+Przed smoke'iem: w panelu Supabase dev vibersi (Authentication → URL Configuration → Redirect URLs) dopisz `http://127.0.0.1:5180/**`.
+Potem nowa sesja w vibersi na main, gdy autopilot etapu 5 skończy fazy (przed archiwizacją `dev-docs-complete`):
+
+```
+Zaktualizuj maszynerię projektu z szablonu i sprawdź, że działa.
+
+1. /sync-template. Gdy wypisze linię „RUNNER TESTÓW: …” — pokaż mi ją z poprawką configu i zapytaj, czy ją wpisać.
+2. bash .claude/scripts/doctor/doctor.sh — wynik ma być OK; wiersze „runner testów” i „zapis hooków” przepisz mi dosłownie.
+3. node .claude/scripts/makieta/makieta.mjs sprawdz --smoke docs/operator/2026-10-18-etap-4-dodawanie-i-moderacja-smoke.md
+   — pokaż liczbę punktów i problemów (stary format smoke'u etapu 4: problemy są oczekiwane, plik zostaje bez zmian).
+4. Commit synchronizacji. Nie zaczynaj w tej sesji kolejnego etapu.
+
+Zasady: w .claude/ nic poza tym, co wnosi /sync-template; nie wypisuj wartości z plików .env* ani zmiennych środowiska.
+Na koniec krótko: co się zmieniło, wynik doctora i kontroli makiet, hash commita.
+```
+
+Smoke etapu 5: w sesji smoke'u `/makieta` (link z wyniku `start`); sprawdź logowanie hasłem i OAuth w ramkach, zmianę konta
+po „Przeładuj ramki” i czy zgłoszenie budzi sesję, gdy czeka na Twoją wiadomość — wynik do HANDOFF.
+
+**Historia: (2026-10-19) — MERGE P22 I SYNC W PROJEKTACH (6a pkt 93) — merge WYKONANY (`dbe8a4a`).**
+Warunek był: operator zgodził się na merge.
 Merge w sesji P22 albo ręcznie: `git switch main && git merge --no-ff popr/P22-po-etapie-4 && npm test && git push`. Potem po jednej
 nowej sesji w katalogu każdego projektu (vibersi, live-10-demo), na main. Sesja projektu nie zna historii szablonu.
 

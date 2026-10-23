@@ -1,0 +1,74 @@
+/* Strona narzedzia makiet (P24 IU-7): naglowek z punktem i decyzjami, po lewej aplikacja w ramkach urzadzen, po prawej makieta. */
+:root {
+  --tlo: #f6f5f2;
+  --karta: #fff;
+  --tusz: #1d1c1a;
+  --wyciszony: #6b6760;
+  --linia: #dcd8d0;
+  --akcent: #2f5bd3;
+  --zgodny: #1f7a3d;
+  --blad: #b3261e;
+  --odstep: #8a5a00;
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--tusz);
+  background: var(--tlo);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+button, input, select, textarea { font: inherit; }
+button {
+  border: 1px solid var(--linia); background: var(--karta); border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+button:hover { border-color: var(--wyciszony); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--akcent); outline-offset: 1px; }
+button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color: var(--tusz); }
+/* Atrybut hidden wygrywa z display: grid/flex klas (formularze decyzji, komunikaty). */
+[hidden] { display: none !important; }
+.ukryty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.wyciszony { color: var(--wyciszony); }
+
+.naglowek, .punkt { padding: 8px 16px; background: var(--karta); border-bottom: 1px solid var(--linia); }
+.naglowek__wiersz, .punkt__wiersz, .decyzje, .pasek { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tytul { font-size: 15px; margin: 0 8px 0 0; }
+.licznik { font-variant-numeric: tabular-nums; }
+.uwagi { margin: 6px 0 0; color: var(--odstep); }
+
+.status { padding: 1px 8px; border-radius: 999px; background: var(--tlo); border: 1px solid var(--linia); }
+.status--zgodny { color: var(--zgodny); border-color: currentColor; }
+.status--odstepstwo { color: var(--odstep); border-color: currentColor; }
+.status--blad { color: var(--blad); border-color: currentColor; }
+.status--poprawione { color: var(--akcent); border-color: currentColor; }
+.ekran { font-weight: 600; }
+.trasa { color: var(--wyciszony); }
+.tresc { margin: 6px 0; max-width: 120ch; }
+.decyzja--zgodne { border-color: var(--zgodny); color: var(--zgodny); }
+.decyzja--blad { border-color: var(--blad); color: var(--blad); }
+.formularz { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: start; max-width: 720px; margin-top: 8px; }
+.formularz textarea, .formularz select { width: 100%; }
+.formularz button { justify-self: start; }
+.komunikat { margin: 6px 0 0; }
+.komunikat:empty { display: none; }
+
+.uklad { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); min-height: 0; }
+.aplikacja, .makieta { padding: 8px 16px; min-width: 0; overflow: auto; }
+.makieta { border-left: 1px solid var(--linia); max-width: 55vw; background: var(--karta); }
+.adres { display: flex; gap: 4px; flex: 1 1 280px; }
+.adres input { flex: 1; min-width: 0; font-family: ui-monospace, monospace; }
+.urzadzenia { margin: 8px 0; }
+.lista-urzadzen { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0; }
+.wymiar { display: flex; gap: 4px; align-items: center; margin: 6px 0; }
+.wymiar input { width: 110px; }
+
+.ramki { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 8px; }
+.ramka figcaption { color: var(--wyciszony); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.ramka__okno { position: relative; overflow: hidden; box-sizing: content-box; border: 1px solid var(--linia); border-radius: 8px; background: #fff; }
+.ramka__okno iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #fff; }
+
+#obraz-makiety { display: block; margin-top: 8px; border: 1px solid var(--linia); }
+.makieta--dopasuj #obraz-makiety { width: auto !important; height: auto; max-width: 100%; max-height: calc(100vh - var(--wysokosc-naglowka, 220px)); object-fit: contain; }
+
+@media (max-width: 900px) {
+  .uklad { grid-template-columns: 1fr; }
+  .makieta { border-left: 0; border-top: 1px solid var(--linia); max-width: none; }
+}

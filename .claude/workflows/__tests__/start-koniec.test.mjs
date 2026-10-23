@@ -385,3 +385,49 @@ test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /
   assert.ok(skill.includes(linia))
   assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
 })
+
+// P24 IU-8: punkty wizualne smoke'u w formacie czytanym przez narzedzie makiet (.claude/scripts/makieta/), odeslanie do /makieta
+// przed pierwszym punktem wizualnym i w ramce „Jak kontynuowac”, kontrola formatu skryptem. Te same zdania w workflowie i w skillu.
+test('smoke: format punktu wizualnego, zdanie o /makieta przed punktami i w ramce, kontrola makieta.mjs sprawdz — w workflowie i w skillu', () => {
+  /** @type {(nazwaZadania: string) => string} */
+  // eslint-disable-next-line no-new-func -- jw.
+  const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
+  const p = smokePrompt('zadanie-x')
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  const zdania = [
+    'Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → <oczekiwany wynik>”: trasa w backtickach (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka.',
+    'Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke\'u wpisz /makieta.',
+    'Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).',
+    'Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×.',
+    'Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.',
+  ]
+  for (const z of zdania) {
+    assert.ok(p.includes(z), `workflow: ${z}`)
+    assert.ok(skill.replace(/\n\s+/g, ' ').includes(z), `skill: ${z}`)
+  }
+  for (const tekst of [p, skill.replace(/\n\s+/g, ' ')]) assert.match(tekst, /Przed pierwszym punktem wizualnym smoke'u stoi zdanie:? [„"]Punkty wizualne przejdziesz narzędziem makiet/)
+  // Ramka nadal konczy sie zdaniami o „Następny krok” (P22 B2) — zdanie o /makieta stoi przed nimi.
+  const ramka = skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'))
+  assert.ok(ramka.indexOf(zdania[2]) !== -1 && ramka.indexOf(zdania[2]) < ramka.indexOf('Po ostatnim punkcie zakończ linią'))
+  assert.match(ramka, /\/dev-pr w tej sesji nie uruchamiaj\.\n {3}```/)
+  assert.ok(p.indexOf(zdania[2]) < p.indexOf('Po ostatnim punkcie zakończ linią'))
+})
+
+// P24 IU-8 po recenzji: szablon kroku 3 daje punkt wizualny, ktory przechodzi kontrole formatu narzedzia; zdanie o /makieta
+// stoi bezposrednio przed nim; skill /makieta uzywa stalych narzedzia (limit Monitora, port w Redirect URLs).
+test('smoke: przykładowy punkt wizualny szablonu przechodzi makieta sprawdzFormat; skill /makieta ze stałymi narzędzia', async () => {
+  const { sprawdzFormat } = await import('../../scripts/makieta/punkty.mjs')
+  const { LIMIT_CZEKANIA_MIN } = await import('../../scripts/makieta/kolejka.mjs')
+  const { DOMYSLNY_PORT } = await import('../../scripts/makieta/proces.mjs')
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  const linie = skill.split('\n')
+  const i = linie.findIndex((l) => /^ {3}- \[ \] .*obok `visual-diff\/<ekran>-figma\.png`/.test(l))
+  assert.ok(i > 0, 'szablon ma punkt wizualny')
+  assert.deepEqual(sprawdzFormat(linie[i].trimStart().replaceAll('<ekran>', 'moje-projekty').replaceAll('<trasa>', '/konto')), [], 'po podstawieniu placeholderów')
+  assert.match(linie[i - 1], /^ {3}Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz \/makieta\./)
+  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
+  assert.ok(makieta.includes(`makieta.mjs czekaj --limit-min ${LIMIT_CZEKANIA_MIN}`))
+  assert.ok(makieta.includes(`http://127.0.0.1:${DOMYSLNY_PORT}/**`))
+  assert.ok(makieta.includes('zgloszenia --smoke <plik>'))
+  assert.ok(!/Read[^\n]*PNG|otwórz[^\n]*PNG/i.test(makieta), 'skill nie każe czytać PNG')
+})
