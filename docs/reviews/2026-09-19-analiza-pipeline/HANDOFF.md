@@ -3046,6 +3046,75 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `E2E_HEALTH=http://localhost:5174/healthz`, `E2E_HEALTH_TRESC='"status":"ok"'` w `.env.e2e`, ponowne odegranie 7 scenariuszy
     `[Manual]` etapu 5 przed smoke'iem, potem `/dev-pr --czesc 1`.
 
+97. **VIBERSI ETAP 5 — SMOKE OPERATORA (2026-10-21); poprawki szablonu po odegraniu scenariuszy E2E — DO WDROŻENIA PO PR
+    ETAPU 5 (decyzja operatora).** Po merge'u P25 (`ba195e3`) i syncu w vibersi (`109e239`) ponowne odegranie 7 scenariuszy
+    `[Manual]` etapu 5 ujawniło trzy klasy luk szablonu (naprawione w vibersi: `c1fcd81` proxy `/healthz`, `4760b5b` Turnstile
+    z testowym sekretem; zapis przebiegów `0ef3129`, `66f5b04`). Analiza z zewnątrz, kodu vibersi nie zmieniałem.
+    **Do poprawy w szablonie (po PR etapu 5):**
+    (1) **Trasa zdrowia poza proxy Vite.** README `e2e-env` każe ustawić `E2E_HEALTH=<E2E_URL>/healthz` „przez proxy”
+    (`.claude/templates/e2e-env/README.md:64`), a skrypt startu opisuje tylko „proxy `/api`” (`:60`). vibersi miał w
+    `vite.config.ts` `TRASY_SERWERA = ['/api/', '/idz/', '/do-akademii/']` — `/healthz` padał na fallback SPA (`index.html`),
+    sonda z `E2E_HEALTH_TRESC` słusznie dawała STOP startu; poprawka `c1fcd81` dopisała `'/healthz'`. Poprawka: README pkt 1
+    i 3 — trasa z `E2E_HEALTH` jest na liście przekierowań proxy Vite (obok `/api`); do rozważenia uwaga `plan.mjs gotowosc`,
+    gdy ścieżki `E2E_HEALTH` nie ma w konfiguracji proxy (`vite.config.*`).
+    (2) **Scenariusz o statusie albo meta trasy renderowanej przez serwer odpytuje Vite.** `profil-404` (IU-21/22) w planie:
+    `curl … localhost:5174/tworca/nie-ma-takiego-tworcy-e2e` → 404 (vibersi `docs/completed/etap-5-…/…-zadania.md:519`); Vite
+    na 5174 zwraca na `/tworca/*` i `/p/*` zawsze 200 (fallback SPA), status i meta daje dopiero serwer (5175) — część
+    w przeglądarce PASS, część `curl` na `[Manual]`. Źródło: `dev-plan/SKILL.md` 3.4b (`:198`) mówi o zapisie i odczycie przez
+    `/api/…`, nie o trasach renderowanych przez serwer. Poprawka 3.4b: w projekcie z serwerem API scenariusz sprawdzający status
+    HTTP albo meta (`<title>`, `og:*`) trasy renderowanej przez serwer odpytuje port serwera albo trasę z listy proxy, nigdy port
+    Vite; ta sama uwaga w README `e2e-env` (sekcja „Aplikacja z osobnym serwerem API”).
+    (3) **Atrapa usługi zewnętrznej zna tylko odpowiedź produkcyjną.** `server/turnstile.ts:113` odrzucał każdy token przy
+    testowym sekrecie Cloudflare (siteverify klucza testowego nie zwraca `action`, host `example.com`) — na e2e każdy głos
+    gościa, komentarz i zgłoszenie dostawał 403 `turnstile_nieudany`. Testy przeszły, bo atrapa zawsze odsyła `action`
+    (`server/test/atrapa-uslug-interakcji.ts:91`, domyślnie `'glos'`, host `vibersi.pl`). Źródło: `rules/coding-rules.md:34`
+    („atrapy tylko dla usług zewnętrznych”) i `agents/test-coverage-reviewer.md:22,29` (argumenty atrapy, kontrakt API
+    przeglądarki) — brak wymogu wariantu odpowiedzi klucza testowego. Poprawka: reguła w `coding-rules.md` — atrapa usługi
+    z kluczem testowym (Turnstile, reCAPTCHA, Stripe test mode, Resend test) ma wariant odpowiedzi tego klucza wg dokumentacji
+    dostawcy (brakujące pola, stałe wartości), a kod rozpoznający klucz testowy ma test na tej odpowiedzi; to samo jako punkt
+    `test-coverage-reviewer` (atrapa usługi bez wariantu klucza testowego używanego w e2e → P2 TEST).
+    (4) **FAIL `glos-przeniesienie` po poprawce Turnstile — defekt kodu vibersi, nie szablonu ani środowiska; dwa wnioski dla
+    szablonu.** `POST /api/glosy/przenies` → 200, SQL zgodny (konto 4 głosy, gość 0), ale przycisk czwartego projektu zostaje
+    „Zagłosuj” do przeładowania. Mechanizm sprawdzony w kodzie: po zalogowaniu klucz `mojeGlosy(idKonta)` to nowe zapytanie
+    bez danych (`src/hooks/interakcje/use-glos.ts:48-52`), jego pierwsze pobranie rusza równolegle z przeniesieniem
+    (`use-przeniesienie-glosow.ts:66-69`), a `invalidateQueries` w `odswiezPoPrzeniesieniu` (`:36-39`) przy pobraniu w toku
+    bez danych nie anuluje go, tylko zwraca jego obietnicę (`@tanstack/query-core@5.104.1` `src/query.ts:595-608`:
+    `cancelRefetch` działa tylko przy `data !== undefined`) — w pamięci zostaje wynik sprzed przeniesienia. Rekomendacja:
+    poprawka przed PR (`cancelQueries` prefiksu „moich głosów” przed unieważnieniem, test z odroczonym pierwszym pobraniem).
+    Dla szablonu: (a) `tailwind-react-guidelines` (React Query) — zapis po stronie serwera, który zmienia dane zapytania
+    mogącego być w pierwszym pobraniu (klucz zależny od sesji tuż po logowaniu), wymaga `cancelQueries` przed
+    `invalidateQueries`/`refetchQueries`, bo unieważnienie dołącza się do pobrania w toku; test z odroczonym `queryFn`;
+    (b) `feature-tester-e2e` — komunikat znikający (toast 4 s) sprawdzasz od razu po akcji (`agent-browser wait --text`),
+    nie po zrzucie: tester czytał stronę po ~5 s i komunikatu „Głos na … policzony” nie potwierdził ani nie obalił.
+    **Wynik w vibersi (2026-10-21/22):** poprawka zgodna z rekomendacją — `06af207` (`cancelQueries` prefiksu
+    `wszystkieMojeGlosy()` przed unieważnieniem, komentarz z przyczyną) + `7d0120c` (scenariusz). Test
+    `src/hooks/interakcje/use-przeniesienie-glosow-wyscig.test.tsx` (podmienione `mojeGlosyKonta` z odroczoną obietnicą
+    i `przeniesGlosy`) pada przed poprawką (`expected [] to include …`), przechodzi po niej; 2940/2940. `glos-przeniesienie`
+    PASS na komputerze i 390 px → **7/7 scenariuszy „E2E do odegrania ręcznie” odhaczonych**; w smoke'u zostaje 39 pozycji
+    (przygotowanie 13, punkty wizualne 21 z 2 decyzjami operatora, staging 5). Potwierdzenie (4a): sesja vibersi najpierw
+    próbowała odtworzyć wyścig na poziomie `fetch` — kolejność odpowiedzi niepowtarzalna, test padał także z poprawką; działa
+    dopiero odroczona obietnica funkcji pobierającej (to wpisać do reguły jako wzór testu).
+    (4c) **Rozszerzenie (4b) — liczba albo stan pochodny po zapisie.** Tester `komentarz-dodaj` zgłosił licznik
+    „Komentarze N” o jeden w tyle; kod jest poprawny (`uniewaznijProjekt` w vibersi `src/hooks/interakcje/use-komentarze.ts:117`,
+    wołane w obu mutacjach, test `use-komentarze.test.tsx:150`), a odświeżenie celowo nie blokuje potwierdzenia w UI — zrzut
+    był zbyt wczesny, sesja straciła turę na sprawdzanie fałszywego alarmu. Poprawka w `feature-tester-e2e` razem z (4b):
+    przed asercją albo zrzutem liczby czy stanu zależnego od odświeżenia po zapisie tester czeka na oczekiwaną wartość
+    (`agent-browser wait --text "<wartość>"`) albo na koniec ruchu sieci (`agent-browser wait --load networkidle`); dopiero
+    rozjazd po czekaniu jest FAIL.
+    (5) **Obserwacja, nie reguła:** `src/components/konto/menu-konta.test.tsx` („porażka wylogowania…”) w vibersi padł raz
+    w pełnym przebiegu pod obciążeniem, osobno 4/4 i kolejny pełny przebieg zielony. Jeden przypadek — jeśli wróci w `/dev-pr`
+    albo w etapie 6, do rozważenia reguła o testach niestabilnych (timeouty `findBy*`/`waitFor` pod pełnym zestawem).
+    **Gdzie wdrożyć (dla nowej sesji):** (1) `.claude/templates/e2e-env/README.md:60,64` + ewentualnie uwaga w
+    `.claude/scripts/plan/plan.mjs` `gotowosc` (ścieżka `E2E_HEALTH` w `vite.config.*`); (2) `.claude/skills/dev-plan/SKILL.md`
+    3.4b (`:198`) + README `e2e-env` sekcja „Aplikacja z osobnym serwerem API”; (3) `.claude/rules/coding-rules.md:34`
+    + `.claude/agents/test-coverage-reviewer.md` (obok `:22`); (4a) `.claude/skills/tailwind-react-guidelines/resources/
+    performance.md` sekcja „React Query” (`:185`) + punkt w `test-coverage-reviewer`; (4b)+(4c)
+    `.claude/agents/feature-tester-e2e.md` przy regule asercji i zrzutu (`:49`). Każda zmiana z testem tekstu, jeśli testy
+    szablonu sprawdzają te pliki (`grep -rn "<fraza>" .claude/scripts/**/*.test.mjs`).
+    **Dalej:** po PR etapu 5 — plan paczki z (1)–(4c) do akceptacji operatora, razem z zostałymi P3 z pkt 96. W vibersi:
+    punkty wizualne smoke'u (`/makieta`), potem `/clear` i `/dev-pr --czesc 1` w nowej sesji (sync zmienił `.claude/`).
+    §8 bez zmian z tego punktu (stan P24/P26 prowadzi blok „AKTUALNA” sesji „Szablon workflow”).
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
