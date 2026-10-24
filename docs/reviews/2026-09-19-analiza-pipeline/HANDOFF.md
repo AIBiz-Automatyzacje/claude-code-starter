@@ -2967,6 +2967,19 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** §8 — merge za zgodą, push, potem `/sync-template` w vibersi PRZED smoke'iem etapu 5 (etap 5 jest w toku na
     autopilocie — sync dopiero po jego zakończeniu, przed `dev-docs-complete`), wpis `http://127.0.0.1:5180/**` w Redirect URLs
     Supabase dev vibersi; pierwszy smoke etapu 5 = żywy test logowania i budzenia sesji.
+    **Pilot na żywo (2026-10-24, smoke etapu 5 vibersi, bez syncu — narzędzie z `../workspace-template` z `--projekt ../vibersi`,
+    sesja szablonu w tle):** serwer z `build/` na 5173 przez proxy; 5/17 ekranów przejrzanych, potem pauza na poprawki (P28, pkt 98).
+    (a) **Logowanie Facebookiem kliknięte w ramce** → „Ta zawartość jest zablokowana” (strona dostawcy nie daje się osadzić); przez
+    „Otwórz w karcie” logowanie wróciło na `127.0.0.1:5180`, a po „Przeładuj ramki” sesja była we wszystkich ramkach (komputer
+    i iPhone SE) — wspólny origin działa. Wpisu `http://127.0.0.1:5180/**` w Redirect URLs dev NIE było (lista: localhost:5173,
+    staging, prod), a powrót i tak trafił na 5180 — przyczyny nie ustaliłem; zalecenie wpisu zostaje. Logowania hasłem i zmiany konta
+    nie sprawdzaliśmy. (b) **Zdarzenie Monitora budzi sesję czekającą na operatora — POTWIERDZONE:** zgłoszenie przyszło jako
+    powiadomienie zadania w tle, gdy sesja stała na odpowiedzi operatora (tura zaczęła się sama). Wygaśnięcie po 25 min (`limit`)
+    → ponowny `Monitor` bez strat. (c) Captcha Turnstile w ramkach wymaga hosta `127.0.0.1` w widgecie Cloudflare (operator).
+    (d) Uwagi operatora do narzędzia → P28: ramki ściśnięte do 47 %, sztywny podział kolumn, chaotyczny nagłówek, zgłoszenie
+    uruchamia sesję w połowie przeglądu (operator chce zebrać wszystkie i ustalić je razem na końcu, w dokumencie), throttling
+    i blokada adresów z DevTools w każdej karcie osobno. Nie sprawdzone dalej: przeżycie `/clear`, Navigator Locks auth-js przy
+    wielu ramkach (2 ramki bez objawów).
 
 95. **VIBERSI ETAP 5 — PLANOWANIE (2026-10-20); lista poprawek szablonu na nową paczkę — DO WDROŻENIA DOPIERO PO AUTOPILOCIE
     I DOMKNIĘCIU ETAPU 5 (decyzja operatora).** Sync P22/P23 w vibersi `015b61c`, plan `docs/plans/2026-10-20-001-feat-etap-5-
@@ -3114,6 +3127,46 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** po PR etapu 5 — plan paczki z (1)–(4c) do akceptacji operatora, razem z zostałymi P3 z pkt 96. W vibersi:
     punkty wizualne smoke'u (`/makieta`), potem `/clear` i `/dev-pr --czesc 1` w nowej sesji (sync zmienił `.claude/`).
     §8 bez zmian z tego punktu (stan P24/P26 prowadzi blok „AKTUALNA” sesji „Szablon workflow”).
+
+98. **P28 „makieta po pilocie” (2026-10-24, jedna sesja): ZROBIONE na gałęzi `popr/P28-makieta-po-pilocie` (od main `10d2cc4`),
+    NIEZMERGOWANE — merge za zgodą operatora.** Wejście: uwagi operatora z pilota narzędzia w smoke'u etapu 5 vibersi (pkt 95a,
+    „Pilot na żywo”). P27 (pkt 97) czeka do PR etapu 5 — plan zaakceptowany wcześniej, wdrożenie odłożone przez operatora.
+    Commity (jeden na pozycję, kolejność wg wpływu na przegląd):
+    - **(4) `b0fc2ea` zgłoszenia na koniec przeglądu:** tryb serwera `na-koniec` (domyślny) / `od-razu` (`start --zgloszenia`);
+      „Zgłoś błąd” zapisuje tylko linię, „Zakończ przegląd” (`POST api/zakoncz`) dopisuje jeden wpis `przeglad` (otwarte zgłoszenia
+      z checklisty + podsumowanie statusów) → zdarzenie `przeglad-zakonczony` w `czekaj`; skill: sekcja „Koniec przeglądu” —
+      dokument `docs/operator/<data>-<zadanie>-makiety-ustalenia.md` (przyczyna w kodzie, propozycja, decyzja operatora) PRZED poprawkami.
+    - **(3) `f32e1b1` jeden pasek u góry:** ← N/17 →, status, ekran, trasa, decyzje, „Zakończ przegląd”; treść punktu w 2 liniach
+      z „Pokaż całość”; uwagi (ekrany SPEC bez punktu) i ścieżka checklisty w zwiniętym `<details>`.
+    - **(1) `6da12ea` skala ramek „przewijaj” (domyślna):** najszersza ramka na szerokość kolumny, reszta obok w rzędzie przewijanym
+      (pasek, Shift + kółko, przeciąganie za podpisy); „wszystkie” = dawne dopasowanie, „1:1”.
+    - **(2) `bd2f911` rozdzielacz kolumn:** separator 20–80 % (strzałki ±5, Home/End), pamiętany w localStorage.
+    - **(5) `410791a` panel „Sieć”:** proxy wstrzykuje `strona/siec.mjs` do stron HTML aplikacji (żądanie HTML z `accept-encoding:
+      identity`; HTML skompresowany przechodzi bez zmian); skrypt opóźnia/odrzuca fetch i XHR wg localStorage `makieta.siec`
+      (wspólny origin, czytane przy każdym żądaniu — działa też na Supabase, bo klasyczny skrypt wykonuje się przed modułami
+      aplikacji); profile Fast 3G 560 ms / Slow 3G 2000 ms (sama latencja, bez przepustowości); panel pokazuje, w ilu ramkach skrypt
+      działa (CSP aplikacji z nonce mogłoby go zablokować; vibersi ma `script-src 'self'` — działa). Nowa strona narzędzia zaczyna
+      bez ograniczeń.
+    - **(6) `e8dd130` hosty:** `start` podaje `hosty` z zależności package.json (`@supabase/*` → Redirect URLs, `*turnstile*` → host
+      widgetu); podpowiedź „Otwórz w karcie” → „Przeładuj ramki” przy ramkach; skill opisuje oba wpisy.
+    - **(7) `e79c1a4`** `(viewport W×H; dopisek)` to poprawny zapis R11 — smoke etapu 5: 17 punktów, 0 problemów (wcześniej 2 fałszywe;
+      wymiar był czytany dobrze — moja rada operatorowi „ustaw ręcznie 1440×1153” była zbędna).
+    - **`4a8e0ee` po sprawdzeniu na żywo** (agent-browser na vibersi, bez zrzutów): ArrowRight na rozdzielaczu przesuwał też ekran
+      (globalny skrót ← →), „1 zgłoszeń” → liczebnik z odmianą. Na żywo potwierdzone: skrypt sieci w 2/2 ramkach, blokada
+      `*/api/komentarze*` → `TypeError`, Slow 3G +2,0 s, wyłączenie → 2 ms; skala „przewijaj” 57 % z przewijaniem (scrollWidth 1339 /
+      848); „Zakończ przegląd” → `czekaj` oddał `przeglad-zakonczony` z 1 zgłoszeniem (punkt 67) i podsumowaniem 17/4/0/1/12.
+    - **`54f8bca` po recenzji:** recenzja subagenta w worktree: 0 P1, 3 P2, 56 mutacji / 16 przeżyło (3 równoważne). P2: HTML z
+      doctype bez `<head>` dostawał skrypt przed doctype (quirks) → po `<html>`/doctype; dwa kliknięcia „Wyślij do sesji” = dwa
+      zdarzenia → przycisk wyłączony w trakcie + skill „kolejne zdarzenie aktualizuje ten sam dokument”; XHR: zablokowany wysyła
+      `readystatechange`/`error`/`loadend`, `abort` w trakcie opóźnienia nie wysyła, synchroniczny bez opóźnienia (blokada =
+      `NetworkError`). P3 poprawione: HEAD/204/304 bez buforowania, 503 z drogą awaryjną przy błędzie kolejki, rozdzielacz tylko
+      lewym przyciskiem, testy wszystkich realnych przeżytych mutantów. P3 zostawione: adnotacja zgłoszenia bez ekranu (punkt
+      z kilkoma ekranami → `opisOtwartych` podaje wszystkie), `hosty` tylko z `package.json` w korzeniu (monorepo), SSR ze
+      strumieniowaniem buforowany do końca (komentarz w proxy), ustawienia sieci działają dalej w karcie z „Otwórz w karcie” po
+      zamknięciu strony narzędzia.
+    Testy 1220/1220 (main 1186), typecheck i lint czyste, prompt-audit dodanych linii SKILL.md 0. Jeden pełny bieg w trakcie dał
+    1 fail, dwa kolejne 1215/1215 — prawdopodobnie zbieg z zatrzymywaniem narzędzia w tym samym czasie; nie odtworzone.
+    **Dalej:** merge za zgodą → w vibersi powrót do punktów wizualnych BEZ syncu (polecenie w §8), potem PR etapu 5, potem P27.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3519,7 +3572,27 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-23) — P24 ZMERGOWANA DO MAIN (6a pkt 95a); `/sync-template` w vibersi przed smoke'iem etapu 6.**
+**AKTUALNA (2026-10-24) — P28 GOTOWA NA GAŁĘZI (6a pkt 98), merge za zgodą; vibersi wraca do punktów wizualnych etapu 5 bez syncu.**
+Po merge'u `popr/P28-makieta-po-pilocie` (katalog `../workspace-template` ma stać na main z P28) nowa sesja w vibersi
+(gałąź `feature/etap-5-interakcje-i-profil`, serwer z `build/` na 5173) z poleceniem niżej. Sync `.claude/` dopiero po PR etapu 5
+(inaczej wejdzie do PR). Przed logowaniem w ramkach: `127.0.0.1` w hostach widgetu Turnstile (dev), `http://127.0.0.1:5180/**`
+w Redirect URLs Supabase dev. P27 (pkt 97) — po PR etapu 5.
+
+```
+Wracamy do punktów wizualnych smoke'u etapu 5 narzędziem makiet z szablonu, bez /sync-template.
+
+Przeczytaj ../workspace-template/.claude/skills/makieta/SKILL.md i postępuj według niego z jedną różnicą: każde
+polecenie „node .claude/scripts/makieta/makieta.mjs …” uruchamiaj jako
+„node ../workspace-template/.claude/scripts/makieta/makieta.mjs … --projekt .”.
+Smoke: docs/operator/2026-10-20-etap-5-interakcje-i-profil-smoke.md, aplikacja: http://localhost:5173 (serwer z build/).
+Zgłoszenia zbieramy do końca przeglądu (domyślnie); po „Zakończ przegląd” przygotuj ze mną dokument ustaleń, dopiero potem poprawki.
+Punkt „Zgłoś projekt pod komentarzami” (zgloszenie-krok1-komputer) jest już zgłoszony — obecny układ zgadza się z makietą etapu 2,
+to moja nowa decyzja, nie usterka.
+
+Zasady: w .claude/ nic nie zmieniaj; nie wypisuj wartości z plików .env*; decyzji w liniach punktów wizualnych nie edytuj ręcznie.
+```
+
+**Historia: (2026-10-23) — P24 ZMERGOWANA DO MAIN (6a pkt 95a); `/sync-template` w vibersi przed smoke'iem etapu 6.**
 Merge `popr/P24-makieta-obok-aplikacji` do main zrobiony 2026-10-23 (po P25).
 Przed smoke'iem następnego etapu: Redirect URLs Supabase dev vibersi + `http://127.0.0.1:5180/**`, potem nowa sesja w vibersi
 na main z poleceniem niżej. Gałąź `popr/P26-po-smoke-etapu-5` (sesja równoległa) dotyka tylko HANDOFF — merge/rebase na nowy main
