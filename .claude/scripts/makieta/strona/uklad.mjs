@@ -58,6 +58,7 @@ export function podepnijRozdzielacz({ uklad, rozdzielacz, poZmianie }) {
   ustaw(zapisanyUdzial())
   let przeciagany = false
   rozdzielacz.addEventListener('pointerdown', (z) => {
+    if (z.button !== 0) return
     przeciagany = true
     rozdzielacz.setPointerCapture(z.pointerId)
     uklad.classList.add('uklad--przeciagany')

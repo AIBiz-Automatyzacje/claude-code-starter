@@ -201,7 +201,11 @@ function tekstPodsumowania(punkty) {
 }
 
 async function zakonczPrzeglad() {
-  const { status, json } = await api('zakoncz', { method: 'POST' })
+  const wyslij = document.querySelector('#form-koniec button[type="submit"]')
+  if (!(wyslij instanceof HTMLButtonElement) || wyslij.disabled) return
+  // Drugie klikniecie w trakcie wysylania dalo sesji drugie zdarzenie konca przegladu z tymi samymi zgloszeniami.
+  wyslij.disabled = true
+  const { status, json } = await api('zakoncz', { method: 'POST' }).finally(() => { wyslij.disabled = false })
   if (status !== 200) return komunikat(json?.error?.message ?? `Wysłanie nie powiodło się (${status}).`)
   ukryjFormularze()
   komunikat(`Wysłane do sesji: ${liczebnik(json.data.zgloszenia, ['zgłoszenie', 'zgłoszenia', 'zgłoszeń'])}. Wróć do sesji smoke'u — tam ustalicie, co poprawić.`)

@@ -58,12 +58,13 @@ test('P28 (2) rozdzielacz: udział aplikacji z pozycji wskaźnika w granicach 20
   const { udzialZPozycji, udzialPoKlawiszu, MIN_UDZIAL, MAX_UDZIAL } = await import('../strona/uklad.mjs')
   assert.deepEqual([MIN_UDZIAL, MAX_UDZIAL], [20, 80])
   assert.equal(udzialZPozycji(600, { left: 100, width: 1000 }), 50)
+  assert.equal(udzialZPozycji(433.3, { left: 100, width: 1000 }), 33, 'zaokrąglenie do całego procentu')
   assert.equal(udzialZPozycji(120, { left: 100, width: 1000 }), 20)
   assert.equal(udzialZPozycji(5000, { left: 100, width: 1000 }), 80)
   assert.equal(udzialZPozycji(500, { left: 0, width: 0 }), null, 'zerowa szerokość — bez zmiany')
   assert.equal(udzialPoKlawiszu(50, 'ArrowLeft'), 45)
   assert.equal(udzialPoKlawiszu(78, 'ArrowRight'), 80)
-  assert.equal(udzialPoKlawiszu(50, 'Home'), 20)
+  assert.equal(udzialPoKlawiszu(80, 'Home'), 20)
   assert.equal(udzialPoKlawiszu(50, 'End'), 80)
   assert.equal(udzialPoKlawiszu(50, 'a'), null)
 })
@@ -82,6 +83,7 @@ test('P28 (5) panel „Sieć”: profile opóźnienia, blokady po jednej w linii
   assert.deepEqual(PROFILE_SIECI.map((p) => [p.nazwa, p.opoznienieMs]), [['Bez ograniczeń', 0], ['Fast 3G', 560], ['Slow 3G', 2000]])
   assert.deepEqual(ustawieniaZFormularza('2000', ' */api/komentarze* \n\n/api/glosy\n'), { opoznienieMs: 2000, blokady: ['*/api/komentarze*', '/api/glosy'] })
   assert.deepEqual(ustawieniaZFormularza('abc', ''), { opoznienieMs: 0, blokady: [] })
+  assert.deepEqual(ustawieniaZFormularza('-5', ''), { opoznienieMs: 0, blokady: [] })
   assert.equal(opisSieci({ opoznienieMs: 0, blokady: [] }), 'Sieć')
   assert.equal(opisSieci({ opoznienieMs: 2000, blokady: ['a'] }), 'Sieć: Slow 3G · 1 blokada')
   assert.equal(opisSieci({ opoznienieMs: 0, blokady: ['a', 'b'] }), 'Sieć: 2 blokady')
@@ -99,7 +101,8 @@ test('P28 (6) podpowiedź przy ramkach: dostawca OAuth przez „Otwórz w karcie
 test('P28 po pilocie: liczebnik z odmianą (1 zgłoszenie, 2 zgłoszenia, 5 zgłoszeń, 12 zgłoszeń, 22 zgłoszenia)', async () => {
   const { liczebnik } = await import('../strona/teksty.mjs')
   const formy = /** @type {const} */ (['zgłoszenie', 'zgłoszenia', 'zgłoszeń'])
-  assert.deepEqual([0, 1, 2, 5, 12, 22, 25].map((n) => liczebnik(n, formy)), ['0 zgłoszeń', '1 zgłoszenie', '2 zgłoszenia', '5 zgłoszeń', '12 zgłoszeń', '22 zgłoszenia', '25 zgłoszeń'])
+  assert.deepEqual([0, 1, 2, 4, 5, 12, 13, 14, 21, 22, 24, 25, 112].map((n) => liczebnik(n, formy)).join(', '),
+    '0 zgłoszeń, 1 zgłoszenie, 2 zgłoszenia, 4 zgłoszenia, 5 zgłoszeń, 12 zgłoszeń, 13 zgłoszeń, 14 zgłoszeń, 21 zgłoszeń, 22 zgłoszenia, 24 zgłoszenia, 25 zgłoszeń, 112 zgłoszeń')
 })
 
 test('P28 po pilocie: strzałki na rozdzielaczu nie zmieniają ekranu (globalny skrót ← → pomija separator)', () => {

@@ -313,3 +313,18 @@ test('P28 (5) bez wstrzyknięcia: JSON, HTML skompresowany przez cel (bajty bez 
   assert.deepEqual(gz.body, gzipSync('<html><head></head></html>'))
   assert.equal((await zapytaj(proxy.port, { path: '/frag', headers: { accept: 'text/html' } })).body.toString(), `${SKRYPT_SIECI}<p>fragment</p>`)
 }))
+
+test('po recenzji: HTML z doctype bez <head> — skrypt po <html> (bez trybu quirks); sam doctype — po nim; HEAD i 304 bez buforowania', () => zSerwerami((req, res) => {
+  if (req.url === '/304') { res.writeHead(304, { 'content-type': 'text/html' }); return res.end() }
+  res.writeHead(200, { 'content-type': 'text/html', 'content-length': req.url === '/html' ? '43' : '30' })
+  if (req.method === 'HEAD') return res.end()
+  res.end(req.url === '/html' ? '<!DOCTYPE html><html lang="pl"><p>x</p>xxxx' : '<!doctype html><p>bez html</p>')
+}, async (_cel, proxy) => {
+  const html = (await zapytaj(proxy.port, { path: '/html', headers: { accept: 'text/html' } })).body.toString()
+  assert.equal(html, `<!DOCTYPE html><html lang="pl">${SKRYPT_SIECI}<p>x</p>xxxx`)
+  assert.equal((await zapytaj(proxy.port, { path: '/doc', headers: { accept: 'text/html' } })).body.toString(), `<!doctype html>${SKRYPT_SIECI}<p>bez html</p>`)
+  const head = await zapytaj(proxy.port, { method: 'HEAD', path: '/html', headers: { accept: 'text/html' } })
+  assert.equal(head.headers['content-length'], '43', 'HEAD z długością celu')
+  const n = await zapytaj(proxy.port, { path: '/304', headers: { accept: 'text/html' } })
+  assert.deepEqual([n.status, n.body.length, n.headers['content-length']], [304, 0, undefined])
+}))

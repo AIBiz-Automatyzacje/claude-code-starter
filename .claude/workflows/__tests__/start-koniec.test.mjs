@@ -440,6 +440,8 @@ test('skill /makieta: zdarzenie przeglad-zakonczony, --zgloszenia od-razu na pro
   assert.ok(makieta.includes('docs/operator/<data>-<zadanie>-makiety-ustalenia.md'))
   assert.ok(makieta.indexOf('## Koniec przeglądu') < makieta.indexOf('## Droga awaryjna'))
   assert.match(makieta, /Zakończ\s+przegląd/)
+  assert.match(makieta, /Kolejne `przeglad-zakonczony`[^]*?aktualizuje\s+ten sam dokument ustaleń/)
+  assert.match(makieta, /W trybie „na koniec” po przeglądzie\s+obsłuż je jak w sekcji „Koniec przeglądu”/)
 })
 
 // P28 (6): adres narzedzia w uslugach z lista hostow — skill podaje pole `hosty` startu i wpis Turnstile.

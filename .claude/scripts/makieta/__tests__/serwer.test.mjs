@@ -362,3 +362,10 @@ test('P28 (4) domyślny tryb serwera to „na koniec”', async () => {
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+test('po recenzji P28: kolejka niezapisywalna przy końcu przeglądu = 503 z drogą awaryjną („zgłoszenia” w sesji)', () => zSerwerem(async ({ port, stan }) => {
+  mkdirSync(join(stan, 'kolejka.jsonl'), { recursive: true })
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/zakoncz', headers: zTokenem })
+  assert.deepEqual([w.status, w.json.error.code], [503, 'kolejka'])
+  assert.match(w.json.error.message, /napisz w sesji „zgłoszenia”/)
+}, { zgloszenia: 'na-koniec' }))

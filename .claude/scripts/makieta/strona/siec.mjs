@@ -48,26 +48,39 @@
   if (!Xhr) return
   const open = Xhr.prototype.open
   const send = Xhr.prototype.send
-  /** @type {WeakMap<XMLHttpRequest, string>} */
-  const adresyXhr = new WeakMap()
+  const abort = Xhr.prototype.abort
+  /** @type {WeakMap<XMLHttpRequest, { url: string, asynchronicznie: boolean }>} */
+  const zadaniaXhr = new WeakMap()
+  /** @type {WeakSet<XMLHttpRequest>} */
+  const przerwane = new WeakSet()
   /**
    * @this {XMLHttpRequest}
    * @param {string} metoda @param {string | URL} url @param {boolean} [asynchronicznie] @param {string | null} [uzytkownik] @param {string | null} [haslo]
    */
   function openZNarzedzia(metoda, url, asynchronicznie = true, uzytkownik, haslo) {
-    adresyXhr.set(this, String(url))
+    zadaniaXhr.set(this, { url: String(url), asynchronicznie })
+    przerwane.delete(this)
     return open.call(this, metoda, url, asynchronicznie, uzytkownik, haslo)
   }
   Xhr.prototype.open = /** @type {typeof open} */ (openZNarzedzia)
+  // abort() w trakcie opoznienia: zadanie nie jest jeszcze wyslane, wiec bez znacznika poszloby po czasie mimo przerwania.
+  Xhr.prototype.abort = function abortZNarzedzia() {
+    przerwane.add(this)
+    return abort.call(this)
+  }
   /** @param {Document | XMLHttpRequestBodyInit | null} [cialo] */
   Xhr.prototype.send = function sendZNarzedzia(cialo) {
     const { opoznienieMs, blokady } = ustawienia()
-    const zablokowane = zablokowany(adres(adresyXhr.get(this) ?? ''), blokady)
-    if (!opoznienieMs && !zablokowane) return send.call(this, cialo)
+    const zadanie = zadaniaXhr.get(this) ?? { url: '', asynchronicznie: true }
+    const zablokowane = zablokowany(adres(zadanie.url), blokady)
+    // Synchroniczny XHR zostaje synchroniczny: bez opoznienia, blokada jak blad sieci przegladarki.
+    if (!zadanie.asynchronicznie && zablokowane) throw new DOMException('zablokowane w narzędziu makiet', 'NetworkError')
+    if (!zadanie.asynchronicznie || (!opoznienieMs && !zablokowane)) return send.call(this, cialo)
     setTimeout(() => {
+      if (przerwane.has(this)) return
       if (!zablokowane) return send.call(this, cialo)
-      this.dispatchEvent(new ProgressEvent('error'))
-      this.dispatchEvent(new ProgressEvent('loadend'))
+      // readyState zostaje OPENED (tylko do odczytu) — readystatechange budzi biblioteki, ktore nie sluchaja `error`.
+      for (const zdarzenie of ['readystatechange', 'error', 'loadend']) this.dispatchEvent(zdarzenie === 'readystatechange' ? new Event(zdarzenie) : new ProgressEvent(zdarzenie))
     }, opoznienieMs)
   }
 })()

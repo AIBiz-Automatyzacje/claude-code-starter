@@ -198,4 +198,5 @@ test('P28 (7) wymiar z dopiskiem po średniku w tym samym nawiasie (smoke etapu 
   assert.deepEqual(sprawdzFormat(linia), [])
   assert.deepEqual(punktyWizualne(linia, skrot)[0].viewport, { szerokosc: 1440, wysokosc: 1153 })
   assert.deepEqual(sprawdzFormat(linia.replace('1440×1153;', '1440×1153 px;')).map((p) => p.powod), ['brak „(viewport <W>×<H>)” bez dwukropka i sufiksu'], 'sufiks px nadal poza formatem')
+  assert.equal(sprawdzFormat(linia.replace('1440×1153; ', '1440×1153;')).length, 1, 'dopisek po średniku ze spacją')
 })

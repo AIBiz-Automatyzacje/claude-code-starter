@@ -201,7 +201,13 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     if (zgloszenia !== 'na-koniec') return blad(res, 409, 'tryb', 'zgłoszenia trafiają do sesji od razu — nie ma czego wysyłać na koniec')
     const { punkty: lista, zrodla } = stan()
     const otwarte = opisOtwartych(lista, zrodla)
-    dopiszPrzeglad(katalogStanu, { smoke: zrodla.smoke, zgloszenia: otwarte, podsumowanie: podsumowanie(lista) })
+    try {
+      dopiszPrzeglad(katalogStanu, { smoke: zrodla.smoke, zgloszenia: otwarte, podsumowanie: podsumowanie(lista) })
+    } catch (b) {
+      // Zgloszenia sa w checkliście — sesja odczyta je droga awaryjna `makieta.mjs zgloszenia`.
+      log(`kolejka: ${b instanceof Error ? b.message : String(b)}`)
+      return blad(res, 503, 'kolejka', 'Nie udało się przekazać przeglądu do kolejki sesji — zgłoszenia są w checkliście, napisz w sesji „zgłoszenia”.')
+    }
     json(res, 200, { data: { zgloszenia: otwarte.length } })
   }
 

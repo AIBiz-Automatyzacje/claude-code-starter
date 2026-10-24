@@ -95,6 +95,9 @@ ustaleń, zanim zmienisz kod:
    w narzędziu („Odstępstwo OK”). Dokument commitujesz razem ze smoke'iem.
 5. Operator sprawdza w narzędziu tylko punkty ze statusem „poprawione, do sprawdzenia”.
 
+Kolejne `przeglad-zakonczony` (operator dokończył punkty bez decyzji albo kliknął „Zakończ przegląd” jeszcze raz) aktualizuje
+ten sam dokument ustaleń: dopisujesz nowe zgłoszenia, wiersze już rozstrzygnięte zostają.
+
 Linii punktów wizualnych sesja nie odhacza i nie zmienia ich treści — zmieniają je decyzje w narzędziu i `poprawione`
 (identyfikator punktu to skrót treści linii). Pozostałe punkty smoke'u sesja odhacza narzędziem Edit, punkt po punkcie.
 
@@ -107,7 +110,8 @@ node .claude/scripts/makieta/makieta.mjs zgloszenia --smoke <plik>
 ```
 
 Wynik to otwarte zgłoszenia z checklisty (status „błąd zgłoszony”): `punkt`, `linia`, `zgloszenie` (adnotacja z urządzeniem,
-szerokością i opisem), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary` — obsłuż je jak wyżej.
+szerokością i opisem), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary`. W trybie „na koniec” po przeglądzie
+obsłuż je jak w sekcji „Koniec przeglądu” (dokument ustaleń), w trybie „od razu” — każde jak pojedyncze zgłoszenie.
 Po `/clear` narzędzie nie działa: `start` od nowa (nowy link), `Monitor`, potem `zgloszenia`.
 
 ## Stan i zatrzymanie

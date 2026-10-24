@@ -71,10 +71,15 @@ const bezQuery = (url) => (url ?? '/').replace(/[?#].*$/, '')
 /** @param {import('node:http').IncomingHttpHeaders} n @returns {boolean} strona HTML, ktorej cialo da sie zmienic (bez kompresji) */
 const htmlDoZmiany = (n) => /^text\/html\b/i.test(String(n['content-type'] ?? '')) && [undefined, 'identity'].includes(n['content-encoding'])
 
-/** @param {Buffer} html @returns {Buffer} html ze skryptem sieci po znaczniku `<head …>` albo na poczatku (fragment bez <head>) */
+/**
+ * @param {Buffer} html
+ * @returns {Buffer} html ze skryptem sieci po `<head …>`, bez niego po `<html …>` albo po doctype (skrypt przed doctype
+ *   przelacza strone w tryb quirks), a we fragmencie bez nich — na poczatku
+ */
 function zeSkryptemSieci(html) {
   const skrypt = Buffer.from(SKRYPT_SIECI)
-  const m = /<head(?:\s[^>]*)?>/i.exec(html.toString('latin1'))
+  const tekst = html.toString('latin1')
+  const m = /<head(?:\s[^>]*)?>/i.exec(tekst) ?? /<html(?:\s[^>]*)?>/i.exec(tekst) ?? /<!doctype[^>]*>/i.exec(tekst)
   if (!m) return Buffer.concat([skrypt, html])
   const po = m.index + m[0].length
   return Buffer.concat([html.subarray(0, po), skrypt, html.subarray(po)])
@@ -118,7 +123,9 @@ export function utworzProxy({ cel, log = () => {} }) {
       const naglowki = naglowkiOdpowiedzi(odp.headers, { cel: cel.origin, proxy: originProxy(req) })
       log(`${req.method} ${bezQuery(req.url)} ${odp.statusCode}`)
       odp.on('error', () => res.destroy())
-      if (req.method === 'HEAD' || !htmlDoZmiany(odp.headers)) {
+      // Strona jest buforowana do konca (SSR ze strumieniowaniem dostaje pierwszy bajt po calej odpowiedzi) — dla stosu Vite
+      // bez znaczenia. HEAD, 204 i 304 nie maja ciala, wiec ida bez zmian (z dlugoscia celu).
+      if (req.method === 'HEAD' || odp.statusCode === 204 || odp.statusCode === 304 || !htmlDoZmiany(odp.headers)) {
         res.writeHead(odp.statusCode ?? 502, naglowki)
         res.flushHeaders()
         odp.pipe(res)
@@ -129,7 +136,6 @@ export function utworzProxy({ cel, log = () => {} }) {
       odp.on('data', (c) => czesci.push(c))
       odp.on('end', () => {
         const cialo = zeSkryptemSieci(Buffer.concat(czesci))
-        delete naglowki['transfer-encoding']
         res.writeHead(odp.statusCode ?? 502, { ...naglowki, 'content-length': String(cialo.length) })
         res.end(cialo)
       })
