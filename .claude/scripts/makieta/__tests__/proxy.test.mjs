@@ -8,7 +8,7 @@ import { gzipSync } from 'node:zlib'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { BladProxy, PREFIKS_NARZEDZIA, celLokalny, utworzProxy } from '../proxy.mjs'
+import { BladProxy, PREFIKS_NARZEDZIA, SKRYPT_SIECI, celLokalny, utworzProxy } from '../proxy.mjs'
 
 /** @typedef {import('node:http').Server} Serwer */
 
@@ -285,3 +285,31 @@ test('upgrade: dane klienta wysłane razem z uzgodnieniem dochodzą; odmowa celu
     },
   })
 })
+
+// P28 (5): panel „Sieć” — proxy wstrzykuje skrypt narzedzia do stron HTML aplikacji (jedno miejsce, wszystkie ramki i karta).
+test('P28 (5) strona HTML dostaje skrypt sieci zaraz po <head>, z nową długością; żądanie HTML idzie do celu bez kompresji', () => zSerwerami((req, res) => {
+  const cialo = Buffer.from(`<!doctype html><html><HEAD lang="pl"><title>żółw</title></head>${req.headers['accept-encoding'] ?? 'brak'}`)
+  res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-length': String(cialo.length) })
+  res.end(cialo)
+}, async (_cel, proxy) => {
+  const w = await zapytaj(proxy.port, { path: '/p/x', headers: { accept: 'text/html,application/xhtml+xml', 'accept-encoding': 'gzip, br' } })
+  const html = w.body.toString()
+  assert.ok(html.startsWith(`<!doctype html><html><HEAD lang="pl">${SKRYPT_SIECI}<title>żółw</title>`), html)
+  assert.equal(Number(w.headers['content-length']), w.body.length)
+  assert.ok(html.endsWith('</head>identity'), 'cel dostał accept-encoding: identity')
+}))
+
+test('P28 (5) bez wstrzyknięcia: JSON, HTML skompresowany przez cel (bajty bez zmian) i HTML bez <head> (skrypt na początku)', () => zSerwerami((req, res) => {
+  if (req.url === '/api') return res.end(JSON.stringify({ a: '<head>' }))
+  if (req.url === '/gz') {
+    res.writeHead(200, { 'content-type': 'text/html', 'content-encoding': 'gzip' })
+    return res.end(gzipSync('<html><head></head></html>'))
+  }
+  res.writeHead(200, { 'content-type': 'text/html' })
+  res.end('<p>fragment</p>')
+}, async (_cel, proxy) => {
+  assert.equal((await zapytaj(proxy.port, { path: '/api' })).body.toString(), '{"a":"<head>"}')
+  const gz = await zapytaj(proxy.port, { path: '/gz', headers: { accept: 'text/html' } })
+  assert.deepEqual(gz.body, gzipSync('<html><head></head></html>'))
+  assert.equal((await zapytaj(proxy.port, { path: '/frag', headers: { accept: 'text/html' } })).body.toString(), `${SKRYPT_SIECI}<p>fragment</p>`)
+}))

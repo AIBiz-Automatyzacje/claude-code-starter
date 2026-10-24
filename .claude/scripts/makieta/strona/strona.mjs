@@ -4,6 +4,7 @@
 // Zmiany sesji (SSE `punkty`) odswiezaja liste z zachowaniem biezacego ekranu; `przeladuj` (po poprawce) przeladowuje ramki.
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
+import { podepnijPanelSieci } from './panel-sieci.mjs'
 import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
 import { podepnijRozdzielacz } from './uklad.mjs'
 
@@ -296,6 +297,8 @@ function podepnij() {
     })
   }
   przeciaganieRzedu(el('ramki', HTMLDivElement))
+  podepnijPanelSieci({ panel: el('siec', HTMLDetailsElement), naglowek: el('siec-naglowek', HTMLElement), opoznienie: el('opoznienie', HTMLSelectElement),
+    blokady: el('blokady', HTMLTextAreaElement), formularz: el('form-siec', HTMLFormElement), stan: el('siec-stan', HTMLParagraphElement), ramki: el('ramki', HTMLDivElement) })
   let klatka = 0
   // Zmiana udzialu przy przeciaganiu przychodzi co ruch wskaznika — skala ramek raz na klatke.
   podepnijRozdzielacz({ uklad: document.querySelector('.uklad') ?? document.body, rozdzielacz: el('rozdzielacz', HTMLDivElement),

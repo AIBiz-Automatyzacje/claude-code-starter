@@ -76,3 +76,15 @@ test('P28 (2) rozdzielacz stoi między aplikacją a makietą jako separator dost
   assert.ok(!css.includes('55vw'))
   assert.match(css, /grid-template-columns: minmax\(0, var\(--udzial-aplikacji/)
 })
+
+test('P28 (5) panel „Sieć”: profile opóźnienia, blokady po jednej w linii, opis stanu w nagłówku panelu', async () => {
+  const { PROFILE_SIECI, ustawieniaZFormularza, opisSieci } = await import('../strona/panel-sieci.mjs')
+  assert.deepEqual(PROFILE_SIECI.map((p) => [p.nazwa, p.opoznienieMs]), [['Bez ograniczeń', 0], ['Fast 3G', 560], ['Slow 3G', 2000]])
+  assert.deepEqual(ustawieniaZFormularza('2000', ' */api/komentarze* \n\n/api/glosy\n'), { opoznienieMs: 2000, blokady: ['*/api/komentarze*', '/api/glosy'] })
+  assert.deepEqual(ustawieniaZFormularza('abc', ''), { opoznienieMs: 0, blokady: [] })
+  assert.equal(opisSieci({ opoznienieMs: 0, blokady: [] }), 'Sieć')
+  assert.equal(opisSieci({ opoznienieMs: 2000, blokady: ['a'] }), 'Sieć: Slow 3G · 1 blokada')
+  assert.equal(opisSieci({ opoznienieMs: 0, blokady: ['a', 'b'] }), 'Sieć: 2 blokady')
+  assert.equal(opisSieci({ opoznienieMs: 300, blokady: Array(5).fill('x') }), 'Sieć: +300 ms · 5 blokad')
+  for (const id of ['siec', 'opoznienie', 'blokady', 'siec-stan']) assert.ok(pozycja(id) > HTML.indexOf('class="aplikacja"'), `#${id} w kolumnie aplikacji`)
+})

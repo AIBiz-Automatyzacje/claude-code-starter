@@ -70,6 +70,12 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .adres { display: flex; gap: 4px; flex: 1 1 280px; }
 .adres input { flex: 1; min-width: 0; font-family: ui-monospace, monospace; }
 .urzadzenia { margin: 8px 0; }
+.siec { margin: 8px 0; }
+.siec summary { cursor: pointer; width: max-content; }
+.siec--aktywna summary { color: var(--blad); font-weight: 600; }
+.form-siec { display: grid; gap: 4px; max-width: 520px; margin-top: 6px; }
+.form-siec textarea { font-family: ui-monospace, monospace; }
+.siec p { margin: 4px 0 0; }
 .lista-urzadzen { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0; }
 .wymiar { display: flex; gap: 4px; align-items: center; margin: 6px 0; }
 .wymiar input { width: 110px; }

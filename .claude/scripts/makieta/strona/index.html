@@ -83,6 +83,21 @@
         </form>
         <button type="button" id="domyslne">Domyślne</button>
       </details>
+      <details id="siec" class="siec">
+        <summary id="siec-naglowek">Sieć</summary>
+        <form id="form-siec" class="form-siec">
+          <label for="opoznienie">Opóźnienie żądań aplikacji</label>
+          <select id="opoznienie"></select>
+          <label for="blokady">Zablokuj adresy (po jednym w linii, * = dowolny ciąg)</label>
+          <textarea id="blokady" rows="2" spellcheck="false" placeholder="*/api/komentarze*"></textarea>
+          <div class="decyzje">
+            <button type="submit">Zastosuj</button>
+            <button type="reset">Wyłącz</button>
+          </div>
+        </form>
+        <p id="siec-stan" class="wyciszony"></p>
+        <p class="wyciszony">Działa na żądania wysyłane przez kod aplikacji (fetch, XHR), także do Supabase; nie obejmuje obrazów i ramek obcych usług (np. widgetu Turnstile).</p>
+      </details>
       <p id="podpowiedz-trasy" class="wyciszony" hidden></p>
       <div id="ramki" class="ramki"></div>
     </section>

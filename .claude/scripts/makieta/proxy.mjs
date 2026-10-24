@@ -1,6 +1,8 @@
 // Reverse proxy narzedzia makiet do lokalnej aplikacji (P24 IU-4). Strona narzedzia i ramki maja jeden origin (proxy), wiec
 // ramki dziela localStorage i sesje logowania; proxy zdejmuje zakaz osadzania (naglowki.mjs), a cialo i `content-encoding`
-// przekazuje bez zmian, strumieniem. SSE bez buforowania (`flushHeaders`), WebSocket (HMR Vite) przez `upgrade` z buforem `head`.
+// przekazuje bez zmian, strumieniem — poza stronami HTML (P28 (5)): do nich proxy wstrzykuje skrypt sieci narzedzia
+// (`strona/siec.mjs`, panel „Sieć”) zaraz po `<head>`, a zadanie strony idzie do celu z `accept-encoding: identity`, zeby
+// cialo dalo sie zmienic bez rozpakowywania; HTML skompresowany mimo to przechodzi bez zmian. SSE bez buforowania (`flushHeaders`), WebSocket (HMR Vite) przez `upgrade` z buforem `head`.
 // Cel tylko lokalny, a naglowek Host musi byc originem proxy: proxy podmienia Host na swoj, wiec bez tej kontroli strona po
 // DNS rebinding (Host obcej domeny) przeszlaby przez kontrole `allowedHosts` Vite i czytala zrodla oraz token HMR.
 //
@@ -12,6 +14,7 @@ import { request } from 'node:http'
 import { naglowkiOdpowiedzi, naglowkiZadania } from './naglowki.mjs'
 
 export const PREFIKS_NARZEDZIA = '/__makieta/'
+export const SKRYPT_SIECI = `<script src="${PREFIKS_NARZEDZIA}strona/siec.mjs"></script>`
 const HOSTY_LOKALNE = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 /**
@@ -65,6 +68,18 @@ const originProxy = (req) => `http://127.0.0.1:${req.socket.localPort}`
 /** @param {string | undefined} url @returns {string} sciezka bez query (do logu) */
 const bezQuery = (url) => (url ?? '/').replace(/[?#].*$/, '')
 
+/** @param {import('node:http').IncomingHttpHeaders} n @returns {boolean} strona HTML, ktorej cialo da sie zmienic (bez kompresji) */
+const htmlDoZmiany = (n) => /^text\/html\b/i.test(String(n['content-type'] ?? '')) && [undefined, 'identity'].includes(n['content-encoding'])
+
+/** @param {Buffer} html @returns {Buffer} html ze skryptem sieci po znaczniku `<head …>` albo na poczatku (fragment bez <head>) */
+function zeSkryptemSieci(html) {
+  const skrypt = Buffer.from(SKRYPT_SIECI)
+  const m = /<head(?:\s[^>]*)?>/i.exec(html.toString('latin1'))
+  if (!m) return Buffer.concat([skrypt, html])
+  const po = m.index + m[0].length
+  return Buffer.concat([html.subarray(0, po), skrypt, html.subarray(po)])
+}
+
 /**
  * @param {{ cel: URL, log?: (linia: string) => void }} opcje cel z `celLokalny`
  * @returns {{ obsluzZadanie: (req: Zadanie, res: Odpowiedz) => void, obsluzUpgrade: (req: Zadanie, gniazdo: Gniazdo, glowa: Buffer) => void }}
@@ -73,10 +88,12 @@ export function utworzProxy({ cel, log = () => {} }) {
   const host = cel.hostname.replace(/^\[|\]$/g, '')
   const port = Number(cel.port) || 80
   /** @param {Zadanie} req @param {boolean} upgrade */
-  const opcjeZadania = (req, upgrade) => ({
-    host, port, method: req.method, path: req.url,
-    headers: naglowkiZadania(req.headers, { cel: cel.origin, proxy: originProxy(req) }, { upgrade }),
-  })
+  const opcjeZadania = (req, upgrade) => {
+    const headers = naglowkiZadania(req.headers, { cel: cel.origin, proxy: originProxy(req) }, { upgrade })
+    // Strona HTML bez kompresji — proxy wstrzykuje do niej skrypt sieci (P28 (5)).
+    if (/text\/html/i.test(String(req.headers.accept ?? ''))) headers['accept-encoding'] = 'identity'
+    return { host, port, method: req.method, path: req.url, headers }
+  }
 
   /** @param {Zadanie} req @returns {string | null} powod odmowy: Host spoza originu proxy albo adres w formie absolutnej */
   const odmowa = (req) => {
@@ -98,11 +115,24 @@ export function utworzProxy({ cel, log = () => {} }) {
       return
     }
     const doCelu = request(opcjeZadania(req, false), (odp) => {
-      res.writeHead(odp.statusCode ?? 502, naglowkiOdpowiedzi(odp.headers, { cel: cel.origin, proxy: originProxy(req) }))
-      res.flushHeaders()
+      const naglowki = naglowkiOdpowiedzi(odp.headers, { cel: cel.origin, proxy: originProxy(req) })
       log(`${req.method} ${bezQuery(req.url)} ${odp.statusCode}`)
       odp.on('error', () => res.destroy())
-      odp.pipe(res)
+      if (req.method === 'HEAD' || !htmlDoZmiany(odp.headers)) {
+        res.writeHead(odp.statusCode ?? 502, naglowki)
+        res.flushHeaders()
+        odp.pipe(res)
+        return
+      }
+      /** @type {Buffer[]} */
+      const czesci = []
+      odp.on('data', (c) => czesci.push(c))
+      odp.on('end', () => {
+        const cialo = zeSkryptemSieci(Buffer.concat(czesci))
+        delete naglowki['transfer-encoding']
+        res.writeHead(odp.statusCode ?? 502, { ...naglowki, 'content-length': String(cialo.length) })
+        res.end(cialo)
+      })
     })
     doCelu.on('error', (blad) => {
       // Klient sam przerwal (zamknieta ramka, przerwany upload) — to nie awaria aplikacji.
