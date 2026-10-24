@@ -3164,7 +3164,9 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
       z kilkoma ekranami → `opisOtwartych` podaje wszystkie), `hosty` tylko z `package.json` w korzeniu (monorepo), SSR ze
       strumieniowaniem buforowany do końca (komentarz w proxy), ustawienia sieci działają dalej w karcie z „Otwórz w karcie” po
       zamknięciu strony narzędzia.
-    Testy 1220/1220 (main 1186), typecheck i lint czyste, prompt-audit dodanych linii SKILL.md 0. Jeden pełny bieg w trakcie dał
+    - **Po podglądzie operatora:** surowa linia R11 nad decyzjami „ciężko się czyta” → pole `opis` punktu (punkty.mjs: co / stany /
+      sprawdź, bez ścieżek PNG i wymiaru), strona pokazuje trzy wiersze „Sprawdź / Stany / Gdzie”, pełna linia pod „Pokaż całą linię”.
+    Testy 1221/1221 (main 1186), typecheck i lint czyste, prompt-audit dodanych linii SKILL.md 0. Jeden pełny bieg w trakcie dał
     1 fail, dwa kolejne 1215/1215 — prawdopodobnie zbieg z zatrzymywaniem narzędzia w tym samym czasie; nie odtworzone.
     **Dalej:** merge za zgodą → w vibersi powrót do punktów wizualnych BEZ syncu (polecenie w §8), potem PR etapu 5, potem P27.
 
