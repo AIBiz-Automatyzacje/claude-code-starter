@@ -192,3 +192,10 @@ test('po recenzji: rozbiór — [X], CRLF, dwie spacje po checkboxie, niezamkni�
   assert.equal(status(`- [ ] *(2026-10-20: zgodne, ${ZNACZNIK_POPRAWKI} w abc)* T`), 'otwarty')
   assert.equal(status(`- [ ] *(2026-10-20: ${ZNACZNIK_BLEDU} — nie ${ZNACZNIK_POPRAWKI} w x)* T`), 'blad')
 })
+
+test('P28 (7) wymiar z dopiskiem po średniku w tym samym nawiasie (smoke etapu 5 vibersi, linie 93 i 102) to poprawny zapis R11', () => {
+  const linia = '- [ ] Komputer: `/tworca/<slug>` obok `visual-diff/profil-tworcy-komputer-figma.png` i `visual-diff/profil-tworcy-komputer-actual.png` (viewport 1440×1153; zrzut aplikacji z konta e2e bez opisu) → karta zgodna'
+  assert.deepEqual(sprawdzFormat(linia), [])
+  assert.deepEqual(punktyWizualne(linia, skrot)[0].viewport, { szerokosc: 1440, wysokosc: 1153 })
+  assert.deepEqual(sprawdzFormat(linia.replace('1440×1153;', '1440×1153 px;')).map((p) => p.powod), ['brak „(viewport <W>×<H>)” bez dwukropka i sufiksu'], 'sufiks px nadal poza formatem')
+})

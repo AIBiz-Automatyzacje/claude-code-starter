@@ -15,7 +15,8 @@ export const ZNACZNIK_ODSTEPSTWA = '— zatwierdzone'
 const CHECKBOX = /^- \[([ xX])\] (.*)$/
 const MAKIETA = /visual-diff\/([A-Za-z0-9][\w.-]*?)-figma\.png/g
 const VIEWPORT = /viewport:?\s*(\d+)\s*[×x]\s*(\d+)\s*(?:px)?/i
-const VIEWPORT_R11 = /\(viewport (\d+)×(\d+)\)/
+// Dopisek po srednik w tym samym nawiasie (P28, smoke etapu 5: „(viewport 1440×1153; zrzut z konta e2e…)”) nie psuje zapisu.
+const VIEWPORT_R11 = /\(viewport (\d+)×(\d+)(?:\)|; )/
 const PLOT = /^\s*(?:```|~~~)/
 const DATA_ADNOTACJI = /^\d{4}-\d{2}-\d{2}[^:]*:\s*/
 // Bez polskich znakow tez — agent smoke'u pisal znacznik z prompta workflowu w ASCII.
