@@ -1,4 +1,4 @@
-/* Strona narzedzia makiet (P24 IU-7): naglowek z punktem i decyzjami, po lewej aplikacja w ramkach urzadzen, po prawej makieta. */
+/* Strona narzedzia makiet (P24 IU-7, uklad P28): jeden pasek z nawigacja, punktem i decyzjami, po lewej aplikacja w ramkach urzadzen, po prawej makieta. */
 :root {
   --tlo: #f6f5f2;
   --karta: #fff;
@@ -28,11 +28,18 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .ukryty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .wyciszony { color: var(--wyciszony); }
 
-.naglowek, .punkt { padding: 8px 16px; background: var(--karta); border-bottom: 1px solid var(--linia); }
-.naglowek__wiersz, .punkt__wiersz, .decyzje, .pasek { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.tytul { font-size: 15px; margin: 0 8px 0 0; }
-.licznik { font-variant-numeric: tabular-nums; }
-.uwagi { margin: 6px 0 0; color: var(--odstep); }
+.naglowek { padding: 8px 16px; background: var(--karta); border-bottom: 1px solid var(--linia); }
+.pasek-punktu, .nawigacja, .decyzje, .pasek, .tresc-wiersz { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.nawigacja { gap: 4px; }
+.licznik { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.zakoncz { margin-left: auto; border-color: var(--tusz); font-weight: 600; }
+.tresc-wiersz { align-items: flex-start; flex-wrap: nowrap; margin-top: 6px; }
+.tresc-wiersz button { flex: none; }
+.uwagi { margin: 6px 0 0; }
+.uwagi summary { cursor: pointer; color: var(--wyciszony); width: max-content; }
+.uwagi p { margin: 4px 0 0; }
+#uwagi-tresc { color: var(--odstep); }
+#uwagi-tresc:empty { display: none; }
 
 .status { padding: 1px 8px; border-radius: 999px; background: var(--tlo); border: 1px solid var(--linia); }
 .status--zgodny { color: var(--zgodny); border-color: currentColor; }
@@ -41,26 +48,49 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .status--poprawione { color: var(--akcent); border-color: currentColor; }
 .ekran { font-weight: 600; }
 .trasa { color: var(--wyciszony); }
-.tresc { margin: 6px 0; max-width: 120ch; }
+.opis { margin: 0; display: grid; gap: 2px; max-width: 120ch; flex: 1; }
+.opis div { display: flex; gap: 8px; }
+.opis dt { flex: none; width: 4.5em; color: var(--wyciszony); }
+.opis dd { margin: 0; }
+.opis div:first-child dd { font-weight: 600; }
+.tresc { margin: 6px 0 0; max-width: 120ch; color: var(--wyciszony); font-family: ui-monospace, monospace; font-size: 12px; }
 .decyzja--zgodne { border-color: var(--zgodny); color: var(--zgodny); }
 .decyzja--blad { border-color: var(--blad); color: var(--blad); }
 .formularz { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: start; max-width: 720px; margin-top: 8px; }
 .formularz textarea, .formularz select { width: 100%; }
 .formularz button { justify-self: start; }
+.podsumowanie { grid-column: 1 / -1; margin: 0; }
 .komunikat { margin: 6px 0 0; }
 .komunikat:empty { display: none; }
 
-.uklad { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); min-height: 0; }
+.uklad { flex: 1; display: grid; grid-template-columns: minmax(0, var(--udzial-aplikacji, 55%)) 8px minmax(0, 1fr); min-height: 0; }
 .aplikacja, .makieta { padding: 8px 16px; min-width: 0; overflow: auto; }
-.makieta { border-left: 1px solid var(--linia); max-width: 55vw; background: var(--karta); }
+.makieta { background: var(--karta); }
+.rozdzielacz { cursor: col-resize; background: var(--linia); border-inline: 3px solid var(--tlo); touch-action: none; }
+.rozdzielacz:hover, .rozdzielacz:focus-visible, .uklad--przeciagany .rozdzielacz { background: var(--akcent); }
+/* W trakcie przeciagania ramki nie przejmuja wskaznika ani zaznaczenia. */
+.uklad--przeciagany { user-select: none; }
+.uklad--przeciagany iframe { pointer-events: none; }
 .adres { display: flex; gap: 4px; flex: 1 1 280px; }
 .adres input { flex: 1; min-width: 0; font-family: ui-monospace, monospace; }
 .urzadzenia { margin: 8px 0; }
+.siec { margin: 8px 0; }
+.siec summary { cursor: pointer; width: max-content; }
+.siec--aktywna summary { color: var(--blad); font-weight: 600; }
+.form-siec { display: grid; gap: 4px; max-width: 520px; margin-top: 6px; }
+.form-siec textarea { font-family: ui-monospace, monospace; }
+.siec p { margin: 4px 0 0; }
 .lista-urzadzen { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0; }
 .wymiar { display: flex; gap: 4px; align-items: center; margin: 6px 0; }
 .wymiar input { width: 110px; }
 
-.ramki { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 8px; }
+.skala { display: flex; }
+.skala button { border-radius: 0; margin-left: -1px; }
+.skala button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+.skala button:last-child { border-radius: 0 6px 6px 0; }
+.ramki { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 16px; align-items: flex-start; margin-top: 8px; padding-bottom: 8px; cursor: grab; }
+.ramki--przeciagane { cursor: grabbing; user-select: none; }
+.ramka { flex: none; }
 .ramka figcaption { color: var(--wyciszony); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
 .ramka__okno { position: relative; overflow: hidden; box-sizing: content-box; border: 1px solid var(--linia); border-radius: 8px; background: #fff; }
 .ramka__okno iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #fff; }
@@ -70,5 +100,6 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 
 @media (max-width: 900px) {
   .uklad { grid-template-columns: 1fr; }
-  .makieta { border-left: 0; border-top: 1px solid var(--linia); max-width: none; }
+  .rozdzielacz { display: none; }
+  .makieta { border-top: 1px solid var(--linia); }
 }

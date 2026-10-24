@@ -1,6 +1,7 @@
 // Ramki urzadzen strony narzedzia makiet (P24 IU-7): aplikacja (ten sam origin co strona, przez proxy) w ramkach o wymiarach
 // presetow, wspolna trasa dla wszystkich ramek, skalowanie `transform: scale` z oknem po skali (media queries ramki widza
-// pelna szerokosc urzadzenia), przelacznik 1:1 i wybor urzadzen pamietany miedzy ekranami (localStorage z try/catch).
+// pelna szerokosc urzadzenia), wybor urzadzen pamietany miedzy ekranami (localStorage z try/catch). Skala (P28): „przewijaj”
+// (domyslna) — najszersza ramka na szerokosc kolumny, rzad przewijany w poziomie; „wszystkie” — caly rzad w kolumnie; „1:1”.
 // Strona nie czyta zawartosci ramek: jedyna interakcja to `src` i przeladowanie.
 
 const KLUCZ_WYBORU = 'makieta.urzadzenia'
@@ -8,7 +9,10 @@ const ODSTEP_RAMEK_PX = 16
 const OBRAMOWANIE_PX = 1
 const MARGINES_PASKA_PX = 20
 
-/** @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie */
+/**
+ * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
+ * @typedef {'przewijaj' | 'wszystkie' | '1:1'} TrybSkali
+ */
 
 /** @param {unknown} x @returns {x is Urzadzenie} */
 const czyUrzadzenie = (x) => typeof x === 'object' && x !== null && 'id' in x && 'szerokosc' in x && 'wysokosc' in x && 'nazwa' in x
@@ -37,15 +41,18 @@ export function zapiszWybor(wybor) {
 }
 
 /**
- * Wspolna skala ramek: wszystkie w jednym rzedzie w szerokosci kolumny, najwyzej 1.
+ * Wspolna skala ramek, najwyzej 1: „przewijaj” — najszersza ramka w szerokosci kolumny, „wszystkie” — caly rzad, „1:1” — 1.
  * @param {Urzadzenie[]} urzadzenia
  * @param {number} szerokoscKolumny
+ * @param {TrybSkali} tryb
  * @returns {number}
  */
-export function skalaRamek(urzadzenia, szerokoscKolumny) {
-  // Obramowanie okna i margines na pionowy pasek przewijania (pojawia sie po wstawieniu ramek) — inaczej ostatnia ramka spada nizej.
-  const razem = urzadzenia.reduce((s, u) => s + u.szerokosc + 2 * OBRAMOWANIE_PX, 0) + ODSTEP_RAMEK_PX * Math.max(0, urzadzenia.length - 1)
-  return razem > 0 ? Math.min(1, (szerokoscKolumny - MARGINES_PASKA_PX) / razem) : 1
+export function skalaRamek(urzadzenia, szerokoscKolumny, tryb) {
+  if (tryb === '1:1' || !urzadzenia.length) return 1
+  const szerokosci = urzadzenia.map((u) => u.szerokosc + 2 * OBRAMOWANIE_PX)
+  // Margines na pionowy pasek przewijania (pojawia sie po wstawieniu ramek) — inaczej ostatnia ramka spada nizej.
+  const potrzebne = tryb === 'wszystkie' ? szerokosci.reduce((s, w) => s + w, 0) + ODSTEP_RAMEK_PX * (urzadzenia.length - 1) : Math.max(...szerokosci)
+  return Math.min(1, (szerokoscKolumny - MARGINES_PASKA_PX) / potrzebne)
 }
 
 /** @param {HTMLElement} okno @param {HTMLIFrameElement} iframe @param {HTMLElement} podpis @param {Urzadzenie} u @param {number} skala */
@@ -57,13 +64,13 @@ function wymiaruj(okno, iframe, podpis, u, skala) {
 }
 
 /**
- * Nowa skala istniejacych ramek (zmiana okna, 1:1) bez tworzenia ich od nowa — aplikacja w ramkach zachowuje stan.
+ * Nowa skala istniejacych ramek (zmiana okna, tryb skali) bez tworzenia ich od nowa — aplikacja w ramkach zachowuje stan.
  * @param {HTMLElement} kontener
  * @param {Urzadzenie[]} urzadzenia te same, dla ktorych powstaly ramki
- * @param {{ jedenDoJednego: boolean }} opcje
+ * @param {TrybSkali} tryb
  */
-export function skalujRamki(kontener, urzadzenia, { jedenDoJednego }) {
-  const skala = jedenDoJednego ? 1 : skalaRamek(urzadzenia, kontener.clientWidth)
+export function skalujRamki(kontener, urzadzenia, tryb) {
+  const skala = skalaRamek(urzadzenia, kontener.clientWidth, tryb)
   kontener.querySelectorAll('figure').forEach((ramka, i) => {
     const okno = ramka.querySelector('.ramka__okno')
     const iframe = ramka.querySelector('iframe')
@@ -77,10 +84,10 @@ export function skalujRamki(kontener, urzadzenia, { jedenDoJednego }) {
  * @param {HTMLElement} kontener
  * @param {Urzadzenie[]} urzadzenia
  * @param {string} trasa
- * @param {{ jedenDoJednego: boolean }} opcje
+ * @param {TrybSkali} tryb
  */
-export function ustawRamki(kontener, urzadzenia, trasa, { jedenDoJednego }) {
-  const skala = jedenDoJednego ? 1 : skalaRamek(urzadzenia, kontener.clientWidth)
+export function ustawRamki(kontener, urzadzenia, trasa, tryb) {
+  const skala = skalaRamek(urzadzenia, kontener.clientWidth, tryb)
   kontener.replaceChildren(...urzadzenia.map((u) => {
     const ramka = document.createElement('figure')
     ramka.className = 'ramka'
@@ -108,4 +115,31 @@ export function przeladujRamki(kontener, trasa) {
     iframe.src = 'about:blank'
     iframe.src = trasa
   }
+}
+
+/**
+ * Przeciaganie rzedu ramek w poziomie za podpisy i odstepy (ramki iframe same lapia wskaznik) — obok paska przewijania
+ * i Shift + kolko.
+ * @param {HTMLElement} kontener
+ */
+export function przeciaganieRzedu(kontener) {
+  /** @type {{ x: number, przewiniecie: number } | null} */
+  let start = null
+  kontener.addEventListener('pointerdown', (z) => {
+    // Klik w poziomy pasek przewijania (pod clientHeight) przewija sam — przechwycenie przewijaloby podwojnie.
+    const naPasku = z.clientY >= kontener.getBoundingClientRect().top + kontener.clientHeight
+    if (z.button !== 0 || naPasku || kontener.scrollWidth <= kontener.clientWidth) return
+    start = { x: z.clientX, przewiniecie: kontener.scrollLeft }
+    kontener.setPointerCapture(z.pointerId)
+    kontener.classList.add('ramki--przeciagane')
+  })
+  kontener.addEventListener('pointermove', (z) => {
+    if (start) kontener.scrollLeft = start.przewiniecie - (z.clientX - start.x)
+  })
+  const koniec = () => {
+    start = null
+    kontener.classList.remove('ramki--przeciagane')
+  }
+  kontener.addEventListener('pointerup', koniec)
+  kontener.addEventListener('pointercancel', koniec)
 }

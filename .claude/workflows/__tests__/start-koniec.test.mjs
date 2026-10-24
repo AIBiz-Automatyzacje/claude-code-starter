@@ -431,3 +431,22 @@ test('smoke: przykładowy punkt wizualny szablonu przechodzi makieta sprawdzForm
   assert.ok(makieta.includes('zgloszenia --smoke <plik>'))
   assert.ok(!/Read[^\n]*PNG|otwórz[^\n]*PNG/i.test(makieta), 'skill nie każe czytać PNG')
 })
+
+// P28 (4): zgloszenia na koniec przegladu — skill zna zdarzenie konca przegladu, tryb „od razu” i dokument ustalen.
+test('skill /makieta: zdarzenie przeglad-zakonczony, --zgloszenia od-razu na prośbę, dokument ustaleń przed poprawkami', () => {
+  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
+  assert.ok(makieta.includes('Zdarzenie `przeglad-zakonczony`'))
+  assert.ok(makieta.includes('`--zgloszenia od-razu`'))
+  assert.ok(makieta.includes('docs/operator/<data>-<zadanie>-makiety-ustalenia.md'))
+  assert.ok(makieta.indexOf('## Koniec przeglądu') < makieta.indexOf('## Droga awaryjna'))
+  assert.match(makieta, /Zakończ\s+przegląd/)
+  assert.match(makieta, /Kolejne `przeglad-zakonczony`[^]*?aktualizuje\s+ten sam dokument ustaleń/)
+  assert.match(makieta, /W trybie „na koniec” po przeglądzie\s+obsłuż je jak w sekcji „Koniec przeglądu”/)
+})
+
+// P28 (6): adres narzedzia w uslugach z lista hostow — skill podaje pole `hosty` startu i wpis Turnstile.
+test('skill /makieta: pole hosty z wyniku startu i host 127.0.0.1 w widgecie Turnstile', () => {
+  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
+  assert.ok(makieta.includes('`hosty`'))
+  assert.match(makieta, /Turnstile wymaga `127\.0\.0\.1` w hostach\s+widgetu/)
+})

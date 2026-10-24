@@ -3,6 +3,8 @@
 // przy starcie wypisuje zgloszenia jeszcze niedostarczone, potem kazde nowe jako jedna linia JSON, na koncu `limit` (Monitor zyje
 // najwyzej 30 min) albo `serwer-zatrzymany`. Dostarczone id dopisujemy do `dostarczone.jsonl` (tylko dopisywanie — serwer
 // i `czekaj` nie przepisuja wspolnego pliku). Zgloszenia otwarte (droga awaryjna) liczymy z checklisty, nie z kolejki.
+// P28 (pilot etapu 5): w trybie „na koniec” (domyslnym) „Zgłoś błąd” zapisuje tylko linie, a „Zakończ przegląd” dopisuje jeden
+// wpis `przeglad` z wszystkimi otwartymi zgloszeniami i podsumowaniem — sesja nie przerywa operatorowi przegladu w polowie.
 
 import { randomUUID } from 'node:crypto'
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
@@ -19,7 +21,13 @@ const ODSTEP_MS = 500
  * @typedef {{ punkt: string, ekran: string, trasa: string | null, viewport: import('./punkty.mjs').Wymiary | null, urzadzenie: string,
  *   szerokosc: number, opis: string, spec: string | null, makieta: string | null }} Zgloszenie
  * @typedef {Zgloszenie & { id: string, czas: string }} WpisKolejki
- * @typedef {({ zdarzenie: 'zgloszenie' } & WpisKolejki) | { zdarzenie: 'limit' } | { zdarzenie: 'serwer-zatrzymany' }} Zdarzenie
+ * @typedef {{ punkt: string, linia: number, zgloszenie: string | undefined, tresc: string, trasa: string | null,
+ *   ekrany: { ekran: string, spec: string | null, makieta: string | null, wymiary: import('./punkty.mjs').Wymiary | null }[] }} OtwarteZgloszenie
+ * @typedef {{ punkty: number } & Record<Punkt['status'], number>} Podsumowanie
+ * @typedef {{ smoke: string, zgloszenia: OtwarteZgloszenie[], podsumowanie: Podsumowanie }} Przeglad
+ * @typedef {Przeglad & { typ: 'przeglad', id: string, czas: string }} WpisPrzegladu
+ * @typedef {({ zdarzenie: 'zgloszenie' } & WpisKolejki) | ({ zdarzenie: 'przeglad-zakonczony' } & Przeglad & { id: string, czas: string })
+ *   | { zdarzenie: 'limit' } | { zdarzenie: 'serwer-zatrzymany' }} Zdarzenie
  */
 
 /** @param {string} plik @returns {unknown[]} obiekty z linii JSON; linia uszkodzona (przerwany zapis) pominieta */
@@ -47,16 +55,32 @@ export function dopiszZgloszenie(katalogStanu, zgloszenie) {
   return wpis
 }
 
+/**
+ * @param {string} katalogStanu
+ * @param {Przeglad} przeglad
+ * @returns {WpisPrzegladu}
+ */
+export function dopiszPrzeglad(katalogStanu, przeglad) {
+  mkdirSync(katalogStanu, { recursive: true })
+  /** @type {WpisPrzegladu} */
+  const wpis = { typ: 'przeglad', ...przeglad, id: randomUUID(), czas: new Date().toISOString() }
+  appendFileSync(join(katalogStanu, PLIK_KOLEJKI), `${JSON.stringify(wpis)}\n`)
+  return wpis
+}
+
 /** @param {unknown} x @returns {x is { id: string }} */
 const zId = (x) => typeof x === 'object' && x !== null && 'id' in x && typeof x.id === 'string'
 
 /** @param {unknown} x @returns {x is WpisKolejki} wpis zapisany przez dopiszZgloszenie (pola tekstowe zgloszenia) */
 const czyWpis = (x) => zId(x) && ['punkt', 'ekran', 'opis', 'urzadzenie', 'czas'].every((k) => typeof (/** @type {Record<string, unknown>} */ (x))[k] === 'string')
 
-/** @param {string} katalogStanu @returns {WpisKolejki[]} wpisy kolejki bez dostarczonych, w kolejnosci zgloszenia */
+/** @param {unknown} x @returns {x is WpisPrzegladu} wpis zapisany przez dopiszPrzeglad */
+const czyPrzeglad = (x) => zId(x) && 'typ' in x && x.typ === 'przeglad' && 'zgloszenia' in x && Array.isArray(x.zgloszenia)
+
+/** @param {string} katalogStanu @returns {(WpisKolejki | WpisPrzegladu)[]} wpisy kolejki bez dostarczonych, w kolejnosci zapisu */
 export function niedostarczone(katalogStanu) {
   const dostarczone = new Set(linieJson(join(katalogStanu, PLIK_DOSTARCZONYCH)).filter(zId).map((x) => x.id))
-  return linieJson(join(katalogStanu, PLIK_KOLEJKI)).filter(czyWpis).filter((w) => !dostarczone.has(w.id))
+  return linieJson(join(katalogStanu, PLIK_KOLEJKI)).filter((x) => czyWpis(x) || czyPrzeglad(x)).filter((w) => !dostarczone.has(w.id))
 }
 
 /** @param {string} katalogStanu @param {string} id */
@@ -74,7 +98,10 @@ export async function* czekaj({ katalogStanu, limitMs, odstepMs = ODSTEP_MS, czy
   const termin = Date.now() + limitMs
   for (;;) {
     for (const wpis of niedostarczone(katalogStanu)) {
-      yield { zdarzenie: 'zgloszenie', ...wpis }
+      if ('typ' in wpis) {
+        const { typ, ...przeglad } = wpis
+        yield { zdarzenie: 'przeglad-zakonczony', ...przeglad }
+      } else yield { zdarzenie: 'zgloszenie', ...wpis }
       oznaczDostarczone(katalogStanu, wpis.id)
     }
     if (Date.now() >= termin) {
@@ -92,4 +119,25 @@ export async function* czekaj({ katalogStanu, limitMs, odstepMs = ODSTEP_MS, czy
 /** @param {Punkt[]} punkty @returns {Punkt[]} punkty ze statusem „błąd zgłoszony” — zgloszenia, ktorych sesja jeszcze nie poprawila */
 export function otwarteZgloszenia(punkty) {
   return punkty.filter((p) => p.status === 'blad')
+}
+
+/**
+ * Otwarte zgloszenia z ekranami (SPEC, PNG, wymiary) — wynik `makieta.mjs zgloszenia` i lista w zdarzeniu konca przegladu.
+ * @param {Punkt[]} punkty
+ * @param {import('./zrodla.mjs').Zrodla} zrodla
+ * @returns {OtwarteZgloszenie[]}
+ */
+export function opisOtwartych(punkty, zrodla) {
+  return otwarteZgloszenia(punkty).map((p) => ({
+    punkt: p.id, linia: p.linia, zgloszenie: p.adnotacje[0], tresc: p.tresc, trasa: p.trasa,
+    ekrany: zrodla.ekrany.filter((e) => e.punkt === p.id).map(({ ekran, spec, makieta, wymiary }) => ({ ekran, spec, makieta, wymiary })),
+  }))
+}
+
+/** @param {Punkt[]} punkty @returns {Podsumowanie} liczba punktow wedlug statusu */
+export function podsumowanie(punkty) {
+  /** @type {Podsumowanie} */
+  const p = { punkty: punkty.length, otwarty: 0, zgodny: 0, odstepstwo: 0, blad: 0, poprawione: 0 }
+  for (const x of punkty) p[x.status] += 1
+  return p
 }

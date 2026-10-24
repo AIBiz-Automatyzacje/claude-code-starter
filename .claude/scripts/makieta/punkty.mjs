@@ -15,7 +15,8 @@ export const ZNACZNIK_ODSTEPSTWA = '— zatwierdzone'
 const CHECKBOX = /^- \[([ xX])\] (.*)$/
 const MAKIETA = /visual-diff\/([A-Za-z0-9][\w.-]*?)-figma\.png/g
 const VIEWPORT = /viewport:?\s*(\d+)\s*[×x]\s*(\d+)\s*(?:px)?/i
-const VIEWPORT_R11 = /\(viewport (\d+)×(\d+)\)/
+// Dopisek po srednik w tym samym nawiasie (P28, smoke etapu 5: „(viewport 1440×1153; zrzut z konta e2e…)”) nie psuje zapisu.
+const VIEWPORT_R11 = /\(viewport (\d+)×(\d+)(?:\)|; )/
 const PLOT = /^\s*(?:```|~~~)/
 const DATA_ADNOTACJI = /^\d{4}-\d{2}-\d{2}[^:]*:\s*/
 // Bez polskich znakow tez — agent smoke'u pisal znacznik z prompta workflowu w ASCII.
@@ -27,7 +28,8 @@ const DLUGOSC_ID = 8
  * @typedef {{ checkbox: ' ' | 'x', adnotacje: string[], tresc: string }} Linia
  * @typedef {{ szerokosc: number, wysokosc: number }} Wymiary
  * @typedef {{ id: string, linia: number, tekst: string, checkbox: ' ' | 'x', adnotacje: string[], tresc: string, status: Status,
- *   ekrany: string[], trasa: string | null, trasaStartowa: string, viewport: Wymiary | null, niejednoznaczny: boolean }} Punkt
+ *   ekrany: string[], trasa: string | null, trasaStartowa: string, viewport: Wymiary | null, niejednoznaczny: boolean, opis: Opis | null }} Punkt
+ * @typedef {{ co: string, stany: string | null, sprawdz: string }} Opis tresc punktu dla operatora (bez sciezek makiet i wymiaru)
  * @typedef {{ linia: number, powod: string }} Problem
  * @typedef {(tekst: string) => string} Skrot funkcja skrotu hex (SHA-1)
  */
@@ -104,6 +106,24 @@ function viewportTresci(tresc) {
   return m ? { szerokosc: Number(m[1]), wysokosc: Number(m[2]) } : null
 }
 
+/**
+ * Opis punktu dla czlowieka (P28, pilot etapu 5: surowa linia R11 z dwiema sciezkami PNG i wymiarem „ciezko sie czyta”):
+ * `co` — tekst przed „obok” (urzadzenie, miejsce, trasa), `stany` — warianty po „(viewport …):”, `sprawdz` — wynik po „→”.
+ * Backticki znikaja (tresc zostaje). Zapis bez „obok”, wymiaru albo „→” = null — strona pokazuje wtedy cala linie.
+ * @param {string} tresc
+ * @returns {Opis | null}
+ */
+function opisTresci(tresc) {
+  const obok = tresc.indexOf(' obok ')
+  const wymiar = /\(viewport [^)]*\)/.exec(tresc)
+  const strzalka = tresc.indexOf('→')
+  if (obok === -1 || !wymiar || strzalka === -1 || strzalka < wymiar.index) return null
+  const czysty = (/** @type {string} */ t) => t.replace(/`/g, '').trim()
+  const co = czysty(tresc.slice(0, obok)).replace(/:$/, '')
+  const stany = czysty(tresc.slice(wymiar.index + wymiar[0].length, strzalka)).replace(/^:\s*/, '')
+  return { co, stany: stany || null, sprawdz: czysty(tresc.slice(strzalka + 1)) }
+}
+
 /** @param {string} md @returns {{ nr: number, tekst: string, rozbior: Linia }[]} linie checkboxow z makieta (bez fizycznych urzadzen i blokow ```) */
 function linieZMakieta(md) {
   let kod = false
@@ -136,7 +156,7 @@ export function punktyWizualne(md, skrot) {
     return {
       id: `p-${skrot(rozbior.tresc).slice(0, DLUGOSC_ID)}`, linia: nr, tekst, checkbox: rozbior.checkbox, adnotacje: rozbior.adnotacje,
       tresc: rozbior.tresc, status: statusLinii(rozbior), ekrany: ekranyTresci(rozbior.tresc), trasa, trasaStartowa: trasaStartowa(trasa),
-      viewport: viewportTresci(rozbior.tresc), niejednoznaczny: dublowane.has(rozbior.tresc),
+      viewport: viewportTresci(rozbior.tresc), niejednoznaczny: dublowane.has(rozbior.tresc), opis: opisTresci(rozbior.tresc),
     }
   })
 }

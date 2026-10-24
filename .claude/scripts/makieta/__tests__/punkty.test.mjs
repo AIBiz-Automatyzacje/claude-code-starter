@@ -31,6 +31,7 @@ test('trasa przed makietą i (viewport 390×782): ekran, trasa /konto/projekty, 
     tresc: 'Telefon: `/konto/projekty` obok `visual-diff/moje-projekty-telefon-figma.png` (viewport 390×782) → układ zgodny z makietą',
     status: 'otwarty', ekrany: ['moje-projekty-telefon'], trasa: '/konto/projekty', trasaStartowa: '/konto/projekty',
     viewport: { szerokosc: 390, wysokosc: 782 }, niejednoznaczny: false,
+    opis: { co: 'Telefon: /konto/projekty', stany: null, sprawdz: 'układ zgodny z makietą' },
   })
   assert.match(p.id, /^p-[0-9a-f]{8}$/)
 })
@@ -191,4 +192,25 @@ test('po recenzji: rozbiór — [X], CRLF, dwie spacje po checkboxie, niezamkni�
   assert.equal(status(`- [ ] *(2026-10-20: zgodne, wcześniej ${ZNACZNIK_BLEDU})* T`), 'otwarty')
   assert.equal(status(`- [ ] *(2026-10-20: zgodne, ${ZNACZNIK_POPRAWKI} w abc)* T`), 'otwarty')
   assert.equal(status(`- [ ] *(2026-10-20: ${ZNACZNIK_BLEDU} — nie ${ZNACZNIK_POPRAWKI} w x)* T`), 'blad')
+})
+
+test('P28 (7) wymiar z dopiskiem po średniku w tym samym nawiasie (smoke etapu 5 vibersi, linie 93 i 102) to poprawny zapis R11', () => {
+  const linia = '- [ ] Komputer: `/tworca/<slug>` obok `visual-diff/profil-tworcy-komputer-figma.png` i `visual-diff/profil-tworcy-komputer-actual.png` (viewport 1440×1153; zrzut aplikacji z konta e2e bez opisu) → karta zgodna'
+  assert.deepEqual(sprawdzFormat(linia), [])
+  assert.deepEqual(punktyWizualne(linia, skrot)[0].viewport, { szerokosc: 1440, wysokosc: 1153 })
+  assert.deepEqual(sprawdzFormat(linia.replace('1440×1153;', '1440×1153 px;')).map((p) => p.powod), ['brak „(viewport <W>×<H>)” bez dwukropka i sufiksu'], 'sufiks px nadal poza formatem')
+  assert.equal(sprawdzFormat(linia.replace('1440×1153; ', '1440×1153;')).length, 1, 'dopisek po średniku ze spacją')
+})
+
+test('P28 opis punktu dla człowieka: co (urządzenie i miejsce), stany (warianty po wymiarze), sprawdź (po →) — bez ścieżek plików', () => {
+  const opis = (/** @type {string} */ t) => punktyWizualne(`- [ ] ${t}`, skrot)[0].opis
+  assert.deepEqual(opis('Komputer: sekcja komentarzy obok `visual-diff/k-figma.png` i `visual-diff/k-actual.png` (viewport 860×621) → lista, wątki i pole zgodne z makietą'),
+    { co: 'Komputer: sekcja komentarzy', stany: null, sprawdz: 'lista, wątki i pole zgodne z makietą' })
+  assert.deepEqual(opis('Stany zgłoszenia obok `visual-diff/z-figma.png` (viewport 1600×290): wysyłka (Slow 3G), błąd (zablokowane `*/api/zgloszenia*`) → każdy stan zgodny z makietą'),
+    { co: 'Stany zgłoszenia', stany: 'wysyłka (Slow 3G), błąd (zablokowane */api/zgloszenia*)', sprawdz: 'każdy stan zgodny z makietą' })
+  assert.deepEqual(opis('Komputer, krok 2: obok `visual-diff/z2-figma.png` (viewport 1440×900; zrzut z e2e) → zgodne z makietą'),
+    { co: 'Komputer, krok 2', stany: null, sprawdz: 'zgodne z makietą' })
+  assert.deepEqual(opis('Telefon: `/tworca/<slug>` obok `visual-diff/p-figma.png` (viewport 390×844) → karta zgodna'),
+    { co: 'Telefon: /tworca/<slug>', stany: null, sprawdz: 'karta zgodna' })
+  assert.equal(opis('Ekran obok `visual-diff/e-figma.png` bez wymiaru i strzałki'), null, 'zapis spoza formatu — strona pokazuje całą linię')
 })

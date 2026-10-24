@@ -9,28 +9,31 @@
 </head>
 <body>
   <header class="naglowek">
-    <div class="naglowek__wiersz">
-      <h1 class="tytul">Makieta obok aplikacji</h1>
-      <span id="licznik" class="licznik"></span>
-      <button type="button" id="poprzedni">Poprzedni</button>
-      <button type="button" id="nastepny">Następny</button>
-      <span id="smoke" class="wyciszony"></span>
-    </div>
-    <p id="uwagi" class="uwagi" hidden></p>
-  </header>
-
-  <section class="punkt" aria-labelledby="tresc">
-    <div class="punkt__wiersz">
+    <div class="pasek-punktu">
+      <div class="nawigacja">
+        <button type="button" id="poprzedni" aria-label="Poprzedni ekran">←</button>
+        <span id="licznik" class="licznik"></span>
+        <button type="button" id="nastepny" aria-label="Następny ekran">→</button>
+      </div>
       <span id="status" class="status"></span>
       <span id="ekran" class="ekran"></span>
       <code id="trasa" class="trasa"></code>
+      <div id="decyzje" class="decyzje">
+        <button type="button" id="zgodne" class="decyzja decyzja--zgodne">Zgodne</button>
+        <button type="button" id="odstepstwo" class="decyzja">Odstępstwo OK</button>
+        <button type="button" id="blad" class="decyzja decyzja--blad">Zgłoś błąd</button>
+      </div>
+      <button type="button" id="zakoncz" class="zakoncz" hidden>Zakończ przegląd</button>
     </div>
-    <p id="tresc" class="tresc"></p>
-    <div id="decyzje" class="decyzje">
-      <button type="button" id="zgodne" class="decyzja decyzja--zgodne">Zgodne</button>
-      <button type="button" id="odstepstwo" class="decyzja">Odstępstwo OK</button>
-      <button type="button" id="blad" class="decyzja decyzja--blad">Zgłoś błąd</button>
+    <div class="tresc-wiersz">
+      <dl id="opis" class="opis">
+        <div><dt>Sprawdź</dt> <dd id="opis-sprawdz"></dd></div>
+        <div id="opis-stany-wiersz"><dt>Stany</dt> <dd id="opis-stany"></dd></div>
+        <div><dt>Gdzie</dt> <dd id="opis-co"></dd></div>
+      </dl>
+      <button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całą linię</button>
     </div>
+    <p id="tresc" class="tresc" hidden></p>
     <form id="form-odstepstwo" class="formularz" hidden>
       <label for="notatka-odstepstwa">Co się różni i dlaczego to OK</label>
       <textarea id="notatka-odstepstwa" rows="2" maxlength="300" required></textarea>
@@ -42,12 +45,22 @@
       <textarea id="opis-bledu" rows="2" maxlength="300" required></textarea>
       <label for="urzadzenie-bledu">Urządzenie</label>
       <select id="urzadzenie-bledu"></select>
-      <button type="submit">Wyślij do sesji</button>
+      <button type="submit" id="wyslij-blad">Wyślij do sesji</button>
       <button type="button" class="anuluj">Anuluj</button>
+    </form>
+    <form id="form-koniec" class="formularz" hidden>
+      <p id="podsumowanie" class="podsumowanie"></p>
+      <button type="submit">Wyślij do sesji</button>
+      <button type="button" class="anuluj">Wróć do przeglądu</button>
     </form>
     <p id="niejednoznaczny" class="komunikat" hidden>Ta sama treść punktu występuje w checkliście kilka razy — decyzję zapisz w sesji.</p>
     <p id="komunikat" class="komunikat" role="status" aria-live="polite"></p>
-  </section>
+    <details id="uwagi" class="uwagi">
+      <summary id="uwagi-naglowek">Uwagi narzędzia</summary>
+      <p id="uwagi-tresc"></p>
+      <p class="wyciszony">Checklista: <span id="smoke"></span></p>
+    </details>
+  </header>
 
   <main class="uklad">
     <section class="aplikacja" aria-label="Aplikacja w ramkach urządzeń">
@@ -59,8 +72,13 @@
         </form>
         <button type="button" id="przeladuj">Przeładuj ramki</button>
         <button type="button" id="w-karcie">Otwórz w karcie</button>
-        <button type="button" id="skala" aria-pressed="false">1:1</button>
+        <div class="skala" role="group" aria-label="Skala ramek">
+          <button type="button" data-skala="przewijaj" aria-pressed="true" title="Najszersza ramka na szerokość kolumny, pozostałe obok — przewiń albo przeciągnij rząd">Przewijaj</button>
+          <button type="button" data-skala="wszystkie" aria-pressed="false" title="Wszystkie ramki w szerokości kolumny">Wszystkie</button>
+          <button type="button" data-skala="1:1" aria-pressed="false" title="Rozmiar rzeczywisty">1:1</button>
+        </div>
       </div>
+      <p id="podpowiedz-logowania" class="wyciszony">Logowanie przez Google albo Facebooka: „Otwórz w karcie”, zaloguj się tam, wróć i kliknij „Przeładuj ramki” — dostawca nie otwiera się w ramce.</p>
       <details class="urzadzenia">
         <summary>Urządzenia</summary>
         <div id="lista-urzadzen" class="lista-urzadzen"></div>
@@ -71,9 +89,25 @@
         </form>
         <button type="button" id="domyslne">Domyślne</button>
       </details>
+      <details id="siec" class="siec">
+        <summary id="siec-naglowek">Sieć</summary>
+        <form id="form-siec" class="form-siec">
+          <label for="opoznienie">Opóźnienie żądań aplikacji</label>
+          <select id="opoznienie"></select>
+          <label for="blokady">Zablokuj adresy (po jednym w linii, * = dowolny ciąg)</label>
+          <textarea id="blokady" rows="2" spellcheck="false" placeholder="*/api/komentarze*"></textarea>
+          <div class="decyzje">
+            <button type="submit">Zastosuj</button>
+            <button type="reset">Wyłącz</button>
+          </div>
+        </form>
+        <p id="siec-stan" class="wyciszony"></p>
+        <p class="wyciszony">Działa na żądania wysyłane przez kod aplikacji (fetch, XHR), także do Supabase; nie obejmuje obrazów i ramek obcych usług (np. widgetu Turnstile).</p>
+      </details>
       <p id="podpowiedz-trasy" class="wyciszony" hidden></p>
       <div id="ramki" class="ramki"></div>
     </section>
+    <div id="rozdzielacz" class="rozdzielacz" role="separator" aria-orientation="vertical" aria-label="Szerokość aplikacji i makiety" tabindex="0" aria-valuemin="20" aria-valuemax="80" aria-valuenow="55"></div>
     <section class="makieta" aria-label="Makieta">
       <div class="pasek">
         <button type="button" id="dopasuj" aria-pressed="false">Dopasuj do wysokości</button>

@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { LIMIT_CZEKANIA_MIN, czekaj, dopiszZgloszenie, niedostarczone, otwarteZgloszenia } from '../kolejka.mjs'
+import { LIMIT_CZEKANIA_MIN, czekaj, dopiszPrzeglad, dopiszZgloszenie, niedostarczone, otwarteZgloszenia, podsumowanie } from '../kolejka.mjs'
 import { punktyWizualne } from '../punkty.mjs'
 import { skrotSha1 } from '../zapis-linii.mjs'
 
@@ -65,7 +65,7 @@ test('czekaj kończy się zdarzeniem serwer-zatrzymany, gdy serwer przestał ży
   const { appendFileSync } = await import('node:fs')
   appendFileSync(join(stan, 'kolejka.jsonl'), '{niedokończony\n')
   dopiszZgloszenie(stan, { ...WPIS, opis: 'po uszkodzonej' })
-  assert.deepEqual(niedostarczone(stan).map((x) => x.opis), ['ucięty tytuł', 'po uszkodzonej'])
+  assert.deepEqual(niedostarczone(stan).map((x) => ('opis' in x ? x.opis : null)), ['ucięty tytuł', 'po uszkodzonej'])
 }))
 
 test('otwarte zgłoszenia liczone z checklisty (status błąd zgłoszony), nie z kolejki', () => {
@@ -90,3 +90,23 @@ test('po recenzji: konsument przerwany po pierwszym zdarzeniu dostaje je ponowni
   appendFileSync(join(stan, 'kolejka.jsonl'), `${JSON.stringify({ id: 'samo-id' })}\n${JSON.stringify({ id: 'bez-opisu', punkt: 'p-1', ekran: 'a', urzadzenie: 'u', czas: 'x' })}\n`)
   assert.deepEqual(niedostarczone(stan), [])
 }))
+
+test('P28 (4) wpis przeglądu: czekaj oddaje go raz jako przeglad-zakonczony bez pola typ; wpis typu przeglad bez listy zgłoszeń pominięty', () => zeStanem(async (stan) => {
+  const pod = { punkty: 3, otwarty: 1, zgodny: 1, odstepstwo: 0, blad: 1, poprawione: 0 }
+  const w = dopiszPrzeglad(stan, { smoke: 's.md', zgloszenia: [], podsumowanie: pod })
+  const { appendFileSync } = await import('node:fs')
+  appendFileSync(join(stan, 'kolejka.jsonl'), `${JSON.stringify({ id: 'zly', typ: 'przeglad', zgloszenia: 'nie-lista' })}\n`)
+  const z = await wszystkie(czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 }))
+  assert.deepEqual(z, [{ zdarzenie: 'przeglad-zakonczony', smoke: 's.md', zgloszenia: [], podsumowanie: pod, id: w.id, czas: w.czas }, { zdarzenie: 'limit' }])
+  assert.deepEqual(niedostarczone(stan), [])
+}))
+
+test('P28 (4) podsumowanie liczy punkty według statusu', () => {
+  const md = [
+    '- [ ] *(2026-10-20: błąd zgłoszony — u 390 px: x)* T: `/` obok `visual-diff/a-figma.png` (viewport 390×844) → ok',
+    '- [x] *(2026-10-20: zgodne)* T: `/c` obok `visual-diff/c-figma.png` (viewport 390×844) → ok',
+    '- [x] *(2026-10-20: inny odstęp — zatwierdzone)* T: `/d` obok `visual-diff/d-figma.png` (viewport 390×844) → ok',
+    '- [ ] T: `/e` obok `visual-diff/e-figma.png` (viewport 390×844) → ok',
+  ].join('\n')
+  assert.deepEqual(podsumowanie(punktyWizualne(md, skrotSha1)), { punkty: 4, otwarty: 1, zgodny: 1, odstepstwo: 1, blad: 1, poprawione: 0 })
+})

@@ -4,7 +4,10 @@
 // Zmiany sesji (SSE `punkty`) odswiezaja liste z zachowaniem biezacego ekranu; `przeladuj` (po poprawce) przeladowuje ramki.
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
-import { przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { podepnijPanelSieci } from './panel-sieci.mjs'
+import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { liczebnik } from './teksty.mjs'
+import { podepnijRozdzielacz } from './uklad.mjs'
 
 const API = '/__makieta/api/'
 const KLUCZ_TOKENU = 'makieta.token'
@@ -16,9 +19,11 @@ const BRAK_SERWERA = 'Serwer narzędzia nie odpowiada — w sesji sprawdź „ma
 /**
  * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
  * @typedef {{ id: string, linia: number, tekst: string, tresc: string, status: keyof typeof STATUSY, ekrany: string[], trasa: string | null,
- *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean }} Punkt
+ *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean,
+ *   opis: { co: string, stany: string | null, sprawdz: string } | null }} Punkt
  * @typedef {{ punkt: string, ekran: string, makieta: string | null, url: string | null, spec: string | null, wymiary: { szerokosc: number, wysokosc: number } | null }} Ekran
- * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[] }} Dane
+ * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[],
+ *   zgloszenia: 'na-koniec' | 'od-razu' }} Dane
  */
 
 /**
@@ -52,8 +57,8 @@ if (tokenZLinku) {
 }
 const token = tokenZLinku ?? bezpiecznie(() => sessionStorage.getItem(KLUCZ_TOKENU)) ?? ''
 
-/** @type {{ dane: Dane | null, indeks: number, urzadzenia: Urzadzenie[], trasa: string, jedenDoJednego: boolean }} */
-const stan = { dane: null, indeks: Number(bezpiecznie(() => sessionStorage.getItem(KLUCZ_EKRANU)) ?? 0) || 0, urzadzenia: [], trasa: '/', jedenDoJednego: false }
+/** @type {{ dane: Dane | null, indeks: number, urzadzenia: Urzadzenie[], trasa: string, skala: import('./ramki.mjs').TrybSkali }} */
+const stan = { dane: null, indeks: Number(bezpiecznie(() => sessionStorage.getItem(KLUCZ_EKRANU)) ?? 0) || 0, urzadzenia: [], trasa: '/', skala: 'przewijaj' }
 
 /** @param {string} tekst */
 const komunikat = (tekst) => { el('komunikat', HTMLParagraphElement).textContent = tekst }
@@ -79,10 +84,10 @@ function biezacy() {
 /** @param {{ ekran: Ekran, punkt: Punkt }} b @returns {Urzadzenie[]} */
 const urzadzeniaEkranu = (b) => zapisanyWybor() ?? domyslneUrzadzenia(b.ekran.wymiary, b.punkt.tresc)
 
-const skaluj = () => skalujRamki(el('ramki', HTMLDivElement), stan.urzadzenia, { jedenDoJednego: stan.jedenDoJednego })
+const skaluj = () => skalujRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.skala)
 
 function rysujRamki() {
-  ustawRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.trasa, { jedenDoJednego: stan.jedenDoJednego })
+  ustawRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.trasa, stan.skala)
   el('adres', HTMLInputElement).value = stan.trasa
   const wybor = el('urzadzenie-bledu', HTMLSelectElement)
   wybor.replaceChildren(...stan.urzadzenia.map((u) => new Option(`${u.nazwa} (${u.szerokosc} px)`, u.id)))
@@ -104,6 +109,28 @@ function rysujRamki() {
   }))
 }
 
+/**
+ * Opis punktu dla operatora (Sprawdź / Stany / Gdzie); pelna linia checklisty tylko na zadanie. Punkt spoza formatu (opis null)
+ * pokazuje od razu cala linie.
+ * @param {Punkt} punkt
+ */
+function ustawOpis(punkt) {
+  const tresc = el('tresc', HTMLParagraphElement)
+  const przelacznik = el('cala-tresc', HTMLButtonElement)
+  const { opis } = punkt
+  el('opis', HTMLElement).hidden = !opis
+  el('opis-sprawdz', HTMLElement).textContent = opis?.sprawdz ?? ''
+  el('opis-stany', HTMLElement).textContent = opis?.stany ?? ''
+  el('opis-stany-wiersz', HTMLDivElement).hidden = !opis?.stany
+  el('opis-co', HTMLElement).textContent = opis?.co ?? ''
+  if (tresc.textContent === punkt.tresc) return
+  tresc.textContent = punkt.tresc
+  tresc.hidden = Boolean(opis)
+  przelacznik.hidden = !opis
+  przelacznik.setAttribute('aria-expanded', 'false')
+  przelacznik.textContent = 'Pokaż całą linię'
+}
+
 /** @param {{ zmienTrase?: boolean }} [opcje] zmienTrase: ramki od nowa na trasie punktu (zmiana ekranu) */
 function rysujEkran({ zmienTrase = true } = {}) {
   const dane = stan.dane
@@ -119,7 +146,7 @@ function rysujEkran({ zmienTrase = true } = {}) {
   status.className = `status status--${punkt.status}`
   el('ekran', HTMLSpanElement).textContent = ekran.ekran
   el('trasa', HTMLElement).textContent = punkt.trasa ?? '/ (punkt bez trasy)'
-  el('tresc', HTMLParagraphElement).textContent = punkt.tresc
+  ustawOpis(punkt)
   el('decyzje', HTMLDivElement).hidden = punkt.niejednoznaczny
   el('niejednoznaczny', HTMLParagraphElement).hidden = !punkt.niejednoznaczny
   const podpowiedz = el('podpowiedz-trasy', HTMLParagraphElement)
@@ -149,10 +176,12 @@ async function wczytaj(opcje) {
   const zachowany = poprzedni ? dane.ekrany.findIndex((e) => e.punkt === poprzedni.ekran.punkt && e.ekran === poprzedni.ekran.ekran) : -1
   stan.indeks = Math.min(Math.max(zachowany === -1 ? stan.indeks : zachowany, 0), Math.max(dane.ekrany.length - 1, 0))
   el('smoke', HTMLSpanElement).textContent = dane.smoke
-  const uwagi = el('uwagi', HTMLParagraphElement)
   const teksty = [...dane.ostrzezenia, ...(dane.pominiete.length ? [`Ekrany SPEC bez punktu w checkliście: ${dane.pominiete.join(', ')} — dopisz punkt, żeby ocenić je tutaj.`] : [])]
-  uwagi.hidden = !teksty.length
-  uwagi.textContent = teksty.join(' ')
+  el('uwagi-naglowek', HTMLElement).textContent = teksty.length ? `Uwagi narzędzia (${teksty.length})` : 'Checklista'
+  el('uwagi-tresc', HTMLParagraphElement).textContent = teksty.join(' ')
+  const naKoniec = dane.zgloszenia === 'na-koniec'
+  el('zakoncz', HTMLButtonElement).hidden = !naKoniec
+  el('wyslij-blad', HTMLButtonElement).textContent = naKoniec ? 'Zapisz zgłoszenie' : 'Wyślij do sesji'
   rysujEkran(opcje)
 }
 
@@ -169,6 +198,27 @@ function przejdz(krok) {
 function ukryjFormularze() {
   el('form-odstepstwo', HTMLFormElement).hidden = true
   el('form-blad', HTMLFormElement).hidden = true
+  el('form-koniec', HTMLFormElement).hidden = true
+}
+
+/** @param {Punkt[]} punkty @returns {string} stan przegladu przed wyslaniem zgloszen do sesji */
+function tekstPodsumowania(punkty) {
+  const ile = (/** @type {Punkt['status']} */ s) => punkty.filter((p) => p.status === s).length
+  const otwarte = ile('otwarty') + ile('poprawione')
+  return `Zgodne: ${ile('zgodny')}, odstępstwa: ${ile('odstepstwo')}, zgłoszone błędy: ${ile('blad')}, bez decyzji: ${otwarte}.`
+    + (otwarte ? ' Punkty bez decyzji zostaną w checkliście — możesz do nich wrócić później.' : '')
+    + ' Sesja dostanie wszystkie zgłoszenia naraz i przygotuje z Tobą dokument ustaleń.'
+}
+
+async function zakonczPrzeglad() {
+  const wyslij = document.querySelector('#form-koniec button[type="submit"]')
+  if (!(wyslij instanceof HTMLButtonElement) || wyslij.disabled) return
+  // Drugie klikniecie w trakcie wysylania dalo sesji drugie zdarzenie konca przegladu z tymi samymi zgloszeniami.
+  wyslij.disabled = true
+  const { status, json } = await api('zakoncz', { method: 'POST' }).finally(() => { wyslij.disabled = false })
+  if (status !== 200) return komunikat(json?.error?.message ?? `Wysłanie nie powiodło się (${status}).`)
+  ukryjFormularze()
+  komunikat(`Wysłane do sesji: ${liczebnik(json.data.zgloszenia, ['zgłoszenie', 'zgłoszenia', 'zgłoszeń'])}. Wróć do sesji smoke'u — tam ustalicie, co poprawić.`)
 }
 
 /**
@@ -196,7 +246,8 @@ async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
     }
     ukryjFormularze()
     await wczytaj({ zmienTrase: false })
-    komunikat(json?.data?.ostrzezenie ?? (decyzja === 'blad' ? 'Zgłoszenie zapisane w checkliście i wysłane do sesji smoke\'u.' : 'Zapisane w checkliście.'))
+    const poBledzie = stan.dane?.zgloszenia === 'na-koniec' ? 'Zgłoszenie zapisane w checkliście — trafi do sesji po „Zakończ przegląd”.' : 'Zgłoszenie zapisane w checkliście i wysłane do sesji smoke\'u.'
+    komunikat(json?.data?.ostrzezenie ?? (decyzja === 'blad' ? poBledzie : 'Zapisane w checkliście.'))
     return true
   } finally {
     for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = false
@@ -208,6 +259,8 @@ function podepnij() {
   el('nastepny', HTMLButtonElement).addEventListener('click', () => przejdz(1))
   document.addEventListener('keydown', (z) => {
     if (z.target instanceof HTMLInputElement || z.target instanceof HTMLTextAreaElement || z.target instanceof HTMLSelectElement) return
+    // Strzalki na rozdzielaczu zmieniaja szerokosc kolumn, nie ekran.
+    if (z.target instanceof HTMLElement && z.target.getAttribute('role') === 'separator') return
     if (z.key === 'ArrowLeft') przejdz(-1)
     if (z.key === 'ArrowRight') przejdz(1)
   })
@@ -215,6 +268,19 @@ function podepnij() {
   el('odstepstwo', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-odstepstwo', HTMLFormElement).hidden = false; el('notatka-odstepstwa', HTMLTextAreaElement).focus() })
   el('blad', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-blad', HTMLFormElement).hidden = false; el('opis-bledu', HTMLTextAreaElement).focus() })
   for (const anuluj of document.querySelectorAll('.anuluj')) anuluj.addEventListener('click', ukryjFormularze)
+  el('cala-tresc', HTMLButtonElement).addEventListener('click', (z) => {
+    const tresc = el('tresc', HTMLParagraphElement)
+    tresc.hidden = !tresc.hidden
+    if (!(z.currentTarget instanceof HTMLButtonElement)) return
+    z.currentTarget.setAttribute('aria-expanded', String(!tresc.hidden))
+    z.currentTarget.textContent = tresc.hidden ? 'Pokaż całą linię' : 'Ukryj linię'
+  })
+  el('zakoncz', HTMLButtonElement).addEventListener('click', () => {
+    ukryjFormularze()
+    el('podsumowanie', HTMLParagraphElement).textContent = tekstPodsumowania(stan.dane?.punkty ?? [])
+    el('form-koniec', HTMLFormElement).hidden = false
+  })
+  el('form-koniec', HTMLFormElement).addEventListener('submit', (z) => { z.preventDefault(); void zakonczPrzeglad() })
   el('form-odstepstwo', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const notatka = el('notatka-odstepstwa', HTMLTextAreaElement).value.trim()
@@ -238,11 +304,23 @@ function podepnij() {
   })
   el('przeladuj', HTMLButtonElement).addEventListener('click', () => przeladujRamki(el('ramki', HTMLDivElement), stan.trasa))
   el('w-karcie', HTMLButtonElement).addEventListener('click', () => window.open(stan.trasa, '_blank', 'noopener'))
-  el('skala', HTMLButtonElement).addEventListener('click', (z) => {
-    stan.jedenDoJednego = !stan.jedenDoJednego
-    if (z.currentTarget instanceof HTMLButtonElement) z.currentTarget.setAttribute('aria-pressed', String(stan.jedenDoJednego))
-    skaluj()
-  })
+  const przyciskiSkali = [...document.querySelectorAll('[data-skala]')].filter((p) => p instanceof HTMLButtonElement)
+  for (const przycisk of przyciskiSkali) {
+    przycisk.addEventListener('click', () => {
+      const tryb = przycisk.dataset.skala
+      if (tryb !== 'przewijaj' && tryb !== 'wszystkie' && tryb !== '1:1') return
+      stan.skala = tryb
+      for (const p of przyciskiSkali) p.setAttribute('aria-pressed', String(p === przycisk))
+      skaluj()
+    })
+  }
+  przeciaganieRzedu(el('ramki', HTMLDivElement))
+  podepnijPanelSieci({ panel: el('siec', HTMLDetailsElement), naglowek: el('siec-naglowek', HTMLElement), opoznienie: el('opoznienie', HTMLSelectElement),
+    blokady: el('blokady', HTMLTextAreaElement), formularz: el('form-siec', HTMLFormElement), stan: el('siec-stan', HTMLParagraphElement), ramki: el('ramki', HTMLDivElement) })
+  let klatka = 0
+  // Zmiana udzialu przy przeciaganiu przychodzi co ruch wskaznika — skala ramek raz na klatke.
+  podepnijRozdzielacz({ uklad: document.querySelector('.uklad') ?? document.body, rozdzielacz: el('rozdzielacz', HTMLDivElement),
+    poZmianie: () => { cancelAnimationFrame(klatka); klatka = requestAnimationFrame(skaluj) } })
   el('dopasuj', HTMLButtonElement).addEventListener('click', (z) => {
     const wlaczone = document.querySelector('.makieta')?.classList.toggle('makieta--dopasuj') ?? false
     if (z.currentTarget instanceof HTMLButtonElement) z.currentTarget.setAttribute('aria-pressed', String(wlaczone))

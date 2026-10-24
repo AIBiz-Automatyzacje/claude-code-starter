@@ -27,8 +27,8 @@ const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3])
 /** @param {import('node:http').Server} s @returns {Promise<number>} */
 const nasluch = (s) => new Promise((ok) => s.listen(0, '127.0.0.1', () => ok(/** @type {import('node:net').AddressInfo} */ (s.address()).port)))
 
-/** @param {(k: Kontekst) => Promise<void>} cialo */
-async function zSerwerem(cialo) {
+/** @param {(k: Kontekst) => Promise<void>} cialo @param {{ zgloszenia?: 'na-koniec' | 'od-razu' }} [opcje] domyslnie od razu (testy P24) */
+async function zSerwerem(cialo, { zgloszenia = 'od-razu' } = {}) {
   const projekt = mkdtempSync(join(tmpdir(), 'makieta-serwer-'))
   const strona = join(projekt, 'strona-narzedzia')
   const pliki = {
@@ -52,7 +52,7 @@ async function zSerwerem(cialo) {
   const aplikacja = createServer((req, res) => { cel.push(`${req.method} ${req.url}`); res.end('aplikacja') })
   const portAplikacji = await nasluch(aplikacja)
   const stan = join(projekt, 'stan')
-  const s = utworzSerwer({ projekt, smoke: SMOKE, aplikacja: celLokalny(`http://localhost:${portAplikacji}`), token: TOKEN, katalogStanu: stan, katalogStrony: strona })
+  const s = utworzSerwer({ projekt, smoke: SMOKE, aplikacja: celLokalny(`http://localhost:${portAplikacji}`), token: TOKEN, katalogStanu: stan, katalogStrony: strona, zgloszenia })
   const port = await nasluch(s.serwer)
   try {
     await cialo({ port, projekt, stan, plik: join(projekt, SMOKE), cel, przeladuj: s.przeladuj })
@@ -311,3 +311,61 @@ test('po recenzji: zamknij() kończy się mimo otwartego WebSocketu przez proxy;
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+test('P28 (4) tryb na koniec: „błąd” zapisuje linię bez wpisu kolejki; „Zakończ przegląd” oddaje sesji wszystkie zgłoszenia naraz z podsumowaniem', () => zSerwerem(async ({ port, plik, stan }) => {
+  const punkty = await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })
+  assert.equal(punkty.json.data.zgloszenia, 'na-koniec')
+  for (const [nr, opis] of [[51, 'liczniki'], [52, 'odstęp']]) {
+    const p = punktLinii(plik, Number(nr))
+    const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: opis, urzadzenie: 'iphone-15', szerokosc: 393 } })
+    assert.equal(w.status, 200, w.tekst)
+    assert.equal(punktLinii(plik, Number(nr)).status, 'blad')
+  }
+  assert.deepEqual(await (async () => { const z = []; for await (const x of czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 })) z.push(x); return z })(), [{ zdarzenie: 'limit' }], 'przed końcem przeglądu sesja nic nie dostaje')
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/zakoncz' })).status, 403)
+  const koniec = await zapytaj(port, { method: 'POST', path: '/__makieta/api/zakoncz', headers: zTokenem })
+  assert.equal(koniec.status, 200, koniec.tekst)
+  assert.equal(koniec.json.data.zgloszenia, 2)
+  const zdarzenia = []
+  for await (const z of czekaj({ katalogStanu: stan, limitMs: 100, odstepMs: 20 })) zdarzenia.push(z)
+  assert.deepEqual(zdarzenia.map((z) => z.zdarzenie), ['przeglad-zakonczony', 'limit'])
+  const [przeglad] = zdarzenia
+  assert.ok(przeglad.zdarzenie === 'przeglad-zakonczony')
+  assert.deepEqual(przeglad.zgloszenia.map((z) => [z.linia, (z.zgloszenie ?? '').replace(/^\d{4}-\d{2}-\d{2}: /, '')]), [[51, 'błąd zgłoszony — iphone-15 393 px: liczniki'], [52, 'błąd zgłoszony — iphone-15 393 px: odstęp']])
+  assert.equal(przeglad.zgloszenia[0].ekrany[0].ekran, 'moje-projekty-telefon')
+  assert.equal(przeglad.podsumowanie.blad, 2)
+  assert.equal(przeglad.podsumowanie.punkty, 24)
+  assert.equal(przeglad.smoke, SMOKE)
+}, { zgloszenia: 'na-koniec' }))
+
+test('P28 (4) tryb od razu: api/zakoncz = 409 (zgłoszenia poszły już do sesji), api/punkty podaje tryb', () => zSerwerem(async ({ port }) => {
+  assert.equal((await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })).json.data.zgloszenia, 'od-razu')
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/zakoncz', headers: zTokenem })
+  assert.deepEqual([w.status, w.json.error.code], [409, 'tryb'])
+}))
+
+test('P28 (4) domyślny tryb serwera to „na koniec”', async () => {
+  const projekt = mkdtempSync(join(tmpdir(), 'makieta-tryb-'))
+  try {
+    mkdirSync(join(projekt, 'docs/operator'), { recursive: true })
+    copyFileSync(join(KATALOG, 'fixtures', 'vibersi-etap-4-smoke.md'), join(projekt, SMOKE))
+    mkdirSync(join(projekt, `docs/completed/${ZADANIE}`), { recursive: true })
+    writeFileSync(join(projekt, `docs/completed/${ZADANIE}/${ZADANIE}-plan.md`), 'x\n')
+    const s = utworzSerwer({ projekt, smoke: SMOKE, aplikacja: celLokalny('http://localhost:5999'), token: TOKEN, katalogStanu: join(projekt, 'stan') })
+    const port = await nasluch(s.serwer)
+    try {
+      assert.equal((await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })).json.data.zgloszenia, 'na-koniec')
+    } finally {
+      await s.zamknij()
+    }
+  } finally {
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
+test('po recenzji P28: kolejka niezapisywalna przy końcu przeglądu = 503 z drogą awaryjną („zgłoszenia” w sesji)', () => zSerwerem(async ({ port, stan }) => {
+  mkdirSync(join(stan, 'kolejka.jsonl'), { recursive: true })
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/zakoncz', headers: zTokenem })
+  assert.deepEqual([w.status, w.json.error.code], [503, 'kolejka'])
+  assert.match(w.json.error.message, /napisz w sesji „zgłoszenia”/)
+}, { zgloszenia: 'na-koniec' }))

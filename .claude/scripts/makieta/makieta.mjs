@@ -4,9 +4,10 @@
 // przez `czekaj` w Monitorze (jedna linia JSON = jedno zdarzenie). Stan procesu i kolejki poza repo (proces.mjs).
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
-//   makieta.mjs start --smoke <plik> [--aplikacja <url>] [--port <n>]   serwer w tle, wynik z linkiem dla operatora
+//   makieta.mjs start --smoke <plik> [--aplikacja <url>] [--port <n>] [--zgloszenia na-koniec|od-razu]
+//                                               serwer w tle, wynik z linkiem dla operatora; zgloszenia domyslnie na koniec przegladu
 //   makieta.mjs stop | stan
-//   makieta.mjs czekaj [--limit-min N]          zdarzenia zgloszen do limitu (N <= 25, domyslnie 25), na koncu `limit`
+//   makieta.mjs czekaj [--limit-min N]          zdarzenia zgloszen i konca przegladu do limitu (N <= 25, domyslnie 25), na koncu `limit`
 //   makieta.mjs zgloszenia [--smoke <plik>]     otwarte zgloszenia z checklisty (droga awaryjna)
 //   makieta.mjs poprawione --punkt <id> --commit <sha> [--smoke <plik>]   adnotacja „poprawione”, przeladowanie ramek
 //   makieta.mjs sprawdz --smoke <plik>          kontrola formatu punktow wizualnych (dev-docs-complete)
@@ -21,7 +22,8 @@ import { isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
-import { LIMIT_CZEKANIA_MIN, czekaj, otwarteZgloszenia } from './kolejka.mjs'
+import { hostyDoDopisania } from './hosty.mjs'
+import { LIMIT_CZEKANIA_MIN, czekaj, opisOtwartych } from './kolejka.mjs'
 import { DOMYSLNA_APLIKACJA, DOMYSLNY_PORT, czasStartu, czekajNaOdpowiedz, katalogStanu, odpowiada, procesNaPorcie, zapisSerwera, zapiszSerwer, zatrzymaj, zyjeNasz } from './proces.mjs'
 import { BladProxy, PREFIKS_NARZEDZIA, celLokalny } from './proxy.mjs'
 import { punktyWizualne, sprawdzFormat } from './punkty.mjs'
@@ -36,12 +38,13 @@ const LIMIT_STARTU_MS = 10_000
 const LIMIT_APLIKACJI_MS = 60_000
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, smoke: { type: 'string' }, aplikacja: { type: 'string' }, port: { type: 'string' },
-  'limit-min': { type: 'string' }, punkt: { type: 'string' }, commit: { type: 'string' },
+  'limit-min': { type: 'string' }, punkt: { type: 'string' }, commit: { type: 'string' }, zgloszenia: { type: 'string' },
 })
+const TRYBY_ZGLOSZEN = /** @type {const} */ (['na-koniec', 'od-razu'])
 
 class BladArgumentow extends Error {}
 
-/** @typedef {{ projekt?: string, smoke?: string, aplikacja?: string, port?: string, 'limit-min'?: string, punkt?: string, commit?: string }} Opcje */
+/** @typedef {{ projekt?: string, smoke?: string, aplikacja?: string, port?: string, 'limit-min'?: string, punkt?: string, commit?: string, zgloszenia?: string }} Opcje */
 
 /**
  * Wynik polecenia i koniec procesu po oproznieniu stdout (na macOS zapis do potoku jest asynchroniczny — exit zaraz po write
@@ -70,6 +73,13 @@ function port(v) {
   return n
 }
 
+/** @param {string | undefined} v @returns {import('./serwer.mjs').TrybZgloszen} */
+function trybZgloszen(v) {
+  const tryb = TRYBY_ZGLOSZEN.find((t) => t === (v ?? TRYBY_ZGLOSZEN[0]))
+  if (!tryb) throw new BladArgumentow(`--zgloszenia ${v}: ${TRYBY_ZGLOSZEN.join(' albo ')}`)
+  return tryb
+}
+
 /** @param {string} projekt @param {Opcje} o @returns {string} smoke z --smoke albo z biezacej instancji */
 function smokeInstancji(projekt, o) {
   const z = zapisSerwera(katalogStanu(projekt))
@@ -94,6 +104,7 @@ async function start(projekt, o) {
   const smoke = wymagane(o.smoke, 'smoke')
   const aplikacja = celLokalny(o.aplikacja ?? DOMYSLNA_APLIKACJA)
   const p = port(o.port)
+  const zgloszenia = trybZgloszen(o.zgloszenia)
   // Cel na porcie narzedzia to proxy do samego siebie — kazde zadanie zagniezdzaloby sie do wyczerpania deskryptorow.
   if (Number(aplikacja.port || 80) === p) throw new BladArgumentow(`--aplikacja ${aplikacja.origin} wskazuje port narzędzia ${p} — podaj adres aplikacji (domyślnie ${DOMYSLNA_APLIKACJA})`)
   const { punkty, zrodla } = stanSmoke(projekt, smoke)
@@ -111,7 +122,7 @@ async function start(projekt, o) {
   // a otwarte zgloszenia zwraca `zgloszenia`.
   for (const f of ['kolejka.jsonl', 'dostarczone.jsonl']) rmSync(join(stan, f), { force: true })
   const log = openSync(join(stan, 'serwer.log'), 'w')
-  const dziecko = spawn(process.execPath, [fileURLToPath(import.meta.url), 'serwer', '--projekt', projekt, '--smoke', smoke, '--aplikacja', aplikacja.origin, '--port', String(p)], {
+  const dziecko = spawn(process.execPath, [fileURLToPath(import.meta.url), 'serwer', '--projekt', projekt, '--smoke', smoke, '--aplikacja', aplikacja.origin, '--port', String(p), '--zgloszenia', zgloszenia], {
     detached: true, stdio: ['ignore', log, log], env: { ...process.env, MAKIETA_TOKEN: token },
   })
   closeSync(log)
@@ -131,7 +142,8 @@ async function start(projekt, o) {
   return wynik({
     link: `http://127.0.0.1:${p}${PREFIKS_NARZEDZIA}?t=${token}`, punkty: punkty.length, ekrany: zrodla.ekrany.length,
     bezMakiety: [...new Set(zrodla.ekrany.filter((e) => !e.makieta).map((e) => e.ekran))], pominiete: zrodla.pominiete, ostrzezenia: zrodla.ostrzezenia,
-    aplikacja: aplikacja.origin, aplikacjaOdpowiada: await odpowiada(`${aplikacja.origin}/`), pid: dziecko.pid,
+    hosty: hostyDoDopisania(projekt, p),
+    aplikacja: aplikacja.origin, aplikacjaOdpowiada: await odpowiada(`${aplikacja.origin}/`), zgloszenia, pid: dziecko.pid,
   })
 }
 
@@ -139,7 +151,7 @@ async function start(projekt, o) {
 async function serwer(projekt, o) {
   const token = wymagane(process.env.MAKIETA_TOKEN, 'MAKIETA_TOKEN w środowisku')
   const s = utworzSerwer({ projekt, smoke: wymagane(o.smoke, 'smoke'), aplikacja: celLokalny(wymagane(o.aplikacja, 'aplikacja')), token,
-    katalogStanu: katalogStanu(projekt), log: (l) => process.stdout.write(`${new Date().toISOString()} ${l}\n`) })
+    katalogStanu: katalogStanu(projekt), zgloszenia: trybZgloszen(o.zgloszenia), log: (l) => process.stdout.write(`${new Date().toISOString()} ${l}\n`) })
   s.serwer.on('error', (b) => {
     process.stdout.write(`${new Date().toISOString()} serwer: ${b.message}\n`, () => process.exit(1))
   })
@@ -173,10 +185,7 @@ async function czekajNaZgloszenia(projekt, o) {
 /** @param {string} projekt @param {Opcje} o */
 function zgloszenia(projekt, o) {
   const { punkty, zrodla } = stanSmoke(projekt, smokeInstancji(projekt, o))
-  return wynik({ zgloszenia: otwarteZgloszenia(punkty).map((p) => ({
-    punkt: p.id, linia: p.linia, zgloszenie: p.adnotacje[0], tresc: p.tresc, trasa: p.trasa,
-    ekrany: zrodla.ekrany.filter((e) => e.punkt === p.id).map(({ ekran, spec, makieta, wymiary }) => ({ ekran, spec, makieta, wymiary })),
-  })) })
+  return wynik({ zgloszenia: opisOtwartych(punkty, zrodla) })
 }
 
 /** @param {string} projekt @param {Opcje} o */
@@ -240,7 +249,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
   } catch (blad) {
     const komunikat = blad instanceof Error ? blad.message : String(blad)
     if (blad instanceof BladArgumentow || blad instanceof BladProxy || (blad instanceof TypeError && 'code' in blad && String(blad.code).startsWith('ERR_PARSE_ARGS'))) {
-      process.stderr.write(`makieta: ${komunikat}\nUzycie: makieta.mjs start --smoke <plik> [--aplikacja <url>] [--port <n>] | stop | stan | czekaj [--limit-min N] | zgloszenia | poprawione --punkt <id> --commit <sha> | sprawdz --smoke <plik>\n`)
+      process.stderr.write(`makieta: ${komunikat}\nUzycie: makieta.mjs start --smoke <plik> [--aplikacja <url>] [--port <n>] [--zgloszenia na-koniec|od-razu] | stop | stan | czekaj [--limit-min N] | zgloszenia | poprawione --punkt <id> --commit <sha> | sprawdz --smoke <plik>\n`)
       process.exit(KOD_ZLYCH_ARGUMENTOW)
     }
     if (blad instanceof BladZrodel || blad instanceof BladZapisu) await wynik({ blad: komunikat, kod: blad.kod }, KOD_PROBLEMU)

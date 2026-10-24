@@ -1,6 +1,6 @@
 ---
 name: makieta
-description: "Narzędzie „makieta obok aplikacji” w smoke'u operatora: aplikacja w ramkach kilku urządzeń obok makiety bieżącego ekranu, decyzje operatora zapisywane do linii checklisty, zgłoszenia błędów dostarczane do sesji smoke'u. Używaj, gdy operator mówi „odpalamy narzędzie makiet”, „makieta obok aplikacji”, „przejdźmy punkty wizualne”, wpisuje /makieta albo smoke ma punkty z `visual-diff/<ekran>-figma.png`."
+description: "Narzędzie „makieta obok aplikacji” w smoke'u operatora: aplikacja w ramkach kilku urządzeń obok makiety bieżącego ekranu, decyzje operatora zapisywane do linii checklisty, zgłoszenia błędów dostarczane do sesji smoke'u na koniec przeglądu i dokument ustaleń z operatorem. Używaj, gdy operator mówi „odpalamy narzędzie makiet”, „makieta obok aplikacji”, „przejdźmy punkty wizualne”, wpisuje /makieta albo smoke ma punkty z `visual-diff/<ekran>-figma.png`."
 argument-hint: "[plik smoke'u] | stop | stan"
 ---
 
@@ -8,7 +8,9 @@ argument-hint: "[plik smoke'u] | stop | stan"
 
 Operator przechodzi punkty wizualne smoke'u w jednym widoku: po lewej aplikacja w ramkach kilku urządzeń, po prawej makieta
 ekranu 1:1. Decyzje „Zgodne” i „Odstępstwo OK” narzędzie zapisuje samo do linii punktu w checkliście. „Zgłoś błąd” zapisuje
-zgłoszenie w linii punktu i przekazuje je tej sesji — sesja naprawia usterkę z testem i daje znać narzędziu, że jest poprawka.
+zgłoszenie w linii punktu, a „Zakończ przegląd” przekazuje tej sesji wszystkie zgłoszenia naraz: sesja przygotowuje z operatorem
+dokument ustaleń, potem naprawia uzgodnione usterki z testem i daje znać narzędziu, że jest poprawka. Operator przechodzi
+wszystkie ekrany bez przerw na naprawy w połowie przeglądu.
 Serwer narzędzia działa w tle na `http://127.0.0.1:5180` i jest zarazem proxy do aplikacji; klucz API nie jest potrzebny.
 
 ## Start
@@ -20,18 +22,24 @@ Serwer narzędzia działa w tle na `http://127.0.0.1:5180` i jest zarazem proxy 
    ```
    node .claude/scripts/makieta/makieta.mjs start --smoke <plik> --aplikacja <adres>
    ```
+   Zgłoszenia idą do sesji na koniec przeglądu (domyślne `--zgloszenia na-koniec`). `--zgloszenia od-razu` — każde
+   zgłoszenie od razu, tylko gdy operator o to prosi (np. jeden ekran do poprawki).
    Wynik to JSON. Operatorowi podaj `link` (jedyne miejsce z tokenem narzędzia), liczbę punktów i ekranów, `bezMakiety`,
-   `pominiete` (ekrany SPEC bez punktu w checkliście) i `ostrzezenia`. `aplikacjaOdpowiada: false` — poproś operatora
+   `pominiete` (ekrany SPEC bez punktu w checkliście), `ostrzezenia` i `hosty` — usługi, w których operator dopisuje adres
+   narzędzia przed logowaniem w ramkach (Redirect URLs Supabase, hosty widgetu Cloudflare Turnstile). `aplikacjaOdpowiada: false` — poproś operatora
    o uruchomienie aplikacji; ramki pokażą stronę „Aplikacja nie odpowiada”, dopóki nie wstanie.
    - Kod 1 z polem `blad`: port zajęty przez inny proces, brak katalogu zadania, nazwa pliku spoza
      `<data>-<zadanie>-smoke.md` albo smoke poza projektem — przekaż operatorowi treść błędu.
    - Kod 2: złe argumenty (komunikat na stderr), np. adres aplikacji spoza localhost.
    - Kod 3: serwer nie wystartował albo wyjątek — przekaż operatorowi `blad` / `wyjatek` ze ścieżką logu serwera.
 4. Logowanie: hasłem w dowolnej ramce — jedna sesja obejmuje wszystkie ramki (wspólny origin). Dostawca OAuth: przycisk
-   „Otwórz w karcie”, logowanie w karcie, potem „Przeładuj ramki”. OAuth wymaga wpisu `http://127.0.0.1:5180/**`
-   w Redirect URLs projektu Supabase dev; bez wpisu działa logowanie hasłem. Po zmianie konta: „Przeładuj ramki”.
+   „Otwórz w karcie”, logowanie w karcie, potem „Przeładuj ramki” — kliknięty w ramce dostawca daje „zawartość
+   zablokowana”, bo jego strona nie daje się osadzić. OAuth wymaga wpisu `http://127.0.0.1:5180/**` w Redirect URLs
+   projektu Supabase dev; bez wpisu działa logowanie hasłem. Captcha Cloudflare Turnstile wymaga `127.0.0.1` w hostach
+   widgetu. Po zmianie konta: „Przeładuj ramki”.
 5. Zaraz po starcie uruchom `Monitor` z sekcji „Zgłoszenia z narzędzia” (narzędzie odroczone — najpierw ToolSearch
-   `select:Monitor`). Powiedz operatorowi: „Gdy zgłoszenie nie dostanie odpowiedzi w minutę, napisz: zgłoszenia”.
+   `select:Monitor`). Powiedz operatorowi: „Zgłoszenia zbieram do końca przeglądu — po ostatnim ekranie kliknij »Zakończ
+   przegląd«; gdy w minutę nie odpowiem, napisz: zgłoszenia”.
 
 ## Zgłoszenia z narzędzia
 
@@ -45,8 +53,12 @@ Monitor({command: "node .claude/scripts/makieta/makieta.mjs czekaj --limit-min 2
 `--limit-min` wynosi najwyżej 25, bo `Monitor` żyje najwyżej 30 minut. Zdarzenie `limit` = uruchom `Monitor` jeszcze raz
 z tą samą komendą. `serwer-zatrzymany` = narzędzie nie działa; zapytaj operatora, czy uruchomić je od nowa (`start`).
 
-Zdarzenie `zgloszenie` ma pola `punkt`, `ekran`, `trasa`, `viewport`, `urzadzenie`, `szerokosc`, `opis`, `spec`, `makieta`.
-Obsługa jednego zgłoszenia:
+Zdarzenie `przeglad-zakonczony` (tryb „na koniec”) ma pola `smoke`, `podsumowanie` (liczba punktów według statusu)
+i `zgloszenia` — lista jak w wyniku `makieta.mjs zgloszenia` (`punkt`, `linia`, `zgloszenie`, `tresc`, `trasa`, `ekrany[]`
+ze `spec`, `makieta`, `wymiary`). Obsługa w sekcji „Koniec przeglądu”.
+
+Zdarzenie `zgloszenie` (tryb „od razu”) ma pola `punkt`, `ekran`, `trasa`, `viewport`, `urzadzenie`, `szerokosc`, `opis`,
+`spec`, `makieta`. Obsługa jednego zgłoszenia:
 
 1. Przeczytaj SPEC z pola `spec` (zwykle `ekrany/<ekran>.md`, bez niego cały SPEC.md; `null` — opis wyłącznie z treści
    punktu). PNG makiety z pola `makieta` podajesz tylko ścieżką i nie otwierasz obrazu — jeden zrzut w kontekście to
@@ -67,6 +79,25 @@ Obsługa jednego zgłoszenia:
    - kod 1, `konflikt: status` — punkt nie ma otwartego zgłoszenia (już poprawiony albo oceniony), nie ponawiaj;
    - kod 0 z `przeladowano: false` — linia zapisana, poproś operatora o „Przeładuj ramki”.
 
+## Koniec przeglądu
+
+Po zdarzeniu `przeglad-zakonczony` (albo po „zgłoszenia” operatora na końcu przeglądu) przygotuj z operatorem dokument
+ustaleń, zanim zmienisz kod:
+
+1. Dla każdego zgłoszenia przeczytaj SPEC ekranu i odtwórz stan w aplikacji jak w krokach 1–2 obsługi zgłoszenia, bez
+   poprawiania. Zgłoszenie bez usterki w kodzie (aplikacja zgodna z makietą, a operator chce innego układu) to zmiana
+   decyzji, nie błąd.
+2. Zapisz `docs/operator/<data>-<zadanie>-makiety-ustalenia.md` (data i zadanie z nazwy smoke'u): podsumowanie z pola
+   `podsumowanie`, potem tabela — nr, ekran, urządzenie i szerokość, opis operatora, co mówi SPEC, przyczyna w kodzie
+   (`plik:linia`), propozycja (poprawka / zmiana decyzji z nowym układem / odstępstwo), pusta kolumna „Decyzja”.
+3. Pokaż operatorowi tabelę i zbierz decyzję dla każdego wiersza; wpisz je do dokumentu.
+4. Poprawki zrób jedna po drugiej, każda z testem i commitem, potem `poprawione` dla jej punktu. Odstępstwo zaznacza operator
+   w narzędziu („Odstępstwo OK”). Dokument commitujesz razem ze smoke'iem.
+5. Operator sprawdza w narzędziu tylko punkty ze statusem „poprawione, do sprawdzenia”.
+
+Kolejne `przeglad-zakonczony` (operator dokończył punkty bez decyzji albo kliknął „Zakończ przegląd” jeszcze raz) aktualizuje
+ten sam dokument ustaleń: dopisujesz nowe zgłoszenia, wiersze już rozstrzygnięte zostają.
+
 Linii punktów wizualnych sesja nie odhacza i nie zmienia ich treści — zmieniają je decyzje w narzędziu i `poprawione`
 (identyfikator punktu to skrót treści linii). Pozostałe punkty smoke'u sesja odhacza narzędziem Edit, punkt po punkcie.
 
@@ -79,7 +110,8 @@ node .claude/scripts/makieta/makieta.mjs zgloszenia --smoke <plik>
 ```
 
 Wynik to otwarte zgłoszenia z checklisty (status „błąd zgłoszony”): `punkt`, `linia`, `zgloszenie` (adnotacja z urządzeniem,
-szerokością i opisem), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary` — obsłuż je jak wyżej.
+szerokością i opisem), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary`. W trybie „na koniec” po przeglądzie
+obsłuż je jak w sekcji „Koniec przeglądu” (dokument ustaleń), w trybie „od razu” — każde jak pojedyncze zgłoszenie.
 Po `/clear` narzędzie nie działa: `start` od nowa (nowy link), `Monitor`, potem `zgloszenia`.
 
 ## Stan i zatrzymanie

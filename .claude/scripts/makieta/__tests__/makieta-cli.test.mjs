@@ -102,9 +102,9 @@ function stanDziecka(projekt, tmp) {
   }
 }
 
-/** @param {Kontekst} k @returns {Promise<any>} wynik startu (link, pid, punkty, bezMakiety…) */
-async function uruchom(k) {
-  const w = await k.cli(['start', '--smoke', SMOKE, '--aplikacja', `http://127.0.0.1:${k.portAplikacji}`, '--port', String(k.port)])
+/** @param {Kontekst} k @param {string[]} [dodatkowe] @returns {Promise<any>} wynik startu (link, pid, punkty, bezMakiety…) */
+async function uruchom(k, dodatkowe = []) {
+  const w = await k.cli(['start', '--smoke', SMOKE, '--aplikacja', `http://127.0.0.1:${k.portAplikacji}`, '--port', String(k.port), ...dodatkowe])
   assert.equal(w.status, 0, w.stdout + w.stderr)
   return w.json
 }
@@ -171,7 +171,7 @@ test('serwer.json z PID 1 albo z PID innego procesu (inny czas startu) — stop 
 
 test('czekaj z krótkim limitem wypisuje zgłoszenie złożone przez API, potem limit; drugi czekaj go nie powtarza; bez serwera = serwer-zatrzymany', () => zProjektem(async (k) => {
   assert.deepEqual((await k.cli(['czekaj', '--limit-min', '0.02'])).json, { zdarzenie: 'serwer-zatrzymany' })
-  const token = new URL((await uruchom(k)).link).searchParams.get('t') ?? ''
+  const token = new URL((await uruchom(k, ['--zgloszenia', 'od-razu'])).link).searchParams.get('t') ?? ''
   const p = punktyWizualne(readFileSync(join(k.projekt, SMOKE), 'utf8'), skrotSha1).find((x) => x.linia === 51)
   assert.ok(p)
   const z = await api(k.port, 'api/decyzja', { method: 'POST', token, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'ucięte liczniki', urzadzenie: 'iphone-15', szerokosc: 393 } })
@@ -265,8 +265,24 @@ test('po recenzji: CLI przez ścieżkę ze spacją i polskimi znakami (dowiązan
   writeFileSync(join(stan, 'serwer.json'), '{uszkodzony')
   assert.equal((await k.cli(['stop'])).json.zatrzymany, false)
   assert.equal(existsSync(join(stan, 'serwer.json')), false, 'uszkodzony serwer.json usunięty')
-  for (const zle of [['start', '--smoke', SMOKE, '--port', '80'], ['start', '--smoke', SMOKE, '--port', '0x1450'], ['czekaj', '--limit-min', '0'], ['czekaj', '--limit-min', '0x1'], ['czekaj', '--foo'], ['czekaj', 'x']]) {
+  for (const zle of [['start', '--smoke', SMOKE, '--port', '80'], ['start', '--smoke', SMOKE, '--port', '0x1450'], ['czekaj', '--limit-min', '0'], ['czekaj', '--limit-min', '0x1'], ['czekaj', '--foo'], ['czekaj', 'x'], ['start', '--smoke', SMOKE, '--zgloszenia', 'zaraz']]) {
     assert.equal((await k.cli(zle)).status, 2, zle.join(' '))
   }
   assert.equal((await k.cli(['sprawdz', '--smoke', 'docs/operator/2026-10-20-brak-smoke.md'])).status, 1, 'brak pliku smoke\'u = problem')
+}))
+
+test('P28 (4) start domyślnie zbiera zgłoszenia na koniec: czekaj milczy do api/zakoncz, potem jedno zdarzenie przeglad-zakonczony', () => zProjektem(async (k) => {
+  writeFileSync(join(k.projekt, 'package.json'), JSON.stringify({ dependencies: { '@marsidev/react-turnstile': '1.6.2' } }))
+  const w = await uruchom(k)
+  assert.equal(w.zgloszenia, 'na-koniec')
+  assert.deepEqual(w.hosty.map((/** @type {string} */ h) => h.split(':')[0]), ['Cloudflare Turnstile'], 'P28 (6) usługi z hostem narzędzia w wyniku startu')
+  const token = new URL(w.link).searchParams.get('t') ?? ''
+  const p = punktyWizualne(readFileSync(join(k.projekt, SMOKE), 'utf8'), skrotSha1).find((x) => x.linia === 51)
+  assert.ok(p)
+  assert.equal((await api(k.port, 'api/decyzja', { method: 'POST', token, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'ucięte', urzadzenie: 'iphone-15', szerokosc: 393 } })).status, 200)
+  assert.deepEqual((await k.cli(['czekaj', '--limit-min', '0.01'])).stdout.trim().split('\n').map((l) => JSON.parse(l).zdarzenie), ['limit'])
+  assert.equal((await api(k.port, 'api/zakoncz', { method: 'POST', token })).json.data.zgloszenia, 1)
+  const linie = (await k.cli(['czekaj', '--limit-min', '0.01'])).stdout.trim().split('\n').map((l) => JSON.parse(l))
+  assert.deepEqual(linie.map((l) => [l.zdarzenie, l.zgloszenia?.map((/** @type {{ linia: number }} */ z) => z.linia) ?? null]), [['przeglad-zakonczony', [51]], ['limit', null]])
+  await k.cli(['stop'])
 }))

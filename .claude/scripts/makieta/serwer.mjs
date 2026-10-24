@@ -2,7 +2,8 @@
 // aplikacji (reszta sciezek przez proxy.mjs) — ramki sa same-origin ze strona i dziela localStorage (jedna sesja logowania).
 // Trasy narzedzia: strona i jej statyka, PNG makiet (tylko ekrany z punktow), punkty ze statusami, zapis decyzji do linii
 // checklisty (zapis-linii.mjs; konflikt = 409), kolejka zgloszen dla sesji (kolejka.mjs) i zdarzenia SSE (`punkty` po zmianie
-// pliku smoke'u, `przeladuj` z CLI po poprawce).
+// pliku smoke'u, `przeladuj` z CLI po poprawce). Tryb zgloszen (P28): „na-koniec” (domyslny) — „Zgłoś błąd” zapisuje tylko
+// linie, `api/zakoncz` oddaje sesji wszystkie otwarte zgloszenia naraz; „od-razu” — kazde zgloszenie trafia do kolejki od razu.
 //
 // Ochrona: nasluch tylko na 127.0.0.1 (robi go CLI), naglowek Host musi byc originem narzedzia (DNS rebinding), API wymaga
 // tokenu z linku startowego (`x-makieta-token`, SSE — w query), POST z obcym `Origin` = 403. Odpowiedzi API: { data, error }.
@@ -13,7 +14,7 @@ import { createServer } from 'node:http'
 import { dirname, extname, isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { dopiszZgloszenie } from './kolejka.mjs'
+import { dopiszPrzeglad, dopiszZgloszenie, opisOtwartych, podsumowanie } from './kolejka.mjs'
 import { PREFIKS_NARZEDZIA, utworzProxy } from './proxy.mjs'
 import { punktyWizualne } from './punkty.mjs'
 import { BladZapisu, oczyscNotatke, skrotSha1, zapiszDecyzje } from './zapis-linii.mjs'
@@ -37,7 +38,9 @@ const NAGLOWKI_NARZEDZIA = {
 /**
  * @typedef {import('node:http').IncomingMessage} Zadanie
  * @typedef {import('node:http').ServerResponse} Odpowiedz
- * @typedef {{ projekt: string, smoke: string, aplikacja: URL, token: string, katalogStanu: string, katalogStrony?: string, log?: (linia: string) => void }} OpcjeSerwera
+ * @typedef {'na-koniec' | 'od-razu'} TrybZgloszen
+ * @typedef {{ projekt: string, smoke: string, aplikacja: URL, token: string, katalogStanu: string, katalogStrony?: string, zgloszenia?: TrybZgloszen,
+ *   log?: (linia: string) => void }} OpcjeSerwera
  */
 
 /** @param {Odpowiedz} res @param {number} status @param {{ data?: unknown, error?: { code: string, message: string } }} koperta */
@@ -127,7 +130,7 @@ function cialoDecyzji(c) {
  * @param {OpcjeSerwera} o
  * @returns {{ serwer: import('node:http').Server, przeladuj: () => void, zamknij: () => Promise<void> }}
  */
-export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, katalogStrony = join(KATALOG, 'strona'), log = () => {} }) {
+export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, katalogStrony = join(KATALOG, 'strona'), zgloszenia = 'na-koniec', log = () => {} }) {
   // Pusty albo krotki token otwieralby API kazdej stronie, ktora zgadnie port.
   if (token.length < MIN_DLUGOSC_TOKENU) throw new Error(`token narzędzia krótszy niż ${MIN_DLUGOSC_TOKENU} znaków`)
   const plikSmoke = isAbsolute(smoke) ? smoke : join(projekt, smoke)
@@ -158,7 +161,7 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
   function punkty(res) {
     const { punkty: lista, zrodla } = stan()
     json(res, 200, { data: {
-      smoke: zrodla.smoke, zadanie: zrodla.zadanie, aplikacja: aplikacja.origin, pominiete: zrodla.pominiete, ostrzezenia: zrodla.ostrzezenia,
+      smoke: zrodla.smoke, zadanie: zrodla.zadanie, aplikacja: aplikacja.origin, pominiete: zrodla.pominiete, ostrzezenia: zrodla.ostrzezenia, zgloszenia,
       punkty: lista.map(({ adnotacje, checkbox, ...p }) => p),
       ekrany: zrodla.ekrany.map((e) => ({ ...e, url: e.makieta ? `${PREFIKS_NARZEDZIA}makieta/${encodeURIComponent(e.ekran)}.png` : null })),
     } })
@@ -176,7 +179,7 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     if (w.wynik === 'konflikt') return json(res, 409, { data: { powod: w.powod, linia: w.linia }, error: { code: 'konflikt', message: 'Sesja zmieniła ten punkt w międzyczasie.' } })
     /** @type {string | undefined} */
     let ostrzezenie
-    if (c.decyzja === 'blad' && p) {
+    if (c.decyzja === 'blad' && p && zgloszenia === 'od-razu') {
       const e = zrodla.ekrany.find((x) => x.punkt === c.punkt && x.ekran === (ekran ?? p.ekrany[0])) ?? null
       try {
         dopiszZgloszenie(katalogStanu, {
@@ -191,6 +194,21 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     }
     rozeslij('punkty')
     json(res, 200, { data: { linia: w.linia, ...(ostrzezenie ? { ostrzezenie } : {}) } })
+  }
+
+  /** @param {Odpowiedz} res koniec przegladu: jeden wpis kolejki z otwartymi zgloszeniami z checklisty i podsumowaniem statusow */
+  function zakoncz(res) {
+    if (zgloszenia !== 'na-koniec') return blad(res, 409, 'tryb', 'zgłoszenia trafiają do sesji od razu — nie ma czego wysyłać na koniec')
+    const { punkty: lista, zrodla } = stan()
+    const otwarte = opisOtwartych(lista, zrodla)
+    try {
+      dopiszPrzeglad(katalogStanu, { smoke: zrodla.smoke, zgloszenia: otwarte, podsumowanie: podsumowanie(lista) })
+    } catch (b) {
+      // Zgloszenia sa w checkliście — sesja odczyta je droga awaryjna `makieta.mjs zgloszenia`.
+      log(`kolejka: ${b instanceof Error ? b.message : String(b)}`)
+      return blad(res, 503, 'kolejka', 'Nie udało się przekazać przeglądu do kolejki sesji — zgłoszenia są w checkliście, napisz w sesji „zgłoszenia”.')
+    }
+    json(res, 200, { data: { zgloszenia: otwarte.length } })
   }
 
   /** @param {Odpowiedz} res */
@@ -210,6 +228,7 @@ export function utworzSerwer({ projekt, smoke, aplikacja, token, katalogStanu, k
     if (req.method === 'GET' && sciezka === 'api/punkty') return punkty(res)
     if (req.method === 'GET' && sciezka === 'api/zdarzenia') return zdarzenia(res)
     if (req.method === 'POST' && sciezka === 'api/decyzja') return decyzja(req, res)
+    if (req.method === 'POST' && sciezka === 'api/zakoncz') return zakoncz(res)
     if (req.method === 'POST' && sciezka === 'api/przeladuj') {
       rozeslij('przeladuj')
       return json(res, 200, { data: { sluchacze: sluchacze.size } })
