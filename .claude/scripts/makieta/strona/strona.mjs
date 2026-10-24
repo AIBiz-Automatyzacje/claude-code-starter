@@ -4,7 +4,7 @@
 // Zmiany sesji (SSE `punkty`) odswiezaja liste z zachowaniem biezacego ekranu; `przeladuj` (po poprawce) przeladowuje ramki.
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
-import { przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
 
 const API = '/__makieta/api/'
 const KLUCZ_TOKENU = 'makieta.token'
@@ -53,8 +53,8 @@ if (tokenZLinku) {
 }
 const token = tokenZLinku ?? bezpiecznie(() => sessionStorage.getItem(KLUCZ_TOKENU)) ?? ''
 
-/** @type {{ dane: Dane | null, indeks: number, urzadzenia: Urzadzenie[], trasa: string, jedenDoJednego: boolean }} */
-const stan = { dane: null, indeks: Number(bezpiecznie(() => sessionStorage.getItem(KLUCZ_EKRANU)) ?? 0) || 0, urzadzenia: [], trasa: '/', jedenDoJednego: false }
+/** @type {{ dane: Dane | null, indeks: number, urzadzenia: Urzadzenie[], trasa: string, skala: import('./ramki.mjs').TrybSkali }} */
+const stan = { dane: null, indeks: Number(bezpiecznie(() => sessionStorage.getItem(KLUCZ_EKRANU)) ?? 0) || 0, urzadzenia: [], trasa: '/', skala: 'przewijaj' }
 
 /** @param {string} tekst */
 const komunikat = (tekst) => { el('komunikat', HTMLParagraphElement).textContent = tekst }
@@ -80,10 +80,10 @@ function biezacy() {
 /** @param {{ ekran: Ekran, punkt: Punkt }} b @returns {Urzadzenie[]} */
 const urzadzeniaEkranu = (b) => zapisanyWybor() ?? domyslneUrzadzenia(b.ekran.wymiary, b.punkt.tresc)
 
-const skaluj = () => skalujRamki(el('ramki', HTMLDivElement), stan.urzadzenia, { jedenDoJednego: stan.jedenDoJednego })
+const skaluj = () => skalujRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.skala)
 
 function rysujRamki() {
-  ustawRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.trasa, { jedenDoJednego: stan.jedenDoJednego })
+  ustawRamki(el('ramki', HTMLDivElement), stan.urzadzenia, stan.trasa, stan.skala)
   el('adres', HTMLInputElement).value = stan.trasa
   const wybor = el('urzadzenie-bledu', HTMLSelectElement)
   wybor.replaceChildren(...stan.urzadzenia.map((u) => new Option(`${u.nazwa} (${u.szerokosc} px)`, u.id)))
@@ -284,11 +284,17 @@ function podepnij() {
   })
   el('przeladuj', HTMLButtonElement).addEventListener('click', () => przeladujRamki(el('ramki', HTMLDivElement), stan.trasa))
   el('w-karcie', HTMLButtonElement).addEventListener('click', () => window.open(stan.trasa, '_blank', 'noopener'))
-  el('skala', HTMLButtonElement).addEventListener('click', (z) => {
-    stan.jedenDoJednego = !stan.jedenDoJednego
-    if (z.currentTarget instanceof HTMLButtonElement) z.currentTarget.setAttribute('aria-pressed', String(stan.jedenDoJednego))
-    skaluj()
-  })
+  const przyciskiSkali = [...document.querySelectorAll('[data-skala]')].filter((p) => p instanceof HTMLButtonElement)
+  for (const przycisk of przyciskiSkali) {
+    przycisk.addEventListener('click', () => {
+      const tryb = przycisk.dataset.skala
+      if (tryb !== 'przewijaj' && tryb !== 'wszystkie' && tryb !== '1:1') return
+      stan.skala = tryb
+      for (const p of przyciskiSkali) p.setAttribute('aria-pressed', String(p === przycisk))
+      skaluj()
+    })
+  }
+  przeciaganieRzedu(el('ramki', HTMLDivElement))
   el('dopasuj', HTMLButtonElement).addEventListener('click', (z) => {
     const wlaczone = document.querySelector('.makieta')?.classList.toggle('makieta--dopasuj') ?? false
     if (z.currentTarget instanceof HTMLButtonElement) z.currentTarget.setAttribute('aria-pressed', String(wlaczone))

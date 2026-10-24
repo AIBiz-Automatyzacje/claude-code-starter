@@ -33,3 +33,23 @@ test('P28 (3) treść punktu skrócona do dwóch linii z przełącznikiem „Pok
   assert.match(HTML, /<p id="tresc" class="tresc tresc--zwinieta"/)
   assert.match(HTML, /<button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całość<\/button>/)
 })
+
+test('P28 (1) skala ramek: „przewijaj” dopasowuje najszerszą ramkę do kolumny (reszta w rzędzie z przewijaniem), „wszystkie” mieści cały rząd, 1:1 = 1', async () => {
+  const { skalaRamek } = await import('../strona/ramki.mjs')
+  const u = [{ id: 'a', nazwa: 'a', szerokosc: 1440, wysokosc: 900 }, { id: 'b', nazwa: 'b', szerokosc: 375, wysokosc: 667 }, { id: 'c', nazwa: 'c', szerokosc: 834, wysokosc: 1194 }]
+  // kolumna 1000: margines paska 20, najszersza 1440 + 2 obramowania
+  assert.equal(skalaRamek(u, 1000, 'przewijaj'), 980 / 1442)
+  // caly rzad: 1442 + 377 + 836 + 2 odstepy po 16
+  assert.equal(skalaRamek(u, 1000, 'wszystkie'), 980 / (1442 + 377 + 836 + 32))
+  assert.equal(skalaRamek(u, 1000, '1:1'), 1)
+  assert.equal(skalaRamek([u[1]], 3000, 'przewijaj'), 1, 'najwyżej 1')
+  assert.equal(skalaRamek([], 1000, 'przewijaj'), 1)
+})
+
+test('P28 (1) rząd ramek bez zawijania, z przewijaniem w poziomie; przełącznik skali z trzema trybami', () => {
+  const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'styl.css'), 'utf8')
+  const ramki = /\.ramki \{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.match(ramki, /flex-wrap: nowrap/)
+  assert.match(ramki, /overflow-x: auto/)
+  for (const tryb of ['przewijaj', 'wszystkie', '1:1']) assert.match(HTML, new RegExp(`data-skala="${tryb}"`))
+})

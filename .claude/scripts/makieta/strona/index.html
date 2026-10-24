@@ -67,7 +67,11 @@
         </form>
         <button type="button" id="przeladuj">Przeładuj ramki</button>
         <button type="button" id="w-karcie">Otwórz w karcie</button>
-        <button type="button" id="skala" aria-pressed="false">1:1</button>
+        <div class="skala" role="group" aria-label="Skala ramek">
+          <button type="button" data-skala="przewijaj" aria-pressed="true" title="Najszersza ramka na szerokość kolumny, pozostałe obok — przewiń albo przeciągnij rząd">Przewijaj</button>
+          <button type="button" data-skala="wszystkie" aria-pressed="false" title="Wszystkie ramki w szerokości kolumny">Wszystkie</button>
+          <button type="button" data-skala="1:1" aria-pressed="false" title="Rozmiar rzeczywisty">1:1</button>
+        </div>
       </div>
       <details class="urzadzenia">
         <summary>Urządzenia</summary>

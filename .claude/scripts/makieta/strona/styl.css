@@ -69,7 +69,13 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .wymiar { display: flex; gap: 4px; align-items: center; margin: 6px 0; }
 .wymiar input { width: 110px; }
 
-.ramki { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 8px; }
+.skala { display: flex; }
+.skala button { border-radius: 0; margin-left: -1px; }
+.skala button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+.skala button:last-child { border-radius: 0 6px 6px 0; }
+.ramki { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 16px; align-items: flex-start; margin-top: 8px; padding-bottom: 8px; cursor: grab; }
+.ramki--przeciagane { cursor: grabbing; user-select: none; }
+.ramka { flex: none; }
 .ramka figcaption { color: var(--wyciszony); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
 .ramka__okno { position: relative; overflow: hidden; box-sizing: content-box; border: 1px solid var(--linia); border-radius: 8px; background: #fff; }
 .ramka__okno iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #fff; }
