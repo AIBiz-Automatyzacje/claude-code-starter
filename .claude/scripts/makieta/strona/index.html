@@ -9,33 +9,25 @@
 </head>
 <body>
   <header class="naglowek">
-    <div class="naglowek__wiersz">
-      <h1 class="tytul">Makieta obok aplikacji</h1>
-      <span id="licznik" class="licznik"></span>
-      <button type="button" id="poprzedni">Poprzedni</button>
-      <button type="button" id="nastepny">Następny</button>
-      <span id="smoke" class="wyciszony"></span>
-      <button type="button" id="zakoncz" hidden>Zakończ przegląd</button>
-    </div>
-    <form id="form-koniec" class="formularz" hidden>
-      <p id="podsumowanie" class="podsumowanie"></p>
-      <button type="submit">Wyślij do sesji</button>
-      <button type="button" class="anuluj">Wróć do przeglądu</button>
-    </form>
-    <p id="uwagi" class="uwagi" hidden></p>
-  </header>
-
-  <section class="punkt" aria-labelledby="tresc">
-    <div class="punkt__wiersz">
+    <div class="pasek-punktu">
+      <div class="nawigacja">
+        <button type="button" id="poprzedni" aria-label="Poprzedni ekran">←</button>
+        <span id="licznik" class="licznik"></span>
+        <button type="button" id="nastepny" aria-label="Następny ekran">→</button>
+      </div>
       <span id="status" class="status"></span>
       <span id="ekran" class="ekran"></span>
       <code id="trasa" class="trasa"></code>
+      <div id="decyzje" class="decyzje">
+        <button type="button" id="zgodne" class="decyzja decyzja--zgodne">Zgodne</button>
+        <button type="button" id="odstepstwo" class="decyzja">Odstępstwo OK</button>
+        <button type="button" id="blad" class="decyzja decyzja--blad">Zgłoś błąd</button>
+      </div>
+      <button type="button" id="zakoncz" class="zakoncz" hidden>Zakończ przegląd</button>
     </div>
-    <p id="tresc" class="tresc"></p>
-    <div id="decyzje" class="decyzje">
-      <button type="button" id="zgodne" class="decyzja decyzja--zgodne">Zgodne</button>
-      <button type="button" id="odstepstwo" class="decyzja">Odstępstwo OK</button>
-      <button type="button" id="blad" class="decyzja decyzja--blad">Zgłoś błąd</button>
+    <div class="tresc-wiersz">
+      <p id="tresc" class="tresc tresc--zwinieta"></p>
+      <button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całość</button>
     </div>
     <form id="form-odstepstwo" class="formularz" hidden>
       <label for="notatka-odstepstwa">Co się różni i dlaczego to OK</label>
@@ -51,9 +43,19 @@
       <button type="submit" id="wyslij-blad">Wyślij do sesji</button>
       <button type="button" class="anuluj">Anuluj</button>
     </form>
+    <form id="form-koniec" class="formularz" hidden>
+      <p id="podsumowanie" class="podsumowanie"></p>
+      <button type="submit">Wyślij do sesji</button>
+      <button type="button" class="anuluj">Wróć do przeglądu</button>
+    </form>
     <p id="niejednoznaczny" class="komunikat" hidden>Ta sama treść punktu występuje w checkliście kilka razy — decyzję zapisz w sesji.</p>
     <p id="komunikat" class="komunikat" role="status" aria-live="polite"></p>
-  </section>
+    <details id="uwagi" class="uwagi">
+      <summary id="uwagi-naglowek">Uwagi narzędzia</summary>
+      <p id="uwagi-tresc"></p>
+      <p class="wyciszony">Checklista: <span id="smoke"></span></p>
+    </details>
+  </header>
 
   <main class="uklad">
     <section class="aplikacja" aria-label="Aplikacja w ramkach urządzeń">

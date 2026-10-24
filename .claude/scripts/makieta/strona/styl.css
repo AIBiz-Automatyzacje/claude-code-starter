@@ -1,4 +1,4 @@
-/* Strona narzedzia makiet (P24 IU-7): naglowek z punktem i decyzjami, po lewej aplikacja w ramkach urzadzen, po prawej makieta. */
+/* Strona narzedzia makiet (P24 IU-7, uklad P28): jeden pasek z nawigacja, punktem i decyzjami, po lewej aplikacja w ramkach urzadzen, po prawej makieta. */
 :root {
   --tlo: #f6f5f2;
   --karta: #fff;
@@ -28,11 +28,18 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .ukryty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .wyciszony { color: var(--wyciszony); }
 
-.naglowek, .punkt { padding: 8px 16px; background: var(--karta); border-bottom: 1px solid var(--linia); }
-.naglowek__wiersz, .punkt__wiersz, .decyzje, .pasek { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.tytul { font-size: 15px; margin: 0 8px 0 0; }
-.licznik { font-variant-numeric: tabular-nums; }
-.uwagi { margin: 6px 0 0; color: var(--odstep); }
+.naglowek { padding: 8px 16px; background: var(--karta); border-bottom: 1px solid var(--linia); }
+.pasek-punktu, .nawigacja, .decyzje, .pasek, .tresc-wiersz { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.nawigacja { gap: 4px; }
+.licznik { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; }
+.zakoncz { margin-left: auto; border-color: var(--tusz); font-weight: 600; }
+.tresc-wiersz { align-items: flex-start; flex-wrap: nowrap; margin-top: 6px; }
+.tresc-wiersz button { flex: none; }
+.uwagi { margin: 6px 0 0; }
+.uwagi summary { cursor: pointer; color: var(--wyciszony); width: max-content; }
+.uwagi p { margin: 4px 0 0; }
+#uwagi-tresc { color: var(--odstep); }
+#uwagi-tresc:empty { display: none; }
 
 .status { padding: 1px 8px; border-radius: 999px; background: var(--tlo); border: 1px solid var(--linia); }
 .status--zgodny { color: var(--zgodny); border-color: currentColor; }
@@ -41,7 +48,8 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .status--poprawione { color: var(--akcent); border-color: currentColor; }
 .ekran { font-weight: 600; }
 .trasa { color: var(--wyciszony); }
-.tresc { margin: 6px 0; max-width: 120ch; }
+.tresc { margin: 0; max-width: 120ch; }
+.tresc--zwinieta { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .decyzja--zgodne { border-color: var(--zgodny); color: var(--zgodny); }
 .decyzja--blad { border-color: var(--blad); color: var(--blad); }
 .formularz { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: start; max-width: 720px; margin-top: 8px; }

@@ -105,6 +105,19 @@ function rysujRamki() {
   }))
 }
 
+/** @param {string} tekst tresc punktu zwinieta do dwoch linii; przelacznik tylko, gdy tresc sie nie miesci */
+function ustawTresc(tekst) {
+  const tresc = el('tresc', HTMLParagraphElement)
+  const przelacznik = el('cala-tresc', HTMLButtonElement)
+  if (tresc.textContent !== tekst) {
+    tresc.textContent = tekst
+    tresc.classList.add('tresc--zwinieta')
+    przelacznik.setAttribute('aria-expanded', 'false')
+    przelacznik.textContent = 'Pokaż całość'
+  }
+  przelacznik.hidden = tresc.classList.contains('tresc--zwinieta') && tresc.scrollHeight <= tresc.clientHeight
+}
+
 /** @param {{ zmienTrase?: boolean }} [opcje] zmienTrase: ramki od nowa na trasie punktu (zmiana ekranu) */
 function rysujEkran({ zmienTrase = true } = {}) {
   const dane = stan.dane
@@ -120,7 +133,7 @@ function rysujEkran({ zmienTrase = true } = {}) {
   status.className = `status status--${punkt.status}`
   el('ekran', HTMLSpanElement).textContent = ekran.ekran
   el('trasa', HTMLElement).textContent = punkt.trasa ?? '/ (punkt bez trasy)'
-  el('tresc', HTMLParagraphElement).textContent = punkt.tresc
+  ustawTresc(punkt.tresc)
   el('decyzje', HTMLDivElement).hidden = punkt.niejednoznaczny
   el('niejednoznaczny', HTMLParagraphElement).hidden = !punkt.niejednoznaczny
   const podpowiedz = el('podpowiedz-trasy', HTMLParagraphElement)
@@ -150,10 +163,9 @@ async function wczytaj(opcje) {
   const zachowany = poprzedni ? dane.ekrany.findIndex((e) => e.punkt === poprzedni.ekran.punkt && e.ekran === poprzedni.ekran.ekran) : -1
   stan.indeks = Math.min(Math.max(zachowany === -1 ? stan.indeks : zachowany, 0), Math.max(dane.ekrany.length - 1, 0))
   el('smoke', HTMLSpanElement).textContent = dane.smoke
-  const uwagi = el('uwagi', HTMLParagraphElement)
   const teksty = [...dane.ostrzezenia, ...(dane.pominiete.length ? [`Ekrany SPEC bez punktu w checkliście: ${dane.pominiete.join(', ')} — dopisz punkt, żeby ocenić je tutaj.`] : [])]
-  uwagi.hidden = !teksty.length
-  uwagi.textContent = teksty.join(' ')
+  el('uwagi-naglowek', HTMLElement).textContent = teksty.length ? `Uwagi narzędzia (${teksty.length})` : 'Checklista'
+  el('uwagi-tresc', HTMLParagraphElement).textContent = teksty.join(' ')
   const naKoniec = dane.zgloszenia === 'na-koniec'
   el('zakoncz', HTMLButtonElement).hidden = !naKoniec
   el('wyslij-blad', HTMLButtonElement).textContent = naKoniec ? 'Zapisz zgłoszenie' : 'Wyślij do sesji'
@@ -237,6 +249,12 @@ function podepnij() {
   el('odstepstwo', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-odstepstwo', HTMLFormElement).hidden = false; el('notatka-odstepstwa', HTMLTextAreaElement).focus() })
   el('blad', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-blad', HTMLFormElement).hidden = false; el('opis-bledu', HTMLTextAreaElement).focus() })
   for (const anuluj of document.querySelectorAll('.anuluj')) anuluj.addEventListener('click', ukryjFormularze)
+  el('cala-tresc', HTMLButtonElement).addEventListener('click', (z) => {
+    const zwinieta = el('tresc', HTMLParagraphElement).classList.toggle('tresc--zwinieta')
+    if (!(z.currentTarget instanceof HTMLButtonElement)) return
+    z.currentTarget.setAttribute('aria-expanded', String(!zwinieta))
+    z.currentTarget.textContent = zwinieta ? 'Pokaż całość' : 'Zwiń'
+  })
   el('zakoncz', HTMLButtonElement).addEventListener('click', () => {
     ukryjFormularze()
     el('podsumowanie', HTMLParagraphElement).textContent = tekstPodsumowania(stan.dane?.punkty ?? [])
