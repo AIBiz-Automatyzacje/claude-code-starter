@@ -29,9 +29,11 @@ test('P28 (3) uwagi narzędzia (ekrany SPEC bez punktu, ostrzeżenia, plik smoke
   assert.ok(pozycja('uwagi') > pozycja('zakoncz'))
 })
 
-test('P28 (3) treść punktu skrócona do dwóch linii z przełącznikiem „Pokaż całość”', () => {
-  assert.match(HTML, /<p id="tresc" class="tresc tresc--zwinieta"/)
-  assert.match(HTML, /<button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całość<\/button>/)
+test('P28 (3) opis punktu dla człowieka: Sprawdź, Stany, Gdzie; pełna linia checklisty ukryta pod „Pokaż całą linię”', () => {
+  const opis = /<dl id="opis"[^>]*>([\s\S]*?)<\/dl>/.exec(HTML)?.[1] ?? ''
+  assert.deepEqual([...opis.matchAll(/<dt>([^<]*)<\/dt>\s*<dd id="([^"]*)"/g)].map((m) => [m[1], m[2]]), [['Sprawdź', 'opis-sprawdz'], ['Stany', 'opis-stany'], ['Gdzie', 'opis-co']])
+  assert.match(HTML, /<button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całą linię<\/button>/)
+  assert.match(HTML, /<p id="tresc" class="tresc" hidden><\/p>/)
 })
 
 test('P28 (1) skala ramek: „przewijaj” dopasowuje najszerszą ramkę do kolumny (reszta w rzędzie z przewijaniem), „wszystkie” mieści cały rząd, 1:1 = 1', async () => {

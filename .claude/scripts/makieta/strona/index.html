@@ -26,9 +26,14 @@
       <button type="button" id="zakoncz" class="zakoncz" hidden>Zakończ przegląd</button>
     </div>
     <div class="tresc-wiersz">
-      <p id="tresc" class="tresc tresc--zwinieta"></p>
-      <button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całość</button>
+      <dl id="opis" class="opis">
+        <div><dt>Sprawdź</dt> <dd id="opis-sprawdz"></dd></div>
+        <div id="opis-stany-wiersz"><dt>Stany</dt> <dd id="opis-stany"></dd></div>
+        <div><dt>Gdzie</dt> <dd id="opis-co"></dd></div>
+      </dl>
+      <button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całą linię</button>
     </div>
+    <p id="tresc" class="tresc" hidden></p>
     <form id="form-odstepstwo" class="formularz" hidden>
       <label for="notatka-odstepstwa">Co się różni i dlaczego to OK</label>
       <textarea id="notatka-odstepstwa" rows="2" maxlength="300" required></textarea>

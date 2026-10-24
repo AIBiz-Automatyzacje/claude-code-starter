@@ -19,7 +19,8 @@ const BRAK_SERWERA = 'Serwer narzędzia nie odpowiada — w sesji sprawdź „ma
 /**
  * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
  * @typedef {{ id: string, linia: number, tekst: string, tresc: string, status: keyof typeof STATUSY, ekrany: string[], trasa: string | null,
- *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean }} Punkt
+ *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean,
+ *   opis: { co: string, stany: string | null, sprawdz: string } | null }} Punkt
  * @typedef {{ punkt: string, ekran: string, makieta: string | null, url: string | null, spec: string | null, wymiary: { szerokosc: number, wysokosc: number } | null }} Ekran
  * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[],
  *   zgloszenia: 'na-koniec' | 'od-razu' }} Dane
@@ -108,17 +109,26 @@ function rysujRamki() {
   }))
 }
 
-/** @param {string} tekst tresc punktu zwinieta do dwoch linii; przelacznik tylko, gdy tresc sie nie miesci */
-function ustawTresc(tekst) {
+/**
+ * Opis punktu dla operatora (Sprawdź / Stany / Gdzie); pelna linia checklisty tylko na zadanie. Punkt spoza formatu (opis null)
+ * pokazuje od razu cala linie.
+ * @param {Punkt} punkt
+ */
+function ustawOpis(punkt) {
   const tresc = el('tresc', HTMLParagraphElement)
   const przelacznik = el('cala-tresc', HTMLButtonElement)
-  if (tresc.textContent !== tekst) {
-    tresc.textContent = tekst
-    tresc.classList.add('tresc--zwinieta')
-    przelacznik.setAttribute('aria-expanded', 'false')
-    przelacznik.textContent = 'Pokaż całość'
-  }
-  przelacznik.hidden = tresc.classList.contains('tresc--zwinieta') && tresc.scrollHeight <= tresc.clientHeight
+  const { opis } = punkt
+  el('opis', HTMLElement).hidden = !opis
+  el('opis-sprawdz', HTMLElement).textContent = opis?.sprawdz ?? ''
+  el('opis-stany', HTMLElement).textContent = opis?.stany ?? ''
+  el('opis-stany-wiersz', HTMLDivElement).hidden = !opis?.stany
+  el('opis-co', HTMLElement).textContent = opis?.co ?? ''
+  if (tresc.textContent === punkt.tresc) return
+  tresc.textContent = punkt.tresc
+  tresc.hidden = Boolean(opis)
+  przelacznik.hidden = !opis
+  przelacznik.setAttribute('aria-expanded', 'false')
+  przelacznik.textContent = 'Pokaż całą linię'
 }
 
 /** @param {{ zmienTrase?: boolean }} [opcje] zmienTrase: ramki od nowa na trasie punktu (zmiana ekranu) */
@@ -136,7 +146,7 @@ function rysujEkran({ zmienTrase = true } = {}) {
   status.className = `status status--${punkt.status}`
   el('ekran', HTMLSpanElement).textContent = ekran.ekran
   el('trasa', HTMLElement).textContent = punkt.trasa ?? '/ (punkt bez trasy)'
-  ustawTresc(punkt.tresc)
+  ustawOpis(punkt)
   el('decyzje', HTMLDivElement).hidden = punkt.niejednoznaczny
   el('niejednoznaczny', HTMLParagraphElement).hidden = !punkt.niejednoznaczny
   const podpowiedz = el('podpowiedz-trasy', HTMLParagraphElement)
@@ -259,10 +269,11 @@ function podepnij() {
   el('blad', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-blad', HTMLFormElement).hidden = false; el('opis-bledu', HTMLTextAreaElement).focus() })
   for (const anuluj of document.querySelectorAll('.anuluj')) anuluj.addEventListener('click', ukryjFormularze)
   el('cala-tresc', HTMLButtonElement).addEventListener('click', (z) => {
-    const zwinieta = el('tresc', HTMLParagraphElement).classList.toggle('tresc--zwinieta')
+    const tresc = el('tresc', HTMLParagraphElement)
+    tresc.hidden = !tresc.hidden
     if (!(z.currentTarget instanceof HTMLButtonElement)) return
-    z.currentTarget.setAttribute('aria-expanded', String(!zwinieta))
-    z.currentTarget.textContent = zwinieta ? 'Pokaż całość' : 'Zwiń'
+    z.currentTarget.setAttribute('aria-expanded', String(!tresc.hidden))
+    z.currentTarget.textContent = tresc.hidden ? 'Pokaż całą linię' : 'Ukryj linię'
   })
   el('zakoncz', HTMLButtonElement).addEventListener('click', () => {
     ukryjFormularze()
