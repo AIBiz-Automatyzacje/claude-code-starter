@@ -53,3 +53,26 @@ test('P28 (1) rząd ramek bez zawijania, z przewijaniem w poziomie; przełączni
   assert.match(ramki, /overflow-x: auto/)
   for (const tryb of ['przewijaj', 'wszystkie', '1:1']) assert.match(HTML, new RegExp(`data-skala="${tryb}"`))
 })
+
+test('P28 (2) rozdzielacz: udział aplikacji z pozycji wskaźnika w granicach 20–80 %, strzałki ±5, Home/End do granic', async () => {
+  const { udzialZPozycji, udzialPoKlawiszu, MIN_UDZIAL, MAX_UDZIAL } = await import('../strona/uklad.mjs')
+  assert.deepEqual([MIN_UDZIAL, MAX_UDZIAL], [20, 80])
+  assert.equal(udzialZPozycji(600, { left: 100, width: 1000 }), 50)
+  assert.equal(udzialZPozycji(120, { left: 100, width: 1000 }), 20)
+  assert.equal(udzialZPozycji(5000, { left: 100, width: 1000 }), 80)
+  assert.equal(udzialZPozycji(500, { left: 0, width: 0 }), null, 'zerowa szerokość — bez zmiany')
+  assert.equal(udzialPoKlawiszu(50, 'ArrowLeft'), 45)
+  assert.equal(udzialPoKlawiszu(78, 'ArrowRight'), 80)
+  assert.equal(udzialPoKlawiszu(50, 'Home'), 20)
+  assert.equal(udzialPoKlawiszu(50, 'End'), 80)
+  assert.equal(udzialPoKlawiszu(50, 'a'), null)
+})
+
+test('P28 (2) rozdzielacz stoi między aplikacją a makietą jako separator dostępny z klawiatury; makieta bez sztywnego limitu 55vw', () => {
+  const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'styl.css'), 'utf8')
+  const sep = /<div id="rozdzielacz"[^>]*>/.exec(HTML)?.[0] ?? ''
+  for (const atrybut of ['role="separator"', 'aria-orientation="vertical"', 'tabindex="0"', 'aria-valuemin="20"', 'aria-valuemax="80"']) assert.ok(sep.includes(atrybut), atrybut)
+  assert.ok(HTML.indexOf('class="aplikacja"') < pozycja('rozdzielacz') && pozycja('rozdzielacz') < HTML.indexOf('class="makieta"'))
+  assert.ok(!css.includes('55vw'))
+  assert.match(css, /grid-template-columns: minmax\(0, var\(--udzial-aplikacji/)
+})

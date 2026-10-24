@@ -5,6 +5,7 @@
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
 import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { podepnijRozdzielacz } from './uklad.mjs'
 
 const API = '/__makieta/api/'
 const KLUCZ_TOKENU = 'makieta.token'
@@ -295,6 +296,10 @@ function podepnij() {
     })
   }
   przeciaganieRzedu(el('ramki', HTMLDivElement))
+  let klatka = 0
+  // Zmiana udzialu przy przeciaganiu przychodzi co ruch wskaznika — skala ramek raz na klatke.
+  podepnijRozdzielacz({ uklad: document.querySelector('.uklad') ?? document.body, rozdzielacz: el('rozdzielacz', HTMLDivElement),
+    poZmianie: () => { cancelAnimationFrame(klatka); klatka = requestAnimationFrame(skaluj) } })
   el('dopasuj', HTMLButtonElement).addEventListener('click', (z) => {
     const wlaczone = document.querySelector('.makieta')?.classList.toggle('makieta--dopasuj') ?? false
     if (z.currentTarget instanceof HTMLButtonElement) z.currentTarget.setAttribute('aria-pressed', String(wlaczone))

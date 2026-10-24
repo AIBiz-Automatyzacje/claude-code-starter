@@ -59,9 +59,14 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .komunikat { margin: 6px 0 0; }
 .komunikat:empty { display: none; }
 
-.uklad { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); min-height: 0; }
+.uklad { flex: 1; display: grid; grid-template-columns: minmax(0, var(--udzial-aplikacji, 55%)) 8px minmax(0, 1fr); min-height: 0; }
 .aplikacja, .makieta { padding: 8px 16px; min-width: 0; overflow: auto; }
-.makieta { border-left: 1px solid var(--linia); max-width: 55vw; background: var(--karta); }
+.makieta { background: var(--karta); }
+.rozdzielacz { cursor: col-resize; background: var(--linia); border-inline: 3px solid var(--tlo); touch-action: none; }
+.rozdzielacz:hover, .rozdzielacz:focus-visible, .uklad--przeciagany .rozdzielacz { background: var(--akcent); }
+/* W trakcie przeciagania ramki nie przejmuja wskaznika ani zaznaczenia. */
+.uklad--przeciagany { user-select: none; }
+.uklad--przeciagany iframe { pointer-events: none; }
 .adres { display: flex; gap: 4px; flex: 1 1 280px; }
 .adres input { flex: 1; min-width: 0; font-family: ui-monospace, monospace; }
 .urzadzenia { margin: 8px 0; }
@@ -85,5 +90,6 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 
 @media (max-width: 900px) {
   .uklad { grid-template-columns: 1fr; }
-  .makieta { border-left: 0; border-top: 1px solid var(--linia); max-width: none; }
+  .rozdzielacz { display: none; }
+  .makieta { border-top: 1px solid var(--linia); }
 }
