@@ -431,3 +431,13 @@ test('smoke: przykładowy punkt wizualny szablonu przechodzi makieta sprawdzForm
   assert.ok(makieta.includes('zgloszenia --smoke <plik>'))
   assert.ok(!/Read[^\n]*PNG|otwórz[^\n]*PNG/i.test(makieta), 'skill nie każe czytać PNG')
 })
+
+// P28 (4): zgloszenia na koniec przegladu — skill zna zdarzenie konca przegladu, tryb „od razu” i dokument ustalen.
+test('skill /makieta: zdarzenie przeglad-zakonczony, --zgloszenia od-razu na prośbę, dokument ustaleń przed poprawkami', () => {
+  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
+  assert.ok(makieta.includes('Zdarzenie `przeglad-zakonczony`'))
+  assert.ok(makieta.includes('`--zgloszenia od-razu`'))
+  assert.ok(makieta.includes('docs/operator/<data>-<zadanie>-makiety-ustalenia.md'))
+  assert.ok(makieta.indexOf('## Koniec przeglądu') < makieta.indexOf('## Droga awaryjna'))
+  assert.match(makieta, /Zakończ\s+przegląd/)
+})

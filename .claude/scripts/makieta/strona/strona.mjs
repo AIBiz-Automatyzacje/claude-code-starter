@@ -18,7 +18,8 @@ const BRAK_SERWERA = 'Serwer narzędzia nie odpowiada — w sesji sprawdź „ma
  * @typedef {{ id: string, linia: number, tekst: string, tresc: string, status: keyof typeof STATUSY, ekrany: string[], trasa: string | null,
  *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean }} Punkt
  * @typedef {{ punkt: string, ekran: string, makieta: string | null, url: string | null, spec: string | null, wymiary: { szerokosc: number, wysokosc: number } | null }} Ekran
- * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[] }} Dane
+ * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[],
+ *   zgloszenia: 'na-koniec' | 'od-razu' }} Dane
  */
 
 /**
@@ -153,6 +154,9 @@ async function wczytaj(opcje) {
   const teksty = [...dane.ostrzezenia, ...(dane.pominiete.length ? [`Ekrany SPEC bez punktu w checkliście: ${dane.pominiete.join(', ')} — dopisz punkt, żeby ocenić je tutaj.`] : [])]
   uwagi.hidden = !teksty.length
   uwagi.textContent = teksty.join(' ')
+  const naKoniec = dane.zgloszenia === 'na-koniec'
+  el('zakoncz', HTMLButtonElement).hidden = !naKoniec
+  el('wyslij-blad', HTMLButtonElement).textContent = naKoniec ? 'Zapisz zgłoszenie' : 'Wyślij do sesji'
   rysujEkran(opcje)
 }
 
@@ -169,6 +173,23 @@ function przejdz(krok) {
 function ukryjFormularze() {
   el('form-odstepstwo', HTMLFormElement).hidden = true
   el('form-blad', HTMLFormElement).hidden = true
+  el('form-koniec', HTMLFormElement).hidden = true
+}
+
+/** @param {Punkt[]} punkty @returns {string} stan przegladu przed wyslaniem zgloszen do sesji */
+function tekstPodsumowania(punkty) {
+  const ile = (/** @type {Punkt['status']} */ s) => punkty.filter((p) => p.status === s).length
+  const otwarte = ile('otwarty') + ile('poprawione')
+  return `Zgodne: ${ile('zgodny')}, odstępstwa: ${ile('odstepstwo')}, zgłoszone błędy: ${ile('blad')}, bez decyzji: ${otwarte}.`
+    + (otwarte ? ' Punkty bez decyzji zostaną w checkliście — możesz do nich wrócić później.' : '')
+    + ' Sesja dostanie wszystkie zgłoszenia naraz i przygotuje z Tobą dokument ustaleń.'
+}
+
+async function zakonczPrzeglad() {
+  const { status, json } = await api('zakoncz', { method: 'POST' })
+  if (status !== 200) return komunikat(json?.error?.message ?? `Wysłanie nie powiodło się (${status}).`)
+  ukryjFormularze()
+  komunikat(`Wysłane do sesji: ${json.data.zgloszenia} zgłoszeń. Wróć do sesji smoke'u — tam ustalicie, co poprawić.`)
 }
 
 /**
@@ -196,7 +217,8 @@ async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
     }
     ukryjFormularze()
     await wczytaj({ zmienTrase: false })
-    komunikat(json?.data?.ostrzezenie ?? (decyzja === 'blad' ? 'Zgłoszenie zapisane w checkliście i wysłane do sesji smoke\'u.' : 'Zapisane w checkliście.'))
+    const poBledzie = stan.dane?.zgloszenia === 'na-koniec' ? 'Zgłoszenie zapisane w checkliście — trafi do sesji po „Zakończ przegląd”.' : 'Zgłoszenie zapisane w checkliście i wysłane do sesji smoke\'u.'
+    komunikat(json?.data?.ostrzezenie ?? (decyzja === 'blad' ? poBledzie : 'Zapisane w checkliście.'))
     return true
   } finally {
     for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = false
@@ -215,6 +237,12 @@ function podepnij() {
   el('odstepstwo', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-odstepstwo', HTMLFormElement).hidden = false; el('notatka-odstepstwa', HTMLTextAreaElement).focus() })
   el('blad', HTMLButtonElement).addEventListener('click', () => { ukryjFormularze(); el('form-blad', HTMLFormElement).hidden = false; el('opis-bledu', HTMLTextAreaElement).focus() })
   for (const anuluj of document.querySelectorAll('.anuluj')) anuluj.addEventListener('click', ukryjFormularze)
+  el('zakoncz', HTMLButtonElement).addEventListener('click', () => {
+    ukryjFormularze()
+    el('podsumowanie', HTMLParagraphElement).textContent = tekstPodsumowania(stan.dane?.punkty ?? [])
+    el('form-koniec', HTMLFormElement).hidden = false
+  })
+  el('form-koniec', HTMLFormElement).addEventListener('submit', (z) => { z.preventDefault(); void zakonczPrzeglad() })
   el('form-odstepstwo', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const notatka = el('notatka-odstepstwa', HTMLTextAreaElement).value.trim()

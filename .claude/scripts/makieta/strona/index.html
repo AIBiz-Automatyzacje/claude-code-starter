@@ -15,7 +15,13 @@
       <button type="button" id="poprzedni">Poprzedni</button>
       <button type="button" id="nastepny">Następny</button>
       <span id="smoke" class="wyciszony"></span>
+      <button type="button" id="zakoncz" hidden>Zakończ przegląd</button>
     </div>
+    <form id="form-koniec" class="formularz" hidden>
+      <p id="podsumowanie" class="podsumowanie"></p>
+      <button type="submit">Wyślij do sesji</button>
+      <button type="button" class="anuluj">Wróć do przeglądu</button>
+    </form>
     <p id="uwagi" class="uwagi" hidden></p>
   </header>
 
@@ -42,7 +48,7 @@
       <textarea id="opis-bledu" rows="2" maxlength="300" required></textarea>
       <label for="urzadzenie-bledu">Urządzenie</label>
       <select id="urzadzenie-bledu"></select>
-      <button type="submit">Wyślij do sesji</button>
+      <button type="submit" id="wyslij-blad">Wyślij do sesji</button>
       <button type="button" class="anuluj">Anuluj</button>
     </form>
     <p id="niejednoznaczny" class="komunikat" hidden>Ta sama treść punktu występuje w checkliście kilka razy — decyzję zapisz w sesji.</p>

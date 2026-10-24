@@ -47,6 +47,7 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .formularz { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: start; max-width: 720px; margin-top: 8px; }
 .formularz textarea, .formularz select { width: 100%; }
 .formularz button { justify-self: start; }
+.podsumowanie { grid-column: 1 / -1; margin: 0; }
 .komunikat { margin: 6px 0 0; }
 .komunikat:empty { display: none; }
 
