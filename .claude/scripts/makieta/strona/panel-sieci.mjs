@@ -3,6 +3,8 @@
 // proxy do stron aplikacji, przy kazdym zadaniu. Nowa strona narzedzia zaczyna bez ograniczen (zapis z poprzedniego przegladu
 // nie spowalnia aplikacji po cichu).
 
+import { liczebnik } from './teksty.mjs'
+
 const KLUCZ = 'makieta.siec'
 /** Opoznienie zadania jak latencja profili DevTools (bez ograniczenia przepustowosci). */
 export const PROFILE_SIECI = Object.freeze([
@@ -19,18 +21,11 @@ export function ustawieniaZFormularza(opoznienie, blokady) {
   return { opoznienieMs: Number.isFinite(ms) && ms > 0 ? ms : 0, blokady: blokady.split('\n').map((w) => w.trim()).filter(Boolean) }
 }
 
-/** @param {number} n @returns {string} „1 blokada”, „2 blokady”, „5 blokad” */
-function blokadyLiczba(n) {
-  const reszta = n % 10
-  const forma = n === 1 ? 'blokada' : reszta >= 2 && reszta <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'blokady' : 'blokad'
-  return `${n} ${forma}`
-}
-
 /** @param {UstawieniaSieci} u @returns {string} nagłowek panelu — aktywne ograniczenia widac bez rozwijania */
 export function opisSieci(u) {
   const czesci = []
   if (u.opoznienieMs) czesci.push(PROFILE_SIECI.find((p) => p.opoznienieMs === u.opoznienieMs)?.nazwa ?? `+${u.opoznienieMs} ms`)
-  if (u.blokady.length) czesci.push(blokadyLiczba(u.blokady.length))
+  if (u.blokady.length) czesci.push(liczebnik(u.blokady.length, ['blokada', 'blokady', 'blokad']))
   return czesci.length ? `Sieć: ${czesci.join(' · ')}` : 'Sieć'
 }
 

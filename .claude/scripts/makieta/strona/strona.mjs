@@ -6,6 +6,7 @@
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
 import { podepnijPanelSieci } from './panel-sieci.mjs'
 import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { liczebnik } from './teksty.mjs'
 import { podepnijRozdzielacz } from './uklad.mjs'
 
 const API = '/__makieta/api/'
@@ -203,7 +204,7 @@ async function zakonczPrzeglad() {
   const { status, json } = await api('zakoncz', { method: 'POST' })
   if (status !== 200) return komunikat(json?.error?.message ?? `Wysłanie nie powiodło się (${status}).`)
   ukryjFormularze()
-  komunikat(`Wysłane do sesji: ${json.data.zgloszenia} zgłoszeń. Wróć do sesji smoke'u — tam ustalicie, co poprawić.`)
+  komunikat(`Wysłane do sesji: ${liczebnik(json.data.zgloszenia, ['zgłoszenie', 'zgłoszenia', 'zgłoszeń'])}. Wróć do sesji smoke'u — tam ustalicie, co poprawić.`)
 }
 
 /**
@@ -244,6 +245,8 @@ function podepnij() {
   el('nastepny', HTMLButtonElement).addEventListener('click', () => przejdz(1))
   document.addEventListener('keydown', (z) => {
     if (z.target instanceof HTMLInputElement || z.target instanceof HTMLTextAreaElement || z.target instanceof HTMLSelectElement) return
+    // Strzalki na rozdzielaczu zmieniaja szerokosc kolumn, nie ekran.
+    if (z.target instanceof HTMLElement && z.target.getAttribute('role') === 'separator') return
     if (z.key === 'ArrowLeft') przejdz(-1)
     if (z.key === 'ArrowRight') przejdz(1)
   })

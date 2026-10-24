@@ -95,3 +95,15 @@ test('P28 (6) podpowiedź przy ramkach: dostawca OAuth przez „Otwórz w karcie
   assert.match(m[1], /„Otwórz w karcie”.*„Przeładuj ramki”/)
   assert.ok(pozycja('podpowiedz-logowania') > pozycja('w-karcie') && pozycja('podpowiedz-logowania') < pozycja('ramki'))
 })
+
+test('P28 po pilocie: liczebnik z odmianą (1 zgłoszenie, 2 zgłoszenia, 5 zgłoszeń, 12 zgłoszeń, 22 zgłoszenia)', async () => {
+  const { liczebnik } = await import('../strona/teksty.mjs')
+  const formy = /** @type {const} */ (['zgłoszenie', 'zgłoszenia', 'zgłoszeń'])
+  assert.deepEqual([0, 1, 2, 5, 12, 22, 25].map((n) => liczebnik(n, formy)), ['0 zgłoszeń', '1 zgłoszenie', '2 zgłoszenia', '5 zgłoszeń', '12 zgłoszeń', '22 zgłoszenia', '25 zgłoszeń'])
+})
+
+test('P28 po pilocie: strzałki na rozdzielaczu nie zmieniają ekranu (globalny skrót ← → pomija separator)', () => {
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  const skrot = js.slice(js.indexOf("document.addEventListener('keydown'"), js.indexOf("if (z.key === 'ArrowLeft')"))
+  assert.match(skrot, /role="separator"|getAttribute\('role'\) === 'separator'/)
+})
