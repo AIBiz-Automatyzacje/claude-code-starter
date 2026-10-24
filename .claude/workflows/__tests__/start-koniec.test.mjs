@@ -441,3 +441,10 @@ test('skill /makieta: zdarzenie przeglad-zakonczony, --zgloszenia od-razu na pro
   assert.ok(makieta.indexOf('## Koniec przeglądu') < makieta.indexOf('## Droga awaryjna'))
   assert.match(makieta, /Zakończ\s+przegląd/)
 })
+
+// P28 (6): adres narzedzia w uslugach z lista hostow — skill podaje pole `hosty` startu i wpis Turnstile.
+test('skill /makieta: pole hosty z wyniku startu i host 127.0.0.1 w widgecie Turnstile', () => {
+  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
+  assert.ok(makieta.includes('`hosty`'))
+  assert.match(makieta, /Turnstile wymaga `127\.0\.0\.1` w hostach\s+widgetu/)
+})

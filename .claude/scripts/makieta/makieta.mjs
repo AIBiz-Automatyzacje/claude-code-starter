@@ -22,6 +22,7 @@ import { isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
+import { hostyDoDopisania } from './hosty.mjs'
 import { LIMIT_CZEKANIA_MIN, czekaj, opisOtwartych } from './kolejka.mjs'
 import { DOMYSLNA_APLIKACJA, DOMYSLNY_PORT, czasStartu, czekajNaOdpowiedz, katalogStanu, odpowiada, procesNaPorcie, zapisSerwera, zapiszSerwer, zatrzymaj, zyjeNasz } from './proces.mjs'
 import { BladProxy, PREFIKS_NARZEDZIA, celLokalny } from './proxy.mjs'
@@ -141,6 +142,7 @@ async function start(projekt, o) {
   return wynik({
     link: `http://127.0.0.1:${p}${PREFIKS_NARZEDZIA}?t=${token}`, punkty: punkty.length, ekrany: zrodla.ekrany.length,
     bezMakiety: [...new Set(zrodla.ekrany.filter((e) => !e.makieta).map((e) => e.ekran))], pominiete: zrodla.pominiete, ostrzezenia: zrodla.ostrzezenia,
+    hosty: hostyDoDopisania(projekt, p),
     aplikacja: aplikacja.origin, aplikacjaOdpowiada: await odpowiada(`${aplikacja.origin}/`), zgloszenia, pid: dziecko.pid,
   })
 }

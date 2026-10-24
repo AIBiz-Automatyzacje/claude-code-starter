@@ -88,3 +88,10 @@ test('P28 (5) panel „Sieć”: profile opóźnienia, blokady po jednej w linii
   assert.equal(opisSieci({ opoznienieMs: 300, blokady: Array(5).fill('x') }), 'Sieć: +300 ms · 5 blokad')
   for (const id of ['siec', 'opoznienie', 'blokady', 'siec-stan']) assert.ok(pozycja(id) > HTML.indexOf('class="aplikacja"'), `#${id} w kolumnie aplikacji`)
 })
+
+test('P28 (6) podpowiedź przy ramkach: dostawca OAuth przez „Otwórz w karcie” i „Przeładuj ramki”', () => {
+  const m = /<p id="podpowiedz-logowania"[^>]*>([^<]*)<\/p>/.exec(HTML)
+  assert.ok(m)
+  assert.match(m[1], /„Otwórz w karcie”.*„Przeładuj ramki”/)
+  assert.ok(pozycja('podpowiedz-logowania') > pozycja('w-karcie') && pozycja('podpowiedz-logowania') < pozycja('ramki'))
+})

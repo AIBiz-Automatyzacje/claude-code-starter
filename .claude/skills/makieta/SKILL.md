@@ -25,15 +25,18 @@ Serwer narzędzia działa w tle na `http://127.0.0.1:5180` i jest zarazem proxy 
    Zgłoszenia idą do sesji na koniec przeglądu (domyślne `--zgloszenia na-koniec`). `--zgloszenia od-razu` — każde
    zgłoszenie od razu, tylko gdy operator o to prosi (np. jeden ekran do poprawki).
    Wynik to JSON. Operatorowi podaj `link` (jedyne miejsce z tokenem narzędzia), liczbę punktów i ekranów, `bezMakiety`,
-   `pominiete` (ekrany SPEC bez punktu w checkliście) i `ostrzezenia`. `aplikacjaOdpowiada: false` — poproś operatora
+   `pominiete` (ekrany SPEC bez punktu w checkliście), `ostrzezenia` i `hosty` — usługi, w których operator dopisuje adres
+   narzędzia przed logowaniem w ramkach (Redirect URLs Supabase, hosty widgetu Cloudflare Turnstile). `aplikacjaOdpowiada: false` — poproś operatora
    o uruchomienie aplikacji; ramki pokażą stronę „Aplikacja nie odpowiada”, dopóki nie wstanie.
    - Kod 1 z polem `blad`: port zajęty przez inny proces, brak katalogu zadania, nazwa pliku spoza
      `<data>-<zadanie>-smoke.md` albo smoke poza projektem — przekaż operatorowi treść błędu.
    - Kod 2: złe argumenty (komunikat na stderr), np. adres aplikacji spoza localhost.
    - Kod 3: serwer nie wystartował albo wyjątek — przekaż operatorowi `blad` / `wyjatek` ze ścieżką logu serwera.
 4. Logowanie: hasłem w dowolnej ramce — jedna sesja obejmuje wszystkie ramki (wspólny origin). Dostawca OAuth: przycisk
-   „Otwórz w karcie”, logowanie w karcie, potem „Przeładuj ramki”. OAuth wymaga wpisu `http://127.0.0.1:5180/**`
-   w Redirect URLs projektu Supabase dev; bez wpisu działa logowanie hasłem. Po zmianie konta: „Przeładuj ramki”.
+   „Otwórz w karcie”, logowanie w karcie, potem „Przeładuj ramki” — kliknięty w ramce dostawca daje „zawartość
+   zablokowana”, bo jego strona nie daje się osadzić. OAuth wymaga wpisu `http://127.0.0.1:5180/**` w Redirect URLs
+   projektu Supabase dev; bez wpisu działa logowanie hasłem. Captcha Cloudflare Turnstile wymaga `127.0.0.1` w hostach
+   widgetu. Po zmianie konta: „Przeładuj ramki”.
 5. Zaraz po starcie uruchom `Monitor` z sekcji „Zgłoszenia z narzędzia” (narzędzie odroczone — najpierw ToolSearch
    `select:Monitor`). Powiedz operatorowi: „Zgłoszenia zbieram do końca przeglądu — po ostatnim ekranie kliknij »Zakończ
    przegląd«; gdy w minutę nie odpowiem, napisz: zgłoszenia”.

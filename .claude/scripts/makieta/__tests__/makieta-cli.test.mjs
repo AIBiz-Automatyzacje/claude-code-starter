@@ -272,8 +272,10 @@ test('po recenzji: CLI przez ścieżkę ze spacją i polskimi znakami (dowiązan
 }))
 
 test('P28 (4) start domyślnie zbiera zgłoszenia na koniec: czekaj milczy do api/zakoncz, potem jedno zdarzenie przeglad-zakonczony', () => zProjektem(async (k) => {
+  writeFileSync(join(k.projekt, 'package.json'), JSON.stringify({ dependencies: { '@marsidev/react-turnstile': '1.6.2' } }))
   const w = await uruchom(k)
   assert.equal(w.zgloszenia, 'na-koniec')
+  assert.deepEqual(w.hosty.map((/** @type {string} */ h) => h.split(':')[0]), ['Cloudflare Turnstile'], 'P28 (6) usługi z hostem narzędzia w wyniku startu')
   const token = new URL(w.link).searchParams.get('t') ?? ''
   const p = punktyWizualne(readFileSync(join(k.projekt, SMOKE), 'utf8'), skrotSha1).find((x) => x.linia === 51)
   assert.ok(p)
