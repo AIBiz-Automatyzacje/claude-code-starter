@@ -3185,6 +3185,14 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `stan.trasa`), a pasek adresu nie pokazuje, gdzie ramka jest; pozostałe ramki zostają na starej stronie. Kierunek: pasek adresu
     śledzi adres ramki (`load` + `contentWindow.location`, ten sam origin), „Przeładuj” przeładowuje bieżący adres każdej ramki,
     osobny przycisk „Wszystkie ramki tutaj” (pozostałe ramki na adres ramki, w której operator nawigował).
+    (2b) **Ramki mają iść razem (operator 2026-10-25):** „jeśli na komputerze będę na profilu twórcy, to na telefonie mi się to nie
+    zmienia, a to ma jednocześnie iść”. Kierunek: tryb „Ramki razem” domyślnie włączony — nawigacja w jednej ramce (klik w link,
+    `pushState` routera SPA, „Przejdź”) przenosi pozostałe na ten sam adres (nasłuch zmiany adresu w ramce przez wstrzyknięty skrypt
+    narzędzia albo `popstate`/`load` + `contentWindow.location`; ten sam origin), z ochroną przed pętlą (ramka, która dostała adres
+    od innej, nie rozsyła go dalej). Wyłączenie trybu = niezależne ramki (np. porównanie dwóch stron). Do rozważenia osobno, po
+    pierwszej wersji: lustro interakcji jak w Responsively/Browsersync (przewinięcie, otwarte okno, wpisany tekst) — przy różnych
+    układach komputer/telefon klik po współrzędnych nie działa, a po selektorze tylko dla elementów obecnych w obu układach;
+    przewinięcie proporcjonalne do wysokości strony. Wtedy (2) „Wszystkie ramki tutaj” zostaje dla trybu niezależnego.
     (3) **Opis zadania na ekranie nadal mętny.** P28 skrócił linię R11 do „Sprawdź / Stany / Gdzie”, ale treść pochodzi z linii
     smoke'u pisanej przez workflow (`dev-docs-complete-wf.js:238`, `smokePrompt`): „Gdzie” bywa opisem („sekcja komentarzy”,
     „okno”) bez kroków dojścia, „Sprawdź” to ogólnik („zgodne z makietą”), stany bez sposobu wywołania. Poprawka u źródła:
