@@ -3180,7 +3180,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     zgłoszenia i do `opisOtwartych` / `przeglad-zakonczony`. Zrzutu samej ramki strona nie zrobi bez biblioteki (html2canvas
     i tak nie oddaje 1:1) — zostaje zrzut operatora. Skill: wyjątek od zakazu otwierania PNG — zrzut zgłoszenia sesja ogląda,
     bo to jedyny dowód usterki (koszt ~2,5 tys. tok. na obraz w każdej turze — jeden zrzut naraz).
-    (2) **Brak odświeżenia widoku pod konkretnym adresem.** Interpretacja do potwierdzenia z operatorem: po przejściu w ramce do
+    (2) **Brak odświeżenia widoku pod konkretnym adresem.** Interpretacja potwierdzona przez operatora (2026-10-25): po przejściu w ramce do
     innej strony (klik w aplikacji albo „Przejdź”) „Przeładuj ramki” wraca na trasę punktu (`ramki.mjs` `przeladujRamki` ustawia
     `stan.trasa`), a pasek adresu nie pokazuje, gdzie ramka jest; pozostałe ramki zostają na starej stronie. Kierunek: pasek adresu
     śledzi adres ramki (`load` + `contentWindow.location`, ten sam origin), „Przeładuj” przeładowuje bieżący adres każdej ramki,
@@ -3193,8 +3193,8 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     nie „zgodne z makietą”), **stany i jak je wywołać** (panel „Sieć”: Slow 3G / blokada `<wzorzec>`, konto, dane); parser
     `punkty.mjs` (`opisTresci`) i kontrola `sprawdz` pod nowy format, zgodność wstecz ze starymi smoke'ami (opis null → cała linia).
     Do rozważenia: przepisanie otwartych punktów smoke'u etapu 5 nowym formatem w sesji vibersi zamiast czekania do etapu 6.
-    **Dalej:** plan P29 (pozycja → plik:linia → test) do akceptacji operatora; kolejność względem P27 (pkt 97, po PR etapu 5)
-    ustala operator — (2) i (3) przydadzą się jeszcze w bieżącym smoke'u.
+    **Dalej (decyzja operatora 2026-10-25):** P27 (pkt 97) i P29 wdrażamy RAZEM, dopiero gdy operator domknie etap 5 w vibersi
+    (smoke, PR, merge). Wtedy jeden plan obu paczek (pozycja → plik:linia → test padający bez poprawki) do akceptacji.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3600,7 +3600,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-25) — P28 ZMERGOWANA (`394f664`, 6a pkt 98); lista poprawek narzędzia P29 w 6a pkt 99 (plan do akceptacji); vibersi w punktach wizualnych etapu 5 bez syncu.**
+**AKTUALNA (2026-10-25) — P28 ZMERGOWANA (`394f664`, 6a pkt 98); P27 (pkt 97) + P29 (pkt 99) razem po domknięciu etapu 5 w vibersi; vibersi w punktach wizualnych etapu 5 bez syncu.**
 Po merge'u `popr/P28-makieta-po-pilocie` (katalog `../workspace-template` ma stać na main z P28) nowa sesja w vibersi
 (gałąź `feature/etap-5-interakcje-i-profil`, serwer z `build/` na 5173) z poleceniem niżej. Sync `.claude/` dopiero po PR etapu 5
 (inaczej wejdzie do PR). Przed logowaniem w ramkach: `127.0.0.1` w hostach widgetu Turnstile (dev), `http://127.0.0.1:5180/**`
