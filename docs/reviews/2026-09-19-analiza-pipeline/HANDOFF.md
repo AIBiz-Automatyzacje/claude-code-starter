@@ -3170,6 +3170,32 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     1 fail, dwa kolejne 1215/1215 — prawdopodobnie zbieg z zatrzymywaniem narzędzia w tym samym czasie; nie odtworzone.
     **Dalej:** merge za zgodą → w vibersi powrót do punktów wizualnych BEZ syncu (polecenie w §8), potem PR etapu 5, potem P27.
 
+99. **NARZĘDZIE MAKIET — LISTA POPRAWEK P29 (2026-10-25, uwagi operatora ze smoke'u etapu 5 vibersi po P28); DO WDROŻENIA —
+    plan do akceptacji operatora.** Wejście: trzy uwagi operatora w trakcie przeglądu narzędziem z P28 (sesja vibersi).
+    (1) **Zgłoszenie błędu bez obrazu.** Operator chce dołączyć zrzut albo zaznaczyć na widoku, co jest nie tak — sam opis
+    tekstem nie wystarcza. Dziś formularz „Zgłoś błąd” ma tylko opis i urządzenie, a `api/decyzja` przyjmuje JSON do 16 KB
+    (`serwer.mjs` `LIMIT_CIALA`). Kierunek: wklejenie zrzutu ze schowka (Cmd+Shift+4 → Cmd+V w formularzu) albo wybór pliku,
+    na podglądzie zrzutu prostokąt/strzałka zaznaczenia (canvas), zapis PNG w katalogu zadania
+    (`visual-diff/zgloszenia/<punkt>-<n>.png`) osobną trasą z limitem rozmiaru i typem `image/png`; ścieżka trafia do adnotacji
+    zgłoszenia i do `opisOtwartych` / `przeglad-zakonczony`. Zrzutu samej ramki strona nie zrobi bez biblioteki (html2canvas
+    i tak nie oddaje 1:1) — zostaje zrzut operatora. Skill: wyjątek od zakazu otwierania PNG — zrzut zgłoszenia sesja ogląda,
+    bo to jedyny dowód usterki (koszt ~2,5 tys. tok. na obraz w każdej turze — jeden zrzut naraz).
+    (2) **Brak odświeżenia widoku pod konkretnym adresem.** Interpretacja do potwierdzenia z operatorem: po przejściu w ramce do
+    innej strony (klik w aplikacji albo „Przejdź”) „Przeładuj ramki” wraca na trasę punktu (`ramki.mjs` `przeladujRamki` ustawia
+    `stan.trasa`), a pasek adresu nie pokazuje, gdzie ramka jest; pozostałe ramki zostają na starej stronie. Kierunek: pasek adresu
+    śledzi adres ramki (`load` + `contentWindow.location`, ten sam origin), „Przeładuj” przeładowuje bieżący adres każdej ramki,
+    osobny przycisk „Wszystkie ramki tutaj” (pozostałe ramki na adres ramki, w której operator nawigował).
+    (3) **Opis zadania na ekranie nadal mętny.** P28 skrócił linię R11 do „Sprawdź / Stany / Gdzie”, ale treść pochodzi z linii
+    smoke'u pisanej przez workflow (`dev-docs-complete-wf.js:238`, `smokePrompt`): „Gdzie” bywa opisem („sekcja komentarzy”,
+    „okno”) bez kroków dojścia, „Sprawdź” to ogólnik („zgodne z makietą”), stany bez sposobu wywołania. Poprawka u źródła:
+    format punktu wizualnego z trzema polami pisanymi dla człowieka — **jak wejść** (konkretne kroki: adres z przykładowym
+    slugiem z seeda/dev, co kliknąć), **co porównać** (2–4 konkretne elementy z makiety/SPEC: teksty, układ, odstępy, kolory —
+    nie „zgodne z makietą”), **stany i jak je wywołać** (panel „Sieć”: Slow 3G / blokada `<wzorzec>`, konto, dane); parser
+    `punkty.mjs` (`opisTresci`) i kontrola `sprawdz` pod nowy format, zgodność wstecz ze starymi smoke'ami (opis null → cała linia).
+    Do rozważenia: przepisanie otwartych punktów smoke'u etapu 5 nowym formatem w sesji vibersi zamiast czekania do etapu 6.
+    **Dalej:** plan P29 (pozycja → plik:linia → test) do akceptacji operatora; kolejność względem P27 (pkt 97, po PR etapu 5)
+    ustala operator — (2) i (3) przydadzą się jeszcze w bieżącym smoke'u.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -3574,7 +3600,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-24) — P28 GOTOWA NA GAŁĘZI (6a pkt 98), merge za zgodą; vibersi wraca do punktów wizualnych etapu 5 bez syncu.**
+**AKTUALNA (2026-10-25) — P28 ZMERGOWANA (`394f664`, 6a pkt 98); lista poprawek narzędzia P29 w 6a pkt 99 (plan do akceptacji); vibersi w punktach wizualnych etapu 5 bez syncu.**
 Po merge'u `popr/P28-makieta-po-pilocie` (katalog `../workspace-template` ma stać na main z P28) nowa sesja w vibersi
 (gałąź `feature/etap-5-interakcje-i-profil`, serwer z `build/` na 5173) z poleceniem niżej. Sync `.claude/` dopiero po PR etapu 5
 (inaczej wejdzie do PR). Przed logowaniem w ramkach: `127.0.0.1` w hostach widgetu Turnstile (dev), `http://127.0.0.1:5180/**`
