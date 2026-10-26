@@ -638,3 +638,15 @@ test('napraw: napraw-szerzej = cala regula klasy na WSZYSTKICH plikach klasy w r
   const klasyfikacja = wytnij('| \\`napraw-szerzej\\` |', '|\n')
   assert.match(klasyfikacja, /glob plikow klasy/)
 })
+
+// E5-8 (vibersi etap 5): `test:scripts` i runnery shell poza walidacja — 2 testy padly poza PR. Walidacja = `test` i kazdy
+// `test:*` bez `e2e` w nazwie, w dev-pr (naprawa, rebase czesci) i w walidacji koncowej autopilota.
+test('walidacja: test i kazdy test:* bez e2e w nazwie — blok komend dev-pr i walidacja koncowa autopilota', () => {
+  const blok = wytnij('const BLOK_KOMEND_PROJEKTU = `', '=== KONIEC BLOKU KOMEND ===`')
+  const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
+  const koncowa = autopilot.slice(autopilot.indexOf('function finalValidationPrompt('), autopilot.indexOf('KROK 3 — AUDYT TESTOW'))
+  for (const [nazwa, tekst] of [['dev-pr', blok], ['autopilot', koncowa]]) {
+    assert.match(tekst, /skrypt \\`test\\` ORAZ kazdy skrypt \\`test:\*\\` bez \\`e2e\\` w nazwie/, nazwa)
+    assert.match(tekst, /test:scripts/, nazwa)
+  }
+})

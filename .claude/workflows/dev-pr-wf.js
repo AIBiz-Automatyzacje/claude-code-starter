@@ -17,13 +17,16 @@ export const meta = {
 
 // ── Bloki wspolne ─────────────────────────────────────────────────────────
 
-// Kopia zasady z dev-autopilot-wf.js (workflowy sa self-contained — przy zmianie synchronizuj recznie).
+// Kopia zasady z dev-autopilot-wf.js (workflowy sa self-contained — przy zmianie synchronizuj recznie; zakres testow
+// `test` + `test:*` bez e2e = finalValidationPrompt, rownosc pilnuje dev-pr.test.mjs).
 const BLOK_KOMEND_PROJEKTU = `
 === KOMENDY WALIDACYJNE (czytaj z projektu, nie zgaduj) ===
 Komendy typecheck / test / build bierz z pola "scripts" w package.json TEGO repo. Nie zakladaj \`npm\`:
 sprawdz, ktory menedzer jest uzywany (bun.lockb -> bun, pnpm-lock.yaml -> pnpm, yarn.lock -> yarn,
 package-lock.json -> npm) i uzyj jego skladni. Gdy skryptu nie ma — napisz to wprost w wyniku zamiast
 uruchamiac wymyslona komende. Monorepo: komendy odpalaj w tym samym miejscu, w ktorym robi to CI.
+Testy = skrypt \`test\` ORAZ kazdy skrypt \`test:*\` bez \`e2e\` w nazwie (np. \`test:scripts\`, runnery shell) — vibersi: dwa
+testy spoza \`test\` padly po zmianie, ktorej walidacja ich nie uruchomila.
 === KONIEC BLOKU KOMEND ===`
 
 const BLOK_GH = `
