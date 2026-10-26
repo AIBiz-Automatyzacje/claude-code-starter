@@ -61,3 +61,19 @@ test('wycinek: duplikat reguly (ta sama klasa i tresc) nie zajmuje limitu — zo
   ], ['src/lib/a.ts'])
   assert.deepEqual(w.pliki, ['docs/solutions/a/nowy.md'])
 })
+
+// E5-15(a) (vibersi etap 5): przy rownej wadze i ucieczkach decydowal alfabet klasy (`cykl-zycia-ui` przed `sciezka-bledu`).
+// Teraz przed alfabetem: wezszy glob z tych, ktore pasuja do plikow — regula z katalogu modulu wygrywa z regula calego `src/`.
+test('wycinek: przy rownej wadze i ucieczkach wezszy pasujacy glob przed alfabetem klasy; ucieczki nadal przed globem', () => {
+  const szeroki = wpis('docs/solutions/c/szeroki.md', { klasa: 'cykl-zycia-ui', paths: ['src/**'] })
+  const waski = wpis('docs/solutions/c/waski.md', { klasa: 'sciezka-bledu', paths: ['src/components/komentarze/**'] })
+  // waski glob, ale niepasujacy do plikow, nie podnosi wpisu
+  const obok = wpis('docs/solutions/c/obok.md', { klasa: 'duplikacja', paths: ['src/**', 'server/trasy/komentarze.ts'] })
+  const pliki = ['src/components/komentarze/pole.tsx']
+  assert.deepEqual(wycinek([szeroki, obok, waski], pliki).pliki, ['docs/solutions/c/waski.md', 'docs/solutions/c/szeroki.md', 'docs/solutions/c/obok.md'])
+  const zUcieczkami = wpis('docs/solutions/c/ucieczki.md', { klasa: 'tekst-ui', paths: ['src/**'], ucieczki: '2' })
+  assert.deepEqual(wycinek([waski, zUcieczkami], pliki).pliki, ['docs/solutions/c/ucieczki.md', 'docs/solutions/c/waski.md'])
+  // plik dokladny wezszy niz katalog
+  const dokladny = wpis('docs/solutions/c/dokladny.md', { klasa: 'wartosc-graniczna', paths: ['src/components/komentarze/pole.tsx'] })
+  assert.deepEqual(wycinek([waski, dokladny], pliki).pliki, ['docs/solutions/c/dokladny.md', 'docs/solutions/c/waski.md'])
+})

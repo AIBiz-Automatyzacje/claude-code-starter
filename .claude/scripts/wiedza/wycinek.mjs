@@ -33,7 +33,7 @@ function linia(w) {
  */
 export function wycinek(wpisy, pliki, limitZn = MAKS_WYCINEK_ZN, opcje = {}) {
   const regulyPlikow = wpisy.filter((w) => czyObowiazuje(w) && pasuje(w, pliki, opcje.bezZawsze === true))
-  const dopasowane = bezDuplikatow(regulyPlikow).unikalne.sort(porownajWpisy)
+  const dopasowane = bezDuplikatow(regulyPlikow).unikalne.sort((a, b) => porownajWpisy(a, b, pliki))
   const stopka = (/** @type {number} */ n) => `+${n} regul poza limitem wycinka — pelna lista: ${PLIK_INDEKSU}`
   /** @type {Wpis[]} */
   const wziete = []
