@@ -604,3 +604,10 @@ test('compound: odlozone watki (sufit, „do czesci N+1”) → known-issues.md 
   assert.match(skillPr, /odlozone: <wątki otwarte po suficie albo odłożone do kolejnej części/)
   assert.match(krok1, /`--czesc N` > 1: przed pytaniem o zgodę .*isResolved:false/s)
 })
+
+// E5-9 (vibersi etap 5): 3 P3 z krotkiego review commitow po archiwum trafily tylko do opisu PR — etap 6 ich nie widzi.
+test('skill /dev-pr: P3 krotkiego review → known-issues.md zadania i commit artefaktu przed etapem start', () => {
+  const krotkie = krok1.slice(krok1.indexOf('**Krótkie review**'), krok1.indexOf('Workflow({scriptPath'))
+  assert.match(krotkie, /P3 \(i findingi zostawione przy „PR z findingami w opisie”\) dopisujesz do\n?\s*`docs\/completed\/<zadanie>\/known-issues\.md`/)
+  assert.match(krotkie, /commit tego pliku jawną ścieżką przed etapem `start`/)
+})

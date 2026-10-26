@@ -80,7 +80,11 @@ po konflikcie rebase'u. „Jeszcze nie” → koniec bez etapu `start`.
 dla każdego commitu z `commity` (sha i tematy). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
 błędu i poprawką; bez zmian w plikach.” Pokaż findingi. P1/P2 → `AskUserQuestion`: „Naprawiam przed PR” (poprawka z testem,
 commit jawnymi ścieżkami, potem krok zgody od nowa) albo „PR z findingami w opisie” (wpisz je operatorowi do raportu). Bez
-P1/P2 → etap `start`.
+P1/P2 → etap `start`. P3 (i findingi zostawione przy „PR z findingami w opisie”) dopisujesz do
+`docs/completed/<zadanie>/known-issues.md` (brak pliku = utwórz z nagłówkiem `# Known issues — <zadanie>`), po linii na finding:
+`- 🟡 [P3/<oś>] <plik:linia> — <opis> (krótkie review po archiwizacji)`, oś = `correctness` albo `security` (reviewer,
+który go zgłosił), powyżej sekcji `## Zamkniete`; commit tego pliku jawną ścieżką przed etapem `start`. Opis PR bierze je
+z known-issues, a etap 6 widzi je w archiwum zadania.
 
 ```
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie, czesc}})
