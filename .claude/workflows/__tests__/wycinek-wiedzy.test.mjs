@@ -77,6 +77,6 @@ test('fix autopilota: wycinek wiedzy po plikach z findingow — poprawka nie lam
 
 test('tura poprawek /dev-pr: wycinek wiedzy po plikach z watkow do naprawy, z blizniaczymi miejscami (6a pkt 60 g2)', () => {
   const napraw = wytnij(zrodloPr, "if (etap === 'napraw') {", '// ── Etap: merge')
-  assert.match(napraw, /\\`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i blizniacze miejsca z napraw-szerzej, bez :linia, po przecinku>\\`/)
+  assert.match(napraw, /\\`node \.claude\/scripts\/wiedza\/wiedza\.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i wszystkie pliki klas z napraw-szerzej, bez :linia, po przecinku>\\`/)
   assert.ok(napraw.indexOf('wiedza.mjs wycinek') < napraw.indexOf('1. NAPRAWA'), 'reguly przed naprawa, nie po niej')
 })

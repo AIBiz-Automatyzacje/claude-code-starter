@@ -622,3 +622,19 @@ test('skill /dev-pr: przed zgoda P3 osi correctness/security z known-issues faz 
   assert.match(p3, /„Naprawić przed PR \(N\)”/)
   assert.match(p3, /Bez wyboru operatora niczego nie naprawiasz/)
 })
+
+// E5-4(b) (vibersi PR #9): seedy w 4 rundach — „szerzej” poprawialo zarzut w plikach PR, nie regule na wszystkich plikach
+// klasy; kazda runda bota znajdowala kolejny plik. Naprawa szerzej = lista kontrolna calej reguly na wszystkich plikach
+// klasy w repo (glob), a odpowiedz w watku wymienia sprawdzone pliki.
+test('napraw: napraw-szerzej = cala regula klasy na WSZYSTKICH plikach klasy w repo (glob), odpowiedz wymienia sprawdzone pliki', async () => {
+  const token = P.tokenTury(1, SHA)
+  const watek = { id: 'T1', token, klasa: 'napraw-szerzej', plik: 'e2e/seeds/a-seed.sql:4', streszczenie: 'seed bez kolumny', uzasadnienie: 'glob e2e/seeds/*-seed.sql', klaster: null }
+  const { prompty } = await uruchom({ etap: 'napraw', zadanie: 'etap-5', tura: 1, token, watki: [watek] }, [
+    { naprawione: ['T1'], odrzucone: [], nieruszone: [], walidacja: 'PASS', walidacjaDetal: 'ok', odpowiedziWyslane: 1, commit: 'abc', push: true, plikiBinarne: [] }])
+  assert.match(prompty[0], /wszystkie pliki klasy w repo/)
+  assert.match(prompty[0], /git ls-files '<glob>'/)
+  assert.match(prompty[0], /lista kontrolna calej reguly/)
+  assert.match(prompty[0], /odpowiedz w watku wymienia sprawdzone pliki/)
+  const klasyfikacja = wytnij('| \\`napraw-szerzej\\` |', '|\n')
+  assert.match(klasyfikacja, /glob plikow klasy/)
+})

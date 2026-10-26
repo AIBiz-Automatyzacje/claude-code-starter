@@ -815,7 +815,7 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
 | Klasa | Kryterium |
 |---|---|
 | \`napraw\` | realny defekt: bezpieczenstwo, poprawnosc, utrata danych, zlamany kontrakt — ALBO drobiazg tanszy do naprawy niz do dyskusji |
-| \`napraw-szerzej\` | uwaga trafna i wystepujaca TAKZE w blizniaczych miejscach; naprawa ma objac wszystkie. Zanim uzyjesz tej klasy, ZNAJDZ te miejsca gropem i wymien je w uzasadnieniu |
+| \`napraw-szerzej\` | uwaga trafna i dotyczaca REGULY, ktora obowiazuje cala klase plikow (seedy, migracje, trasy API), nie jedno miejsce; naprawa ma objac regule na wszystkich plikach klasy. W uzasadnieniu podaj glob plikow klasy (np. e2e/seeds/*-seed.sql) i regule jednym zdaniem; blizniacze miejsca znalezione grepem wymien |
 | \`odrzuc\` | bot nie zna decyzji projektowej. **Wymaga nazwy dokumentu** (CLAUDE.md, docs/plans/<plik>, docs/CONCEPTS.md, docs/decisions/<plik>) i uzasadnienia poza nia (min. 20 znakow). Sam fragment kodu w backtickach nie jest zrodlem decyzji — wtedy \`do-operatora\` |
 | \`do-operatora\` | wymaga decyzji produktowej albo ryzyka nie da sie ograniczyc w tej turze |
 
@@ -913,13 +913,18 @@ ${JSON.stringify(doNaprawy, null, 2)}
 DO ODRZUCENIA — odpowiadasz w watku, NIE zmieniasz kodu (${doOdrzucenia.length}):
 ${JSON.stringify(doOdrzucenia, null, 2)}
 
-REGULY PROJEKTU dla poprawianych plikow, przed naprawa: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i blizniacze miejsca z napraw-szerzej, bez :linia, po przecinku>\`
+REGULY PROJEKTU dla poprawianych plikow, przed naprawa: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i wszystkie pliki klas z napraw-szerzej, bez :linia, po przecinku>\`
 (pole tresc; pusta — brak regul dla tych plikow). To reguly z poprzednich zadan tego projektu, ktore builder dostal w prompcie;
 poprawka lamiaca ktorakolwiek z nich wraca jako kolejny komentarz bota albo jako defekt po merge'u.
 
 1. NAPRAWA. Idz po klastrach: watki z tym samym \`klaster\` maja WSPOLNA przyczyne i zamyka je jedna
-   zmiana — nie lataj kazdego osobno. Przy klasie \`napraw-szerzej\` napraw takze blizniacze miejsca
-   wymienione w uzasadnieniu; pominiecie ktoregos oznacza, ze ta sama uwaga wroci w nastepnej turze.
+   zmiana — nie lataj kazdego osobno.
+   Klasa \`napraw-szerzej\` (vibersi PR #9: seedy w 4 rundach, bo kazda naprawa lapala tylko zarzut w plikach PR):
+   a) lista kontrolna calej reguly klasy — zarzut bota plus reguly z wycinka wiedzy dla tej klasy plikow, punkt po punkcie;
+   b) wszystkie pliki klasy w repo, nie tylko z PR: \`git ls-files '<glob>'\` z globem z uzasadnienia (brak globu — wyprowadz
+      go z plikow watku i wpisz do odpowiedzi);
+   c) kazdy plik z (b) sprawdzony wg (a) i poprawiony tam, gdzie lamie regule;
+   d) odpowiedz w watku wymienia sprawdzone pliki (glob, liczba i lista poprawionych) — bot widzi, ze regula objeta w calosci.
    ZAKAZ TEST-WEAKENINGU (twardy): nie modyfikuj istniejacych testow ani asercji, zeby przeszly —
    napraw implementacje. Testy mozesz DODAWAC. Gdy uwaga bota dotyczy brakujacego przypadku brzegowego,
    dopisz test, ktory ten przypadek pokrywa.
