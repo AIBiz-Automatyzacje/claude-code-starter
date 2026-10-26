@@ -3259,6 +3259,43 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     bez bramki rozmiaru; droga „osobny PR commitów po archiwum” niewykonalna) i 6 × P3 — wszystkie poprawione w sesji
     (commit `fix(P27 S1): poprawki po recenzji…`); bieg mutacji po poprawkach 22/22 zabite.
     **Dalej:** merge `popr/P27-S1` po zgodzie operatora, potem sesja S2 (§8).
+103. **WDROŻENIE S2 „review, fix, wiedza” (2026-10-26, jedna sesja) — gałąź `popr/P27-S2` od main `45948b5`, 14 commitów
+    (pomiar + 11 pozycji 14–24 + 2 poprawki po recenzji), testy 1244 → 1262, NIEZMERGOWANA (merge za zgodą operatora).**
+    **Najpierw (wynik pokazany operatorowi przed resztą):** (a) **E5-21 kanarki — 4/4 obalone → sceptyk zostaje.** Kopia vibersi
+    na `42c4e43` (feat fazy 4 etapu 5, bez refów i obiektów fixa, bez `.env*`), wycinek Verify z `dev-docs-review-wf.js` bajt
+    w bajt (`klasa-sceptyk`, sceptykP2 = medium, porcje po 4), 4 prawdziwe P2 KOD z `review-faza-4.md` + 4 kanarki (2 łatwe,
+    2 subtelne — dowód w drugim pliku / łańcuchu `??`), każda porcja 2 + 1 + 1; 4 × DISAGREE_EVIDENCE z właściwą linią,
+    4 prawdziwe potwierdzone; 0,51 USD. Kontekst = null (mapa packagera niezachowana). `skrypty/e5_21_kanarki.py`,
+    `dane/e5-21-kanarki.txt`. (b) **Pomiar E5-3 — próg linii fixa nie rozróżnia:** 18 fixów etapów 3–5 (fix + kontrola
+    diffu), ucieczka z kodu fixa tylko w 1 (etap 5 faza 5, +957 linii kodu przy medianie +971, max +1633); wyzwalacz
+    „fix dodaje hook/funkcję” w 14/18. `skrypty/e5_3_fixy.py`, `dane/e5-3-fixy.txt`. **Decyzja operatora: pozycja 14 bez
+    progu, L-COR-4/5 zawsze.**
+    **Pozycje:** (14) K-3 kontroli fixa: pięć list — L-COR-4 (efekty, timery, jednorazowe znaczniki, stan wyliczany),
+    L-COR-5 (gałąź błędu: droga i widok w każdym stanie); (15) correctness waga: zły widoczny wynik na zwykłej ścieżce = P2
+    (duplikat, 413 poprawnego komentarza); (16) security seed: filtr operacji niszczącej = lista strażnika (nie `LIKE`),
+    upsert bez `owner_id`, `\getenv` tylko bez `-v`; (17) klucz testowy dostawcy: coding-rules (atrapa z wariantem
+    odpowiedzi klucza testowego; kod przyjmuje klucz tylko lokalnie/e2e, test odmowy w produkcji), test-coverage :22 P2 TEST,
+    security :30 P1; (18) `performance.md` React Query: `cancelQueries` przed `invalidateQueries` przy kluczu w pierwszym
+    pobraniu, test z odroczonym `queryFn`; (19) E5-22: reguła lokalna ESLint `lokalne/atrapa-z-argumentami` w
+    `eslint.config.szablon.ts` (`toHaveBeenCalledTimes(n > 0)` w callbacku `it`/`test`/`it.each` wymaga `CalledWith`/
+    `Nth`/`Last` tej samej atrapy; `expect.soft`, `vi.mocked(x)` = `x`) + test-coverage :21 kolejność obietnic w teście
+    wyścigu; (20) E5-12: PATCH z migawki → :17, znacznik i poprzednia wartość → :21, bodyLimit × 12 B → :24, kursor → :25
+    (liczba poleceń 19 bez zmian); (21) `porownajWpisy`: po ucieczkach precyzja najwęższego PASUJĄCEGO globu, przed
+    alfabetem; (22) pole `regula_krotka` (≤ 160, walidacja, compound skill + krok 4 wf), linia wycinka = regula_krotka albo
+    pierwsze zdanie (`pierwszeZdanie`, maski skrótów i `kodu`), cięcie z „…”; (23) `MAKS_WYCINEK_ZN` 2000 → 5000 — fixture
+    `wiedza-vibersi-etap5.json` (19 wpisów startu etapu 5 + pliki IU-10/14/19/23): na main 4 reguły, 11 pominiętych, bez
+    `sciezka-bledu`/`cykl-zycia-ui`; po zmianach obie klasy, 0 pominiętych, ~4,1 tys. zn; (24) indeks: `doScalenia` (klasa
+    z ≥ 3 regułami) i `doBramki` (suma ucieczek ≥ 3, wpisy obowiązujące po dedupie); refresh Faza 1.7 pkt 5–6 + raport,
+    compound — propozycja bramki dla klasy z `doBramki`. Baza vibersi dziś: do scalenia `sciezka-bledu` (4), `seed-e2e` (3),
+    `spojnosc-dwoch-systemow` (3); do bramki `seed-e2e` (5), `sciezka-bledu` (4).
+    **Recenzja subagenta z mutacjami (worktree w scratchpadzie):** 60 mutacji, 37 zabitych; 2 × P2 — zakres „jeden test”
+    reguły ESLint nietestowany (mutanty zakres = plik, bez `it`, najbliższa funkcja, bez `it.each` przeżywały), maskowanie
+    w `pierwszeZdanie` bez testu; P3 — `expect.soft` omijał regułę, `vi.mocked(x)` fałszywy alarm, brzegi precyzji globu,
+    sortowanie `doBramki`, treść L-COR-4/5 w teście. Wszystkie P2 i wymienione P3 poprawione (2 commity `fix(P27 S2)…`);
+    bieg mutacji po poprawkach: 8/8 ESLint (+1 równoważny), 3/3 maski, wiedza 5/5; `+1` precyzji pliku dokładnego usunięty
+    jako równoważny. Zostało (P3, poza S2): `ok` na liście skrótów `walidacja.mjs:22` („Status ok. Potem X.” = całość),
+    sprawdzenie argumentów przez `f.mock.calls` daje fałszywy alarm reguły ESLint.
+    **Dalej:** merge `popr/P27-S2` po zgodzie operatora, potem sesja S3 „makieta” (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3667,10 +3704,38 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   testów i sprawdź `prompty[0]` (tabela części) ręcznie. Dwie uwagi wzajemnie wykluczające się (serwer API bez treści sondy,
   proxy tylko z treścią) testuj osobnymi konfiguracjami, nie jedną asercją „obie”. Mutant usuwający `/` z końca ścieżki jest
   równoważny przy kluczu-prefiksie — zabija go dopiero klucz-regex z `$`.
+- P27 S2 (2026-10-26): test kanarkowy sceptyka bez infrastruktury test-review: klon vibersi na commit review, refy usunięte
+  i `git gc --prune=now` (inaczej `git log --all` pokazuje commit fixa z odpowiedzią), wycinek Verify z
+  `test_review_sceptycy.P9_WYCINKI` z kontrolą bajtową, sesja `claude -p` w kopii z deny zapisu i odczytu `Documents`.
+  Plik `.md` zmieniony skryptem Pythona przez nieuwagę → `git checkout` i powtórka narzędziem Edit (zasada operatora);
+  pliki `.mjs`/`.ts`/`.json` skryptem wolno. Reguła ESLint z zakresem „jeden test”: fixture ze złymi przypadkami musi mieć
+  atrapę sprawdzaną argumentami POZA badanym zakresem (atrapa modułu, pomocnik poza testem) — inaczej mutant „zakres = plik”
+  przeżywa. Dobry fixture ESLint przechodzi też przez reguły typowane (`no-deprecated` na `toBeCalledTimes`,
+  `no-confusing-void-expression` na `waitFor(() => expect…)`). Test `sync-template` raz padł na „Broken pipe” (printf w
+  `sync-template.sh:168`) i przeszedł w powtórce — niestabilny, obserwacja.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-26, po S1) — WDROŻENIE P27 + P29 + E5, SESJA S2 „review, fix, wiedza” (6a pkt 101, 102).** Warunek:
+**AKTUALNA (2026-10-26, po S2) — WDROŻENIE P27 + P29 + E5, SESJA S3 „narzędzie makiet” (6a pkt 101–103).** Warunek:
+`popr/P27-S2` zmergowana do main (zgoda operatora). S3 = pozycje 25–28 planu (P29 (2b), (2), (1)+E5-11, (3)). Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin, popr/P27-S2 zmergowana). Sesja: WDROŻENIE S3
+„narzędzie makiet” paczki P27. Przeczytaj docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md (sekcje Wniosek, S3, Kolejność
+i zasady) i HANDOFF 6a pkt 101–103, §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+
+Cel: pozycje 25–28 na gałęzi popr/P27-S3 od main. Każda pozycja: test → bieg bez poprawki (czerwony) → poprawka → zielony;
+pełny npm test (skrypt kontroli z kodem wyjścia ≠ 0 przy czerwonym) przed każdym commitem; commit na pozycję. Przed zmianą
+sprawdź plik:linia z planu na obecnym main. Na koniec recenzja subagenta z mutacjami w osobnym worktree (ramki.mjs, proxy.mjs,
+serwer.mjs — trasa api/zrzut i limit ciała, punkty.mjs); P2 poprawiasz w tej sesji. Merge za moją zgodą.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; subagenci bez pkill z szerokim wzorcem; liczby skryptem;
+pliki .md tylko narzędziem Write/Edit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: (2026-10-26, po S1) — WDROŻENIE S2 „review, fix, wiedza” — WYKONANE (6a pkt 103, gałąź `popr/P27-S2`).** Warunek:
 `popr/P27-S1` zmergowana do main (zgoda operatora). S2 zaczyna od testu kanarkowego sceptyka E5-21 i pomiaru progu E5-3 —
 wynik kanarków może zmienić zakres S2 (wymiana promptu sceptyka = nowa pozycja do akceptacji operatora). Operator wkleja:
 
