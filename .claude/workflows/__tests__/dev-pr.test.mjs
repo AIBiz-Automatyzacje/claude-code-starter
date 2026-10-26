@@ -611,3 +611,14 @@ test('skill /dev-pr: P3 krotkiego review → known-issues.md zadania i commit ar
   assert.match(krotkie, /P3 \(i findingi zostawione przy „PR z findingami w opisie”\) dopisujesz do\n?\s*`docs\/completed\/<zadanie>\/known-issues\.md`/)
   assert.match(krotkie, /commit tego pliku jawną ścieżką przed etapem `start`/)
 })
+
+// E5-2(b) (vibersi etapy 3–5): P3 z realnym scenariuszem wracal od bota jako P2 (≥ 1 na etap). Przed PR operator widzi
+// P3 osi correctness/security z known-issues faz tej czesci i decyduje o naprawie — bez auto-naprawy (P8 bez zmian).
+test('skill /dev-pr: przed zgoda P3 osi correctness/security z known-issues faz czesci → pytanie „Naprawić przed PR (N)” z lista', () => {
+  const p3 = krok1.slice(krok1.indexOf('**P3 z realnym scenariuszem.**'), krok1.indexOf('**Zgoda na wysłanie.**'))
+  assert.ok(p3.length > 0, 'akapit przed zgoda')
+  assert.match(p3, /grep -E '\^- 🟡 \\\[P3\/\(correctness\|security\)\\\]'/)
+  assert.match(p3, /sekcje `## P3 faza K` dla faz tej części/)
+  assert.match(p3, /„Naprawić przed PR \(N\)”/)
+  assert.match(p3, /Bez wyboru operatora niczego nie naprawiasz/)
+})

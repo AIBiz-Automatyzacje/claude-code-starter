@@ -61,6 +61,13 @@ o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCze
 pomijasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd i pytaj
 jak przy plikach kodu.
 
+**P3 z realnym scenariuszem.** P3 osi correctness i security wracały od bota jako P2 (vibersi: co najmniej jeden na etap).
+Przed pytaniem o zgodę: `git show feature/<zadanie>:docs/completed/<zadanie>/known-issues.md | grep -E '^- 🟡 \[P3/(correctness|security)\]'`
+— przy `--czesc N` tylko sekcje `## P3 faza K` dla faz tej części (kolumna „Fazy” tabeli „Części PR”), bez części wszystkie.
+Niepusta lista (N pozycji) → pytanie o zgodę dostaje opcję „Naprawić przed PR (N)” z listą (plik:linia, oś, opis).
+Wybór → poprawka z testem dla wybranych pozycji, commit jawnymi ścieżkami, linia przeniesiona do sekcji `## Zamkniete`,
+potem krok zgody od nowa. Bez wyboru operatora niczego nie naprawiasz — P3 idą do opisu PR jak dotąd.
+
 **Otwarte wątki poprzednich części.** `--czesc N` > 1: przed pytaniem o zgodę pobierz PR części 1..N−1
 (`gh pr list --state merged --head feature/<zadanie>-czK --json number,url`) i ich wątki zapytaniem GraphQL `reviewThreads`
 (jak w bloku gh workflowu), tylko isResolved:false. Wypisz je w pytaniu o zgodę (PR, plik:linia, zarzut, link) — operator

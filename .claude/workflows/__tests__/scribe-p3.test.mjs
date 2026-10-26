@@ -45,7 +45,6 @@ const prompt = scribePrompt('docs/active/x', 4, [], PRZEBIEG, [])
 test('scribe: P3 typu KOD/TEST ida do known-issues, sekcja "## P3 faza N", dopisanie bez duplikatow', () => {
   assert.match(prompt, /docs\/active\/x\/known-issues\.md/)
   assert.match(prompt, /## P3 faza 4/)
-  assert.match(prompt, /- 🟡 \[P3\] <plik:linia> — <opis>/)
   assert.match(prompt, /bez duplikatow/i)
   assert.match(prompt, /nie usuwaj/i, 'powtorka review po STOP-ie nie moze skasowac P3 z przerwanego podejscia')
 })
@@ -64,4 +63,10 @@ test('blok limitu P3: P3 laduja w known-issues i opisie PR, nie w fixie', () => 
   assert.match(BLOK_LIMIT_P3, /known-issues/)
   // Zmiana kontraktu (P11): blok wg zasad pisania bez wersalikow nacisku — warunek akcyjnosci ten sam, brzmienie malymi literami.
   assert.match(BLOK_LIMIT_P3, /dokladnie jeden plik z numerem linii/, 'akcyjnosc zostaje: wpis known-issues czyta ktos bez kontekstu review')
+})
+
+// E5-2(b): /dev-pr pyta przed PR o P3 osi correctness/security z known-issues — linia musi niesc os (pole _zrodlo findingu).
+test('scribe: linia P3 w known-issues niesie os reviewera ([P3/<os>] z pola _zrodlo)', () => {
+  assert.match(prompt, /- 🟡 \[P3\/<os>\] <plik:linia> — <opis>/)
+  assert.match(prompt, /os = pole _zrodlo findingu/)
 })
