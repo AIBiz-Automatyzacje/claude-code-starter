@@ -110,3 +110,21 @@ test('wycinek (vibersi etap 5): IU-10/14/19/23 dostaja sciezka-bledu i cykl-zyci
     assert.ok(w.zn <= MAKS_WYCINEK_ZN, `${iu}: ${w.zn}`)
   }
 })
+
+// Recenzja S2 (P3): przypadki brzegowe precyzji globu i jednej linii reguly krotkiej.
+test('wycinek: plik dokladny przed katalogiem tej samej glebokosci; {a,b} i ? to wieloznaczniki; liczy sie najwezszy pasujacy glob', () => {
+  const pliki = ['src/a/b.ts']
+  const plik = wpis('docs/solutions/e/plik.md', { klasa: 'wartosc-graniczna', paths: ['src/a/b.ts'] })
+  const katalog = wpis('docs/solutions/e/katalog.md', { klasa: 'cykl-zycia-ui', paths: ['src/a/**'] })
+  assert.deepEqual(wycinek([katalog, plik], pliki).pliki, ['docs/solutions/e/plik.md', 'docs/solutions/e/katalog.md'])
+  const klamry = wpis('docs/solutions/e/klamry.md', { klasa: 'cykl-zycia-ui', paths: ['src/{a,b}/b.ts'] })
+  const znak = wpis('docs/solutions/e/znak.md', { klasa: 'duplikacja', paths: ['src/?/b.ts'] })
+  assert.deepEqual(wycinek([klamry, znak, katalog], pliki).pliki, ['docs/solutions/e/katalog.md', 'docs/solutions/e/klamry.md', 'docs/solutions/e/znak.md'])
+  const dwa = wpis('docs/solutions/e/dwa.md', { klasa: 'tekst-ui', paths: ['src/**', 'src/a/b.ts'] })
+  assert.deepEqual(wycinek([katalog, dwa], pliki).pliki, ['docs/solutions/e/dwa.md', 'docs/solutions/e/katalog.md'])
+})
+
+test('wycinek: regula_krotka z nowa linia w jednej linii wycinka', () => {
+  const w = wpis('docs/solutions/e/nl.md', { regula_krotka: 'Pierwsza czesc\n  druga czesc.' })
+  assert.equal(wycinek([w], ['src/lib/a.ts']).tresc, '- [srednia] sciezka-bledu: Pierwsza czesc druga czesc. (docs/solutions/e/nl.md)')
+})

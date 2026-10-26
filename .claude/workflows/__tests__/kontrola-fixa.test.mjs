@@ -195,6 +195,11 @@ test('kontrolaFixaPrompt: listy K-1…K-7, bramki na plikach fixa, zakres z hash
   assert.match(k3, /L-COR-4: kazdy useEffect/)
   assert.match(k3, /L-COR-5: kazda galaz bledu/)
   assert.doesNotMatch(k3, /L-COR-[45] \(/, 'L-COR-4/5 bez warunku w nawiasie')
+  // tresc list, nie tylko naglowek (recenzja S2): co wypisac i co jest defektem
+  assert.match(k3, /cleanup, skutek podwojnego wywolania w StrictMode/)
+  assert.match(k3, /znacznik zdejmowany za wczesnie albo za pozno/)
+  assert.match(k3, /co widzi uzytkownik w kazdym stanie widoku po bledzie/)
+  assert.match(k3, /blad znikajacy bez sladu to defekt/)
   assert.doesNotMatch(zrodlo, /PROG_LINII_FIXA|progLiniiFixa/, 'brak bramki progu linii fixa (decyzja operatora po pomiarze)')
   assert.match(p, /node \.claude\/scripts\/bramki\/bramki\.mjs --baza <najstarszy>\^/)
   assert.match(p, /abc1234/)

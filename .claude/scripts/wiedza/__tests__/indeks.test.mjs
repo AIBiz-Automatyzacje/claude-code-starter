@@ -87,7 +87,7 @@ test('generujIndeks: doScalenia — klasa z ≥ 3 regulami w indeksie; doBramki 
     wpis('docs/solutions/a/1.md', { ucieczki: '1' }),
     wpis('docs/solutions/a/2.md', { ucieczki: '1' }),
     wpis('docs/solutions/a/3.md', { ucieczki: '1' }),
-    wpis('docs/solutions/b/1.md', { klasa: 'seed-e2e', ucieczki: '3' }),
+    wpis('docs/solutions/b/1.md', { klasa: 'seed-e2e', ucieczki: '4' }),
     wpis('docs/solutions/c/1.md', { klasa: 'tekst-ui', ucieczki: '1' }),
     wpis('docs/solutions/c/2.md', { klasa: 'tekst-ui', ucieczki: '1' }),
     // duplikat (ta sama tresc) nie liczy sie podwojnie: indeks bierze nowszy, jego licznik juz obejmuje starszy
@@ -98,6 +98,6 @@ test('generujIndeks: doScalenia — klasa z ≥ 3 regulami w indeksie; doBramki 
     wpis('docs/solutions/e/regula.md', { klasa: 'konwencja-kodu', ucieczki: '1' }),
   ])
   assert.deepEqual(w.doScalenia, [{ klasa: 'sciezka-bledu', pliki: ['docs/solutions/a/1.md', 'docs/solutions/a/2.md', 'docs/solutions/a/3.md'] }])
-  assert.deepEqual(w.doBramki, [{ klasa: 'sciezka-bledu', ucieczki: 3 }, { klasa: 'seed-e2e', ucieczki: 3 }])
+  assert.deepEqual(w.doBramki, [{ klasa: 'seed-e2e', ucieczki: 4 }, { klasa: 'sciezka-bledu', ucieczki: 3 }])
   assert.deepEqual(w.bledy, [])
 })

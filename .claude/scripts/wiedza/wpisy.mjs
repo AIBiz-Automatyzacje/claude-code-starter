@@ -39,15 +39,15 @@ export function czyObowiazuje(w) {
 }
 
 /**
- * Precyzja globu: liczba segmentow przed pierwszym z wieloznacznikiem; glob bez wieloznacznika (jeden plik) o jeden wiecej.
- * `**` = 0, `src/**` = 1, `src/components/komentarze/**` = 3, `src/a/b.ts` = 4.
+ * Precyzja globu: liczba segmentow przed pierwszym z wieloznacznikiem; glob bez wieloznacznika (jeden plik) — wszystkie
+ * segmenty, wiec plik zawsze wygrywa z globem swojego katalogu. `**` = 0, `src/**` = 1, `src/a/**` = 2, `src/a/b.ts` = 3.
  * @param {string} glob
  * @returns {number}
  */
 function precyzjaGlobu(glob) {
   const segmenty = glob.split('/')
   const pierwszy = segmenty.findIndex((s) => /[*?[\]{}]/.test(s))
-  return pierwszy === -1 ? segmenty.length + 1 : pierwszy
+  return pierwszy === -1 ? segmenty.length : pierwszy
 }
 
 /** @param {Wpis} w @param {string[] | undefined} pliki @returns {number} najwezszy glob wpisu (z plikami: sposrod pasujacych) */

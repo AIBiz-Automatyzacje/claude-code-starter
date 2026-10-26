@@ -4,7 +4,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { POLA_WIEDZY, czyZawsze, liczZdania, walidujWpis } from '../walidacja.mjs'
+import { POLA_WIEDZY, czyZawsze, liczZdania, pierwszeZdanie, walidujWpis } from '../walidacja.mjs'
 
 const PLIKI = ['src/lib/limiter.ts', 'src/components/Baner.tsx', 'supabase/migrations/001_init.sql']
 const WPIS = {
@@ -73,4 +73,13 @@ test('walidujWpis: regula_krotka opcjonalna; podana — niepusta, ≤ 160 zn', (
   assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: 'x'.repeat(161) }, PLIKI).bledy, ['regula_krotka: 161 zn, maksimum 160'])
   assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: 'x'.repeat(160) }, PLIKI).bledy, [])
   assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: ' ' }, PLIKI).bledy, ['regula_krotka: pusta — podaj jedno zdanie ≤ 160 zn albo usun pole'])
+})
+
+// Recenzja S2 P2-2: pierwsze zdanie to domyslna linia wycinka dla solutions bez regula_krotka — kropka w skrocie
+// albo w `kodzie` nie konczy zdania, a maska tej samej dlugosci trzyma indeks ciecia na oryginale.
+test('pierwszeZdanie: skroty i `kod` nie koncza zdania; bez konca zdania — caly tekst', () => {
+  assert.equal(pierwszeZdanie('Uzyj np. limitera. Potem zapisz.'), 'Uzyj np. limitera.')
+  assert.equal(pierwszeZdanie('Porownaj `x. y` z wzorcem. Potem X.'), 'Porownaj `x. y` z wzorcem.')
+  assert.equal(pierwszeZdanie('Kroki m.in. A i B. Reszta.'), 'Kroki m.in. A i B.')
+  assert.equal(pierwszeZdanie('Bez kropki na koncu'), 'Bez kropki na koncu')
 })
