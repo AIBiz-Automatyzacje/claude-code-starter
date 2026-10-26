@@ -483,3 +483,19 @@ test('rozmiar fazy: powyzej 5 IU = uwaga z numerem fazy i liczba IU; 5 IU — be
   assert.match(uwaga ?? '', /^faza 1: 6 IU \(próg 5\)/)
   assert.match(uwaga ?? '', /migracje przepisujące istniejące funkcje/)
 })
+
+// P3 pkt 96 M22: uwaga rozmiaru fazy byla testowana tylko funkcja — usuniecie jej wpiecia w sprawdzPlan przezywalo.
+test('sprawdzPlan: faza z 6 IU daje uwage rozmiaru fazy (wpiecie uwagiRozmiaruFaz), faza fixture — bez niej', () => {
+  const korzen = projekt()
+  try {
+    const plan = parsujPlan(FIXTURE)
+    assert.deepEqual(sprawdzPlan(plan, korzen).uwagi.filter((u) => /IU \(próg 5\)/.test(u)), [])
+    const [faza] = plan.fazy
+    while (faza.iu.length < 6) faza.iu.push({ ...faza.iu[0] })
+    const uwagi = sprawdzPlan(plan, korzen).uwagi.filter((u) => /IU \(próg 5\)/.test(u))
+    assert.equal(uwagi.length, 1)
+    assert.match(uwagi[0], new RegExp(`^faza ${faza.numer}: 6 IU \\(próg 5\\)`))
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})

@@ -289,6 +289,23 @@ test('gotowosc: sciezka E2E_HEALTH na porcie Vite bez wpisu w vite.config = uwag
   assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'bez vite.config — projekt nie na Vite')
 }))
 
+// P3 pkt 96 M15: uwagi serwera API i proxy sondy dotycza scenariuszy [E2E] — zadanie bez nich (same makiety albo nic) ich nie
+// dostaje; mutacja usuwajaca warunek `scenariusze` w gotowosc przezywala.
+test('gotowosc: serwer API i sonda poza proxy bez scenariuszy [E2E] — bez uwag (dotycza tylko scenariuszy)', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  mkdirSync(join(k, 'server'))
+  writeFileSync(join(k, 'server/app.ts'), 'export {}\n')
+  writeFileSync(join(k, 'vite.config.ts'), "export default { server: { proxy: { '/api': 'http://localhost:8787' } } }\n")
+  writeFileSync(join(k, '.env.e2e'), 'X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=http://localhost:5174/healthz\n')
+  const zUwagami = gotowosc(k, ZADANIE).e2e.uwagi
+  assert.equal(zUwagami.filter((u) => /serwer API|proxy Vite/.test(u)).length, 2, 'ze scenariuszami: obie uwagi')
+  const zadania = join(k, ZADANIE, 'publikacja-ofert-zadania.md')
+  writeFileSync(zadania, readFileSync(zadania, 'utf8').replace(/\[E2E\]/g, '[Manual]'))
+  const bez = gotowosc(k, ZADANIE)
+  assert.equal(bez.e2e.scenariusze, 0)
+  assert.deepEqual(bez.e2e.uwagi.filter((u) => /serwer API|proxy Vite/.test(u)), [])
+}))
+
 // P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:
 // pozycja „[blokuje: faza 3]” byla tylko w planie zadania i run przeszedl fazy 3–6 bez serwera Hono w E2E.
 test('blokery: nieodhaczone pozycje checklisty z numerem fazy (start = faza 1), odhaczone pominiete; bez checklisty pusto', () => wRepo((k) => {
