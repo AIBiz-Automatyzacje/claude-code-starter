@@ -3608,7 +3608,39 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-25) — P28 ZMERGOWANA (`394f664`, 6a pkt 98); P27 (pkt 97) + P29 (pkt 99) razem po domknięciu etapu 5 w vibersi; vibersi w punktach wizualnych etapu 5 bez syncu.**
+**AKTUALNA (2026-10-26) — ETAP 5 VIBERSI DOMKNIĘTY (PR #8–#10 zmergowane, main `caed641`); sesja analizy etapu 5, potem plan P27 + P29.**
+Stan: P28 w main (`394f664`); P27 (pkt 97) i P29 (pkt 99, w tym 2b) czekają — plan obu po analizie, razem z jej wnioskami.
+vibersi: etap 5 w trzech częściach PR (#8 fazy 1–2, #9 fazy 3–4, #10 fazy 5–6), po każdej compound z review bota; archiwum
+`docs/completed/etap-5-interakcje-i-profil/`. `/sync-template` w vibersi dopiero po wdrożeniu P27 + P29 (przed etapem 6).
+Operator wkleja do nowej sesji szablonu polecenie niżej, a pod nim ostatnią wiadomość sesji vibersi (feedback z etapu 5).
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin). Sesja: ANALIZA ETAPU 5 vibersi.
+Przeczytaj docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md: 6a pkt 95–99 (planowanie, P25, smoke, P28, lista P29), §7 dwa
+ostatnie wpisy, §8 blok AKTUALNA. Potwierdź w 3–5 zdaniach, gdzie jesteśmy.
+
+Cel: sprawdzić, czy etap 5 (autopilot 6 faz + smoke + 3 części PR) przeszedł zgodnie z założeniami szablonu, i zebrać poprawki.
+1. Telemetria: node .claude/scripts/telemetria/raport.mjs --od 2026-10-20 --do 2026-10-26 --projekt vibersi (najpierw skan;
+   0 NIEZNANY). Koszt per etap i rola, niezawodność, findingi per oś, jakość bota, anomalie — porównaj z etapem 4.
+2. Autopilot etapu 5 (vibersi docs/completed/etap-5-interakcje-i-profil/, .autopilot-state.json, raporty review): czy działały
+   wdrożone paczki — P25 (blokery operatora per faza, sonda E2E_HEALTH_TRESC, uwagi rozmiaru faz i warstwy stałych), P22–P24.
+   Liczby skryptem, nie z głowy; każde twierdzenie z plikiem albo komendą.
+3. PR: trzy części (#8–#10) i trzy tury poprawek — ile uwag bota, jakie klasy, które dało się złapać wcześniej (review fazy,
+   reguły, reviewerzy), co compound dopisał do wiedzy (docs/solutions/, propozycje-do-reviewerow.md). Dlaczego aż tyle plików
+   do poprawy — przyczyny, nie lista.
+4. Feedback z sesji vibersi (wklejony niżej) — każdy punkt: problem → przyczyna w szablonie (plik:linia) → poprawka.
+Wynik: raport w docs/reviews/ (wnioski na początku, potem dowody) + lista poprawek do dołączenia do planu P27 + P29.
+Nic nie wdrażaj w tej sesji; plan paczki do mojej akceptacji w kolejnej.
+
+Zasady: pracujemy w jednej sesji; nie wypisuj wartości z plików .env*; subagenci bez pkill z szerokim wzorcem; liczby skryptem.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+
+--- ostatnia wiadomość sesji vibersi ---
+<wklej>
+```
+
+**Historia: (2026-10-25) — P28 ZMERGOWANA (`394f664`, 6a pkt 98); P27 (pkt 97) + P29 (pkt 99) razem po domknięciu etapu 5 w vibersi.**
 Po merge'u `popr/P28-makieta-po-pilocie` (katalog `../workspace-template` ma stać na main z P28) nowa sesja w vibersi
 (gałąź `feature/etap-5-interakcje-i-profil`, serwer z `build/` na 5173) z poleceniem niżej. Sync `.claude/` dopiero po PR etapu 5
 (inaczej wejdzie do PR). Przed logowaniem w ramkach: `127.0.0.1` w hostach widgetu Turnstile (dev), `http://127.0.0.1:5180/**`
