@@ -126,3 +126,21 @@ test('blokRestartu: ogon logu nieudanego restartu z instrukcja P1 KOD dla correc
   assert.equal(blokRestartu(null), '')
   assert.match(zrodlo, /const restartE2e = \(args && args\.restartE2e\) \|\| null/)
 })
+
+// P27 S2 (plan paczki P27-P29-E5): reguly plikow rol wpiete w istniejace pozycje list — liczba polecen bez zmian.
+/** @param {string} rola @returns {string} */
+const rola = (rola) => readFileSync(join(AGENCI, `${rola}.md`), 'utf8')
+/** @param {string} tresc @param {RegExp} wzor @returns {string} */
+const pozycja = (tresc, wzor) => {
+  const linia = tresc.split('\n').find((l) => l.startsWith('- ') && wzor.test(l))
+  assert.ok(linia, `brak pozycji listy ${wzor}`)
+  return String(linia)
+}
+
+test('correctness: waga — zly widoczny wynik na zwyklej sciezce to P2, nie P3 (E5-2(a): duplikat, 413 na poprawnym komentarzu)', () => {
+  const waga = pozycja(rola('correctness-reviewer'), /^- Nadaj P1/)
+  assert.match(waga, /zwykłej ścieżce użytkownika[^.]*to P2, nie P3/)
+  assert.match(waga, /413/)
+  assert.match(waga, /duplikat/)
+  assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
+})
