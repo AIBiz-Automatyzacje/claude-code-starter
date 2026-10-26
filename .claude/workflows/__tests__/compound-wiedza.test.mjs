@@ -178,3 +178,12 @@ test('skill dev-compound: kod/lint do wdrozenia bramki w indeksie jak regula; po
   assert.match(sekcja, /Po każdym zapisanym solution: `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
   assert.doesNotMatch(skill, /indeksu nie ruszasz|Do indeksu idzie tylko/)
 })
+
+// E5-15(b): compound zapisuje regule skrocona do linii wycinka (≤ 160 zn); walidacja: walidacja.test.mjs.
+test('compound: pole regula_krotka w szablonie frontmattera skilla, w liscie pol skilla i w kroku 4 workflowu', () => {
+  const start = skill.indexOf('```markdown\n---\ntitle:')
+  const frontmatter = skill.slice(start, skill.indexOf('\n---\n', start + '```markdown\n---\n'.length))
+  assert.match(frontmatter, /\nregula_krotka: /)
+  assert.match(skill, /- `regula_krotka` — [^\n]*160 zn/)
+  assert.match(zrodloCompound, /\(klasa, regula, regula_krotka, paths,/)
+})

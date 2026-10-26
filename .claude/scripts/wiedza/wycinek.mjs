@@ -5,7 +5,7 @@
 import { posix } from 'node:path'
 
 import { PLIK_INDEKSU, bezDuplikatow } from './indeks.mjs'
-import { czyZawsze } from './walidacja.mjs'
+import { MAKS_KROTKA_ZN, POLE_KROTKIE, czyZawsze, pierwszeZdanie } from './walidacja.mjs'
 import { czyObowiazuje, pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 
 export const MAKS_WYCINEK_ZN = 2000
@@ -19,9 +19,21 @@ function pasuje(w, pliki, bezZawsze) {
   return pliki.some((p) => globy.some((g) => posix.matchesGlob(p, g)))
 }
 
+/**
+ * E5-15(b): regula skrocona — pole `regula_krotka`, a bez niego pierwsze zdanie reguly, ciete do MAKS_KROTKA_ZN z „…”.
+ * Pelna regula zostaje w solution, do ktorego linia linkuje (vibersi etap 5: 4 reguly po 300–465 zn wypelnialy limit).
+ * @param {Wpis} w
+ * @returns {string}
+ */
+function regulaKrotka(w) {
+  const jednaLinia = (/** @type {string} */ t) => t.replace(/\s*\n\s*/g, ' ').trim()
+  const krotka = jednaLinia(pole(w, POLE_KROTKIE)) || pierwszeZdanie(jednaLinia(pole(w, 'regula')))
+  return krotka.length > MAKS_KROTKA_ZN ? `${krotka.slice(0, MAKS_KROTKA_ZN - 1).trimEnd()}…` : krotka
+}
+
 /** @param {Wpis} w @returns {string} */
 function linia(w) {
-  return `- [${pole(w, 'waga')}] ${pole(w, 'klasa')}: ${pole(w, 'regula').replace(/\s*\n\s*/g, ' ')} (${w.plik})`
+  return `- [${pole(w, 'waga')}] ${pole(w, 'klasa')}: ${regulaKrotka(w)} (${w.plik})`
 }
 
 /**

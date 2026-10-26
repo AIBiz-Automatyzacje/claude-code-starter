@@ -66,3 +66,11 @@ test('walidujWpis: pole bramka (gdzie wdrozona) tylko przy szczeblu kod albo lin
   assert.match(walidujWpis({ ...lint, bramka: ' ' }, PLIKI).bledy.join('\n'), /^bramka: pusta/m)
   assert.match(walidujWpis({ ...WPIS, bramka: 'eslint.config.js' }, PLIKI).bledy.join('\n'), /^bramka: tylko przy szczeblu kod albo lint/m)
 })
+
+// E5-15(b): linia wycinka niesie regule skrocona (≤ 160 zn), pelna regula zostaje w solution (link w linii).
+test('walidujWpis: regula_krotka opcjonalna; podana — niepusta, ≤ 160 zn', () => {
+  assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: 'Klucz limitera z adresu polaczenia, nie z X-Forwarded-For.' }, PLIKI), { ok: true, bledy: [] })
+  assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: 'x'.repeat(161) }, PLIKI).bledy, ['regula_krotka: 161 zn, maksimum 160'])
+  assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: 'x'.repeat(160) }, PLIKI).bledy, [])
+  assert.deepEqual(walidujWpis({ ...WPIS, regula_krotka: ' ' }, PLIKI).bledy, ['regula_krotka: pusta — podaj jedno zdanie ≤ 160 zn albo usun pole'])
+})

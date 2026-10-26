@@ -104,6 +104,7 @@ status: verified
 last_verified: YYYY-MM-DD
 klasa: klasa-ze-slownika
 regula: "Rób X, nie Y — jedno albo dwa zdania."
+regula_krotka: "Ta sama reguła w jednym zdaniu, ≤ 160 zn."
 paths:
   - src/lib/**
 waga: wysoka | srednia | niska
@@ -192,6 +193,9 @@ pól nie zostaje w bazie.
 - `klasa` — klasa defektu z listy `KLASY_WIEDZY` w `.claude/scripts/wiedza/klasy.mjs` (słownik klas błędów dev-pr bez klas
   nie-defektu i bez `inna`).
 - `regula` — jedno albo dwa zdania, ≤ 400 zn: co przyszły kod robi, żeby problem nie wrócił („rób X, nie Y”).
+- `regula_krotka` — ta sama reguła w jednym zdaniu, ≤ 160 zn. Wycinek reguł dla buildera i reviewera pokazuje ją
+  z linkiem do solution, więc w limicie wycinka mieści się kilka razy więcej reguł; bez tego pola wycinek tnie pierwsze
+  zdanie `regula`.
 - `paths` — globy plików, których reguła dotyczy: względne, z `/`, bez segmentów `.` i `..`, każdy pasuje do pliku repo.
   `"**"` znaczy „każdy plik” — projekt ma takich reguł najwyżej 5, więc dostaje go reguła naprawdę przekrojowa.
 - `waga` — `wysoka` (severity critical/high), `srednia` (medium), `niska` (low).

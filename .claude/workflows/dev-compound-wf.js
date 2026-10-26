@@ -76,7 +76,7 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
 3. Sklasyfikuj kategorie (build-errors/runtime-errors/supabase-issues/auth-issues/ui-bugs/
    performance-issues/typescript-errors/deployment-issues/testing-issues).
 4. Zapisz JEDEN plik docs/solutions/<category>/YYYY-MM-DD-kebab-title.md (data z \`date +%F\`) wg formatu ze skilla,
-   razem z polami wiedzy we frontmatterze (klasa, regula, paths, waga, szczebel, szczebel_powod, zrodlo, ucieczki — sekcja
+   razem z polami wiedzy we frontmatterze (klasa, regula, regula_krotka, paths, waga, szczebel, szczebel_powod, zrodlo, ucieczki — sekcja
    "Pola wiedzy" skilla). Jesli nie bylo nietrywialnego problemu wartego dokumentacji — ustaw plik=null, wiedza=null.
 5. Sprawdzenie pol: \`node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>\`. Kod 1 = popraw pola wg \`bledy\` i sprawdz
    drugi raz. Gdy dalej kod 1 — usun plik (solution bez poprawnych pol wiedzy nie zostaje w bazie), zwroc plik=null,

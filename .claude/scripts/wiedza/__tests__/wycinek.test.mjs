@@ -77,3 +77,17 @@ test('wycinek: przy rownej wadze i ucieczkach wezszy pasujacy glob przed alfabet
   const dokladny = wpis('docs/solutions/c/dokladny.md', { klasa: 'wartosc-graniczna', paths: ['src/components/komentarze/pole.tsx'] })
   assert.deepEqual(wycinek([waski, dokladny], pliki).pliki, ['docs/solutions/c/dokladny.md', 'docs/solutions/c/waski.md'])
 })
+
+// E5-15(b): linia = waga, klasa, regula skrocona i link do solution; pelnej reguly w wycinku nie ma.
+test('wycinek: linia z regula_krotka zamiast pelnej reguly; bez pola — pierwsze zdanie reguly albo ciecie do 160 zn z „…”', () => {
+  const pelna = `Pierwsze zdanie reguly. ${'Drugie zdanie dlugie '.repeat(10)}koniec.`
+  const zKrotka = wpis('docs/solutions/d/krotka.md', { regula: pelna, regula_krotka: 'Krotko: blad zapisu widoczny w kazdej galezi.' })
+  assert.equal(wycinek([zKrotka], ['src/lib/a.ts']).tresc, '- [srednia] sciezka-bledu: Krotko: blad zapisu widoczny w kazdej galezi. (docs/solutions/d/krotka.md)')
+  const bezKrotkiej = wpis('docs/solutions/d/zdanie.md', { regula: pelna })
+  assert.equal(wycinek([bezKrotkiej], ['src/lib/a.ts']).tresc, '- [srednia] sciezka-bledu: Pierwsze zdanie reguly. (docs/solutions/d/zdanie.md)')
+  const jednoDlugie = wpis('docs/solutions/d/dlugie.md', { regula: `${'slowo '.repeat(60)}koniec.` })
+  const linia = wycinek([jednoDlugie], ['src/lib/a.ts']).tresc
+  const skrot = /sciezka-bledu: (.*) \(docs/.exec(linia)?.[1] ?? ''
+  assert.equal(skrot.length, 160)
+  assert.ok(skrot.endsWith('…'), skrot)
+})
