@@ -1,0 +1,56 @@
+Raport telemetrii pipeline'u dev-* — 2026-10-20 … 2026-10-26 — projekt vibersi (wygenerowano 2026-10-26T09:51:04.644Z)
+
+1. Koszt (jednostki wzgledne: in 1, cache write 1,25, cache read 0,1, out 5)
+   razem 84.7 M; agentow: 200; runow: 26; faz: 6; poza etapami fazy 3.6 M
+   execute              43.4 M  51.3%
+   review               19.0 M  22.5%
+   fix                  13.8 M  16.3%
+   orkiestracja          1.7 M  2%
+   mechanika_review      1.7 M  2%
+   sceptycy              1.4 M  1.7%
+   poza pipeline'em (analizy, testy): 0 runow, 0 agentow, 0.0 M — pominiete w sekcjach 1–5 i 7
+   per projekt: vibersi 84.7 M
+
+2. Kontekst startowy per klasa roli i model (odniesienie 20.09: mechaniczny haiku 89k, orkiestracyjny opus 121k, reviewer 125k, sceptyk 123k, builder 135k; cele po It. 3a: mechaniczny ~9–10k, orkiestracyjny/sceptyk/naprawiacz opus ~25–26k, naprawiacz haiku ~21k, reviewer ~29k, builder ~38k)
+   builder         claude-opus-5-5            n=24  ctx_start p50 27k p90 29k  narzedzia p50 brak listy  CLAUDE.md p50 3582 zn
+   mechaniczny     claude-haiku-5-5           n=14  ctx_start p50 10k p90 22k  narzedzia p50 brak listy  CLAUDE.md p50 — zn
+   naprawiacz      claude-opus-5-5            n=11  ctx_start p50 31k p90 34k  narzedzia p50 brak listy  CLAUDE.md p50 3582 zn
+   orkiestracyjny  claude-haiku-5-5           n=13  ctx_start p50 6k p90 6k  narzedzia p50 brak listy  CLAUDE.md p50 — zn
+   orkiestracyjny  claude-opus-5-5            n=69  ctx_start p50 12k p90 27k  narzedzia p50 brak listy  CLAUDE.md p50 3582 zn
+   reviewer        claude-opus-5-5            n=36  ctx_start p50 16k p90 18k  narzedzia p50 brak listy  CLAUDE.md p50 3582 zn
+   sceptyk         claude-opus-5-5            n=27  ctx_start p50 14k p90 15k  narzedzia p50 brak listy  CLAUDE.md p50 3582 zn
+   tester-e2e      claude-opus-5-5            n=6  ctx_start p50 28k p90 29k  narzedzia p50 brak listy  CLAUDE.md p50 3582 zn
+
+3. Efort per klasa roli (brak = efort sesji albo model bez efortu, np. haiku)
+   orkiestracyjny  medium 71, low 6, high 5
+   reviewer        medium 12, high 24
+   tester-e2e      high 6
+   naprawiacz      high 11
+   sceptyk         medium 27
+   builder         high 24
+   mechaniczny     medium 14
+
+4. Jakosc
+   findingi reviewerow per os: spec-compliance P1 0 / P2 8 / P3 2; e2e P1 0 / P2 3 / P3 20; security P1 0 / P2 7 / P3 4; performance P1 0 / P2 4 / P3 9; test-coverage P1 0 / P2 61 / P3 6; correctness P1 0 / P2 4 / P3 16; code-quality P1 0 / P2 18 / P3 25
+   uwagi bota (unikalne watki per zadanie): etap-5-interakcje-i-profil: 7 P1/P2 z 14 watkow, 2.7 na 100 plikow
+
+5. Niezawodnosc
+   dev-autopilot        OK 1
+   dev-pr               STOP 1, OK 24
+   STOP per kategoria: czystosc 1
+
+6. Skille w sesji glownej (pelny koszt = wlasny + subagenci; epizody zamkniete)
+   dev-plan                 n=1  pelny p50 7194k  wiadomosci operatora p50 1
+   sync-template            n=1  pelny p50 6594k  wiadomosci operatora p50 14
+   weryfikacja              n=1  pelny p50 5515k  wiadomosci operatora p50 6
+   figma:figma-design-to-code n=1  pelny p50 2833k  wiadomosci operatora p50 1
+   figma:figma-use          n=1  pelny p50 1634k  wiadomosci operatora p50 3
+   dev-pr                   n=2  pelny p50 1057k  wiadomosci operatora p50 1
+
+7. Anomalie (agent > 2× mediany swojej roli), top 10
+   build                    3.3 M  wf_e17cca34-115 a76ee3d421bef8582
+   build                    3.1 M  wf_e17cca34-115 ac9f98a0c24352fb2
+   build                    2.9 M  wf_e17cca34-115 a8c879637b4c9671b
+   build                    2.8 M  wf_e17cca34-115 a8cedac6e6471a8db
+   build                    2.7 M  wf_e17cca34-115 a4dd12ea997142b2e
+   pr:napraw                0.8 M  wf_8a03eeef-e6f acdb5c1afa2ea3148

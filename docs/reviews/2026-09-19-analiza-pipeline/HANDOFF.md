@@ -3204,6 +3204,24 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej (decyzja operatora 2026-10-25):** P27 (pkt 97) i P29 wdrażamy RAZEM, dopiero gdy operator domknie etap 5 w vibersi
     (smoke, PR, merge). Wtedy jeden plan obu paczek (pozycja → plik:linia → test padający bez poprawki) do akceptacji.
 
+100. **ANALIZA ETAPU 5 VIBERSI (2026-10-26, jedna sesja, nic nie wdrożone) — raport `docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md`,
+    lista E5-1…E5-14 dochodzi do planu P27 + P29.** Telemetria (`raport.mjs --od 2026-10-20 --do 2026-10-26 --projekt vibersi`,
+    skan 600 runów, 0 błędów; porównanie z etapem 4 w `docs/reviews/telemetria/raport-2026-10-17_2026-10-19-vibersi*`):
+    84,7 M vs 54,6 M — execute 43,4 M (24 IU vs 14, builder p50 bez zmian 1,33 M), review 19,0 M (+64%, diff faz 1,6× większy),
+    fix 13,8 M (stabilny). Bot 2,7 P1/P2 na 100 plików (etap 4: 1,5); PR #8 0 wątków, #9 3 tury + wątek po sufitcie, #10 2 tury.
+    **Ustalenia:** (a) run `wf_e17cca34-115` szedł BEZ P23 (sync `015b61c` 19.10 17:30 ze stanu `54d9fbd`, merge P23 o 18:56)
+    i bez P25 (po runie); P25 zadziałała w smoke'u, `plan.mjs blokery` retrospektywnie daje STOP przed fazą 3. (b) P22 działa
+    (B1, B2, B4, C1, D2, F1 — dowody w raporcie §2). (c) Z 13 wątków bota PR #9/#10: 8 = klasa seedów rozlewana rundami
+    „szerzej” (seedy z etapu 4 weszły do recenzji przez poszerzenie), 2 = P3 z review fazy 4/5 w known-issues, 2 = kod fixa fazy 5
+    (`5901dc3`, +852 linii, tylko listy K-3); 7/7 klas miało regułę u recenzentów. (d) Poprawka Turnstile (`b954014`) poza main —
+    część 3 po smoke'u 149 plików bota, poprawka P2 dała 152 → recenzja pominięta; sama dziura powstała w smoke'u (`0dd8f3b`) po
+    naszej analizie pkt 97(3), która nie wymagała warunku środowiska. (e) Wątek `moje-projekty-seed.sql:182` (Major) „do cz. 3”
+    został otwarty na zmergowanym PR #9 — brak nośnika po sufitcie. (f) `test:scripts` i `e2e/serwer-smoke.sh` poza walidacją.
+    Skrypty: `skrypty/e5_runy.py`, `e5_stan.py`, `e5_sesje.py`.
+    **Dalej:** sesja planu paczki P27 (pkt 97 + P3 z pkt 96) + P29 (pkt 99) + E5-1…E5-14 do akceptacji operatora (§8).
+    W vibersi przed etapem 6 (decyzje operatora, poza szablonem): PR z `b954014` (Turnstile), wątek `moje-projekty-seed.sql:182`,
+    2 padające testy, CLAUDE.md `TURNSTILE_SECRET_KEY`.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -3608,7 +3626,26 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-26) — ETAP 5 VIBERSI DOMKNIĘTY (PR #8–#10 zmergowane, main `caed641`); sesja analizy etapu 5, potem plan P27 + P29.**
+**AKTUALNA (2026-10-26, po analizie) — PLAN PACZKI P27 + P29 + E5 (6a pkt 97, 99, 100); plan do akceptacji, wdrożenie w kolejnej sesji.**
+Stan: analiza etapu 5 zrobiona (raport `docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md`). `/sync-template` w vibersi dopiero
+po wdrożeniu paczki (przed etapem 6). Operator wkleja do nowej sesji szablonu:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin). Sesja: PLAN PACZKI P27 + P29 + E5.
+Przeczytaj docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md: 6a pkt 96 (zostałe P3), 97 (P27), 99 (P29 z 2b), 100 (analiza),
+§7 dwa ostatnie wpisy; raport docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md (lista E5-1…E5-14). Potwierdź w 3–5 zdaniach.
+
+Cel: jeden plan paczki — każda pozycja: problem → plik:linia → poprawka → test padający bez poprawki → co mi to da;
+kolejność wg wpływu (blokuje run / jakość PR / koszt), grupy do jednej sesji wdrożenia; E5-14 i obserwacje sceptyka jako pomiar,
+nie zmiana. Sprawdź każde plik:linia w obecnym main przed wpisaniem do planu.
+Nic nie wdrażaj; plan do mojej akceptacji.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; subagenci bez pkill z szerokim wzorcem; liczby skryptem.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: (2026-10-26) — ETAP 5 VIBERSI DOMKNIĘTY (PR #8–#10 zmergowane, main `caed641`); sesja analizy etapu 5 — WYKONANA (6a pkt 100).**
 Stan: P28 w main (`394f664`); P27 (pkt 97) i P29 (pkt 99, w tym 2b) czekają — plan obu po analizie, razem z jej wnioskami.
 vibersi: etap 5 w trzech częściach PR (#8 fazy 1–2, #9 fazy 3–4, #10 fazy 5–6), po każdej compound z review bota; archiwum
 `docs/completed/etap-5-interakcje-i-profil/`. `/sync-template` w vibersi dopiero po wdrożeniu P27 + P29 (przed etapem 6).
