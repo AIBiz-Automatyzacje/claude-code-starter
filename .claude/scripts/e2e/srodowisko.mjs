@@ -73,9 +73,14 @@ export function menedzerPakietow(projekt) {
   return 'npm'
 }
 
-/** @param {string} projekt @returns {boolean} katalog `server/` albo skrypt package.json z czlonem `server` (`build:server`, `dev:server`) */
+// Uklady repo z serwerem API obok SPA (P27 S1 (12)): `server/` (vibersi), `api/`, monorepo `apps/api/`.
+const KATALOGI_SERWERA = ['server', 'api', 'apps/api']
+// Czlon nazwy skryptu `server` albo `api` miedzy dwukropkami (`dev:server`, `api:build`), nie fragment slowa (`observer`, `rapid`).
+const SKRYPT_SERWERA = /(?:^|:)(?:server|api)(?::|$)/
+
+/** @param {string} projekt @returns {boolean} katalog z KATALOGI_SERWERA albo skrypt package.json z czlonem `server`/`api` (`build:server`, `dev:api`) */
 function maSerwerApi(projekt) {
-  if (existsSync(join(projekt, 'server'))) return true
+  if (KATALOGI_SERWERA.some((k) => existsSync(join(projekt, k)))) return true
   const pakiet = join(projekt, 'package.json')
   if (!existsSync(pakiet)) return false
   /** @type {unknown} */
@@ -88,7 +93,7 @@ function maSerwerApi(projekt) {
     throw e
   }
   const scripts = manifest && typeof manifest === 'object' && 'scripts' in manifest ? manifest.scripts : null
-  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => /(?:^|:)server(?::|$)/.test(nazwa))
+  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => SKRYPT_SERWERA.test(nazwa))
 }
 
 /**
@@ -98,7 +103,60 @@ function maSerwerApi(projekt) {
  */
 export function uwagaSerweraApi(projekt, env) {
   if (env.E2E_HEALTH_TRESC || !maSerwerApi(projekt)) return null
-  return `projekt ma serwer API (server/ albo skrypt *:server), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
+  return `projekt ma serwer API (server/, api/, apps/api/ albo skrypt *:server, *:api), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
+}
+
+const PLIKI_VITE = ['vite.config.ts', 'vite.config.mts', 'vite.config.js', 'vite.config.mjs', 'vite.config.cjs']
+
+/** @param {URL} a @param {URL} b @returns {boolean} ten sam serwer: port i host (localhost, 127.0.0.1, [::1] to jeden host) */
+function tenSamSerwer(a, b) {
+  const host = (/** @type {URL} */ u) => (HOSTY_LOKALNE.includes(u.hostname) ? 'lokalny' : u.hostname)
+  return a.protocol === b.protocol && a.port === b.port && host(a) === host(b)
+}
+
+/**
+ * Klucze proxy z vite.config (napisy w cudzyslowie z dwukropkiem za nimi, po `proxy:`), bez komentarzy. Klucz z `^` to wyrazenie
+ * regularne Vite, pozostale — prefiks sciezki.
+ * @param {string} tresc @returns {string[]}
+ */
+function kluczeProxy(tresc) {
+  const bezKomentarzy = tresc.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1')
+  const proxy = /\bproxy\s*:\s*\{/.exec(bezKomentarzy)
+  if (!proxy) return []
+  return [...bezKomentarzy.slice(proxy.index).matchAll(/['"`](\^?\/[^'"`\s]*)['"`]\s*:/g)].map((m) => m[1])
+}
+
+/** @param {string} klucz @param {string} sciezka @returns {boolean} klucz proxy Vite kieruje te sciezke na serwer */
+function kluczPokrywa(klucz, sciezka) {
+  if (klucz.startsWith('^')) {
+    try {
+      return new RegExp(klucz).test(sciezka)
+    } catch (e) {
+      // Klucz, ktorego nie da sie skompilowac, Vite tez odrzuci — nie pokrywa sciezki (uwaga zostaje).
+      if (e instanceof SyntaxError) return false
+      throw e
+    }
+  }
+  const prefiks = klucz.replace(/\/$/, '')
+  return !!prefiks && (sciezka === prefiks || sciezka.startsWith(`${prefiks}/`))
+}
+
+/**
+ * Uwaga przy planowaniu (P27 (1), vibersi etap 5): sonda E2E_HEALTH z E2E_HEALTH_TRESC na porcie Vite (serwer E2E_URL), a jej
+ * sciezki nie pokrywa zaden klucz proxy w vite.config.* — Vite odpowiada fallbackiem SPA i sonda daje STOP startu. Bez tresci
+ * sonda przechodzi na kazdej trasie aplikacji (brak sprawdzenia serwera zglasza uwagaSerweraApi).
+ * @param {string} projekt @param {Record<string, string>} env @returns {string | null}
+ */
+export function uwagaProxyZdrowia(projekt, env) {
+  if (!env.E2E_HEALTH_TRESC) return null
+  const zdrowie = env.E2E_HEALTH ? adresHttp(env.E2E_HEALTH) : null
+  const url = adresHttp(env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`)
+  if (!zdrowie || !url || !tenSamSerwer(zdrowie, url) || zdrowie.pathname === '/') return null
+  const plik = PLIKI_VITE.find((p) => existsSync(join(projekt, p)))
+  if (!plik) return null
+  const sciezka = zdrowie.pathname.replace(/\/$/, '')
+  if (kluczeProxy(readFileSync(join(projekt, plik), 'utf8')).some((k) => kluczPokrywa(k, sciezka))) return null
+  return `ścieżki ${sciezka} z E2E_HEALTH nie ma w trasach proxy ${plik} — Vite odpowie na nią fallbackiem SPA (index.html), więc sonda z E2E_HEALTH_TRESC da STOP startu; dodaj ${sciezka} do tras proxy Vite obok /api albo ustaw E2E_HEALTH na port serwera (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
 }
 
 /** @param {string} url @returns {URL | null} adres http(s) albo null (zapis bez schematu parsuje sie jako schemat `localhost:`) */

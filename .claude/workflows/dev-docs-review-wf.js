@@ -566,7 +566,7 @@ ${JSON.stringify(obalone || [], null, 2)}
    z markerem [E2E] zamienionym na [Manual]. Obie sekcje zapisz jako calosc z TEGO review: istniejaca kopie tej samej
    linii/flow zaktualizuj zamiast dodawac druga, stare pozycje, ktorych tu nie ma, usun.
 2a. P3 typu KOD/TEST zapisz w ${sciezka}/known-issues.md w sekcji "## P3 faza ${faza}", jeden wiersz na finding:
-   "- 🟡 [P3] <plik:linia> — <opis>". Fix naprawia tylko P1 i P2; P3 z tej sekcji ida do opisu PR i do bota. Brak pliku —
+   "- 🟡 [P3/<os>] <plik:linia> — <opis>", os = pole _zrodlo findingu (/dev-pr pyta przed PR o P3 osi correctness i security). Fix naprawia tylko P1 i P2; P3 z tej sekcji ida do opisu PR i do bota. Brak pliku —
    utworz go; sekcja juz jest (powtorka review po STOP-ie) — dopisz brakujace wiersze bez duplikatow (ten sam plik:linia
    i opis = ten sam wiersz); istniejacych nie usuwaj. Nowa sekcja stoi przed "## Zamkniete" (gdy jest),
    inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. P3 typu E2E i OPERATOR obsluguja punkty 2 i 3.

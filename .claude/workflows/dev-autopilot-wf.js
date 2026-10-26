@@ -984,6 +984,8 @@ Brak skryptu typecheck -> sprobuj tsc --noEmit jesli jest tsconfig.json. Build: 
 
 KROK 2 — uruchom w kolejnosci: typecheck -> lint (jesli jest) -> test (pelny suite, wg BLOKU
 DLUGICH KOMEND: tlo + polling; flake infra obsluz wg procedury z bloku i DOKONCZ lancuch) -> build.
+Test = skrypt \`test\` ORAZ kazdy skrypt \`test:*\` bez \`e2e\` w nazwie (np. \`test:scripts\`, runnery shell) — kazdy osobno,
+wynik kazdego w detalu testu (kopia zasady w BLOK_KOMEND_PROJEKTU dev-pr-wf.js).
 Zatrzymaj sie dopiero na REALNYM FAIL (flake infra PASS-w-izolacji nie jest FAIL).
 
 KROK 3 — AUDYT TESTOW PO FIXACH: commity fixa tego zadania wylacznie z \`${komendaCommitowFixa(sciezka)}\`

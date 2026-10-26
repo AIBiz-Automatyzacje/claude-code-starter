@@ -41,6 +41,8 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 
 **Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Wyczerpany limit = domknięcie,
 nawet gdy zostały otwarte wątki. Nie proponuj „jeszcze jednej tury" — zaraportuj, co zostało, i oddaj decyzję operatorowi.
+Wątki otwarte po suficie i wątki odłożone „do części N+1” przekazujesz etapowi `compound` w `odlozone` — trafiają do
+`known-issues.md` zadania z linkiem wątku, a start kolejnej części zbiera nierozwiązane wątki PR poprzednich części.
 
 ## Przebieg
 
@@ -59,6 +61,19 @@ o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCze
 pomijasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd i pytaj
 jak przy plikach kodu.
 
+**P3 z realnym scenariuszem.** P3 osi correctness i security wracały od bota jako P2 (vibersi: co najmniej jeden na etap).
+Przed pytaniem o zgodę: `git show feature/<zadanie>:docs/completed/<zadanie>/known-issues.md | grep -E '^- 🟡 \[P3/(correctness|security)\]'`
+— przy `--czesc N` tylko sekcje `## P3 faza K` dla faz tej części (kolumna „Fazy” tabeli „Części PR”) oraz, przy części
+ostatniej, sekcja `## P3 po archiwizacji`; bez części wszystkie.
+Niepusta lista (N pozycji) → pytanie o zgodę dostaje opcję „Naprawić przed PR (N)” z listą (plik:linia, oś, opis).
+Wybór → poprawka z testem dla wybranych pozycji, commit jawnymi ścieżkami, linia przeniesiona do sekcji `## Zamkniete`,
+potem krok zgody od nowa. Bez wyboru operatora niczego nie naprawiasz — P3 idą do opisu PR jak dotąd.
+
+**Otwarte wątki poprzednich części.** `--czesc N` > 1: przed pytaniem o zgodę pobierz PR części 1..N−1
+(`gh pr list --state merged --head feature/<zadanie>-czK --json number,url`) i ich wątki zapytaniem GraphQL `reviewThreads`
+(jak w bloku gh workflowu), tylko isResolved:false. Wypisz je w pytaniu o zgodę (PR, plik:linia, zarzut, link) — operator
+decyduje, czy naprawić je przed wysłaniem części. Etap `start` dopisuje je też do opisu PR (`otwarteWatkiPoprzednich`).
+
 **Zgoda na wysłanie.** Etap `start` wypycha gałąź i tworzy PR, czyli publikuje zmiany na zewnątrz. Przed nim zawsze pytasz
 operatora przez `AskUserQuestion`: „Wysłać PR <zadanie>[, część N]?” z opcjami „Wyślij PR” i „Jeszcze nie”. Przy plikach
 kodu po archiwum opcje to „Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”, a w pytaniu podajesz liczbę
@@ -73,7 +88,11 @@ po konflikcie rebase'u. „Jeszcze nie” → koniec bez etapu `start`.
 dla każdego commitu z `commity` (sha i tematy). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
 błędu i poprawką; bez zmian w plikach.” Pokaż findingi. P1/P2 → `AskUserQuestion`: „Naprawiam przed PR” (poprawka z testem,
 commit jawnymi ścieżkami, potem krok zgody od nowa) albo „PR z findingami w opisie” (wpisz je operatorowi do raportu). Bez
-P1/P2 → etap `start`.
+P1/P2 → etap `start`. P3 (i findingi zostawione przy „PR z findingami w opisie”) dopisujesz do
+`docs/completed/<zadanie>/known-issues.md` (brak pliku = utwórz z nagłówkiem `# Known issues — <zadanie>`), po linii na finding:
+`- 🟡 [P3/<oś>] <plik:linia> — <opis> (krótkie review po archiwizacji)`, oś = `correctness` albo `security` (reviewer,
+który go zgłosił), w sekcji `## P3 po archiwizacji` (brak = utwórz przed `## Zamkniete`); commit tego pliku jawną ścieżką przed etapem `start`. Opis PR bierze je
+z known-issues, a etap 6 widzi je w archiwum zadania.
 
 ```
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie, czesc}})
@@ -87,6 +106,16 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
+
+`status: "STOP"` z polem `rozmiar` (część albo jeden PR ≥ 150 plików do recenzji po przeliczeniu czubka — commity po
+archiwizacji dołożyły pliki do liczby z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`)
+i opcjami „Dodatkowa część” i „Jeszcze nie”. „Dodatkowa część” = cięcie na commicie archiwizacji (pole `archiwum`
+z `po-archiwum.mjs`): przy `--czesc N` wiersz części N kończy się na nim, a nowy wiersz N+1 biegnie od niego do „czubek
+gałęzi” (fazy = ostatnia faza części N); przy jednym PR tabela „## Części PR” z dwoma wierszami (część 1 od
+`git merge-base origin/main feature/<zadanie>` do niego, część 2 od niego do czubka). Liczby plików każdego wiersza
+z `rozmiar.mjs --baza <od> --czubek <do>` (pole `doRecenzji`). Tabelę wpisujesz w podsumowanie zadania na
+`feature/<zadanie>`, commit jawną ścieżką i znów krok 1 (`/dev-pr --czesc N`, przy jednym PR `--czesc 1`). Bez decyzji
+operatora nie wysyłasz PR ponad limitem bota.
 
 Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
 przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „pliki generowane rozwiązane”).
@@ -207,7 +236,8 @@ komentarze bota w wiedzę projektu, i jest niezależna od tego, czy PR wylądowa
 
 ```
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js",
-          args: {etap: "compound", zadanie, watki: <wszystkie wątki ze wszystkich tur>}})
+          args: {etap: "compound", zadanie, watki: <wszystkie wątki ze wszystkich tur>,
+                 odlozone: <wątki otwarte po suficie albo odłożone do kolejnej części: {plik, streszczenie, url}>}})
 ```
 
 Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review, z polami wiedzy

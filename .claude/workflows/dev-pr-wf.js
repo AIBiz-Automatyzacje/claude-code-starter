@@ -17,13 +17,16 @@ export const meta = {
 
 // ── Bloki wspolne ─────────────────────────────────────────────────────────
 
-// Kopia zasady z dev-autopilot-wf.js (workflowy sa self-contained — przy zmianie synchronizuj recznie).
+// Kopia zasady z dev-autopilot-wf.js (workflowy sa self-contained — przy zmianie synchronizuj recznie; zakres testow
+// `test` + `test:*` bez e2e = finalValidationPrompt, rownosc pilnuje dev-pr.test.mjs).
 const BLOK_KOMEND_PROJEKTU = `
 === KOMENDY WALIDACYJNE (czytaj z projektu, nie zgaduj) ===
 Komendy typecheck / test / build bierz z pola "scripts" w package.json TEGO repo. Nie zakladaj \`npm\`:
 sprawdz, ktory menedzer jest uzywany (bun.lockb -> bun, pnpm-lock.yaml -> pnpm, yarn.lock -> yarn,
 package-lock.json -> npm) i uzyj jego skladni. Gdy skryptu nie ma — napisz to wprost w wyniku zamiast
 uruchamiac wymyslona komende. Monorepo: komendy odpalaj w tym samym miejscu, w ktorym robi to CI.
+Testy = skrypt \`test\` ORAZ kazdy skrypt \`test:*\` bez \`e2e\` w nazwie (np. \`test:scripts\`, runnery shell) — vibersi: dwa
+testy spoza \`test\` padly po zmianie, ktorej walidacja ich nie uruchomila.
 === KONIEC BLOKU KOMEND ===`
 
 const BLOK_GH = `
@@ -40,7 +43,7 @@ const BLOK_GH = `
           reviewThreads(first:100) {
             nodes {
               id isResolved isOutdated path line
-              comments(first:20) { nodes { author { login } body createdAt } }
+              comments(first:20) { nodes { author { login } body createdAt url } }
             }
           }
         }
@@ -80,6 +83,16 @@ const START = {
     state: { type: ['string', 'null'] },
     mergeable: { type: ['string', 'null'] },
     mergeStateStatus: { type: ['string', 'null'] },
+    otwarteWatkiPoprzednich: {
+      type: 'array',
+      description: 'czesc N > 1: nierozwiazane watki PR czesci 1..N-1 (E5-5)',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: { pr: { type: 'integer' }, plik: { type: 'string' }, streszczenie: { type: 'string' }, url: { type: 'string' } },
+        required: ['pr', 'plik', 'streszczenie', 'url'],
+      },
+    },
   },
   required: ['bramka', 'branch', 'prUtworzony'],
 }
@@ -128,6 +141,16 @@ const CZESCI_TABELA = {
     galazZadania: { type: 'boolean', description: 'czy galaz feature/<zadanie> istnieje lokalnie (git rev-parse --verify --quiet)' },
   },
   required: ['tabela', 'galazZadania'],
+}
+
+// Pomiar rozmiaru czesci PR przed przygotowaniem galezi (E5-6) — agent przepisuje stdout rozmiar.mjs, liczbe czyta JS.
+const ROZMIAR_CZESCI = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    wynik: { type: 'string', description: 'ostatnia linia stdout rozmiar.mjs 1:1 (JSON w jednej linii)' },
+  },
+  required: ['wynik'],
 }
 
 const KLASY = ['napraw', 'napraw-szerzej', 'odrzuc', 'do-operatora']
@@ -186,6 +209,7 @@ const ZEBRANE = {
         properties: {
           id: { type: 'string', description: 'reviewThreads.nodes[].id z GraphQL — klucz do odpowiedzi w watku' },
           plik: { type: 'string', description: 'path:line albo "(recenzja ogolna)"' },
+          url: { type: 'string', description: 'url pierwszego komentarza watku (recenzja ogolna: url komentarza recenzji) — link w known-issues.md przy odlozeniu (E5-5)' },
           streszczenie: { type: 'string', description: 'jedno zdanie: co bot zarzuca' },
           klasa: { type: 'string', enum: KLASY },
           uzasadnienie: { type: 'string', description: 'dlaczego ta klasa; przy "odrzuc" nazwa dokumentu decyzji (CLAUDE.md, docs/plans/<plik>, docs/CONCEPTS.md, docs/decisions/<plik>) i uzasadnienie' },
@@ -199,7 +223,7 @@ const ZEBRANE = {
           waga: { type: 'string', enum: WAGI_UWAG, description: 'skutek, gdy defekt zostaje (nie koszt naprawy): P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny bez skutku dla uzytkownika i danych, 0 nie-defekt' },
           naszaOdpowiedz: { type: 'boolean', description: 'czy w watku jest komentarz autora innego niz bot (nasza odpowiedz) po pierwszym komentarzu bota' },
         },
-        required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'],
+        required: ['id', 'plik', 'url', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'],
       },
     },
     prNumer: { type: ['integer', 'null'], description: 'numer pull requesta z gh pr view' },
@@ -326,6 +350,7 @@ const COMPOUND_PR = {
       description: 'TYLKO propozycje — wdrozenie jest decyzja operatora, ten workflow NIE edytuje plikow agentow',
     },
     plikPropozycji: { type: ['string', 'null'], description: 'docs/reviews/propozycje-do-reviewerow.md, gdy dopisano sekcje' },
+    odlozoneZapisane: { type: 'integer', description: 'ile watkow odlozonych dopisano do known-issues.md zadania (E5-5)' },
     commit: { type: ['string', 'null'] },
     push: { type: 'boolean' },
     pushDetal: { type: 'string' },
@@ -487,6 +512,34 @@ function czesciZTabeli(tekst) {
 // Bot recenzuje czesc ponizej limitu planu Pro (kopia PROG_PLIKOW_PR z .claude/scripts/pr/rozmiar.mjs).
 const PROG_CZESCI = 150
 
+// E5-6 (vibersi etap 5, cz. 3): liczba w tabeli czesci pochodzi z archiwizacji, a commity smoke'u po archiwum dochodza do
+// ostatniej czesci (122 -> 152) — bot pominal recenzje i poprawka bezpieczenstwa nie weszla na main. Start przelicza czubek
+// czesci skryptem (filtry .coderabbit.yaml); wynik >= progu zatrzymuje start przed pushem.
+function rozmiarCzesci(stdout, cz) {
+  const kto = cz.czesc ? `część ${cz.czesc}` : 'PR'
+  let r
+  try {
+    r = JSON.parse(String(stdout || '').trim().split('\n').pop() || 'null')
+  } catch (e) {
+    r = { wyjatek: `JSON: ${e.message}` }
+  }
+  if (!r || !Number.isInteger(r.doRecenzji)) {
+    const przyczyna = (r && r.wyjatek) || (r ? 'brak liczbowego pola doRecenzji' : 'brak JSON-a')
+    return { pliki: null, blad: `pomiar rozmiaru ${cz.czesc ? `części ${cz.czesc}` : 'PR'} nieczytelny (rozmiar.mjs: ${przyczyna}) — sprawdź gałąź feature/<zadanie>${cz.czesc ? ' i commit cięcia z tabeli „Części PR”' : ''}` }
+  }
+  if (r.doRecenzji < PROG_CZESCI) return { pliki: r.doRecenzji, blad: null }
+  // Jedyna droga wykonalna w pipeline: cięcie na commicie archiwizacji (commity po nim = smoke) — nowa ostatnia część.
+  const tabela = cz.czesc
+    ? `wiersz części ${cz.czesc} kończy się na nim, nowy wiersz ${cz.czesc + 1} od niego do czubka gałęzi`
+    : 'część 1 od bazy do niego, część 2 od niego do czubka gałęzi'
+  return {
+    pliki: r.doRecenzji,
+    blad: `${kto} ma ${r.doRecenzji} plików do recenzji (${cz.pliki == null ? '' : `tabela przy archiwizacji: ${cz.pliki}, `}limit bota ${PROG_CZESCI}) — bot pominie recenzję. `
+      + `Dodatkowa część z cięciem na commicie archiwizacji (pole archiwum z po-archiwum.mjs): ${tabela} w tabeli „## Części PR” podsumowania `
+      + `(liczby plików z rozmiar.mjs --baza/--czubek), commit tabeli na feature/<zadanie>, potem /dev-pr --czesc ${cz.czesc || 1}`,
+  }
+}
+
 // Wynik agenta przygotowania sprawdzany w JS: status, galaz, walidacja po rebase'ie i push — kazdy osobno w powodzie.
 const INDEKS_WIEDZY = 'docs/learned-patterns.md'
 const SUMA_MIGRACJI = 'supabase/migrations.sum'
@@ -518,8 +571,19 @@ function planCzesci(czesci, czesc, zadanie) {
   return {
     blad: null, czesc, czesci: czesci.length, fazy: c.fazy, pliki: c.pliki, ostatnia,
     galaz: ostatnia ? `feature/${zadanie}` : `feature/${zadanie}-cz${czesc}`,
-    doSha: c.do, rebaseOd: czesc > 1 ? c.od : null, poprzednia: czesc > 1 ? `feature/${zadanie}-cz${czesc - 1}` : null,
+    doSha: c.do, rebaseOd: czesc > 1 ? c.od : null, poprzednia: czesc > 1 ? `feature/${zadanie}-cz${czesc - 1}` : null, od: c.od,
   }
+}
+
+// E5-5 (vibersi PR #9): watek odlozony „do cz. 3” zostal otwarty na zmergowanym PR — kolejna czesc go nie widziala.
+// Start czesci N > 1 zbiera nierozwiazane watki PR czesci 1..N-1 do opisu PR i wyniku etapu.
+function watkiPoprzednich(cz, zadanie) {
+  const galezie = Array.from({ length: cz.czesc - 1 }, (_, i) => `feature/${zadanie}-cz${i + 1}`)
+  return `OTWARTE WATKI POPRZEDNICH CZESCI: PR kazdej czesci = ${galezie.map((g) => `\`gh pr list --state merged --head ${g} --json number,url -q '.[0]'\``).join(', ')};
+watki = zapytanie GraphQL reviewThreads z bloku gh, tylko isResolved:false. Kazdy taki watek:
+otwarteWatkiPoprzednich[] = {pr, plik (path:line), streszczenie (jedno zdanie z pierwszego komentarza), url (pierwszego komentarza)},
+a w opisie PR sekcja \`## Otwarte wątki poprzednich części\` z linia \`- PR #<pr> <plik> — <streszczenie> (<url>)\` na watek
+(brak = sekcji nie dodajesz). Watkow nie rozwiazujesz i nie odpowiadasz w nich.\n`
 }
 
 // Krok CLAUDE.md po czesci nieostatniej nie startuje: plik decyzji zadania jedzie w ostatniej czesci (vibersi PR #3: STOP
@@ -542,6 +606,8 @@ const auto = !!(args && args.auto)
 // wybor liczy sam agent naprawy wg rubryki (napraw + napraw-szerzej).
 const wybor = (args && Array.isArray(args.wybor)) ? args.wybor : null
 const watkiWejsciowe = (args && Array.isArray(args.watki)) ? args.watki : []
+// Etap compound: watki otwarte po suficie tur albo odlozone „do czesci N+1” — nosnik w known-issues.md zadania (E5-5).
+const odlozone = (args && Array.isArray(args.odlozone)) ? args.odlozone : []
 const tokenWejsciowy = (args && typeof args.token === 'string') ? args.token : null
 // Etap merge: ile tur napraw juz wykonano (licznik skilla) — rekomendacja odroznia KOLEJNA TURE od sufitu.
 const turyWykonane = (args && Number.isInteger(args.turyWykonane)) ? args.turyWykonane : 0
@@ -583,7 +649,30 @@ Zwroc obiekt zgodny ze schematem.`,
     if (!t.galazZadania) return { status: 'STOP', etap, czesc, powod: `brak lokalnej gałęzi feature/${zadanie} — tabela części i commity cięcia są na niej (git fetch, git switch feature/${zadanie})` }
     cz = planCzesci(tabelaCzesci, czesc, zadanie)
     if (cz.blad) return { status: 'STOP', etap, czesc, powod: cz.blad }
-    if (cz.pliki >= PROG_CZESCI) log(`/dev-pr czesc ${cz.czesc}: UWAGA — ${cz.pliki} plikow do recenzji (limit bota ${PROG_CZESCI}); bot moze pominac recenzje czesci`)
+  }
+  // Rozmiar do recenzji bota liczy skrypt przed pushem (E5-6). Czubek czesci: ostatnia = galaz zadania (z commitami po archiwum),
+  // nieostatnia = commit ciecia; galaz juz po rebase'ie (ciecie poza historia) — baza = merge-base z origin/main. Jeden PR:
+  // biezaca galaz od merge-base z origin/main (commity smoke'u przesuwaja go ponad limit tak samo).
+  const czubek = cz ? (cz.ostatnia ? `feature/${zadanie}` : cz.doSha) : 'HEAD'
+  const krokBazy = cz
+    ? `\`git merge-base --is-ancestor ${cz.od} ${czubek}\` kod 0 -> BAZA=${cz.od}; inaczej BAZA = stdout \`git merge-base origin/main ${czubek}\`.`
+    : `BAZA = stdout \`git merge-base origin/main HEAD\`.`
+  const pomiar = await agent(
+    `Zmierz rozmiar ${cz ? `czesci ${cz.czesc} z ${cz.czesci} pull requesta` : 'pull requesta'} zadania "${zadanie}" do recenzji bota. Niczego nie zmieniaj.
+1. \`git fetch --prune origin\` (blad sieci nie przerywa — licz na lokalnych refach).
+2. ${krokBazy}
+3. wynik = ostatnia linia stdout 1:1 (takze przy kodzie wyjscia 3): \`node .claude/scripts/pr/rozmiar.mjs --baza <BAZA> --czubek ${czubek}\`.
+Zwroc obiekt zgodny ze schematem.`,
+    { schema: ROZMIAR_CZESCI, agentType: 'klasa-mechaniczny-pomiar', label: `pr:rozmiar-czesci:${cz ? cz.czesc : 'pr'}:${zadanie}` }
+  )
+  if (!pomiar) return { status: 'BLAD', etap, czesc, powod: 'Pomiar rozmiaru PR zwrocil null (agent padl).' }
+  const rozmiar = rozmiarCzesci(pomiar.wynik, cz || { czesc: null, pliki: null })
+  if (rozmiar.blad) {
+    log(`/dev-pr${cz ? ` czesc ${cz.czesc}` : ''}: STOP — ${rozmiar.blad}`)
+    return { status: 'STOP', etap, ...(cz ? { czesc: cz.czesc, czesci: cz.czesci } : {}), powod: rozmiar.blad, rozmiar: { pliki: rozmiar.pliki, tabela: cz ? cz.pliki : null, prog: PROG_CZESCI } }
+  }
+  if (cz) {
+    cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
    „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”`
     // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po
@@ -680,7 +769,7 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
 moze nie miec podsumowania): tytul PR "<tytul zadania> — cz. ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy})"; podsumowanie z
 \`${zrodloOpisu}/${zadanie}-podsumowanie.md'\`, otwarte P3 z \`${zrodloOpisu}/${zadanie}-zadania.md'\` (sekcje "Do poprawy po review
 fazy N" dla faz ${cz.fazy}), otwarte wpisy z \`${zrodloOpisu}/known-issues.md'\` (brak pliku = brak wpisow). Pierwsza linia opisu:
-"Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}."\n`
+"Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}."\n${cz.czesc > 1 ? watkiPoprzednich(cz, zadanie) : ''}`
     : ''
   const wynik = await agent(
     `Jestes bramka wejscia skilla /dev-pr dla zadania "${zadanie}". Sprawdzasz warunki i — gdy trzeba —
@@ -716,6 +805,9 @@ Nie pushuj, nie mergeuj, nie zmieniaj kodu. Zwroc obiekt zgodny ze schematem.${B
     log(`/dev-pr: bramka wejscia STOP — ${wynik.powod || 'bez powodu'}`)
     return { status: 'STOP', etap, ...wynik }
   }
+  if (cz && wynik.otwarteWatkiPoprzednich && wynik.otwarteWatkiPoprzednich.length) {
+    log(`/dev-pr czesc ${cz.czesc}: UWAGA — ${wynik.otwarteWatkiPoprzednich.length} nierozwiazanych watkow PR poprzednich czesci (w opisie PR)`)
+  }
   log(`/dev-pr: PR #${wynik.prNumer} ${wynik.prUtworzony ? 'UTWORZONY' : 'istnieje'} (${wynik.prUrl || 'brak url'}), head ${String(wynik.headRefOid || '').slice(0, 8)}`)
   return { status: 'OK', etap, ...wynik, ...(cz ? { czesc: cz.czesc, czesci: cz.czesci, fazy: cz.fazy } : {}) }
 }
@@ -738,7 +830,7 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
 | Klasa | Kryterium |
 |---|---|
 | \`napraw\` | realny defekt: bezpieczenstwo, poprawnosc, utrata danych, zlamany kontrakt — ALBO drobiazg tanszy do naprawy niz do dyskusji |
-| \`napraw-szerzej\` | uwaga trafna i wystepujaca TAKZE w blizniaczych miejscach; naprawa ma objac wszystkie. Zanim uzyjesz tej klasy, ZNAJDZ te miejsca gropem i wymien je w uzasadnieniu |
+| \`napraw-szerzej\` | uwaga trafna i dotyczaca REGULY, ktora obowiazuje cala klase plikow (seedy, migracje, trasy API), nie jedno miejsce; naprawa ma objac regule na wszystkich plikach klasy. W uzasadnieniu podaj glob plikow klasy (np. e2e/seeds/*-seed.sql) i regule jednym zdaniem; blizniacze miejsca znalezione grepem wymien |
 | \`odrzuc\` | bot nie zna decyzji projektowej. **Wymaga nazwy dokumentu** (CLAUDE.md, docs/plans/<plik>, docs/CONCEPTS.md, docs/decisions/<plik>) i uzasadnienia poza nia (min. 20 znakow). Sam fragment kodu w backtickach nie jest zrodlem decyzji — wtedy \`do-operatora\` |
 | \`do-operatora\` | wymaga decyzji produktowej albo ryzyka nie da sie ograniczyc w tej turze |
 
@@ -836,13 +928,18 @@ ${JSON.stringify(doNaprawy, null, 2)}
 DO ODRZUCENIA — odpowiadasz w watku, NIE zmieniasz kodu (${doOdrzucenia.length}):
 ${JSON.stringify(doOdrzucenia, null, 2)}
 
-REGULY PROJEKTU dla poprawianych plikow, przed naprawa: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i blizniacze miejsca z napraw-szerzej, bez :linia, po przecinku>\`
+REGULY PROJEKTU dla poprawianych plikow, przed naprawa: \`node .claude/scripts/wiedza/wiedza.mjs wycinek --pliki <pliki z watkow DO NAPRAWY i wszystkie pliki klas z napraw-szerzej, bez :linia, po przecinku>\`
 (pole tresc; pusta — brak regul dla tych plikow). To reguly z poprzednich zadan tego projektu, ktore builder dostal w prompcie;
 poprawka lamiaca ktorakolwiek z nich wraca jako kolejny komentarz bota albo jako defekt po merge'u.
 
 1. NAPRAWA. Idz po klastrach: watki z tym samym \`klaster\` maja WSPOLNA przyczyne i zamyka je jedna
-   zmiana — nie lataj kazdego osobno. Przy klasie \`napraw-szerzej\` napraw takze blizniacze miejsca
-   wymienione w uzasadnieniu; pominiecie ktoregos oznacza, ze ta sama uwaga wroci w nastepnej turze.
+   zmiana — nie lataj kazdego osobno.
+   Klasa \`napraw-szerzej\` (vibersi PR #9: seedy w 4 rundach, bo kazda naprawa lapala tylko zarzut w plikach PR):
+   a) lista kontrolna calej reguly klasy — zarzut bota plus reguly z wycinka wiedzy dla tej klasy plikow, punkt po punkcie;
+   b) wszystkie pliki klasy w repo, nie tylko z PR: \`git ls-files '<glob>'\` z globem z uzasadnienia (brak globu — wyprowadz
+      go z plikow watku i wpisz do odpowiedzi);
+   c) kazdy plik z (b) sprawdzony wg (a) i poprawiony tam, gdzie lamie regule;
+   d) odpowiedz w watku wymienia sprawdzone pliki (glob, liczba i lista poprawionych) — bot widzi, ze regula objeta w calosci.
    ZAKAZ TEST-WEAKENINGU (twardy): nie modyfikuj istniejacych testow ani asercji, zeby przeszly —
    napraw implementacje. Testy mozesz DODAWAC. Gdy uwaga bota dotyczy brakujacego przypadku brzegowego,
    dopisz test, ktory ten przypadek pokrywa.
@@ -957,6 +1054,10 @@ nastepny krok, po bramce rozmiaru liczonej w orkiestratorze.
 5. Gdy fakty[] niepuste, wprowadz je do CLAUDE.md: kazdy fakt raz, w sekcji, ktorej dotyczy. Zdanie, ktoremu fakt przeczy,
    popraw albo usun zamiast dopisywac obok. Bez historii zadania, dat i uzasadnien — te zostaja w pliku decyzji. Fakt, ktory
    CLAUDE.md juz zawiera, pomin. Innych zmian w CLAUDE.md nie rob.
+   Fakt o zmiennej srodowiska (vibersi: zmienna wymagana w trybie produkcyjnym opisana jako opcjonalna): wymagalnosc bierzesz
+   z walidatora konfiguracji (plik:linia) — np. schemat Zod env albo funkcja sprawdzajaca konfiguracje (\`grep -rn <NAZWA> src\`),
+   nie z brzmienia pliku decyzji. Zmienna wymagana warunkowo opisujesz z warunkiem trybu ("wymagana gdy <warunek>"); bez
+   walidatora piszesz to wprost ("brak walidacji w kodzie").
 6. znPo = \`wc -m < CLAUDE.md\`. W zmiany jednym-dwoma zdaniami: co dopisano, poprawiono, usunieto (albo "bez zmian").
 
 Zwroc obiekt zgodny ze schematem.`,
@@ -1035,8 +1136,14 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    \`## <data z \`date +%F\`> ${zadanie}\` z jedna linia na propozycje: \`- <agent> ← <klasa>: <regula> (wystapila w: <podstawa>)\`.
    Gdy pliku nie ma, utworz go z naglowkiem \`# Propozycje do reviewerow\` i zdaniem: "Propozycje z compoundu /dev-pr —
    wdrozenie w plikach agentow jest decyzja operatora." Sciezke zwroc w plikPropozycji (bez propozycji: null).
-5. Zacommituj artefakty bazy wiedzy jawnym pathspec (docs/solutions/, docs/learned-patterns.md,
-   docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
+${odlozone.length ? `4a. WATKI ODLOZONE (otwarte po suficie tur albo odlozone do kolejnej czesci — bez nosnika gina po merge'u):
+${JSON.stringify(odlozone, null, 2)}
+   Gdy katalog docs/completed/${zadanie}/ istnieje w drzewie: dopisz do docs/completed/${zadanie}/known-issues.md (brak pliku = utworz
+   z naglowkiem \`# Known issues — ${zadanie}\`) po jednej linii na watek: \`- 🟡 [bot] <plik> — <streszczenie> (watek: <url>)\`,
+   powyzej sekcji "## Zamkniete", i dolacz plik do commitu w pkt 5. odlozoneZapisane = liczba dopisanych linii. Katalogu nie ma
+   (czesc nieostatnia) = odlozoneZapisane 0 — start kolejnej czesci zbierze je z PR.
+` : ''}5. Zacommituj artefakty bazy wiedzy jawnym pathspec (docs/solutions/, docs/learned-patterns.md,
+   docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md, docs/completed/${zadanie}/known-issues.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
    commit = krotki hash; bez zmian do zacommitowania commit null, push false, pushDetal "brak commita" i pomin pkt 6.
 6. ${KROK_PUSH}
    Po merge'u z \`--delete-branch\` biezaca galaz to glowna, wiec push wysyla commit compoundu na glowna — bez niego
@@ -1051,6 +1158,7 @@ Zwroc obiekt zgodny ze schematem.`,
   // Propozycje mialy zero artefaktow w repo mimo 19 compoundow (ETAP1B §4) — brak pliku przy niepustej liscie widac w logu.
   if (wynik.propozycjeDoReviewerow.length && !wynik.plikPropozycji) log('/dev-pr compound: UWAGA — propozycje bez zapisu do docs/reviews/propozycje-do-reviewerow.md')
   if (wynik.indeks === 'bramka') log(`/dev-pr compound: ${INDEKS_PELNY}`)
+  if (odlozone.length) log(`/dev-pr compound: watki odlozone ${odlozone.length}, w known-issues.md: ${wynik.odlozoneZapisane || 0}`)
   if (wynik.commit && !wynik.push) log(`/dev-pr compound: UWAGA — commit ${wynik.commit} bez pusha (${wynik.pushDetal}); wypchnij go przed kolejnym PR i krokiem CLAUDE.md`)
   return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
 }

@@ -50,21 +50,26 @@ i `E2E_START`; db-sync wtedy się nie uruchamia. Wzór: `.claude/templates/e2e-e
 
 ## Aplikacja z osobnym serwerem API (SPA + backend)
 
-Domyślny start to jeden proces Vite. Gdy klient woła własny serwer (`fetch('/api/…')`, katalog `server/`, skrypt
-`build:server` albo `dev:server`), sam Vite w E2E odpowiada na `/api/*` stroną `index.html` albo 404, a scenariusze
+Domyślny start to jeden proces Vite. Gdy klient woła własny serwer (`fetch('/api/…')`, katalog `server/`, `api/` albo
+`apps/api/`, skrypt `build:server`, `dev:server` albo `dev:api`), sam Vite w E2E odpowiada na `/api/*` stroną `index.html` albo 404, a scenariusze
 z zapisem przez serwer kończą się SKIP „środowisko” → `[Manual]` (vibersi etap 4: `POST /api/projekty` → 404; etap 5:
 stary `E2E_START` w trzech fazach). Taki projekt potrzebuje:
 
 1. **Skryptu startu obu procesów** w repo (np. `scripts/e2e/start-e2e.mjs` + `pnpm e2e:start`): buduje i uruchamia serwer
    na osobnym porcie z mapą zmiennych z `.env.e2e` (adres i klucz bazy e2e, `SITE_URL=<E2E_URL>`, testowe klucze usług
    zewnętrznych, wysyłki w trybie dziennika), potem Vite `--mode e2e --port <port E2E_URL> --strictPort` z proxy `/api`
-   na serwer; sygnał zakończenia i padnięcie jednego procesu kończą oba. Wzór: vibersi `scripts/e2e/start-e2e.mjs`.
+   i ścieżki sondy z `E2E_HEALTH` (np. `/healthz`) na serwer — trasa spoza proxy dostaje od Vite fallback SPA (`index.html`),
+   a sonda z treścią daje STOP startu (vibersi etap 5); sygnał zakończenia i padnięcie jednego procesu kończą oba. Wzór: vibersi `scripts/e2e/start-e2e.mjs`.
 2. **`E2E_START` na ten skrypt** (`E2E_START="pnpm e2e:start"`) — jeden klucz w pliku; zmiana istniejącej wartości to
    podmiana linii, nie dopisanie drugiej.
-3. **Sondy na trasie serwera z treścią**: `E2E_HEALTH=<E2E_URL>/healthz` (trasa zdrowia serwera przez proxy) i
+3. **Sondy na trasie serwera z treścią**: `E2E_HEALTH=<E2E_URL>/healthz` (trasa zdrowia serwera przez proxy — ta ścieżka
+   musi być na liście tras proxy w `vite.config.*` obok `/api`; bramka gotowości `/dev-plan` zgłasza uwagę, gdy jej nie ma) i
    `E2E_HEALTH_TRESC='"status":"ok"'` (tekst z odpowiedzi tej trasy). Fallback SPA odpowiada 200 na każdej ścieżce, więc
    bez treści stary start „samego Vite” przechodzi sondę; z treścią daje STOP przed fazą 1 albo serwer martwy po restarcie.
    Sonda nie podąża za przekierowaniem: `E2E_HEALTH` wskazuje adres, który odpowiada wprost (np. `/healthz`, nie `/healthz/` z 301).
+
+Status HTTP i meta (`<title>`, `og:*`) trasy renderowanej przez serwer scenariusz sprawdza na porcie serwera albo na trasie
+z listy proxy Vite, nigdy port Vite — Vite odpowiada na każdej ścieżce 200 i `index.html` (vibersi etap 5: `curl` na `[Manual]`).
 
 Gdy skrypt startu powstaje dopiero w zadaniu, plan ma pozycję checklisty `[blokuje: faza N]` (N = faza pierwszego scenariusza
 zapisującego albo czytającego przez serwer): operator podmienia `E2E_START` i ustawia sondy po fazie z IU skryptu, a autopilot

@@ -3240,6 +3240,25 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (`dev-docs-review-wf.js:568-569`) — E5-2(b) wymaga najpierw osi w linii; etap `claude-md` nie wylicza zmiennych sam
     (poprawka w kroku 5 promptu, `dev-pr-wf.js:957`). P27(5) (test niestabilny) zostaje obserwacją.
     **Dalej:** sesja wdrożenia S1 (§8), potem S2–S4.
+102. **WDROŻENIE S1 „run i PR” (2026-10-26, jedna sesja) — gałąź `popr/P27-S1`, 14 commitów (13 pozycji planu + poprawki po
+    recenzji), testy 1221 → 1244, NIEZMERGOWANA (merge za zgodą operatora).** Każda pozycja: test → czerwony → poprawka →
+    zielony → pełny `npm test` + tsc + eslint → commit. (1) E5-6: `start` mierzy czubek części `rozmiar.mjs` (agent
+    `klasa-mechaniczny-pomiar`, liczbę czyta JS) przed przygotowaniem gałęzi; ≥ 150 = STOP przed pushem; po recenzji także
+    jeden PR (HEAD od merge-base z `origin/main`) i jedna droga: dodatkowa część z cięciem na commicie archiwizacji.
+    (2) E5-5: start części N > 1 zbiera nierozwiązane wątki PR części 1..N−1 (opis PR, wynik, pytanie skilla); compound
+    przyjmuje `odlozone` → `known-issues.md` z linkiem (`url` w GraphQL i schemacie wątku). (3) E5-9: P3 krótkiego review
+    → `## P3 po archiwizacji` w known-issues + commit przed startem. (4) E5-2(b): scribe pisze `- 🟡 [P3/<os>]` (oś z
+    `_zrodlo`); skill przed zgodą pyta „Naprawić przed PR (N)” o P3 correctness/security faz części. (5) E5-4(b):
+    `napraw-szerzej` = glob plików klasy + lista kontrolna reguły na `git ls-files`, odpowiedź wymienia sprawdzone pliki.
+    (6) E5-8: walidacja = `test` + każdy `test:*` bez `e2e` (dev-pr i walidacja końcowa autopilota). (7) E5-10: krok 5
+    `claude-md` — wymagalność zmiennej z walidatora konfiguracji. (8) P27(1): `uwagaProxyZdrowia` (srodowisko.mjs) w bramce
+    gotowości — sonda z `E2E_HEALTH_TRESC` na porcie Vite, ścieżka poza kluczami proxy; README pkt 1 i 3. (9) P27(2): 3.4b
+    dev-plan + README — status/meta trasy serwera nigdy na porcie Vite. (10) P27(4b)+(4c): tester `wait --text` od razu po
+    akcji, FAIL po czekaniu. (11)–(13) testy M9, M10, M14 (+ wykrycie `api/`, `apps/api/`, `*:api`), M15, M22 — mutanty zabite.
+    Recenzja subagenta z mutacjami: 39 mutacji, 20 przeżyło, 3 × P2 (uwaga proxy bez treści sondy = szkodliwa rada; jeden PR
+    bez bramki rozmiaru; droga „osobny PR commitów po archiwum” niewykonalna) i 6 × P3 — wszystkie poprawione w sesji
+    (commit `fix(P27 S1): poprawki po recenzji…`); bieg mutacji po poprawkach 22/22 zabite.
+    **Dalej:** merge `popr/P27-S1` po zgodzie operatora, potem sesja S2 (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3642,10 +3661,37 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   serwera http są pół-otwarte i poza `closeAllConnections` — serwer z proxy WebSocket musi je śledzić sam. Klient testu
   przez `net.connect` pisze `write`, nie `end` (pół-zamknięte połączenie serwer kończy bez odpowiedzi). Przed planem
   z regułą liczbową sprawdź przykłady planu tą regułą (358 vs ±24).
+- P27 S1 (2026-10-26): skrypt kontroli przed commitem musi kończyć się kodem ≠ 0 przy czerwonym teście — `grep` liczników
+  bez `exit 1` przepuścił commit z 1 czerwonym testem (poprawiony `--amend`). Nowy agent w etapie workflowu przesuwa indeksy
+  `prompty[]` i kolejkę odpowiedzi atrapy we wszystkich testach przebiegu — przesuwaj skryptem tylko w zakresie linii tych
+  testów i sprawdź `prompty[0]` (tabela części) ręcznie. Dwie uwagi wzajemnie wykluczające się (serwer API bez treści sondy,
+  proxy tylko z treścią) testuj osobnymi konfiguracjami, nie jedną asercją „obie”. Mutant usuwający `/` z końca ścieżki jest
+  równoważny przy kluczu-prefiksie — zabija go dopiero klucz-regex z `$`.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-26, po planie) — WDROŻENIE P27 + P29 + E5, SESJA S1 „run i PR” (6a pkt 101).** Plan
+**AKTUALNA (2026-10-26, po S1) — WDROŻENIE P27 + P29 + E5, SESJA S2 „review, fix, wiedza” (6a pkt 101, 102).** Warunek:
+`popr/P27-S1` zmergowana do main (zgoda operatora). S2 zaczyna od testu kanarkowego sceptyka E5-21 i pomiaru progu E5-3 —
+wynik kanarków może zmienić zakres S2 (wymiana promptu sceptyka = nowa pozycja do akceptacji operatora). Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin, popr/P27-S1 zmergowana). Sesja: WDROŻENIE S2
+„review, fix, wiedza” paczki P27. Przeczytaj docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md (sekcje Wniosek, S2, Kolejność
+i zasady) i HANDOFF 6a pkt 101–102, §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+
+Cel: najpierw E5-21 (test kanarkowy sceptyka na kopii vibersi, kryterium z planu ustalone przed biegiem) i pomiar progu E5-3 —
+wynik pokaż mi przed resztą S2; potem pozycje 14–24 na gałęzi popr/P27-S2 od main. Każda pozycja: test → bieg bez poprawki
+(czerwony) → poprawka → zielony; pełny npm test (skrypt kontroli z kodem wyjścia ≠ 0 przy czerwonym) przed każdym commitem;
+commit na pozycję. Przed zmianą sprawdź plik:linia z planu na obecnym main. Na koniec recenzja subagenta z mutacjami
+(wycinek.mjs, wpisy.mjs, bramki JS w dev-autopilot-wf.js); P2 poprawiasz w tej sesji. Merge za moją zgodą.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; subagenci bez pkill z szerokim wzorcem; liczby skryptem;
+pliki .md tylko narzędziem Write/Edit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: (2026-10-26, po planie) — WDROŻENIE S1 „run i PR” — WYKONANE (6a pkt 102, gałąź `popr/P27-S1`).** Plan
 `docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md` zaakceptowany bez zmian (2026-10-26). Kolejne sesje S2–S4 — ten sam
 blok z podmienioną nazwą sesji i pozycjami. Operator wkleja do nowej sesji szablonu:
 
