@@ -1,7 +1,7 @@
 # Analiza etapu 5 vibersi (autopilot 6 faz, smoke, PR #8–#10) — 2026-10-26
 
 Wejście: HANDOFF 6a pkt 95–99, telemetria, archiwum `vibersi/docs/completed/etap-5-interakcje-i-profil/`, PR #8–#10 (gh),
-transkrypty sesji vibersi, feedback z ostatniej sesji vibersi. Nic nie wdrożone; lista poprawek na końcu (E5-1…E5-21) do planu
+transkrypty sesji vibersi, feedback z ostatniej sesji vibersi. Nic nie wdrożone; lista poprawek na końcu (E5-1…E5-22) do planu
 P27 + P29.
 
 ## Wnioski (najpierw)
@@ -178,6 +178,7 @@ Kolejność wg wpływu. Każda pozycja w planie dostanie test padający bez popr
 | E5-19 | Telemetria: koszt epizodu skilla do następnego skilla | `sync-template` 6,6 M w etapie 5 to w większości smoke | koniec epizodu na `/clear` i na kolejnym poleceniu operatora spoza skilla; osobna pozycja „sesja główna bez skilla” | koszt smoke'u widoczny osobno |
 | E5-20 | Telemetria: brak sekcji „ucieczki” | pochodzenie wątku bota liczone w tej analizie ręcznie | sekcja raportu: wątek bota → był w review fazy (P3/known-issues) / plik z commitu fixa / plik ze smoke'u / nowy | główna miara skuteczności architektury liczona skryptem |
 | E5-21 | Sceptyk P2: 0 obaleń z 173 (etapy 4–5; etapy 1–3: 1 z 163), jedyny skutek to obniżenia P2 → P3 (które trafiają do known-issues — dziura E5-2) | nie wiemy, czy reviewerzy przestali się mylić, czy sceptyk przytakuje | najpierw test kanarkowy: do partii weryfikacji 3–5 podłożonych fałszywych findingów (teza sprzeczna z kodem, z plik:linia); sceptyk obala kanarki → zostaje, 0 obaleń jest prawdą; przytakuje → wymiana promptu albo przeniesienie budżetu na E5-3 | decyzja na danych, nie na przeczuciu |
+| E5-22 | Z PR #12 vibersi (`efdbc33`): test wyścigu nie odtwarzał trwającego pobrania; atrapa sprawdzana tylko liczbą wywołań | `vitest/prefer-called-with` nie obejmuje `toHaveBeenCalledTimes`; test-coverage bez punktu o kolejności obietnic w teście wyścigu | (a) reguła ESLint w konfiguracji szablonu: `toHaveBeenCalledTimes` bez `toHaveBeenCalledWith` tej samej atrapy; (b) propozycja do `test-coverage-reviewer` wpięta w istniejący punkt o testach niefalsyfikowalnych (jak E5-12), bez nowej linii | test wyścigu, który naprawdę pada bez poprawki |
 
 Obserwacje bez poprawki teraz: P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie serwera `api/`) — zostają w planie P27 jak ustalono.
 
