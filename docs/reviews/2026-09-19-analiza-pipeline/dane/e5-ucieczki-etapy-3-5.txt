@@ -1,0 +1,62 @@
+Ucieczki do bota — vibersi etapy 3–5 (skrypty/ucieczki_bota.py, 2026-10-26)
+
+== etap-3-konto-i-auth (PR 3,4)
+#3 src/lib/konto/akcje-auth.ts:124                            P2   sciezka-bledu            znane-P3?         | 0aad3f41 feat(etap-3-konto-i-auth): klient auth, profil i serwer awatara (faza  | review: review-faza-2.md P3 KOD src/lib/konto/akcje-auth.ts:122
+#4 src/components/konto/okno-powitania.tsx:35                 P2   inna                     kod-buildu        | 8c1daa45 feat(etap-3-konto-i-auth): okno powitania i strona ustawień profilu (f | ten plik w review (inna linia, sprawdz recznie): review-faza-5.md P2 :22
+#4 src/pages/potwierdz.tsx:127                                P2   tekst-ui                 znane-P2-wrocilo? | 826701b7 feat(etap-3-konto-i-auth): rejestracja, potwierdzenie linku i reset ha | review: review-faza-4.md P2 KOD src/pages/potwierdz.tsx:129
+
+Watki bota: 3 (P1/P2 wg naszej klasyfikacji: 3)
+  znane-P3?           1   P1/P2: 1
+  znane-P2-wrocilo?   1   P1/P2: 1
+  kod-buildu          1   P1/P2: 1
+Uwagi bota poza diffem (w tresci recenzji, bez watku) nie sa liczone. „znane?” = finding review w okolicy linii — KANDYDAT, potwierdz trescia;
+„ten plik w review” to podpowiedz do recznego sprawdzenia — ten sam defekt bywa opisany w innej linii po zmianach pliku.
+
+== etap-4-dodawanie-i-moderacja (PR 5,6)
+#5 src/lib/projekty/schemat-projektu.ts:100                   P3   kontrakt-wspolny         kod-buildu        | 1ebe7fd0 feat(etap-4-dodawanie-i-moderacja): zapis i edycja projektu przez serw | ten plik w review (inna linia, sprawdz recznie): review-faza-2.md P2 :45, review-faza-2.md P3 :9, known-issues.md P3 :9
+#5 src/lib/projekty/wysylka.ts:55                             P2   sciezka-bledu            znane-P2-wrocilo? | f8493dde feat(etap-4-dodawanie-i-moderacja): szkic, obrazy, dane projektow i wy | review: review-faza-3.md P2 KOD src/lib/projekty/wysylka.ts:50
+#5 supabase/migrations/20261017120000_dodawanie_i_moderacja.sql:196 P1   kontrakt-wspolny         znane-P3?         | 85b3a5ec feat(etap-4-dodawanie-i-moderacja): migracja moderacji, zapisu projekt | review: review-faza-1.md P3 KOD supabase/migrations/20261017120000_dodawanie_i_moderacja.sql:193
+#6 server/odznaka/trasa.ts:49                                 P3   walidacja-granicy-api    kod-smoke         | 71a16529 feat(odznaka): naklejka „jestem na VIBERSI” z opcjonalną liczbą głosów
+#6 src/lib/przeladuj-po-wdrozeniu.ts:17                       P3   polkniety-blad           kod-smoke         | 7e6a5435 fix(aplikacja): przeładowanie strony, gdy chunk zniknął po wdrożeniu
+#6 src/pages/kolejka-admina.tsx:223                           P2   sciezka-bledu            kod-buildu        | 38079331 feat(etap-4-dodawanie-i-moderacja): kolejka akceptacji admina | ten plik w review (inna linia, sprawdz recznie): review-faza-6.md P2 :81, review-faza-6.md P2 :97, review-faza-6.md P2 :122, review-faza-6.md P2 :265, review-faza-6.md P3 :241, review-faza-6.md P3 :110, known-issues.md P3 :241, known-issues.md P3 :110
+
+Watki bota: 6 (P1/P2 wg naszej klasyfikacji: 3)
+  znane-P3?           1   P1/P2: 1
+  znane-P2-wrocilo?   1   P1/P2: 1
+  kod-smoke           2   P1/P2: 0
+  kod-buildu          2   P1/P2: 1
+Uwagi bota poza diffem (w tresci recenzji, bez watku) nie sa liczone. „znane?” = finding review w okolicy linii — KANDYDAT, potwierdz trescia;
+„ten plik w review” to podpowiedz do recznego sprawdzenia — ten sam defekt bywa opisany w innej linii po zmianach pliku.
+
+== etap-5-interakcje-i-profil (PR 8,9,10)
+#9 e2e/seeds/glosy-zapisane-seed.sql:50                       P3   seed-e2e                 kod-buildu        | 47fde751 feat(etap-5-interakcje-i-profil): głosy i Zapisane (faza 3)
+#9 e2e/seeds/glosy-zapisane-seed.sql:69                       P3   seed-e2e                 kod-buildu        | 47fde751 feat(etap-5-interakcje-i-profil): głosy i Zapisane (faza 3)
+#9 server/komentarze.ts:25                                    P3   wartosc-graniczna        znane-P3?         | 42c4e43e feat(etap-5-interakcje-i-profil): komentarze i zgłoszenia (faza 4) | review: review-faza-4.md P3 KOD server/komentarze.ts:25
+#9 src/components/interakcje/okno-zaloz-konto.tsx:41          P3   duplikacja               kod-buildu        | 47fde751 feat(etap-5-interakcje-i-profil): głosy i Zapisane (faza 3)
+#9 server/komentarze.ts:29                                    P3   wartosc-graniczna        kod-tury-PR       | e057b8a8 fix(pr): tura 1 — poprawki po review bota | ten plik w review (inna linia, sprawdz recznie): review-faza-4.md P2 :82, review-faza-4.md P3 :75, review-faza-4.md P3 :25, known-issues.md P3 :75, known-issues.md P3 :25
+#9 e2e/seeds/etap-4-moderacja-seed.sql:63                     P2   seed-e2e                 kod-tury-PR       | d7159ca5 fix(pr): tura 2 — poprawki po review bota
+#9 e2e/seeds/etap-5-interakcje-seed.sql:61                    P2   seed-e2e                 kod-tury-PR       | d7159ca5 fix(pr): tura 2 — poprawki po review bota
+#9 e2e/seeds/moje-projekty-seed.sql:61                        P2   seed-e2e                 kod-tury-PR       | d7159ca5 fix(pr): tura 2 — poprawki po review bota
+#9 e2e/seeds/moje-projekty-seed.sql:182                       None None                     kod-tury-PR       | 33413dd0 fix(pr): tura 3 — poprawki po review bota
+#10 src/components/komentarze/watek-komentarza.tsx:101         P2   cykl-zycia-ui            kod-fixa          | 5901dc35 fix(etap-5-interakcje-i-profil): poprawki po review fazy 5 | ten plik w review (inna linia, sprawdz recznie): review-faza-4.md P3 :73, known-issues.md P3 :73
+#10 src/components/projekt/komentarze-projektu.tsx:111         P2   sciezka-bledu            kod-fixa          | 5901dc35 fix(etap-5-interakcje-i-profil): poprawki po review fazy 5 | ten plik w review (inna linia, sprawdz recznie): review-faza-4.md P3 :86, review-faza-4.md P3 :113, known-issues.md P3 :86, known-issues.md P3 :113
+#10 src/hooks/interakcje/use-powiadomienia.ts:139              P2   spojnosc-dwoch-systemow  kod-buildu        | f2df26fa feat(etap-5-interakcje-i-profil): powiadomienia i poczta (faza 5) | ten plik w review (inna linia, sprawdz recznie): review-faza-5.md P3 :105, review-faza-5.md P3 :37, known-issues.md P3 :105, known-issues.md P3 :37
+#10 src/lib/konto/profil.ts:199                                P2   wyscig-i-wspolbieznosc   kod-buildu        | f2df26fa feat(etap-5-interakcje-i-profil): powiadomienia i poczta (faza 5)
+
+Watki bota: 13 (P1/P2 wg naszej klasyfikacji: 7)
+  znane-P3?           1   P1/P2: 0
+  kod-fixa            2   P1/P2: 2
+  kod-tury-PR         5   P1/P2: 3
+  kod-buildu          5   P1/P2: 2
+Uwagi bota poza diffem (w tresci recenzji, bez watku) nie sa liczone. „znane?” = finding review w okolicy linii — KANDYDAT, potwierdz trescia;
+„ten plik w review” to podpowiedz do recznego sprawdzenia — ten sam defekt bywa opisany w innej linii po zmianach pliku.
+
+Weryfikacja reczna kandydatow „znane?” (tresc findingu review vs tresc watku bota):
+- etap 3 #3 akcje-auth.ts:124 — PRAWDZIWE: review-faza-2 P3 :122 (zapamietana obietnica bledu przejsciowego) = bot P2.
+- etap 3 #4 potwierdz.tsx:127 — FALSZYWE: review P2 :129 (resend dla email_change), bot: tekst karty bez sesji.
+- etap 4 #5 migracja :196 — PRAWDZIWE: review-faza-1 P3 :193 (edycja nadpisuje group_post_url nullem) = bot P1.
+- etap 4 #5 wysylka.ts:55 — FALSZYWE: review P2 :50 (podwojny kontrakt multipart), bot: sciezka bledu.
+- etap 4 #6 kolejka-admina.tsx:223 — poza oknem 10 linii; review P3 :241 (filtr) to inny defekt.
+- etap 5 #9 komentarze.ts:25 — PRAWDZIWE: review-faza-4 P3 :25 (limit 8 kB) = bot.
+- etap 5 #10 use-powiadomienia.ts:139 — skrypt nie dopasowal (review-faza-5 P3 :37, plik zmieniony w smoke'u), recznie PRAWDZIWE.
+Wniosek: w kazdym z etapow 3–5 co najmniej jeden watek bota P1/P2 byl w review fazy jako P3 (etap 4: bot P1).

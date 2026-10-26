@@ -179,5 +179,29 @@ Kolejność wg wpływu. Każda pozycja w planie dostanie test padający bez popr
 | E5-20 | Telemetria: brak sekcji „ucieczki” | pochodzenie wątku bota liczone w tej analizie ręcznie | sekcja raportu: wątek bota → był w review fazy (P3/known-issues) / plik z commitu fixa / plik ze smoke'u / nowy | główna miara skuteczności architektury liczona skryptem |
 | E5-21 | Sceptyk P2 bez obaleń (0/173 w etapach 4–5), a kod fixa bez review osi | `verify-batch` 1,43 M/etap | do decyzji: budżet sceptyka P2 przenieść na review commitów fixa (E5-3) — koszt bez zmian, sceptyk zostaje dla P1 i degradacji | ta sama kwota łapie błędy zamiast potwierdzać |
 
-Obserwacje bez poprawki teraz: sceptyk P2 bez obaleń w dwóch etapach (0/173) przy koszcie ~1,4 M — kandydat do pomiaru
-w panelu, nie do zmiany; P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie serwera `api/`) — zostają w planie P27 jak ustalono.
+Obserwacje bez poprawki teraz: P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie serwera `api/`) — zostają w planie P27 jak ustalono.
+
+## Decyzje operatora (2026-10-26, po raporcie)
+
+- **E5-15 (wiedza) — wchodzi do paczki.**
+- **E5-1 i E5-13 (granice procesu) — odrzucone:** sync przed merge'em paczki i duża zmiana funkcji w smoke'u uznane za wyjątek.
+- **E5-16…E5-20 (telemetria) — wchodzą do paczki.** E5-20 dostaje pierwowzór: `skrypty/ucieczki_bota.py` (niżej).
+- E5-21 (sceptyk P2 → review fixa) — operator prosi o prostsze wyjaśnienie przed decyzją.
+
+## Ucieczki do bota — skrypt i wynik dla etapów 3–5
+
+`python3 skrypty/ucieczki_bota.py --repo ../vibersi --zadanie <zadanie> --pr <N,M>` (w katalogu analizy) — dla każdego wątku
+bota: `git blame` linii na commicie, który bot skomentował (fix fazy / tura PR / smoke / build / sprzed zadania) i kandydat
+„był w review fazy” (finding w ±10 liniach, tylko gdy kod istniał w czasie review). Wynik i ręczna weryfikacja kandydatów:
+`dane/e5-ucieczki-etapy-3-5.txt`.
+
+| Etap | Wątki | P1/P2 | P1/P2 znane z review jako P3 (potwierdzone) | z kodu fixa | z tur PR | ze smoke'u |
+|---|---|---|---|---|---|---|
+| 3 | 3 | 3 | 1 (`akcje-auth.ts`) | 0 | 0 | 0 |
+| 4 | 6 | 3 | 1 — bot dał **P1** (`migracja :196`, review-faza-1 P3 `:193`) | 0 | 0 | 2 (P3) |
+| 5 | 13 | 7 | 1 (`use-powiadomienia.ts`, dopasowane ręcznie) | 2 | 3 (kaskada seedów) | 0 |
+
+Wniosek: w każdym etapie co najmniej jeden P1/P2 bota leżał w review fazy jako P3 — E5-2 ma dane z trzech etapów, nie z jednego.
+Skrypt myli się w dwie strony: 2 fałszywe kandydaty (inny defekt w sąsiedniej linii) i 1 przeoczony (linia przesunięta
+w smoke'u); dlatego kandydat ma znak „?” i podpowiedź „ten plik w review” do ręcznego sprawdzenia. W E5-20 dopasowanie dostanie
+klasę findingu z review (dziś review nie zapisuje klasy) zamiast samej odległości linii.
