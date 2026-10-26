@@ -171,3 +171,16 @@ test('test-coverage (E5-22(b)): test wyscigu — kolejnosc rozwiazywania obietni
   assert.match(niefalsyfikowalne, /odroczon/)
   assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
 })
+
+// E5-12: propozycje compoundu vibersi (etap 5, docs/reviews/propozycje-do-reviewerow.md) wpiete w istniejace pozycje
+// correctness (:17, :21, :24, :25) — liczba polecen bez zmian; seed poszedl do security (E5-4(a), test wyzej).
+test('correctness (E5-12): PATCH z migawki, cykl zycia + jednorazowy znacznik, bodyLimit w bajtach, kursor po mutacji — w istniejacych pozycjach', () => {
+  const tresc = rola('correctness-reviewer')
+  assert.match(pozycja(tresc, /^- Dla każdej operacji zmieniającej stan/), /PATCH[^.]*migawk/)
+  const hooki = pozycja(tresc, /^- \(hooki, subskrypcje/)
+  assert.match(hooki, /jednorazow[^.]*znacznik[^.]*(błęd|ścieżce błędu)/)
+  assert.match(hooki, /poprzedni[^.]*wartoś[^.]*(dwa|ten sam rzut)/)
+  assert.match(pozycja(tresc, /^- Wypisz każdą wartość graniczną/), /bajt[^.]*× 12/)
+  assert.match(pozycja(tresc, /^- \(zapis do pamięci podręcznej/), /kursor[^.]*mutacj/)
+  assert.equal(liczbaPolecen(tresc), 19)
+})
