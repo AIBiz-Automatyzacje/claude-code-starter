@@ -8,7 +8,9 @@ import { PLIK_INDEKSU, bezDuplikatow } from './indeks.mjs'
 import { MAKS_KROTKA_ZN, POLE_KROTKIE, czyZawsze, pierwszeZdanie } from './walidacja.mjs'
 import { czyObowiazuje, pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 
-export const MAKS_WYCINEK_ZN = 2000
+// E5-15(c): 2000 miescilo ~4 pelne reguly (vibersi etap 5: 11 pominietych na IU); z regula skrocona ~5000 zn miesci
+// cala baze etapu 5 (15 regul, ~4,1 tys. zn) za ~1 tys. tokenow wiecej na start buildera.
+export const MAKS_WYCINEK_ZN = 5000
 
 /** @typedef {import('./wpisy.mjs').Wpis} Wpis */
 

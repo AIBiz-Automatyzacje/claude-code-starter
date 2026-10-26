@@ -1,6 +1,9 @@
 // Wycinek wiedzy dla buildera i reviewera (PLAN-POPRAWY P10): reguly, ktorych globy pasuja do plikow IU / fazy,
 // plus koszyk „zawsze”, w limicie znakow — zamiast calego pliku learned-patterns w kazdym agencie.
 
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -46,7 +49,8 @@ test('wycinek: brak pasujacych regul i brak koszyka = pusty wycinek', () => {
 })
 
 test('wycinek: limit znakow — reguly ponad limit pominiete z odeslaniem do indeksu, tresc w limicie', () => {
-  const duzo = Array.from({ length: 40 }, (_, i) => wpis(`docs/solutions/b/${i}.md`, { regula: `${'Regula dluga. '.repeat(1)}${'x'.repeat(150)} ${i}.` }))
+  // linia wycinka niesie regule skrocona (E5-15(b)) — 40 linii po ~180 zn przekracza limit
+  const duzo = Array.from({ length: 40 }, (_, i) => wpis(`docs/solutions/b/${i}.md`, { regula: `Regula dluga ${i}.`, regula_krotka: `${'x'.repeat(140)} ${i}.` }))
   const w = wycinek(duzo, ['src/lib/a.ts'])
   assert.ok(w.zn <= MAKS_WYCINEK_ZN, `${w.zn}`)
   assert.ok(w.pominiete > 0)
@@ -90,4 +94,19 @@ test('wycinek: linia z regula_krotka zamiast pelnej reguly; bez pola — pierwsz
   const skrot = /sciezka-bledu: (.*) \(docs/.exec(linia)?.[1] ?? ''
   assert.equal(skrot.length, 160)
   assert.ok(skrot.endsWith('…'), skrot)
+})
+
+// E5-15(c): limit ~5000 zn. Fixture: baza wiedzy vibersi na starcie etapu 5 (19 wpisow, reguly 200–365 zn) i pliki IU-10/14/19/23
+// z planu etapu; przy limicie 2000 i pelnych regulach kazda z tych IU dostawala 4 reguly (11 pominietych), bez `sciezka-bledu`
+// i `cykl-zycia-ui` — a bot na PR #10 znalazl potem bledy obu klas w tych plikach.
+test('wycinek (vibersi etap 5): IU-10/14/19/23 dostaja sciezka-bledu i cykl-zycia-ui, bez pominietych, w limicie', () => {
+  const fixture = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures/wiedza-vibersi-etap5.json'), 'utf8'))
+  assert.equal(MAKS_WYCINEK_ZN, 5000)
+  for (const [iu, pliki] of Object.entries(fixture.iu)) {
+    const w = wycinek(fixture.wpisy, pliki)
+    const klasy = w.pliki.map((p) => fixture.wpisy.find((/** @type {{ plik: string }} */ x) => x.plik === p).pola.klasa)
+    assert.ok(klasy.includes('sciezka-bledu') && klasy.includes('cykl-zycia-ui'), `${iu}: ${klasy.join(', ')}`)
+    assert.equal(w.pominiete, 0, iu)
+    assert.ok(w.zn <= MAKS_WYCINEK_ZN, `${iu}: ${w.zn}`)
+  }
 })

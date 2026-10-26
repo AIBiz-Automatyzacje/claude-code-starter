@@ -1,0 +1,675 @@
+{
+ "zrodlo": "vibersi 4a77cf4 (start etapu 5): docs/solutions — pola wiedzy; pliki IU z planu etapu 5",
+ "wpisy": [
+  {
+   "plik": "docs/solutions/deployment-issues/2026-10-13-zmienne-pg-z-source-env-omijaja-guard-uri-psql.md",
+   "pola": {
+    "title": "Zmienne PG* z wczytanego pliku env kierują psql obok adresu sprawdzonego przez guard celu",
+    "date": "2026-10-13",
+    "category": "deployment-issues",
+    "severity": "medium",
+    "stack": [
+     "Bash",
+     "PostgreSQL",
+     "Supabase"
+    ],
+    "tags": [
+     "guard-celu",
+     "libpq",
+     "seed",
+     "e2e",
+     "env"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-13",
+    "klasa": "bramka-na-jednej-drodze",
+    "regula": "Skrypt, który wczytuje plik env (set -a; . plik) i woła psql, uruchamia go przez psql_celu z e2e/lib/psql-celu.sh (env -u PGHOST/PGHOSTADDR/PGPORT/PGSERVICE/PGSERVICEFILE/PGOPTIONS), nie gołym psql — guard celu sprawdza tylko URI, a libpq bierze cel także ze zmiennych PG*.",
+    "paths": [
+     "e2e/**",
+     "scripts/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "lint",
+    "szczebel_powod": "Grep w bramce nad *.sh wykryje wywołanie psql poza psql_celu; typem tego nie wymusisz w Bashu, a jedno miejsce już istnieje (psql_celu), brakuje tylko zakazu obejścia.",
+    "zrodlo": "zadanie etap-2-katalog-publiczny / PR #2 (watek PRRT_kwDOVCFA4c6rwQXP) / commit 5335e70",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/performance-issues/2026-10-15-statyczny-import-auth-js-wciaga-klienta-do-paczki-startowej.md",
+   "pola": {
+    "title": "Statyczny import modułu Auth z komponentu paska wciąga auth-js do paczki startowej",
+    "date": "2026-10-15",
+    "category": "performance-issues",
+    "severity": "medium",
+    "stack": [
+     "React",
+     "TypeScript",
+     "Vite",
+     "Supabase"
+    ],
+    "tags": [
+     "bundle",
+     "dynamic-import",
+     "code-splitting",
+     "auth-js",
+     "size-limit"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-15",
+    "klasa": "cache-i-zapytania",
+    "regula": "Wartości z @supabase/auth-js, @/lib/konto/klient-auth i @/lib/konto/akcje-auth importuj statycznie tylko wewnątrz src/lib/konto/; komponenty, hooki, strony i router biorą akcje przez akcjeAuth() z wczytaj-akcje-auth (dynamiczny import), a z tych modułów tylko import type.",
+    "paths": [
+     "src/components/**",
+     "src/hooks/**",
+     "src/pages/**",
+     "src/router.tsx"
+    ],
+    "waga": "srednia",
+    "szczebel": "lint",
+    "szczebel_powod": "Statyczny import wartości wykryje no-restricted-imports z allowTypeImports i wyjątkiem dla src/lib/konto/**; struktura kodu sama tego nie wymusi, bo import dynamiczny i statyczny tego samego modułu kompilują się bez błędu.",
+    "zrodlo": "zadanie etap-3-konto-i-auth / review fazy 3 (P2 performance) / commit fa6c345",
+    "ucieczki": "0"
+   }
+  },
+  {
+   "plik": "docs/solutions/performance-issues/2026-10-19-slug-z-adresu-trafia-do-pamieci-przed-walidacja.md",
+   "pola": {
+    "title": "Slug z adresu trafia do pamięci podręcznej serwera przed walidacją",
+    "date": "2026-10-19",
+    "category": "performance-issues",
+    "severity": "low",
+    "stack": [
+     "Hono",
+     "TypeScript",
+     "Zod"
+    ],
+    "tags": [
+     "pamiec-podreczna",
+     "walidacja",
+     "slug",
+     "serwer"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-19",
+    "klasa": "walidacja-granicy-api",
+    "regula": "Parametr z adresu (slug, id) waliduj wspólnym schematem z server/slug.ts (schematSluga.safeParse) przed pamiec.pobierz i przed zapytaniem do bazy; niepoprawny kształt kończ 404 bez wpisu w pamięci, nie zapisuj go jako 'brak'.",
+    "paths": [
+     "server/**"
+    ],
+    "waga": "niska",
+    "szczebel": "regula",
+    "szczebel_powod": "Kolejność walidacji przed pamięcią w handlerze trasy wymaga osądu, którego parametr idzie do zasobu procesu; lint nie odróżni klucza zwalidowanego od surowego bez typu markowanego, którego pamięć jeszcze nie wymaga.",
+    "zrodlo": "zadanie etap-4-dodawanie-i-moderacja / PR #6 wątek PRRT_kwDOVCFA4c6t2dHo / commit 8b7572a",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/runtime-errors/2026-10-16-memo-obietnicy-zapamietuje-blad-sieci.md",
+   "pola": {
+    "title": "Memo obietnicy w module zapamiętuje błąd sieci, więc ponowienie zweryfikujLink zwraca stary błąd",
+    "date": "2026-10-16",
+    "category": "runtime-errors",
+    "severity": "medium",
+    "stack": [
+     "TypeScript",
+     "Supabase"
+    ],
+    "tags": [
+     "deduplikacja-obietnic",
+     "memo",
+     "siec",
+     "auth",
+     "ponowienie"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-16",
+    "klasa": "sciezka-bledu",
+    "regula": "Obietnicę zapamiętaną w module (deduplikacja żądań, memo singletonu) zwalniaj po błędzie przejściowym (kod 'siec', wyjątek/odrzucenie), o ile wpis to wciąż ta sama obietnica; zapamiętuj na stałe tylko wynik, który serwer naprawdę rozstrzygnął, i testuj ponowienie po błędzie sieci.",
+    "paths": [
+     "src/lib/**",
+     "src/hooks/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "regula",
+    "szczebel_powod": "Które błędy są przejściowe, a które ostateczne (link zużyty vs brak sieci), zależy od semantyki akcji; ani typ, ani lint tego nie rozstrzygną bez osądu.",
+    "zrodlo": "zadanie etap-3-konto-i-auth / PR 3 / commit 94e038d",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/runtime-errors/2026-10-19-klient-mapuje-429-po-statusie-zamiast-kodu-koperty.md",
+   "pola": {
+    "title": "Klient mapuje każdy 429 na „spróbuj za chwilę”, także trwałą odmowę za_duzo_oczekujacych",
+    "date": "2026-10-19",
+    "category": "runtime-errors",
+    "severity": "medium",
+    "stack": [
+     "TypeScript",
+     "Hono"
+    ],
+    "tags": [
+     "koperta-bledu",
+     "status-http",
+     "ponowienie",
+     "kontrakt-api"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-19",
+    "klasa": "sciezka-bledu",
+    "regula": "Klient własnego API wybiera wynik po error.code z koperty błędu (kody we wspólnym module kontraktu, np. kontrakt-wysylki.ts), a status HTTP jest tylko fallbackiem; gdy serwer ma pod jednym statusem kody chwilowe i trwałe (429 limit vs za_duzo_oczekujacych), test każdego kodu asertuje osobny wynik.",
+    "paths": [
+     "src/lib/**",
+     "server/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "regula",
+    "szczebel_powod": "Czy dwa kody pod jednym statusem wymagają różnych wyników w UI, zależy od semantyki odmowy; typ może wymusić kompletność mapy kodów, ale nie to, że klient w ogóle czyta kopertę.",
+    "zrodlo": "zadanie etap-4-dodawanie-i-moderacja / PR 5 / commit 98b5213",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/supabase-issues/2026-10-12-licznik-rpc-wykonywalny-przez-anon-zawyzanie-statystyk.md",
+   "pola": {
+    "title": "Funkcja licznika (RPC) wykonywalna przez anon — każdy zawyża statystyki kluczem publishable z paczki SPA",
+    "date": "2026-10-12",
+    "category": "supabase-issues",
+    "severity": "high",
+    "stack": [
+     "Supabase",
+     "Hono",
+     "React"
+    ],
+    "tags": [
+     "rls",
+     "grant-execute",
+     "security-definer",
+     "licznik",
+     "limiter",
+     "sec-fetch"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-12",
+    "klasa": "uprawnienia-naglowki-sql",
+    "regula": "Funkcję SQL, która zmienia liczniki lub statystyki (zarejestruj_*), daj w migracji jawnie: revoke execute from public, anon, authenticated i grant execute to service_role; wołaj ją tylko z serwera Hono za limiterem na IP i filtrem Sec-Fetch-*, nigdy z SPA kluczem publishable.",
+    "paths": [
+     "supabase/migrations/**",
+     "server/**"
+    ],
+    "waga": "wysoka",
+    "szczebel": "lint",
+    "szczebel_powod": "Skrypt bramki nad supabase/migrations wykryje funkcję security definer bez revoke od anon spoza listy jawnie publicznych odczytów; typem tego nie wymusisz, bo grant żyje w SQL, a nie w TS.",
+    "zrodlo": "zadanie etap-2-poprawki-bezpieczenstwa / commity 3184223, ad8c7d7 (known-issues etap-2-katalog-publiczny)",
+    "ucieczki": "0"
+   }
+  },
+  {
+   "plik": "docs/solutions/supabase-issues/2026-10-18-nowa-kolumna-projects-publiczna-przez-grant-select-calej-tabeli.md",
+   "pola": {
+    "title": "Nowa kolumna w projects publiczna przez grant SELECT całej tabeli dla anon",
+    "date": "2026-10-18",
+    "category": "supabase-issues",
+    "severity": "medium",
+    "stack": [
+     "Supabase",
+     "PostgreSQL"
+    ],
+    "tags": [
+     "grant",
+     "data-api",
+     "rls",
+     "schemat-private",
+     "migracje"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-18",
+    "klasa": "uprawnienia-naglowki-sql",
+    "regula": "Stan wewnętrzny (licznik, wersja, klucz idempotencji) trzymaj w tabeli schematu private bez grantów dla ról klienta, nie w nowej kolumnie public.projects: grant SELECT całej tabeli dla anon pokazuje ją w /rest/v1/projects?select=* (RLS filtruje wiersze, nie kolumny). Nową kolumnę publiczną dopisz do zamkniętej listy kolumn anon w e2e/etap-4-moderacja-asercje.sql.",
+    "paths": [
+     "supabase/migrations/**",
+     "e2e/**"
+    ],
+    "waga": "wysoka",
+    "szczebel": "kod",
+    "szczebel_powod": "Granty kolumnowe (grant select (lista kolumn)) zamiast grantu całej tabeli uczyniłyby każdą nową kolumnę domyślnie niepubliczną, ale to zmiana kontraktu Data API całego katalogu, więc do wdrożenia decyzją operatora.",
+    "zrodlo": "zadanie etap-4-dodawanie-i-moderacja / commit 11a7886 (kontrola diffu naprawczego fazy 1)",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/supabase-issues/2026-10-19-edycja-sql-zeruje-pole-spoza-walidatora.md",
+   "pola": {
+    "title": "Edycja projektu przez funkcję SQL zeruje group_post_url, bo brak klucza w p_dane znaczy null",
+    "date": "2026-10-19",
+    "category": "supabase-issues",
+    "severity": "high",
+    "stack": [
+     "Supabase",
+     "TypeScript"
+    ],
+    "tags": [
+     "security-definer",
+     "jsonb",
+     "czesciowy-zapis",
+     "edycja",
+     "utrata-danych"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-19",
+    "klasa": "kontrakt-wspolny",
+    "regula": "Funkcja SQL edycji, która bierze pola z jsonb (p_dane), traktuje brak klucza jako „bez zmian” (p_dane ? 'pole' — inaczej wartość z bieżącego wiersza), nie jako null; każde pole tabeli, którego walidator serwera nie przepuszcza, ma asercję SQL, że edycja go nie zeruje.",
+    "paths": [
+     "supabase/migrations/**",
+     "server/**",
+     "e2e/**"
+    ],
+    "waga": "wysoka",
+    "szczebel": "regula",
+    "szczebel_powod": "Które pola formularz celowo pomija, wynika z rozjazdu walidatora Zod i kolumn tabeli; ani typ, ani lint nie łączą ciała plpgsql z kształtem p_dane po stronie serwera.",
+    "zrodlo": "zadanie etap-4-dodawanie-i-moderacja / PR 5 / commit 98b5213",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/testing-issues/2026-10-10-testy-odmowy-rls-przepuszczaja-mutanty-using-true.md",
+   "pola": {
+    "title": "Testy odmowy RLS przechodzą przy mutancie using (true) — cel testu niewidoczny przez politykę SELECT albo jedyny w seedzie",
+    "date": "2026-10-10",
+    "category": "testing-issues",
+    "severity": "high",
+    "stack": [
+     "Supabase",
+     "PostgreSQL",
+     "Bash"
+    ],
+    "tags": [
+     "rls",
+     "sql-smoke",
+     "mutation-testing",
+     "seed"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-10",
+    "klasa": "test-niefalsyfikowalny",
+    "regula": "Test odmowy RLS (UPDATE/DELETE/SELECT cudzego wiersza) celuj w wiersz, który konto WIDZI przez politykę SELECT, a seed musi mieć cudzy wiersz, który mutant using (true) by zwrócił; sprawdź też, że wiersz po próbie nadal istnieje i niezmieniony.",
+    "paths": [
+     "e2e/**",
+     "supabase/migrations/**"
+    ],
+    "waga": "wysoka",
+    "szczebel": "regula",
+    "szczebel_powod": "Czy cel testu jest widoczny dla konta i czy seed odróżnia politykę od using (true), zależy od semantyki konkretnej polityki i danych — lint ani typ tego nie rozstrzygną.",
+    "zrodlo": "zadanie etap-1-fundament / review fazy 3 (4 x P1) / commit 40a1fa1",
+    "ucieczki": "0"
+   }
+  },
+  {
+   "plik": "docs/solutions/testing-issues/2026-10-11-asercja-sql-unikalny-slot-zalezy-od-danych-bazy-e2e.md",
+   "pola": {
+    "title": "Asercja SQL ustawia featured_slot = 1 bez zwolnienia slotu — 23505 przy danych spoza seeda",
+    "date": "2026-10-11",
+    "category": "testing-issues",
+    "severity": "low",
+    "stack": [
+     "Supabase",
+     "PostgreSQL"
+    ],
+    "tags": [
+     "sql-smoke",
+     "unique-index",
+     "e2e"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-11",
+    "klasa": "test-kruchy",
+    "regula": "Asercja SQL, która ustawia wartość objętą unikalnym indeksem (featured_slot, slug), najpierw zwalnia tę wartość w tej samej wycofywanej transakcji — nie zakładaj, że baza e2e zawiera tylko dane seeda.",
+    "paths": [
+     "e2e/**"
+    ],
+    "waga": "niska",
+    "szczebel": "regula",
+    "szczebel_powod": "Które kolumny mają unikalny indeks i które UPDATE w teście je ustawiają, wymaga znajomości schematu i celu asercji; lint na plikach SQL tego nie rozpozna.",
+    "zrodlo": "zadanie etap-1-fundament / PR #1 (watek PRRT_kwDOVCFA4c6rNneX) / commit 4d2bbb8",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/testing-issues/2026-10-11-seed-e2e-powiadomienia-bez-comment-id.md",
+   "pola": {
+    "title": "Seed e2e wstawia powiadomienia 'komentarz'/'odpowiedz' bez comment_id — stan nieosiągalny w produkcji",
+    "date": "2026-10-11",
+    "category": "testing-issues",
+    "severity": "low",
+    "stack": [
+     "Supabase",
+     "PostgreSQL"
+    ],
+    "tags": [
+     "seed",
+     "notifications",
+     "e2e"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-11",
+    "klasa": "seed-e2e",
+    "regula": "Wiersz seeda e2e musi być stanem, który aplikacja w produkcji może wytworzyć — także gdy schemat go nie wymusza: powiadomienie typu 'komentarz'/'odpowiedz' zawsze wskazuje comment_id komentarza, który je wywołał.",
+    "paths": [
+     "e2e/seeds/**"
+    ],
+    "waga": "niska",
+    "szczebel": "kod",
+    "szczebel_powod": "Spójność typu powiadomienia z comment_id da się wymusić w schemacie CHECK-iem (type in ('komentarz','odpowiedz') => comment_id is not null), wtedy baza odrzuci taki seed; do wdrożenia CHECK zostaje regułą.",
+    "zrodlo": "zadanie etap-1-fundament / PR #1 (watek PRRT_kwDOVCFA4c6rNneh) / commit 4d2bbb8",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/testing-issues/2026-10-13-atrapa-matchmedia-zdarzenie-bez-matches-i-media.md",
+   "pola": {
+    "title": "Atrapa matchMedia wysyła Event('change') bez matches i media, niezgodnie z MediaQueryListEvent",
+    "date": "2026-10-13",
+    "category": "testing-issues",
+    "severity": "low",
+    "stack": [
+     "React",
+     "TypeScript",
+     "Vitest"
+    ],
+    "tags": [
+     "atrapa",
+     "matchMedia",
+     "jsdom",
+     "kontrakt-api-przegladarki"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-13",
+    "klasa": "spojnosc-dwoch-systemow",
+    "regula": "Atrapa API przeglądarki w testach (matchMedia, IntersectionObserver, clipboard) odtwarza kontrakt zdarzeń i wartości prawdziwego API (change z matches i media jak MediaQueryListEvent) i żyje w jednym miejscu src/test/, nie jako lokalna kopia w pliku testu.",
+    "paths": [
+     "src/**"
+    ],
+    "waga": "niska",
+    "szczebel": "kod",
+    "szczebel_powod": "Wspólna atrapa src/test/atrapa-zapytan-mediow.ts z własnym testem kontraktu usuwa lokalne kopie; lint nie oceni, czy zdarzenie atrapy ma pola prawdziwego API.",
+    "zrodlo": "zadanie etap-2-katalog-publiczny / PR #2 (watek PRRT_kwDOVCFA4c6rwQXl) / commit 5335e70",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/testing-issues/2026-10-13-guard-url-e2e-porownuje-tekst-z-koncowym-ukosnikiem.md",
+   "pola": {
+    "title": "Guard 'URL e2e różny od .env' porównuje URL dosłownie i przepuszcza ten sam projekt z końcowym ukośnikiem",
+    "date": "2026-10-13",
+    "category": "testing-issues",
+    "severity": "low",
+    "stack": [
+     "Bash",
+     "Supabase"
+    ],
+    "tags": [
+     "guard-celu",
+     "url",
+     "e2e"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-13",
+    "klasa": "dopasowanie-tekstu",
+    "regula": "Guard porównujący adresy (URL API, URI bazy) normalizuje je przed porównaniem (końcowy /, wielkość liter hosta, port domyślny) albo porównuje ref projektu wyciągnięty z hosta, nie dosłowny tekst przez grep -F.",
+    "paths": [
+     "e2e/**",
+     "scripts/**"
+    ],
+    "waga": "niska",
+    "szczebel": "regula",
+    "szczebel_powod": "Które warianty zapisu adresu są równoważne, zależy od rodzaju adresu i celu porównania; lint nie odróżni grep -F na URL od grep -F na zwykłym tekście.",
+    "zrodlo": "zadanie etap-2-katalog-publiczny / PR #2 (watek PRRT_kwDOVCFA4c6rwQWx) / commit 5335e70",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/testing-issues/2026-10-13-seed-z-prawdziwych-postow-niesie-kod-rabatowy.md",
+   "pola": {
+    "title": "Seed z prawdziwych postów grupy przeniósł aktywny kod rabatowy do repo i na publiczną stronę",
+    "date": "2026-10-13",
+    "category": "testing-issues",
+    "severity": "low",
+    "stack": [
+     "Node",
+     "PostgreSQL"
+    ],
+    "tags": [
+     "seed",
+     "dane-prawdziwe",
+     "sekrety",
+     "pii"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-13",
+    "klasa": "pii-i-sekrety",
+    "regula": "Treść seeda budowanego z prawdziwych postów (opisy, nazwy twórców) przed zapisem do repo przejrzyj pod kątem kodów rabatowych, e-maili, telefonów i prywatnych linków i usuń je w scripts/seed-katalog/przygotuj.mjs, nie ręcznie w wygenerowanym SQL.",
+    "paths": [
+     "scripts/seed-katalog/**",
+     "e2e/seeds/**"
+    ],
+    "waga": "niska",
+    "szczebel": "kod",
+    "szczebel_powod": "Krok czyszczenia w przygotuj.mjs z wzorcami (e-mail, telefon, KOD-RRRR-XXXX) odrzuci rekord przy generowaniu; pełnej oceny, co jest prywatne, nie zrobi, więc reszta zostaje regułą.",
+    "zrodlo": "zadanie etap-2-katalog-publiczny / PR #2 (watek PRRT_kwDOVCFA4c6rwQXC) / commit 5335e70",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/ui-bugs/2026-10-11-menu-ukryte-css-trzyma-blokade-przewijania-po-zmianie-ukladu.md",
+   "pola": {
+    "title": "Menu telefonu ukryte przez md:hidden trzyma blokadę przewijania po poszerzeniu okna",
+    "date": "2026-10-11",
+    "category": "ui-bugs",
+    "severity": "medium",
+    "stack": [
+     "React",
+     "Tailwind"
+    ],
+    "tags": [
+     "responsywnosc",
+     "scroll-lock",
+     "matchMedia",
+     "useEffect"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-11",
+    "klasa": "cykl-zycia-ui",
+    "regula": "Element ukrywany tylko klasą CSS (md:hidden), który w stanie otwartym blokuje przewijanie albo podpina globalnych słuchaczy, zamykaj przy wejściu w układ, w którym CSS go chowa (matchMedia z cleanupem) — nie zakładaj, że zniknięcie z ekranu odmontuje komponent.",
+    "paths": [
+     "src/components/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "regula",
+    "szczebel_powod": "To, że stan komponentu przeżywa ukrycie przez breakpoint, zależy od pary klasa CSS + efekt z globalnym skutkiem; ani typ, ani lint nie powiążą md:hidden z efektem blokady przewijania.",
+    "zrodlo": "zadanie etap-1-fundament / PR #1 (watek PRRT_kwDOVCFA4c6rNnei) / commit 4d2bbb8",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/ui-bugs/2026-10-12-scrollrestoration-odtwarza-pozycje-przy-wejsciu-linkiem.md",
+   "pola": {
+    "title": "ScrollRestoration odtwarza zapisaną pozycję przy wejściu linkiem i przy natywnym skoku do kotwicy",
+    "date": "2026-10-12",
+    "category": "ui-bugs",
+    "severity": "medium",
+    "stack": [
+     "React",
+     "React Router"
+    ],
+    "tags": [
+     "scroll-restoration",
+     "react-router",
+     "kotwica",
+     "historia-przegladarki"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-12",
+    "klasa": "spojnosc-dwoch-systemow",
+    "regula": "ScrollRestoration zostaw z domyślnym kluczem location.key (bez getKey per pathname), a link do kotwicy w SPA nawiguj przez router (useLinkClickHandler / Link to={{ hash }}), nie natywnym <a href=\"#id\">: natywny skok daje wpis historii z kluczem \"default\" i router odtwarza pozycję strony wejściowej.",
+    "paths": [
+     "src/components/**",
+     "src/pages/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "kod",
+    "szczebel_powod": "Jeden komponent kotwicy z useLinkClickHandler usuwa zły wzorzec w architekturze; sam lint nie odróżni <a href=\"#id\"> z handlerem routera od natywnego skoku.",
+    "zrodlo": "zadanie etap-2-katalog-publiczny / commity d830b61 (faza 4), 3b46794 (faza 6)",
+    "ucieczki": "0"
+   }
+  },
+  {
+   "plik": "docs/solutions/ui-bugs/2026-10-16-blokujace-okno-ukladu-zaslania-dokumenty-ktore-linkuje.md",
+   "pola": {
+    "title": "Blokujące okno powitania zasłania Regulamin i Politykę, które samo linkuje do akceptacji",
+    "date": "2026-10-16",
+    "category": "ui-bugs",
+    "severity": "medium",
+    "stack": [
+     "React",
+     "TypeScript"
+    ],
+    "tags": [
+     "modal",
+     "react-router",
+     "akceptacja-dokumentow",
+     "uklad-strony"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-16",
+    "klasa": "kontrakt-wspolny",
+    "regula": "Okno blokujące renderowane w UkladStrony wyłącza trasy, które samo linkuje (dokumenty prawne), przez wspólną stałą tras z src/config/trasy.ts (TRASY_DOKUMENTOW), nie przez lokalną listę wyjątków; test sprawdza brak okna na każdej linkowanej trasie.",
+    "paths": [
+     "src/components/**",
+     "src/config/trasy.ts"
+    ],
+    "waga": "srednia",
+    "szczebel": "kod",
+    "szczebel_powod": "Jedna funkcja wyjątków tras dla wszystkich blokujących okien układu (eksport z src/config/trasy.ts) czyni pominięcie trasy dokumentu niemożliwym; dziś czyTrasaBezPowitania jest lokalna w okno-powitania.tsx, więc bramki jeszcze nie ma.",
+    "zrodlo": "zadanie etap-3-konto-i-auth / PR #4 watek PRRT_kwDOVCFA4c6tUtGu / commit 75cfae6",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/ui-bugs/2026-10-16-karta-sukcesu-obiecuje-logowanie-gosciowi.md",
+   "pola": {
+    "title": "Karta sukcesu potwierdzenia obiecuje automatyczne logowanie, gdy sesji nie ma",
+    "date": "2026-10-16",
+    "category": "ui-bugs",
+    "severity": "medium",
+    "stack": [
+     "React",
+     "TypeScript"
+    ],
+    "tags": [
+     "tekst-ui",
+     "auth",
+     "stan-sesji"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-16",
+    "klasa": "tekst-ui",
+    "regula": "Tekst UI zależny od stanu sesji albo wartości, która może być null, wybieraj osobnym wariantem dla każdego stanu (gość, zalogowany, brak danych), nie wklejaj wartości przez `?? ''` do zdania pisanego dla jednego stanu; test każdej ścieżki asertuje treść tekstu, nie tylko obecność karty.",
+    "paths": [
+     "src/pages/**",
+     "src/components/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "regula",
+    "szczebel_powod": "Lint złapie tylko `?? ''` w szablonie (podwójna spacja), ale fałszywą obietnicę w zdaniu dla złego stanu rozpozna jedynie osąd treści względem stanu, więc zostaje regułą.",
+    "zrodlo": "zadanie etap-3-konto-i-auth / PR #4 watek PRRT_kwDOVCFA4c6tUtHT / commit 75cfae6",
+    "ucieczki": "1"
+   }
+  },
+  {
+   "plik": "docs/solutions/ui-bugs/2026-10-19-blad-zapisu-ukryty-w-galezi-ukladu.md",
+   "pola": {
+    "title": "Błąd zapisu decyzji ukryty warunkiem układu przy pustej kolejce",
+    "date": "2026-10-19",
+    "category": "ui-bugs",
+    "severity": "medium",
+    "stack": [
+     "React",
+     "TypeScript"
+    ],
+    "tags": [
+     "stan-bledu",
+     "responsywnosc",
+     "kolejka-admina"
+    ],
+    "status": "verified",
+    "last_verified": "2026-10-19",
+    "klasa": "sciezka-bledu",
+    "regula": "Komunikat błędu zapisu renderuj w każdej gałęzi widoku (telefon/komputer, lista pusta/niepusta, element wybrany/brak), nie pod warunkiem układu; test obejmuje błąd zapisu dla ostatniego elementu, po którym widok przechodzi w stan pusty.",
+    "paths": [
+     "src/pages/**",
+     "src/components/**"
+    ],
+    "waga": "srednia",
+    "szczebel": "regula",
+    "szczebel_powod": "To, czy dana gałąź renderowania może pokazać się po nieudanym zapisie, wynika z logiki stanu ekranu, czego typ ani lint nie wyrażą.",
+    "zrodlo": "zadanie etap-4-dodawanie-i-moderacja / PR #6 wątek PRRT_kwDOVCFA4c6t2dH8 / commit 8b7572a",
+    "ucieczki": "1"
+   }
+  }
+ ],
+ "iu": {
+  "IU-10": [
+   "e2e/seeds/glosy-zapisane-seed.sql",
+   "src/components/ikony/ikony-interakcji.tsx",
+   "src/components/interakcje/okno-zaloz-konto.test.tsx",
+   "src/components/interakcje/okno-zaloz-konto.tsx",
+   "src/components/interakcje/przeniesienie-glosow.tsx",
+   "src/components/interakcje/przycisk-glosu.test.tsx",
+   "src/components/interakcje/przycisk-glosu.tsx",
+   "src/components/konto/komunikat-dolny.test.tsx",
+   "src/components/konto/komunikat-dolny.tsx",
+   "src/components/layout/uklad-strony.tsx",
+   "src/components/projekt/naglowek-projektu.tsx",
+   "src/components/projekty/elementy-projektu.tsx",
+   "src/components/projekty/karta-projektu.tsx",
+   "src/components/projekty/karta-wyrozniona.tsx",
+   "src/components/projekty/wiersz-projektu.tsx"
+  ],
+  "IU-14": [
+   "e2e/seeds/komentarze-seed.sql",
+   "src/components/komentarze/komentarz.tsx",
+   "src/components/komentarze/lista-komentarzy.test.tsx",
+   "src/components/komentarze/pole-komentarza.test.tsx",
+   "src/components/komentarze/pole-komentarza.tsx",
+   "src/components/komentarze/watek-komentarza.tsx",
+   "src/components/projekt/komentarze-projektu.tsx",
+   "src/pages/projekt.tsx"
+  ],
+  "IU-19": [
+   "e2e/seeds/powiadomienia-seed.sql",
+   "src/components/layout/pasek-nawigacji-dzwonek.test.tsx",
+   "src/components/layout/pasek-nawigacji.tsx",
+   "src/components/powiadomienia/dzwonek-powiadomien.tsx",
+   "src/components/powiadomienia/panel-powiadomien.test.tsx",
+   "src/components/powiadomienia/panel-powiadomien.tsx",
+   "src/components/powiadomienia/pozycja-powiadomienia.tsx",
+   "src/components/powiadomienia/teksty-powiadomien.ts"
+  ],
+  "IU-23": [
+   "e2e/etap-3-konto-smoke.sh",
+   "e2e/lib/srodowisko-e2e.sh",
+   "e2e/poczta-e2e.sh",
+   "scripts/supabase-captcha/wlacz.sh",
+   "scripts/supabase-captcha/wlacz.test.mjs",
+   "src/components/konto/captcha-formularza.test.tsx",
+   "src/components/konto/captcha-formularza.tsx",
+   "src/components/konto/formularz-rejestracji.tsx",
+   "src/components/konto/krok-logowania.tsx",
+   "src/components/konto/krok-resetu.tsx",
+   "src/components/konto/link-wygasl.tsx",
+   "src/components/konto/sprawdz-skrzynke.tsx",
+   "src/lib/konto/akcje-auth-captcha.test.ts",
+   "src/lib/konto/akcje-auth.ts"
+  ]
+ }
+}
