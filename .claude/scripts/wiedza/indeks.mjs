@@ -9,6 +9,10 @@ import { czyObowiazuje, pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 export const MAKS_ZAWSZE = 5
 export const MAKS_INDEKS_ZN = 40000
 export const PLIK_INDEKSU = 'docs/learned-patterns.md'
+// E5-15(d)(e) (vibersi etap 5): 4 reguly `sciezka-bledu` osobno zajmowaly limit wycinka, a `seed-e2e` uciekal botowi
+// w czterech turach. Indeks podaje refreshowi klasy do scalenia i klasy, ktorym nalezy sie bramka mechaniczna.
+const MIN_REGUL_DO_SCALENIA = 3
+const MIN_UCIECZEK_DO_BRAMKI = 3
 
 /** @typedef {import('./wpisy.mjs').Wpis} Wpis */
 
@@ -40,6 +44,23 @@ export function bezDuplikatow(wpisy) {
   return { unikalne: [...wgKlucza.values()], duplikaty }
 }
 
+/**
+ * @param {Wpis[]} unikalne obowiazujace wpisy po dedupie (duplikat nie liczy sie podwojnie — nowszy niesie licznik starszego)
+ * @returns {{ doScalenia: { klasa: string, pliki: string[] }[], doBramki: { klasa: string, ucieczki: number }[] }}
+ */
+function klasyDoPrzegladu(unikalne) {
+  /** @type {Map<string, Wpis[]>} */
+  const wgKlasy = new Map()
+  for (const w of unikalne) wgKlasy.set(pole(w, 'klasa'), [...(wgKlasy.get(pole(w, 'klasa')) ?? []), w])
+  const klasy = [...wgKlasy.entries()].sort(([a], [b]) => a.localeCompare(b))
+  const doScalenia = klasy.filter(([, ws]) => ws.length >= MIN_REGUL_DO_SCALENIA)
+    .map(([klasa, ws]) => ({ klasa, pliki: ws.map((w) => w.plik).sort() }))
+  const doBramki = klasy.map(([klasa, ws]) => ({ klasa, ucieczki: ws.reduce((s, w) => s + Number(pole(w, 'ucieczki')), 0) }))
+    .filter((k) => k.ucieczki >= MIN_UCIECZEK_DO_BRAMKI)
+    .sort((a, b) => b.ucieczki - a.ucieczki || a.klasa.localeCompare(b.klasa))
+  return { doScalenia, doBramki }
+}
+
 /** @param {Wpis} w @returns {string} */
 function wiersz(w) {
   const wzorce = sciezkiWpisu(w).map((g) => `\`${g}\``).join(', ')
@@ -49,7 +70,8 @@ function wiersz(w) {
 
 /**
  * @param {Wpis[]} wpisy zwalidowane wpisy solutions
- * @returns {{ tresc: string, zn: number, wpisy: number, zawsze: number, duplikaty: { plik: string, duplikatZ: string }[], bramki: { propozycje: number, wdrozone: number }, bledy: string[] }}
+ * @returns {{ tresc: string, zn: number, wpisy: number, zawsze: number, duplikaty: { plik: string, duplikatZ: string }[], bramki: { propozycje: number, wdrozone: number },
+ *   doScalenia: { klasa: string, pliki: string[] }[], doBramki: { klasa: string, ucieczki: number }[], bledy: string[] }}
  */
 export function generujIndeks(wpisy) {
   const { unikalne, duplikaty } = bezDuplikatow(wpisy.filter(czyObowiazuje))
@@ -76,5 +98,5 @@ export function generujIndeks(wpisy) {
   // Metryka wdrozen bramek (6a pkt 60 g3b): lekcje kod/lint z polem `bramka` wsrod wszystkich lekcji kod/lint.
   const propozycje = wpisy.filter((w) => pole(w, 'szczebel') !== 'regula')
   const bramki = { propozycje: propozycje.length, wdrozone: propozycje.filter((w) => !czyObowiazuje(w)).length }
-  return { tresc, zn: tresc.length, wpisy: posortowane.length, zawsze: zawsze.length, duplikaty, bramki, bledy }
+  return { tresc, zn: tresc.length, wpisy: posortowane.length, zawsze: zawsze.length, duplikaty, bramki, ...klasyDoPrzegladu(posortowane), bledy }
 }

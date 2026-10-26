@@ -31,7 +31,7 @@ W projekcie z konfiguracją ESLint z szablonu te reguły sprawdza maszyna; bez n
 - Czerwony test naprawiasz w implementacji. Test zmieniasz tylko wtedy, gdy zmienia się zamówione zachowanie, i nazywasz tę zmianę w raporcie albo commicie.
 - Test usuwasz razem z funkcjonalnością, którą sprawdza. Jedyny inny przypadek: zielony test niefalsyfikowalny, którego asercji nie da się przepisać — usuwasz go z wpisem w raporcie fazy. Czerwonego testu nie usuwasz.
 - Asercji nie osłabiasz (`toBe(429)` → `toBeDefined()`): słabsza asercja przepuszcza błąd, który test miał łapać.
-- Atrapy tylko dla usług zewnętrznych; testowany moduł działa naprawdę, inaczej test sprawdza atrapę.
+- Atrapy tylko dla usług zewnętrznych; testowany moduł działa naprawdę, inaczej test sprawdza atrapę. Atrapa usługi z kluczem testowym (Turnstile, reCAPTCHA, Stripe test mode, Resend test) ma też wariant odpowiedzi tego klucza wg dokumentacji dostawcy (brakujące pola, stałe wartości), a kod rozpoznający klucz testowy ma test na tej odpowiedzi — atrapa znająca tylko odpowiedź produkcyjną przepuszcza kod, który na e2e odrzuca każde żądanie.
 - Zanim zostawisz test, pytasz, czy przeszedłby, gdyby każda importowana funkcja zwracała `undefined`. Jeśli tak — dajesz jedno konkretne wejście i dosłowny wynik albo obserwowalny skutek.
 - Każda nowa funkcja publiczna ma test ścieżki poprawnej i test błędu.
 - Unit testy pracują na małych fixture'ach w `tests/fixtures/`, nie na pełnych zbiorach danych.
@@ -91,6 +91,7 @@ W projekcie z konfiguracją ESLint z szablonu te reguły sprawdza maszyna; bez n
 ## Bezpieczeństwo
 
 - Sekrety tylko w zmiennych środowiska poza repo.
+- Klucz testowy dostawcy (odpowiedź bez `action`, host testowy) kod przyjmuje tylko w konfiguracji lokalnej albo e2e (warunek z trybu aplikacji albo `SITE_URL`), z testem odmowy w konfiguracji produkcyjnej — bez warunku klucz testowy w produkcji omija weryfikację.
 - Sekretów i danych osobowych nie logujesz — także do Sentry: redakcja przed wysłaniem.
 - SQL tylko z parametrami, bez sklejania z danymi użytkownika.
 - Bez dynamicznego wykonania kodu z danych użytkownika.

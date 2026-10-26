@@ -85,3 +85,11 @@ test('maszyneria odwoluje sie do regul kodu po temacie, nie po numerze sekcji', 
     })
   assert.deepEqual(trafienia, [])
 })
+
+test('klucz testowy dostawcy (E5-7 + P27(3)): atrapa ma wariant odpowiedzi klucza testowego; kod przyjmujacy klucz testowy tylko lokalnie/e2e z testem odmowy', () => {
+  const testowanie = sekcja(REGULY, 'Testowanie')
+  assert.match(testowanie, /kluczem testowym[^.]*wariant odpowiedzi tego klucza/)
+  const bezpieczenstwo = sekcja(REGULY, 'Bezpieczeństwo')
+  assert.match(bezpieczenstwo, /[Kk]lucz testowy dostawcy[^.]*tylko w konfiguracji lokalnej (albo|i) e2e/)
+  assert.match(bezpieczenstwo, /testem odmowy w konfiguracji produkcyjnej/)
+})

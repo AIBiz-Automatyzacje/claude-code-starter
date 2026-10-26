@@ -126,3 +126,61 @@ test('blokRestartu: ogon logu nieudanego restartu z instrukcja P1 KOD dla correc
   assert.equal(blokRestartu(null), '')
   assert.match(zrodlo, /const restartE2e = \(args && args\.restartE2e\) \|\| null/)
 })
+
+// P27 S2 (plan paczki P27-P29-E5): reguly plikow rol wpiete w istniejace pozycje list — liczba polecen bez zmian.
+/** @param {string} rola @returns {string} */
+const rola = (rola) => readFileSync(join(AGENCI, `${rola}.md`), 'utf8')
+/** @param {string} tresc @param {RegExp} wzor @returns {string} */
+const pozycja = (tresc, wzor) => {
+  const linia = tresc.split('\n').find((l) => l.startsWith('- ') && wzor.test(l))
+  assert.ok(linia, `brak pozycji listy ${wzor}`)
+  return String(linia)
+}
+
+test('correctness: waga — zly widoczny wynik na zwyklej sciezce to P2, nie P3 (E5-2(a): duplikat, 413 na poprawnym komentarzu)', () => {
+  const waga = pozycja(rola('correctness-reviewer'), /^- Nadaj P1/)
+  assert.match(waga, /zwykłej ścieżce użytkownika[^.]*to P2, nie P3/)
+  assert.match(waga, /413/)
+  assert.match(waga, /duplikat/)
+  assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
+})
+
+test('security: strażnik seeda sprawdza zakres, nie istnienie (E5-4(a), E5-12 seed) — filtr = lista strażnika, \\getenv nie nadpisuje -v', () => {
+  const seed = pozycja(rola('security-sentinel'), /^- \(seed albo skrypt usuwający/)
+  assert.match(seed, /każdej operacji niszczącej/)
+  assert.match(seed, /listę ze strażnika/)
+  assert.match(seed, /LIKE 'prefiks-%'/)
+  assert.match(seed, /owner_id/)
+  assert.match(seed, /\\getenv[^.]*-v/)
+  assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
+})
+
+test('klucz testowy dostawcy (E5-7 + P27(3)): test-coverage — atrapa bez wariantu klucza testowego = P2 TEST; security — bez warunku srodowiska = P1', () => {
+  const atrapy = pozycja(rola('test-coverage-reviewer'), /^- \(atrapy w diffie\)/)
+  assert.match(atrapy, /kluczem testowym[^.]*wariantu odpowiedzi tego klucza[^.]*P2 TEST/)
+  const sekrety = pozycja(rola('security-sentinel'), /^- Przeszukaj diff fazy pod kątem sekretów/)
+  assert.match(sekrety, /[Kk]lucz testowy dostawcy[^.]*bez warunku środowiska[^.]*P1/)
+  assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
+  assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
+})
+
+test('test-coverage (E5-22(b)): test wyscigu — kolejnosc rozwiazywania obietnic w punkcie testow niefalsyfikowalnych, bez nowej pozycji', () => {
+  const niefalsyfikowalne = pozycja(rola('test-coverage-reviewer'), /^- Wypisz każdą asercję z diffu o jednym z pięciu kształtów/)
+  assert.match(niefalsyfikowalne, /teście wyścigu/)
+  assert.match(niefalsyfikowalne, /Promise\.resolve/)
+  assert.match(niefalsyfikowalne, /odroczon/)
+  assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
+})
+
+// E5-12: propozycje compoundu vibersi (etap 5, docs/reviews/propozycje-do-reviewerow.md) wpiete w istniejace pozycje
+// correctness (:17, :21, :24, :25) — liczba polecen bez zmian; seed poszedl do security (E5-4(a), test wyzej).
+test('correctness (E5-12): PATCH z migawki, cykl zycia + jednorazowy znacznik, bodyLimit w bajtach, kursor po mutacji — w istniejacych pozycjach', () => {
+  const tresc = rola('correctness-reviewer')
+  assert.match(pozycja(tresc, /^- Dla każdej operacji zmieniającej stan/), /PATCH[^.]*migawk/)
+  const hooki = pozycja(tresc, /^- \(hooki, subskrypcje/)
+  assert.match(hooki, /jednorazow[^.]*znacznik[^.]*(błęd|ścieżce błędu)/)
+  assert.match(hooki, /poprzedni[^.]*wartoś[^.]*(dwa|ten sam rzut)/)
+  assert.match(pozycja(tresc, /^- Wypisz każdą wartość graniczną/), /bajt[^.]*× 12/)
+  assert.match(pozycja(tresc, /^- \(zapis do pamięci podręcznej/), /kursor[^.]*mutacj/)
+  assert.equal(liczbaPolecen(tresc), 19)
+})

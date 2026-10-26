@@ -5,10 +5,12 @@
 import { posix } from 'node:path'
 
 import { PLIK_INDEKSU, bezDuplikatow } from './indeks.mjs'
-import { czyZawsze } from './walidacja.mjs'
+import { MAKS_KROTKA_ZN, POLE_KROTKIE, czyZawsze, pierwszeZdanie } from './walidacja.mjs'
 import { czyObowiazuje, pole, porownajWpisy, sciezkiWpisu } from './wpisy.mjs'
 
-export const MAKS_WYCINEK_ZN = 2000
+// E5-15(c): 2000 miescilo ~4 pelne reguly (vibersi etap 5: 11 pominietych na IU); z regula skrocona ~5000 zn miesci
+// cala baze etapu 5 (15 regul, ~4,1 tys. zn) za ~1 tys. tokenow wiecej na start buildera.
+export const MAKS_WYCINEK_ZN = 5000
 
 /** @typedef {import('./wpisy.mjs').Wpis} Wpis */
 
@@ -19,9 +21,21 @@ function pasuje(w, pliki, bezZawsze) {
   return pliki.some((p) => globy.some((g) => posix.matchesGlob(p, g)))
 }
 
+/**
+ * E5-15(b): regula skrocona — pole `regula_krotka`, a bez niego pierwsze zdanie reguly, ciete do MAKS_KROTKA_ZN z „…”.
+ * Pelna regula zostaje w solution, do ktorego linia linkuje (vibersi etap 5: 4 reguly po 300–465 zn wypelnialy limit).
+ * @param {Wpis} w
+ * @returns {string}
+ */
+function regulaKrotka(w) {
+  const jednaLinia = (/** @type {string} */ t) => t.replace(/\s*\n\s*/g, ' ').trim()
+  const krotka = jednaLinia(pole(w, POLE_KROTKIE)) || pierwszeZdanie(jednaLinia(pole(w, 'regula')))
+  return krotka.length > MAKS_KROTKA_ZN ? `${krotka.slice(0, MAKS_KROTKA_ZN - 1).trimEnd()}…` : krotka
+}
+
 /** @param {Wpis} w @returns {string} */
 function linia(w) {
-  return `- [${pole(w, 'waga')}] ${pole(w, 'klasa')}: ${pole(w, 'regula').replace(/\s*\n\s*/g, ' ')} (${w.plik})`
+  return `- [${pole(w, 'waga')}] ${pole(w, 'klasa')}: ${regulaKrotka(w)} (${w.plik})`
 }
 
 /**
@@ -33,7 +47,7 @@ function linia(w) {
  */
 export function wycinek(wpisy, pliki, limitZn = MAKS_WYCINEK_ZN, opcje = {}) {
   const regulyPlikow = wpisy.filter((w) => czyObowiazuje(w) && pasuje(w, pliki, opcje.bezZawsze === true))
-  const dopasowane = bezDuplikatow(regulyPlikow).unikalne.sort(porownajWpisy)
+  const dopasowane = bezDuplikatow(regulyPlikow).unikalne.sort((a, b) => porownajWpisy(a, b, pliki))
   const stopka = (/** @type {number} */ n) => `+${n} regul poza limitem wycinka — pelna lista: ${PLIK_INDEKSU}`
   /** @type {Wpis[]} */
   const wziete = []

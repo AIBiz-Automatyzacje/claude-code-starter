@@ -6,7 +6,7 @@
 // Reguly typowane (typescript-eslint) wymagaja w projekcie typescript < 6.1.
 import js from '@eslint/js'
 import vitest from '@vitest/eslint-plugin'
-import type { Linter } from 'eslint'
+import type { Linter, Rule } from 'eslint'
 import { defineConfig } from 'eslint/config'
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
 import { importX } from 'eslint-plugin-import-x'
@@ -30,6 +30,76 @@ function zPoziomem(zestaw: typeof tseslint.configs.recommendedTypeChecked, pozio
     }
   }
   return wynik
+}
+
+// E5-22 (vibersi PR #12): test wyscigu sprawdzal atrape sama liczba wywolan, a `vitest/prefer-called-with` nie obejmuje
+// `toHaveBeenCalledTimes`. Selektor AST nie powiaze dwoch asercji jednej atrapy, stad regula lokalna: w callbacku testu
+// (it/test, takze it.each i test.x) `expect(x).toHaveBeenCalledTimes(n > 0)` wymaga `toHaveBeenCalledWith`, `NthCalledWith` albo `LastCalledWith` na `x`.
+type Wezel = Rule.Node
+const SPRAWDZA_ARGUMENTY = new Set(['toHaveBeenCalledWith', 'toHaveBeenNthCalledWith', 'toHaveBeenLastCalledWith', 'toBeCalledWith'])
+const LICZY_WYWOLANIA = new Set(['toHaveBeenCalledTimes', 'toBeCalledTimes'])
+const FUNKCJE_TESTU = new Set(['it', 'test'])
+
+/** `expect` albo `expect.soft`. */
+function czyExpect(w: Wezel): boolean {
+  if (w.type === 'Identifier') return w.name === 'expect'
+  return w.type === 'MemberExpression' && w.object.type === 'Identifier' && w.object.name === 'expect'
+    && w.property.type === 'Identifier' && w.property.name === 'soft'
+}
+
+/** `vi.mocked(x)` to ta sama atrapa co `x`. */
+function bezMocked(w: Wezel): Wezel {
+  const mocked = w.type === 'CallExpression' && w.callee.type === 'MemberExpression' && w.callee.object.type === 'Identifier'
+    && w.callee.object.name === 'vi' && w.callee.property.type === 'Identifier' && w.callee.property.name === 'mocked'
+  return mocked && w.arguments[0] ? (w.arguments[0] as Wezel) : w
+}
+
+/** Atrapa i matcher z `expect(atrapa).matcher(...)` / `expect.soft(...)` (bez `.not`); inny ksztalt — null. */
+function asercjaAtrapy(wezel: Wezel, tekst: (w: Wezel) => string): { atrapa: string, matcher: string } | null {
+  if (wezel.type !== 'CallExpression' || wezel.callee.type !== 'MemberExpression' || wezel.callee.property.type !== 'Identifier') return null
+  const obiekt = wezel.callee.object
+  if (obiekt.type !== 'CallExpression' || !czyExpect(obiekt.callee as Wezel) || !obiekt.arguments[0]) return null
+  return { atrapa: tekst(bezMocked(obiekt.arguments[0] as Wezel)), matcher: wezel.callee.property.name }
+}
+
+/** Callback testu (ostatni argument `it(...)`, `test(...)`, `it.each(...)(...)`, `test.concurrent(...)`) obejmujacy wezel; poza testem — Program. */
+function zakresTestu(przodkowie: Wezel[]): Wezel {
+  for (let i = przodkowie.length - 1; i > 0; i--) {
+    const funkcja = przodkowie[i]
+    const wywolanie = przodkowie[i - 1]
+    if (funkcja.type !== 'ArrowFunctionExpression' && funkcja.type !== 'FunctionExpression') continue
+    if (wywolanie.type !== 'CallExpression') continue
+    let nazwa: Wezel = wywolanie.callee as Wezel
+    while (nazwa.type === 'MemberExpression' || nazwa.type === 'CallExpression') nazwa = (nazwa.type === 'MemberExpression' ? nazwa.object : nazwa.callee) as Wezel
+    if (nazwa.type === 'Identifier' && FUNKCJE_TESTU.has(nazwa.name)) return funkcja
+  }
+  return przodkowie[0]
+}
+
+const atrapaZArgumentami: Rule.RuleModule = {
+  meta: { type: 'problem', messages: { liczba: 'Atrapa `{{atrapa}}` sprawdzana sama liczba wywolan — dodaj toHaveBeenCalledWith (albo Nth/LastCalledWith) tej atrapy w tym tescie.' } },
+  create(context) {
+    const zakresy = new Map<Wezel, { liczby: { atrapa: string, wezel: Wezel }[], zArgumentami: Set<string> }>()
+    const tekst = (w: Wezel): string => context.sourceCode.getText(w)
+    return {
+      CallExpression(wezel) {
+        const asercja = asercjaAtrapy(wezel, tekst)
+        if (!asercja) return
+        const zakres = zakresTestu(context.sourceCode.getAncestors(wezel) as Wezel[])
+        const wpis = zakresy.get(zakres) ?? { liczby: [], zArgumentami: new Set<string>() }
+        zakresy.set(zakres, wpis)
+        if (SPRAWDZA_ARGUMENTY.has(asercja.matcher)) wpis.zArgumentami.add(asercja.atrapa)
+        const [n] = wezel.arguments
+        const zero = n?.type === 'Literal' && n.value === 0
+        if (LICZY_WYWOLANIA.has(asercja.matcher) && !zero) wpis.liczby.push({ atrapa: asercja.atrapa, wezel })
+      },
+      'Program:exit'() {
+        for (const { liczby, zArgumentami } of zakresy.values()) {
+          for (const { atrapa, wezel } of liczby) if (!zArgumentami.has(atrapa)) context.report({ node: wezel, messageId: 'liczba', data: { atrapa } })
+        }
+      },
+    }
+  },
 }
 
 const rekomendowane = zPoziomem(tseslint.configs.recommendedTypeChecked, 'error', new Set())
@@ -85,7 +155,7 @@ export default defineConfig(
   },
   {
     files: TESTY,
-    plugins: { vitest },
+    plugins: { vitest, lokalne: { rules: { 'atrapa-z-argumentami': atrapaZArgumentami } } },
     rules: {
       // Opis testu (describe) przekracza 60 linii z natury; rozmiar pliku testow nadal liczony.
       'max-lines-per-function': 'off',
@@ -97,6 +167,7 @@ export default defineConfig(
       'vitest/no-conditional-expect': 'error',
       'vitest/no-standalone-expect': 'error',
       'vitest/prefer-called-with': 'error',
+      'lokalne/atrapa-z-argumentami': 'error',
       'vitest/no-disabled-tests': 'warn',
       'vitest/no-focused-tests': 'error',
     },

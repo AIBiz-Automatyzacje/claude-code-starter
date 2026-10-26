@@ -290,6 +290,16 @@ export function TemplateList() {
 
 `isPending` zamiast `isLoading`: po wykluczeniu `isPending` i `error` TypeScript zawęża `data` do zdefiniowanej tablicy, więc gałąź danych nie potrzebuje `data?.` ani `!`.
 
+**Zapis, który zmienia dane zapytania w pierwszym pobraniu.** Klucz zależny od sesji (np. „moje głosy” konta tuż po logowaniu) startuje bez danych, a jego pierwsze pobranie rusza równolegle z zapisem po stronie serwera. `invalidateQueries` przy pobraniu w toku i `data === undefined` nie anuluje go, tylko zwraca jego obietnicę (`cancelRefetch` działa, gdy zapytanie ma już dane), więc w cache zostaje wynik sprzed zapisu. Dlatego przy takim kluczu wołasz `cancelQueries` przed `invalidateQueries` (albo `refetchQueries`):
+
+```typescript
+// po zapisie, który zmienia „moje głosy” (np. przeniesienie głosów gościa na konto)
+await queryClient.cancelQueries({ queryKey: voteKeys.mine() });
+await queryClient.invalidateQueries({ queryKey: voteKeys.mine() });
+```
+
+Test wyścigu odtwarza pobranie w toku: odroczona obietnica w `queryFn` (podmieniony serwis zwraca obietnicę rozwiązywaną ręcznie po zapisie), nie `fetch` rozwiązany od razu. Taki test pada bez `cancelQueries` (w cache zostaje stara lista) i przechodzi z nim.
+
 **Dlaczego React Query dla SPA:**
 - Automatyczny cache i refetch
 - Deduplikacja requestów

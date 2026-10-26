@@ -187,7 +187,20 @@ test('kontrolaFixaPrompt: listy K-1…K-7, bramki na plikach fixa, zakres z hash
     { severity: 'P2', typ: 'KOD', plik: 'src/b.ts:9', opis: 'stan rozjechany' },
   ]
   const p = kontrolaFixaPrompt('docs/active/x', 2, ['abc1234'], findingi)
-  for (const id of ['K-1', 'K-2', 'K-3', 'K-4', 'K-5', 'K-6', 'K-7', 'L-COR-1', 'L-COR-2', 'L-COR-3']) assert.match(p, new RegExp(`^ *${id}`, 'm'), id)
+  for (const id of ['K-1', 'K-2', 'K-3', 'K-4', 'K-5', 'K-6', 'K-7', 'L-COR-1', 'L-COR-2', 'L-COR-3', 'L-COR-4', 'L-COR-5']) assert.match(p, new RegExp(`^ *${id}`, 'm'), id)
+  // P27 S2 poz. 14 (E5-3): 2 ucieczki PR #10 z fixu fazy 5 (cykl zycia UI, sciezka bledu); pomiar e5-3-fixy.txt: progu linii
+  // nie ma (1 z 18 fixow, +957 przy medianie +971), wiec L-COR-4/5 bez warunku — zaden prog ani warunek nie wylacza list
+  const k3 = p.slice(p.indexOf('K-3 ('), p.indexOf('K-4 ('))
+  assert.match(k3, /piec list/)
+  assert.match(k3, /L-COR-4: kazdy useEffect/)
+  assert.match(k3, /L-COR-5: kazda galaz bledu/)
+  assert.doesNotMatch(k3, /L-COR-[45] \(/, 'L-COR-4/5 bez warunku w nawiasie')
+  // tresc list, nie tylko naglowek (recenzja S2): co wypisac i co jest defektem
+  assert.match(k3, /cleanup, skutek podwojnego wywolania w StrictMode/)
+  assert.match(k3, /znacznik zdejmowany za wczesnie albo za pozno/)
+  assert.match(k3, /co widzi uzytkownik w kazdym stanie widoku po bledzie/)
+  assert.match(k3, /blad znikajacy bez sladu to defekt/)
+  assert.doesNotMatch(zrodlo, /PROG_LINII_FIXA|progLiniiFixa/, 'brak bramki progu linii fixa (decyzja operatora po pomiarze)')
   assert.match(p, /node \.claude\/scripts\/bramki\/bramki\.mjs --baza <najstarszy>\^/)
   assert.match(p, /abc1234/)
   assert.match(p, /P1 naprawiane przez fix: src\/a\.ts:3\)/)

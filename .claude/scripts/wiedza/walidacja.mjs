@@ -10,6 +10,9 @@ export const POLA_WIEDZY = ['klasa', 'regula', 'paths', 'waga', 'szczebel', 'szc
 // Pole opcjonalne: gdzie wdrozono bramke dla lekcji `kod`/`lint` (np. eslint.config.js no-restricted-syntax). Bez niego
 // lekcja dziala jak regula (indeks, wycinek); z nim wypada z obu — pilnuje jej mechanizm.
 export const POLE_BRAMKI = 'bramka'
+// Pole opcjonalne (E5-15(b)): regula skrocona do linii wycinka; pelna regula zostaje w solution, do ktorego linia linkuje.
+export const POLE_KROTKIE = 'regula_krotka'
+export const MAKS_KROTKA_ZN = 160
 export const WAGI = ['wysoka', 'srednia', 'niska']
 export const SZCZEBLE = ['regula', 'kod', 'lint']
 export const GLOB_ZAWSZE = '**'
@@ -27,6 +30,14 @@ export function liczZdania(tekst) {
   if (!czysty) return 0
   const konce = czysty.match(KONIEC_ZDANIA)?.length ?? 0
   return /[.!?…]$/.test(czysty) ? konce : konce + 1
+}
+
+/** @param {string} tekst @returns {string} pierwsze zdanie (kropka w skrocie albo w `kodzie` nie konczy zdania) */
+export function pierwszeZdanie(tekst) {
+  const maska = (/** @type {string} */ m) => 'X'.repeat(m.length)
+  const zamaskowany = tekst.replace(/`[^`]*`/g, maska).replace(SKROTY, maska)
+  const koniec = new RegExp(KONIEC_ZDANIA.source).exec(zamaskowany)
+  return (koniec ? tekst.slice(0, koniec.index + koniec[0].length) : tekst).trim()
 }
 
 /** @param {string[]} paths @returns {boolean} */
@@ -69,6 +80,14 @@ function poprawnaData(data) {
 }
 
 /** @param {Pola} pola @returns {string | null} */
+function bladKrotkiej(pola) {
+  if (!(POLE_KROTKIE in pola)) return null
+  const krotka = tekst(pola[POLE_KROTKIE])
+  if (!krotka) return `${POLE_KROTKIE}: pusta — podaj jedno zdanie ≤ ${MAKS_KROTKA_ZN} zn albo usun pole`
+  return krotka.length > MAKS_KROTKA_ZN ? `${POLE_KROTKIE}: ${krotka.length} zn, maksimum ${MAKS_KROTKA_ZN}` : null
+}
+
+/** @param {Pola} pola @returns {string | null} */
 function bladBramki(pola) {
   if (!(POLE_BRAMKI in pola)) return null
   if (!tekst(pola[POLE_BRAMKI])) return 'bramka: pusta — podaj, gdzie wdrozono bramke (plik i regula), albo usun pole'
@@ -95,6 +114,7 @@ export function walidujWpis(pola, plikiRepo) {
     poprawnaData(tekst(pola.date)) ? null : `date: "${tekst(pola.date)}" nie jest data RRRR-MM-DD`,
     tekst(pola.zrodlo) ? null : 'zrodlo: brak (zadanie, PR albo commit)',
     /^\d+$/.test(tekst(pola.ucieczki)) ? null : `ucieczki: "${tekst(pola.ucieczki)}" nie jest liczba >= 0`,
+    bladKrotkiej(pola),
     bladBramki(pola),
   ].filter((b) => b !== null)
   return { ok: !bledy.length, bledy }

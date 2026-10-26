@@ -894,7 +894,7 @@ ktory tego wymagal. Zmiana zachowania bez findingu (nowe pole odpowiedzi, dolozo
 K-2 (gdy diff fixa dodaje albo zmienia bramke walidacyjna: wyrazenie regularne, allowlista, limit rozmiaru, porownanie
 originu, sprawdzenie roli, parsowanie wejscia): dla kazdej bramki wypisz trzy konkretne wejscia obejscia i test odmowy,
 czyli test, ze zle wejscie zostaje odrzucone. Bramka bez testu odmowy to pozycja z wejsciami obejscia w opisie.
-K-3 (defekt urodzony w fixie): wykonaj na diffie fixa trzy listy correctness; kazdy defekt to pozycja.
+K-3 (defekt urodzony w fixie): wykonaj na diffie fixa piec list correctness; kazdy defekt to pozycja.
   L-COR-1: kazda operacja zmieniajaca stan (zapis do bazy, wywolanie z efektem, wysylka) ze wszystkimi drogami do niej
   (handler, trasa, retry, job, inny modul) i plikiem:linia bramki na kazdej drodze. Droga bez bramki, ktora maja inne
   drogi do tej operacji, to defekt.
@@ -903,6 +903,13 @@ K-3 (defekt urodzony w fixie): wykonaj na diffie fixa trzy listy correctness; ka
   L-COR-3 (gdy diff fixa ma await): kazda wartosc odczytana przed await i uzyta po nim oraz kazdy sygnal zatrzymania
   petli lub ponowien, z informacja, czy po await jest porownanie numeru generacji albo AbortSignal. Uzycie bez porownania
   i petla ponowien bez sufitu to defekt.
+  L-COR-4: kazdy useEffect, subskrypcja, timer, listener, jednorazowy znacznik (ref "juz zrobione") i stan wyliczany
+  z propsow, ktore fix dodal albo zmienil: cleanup, skutek podwojnego wywolania w StrictMode, chwila zdjecia znacznika
+  i zrodlo prawdy stanu wyliczanego. Brak cleanupu, znacznik zdejmowany za wczesnie albo za pozno i kopia stanu, ktora
+  rozjezdza sie ze zrodlem, to defekt.
+  L-COR-5: kazda galaz bledu, ktora fix dodal albo zmienil (catch, wynik odmowy, komunikat bledu, stan po nieudanym zapisie):
+  droga, ktora do niej prowadzi, i co widzi uzytkownik w kazdym stanie widoku po bledzie (pusta lista, inny uklad, wznowienie).
+  Galaz nieosiagalna, komunikat, ktory w ktoryms stanie sie nie renderuje, i blad znikajacy bez sladu to defekt.
 K-4 (gdy fix zmienil albo usunal nazwe: funkcja, stala, pole, trasa, klucz tekstu): dla kazdej starej nazwy uruchom
 \`git grep -n '<stara nazwa>'\` w calym repo, w tym docs/ i CLAUDE.md. Trafienie poza diffem fixa to pozycja.
 K-5: dla kazdej funkcji i bloku zmienionego przez fix wypisz komentarz, JSDoc i akapit dokumentacji, ktory go opisuje,

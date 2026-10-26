@@ -1,0 +1,30 @@
+E5-3 pomiar progu fixa — vibersi etapy 3–5 (skrypty/e5_3_fixy.py). Fix fazy = „poprawki po review” + „kontrola diffu naprawczego”.
+plus_kod = linie dodane poza docs/. Ucieczki = wątki bota z kodu fixa (dane/e5-ucieczki-etapy-3-5.txt, klasa kod-fixa).
+
+etap                           faza       +       -     +kod  hooki  funkc  ucieczki bota z fixa
+etap-3-konto-i-auth               4    1712     455     1633      1     22  0 
+etap-4-dodawanie-i-moderacja      2    1436     217     1435      0     24  0 
+etap-5-interakcje-i-profil        4    1422     275     1335      0     13  0 
+etap-3-konto-i-auth               3    1268     183     1247      3     12  0 
+etap-5-interakcje-i-profil        3    1156      47     1138      0      2  0 
+etap-4-dodawanie-i-moderacja      4    1117     133     1093      0     12  0 
+etap-4-dodawanie-i-moderacja      1    1068      20     1057      0      0  0 
+etap-5-interakcje-i-profil        1    1026      45     1008      0      0  0 
+etap-3-konto-i-auth               5    1002      58      971      1      6  0 
+etap-4-dodawanie-i-moderacja      5    1055     122      961      2     13  0 
+etap-5-interakcje-i-profil        5     989     186      957      3     15  2 #10 src/components/komentarze/watek-komentarza.tsx:101; #10 src/components/projekt/komentarze-projektu.tsx:111
+etap-3-konto-i-auth               2     916     184      896      0     18  0 
+etap-4-dodawanie-i-moderacja      3     773     105      758      0      2  0 
+etap-4-dodawanie-i-moderacja      6     769     179      741      0     16  0 
+etap-5-interakcje-i-profil        2     427      67      410      0      3  0 
+etap-5-interakcje-i-profil        6     355     163      327      0      0  0 
+etap-3-konto-i-auth               1     241      51      230      0      0  0 
+etap-3-konto-i-auth               6     240     108      229      0      6  0 
+
+Fazy z fixem: 18; z ucieczką z fixa: 1 (+kod: [957]); bez ucieczki: 17 (+kod max 1633, mediana 971).
+próg 200: fixów powyżej 18, z nich z ucieczką 1
+próg 300: fixów powyżej 16, z nich z ucieczką 1
+próg 400: fixów powyżej 15, z nich z ucieczką 1
+próg 500: fixów powyżej 14, z nich z ucieczką 1
+próg 600: fixów powyżej 14, z nich z ucieczką 1
+wyzwalacz L-COR-4/5 (fix dodaje hook albo funkcję poza testami): 14 z 18 fixów

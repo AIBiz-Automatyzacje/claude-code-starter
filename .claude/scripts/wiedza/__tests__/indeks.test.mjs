@@ -79,3 +79,25 @@ test('generujIndeks: znak | i nowa linia w regule nie lamia tabeli', () => {
   const w = generujIndeks([wpis('docs/solutions/a/x.md', { regula: 'Uzyj a | b.\nPotem c.' })])
   assert.match(w.tresc, /\| Uzyj a \\\| b\. Potem c\. \|/)
 })
+
+// E5-15(d)(e) (vibersi etap 5: 4 reguly sciezka-bledu osobno, seed-e2e z 5 ucieczkami w 4 turach bota): indeks wskazuje
+// refreshowi klasy do scalenia i klasy, ktorym zamiast kolejnej linii nalezy sie bramka mechaniczna.
+test('generujIndeks: doScalenia — klasa z ≥ 3 regulami w indeksie; doBramki — klasa z suma ucieczek ≥ 3 bez wdrozonej bramki', () => {
+  const w = generujIndeks([
+    wpis('docs/solutions/a/1.md', { ucieczki: '1' }),
+    wpis('docs/solutions/a/2.md', { ucieczki: '1' }),
+    wpis('docs/solutions/a/3.md', { ucieczki: '1' }),
+    wpis('docs/solutions/b/1.md', { klasa: 'seed-e2e', ucieczki: '4' }),
+    wpis('docs/solutions/c/1.md', { klasa: 'tekst-ui', ucieczki: '1' }),
+    wpis('docs/solutions/c/2.md', { klasa: 'tekst-ui', ucieczki: '1' }),
+    // duplikat (ta sama tresc) nie liczy sie podwojnie: indeks bierze nowszy, jego licznik juz obejmuje starszy
+    wpis('docs/solutions/d/stary.md', { klasa: 'duplikacja', regula: 'Jedna regula.', ucieczki: '2', date: '2026-08-01' }),
+    wpis('docs/solutions/d/nowy.md', { klasa: 'duplikacja', regula: 'Jedna regula.', ucieczki: '2', date: '2026-09-01' }),
+    // lekcja z wdrozona bramka poza indeksem i poza suma ucieczek klasy (2 + 1 dalyby prog)
+    wpis('docs/solutions/e/lint.md', { klasa: 'konwencja-kodu', szczebel: 'lint', bramka: 'eslint.config.ts lokalne/x', ucieczki: '2' }),
+    wpis('docs/solutions/e/regula.md', { klasa: 'konwencja-kodu', ucieczki: '1' }),
+  ])
+  assert.deepEqual(w.doScalenia, [{ klasa: 'sciezka-bledu', pliki: ['docs/solutions/a/1.md', 'docs/solutions/a/2.md', 'docs/solutions/a/3.md'] }])
+  assert.deepEqual(w.doBramki, [{ klasa: 'seed-e2e', ucieczki: 4 }, { klasa: 'sciezka-bledu', ucieczki: 3 }])
+  assert.deepEqual(w.bledy, [])
+})
