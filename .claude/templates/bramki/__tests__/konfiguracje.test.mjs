@@ -135,6 +135,64 @@ describe('slabe', () => {
   }
 })
 
+// E5-22 (vibersi PR #12): test wyscigu sprawdzal atrape sama liczba wywolan — `vitest/prefer-called-with` nie obejmuje
+// `toHaveBeenCalledTimes`. Regula lokalna: liczba wywolan atrapy w tescie tylko obok sprawdzenia argumentow tej samej atrapy.
+test('eslint.config.ts: toHaveBeenCalledTimes bez toHaveBeenCalledWith tej samej atrapy w tescie = error', () => {
+  const repo = projekt()
+  try {
+    zapisz(repo, {
+      'src/atrapy.test.ts': `import { describe, expect, it, vi } from 'vitest'
+
+describe('atrapy', () => {
+  it('sama liczba', () => {
+    const pobierz = vi.fn()
+    pobierz(1)
+    expect(pobierz).toHaveBeenCalledTimes(1)
+  })
+  it('argumenty innej atrapy nie licza sie', () => {
+    const pobierz = vi.fn()
+    const zapisz = vi.fn()
+    pobierz(1)
+    zapisz(2)
+    expect(zapisz).toHaveBeenCalledWith(2)
+    expect(pobierz).toHaveBeenCalledTimes(1)
+  })
+})
+`,
+      'src/atrapy-dobre.test.ts': `import { describe, expect, it, vi } from 'vitest'
+
+const serwis = { pobierz: vi.fn() }
+
+describe('atrapy dobre', () => {
+  it('liczba i argumenty', () => {
+    serwis.pobierz(1)
+    expect(serwis.pobierz).toHaveBeenCalledTimes(1)
+    expect(serwis.pobierz).toHaveBeenCalledWith(1)
+  })
+  it('ostatnie i n-te wywolanie tez sprawdzaja argumenty', () => {
+    const f = vi.fn()
+    f(1)
+    f(2)
+    expect(f).toHaveBeenCalledTimes(2)
+    expect(f).toHaveBeenNthCalledWith(1, 1)
+    expect(f).toHaveBeenLastCalledWith(2)
+  })
+  it('zero wywolan nie ma argumentow', () => {
+    const f = vi.fn()
+    expect(f).toHaveBeenCalledTimes(0)
+    expect(f).not.toHaveBeenCalledWith(1)
+  })
+})
+`,
+    })
+    const zle = lint(repo, ['src/atrapy.test.ts']).filter((u) => u.regula === 'lokalne/atrapa-z-argumentami')
+    assert.deepEqual(zle, [{ regula: 'lokalne/atrapa-z-argumentami', poziom: BLAD }, { regula: 'lokalne/atrapa-z-argumentami', poziom: BLAD }])
+    assert.deepEqual(lint(repo, ['src/atrapy-dobre.test.ts']), [])
+  } finally {
+    usun(repo)
+  }
+})
+
 // Projekt sprawdza typy plikow konfiguracji (`include` z `*.config.ts`, vibersi) — szablon ESLint musi przejsc tsc.
 // Typy Node z korzenia szablonu: pakiet bramek ich nie instaluje, a projekt Vite ma je zawsze.
 test('eslint.config.ts z szablonu przechodzi tsc (projekt z *.config.ts w include)', () => {

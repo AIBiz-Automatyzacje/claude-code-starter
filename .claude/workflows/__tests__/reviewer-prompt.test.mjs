@@ -163,3 +163,11 @@ test('klucz testowy dostawcy (E5-7 + P27(3)): test-coverage — atrapa bez waria
   assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
   assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
 })
+
+test('test-coverage (E5-22(b)): test wyscigu — kolejnosc rozwiazywania obietnic w punkcie testow niefalsyfikowalnych, bez nowej pozycji', () => {
+  const niefalsyfikowalne = pozycja(rola('test-coverage-reviewer'), /^- Wypisz każdą asercję z diffu o jednym z pięciu kształtów/)
+  assert.match(niefalsyfikowalne, /teście wyścigu/)
+  assert.match(niefalsyfikowalne, /Promise\.resolve/)
+  assert.match(niefalsyfikowalne, /odroczon/)
+  assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
+})
