@@ -68,6 +68,9 @@ stary `E2E_START` w trzech fazach). Taki projekt potrzebuje:
    bez treści stary start „samego Vite” przechodzi sondę; z treścią daje STOP przed fazą 1 albo serwer martwy po restarcie.
    Sonda nie podąża za przekierowaniem: `E2E_HEALTH` wskazuje adres, który odpowiada wprost (np. `/healthz`, nie `/healthz/` z 301).
 
+Status HTTP i meta (`<title>`, `og:*`) trasy renderowanej przez serwer scenariusz sprawdza na porcie serwera albo na trasie
+z listy proxy Vite, nigdy port Vite — Vite odpowiada na każdej ścieżce 200 i `index.html` (vibersi etap 5: `curl` na `[Manual]`).
+
 Gdy skrypt startu powstaje dopiero w zadaniu, plan ma pozycję checklisty `[blokuje: faza N]` (N = faza pierwszego scenariusza
 zapisującego albo czytającego przez serwer): operator podmienia `E2E_START` i ustawia sondy po fazie z IU skryptu, a autopilot
 zatrzymuje się przed fazą N, dopóki pozycja jest nieodhaczona.

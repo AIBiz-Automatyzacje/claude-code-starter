@@ -181,3 +181,14 @@ test('SKILL.md 3.4b: wysyłki maili/SMS fazy kontra limit usługi na projekcie e
   assert.match(regula, /Send Email hook tego limitu nie omija/)
   assert.match(regula, /pozycja w checkliście przygotowania \(3\.7\)[^.]*`\[blokuje: faza N\]`/)
 })
+
+// P27 (2) (vibersi etap 5): scenariusz o statusie HTTP i meta trasy renderowanej przez serwer odpytywal port Vite, ktory na
+// kazdej sciezce odpowiada 200 i index.html — wynik zawsze „zgodny” albo `curl` na [Manual].
+test('SKILL.md 3.4b i README e2e-env: status HTTP i meta trasy serwera — port serwera albo trasa z listy proxy, nigdy port Vite', () => {
+  const p34b = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b'), SKILL_MD.indexOf('#### 3.5'))
+  assert.match(p34b, /status HTTP albo meta \(`<title>`, `og:\*`\) trasy renderowanej przez serwer/)
+  assert.match(p34b, /port serwera albo trasa z listy proxy Vite, nigdy port Vite/)
+  const readme = readFileSync(join(REPO, '.claude/templates/e2e-env/README.md'), 'utf8')
+  assert.match(readme, /Status HTTP i meta \(`<title>`, `og:\*`\) trasy renderowanej przez serwer/)
+  assert.match(readme, /nigdy port Vite/)
+})
