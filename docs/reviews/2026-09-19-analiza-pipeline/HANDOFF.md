@@ -3205,10 +3205,10 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (smoke, PR, merge). Wtedy jeden plan obu paczek (pozycja → plik:linia → test padający bez poprawki) do akceptacji.
 
 100. **ANALIZA ETAPU 5 VIBERSI (2026-10-26, jedna sesja, nic nie wdrożone) — raport `docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md`,
-    lista E5-1…E5-14 dochodzi do planu P27 + P29.** Telemetria (`raport.mjs --od 2026-10-20 --do 2026-10-26 --projekt vibersi`,
+    lista E5-1…E5-21 dochodzi do planu P27 + P29 (E5-15 wycinek wiedzy, E5-16…E5-20 telemetria, E5-21 sceptyk — dopisane po pytaniach operatora).** Telemetria (`raport.mjs --od 2026-10-20 --do 2026-10-26 --projekt vibersi`,
     skan 600 runów, 0 błędów; porównanie z etapem 4 w `docs/reviews/telemetria/raport-2026-10-17_2026-10-19-vibersi*`):
     84,7 M vs 54,6 M — execute 43,4 M (24 IU vs 14, builder p50 bez zmian 1,33 M), review 19,0 M (+64%, diff faz 1,6× większy),
-    fix 13,8 M (stabilny). Bot 2,7 P1/P2 na 100 plików (etap 4: 1,5); PR #8 0 wątków, #9 3 tury + wątek po sufitcie, #10 2 tury.
+    fix 13,8 M (stabilny). Bot 7 P1/P2 na 577 plików PR (1,2/100; etap 4: 0,9 — raport.mjs pokazuje 2,7 vs 1,5, bo dzieli przez największą część, E5-16); PR #8 0 wątków, #9 3 tury + wątek po sufitcie, #10 2 tury.
     **Ustalenia:** (a) run `wf_e17cca34-115` szedł BEZ P23 (sync `015b61c` 19.10 17:30 ze stanu `54d9fbd`, merge P23 o 18:56)
     i bez P25 (po runie); P25 zadziałała w smoke'u, `plan.mjs blokery` retrospektywnie daje STOP przed fazą 3. (b) P22 działa
     (B1, B2, B4, C1, D2, F1 — dowody w raporcie §2). (c) Z 13 wątków bota PR #9/#10: 8 = klasa seedów rozlewana rundami
@@ -3218,7 +3218,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     naszej analizie pkt 97(3), która nie wymagała warunku środowiska. (e) Wątek `moje-projekty-seed.sql:182` (Major) „do cz. 3”
     został otwarty na zmergowanym PR #9 — brak nośnika po sufitcie. (f) `test:scripts` i `e2e/serwer-smoke.sh` poza walidacją.
     Skrypty: `skrypty/e5_runy.py`, `e5_stan.py`, `e5_sesje.py`.
-    **Dalej:** sesja planu paczki P27 (pkt 97 + P3 z pkt 96) + P29 (pkt 99) + E5-1…E5-14 do akceptacji operatora (§8).
+    **Dalej:** sesja planu paczki P27 (pkt 97 + P3 z pkt 96) + P29 (pkt 99) + E5-1…E5-21 do akceptacji operatora (§8).
     W vibersi przed etapem 6 (decyzje operatora, poza szablonem): PR z `b954014` (Turnstile), wątek `moje-projekty-seed.sql:182`,
     2 padające testy, CLAUDE.md `TURNSTILE_SECRET_KEY`.
 
@@ -3633,7 +3633,7 @@ po wdrożeniu paczki (przed etapem 6). Operator wkleja do nowej sesji szablonu:
 ```
 Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin). Sesja: PLAN PACZKI P27 + P29 + E5.
 Przeczytaj docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md: 6a pkt 96 (zostałe P3), 97 (P27), 99 (P29 z 2b), 100 (analiza),
-§7 dwa ostatnie wpisy; raport docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md (lista E5-1…E5-14). Potwierdź w 3–5 zdaniach.
+§7 dwa ostatnie wpisy; raport docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md (lista E5-1…E5-21). Potwierdź w 3–5 zdaniach.
 
 Cel: jeden plan paczki — każda pozycja: problem → plik:linia → poprawka → test padający bez poprawki → co mi to da;
 kolejność wg wpływu (blokuje run / jakość PR / koszt), grupy do jednej sesji wdrożenia; E5-14 i obserwacje sceptyka jako pomiar,

@@ -1,7 +1,7 @@
 # Analiza etapu 5 vibersi (autopilot 6 faz, smoke, PR #8–#10) — 2026-10-26
 
 Wejście: HANDOFF 6a pkt 95–99, telemetria, archiwum `vibersi/docs/completed/etap-5-interakcje-i-profil/`, PR #8–#10 (gh),
-transkrypty sesji vibersi, feedback z ostatniej sesji vibersi. Nic nie wdrożone; lista poprawek na końcu (E5-1…E5-14) do planu
+transkrypty sesji vibersi, feedback z ostatniej sesji vibersi. Nic nie wdrożone; lista poprawek na końcu (E5-1…E5-21) do planu
 P27 + P29.
 
 ## Wnioski (najpierw)
@@ -14,7 +14,8 @@ P27 + P29.
 2. **Koszt +55% (84,7 M vs 54,6 M), prawie cały z liczby IU i rozmiaru faz, nie z rozrzutu.** Builder p50 bez zmian
    (1,33 vs 1,36 M), ale 24 IU zamiast 14 → execute 43,4 M (+23,6 M). Reviewerzy +64% (19,0 vs 11,6 M), bo diff fazy jest
    1,6× większy (średnio 323k vs 204k zn) i nie było P23. Fix stabilny (11,2 vs 12,4 M).
-3. **Bot znalazł 2,7 uwag P1/P2 na 100 plików (etap 4: 1,5). Połowę pipeline już znał albo sam wyprodukował.**
+3. **Bot: 7 uwag P1/P2 na 577 plików trzech PR (1,2 na 100; etap 4: 3 na 338 = 0,9) — raport telemetrii podaje 2,7 vs 1,5,
+   bo dzieli przez największą część zamiast sumy (E5-16). Połowę uwag pipeline już znał albo sam wyprodukował.**
    Z 13 wątków bota (PR #9: 9, PR #10: 4) i 2 uwag poza diffem: 8 to jedna klasa seedów e2e, która rozlewała się po kolejnych
    plikach przez 4 rundy; 2 były w review fazy jako P3 i leżały w known-issues (limit ciała 8 kB, kursor powiadomień); 2 urodziły
    się w commicie fixa fazy 5 (+852 linii, oglądanym tylko listami K-1…K-7); reszta to następstwo poprawki (surogaty),
@@ -46,7 +47,7 @@ Skan: `zbierz.mjs --skan` → `runow: 600, sesji: 2663, dopisanych: 0, bledow: 0
 | sceptycy | 1,8 M | 1,4 M |
 | dev-pr (runy) | 1,83 M / 16 | 3,49 M / 25 |
 | P1 / P2 / P3 review | 5 / 77 / 51 | 0 / 90 / 63 |
-| bot P1/P2 na 100 plików | 1,5 | 2,7 (7 z 14 wątków) |
+| bot P1/P2 na 100 plików (suma plików PR) | 0,9 (3/338) | 1,2 (7/577); raport.mjs: 1,5 i 2,7 (mianownik = największa część, E5-16) |
 | niezawodność | autopilot OK, dev-pr 1 STOP | autopilot OK, dev-pr 1 STOP (czystość) |
 
 - **Per rola (p50 agenta):** build 1360k → 1325k; correctness 392k → 727k; test-coverage 354k → 595k; code-quality 296k → 496k;
@@ -170,7 +171,13 @@ Kolejność wg wpływu. Każda pozycja w planie dostanie test padający bez popr
 | E5-12 | 6 propozycji do recenzentów | `correctness-reviewer.md:16-31` ma 16 pozycji; 7/7 klas bota z regułą | wpiąć w istniejące pozycje: ścieżka błędu i cykl życia → `:21`, kursor → `:25`, bodyLimit → `:24`, PATCH z migawki → `:17`, seed → `security-sentinel.md:41` (E5-4); 0 nowych linii | reguły bez rozrostu listy |
 | E5-13 | Smoke z dużą zmianą funkcji w sesji 300–480k | `dev-docs-complete` smoke bez progu zmiany | gdy smoke zmienia funkcję (> ~10 plików kodu): `/clear` + osobne mini-zadanie (plan → faza autopilota) zamiast w sesji smoke'u | 8,35 M sesji → koszt fazy; zmiana przechodzi review osi |
 | E5-14 | Builder ~100 tur / 300k kontekstu (5 IU) | rozmiar IU w planie bez progu | najpierw pomiar: tury builderów vs liczba plików/linii IU (etapy 3–5); próg w `dev-plan` 3.3 dopiero przy korelacji | — (pomiar) |
-| E5-15 | Wiedza projektu ucinana limitem wycinka | `wiedza/wycinek.mjs:11` `MAKS_WYCINEK_ZN = 2000` (~4 reguły); baza vibersi 28 wpisów, indeks 12,9k zn | pomiar, potem decyzja: 24/24 buildery dostały blok reguł, ale 13/24 z ucięciem, UI IU-10/14/19/23 po 11 reguł poza limitem (to obszar 4 wątków bota PR #10); dossier faz 3–5: 4 wpisy, 15 pominiętych. Kierunek: limit per warstwa albo kolejność wg klasy pliku, nie daty | wiedza dociera tam, gdzie bot później znajduje błędy |
+| E5-15 | Wiedza projektu ucinana limitem wycinka | `wiedza/wycinek.mjs:11` `MAKS_WYCINEK_ZN = 2000` (~4 reguły po 300–465 zn); kolejność `wpisy.mjs:42` przy równej wadze i ucieczkach = alfabet nazwy klasy (`cykl-zycia-ui` przed `sciezka-bledu`); baza 28 wpisów, 4 reguły `sciezka-bledu` osobno | (a) kolejność: dopasowanie najwęższym globem i liczba ucieczek do bota przed alfabetem; (b) linia wycinka = klasa + zdanie skrócone (pole `regula_krotka`, ≤ 160 zn), pełna reguła linkiem; (c) limit ~5000 zn (+~1 tys. tokenów na start buildera, < 0,1 M na etap); (d) `/dev-compound-refresh` scala reguły jednej klasy w jedną; (e) klasa z ≥ 3 ucieczkami → propozycja bramki mechanicznej (lint/ast-grep/test) zamiast kolejnej linii; test na etapie 5: IU-10/14/19/23 dostają `sciezka-bledu` i `cykl-zycia-ui` | wiedza dociera tam, gdzie bot później znajduje błędy |
+| E5-16 | Telemetria: jakość bota zawyżona przy PR w częściach | `telemetria/raport-sekcje.mjs:93` `Math.max` plików części | suma plików do recenzji wszystkich części (z „Files selected for processing” albo filtrów `.coderabbit.yaml`) | porównywalna miara jakości między etapami |
+| E5-17 | Telemetria: pełny skan nadpisuje stare rekordy stanem z dnia skanu | `run.szablon` (marker z `.template-version` w chwili skanu: run 12.10 ma marker P25 z 21.10), `instrukcje_stale` (`zrodla.mjs:148`, plik roli czytany przy skanie) | pola wersji zamrożone przy pierwszym rekordzie runu (nie nadpisywać przy ponownym skanie) albo liczone z gita na czas końca runu | wiadomo, która wersja szablonu się wykonała (sprawdzian E5-1) |
+| E5-18 | Telemetria: `narzedzia_n` puste u wszystkich 200 agentów etapu 5 | `transkrypt.mjs:164-170` czyta załączniki `deferred_tools_*`, których transkrypty już nie mają | odczyt z nowego formatu albo usunięcie pola z raportu | raport bez martwej kolumny |
+| E5-19 | Telemetria: koszt epizodu skilla do następnego skilla | `sync-template` 6,6 M w etapie 5 to w większości smoke | koniec epizodu na `/clear` i na kolejnym poleceniu operatora spoza skilla; osobna pozycja „sesja główna bez skilla” | koszt smoke'u widoczny osobno |
+| E5-20 | Telemetria: brak sekcji „ucieczki” | pochodzenie wątku bota liczone w tej analizie ręcznie | sekcja raportu: wątek bota → był w review fazy (P3/known-issues) / plik z commitu fixa / plik ze smoke'u / nowy | główna miara skuteczności architektury liczona skryptem |
+| E5-21 | Sceptyk P2 bez obaleń (0/173 w etapach 4–5), a kod fixa bez review osi | `verify-batch` 1,43 M/etap | do decyzji: budżet sceptyka P2 przenieść na review commitów fixa (E5-3) — koszt bez zmian, sceptyk zostaje dla P1 i degradacji | ta sama kwota łapie błędy zamiast potwierdzać |
 
 Obserwacje bez poprawki teraz: sceptyk P2 bez obaleń w dwóch etapach (0/173) przy koszcie ~1,4 M — kandydat do pomiaru
 w panelu, nie do zmiany; P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie serwera `api/`) — zostają w planie P27 jak ustalono.
