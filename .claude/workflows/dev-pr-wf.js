@@ -1042,6 +1042,10 @@ nastepny krok, po bramce rozmiaru liczonej w orkiestratorze.
 5. Gdy fakty[] niepuste, wprowadz je do CLAUDE.md: kazdy fakt raz, w sekcji, ktorej dotyczy. Zdanie, ktoremu fakt przeczy,
    popraw albo usun zamiast dopisywac obok. Bez historii zadania, dat i uzasadnien — te zostaja w pliku decyzji. Fakt, ktory
    CLAUDE.md juz zawiera, pomin. Innych zmian w CLAUDE.md nie rob.
+   Fakt o zmiennej srodowiska (vibersi: zmienna wymagana w trybie produkcyjnym opisana jako opcjonalna): wymagalnosc bierzesz
+   z walidatora konfiguracji (plik:linia) — np. schemat Zod env albo funkcja sprawdzajaca konfiguracje (\`grep -rn <NAZWA> src\`),
+   nie z brzmienia pliku decyzji. Zmienna wymagana warunkowo opisujesz z warunkiem trybu ("wymagana gdy <warunek>"); bez
+   walidatora piszesz to wprost ("brak walidacji w kodzie").
 6. znPo = \`wc -m < CLAUDE.md\`. W zmiany jednym-dwoma zdaniami: co dopisano, poprawiono, usunieto (albo "bez zmian").
 
 Zwroc obiekt zgodny ze schematem.`,

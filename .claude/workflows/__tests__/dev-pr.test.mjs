@@ -650,3 +650,13 @@ test('walidacja: test i kazdy test:* bez e2e w nazwie — blok komend dev-pr i w
     assert.match(tekst, /test:scripts/, nazwa)
   }
 })
+
+// E5-10 (vibersi etap 5): CLAUDE.md opisal zmienna wymagana warunkowo (tryb produkcyjny) jako opcjonalna — etap claude-md
+// przepisal fakt z pliku decyzji bez sprawdzenia walidatora konfiguracji.
+test('claude-md: fakt o zmiennej srodowiska — wymagalnosc z walidatora konfiguracji (plik:linia) z warunkiem trybu', async () => {
+  const { prompty } = await uruchom({ etap: 'claude-md', zadanie: 'etap-5' }, [null])
+  const krok5 = prompty[0].slice(prompty[0].indexOf('5. Gdy fakty[]'), prompty[0].indexOf('6. znPo'))
+  assert.match(krok5, /zmiennej srodowiska/)
+  assert.match(krok5, /walidatora konfiguracji \(plik:linia\)/)
+  assert.match(krok5, /wymagana warunkowo/)
+})
