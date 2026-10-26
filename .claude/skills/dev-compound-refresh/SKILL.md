@@ -180,6 +180,14 @@ po Update, Replace i Archive generujesz go od nowa — ręcznie go nie edytujesz
    Wąski przegląd z autopilota bramki rozmiaru nie porządkuje: zwraca ją operatorowi, który uruchamia pełny przegląd.
 4. `duplikaty` w wyniku = ta sama klasa i treść reguły w kilku solutions; indeks bierze nowszy wpis — starszy oceń jak każdy
    dokument (Keep, gdy wnosi własny opis problemu; Archive, gdy jest redundantny).
+5. `doScalenia` w wyniku = klasa z co najmniej 3 regułami w indeksie. Osobne reguły jednej klasy zajmują limit wycinka
+   buildera i reviewera kilka razy, więc reguły o wspólnym mechanizmie scalasz: Replace jednym następcą, którego `regula`
+   obejmuje warianty (≤ 2 zdania), `regula_krotka` mieści je w jednym zdaniu, `paths` to suma globów, `ucieczki` suma
+   liczników, a starsze solutions idą do `_archived`. Reguła o innym mechanizmie tej samej klasy zostaje (Keep).
+6. `doBramki` w wyniku = klasa z sumą ucieczek do bota co najmniej 3. Kolejna linia reguły jej nie zatrzymała, więc
+   w raporcie proponujesz bramkę mechaniczną — regułę lint (ESLint `no-restricted-syntax` albo reguła lokalna), wzorzec
+   ast-grep albo test w bramkach domknięcia — z plikami klasy i przykładem, który bramka ma odrzucić. Wdrożenie to decyzja
+   operatora; po wdrożeniu solution dostaje szczebel `lint` albo `kod` i pole `bramka`.
 
 ## Jeden wątek
 
@@ -349,6 +357,8 @@ Indeks wiedzy:
   Wpisy: N (koszyk „zawsze”: Z), znaki: C
   Niepoprawne pola: <lista albo „brak”>
   Duplikaty: <lista albo „brak”>
+  Do scalenia: <klasa: scalone w <plik> / zostawione z powodem> albo „brak”
+  Do bramki: <klasa (ucieczki): propozycja bramki> albo „brak”
 ```
 
 ### Format raportu autonomicznego

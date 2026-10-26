@@ -223,7 +223,8 @@ Po zapisie pliku:
    rozmiar indeksu) = indeks zostaje bez zmian; podaj błędy w podsumowaniu, porządkuje je `/dev-compound-refresh`.
    Indeksu nie edytujesz ręcznie.
 3. Szczebel `kod` albo `lint`: w podsumowaniu także **Propozycja bramki** (typ albo reguła lint do wdrożenia),
-   decyzja operatora.
+   decyzja operatora. Klasa zapisanego solution w `doBramki` wyniku indeksu (suma ucieczek ≥ 3) — też propozycja bramki,
+   nawet przy szczeblu `regula`, bo kolejna linia reguły tej klasy jej nie zatrzymała.
 
 ### Krok 5: Podsumowanie
 

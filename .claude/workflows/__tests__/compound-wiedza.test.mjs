@@ -187,3 +187,16 @@ test('compound: pole regula_krotka w szablonie frontmattera skilla, w liscie pol
   assert.match(skill, /- `regula_krotka` — [^\n]*160 zn/)
   assert.match(zrodloCompound, /\(klasa, regula, regula_krotka, paths,/)
 })
+
+// E5-15(d)(e): refresh czyta doScalenia i doBramki z wyniku indeksu — scala reguly jednej klasy w jedna, a klasie
+// z ≥ 3 ucieczkami proponuje bramke mechaniczna zamiast kolejnej linii; compound podaje doBramki w podsumowaniu.
+test('skill dev-compound-refresh: doScalenia → jedna regula klasy (Replace), doBramki → propozycja bramki mechanicznej; raport z obu', () => {
+  const faza = refresh.slice(refresh.indexOf('## Faza 1.7: Indeks wiedzy'), refresh.indexOf('## Jeden wątek'))
+  assert.match(faza, /`doScalenia`[^\n]*(\n[^\n]+)*?Replace jednym następcą/)
+  assert.match(faza, /`regula_krotka`/)
+  assert.match(faza, /`doBramki`[^\n]*(\n[^\n]+)*?(lint|ast-grep)/)
+  const raport = refresh.slice(refresh.indexOf('### Indeks wiedzy (docs/learned-patterns.md)'))
+  assert.match(raport, /Do scalenia: /)
+  assert.match(raport, /Do bramki: /)
+  assert.match(skill, /`doBramki`/)
+})
