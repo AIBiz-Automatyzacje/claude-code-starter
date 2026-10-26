@@ -144,3 +144,13 @@ test('correctness: waga — zly widoczny wynik na zwyklej sciezce to P2, nie P3 
   assert.match(waga, /duplikat/)
   assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
 })
+
+test('security: strażnik seeda sprawdza zakres, nie istnienie (E5-4(a), E5-12 seed) — filtr = lista strażnika, \\getenv nie nadpisuje -v', () => {
+  const seed = pozycja(rola('security-sentinel'), /^- \(seed albo skrypt usuwający/)
+  assert.match(seed, /każdej operacji niszczącej/)
+  assert.match(seed, /listę ze strażnika/)
+  assert.match(seed, /LIKE 'prefiks-%'/)
+  assert.match(seed, /owner_id/)
+  assert.match(seed, /\\getenv[^.]*-v/)
+  assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
+})
