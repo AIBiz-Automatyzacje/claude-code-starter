@@ -177,7 +177,7 @@ Kolejność wg wpływu. Każda pozycja w planie dostanie test padający bez popr
 | E5-18 | Telemetria: `narzedzia_n` puste u wszystkich 200 agentów etapu 5 | `transkrypt.mjs:164-170` czyta załączniki `deferred_tools_*`, których transkrypty już nie mają | odczyt z nowego formatu albo usunięcie pola z raportu | raport bez martwej kolumny |
 | E5-19 | Telemetria: koszt epizodu skilla do następnego skilla | `sync-template` 6,6 M w etapie 5 to w większości smoke | koniec epizodu na `/clear` i na kolejnym poleceniu operatora spoza skilla; osobna pozycja „sesja główna bez skilla” | koszt smoke'u widoczny osobno |
 | E5-20 | Telemetria: brak sekcji „ucieczki” | pochodzenie wątku bota liczone w tej analizie ręcznie | sekcja raportu: wątek bota → był w review fazy (P3/known-issues) / plik z commitu fixa / plik ze smoke'u / nowy | główna miara skuteczności architektury liczona skryptem |
-| E5-21 | Sceptyk P2 bez obaleń (0/173 w etapach 4–5), a kod fixa bez review osi | `verify-batch` 1,43 M/etap | do decyzji: budżet sceptyka P2 przenieść na review commitów fixa (E5-3) — koszt bez zmian, sceptyk zostaje dla P1 i degradacji | ta sama kwota łapie błędy zamiast potwierdzać |
+| E5-21 | Sceptyk P2: 0 obaleń z 173 (etapy 4–5; etapy 1–3: 1 z 135), jedyny skutek to obniżenia P2 → P3 (które trafiają do known-issues — dziura E5-2) | nie wiemy, czy reviewerzy przestali się mylić, czy sceptyk przytakuje | najpierw test kanarkowy: do partii weryfikacji 3–5 podłożonych fałszywych findingów (teza sprzeczna z kodem, z plik:linia); sceptyk obala kanarki → zostaje, 0 obaleń jest prawdą; przytakuje → wymiana promptu albo przeniesienie budżetu na E5-3 | decyzja na danych, nie na przeczuciu |
 
 Obserwacje bez poprawki teraz: P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie serwera `api/`) — zostają w planie P27 jak ustalono.
 
@@ -186,7 +186,9 @@ Obserwacje bez poprawki teraz: P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie s
 - **E5-15 (wiedza) — wchodzi do paczki.**
 - **E5-1 i E5-13 (granice procesu) — odrzucone:** sync przed merge'em paczki i duża zmiana funkcji w smoke'u uznane za wyjątek.
 - **E5-16…E5-20 (telemetria) — wchodzą do paczki.** E5-20 dostaje pierwowzór: `skrypty/ucieczki_bota.py` (niżej).
-- E5-21 (sceptyk P2 → review fixa) — operator prosi o prostsze wyjaśnienie przed decyzją.
+- E5-21 — zamiast decyzji „przenieść budżet” najpierw test kanarkowy (wiersz E5-21).
+- E5-2 nie zmienia decyzji P8 (fix tylko P1/P2): P3 dalej bez automatycznej naprawy; zmiana to kalibracja wagi i pytanie przed PR.
+- E5-3 nie przywraca re-review po fixie (odrzucone 2026-09-20: review nie zbiega); to dwie listy więcej w tej samej jednej kontroli fixa.
 
 ## Ucieczki do bota — skrypt i wynik dla etapów 3–5
 
