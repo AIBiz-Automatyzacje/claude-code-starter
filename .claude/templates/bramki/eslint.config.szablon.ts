@@ -34,18 +34,32 @@ function zPoziomem(zestaw: typeof tseslint.configs.recommendedTypeChecked, pozio
 
 // E5-22 (vibersi PR #12): test wyscigu sprawdzal atrape sama liczba wywolan, a `vitest/prefer-called-with` nie obejmuje
 // `toHaveBeenCalledTimes`. Selektor AST nie powiaze dwoch asercji jednej atrapy, stad regula lokalna: w callbacku testu
-// (it/test) `expect(x).toHaveBeenCalledTimes(n > 0)` wymaga `toHaveBeenCalledWith`, `NthCalledWith` albo `LastCalledWith` na `x`.
+// (it/test, takze it.each i test.x) `expect(x).toHaveBeenCalledTimes(n > 0)` wymaga `toHaveBeenCalledWith`, `NthCalledWith` albo `LastCalledWith` na `x`.
 type Wezel = Rule.Node
 const SPRAWDZA_ARGUMENTY = new Set(['toHaveBeenCalledWith', 'toHaveBeenNthCalledWith', 'toHaveBeenLastCalledWith', 'toBeCalledWith'])
 const LICZY_WYWOLANIA = new Set(['toHaveBeenCalledTimes', 'toBeCalledTimes'])
 const FUNKCJE_TESTU = new Set(['it', 'test'])
 
-/** Atrapa i matcher z `expect(atrapa).matcher(...)` (bez `.not`); inny ksztalt — null. */
+/** `expect` albo `expect.soft`. */
+function czyExpect(w: Wezel): boolean {
+  if (w.type === 'Identifier') return w.name === 'expect'
+  return w.type === 'MemberExpression' && w.object.type === 'Identifier' && w.object.name === 'expect'
+    && w.property.type === 'Identifier' && w.property.name === 'soft'
+}
+
+/** `vi.mocked(x)` to ta sama atrapa co `x`. */
+function bezMocked(w: Wezel): Wezel {
+  const mocked = w.type === 'CallExpression' && w.callee.type === 'MemberExpression' && w.callee.object.type === 'Identifier'
+    && w.callee.object.name === 'vi' && w.callee.property.type === 'Identifier' && w.callee.property.name === 'mocked'
+  return mocked && w.arguments[0] ? (w.arguments[0] as Wezel) : w
+}
+
+/** Atrapa i matcher z `expect(atrapa).matcher(...)` / `expect.soft(...)` (bez `.not`); inny ksztalt — null. */
 function asercjaAtrapy(wezel: Wezel, tekst: (w: Wezel) => string): { atrapa: string, matcher: string } | null {
   if (wezel.type !== 'CallExpression' || wezel.callee.type !== 'MemberExpression' || wezel.callee.property.type !== 'Identifier') return null
   const obiekt = wezel.callee.object
-  if (obiekt.type !== 'CallExpression' || obiekt.callee.type !== 'Identifier' || obiekt.callee.name !== 'expect' || !obiekt.arguments[0]) return null
-  return { atrapa: tekst(obiekt.arguments[0] as Wezel), matcher: wezel.callee.property.name }
+  if (obiekt.type !== 'CallExpression' || !czyExpect(obiekt.callee as Wezel) || !obiekt.arguments[0]) return null
+  return { atrapa: tekst(bezMocked(obiekt.arguments[0] as Wezel)), matcher: wezel.callee.property.name }
 }
 
 /** Callback testu (ostatni argument `it(...)`, `test(...)`, `it.each(...)(...)`, `test.concurrent(...)`) obejmujacy wezel; poza testem — Program. */

@@ -158,6 +158,32 @@ describe('atrapy', () => {
     expect(pobierz).toHaveBeenCalledTimes(1)
   })
 })
+
+// zakres to jeden test: argumenty sprawdzone w innym tescie tej samej atrapy modulu nie licza sie
+const wspolna = vi.fn()
+// pomocnik poza testem nie sprawdza argumentow za test (zakres pliku zgasilby blad it.each nizej)
+export function sprawdzWspolna(): void {
+  expect(wspolna).toHaveBeenCalledWith(1)
+}
+describe('zakres', () => {
+  it('argumenty w tym tescie', () => {
+    wspolna(1)
+    expect(wspolna).toHaveBeenCalledWith(1)
+  })
+  it('sama liczba w innym tescie', () => {
+    wspolna(2)
+    expect(wspolna).toHaveBeenCalledTimes(1)
+  })
+  it.each([1])('it.each %s: zakres to callback testu, nie plik', (n) => {
+    wspolna(n)
+    expect(wspolna).toHaveBeenCalledTimes(1)
+  })
+  it('expect.soft tez liczy', () => {
+    const f = vi.fn()
+    f(1)
+    expect.soft(f).toHaveBeenCalledTimes(1)
+  })
+})
 `,
       'src/atrapy-dobre.test.ts': `import { describe, expect, it, vi } from 'vitest'
 
@@ -182,11 +208,36 @@ describe('atrapy dobre', () => {
     expect(f).toHaveBeenCalledTimes(0)
     expect(f).not.toHaveBeenCalledWith(1)
   })
+  it('samo n-te wywolanie sprawdza argumenty', () => {
+    const f = vi.fn()
+    f(1)
+    expect(f).toHaveBeenCalledTimes(1)
+    expect(f).toHaveBeenNthCalledWith(1, 1)
+  })
+  it('samo ostatnie wywolanie sprawdza argumenty', () => {
+    const f = vi.fn()
+    f(1)
+    expect(f).toHaveBeenCalledTimes(1)
+    expect(f).toHaveBeenLastCalledWith(1)
+  })
+  it('liczba w callbacku waitFor, argumenty w tescie; vi.mocked to ta sama atrapa', async () => {
+    serwis.pobierz(3)
+    await vi.waitFor(() => {
+      expect(serwis.pobierz).toHaveBeenCalledTimes(2)
+    })
+    expect(vi.mocked(serwis.pobierz)).toHaveBeenCalledWith(3)
+  })
+  it.each([1, 2])('it.each %s', (n) => {
+    const f = vi.fn()
+    f(n)
+    expect(f).toHaveBeenCalledTimes(1)
+    expect(f).toHaveBeenCalledWith(n)
+  })
 })
 `,
     })
     const zle = lint(repo, ['src/atrapy.test.ts']).filter((u) => u.regula === 'lokalne/atrapa-z-argumentami')
-    assert.deepEqual(zle, [{ regula: 'lokalne/atrapa-z-argumentami', poziom: BLAD }, { regula: 'lokalne/atrapa-z-argumentami', poziom: BLAD }])
+    assert.deepEqual(zle, Array.from({ length: 5 }, () => ({ regula: 'lokalne/atrapa-z-argumentami', poziom: BLAD })))
     assert.deepEqual(lint(repo, ['src/atrapy-dobre.test.ts']), [])
   } finally {
     usun(repo)
