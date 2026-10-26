@@ -154,3 +154,12 @@ test('security: strażnik seeda sprawdza zakres, nie istnienie (E5-4(a), E5-12 s
   assert.match(seed, /\\getenv[^.]*-v/)
   assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
 })
+
+test('klucz testowy dostawcy (E5-7 + P27(3)): test-coverage — atrapa bez wariantu klucza testowego = P2 TEST; security — bez warunku srodowiska = P1', () => {
+  const atrapy = pozycja(rola('test-coverage-reviewer'), /^- \(atrapy w diffie\)/)
+  assert.match(atrapy, /kluczem testowym[^.]*wariantu odpowiedzi tego klucza[^.]*P2 TEST/)
+  const sekrety = pozycja(rola('security-sentinel'), /^- Przeszukaj diff fazy pod kątem sekretów/)
+  assert.match(sekrety, /[Kk]lucz testowy dostawcy[^.]*bez warunku środowiska[^.]*P1/)
+  assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
+  assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
+})
