@@ -101,6 +101,26 @@ export function uwagaSerweraApi(projekt, env) {
   return `projekt ma serwer API (server/ albo skrypt *:server), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
 }
 
+const PLIKI_VITE = ['vite.config.ts', 'vite.config.mts', 'vite.config.js', 'vite.config.mjs', 'vite.config.cjs']
+
+/**
+ * Uwaga przy planowaniu (P27 (1), vibersi etap 5): sonda E2E_HEALTH na porcie Vite (origin E2E_URL), a jej sciezki nie ma
+ * w vite.config.* — Vite odpowiada fallbackiem SPA i sonda z E2E_HEALTH_TRESC daje STOP startu. Sciezka jest pokryta, gdy
+ * config ma ja w cudzyslowie albo prefiks jej segmentow (klucz proxy `/api` pokrywa `/api/health`, `^/healthz` — `/healthz`).
+ * @param {string} projekt @param {Record<string, string>} env @returns {string | null}
+ */
+export function uwagaProxyZdrowia(projekt, env) {
+  const zdrowie = env.E2E_HEALTH ? adresHttp(env.E2E_HEALTH) : null
+  const url = adresHttp(env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`)
+  if (!zdrowie || !url || zdrowie.origin !== url.origin || zdrowie.pathname === '/') return null
+  const plik = PLIKI_VITE.find((p) => existsSync(join(projekt, p)))
+  if (!plik) return null
+  const sciezki = [...readFileSync(join(projekt, plik), 'utf8').matchAll(/['"`]\^?(\/[^'"`\s]*)['"`]/g)].map((m) => m[1].replace(/\/$/, ''))
+  const sciezka = zdrowie.pathname.replace(/\/$/, '')
+  if (sciezki.some((s) => s && (sciezka === s || sciezka.startsWith(`${s}/`)))) return null
+  return `ścieżki ${sciezka} z E2E_HEALTH nie ma w ${plik} — Vite odpowie na nią fallbackiem SPA (index.html), więc sonda z E2E_HEALTH_TRESC da STOP startu; dodaj ${sciezka} do tras proxy Vite obok /api albo ustaw E2E_HEALTH na port serwera (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
+}
+
 /** @param {string} url @returns {URL | null} adres http(s) albo null (zapis bez schematu parsuje sie jako schemat `localhost:`) */
 function adresHttp(url) {
   const u = URL.canParse(url) ? new URL(url) : null

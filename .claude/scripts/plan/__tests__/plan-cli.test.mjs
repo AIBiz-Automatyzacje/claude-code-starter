@@ -259,6 +259,36 @@ test('gotowosc: serwer API bez E2E_HEALTH_TRESC = uwaga E2E z sekcja README; z t
   }
 }))
 
+// P27 (1) (vibersi etap 5): E2E_HEALTH=<E2E_URL>/healthz, a proxy Vite tylko na /api — /healthz dostal fallback SPA (index.html),
+// sonda z E2E_HEALTH_TRESC dala STOP startu. Uwaga przy planowaniu, gdy sciezki sondy nie ma w vite.config.*.
+test('gotowosc: sciezka E2E_HEALTH na porcie Vite bez wpisu w vite.config = uwaga; w proxy, pod /api albo na porcie serwera — bez uwagi', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const uwagaProxy = (/** @type {string[]} */ u) => u.filter((t) => /proxy Vite/.test(t))
+  const vite = (/** @type {string} */ klucze) => writeFileSync(join(k, 'vite.config.ts'), `export default { server: { proxy: { ${klucze} } } }\n`)
+  const env = (/** @type {string} */ zdrowie) => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=${zdrowie}\n`)
+  vite("'/api': 'http://localhost:8787'")
+  env('http://localhost:5174/healthz')
+  const [uwaga] = uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi)
+  assert.match(uwaga ?? '', /ścieżki \/healthz z E2E_HEALTH nie ma w vite\.config\.ts/)
+  assert.match(uwaga ?? '', /Aplikacja z osobnym serwerem API/)
+  vite("'/api': 'http://localhost:8787', '/healthz': 'http://localhost:8787'")
+  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [])
+  vite("'^/healthz': 'http://localhost:8787'")
+  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'klucz proxy jako wyrazenie z ^')
+  vite("'/api': 'http://localhost:8787'")
+  env('http://localhost:5174/api/health')
+  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'sciezka pod /api')
+  env('http://localhost:5174/apihealth')
+  assert.equal(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi).length, 1, '/api nie jest prefiksem segmentu /apihealth')
+  env('http://localhost:8787/healthz')
+  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'sonda wprost na porcie serwera')
+  env('http://localhost:5174')
+  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'sonda na stronie glownej')
+  rmSync(join(k, 'vite.config.ts'))
+  env('http://localhost:5174/healthz')
+  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'bez vite.config — projekt nie na Vite')
+}))
+
 // P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:
 // pozycja „[blokuje: faza 3]” byla tylko w planie zadania i run przeszedl fazy 3–6 bez serwera Hono w E2E.
 test('blokery: nieodhaczone pozycje checklisty z numerem fazy (start = faza 1), odhaczone pominiete; bez checklisty pusto', () => wRepo((k) => {

@@ -58,10 +58,12 @@ stary `E2E_START` w trzech fazach). Taki projekt potrzebuje:
 1. **Skryptu startu obu procesów** w repo (np. `scripts/e2e/start-e2e.mjs` + `pnpm e2e:start`): buduje i uruchamia serwer
    na osobnym porcie z mapą zmiennych z `.env.e2e` (adres i klucz bazy e2e, `SITE_URL=<E2E_URL>`, testowe klucze usług
    zewnętrznych, wysyłki w trybie dziennika), potem Vite `--mode e2e --port <port E2E_URL> --strictPort` z proxy `/api`
-   na serwer; sygnał zakończenia i padnięcie jednego procesu kończą oba. Wzór: vibersi `scripts/e2e/start-e2e.mjs`.
+   i ścieżki sondy z `E2E_HEALTH` (np. `/healthz`) na serwer — trasa spoza proxy dostaje od Vite fallback SPA (`index.html`),
+   a sonda z treścią daje STOP startu (vibersi etap 5); sygnał zakończenia i padnięcie jednego procesu kończą oba. Wzór: vibersi `scripts/e2e/start-e2e.mjs`.
 2. **`E2E_START` na ten skrypt** (`E2E_START="pnpm e2e:start"`) — jeden klucz w pliku; zmiana istniejącej wartości to
    podmiana linii, nie dopisanie drugiej.
-3. **Sondy na trasie serwera z treścią**: `E2E_HEALTH=<E2E_URL>/healthz` (trasa zdrowia serwera przez proxy) i
+3. **Sondy na trasie serwera z treścią**: `E2E_HEALTH=<E2E_URL>/healthz` (trasa zdrowia serwera przez proxy — ta ścieżka
+   musi być na liście tras proxy w `vite.config.*` obok `/api`; bramka gotowości `/dev-plan` zgłasza uwagę, gdy jej nie ma) i
    `E2E_HEALTH_TRESC='"status":"ok"'` (tekst z odpowiedzi tej trasy). Fallback SPA odpowiada 200 na każdej ścieżce, więc
    bez treści stary start „samego Vite” przechodzi sondę; z treścią daje STOP przed fazą 1 albo serwer martwy po restarcie.
    Sonda nie podąża za przekierowaniem: `E2E_HEALTH` wskazuje adres, który odpowiada wprost (np. `/healthz`, nie `/healthz/` z 301).
