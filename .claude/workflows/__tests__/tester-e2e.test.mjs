@@ -164,3 +164,12 @@ test('plik roli: zrzut pod sciezka bezwzgledna w katalogu zadania ($Z od git rev
 test('plik roli: finding P2 E2E rozjazdu z makieta ma nazwe ekranu w pierwszym zdaniu („z makiety <ekran>”)', () => {
   assert.match(tester, /finding P2 typ E2E z nazwą ekranu w pierwszym zdaniu opisu \(„z makiety <ekran>”\), bo fix szuka po niej opisu ekranu w planie/)
 })
+
+// P27 (4b)+(4c) (vibersi etap 5): tester czytal toast po ~5 s (zniknal) i sprawdzal licznik po odswiezeniu przed koncem zapisu
+// — dwa falszywe FAIL i stracone tury fixa. Czekanie na tekst od razu po akcji, FAIL dopiero po czekaniu.
+test('plik roli: komunikat znikajacy = wait --text od razu po akcji; liczba/stan po zapisie = wait --text albo networkidle; FAIL po czekaniu', () => {
+  const linia = tester.split('\n').find((l) => l.includes('Oczekiwany stan sprawdź')) ?? ''
+  assert.match(linia, /[Kk]omunikat znikający \(toast, alert\) czytasz `agent-browser wait --text "<tekst>"` od razu po akcji/)
+  assert.match(linia, /[Ll]iczbę albo stan po zapisie \(licznik, lista po odświeżeniu\) — `agent-browser wait --text "<wartość>"` albo `agent-browser wait --load networkidle`/)
+  assert.match(linia, /FAIL dopiero po czekaniu/)
+})
