@@ -3218,8 +3218,10 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     naszej analizie pkt 97(3), która nie wymagała warunku środowiska. (e) Wątek `moje-projekty-seed.sql:182` (Major) „do cz. 3”
     został otwarty na zmergowanym PR #9 — brak nośnika po sufitcie. (f) `test:scripts` i `e2e/serwer-smoke.sh` poza walidacją.
     Skrypty: `skrypty/e5_runy.py`, `e5_stan.py`, `e5_sesje.py`.
-    **Decyzje operatora (2026-10-26):** E5-15 i E5-16…E5-20 wchodzą; E5-1 i E5-13 odrzucone (wyjątek); E5-21 — prostsze
-    wyjaśnienie przed decyzją. Skrypt ucieczek `skrypty/ucieczki_bota.py` (pierwowzór E5-20), wynik etapów 3–5
+    **Decyzje operatora (2026-10-26):** E5-15 i E5-16…E5-20 wchodzą; E5-1 i E5-13 odrzucone (wyjątek); E5-2, E5-3, E5-4
+    zaakceptowane po wyjaśnieniu (P3 dalej bez auto-naprawy — kalibracja wagi i pytanie przed PR; bez re-review po fixie — 2 listy
+    więcej w kontroli fixa + finding SPEC „brak zachowania” powyżej progu jak budowa; „szerzej” = cała reguła klasy na wszystkich
+    plikach klasy); E5-21 = test kanarkowy sceptyka (3–5 podłożonych fałszywych findingów) — zaakceptowany. Skrypt ucieczek `skrypty/ucieczki_bota.py` (pierwowzór E5-20), wynik etapów 3–5
     `dane/e5-ucieczki-etapy-3-5.txt`: w każdym etapie ≥ 1 P1/P2 bota był w review fazy jako P3 (etap 4: bot P1). vibersi:
     PR #11 (`93e899f`) zamknął Turnstile, seed `:182`, oba testy i CLAUDE.md; zostały 3 P3 z krótkiego review i smoke sekcja 8.
     **Dalej:** sesja planu paczki P27 (pkt 97 + P3 z pkt 96) + P29 (pkt 99) + E5-1…E5-21 do akceptacji operatora (§8).

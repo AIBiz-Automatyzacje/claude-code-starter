@@ -186,7 +186,8 @@ Obserwacje bez poprawki teraz: P3 z pkt 96 (M9, M10, M14, M15, M22, wykrywanie s
 - **E5-15 (wiedza) — wchodzi do paczki.**
 - **E5-1 i E5-13 (granice procesu) — odrzucone:** sync przed merge'em paczki i duża zmiana funkcji w smoke'u uznane za wyjątek.
 - **E5-16…E5-20 (telemetria) — wchodzą do paczki.** E5-20 dostaje pierwowzór: `skrypty/ucieczki_bota.py` (niżej).
-- E5-21 — zamiast decyzji „przenieść budżet” najpierw test kanarkowy (wiersz E5-21).
+- E5-21 — test kanarkowy sceptyka: zaakceptowany.
+- E5-2, E5-3, E5-4 — zaakceptowane po wyjaśnieniu. E5-3 obejmuje też: finding SPEC „brak zachowania” powyżej progu rozmiaru fixa idzie jak budowa (review następnej fazy albo operator), nie przez fix. E5-4: „szerzej” = lista kontrolna całej reguły klasy, wszystkie pliki klasy w repo (nie tylko z PR), odpowiedź w wątku wymienia sprawdzone pliki.
 - E5-2 nie zmienia decyzji P8 (fix tylko P1/P2): P3 dalej bez automatycznej naprawy; zmiana to kalibracja wagi i pytanie przed PR.
 - E5-3 nie przywraca re-review po fixie (odrzucone 2026-09-20: review nie zbiega); to dwie listy więcej w tej samej jednej kontroli fixa.
 
