@@ -158,7 +158,7 @@ test('zbierz: watkiOdrzucBezOdpowiedzi z pola naszaOdpowiedz watkow odrzuc (po p
   assert.match(zbierz, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true\)\.length/)
   assert.ok(zbierz.indexOf('odrzuconeBezCytatu.length') < zbierz.indexOf('watkiOdrzucBezOdpowiedzi'))
   assert.match(zbierz, /\\`naszaOdpowiedz\\` = true, gdy w watku po pierwszym komentarzu bota jest komentarz autora innego niz bot/)
-  assert.match(zrodlo, /required: \['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'\]/)
+  assert.match(zrodlo, /required: \['id', 'plik', 'url', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'\]/)
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), 'utf8')
   assert.match(skill, /Wyjątek: tura bez commita \(sama odpowiedź w wątkach\s+`odrzuć`, np\. `KOLEJNA TURA \(tylko odpowiedzi\)`\) nie ma czego recenzować — przechodzisz od razu do kroku 3\./)
   assert.match(wytnij("if (etap === 'napraw') {", '\n}\n'), /const doOdrzucenia = zTury\.watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true && !doNaprawy\.includes\(w\)\)/)
@@ -414,9 +414,9 @@ test('start bez --czesc przy tabeli czesci = STOP z /dev-pr --czesc 1; bez tabel
   const z = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }])
   assert.deepEqual([z.wynik.status, z.prompty.length], ['STOP', 1])
   assert.match(z.wynik.powod, /zadanie ma 2 części PR .* \/dev-pr --czesc 1/)
-  const jeden = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: '', galazZadania: true }, START_OK])
-  assert.deepEqual([jeden.wynik.status, jeden.prompty.length, jeden.wynik.czesc], ['OK', 2, undefined])
-  assert.doesNotMatch(jeden.prompty[1], /CZESC \d/)
+  const jeden = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: '', galazZadania: true }, POMIAR(140), START_OK])
+  assert.deepEqual([jeden.wynik.status, jeden.prompty.length, jeden.wynik.czesc], ['OK', 3, undefined])
+  assert.doesNotMatch(jeden.prompty[2], /CZESC \d/)
 })
 
 test('start --czesc: brak galezi zadania, walidacja FAIL po rebase, push false = STOP; null agentow = BLAD; zla nazwa zadania = BLAD bez agentow', async () => {
@@ -560,22 +560,39 @@ test('start --czesc: rozmiar czubka czesci przeliczany rozmiar.mjs przed przygot
   assert.match(duza.prompty[1], new RegExp(`git merge-base --is-ancestor ${B.slice(0, 12)} feature/etap-5\` kod 0 -> BAZA=${B.slice(0, 12)}`))
   assert.deepEqual([duza.wynik.status, duza.wynik.czesc, duza.wynik.rozmiar], ['STOP', 2, { pliki: 152, tabela: 122, prog: 150 }])
   assert.match(duza.wynik.powod, /^część 2 ma 152 plików do recenzji \(tabela przy archiwizacji: 122, limit bota 150\)/)
-  assert.match(duza.wynik.powod, /\(1\) commity po archiwizacji osobnym PR.*\(2\) dodatkowa część/s)
+  assert.match(duza.wynik.powod, /Dodatkowa część z cięciem na commicie archiwizacji .*wiersz części 2 kończy się na nim, nowy wiersz 3 od niego do czubka gałęzi.*\/dev-pr --czesc 2$/s)
+  assert.doesNotMatch(duza.wynik.powod, /osobnym PR/, 'droga bez mechaniki w pipeline (recenzja P2-3)')
   const cz1 = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 1 }, [tab, POMIAR(93)])
   assert.match(cz1.prompty[1], new RegExp(`--czubek ${B.slice(0, 12)}\``), 'czesc nieostatnia: czubek = commit ciecia')
   const ok = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(149), { ...PRZYG_OK, galaz: 'feature/etap-5' }, START_OK])
   assert.deepEqual([ok.wynik.status, ok.prompty.length], ['OK', 4])
+  const granica = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(150)])
+  assert.deepEqual([granica.wynik.status, granica.prompty.length], ['STOP', 2], 'próg ≥ 150')
+  const zLogiem = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: `ostrzezenie\n${POMIAR(152).wynik}` }])
+  assert.equal(zLogiem.wynik.rozmiar.pliki, 152, 'ostatnia linia stdout')
+  assert.match(duza.prompty[1], /inaczej BAZA = stdout `git merge-base origin\/main feature\/etap-5`\./)
   for (const zly of [{ wynik: '{"wyjatek":"nie ma commita feature/etap-5"}' }, { wynik: '' }]) {
     const r = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, zly])
     assert.deepEqual([r.wynik.status, r.prompty.length], ['STOP', 2])
     assert.match(r.wynik.powod, /pomiar rozmiaru części 2 nieczytelny/)
   }
+  const tekst = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: '{"doRecenzji":"152"}' }])
+  assert.match(tekst.wynik.powod, /brak liczbowego pola doRecenzji/)
+  // Czesc srodkowa (N > 1, nieostatnia): czubek = commit ciecia, nie galaz zadania.
+  const trzy = { tabela: tabela([['1–3', A, B, 93], ['4', B, D, 40], ['5–6', D, E, 70]]), galazZadania: true }
+  const srodek = await uruchom({ etap: 'start', zadanie: 'z', czesc: 2 }, [trzy, POMIAR(160)])
+  assert.match(srodek.prompty[1], new RegExp(`--czubek ${D.slice(0, 12)}\``))
   assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, null])).wynik.status, 'BLAD')
 })
 
 test('skill /dev-pr: STOP rozmiaru czesci = pytanie operatora o droge (osobny PR commitow po archiwum albo dodatkowa czesc)', () => {
   assert.match(krok1, /`status: "STOP"` z polem `rozmiar`/)
-  assert.match(krok1, /„Commity po archiwizacji osobnym PR” i „Dodatkowa część”/)
+  assert.match(krok1, /opcjami „Dodatkowa część” i „Jeszcze nie”/)
+  assert.match(krok1, /cięcie na commicie archiwizacji \(pole `archiwum`\nz `po-archiwum\.mjs`\)/)
+  assert.doesNotMatch(krok1, /osobnym PR/, 'droga bez mechaniki w pipeline (recenzja P2-3)')
+  // P3-6: P3 krotkiego review w sekcji liczonej przy czesci ostatniej (filtr czesci czyta sekcje, nie caly plik).
+  assert.match(krok1, /w sekcji `## P3 po archiwizacji`/)
+  assert.match(krok1, /przy części\nostatniej, sekcja `## P3 po archiwizacji`/)
 })
 
 // E5-5 (vibersi PR #9): watek „Major” odlozony „do cz. 3” zostal otwarty na zmergowanym PR — sufit tur i odlozenie do
@@ -659,4 +676,41 @@ test('claude-md: fakt o zmiennej srodowiska — wymagalnosc z walidatora konfigu
   assert.match(krok5, /zmiennej srodowiska/)
   assert.match(krok5, /walidatora konfiguracji \(plik:linia\)/)
   assert.match(krok5, /wymagana warunkowo/)
+})
+
+// Recenzja S1 (P2-2, P3-1, P3-2 i przezyte mutanty): jeden PR bez tabeli czesci tez ma bramke rozmiaru (smoke po archiwum
+// przesuwa go ponad limit tak samo); watki poprzednich czesci tylko z --czesc; url watku w zapytaniu i schemacie.
+test('start bez --czesc: rozmiar HEAD od merge-base z origin/main; >= 150 = STOP z podzialem na dwie czesci, bez PR', async () => {
+  const duzy = await uruchom({ etap: 'start', zadanie: 'etap-5' }, [{ tabela: '', galazZadania: true }, POMIAR(152)])
+  assert.deepEqual([duzy.wynik.status, duzy.prompty.length, duzy.wynik.rozmiar], ['STOP', 2, { pliki: 152, tabela: null, prog: 150 }])
+  assert.match(duzy.prompty[1], /BAZA = stdout `git merge-base origin\/main HEAD`\./)
+  assert.match(duzy.prompty[1], /rozmiar\.mjs --baza <BAZA> --czubek HEAD`/)
+  assert.match(duzy.wynik.powod, /^PR ma 152 plików do recenzji \(limit bota 150\).*część 1 od bazy do niego, część 2 od niego do czubka gałęzi.*\/dev-pr --czesc 1$/s)
+})
+
+test('start bez --czesc: otwarteWatkiPoprzednich od agenta nie wywraca etapu (log tylko przy czesci)', async () => {
+  const w = await uruchom({ etap: 'start', zadanie: 'etap-5' }, [{ tabela: '', galazZadania: true }, POMIAR(10),
+    { ...START_OK, otwarteWatkiPoprzednich: [{ pr: 1, plik: 'a', streszczenie: 'b', url: 'c' }] }])
+  assert.equal(w.wynik.status, 'OK')
+})
+
+test('start --czesc 3: watki PR obu poprzednich czesci; czesc srodkowa tez je zbiera; url w zapytaniu GraphQL i w schemacie watku', async () => {
+  const trzy = { tabela: tabela([['1–3', A, B, 93], ['4', B, D, 40], ['5–6', D, E, 70]]), galazZadania: true }
+  const cz3 = await uruchom({ etap: 'start', zadanie: 'z', czesc: 3 }, [trzy, POMIAR(70), { ...PRZYG_OK, galaz: 'feature/z' }, START_OK])
+  assert.match(cz3.prompty[3], /--head feature\/z-cz1 --json number,url/)
+  assert.match(cz3.prompty[3], /--head feature\/z-cz2 --json number,url/)
+  const cz2 = await uruchom({ etap: 'start', zadanie: 'z', czesc: 2 }, [trzy, POMIAR(40), { ...PRZYG_OK, galaz: 'feature/z-cz2' }, START_OK])
+  assert.match(cz2.prompty[3], /OTWARTE WATKI POPRZEDNICH CZESCI: .*--head feature\/z-cz1 /)
+  assert.match(zrodlo, /comments\(first:20\) \{ nodes \{ author \{ login \} body createdAt url \} \}/)
+  const zebrane = wytnij('const ZEBRANE = {', '\n}\n')
+  assert.match(zebrane, /url: \{ type: 'string'/)
+  assert.match(zebrane, /required: \['id', 'plik', 'url',/)
+})
+
+test('compound z odlozonymi: known-issues.md zadania w pathspec commitu (inaczej dopisane watki zostaja poza commitem)', async () => {
+  const { prompty } = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [], odlozone: [{ plik: 'a', streszczenie: 'b', url: 'c' }] },
+    [{ wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: null, push: false, pushDetal: 'brak commita' }])
+  const krok5 = prompty[0].slice(prompty[0].indexOf('5. Zacommituj'), prompty[0].indexOf('6. '))
+  assert.match(krok5, /docs\/completed\/etap-5\/known-issues\.md/)
+  assert.match(prompty[0], /Gdy katalog docs\/completed\/etap-5\/ istnieje w drzewie/)
 })

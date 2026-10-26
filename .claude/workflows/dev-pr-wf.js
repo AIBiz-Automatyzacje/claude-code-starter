@@ -209,7 +209,7 @@ const ZEBRANE = {
         properties: {
           id: { type: 'string', description: 'reviewThreads.nodes[].id z GraphQL — klucz do odpowiedzi w watku' },
           plik: { type: 'string', description: 'path:line albo "(recenzja ogolna)"' },
-          url: { type: 'string', description: 'url pierwszego komentarza watku — link w known-issues.md przy odlozeniu (E5-5)' },
+          url: { type: 'string', description: 'url pierwszego komentarza watku (recenzja ogolna: url komentarza recenzji) — link w known-issues.md przy odlozeniu (E5-5)' },
           streszczenie: { type: 'string', description: 'jedno zdanie: co bot zarzuca' },
           klasa: { type: 'string', enum: KLASY },
           uzasadnienie: { type: 'string', description: 'dlaczego ta klasa; przy "odrzuc" nazwa dokumentu decyzji (CLAUDE.md, docs/plans/<plik>, docs/CONCEPTS.md, docs/decisions/<plik>) i uzasadnienie' },
@@ -223,7 +223,7 @@ const ZEBRANE = {
           waga: { type: 'string', enum: WAGI_UWAG, description: 'skutek, gdy defekt zostaje (nie koszt naprawy): P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny bez skutku dla uzytkownika i danych, 0 nie-defekt' },
           naszaOdpowiedz: { type: 'boolean', description: 'czy w watku jest komentarz autora innego niz bot (nasza odpowiedz) po pierwszym komentarzu bota' },
         },
-        required: ['id', 'plik', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'],
+        required: ['id', 'plik', 'url', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'],
       },
     },
     prNumer: { type: ['integer', 'null'], description: 'numer pull requesta z gh pr view' },
@@ -516,6 +516,7 @@ const PROG_CZESCI = 150
 // ostatniej czesci (122 -> 152) — bot pominal recenzje i poprawka bezpieczenstwa nie weszla na main. Start przelicza czubek
 // czesci skryptem (filtry .coderabbit.yaml); wynik >= progu zatrzymuje start przed pushem.
 function rozmiarCzesci(stdout, cz) {
+  const kto = cz.czesc ? `część ${cz.czesc}` : 'PR'
   let r
   try {
     r = JSON.parse(String(stdout || '').trim().split('\n').pop() || 'null')
@@ -523,14 +524,19 @@ function rozmiarCzesci(stdout, cz) {
     r = { wyjatek: `JSON: ${e.message}` }
   }
   if (!r || !Number.isInteger(r.doRecenzji)) {
-    return { pliki: null, blad: `pomiar rozmiaru części ${cz.czesc} nieczytelny (rozmiar.mjs: ${(r && r.wyjatek) || 'brak JSON-a'}) — sprawdź gałąź feature/<zadanie> i commit cięcia z tabeli „Części PR”` }
+    const przyczyna = (r && r.wyjatek) || (r ? 'brak liczbowego pola doRecenzji' : 'brak JSON-a')
+    return { pliki: null, blad: `pomiar rozmiaru ${cz.czesc ? `części ${cz.czesc}` : 'PR'} nieczytelny (rozmiar.mjs: ${przyczyna}) — sprawdź gałąź feature/<zadanie>${cz.czesc ? ' i commit cięcia z tabeli „Części PR”' : ''}` }
   }
   if (r.doRecenzji < PROG_CZESCI) return { pliki: r.doRecenzji, blad: null }
+  // Jedyna droga wykonalna w pipeline: cięcie na commicie archiwizacji (commity po nim = smoke) — nowa ostatnia część.
+  const tabela = cz.czesc
+    ? `wiersz części ${cz.czesc} kończy się na nim, nowy wiersz ${cz.czesc + 1} od niego do czubka gałęzi`
+    : 'część 1 od bazy do niego, część 2 od niego do czubka gałęzi'
   return {
     pliki: r.doRecenzji,
-    blad: `część ${cz.czesc} ma ${r.doRecenzji} plików do recenzji (tabela przy archiwizacji: ${cz.pliki}, limit bota ${PROG_CZESCI}) — bot pominie recenzję. `
-      + `Dwie drogi: (1) commity po archiwizacji osobnym PR (po-archiwum.mjs je wylicza; ta część bez nich, one po jej merge'u); `
-      + `(2) dodatkowa część: wiersz w tabeli „Części PR” podsumowania z cięciem na commicie archiwizacji i /dev-pr --czesc ${cz.czesc}`,
+    blad: `${kto} ma ${r.doRecenzji} plików do recenzji (${cz.pliki == null ? '' : `tabela przy archiwizacji: ${cz.pliki}, `}limit bota ${PROG_CZESCI}) — bot pominie recenzję. `
+      + `Dodatkowa część z cięciem na commicie archiwizacji (pole archiwum z po-archiwum.mjs): ${tabela} w tabeli „## Części PR” podsumowania `
+      + `(liczby plików z rozmiar.mjs --baza/--czubek), commit tabeli na feature/<zadanie>, potem /dev-pr --czesc ${cz.czesc || 1}`,
   }
 }
 
@@ -643,23 +649,29 @@ Zwroc obiekt zgodny ze schematem.`,
     if (!t.galazZadania) return { status: 'STOP', etap, czesc, powod: `brak lokalnej gałęzi feature/${zadanie} — tabela części i commity cięcia są na niej (git fetch, git switch feature/${zadanie})` }
     cz = planCzesci(tabelaCzesci, czesc, zadanie)
     if (cz.blad) return { status: 'STOP', etap, czesc, powod: cz.blad }
-    // Czubek czesci: ostatnia = galaz zadania (z commitami po archiwum), nieostatnia = commit ciecia. Galaz juz po rebase'ie
-    // (ciecie poza historia) — baza = merge-base z origin/main.
-    const czubek = cz.ostatnia ? `feature/${zadanie}` : cz.doSha
-    const pomiar = await agent(
-      `Zmierz rozmiar czesci ${cz.czesc} z ${cz.czesci} pull requesta zadania "${zadanie}" do recenzji bota. Niczego nie zmieniaj.
+  }
+  // Rozmiar do recenzji bota liczy skrypt przed pushem (E5-6). Czubek czesci: ostatnia = galaz zadania (z commitami po archiwum),
+  // nieostatnia = commit ciecia; galaz juz po rebase'ie (ciecie poza historia) — baza = merge-base z origin/main. Jeden PR:
+  // biezaca galaz od merge-base z origin/main (commity smoke'u przesuwaja go ponad limit tak samo).
+  const czubek = cz ? (cz.ostatnia ? `feature/${zadanie}` : cz.doSha) : 'HEAD'
+  const krokBazy = cz
+    ? `\`git merge-base --is-ancestor ${cz.od} ${czubek}\` kod 0 -> BAZA=${cz.od}; inaczej BAZA = stdout \`git merge-base origin/main ${czubek}\`.`
+    : `BAZA = stdout \`git merge-base origin/main HEAD\`.`
+  const pomiar = await agent(
+    `Zmierz rozmiar ${cz ? `czesci ${cz.czesc} z ${cz.czesci} pull requesta` : 'pull requesta'} zadania "${zadanie}" do recenzji bota. Niczego nie zmieniaj.
 1. \`git fetch --prune origin\` (blad sieci nie przerywa — licz na lokalnych refach).
-2. \`git merge-base --is-ancestor ${cz.od} ${czubek}\` kod 0 -> BAZA=${cz.od}; inaczej BAZA = stdout \`git merge-base origin/main ${czubek}\`.
+2. ${krokBazy}
 3. wynik = ostatnia linia stdout 1:1 (takze przy kodzie wyjscia 3): \`node .claude/scripts/pr/rozmiar.mjs --baza <BAZA> --czubek ${czubek}\`.
 Zwroc obiekt zgodny ze schematem.`,
-      { schema: ROZMIAR_CZESCI, agentType: 'klasa-mechaniczny-pomiar', label: `pr:rozmiar-czesci:${cz.czesc}:${zadanie}` }
-    )
-    if (!pomiar) return { status: 'BLAD', etap, czesc, powod: 'Pomiar rozmiaru czesci zwrocil null (agent padl).' }
-    const rozmiar = rozmiarCzesci(pomiar.wynik, cz)
-    if (rozmiar.blad) {
-      log(`/dev-pr czesc ${cz.czesc}: STOP — ${rozmiar.blad}`)
-      return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: rozmiar.blad, rozmiar: { pliki: rozmiar.pliki, tabela: cz.pliki, prog: PROG_CZESCI } }
-    }
+    { schema: ROZMIAR_CZESCI, agentType: 'klasa-mechaniczny-pomiar', label: `pr:rozmiar-czesci:${cz ? cz.czesc : 'pr'}:${zadanie}` }
+  )
+  if (!pomiar) return { status: 'BLAD', etap, czesc, powod: 'Pomiar rozmiaru PR zwrocil null (agent padl).' }
+  const rozmiar = rozmiarCzesci(pomiar.wynik, cz || { czesc: null, pliki: null })
+  if (rozmiar.blad) {
+    log(`/dev-pr${cz ? ` czesc ${cz.czesc}` : ''}: STOP — ${rozmiar.blad}`)
+    return { status: 'STOP', etap, ...(cz ? { czesc: cz.czesc, czesci: cz.czesci } : {}), powod: rozmiar.blad, rozmiar: { pliki: rozmiar.pliki, tabela: cz ? cz.pliki : null, prog: PROG_CZESCI } }
+  }
+  if (cz) {
     cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
    „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”`
@@ -793,7 +805,7 @@ Nie pushuj, nie mergeuj, nie zmieniaj kodu. Zwroc obiekt zgodny ze schematem.${B
     log(`/dev-pr: bramka wejscia STOP — ${wynik.powod || 'bez powodu'}`)
     return { status: 'STOP', etap, ...wynik }
   }
-  if (wynik.otwarteWatkiPoprzednich && wynik.otwarteWatkiPoprzednich.length) {
+  if (cz && wynik.otwarteWatkiPoprzednich && wynik.otwarteWatkiPoprzednich.length) {
     log(`/dev-pr czesc ${cz.czesc}: UWAGA — ${wynik.otwarteWatkiPoprzednich.length} nierozwiazanych watkow PR poprzednich czesci (w opisie PR)`)
   }
   log(`/dev-pr: PR #${wynik.prNumer} ${wynik.prUtworzony ? 'UTWORZONY' : 'istnieje'} (${wynik.prUrl || 'brak url'}), head ${String(wynik.headRefOid || '').slice(0, 8)}`)

@@ -265,11 +265,11 @@ test('gotowosc: sciezka E2E_HEALTH na porcie Vite bez wpisu w vite.config = uwag
   zadanieNaGalezi(k)
   const uwagaProxy = (/** @type {string[]} */ u) => u.filter((t) => /proxy Vite/.test(t))
   const vite = (/** @type {string} */ klucze) => writeFileSync(join(k, 'vite.config.ts'), `export default { server: { proxy: { ${klucze} } } }\n`)
-  const env = (/** @type {string} */ zdrowie) => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=${zdrowie}\n`)
+  const env = (/** @type {string} */ zdrowie, tresc = "E2E_HEALTH_TRESC='ok'\n") => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=${zdrowie}\n${tresc}`)
   vite("'/api': 'http://localhost:8787'")
   env('http://localhost:5174/healthz')
   const [uwaga] = uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi)
-  assert.match(uwaga ?? '', /ścieżki \/healthz z E2E_HEALTH nie ma w vite\.config\.ts/)
+  assert.match(uwaga ?? '', /ścieżki \/healthz z E2E_HEALTH nie ma w trasach proxy vite\.config\.ts/)
   assert.match(uwaga ?? '', /Aplikacja z osobnym serwerem API/)
   vite("'/api': 'http://localhost:8787', '/healthz': 'http://localhost:8787'")
   assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [])
@@ -289,6 +289,38 @@ test('gotowosc: sciezka E2E_HEALTH na porcie Vite bez wpisu w vite.config = uwag
   assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'bez vite.config — projekt nie na Vite')
 }))
 
+// Recenzja S1 (P2-1, P3-3, P3-4): bez E2E_HEALTH_TRESC sonda przechodzi na kazdej trasie (rada „dodaj do proxy” psulaby trase
+// aplikacji); alias hosta to ten sam port Vite; liczą się tylko klucze proxy (bez komentarzy, `base`, aliasow), klucz z ^ = regex.
+test('gotowosc: uwaga proxy sondy tylko z E2E_HEALTH_TRESC, alias hosta, klucze proxy bez komentarzy, klucze-regexy Vite', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const uwagaProxy = () => gotowosc(k, ZADANIE).e2e.uwagi.filter((t) => /proxy Vite/.test(t))
+  const vite = (/** @type {string} */ tresc) => writeFileSync(join(k, 'vite.config.ts'), tresc)
+  const env = (/** @type {string} */ zdrowie, tresc = "E2E_HEALTH_TRESC='ok'\n") => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=${zdrowie}\n${tresc}`)
+  vite("export default { server: { proxy: { '/api': 'http://localhost:8787' } } }\n")
+  env('http://localhost:5174/login', '')
+  assert.deepEqual(uwagaProxy(), [], 'bez E2E_HEALTH_TRESC — trasa aplikacji, bez rady')
+  env('http://127.0.0.1:5174/healthz')
+  assert.equal(uwagaProxy().length, 1, '127.0.0.1 i localhost to ten sam serwer Vite')
+  const przypadki = /** @type {[string, string, number][]} */ ([
+    ["export default { base: '/', server: { proxy: { '/api': 'x' } } }", '/healthz', 1],
+    ["export default { server: { proxy: {\n  // '/healthz': 'x',\n  '/api': 'x' } } }", '/healthz', 1],
+    ["export default { resolve: { alias: { '@': '/src' } }, server: { proxy: { '/api': 'x' } } }", '/src/health', 1],
+    ["export default { server: { proxy: { '/api': { target: 'x', rewrite: (p) => p.replace(/^\\/api/, '/healthz') } } } }", '/healthz', 1],
+    ["export default { server: { proxy: { '^/api/.*': 'x' } } }", '/api/health', 0],
+    ["export default { server: { proxy: { '^/(api|healthz)': 'x' } } }", '/healthz', 0],
+    ["export default { server: { proxy: { '/healthz': 'http://localhost:8787' } } }", '/healthz/', 0],
+    ["export default { server: { proxy: { '/api/': 'x' } } }", '/api/health', 0],
+    ["export default { server: { proxy: { '^/(': 'x' } } }", '/healthz', 1],
+    ["export default { define: { '/healthz': 'x' }, server: { proxy: { '/api': 'x' } } }", '/healthz', 1],
+    ["export default { server: { proxy: { '^/healthz$': 'x' } } }", '/healthz/', 0],
+  ])
+  for (const [tresc, sciezka, ile] of przypadki) {
+    vite(`${tresc}\n`)
+    env(`http://localhost:5174${sciezka}`)
+    assert.equal(uwagaProxy().length, ile, `${tresc} / ${sciezka}`)
+  }
+}))
+
 // P3 pkt 96 M15: uwagi serwera API i proxy sondy dotycza scenariuszy [E2E] — zadanie bez nich (same makiety albo nic) ich nie
 // dostaje; mutacja usuwajaca warunek `scenariusze` w gotowosc przezywala.
 test('gotowosc: serwer API i sonda poza proxy bez scenariuszy [E2E] — bez uwag (dotycza tylko scenariuszy)', () => wRepo((k) => {
@@ -296,14 +328,18 @@ test('gotowosc: serwer API i sonda poza proxy bez scenariuszy [E2E] — bez uwag
   mkdirSync(join(k, 'server'))
   writeFileSync(join(k, 'server/app.ts'), 'export {}\n')
   writeFileSync(join(k, 'vite.config.ts'), "export default { server: { proxy: { '/api': 'http://localhost:8787' } } }\n")
-  writeFileSync(join(k, '.env.e2e'), 'X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=http://localhost:5174/healthz\n')
-  const zUwagami = gotowosc(k, ZADANIE).e2e.uwagi
-  assert.equal(zUwagami.filter((u) => /serwer API|proxy Vite/.test(u)).length, 2, 'ze scenariuszami: obie uwagi')
+  const env = (/** @type {string} */ tresc) => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=http://localhost:5174/healthz\n${tresc}`)
+  const uwagi = (/** @type {RegExp} */ wzor) => gotowosc(k, ZADANIE).e2e.uwagi.filter((u) => wzor.test(u)).length
+  env('')
+  assert.equal(uwagi(/serwer API/), 1, 'ze scenariuszami, sonda bez tresci: uwaga serwera API')
+  env("E2E_HEALTH_TRESC='ok'\n")
+  assert.equal(uwagi(/proxy Vite/), 1, 'ze scenariuszami, sonda z trescia poza proxy: uwaga proxy')
   const zadania = join(k, ZADANIE, 'publikacja-ofert-zadania.md')
   writeFileSync(zadania, readFileSync(zadania, 'utf8').replace(/\[E2E\]/g, '[Manual]'))
-  const bez = gotowosc(k, ZADANIE)
-  assert.equal(bez.e2e.scenariusze, 0)
-  assert.deepEqual(bez.e2e.uwagi.filter((u) => /serwer API|proxy Vite/.test(u)), [])
+  assert.equal(gotowosc(k, ZADANIE).e2e.scenariusze, 0)
+  assert.equal(uwagi(/proxy Vite/), 0)
+  env('')
+  assert.equal(uwagi(/serwer API/), 0)
 }))
 
 // P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:

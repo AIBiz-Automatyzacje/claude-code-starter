@@ -63,7 +63,8 @@ jak przy plikach kodu.
 
 **P3 z realnym scenariuszem.** P3 osi correctness i security wracały od bota jako P2 (vibersi: co najmniej jeden na etap).
 Przed pytaniem o zgodę: `git show feature/<zadanie>:docs/completed/<zadanie>/known-issues.md | grep -E '^- 🟡 \[P3/(correctness|security)\]'`
-— przy `--czesc N` tylko sekcje `## P3 faza K` dla faz tej części (kolumna „Fazy” tabeli „Części PR”), bez części wszystkie.
+— przy `--czesc N` tylko sekcje `## P3 faza K` dla faz tej części (kolumna „Fazy” tabeli „Części PR”) oraz, przy części
+ostatniej, sekcja `## P3 po archiwizacji`; bez części wszystkie.
 Niepusta lista (N pozycji) → pytanie o zgodę dostaje opcję „Naprawić przed PR (N)” z listą (plik:linia, oś, opis).
 Wybór → poprawka z testem dla wybranych pozycji, commit jawnymi ścieżkami, linia przeniesiona do sekcji `## Zamkniete`,
 potem krok zgody od nowa. Bez wyboru operatora niczego nie naprawiasz — P3 idą do opisu PR jak dotąd.
@@ -90,7 +91,7 @@ commit jawnymi ścieżkami, potem krok zgody od nowa) albo „PR z findingami w 
 P1/P2 → etap `start`. P3 (i findingi zostawione przy „PR z findingami w opisie”) dopisujesz do
 `docs/completed/<zadanie>/known-issues.md` (brak pliku = utwórz z nagłówkiem `# Known issues — <zadanie>`), po linii na finding:
 `- 🟡 [P3/<oś>] <plik:linia> — <opis> (krótkie review po archiwizacji)`, oś = `correctness` albo `security` (reviewer,
-który go zgłosił), powyżej sekcji `## Zamkniete`; commit tego pliku jawną ścieżką przed etapem `start`. Opis PR bierze je
+który go zgłosił), w sekcji `## P3 po archiwizacji` (brak = utwórz przed `## Zamkniete`); commit tego pliku jawną ścieżką przed etapem `start`. Opis PR bierze je
 z known-issues, a etap 6 widzi je w archiwum zadania.
 
 ```
@@ -106,11 +107,15 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
-`status: "STOP"` z polem `rozmiar` (część ≥ 150 plików do recenzji po przeliczeniu czubka — commity po archiwizacji
-dołożyły pliki do tabeli z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`) i opcjami
-„Commity po archiwizacji osobnym PR” i „Dodatkowa część”. Pierwsza: gałąź części bez commitów z `po-archiwum.mjs`, a one
-osobnym PR po jej merge'u; druga: wiersz w tabeli „Części PR” podsumowania z cięciem na commicie archiwizacji, commit
-tabeli i znów krok 1. Wybraną drogę wykonujesz po decyzji operatora; bez niej nie wysyłasz części ponad limitem bota.
+`status: "STOP"` z polem `rozmiar` (część albo jeden PR ≥ 150 plików do recenzji po przeliczeniu czubka — commity po
+archiwizacji dołożyły pliki do liczby z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`)
+i opcjami „Dodatkowa część” i „Jeszcze nie”. „Dodatkowa część” = cięcie na commicie archiwizacji (pole `archiwum`
+z `po-archiwum.mjs`): przy `--czesc N` wiersz części N kończy się na nim, a nowy wiersz N+1 biegnie od niego do „czubek
+gałęzi” (fazy = ostatnia faza części N); przy jednym PR tabela „## Części PR” z dwoma wierszami (część 1 od
+`git merge-base origin/main feature/<zadanie>` do niego, część 2 od niego do czubka). Liczby plików każdego wiersza
+z `rozmiar.mjs --baza <od> --czubek <do>` (pole `doRecenzji`). Tabelę wpisujesz w podsumowanie zadania na
+`feature/<zadanie>`, commit jawną ścieżką i znów krok 1 (`/dev-pr --czesc N`, przy jednym PR `--czesc 1`). Bez decyzji
+operatora nie wysyłasz PR ponad limitem bota.
 
 Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
 przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „pliki generowane rozwiązane”).

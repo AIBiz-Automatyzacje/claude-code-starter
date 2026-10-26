@@ -108,22 +108,55 @@ export function uwagaSerweraApi(projekt, env) {
 
 const PLIKI_VITE = ['vite.config.ts', 'vite.config.mts', 'vite.config.js', 'vite.config.mjs', 'vite.config.cjs']
 
+/** @param {URL} a @param {URL} b @returns {boolean} ten sam serwer: port i host (localhost, 127.0.0.1, [::1] to jeden host) */
+function tenSamSerwer(a, b) {
+  const host = (/** @type {URL} */ u) => (HOSTY_LOKALNE.includes(u.hostname) ? 'lokalny' : u.hostname)
+  return a.protocol === b.protocol && a.port === b.port && host(a) === host(b)
+}
+
 /**
- * Uwaga przy planowaniu (P27 (1), vibersi etap 5): sonda E2E_HEALTH na porcie Vite (origin E2E_URL), a jej sciezki nie ma
- * w vite.config.* — Vite odpowiada fallbackiem SPA i sonda z E2E_HEALTH_TRESC daje STOP startu. Sciezka jest pokryta, gdy
- * config ma ja w cudzyslowie albo prefiks jej segmentow (klucz proxy `/api` pokrywa `/api/health`, `^/healthz` — `/healthz`).
+ * Klucze proxy z vite.config (napisy w cudzyslowie z dwukropkiem za nimi, po `proxy:`), bez komentarzy. Klucz z `^` to wyrazenie
+ * regularne Vite, pozostale — prefiks sciezki.
+ * @param {string} tresc @returns {string[]}
+ */
+function kluczeProxy(tresc) {
+  const bezKomentarzy = tresc.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1')
+  const proxy = /\bproxy\s*:\s*\{/.exec(bezKomentarzy)
+  if (!proxy) return []
+  return [...bezKomentarzy.slice(proxy.index).matchAll(/['"`](\^?\/[^'"`\s]*)['"`]\s*:/g)].map((m) => m[1])
+}
+
+/** @param {string} klucz @param {string} sciezka @returns {boolean} klucz proxy Vite kieruje te sciezke na serwer */
+function kluczPokrywa(klucz, sciezka) {
+  if (klucz.startsWith('^')) {
+    try {
+      return new RegExp(klucz).test(sciezka)
+    } catch (e) {
+      // Klucz, ktorego nie da sie skompilowac, Vite tez odrzuci — nie pokrywa sciezki (uwaga zostaje).
+      if (e instanceof SyntaxError) return false
+      throw e
+    }
+  }
+  const prefiks = klucz.replace(/\/$/, '')
+  return !!prefiks && (sciezka === prefiks || sciezka.startsWith(`${prefiks}/`))
+}
+
+/**
+ * Uwaga przy planowaniu (P27 (1), vibersi etap 5): sonda E2E_HEALTH z E2E_HEALTH_TRESC na porcie Vite (serwer E2E_URL), a jej
+ * sciezki nie pokrywa zaden klucz proxy w vite.config.* — Vite odpowiada fallbackiem SPA i sonda daje STOP startu. Bez tresci
+ * sonda przechodzi na kazdej trasie aplikacji (brak sprawdzenia serwera zglasza uwagaSerweraApi).
  * @param {string} projekt @param {Record<string, string>} env @returns {string | null}
  */
 export function uwagaProxyZdrowia(projekt, env) {
+  if (!env.E2E_HEALTH_TRESC) return null
   const zdrowie = env.E2E_HEALTH ? adresHttp(env.E2E_HEALTH) : null
   const url = adresHttp(env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`)
-  if (!zdrowie || !url || zdrowie.origin !== url.origin || zdrowie.pathname === '/') return null
+  if (!zdrowie || !url || !tenSamSerwer(zdrowie, url) || zdrowie.pathname === '/') return null
   const plik = PLIKI_VITE.find((p) => existsSync(join(projekt, p)))
   if (!plik) return null
-  const sciezki = [...readFileSync(join(projekt, plik), 'utf8').matchAll(/['"`]\^?(\/[^'"`\s]*)['"`]/g)].map((m) => m[1].replace(/\/$/, ''))
   const sciezka = zdrowie.pathname.replace(/\/$/, '')
-  if (sciezki.some((s) => s && (sciezka === s || sciezka.startsWith(`${s}/`)))) return null
-  return `ścieżki ${sciezka} z E2E_HEALTH nie ma w ${plik} — Vite odpowie na nią fallbackiem SPA (index.html), więc sonda z E2E_HEALTH_TRESC da STOP startu; dodaj ${sciezka} do tras proxy Vite obok /api albo ustaw E2E_HEALTH na port serwera (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
+  if (kluczeProxy(readFileSync(join(projekt, plik), 'utf8')).some((k) => kluczPokrywa(k, sciezka))) return null
+  return `ścieżki ${sciezka} z E2E_HEALTH nie ma w trasach proxy ${plik} — Vite odpowie na nią fallbackiem SPA (index.html), więc sonda z E2E_HEALTH_TRESC da STOP startu; dodaj ${sciezka} do tras proxy Vite obok /api albo ustaw E2E_HEALTH na port serwera (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
 }
 
 /** @param {string} url @returns {URL | null} adres http(s) albo null (zapis bez schematu parsuje sie jako schemat `localhost:`) */
