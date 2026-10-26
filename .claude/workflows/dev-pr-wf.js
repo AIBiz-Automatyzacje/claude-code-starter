@@ -130,6 +130,16 @@ const CZESCI_TABELA = {
   required: ['tabela', 'galazZadania'],
 }
 
+// Pomiar rozmiaru czesci PR przed przygotowaniem galezi (E5-6) — agent przepisuje stdout rozmiar.mjs, liczbe czyta JS.
+const ROZMIAR_CZESCI = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    wynik: { type: 'string', description: 'ostatnia linia stdout rozmiar.mjs 1:1 (JSON w jednej linii)' },
+  },
+  required: ['wynik'],
+}
+
 const KLASY = ['napraw', 'napraw-szerzej', 'odrzuc', 'do-operatora']
 
 // Zamkniety slownik klas BLEDU (It. 1, L12): miara jakosci „P1/P2 bota na 100 plikow per klasa i os” wymaga jednej nazwy na
@@ -487,6 +497,28 @@ function czesciZTabeli(tekst) {
 // Bot recenzuje czesc ponizej limitu planu Pro (kopia PROG_PLIKOW_PR z .claude/scripts/pr/rozmiar.mjs).
 const PROG_CZESCI = 150
 
+// E5-6 (vibersi etap 5, cz. 3): liczba w tabeli czesci pochodzi z archiwizacji, a commity smoke'u po archiwum dochodza do
+// ostatniej czesci (122 -> 152) — bot pominal recenzje i poprawka bezpieczenstwa nie weszla na main. Start przelicza czubek
+// czesci skryptem (filtry .coderabbit.yaml); wynik >= progu zatrzymuje start przed pushem.
+function rozmiarCzesci(stdout, cz) {
+  let r
+  try {
+    r = JSON.parse(String(stdout || '').trim().split('\n').pop() || 'null')
+  } catch (e) {
+    r = { wyjatek: `JSON: ${e.message}` }
+  }
+  if (!r || !Number.isInteger(r.doRecenzji)) {
+    return { pliki: null, blad: `pomiar rozmiaru części ${cz.czesc} nieczytelny (rozmiar.mjs: ${(r && r.wyjatek) || 'brak JSON-a'}) — sprawdź gałąź feature/<zadanie> i commit cięcia z tabeli „Części PR”` }
+  }
+  if (r.doRecenzji < PROG_CZESCI) return { pliki: r.doRecenzji, blad: null }
+  return {
+    pliki: r.doRecenzji,
+    blad: `część ${cz.czesc} ma ${r.doRecenzji} plików do recenzji (tabela przy archiwizacji: ${cz.pliki}, limit bota ${PROG_CZESCI}) — bot pominie recenzję. `
+      + `Dwie drogi: (1) commity po archiwizacji osobnym PR (po-archiwum.mjs je wylicza; ta część bez nich, one po jej merge'u); `
+      + `(2) dodatkowa część: wiersz w tabeli „Części PR” podsumowania z cięciem na commicie archiwizacji i /dev-pr --czesc ${cz.czesc}`,
+  }
+}
+
 // Wynik agenta przygotowania sprawdzany w JS: status, galaz, walidacja po rebase'ie i push — kazdy osobno w powodzie.
 const INDEKS_WIEDZY = 'docs/learned-patterns.md'
 const SUMA_MIGRACJI = 'supabase/migrations.sum'
@@ -518,7 +550,7 @@ function planCzesci(czesci, czesc, zadanie) {
   return {
     blad: null, czesc, czesci: czesci.length, fazy: c.fazy, pliki: c.pliki, ostatnia,
     galaz: ostatnia ? `feature/${zadanie}` : `feature/${zadanie}-cz${czesc}`,
-    doSha: c.do, rebaseOd: czesc > 1 ? c.od : null, poprzednia: czesc > 1 ? `feature/${zadanie}-cz${czesc - 1}` : null,
+    doSha: c.do, rebaseOd: czesc > 1 ? c.od : null, poprzednia: czesc > 1 ? `feature/${zadanie}-cz${czesc - 1}` : null, od: c.od,
   }
 }
 
@@ -583,7 +615,24 @@ Zwroc obiekt zgodny ze schematem.`,
     if (!t.galazZadania) return { status: 'STOP', etap, czesc, powod: `brak lokalnej gałęzi feature/${zadanie} — tabela części i commity cięcia są na niej (git fetch, git switch feature/${zadanie})` }
     cz = planCzesci(tabelaCzesci, czesc, zadanie)
     if (cz.blad) return { status: 'STOP', etap, czesc, powod: cz.blad }
-    if (cz.pliki >= PROG_CZESCI) log(`/dev-pr czesc ${cz.czesc}: UWAGA — ${cz.pliki} plikow do recenzji (limit bota ${PROG_CZESCI}); bot moze pominac recenzje czesci`)
+    // Czubek czesci: ostatnia = galaz zadania (z commitami po archiwum), nieostatnia = commit ciecia. Galaz juz po rebase'ie
+    // (ciecie poza historia) — baza = merge-base z origin/main.
+    const czubek = cz.ostatnia ? `feature/${zadanie}` : cz.doSha
+    const pomiar = await agent(
+      `Zmierz rozmiar czesci ${cz.czesc} z ${cz.czesci} pull requesta zadania "${zadanie}" do recenzji bota. Niczego nie zmieniaj.
+1. \`git fetch --prune origin\` (blad sieci nie przerywa — licz na lokalnych refach).
+2. \`git merge-base --is-ancestor ${cz.od} ${czubek}\` kod 0 -> BAZA=${cz.od}; inaczej BAZA = stdout \`git merge-base origin/main ${czubek}\`.
+3. wynik = ostatnia linia stdout 1:1 (takze przy kodzie wyjscia 3): \`node .claude/scripts/pr/rozmiar.mjs --baza <BAZA> --czubek ${czubek}\`.
+Zwroc obiekt zgodny ze schematem.`,
+      { schema: ROZMIAR_CZESCI, agentType: 'klasa-mechaniczny-pomiar', label: `pr:rozmiar-czesci:${cz.czesc}:${zadanie}` }
+    )
+    if (!pomiar) return { status: 'BLAD', etap, czesc, powod: 'Pomiar rozmiaru czesci zwrocil null (agent padl).' }
+    const rozmiar = rozmiarCzesci(pomiar.wynik, cz)
+    if (rozmiar.blad) {
+      log(`/dev-pr czesc ${cz.czesc}: STOP — ${rozmiar.blad}`)
+      return { status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: rozmiar.blad, rozmiar: { pliki: rozmiar.pliki, tabela: cz.pliki, prog: PROG_CZESCI } }
+    }
+    cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
    „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”`
     // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po

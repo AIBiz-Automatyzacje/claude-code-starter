@@ -310,10 +310,10 @@ test('czesci: jedna czesc, numeracja nie po kolei, od rozne od konca poprzedniej
 test('plan czesci: nieostatnia = galaz <feature>-czN na koncu czesci (od 2 rebase od poczatku), ostatnia = rebase galezi zadania od ciecia', () => {
   const dwie = P.czesciZTabeli(tabela([['1–3', A, B, 93], ['4–6', B, E, 101]]))
   assert.deepEqual(P.planCzesci(dwie, 1, 'etap-3'), {
-    blad: null, czesc: 1, czesci: 2, fazy: '1–3', pliki: 93, ostatnia: false, galaz: 'feature/etap-3-cz1', doSha: B.slice(0, 12), rebaseOd: null, poprzednia: null,
+    blad: null, czesc: 1, czesci: 2, fazy: '1–3', pliki: 93, ostatnia: false, galaz: 'feature/etap-3-cz1', doSha: B.slice(0, 12), rebaseOd: null, poprzednia: null, od: A.slice(0, 12),
   })
   assert.deepEqual(P.planCzesci(dwie, 2, 'etap-3'), {
-    blad: null, czesc: 2, czesci: 2, fazy: '4–6', pliki: 101, ostatnia: true, galaz: 'feature/etap-3', doSha: null, rebaseOd: B.slice(0, 12), poprzednia: 'feature/etap-3-cz1',
+    blad: null, czesc: 2, czesci: 2, fazy: '4–6', pliki: 101, ostatnia: true, galaz: 'feature/etap-3', doSha: null, rebaseOd: B.slice(0, 12), poprzednia: 'feature/etap-3-cz1', od: B.slice(0, 12),
   })
   const trzy = P.czesciZTabeli(tabela([['1–3', A, B, 93], ['4', B, D, 40], ['5–6', D, E, 70]]))
   assert.deepEqual([P.planCzesci(trzy, 2, 'z').galaz, P.planCzesci(trzy, 2, 'z').doSha, P.planCzesci(trzy, 2, 'z').rebaseOd, P.planCzesci(trzy, 2, 'z').poprzednia],
@@ -365,36 +365,38 @@ async function uruchom(args, odpowiedzi) {
 }
 const TABELA_ETAPU_3 = tabela([['1–3', A, B, 93], ['4–6', B, E, 121]])
 const PRZYG_OK = { status: 'OK', galaz: 'feature/etap-3', konflikty: [], rebase: 'wykonany', walidacja: 'PASS', walidacjaDetal: 'tsc, vitest', push: true, pushDetal: 'OK' }
+// Pomiar rozmiaru czesci (E5-6) — drugi agent etapu start z --czesc.
+const POMIAR = (/** @type {number} */ n) => ({ wynik: JSON.stringify({ baza: 'x', czubek: 'y', doRecenzji: n }) })
 const START_OK = { bramka: 'OK', branch: 'feature/etap-3', prUtworzony: true, prNumer: 4, prUrl: 'u', headRefOid: 'abc' }
 
 test('start --czesc 2 z 2: odczyt tabeli, rebase galezi zadania od 909f669 na origin/main, push z lease, tytul czesci; wynik niesie czesc', async () => {
-  const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, PRZYG_OK, START_OK])
-  assert.equal(prompty.length, 3)
+  const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121), PRZYG_OK, START_OK])
+  assert.equal(prompty.length, 4)
   assert.match(prompty[0], /git show 'feature\/etap-3:docs\/completed\/etap-3\/etap-3-podsumowanie\.md' \| awk/)
-  assert.match(prompty[1], /git switch feature\/etap-3`, `git fetch --prune origin`/)
-  assert.match(prompty[1], /--head feature\/etap-3-cz1 --json number/)
-  assert.match(prompty[1], /is-ancestor 909f669f0efc HEAD` kod 0 — `git rebase --onto origin\/main 909f669f0efc`/)
-  assert.match(prompty[1], /\(c\) inaczej .* `git rebase origin\/main`, rebase=wykonany/)
-  assert.match(prompty[1], /git push --force-with-lease --force-if-includes -u origin feature\/etap-3`/)
-  assert.match(prompty[1], /5\. WALIDACJA \(tylko gdy rebase=wykonany albo juz-wykonany\): typecheck i testy/)
-  assert.match(prompty[2], /tytul PR "<tytul zadania> — cz\. 2 z 2 \(fazy 4–6\)"/)
-  assert.match(prompty[2], /git show 'feature\/etap-3:docs\/completed\/etap-3\/known-issues\.md'/)
+  assert.match(prompty[2], /git switch feature\/etap-3`, `git fetch --prune origin`/)
+  assert.match(prompty[2], /--head feature\/etap-3-cz1 --json number/)
+  assert.match(prompty[2], /is-ancestor 909f669f0efc HEAD` kod 0 — `git rebase --onto origin\/main 909f669f0efc`/)
+  assert.match(prompty[2], /\(c\) inaczej .* `git rebase origin\/main`, rebase=wykonany/)
+  assert.match(prompty[2], /git push --force-with-lease --force-if-includes -u origin feature\/etap-3`/)
+  assert.match(prompty[2], /5\. WALIDACJA \(tylko gdy rebase=wykonany albo juz-wykonany\): typecheck i testy/)
+  assert.match(prompty[3], /tytul PR "<tytul zadania> — cz\. 2 z 2 \(fazy 4–6\)"/)
+  assert.match(prompty[3], /git show 'feature\/etap-3:docs\/completed\/etap-3\/known-issues\.md'/)
   assert.deepEqual([wynik.status, wynik.czesc, wynik.czesci, wynik.fazy, wynik.prNumer], ['OK', 2, 2, '4–6', 4])
 })
 
 test('start --czesc 1: galaz -cz1 od commitu ciecia bez rebase; konflikt i zla galaz zatrzymuja przed PR; brak tabeli = STOP bez przygotowania', async () => {
-  const cz1 = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, { ...PRZYG_OK, galaz: 'feature/etap-3-cz1', rebase: 'nie-dotyczy', walidacja: 'nie-dotyczy' }, START_OK])
-  assert.match(cz1.prompty[1], /git fetch --prune origin`.*`git switch -c feature\/etap-3-cz1 909f669f0efc`/s)
-  assert.doesNotMatch(cz1.prompty[1], /git rebase --onto/)
-  assert.match(cz1.prompty[2], /kolejne części po merge'u tej/)
+  const cz1 = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121), { ...PRZYG_OK, galaz: 'feature/etap-3-cz1', rebase: 'nie-dotyczy', walidacja: 'nie-dotyczy' }, START_OK])
+  assert.match(cz1.prompty[2], /git fetch --prune origin`.*`git switch -c feature\/etap-3-cz1 909f669f0efc`/s)
+  assert.doesNotMatch(cz1.prompty[2], /git rebase --onto/)
+  assert.match(cz1.prompty[3], /kolejne części po merge'u tej/)
   assert.equal(cz1.wynik.czesc, 1)
-  const konflikt = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true },
+  const konflikt = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121),
     { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['e2e/etap-4-moderacja-smoke.sh'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
-  assert.equal(konflikt.prompty.length, 2, 'bez agenta tworzacego PR')
+  assert.equal(konflikt.prompty.length, 3, 'bez agenta tworzacego PR')
   assert.deepEqual([konflikt.wynik.status, konflikt.wynik.konflikty], ['KONFLIKT', ['e2e/etap-4-moderacja-smoke.sh']])
   assert.match(konflikt.wynik.naprawa, /git rebase --continue` \(do konca rebase.u\), potem \/dev-pr --czesc 2; albo `git rebase --abort`/)
-  const zlaGalaz = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, { ...PRZYG_OK, galaz: 'main' }])
-  assert.deepEqual([zlaGalaz.wynik.status, zlaGalaz.wynik.powod, zlaGalaz.prompty.length], ['STOP', 'biezaca galaz main, oczekiwana feature/etap-3', 2])
+  const zlaGalaz = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121), { ...PRZYG_OK, galaz: 'main' }])
+  assert.deepEqual([zlaGalaz.wynik.status, zlaGalaz.wynik.powod, zlaGalaz.prompty.length], ['STOP', 'biezaca galaz main, oczekiwana feature/etap-3', 3])
   const bezTabeli = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: '', galazZadania: true }])
   assert.deepEqual([bezTabeli.wynik.status, bezTabeli.prompty.length], ['STOP', 1])
 })
@@ -421,12 +423,12 @@ test('start --czesc: brak galezi zadania, walidacja FAIL po rebase, push false =
   const bezGalezi = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: '', galazZadania: false }])
   assert.equal(bezGalezi.wynik.powod, 'brak lokalnej gałęzi feature/etap-3 — tabela części i commity cięcia są na niej (git fetch, git switch feature/etap-3)')
   const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
-  const fail = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...PRZYG_OK, walidacja: 'FAIL', walidacjaDetal: 'vitest 3 failed' }])
-  assert.deepEqual([fail.wynik.status, fail.wynik.powod, fail.prompty.length], ['STOP', "walidacja po rebase'ie FAIL: vitest 3 failed", 2])
-  const push = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...PRZYG_OK, push: false, pushDetal: 'rejected (stale info)' }])
+  const fail = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), { ...PRZYG_OK, walidacja: 'FAIL', walidacjaDetal: 'vitest 3 failed' }])
+  assert.deepEqual([fail.wynik.status, fail.wynik.powod, fail.prompty.length], ['STOP', "walidacja po rebase'ie FAIL: vitest 3 failed", 3])
+  const push = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), { ...PRZYG_OK, push: false, pushDetal: 'rejected (stale info)' }])
   assert.equal(push.wynik.powod, 'push: rejected (stale info)')
   assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [null])).wynik.status, 'BLAD')
-  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, null])).wynik.status, 'BLAD')
+  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), null])).wynik.status, 'BLAD')
   const zla = await uruchom({ etap: 'start', zadanie: "x'; rm -rf ~", czesc: 1 }, [])
   assert.deepEqual([zla.wynik.status, zla.prompty.length], ['BLAD', 0])
 })
@@ -449,39 +451,39 @@ const KONFLIKT_INDEKSU = { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['docs/le
 
 test('start --czesc 2: konflikt tylko w indeksie wiedzy → regeneracja (wiedza.mjs indeks, rebase --continue), przygotowanie od nowa, PR', async () => {
   const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
-    { tabela: TABELA_ETAPU_3, galazZadania: true }, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 2, powod: null }, PRZYG_OK, START_OK])
-  assert.equal(prompty.length, 5)
-  assert.match(prompty[2], /wylacznie w plikach generowanych: docs\/learned-patterns\.md \(indeks z docs\/solutions\/\)\nalbo supabase\/migrations\.sum/)
-  assert.match(prompty[2], /`git checkout --theirs -- docs\/learned-patterns\.md`, `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
-  assert.match(prompty[2], /^4\. `GIT_EDITOR=true git rebase --continue`; regeneracje \+ 1\./m)
-  assert.match(prompty[2], /Plik inny niz docs\/learned-patterns\.md i supabase\/migrations\.sum na liscie = koniec: status KONFLIKT/)
-  assert.match(prompty[2], /^Powtarzaj, dopoki rebase trwa/m)
-  assert.match(prompty[2], /Nie zmieniasz innych plikow i nie pushujesz/)
-  assert.match(prompty[2], /o zapisie mowi pole `zapisany` JSON-a, nie kod wyjscia/)
-  assert.match(prompty[2], /^5\. Polecenie git z krokow 2–4 z kodem rozny od 0 bez nowego konfliktu = status STOP/m)
-  assert.match(prompty[1], /Rebase w toku z konfliktami [\s\S]*? = status KONFLIKT z ta lista/)
-  assert.equal(prompty[3], prompty[1], 'przygotowanie od nowa tym samym poleceniem')
+    { tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121), KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 2, powod: null }, PRZYG_OK, START_OK])
+  assert.equal(prompty.length, 6)
+  assert.match(prompty[3], /wylacznie w plikach generowanych: docs\/learned-patterns\.md \(indeks z docs\/solutions\/\)\nalbo supabase\/migrations\.sum/)
+  assert.match(prompty[3], /`git checkout --theirs -- docs\/learned-patterns\.md`, `node \.claude\/scripts\/wiedza\/wiedza\.mjs indeks --zapisz`/)
+  assert.match(prompty[3], /^4\. `GIT_EDITOR=true git rebase --continue`; regeneracje \+ 1\./m)
+  assert.match(prompty[3], /Plik inny niz docs\/learned-patterns\.md i supabase\/migrations\.sum na liscie = koniec: status KONFLIKT/)
+  assert.match(prompty[3], /^Powtarzaj, dopoki rebase trwa/m)
+  assert.match(prompty[3], /Nie zmieniasz innych plikow i nie pushujesz/)
+  assert.match(prompty[3], /o zapisie mowi pole `zapisany` JSON-a, nie kod wyjscia/)
+  assert.match(prompty[3], /^5\. Polecenie git z krokow 2–4 z kodem rozny od 0 bez nowego konfliktu = status STOP/m)
+  assert.match(prompty[2], /Rebase w toku z konfliktami [\s\S]*? = status KONFLIKT z ta lista/)
+  assert.equal(prompty[4], prompty[2], 'przygotowanie od nowa tym samym poleceniem')
   assert.deepEqual([wynik.status, wynik.czesc, wynik.prNumer], ['OK', 2, 4])
 })
 
 test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracja trafia na inny plik = KONFLIKT z ta lista; STOP i null', async () => {
   const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
-  const oba = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...KONFLIKT_INDEKSU, konflikty: ['docs/learned-patterns.md', 'e2e/smoke.sh'] }])
-  assert.deepEqual([oba.wynik.status, oba.prompty.length], ['KONFLIKT', 2])
-  const potem = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'KONFLIKT', konflikty: ['e2e/smoke.sh'], regeneracje: 1, powod: null }])
-  assert.deepEqual([potem.wynik.status, potem.wynik.konflikty, potem.prompty.length], ['KONFLIKT', ['e2e/smoke.sh'], 3])
+  const oba = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), { ...KONFLIKT_INDEKSU, konflikty: ['docs/learned-patterns.md', 'e2e/smoke.sh'] }])
+  assert.deepEqual([oba.wynik.status, oba.prompty.length], ['KONFLIKT', 3])
+  const potem = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), KONFLIKT_INDEKSU, { status: 'KONFLIKT', konflikty: ['e2e/smoke.sh'], regeneracje: 1, powod: null }])
+  assert.deepEqual([potem.wynik.status, potem.wynik.konflikty, potem.prompty.length], ['KONFLIKT', ['e2e/smoke.sh'], 4])
   assert.match(potem.wynik.powod, /konflikt rebase'u w e2e\/smoke\.sh/)
-  const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, bramkaIndeksu: false, powod: 'git add: kod 128' }])
+  const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, bramkaIndeksu: false, powod: 'git add: kod 128' }])
   assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja plikow generowanych: git add: kod 128'])
   assert.match(stop.wynik.naprawa, /^Rebase w toku\. `git rebase --abort` wraca stan sprzed części; .*potem \/dev-pr --czesc 2\.$/)
   // STOP przygotowania z konfliktem indeksu na liscie (np. brudne drzewo) — bez regeneracji.
-  const przygStop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, { ...KONFLIKT_INDEKSU, status: 'STOP', powod: 'brudne drzewo' }])
-  assert.deepEqual([przygStop.wynik.status, przygStop.prompty.length], ['STOP', 2])
-  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, null])).wynik.status, 'BLAD')
+  const przygStop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), { ...KONFLIKT_INDEKSU, status: 'STOP', powod: 'brudne drzewo' }])
+  assert.deepEqual([przygStop.wynik.status, przygStop.prompty.length], ['STOP', 3])
+  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), KONFLIKT_INDEKSU, null])).wynik.status, 'BLAD')
   // Konflikt indeksu po kazdej regeneracji: limit prob, potem KONFLIKT dla operatora (bez petli).
-  const petla = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU,
+  const petla = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), KONFLIKT_INDEKSU, { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU,
     { status: 'OK', konflikty: [], regeneracje: 1, powod: null }, KONFLIKT_INDEKSU])
-  assert.deepEqual([petla.wynik.status, petla.prompty.length], ['KONFLIKT', 6])
+  assert.deepEqual([petla.wynik.status, petla.prompty.length], ['KONFLIKT', 7])
   assert.equal(P.tylkoPlikiGenerowane([]), false)
 })
 
@@ -493,10 +495,10 @@ test('start --czesc 2: konflikt w sumie migracji (sam albo z indeksem) → bramk
   const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
   for (const konflikty of [['supabase/migrations.sum'], ['docs/learned-patterns.md', 'supabase/migrations.sum']]) {
     const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
-      tab, { ...KONFLIKT_SUMY, konflikty }, { status: 'OK', konflikty: [], regeneracje: 1, bramkaIndeksu: false, powod: null }, PRZYG_OK, START_OK])
-    assert.equal(prompty.length, 5)
-    assert.match(prompty[2], /^2\. supabase\/migrations\.sum na liscie: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume`/m)
-    assert.match(prompty[2], /odczytaj pole `scalony`\n {3}JSON-a \(nie kod wyjscia\)\. `scalony: false` = koniec: status KONFLIKT[\s\S]*?bez `git add`[\s\S]*?Dopiero `scalony: true` = `git add supabase\/migrations\.sum`\./)
+      tab, POMIAR(121), { ...KONFLIKT_SUMY, konflikty }, { status: 'OK', konflikty: [], regeneracje: 1, bramkaIndeksu: false, powod: null }, PRZYG_OK, START_OK])
+    assert.equal(prompty.length, 6)
+    assert.match(prompty[3], /^2\. supabase\/migrations\.sum na liscie: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume`/m)
+    assert.match(prompty[3], /odczytaj pole `scalony`\n {3}JSON-a \(nie kod wyjscia\)\. `scalony: false` = koniec: status KONFLIKT[\s\S]*?bez `git add`[\s\S]*?Dopiero `scalony: true` = `git add supabase\/migrations\.sum`\./)
     assert.deepEqual([wynik.status, wynik.prNumer], ['OK', 4])
   }
 })
@@ -504,8 +506,8 @@ test('start --czesc 2: konflikt w sumie migracji (sam albo z indeksem) → bramk
 test('start --czesc 2: suma nie do scalenia = KONFLIKT do operatora po jednej probie (bez petli na tym samym pliku)', async () => {
   const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
   const { wynik, prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [
-    tab, KONFLIKT_SUMY, { status: 'KONFLIKT', konflikty: ['supabase/migrations.sum'], regeneracje: 0, bramkaIndeksu: false, powod: 'ta sama migracja z inna suma po obu stronach: x.sql' }])
-  assert.deepEqual([wynik.status, wynik.konflikty, prompty.length], ['KONFLIKT', ['supabase/migrations.sum'], 3])
+    tab, POMIAR(121), KONFLIKT_SUMY, { status: 'KONFLIKT', konflikty: ['supabase/migrations.sum'], regeneracje: 0, bramkaIndeksu: false, powod: 'ta sama migracja z inna suma po obu stronach: x.sql' }])
+  assert.deepEqual([wynik.status, wynik.konflikty, prompty.length], ['KONFLIKT', ['supabase/migrations.sum'], 4])
   assert.equal(wynik.powod, 'ta sama migracja z inna suma po obu stronach: x.sql')
   assert.deepEqual([P.tylkoPlikiGenerowane(['supabase/migrations.sum', 'e2e/smoke.sh']), P.tylkoPlikiGenerowane(['supabase/migrations.sum'])], [false, true])
 })
@@ -544,4 +546,34 @@ test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clea
   assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\. Kolejnej części nie uruchamiasz w tej sesji/)
   assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\./)
   assert.doesNotMatch(skillPr, /dalej: \/dev-pr --czesc N\+1\]/)
+})
+
+// E5-6 (vibersi etap 5, cz. 3): tabela czesci liczy pliki przy archiwizacji (122), commity smoke'u po archiwum doszly do
+// ostatniej czesci (152 > limit bota) — bot pominal recenzje, a poprawka Turnstile nie weszla na main. Start przelicza
+// rozmiar czubka czesci skryptem przed przygotowaniem galezi; >= progu = STOP z liczba i dwiema drogami.
+
+test('start --czesc: rozmiar czubka czesci przeliczany rozmiar.mjs przed przygotowaniem; >= 150 = STOP z liczba i dwiema drogami', async () => {
+  const tab = { tabela: tabela([['1–3', A, B, 93], ['4–6', B, E, 122]]), galazZadania: true }
+  const duza = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(152)])
+  assert.equal(duza.prompty.length, 2, 'bez przygotowania galezi i bez PR')
+  assert.match(duza.prompty[1], /node \.claude\/scripts\/pr\/rozmiar\.mjs --baza <BAZA> --czubek feature\/etap-5`/)
+  assert.match(duza.prompty[1], new RegExp(`git merge-base --is-ancestor ${B.slice(0, 12)} feature/etap-5\` kod 0 -> BAZA=${B.slice(0, 12)}`))
+  assert.deepEqual([duza.wynik.status, duza.wynik.czesc, duza.wynik.rozmiar], ['STOP', 2, { pliki: 152, tabela: 122, prog: 150 }])
+  assert.match(duza.wynik.powod, /^część 2 ma 152 plików do recenzji \(tabela przy archiwizacji: 122, limit bota 150\)/)
+  assert.match(duza.wynik.powod, /\(1\) commity po archiwizacji osobnym PR.*\(2\) dodatkowa część/s)
+  const cz1 = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 1 }, [tab, POMIAR(93)])
+  assert.match(cz1.prompty[1], new RegExp(`--czubek ${B.slice(0, 12)}\``), 'czesc nieostatnia: czubek = commit ciecia')
+  const ok = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(149), { ...PRZYG_OK, galaz: 'feature/etap-5' }, START_OK])
+  assert.deepEqual([ok.wynik.status, ok.prompty.length], ['OK', 4])
+  for (const zly of [{ wynik: '{"wyjatek":"nie ma commita feature/etap-5"}' }, { wynik: '' }]) {
+    const r = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, zly])
+    assert.deepEqual([r.wynik.status, r.prompty.length], ['STOP', 2])
+    assert.match(r.wynik.powod, /pomiar rozmiaru części 2 nieczytelny/)
+  }
+  assert.equal((await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, null])).wynik.status, 'BLAD')
+})
+
+test('skill /dev-pr: STOP rozmiaru czesci = pytanie operatora o droge (osobny PR commitow po archiwum albo dodatkowa czesc)', () => {
+  assert.match(krok1, /`status: "STOP"` z polem `rozmiar`/)
+  assert.match(krok1, /„Commity po archiwizacji osobnym PR” i „Dodatkowa część”/)
 })

@@ -88,6 +88,12 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej.
 
+`status: "STOP"` z polem `rozmiar` (część ≥ 150 plików do recenzji po przeliczeniu czubka — commity po archiwizacji
+dołożyły pliki do tabeli z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`) i opcjami
+„Commity po archiwizacji osobnym PR” i „Dodatkowa część”. Pierwsza: gałąź części bez commitów z `po-archiwum.mjs`, a one
+osobnym PR po jej merge'u; druga: wiersz w tabeli „Części PR” podsumowania z cięciem na commicie archiwizacji, commit
+tabeli i znów krok 1. Wybraną drogę wykonujesz po decyzji operatora; bez niej nie wysyłasz części ponad limitem bota.
+
 Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
 przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od nowa (log „pliki generowane rozwiązane”).
 Tak samo `supabase/migrations.sum`: workflow scala wpisy obu stron (`bramki.mjs --scal-sume`); ta sama migracja z inną sumą

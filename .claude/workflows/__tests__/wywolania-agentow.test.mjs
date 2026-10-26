@@ -23,7 +23,7 @@ const SUFIKS_FIGMA = '-figma'
 const MAPA_KLAS = /** @type {const} */ ([
   [/^(stop:commit-artefaktow|start:commit-zadania|start:p3-known-issues|complete:czesci-pr:\*|pr:czesci:\*|pr:pliki-generowane:czesc-\*:\*|pr:claude-md-commit:\*|stan:zapis|e2e:start|e2e:start:retry|e2e:restart:faza-\*|e2e:env-down|dossier:zapas)$/, 'klasa-mechaniczny'],
   [/^(dedup:semantyczny|scribe:faza-\*:inspekcja)$/, 'klasa-mechaniczny-odczyt'],
-  [/^ogrod:pomiar$/, 'klasa-mechaniczny-pomiar'],
+  [/^(ogrod:pomiar|pr:rozmiar-czesci:\*:\*)$/, 'klasa-mechaniczny-pomiar'],
   [/^(verify:\*:\*|verify-batch:\*:\*|fix:kontrola:faza-\*|ogrod:ocena)$/, 'klasa-sceptyk'],
   [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
   [/^review:test-coverage$/, 'test-coverage-reviewer'],
