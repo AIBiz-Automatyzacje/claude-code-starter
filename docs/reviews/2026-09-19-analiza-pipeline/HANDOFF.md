@@ -3228,6 +3228,19 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     W vibersi przed etapem 6 (decyzje operatora, poza szablonem): PR z `b954014` (Turnstile), wątek `moje-projekty-seed.sql:182`,
     2 padające testy, CLAUDE.md `TURNSTILE_SECRET_KEY`.
 
+101. **PLAN PACZKI P27 + P29 + E5 (2026-10-26, jedna sesja, nic nie wdrożone) — `docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md`,
+    ZAAKCEPTOWANY PRZEZ OPERATORA BEZ ZMIAN (2026-10-26).** 33 pozycje (pkt 97 (1)–(4c), P3 z pkt 96, pkt 99 (1)–(3) z 2b, E5-2…E5-22 bez E5-1/E5-13) w 4 sesjach
+    wdrożenia wg wpływu: **S1 run i PR** (13: E5-6 przeliczenie rozmiaru części w `start`, E5-5 wątki po suficie, E5-9, E5-2(b),
+    E5-4(b), E5-8, E5-10, P27(1)(2)(4b)(4c), P3 M9/M10/M14/M15/M22 + detekcja `api/`), **S2 review/fix/wiedza** (zaczyna od testu
+    kanarkowego sceptyka E5-21 — kryterium ustalone z góry: 4/4 obalone → zostaje, ≤ 2/4 → wymiana promptu, 0/4 → budżet na E5-3 —
+    i pomiaru progu fixa E5-3; potem E5-3, E5-2(a), E5-4(a), E5-7+P27(3), P27(4a), E5-22, E5-12, E5-15), **S3 makieta** (P29 (2b),
+    (2), (1)+E5-11, (3)), **S4 telemetria** (E5-16…E5-20 + pomiar E5-14). Każde plik:linia sprawdzone na main `beace7c`
+    (testy 1221/1221). Rozbieżności z raportem pkt 100: correctness ma 14 pozycji list `:17-30`; ucieczki już sortują wpisy
+    wiedzy przed alfabetem (`wpisy.mjs:45`), brakuje węższego globu; linia P3 w known-issues nie ma osi
+    (`dev-docs-review-wf.js:568-569`) — E5-2(b) wymaga najpierw osi w linii; etap `claude-md` nie wylicza zmiennych sam
+    (poprawka w kroku 5 promptu, `dev-pr-wf.js:957`). P27(5) (test niestabilny) zostaje obserwacją.
+    **Dalej:** sesja wdrożenia S1 (§8), potem S2–S4.
+
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
 - Hook `md-guard` blokuje zapis `.md` przez Bash (heredoc/python) — pliki `.md` pisz WYŁĄCZNIE narzędziem Write/Edit; dane robocze zapisuj jako `.txt`/`.json`/`.csv`.
@@ -3632,7 +3645,26 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-26, po analizie) — PLAN PACZKI P27 + P29 + E5 (6a pkt 97, 99, 100); plan do akceptacji, wdrożenie w kolejnej sesji.**
+**AKTUALNA (2026-10-26, po planie) — WDROŻENIE P27 + P29 + E5, SESJA S1 „run i PR” (6a pkt 101).** Plan
+`docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md` zaakceptowany bez zmian (2026-10-26). Kolejne sesje S2–S4 — ten sam
+blok z podmienioną nazwą sesji i pozycjami. Operator wkleja do nowej sesji szablonu:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin). Sesja: WDROŻENIE S1 „run i PR” paczki P27.
+Przeczytaj docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md (sekcje Wniosek, S1, Kolejność i zasady) i HANDOFF 6a pkt 101,
+§7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+
+Cel: pozycje 1–13 planu na gałęzi popr/P27-S1 od main. Każda pozycja: test → bieg bez poprawki (czerwony) → poprawka →
+zielony; pełny npm test przed każdym commitem; commit na pozycję. Przed zmianą sprawdź plik:linia z planu na obecnym main.
+Na koniec recenzja subagenta z mutacjami (bramki JS w dev-pr-wf.js, srodowisko.mjs, gotowosc.mjs); P2 poprawiasz w tej sesji.
+Merge za moją zgodą.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; subagenci bez pkill z szerokim wzorcem; liczby skryptem.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: (2026-10-26, po analizie) — PLAN PACZKI P27 + P29 + E5 (6a pkt 97, 99, 100) — WYKONANY (6a pkt 101).**
 Stan: analiza etapu 5 zrobiona (raport `docs/reviews/2026-10-26-analiza-etapu-5-vibersi.md`). `/sync-template` w vibersi dopiero
 po wdrożeniu paczki (przed etapem 6). Operator wkleja do nowej sesji szablonu:
 
