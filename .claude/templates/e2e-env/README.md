@@ -50,8 +50,8 @@ i `E2E_START`; db-sync wtedy się nie uruchamia. Wzór: `.claude/templates/e2e-e
 
 ## Aplikacja z osobnym serwerem API (SPA + backend)
 
-Domyślny start to jeden proces Vite. Gdy klient woła własny serwer (`fetch('/api/…')`, katalog `server/`, skrypt
-`build:server` albo `dev:server`), sam Vite w E2E odpowiada na `/api/*` stroną `index.html` albo 404, a scenariusze
+Domyślny start to jeden proces Vite. Gdy klient woła własny serwer (`fetch('/api/…')`, katalog `server/`, `api/` albo
+`apps/api/`, skrypt `build:server`, `dev:server` albo `dev:api`), sam Vite w E2E odpowiada na `/api/*` stroną `index.html` albo 404, a scenariusze
 z zapisem przez serwer kończą się SKIP „środowisko” → `[Manual]` (vibersi etap 4: `POST /api/projekty` → 404; etap 5:
 stary `E2E_START` w trzech fazach). Taki projekt potrzebuje:
 

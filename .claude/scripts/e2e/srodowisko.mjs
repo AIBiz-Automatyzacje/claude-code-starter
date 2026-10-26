@@ -73,9 +73,14 @@ export function menedzerPakietow(projekt) {
   return 'npm'
 }
 
-/** @param {string} projekt @returns {boolean} katalog `server/` albo skrypt package.json z czlonem `server` (`build:server`, `dev:server`) */
+// Uklady repo z serwerem API obok SPA (P27 S1 (12)): `server/` (vibersi), `api/`, monorepo `apps/api/`.
+const KATALOGI_SERWERA = ['server', 'api', 'apps/api']
+// Czlon nazwy skryptu `server` albo `api` miedzy dwukropkami (`dev:server`, `api:build`), nie fragment slowa (`observer`, `rapid`).
+const SKRYPT_SERWERA = /(?:^|:)(?:server|api)(?::|$)/
+
+/** @param {string} projekt @returns {boolean} katalog z KATALOGI_SERWERA albo skrypt package.json z czlonem `server`/`api` (`build:server`, `dev:api`) */
 function maSerwerApi(projekt) {
-  if (existsSync(join(projekt, 'server'))) return true
+  if (KATALOGI_SERWERA.some((k) => existsSync(join(projekt, k)))) return true
   const pakiet = join(projekt, 'package.json')
   if (!existsSync(pakiet)) return false
   /** @type {unknown} */
@@ -88,7 +93,7 @@ function maSerwerApi(projekt) {
     throw e
   }
   const scripts = manifest && typeof manifest === 'object' && 'scripts' in manifest ? manifest.scripts : null
-  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => /(?:^|:)server(?::|$)/.test(nazwa))
+  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => SKRYPT_SERWERA.test(nazwa))
 }
 
 /**
@@ -98,7 +103,7 @@ function maSerwerApi(projekt) {
  */
 export function uwagaSerweraApi(projekt, env) {
   if (env.E2E_HEALTH_TRESC || !maSerwerApi(projekt)) return null
-  return `projekt ma serwer API (server/ albo skrypt *:server), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
+  return `projekt ma serwer API (server/, api/, apps/api/ albo skrypt *:server, *:api), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
 }
 
 const PLIKI_VITE = ['vite.config.ts', 'vite.config.mts', 'vite.config.js', 'vite.config.mjs', 'vite.config.cjs']

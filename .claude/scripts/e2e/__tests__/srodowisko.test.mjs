@@ -10,7 +10,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
-import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
+import { bledySrodowiska, konfiguracja, parsujEnv, uwagaSerweraApi } from '../srodowisko.mjs'
 import { restartFazy, startE2e } from '../start.mjs'
 
 const ZADANIE = 'docs/active/z'
@@ -641,4 +641,16 @@ test('restart: potomek naszego serwera ignorujacy SIGTERM ginie z grupa — rest
   assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })).serwer, 'uruchomione')
   const w = await restartFazy(p, ZADANIE, 1)
   assert.deepEqual([w.status, w.serwer, w.obcy], ['gotowe', 'uruchomione', null], w.detal)
+})
+
+// P3 pkt 96 M14 + P27 S1 (12): wykrycie serwera API — kotwice regexu skryptow bez testu (mutacje przezywaly), a uklady
+// `api/`, `apps/api/` i skrypty `*:api` nie byly wykrywane (uwaga P25 nie dzialala na innych repo).
+test('uwagaSerweraApi: katalogi server/, api/, apps/api/ i skrypty z czlonem server albo api; observer, server-x, rapid — nie', () => {
+  const wykryty = (/** @type {Record<string, string>} */ pliki) => uwagaSerweraApi(projekt({ pliki }), {}) !== null
+  for (const katalog of ['server/index.ts', 'api/index.ts', 'apps/api/src/index.ts']) assert.equal(wykryty({ [katalog]: '' }), true, katalog)
+  const zeSkryptem = (/** @type {string} */ nazwa) => wykryty({ 'package.json': JSON.stringify({ scripts: { [nazwa]: 'x' } }) })
+  for (const nazwa of ['server', 'dev:server', 'server:dev', 'build:server:prod', 'api', 'dev:api', 'api:build']) assert.equal(zeSkryptem(nazwa), true, nazwa)
+  for (const nazwa of ['observer', 'server-x', 'dev:observer', 'serverless:x', 'rapid', 'dev:apis', 'api-docs', 'dev']) assert.equal(zeSkryptem(nazwa), false, nazwa)
+  assert.equal(wykryty({ 'apps/web/src/index.ts': '' }), false, 'apps/ bez api/')
+  assert.equal(uwagaSerweraApi(projekt({ pliki: { 'apps/api/x.ts': '' } }), { E2E_HEALTH_TRESC: 'ok' }), null, 'sonda z trescia')
 })
