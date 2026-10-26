@@ -41,6 +41,8 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 
 **Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Wyczerpany limit = domknięcie,
 nawet gdy zostały otwarte wątki. Nie proponuj „jeszcze jednej tury" — zaraportuj, co zostało, i oddaj decyzję operatorowi.
+Wątki otwarte po suficie i wątki odłożone „do części N+1” przekazujesz etapowi `compound` w `odlozone` — trafiają do
+`known-issues.md` zadania z linkiem wątku, a start kolejnej części zbiera nierozwiązane wątki PR poprzednich części.
 
 ## Przebieg
 
@@ -58,6 +60,11 @@ o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCze
 (commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
 pomijasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd i pytaj
 jak przy plikach kodu.
+
+**Otwarte wątki poprzednich części.** `--czesc N` > 1: przed pytaniem o zgodę pobierz PR części 1..N−1
+(`gh pr list --state merged --head feature/<zadanie>-czK --json number,url`) i ich wątki zapytaniem GraphQL `reviewThreads`
+(jak w bloku gh workflowu), tylko isResolved:false. Wypisz je w pytaniu o zgodę (PR, plik:linia, zarzut, link) — operator
+decyduje, czy naprawić je przed wysłaniem części. Etap `start` dopisuje je też do opisu PR (`otwarteWatkiPoprzednich`).
 
 **Zgoda na wysłanie.** Etap `start` wypycha gałąź i tworzy PR, czyli publikuje zmiany na zewnątrz. Przed nim zawsze pytasz
 operatora przez `AskUserQuestion`: „Wysłać PR <zadanie>[, część N]?” z opcjami „Wyślij PR” i „Jeszcze nie”. Przy plikach
@@ -213,7 +220,8 @@ komentarze bota w wiedzę projektu, i jest niezależna od tego, czy PR wylądowa
 
 ```
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js",
-          args: {etap: "compound", zadanie, watki: <wszystkie wątki ze wszystkich tur>}})
+          args: {etap: "compound", zadanie, watki: <wszystkie wątki ze wszystkich tur>,
+                 odlozone: <wątki otwarte po suficie albo odłożone do kolejnej części: {plik, streszczenie, url}>}})
 ```
 
 Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review, z polami wiedzy

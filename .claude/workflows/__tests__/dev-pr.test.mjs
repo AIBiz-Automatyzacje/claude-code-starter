@@ -577,3 +577,30 @@ test('skill /dev-pr: STOP rozmiaru czesci = pytanie operatora o droge (osobny PR
   assert.match(krok1, /`status: "STOP"` z polem `rozmiar`/)
   assert.match(krok1, /„Commity po archiwizacji osobnym PR” i „Dodatkowa część”/)
 })
+
+// E5-5 (vibersi PR #9): watek „Major” odlozony „do cz. 3” zostal otwarty na zmergowanym PR — sufit tur i odlozenie do
+// kolejnej czesci nie mialy nosnika. Start czesci N > 1 zbiera nierozwiazane watki PR czesci 1..N-1 (opis PR i wynik),
+// compound zapisuje odlozone watki do known-issues.md zadania z linkiem.
+test('start --czesc 2: krok „otwarte watki czesci 1” (isResolved:false na PR feature/<zadanie>-cz1) w opisie PR i w wyniku; czesc 1 bez kroku', async () => {
+  const tab = { tabela: TABELA_ETAPU_3, galazZadania: true }
+  const watek = { pr: 3, plik: 'src/a.ts:10', streszczenie: 'brak limitu', url: 'https://github.com/o/r/pull/3#discussion_r1' }
+  const cz2 = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), PRZYG_OK, { ...START_OK, otwarteWatkiPoprzednich: [watek] }])
+  assert.match(cz2.prompty[3], /OTWARTE WATKI POPRZEDNICH CZESCI/)
+  assert.match(cz2.prompty[3], /gh pr list --state merged --head feature\/etap-3-cz1 --json number,url/)
+  assert.match(cz2.prompty[3], /isResolved:false/)
+  assert.match(cz2.prompty[3], /## Otwarte wątki poprzednich części/)
+  assert.deepEqual(cz2.wynik.otwarteWatkiPoprzednich, [watek])
+  const cz1 = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [tab, POMIAR(93), { ...PRZYG_OK, galaz: 'feature/etap-3-cz1', rebase: 'nie-dotyczy', walidacja: 'nie-dotyczy' }, START_OK])
+  assert.doesNotMatch(cz1.prompty[3], /OTWARTE WATKI POPRZEDNICH CZESCI/)
+})
+
+test('compound: odlozone watki (sufit, „do czesci N+1”) → known-issues.md zadania z linkiem watku; skill przekazuje odlozone i pyta z lista przy --czesc N+1', async () => {
+  const odl = [{ plik: 'src/a.ts:10', streszczenie: 'Major: brak limitu', url: 'https://github.com/o/r/pull/9#discussion_r2' }]
+  const { prompty } = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [], odlozone: odl }, [{ wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: null, push: false, pushDetal: 'brak commita' }])
+  assert.match(prompty[0], /docs\/completed\/etap-5\/known-issues\.md/)
+  assert.match(prompty[0], /pull\/9#discussion_r2/)
+  const bez = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [] }, [{ wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: null, push: false, pushDetal: 'brak commita' }])
+  assert.doesNotMatch(bez.prompty[0], /WATKI ODLOZONE/)
+  assert.match(skillPr, /odlozone: <wątki otwarte po suficie albo odłożone do kolejnej części/)
+  assert.match(krok1, /`--czesc N` > 1: przed pytaniem o zgodę .*isResolved:false/s)
+})
