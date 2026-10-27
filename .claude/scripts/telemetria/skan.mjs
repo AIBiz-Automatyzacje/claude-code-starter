@@ -1,4 +1,4 @@
-// Skladanie rekordow jednego runu: run + fazy + agenci. Wejscie z dysku (zrodla.mjs), git tylko dla plikow fixa.
+// Skladanie rekordow jednego runu: run + fazy + agenci. Wejscie z dysku (zrodla.mjs), git dla plikow fixa i ucieczek watkow bota.
 
 import { statSync } from 'node:fs'
 import { join } from 'node:path'
@@ -7,6 +7,7 @@ import { rekordyFaz } from './faza.mjs'
 import { zmianyCommitow } from './git.mjs'
 import { rekordRunu, statusBezHarnessu, statusRunu } from './run.mjs'
 import { wersjaSzablonu } from './szablon.mjs'
+import { ucieczkiPr } from './ucieczki.mjs'
 import { klasyZRegula } from './wiedza.mjs'
 import { agenciRunu, czytajHarness, czytajJournal, katalogProjektu } from './zrodla.mjs'
 
@@ -53,18 +54,21 @@ export function rekordyRunu(run, kontekst) {
   const bootstrap = agenci.find((a) => a.rola === 'bootstrap')
   const repo = katalogProjektu(run)
   const etapZbierz = harness?.workflowName === 'dev-pr-wf' && obiektWyniku(harness.result).etap === 'zbierz'
-  return {
-    run: rekordRunu({
-      harness, status, agenci,
-      bootstrap: bootstrap ? journal.get(bootstrap.id)?.wynik : null,
-      klasyZRegula: etapZbierz ? klasyZRegula(repo) : null,
-      szablon: wersjaSzablonu({
-        workflowName: typeof harness?.workflowName === 'string' ? harness.workflowName : null,
-        skrypt: typeof harness?.script === 'string' ? harness.script : null,
-        startMs: typeof harness?.startTime === 'number' ? harness.startTime : null,
-        repo,
-      }),
+  const rekord = rekordRunu({
+    harness, status, agenci,
+    bootstrap: bootstrap ? journal.get(bootstrap.id)?.wynik : null,
+    klasyZRegula: etapZbierz ? klasyZRegula(repo) : null,
+    szablon: wersjaSzablonu({
+      workflowName: typeof harness?.workflowName === 'string' ? harness.workflowName : null,
+      skrypt: typeof harness?.script === 'string' ? harness.script : null,
+      startMs: typeof harness?.startTime === 'number' ? harness.startTime : null,
+      repo,
     }),
+  })
+  // Ucieczki watkow bota (E5-20): blame linii na czubku PR i findingi review zadania z drzewa projektu.
+  if (rekord.pr) rekord.pr.klasy = ucieczkiPr({ repo, zadanie: rekord.zadanie, head: rekord.pr.head }, rekord.pr.klasy)
+  return {
+    run: rekord,
     fazy: rekordyFaz({
       wynikRunu: harness?.result,
       agenci,

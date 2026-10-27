@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { PROG_CTX_START_SKILLA, anomalie, czyPipeline, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem } from './raport-sekcje.mjs'
+import { PROG_CTX_START_SKILLA, anomalie, czyPipeline, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem, ucieczkiBota } from './raport-sekcje.mjs'
 import { zbierzWszystko } from './zbieranie.mjs'
 import { PLIK_BLEDOW, PLIK_DANYCH, odczytajRekordy } from './zapis.mjs'
 import { KATALOG_PROJEKTOW } from './zrodla.mjs'
@@ -80,6 +80,8 @@ const opisBota = (b) => b.bez_wagi === b.watki
   ? `${b.zadanie}: ${b.watki} watkow bez klasyfikacji (sprzed slownika klas)`
   : `${b.zadanie}: ${b.p1p2} P1/P2 z ${b.watki} watkow, ${b.p1p2_na_100_plikow ?? '—'} na 100 plikow${b.bez_wagi ? `, ${b.bez_wagi} bez klasyfikacji` : ''}`
 out.push('   uwagi bota (unikalne watki per zadanie): ' + (bot.map(opisBota).join('; ') || 'brak rekordow run.pr'))
+out.push('   ucieczki do bota (skad watek: review fazy go mial / kod fixa / tura PR / smoke / nowy; w nawiasie P1/P2):')
+for (const u of ucieczkiBota(runy)) out.push(`     ${u.zadanie}: ${u.watki} watkow — ${u.kubelki.map((k) => `${k.kubelek} ${k.razem} (${k.p1p2})`).join(', ')}`)
 
 const nz = niezawodnosc(runy)
 out.push('', '5. Niezawodnosc')

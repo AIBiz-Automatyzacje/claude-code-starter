@@ -407,7 +407,7 @@ test('claude-md czesci 1 z 2 bez agenta; zbierz oddaje czesc do telemetrii', asy
   const zb = await uruchom({ etap: 'zbierz', zadanie: 'etap-3', tura: 1, czesc: 2, czesci: 2 }, [{
     watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'brak CI', recenzjaAktualna: true, plikiPr: 194,
   }])
-  assert.deepEqual([zb.wynik.czesc, zb.wynik.prNumer, zb.wynik.rekomendacja], [2, 4, 'MERGUJ'])
+  assert.deepEqual([zb.wynik.czesc, zb.wynik.prNumer, zb.wynik.rekomendacja, zb.wynik.headRefOid], [2, 4, 'MERGUJ', 'abc'], 'czubek PR do telemetrii (ucieczki, E5-20)')
 })
 
 test('start bez --czesc przy tabeli czesci = STOP z /dev-pr --czesc 1; bez tabeli — zwykly PR', async () => {

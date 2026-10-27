@@ -2,6 +2,7 @@
 
 import { etapRoli } from './faza.mjs'
 import { KOMENDY_LOKALNE } from './skill.mjs'
+import { KUBELKI } from './ucieczki.mjs'
 
 /** @typedef {Record<string, unknown>} Rekord */
 
@@ -109,6 +110,37 @@ export function jakoscBota(runy) {
     const p1p2 = wagi.filter((s) => s === 'P1' || s === 'P2').length
     const liczalne = pliki && bezWagi < wagi.length
     return { zadanie, pliki, watki: z.watki.size, bez_wagi: bezWagi, p1p2, p1p2_na_100_plikow: liczalne ? Math.round((p1p2 / pliki) * NA_STO * 10) / 10 : null }
+  })
+}
+
+// Ucieczki do bota (E5-20): kubelek kazdego unikalnego watku zadania z najnowszego rekordu, ktory go klasyfikowal.
+// Watek bez oznaczenia (rekord sprzed E5-20, brak repo albo czubka PR) = „bez danych”, nie „nowy”.
+const BEZ_DANYCH = 'bez danych'
+
+/** @param {Rekord[]} runy */
+export function ucieczkiBota(runy) {
+  /** @type {Map<string, Map<string, { start: string, severity: unknown, kubelek: string }>>} */
+  const perZadanie = new Map()
+  for (const r of runy) {
+    const pr = obiekt(r.pr)
+    if (!Array.isArray(pr.klasy) || typeof r.zadanie !== 'string') continue
+    const watki = perZadanie.get(r.zadanie) ?? new Map()
+    const start = String(r.start ?? '')
+    for (const k of pr.klasy.map(obiekt)) {
+      if (typeof k.id !== 'string') continue
+      const dotad = watki.get(k.id)
+      const kubelek = obiekt(k.ucieczka).kubelek
+      if (!dotad || start >= dotad.start) watki.set(k.id, { start, severity: k.severity, kubelek: typeof kubelek === 'string' ? kubelek : BEZ_DANYCH })
+    }
+    perZadanie.set(r.zadanie, watki)
+  }
+  return [...perZadanie].filter(([, w]) => w.size).map(([zadanie, watki]) => {
+    const lista = [...watki.values()]
+    const kubelki = [...KUBELKI, BEZ_DANYCH].map((kubelek) => {
+      const w = lista.filter((x) => x.kubelek === kubelek)
+      return { kubelek, razem: w.length, p1p2: w.filter((x) => x.severity === 'P1' || x.severity === 'P2').length }
+    }).filter((k) => k.razem)
+    return { zadanie, watki: lista.length, kubelki }
   })
 }
 

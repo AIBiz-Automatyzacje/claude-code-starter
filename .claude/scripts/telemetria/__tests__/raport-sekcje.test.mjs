@@ -3,7 +3,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { PROG_CTX_START_SKILLA, anomalie, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem } from '../raport-sekcje.mjs'
+import { PROG_CTX_START_SKILLA, anomalie, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem, ucieczkiBota } from '../raport-sekcje.mjs'
 
 /** @param {string} rola @param {string} klasa @param {number} koszt @param {Record<string, unknown>} [inne] */
 const agent = (rola, klasa, koszt, inne = {}) => ({
@@ -167,4 +167,23 @@ test('skille: epizod w sesji zaczetej od /clear (po_clear) nie jest kontynuacja 
     { typ: 'skill', skill: 'dev-plan', projekt: 'p', sesja: 's2', start: '2026-10-21T10:35:00Z', koniec: '2026-10-21T11:00:00Z', koszt_jedn: 300, subagenci_jedn: 0, wiadomosci_operatora: 3, otwarty: false, po_clear: true },
   ], Date.parse('2026-10-22T10:00:00Z'))
   assert.deepEqual(s, [{ skill: 'dev-plan', n: 2, pelny_p50: 300, wiadomosci_p50: 3 }])
+})
+
+test('ucieczki bota: unikalne watki per zadanie (najnowsza wersja), kubelki w stalej kolejnosci z P1/P2; watek bez oznaczenia = bez danych (E5-20)', () => {
+  /** @param {string} id @param {string} severity @param {string | null} kubelek */
+  const w = (id, severity, kubelek) => ({ id, severity, ucieczka: kubelek ? { kubelek, pochodzenie: kubelek, znane: null } : null })
+  const runy = [
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T10:00:00Z', pr: { numer: 9, klasy: [w('A', 'P3', 'nowy'), w('B', 'P2', 'kod-tury-PR')] } },
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T11:00:00Z', pr: { numer: 9, klasy: [w('A', 'P2', 'review-P3'), w('C', 'P2', 'kod-fixa'), w('D', 'P2', null)] } },
+    { typ: 'run', zadanie: 'inne', start: '2026-10-25T11:00:00Z', pr: null },
+  ]
+  assert.deepEqual(ucieczkiBota(runy), [{
+    zadanie: 'z', watki: 4,
+    kubelki: [
+      { kubelek: 'review-P3', razem: 1, p1p2: 1 },
+      { kubelek: 'kod-fixa', razem: 1, p1p2: 1 },
+      { kubelek: 'kod-tury-PR', razem: 1, p1p2: 1 },
+      { kubelek: 'bez danych', razem: 1, p1p2: 1 },
+    ],
+  }])
 })

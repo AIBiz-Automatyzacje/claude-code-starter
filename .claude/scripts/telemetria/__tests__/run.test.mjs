@@ -136,7 +136,7 @@ test('run.pr z etapu zbierz dev-pr: klasy uwag, wagi, liczba plikow PR', () => {
     harness: {
       workflowName: 'dev-pr-wf', args: { zadanie: 'z1', etap: 'zbierz', tura: 2 },
       result: {
-        status: 'OK', etap: 'zbierz', tura: 2, plikiPr: 40, prNumer: 17,
+        status: 'OK', etap: 'zbierz', tura: 2, plikiPr: 40, prNumer: 17, headRefOid: 'abc1234',
         watki: [
           { id: 'PRRT_1', plik: 'a.ts:1', klasa: 'napraw', klasaBledu: 'sciezka-bledu', os: 'correctness', waga: 'P2' },
           { id: 'PRRT_2', plik: 'b.ts:2', klasa: 'odrzuc', klasaBledu: 'preferencja-bota', os: 'brak', waga: '0' },
@@ -147,11 +147,12 @@ test('run.pr z etapu zbierz dev-pr: klasy uwag, wagi, liczba plikow PR', () => {
     status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
   })
   assert.deepEqual(r.pr, {
-    numer: 17, tura: 2, pliki: 40, czesc: null, uwagi_razem: 3, p1: 1, p2: 1, p3: 0, koszyk: null, rekomendacja: null,
+    // head: czubek PR z chwili zbierania — na nim skan liczy blame linii watku (ucieczki, E5-20); ucieczka dopisuje skan.
+    numer: 17, tura: 2, pliki: 40, czesc: null, head: 'abc1234', uwagi_razem: 3, p1: 1, p2: 1, p3: 0, koszyk: null, rekomendacja: null,
     klasy: [
-      { id: 'PRRT_1', klasa: 'sciezka-bledu', severity: 'P2', plik: 'a.ts:1', os: 'correctness', decyzja: 'napraw', ma_regule: null },
-      { id: 'PRRT_2', klasa: 'preferencja-bota', severity: '0', plik: 'b.ts:2', os: 'brak', decyzja: 'odrzuc', ma_regule: null },
-      { id: 'PRRT_3', klasa: 'bramka-czarna-lista', severity: 'P1', plik: 'c.ts:3', os: 'security', decyzja: 'napraw', ma_regule: null },
+      { id: 'PRRT_1', klasa: 'sciezka-bledu', severity: 'P2', plik: 'a.ts:1', os: 'correctness', decyzja: 'napraw', ma_regule: null, ucieczka: null },
+      { id: 'PRRT_2', klasa: 'preferencja-bota', severity: '0', plik: 'b.ts:2', os: 'brak', decyzja: 'odrzuc', ma_regule: null, ucieczka: null },
+      { id: 'PRRT_3', klasa: 'bramka-czarna-lista', severity: 'P1', plik: 'c.ts:3', os: 'security', decyzja: 'napraw', ma_regule: null, ucieczka: null },
     ],
   })
 })
@@ -165,6 +166,18 @@ test('run.pr.czesc z wyniku etapu zbierz (PR wieloczesciowy); bez pola = null', 
   assert.equal(zbierz({ czesc: 2 })?.czesc, 2)
   assert.equal(zbierz({ czesc: null })?.czesc, null)
   assert.equal(zbierz({})?.czesc, null)
+})
+
+test('run.pr.head: headRefOid z wyniku zbierz; run sprzed pola — prefiks SHA z tokenu tury; bez obu null', () => {
+  const zbierz = (/** @type {Record<string, unknown>} */ wynik) => rekordRunu({
+    harness: { workflowName: 'dev-pr-wf', result: { status: 'OK', etap: 'zbierz', tura: 1, watki: [], ...wynik } },
+    status: { status: 'OK', powod: null }, agenci: [], bootstrap: null,
+  }).pr?.head
+  assert.equal(zbierz({ headRefOid: 'abc123def4567890', token: 'tura-1@abc123def456' }), 'abc123def4567890')
+  assert.equal(zbierz({ token: 'tura-2@abc123def456' }), 'abc123def456')
+  assert.equal(zbierz({ token: 'tura-2@' }), null)
+  assert.equal(zbierz({ token: 'tura-2@abc; rm -rf' }), null, 'tylko hex — wartosc idzie do gita')
+  assert.equal(zbierz({}), null)
 })
 
 test('run.pr.klasy[].ma_regule (P10): klasa uwagi ma regule w wiedzy projektu; bez odczytu wiedzy = null', () => {

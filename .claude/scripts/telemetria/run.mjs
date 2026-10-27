@@ -124,6 +124,19 @@ const nazwaZSciezki = (sciezka) => sciezka.replace(/^@/, '').replace(/\/+$/, '')
 /** @param {unknown} x @returns {number | null} */
 const liczbaLubNull = (x) => (typeof x === 'number' ? x : null)
 
+const RE_SHA = /^[0-9a-f]{7,40}$/
+
+/**
+ * SHA czubka PR: `headRefOid` wyniku zbierz, a w runach sprzed tego pola prefiks z tokenu tury (`tura-N@<12 znakow SHA>`).
+ * Tylko hex — wartosc trafia do argumentow gita.
+ * @param {Record<string, unknown>} wynik
+ * @returns {string | null}
+ */
+function czubekPr(wynik) {
+  const sha = typeof wynik.headRefOid === 'string' ? wynik.headRefOid : typeof wynik.token === 'string' ? wynik.token.split('@')[1] ?? '' : ''
+  return RE_SHA.test(sha) ? sha : null
+}
+
 /**
  * `run.pr` z wyniku etapu `zbierz` dev-pr (klasa bledu, os i waga ze slownika KLASY_BLEDOW w dev-pr-wf.js; It. 1 krok 8).
  * Jeden run = jedna tura; raport liczy UNIKALNE watki per zadanie (suma po turach zawyza o 43% — przeglad D5 §8 pkt 4).
@@ -138,6 +151,8 @@ function rekordPr(wynik, klasyZRegula) {
     numer: liczbaLubNull(wynik.prNumer), tura: liczbaLubNull(wynik.tura), pliki: liczbaLubNull(wynik.plikiPr),
     // PR wieloczesciowy (P20 S2): numer czesci z etapu zbierz; null = zadanie jednym PR albo run sprzed P20.
     czesc: liczbaLubNull(wynik.czesc),
+    // Czubek PR z chwili zbierania — kod, ktory bot skomentowal; na nim skan liczy blame linii watku (ucieczki, E5-20).
+    head: czubekPr(wynik),
     uwagi_razem: watki.length, p1: ile('P1'), p2: ile('P2'), p3: ile('P3'),
     // Rekomendacja liczona w JS dev-pr-wf (P5); koszyk A–D (ETAP1B) — producent w It. 2.
     koszyk: null, rekomendacja: tekstLubNull(wynik.rekomendacja),
@@ -145,6 +160,8 @@ function rekordPr(wynik, klasyZRegula) {
       id: tekstLubNull(w.id), klasa: tekstLubNull(w.klasaBledu), severity: tekstLubNull(w.waga), plik: tekstLubNull(w.plik),
       os: tekstLubNull(w.os), decyzja: tekstLubNull(w.klasa),
       ma_regule: klasyZRegula && typeof w.klasaBledu === 'string' ? klasyZRegula.has(w.klasaBledu) : null,
+      /** @type {import('./ucieczki.mjs').Ucieczka | null} kubelek ucieczki — dopisuje skan (git i raporty review projektu) */
+      ucieczka: null,
     })),
   }
 }

@@ -1,0 +1,151 @@
+{
+ "_opis": "vibersi etap 5, PR #9 i #10: 13 watkow bota (dane/e5-ucieczki-etapy-3-5.txt), temat i czas commitu z git blame linii watku, naglowki review fazy i known-issues tych plikow (os wg tresci wpisu — format poz. 4 S1). Raport: P1/P2 znane z review 1, z kodu fixa 2, z tur PR 3, ze smoke 0.",
+ "zadanie": "etap-5-interakcje-i-profil",
+ "czasArchiwum": 1793003326,
+ "watki": [
+  {
+   "id": "PRRT_e5_1",
+   "plik": "e2e/seeds/glosy-zapisane-seed.sql:50",
+   "severity": "P3",
+   "os": "e2e",
+   "blame": {
+    "temat": "feat(etap-5-interakcje-i-profil): głosy i Zapisane (faza 3)",
+    "czas": 1792963911
+   }
+  },
+  {
+   "id": "PRRT_e5_2",
+   "plik": "e2e/seeds/glosy-zapisane-seed.sql:69",
+   "severity": "P3",
+   "os": "e2e",
+   "blame": {
+    "temat": "feat(etap-5-interakcje-i-profil): głosy i Zapisane (faza 3)",
+    "czas": 1792963911
+   }
+  },
+  {
+   "id": "PRRT_e5_3",
+   "plik": "server/komentarze.ts:25",
+   "severity": "P3",
+   "os": "correctness",
+   "blame": {
+    "temat": "feat(etap-5-interakcje-i-profil): komentarze i zgłoszenia (faza 4)",
+    "czas": 1792963911
+   }
+  },
+  {
+   "id": "PRRT_e5_4",
+   "plik": "src/components/interakcje/okno-zaloz-konto.tsx:41",
+   "severity": "P3",
+   "os": "code-quality",
+   "blame": {
+    "temat": "feat(etap-5-interakcje-i-profil): głosy i Zapisane (faza 3)",
+    "czas": 1792963911
+   }
+  },
+  {
+   "id": "PRRT_e5_5",
+   "plik": "server/komentarze.ts:29",
+   "severity": "P3",
+   "os": "correctness",
+   "blame": {
+    "temat": "fix(pr): tura 1 — poprawki po review bota",
+    "czas": 1792966062
+   }
+  },
+  {
+   "id": "PRRT_e5_6",
+   "plik": "e2e/seeds/etap-4-moderacja-seed.sql:63",
+   "severity": "P2",
+   "os": "e2e",
+   "blame": {
+    "temat": "fix(pr): tura 2 — poprawki po review bota",
+    "czas": 1792966889
+   }
+  },
+  {
+   "id": "PRRT_e5_7",
+   "plik": "e2e/seeds/etap-5-interakcje-seed.sql:61",
+   "severity": "P2",
+   "os": "e2e",
+   "blame": {
+    "temat": "fix(pr): tura 2 — poprawki po review bota",
+    "czas": 1792966889
+   }
+  },
+  {
+   "id": "PRRT_e5_8",
+   "plik": "e2e/seeds/moje-projekty-seed.sql:61",
+   "severity": "P2",
+   "os": "e2e",
+   "blame": {
+    "temat": "fix(pr): tura 2 — poprawki po review bota",
+    "czas": 1792966889
+   }
+  },
+  {
+   "id": "PRRT_e5_9",
+   "plik": "e2e/seeds/moje-projekty-seed.sql:182",
+   "severity": null,
+   "os": null,
+   "blame": {
+    "temat": "fix(pr): tura 3 — poprawki po review bota",
+    "czas": 1792967644
+   }
+  },
+  {
+   "id": "PRRT_e5_10",
+   "plik": "src/components/komentarze/watek-komentarza.tsx:101",
+   "severity": "P2",
+   "os": "correctness",
+   "blame": {
+    "temat": "fix(etap-5-interakcje-i-profil): poprawki po review fazy 5",
+    "czas": 1793003312
+   }
+  },
+  {
+   "id": "PRRT_e5_11",
+   "plik": "src/components/projekt/komentarze-projektu.tsx:111",
+   "severity": "P2",
+   "os": "correctness",
+   "blame": {
+    "temat": "fix(etap-5-interakcje-i-profil): poprawki po review fazy 5",
+    "czas": 1793003312
+   }
+  },
+  {
+   "id": "PRRT_e5_12",
+   "plik": "src/hooks/interakcje/use-powiadomienia.ts:139",
+   "severity": "P2",
+   "os": "correctness",
+   "blame": {
+    "temat": "feat(etap-5-interakcje-i-profil): powiadomienia i poczta (faza 5)",
+    "czas": 1793003312
+   }
+  },
+  {
+   "id": "PRRT_e5_13",
+   "plik": "src/lib/konto/profil.ts:199",
+   "severity": "P2",
+   "os": "correctness",
+   "blame": {
+    "temat": "feat(etap-5-interakcje-i-profil): powiadomienia i poczta (faza 5)",
+    "czas": 1793003312
+   }
+  }
+ ],
+ "raporty": [
+  {
+   "nazwa": "review-faza-4.md",
+   "tresc": "# Review fazy 4 — Komentarze i zgłoszenia (wycinek naglowkow)\n\n### P2 · KOD · `server/komentarze.ts:82`\n\n### P3 · KOD · `src/components/komentarze/watek-komentarza.tsx:73`\n\n### P3 · KOD · `src/components/projekt/komentarze-projektu.tsx:86`\n\n### P3 · KOD · `server/komentarze.ts:75`\n\n### P3 · KOD · `server/komentarze.ts:25`\n\n### P3 · KOD · `src/components/projekt/komentarze-projektu.tsx:113`\n"
+  },
+  {
+   "nazwa": "review-faza-5.md",
+   "tresc": "# Review fazy 5 — Powiadomienia i poczta (wycinek naglowkow)\n\n### P3 · KOD · `src/hooks/interakcje/use-powiadomienia.ts:105`\n\n### P3 · KOD · `src/hooks/interakcje/use-powiadomienia.ts:37`\n"
+  },
+  {
+   "nazwa": "known-issues.md",
+   "tresc": "# Known issues — etap-5-interakcje-i-profil (wycinek; os w formacie poz. 4 S1, przypisana wg tresci wpisu)\n\n## P3 faza 4\n\n- 🟡 [P3/performance] src/components/komentarze/watek-komentarza.tsx:73 — ListaOdpowiedzi renderuje odpowiedzi w zwinietym watku.\n- 🟡 [P3/code-quality] src/components/projekt/komentarze-projektu.tsx:86 — plik urosl o ListaKomentarzy.\n- 🟡 [P3/code-quality] server/komentarze.ts:75 — odmowaWolajacego i odczytajCialo w trzech kopiach.\n- 🟡 [P3/correctness] server/komentarze.ts:25 — MAKS_ROZMIAR_CIALA_B liczy 1 B na znak; 413 na poprawnym komentarzu.\n- 🟡 [P3/correctness] src/components/projekt/komentarze-projektu.tsx:113 — „Pokaz kolejne” zostaje na zawsze.\n\n## P3 faza 5\n\n- 🟡 [P3/correctness] src/hooks/interakcje/use-powiadomienia.ts:105 — blad oznaczania po kliknieciu nie dociera do uzytkownika.\n- 🟡 [P3/correctness] src/hooks/interakcje/use-powiadomienia.ts:37 — po „Oznacz jako przeczytane” strona 2 pokazuje grupe drugi raz.\n"
+  }
+ ]
+}
