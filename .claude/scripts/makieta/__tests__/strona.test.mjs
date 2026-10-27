@@ -192,3 +192,26 @@ test('P27 S3 poz. 26: pasek adresu śledzi adres ramki (bez nadpisywania wpisu o
   assert.match(js, /el\('tutaj', HTMLButtonElement\)\.hidden = [^\n]*checked/)
   assert.match(js, /el\('tutaj', HTMLButtonElement\)\.addEventListener\('click', \(\) => przeniesRamki\(el\('ramki', HTMLDivElement\), stan\.trasa\)\)/)
 })
+
+test('P27 S3 poz. 27: kadr zrzutu — zaznaczenie w pikselach podglądu (w dowolną stronę) na piksele obrazu, przycięte do obrazu; zaznaczenie mniejsze niż 8 px = cały obraz', async () => {
+  const { kadrZrzutu } = await import('../strona/zrzut.mjs')
+  const obraz = { szerokosc: 2000, wysokosc: 1000 }
+  assert.deepEqual(kadrZrzutu({ x0: 10, y0: 20, x1: 110, y1: 70 }, 4, obraz), { x: 40, y: 80, szerokosc: 400, wysokosc: 200 })
+  assert.deepEqual(kadrZrzutu({ x0: 110, y0: 70, x1: 10, y1: 20 }, 4, obraz), { x: 40, y: 80, szerokosc: 400, wysokosc: 200 }, 'od prawej dolnej')
+  assert.deepEqual(kadrZrzutu({ x0: 450, y0: 200, x1: 900, y1: -50 }, 4, obraz), { x: 1800, y: 0, szerokosc: 200, wysokosc: 800 }, 'poza podglądem — do krawędzi obrazu')
+  assert.deepEqual(kadrZrzutu({ x0: 10.4, y0: 10.6, x1: 20.6, y1: 30.2 }, 1, obraz), { x: 10, y: 11, szerokosc: 11, wysokosc: 19 })
+  assert.deepEqual(kadrZrzutu({ x0: 10, y0: 10, x1: 17, y1: 100 }, 4, obraz), { x: 0, y: 0, szerokosc: 2000, wysokosc: 1000 })
+  assert.deepEqual(kadrZrzutu(null, 4, obraz), { x: 0, y: 0, szerokosc: 2000, wysokosc: 1000 })
+})
+
+test('P27 S3 poz. 27: formularz „Zgłoś błąd” — zrzut z pliku albo Cmd+V, podgląd z zaznaczeniem, „Usuń zrzut”; zgłoszenie wysyła PNG do api/zrzut przed decyzją', () => {
+  const form = /<form id="form-blad"[^>]*>([\s\S]*?)<\/form>/.exec(HTML)?.[1] ?? ''
+  assert.match(form, /<label for="zrzut-bledu">[^<]*Cmd\+V[^<]*<\/label>/)
+  assert.match(form, /<input type="file" id="zrzut-bledu" accept="image\/\*">/)
+  assert.match(form, /<canvas id="podglad-zrzutu" class="podglad-zrzutu" hidden><\/canvas>/)
+  assert.match(form, /<button type="button" id="usun-zrzut" hidden>Usuń zrzut<\/button>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  const wysylka = js.slice(js.indexOf('async function zglosBlad'), js.indexOf('function podepnij()'))
+  assert.match(wysylka, /api\(`zrzut\?punkt=\$\{[^}]+\}`, \{ method: 'POST', body: png, headers: \{ 'content-type': 'image\/png' \} \}\)/)
+  assert.ok(wysylka.indexOf("api(`zrzut") < wysylka.indexOf("zapisz('blad'"), 'zrzut przed decyzją')
+})

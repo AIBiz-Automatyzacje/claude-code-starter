@@ -11,6 +11,8 @@
 export const ZNACZNIK_BLEDU = 'błąd zgłoszony'
 export const ZNACZNIK_POPRAWKI = 'poprawione'
 export const ZNACZNIK_ODSTEPSTWA = '— zatwierdzone'
+// Zrzut operatora do zgloszenia (P27 S3): sciezka PNG na koncu adnotacji bledu.
+export const ZNACZNIK_ZRZUTU = ' · zrzut: '
 
 const CHECKBOX = /^- \[([ xX])\] (.*)$/
 const MAKIETA = /visual-diff\/([A-Za-z0-9][\w.-]*?)-figma\.png/g

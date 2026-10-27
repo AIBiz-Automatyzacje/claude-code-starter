@@ -9,6 +9,7 @@ import { podepnijPanelSieci } from './panel-sieci.mjs'
 import { adresZRamki, bezpiecznaTrasa, przeciaganieRzedu, przeladujRamki, przeniesRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
 import { liczebnik } from './teksty.mjs'
 import { podepnijRozdzielacz } from './uklad.mjs'
+import { podepnijZrzut } from './zrzut.mjs'
 
 const API = '/__makieta/api/'
 const KLUCZ_TOKENU = 'makieta.token'
@@ -224,17 +225,17 @@ async function zakonczPrzeglad() {
 
 /**
  * @param {'zgodne' | 'odstepstwo' | 'blad'} decyzja
- * @param {{ notatka?: string, urzadzenie?: Urzadzenie }} [dane]
+ * @param {{ notatka?: string, urzadzenie?: Urzadzenie, zrzut?: string }} [dane]
  * @returns {Promise<boolean>} czy zapisano (formularz czysci pole tylko po zapisie)
  */
-async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
+async function zapisz(decyzja, { notatka, urzadzenie, zrzut } = {}) {
   const b = biezacy()
   if (!b) return false
   const przyciski = document.querySelectorAll('#decyzje button, .formularz button[type="submit"]')
   // Drugie klikniecie w trakcie zapisu dostaloby 409 i komunikat konfliktu po udanym zapisie.
   for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = true
   try {
-    const cialo = { punkt: b.punkt.id, linia: b.punkt.tekst, decyzja, notatka, ekran: b.ekran.ekran, urzadzenie: urzadzenie?.nazwa, szerokosc: urzadzenie?.szerokosc }
+    const cialo = { punkt: b.punkt.id, linia: b.punkt.tekst, decyzja, notatka, ekran: b.ekran.ekran, urzadzenie: urzadzenie?.nazwa, szerokosc: urzadzenie?.szerokosc, zrzut }
     const { status, json } = await api('decyzja', { method: 'POST', body: JSON.stringify(cialo) })
     if (status === 409) {
       await wczytaj({ zmienTrase: false })
@@ -253,6 +254,30 @@ async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
   } finally {
     for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = false
   }
+}
+
+/**
+ * „Zgłoś błąd”: najpierw zrzut (jesli jest) do `api/zrzut`, potem decyzja ze sciezka zrzutu — linia checklisty dostaje
+ * zgloszenie dopiero, gdy zrzut juz lezy w katalogu zadania.
+ * @param {{ notatka: string, urzadzenie: Urzadzenie, zrzuty: ReturnType<typeof podepnijZrzut> }} o
+ * @returns {Promise<boolean>} czy zapisano
+ */
+async function zglosBlad({ notatka, urzadzenie, zrzuty }) {
+  const b = biezacy()
+  const png = await zrzuty.png()
+  /** @type {string | undefined} */
+  let zrzut
+  if (b && png) {
+    const { status, json } = await api(`zrzut?punkt=${encodeURIComponent(b.punkt.id)}`, { method: 'POST', body: png, headers: { 'content-type': 'image/png' } })
+    if (status !== 200) {
+      komunikat(status === 413 ? 'Zrzut większy niż 5 MB — zaznacz mniejszy fragment.' : json?.error?.message ?? `Zrzut nie zapisał się (${status}).`)
+      return false
+    }
+    zrzut = json.data.zrzut
+  }
+  const ok = await zapisz('blad', { notatka, urzadzenie, zrzut })
+  if (ok) zrzuty.wyczysc()
+  return ok
 }
 
 function podepnij() {
@@ -288,12 +313,14 @@ function podepnij() {
     if (!notatka) return komunikat('Wpisz, co się różni i dlaczego to OK.')
     void zapisz('odstepstwo', { notatka }).then((ok) => { if (ok) el('notatka-odstepstwa', HTMLTextAreaElement).value = '' })
   })
+  const zrzuty = podepnijZrzut({ formularz: el('form-blad', HTMLFormElement), pole: el('zrzut-bledu', HTMLInputElement), podglad: el('podglad-zrzutu', HTMLCanvasElement),
+    usun: el('usun-zrzut', HTMLButtonElement), komunikat })
   el('form-blad', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const notatka = el('opis-bledu', HTMLTextAreaElement).value.trim()
     const urzadzenie = stan.urzadzenia.find((u) => u.id === el('urzadzenie-bledu', HTMLSelectElement).value) ?? stan.urzadzenia[0]
     if (!notatka || !urzadzenie) return komunikat('Wpisz, co jest nie tak.')
-    void zapisz('blad', { notatka, urzadzenie }).then((ok) => { if (ok) el('opis-bledu', HTMLTextAreaElement).value = '' })
+    void zglosBlad({ notatka, urzadzenie, zrzuty }).then((ok) => { if (ok) el('opis-bledu', HTMLTextAreaElement).value = '' })
   })
   el('form-adres', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()

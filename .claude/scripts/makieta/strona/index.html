@@ -45,6 +45,10 @@
       <textarea id="opis-bledu" rows="2" maxlength="300" required></textarea>
       <label for="urzadzenie-bledu">Urządzenie</label>
       <select id="urzadzenie-bledu"></select>
+      <label for="zrzut-bledu">Zrzut (opcjonalnie): wklej Cmd+V albo wybierz plik, potem zaznacz fragment myszą</label>
+      <input type="file" id="zrzut-bledu" accept="image/*">
+      <canvas id="podglad-zrzutu" class="podglad-zrzutu" hidden></canvas>
+      <button type="button" id="usun-zrzut" hidden>Usuń zrzut</button>
       <button type="submit" id="wyslij-blad">Wyślij do sesji</button>
       <button type="button" class="anuluj">Anuluj</button>
     </form>
