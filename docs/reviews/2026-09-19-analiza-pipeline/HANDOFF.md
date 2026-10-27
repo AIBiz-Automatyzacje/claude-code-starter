@@ -3805,7 +3805,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
 **AKTUALNA (2026-10-27, po S4) — SYNC PACZKI P27 DO VIBERSI I PRZYGOTOWANIE ETAPU 6 (6a pkt 105).** Warunek: `popr/P27-S4`
-zmergowana do main (zgoda operatora), decyzja o progu E5-14 podjęta (jeśli próg — wdrożony w szablonie przed syncem).
+zmergowana (main `de8c49a`) i `popr/P27-E5-14` (uwaga rozmiaru IU w `sprawdz`) zmergowana — zgoda operatora.
 Sesja w katalogu vibersi. Operator wkleja:
 
 ```
