@@ -161,6 +161,22 @@ export function uwagiRozmiaruFaz(fazy) {
     + ' postaw w fazie bez fundamentu serwera i klienta (dev-plan 3.3)')
 }
 
+// E5-14 (vibersi etapy 3–5, 51 IU): scenariusze IU ↔ ctx_max buildera Spearman +0,83, pliki ↔ tury +0,71; IU z 10+ plikami
+// tury p50 72 i ctx_max p50 227k, z 7–9 scenariuszami 80 i 263k (1–3 pliki: 27 i 89k). Zero porazek buildera — uwaga, nie blad.
+const PROG_SCENARIUSZY_IU = 7
+const PROG_PLIKOW_IU = 10
+
+/**
+ * @param {{ id: string, scenariusze: unknown[], pliki: unknown[] }[]} jednostki
+ * @returns {string[]} uwaga na kazda IU z co najmniej PROG_SCENARIUSZY_IU scenariuszami albo PROG_PLIKOW_IU plikami
+ */
+export function uwagiRozmiaruIu(jednostki) {
+  return jednostki.filter((iu) => iu.scenariusze.length >= PROG_SCENARIUSZY_IU || iu.pliki.length >= PROG_PLIKOW_IU)
+    .map((iu) => `${iu.id}: ${iu.scenariusze.length} scenariuszy testowych, ${iu.pliki.length} plików (próg: ${PROG_SCENARIUSZY_IU}`
+      + ` scenariuszy albo ${PROG_PLIKOW_IU} plików) — builder takiej IU ma ~2–3× więcej tur i kontekstu (E5-14); podziel ją`
+      + ' na granicy zachowania albo warstwy, jeśli obie części dają się zreviewować osobno (dev-plan 3.3)')
+}
+
 /**
  * @param {Plan} plan sparsowany plan techniczny
  * @param {string} projekt katalog projektu (sciezki planu sa wzgledne wobec niego)
@@ -190,6 +206,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
   w.uwagi.push(...uwagiRozmiaruFaz(plan.fazy))
+  w.uwagi.push(...uwagiRozmiaruIu(jednostki))
   w.uwagi.push(...uwagiRejestru(plan, jednostki))
   const makiety = sprawdzMakiety(plan, jednostki, projekt)
   w.bledy.push(...makiety.bledy)

@@ -3362,7 +3362,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     człowieka; praca przed pierwszym skillem pliku nie jest „bez skilla”; `/sync-template` wpisany komendą dalej wchłania smoke
     (poprawka obejmuje wywołanie narzędziem); parser nagłówków review nie łapie `plik:?` i zakresów `:12-20`; pola zamrożone
     nie da się poprawić podbiciem `v`; `--grep` archiwum szuka w całej wiadomości commita.
-    **Dalej:** decyzja operatora o progu E5-14; merge `popr/P27-S4` po zgodzie; potem `/sync-template` + doctor w vibersi
+    **Decyzje operatora (2026-10-27):** merge `popr/P27-S4` → main `de8c49a` (wypchnięty); próg E5-14 wdrożony na gałęzi
+    `popr/P27-E5-14`: `uwagiRozmiaruIu` w `walidacja-planu.mjs` (≥ 7 scenariuszy albo ≥ 10 plików = uwaga, nie błąd) + akapit
+    w `dev-plan` 3.3; na danych etapów 3–5 uwagę dostałoby 29/51 IU (przy ≥ 8 / ≥ 12 — 17/51). Test
+    `srodowisko.test.mjs` „restart: potomek… ignorujący SIGTERM” padł raz w pełnym biegu i przeszedł 4/4 w powtórce — niestabilny.
+    **Dalej:** merge `popr/P27-E5-14` po zgodzie; potem `/sync-template` + doctor w vibersi
     i pełny skan telemetrii (WERSJA 9 przelicza ucieczki etapów 1–5), potem etap 6 (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
@@ -3801,7 +3805,7 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
 **AKTUALNA (2026-10-27, po S4) — SYNC PACZKI P27 DO VIBERSI I PRZYGOTOWANIE ETAPU 6 (6a pkt 105).** Warunek: `popr/P27-S4`
-zmergowana do main (zgoda operatora), decyzja o progu E5-14 podjęta (jeśli próg — wdrożony w szablonie przed syncem).
+zmergowana (main `de8c49a`) i `popr/P27-E5-14` (uwaga rozmiaru IU w `sprawdz`) zmergowana — zgoda operatora.
 Sesja w katalogu vibersi. Operator wkleja:
 
 ```
