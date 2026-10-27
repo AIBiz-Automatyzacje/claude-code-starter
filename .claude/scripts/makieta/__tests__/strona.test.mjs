@@ -138,7 +138,7 @@ const ORIGIN = 'http://127.0.0.1:5180'
 test('P27 S3 poz. 25: „Ramki razem” — nawigacja w ramce A przenosi pozostałe ramki; ramka przeniesiona nie rozsyła dalej (1 przeniesienie na nawigację)', async () => {
   const { adresZRamki } = await import('../strona/ramki.mjs')
   const { ramki: [a, b, c], kontener } = atrapaRamek(['/p/x', '/p/x', '/p/x'])
-  const z = (/** @type {{ contentWindow: object }} */ r, /** @type {string} */ adres) => ({ origin: ORIGIN, source: r.contentWindow, data: { makieta: 'adres', adres } })
+  const z = (/** @type {{ contentWindow: object }} */ r, /** @type {string} */ adres) => ({ origin: ORIGIN, source: r.contentWindow, data: { makieta: 'adres', adres, rodzaj: 'push' } })
   assert.equal(adresZRamki(kontener, z(a, '/tworca/x'), { origin: ORIGIN, razem: true }), '/tworca/x')
   assert.deepEqual([a.historia, b.historia, c.historia], [[], ['/tworca/x'], ['/tworca/x']])
   // B i C po zaladowaniu zglaszaja ten sam adres — bez kolejnych przeniesien (bez petli).
@@ -155,11 +155,12 @@ test('P27 S3 poz. 25: komunikat obcego originu, spoza ramek, innego typu albo z 
   const { ramki: [a, b], kontener } = atrapaRamek(['/p/x', '/p/x'])
   const opcje = { origin: ORIGIN, razem: true }
   for (const zdarzenie of [
-    { origin: 'http://zly.example', source: a.contentWindow, data: { makieta: 'adres', adres: '/y' } },
-    { origin: ORIGIN, source: {}, data: { makieta: 'adres', adres: '/y' } },
+    { origin: 'http://zly.example', source: a.contentWindow, data: { makieta: 'adres', adres: '/y', rodzaj: 'push' } },
+    { origin: ORIGIN, source: {}, data: { makieta: 'adres', adres: '/y', rodzaj: 'push' } },
     { origin: ORIGIN, source: a.contentWindow, data: { makieta: 'inne', adres: '/y' } },
     { origin: ORIGIN, source: a.contentWindow, data: '/y' },
-    ...['//zly.example/y', '/\\zly.example', '/\t/zly.example', '/__makieta/strona/', 'y', 7].map((adres) => ({ origin: ORIGIN, source: a.contentWindow, data: { makieta: 'adres', adres } })),
+    ...['//zly.example/y', '/\\zly.example', '/\t/zly.example', '/__makieta/strona/', 'y', 7].map((adres) => ({ origin: ORIGIN, source: a.contentWindow, data: { makieta: 'adres', adres, rodzaj: 'push' } })),
+    { origin: ORIGIN, source: a.contentWindow, data: { makieta: 'adres', adres: '/y', rodzaj: 'inny' } },
   ]) assert.equal(adresZRamki(kontener, zdarzenie, opcje), null, JSON.stringify(zdarzenie.data))
   assert.deepEqual([a.historia, b.historia, a.dataset.adres], [[], [], '/p/x'])
 })
@@ -218,4 +219,33 @@ test('P27 S3 poz. 27: formularz „Zgłoś błąd” — zrzut z pliku albo Cmd+
   const wysylka = js.slice(js.indexOf('async function zglosBlad'), js.indexOf('function podepnij()'))
   assert.match(wysylka, /api\(`zrzut\?punkt=\$\{[^}]+\}`, \{ method: 'POST', body: png, headers: \{ 'content-type': 'image\/png' \} \}\)/)
   assert.ok(wysylka.indexOf("api(`zrzut") < wysylka.indexOf("zapisz('blad'"), 'zrzut przed decyzją')
+})
+
+test('po recenzji P27 S3 (P2): przekierowanie zależne od szerokości nie zapętla „Ramki razem” — start/replace ramki przeniesionej przez narzędzie w oknie 3 s nie rozsyła dalej', async () => {
+  const { adresZRamki, przeniesRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b], kontener } = atrapaRamek(['/x', '/x'])
+  const z = (/** @type {{ contentWindow: object }} */ r, /** @type {string} */ adres, /** @type {string} */ rodzaj) => ({ origin: ORIGIN, source: r.contentWindow, data: { makieta: 'adres', adres, rodzaj } })
+  // Komputer (A) klika: telefon (B) dostaje /d, aplikacja przekierowuje go na /m/d (start nowego dokumentu albo replace routera).
+  assert.equal(adresZRamki(kontener, z(a, '/d', 'push'), { origin: ORIGIN, razem: true, teraz: 1000 }), '/d')
+  assert.equal(adresZRamki(kontener, z(b, '/m/d', 'start'), { origin: ORIGIN, razem: true, teraz: 1500 }), '/m/d')
+  assert.equal(adresZRamki(kontener, z(b, '/m/d?r=1', 'replace'), { origin: ORIGIN, razem: true, teraz: 2000 }), '/m/d?r=1')
+  assert.deepEqual([a.historia, b.historia, b.dataset.adres], [[], ['/d'], '/m/d?r=1'], 'A zostaje na /d — bez ping-ponga')
+  // Klik operatora w B (push) rozsyła zawsze; po oknie 3 s zwykłe replace też.
+  assert.equal(adresZRamki(kontener, z(b, '/m/e', 'push'), { origin: ORIGIN, razem: true, teraz: 2500 }), '/m/e')
+  assert.deepEqual(a.historia, ['/m/e'])
+  assert.equal(adresZRamki(kontener, z(b, '/m/f', 'replace'), { origin: ORIGIN, razem: true, teraz: 9000 }), '/m/f')
+  assert.deepEqual(a.historia, ['/m/e', '/m/f'])
+  // Ramka przeniesiona przyciskiem „Wszystkie ramki tutaj” tak samo nie odbija przekierowania.
+  przeniesRamki(kontener, '/g', 20_000)
+  assert.equal(adresZRamki(kontener, z(a, '/m/g', 'start'), { origin: ORIGIN, razem: true, teraz: 20_500 }), '/m/g')
+  assert.deepEqual([a.historia.at(-1), b.historia.at(-1)], ['/g', '/g'])
+})
+
+test('po recenzji P27 S3: kadr zrzutu — granica 8 px to zaznaczenie, mała wysokość przy dużej szerokości = cały obraz, zaznaczenie całkiem poza obrazem = cały obraz, zaokrąglenie do najbliższego piksela', async () => {
+  const { kadrZrzutu } = await import('../strona/zrzut.mjs')
+  const obraz = { szerokosc: 100, wysokosc: 100 }
+  assert.deepEqual(kadrZrzutu({ x0: 0, y0: 0, x1: 8, y1: 8 }, 1, obraz), { x: 0, y: 0, szerokosc: 8, wysokosc: 8 })
+  assert.deepEqual(kadrZrzutu({ x0: 0, y0: 0, x1: 80, y1: 7 }, 1, obraz), { x: 0, y: 0, szerokosc: 100, wysokosc: 100 })
+  assert.deepEqual(kadrZrzutu({ x0: 200, y0: 200, x1: 300, y1: 300 }, 1, obraz), { x: 0, y: 0, szerokosc: 100, wysokosc: 100 })
+  assert.deepEqual(kadrZrzutu({ x0: 10.6, y0: 10, x1: 30, y1: 30 }, 1, obraz), { x: 11, y: 10, szerokosc: 19, wysokosc: 20 })
 })

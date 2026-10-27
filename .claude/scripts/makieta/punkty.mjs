@@ -25,8 +25,9 @@ const DATA_ADNOTACJI = /^\d{4}-\d{2}-\d{2}[^:]*:\s*/
 const FIZYCZNE = /\*\*\[fizyczne urz[aą]dzenie\]\*\*/
 const DLUGOSC_ID = 8
 // Trzy pola punktu dla czlowieka po „→” (P27 S3 poz. 28, P29(3)): jak wejsc, co porownac, stany i jak je wywolac.
-const POLA = /^Wejście:\s*(.+?)\s+Porównaj:\s*(.+?)\s+Stany:\s*(.+)$/
-const NAZWY_POL = /** @type {const} */ (['Wejście', 'Porównaj', 'Stany'])
+// Bez polskich znakow tez (agent smoke'u pisal juz znaczniki w ASCII).
+const POLA = /^Wej[sś]cie:\s*(.+?)\s+Por[oó]wnaj:\s*(.+?)\s+Stany:\s*(.+)$/
+const NAZWY_POL = /** @type {const} */ ([['Wejście', /Wej[sś]cie:/], ['Porównaj', /Por[oó]wnaj:/], ['Stany', /Stany:/]])
 
 /**
  * @typedef {'otwarty' | 'zgodny' | 'odstepstwo' | 'blad' | 'poprawione'} Status
@@ -174,15 +175,16 @@ export function punktyWizualne(md, skrot) {
 
 /**
  * Uwagi formatu R11 punktu wizualnego: `- [ ] <Urzadzenie>: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport WxH) → <wynik>`.
- * Pola po „→”: niepelny zestaw — zawsze uwaga; brak wszystkich — uwaga tylko z `pola` (nowy smoke; stare smoke'i bez zmian).
+ * Pola po „→”: zapis zaczety od „Wejście:” z brakami — zawsze uwaga; bez „Wejście:” (stary R11, takze ze slowem „Stany:”) —
+ * uwaga tylko z `pola` (nowy smoke; stare smoke'i bez zmian).
  * @param {string} tresc
  * @param {boolean} pola
  * @returns {string[]}
  */
 function uwagiPol(tresc, pola) {
   const po = tresc.slice(tresc.indexOf('→') + 1)
-  const brak = NAZWY_POL.filter((n) => !po.includes(`${n}:`))
-  if (brak.length === NAZWY_POL.length) return pola ? ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”'] : []
+  const brak = NAZWY_POL.filter(([, w]) => !w.test(po)).map(([n]) => n)
+  if (brak.includes('Wejście')) return pola ? ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”'] : []
   if (brak.length) return brak.map((n) => `po „→” brak pola „${n}:” (format: Wejście: … Porównaj: … Stany: …)`)
   return POLA.test(po.replace(/`/g, '').trim()) ? [] : ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:']
 }

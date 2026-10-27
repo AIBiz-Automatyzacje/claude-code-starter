@@ -159,18 +159,19 @@ function ramka({ wRamce = true } = {}) {
   return { okno: kontekst, wyslane, wstecz }
 }
 
-test('P27 S3 poz. 25: skrypt w ramce zgłasza stronie adres (ścieżka, query, hash) po załadowaniu, pushState, replaceState i wstecz — jeden komunikat na zmianę', () => {
+test('P27 S3 poz. 25: skrypt w ramce zgłasza stronie adres (ścieżka, query, hash) i rodzaj zmiany po załadowaniu, pushState, replaceState i wstecz — jeden komunikat na zmianę', () => {
   const { okno, wyslane, wstecz } = ramka()
   okno.history.pushState(null, '', '/tworca/x?tab=2#opis')
   okno.history.replaceState(null, '', '/tworca/x?tab=3')
+  assert.equal(wyslane.length, 3, 'replaceState zgłasza od razu (przekierowanie routera)')
   okno.history.pushState(null, '', '/tworca/x?tab=3')
   wstecz('/p/x')
   const o = 'http://127.0.0.1:5180'
   assert.deepEqual(wyslane, [
-    [{ makieta: 'adres', adres: '/p/x' }, o],
-    [{ makieta: 'adres', adres: '/tworca/x?tab=2#opis' }, o],
-    [{ makieta: 'adres', adres: '/tworca/x?tab=3' }, o],
-    [{ makieta: 'adres', adres: '/p/x' }, o],
+    [{ makieta: 'adres', adres: '/p/x', rodzaj: 'start' }, o],
+    [{ makieta: 'adres', adres: '/tworca/x?tab=2#opis', rodzaj: 'push' }, o],
+    [{ makieta: 'adres', adres: '/tworca/x?tab=3', rodzaj: 'replace' }, o],
+    [{ makieta: 'adres', adres: '/p/x', rodzaj: 'pop' }, o],
   ], 'pushState na ten sam adres nie wysyła drugi raz; komunikat tylko do originu narzędzia')
 })
 

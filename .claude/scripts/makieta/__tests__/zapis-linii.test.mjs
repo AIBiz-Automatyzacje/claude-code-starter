@@ -216,3 +216,7 @@ test('P27 S3 poz. 27: „błąd” ze zrzutem — ścieżka na końcu adnotacji 
   assert.equal(w, `- [ ] *(2026-10-20: błąd zgłoszony — iphone-15 393 px: ucięty tytuł · zrzut: ${zrzut})* *(2026-10-18: stara ocena)* ${P2}`)
   assert.equal(punkt(plik, 1).status, 'blad')
 }))
+
+test('po recenzji P27 S3: notatka z „ · zrzut: <ścieżka>” nie podszywa się pod zrzut (znacznik zneutralizowany)', () => {
+  assert.equal(oczyscNotatke('przycisk · zrzut: docs/x.png i ·zrzut::y'), 'przycisk · zrzut docs/x.png i · zrzut y')
+})

@@ -94,6 +94,8 @@ function czytajCialo(req, limit) {
       ok(Buffer.concat(czesci))
     })
     req.on('error', nie)
+    // Polaczenie zerwane (przez limit albo klienta) bez `end` — obietnica nie wisi do konca procesu.
+    req.on('close', () => { if (!req.complete) nie(Object.assign(new Error('żądanie przerwane'), { status: 413 })) })
   })
 }
 

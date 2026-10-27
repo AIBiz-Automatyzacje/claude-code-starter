@@ -242,3 +242,17 @@ test('P27 S3 poz. 28: kontrola formatu — z --pola punkt bez trzech pól (stary
     assert.ok(!sprawdzFormat(md).some((p) => /Wejście|Porównaj|Stany/.test(p.powod)), f)
   }
 })
+
+test('po recenzji P27 S3: stary R11 ze słowem „Stany:” po „→” bez --pola bez uwag; zapis ASCII (Wejscie/Porownaj) czytany jak polski; pola w złej kolejności i tekst przed „Wejście:” = uwaga', () => {
+  const r11 = '- [ ] Komputer: `/a` obok `visual-diff/a-figma.png` (viewport 1440×900) → Stany: ładowanie i błąd jak w makiecie'
+  assert.deepEqual(sprawdzFormat(r11), [])
+  assert.deepEqual(sprawdzFormat(r11, { pola: true }).map((p) => p.powod), ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”'])
+  const ascii = `- [ ] ${TRZY_POLA.replace('Wejście:', 'Wejscie:').replace('Porównaj:', 'Porownaj:')}`
+  assert.deepEqual(sprawdzFormat(ascii, { pola: true }), [])
+  assert.equal(punktyWizualne(ascii, skrot)[0].opis?.wejscie, 'z /odkrywaj kliknij kartę „Kawiarnia u Ani”')
+  const kolejnosc = '- [ ] T: `/a` obok `visual-diff/a-figma.png` (viewport 390×844) → Porównaj: nagłówek. Wejście: z `/`. Stany: brak'
+  assert.deepEqual(sprawdzFormat(kolejnosc, { pola: true }).map((p) => p.powod), ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:'])
+  const przed = '- [ ] T: `/a` obok `visual-diff/a-figma.png` (viewport 390×844) → zgodne. Wejście: z `/`. Porównaj: nagłówek. Stany: brak'
+  assert.deepEqual(sprawdzFormat(przed).map((p) => p.powod), ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:'])
+  assert.deepEqual(sprawdzFormat(`- [ ] ${TRZY_POLA.replace(/\.\s*Porównaj:/, ';Porównaj:')}`), ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:'].map((powod) => ({ linia: 1, powod })), 'Porównaj: bez spacji przed')
+})

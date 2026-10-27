@@ -424,3 +424,26 @@ test('P27 S3 poz. 27: przegląd na koniec niesie pole zrzut każdego zgłoszenia
   assert.ok(z[0].zdarzenie === 'przeglad-zakonczony')
   assert.deepEqual(z[0].zgloszenia.map((/** @type {{ linia: number, zrzut: string | null }} */ x) => [x.linia, x.zrzut]), [[51, zrzut], [52, null]])
 }, { zgloszenia: 'na-koniec' }))
+
+test('po recenzji P27 S3 (P2): zrzut tylko z katalogu zrzutów zadania — `../` za prefiksem i katalog o tej samej długości z istniejącym plikiem = 400; zrzut nie-tekstem = 400', () => zSerwerem(async ({ port, plik, projekt }) => {
+  const p = punktLinii(plik, 51)
+  await wyslijZrzut(port, p.id, ZRZUT)
+  const podrzucone = [`${KATALOG_ZRZUTOW}/../../x/${p.id}-1.png`, `${KATALOG_ZRZUTOW.replace('zgloszenia', 'zgloszeniA')}/${p.id}-1.png`]
+  for (const sciezka of podrzucone) {
+    mkdirSync(join(projekt, sciezka, '..'), { recursive: true })
+    writeFileSync(join(projekt, sciezka), ZRZUT)
+  }
+  for (const zrzut of [...podrzucone, 5]) {
+    const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'iphone-15', szerokosc: 393, zrzut } })
+    assert.equal(w.status, 400, String(zrzut))
+  }
+  assert.equal(punktLinii(plik, 51).tekst, p.tekst, 'linia bez zmian')
+}))
+
+test('po recenzji P27 S3 (P2): typ zrzutu bez względu na wielkość liter i parametry; ciało ponad limit + 1 MB zrywa połączenie (JSON i zrzut)', () => zSerwerem(async ({ port, plik }) => {
+  const p = punktLinii(plik, 51)
+  assert.equal((await wyslijZrzut(port, p.id, ZRZUT, { 'content-type': 'IMAGE/PNG; x=1' })).status, 200)
+  await assert.rejects(zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: 'x'.repeat(16 * 1024 + 1024 * 1024 + 64 * 1024) }))
+  await assert.rejects(wyslijZrzut(port, p.id, Buffer.concat([SYGNATURA_PNG, Buffer.alloc(6 * 1024 * 1024 + 64 * 1024)])))
+  assert.equal((await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })).status, 200, 'serwer dalej odpowiada')
+}))

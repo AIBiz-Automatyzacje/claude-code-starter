@@ -13,28 +13,30 @@
 
   // Adres ramki dla strony narzedzia (P27 S3 poz. 25–26): pasek adresu, „Ramki razem” i „Przeładuj ramki” w biezacym miejscu.
   // Tylko w ramce (karta z „Otwórz w karcie” nie ma rodzica), tylko do originu narzedzia; ten sam adres nie idzie drugi raz.
+  // Rodzaj zmiany (start dokumentu, push, replace, pop) odroznia przekierowanie od klikniecia operatora.
   if (window.parent && window.parent !== window) {
     let zgloszony = ''
-    const zglos = () => {
+    /** @param {'start' | 'push' | 'replace' | 'pop'} rodzaj */
+    const zglos = (rodzaj) => {
       const adres = window.location.pathname + window.location.search + window.location.hash
       if (adres === zgloszony) return
       zgloszony = adres
-      window.parent.postMessage({ makieta: 'adres', adres }, window.location.origin)
+      window.parent.postMessage({ makieta: 'adres', adres, rodzaj }, window.location.origin)
     }
     const { pushState, replaceState } = window.history
     /** @param {Parameters<History['pushState']>} argumenty */
     window.history.pushState = function pushStateZNarzedzia(...argumenty) {
       pushState.apply(this, argumenty)
-      zglos()
+      zglos('push')
     }
     /** @param {Parameters<History['replaceState']>} argumenty */
     window.history.replaceState = function replaceStateZNarzedzia(...argumenty) {
       replaceState.apply(this, argumenty)
-      zglos()
+      zglos('replace')
     }
-    window.addEventListener('popstate', zglos)
-    window.addEventListener('hashchange', zglos)
-    zglos()
+    window.addEventListener('popstate', () => zglos('pop'))
+    window.addEventListener('hashchange', () => zglos('pop'))
+    zglos('start')
   }
 
   /** @returns {{ opoznienieMs: number, blokady: string[] }} ustawienia albo brak ograniczen (brak zapisu, zapis uszkodzony) */

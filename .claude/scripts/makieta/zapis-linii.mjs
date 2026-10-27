@@ -50,6 +50,8 @@ const neutralizuj = (t) => t
   .replace(/\)\*+/g, ')')
   .replace(/\[+\s*(E2E|Manual|Unit|P[1-3])\s*\]+/gi, '$1')
   .replace(/(Operator)\s*:+/gi, '$1')
+  // Znacznik sciezki zrzutu (P27 S3) stawia tylko narzedzie — notatka nie podszyje sie pod zrzut w `opisOtwartych`.
+  .replace(/·\s*(zrzut)\s*:+/gi, '· $1 ')
 
 /**
  * Notatka operatora jako fragment jednej linii checkboxa: neutralizacja do punktu stalego (resztki nie skladaja sie w nowe
