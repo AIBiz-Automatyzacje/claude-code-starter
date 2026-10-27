@@ -2,7 +2,8 @@
 //
 // Uruchomienie: node --test .claude/scripts/e2e/__tests__/srodowisko.test.mjs
 
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -20,6 +21,23 @@ const SPRAWNE = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, de
 
 // Sprzatanie po kazdym tescie, takze padnietym: serwer pipeline'u z pliku PID (zatrzymajSerwer zabija tylko nasz proces),
 // log i plik PID w /tmp, katalog projektu.
+// Bieg ubity w trakcie (Ctrl+C, limit czasu, recenzent z kill) nie wykonuje afterEach, a serwer startu jest `detached` — zostaje
+// sierota z PPID 1 trzymajaca port (macOS 2026-10-27: `node -e createServer…` z katalogu e2e-srodowisko-* zywy od 9 dni). Przed
+// biegiem: tylko sieroty z katalogiem roboczym w projekcie testowym — serwery rownoleglego biegu maja zywego rodzica.
+test.before(() => {
+  const prefiks = join(realpathSync(tmpdir()), 'e2e-srodowisko-')
+  let pid = 0
+  for (const linia of spawnSync('lsof', ['-d', 'cwd', '-Fpn'], { encoding: 'utf8' }).stdout?.split('\n') ?? []) {
+    if (linia.startsWith('p')) pid = Number(linia.slice(1))
+    if (!linia.startsWith(`n${prefiks}`) || spawnSync('ps', ['-o', 'ppid=', '-p', String(pid)], { encoding: 'utf8' }).stdout.trim() !== '1') continue
+    try {
+      process.kill(pid, 'SIGKILL')
+    } catch (blad) {
+      if (!(blad instanceof Error && 'code' in blad && blad.code === 'ESRCH')) throw blad
+    }
+  }
+})
+
 /** @type {string[]} */
 const PROJEKTY = []
 test.afterEach(async () => {
