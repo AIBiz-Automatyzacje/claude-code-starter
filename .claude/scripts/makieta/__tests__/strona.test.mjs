@@ -164,5 +164,31 @@ test('P27 S3 poz. 25: przełącznik „Ramki razem” w pasku ramek, domyślnie 
   const pasek = HTML.slice(HTML.indexOf('id="form-adres"'), HTML.indexOf('class="skala"'))
   assert.match(pasek, /<label[^>]*><input type="checkbox" id="razem" checked> Ramki razem<\/label>/)
   const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
-  assert.match(js, /addEventListener\('message', [^\n]*adresZRamki\(/)
+  assert.match(js, /addEventListener\('message', \(z\) => \{\s*const trasa = adresZRamki\(/)
+})
+
+test('P27 S3 poz. 26: „Przeładuj ramki” przeładowuje każdą ramkę na jej bieżącym adresie (nie na trasie punktu); ramka bez adresu — na trasie', async () => {
+  const { przeladujRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b, c], kontener } = atrapaRamek(['/tworca/x', '/p/x', ''])
+  delete c.dataset.adres
+  przeladujRamki(kontener, '/p/x')
+  assert.deepEqual([a.historia, b.historia, c.historia], [['about:blank', '/tworca/x'], ['about:blank', '/p/x'], ['about:blank', '/p/x']])
+})
+
+test('P27 S3 poz. 26: „Wszystkie ramki tutaj” (tryb niezależny) przenosi ramki z innym adresem na adres z paska; ramka już tam — bez przeładowania', async () => {
+  const { przeniesRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b], kontener } = atrapaRamek(['/tworca/x', '/p/x'])
+  przeniesRamki(kontener, '/tworca/x')
+  assert.deepEqual([a.historia, b.historia, b.dataset.adres], [[], ['/tworca/x'], '/tworca/x'])
+})
+
+test('P27 S3 poz. 26: pasek adresu śledzi adres ramki (bez nadpisywania wpisu operatora w trakcie pisania); „Wszystkie ramki tutaj” widoczne tylko bez „Ramki razem”', () => {
+  assert.match(HTML, /<button type="button" id="tutaj" hidden>Wszystkie ramki tutaj<\/button>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  const nasluch = js.slice(js.indexOf("addEventListener('message'"), js.indexOf("el('przeladuj'"))
+  assert.match(nasluch, /const trasa = adresZRamki\(/)
+  assert.match(nasluch, /stan\.trasa = trasa/)
+  assert.match(nasluch, /document\.activeElement !== pole/)
+  assert.match(js, /el\('tutaj', HTMLButtonElement\)\.hidden = [^\n]*checked/)
+  assert.match(js, /el\('tutaj', HTMLButtonElement\)\.addEventListener\('click', \(\) => przeniesRamki\(el\('ramki', HTMLDivElement\), stan\.trasa\)\)/)
 })

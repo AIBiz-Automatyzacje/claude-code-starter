@@ -156,12 +156,12 @@ export function przeniesRamki(kontener, trasa) {
   }
 }
 
-/** @param {HTMLElement} kontener @param {string} trasa wszystkie ramki od nowa na trasie */
+/** @param {HTMLElement} kontener @param {string} trasa ramki od nowa na swoim adresie (P27 S3); ramka bez zgloszonego adresu — na trasie */
 export function przeladujRamki(kontener, trasa) {
   for (const iframe of kontener.querySelectorAll('iframe')) {
     // Ten sam src nie przeladowuje ramki, ktora zmienila trase sama (nawigacja w aplikacji) — ustawiamy go od nowa przez about:blank.
     iframe.src = 'about:blank'
-    iframe.src = trasa
+    iframe.src = iframe.dataset.adres || trasa
   }
 }
 
