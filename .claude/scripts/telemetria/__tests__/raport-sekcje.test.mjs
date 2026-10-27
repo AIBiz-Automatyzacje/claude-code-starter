@@ -160,3 +160,11 @@ test('skille z odziedziczonym kontekstem: ctx_start powyzej progu, tylko komenda
   assert.deepEqual(s.map((x) => `${x.skill} ${x.ctx_start}`), ['dev-prep 236731', 'dev-plan 233380'])
   assert.equal(PROG_CTX_START_SKILLA, 120_000)
 })
+
+test('skille: epizod w sesji zaczetej od /clear (po_clear) nie jest kontynuacja otwartego epizodu sprzed /clear (E5-19)', () => {
+  const s = skillePerNazwa([
+    { typ: 'skill', skill: 'dev-plan', projekt: 'p', sesja: 's1', start: '2026-10-21T10:00:00Z', koniec: '2026-10-21T10:30:00Z', koszt_jedn: 100, subagenci_jedn: 0, wiadomosci_operatora: 1, otwarty: true },
+    { typ: 'skill', skill: 'dev-plan', projekt: 'p', sesja: 's2', start: '2026-10-21T10:35:00Z', koniec: '2026-10-21T11:00:00Z', koszt_jedn: 300, subagenci_jedn: 0, wiadomosci_operatora: 3, otwarty: false, po_clear: true },
+  ], Date.parse('2026-10-22T10:00:00Z'))
+  assert.deepEqual(s, [{ skill: 'dev-plan', n: 2, pelny_p50: 300, wiadomosci_p50: 3 }])
+})

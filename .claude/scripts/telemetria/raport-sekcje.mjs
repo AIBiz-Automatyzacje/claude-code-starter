@@ -142,7 +142,7 @@ export function anomalie(agenci) {
 // Epizod „otwarty” trwal do konca pliku sesji. Bez ruchu od 2 h to koniec sesji, nie skill w toku — szybki skan nie
 // odswieza rekordu sesji, ktorej plik juz sie nie zmienia, wiec bez tej reguly epizod znikal z raportu na zawsze (vibersi:
 // dev-plan 1,06 M i dev-brainstorm 2,22 M). Ten sam skill w nowej sesji do 30 min po takim koncu to kontynuacja (restart
-// sesji, np. pod wtyczke MCP) — jeden epizod (6a pkt 80 j).
+// sesji, np. pod wtyczke MCP) — jeden epizod (6a pkt 80 j). Nowa sesja po /clear (`po_clear`) to nie kontynuacja (E5-19).
 const CISZA_MS = 2 * 3_600_000
 const PRZERWA_KONTYNUACJI_MS = 30 * 60_000
 
@@ -155,7 +155,7 @@ function polaczKontynuacje(lista) {
   const wynik = []
   for (const s of [...lista].sort((a, b) => String(a.start).localeCompare(String(b.start)))) {
     const p = wynik.findLast((x) => x.skill === s.skill && x.projekt === s.projekt)
-    if (p && p.otwarty === true && p.sesja !== s.sesja && ms(s.start) - ms(p.koniec) < PRZERWA_KONTYNUACJI_MS) {
+    if (p && p.otwarty === true && p.sesja !== s.sesja && s.po_clear !== true && ms(s.start) - ms(p.koniec) < PRZERWA_KONTYNUACJI_MS) {
       const sub = [p.subagenci_jedn, s.subagenci_jedn]
       Object.assign(p, {
         koszt_jedn: (liczba(p.koszt_jedn) ?? 0) + (liczba(s.koszt_jedn) ?? 0),

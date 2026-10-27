@@ -14,8 +14,9 @@ import { czytajJsonl, katalogProjektu, katalogRepo, znajdzRuny } from './zrodla.
 // 2: rola bez sufiksu :retry, /exit i inne komendy sesji nie sa skillami, run.start. 3: run.pr z etapu zbierz dev-pr.
 // 4: run.walidacja z obiektu walidacji koncowej (odczyt It. 1). 5: epizod dev-plan konczy sie na Workflow, skill.ctx_start (P20 A8).
 // 6: projekt = katalog repo (korzen z .git) zamiast katalogu cwd agenta, pole repo (P22 F1). 7: agent.kontekst.narzedzia_n
-// i tools_zn z api-request-shape (E5-18).
-export const WERSJA_REKORDU = 7
+// i tools_zn z api-request-shape (E5-18). 8: skill pomocniczy narzedziem konczy sie z tura, /clear zamyka epizod,
+// epizod „sesja glowna bez skilla”, skill.po_clear (E5-19).
+export const WERSJA_REKORDU = 8
 // Zapas tylu minut przed znacznikiem ostatniego skanu: transkrypt bywa dopisywany chwile po hooku Stop.
 const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 const SCRATCHPAD = /\/tmp\/claude-[^/]+\/.*\/scratchpad(?:\/|$)/

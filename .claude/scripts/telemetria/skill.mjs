@@ -1,6 +1,8 @@
 // Epizody skilli w sesji glownej — rekord `skill` (d5-telemetria-rekord.txt §7 + §9; port koszt_skilli.py z granica z przegladu D6,
 // d6r_rewizja_audytu.py wariant E2 + subagenci). Epizod: od `<command-name>` skilla albo narzedzia Skill do NASTEPNEGO skilla
-// albo konca pliku sesji; powiadomienia, przerwania i komendy lokalne (/model, /compact...) go nie koncza.
+// albo konca pliku sesji; powiadomienia, przerwania i komendy lokalne (/model, /compact...) go nie koncza — poza /clear.
+// Skill pomocniczy wywolany narzedziem poza epizodem operatora konczy sie z tura; polecenia operatora po zakonczonym skillu
+// to epizod SESJA_BEZ_SKILLA do nastepnego skilla (E5-19).
 // Skill pomocniczy wywolany narzedziem Skill w epizodzie otwartym komenda operatora to krok tego skilla (P17, vibersi: /dev-plan
 // wolal figma:figma-design-to-code w kroku 1.6 i epizod planu urywal sie po 6 turach, a 1,25 M szlo na „epizod Figmy”).
 // Skill pipeline'u (dev-*) wywolany narzedziem zaczyna wlasny epizod — to zwykle nowa prosba operatora.
@@ -17,7 +19,7 @@ import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
  * @typedef {object} Epizod
  * @property {string} klucz uuid wiadomosci otwierajacej albo id wywolania Skill (ten sam w kopiach wznowionej sesji)
  * @property {string} skill
- * @property {'slash' | 'Skill-tool'} zrodlo
+ * @property {'slash' | 'Skill-tool' | 'bez-skilla'} zrodlo bez-skilla = praca sesji po zakonczonym skillu (SESJA_BEZ_SKILLA)
  * @property {string} sesja
  * @property {string} start
  * @property {string} koniec
@@ -30,6 +32,7 @@ import { artefaktyPlanu, poleceniePlanu, wynikJson } from './planowanie.mjs'
  * @property {{ narzedzia: Set<string>, workflow: number }} wywolania
  * @property {Map<string, import('./planowanie.mjs').WywolaniePlanu>} plan wywolania plan.mjs (id tool_use → polecenie i wynik)
  * @property {Set<string>} zagniezdzone skille pomocnicze wywolane narzedziem Skill jako krok tego epizodu
+ * @property {boolean} poClear w pliku sesji przed startem epizodu byl /clear — epizod nie jest kontynuacja poprzedniej sesji
  */
 
 const RE_KOMENDA = /<command-name>\/?([\w:-]+)<\/command-name>/
@@ -44,6 +47,13 @@ export const KOMENDY_LOKALNE = new Set(['model', 'clear', 'compact', 'context', 
 const czyKrokSkilla = (nazwa, otwarte) => !nazwa.startsWith('dev-') && otwarte.some((e) => e.zrodlo === 'slash')
 // Skille, ktorych epizod konczy wywolanie Workflow (oddanie pracy autopilotowi). /dev-pr woła dev-pr-wf w kazdym etapie — nie tu.
 const KONIEC_NA_WORKFLOW = new Set(['dev-plan'])
+// Skill pomocniczy wywolany narzedziem to krok odpowiedzi na polecenie operatora — konczy sie z tura (E5-19: sync-template
+// jako punkt 1 polecenia, potem smoke). Skill pipeline'u (dev-*) i skill z komendy operatora prowadza dialog — trwaja dalej.
+/** @param {Epizod} e */
+const konczySieZTura = (e) => e.zrodlo === 'Skill-tool' && !e.skill.startsWith('dev-')
+const RE_CLEAR = /^\s*<command-name>\/?clear<\/command-name>/
+// Praca sesji po zakonczonym skillu do nastepnego skilla (E5-19) — osobna pozycja raportu, nie koszt skilla.
+export const SESJA_BEZ_SKILLA = '(sesja glowna bez skilla)'
 const RE_LOKALNA = new RegExp(`^\\s*<command-name>\\/?(${[...KOMENDY_LOKALNE].join('|')})<\\/command-name>`)
 
 /** @param {unknown} c @returns {string} */
@@ -66,12 +76,13 @@ function blokiNarzedzi(c) {
 }
 
 /**
- * @param {string} klucz @param {string} skill @param {'slash' | 'Skill-tool'} zrodlo @param {string} sesja @param {string} czas
+ * @param {string} klucz @param {string} skill @param {Epizod['zrodlo']} zrodlo @param {string} sesja @param {string} czas
+ * @param {boolean} poClear
  * @returns {Epizod & { e0: boolean, e2: boolean }}
  */
-function nowyEpizod(klucz, skill, zrodlo, sesja, czas) {
+function nowyEpizod(klucz, skill, zrodlo, sesja, czas, poClear) {
   return {
-    klucz, skill, zrodlo, sesja, start: czas, koniec: czas, zamkniety: false, ctxStart: null, e0: true, e2: true,
+    klucz, skill, zrodlo, sesja, start: czas, koniec: czas, zamkniety: false, ctxStart: null, e0: true, e2: true, poClear,
     odpowiedzi: new Map(), pierwszaOdpowiedz: new Map(), operator: new Set(), subagenci: new Set(),
     wywolania: { narzedzia: new Set(), workflow: 0 }, plan: new Map(), zagniezdzone: new Set(),
   }
@@ -87,6 +98,7 @@ export function epizodySesji(wpisy, sesja) {
   const wszystkie = []
   /** @type {Array<Epizod & { e0: boolean, e2: boolean }>} */
   let otwarte = []
+  let poClear = false
   for (const w of wpisy) {
     const tresc = w.message?.content
     const czas = w.timestamp ?? ''
@@ -94,13 +106,22 @@ export function epizodySesji(wpisy, sesja) {
       const t = tekst(tresc)
       const komenda = t.match(RE_KOMENDA)
       const skill = komenda && !czyLokalna(t) ? komenda[1] : null
+      const clear = RE_CLEAR.test(t)
+      const czlowiek = czyCzlowiek(t)
+      poClear ||= clear
       for (const e of otwarte) {
         e.e0 = false
-        if (skill) { e.e2 = false; e.zamkniety = true } else if (czyCzlowiek(t) && w.uuid) e.operator.add(w.uuid)
+        if (skill || clear || (czlowiek && konczySieZTura(e))) { e.e2 = false; e.zamkniety = true } else if (czlowiek && w.uuid) e.operator.add(w.uuid)
       }
       otwarte = otwarte.filter((e) => e.e2)
       if (skill && w.uuid) {
-        const e = nowyEpizod(w.uuid, skill, 'slash', sesja, czas)
+        const e = nowyEpizod(w.uuid, skill, 'slash', sesja, czas, poClear)
+        wszystkie.push(e); otwarte.push(e)
+      } else if (czlowiek && w.uuid && !otwarte.length && wszystkie.length) {
+        // Polecenie operatora po zakonczonym skillu: praca do nastepnego skilla jest osobna pozycja (E5-19). e0 = false —
+        // narzedzie Skill w pierwszej odpowiedzi otwiera wlasny epizod (e0 chroni tylko przed echem komendy skilla).
+        const e = { ...nowyEpizod(w.uuid, SESJA_BEZ_SKILLA, 'bez-skilla', sesja, czas, poClear), e0: false }
+        e.operator.add(w.uuid)
         wszystkie.push(e); otwarte.push(e)
       }
       continue
@@ -124,7 +145,7 @@ export function epizodySesji(wpisy, sesja) {
         for (const e of otwarte) e.zagniezdzone.add(nazwa)
       } else {
         for (const e of otwarte) { e.e2 = false; e.zamkniety = true }
-        const e = nowyEpizod(wywolanieSkilla.id, nazwa, 'Skill-tool', sesja, czas)
+        const e = nowyEpizod(wywolanieSkilla.id, nazwa, 'Skill-tool', sesja, czas, poClear)
         wszystkie.push(e)
         otwarte = [e]
       }
@@ -233,6 +254,8 @@ export function rekordSkilla(e, kosztSubagenta) {
     agent_calls: e.subagenci.size,
     workflow_calls: e.wywolania.workflow,
     zagniezdzone: [...e.zagniezdzone],
+    // Epizod po /clear w tym pliku — raport nie laczy go z otwartym epizodem poprzedniej sesji jako kontynuacji (E5-19).
+    po_clear: e.poClear,
     // Wyniki plan.mjs z epizodu /dev-plan (P13): rozmiary planu i zadan, budzet pliku, walidacja, bramka gotowosci; inne skille null.
     artefakty: artefaktyPlanu([...e.plan.values()]),
   }
