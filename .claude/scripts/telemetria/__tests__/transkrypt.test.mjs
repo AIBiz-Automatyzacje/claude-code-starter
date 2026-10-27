@@ -170,3 +170,23 @@ test('promptAgenta: zwykla wiadomosc bez zmian; sama przekazana prosba = null; n
   assert.equal(promptAgenta('[Workflow harness — computed task] inny format'), '[Workflow harness — computed task] inny format')
   assert.equal(analizujTranskrypt([{ type: 'user', message: { content: '[Workflow harness — user request] x:\n  Uruchom' } }]).prompt, null)
 })
+
+// E5-18 (etap 5 vibersi): od CC 2.1.30x agent workflowu nie ma listy odroczonych narzedzi w kontekscie startowym
+// (`deferred_tools_record` pusty i dopiero po pierwszej odpowiedzi), a `prompt_snapshot` z `tools` przychodzi po pierwszej
+// odpowiedzi — narzedzia_n i tools_zn byly null u 200/200 agentow. Narzedzia pierwszego zapytania sa w `api-request-shape`.
+test('transkrypt CC 2.1.304 (wycinek wf_e17cca34-115): narzedzia_n i tools_zn z api-request-shape przed pierwsza odpowiedzia', async () => {
+  const { readFileSync } = await import('node:fs')
+  const wpisy = readFileSync(new URL('./fixtures/transkrypt-harness-2.1.304.jsonl', import.meta.url), 'utf8').trim().split('\n').map((l) => JSON.parse(l))
+  const ksztalt = wpisy.find((w) => w.type === 'api-request-shape')
+  const k = analizujTranskrypt(wpisy).kontekst
+  assert.equal(k.narzedzia_n, 4)
+  assert.equal(k.tools_zn, JSON.stringify(ksztalt.shape.tools).length)
+})
+
+test('api-request-shape po pierwszej odpowiedzi nie zmienia kontekstu startowego; stary deferred_tools_delta ma pierwszenstwo', () => {
+  const ksztalt = { type: 'api-request-shape', shape: { system: [], tools: [{ name: 'Read' }, { name: 'Bash' }, { name: 'Write' }, { name: 'Edit' }, { name: 'Grep' }] } }
+  const poOdpowiedzi = [TRANSKRYPT[0], ...TRANSKRYPT.slice(2).filter((w) => w.type !== 'attachment'), ksztalt]
+  assert.equal(analizujTranskrypt(poOdpowiedzi).kontekst.narzedzia_n, null)
+  const zDelta = [...TRANSKRYPT.slice(0, 2), ksztalt, ...TRANSKRYPT.slice(2)]
+  assert.equal(analizujTranskrypt(zDelta).kontekst.narzedzia_n, 3)
+})

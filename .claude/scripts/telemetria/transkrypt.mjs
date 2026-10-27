@@ -20,6 +20,7 @@ import { kosztJednostek } from './cennik.mjs'
  * @property {string} [version]
  * @property {string} [effort]
  * @property {Record<string, unknown>} [attachment]
+ * @property {Record<string, unknown>} [shape] wpis `api-request-shape` (CC 2.1.30x): system i tools zapytania
  * @property {{ id?: string, model?: string, content?: unknown, usage?: Uzycie }} [message]
  */
 
@@ -177,6 +178,18 @@ function dopiszZalacznik(zal, k) {
 }
 
 /**
+ * Narzedzia pierwszego zapytania API (`api-request-shape`). Od CC 2.1.30x agent workflowu nie ma listy odroczonych narzedzi
+ * w kontekscie startowym, a `prompt_snapshot` z `tools` przychodzi dopiero po pierwszej odpowiedzi (etap 5 vibersi: null
+ * u 200/200 agentow, E5-18). Lista odroczona ze starego formatu ma pierwszenstwo.
+ * @param {Record<string, unknown>} ksztalt @param {KontekstStartowy} k
+ */
+function dopiszKsztaltZapytania(ksztalt, k) {
+  if (!Array.isArray(ksztalt.tools)) return
+  k.narzedzia_n ??= ksztalt.tools.length
+  k.tools_zn ??= JSON.stringify(ksztalt.tools).length
+}
+
+/**
  * Odpowiedzi API: jedna odpowiedz = kilka wpisow z tym samym message.id; bierzemy OSTATNI wpis (koncowy output).
  * @param {WpisTranskryptu[]} wpisy
  * @returns {Map<string, Uzycie>}
@@ -205,6 +218,7 @@ export function analizujTranskrypt(wpisy) {
     if (w.timestamp) { start ??= w.timestamp; koniec = w.timestamp }
     if (w.type === 'user' && prompt === null) prompt = promptAgenta(tekstWiadomosci(w.message) ?? '')
     if (w.type === 'attachment' && !poPierwszejOdpowiedzi) dopiszZalacznik(obiekt(w.attachment), kontekst)
+    if (w.type === 'api-request-shape' && !poPierwszejOdpowiedzi) dopiszKsztaltZapytania(obiekt(w.shape), kontekst)
     if (w.type !== 'assistant') continue
     poPierwszejOdpowiedzi = true
     model ??= w.message?.model ?? null

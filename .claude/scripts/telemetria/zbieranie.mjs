@@ -13,8 +13,9 @@ import { czytajJsonl, katalogProjektu, katalogRepo, znajdzRuny } from './zrodla.
 // Podbijana przy kazdej zmianie logiki wyliczania rekordu — skan dopisze wtedy nowe wersje wszystkich rekordow.
 // 2: rola bez sufiksu :retry, /exit i inne komendy sesji nie sa skillami, run.start. 3: run.pr z etapu zbierz dev-pr.
 // 4: run.walidacja z obiektu walidacji koncowej (odczyt It. 1). 5: epizod dev-plan konczy sie na Workflow, skill.ctx_start (P20 A8).
-// 6: projekt = katalog repo (korzen z .git) zamiast katalogu cwd agenta, pole repo (P22 F1).
-export const WERSJA_REKORDU = 6
+// 6: projekt = katalog repo (korzen z .git) zamiast katalogu cwd agenta, pole repo (P22 F1). 7: agent.kontekst.narzedzia_n
+// i tools_zn z api-request-shape (E5-18).
+export const WERSJA_REKORDU = 7
 // Zapas tylu minut przed znacznikiem ostatniego skanu: transkrypt bywa dopisywany chwile po hooku Stop.
 const ZAPAS_ZNACZNIKA_MS = 10 * 60 * 1000
 const SCRATCHPAD = /\/tmp\/claude-[^/]+\/.*\/scratchpad(?:\/|$)/
