@@ -3369,6 +3369,28 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `srodowisko.test.mjs` „restart: potomek… ignorujący SIGTERM” padł raz w pełnym biegu i przeszedł 4/4 w powtórce — niestabilny.
     **Dalej:** `/sync-template` + doctor w vibersi
     i pełny skan telemetrii (WERSJA 9 przelicza ucieczki etapów 1–5), potem etap 6 (§8).
+106. **SYNC P27 DO VIBERSI + SKAN TELEMETRII + STAN PRZED ETAPEM 6 (2026-10-27, jedna sesja w vibersi).**
+    (1) `/sync-template`: szablon `990d683` (origin/main = lokalny main), 105 plików w `.claude/` (nowe m.in. skill `makieta`,
+    `scripts/makieta/`, `telemetria/ucieczki.mjs`; zmienione 4 agenty, 5 skilli dev-*, 5 workflowów, telemetria, wiedza, plan),
+    backup `.claude/.backups/20261027-120133`. Doctor: OK, uwagi 0 (vitest 198 plików, 0 z `.claude/**`; warstwa stała ról 274
+    polecenia, max 37). Commit vibersi `16a9f73` „chore(claude): sync maszynerii z szablonu (P27)” na `main`, poza `.claude/`
+    nic; NIEWYPCHNIĘTY (main ahead 1). (2) `zbierz.mjs --skan`: runów 602, sesji 2692, dopisanych 8211, błędów 0 (49 663 linii
+    jsonl). Raport `--projekt vibersi` 01–31.10 (`--bez-skanu`, zaraz po skanie): §4 bot na 100 plików — etap 1: 1,0, 2: 0,
+    3: 0,8, 4: 0,9, 5: 1,2; ucieczki: e1 3 wątki (kod-fixa 1, kod-smoke 1 (1 P1/P2), nowy 1), e2 10 (review-P3 2, kod-smoke 2,
+    sprzed-zadania 6; 0 P1/P2), e3 3 (review-P3 1 (1), review-P1P2 1 (1), nowy 1 (1)), e4 6 (review-P3 1 (1), review-P1P2 1 (1),
+    kod-smoke 2, nowy 2 (1)), e5 14 (review-P3 1 (0), kod-fixa 2 (2), kod-tury-PR 4 (3), nowy 7 (2)). **Rozjazd e5 z fixture**
+    (13 wątków: review-P3 2 (1), tury PR 5 (3), nowy 4 (1)): P1/P2 `use-powiadomienia.ts:177` w prawdziwych danych = „nowy”,
+    bo `docs/completed/etap-5…/known-issues.md` ma stary format `[P3]` bez osi (linia 105, poza oknem 10 linii) — fixture ma
+    oś dopisaną ręcznie. Etapy 1–5 zaniżają „review-P3” z tego powodu; od etapu 6 (`[P3/<os>]` z poz. 4 S1) dopasowanie po osi
+    zadziała. Bez poprawki kodu (dane historyczne). §6: dev-plan n=6 p50 4307k, dev-prep n=5 3016k, weryfikacja n=1 5515k,
+    „(sesja glowna bez skilla)” n=17 p50 1494k, wiad. operatora p50 3; sync-template n=8 p50 63k; 2 × UWAGA dev-plan
+    z kontekstem startu 233–237k (brak `/clear`). (3) Stan przed etapem 6: gałąź `main`, drzewo czyste, `.env.e2e` ma 11 kluczy
+    (E2E_URL, E2E_START, E2E_HEALTH, E2E_HEALTH_TRESC, VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, SUPABASE_E2E_DB_URL,
+    SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD, SUPABASE_ACCESS_TOKEN). `plan.mjs gotowosc
+    docs/active/etap-6`: e2e OK, testy OK; czerwone — brak `docs/active/etap-6*`, planu technicznego i gałęzi `feature/etap-6…`
+    (to robi `/dev-plan`). Wcześniej blokuje: brak checklisty `docs/operator/etap-6-…-przygotowanie.md` (`/dev-prep`), makieta
+    Figma „admin: zgłoszenia i wyróżnione” (mvp-requirements etap-6), decyzje prep (Cookieyes, PostHog premium, GA4, Pixel FB —
+    decyzja Marcina), R11 treści po przeglądzie prawnika. **Dalej:** nowa sesja (maszyneria buforowana) → `/dev-prep` etapu 6 (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3805,7 +3827,25 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-27, po S4) — SYNC PACZKI P27 DO VIBERSI I PRZYGOTOWANIE ETAPU 6 (6a pkt 105).** Warunek: `popr/P27-S4`
+**AKTUALNA (2026-10-27, po syncu P27 do vibersi) — ETAP 6 VIBERSI: PREP (6a pkt 106).** Warunek: vibersi `16a9f73`
+(sync P27) na main — wypchnięty albo świadomie lokalny (decyzja operatora); makieta Figma „admin: zgłoszenia i wyróżnione”
+gotowa albo `/dev-prep` ją zgłosi jako bloker. Nowa sesja w katalogu vibersi. Operator wkleja:
+
+```
+Kontynuujemy w vibersi: etap 6 (Admin pełny, zgody i analityka, start — docs/brainstorms/mvp-requirements.md, sekcja etap-6).
+Maszyneria z szablonu P27 zsynchronizowana (commit 16a9f73, HANDOFF 6a pkt 106 w workspace-template/docs/reviews/
+2026-09-19-analiza-pipeline/HANDOFF.md). Przeczytaj pkt 106. Potwierdź w 3–5 zdaniach.
+
+Cel: /dev-prep etapu 6 — checklista docs/operator/etap-6-…-przygotowanie.md: makieta admin (zgłoszenia, wyróżnione), decyzje
+Cookieyes / PostHog premium / GA4 / Pixel FB, R11 (treści po prawniku), produkcyjne Supabase (pozycja z etapu 4). Pozycje
+blokujące oznacz [blokuje: …]. /dev-plan dopiero, gdy checklista nie ma blokerów startu.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko narzędziem Write/Edit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) w workspace-template + §8.
+```
+
+**Historia: (2026-10-27, po S4) — SYNC PACZKI P27 DO VIBERSI I PRZYGOTOWANIE ETAPU 6 — WYKONANE (6a pkt 106).** Warunek: `popr/P27-S4`
 zmergowana (main `de8c49a`) i `popr/P27-E5-14` (uwaga rozmiaru IU w `sprawdz`) zmergowana — zgoda operatora.
 Sesja w katalogu vibersi. Operator wkleja:
 
